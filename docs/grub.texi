@@ -82,7 +82,7 @@ edition documents version @value{VERSION}.
 * Using::                       Booting your operating system.
 * Filesystems::                 Filesystem syntax and semantics.
 * Troubleshooting::             Error messages produced by GRUB.
-* Stage 2 Emulator::            The @command{grub} command.
+* Stage 2 emulator::            The @command{grub} command.
 * Hacking::                     Implementation details.
 * Index::                       Index.
 
