@@ -1,3 +1,17 @@
+2005-02-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/smp-imps.h (imps_any_new_apics): Removed.
+	(imps_enabled): Likewise.
+	(imps_lapic_addr): Likewise.
+	(imps_num_cpus): Likewise.
+	(imps_cpu_apic_map): Likewise.
+	(imps_apic_cpu_map): Likewise.
+
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Remove
+	-fwritable-strings. Not required for the grub shell actually.
+
+	* grub/Makefile.am (AM_CFLAGS): Likewise.
+
 2005-02-01  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* grub/asmstub.c (grub_stage2): Use auto instead of static for
