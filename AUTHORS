@@ -34,6 +34,4 @@ stage2/fsys_reiserfs.c and stage2/md5.c.
 
 Christoph Plattner added support for Net Boot Image Proposal.
 
-Stefan Ondrejicka added the commands "partnew" and "parttype".
-
 Frank Mehnert added support for hercules console.
