@@ -1,3 +1,7 @@
+2000-10-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S [STAGE1_5]: Don't include setjmp.S or apm.S.
+	
 2000-10-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* lib/device.c (read_device_map): Don't parse a line, if it is

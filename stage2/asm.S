@@ -1323,8 +1323,10 @@ probe_values:
 
 
 /* Source files are splitted, as they have different copyrights.  */
-#include "setjmp.S"
-#include "apm.S"
+#ifndef STAGE1_5
+# include "setjmp.S"
+# include "apm.S"
+#endif /* ! STAGE1_5 */
 		
 /*
  * console_putchar(c)
