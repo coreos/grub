@@ -35,6 +35,14 @@
 {  1, 1, 1, 0, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1 }
  */
 
+/*
+ * Note: PUPA is compiled with the options -mrtd and -mregparm=3.
+ *       So the first three arguments are passed in %eax, %edx, and %ecx,
+ *       respectively, and if a function has a fixed number of arguments
+ *       and the number if greater than three, the function must return
+ *       with "ret $N" where N is ((the number of arguments) - 3) * 4.
+ */
+
 #include <config.h>
 #include <pupa/symbol.h>
 #include <pupa/boot.h>
@@ -203,9 +211,6 @@ FUNCTION(pupa_reboot)
  * APM even if it is available.
  */
 FUNCTION(pupa_halt)
-	/* get the argument */
-	movl	4(%esp), %eax
-	
 	/* see if zero */
 	testl	%eax, %eax
 	jnz	EXT_C(pupa_stop)
@@ -256,16 +261,16 @@ FUNCTION(pupa_halt)
  */
 
 FUNCTION(pupa_chainloader_real_boot)
-	/* no need to save anything, just use %esp */
+	/* no need to save anything */
 
 	/* ESI must point to a partition table entry */
-	movl	8(%esp), %esi
+	movl	%edx, %esi
 
 	/* set up to pass boot drive */
-	movl	4(%esp), %edx
+	movl	%eax, %edx
 
 	/* Turn off Gate A20 */
-	pushl	$0
+	xorl	%eax, %eax
 	call	EXT_C(pupa_gate_a20)
 	
 	call	prot_to_real
@@ -398,21 +403,15 @@ realcseg:
 
 FUNCTION(pupa_biosdisk_rw_int13_extensions)
 	pushl	%ebp
-	movl	%esp, %ebp
-
 	pushl	%esi
 
 	/* compute the address of disk_address_packet */
-	movl	0x10(%ebp), %eax
-	movw	%ax, %si
-	xorw	%ax, %ax
-	shrl	$4, %eax
-	movw	%ax, %cx	/* save the segment to cx */
+	movw	%cx, %si
+	xorw	%cx, %cx
+	shrl	$4, %ecx	/* save the segment to cx */
 
-	/* drive */
-	movb	0xc(%ebp), %dl
 	/* ah */
-	movb	0x8(%ebp), %dh
+	movb	%al, %dh
 	/* enter real mode */
 	call	prot_to_real
 	
@@ -453,21 +452,24 @@ FUNCTION(pupa_biosdisk_rw_standard)
 	pushl	%esi
 
 	/* set up CHS information */
-	movl	0x10(%ebp), %eax
-	movb	%al, %ch
-	movb	0x18(%ebp), %al
-	shlb	$2, %al
-	shrw	$2, %ax
-	movb	%al, %cl
-	movb	0x14(%ebp), %dh
-	/* drive */
-	movb	0xc(%ebp), %dl
-	/* segment */
-	movw	0x20(%ebp), %bx
-	/* save nsec and ah to %di */
-	movb	0x8(%ebp), %ah
-	movb	0x1c(%ebp), %al
+
+	/* set %ch to low eight bits of cylinder */
+	xchgb	%cl, %ch
+	/* set bits 6-7 of %cl to high two bits of cylinder */
+	shlb	$6, %cl
+	/* set bits 0-5 of %cl to sector */
+	addb	0xc(%ebp), %cl
+	/* set %dh to head */
+	movb	0x8(%ebp), %dh
+	/* set %ah to AH */
+	movb	%al, %ah
+	/* set %al to NSEC */
+	movb	0x10(%ebp), %al
+	/* save %ax in %di */
 	movw	%ax, %di
+	/* save SEGMENT in %bx */
+	movw	0x14(%ebp), %bx
+		
 	/* enter real mode */
 	call	prot_to_real
 
@@ -503,7 +505,7 @@ FUNCTION(pupa_biosdisk_rw_standard)
 	popl	%ebx
 	popl	%ebp
 
-	ret
+	ret	$(4 * 4)
 
 
 /*
@@ -515,12 +517,10 @@ FUNCTION(pupa_biosdisk_rw_standard)
 
 FUNCTION(pupa_biosdisk_check_int13_extensions)
 	pushl	%ebp
-	movl	%esp, %ebp
-
 	pushl	%ebx
 
 	/* drive */
-	movb	0x8(%ebp), %dl
+	movb	%al, %dl
 	/* enter real mode */
 	call	prot_to_real
 
@@ -564,19 +564,16 @@ FUNCTION(pupa_biosdisk_check_int13_extensions)
 
 FUNCTION(pupa_biosdisk_get_diskinfo_int13_extensions)
 	pushl	%ebp
-	movl	%esp, %ebp
-
 	pushl	%ebx
 	pushl	%esi
 
 	/* compute the address of drive parameters */
-	movl	0xc(%ebp), %eax
-	movw	%ax, %si
-	xorw	%ax, %ax
-	shrl	$4, %eax
-	movw	%ax, %bx	/* save the segment into %bx */
+	movw	%dx, %si
+	xorw	%dx, %dx
+	shrl	$4, %edx
+	movw	%dx, %bx	/* save the segment into %bx */
 	/* drive */
-	movb	0x8(%ebp), %dl
+	movb	%al, %dl
 	/* enter real mode */
 	call	prot_to_real
 
@@ -613,13 +610,17 @@ FUNCTION(pupa_biosdisk_get_diskinfo_int13_extensions)
 
 FUNCTION(pupa_biosdisk_get_diskinfo_standard)
 	pushl	%ebp
-	movl	%esp, %ebp
-
 	pushl	%ebx
 	pushl	%edi
 
+	/* push CYLINDERS */
+	pushl	%edx
+	/* push HEADS */
+	pushl	%ecx
+	/* SECTORS is on the stack */
+	
 	/* drive */
-	movb	0x8(%ebp), %dl
+	movb	%al, %dl
 	/* enter real mode */
 	call	prot_to_real
 
@@ -640,31 +641,26 @@ FUNCTION(pupa_biosdisk_get_diskinfo_standard)
 	DATA32	call	real_to_prot
 	.code32
 
-	/* restore %ebp */
-	leal	0x8(%esp), %ebp
-	
-	/* heads */
+	/* pop HEADS */
+	popl	%edi
 	movb	%dh, %al
-	incl	%eax		/* the number of heads is counted from zero */
-	movl	0x10(%ebp), %edi
+	incl	%eax	/* the number of heads is counted from zero */
 	movl	%eax, (%edi)
 
-	/* sectors */
-	xorl	%eax, %eax
-	movb	%cl, %al
-	andb	$0x3f, %al
-	movl	0x14(%ebp), %edi
-	movl	%eax, (%edi)
-
-	/* cylinders */
-	shrb	$6, %cl
-	movb	%cl, %ah
+	/* pop CYLINDERS */
+	popl	%edi
 	movb	%ch, %al
-	incl	%eax		/* the number of cylinders is 
-				   counted from zero */
-	movl	0xc(%ebp), %edi
+	movb	%cl, %ah
+	shrb	$6, %ah	/* the number of cylinders is counted from zero */
+	incl	%eax
 	movl	%eax, (%edi)
 
+	/* SECTORS */
+	movl	0x10(%esp), %edi
+	andb	$0x3f, %cl
+	movzbl	%cl, %eax
+	movl	%eax, (%edi)
+	
 	xorl	%eax, %eax
 	movb	%bl, %al	/* return value in %eax */
 
@@ -672,7 +668,7 @@ FUNCTION(pupa_biosdisk_get_diskinfo_standard)
 	popl	%ebx
 	popl	%ebp
 
-	ret
+	ret	$4
 
 
 /*
@@ -724,14 +720,13 @@ FUNCTION(pupa_biosdisk_get_num_floppies)
 
 FUNCTION(pupa_get_memsize)
 	pushl	%ebp
-	pushl	%ebx
 
-	movl	0xc(%esp), %ebx
+	movl	%eax, %edx
 
 	call	prot_to_real	/* enter real mode */
 	.code16
 
-	testl	%ebx, %ebx
+	testl	%edx, %edx
 	jnz	xext
 
 	int	$0x12
@@ -742,13 +737,13 @@ xext:
 	int	$0x15
 
 xdone:
-	movw	%ax, %bx
+	movw	%ax, %dx
 
 	DATA32	call	real_to_prot
 	.code32
 
-	movw	%bx, %ax
-	popl	%ebx
+	movw	%dx, %ax
+
 	popl	%ebp
 	ret
 
@@ -802,13 +797,12 @@ xnoteisa:
  */
 
 FUNCTION(pupa_get_mmap_entry)
-	push	%ebp
-	push	%ebx
-	push	%edi
-	push	%esi
+	pusha
 
+	/* push ADDR */
+	pushl	%eax
+	
 	/* place address (+4) in ES:DI */
-	movl	0x14(%esp), %eax
 	addl	$4, %eax
 	movl	%eax, %edi
 	andl	$0xf, %edi
@@ -816,7 +810,7 @@ FUNCTION(pupa_get_mmap_entry)
 	movl	%eax, %esi
 
 	/* set continuation value */
-	movl	0x18(%esp), %ebx
+	movl	%edx, %ebx
 
 	/* set default maximum buffer size */
 	movl	$0x14, %ecx
@@ -851,17 +845,14 @@ xsmap:
 	DATA32	call	real_to_prot
 	.code32
 
-	/* write length of buffer (zero if error) into "addr" */
-	movl	0x14(%esp), %eax
+	/* write length of buffer (zero if error) into ADDR */
+	popl	%eax
 	movl	%ecx, (%eax)
 
 	/* set return value to continuation */
 	movl	%ebx, %eax
 
-	pop	%esi
-	pop	%edi
-	pop	%ebx
-	pop	%ebp
+	popa
 	ret
 
 	
@@ -937,7 +928,7 @@ gloop2ret:
  * support setting a background attribute.
  */
 FUNCTION(pupa_console_putchar)
-	movl	0x4(%esp), %edx
+	movl	%eax, %edx
 	pusha
 	movb	EXT_C(pupa_console_cur_color), %bl
 	
@@ -1122,8 +1113,8 @@ FUNCTION(pupa_console_gotoxy)
 	pushl	%ebp
 	pushl	%ebx                    /* save EBX */
 
-	movb	0xc(%esp), %dl           /* %dl = x */
-	movb	0x10(%esp), %dh          /* %dh = y */
+	movb	%dl, %dh	/* %dh = y */
+	movb	%al, %dl	/* %dl = x */
 
 	call	prot_to_real
 	.code16
@@ -1195,9 +1186,12 @@ console_cursor_shape:
 	.word	0
 	
 FUNCTION(pupa_console_setcursor)
-	push	%ebp
-	push	%ebx
+	pushl	%ebp
+	pushl	%ebx
 
+	/* push ON */
+	pushl	%eax
+	
 	/* check if the standard cursor shape has already been saved */
 	movw	console_cursor_shape, %ax
 	testw	%ax, %ax
@@ -1217,8 +1211,8 @@ FUNCTION(pupa_console_setcursor)
 1:
 	/* set %cx to the designated cursor shape */
 	movw	$0x2000, %cx
-	movl	0xc(%esp), %ebx
-	testl	%ebx, %ebx
+	popl	%eax
+	testl	%eax, %eax
 	jz	2f
 	movw	console_cursor_shape, %cx
 2:	
@@ -1254,7 +1248,7 @@ FUNCTION(pupa_console_setcursor)
  *                          that it isn't running)
  */
 FUNCTION(pupa_getrtsecs)
-	push	%ebp
+	pushl	%ebp
 
 	call	prot_to_real	/* enter real mode */
 	.code16
@@ -1272,7 +1266,7 @@ gottime:
 
 	movb	%dh, %al
 
-	pop	%ebp
+	popl	%ebp
 	ret
 
 	

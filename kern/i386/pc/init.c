@@ -30,7 +30,8 @@ void
 pupa_machine_init (void)
 {
   pupa_uint32_t cont;
-  struct pupa_machine_mmap_entry entry;
+  struct pupa_machine_mmap_entry *entry
+    = (struct pupa_machine_mmap_entry *) PUPA_MEMORY_MACHINE_SCRATCH_ADDR;
   pupa_size_t lower_mem = (pupa_get_memsize (0) << 10);
   pupa_addr_t end_addr = pupa_get_end_addr ();
 
@@ -53,31 +54,31 @@ pupa_machine_init (void)
 		       PUPA_MEMORY_MACHINE_RESERVED_START - end_addr);
 
   /* Check if pupa_get_mmap_entry works.  */
-  cont = pupa_get_mmap_entry (&entry, 0);
+  cont = pupa_get_mmap_entry (entry, 0);
 
-  if (entry.size)
+  if (entry->size)
     do
       {
 	/* Avoid the lower memory.  */
-	if (entry.addr < 0x100000)
+	if (entry->addr < 0x100000)
 	  {
-	    if (entry.len <= 0x100000 - entry.addr)
+	    if (entry->len <= 0x100000 - entry->addr)
 	      goto next;
 
-	    entry.len -= 0x100000 - entry.addr;
-	    entry.addr = 0x100000;
+	    entry->len -= 0x100000 - entry->addr;
+	    entry->addr = 0x100000;
 	  }
 	
 	/* Ignore >4GB.  */
-	if (entry.addr <= 0xFFFFFFFF && entry.type == 1)
+	if (entry->addr <= 0xFFFFFFFF && entry->type == 1)
 	  {
 	    pupa_addr_t addr;
 	    pupa_size_t len;
 
-	    addr = (pupa_addr_t) entry.addr;
-	    len = ((addr + entry.len > 0xFFFFFFFF)
+	    addr = (pupa_addr_t) entry->addr;
+	    len = ((addr + entry->len > 0xFFFFFFFF)
 		   ? 0xFFFFFFFF - addr
-		   : (pupa_size_t) entry.len);
+		   : (pupa_size_t) entry->len);
 	    pupa_mm_init_region ((void *) addr, len);
 	  }
 	
@@ -85,9 +86,9 @@ pupa_machine_init (void)
 	if (! cont)
 	  break;
 	
-	cont = pupa_get_mmap_entry (&entry, cont);
+	cont = pupa_get_mmap_entry (entry, cont);
       }
-    while (entry.size);
+    while (entry->size);
   else
     {
       pupa_uint32_t eisa_mmap = pupa_get_eisa_mmap ();

@@ -1,7 +1,7 @@
 # -*- makefile -*-
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin
-COMMON_CFLAGS = -fno-builtin
+COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3
 
 # Images.
 pkgdata_IMAGES = boot.img diskboot.img kernel.img
@@ -312,7 +312,7 @@ pre-chain.o: chain_mod-loader_i386_pc_chainloader.o
 	$(LD) -r -o $@ $^
 
 mod-chain.o: mod-chain.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
 
 mod-chain.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'chain' $< > $@ || (rm -f $@; exit 1)
@@ -351,7 +351,7 @@ pre-fat.o: fat_mod-fs_fat.o
 	$(LD) -r -o $@ $^
 
 mod-fat.o: mod-fat.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
 
 mod-fat.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'fat' $< > $@ || (rm -f $@; exit 1)

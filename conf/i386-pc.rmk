@@ -1,7 +1,7 @@
 # -*- makefile -*-
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin
-COMMON_CFLAGS = -fno-builtin
+COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3
 
 # Images.
 pkgdata_IMAGES = boot.img diskboot.img kernel.img

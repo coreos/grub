@@ -125,7 +125,7 @@ UNDSYMFILES += #{undsym}
 	$(LD) -r -o $@ $^
 
 #{mod_obj}: #{mod_src}
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<
 
 #{mod_src}: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)

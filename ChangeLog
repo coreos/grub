@@ -1,3 +1,33 @@
+2002-12-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Use -mrtd and -mregparm=3 to reduce the generated code sizes.
+	This means that any missing prototypes could be fatal. Also, you
+	must take care when writing assembly code. See the comments at
+	the beginning of startup.S, for more details.
+	
+	* kern/i386/pc/startup.S (pupa_halt): Modified for the new
+	compilation mechanism.
+	(pupa_chainloader_real_boot): Likewise.
+	(pupa_biosdisk_rw_int13_extensions): Likewise.
+	(pupa_biosdisk_rw_standard): Likewise.
+	(pupa_biosdisk_check_int13_extensions): Likewise.
+	(pupa_biosdisk_get_diskinfo_int13_extensions): Likewise.
+	(pupa_biosdisk_get_diskinfo_standard): Likewise.
+	(pupa_get_memsize): Likewise.
+	(pupa_get_mmap_entry): Likewise.
+	(pupa_console_putchar): Likewise.
+	(pupa_console_setcursor): Likewise.
+	(pupa_getrtsecs): Use pushl instead of push.
+
+	* kern/i386/pc/init.c (pupa_machine_init): Use the scratch
+	memory instead of the stack for a mmap entry, because some
+	BIOSes may ignore the maximum size and overflow.
+
+	* conf/i386-pc.rmk (COMMON_CFLAGS): Added -mrtd and -mregparm=3.
+
+	* genmk.rb (PModule#rule): Compile automatically generated
+	sources with module-specific CFLAGS as well as other sources.
+
 2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac: Check ld.
