@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 0.90 - XXXX-XX-XX:
+New in 0.90 - 2001-07-11:
 * The command "setkey" resets key mappings, when no argument is
   specified.
 * Linux devfs support is added.
@@ -12,11 +12,11 @@ New in 0.90 - XXXX-XX-XX:
   items with their own passwords.
 * New command, "displayapm".
 * New command, "md5crypt".
-* The new utility ``grub-md5-crypt'' is a fontend of the grub shell. It
+* The new utility ``grub-md5-crypt'' is a frontend of the grub shell. It
   encrypts a password in MD5 format.
 * New commands, "testvbe" and "vbeprobe".
 * The configure script accepts a new option, `--enable-preset-menu'. You
-  can embed a arbitrary configuration which will be used when Stage 2
+  can embed an arbitrary configuration which will be used when Stage 2
   cannot open a real configuration file, with this option. The argument
   must be an existing file.
 * EZ-BIOS support is added.
