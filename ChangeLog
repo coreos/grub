@@ -1,5 +1,20 @@
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (testload_func): Fix the typos: 0x2000000 ->
+	0x200000 and 0x3000000 -> 0x300000.
+	
+1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Hisazumi Kenji <nel@soraneko.com>:
+	* stage2/fsys_ffs.c (mapblock_offset): New variable.
+	(mapblock_bsize): Likewise.
+	(MAPBUF): New macro.
+	(MAPBUF_LEN): Likewise.
+	(ffs_mount): Set MAPBLOCK_OFFSET to -1.
+	(block_map): Added partial read support.
+	
+1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/cmdline.c (find_command): If COMMAND is less than
 	(*BUILTIN)->NAME in dictionary order, break the loop.
 	* stage2/builtins.c (builtin_chainloader): Capitalize the

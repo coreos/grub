@@ -1244,8 +1244,8 @@ testload_func (char *arg, int flags)
 	       *((int *) RAW_ADDR (0x30000c)));
 
   for (i = 0; i < 0x10ac0; i++)
-    if (*((unsigned char *) RAW_ADDR (0x2000000 + i))
-	!= *((unsigned char *) RAW_ADDR (0x3000000 + i)))
+    if (*((unsigned char *) RAW_ADDR (0x200000 + i))
+	!= *((unsigned char *) RAW_ADDR (0x300000 + i)))
       break;
   
   grub_printf ("Max is 0x10ac0: i=0x%x, filepos=0x%x\n", i, filepos);

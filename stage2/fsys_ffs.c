@@ -67,11 +67,14 @@
 
 /* used for filesystem map blocks */
 static int mapblock;
+static int mapblock_offset;
+static int mapblock_bsize;
 
 /* pointer to superblock */
 #define SUPERBLOCK ((struct fs *) ( FSYS_BUF + 8192 ))
 #define INODE ((struct icommon *) ( FSYS_BUF + 16384 ))
 #define MAPBUF ( FSYS_BUF + 24576 )
+#define MAPBUF_LEN 8192
 
 
 int
@@ -87,31 +90,54 @@ ffs_mount (void)
     retval = 0;
 
   mapblock = -1;
-
+  mapblock_offset = -1;
+  
   return retval;
 }
 
 static int
 block_map (int file_block)
 {
-  int bnum;
-
+  int bnum, offset, bsize;
+  
   if (file_block < NDADDR)
     return (INODE->i_db[file_block]);
-
-  if ((bnum = fsbtodb (SUPERBLOCK, INODE->i_ib[0])) != mapblock)
+  
+  /* If the blockmap loaded does not include FILE_BLOCK,
+     load a new blockmap.  */
+  if ((bnum = fsbtodb (SUPERBLOCK, INODE->i_ib[0])) != mapblock
+      || (mapblock_offset <= bnum && bnum <= mapblock_offset + mapblock_bsize))
     {
-      if (!devread (bnum, 0, SUPERBLOCK->fs_bsize, (char *)MAPBUF))
+      if (MAPBUF_LEN < SUPERBLOCK->fs_bsize)
+	{
+	  offset = ((file_block - NDADDR) % NINDIR (SUPERBLOCK));
+	  bsize = MAPBUF_LEN;
+	  
+	  if (offset + MAPBUF_LEN > SUPERBLOCK->fs_bsize)
+	    offset = (SUPERBLOCK->fs_bsize - MAPBUF_LEN) / sizeof (int);
+	}
+      else
+	{
+	  bsize = SUPERBLOCK->fs_bsize;
+	  offset = 0;
+	}
+      
+      if (! devread (bnum, offset * sizeof (int), bsize, (char *) MAPBUF))
 	{
 	  mapblock = -1;
+	  mapblock_bsize = -1;
+	  mapblock_offset = -1;
 	  errnum = ERR_FSYS_CORRUPT;
 	  return -1;
 	}
-
+      
       mapblock = bnum;
+      mapblock_bsize = bsize;
+      mapblock_offset = offset;
     }
-
-  return (((int *) MAPBUF)[(file_block - NDADDR) % NINDIR (SUPERBLOCK)]);
+  
+  return (((int *) MAPBUF)[((file_block - NDADDR) % NINDIR (SUPERBLOCK))
+			  - mapblock_offset]);
 }
 
 
@@ -119,7 +145,7 @@ int
 ffs_read (char *buf, int len)
 {
   int logno, off, size, map, ret = 0;
-
+  
   while (len && !errnum)
     {
       off = blkoff (SUPERBLOCK, filepos);
@@ -169,13 +195,10 @@ loop:
 
   /* load current inode (defaults to the root inode) */
 
-  if (!devread (fsbtodb (SUPERBLOCK, itod (SUPERBLOCK, ino)),
-		0, SUPERBLOCK->fs_bsize, (char *) FSYS_BUF))
-    return 0;			/* XXX what return value? */
-
-  memmove ((void *) INODE,
-	   (void *) &(((struct dinode *) FSYS_BUF)[ino % (SUPERBLOCK->fs_inopb)]),
-	   sizeof (struct dinode));
+	if (!devread (fsbtodb (SUPERBLOCK, itod (SUPERBLOCK, ino)),
+								ino % (SUPERBLOCK->fs_inopb) * sizeof (struct dinode),
+								sizeof (struct dinode), (char *) INODE))
+			return 0;			/* XXX what return value? */
 
   /* if we have a real file (and we're not just printing possibilities),
      then this is where we want to exit */
