@@ -258,8 +258,12 @@ attempt_mount (void)
   if (fsys_type == NUM_FSYS && errnum == ERR_NONE)
     errnum = ERR_FSYS_MOUNT;
 #else
-  if ((*(fsys_table[0].mount_func)) () != 1)
-    errnum = ERR_FSYS_MOUNT;
+  fsys_type = 0;
+  if ((*(fsys_table[fsys_type].mount_func)) () != 1)
+    {
+      fsys_type = NUM_FSYS;
+      errnum = ERR_FSYS_MOUNT;
+    }
 #endif
 }
 
@@ -395,15 +399,17 @@ real_open_partition (int flags)
   char mbr_buf[SECTOR_SIZE];
   int i, part_no, slice_no, ext = 0;
 
+#ifndef STAGE1_5
+  if (! sane_partition ())
+    return 0;
+#endif
+  
   /*
    *  The "rawread" is probably unnecessary here, but it is good to
    *  know it works.
    */
-#ifndef STAGE1_5
-  if (!sane_partition ()
-      || !rawread (current_drive, 0, 0, SECTOR_SIZE, mbr_buf))
+  if (! rawread (current_drive, 0, 0, SECTOR_SIZE, mbr_buf))
     return 0;
-#endif
 
   bsd_evil_hack = 0;
   current_slice = 0;

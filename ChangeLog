@@ -1,12 +1,8 @@
-1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+1999-06-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
-	* Makefile.am (SUBDIRS): Change the order of the directories so
-	that a directory will be made after the dependent directories
-	are made. `grub' depends on `stage2', and `docs' depends on
-	`grub'. Do not make in parallel.
-	* docs/help2man: Copied from help2man-1.012, which contains my
-	previous change.
-	* docs/grub.8: Regenerated.
+	* stage2/disk_io.c (attempt_mount) [STAGE1_5]: Set FSYS_TYPE to
+	0, and set it to NUM_FSYS if mount fails.
+	(real_open_partition): Call rawread in Stage 1.5 as well.
 	
 1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
