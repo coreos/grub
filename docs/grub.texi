@@ -30,7 +30,6 @@
 @setchapternewpage off
 
 @ifinfo
-Copyright @copyright{} 1996 Erich Boleyn
 Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -63,7 +62,6 @@ into another language, under the above conditions for modified versions.
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1996 Erich Boleyn
 Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of

@@ -1,3 +1,32 @@
+2001-11-12  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* docs/grub.texi: The copyright of this file is only held by
+	Free Software Foundation, Inc., as Erich Boleyn has assigned his
+	copyright to the FSF.
+	* stage1/stage1.S: Likewise.
+	* stage2/asm.S: Likewise.
+	* stage2/boot.c: Likewise.
+	* stage2/builtins.c: Likewise.
+	* stage2/char_io.c: Likewise.
+	* stage2/cmdline.c: Likewise.
+	* stage2/common.c: Likewise.
+	* stage2/disk_io.c: Likewise.
+	* stage2/fat.h: Likewise.
+	* stage2/filesys.h: Likewise.
+	* stage2/freebsd.h: Likewise.
+	* stage2/fsys_ext2fs.c: Likewise.
+	* stage2/fsys_fat.c: Likewise.
+	* stage2/fsys_ffs.c: Likewise.
+	* stage2/gunzip.c: Likewise.
+	* stage2/i386-elf.h: Likewise.
+	* stage2/mb_header.h: Likewise.
+	* stage2/mb_info.h: Likewise.
+	* stage2/pc_slice.h: Likewise.
+	* stage2/shared.h: Likewise.
+	* stage2/stage1_5.c: Likewise.
+	* stage2/stage2.c: Likewise.
+	* stage2/start.S: Likewise.
+	
 2001-11-07  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* stage2/builtins.c (terminal_func) [!SUPPORT_SERIAL]: Disable

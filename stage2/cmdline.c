@@ -1,7 +1,6 @@
 /* cmdline.c - the device-independent GRUB text command line */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
  *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
