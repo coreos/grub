@@ -67,9 +67,11 @@ FSYS_CFLAGS = @FSYS_CFLAGS@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
+PERL = @PERL@
 RANLIB = @RANLIB@
 STAGE1_CFLAGS = @STAGE1_CFLAGS@
 STAGE2_CFLAGS = @STAGE2_CFLAGS@
@@ -110,7 +112,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .dvi .info .ps .texi .texinfo .txi
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu docs/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
@@ -118,7 +120,7 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-$(srcdir)/version.texi: stamp-vti
+$(srcdir)/version.texi: @MAINTAINER_MODE_TRUE@stamp-vti
 	@:
 
 $(srcdir)/stamp-vti: grub.texi $(top_srcdir)/configure.in
@@ -139,7 +141,7 @@ clean-vti:
 distclean-vti:
 
 maintainer-clean-vti:
-	-rm -f $(srcdir)/stamp-vti $(srcdir)/version.texi
+	-@MAINTAINER_MODE_TRUE@rm -f $(srcdir)/stamp-vti $(srcdir)/version.texi
 
 grub.info: grub.texi version.texi
 grub.dvi: grub.texi version.texi
@@ -405,9 +407,9 @@ grub.info: grub.texi
 	cd $(srcdir) \
 	  && sed 's/@command/@file/g; s/ifnottex/ifinfo/' grub.texi | $(MAKEINFO)
 
-@GRUB_MAINT_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
-@GRUB_MAINT_TRUE@	$(srcdir)/$(HELP2MAN) --name="the grub shell" \
-@GRUB_MAINT_TRUE@		--section=8 --output=$@ $<
+@MAINTAINER_MODE_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
+@MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) --name="the grub shell" \
+@MAINTAINER_MODE_TRUE@		--section=8 --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

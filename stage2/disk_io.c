@@ -511,8 +511,7 @@ real_open_partition (int flags)
 		  /*
 		   *  Is this an extended partition?
 		   */
-		  if (current_slice == PC_SLICE_TYPE_EXTENDED
-		      || current_slice == PC_SLICE_TYPE_WIN95_EXTENDED)
+		  if (IS_PC_SLICE_TYPE_EXTENDED (current_slice))
 		    {
 		      if (ext == -1)
 			{
@@ -560,8 +559,7 @@ real_open_partition (int flags)
 	       *  to one per valid entry.
 	       */
 	      if (slice_no < PC_SLICE_MAX
-		  || (current_slice != PC_SLICE_TYPE_EXTENDED
-		      && current_slice != PC_SLICE_TYPE_EXTENDED
+		  || (! IS_PC_SLICE_TYPE_EXTENDED (current_slice)
 		      && current_slice != PC_SLICE_TYPE_NONE))
 		slice_no++;
 	    }

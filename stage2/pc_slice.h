@@ -117,7 +117,10 @@
    || ((type) == PC_SLICE_TYPE_FAT16_LBA) \
    || ((type) == PC_SLICE_TYPE_FAT32) \
    || ((type) == PC_SLICE_TYPE_FAT32_LBA))
-   
+
+#define IS_PC_SLICE_TYPE_EXTENDED(type)	\
+  (((type) == PC_SLICE_TYPE_EXTENDED)	\
+   || ((type) == PC_SLICE_TYPE_WIN95_EXTENDED))
 
 /* these ones are special, as they use thier own partitioning scheme
    to subdivide the PC partitions from there.  */

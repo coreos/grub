@@ -34,15 +34,13 @@ AC_SUBST(host_vendor)
 # Options
 #
 
-AC_ARG_ENABLE(maintainer-mode,
-[  --enable-maintainer-mode
-                          enable the maintainer mode],
-[case "x${enableval}" in
-   xyes) maintainermode=yes ;;
-   xno) maintainermode=no ;;
-   *) AC_MSG_ERROR(invalid value ${enableval} for --enable-maintainer-mode) ;;
-esac],[maintainermode=no])
-AM_CONDITIONAL(GRUB_MAINT, test "x${maintainermode}" = xyes)
+AM_MAINTAINER_MODE
+if test "x$enable_maintainer_mode" = xyes; then
+  AC_PATH_PROG(PERL,perl)
+  if test -z "$PERL"; then
+    AC_MSG_ERROR([perl not found])
+  fi
+fi
 
 # This should be checked before AC_PROG_CC
 if test "x$CFLAGS" = x; then

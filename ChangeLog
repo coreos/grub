@@ -1,3 +1,20 @@
+1999-09-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* configure.in (--enable-maintainer-mode): Do not use our own
+	rule, but use AM_MAINTAINER_MODE instead. If the maintainer mode
+	is enabled, then check for perl, and if it is not found, print
+	an error message and abort.
+	* docs/Makefile.am (grub.8): Regenerated if MAINTAINER_MODE is
+	defined, instead of GRUB_MAINT. Use the variable PERL rather
+	than running help2man directly.
+	
+1999-09-13  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/pc_slice.h (IS_PC_SLICE_TYPE_EXTENDED): New macro.
+	* stage2/disk_io.c (real_open_partition): Use
+	IS_PC_SLICE_TYPE_EXTENDED instead of comparing CURRENT_SLICE
+	with the extended partition types.
+
 1999-09-11  Pavel Roskin  <pavel_roskin@geocities.com>
 	
 	* acconfig.h: New file for autoheader support.

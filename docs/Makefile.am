@@ -11,8 +11,8 @@ grub.info: grub.texi
 	cd $(srcdir) \
 	  && sed 's/@command/@file/g; s/ifnottex/ifinfo/' grub.texi | $(MAKEINFO)
 
-if GRUB_MAINT
+if MAINTAINER_MODE
 $(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
-	$(srcdir)/$(HELP2MAN) --name="the grub shell" \
+	$(PERL) $(srcdir)/$(HELP2MAN) --name="the grub shell" \
 		--section=8 --output=$@ $<
 endif
