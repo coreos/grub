@@ -61,7 +61,7 @@ ENTRY(start)
 	. = EXT_C(start) + 0x8
 
 VARIABLE(install_partition)
-	.long	0xFF00FF
+	.long	0x020000
 VARIABLE(version_string)
 	.string "0.5"
 VARIABLE(config_file)
@@ -976,11 +976,7 @@ ENTRY(patch_code_end)
 
 ENTRY(linux_boot)
 	/* don't worry about saving anything, we're committed at this point */
-	call	EXT_C(stop_floppy)
 	cld	/* forward copying */
-
-	/* XXX new stack pointer in safe area for calling functions */
-	movl	$0x4000, %esp
 
 	/* copy kernel */
 	movl	$LINUX_SETUP, %eax
@@ -991,6 +987,11 @@ ENTRY(linux_boot)
 
 	rep
 	movsl
+
+ENTRY(big_linux_boot)
+	/* XXX new stack pointer in safe area for calling functions */
+	movl	$0x4000, %esp
+	call	EXT_C(stop_floppy)
 
 	/* final setup for linux boot */
 
