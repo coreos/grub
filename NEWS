@@ -1,5 +1,9 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New:
+* The /sbin/grub stage2 simulator now works for simple cases, and uses
+  the Linux HDIO_GETGEO ioctl to determine hard disk geometry.
+
 New in 0.5.91 - 1999-03-14, Gordon Matzigkeit:
 * LBA and preliminary AWARD BIOS disk extension support.
 * Started docs/grub.texi.

@@ -78,7 +78,7 @@ int current_slice;
 /* disk buffer parameters */
 int buf_drive = -1;
 int buf_track;
-int buf_geom;
+struct geometry buf_geom;
 
 /* filesystem common variables */
 int filepos;
@@ -103,26 +103,24 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
        */
       if (buf_drive != drive)
 	{
-	  buf_geom = get_diskinfo (drive);
+	  if (get_diskinfo (drive, &buf_geom))
+	    {
+	      errnum = ERR_NO_DISK;
+	      return 0;
+	    }
 	  buf_drive = drive;
 	  buf_track = -1;
 	}
 
-      if (buf_geom == 0)
-	{
-	  errnum = ERR_NO_DISK;
-	  return 0;
-	}
-
       /*  Get first sector of track  */
-      soff = sector % SECTORS (buf_geom);
+      soff = sector % buf_geom.sectors;
       track = sector - soff;
-      num_sect = SECTORS (buf_geom) - soff;
+      num_sect = buf_geom.sectors - soff;
       bufaddr = BUFFERADDR + (soff * SECTOR_SIZE) + byte_offset;
 
       if (track != buf_track)
 	{
-	  int bios_err, read_start = track, read_len = SECTORS (buf_geom);
+	  int bios_err, read_start = track, read_len = buf_geom.sectors;
 
 	  /*
 	   *  If there's more than one read in this entire loop, then
@@ -136,7 +134,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	      bufaddr = BUFFERADDR + byte_offset;
 	    }
 
-	  bios_err = biosdisk (BIOSDISK_READ, drive, buf_geom,
+	  bios_err = biosdisk (BIOSDISK_READ, drive, &buf_geom,
 			       read_start, read_len, BUFFERSEG);
 	  if (bios_err)
 	    {
@@ -151,7 +149,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 		   *  required sector(s) rather than failing completely.
 		   */
 		  if (slen > num_sect
-		      || biosdisk (BIOSDISK_READ, drive, buf_geom,
+		      || biosdisk (BIOSDISK_READ, drive, &buf_geom,
 				   sector, slen, BUFFERSEG))
 		    errnum = ERR_READ;
 
@@ -293,7 +291,7 @@ make_saved_active (void)
 
 	  buf_track = -1;
 
-	  if (biosdisk (BIOSDISK_WRITE, saved_drive, buf_geom,
+	  if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
 			0, 1, SCRATCHSEG))
 	    {
 	      errnum = ERR_WRITE;
@@ -406,7 +404,7 @@ real_open_partition (int flags)
   bsd_evil_hack = 0;
   current_slice = 0;
   part_start = 0;
-  part_length = SECTORS (buf_geom) * HEADS (buf_geom) * CYLINDERS (buf_geom);
+  part_length = buf_geom.sectors * buf_geom.heads * buf_geom.cylinders;
 
   if (current_drive & 0x80)
     {
@@ -900,6 +898,7 @@ print_completions (char *filename)
 	    {
 	      /* disk completions */
 	      int disk_no, i, j;
+	      struct geometry geom;
 
 	      printf (" Possible disks are: ");
 
@@ -908,8 +907,8 @@ print_completions (char *filename)
 		  for (j = 0; j < 8; j++)
 		    {
 		      disk_no = (i * 0x80) + j;
-		      if ((disk_choice || disk_no == current_drive)
-			  && get_diskinfo (disk_no))
+		      if ((disk_choice || disk_no == current_drive) &&
+			  ! get_diskinfo (disk_no, &geom))
 			printf (" %cd%d", (i ? 'h' : 'f'), j);
 		    }
 		}

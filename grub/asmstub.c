@@ -39,10 +39,22 @@ int grub_stage2 (void);
 #include <assert.h>
 #include <stdio.h>
 
+#ifdef __linux__
+# include <sys/ioctl.h>		/* ioctl */
+# include <linux/hdreg.h>	/* HDIO_GETGEO */
+#endif /* __linux__ */
+
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (4 * 1024 * 1024)	/* 4MB */
 #define CONVENTIONAL_MEMSIZE (640) /* 640kB */
 
+/* Simulated disk sizes. */
+#define DEFAULT_FD_CYLINDERS	80
+#define DEFAULT_FD_HEADS	2
+#define DEFAULT_FD_SECTORS	18
+#define DEFAULT_HD_CYLINDERS	620
+#define DEFAULT_HD_HEADS	128
+#define DEFAULT_HD_SECTORS	63
 
 unsigned long install_partition = 0x20000;
 unsigned long boot_drive = 0;
@@ -53,7 +65,7 @@ char config_file[] = "/boot/grub/menu.lst";
 char *grub_scratch_mem = 0;
 
 #define NUM_DISKS 256
-static FILE **disks = 0;
+static struct geometry *disks = 0;
 
 /* The main entry point into this mess. */
 int
@@ -64,6 +76,31 @@ grub_stage2 (void)
   static char *realstack;
   int i;
   char *scratch, *simstack;
+
+  /* We need a nested function so that we get a clean stack frame,
+     regardless of how the code is optimized. */
+  static volatile void doit ()
+  {
+    /* Make sure our stack lives in the simulated memory area. */
+    asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"
+		  : "&=r" (realstack) : "r" (simstack));
+
+    /* FIXME: Do a setjmp here for the stop command. */
+    if (1)
+      {
+	/* Actually enter the generic stage2 code. */
+	status = 0;
+	init_bios_info ();
+      }
+    else
+      {
+	/* Somebody aborted. */
+	status = 1;
+      }
+
+    /* Replace our stack before we use any local variables. */
+    asm volatile ("movl %0, %%esp\n" : : "r" (realstack));
+  }
 
   assert (grub_scratch_mem == 0);
   scratch = malloc (0x100000 + EXTENDED_MEMSIZE + 15);
@@ -93,32 +130,9 @@ grub_stage2 (void)
   keypad (stdscr, TRUE);
 #endif
 
-  /* Make sure our stack lives in the simulated memory area. */
-  simstack = (char *) RAW_ADDR (PROTSTACKINIT);
-#ifdef SIMULATE_STACK
-  __asm __volatile ("movl %%esp, %0;" : "=d" (realstack));
-  __asm __volatile ("movl %0, %%esp" :: "d" (simstack));
-#endif
-
-  {
-    /* FIXME: Do a setjmp here for the stop command. */
-    if (1)
-      {
-	/* Actually enter the generic stage2 code. */
-	status = 0;
-	init_bios_info ();
-      }
-    else
-      {
-	/* Somebody aborted. */
-	status = 1;
-      }
-  }
-
-#ifdef SIMULATE_STACK
-  /* Replace our stack before we use any local variables. */
-  __asm __volatile ("movl %0, %%esp" :: "d" (realstack));
-#endif
+  /* Set our stack, and go for it. */
+  simstack = (char *) PROTSTACKINIT;
+  doit ();
 
 #ifdef HAVE_LIBCURSES
   endwin ();
@@ -126,8 +140,8 @@ grub_stage2 (void)
 
   /* Close off the file pointers we used. */
   for (i = 0; i < NUM_DISKS; i ++)
-    if (disks[i])
-      fclose (disks[i]);
+    if (disks[i].flags)
+      fclose ((FILE *) disks[i].flags);
 
   /* Release memory. */
   free (disks);
@@ -352,47 +366,107 @@ set_attrib (int attr)
 /* Low-level disk I/O.  Our stubbed version just returns a file
    descriptor, not the actual geometry. */
 int
-get_diskinfo (int drive)
+get_diskinfo (int drive, struct geometry *geometry)
 {
-  /* The unpartitioned device name: /dev/XdX */
-  char devname[9];
+  /* FIXME: this function is truly horrid.  We try opening the device,
+     then severely abuse the GEOMETRY->flags field to pass a file
+     pointer to biosdisk.  Thank God nobody's looking at this comment,
+     or my reputation would be ruined. --Gord */
 
   /* See if we have a cached device. */
-  if (disks[drive])
-    return (int) disks[drive];
+  if (! disks[drive].flags)
+    {
+      /* The unpartitioned device name: /dev/XdX */
+      char devname[9];
 
-  /* Try opening the drive device. */
-  strcpy (devname, "/dev/");
-  if (drive & 0x80)
-    devname[5] = 'h';
-  else
-    devname[5] = 'f';
-  devname[6] = 'd';
+      /* Try opening the drive device. */
+      strcpy (devname, "/dev/");
 
-  /* Check to make sure we don't exceed /dev/hdz. */
-  devname[7] = (drive & 0x7f) + 'a';
-  if (devname[7] > 'z')
-    return 0;
-  devname[8] = '\0';
+#ifdef __linux__
+      /* Linux uses /dev/hda, and /dev/sda, but /dev/fd0.  Go figure. */
+      if (drive & 0x80)
+	{
+	  /* Check to make sure we don't exceed /dev/hdz. */
+	  devname[5] = 'h';
+	  devname[7] = 'a' + (drive & 0x7f);
+	  if (devname[7] > 'z')
+	    return -1;
+	}
+      else
+	{
+	  devname[5] = 'f';
+	  devname[7] = '0' + drive;
+	  if (devname[7] > '9')
+	    return -1;
+	}
+#else /* ! __linux__ */
+      if (drive & 0x80)
+	devname[5] = 'h';
 
-  /* Open read/write, or read-only if that failed. */
-  disks[drive] = fopen (devname, "r+");
-  if (! disks[drive])
-    disks[drive] = fopen (devname, "r");
+      devname[7] = '0' + drive;
+      if (devname[7] > '9')
+	return -1;
+#endif /* __linux__ */
 
-  return (int) disks[drive];
+      devname[6] = 'd';
+      devname[8] = '\0';
+
+      /* Open read/write, or read-only if that failed. */
+      disks[drive].flags = (int) fopen (devname, "r+");
+      if (! disks[drive].flags)
+	disks[drive].flags = (int) fopen (devname, "r");
+
+      if (disks[drive].flags)
+	{
+#ifdef __linux__
+	  struct hd_geometry hdg;
+	  if (! ioctl (fileno ((FILE *) disks[drive].flags),
+		       HDIO_GETGEO, &hdg))
+	    {
+	      /* Got the geometry, so save it. */
+	      disks[drive].cylinders = hdg.cylinders;
+	      disks[drive].heads = hdg.heads;
+	      disks[drive].sectors = hdg.sectors;
+	    }
+	  else
+	    /* FIXME: should have some other alternatives before using
+	       arbitrary defaults. */
+#endif
+	  /* Set some arbitrary defaults. */
+	  if (drive & 0x80)
+	    {
+	      /* Hard drive. */
+	      disks[drive].cylinders = DEFAULT_HD_CYLINDERS;
+	      disks[drive].heads = DEFAULT_HD_HEADS;
+	      disks[drive].sectors = DEFAULT_HD_SECTORS;
+	    }
+	  else
+	    {
+	      /* Floppy. */
+	      disks[drive].cylinders = DEFAULT_FD_CYLINDERS;
+	      disks[drive].heads = DEFAULT_FD_HEADS;
+	      disks[drive].sectors = DEFAULT_FD_SECTORS;
+	    }
+	}
+    }
+
+  if (! disks[drive].flags)
+    return -1;
+
+  *geometry = disks[drive];
+  return 0;
 }
 
 int
-biosdisk (int subfunc, int drive, int geometry,
+biosdisk (int subfunc, int drive, struct geometry *geometry,
 	  int sector, int nsec, int segment)
 {
   char *buf;
   FILE *fp;
 
   /* Get the file pointer from the geometry, and make sure it matches. */
-  fp = (FILE *) geometry;
-  if (! fp || fp != disks[drive])
+  fp = (FILE *) geometry->flags;
+  if (! fp || fp != (FILE *) disks[drive].flags)
     return BIOSDISK_ERROR_GEOMETRY;
 
   /* Seek to the specified location. */

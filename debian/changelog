@@ -1,3 +1,9 @@
+grub (0.5.92) unstable; urgency=low
+
+  *
+
+ --
+
 grub (0.5.91) unstable; urgency=low
 
   * Added support for LBA mode and preliminary AWARD/AMI hard disk BIOS

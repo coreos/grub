@@ -21,10 +21,6 @@
 
 #include "pc_slice.h"
 
-#define SECTORS(geom)    ( (geom) & 0xFF )
-#define HEADS(geom)      ( ( ( (geom) >> 8 ) & 0xFF ) + 1 )
-#define CYLINDERS(geom)  ( ( ( (geom) >> 16 ) & 0x3FF ) + 1 )
-
 /*
  *  Default to all functioning filesystems enabled
  */

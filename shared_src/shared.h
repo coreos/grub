@@ -58,6 +58,7 @@ extern char *grub_scratch_mem;
 #define BIOSDISK_READ		    0x0
 #define BIOSDISK_WRITE		    0x1
 #define BIOSDISK_ERROR_GEOMETRY     0x100
+#define BIOSDISK_FLAG_LBA_EXTENSION 0x1
 
 /*
  *  This is the filesystem (not raw device) buffer.
@@ -304,6 +305,19 @@ extern int fsys_type;
 extern int block_file;
 #endif /* NO_BLOCK_FILES */
 
+/* The information for a disk geometry */
+struct geometry
+{
+  /* The number of cylinders */
+  unsigned long cylinders;
+  /* The number of heads */
+  unsigned long heads;
+  /* The number of sectors */
+  unsigned long sectors;
+  /* Flags */
+  unsigned long flags;
+};
+
 extern long part_start;
 extern long part_length;
 
@@ -311,7 +325,7 @@ extern int current_slice;
 
 extern int buf_drive;
 extern int buf_track;
-extern int buf_geom;
+extern struct geometry buf_geom;
 
 /* these are the current file position and maximum file position */
 extern int filepos;
@@ -418,8 +432,8 @@ int checkkey (void);
 void set_attrib (int attr);
 
 /* Low-level disk I/O */
-int get_diskinfo (int drive);
-int biosdisk (int read, int drive, int geometry,
+int get_diskinfo (int drive, struct geometry *geometry);
+int biosdisk (int read, int drive, struct geometry *geometry,
 	      int sector, int nsec, int segment);
 void stop_floppy (void);
 
@@ -494,6 +508,6 @@ int load_image (void);
 int load_module (void);
 int load_initrd (void);
 
-void init_bios_info (void) __attribute__ ((noreturn));
+void init_bios_info (void);
 
 #endif /* ASM_FILE */

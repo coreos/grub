@@ -398,9 +398,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	  lpos++;
 	}
       while (cmdline[lpos]);
-    }
 
-  cmdline[c] = 0;
+      /* Zero-terminate the string. */
+      cmdline[c] = 0;
+    }
 
   return 0;
 }
@@ -562,13 +563,16 @@ strstr (char *s1, char *s2)
 int
 memcheck (int start, int len)
 {
-  /* FIXME: fails when used with addresses on our stack. */
+  /* FIXME: Don't bother checking memory for now, since our globals
+     are out of range. */
+#ifndef GRUB_UTIL
   if ((start < RAW_ADDR (0x1000)) ||
       (start < RAW_ADDR (0x100000) &&
        RAW_ADDR (mbi.mem_lower * 1024) < (start + len)) ||
       (start >= RAW_ADDR (0x100000) &&
        RAW_ADDR (mbi.mem_upper * 1024) < ((start - 0x100000) + len)))
     errnum = ERR_WONT_FIT;
+#endif /* GRUB_UTIL */
 
   return (!errnum);
 }

@@ -372,7 +372,8 @@ returnit:
 	  set_device (dest_dev) && open_partition () &&
 	  devread (0, 0, SECTOR_SIZE, old_sect))
 	{
-	  int dest_drive = current_drive, dest_geom = buf_geom;
+	  int dest_drive = current_drive;
+	  struct geometry dest_geom = buf_geom;
 	  int dest_sector = part_start, i;
 
 #ifndef NO_DECOMPRESSION
@@ -466,11 +467,11 @@ returnit:
 
 		      if (!errnum
 			  && (biosdisk(BIOSDISK_WRITE,
-				       dest_drive, dest_geom,
+				       dest_drive, &dest_geom,
 				       dest_sector, 1, (BOOTSEC_LOCATION>>4))
 			      || (write_stage2_sect
 				  && biosdisk(BIOSDISK_WRITE,
-					      current_drive, buf_geom,
+					      current_drive, &buf_geom,
 					      stage2_sect, 1, SCRATCHSEG))))
 			  errnum = ERR_WRITE;
 		    }

@@ -352,10 +352,12 @@ ENTRY(biosdisk)
 	push	%ecx
 	push	%edx
 	push	%esi
+	push	%edi
 
 	/* Check whether we have LBA. */
-	movb	0x13(%ebp), %al
-	andb	$0x10, %al
+	movl	0x10(%ebp), %eax
+	andb	0xc(%eax), %eax
+	andl	$BIOSDISK_FLAG_LBA_EXTENSION, %eax
 	jz	disk_compute_args	/* nope. */
 
 	/* set up disk address packet for extended calls (LBA mode) */
@@ -416,39 +418,37 @@ ENTRY(biosdisk)
 	/* either failed, or a floppy, so try standard BIOS calls */
 disk_compute_args:
 	/*
-	 * GEOMETRY is a longword representing the BIOS geometry:
-	 *       4 bit BIOS extension (0 = none, 1 = LBA)
-	 *	12 bit cylinder   (bytes 2 & 3)
-	 *	 8 bit head       (byte 1)
-	 *	 8 bit sector     (byte 0)
+	 * GEOMETRY is a structure representing the BIOS geometry:
+	 *      32 bit flags      (bytes 12-15)
+	 *	32 bit cylinders  (bytes 8-11)
+	 *	32 bit heads      (bytes 4-7)
+	 *	32 bit sectors    (bytes 0-3)
 	 */
 
 	/* set up original sector number */
 	xorl	%edx, %edx
 	movl	0x14(%ebp), %eax
 
+	/* get the pointer to GEOMETRY */
+	movl	0x10(%ebp), %edi
+
 	/* get sector offset, place in %ecx */
-	xorl	%ebx, %ebx
-	movb	0x10(%ebp), %bl
+	movl	0x8(%edi), %ebx
 	divl	%ebx
 	movl	%edx, %ecx
 
 	/* get track offset (head number) in %edx,
 	   and cylinder offset in %eax */
 	xorl	%edx, %edx
-	xorl	%ebx, %ebx
-	movb	0x11(%ebp), %bl
-	inc	%ebx
+	movl	0x4(%edi), %ebx
 	divl	%ebx
 
 	/* check cylinder offset, is there a geometry problem here? */
-	movl	0x10(%ebp), %ebx
-	shrl	$16, %ebx
-	andb	$0xf, %bh		/* mask out bios extension code */
+	movl	(%edi), %ebx
 	cmpl	%ebx, %eax
 
 	/* if not, go on to standard read function */
-	jle	disk_use_standard_bios
+	jl	disk_use_standard_bios
 
 	movl	$BIOSDISK_ERROR_GEOMETRY, %eax
 	jmp	disk_exit_32
@@ -538,6 +538,7 @@ disk_exit_16:
 	movb	%bl, %al		/* return value in %eax */
 
 disk_exit_32:
+	pop	%edi
 	pop	%esi
 	pop	%edx
 	pop	%ecx
@@ -549,8 +550,9 @@ disk_exit_32:
 
 /*
  *
- * get_diskinfo(drive):  return a word that represents the
- *	max number of sectors and heads and cylinders for this drive
+ * get_diskinfo(drive, geometry):  return a structure that represents the
+ *	max number of sectors and heads and cylinders for DRIVE in GEOMETRY.
+ *	If an error occures, return non-zero, otherwise return zero.
  *
  */
 
@@ -633,11 +635,12 @@ hard_drive:
 	jz	1f			/* LBA not supported */
 
 	/* Wahoo!  Got LBA! */
-	movb	$0x1, %bh
+	movl	$BIOSDISK_FLAG_LBA_EXTENSION, %edi
+	/* FIXME: Should use INT 13 AH=42h */
 	data32
 	jmp	2f
 
-1:	xorb	%bh, %bh		/* Too bad, no LBA */
+1:	xorl	%edi, %edi		/* Too bad, no LBA */
 2:	movb	$0x8, %ah		/* ask for disk info */
 	int	$0x13
 
@@ -649,33 +652,36 @@ hard_drive:
 
 probe_success:
 	/*
-	 * form a dword representing all this gunk:
-	 *       4 bit BIOS extension (0 = none, 1 = LBA)
-	 *	12 bit cylinder
-	 *	 8 bit head
-	 *	 8 bit sector
+	 * Store the information for CHS and BIOS extension to registers:
+	 *      32 bit BIOS extension -> edi
+	 *	32 bit cylinder       -> ebx
+	 *	32 bit head           -> ecx
+	 *	32 bit sector         -> edx
 	 */
-	movb	%bh, %ah		/* restore BIOS extensions bits */
-
 #ifdef AWARD_INT13_EXTENSIONS
 	movb	%dh, %al		/* bits 10,11 of cylinder count */
 	andb	$0xc0, %al
-#endif
 	shlw	$2, %ax			/* << 2 */
+#endif
 	movb	%cl, %al		/* bits 8,9 of cylinder count */
 	andb	$0xc0, %al
 	shlw	$2, %ax			/* << 2 */
 	movb	%ch, %al		/* Lower 8 bits */
+	movswl	%ax, %ebx		/* max cylinder */
+	incl	%ebx			/* number of cylinders */
 	shll	$16, %eax		/* << 16 */
 
 #ifdef AWARD_INT13_EXTENSIONS
 	andb	$0x3f, %dh		/* mask off cylinder gunk */
 #endif
-	movb	%dh, %ah		/* max head */
+	movb	%dh, %al		/* max head */
+	
 	andb	$0x3f, %cl		/* mask off cylinder gunk */
-	movb	%cl, %al		/* max sector (and # sectors) */
+	movsbl	%cl, %edx		/* max sector (and # sectors) */
 
-	movl	%eax, %ebx		/* save return value */
+	movsbl	%al, %ecx
+	incl	%ecx			/* number of heads */
+
 	data32
 	jmp	got_drive
 
@@ -684,18 +690,37 @@ probe_failed:
 	 * Urk.  Call failed.  It is not supported for floppies by old
 	 * BIOSes, but it should work for all hard drives!!
 	 *
-	 * Return a 0 here...  presume there is no drive present.  ????
+	 * Return a 1 here...  presume there is no drive present.  ????
 	 */
 
-	movl	$0, %ebx		/* not present value */
+	data32
+	call	EXT_C(real_to_prot)
+	.code32
 
+	movl	$1, %eax
+	popl	%esi
+	popl	%edi
+	popl	%edx
+	popl	%ecx
+	popl	%ebx
+	popl	%ebp
+
+	ret
+
+	.code16
 got_drive:
 	data32
 	call	EXT_C(real_to_prot)	/* back to protected mode */
 	.code32
 
-	/* set up return in correct register */
-	movl	%ebx, %eax
+	/* set up return structure */
+	movl	0x0c(%ebp), %eax
+	movl	%ebx, (%eax)
+	movl	%ecx, 0x04(%eax)
+	movl	%edx, 0x08(%eax)
+	movl	%edi, 0x0c(%eax)
+	
+	xorl	%eax, %eax
 
 	popl	%esi
 	popl	%edi

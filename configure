@@ -692,7 +692,7 @@ fi
 PACKAGE=grub
 
 
-VERSION=0.5.91
+VERSION=0.5.92
 
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then

@@ -1,3 +1,48 @@
+1999-03-21  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/boot.c (load_image): Make sure we use the mapped
+	address before actually writing data to memaddr.
+
+	* shared_src/char_io.c (get_cmdline): Only zero-terminate if there
+	were leading blanks.  This prevents accidental truncation of
+	commands.
+
+	* grub/asmstub.c (get_diskinfo): Cache device geometries as well
+	as file handles.
+	Use the Linux HDIO_GETGEO ioctl to make a better guess at hard
+	disk geometries.
+
+1999-03-16  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/shared.h (geometry_t): Delete typedef, until we
+	actually use it.
+
+1999-03-16  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* shared_src/asm.S (biosdisk): Use a structure for geometry
+	instead of a integer.
+	(get_diskinfo): Take a pointer to a geometry structure as the
+	second argument, and fill a geometry in it. Return 1 if an error
+	occurs, otherwise return 0.
+	* shared_src/boot.c (bsd_boot): Compute BIOS geometries for BSD.
+	* shared_src/cmdline.c (enter_cmdline): Declare dest_geom as
+	struct geometry.
+	* shared_src/disk_io.c (buf_geom): Declare as struct geometry.
+	* shared_src/filesys.h (SECTORS): Deleted.
+	(HEADS): Likewise.
+	(CYLINDERS): Likewise.
+	* shared_src/shared.h (BIOSDISK_FLAG_LBA_EXTENSION): New macro.
+	(struct geometry): New structure.
+	(buf_geom): Correct the prototype.
+	(get_diskinfo): Likewise.
+	(biosdisk): Likewise.
+
+1999-03-15  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* grub/asmstub.c (doit): Nested function to get a clean stack
+	frame while in grub_stage2.
+	Use different assembler magic.  From OKUJI Yoshinori.
+
 1999-03-14  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/stage2.c (run_menu): Use A_REVERSE and A_NORMAL

@@ -381,6 +381,7 @@ load_image (void)
 	      loaded++;
 
 	      /* load the segment */
+	      memaddr = RAW_ADDR (memaddr);
 	      if (memcheck (memaddr, memsiz)
 		  && grub_read ((char *) memaddr, filesiz) == filesiz)
 		{
@@ -532,7 +533,18 @@ bsd_boot (int type, int bootdev)
       bi.bi_n_bios_used = 0;	/* this field is apparently unused */
 
       for (i = 0; i < N_BIOS_GEOM; i++)
-	bi.bi_bios_geom[i] = get_diskinfo (i + 0x80);
+	{
+	  struct geometry geom;
+
+	  /* XXX Should check the return value.  */
+	  get_diskinfo (i + 0x80, &geom);
+	  /* FIXME: If HEADS or SECTORS is greater than 255, then this will
+	     break the geometry information. That is a drawback of BSD
+	     but not of GRUB.  */
+	  bi.bi_bios_geom[i] = (((geom.cylinders - 1) << 16)
+				+ (((geom.heads - 1) & 0xff) << 8)
+				+ (geom.sectors & 0xff));
+	}
 
       bi.bi_size = sizeof (struct bootinfo);
       bi.bi_memsizes_valid = 1;
