@@ -1,7 +1,7 @@
 /* loader.h - OS loaders */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
 extern grub_size_t EXPORT_VAR(grub_os_area_size);
 
+int EXPORT_FUNC(grub_loader_is_loaded) (void);
 void EXPORT_FUNC(grub_loader_set) (grub_err_t (*boot) (void),
 				   grub_err_t (*unload) (void));
 void EXPORT_FUNC(grub_loader_unset) (void);

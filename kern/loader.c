@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,12 @@ static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
 
 static int grub_loader_loaded;
+
+int
+grub_loader_is_loaded (void)
+{
+  return grub_loader_loaded;
+}
 
 void
 grub_loader_set (grub_err_t (*boot) (void),

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #include <grub/normal.h>
 #include <grub/term.h>
 #include <grub/misc.h>
+#include <grub/loader.h>
+#include <grub/machine/time.h>
 
 /* FIXME: These below are all runaround.  */
 
@@ -80,7 +82,7 @@ print_message (int nested)
       Press enter to boot the selected OS, \'e\' to edit the\n\
       commands before booting, or \'c\' for a command-line.");
   if (nested)
-    grub_printf ("\
+    grub_printf ("\n\
       ESC to return previous menu.");
 }
 
@@ -170,6 +172,7 @@ static int
 run_menu (grub_menu_t menu, int nested)
 {
   int first, offset;
+  unsigned long saved_time;
   
   grub_setcursor (0);
   
@@ -184,80 +187,153 @@ run_menu (grub_menu_t menu, int nested)
   init_page (nested);
   print_entries (menu, first, offset);
   grub_refresh ();
+
+  /* Initialize the time.  */
+  saved_time = grub_get_rtc ();
   
   while (1)
     {
       int c;
 
-      c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
-      switch (c)
+      if (menu->timeout > 0)
 	{
-	case 16:
-	case '^':
-	  if (offset > 0)
-	    {
-	      print_entry (4 + offset, 0, get_entry (menu, first + offset));
-	      offset--;
-	      print_entry (4 + offset, 1, get_entry (menu, first + offset));
-	    }
-	  else if (first > 0)
-	    {
-	      first--;
-	      print_entries (menu, first, offset);
-	    }
-	  break;
+	  unsigned long current_time;
 
-	case 14:
-	case 'v':
-	  if (menu->size > first + offset + 1)
+	  current_time = grub_get_rtc ();
+	  if (current_time - saved_time >= GRUB_TICKS_PER_SECOND)
 	    {
-	      if (offset < 11)
+	      menu->timeout--;
+	      saved_time = current_time;
+	    }
+	  
+	  grub_gotoxy (3, 22);
+	  grub_printf ("The highlighted entry will be booted automatically in %d seconds.    ",
+		       menu->timeout);
+	  grub_gotoxy (74, 4 + offset);
+	  grub_refresh ();
+	}
+
+      if (menu->timeout == 0)
+	return menu->default_entry;
+      
+      if (grub_checkkey () >= 0 || menu->timeout < 0)
+	{
+	  c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
+	  
+	  if (menu->timeout >= 0)
+	    {
+	      grub_gotoxy (3, 22);
+              grub_printf ("                                                                 ");
+              menu->timeout = -1;
+              menu->fallback_entry = -1;
+	      grub_gotoxy (74, 4 + offset);
+	    }
+	  
+	  switch (c)
+	    {
+	    case 16:
+	    case '^':
+	      if (offset > 0)
 		{
 		  print_entry (4 + offset, 0,
 			       get_entry (menu, first + offset));
-		  offset++;
+		  offset--;
 		  print_entry (4 + offset, 1,
 			       get_entry (menu, first + offset));
 		}
-	      else
+	      else if (first > 0)
 		{
-		  first++;
+		  first--;
 		  print_entries (menu, first, offset);
 		}
-	    }
-	  break;
-
-	case '\n':
-	case '\r':
-	case 6:
-	  grub_setcursor (1);
-	  return first + offset;
-
-	case '\e':
-	  if (nested)
-	    {
+	      break;
+	      
+	    case 14:
+	    case 'v':
+	      if (menu->size > first + offset + 1)
+		{
+		  if (offset < 11)
+		    {
+		      print_entry (4 + offset, 0,
+				   get_entry (menu, first + offset));
+		      offset++;
+		      print_entry (4 + offset, 1,
+				   get_entry (menu, first + offset));
+		    }
+		  else
+		    {
+		      first++;
+		      print_entries (menu, first, offset);
+		    }
+		}
+	      break;
+	      
+	    case '\n':
+	    case '\r':
+	    case 6:
 	      grub_setcursor (1);
-	      return -1;
+	      return first + offset;
+	      
+	    case '\e':
+	      if (nested)
+		{
+		  grub_setcursor (1);
+		  return -1;
+		}
+	      break;
+	      
+	    case 'c':
+	      grub_setcursor (1);
+	      grub_cmdline_run (1);
+	      grub_setcursor (0);
+	      init_page (nested);
+	      print_entries (menu, first, offset);
+	      break;
+	      
+	    default:
+	      break;
 	    }
-	  break;
-
-	case 'c':
-	  grub_setcursor (1);
-	  grub_cmdline_run (1);
-	  grub_setcursor (0);
-	  init_page (nested);
-	  print_entries (menu, first, offset);
-	  break;
-
-	default:
-	  break;
+	  
+	  grub_refresh ();
 	}
-      
-      grub_refresh ();
     }
 
   /* Never reach here.  */
   return -1;
+}
+
+/* Run a menu entry.  */
+static void
+run_menu_entry (grub_menu_entry_t entry)
+{
+  grub_command_list_t cl;
+
+  for (cl = entry->command_list; cl != 0; cl = cl->next)
+    {
+      grub_command_t c;
+      
+      c = grub_command_find (cl->command);
+      if (! c)
+	break;
+      
+      if (! (c->flags & GRUB_COMMAND_FLAG_CMDLINE))
+	{
+	  grub_error (GRUB_ERR_INVALID_COMMAND,
+		      "invalid command `%s'",
+		      cl->command);
+	  break;
+	}
+      
+      if (! (c->flags & GRUB_COMMAND_FLAG_NO_ECHO))
+	grub_printf ("%s\n", cl->command);
+      
+      if (grub_command_execute (cl->command) != 0)
+	break;
+    }
+  
+  if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
+    /* Implicit execution of boot, only if something is loaded.  */
+    grub_command_execute ("boot");
 }
 
 void
@@ -266,11 +342,42 @@ grub_menu_run (grub_menu_t menu, int nested)
   while (1)
     {
       int boot_entry;
+      grub_menu_entry_t e;
       
       boot_entry = run_menu (menu, nested);
       if (boot_entry < 0)
 	break;
 
-      /* FIXME: Boot the entry.  */
+      grub_cls ();
+      grub_setcursor (1);
+
+      e = get_entry (menu, boot_entry);
+      grub_printf ("  Booting \'%s\'\n\n", e->title);
+  
+      run_menu_entry (e);
+
+      /* Deal with a fallback entry.  */
+      /* FIXME: Mutiple fallback entries like GRUB Legacy.  */
+      if (menu->fallback_entry >= 0)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+	  
+	  e = get_entry (menu, menu->fallback_entry);
+	  menu->fallback_entry = -1;
+	  grub_printf ("\n  Falling back to \'%s\'\n\n", e->title);
+	  run_menu_entry (e);
+	}
+
+      if (grub_errno != GRUB_ERR_NONE)
+	{
+	  grub_print_error ();
+	  grub_errno = GRUB_ERR_NONE;
+
+	  /* Wait until the user pushes any key so that the user
+	     can see what happened.  */
+	  grub_printf ("\nPress any key to continue...");
+	  (void) grub_getkey ();
+	}
     }
 }

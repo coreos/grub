@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #ifndef KERNEL_TIME_HEADER
 #define KERNEL_TIME_HEADER	1
 
+#include <grub/symbol.h>
+
 #ifdef GRUB_UTIL
 # include <time.h>
 # define GRUB_TICKS_PER_SECOND	CLOCKS_PER_SEC
@@ -28,6 +30,6 @@
 #endif
 
 /* Return the real time in ticks.  */
-grub_uint32_t grub_get_rtc (void);
+grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
 
 #endif /* ! KERNEL_TIME_HEADER */

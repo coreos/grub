@@ -1,3 +1,28 @@
+2004-09-10  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* normal/menu.c: Include grub/loader.h and grub/machine/time.h.
+	(print_message): Add a missing newline.
+	(run_menu): Added timeout support.
+	(run_menu_entry): New local function.
+	(grub_menu_run): Added support for booting.
+
+	* kern/loader.c (grub_loader_is_loaded): New function.
+
+	* include/grub/powerpc/ieee1275/time.h: Include grub/symbol.h.
+	(grub_get_rtc): Exported.
+
+	* include/grub/i386/pc/time.h: Include grub/symbol.h.
+	(grub_get_rtc): Exported.
+
+	* include/grub/normal.h (struct grub_command_list): Remove
+	constant from the member `command'.
+
+	* include/grub/loader.h (grub_loader_is_loaded): Declared.
+
+	* include/grub/err.h (GRUB_ERR_INVALID_COMMAND): New constant.
+
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Added machine/time.h.
+
 2004-08-28  Marco Gerards  <metgerards@student.han.nl>
 
 	Add support for the JFS filesystem.

@@ -70,7 +70,7 @@ typedef struct grub_command *grub_command_t;
 struct grub_command_list
 {
   /* The string of a command.  */
-  const char *command;
+  char *command;
 
   /* The next element.  */
   struct grub_command_list *next;

@@ -1,7 +1,7 @@
 /* err.h - error numbers and prototypes */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ typedef enum
     GRUB_ERR_READ_ERROR,
     GRUB_ERR_WRITE_ERROR,
     GRUB_ERR_UNKNOWN_COMMAND,
+    GRUB_ERR_INVALID_COMMAND,
     GRUB_ERR_BAD_ARGUMENT,
     GRUB_ERR_BAD_PART_TABLE,
     GRUB_ERR_UNKNOWN_OS,
