@@ -21,6 +21,16 @@ you use the following utilities:
 and 2.9.1.0.x, and we support only 2.9.1.0.x. It is available from
 ftp.XX.kernel.org (XX is the country code, such as `jp').
 
+* ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
+
+  Ncurses is used for /sbin/grub, so it may not be needed if you don't
+use /sbin/grub. Ncurses 4.0 is available from many ftp sites. (Should we
+use terminfo or termcap directly?)
+
+
+These below are required when you develop GRUB or when you get it from
+the CVS:
+
 * autoconf 19990301 and later
 
   Autoconf 2.13 has a bug that can't handle any macro with arguments,
@@ -32,11 +42,6 @@ http://sourceware.cygnus.com/autoconf for more information.
   The new feature, per-executable flags, is requred, so you need to get
 an unreleased version from the CVS. See
 http://sourceware.cygnus.com/automake for more information.
-
-* ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
-
-  Ncurses is used for /sbin/grub, so it may not be needed if you don't
-use /sbin/grub. Ncurses 4.0 is available from many ftp sites.
 
 * texinfo 3.12h and later
 

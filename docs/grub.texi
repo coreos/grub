@@ -462,7 +462,7 @@ First, copy @file{e2fs_stage1_5} to the first cylinder after MBR
 (@pxref{MBR}):
 
 @example
-dd if=e2fs_stage1_5/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
+dd if=stage2/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
 @end example
 
 Second, specify the stage2 argument in the block-list format:
@@ -886,6 +886,10 @@ routines. The format is @samp{<@var{sector}, @var{byte_offset},
 
 Filesystem test mode is turned off by any uses of the @command{install=}
 or @command{testload=} commands.
+
+@item quit
+Finish GRUB in the Stage 2 emulator @command{grub} (@pxref{Stage 2
+emulator}). This is just ignored in the native Stage 2.
 @end table
 
 

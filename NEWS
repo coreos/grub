@@ -12,6 +12,7 @@ New:
   stage2.
 * Color menu support.
 * New command "quit".
+* The man page for /sbin/grub.
 
 New in 0.5.91 - 1999-03-14, Gordon Matzigkeit:
 * LBA and preliminary AWARD BIOS disk extension support.

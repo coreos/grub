@@ -38,4 +38,6 @@ Add ``configfile'' command, in a clean way.
 
 Add keyboard layout configuration support.
 
-Finish the GNU GRUB manual, grub.texi.
+Clean up and enhance the manuals, especially concept indexes.
+
+Add more filesystems support (minix, FAT32, etc.)
