@@ -1,3 +1,9 @@
+2003-06-17  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c (reiserfs_mount): Clear the node cache.
+	This fixes a problem where files from other partitions appear at
+	the wrong partition.  Problem reported by Johan Regin.
+
 2003-05-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (partnew): Fixed the inconsistency between the

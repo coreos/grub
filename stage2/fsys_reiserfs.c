@@ -613,6 +613,9 @@ reiserfs_mount (void)
   INFO->cached_slots = 
     (FSYSREISER_CACHE_SIZE >> INFO->fullblocksize_shift) - 1;
 
+  /* Clear node cache. */
+  memset (INFO->blocks, 0, sizeof (INFO->blocks));
+
   if (super.s_blocksize < FSYSREISER_MIN_BLOCKSIZE
       || super.s_blocksize > FSYSREISER_MAX_BLOCKSIZE
       || (SECTOR_SIZE << INFO->blocksize_shift) != super.s_blocksize)
