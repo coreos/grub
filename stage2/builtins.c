@@ -3182,24 +3182,28 @@ setkey_func (char *arg, int flags)
 
       for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
 	{
-	  if (grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
+	  if (keysym_table[i].unshifted_name &&
+	      grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
 	    return keysym_table[i].keycode;
-	  else if (grub_strcmp (key, keysym_table[i].shifted_name) == 0)
+	  else if (keysym_table[i].shifted_name &&
+		   grub_strcmp (key, keysym_table[i].shifted_name) == 0)
 	    return keysym_table[i].keycode;
 	}
-
+      
       return 0;
     }
-
+  
   static int find_ascii_code (char *key)
     {
       int i;
-
+      
       for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
 	{
-	  if (grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
+	  if (keysym_table[i].unshifted_name &&
+	      grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
 	    return keysym_table[i].unshifted_ascii;
-	  else if (grub_strcmp (key, keysym_table[i].shifted_name) == 0)
+	  else if (keysym_table[i].shifted_name &&
+		   grub_strcmp (key, keysym_table[i].shifted_name) == 0)
 	    return keysym_table[i].shifted_ascii;
 	}
       
@@ -3208,10 +3212,10 @@ setkey_func (char *arg, int flags)
   
   to_key = arg;
   from_key = skip_to (0, to_key);
-
+  
   nul_terminate (to_key);
   nul_terminate (from_key);
-
+  
   to_code = find_ascii_code (to_key);
   from_code = find_ascii_code (from_key);
   if (! to_code || ! from_code)
@@ -3225,7 +3229,7 @@ setkey_func (char *arg, int flags)
 	  return 1;
 	}
     }
-
+  
   if (map_in_interrupt)
     {
       int i;
@@ -3249,7 +3253,8 @@ setkey_func (char *arg, int flags)
       
       if (to_code == from_code)
 	/* If TO is equal to FROM, delete the entry.  */
-	grub_memmove ((char *) &bios_key_map[i], (char *) &bios_key_map[i + 1],
+	grub_memmove ((char *) &bios_key_map[i],
+		      (char *) &bios_key_map[i + 1],
 		      sizeof (unsigned short) * (KEY_MAP_SIZE - i));
       else
 	bios_key_map[i] = (to_code << 8) | from_code;

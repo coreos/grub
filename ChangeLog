@@ -1,3 +1,17 @@
+2000-10-10  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/start.S (copy_buffer): Use pusha and popa instead of
+	pushing and poping %di and %si individually, to reduce the code
+	size and save %cx as well. Reported by Herbert Nachtnebel
+	<nachtneb@iaee.tuwien.ac.at>.
+	
+2000-10-10  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Daniel Pittman <daniel@rimspace.net>:
+	* stage2/builtins.c (setkey_func): Check if
+	KEYSYM_TABLE[I].UNSHIFTED_NAME and KEYSYM_TABLE[I].SHIFTED_NAME
+	are not NULLs, before calling grub_strcmp.
+	
 2000-10-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (grub_prefix): New variable. The default

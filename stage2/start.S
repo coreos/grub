@@ -279,14 +279,13 @@ copy_buffer:
 	addw	%ax, 6(%di)	/* add the corrected value to the destination
 				   address for next time */
 
+	/* save addressing regs */
+	pusha
+	pushw	%ds
+
 	/* get the copy length */
 	shlw	$4, %ax
 	movw	%ax, %cx
-
-	/* save addressing regs */
-	pushw	%si
-	pushw	%di
-	pushw	%ds
 
 	xorw	%di, %di	/* zero offset of destination addresses */
 	xorw	%si, %si	/* zero offset of source addresses */
@@ -302,8 +301,7 @@ copy_buffer:
 	   (MSG modifies SI, which is saved, and unused AX and BX) */
 	popw	%ds
 	MSG(notification_step)
-	popw	%di
-	popw	%si
+	popa
 
 	/* check if finished with this dataset */
 	cmpw	$0, 4(%di)
