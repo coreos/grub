@@ -1,3 +1,8 @@
+2000-02-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Per Lundberg <plundis@byggdok.se>:
+	* docs/multiboot.texi: Added graphics support.
+	
 2000-02-10  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/multiboot.texi (Top): Downgrade the version to 0.6.90,

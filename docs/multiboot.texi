@@ -353,6 +353,11 @@ header is as follows:
 24      | bss_end_addr      |   (present if flags[16] is set)
 28      | entry_addr        |   (present if flags[16] is set)
         +-------------------+
+32      | mode_type         |   (present if flags[2] is set)
+36      | width             |   (present if flags[2] is set)
+40      | height            |   (present if flags[2] is set)
+44      | depth             |   (present if flags[2] is set)
+        +-------------------+
 @end group
 @end example
 
@@ -382,6 +387,28 @@ memory via at least the @samp{mem_*} fields of the Multiboot information
 structure (@pxref{Boot information format}) must be included. If the
 bootloader is capable of passing a memory map (the @samp{mmap_*} fields)
 and one exists, then it must be included as well.
+
+If bit 2 in the @samp{flags} word is set, information about the video
+mode table, defined later, must be available to the kernel.
+
+Also, information about a preferred default mode can be specified in the
+@samp{mode_type}, @samp{width}, @samp{height} and @samp{depth}
+fields. This is only a @emph{recommended} mode by the kernel. If the
+mode exists, the boot loader should set it if the user hasn't specified
+a mode. If not, it should fall back to a similar mode, if available.
+
+Valid numbers for @samp{mode_type} is 0 for linear graphics mode and 1
+for EGA-standard text mode. Everything else is reserved for future
+expansion. Please note that even if you set this field to indicate that
+you want a graphics mode, you might get a text mode.
+
+@samp{width} and @samp{height} is specified in pixels, if graphics mode,
+or characters in EGA text mode. @samp{depth} is given in bits per pixel
+for graphics, or zero for EGA text modes.
+
+Any, some or all of those three fields may be set to zero, indicating to
+the boot loader that no preference is given. This makes it possible for
+a kernel to just say it wants a 32-bit resolution, for example.
 
 If bit 16 in the @samp{flags} word is set, then the fields at offsets
 8-24 in the Multiboot header are valid, and the boot loader should use
@@ -548,6 +575,8 @@ follows:
 64      | boot_loader_name  |    (present if flags[9] is set)
         +-------------------+
 68 - ?? | apm_table         |    (present if flags[10] is set)
+        +-------------------+
+?? - ?? | graphics_table    |    (present if flags[11] is set)
         +-------------------+
 @end group
 @end example
@@ -800,6 +829,36 @@ string.
 
 @c I haven't defined the apm_table field yet. - okuji
 
+If bit 11 in the @samp{flags} is set, video mode information is
+available in the mode table. This should only be done if the kernel has
+indicated in the @samp{Multiboot Header} that it accepts graphics modes.
+
+The mode table looks like this:
+
+@example
+@group
+
+        +----------------------+
+0       | mode_type            |
+4       | width                |
+8       | height               |
+12      | depth                |
+16      | frame_buffer_address |
+        +----------------------+
+
+@end group
+@end example
+
+Valid numbers for @samp{mode_type} is 0 for linear graphics mode and 1
+for EGA-standard text mode. Everything else is reserved for future
+expansion.
+
+@samp{width} and @samp{height} is specified in pixels, if graphics mode,
+or characters in EGA text mode. @samp{depth} is given in bits per pixel
+for graphics, or unused for EGA text mode.
+
+@samp{frame_buffer_address} specifies the physical start address of the
+linear frame buffer. This is valid for both graphics and text modes.
 
 @node Examples
 @chapter Examples
