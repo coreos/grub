@@ -1,3 +1,19 @@
+2004-10-28  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/cmain.c (cmain): Remove asm statements
+	which initialized BAT registers.
+	* boot/powerpc/ieee1275/ieee1275.c (IEEE1275_CALL_ENTRY_FN,
+	grub_ieee1275_common_hdr, INIT_IEEE1275_COMMON):
+	Move from here...
+	* include/grub/powerpc/ieee1275/ieee1275.h (IEEE1275_CALL_ENTRY_FN,
+	grub_ieee1275_common_hdr, INIT_IEEE1275_COMMON):
+	... to here.
+	* kern/powerpc/ieee1275/openfw.c (grub_map): New function.
+	(grub_mapclaim): Likewise.
+	* loader/powerpc/ieee1275/linux.c (grub_load_linux): Use
+	grub_mapclaim instead of grub_ieee1275_claim.  Assign linux_addr by
+	hand.
+
 2004-10-19  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* conf/powerpc-ieee1275.rmk (COMMON_ASFLAGS): Remove -fno-builtin.

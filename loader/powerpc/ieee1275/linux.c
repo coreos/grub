@@ -188,12 +188,13 @@ grub_load_linux (int argc, char *argv[])
   /* Reserve memory for the kernel.  */
   linux_size += 0x100000;
   
-  if (grub_ieee1275_claim (entry, linux_size, 0, &linux_addr) == -1)
+  if (grub_claimmap (entry, linux_size) == -1)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
       goto fail;
     }
-  
+  linux_addr = entry;
+
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr.e_phnum; i++)
     {

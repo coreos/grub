@@ -137,3 +137,57 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 
   return 0;
 }
+
+/* Call the "map" method of /chosen/mmu.  */
+int
+grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
+		   grub_uint8_t mode)
+{
+  struct map_args {
+    struct grub_ieee1275_common_hdr common;
+    char *method;
+    grub_ieee1275_ihandle_t ihandle;
+    grub_uint32_t mode;
+    grub_uint32_t size;
+    grub_uint32_t virt;
+    grub_uint32_t phys;
+    int catch_result;
+  } args;
+  grub_ieee1275_ihandle_t mmu;
+  grub_ieee1275_ihandle_t chosen;
+  int len;
+
+  grub_ieee1275_finddevice ("/chosen", &chosen);
+  if (chosen == 0)
+    return -1;
+
+  grub_ieee1275_get_property (chosen, "mmu", &mmu, sizeof mmu, &len);
+  if (len != sizeof mmu)
+    return -1;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 1);
+  args.method = "map";
+  args.ihandle = mmu;
+  args.phys = phys;
+  args.virt = virt;
+  args.size = size;
+  args.mode = mode; /* Format is WIMG0PP.  */
+
+  if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+    return -1;
+
+  return args.catch_result;
+}
+
+int
+grub_claimmap (grub_addr_t addr, grub_size_t size)
+{
+  if (grub_ieee1275_claim (addr, size, 0, 0))
+    return -1;
+  if (grub_map (addr, addr, size, 0x00))
+    {
+      grub_ieee1275_release (addr, size);
+      return -1;
+    }
+  return 0;
+}

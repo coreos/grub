@@ -55,7 +55,6 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
   char **argv, args[256];
   grub_ieee1275_phandle_t chosen;
   int argc = 0, actual;
-  long batl, batu;
 
   if (r5 == 0xdeadbeef)
     {
@@ -80,27 +79,6 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
       /* Assume we were entered from Open Firmware.  */
       grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r5;
     }
-
-  /* Initialize BAT registers to unmapped to not generate overlapping
-     mappings below.  */
-  asm volatile ("mtibatu 0,%0" :: "r"(0));
-  asm volatile ("mtibatu 1,%0" :: "r"(0));
-  asm volatile ("mtibatu 2,%0" :: "r"(0));
-  asm volatile ("mtibatu 3,%0" :: "r"(0));
-  asm volatile ("mtdbatu 0,%0" :: "r"(0));
-  asm volatile ("mtdbatu 1,%0" :: "r"(0));
-  asm volatile ("mtdbatu 2,%0" :: "r"(0));
-  asm volatile ("mtdbatu 3,%0" :: "r"(0));
-
-  /* Set up initial BAT table to only map the lowest 256 MB area.  */
-  batl = 0x00000000 | 0x10   | 0x02;
-  batu = 0x00000000 | 0x1ffc | 0x02;
-
-  /* IBAT0 used for initial 256 MB segment */
-  asm volatile ("mtibatl 3,%0; mtibatu 3,%1" :: "r" (batl), "r" (batu));
-  /* DBAT0 used similar */
-  asm volatile ("mtdbatl 3,%0; mtdbatu 3,%1" :: "r" (batl), "r" (batu));
-  asm ("isync");
 
   /* If any argument was passed to the kernel (us), they are
      put in the bootargs property of /chosen.  The string can

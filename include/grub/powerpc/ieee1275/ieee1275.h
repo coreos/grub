@@ -39,6 +39,27 @@ struct grub_ieee1275_mem_region
   unsigned int size;
 };
 
+extern intptr_t (*grub_ieee1275_entry_fn) (void *);
+
+#ifndef IEEE1275_CALL_ENTRY_FN
+#define IEEE1275_CALL_ENTRY_FN(args) (*grub_ieee1275_entry_fn) (args)
+#endif
+
+/* All backcalls to the firmware is done by calling an entry function 
+   which was passed to us from the bootloader.  When doing the backcall, 
+   a structure is passed which specifies what the firmware should do.  
+   NAME is the requested service.  NR_INS and NR_OUTS is the number of
+   passed arguments and the expected number of return values, resp. */
+struct grub_ieee1275_common_hdr
+{
+  char *name;
+  int nr_ins;
+  int nr_outs;
+};
+
+#define INIT_IEEE1275_COMMON(p, xname, xins, xouts) \
+  (p)->name = xname; (p)->nr_ins = xins; (p)->nr_outs = xouts
+
 /* FIXME jrydberg: is this correct cell types? */
 typedef intptr_t grub_ieee1275_ihandle_t;
 typedef intptr_t grub_ieee1275_phandle_t;
@@ -103,6 +124,7 @@ grub_err_t EXPORT_FUNC(grub_devalias_iterate)
      (int (*hook) (struct grub_ieee1275_devalias *alias));
 grub_err_t EXPORT_FUNC(grub_children_iterate) (char *devpath,
      int (*hook) (struct grub_ieee1275_devalias *alias));
+int EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
 void EXPORT_FUNC(abort) (void);
 
