@@ -1682,6 +1682,11 @@ gdoit:
 
 	call	gloop1
 
+	/* output a dummy command (USB keyboard hack) */
+	movb	$0xff, %al
+	outb	$K_CMD
+	call	gloop1
+	
 	popl	%eax
 	ret
 
