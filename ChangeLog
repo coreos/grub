@@ -1,5 +1,10 @@
 2000-06-11  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/tutorial.texi (GNU/Linux): Added a caution about the
+	"mem=" option.
+	
+2000-06-11  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* util/grub-install.in (convert): When $host_os is linux*, use
 	the expression 's%\([sh]d[a-z]\)[0-9]*$%\1%' instead of
 	's%[0-9]*$%%', to get rid of the partition part. This fixes the
