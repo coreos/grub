@@ -1022,7 +1022,7 @@ If, for any reason, the default entry doesn't work, fall back to the
 second one (this is rarely used, for obvious reasons).
 
 Note that the complete descriptions of these commands, which are menu
-interface specific, can be found in @pxref{Menu-specific
+interface specific, can be found in @ref{Menu-specific
 commands}. Other descriptions can be found in @ref{Commands}.
 
 Now, on to the actual OS definitions. You will see that each entry
