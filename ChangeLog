@@ -1,5 +1,10 @@
 2000-01-11  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/prog-ref.texi (LBA mode disk I/O): Added a footnote about
+	a buggy BIOS.
+	
+2000-01-11  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage1/stage1.S [!NO_BUGGY_BIOS_IN_THE_WORLD]: Don't check if
 	LBA read is supported. Anyway, fallback to the CHS mode if
 	fails.

@@ -1060,7 +1060,9 @@ otherwise 01h (the error code of @dfn{invalid function}).
 @item @code{DH} @tab Extension version.
 @end multitable
 
-The bitfields for the API subset support bitmap are:
+The bitfields for the API subset support bitmap are@footnote{It is known
+that (at least) the AMI BIOS in SuperMicro P6SBA motherboard
+(AMIBIOSC0631) does @emph{not} return the bitfields correctly.}:
 
 @multitable @columnfractions 0.15 0.85
 @item Bit(s) @tab Description
