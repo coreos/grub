@@ -21,13 +21,13 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
-datadir=@datadir@
+libdir=@libdir@
 PACKAGE=@PACKAGE@
 VERSION=@VERSION@
 host_cpu=@host_cpu@
 host_os=@host_os@
 host_vendor=@host_vendor@
-pkgdatadir=${datadir}/${PACKAGE}/${host_cpu}-${host_vendor}
+pkglibdir=${libdir}/${PACKAGE}/${host_cpu}-${host_vendor}
 
 grub_shell=${sbindir}/grub
 grub_set_default=${sbindir}/grub-set-default
@@ -299,17 +299,17 @@ else
     exit 1
 fi
 
-if test -f "$pkgdatadir/stage1"; then
+if test -f "$pkglibdir/stage1"; then
     :
 else
-    echo "${pkgdatadir}/stage1: Not found." 1>&2
+    echo "${pkglibdir}/stage1: Not found." 1>&2
     exit 1
 fi
 
-if test -f "$pkgdatadir/stage2"; then
+if test -f "$pkglibdir/stage2"; then
     :
 else
-    echo "${pkgdatadir}/stage2: Not found." 1>&2
+    echo "${pkglibdir}/stage2: Not found." 1>&2
     exit 1
 fi
 
@@ -407,7 +407,7 @@ for file in ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5; do
     rm -f $file || exit 1
 done
 for file in \
-    ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5; do
+    ${pkglibdir}/stage1 ${pkglibdir}/stage2 ${pkglibdir}/*stage1_5; do
     cp -f $file ${grubdir} || exit 1
 done
 

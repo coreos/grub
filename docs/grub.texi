@@ -476,13 +476,13 @@ have an emergency boot disk ready, so that you can rescue your computer
 if, by any chance, your hard drive becomes unusable (unbootable).
 
 GRUB comes with boot images, which are normally put in the directory
-@file{/usr/share/grub/i386-pc}. If you do not use grub-install, then
+@file{/usr/lib/grub/i386-pc}. If you do not use grub-install, then
 you need to copy the files @file{stage1}, @file{stage2}, and
 @file{*stage1_5} to the directory @file{/boot/grub}, and run the
 @command{grub-set-default} (@pxref{Invoking grub-set-default}) if you
 intend to use @samp{default saved} (@pxref{default}) in your
 configuration file. Hereafter, the directory where GRUB images are
-initially placed (normally @file{/usr/share/grub/i386-pc}) will be
+initially placed (normally @file{/usr/lib/grub/i386-pc}) will be
 called the @dfn{image directory}, and the directory where the boot
 loader needs to find them (usually @file{/boot/grub}) will be called
 the @dfn{boot directory}.
@@ -510,7 +510,7 @@ commands:
 
 @example
 @group
-# @kbd{cd /usr/share/grub/i386-pc}
+# @kbd{cd /usr/lib/grub/i386-pc}
 # @kbd{dd if=stage1 of=/dev/fd0 bs=512 count=1}
 1+0 records in
 1+0 records out
@@ -704,7 +704,7 @@ $ @kbd{mkdir -p iso/boot/grub}
 Copy the file @file{stage2_eltorito}:
 
 @example
-$ @kbd{cp /usr/share/grub/i386-pc/stage2_eltorito iso/boot/grub}
+$ @kbd{cp /usr/lib/grub/i386-pc/stage2_eltorito iso/boot/grub}
 @end example
 
 If desired, make the config file @file{menu.lst} under @file{iso/boot/grub}
