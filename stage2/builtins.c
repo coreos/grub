@@ -131,20 +131,13 @@ static struct builtin builtin_boot =
 static int
 cat_func (char *arg, int flags)
 {
-  int len;
-  char *ptr;
+  char c;
   
   if (! grub_open (arg))
     return 1;
 
-  len = grub_read ((char *) RAW_ADDR (0x100000), -1);
-  if (errnum)
-    return 1;
-  
-  ptr = (char *) RAW_ADDR (0x100000);
-  
-  while (len--)
-    grub_putchar (*ptr++);
+  while (grub_read (&c, 1))
+    grub_putchar (c);
 
   return 0;
 }

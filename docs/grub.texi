@@ -539,19 +539,57 @@ behavior will be changed in the future version, in a user-invisible
 way.}. The commands are a subset of those available in the configuration
 file, used with exactly the same syntax.
 
-@c FIXME: The list of available keys should be listed in @table, and should be
-@c explained exactly. Current explanation is obscure.
 Cursor movement and editing of the text on the line can be done via a
-subset of the functions available in the BASH shell (@kbd{C-f} forward,
-@kbd{C-b} backward, @kbd{C-a} beginning of line, @kbd{C-e} end of line,
-@kbd{C-k} delete to end, @kbd{C-u} delete to beginning; the PC left and
-right arrow keys, @key{HOME}, @key{DEL}, and @key{END} work as well).
+subset of the functions available in the BASH shell:
+
+@table @key
+@item C-f
+@itemx PC left key
+Move forward one character.
+
+@item C-b
+@itemx PC right key
+Move back one character.
+
+@item C-a
+@itemx HOME
+Move to the start of the line.
+
+@item C-e
+@itemx END
+Move the the end of the line.
+
+@item C-d
+@itemx DEL
+Delete the character underneath the cursor.
+
+@item C-h
+@itemx BS
+Delete the character to the left of the cursor.
+
+@item C-k
+Kill the text from the current cursor position to the end of the line.
+
+@item C-u
+Kill backward from the cursor to the beginning of the line.
+
+@item C-y
+Yank the killed text back into the buffer at the cursor.
+
+@item C-p
+@itemx PC up key
+Move up through the history list.
+
+@item C-n
+@itemx PC down key
+Move down through the history list.
+@end table
 
 When typing commands interactively, if the cursor is within or before
-the first word in the command-line, pressing the @key{TAB} key will
-display a listing of the available commands, and if the cursor is after
-the first word, the @key{TAB} will provide a completion listing
-of disks, partitions, and filenames depending on the context.
+the first word in the command-line, pressing the @key{TAB} key (or
+@key{C-i}) will display a listing of the available commands, and if the
+cursor is after the first word, the @key{TAB} will provide a completion
+listing of disks, partitions, and filenames depending on the context.
 
 
 @node Menu
@@ -673,6 +711,9 @@ This boots the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command line (it is implicit at the end of
 a config-file entry).
 
+@item cat @var{file}
+Display the contents of the file @var{file}.
+
 @item color @var{normal} [@var{highlight}]
 Change the menu colors. The color @var{normal} is used for most
 lines in the menu, and the color @var{highlight} is used to highlight the
@@ -761,6 +802,19 @@ sector of the current partition with @samp{+1}.
 @item configfile @var{file}
 Load @var{file} as the configuration file.
 
+@item device @var{drive} @var{file}
+In the grub shell, specify the file @var{file} as the actual drive for a
+@sc{bios} drive @var{drive}. You can use this command to create a disk
+image and to fix the drives guessed by GRUB when GRUB fails to determine
+them correctly, like this:
+
+@example
+grub> device (fd0) /floppy-image
+grub> device (hd0) /dev/sd0
+@end example
+
+This command is just ignored in Stage 2.
+
 @item displaymem
 Display what GRUB thinks the system address space map of the machine is,
 including all regions of physical @sc{ram} installed. GRUB's
@@ -783,6 +837,14 @@ requests from the disk.
 
 Filesystem test mode is turned off by any use of the @command{install}
 or @command{testload} commands.
+
+@item geometry @var{drive} [@var{cylinder} @var{head} @var{sector} [@var{total_sector}]]
+Print the information for the drive @var{drive}. In the grub shell, you
+can set the geometry of the drive arbitrarily. The number of the
+cylinders, the one of the heads, the one of the sectors and the one of
+the total sectors are set to CYLINDER, HEAD, SECTOR and TOTAL_SECTOR,
+respectively. If you omit TOTAL_SECTOR, then it will be calculated
+based on the C/H/S values automatically.
 
 @item help [@var{pattern} @dots{}]
 Display helpful information about builtin commands. If you do not

@@ -1,5 +1,15 @@
 1999-10-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (cat_func): Do not read the whole of a file
+	at one time. Instead, repeat reading one byte and print it on
+	the screen.
+	* docs/grub.texi (Command line): List the available key
+	bindings.
+	(Commands): Added descriptions about "geometry", "device" and
+	"cat".
+	
+1999-10-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	Now it is possible to build the grub shell with old BSD curses.
 	
 	* stage2/shared.h [!A_NORMAL] (A_NORMAL): Set to zero.
