@@ -7,7 +7,8 @@ New:
 * Add a workaround for buggy BIOSes (notably HP Vectra series) which
   don't pass the boot drive correctly.
 * Display "GNU GRUB" instead of "GRUB" in the menu.
-* Add support QNX RTP into the grub shell.
+* Add support for QNX RTP into the grub shell.
+* Add support for the initrd max address of a kernel header in Linux.
 
 New in 0.93 - 2002-12-08:
 * Define the behavior of the boot loader when the load end address is
