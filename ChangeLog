@@ -1,3 +1,7 @@
+2002-04-06  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub-install.in: Fix hardcoded /dev/hda1.
+
 2002-04-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c [GRUB_UTIL] (dump_func): New function.

@@ -193,7 +193,7 @@ find_device () {
 
     # Resolve symlinks
     while test -L $tmp_fname; do
-	tmp_new_fname=`ls -al /dev/hda1 | sed -n 's%.*-> %\1%p'`
+	tmp_new_fname=`ls -al $tmp_fname | sed -n 's%.*-> %\1%p'`
 	if test -z "$tmp_new_fname"; then
 	    echo "Unrecognized ls output" 2>&1
 	    exit 1
