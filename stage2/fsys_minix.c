@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -161,7 +161,7 @@ int
 minix_mount (void)
 {
   if (((current_drive & 0x80 || current_slice != 0))
-      && (current_slice != PC_SLICE_TYPE_MINIX)
+      && IS_PC_SLICE_TYPE_MINIX (current_slice)
       && ! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_OTHER))
     return 0;			/* The partition is not of MINIX type */
   

@@ -110,6 +110,7 @@
 #define PC_SLICE_TYPE_FAT16_LBA		0xe
 #define PC_SLICE_TYPE_WIN95_EXTENDED	0xf
 #define PC_SLICE_TYPE_MINIX		0x80
+#define PC_SLICE_TYPE_LINUX_MINIX	0x81
 #define PC_SLICE_TYPE_EXT2FS       	0x83
 #define PC_SLICE_TYPE_LINUX_EXTENDED	0x85
 
@@ -129,6 +130,10 @@
   (((type) == PC_SLICE_TYPE_EXTENDED)	\
    || ((type) == PC_SLICE_TYPE_WIN95_EXTENDED)	\
    || ((type) == PC_SLICE_TYPE_LINUX_EXTENDED))
+
+#define IS_PC_SLICE_TYPE_MINIX(type) \
+  (((type) == PC_SLICE_TYPE_MINIX)	\
+   || ((type) == PC_SLICE_TYPE_LINUX_MINIX))
 
 /* these ones are special, as they use their own partitioning scheme
    to subdivide the PC partitions from there.  */

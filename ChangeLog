@@ -1,3 +1,12 @@
+2000-09-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Reported by Alessandro Rubini:
+	* stage2/fsys_minix.c (minix_mount): Check if CURRENT_SLICE is a
+	partition type for minix fs, using the macro
+	IS_PC_SLICE_TYPE_MINIX.
+	* stage2/pc_slice.h (PC_SLICE_TYPE_LINUX_MINIX): New macro.
+	(IS_PC_SLICE_TYPE_MINIX): Likewise.
+	
 2000-09-09  Alessandro Rubini  <rubini@morgana.systemy.it>
 
 	* stage1/stage1.S (notification_string): Print "GRUB " instead
