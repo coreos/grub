@@ -272,7 +272,7 @@ GRUB_MOD_FINI
 void
 grub_linux_init (void)
 {
-  grub_rescue_register_command ("linux", grub_rescue_cmd_linux,
+  grub_rescue_register_command ("linux", grub_load_linux,
 				"load a linux kernel");
 }
 

@@ -69,7 +69,7 @@ RUBY = @RUBY@
 
 ### General variables.
 
-RMKFILES = $(addprefix conf/,i386-pc.rmk)
+RMKFILES = $(addprefix conf/,i386-pc.rmk powerpc-ieee1275.rmk)
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 COMMON_DISTFILES = AUTHORS COPYING ChangeLog INSTALL NEWS README \
