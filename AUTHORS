@@ -29,7 +29,7 @@ Klaus Reichl wrote stage2/fsys_minix.c.
 Per Lundberg added graphics support to the Multiboot Specification.
 
 Jochen Hoenicke rewrote stage2/fsys_fat.c and wrote
-stage2/fsys_reiserfs.c.
+stage2/fsys_reiserfs.c and stage2/md5.c.
 
 Christoph Plattner added support for Net Boot Image Proposal.
 

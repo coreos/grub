@@ -553,15 +553,6 @@ menu to be displayed by pressing @key{ESC} before the timeout
 expires.
 @end deffn
 
-@deffn Command password passwd [new-config-file]
-Disable all interactive editing control (menu entry editor and
-command line) and entries protected by the command @command{lock}. If
-the password @var{passwd} is entered, it loads the @var{new-config-file}
-as a new config file and restarts the GRUB Stage 2, if
-@var{new-config-file} is specified. Otherwise, GRUB will just unlock the
-privileged instructions.
-@end deffn
-
 @deffn Command timeout sec
 Set a timeout, in @var{sec} seconds, before automatically booting the
 default entry (normally the first entry defined).
@@ -702,6 +693,18 @@ sector number.
 Change the type of an existing partition.  @var{part} is a partition
 specification in GRUB syntax (@pxref{Naming convention}); @var{type}
 is the new partition type and must be a number in the range 0-0xff.
+@end deffn
+
+@deffn Command password [@option{--md5}] passwd [new-config-file]
+If used in the first section of a menu file, disable all interactive
+editing control (menu entry editor and command line) and entries
+protected by the command @command{lock}. If the password @var{passwd} is
+entered, it loads the @var{new-config-file} as a new config file and
+restarts the GRUB Stage 2, if @var{new-config-file} is
+specified. Otherwise, GRUB will just unlock the privileged instructions.
+You can also use this command in the script section, in which case it
+will ask for the password, before continueing.  The option
+@option{--md5} tells GRUB that @var{passwd} is encrypted with md5crypt.
 @end deffn
 
 @deffn Command rarp

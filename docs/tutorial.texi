@@ -979,11 +979,13 @@ run the command @command{password} in your configuration file, like
 this:
 
 @example
-password PASSWORD
+password --md5 PASSWORD
 @end example
 
 If this is specified, GRUB disallows any interactive control, until you
-press the key @key{p} and enter @samp{PASSWORD}.
+press the key @key{p} and enter @samp{PASSWORD}.  The option
+@option{--md5} tells GRUB that @samp{PASSWORD} is in md5 format.  If it
+is omitted grub assumes the @samp{PASSWORD} is in clear text.
 
 Also, you can specify an optional argument to @command{password}. See
 this example:
@@ -1000,9 +1002,8 @@ menu entry. Usually, this wouldn't be problematic, but you might want to
 permit only administrators to run some of your menu entries, such as an
 entry for booting an insecure OS like DOS.
 
-The solution used by GRUB is the command @command{lock}. This command
-always fails until you enter a valid password, so you can use it, like
-this:
+GRUB provides the command @command{lock}. This command always fails
+until you enter a valid password, so you can use it, like this:
 
 @example
 @group
@@ -1017,3 +1018,9 @@ chainload +1
 You should insert @command{lock} right after @command{title}, because
 any user can execute commands in an entry, until GRUB encounters
 @command{lock}.
+
+You can also use the command @command{password} instead of
+@command{lock}. In this case the boot process will ask for the password
+and stop if it was entered incorrectly.  Since the @command{password}
+takes its own @samp{PASSWORD} argument this is useful if you want
+different passwords for different entries.

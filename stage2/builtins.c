@@ -43,6 +43,10 @@
 # include <smp-imps.h>
 #endif /* ! GRUB_UTIL */
 
+#ifdef USE_MD5_PASSWORDS
+# include <md5.h>
+#endif
+
 /* Terminal types.  */
 int terminal = TERMINAL_CONSOLE;
 /* The type of kernel loaded.  */
@@ -62,6 +66,8 @@ int current_entryno;
 static char *mb_cmdline;
 /* The password.  */
 char *password;
+/* The password type.  */
+password_t password_type;
 /* The flag for indicating that the user is authoritative.  */
 int auth = 0;
 /* Color settings.  */
@@ -94,6 +100,26 @@ init_config (void)
   password = 0;
   fallback_entry = -1;
   grub_timeout = -1;
+}
+
+/* Check a password for correctness.  Returns 0 if password was
+   correct, and a value != 0 for error, similarly to strcmp. */
+int
+check_password (char *entered, char* expected, password_t type)
+{
+  switch (type)
+    {
+    case PASSWORD_PLAIN:
+      return strcmp (entered, expected);
+
+#ifdef USE_MD5_PASSWORDS
+    case PASSWORD_MD5:
+      return check_md5_password (entered, expected);
+#endif
+    default: 
+      /* unsupported password type: be secure */
+      return 1;
+    }
 }
 
 /* Print which sector is read when loading a file.  */
@@ -2588,19 +2614,55 @@ static struct builtin builtin_parttype =
 static int
 password_func (char *arg, int flags)
 {
-  int len = grub_strlen (arg);
+  int len;
+  password_t type = PASSWORD_PLAIN;
 
-  /* PASSWORD NUL NUL ... */
-  if (len + 2 > PASSWORD_BUFLEN)
+#ifdef USE_MD5_PASSWORDS
+  if (grub_memcmp (arg, "--md5", 5) == 0)
     {
-      errnum = ERR_WONT_FIT;
-      return 1;
+      type = PASSWORD_MD5;
+      arg = skip_to (0, arg);
+    }
+#endif
+  if (grub_memcmp (arg, "--", 2) == 0)
+    {
+      type = PASSWORD_UNSUPPORTED;
+      arg = skip_to (0, arg);
     }
 
-  /* Copy the password and clear the rest of the buffer.  */
-  password = (char *) PASSWORD_BUF;
-  grub_memmove (password, arg, len);
-  grub_memset (password + len, 0, PASSWORD_BUFLEN - len);
+  if ((flags & (BUILTIN_CMDLINE | BUILTIN_SCRIPT)) != 0)
+    {
+      /* Do password check! */
+      char entered[32];
+      
+      /* Wipe out any previously entered password */
+      entered[0] = 0;
+      get_cmdline ("Password: ", entered, 31, '*', 0);
+
+      nul_terminate (arg);
+      if (check_password (entered, arg, type) != 0)
+	{
+	  errnum = ERR_PRIVILEGED;
+	  return 1;
+	}
+    }
+  else
+    {
+      len = grub_strlen (arg);
+      
+      /* PASSWORD NUL NUL ... */
+      if (len + 2 > PASSWORD_BUFLEN)
+	{
+	  errnum = ERR_WONT_FIT;
+	  return 1;
+	}
+      
+      /* Copy the password and clear the rest of the buffer.  */
+      password = (char *) PASSWORD_BUF;
+      grub_memmove (password, arg, len);
+      grub_memset (password + len, 0, PASSWORD_BUFLEN - len);
+      password_type = type;
+    }
   return 0;
 }
 
@@ -2608,15 +2670,17 @@ static struct builtin builtin_password =
 {
   "password",
   password_func,
-  BUILTIN_MENU,
-#if 0
-  "password PASSWD [FILE]",
-  "Disable all interactive editing control (menu entry editor and"
+  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HIDDEN,
+  "password [--md5] PASSWD [FILE]",
+  "If used in the first section of a menu file, disable all"
+  " interactive editing control (menu entry editor and"
   " command line). If the password PASSWD is entered, it loads the"
   " FILE as a new config file and restarts the GRUB Stage 2. If you"
   " omit the argument FILE, then GRUB just unlocks privileged"
-  " instructions."
-#endif
+  " instructions.  You can also use it in the script section, in"
+  " which case it will ask for the password, before continueing."
+  " The option --md5 tells GRUB that PASSWD is encrypted with"
+  " md5crypt."
 };
 
 
@@ -2624,6 +2688,8 @@ static struct builtin builtin_password =
 static int
 pause_func (char *arg, int flags)
 {
+  printf("%s\n", arg);
+
   /* If ESC is returned, then abort this entry.  */
   if (ASCII_CHAR (getkey ()) == 27)
     return 1;
@@ -2635,7 +2701,7 @@ static struct builtin builtin_pause =
 {
   "pause",
   pause_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HIDDEN,
   "pause [MESSAGE ...]",
   "Print MESSAGE, then wait until a key is pressed."
 };

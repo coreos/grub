@@ -318,7 +318,7 @@ restart:
 	      grub_memset (entered, 0, sizeof (entered));
 	      get_cmdline ("Password: ", entered, 31, '*', 0);
 	    }
-	  while (grub_strcmp (password, entered) != 0);
+	  while (check_password (entered, password, password_type) != 0);
 	}
 	  
       enter_cmdline (heap, 1);
@@ -558,7 +558,7 @@ restart:
 		  /* Make sure that PASSWORD is NUL-terminated.  */
 		  *pptr++ = 0;
 
-		  if (! strcmp (password, entered))
+		  if (! check_password (entered, password, password_type))
 		    {
 		      char *new_file = config_file;
 		      while (isspace (*pptr))

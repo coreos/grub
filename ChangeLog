@@ -1,3 +1,35 @@
+2000-10-17  Jochen Hoenicke  <jochen@gnu.org>
+
+	Added MD5 passwords and extended password command:
+	
+	* configure.in (--disable-md5password): New option.
+	* stage2/Makefile.am (libgrub_a_SOURCES): Added md5.c.
+	(pre_stage2_exec_SOURCES): Likewise.
+	* stage2/md5.c: New file.
+	* stage2/shared.h (password_t): New type.
+	(password_type): New variable.
+	(BUILTIN_HIDDEN): New flag, describing that a command should not
+	be printed when booting the entry.
+	(check_password): New function.
+	* stage2/cmdline.c (run_script): Don't show commands that have
+	the hidden attribute.
+	* stage2/buildins.c (password_type): New variable.
+	(check_password): New function.
+	(password_func): Handle the --md5 option and set password_type.
+	Check if in CMDLINE or SCRIPT mode and ask password immediately.
+	(builtin_password): Also allow passwords in CMDLINE mode, make
+	it hidden, so the user wont see the password he should enter.
+	Changed command description.
+	(builtin_pause): Make the command hidden.
+	(pause_func): Print argument, since the command is now hidden.
+	* stage2/stage2.c (run_menu): Call check_password to check password.
+	* docs/tutorial.texi (Security): Describe the new features of the
+	password commands.
+	* docs/user-ref.texi (Menu-specific commands): password command
+ 	moved ...
+	(Command-line and menu commands): ... to here.  New features 
+	doumented.
+	
 2000-10-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (setkey_func): Clear the all elements of

@@ -501,7 +501,18 @@ extern void assign_device_name (int drive, const char *device);
 extern int fallback_entry;
 extern int default_entry;
 extern int current_entryno;
+
+/* The constants for password types.  */
+typedef enum
+{
+  PASSWORD_PLAIN,
+  PASSWORD_MD5,
+  PASSWORD_UNSUPPORTED
+}
+password_t;
+
 extern char *password;
+extern password_t password_type;
 extern int auth;
 extern char commands[];
 #endif
@@ -718,6 +729,7 @@ void stop_floppy (void);
 #define BUILTIN_MENU		0x2	/* Run in the menu.  */
 #define BUILTIN_TITLE		0x4	/* Only for the command title.  */
 #define BUILTIN_SCRIPT		0x8	/* Run in the script.  */
+#define BUILTIN_HIDDEN		0x10	/* Don't print command on booting. */
 
 /* The table for a builtin.  */
 struct builtin
@@ -892,6 +904,8 @@ kernel_t load_image (char *kernel, char *arg, kernel_t suggested_type,
 
 int load_module (char *module, char *arg);
 int load_initrd (char *initrd);
+
+int check_password(char *entered, char* expected, password_t type);
 #endif
 
 void init_bios_info (void);
