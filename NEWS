@@ -27,6 +27,9 @@ New in 0.5.94:
   filename from "/boot/grub/menu.lst" even if a Stage 1.5 is used.
 * New program, ``grub-install''.
 * The command "blocklist" prints the blocklist notation of a file.
+* The command "chainloader" now accepts an option "--force", which is
+  required if you want to chain-load a boot loader defective in the
+  signature, such as SCO Unixware 7.1.
 
 New in 0.5.93 - 1999-10-30:
 * ELF format of FreeBSD kernel is supported.

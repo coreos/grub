@@ -268,17 +268,35 @@ static struct builtin builtin_cat =
 static int
 chainloader_func (char *arg, int flags)
 {
-  if (! grub_open (arg))
+  int force = 0;
+  char *file = arg;
+
+  /* If the option `--force' is specified?  */
+  if (substring ("--force", arg) <= 0)
+    {
+      force = 1;
+      file = skip_to (0, arg);
+    }
+
+  /* Open the file.  */
+  if (! grub_open (file))
     {
       kernel_type = KERNEL_TYPE_NONE;
       return 1;
     }
-      
-  if (grub_read ((char *) BOOTSEC_LOCATION, SECTOR_SIZE) == SECTOR_SIZE
+
+  /* Read the first block.  */
+  if (grub_read ((char *) BOOTSEC_LOCATION, SECTOR_SIZE) != SECTOR_SIZE)
+    {
+      grub_close ();
+      kernel_type = KERNEL_TYPE_NONE;
+      return 1;
+    }
+
+  /* If not loading it forcibly, check for the signature.  */
+  if (! force
       && (*((unsigned short *) (BOOTSEC_LOCATION + BOOTSEC_SIG_OFFSET))
-	  == BOOTSEC_SIGNATURE))
-    kernel_type = KERNEL_TYPE_CHAINLOADER;
-  else if (! errnum)
+	  != BOOTSEC_SIGNATURE))
     {
       grub_close ();
       errnum = ERR_EXEC_FORMAT;
@@ -287,6 +305,7 @@ chainloader_func (char *arg, int flags)
     }
 
   grub_close ();
+  kernel_type = KERNEL_TYPE_CHAINLOADER;
   return 0;
 }
 
@@ -295,8 +314,9 @@ static struct builtin builtin_chainloader =
   "chainloader",
   chainloader_func,
   BUILTIN_CMDLINE,
-  "chainloader FILE",
-  "Load the chain-loader FILE."
+  "chainloader [--force] FILE",
+  "Load the chain-loader FILE. If --force is specified, then load it"
+  " forcibly, whether the boot loader signature is present or not."
 };
 
 

@@ -367,6 +367,12 @@ grub> chainloader +1
 Do not care about what @samp{+1} is. We describe it later in
 @ref{Filesystem}. If this succeeds, run the command @command{boot}.
 
+@strong{Caution:} Some boot loaders (such as the one in SCO Unixware
+7.1) are defective in the signature, so you will have to specify the
+option @option{--force} to @command{chainloader} for them. The option
+might seem to solve your problem, but we strongly recommend reporting
+the bug to the maintainer.
+
 However, some tricks will be necessary if you have installed DOS or
 Windows on a non-first hard disk, because they cannot boot any disks
 except for the first one. The solution is to use the command

@@ -1,3 +1,12 @@
+2000-01-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (chainloader_func): If --force is specified
+	in ARG, don't check for the signature.
+	* docs/tutorial.texi (Chain-loading): Added a caution about some
+	defective boot loaders and --force.
+	* docs/user-ref.texi (Command-line-specific commands): Added a
+	description about --force.
+	
 2000-01-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/prog-ref.texi (LBA mode disk I/O): Added a footnote about

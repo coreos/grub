@@ -758,10 +758,13 @@ grub> cat /etc/fstab
 @end example
 @end deffn
 
-@deffn Command chainloader file
+@deffn Command chainloader [@option{--force}] file
 Load @var{file} as a chain-loader. Like any other file loaded by the
 filesystem code, it can use the blocklist notation to grab the first
-sector of the current partition with @samp{+1}.
+sector of the current partition with @samp{+1}. If you specify the
+option @option{--force}, then load @var{file} forcibly, whether it has a
+correct signature or not. This is required when you want to load a
+defective boot loader, such as SCO Unixware 7.1.
 @end deffn
 
 @deffn Command configfile @var{file}
