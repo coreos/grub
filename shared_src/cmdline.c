@@ -53,10 +53,11 @@ cmos_read_byte(int loc)
 #endif /* DEBUG */
 
 /*
- *  This is used for determining of the command-line should ask the user
- *  to correct errors.
+ *  These are used for determining if the command-line should ask the user
+ *  to correct errors during scripts.
  */
 int fallback = -1;
+int protected = 0;
 
 char *
 skip_to(int after_equal, char *cmdline)
@@ -158,7 +159,7 @@ enter_cmdline(char *script, char *heap)
     mbi.flags |= MB_INFO_MEM_MAP;
 
   /* BSD and chainloading evil hacks !! */
-  bootdev = set_bootdev();
+  bootdev = set_bootdev(0);
 
   if (!script)
     {
@@ -171,10 +172,17 @@ restart:
     {
       if (errnum)
 	{
-	  if (fallback != -1)
-	    return 0;
-
+	  if (fallback < 0)
+	    goto returnit;
 	  print_error();
+	  if (protected || errnum == ERR_BOOT_COMMAND)
+	    {
+	      printf("Press any key to continue...");
+	      getc();
+returnit:
+	      return 0;
+	    }
+
 	  run_cmdline = 1;
 	  if (!have_run_cmdline)
 	    {
@@ -222,19 +230,8 @@ restart:
 
       if (!type)
 	{
-	  printf(" Error, cannot boot unless kernel loaded.\n");
-
-	  if (fallback != -1)
-	    return 0;
-
-	  if (script)
-	    {
-	      printf("Press any key to continue...");
-	      getc();
-	      return 1;
-	    }
-	  else
-	    goto restart;
+	  errnum = ERR_BOOT_COMMAND;
+	  goto restart;
 	}
 
       /* this is the final possibility */
@@ -271,7 +268,8 @@ restart:
     }
   else if (strcmp("root", cur_heap) < 1)
     {
-      set_device(cur_cmdline);
+      int hdbias = 0;
+      char *biasptr = skip_to(0, set_device(cur_cmdline));
 
       /* this will respond to any "rootn<XXX>" command,
 	 but that's OK */
@@ -285,7 +283,9 @@ restart:
 	  if (cur_heap[4] != 'n')
 	    {
 	      /* BSD and chainloading evil hacks !! */
-	      bootdev = set_bootdev();
+	      safe_parse_maxint(&biasptr, &hdbias);
+	      errnum = 0;
+	      bootdev = set_bootdev(hdbias);
 
 	      print_fsys_type();
 	    }
@@ -309,7 +309,7 @@ restart:
 #ifndef NO_DECOMPRESSION
 	  /* this will respond to any "modulen<XXX>" command,
 	     but that's OK */
-	  if (cur_heap[6] = 'n')
+	  if (cur_heap[6] == 'n')
 	    no_decompression = 1;
 #endif  /* NO_DECOMPRESSION */
 
