@@ -1,3 +1,10 @@
+1999-10-31  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (init_device_map): Add a floppy device name
+	into the device map file even if check_device fails.
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): Clear ERRNUM after
+	calling print_completions.
+	
 1999-10-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/asm.S (track_int13): Defined unconditionally. Do not

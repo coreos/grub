@@ -341,14 +341,13 @@ init_device_map (void)
 	  break;
 	
 	get_floppy_disk_name (name, i);
+	/* In floppies, write the map, whether check_device succeeds
+	   or not, because the user just does not insert floppies.  */
+	if (fp)
+	  fprintf (fp, "(fd%d)\t%s\n", i, name);
+	
 	if (check_device (name))
-	  {
-	    assign_device_name (i, name);
-
-	    /* If the device map file is opened, write the map.  */
-	    if (fp)
-	      fprintf (fp, "(fd%d)\t%s\n", i, name);
-	  }
+	  assign_device_name (i, name);
       }
   
   /* IDE disks.  */

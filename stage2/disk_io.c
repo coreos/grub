@@ -1055,7 +1055,7 @@ print_completions (int is_filename, int is_completion)
     {
       errnum = 0;
 
-      if (*buf != '/' && (incomplete || ! *ptr))
+      if (*buf == '(' && (incomplete || ! *ptr))
 	{
 	  if (! part_choice)
 	    {
@@ -1142,7 +1142,7 @@ print_completions (int is_filename, int is_completion)
 		}
 	    }
 	}
-      else if (*ptr == '/')
+      else if (ptr && *ptr == '/')
 	{
 	  /* filename completions */
 	  if (! is_completion)

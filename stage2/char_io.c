@@ -408,7 +408,8 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		grub_memmove (completion_buffer, buf + i, lpos - i);
 		completion_buffer[lpos - i] = 0;
 		ret = print_completions (is_filename, 1);
-
+		errnum = ERR_NONE;
+		
 		if (ret >= 0)
 		  {
 		    /* Found, so insert COMPLETION_BUFFER.  */
