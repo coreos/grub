@@ -632,8 +632,10 @@ load_initrd (char *initrd)
     moveto = (LINUX_INITRD_MAX_ADDRESS - len) & 0xfffff000;
   
   /* XXX: Linux 2.3.xx has a bug in the memory range check, so avoid
-     the last page.  */
-  moveto -= 0x1000;
+     the last page.
+     XXX: Linux 2.2.xx has a bug in the memory range check, which is
+     worse than that of Linux 2.3.xx, so avoid the last 64kb. *sigh*  */
+  moveto -= 0x10000;
   memmove ((void *) RAW_ADDR (moveto), (void *) cur_addr, len);
 
   printf ("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);

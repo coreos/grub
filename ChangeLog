@@ -1,3 +1,9 @@
+2001-03-16  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Bodo Rueskamp <br@itchigo.com>:
+	* stage2/boot.c (load_initrd): Avoid the last 64kb for
+	Linux 2.2.x bug.
+	
 2001-03-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/multiboot.texi (History): Written.
