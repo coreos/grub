@@ -1,3 +1,9 @@
+1999-11-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/multiboot.texi (Boot information format): Add the members
+	`drives_addr' and `drives_count' into the Multiboot information
+	structure, and added the descriptions.
+	
 1999-11-03  Gordon Matzigkeit  <gord@fig.org>
 
 	* util/mbchk.c (main): Move the version number inside the
