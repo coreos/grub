@@ -25,7 +25,7 @@
 
 @ifinfo
 Copyright @copyright{} 1996 Erich Boleyn
-Copyright @copyright{} 1999 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -58,7 +58,7 @@ into another language, under the above conditions for modified versions.
 @vskip 0pt plus 1filll
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1996 Erich Boleyn
-Copyright @copyright{} 1999 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -92,6 +92,7 @@ Part I: The Tutorial Manual
 * Filename::                    How to write filenames
 * Installation::                How to install GRUB on your drive
 * Boot::                        How to boot your operating systems
+* Network::                     Downloading OS images from a network
 * Configuration::               Writing your configuration file
 
 Part II: The User Reference Manual

@@ -511,6 +511,51 @@ grub> boot
 @end example
 
 
+@node Network
+@chapter Downloading OS images from a network
+
+Although GRUB is a disk-based boot loader, it provides you some network
+support. To using the network support, you need to enable at least one
+network driver in the build process. See the file
+@file{netboot/README.netboot} in the source distribution, for more
+information.
+
+First, you have to set up servers in your network. The servers GRUB
+requires are a server which assigns an IP address and a file server. The
+former is one of a BOOTP server, a DHCP server and a RARP server. RARP
+is deprecated, since it cannot serve much information. For the latter,
+only TFTP is supported at the moment. It is not necessary to run both
+the servers on one computer. How to configure the servers is beyond the
+scope of this document, so please refer to their own manuals.
+
+Second, run @command{bootp}, @command{dhcp} and @command{rarp} for
+BOOTP, DHCP and RARP, respectively. Each command will show an assigned
+IP address, a netmask, an IP address for your TFTP server and a
+gateway. If any of the addresses is wrong or it causes an error,
+probably the configuration of your servers isn't set up properly.
+
+Lastly, download your OS images from your network. The network can be
+accessed by the network drive @samp{(nd)}. Everything else is similar to
+the normal instructions (@pxref{Boot}).
+
+Here is an example:
+
+@example
+@group
+grub> bootp
+Probing... [NE*000]
+NE2000 base ...
+Address: 192.168.110.23    Netmask: 255.255.255.0
+Server: 192.168.110.14     Gateway: 192.168.110.1
+
+grub> root (nd)
+grub> kernel /tftproot/gnumach.gz root=sd0s1
+grub> module /tftproot/serverboot.gz
+grub> boot
+@end group
+@end example
+
+
 @node Configuration
 @chapter Configuration
 

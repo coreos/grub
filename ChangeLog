@@ -1,3 +1,7 @@
+2000-02-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/tutorial.texi (Network): New chapter.
+	
 2000-02-26  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/help2man: Upgraded to 1.020.

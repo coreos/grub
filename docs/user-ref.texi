@@ -150,6 +150,10 @@ standard interface used in all machines. However, some newer machines
 have the new interface, Logical Block Address (@dfn{LBA}) mode. GRUB
 automatically detects if LBA mode is available and uses it if
 available. In LBA mode, GRUB can access the entire disk.
+
+@item Network support
+GRUB is a disk-based boot loader but also has network support. You can
+load OS images from a network by using the @dfn{TFTP} protocol.
 @end table
 
 Future directions might include an internal programming language for
@@ -248,6 +252,10 @@ The syntax like @samp{(hd0)} represents using the entire disk (or the
 MBR when installing GRUB), while the syntax like @samp{(hd0,0)}
 represents using the partition of the disk (or the boot sector of the
 partition when installing GRUB).
+
+If you enabled the network support, the special drive, @samp{(nd)}, is
+also available. Before using the network drive, you must initiailze the
+network. @xref{Network}, for more information.
 
 
 @node Filename syntax
@@ -370,6 +378,10 @@ the first word in the command-line, pressing the @key{TAB} key (or
 cursor is after the first word, the @kbd{@key{TAB}} will provide a
 completion listing of disks, partitions, and filenames depending on the
 context.
+
+Note that you cannot use the completion functionality in the TFTP
+filesystem. This is because TFTP doesn't support filename listing for
+the security.
 
 
 @node Menu
