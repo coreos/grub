@@ -1,3 +1,8 @@
+2000-07-31  Pavel Roskin  <proski@gnu.org>
+
+	* grub/asmstub.c (biosdisk) [__linux__]: The first argument for
+	_llseek renamed from "seeked_fd" to "filedes".
+
 2000-07-30  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/appendices.texi (FAQ): Added the answer for the separate

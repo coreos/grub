@@ -748,9 +748,9 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
   /* Maybe libc doesn't have large file support.  */
   {
     loff_t offset, result;
-    static int _llseek (uint seeked_fd, ulong hi, ulong lo,
+    static int _llseek (uint filedes, ulong hi, ulong lo,
 			loff_t *res, uint wh);
-    _syscall5 (int, _llseek, uint, seeked_fd, ulong, hi, ulong, lo,
+    _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
 	       loff_t *, res, uint, wh);
 
     offset = (loff_t) sector * (loff_t) SECTOR_SIZE;
