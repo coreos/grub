@@ -52,7 +52,7 @@ CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
 
 stage2_size.h: pre_stage2
 	-rm -f stage2_size.h
-	set dummy `ls -l ../stage2/stage2`; \
+	set dummy `ls -l pre_stage2`; \
 	echo "#define STAGE2_SIZE $$6" > stage2_size.h
 
 start_exec_SOURCES = start.S

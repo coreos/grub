@@ -1,3 +1,18 @@
+1999-10-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): If C is a newline
+	or a return, then set LPOS to LLEN and call the function
+	cl_setcpos.
+	* stage2/builtins.c (embed_func): New function.
+	(builtin_embed): New varilable.
+	(setup_func): New function.
+	(builtin_setup): New varilable.
+	(builtin_table): Added a pointer to BUILTIN_EMBED and a pointer
+	to BUILTIN_SETUP.
+	
+	* stage2/Makefile.am (stage2_size.h): ../stage2/stage2 ->
+	pre_stage2. Reported by Pavel Roskin.
+	
 1999-10-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin:

@@ -625,6 +625,7 @@ int grub_isspace (int c);
 int grub_strncat (char *s1, const char *s2, int n);
 char *grub_memmove (char *to, const char *from, int len);
 void *grub_memset (void *start, int c, int len);
+int grub_strncat (char *s1, const char *s2, int n);
 char *grub_strstr (const char *s1, const char *s2);
 int grub_memcmp (const char *s1, const char *s2, int n);
 int grub_strcmp (const char *s1, const char *s2);

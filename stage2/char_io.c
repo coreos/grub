@@ -590,9 +590,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	}
     }
   
-  /* goto part after line here */
-  yend = ((llen + plen) / 79) + ystart;
-  putchar ('\n');
+  /* Move the cursor to the end of the command.  */
+  lpos = llen;
+  cl_setcpos ();
+  grub_putchar ('\n');
   gotoxy (0, getxy () & 0xff);
 
   /* If ECHO_CHAR is NUL, remove the leading spaces.  */
@@ -708,7 +709,7 @@ grub_memcmp (const char *s1, const char *s2, int n)
 }
 #endif /* ! STAGE1_5 */
 
-#if 0
+#ifndef STAGE1_5
 int
 grub_strncat (char *s1, const char *s2, int n)
 {
@@ -727,7 +728,7 @@ grub_strncat (char *s1, const char *s2, int n)
 
   return 1;
 }
-#endif
+#endif /* ! STAGE1_5 */
 
 #ifndef STAGE1_5
 int

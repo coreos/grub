@@ -111,7 +111,6 @@ nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5
 
 noinst_DATA = pre_stage2 start
-CLEANFILES = $(BUILT_SOURCES)
 noinst_PROGRAMS = pre_stage2.exec start.exec \
 	e2fs_stage1_5.exec fat_stage1_5.exec \
 	ffs_stage1_5.exec minix_stage1_5.exec
@@ -136,6 +135,7 @@ pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 @NETBOOT_SUPPORT_TRUE@pre_stage2_exec_LDADD = @NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
 
 BUILT_SOURCES = stage2_size.h
+CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
 
 start_exec_SOURCES = start.S
 start_exec_CFLAGS = $(STAGE2_COMPILE)
@@ -1602,7 +1602,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 stage2_size.h: pre_stage2
 	-rm -f stage2_size.h
-	set dummy `ls -l ../stage2/stage2`; \
+	set dummy `ls -l pre_stage2`; \
 	echo "#define STAGE2_SIZE $$6" > stage2_size.h
 
 stage2: pre_stage2 start

@@ -20,6 +20,7 @@
  */
 
 #include <shared.h>
+#include <filesys.h>
 
 #ifndef GRUB_UTIL
 # include "apic.h"
@@ -402,6 +403,133 @@ static struct builtin builtin_displaymem =
   "displaymem",
   "Display what GRUB thinks the system address space map of the"
   " machine is, including all regions of physical RAM installed."
+};
+
+
+/* embed */
+/* Embed a Stage 1.5 in the first cylinder after MBR or in the
+   bootloader block in a FFS.  */
+static int
+embed_func (char *arg, int flags)
+{
+  char *stage1_5;
+  char *device;
+  char *stage1_5_buffer = (char *) RAW_ADDR (0x100000);
+  int len, size;
+  int sector;
+  int i;
+  
+  stage1_5 = arg;
+  device = skip_to (0, stage1_5);
+
+  /* Open a Stage 1.5.  */
+  if (! grub_open (stage1_5))
+    return 1;
+
+  /* Read the whole of the Stage 1.5.  */
+  len = grub_read (stage1_5_buffer, -1);
+  if (errnum)
+    return 1;
+
+  size = (len + SECTOR_SIZE - 1) / SECTOR_SIZE;
+  
+  /* Get the device where the Stage 1.5 will be embedded.  */
+  set_device (device);
+  if (errnum)
+    return 1;
+
+  if (current_partition == 0xFFFFFF)
+    {
+      /* Embed it after the MBR.  */
+      
+      char mbr[SECTOR_SIZE];
+
+      /* No floppy has MBR.  */
+      if (! (current_drive & 0x80))
+	{
+	  errnum = ERR_DEV_VALUES;
+	  return 1;
+	}
+      
+      /* Read the MBR of CURRENT_DRIVE.  */
+      if (! rawread (current_drive, PC_MBR_SECTOR, 0, SECTOR_SIZE, mbr))
+	return 1;
+      
+      /* Sanity check.  */
+      if (! PC_MBR_CHECK_SIG (mbr))
+	{
+	  errnum = ERR_BAD_PART_TABLE;
+	  return 1;
+	}
+
+      /* Check if the disk can store the Stage 1.5.  */
+      if (PC_SLICE_START (mbr, 0) - 1 < size)
+	{
+	  errnum = ERR_DEV_VALUES;
+	  return 1;
+	}
+
+      sector = 1;
+    }
+  else
+    {
+      /* Embed it in the bootloader block in the FFS.  */
+
+      /* Open the partition.  */
+      if (! open_partition ())
+	return 1;
+
+      /* Check if the current slice is a BSD slice.  */
+      if (grub_strcmp (fsys_table[fsys_type].name, "ffs") != 0)
+	{
+	  errnum = ERR_DEV_VALUES;
+	  return 1;
+	}
+
+      /* Sanity check.  */
+      if (size > 14)
+	{
+	  errnum = ERR_BAD_VERSION;
+	  return 1;
+	}
+
+      /* XXX: I don't know this is really correct. Someone who is
+	 familiar with BSD should check for this.  */
+      sector = part_start + 1;
+#if 1
+      /* FIXME: Disable the embedding in FFS until someone checks if
+	 the code above is correct.  */
+      errnum = ERR_DEV_VALUES;
+      return 1;
+#endif
+    }
+
+  /* Now perform the embedding.  */
+  for (i = 0; i < size; i++)
+    {
+      grub_memmove ((char *) SCRATCHADDR, stage1_5_buffer + i * SECTOR_SIZE,
+		    SECTOR_SIZE);
+      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+		    sector + i * SECTOR_SIZE, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  return 1;
+	}
+    }
+
+  grub_printf (" %d sectors are embedded.\n", size);
+  return 0;
+}
+
+static struct builtin builtin_embed =
+{
+  "embed",
+  embed_func,
+  BUILTIN_CMDLINE,
+  "embed STAGE1_5 DEVICE",
+  "Embed the Stage 1.5 STAGE1_5 in the sectors after MBR if DEVICE"
+  " is a drive, or in the \"bootloader\" area if DEVICE is a FFS partition."
+  " Print the number of sectors which STAGE1_5 occupies if successful."
 };
 
 
@@ -1376,6 +1504,150 @@ static struct builtin builtin_rootnoverify =
 };
 
 
+/* setup */
+static int
+setup_func (char *arg, int flags)
+{
+  /* Point to the string of the installed drive/partition.  */
+  char *install_ptr;
+  /* Point to the string of the drive/parition where the GRUB images
+     reside.  */
+  char *image_ptr;
+  int install_drive, install_partition;
+  char *stage1 = "/boot/grub/stage1";
+  char *stage2 = "/boot/grub/stage2";
+  char *config_file = "/boot/grub/menu.lst";
+  char install_arg[256];
+  char buffer[32];
+  static void sprint_device (int drive, int partition)
+    {
+      grub_sprintf (buffer, "(%cd%d",
+		    (drive & 0x80) ? 'h' : 'f',
+		    drive & ~0x80);
+      if ((partition & 0xFF0000) != 0xFF0000)
+	{
+	  char tmp[16];
+	  grub_sprintf (tmp, ",%d", (partition >> 16) & 0xFF);
+	  grub_strncat (buffer, tmp, sizeof (buffer));
+	}
+      if ((partition & 0x00FF00) != 0x00FF00)
+	{
+	  char tmp[16];
+	  grub_sprintf (tmp, ",%c", 'a' + ((partition >> 8) & 0xFF));
+	  grub_strncat (buffer, tmp, sizeof (buffer));
+	}
+      grub_strncat (buffer, ")", sizeof (buffer));
+    }
+	  
+  struct stage1_5_map {
+    char *fsys;
+    char *name;
+  };
+  
+  struct stage1_5_map stage1_5_map[] =
+  {
+    {"ext2fs", "/boot/grub/e2fs_stage1_5"},
+    {"ffs", "/boot/grub/ffs_stage1_5"},
+    {"fat", "/boot/grub/fat_stage1_5"},
+    {"minix", "/boot/grub/minix_stage1_5"}
+  };
+    
+  install_ptr = arg;
+  image_ptr = skip_to (0, install_ptr);
+
+  /* Make sure that INSTALL_PTR is valid.  */
+  set_device (install_ptr);
+  if (errnum)
+    return 1;
+
+  install_drive = current_drive;
+  install_partition = current_partition;
+  
+  /* Mount the drive pointed by IMAGE_PTR.  */
+  if (*image_ptr)
+    {
+      /* If the drive/partition where the images reside is specified,
+	 get the drive and the partition.  */
+      set_device (image_ptr);
+      if (errnum)
+	return 1;
+    }
+  else
+    {
+      /* If omitted, use SAVED_PARTITION and SAVED_DRIVE.  */
+      current_partition = saved_partition;
+      current_drive = saved_drive;
+    }
+
+  /* Open it.  */
+  if (! open_device ())
+    return 1;
+  
+  /* Check for stage1 and stage2. We hardcode the filenames, so
+     if the user installed GRUB in a uncommon directory, this never
+     succeed.  */
+  if (! grub_open (stage1) || ! grub_open (stage2))
+    return 1;
+
+  /* If the drive where stage2 resides is a hard disk, try to use a
+     Stage 1.5.  */
+  if (current_drive & 0x80)
+    {
+      char *fsys = fsys_table[fsys_type].name;
+      int i;
+      int size = sizeof (stage1_5_map) / sizeof (stage1_5_map[0]);
+
+      /* Iterate finding the same filesystem name as FSYS.  */
+      for (i = 0; i < size; i++)
+	{
+	  if (grub_strcmp (fsys, stage1_5_map[i].fsys) == 0)
+	    {
+	      /* OK, check if the Stage 1.5 exists.  */
+	      if (grub_open (stage1_5_map[i].name))
+		{
+		  stage2 = stage1_5_map[i].name;
+		  config_file = stage2;
+		}
+	      break;
+	    }
+	}
+    }
+
+  /* Construct a string that is used by the command "install" as its
+     arguments.  */
+  sprint_device (install_drive, install_partition);
+  grub_sprintf (install_arg, "%s %s%s %s p",
+		stage1,
+		(install_drive != current_drive) ? "d " : "",
+		buffer,
+		stage2);
+  
+  /* Notify what will be run.  */
+  grub_printf (" Run \"install %s\"\n", install_arg);
+
+  /* Run the command.  */
+#if 0
+  return install_func (install_arg, flags);
+#else
+  return 0;
+#endif
+}
+
+static struct builtin builtin_setup =
+{
+  "setup",
+  setup_func,
+  BUILTIN_CMDLINE,
+  "setup INSTALL_DEVICE [IMAGE_DEVICE]",
+  "Set up the installation of GRUB automatically. This command uses"
+  " the more flexible command \"install\" in the backend and installs"
+  " GRUB into the device INSTALL_DEVICE. If IMAGE_DEVICE is specified,"
+  " then find the GRUB images in the device IMAGE_DEVICE, otherwise"
+  " use the current \"root partition\", which can be set by the command"
+  " \"root\"."
+};
+
+
 /* testload */
 static int
 testload_func (char *arg, int flags)
@@ -1567,6 +1839,7 @@ struct builtin *builtin_table[] =
   &builtin_default,
   &builtin_device,
   &builtin_displaymem,
+  &builtin_embed,
   &builtin_fallback,
   &builtin_fstest,
   &builtin_geometry,
@@ -1585,6 +1858,7 @@ struct builtin *builtin_table[] =
   &builtin_read,
   &builtin_root,
   &builtin_rootnoverify,
+  &builtin_setup,
   &builtin_testload,
   &builtin_timeout,
   &builtin_title,
