@@ -1,3 +1,13 @@
+2004-07-11  Marco Gerards  <metgerards@student.han.nl>
+
+	* conf/i386-pc.rmk (pkgdata_IMAGE): Add pxeboot.img.
+	(pxeboot_img_SOURCES): New variable.
+	(pxeboot_img_ASFLAGS): Likewise.
+	(pxeboot_img_LDFLAGS): Likewise.
+	* boot/i386/pc/pxeboot.S: New file.  Based on pxeloader.S from
+	GRUB Legacy and boot.S.  Adopted for GRUB 2 by lode leroy
+	<lode_leroy@hotmail.com>.
+
 2004-06-27  Tomas Ebenlendr  <ebik@ucw.cz>
 
 	* kern/rescue.c (grub_enter_rescue_mode): Don't continue when

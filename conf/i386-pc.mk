@@ -4,7 +4,7 @@ COMMON_ASFLAGS = -nostdinc -fno-builtin
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3
 
 # Images.
-pkgdata_IMAGES = boot.img diskboot.img kernel.img
+pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -27,6 +27,28 @@ boot_img-boot_i386_pc_boot.d: boot/i386/pc/boot.S
 
 boot_img_ASFLAGS = $(COMMON_ASFLAGS)
 boot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
+
+# For pxeboot.img
+pxeboot_img_SOURCES = boot/i386/pc/pxeboot.S
+CLEANFILES += pxeboot.img pxeboot.exec pxeboot_img-boot_i386_pc_pxeboot.o
+MOSTLYCLEANFILES += pxeboot_img-boot_i386_pc_pxeboot.d
+
+pxeboot.img: pxeboot.exec
+	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+
+pxeboot.exec: pxeboot_img-boot_i386_pc_pxeboot.o
+	$(CC) -o $@ $^ $(LDFLAGS) $(pxeboot_img_LDFLAGS)
+
+pxeboot_img-boot_i386_pc_pxeboot.o: boot/i386/pc/pxeboot.S
+	$(CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(CPPFLAGS) -DASM_FILE=1 $(ASFLAGS) $(pxeboot_img_ASFLAGS) -c -o $@ $<
+
+pxeboot_img-boot_i386_pc_pxeboot.d: boot/i386/pc/pxeboot.S
+	set -e; 	  $(CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(CPPFLAGS) -DASM_FILE=1 $(ASFLAGS) $(pxeboot_img_ASFLAGS) -M $< 	  | sed 's,pxeboot\.o[ :]*,pxeboot_img-boot_i386_pc_pxeboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pxeboot_img-boot_i386_pc_pxeboot.d
+
+pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
+pxeboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8000
 
 # For diskboot.img.
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S
