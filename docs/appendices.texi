@@ -25,9 +25,8 @@ configurable in BIOS setting utility. Read the manual for your BIOS
 for more information.
 
 Furthermore, some operating systems (i.e. DOS) cannot access any large
-disk, so the problem is not solved by any kind of boot loader. As long
-as I know, at least GNU/Hurd and GNU/Linux can boot from such a large
-disk.
+disk, so the problem is not solved by any kind of boot loader. GNU/Hurd
+and GNU/Linux can surely boot from such a large disk.
 
 @item Can I put Stage2 into a partition which is over 1024 cylinders?
 
@@ -132,9 +131,9 @@ developers haven't seen it by their own eyes. This is why it is
 desirable that you investigate the cause seriously if you have the
 skill.
 
-@item Why doesn't Linux (FreeBSD, NetBSD, etc.) become Multiboot-compliant?
+@item Why don't Linux, FreeBSD, NetBSD, etc. become Multiboot-compliant?
 
-Please ask the maintainers. If all free kernels were
+Please ask the relevant maintainers. If all free kernels were
 Multiboot-compliant (@pxref{Top, Multiboot Specification, Motivation,
 multiboot, The Multiboot Specification}), the world would be an
 utopia@dots{}

@@ -479,9 +479,7 @@ restart:
 	      if (c == 'q')
 		{
 		  /* The same as ``quit''.  */
-#ifdef GRUB_UTIL
 		  stop ();
-#endif
 		}
 #endif
 	    }

@@ -1,7 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999   Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -97,6 +97,9 @@
  *  Known PC partition types are defined here.
  */
 
+/* This is not a flag actually, but used as if it were a flag.  */
+#define PC_SLICE_TYPE_HIDDEN_FLAG	0x10
+
 #define PC_SLICE_TYPE_NONE         	0
 #define PC_SLICE_TYPE_FAT12        	1
 #define PC_SLICE_TYPE_FAT16_LT32M  	4
@@ -110,13 +113,16 @@
 #define PC_SLICE_TYPE_EXT2FS       	0x83
 
 /* For convinience.  */
+/* Check if TYPE is a FAT partition type. Clear the hidden flag before
+   the check, to allow the user to mount a hidden partition in GRUB.  */
 #define IS_PC_SLICE_TYPE_FAT(type)	\
-  (((type) == PC_SLICE_TYPE_FAT12) \
-   || ((type) == PC_SLICE_TYPE_FAT16_LT32M) \
-   || ((type) == PC_SLICE_TYPE_FAT16_GT32M) \
-   || ((type) == PC_SLICE_TYPE_FAT16_LBA) \
-   || ((type) == PC_SLICE_TYPE_FAT32) \
-   || ((type) == PC_SLICE_TYPE_FAT32_LBA))
+  ({ int _type = (type) & ~PC_SLICE_TYPE_HIDDEN_FLAG; \
+     _type == PC_SLICE_TYPE_FAT12 \
+     || _type == PC_SLICE_TYPE_FAT16_LT32M \
+     || _type == PC_SLICE_TYPE_FAT16_GT32M \
+     || _type == PC_SLICE_TYPE_FAT16_LBA \
+     || _type == PC_SLICE_TYPE_FAT32 \
+     || _type == PC_SLICE_TYPE_FAT32_LBA; })
 
 #define IS_PC_SLICE_TYPE_EXTENDED(type)	\
   (((type) == PC_SLICE_TYPE_EXTENDED)	\
@@ -135,9 +141,6 @@
    || (type) == (PC_SLICE_TYPE_NETBSD | (fs) << 8))
 
 #define IS_PC_SLICE_TYPE_BSD(type)	IS_PC_SLICE_TYPE_BSD_WITH_FS(type,0)
-
-/* This is not a flag actually, but used as if it were a flag.  */
-#define PC_SLICE_TYPE_HIDDEN_FLAG	0x10
 
 /*
  *  *BSD-style disklabel & partition definitions.

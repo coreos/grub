@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -197,9 +197,7 @@ init_bios_info (void)
       mbi.mem_upper = memtmp;
     }
 
-#ifndef STAGE1_5
   saved_mem_upper = mbi.mem_upper;
-#endif
 
   /*
    *  Initialize other Multiboot Info flags.

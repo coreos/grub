@@ -83,7 +83,7 @@ GRUB fully supports the Multiboot feature of loading multiple modules.
 
 @item Configuration File
 Supports a human-readable text configuration file with preset boot
-commands. The list of commands (@pxref{Command}) are a superset of
+commands. The list of commands (@pxref{Commands}) are a superset of
 those supported on the command line. An example command file is provided
 in @ref{Configuration}.
 
@@ -98,7 +98,7 @@ is available to edit any preset commands, or write a new boot command
 set from scratch. If no command file is present, GRUB drops to
 the command line.
 
-The list of commands (@pxref{Command}) are a subset of those supported
+The list of commands (@pxref{Commands}) are a subset of those supported
 for command files. Editing commands closely resemble the Bash command
 line (@pxref{Command Line Editing, Bash, Command Line Editing, features,
 Bash Features}), with @key{TAB}-completion of commands, devices,
@@ -205,7 +205,7 @@ accessed by BIOS. Because of BIOS limitations, GRUB cannot distinguish
 between IDE, ESDI, SCSI, or others. You must know yourself which BIOS
 device is equivalent to which OS device. Normally, that will be clear if
 you see the files in a device or use the command @command{find}
-(@pxref{Command}).
+(@pxref{Commands}).
 
 @menu
 * Device syntax::               How to specify devices
@@ -311,7 +311,7 @@ the command line interface.
 
 @menu
 * Command line::                The flexible command line interface.
-* Menu::                        The simple menu interface.
+* Menu interface::              The simple menu interface.
 * Menu entry editor::           Editing a menu entry.
 @end menu
 
@@ -323,7 +323,7 @@ The command line interface provides a prompt and after it an editable
 text area much like a command line in Unix or DOS. Each command is
 immediately executed after it is entered @footnote{However, this
 behavior will be changed in the future version, in a user-invisible
-way.}. The commands (@pxref{Command}) are a subset of those available in
+way.}. The commands (@pxref{Commands}) are a subset of those available in
 the configuration file, used with exactly the same syntax.
 
 Cursor movement and editing of the text on the line can be done via a
@@ -384,7 +384,7 @@ filesystem. This is because TFTP doesn't support filename listing for
 the security.
 
 
-@node Menu
+@node Menu interface
 @section The simple menu interface
 
 The menu interface is quite easy to use. Its commands are both
@@ -427,7 +427,7 @@ To delete a line, hit the key @key{d}. Although GRUB does not support
 returning to the main menu.
 
 
-@node Command
+@node Commands
 @chapter The list of available commands
 
 In this chapter, we list the available commands, both in the
@@ -1270,7 +1270,7 @@ You can use the command @command{grub} for installing GRUB under your
 operating systems and for a testbed when you add a new feature into GRUB
 or when fix a bug. @command{grub} is almost the same as the Stage 2,
 and, in fact, it shares the source code with the Stage 2 and you can use
-the same commands (@pxref{Command}) in @command{grub}. It is emulated by
+the same commands (@pxref{Commands}) in @command{grub}. It is emulated by
 replacing BIOS calls with UNIX system calls and libc functions.
 
 The command @command{grub} accepts the following options:

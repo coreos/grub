@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ convert_to_ascii (char *buf, int c,...)
   char *ptr = buf;
 
 #ifndef STAGE1_5
-  if (c == 'x')
+  if (c == 'x' || c == 'X' || c == 'b')
     mult = 16;
 
   if ((num & 0x80000000uL) && c == 'd')
@@ -80,7 +80,8 @@ grub_printf (const char *format,...)
 {
   int *dataptr = (int *) &format;
   char c, *ptr, str[16];
-
+  unsigned long mask = 0xFFFFFFFF;
+  
   dataptr++;
 
   while ((c = *(format++)) != 0)
@@ -91,11 +92,16 @@ grub_printf (const char *format,...)
 	switch (c = *(format++))
 	  {
 #ifndef STAGE1_5
+	  case 'b':
+	    mask = 0xFF;
+	    /* Fall down intentionally!  */
 	  case 'd':
 	  case 'x':
+	  case 'X':
 #endif
 	  case 'u':
-	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++)) = 0;
+	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++) & mask)
+	      = 0;
 
 	    ptr = str;
 

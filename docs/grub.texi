@@ -14,6 +14,10 @@
 @syncodeindex pg cp
 @syncodeindex tp cp
 
+@footnotestyle separate
+@paragraphindent 3
+@finalout
+
 @dircategory Kernel
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader
@@ -51,11 +55,11 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @sp 10
 @title The GRUB Manual
+@subtitle The GRand Unified Bootloader, version @value{VERSION}, @value{UPDATED}.
 @author Gordon Matzigkeit
 @author OKUJI Yoshinori
 @c The following two commands start the copyright page.
 @page
-@vskip 0pt plus 1filll
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1996 Erich Boleyn
 Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
@@ -81,26 +85,28 @@ by Free Software Foundation.
 @node Top
 @top GRUB
 
-This file documents GNU GRUB, the Grand Unified Bootloader.  This
-edition documents version @value{VERSION}.
+This is the documentation of GNU GRUB, the GRand Unified Bootloader,
+a flexible and powerful boot loader program for @sc{pc}s.
+
+This edition documents version @value{VERSION}.
 @end ifnottex
 
 @menu
 Part I: The Tutorial Manual
 
-* Overview::                    Starting to use GRUB
-* Filename::                    How to write filenames
-* Installation::                How to install GRUB on your drive
-* Boot::                        How to boot your operating systems
+* Overview::                    What exactly GRUB is and how to use it
+* Naming convention::           Names of your drives in GRUB
+* Installation::                Installing GRUB on your drive
+* Booting::                     How to boot different operating systems
 * Network::                     Downloading OS images from a network
-* Configuration::               Writing your configuration file
+* Configuration::               Writing your own configuration file
 
 Part II: The User Reference Manual
 
 * Introduction::                Capturing the spirit of GRUB
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
-* Command::                     The list of available builtin commands
+* Commands::                    The list of available builtin commands
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer

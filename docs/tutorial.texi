@@ -5,28 +5,32 @@ Briefly, a @dfn{boot loader} is the first software program that runs when
 a computer starts.  It is responsible for loading and transferring
 control to the operating system @dfn{kernel} software (such as the Linux
 or GNU Hurd kernel).  The kernel, in turn, initializes the rest of the
-operating system (usually GNU).
+operating system (e.g. a GNU system).
 
-GRUB can load a wide variety of free operating systems as well as
+GRUB can load a wide variety of free operating systems, as well as
 chain-loading@footnote{@dfn{chain-load} is the mechanism for loading
-unsupported operating systems by loading another boot loader.}
-proprietary operating systems. The important feature in GRUB
-is flexibility; GRUB can understand filesystems and kernel executable
-formats, so you can load an arbitrary operating system as you like
-without recording the position of your kernel on the disk.
+unsupported operating systems by loading another boot loader. It is
+typically used for loading DOS or Windows} proprietary operating
+systems.
 
-Therefore, you have to specify the drive/partition where your kernel
-resides and the filename at hand. If you don't want to type the
-drive and the filename every time, the menu interface (@pxref{Menu})
-will help you. GRUB loads a configuration file (@pxref{Configuration})
-if found and provides the menu so that you can select which OS is booted
-at ease. Of course, you can enter the command-line interface
-(@pxref{Command line}) whenever you like.
+The important feature in GRUB is flexibility; GRUB understands
+filesystems and kernel executable formats, so you can load an arbitrary
+operating system the way you like, without recording the physical
+position of your kernel on the disk.
 
-In the following chapters, we teach you how to specify a
-drive/partition and a filename (@pxref{Filename}), how to install GRUB
-on your drive (@pxref{Installation}), and how to boot your OSes
-(@pxref{Boot}), step by step.
+Therefore, you have to specify the drive (and the partition) where your
+kernel resides and the filename at hand. If you don't want to type in
+the drive and the filename every time, you can set it up in a simple
+configuration file (@pxref{Configuration}). GRUB will locate and load
+it, and provide a nice menu interface (@pxref{Menu interface}) through
+which you can easily select which OS it boots. Of course, you can enter
+the command-line interface (@pxref{Command line}) whenever you like, or
+you can edit specific menu entries prior to using them.
+
+In the following chapters, you will learn how to specify a drive or a
+partition, and a file name (@pxref{Naming convention}) to GRUB, how to
+install GRUB on your drive (@pxref{Installation}), and how to boot your
+OSes (@pxref{Booting}), step by step.
 
 
 @c @node Fundamentals
@@ -36,32 +40,37 @@ on your drive (@pxref{Installation}), and how to boot your OSes
 @c copyright problem will be solved.
 
 
-@node Filename
-@chapter Filename
+@node Naming convention
+@chapter Naming convention
 
-Now is the time when you should learn the device syntax used in GRUB, so
-that you can specify a drive/partition. See this example:
+The device syntax used in GRUB is a wee bit different from what you may
+have seen before in your operating system(s), and you need to know it so
+that you can specify a drive/partition.
+
+Look at the following examples and explanations:
 
 @example
 (fd0)
 @end example
 
-This means the first floppy disk drive. GRUB requires that the device
-name is enclosed with @samp{(} and @samp{)}. The number @samp{0} is the
-drive number, which is counted from @emph{zero}. In this case, GRUB uses
-the whole floppy disk.
+First of all, GRUB requires that the device name is enclosed with
+@samp{(} and @samp{)}. The @samp{fd} part means that it is a floppy
+disk. The number @samp{0} is the drive number, which is counted from
+@emph{zero}. This expression means that GRUB will use the whole floppy
+disk.
 
 @example
 (hd0,1)
 @end example
 
-This means the second partition of the first hard disk drive. The first
-integer @samp{0} indicates the drive number, that is, the first hard
-disk, while the second integer @samp{1} indicates the partition number
-(or the @sc{pc} slice number in the BSD terminology). Note that the
-partition numbers are counted from @emph{zero} but not from one. In this
-case, GRUB uses the partition of the disk instead of the whole
-disk.
+Here, @samp{hd} means it is a hard disk drive. The first integer
+@samp{0} indicates the drive number, that is, the first hard disk, while
+the second integer, @samp{1}, indicates the partition number (or the
+@sc{pc} slice number in the BSD terminology). Once again, please note
+that the partition numbers are counted from @emph{zero}, not from
+one. This expression means the second partition of the first hard disk
+drive. In this case, GRUB uses one partition of the disk, instead of the
+whole disk.
 
 @example
 (hd0,4)
@@ -69,62 +78,70 @@ disk.
 
 This specifies the first @dfn{extended partition} of the first hard disk
 drive. Note that the partition numbers for extended partitions are
-counted from @samp{4}, whether your disks has four primary partitions or
-less.
+counted from @samp{4}, regardless of the actual number of primary
+partitions on your hard disk.
 
 @example
 (hd1,a)
 @end example
 
 This means the BSD @samp{a} partition of the second hard disk. If you
-need to specify which @sc{pc} slice number should be used, use a device
-like @samp{(hd1,0,a)}. If the @sc{pc} slice number is omitted, GRUB
-searches for the first @sc{pc} slice which has a BSD @samp{a} partition.
+need to specify which @sc{pc} slice number should be used, use something
+like this: @samp{(hd1,0,a)}. If the @sc{pc} slice number is omitted,
+GRUB searches for the first @sc{pc} slice which has a BSD @samp{a}
+partition.
 
-Note that GRUB does @emph{not} distinguish IDE from SCSI; just count the
-drive numbers from zero. Normally, any IDE drive number is less than any
-SCSI drive number, but this is not true if you exchange the boot
-sequence between IDE and SCSI in your BIOS. But do not worry. In the
-GRUB command-line (@pxref{Command line}), you can always use the
-@key{TAB} completion which displays the list of drives, the list of the
-partitions of a drive, or the list of the filenames on a partition,
-depending on where you push the @key{TAB} key in the command-line. So it
-should be possible to determine which drive and which partition are what
-you seek for.
+Of course, to actually access the disks or partitions with GRUB, you
+need to use the device specification in a command, like @samp{root
+(fd0)} or @samp{unhide (hd0,2)}. To help you find out which number is a
+partition you want, the GRUB command-line (@pxref{Command line}) options
+have argument completion. That means that, for example, you only need to
+type @samp{root (}, followed by a @key{TAB}, and GRUB will display the
+list of drives, partitions, or filenames, so it should be quite easy to
+determine the name of your target partition, even with minimal knowledge
+of the syntax.
 
-Now the question is how to specify a file. Again, see this example:
+Note that GRUB does @emph{not} distinguish IDE from SCSI - it simply
+counts the drive numbers from zero, regardless of their type. Normally,
+any IDE drive number is less than any SCSI drive number, although that
+is not true if you change the boot sequence by swapping IDE and SCSI
+drives in your BIOS.
+
+Now the question is, how to specify a file? Again, see this example:
 
 @example
 (hd0,0)/vmlinuz
 @end example
 
-This specifies the file whose name is @samp{vmlinuz} on the first
-partition of the first hard disk drive. Isn't that easy? All you should
-do is type the absolute filename. If you are tired of typing the
-whole filename, press the @key{TAB} key. @kbd{@key{TAB}}
-completes the filename if it is unique. Otherwise, it displays the list
-of the candidates.
+This specifies the file named @samp{vmlinuz}, found on the first
+partition of the first hard disk drive. Note that the argument
+completion works with file names, too.
 
-OK, the next chapter introduces how to install GRUB on your drive.
+That was easy, admit it. Do read the next chapter, to find out how to
+actually install GRUB on your drive.
 
 
 @node Installation
 @chapter Installation
 
-At first, install GRUB by @code{make install} (@pxref{Obtaining and
-Building GRUB}) or by the GRUB package for your OS. If this is done,
-let's install GRUB on your drive. There are two ways to install GRUB:
-using the grub shell (@pxref{Invoking the grub shell}) on a UNIX-like OS
-and using the native Stage 2. The two ways are almost the same, but the
-main difference is that the grub shell might probe a wrong BIOS drive on
-a UNIX-like OS. If you install GRUB on a UNIX-like OS, make sure that
-you have a boot floppy disk so that you can rescue your computer when it
-crashes.
+First, you need to have GRUB itself properly installed on your system,
+(@pxref{Obtaining and Building GRUB}) either from the source tarball, or
+as a package for your OS.
 
-Anyhow, copy your GRUB images (@file{stage1}, @file{stage2}, and
-@file{*stage1_5}) to the directory @file{/boot/grub} before staring to
-install GRUB. Normally, the images are installed under the directory
-@file{/usr/share/grub/i386-pc}.
+To use GRUB, you need to install it on your drive. There are two ways of
+doing that - either using the grub shell (@pxref{Invoking the grub
+shell}) on a UNIX-like OS, or by using the native Stage 2. These are
+quite similar, however, the shell might probe a wrong BIOS drive, so
+better be careful.
+
+Also, if you install GRUB on a UNIX-like OS, please make sure that you
+have an emergency boot disk ready, so that you can rescue your computer
+if, by any chance, your hard drive becomes unusable (unbootable).
+
+GRUB comes with boot images, which are normally installed in the
+@file{/usr/share/grub/i386-pc} directory. You need to copy the files
+@file{stage1}, @file{stage2}, and @file{*stage1_5} to the directory
+@file{/boot/grub}.
 
 @menu
 * Installing GRUB on a floppy::
@@ -135,12 +152,17 @@ install GRUB. Normally, the images are installed under the directory
 @node Installing GRUB on a floppy
 @section Installing GRUB on a floppy
 
+To create a GRUB boot floppy, you need to take the @file{stage1} and
+@file{stage2} files from @file{/boot/grub} directory, and write them to
+the first and the second block of the floppy disk.
+
 @quotation
 @strong{Caution:} This procedure will destroy any data currently stored
 on the floppy.
 @end quotation
 
-It is easy to create a GRUB boot floppy. Just follow this below:
+On a UNIX like operating system, that is done with the following
+commands:
 
 @example
 @group
@@ -158,42 +180,43 @@ The device filename may be different. Consult the manual for your OS.
 
 @quotation
 @strong{Caution:} Installing GRUB's stage1 in this manner will erase the
-normal boot-sector used by an OS. GRUB can boot GNU Mach, Linux,
-FreeBSD, NetBSD, and OpenBSD directly, so this may be
-desired. Generally, it is a good idea to back up the first sector of the
-partition on which you are installing GRUB's stage1. This isn't as
-important if you are installing GRUB on the first sector of a hard disk,
-since it's easy to reinitialize it (by running @code{FDISK /MBR} from
-DOS).
+normal boot-sector used by an OS.
 @end quotation
 
-OK, now reboot your computer with a GRUB boot floppy inserted if you
-decide to install GRUB in the native environment. That's definitely
-desirable. However, if you don't want to reboot your computer, run the
-program @file{/sbin/grub} (@pxref{Invoking the grub shell}).
+GRUB can currently boot GNU Mach, Linux, FreeBSD, NetBSD, and OpenBSD
+directly, so using it on a boot sector should be okay. But generally, it
+would be a good idea to back up the first sector of the partition on
+which you are installing GRUB's stage1. This isn't as important if you
+are installing GRUB on the first sector of a hard disk, since it's easy
+to reinitialize it (e.g. by running @samp{FDISK /MBR} from DOS).
 
-In both, GRUB will show the command-line interface (@pxref{Command
+If you decide to install GRUB in the native environment, which is
+definitely desirable, you'll either need to create the GRUB boot disk,
+and reboot your computer with it, or run the grub shell (@pxref{Invoking
+the grub shell}) as the super-user (@samp{root}).
+
+Once started, GRUB will show the command-line interface (@pxref{Command
 line}). First, set the GRUB's @dfn{root device}@footnote{Note that
-GRUB's root device is not your OS's root partition; if you need to
-specify a root partition for your OS, add the argument into the command
-@command{kernel}.} to the partition which has your GRUB images, like
-this:
+GRUB's root device does not neccessarily have to be your OS's root
+partition; if you need to specify a root partition for your OS, add the
+argument into the command @command{kernel}.} to the partition which has
+your GRUB images, like this:
 
 @example
 grub> root (hd0,0)
 @end example
 
-If you are not sure where the images exist, use the command
-@command{find}:
+If you are not sure which partition actually holds these files, use the
+@command{find} command, like this:
 
 @example
 grub> find /boot/grub/stage1
 @end example
 
 This will search for the filename @file{/boot/grub/stage1} and show the
-devices which contain the image.
+devices which contain the file.
 
-If you set the root device correctly, run the command
+Once you've set the root device correctly, run the command
 @command{setup}:
 
 @example
@@ -213,12 +236,13 @@ If you install GRUB into a partition or a drive except for the first
 one, you must chain-load GRUB from another boot loader. Refer the manual
 for the boot loader to know how to chain-load GRUB.
 
-That's all. Now you can boot GRUB without a GRUB floppy, so let's see
-how to boot your operating systems from GRUB in the next chapter.
+That's all there is to it: now you can boot GRUB without a GRUB
+floppy. See the next chapter to find out how to boot your operating
+systems from GRUB.
 
 
-@node Boot
-@chapter Boot
+@node Booting
+@chapter Booting
 
 For Multiboot-compliant kernels, GRUB can load them in a consistent way,
 but, for some free operating systems, you need to use some OS-specific
@@ -269,8 +293,8 @@ the command @command{root}.
 Load the kernel image by the command @command{kernel}.
 
 @item
-Load the modules by the command @command{module} or
-@command{modulenounzip} as you need.
+If you need modules, load them with the command @command{module} or
+@command{modulenounzip}.
 
 @item
 Run the command @command{boot}.
@@ -342,14 +366,16 @@ Here, we describe some caveats on several operating systems.
 @subsection GNU/Hurd
 
 Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
-nothing special. But do not forget that you specify a root partition to
-the kernel.
+nothing special about it. But do not forget that you have to specify a
+root partition to the kernel.
 
-First, set GRUB's root device to the same drive as
-GNU/Hurd's. Probably @code{find /boot/gnumach} or such will help
-you.
+@enumerate
+@item
+Set GRUB's root device to the same drive as GNU/Hurd's. Probably the
+command @code{find /boot/gnumach} or similar can help you.
 
-Second, load the kernel and the module, like this:
+@item
+Load the kernel and the module, like this:
 
 @example
 @group
@@ -358,35 +384,40 @@ grub> module /boot/serverboot
 @end group
 @end example
 
-And, finally, run the command @command{boot}.
+@item
+Run the command @command{boot}.
+@end enumerate
 
 
 @node GNU/Linux
 @subsection GNU/Linux
 
-It is relatively easy to boot GNU/Linux from GRUB, because booting
-GNU/Linux somewhat resembles booting a Multiboot-compliant OS.
+It is relatively easy to boot GNU/Linux from GRUB, because it somewhat
+resembles booting a Multiboot-compliant OS.
 
-First, set GRUB's root device to the same drive as
-GNU/Linux's. Probably @code{find /vmlinuz} or such will help
-you.
+@enumerate
+@item
+Set GRUB's root device to the same drive as GNU/Linux's. Probably the
+command @code{find /vmlinuz} or similar can help you.
 
-Second, load the kernel:
+@item
+Load the kernel:
 
 @example
 grub> kernel /vmlinuz root=/dev/hda1
 @end example
 
 If you need to specify some kernel parameters, just append them to the
-command. An example is to set @option{vga} to @samp{ext}:
+command. For example, to set @option{vga} to @samp{ext}, do this:
 
 @example
 grub> kernel /vmlinuz root=/dev/hda1 vga=ext
 @end example
 
-See the documentation in the Linux source tree, for the complete
+See the documentation in the Linux source tree for the complete
 information on the available options.
 
+@item
 If you use initrd, execute the command @command{initrd} after
 @command{kernel}:
 
@@ -394,16 +425,17 @@ If you use initrd, execute the command @command{initrd} after
 grub> initrd /initrd
 @end example
 
-And, finally, run the command @command{boot}.
+@item
+Finally, run the command @command{boot}.
+@end enumerate
 
 
 @node FreeBSD
 @subsection FreeBSD
 
 GRUB can directly load both kernel formats, ELF and a.out, but this is
-deprecated, since FreeBSD's bootstrap interface is sometimes changed
-heavily and so GRUB can't guarantee to pass kernel parameters
-correctly.
+deprecated, since FreeBSD's bootstrap interface sometimes changes
+heavily, so GRUB can't guarantee to pass kernel parameters correctly.
 
 Thus, we'd recommend loading the very flexible loader
 @file{/boot/loader} instead. See this example:
@@ -420,42 +452,43 @@ grub> boot
 @node NetBSD
 @subsection NetBSD
 
-GRUB can load NetBSD a.out directly, by the following steps:
+GRUB can load NetBSD a.out directly, follow these steps:
 
 @enumerate
 @item
-Set GRUB's root device by @command{root}.
+Set GRUB's root device with @command{root}.
 
 @item
-Load the kernel by @command{kernel}.
+Load the kernel with @command{kernel}.
 
 @item
 Run @command{boot}.
 @end enumerate
 
 For now, however, GRUB doesn't allow you to pass kernel parameters, so
-it may be better to chain-load it instead. @xref{Chain-loading}, for
-more information.
+it may be better to chain-load it instead, for more information please
+see @xref{Chain-loading}.
 
 
 @node OpenBSD
 @subsection OpenBSD
 
-The boot instructions are exactly the same as NetBSD (@pxref{NetBSD}).
+The booting instructions are exactly the same as for NetBSD
+(@pxref{NetBSD}).
 
 
 @node DOS/Windows
 @subsection DOS/Windows
 
-GRUB doesn't support DOS or Windows directly, so you must chain-load
-them (@pxref{Chain-loading}). However, their boot loaders have some
-critical deficiencies, so the general methods may not be enough.
+GRUB doesn't support booting DOS or Windows directly, so you must
+chain-load them (@pxref{Chain-loading}). However, their boot loaders
+have some critical deficiencies, so the general methods may not be
+enough.
 
-If you have installed DOS (or Windows) on a non-first hard disk, the
-disk swapping technique is necessary, because it cannot boot any disks
-but the first one. The solution used in GRUB is the command
-@command{map} (@pxref{Command}). For example, if the installed disk is
-the second hard disk, swap it for the first hard disk:
+If you have installed DOS (or Windows) on a non-first hard disk, you
+have to use the disk swapping technique, because that OS cannot boot
+from any disks but the first one. The solution used in GRUB is the
+command @command{map} (@pxref{Commands}), like this:
 
 @example
 @group
@@ -464,23 +497,24 @@ grub> map (hd1) (hd0)
 @end group
 @end example
 
-This performs the @dfn{virtual} exchange between the two disks.
+This performs a @dfn{virtual} swap between your first and second hard
+drive.
 
 @strong{Caution:} This is effective only if DOS (or Windows) uses BIOS
 to access the swapped disks. If it uses a special driver for them,
-probably this doesn't work.
+it probably won't work.
 
 Another problem arises if you install more than one sets of DOS/Windows
-into one disk, because they could be confused if there are more than one
-primary partitions for DOS/Windows. Certainly you should avoid this way,
-but there is a solution if you do want to do so. Use the partition
+onto one disk, because they could be confused if there are more than one
+primary partitions for DOS/Windows. Certainly you should avoid doing
+this, but there is a solution if you do want to do so. Use the partition
 hiding/unhiding technique.
 
 If GRUB @dfn{hide}s a DOS (or Windows) partition, then it ignores the
 partition. If GRUB @dfn{unhide}s a DOS (or Windows) partition, it
-detects the partition. Thus, if you have installed DOS (or Windows) into
+detects the partition. Thus, if you have installed DOS (or Windows) on
 the first partition and the second partition of the first hard disk,
-follow these below when booting the first:
+to boot the first copy, do the following:
 
 @example
 @group
@@ -497,8 +531,8 @@ grub> boot
 @node SCO UnixWare
 @subsection SCO UnixWare
 
-The boot loader in SCO UnixWare is known by the fact that its signature
-is wrong. So you will need to specify the option @option{--force} to
+It is known that the signature in the boot loader for SCO UnixWare is
+wrong, so you will have to specify the option @option{--force} to
 @command{chainloader}, like this:
 
 @example
@@ -514,19 +548,18 @@ grub> boot
 @node Network
 @chapter Downloading OS images from a network
 
-Although GRUB is a disk-based boot loader, it provides you some network
+Although GRUB is a disk-based boot loader, it does provide some network
 support. To using the network support, you need to enable at least one
-network driver in the build process. See the file
-@file{netboot/README.netboot} in the source distribution, for more
-information.
+network driver in the build process. For more information please see
+@file{netboot/README.netboot} in the source distribution.
 
-First, you have to set up servers in your network. The servers GRUB
-requires are a server which assigns an IP address and a file server. The
-former is one of a BOOTP server, a DHCP server and a RARP server. RARP
-is deprecated, since it cannot serve much information. For the latter,
-only TFTP is supported at the moment. It is not necessary to run both
-the servers on one computer. How to configure the servers is beyond the
-scope of this document, so please refer to their own manuals.
+First, you have to set up servers in your network. GRUB requires a
+server that will assign an IP address, and a file server. The former is
+either BOOTP, DHCP or a RARP server (RARP is deprecated, since it cannot
+serve much information). For the latter, only TFTP is supported at the
+moment. It is not necessary to run both the servers on one computer. How
+to configure the servers is beyond the scope of this document, so please
+refer to the manuals specific to those protocols/servers.
 
 Second, run @command{bootp}, @command{dhcp} and @command{rarp} for
 BOOTP, DHCP and RARP, respectively. Each command will show an assigned
@@ -534,9 +567,9 @@ IP address, a netmask, an IP address for your TFTP server and a
 gateway. If any of the addresses is wrong or it causes an error,
 probably the configuration of your servers isn't set up properly.
 
-Lastly, download your OS images from your network. The network can be
-accessed by the network drive @samp{(nd)}. Everything else is similar to
-the normal instructions (@pxref{Boot}).
+Finally, download your OS images from your network. The network can be
+accessed using the network drive @samp{(nd)}. Everything else is very
+similar to the normal instructions (@pxref{Booting}).
 
 Here is an example:
 
@@ -559,51 +592,174 @@ grub> boot
 @node Configuration
 @chapter Configuration
 
-Probably it is bothersome to type the commands to boot your OS. So
-GRUB provides the menu interface (@pxref{Menu}) so that you can just
-select an item from the menu.
+You probably noticed that you need to type several commands to boot your
+OS. There's a solution to that - GRUB provides a menu interface
+(@pxref{Menu interface}) from which you can select an item (using arrow
+keys) which will do everything to boot an OS.
 
-To enable the menu, write a configuration file and save it in
-@file{/boot/grub/menu.lst}. Here is a sample configuration file:
+To enable the menu, you need a configuration file,
+@file{/boot/grub/menu.lst}. We'll analyze an example file.
+
+The file first contains some general settings, the menu interface
+related options. You can put these commands (@pxref{Menu-specific
+commands}) before any of the items (starting with @command{title}).
 
 @example
-@include menu.lst
+@group
+#
+# Sample boot menu configuration file
+#
+@end group
 @end example
 
-As you see, each entry begins with the special command @command{title} and
-the action is described after it. Note that you may not write the
-command @command{boot} at each of the entries, since GRUB automatically
-executes the command @command{boot} if it loads an OS successfully.
+As you may have guessed, these lines are comments. Lines starting with a
+hash character (@samp{#}), and blank lines, are ignored by GRUB.
 
-The argument for the command @command{title} is used to display the
-message about the entry. Since @command{title} displays the argument as
-it is, you can write any words as you like.
+@example
+@group
+# By default, boot the first entry.
+default 0
+@end group
+@end example
 
-You can write the menu interface specific commands (@pxref{Menu-specific
-commands}) before any @command{title}. There are several commands you
-can use in there, but we describe a few of them. The complete
-descriptions can be found in @ref{Command}.
+The first entry (here, counting starts with number zero, not one!) will
+be the default choice.
 
-The command @command{default} specifies which entry will be selected
-when you do not select an entry explicitly. The argument is the entry
-number. GRUB counts the entries from zero, so the number of the first
-entry is @samp{0}, the number of the second entry is @samp{1}, @dots{}
+@example
+# Boot automatically after 30 secs.
+timeout 30
+@end example
 
-The default entry will be executed when you do not select any entry
-during certain seconds, which is defined by the command
-@command{timeout}. So in the example above, the timeout is 30 seconds.
+As the comment says, GRUB will boot automatically in 30 seconds, unless
+interrupted with a keypress.
 
-The command @command{fallback} is used only if the default entry
-fails. If GRUB executes the default entry and it fails, then it executes
-the @dfn{fallback} entry. The argument is the same meaning as the one
-for @command{default}. This command is rarely used.
+@example
+@group
+# Fallback to the second entry.
+fallback 1
+@end group
+@end example
 
-In the last entry, @command{color} is used. This command is somewhat
-special because it can be used both in the command-line and in the
-menu (@pxref{General commands}). GRUB has such several commands. The
-command @command{color} changes the menu colors. It is best to run the
-command actually to understand what happens.
+If, for any reason, the default entry doesn't work, fall back to the
+second one (this is rarely used, for obvious reasons).
 
-We hope that you now understand how to use GRUB. To understand more
-about GRUB, see the User Reference Manual (@pxref{Introduction}). Have
-fun!
+Note that the complete descriptions of these commands, which are menu
+interface specific, can be found in @pxref{Menu-specific
+commands}. Other descriptions can be found in @ref{Commands}.
+
+Now, on to the actual OS definitions. You will see that each entry
+begins with a special command, @command{title}, and the action is
+described after it. Note that there is no command @command{boot} at the
+end of each item. That is because GRUB automatically executes
+@command{boot} if it loads other commands successfully.
+
+The argument for the command @command{title} is used to display a short
+title/description of the entry in the menu. Since @command{title}
+displays the argument as is, you can write basically anything in there.
+
+@example
+@group
+# For booting the GNU Hurd
+title  GNU/Hurd
+root   (hd0,0)
+kernel /boot/gnumach.gz root=hd0s1
+module /boot/serverboot.gz
+@end group
+@end example
+
+This boots GNU/Hurd from the first hard disk.
+
+@example
+@group
+# For booting Linux
+title  GNU/Linux
+kernel (hd1,0)/vmlinuz root=/dev/hdb1
+@end group
+@end example
+
+This boots GNU/Linux, but from the second hard disk.
+
+@example
+@group
+# For booting Mach (getting kernel from floppy)
+title  Utah Mach4 multiboot
+root   (hd0,2)
+pause  Insert the diskette now!!
+kernel (fd0)/boot/kernel root=hd0s3
+module (fd0)/boot/bootstrap
+@end group
+@end example
+
+This boots Mach with a kernel on a floppy, but the root filesystem at
+hd0s3. It also contains a @command{pause} line, which will cause GRUB to
+display a prompt and delay, before actually executing the rest of the
+commands and booting.
+
+@example
+@group
+# For booting FreeBSD
+title  FreeBSD
+root   (hd0,2,a)
+kernel /boot/loader
+@end group
+@end example
+
+This item will boot FreeBSD kernel loaded from the @samp{a} partition of
+the third @sc{pc} slice of the first hard disk.
+
+@example
+@group
+# For booting OS/2
+title OS/2
+root  (hd0,1)
+makeactive
+# chainload OS/2 bootloader from the first sector
+chainloader +1
+# This is similar to "chainload", but loads a specific file
+#chainloader /boot/chain.os2
+@end group
+@end example
+
+This will boot OS/2, using a chain-loader.
+
+@example
+@group
+# For booting Windows NT or Windows95
+title Windows NT / Windows 95 boot menu
+root        (hd0,0)
+makeactive
+chainloader +1
+# For loading DOS if Windows NT is installed
+# chainload /bootsect.dos
+@end group
+@end example
+
+The same as the above, just for Windows.
+
+@example
+@group
+# For installing GRUB into the hard disk
+title Install GRUB into the hard disk
+root    (hd0,0)
+setup   (hd0)
+@end group
+@end example
+
+This will just (re)install GRUB on the hard disk.
+
+@example
+# Change the colors.
+title Change the colors
+color light-green/brown blink-red/blue
+@end example
+
+In the last entry, the command @command{color} is used, to change the
+menu colors (try it!). This command is somewhat special, because it can
+be used both in the command-line and in the menu (@pxref{General
+commands}). GRUB has several such commands, see the user reference.
+
+We hope that you now understand how to use the basic features of
+GRUB. To learn more about GRUB, see the User Reference Manual
+(@pxref{Introduction}).
+
+Have fun!

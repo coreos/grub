@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Install GRUB on your drive.
-#   Copyright (C) 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -49,6 +49,8 @@ Install GRUB on your drive.
                           instead of the root directory.
   --grub-shell=FILE       use FILE as the grub shell.
 
+INSTALL_DEVICE can be a GRUB device name or a system device filename.
+
 Reports bugs to <bug-grub@gnu.org>.
 EOF
 }
@@ -58,26 +60,26 @@ EOF
 # This part is OS-specific.
 convert () {
     # First, check if the device file exists.
-    if test ! -e $1; then
+    if test ! -e "$1"; then
 	echo "$1: Not found." 1>&2
 	exit 1
     fi
 
     # Break the device name into the disk part and the partition part.
-    case $host_os in
+    case "$host_os" in
     linux*)
-	tmp_disk=`echo $1 | sed 's%[0-9]*$%%'`
-	tmp_part=`echo $1 | sed "s%$tmp_disk%%"` ;;
+	tmp_disk=`echo "$1" | sed 's%[0-9]*$%%'`
+	tmp_part=`echo "$1" | sed "s%$tmp_disk%%"` ;;
     gnu*)
-	tmp_disk=`echo $1 | sed 's%s[0-9]*[a-g]?%%'`
-	tmp_part=`echo $1 | sed "s%$tmp_disk%%"` ;;
+	tmp_disk=`echo "$1" | sed 's%s[0-9]*[a-g]?%%'`
+	tmp_part=`echo "$1" | sed "s%$tmp_disk%%"` ;;
     *)
 	echo "grub-install does not support your OS yet." 1>&2
 	exit 1 ;;
     esac
 
     # Get the drive name.
-    tmp_drive=`grep -v '^#' $device_map | grep $tmp_disk \
+    tmp_drive=`grep -v '^#' $device_map | grep "$tmp_disk" \
 	| sed 's%.*\(([hf]d[0-9][a-g0-9,]*)\).*%\1%'`
 
     # If not found, print an error message and exit.
@@ -89,23 +91,24 @@ convert () {
     if test "x$tmp_part" != x; then
 	# If a partition is specified, we need to translate it into the
 	# GRUB's syntax.
-	case $host_os in
+	case "$host_os" in
 	linux*)
-	    echo $tmp_drive | sed "s%)$%,`expr $tmp_part - 1`)%" ;;
+	    echo "$tmp_drive" | sed "s%)$%,`expr $tmp_part - 1`)%" ;;
 	gnu*)
-	    tmp_pc_slice=`echo $tmp_part | sed "s%s\([0-9]*\)[a-g]?%\1%"`
-	    tmp_bsd_partition=`echo $tmp | sed "s%s[0-9]*\([a-g]?\)%\1%"`
-	    tmp_drive=`echo $tmp_drive \
-		| sed "s%)%,\`expr $tmp_pc_slice - 1\`)%"`
+	    tmp_pc_slice=`echo "$tmp_part" | sed "s%s\([0-9]*\)[a-g]?%\1%"`
+	    tmp_bsd_partition=`echo "$tmp_part" \
+		| sed "s%s[0-9]*\([a-g]?\)%\1%"`
+	    tmp_drive=`echo "$tmp_drive" \
+		| sed "s%)%,\`expr "$tmp_pc_slice" - 1\`)%"`
 	    if test "x$tmp_bsd_partition" != x; then
-		tmp_drive=`echo $tmp_drive \
+		tmp_drive=`echo "$tmp_drive" \
 		    | sed "s%)%,\`sed y%abcdefg%0123456%\`)%"`
 	    fi
-	    echo $tmp_drive ;;
+	    echo "$tmp_drive" ;;
 	esac
     else
 	# If no partition is specified, just print the drive name.
-	echo $tmp_drive
+	echo "$tmp_drive"
     fi
 }
 
@@ -119,9 +122,9 @@ for option; do
 	echo "grub-install (GNU GRUB ${VERSION})"
 	exit 0 ;;
     --root-directory=*)
-	rootdir=`echo $option | sed 's/--root-directory=//'` ;;
+	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
     --grub-shell=*)
-	grub_shell=`echo $option | sed 's/--grub-shell=//'` ;;
+	grub_shell=`echo "$option" | sed 's/--grub-shell=//'` ;;
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
@@ -145,17 +148,17 @@ grubdir=${bootdir}/grub
 device_map=${grubdir}/device.map
 
 # Check if GRUB is installed
-if test ! -f $grub_shell; then
+if test ! -f "$grub_shell"; then
     echo "${grub_shell}: Not found." 1>&2
     exit 1
 fi
 
-if test ! -f $pkgdatadir/stage1; then
+if test ! -f "$pkgdatadir/stage1"; then
     echo "${pkgdatadir}/stage1: Not found." 1>&2
     exit 1
 fi
 
-if test ! -f $pkgdatadir/stage2; then
+if test ! -f "$pkgdatadir/stage2"; then
     echo "${pkgdatadir}/stage2: Not found." 1>&2
     exit 1
 fi
@@ -164,11 +167,11 @@ fi
 # Stage 1.5 does not exist.
 
 # Create the GRUB directory if it is not present.
-test -d $bootdir || mkdir $bootdir
-test -d $grubdir || mkdir $grubdir
+test -d "$bootdir" || mkdir "$bootdir"
+test -d "$grubdir" || mkdir "$grubdir"
 
 # Create the device map file if it is not present.
-if test ! -f $device_map; then
+if test ! -f "$device_map"; then
     # Create a safe temporary file.
     test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 
@@ -190,7 +193,7 @@ if test "x$install_device" = x; then
 else
     case "$install_device" in
     /dev/*)
-	install_drive=`convert $install_device`
+	install_drive=`convert "$install_device"`
 	# I don't know why, but some shells wouldn't die if exit is
 	# called in a function.
 	if test "x$install_drive" = x; then
@@ -208,15 +211,16 @@ fi
 # For now, this uses the program `df' to get the device name, but is
 # this really portable?
 root_device=`df ${rootdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
-root_drive=`convert $root_device`
+root_drive=`convert "$root_device"`
 if test "x$root_drive" = x; then
     exit 1
 fi
 
 # Check if the root directory exists in the same device as the grub
 # directory.
-grubdir_device=`df ${grubdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
-if test $grubdir_device != $root_device; then
+grubdir_device=`df ${grubdir} | grep /dev/ \
+    | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+if test "x$grubdir_device" != "x$root_device"; then
     # For now, cannot deal with this situation.
     cat <<EOF 1&>2
 You must set the root directory by the option --root-directory, because

@@ -331,7 +331,8 @@ init_device_map (void)
 
   /* Print something as the user does not think GRUB has been crashed.  */
   fprintf (stderr,
-	   "Probe devices to guess BIOS drives. This may take a long time.\n");
+	   "Probing devices to guess BIOS drives. "
+	   "This may take a long time.\n");
 
   if (device_map_file)
     /* Try to open the device map file to write the probed data.  */

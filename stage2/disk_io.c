@@ -358,12 +358,13 @@ make_saved_active (void)
   return 1;
 }
 
+/* Hide/Unhide CURRENT_PARTITION.  */
 int
 set_partition_hidden_flag (int hidden)
 {
-  if (saved_drive)
+  if (current_drive & 0x80)
     {
-      int part = saved_partition >> 16;
+      int part = current_partition >> 16;
 
       if (part > 3)
 	{
@@ -371,7 +372,7 @@ set_partition_hidden_flag (int hidden)
           return 0;
         }
 
-      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+      if (! rawread (current_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
         return 0;
 
       if (hidden)
@@ -380,7 +381,7 @@ set_partition_hidden_flag (int hidden)
 	PC_SLICE_TYPE (SCRATCHADDR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
       
       buf_track = -1;
-      if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
+      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
 		    0, 1, SCRATCHSEG))
 	{
 	  errnum = ERR_WRITE;

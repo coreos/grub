@@ -1,3 +1,58 @@
+2000-04-03  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/stage2.c (run_menu) [GRUB_UTIL]: Removed a nested
+	"#ifdef GRUB_UTIL" ... "#endif".
+	* stage2/builtins.c (unhide_func): Don't modify SAVED_DRIVE or
+	SAVED_PARTITION.
+	(hide_func): Likewise.
+	* stage2/disk_io.c (set_partition_hidden_flag): Use
+	CURRENT_DRIVE and CURRENT_PARTITION instead of SAVED_DRIVE and
+	SAVED_PARTITION. Check if bit 7 in CURRENT_DRIVE is non-zero
+	instead of if CURRENT_DRIVE is non-zero.
+
+	* grub/asmstub.c (init_device_map): Change the message
+	"Probe devices..." to "Probing devices...". Suggested by Neal H
+	Walfield.
+
+	* stage2/pc_slice.h (PC_SLICE_TYPE_HIDDEN_FLAG): Move the
+	definition before the PC partition type definitions.
+	(IS_PC_SLICE_TYPE_FAT): Clear the hidden flag in TYPE before
+	checking if TYPE is either of the FAT partition types. Reported
+	by Thomas Schweikle <tschweikle@fiducia.de>.
+	
+2000-04-02  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setup_func): Don't read a stage 1.5 to get
+	the size. Use FILEMAX instead.
+	If embed_func fails (i.e. ERRNUM is non-zero), goto fail.
+	
+2000-04-02  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Suggested by Neal H Walfield <neal@walfield.org>:
+	* stage2/common.c (init_bios_info): Removed a nested
+	"#ifndef STAGE1_5" ... "#endif".
+	* util/grub-install.in: Quote most of the references to
+	shell variables by double quotation marks.
+	(usage): Added a description about the argument.
+	* stage2/builtins.c (setup_func): Change each of the messages
+	when running embed_func and install_func. "Run" -> "Running".
+	If install_func succeeds, print a message ("Done.").
+
+	From Frank Mehnert <fm3@os.inf.tu-dresden.de>:
+	* stage2/char_io.c (convert_to_ascii) [!STAGE1_5]: Accept 'X'
+	and 'b' as well. If C is 'X' or 'b', then set MULT to 16.
+	(grub_printf): Set a new variable MASK to 0xFFFFFFFF by default.
+	Mask *DATAPTR with MASK when calling convert_to_ascii.
+	(grub_printf) [!STAGE1_5]: Added 'b' and 'X'. If C is 'b', set
+	MASK to 0xFF and fall through to the case 'u'. 'X' is the same
+	as 'x'.
+
+	From Josip Rodin <joy@cibalia.gkvk.hr>:
+	* grub.texi: Several awkward English sentences are fixed.
+	* tutorial.texi: Likewise.
+	* user-ref.texi: Likewise.
+	* appendices.texi: Likewise.
+	
 2000-03-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage1/depcomp: New file. Automake forces to install it. This

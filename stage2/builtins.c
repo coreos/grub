@@ -1294,23 +1294,12 @@ static struct builtin builtin_help =
 static int
 hide_func (char *arg, int flags)
 {
-  unsigned long tmp_drive = saved_drive;
-  unsigned long tmp_partition = saved_partition;
-  
   if (! set_device (arg))
     return 1;
 
-  saved_partition = current_partition;
-  saved_drive = current_drive;
   if (! set_partition_hidden_flag (1))
-    {
-      saved_drive = tmp_drive;
-      saved_partition = tmp_partition;
-      return 1;
-    }
+    return 1;
 
-  saved_drive = tmp_drive;
-  saved_partition = tmp_partition;
   return 0;
 }
 
@@ -2533,6 +2522,7 @@ setup_func (char *arg, int flags)
   char cmd_arg[256];
   char device[16];
   char *buffer = (char *) RAW_ADDR (0x100000);
+  
   static void sprint_device (int drive, int partition)
     {
       grub_sprintf (device, "(%cd%d",
@@ -2633,6 +2623,8 @@ setup_func (char *arg, int flags)
 	    /* OK, check if the Stage 1.5 exists.  */
 	    if (grub_open (stage1_5_map[i].name))
 	      {
+		int blocksize = (filemax + SECTOR_SIZE - 1) / SECTOR_SIZE;
+		
 		grub_close ();
 		grub_strcpy (config_file, stage2);
 		grub_strcpy (stage2, stage1_5_map[i].name);
@@ -2645,26 +2637,22 @@ setup_func (char *arg, int flags)
 		    grub_sprintf (cmd_arg, "%s %s", stage2, device);
 
 		    /* Notify what will be run.  */
-		    grub_printf (" Run \"embed %s\"\n", cmd_arg);
+		    grub_printf (" Running \"embed %s\"\n", cmd_arg);
 		    
 		    embed_func (cmd_arg, flags);
 		    if (! errnum)
 		      {
-			int len;
-
-			/* Need to know the size of the Stage 1.5.  */
-			grub_seek (0);
-			len = grub_read (buffer, -1);
 			/* Construct the blocklist representation.  */
-			grub_sprintf (stage2, "%s1+%d",
-				      device,
-				      (len + SECTOR_SIZE - 1) / SECTOR_SIZE);
+			grub_sprintf (stage2, "%s1+%d", device, blocksize);
+
 			/* Need to prepend the device name to the
 			   configuration filename.  */
 			sprint_device (image_drive, image_partition);
 			grub_sprintf (buffer, "%s%s", device, config_file);
 			grub_strcpy (config_file, buffer);
 		      }
+		    else
+		      goto fail;
 		  }
 		else if (grub_strcmp (fsys, "ffs") == 0)
 		  {
@@ -2705,7 +2693,7 @@ setup_func (char *arg, int flags)
 #endif /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
   
   /* Notify what will be run.  */
-  grub_printf (" Run \"install %s\"\n", cmd_arg);
+  grub_printf (" Running \"install %s\"\n", cmd_arg);
 
   /* Make sure that SAVED_DRIVE and SAVED_PARTITION are identical
      with IMAGE_DRIVE and IMAGE_PARTITION, respectively.  */
@@ -2713,7 +2701,8 @@ setup_func (char *arg, int flags)
   saved_partition = image_partition;
   
   /* Run the command.  */
-  install_func (cmd_arg, flags);
+  if (! install_func (cmd_arg, flags))
+    grub_printf ("Done.\n");
 
  fail:
   saved_drive = tmp_drive;
@@ -2872,23 +2861,12 @@ static struct builtin builtin_title =
 static int
 unhide_func (char *arg, int flags)
 {
-  unsigned long tmp_drive = saved_drive;
-  unsigned long tmp_partition = saved_partition;
-  
   if (! set_device (arg))
     return 1;
 
-  saved_partition = current_partition;
-  saved_drive = current_drive;
   if (! set_partition_hidden_flag (0))
-    {
-      saved_drive = tmp_drive;
-      saved_partition = tmp_partition;
-      return 1;
-    }
-  
-  saved_drive = tmp_drive;
-  saved_partition = tmp_partition;
+    return 1;
+
   return 0;
 }
 
