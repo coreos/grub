@@ -158,6 +158,8 @@ main (int argc, char *argv[])
   /* Initialize the default modules.  */
   grub_fat_init ();
   grub_ext2_init ();
+  grub_ufs_init ();
+  grub_minix_init ();
   grub_ls_init ();
   grub_boot_init ();
   grub_cmp_init ();
@@ -172,7 +174,9 @@ main (int argc, char *argv[])
 
   grub_util_biosdisk_fini ();
   grub_normal_fini ();
+  grub_ufs_fini ();
   grub_ext2_fini ();
+  grub_minix_fini ();
   grub_fat_fini ();
   grub_boot_fini ();
   grub_cmp_fini ();

@@ -289,11 +289,11 @@ grub_mkimage_LDFLAGS = -llzo
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
-	kern/file.c kern/fs.c kern/env.c
-CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-disk_i386_pc_partition.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o
-MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-disk_i386_pc_partition.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d
+	fs/ufs.c fs/minix.c kern/file.c kern/fs.c kern/env.c
+CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-disk_i386_pc_partition.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o
+MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-disk_i386_pc_partition.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-fs_ufs.d grub_setup-fs_minix.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d
 
-grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-disk_i386_pc_partition.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o
+grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-disk_i386_pc_partition.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_setup_LDFLAGS)
 
 grub_setup-util_i386_pc_grub_setup.o: util/i386/pc/grub-setup.c
@@ -384,6 +384,22 @@ grub_setup-fs_ext2.d: fs/ext2.c
 
 -include grub_setup-fs_ext2.d
 
+grub_setup-fs_ufs.o: fs/ufs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
+
+grub_setup-fs_ufs.d: fs/ufs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_setup-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_setup-fs_ufs.d
+
+grub_setup-fs_minix.o: fs/minix.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
+
+grub_setup-fs_minix.d: fs/minix.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_setup-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_setup-fs_minix.d
+
 grub_setup-kern_file.o: kern/file.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
@@ -415,13 +431,13 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
 	disk/i386/pc/partition.c kern/env.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
-	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
+	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c			\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c
-CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_i386_pc_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
-MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-disk_i386_pc_partition.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d
+CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_i386_pc_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
+MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-disk_i386_pc_partition.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d
 
-grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_i386_pc_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
+grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_i386_pc_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-kern_main.o: kern/main.c
@@ -592,6 +608,22 @@ grub_emu-fs_ext2.d: fs/ext2.c
 
 -include grub_emu-fs_ext2.d
 
+grub_emu-fs_ufs.o: fs/ufs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_ufs.d: fs/ufs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_emu-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_ufs.d
+
+grub_emu-fs_minix.o: fs/minix.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_minix.d: fs/minix.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_emu-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_minix.d
+
 grub_emu-normal_cmdline.o: normal/cmdline.c
 	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -684,7 +716,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod ufs.mod ext2.mod minix.mod normal.mod hello.mod \
 	 vga.mod font.mod _multiboot.mod ls.mod boot.mod cmp.mod cat.mod terminal.mod
 
 # For _chain.mod.
@@ -803,6 +835,84 @@ ext2_mod-fs_ext2.d: fs/ext2.c
 -include ext2_mod-fs_ext2.d
 
 ext2_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ufs.mod.
+ufs_mod_SOURCES = fs/ufs.c
+CLEANFILES += ufs.mod mod-ufs.o mod-ufs.c pre-ufs.o ufs_mod-fs_ufs.o def-ufs.lst und-ufs.lst
+MOSTLYCLEANFILES += ufs_mod-fs_ufs.d
+DEFSYMFILES += def-ufs.lst
+UNDSYMFILES += und-ufs.lst
+
+ufs.mod: pre-ufs.o mod-ufs.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-ufs.o: ufs_mod-fs_ufs.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-ufs.o: mod-ufs.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
+
+mod-ufs.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ufs' $< > $@ || (rm -f $@; exit 1)
+
+def-ufs.lst: pre-ufs.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ufs/' > $@
+
+und-ufs.lst: pre-ufs.o
+	echo 'ufs' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ufs_mod-fs_ufs.o: fs/ufs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
+
+ufs_mod-fs_ufs.d: fs/ufs.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,ufs_mod-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include ufs_mod-fs_ufs.d
+
+ufs_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For minix.mod.
+minix_mod_SOURCES = fs/minix.c
+CLEANFILES += minix.mod mod-minix.o mod-minix.c pre-minix.o minix_mod-fs_minix.o def-minix.lst und-minix.lst
+MOSTLYCLEANFILES += minix_mod-fs_minix.d
+DEFSYMFILES += def-minix.lst
+UNDSYMFILES += und-minix.lst
+
+minix.mod: pre-minix.o mod-minix.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-minix.o: minix_mod-fs_minix.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-minix.o: mod-minix.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
+
+mod-minix.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'minix' $< > $@ || (rm -f $@; exit 1)
+
+def-minix.lst: pre-minix.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 minix/' > $@
+
+und-minix.lst: pre-minix.o
+	echo 'minix' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+minix_mod-fs_minix.o: fs/minix.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
+
+minix_mod-fs_minix.d: fs/minix.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,minix_mod-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include minix_mod-fs_minix.d
+
+minix_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c

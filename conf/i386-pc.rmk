@@ -56,7 +56,7 @@ grub_mkimage_LDFLAGS = -llzo
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
-	kern/file.c kern/fs.c kern/env.c
+	fs/ufs.c fs/minix.c kern/file.c kern/fs.c kern/env.c
 
 # For grub
 grub_emu_SOURCES = kern/main.c kern/device.c				\
@@ -64,7 +64,7 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
 	disk/i386/pc/partition.c kern/env.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
-	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
+	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c			\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c
 grub_emu_LDFLAGS = -lncurses
@@ -73,7 +73,7 @@ grub_emu_LDFLAGS = -lncurses
 genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod ufs.mod ext2.mod minix.mod normal.mod hello.mod \
 	 vga.mod font.mod _multiboot.mod ls.mod boot.mod cmp.mod cat.mod terminal.mod
 
 # For _chain.mod.
@@ -87,6 +87,14 @@ fat_mod_CFLAGS = $(COMMON_CFLAGS)
 # For ext2.mod.
 ext2_mod_SOURCES = fs/ext2.c
 ext2_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ufs.mod.
+ufs_mod_SOURCES = fs/ufs.c
+ufs_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For minix.mod.
+minix_mod_SOURCES = fs/minix.c
+minix_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c

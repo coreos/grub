@@ -1,7 +1,7 @@
 /* fs.h - filesystem manager */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -70,6 +70,10 @@ void grub_fat_init (void);
 void grub_fat_fini (void);
 void grub_ext2_init (void);
 void grub_ext2_fini (void);
+void grub_ufs_init (void);
+void grub_ufs_fini (void);
+void grub_minix_init (void);
+void grub_minix_fini (void);
 #endif /* GRUB_UTIL */
 
 #endif /* ! GRUB_FS_HEADER */
