@@ -224,7 +224,7 @@ returnit:
       print_error();
     }
 
-  if (run_cmdline && get_cmdline(PACKAGE "> ", commands, cur_heap, 2048))
+  if (run_cmdline && get_cmdline (PACKAGE "> ", commands, cur_heap, 2048, 0))
     return 1;
 
   if (substring("boot", cur_heap) == 0 || (script && !*cur_heap))

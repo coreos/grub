@@ -143,7 +143,7 @@ grub_stage2 (void)
   /* Close off the file descriptors we used. */
   for (i = 0; i < NUM_DISKS; i ++)
     if (disks[i].flags)
-      close ((FILE *) disks[i].flags);
+      close (disks[i].flags);
 
   /* Release memory. */
   free (disks);
@@ -356,7 +356,7 @@ checkkey (void)
     ungetch (c);	/* FIXME: ncurses-1.9.9g ungetch is buggy.  */
   return c;
 #else
-  /* Just pretend they hit the space bar.
+  /* Just pretend they hit the space bar. */
   return ' ';
 #endif
 }
@@ -501,7 +501,7 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
 
   buf = (char *) (segment << 4);
   /* FIXME: handle EINTR */
-  if (read (fd, buf, nsec * SECTOR_SIZE, fp) != nsec * SECTOR_SIZE)
+  if (read (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
     return -1;
   return 0;
 }

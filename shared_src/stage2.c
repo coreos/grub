@@ -314,24 +314,30 @@ restart:
 	      if (c == 'p')
 		{
 		  /* Do password check here! */
-		  char *ptr = password;
-		  gotoxy(2, 22);
-		  printf("Entering password...  ");
-		  do
+		  char entered[32];
+		  char *pptr = password;
+
+		  gotoxy(1, 21);
+		  get_cmdline (" Password: ", commands, entered, 31, '*');
+
+		  while (! isspace (*pptr))
+		    pptr ++;
+		  if (! strcmp (password, entered))
 		    {
-		      if (isspace(*ptr))
-			{
-			  char *new_file = config_file;
-			  while (isspace(*ptr)) ptr++;
-			  while ((*(new_file++) = *(ptr++)) != 0);
-			  return;
-			}
-		      c = ASCII_CHAR(getkey());
+		      char *new_file = config_file;
+		      bzero (entered, sizeof (entered));
+		      while (isspace (*pptr))
+			pptr ++;
+		      while ((*(new_file ++) = *(pptr ++)) != 0);
+		      return;
 		    }
-		  while (*(ptr++) == c);
-		  printf("Failed!\n      Press any key to continue...");
-		  getkey();
-		  goto restart;
+		  else
+		    {
+		      bzero (entered, sizeof (entered));
+		      printf("Failed!\n      Press any key to continue...");
+		      getkey ();
+		      goto restart;
+		    }
 		}
 	    }
 	  else
@@ -379,8 +385,8 @@ restart:
 		      saved_partition = install_partition;
 		      current_drive = 0xFF;
 
-		      if (!get_cmdline(PACKAGE " edit> ", commands, new_heap,
-				       NEW_HEAPSIZE + 1))
+		      if (! get_cmdline(PACKAGE " edit> ", commands, new_heap,
+					NEW_HEAPSIZE + 1, 0))
 			{
 			  int j = 0;
 

@@ -80,7 +80,7 @@ convert_to_ascii (char *buf, int c,...)
 
 
 void
-printf (char *format,...)
+grub_printf (char *format,...)
 {
   int *dataptr = (int *) &format;
   char c, *ptr, str[16];
@@ -137,20 +137,24 @@ init_page (void)
    at once.  So, the whole screen is about 2000 characters, minus the
    PROMPT, and space for error and status lines, etc.  MAXLEN must be
    at least 1, and PROMPT and CMDLINE must be valid strings (not NULL
-   or zero-length). */
+   or zero-length).
+
+   If ECHO_CHAR is nonzero, echo it instead of the typed character. */
 int
-get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
+get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
+	     int echo_char)
 {
   int ystart, yend, xend, lpos, c;
   int plen = 0;
   int llen = 0;
 
   /* nested function definition for code simplicity */
-  static void cl_print (char *str)
+  static void cl_print (char *str, int echo_char)
   {
     while (*str != 0)
       {
-	putchar (*(str++));
+	putchar (echo_char ? echo_char : *str);
+	str ++;
 	if (++xend > 78)
 	  {
 	    xend = 0;
@@ -180,8 +184,8 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
     ystart = (getxy () & 0xff);
     yend = ystart;
     xend = 0;
-    cl_print (prompt);
-    cl_print (cmdline);
+    cl_print (prompt, 0);
+    cl_print (cmdline, echo_char);
     cl_setcpos ();
   }
 
@@ -324,7 +328,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	      cl_setcpos ();
 	      if (lpos != llen)
 		{
-		  cl_print (cmdline + lpos);
+		  cl_print (cmdline + lpos, echo_char);
 		  cl_setcpos ();
 		}
 	    }
@@ -348,7 +352,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 		{
 		  lpos = 0;
 		  cl_setcpos ();
-		  cl_print (cmdline);
+		  cl_print (cmdline, echo_char);
 		  cl_setcpos ();
 		}
 	    }
@@ -360,7 +364,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 		{
 		  cmdline[lpos] = c;
 		  cmdline[lpos + 1] = 0;
-		  cl_print (cmdline + lpos);
+		  cl_print (cmdline + lpos, echo_char);
 		  lpos ++;
 		  cl_setcpos ();
 		}
@@ -371,7 +375,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 		    cmdline[i + 1] = cmdline[i];
 		  cmdline[lpos] = c;
 		  cl_setcpos ();
-		  cl_print (cmdline + lpos);
+		  cl_print (cmdline + lpos, echo_char);
 		  lpos++;
 		  cl_setcpos ();
 		}
@@ -481,7 +485,7 @@ safe_parse_maxint (char **str_ptr, int *myint_ptr)
 
 
 int
-tolower (int c)
+grub_tolower (int c)
 {
   if (c >= 'A' && c <= 'Z')
     return (c + ('a' - 'A'));
@@ -492,7 +496,7 @@ tolower (int c)
 
 
 int
-isspace (int c)
+grub_isspace (int c)
 {
   if (c == ' ' || c == '\t' || c == '\n')
     return 1;
@@ -502,7 +506,7 @@ isspace (int c)
 
 
 int
-strncat (char *s1, char *s2, int n)
+grub_strncat (char *s1, char *s2, int n)
 {
   int i = -1;
 
@@ -518,6 +522,23 @@ strncat (char *s1, char *s2, int n)
   s1[i] = 0;
 
   return 1;
+}
+
+
+int
+grub_strcmp (char *s1, char *s2)
+{
+  while (*s1 || *s2)
+    {
+      if (*s1 < *s2)
+	return -1;
+      else if (*s1 > *s2)
+	return 1;
+      s1 ++;
+      s2 ++;
+    }
+
+  return 0;
 }
 
 
@@ -542,7 +563,7 @@ substring (char *s1, char *s2)
 
 
 char *
-strstr (char *s1, char *s2)
+grub_strstr (char *s1, char *s2)
 {
   char *ptr, *tmp;
 
@@ -586,7 +607,7 @@ memcheck (int start, int len)
 
 
 int
-bcopy (char *from, char *to, int len)
+grub_bcopy (char *from, char *to, int len)
 {
   if (memcheck ((int) to, len))
     {
@@ -614,7 +635,7 @@ bcopy (char *from, char *to, int len)
 
 
 int
-bzero (char *start, int len)
+grub_bzero (char *start, int len)
 {
   if (memcheck ((int) start, len))
     {

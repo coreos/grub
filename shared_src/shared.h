@@ -212,6 +212,7 @@ extern char *grub_scratch_mem;
 #define putchar grub_putchar
 #define strncat grub_strncat
 #define strstr grub_strstr
+#define strcmp grub_strcmp
 #define tolower grub_tolower
 #endif /* WITHOUT_LIBC_STUBS */
 
@@ -454,12 +455,14 @@ int grub_strncat (char *s1, char *s2, int n);
 int grub_bcopy (char *from, char *to, int len);
 int grub_bzero (char *start, int len);
 char *grub_strstr (char *s1, char *s2);
+int grub_strcmp (char *s1, char *s2);
 
 /* misc */
 void init_page (void);
 void print_error (void);
 char *convert_to_ascii (char *buf, int c,...);
-int get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen);
+int get_cmdline (char *prompt, char *commands, char *cmdline,
+		 int maxlen, int echo_char);
 int substring (char *s1, char *s2);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);

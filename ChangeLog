@@ -1,9 +1,29 @@
 1999-03-27  Gordon Matzigkeit  <gord@trick.fig.org>
 
+	* grub/asmstub.c (checkkey): Fix unterminated comment.
+
+	* shared_src/char_io.c (grub_printf): Renamed from printf.
+	(grub_tolower): Renamed from tolower.
+	(grub_isspace): Renamed from isspace.
+	(grub_strncat): Renamed from strncat.
+	(grub_strstr): Renamed from strstr.
+	(grub_bcopy): Renamed from bcopy.
+	(grub_bzero): Renamed from bzero.
+
+	From Bradford Hovinen:
+	* shared_src/char_io.c (get_cmdline): Add new argument to hide
+	password entry.
+	(grub_strcmp): New function.
+	* shared_src/shared.h (get_cmdline): Fix declaration.
+	(grub_strcmp): Declare.
+	* shared_src/stage2.c (run_menu): Use get_cmdline with an
+	ECHO_CHAR of `*'.  This protects against both brute-force and
+	sidelong-glance password cracking attempts.
+
 	* grub/main.c (usage): Display defaults for stage2 options.
 
-	* grub/asmstub.c [NO_REMAPPING_LIBC_FUNCTIONS]: Rename to
-	WITHOUT_LIBC_STUBS.
+	* grub/asmstub.c [WITHOUT_LIBC_STUBS]: Renamed from
+	NO_REMAPPING_LIBC_FUNCTIONS.
 	* grub/main.c: Likewise.
 	* shared_src/shared.h: Likewise.
 
