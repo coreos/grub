@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -22,11 +22,13 @@ AC_CANONICAL_HOST
 
 case "$host_cpu" in
   i[[3456]]86) host_cpu=i386 ;;
+  powerpc) ;;
   *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
 
 case "$host_cpu"-"$host_vendor" in
   i386-*) host_vendor=pc ;;
+  powerpc-*) host_vendor=ieee1275 ;;
   *) AC_MSG_ERROR([unsupported machine type]) ;;
 esac
 
@@ -80,9 +82,11 @@ AC_SUBST(CFLAGS)
 
 # Defined in aclocal.m4.
 pupa_ASM_USCORE
-pupa_CHECK_START_SYMBOL
-pupa_CHECK_BSS_START_SYMBOL
-pupa_CHECK_END_SYMBOL
+if test "x$host_cpu" = xi386; then
+  pupa_CHECK_START_SYMBOL
+  pupa_CHECK_BSS_START_SYMBOL
+  pupa_CHECK_END_SYMBOL
+fi
 
 if test "x$host_cpu" = xi386; then
   pupa_I386_ASM_PREFIX_REQUIREMENT
@@ -106,11 +110,11 @@ AC_PATH_PROG(RUBY, ruby)
 
 # For cross-compiling.
 if test "x$build" = "x$host"; then
-  BUILD_CC="$CC"
-  AC_SUBST(BUILD_CC)
-else
   AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc],
 		 [AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])])
+else
+  BUILD_CC="$CC"
+  AC_SUBST(BUILD_CC)
 fi
 
 # Test the C compiler for the build environment.
@@ -126,11 +130,13 @@ AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
 
-# Check LZO.
-AC_CHECK_LIB(lzo, __lzo_init2, ,
-	     AC_MSG_ERROR([LZO library version 1.02 or later is required]))
-AC_CHECK_FUNC(lzo1x_999_compress, , 
-	      [AC_MSG_ERROR([LZO1X-999 must be enabled])])
+# Check LZO when compiling for the i386.
+if test "x$host_cpu" = xi386; then
+  AC_CHECK_LIB(lzo, __lzo_init2, ,
+	       AC_MSG_ERROR([LZO library version 1.02 or later is required]))
+  AC_CHECK_FUNC(lzo1x_999_compress, , 
+	        [AC_MSG_ERROR([LZO1X-999 must be enabled])])
+fi
 
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"

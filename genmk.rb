@@ -170,7 +170,7 @@ class Utility
   def rule(sources)
     prefix = @name.to_var
     objs = sources.collect do |src|
-      raise "unknown source file `#{src}'" if /\.c$/ !~ src
+      raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
       prefix + '-' + src.to_obj
     end
     objs_str = objs.join(' ');

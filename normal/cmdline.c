@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -269,6 +269,7 @@ pupa_tab_complete (char *buf, int *restore)
 	    add_completion (devname, ")", "disks", print_simple_completion);
 	}
 
+      pupa_errno = PUPA_ERR_NONE;
       return 0;
     }
 
@@ -290,7 +291,7 @@ pupa_tab_complete (char *buf, int *restore)
     {
       /* Tab complete a command.  */
       len = pupa_strlen (pos);
-		
+      
       pupa_iterate_commands (iterate_commands);
     }
   else
@@ -330,7 +331,7 @@ pupa_tab_complete (char *buf, int *restore)
 		    {
 		      pos = partition + 1;
 		      len = pupa_strlen (pos);
-				    
+		      
 		      pupa_partition_iterate (partdev->disk, iterate_part);
 		      if (pupa_errno)
 			pupa_errno = 0;
@@ -363,7 +364,7 @@ pupa_tab_complete (char *buf, int *restore)
 	      char *dirfile;
 	      pos++;
 	      len = pupa_strlen (pos);
-
+	      
 	      dir = pupa_strchr (path, '/');
 	      if (!dir)
 		{

@@ -1363,6 +1363,7 @@ host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 
 case "$host_cpu" in
   i[3456]86) host_cpu=i386 ;;
+  powerpc) ;;
   *) { { echo "$as_me:$LINENO: error: unsupported CPU type" >&5
 echo "$as_me: error: unsupported CPU type" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -1370,6 +1371,7 @@ esac
 
 case "$host_cpu"-"$host_vendor" in
   i386-*) host_vendor=pc ;;
+  powerpc-*) host_vendor=ieee1275 ;;
   *) { { echo "$as_me:$LINENO: error: unsupported machine type" >&5
 echo "$as_me: error: unsupported machine type" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -2737,6 +2739,7 @@ fi
 echo "$as_me:$LINENO: result: $pupa_cv_asm_uscore" >&5
 echo "${ECHO_T}$pupa_cv_asm_uscore" >&6
 
+if test "x$host_cpu" = xi386; then
 
 echo "$as_me:$LINENO: checking if start is defined by the compiler" >&5
 echo $ECHO_N "checking if start is defined by the compiler... $ECHO_C" >&6
@@ -3131,6 +3134,7 @@ echo "$as_me: error: neither end nor _end is defined" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
+fi
 
 if test "x$host_cpu" = xi386; then
 
@@ -3877,9 +3881,6 @@ fi
 
 # For cross-compiling.
 if test "x$build" = "x$host"; then
-  BUILD_CC="$CC"
-
-else
   for ac_prog in gcc egcs cc
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -3922,6 +3923,9 @@ done
 test -n "$BUILD_CC" || BUILD_CC="{ { echo "$as_me:$LINENO: error: none of gcc, egcs and cc is found. set BUILD_CC manually." >&5
 echo "$as_me: error: none of gcc, egcs and cc is found. set BUILD_CC manually." >&2;}
    { (exit 1); exit 1; }; }"
+
+else
+  BUILD_CC="$CC"
 
 fi
 
@@ -5334,7 +5338,8 @@ _ACEOF
 
 
 
-# Check LZO.
+# Check LZO when compiling for the i386.
+if test "x$host_cpu" = xi386; then
 
 echo "$as_me:$LINENO: checking for __lzo_init2 in -llzo" >&5
 echo $ECHO_N "checking for __lzo_init2 in -llzo... $ECHO_C" >&6
@@ -5403,7 +5408,7 @@ echo "$as_me: error: LZO library version 1.02 or later is required" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-echo "$as_me:$LINENO: checking for lzo1x_999_compress" >&5
+  echo "$as_me:$LINENO: checking for lzo1x_999_compress" >&5
 echo $ECHO_N "checking for lzo1x_999_compress... $ECHO_C" >&6
 if test "${ac_cv_func_lzo1x_999_compress+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -5483,6 +5488,7 @@ echo "$as_me: error: LZO1X-999 must be enabled" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
+fi
 
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"

@@ -1,3 +1,41 @@
+2004-03-29  Marco Gerards  <metgerards@student.han.nl>
+
+	Add support for the newworld apple macintosh (PPC).  This has been
+	tested on the powerbook 2000 only.  It only adds support for
+	generic ieee1275 functions, console and disk support.  This should
+	be easy to port to other architectures with support for Open
+	Firmware.
+	
+	* configure.ac: Accept the powerpc as host_cpu.  In the case of
+	the powerpc cpu set the host_vendor to ieee1275.  Make sure the i386
+	specific tests are only executed while building for the i386.
+	Inverse test for crosscompile.
+	* genmk.rb (Utility): Allow assembler files.
+	* normal/cmdline.c (pupa_tab_complete): Reset pupa_errno.
+	* conf/powerpc-ieee1275.rmk: New file.
+	* disk/powerpc/ieee1275/ofdisk.c: Likewise.
+	* disk/powerpc/ieee1275/partition.c: Likewise.
+	* include/pupa/powerpc/ieee1275/biosdisk.h: Likewise.
+	* include/pupa/powerpc/ieee1275/console.h: Likewise.
+	* include/pupa/powerpc/ieee1275/partition.h: Likewise.
+	* include/pupa/powerpc/ieee1275/time.h: Likewise.
+	* include/pupa/powerpc/ieee1275/util/biosdisk.h: Likewise.
+	* include/pupa/powerpc/ieee1275/multiboot.h: Likewise.
+	* include/pupa/powerpc/ieee1275/loader.h
+	* include/pupa/powerpc/setjmp.h: Likewise.
+	* include/pupa/powerpc/types.h: Likewise.
+	* kern/powerpc/ieee1275/init.c: Likewise.
+	* kern/powerpc/ieee1275/openfw.c: Likewise.
+	* term/powerpc/ieee1275/ofconsole.c: Likewise.
+
+	These files were written by Johan Rydberg
+	(jrydberg@night.trouble.net) and I only modified them slightly.
+		
+	* boot/powerpc/ieee1275/cmain.c: New file.
+	* boot/powerpc/ieee1275/crt0.S: Likewise.
+	* boot/powerpc/ieee1275/ieee1275.c: Likewise.
+	* include/pupa/powerpc/ieee1275/ieee1275.h: Likewise.
+
 2004-03-14  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* Makefile.in: Update copyright.

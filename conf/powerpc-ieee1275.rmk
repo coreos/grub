@@ -1,0 +1,51 @@
+
+# -*- makefile -*-
+
+COMMON_ASFLAGS = -nostdinc -fno-builtin -D__ASSEMBLY__
+COMMON_CFLAGS = -fno-builtin -D__ASSEMBLY__
+
+# Images.
+
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+
+symlist.c: $(addprefix include/pupa/,$(kernel_img_HEADERS)) gensymlist.sh
+	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
+
+kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
+	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
+
+# Utilities.
+sbin_UTILITIES = pupaof
+bin_UTILITIES = pupa-emu
+noinst_UTILITIES = genmoddep
+
+# For pupa-emu
+pupa_emu_SOURCES = kern/main.c kern/device.c				\
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
+        kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
+	disk/powerpc/ieee1275/partition.c 					\
+	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
+	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
+	util/console.c util/pupa-emu.c util/misc.c util/i386/pc/getroot.c \
+	kern/env.c 
+pupa_emu_LDFLAGS = -lncurses
+
+pupaof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c \
+	boot/powerpc/ieee1275/crt0.S kern/main.c kern/device.c \
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
+	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
+	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \
+	kern/powerpc/ieee1275/openfw.c fs/ext2.c normal/cmdline.c \
+	normal/command.c normal/main.c normal/menu.c \
+	disk/powerpc/ieee1275/ofdisk.c disk/powerpc/ieee1275/partition.c \
+	kern/env.c normal/arg.c
+pupaof_HEADERS = pupa/powerpc/ieee1275/ieee1275.h
+pupaof_CFLAGS = $(COMMON_CFLAGS)
+pupaof_ASFLAGS = $(COMMON_ASFLAGS)
+pupaof_LDFLAGS = -Wl,-Ttext,0x200000,-Bstatic
+
+# For genmoddep.
+genmoddep_SOURCES = util/genmoddep.c
+
+# Modules.
