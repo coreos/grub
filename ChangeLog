@@ -1,5 +1,10 @@
 2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	From John Goerzen <jgoerzen@complete.org>:
+	* util/grub-install.in (convert): Added NetBSD support.
+	
+2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* util/grub-install.in: Set GRUB_PREFIX and BOOTDIR to "/grub"
 	and "${rootdir}" respectively in NetBSD.
 	

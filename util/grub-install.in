@@ -96,6 +96,12 @@ convert () {
 	    | sed "s%.*/r\{0,1\}[saw]d[0-9]\(s[0-9]*[a-h]\)%\1%" \
        	    | sed "s%.*/r\{0,1\}da[0-9]\(s[0-9]*[a-h]\)%\1%"`
 	;;
+    netbsd*)
+	tmp_disk=`echo "$1" | sed 's%r\{0,1\}\([sw]d[0-9]*\).*$%r\1d%' \
+	    | sed 's%r\{0,1\}\(fd[0-9]*\).*$%r\1a%'`
+	tmp_part=`echo "$1" \
+	    | sed "s%.*/r\{0,1\}[sw]d[0-9]\([abe-p]\)%\1%"`
+	;;
     *)
 	echo "grub-install does not support your OS yet." 1>&2
 	exit 1 ;;
@@ -141,6 +147,14 @@ convert () {
 	    if echo $tmp_part | grep "[a-h]$" >/dev/null; then
 		tmp_bsd_partition=`echo "$tmp_part" \
 		    | sed "s%s\{0,1\}[0-9]*\([a-h]\)$%\1%"`
+		tmp_drive=`echo "$tmp_drive" \
+		    | sed "s%)%,$tmp_bsd_partition)%"`
+	    fi
+	    echo "$tmp_drive" ;;
+	netbsd*)
+	    if echo $tmp_part | grep "^[abe-p]$" >/dev/null; then
+		tmp_bsd_partition=`echo "$tmp_part" \
+		    | sed "s%\([a-p]\)$%\1%"`
 		tmp_drive=`echo "$tmp_drive" \
 		    | sed "s%)%,$tmp_bsd_partition)%"`
 	    fi
