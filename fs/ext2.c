@@ -31,6 +31,11 @@
 #define	FILETYPE_DIRECTORY	2
 #define	FILETYPE_SYMLINK	7
 
+/* Filetype information as used in inodes.  */
+#define FILETYPE_INO_MASK	0170000
+#define FILETYPE_INO_DIRECTORY	0040000
+#define FILETYPE_INO_SYMLINK	0120000
+
 #include <grub/err.h>
 #include <grub/file.h>
 #include <grub/mm.h>
@@ -451,8 +456,14 @@ grub_ext2_find_file (struct grub_ext2_data *data, const char *path, int *ino)
 	      if (dirent.namelen == namesize 
 		  && !grub_strncmp (name, filename, namesize))
 		{
+		  /* Stat the inode.  */
+		  grub_ext2_read_inode (data, 
+					grub_le_to_cpu32 (dirent.inode),
+					inode);
+
 		  /* If this is a symlink, follow it.  */
-		  if (dirent.filetype == FILETYPE_SYMLINK)
+		  if ((grub_le_to_cpu16 (data->inode.mode) 
+		       & FILETYPE_INO_MASK) == FILETYPE_INO_SYMLINK)
 		    {
 		      /* XXX: Use malloc instead?  */
 		      char symlink[blocksize];
@@ -463,11 +474,6 @@ grub_ext2_find_file (struct grub_ext2_data *data, const char *path, int *ino)
 				      "too deep nesting of symlinks");
 			  goto fail;
 			}
-
-		      /* Read the symlink.  */
-		      grub_ext2_read_inode (data, 
-					    grub_le_to_cpu32 (dirent.inode),
-					    inode);
 
 		      /* If the filesize of the symlink is bigger than
 			 60 the symlink is stored in a separate block,
@@ -490,7 +496,7 @@ grub_ext2_find_file (struct grub_ext2_data *data, const char *path, int *ino)
 		      /* Check if the symlink is absolute or relative.  */
 		      if (symlink[0] == '/')
 			{
-			  grub_strncpy (fpath, symlink, EXT2_PATH_MAX);
+			  grub_strncpy (fpath, symlink + 1, EXT2_PATH_MAX);
 			  name = fpath;
 			  currinode = 2;
 			}
@@ -516,7 +522,7 @@ grub_ext2_find_file (struct grub_ext2_data *data, const char *path, int *ino)
 			      grub_free (bak);
 			    }
 			}
-		  
+
 		      fpos = 0;
 		      break;
 		    }
@@ -526,7 +532,8 @@ grub_ext2_find_file (struct grub_ext2_data *data, const char *path, int *ino)
 		      currinode = grub_le_to_cpu32 (dirent.inode);
 		      name = next;
 
-		      if (dirent.filetype != FILETYPE_DIRECTORY)
+		      if ((grub_le_to_cpu16 (data->inode.mode) 
+			   & FILETYPE_INO_MASK) != FILETYPE_INO_DIRECTORY)
 			{
 			  grub_error (GRUB_ERR_BAD_FILE_TYPE,
 				      "not a directory");
@@ -653,7 +660,8 @@ grub_ext2_dir (grub_device_t device, const char *path,
   if (grub_errno)
     goto fail;
 
-  if (!(grub_le_to_cpu16 (data->inode.mode) & 040000))
+  if ((grub_le_to_cpu16 (data->inode.mode)
+       & FILETYPE_INO_MASK) != FILETYPE_INO_DIRECTORY)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a directory");
       goto fail;
