@@ -89,6 +89,8 @@ void grub_amiga_partition_map_init (void);
 void grub_amiga_partition_map_fini (void);
 void grub_apple_partition_map_init (void);
 void grub_apple_partition_map_fini (void);
+void grub_sun_partition_map_init (void);
+void grub_sun_partition_map_fini (void);
 #endif
 
 static inline unsigned long

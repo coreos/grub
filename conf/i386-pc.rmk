@@ -61,7 +61,7 @@ grub_mkimage_LDFLAGS = -llzo
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c \
-	kern/partition.c partmap/amiga.c partmap/apple.c partmap/pc.c \
+	kern/partition.c partmap/amiga.c partmap/apple.c partmap/pc.c partmap/sun.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub
@@ -76,7 +76,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	kern/partition.c kern/rescue.c kern/term.c			\
 	normal/arg.c normal/cmdline.c normal/command.c normal/main.c	\
 	normal/menu.c normal/menu_entry.c				\
-	partmap/amiga.c	partmap/apple.c partmap/pc.c			\
+	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 	util/i386/pc/misc.c
@@ -90,7 +90,7 @@ genmoddep_SOURCES = util/genmoddep.c
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod multiboot.mod \
-	amiga.mod apple.mod pc.mod loopback.mod reboot.mod halt.mod help.mod
+	amiga.mod apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod help.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -210,6 +210,10 @@ apple_mod_CFLAGS = $(COMMON_CFLAGS)
 # For pc.mod
 pc_mod_SOURCES = partmap/pc.c
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For sun.mod
+sun_mod_SOURCES = partmap/sun.c
+sun_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For loopback.mod
 loopback_mod_SOURCES = disk/loopback.c

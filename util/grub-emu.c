@@ -172,6 +172,7 @@ main (int argc, char *argv[])
   grub_pc_partition_map_init ();
   grub_amiga_partition_map_init ();
   grub_apple_partition_map_init ();
+  grub_sun_partition_map_init ();
 
   /* Initialize the default modules.  */
   grub_iso9660_init ();
@@ -217,6 +218,7 @@ main (int argc, char *argv[])
   grub_amiga_partition_map_fini ();
   grub_pc_partition_map_fini ();
   grub_apple_partition_map_fini ();
+  grub_sun_partition_map_fini ();
 
   grub_machine_fini ();
   
