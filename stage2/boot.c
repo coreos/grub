@@ -312,7 +312,7 @@ load_image (void)
       printf (", loadaddr=0x%x, text%s=0x%x", cur_addr, str, text_len);
 
       /* read text, then read data */
-      if (grub_read ((char *) cur_addr, text_len) == text_len)
+      if (grub_read ((char *) RAW_ADDR (cur_addr), text_len) == text_len)
 	{
 	  cur_addr += text_len;
 
@@ -326,15 +326,16 @@ load_image (void)
 
 	      printf (", data=0x%x", data_len);
 
-	      if (grub_read ((char *) cur_addr, data_len) != data_len &&
-		  !errnum)
+	      if ((grub_read ((char *) RAW_ADDR (cur_addr), data_len)
+		   != data_len)
+		  && !errnum)
 		errnum = ERR_EXEC_FORMAT;
 	      cur_addr += data_len;
 	    }
 
 	  if (!errnum)
 	    {
-	      memset ((char *) cur_addr, 0, bss_len);
+	      memset ((char *) RAW_ADDR (cur_addr), 0, bss_len);
 	      cur_addr += bss_len;
 
 	      printf (", bss=0x%x", bss_len);
@@ -353,18 +354,21 @@ load_image (void)
 
 	  mbi.syms.a.addr = cur_addr;
 
-	  *(((int *) cur_addr)++) = pu.aout->a_syms;
-
+	  *((int *) RAW_ADDR (cur_addr)) = pu.aout->a_syms;
+	  cur_addr += sizeof (int);
+	  
 	  printf (", symtab=0x%x", pu.aout->a_syms);
 
-	  if (grub_read ((char *) cur_addr, pu.aout->a_syms) == pu.aout->a_syms)
+	  if (grub_read ((char *) RAW_ADDR (cur_addr), pu.aout->a_syms)
+	      == pu.aout->a_syms)
 	    {
 	      cur_addr += pu.aout->a_syms;
 	      mbi.syms.a.tabsize = pu.aout->a_syms;
 
 	      if (grub_read ((char *) &i, sizeof (int)) == sizeof (int))
 		{
-		  *(((int *) cur_addr)++) = i;
+		  *((int *) RAW_ADDR (cur_addr)) = i;
+		  cur_addr += sizeof (int);
 
 		  mbi.syms.a.strsize = i;
 
@@ -372,7 +376,8 @@ load_image (void)
 
 		  printf (", strtab=0x%x", i);
 
-		  symtab_err = (grub_read ((char *) cur_addr, i) != i);
+		  symtab_err = (grub_read ((char *) RAW_ADDR (cur_addr), i)
+				!= i);
 		  cur_addr += i;
 		}
 	      else

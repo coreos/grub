@@ -1,3 +1,8 @@
+1999-08-05  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/boot.c (load_image): Use RAW_ADDR macro when loading
+	an a.out kernel.
+	
 1999-08-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/asm.S: Make each of the addr32 and data32 prefixes
