@@ -1,3 +1,17 @@
+1999-09-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+        * multiboot.texi (BIOS device mapping techniques): New section.
+        Stolen from bios_mapping.txt in grub-0.5.
+        (Data comparison technique): New subsection.
+        (I/O restriction technique): Likewise.
+        (Example OS code): Rewrited from scratch.
+        
+1999-09-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+        * multiboot.texi: Rename Multiboot Standard to Multiboot
+        Specification and upgrade the version to 0.7. Many cleanups
+        are done.
+
 1999-10-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (setup_func): Save CURRENT_DRIVE and
