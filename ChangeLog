@@ -1,3 +1,8 @@
+2000-04-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setup_func): Use SECTOR_BITS instead of
+	SECTOR_SIZE to compute BLOCKSIZE.
+
 2000-04-26  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* netboot/depca.c: Copied from Etherboot-4.6.0.

@@ -2751,7 +2751,7 @@ setup_func (char *arg, int flags)
 	    /* OK, check if the Stage 1.5 exists.  */
 	    if (grub_open (stage1_5_map[i].name))
 	      {
-		int blocksize = (filemax + SECTOR_SIZE - 1) / SECTOR_SIZE;
+		int blocksize = (filemax + SECTOR_SIZE - 1) >> SECTOR_BITS;
 		
 		grub_close ();
 		grub_strcpy (config_file, stage2);
