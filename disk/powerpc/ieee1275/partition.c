@@ -31,7 +31,7 @@ grub_partition_iterate (grub_disk_t disk,
   struct grub_apple_part apart;
   struct grub_disk raw;
   int partno = 0;
-  int pos = GRUB_DISK_SECTOR_SIZE * 2;
+  int pos = GRUB_DISK_SECTOR_SIZE;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -68,7 +68,7 @@ grub_partition_iterate (grub_disk_t disk,
 grub_partition_t
 grub_partition_probe (grub_disk_t disk, const char *str)
 {
-  grub_partition_t p;
+  grub_partition_t p = 0;
   int partnum = 0;
   char *s = (char *) str;
 
@@ -88,7 +88,7 @@ grub_partition_probe (grub_disk_t disk, const char *str)
     }
   
   /* Get the partition number.  */
-  partnum = grub_strtoul (s, &s, 0);
+  partnum = grub_strtoul (s, 0, 10);
   if (grub_errno)
     {
       grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");

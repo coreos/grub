@@ -1,5 +1,16 @@
 2004-07-11  Marco Gerards  <metgerards@student.han.nl>
 
+	* disk/powerpc/ieee1275/partition.c (grub_partition_iterate): Skip
+	one block instead of two when looking for the initial partition.
+	(grub_partition_probe): Initialize the local variable `p' with 0.
+	Use base 10 for the grub_strtoul call.
+	* kern/misc.c (grub_strncpy): Fix off by one bug.  Eliminated the
+	need for one local variable.
+	(grub_strtoul): Don't add the new value to `num', instead of that
+	just assign it.
+
+2004-07-11  Marco Gerards  <metgerards@student.han.nl>
+
 	* conf/i386-pc.rmk (pkgdata_IMAGE): Add pxeboot.img.
 	(pxeboot_img_SOURCES): New variable.
 	(pxeboot_img_ASFLAGS): Likewise.

@@ -64,10 +64,9 @@ char *
 grub_strncpy (char *dest, const char *src, int c)
 {
   char *p = dest;
-  int pos = 0;
-
-  while ((*p++ = *src++) != '\0' && c > pos)
-    pos++;
+  
+  while ((*p++ = *src++) != '\0' && --c)
+    ;
 
   return dest;
 }
@@ -285,7 +284,7 @@ grub_strtoul (const char *str, char **end, int base)
 	  return 0;
 	}
 
-      num += num * base + digit;
+      num = num * base + digit;
       str++;
     }
 
