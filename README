@@ -18,8 +18,23 @@ you use the following utilities:
 * binutils 2.9.1.0.23 and later (Do not use early 2.9.1.0.x!)
 
   Binutils has changed the behavior of 16bit assembler between 2.9.1
-and 2.9.1.0.x, and we support only 2.9.1.0.x. It is available from
-ftp.XX.kernel.org (XX is the country code, such as `jp').
+and 2.9.1.0.x, and we support only 2.9.1.0.x and higher. It is available
+from ftp.varesearch.com:/pub/support/hjl/binutils.
+
+NOTE: you should check for the version of your binutils by the following
+command:
+
+$ gcc -Wl,-v 2>&1 | grep "GNU ld"
+
+This will show two versions, like this:
+
+GNU ld version 2.9.5 (with BFD 2.9.5.0.13)
+
+The latter is what you should see. If you have installed a recent
+version of binutils but this version number is not identical with it,
+GCC uses a fixed path rather than the environment variable PATH to find
+binutils. In this case, you need to install your binutils into the path
+which GCC sees (typically, /usr/bin), or reinstall GCC.
 
 
 These below are required when you develop GRUB or when you get it from

@@ -352,7 +352,7 @@ blocklist_default_start:
 			   sectors from the start of the disk, sector 0 */
 blocklist_default_len:
 			/* this is the number of sectors to read */
-	.word (STAGE2_SIZE + 511) / 512
+	.word (STAGE2_SIZE + 511) >> 9
 blocklist_default_seg:
 	.word 0x0800	/* this is the segment of the starting address
 			   to load the data into */

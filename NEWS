@@ -27,6 +27,8 @@ New in 0.5.93:
 * Killing (C-u and C-k), yanking (C-y) and manipulating the history
   (C-p and C-n) are supported.
 * The address argument for the command "install" is now optional.
+* Better completion support.
+* The command "cat" displays the contents of a file.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

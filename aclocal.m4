@@ -282,11 +282,11 @@ else
   grub_cv_check_uscore_end_symbol=no
 fi
 
+rm -f conftest*])
+
 if test "x$grub_cv_check_uscore_end_symbol" = xyes; then
   AC_DEFINE([HAVE_USCORE_END_SYMBOL])
 fi
-
-rm -f conftest*])
 
 AC_MSG_RESULT([$grub_cv_check_uscore_end_symbol])
 ])

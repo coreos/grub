@@ -211,7 +211,9 @@ loop:
 	    {
 	      if (print_possibilities < 0)
 		{
+#if 0
 		  putchar ('\n');
+#endif
 		  return 1;
 		}
 

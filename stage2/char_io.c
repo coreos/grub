@@ -300,6 +300,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	  if (lpos == llen)
 	    {
 	      grub_memmove (buf + lpos, str, l + 1);
+	      cl_setcpos ();
 	      cl_print (buf + lpos, echo_char);
 	      lpos += l;
 	      cl_setcpos ();
@@ -414,7 +415,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		  {
 		    /* Found, so insert COMPLETION_BUFFER.  */
 		    cl_insert (completion_buffer + lpos - i);
-		    
+
 		    if (ret > 0)
 		      {
 			/* There is more than one candidates, so print
@@ -432,7 +433,9 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		/* Restore the command-line.  */
 		if (equal_pos >= 0)
 		  buf[equal_pos] = '=';
-		cl_init ();
+		
+		if (ret)
+		  cl_init ();
 	      }
 	      break;
 	    case 1:		/* C-a go to beginning of line */

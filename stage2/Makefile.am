@@ -32,8 +32,7 @@ STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
 STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc
 
 STAGE1_5_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,2000
-STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1 \
-	-DCONFIG_FILE_ASM='.string "/boot/grub/stage2"'
+STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 
 # asm.S absolutely needs to come first!
 # For stage2 target.

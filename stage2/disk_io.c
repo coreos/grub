@@ -242,14 +242,13 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
 		  byte_len, buf);
 }
 
+#ifndef STAGE1_5
 static int
 sane_partition (void)
 {
-#ifndef STAGE1_5
   /* network drive */
   if (current_drive == 0x20)
     return 1;
-#endif
   
   if (!(current_partition & 0xFF000000uL)
       && (current_drive & 0xFFFFFF7F) < 8
@@ -263,6 +262,7 @@ sane_partition (void)
   errnum = ERR_DEV_VALUES;
   return 0;
 }
+#endif /* ! STAGE1_5 */
 
 static void
 attempt_mount (void)
@@ -415,6 +415,16 @@ check_BSD_parts (int flags)
 
 		  if (! do_completion)
 		    printf ("     BSD Partition num: \'%c\', ", part_no + 'a');
+		  else
+		    {
+		      char str[16];
+
+		      grub_sprintf (str, "%d,%c)",
+				    (current_partition >> 16) & 0xFF,
+				    part_no + 'a');
+		      print_a_completion (str);
+		    }
+		  
 		  check_and_print_mount ();
 		}
 	      else
@@ -446,7 +456,7 @@ check_BSD_parts (int flags)
 static char cur_part_desc[16];
 #endif
 
-static int
+int
 real_open_partition (int flags)
 {
   char mbr_buf[SECTOR_SIZE];
@@ -543,14 +553,30 @@ real_open_partition (int flags)
 		    {
 		      current_partition |= 0xFFFF;
 		      if (! do_completion)
-			printf ("   Partition num: %d, ", slice_no);
-		      if (! IS_PC_SLICE_TYPE_BSD (current_slice))
-			check_and_print_mount ();
+			{
+			  printf ("   Partition num: %d, ", slice_no);
+		      
+			  if (! IS_PC_SLICE_TYPE_BSD (current_slice))
+			    check_and_print_mount ();
+			  else
+			    check_BSD_parts (1);
+			}
 		      else
-			check_BSD_parts (1);
+			{
+			  if (! IS_PC_SLICE_TYPE_BSD (current_slice))
+			    {
+			      char str[8];
+
+			      grub_sprintf (str, "%d)", slice_no);
+			      print_a_completion (str);
+			    }
+			  else
+			    check_BSD_parts (1);
+			}
+		      
 		      errnum = ERR_NONE;
 		    }
-# endif /* STAGE1_5 */
+# endif /* ! STAGE1_5 */
 		  /*
 		   *  If we've found the right partition, we're done
 		   */
@@ -636,20 +662,42 @@ open_partition (void)
 }
 
 
+#ifndef STAGE1_5
 /* XX used for device completion in 'set_device' and 'print_completions' */
 static int incomplete, disk_choice;
 static enum
-  {
-    PART_UNSPECIFIED = 0,
-    PART_DISK,
-    PART_CHOSEN,
-  }
+{
+  PART_UNSPECIFIED = 0,
+  PART_DISK,
+  PART_CHOSEN,
+}
 part_choice;
-
+#endif /* ! STAGE1_5 */
 
 char *
 set_device (char *device)
 {
+#ifdef STAGE1_5
+    /* In Stage 1.5, the first 4 bytes of FILENAME has a device number.  */
+  int dev = *((int *) device);
+  int drive = dev >> 24;
+  int partition = dev & 0xFFFFFF;
+
+  if (drive == 0xFF)
+    {
+      current_drive = saved_drive;
+      current_partition = saved_partition;
+    }
+  else
+    {
+      current_drive = drive;
+      current_partition = partition;
+    }
+  
+  return device + sizeof (int);
+  
+#else /* ! STAGE1_5 */
+  
   /* The use of retval in this function is not really clean, but it works */
   char *retval = 0;
 
@@ -659,11 +707,9 @@ set_device (char *device)
   current_drive = saved_drive;
   current_partition = 0xFFFFFF;
 
-#ifndef STAGE1_5
   if (*device == '(' && !*(device + 1))
     /* user has given '(' only, let disk_choice handle what disks we have */
     return device + 1;
-#endif
 
   if (*device == '(' && *(++device))
     {
@@ -671,7 +717,6 @@ set_device (char *device)
 	{
 	  char ch = *device;
 
-#ifndef STAGE1_5
 	  if (*device == 'f' || *device == 'h')
 	    {
 	      /* user has given '([fh]', check for resp. add 'd' and
@@ -686,7 +731,6 @@ set_device (char *device)
 	      else if (*(device + 1) == 'd' && !*(device + 2))
 		return device + 2;
 	    }
-#endif
 
 	  if ((*device == 'f' || *device == 'h' || *device == 'n')
 	      && (device += 2, (*(device - 1) != 'd')))
@@ -846,6 +890,8 @@ set_device (char *device)
     }
 
   return retval;
+  
+#endif /* ! STAGE1_5 */
 }
 
 /*
@@ -901,6 +947,23 @@ set_bootdev (int hdbias)
 static char *
 setup_part (char *filename)
 {
+#ifdef STAGE1_5
+
+  if (! (filename = set_device (filename)))
+    {
+      current_drive = 0xFF;
+      return 0;
+    }
+  
+# ifndef NO_BLOCK_FILES
+  if (*filename != '/')
+    open_partition ();
+  else
+# endif /* ! NO_BLOCK_FILES */
+    open_device ();
+  
+#else /* ! STAGE1_5 */
+  
   /* FIXME: decide on syntax for blocklist vs. old-style vs. /dev/hd0s1 */
   /* Strip any leading /dev. */
   if (substring ("/dev/", filename) < 1)
@@ -913,11 +976,11 @@ setup_part (char *filename)
 	  current_drive = 0xFF;
 	  return 0;
 	}
-#ifndef NO_BLOCK_FILES
+# ifndef NO_BLOCK_FILES
       if (*filename != '/')
 	open_partition ();
       else
-#endif /* NO_BLOCK_FILES */
+# endif /* ! NO_BLOCK_FILES */
 	open_device ();
     }
   else if (saved_drive != current_drive
@@ -929,14 +992,16 @@ setup_part (char *filename)
       current_partition = saved_partition;
       /* allow for the error case of "no filesystem" after the partition
          is found.  This makes block files work fine on no filesystem */
-#ifndef NO_BLOCK_FILES
+# ifndef NO_BLOCK_FILES
       if (*filename != '/')
 	open_partition ();
       else
-#endif /* NO_BLOCK_FILES */
+# endif /* ! NO_BLOCK_FILES */
 	open_device ();
     }
-
+  
+#endif /* ! STAGE1_5 */
+  
   if (errnum && (*filename == '/' || errnum != ERR_FSYS_MOUNT))
     return 0;
   else
@@ -982,6 +1047,10 @@ print_fsys_type (void)
 void
 print_a_completion (char *name)
 {
+  /* If NAME is "." or "..", do not count it.  */
+  if (grub_strcmp (name, ".") == 0 || grub_strcmp (name, "..") == 0)
+    return;
+  
   if (do_completion)
     {
       char *buf = unique_string;
@@ -1053,6 +1122,9 @@ print_completions (int is_filename, int is_completion)
 	  grub_strcpy (buf, unique_string);
 	}
 
+      if (! is_completion)
+	grub_putchar ('\n');
+      
       do_completion = 0;
       return unique - 1;
     }
@@ -1082,12 +1154,9 @@ print_completions (int is_filename, int is_completion)
 		      if ((disk_choice || disk_no == current_drive)
 			  && ! get_diskinfo (disk_no, &geom))
 			{
-			  char dev_name[4];
+			  char dev_name[8];
 
-			  dev_name[0] = (i ? 'h' : 'f');
-			  dev_name[1] = 'd';
-			  dev_name[2] = '0' + j;
-			  dev_name[3] = '\0';
+			  grub_sprintf (dev_name, "%cd%d", i ? 'h' : 'f', j);
 			  print_a_completion (dev_name);
 			}
 		    }
@@ -1099,22 +1168,25 @@ print_completions (int is_filename, int is_completion)
 		  while (*ptr != '(')
 		    ptr--;
 		  ptr++;
-		  {
-		    char *u = unique_string;
-		    while ((*ptr++ = *u++))
-		      ;
-		    ptr--;
-		  }
-		  ptr--;
-		  if ((*(ptr - 2) == 'h') && (*(ptr - 1) == 'd')
-		      && ('0' <= *ptr && *ptr <= '8'))
-		    *(ptr + 1) = ',', *(ptr + 2) = '\0';
-		  if ((*(ptr - 2) == 'f') && (*(ptr - 1) == 'd')
-		      && ('0' <= *ptr && *ptr <= '8'))
-		    *(ptr + 1) = ')', *(ptr + 2) = '\0';
-		  
-		  grub_putchar ('\n');
+		  grub_strcpy (ptr, unique_string);
+		  if (unique == 1)
+		    {
+		      ptr += grub_strlen (ptr);
+		      if (*unique_string == 'h')
+			{
+			  *ptr++ = ',';
+			  *ptr = 0;
+			}
+		      else
+			{
+			  *ptr++ = ')';
+			  *ptr = 0;
+			}
+		    }
 		}
+
+	      if (! is_completion)
+		grub_putchar ('\n');
 	    }
 	  else
 	    {
@@ -1124,21 +1196,26 @@ print_completions (int is_filename, int is_completion)
 		  if (! is_completion)
 		    grub_printf (" Possible partitions are:\n");
 		  real_open_partition (1);
+		  
+		  if (is_completion && *unique_string)
+		    {
+		      ptr = buf;
+		      while (*ptr++ != ',')
+			;
+		      grub_strcpy (ptr, unique_string);
+		    }
 		}
 	      else
 		{
 		  if (open_partition ())
 		    {
-		      check_and_print_mount ();
-		      /* FIXME: Can talk about linux only, do we need
-			 to know about syntax here?  */
-		      ptr = buf;
-		      while (*ptr)
-			ptr++;
+		      unique = 1;
+		      ptr = buf + grub_strlen (buf);
 		      if (*(ptr - 1) != ')')
-			*ptr++ = ')';
-		      *ptr++ = '/';
-		      *ptr = '\0';
+			{
+			  *ptr++ = ')';
+			  *ptr = 0;
+			}
 		    }
 		}
 	    }
@@ -1158,16 +1235,33 @@ print_completions (int is_filename, int is_completion)
 		ptr--;
 	      ptr++;
 	      
+	      grub_strcpy (ptr, unique_string);
+	      
 	      if (unique == 1)
 		{
-		  char *u = unique_string + grub_strlen (unique_string);
-		  
-		  *u++ = ' ';
-		  *u = 0;
-		}
+		  ptr += grub_strlen (unique_string);
 
-	      grub_strcpy (ptr, unique_string);
+		  /* Check if the file UNIQUE_STRING is a directory.  */
+		  *ptr = '/';
+		  *(ptr + 1) = 0;
+		  
+		  dir (buf);
+		  
+		  /* Restore the original unique value.  */
+		  unique = 1;
+		  
+		  if (errnum)
+		    {
+		      /* Regular file */
+		      errnum = 0;
+		      *ptr = ' ';
+		      *(ptr + 1) = 0;
+		    }
+		}
 	    }
+	  
+	  if (! is_completion)
+	    grub_putchar ('\n');
 	}
       else
 	errnum = ERR_BAD_FILENAME;

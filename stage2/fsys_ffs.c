@@ -240,7 +240,9 @@ loop:
     {
       if (loc >= INODE->i_size)
 	{
+#if 0
 	  putchar ('\n');
+#endif
 
 	  if (print_possibilities < 0)
 	    return 1;

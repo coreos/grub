@@ -1,3 +1,81 @@
+1999-09-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (install_func): If the Stage 2 id in FILE is
+	not STAGE2_ID_STAGE2, set IS_STAGE1_5 to 1, otherwise to 0.
+	Use CONFIG_FILE_LOCATION to point to the location of the name of
+	a configuration file in Stage 2.
+	If the option `p' is present and IS_STAGE1_5 is non-zero, reset
+	the device information in CONFIG_FILE_LOCATION.
+	(cat_func): New function.
+	(builtin_cat): New variable.
+	(builtin_table): Added a pointer to BUILTIN_CAT.
+	(geometry_func): Call real_open_partition with the argument 1
+	after printing out the drive information.
+	* stage2/disk_io.c (real_open_partition): Made global.
+	[!STAGE1_5] (print_completions): In the command completion and
+	the filename completion, print a newline at the last if
+	IS_COMPLETION is zero.
+	* stage2/shared.h (real_open_partition): Declared.
+	* stage2/fsys_ext2fs.c (ext2fs_dir): Do not print a newline even
+	if PRINT_POSSIBILITIES is less than zero.
+	* stage2/fsys_ffs.c (ffs_dir): Likewise.
+	* stage2/fsys_fat.c (fat_dir): Likewise.
+	* stage2/fsys_minix.c (minix_dir): Likewise.
+	
+1999-09-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage1/stage1.S [!FFS_STAGE1_5] (blocklist_default_len): Do
+	not divide the size by 512, but shift the size to the right by
+	9 instead, because of a binutils-2.9.1.0.x bug.
+	* stage1/stage1_lba.S [!FFS_STAGE1_5] (blocklist_default_len):
+	Likewise.
+	* stage2/builtins.c (install_func): When installing Stage 1.5,
+	if set_device returns NULL, then set CURRENT_DRIVE to 0xFF and
+	CONFIG_FILE to PTR.
+	
+1999-09-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): In cl_insert, call
+	cl_setcpos before printing BUF, even if LPOS is equal to LLEN.
+	In the completion, if RET is zero, do not call cl_init.
+	* stage2/disk_io.c [!STAGE1_5] (print_completions): In the
+	filename completion, if UNIQUE is 1, check if UNIQUE_STRING is a
+	directory or not. If so, append '/' to BUF.
+	In the partition completion, if IS_COMPLETION is non-zero and
+	*UNIQUE_STRING is not NUL, copy UNIQUE_STRING to PTR. Do not
+	append '/'.
+	(real_open_partition) [!STAGE1_5]: If DO_COMPRESSION is non-zero,
+	call print_a_completion.
+	(check_BSD_parts) [!STAGE1_5]: Likewise.
+	[!STAGE1_5] (print_a_completion): Ignore NAME if it is "." or
+	"..".
+	
+1999-09-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_CHECK_USCORE_END_SYMBOL): Do not call
+	AC_DEFINE within AC_CACHE_VAL. Call it after AC_CACHE_VAL.
+	* stage2/Makefile.am (STAGE1_5_COMPILE): Do not define
+	CONFIG_FILE_ASM.
+	* stage2/asm.S (config_file) [STAGE1_5]: Set the first 4 bytes
+	to 0xffffffff and the following to "/boot/grub/stage2".
+	(config_file) [!STAGE1_5]: Set to "/boot/grub/menu.lst".
+	* stage2/builtins.c (install_func): Read a Stage 2 before
+	handling the `p' option.
+	If the `configfile' option is present and FILE is a Stage 2,
+	translate the device name to the internal device representation
+	and copy the result to STR.
+	* stage2/disk_io.c [STAGE1_5] (sane_partition): Eliminated.
+	[STAGE1_5] (incomplete): Likewise.
+	[STAGE1_5] (disk_choice): Likewise.
+	[STAGE1_5] (part_choice): Likewise.
+	(set_device) [STAGE1_5]: Assume that the first 4 bytes of DEVICE
+	is a device number. Set DRIVE to the forth byte of DEV and
+	PARTITION to the first 3 bytes of DEV. If DRIVE is 0xFF, set
+	CURRENT_DRIVE and CURRENT_PARTITION to SAVED_DRIVE and
+	SAVED_PARTITION, respectively. Otherwise set to DRIVE and
+	PARTITION, respectively.
+	(setup_part) [STAGE1_5]: Always call set_device.
+	
 1999-09-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_CHECK_END_SYMBOL): Add a missing

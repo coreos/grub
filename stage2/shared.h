@@ -640,6 +640,7 @@ int devread (int sector, int byte_offset, int byte_len, char *buf);
 /* Parse a device string and initialize the global parameters. */
 char *set_device (char *device);
 int open_device (void);
+int real_open_partition (int flags);
 int open_partition (void);
 
 /* Sets device to the one represented by the SAVED_* parameters. */

@@ -66,11 +66,12 @@ VARIABLE(stage2_id)
 VARIABLE(version_string)
 	.string VERSION
 VARIABLE(config_file)
-#ifndef CONFIG_FILE_ASM
+#ifndef STAGE1_5
 	.string "/boot/grub/menu.lst"
-#else   /* CONFIG_FILE_ASM */
-	CONFIG_FILE_ASM
-#endif  /* CONFIG_FILE_ASM */
+#else   /* STAGE1_5 */
+	.long	0xffffffff
+	.string "/boot/grub/stage2"
+#endif  /* STAGE1_5 */
 
 	/*
 	 *  Leave some breathing room for the config file name.

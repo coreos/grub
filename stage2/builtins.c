@@ -128,6 +128,37 @@ static struct builtin builtin_boot =
 };
 
 
+static int
+cat_func (char *arg, int flags)
+{
+  int len;
+  char *ptr;
+  
+  if (! grub_open (arg))
+    return 1;
+
+  len = grub_read ((char *) RAW_ADDR (0x100000), -1);
+  if (errnum)
+    return 1;
+  
+  ptr = (char *) RAW_ADDR (0x100000);
+  
+  while (len--)
+    grub_putchar (*ptr++);
+
+  return 0;
+}
+
+static struct builtin builtin_cat =
+{
+  "cat",
+  cat_func,
+  BUILTIN_CMDLINE,
+  "cat FILE",
+  "Print the contents of the file FILE."
+};
+
+
 /* chainloader */
 static int
 chainloader_func (char *arg, int flags)
@@ -502,6 +533,7 @@ geometry_func (char *arg, int flags)
 	       current_drive,
 	       geom.cylinders, geom.heads, geom.sectors,
 	       geom.total_sectors, msg);
+  real_open_partition (1);
   
   return 0;
 }
@@ -728,7 +760,11 @@ install_func (char *arg, int flags)
   int stage2_sect;
   char *ptr;
   int installaddr, installlist;
-
+  /* Point to the location of the name of a configuration file in Stage 2.  */
+  char *config_file_location;
+  /* If FILE is a Stage 1.5?  */
+  int is_stage1_5 = 0;
+  
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
   static void disk_read_savesect_func (int sector)
     {
@@ -926,33 +962,16 @@ install_func (char *arg, int flags)
 	/* Stage 2.  */
 	installaddr = 0x8000;
       else
-	/* Stage 1.5.  */
-	installaddr = 0x2000;
+	{
+	  /* Stage 1.5.  */
+	  installaddr = 0x2000;
+	  is_stage1_5 = 1;
+	}
     }
   
   *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
     = installaddr;
   
-  if (*ptr == 'p')
-    {
-      write_stage2_sect = 1;
-      *((long *) (SCRATCHADDR + STAGE2_INSTALLPART)) = current_partition;
-      ptr = skip_to (0, ptr);
-    }
-
-  if (*ptr)
-    {
-      char *str	= ((char *) (SCRATCHADDR + STAGE2_VER_STR_OFFS));
-
-      write_stage2_sect = 1;
-      /* Find a string for the configuration filename.  */
-      while (*(str++))
-	;
-      /* Copy the filename to Stage 2.  */
-      while ((*(str++) = *(ptr++)) != 0)
-	;
-    }
-
   /* Read the whole of Stage 2.  */
   filepos = 0;
   disk_read_hook = disk_read_blocklist_func;
@@ -960,6 +979,55 @@ install_func (char *arg, int flags)
     {
       disk_read_hook = 0;
       return 1;
+    }
+
+  /* Find a string for the configuration filename.  */
+  config_file_location = ((char *) (SCRATCHADDR + STAGE2_VER_STR_OFFS));
+  while (*(config_file_location++))
+    ;
+  
+  if (*ptr == 'p')
+    {
+      write_stage2_sect = 1;
+      *((long *) (SCRATCHADDR + STAGE2_INSTALLPART)) = current_partition;
+      if (is_stage1_5)
+	{
+	  /* Reset the device information in FILE if it is a Stage 1.5.  */
+	  int device = 0xFFFFFFFF;
+	  
+	  grub_memmove (config_file_location, (char *) &device,	sizeof (int));
+	}
+      
+      ptr = skip_to (0, ptr);
+    }
+
+  if (*ptr)
+    {
+      write_stage2_sect = 1;
+      
+      if (! is_stage1_5)
+	/* If it is a Stage 2, just copy PTR to CONFIG_FILE_LOCATION.  */
+	grub_strcpy (config_file_location, ptr);
+      else
+	{
+	  char *config_file;
+	  int device;
+	  int tmp = current_drive;
+	  
+	  /* Translate the external device syntax to the internal device
+	     syntax.  */
+	  if (! (config_file = set_device (ptr)))
+	    {
+	      errnum = 0;
+	      current_drive = 0xFF;
+	      config_file = ptr;
+	    }
+	  
+	  device = current_drive << 24 | current_partition;
+	  current_drive = tmp;
+	  grub_memmove (config_file_location, (char *) &device, sizeof (int));
+	  grub_strcpy (config_file_location + sizeof (int), config_file);
+	}
     }
 
   /* Clear the cache.  */
@@ -1507,6 +1575,7 @@ static struct builtin builtin_uppermem =
 struct builtin *builtin_table[] =
 {
   &builtin_boot,
+  &builtin_cat,
   &builtin_chainloader,
   &builtin_color,
   &builtin_configfile,
