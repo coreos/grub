@@ -1,5 +1,8 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 0.5.94:
+* Stage 1 supports both the LBA mode and the CHS mode.
+
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.
 * Support the partition ids for NetBSD and OpenBSD.
