@@ -97,8 +97,12 @@ extern char *grub_scratch_mem;
 #define PASSWORD_BUF		RAW_ADDR (0x78000)
 #define PASSWORD_BUFLEN		0x200
 
+/* THe buffer for the filename of "/boot/grub/default".  */
+#define DEFAULT_FILE_BUF	(PASSWORD_BUF + PASSWORD_BUFLEN)
+#define DEFAULT_FILE_BUFLEN	0x60
+
 /* The buffer for the command-line.  */
-#define CMDLINE_BUF		(PASSWORD_BUF + PASSWORD_BUFLEN)
+#define CMDLINE_BUF		(DEFAULT_FILE_BUF + DEFAULT_FILE_BUFLEN)
 #define CMDLINE_BUFLEN		MAX_CMDLINE
 
 /* The kill buffer for the command-line.  */
@@ -120,7 +124,7 @@ extern char *grub_scratch_mem;
 
 /* The buffer for the menu entries.  */
 #define MENU_BUF		(UNIQUE_BUF + UNIQUE_BUFLEN)
-#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - UNIQUE_BUF)
+#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - MENU_BUF)
 
 /* The size of the drive map.  */
 #define DRIVE_MAP_SIZE		8
@@ -585,7 +589,9 @@ extern void assign_device_name (int drive, const char *device);
 
 #ifndef STAGE1_5
 /* GUI interface variables. */
-extern int fallback_entry;
+# define MAX_FALLBACK_ENTRIES	8
+extern int fallback_entries[MAX_FALLBACK_ENTRIES];
+extern int fallback_entryno;
 extern int default_entry;
 extern int current_entryno;
 

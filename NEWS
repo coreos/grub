@@ -1,5 +1,12 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New:
+* The command "fallback" supports mutiple fallback entries.
+* The command "savedefault" supports an optional argument which
+  is the number of next boot entry or the special keyword `fallback'.
+* New utility "grub-set-default".
+* New section "Making your system robust" in the manual.
+
 New in 0.95 - 2004-06-13:
 * Add support for ReiserFS 3.
 * Fix support for FreeBSD 5.

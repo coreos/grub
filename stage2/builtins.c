@@ -59,7 +59,8 @@ int debug = 0;
 /* The default entry.  */
 int default_entry = 0;
 /* The fallback entry.  */
-int fallback_entry = -1;
+int fallback_entryno;
+int fallback_entries[MAX_FALLBACK_ENTRIES];
 /* The number of current entry.  */
 int current_entryno;
 /* The address for Multiboot command-line buffer.  */
@@ -97,7 +98,8 @@ init_config (void)
 {
   default_entry = 0;
   password = 0;
-  fallback_entry = -1;
+  fallback_entryno = -1;
+  fallback_entries[0] = -1;
   grub_timeout = -1;
 }
 
@@ -1143,9 +1145,35 @@ static struct builtin builtin_embed =
 static int
 fallback_func (char *arg, int flags)
 {
-  if (! safe_parse_maxint (&arg, &fallback_entry))
-    return 1;
+  int i = 0;
 
+  while (*arg)
+    {
+      int entry;
+      int j;
+      
+      if (! safe_parse_maxint (&arg, &entry))
+	return 1;
+
+      /* Remove duplications to prevent infinite looping.  */
+      for (j = 0; j < i; j++)
+	if (entry == fallback_entries[j])
+	  break;
+      if (j != i)
+	continue;
+      
+      fallback_entries[i++] = entry;
+      if (i == MAX_FALLBACK_ENTRIES)
+	break;
+      
+      arg = skip_to (0, arg);
+    }
+
+  if (i < MAX_FALLBACK_ENTRIES)
+    fallback_entries[i] = -1;
+
+  fallback_entryno = (i == 0) ? -1 : 0;
+  
   return 0;
 }
 
@@ -1155,7 +1183,7 @@ static struct builtin builtin_fallback =
   fallback_func,
   BUILTIN_MENU,
 #if 0
-  "fallback NUM",
+  "fallback NUM...",
   "Go into unattended boot mode: if the default boot entry has any"
   " errors, instead of waiting for the user to do anything, it"
   " immediately starts over using the NUM entry (same numbering as the"
@@ -3185,8 +3213,29 @@ static int
 savedefault_func (char *arg, int flags)
 {
 #if !defined(SUPPORT_DISKLESS) && !defined(GRUB_UTIL)
-  char buffer[512];
-  int *entryno_ptr;
+  unsigned long tmp_drive = saved_drive;
+  unsigned long tmp_partition = saved_partition;
+  char *default_file = (char *) DEFAULT_FILE_BUF;
+  char buf[10];
+  char sect[SECTOR_SIZE];
+  int entryno;
+  int sector_count = 0;
+  int saved_sectors[2];
+  int saved_offsets[2];
+  int saved_lengths[2];
+
+  /* Save sector information about at most two sectors.  */
+  auto void disk_read_savesect_func (int sector, int offset, int length);
+  void disk_read_savesect_func (int sector, int offset, int length)
+    {
+      if (sector_count < 2)
+	{
+	  saved_sectors[sector_count] = sector;
+	  saved_offsets[sector_count] = offset;
+	  saved_lengths[sector_count] = length;
+	}
+      sector_count++;
+    }
   
   /* This command is only useful when you boot an entry from the menu
      interface.  */
@@ -3195,46 +3244,110 @@ savedefault_func (char *arg, int flags)
       errnum = ERR_UNRECOGNIZED;
       return 1;
     }
-  
-  /* Get the geometry of the boot drive (i.e. the disk which contains
-     this stage2).  */
-  if (get_diskinfo (boot_drive, &buf_geom))
-    {
-      errnum = ERR_NO_DISK;
-      return 1;
-    }
 
-  /* Load the second sector of this stage2.  */
-  if (! rawread (boot_drive, install_second_sector, 0, SECTOR_SIZE, buffer))
+  /* Determine a saved entry number.  */
+  if (*arg)
     {
-      return 1;
-    }
+      if (grub_memcmp (arg, "fallback", sizeof ("fallback") - 1) == 0)
+	{
+	  int i;
+	  int index = 0;
+	  
+	  for (i = 0; i < MAX_FALLBACK_ENTRIES; i++)
+	    {
+	      if (fallback_entries[i] < 0)
+		break;
+	      if (fallback_entries[i] == current_entryno)
+		{
+		  index = i + 1;
+		  break;
+		}
+	    }
+	  
+	  if (index >= MAX_FALLBACK_ENTRIES || fallback_entries[index] < 0)
+	    {
+	      /* This is the last.  */
+	      errnum = ERR_BAD_ARGUMENT;
+	      return 1;
+	    }
 
-  /* Sanity check.  */
-  if (buffer[STAGE2_STAGE2_ID] != STAGE2_ID_STAGE2
-      || *((short *) (buffer + STAGE2_VER_MAJ_OFFS)) != COMPAT_VERSION)
-    {
-      errnum = ERR_BAD_VERSION;
-      return 1;
-    }
-  
-  entryno_ptr = (int *) (buffer + STAGE2_SAVED_ENTRYNO);
-
-  /* Check if the saved entry number differs from current entry number.  */
-  if (*entryno_ptr != current_entryno)
-    {
-      /* Overwrite the saved entry number.  */
-      *entryno_ptr = current_entryno;
-      
-      /* Save the image in the disk.  */
-      if (! rawwrite (boot_drive, install_second_sector, buffer))
+	  entryno = fallback_entries[index];
+	}
+      else if (! safe_parse_maxint (&arg, &entryno))
 	return 1;
+    }
+  else
+    entryno = current_entryno;
+
+  /* Open the default file.  */
+  saved_drive = boot_drive;
+  saved_partition = install_partition;
+  if (grub_open (default_file))
+    {
+      int len;
       
+      disk_read_hook = disk_read_savesect_func;
+      len = grub_read (buf, sizeof (buf));
+      disk_read_hook = 0;
+      grub_close ();
+      
+      if (len != sizeof (buf))
+	{
+	  /* This is too small. Do not modify the file manually, please!  */
+	  errnum = ERR_READ;
+	  goto fail;
+	}
+
+      if (sector_count > 2)
+	{
+	  /* Is this possible?! Too fragmented!  */
+	  errnum = ERR_FSYS_CORRUPT;
+	  goto fail;
+	}
+      
+      /* Set up a string to be written.  */
+      grub_memset (buf, '\n', sizeof (buf));
+      grub_sprintf (buf, "%d", entryno);
+      
+      if (saved_lengths[0] < sizeof (buf))
+	{
+	  /* The file is anchored to another file and the first few bytes
+	     are spanned in two sectors. Uggh...  */
+	  if (! rawread (current_drive, saved_sectors[0], 0, SECTOR_SIZE,
+			 sect))
+	    goto fail;
+	  grub_memmove (sect + saved_offsets[0], buf, saved_lengths[0]);
+	  if (! rawwrite (current_drive, saved_sectors[0], sect))
+	    goto fail;
+
+	  if (! rawread (current_drive, saved_sectors[1], 0, SECTOR_SIZE,
+			 sect))
+	    goto fail;
+	  grub_memmove (sect + saved_offsets[1],
+			buf + saved_lengths[0],
+			sizeof (buf) - saved_lengths[0]);
+	  if (! rawwrite (current_drive, saved_sectors[1], sect))
+	    goto fail;
+	}
+      else
+	{
+	  /* This is a simple case. It fits into a single sector.  */
+	  if (! rawread (current_drive, saved_sectors[0], 0, SECTOR_SIZE,
+			 sect))
+	    goto fail;
+	  grub_memmove (sect + saved_offsets[0], buf, sizeof (buf));
+	  if (! rawwrite (current_drive, saved_sectors[0], sect))
+	    goto fail;
+	}
+
       /* Clear the cache.  */
       buf_track = -1;
     }
 
-  return 0;
+ fail:
+  saved_drive = tmp_drive;
+  saved_partition = tmp_partition;
+  return errnum;
 #else /* ! SUPPORT_DISKLESS && ! GRUB_UTIL */
   errnum = ERR_UNRECOGNIZED;
   return 1;
@@ -3246,8 +3359,10 @@ static struct builtin builtin_savedefault =
   "savedefault",
   savedefault_func,
   BUILTIN_CMDLINE,
-  "savedefault",
-  "Save the current entry as the default boot entry."
+  "savedefault [NUM | `fallback']",
+  "Save the current entry as the default boot entry if no argument is"
+  " specified. If a number is specified, this number is saved. If"
+  " `fallback' is used, next fallback entry is saved."
 };
 
 

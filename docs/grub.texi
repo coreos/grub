@@ -27,6 +27,8 @@
 * grub-terminfo: (grub)Invoking grub-terminfo.  Generate a terminfo
                                                 command from a
                                                 terminfo name
+* grub-set-default: (grub)Invoking grub-set-default.    Set a default boot
+                                                        entry
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
 @end direntry
 
@@ -113,6 +115,7 @@ This edition documents version @value{VERSION}.
 * Invoking grub-install::       How to use the GRUB installer
 * Invoking grub-md5-crypt::     How to generate a cryptic password
 * Invoking grub-terminfo::      How to generate a terminfo command
+* Invoking grub-set-default::   How to set a default boot entry
 * Invoking mbchk::              How to use the Multiboot checker
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
@@ -475,11 +478,14 @@ if, by any chance, your hard drive becomes unusable (unbootable).
 GRUB comes with boot images, which are normally put in the directory
 @file{/usr/share/grub/i386-pc}. If you do not use grub-install, then
 you need to copy the files @file{stage1}, @file{stage2}, and
-@file{*stage1_5} to the directory @file{/boot/grub}. Hereafter, the
-directory where GRUB images are initially placed (normally
-@file{/usr/share/grub/i386-pc}) will be called the @dfn{image
-directory}, and the directory where the boot loader needs to find them
-(usually @file{/boot/grub}) will be called the @dfn{boot directory}.
+@file{*stage1_5} to the directory @file{/boot/grub}, and run the
+@command{grub-set-default} (@pxref{Invoking grub-set-default}) if you
+intend to use @samp{default saved} (@pxref{default}) in your
+configuration file. Hereafter, the directory where GRUB images are
+initially placed (normally @file{/usr/share/grub/i386-pc}) will be
+called the @dfn{image directory}, and the directory where the boot
+loader needs to find them (usually @file{/boot/grub}) will be called
+the @dfn{boot directory}.
 
 @menu
 * Creating a GRUB boot floppy::
@@ -734,6 +740,7 @@ magic.
 @menu
 * General boot methods::        How to boot OSes with GRUB generally
 * OS-specific notes::           Notes on some operating systems
+* Making your system robust::   How to make your system robust
 @end menu
 
 
@@ -1066,6 +1073,184 @@ grub> @kbd{chainloader +4}
 grub> @kbd{boot}
 @end group
 @end example
+
+
+@node Making your system robust
+@section How to make your system robust
+
+When you test a new kernel or a new OS, it is important to make sure
+that your computer can boot even if the new system is unbootable. This
+is crucial especially if you maintain servers or remote systems. To
+accomplish this goal, you need to set up two things:
+
+@enumerate
+@item
+You must maintain a system which is always bootable. For instance, if
+you test a new kernel, you need to keep a working kernel in a
+different place. And, it would sometimes be very nice to even have a
+complete copy of a working system in a different partition or disk.
+
+@item
+You must direct GRUB to boot a working system when the new system
+fails. This is possible with the @dfn{fallback} system in GRUB.
+@end enumerate
+
+The former requirement is very specific to each OS, so this
+documentation does not cover that topic. It is better to consult some
+backup tools.
+
+So let's see the GRUB part. There are two possibilities: one of them
+is quite simple but not very robust, and the other is a bit complex to
+set up but probably the best solution to make sure that your system
+can start as long as GRUB itself is bootable.
+
+@menu
+* Booting once-only::
+* Booting fallback systems::
+@end menu
+
+
+@node Booting once-only
+@subsection Booting once-only
+
+You can teach GRUB to boot an entry only at next boot time. Suppose
+that your have an old kernel @file{old_kernel} and a new kernel
+@file{new_kernel}. You know that @file{old_kernel} can boot
+your system correctly, and you want to test @file{new_kernel}.
+
+To ensure that your system will go back to the old kernel even if the
+new kernel fails (e.g. it panics), you can specify that GRUB should
+try the new kernel only once and boot the old kernel after that.
+
+First, modify your configuration file. Here is an example:
+
+@group
+@example
+default saved        # This is important!!!
+timeout 10
+
+title the old kernel
+root (hd0,0)
+kernel /old_kernel
+savedefault
+
+title the new kernel
+root (hd0,0)
+kernel /new_kernel
+savedefault 0         # This is important!!!
+@end example
+@end group
+
+Note that this configuration file uses @samp{default saved}
+(@pxref{default}) at the head and @samp{savedefault 0}
+(@pxref{savedefault}) in the entry for the new kernel. This means
+that GRUB boots a saved entry by default, and booting the entry for the
+new kernel saves @samp{0} as the saved entry.
+
+With this configuration file, after all, GRUB always tries to boot the
+old kernel after it booted the new one, because @samp{0} is the entry
+of @code{the old kernel}.
+
+The next step is to tell GRUB to boot the new kernel at next boot
+time. For this, execute @command{grub-set-default} (@pxref{Invoking
+grub-set-default}):
+
+@example
+# @kbd{grub-set-default 1}
+@end example
+
+This command sets the saved entry to @samp{1}, that is, to the new
+kernel.
+
+This method is useful, but still not very robust, because GRUB stops
+booting, if there is any error in the boot entry, such that the new
+kernel has an invalid executable format. Thus, it it even better to
+use the @dfn{fallback} mechanism of GRUB. Look at next subsection for
+this feature.
+
+
+@node Booting fallback systems
+@subsection Booting fallback systems
+
+GRUB supports a fallback mechanism of booting one or more other
+entries if a default boot entry fails. You can specify multiple
+fallback entries if you wish.
+
+Suppose that you have three systems, @samp{A}, @samp{B} and
+@samp{C}. @samp{A} is a system which you want to boot by
+default. @samp{B} is a backup system which is supposed to boot
+safely. @samp{C} is another backup system which is used in case where
+@samp{B} is broken.
+
+Then you may want GRUB to boot the first system which is bootable
+among @samp{A}, @samp{B} and @samp{C}. A configuration file can be
+written in this way:
+
+@group
+@example
+default saved        # This is important!!!
+timeout 10
+fallback 1 2         # This is important!!!
+
+title A
+root (hd0,0)
+kernel /kernel
+savedefault fallback # This is important!!!
+
+title B
+root (hd1,0)
+kernel /kernel
+savedefault fallback # This is important!!!
+
+title C
+root (hd2,0)
+kernel /kernel
+savedefault
+@end example
+@end group
+
+Note that @samp{default saved} (@pxref{default}), @samp{fallback 1 2}
+and @samp{savedefault fallback} are used. GRUB will boot a saved entry
+by default and save a fallback entry as next boot entry with this
+configuration.
+
+When GRUB tries to boot @samp{A}, GRUB saves @samp{1} as next boot
+entry, because the command @command{fallback} specifies that @samp{1}
+is the first fallback entry. The entry @samp{1} is @samp{B}, so GRUB
+will try to boot @samp{B} at next boot time.
+
+Likewise, when GRUB tries to boot @samp{B}, GRUB saves @samp{2} as
+next boot entry, because @command{fallback} specifies @samp{2} as next
+fallback entry. This makes sure that GRUB will boot @samp{C} after
+booting @samp{B}.
+
+It is noteworthy that GRUB uses fallback entries both when GRUB
+itself fails in booting an entry and when @samp{A} or @samp{B} fails
+in starting up your system. So this solution ensures that your system
+is started even if GRUB cannot find your kernel or if your kernel
+panics.
+
+However, you need to run @command{grub-set-default} (@pxref{Invoking
+grub-set-default}) when @samp{A} starts correctly or you fix @samp{A}
+after it crashes, since GRUB always sets next boot entry to a fallback
+entry. You should run this command in a startup script such as
+@file{rc.local} to boot @samp{A} by default:
+
+@example
+# @kbd{grub-set-default 0}
+@end example
+
+where @samp{0} is the number of the boot entry for the system
+@samp{A}.
+
+If you want to see what is current default entry, you can look at the
+file @file{/boot/grub/default} (or @file{/grub/default} in
+some systems). Because this file is plain-text, you can just
+@command{cat} this file. But it is strongly recommended @strong{not to
+modify this file directly}, because GRUB may fail in saving a default
+entry in this file, if you change this file in an unintended
+manner. Therefore, you should use @command{grub-set-default} when you
+need to change the default entry.
 
 
 @node Configuration
@@ -1952,12 +2137,13 @@ default entry is the entry saved with the command
 @node fallback
 @subsection fallback
 
-@deffn Command fallback num
+@deffn Command fallback num...
 Go into unattended boot mode: if the default boot entry has any errors,
 instead of waiting for the user to do something, immediately start
 over using the @var{num} entry (same numbering as the @code{default}
 command (@pxref{default})). This obviously won't help if the machine was
-rebooted by a kernel that GRUB loaded.
+rebooted by a kernel that GRUB loaded. You can specify multiple
+fallback entry numbers.
 @end deffn
 
 
@@ -2962,8 +3148,9 @@ derived from attempting the mount will @emph{not} work correctly.
 @node savedefault
 @subsection savedefault
 
-@deffn Command savedefault
-Save the current menu entry as a default entry. Here is an example:
+@deffn Command savedefault num
+Save the current menu entry or @var{num} if specified as a default
+entry. Here is an example:
 
 @example
 @group
@@ -2984,7 +3171,13 @@ savedefault
 @end example
 
 With this configuration, GRUB will choose the entry booted previously as
-the default entry. See also @ref{default}.
+the default entry.
+
+You can specify @samp{fallback} instead of a number. Then, next
+fallback entry is saved. Next fallback entry is chosen from fallback
+entries. Normally, this will be the first entry in fallback ones.
+
+See also @ref{default} and @ref{Invoking grub-set-default}.
 @end deffn
 
 
@@ -3559,6 +3752,68 @@ You must specify one argument to this command. For example:
 @end example
 
 
+@node Invoking grub-set-default
+@chapter Invoking grub-set-default
+
+The program @command{grub-set-default} sets the default boot entry for
+GRUB. This automatically creates a file named @file{default} under
+your GRUB directory (i.e. @file{/boot/grub}), if it is not
+present. This file is used to determine the default boot entry when
+GRUB boots up your system when you use @samp{default saved} in your
+configuration file (@pxref{default}), and to save next default boot
+entry when you use @samp{savedefault} in a boot entry
+(@pxref{savedefault}).
+
+@command{grub-set-default} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version information and exit.
+
+@item --root-directory=@var{dir}
+Use the directory @var{dir} instead of the root directory
+(i.e. @file{/}) to define the location of the default file. This
+is useful when you mount a disk which is used for another system.
+@end table
+
+You must specify a single argument to @command{grub-set-default}. This
+argument is normally the number of a default boot entry. For example,
+if you have this configuration file:
+
+@group
+@example
+default saved
+timeout 10
+
+title GNU/Hurd
+root (hd0,0)
+...
+
+title GNU/Linux
+root (hd0,1)
+...
+@end example
+@end group
+
+and if you want to set the next default boot entry to GNU/Linux, you
+may execute this command:
+
+@example
+@kbd{grub-set-default 1}
+@end example
+
+Because the entry for GNU/Linux is @samp{1}. Note that entries are
+counted from zero. So, if you want to specify GNU/Hurd here, then you
+should specify @samp{0}.
+
+This feature is very useful if you want to test a new kernel or to
+make your system quite robust. @xref{Making your system robust}, for
+more hints about how to set up a robust system.
+
+
 @node Invoking mbchk
 @chapter Invoking mbchk
 
@@ -3695,27 +3950,12 @@ Once we get your report, we will try to fix the bugs.
 @node Future
 @chapter Where GRUB will go
 
-Here are some ideas of what might happen in the future:
-
-@itemize @bullet
-@item
-Support dynamic loading.
-
-@item
-Add real memory management.
-
-@item
-Add a real scripting language.
-
-@item
-Support internationalization.
-
-@item
-Support other architectures than i386-pc.
-@end itemize
-
-See the file @file{TODO} in the source distribution, for more
-information.
+We started the next generation of GRUB, GRUB 2. This will include
+internationalization, dynamic module loading, real memory management,
+multiple architecture support, a scripting language, and many other
+nice feature. If you are interested in the development of GRUB 2, take
+a look at @uref{http://www.gnu.org/software/grub/grub.html, the
+homepage}.
 
 
 @c Separate the programming guide.

@@ -6109,7 +6109,7 @@ CCASFLAGS='$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)'
 
 
 
-                                                                                                                        ac_config_files="$ac_config_files Makefile stage1/Makefile stage2/Makefile docs/Makefile lib/Makefile util/Makefile grub/Makefile netboot/Makefile util/grub-image util/grub-install util/grub-md5-crypt util/grub-terminfo"
+                                                                                                                                  ac_config_files="$ac_config_files Makefile stage1/Makefile stage2/Makefile docs/Makefile lib/Makefile util/Makefile grub/Makefile netboot/Makefile util/grub-image util/grub-install util/grub-md5-crypt util/grub-terminfo util/grub-set-default"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -6728,6 +6728,7 @@ do
   "util/grub-install" ) CONFIG_FILES="$CONFIG_FILES util/grub-install" ;;
   "util/grub-md5-crypt" ) CONFIG_FILES="$CONFIG_FILES util/grub-md5-crypt" ;;
   "util/grub-terminfo" ) CONFIG_FILES="$CONFIG_FILES util/grub-terminfo" ;;
+  "util/grub-set-default" ) CONFIG_FILES="$CONFIG_FILES util/grub-set-default" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

@@ -87,6 +87,7 @@ ENTRY(main)
 
 VARIABLE(install_partition)
 	.long	0xFFFFFF
+/* This variable is here only because of a historical reason.  */
 VARIABLE(saved_entryno)
 	.long	0
 VARIABLE(stage2_id)
