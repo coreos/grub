@@ -13,6 +13,8 @@ New in 0.5.94:
 * NetBSD support in the grub shell is improved.
 * A simple checker for the format of a Multiboot kernel, ``mbchk'', is
   added.
+* The command "find" searches for a filename in all devices and print
+  the list of the device which contain the file.
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.

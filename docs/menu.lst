@@ -53,7 +53,7 @@ chainloader +1
 # For installing GRUB into the hard disk
 title Install GRUB into the hard disk
 root    (hd0,0)
-install /boot/grub/stage1 d (hd0) /boot/grub/stage2 p
+setup   (hd0)
 
 # Change the colors.
 title Change the colors

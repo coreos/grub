@@ -7,7 +7,7 @@ SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
 # The unfinished manuals.
-UNFINISHED_MANUALS = new-grub.texi
+UNFINISHED_MANUALS = new-grub.texi tutorial.texi
 
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS) $(UNFINISHED_MANUALS)
@@ -17,13 +17,13 @@ EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 .texi:
 
 %.c.texi: %.c $(srcdir)/$(SRC2TEXI)
-	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+	$(SHELL) $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 %.h.texi: %.h $(srcdir)/$(SRC2TEXI)
-	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+	$(SHELL) $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 %.S.texi: %.S $(srcdir)/$(SRC2TEXI)
-	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+	$(SHELL) $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 # FIXME: Use this rule until Debian has the new Texinfo.
 grub.info: grub.texi

@@ -677,7 +677,7 @@ find_func (char *arg, int flags)
       saved_drive = current_drive;
       saved_partition = current_partition;
       if (grub_open (filename))
-	grub_printf ("(fd%d)%s\n", drive, filename);
+	grub_printf (" (fd%d)\n", drive);
     }
 
   /* Hard disks.  */
@@ -703,11 +703,8 @@ find_func (char *arg, int flags)
 		  saved_drive = current_drive;
 		  saved_partition = current_partition;
 		  if (grub_open (filename))
-		    grub_printf ("(hd%d,%d,%c)%s",
-				 drive - 0x80,
-				 slice,
-				 part + 'a',
-				 filename);
+		    grub_printf (" (hd%d,%d,%c)",
+				 drive - 0x80, slice, part + 'a');
 		}
 	    }
 	  else
@@ -715,7 +712,7 @@ find_func (char *arg, int flags)
 	      saved_drive = current_drive;
 	      saved_partition = current_partition;
 	      if (grub_open (filename))
-		grub_printf ("(hd%d,%d)%s", drive - 0x80, slice, filename);
+		grub_printf (" (hd%d,%d)", drive - 0x80, slice);
 	    }
 	}
     }
@@ -732,7 +729,8 @@ static struct builtin builtin_find =
   find_func,
   BUILTIN_CMDLINE,
   "find FILENAME",
-  "Search for the filename FILENAME in all of partitions."
+  "Search for the filename FILENAME in all of partitions and print the list of"
+  " the devices which contain the file."
 };
 
 

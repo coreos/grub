@@ -90,8 +90,11 @@ HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
+# The unfinished manuals.
+UNFINISHED_MANUALS = new-grub.texi tutorial.texi
+
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
-	$(EXAMPLES) $(multiboot_TEXINFOS)
+	$(EXAMPLES) $(multiboot_TEXINFOS) $(UNFINISHED_MANUALS)
 
 subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -444,13 +447,13 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 .texi:
 
 %.c.texi: %.c $(srcdir)/$(SRC2TEXI)
-	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+	$(SHELL) $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 %.h.texi: %.h $(srcdir)/$(SRC2TEXI)
-	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+	$(SHELL) $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 %.S.texi: %.S $(srcdir)/$(SRC2TEXI)
-	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+	$(SHELL) $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 # FIXME: Use this rule until Debian has the new Texinfo.
 grub.info: grub.texi
@@ -463,7 +466,8 @@ grub.info: grub.texi
 @MAINTAINER_MODE_TRUE@		--section=8 --output=$@ $<
 
 @MAINTAINER_MODE_TRUE@$(srcdir)/mbchk.1: ../util/mbchk $(srcdir)/$(HELP2MAN)
-@MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) --name="Multiboot format checker" \
+@MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) \
+@MAINTAINER_MODE_TRUE@		--name="check the format of a Multiboot kernel" \
 @MAINTAINER_MODE_TRUE@		--section=1 --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

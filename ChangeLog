@@ -1,5 +1,14 @@
 1999-10-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (find_func): Print only the device names.
+	* docs/tutorial.texi: New file.
+	* docs/Makefile.am (UNFINISHED_MANUALS): Added tutorial.texi.
+	(%.c.texi): Use $(SHELL) instead of /bin/sh.
+	(%.h.texi): Likewise.
+	(%.S.texi): Likewise.
+	
+1999-10-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/char_io.c (memcheck): Fix the checks: "<=" -> "<".
 	Reported by Mike Hicks <hick0088@umn.edu>.
 	

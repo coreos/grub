@@ -1,0 +1,386 @@
+@node Overview
+@chapter Overview
+
+Briefly, a @dfn{boot loader} is the first software program that runs when
+a computer starts.  It is responsible for loading and transferring
+control to the operating system @dfn{kernel} software (such as the Linux
+or GNU Hurd kernel).  The kernel, in turn, initializes the rest of the
+operating system (usually GNU).
+
+GRUB can load a wide variety of free operating systems as well as
+chain-loading@footnote{@dfn{chain-load} is the machanism for loading
+unsupported operating systems by loading another boot loader.}
+proprietary operating systems. The important feature in GRUB
+is flexibility; GRUB can understand filesystems and kernel executable
+formats, so you can load an arbitary operating system as you like
+without recording the position of your kernel on the disk.
+
+Therefore, you have to specify the drive/partition where your kernel
+resides and the filename at hand. If you don't want to type the
+drive and the filename every time, the menu interface will help
+you. GRUB loads a configuration file if found and provides the menu so
+that you can select which OS is booted at ease. Of course, you can enter
+the command-line interface whenever you like.
+
+In the following chapters, we teach you how to specify your drive, how
+to install GRUB on your drive, and how to boot your OSes, step by step.
+
+
+@node Device Syntax
+@chapter Device Syntax
+
+Now is the time when you should learn the device syntax used in GRUB, so
+that you can specify a drive/partition. See this example:
+
+@example
+(fd0)
+@end example
+
+This means the first floppy disk drive. GRUB requires that the device
+name is enclosed with @samp{(} and @samp{)}. In this case, GRUB 
+uses the whole of the floppy disk.
+
+@example
+(hd0,1)
+@end example
+
+This means the second partition of the first hard disk drive. The first
+integer @samp{0} indicates the drive number, that is, the first hard
+disk, while the second integer @samp{1} indicates the partition number
+(or the @sc{pc} slice number in the BSD terminology). Note that the
+partition numbers are counted from @emph{zero} but not from one. In this
+case, GRUB uses the partition of the disk instead of the whole of the
+disk.
+
+@example
+(hd1,a)
+@end example
+
+This means the BSD @samp{a} partition of the second hard disk. If you
+need to specify which @sc{pc} slice number should be used, use a device
+like @samp{(hd1,0,a)}. If the @sc{pc} slice number is omitted, GRUB
+searches for the first @sc{pc} slice which has a BSD @samp{a} partition.
+
+Note that GRUB does @emph{not} distinguish IDE from SCSI; just count the
+drive numbers from zero. Normally, any IDE drive number is less than any
+SCSI drive number, but this is not correct if you exchange the boot
+sequence between IDE and SCSI in your BIOS. But do not worry. In the
+GRUB command-line, you can always use the @key{TAB} completion which
+displays the list of drives, the list of the partitions of a drive, or
+the list of the filenames on a partition, depending on where you push
+the @key{TAB} key in the command-line. So it should be possible to
+determine which drive and which partition are what you seek for.
+
+Now the question is how to specify a file. Again, see this example:
+
+@example
+(hd0,0)/vmlinuz
+@end example
+
+This specifies the file whose name is @samp{vmlinuz} on the first
+partition of the first hard disk drive. Isn't that easy? All you should
+do is just type the absolute filename. If you are tired of typing the
+whole of the filename, press the @key{TAB} key. @key{TAB} completes the
+filename if it is unique. Otherwise, it displays the list of the
+candidates.
+
+OK, the next chapter introduces how to install GRUB on your drive.
+
+
+@node Installation
+@chapter Installation
+
+At first, install GRUB by @code{make install} (@pxref{Obtaining and
+Building GRUB}) or by the GRUB package for your OS. If this is done,
+let's install GRUB on your drive. There are two ways to install GRUB:
+using the grub shell on a UNIX-like OS and using the native Stage 2. The
+two ways are almost same, but the main difference is that the grub shell
+might probe a wrong BIOS drive on a UNIX-like OS. If you install GRUB on
+a UNIX-like OS, make sure that you have a boot floppy disk so that you
+can rescue your computer when it crashes.
+
+Anyhow, copy your GRUB images (@file{stage1}, @file{stage2}, etc.) to
+the directory @file{/boot/grub} before staring to install
+GRUB. Normally, the images are installed under the directory
+@file{/usr/share/grub/i386-pc}.
+
+@menu
+* Installing GRUB on a floppy::
+* Installing GRUB on a hard disk::
+@end menu
+
+
+@node Installing GRUB on a floppy
+@section Installing GRUB on a floppy
+
+@quotation
+@strong{Caution:} This procedure will destroy any data currently stored
+on the floppy.
+@end quotation
+
+It is easy to create a GRUB boot floppy. Just follow this below:
+
+@example
+# cd /boot/grub
+# dd if=stage1 of=/dev/fd0 bs=512 count=1
+# dd if=stage2 of=/dev/fd0 bs=512 seek=1
+@end example
+
+The device filename may be different. Consult the manual for your OS.
+
+
+@node Installing GRUB on a hard disk
+@section Installing GRUB on a hard disk
+
+@quotation
+@strong{Caution:} Installing GRUB's stage1 in this manner will erase the
+normal boot-sector used by an OS. GRUB can boot GNU Mach, Linux,
+FreeBSD, NetBSD, and OpenBSD directly, so this may be
+desired. Generally, it is a good idea to back up the first sector of the
+partition on which you are installing GRUB's stage1. This isn't as
+important if you are installing GRUB on the first sector of a hard disk,
+since it's easy to reinitialize it (by running @code{FDISK /MBR} from
+DOS).
+@end quotation
+
+OK, now reboot your computer with a GRUB boot floppy inserted if you
+decide to install GRUB in the native environment. That's definitely
+desirable. However, if you don't want to reboot your computer, run the
+program @file{/sbin/grub}.
+
+In both, GRUB will show the command-line interface. First, set the
+GRUB's @dfn{root partition}@footnote{Note that GRUB's root partition is
+not your OS's root partition; if you need to specify a root partition
+for your OS, add the argument into the command @command{kernel}.} to the
+partition which has your GRUB images, like this:
+
+@example
+grub> root (hd0,0)
+@end example
+
+If you are not sure where the images exist, use the command
+@command{find}:
+
+@example
+grub> find /boot/grub/stage1
+@end example
+
+This will search for the filename @file{/boot/grub/stage1} and show the
+device which contains the images.
+
+If you set the root partition correctly, run the command
+@command{setup}:
+
+@example
+grub> setup (hd0)
+@end example
+
+This command will install GRUB on the MBR in the first drive. If you
+want to install GRUB into the @dfn{boot sector} of a partition instead
+of the MBR, specify a partition into which you want to install GRUB:
+
+@example
+grub> setup (hd0,0)
+@end example
+
+If you install GRUB into a partition or a drive except for the first
+one, you must chain-load GRUB from another boot loader. Refer the manual
+for the boot loader to know how to chain-load GRUB.
+
+That's all. Now you can boot GRUB without a GRUB floppy, so let's see
+how to boot your operating systems from GRUB in the next chapter.
+
+
+@node Boot
+@chapter Boot
+
+For Multiboot-compliant kernels, GRUB can load them in a consistent way,
+but, for some free operating systems, you need to use some OS-specific
+magics.
+
+@menu
+* Booting a Multiboot-compliant OS::
+* Booting GNU/Hurd::
+* Booting GNU/Linux::
+* Booting FreeBSD::
+* Booting NetBSD::
+* Booting OpenBSD::
+* Chain-loading::
+@end menu
+
+
+@node Booting a Multiboot-compliant OS
+@section Booting a Multiboot-compliant OS
+
+Generally, GRUB can boot any Multiboot-compliant OS in the following
+steps:
+
+@enumerate
+@item
+Set GRUB's root partition to the drive where the OS images is stored by
+the command @command{root}.
+
+@item
+Load the kernel image by the command @command{kernel}.
+
+@item
+Load the modules by the command @command{module} or
+@command{modulenounzip} as you need.
+
+@item
+Run the command @command{boot}.
+@end enumerate
+
+
+@node Booting GNU/Hurd
+@section Booting GNU/Hurd
+
+Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
+nothing special. But do not forget that you specify a root partition to
+the kernel.
+
+First, set GRUB's root partition to the same drive as
+GNU/Hurd's. Probably @code{find /boot/gnumach} or such will help
+you.
+
+Second, load the kernel and the module, like this:
+
+@example
+grub> kernel /boot/gnumach root=hd0s1
+grub> module /boot/serverboot
+@end example
+
+And, finally, run the command @command{boot}.
+
+
+@node Booting GNU/Linux
+@section Booting GNU/Linux
+
+It is relatively easy to boot GNU/Linux from GRUB, because booting
+GNU/Linux somewhat resembles booting a Multiboot-compliant OS.
+
+First, set GRUB's root partition to the same drive as
+GNU/Linux's. Probably @code{find /vmlinuz} or such will help
+you.
+
+Second, load the kernel:
+
+@example
+grub> kernel /vmlinuz root=/dev/hda1
+@end example
+
+If you need to specify some kernel parameters, just append them to the
+command. An example is to set @samp{vga} to @samp{ext}:
+
+@example
+grub> kernel /vmlinuz root=/dev/hda1 vga=ext
+@end example
+
+If you use initrd, execute the command @command{initrd} after
+@command{kernel}:
+
+@example
+grub> initrd /initrd
+@end example
+
+And, finally, run the command @command{boot}.
+
+
+@node Booting FreeBSD
+@section Booting FreeBSD
+
+@c Probably we should fix the boot parameters before writing this
+@c section.
+FIXME
+
+
+@node Booting NetBSD
+@section Booting NetBSD
+
+@c Likewise.
+FIXME
+
+
+@node Booting OpenBSD
+@section Booting OpenBSD
+
+@c Likewise.
+FIXME
+
+
+@node Chain-loading
+@section Chain-loading
+
+If you want to boot a unsupported operating system (i.e. Windows 95),
+chain-load the boot loader for the operating system. Normally, the boot
+loader is embedded in the @dfn{boot sector} of the partition on which
+the operating system is installed.
+
+First, set GRUB's root partition to the partition by the command
+@command{rootnoverify}:
+
+@example
+grub> rootnoverify (hd0,0)
+@end example
+
+Second, load the boot loader by the command @command{chainloader}:
+
+@example
+grub> chainloader +1
+@end example
+
+Do not care about what @samp{+1} is. We describe it later in
+@xref{Filesystem}. If this succeeds, run the command @command{boot}.
+
+
+@node Configuration
+@chapter Configuration
+
+Probably it is bothersome to type the commands to boot your OS. So
+GRUB provides the menu interface so that you can just select an item
+from the menu.
+
+To enable the menu, write a configuration file and save it in
+@file{/boot/grub/menu.lst}. Here is the sample configuration file:
+
+@example
+@include menu.lst
+@end example
+
+As you see, each entry begins with the special command @command{title} and
+the action is described after it. Note that you may not write the
+command @command{boot} at each of the entries, since GRUB automatically
+executes the command @command{boot} if it loads an OS successfully.
+
+The argument for the command @command{title} is used to display the
+message about the entry. Since @command{title} displays the argument as
+it is, you can write any words as you like.
+
+You can write the menu interface specific commands before any
+@command{title}. There are several commands you can use in there, but we
+describe a few of them. The complete descriptions can be found in
+@xref{Command}.
+
+The command @command{default} specifies which entry will be selected
+when you do not select an entry explicitly. The argument is the entry
+number. GRUB counts the entries from zero, so the number of the first
+entry is @samp{0}, the number of the second entry is @samp{1}, @dots{}
+
+The default entry will be executed when you do not select any entry
+during certain seconds, which is defined by the command
+@command{timeout}. So in the example above, the timeout is 30 seconds.
+
+The command @command{fallback} is used if the default entry fails. If
+GRUB executes the default entry and it fails, then it executes the
+@dfn{fallback} entry. The argument is the same meaning as the one for
+@command{default}. This command is rarely used.
+
+In the last entry, @command{color} is used. This command is somewhat
+special because it can be used both in the command-line and in the
+menu. GRUB has such several commands. The command @command{color}
+changes the menu colors. It is best to run the command actually to
+understand what happens.
+
+We hope that you now understand how to use GRUB. To understand more
+about GRUB, see the User Reference Manual (@pxref{Introduction}). Have
+fun!
