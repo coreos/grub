@@ -67,6 +67,13 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 unsigned long current_drive = 0xFF;
 unsigned long current_partition;
 
+#ifndef STAGE1_5
+/* The register ESI should contain the address of the partition to be
+   used for loading a chain-loader when chain-loading the loader.  */
+unsigned long boot_part_addr;
+unsigned long boot_part_offset;
+#endif
+
 /*
  *  Global variables describing details of the filesystem
  */
@@ -451,17 +458,17 @@ check_BSD_parts (int flags)
   return 0;
 }
 
-
 #ifndef STAGE1_5
-static char cur_part_desc[16];
+static unsigned long cur_part_offset;
+static unsigned long cur_part_addr;
 #endif
 
 int
 real_open_partition (int flags)
 {
-  char mbr_buf[SECTOR_SIZE];
   int i, part_no, slice_no, ext = 0;
-
+  char mbr_buf[SECTOR_SIZE];
+  
 #ifndef STAGE1_5
   /* network drive */
   if (current_drive == NETWORK_DRIVE)
@@ -527,9 +534,8 @@ real_open_partition (int flags)
 	      part_start = part_offset + PC_SLICE_START (mbr_buf, i);
 	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
 #ifndef STAGE1_5
-	      grub_memmove (cur_part_desc,
-			    mbr_buf + PC_SLICE_OFFSET + (i << 4),
-			    16);
+	      cur_part_offset = part_offset;
+	      cur_part_addr = BOOTSEC_LOCATION + PC_SLICE_OFFSET + (i << 4);
 #endif
 
 	      /*
@@ -848,11 +854,10 @@ set_bootdev (int hdbias)
 {
   int i, j;
 
-  /*
-   *  Set chainloader boot device.
-   */
-  memmove ((char *) (BOOTSEC_LOCATION - 16), cur_part_desc, 16);
-
+  /* Save the boot partition for chain-loading.  */
+  boot_part_offset = cur_part_offset;
+  boot_part_addr = cur_part_addr;
+  
   /*
    *  Set BSD boot device.
    */

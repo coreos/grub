@@ -1,3 +1,29 @@
+2000-02-16  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Pass the boot partition information to a chain-loader, in the
+	partition table area of the loader, instead of right before the
+	loaded address. Reported by takehiro@coral.ocn.ne.jp (Takehiro
+	Suzuki).
+	
+	* stage2/builtins.c (chainloader_func): Embed the partition
+	table of the boot drive in the partition table area of the
+	chain-loader, if the boot drive is a hard disk drive.
+	Pass BOOT_PART_ADDR instead of (BOOTSEC_LOCATION - 16) as the
+	third argument for the function chain_stage1.
+	* stage2/disk_io.c [!STAGE1_5] (boot_part_addr): New variable.
+	[!STAGE1_5] (boot_part_offset): Likewise.
+	[!STAGE1_5] (cur_part_offset): Likewise.
+	[!STAGE1_5] (cur_part_addr): Likewise.
+	[!STAGE1_5] (cur_part_desc): Removed.
+	(real_open_partition) [!STAGE1_5]: Set CUR_PART_OFFSET and
+	CUR_PART_ADDR to PART_OFFSET and (BOOTSEC_LOCATION +
+	PC_SLICE_OFFSET + (i << 4)), respectively.
+	[!STAGE1_5] (set_bootdev): Set BOOT_PART_OFFSET and
+	BOOT_PART_ADDR to CUR_PART_OFFSET and CUR_PART_ADDR,
+	respectively.
+	* stage2/shared.h (boot_part_addr): Declared.
+	(boot_part_offset): Likewise.
+	
 2000-02-12  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (geometry_func): Attempt to read the first

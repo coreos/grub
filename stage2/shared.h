@@ -415,6 +415,8 @@ typedef enum
 
 extern unsigned long install_partition;
 extern unsigned long boot_drive;
+extern unsigned long boot_part_addr;
+extern unsigned long boot_part_offset;
 extern char version_string[];
 extern char config_file[];
 

@@ -192,12 +192,12 @@ boot_func (char *arg, int flags)
 
     case KERNEL_TYPE_CHAINLOADER:
       /* Chainloader */
-
+      
       /* Check if we should set the int13 handler.  */
       if (bios_drive_map[0] != 0)
 	{
 	  int i;
-
+	  
 	  /* Search for SAVED_DRIVE.  */
 	  for (i = 0; i < DRIVE_MAP_SIZE; i++)
 	    {
@@ -210,14 +210,35 @@ boot_func (char *arg, int flags)
 		  break;
 		}
 	    }
-
+	  
 	  /* Set the handler. This is somewhat dangerous.  */
 	  set_int13_handler (bios_drive_map);
 	}
-
+      
       gateA20 (0);
       boot_drive = saved_drive;
-      chain_stage1 (0, BOOTSEC_LOCATION, BOOTSEC_LOCATION - 16);
+      
+      /* Copy the boot partition information to the chain-loader, if
+	 BOOT_DRIVE is a hard disk drive.  */
+      if (boot_drive & 0x80)
+	{
+	  /* Read the MBR here, because it might be modified
+	     after opening the partition.  */
+	  if (! rawread (boot_drive, boot_part_offset,
+			 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+	    {
+	      /* This should never happen.  */
+	      errnum = ERR_READ;
+	      return 0;
+	    }
+
+	  /* Need only the partition table.  */
+	  grub_memmove ((char *) BOOTSEC_LOCATION + BOOTSEC_PART_OFFSET,
+			(char *) SCRATCHADDR + BOOTSEC_PART_OFFSET,
+			BOOTSEC_PART_LENGTH);
+	}
+      
+      chain_stage1 (0, BOOTSEC_LOCATION, boot_part_addr);
       break;
 
     case KERNEL_TYPE_MULTIBOOT:
