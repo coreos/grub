@@ -1,3 +1,7 @@
+2003-10-10  Robert Millan  <robertmh@gnu.org>
+
+	* config.{guess,sub}: Update from official source (CVS).
+
 2003-09-18  Robert Millan  <robertmh@gnu.org>
 
 	* docs/texinfo.tex: Update from ftp.gnu.org.
