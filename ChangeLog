@@ -1,3 +1,12 @@
+2000-10-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/grub.texi: Added an entry for the new chapter "Security",
+	and the order of the chapters in the Tutorial Manual was
+	changed.
+	* docs/tutorial.texi (Configuration): Moved to right after the
+	chapter "Booting".
+	(Security): New chapter.
+	
 2000-10-10  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Alessandro Rubini:

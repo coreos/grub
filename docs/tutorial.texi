@@ -632,157 +632,6 @@ grub> @kbd{boot}
 @end example
 
 
-@node Network
-@chapter Downloading OS images from a network
-
-Although GRUB is a disk-based boot loader, it does provide some network
-support. To use the network support, you need to enable at least one
-network driver in the GRUB build process. For more information please
-see @file{netboot/README.netboot} in the source distribution.
-
-@menu
-* General usage of network support::
-* Diskless::
-@end menu
-
-
-@node General usage of network support
-@section How to set up your network
-
-GRUB requires a server that will assign an IP address to the machine on
-which GRUB is running, and a file server. The former is either BOOTP,
-DHCP or a RARP server (RARP is deprecated, since it cannot serve much
-information). For the latter, only TFTP is supported at the moment. It
-is not necessary to run both the servers on one computer. How to
-configure these servers is beyond the scope of this document, so please
-refer to the manuals specific to those protocols/servers.
-
-Once you have set up the servers, run @command{bootp}, @command{dhcp}
-or @command{rarp} for BOOTP, DHCP or RARP, respectively. Each command
-will show an assigned IP address, a netmask, an IP address for your TFTP
-server and a gateway. If any of the addresses is wrong or it causes an
-error, probably the configuration of your servers isn't set up properly.
-
-Finally, download your OS images from your network. The network can be
-accessed using the network drive @samp{(nd)}. Everything else is very
-similar to the normal instructions (@pxref{Booting}).
-
-Here is an example:
-
-@example
-@group
-grub> @kbd{bootp}
-Probing... [NE*000]
-NE2000 base ...
-Address: 192.168.110.23    Netmask: 255.255.255.0
-Server: 192.168.110.14     Gateway: 192.168.110.1
-
-grub> @kbd{root (nd)}
-grub> @kbd{kernel /tftproot/gnumach.gz root=sd0s1}
-grub> @kbd{module /tftproot/serverboot.gz}
-grub> @kbd{boot}
-@end group
-@end example
-
-
-@node Diskless
-@section Booting from a network
-
-It is sometimes very useful to boot from a network, especially, when you
-use a machine which has no local disk. In this case, you need to obtain
-a kind of Net Boot @sc{rom}, such as a PXE @sc{rom} or a free software
-package like Etherboot. Such a Boot @sc{rom} first boots the machine,
-sets up the network card installed into the machine, and downloads a
-second stage boot image from the network. Then, the second image will
-try to boot an operating system from the network actually.
-
-GRUB provides two second stage images, @file{nbgrub} and
-@file{pxegrub}. Those images are the same as the normal Stage 2, except
-that they set up a network automatically, and try to load a
-configuration file from the network, if specified. The usage is very
-simple: If the machine has a PXE @sc{rom}, use @file{pxegrub}. If the
-machine has a NBI loader such as Etherboot, use @file{nbgrub}. There is
-no difference between them but their formats. As how to load a second
-stage image you want to use should be described in the manual on your
-Net Boot @sc{rom}, please refer to the manual, for more details. The
-topic is beyond the scope of this documentation.
-
-However, there is one thing specific to GRUB. Namely, how to specify a
-configuration file in a BOOTP/DHCP server. For now, GRUB uses the tag
-@samp{150}, to get the name of a configuration file. This below is an
-example about a BOOTP configuration:
-
-@example
-@group
-allhost:hd=/tmp:bf=null:\
-        :ds=145.71.35.1 145.71.32.1:\
-        :sm=255.255.254.0:\
-        :gw=145.71.35.1:\
-        :sa=145.71.35.5:
-
-foo:ht=1:ha=63655d0334a7:ip=145.71.35.127:\
-        :bf=/nbgrub:\
-        :tc=allhost:\
-        :T150="/tftpboot/menu.lst.foo":
-@end group
-@end example
-
-See the manual about your BOOTP/DHCP server, for more information. The
-exact syntax should differ from the example, more or less.
-
-
-@node Serial terminal
-@chapter Using GRUB via a serial line
-
-This chapter describes how to use the serial terminal support in GRUB.
-
-If you have many computers or computers with no display/keyboard, it
-would be very useful to control the computers with serial
-communications. To connect a computer with another via a serial line,
-you need to prepare a null-modem (cross) serial cable, and you may need
-to have multiport serial boards, if your computer doesn't have extra
-serial ports. In addition, a terminal emulator is also required, such as
-minicom. Refer to a manual of your operating system, for more
-information.
-
-As for GRUB, the instruction to set up a serial terminal is quite
-simple. First of all, make sure that you haven't specified the option
-@option{--disable-serial} to the configure script when you built your
-GRUB images. If you get them in binary form, probably they have serial
-terminal support already.
-
-Then, initialize your serial terminal after GRUB starts up. Here is an
-example:
-
-@example
-@group
-grub> @kbd{serial --unit=0 --speed=9600}
-grub> @kbd{terminal serial}
-@end group
-@end example
-
-The command @command{serial} initializes the serial unit 0 with the
-speed 9600bps. The serial unit 0 is usually called @samp{COM1}, so, if
-you want to use COM2, you must specify @samp{--unit=1} instead. This
-command accepts many other options, so please refer to @ref{Commands},
-for more details.
-
-The command @command{terminal} chooses which type of terminal you want
-to use. In that case above, the terminal will be a serial terminal, but
-you can also pass @code{console} to the command, like @samp{terminal
-serial console}. In this case, a terminal in which you press any key
-will be selected as a GRUB terminal.
-
-However, note that GRUB assumes that your terminal emulator is
-compatible with VT100 by default. This is true for most terminal
-emulators nowadays, but you should pass the option @option{--dumb} to
-the command, if your terminal emulator is not VT100-compatible or
-implement few VT100 escape sequences. If you specify the option, then
-GRUB doesn't provide you with the menu interface, because the menu
-requires several fancy features for your terminal. Instead, GRUB only
-gives you the hidden menu interface and the command-line interface.
-
-
 @node Configuration
 @chapter Configuration
 
@@ -954,15 +803,217 @@ and menu commands}). GRUB has several such commands, see the user
 reference.
 
 We hope that you now understand how to use the basic features of
-GRUB. To learn more about GRUB, see the User Reference Manual
-(@pxref{Introduction}).
+GRUB. To learn more about GRUB, see the following chapters and the User
+Reference Manual (@pxref{Introduction}).
 
-Have fun!
 
-@c FIXME: I think we should write some notes on the security here, or in
-@c another chapter. Perhaps we should pick up all the user-visible
-@c features in this tutorial and make the reference manual just a record
-@c of the pure information. - okuji
-@c
-@c BTW, how many people think that this tutorial is easy to read? I
-@c don't know. God knows? I don't think so. :p - okuji
+@node Network
+@chapter Downloading OS images from a network
+
+Although GRUB is a disk-based boot loader, it does provide some network
+support. To use the network support, you need to enable at least one
+network driver in the GRUB build process. For more information please
+see @file{netboot/README.netboot} in the source distribution.
+
+@menu
+* General usage of network support::
+* Diskless::
+@end menu
+
+
+@node General usage of network support
+@section How to set up your network
+
+GRUB requires a server that will assign an IP address to the machine on
+which GRUB is running, and a file server. The former is either BOOTP,
+DHCP or a RARP server (RARP is deprecated, since it cannot serve much
+information). For the latter, only TFTP is supported at the moment. It
+is not necessary to run both the servers on one computer. How to
+configure these servers is beyond the scope of this document, so please
+refer to the manuals specific to those protocols/servers.
+
+Once you have set up the servers, run @command{bootp}, @command{dhcp}
+or @command{rarp} for BOOTP, DHCP or RARP, respectively. Each command
+will show an assigned IP address, a netmask, an IP address for your TFTP
+server and a gateway. If any of the addresses is wrong or it causes an
+error, probably the configuration of your servers isn't set up properly.
+
+Finally, download your OS images from your network. The network can be
+accessed using the network drive @samp{(nd)}. Everything else is very
+similar to the normal instructions (@pxref{Booting}).
+
+Here is an example:
+
+@example
+@group
+grub> @kbd{bootp}
+Probing... [NE*000]
+NE2000 base ...
+Address: 192.168.110.23    Netmask: 255.255.255.0
+Server: 192.168.110.14     Gateway: 192.168.110.1
+
+grub> @kbd{root (nd)}
+grub> @kbd{kernel /tftproot/gnumach.gz root=sd0s1}
+grub> @kbd{module /tftproot/serverboot.gz}
+grub> @kbd{boot}
+@end group
+@end example
+
+
+@node Diskless
+@section Booting from a network
+
+It is sometimes very useful to boot from a network, especially, when you
+use a machine which has no local disk. In this case, you need to obtain
+a kind of Net Boot @sc{rom}, such as a PXE @sc{rom} or a free software
+package like Etherboot. Such a Boot @sc{rom} first boots the machine,
+sets up the network card installed into the machine, and downloads a
+second stage boot image from the network. Then, the second image will
+try to boot an operating system from the network actually.
+
+GRUB provides two second stage images, @file{nbgrub} and
+@file{pxegrub}. Those images are the same as the normal Stage 2, except
+that they set up a network automatically, and try to load a
+configuration file from the network, if specified. The usage is very
+simple: If the machine has a PXE @sc{rom}, use @file{pxegrub}. If the
+machine has a NBI loader such as Etherboot, use @file{nbgrub}. There is
+no difference between them but their formats. As how to load a second
+stage image you want to use should be described in the manual on your
+Net Boot @sc{rom}, please refer to the manual, for more details. The
+topic is beyond the scope of this documentation.
+
+However, there is one thing specific to GRUB. Namely, how to specify a
+configuration file in a BOOTP/DHCP server. For now, GRUB uses the tag
+@samp{150}, to get the name of a configuration file. This below is an
+example about a BOOTP configuration:
+
+@example
+@group
+.allhost:hd=/tmp:bf=null:\
+        :ds=145.71.35.1 145.71.32.1:\
+        :sm=255.255.254.0:\
+        :gw=145.71.35.1:\
+        :sa=145.71.35.5:
+
+foo:ht=1:ha=63655d0334a7:ip=145.71.35.127:\
+        :bf=/nbgrub:\
+        :tc=.allhost:\
+        :T150="/tftpboot/menu.lst.foo":
+@end group
+@end example
+
+See the manual about your BOOTP/DHCP server, for more information. The
+exact syntax should differ from the example, more or less.
+
+
+@node Serial terminal
+@chapter Using GRUB via a serial line
+
+This chapter describes how to use the serial terminal support in GRUB.
+
+If you have many computers or computers with no display/keyboard, it
+would be very useful to control the computers with serial
+communications. To connect a computer with another via a serial line,
+you need to prepare a null-modem (cross) serial cable, and you may need
+to have multiport serial boards, if your computer doesn't have extra
+serial ports. In addition, a terminal emulator is also required, such as
+minicom. Refer to a manual of your operating system, for more
+information.
+
+As for GRUB, the instruction to set up a serial terminal is quite
+simple. First of all, make sure that you haven't specified the option
+@option{--disable-serial} to the configure script when you built your
+GRUB images. If you get them in binary form, probably they have serial
+terminal support already.
+
+Then, initialize your serial terminal after GRUB starts up. Here is an
+example:
+
+@example
+@group
+grub> @kbd{serial --unit=0 --speed=9600}
+grub> @kbd{terminal serial}
+@end group
+@end example
+
+The command @command{serial} initializes the serial unit 0 with the
+speed 9600bps. The serial unit 0 is usually called @samp{COM1}, so, if
+you want to use COM2, you must specify @samp{--unit=1} instead. This
+command accepts many other options, so please refer to @ref{Commands},
+for more details.
+
+The command @command{terminal} chooses which type of terminal you want
+to use. In that case above, the terminal will be a serial terminal, but
+you can also pass @code{console} to the command, like @samp{terminal
+serial console}. In this case, a terminal in which you press any key
+will be selected as a GRUB terminal.
+
+However, note that GRUB assumes that your terminal emulator is
+compatible with VT100 by default. This is true for most terminal
+emulators nowadays, but you should pass the option @option{--dumb} to
+the command, if your terminal emulator is not VT100-compatible or
+implement few VT100 escape sequences. If you specify the option, then
+GRUB doesn't provide you with the menu interface, because the menu
+requires several fancy features for your terminal. Instead, GRUB only
+gives you the hidden menu interface and the command-line interface.
+
+
+@node Security
+@chapter Security
+
+You may be interested in how to prevent ordinary users from doing
+whatever they like, if you share your computer with other people. So
+this chapter describes how to improve the security of GRUB.
+
+One thing which could be a security hole is that the user can do too
+many things with GRUB, because GRUB allows to modify its configuration
+and run arbitrary commands at run-time. For example, the user can read
+even @file{/etc/passwd} in the command-line interface by the command
+@command{cat}. So it is necessary to disable all the interactive
+operations.
+
+Thus, GRUB provides @dfn{password} feature, so that only administrators
+can start the interactive operations (i.e. editing menu entries and
+entering the command-line interface). To use this feature, you need to
+run the command @command{password} in your configuration file, like
+this:
+
+@example
+password PASSWORD
+@end example
+
+If this is specified, GRUB disallows any interactive control, until you
+press the key @key{p} and enter @samp{PASSWORD}.
+
+Also, you can specify an optional argument to @command{password}. See
+this example:
+
+@example
+password PASSWORD /boot/grub/menu-admin.lst
+@end example
+
+In this case, GRUB will load @file{/boot/grub/menu-admin.lst} as the
+configuration file when you enter the valid password.
+
+Another thing which may be dangerous is that any user can choose any
+menu entry. Usually, this wouldn't be problematic, but you might want to
+permit only administrators to run some of your menu entries, such as an
+entry for booting an insecure OS like DOS.
+
+The solution used by GRUB is the command @command{lock}. This command
+always fails until you enter a valid password, so you can use it, like
+this:
+
+@example
+@group
+title Boot DOS
+lock
+rootnoverify (hd0,1)
+makeactive
+chainload +1
+@end group
+@end example
+
+You should insert @command{lock} right after @command{title}, because
+any user can execute commands in an entry, until GRUB encounters
+@command{lock}.

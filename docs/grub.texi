@@ -98,9 +98,10 @@ Part I: The Tutorial Manual
 * Naming convention::           Names of your drives in GRUB
 * Installation::                Installing GRUB on your drive
 * Booting::                     How to boot different operating systems
+* Configuration::               Writing your own configuration file
 * Network::                     Downloading OS images from a network
 * Serial terminal::             Using GRUB via a serial line
-* Configuration::               Writing your own configuration file
+* Security::                    Improving the security
 
 Part II: The User Reference Manual
 
