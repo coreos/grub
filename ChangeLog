@@ -1,3 +1,8 @@
+2002-07-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (Reporting bugs): Use the group name (i.e.
+	grub) instead of the group id (i.e. 68) for the URL of the BTS.
+
 2002-07-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/serial.c [!GRUB_UTIL] (inb): Added a delay into this

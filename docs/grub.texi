@@ -3536,7 +3536,7 @@ thing.
 @end enumerate
 
 If you realize the guideline above, submit a report to the
-@uref{http://savannah.gnu.org/bugs/?group_id=68, Bug Tracking System}.
+@uref{http://savannah.gnu.org/bugs/?group=grub, Bug Tracking System}.
 Alternatively, you can submit a report via electronic mail to
 @email{bug-grub@@gnu.org}, but we strongly recommend that you use the
 Bug Tracking System, because e-mail can be passed over easily.
