@@ -271,7 +271,9 @@ gunzip_test_header (void)
   unsigned char buf[10];
   int is_tftp = 0;
 
-  if (grub_strcmp (fsys_table[fsys_type].name, "tftp") == 0)
+  /* XXX: currently, if CURRENT_DRIVE is a network device, we use only
+     tftp.  */
+  if (current_drive == 0x20)
     is_tftp = 1;
   
   /* "compressed_file" is already reset to zero by this point */
