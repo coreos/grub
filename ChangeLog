@@ -1,3 +1,16 @@
+2004-08-18  Marco Gerards  <metgerards@student.han.nl>
+
+	* fs/hfs.c: New file.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add fs/hfs.c.
+	(grub_emu_SOURCES): Likewise.
+	(pkgdata_MODULES): Add hfs.mod.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add fs/hfs.c.
+	(grubof_SOURCES): Likewise.
+	* util/grub-emu.c (main): Initialize and deinitialize HFS support.
+
+	* include/grub/misc.h (grub_strncasecmp): Add prototype.
+	* kern/misc.c (grub_strncasecmp): Add function.
+
 2004-08-14  Marco Gerards  <metgerards@student.han.nl>
 
 	* include/grub/arg.h (GRUB_ARG_OPTION_OPTIONAL): Surround macro

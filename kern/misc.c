@@ -168,6 +168,24 @@ grub_strncmp (const char *s1, const char *s2, int c)
   return (int) *s1 - (int) *s2;
 }
 
+int
+grub_strncasecmp (const char *s1, const char *s2, int c)
+{
+  int p = 1;
+
+  while (grub_tolower (*s1) && grub_tolower (*s2) && p < c)
+    {
+      if (grub_tolower (*s1) != grub_tolower (*s2))
+	return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+      
+      s1++;
+      s2++;
+      p++;
+    }
+
+  return (int) *s1 - (int) *s2;
+}
+
 char *
 grub_strchr (const char *s, int c)
 {

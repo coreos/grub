@@ -25,16 +25,16 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
 	disk/powerpc/ieee1275/partition.c 					\
-	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c	\
+	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c	\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
 	normal/arg.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
 	kern/env.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
-CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_powerpc_ieee1275_partition.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
-MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-disk_powerpc_ieee1275_partition.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d
+CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_powerpc_ieee1275_partition.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
+MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-disk_powerpc_ieee1275_partition.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-fs_hfs.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d
 
-grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_powerpc_ieee1275_partition.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
+grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_powerpc_ieee1275_partition.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-kern_main.o: kern/main.c
@@ -173,6 +173,14 @@ grub_emu-fs_minix.d: fs/minix.c
 
 -include grub_emu-fs_minix.d
 
+grub_emu-fs_hfs.o: fs/hfs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_hfs.d: fs/hfs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_emu-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_hfs.d
+
 grub_emu-normal_cmdline.o: normal/cmdline.c
 	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -300,14 +308,15 @@ grubof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c 
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \
-	kern/powerpc/ieee1275/openfw.c fs/ext2.c fs/ufs.c fs/minix.c normal/cmdline.c \
-	normal/command.c normal/main.c normal/menu.c \
+	kern/powerpc/ieee1275/openfw.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c \
+	normal/cmdline.c normal/command.c normal/main.c normal/menu.c \
 	disk/powerpc/ieee1275/ofdisk.c disk/powerpc/ieee1275/partition.c \
-	kern/env.c normal/arg.c loader/powerpc/ieee1275/linux.c loader/powerpc/ieee1275/linux_normal.c commands/boot.c
-CLEANFILES += grubof grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-boot_powerpc_ieee1275_crt0.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
-MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-boot_powerpc_ieee1275_crt0.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-fs_ext2.d grubof-fs_ufs.d grubof-fs_minix.d grubof-normal_cmdline.d grubof-normal_command.d grubof-normal_main.d grubof-normal_menu.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-disk_powerpc_ieee1275_partition.d grubof-kern_env.d grubof-normal_arg.d grubof-loader_powerpc_ieee1275_linux.d grubof-loader_powerpc_ieee1275_linux_normal.d grubof-commands_boot.d
+	kern/env.c normal/arg.c loader/powerpc/ieee1275/linux.c \
+	loader/powerpc/ieee1275/linux_normal.c commands/boot.c
+CLEANFILES += grubof grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-boot_powerpc_ieee1275_crt0.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
+MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-boot_powerpc_ieee1275_crt0.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-fs_ext2.d grubof-fs_ufs.d grubof-fs_minix.d grubof-fs_hfs.d grubof-normal_cmdline.d grubof-normal_command.d grubof-normal_main.d grubof-normal_menu.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-disk_powerpc_ieee1275_partition.d grubof-kern_env.d grubof-normal_arg.d grubof-loader_powerpc_ieee1275_linux.d grubof-loader_powerpc_ieee1275_linux_normal.d grubof-commands_boot.d
 
-grubof: grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-boot_powerpc_ieee1275_crt0.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
+grubof: grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-boot_powerpc_ieee1275_crt0.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grubof_LDFLAGS)
 
 grubof-boot_powerpc_ieee1275_cmain.o: boot/powerpc/ieee1275/cmain.c
@@ -477,6 +486,14 @@ grubof-fs_minix.d: fs/minix.c
 	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grubof-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-fs_minix.d
+
+grubof-fs_hfs.o: fs/hfs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+
+grubof-fs_hfs.d: fs/hfs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grubof-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grubof-fs_hfs.d
 
 grubof-normal_cmdline.o: normal/cmdline.c
 	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<

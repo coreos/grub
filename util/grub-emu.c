@@ -160,6 +160,7 @@ main (int argc, char *argv[])
   grub_ext2_init ();
   grub_ufs_init ();
   grub_minix_init ();
+  grub_hfs_init ();
   grub_ls_init ();
   grub_boot_init ();
   grub_cmp_init ();
@@ -177,6 +178,7 @@ main (int argc, char *argv[])
   grub_ufs_fini ();
   grub_ext2_fini ();
   grub_minix_fini ();
+  grub_hfs_fini ();
   grub_fat_fini ();
   grub_boot_fini ();
   grub_cmp_fini ();
