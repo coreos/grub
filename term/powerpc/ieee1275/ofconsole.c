@@ -214,7 +214,7 @@ grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
   grub_curr_x = x;
   grub_curr_y = y;
 
-  grub_sprintf (s, "\e[%d;%dH", y - 1, x + 1);
+  grub_sprintf (s, "\e[%d;%dH", y + 1, x + 1);
   grub_ofconsole_writeesc (s);
 }
 

@@ -618,7 +618,7 @@ grubof-commands_boot.d: commands/boot.c
 grubof_HEADERS = grub/powerpc/ieee1275/ieee1275.h
 grubof_CFLAGS = $(COMMON_CFLAGS)
 grubof_ASFLAGS = $(COMMON_ASFLAGS)
-grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-Ttext,0x200000,-Bstatic
+grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

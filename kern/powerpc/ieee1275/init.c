@@ -40,6 +40,9 @@ grub_addr_t grub_total_module_size = 0;
 void
 abort (void)
 {
+  /* Trap to Open Firmware.  */
+  asm ("trap");
+  
   for (;;);
 }
 

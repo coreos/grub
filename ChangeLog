@@ -1,3 +1,12 @@
+2004-09-14  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/powerpc/ieee1275/init.c (abort): Trap into Open Firmware.
+
+	* term/powerpc/ieee1275/ofconsole.c (grub_ofconsole_gotoxy): Use
+	`y + 1' instead of `y - 1'.
+
+	* conf/powerpc-ieee1275.rmk (grubof_LDFLAGS): Add `-N' and `-S'.
+	
 2004-09-14  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Hollis Blanchard <hollis@penguinppc.org>:
