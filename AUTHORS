@@ -1,1 +1,10 @@
-Yoshinori K. Okuji designed and implemented everything.
+The following authors assigned copyright on their work to the Free
+Software Foundation:
+
+Yoshinori K. Okuji designed and implemented the initial version.
+
+Jeroen Dekkers added initrd support, Multiboot support, and fixed bugs
+in ext2fs.
+
+Marco Gerards added ext2fs support, pupa-emu, a new command-line
+engine, and fixed many bugs.
