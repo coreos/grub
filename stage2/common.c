@@ -283,8 +283,13 @@ init_bios_info (void)
       /* Clean out the I/O map.  */
       grub_memset ((char *) io_map, 0,
 		   IO_MAP_SIZE * sizeof (unsigned short));
+
+      /* Disable to probe I/O ports temporarily, because this doesn't
+	 work with some BIOSes (maybe they are too buggy).  */
+#if 0
       /* Track the int13 handler.  */
       track_int13 (drive);
+#endif
 
       /* Set the information.  */
       info->drive_number = drive;

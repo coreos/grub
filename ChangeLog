@@ -1,5 +1,11 @@
 2000-11-27  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/common.c (init_bios_info) [!STAGE1_5]: Don't call
+	track_int13, because the current implementation hangs up in some
+	environments.
+	
+2000-11-27  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* grub/asmstub.c (serial_init) [!O_SYNC]: Don't specify O_SYNC
 	to open SERIAL_DEVICE.
 	(serial_init) [O_FSYNC]: Specify O_FSYNC to open SERIAL_DEVICE.
