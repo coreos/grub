@@ -1,5 +1,10 @@
 2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/builtins.c (help_func): Show all the commands runnable
+	with the command-line interface, if "--all" is specified.
+	
+2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	An internal pager is implemented.
 	
 	* stage2/builtins.c (pager_func): New function.

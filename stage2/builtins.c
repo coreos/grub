@@ -1396,6 +1396,14 @@ static struct builtin builtin_halt =
 static int
 help_func (char *arg, int flags)
 {
+  int all = 0;
+  
+  if (grub_memcmp (arg, "--all", sizeof ("--all") - 1) == 0)
+    {
+      all = 1;
+      arg = skip_to (0, arg);
+    }
+  
   if (! *arg)
     {
       /* Invoked with no argument. Print the list of the short docs.  */
@@ -1407,9 +1415,14 @@ help_func (char *arg, int flags)
 	  int len;
 	  int i;
 
-	  /* If this doesn't need to be listed automatically,
+	  /* If this cannot be used in the command-line interface,
 	     skip this.  */
-	  if (! ((*builtin)->flags & BUILTIN_HELP_LIST))
+	  if (! ((*builtin)->flags & BUILTIN_CMDLINE))
+	    continue;
+	  
+	  /* If this doesn't need to be listed automatically and "--all"
+	     is not specified, skip this.  */
+	  if (! all && ! ((*builtin)->flags & BUILTIN_HELP_LIST))
 	    continue;
 
 	  len = grub_strlen ((*builtin)->short_doc);
@@ -1498,8 +1511,9 @@ static struct builtin builtin_help =
   "help",
   help_func,
   BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
-  "help [PATTERN ...]",
-  "Display helpful information about builtin commands."
+  "help [--all] [PATTERN ...]",
+  "Display helpful information about builtin commands. Not all commands"
+  " aren't shown without the option `--all'."
 };
 
 
