@@ -53,9 +53,9 @@ EOF
 	;;
 
     *)
-	echo "$progname: unrecognized option `$option'"
+	echo "$progname: unrecognized option \`$option'"
 	echo "Usage: $progname [OPTION]"
-	echo "Try `$progname --help' for more information."
+	echo "Try \`$progname --help' for more information."
 	exit 1
 	;;
     esac

@@ -1,3 +1,8 @@
+2001-08-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-md5-crypt.in: Prefix backquotes with backslashes in
+	strings.  From Fernando Silveira.
+	
 2001-08-02  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage2/common.c (init_bios_info): Ignore zero-length memory
