@@ -28,21 +28,36 @@ grub_cmd_halt (struct grub_arg_list *state __attribute__ ((unused)),
 	       int argc __attribute__ ((unused)),
 	       char **args __attribute__ ((unused)))
 {
-  grub_ieee1275_interpret ("shut-down", 0);
+  grub_halt ();
   return 0;
 }
 
 
+#ifdef GRUB_UTIL
+void
+grub_halt_init (void)
+{
+  grub_register_command ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
+			 "halt", "halts the computer.  This command does not"
+			 " work on all firmware.", 0);
+}
+
+void
+grub_halt_fini (void)
+{
+  grub_unregister_command ("halt");
+}
+#else /* ! GRUB_UTIL */
 GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
 			 "halt", "halts the computer.  This command does not"
-			 " work on every firmware.", 0);
+			 " work on all firmware.", 0);
 }
 
 GRUB_MOD_FINI
 {
   grub_unregister_command ("halt");
 }
-
+#endif

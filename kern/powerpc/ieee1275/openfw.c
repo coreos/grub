@@ -199,3 +199,15 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
 
   return 0;
 }
+
+void
+grub_reboot (void)
+{
+  grub_ieee1275_interpret ("reset-all", 0);
+}
+
+void
+grub_halt (void)
+{
+  grub_ieee1275_interpret ("shut-down", 0);
+}

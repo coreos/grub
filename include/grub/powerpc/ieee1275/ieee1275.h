@@ -131,6 +131,8 @@ grub_err_t EXPORT_FUNC(grub_children_iterate) (char *devpath,
 int EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
 void EXPORT_FUNC(abort) (void);
+void EXPORT_FUNC (grub_reboot) (void);
+void EXPORT_FUNC (grub_halt) (void);
 
 
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */

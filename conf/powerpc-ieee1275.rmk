@@ -35,7 +35,7 @@ grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/default.c commands/help.c	\
 	commands/terminal.c commands/ls.c commands/timeout.c		\
-	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
 	fs/minix.c fs/ufs.c						\
@@ -47,7 +47,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
-	util/i386/pc/misc.c
+	util/powerpc/ieee1275/misc.c
 
 grub_emu_LDFLAGS = -lncurses
 

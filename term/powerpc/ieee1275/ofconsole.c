@@ -307,3 +307,9 @@ grub_console_init (void)
   grub_term_register (&grub_ofconsole_term);
   grub_term_set_current (&grub_ofconsole_term);
 }
+
+void
+grub_console_fini (void)
+{
+  grub_term_unregister (&grub_ofconsole_term);
+}

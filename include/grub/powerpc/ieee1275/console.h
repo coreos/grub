@@ -51,6 +51,9 @@ void grub_console_setcursor (int on);
 /* Initialize the console system.  */
 void grub_console_init (void);
 
+/* Finish the console system.  */
+void grub_console_fini (void);
+
 #endif
 
 #endif /* ! GRUB_CONSOLE_MACHINE_HEADER */

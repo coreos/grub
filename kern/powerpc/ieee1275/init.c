@@ -33,6 +33,10 @@
 #include <grub/machine/time.h>
 #include <grub/machine/kernel.h>
 
+/* Apple OF 1.0.5 reserves 0x0 to 0x4000 for the exception handlers.  */
+static const grub_addr_t grub_heap_start = 0x4000;
+static grub_addr_t grub_heap_len;
+
 void
 abort (void)
 {
@@ -46,28 +50,36 @@ void
 grub_machine_init (void)
 {
   extern char _start;
-  grub_addr_t heap_start;
-  grub_addr_t heap_len;
 
   grub_console_init ();
 
-  /* Apple OF 1.0.5 reserves 0x4000 bytes for the exception handlers.  */
-  heap_start = 0x4000;
   /* Apple OF 3.1.1 reserves an extra 0x1000 bytes below the load address
      of an ELF file.  */
-  heap_len = (grub_addr_t) &_start - 0x1000 - heap_start;
+  grub_heap_len = (grub_addr_t) &_start - 0x1000 - grub_heap_start;
 
-  if (grub_ieee1275_claim (heap_start, heap_len, 0, 0))
+  if (grub_ieee1275_claim (grub_heap_start, grub_heap_len, 0, 0))
     {
-      grub_printf ("Failed to claim heap at 0x%x, len 0x%x\n", heap_start,
-		   heap_len);
+      grub_printf ("Failed to claim heap at 0x%x, len 0x%x\n", grub_heap_start,
+		   grub_heap_len);
       abort ();
     }
-  grub_mm_init_region ((void *) heap_start, heap_len);
+  grub_mm_init_region ((void *) grub_heap_start, grub_heap_len);
 
   grub_env_set ("prefix", "");
 
   grub_ofdisk_init ();
+}
+
+void
+grub_machine_fini (void)
+{
+  grub_loader_unset ();
+
+  grub_ofdisk_fini ();
+  grub_console_fini ();
+
+  grub_ieee1275_release (grub_heap_start, grub_heap_len);
+  /* XXX Release memory claimed for Old World firmware.  */
 }
 
 void

@@ -1,8 +1,8 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2005  Free Software Foundation, Inc.
  *
- *  This program is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,15 +13,22 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_INIT_MACHINE_HEADER
-#define GRUB_INIT_MACHINE_HEADER	1
+#include <setjmp.h>
 
-void cmain (uint32_t r3, uint32_t r4, uint32_t r5);
-void grub_ofdisk_init (void);
-void grub_console_init (void);
+#include <grub/util/misc.h>
 
-#endif /* ! GRUB_INIT_MACHINE_HEADER */
+void
+grub_reboot (void)
+{
+  longjmp (main_env, 1);
+}
+
+void
+grub_halt (void)
+{
+  grub_reboot ();
+}

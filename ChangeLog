@@ -1,3 +1,36 @@
+2005-03-26  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* commands/ieee1275/halt.c (grub_cmd_halt): Call grub_halt
+	instead of grub_ieee1275_interpret.
+	(grub_halt_init): New function.
+	(grub_halt_fini): Likewise.
+	(GRUB_MOD_INIT): Correct message grammar.
+	* commands/ieee1275/reboot.c (grub_cmd_reboot): Call grub_reboot
+	instead of grub_ieee1275_interpret.
+	(grub_reboot_init): New function.
+	(grub_reboot_fini): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Replace
+	commands/i386/pc/halt.c, commands/i386/pc/reboot.c, and
+	util/i386/pc/misc.c with commands/ieee1275/halt.c,
+	commands/ieee1275/reboot.c, and util/powerpc/ieee1275/misc.c.
+	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_fini): New
+	function.
+	* include/grub/powerpc/ieee1275/console.h (grub_console_fini):
+	Add prototype.
+	* include/grub/powerpc/ieee1275/ieee1275.h (grub_reboot): Add
+	prototype.
+	(grub_halt): Likewise.
+	* include/grub/powerpc/ieee1275/init.h: Remove inaccurate comment.
+	(cmain): Remove __attribute__((unused)).
+	* kern/powerpc/ieee1275/init.c (grub_heap_start): New variable.
+	(grub_heap_len): Likewise.
+	(grub_machine_fini): New function.
+	* kern/powerpc/ieee1275/openfw.c (grub_reboot): New function.
+	(grub_halt): Likewise.
+	* term/powerpc/ieee1275/ofconsole.c (grub_console_fini): New
+	function.
+	* util/powerpc/ieee1275/misc.c: New file.
+
 2005-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: New file.

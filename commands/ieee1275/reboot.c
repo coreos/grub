@@ -28,11 +28,25 @@ grub_cmd_reboot (struct grub_arg_list *state __attribute__ ((unused)),
 		 int argc __attribute__ ((unused)),
 		 char **args __attribute__ ((unused)))
 {
-  grub_ieee1275_interpret ("reset-all", 0);
+  grub_reboot ();
   return 0;
 }
 
 
+#ifdef GRUB_UTIL
+void
+grub_reboot_init (void)
+{
+  grub_register_command ("reboot", grub_cmd_reboot, GRUB_COMMAND_FLAG_BOTH,
+			 "reboot", "Reboot the computer", 0);
+}
+
+void
+grub_reboot_fini (void)
+{
+  grub_unregister_command ("reboot");
+}
+#else /* ! GRUB_UTIL */
 GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
@@ -44,3 +58,4 @@ GRUB_MOD_FINI
 {
   grub_unregister_command ("reboot");
 }
+#endif

@@ -164,3 +164,9 @@ grub_ofdisk_init (void)
 {
   grub_disk_dev_register (&grub_ofdisk_dev);
 }
+
+void
+grub_ofdisk_fini (void)
+{
+  grub_disk_dev_unregister (&grub_ofdisk_dev);
+}
