@@ -1,3 +1,9 @@
+2001-11-07  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* stage2/builtins.c (terminal_func) [!SUPPORT_SERIAL]: Disable
+	the wait code, as it is usable only when serial support is on.
+	Reported by Karl Hammar <karl@kalle.csb.ki.se>.
+	
 2001-10-27  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	JFS and XFS support is added.

@@ -3940,6 +3940,7 @@ terminal_func (char *arg, int flags)
       arg = skip_to (0, arg);
     }
 
+#ifdef SUPPORT_SERIAL
   /* If a seial console is turned on, wait until the user pushes any key.  */
   if (terminal & TERMINAL_SERIAL)
     {
@@ -3984,6 +3985,7 @@ terminal_func (char *arg, int flags)
       /* Expired.  */
       terminal &= (default_terminal | TERMINAL_DUMB);
     }
+#endif /* SUPPORT_SERIAL */
 
   return 0;
 }
