@@ -36,8 +36,11 @@
 
 #include "etherboot.h"
 #include "nic.h"
+#include "pci.h"
+#if 0
 #ifndef __FreeBSD__
 #include <linux/pci.h>
+#endif
 #endif
 
 #define	TIME_OUT	60000

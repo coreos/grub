@@ -531,8 +531,10 @@ bootp (void)
 	      grub_memmove (bp.bp_vend + sizeof rfc1533_cookie
 			    + sizeof dhcprequest,
 			    rfc1533_end, sizeof rfc1533_end);
-	      grub_memmove (bp.bp_vend + 9, &dhcp_server, sizeof (in_addr));
-	      grub_memmove (bp.bp_vend + 15, &dhcp_addr, sizeof (in_addr));
+	      grub_memmove (bp.bp_vend + 9, (char *) &dhcp_server,
+			    sizeof (in_addr));
+	      grub_memmove (bp.bp_vend + 15, (char *) &dhcp_addr,
+			    sizeof (in_addr));
 	      for (retry1 = 0; retry1 < MAX_BOOTP_RETRIES;)
 		{
 		  udp_transmit (IP_BROADCAST, 0, BOOTP_SERVER,
@@ -861,7 +863,7 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	    }
 	  else if (c == RFC2132_SRV_ID)
 	    {
-	      grub_memmove (&dhcp_server, p + 2, sizeof (in_addr));
+	      grub_memmove ((char *) &dhcp_server, p + 2, sizeof (in_addr));
 	    }
 #endif /* ! NO_DHCP_SUPPORT */
 	  

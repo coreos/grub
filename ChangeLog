@@ -1,3 +1,24 @@
+2000-02-10  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/Makefile.am [NETBOOT_SUPPORT] (STAGE2_COMPILE): Added
+	-I$(top_srcdir)/netboot and -DSUPPORT_NETBOOT=1.
+	* stage2/builtins.c (bootp_func): New function.
+	(dhcp_func): Likewise.
+	(rarp_func): Likewise.
+	(builtin_bootp): New variable.
+	(builtin_dhcp): Likewise.
+	(builtin_rarp): Likewise.
+	(builtin_table): Added pointers to BUILTIN_BOOTP, BUILTIN_DHCP
+	and BUILTIN_RARP.
+	* docs/user-ref.texi (General Commands): Added descriptions
+	about "bootp", "dhcp" and "rarp".
+	
+	* netboot/main.c (bootp) [!NO_DHCP_SUPPORT]: Added casts to
+	suppress gcc warnings.
+	(decode_rfc1533) [!NO_DHCP_SUPPORT]: Likewise.
+	* netboot/3c90x.c: Include the local "pci.h" instead of
+	<linux/pci.h> even if __FreeBSD__ is undefined.
+	
 2000-02-09  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Jochen Hoenicke:

@@ -498,6 +498,10 @@ the line, starting with the first non-space character.
 
 Commands usable both in the menu and in the command line.
 
+@deffn Command bootp
+Initialize a network device via the @dfn{BOOTP} protocol.
+@end deffn
+
 @deffn Command color normal [highlight]
 Change the menu colors. The color @var{normal} is used for most
 lines in the menu, and the color @var{highlight} is used to highlight the
@@ -592,10 +596,19 @@ This command can be used only in the grub shell (@pxref{Invoking the
 grub shell}).
 @end deffn
 
+@deffn Command dhcp
+Initialize a network device via the @dfn{DHCP} protocol. At the moment,
+this command is just an alias for @command{bootp}.
+@end deffn
+
 @deffn Command hide partition
 Hide @var{partition} by setting the @dfn{hidden} bit in its partition
 type code. This is useful only for DOS or Windows when multiple primary
 partitions exist in one disk.
+@end deffn
+
+@deffn Command rarp
+Initialize a network device via the @dfn{RARP} protocol.
 @end deffn
 
 @deffn Command setkey to_key from_key

@@ -22,6 +22,10 @@
 #include <shared.h>
 #include <filesys.h>
 
+#ifdef SUPPORT_NETBOOT
+# include <etherboot.h>
+#endif
+
 #ifndef GRUB_UTIL
 # include "apic.h"
 # include "smp-imps.h"
@@ -239,6 +243,37 @@ static struct builtin builtin_boot =
 };
 
 
+/* bootp */
+static int
+bootp_func (char *arg, int flags)
+{
+#ifdef SUPPORT_NETBOOT
+  if (! bootp ())
+    {
+      if (errnum == ERR_NONE)
+	errnum = ERR_DEV_VALUES;
+
+      return 1;
+    }
+
+  return 0;
+#else
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#endif
+}
+
+static struct builtin builtin_bootp =
+{
+  "bootp",
+  bootp_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "bootp",
+  "Initialize a network device via BOOTP."
+};
+
+
+/* cat */
 static int
 cat_func (char *arg, int flags)
 {
@@ -580,6 +615,24 @@ static struct builtin builtin_device =
   "device DRIVE DEVICE",
   "Specify DEVICE as the actual drive for a BIOS drive DRIVE. This command"
   " can be used only in the grub shell."
+};
+
+
+/* dhcp */
+static int
+dhcp_func (char *arg, int flags)
+{
+  /* For now, this is an alias for bootp.  */
+  return bootp_func (arg, flags);
+}
+
+static struct builtin builtin_dhcp =
+{
+  "dhcp",
+  dhcp_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "dhcp",
+  "Initialize a network device via DHCP."
 };
 
 
@@ -1930,6 +1983,35 @@ static struct builtin builtin_quit =
 
 
 static int
+rarp_func (char *arg, int flags)
+{
+#ifdef SUPPORT_NETBOOT
+  if (! rarp ())
+    {
+      if (errnum == ERR_NONE)
+	errnum = ERR_DEV_VALUES;
+
+      return 1;
+    }
+
+  return 0;
+#else
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#endif
+}
+
+static struct builtin builtin_rarp =
+{
+  "rarp",
+  rarp_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "rarp",
+  "Initialize a network device via RARP."
+};
+
+
+static int
 read_func (char *arg, int flags)
 {
   int addr;
@@ -2718,6 +2800,7 @@ struct builtin *builtin_table[] =
 {
   &builtin_blocklist,
   &builtin_boot,
+  &builtin_bootp,
   &builtin_cat,
   &builtin_chainloader,
   &builtin_color,
@@ -2725,6 +2808,7 @@ struct builtin *builtin_table[] =
   &builtin_debug,
   &builtin_default,
   &builtin_device,
+  &builtin_dhcp,
   &builtin_displaymem,
   &builtin_embed,
   &builtin_fallback,
@@ -2745,6 +2829,7 @@ struct builtin *builtin_table[] =
   &builtin_password,
   &builtin_pause,
   &builtin_quit,
+  &builtin_rarp,
   &builtin_read,
   &builtin_root,
   &builtin_rootnoverify,

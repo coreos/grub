@@ -398,6 +398,7 @@ if test "x$enable_via_rhine" = xyes; then
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS via_rhine.o"
 fi
 
+dnl Check if the netboot support is turned on.
 AM_CONDITIONAL(NETBOOT_SUPPORT, test "x$NET_CFLAGS" != x)
 if test "x$NET_CFLAGS" != x; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_TFTP=1"
