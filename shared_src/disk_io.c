@@ -546,10 +546,11 @@ open_partition(void)
 static int incomplete, disk_choice, part_choice;
 
 
-int
+char *
 set_device(char *device)
 {
-  int retval = 0;
+  /* The use of retval in this function is not really clean, but it works */
+  char *retval = 0;
 
   incomplete = 0;
   disk_choice = 1;
@@ -631,7 +632,7 @@ set_device(char *device)
     }
 
   if (retval)
-    retval = ((int)device) + 1;
+    retval = device + 1;
   else
     {
       if (!*device)
@@ -663,7 +664,7 @@ open_device(void)
 
 #ifndef NO_FANCY_STUFF
 int
-set_bootdev(void)
+set_bootdev(int hdbias)
 {
   int i, j;
 
@@ -686,7 +687,8 @@ set_bootdev(void)
   if (saved_drive & 0x80)
     j = bsd_evil_hack;
 
-  return MAKEBOOTDEV( j, (i >> 4), (i & 0xF), (saved_drive & 0x79),
+  return MAKEBOOTDEV( j, (i >> 4), (i & 0xF),
+		      ((saved_drive - hdbias) & 0x79),
 		      ((saved_partition >> 8) & 0xFF) );
 }
 #endif /* NO_FANCY_STUFF */
@@ -697,7 +699,7 @@ setup_part(char *filename)
 {
   if (*filename == '(')
     {
-      if ( (filename = (char *) set_device(filename)) == (char *)0 )
+      if ( (filename = set_device(filename)) == 0 )
         {
           current_drive = 0xFF;
           return 0;
@@ -770,7 +772,7 @@ print_completions(char *filename)
 {
   char *ptr = filename;
 
-  if (*filename == '/' || (ptr = (char *)set_device(filename)) || incomplete)
+  if (*filename == '/' || (ptr = set_device(filename)) || incomplete)
     {
       errnum = 0;
 
