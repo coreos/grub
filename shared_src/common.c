@@ -64,6 +64,7 @@ char *err_list[] =
   "Unsupported Multiboot features requested",
   "Unknown boot failure",
   "Must load Multiboot kernel before modules",
+  "Must load Linux kernel before initrd",
   "Cannot boot without kernel loaded",
   "Unrecognized command",
   "Bad or incompatible header on compressed file",
