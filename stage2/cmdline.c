@@ -19,7 +19,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "shared.h"
+#include <shared.h>
+
+#ifdef SUPPORT_DISKLESS
+# include <etherboot.h>
+#endif
 
 /* Find the next word from CMDLINE and return the pointer. If
    AFTER_EQUAL is non-zero, assume that the character `=' is treated as
@@ -117,6 +121,10 @@ enter_cmdline (char *heap, int forever)
   /* Initialize the data and print a message.  */
   init_cmdline ();
   init_page ();
+#ifdef SUPPORT_DISKLESS
+  print_network_configuration ();
+  grub_putchar ('\n');
+#endif
   print_cmdline_message (forever);
 
   while (1)

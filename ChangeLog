@@ -1,3 +1,18 @@
+2000-06-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Chip Salzenberg:
+	* stage2/cmdline.c (enter_cmdline) [SUPPORT_DISKLESS]: Redisplay
+	network configuration after clearing screen, before first prompt.
+
+	* stage2/cmdline.c: Include <shared.h> instead of "shared.h".
+	[SUPPORT_DISKLESS]: Include <etherboot.h>.
+
+2000-06-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setup_func): Try to install a Stage 1.5,
+	check if INSTALL_DRIVE is a hard disk as well as IMAGE_DRIVE.
+	Reported by Pavel Roskin.
+	
 2000-05-31  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* acinclude.m4 (grub_ASM_ABSOLUTE_WITHOUT_ASTERISK): New

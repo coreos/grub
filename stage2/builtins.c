@@ -2738,7 +2738,7 @@ setup_func (char *arg, int flags)
   
   /* If the drive where stage2 resides is a hard disk, try to use a
      Stage 1.5.  */
-  if (image_drive & 0x80)
+  if ((image_drive & 0x80) && (install_drive & 0x80))
     {
       char *fsys = fsys_table[fsys_type].name;
       int i;
