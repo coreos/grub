@@ -279,7 +279,7 @@ load_image(void)
 	      bzero((char*)cur_addr, bss_len);
 	      cur_addr += bss_len;
 
-	      printf(", bss=0x%x", str, bss_len);
+	      printf(", bss=0x%x", bss_len);
 	    }
 	}
       else if (!errnum)
@@ -364,7 +364,7 @@ load_image(void)
 	      /* mark memory as used */
 	      if (cur_addr < memaddr+memsiz)
 		cur_addr = memaddr+memsiz;
-	      printf(", <0x%x:0x%x:0x%x>", str, memaddr, filesiz,
+	      printf(", <0x%x:0x%x:0x%x>", memaddr, filesiz,
 		     memsiz-filesiz);
 	      /* increment number of segments */
 	      loaded++;
@@ -393,7 +393,7 @@ load_image(void)
     }
 
   if (!errnum)
-    printf(", entry=0x%x]\n", str, (int)entry_addr);
+    printf(", entry=0x%x]\n", (int)entry_addr);
   else
     {
       putchar('\n');
