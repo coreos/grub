@@ -1,5 +1,12 @@
 2002-05-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* lib/device.c (read_device_map): Show an error message and exit
+	abnormally, if MAP[DRIVE] has already been filled.
+	* util/grub-install.in: If there is any dulicated entry, print
+	an error message and exit abnormally.
+	
+2002-05-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* lib/device.c: Don't include linux/hdreg.h, linux/major.h,
 	or linux/kdev_t.h.
 	[__linux__] (HDIO_GETGEO): Defined.

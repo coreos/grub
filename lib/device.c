@@ -454,6 +454,13 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       while (*eptr && ! isspace (*eptr))
 	eptr++;
       *eptr = 0;
+
+      /* Multiple entries for a given drive is not allowed.  */
+      if (map[drive])
+	{
+	  show_error (line_number, "Duplicated entry found");
+	  return 0;
+	}
       
       map[drive] = strdup (ptr);
       assert (map[drive]);

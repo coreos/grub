@@ -323,6 +323,14 @@ EOF
     rm -f $log_file
 fi
 
+# Make sure that there is no duplicated entry.
+tmp=`sed -n '/^([fh]d[0-9]*)/s/\(^(.*)\).*/\1/p' $device_map \
+    | sort | uniq -d | sed -n 1p`
+if test -n "$tmp"; then
+    echo "The drive $tmp is defined multiple times in the device map $device_map" 1>&2
+    exit 1
+fi
+
 # Check for INSTALL_DEVICE.
 case "$install_device" in
 /dev/*)
