@@ -177,14 +177,14 @@ grub_stage2 (void)
 
   /* Make sure that actual writing is done.  */
   sync ();
-  
+
   /* Set our stack, and go for it. */
   simstack = (char *) PROTSTACKINIT;
   doit ();
 
   /* I don't know if this is necessary really.  */
   sync ();
-  
+
 #ifdef HAVE_LIBCURSES
   if (use_curses)
     endwin ();
@@ -229,7 +229,7 @@ init_device_map (void)
     {
       fprintf (stderr, "%s:%d: error: %s\n", device_map_file, no, msg);
     }
-  
+
   assert (device_map == 0);
   device_map = malloc (NUM_DISKS * sizeof (char *));
   assert (device_map);
@@ -250,41 +250,41 @@ init_device_map (void)
 	     probing devices.  */
 	  char buf[1024];		/* XXX */
 	  int line_number = 0;
-	  
+
 	  while (fgets (buf, sizeof (buf), fp))
 	    {
 	      char *ptr, *eptr;
 	      int drive;
 	      int is_floppy = 0;
-	      
+
 	      /* Increase the number of lines.  */
 	      line_number++;
-	      
+
 	      /* If the first character is '#', skip it.  */
 	      if (buf[0] == '#')
 		continue;
-	      
+
 	      ptr = buf;
 	      /* Skip leading spaces.  */
 	      while (*ptr && isspace (*ptr))
 		ptr++;
-	      
+
 	      if (*ptr != '(')
 		{
 		  print_error (line_number, "No open parenthesis found");
 		  stop ();
 		}
-	      
+
 	      ptr++;
 	      if ((*ptr != 'f' && *ptr != 'h') || *(ptr + 1) != 'd')
 		{
 		  print_error (line_number, "Bad drive name");
 		  stop ();
 		}
-	      
+
 	      if (*ptr == 'f')
 		is_floppy = 1;
-	      
+
 	      ptr += 2;
 	      drive = strtoul (ptr, &ptr, 10);
 	      if (drive < 0 || drive > 8)
@@ -292,41 +292,41 @@ init_device_map (void)
 		  print_error (line_number, "Bad device number");
 		  stop ();
 		}
-	      
+
 	      if (! is_floppy)
 		drive += 0x80;
-	      
+
 	      if (*ptr != ')')
 		{
 		  print_error (line_number, "No close parenthesis found");
 		  stop ();
 		}
-	      
+
 	      ptr++;
 	      /* Skip spaces.  */
 	      while (*ptr && isspace (*ptr))
 		ptr++;
-	      
+
 	      if (! *ptr)
 		{
 		  print_error (line_number, "No filename found");
 		  stop ();
 		}
-	      
+
 	      /* Terminate the filename.  */
 	      eptr = ptr;
 	      while (*eptr && ! isspace (*eptr))
 		eptr++;
 	      *eptr = 0;
-	      
+
 	      assign_device_name (drive, ptr);
 	    }
-	  
+
 	  fclose (fp);
 	  return;
 	}
     }
-  
+
   /* Print something as the user does not think GRUB has been crashed.  */
   fprintf (stderr,
 	   "Probe devices to guess BIOS drives. This may take a long time.\n");
@@ -334,7 +334,7 @@ init_device_map (void)
   if (device_map_file)
     /* Try to open the device map file to write the probed data.  */
     fp = fopen (device_map_file, "w");
-  
+
   /* Floppies.  */
   if (! no_floppy)
     for (i = 0; i < 2; i++)
@@ -343,17 +343,17 @@ init_device_map (void)
 
 	if (i == 1 && ! probe_second_floppy)
 	  break;
-	
+
 	get_floppy_disk_name (name, i);
 	/* In floppies, write the map, whether check_device succeeds
 	   or not, because the user just does not insert floppies.  */
 	if (fp)
 	  fprintf (fp, "(fd%d)\t%s\n", i, name);
-	
+
 	if (check_device (name))
 	  assign_device_name (i, name);
       }
-  
+
   /* IDE disks.  */
   for (i = 0; i < 4; i++)
     {
@@ -363,15 +363,15 @@ init_device_map (void)
       if (check_device (name))
 	{
 	  assign_device_name (num_hd + 0x80, name);
-	  
+
 	  /* If the device map file is opened, write the map.  */
 	  if (fp)
 	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
-	  
+
 	  num_hd++;
 	}
     }
-  
+
   /* The rest is SCSI disks.  */
   for (i = 0; i < 8; i++)
     {
@@ -385,7 +385,7 @@ init_device_map (void)
 	  /* If the device map file is opened, write the map.  */
 	  if (fp)
 	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
-	  
+
 	  num_hd++;
 	}
     }
@@ -484,7 +484,7 @@ get_scsi_disk_name (char *name, int unit)
   *name = 0;
 #endif
 }
-  
+
 /* Check if DEVICE can be read. If an error occurs, return zero,
    otherwise return non-zero.  */
 int
@@ -524,7 +524,7 @@ check_device (const char *device)
       fclose (fp);
       return 0;
     }
-  
+
   fclose (fp);
   return 1;
 }
@@ -536,14 +536,14 @@ assign_device_name (int drive, const char *device)
   /* If DRIVE is already assigned, free it.  */
   if (device_map[drive])
     free (device_map[drive]);
-  
+
   /* If the old one is already opened, close it.  */
   if (disks[drive].flags != -1)
     {
       close (disks[drive].flags);
       disks[drive].flags = -1;
     }
-  
+
   /* Assign DRIVE to DEVICE.  */
   if (! device)
     device_map[drive] = 0;
@@ -763,11 +763,11 @@ static int save_char = ERR;
 int
 getkey (void)
 {
+  int c;
+
 #ifdef HAVE_LIBCURSES
   if (use_curses)
     {
-      int c;
-
       /* If checkkey has already got a character, then return it.  */
       if (save_char != ERR)
 	{
@@ -775,15 +775,19 @@ getkey (void)
 	  save_char = ERR;
 	  return c;
 	}
-      
+
       wtimeout (stdscr, -1);
       c = getch ();
       wtimeout (stdscr, 100);
-      return c;
     }
+  else
 #endif
+    c = getchar ();
 
-  return getchar ();
+  /* Quit if we get EOF. */
+  if (c == -1)
+    stop ();
+  return c;
 }
 
 
@@ -800,7 +804,7 @@ checkkey (void)
 	 means checkkey is called twice continuously.  */
       if (save_char != ERR)
 	return save_char;
-      
+
       c = getch ();
       /* If C is not ERR, then put it back in the input queue.  */
       if (c != ERR)
@@ -809,7 +813,8 @@ checkkey (void)
     }
 #endif
 
-  /* Just pretend they hit the space bar. */
+  /* Just pretend they hit the space bar, then read the real key when
+     they call getkey. */
   return ' ';
 }
 
@@ -845,7 +850,7 @@ get_drive_geometry (int drive)
   struct hd_geometry hdg;
   if (ioctl (geom->flags, HDIO_GETGEO, &hdg))
     return 0;
-  
+
   /* Got the geometry, so save it. */
   geom->cylinders = hdg.cylinders;
   geom->heads = hdg.heads;
@@ -853,19 +858,19 @@ get_drive_geometry (int drive)
   /* FIXME: Should get the real number of sectors.  */
   geom->total_sectors = hdg.cylinders * hdg.heads * hdg.sectors;
   return 1;
-  
+
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
   /* FreeBSD */
   struct disklabel hdg;
   if (ioctl (disks[drive].flags, DIOCGDINFO, &hdg))
     return 0;
-  
+
   disks[drive].cylinders = hdg.d_ncylinders;
   disks[drive].heads = hdg.d_ntracks;
   disks[drive].sectors = hdg.d_nsectors;
   disks[drive].total_sectors = hdg.d_secperunit;
   return 1;
-  
+
 #else
 # warning "In your operating system, automatic detection of geometries \
 will not be performed."
@@ -873,7 +878,7 @@ will not be performed."
 #endif
 }
 
-  
+
 /* Low-level disk I/O.  Our stubbed version just returns a file
    descriptor, not the actual geometry. */
 int
@@ -897,11 +902,11 @@ get_diskinfo (int drive, struct geometry *geometry)
       if (verbose)
 	grub_printf ("Attempt to open drive 0x%x (%s)\n",
 		     drive, devname);
-	  
+
       /* Open read/write, or read-only if that failed. */
       if (! read_only)
 	disks[drive].flags = open (devname, O_RDWR);
-      
+
       if (disks[drive].flags == -1)
 	{
 	  if (read_only || errno == EACCES || errno == EROFS)
@@ -962,11 +967,11 @@ get_diskinfo (int drive, struct geometry *geometry)
     return -1;
 
 #ifdef __linux__
-  /* In Linux, invalidate the buffer cache, so that left overs 
+  /* In Linux, invalidate the buffer cache, so that left overs
      from other program in the cache are flushed and seen by us */
   ioctl (disks[drive].flags, BLKFLSBUF, 0);
 #endif
-  
+
   *geometry = disks[drive];
   return 0;
 }
@@ -977,7 +982,7 @@ static int
 nread (int fd, char *buf, size_t len)
 {
   int size = len;
-  
+
   while (len)
     {
       int ret = read (fd, buf, len);
@@ -993,7 +998,7 @@ nread (int fd, char *buf, size_t len)
       len -= ret;
       buf += ret;
     }
-  
+
   return size;
 }
 
@@ -1003,7 +1008,7 @@ static int
 nwrite (int fd, char *buf, size_t len)
 {
   int size = len;
-  
+
   while (len)
     {
       int ret = write (fd, buf, len);
@@ -1019,7 +1024,7 @@ nwrite (int fd, char *buf, size_t len)
       len -= ret;
       buf += ret;
     }
-  
+
   return size;
 }
 
@@ -1036,7 +1041,7 @@ hex_dump (void *buf, size_t size)
   int column = 0;
   /* how many bytes written */
   int count = 0;
-  
+
   while (size > 0)
     {
       /* high 4 bits */
@@ -1099,7 +1104,7 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
 #else
   {
     off_t offset = (off_t) sector * (off_t) SECTOR_SIZE;
-    
+
     if (lseek (fd, offset, SEEK_SET) != offset)
       return -1;
   }
@@ -1113,7 +1118,7 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
       if (nread (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
 	return -1;
       break;
-      
+
     case BIOSDISK_WRITE:
       if (verbose)
 	{
@@ -1126,12 +1131,12 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
 	if (nwrite (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
 	  return -1;
       break;
-      
+
     default:
       grub_printf ("unknown subfunc %d\n", subfunc);
       break;
     }
-  
+
   return 0;
 }
 

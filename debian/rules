@@ -49,7 +49,7 @@ binary-arch:	checkroot build
 
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
 	gzip -f9 debian/tmp/usr/share/info/* debian/tmp/usr/share/man/*/*
-	strip -s debian/tmp/usr/sbin/*
+	strip -s debian/tmp/usr/sbin/grub
 
 	$(INSTALL_DATA)	TODO BUGS NEWS docs/menu.lst \
 	  debian/tmp/usr/share/doc/grub/
@@ -63,7 +63,7 @@ binary-arch:	checkroot build
 
 	# Install control files.
 	$(INSTALL_PROGRAM) debian/postinst debian/prerm debian/tmp/DEBIAN
-	dpkg-shlibdeps debian/tmp/usr/*bin/*
+	dpkg-shlibdeps debian/tmp/usr/sbin/grub
 	dpkg-gencontrol
 	chown -R root.root debian/tmp
 	chmod -R go=rX debian/tmp

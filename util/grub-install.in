@@ -64,7 +64,7 @@ convert () {
 
     # Break the device name into the disk part and the partition part.
     case $host_os in
-    linux*) 
+    linux*)
 	tmp_disk=`echo $1 | sed 's%[0-9]*$%%'`
 	tmp_part=`echo $1 | sed "s%$tmp_disk%%"` ;;
     gnu*)
@@ -154,16 +154,14 @@ fi
 # Stage 1.5 does not exist.
 
 # Create the GRUB directory if it is not present.
-if test ! -d $bootdir; then
-    mkdir $bootdir
-fi
-
-if test ! -d $grubdir; then
-    mkdir $grubdir
-fi
+test -d $bootdir || mkdir $bootdir
+test -d $grubdir || mkdir $grubdir
 
 # Create the device map file if it is not present.
 if test ! -f $device_map; then
+    # Create a safe temporary file.
+    test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
+
     $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 quit
 EOF
@@ -208,6 +206,9 @@ fi
 # Copy the GRUB images to the GRUB directory.
 rm -f ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5
 cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 ${grubdir}
+
+# Create a safe temporary file.
+test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file

@@ -668,8 +668,8 @@ void init_builtins (void);
 void init_config (void);
 char *skip_to (int after_equal, char *cmdline);
 struct builtin *find_command (char *command);
-void print_cmdline_message (void);
-void enter_cmdline (char *heap);
+void print_cmdline_message (int forever);
+void enter_cmdline (char *heap, int forever);
 int run_script (char *script, char *heap);
 #endif
 

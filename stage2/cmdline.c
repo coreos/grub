@@ -42,11 +42,13 @@ skip_to (int after_equal, char *cmdline)
 
 /* Print a helpful message for the command-line interface.  */
 void
-print_cmdline_message (void)
+print_cmdline_message (int forever)
 {
-  printf (" [ Minimal BASH-like line editing is supported.  For the first word, TAB
+  printf ("\
+ [ Minimal BASH-like line editing is supported.  For the first word, TAB
    lists possible command completions.  Anywhere else TAB lists the possible
-   completions of a device/filename.  ESC at any time exits. ]\n");
+   completions of a device/filename.%s ]\n",
+	  (forever ? "" : "  ESC at any time exits."));
 }
 
 /* Find the builtin whose command name is COMMAND and return the
@@ -106,14 +108,15 @@ init_cmdline (void)
 }
 
 /* Enter the command-line interface. HEAP is used for the command-line
-   buffer. Return only if get_cmdline returns non-zero (ESC is pushed).  */
+   buffer. Return only if FOREVER is nonzero and get_cmdline returns
+   nonzero (ESC is pushed).  */
 void
-enter_cmdline (char *heap)
+enter_cmdline (char *heap, int forever)
 {
   /* Initialize the data and print a message.  */
   init_cmdline ();
   init_page ();
-  print_cmdline_message ();
+  print_cmdline_message (forever);
 
   while (1)
     {
@@ -123,7 +126,7 @@ enter_cmdline (char *heap)
       *heap = 0;
       print_error ();
       errnum = ERR_NONE;
-      
+
       /* Get the command-line with the minimal BASH-like interface.  */
       if (get_cmdline (PACKAGE "> ", heap, 2048, 0, 1))
 	return;

@@ -94,14 +94,14 @@ print_border (int y, int size)
   for (i = 0; i < 14; i++)
     {
       int j;
-      for (j = 0; j < 75; j++) 
+      for (j = 0; j < 75; j++)
 	{
-	  gotoxy (j + 1, i + y); 
-	  set_attrib (normal_color); 
+	  gotoxy (j + 1, i + y);
+	  set_attrib (normal_color);
 	}
     }
 #endif
-  
+
   gotoxy (1, y);
 
   putchar (DISP_UL);
@@ -185,7 +185,7 @@ restart:
 
   init_page ();
 #ifndef GRUB_UTIL
-  nocursor (); 
+  nocursor ();
 #endif
 
   print_border (3, 12);
@@ -193,7 +193,7 @@ restart:
 #ifdef GRUB_UTIL
   grub_printf ("\n
       Use the up and down arrows for selecting which entry is highlighted.\n");
-#else  
+#else
   grub_printf ("\n
       Use the %c and %c keys for selecting which entry is highlighted.\n",
 	  DISP_UP, DISP_DOWN);
@@ -303,7 +303,7 @@ restart:
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
 		  set_line_normal (4 + entryno);
-		  
+
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
@@ -332,7 +332,7 @@ restart:
 		      char *ptr = get_entry(menu_entries,
 					    first_entry + entryno + 1,
 					    0);
-		      
+
 		      memmove (cur_entry, ptr, ((int) heap) - ((int) ptr));
 		      heap -= (((int) ptr) - ((int) cur_entry));
 
@@ -364,7 +364,7 @@ restart:
 		  char *pptr = password;
 
 		  gotoxy (1, 21);
-		  
+
 		  /* Wipe out the previously entered password */
 		  memset (entered, 0, sizeof (entered));
 		  get_cmdline (" Password: ", entered, 31, '*', 0);
@@ -374,7 +374,7 @@ restart:
 
 		  /* Make sure that PASSWORD is NUL-terminated.  */
 		  *pptr++ = 0;
-		  
+
 		  if (! strcmp (password, entered))
 		    {
 		      char *new_file = config_file;
@@ -431,7 +431,7 @@ restart:
 		  else
 		    {
 		      cls ();
-		      print_cmdline_message ();
+		      print_cmdline_message (0);
 
 		      new_heap = heap + NEW_HEAPSIZE + 1;
 
@@ -470,7 +470,7 @@ restart:
 		}
 	      if (c == 'c')
 		{
-		  enter_cmdline (heap);
+		  enter_cmdline (heap, 0);
 		  goto restart;
 		}
 #ifdef GRUB_UTIL
@@ -518,7 +518,7 @@ restart:
       else
 	break;
     }
-  
+
   goto restart;
 }
 
@@ -582,7 +582,7 @@ cmain (void)
 
   /* Initialize the kill buffer.  */
   *kill = 0;
-  
+
   /* Never return.  */
   for (;;)
     {
@@ -622,7 +622,7 @@ cmain (void)
 	      if (builtin->flags & BUILTIN_TITLE)
 		{
 		  char *ptr;
-		  
+
 		  /* the command "title" is specially treated.  */
 		  if (state > 1)
 		    {
@@ -641,7 +641,7 @@ cmain (void)
 
 		  /* Reset the state.  */
 		  state = 1;
-		  
+
 		  /* Copy title into menu area.  */
 		  ptr = skip_to (1, cmdline);
 		  while ((menu_entries[menu_len++] = *(ptr++)) != 0)
@@ -663,14 +663,14 @@ cmain (void)
 	      else
 		{
 		  char *ptr = cmdline;
-		  
+
 		  state++;
 		  /* Copy config file data to config area.  */
 		  while ((config_entries[config_len++] = *ptr++) != 0)
 		    ;
 		}
 	    }
-	  
+
 	  if (state > 1)
 	    {
 	      /* Finish the last entry.  */
@@ -682,7 +682,7 @@ cmain (void)
 	      menu_len = prev_menu_len;
 	      config_len = prev_config_len;
 	    }
-	  
+
 	  menu_entries[menu_len++] = 0;
 	  config_entries[config_len++] = 0;
 	  grub_memmove (config_entries + config_len, menu_entries, menu_len);
@@ -690,14 +690,13 @@ cmain (void)
 
 	  grub_close ();
 	}
-      
+
       if (! num_entries)
 	{
 	  /* If no acceptable config file, goto command-line, starting
 	     heap from where the config entries would have been stored
 	     if there were any.  */
-	  while (1)
-	    enter_cmdline (config_entries);
+	  enter_cmdline (config_entries, 1);
 	}
       else
 	{

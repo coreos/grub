@@ -27,7 +27,8 @@ Priorities:
   partition. !!!
 
 * Support embedding a Stage 1.5 in the EXT2_BOOT_LOADER_INO of an ext2fs
-  partition.  Maybe we can just make a hard link to an existing file? !
+  partition, so that it won't be accidentally erased or modified by
+  the kernel.
 
 * Complete the netboot support. !
 
@@ -42,7 +43,7 @@ Priorities:
 * Fix the completion so that it works for BSD partitions as well. !!
 
 * Add BSD syntax support, using results of ioprobe to map drives.
-  (0x1f0-0x1f77 = primary IDE, 0x170-0x176 = secondary,
+  (0x1f0-0x1f7 = primary IDE, 0x170-0x176 = secondary,
    0x1e8-0x1ef = tertiary, 0x168-0x16f = quaternary).
 
 * Add more filesystems support (XFS, NTFS, etc.)
