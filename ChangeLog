@@ -1,3 +1,13 @@
+1999-05-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/TODO: Moved to ...
+	* TODO: ... here.
+	* docs/BUGS: Moved to ...
+	* BUGS: ... here.
+	* docs/COPYING: Removed.
+	* docs/Makefile.am (EXTRA_DIST): Get rid of BUGS.
+	* Makefile.am (EXTRA_DIST): Set to BUGS.
+	
 1999-05-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_EXT_C): Do not overrun the comman

@@ -3,4 +3,4 @@ html = boot-proposal.html errors.html faq.html grub.html install.html \
 txt = PC_partitioning.txt bios_mapping.txt commands.txt embedded_data.txt \
 	filesystem.txt
 info_TEXINFOS = grub.texi multiboot.texi
-EXTRA_DIST = BUGS $(txt) $(html) menu.lst
+EXTRA_DIST = $(txt) $(html) menu.lst
