@@ -446,6 +446,8 @@ bsd_boot(int type, int bootdev)
   int clval = 0, i;
   struct bootinfo bi;
 
+  stop_floppy();
+
   while (*(++cur_cmdline) && *cur_cmdline != ' ');
   str = cur_cmdline;
   while (*str)
