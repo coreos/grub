@@ -44,6 +44,11 @@ typedef intptr_t grub_ieee1275_ihandle_t;
 typedef intptr_t grub_ieee1275_phandle_t;
 
 extern intptr_t (*grub_ieee1275_entry_fn) (void *);
+extern grub_uint32_t grub_ieee1275_flags;
+
+/* Old World firmware fails seek when "dev:0" is opened.  */
+#define GRUB_IEEE1275_NO_PARTITION_0 0x1
+
 
 
 uint32_t EXPORT_FUNC(grub_ieee1275_decode_int_4) (unsigned char *p);

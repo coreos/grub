@@ -35,6 +35,8 @@ struct module_info
 /* OpenFirmware entry point passed to us from the real bootloader.  */
 intptr_t (*grub_ieee1275_entry_fn) (void *);
 
+grub_uint32_t grub_ieee1275_flags;
+
 
 /* Return a help text for this architecture.  */
 const char *
@@ -48,14 +50,36 @@ help_arch (void)
 /* Setup the argument vector and pass control over to the main
    function.  */
 void
-cmain (uint32_t firmware_entry)
+cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
 {
   char **argv, args[256];
   grub_ieee1275_phandle_t chosen;
   int argc = 0, actual;
   long batl, batu;
 
-  grub_ieee1275_entry_fn = (intptr_t (*)(void *)) firmware_entry;
+  if (r5 == 0xdeadbeef)
+    {
+      /* Entered from Old World stage1.  */
+      extern char _start;
+      extern char _end;
+
+      grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r3;
+
+      grub_ieee1275_flags = GRUB_IEEE1275_NO_PARTITION_0;
+
+      /* Old World Open Firmware may use 4M-5M without claiming it.  */
+      grub_ieee1275_claim (0x00400000, 0x00100000, 0, 0);
+
+      /* Need to claim ourselves so we don't cannibalize our memory later.  */
+      if (grub_ieee1275_claim ((grub_addr_t) &_start, (grub_addr_t) &_end
+          - (grub_addr_t) &_start, 0, 0))
+	abort();
+    }
+  else
+    {
+      /* Assume we were entered from Open Firmware.  */
+      grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r5;
+    }
 
   /* Initialize BAT registers to unmapped to not generate overlapping
      mappings below.  */

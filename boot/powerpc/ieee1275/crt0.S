@@ -32,7 +32,10 @@
 	.long   0xffffffff      /* virt-base */
 	.long   0xffffffff      /* virt-size */
 	.long   0x00030000      /* load-base */
-	
+
+.extern __bss_start
+.extern _end
+
 	.text
 	.align	2
 	.globl	_start
@@ -43,9 +46,18 @@ _start:
 
 	li      2, 0
 	li      13, 0
-	
 
-	mr	3, 5	
+	/* Stage1 won't zero BSS for us. In other cases, why not do it again?  */
+	lis	6, (__bss_start - 4)@h
+	ori	6, 6, (__bss_start - 4)@l
+	lis	7, (_end - 4)@h
+	ori	7, 7, (_end - 4)@l
+	subf	7, 6, 7
+	srwi	7, 7, 2 /* We store 4 bytes at a time.  */
+	mtctr	7
+2:	stwu	2, 4(6) /* We know r2 is already 0 from above.  */
+	bdnz	2b
+
 	bl	cmain
 1:	b	1b
 

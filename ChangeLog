@@ -1,5 +1,18 @@
 2004-10-11  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* boot/powerpc/ieee1275/cmain.c (grub_ieee1275_flags): New global.
+	(cmain): Accept 3 parameters. Test for 0xdeadbeef, indicating Old
+	World Macintosh. If Old Wold, set flag in grub_ieee1275_flags; claim
+	Open Firmware's memory for it; claim memory from _start to _end.
+	* boot/powerpc/ieee1275/crt0.S (__bss_start): New extern.
+	(_end): New extern.
+	(_start): Zero BSS from __bss_start to _end.
+	* include/grub/powerpc/ieee1275/ieee1275.h (grub_ieee1275_flags):
+	New extern.
+	(GRUB_IEEE1275_NO_PARTITION_0): New #define.
+
+2004-10-11  Hollis Blanchard  <hollis@penguinppc.org>
+
     * boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_claim):
     Return -1 if args.base was -1.
 
