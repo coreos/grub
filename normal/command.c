@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -316,10 +316,10 @@ grub_command_init (void)
 			 "rescue", "Enter into the rescue mode.", 0);
 
   grub_register_command ("set", set_command, GRUB_COMMAND_FLAG_BOTH,
-			 "unset ENVVAR", "Set an environment variable.", 0);
+			 "set [ENVVAR=VALUE]", "Set an environment variable.", 0);
 
   grub_register_command ("unset", unset_command, GRUB_COMMAND_FLAG_BOTH,
-			 "set [ENVVAR=VALUE]", "Remove an environment variable.", 0);
+			 "unset ENVVAR", "Remove an environment variable.", 0);
 
   grub_register_command ("insmod", insmod_command, GRUB_COMMAND_FLAG_BOTH,
 			 "insmod MODULE|FILE", "Insert a module.", 0);

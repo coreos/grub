@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -459,7 +459,7 @@ grub_cmdline_run (int nested)
 
 /* Get a command-line. If ECHO_CHAR is not zero, echo it instead of input
    characters. If READLINE is non-zero, readline-like key bindings are
-   available. If ESC is pushed, return non-zero, otherwise return zero.  */
+   available. If ESC is pushed, return zero, otherwise return non-zero.  */
 /* FIXME: The dumb interface is not supported yet.  */
 int
 grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,

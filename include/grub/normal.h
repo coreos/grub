@@ -1,7 +1,7 @@
 /* normal.h - prototypes for the normal mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -141,6 +141,7 @@ void grub_command_init (void);
 void grub_normal_init_page (void);
 int grub_arg_parse (grub_command_t parser, int argc, char **argv,
 		    struct grub_arg_list *usr, char ***args, int *argnum);
+void grub_arg_show_help (grub_command_t cmd);
 
 
 #ifdef GRUB_UTIL
@@ -160,6 +161,8 @@ void grub_terminal_init (void);
 void grub_terminal_fini (void);
 void grub_loop_init (void);
 void grub_loop_fini (void);
+void grub_help_init (void);
+void grub_help_fini (void);
 #endif
 
 #endif /* ! GRUB_NORMAL_HEADER */

@@ -101,8 +101,8 @@ show_usage (grub_command_t cmd)
   grub_printf ("Usage: %s\n", cmd->summary);
 }
 
-static void
-show_help (grub_command_t cmd)
+void
+grub_arg_show_help (grub_command_t cmd)
 {
   static void showargs (const struct grub_arg_option *opt)
     {
@@ -140,7 +140,7 @@ parse_option (grub_command_t cmd, int key, char *arg, struct grub_arg_list *usr)
   switch (key)
     {
     case 'h':
-      show_help (cmd);
+      grub_arg_show_help (cmd);
       return -1;
       
     case 'u':

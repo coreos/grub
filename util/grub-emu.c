@@ -177,6 +177,7 @@ main (int argc, char *argv[])
   grub_cat_init ();
   grub_terminal_init ();
   grub_loop_init ();
+  grub_help_init ();
   
   /* XXX: Should normal mode be started by default?  */
   grub_normal_init ();
@@ -184,6 +185,7 @@ main (int argc, char *argv[])
   /* Start GRUB!  */
   grub_main ();
 
+  grub_help_fini ();
   grub_loop_fini ();
   grub_util_biosdisk_fini ();
   grub_normal_fini ();

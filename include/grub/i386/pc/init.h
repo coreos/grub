@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,5 +53,13 @@ grub_uint32_t grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
 
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
+
+/* Reboot the machine.  */
+void EXPORT_FUNC (grub_reboot) (void);
+
+/* Halt the system, using APM if possible. If NO_APM is true, don't
+ * use APM even if it is available.  */
+void EXPORT_FUNC (grub_halt) (int no_apm);
+
 
 #endif /* ! GRUB_INIT_MACHINE_HEADER */

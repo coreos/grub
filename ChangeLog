@@ -1,4 +1,33 @@
-2005-01-30  Marco Gerards  <metgerards@student.han.nl>
+2005-01-31  Marco Gerards  <metgerards@student.han.nl>
+
+	* commands/help.c: New file.
+	* normal/arg.c (show_help): Renamed to...
+	(grub_arg_show_help): ... this.
+	* commands/i386/pc/halt.c: New file.
+	* commands/i386/pc/reboot.c: Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `commands/help.c'.
+	(pkgdata_MODULES): Add `reboot.mod', `halt.mod' and `help.mod'.
+	(help_mod_SOURCES, help_mod_CFLAGS, reboot_mod_SOURCES)
+	(reboot_mod_CFLAGS, halt_mod_SOURCES, halt_mod_CFLAGS): New
+	variables.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
+	`commands/help.c'.
+	(pkgdata_MODULES): Add `help.mod'.
+	(help_mod_SOURCES, help_mod_CFLAGS): New variables.
+	* grub/i386/pc/init.h (grub_reboot): New prototype.
+	(grub_halt): Likewise.
+	* include/grub/normal.h (grub_arg_show_help): New prototype.
+	(grub_help_init): Likewise.
+	(grub_help_fini): Likewise.
+	* util/grub-emu.c (main): Initialize and deinitialize the help
+	command.
+
+	* normal/cmdline.c (grub_cmdline_get): Doc fix.
+
+	* normal/command.c (grub_command_init): Fixed the description of
+	the `set' and `unset' commands.
+
+2005-01-31  Marco Gerards  <metgerards@student.han.nl>
 
 	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_interpret): New
 	function.
