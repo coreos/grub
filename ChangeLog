@@ -1,3 +1,8 @@
+2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (displaymem_func): Use hex digits to display
+	for consistency.
+	
 2002-02-04  Jason Thomas  <jason@topic.com.ah>
 
 	From Denis Kitzman  <dkitzman@blue.weeg.uiowa.edu>:

@@ -949,7 +949,7 @@ displaymem_func (char *arg, int flags)
 	  else
 	    str = "Reserved";
 	  grub_printf ("   %s:  Base Address:  0x%x X 4GB + 0x%x,\n"
-		       "      Length:   %u X 4GB + %u bytes\n",
+		       "      Length:   0x%x X 4GB + 0x%x bytes\n",
 		       str,
 		       (unsigned long) (map->BaseAddr >> 32),
 		       (unsigned long) (map->BaseAddr & 0xFFFFFFFF),
