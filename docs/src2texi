@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/sh
 #
 # Convert a source file to a TeXinfo file. Stolen from glibc.
 #

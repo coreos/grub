@@ -2451,12 +2451,26 @@ setup_func (char *arg, int flags)
   /* Construct a string that is used by the command "install" as its
      arguments.  */
   sprint_device (install_drive, install_partition);
+  
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
+  /* I prefer this, but...  */
   grub_sprintf (cmd_arg, "%s %s%s %s p %s",
 		stage1,
 		(install_drive != image_drive) ? "d " : "",
 		device,
 		stage2,
 		config_file);
+#else /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
+  /* Actually, there are several buggy BIOSes in the world, so we
+     may not expect that your BIOS will pass a booting drive to stage1
+     correctly. Thus, always specify the option `d', whether
+     INSTALL_DRIVE is identical with IMAGE_DRIVE or not. *sigh*  */
+  grub_sprintf (cmd_arg, "%s d %s %s p %s",
+		stage1,
+		device,
+		stage2,
+		config_file);
+#endif /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
   
   /* Notify what will be run.  */
   grub_printf (" Run \"install %s\"\n", cmd_arg);

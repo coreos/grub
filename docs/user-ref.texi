@@ -861,6 +861,20 @@ time. Likewise, if @var{real_config_file} is present and
 patched with the configuration filename @var{real_config_file}. This
 command preserves the DOS BPB (and for hard disks, the partition table)
 of the sector the Stage 1 is to be installed into.
+
+@strong{Caution:} Several buggy BIOSes don't pass a booting drive
+properly when booting from a hard disk drive. Therefore, you will have
+to specify the option @option{d}, whether your Stage2 resides at the
+booting drive or not, if you have such a BIOS unfortunately. We know
+these are defective in that:
+
+@table @asis
+@item
+Fujitsu LifeBook 400 BIOS version 31J0103A
+
+@item
+HP Vectra XU 6/200 BIOS version GG.06.11
+@end table
 @end deffn
 
 @deffn Command ioprobe drive

@@ -1,3 +1,18 @@
+1999-12-31  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setup_func) [!NO_BUGGY_BIOS_IN_THE_WORLD]:
+	Specify the option `d', whether INSTALL_DRIVE is identical with
+	IMAGE_DRIVE or not.
+	* docs/user-ref.texi (Command-line-specific commands): Added a
+	caution about buggy BIOSes which don't pass a booting drive
+	properly.
+
+	* docs/src2texi: Added an extra space into the first line, for
+	the portability issue.
+
+	* docs/appendices.texi (Obtaining and Building GRUB): Update the
+	information on the ftp site and the CVS repository.
+	
 1999-12-30  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (blocklist_func): New function.

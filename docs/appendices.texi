@@ -130,14 +130,14 @@ obtained from:
 @url{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}
 @end quotation
 
-@c Do not change alpha.gnu.org:/gnu/hurd/src to the URI, since TeX does
+@c Do not change alpha.gnu.org:/gnu/grub to the URI, since TeX does
 @c not format it well.
 GRUB is available from the GNU alpha archive site
-@url{alpha.gnu.org:/gnu/hurd/src} or any of its mirrors. The file
+@url{alpha.gnu.org:/gnu/grub} or any of its mirrors. The file
 will be named grub-version.tar.gz. The current version is
 @value{VERSION}, so the file you should grab is:
 
-@url{ftp://alpha.gnu.org/gnu/hurd/src/grub-@value{VERSION}.tar.gz}
+@url{ftp://alpha.gnu.org/gnu/grub/grub-@value{VERSION}.tar.gz}
 
 To unbundle GRUB use the instruction:
 
@@ -164,7 +164,7 @@ and the GRUB images It will also install the GRUB manual.
 
 Also, the latest version is available from the CVS. The repository is:
 
-@code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot}
+@code{:pserver:anoncvs@@subversions.gnu.org:/home/cvs}
 
 and the module is:
 
@@ -174,11 +174,11 @@ The password for anoncvs is empty. So the instruction is:
 
 @example
 @group
-$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot \
+$ cvs -d :pserver:anoncvs@@subversions.gnu.org:/home/cvs \
     login
 Password: @key{ENTER}
-$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot \
-    co grub
+$ cvs -d :pserver:anoncvs@@subversions.gnu.org:/home/cvs \
+    checkout grub
 @end group
 @end example
 
