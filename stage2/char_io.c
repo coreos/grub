@@ -1450,7 +1450,6 @@ grub_memmove (void *to, const void *from, int len)
    return errnum ? NULL : to;
 }
 
-#ifndef STAGE1_5
 void *
 grub_memset (void *start, int c, int len)
 {
@@ -1465,6 +1464,7 @@ grub_memset (void *start, int c, int len)
   return errnum ? NULL : start;
 }
 
+#ifndef STAGE1_5
 char *
 grub_strcpy (char *dest, const char *src)
 {

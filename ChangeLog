@@ -1,5 +1,15 @@
 2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* stage2/bios.c (get_diskinfo): Clear out the structure DRP
+	before calling get_diskinfo_int13_extensions, because the Ralf
+	Brown's Interrupt List says that Dell machines using PhoenixBIOS
+	4.0 Release 6.0 fail, if DRP.FLAGS is not zero. Setting the
+	entire structure to zero may be overkill, but it should be safe.
+	
+	* stage2/char_io.c [STAGE1_5] (grub_memset): Defined.
+	
+2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	From John Goerzen <jgoerzen@complete.org>:
 	* util/grub-install.in (convert): Added NetBSD support.
 	
