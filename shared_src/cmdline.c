@@ -56,8 +56,8 @@ cmos_read_byte(int loc)
  *  These are used for determining if the command-line should ask the user
  *  to correct errors during scripts.
  */
-int fallback = -1;
-int protected = 0;
+int fallback;
+char *password;
 
 char *
 skip_to(int after_equal, char *cmdline)
@@ -175,7 +175,7 @@ restart:
 	  if (fallback < 0)
 	    goto returnit;
 	  print_error();
-	  if (protected || errnum == ERR_BOOT_COMMAND)
+	  if (password || errnum == ERR_BOOT_COMMAND)
 	    {
 	      printf("Press any key to continue...");
 	      getc();
@@ -220,6 +220,8 @@ returnit:
 	bsd_boot(type, bootdev);
       if (type == 'l')
 	linux_boot();
+      if (type == 'L')
+	big_linux_boot();
 
       if (type == 'c')
 	{
@@ -320,8 +322,21 @@ returnit:
 	  no_decompression = 0;
 #endif  /* NO_DECOMPRESSION */
 	}
+      else if (type == 'L' || type == 'l')
+	{
+	  load_initrd();
+	}
       else
-	errnum = ERR_NEED_KERNEL;
+	errnum = ERR_NEED_MB_KERNEL;
+    }
+  else if (strcmp("initrd", cur_heap) < 1)
+    {
+      if (type == 'L' || type == 'l')
+	{
+	  load_initrd();
+	}
+      else
+	errnum = ERR_NEED_LX_KERNEL;
     }
   else if (strcmp("install", cur_heap) < 1)
     {
@@ -457,6 +472,7 @@ returnit:
 #ifdef DEBUG
   else if (strcmp("testload", cur_heap) < 1)
     {
+      type = 0;
       if (open(cur_cmdline))
 	{
 	  int i;
