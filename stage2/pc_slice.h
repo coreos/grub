@@ -105,9 +105,19 @@
 #define PC_SLICE_TYPE_WIN95_EXTENDED	0xf
 #define PC_SLICE_TYPE_EXT2FS       	0x83
 
- /* this next one is special, as it uses it's own partitioning scheme
-    to subdivide the PC partition from there */
-#define PC_SLICE_TYPE_BSD          0xa5
+/* these ones are special, as they use thier own partitioning scheme
+   to subdivide the PC partitions from there.  */
+#define PC_SLICE_TYPE_FREEBSD		0xa5
+#define PC_SLICE_TYPE_OPENBSD		0xa6
+#define PC_SLICE_TYPE_NETBSD		0xa9
+
+/* For convenience.  */
+#define IS_PC_SLICE_TYPE_BSD_WITH_FS(type,fs)	\
+  ((type) == (PC_SLICE_TYPE_FREEBSD | ((fs) << 8)) \
+   || (type) == (PC_SLICE_TYPE_OPENBSD | ((fs) << 8)) \
+   || (type) == (PC_SLICE_TYPE_NETBSD | (fs) << 8))
+
+#define IS_PC_SLICE_TYPE_BSD(type)	IS_PC_SLICE_TYPE_BSD_WITH_FS(type,0)
 
 
 /*

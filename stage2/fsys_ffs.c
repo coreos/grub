@@ -80,7 +80,7 @@ ffs_mount (void)
   int retval = 1;
 
   if ((((current_drive & 0x80) || (current_slice != 0))
-       && current_slice != (PC_SLICE_TYPE_BSD | (FS_BSDFFS << 8)))
+       && ! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_BSDFFS << 8))
       || part_length < (SBLOCK + (SBSIZE / DEV_BSIZE))
       || !devread (SBLOCK, 0, SBSIZE, (char *) SUPERBLOCK)
       || SUPERBLOCK->fs_magic != FS_MAGIC)

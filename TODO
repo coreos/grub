@@ -12,9 +12,6 @@ Look at the network booting patches from L4.
 Add internationalization support, emulating gettext as much as is
 feasible.
 
-Add support/delays so that a floppy can be installed from another
-floppy.
-
 Add bootable CDROM support (this probably means we have to support
 ISO-9660 plus maybe even the Rock Ridge extensions...  ugh).
 
@@ -29,8 +26,6 @@ larger than 16MB can be read.
 ???  Add command for modifying partition types.
 
 Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
-
-Support new partition IDs for NetBSD and OpenBSD.
 
 Add ``configfile'' command, in a clean way.
 

@@ -1,3 +1,25 @@
+1999-08-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Support the NetBSD and OpenBSD partition slices.
+	
+	* stage2/pc_slice.h (PC_SLICE_TYPE_BSD): Deleted.
+	(PC_SLICE_TYPE_FREEBSD): New macro.
+	(PC_SLICE_TYPE_OPENBSD): Likewise.
+	(PC_SLICE_TYPE_NETBSD): Likewise.
+	(IS_PC_SLICE_TYPE_BSD_WITH_FS): Likewise.
+	(IS_PC_SLICE_TYPE_BSD): Likewise.
+	* stage2/fsys_ffs.c (ffs_mount): Use the macro
+	IS_PC_SLICE_TYPE_BSD_WITH_FS instead of checking if
+	CURRECT_SLICE is equal to the BSD partition type directly.
+	* stage2/fsys_ext2fs.c (ext2fs_mount): Likewise.
+	* stage2/fsys_fat.c (fat_mount): Likewise.
+	* stage2/disk_io.c (check_BSD_parts): Set the low bits of
+	CURRENT_SLICE to PC_SLICE_TYPE_FREEBSD instead of
+	PC_SLICE_TYPE_BSD.
+	(real_open_partition): Use the macro IS_PC_SLICE_TYPE_BSD instead
+	of checking if CURRENT_SLICE is	equal to the BSD partition type
+	directly.
+	
 1999-08-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/cmdline.c (commands): Added geometry.

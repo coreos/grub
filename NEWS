@@ -2,6 +2,8 @@ NEWS - list of user-visible changes between releases of GRUB
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.
+* Support the partition ids for NetBSD and OpenBSD.
+* Exit from the grub emulator just by pushing the key `q' in the menu.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

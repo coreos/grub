@@ -346,8 +346,11 @@ check_BSD_parts (int flags)
 	    {
 	      /* FIXME: should do BAD144 sector remapping setup here */
 
+	      /* XXX We cannot determine which variant of BSD owns
+		 this slice, so set it to FreeBSD paritition type.
+		 That should work fine for now.  */
 	      current_slice = ((BSD_PART_TYPE (label_buf, part_no) << 8)
-			       | PC_SLICE_TYPE_BSD);
+			       | PC_SLICE_TYPE_FREEBSD);
 	      part_start = BSD_PART_START (label_buf, part_no);
 	      part_length = BSD_PART_LENGTH (label_buf, part_no);
 
@@ -487,7 +490,7 @@ real_open_partition (int flags)
 		    {
 		      current_partition |= 0xFFFF;
 		      printf ("   Partition num: %d, ", slice_no);
-		      if (current_slice != PC_SLICE_TYPE_BSD)
+		      if (! IS_PC_SLICE_TYPE_BSD (current_slice))
 			check_and_print_mount ();
 		      else
 			check_BSD_parts (1);
@@ -499,11 +502,11 @@ real_open_partition (int flags)
 		   */
 		  else if (part_no == slice_no
 			   || (part_no == 0xFF
-			       && current_slice == PC_SLICE_TYPE_BSD))
+			       && IS_PC_SLICE_TYPE_BSD (current_slice)))
 		    {
 		      if ((current_partition & 0xFF00) != 0xFF00)
 			{
-			  if (current_slice == PC_SLICE_TYPE_BSD)
+			  if (IS_PC_SLICE_TYPE_BSD (current_slice))
 			    check_BSD_parts (0);
 			  else
 			    errnum = ERR_NO_PART;

@@ -42,7 +42,7 @@ fat_mount (void)
        && (current_slice != PC_SLICE_TYPE_FAT12)
        && (current_slice != PC_SLICE_TYPE_FAT16_LT32M)
        && (current_slice != PC_SLICE_TYPE_FAT16_GT32M)
-       && (current_slice != (PC_SLICE_TYPE_BSD | (FS_MSDOS << 8))))
+       && (! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_MSDOS << 8)))
       || !devread (0, 0, SECTOR_SIZE, (char *) BPB)
       || FAT_BPB_BYTES_PER_SECTOR (BPB) != SECTOR_SIZE
       || FAT_BPB_SECT_PER_CLUST (BPB) < 1 || FAT_BPB_SECT_PER_CLUST (BPB) > 64

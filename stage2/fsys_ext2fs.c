@@ -255,7 +255,7 @@ ext2fs_mount (void)
 
   if ((((current_drive & 0x80) || (current_slice != 0))
        && (current_slice != PC_SLICE_TYPE_EXT2FS)
-       && (current_slice != (PC_SLICE_TYPE_BSD | (FS_OTHER << 8))))
+       && (! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_OTHER)))
       || part_length < (SBLOCK + (sizeof (struct ext2_super_block) / DEV_BSIZE))
       || !devread (SBLOCK, 0, sizeof (struct ext2_super_block),
 		   (char *) SUPERBLOCK)
