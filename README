@@ -5,7 +5,8 @@ personal computer BIOSes:
   - provides fully-featured command line and graphical interfaces
   - recognizes fdisk partitions and BSD disklabels
   - can dynamically read Linux ext2fs and ReiserFS, BSD ufs, MS-DOS
-    FAT16 and FAT32, and Minix fs filesystems, plus hardcoded blocklists
+    FAT16 and FAT32, Minix fs, and VSTa fs filesystems, plus hardcoded
+    blocklists
   - can boot Multiboot-compliant kernels (such as GNU Mach), as well
     as standard Linux and *BSD kernels
 
