@@ -1,3 +1,8 @@
+2001-08-02  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage2/common.c (init_bios_info): Ignore zero-length memory
+	ranges.  From Derrik Pates.
+
 2001-07-26  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/Makefile.am (libgrub_a_CFLAGS): Enable USE_MD5_PASSWORDS

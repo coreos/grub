@@ -226,7 +226,7 @@ init_bios_info (void)
 	{
 	  struct AddrRangeDesc *desc = (struct AddrRangeDesc *) addr;
 	  
-	  if (desc->Type == MB_ARD_MEMORY
+	  if (desc->Type == MB_ARD_MEMORY && desc->Length > 0
 	      && desc->BaseAddr + desc->Length > max_addr)
 	    max_addr = desc->BaseAddr + desc->Length;
 	}
