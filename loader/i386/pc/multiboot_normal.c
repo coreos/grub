@@ -50,7 +50,7 @@ GRUB_MOD_INIT
   
   grub_register_command ("module", grub_normal_cmd_module,
 			 GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
-			 "multiboot FILE [ARGS...]",
+			 "module FILE [ARGS...]",
 			 "Load a multiboot module", 0);
 }
 

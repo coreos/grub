@@ -1,3 +1,8 @@
+2005-02-01  Guillem Jover  <guillem@hadrons.org>
+
+	* loader/i386/pc/multiboot_normal.c (GRUB_MOD_INIT): Fix module
+	help info.
+
 2005-01-31  Marco Gerards  <metgerards@student.han.nl>
 
 	* include/grub/powerpc/ieee1275/loader.h (grub_load_linux):
