@@ -106,6 +106,7 @@ int EXPORT_FUNC(grub_ieee1275_child) (grub_ieee1275_phandle_t node,
 				      grub_ieee1275_phandle_t *result);
 int EXPORT_FUNC(grub_ieee1275_parent) (grub_ieee1275_phandle_t node,
 				       grub_ieee1275_phandle_t *result);
+int EXPORT_FUNC(grub_ieee1275_enter) (void);
 int EXPORT_FUNC(grub_ieee1275_exit) (void);
 int EXPORT_FUNC(grub_ieee1275_open) (char *node,
 				     grub_ieee1275_ihandle_t *result);

@@ -1,3 +1,14 @@
+2005-01-20  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_enter): New
+	function.
+	* conf/powerpc-ieee1275.rmk (pkgdata_MODULES): Add suspend.mod.
+	(suspend_mod_SOURCES): New variable.
+	(suspend_mod_CFLAGS): Likewise.
+	* include/grub/powerpc/ieee1275/ieee1275.h (grub_ieee1275_enter):
+	New prototype.
+	* commands/ieee1275/suspend.c: New file.
+
 2005-01-20  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
 
 	* include/grub/dl.h (GRUB_MOD_INIT): Changed `__attribute__

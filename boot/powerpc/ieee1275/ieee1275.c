@@ -332,6 +332,20 @@ grub_ieee1275_parent (grub_ieee1275_phandle_t node,
 }
 
 int
+grub_ieee1275_enter (void)
+{
+  struct enter_args {
+    struct grub_ieee1275_common_hdr common;
+  } args;
+
+  INIT_IEEE1275_COMMON (&args.common, "enter", 0, 0);
+
+  if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+    return -1;
+  return 0;
+}
+
+int
 grub_ieee1275_exit (void)
 {
   struct exit_args {

@@ -64,7 +64,8 @@ genmoddep_SOURCES = util/genmoddep.c
 # Modules.
 pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod pc.mod
+	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
+	pc.mod suspend.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -151,3 +152,7 @@ apple_mod_CFLAGS = $(COMMON_CFLAGS)
 # For pc.mod
 pc_mod_SOURCES = partmap/pc.c
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For suspend.mod
+suspend_mod_SOURCES = commands/ieee1275/suspend.c
+suspend_mod_CFLAGS = $(COMMON_CFLAGS)
