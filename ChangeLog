@@ -1,3 +1,11 @@
+1999-03-22  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/cmdline.c (enter_cmdline): Check the return value of
+	set_device in the `root' command.
+
+	* shared_src/char_io.c (memcheck): Special-case cur_part_desc and
+	reenable memory checking.
+
 1999-03-21  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/boot.c (load_image): Make sure we use the mapped

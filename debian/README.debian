@@ -15,6 +15,11 @@ edit configuration files or rerun a special installation program.
 NOTE: GRUB does not yet have a simple installation mechanism, but
 we're working on this, so please don't report it as a bug.  Until
 then, read the documentation (starting with docs/grub.html or
-docs/install.html), and use the binary files in /usr/share/grub.
+docs/install.html), and copy the binary files in /share/grub/$(HWARCH)
+to /boot/grub.
+
+WARNING: Never use the binary files in /share/grub directly
+(i.e. without first copying them to /boot/grub), or else your system
+will break the next time you upgrade.
 
 Gordon Matzigkeit <gord@debian.org>, Sat, 13 Mar 1999 17:30:29 -0600

@@ -385,7 +385,9 @@ check_BSD_parts (int flags)
 
 
 #if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
-static char cur_part_desc[16];
+/* This isn't static, because the GRUB utility's char_io.c (memcheck)
+   needs to know about it as a special case. */
+char cur_part_desc[16];
 
 static int
 real_open_partition (int flags)

@@ -563,18 +563,24 @@ strstr (char *s1, char *s2)
 int
 memcheck (int start, int len)
 {
-  /* FIXME: Don't bother checking memory for now, since our globals
-     are out of range. */
-#ifndef GRUB_UTIL
+#ifdef GRUB_UTIL
+  /* FIXME: cur_part_desc is the only global variable that we bcopy
+     to.  We should fix this so that we don't need a special case
+     (i.e. so that it lives on the stack, or somewhere inside
+     grub_scratch_mem). */
+  extern char cur_part_desc[];
+  if (start >= (int) cur_part_desc && start + len <= (int) cur_part_desc + 16)
+    return ! errnum;
+#endif /* GRUB_UTIL */
+
   if ((start < RAW_ADDR (0x1000)) ||
       (start < RAW_ADDR (0x100000) &&
        RAW_ADDR (mbi.mem_lower * 1024) < (start + len)) ||
       (start >= RAW_ADDR (0x100000) &&
        RAW_ADDR (mbi.mem_upper * 1024) < ((start - 0x100000) + len)))
     errnum = ERR_WONT_FIT;
-#endif /* GRUB_UTIL */
 
-  return (!errnum);
+  return ! errnum;
 }
 
 

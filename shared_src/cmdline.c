@@ -284,28 +284,33 @@ returnit:
   else if (substring("root", cur_heap) < 1)
     {
       int hdbias = 0;
-      char *biasptr = skip_to(0, set_device(cur_cmdline));
+      char *next_cmd = set_device (cur_cmdline);
 
-      /* this will respond to any "rootn<XXX>" command,
-	 but that's OK */
-      if (!errnum && (cur_heap[4] == 'n' || open_device()
-		      || errnum == ERR_FSYS_MOUNT))
+      if (next_cmd)
 	{
-	  errnum = 0;
-	  saved_partition = current_partition;
-	  saved_drive = current_drive;
+	  char *biasptr = skip_to (0, next_cmd);
 
-	  if (cur_heap[4] != 'n')
+	  /* this will respond to any "rootn<XXX>" command,
+	     but that's OK */
+	  if (!errnum && (cur_heap[4] == 'n' || open_device()
+			  || errnum == ERR_FSYS_MOUNT))
 	    {
-	      /* BSD and chainloading evil hacks !! */
-	      safe_parse_maxint(&biasptr, &hdbias);
 	      errnum = 0;
-	      bootdev = set_bootdev(hdbias);
+	      saved_partition = current_partition;
+	      saved_drive = current_drive;
 
-	      print_fsys_type();
+	      if (cur_heap[4] != 'n')
+		{
+		  /* BSD and chainloading evil hacks !! */
+		  safe_parse_maxint(&biasptr, &hdbias);
+		  errnum = 0;
+		  bootdev = set_bootdev(hdbias);
+
+		  print_fsys_type();
+		}
+	      else
+		current_drive = -1;
 	    }
-	  else
-	    current_drive = -1;
 	}
     }
   else if (substring("kernel", cur_heap) < 1)

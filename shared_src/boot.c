@@ -365,9 +365,9 @@ load_image (void)
 	      /* offset into file */
 	      filepos = phdr->p_offset;
 	      filesiz = phdr->p_filesz;
-	      memaddr = phdr->p_vaddr;
+	      memaddr = RAW_ADDR (phdr->p_vaddr);
 	      memsiz = phdr->p_memsz;
-	      if (memaddr < 0x100000)
+	      if (memaddr < RAW_ADDR (0x100000))
 		errnum = ERR_BELOW_1MB;
 	      /* make sure we only load what we're supposed to! */
 	      if (filesiz > memsiz)
