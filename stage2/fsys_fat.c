@@ -35,6 +35,7 @@ struct fat_superblock
   
   int num_sectors;
   int num_clust;
+  int clust_eof_marker;
   int sects_per_clust;
   int sectsize_bits;
   int clustsize_bits;
@@ -115,8 +116,21 @@ fat_mount (void)
       /* This is a FAT32 */
       if (FAT_CVT_U16(bpb.dir_entries))
  	return 0;
+      
+      if (bpb.flags & 0x0080)
+	{
+	  /* FAT mirroring is disabled, get active FAT */
+	  int active_fat = bpb.flags & 0x000f;
+	  if (active_fat >= bpb.num_fats)
+	    return 0;
+	  FAT_SUPER->fat_offset += active_fat * FAT_SUPER->fat_length;
+	}
+      
       FAT_SUPER->fat_size = 8;
       FAT_SUPER->root_cluster = bpb.root_cluster;
+
+      /* Yes the following is correct.  FAT32 should be called FAT28 :) */
+      FAT_SUPER->clust_eof_marker = 0xffffff8;
     } 
   else 
     {
@@ -124,10 +138,16 @@ fat_mount (void)
  	return 0;
       
       FAT_SUPER->root_cluster = -1;
-      if (FAT_SUPER->num_clust >= FAT_MAX_12BIT_CLUST)
- 	FAT_SUPER->fat_size = 4;
+      if (FAT_SUPER->num_clust > FAT_MAX_12BIT_CLUST) 
+	{
+	  FAT_SUPER->fat_size = 4;
+	  FAT_SUPER->clust_eof_marker = 0xfff8;
+	} 
       else
- 	FAT_SUPER->fat_size = 3;
+	{
+	  FAT_SUPER->fat_size = 3;
+	  FAT_SUPER->clust_eof_marker = 0xff8;
+	}
     }
   
   
@@ -178,52 +198,51 @@ fat_read (char *buf, int len)
     {
       int sector;
       while (logical_clust > FAT_SUPER->current_cluster_num)
- 	{
- 	  /* calculate next cluster */
- 	  int fat_entry = 
- 	    FAT_SUPER->current_cluster * FAT_SUPER->fat_size;
- 	  int next_cluster;
- 	  int cached_pos = (fat_entry - FAT_SUPER->cached_fat);
- 	  
- 	  if (cached_pos < 0 || 
- 	      (cached_pos + FAT_SUPER->fat_size) > 2*FAT_CACHE_SIZE)
- 	    {
- 	      FAT_SUPER->cached_fat = (fat_entry & ~(2*SECTOR_SIZE - 1));
- 	      cached_pos = (fat_entry - FAT_SUPER->cached_fat);
- 	      sector = FAT_SUPER->fat_offset
- 		+ FAT_SUPER->cached_fat / (2*SECTOR_SIZE);
- 	      if (!devread (sector, 0, FAT_CACHE_SIZE, (char*) FAT_BUF))
- 		return 0;
- 	    }
- 	  next_cluster = * (unsigned long *) (FAT_BUF + (cached_pos >> 1));
- 	  if (FAT_SUPER->fat_size == 3)
- 	    {
- 	      if (cached_pos & 1)
- 		next_cluster >>= 4;
- 	      next_cluster &= 0xFFF;
- 	    }
- 	  else if (FAT_SUPER->fat_size == 4)
- 	    next_cluster &= 0xFFFF;
- 	  
- 	  if (next_cluster < 2)
- 	    {
- 	      errnum = ERR_FSYS_CORRUPT;
- 	      return 0;
- 	    }
- 	  
- 	  if (next_cluster >= FAT_SUPER->num_clust)
- 	    return ret;
- 	  
- 	  FAT_SUPER->current_cluster = next_cluster;
- 	  FAT_SUPER->current_cluster_num++;
- 	}
+	{
+	  /* calculate next cluster */
+	  int fat_entry = 
+	    FAT_SUPER->current_cluster * FAT_SUPER->fat_size;
+	  int next_cluster;
+	  int cached_pos = (fat_entry - FAT_SUPER->cached_fat);
+	  
+	  if (cached_pos < 0 || 
+	      (cached_pos + FAT_SUPER->fat_size) > 2*FAT_CACHE_SIZE)
+	    {
+	      FAT_SUPER->cached_fat = (fat_entry & ~(2*SECTOR_SIZE - 1));
+	      cached_pos = (fat_entry - FAT_SUPER->cached_fat);
+	      sector = FAT_SUPER->fat_offset
+		+ FAT_SUPER->cached_fat / (2*SECTOR_SIZE);
+	      if (!devread (sector, 0, FAT_CACHE_SIZE, (char*) FAT_BUF))
+		return 0;
+	    }
+	  next_cluster = * (unsigned long *) (FAT_BUF + (cached_pos >> 1));
+	  if (FAT_SUPER->fat_size == 3)
+	    {
+	      if (cached_pos & 1)
+		next_cluster >>= 4;
+	      next_cluster &= 0xFFF;
+	    }
+	  else if (FAT_SUPER->fat_size == 4)
+	    next_cluster &= 0xFFFF;
+	  
+	  if (next_cluster >= FAT_SUPER->clust_eof_marker)
+	    return ret;
+	  if (next_cluster < 2 || next_cluster >= FAT_SUPER->num_clust)
+	    {
+	      errnum = ERR_FSYS_CORRUPT;
+	      return 0;
+	    }
+	  
+	  FAT_SUPER->current_cluster = next_cluster;
+	  FAT_SUPER->current_cluster_num++;
+	}
       
       sector = FAT_SUPER->data_offset +
- 	((FAT_SUPER->current_cluster - 2) << (FAT_SUPER->clustsize_bits
+	((FAT_SUPER->current_cluster - 2) << (FAT_SUPER->clustsize_bits
  					      - FAT_SUPER->sectsize_bits));
       size = (1 << FAT_SUPER->clustsize_bits) - offset;
       if (size > len)
- 	size = len;
+	size = len;
       
 #ifndef STAGE1_5
       disk_read_func = disk_read_hook;

@@ -1,3 +1,18 @@
+2000-08-04  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_fat.c (fat_superblock): clust_eof_marker added.
+	(fat_mount): Initialize clust_eof_marker to 0xff8, 0xfff8, or
+	0xffffff8, depending on fat size.  Support for single active FAT
+	added (FAT32 extension). Changed the boundary between FAT12 and
+	FAT16, again.  The Microsoft KB article Q65541 seems to be wrong
+	here, I go with mtools and the previous behaviour of grub: FAT12
+	iff number of clusters (without counting the two nonexisting
+	clusters) is less or equal 4095.
+	(fat_read): Report error if cluster number is too big, but not
+	greater or equal clust_eof_marker.
+	* stage2/fsys_reiserfs.c (journal_init): Fixed calculation of
+	journal_transaction.
+	
 2000-08-01  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c: Symlink support added.

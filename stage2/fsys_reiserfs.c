@@ -504,7 +504,6 @@ journal_init (void)
 	      desc.j_trans_id, desc.j_mount_id, desc_block);
 #endif
 
-      INFO->journal_transactions++;
       next_trans_id++;
       if (journal_table < JOURNAL_END)
 	{
@@ -549,7 +548,8 @@ journal_init (void)
 	  desc.j_trans_id, desc.j_mount_id, desc_block);
 #endif
 
-  INFO->journal_transactions = next_trans_id - header.j_last_flush_trans_id;
+  INFO->journal_transactions
+    = next_trans_id - header.j_last_flush_trans_id - 1;
   return errnum == 0;
 }
 
