@@ -1,3 +1,8 @@
+2000-10-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (--disable-md5password): Renamed to ...
+	(--disable-md5-password): ... this. Just for my preference.
+	
 2000-10-17  Jochen Hoenicke  <jochen@gnu.org>
 
 	Added MD5 passwords and extended password command:

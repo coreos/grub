@@ -34,7 +34,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --disable-gunzip        disable decompression in Stage 2"
 ac_help="$ac_help
-  --disable-md5password   disable MD5 passwords in Stage 2"
+  --disable-md5-password  disable MD5 password support in Stage 2"
 ac_help="$ac_help
   --disable-packet-retransmission
                           turn off packet retransmission"
@@ -782,7 +782,7 @@ else
   echo "configure: warning: ${am_backtick}missing' script is too old or missing" 1>&2
 fi
 
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -2423,13 +2423,13 @@ if test x"$enable_gunzip" = xno; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DNO_DECOMPRESSION=1"
 fi
 
-# Check whether --enable-md5password or --disable-md5password was given.
-if test "${enable_md5password+set}" = set; then
-  enableval="$enable_md5password"
+# Check whether --enable-md5-password or --disable-md5-password was given.
+if test "${enable_md5_password+set}" = set; then
+  enableval="$enable_md5_password"
   :
 fi
 
-if test "x$enable_md5password" != xno; then
+if test "x$enable_md5_password" != xno; then
   CFLAGS="$CFLAGS -DUSE_MD5_PASSWORDS=1"
 fi
 
