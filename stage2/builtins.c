@@ -19,6 +19,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* Include stdio.h before shared.h, because we can't define
+   WITHOUT_LIBC_STUBS here.  */
+#ifdef GRUB_UTIL
+# include <stdio.h>
+#endif
+
 #include <shared.h>
 #include <filesys.h>
 
@@ -31,7 +37,6 @@
 #endif
 
 #ifdef GRUB_UTIL
-# include <stdio.h>
 # include <device.h>
 #else /* ! GRUB_UTIL */
 # include <apic.h>

@@ -1,3 +1,9 @@
+2000-08-24  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c [GRUB_UTIL]: Include stdio.h before
+	shared.h. Reported by Mathieu Chouquet-Stringer
+	<mchouque@cs.stevens-tech.edu>.
+	
 2000-08-21  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (--enable-serial-speed-emulation): New option.
