@@ -1,3 +1,17 @@
+2000-02-18  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c [!STAGE1_5] (make_saved_active): Make sure
+	that SAVED_PARTITION is not an extended partition.
+	If SAVED_DRIVE is not a hard disk drive, set ERRNUM to
+	ERR_DEV_VALUES and return zero.
+
+	* netboot/3c59x.c: Removed.
+	* netboot/Makefile.am (EXTRA_libdrivers_a_SOURCES): Deleted
+	3c59x.c.
+	(3c59x_drivers): Deleted.
+	(3c59x_o_CFLAGS): Likewise.
+	* configure.in (--enable-3c59x): Likewise.
+	
 2000-02-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (--enable-3c90x): Add -DINCLUDE_3C90X=1 instead

@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -292,33 +292,53 @@ attempt_mount (void)
 
 
 #ifndef STAGE1_5
+/* Turn on the active flag for the partition SAVED_PARATITION in the
+   drive SAVED_DRIVE. If an error occurs, return zero, otherwise return
+   non-zero.  */
 int
 make_saved_active (void)
 {
   if (saved_drive & 0x80)
     {
+      /* Hard disk */
       int part = saved_partition >> 16;
 
+      /* If the partition is not a primary partition, the active flag is
+	 meaningless. (XXX: Really?)  */
       if (part > 3)
 	{
 	  errnum = ERR_NO_PART;
 	  return 0;
 	}
 
-      if (!rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+      /* Read the MBR in the scratch space.  */
+      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
 	return 0;
 
+      /* If the partition is an extended partition, setting the active
+	 flag violates the specification by IBM.  */
+      if (IS_PC_SLICE_TYPE_EXTENDED (PC_SLICE_TYPE (SCRATCHADDR, part)))
+	{
+	  errnum = ERR_DEV_VALUES;
+	  return 0;
+	}
+
+      /* Check if the active flag is disabled.  */
       if (PC_SLICE_FLAG (SCRATCHADDR, part) != PC_SLICE_FLAG_BOOTABLE)
 	{
 	  int i;
 
+	  /* Clear all the active flags in this table.  */
 	  for (i = 0; i < 4; i++)
 	    PC_SLICE_FLAG (SCRATCHADDR, i) = 0;
 
+	  /* Set the flag.  */
 	  PC_SLICE_FLAG (SCRATCHADDR, part) = PC_SLICE_FLAG_BOOTABLE;
 
+	  /* Clear the cache.  */
 	  buf_track = -1;
 
+	  /* Write back the MBR.  */
 	  if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
 			0, 1, SCRATCHSEG))
 	    {
@@ -326,6 +346,13 @@ make_saved_active (void)
 	      return 0;
 	    }
 	}
+    }
+  else
+    {
+      /* If the drive is not a hard disk drive, you shouldn't call this
+	 function. (XXX: Should I just ignore this error?)  */
+      errnum = ERR_DEV_VALUES;
+      return 0;
     }
 
   return 1;

@@ -244,12 +244,12 @@ if test "x$enable_3c529" = xyes; then
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c529.o"
 fi
 
-AC_ARG_ENABLE(3c59x,
-  [  --enable-3c59x          enable 3Com59x driver])
-if test "x$enable_3c59x" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C59x=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c59x.o"
-fi
+dnl AC_ARG_ENABLE(3c59x,
+dnl   [  --enable-3c59x          enable 3Com59x driver])
+dnl if test "x$enable_3c59x" = xyes; then
+dnl   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C59x=1"
+dnl   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c59x.o"
+dnl fi
 
 AC_ARG_ENABLE(3c90x,
   [  --enable-3c90x          enable 3Com90x driver])

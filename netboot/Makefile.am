@@ -14,7 +14,7 @@ libdrivers_a_SOURCES = byteorder.h config.c etherboot.h \
 	fsys_tftp.c if.h linux-asm-io.h linux-asm-string.h \
 	main.c misc.c netboot_config.h netdevice.h nic.h osdep.h \
 	pci.c pci.h
-EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c59x.c 3c90x.c cs89x0.c \
+EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c90x.c cs89x0.c \
 	3c89x0.h eepro100.c epic100.c epic100.h i82586.c lance.c \
 	ns8390.c ns8390.h ntulip.c rtl8139.c sk_g16.c sk_g16.h \
 	smc9000.c smc9000.h tiara.c tulip.c tulip.h via-rhine.c
@@ -31,7 +31,7 @@ EXTRA_DIST = README.netboot 3c90x.txt ntulip.txt
 
 # What objects are derived from a driver?
 3c509_drivers = 3c509.o 3c529.o
-3c59x_drivers = 3c59x.o
+#3c59x_drivers = 3c59x.o
 3c90x_drivers = 3c90x.o
 cs89x0_drivers = cs89x0.o
 eepro100_drivers = eepro100.o
@@ -63,10 +63,10 @@ $(3c509_drivers): %.o: 3c509.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
-$(3c59x_drivers): 3c59x.c 3c509.h
-$(3c59x_drivers): %.o: 3c59x.c
-	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
-	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+#$(3c59x_drivers): 3c59x.c 3c509.h
+#$(3c59x_drivers): %.o: 3c59x.c
+#	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+#	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
 $(3c90x_drivers): 3c90x.c
 $(3c90x_drivers): %.o: 3c90x.c
@@ -132,7 +132,7 @@ $(via_rhine_drivers): %.o: via-rhine.c
 # Per-object flags.
 3c509_o_CFLAGS = -DINCLUDE_3C509=1
 3c529_o_CFLAGS = -DINCLUDE_3C529=1
-3c59x_o_CFLAGS = -DINCLUDE_3C59X=1
+#3c59x_o_CFLAGS = -DINCLUDE_3C59X=1
 3c90x_o_CFLAGS = -DINCLUDE_3C90X=1
 cs89x0_o_CFLAGS = -DINCLUDE_CS89X0=1
 eepro100_o_CFLAGS = -DINCLUDE_EEPRO100=1
