@@ -24,3 +24,6 @@
 
 /* Defined if _end is defined.  */
 #undef HAVE_USCORE_END_SYMBOL
+
+/* Defined if an absolute indirect call/jump must NOT be prefixed with `*'.  */
+#undef ABSOLUTE_WITHOUT_ASTERISK

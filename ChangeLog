@@ -1,3 +1,30 @@
+2000-05-31  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* acinclude.m4 (grub_ASM_ABSOLUTE_WITHOUT_ASTERISK): New
+	function. Check if GAS requires absolute indirect calls/jumps
+	with NO asterisk.
+	* configure.in: Call grub_ASM_ABSOLUTE_WITHOUT_ASTERISK.
+	* acconfig.h (ABSOLUTE_WITHOUT_ASTERISK): New macro entry.
+	* netboot/pci.c (bios32_service) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Prefix the operand to "lcall" with `*'.
+	(pcibios_read_config_byte) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Likewise.
+	(pcibios_read_config_word) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Likewise.
+	(pcibios_read_config_dword) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Likewise.
+	(pcibios_write_config_byte) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Likewise.
+	(pcibios_write_config_word) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Likewise.
+	(pcibios_write_config_dword) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Likewise.
+	(check_pcibios) [!ABSOLUTE_WITHOUT_ASTERISK]: Likewise.
+	* stage2/asm.S (chain_stage1) [!ABSOLUTE_WITHOUT_ASTERISK]:
+	Prefix the operand to "ljmp" with `*'.
+	(chain_stage2) [!ABSOLUTE_WITHOUT_ASTERISK]: Likewise.
+	(big_linux_boot) [!ABSOLUTE_WITHOUT_ASTERISK]: Likewise.
+	
 2000-05-29  Chip Salzenberg  <chip@valinux.com>
 
 	* stage2/shared.h (grub_memmove): Prototype to use void *.

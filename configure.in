@@ -116,6 +116,8 @@ if test "x$grub_cv_asm_addr32" != xyes; then
   AC_MSG_ERROR([GRUB requires GAS .code16 addr32 support; upgrade your binutils])
 fi
 
+grub_ASM_ABSOLUTE_WITHOUT_ASTERISK
+
 grub_CHECK_START_SYMBOL
 grub_CHECK_USCORE_START_SYMBOL
 if test "x$grub_cv_check_start_symbol" != "xyes" \

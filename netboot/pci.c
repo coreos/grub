@@ -105,7 +105,12 @@ static unsigned long bios32_service(unsigned long service)
 	unsigned long flags;
 
 	save_flags(flags);
-	__asm__("lcall (%%edi)"
+	__asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%edi)"
+#else
+		"lcall (%%edi)"
+#endif
 		: "=a" (return_code),
 		  "=b" (address),
 		  "=c" (length),
@@ -136,7 +141,12 @@ int pcibios_read_config_byte(unsigned char bus,
         unsigned long flags;
 
         save_flags(flags);
-        __asm__("lcall (%%esi)\n\t"
+        __asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%esi)\n\t"
+#else
+		"lcall (%%esi)\n\t"
+#endif
                 "jc 1f\n\t"
                 "xor %%ah, %%ah\n"
                 "1:"
@@ -158,7 +168,12 @@ int pcibios_read_config_word(unsigned char bus,
         unsigned long flags;
 
         save_flags(flags);
-        __asm__("lcall (%%esi)\n\t"
+        __asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%esi)\n\t"
+#else
+		"lcall (%%esi)\n\t"
+#endif
                 "jc 1f\n\t"
                 "xor %%ah, %%ah\n"
                 "1:"
@@ -180,7 +195,12 @@ static int pcibios_read_config_dword(unsigned char bus,
         unsigned long flags;
 
         save_flags(flags);
-        __asm__("lcall (%%esi)\n\t"
+        __asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%esi)\n\t"
+#else
+		"lcall (%%esi)\n\t"
+#endif
                 "jc 1f\n\t"
                 "xor %%ah, %%ah\n"
                 "1:"
@@ -202,7 +222,12 @@ int pcibios_write_config_byte (unsigned char bus,
 	unsigned long flags;
 
 	save_flags(flags); cli();
-	__asm__("lcall (%%esi)\n\t"
+	__asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%esi)\n\t"
+#else
+		"lcall (%%esi)\n\t"
+#endif
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
 		"1:"
@@ -224,7 +249,12 @@ int pcibios_write_config_word (unsigned char bus,
 	unsigned long flags;
 
 	save_flags(flags); cli();
-	__asm__("lcall (%%esi)\n\t"
+	__asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%esi)\n\t"
+#else
+		"lcall (%%esi)\n\t"
+#endif
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
 		"1:"
@@ -246,7 +276,12 @@ int pcibios_write_config_dword (unsigned char bus,
 	unsigned long flags;
 
 	save_flags(flags); cli();
-	__asm__("lcall (%%esi)\n\t"
+	__asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+		"lcall *(%%esi)\n\t"
+#else
+		"lcall (%%esi)\n\t"
+#endif
 		"jc 1f\n\t"
 		"xor %%ah, %%ah\n"
 		"1:"
@@ -273,7 +308,12 @@ static void check_pcibios(void)
 		pci_indirect.address = pcibios_entry;
 
 		save_flags(flags);
-		__asm__("lcall (%%edi)\n\t"
+		__asm__(
+#ifndef ABSOLUTE_WITHOUT_ASTERISK
+			"lcall *(%%edi)\n\t"
+#else
+			"lcall (%%edi)\n\t"
+#endif
 			"jc 1f\n\t"
 			"xor %%ah, %%ah\n"
 			"1:\tshl $8, %%eax\n\t"

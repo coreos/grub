@@ -697,7 +697,11 @@ ENTRY(chain_stage1)
 	call	EXT_C(prot_to_real)
 	.code16
 
+#ifdef ABSOLUTE_WITHOUT_ASTERISK
 	DATA32	ADDR32	ljmp	(offset)
+#else
+	DATA32	ADDR32	ljmp	*(offset)
+#endif
 	.code32
 #endif /* STAGE1_5 */
 
@@ -737,7 +741,11 @@ ENTRY(chain_stage2)
 	call	EXT_C(prot_to_real)
 	.code16
 
+#ifdef ABSOLUTE_WITHOUT_ASTERISK
 	DATA32	ADDR32	ljmp	(offset)
+#else
+	DATA32	ADDR32	ljmp	*(offset)
+#endif
 
 	.code32
 #endif /* STAGE1_5 */
@@ -1654,7 +1662,11 @@ ENTRY(big_linux_boot)
 	movw	%ax, %ss
 
 	/* jump to start */
+#ifdef ABSOLUTE_WITHOUT_ASTERISK
 	DATA32	ADDR32	ljmp	(offset)
+#else
+	DATA32	ADDR32	ljmp	*(offset)
+#endif
 	.code32
 
 

@@ -152,6 +152,35 @@ AC_DEFINE_UNQUOTED([DATA32], $grub_tmp_data32,
 AC_MSG_RESULT([$grub_cv_asm_prefix_requirement])])
 
 dnl
+dnl Older versions of GAS require that absolute indirect calls/jumps are
+dnl not prefixed with `*', while later versions warn if not prefixed.
+AC_DEFUN(grub_ASM_ABSOLUTE_WITHOUT_ASTERISK,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(dnl
+[whether an absolute indirect call/jump must not be prefixed with an asterisk])
+AC_CACHE_VAL(grub_cv_asm_absolute_without_asterisk,
+[cat > conftest.s <<\EOF
+	lcall	*(offset)	
+offset:
+	.long	0
+	.word	0
+EOF
+
+if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
+  grub_cv_asm_absolute_without_asterisk=no
+else
+  grub_cv_asm_absolute_without_asterisk=yes
+fi
+
+rm -f conftest*])
+
+if test "x$grub_cv_asm_absolute_without_asterisk" = xyes; then
+  AC_DEFINE([ABSOLUTE_WITHOUT_ASTERISK])
+fi
+
+AC_MSG_RESULT([$grub_cv_asm_absolute_without_asterisk])])
+
+dnl
 dnl grub_CHECK_START_SYMBOL checks if start is automatically defined by
 dnl the compiler.
 dnl Written by OKUJI Yoshinori
