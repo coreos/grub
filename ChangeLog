@@ -1,5 +1,12 @@
 2004-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	All symbols prefixed with PUPA_ and pupa_ are renamed to GRUB_
+	and grub_, respectively. Because the conversion is trivial and
+	mechanical, I omit the details here. Please refer to the CVS
+	if you need more information.
+
+2004-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* include/pupa: Renamed to ...
 	* include/grub: ... this.
 	* util/i386/pc/pupa-mkimage.c: Renamed to ...

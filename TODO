@@ -1,9 +1,9 @@
 -*- Mode: Outline -*-
 
 Before working on anything in this file, it's very important that you
-make contact with the core PUPA developers. Things herein might be
+make contact with the core GRUB developers. Things herein might be
 slightly out of date or otherwise not easy to understand at first
-glance. So write to <pupa-devel@nongnu.org> first.
+glance. So write to <grub-devel@gnu.org> first.
 
 Priorities:
   Reported bugs generally have top priority.
@@ -12,8 +12,6 @@ Priorities:
   Things in this file are ranked with one to three !; the more, the
   higher priority.
 
-
-* Replace PUPA with GRUB (or GRUB 2). !!!
 
 * Add more filesystems (such as jfs, ffs, and reiserfs). !
 

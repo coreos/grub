@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,37 +13,37 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_ENV_HEADER
-#define PUPA_ENV_HEADER	1
+#ifndef GRUB_ENV_HEADER
+#define GRUB_ENV_HEADER	1
 
-#include <pupa/symbol.h>
-#include <pupa/err.h>
-#include <pupa/types.h>
+#include <grub/symbol.h>
+#include <grub/err.h>
+#include <grub/types.h>
 
-struct pupa_env_var
+struct grub_env_var
 {
   char *name;
   char *value;
-  pupa_err_t (*read_hook) (struct pupa_env_var *var, char **val);
-  pupa_err_t (*write_hook) (struct pupa_env_var *var);
-  struct pupa_env_var *next;
-  struct pupa_env_var **prevp;
-  struct pupa_env_var *sort_next;
-  struct pupa_env_var **sort_prevp;
+  grub_err_t (*read_hook) (struct grub_env_var *var, char **val);
+  grub_err_t (*write_hook) (struct grub_env_var *var);
+  struct grub_env_var *next;
+  struct grub_env_var **prevp;
+  struct grub_env_var *sort_next;
+  struct grub_env_var **sort_prevp;
 };
 
-pupa_err_t EXPORT_FUNC(pupa_env_set) (const char *var, const char *val);
-char *EXPORT_FUNC(pupa_env_get) (const char *name);
-void EXPORT_FUNC(pupa_env_unset) (const char *name);
-void EXPORT_FUNC(pupa_env_iterate) (int (* func) (struct pupa_env_var *var));
-pupa_err_t EXPORT_FUNC(pupa_register_variable_hook) (const char *var,
-						     pupa_err_t (*read_hook) 
-						     (struct pupa_env_var *var, char **val),
-						     pupa_err_t (*write_hook)
-						     (struct pupa_env_var *var));
+grub_err_t EXPORT_FUNC(grub_env_set) (const char *var, const char *val);
+char *EXPORT_FUNC(grub_env_get) (const char *name);
+void EXPORT_FUNC(grub_env_unset) (const char *name);
+void EXPORT_FUNC(grub_env_iterate) (int (* func) (struct grub_env_var *var));
+grub_err_t EXPORT_FUNC(grub_register_variable_hook) (const char *var,
+						     grub_err_t (*read_hook) 
+						     (struct grub_env_var *var, char **val),
+						     grub_err_t (*write_hook)
+						     (struct grub_env_var *var));
 
-#endif /* ! PUPA_ENV_HEADER */
+#endif /* ! GRUB_ENV_HEADER */

@@ -1,9 +1,9 @@
 /* misc.h - prototypes for misc functions */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,51 +14,51 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_MISC_HEADER
-#define PUPA_MISC_HEADER	1
+#ifndef GRUB_MISC_HEADER
+#define GRUB_MISC_HEADER	1
 
 #include <stdarg.h>
-#include <pupa/types.h>
-#include <pupa/symbol.h>
-#include <pupa/err.h>
+#include <grub/types.h>
+#include <grub/symbol.h>
+#include <grub/err.h>
 
-/* XXX: If pupa_memmove is too slow, we must implement pupa_memcpy.  */
-#define pupa_memcpy(d,s,n)	pupa_memmove ((d), (s), (n))
+/* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
+#define grub_memcpy(d,s,n)	grub_memmove ((d), (s), (n))
 
-void *EXPORT_FUNC(pupa_memmove) (void *dest, const void *src, pupa_size_t n);
-char *EXPORT_FUNC(pupa_strcpy) (char *dest, const char *src);
-char *EXPORT_FUNC(pupa_strncpy) (char *dest, const char *src, int c);
-char *EXPORT_FUNC(pupa_stpcpy) (char *dest, const char *src);
-char *EXPORT_FUNC(pupa_strcat) (char *dest, const char *src);
+void *EXPORT_FUNC(grub_memmove) (void *dest, const void *src, grub_size_t n);
+char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
+char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);
+char *EXPORT_FUNC(grub_stpcpy) (char *dest, const char *src);
+char *EXPORT_FUNC(grub_strcat) (char *dest, const char *src);
 
 
-int EXPORT_FUNC(pupa_memcmp) (const void *s1, const void *s2, pupa_size_t n);
-int EXPORT_FUNC(pupa_strcmp) (const char *s1, const char *s2);
-int EXPORT_FUNC(pupa_strncmp) (const char *s1, const char *s2, int c);
-char *EXPORT_FUNC(pupa_strchr) (const char *s, int c);
-char *EXPORT_FUNC(pupa_strrchr) (const char *s, int c);
-int EXPORT_FUNC(pupa_isspace) (int c);
-int EXPORT_FUNC(pupa_isprint) (int c);
-int EXPORT_FUNC(pupa_isalpha) (int c);
-int EXPORT_FUNC(pupa_isgraph) (int c);
-int EXPORT_FUNC(pupa_isdigit) (int c);
-int EXPORT_FUNC(pupa_tolower) (int c);
-unsigned long EXPORT_FUNC(pupa_strtoul) (const char *str, char **end, int base);
-char *EXPORT_FUNC(pupa_strdup) (const char *s);
-char *EXPORT_FUNC(pupa_strndup) (const char *s, pupa_size_t n);
-void *EXPORT_FUNC(pupa_memset) (void *s, int c, pupa_size_t n);
-pupa_size_t EXPORT_FUNC(pupa_strlen) (const char *s);
-int EXPORT_FUNC(pupa_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-int EXPORT_FUNC(pupa_vprintf) (const char *fmt, va_list args);
-int EXPORT_FUNC(pupa_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-int EXPORT_FUNC(pupa_vsprintf) (char *str, const char *fmt, va_list args);
-void EXPORT_FUNC(pupa_stop) (void) __attribute__ ((noreturn));
-pupa_err_t EXPORT_FUNC(pupa_split_cmdline) (const char *str, 
-					    pupa_err_t (* getline) (char **),
+int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
+int EXPORT_FUNC(grub_strcmp) (const char *s1, const char *s2);
+int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, int c);
+char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
+char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
+int EXPORT_FUNC(grub_isspace) (int c);
+int EXPORT_FUNC(grub_isprint) (int c);
+int EXPORT_FUNC(grub_isalpha) (int c);
+int EXPORT_FUNC(grub_isgraph) (int c);
+int EXPORT_FUNC(grub_isdigit) (int c);
+int EXPORT_FUNC(grub_tolower) (int c);
+unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
+char *EXPORT_FUNC(grub_strdup) (const char *s);
+char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
+void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
+grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
+int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
+int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
+void EXPORT_FUNC(grub_stop) (void) __attribute__ ((noreturn));
+grub_err_t EXPORT_FUNC(grub_split_cmdline) (const char *str, 
+					    grub_err_t (* getline) (char **),
 					    int *argc, char ***argv);
 
-#endif /* ! PUPA_MISC_HEADER */
+#endif /* ! GRUB_MISC_HEADER */

@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,15 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/machine/vga.h>
-#include <pupa/machine/console.h>
-#include <pupa/term.h>
-#include <pupa/types.h>
-#include <pupa/dl.h>
-#include <pupa/misc.h>
-#include <pupa/normal.h>
-#include <pupa/font.h>
-#include <pupa/arg.h>
+#include <grub/machine/vga.h>
+#include <grub/machine/console.h>
+#include <grub/term.h>
+#include <grub/types.h>
+#include <grub/dl.h>
+#include <grub/misc.h>
+#include <grub/normal.h>
+#include <grub/font.h>
+#include <grub/arg.h>
 
 #define DEBUG_VGA	0
 
@@ -43,7 +43,7 @@
 struct colored_char
 {
   /* An Unicode codepoint.  */
-  pupa_uint32_t code;
+  grub_uint32_t code;
 
   /* Color indexes.  */
   unsigned char fg_color;
@@ -56,7 +56,7 @@ struct colored_char
   unsigned char index;
 };
 
-static pupa_dl_t my_mod;
+static grub_dl_t my_mod;
 static unsigned char text_mode;
 static unsigned xpos, ypos;
 static int cursor_state;
@@ -120,30 +120,30 @@ set_map_mask (unsigned char mask)
   outb (SEQUENCER_ADDR_PORT, old_addr);
 }
 
-static pupa_err_t
-pupa_vga_init (void)
+static grub_err_t
+grub_vga_init (void)
 {
-  vga_font = pupa_vga_get_font ();
-  text_mode = pupa_vga_set_mode (0x12);
+  vga_font = grub_vga_get_font ();
+  text_mode = grub_vga_set_mode (0x12);
   cursor_state = 1;
   fg_color = DEFAULT_FG_COLOR;
   bg_color = DEFAULT_BG_COLOR;
   saved_map_mask = get_map_mask ();
   set_map_mask (0x0f);
   
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
-static pupa_err_t
-pupa_vga_fini (void)
+static grub_err_t
+grub_vga_fini (void)
 {
   set_map_mask (saved_map_mask);
-  pupa_vga_set_mode (text_mode);
-  return PUPA_ERR_NONE;
+  grub_vga_set_mode (text_mode);
+  return GRUB_ERR_NONE;
 }
 
 static int
-get_vga_glyph (pupa_uint32_t code, unsigned char bitmap[32], unsigned *width)
+get_vga_glyph (grub_uint32_t code, unsigned char bitmap[32], unsigned *width)
 {
   if (code > 0x7f)
     {
@@ -182,12 +182,12 @@ get_vga_glyph (pupa_uint32_t code, unsigned char bitmap[32], unsigned *width)
 	  break;
 
 	default:
-	  return pupa_font_get_glyph (code, bitmap, width);
+	  return grub_font_get_glyph (code, bitmap, width);
 	}
     }
 
   if (bitmap)
-    pupa_memcpy (bitmap, vga_font + code * CHAR_HEIGHT, CHAR_HEIGHT);
+    grub_memcpy (bitmap, vga_font + code * CHAR_HEIGHT, CHAR_HEIGHT);
   
   *width = 1;
   return 1;
@@ -284,7 +284,7 @@ scroll_up (void)
   unsigned i;
   unsigned plane;
   
-  pupa_memmove (text_buf, text_buf + TEXT_WIDTH,
+  grub_memmove (text_buf, text_buf + TEXT_WIDTH,
 		sizeof (struct colored_char) * TEXT_WIDTH * (TEXT_HEIGHT - 1));
       
   for (i = TEXT_WIDTH * (TEXT_HEIGHT - 1); i < TEXT_WIDTH * TEXT_HEIGHT; i++)
@@ -299,17 +299,17 @@ scroll_up (void)
   for (plane = 0x1; plane <= 0x8; plane <<= 1)
     {
       set_map_mask (plane);
-      pupa_memmove (VGA_MEM, VGA_MEM + VGA_WIDTH * CHAR_HEIGHT / 8,
+      grub_memmove (VGA_MEM, VGA_MEM + VGA_WIDTH * CHAR_HEIGHT / 8,
 		    VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8);
     }
 
   set_map_mask (0x0f);
-  pupa_memset (VGA_MEM + VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8, 0,
+  grub_memset (VGA_MEM + VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8, 0,
 	       VGA_WIDTH * CHAR_HEIGHT / 8);
 }
 
 static void
-pupa_vga_putchar (pupa_uint32_t c)
+grub_vga_putchar (grub_uint32_t c)
 {
 #if DEBUG_VGA
   static int show = 1;
@@ -355,7 +355,7 @@ pupa_vga_putchar (pupa_uint32_t c)
       get_vga_glyph (c, 0, &width);
 
       if (xpos + width > TEXT_WIDTH)
-	pupa_putchar ('\n');
+	grub_putchar ('\n');
 
       p = text_buf + xpos + ypos * TEXT_WIDTH;
       p->code = c;
@@ -396,29 +396,29 @@ pupa_vga_putchar (pupa_uint32_t c)
 #if DEBUG_VGA
   if (show)
     {
-      pupa_uint16_t pos = pupa_getxy ();
+      grub_uint16_t pos = grub_getxy ();
 
       show = 0;
-      pupa_gotoxy (0, 0);
-      pupa_printf ("[%u:%u]", (unsigned) (pos >> 8), (unsigned) (pos & 0xff));
-      pupa_gotoxy (pos >> 8, pos & 0xff);
+      grub_gotoxy (0, 0);
+      grub_printf ("[%u:%u]", (unsigned) (pos >> 8), (unsigned) (pos & 0xff));
+      grub_gotoxy (pos >> 8, pos & 0xff);
       show = 1;
     }
 #endif
 }
 
-static pupa_uint16_t
-pupa_vga_getxy (void)
+static grub_uint16_t
+grub_vga_getxy (void)
 {
   return ((xpos << 8) | ypos);
 }
 
 static void
-pupa_vga_gotoxy (pupa_uint8_t x, pupa_uint8_t y)
+grub_vga_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
   if (x >= TEXT_WIDTH || y >= TEXT_HEIGHT)
     {
-      pupa_error (PUPA_ERR_OUT_OF_RANGE, "invalid point (%u,%u)",
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "invalid point (%u,%u)",
 		  (unsigned) x, (unsigned) y);
       return;
     }
@@ -434,7 +434,7 @@ pupa_vga_gotoxy (pupa_uint8_t x, pupa_uint8_t y)
 }
 
 static void
-pupa_vga_cls (void)
+grub_vga_cls (void)
 {
   unsigned i;
 
@@ -447,22 +447,22 @@ pupa_vga_cls (void)
       text_buf[i].index = 0;
     }
 
-  pupa_memset (VGA_MEM, 0, VGA_WIDTH * VGA_HEIGHT / 8);
+  grub_memset (VGA_MEM, 0, VGA_WIDTH * VGA_HEIGHT / 8);
 
   xpos = ypos = 0;
 }
 
 static void
-pupa_vga_setcolorstate (pupa_term_color_state state)
+grub_vga_setcolorstate (grub_term_color_state state)
 {
   switch (state)
     {
-    case PUPA_TERM_COLOR_STANDARD:
-    case PUPA_TERM_COLOR_NORMAL:
+    case GRUB_TERM_COLOR_STANDARD:
+    case GRUB_TERM_COLOR_NORMAL:
       fg_color = DEFAULT_FG_COLOR;
       bg_color = DEFAULT_BG_COLOR;
       break;
-    case PUPA_TERM_COLOR_HIGHLIGHT:
+    case GRUB_TERM_COLOR_HIGHLIGHT:
       fg_color = DEFAULT_BG_COLOR;
       bg_color = DEFAULT_FG_COLOR;
       break;
@@ -472,14 +472,14 @@ pupa_vga_setcolorstate (pupa_term_color_state state)
 }
 
 static void
-pupa_vga_setcolor (pupa_uint8_t normal_color __attribute__ ((unused)),
-		   pupa_uint8_t highlight_color __attribute__ ((unused)))
+grub_vga_setcolor (grub_uint8_t normal_color __attribute__ ((unused)),
+		   grub_uint8_t highlight_color __attribute__ ((unused)))
 {
   /* FIXME */
 }
 
 static void
-pupa_vga_setcursor (int on)
+grub_vga_setcursor (int on)
 {
   if (cursor_state != on)
     {
@@ -492,43 +492,43 @@ pupa_vga_setcursor (int on)
     }
 }
 
-static struct pupa_term pupa_vga_term =
+static struct grub_term grub_vga_term =
   {
     .name = "vga",
-    .init = pupa_vga_init,
-    .fini = pupa_vga_fini,
-    .putchar = pupa_vga_putchar,
-    .checkkey = pupa_console_checkkey,
-    .getkey = pupa_console_getkey,
-    .getxy = pupa_vga_getxy,
-    .gotoxy = pupa_vga_gotoxy,
-    .cls = pupa_vga_cls,
-    .setcolorstate = pupa_vga_setcolorstate,
-    .setcolor = pupa_vga_setcolor,
-    .setcursor = pupa_vga_setcursor,
+    .init = grub_vga_init,
+    .fini = grub_vga_fini,
+    .putchar = grub_vga_putchar,
+    .checkkey = grub_console_checkkey,
+    .getkey = grub_console_getkey,
+    .getxy = grub_vga_getxy,
+    .gotoxy = grub_vga_gotoxy,
+    .cls = grub_vga_cls,
+    .setcolorstate = grub_vga_setcolorstate,
+    .setcolor = grub_vga_setcolor,
+    .setcursor = grub_vga_setcursor,
     .flags = 0,
     .next = 0
   };
 
-static pupa_err_t
-debug_command (struct pupa_arg_list *state __attribute__ ((unused)),
+static grub_err_t
+debug_command (struct grub_arg_list *state __attribute__ ((unused)),
 	       int argc  __attribute__ ((unused)),
 	       char **args __attribute__ ((unused)))
 {
-  pupa_printf ("???????бу??n");
+  grub_printf ("???????бу??n");
 
   return 0;
 }
 
-PUPA_MOD_INIT
+GRUB_MOD_INIT
 {
   my_mod = mod;
-  pupa_term_register (&pupa_vga_term);
-  pupa_register_command ("debug", debug_command, PUPA_COMMAND_FLAG_CMDLINE,
+  grub_term_register (&grub_vga_term);
+  grub_register_command ("debug", debug_command, GRUB_COMMAND_FLAG_CMDLINE,
 			 "debug", "Debug it!", 0);
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_term_unregister (&pupa_vga_term);
+  grub_term_unregister (&grub_vga_term);
 }

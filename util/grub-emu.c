@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
@@ -23,64 +23,64 @@
 #include <argp.h>
 #include <string.h>
 
-#include <pupa/mm.h>
-#include <pupa/setjmp.h>
-#include <pupa/fs.h>
-#include <pupa/i386/pc/util/biosdisk.h>
-#include <pupa/dl.h>
-#include <pupa/machine/console.h>
-#include <pupa/util/misc.h>
-#include <pupa/kernel.h>
-#include <pupa/normal.h>
-#include <pupa/util/getroot.h>
-#include <pupa/env.h>
+#include <grub/mm.h>
+#include <grub/setjmp.h>
+#include <grub/fs.h>
+#include <grub/i386/pc/util/biosdisk.h>
+#include <grub/dl.h>
+#include <grub/machine/console.h>
+#include <grub/util/misc.h>
+#include <grub/kernel.h>
+#include <grub/normal.h>
+#include <grub/util/getroot.h>
+#include <grub/env.h>
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/pupa"
+# define DEFAULT_DIRECTORY	"/grub"
 #else
-# define DEFAULT_DIRECTORY	"/boot/pupa"
+# define DEFAULT_DIRECTORY	"/boot/grub"
 #endif
 
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
 
 /* XXX.  */
-pupa_addr_t pupa_end_addr = -1;
-pupa_addr_t pupa_total_module_size = 0;
+grub_addr_t grub_end_addr = -1;
+grub_addr_t grub_total_module_size = 0;
 
 int
-pupa_arch_dl_check_header (void *ehdr, pupa_size_t size)
+grub_arch_dl_check_header (void *ehdr, grub_size_t size)
 {
   (void) ehdr;
   (void) size;
 
-  return PUPA_ERR_BAD_MODULE;
+  return GRUB_ERR_BAD_MODULE;
 }
 
-pupa_err_t
-pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr)
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 {
   (void) mod;
   (void) ehdr;
 
-  return PUPA_ERR_BAD_MODULE;
+  return GRUB_ERR_BAD_MODULE;
 }
 
 void
-pupa_machine_init (void)
+grub_machine_init (void)
 {
-  pupa_console_init ();
+  grub_console_init ();
 }
 
 
 const char *argp_program_version = PACKAGE_STRING;
 const char *argp_program_bug_address = PACKAGE_BUGREPORT;
-static char doc[] = "PUPA emulator";
+static char doc[] = "GRUB emulator";
 
 static struct argp_option options[] = {
   {"root-device", 'r', "DEV",  0, "use DEV as the root device [default=guessed]", 0},
   {"device-map",  'm', "FILE", 0, "use FILE as the device map", 0},
-  {"directory",   'd', "DIR",  0, "use PUPA files in the directory DIR", 0},
+  {"directory",   'd', "DIR",  0, "use GRUB files in the directory DIR", 0},
   {"verbose",     'v', 0     , 0, "print verbose messages", 0},
   { 0, 0, 0, 0, 0, 0 }
 };
@@ -138,46 +138,46 @@ main (int argc, char *argv[])
   /* More sure there is a root device.  */
   if (! args.root_dev)
     {
-      args.root_dev = pupa_guess_root_device (args.dir ? : DEFAULT_DIRECTORY);
+      args.root_dev = grub_guess_root_device (args.dir ? : DEFAULT_DIRECTORY);
       if (! args.root_dev)
 	{
-	  pupa_util_info ("guessing the root device failed, because of `%s'",
-			  pupa_errmsg);
-	  pupa_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
+	  grub_util_info ("guessing the root device failed, because of `%s'",
+			  grub_errmsg);
+	  grub_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
 	}
     }
 
-  prefix = pupa_get_prefix (args.dir ? : DEFAULT_DIRECTORY);
+  prefix = grub_get_prefix (args.dir ? : DEFAULT_DIRECTORY);
   sprintf (rootprefix, "%s%s", args.root_dev, prefix);
 
-  pupa_env_set ("prefix", rootprefix);
+  grub_env_set ("prefix", rootprefix);
   
   /* XXX: This is a bit unportable.  */
-  pupa_util_biosdisk_init (args.dev_map);
+  grub_util_biosdisk_init (args.dev_map);
 
   /* Initialize the default modules.  */
-  pupa_fat_init ();
-  pupa_ext2_init ();
-  pupa_ls_init ();
-  pupa_boot_init ();
-  pupa_cmp_init ();
-  pupa_cat_init ();
-  pupa_terminal_init ();
+  grub_fat_init ();
+  grub_ext2_init ();
+  grub_ls_init ();
+  grub_boot_init ();
+  grub_cmp_init ();
+  grub_cat_init ();
+  grub_terminal_init ();
 
   /* XXX: Should normal mode be started by default?  */
-  pupa_normal_init ();
+  grub_normal_init ();
 
-  /* Start PUPA!  */
-  pupa_main ();
+  /* Start GRUB!  */
+  grub_main ();
 
-  pupa_util_biosdisk_fini ();
-  pupa_normal_fini ();
-  pupa_ext2_fini ();
-  pupa_fat_fini ();
-  pupa_boot_fini ();
-  pupa_cmp_fini ();
-  pupa_cat_fini ();
-  pupa_terminal_fini ();
+  grub_util_biosdisk_fini ();
+  grub_normal_fini ();
+  grub_ext2_fini ();
+  grub_fat_fini ();
+  grub_boot_fini ();
+  grub_cmp_fini ();
+  grub_cat_fini ();
+  grub_terminal_fini ();
 
   return 0;
 }

@@ -21,7 +21,7 @@ use (yet). For now, you can install GRUB 2 into a floppy by these
 instructions:
 
 $ configure && make
-$ ./pupa-mkimage -v -d . -o core.img _chain ext2
+$ ./grub-mkimage -v -d . -o core.img _chain ext2
 $ dd if=boot.img of=/dev/fd0 bs=512 count=1
 $ dd if=core.img of=/dev/fd0 bs=512 seek=1
 

@@ -1,6 +1,6 @@
 /* ieee1275.c - Access the Open Firmware client interface.  */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,16 +18,16 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/machine/ieee1275.h>
+#include <grub/machine/ieee1275.h>
 
 
-#define IEEE1275_PHANDLE_ROOT		((pupa_ieee1275_phandle_t) 0)
-#define IEEE1275_PHANDLE_INVALID	((pupa_ieee1275_phandle_t) -1)
+#define IEEE1275_PHANDLE_ROOT		((grub_ieee1275_phandle_t) 0)
+#define IEEE1275_PHANDLE_INVALID	((grub_ieee1275_phandle_t) -1)
 
-intptr_t (*pupa_ieee1275_entry_fn) (void *);
+intptr_t (*grub_ieee1275_entry_fn) (void *);
 
 #ifndef IEEE1275_CALL_ENTRY_FN
-#define IEEE1275_CALL_ENTRY_FN(args) (*pupa_ieee1275_entry_fn) (args)
+#define IEEE1275_CALL_ENTRY_FN(args) (*grub_ieee1275_entry_fn) (args)
 #endif
 
 /* All backcalls to the firmware is done by calling an entry function 
@@ -35,7 +35,7 @@ intptr_t (*pupa_ieee1275_entry_fn) (void *);
    a structure is passed which specifies what the firmware should do.  
    NAME is the requested service.  NR_INS and NR_OUTS is the number of
    passed arguments and the expected number of return values, resp. */
-struct pupa_ieee1275_common_hdr
+struct grub_ieee1275_common_hdr
 {
   char *name;
   int nr_ins;
@@ -46,10 +46,10 @@ struct pupa_ieee1275_common_hdr
   (p)->name = xname; (p)->nr_ins = xins; (p)->nr_outs = xouts
 
 /* FIXME is this function needed? */
-pupa_uint32_t
-pupa_ieee1275_decode_int_4 (unsigned char *p)
+grub_uint32_t
+grub_ieee1275_decode_int_4 (unsigned char *p)
 {
-  pupa_uint32_t val = (*p++ << 8);
+  grub_uint32_t val = (*p++ << 8);
   val = (val + *p++) << 8;
   val = (val + *p++) << 8;
   return (val + *p);
@@ -57,12 +57,12 @@ pupa_ieee1275_decode_int_4 (unsigned char *p)
 
 
 int
-pupa_ieee1275_finddevice (char *name, pupa_ieee1275_phandle_t *phandlep)
+grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
 {
   struct find_device_args {
-    struct pupa_ieee1275_common_hdr common;
+    struct grub_ieee1275_common_hdr common;
     char *device;
-    pupa_ieee1275_phandle_t phandle;
+    grub_ieee1275_phandle_t phandle;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "finddevice", 1, 1);
@@ -75,12 +75,12 @@ pupa_ieee1275_finddevice (char *name, pupa_ieee1275_phandle_t *phandlep)
 }
 
 int
-pupa_ieee1275_get_property (int handle, const char *property, void *buf,
-			    pupa_size_t size, pupa_size_t *actual)
+grub_ieee1275_get_property (int handle, const char *property, void *buf,
+			    grub_size_t size, grub_size_t *actual)
 {
   struct get_property_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t phandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t phandle;
     const char *prop;
     void *buf;
     int buflen;
@@ -101,12 +101,12 @@ pupa_ieee1275_get_property (int handle, const char *property, void *buf,
 }
 
 int
-pupa_ieee1275_next_property (int handle, char *prev_prop, char *prop,
+grub_ieee1275_next_property (int handle, char *prev_prop, char *prop,
 			     int *flags)
 {
   struct get_property_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t phandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t phandle;
     char *prev_prop;
     char *next_prop;
     int flags;
@@ -126,14 +126,14 @@ pupa_ieee1275_next_property (int handle, char *prev_prop, char *prop,
 }
 
 int
-pupa_ieee1275_get_property_length (pupa_ieee1275_phandle_t handle, 
-				   const char *prop, pupa_size_t *length)
+grub_ieee1275_get_property_length (grub_ieee1275_phandle_t handle, 
+				   const char *prop, grub_size_t *length)
 {
   struct get_property_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t phandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t phandle;
     const char *prop;
-    pupa_size_t length;
+    grub_size_t length;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "getproplen", 2, 1);
@@ -148,13 +148,13 @@ pupa_ieee1275_get_property_length (pupa_ieee1275_phandle_t handle,
 }
 
 int
-pupa_ieee1275_instance_to_package (pupa_ieee1275_ihandle_t ihandle,
-				   pupa_ieee1275_phandle_t *phandlep)
+grub_ieee1275_instance_to_package (grub_ieee1275_ihandle_t ihandle,
+				   grub_ieee1275_phandle_t *phandlep)
 {
   struct instance_to_package_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_ihandle_t ihandle;
-    pupa_ieee1275_phandle_t phandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_phandle_t phandle;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "instance-to-package", 1, 1);
@@ -167,12 +167,12 @@ pupa_ieee1275_instance_to_package (pupa_ieee1275_ihandle_t ihandle,
 }
 
 int
-pupa_ieee1275_package_to_path (pupa_ieee1275_phandle_t phandle,
-			       char *path, pupa_size_t len, pupa_size_t *actual)
+grub_ieee1275_package_to_path (grub_ieee1275_phandle_t phandle,
+			       char *path, grub_size_t len, grub_size_t *actual)
 {
   struct instance_to_package_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t phandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t phandle;
     char *buf;
     int buflen;
     int actual;
@@ -191,13 +191,13 @@ pupa_ieee1275_package_to_path (pupa_ieee1275_phandle_t phandle,
 }
 
 int
-pupa_ieee1275_instance_to_path (pupa_ieee1275_ihandle_t ihandle,
-				char *path, pupa_size_t len,
-				pupa_size_t *actual)
+grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
+				char *path, grub_size_t len,
+				grub_size_t *actual)
 {
   struct instance_to_package_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_ihandle_t ihandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_ihandle_t ihandle;
     char *buf;
     int buflen;
     int actual;
@@ -216,15 +216,15 @@ pupa_ieee1275_instance_to_path (pupa_ieee1275_ihandle_t ihandle,
 }
 
 int
-pupa_ieee1275_write (pupa_ieee1275_ihandle_t ihandle, void *buffer, 
-		     pupa_size_t len, pupa_size_t *actualp)
+grub_ieee1275_write (grub_ieee1275_ihandle_t ihandle, void *buffer, 
+		     grub_size_t len, grub_size_t *actualp)
 {
   struct write_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_ihandle_t ihandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_ihandle_t ihandle;
     void *buf;
-    pupa_size_t len;
-    pupa_size_t actual;
+    grub_size_t len;
+    grub_size_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "write", 3, 1);
@@ -240,15 +240,15 @@ pupa_ieee1275_write (pupa_ieee1275_ihandle_t ihandle, void *buffer,
 }
 
 int
-pupa_ieee1275_read (pupa_ieee1275_ihandle_t ihandle, void *buffer,
-		    pupa_size_t len, pupa_size_t *actualp)
+grub_ieee1275_read (grub_ieee1275_ihandle_t ihandle, void *buffer,
+		    grub_size_t len, grub_size_t *actualp)
 {
   struct write_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_ihandle_t ihandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_ihandle_t ihandle;
     void *buf;
-    pupa_size_t len;
-    pupa_size_t actual;
+    grub_size_t len;
+    grub_size_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "read", 3, 1);
@@ -264,12 +264,12 @@ pupa_ieee1275_read (pupa_ieee1275_ihandle_t ihandle, void *buffer,
 }
 
 int
-pupa_ieee1275_seek (pupa_ieee1275_ihandle_t ihandle, int pos_hi,
+grub_ieee1275_seek (grub_ieee1275_ihandle_t ihandle, int pos_hi,
 		    int pos_lo, int *result)
 {
   struct write_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_ihandle_t ihandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_ihandle_t ihandle;
     int pos_hi;
     int pos_lo;
     int result;
@@ -289,13 +289,13 @@ pupa_ieee1275_seek (pupa_ieee1275_ihandle_t ihandle, int pos_hi,
 }
 
 int
-pupa_ieee1275_peer (pupa_ieee1275_phandle_t node,
-		    pupa_ieee1275_phandle_t *result)
+grub_ieee1275_peer (grub_ieee1275_phandle_t node,
+		    grub_ieee1275_phandle_t *result)
 {
   struct peer_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t node;
-    pupa_ieee1275_phandle_t result;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t node;
+    grub_ieee1275_phandle_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "peer", 1, 1);
@@ -308,13 +308,13 @@ pupa_ieee1275_peer (pupa_ieee1275_phandle_t node,
 }
 
 int
-pupa_ieee1275_child (pupa_ieee1275_phandle_t node,
-		     pupa_ieee1275_phandle_t *result)
+grub_ieee1275_child (grub_ieee1275_phandle_t node,
+		     grub_ieee1275_phandle_t *result)
 {
   struct child_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t node;
-    pupa_ieee1275_phandle_t result;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t node;
+    grub_ieee1275_phandle_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "child", 1, 1);
@@ -328,13 +328,13 @@ pupa_ieee1275_child (pupa_ieee1275_phandle_t node,
 }
 
 int
-pupa_ieee1275_parent (pupa_ieee1275_phandle_t node,
-		      pupa_ieee1275_phandle_t *result)
+grub_ieee1275_parent (grub_ieee1275_phandle_t node,
+		      grub_ieee1275_phandle_t *result)
 {
   struct parent_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t node;
-    pupa_ieee1275_phandle_t result;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t node;
+    grub_ieee1275_phandle_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "parent", 1, 1);
@@ -348,10 +348,10 @@ pupa_ieee1275_parent (pupa_ieee1275_phandle_t node,
 }
 
 int
-pupa_ieee1275_exit (void)
+grub_ieee1275_exit (void)
 {
   struct exit_args {
-    struct pupa_ieee1275_common_hdr common;
+    struct grub_ieee1275_common_hdr common;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "exit", 0, 0);
@@ -362,12 +362,12 @@ pupa_ieee1275_exit (void)
 }
 
 int
-pupa_ieee1275_open (char *node, pupa_ieee1275_ihandle_t *result)
+grub_ieee1275_open (char *node, grub_ieee1275_ihandle_t *result)
 {
   struct open_args {
-    struct pupa_ieee1275_common_hdr common;
+    struct grub_ieee1275_common_hdr common;
     char *cstr;
-    pupa_ieee1275_ihandle_t result;
+    grub_ieee1275_ihandle_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "open", 1, 1);
@@ -380,11 +380,11 @@ pupa_ieee1275_open (char *node, pupa_ieee1275_ihandle_t *result)
 }
 
 int
-pupa_ieee1275_close (pupa_ieee1275_ihandle_t ihandle)
+grub_ieee1275_close (grub_ieee1275_ihandle_t ihandle)
 {
   struct close_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_ihandle_t ihandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_ihandle_t ihandle;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "close", 1, 0);
@@ -397,13 +397,13 @@ pupa_ieee1275_close (pupa_ieee1275_ihandle_t ihandle)
 }
 
 int
-pupa_ieee1275_claim (void *p, pupa_size_t size,
+grub_ieee1275_claim (void *p, grub_size_t size,
 		     unsigned int align, void **result)
 {
   struct claim_args {
-    struct pupa_ieee1275_common_hdr common;
+    struct grub_ieee1275_common_hdr common;
     void *p;
-    pupa_size_t size;
+    grub_size_t size;
     unsigned int align;
     void *addr;
   } args;
@@ -420,17 +420,17 @@ pupa_ieee1275_claim (void *p, pupa_size_t size,
 }
 
 int
-pupa_ieee1275_set_property (pupa_ieee1275_phandle_t phandle,
+grub_ieee1275_set_property (grub_ieee1275_phandle_t phandle,
 			    const char *propname, void *buf,
-			    pupa_size_t size, pupa_size_t *actual)
+			    grub_size_t size, grub_size_t *actual)
 {
   struct set_property_args {
-    struct pupa_ieee1275_common_hdr common;
-    pupa_ieee1275_phandle_t phandle;
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_phandle_t phandle;
     const char *propname;
     void *buf;
-    pupa_size_t size;
-    pupa_size_t actual;
+    grub_size_t size;
+    grub_size_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "setprop", 4, 1);
@@ -446,13 +446,13 @@ pupa_ieee1275_set_property (pupa_ieee1275_phandle_t phandle,
 }
 
 int
-pupa_ieee1275_set_color (pupa_ieee1275_ihandle_t ihandle,
+grub_ieee1275_set_color (grub_ieee1275_ihandle_t ihandle,
 			 int index, int r, int g, int b)
 {
   struct set_color_args {
-    struct pupa_ieee1275_common_hdr common;
+    struct grub_ieee1275_common_hdr common;
     char *method;
-    pupa_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_ihandle_t ihandle;
     int index;
     int b;
     int g;

@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,16 +17,16 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/symbol.h>
+#include <grub/symbol.h>
 
 	.file	"setjmp.S"
 	
 	.text
 	
 /*
- * int pupa_setjmp (pupa_jmp_buf env)
+ * int grub_setjmp (grub_jmp_buf env)
  */
-FUNCTION(pupa_setjmp)
+FUNCTION(grub_setjmp)
 	movl	%ebx, 0(%eax)	/* EBX */
 	movl	%esi, 4(%eax)	/* ESI */
 	movl	%edi, 8(%eax)	/* EDI */
@@ -39,9 +39,9 @@ FUNCTION(pupa_setjmp)
 
 		
 /*
- * int pupa_longjmp (pupa_jmp_buf env, int val)
+ * int grub_longjmp (grub_jmp_buf env, int val)
  */
-FUNCTION(pupa_longjmp)
+FUNCTION(grub_longjmp)
 	movl	0(%eax), %ebx
 	movl	4(%eax), %esi
 	movl	8(%eax), %edi

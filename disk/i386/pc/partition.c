@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002 Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,23 +13,23 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/machine/partition.h>
-#include <pupa/disk.h>
-#include <pupa/mm.h>
-#include <pupa/misc.h>
+#include <grub/machine/partition.h>
+#include <grub/disk.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
 /* Parse the partition representation in STR and return a partition.  */
-static pupa_partition_t
-pupa_partition_parse (const char *str)
+static grub_partition_t
+grub_partition_parse (const char *str)
 {
-  pupa_partition_t p;
+  grub_partition_t p;
   char *s = (char *) str;
   
-  p = (pupa_partition_t) pupa_malloc (sizeof (*p));
+  p = (grub_partition_t) grub_malloc (sizeof (*p));
   if (! p)
     return 0;
 
@@ -37,13 +37,13 @@ pupa_partition_parse (const char *str)
   p->bsd_part = p->dos_type = p->bsd_type = p->index = -1;
 
   /* Get the DOS partition number.  */
-  p->dos_part = pupa_strtoul (s, &s, 0);
+  p->dos_part = grub_strtoul (s, &s, 0);
   
-  if (pupa_errno)
+  if (grub_errno)
     {
       /* Not found. Maybe only a BSD label is specified.  */
       p->dos_part = -1;
-      pupa_errno = PUPA_ERR_NONE;
+      grub_errno = GRUB_ERR_NONE;
     }
   else if (*s == ',')
     s++;
@@ -66,19 +66,19 @@ pupa_partition_parse (const char *str)
   return p;
   
  fail:
-  pupa_free (p);
-  pupa_error (PUPA_ERR_BAD_FILENAME, "invalid partition");
+  grub_free (p);
+  grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
   return 0;
 }
 
-pupa_err_t
-pupa_partition_iterate (pupa_disk_t disk,
-			int (*hook) (const pupa_partition_t partition))
+grub_err_t
+grub_partition_iterate (grub_disk_t disk,
+			int (*hook) (const grub_partition_t partition))
 {
-  struct pupa_partition p;
-  struct pupa_partition_mbr mbr;
-  struct pupa_partition_disk_label label;
-  struct pupa_disk raw;
+  struct grub_partition p;
+  struct grub_partition_mbr mbr;
+  struct grub_partition_disk_label label;
+  struct grub_disk raw;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -91,30 +91,30 @@ pupa_partition_iterate (pupa_disk_t disk,
   while (1)
     {
       int i;
-      struct pupa_partition_entry *e;
+      struct grub_partition_entry *e;
       
       /* Read the MBR.  */
-      if (pupa_disk_read (&raw, p.offset, 0, sizeof (mbr), (char *) &mbr))
+      if (grub_disk_read (&raw, p.offset, 0, sizeof (mbr), (char *) &mbr))
 	goto finish;
 
       /* Check if it is valid.  */
-      if (mbr.signature != pupa_cpu_to_le16 (PUPA_PARTITION_SIGNATURE))
-	return pupa_error (PUPA_ERR_BAD_PART_TABLE, "no signature");
+      if (mbr.signature != grub_cpu_to_le16 (GRUB_PARTITION_SIGNATURE))
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
       /* Analyze DOS partitions.  */
       for (p.index = 0; p.index < 4; p.index++)
 	{
 	  e = mbr.entries + p.index;
 	  
-	  p.start = p.offset + pupa_le_to_cpu32 (e->start);
-	  p.len = pupa_le_to_cpu32 (e->length);
+	  p.start = p.offset + grub_le_to_cpu32 (e->start);
+	  p.len = grub_le_to_cpu32 (e->length);
 	  p.bsd_part = -1;
 	  p.dos_type = e->type;
 	  p.bsd_type = -1;
 
 	  /* If this partition is a normal one, call the hook.  */
-	  if (! pupa_partition_is_empty (e->type)
-	      && ! pupa_partition_is_extended (e->type))
+	  if (! grub_partition_is_empty (e->type)
+	      && ! grub_partition_is_extended (e->type))
 	    {
 	      p.dos_part++;
 	      
@@ -122,17 +122,17 @@ pupa_partition_iterate (pupa_disk_t disk,
 		goto finish;
 
 	      /* Check if this is a BSD partition.  */
-	      if (pupa_partition_is_bsd (e->type))
+	      if (grub_partition_is_bsd (e->type))
 		{
 		  /* Check if the BSD label is within the DOS partition.  */
-		  if (p.len <= PUPA_PARTITION_BSD_LABEL_SECTOR)
-		    return pupa_error (PUPA_ERR_BAD_PART_TABLE,
+		  if (p.len <= GRUB_PARTITION_BSD_LABEL_SECTOR)
+		    return grub_error (GRUB_ERR_BAD_PART_TABLE,
 				       "no space for disk label");
 
 		  /* Read the BSD label.  */
-		  if (pupa_disk_read (&raw,
+		  if (grub_disk_read (&raw,
 				      (p.start
-				       + PUPA_PARTITION_BSD_LABEL_SECTOR),
+				       + GRUB_PARTITION_BSD_LABEL_SECTOR),
 				      0,
 				      sizeof (label),
 				      (char *) &label))
@@ -140,22 +140,22 @@ pupa_partition_iterate (pupa_disk_t disk,
 
 		  /* Check if it is valid.  */
 		  if (label.magic
-		      != pupa_cpu_to_le32 (PUPA_PARTITION_BSD_LABEL_MAGIC))
-		    return pupa_error (PUPA_ERR_BAD_PART_TABLE,
+		      != grub_cpu_to_le32 (GRUB_PARTITION_BSD_LABEL_MAGIC))
+		    return grub_error (GRUB_ERR_BAD_PART_TABLE,
 				       "invalid disk label magic");
 
 		  for (p.bsd_part = 0;
-		       p.bsd_part < pupa_cpu_to_le16 (label.num_partitions);
+		       p.bsd_part < grub_cpu_to_le16 (label.num_partitions);
 		       p.bsd_part++)
 		    {
-		      struct pupa_partition_bsd_entry *be
+		      struct grub_partition_bsd_entry *be
 			= label.entries + p.bsd_part;
 
-		      p.start = pupa_le_to_cpu32 (be->offset);
-		      p.len = pupa_le_to_cpu32 (be->size);
+		      p.start = grub_le_to_cpu32 (be->offset);
+		      p.len = grub_le_to_cpu32 (be->size);
 		      p.bsd_type = be->fs_type;
 		      
-		      if (be->fs_type != PUPA_PARTITION_BSD_TYPE_UNUSED)
+		      if (be->fs_type != GRUB_PARTITION_BSD_TYPE_UNUSED)
 			if (hook (&p))
 			  goto finish;
 		    }
@@ -172,9 +172,9 @@ pupa_partition_iterate (pupa_disk_t disk,
 	{
 	  e = mbr.entries + i;
 	  
-	  if (pupa_partition_is_extended (e->type))
+	  if (grub_partition_is_extended (e->type))
 	    {
-	      p.offset = p.ext_offset + pupa_le_to_cpu32 (e->start);
+	      p.offset = p.ext_offset + grub_le_to_cpu32 (e->start);
 	      if (! p.ext_offset)
 		p.ext_offset = p.offset;
 
@@ -188,61 +188,61 @@ pupa_partition_iterate (pupa_disk_t disk,
     }
 
  finish:
-  return pupa_errno;
+  return grub_errno;
 }
 
-pupa_partition_t
-pupa_partition_probe (pupa_disk_t disk, const char *str)
+grub_partition_t
+grub_partition_probe (grub_disk_t disk, const char *str)
 {
-  pupa_partition_t p;
-  auto int find_func (const pupa_partition_t partition);
+  grub_partition_t p;
+  auto int find_func (const grub_partition_t partition);
 
-  int find_func (const pupa_partition_t partition)
+  int find_func (const grub_partition_t partition)
     {
       if ((p->dos_part == partition->dos_part || p->dos_part == -1)
 	  && p->bsd_part == partition->bsd_part)
 	{
-	  pupa_memcpy (p, partition, sizeof (*p));
+	  grub_memcpy (p, partition, sizeof (*p));
 	  return 1;
 	}
       
       return 0;
     }
   
-  p = pupa_partition_parse (str);
+  p = grub_partition_parse (str);
   if (! p)
     return 0;
 
 
-  if (pupa_partition_iterate (disk, find_func))
+  if (grub_partition_iterate (disk, find_func))
     goto fail;
 
   if (p->index < 0)
     {
-      pupa_error (PUPA_ERR_BAD_DEVICE, "no such partition");
+      grub_error (GRUB_ERR_BAD_DEVICE, "no such partition");
       goto fail;
     }
 
   return p;
 
  fail:
-  pupa_free (p);
+  grub_free (p);
   return 0;
 }
 
 char *
-pupa_partition_get_name (const pupa_partition_t p)
+grub_partition_get_name (const grub_partition_t p)
 {
   char *name;
 
-  name = pupa_malloc (13);
+  name = grub_malloc (13);
   if (! name)
     return 0;
 
   if (p->bsd_part < 0)
-    pupa_sprintf (name, "%d", p->dos_part);
+    grub_sprintf (name, "%d", p->dos_part);
   else
-    pupa_sprintf (name, "%d,%c", p->dos_part, p->bsd_part + 'a');
+    grub_sprintf (name, "%d,%c", p->dos_part, p->bsd_part + 'a');
 
   return name;
 }

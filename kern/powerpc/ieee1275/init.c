@@ -1,6 +1,6 @@
-/*  init.c -- Initialize PUPA on the newworld mac (PPC).  */
+/*  init.c -- Initialize GRUB on the newworld mac (PPC).  */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003, 2004 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,24 +18,24 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/kernel.h>
-#include <pupa/dl.h>
-#include <pupa/disk.h>
-#include <pupa/mm.h>
-#include <pupa/machine/partition.h>
-#include <pupa/machine/ieee1275.h>
-#include <pupa/normal.h>
-#include <pupa/fs.h>
-#include <pupa/setjmp.h>
+#include <grub/kernel.h>
+#include <grub/dl.h>
+#include <grub/disk.h>
+#include <grub/mm.h>
+#include <grub/machine/partition.h>
+#include <grub/machine/ieee1275.h>
+#include <grub/normal.h>
+#include <grub/fs.h>
+#include <grub/setjmp.h>
 #include <env.h>
 
-void pupa_ofdisk_init (void);
-void pupa_console_init (void);
+void grub_ofdisk_init (void);
+void grub_console_init (void);
 
 
 /* XXX: Modules are not yet supported.  */
-pupa_addr_t pupa_end_addr = -1;
-pupa_addr_t pupa_total_module_size = 0;
+grub_addr_t grub_end_addr = -1;
+grub_addr_t grub_total_module_size = 0;
 
 void
 abort (void)
@@ -44,63 +44,63 @@ abort (void)
 }
 
 void
-pupa_machine_init (void)
+grub_machine_init (void)
 {
   void *mem;
 
-  if (pupa_ieee1275_claim ((void *) 0x300000, 0x150000, 0, &mem) == -1)
+  if (grub_ieee1275_claim ((void *) 0x300000, 0x150000, 0, &mem) == -1)
     abort (); /* Damn, we are in trouble!  */
   
   /* The memory allocations were copied from yaboot.  */
-  pupa_mm_init_region ((void *) 0x300000, 0x150000);
+  grub_mm_init_region ((void *) 0x300000, 0x150000);
 
   /* XXX: Loadable modules are not supported.  */
-  pupa_env_set ("prefix", "");
+  grub_env_set ("prefix", "");
 
-  pupa_ext2_init ();
-  pupa_ofdisk_init ();
-  pupa_console_init ();
+  grub_ext2_init ();
+  grub_ofdisk_init ();
+  grub_console_init ();
 }
 
 int
-pupa_arch_dl_check_header (void *ehdr __attribute ((unused)),
-			   pupa_size_t size __attribute ((unused)))
+grub_arch_dl_check_header (void *ehdr __attribute ((unused)),
+			   grub_size_t size __attribute ((unused)))
 {
   return 0;
 }
 
-pupa_err_t
-pupa_arch_dl_relocate_symbols (pupa_dl_t mod __attribute ((unused)),
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod __attribute ((unused)),
 			       void *ehdr __attribute ((unused)))
 {
   return 0;
 }
 
 void
-pupa_stop (void)
+grub_stop (void)
 {
   for (;;);
 }
 
 void
-pupa_register_exported_symbols (void)
+grub_register_exported_symbols (void)
 {
 }
 
-pupa_uint32_t
-pupa_get_rtc (void)
+grub_uint32_t
+grub_get_rtc (void)
 {
   return 0;
 }
 
 int
-pupa_setjmp (pupa_jmp_buf env __attribute ((unused)))
+grub_setjmp (grub_jmp_buf env __attribute ((unused)))
 {
   return 0;
 }
 
 void
-pupa_longjmp (pupa_jmp_buf env __attribute ((unused)),
+grub_longjmp (grub_jmp_buf env __attribute ((unused)),
 	      int val __attribute ((unused)))
 {
 }

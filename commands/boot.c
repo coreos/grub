@@ -1,9 +1,9 @@
 /* boot.c - command to boot an operating system */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,52 +14,52 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/normal.h>
-#include <pupa/dl.h>
-#include <pupa/arg.h>
-#include <pupa/misc.h>
-#include <pupa/loader.h>
+#include <grub/normal.h>
+#include <grub/dl.h>
+#include <grub/arg.h>
+#include <grub/misc.h>
+#include <grub/loader.h>
 
-static pupa_err_t
-pupa_cmd_boot (struct pupa_arg_list *state __attribute__ ((unused)),
+static grub_err_t
+grub_cmd_boot (struct grub_arg_list *state __attribute__ ((unused)),
 	       int argc, char **args __attribute__ ((unused)))
 {
   if (argc)
-    return pupa_error (PUPA_ERR_BAD_ARGUMENT, "too many arguments");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many arguments");
   
-  pupa_loader_boot ();
+  grub_loader_boot ();
   
   return 0;
 }
 
 
-#ifdef PUPA_UTIL
+#ifdef GRUB_UTIL
 void
-pupa_boot_init (void)
+grub_boot_init (void)
 {
-  pupa_register_command ("boot", pupa_cmd_boot, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("boot", grub_cmd_boot, GRUB_COMMAND_FLAG_BOTH,
 			 "boot", "Boot an operating system", 0);
 }
 
 void
-pupa_boot_fini (void)
+grub_boot_fini (void)
 {
-  pupa_unregister_command ("boot");
+  grub_unregister_command ("boot");
 }
-#else /* ! PUPA_UTIL */
-PUPA_MOD_INIT
+#else /* ! GRUB_UTIL */
+GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
-  pupa_register_command ("boot", pupa_cmd_boot, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("boot", grub_cmd_boot, GRUB_COMMAND_FLAG_BOTH,
 			 "boot", "Boot an operating system", 0);
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_unregister_command ("boot");
+  grub_unregister_command ("boot");
 }
-#endif /* ! PUPA_UTIL */
+#endif /* ! GRUB_UTIL */

@@ -118,7 +118,7 @@ UNDSYMFILES += #{undsym}
 #{@name}: #{pre_obj} #{mod_obj}
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 #{pre_obj}: #{objs_str}
 	-rm -f $@
@@ -190,11 +190,11 @@ MOSTLYCLEANFILES += #{deps_str}
       dir = File.dirname(src)
 
       "#{obj}: #{src}
-	$(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(#{prefix}_CFLAGS) -c -o $@ $<
+	$(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -c -o $@ $<
 
 #{dep}: #{src}
 	set -e; \
-	  $(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(#{prefix}_CFLAGS) -M $< \
+	  $(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -M $< \
 	  | sed 's,#{Regexp.quote(fake_obj)}[ :]*,#{obj} $@ : ,g' > $@; \
 	  [ -s $@ ] || rm -f $@
 

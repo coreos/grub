@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,42 +17,42 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_KERNEL_HEADER
-#define PUPA_KERNEL_HEADER	1
+#ifndef GRUB_KERNEL_HEADER
+#define GRUB_KERNEL_HEADER	1
 
-#include <pupa/types.h>
+#include <grub/types.h>
 
 /* The module header.  */
-struct pupa_module_header
+struct grub_module_header
 {
   /* The offset of object code.  */
-  pupa_off_t offset;
+  grub_off_t offset;
   /* The size of object code plus this header.  */
-  pupa_size_t size;
+  grub_size_t size;
 };
 
 /* The start address of the kernel.  */
-extern pupa_addr_t pupa_start_addr;
+extern grub_addr_t grub_start_addr;
 
 /* The end address of the kernel.  */
-extern pupa_addr_t pupa_end_addr;
+extern grub_addr_t grub_end_addr;
 
 /* The total size of modules including their headers.  */
-extern pupa_size_t pupa_total_module_size;
+extern grub_size_t grub_total_module_size;
 
 /* The size of the kernel image.  */
-extern pupa_size_t pupa_kernel_image_size;
+extern grub_size_t grub_kernel_image_size;
 
 /* The start point of the C code.  */
-void pupa_main (void);
+void grub_main (void);
 
 /* The machine-specific initialization. This must initialize memory.  */
-void pupa_machine_init (void);
+void grub_machine_init (void);
 
 /* Return the end address of the core image.  */
-pupa_addr_t pupa_get_end_addr (void);
+grub_addr_t grub_get_end_addr (void);
 
 /* Register all the exported symbols. This is automatically generated.  */
-void pupa_register_exported_symbols (void);
+void grub_register_exported_symbols (void);
 
-#endif /* ! PUPA_KERNEL_HEADER */
+#endif /* ! GRUB_KERNEL_HEADER */

@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,36 +13,36 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_PARTITION_HEADER
-#define PUPA_PARTITION_HEADER	1
+#ifndef GRUB_PARTITION_HEADER
+#define GRUB_PARTITION_HEADER	1
 
-#include <pupa/symbol.h>
-#include <pupa/types.h>
-#include <pupa/err.h>
+#include <grub/symbol.h>
+#include <grub/types.h>
+#include <grub/err.h>
 
-#define PUPA_APPLE_PART_MAGIC	0x504D
+#define GRUB_APPLE_PART_MAGIC	0x504D
 
-struct pupa_apple_part
+struct grub_apple_part
 {
   /* The magic number to idenify this as a partition, it should have
      the value `0x504D'.  */
-  pupa_uint16_t magic;
+  grub_uint16_t magic;
 
   /* Reserved.  */
-  pupa_uint16_t reserved;
+  grub_uint16_t reserved;
 
   /* The size of the partition map in blocks.  */
-  pupa_uint32_t partmap_size;
+  grub_uint32_t partmap_size;
 
   /* The first physical block of the partition.  */
-  pupa_uint32_t first_phys_block;
+  grub_uint32_t first_phys_block;
 
   /* The amount of blocks.  */
-  pupa_uint32_t blockcnt;
+  grub_uint32_t blockcnt;
 
   /* The partition name.  */
   char partname[32];
@@ -51,44 +51,44 @@ struct pupa_apple_part
   char parttype[32];
 
   /* The first datablock of the partition.  */
-  pupa_uint32_t datablocks_first;
+  grub_uint32_t datablocks_first;
 
   /* The amount datablocks.  */
-  pupa_uint32_t datablocks_count;
+  grub_uint32_t datablocks_count;
 
   /* The status of the partition. (???)  */
-  pupa_uint32_t status;
+  grub_uint32_t status;
 
   /* The first block on which the bootcode can be found.  */
-  pupa_uint32_t bootcode_pos;
+  grub_uint32_t bootcode_pos;
 
   /* The size of the bootcode in bytes.  */
-  pupa_uint32_t bootcode_size;
+  grub_uint32_t bootcode_size;
 
   /* The load address of the bootcode.  */
-  pupa_uint32_t bootcode_loadaddr;
+  grub_uint32_t bootcode_loadaddr;
 
   /* Reserved.  */
-  pupa_uint32_t reserved2;
+  grub_uint32_t reserved2;
   
   /* The entrypoint of the bootcode.  */
-  pupa_uint32_t bootcode_entrypoint;
+  grub_uint32_t bootcode_entrypoint;
 
   /* Reserved.  */
-  pupa_uint32_t reserved3;
+  grub_uint32_t reserved3;
 
   /* A checksum of the bootcode.  */
-  pupa_uint32_t bootcode_checksum;
+  grub_uint32_t bootcode_checksum;
 
   /* The processor type.  */
   char processor[16];
 
   /* Padding.  */
-  pupa_uint16_t pad[187];
+  grub_uint16_t pad[187];
 };
 
 /* Partition description.  */
-struct pupa_partition
+struct grub_partition
 {
   /* The start sector.  */
   unsigned long start;
@@ -114,27 +114,27 @@ struct pupa_partition
   /* The BSD partition type.  */
   int bsd_type;
 };
-typedef struct pupa_partition *pupa_partition_t;
+typedef struct grub_partition *grub_partition_t;
 
-struct pupa_disk;
+struct grub_disk;
 
-pupa_partition_t EXPORT_FUNC(pupa_partition_probe) (struct pupa_disk *disk,
+grub_partition_t EXPORT_FUNC(grub_partition_probe) (struct grub_disk *disk,
 						    const char *str);
-pupa_err_t EXPORT_FUNC(pupa_partition_iterate) (struct pupa_disk *disk,
-						int (*hook) (const pupa_partition_t partition));
-char *EXPORT_FUNC(pupa_partition_get_name) (const pupa_partition_t partition);
+grub_err_t EXPORT_FUNC(grub_partition_iterate) (struct grub_disk *disk,
+						int (*hook) (const grub_partition_t partition));
+char *EXPORT_FUNC(grub_partition_get_name) (const grub_partition_t partition);
 
 
 static inline unsigned long
-pupa_partition_get_start (const pupa_partition_t p)
+grub_partition_get_start (const grub_partition_t p)
 {
   return p->start;
 }
 
 static inline unsigned long
-pupa_partition_get_len (const pupa_partition_t p)
+grub_partition_get_len (const grub_partition_t p)
 {
   return p->len;
 }
 
-#endif /* ! PUPA_PARTITION_HEADER */
+#endif /* ! GRUB_PARTITION_HEADER */

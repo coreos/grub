@@ -13,7 +13,7 @@
 
 AC_INIT(GRUB, 1.90, [bug-grub@gnu.org])
 AC_PREREQ(2.53)
-AC_CONFIG_SRCDIR([include/pupa/dl.h])
+AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
 # Checks for build and host systems.
@@ -81,18 +81,18 @@ fi
 AC_SUBST(CFLAGS)
 
 # Defined in aclocal.m4.
-pupa_ASM_USCORE
+grub_ASM_USCORE
 if test "x$host_cpu" = xi386; then
-  pupa_CHECK_START_SYMBOL
-  pupa_CHECK_BSS_START_SYMBOL
-  pupa_CHECK_END_SYMBOL
+  grub_CHECK_START_SYMBOL
+  grub_CHECK_BSS_START_SYMBOL
+  grub_CHECK_END_SYMBOL
 fi
 
 if test "x$host_cpu" = xi386; then
-  pupa_I386_ASM_PREFIX_REQUIREMENT
-  pupa_I386_ASM_ADDR32
-  pupa_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
-  pupa_I386_CHECK_REGPARM_BUG
+  grub_I386_ASM_PREFIX_REQUIREMENT
+  grub_I386_ASM_ADDR32
+  grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
+  grub_I386_CHECK_REGPARM_BUG
 else
   AC_DEFINE([NESTED_FUNC_ATTR], [],[Catch gcc bug])
 fi
@@ -100,7 +100,7 @@ fi
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_CHECK_TOOL(OBJCOPY, objcopy)
-pupa_PROG_OBJCOPY_ABSOLUTE
+grub_PROG_OBJCOPY_ABSOLUTE
 AC_CHECK_TOOL(STRIP, strip)
 AC_CHECK_TOOL(NM, nm)
 AC_CHECK_TOOL(LD, ld)
@@ -143,8 +143,8 @@ CFLAGS="$tmp_CFLAGS"
 CPPFLAGS="$tmp_CPPFLAGS"
 
 # Output files.
-AC_CONFIG_LINKS([include/pupa/cpu:include/pupa/$host_cpu
-	include/pupa/machine:include/pupa/$host_cpu/$host_vendor])
+AC_CONFIG_LINKS([include/grub/cpu:include/grub/$host_cpu
+	include/grub/machine:include/grub/$host_cpu/$host_vendor])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
 AC_OUTPUT

@@ -1,9 +1,9 @@
 /* device.c - device manager */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,62 +14,62 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/device.h>
-#include <pupa/disk.h>
-#include <pupa/net.h>
-#include <pupa/fs.h>
-#include <pupa/mm.h>
-#include <pupa/misc.h>
+#include <grub/device.h>
+#include <grub/disk.h>
+#include <grub/net.h>
+#include <grub/fs.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
-static char *pupa_device_root;
+static char *grub_device_root;
 
-pupa_err_t
-pupa_device_set_root (const char *name)
+grub_err_t
+grub_device_set_root (const char *name)
 {
-  pupa_free (pupa_device_root);
-  pupa_device_root = pupa_strdup (name);
-  return pupa_errno;
+  grub_free (grub_device_root);
+  grub_device_root = grub_strdup (name);
+  return grub_errno;
 }
 
 const char *
-pupa_device_get_root (void)
+grub_device_get_root (void)
 {
-  if (! pupa_device_root)
-    pupa_error (PUPA_ERR_BAD_DEVICE, "no root device");
+  if (! grub_device_root)
+    grub_error (GRUB_ERR_BAD_DEVICE, "no root device");
   
-  return pupa_device_root;
+  return grub_device_root;
 }
 
-pupa_device_t
-pupa_device_open (const char *name)
+grub_device_t
+grub_device_open (const char *name)
 {
-  pupa_disk_t disk = 0;
-  pupa_device_t dev = 0;
+  grub_disk_t disk = 0;
+  grub_device_t dev = 0;
 
   if (! name)
     {
-      if (! pupa_device_root)
+      if (! grub_device_root)
 	{
-	  pupa_error (PUPA_ERR_BAD_DEVICE, "no device is set");
+	  grub_error (GRUB_ERR_BAD_DEVICE, "no device is set");
 	  goto fail;
 	}
 
-      name = pupa_device_root;
+      name = grub_device_root;
     }
     
-  dev = pupa_malloc (sizeof (*dev));
+  dev = grub_malloc (sizeof (*dev));
   if (! dev)
     goto fail;
   
   /* Try to open a disk.  */
-  disk = pupa_disk_open (name);
+  disk = grub_disk_open (name);
   if (! disk)
     {
-      pupa_error (PUPA_ERR_BAD_DEVICE, "unknown device");
+      grub_error (GRUB_ERR_BAD_DEVICE, "unknown device");
       goto fail;
     }
 
@@ -80,20 +80,20 @@ pupa_device_open (const char *name)
 
  fail:
   if (disk)
-    pupa_disk_close (disk);
+    grub_disk_close (disk);
   
-  pupa_free (dev);
+  grub_free (dev);
 
   return 0;
 }
 
-pupa_err_t
-pupa_device_close (pupa_device_t device)
+grub_err_t
+grub_device_close (grub_device_t device)
 {
   if (device->disk)
-    pupa_disk_close (device->disk);
+    grub_disk_close (device->disk);
 
-  pupa_free (device);
+  grub_free (device);
 
-  return pupa_errno;
+  return grub_errno;
 }

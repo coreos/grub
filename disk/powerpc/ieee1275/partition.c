@@ -1,6 +1,6 @@
 /* partiton.c - Read macintosh partition tables.  */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,20 +18,20 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/disk.h>
-#include <pupa/misc.h>
-#include <pupa/mm.h>
-#include <pupa/machine/partition.h>
+#include <grub/disk.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/machine/partition.h>
 
-pupa_err_t
-pupa_partition_iterate (pupa_disk_t disk,
-			int (*hook) (const pupa_partition_t partition))
+grub_err_t
+grub_partition_iterate (grub_disk_t disk,
+			int (*hook) (const grub_partition_t partition))
 {
-  struct pupa_partition part;
-  struct pupa_apple_part apart;
-  struct pupa_disk raw;
+  struct grub_partition part;
+  struct grub_apple_part apart;
+  struct grub_disk raw;
   int partno = 0;
-  int pos = PUPA_DISK_SECTOR_SIZE * 2;
+  int pos = GRUB_DISK_SECTOR_SIZE * 2;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -39,12 +39,12 @@ pupa_partition_iterate (pupa_disk_t disk,
 
   for (;;)
     {
-      if (pupa_disk_read (&raw, pos / PUPA_DISK_SECTOR_SIZE,
-		      pos % PUPA_DISK_SECTOR_SIZE,
-			  sizeof (struct pupa_apple_part),  (char *) &apart))
-	return pupa_errno;
+      if (grub_disk_read (&raw, pos / GRUB_DISK_SECTOR_SIZE,
+		      pos % GRUB_DISK_SECTOR_SIZE,
+			  sizeof (struct grub_apple_part),  (char *) &apart))
+	return grub_errno;
 
-      if (apart.magic !=  PUPA_APPLE_PART_MAGIC)
+      if (apart.magic !=  GRUB_APPLE_PART_MAGIC)
 	break;
 
       part.start = apart.first_phys_block;
@@ -53,34 +53,34 @@ pupa_partition_iterate (pupa_disk_t disk,
       part.index = partno;
 
       if (hook (&part))
-	return pupa_errno;
+	return grub_errno;
 
-      if (apart.first_phys_block == PUPA_DISK_SECTOR_SIZE * 2)
+      if (apart.first_phys_block == GRUB_DISK_SECTOR_SIZE * 2)
 	return 0;
 
-      pos += sizeof (struct pupa_apple_part);
+      pos += sizeof (struct grub_apple_part);
       partno++;
     }
 
   return 0;
 }
 
-pupa_partition_t
-pupa_partition_probe (pupa_disk_t disk, const char *str)
+grub_partition_t
+grub_partition_probe (grub_disk_t disk, const char *str)
 {
-  pupa_partition_t p;
+  grub_partition_t p;
   int partnum = 0;
   char *s = (char *) str;
 
-  int find_func (const pupa_partition_t partition)
+  int find_func (const grub_partition_t partition)
     {
       if (partnum == partition->index)
 	{
-	  p = (pupa_partition_t) pupa_malloc (sizeof (*p));
+	  p = (grub_partition_t) grub_malloc (sizeof (*p));
 	  if (! p)
 	    return 1;
 	  
-	  pupa_memcpy (p, partition, sizeof (*p));
+	  grub_memcpy (p, partition, sizeof (*p));
 	  return 1;
 	}
       
@@ -88,33 +88,33 @@ pupa_partition_probe (pupa_disk_t disk, const char *str)
     }
   
   /* Get the partition number.  */
-  partnum = pupa_strtoul (s, &s, 0);
-  if (pupa_errno)
+  partnum = grub_strtoul (s, &s, 0);
+  if (grub_errno)
     {
-      pupa_error (PUPA_ERR_BAD_FILENAME, "invalid partition");
+      grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
       return 0;
     }
 
-  if (pupa_partition_iterate (disk, find_func))
+  if (grub_partition_iterate (disk, find_func))
     goto fail;
 
   return p;
 
  fail:
-  pupa_free (p);
+  grub_free (p);
   return 0;
 
 }
 
 char *
-pupa_partition_get_name (const pupa_partition_t p)
+grub_partition_get_name (const grub_partition_t p)
 {
   char *name;
 
-  name = pupa_malloc (13);
+  name = grub_malloc (13);
   if (! name)
     return 0;
 
-  pupa_sprintf (name, "%d", p->index);
+  grub_sprintf (name, "%d", p->index);
   return name;
 }

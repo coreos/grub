@@ -36,38 +36,38 @@ kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-symlist.c: $(addprefix include/pupa/,$(kernel_img_HEADERS)) gensymlist.sh
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) gensymlist.sh
 	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
 
-kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
 # Utilities.
-bin_UTILITIES = pupa-mkimage
-sbin_UTILITIES = pupa-setup pupa-emu
+bin_UTILITIES = grub-mkimage
+sbin_UTILITIES = grub-setup grub-emu
 noinst_UTILITIES = genmoddep
 
-# For pupa-mkimage.
-pupa_mkimage_SOURCES = util/i386/pc/pupa-mkimage.c util/misc.c \
+# For grub-mkimage.
+grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c
-pupa_mkimage_LDFLAGS = -llzo
+grub_mkimage_LDFLAGS = -llzo
 
-# For pupa-setup.
-pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
+# For grub-setup.
+grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
 	kern/file.c kern/fs.c kern/env.c
 
-# For pupa
-pupa_emu_SOURCES = kern/main.c kern/device.c				\
+# For grub
+grub_emu_SOURCES = kern/main.c kern/device.c				\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
 	disk/i386/pc/partition.c kern/env.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
-	util/console.c util/pupa-emu.c util/misc.c util/i386/pc/getroot.c
-pupa_emu_LDFLAGS = -lncurses
+	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c
+grub_emu_LDFLAGS = -lncurses
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

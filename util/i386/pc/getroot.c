@@ -1,9 +1,9 @@
 /* getroot.c - Get root device */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,7 +14,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
@@ -23,8 +23,8 @@
 #include <string.h>
 #include <dirent.h>
 
-#include <pupa/util/misc.h>
-#include <pupa/i386/pc/util/biosdisk.h>
+#include <grub/util/misc.h>
+#include <grub/i386/pc/util/biosdisk.h>
 
 static void
 strip_extra_slashes (char *dir)
@@ -65,7 +65,7 @@ xgetcwd (void)
 }
 
 char *
-pupa_get_prefix (const char *dir)
+grub_get_prefix (const char *dir)
 {
   char *saved_cwd;
   char *abs_dir, *prev_dir;
@@ -76,28 +76,28 @@ pupa_get_prefix (const char *dir)
   saved_cwd = xgetcwd ();
 
   if (chdir (dir) < 0)
-    pupa_util_error ("Cannot change directory to `%s'", dir);
+    grub_util_error ("Cannot change directory to `%s'", dir);
 
   abs_dir = xgetcwd ();
   strip_extra_slashes (abs_dir);
   prev_dir = xstrdup (abs_dir);
   
   if (stat (".", &prev_st) < 0)
-    pupa_util_error ("Cannot stat `%s'", dir);
+    grub_util_error ("Cannot stat `%s'", dir);
 
   if (! S_ISDIR (prev_st.st_mode))
-    pupa_util_error ("`%s' is not a directory", dir);
+    grub_util_error ("`%s' is not a directory", dir);
 
   while (1)
     {
       if (chdir ("..") < 0)
-	pupa_util_error ("Cannot change directory to the parent");
+	grub_util_error ("Cannot change directory to the parent");
 
       if (stat (".", &st) < 0)
-	pupa_util_error ("Cannot stat current directory");
+	grub_util_error ("Cannot stat current directory");
 
       if (! S_ISDIR (st.st_mode))
-	pupa_util_error ("Current directory is not a directory???");
+	grub_util_error ("Current directory is not a directory???");
 
       if (prev_st.st_dev != st.st_dev || prev_st.st_ino == st.st_ino)
 	break;
@@ -114,13 +114,13 @@ pupa_get_prefix (const char *dir)
   strip_extra_slashes (prefix);
 
   if (chdir (saved_cwd) < 0)
-    pupa_util_error ("Cannot change directory to `%s'", dir);
+    grub_util_error ("Cannot change directory to `%s'", dir);
 
   free (saved_cwd);
   free (abs_dir);
   free (prev_dir);
 
-  pupa_util_info ("prefix = %s", prefix);
+  grub_util_info ("prefix = %s", prefix);
   return prefix;
 }
 
@@ -137,7 +137,7 @@ find_root_device (const char *dir, dev_t dev)
 
   saved_cwd = xgetcwd ();
 
-  pupa_util_info ("changing current directory to %s", dir);
+  grub_util_info ("changing current directory to %s", dir);
   if (chdir (dir) < 0)
     {
       free (saved_cwd);
@@ -170,7 +170,7 @@ find_root_device (const char *dir, dev_t dev)
 	  if (res)
 	    {
 	      if (chdir (saved_cwd) < 0)
-		pupa_util_error ("Cannot restore the original directory");
+		grub_util_error ("Cannot restore the original directory");
 	      
 	      free (saved_cwd);
 	      closedir (dp);
@@ -191,7 +191,7 @@ find_root_device (const char *dir, dev_t dev)
 	  free (cwd);
 
 	  if (chdir (saved_cwd) < 0)
-	    pupa_util_error ("Cannot restore the original directory");
+	    grub_util_error ("Cannot restore the original directory");
 
 	  free (saved_cwd);
 	  closedir (dp);
@@ -200,7 +200,7 @@ find_root_device (const char *dir, dev_t dev)
     }
 
   if (chdir (saved_cwd) < 0)
-    pupa_util_error ("Cannot restore the original directory");
+    grub_util_error ("Cannot restore the original directory");
 
   free (saved_cwd);
   closedir (dp);
@@ -208,18 +208,18 @@ find_root_device (const char *dir, dev_t dev)
 }
 
 char *
-pupa_guess_root_device (const char *dir)
+grub_guess_root_device (const char *dir)
 {
   struct stat st;
   char *os_dev;
   
   if (stat (dir, &st) < 0)
-    pupa_util_error ("Cannot stat `%s'", dir);
+    grub_util_error ("Cannot stat `%s'", dir);
 
   /* This might be truly slow, but is there any better way?  */
   os_dev = find_root_device ("/dev", st.st_dev);
   if (! os_dev)
     return 0;
 
-  return pupa_util_biosdisk_get_pupa_dev (os_dev);
+  return grub_util_biosdisk_get_grub_dev (os_dev);
 }

@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,40 +13,40 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/term.h>
-#include <pupa/err.h>
-#include <pupa/mm.h>
-#include <pupa/misc.h>
+#include <grub/term.h>
+#include <grub/err.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
 /* The list of terminals.  */
-static pupa_term_t pupa_term_list;
+static grub_term_t grub_term_list;
 
 /* The current terminal.  */
-static pupa_term_t pupa_cur_term;
+static grub_term_t grub_cur_term;
 
 /* The amount of lines counted by the pager.  */
-static int pupa_more_lines;
+static int grub_more_lines;
 
 /* If the more pager is active.  */
-static int pupa_more;
+static int grub_more;
 
 void
-pupa_term_register (pupa_term_t term)
+grub_term_register (grub_term_t term)
 {
-  term->next = pupa_term_list;
-  pupa_term_list = term;
+  term->next = grub_term_list;
+  grub_term_list = term;
 }
 
 void
-pupa_term_unregister (pupa_term_t term)
+grub_term_unregister (grub_term_t term)
 {
-  pupa_term_t *p, q;
+  grub_term_t *p, q;
   
-  for (p = &pupa_term_list, q = *p; q; p = &(q->next), q = q->next)
+  for (p = &grub_term_list, q = *p; q; p = &(q->next), q = q->next)
     if (q == term)
       {
         *p = q->next;
@@ -55,83 +55,83 @@ pupa_term_unregister (pupa_term_t term)
 }
 
 void
-pupa_term_iterate (int (*hook) (pupa_term_t term))
+grub_term_iterate (int (*hook) (grub_term_t term))
 {
-  pupa_term_t p;
+  grub_term_t p;
   
-  for (p = pupa_term_list; p; p = p->next)
+  for (p = grub_term_list; p; p = p->next)
     if (hook (p))
       break;
 }
 
-pupa_err_t
-pupa_term_set_current (pupa_term_t term)
+grub_err_t
+grub_term_set_current (grub_term_t term)
 {
-  if (pupa_cur_term && pupa_cur_term->fini)
-    if ((pupa_cur_term->fini) () != PUPA_ERR_NONE)
-      return pupa_errno;
+  if (grub_cur_term && grub_cur_term->fini)
+    if ((grub_cur_term->fini) () != GRUB_ERR_NONE)
+      return grub_errno;
 
   if (term->init)
-    if ((term->init) () != PUPA_ERR_NONE)
-      return pupa_errno;
+    if ((term->init) () != GRUB_ERR_NONE)
+      return grub_errno;
   
-  pupa_cur_term = term;
-  pupa_cls ();
-  return PUPA_ERR_NONE;
+  grub_cur_term = term;
+  grub_cls ();
+  return GRUB_ERR_NONE;
 }
 
-pupa_term_t
-pupa_term_get_current (void)
+grub_term_t
+grub_term_get_current (void)
 {
-  return pupa_cur_term;
+  return grub_cur_term;
 }
 
 /* Put a Unicode character.  */
 void
-pupa_putcode (pupa_uint32_t code)
+grub_putcode (grub_uint32_t code)
 {
-  if (code == '\t' && pupa_cur_term->getxy)
+  if (code == '\t' && grub_cur_term->getxy)
     {
       int n;
       
-      n = 8 - ((pupa_getxy () >> 8) & 7);
+      n = 8 - ((grub_getxy () >> 8) & 7);
       while (n--)
-	pupa_putcode (' ');
+	grub_putcode (' ');
 
       return;
     }
   
-  (pupa_cur_term->putchar) (code);
+  (grub_cur_term->putchar) (code);
   
   if (code == '\n')
     {
-      pupa_putcode ('\r');
+      grub_putcode ('\r');
 
-      pupa_more_lines++;
+      grub_more_lines++;
       /* XXX: Don't use a fixed height!  */
-      if (pupa_more && pupa_more_lines == 24 - 1)
+      if (grub_more && grub_more_lines == 24 - 1)
 	{
 	  char key;
-	  int pos = pupa_getxy ();
+	  int pos = grub_getxy ();
 
 	  /* Show --MORE-- on the lower left side of the screen.  */
-	  pupa_gotoxy (1, 24 - 1);
-	  pupa_setcolorstate (PUPA_TERM_COLOR_HIGHLIGHT);
-	  pupa_printf ("--MORE--");
-	  pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
+	  grub_gotoxy (1, 24 - 1);
+	  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+	  grub_printf ("--MORE--");
+	  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 
-	  key = pupa_getkey ();
+	  key = grub_getkey ();
 	  
 	  /* Remove the message.  */
-	  pupa_gotoxy (1, 24 -1);
-	  pupa_printf ("        ");
-	  pupa_gotoxy (pos >> 8, pos & 0xFF);
+	  grub_gotoxy (1, 24 -1);
+	  grub_printf ("        ");
+	  grub_gotoxy (pos >> 8, pos & 0xFF);
 	  
 	  /* Scroll one lines or an entire page, depending on the key.  */
 	  if (key == '\r' || key =='\n')
-	    pupa_more_lines--;
+	    grub_more_lines--;
 	  else
-	    pupa_more_lines = 0;
+	    grub_more_lines = 0;
 	}
     }
 }
@@ -139,9 +139,9 @@ pupa_putcode (pupa_uint32_t code)
 /* Put a character. C is one byte of a UTF-8 stream.
    This function gathers bytes until a valid Unicode character is found.  */
 void
-pupa_putchar (int c)
+grub_putchar (int c)
 {
-  static pupa_uint32_t code = 0;
+  static grub_uint32_t code = 0;
   static int count = 0;
 
   if (count)
@@ -197,68 +197,68 @@ pupa_putchar (int c)
     /* Not finished yet.  */
     return;
 
-  pupa_putcode (code);
+  grub_putcode (code);
 }
 
 int
-pupa_getkey (void)
+grub_getkey (void)
 {
-  return (pupa_cur_term->getkey) ();
+  return (grub_cur_term->getkey) ();
 }
 
 int
-pupa_checkkey (void)
+grub_checkkey (void)
 {
-  return (pupa_cur_term->checkkey) ();
+  return (grub_cur_term->checkkey) ();
 }
 
-pupa_uint16_t
-pupa_getxy (void)
+grub_uint16_t
+grub_getxy (void)
 {
-  return (pupa_cur_term->getxy) ();
-}
-
-void
-pupa_gotoxy (pupa_uint8_t x, pupa_uint8_t y)
-{
-  (pupa_cur_term->gotoxy) (x, y);
+  return (grub_cur_term->getxy) ();
 }
 
 void
-pupa_cls (void)
+grub_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
-  if (pupa_cur_term->flags & PUPA_TERM_DUMB)
+  (grub_cur_term->gotoxy) (x, y);
+}
+
+void
+grub_cls (void)
+{
+  if (grub_cur_term->flags & GRUB_TERM_DUMB)
     {
-      pupa_putchar ('\n');
-      pupa_refresh ();
+      grub_putchar ('\n');
+      grub_refresh ();
     }
   else
-    (pupa_cur_term->cls) ();
+    (grub_cur_term->cls) ();
 }
 
 void
-pupa_setcolorstate (pupa_term_color_state state)
+grub_setcolorstate (grub_term_color_state state)
 {
-  if (pupa_cur_term->setcolorstate)
-    (pupa_cur_term->setcolorstate) (state);
+  if (grub_cur_term->setcolorstate)
+    (grub_cur_term->setcolorstate) (state);
 }
 
 void
-pupa_setcolor (pupa_uint8_t normal_color, pupa_uint8_t highlight_color)
+grub_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
-  if (pupa_cur_term->setcolor)
-    (pupa_cur_term->setcolor) (normal_color, highlight_color);
+  if (grub_cur_term->setcolor)
+    (grub_cur_term->setcolor) (normal_color, highlight_color);
 }
 
 int
-pupa_setcursor (int on)
+grub_setcursor (int on)
 {
   static int prev = 1;
   int ret = prev;
 
-  if (pupa_cur_term->setcursor)
+  if (grub_cur_term->setcursor)
     {
-      (pupa_cur_term->setcursor) (on);
+      (grub_cur_term->setcursor) (on);
       prev = on;
     }
   
@@ -266,19 +266,19 @@ pupa_setcursor (int on)
 }
 
 void
-pupa_refresh (void)
+grub_refresh (void)
 {
-  if (pupa_cur_term->refresh)
-    (pupa_cur_term->refresh) ();
+  if (grub_cur_term->refresh)
+    (grub_cur_term->refresh) ();
 }
 
 void
-pupa_set_more (int onoff)
+grub_set_more (int onoff)
 {
   if (onoff == 1)
-    pupa_more++;
+    grub_more++;
   else
-    pupa_more--;
+    grub_more--;
 
-  pupa_more_lines = 0;
+  grub_more_lines = 0;
 }

@@ -1,6 +1,6 @@
 /* crt0.S - Startup code for the PowerPC.  */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify

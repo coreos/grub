@@ -1,15 +1,15 @@
 -*- Text -*-
 
-This is the PUPA.  Welcome.
+This is the GRUB.  Welcome.
 
-This file contains instructions for compiling and installing the PUPA.
+This file contains instructions for compiling and installing the GRUB.
 
 The Requirements
 ================
 
-PUPA depends on some software packages installed into your system. If
+GRUB depends on some software packages installed into your system. If
 you don't have any of them, please obtain and install them before
-configuring the PUPA.
+configuring the GRUB.
 
 * GCC 2.95 or later
 * GNU Make
@@ -17,12 +17,12 @@ configuring the PUPA.
 * Other standard GNU/Unix tools
 * LZO 1.02 or later
 
-If you'd like to develop PUPA, these below are also required.
+If you'd like to develop GRUB, these below are also required.
 
 * Ruby 1.6 or later
 * Autoconf 2.53 or later
 
-Configuring the PUPA
+Configuring the GRUB
 ====================
 
 The `configure' shell script attempts to guess correct values for
@@ -46,7 +46,7 @@ called `autoconf'.  You only need `configure.in' if you want to change
 it or regenerate `configure' using a newer version of `autoconf'.
 
 
-Building the PUPA
+Building the GRUB
 =================
 
 The simplest way to compile this package is:
@@ -111,10 +111,10 @@ If the package supports it, you can cause programs to be installed
 with an extra prefix or suffix on their names by giving `configure'
 the option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 
-Please note, however, that the PUPA knows where it is located in the
+Please note, however, that the GRUB knows where it is located in the
 filesystem.  If you have installed it in an unusual location, the
 system might not work properly, or at all.  The chief utility of these
-options for the PUPA is to allow you to "install" in some alternate
+options for the GRUB is to allow you to "install" in some alternate
 location, and then copy these to the actual root filesystem later.
 
 

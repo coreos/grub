@@ -1,6 +1,6 @@
 /* rescue.c - rescue mode */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,43 +18,43 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/kernel.h>
-#include <pupa/rescue.h>
-#include <pupa/term.h>
-#include <pupa/misc.h>
-#include <pupa/disk.h>
-#include <pupa/file.h>
-#include <pupa/mm.h>
-#include <pupa/err.h>
-#include <pupa/loader.h>
-#include <pupa/dl.h>
-#include <pupa/machine/partition.h>
-#include <pupa/env.h>
+#include <grub/kernel.h>
+#include <grub/rescue.h>
+#include <grub/term.h>
+#include <grub/misc.h>
+#include <grub/disk.h>
+#include <grub/file.h>
+#include <grub/mm.h>
+#include <grub/err.h>
+#include <grub/loader.h>
+#include <grub/dl.h>
+#include <grub/machine/partition.h>
+#include <grub/env.h>
 
-#define PUPA_RESCUE_BUF_SIZE	256
-#define PUPA_RESCUE_MAX_ARGS	20
+#define GRUB_RESCUE_BUF_SIZE	256
+#define GRUB_RESCUE_MAX_ARGS	20
 
-struct pupa_rescue_command
+struct grub_rescue_command
 {
   const char *name;
   void (*func) (int argc, char *argv[]);
   const char *message;
-  struct pupa_rescue_command *next;
+  struct grub_rescue_command *next;
 };
-typedef struct pupa_rescue_command *pupa_rescue_command_t;
+typedef struct grub_rescue_command *grub_rescue_command_t;
 
-static char linebuf[PUPA_RESCUE_BUF_SIZE];
+static char linebuf[GRUB_RESCUE_BUF_SIZE];
 
-static pupa_rescue_command_t pupa_rescue_command_list;
+static grub_rescue_command_t grub_rescue_command_list;
 
 void
-pupa_rescue_register_command (const char *name,
+grub_rescue_register_command (const char *name,
 			      void (*func) (int argc, char *argv[]),
 			      const char *message)
 {
-  pupa_rescue_command_t cmd;
+  grub_rescue_command_t cmd;
 
-  cmd = (pupa_rescue_command_t) pupa_malloc (sizeof (*cmd));
+  cmd = (grub_rescue_command_t) grub_malloc (sizeof (*cmd));
   if (! cmd)
     return;
 
@@ -62,42 +62,42 @@ pupa_rescue_register_command (const char *name,
   cmd->func = func;
   cmd->message = message;
 
-  cmd->next = pupa_rescue_command_list;
-  pupa_rescue_command_list = cmd;
+  cmd->next = grub_rescue_command_list;
+  grub_rescue_command_list = cmd;
 }
 
 void
-pupa_rescue_unregister_command (const char *name)
+grub_rescue_unregister_command (const char *name)
 {
-  pupa_rescue_command_t *p, q;
+  grub_rescue_command_t *p, q;
 
-  for (p = &pupa_rescue_command_list, q = *p; q; p = &(q->next), q = q->next)
-    if (pupa_strcmp (name, q->name) == 0)
+  for (p = &grub_rescue_command_list, q = *p; q; p = &(q->next), q = q->next)
+    if (grub_strcmp (name, q->name) == 0)
       {
 	*p = q->next;
-	pupa_free (q);
+	grub_free (q);
 	break;
       }
 }
 
 /* Prompt to input a command and read the line.  */
 static void
-pupa_rescue_get_command_line (const char *prompt)
+grub_rescue_get_command_line (const char *prompt)
 {
   int c;
   int pos = 0;
   
-  pupa_printf (prompt);
-  pupa_memset (linebuf, 0, PUPA_RESCUE_BUF_SIZE);
+  grub_printf (prompt);
+  grub_memset (linebuf, 0, GRUB_RESCUE_BUF_SIZE);
   
-  while ((c = PUPA_TERM_ASCII_CHAR (pupa_getkey ())) != '\n' && c != '\r')
+  while ((c = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && c != '\r')
     {
-      if (pupa_isprint (c))
+      if (grub_isprint (c))
 	{
-	  if (pos < PUPA_RESCUE_BUF_SIZE - 1)
+	  if (pos < GRUB_RESCUE_BUF_SIZE - 1)
 	    {
 	      linebuf[pos++] = c;
-	      pupa_putchar (c);
+	      grub_putchar (c);
 	    }
 	}
       else if (c == '\b')
@@ -105,45 +105,45 @@ pupa_rescue_get_command_line (const char *prompt)
 	  if (pos > 0)
 	    {
 	      linebuf[--pos] = 0;
-	      pupa_putchar (c);
-	      pupa_putchar (' ');
-	      pupa_putchar (c);
+	      grub_putchar (c);
+	      grub_putchar (' ');
+	      grub_putchar (c);
 	    }
 	}
-      pupa_refresh ();
+      grub_refresh ();
     }
 
-  pupa_putchar ('\n');
-  pupa_refresh ();
+  grub_putchar ('\n');
+  grub_refresh ();
 }
 
 /* boot */
 static void
-pupa_rescue_cmd_boot (int argc __attribute__ ((unused)),
+grub_rescue_cmd_boot (int argc __attribute__ ((unused)),
 		      char *argv[] __attribute__ ((unused)))
 {
-  pupa_loader_boot ();
+  grub_loader_boot ();
 }
 
 /* cat FILE */
 static void
-pupa_rescue_cmd_cat (int argc, char *argv[])
+grub_rescue_cmd_cat (int argc, char *argv[])
 {
-  pupa_file_t file;
-  char buf[PUPA_DISK_SECTOR_SIZE];
-  pupa_ssize_t size;
+  grub_file_t file;
+  char buf[GRUB_DISK_SECTOR_SIZE];
+  grub_ssize_t size;
 
   if (argc < 1)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no file specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
       return;
     }
   
-  file = pupa_file_open (argv[0]);
+  file = grub_file_open (argv[0]);
   if (! file)
     return;
 
-  while ((size = pupa_file_read (file, buf, sizeof (buf))) > 0)
+  while ((size = grub_file_read (file, buf, sizeof (buf))) > 0)
     {
       int i;
 
@@ -151,136 +151,136 @@ pupa_rescue_cmd_cat (int argc, char *argv[])
 	{
 	  unsigned char c = buf[i];
 
-	  if (pupa_isprint (c) || pupa_isspace (c))
-	    pupa_putchar (c);
+	  if (grub_isprint (c) || grub_isspace (c))
+	    grub_putchar (c);
 	  else
 	    {
-	      pupa_setcolorstate (PUPA_TERM_COLOR_HIGHLIGHT);
-	      pupa_printf ("<%x>", (int) c);
-	      pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
+	      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+	      grub_printf ("<%x>", (int) c);
+	      grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 	    }
 	}
     }
 
-  pupa_putchar ('\n');
-  pupa_refresh ();
-  pupa_file_close (file);
+  grub_putchar ('\n');
+  grub_refresh ();
+  grub_file_close (file);
 }
 
 static int
-pupa_rescue_print_disks (const char *name)
+grub_rescue_print_disks (const char *name)
 {
-  pupa_device_t dev;
-  auto int print_partition (const pupa_partition_t p);
+  grub_device_t dev;
+  auto int print_partition (const grub_partition_t p);
 
-  int print_partition (const pupa_partition_t p)
+  int print_partition (const grub_partition_t p)
     {
-      char *pname = pupa_partition_get_name (p);
+      char *pname = grub_partition_get_name (p);
 
       if (pname)
 	{
-	  pupa_printf ("(%s,%s) ", name, pname);
-	  pupa_free (pname);
+	  grub_printf ("(%s,%s) ", name, pname);
+	  grub_free (pname);
 	}
 
       return 0;
     }
 
-  dev = pupa_device_open (name);
-  pupa_errno = PUPA_ERR_NONE;
+  dev = grub_device_open (name);
+  grub_errno = GRUB_ERR_NONE;
   
   if (dev)
     {
-      pupa_printf ("(%s) ", name);
+      grub_printf ("(%s) ", name);
 
       if (dev->disk && dev->disk->has_partitions)
 	{
-	  pupa_partition_iterate (dev->disk, print_partition);
-	  pupa_errno = PUPA_ERR_NONE;
+	  grub_partition_iterate (dev->disk, print_partition);
+	  grub_errno = GRUB_ERR_NONE;
 	}
 
-      pupa_device_close (dev);
+      grub_device_close (dev);
     }
   
   return 0;
 }
 
 static int
-pupa_rescue_print_files (const char *filename, int dir)
+grub_rescue_print_files (const char *filename, int dir)
 {
-  pupa_printf ("%s%s ", filename, dir ? "/" : "");
+  grub_printf ("%s%s ", filename, dir ? "/" : "");
   
   return 0;
 }
 
 /* ls [ARG] */
 static void
-pupa_rescue_cmd_ls (int argc, char *argv[])
+grub_rescue_cmd_ls (int argc, char *argv[])
 {
   if (argc < 1)
     {
-      pupa_disk_dev_iterate (pupa_rescue_print_disks);
-      pupa_putchar ('\n');
-      pupa_refresh ();
+      grub_disk_dev_iterate (grub_rescue_print_disks);
+      grub_putchar ('\n');
+      grub_refresh ();
     }
   else
     {
       char *device_name;
-      pupa_device_t dev;
-      pupa_fs_t fs;
+      grub_device_t dev;
+      grub_fs_t fs;
       char *path;
       
-      device_name = pupa_file_get_device_name (argv[0]);
-      dev = pupa_device_open (device_name);
+      device_name = grub_file_get_device_name (argv[0]);
+      dev = grub_device_open (device_name);
       if (! dev)
 	goto fail;
 
-      fs = pupa_fs_probe (dev);
-      path = pupa_strchr (argv[0], '/');
+      fs = grub_fs_probe (dev);
+      path = grub_strchr (argv[0], '/');
 
       if (! path && ! device_name)
 	{
-	  pupa_error (PUPA_ERR_BAD_ARGUMENT, "invalid argument");
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
 	  goto fail;
 	}
       
       if (! path)
 	{
-	  if (pupa_errno == PUPA_ERR_UNKNOWN_FS)
-	    pupa_errno = PUPA_ERR_NONE;
+	  if (grub_errno == GRUB_ERR_UNKNOWN_FS)
+	    grub_errno = GRUB_ERR_NONE;
 	  
-	  pupa_printf ("(%s): Filesystem is %s.\n",
+	  grub_printf ("(%s): Filesystem is %s.\n",
 		       device_name, fs ? fs->name : "unknown");
 	}
       else if (fs)
 	{
-	  (fs->dir) (dev, path, pupa_rescue_print_files);
-	  pupa_putchar ('\n');
-	  pupa_refresh ();
+	  (fs->dir) (dev, path, grub_rescue_print_files);
+	  grub_putchar ('\n');
+	  grub_refresh ();
 	}
 
     fail:
       if (dev)
-	pupa_device_close (dev);
+	grub_device_close (dev);
       
-      pupa_free (device_name);
+      grub_free (device_name);
     }
 }
 
 /* help */
 static void
-pupa_rescue_cmd_help (int argc __attribute__ ((unused)),
+grub_rescue_cmd_help (int argc __attribute__ ((unused)),
 		      char *argv[] __attribute__ ((unused)))
 {
-  pupa_rescue_command_t p, q;
+  grub_rescue_command_t p, q;
 
   /* Sort the commands. This is not a good algorithm, but this is enough,
      because rescue mode has a small number of commands.  */
-  for (p = pupa_rescue_command_list; p; p = p->next)
+  for (p = grub_rescue_command_list; p; p = p->next)
     for (q = p->next; q; q = q->next)
-      if (pupa_strcmp (p->name, q->name) > 0)
+      if (grub_strcmp (p->name, q->name) > 0)
 	{
-	  struct pupa_rescue_command tmp;
+	  struct grub_rescue_command tmp;
 
 	  tmp.name = p->name;
 	  tmp.func = p->func;
@@ -296,323 +296,323 @@ pupa_rescue_cmd_help (int argc __attribute__ ((unused)),
 	}
 
   /* Print them.  */
-  for (p = pupa_rescue_command_list; p; p = p->next)
-    pupa_printf ("%s\t%s\n", p->name, p->message);
+  for (p = grub_rescue_command_list; p; p = p->next)
+    grub_printf ("%s\t%s\n", p->name, p->message);
 }
 
 #if 0
 static void
-pupa_rescue_cmd_info (void)
+grub_rescue_cmd_info (void)
 {
-  extern void pupa_disk_cache_get_performance (unsigned long *,
+  extern void grub_disk_cache_get_performance (unsigned long *,
 					       unsigned long *);
   unsigned long hits, misses;
   
-  pupa_disk_cache_get_performance (&hits, &misses);
-  pupa_printf ("Disk cache: hits = %u, misses = %u ", hits, misses);
+  grub_disk_cache_get_performance (&hits, &misses);
+  grub_printf ("Disk cache: hits = %u, misses = %u ", hits, misses);
   if (hits + misses)
     {
       unsigned long ratio = hits * 10000 / (hits + misses);
-      pupa_printf ("(%u.%u%%)\n", ratio / 100, ratio % 100);
+      grub_printf ("(%u.%u%%)\n", ratio / 100, ratio % 100);
     }
   else
-    pupa_printf ("(N/A)\n");
+    grub_printf ("(N/A)\n");
 }
 #endif
 
 /* root [DEVICE] */
 static void
-pupa_rescue_cmd_root (int argc, char *argv[])
+grub_rescue_cmd_root (int argc, char *argv[])
 {
-  pupa_device_t dev;
-  pupa_fs_t fs;
+  grub_device_t dev;
+  grub_fs_t fs;
 
   if (argc > 0)
     {
-      char *device_name = pupa_file_get_device_name (argv[0]);
+      char *device_name = grub_file_get_device_name (argv[0]);
       if (! device_name)
 	return;
       
-      pupa_device_set_root (device_name);
-      pupa_free (device_name);
+      grub_device_set_root (device_name);
+      grub_free (device_name);
     }
   
-  dev = pupa_device_open (0);
+  dev = grub_device_open (0);
   if (! dev)
     return;
 
-  fs = pupa_fs_probe (dev);
-  if (pupa_errno == PUPA_ERR_UNKNOWN_FS)
-    pupa_errno = PUPA_ERR_NONE;
+  fs = grub_fs_probe (dev);
+  if (grub_errno == GRUB_ERR_UNKNOWN_FS)
+    grub_errno = GRUB_ERR_NONE;
   
-  pupa_printf ("(%s): Filesystem is %s.\n",
-	       pupa_device_get_root (), fs ? fs->name : "unknown");
+  grub_printf ("(%s): Filesystem is %s.\n",
+	       grub_device_get_root (), fs ? fs->name : "unknown");
   
-  pupa_device_close (dev);
+  grub_device_close (dev);
 }
 
 #if 0
 static void
-pupa_rescue_cmd_testload (int argc, char *argv[])
+grub_rescue_cmd_testload (int argc, char *argv[])
 {
-  pupa_file_t file;
+  grub_file_t file;
   char *buf;
-  pupa_ssize_t size;
-  pupa_ssize_t pos;
+  grub_ssize_t size;
+  grub_ssize_t pos;
   auto void read_func (unsigned long sector, unsigned offset, unsigned len);
 
   void read_func (unsigned long sector __attribute__ ((unused)),
 		  unsigned offset __attribute__ ((unused)),
 		  unsigned len __attribute__ ((unused)))
     {
-      pupa_putchar ('.');
-      pupa_refresh ();
+      grub_putchar ('.');
+      grub_refresh ();
     }
 
   if (argc < 1)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no file specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
       return;
     }
   
-  file = pupa_file_open (argv[0]);
+  file = grub_file_open (argv[0]);
   if (! file)
     return;
 
-  size = pupa_file_size (file) & ~(PUPA_DISK_SECTOR_SIZE - 1);
+  size = grub_file_size (file) & ~(GRUB_DISK_SECTOR_SIZE - 1);
   if (size == 0)
     {
-      pupa_file_close (file);
+      grub_file_close (file);
       return;
     }
   
-  buf = pupa_malloc (size);
+  buf = grub_malloc (size);
   if (! buf)
     goto fail;
 
-  pupa_printf ("Reading %s sequentially", argv[0]);
+  grub_printf ("Reading %s sequentially", argv[0]);
   file->read_hook = read_func;
-  if (pupa_file_read (file, buf, size) != size)
+  if (grub_file_read (file, buf, size) != size)
     goto fail;
-  pupa_printf (" Done.\n");
+  grub_printf (" Done.\n");
 
   /* Read sequentially again.  */
-  pupa_printf ("Reading %s sequentially again", argv[0]);
-  if (pupa_file_seek (file, 0) < 0)
+  grub_printf ("Reading %s sequentially again", argv[0]);
+  if (grub_file_seek (file, 0) < 0)
     goto fail;
   
-  for (pos = 0; pos < size; pos += PUPA_DISK_SECTOR_SIZE)
+  for (pos = 0; pos < size; pos += GRUB_DISK_SECTOR_SIZE)
     {
-      char sector[PUPA_DISK_SECTOR_SIZE];
+      char sector[GRUB_DISK_SECTOR_SIZE];
       
-      if (pupa_file_read (file, sector, PUPA_DISK_SECTOR_SIZE)
-	  != PUPA_DISK_SECTOR_SIZE)
+      if (grub_file_read (file, sector, GRUB_DISK_SECTOR_SIZE)
+	  != GRUB_DISK_SECTOR_SIZE)
 	goto fail;
 
-      if (pupa_memcmp (sector, buf + pos, PUPA_DISK_SECTOR_SIZE) != 0)
+      if (grub_memcmp (sector, buf + pos, GRUB_DISK_SECTOR_SIZE) != 0)
 	{
-	  pupa_printf ("\nDiffers in %d\n", pos);
+	  grub_printf ("\nDiffers in %d\n", pos);
 	  goto fail;
 	}
     }
-  pupa_printf (" Done.\n");
+  grub_printf (" Done.\n");
   
   /* Read backwards and compare.  */
-  pupa_printf ("Reading %s backwards", argv[0]);
+  grub_printf ("Reading %s backwards", argv[0]);
   pos = size;
   while (pos > 0)
     {
-      char sector[PUPA_DISK_SECTOR_SIZE];
+      char sector[GRUB_DISK_SECTOR_SIZE];
       
-      pos -= PUPA_DISK_SECTOR_SIZE;
+      pos -= GRUB_DISK_SECTOR_SIZE;
       
-      if (pupa_file_seek (file, pos) < 0)
+      if (grub_file_seek (file, pos) < 0)
 	goto fail;
       
-      if (pupa_file_read (file, sector, PUPA_DISK_SECTOR_SIZE)
-	  != PUPA_DISK_SECTOR_SIZE)
+      if (grub_file_read (file, sector, GRUB_DISK_SECTOR_SIZE)
+	  != GRUB_DISK_SECTOR_SIZE)
 	goto fail;
 
-      if (pupa_memcmp (sector, buf + pos, PUPA_DISK_SECTOR_SIZE) != 0)
+      if (grub_memcmp (sector, buf + pos, GRUB_DISK_SECTOR_SIZE) != 0)
 	{
 	  int i;
 	  
-	  pupa_printf ("\nDiffers in %d\n", pos);
+	  grub_printf ("\nDiffers in %d\n", pos);
 	  
-	  for (i = 0; i < PUPA_DISK_SECTOR_SIZE; i++)
-	    pupa_putchar (buf[pos + i]);
+	  for (i = 0; i < GRUB_DISK_SECTOR_SIZE; i++)
+	    grub_putchar (buf[pos + i]);
 
 	  if (i)
-	    pupa_refresh ();
+	    grub_refresh ();
 
 	  goto fail;
 	}
     }
-  pupa_printf (" Done.\n");
+  grub_printf (" Done.\n");
 
  fail:
 
-  pupa_file_close (file);
-  pupa_free (buf);
+  grub_file_close (file);
+  grub_free (buf);
 }
 #endif
 
 /* dump ADDRESS [SIZE] */
 static void
-pupa_rescue_cmd_dump (int argc, char *argv[])
+grub_rescue_cmd_dump (int argc, char *argv[])
 {
-  pupa_uint8_t *addr;
-  pupa_size_t size = 4;
+  grub_uint8_t *addr;
+  grub_size_t size = 4;
   
   if (argc == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no address specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no address specified");
       return;
     }
 
-  addr = (pupa_uint8_t *) pupa_strtoul (argv[0], 0, 0);
-  if (pupa_errno)
+  addr = (grub_uint8_t *) grub_strtoul (argv[0], 0, 0);
+  if (grub_errno)
     return;
 
   if (argc > 1)
-    size = (pupa_size_t) pupa_strtoul (argv[1], 0, 0);
+    size = (grub_size_t) grub_strtoul (argv[1], 0, 0);
 
   while (size--)
     {
-      pupa_printf ("%x%x ", *addr >> 4, *addr & 0xf);
+      grub_printf ("%x%x ", *addr >> 4, *addr & 0xf);
       addr++;
     }
 }
 
 /* insmod MODULE */
 static void
-pupa_rescue_cmd_insmod (int argc, char *argv[])
+grub_rescue_cmd_insmod (int argc, char *argv[])
 {
   char *p;
-  pupa_dl_t mod;
+  grub_dl_t mod;
   
   if (argc == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       return;
     }
 
-  p = pupa_strchr (argv[0], '/');
+  p = grub_strchr (argv[0], '/');
   if (! p)
-    mod = pupa_dl_load (argv[0]);
+    mod = grub_dl_load (argv[0]);
   else
-    mod = pupa_dl_load_file (argv[0]);
+    mod = grub_dl_load_file (argv[0]);
 
   if (mod)
-    pupa_dl_ref (mod);
+    grub_dl_ref (mod);
 }
 
 /* rmmod MODULE */
 static void
-pupa_rescue_cmd_rmmod (int argc, char *argv[])
+grub_rescue_cmd_rmmod (int argc, char *argv[])
 {
-  pupa_dl_t mod;
+  grub_dl_t mod;
   
   if (argc == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no module specified");
       return;
     }
 
-  mod = pupa_dl_get (argv[0]);
+  mod = grub_dl_get (argv[0]);
   if (! mod)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no such module");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no such module");
       return;
     }
 
-  if (! pupa_dl_unref (mod))
-    pupa_dl_unload (mod);
+  if (! grub_dl_unref (mod))
+    grub_dl_unload (mod);
 }
 
 /* lsmod */
 static void
-pupa_rescue_cmd_lsmod (int argc __attribute__ ((unused)),
+grub_rescue_cmd_lsmod (int argc __attribute__ ((unused)),
 		       char *argv[] __attribute__ ((unused)))
 {
-  auto int print_module (pupa_dl_t mod);
+  auto int print_module (grub_dl_t mod);
 
-  int print_module (pupa_dl_t mod)
+  int print_module (grub_dl_t mod)
     {
-      pupa_dl_dep_t dep;
+      grub_dl_dep_t dep;
       
-      pupa_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
+      grub_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
       for (dep = mod->dep; dep; dep = dep->next)
 	{
 	  if (dep != mod->dep)
-	    pupa_putchar (',');
+	    grub_putchar (',');
 
-	  pupa_printf ("%s", dep->mod->name);
+	  grub_printf ("%s", dep->mod->name);
 	}
-      pupa_putchar ('\n');
-      pupa_refresh ();
+      grub_putchar ('\n');
+      grub_refresh ();
 
       return 0;
     }
 
-  pupa_printf ("Name\tRef Count\tDependencies\n");
-  pupa_dl_iterate (print_module);
+  grub_printf ("Name\tRef Count\tDependencies\n");
+  grub_dl_iterate (print_module);
 }
 
 /* set ENVVAR=VALUE */
 static void
-pupa_rescue_cmd_set (int argc, char *argv[])
+grub_rescue_cmd_set (int argc, char *argv[])
 {
   char *var;
   char *val;
 
-  auto int print_env (struct pupa_env_var *env);
+  auto int print_env (struct grub_env_var *env);
 
-  int print_env (struct pupa_env_var *env)
+  int print_env (struct grub_env_var *env)
     {
-      pupa_printf ("%s=%s\n", env->name, env->value);
+      grub_printf ("%s=%s\n", env->name, env->value);
       return 0;
     }
 
   if (argc < 1)
     {
-      pupa_env_iterate (print_env);
+      grub_env_iterate (print_env);
       return;
     }
 
   var = argv[0];
-  val = pupa_strchr (var, '=');
+  val = grub_strchr (var, '=');
   if (! val)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "not an assignment");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "not an assignment");
       return;
     }
 
   val[0] = 0;
-  pupa_env_set (var, val + 1);
+  grub_env_set (var, val + 1);
   val[0] = '=';
 }
 
 static void
-pupa_rescue_cmd_unset (int argc, char *argv[])
+grub_rescue_cmd_unset (int argc, char *argv[])
 {
   if (argc < 1)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no environment variable specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no environment variable specified");
       return;
     }
 
-  pupa_env_unset (argv[0]);
+  grub_env_unset (argv[0]);
 }
 
 static void
 attempt_normal_mode (void)
 {
-  pupa_rescue_command_t cmd;
+  grub_rescue_command_t cmd;
 
-  for (cmd = pupa_rescue_command_list; cmd; cmd = cmd->next)
+  for (cmd = grub_rescue_command_list; cmd; cmd = cmd->next)
     {
-      if (pupa_strcmp ("normal", cmd->name) == 0)
+      if (grub_strcmp ("normal", cmd->name) == 0)
 	{
 	  (cmd->func) (0, 0);
 	  break;
@@ -622,13 +622,13 @@ attempt_normal_mode (void)
 
 /* Enter the rescue mode.  */
 void
-pupa_enter_rescue_mode (void)
+grub_enter_rescue_mode (void)
 {
-  auto pupa_err_t getline (char **line);
+  auto grub_err_t getline (char **line);
   
-  pupa_err_t getline (char **line)
+  grub_err_t getline (char **line)
     {
-      pupa_rescue_get_command_line ("> ");
+      grub_rescue_get_command_line ("> ");
       *line = linebuf;
       return 0;
     }
@@ -636,29 +636,29 @@ pupa_enter_rescue_mode (void)
   /* First of all, attempt to execute the normal mode.  */
   attempt_normal_mode ();
 
-  pupa_printf ("Entering into rescue mode...\n");
+  grub_printf ("Entering into rescue mode...\n");
   
-  pupa_rescue_register_command ("boot", pupa_rescue_cmd_boot,
+  grub_rescue_register_command ("boot", grub_rescue_cmd_boot,
 				"boot an operating system");
-  pupa_rescue_register_command ("cat", pupa_rescue_cmd_cat,
+  grub_rescue_register_command ("cat", grub_rescue_cmd_cat,
 				"show the contents of a file");
-  pupa_rescue_register_command ("help", pupa_rescue_cmd_help,
+  grub_rescue_register_command ("help", grub_rescue_cmd_help,
 				"show this message");
-  pupa_rescue_register_command ("ls", pupa_rescue_cmd_ls,
+  grub_rescue_register_command ("ls", grub_rescue_cmd_ls,
 				"list devices or files");
-  pupa_rescue_register_command ("root", pupa_rescue_cmd_root,
+  grub_rescue_register_command ("root", grub_rescue_cmd_root,
 				"set the root device");
-  pupa_rescue_register_command ("dump", pupa_rescue_cmd_dump,
+  grub_rescue_register_command ("dump", grub_rescue_cmd_dump,
 				"dump memory");
-  pupa_rescue_register_command ("insmod", pupa_rescue_cmd_insmod,
+  grub_rescue_register_command ("insmod", grub_rescue_cmd_insmod,
 				"insert a module");
-  pupa_rescue_register_command ("rmmod", pupa_rescue_cmd_rmmod,
+  grub_rescue_register_command ("rmmod", grub_rescue_cmd_rmmod,
 				"remove a module");
-  pupa_rescue_register_command ("lsmod", pupa_rescue_cmd_lsmod,
+  grub_rescue_register_command ("lsmod", grub_rescue_cmd_lsmod,
 				"show loaded modules");
-  pupa_rescue_register_command ("set", pupa_rescue_cmd_set,
+  grub_rescue_register_command ("set", grub_rescue_cmd_set,
 				"set an environment variable");
-  pupa_rescue_register_command ("unset", pupa_rescue_cmd_unset,
+  grub_rescue_register_command ("unset", grub_rescue_cmd_unset,
 				"remove an environment variable");
   
   while (1)
@@ -666,26 +666,26 @@ pupa_enter_rescue_mode (void)
       char *line = linebuf;
       char *name;
       int n;
-      pupa_rescue_command_t cmd;
+      grub_rescue_command_t cmd;
       char **args;
 
       /* Print an error, if any.  */
-      pupa_print_error ();
-      pupa_errno = PUPA_ERR_NONE;
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
 
       /* Get a command line.  */
-      pupa_rescue_get_command_line ("pupa rescue> ");
+      grub_rescue_get_command_line ("grub rescue> ");
 
-      if (pupa_split_cmdline (line, getline, &n, &args))
+      if (grub_split_cmdline (line, getline, &n, &args))
 	continue;
 
       /* In case of an assignment set the environment accordingly
 	 instead of calling a function.  */
-      if (n == 0 && pupa_strchr (line, '='))
+      if (n == 0 && grub_strchr (line, '='))
 	{
-	  char *val = pupa_strchr (args[0], '=');
+	  char *val = grub_strchr (args[0], '=');
 	  val[0] = 0;
-	  pupa_env_set (args[0], val + 1);
+	  grub_env_set (args[0], val + 1);
 	  val[0] = '=';
 	  continue;
 	}
@@ -698,9 +698,9 @@ pupa_enter_rescue_mode (void)
 	continue;
 
       /* Find the command and execute it.  */
-      for (cmd = pupa_rescue_command_list; cmd; cmd = cmd->next)
+      for (cmd = grub_rescue_command_list; cmd; cmd = cmd->next)
 	{
-	  if (pupa_strcmp (name, cmd->name) == 0)
+	  if (grub_strcmp (name, cmd->name) == 0)
 	    {
 	      (cmd->func) (n, &args[1]);
 	      break;
@@ -710,8 +710,8 @@ pupa_enter_rescue_mode (void)
       /* If not found, print an error message.  */
       if (! cmd)
 	{
-	  pupa_printf ("Unknown command `%s'\n", name);
-	  pupa_printf ("Try `help' for usage\n");
+	  grub_printf ("Unknown command `%s'\n", name);
+	  grub_printf ("Try `help' for usage\n");
 	}
     }
 }

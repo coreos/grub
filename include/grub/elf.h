@@ -17,40 +17,40 @@
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
    02111-1307 USA.  */
 
-#ifndef PUPA_ELF_H
-#define	PUPA_ELF_H 1
+#ifndef GRUB_ELF_H
+#define	GRUB_ELF_H 1
 
 /* Standard ELF types.  */
 
-#include <pupa/types.h>
+#include <grub/types.h>
 
 /* Type for a 16-bit quantity.  */
-typedef pupa_uint16_t Elf32_Half;
-typedef pupa_uint16_t Elf64_Half;
+typedef grub_uint16_t Elf32_Half;
+typedef grub_uint16_t Elf64_Half;
 
 /* Types for signed and unsigned 32-bit quantities.  */
-typedef pupa_uint32_t Elf32_Word;
-typedef	pupa_int32_t  Elf32_Sword;
-typedef pupa_uint32_t Elf64_Word;
-typedef	pupa_int32_t  Elf64_Sword;
+typedef grub_uint32_t Elf32_Word;
+typedef	grub_int32_t  Elf32_Sword;
+typedef grub_uint32_t Elf64_Word;
+typedef	grub_int32_t  Elf64_Sword;
 
 /* Types for signed and unsigned 64-bit quantities.  */
-typedef pupa_uint64_t Elf32_Xword;
-typedef	pupa_int64_t  Elf32_Sxword;
-typedef pupa_uint64_t Elf64_Xword;
-typedef	pupa_int64_t  Elf64_Sxword;
+typedef grub_uint64_t Elf32_Xword;
+typedef	grub_int64_t  Elf32_Sxword;
+typedef grub_uint64_t Elf64_Xword;
+typedef	grub_int64_t  Elf64_Sxword;
 
 /* Type of addresses.  */
-typedef pupa_uint32_t Elf32_Addr;
-typedef pupa_uint64_t Elf64_Addr;
+typedef grub_uint32_t Elf32_Addr;
+typedef grub_uint64_t Elf64_Addr;
 
 /* Type of file offsets.  */
-typedef pupa_uint32_t Elf32_Off;
-typedef pupa_uint64_t Elf64_Off;
+typedef grub_uint32_t Elf32_Off;
+typedef grub_uint64_t Elf64_Off;
 
 /* Type for section indices, which are 16-bit quantities.  */
-typedef pupa_uint16_t Elf32_Section;
-typedef pupa_uint16_t Elf64_Section;
+typedef grub_uint16_t Elf32_Section;
+typedef grub_uint16_t Elf64_Section;
 
 /* Type for version symbol information.  */
 typedef Elf32_Half Elf32_Versym;
@@ -2310,4 +2310,4 @@ typedef Elf32_Addr Elf32_Conflict;
 
 #define R_X86_64_NUM		24
 
-#endif /* ! PUPA_ELF_H */
+#endif /* ! GRUB_ELF_H */

@@ -1,9 +1,9 @@
 /* err.c - error handling routines */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,48 +14,48 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/err.h>
-#include <pupa/misc.h>
+#include <grub/err.h>
+#include <grub/misc.h>
 #include <stdarg.h>
 
-#define PUPA_MAX_ERRMSG	256
+#define GRUB_MAX_ERRMSG	256
 
-pupa_err_t pupa_errno;
-char pupa_errmsg[PUPA_MAX_ERRMSG];
+grub_err_t grub_errno;
+char grub_errmsg[GRUB_MAX_ERRMSG];
 
-pupa_err_t
-pupa_error (pupa_err_t n, const char *fmt, ...)
+grub_err_t
+grub_error (grub_err_t n, const char *fmt, ...)
 {
   va_list ap;
   
-  pupa_errno = n;
+  grub_errno = n;
 
   va_start (ap, fmt);
-  pupa_vsprintf (pupa_errmsg, fmt, ap);
+  grub_vsprintf (grub_errmsg, fmt, ap);
   va_end (ap);
 
   return n;
 }
 
 void
-pupa_fatal (const char *fmt, ...)
+grub_fatal (const char *fmt, ...)
 {
   va_list ap;
 
   va_start (ap, fmt);
-  pupa_vprintf (fmt, ap);
+  grub_vprintf (fmt, ap);
   va_end (ap);
 
-  pupa_stop ();
+  grub_stop ();
 }
 
 void
-pupa_print_error (void)
+grub_print_error (void)
 {
-  if (pupa_errno != PUPA_ERR_NONE)
-    pupa_printf ("error: %s\n", pupa_errmsg);
+  if (grub_errno != GRUB_ERR_NONE)
+    grub_printf ("error: %s\n", grub_errmsg);
 }

@@ -1,6 +1,6 @@
 /* main.c - the normal mode main routine */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2000,2001,2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,23 +18,23 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/kernel.h>
-#include <pupa/normal.h>
-#include <pupa/dl.h>
-#include <pupa/rescue.h>
-#include <pupa/misc.h>
-#include <pupa/file.h>
-#include <pupa/mm.h>
-#include <pupa/term.h>
-#include <pupa/env.h>
+#include <grub/kernel.h>
+#include <grub/normal.h>
+#include <grub/dl.h>
+#include <grub/rescue.h>
+#include <grub/misc.h>
+#include <grub/file.h>
+#include <grub/mm.h>
+#include <grub/term.h>
+#include <grub/env.h>
 
-pupa_jmp_buf pupa_exit_env;
+grub_jmp_buf grub_exit_env;
 
-#define PUPA_DEFAULT_HISTORY_SIZE	50
+#define GRUB_DEFAULT_HISTORY_SIZE	50
 
 /* Read a line from the file FILE.  */
 static int
-get_line (pupa_file_t file, char cmdline[], int max_len)
+get_line (grub_file_t file, char cmdline[], int max_len)
 {
   char c;
   int pos = 0;
@@ -43,7 +43,7 @@ get_line (pupa_file_t file, char cmdline[], int max_len)
 
   while (1)
     {
-      if (pupa_file_read (file, &c, 1) != 1)
+      if (grub_file_read (file, &c, 1) != 1)
 	break;
 
       /* Skip all carriage returns.  */
@@ -82,7 +82,7 @@ get_line (pupa_file_t file, char cmdline[], int max_len)
 	{
 	  if (c == '#')
 	    comment = 1;
-	  else if (! pupa_isspace (c))
+	  else if (! grub_isspace (c))
 	    cmdline[pos++] = c;
 	}
       else
@@ -101,51 +101,51 @@ get_line (pupa_file_t file, char cmdline[], int max_len)
 }
 
 static void
-free_menu (pupa_menu_t menu)
+free_menu (grub_menu_t menu)
 {
-  pupa_menu_entry_t entry = menu->entry_list;
+  grub_menu_entry_t entry = menu->entry_list;
   
   while (entry)
     {
-      pupa_menu_entry_t next_entry = entry->next;
-      pupa_command_list_t cmd = entry->command_list;
+      grub_menu_entry_t next_entry = entry->next;
+      grub_command_list_t cmd = entry->command_list;
       
       while (cmd)
 	{
-	  pupa_command_list_t next_cmd = cmd->next;
+	  grub_command_list_t next_cmd = cmd->next;
 
-	  pupa_free ((void *) cmd->command);
+	  grub_free ((void *) cmd->command);
 	  cmd = next_cmd;
 	}
 
-      pupa_free ((void *) entry->title);
+      grub_free ((void *) entry->title);
       entry = next_entry;
     }
 
-  pupa_free (menu);
+  grub_free (menu);
 }
 
 /* Read the config file CONFIG and return a menu. If no entry is present,
    return NULL.  */
-static pupa_menu_t
+static grub_menu_t
 read_config_file (const char *config)
 {
-  pupa_file_t file;
-  static char cmdline[PUPA_MAX_CMDLINE];
-  pupa_menu_t menu;
-  pupa_menu_entry_t *next_entry, cur_entry = 0;
-  pupa_command_list_t *next_cmd, cur_cmd;
+  grub_file_t file;
+  static char cmdline[GRUB_MAX_CMDLINE];
+  grub_menu_t menu;
+  grub_menu_entry_t *next_entry, cur_entry = 0;
+  grub_command_list_t *next_cmd, cur_cmd;
   
   /* Try to open the config file.  */
-  file = pupa_file_open (config);
+  file = grub_file_open (config);
   if (! file)
     return 0;
 
   /* Initialize the menu.  */
-  menu = (pupa_menu_t) pupa_malloc (sizeof (*menu));
+  menu = (grub_menu_t) grub_malloc (sizeof (*menu));
   if (! menu)
     {
-      pupa_file_close (file);
+      grub_file_close (file);
       return 0;
     }
   menu->default_entry = 0;
@@ -160,33 +160,33 @@ read_config_file (const char *config)
   /* Read each line.  */
   while (get_line (file, cmdline, sizeof (cmdline)))
     {
-      pupa_command_t cmd;
+      grub_command_t cmd;
       
-      cmd = pupa_command_find (cmdline);
-      pupa_errno = PUPA_ERR_NONE;
+      cmd = grub_command_find (cmdline);
+      grub_errno = GRUB_ERR_NONE;
       if (! cmd)
 	{
-	  pupa_printf ("Unknown command `%s' is ignored.\n", cmdline);
+	  grub_printf ("Unknown command `%s' is ignored.\n", cmdline);
 	  continue;
 	}
 
-      if (cmd->flags & PUPA_COMMAND_FLAG_TITLE)
+      if (cmd->flags & GRUB_COMMAND_FLAG_TITLE)
 	{
 	  char *p;
 	  
-	  cur_entry = (pupa_menu_entry_t) pupa_malloc (sizeof (*cur_entry));
+	  cur_entry = (grub_menu_entry_t) grub_malloc (sizeof (*cur_entry));
 	  if (! cur_entry)
 	    goto fail;
 
-	  p = pupa_strchr (cmdline, ' ');
+	  p = grub_strchr (cmdline, ' ');
 	  if (p)
-	    cur_entry->title = pupa_strdup (p);
+	    cur_entry->title = grub_strdup (p);
 	  else
-	    cur_entry->title = pupa_strdup ("");
+	    cur_entry->title = grub_strdup ("");
 	  
 	  if (! cur_entry->title)
 	    {
-	      pupa_free (cur_entry);
+	      grub_free (cur_entry);
 	      goto fail;
 	    }
 	  
@@ -204,28 +204,28 @@ read_config_file (const char *config)
       else if (! cur_entry)
 	{
 	  /* Run the command if possible.  */
-	  if (cmd->flags & PUPA_COMMAND_FLAG_MENU)
+	  if (cmd->flags & GRUB_COMMAND_FLAG_MENU)
 	    {
-	      pupa_command_execute (cmdline);
-	      pupa_print_error ();
-	      pupa_errno = PUPA_ERR_NONE;
+	      grub_command_execute (cmdline);
+	      grub_print_error ();
+	      grub_errno = GRUB_ERR_NONE;
 	    }
 	  else
 	    {
-	      pupa_printf ("Invalid command `%s' is ignored.\n", cmdline);
+	      grub_printf ("Invalid command `%s' is ignored.\n", cmdline);
 	      continue;
 	    }
 	}
       else
 	{
-	  cur_cmd = (pupa_command_list_t) pupa_malloc (sizeof (*cur_cmd));
+	  cur_cmd = (grub_command_list_t) grub_malloc (sizeof (*cur_cmd));
 	  if (! cur_cmd)
 	    goto fail;
 
-	  cur_cmd->command = pupa_strdup (cmdline);
+	  cur_cmd->command = grub_strdup (cmdline);
 	  if (! cur_cmd->command)
 	    {
-	      pupa_free (cur_cmd);
+	      grub_free (cur_cmd);
 	      goto fail;
 	    }
 
@@ -240,10 +240,10 @@ read_config_file (const char *config)
 
  fail:
 
-  pupa_file_close (file);
+  grub_file_close (file);
 
   /* If no entry was found or any error occurred, return NULL.  */
-  if (menu->size == 0 || pupa_errno != PUPA_ERR_NONE)
+  if (menu->size == 0 || grub_errno != GRUB_ERR_NONE)
     {
       free_menu (menu);
       return 0;
@@ -269,46 +269,46 @@ read_config_file (const char *config)
 
 /* This starts the normal mode.  */
 void
-pupa_enter_normal_mode (const char *config)
+grub_enter_normal_mode (const char *config)
 {
-  if (pupa_setjmp (pupa_exit_env) == 0)
-    pupa_normal_execute (config, 0);
+  if (grub_setjmp (grub_exit_env) == 0)
+    grub_normal_execute (config, 0);
 }
 
 /* Initialize the screen.  */
 void
-pupa_normal_init_page (void)
+grub_normal_init_page (void)
 {
-  pupa_cls ();
-  pupa_printf ("\n\
-                             PUPA  version %s\n\n",
+  grub_cls ();
+  grub_printf ("\n\
+                             GRUB  version %s\n\n",
 	       PACKAGE_VERSION);
 }
 
 /* Read the config file CONFIG and execute the menu interface or
    the command-line interface.  */
 void
-pupa_normal_execute (const char *config, int nested)
+grub_normal_execute (const char *config, int nested)
 {
-  pupa_menu_t menu = 0;
+  grub_menu_t menu = 0;
 
   if (config)
     {
       menu = read_config_file (config);
 
       /* Ignore any error.  */
-      pupa_errno = PUPA_ERR_NONE;
+      grub_errno = GRUB_ERR_NONE;
     }
 
   if (menu)
-    pupa_menu_run (menu, nested);
+    grub_menu_run (menu, nested);
   else
-    pupa_cmdline_run (nested);
+    grub_cmdline_run (nested);
 }
 
 /* Enter normal mode from rescue mode.  */
 static void
-pupa_rescue_cmd_normal (int argc, char *argv[])
+grub_rescue_cmd_normal (int argc, char *argv[])
 {
   if (argc == 0)
     {
@@ -316,65 +316,65 @@ pupa_rescue_cmd_normal (int argc, char *argv[])
       char *config;
       const char *prefix;
       
-      prefix = pupa_env_get ("prefix");
+      prefix = grub_env_get ("prefix");
       if (prefix)
 	{
-	  config = pupa_malloc (pupa_strlen (prefix) + sizeof ("/pupa.cfg"));
+	  config = grub_malloc (grub_strlen (prefix) + sizeof ("/grub.cfg"));
 	  if (! config)
 	    return;
 
-	  pupa_sprintf (config, "%s/pupa.cfg", prefix);
-	  pupa_enter_normal_mode (config);
-	  pupa_free (config);
+	  grub_sprintf (config, "%s/grub.cfg", prefix);
+	  grub_enter_normal_mode (config);
+	  grub_free (config);
 	}
       else
-	pupa_enter_normal_mode (0);
+	grub_enter_normal_mode (0);
     }
   else
-    pupa_enter_normal_mode (argv[0]);
+    grub_enter_normal_mode (argv[0]);
 }
 
-#ifdef PUPA_UTIL
+#ifdef GRUB_UTIL
 void
-pupa_normal_init (void)
+grub_normal_init (void)
 {
-  pupa_set_history (PUPA_DEFAULT_HISTORY_SIZE);
+  grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
   /* Register a command "normal" for the rescue mode.  */
-  pupa_rescue_register_command ("normal", pupa_rescue_cmd_normal,
+  grub_rescue_register_command ("normal", grub_rescue_cmd_normal,
 				"enter normal mode");
 
   /* This registers some built-in commands.  */
-  pupa_command_init ();
+  grub_command_init ();
   
 }
 
 void
-pupa_normal_fini (void)
+grub_normal_fini (void)
 {
-  pupa_set_history (0);
-  pupa_rescue_unregister_command ("normal");
+  grub_set_history (0);
+  grub_rescue_unregister_command ("normal");
 
 }
-#else /* ! PUPA_UTIL */
-PUPA_MOD_INIT
+#else /* ! GRUB_UTIL */
+GRUB_MOD_INIT
 {
   /* Normal mode shouldn't be unloaded.  */
-  pupa_dl_ref (mod);
+  grub_dl_ref (mod);
 
-  pupa_set_history (PUPA_DEFAULT_HISTORY_SIZE);
+  grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
   /* Register a command "normal" for the rescue mode.  */
-  pupa_rescue_register_command ("normal", pupa_rescue_cmd_normal,
+  grub_rescue_register_command ("normal", grub_rescue_cmd_normal,
 				"enter normal mode");
 
   /* This registers some built-in commands.  */
-  pupa_command_init ();
+  grub_command_init ();
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_set_history (0);
-  pupa_rescue_unregister_command ("normal");
+  grub_set_history (0);
+  grub_rescue_unregister_command ("normal");
 }
-#endif /* ! PUPA_UTIL */
+#endif /* ! GRUB_UTIL */

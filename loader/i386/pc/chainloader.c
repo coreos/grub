@@ -1,6 +1,6 @@
 /* chainloader.c - boot another boot loader */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,79 +18,79 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/loader.h>
-#include <pupa/machine/loader.h>
-#include <pupa/file.h>
-#include <pupa/err.h>
-#include <pupa/device.h>
-#include <pupa/disk.h>
-#include <pupa/misc.h>
-#include <pupa/types.h>
-#include <pupa/machine/init.h>
-#include <pupa/machine/partition.h>
-#include <pupa/machine/memory.h>
-#include <pupa/rescue.h>
-#include <pupa/dl.h>
+#include <grub/loader.h>
+#include <grub/machine/loader.h>
+#include <grub/file.h>
+#include <grub/err.h>
+#include <grub/device.h>
+#include <grub/disk.h>
+#include <grub/misc.h>
+#include <grub/types.h>
+#include <grub/machine/init.h>
+#include <grub/machine/partition.h>
+#include <grub/machine/memory.h>
+#include <grub/rescue.h>
+#include <grub/dl.h>
 
-static pupa_dl_t my_mod;
+static grub_dl_t my_mod;
 
-static pupa_err_t
-pupa_chainloader_boot (void)
+static grub_err_t
+grub_chainloader_boot (void)
 {
-  pupa_device_t dev;
+  grub_device_t dev;
   int drive = -1;
   void *part_addr = 0;
   
   /* Open the root device.  */
-  dev = pupa_device_open (0);
+  dev = grub_device_open (0);
   if (dev)
     {
-      pupa_disk_t disk = dev->disk;
+      grub_disk_t disk = dev->disk;
       
       if (disk)
 	{
-	  pupa_partition_t p = disk->partition;
+	  grub_partition_t p = disk->partition;
 	  
 	  /* In i386-pc, the id is equal to the BIOS drive number.  */
 	  drive = (int) disk->id;
 
 	  if (p)
 	    {
-	      pupa_disk_read (disk, p->offset, 446, 64,
-			      (char *) PUPA_MEMORY_MACHINE_PART_TABLE_ADDR);
+	      grub_disk_read (disk, p->offset, 446, 64,
+			      (char *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
 	      
 	      /* Ignore errors. Perhaps it's not fatal.  */
-	      part_addr = (void *) (PUPA_MEMORY_MACHINE_PART_TABLE_ADDR
+	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
 				    + (p->index << 4));
 	    }
 	}
 
-      pupa_device_close (dev);
+      grub_device_close (dev);
     }
 
-  pupa_chainloader_real_boot (drive, part_addr);
+  grub_chainloader_real_boot (drive, part_addr);
 
   /* Never reach here.  */
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
-static pupa_err_t
-pupa_chainloader_unload (void)
+static grub_err_t
+grub_chainloader_unload (void)
 {
-  pupa_dl_unref (my_mod);
-  return PUPA_ERR_NONE;
+  grub_dl_unref (my_mod);
+  return GRUB_ERR_NONE;
 }
 
 void
-pupa_rescue_cmd_chainloader (int argc, char *argv[])
+grub_rescue_cmd_chainloader (int argc, char *argv[])
 {
-  pupa_file_t file = 0;
-  pupa_uint16_t signature;
+  grub_file_t file = 0;
+  grub_uint16_t signature;
   int force = 0;
 
-  pupa_dl_ref (my_mod);
+  grub_dl_ref (my_mod);
   
-  if (argc > 0 && pupa_strcmp (argv[0], "--force") == 0)
+  if (argc > 0 && grub_strcmp (argv[0], "--force") == 0)
     {
       force = 1;
       argc--;
@@ -99,55 +99,55 @@ pupa_rescue_cmd_chainloader (int argc, char *argv[])
 
   if (argc == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no file specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
       goto fail;
     }
 
-  file = pupa_file_open (argv[0]);
+  file = grub_file_open (argv[0]);
   if (! file)
     goto fail;
 
   /* Read the first block.  */
-  if (pupa_file_read (file, (char *) 0x7C00, PUPA_DISK_SECTOR_SIZE)
-      != PUPA_DISK_SECTOR_SIZE)
+  if (grub_file_read (file, (char *) 0x7C00, GRUB_DISK_SECTOR_SIZE)
+      != GRUB_DISK_SECTOR_SIZE)
     {
-      if (pupa_errno == PUPA_ERR_NONE)
-	pupa_error (PUPA_ERR_BAD_OS, "too small");
+      if (grub_errno == GRUB_ERR_NONE)
+	grub_error (GRUB_ERR_BAD_OS, "too small");
 
       goto fail;
     }
 
   /* Check the signature.  */
-  signature = *((pupa_uint16_t *) (0x7C00 + PUPA_DISK_SECTOR_SIZE - 2));
-  if (signature != pupa_le_to_cpu16 (0xaa55) && ! force)
+  signature = *((grub_uint16_t *) (0x7C00 + GRUB_DISK_SECTOR_SIZE - 2));
+  if (signature != grub_le_to_cpu16 (0xaa55) && ! force)
     {
-      pupa_error (PUPA_ERR_BAD_OS, "invalid signature");
+      grub_error (GRUB_ERR_BAD_OS, "invalid signature");
       goto fail;
     }
 
-  pupa_file_close (file);
-  pupa_loader_set (pupa_chainloader_boot, pupa_chainloader_unload);
+  grub_file_close (file);
+  grub_loader_set (grub_chainloader_boot, grub_chainloader_unload);
   return;
   
  fail:
 
   if (file)
-    pupa_file_close (file);
+    grub_file_close (file);
   
-  pupa_dl_unref (my_mod);
+  grub_dl_unref (my_mod);
 }
 
 static const char loader_name[] = "chainloader";
 
-PUPA_MOD_INIT
+GRUB_MOD_INIT
 {
-  pupa_rescue_register_command (loader_name,
-				pupa_rescue_cmd_chainloader,
+  grub_rescue_register_command (loader_name,
+				grub_rescue_cmd_chainloader,
 				"load another boot loader");
   my_mod = mod;
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_rescue_unregister_command (loader_name);
+  grub_rescue_unregister_command (loader_name);
 }

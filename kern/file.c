@@ -1,9 +1,9 @@
 /* file.c - file I/O functions */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,37 +14,37 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/misc.h>
-#include <pupa/err.h>
-#include <pupa/file.h>
-#include <pupa/mm.h>
-#include <pupa/fs.h>
-#include <pupa/device.h>
+#include <grub/misc.h>
+#include <grub/err.h>
+#include <grub/file.h>
+#include <grub/mm.h>
+#include <grub/fs.h>
+#include <grub/device.h>
 
 /* Get the device part of the filename NAME. It is enclosed by parentheses.  */
 char *
-pupa_file_get_device_name (const char *name)
+grub_file_get_device_name (const char *name)
 {
   if (name[0] == '(')
     {
-      char *p = pupa_strchr (name, ')');
+      char *p = grub_strchr (name, ')');
       char *ret;
       
       if (! p)
 	{
-	  pupa_error (PUPA_ERR_BAD_FILENAME, "missing `)'");
+	  grub_error (GRUB_ERR_BAD_FILENAME, "missing `)'");
 	  return 0;
 	}
 
-      ret = (char *) pupa_malloc (p - name);
+      ret = (char *) grub_malloc (p - name);
       if (! ret)
 	return 0;
       
-      pupa_memcpy (ret, name + 1, p - name - 1);
+      grub_memcpy (ret, name + 1, p - name - 1);
       ret[p - name - 1] = '\0';
       return ret;
     }
@@ -52,31 +52,31 @@ pupa_file_get_device_name (const char *name)
   return 0;
 }
 
-pupa_file_t
-pupa_file_open (const char *name)
+grub_file_t
+grub_file_open (const char *name)
 {
-  pupa_device_t device;
-  pupa_file_t file = 0;
+  grub_device_t device;
+  grub_file_t file = 0;
   char *device_name;
   char *file_name;
 
-  device_name = pupa_file_get_device_name (name);
-  if (pupa_errno)
+  device_name = grub_file_get_device_name (name);
+  if (grub_errno)
     return 0;
 
   /* Get the file part of NAME.  */
-  file_name = pupa_strchr (name, ')');
+  file_name = grub_strchr (name, ')');
   if (file_name)
     file_name++;
   else
     file_name = (char *) name;
 
-  device = pupa_device_open (device_name);
-  pupa_free (device_name);
+  device = grub_device_open (device_name);
+  grub_free (device_name);
   if (! device)
     goto fail;
   
-  file = (pupa_file_t) pupa_malloc (sizeof (*file));
+  file = (grub_file_t) grub_malloc (sizeof (*file));
   if (! file)
     goto fail;
   
@@ -87,34 +87,34 @@ pupa_file_open (const char *name)
     
   if (device->disk && file_name[0] != '/')
     /* This is a block list.  */
-    file->fs = &pupa_fs_blocklist;
+    file->fs = &grub_fs_blocklist;
   else
     {
-      file->fs = pupa_fs_probe (device);
+      file->fs = grub_fs_probe (device);
       if (! file->fs)
 	goto fail;
     }
 
-  if ((file->fs->open) (file, file_name) != PUPA_ERR_NONE)
+  if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)
     goto fail;
 
   return file;
 
  fail:
   if (device)
-    pupa_device_close (device);
+    grub_device_close (device);
 
-  /* if (net) pupa_net_close (net);  */
+  /* if (net) grub_net_close (net);  */
 
-  pupa_free (file);
+  grub_free (file);
   
   return 0;
 }
 
-pupa_ssize_t
-pupa_file_read (pupa_file_t file, char *buf, pupa_ssize_t len)
+grub_ssize_t
+grub_file_read (grub_file_t file, char *buf, grub_ssize_t len)
 {
-  pupa_ssize_t res;
+  grub_ssize_t res;
   
   if (len == 0 || len > file->size - file->offset)
     len = file->size - file->offset;
@@ -129,25 +129,25 @@ pupa_file_read (pupa_file_t file, char *buf, pupa_ssize_t len)
   return res;
 }
 
-pupa_err_t
-pupa_file_close (pupa_file_t file)
+grub_err_t
+grub_file_close (grub_file_t file)
 {
   if (file->fs->close)
     (file->fs->close) (file);
 
-  pupa_device_close (file->device);
-  pupa_free (file);
-  return pupa_errno;
+  grub_device_close (file->device);
+  grub_free (file);
+  return grub_errno;
 }
 
-pupa_ssize_t
-pupa_file_seek (pupa_file_t file, pupa_ssize_t offset)
+grub_ssize_t
+grub_file_seek (grub_file_t file, grub_ssize_t offset)
 {
-  pupa_ssize_t old;
+  grub_ssize_t old;
 
   if (offset < 0 || offset >= file->size)
     {
-      pupa_error (PUPA_ERR_OUT_OF_RANGE,
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
 		  "attempt to seek outside of the file");
       return -1;
     }

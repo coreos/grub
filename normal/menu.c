@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/normal.h>
-#include <pupa/term.h>
-#include <pupa/misc.h>
+#include <grub/normal.h>
+#include <grub/term.h>
+#include <grub/misc.h>
 
 /* FIXME: These below are all runaround.  */
 
@@ -39,55 +39,55 @@ draw_border (void)
 {
   unsigned i;
   
-  pupa_setcolorstate (PUPA_TERM_COLOR_NORMAL);
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
   
-  pupa_gotoxy (1, 3);
-  pupa_putcode (DISP_UL);
+  grub_gotoxy (1, 3);
+  grub_putcode (DISP_UL);
   for (i = 0; i < 73; i++)
-    pupa_putcode (DISP_HLINE);
-  pupa_putcode (DISP_UR);
+    grub_putcode (DISP_HLINE);
+  grub_putcode (DISP_UR);
 
   i = 1;
   while (1)
     {
-      pupa_gotoxy (1, 3 + i);
+      grub_gotoxy (1, 3 + i);
 
       if (i > 12)
 	break;
 
-      pupa_putcode (DISP_VLINE);
-      pupa_gotoxy (75, 3 + i);
-      pupa_putcode (DISP_VLINE);
+      grub_putcode (DISP_VLINE);
+      grub_gotoxy (75, 3 + i);
+      grub_putcode (DISP_VLINE);
 
       i++;
     }
 
-  pupa_putcode (DISP_LL);
+  grub_putcode (DISP_LL);
   for (i = 0; i < 73; i++)
-    pupa_putcode (DISP_HLINE);
-  pupa_putcode (DISP_LR);
+    grub_putcode (DISP_HLINE);
+  grub_putcode (DISP_LR);
 
-  pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
+  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 }
 
 static void
 print_message (int nested)
 {
-  pupa_printf ("\n\
+  grub_printf ("\n\
       Use the %C and %C keys to select which entry is highlighted.\n",
-	       (pupa_uint32_t) DISP_UP, (pupa_uint32_t) DISP_DOWN);
-  pupa_printf ("\
+	       (grub_uint32_t) DISP_UP, (grub_uint32_t) DISP_DOWN);
+  grub_printf ("\
       Press enter to boot the selected OS, \'e\' to edit the\n\
       commands before booting, or \'c\' for a command-line.");
   if (nested)
-    pupa_printf ("\
+    grub_printf ("\
       ESC to return previous menu.");
 }
 
-static pupa_menu_entry_t
-get_entry (pupa_menu_t menu, int no)
+static grub_menu_entry_t
+get_entry (grub_menu_t menu, int no)
 {
-  pupa_menu_entry_t e;
+  grub_menu_entry_t e;
 
   for (e = menu->entry_list; e && no > 0; e = e->next, no--)
     ;
@@ -96,48 +96,48 @@ get_entry (pupa_menu_t menu, int no)
 }
 
 static void
-print_entry (int y, int highlight, pupa_menu_entry_t entry)
+print_entry (int y, int highlight, grub_menu_entry_t entry)
 {
   int x;
   const char *title;
 
   title = entry ? entry->title : "";
   
-  pupa_setcolorstate (highlight
-		      ? PUPA_TERM_COLOR_HIGHLIGHT
-		      : PUPA_TERM_COLOR_NORMAL);
+  grub_setcolorstate (highlight
+		      ? GRUB_TERM_COLOR_HIGHLIGHT
+		      : GRUB_TERM_COLOR_NORMAL);
 
-  pupa_gotoxy (2, y);
-  pupa_putchar (' ');
+  grub_gotoxy (2, y);
+  grub_putchar (' ');
   for (x = 3; x < 75; x++)
     {
       if (*title && x <= 72)
 	{
 	  if (x == 72)
-	    pupa_putcode (DISP_RIGHT);
+	    grub_putcode (DISP_RIGHT);
 	  else
-	    pupa_putchar (*title++);
+	    grub_putchar (*title++);
 	}
       else
-	pupa_putchar (' ');
+	grub_putchar (' ');
     }
-  pupa_gotoxy (74, y);
+  grub_gotoxy (74, y);
 
-  pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
+  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 }
 
 static void
-print_entries (pupa_menu_t menu, int first, int offset)
+print_entries (grub_menu_t menu, int first, int offset)
 {
-  pupa_menu_entry_t e;
+  grub_menu_entry_t e;
   int i;
   
-  pupa_gotoxy (77, 4);
+  grub_gotoxy (77, 4);
 
   if (first)
-    pupa_putcode (DISP_UP);
+    grub_putcode (DISP_UP);
   else
-    pupa_putchar (' ');
+    grub_putchar (' ');
 
   e = get_entry (menu, first);
 
@@ -148,30 +148,30 @@ print_entries (pupa_menu_t menu, int first, int offset)
 	e = e->next;
     }
 
-  pupa_gotoxy (77, 4 + 12);
+  grub_gotoxy (77, 4 + 12);
 
   if (e)
-    pupa_putcode (DISP_DOWN);
+    grub_putcode (DISP_DOWN);
   else
-    pupa_putchar (' ');
+    grub_putchar (' ');
 
-  pupa_gotoxy (74, 4 + offset);
+  grub_gotoxy (74, 4 + offset);
 }
 
 static void
 init_page (int nested)
 {
-  pupa_normal_init_page ();
+  grub_normal_init_page ();
   draw_border ();
   print_message (nested);
 }
 
 static int
-run_menu (pupa_menu_t menu, int nested)
+run_menu (grub_menu_t menu, int nested)
 {
   int first, offset;
   
-  pupa_setcursor (0);
+  grub_setcursor (0);
   
   first = 0;
   offset = menu->default_entry;
@@ -183,13 +183,13 @@ run_menu (pupa_menu_t menu, int nested)
 
   init_page (nested);
   print_entries (menu, first, offset);
-  pupa_refresh ();
+  grub_refresh ();
   
   while (1)
     {
       int c;
 
-      c = PUPA_TERM_ASCII_CHAR (pupa_getkey ());
+      c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
       switch (c)
 	{
 	case 16:
@@ -230,21 +230,21 @@ run_menu (pupa_menu_t menu, int nested)
 	case '\n':
 	case '\r':
 	case 6:
-	  pupa_setcursor (1);
+	  grub_setcursor (1);
 	  return first + offset;
 
 	case '\e':
 	  if (nested)
 	    {
-	      pupa_setcursor (1);
+	      grub_setcursor (1);
 	      return -1;
 	    }
 	  break;
 
 	case 'c':
-	  pupa_setcursor (1);
-	  pupa_cmdline_run (1);
-	  pupa_setcursor (0);
+	  grub_setcursor (1);
+	  grub_cmdline_run (1);
+	  grub_setcursor (0);
 	  init_page (nested);
 	  print_entries (menu, first, offset);
 	  break;
@@ -253,7 +253,7 @@ run_menu (pupa_menu_t menu, int nested)
 	  break;
 	}
       
-      pupa_refresh ();
+      grub_refresh ();
     }
 
   /* Never reach here.  */
@@ -261,7 +261,7 @@ run_menu (pupa_menu_t menu, int nested)
 }
 
 void
-pupa_menu_run (pupa_menu_t menu, int nested)
+grub_menu_run (grub_menu_t menu, int nested)
 {
   while (1)
     {

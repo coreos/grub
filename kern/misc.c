@@ -1,9 +1,9 @@
 /* misc.c - definitions of misc functions */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,19 +14,19 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/misc.h>
-#include <pupa/err.h>
-#include <pupa/mm.h>
+#include <grub/misc.h>
+#include <grub/err.h>
+#include <grub/mm.h>
 #include <stdarg.h>
-#include <pupa/term.h>
-#include <pupa/env.h>
+#include <grub/term.h>
+#include <grub/env.h>
 
 void *
-pupa_memmove (void *dest, const void *src, pupa_size_t n)
+grub_memmove (void *dest, const void *src, grub_size_t n)
 {
   char *d = (char *) dest;
   const char *s = (const char *) src;
@@ -46,11 +46,11 @@ pupa_memmove (void *dest, const void *src, pupa_size_t n)
   return dest;
 }
 /* GCC emits references to memcpy() for struct copies etc.  */
-void *memcpy (void *dest, const void *src, pupa_size_t n)
-  __attribute__ ((alias ("pupa_memmove")));
+void *memcpy (void *dest, const void *src, grub_size_t n)
+  __attribute__ ((alias ("grub_memmove")));
 
 char *
-pupa_strcpy (char *dest, const char *src)
+grub_strcpy (char *dest, const char *src)
 {
   char *p = dest;
 
@@ -61,7 +61,7 @@ pupa_strcpy (char *dest, const char *src)
 }
 
 char *
-pupa_strncpy (char *dest, const char *src, int c)
+grub_strncpy (char *dest, const char *src, int c)
 {
   char *p = dest;
   int pos = 0;
@@ -73,7 +73,7 @@ pupa_strncpy (char *dest, const char *src, int c)
 }
 
 char *
-pupa_stpcpy (char *dest, const char *src)
+grub_stpcpy (char *dest, const char *src)
 {
   char *d = dest;
   const char *s = src;
@@ -86,7 +86,7 @@ pupa_stpcpy (char *dest, const char *src)
 }
 
 char *
-pupa_strcat (char *dest, const char *src)
+grub_strcat (char *dest, const char *src)
 {
   char *p = dest;
 
@@ -100,26 +100,26 @@ pupa_strcat (char *dest, const char *src)
 }
 
 int
-pupa_printf (const char *fmt, ...)
+grub_printf (const char *fmt, ...)
 {
   va_list ap;
   int ret;
   
   va_start (ap, fmt);
-  ret = pupa_vprintf (fmt, ap);
+  ret = grub_vprintf (fmt, ap);
   va_end (ap);
 
   return ret;
 }  
 
 int
-pupa_vprintf (const char *fmt, va_list args)
+grub_vprintf (const char *fmt, va_list args)
 {
-  return pupa_vsprintf (0, fmt, args);
+  return grub_vsprintf (0, fmt, args);
 }
 
 int
-pupa_memcmp (const void *s1, const void *s2, pupa_size_t n)
+grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 {
   const char *t1 = s1;
   const char *t2 = s2;
@@ -137,7 +137,7 @@ pupa_memcmp (const void *s1, const void *s2, pupa_size_t n)
 }
 
 int
-pupa_strcmp (const char *s1, const char *s2)
+grub_strcmp (const char *s1, const char *s2)
 {
   while (*s1 && *s2)
     {
@@ -152,7 +152,7 @@ pupa_strcmp (const char *s1, const char *s2)
 }
 
 int
-pupa_strncmp (const char *s1, const char *s2, int c)
+grub_strncmp (const char *s1, const char *s2, int c)
 {
   int p = 1;
 
@@ -170,7 +170,7 @@ pupa_strncmp (const char *s1, const char *s2, int c)
 }
 
 char *
-pupa_strchr (const char *s, int c)
+grub_strchr (const char *s, int c)
 {
   while (*s)
     {
@@ -183,7 +183,7 @@ pupa_strchr (const char *s, int c)
 }
 
 char *
-pupa_strrchr (const char *s, int c)
+grub_strrchr (const char *s, int c)
 {
   char *p = 0;
 
@@ -198,37 +198,37 @@ pupa_strrchr (const char *s, int c)
 }
 
 int
-pupa_isspace (int c)
+grub_isspace (int c)
 {
   return (c == '\n' || c == '\r' || c == ' ' || c == '\t');
 }
 
 int
-pupa_isprint (int c)
+grub_isprint (int c)
 {
   return (c >= ' ' && c <= '~');
 }
 
 int
-pupa_isalpha (int c)
+grub_isalpha (int c)
 {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 int
-pupa_isdigit (int c)
+grub_isdigit (int c)
 {
   return (c >= '0' && c <= '9');
 }
 
 int
-pupa_isgraph (int c)
+grub_isgraph (int c)
 {
   return (c >= '!' && c <= '~');
 }
 
 int
-pupa_tolower (int c)
+grub_tolower (int c)
 {
   if (c >= 'A' && c <= 'Z')
     return c - 'A' + 'a';
@@ -237,13 +237,13 @@ pupa_tolower (int c)
 }
 
 unsigned long
-pupa_strtoul (const char *str, char **end, int base)
+grub_strtoul (const char *str, char **end, int base)
 {
   unsigned long num = 0;
   int found = 0;
   
   /* Skip white spaces.  */
-  while (*str && pupa_isspace (*str))
+  while (*str && grub_isspace (*str))
     str++;
   
   /* Guess the base, if not specified. The prefix `0x' means 16, and
@@ -269,7 +269,7 @@ pupa_strtoul (const char *str, char **end, int base)
     {
       unsigned long digit;
 
-      digit = pupa_tolower (*str) - '0';
+      digit = grub_tolower (*str) - '0';
       if (digit > 9)
 	{
 	  digit += '0' - 'a' + 10;
@@ -281,7 +281,7 @@ pupa_strtoul (const char *str, char **end, int base)
       
       if (num > (~0UL - digit) / base)
 	{
-	  pupa_error (PUPA_ERR_OUT_OF_RANGE, "overflow is detected");
+	  grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
 	  return 0;
 	}
 
@@ -291,7 +291,7 @@ pupa_strtoul (const char *str, char **end, int base)
 
   if (! found)
     {
-      pupa_error (PUPA_ERR_BAD_NUMBER, "unrecognized number");
+      grub_error (GRUB_ERR_BAD_NUMBER, "unrecognized number");
       return 0;
     }
   
@@ -302,38 +302,38 @@ pupa_strtoul (const char *str, char **end, int base)
 }
 
 char *
-pupa_strdup (const char *s)
+grub_strdup (const char *s)
 {
-  pupa_size_t len;
+  grub_size_t len;
   char *p;
   
-  len = pupa_strlen (s) + 1;
-  p = (char *) pupa_malloc (len);
+  len = grub_strlen (s) + 1;
+  p = (char *) grub_malloc (len);
   if (! p)
     return 0;
 
-  return pupa_memcpy (p, s, len);
+  return grub_memcpy (p, s, len);
 }
 
 char *
-pupa_strndup (const char *s, pupa_size_t n)
+grub_strndup (const char *s, grub_size_t n)
 {
-  pupa_size_t len = 0;
+  grub_size_t len = 0;
   char *p = (char *) s;
   
   while (*(p++) && len < n)
     len++;
 
-  len = pupa_strlen (s) + 1;
-  p = (char *) pupa_malloc (len);
+  len = grub_strlen (s) + 1;
+  p = (char *) grub_malloc (len);
   if (! p)
     return 0;
 
-  return pupa_memcpy (p, s, len);
+  return grub_memcpy (p, s, len);
 }
 
 void *
-pupa_memset (void *s, int c, pupa_size_t n)
+grub_memset (void *s, int c, grub_size_t n)
 {
   unsigned char *p = (unsigned char *) s;
 
@@ -343,8 +343,8 @@ pupa_memset (void *s, int c, pupa_size_t n)
   return s;
 }
 
-pupa_size_t
-pupa_strlen (const char *s)
+grub_size_t
+grub_strlen (const char *s)
 {
   const char *p = s;
 
@@ -355,9 +355,9 @@ pupa_strlen (const char *s)
 }
 
 static inline void
-pupa_reverse (char *str)
+grub_reverse (char *str)
 {
-  char *p = str + pupa_strlen (str) - 1;
+  char *p = str + grub_strlen (str) - 1;
 
   while (str < p)
     {
@@ -372,7 +372,7 @@ pupa_reverse (char *str)
 }
 
 static char *
-pupa_itoa (char *str, int c, unsigned n)
+grub_itoa (char *str, int c, unsigned n)
 {
   unsigned base = (c == 'x') ? 16 : 10;
   char *p;
@@ -392,12 +392,12 @@ pupa_itoa (char *str, int c, unsigned n)
   while (n /= base);
   *p = 0;
 
-  pupa_reverse (str);
+  grub_reverse (str);
   return p;
 }
 
 static char *
-pupa_ftoa (char *str, double f, int round)
+grub_ftoa (char *str, double f, int round)
 {
   unsigned int intp;
   unsigned int fractp;
@@ -410,12 +410,12 @@ pupa_ftoa (char *str, double f, int round)
   intp = f;
   fractp = (f - (float) intp) * power;
 
-  pupa_sprintf (str, "%d.%d", intp, fractp);
+  grub_sprintf (str, "%d.%d", intp, fractp);
   return str;
 }
 
 int
-pupa_vsprintf (char *str, const char *fmt, va_list args)
+grub_vsprintf (char *str, const char *fmt, va_list args)
 {
   char c;
   int count = 0;
@@ -428,7 +428,7 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
       if (str)
 	*str++ = ch;
       else
-	pupa_putchar (ch);
+	grub_putchar (ch);
 
       count++;
     }
@@ -468,29 +468,29 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	  
 	  p = (char *) fmt;
 	  /* Read formatting parameters.  */
-	  while (*p && pupa_isdigit (*p))
+	  while (*p && grub_isdigit (*p))
 	    p++;
 
 	  if (p > fmt)
 	    {
 	      char s[p - fmt];
-	      pupa_strncpy (s, fmt, p - fmt);
+	      grub_strncpy (s, fmt, p - fmt);
 	      if (s[0] == '0')
 		zerofill = '0';
-	      format1 = pupa_strtoul (s, 0, 10);
+	      format1 = grub_strtoul (s, 0, 10);
 	      fmt = p;
 	      if (*p && *p == '.')
 		{
 		  p++;
 		  fmt++;
-		  while (*p && pupa_isdigit (*p))
+		  while (*p && grub_isdigit (*p))
 		    p++;
 		  
 		  if (p > fmt)
 		    {
 		      char fstr[p - fmt];
-		      pupa_strncpy (fstr, fmt, p - fmt);
-		      format2 = pupa_strtoul (fstr, 0, 10);
+		      grub_strncpy (fstr, fmt, p - fmt);
+		      format2 = grub_strtoul (fstr, 0, 10);
 		      fmt = p;
 		    }
 		}
@@ -508,12 +508,12 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	    case 'u':
 	    case 'd':
 	      n = va_arg (args, int);
-	      pupa_itoa (tmp, c, n);
-	      if (!rightfill && pupa_strlen (tmp) < format1)
-		write_fill (zerofill, format1 - pupa_strlen (tmp));
+	      grub_itoa (tmp, c, n);
+	      if (!rightfill && grub_strlen (tmp) < format1)
+		write_fill (zerofill, format1 - grub_strlen (tmp));
 	      write_str (tmp);
-	      if (rightfill && pupa_strlen (tmp) < format1)
-		write_fill (zerofill, format1 - pupa_strlen (tmp));
+	      if (rightfill && grub_strlen (tmp) < format1)
+		write_fill (zerofill, format1 - grub_strlen (tmp));
 	      break;
 	      
 	    case 'c':
@@ -525,18 +525,18 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	      {
 		float f;
 		f = va_arg (args, double);
-		pupa_ftoa (tmp, f, format2);
-		if (!rightfill && pupa_strlen (tmp) < format1)
-		  write_fill (zerofill, format1 - pupa_strlen (tmp));
+		grub_ftoa (tmp, f, format2);
+		if (!rightfill && grub_strlen (tmp) < format1)
+		  write_fill (zerofill, format1 - grub_strlen (tmp));
 		write_str (tmp);
-		if (rightfill && pupa_strlen (tmp) < format1)
-		  write_fill (zerofill, format1 - pupa_strlen (tmp));
+		if (rightfill && grub_strlen (tmp) < format1)
+		  write_fill (zerofill, format1 - grub_strlen (tmp));
 		break;
 	      }
 	      
 	    case 'C':
 	      {
-		pupa_uint32_t code = va_arg (args, pupa_uint32_t);
+		grub_uint32_t code = va_arg (args, grub_uint32_t);
 		int shift;
 		unsigned mask;
 		
@@ -588,13 +588,13 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	      p = va_arg (args, char *);
 	      if (p)
 		{
-		  if (!rightfill && pupa_strlen (p) < format1)
-		    write_fill (zerofill, format1 - pupa_strlen (p));
+		  if (!rightfill && grub_strlen (p) < format1)
+		    write_fill (zerofill, format1 - grub_strlen (p));
 		  
 		  write_str (p);
 		  
-		  if (rightfill && pupa_strlen (p) < format1)
-		    write_fill (zerofill, format1 - pupa_strlen (p));
+		  if (rightfill && grub_strlen (p) < format1)
+		    write_fill (zerofill, format1 - grub_strlen (p));
 		}
 	      else
 		write_str ("(null)");
@@ -612,26 +612,26 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
     *str = '\0';
 
   if (count && !str)
-    pupa_refresh ();
+    grub_refresh ();
   
   return count;
 }
 
 int
-pupa_sprintf (char *str, const char *fmt, ...)
+grub_sprintf (char *str, const char *fmt, ...)
 {
   va_list ap;
   int ret;
   
   va_start (ap, fmt);
-  ret = pupa_vsprintf (str, fmt, ap);
+  ret = grub_vsprintf (str, fmt, ap);
   va_end (ap);
 
   return ret;
 }
 
-pupa_err_t
-pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *argc, char ***argv)
+grub_err_t
+grub_split_cmdline (const char *cmdline, grub_err_t (* getline) (char **), int *argc, char ***argv)
 {
   /* XXX: Fixed size buffer, perhaps this buffer should be dynamically
      allocated.  */
@@ -651,7 +651,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
   /* Get one character from the commandline.  If the caller reads
      beyond the end of the string a new line will be read.  This
      function will not chech for errors, the caller has to check for
-     pupa_errno.  */
+     grub_errno.  */
   char getchar (void)
     {
       int c;
@@ -703,7 +703,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
 	{
 	  /* XXX: An env. variable can have characters and digits in
 	     its name, are more characters allowed here?  */
-	  while (c && (pupa_isalpha (c) || pupa_isdigit (c)))
+	  while (c && (grub_isalpha (c) || grub_isdigit (c)))
 	    {
 	      *(p++) = c;
 	      c = getchar ();
@@ -713,7 +713,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
       *p = '\0';
 
       /* The variable does not exist.  */
-      val = pupa_env_get (varname);
+      val = grub_env_get (varname);
       if (! val)
 	return;
 
@@ -724,7 +724,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
 
   /* Read one argument.  Return 1 if no variables can be read anymore,
      otherwise return 0.  If there is an error, return 1, the caller
-     has to check pupa_errno.  */
+     has to check grub_errno.  */
   int getarg (void)
     {
       char c;
@@ -741,7 +741,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
 	    /* Double quote.  */
 	    while ((c = getchar ()))
 	      {
-		if (pupa_errno)
+		if (grub_errno)
 		  return 1;
 		/* Read in an escaped character.  */
 		if (c == '\\')
@@ -766,7 +766,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
 	    /* Single quote.  */
 	    while ((c = getchar ()) != '\'')
 	      {
-		if (pupa_errno)
+		if (grub_errno)
 		  return 1;
 
 		*(bp++) = c;
@@ -779,8 +779,8 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
 
 	  default:
 	    /* A normal option.  */
-	    while (c && (pupa_isalpha (c)
-			 || pupa_isdigit (c) || pupa_isgraph (c)))
+	    while (c && (grub_isalpha (c)
+			 || grub_isdigit (c) || grub_isgraph (c)))
 	      {
 		/* Read in an escaped character.  */
 		if (c == '\\')
@@ -804,7 +804,7 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
 
 	    break;
 	  }
-      } while (! pupa_isspace (c) && c != '\'' && c != '"');
+      } while (! grub_isspace (c) && c != '\'' && c != '"');
 
       return 0;
     }
@@ -820,20 +820,20 @@ pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *
     }
 
   /* Check if there were no errors.  */
-  if (pupa_errno)
-    return pupa_errno;
+  if (grub_errno)
+    return grub_errno;
 
   /* Reserve memory for the return values.  */
-  args = pupa_malloc (bp - buffer);
+  args = grub_malloc (bp - buffer);
   if (! args)
-    return pupa_errno;
-  pupa_memcpy (args, buffer, bp - buffer);
+    return grub_errno;
+  grub_memcpy (args, buffer, bp - buffer);
   
-  *argv = pupa_malloc (sizeof (char *) * (*argc + 1));
+  *argv = grub_malloc (sizeof (char *) * (*argc + 1));
   if (! *argv)
     {
-      pupa_free (args);
-      return pupa_errno;
+      grub_free (args);
+      return grub_errno;
     }
 
   /* The arguments are separated with 0's, setup argv so it points to

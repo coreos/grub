@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,9 +17,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_SETJMP_CPU_HEADER
-#define PUPA_SETJMP_CPU_HEADER	1
+#ifndef GRUB_SETJMP_CPU_HEADER
+#define GRUB_SETJMP_CPU_HEADER	1
 
-typedef unsigned long pupa_jmp_buf[6];
+typedef unsigned long grub_jmp_buf[6];
 
-#endif /* ! PUPA_SETJMP_CPU_HEADER */
+#endif /* ! GRUB_SETJMP_CPU_HEADER */

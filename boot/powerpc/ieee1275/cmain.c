@@ -1,6 +1,6 @@
 /* cmain.c - Startup code for the PowerPC.  */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@
 #include <alloca.h>
 #include <stdint.h>
 
-#include "pupa/machine/ieee1275.h"
-#include "pupa/kernel.h"
+#include "grub/machine/ieee1275.h"
+#include "grub/kernel.h"
 
 struct module_info
 {
@@ -33,7 +33,7 @@ struct module_info
 #define roundup(a, s) (((a) + ((s) - 1)) & ~((s) - 1))
 
 /* OpenFirmware entry point passed to us from the real bootloader.  */
-intptr_t (*pupa_ieee1275_entry_fn) (void *);
+intptr_t (*grub_ieee1275_entry_fn) (void *);
 
 
 /* Return a help text for this architecture.  */
@@ -51,11 +51,11 @@ void
 cmain (uint32_t firmware_entry)
 {
   char **argv, args[256];
-  pupa_ieee1275_phandle_t chosen;
+  grub_ieee1275_phandle_t chosen;
   int argc = 0, actual;
   long batl, batu;
 
-  pupa_ieee1275_entry_fn = (intptr_t (*)(void *)) firmware_entry;
+  grub_ieee1275_entry_fn = (intptr_t (*)(void *)) firmware_entry;
 
   /* Initialize BAT registers to unmapped to not generate overlapping
      mappings below.  */
@@ -83,8 +83,8 @@ cmain (uint32_t firmware_entry)
      be null (just the nul-character), so check that the size
      is actually greater than one.  */
 
-  pupa_ieee1275_finddevice ("/chosen", &chosen);
-  if (pupa_ieee1275_get_property (chosen, "bootargs", args,
+  grub_ieee1275_finddevice ("/chosen", &chosen);
+  if (grub_ieee1275_get_property (chosen, "bootargs", args,
 				  sizeof args, &actual) == 0
       && actual > 1)
     {
@@ -109,7 +109,7 @@ cmain (uint32_t firmware_entry)
 
       /* The bootargs property does not contain the program
 	 name, just the arguments.  */
-      argv[0] = "pupa";
+      argv[0] = "grub";
 
       /* Second time around we fill in the argv.  */
       str = args;
@@ -136,13 +136,13 @@ cmain (uint32_t firmware_entry)
   else
     {
       argv = alloca (sizeof (char *) * 2);
-      argv[0] = "pupa";
+      argv[0] = "grub";
       argv[1] = 0;
       argc = 1;
     }
   /* Now invoke the main function.  */
-  /* XXX: pupa_main does not parse arguments yet.  */
-  pupa_main ();
+  /* XXX: grub_main does not parse arguments yet.  */
+  grub_main ();
 
   /* Never reached.  */
 }

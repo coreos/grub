@@ -1,9 +1,9 @@
 /* dl-386.c - arch-dependent part of loadable module support */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,18 +14,18 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/dl.h>
-#include <pupa/elf.h>
-#include <pupa/misc.h>
-#include <pupa/err.h>
+#include <grub/dl.h>
+#include <grub/elf.h>
+#include <grub/misc.h>
+#include <grub/err.h>
 
 /* Check if EHDR is a valid ELF header.  */
 int
-pupa_arch_dl_check_header (void *ehdr, unsigned size)
+grub_arch_dl_check_header (void *ehdr, unsigned size)
 {
   Elf32_Ehdr *e = ehdr;
 
@@ -53,8 +53,8 @@ pupa_arch_dl_check_header (void *ehdr, unsigned size)
 }
 
 /* Relocate symbols.  */
-pupa_err_t
-pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr)
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 {
   Elf32_Ehdr *e = ehdr;
   Elf32_Shdr *s;
@@ -70,7 +70,7 @@ pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr)
       break;
 
   if (i == e->e_shnum)
-    return pupa_error (PUPA_ERR_BAD_MODULE, "no symtab found");
+    return grub_error (GRUB_ERR_BAD_MODULE, "no symtab found");
   
   symtab = (Elf32_Sym *) ((char *) e + s->sh_offset);
   entsize = s->sh_entsize;
@@ -80,7 +80,7 @@ pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr)
        i++, s = (Elf32_Shdr *) ((char *) s + e->e_shentsize))
     if (s->sh_type == SHT_REL)
       {
-	pupa_dl_segment_t seg;
+	grub_dl_segment_t seg;
 
 	/* Find the target segment.  */
 	for (seg = mod->segment; seg; seg = seg->next)
@@ -100,7 +100,7 @@ pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr)
 		Elf32_Sym *sym;
 		
 		if (seg->size < rel->r_offset)
-		  return pupa_error (PUPA_ERR_BAD_MODULE,
+		  return grub_error (GRUB_ERR_BAD_MODULE,
 				     "reloc offset is out of the segment");
 		
 		addr = (Elf32_Word *) ((char *) seg->addr + rel->r_offset);
@@ -122,5 +122,5 @@ pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr)
 	  }
       }
 
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }

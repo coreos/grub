@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,16 +17,16 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/normal.h>
-#include <pupa/misc.h>
-#include <pupa/term.h>
-#include <pupa/err.h>
-#include <pupa/types.h>
-#include <pupa/mm.h>
-#include <pupa/machine/partition.h>
-#include <pupa/disk.h>
-#include <pupa/file.h>
-#include <pupa/env.h>
+#include <grub/normal.h>
+#include <grub/misc.h>
+#include <grub/term.h>
+#include <grub/err.h>
+#include <grub/types.h>
+#include <grub/mm.h>
+#include <grub/machine/partition.h>
+#include <grub/disk.h>
+#include <grub/file.h>
+#include <grub/env.h>
 
 static char *kill_buf;
 
@@ -36,11 +36,11 @@ static int hist_pos = 0;
 static int hist_end = 0;
 static int hist_used = 0;
 
-pupa_err_t
-pupa_set_history (int newsize)
+grub_err_t
+grub_set_history (int newsize)
 {
   char **old_hist_lines = hist_lines;
-  hist_lines = pupa_malloc (sizeof (char *) * newsize);
+  hist_lines = grub_malloc (sizeof (char *) * newsize);
 
   /* Copy the old lines into the new buffer.  */
   if (old_hist_lines)
@@ -57,7 +57,7 @@ pupa_set_history (int newsize)
 	      int pos = hist_end - i;
 	      if (pos > hist_size)
 		pos -= hist_size;
-	      pupa_free (old_hist_lines[pos]);
+	      grub_free (old_hist_lines[pos]);
 	    }
 
 	  hist_end -= delsize;
@@ -66,23 +66,23 @@ pupa_set_history (int newsize)
 	}
 
       if (hist_pos < hist_end)
-	pupa_memmove (hist_lines, old_hist_lines + hist_pos,
+	grub_memmove (hist_lines, old_hist_lines + hist_pos,
 		      (hist_end - hist_pos) * sizeof (char *));
       else
 	{
 	  /* Copy the first part.  */
-	  pupa_memmove (hist_lines, old_hist_lines,
+	  grub_memmove (hist_lines, old_hist_lines,
 			hist_pos * sizeof (char *));
 
 
 	  /* Copy the last part.  */
-	  pupa_memmove (hist_lines + hist_pos, old_hist_lines + hist_pos,
+	  grub_memmove (hist_lines + hist_pos, old_hist_lines + hist_pos,
 			(hist_size - hist_pos) * sizeof (char *));
 
 	}
     }
 
-  pupa_free (old_hist_lines);
+  grub_free (old_hist_lines);
 
   hist_size = newsize;
   hist_pos = 0;
@@ -93,7 +93,7 @@ pupa_set_history (int newsize)
 /* Get the entry POS from the history where `0' is the newest
    entry.  */
 static char *
-pupa_history_get (int pos)
+grub_history_get (int pos)
 {
   pos = (hist_pos + pos) % hist_size;
   return hist_lines[pos];
@@ -102,7 +102,7 @@ pupa_history_get (int pos)
 
 /* Insert a new history line S on the top of the history.  */
 static void
-pupa_history_add (char *s)
+grub_history_add (char *s)
 {
   /* Remove the oldest entry in the history to make room for a new
      entry.  */
@@ -112,7 +112,7 @@ pupa_history_add (char *s)
       if (hist_end < 0)
 	hist_end = hist_size + hist_end;
 
-      pupa_free (hist_lines[hist_end]);
+      grub_free (hist_lines[hist_end]);
     }
   else
     hist_used++;
@@ -123,16 +123,16 @@ pupa_history_add (char *s)
     hist_pos = hist_size + hist_pos;
 
   /* Insert into history.  */
-  hist_lines[hist_pos] = pupa_strdup (s);
+  hist_lines[hist_pos] = grub_strdup (s);
 }
 
 /* Replace the history entry on position POS with the string S.  */
 static void
-pupa_history_replace (int pos, char *s)
+grub_history_replace (int pos, char *s)
 {
   pos = (hist_pos + pos) % hist_size;
-  pupa_free (hist_lines[pos]);
-  hist_lines[pos] = pupa_strdup (s);
+  grub_free (hist_lines[pos]);
+  hist_lines[pos] = grub_strdup (s);
 }
 
 /* Try to complete the string in BUF, return the characters that
@@ -140,7 +140,7 @@ pupa_history_replace (int pos, char *s)
    completions, in that case set RESTORE to 1 so the caller can
    restore the prompt.  */
 static char *
-pupa_tab_complete (char *buf, int *restore)
+grub_tab_complete (char *buf, int *restore)
 {
   char *pos = buf;
   char *path;
@@ -151,8 +151,8 @@ pupa_tab_complete (char *buf, int *restore)
   int len;
   int numfound = 0;
 
-  /* The disk that is used for pupa_partition_iterate.  */
-  pupa_device_t partdev;
+  /* The disk that is used for grub_partition_iterate.  */
+  grub_device_t partdev;
 		
   /* String that is added when matched.  */
   char *matchstr;
@@ -162,22 +162,22 @@ pupa_tab_complete (char *buf, int *restore)
   auto int NESTED_FUNC_ATTR add_completion (const char *comp, const char *match,
 					    const char *what, 
 					    void (*print_completion) (char *));
-  auto int iterate_commands (pupa_command_t cmd);
+  auto int iterate_commands (grub_command_t cmd);
   auto int iterate_dev (const char *devname);
-  auto int iterate_part (const pupa_partition_t p);
+  auto int iterate_part (const grub_partition_t p);
   auto int iterate_dir (const char *filename, int dir);
   
 
 
   void print_simple_completion (char *comp)
     {
-      pupa_printf (" %s", comp);
+      grub_printf (" %s", comp);
     }
 
   void print_partition_completion (char *comp)
     {
-      pupa_print_partinfo (partdev, comp);
-      pupa_errno = 0;
+      grub_print_partinfo (partdev, comp);
+      grub_errno = 0;
     }
 
   /* Add a string to the list of possible completions.  COMP is the
@@ -193,21 +193,21 @@ pupa_tab_complete (char *buf, int *restore)
 				       void (*print_completion) (char *))
     {
       /* Bug in strncmp then len ==0.  */
-      if (!len || pupa_strncmp (pos, comp, len) == 0)
+      if (!len || grub_strncmp (pos, comp, len) == 0)
 	{
 	  numfound++;
 	
 	  if (numfound == 1)
 	    {
 	      begin = len;
-	      found = pupa_strdup (comp);
-	      end = pupa_strlen (found);
+	      found = grub_strdup (comp);
+	      end = grub_strlen (found);
 	      matchstr = (char *) match;
 	    }
 	  /* Multiple matches found, print the first instead of completing.  */
 	  else if (numfound == 2)
 	    {
-	      pupa_printf ("\nPossible %s are: ", what);
+	      grub_printf ("\nPossible %s are: ", what);
 	      print_completion (found);
 	    }
 	    
@@ -233,9 +233,9 @@ pupa_tab_complete (char *buf, int *restore)
       return 0;
     }
 
-  int iterate_part (const pupa_partition_t p)
+  int iterate_part (const grub_partition_t p)
     {
-      add_completion (pupa_partition_get_name (p), ")", "partitions", 
+      add_completion (grub_partition_get_name (p), ")", "partitions", 
 		      print_partition_completion);
       return 0;
     }
@@ -246,9 +246,9 @@ pupa_tab_complete (char *buf, int *restore)
 	add_completion (filename, " ", "files", print_simple_completion);
       else
 	{
-	  char fname[pupa_strlen (filename) + 2];
-	  pupa_strcpy (fname, filename);
-	  pupa_sprintf (fname, "%s/", filename);
+	  char fname[grub_strlen (filename) + 2];
+	  grub_strcpy (fname, filename);
+	  grub_sprintf (fname, "%s/", filename);
 	  add_completion (fname, "", "files", print_simple_completion);
 	}
       return 0;
@@ -256,10 +256,10 @@ pupa_tab_complete (char *buf, int *restore)
 
   int iterate_dev (const char *devname)
     {
-      pupa_device_t dev;
+      grub_device_t dev;
       
       /* Complete the partition part.  */
-      dev = pupa_device_open (devname);
+      dev = grub_device_open (devname);
       
       if (dev)
 	{
@@ -269,13 +269,13 @@ pupa_tab_complete (char *buf, int *restore)
 	    add_completion (devname, ")", "disks", print_simple_completion);
 	}
 
-      pupa_errno = PUPA_ERR_NONE;
+      grub_errno = GRUB_ERR_NONE;
       return 0;
     }
 
-  int iterate_commands (pupa_command_t cmd)
+  int iterate_commands (grub_command_t cmd)
     {
-      if (cmd->flags & PUPA_COMMAND_FLAG_CMDLINE)
+      if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
 	add_completion (cmd->name, " ", "commands", print_simple_completion);
       return 0;
     }
@@ -285,14 +285,14 @@ pupa_tab_complete (char *buf, int *restore)
     pos++;
 
   /* Check if the string is a command or path.  */
-  path = pupa_strchr (pos, ' ');
+  path = grub_strchr (pos, ' ');
       
   if (!path)
     {
       /* Tab complete a command.  */
-      len = pupa_strlen (pos);
+      len = grub_strlen (pos);
       
-      pupa_iterate_commands (iterate_commands);
+      grub_iterate_commands (iterate_commands);
     }
   else
     {
@@ -303,17 +303,17 @@ pupa_tab_complete (char *buf, int *restore)
 	pos++;
 	
       /* Check if this is a completion for a device name.  */
-      if (*pos == '(' && !pupa_strchr (pos, ')'))
+      if (*pos == '(' && !grub_strchr (pos, ')'))
 	{
 	  /* Check if this is a device or partition.  */
-	  char *partition = pupa_strchr (++pos, ',');
+	  char *partition = grub_strchr (++pos, ',');
 			
 	  if (!partition)
 	    {
 	      /* Complete the disk part.  */
-	      len = pupa_strlen (pos);
-	      pupa_disk_dev_iterate (iterate_dev);
-	      if (pupa_errno)
+	      len = grub_strlen (pos);
+	      grub_disk_dev_iterate (iterate_dev);
+	      if (grub_errno)
 		goto fail;
 	    }
 	  else
@@ -321,23 +321,23 @@ pupa_tab_complete (char *buf, int *restore)
 	      *partition = '\0';
 
 	      /* Complete the partition part.  */
-	      partdev = pupa_device_open (pos);
+	      partdev = grub_device_open (pos);
 	      *partition = ',';
-	      pupa_errno = PUPA_ERR_NONE;
+	      grub_errno = GRUB_ERR_NONE;
   
 	      if (partdev)
 		{
 		  if (partdev->disk && partdev->disk->has_partitions)
 		    {
 		      pos = partition + 1;
-		      len = pupa_strlen (pos);
+		      len = grub_strlen (pos);
 		      
-		      pupa_partition_iterate (partdev->disk, iterate_part);
-		      if (pupa_errno)
-			pupa_errno = 0;
+		      grub_partition_iterate (partdev->disk, iterate_part);
+		      if (grub_errno)
+			grub_errno = 0;
 		    }
 
-		  pupa_device_close (partdev);
+		  grub_device_close (partdev);
 		}
 	      else
 		goto fail;
@@ -345,53 +345,53 @@ pupa_tab_complete (char *buf, int *restore)
 	}
       else
 	{
-	  char *device = pupa_file_get_device_name (pos);
-	  pupa_device_t dev;
-	  pupa_fs_t fs;
+	  char *device = grub_file_get_device_name (pos);
+	  grub_device_t dev;
+	  grub_fs_t fs;
 
-	  dev = pupa_device_open (device);
+	  dev = grub_device_open (device);
 	  if (!dev)
 	    goto fail;
 			
-	  fs = pupa_fs_probe (dev);
-	  if (pupa_errno)
+	  fs = grub_fs_probe (dev);
+	  if (grub_errno)
 	    goto fail;
 
-	  pos = pupa_strrchr (pos, '/');
+	  pos = grub_strrchr (pos, '/');
 	  if (pos)
 	    {
 	      char *dir;
 	      char *dirfile;
 	      pos++;
-	      len = pupa_strlen (pos);
+	      len = grub_strlen (pos);
 	      
-	      dir = pupa_strchr (path, '/');
+	      dir = grub_strchr (path, '/');
 	      if (!dir)
 		{
 		  *restore = 0;
 		  return 0;
 		}
 
-	      dir = pupa_strdup (dir);
+	      dir = grub_strdup (dir);
 
 	      /* Cut away the filename part.  */
-	      dirfile = pupa_strrchr (dir, '/');
+	      dirfile = grub_strrchr (dir, '/');
 	      dirfile[1] = '\0';
 	      
 	      /* Tab complete a file.  */
 	      (fs->dir) (dev, dir, iterate_dir);
 	      if (dev)
-		pupa_device_close (dev);
+		grub_device_close (dev);
 
-	      pupa_free (device);
-	      pupa_free (dir);
+	      grub_free (device);
+	      grub_free (dir);
 
-	      if (pupa_errno)
+	      if (grub_errno)
 		goto fail;
 	    }
 	  else
 	    {
-	      found = pupa_strdup ("/");
+	      found = grub_strdup ("/");
 	      matchstr = "";
 	      numfound = 1;
 	      begin = 0;
@@ -412,29 +412,29 @@ pupa_tab_complete (char *buf, int *restore)
   if (end && found)
     {
       char *insert;
-      insert = pupa_malloc (end - begin + 1 + sizeof (matchstr));
-      pupa_strncpy (insert, found + begin, end - begin);
+      insert = grub_malloc (end - begin + 1 + sizeof (matchstr));
+      grub_strncpy (insert, found + begin, end - begin);
       insert[end - begin] = '\0';
       if (numfound == 1)
-	pupa_strcat (insert, matchstr);
-      pupa_free (found);
+	grub_strcat (insert, matchstr);
+      grub_free (found);
 
       return insert;
     }
 
  fail:
-  pupa_free (found);
-  pupa_errno = PUPA_ERR_NONE;
+  grub_free (found);
+  grub_errno = GRUB_ERR_NONE;
 
   return 0;
 }
 
 void
-pupa_cmdline_run (int nested)
+grub_cmdline_run (int nested)
 {
-  pupa_normal_init_page ();
+  grub_normal_init_page ();
   
-  pupa_printf ("\
+  grub_printf ("\
  [ Minimal BASH-like line editing is supported. For the first word, TAB\n\
    lists possible command completions. Anywhere else TAB lists possible\n\
    device/file completions.%s ]\n\n",
@@ -442,20 +442,20 @@ pupa_cmdline_run (int nested)
   
   while (1)
     {
-      static char cmdline[PUPA_MAX_CMDLINE];
+      static char cmdline[GRUB_MAX_CMDLINE];
 
-      pupa_print_error ();
-      pupa_errno = PUPA_ERR_NONE;
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
       cmdline[0] = '\0';
       
-      if (! pupa_cmdline_get ("pupa> ", cmdline, sizeof (cmdline), 0, 1)
+      if (! grub_cmdline_get ("grub> ", cmdline, sizeof (cmdline), 0, 1)
 	  && nested)
 	return;
 
       if (! *cmdline)
 	continue;
 
-      pupa_command_execute (cmdline);
+      grub_command_execute (cmdline);
     }
 }
 
@@ -464,12 +464,12 @@ pupa_cmdline_run (int nested)
    available. If ESC is pushed, return non-zero, otherwise return zero.  */
 /* FIXME: The dumb interface is not supported yet.  */
 int
-pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
+grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		  int echo_char, int readline)
 {
   unsigned xpos, ypos, ystart;
-  pupa_size_t lpos, llen;
-  pupa_size_t plen;
+  grub_size_t lpos, llen;
+  grub_size_t plen;
   char buf[max_len];
   int key;
   int histpos = 0;
@@ -482,7 +482,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
     {
       xpos = (plen + lpos) % 79;
       ypos = ystart + (plen + lpos) / 79;
-      pupa_gotoxy (xpos, ypos);
+      grub_gotoxy (xpos, ypos);
     }
   
   void cl_print (int pos, int c)
@@ -493,30 +493,30 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	{
 	  if (xpos++ > 78)
 	    {
-	      pupa_putchar ('\n');
+	      grub_putchar ('\n');
 	      
 	      xpos = 1;
-	      if (ypos == (unsigned) (pupa_getxy () & 0xFF))
+	      if (ypos == (unsigned) (grub_getxy () & 0xFF))
 		ystart--;
 	      else
 		ypos++;
 	    }
 
 	  if (c)
-	    pupa_putchar (c);
+	    grub_putchar (c);
 	  else
-	    pupa_putchar (*p);
+	    grub_putchar (*p);
 	}
     }
   
   void cl_insert (const char *str)
     {
-      pupa_size_t len = pupa_strlen (str);
+      grub_size_t len = grub_strlen (str);
 
       if (len + llen < max_len)
 	{
-	  pupa_memmove (buf + lpos + len, buf + lpos, llen - lpos + 1);
-	  pupa_memmove (buf + lpos, str, len);
+	  grub_memmove (buf + lpos + len, buf + lpos, llen - lpos + 1);
+	  grub_memmove (buf + lpos, str, len);
 
 	  llen += len;
 	  lpos += len;
@@ -529,7 +529,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
     {
       if (lpos + len <= llen)
 	{
-	  pupa_size_t saved_lpos = lpos;
+	  grub_size_t saved_lpos = lpos;
 
 	  lpos = llen - len;
 	  cl_set_pos ();
@@ -537,30 +537,30 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  lpos = saved_lpos;
 	  cl_set_pos ();
 	  
-	  pupa_memmove (buf + lpos, buf + lpos + len, llen - lpos + 1);
+	  grub_memmove (buf + lpos, buf + lpos + len, llen - lpos + 1);
 	  llen -= len;
 	  cl_print (lpos, echo_char);
 	  cl_set_pos ();
 	}
     }
   
-  plen = pupa_strlen (prompt);
+  plen = grub_strlen (prompt);
   lpos = llen = 0;
   buf[0] = '\0';
 
-  if ((pupa_getxy () >> 8) != 0)
-    pupa_putchar ('\n');
+  if ((grub_getxy () >> 8) != 0)
+    grub_putchar ('\n');
   
-  pupa_printf (prompt);
+  grub_printf (prompt);
   
   xpos = plen;
-  ystart = ypos = (pupa_getxy () & 0xFF);
+  ystart = ypos = (grub_getxy () & 0xFF);
   
   cl_insert (cmdline);
 
-  pupa_history_add (buf);
+  grub_history_add (buf);
 
-  while ((key = PUPA_TERM_ASCII_CHAR (pupa_getkey ())) != '\n' && key != '\r')
+  while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
     {
       if (readline)
 	{
@@ -603,22 +603,22 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		buf[lpos] = '\0';
 		
 
-		insert = pupa_tab_complete (buf, &restore);
+		insert = grub_tab_complete (buf, &restore);
 		/* Restore the original string.  */
 		buf[lpos] = backup;
 		
 		if (restore)
 		  {
 		    /* Restore the prompt.  */
-		    pupa_printf ("\n%s%s", prompt, buf);
+		    grub_printf ("\n%s%s", prompt, buf);
 		    xpos = plen;
-		    ystart = ypos = (pupa_getxy () & 0xFF);
+		    ystart = ypos = (grub_getxy () & 0xFF);
 		  }
 
 		if (insert)
 		  {
 		    cl_insert (insert);
-		    pupa_free (insert);
+		    grub_free (insert);
 		  }
 	      }
 	      break;
@@ -627,10 +627,10 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	      if (lpos < llen)
 		{
 		  if (kill_buf)
-		    pupa_free (kill_buf);
+		    grub_free (kill_buf);
 
-		  kill_buf = pupa_strdup (buf + lpos);
-		  pupa_errno = PUPA_ERR_NONE;
+		  kill_buf = grub_strdup (buf + lpos);
+		  grub_errno = GRUB_ERR_NONE;
 
 		  cl_delete (llen - lpos);
 		}
@@ -646,7 +646,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		  histpos--;
 
 		cl_delete (llen);
-		hist = pupa_history_get (histpos);
+		hist = grub_history_get (histpos);
 		cl_insert (hist);
 
 		break;
@@ -661,7 +661,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		  histpos++;
 
 		cl_delete (llen);
-		hist = pupa_history_get (histpos);
+		hist = grub_history_get (histpos);
 
 		cl_insert (hist);
 	      }
@@ -670,16 +670,16 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	    case 21:	/* Ctrl-u */
 	      if (lpos > 0)
 		{
-		  pupa_size_t n = lpos;
+		  grub_size_t n = lpos;
 		  
 		  if (kill_buf)
-		    pupa_free (kill_buf);
+		    grub_free (kill_buf);
 
-		  kill_buf = pupa_malloc (n + 1);
-		  pupa_errno = PUPA_ERR_NONE;
+		  kill_buf = grub_malloc (n + 1);
+		  grub_errno = GRUB_ERR_NONE;
 		  if (kill_buf)
 		    {
-		      pupa_memcpy (kill_buf, buf, n);
+		      grub_memcpy (kill_buf, buf, n);
 		      kill_buf[n] = '\0';
 		    }
 
@@ -715,7 +715,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  break;
 
 	default:
-	  if (pupa_isprint (key))
+	  if (grub_isprint (key))
 	    {
 	      char str[2];
 
@@ -726,11 +726,11 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	  break;
 	}
 
-      pupa_history_replace (histpos, buf);
+      grub_history_replace (histpos, buf);
     }
 
-  pupa_putchar ('\n');
-  pupa_refresh ();
+  grub_putchar ('\n');
+  grub_refresh ();
 
   /* If ECHO_CHAR is NUL, remove leading spaces.  */
   lpos = 0;
@@ -738,7 +738,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
     while (buf[lpos] == ' ')
       lpos++;
 
-  pupa_memcpy (cmdline, buf + lpos, llen - lpos + 1);
+  grub_memcpy (cmdline, buf + lpos, llen - lpos + 1);
 
   return 1;
 }

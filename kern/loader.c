@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,51 +13,51 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/loader.h>
-#include <pupa/misc.h>
-#include <pupa/mm.h>
-#include <pupa/err.h>
+#include <grub/loader.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/err.h>
 
-static pupa_err_t (*pupa_loader_boot_func) (void);
-static pupa_err_t (*pupa_loader_unload_func) (void);
+static grub_err_t (*grub_loader_boot_func) (void);
+static grub_err_t (*grub_loader_unload_func) (void);
 
-static int pupa_loader_loaded;
+static int grub_loader_loaded;
 
 void
-pupa_loader_set (pupa_err_t (*boot) (void),
-		 pupa_err_t (*unload) (void))
+grub_loader_set (grub_err_t (*boot) (void),
+		 grub_err_t (*unload) (void))
 {
-  if (pupa_loader_loaded && pupa_loader_unload_func)
-    pupa_loader_unload_func ();
+  if (grub_loader_loaded && grub_loader_unload_func)
+    grub_loader_unload_func ();
   
-  pupa_loader_boot_func = boot;
-  pupa_loader_unload_func = unload;
+  grub_loader_boot_func = boot;
+  grub_loader_unload_func = unload;
 
-  pupa_loader_loaded = 1;
+  grub_loader_loaded = 1;
 }
 
 void
-pupa_loader_unset(void)
+grub_loader_unset(void)
 {
-  if (pupa_loader_loaded && pupa_loader_unload_func)
-    pupa_loader_unload_func ();
+  if (grub_loader_loaded && grub_loader_unload_func)
+    grub_loader_unload_func ();
   
-  pupa_loader_boot_func = 0;
-  pupa_loader_unload_func = 0;
+  grub_loader_boot_func = 0;
+  grub_loader_unload_func = 0;
 
-  pupa_loader_loaded = 0;
+  grub_loader_loaded = 0;
 }
 
-pupa_err_t
-pupa_loader_boot (void)
+grub_err_t
+grub_loader_boot (void)
 {
-  if (! pupa_loader_loaded)
-    return pupa_error (PUPA_ERR_NO_KERNEL, "no loaded kernel");
+  if (! grub_loader_loaded)
+    return grub_error (GRUB_ERR_NO_KERNEL, "no loaded kernel");
 
-  return (pupa_loader_boot_func) ();
+  return (grub_loader_boot_func) ();
 }
 

@@ -1,6 +1,6 @@
 /* multiboot.c - boot a multiboot OS image. */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -31,110 +31,110 @@
  *  - APM table
  */
 
-#include <pupa/loader.h>
-#include <pupa/machine/loader.h>
-#include <pupa/machine/multiboot.h>
-#include <pupa/machine/init.h>
-#include <pupa/elf.h>
-#include <pupa/file.h>
-#include <pupa/err.h>
-#include <pupa/rescue.h>
-#include <pupa/dl.h>
-#include <pupa/mm.h>
-#include <pupa/misc.h>
+#include <grub/loader.h>
+#include <grub/machine/loader.h>
+#include <grub/machine/multiboot.h>
+#include <grub/machine/init.h>
+#include <grub/elf.h>
+#include <grub/file.h>
+#include <grub/err.h>
+#include <grub/rescue.h>
+#include <grub/dl.h>
+#include <grub/mm.h>
+#include <grub/misc.h>
 
-static pupa_dl_t my_mod;
-static struct pupa_multiboot_info *mbi;
-static pupa_addr_t entry;
+static grub_dl_t my_mod;
+static struct grub_multiboot_info *mbi;
+static grub_addr_t entry;
 
-static pupa_err_t
-pupa_multiboot_boot (void)
+static grub_err_t
+grub_multiboot_boot (void)
 {
-  pupa_multiboot_real_boot (entry, mbi);
+  grub_multiboot_real_boot (entry, mbi);
 
   /* Not reached.  */
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
-static pupa_err_t
-pupa_multiboot_unload (void)
+static grub_err_t
+grub_multiboot_unload (void)
 {
   if (mbi)
     {
       unsigned int i;
       for (i = 0; i < mbi->mods_count; i++)
 	{
-	  pupa_free ((void *)
-		     ((struct pupa_mod_list *) mbi->mods_addr)[i].mod_start);
-	  pupa_free ((void *)
-		     ((struct pupa_mod_list *) mbi->mods_addr)[i].cmdline);
+	  grub_free ((void *)
+		     ((struct grub_mod_list *) mbi->mods_addr)[i].mod_start);
+	  grub_free ((void *)
+		     ((struct grub_mod_list *) mbi->mods_addr)[i].cmdline);
 	}
-      pupa_free ((void *) mbi->mods_addr);
-      pupa_free ((void *) mbi->cmdline);
-      pupa_free (mbi);
+      grub_free ((void *) mbi->mods_addr);
+      grub_free ((void *) mbi->cmdline);
+      grub_free (mbi);
     }
 
 
   mbi = 0;
-  pupa_dl_unref (my_mod);
+  grub_dl_unref (my_mod);
 
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
 void
-pupa_rescue_cmd_multiboot (int argc, char *argv[])
+grub_rescue_cmd_multiboot (int argc, char *argv[])
 {
-  pupa_file_t file = 0;
-  char buffer[PUPA_MB_SEARCH], *cmdline = 0, *p;
-  struct pupa_multiboot_header *header;
-  pupa_ssize_t len;
+  grub_file_t file = 0;
+  char buffer[GRUB_MB_SEARCH], *cmdline = 0, *p;
+  struct grub_multiboot_header *header;
+  grub_ssize_t len;
   int i;
   Elf32_Ehdr *ehdr;
 
-  pupa_dl_ref (my_mod);
+  grub_dl_ref (my_mod);
 
-  pupa_loader_unset();
+  grub_loader_unset();
     
   if (argc == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "No kernel specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
       goto fail;
     }
 
-  file = pupa_file_open (argv[0]);
+  file = grub_file_open (argv[0]);
   if (!file)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "Couldn't open file");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
       goto fail;
     }
 
-  len = pupa_file_read (file, buffer, PUPA_MB_SEARCH);
+  len = grub_file_read (file, buffer, GRUB_MB_SEARCH);
   if (len < 32)
     {
-      pupa_error (PUPA_ERR_BAD_OS, "File too small");
+      grub_error (GRUB_ERR_BAD_OS, "File too small");
       goto fail;
     }
 
   /* Look for the multiboot header in the buffer.  The header should
      be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct pupa_multiboot_header *) buffer; 
+  for (header = (struct grub_multiboot_header *) buffer; 
        ((char *) header <= buffer + len - 12) || (header = 0);
-       header = (struct pupa_multiboot_header *) ((char *)header + 4))
+       header = (struct grub_multiboot_header *) ((char *)header + 4))
     {
-      if (header->magic == PUPA_MB_MAGIC 
+      if (header->magic == GRUB_MB_MAGIC 
 	  && !(header->magic + header->flags + header->checksum))
 	  break;
     }
   
   if (header == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "No multiboot header found");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "No multiboot header found");
       goto fail;
     }
 
-  if (header->flags & PUPA_MB_UNSUPPORTED)
+  if (header->flags & GRUB_MB_UNSUPPORTED)
     {
-      pupa_error (PUPA_ERR_UNKNOWN_OS, "Unsupported flag: 0x%x", header->flags);
+      grub_error (GRUB_ERR_UNKNOWN_OS, "Unsupported flag: 0x%x", header->flags);
       goto fail;
     }
 
@@ -150,14 +150,14 @@ pupa_rescue_cmd_multiboot (int argc, char *argv[])
 	&& (ehdr->e_type == ET_EXEC) && (ehdr->e_machine == EM_386) 
 	&& (ehdr->e_version == EV_CURRENT)))
     {
-      pupa_error (PUPA_ERR_UNKNOWN_OS, "No valid ELF header found");
+      grub_error (GRUB_ERR_UNKNOWN_OS, "No valid ELF header found");
       goto fail;
     }
 
   /* FIXME: Should we support program headers at strange locations?  */
-  if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > PUPA_MB_SEARCH)
+  if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > GRUB_MB_SEARCH)
     {
-      pupa_error (PUPA_ERR_UNKNOWN_OS, "Program header at a too high offset");
+      grub_error (GRUB_ERR_UNKNOWN_OS, "Program header at a too high offset");
       goto fail;
     }
 
@@ -172,186 +172,186 @@ pupa_rescue_cmd_multiboot (int argc, char *argv[])
       if (phdr->p_type == PT_LOAD)
 	{
 	  /* The segment should fit in the area reserved for the OS.  */
-	  if ((phdr->p_paddr < pupa_os_area_addr) 
+	  if ((phdr->p_paddr < grub_os_area_addr) 
 	      || (phdr->p_paddr + phdr->p_memsz
-		  > pupa_os_area_addr + pupa_os_area_size))
+		  > grub_os_area_addr + grub_os_area_size))
 	    {
-	      pupa_error (PUPA_ERR_BAD_OS, 
+	      grub_error (GRUB_ERR_BAD_OS, 
 			  "Segment doesn't fit in memory reserved for the OS");
 	      goto fail;
 	    }
 	  
-	  if (pupa_file_seek (file, phdr->p_offset) == -1)
+	  if (grub_file_seek (file, phdr->p_offset) == -1)
 	    {
-	      pupa_error (PUPA_ERR_BAD_OS, "Invalid offset in program header");
+	      grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
 	      goto fail;
 	    }
 
-	  if (pupa_file_read (file, (void *) phdr->p_paddr, phdr->p_filesz) 
-	      != (pupa_ssize_t) phdr->p_filesz)
+	  if (grub_file_read (file, (void *) phdr->p_paddr, phdr->p_filesz) 
+	      != (grub_ssize_t) phdr->p_filesz)
 	    {
-	      pupa_error (PUPA_ERR_BAD_OS, "Couldn't read segment from file");
+	      grub_error (GRUB_ERR_BAD_OS, "Couldn't read segment from file");
 	      goto fail;
 	    }
 
 	  if (phdr->p_filesz < phdr->p_memsz)
-	    pupa_memset ((char *) phdr->p_paddr + phdr->p_filesz, 0, 
+	    grub_memset ((char *) phdr->p_paddr + phdr->p_filesz, 0, 
 			 phdr->p_memsz - phdr->p_filesz);
 	}
     }
 
-  mbi = pupa_malloc (sizeof (struct pupa_multiboot_info));
+  mbi = grub_malloc (sizeof (struct grub_multiboot_info));
   if (!mbi)
     goto fail;
 
-  mbi->flags = PUPA_MB_INFO_MEMORY;
+  mbi->flags = GRUB_MB_INFO_MEMORY;
 
   /* Convert from bytes to kilobytes.  */
-  mbi->mem_lower = pupa_lower_mem / 1024;
-  mbi->mem_upper = pupa_upper_mem / 1024;
+  mbi->mem_lower = grub_lower_mem / 1024;
+  mbi->mem_upper = grub_upper_mem / 1024;
 
   for (i = 0, len = 0; i < argc; i++)
-    len += pupa_strlen (argv[i]) + 1;
+    len += grub_strlen (argv[i]) + 1;
   
-  cmdline = p = pupa_malloc (len);
+  cmdline = p = grub_malloc (len);
   if (!cmdline)
     goto fail;
   
   for (i = 0; i < argc; i++)
     {
-      p = pupa_stpcpy (p, argv[i]);
+      p = grub_stpcpy (p, argv[i]);
       *(p++) = ' ';
     }
   
   /* Remove the space after the last word.  */
   *(--p) = '\0';
   
-  mbi->flags |= PUPA_MB_INFO_CMDLINE;
-  mbi->cmdline = (pupa_uint32_t) cmdline;
+  mbi->flags |= GRUB_MB_INFO_CMDLINE;
+  mbi->cmdline = (grub_uint32_t) cmdline;
 
-  mbi->flags |= PUPA_MB_INFO_BOOT_LOADER_NAME;
-  mbi->boot_loader_name = (pupa_uint32_t) pupa_strdup (PACKAGE_STRING);
+  mbi->flags |= GRUB_MB_INFO_BOOT_LOADER_NAME;
+  mbi->boot_loader_name = (grub_uint32_t) grub_strdup (PACKAGE_STRING);
 
-  pupa_loader_set (pupa_multiboot_boot, pupa_multiboot_unload);
+  grub_loader_set (grub_multiboot_boot, grub_multiboot_unload);
 
  fail:
   if (file)
-    pupa_file_close (file);
+    grub_file_close (file);
 
-  if (pupa_errno != PUPA_ERR_NONE)
+  if (grub_errno != GRUB_ERR_NONE)
     {
-      pupa_free (cmdline);
-      pupa_free (mbi);
-      pupa_dl_unref (my_mod);
+      grub_free (cmdline);
+      grub_free (mbi);
+      grub_dl_unref (my_mod);
     }
 }
 
 
 void
-pupa_rescue_cmd_module  (int argc, char *argv[])
+grub_rescue_cmd_module  (int argc, char *argv[])
 {
-  pupa_file_t file = 0;
-  pupa_ssize_t size, len = 0;
+  grub_file_t file = 0;
+  grub_ssize_t size, len = 0;
   char *module = 0, *cmdline = 0, *p;
   int i;
 
   if (argc == 0)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "No module specified");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "No module specified");
       goto fail;
     }
 
   if (!mbi)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, 
+      grub_error (GRUB_ERR_BAD_ARGUMENT, 
 		  "You need to load the multiboot kernel first");
       goto fail;
     }
 
-  file = pupa_file_open (argv[0]);
+  file = grub_file_open (argv[0]);
   if (!file)
     goto fail;
 
-  size = pupa_file_size (file);
-  module = pupa_memalign (PUPA_MB_MOD_ALIGN, size);
+  size = grub_file_size (file);
+  module = grub_memalign (GRUB_MB_MOD_ALIGN, size);
   if (!module)
     goto fail;
 
-  if (pupa_file_read (file, module, size) != size)
+  if (grub_file_read (file, module, size) != size)
     {
-      pupa_error (PUPA_ERR_FILE_READ_ERROR, "Couldn't read file");
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
       goto fail;
     }
   
   for (i = 0; i < argc; i++)
-    len += pupa_strlen (argv[i]) + 1;
+    len += grub_strlen (argv[i]) + 1;
   
-  cmdline = p = pupa_malloc (len);
+  cmdline = p = grub_malloc (len);
   if (!cmdline)
     goto fail;
   
   for (i = 0; i < argc; i++)
     {
-      p = pupa_stpcpy (p, argv[i]);
+      p = grub_stpcpy (p, argv[i]);
       *(p++) = ' ';
     }
   
   /* Remove the space after the last word.  */
   *(--p) = '\0';
 
-  if (mbi->flags & PUPA_MB_INFO_MODS)
+  if (mbi->flags & GRUB_MB_INFO_MODS)
     {
-      struct pupa_mod_list *modlist = (struct pupa_mod_list *) mbi->mods_addr;
+      struct grub_mod_list *modlist = (struct grub_mod_list *) mbi->mods_addr;
 
-      modlist = pupa_realloc (modlist, (mbi->mods_count + 1) 
-			               * sizeof (struct pupa_mod_list));
+      modlist = grub_realloc (modlist, (mbi->mods_count + 1) 
+			               * sizeof (struct grub_mod_list));
       if (!modlist)
 	goto fail;
-      mbi->mods_addr = (pupa_uint32_t) modlist;
+      mbi->mods_addr = (grub_uint32_t) modlist;
       modlist += mbi->mods_count;
-      modlist->mod_start = (pupa_uint32_t) module;
-      modlist->mod_end = (pupa_uint32_t) module + size;
-      modlist->cmdline = (pupa_uint32_t) cmdline;
+      modlist->mod_start = (grub_uint32_t) module;
+      modlist->mod_end = (grub_uint32_t) module + size;
+      modlist->cmdline = (grub_uint32_t) cmdline;
       modlist->pad = 0;
       mbi->mods_count++;
     }
   else
     {
-      struct pupa_mod_list *modlist = pupa_malloc (sizeof (struct pupa_mod_list));
+      struct grub_mod_list *modlist = grub_malloc (sizeof (struct grub_mod_list));
       if (!modlist)
 	goto fail;
-      modlist->mod_start = (pupa_uint32_t) module;
-      modlist->mod_end = (pupa_uint32_t) module + size;
-      modlist->cmdline = (pupa_uint32_t) cmdline;
+      modlist->mod_start = (grub_uint32_t) module;
+      modlist->mod_end = (grub_uint32_t) module + size;
+      modlist->cmdline = (grub_uint32_t) cmdline;
       modlist->pad = 0;
       mbi->mods_count = 1;
-      mbi->mods_addr = (pupa_uint32_t) modlist;
-      mbi->flags |= PUPA_MB_INFO_MODS;
+      mbi->mods_addr = (grub_uint32_t) modlist;
+      mbi->flags |= GRUB_MB_INFO_MODS;
     }
 
  fail:
   if (file)
-    pupa_file_close (file);
+    grub_file_close (file);
 
-  if (pupa_errno != PUPA_ERR_NONE)
+  if (grub_errno != GRUB_ERR_NONE)
     {
-      pupa_free (module);
-      pupa_free (cmdline);
+      grub_free (module);
+      grub_free (cmdline);
     }
 }
 
 
-PUPA_MOD_INIT
+GRUB_MOD_INIT
 {
-  pupa_rescue_register_command ("multiboot", pupa_rescue_cmd_multiboot,
+  grub_rescue_register_command ("multiboot", grub_rescue_cmd_multiboot,
 				"load a multiboot kernel");
-  pupa_rescue_register_command ("module", pupa_rescue_cmd_module,
+  grub_rescue_register_command ("module", grub_rescue_cmd_module,
 				"load a multiboot module");
   my_mod = mod;
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_rescue_unregister_command ("multiboot");
-  pupa_rescue_unregister_command ("module");
+  grub_rescue_unregister_command ("multiboot");
+  grub_rescue_unregister_command ("module");
 }

@@ -1,9 +1,9 @@
 /* biosdisk.c - emulate biosdisk */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,16 +14,16 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/machine/biosdisk.h>
-#include <pupa/disk.h>
-#include <pupa/machine/partition.h>
-#include <pupa/types.h>
-#include <pupa/err.h>
-#include <pupa/util/misc.h>
+#include <grub/machine/biosdisk.h>
+#include <grub/disk.h>
+#include <grub/machine/partition.h>
+#include <grub/types.h>
+#include <grub/err.h>
+#include <grub/util/misc.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,7 +119,7 @@ get_drive (const char *name)
   return (int) drive;
 
  fail:
-  pupa_error (PUPA_ERR_UNKNOWN_DEVICE, "not a biosdisk");
+  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a biosdisk");
   return -1;
 }
 
@@ -133,7 +133,7 @@ call_hook (int (*hook) (const char *name), int drive)
 }
 
 static int
-pupa_util_biosdisk_iterate (int (*hook) (const char *name))
+grub_util_biosdisk_iterate (int (*hook) (const char *name))
 {
   unsigned i;
 
@@ -144,18 +144,18 @@ pupa_util_biosdisk_iterate (int (*hook) (const char *name))
   return 0;
 }
 
-static pupa_err_t
-pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
+static grub_err_t
+grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 {
   int drive;
   struct stat st;
   
   drive = get_drive (name);
   if (drive < 0)
-    return pupa_errno;
+    return grub_errno;
 
   if (! map[drive])
-    return pupa_error (PUPA_ERR_BAD_DEVICE,
+    return grub_error (GRUB_ERR_BAD_DEVICE,
 		       "no mapping exists for `%s'", name);
   
   disk->has_partitions = (drive & 0x80);
@@ -169,7 +169,7 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
 
     fd = open (map[drive], O_RDONLY);
     if (! fd)
-      return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", map[drive]);
+      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[drive]);
 
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
       {
@@ -186,9 +186,9 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
     close (fd);
     disk->total_sectors = nr;
     
-    pupa_util_info ("the size of %s is %lu", name, disk->total_sectors);
+    grub_util_info ("the size of %s is %lu", name, disk->total_sectors);
     
-    return PUPA_ERR_NONE;
+    return GRUB_ERR_NONE;
   }
 
  fail:
@@ -197,13 +197,13 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
 # warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
 #endif
   if (stat (map[drive], &st) < 0)
-    return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive]);
+    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive]);
 
-  disk->total_sectors = st.st_size >> PUPA_DISK_SECTOR_BITS;
+  disk->total_sectors = st.st_size >> GRUB_DISK_SECTOR_BITS;
   
-  pupa_util_info ("the size of %s is %lu", name, disk->total_sectors);
+  grub_util_info ("the size of %s is %lu", name, disk->total_sectors);
   
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }
 
 #ifdef __linux__
@@ -284,7 +284,7 @@ linux_find_partition (char *dev, unsigned long sector)
 #endif /* __linux__ */
 
 static int
-open_device (const pupa_disk_t disk, unsigned long sector, int flags)
+open_device (const grub_disk_t disk, unsigned long sector, int flags)
 {
   int fd;
 
@@ -310,11 +310,11 @@ open_device (const pupa_disk_t disk, unsigned long sector, int flags)
       is_partition = linux_find_partition (dev, disk->partition->start);
     
     /* Open the partition.  */
-    pupa_util_info ("opening the device `%s'", dev);
+    grub_util_info ("opening the device `%s'", dev);
     fd = open (dev, flags);
     if (fd < 0)
       {
-	pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", dev);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", dev);
 	return -1;
       }
 
@@ -328,7 +328,7 @@ open_device (const pupa_disk_t disk, unsigned long sector, int flags)
   fd = open (map[disk->id], flags);
   if (fd < 0)
     {
-      pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", map[disk->id]);
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[disk->id]);
       return -1;
     }
 #endif /* ! __linux__ */
@@ -343,21 +343,21 @@ open_device (const pupa_disk_t disk, unsigned long sector, int flags)
     _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
                loff_t *, res, uint, wh);
 
-    offset = (loff_t) sector << PUPA_DISK_SECTOR_BITS;
+    offset = (loff_t) sector << GRUB_DISK_SECTOR_BITS;
     if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
       {
-	pupa_error (PUPA_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id]);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id]);
 	close (fd);
 	return -1;
       }
   }
 #else
   {
-    off_t offset = (off_t) sector << PUPA_DISK_SECTOR_BITS;
+    off_t offset = (off_t) sector << GRUB_DISK_SECTOR_BITS;
 
     if (lseek (fd, offset, SEEK_SET) != offset)
       {
-	pupa_error (PUPA_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id]);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id]);
 	close (fd);
 	return -1;
       }
@@ -419,15 +419,15 @@ nwrite (int fd, const char *buf, size_t len)
   return size;
 }
 
-static pupa_err_t
-pupa_util_biosdisk_read (pupa_disk_t disk, unsigned long sector,
+static grub_err_t
+grub_util_biosdisk_read (grub_disk_t disk, unsigned long sector,
 			 unsigned long size, char *buf)
 {
   int fd;
 
   fd = open_device (disk, sector, O_RDONLY);
   if (fd < 0)
-    return pupa_errno;
+    return grub_errno;
   
 #ifdef __linux__
   if (sector == 0 && size > 1)
@@ -436,52 +436,52 @@ pupa_util_biosdisk_read (pupa_disk_t disk, unsigned long sector,
 	 sectors that are read together with the MBR in one read.  It
 	 should only remap the MBR, so we split the read in two 
 	 parts. -jochen  */
-      if (nread (fd, buf, PUPA_DISK_SECTOR_SIZE) != PUPA_DISK_SECTOR_SIZE)
+      if (nread (fd, buf, GRUB_DISK_SECTOR_SIZE) != GRUB_DISK_SECTOR_SIZE)
 	{
-	  pupa_error (PUPA_ERR_READ_ERROR, "cannot read `%s'", map[disk->id]);
+	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id]);
 	  close (fd);
-	  return pupa_errno;
+	  return grub_errno;
 	}
       
-      buf += PUPA_DISK_SECTOR_SIZE;
+      buf += GRUB_DISK_SECTOR_SIZE;
       size--;
     }
 #endif /* __linux__ */
   
-  if (nread (fd, buf, size << PUPA_DISK_SECTOR_BITS)
-      != (ssize_t) (size << PUPA_DISK_SECTOR_BITS))
-    pupa_error (PUPA_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id]);
+  if (nread (fd, buf, size << GRUB_DISK_SECTOR_BITS)
+      != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+    grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id]);
 
   close (fd);
-  return pupa_errno;
+  return grub_errno;
 }
 
-static pupa_err_t
-pupa_util_biosdisk_write (pupa_disk_t disk, unsigned long sector,
+static grub_err_t
+grub_util_biosdisk_write (grub_disk_t disk, unsigned long sector,
 			  unsigned long size, const char *buf)
 {
   int fd;
 
   fd = open_device (disk, sector, O_WRONLY);
   if (fd < 0)
-    return pupa_errno;
+    return grub_errno;
   
-  if (nwrite (fd, buf, size << PUPA_DISK_SECTOR_BITS)
-      != (ssize_t) (size << PUPA_DISK_SECTOR_BITS))
-    pupa_error (PUPA_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id]);
+  if (nwrite (fd, buf, size << GRUB_DISK_SECTOR_BITS)
+      != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
+    grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id]);
 
   close (fd);
-  return pupa_errno;
+  return grub_errno;
 }
 
-static struct pupa_disk_dev pupa_util_biosdisk_dev =
+static struct grub_disk_dev grub_util_biosdisk_dev =
   {
     .name = "biosdisk",
-    .iterate = pupa_util_biosdisk_iterate,
-    .open = pupa_util_biosdisk_open,
+    .iterate = grub_util_biosdisk_iterate,
+    .open = grub_util_biosdisk_open,
     .close = 0,
-    .read = pupa_util_biosdisk_read,
-    .write = pupa_util_biosdisk_write,
+    .read = grub_util_biosdisk_read,
+    .write = grub_util_biosdisk_write,
     .next = 0
   };
 
@@ -495,12 +495,12 @@ read_device_map (const char *dev_map)
 
   void show_error (const char *msg)
     {
-      pupa_util_error ("%s:%d: %s", dev_map, lineno, msg);
+      grub_util_error ("%s:%d: %s", dev_map, lineno, msg);
     }
   
   fp = fopen (dev_map, "r");
   if (! fp)
-    pupa_util_error ("Cannot open `%s'", dev_map);
+    grub_util_error ("Cannot open `%s'", dev_map);
 
   while (fgets (buf, sizeof (buf), fp))
     {
@@ -554,7 +554,7 @@ read_device_map (const char *dev_map)
 	 symbolic links.  */
       map[drive] = xmalloc (PATH_MAX);
       if (! realpath (p, map[drive]))
-	pupa_util_error ("Cannot get the real path of `%s'", p);
+	grub_util_error ("Cannot get the real path of `%s'", p);
 #else
       map[drive] = xstrdup (p);
 #endif
@@ -564,21 +564,21 @@ read_device_map (const char *dev_map)
 }
 
 void
-pupa_util_biosdisk_init (const char *dev_map)
+grub_util_biosdisk_init (const char *dev_map)
 {
   read_device_map (dev_map);
-  pupa_disk_dev_register (&pupa_util_biosdisk_dev);
+  grub_disk_dev_register (&grub_util_biosdisk_dev);
 }
 
 void
-pupa_util_biosdisk_fini (void)
+grub_util_biosdisk_fini (void)
 {
   unsigned i;
   
   for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
     free (map[i]);
   
-  pupa_disk_dev_unregister (&pupa_util_biosdisk_dev);
+  grub_disk_dev_unregister (&grub_util_biosdisk_dev);
 }
 
 static char *
@@ -697,21 +697,21 @@ find_drive (const char *os_dev)
 }
 
 char *
-pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
+grub_util_biosdisk_get_grub_dev (const char *os_dev)
 {
   struct stat st;
   int drive;
 
   if (stat (os_dev, &st) < 0)
     {
-      pupa_error (PUPA_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
       return 0;
     }
 
   drive = find_drive (os_dev);
   if (drive < 0)
     {
-      pupa_error (PUPA_ERR_BAD_DEVICE,
+      grub_error (GRUB_ERR_BAD_DEVICE,
 		  "no mapping exists for `%s'", os_dev);
       return 0;
     }
@@ -721,25 +721,25 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
   
 #if defined(__linux__)
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
-     partition, so mapping them to PUPA devices is not trivial.
+     partition, so mapping them to GRUB devices is not trivial.
      Here, get the start sector of a partition by HDIO_GETGEO, and
-     compare it with each partition PUPA recognizes.  */
+     compare it with each partition GRUB recognizes.  */
   {
     char *name;
-    pupa_disk_t disk;
+    grub_disk_t disk;
     int fd;
     struct hd_geometry hdg;
     int dos_part = -1;
     int bsd_part = -1;
-    auto int find_partition (const pupa_partition_t partition);
+    auto int find_partition (const grub_partition_t partition);
     
-    int find_partition (const pupa_partition_t partition)
+    int find_partition (const grub_partition_t partition)
       {
 	if (partition->bsd_part < 0)
-	  pupa_util_info ("DOS partition %d starts from %lu",
+	  grub_util_info ("DOS partition %d starts from %lu",
 			  partition->dos_part, partition->start);
 	else
-	  pupa_util_info ("BSD partition %d,%c starts from %lu",
+	  grub_util_info ("BSD partition %d,%c starts from %lu",
 			  partition->dos_part, partition->bsd_part + 'a',
 			  partition->start);
 	
@@ -761,14 +761,14 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
     fd = open (os_dev, O_RDONLY);
     if (! fd)
       {
-	pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", os_dev);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", os_dev);
 	free (name);
 	return 0;
       }
     
     if (ioctl (fd, HDIO_GETGEO, &hdg))
       {
-	pupa_error (PUPA_ERR_BAD_DEVICE,
+	grub_error (GRUB_ERR_BAD_DEVICE,
 		    "cannot get geometry of `%s'", os_dev);
 	close (fd);
 	free (name);
@@ -777,28 +777,28 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
     
     close (fd);
 
-    pupa_util_info ("%s starts from %lu", os_dev, hdg.start);
+    grub_util_info ("%s starts from %lu", os_dev, hdg.start);
     
     if (hdg.start == 0)
       return name;
 
-    pupa_util_info ("opening the device %s", name);
-    disk = pupa_disk_open (name);
+    grub_util_info ("opening the device %s", name);
+    disk = grub_disk_open (name);
     free (name);
     
     if (! disk)
       return 0;
     
-    if (pupa_partition_iterate (disk, find_partition) != PUPA_ERR_NONE)
+    if (grub_partition_iterate (disk, find_partition) != GRUB_ERR_NONE)
       {
-	pupa_disk_close (disk);
+	grub_disk_close (disk);
 	return 0;
       }
     
     if (dos_part < 0)
       {
-	pupa_disk_close (disk);
-	pupa_error (PUPA_ERR_BAD_DEVICE,
+	grub_disk_close (disk);
+	grub_error (GRUB_ERR_BAD_DEVICE,
 		    "cannot find the partition of `%s'", os_dev);
 	return 0;
       }
@@ -834,7 +834,7 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
   }
   
 #else
-# warning "The function `pupa_util_biosdisk_get_pupa_dev' might not work on your OS correctly."
+# warning "The function `grub_util_biosdisk_get_grub_dev' might not work on your OS correctly."
   return make_device_name (drive, -1, -1);
 #endif
 }

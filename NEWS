@@ -1,3 +1,15 @@
+New in 1.90:
+
+* Rename the project name PUPA to GRUB. Now this version is the
+  developmental version of GRUB officially.
+
+* The GRUB emulator ``grub-emu'' is added.
+
+* Add support for newworld Mac. This should work with other
+  PowerPC-based machines as well, if they use IEEE 1275
+  (Open Firmware).
+
+
 New in 0.7:
 
 * Problems in cross-compiling PUPA are fixed.

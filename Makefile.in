@@ -60,7 +60,7 @@ CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W
 BUILD_CC = @BUILD_CC@
 BUILD_CFLAGS = -g -O2
 BUILD_CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W \
-	-DPUPA_DATADIR=\"$(pkgdatadir)\"
+	-DGRUB_DATADIR=\"$(pkgdatadir)\"
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
 NM = @NM@
@@ -86,14 +86,14 @@ DISK_DISTFILES = $(addprefix disk/i386/pc/,biosdisk.c partition.c)
 
 FS_DISTFILES = $(addprefix fs/,fat.c)
 
-INCLUDE_DISTFILES = $(addprefix include/pupa/,boot.h device.h disk.h \
+INCLUDE_DISTFILES = $(addprefix include/grub/,boot.h device.h disk.h \
 	  dl.h elf.h err.h file.h fs.h kernel.h loader.h misc.h mm.h \
 	  net.h rescue.h symbol.h term.h types.h) \
-	$(addprefix include/pupa/util/,misc.h resolve.h) \
-	include/pupa/i386/types.h \
-	$(addprefix include/pupa/i386/pc/,biosdisk.h boot.h \
+	$(addprefix include/grub/util/,misc.h resolve.h) \
+	include/grub/i386/types.h \
+	$(addprefix include/grub/i386/pc/,biosdisk.h boot.h \
 	  console.h init.h kernel.h loader.h memory.h partition.h) \
-	$(addprefix include/pupa/i386/pc/util/,biosdisk.h)
+	$(addprefix include/grub/i386/pc/util/,biosdisk.h)
 
 KERN_DISTFILES = $(addprefix kern/,device.c disk.c dl.c err.c file.c \
 	  fs.c loader.c main.c misc.c mm.c rescue.c term.c) \
@@ -105,8 +105,8 @@ LOADER_DISTFILES = $(addprefix loader/i386/pc/,chainloader.c)
 TERM_DISTFILES = $(addprefix term/i386/pc/,console.c)
 
 UTIL_DISTFILES = $(addprefix util/,genmoddep.c misc.c resolve.c) \
-	$(addprefix util/i386/pc/,biosdisk.c pupa-mkimage.c \
-	  pupa-setup.c)
+	$(addprefix util/i386/pc/,biosdisk.c grub-mkimage.c \
+	  grub-setup.c)
 
 DISTFILES = $(COMMON_DISTFILES) $(BOOT_DISTFILES) $(CONF_DISTFILES) \
 	$(DISK_DISTFILES) $(FS_DISTFILES) $(INCLUDE_DISTFILES) \
@@ -120,7 +120,7 @@ SCRIPTS =
 CLEANFILES =
 MOSTLYCLEANFILES = 
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/pupa/cpu include/pupa/machine
+	Makefile stamp-h include/grub/cpu include/grub/machine
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES))
 
 # The default target.

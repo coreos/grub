@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_BOOT_HEADER
-#define PUPA_BOOT_HEADER	1
+#ifndef GRUB_BOOT_HEADER
+#define GRUB_BOOT_HEADER	1
 
-#define PUPA_BOOT_VERSION_MAJOR	4
-#define PUPA_BOOT_VERSION_MINOR	0
-#define PUPA_BOOT_VERSION	((PUPA_BOOT_VERSION_MINOR << 8) \
-					| PUPA_BOOT_VERSION_MAJOR)
+#define GRUB_BOOT_VERSION_MAJOR	4
+#define GRUB_BOOT_VERSION_MINOR	0
+#define GRUB_BOOT_VERSION	((GRUB_BOOT_VERSION_MINOR << 8) \
+					| GRUB_BOOT_VERSION_MAJOR)
 
-#endif /* ! PUPA_BOOT_HEADER */
+#endif /* ! GRUB_BOOT_HEADER */

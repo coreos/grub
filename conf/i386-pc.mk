@@ -239,432 +239,432 @@ kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-symlist.c: $(addprefix include/pupa/,$(kernel_img_HEADERS)) gensymlist.sh
+symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) gensymlist.sh
 	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
 
-kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
 # Utilities.
-bin_UTILITIES = pupa-mkimage
-sbin_UTILITIES = pupa-setup pupa-emu
+bin_UTILITIES = grub-mkimage
+sbin_UTILITIES = grub-setup grub-emu
 noinst_UTILITIES = genmoddep
 
-# For pupa-mkimage.
-pupa_mkimage_SOURCES = util/i386/pc/pupa-mkimage.c util/misc.c \
+# For grub-mkimage.
+grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c
-CLEANFILES += pupa-mkimage pupa_mkimage-util_i386_pc_pupa_mkimage.o pupa_mkimage-util_misc.o pupa_mkimage-util_resolve.o
-MOSTLYCLEANFILES += pupa_mkimage-util_i386_pc_pupa_mkimage.d pupa_mkimage-util_misc.d pupa_mkimage-util_resolve.d
+CLEANFILES += grub-mkimage grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
+MOSTLYCLEANFILES += grub_mkimage-util_i386_pc_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d
 
-pupa-mkimage: pupa_mkimage-util_i386_pc_pupa_mkimage.o pupa_mkimage-util_misc.o pupa_mkimage-util_resolve.o
-	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_mkimage_LDFLAGS)
+grub-mkimage: grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_mkimage_LDFLAGS)
 
-pupa_mkimage-util_i386_pc_pupa_mkimage.o: util/i386/pc/pupa-mkimage.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -c -o $@ $<
+grub_mkimage-util_i386_pc_grub_mkimage.o: util/i386/pc/grub-mkimage.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
 
-pupa_mkimage-util_i386_pc_pupa_mkimage.d: util/i386/pc/pupa-mkimage.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -M $< 	  | sed 's,pupa\-mkimage\.o[ :]*,pupa_mkimage-util_i386_pc_pupa_mkimage.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_mkimage-util_i386_pc_grub_mkimage.d: util/i386/pc/grub-mkimage.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,grub\-mkimage\.o[ :]*,grub_mkimage-util_i386_pc_grub_mkimage.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_mkimage-util_i386_pc_pupa_mkimage.d
+-include grub_mkimage-util_i386_pc_grub_mkimage.d
 
-pupa_mkimage-util_misc.o: util/misc.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -c -o $@ $<
+grub_mkimage-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
 
-pupa_mkimage-util_misc.d: util/misc.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_mkimage-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_mkimage-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_mkimage-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_mkimage-util_misc.d
+-include grub_mkimage-util_misc.d
 
-pupa_mkimage-util_resolve.o: util/resolve.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -c -o $@ $<
+grub_mkimage-util_resolve.o: util/resolve.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
 
-pupa_mkimage-util_resolve.d: util/resolve.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -M $< 	  | sed 's,resolve\.o[ :]*,pupa_mkimage-util_resolve.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_mkimage-util_resolve.d: util/resolve.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,resolve\.o[ :]*,grub_mkimage-util_resolve.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_mkimage-util_resolve.d
+-include grub_mkimage-util_resolve.d
 
-pupa_mkimage_LDFLAGS = -llzo
+grub_mkimage_LDFLAGS = -llzo
 
-# For pupa-setup.
-pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
+# For grub-setup.
+grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
 	kern/file.c kern/fs.c kern/env.c
-CLEANFILES += pupa-setup pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-util_i386_pc_getroot.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_env.o
-MOSTLYCLEANFILES += pupa_setup-util_i386_pc_pupa_setup.d pupa_setup-util_i386_pc_biosdisk.d pupa_setup-util_misc.d pupa_setup-util_i386_pc_getroot.d pupa_setup-kern_device.d pupa_setup-kern_disk.d pupa_setup-kern_err.d pupa_setup-kern_misc.d pupa_setup-disk_i386_pc_partition.d pupa_setup-fs_fat.d pupa_setup-fs_ext2.d pupa_setup-kern_file.d pupa_setup-kern_fs.d pupa_setup-kern_env.d
+CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-disk_i386_pc_partition.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o
+MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-disk_i386_pc_partition.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d
 
-pupa-setup: pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-util_i386_pc_getroot.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_env.o
-	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_setup_LDFLAGS)
+grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-disk_i386_pc_partition.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_setup_LDFLAGS)
 
-pupa_setup-util_i386_pc_pupa_setup.o: util/i386/pc/pupa-setup.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-util_i386_pc_grub_setup.o: util/i386/pc/grub-setup.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-util_i386_pc_pupa_setup.d: util/i386/pc/pupa-setup.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,pupa\-setup\.o[ :]*,pupa_setup-util_i386_pc_pupa_setup.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-util_i386_pc_grub_setup.d: util/i386/pc/grub-setup.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,grub\-setup\.o[ :]*,grub_setup-util_i386_pc_grub_setup.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-util_i386_pc_pupa_setup.d
+-include grub_setup-util_i386_pc_grub_setup.d
 
-pupa_setup-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,pupa_setup-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_setup-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-util_i386_pc_biosdisk.d
+-include grub_setup-util_i386_pc_biosdisk.d
 
-pupa_setup-util_misc.o: util/misc.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-util_misc.d: util/misc.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_setup-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_setup-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-util_misc.d
+-include grub_setup-util_misc.d
 
-pupa_setup-util_i386_pc_getroot.o: util/i386/pc/getroot.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-util_i386_pc_getroot.o: util/i386/pc/getroot.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-util_i386_pc_getroot.d: util/i386/pc/getroot.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,pupa_setup-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-util_i386_pc_getroot.d: util/i386/pc/getroot.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,grub_setup-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-util_i386_pc_getroot.d
+-include grub_setup-util_i386_pc_getroot.d
 
-pupa_setup-kern_device.o: kern/device.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_device.o: kern/device.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_device.d: kern/device.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,pupa_setup-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_device.d: kern/device.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_setup-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_device.d
+-include grub_setup-kern_device.d
 
-pupa_setup-kern_disk.o: kern/disk.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_disk.o: kern/disk.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_disk.d: kern/disk.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,pupa_setup-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_disk.d: kern/disk.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grub_setup-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_disk.d
+-include grub_setup-kern_disk.d
 
-pupa_setup-kern_err.o: kern/err.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_err.o: kern/err.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_err.d: kern/err.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,pupa_setup-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_err.d: kern/err.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_setup-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_err.d
+-include grub_setup-kern_err.d
 
-pupa_setup-kern_misc.o: kern/misc.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_misc.o: kern/misc.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_misc.d: kern/misc.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_setup-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_misc.d: kern/misc.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_setup-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_misc.d
+-include grub_setup-kern_misc.d
 
-pupa_setup-disk_i386_pc_partition.o: disk/i386/pc/partition.c
-	$(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-disk_i386_pc_partition.o: disk/i386/pc/partition.c
+	$(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-disk_i386_pc_partition.d: disk/i386/pc/partition.c
-	set -e; 	  $(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,pupa_setup-disk_i386_pc_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-disk_i386_pc_partition.d: disk/i386/pc/partition.c
+	set -e; 	  $(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_setup-disk_i386_pc_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-disk_i386_pc_partition.d
+-include grub_setup-disk_i386_pc_partition.d
 
-pupa_setup-fs_fat.o: fs/fat.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-fs_fat.o: fs/fat.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-fs_fat.d: fs/fat.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,pupa_setup-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-fs_fat.d: fs/fat.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_setup-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-fs_fat.d
+-include grub_setup-fs_fat.d
 
-pupa_setup-fs_ext2.o: fs/ext2.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-fs_ext2.o: fs/ext2.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,pupa_setup-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_setup-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-fs_ext2.d
+-include grub_setup-fs_ext2.d
 
-pupa_setup-kern_file.o: kern/file.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_file.o: kern/file.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_file.d: kern/file.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,pupa_setup-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_file.d: kern/file.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,grub_setup-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_file.d
+-include grub_setup-kern_file.d
 
-pupa_setup-kern_fs.o: kern/fs.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_fs.o: kern/fs.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_fs.d: kern/fs.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,pupa_setup-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_fs.d: kern/fs.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grub_setup-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_fs.d
+-include grub_setup-kern_fs.d
 
-pupa_setup-kern_env.o: kern/env.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+grub_setup-kern_env.o: kern/env.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
-pupa_setup-kern_env.d: kern/env.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,pupa_setup-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_setup-kern_env.d: kern/env.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_setup-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_setup-kern_env.d
+-include grub_setup-kern_env.d
 
 
-# For pupa
-pupa_emu_SOURCES = kern/main.c kern/device.c				\
+# For grub
+grub_emu_SOURCES = kern/main.c kern/device.c				\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
 	disk/i386/pc/partition.c kern/env.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
-	util/console.c util/pupa-emu.c util/misc.c util/i386/pc/getroot.c
-CLEANFILES += pupa-emu pupa_emu-kern_main.o pupa_emu-kern_device.o pupa_emu-kern_disk.o pupa_emu-kern_dl.o pupa_emu-kern_file.o pupa_emu-kern_fs.o pupa_emu-kern_err.o pupa_emu-kern_misc.o pupa_emu-kern_loader.o pupa_emu-kern_rescue.o pupa_emu-kern_term.o pupa_emu-disk_i386_pc_partition.o pupa_emu-kern_env.o pupa_emu-commands_ls.o pupa_emu-commands_terminal.o pupa_emu-commands_boot.o pupa_emu-commands_cmp.o pupa_emu-commands_cat.o pupa_emu-util_i386_pc_biosdisk.o pupa_emu-fs_fat.o pupa_emu-fs_ext2.o pupa_emu-normal_cmdline.o pupa_emu-normal_command.o pupa_emu-normal_main.o pupa_emu-normal_menu.o pupa_emu-normal_arg.o pupa_emu-util_console.o pupa_emu-util_pupa_emu.o pupa_emu-util_misc.o pupa_emu-util_i386_pc_getroot.o
-MOSTLYCLEANFILES += pupa_emu-kern_main.d pupa_emu-kern_device.d pupa_emu-kern_disk.d pupa_emu-kern_dl.d pupa_emu-kern_file.d pupa_emu-kern_fs.d pupa_emu-kern_err.d pupa_emu-kern_misc.d pupa_emu-kern_loader.d pupa_emu-kern_rescue.d pupa_emu-kern_term.d pupa_emu-disk_i386_pc_partition.d pupa_emu-kern_env.d pupa_emu-commands_ls.d pupa_emu-commands_terminal.d pupa_emu-commands_boot.d pupa_emu-commands_cmp.d pupa_emu-commands_cat.d pupa_emu-util_i386_pc_biosdisk.d pupa_emu-fs_fat.d pupa_emu-fs_ext2.d pupa_emu-normal_cmdline.d pupa_emu-normal_command.d pupa_emu-normal_main.d pupa_emu-normal_menu.d pupa_emu-normal_arg.d pupa_emu-util_console.d pupa_emu-util_pupa_emu.d pupa_emu-util_misc.d pupa_emu-util_i386_pc_getroot.d
+	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c
+CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_i386_pc_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
+MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-disk_i386_pc_partition.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d
 
-pupa-emu: pupa_emu-kern_main.o pupa_emu-kern_device.o pupa_emu-kern_disk.o pupa_emu-kern_dl.o pupa_emu-kern_file.o pupa_emu-kern_fs.o pupa_emu-kern_err.o pupa_emu-kern_misc.o pupa_emu-kern_loader.o pupa_emu-kern_rescue.o pupa_emu-kern_term.o pupa_emu-disk_i386_pc_partition.o pupa_emu-kern_env.o pupa_emu-commands_ls.o pupa_emu-commands_terminal.o pupa_emu-commands_boot.o pupa_emu-commands_cmp.o pupa_emu-commands_cat.o pupa_emu-util_i386_pc_biosdisk.o pupa_emu-fs_fat.o pupa_emu-fs_ext2.o pupa_emu-normal_cmdline.o pupa_emu-normal_command.o pupa_emu-normal_main.o pupa_emu-normal_menu.o pupa_emu-normal_arg.o pupa_emu-util_console.o pupa_emu-util_pupa_emu.o pupa_emu-util_misc.o pupa_emu-util_i386_pc_getroot.o
-	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_emu_LDFLAGS)
+grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_i386_pc_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
-pupa_emu-kern_main.o: kern/main.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_main.o: kern/main.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_main.d: kern/main.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,pupa_emu-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_main.d: kern/main.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grub_emu-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_main.d
+-include grub_emu-kern_main.d
 
-pupa_emu-kern_device.o: kern/device.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_device.o: kern/device.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_device.d: kern/device.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,pupa_emu-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_device.d: kern/device.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_emu-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_device.d
+-include grub_emu-kern_device.d
 
-pupa_emu-kern_disk.o: kern/disk.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_disk.o: kern/disk.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_disk.d: kern/disk.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,pupa_emu-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_disk.d: kern/disk.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grub_emu-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_disk.d
+-include grub_emu-kern_disk.d
 
-pupa_emu-kern_dl.o: kern/dl.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_dl.o: kern/dl.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_dl.d: kern/dl.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,pupa_emu-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_dl.d: kern/dl.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,grub_emu-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_dl.d
+-include grub_emu-kern_dl.d
 
-pupa_emu-kern_file.o: kern/file.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_file.o: kern/file.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_file.d: kern/file.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,pupa_emu-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_file.d: kern/file.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,grub_emu-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_file.d
+-include grub_emu-kern_file.d
 
-pupa_emu-kern_fs.o: kern/fs.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_fs.o: kern/fs.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_fs.d: kern/fs.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,pupa_emu-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_fs.d: kern/fs.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grub_emu-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_fs.d
+-include grub_emu-kern_fs.d
 
-pupa_emu-kern_err.o: kern/err.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_err.o: kern/err.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_err.d: kern/err.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,pupa_emu-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_err.d: kern/err.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_emu-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_err.d
+-include grub_emu-kern_err.d
 
-pupa_emu-kern_misc.o: kern/misc.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_misc.o: kern/misc.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_misc.d: kern/misc.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_emu-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_misc.d: kern/misc.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_misc.d
+-include grub_emu-kern_misc.d
 
-pupa_emu-kern_loader.o: kern/loader.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_loader.o: kern/loader.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_loader.d: kern/loader.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,pupa_emu-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_loader.d: kern/loader.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,grub_emu-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_loader.d
+-include grub_emu-kern_loader.d
 
-pupa_emu-kern_rescue.o: kern/rescue.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_rescue.o: kern/rescue.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_rescue.d: kern/rescue.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,pupa_emu-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_rescue.d: kern/rescue.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,grub_emu-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_rescue.d
+-include grub_emu-kern_rescue.d
 
-pupa_emu-kern_term.o: kern/term.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_term.o: kern/term.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_term.d: kern/term.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,pupa_emu-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_term.d: kern/term.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,grub_emu-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_term.d
+-include grub_emu-kern_term.d
 
-pupa_emu-disk_i386_pc_partition.o: disk/i386/pc/partition.c
-	$(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-disk_i386_pc_partition.o: disk/i386/pc/partition.c
+	$(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-disk_i386_pc_partition.d: disk/i386/pc/partition.c
-	set -e; 	  $(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,pupa_emu-disk_i386_pc_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-disk_i386_pc_partition.d: disk/i386/pc/partition.c
+	set -e; 	  $(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_emu-disk_i386_pc_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-disk_i386_pc_partition.d
+-include grub_emu-disk_i386_pc_partition.d
 
-pupa_emu-kern_env.o: kern/env.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-kern_env.o: kern/env.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-kern_env.d: kern/env.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,pupa_emu-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_env.d: kern/env.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_emu-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-kern_env.d
+-include grub_emu-kern_env.d
 
-pupa_emu-commands_ls.o: commands/ls.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_ls.o: commands/ls.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-commands_ls.d: commands/ls.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,pupa_emu-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_ls.d: commands/ls.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,grub_emu-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-commands_ls.d
+-include grub_emu-commands_ls.d
 
-pupa_emu-commands_terminal.o: commands/terminal.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_terminal.o: commands/terminal.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-commands_terminal.d: commands/terminal.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,pupa_emu-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_terminal.d: commands/terminal.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,grub_emu-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-commands_terminal.d
+-include grub_emu-commands_terminal.d
 
-pupa_emu-commands_boot.o: commands/boot.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_boot.o: commands/boot.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-commands_boot.d: commands/boot.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,pupa_emu-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_boot.d: commands/boot.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,grub_emu-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-commands_boot.d
+-include grub_emu-commands_boot.d
 
-pupa_emu-commands_cmp.o: commands/cmp.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_cmp.o: commands/cmp.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-commands_cmp.d: commands/cmp.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,pupa_emu-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_cmp.d: commands/cmp.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,grub_emu-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-commands_cmp.d
+-include grub_emu-commands_cmp.d
 
-pupa_emu-commands_cat.o: commands/cat.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_cat.o: commands/cat.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-commands_cat.d: commands/cat.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,pupa_emu-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_cat.d: commands/cat.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,grub_emu-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-commands_cat.d
+-include grub_emu-commands_cat.d
 
-pupa_emu-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,pupa_emu-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_emu-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-util_i386_pc_biosdisk.d
+-include grub_emu-util_i386_pc_biosdisk.d
 
-pupa_emu-fs_fat.o: fs/fat.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-fs_fat.o: fs/fat.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-fs_fat.d: fs/fat.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,pupa_emu-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-fs_fat.d: fs/fat.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_emu-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-fs_fat.d
+-include grub_emu-fs_fat.d
 
-pupa_emu-fs_ext2.o: fs/ext2.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-fs_ext2.o: fs/ext2.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,pupa_emu-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_emu-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-fs_ext2.d
+-include grub_emu-fs_ext2.d
 
-pupa_emu-normal_cmdline.o: normal/cmdline.c
-	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-normal_cmdline.o: normal/cmdline.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-normal_cmdline.d: normal/cmdline.c
-	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,pupa_emu-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-normal_cmdline.d: normal/cmdline.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,grub_emu-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-normal_cmdline.d
+-include grub_emu-normal_cmdline.d
 
-pupa_emu-normal_command.o: normal/command.c
-	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-normal_command.o: normal/command.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-normal_command.d: normal/command.c
-	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,pupa_emu-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-normal_command.d: normal/command.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,grub_emu-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-normal_command.d
+-include grub_emu-normal_command.d
 
-pupa_emu-normal_main.o: normal/main.c
-	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-normal_main.o: normal/main.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-normal_main.d: normal/main.c
-	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,pupa_emu-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-normal_main.d: normal/main.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grub_emu-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-normal_main.d
+-include grub_emu-normal_main.d
 
-pupa_emu-normal_menu.o: normal/menu.c
-	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-normal_menu.o: normal/menu.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-normal_menu.d: normal/menu.c
-	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,pupa_emu-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-normal_menu.d: normal/menu.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,grub_emu-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-normal_menu.d
+-include grub_emu-normal_menu.d
 
-pupa_emu-normal_arg.o: normal/arg.c
-	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-normal_arg.o: normal/arg.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-normal_arg.d: normal/arg.c
-	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,pupa_emu-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-normal_arg.d: normal/arg.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,grub_emu-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-normal_arg.d
+-include grub_emu-normal_arg.d
 
-pupa_emu-util_console.o: util/console.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-util_console.o: util/console.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-util_console.d: util/console.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,console\.o[ :]*,pupa_emu-util_console.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-util_console.d: util/console.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,console\.o[ :]*,grub_emu-util_console.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-util_console.d
+-include grub_emu-util_console.d
 
-pupa_emu-util_pupa_emu.o: util/pupa-emu.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-util_grub_emu.o: util/grub-emu.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-util_pupa_emu.d: util/pupa-emu.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,pupa\-emu\.o[ :]*,pupa_emu-util_pupa_emu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-util_grub_emu.d: util/grub-emu.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,grub\-emu\.o[ :]*,grub_emu-util_grub_emu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-util_pupa_emu.d
+-include grub_emu-util_grub_emu.d
 
-pupa_emu-util_misc.o: util/misc.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-util_misc.d: util/misc.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_emu-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-util_misc.d
+-include grub_emu-util_misc.d
 
-pupa_emu-util_i386_pc_getroot.o: util/i386/pc/getroot.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+grub_emu-util_i386_pc_getroot.o: util/i386/pc/getroot.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-pupa_emu-util_i386_pc_getroot.d: util/i386/pc/getroot.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,pupa_emu-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-util_i386_pc_getroot.d: util/i386/pc/getroot.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,grub_emu-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include pupa_emu-util_i386_pc_getroot.d
+-include grub_emu-util_i386_pc_getroot.d
 
-pupa_emu_LDFLAGS = -lncurses
+grub_emu_LDFLAGS = -lncurses
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
@@ -675,10 +675,10 @@ genmoddep: genmoddep-util_genmoddep.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(genmoddep_LDFLAGS)
 
 genmoddep-util_genmoddep.o: util/genmoddep.c
-	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(genmoddep_CFLAGS) -c -o $@ $<
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(genmoddep_CFLAGS) -c -o $@ $<
 
 genmoddep-util_genmoddep.d: util/genmoddep.c
-	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(genmoddep_CFLAGS) -M $< 	  | sed 's,genmoddep\.o[ :]*,genmoddep-util_genmoddep.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(genmoddep_CFLAGS) -M $< 	  | sed 's,genmoddep\.o[ :]*,genmoddep-util_genmoddep.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include genmoddep-util_genmoddep.d
 
@@ -697,7 +697,7 @@ UNDSYMFILES += und-_chain.lst
 _chain.mod: pre-_chain.o mod-_chain.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_chain.o: _chain_mod-loader_i386_pc_chainloader.o
 	-rm -f $@
@@ -736,7 +736,7 @@ UNDSYMFILES += und-fat.lst
 fat.mod: pre-fat.o mod-fat.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fat.o: fat_mod-fs_fat.o
 	-rm -f $@
@@ -775,7 +775,7 @@ UNDSYMFILES += und-ext2.lst
 ext2.mod: pre-ext2.o mod-ext2.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ext2.o: ext2_mod-fs_ext2.o
 	-rm -f $@
@@ -814,7 +814,7 @@ UNDSYMFILES += und-_linux.lst
 _linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: _linux_mod-loader_i386_pc_linux.o
 	-rm -f $@
@@ -854,7 +854,7 @@ UNDSYMFILES += und-normal.lst
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_arg.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
@@ -934,7 +934,7 @@ UNDSYMFILES += und-hello.lst
 hello.mod: pre-hello.o mod-hello.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hello.o: hello_mod-hello_hello.o
 	-rm -f $@
@@ -973,7 +973,7 @@ UNDSYMFILES += und-boot.lst
 boot.mod: pre-boot.o mod-boot.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-boot.o: boot_mod-commands_boot.o
 	-rm -f $@
@@ -1012,7 +1012,7 @@ UNDSYMFILES += und-terminal.lst
 terminal.mod: pre-terminal.o mod-terminal.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminal.o: terminal_mod-commands_terminal.o
 	-rm -f $@
@@ -1051,7 +1051,7 @@ UNDSYMFILES += und-ls.lst
 ls.mod: pre-ls.o mod-ls.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ls.o: ls_mod-commands_ls.o
 	-rm -f $@
@@ -1090,7 +1090,7 @@ UNDSYMFILES += und-cmp.lst
 cmp.mod: pre-cmp.o mod-cmp.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cmp.o: cmp_mod-commands_cmp.o
 	-rm -f $@
@@ -1129,7 +1129,7 @@ UNDSYMFILES += und-cat.lst
 cat.mod: pre-cat.o mod-cat.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cat.o: cat_mod-commands_cat.o
 	-rm -f $@
@@ -1168,7 +1168,7 @@ UNDSYMFILES += und-vga.lst
 vga.mod: pre-vga.o mod-vga.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vga.o: vga_mod-term_i386_pc_vga.o
 	-rm -f $@
@@ -1207,7 +1207,7 @@ UNDSYMFILES += und-font.lst
 font.mod: pre-font.o mod-font.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-font.o: font_mod-font_manager.o
 	-rm -f $@
@@ -1246,7 +1246,7 @@ UNDSYMFILES += und-_multiboot.lst
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
-	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_multiboot.o: _multiboot_mod-loader_i386_pc_multiboot.o
 	-rm -f $@

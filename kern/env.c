@@ -1,9 +1,9 @@
 /* env.c - Environment variables */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,25 +14,25 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/env.h>
-#include <pupa/misc.h>
-#include <pupa/mm.h>
+#include <grub/env.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
 
 /* XXX: What would be a good size for the hashtable?  */
 #define	HASHSZ	123
 
 /* A hashtable for quick lookup of variables.  */
-static struct pupa_env_var *pupa_env[HASHSZ];
+static struct grub_env_var *grub_env[HASHSZ];
 
 /* The variables in a sorted list.  */
-static struct pupa_env_var *pupa_env_sorted;
+static struct grub_env_var *grub_env_sorted;
 
 /* Return the hash representation of the string S.  */
-static unsigned int pupa_env_hashval (const char *s)
+static unsigned int grub_env_hashval (const char *s)
 {
   unsigned int i = 0;
 
@@ -43,73 +43,73 @@ static unsigned int pupa_env_hashval (const char *s)
   return i % HASHSZ;
 }
 
-static struct pupa_env_var *
-pupa_env_find (const char *name)
+static struct grub_env_var *
+grub_env_find (const char *name)
 {
-  struct pupa_env_var *var;
-  int idx = pupa_env_hashval (name);
+  struct grub_env_var *var;
+  int idx = grub_env_hashval (name);
 
-  for (var = pupa_env[idx]; var; var = var->next)
-    if (! pupa_strcmp (var->name, name))
+  for (var = grub_env[idx]; var; var = var->next)
+    if (! grub_strcmp (var->name, name))
       return var;
   return 0;
 }
 
-pupa_err_t
-pupa_env_set (const char *var, const char *val)
+grub_err_t
+grub_env_set (const char *var, const char *val)
 {
-  int idx = pupa_env_hashval (var);
-  struct pupa_env_var *env;
-  struct pupa_env_var *sort;
-  struct pupa_env_var **sortp;
+  int idx = grub_env_hashval (var);
+  struct grub_env_var *env;
+  struct grub_env_var *sort;
+  struct grub_env_var **sortp;
   
   /* If the variable does already exist, just update the variable.  */
-  env = pupa_env_find (var);
+  env = grub_env_find (var);
   if (env)
     {
       char *old = env->value;
-      env->value = pupa_strdup (val);
+      env->value = grub_strdup (val);
       if (! env->name)
 	{
 	  env->value = old;
-	  return pupa_errno;
+	  return grub_errno;
 	}
 
       if (env->write_hook)
 	(env->write_hook) (env);
 
-      pupa_free (old);
+      grub_free (old);
       return 0;
     }
 
   /* The variable does not exist, create it.  */
-  env = pupa_malloc (sizeof (struct pupa_env_var));
+  env = grub_malloc (sizeof (struct grub_env_var));
   if (! env)
-    return pupa_errno;
+    return grub_errno;
   
-  pupa_memset (env, 0, sizeof (struct pupa_env_var));
+  grub_memset (env, 0, sizeof (struct grub_env_var));
   
-  env->name = pupa_strdup (var);
+  env->name = grub_strdup (var);
   if (! env->name)
     goto fail;
   
-  env->value = pupa_strdup (val);
+  env->value = grub_strdup (val);
   if (! env->name)
     goto fail;
   
   /* Insert it in the hashtable.  */
-  env->prevp = &pupa_env[idx];
-  env->next = pupa_env[idx];
-  if (pupa_env[idx])
-    pupa_env[idx]->prevp = &env->next;
-  pupa_env[idx] = env;
+  env->prevp = &grub_env[idx];
+  env->next = grub_env[idx];
+  if (grub_env[idx])
+    grub_env[idx]->prevp = &env->next;
+  grub_env[idx] = env;
   
   /* Insert it in the sorted list.  */
-  sortp = &pupa_env_sorted;
-  sort = pupa_env_sorted;
+  sortp = &grub_env_sorted;
+  sort = grub_env_sorted;
   while (sort)
     {
-      if (pupa_strcmp (sort->name, var) > 0)
+      if (grub_strcmp (sort->name, var) > 0)
 	break;
       
       sortp = &sort->sort_next;
@@ -122,21 +122,21 @@ pupa_env_set (const char *var, const char *val)
   *sortp = env;
 
  fail:
-  if (pupa_errno)
+  if (grub_errno)
     {
-      pupa_free (env->name);
-      pupa_free (env->value);
-      pupa_free (env);
+      grub_free (env->name);
+      grub_free (env->value);
+      grub_free (env);
     }
   
   return 0;
 }
 
 char *
-pupa_env_get (const char *name)
+grub_env_get (const char *name)
 {
-  struct pupa_env_var *env;
-  env = pupa_env_find (name);
+  struct grub_env_var *env;
+  env = grub_env_find (name);
   if (! env)
     return 0;
 
@@ -152,10 +152,10 @@ pupa_env_get (const char *name)
 }
 
 void
-pupa_env_unset (const char *name)
+grub_env_unset (const char *name)
 {
-  struct pupa_env_var *env;
-  env = pupa_env_find (name);
+  struct grub_env_var *env;
+  env = grub_env_find (name);
   if (! env)
     return;
 
@@ -172,38 +172,38 @@ pupa_env_unset (const char *name)
   if (env->sort_next)
     env->sort_next->sort_prevp = env->sort_prevp;
 
-  pupa_free (env->name);
-  pupa_free (env->value);
-  pupa_free (env);
+  grub_free (env->name);
+  grub_free (env->value);
+  grub_free (env);
   return;
 }
 
 void
-pupa_env_iterate (int (* func) (struct pupa_env_var *var))
+grub_env_iterate (int (* func) (struct grub_env_var *var))
 {
-  struct pupa_env_var *env;
+  struct grub_env_var *env;
   
-  for (env = pupa_env_sorted; env; env = env->sort_next)
+  for (env = grub_env_sorted; env; env = env->sort_next)
     if (func (env))
       return;
 }
 
-pupa_err_t
-pupa_register_variable_hook (const char *var,
-			     pupa_err_t (*read_hook) (struct pupa_env_var *var, char **),
-			     pupa_err_t (*write_hook) (struct pupa_env_var *var))
+grub_err_t
+grub_register_variable_hook (const char *var,
+			     grub_err_t (*read_hook) (struct grub_env_var *var, char **),
+			     grub_err_t (*write_hook) (struct grub_env_var *var))
 {
-  struct pupa_env_var *env = pupa_env_find (var);
+  struct grub_env_var *env = grub_env_find (var);
 
   if (! env)
-    if (pupa_env_set (var, "") != PUPA_ERR_NONE)
-      return pupa_errno;
+    if (grub_env_set (var, "") != GRUB_ERR_NONE)
+      return grub_errno;
   
-  env = pupa_env_find (var);
+  env = grub_env_find (var);
   /* XXX Insert an assertion?  */
   
   env->read_hook = read_hook;
   env->write_hook = write_hook;
 
-  return PUPA_ERR_NONE;
+  return GRUB_ERR_NONE;
 }

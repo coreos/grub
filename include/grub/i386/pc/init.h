@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,38 +17,38 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_INIT_MACHINE_HEADER
-#define PUPA_INIT_MACHINE_HEADER	1
+#ifndef GRUB_INIT_MACHINE_HEADER
+#define GRUB_INIT_MACHINE_HEADER	1
 
-#include <pupa/types.h>
-#include <pupa/symbol.h>
+#include <grub/types.h>
+#include <grub/symbol.h>
 
 /* FIXME: Should these be declared in memory.h?  */
-extern pupa_size_t EXPORT_VAR(pupa_lower_mem);
-extern pupa_size_t EXPORT_VAR(pupa_upper_mem);
+extern grub_size_t EXPORT_VAR(grub_lower_mem);
+extern grub_size_t EXPORT_VAR(grub_upper_mem);
 
 /* Get the memory size in KB. If EXTENDED is zero, return conventional
    memory, otherwise return extended memory.  */
-pupa_uint16_t pupa_get_memsize (int extended);
+grub_uint16_t grub_get_memsize (int extended);
 
 /* Get a packed EISA memory map. Lower 16 bits are between 1MB and 16MB
    in 1KB parts, and upper 16 bits are above 16MB in 64KB parts.  */
-pupa_uint32_t pupa_get_eisa_mmap (void);
+grub_uint32_t grub_get_eisa_mmap (void);
 
-struct pupa_machine_mmap_entry
+struct grub_machine_mmap_entry
 {
-  pupa_uint32_t size;
-  pupa_uint64_t addr;
-  pupa_uint64_t len;
-  pupa_uint32_t type;
+  grub_uint32_t size;
+  grub_uint64_t addr;
+  grub_uint64_t len;
+  grub_uint32_t type;
 };
 
 /* Get a memory map entry. Return next continuation value. Zero means
    the end.  */
-pupa_uint32_t pupa_get_mmap_entry (struct pupa_machine_mmap_entry *entry,
-				   pupa_uint32_t cont);
+grub_uint32_t grub_get_mmap_entry (struct grub_machine_mmap_entry *entry,
+				   grub_uint32_t cont);
 
 /* Turn on/off Gate A20.  */
-void pupa_gate_a20 (int on);
+void grub_gate_a20 (int on);
 
-#endif /* ! PUPA_INIT_MACHINE_HEADER */
+#endif /* ! GRUB_INIT_MACHINE_HEADER */

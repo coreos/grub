@@ -1,6 +1,6 @@
 /* loader.h - OS loaders */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,21 +18,21 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_LOADER_HEADER
-#define PUPA_LOADER_HEADER	1
+#ifndef GRUB_LOADER_HEADER
+#define GRUB_LOADER_HEADER	1
 
-#include <pupa/file.h>
-#include <pupa/symbol.h>
-#include <pupa/err.h>
-#include <pupa/types.h>
+#include <grub/file.h>
+#include <grub/symbol.h>
+#include <grub/err.h>
+#include <grub/types.h>
 
-extern pupa_addr_t EXPORT_VAR(pupa_os_area_addr);
-extern pupa_size_t EXPORT_VAR(pupa_os_area_size);
+extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
+extern grub_size_t EXPORT_VAR(grub_os_area_size);
 
-void EXPORT_FUNC(pupa_loader_set) (pupa_err_t (*boot) (void),
-				   pupa_err_t (*unload) (void));
-void EXPORT_FUNC(pupa_loader_unset) (void);
+void EXPORT_FUNC(grub_loader_set) (grub_err_t (*boot) (void),
+				   grub_err_t (*unload) (void));
+void EXPORT_FUNC(grub_loader_unset) (void);
 
-pupa_err_t EXPORT_FUNC(pupa_loader_boot) (void);
+grub_err_t EXPORT_FUNC(grub_loader_boot) (void);
 
-#endif /* ! PUPA_LOADER_HEADER */
+#endif /* ! GRUB_LOADER_HEADER */

@@ -1,9 +1,9 @@
 /* device.h - device manager */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,31 +14,31 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_DEVICE_HEADER
-#define PUPA_DEVICE_HEADER	1
+#ifndef GRUB_DEVICE_HEADER
+#define GRUB_DEVICE_HEADER	1
 
-#include <pupa/symbol.h>
-#include <pupa/err.h>
+#include <grub/symbol.h>
+#include <grub/err.h>
 
-struct pupa_disk;
-struct pupa_net;
-struct pupa_fs;
+struct grub_disk;
+struct grub_net;
+struct grub_fs;
 
-struct pupa_device
+struct grub_device
 {
-  struct pupa_disk *disk;
-  struct pupa_net *net;
+  struct grub_disk *disk;
+  struct grub_net *net;
 };
-typedef struct pupa_device *pupa_device_t;
+typedef struct grub_device *grub_device_t;
 
-pupa_device_t EXPORT_FUNC(pupa_device_open) (const char *name);
-pupa_err_t EXPORT_FUNC(pupa_device_close) (pupa_device_t device);
+grub_device_t EXPORT_FUNC(grub_device_open) (const char *name);
+grub_err_t EXPORT_FUNC(grub_device_close) (grub_device_t device);
 
-pupa_err_t EXPORT_FUNC(pupa_device_set_root) (const char *name);
-const char *EXPORT_FUNC(pupa_device_get_root) (void);
+grub_err_t EXPORT_FUNC(grub_device_set_root) (const char *name);
+const char *EXPORT_FUNC(grub_device_get_root) (void);
 
-#endif /* ! PUPA_DEVICE_HEADER */
+#endif /* ! GRUB_DEVICE_HEADER */

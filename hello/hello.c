@@ -1,6 +1,6 @@
 /* hello.c - test module for dynamic loading */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *  Copyright (C) 2003  NIIBE Yutaka <gniibe@m17n.org>
  *
@@ -19,30 +19,30 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/types.h>
-#include <pupa/misc.h>
-#include <pupa/mm.h>
-#include <pupa/err.h>
-#include <pupa/dl.h>
-#include <pupa/normal.h>
+#include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/err.h>
+#include <grub/dl.h>
+#include <grub/normal.h>
 
-static pupa_err_t
-pupa_cmd_hello (struct pupa_arg_list *state __attribute__ ((unused)),
+static grub_err_t
+grub_cmd_hello (struct grub_arg_list *state __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
-  pupa_printf ("Hello World\n");
+  grub_printf ("Hello World\n");
   return 0;
 }
 
-PUPA_MOD_INIT
+GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
-  pupa_register_command ("hello", pupa_cmd_hello, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
 			 "hello", "Say hello", 0);
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_unregister_command ("hello");
+  grub_unregister_command ("hello");
 }

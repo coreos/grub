@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996-2002 Markus Franz Xaver Johannes Oberhumer
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
@@ -21,7 +21,7 @@
 /*
  * This code was stolen from the files enter.sh, leave.sh, lzo1x_d.sh,
  * lzo1x_f.s and lzo_asm.h in LZO version 1.08, and was heavily modified
- * to adapt it to PUPA's requirement.
+ * to adapt it to GRUB's requirement.
  *
  * See <http://www.oberhumer.com/opensource/lzo/>, for more information
  * about LZO.

@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,20 +17,20 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_SETJMP_HEADER
-#define PUPA_SETJMP_HEADER	1
+#ifndef GRUB_SETJMP_HEADER
+#define GRUB_SETJMP_HEADER	1
 
-#ifdef PUPA_UTIL
+#ifdef GRUB_UTIL
 #include <setjmp.h>
-typedef jmp_buf pupa_jmp_buf;
-#define pupa_setjmp setjmp
-#define pupa_longjmp longjmp
+typedef jmp_buf grub_jmp_buf;
+#define grub_setjmp setjmp
+#define grub_longjmp longjmp
 #else
-/* This must define pupa_jmp_buf.  */
-#include <pupa/cpu/setjmp.h>
+/* This must define grub_jmp_buf.  */
+#include <grub/cpu/setjmp.h>
 
-int pupa_setjmp (pupa_jmp_buf env);
-void pupa_longjmp (pupa_jmp_buf env, int val) __attribute__ ((noreturn));
+int grub_setjmp (grub_jmp_buf env);
+void grub_longjmp (grub_jmp_buf env, int val) __attribute__ ((noreturn));
 #endif
 
-#endif /* ! PUPA_SETJMP_HEADER */
+#endif /* ! GRUB_SETJMP_HEADER */

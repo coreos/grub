@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@
  */
 
 /*
- * Note: PUPA is compiled with the options -mrtd and -mregparm=3.
+ * Note: GRUB is compiled with the options -mrtd and -mregparm=3.
  *       So the first three arguments are passed in %eax, %edx, and %ecx,
  *       respectively, and if a function has a fixed number of arguments
  *       and the number if greater than three, the function must return
@@ -43,16 +43,16 @@
  */
 
 #include <config.h>
-#include <pupa/symbol.h>
-#include <pupa/boot.h>
-#include <pupa/machine/boot.h>
-#include <pupa/machine/memory.h>
-#include <pupa/machine/console.h>
-#include <pupa/machine/linux.h>
-#include <pupa/machine/kernel.h>
-#include <pupa/machine/multiboot.h>
+#include <grub/symbol.h>
+#include <grub/boot.h>
+#include <grub/machine/boot.h>
+#include <grub/machine/memory.h>
+#include <grub/machine/console.h>
+#include <grub/machine/linux.h>
+#include <grub/machine/kernel.h>
+#include <grub/machine/multiboot.h>
 		
-#define ABS(x)	((x) - EXT_C(start) + PUPA_BOOT_MACHINE_KERNEL_ADDR + 0x200)
+#define ABS(x)	((x) - EXT_C(start) + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 	
 	.file	"startup.S"
 
@@ -77,7 +77,7 @@ _start:
 	 *  DO NOT MOVE !!!
 	 */
 	. = EXT_C(start) + 0x6
-	.byte	PUPA_BOOT_VERSION_MAJOR, PUPA_BOOT_VERSION_MINOR
+	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 
 	/*
 	 *  This is a special data area 8 bytes from the beginning.
@@ -85,18 +85,18 @@ _start:
 
 	. = EXT_C(start) + 0x8
 
-VARIABLE(pupa_total_module_size)
+VARIABLE(grub_total_module_size)
 	.long	0
-VARIABLE(pupa_kernel_image_size)
+VARIABLE(grub_kernel_image_size)
 	.long	0
-VARIABLE(pupa_compressed_size)
+VARIABLE(grub_compressed_size)
 	.long	0
-VARIABLE(pupa_install_dos_part)
+VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
-VARIABLE(pupa_install_bsd_part)
+VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
-VARIABLE(pupa_prefix)
-	.string "/boot/pupa"
+VARIABLE(grub_prefix)
+	.string "/boot/grub"
 
 	/*
 	 *  Leave some breathing room for the prefix.
@@ -115,13 +115,13 @@ codestart:
 	movw	%ax, %es
 
 	/* set up the real mode/BIOS stack */
-	movl	$PUPA_MEMORY_MACHINE_REAL_STACK, %ebp
+	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %ebp
 	movl	%ebp, %esp
 
 	sti		/* we're safe again */
 
 	/* save boot drive reference */
-	ADDR32	movb	%dl, EXT_C(pupa_boot_drive)
+	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
@@ -133,14 +133,14 @@ codestart:
 	.code32
 
 	incl	%eax
-	call	EXT_C(pupa_gate_a20)
+	call	EXT_C(grub_gate_a20)
 
 	/* decompress the compressed part and put the result at 1MB */
 	movl	$0x100000, %esi
-	movl	$(START_SYMBOL + PUPA_KERNEL_MACHINE_RAW_SIZE), %edi
+	movl	$(START_SYMBOL + GRUB_KERNEL_MACHINE_RAW_SIZE), %edi
 
 	pushl	%esi
-	pushl	EXT_C(pupa_compressed_size)
+	pushl	EXT_C(grub_compressed_size)
 	pushl	%edi
 	call	lzo1x_decompress
 	addl	$12, %esp
@@ -152,8 +152,8 @@ codestart:
 	movsb
 
 	/* copy modules before cleaning out the bss */
-	movl	EXT_C(pupa_total_module_size), %ecx
-	movl	EXT_C(pupa_kernel_image_size), %esi
+	movl	EXT_C(grub_total_module_size), %ecx
+	movl	EXT_C(grub_kernel_image_size), %esi
 	addl	%ecx, %esi
 	addl	$START_SYMBOL, %esi
 	decl	%esi
@@ -180,7 +180,7 @@ codestart:
 	/*
 	 *  Call the start of main body of C code.
 	 */
-	call EXT_C(pupa_main)
+	call EXT_C(grub_main)
 
 
 /*
@@ -190,18 +190,18 @@ codestart:
 	.p2align	2	/* force 4-byte alignment */
 
 protstack:
-	.long	PUPA_MEMORY_MACHINE_PROT_STACK
+	.long	GRUB_MEMORY_MACHINE_PROT_STACK
 
-VARIABLE(pupa_boot_drive)
+VARIABLE(grub_boot_drive)
 	.long	0
 
-VARIABLE(pupa_start_addr)
+VARIABLE(grub_start_addr)
 	.long	START_SYMBOL
 
-VARIABLE(pupa_end_addr)
+VARIABLE(grub_end_addr)
 	.long	END_SYMBOL
 	
-VARIABLE(pupa_apm_bios_info)
+VARIABLE(grub_apm_bios_info)
 	.word	0	/* version */
 	.word	0	/* cseg */
 	.long	0	/* offset */
@@ -275,16 +275,16 @@ real_to_prot:
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
-	orl	$PUPA_MEMORY_MACHINE_CR0_PE_ON, %eax
+	orl	$GRUB_MEMORY_MACHINE_CR0_PE_ON, %eax
 	movl	%eax, %cr0
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
-	DATA32	ljmp	$PUPA_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
+	DATA32	ljmp	$GRUB_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
 
 	.code32
 protcseg:
 	/* reload other segment registers */
-	movw	$PUPA_MEMORY_MACHINE_PROT_MODE_DSEG, %ax
+	movw	$GRUB_MEMORY_MACHINE_PROT_MODE_DSEG, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
 	movw	%ax, %fs
@@ -293,7 +293,7 @@ protcseg:
 
 	/* put the return address in a known safe location */
 	movl	(%esp), %eax
-	movl	%eax, PUPA_MEMORY_MACHINE_REAL_STACK
+	movl	%eax, GRUB_MEMORY_MACHINE_REAL_STACK
 
 	/* get protected mode stack */
 	movl	protstack, %eax
@@ -301,7 +301,7 @@ protcseg:
 	movl	%eax, %ebp
 
 	/* get return address onto the right stack */
-	movl	PUPA_MEMORY_MACHINE_REAL_STACK, %eax
+	movl	GRUB_MEMORY_MACHINE_REAL_STACK, %eax
 	movl	%eax, (%esp)
 
 	/* zero %eax */
@@ -321,15 +321,15 @@ prot_to_real:
 
 	/* get the return address */
 	movl	(%esp), %eax
-	movl	%eax, PUPA_MEMORY_MACHINE_REAL_STACK
+	movl	%eax, GRUB_MEMORY_MACHINE_REAL_STACK
 
 	/* set up new stack */
-	movl	$PUPA_MEMORY_MACHINE_REAL_STACK, %eax
+	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %eax
 	movl	%eax, %esp
 	movl	%eax, %ebp
 
 	/* set up segment limits */
-	movw	$PUPA_MEMORY_MACHINE_PSEUDO_REAL_DSEG, %ax
+	movw	$GRUB_MEMORY_MACHINE_PSEUDO_REAL_DSEG, %ax
 	movw	%ax, %ds
 	movw	%ax, %es
 	movw	%ax, %fs
@@ -338,14 +338,14 @@ prot_to_real:
 
 	/* this might be an extra step */
 	/* jump to a 16 bit segment */
-	ljmp	$PUPA_MEMORY_MACHINE_PSEUDO_REAL_CSEG, $tmpcseg
+	ljmp	$GRUB_MEMORY_MACHINE_PSEUDO_REAL_CSEG, $tmpcseg
 
 tmpcseg:
 	.code16
 
 	/* clear the PE bit of CR0 */
 	movl	%cr0, %eax
-	andl 	$(~PUPA_MEMORY_MACHINE_CR0_PE_ON), %eax
+	andl 	$(~GRUB_MEMORY_MACHINE_CR0_PE_ON), %eax
 	movl	%eax, %cr0
 
 	/* flush prefetch queue, reload %cs */
@@ -374,7 +374,7 @@ realcseg:
 
 
 /*
- * pupa_gate_a20(int on)
+ * grub_gate_a20(int on)
  *
  * Gate address-line 20 for high memory.
  *
@@ -383,7 +383,7 @@ realcseg:
  * It also eats any keystrokes in the keyboard buffer.  :-(
  */
 
-FUNCTION(pupa_gate_a20)
+FUNCTION(grub_gate_a20)
 	movl	%eax, %ecx
 
 	call    gloop1
@@ -437,7 +437,7 @@ gloop2ret:
  *  hang at this point!
  */
 
-FUNCTION(pupa_stop)
+FUNCTION(grub_stop)
 	call	prot_to_real
 
 	/*
@@ -446,29 +446,29 @@ FUNCTION(pupa_stop)
 	 * mode, so think about it before changing it.
 	 */
 
-FUNCTION(pupa_hard_stop)
+FUNCTION(grub_hard_stop)
 	hlt
-	jmp EXT_C(pupa_hard_stop)
+	jmp EXT_C(grub_hard_stop)
 
 
 /*
- * pupa_stop_floppy()
+ * grub_stop_floppy()
  *
  * Stop the floppy drive from spinning, so that other software is
  * jumped to with a known state.
  */
-FUNCTION(pupa_stop_floppy)
+FUNCTION(grub_stop_floppy)
 	movw	$0x3F2, %dx
 	xorb	%al, %al
 	outb	%al, %dx
 	ret
 
 /*
- * pupa_reboot()
+ * grub_reboot()
  *
  * Reboot the system. At the moment, rely on BIOS.
  */
-FUNCTION(pupa_reboot)
+FUNCTION(grub_reboot)
 	call	prot_to_real
 	.code16
 	/* cold boot */
@@ -478,15 +478,15 @@ FUNCTION(pupa_reboot)
 	.code32
 	
 /*
- * pupa_halt(int no_apm)
+ * grub_halt(int no_apm)
  *
  * Halt the system, using APM if possible. If NO_APM is true, don't use
  * APM even if it is available.
  */
-FUNCTION(pupa_halt)
+FUNCTION(grub_halt)
 	/* see if zero */
 	testl	%eax, %eax
-	jnz	EXT_C(pupa_stop)
+	jnz	EXT_C(grub_stop)
 
 	call	prot_to_real
 	.code16
@@ -495,7 +495,7 @@ FUNCTION(pupa_halt)
 	movw	$0x5300, %ax
 	xorw	%bx, %bx
 	int	$0x15
-	jc	EXT_C(pupa_hard_stop)
+	jc	EXT_C(grub_hard_stop)
 	/* don't check %bx for buggy BIOSes... */
 
 	/* disconnect APM first */
@@ -507,14 +507,14 @@ FUNCTION(pupa_halt)
 	movw	$0x5301, %ax
 	xorw	%bx, %bx
 	int	$0x15
-	jc	EXT_C(pupa_hard_stop)
+	jc	EXT_C(grub_hard_stop)
 
 	/* set APM protocol level - 1.1 or bust. (this covers APM 1.2 also) */
 	movw	$0x530E, %ax
 	xorw	%bx, %bx
 	movw	$0x0101, %cx
 	int	$0x15
-	jc	EXT_C(pupa_hard_stop)
+	jc	EXT_C(grub_hard_stop)
 	
 	/* set the power state to off */
 	movw	$0x5307, %ax
@@ -523,21 +523,21 @@ FUNCTION(pupa_halt)
 	int	$0x15
 
 	/* shouldn't reach here */
-	jmp	EXT_C(pupa_hard_stop)
+	jmp	EXT_C(grub_hard_stop)
 	.code32
 	
 	
 /*
- *  void pupa_chainloader_real_boot (int drive, void *part_addr)
+ *  void grub_chainloader_real_boot (int drive, void *part_addr)
  *
  *  This starts another boot loader.
  */
 
-FUNCTION(pupa_chainloader_real_boot)
+FUNCTION(grub_chainloader_real_boot)
 	pushl	%edx
 	pushl	%eax
 
-	call	EXT_C(pupa_dl_unload_all)
+	call	EXT_C(grub_dl_unload_all)
 
 	/* set up to pass boot drive */
 	popl	%edx
@@ -547,44 +547,44 @@ FUNCTION(pupa_chainloader_real_boot)
 
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax
-	call	EXT_C(pupa_gate_a20)
+	call	EXT_C(grub_gate_a20)
 	
 	call	prot_to_real
 	.code16
-	ljmp	$0, $PUPA_MEMORY_MACHINE_BOOT_LOADER_ADDR
+	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
 	.code32
 
 
 /*
- * void pupa_linux_boot_zimage (void)
+ * void grub_linux_boot_zimage (void)
  */
-VARIABLE(pupa_linux_prot_size)
+VARIABLE(grub_linux_prot_size)
 	.long	0
-VARIABLE(pupa_linux_tmp_addr)
+VARIABLE(grub_linux_tmp_addr)
 	.long	0
-VARIABLE(pupa_linux_real_addr)
+VARIABLE(grub_linux_real_addr)
 	.long	0
 	
-FUNCTION(pupa_linux_boot_zimage)
+FUNCTION(grub_linux_boot_zimage)
 	/* copy the kernel */
-	movl	EXT_C(pupa_linux_prot_size), %ecx
+	movl	EXT_C(grub_linux_prot_size), %ecx
 	addl	$3, %ecx
 	shrl	$2, %ecx
-	movl	$PUPA_LINUX_BZIMAGE_ADDR, %esi
-	movl	$PUPA_LINUX_ZIMAGE_ADDR, %edi
+	movl	$GRUB_LINUX_BZIMAGE_ADDR, %esi
+	movl	$GRUB_LINUX_ZIMAGE_ADDR, %edi
 	cld
 	rep
 	movsl
 
-FUNCTION(pupa_linux_boot_bzimage)
-	call	EXT_C(pupa_dl_unload_all)
+FUNCTION(grub_linux_boot_bzimage)
+	call	EXT_C(grub_dl_unload_all)
 	
-	movl	EXT_C(pupa_linux_real_addr), %ebx
+	movl	EXT_C(grub_linux_real_addr), %ebx
 
 	/* copy the real mode code */
-	movl	EXT_C(pupa_linux_tmp_addr), %esi
+	movl	EXT_C(grub_linux_tmp_addr), %esi
 	movl	%ebx, %edi
-	movl	$PUPA_LINUX_SETUP_MOVE_SIZE, %ecx
+	movl	$GRUB_LINUX_SETUP_MOVE_SIZE, %ecx
 	cld
 	rep
 	movsb
@@ -597,7 +597,7 @@ FUNCTION(pupa_linux_boot_bzimage)
 
 	/* XXX new stack pointer in safe area for calling functions */
 	movl	$0x4000, %esp
-	call	EXT_C(pupa_stop_floppy)
+	call	EXT_C(grub_stop_floppy)
 
 	/* final setup for linux boot */
 	call	prot_to_real
@@ -605,7 +605,7 @@ FUNCTION(pupa_linux_boot_bzimage)
 
 	cli
 	movw	%bx, %ss
-	movw	$PUPA_LINUX_SETUP_STACK, %sp
+	movw	$GRUB_LINUX_SETUP_STACK, %sp
 
 	movw	%bx, %ds
 	movw	%bx, %es
@@ -624,34 +624,34 @@ linux_setup_seg:
  * This starts the multiboot kernel.
  */
 
-FUNCTION(pupa_multiboot_real_boot)
+FUNCTION(grub_multiboot_real_boot)
 	/* Push the entry address on the stack.  */
 	pushl	%eax
 	/* Move the address of the multiboot information structure to ebx.  */
 	movl	%edx,%ebx
 	
 	/* Unload all modules and stop the floppy driver.  */
-	call	EXT_C(pupa_dl_unload_all)
-	call	EXT_C(pupa_stop_floppy)
+	call	EXT_C(grub_dl_unload_all)
+	call	EXT_C(grub_stop_floppy)
 
 	/* Interrupts should be disabled.  */
 	cli
 	
 	/* Move the magic value into eax and jump to the kernel.  */
-	movl	$PUPA_MB_MAGIC2,%eax
+	movl	$GRUB_MB_MAGIC2,%eax
 	popl	%ecx
 	jmp 	*%ecx
 	
 	
 /*
- *   int pupa_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
+ *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
  *
  *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
  *   is passed for disk address packet. If an error occurs, return
  *   non-zero, otherwise zero.
  */
 
-FUNCTION(pupa_biosdisk_rw_int13_extensions)
+FUNCTION(grub_biosdisk_rw_int13_extensions)
 	pushl	%ebp
 	pushl	%esi
 
@@ -685,7 +685,7 @@ FUNCTION(pupa_biosdisk_rw_int13_extensions)
 	ret
 	
 /*
- *   int pupa_biosdisk_rw_standard (int ah, int drive, int coff, int hoff,
+ *   int grub_biosdisk_rw_standard (int ah, int drive, int coff, int hoff,
  *                                  int soff, int nsec, int segment)
  *
  *   Call standard and old INT13 (int 13 %ah=AH) for DRIVE. Read/write
@@ -693,7 +693,7 @@ FUNCTION(pupa_biosdisk_rw_int13_extensions)
  *   return non-zero, otherwise zero.
  */
 
-FUNCTION(pupa_biosdisk_rw_standard)
+FUNCTION(grub_biosdisk_rw_standard)
 	pushl	%ebp
 	movl	%esp, %ebp
 
@@ -759,13 +759,13 @@ FUNCTION(pupa_biosdisk_rw_standard)
 
 
 /*
- *   int pupa_biosdisk_check_int13_extensions (int drive)
+ *   int grub_biosdisk_check_int13_extensions (int drive)
  *
  *   Check if LBA is supported for DRIVE. If it is supported, then return
  *   the major version of extensions, otherwise zero.
  */
 
-FUNCTION(pupa_biosdisk_check_int13_extensions)
+FUNCTION(grub_biosdisk_check_int13_extensions)
 	pushl	%ebp
 	pushl	%ebx
 
@@ -806,13 +806,13 @@ FUNCTION(pupa_biosdisk_check_int13_extensions)
 
 
 /*
- *   int pupa_biosdisk_get_diskinfo_int13_extensions (int drive, void *drp)
+ *   int grub_biosdisk_get_diskinfo_int13_extensions (int drive, void *drp)
  *
  *   Return the geometry of DRIVE in a drive parameters, DRP. If an error
  *   occurs, then return non-zero, otherwise zero.
  */
 
-FUNCTION(pupa_biosdisk_get_diskinfo_int13_extensions)
+FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -849,7 +849,7 @@ FUNCTION(pupa_biosdisk_get_diskinfo_int13_extensions)
 
 
 /*
- *   int pupa_biosdisk_get_diskinfo_standard (int drive,
+ *   int grub_biosdisk_get_diskinfo_standard (int drive,
  *                                            unsigned long *cylinders, 
  *                                            unsigned long *heads,
  *                                            unsigned long *sectors)
@@ -858,7 +858,7 @@ FUNCTION(pupa_biosdisk_get_diskinfo_int13_extensions)
  *   error occurs, then return non-zero, otherwise zero.
  */
 
-FUNCTION(pupa_biosdisk_get_diskinfo_standard)
+FUNCTION(grub_biosdisk_get_diskinfo_standard)
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%edi
@@ -922,9 +922,9 @@ FUNCTION(pupa_biosdisk_get_diskinfo_standard)
 
 
 /*
- * int pupa_biosdisk_get_num_floppies (void)
+ * int grub_biosdisk_get_num_floppies (void)
  */
-FUNCTION(pupa_biosdisk_get_num_floppies)
+FUNCTION(grub_biosdisk_get_num_floppies)
 	pushl	%ebp
 
 	xorl	%edx, %edx
@@ -960,7 +960,7 @@ FUNCTION(pupa_biosdisk_get_num_floppies)
 	
 /*
  *
- * pupa_get_memsize(i) :  return the memory size in KB. i == 0 for conventional
+ * grub_get_memsize(i) :  return the memory size in KB. i == 0 for conventional
  *		memory, i == 1 for extended memory
  *	BIOS call "INT 12H" to get conventional memory size
  *	BIOS call "INT 15H, AH=88H" to get extended memory size
@@ -968,7 +968,7 @@ FUNCTION(pupa_biosdisk_get_num_floppies)
  *
  */
 
-FUNCTION(pupa_get_memsize)
+FUNCTION(grub_get_memsize)
 	pushl	%ebp
 
 	movl	%eax, %edx
@@ -1000,7 +1000,7 @@ xdone:
 
 /*
  *
- * pupa_get_eisa_mmap() :  return packed EISA memory map, lower 16 bits is
+ * grub_get_eisa_mmap() :  return packed EISA memory map, lower 16 bits is
  *		memory between 1M and 16M in 1K parts, upper 16 bits is
  *		memory above 16M in 64K parts.  If error, return zero.
  *	BIOS call "INT 15H, AH=E801H" to get EISA memory map,
@@ -1009,7 +1009,7 @@ xdone:
  *
  */
 
-FUNCTION(pupa_get_eisa_mmap)
+FUNCTION(grub_get_eisa_mmap)
 	pushl	%ebp
 	pushl	%ebx
 
@@ -1037,7 +1037,7 @@ xnoteisa:
 
 /*
  *
- * pupa_get_mmap_entry(addr, cont) : address and old continuation value (zero to
+ * grub_get_mmap_entry(addr, cont) : address and old continuation value (zero to
  *		start), for the Query System Address Map BIOS call.
  *
  *  Sets the first 4-byte int value of "addr" to the size returned by
@@ -1046,7 +1046,7 @@ xnoteisa:
  *	Returns:  new (non-zero) continuation value, 0 if done.
  */
 
-FUNCTION(pupa_get_mmap_entry)
+FUNCTION(grub_get_mmap_entry)
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%edi
@@ -1113,7 +1113,7 @@ xsmap:
 
 	
 /*
- * void pupa_console_real_putchar (int c)
+ * void grub_console_real_putchar (int c)
  *
  * Put the character C on the console. Because GRUB wants to write a
  * character with an attribute, this implementation is a bit tricky.
@@ -1126,10 +1126,10 @@ xsmap:
  * get the height of the screen, and the TELETYPE OUPUT BIOS call doesn't
  * support setting a background attribute.
  */
-FUNCTION(pupa_console_real_putchar)
+FUNCTION(grub_console_real_putchar)
 	movl	%eax, %edx
 	pusha
-	movb	EXT_C(pupa_console_cur_color), %bl
+	movb	EXT_C(grub_console_cur_color), %bl
 	
 	call	prot_to_real
 	.code16
@@ -1197,7 +1197,7 @@ FUNCTION(pupa_console_real_putchar)
 	
 
 /*
- * int pupa_console_getkey (void)
+ * int grub_console_getkey (void)
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
@@ -1206,16 +1206,16 @@ FUNCTION(pupa_console_real_putchar)
 
 /* this table is used in translate_keycode below */
 translation_table:
-	.word	PUPA_CONSOLE_KEY_LEFT, 2
-	.word	PUPA_CONSOLE_KEY_RIGHT, 6
-	.word	PUPA_CONSOLE_KEY_UP, 16
-	.word	PUPA_CONSOLE_KEY_DOWN, 14
-	.word	PUPA_CONSOLE_KEY_HOME, 1
-	.word	PUPA_CONSOLE_KEY_END, 5
-	.word	PUPA_CONSOLE_KEY_DC, 4
-	.word	PUPA_CONSOLE_KEY_BACKSPACE, 8
-	.word	PUPA_CONSOLE_KEY_PPAGE, 7
-	.word	PUPA_CONSOLE_KEY_NPAGE, 3
+	.word	GRUB_CONSOLE_KEY_LEFT, 2
+	.word	GRUB_CONSOLE_KEY_RIGHT, 6
+	.word	GRUB_CONSOLE_KEY_UP, 16
+	.word	GRUB_CONSOLE_KEY_DOWN, 14
+	.word	GRUB_CONSOLE_KEY_HOME, 1
+	.word	GRUB_CONSOLE_KEY_END, 5
+	.word	GRUB_CONSOLE_KEY_DC, 4
+	.word	GRUB_CONSOLE_KEY_BACKSPACE, 8
+	.word	GRUB_CONSOLE_KEY_PPAGE, 7
+	.word	GRUB_CONSOLE_KEY_NPAGE, 3
 	.word	0
 	
 /*
@@ -1248,7 +1248,7 @@ translate_keycode:
 
 	.code32
 	
-FUNCTION(pupa_console_getkey)
+FUNCTION(grub_console_getkey)
 	pushl	%ebp
 
 	call	prot_to_real
@@ -1269,7 +1269,7 @@ FUNCTION(pupa_console_getkey)
 
 
 /*
- * int pupa_console_checkkey (void)
+ * int grub_console_checkkey (void)
  *	if there is a character pending, return it; otherwise return -1
  * BIOS call "INT 16H Function 01H" to check whether a character is pending
  *	Call with	%ah = 0x1
@@ -1281,7 +1281,7 @@ FUNCTION(pupa_console_getkey)
  *		else
  *			Zero flag = set
  */
-FUNCTION(pupa_console_checkkey)
+FUNCTION(grub_console_checkkey)
 	pushl	%ebp
 	xorl	%edx, %edx
 	
@@ -1310,7 +1310,7 @@ pending:
 
 	
 /*
- * pupa_uint16_t pupa_console_getxy (void)
+ * grub_uint16_t grub_console_getxy (void)
  * BIOS call "INT 10H Function 03h" to get cursor position
  *	Call with	%ah = 0x03
  *			%bh = page
@@ -1321,7 +1321,7 @@ pending:
  */
 
 
-FUNCTION(pupa_console_getxy)
+FUNCTION(grub_console_getxy)
 	pushl	%ebp
 	pushl	%ebx                    /* save EBX */
 
@@ -1344,7 +1344,7 @@ FUNCTION(pupa_console_getxy)
 
 
 /*
- * void pupa_console_gotoxy(pupa_uint8_t x, pupa_uint8_t y)
+ * void grub_console_gotoxy(grub_uint8_t x, grub_uint8_t y)
  * BIOS call "INT 10H Function 02h" to set cursor position
  *	Call with	%ah = 0x02
  *			%bh = page
@@ -1353,7 +1353,7 @@ FUNCTION(pupa_console_getxy)
  */
 
 
-FUNCTION(pupa_console_gotoxy)
+FUNCTION(grub_console_gotoxy)
 	pushl	%ebp
 	pushl	%ebx                    /* save EBX */
 
@@ -1376,7 +1376,7 @@ FUNCTION(pupa_console_gotoxy)
 
 	
 /*
- * void pupa_console_cls (void)
+ * void grub_console_cls (void)
  * BIOS call "INT 10H Function 09h" to write character and attribute
  *	Call with	%ah = 0x09
  *                      %al = (character)
@@ -1385,7 +1385,7 @@ FUNCTION(pupa_console_gotoxy)
  *                      %cx = (number of times)
  */
 
-FUNCTION(pupa_console_cls)
+FUNCTION(grub_console_cls)
 	pushl	%ebp
 	pushl	%ebx                    /* save EBX */
 
@@ -1417,7 +1417,7 @@ FUNCTION(pupa_console_cls)
 
 	
 /*
- * void pupa_console_setcursor (int on)
+ * void grub_console_setcursor (int on)
  * BIOS call "INT 10H Function 01h" to set cursor type
  *      Call with       %ah = 0x01
  *                      %ch = cursor starting scanline
@@ -1429,7 +1429,7 @@ console_cursor_state:
 console_cursor_shape:
 	.word	0
 	
-FUNCTION(pupa_console_setcursor)
+FUNCTION(grub_console_setcursor)
 	pushl	%ebp
 	pushl	%ebx
 
@@ -1474,7 +1474,7 @@ FUNCTION(pupa_console_setcursor)
 	ret
 		
 /*
- * pupa_getrtsecs()
+ * grub_getrtsecs()
  *	if a seconds value can be read, read it and return it (BCD),
  *      otherwise return 0xFF
  * BIOS call "INT 1AH Function 02H" to check whether a character is pending
@@ -1491,7 +1491,7 @@ FUNCTION(pupa_console_setcursor)
  *                         (this indicates that the clock is updating, or
  *                          that it isn't running)
  */
-FUNCTION(pupa_getrtsecs)
+FUNCTION(grub_getrtsecs)
 	pushl	%ebp
 
 	call	prot_to_real	/* enter real mode */
@@ -1515,11 +1515,11 @@ gottime:
 
 	
 /*
- * pupa_get_rtc()
+ * grub_get_rtc()
  *	return the real time in ticks, of which there are about
  *	18-20 per second
  */
-FUNCTION(pupa_get_rtc)
+FUNCTION(grub_get_rtc)
 	pushl	%ebp
 
 	call	prot_to_real	/* enter real mode */
@@ -1540,9 +1540,9 @@ FUNCTION(pupa_get_rtc)
 
 
 /*
- * unsigned char pupa_vga_set_mode (unsigned char mode)
+ * unsigned char grub_vga_set_mode (unsigned char mode)
  */
-FUNCTION(pupa_vga_set_mode)
+FUNCTION(grub_vga_set_mode)
 	pushl	%ebp
 	pushl	%ebx
 	movl	%eax, %ecx
@@ -1570,9 +1570,9 @@ FUNCTION(pupa_vga_set_mode)
 
 
 /*
- * unsigned char *pupa_vga_get_font (void)
+ * unsigned char *grub_vga_get_font (void)
  */
-FUNCTION(pupa_vga_get_font)
+FUNCTION(grub_vga_get_font)
 	pushl	%ebp
 	pushl	%ebx
 

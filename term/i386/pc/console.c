@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,17 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/machine/console.h>
-#include <pupa/term.h>
-#include <pupa/types.h>
+#include <grub/machine/console.h>
+#include <grub/term.h>
+#include <grub/types.h>
 
-pupa_uint8_t pupa_console_cur_color = 0x7;
-static pupa_uint8_t pupa_console_standard_color = 0x7;
-static pupa_uint8_t pupa_console_normal_color = 0x7;
-static pupa_uint8_t pupa_console_highlight_color = 0x70;
+grub_uint8_t grub_console_cur_color = 0x7;
+static grub_uint8_t grub_console_standard_color = 0x7;
+static grub_uint8_t grub_console_normal_color = 0x7;
+static grub_uint8_t grub_console_highlight_color = 0x70;
 
 static void
-pupa_console_putchar (pupa_uint32_t c)
+grub_console_putchar (grub_uint32_t c)
 {
   if (c > 0x7f)
     {
@@ -71,21 +71,21 @@ pupa_console_putchar (pupa_uint32_t c)
 	}
     }
 
-  pupa_console_real_putchar (c);
+  grub_console_real_putchar (c);
 }
 
 static void
-pupa_console_setcolorstate (pupa_term_color_state state)
+grub_console_setcolorstate (grub_term_color_state state)
 {
   switch (state) {
-    case PUPA_TERM_COLOR_STANDARD:
-      pupa_console_cur_color = pupa_console_standard_color;
+    case GRUB_TERM_COLOR_STANDARD:
+      grub_console_cur_color = grub_console_standard_color;
       break;
-    case PUPA_TERM_COLOR_NORMAL:
-      pupa_console_cur_color = pupa_console_normal_color;
+    case GRUB_TERM_COLOR_NORMAL:
+      grub_console_cur_color = grub_console_normal_color;
       break;
-    case PUPA_TERM_COLOR_HIGHLIGHT:
-      pupa_console_cur_color = pupa_console_highlight_color;
+    case GRUB_TERM_COLOR_HIGHLIGHT:
+      grub_console_cur_color = grub_console_highlight_color;
       break;
     default:
       break;
@@ -93,33 +93,33 @@ pupa_console_setcolorstate (pupa_term_color_state state)
 }
 
 static void
-pupa_console_setcolor (pupa_uint8_t normal_color, pupa_uint8_t highlight_color)
+grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 {
-  pupa_console_normal_color = normal_color;
-  pupa_console_highlight_color = highlight_color;
+  grub_console_normal_color = normal_color;
+  grub_console_highlight_color = highlight_color;
 }
 
-static struct pupa_term pupa_console_term =
+static struct grub_term grub_console_term =
   {
     .name = "console",
     .init = 0,
     .fini = 0,
-    .putchar = pupa_console_putchar,
-    .checkkey = pupa_console_checkkey,
-    .getkey = pupa_console_getkey,
-    .getxy = pupa_console_getxy,
-    .gotoxy = pupa_console_gotoxy,
-    .cls = pupa_console_cls,
-    .setcolorstate = pupa_console_setcolorstate,
-    .setcolor = pupa_console_setcolor,
-    .setcursor = pupa_console_setcursor,
+    .putchar = grub_console_putchar,
+    .checkkey = grub_console_checkkey,
+    .getkey = grub_console_getkey,
+    .getxy = grub_console_getxy,
+    .gotoxy = grub_console_gotoxy,
+    .cls = grub_console_cls,
+    .setcolorstate = grub_console_setcolorstate,
+    .setcolor = grub_console_setcolor,
+    .setcursor = grub_console_setcursor,
     .flags = 0,
     .next = 0
   };
 
 void
-pupa_console_init (void)
+grub_console_init (void)
 {
-  pupa_term_register (&pupa_console_term);
-  pupa_term_set_current (&pupa_console_term);
+  grub_term_register (&grub_console_term);
+  grub_term_set_current (&grub_console_term);
 }

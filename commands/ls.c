@@ -1,9 +1,9 @@
 /* ls.c - command to list files and devices */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,24 +14,24 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/types.h>
-#include <pupa/misc.h>
-#include <pupa/mm.h>
-#include <pupa/err.h>
-#include <pupa/dl.h>
-#include <pupa/normal.h>
-#include <pupa/arg.h>
-#include <pupa/disk.h>
-#include <pupa/device.h>
-#include <pupa/term.h>
-#include <pupa/machine/partition.h>
-#include <pupa/file.h>
+#include <grub/types.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/err.h>
+#include <grub/dl.h>
+#include <grub/normal.h>
+#include <grub/arg.h>
+#include <grub/disk.h>
+#include <grub/device.h>
+#include <grub/term.h>
+#include <grub/machine/partition.h>
+#include <grub/file.h>
 
-static const struct pupa_arg_option options[] =
+static const struct grub_arg_option options[] =
   {
     {"long", 'l', 0, "Show a long list with more detailed information", 0, 0},
     {"human-readable", 'h', 0, "Print sizes in a human readable format", 0, 0},
@@ -39,105 +39,105 @@ static const struct pupa_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
-static const char pupa_human_sizes[] = {' ', 'K', 'M', 'G', 'T'};
+static const char grub_human_sizes[] = {' ', 'K', 'M', 'G', 'T'};
 
-static pupa_err_t
-pupa_ls_list_disks (int longlist)
+static grub_err_t
+grub_ls_list_disks (int longlist)
 {
-  auto int pupa_ls_print_disks (const char *name);
-  int pupa_ls_print_disks (const char *name)
+  auto int grub_ls_print_disks (const char *name);
+  int grub_ls_print_disks (const char *name)
     {
-      pupa_device_t dev;
-      auto int print_partition (const pupa_partition_t p);
+      grub_device_t dev;
+      auto int print_partition (const grub_partition_t p);
       
-      int print_partition (const pupa_partition_t p)
+      int print_partition (const grub_partition_t p)
 	{
-	  char *pname = pupa_partition_get_name (p);
+	  char *pname = grub_partition_get_name (p);
 
 	  if (pname)
 	    {
 	      if (longlist)
-		pupa_print_partinfo (dev, pname);
+		grub_print_partinfo (dev, pname);
 	      else
-		pupa_printf ("(%s,%s) ", name, pname);
+		grub_printf ("(%s,%s) ", name, pname);
 	    }
 
 	  return 0;
 	}
       
-      dev = pupa_device_open (name);
-      pupa_errno = PUPA_ERR_NONE;
+      dev = grub_device_open (name);
+      grub_errno = GRUB_ERR_NONE;
       
       if (dev)
 	{
 	  if (longlist)
-	    pupa_printf ("Disk: %s\n", name);
+	    grub_printf ("Disk: %s\n", name);
 	  else
-	    pupa_printf ("(%s) ", name);
+	    grub_printf ("(%s) ", name);
 
 	  if (dev->disk && dev->disk->has_partitions)
 	    {
-	      pupa_partition_iterate (dev->disk, print_partition);
-	      pupa_errno = PUPA_ERR_NONE;
+	      grub_partition_iterate (dev->disk, print_partition);
+	      grub_errno = GRUB_ERR_NONE;
 	    }
 
-	  pupa_device_close (dev);
+	  grub_device_close (dev);
 	}
   
       return 0;
     }
   
-  pupa_disk_dev_iterate (pupa_ls_print_disks);
-  pupa_putchar ('\n');
-  pupa_refresh ();
+  grub_disk_dev_iterate (grub_ls_print_disks);
+  grub_putchar ('\n');
+  grub_refresh ();
 
  
   return 0;
 }
 
-static pupa_err_t
-pupa_ls_list_files (const char *dirname, int longlist, int all, int human)
+static grub_err_t
+grub_ls_list_files (const char *dirname, int longlist, int all, int human)
 {
   char *device_name;
-  pupa_fs_t fs;
+  grub_fs_t fs;
   char *path;
-  pupa_device_t dev;
+  grub_device_t dev;
 
   static int print_files (const char *filename, int dir)
     {
       if (all || filename[0] != '.')
-	pupa_printf ("%s%s ", filename, dir ? "/" : "");
+	grub_printf ("%s%s ", filename, dir ? "/" : "");
       
       return 0;
     }
      
   static int print_files_long (const char *filename, int dir)
     {
-      char pathname[pupa_strlen (dirname) + pupa_strlen (filename) + 1];
+      char pathname[grub_strlen (dirname) + grub_strlen (filename) + 1];
 
       if ((! all) && (filename[0] == '.'))
 	return 0;
 
       if (! dir)
 	{
-	  pupa_file_t file;
+	  grub_file_t file;
 	  
-	  if (dirname[pupa_strlen (dirname) - 1] == '/')
-	    pupa_sprintf (pathname, "%s%s", dirname, filename);
+	  if (dirname[grub_strlen (dirname) - 1] == '/')
+	    grub_sprintf (pathname, "%s%s", dirname, filename);
 	  else
-	    pupa_sprintf (pathname, "%s/%s", dirname, filename);
+	    grub_sprintf (pathname, "%s/%s", dirname, filename);
 
 	  /* XXX: For ext2fs symlinks are detected as files while they
 	     should be reported as directories.  */
-	  file = pupa_file_open (pathname);
+	  file = grub_file_open (pathname);
 	  if (! file)
 	    {
-	      pupa_errno = 0;
+	      grub_errno = 0;
 	      return 0;
 	    }
 
 	  if (! human)
-	    pupa_printf ("%-12d", file->size);
+	    grub_printf ("%-12d", file->size);
 	  else
 	    {
 	      float fsize = file->size;
@@ -154,43 +154,43 @@ pupa_ls_list_files (const char *dirname, int longlist, int all, int human)
 
 	      if (units)
 		{
-		  pupa_sprintf (buf, "%0.2f%c", fsize, pupa_human_sizes[units]);
-		  pupa_printf ("%-12s", buf);
+		  grub_sprintf (buf, "%0.2f%c", fsize, grub_human_sizes[units]);
+		  grub_printf ("%-12s", buf);
 		}
 	      else
-		pupa_printf ("%-12d", file->size);
+		grub_printf ("%-12d", file->size);
 	      
 	    }
 	  (fs->close) (file);
       	}
       else
-	pupa_printf ("%-12s", "DIR");
+	grub_printf ("%-12s", "DIR");
 
-      pupa_printf ("%s%s\n", filename, dir ? "/" : "");
+      grub_printf ("%s%s\n", filename, dir ? "/" : "");
 
       return 0;
     }
 
-  device_name = pupa_file_get_device_name (dirname);
-  dev = pupa_device_open (device_name);
+  device_name = grub_file_get_device_name (dirname);
+  dev = grub_device_open (device_name);
   if (! dev)
     goto fail;
 
-  fs = pupa_fs_probe (dev);
-  path = pupa_strchr (dirname, '/');
+  fs = grub_fs_probe (dev);
+  path = grub_strchr (dirname, '/');
 
   if (! path && ! device_name)
     {
-      pupa_error (PUPA_ERR_BAD_ARGUMENT, "invalid argument");
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
       goto fail;
     }
       
   if (! path)
     {
-      if (pupa_errno == PUPA_ERR_UNKNOWN_FS)
-	pupa_errno = PUPA_ERR_NONE;
+      if (grub_errno == GRUB_ERR_UNKNOWN_FS)
+	grub_errno = GRUB_ERR_NONE;
 	  
-      pupa_printf ("(%s): Filesystem is %s.\n",
+      grub_printf ("(%s): Filesystem is %s.\n",
 		   device_name, fs ? fs->name : "unknown");
     }
   else if (fs)
@@ -199,64 +199,64 @@ pupa_ls_list_files (const char *dirname, int longlist, int all, int human)
 	(fs->dir) (dev, path, print_files_long);
       else
 	(fs->dir) (dev, path, print_files);
-      pupa_putchar ('\n');
-      pupa_refresh ();
+      grub_putchar ('\n');
+      grub_refresh ();
     }
 
  fail:
   if (dev)
-    pupa_device_close (dev);
+    grub_device_close (dev);
       
-  pupa_free (device_name);
+  grub_free (device_name);
 
   return 0;
 }
 
-static pupa_err_t
-pupa_cmd_ls (struct pupa_arg_list *state, int argc, char **args)
+static grub_err_t
+grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
 {
-  static int pupa_ls_print_files (const char *filename, int dir)
+  static int grub_ls_print_files (const char *filename, int dir)
     {
       if (state[2].set/*all*/ || filename[0] != '.')
-	pupa_printf ("%s%s ", filename, dir ? "/" : "");
+	grub_printf ("%s%s ", filename, dir ? "/" : "");
       
       return 0;
     }
 
   if (argc == 0)
-  pupa_ls_list_disks (state[0].set);
+  grub_ls_list_disks (state[0].set);
   else
-    pupa_ls_list_files (args[0], state[0].set, state[2].set,
+    grub_ls_list_files (args[0], state[0].set, state[2].set,
 			state[1].set);
 
   return 0;
 }
 
-#ifdef PUPA_UTIL
+#ifdef GRUB_UTIL
 void
-pupa_ls_init (void)
+grub_ls_init (void)
 {
-  pupa_register_command ("ls", pupa_cmd_ls, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
 			 "ls [OPTIONS...] [DIR]",
 			 "List devices and files", options);
 }
 
 void
-pupa_ls_fini (void)
+grub_ls_fini (void)
 {
-  pupa_unregister_command ("ls");
+  grub_unregister_command ("ls");
 }
-#else /* ! PUPA_UTIL */
-PUPA_MOD_INIT
+#else /* ! GRUB_UTIL */
+GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
-  pupa_register_command ("ls", pupa_cmd_ls, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
 			 "ls [OPTIONS...] [DIR]",
 			 "List devices and files", options);
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_unregister_command ("ls");
+  grub_unregister_command ("ls");
 }
-#endif /* ! PUPA_UTIL */
+#endif /* ! GRUB_UTIL */

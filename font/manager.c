@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,25 +17,25 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/file.h>
-#include <pupa/misc.h>
-#include <pupa/dl.h>
-#include <pupa/normal.h>
-#include <pupa/types.h>
-#include <pupa/mm.h>
-#include <pupa/font.h>
+#include <grub/file.h>
+#include <grub/misc.h>
+#include <grub/dl.h>
+#include <grub/normal.h>
+#include <grub/types.h>
+#include <grub/mm.h>
+#include <grub/font.h>
 
 struct entry
 {
-  pupa_uint32_t code;
-  pupa_uint32_t offset;
+  grub_uint32_t code;
+  grub_uint32_t offset;
 };
 
 struct font
 {
   struct font *next;
-  pupa_file_t file;
-  pupa_uint32_t num;
+  grub_file_t file;
+  grub_uint32_t num;
   struct entry table[0];
 };
 
@@ -44,29 +44,29 @@ static struct font *font_list;
 static int
 add_font (const char *filename)
 {
-  pupa_file_t file = 0;
+  grub_file_t file = 0;
   char magic[4];
-  pupa_uint32_t num, i;
+  grub_uint32_t num, i;
   struct font *font = 0;
 
-  file = pupa_file_open (filename);
+  file = grub_file_open (filename);
   if (! file)
     goto fail;
 
-  if (pupa_file_read (file, magic, 4) != 4)
+  if (grub_file_read (file, magic, 4) != 4)
     goto fail;
 
-  if (pupa_memcmp (magic, PUPA_FONT_MAGIC, 4) != 0)
+  if (grub_memcmp (magic, GRUB_FONT_MAGIC, 4) != 0)
     {
-      pupa_error (PUPA_ERR_BAD_FONT, "invalid font magic");
+      grub_error (GRUB_ERR_BAD_FONT, "invalid font magic");
       goto fail;
     }
 
-  if (pupa_file_read (file, (char *) &num, 4) != 4)
+  if (grub_file_read (file, (char *) &num, 4) != 4)
     goto fail;
 
-  num = pupa_le_to_cpu32 (num);
-  font = (struct font *) pupa_malloc (sizeof (struct font)
+  num = grub_le_to_cpu32 (num);
+  font = (struct font *) grub_malloc (sizeof (struct font)
 				      + sizeof (struct entry) * num);
   if (! font)
     goto fail;
@@ -76,16 +76,16 @@ add_font (const char *filename)
 
   for (i = 0; i < num; i++)
     {
-      pupa_uint32_t code, offset;
+      grub_uint32_t code, offset;
       
-      if (pupa_file_read (file, (char *) &code, 4) != 4)
+      if (grub_file_read (file, (char *) &code, 4) != 4)
 	goto fail;
 
-      if (pupa_file_read (file, (char *) &offset, 4) != 4)
+      if (grub_file_read (file, (char *) &offset, 4) != 4)
 	goto fail;
 
-      font->table[i].code = pupa_le_to_cpu32 (code);
-      font->table[i].offset = pupa_le_to_cpu32 (offset);
+      font->table[i].code = grub_le_to_cpu32 (code);
+      font->table[i].offset = grub_le_to_cpu32 (offset);
     }
 
   font->next = font_list;
@@ -95,10 +95,10 @@ add_font (const char *filename)
 
  fail:
   if (font)
-    pupa_free (font);
+    grub_free (font);
 
   if (file)
-    pupa_file_close (file);
+    grub_file_close (file);
 
   return 0;
 }
@@ -113,8 +113,8 @@ remove_font (struct font *font)
       {
         *p = q->next;
 	
-	pupa_file_close (font->file);
-	pupa_free (font);
+	grub_file_close (font->file);
+	grub_free (font);
 	
         break;
       }
@@ -122,11 +122,11 @@ remove_font (struct font *font)
 
 /* Return the offset of the glyph corresponding to the codepoint CODE
    in the font FONT. If no found, return zero.  */
-static pupa_uint32_t
-find_glyph (const struct font *font, pupa_uint32_t code)
+static grub_uint32_t
+find_glyph (const struct font *font, grub_uint32_t code)
 {
-  pupa_uint32_t start = 0;
-  pupa_uint32_t end = font->num - 1;
+  grub_uint32_t start = 0;
+  grub_uint32_t end = font->num - 1;
   struct entry *table = font->table;
   
   /* This shouldn't happen.  */
@@ -136,7 +136,7 @@ find_glyph (const struct font *font, pupa_uint32_t code)
   /* Do a binary search.  */
   while (start <= end)
     {
-      pupa_uint32_t i = (start + end) / 2;
+      grub_uint32_t i = (start + end) / 2;
 
       if (table[i].code < code)
 	start = i + 1;
@@ -167,7 +167,7 @@ fill_with_default_glyph (unsigned char bitmap[32], unsigned *width)
 /* Get a glyph corresponding to the codepoint CODE. Always fill BITMAP
    and WIDTH with something, even if no glyph is found.  */
 int
-pupa_font_get_glyph (pupa_uint32_t code,
+grub_font_get_glyph (grub_uint32_t code,
 		     unsigned char bitmap[32], unsigned *width)
 {
   struct font *font;
@@ -177,31 +177,31 @@ pupa_font_get_glyph (pupa_uint32_t code,
  restart:
   for (font = font_list; font; font = font->next)
     {
-      pupa_uint32_t offset;
+      grub_uint32_t offset;
 
       offset = find_glyph (font, code);
       if (offset)
 	{
-	  pupa_uint32_t w;
+	  grub_uint32_t w;
 	  
-	  pupa_file_seek (font->file, offset);
-	  if (pupa_file_read (font->file, (char *) &w, 4) != 4)
+	  grub_file_seek (font->file, offset);
+	  if (grub_file_read (font->file, (char *) &w, 4) != 4)
 	    {
 	      remove_font (font);
 	      goto restart;
 	    }
 
-	  w = pupa_le_to_cpu32 (w);
+	  w = grub_le_to_cpu32 (w);
 	  if (w != 1 && w != 2)
 	    {
-	      /* pupa_error (PUPA_ERR_BAD_FONT, "invalid width"); */
+	      /* grub_error (GRUB_ERR_BAD_FONT, "invalid width"); */
 	      remove_font (font);
 	      goto restart;
 	    }
 
 	  if (bitmap
-	      && (pupa_file_read (font->file, bitmap, w * 16)
-		  != (pupa_ssize_t) w * 16))
+	      && (grub_file_read (font->file, bitmap, w * 16)
+		  != (grub_ssize_t) w * 16))
 	    {
 	      remove_font (font);
 	      goto restart;
@@ -217,13 +217,13 @@ pupa_font_get_glyph (pupa_uint32_t code,
   return 0;
 }
 
-static pupa_err_t
-font_command (struct pupa_arg_list *state __attribute__ ((unused)),
+static grub_err_t
+font_command (struct grub_arg_list *state __attribute__ ((unused)),
 	      int argc  __attribute__ ((unused)),
 	      char **args __attribute__ ((unused)))
 {
   if (argc == 0)
-    return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no font specified");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no font specified");
 
   while (argc--)
     if (! add_font (*args++))
@@ -232,14 +232,14 @@ font_command (struct pupa_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
-PUPA_MOD_INIT
+GRUB_MOD_INIT
 {
   (void) mod; /* Stop warning.  */
-  pupa_register_command ("font", font_command, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("font", font_command, GRUB_COMMAND_FLAG_BOTH,
 			 "font FILE...", "Specify a font file to display.", 0);
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_unregister_command ("font");
+  grub_unregister_command ("font");
 }

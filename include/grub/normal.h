@@ -1,6 +1,6 @@
 /* normal.h - prototypes for the normal mode */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,36 +18,36 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_NORMAL_HEADER
-#define PUPA_NORMAL_HEADER	1
+#ifndef GRUB_NORMAL_HEADER
+#define GRUB_NORMAL_HEADER	1
 
-#include <pupa/setjmp.h>
-#include <pupa/symbol.h>
-#include <pupa/err.h>
-#include <pupa/arg.h>
+#include <grub/setjmp.h>
+#include <grub/symbol.h>
+#include <grub/err.h>
+#include <grub/arg.h>
 
 /* The maximum size of a command-line.  */
-#define PUPA_MAX_CMDLINE	1600
+#define GRUB_MAX_CMDLINE	1600
 
 /* Can be run in the command-line.  */
-#define PUPA_COMMAND_FLAG_CMDLINE	0x1
+#define GRUB_COMMAND_FLAG_CMDLINE	0x1
 /* Can be run in the menu.  */
-#define PUPA_COMMAND_FLAG_MENU		0x2
+#define GRUB_COMMAND_FLAG_MENU		0x2
 /* Can be run in both interfaces.  */
-#define PUPA_COMMAND_FLAG_BOTH		0x3
+#define GRUB_COMMAND_FLAG_BOTH		0x3
 /* Only for the command title.  */
-#define PUPA_COMMAND_FLAG_TITLE		0x4
+#define GRUB_COMMAND_FLAG_TITLE		0x4
 /* Don't print the command on booting.  */
-#define PUPA_COMMAND_FLAG_NO_ECHO	0x8
+#define GRUB_COMMAND_FLAG_NO_ECHO	0x8
 
 /* The command description.  */
-struct pupa_command
+struct grub_command
 {
   /* The name.  */
   const char *name;
 
   /* The callback function.  */
-  pupa_err_t (*func) (struct pupa_arg_list *state, int argc, char **args);
+  grub_err_t (*func) (struct grub_arg_list *state, int argc, char **args);
 
   /* The flags.  */
   unsigned flags;
@@ -59,26 +59,26 @@ struct pupa_command
   const char *description;
 
   /* The argument parser optionlist.  */
-  const struct pupa_arg_option *options;
+  const struct grub_arg_option *options;
 
   /* The next element.  */
-  struct pupa_command *next;
+  struct grub_command *next;
 };
-typedef struct pupa_command *pupa_command_t;
+typedef struct grub_command *grub_command_t;
 
 /* The command list.  */
-struct pupa_command_list
+struct grub_command_list
 {
   /* The string of a command.  */
   const char *command;
 
   /* The next element.  */
-  struct pupa_command_list *next;
+  struct grub_command_list *next;
 };
-typedef struct pupa_command_list *pupa_command_list_t;
+typedef struct grub_command_list *grub_command_list_t;
 
 /* The menu entry.  */
-struct pupa_menu_entry
+struct grub_menu_entry
 {
   /* The title name.  */
   const char *title;
@@ -87,15 +87,15 @@ struct pupa_menu_entry
   int num;
 
   /* The list of commands.  */
-  pupa_command_list_t command_list;
+  grub_command_list_t command_list;
 
   /* The next element.  */
-  struct pupa_menu_entry *next;
+  struct grub_menu_entry *next;
 };
-typedef struct pupa_menu_entry *pupa_menu_entry_t;
+typedef struct grub_menu_entry *grub_menu_entry_t;
 
 /* The menu.  */
-struct pupa_menu
+struct grub_menu
 {
   /* The default entry number.  */
   int default_entry;
@@ -110,52 +110,52 @@ struct pupa_menu
   int size;
 
   /* The list of menu entries.  */
-  pupa_menu_entry_t entry_list;
+  grub_menu_entry_t entry_list;
 };
-typedef struct pupa_menu *pupa_menu_t;
+typedef struct grub_menu *grub_menu_t;
 
 /* To exit from the normal mode.  */
-extern pupa_jmp_buf pupa_exit_env;
+extern grub_jmp_buf grub_exit_env;
 
-void pupa_enter_normal_mode (const char *config);
-void pupa_normal_execute (const char *config, int nested);
-void pupa_menu_run (pupa_menu_t menu, int nested);
-void pupa_cmdline_run (int nested);
-int pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
+void grub_enter_normal_mode (const char *config);
+void grub_normal_execute (const char *config, int nested);
+void grub_menu_run (grub_menu_t menu, int nested);
+void grub_cmdline_run (int nested);
+int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
-void EXPORT_FUNC(pupa_register_command) (const char *name,
-			    pupa_err_t (*func) (struct pupa_arg_list *state,
+void EXPORT_FUNC(grub_register_command) (const char *name,
+			    grub_err_t (*func) (struct grub_arg_list *state,
 						int argc, char **args),
 			    unsigned flags,
 			    const char *summary,
 			    const char *description,
-			    const struct pupa_arg_option *parser);
-void EXPORT_FUNC(pupa_unregister_command) (const char *name);
-pupa_command_t pupa_command_find (char *cmdline);
-pupa_err_t pupa_set_history (int newsize);
-int pupa_iterate_commands (int (*iterate) (pupa_command_t));
-int pupa_command_execute (char *cmdline);
-void pupa_command_init (void);
-void pupa_normal_init_page (void);
-int pupa_arg_parse (pupa_command_t parser, int argc, char **argv,
-		    struct pupa_arg_list *usr, char ***args, int *argnum);
+			    const struct grub_arg_option *parser);
+void EXPORT_FUNC(grub_unregister_command) (const char *name);
+grub_command_t grub_command_find (char *cmdline);
+grub_err_t grub_set_history (int newsize);
+int grub_iterate_commands (int (*iterate) (grub_command_t));
+int grub_command_execute (char *cmdline);
+void grub_command_init (void);
+void grub_normal_init_page (void);
+int grub_arg_parse (grub_command_t parser, int argc, char **argv,
+		    struct grub_arg_list *usr, char ***args, int *argnum);
 
 
-#ifdef PUPA_UTIL
-void pupa_normal_init (void);
-void pupa_normal_fini (void);
-void pupa_hello_init (void);
-void pupa_hello_fini (void);
-void pupa_ls_init (void);
-void pupa_ls_fini (void);
-void pupa_cat_init (void);
-void pupa_cat_fini (void);
-void pupa_boot_init (void);
-void pupa_boot_fini (void);
-void pupa_cmp_init (void);
-void pupa_cmp_fini (void);
-void pupa_terminal_init (void);
-void pupa_terminal_fini (void);
+#ifdef GRUB_UTIL
+void grub_normal_init (void);
+void grub_normal_fini (void);
+void grub_hello_init (void);
+void grub_hello_fini (void);
+void grub_ls_init (void);
+void grub_ls_fini (void);
+void grub_cat_init (void);
+void grub_cat_fini (void);
+void grub_boot_init (void);
+void grub_boot_fini (void);
+void grub_cmp_init (void);
+void grub_cmp_fini (void);
+void grub_terminal_init (void);
+void grub_terminal_fini (void);
 #endif
 
-#endif /* ! PUPA_NORMAL_HEADER */
+#endif /* ! GRUB_NORMAL_HEADER */

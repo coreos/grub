@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,14 +17,14 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_FONT_HEADER
-#define PUPA_FONT_HEADER	1
+#ifndef GRUB_FONT_HEADER
+#define GRUB_FONT_HEADER	1
 
-#include <pupa/types.h>
+#include <grub/types.h>
 
-#define PUPA_FONT_MAGIC	"PPF\x7f"
+#define GRUB_FONT_MAGIC	"PPF\x7f"
 
-int pupa_font_get_glyph (pupa_uint32_t code,
+int grub_font_get_glyph (grub_uint32_t code,
 			 unsigned char bitmap[32], unsigned *width);
 
-#endif /* ! PUPA_FONT_HEADER */
+#endif /* ! GRUB_FONT_HEADER */

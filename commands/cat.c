@@ -1,9 +1,9 @@
 /* cat.c - command to show the contents of a file  */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -14,35 +14,35 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/normal.h>
-#include <pupa/dl.h>
-#include <pupa/arg.h>
-#include <pupa/file.h>
-#include <pupa/disk.h>
-#include <pupa/term.h>
-#include <pupa/misc.h>
+#include <grub/normal.h>
+#include <grub/dl.h>
+#include <grub/arg.h>
+#include <grub/file.h>
+#include <grub/disk.h>
+#include <grub/term.h>
+#include <grub/misc.h>
 
-static pupa_err_t
-pupa_cmd_cat (struct pupa_arg_list *state __attribute__ ((unused)),
+static grub_err_t
+grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
 	      int argc, char **args)
 
 {
-  pupa_file_t file;
-  char buf[PUPA_DISK_SECTOR_SIZE];
-  pupa_ssize_t size;
+  grub_file_t file;
+  char buf[GRUB_DISK_SECTOR_SIZE];
+  grub_ssize_t size;
 
   if (argc != 1)
-    return pupa_error (PUPA_ERR_BAD_ARGUMENT, "file name required");
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  file = pupa_file_open (args[0]);
+  file = grub_file_open (args[0]);
   if (! file)
     return 0;
   
-  while ((size = pupa_file_read (file, buf, sizeof (buf))) > 0)
+  while ((size = grub_file_read (file, buf, sizeof (buf))) > 0)
     {
       int i;
       
@@ -50,48 +50,48 @@ pupa_cmd_cat (struct pupa_arg_list *state __attribute__ ((unused)),
 	{
 	  unsigned char c = buf[i];
 	  
-	  if (pupa_isprint (c) || pupa_isspace (c))
-	    pupa_putchar (c);
+	  if (grub_isprint (c) || grub_isspace (c))
+	    grub_putchar (c);
 	  else
 	    {
-	      pupa_setcolorstate (PUPA_TERM_COLOR_HIGHLIGHT);
-	      pupa_printf ("<%x>", (int) c);
-	      pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
+	      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+	      grub_printf ("<%x>", (int) c);
+	      grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 	    }
 	}
     }
 
-  pupa_putchar ('\n');
-  pupa_refresh ();
-  pupa_file_close (file);
+  grub_putchar ('\n');
+  grub_refresh ();
+  grub_file_close (file);
   
   return 0;
 }
 
 
-#ifdef PUPA_UTIL
+#ifdef GRUB_UTIL
 void
-pupa_cat_init (void)
+grub_cat_init (void)
 {
-  pupa_register_command ("cat", pupa_cmd_cat, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
 			 "cat FILE", "Show the contents of a file", 0);
 }
 
 void
-pupa_cat_fini (void)
+grub_cat_fini (void)
 {
-  pupa_unregister_command ("cat");
+  grub_unregister_command ("cat");
 }
-#else /* ! PUPA_UTIL */
-PUPA_MOD_INIT
+#else /* ! GRUB_UTIL */
+GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
-  pupa_register_command ("cat", pupa_cmd_cat, PUPA_COMMAND_FLAG_BOTH,
+  grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
 			 "cat FILE", "Show the contents of a file", 0);
 }
 
-PUPA_MOD_FINI
+GRUB_MOD_FINI
 {
-  pupa_unregister_command ("cat");
+  grub_unregister_command ("cat");
 }
-#endif /* ! PUPA_UTIL */
+#endif /* ! GRUB_UTIL */

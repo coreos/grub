@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,12 +13,12 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_SYMBOL_HEADER
-#define PUPA_SYMBOL_HEADER	1
+#ifndef GRUB_SYMBOL_HEADER
+#define GRUB_SYMBOL_HEADER	1
 
 #include <config.h>
 
@@ -36,4 +36,4 @@
 #define EXPORT_FUNC(x)	x
 #define EXPORT_VAR(x)	x
 
-#endif /* ! PUPA_SYMBOL_HEADER */
+#endif /* ! GRUB_SYMBOL_HEADER */

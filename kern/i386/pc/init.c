@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,24 +17,24 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/kernel.h>
-#include <pupa/mm.h>
-#include <pupa/machine/init.h>
-#include <pupa/machine/memory.h>
-#include <pupa/machine/console.h>
-#include <pupa/machine/biosdisk.h>
-#include <pupa/machine/kernel.h>
-#include <pupa/types.h>
-#include <pupa/err.h>
-#include <pupa/dl.h>
-#include <pupa/misc.h>
-#include <pupa/loader.h>
-#include <pupa/env.h>
+#include <grub/kernel.h>
+#include <grub/mm.h>
+#include <grub/machine/init.h>
+#include <grub/machine/memory.h>
+#include <grub/machine/console.h>
+#include <grub/machine/biosdisk.h>
+#include <grub/machine/kernel.h>
+#include <grub/types.h>
+#include <grub/err.h>
+#include <grub/dl.h>
+#include <grub/misc.h>
+#include <grub/loader.h>
+#include <grub/env.h>
 
 struct mem_region
 {
-  pupa_addr_t addr;
-  pupa_size_t size;
+  grub_addr_t addr;
+  grub_size_t size;
 };
 
 #define MAX_REGIONS	32
@@ -42,9 +42,9 @@ struct mem_region
 static struct mem_region mem_regions[MAX_REGIONS];
 static int num_regions;
 
-pupa_addr_t pupa_os_area_addr;
-pupa_size_t pupa_os_area_size;
-pupa_size_t pupa_lower_mem, pupa_upper_mem;
+grub_addr_t grub_os_area_addr;
+grub_size_t grub_os_area_size;
+grub_size_t grub_lower_mem, grub_upper_mem;
 
 static char *
 make_install_device (void)
@@ -52,25 +52,25 @@ make_install_device (void)
   /* XXX: This should be enough.  */
   char dev[100];
 
-  pupa_sprintf (dev, "(%cd%u",
-		(pupa_boot_drive & 0x80) ? 'h' : 'f',
-		pupa_boot_drive & 0x7f);
+  grub_sprintf (dev, "(%cd%u",
+		(grub_boot_drive & 0x80) ? 'h' : 'f',
+		grub_boot_drive & 0x7f);
   
-  if (pupa_install_dos_part >= 0)
-    pupa_sprintf (dev + pupa_strlen (dev), ",%u", pupa_install_dos_part);
+  if (grub_install_dos_part >= 0)
+    grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part);
 
-  if (pupa_install_bsd_part >= 0)
-    pupa_sprintf (dev + pupa_strlen (dev), ",%c", pupa_install_bsd_part + 'a');
+  if (grub_install_bsd_part >= 0)
+    grub_sprintf (dev + grub_strlen (dev), ",%c", grub_install_bsd_part + 'a');
 
-  pupa_sprintf (dev + pupa_strlen (dev), ")%s", pupa_prefix);
-  pupa_strcpy (pupa_prefix, dev);
+  grub_sprintf (dev + grub_strlen (dev), ")%s", grub_prefix);
+  grub_strcpy (grub_prefix, dev);
   
-  return pupa_prefix;
+  return grub_prefix;
 }
 
 /* Add a memory region.  */
 static void
-add_mem_region (pupa_addr_t addr, pupa_size_t size)
+add_mem_region (grub_addr_t addr, grub_size_t size)
 {
   if (num_regions == MAX_REGIONS)
     /* Ignore.  */
@@ -108,44 +108,44 @@ compact_mem_regions (void)
 	  mem_regions[i].size = (mem_regions[j].addr + mem_regions[j].size
 				 - mem_regions[i].addr);
 
-	pupa_memmove (mem_regions + j, mem_regions + j + 1,
+	grub_memmove (mem_regions + j, mem_regions + j + 1,
 		      (num_regions - j - 1) * sizeof (struct mem_region));
 	i--;
       }
 }
 
 void
-pupa_machine_init (void)
+grub_machine_init (void)
 {
-  pupa_uint32_t cont;
-  struct pupa_machine_mmap_entry *entry
-    = (struct pupa_machine_mmap_entry *) PUPA_MEMORY_MACHINE_SCRATCH_ADDR;
-  pupa_addr_t end_addr = pupa_get_end_addr ();
+  grub_uint32_t cont;
+  struct grub_machine_mmap_entry *entry
+    = (struct grub_machine_mmap_entry *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_addr_t end_addr = grub_get_end_addr ();
   int i;
   
   /* Initialize the console as early as possible.  */
-  pupa_console_init ();
+  grub_console_init ();
   
-  pupa_lower_mem = pupa_get_memsize (0) << 10;
+  grub_lower_mem = grub_get_memsize (0) << 10;
   
   /* Sanity check.  */
-  if (pupa_lower_mem < PUPA_MEMORY_MACHINE_RESERVED_END)
-    pupa_fatal ("too small memory");
+  if (grub_lower_mem < GRUB_MEMORY_MACHINE_RESERVED_END)
+    grub_fatal ("too small memory");
 
 #if 0
   /* Turn on Gate A20 to access >1MB.  */
-  pupa_gate_a20 (1);
+  grub_gate_a20 (1);
 #endif
 
   /* Add the lower memory into free memory.  */
-  if (pupa_lower_mem >= PUPA_MEMORY_MACHINE_RESERVED_END)
-    add_mem_region (PUPA_MEMORY_MACHINE_RESERVED_END,
-		    pupa_lower_mem - PUPA_MEMORY_MACHINE_RESERVED_END);
+  if (grub_lower_mem >= GRUB_MEMORY_MACHINE_RESERVED_END)
+    add_mem_region (GRUB_MEMORY_MACHINE_RESERVED_END,
+		    grub_lower_mem - GRUB_MEMORY_MACHINE_RESERVED_END);
   
-  add_mem_region (end_addr, PUPA_MEMORY_MACHINE_RESERVED_START - end_addr);
+  add_mem_region (end_addr, GRUB_MEMORY_MACHINE_RESERVED_START - end_addr);
 
-  /* Check if pupa_get_mmap_entry works.  */
-  cont = pupa_get_mmap_entry (entry, 0);
+  /* Check if grub_get_mmap_entry works.  */
+  cont = grub_get_mmap_entry (entry, 0);
 
   if (entry->size)
     do
@@ -163,13 +163,13 @@ pupa_machine_init (void)
 	/* Ignore >4GB.  */
 	if (entry->addr <= 0xFFFFFFFF && entry->type == 1)
 	  {
-	    pupa_addr_t addr;
-	    pupa_size_t len;
+	    grub_addr_t addr;
+	    grub_size_t len;
 
-	    addr = (pupa_addr_t) entry->addr;
+	    addr = (grub_addr_t) entry->addr;
 	    len = ((addr + entry->len > 0xFFFFFFFF)
 		   ? 0xFFFFFFFF - addr
-		   : (pupa_size_t) entry->len);
+		   : (grub_size_t) entry->len);
 	    add_mem_region (addr, len);
 	  }
 	
@@ -177,12 +177,12 @@ pupa_machine_init (void)
 	if (! cont)
 	  break;
 	
-	cont = pupa_get_mmap_entry (entry, cont);
+	cont = grub_get_mmap_entry (entry, cont);
       }
     while (entry->size);
   else
     {
-      pupa_uint32_t eisa_mmap = pupa_get_eisa_mmap ();
+      grub_uint32_t eisa_mmap = grub_get_eisa_mmap ();
 
       if (eisa_mmap)
 	{
@@ -195,7 +195,7 @@ pupa_machine_init (void)
 	    }
 	}
       else
-	add_mem_region (0x100000, pupa_get_memsize (1) << 10);
+	add_mem_region (0x100000, grub_get_memsize (1) << 10);
     }
 
   compact_mem_regions ();
@@ -206,24 +206,24 @@ pupa_machine_init (void)
   for (i = 0; i < num_regions; i++)
     if (mem_regions[i].addr == 0x100000)
       {
-	pupa_size_t quarter = mem_regions[i].size >> 2;
+	grub_size_t quarter = mem_regions[i].size >> 2;
 
-	pupa_upper_mem = mem_regions[i].size;
-	pupa_os_area_addr = mem_regions[i].addr;
-	pupa_os_area_size = mem_regions[i].size - quarter;
-	pupa_mm_init_region ((void *) (pupa_os_area_addr + pupa_os_area_size),
+	grub_upper_mem = mem_regions[i].size;
+	grub_os_area_addr = mem_regions[i].addr;
+	grub_os_area_size = mem_regions[i].size - quarter;
+	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),
 			     quarter);
       }
     else
-      pupa_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
+      grub_mm_init_region ((void *) mem_regions[i].addr, mem_regions[i].size);
   
-  if (! pupa_os_area_addr)
-    pupa_fatal ("no upper memory");
+  if (! grub_os_area_addr)
+    grub_fatal ("no upper memory");
   
   /* The memory system was initialized, thus register built-in devices.  */
-  pupa_biosdisk_init ();
+  grub_biosdisk_init ();
 
 
   /* Initialize the prefix.  */
-  pupa_env_set ("prefix", make_install_device ());
+  grub_env_set ("prefix", make_install_device ());
 }

@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/machine/boot.h>
+#include <grub/machine/boot.h>
 	
 /*
  *  defines for the code go here
@@ -26,7 +26,7 @@
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
 	   from the linker. (ELF can't relocate 16-bit addresses!) */
-#define ABS(x) (x-_start+PUPA_BOOT_MACHINE_KERNEL_ADDR)
+#define ABS(x) (x-_start+GRUB_BOOT_MACHINE_KERNEL_ADDR)
 	
 	/* Print message string */
 #define MSG(x)	movw $ABS(x), %si; call message
@@ -62,7 +62,7 @@ _start:
 	popw	%si
 	
 	/* this sets up for the first run through "bootloop" */
-	movw	$ABS(firstlist - PUPA_BOOT_MACHINE_LIST_SIZE), %di
+	movw	$ABS(firstlist - GRUB_BOOT_MACHINE_LIST_SIZE), %di
 
 	/* save the sector number of the second sector in %ebp */
 	movl	(%di), %ebp
@@ -119,7 +119,7 @@ lba_mode:
 	movl	%ebx, 8(%si)
 
 	/* the segment of buffer address */
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, 6(%si)
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
 
 	/* save %ax from destruction! */
 	pushw	%ax
@@ -148,7 +148,7 @@ lba_mode:
 
 	jc	read_error
 
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
 	jmp	copy_buffer
 			
 chs_mode:	
@@ -237,7 +237,7 @@ chs_mode:
  *			%al = 0x0 on success; err code on failure
  */
 
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
 	movw	%bx, %es	/* load %es segment with disk buffer */
 
 	xorw	%bx, %bx	/* %bx = 0, put it at 0 in the segment */
@@ -292,7 +292,7 @@ copy_buffer:
 	jne	setup_sectors
 
 	/* update position to load from */
-	subw	$PUPA_BOOT_MACHINE_LIST_SIZE, %di
+	subw	$GRUB_BOOT_MACHINE_LIST_SIZE, %di
 
 	/* jump to bootloop */
 	jmp	bootloop
@@ -303,7 +303,7 @@ bootit:
 	/* print a newline */
 	MSG(notification_done)
 	popw	%dx	/* this makes sure %dl is our "boot" drive */
-	ljmp	$0, $(PUPA_BOOT_MACHINE_KERNEL_ADDR + 0x200)
+	ljmp	$0, $(GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 
 
 /*
@@ -368,7 +368,7 @@ lastlist:
 	.word 0
 	.word 0
 
-	. = _start + 0x200 - PUPA_BOOT_MACHINE_LIST_SIZE
+	. = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
 	
         /* fill the first data listing with the default */
 blocklist_default_start:
@@ -381,6 +381,6 @@ blocklist_default_len:
 	.word 0
 blocklist_default_seg:
 	/* this is the segment of the starting address to load the data into */
-	.word (PUPA_BOOT_MACHINE_KERNEL_SEG + 0x20)
+	.word (GRUB_BOOT_MACHINE_KERNEL_SEG + 0x20)
 	
 firstlist:	/* this label has to be after the list data!!! */

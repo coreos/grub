@@ -1,6 +1,6 @@
 /* -*-Asm-*- */
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <pupa/boot.h>
-#include <pupa/machine/boot.h>
+#include <grub/boot.h>
+#include <grub/machine/boot.h>
 	
 /*
  *  defines for the code go here
@@ -83,25 +83,25 @@ cylinder_start:
 	.word	0
 	/* more space... */
 
-	. = _start + PUPA_BOOT_MACHINE_BPB_END
+	. = _start + GRUB_BOOT_MACHINE_BPB_END
 
 	/*
 	 * End of BIOS parameter block.
 	 */
 
 boot_version:	
-	.byte	PUPA_BOOT_VERSION_MAJOR, PUPA_BOOT_VERSION_MINOR
+	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 boot_drive:	
 	.byte 0xff	/* the disk to load kernel from */
 			/* 0xff means use the boot drive */
 force_lba:
 	.byte	0
 kernel_address:
-	.word	PUPA_BOOT_MACHINE_KERNEL_ADDR
+	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
 kernel_sector:
 	.long	1
 kernel_segment:
-	.word	PUPA_BOOT_MACHINE_KERNEL_SEG
+	.word	GRUB_BOOT_MACHINE_KERNEL_SEG
 
 after_BPB:
 
@@ -122,7 +122,7 @@ real_start:
 	movw	%ax, %ss
 
 	/* set up the REAL stack */
-	movw	$PUPA_BOOT_MACHINE_STACK_SEG, %sp
+	movw	$GRUB_BOOT_MACHINE_STACK_SEG, %sp
 
 	sti		/* we're safe again */
 
@@ -141,7 +141,7 @@ real_start:
 	MSG(notification_string)
 
 	/* do not probe LBA if the drive is a floppy */
-	testb	$PUPA_BOOT_MACHINE_BIOS_HD_FLAG, %dl
+	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
 	jz	chs_mode
 			
 	/* check if LBA is supported */
@@ -190,7 +190,7 @@ lba_mode:
 	movl	%ebx, 8(%si)
 
 	/* the segment of buffer address */
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, 6(%si)
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
 
 	xorl	%eax, %eax
 	movw	%ax, 4(%si)
@@ -211,7 +211,7 @@ lba_mode:
 	/* LBA read is not supported, so fallback to CHS.  */
 	jc	chs_mode
 
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
 	jmp	copy_buffer
 		
 chs_mode:	
@@ -226,7 +226,7 @@ chs_mode:
 	/*
 	 *  The call failed, so maybe use the floppy probe instead.
 	 */
-	testb	$PUPA_BOOT_MACHINE_BIOS_HD_FLAG, %dl
+	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
 	jz	floppy_probe
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */
@@ -322,7 +322,7 @@ setup_sectors:
  *			%al = 0x0 on success; err code on failure
  */
 
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
 	movw	%bx, %es	/* load %es segment with disk buffer */
 
 	xorw	%bx, %bx	/* %bx = 0, put it at 0 in the segment */
@@ -387,7 +387,7 @@ general_error:
 /* go here when you need to stop the machine hard after an error condition */
 stop:	jmp	stop
 
-notification_string:	.string "PUPA "
+notification_string:	.string "GRUB "
 geometry_error_string:	.string "Geom"
 hd_probe_error_string:	.string "Hard Disk"
 read_error_string:	.string "Read"
@@ -419,7 +419,7 @@ message:
 	 *  number here.
 	 */
 
-	. = _start + PUPA_BOOT_MACHINE_WINDOWS_NT_MAGIC
+	. = _start + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC
 nt_magic:	
 	.long 0
 	.word 0
@@ -431,7 +431,7 @@ nt_magic:
 	 */
 
 part_start:	
-	. = _start + PUPA_BOOT_MACHINE_PART_START
+	. = _start + GRUB_BOOT_MACHINE_PART_START
 
 probe_values:
 	.byte	36, 18, 15, 9, 0
@@ -465,7 +465,7 @@ fd_probe_error_string:	.string "Floppy"
 
 1:
 	/* perform read */
-	movw	$PUPA_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
 	movw	$0x201, %ax
 	movb	$0, %ch
 	movb	$0, %dh
@@ -480,7 +480,7 @@ fd_probe_error_string:	.string "Floppy"
 
 	jmp	final_init
 
-	. = _start + PUPA_BOOT_MACHINE_PART_END
+	. = _start + GRUB_BOOT_MACHINE_PART_END
 
 /* the last 2 bytes in the sector 0 contain the signature */
-	.word	PUPA_BOOT_MACHINE_SIGNATURE
+	.word	GRUB_BOOT_MACHINE_SIGNATURE

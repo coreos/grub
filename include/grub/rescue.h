@@ -1,5 +1,5 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,21 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_RESCUE_HEADER
-#define PUPA_RESCUE_HEADER	1
+#ifndef GRUB_RESCUE_HEADER
+#define GRUB_RESCUE_HEADER	1
 
-#include <pupa/symbol.h>
+#include <grub/symbol.h>
 
 /* Enter rescue mode.  */
-void pupa_enter_rescue_mode (void);
+void grub_enter_rescue_mode (void);
 
 /* Register a rescue mode command.  */
-void EXPORT_FUNC(pupa_rescue_register_command) (const char *name,
+void EXPORT_FUNC(grub_rescue_register_command) (const char *name,
 						void (*func) (int argc,
 							      char *argv[]),
 						const char *message);
 
 /* Unregister a rescue mode command.  */
-void EXPORT_FUNC(pupa_rescue_unregister_command) (const char *name);
+void EXPORT_FUNC(grub_rescue_unregister_command) (const char *name);
 
-#endif /* ! PUPA_RESCUE_HEADER */
+#endif /* ! GRUB_RESCUE_HEADER */

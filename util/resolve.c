@@ -1,8 +1,8 @@
 /*
- *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2002  Free Software Foundation, Inc.
  *
- *  PUPA is free software; you can redistribute it and/or modify
+ *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,7 +13,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PUPA; if not, write to the Free Software
+ *  along with GRUB; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <pupa/util/resolve.h>
-#include <pupa/util/misc.h>
+#include <grub/util/resolve.h>
+#include <grub/util/misc.h>
 
 /* Module.  */
 struct mod_list
@@ -85,7 +85,7 @@ read_dep_list (FILE *fp)
       /* Get the target name.  */
       p = strchr (buf, ':');
       if (! p)
-	pupa_util_error ("invalid line format: %s", buf);
+	grub_util_error ("invalid line format: %s", buf);
 
       *p++ = '\0';
 
@@ -174,7 +174,7 @@ get_module_path (const char *prefix, const char *str)
   if (dir)
     return base;
 
-  ret = pupa_util_get_path (prefix, base);
+  ret = grub_util_get_path (prefix, base);
   free (base);
   return ret;
 }
@@ -183,11 +183,11 @@ static void
 add_module (const char *dir,
 	    struct dep_list *dep_list,
 	    struct mod_list **mod_head,
-	    struct pupa_util_path_list **path_head,
+	    struct grub_util_path_list **path_head,
 	    const char *name)
 {
   char *mod_name;
-  struct pupa_util_path_list *path;
+  struct grub_util_path_list *path;
   struct mod_list *mod;
   struct dep_list *dep;
   
@@ -218,14 +218,14 @@ add_module (const char *dir,
   *mod_head = mod;
 
   /* Add this path.  */
-  path = (struct pupa_util_path_list *) xmalloc (sizeof (*path));
+  path = (struct grub_util_path_list *) xmalloc (sizeof (*path));
   path->name = get_module_path (dir, name);
   path->next = *path_head;
   *path_head = path;
 }
 
-struct pupa_util_path_list *
-pupa_util_resolve_dependencies (const char *prefix,
+struct grub_util_path_list *
+grub_util_resolve_dependencies (const char *prefix,
 				const char *dep_list_file,
 				char *modules[])
 {
@@ -233,12 +233,12 @@ pupa_util_resolve_dependencies (const char *prefix,
   FILE *fp;
   struct dep_list *dep_list;
   struct mod_list *mod_list = 0;
-  struct pupa_util_path_list *path_list = 0;
+  struct grub_util_path_list *path_list = 0;
 
-  path = pupa_util_get_path (prefix, dep_list_file);
+  path = grub_util_get_path (prefix, dep_list_file);
   fp = fopen (path, "r");
   if (! fp)
-    pupa_util_error ("cannot open %s", path);
+    grub_util_error ("cannot open %s", path);
 
   free (path);
   dep_list = read_dep_list (fp);
@@ -254,7 +254,7 @@ pupa_util_resolve_dependencies (const char *prefix,
   free_mod_list (mod_list);
 
   { /* Reverse the path_list */
-    struct pupa_util_path_list *p, *prev, *next;
+    struct grub_util_path_list *p, *prev, *next;
 
     for (p = path_list, prev = NULL; p; p = next)
       {
