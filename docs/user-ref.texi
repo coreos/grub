@@ -752,6 +752,12 @@ character each of the symbols corresponds to:
 @end table
 @end deffn
 
+@deffn Command tftpserver ipaddr
+Override a TFTP server address returned by a BOOTP/DHCP/RARP server. The
+argument @var{ipaddr} must be in the standard format, like
+@samp{192.168.0.15}.
+@end deffn
+
 @deffn Command unhide partition
 Unhide @var{partition} by clearing the @dfn{hidden} bit in its partition
 type code. This is useful only for DOS or Windows when multiple primary

@@ -15,6 +15,13 @@ to specify them.
   Define this for PCI BIOSes that do not implement BIOS32 or not
   correctly.
 
+--enable-diskless
+  Enable the diskless support. If specified, you will get two optional
+  images, called "nbgrub" and "pxegrub". The former is the ``Net Boot
+  Image Proposal'' format, which is used by Etherboot and Netboot, while
+  the latter is the ``Preboot Execution Environment" format, which is
+  used by a PXE ROM. You may buy a PXE ROM from some companies.
+
 Here is the information about the device drivers. They are all disabled
 by default, so you must specify configure options to enable drivers you
 want to use. Some drivers have extra per-driver options, so the extra

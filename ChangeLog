@@ -1,5 +1,13 @@
 2000-06-08  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/tutorial.texi (Network): The body is moved to ...
+	(General usage of network support): ... this new section.
+	(Diskless): New section.
+	* docs/user-ref.texi (General commands): Added a description
+	about the command "tftpserver".
+	
+2000-06-08  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* netboot/main.c (decode_rfc1533) [GRUB]: Eliminate trailing
 	NULs in the NVT string for a configuration file name, if any.
 	(decode_rfc1533): Likewise, if Extensions Path is present,

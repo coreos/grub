@@ -560,6 +560,15 @@ support. To using the network support, you need to enable at least one
 network driver in the build process. For more information please see
 @file{netboot/README.netboot} in the source distribution.
 
+@menu
+* General usage of network support::
+* Diskless::
+@end menu
+
+
+@node General usage of network support
+@section How to set up your network
+
 First, you have to set up servers in your network. GRUB requires a
 server that will assign an IP address, and a file server. The former is
 either BOOTP, DHCP or a RARP server (RARP is deprecated, since it cannot
@@ -594,6 +603,52 @@ grub> module /tftproot/serverboot.gz
 grub> boot
 @end group
 @end example
+
+
+@node Diskless
+@section Booting from a network
+
+It is sometimes very useful to boot from a network, especially, when you
+use a machine which has no local disk. In this case, you need to obtain
+a kind of Net Boot @sc{rom}, such as a PXE @sc{rom} or a free software
+package like Etherboot. Such a Boot @sc{rom} first boots the machine,
+sets up the network card installed into the machine, and downloads a
+second stage boot image from the network. Then, the second image will
+try to boot an operating system from the network actually.
+
+GRUB provides two second stage images, @file{nbgrub} and
+@file{pxegrub}. Those images are the same as the normal Stage 2, except
+that they set up a network automatically, and try to load a
+configuration file from the network, if specified. The usage is very
+simple: If the machine has a PXE @sc{rom}, use @file{pxegrub}. If the
+machine has a NBI loader such as Etherboot, use @file{nbgrub}. There is
+no difference between them but their formats. As how to load a second
+stage image you want to use should be described in the manual on your
+Net Boot @sc{rom}, please refer to the manual, for more details. The
+topic is beyond the scope of this documentation.
+
+However, there is one thing specific to GRUB. Namely, how to specify a
+configuration file in a BOOTP/DHCP server. For now, GRUB uses the tag
+@samp{150}, to get the name of a configuration file. This below is an
+example about a BOOTP configuration:
+
+@example
+@group
+allhost:hd=/tmp:bf=null:\
+        :ds=145.71.35.1 145.71.32.1:\
+        :sm=255.255.254.0:\
+        :gw=145.71.35.1:\
+        :sa=145.71.35.5:
+
+foo:ht=1:ha=63655d0334a7:ip=145.71.35.127:\
+        :bf=/nbgrub:\
+        :tc=allhost:\
+        :T150="/tftpboot/menu.lst.foo":
+@end group
+@end example
+
+See the manual about your BOOTP/DHCP server, for more information. The
+exact syntax should differ from the example, more or less.
 
 
 @node Configuration
