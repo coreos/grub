@@ -3081,7 +3081,8 @@ savedefault_func (char *arg, int flags)
     }
 
   /* Sanity check.  */
-  if (buffer[STAGE2_STAGE2_ID] != STAGE2_ID_STAGE2)
+  if (buffer[STAGE2_STAGE2_ID] != STAGE2_ID_STAGE2
+      || *((short *) (buffer + STAGE2_VER_MAJ_OFFS)) != COMPAT_VERSION)
     {
       errnum = ERR_BAD_VERSION;
       return 1;
