@@ -1,3 +1,26 @@
+2005-03-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* term/i386/pc/vga.c (debug_command): Removed.
+	(GRUB_MOD_INIT): Do not register the command "debug".
+
+	From Hollis Blanchard:
+	* commands/configfile.c: New file.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added
+	commands/configfile.c.
+	(pkgdata_MODULES): Added configfile.mod.
+	(configfile_mod_SOURCES): New variable.
+	(configfile_mod_CFLAGS): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Added
+	commands/configfile.c.
+	(pkgdata_MODULES): Added configfile.mod.
+	(configfile_mod_SOURCES): New variable.
+	(configfile_mod_CFLAGS): Likewise.
+	* util/grub-emu.c (main): Call grub_configfile_init and
+	grub_configfile_fini.
+	* include/grub/normal.h [GRUB_UTIL] (grub_configfile_init): New
+	prototype.
+	[GRUB_UTIL] (grub_configfile_fini): Likewise.
+	
 2005-02-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* normal/arg.c (grub_arg_show_help): Do not show the bug report

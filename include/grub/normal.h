@@ -192,6 +192,8 @@ void grub_default_init (void);
 void grub_default_fini (void);
 void grub_timeout_init (void);
 void grub_timeout_fini (void);
+void grub_configfile_init (void);
+void grub_configfile_fini (void);
 #endif
 
 #endif /* ! GRUB_NORMAL_HEADER */

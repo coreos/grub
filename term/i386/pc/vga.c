@@ -576,22 +576,10 @@ static struct grub_term grub_vga_term =
     .next = 0
   };
 
-static grub_err_t
-debug_command (struct grub_arg_list *state __attribute__ ((unused)),
-	       int argc  __attribute__ ((unused)),
-	       char **args __attribute__ ((unused)))
-{
-  grub_printf ("???????бу??n");
-
-  return 0;
-}
-
 GRUB_MOD_INIT
 {
   my_mod = mod;
   grub_term_register (&grub_vga_term);
-  grub_register_command ("debug", debug_command, GRUB_COMMAND_FLAG_CMDLINE,
-			 "debug", "Debug it!", 0);
 }
 
 GRUB_MOD_FINI

@@ -33,8 +33,8 @@ grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
 
 # For grub-emu
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
-	commands/default.c commands/help.c commands/terminal.c		\
-	commands/ls.c commands/timeout.c				\
+	commands/configfile.c commands/default.c commands/help.c	\
+	commands/terminal.c commands/ls.c commands/timeout.c		\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
@@ -72,7 +72,7 @@ pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod
+	default.mod timeout.mod configfile.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -193,3 +193,7 @@ default_mod_CFLAGS =  $(COMMON_CFLAGS)
 # For timeout.mod
 timeout_mod_SOURCES = commands/timeout.c
 timeout_mod_CFLAGS =  $(COMMON_CFLAGS)
+
+# For configfile.mod
+configfile_mod_SOURCES = commands/configfile.c
+configfile_mod_CFLAGS = $(COMMON_CFLAGS)

@@ -66,8 +66,8 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 
 # For grub_emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
-	commands/default.c commands/help.c commands/terminal.c		\
-	commands/ls.c commands/timeout.c				\
+	commands/configfile.c commands/default.c commands/help.c	\
+	commands/terminal.c commands/ls.c commands/timeout.c		\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
@@ -93,7 +93,7 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	font.mod _multiboot.mod ls.mod boot.mod cmp.mod cat.mod		\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
-	help.mod default.mod timeout.mod
+	help.mod default.mod timeout.mod configfile.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -224,8 +224,12 @@ loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For default.mod
 default_mod_SOURCES = commands/default.c
-default_mod_CFLAGS =  $(COMMON_CFLAGS)
+default_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For timeout.mod
 timeout_mod_SOURCES = commands/timeout.c
-timeout_mod_CFLAGS =  $(COMMON_CFLAGS)
+timeout_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For configfile.mod
+configfile_mod_SOURCES = commands/configfile.c
+configfile_mod_CFLAGS = $(COMMON_CFLAGS)
