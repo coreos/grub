@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Install GRUB on your drive.
-#   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -199,7 +199,19 @@ if test $debug = yes; then
 fi
 
 # Initialize these directories here, since ROOTDIR was initialized.
-bootdir=${rootdir}/boot
+case "$host_os" in
+netbsd*)
+    # Because /boot is used for the boot block in NetBSD, use /grub
+    # instead of /boot/grub.
+    grub_prefix=/grub
+    bootdir=${rootdir}
+    ;;
+*)
+    # Use /boot/grub by default.
+    bootdir=${rootdir}/boot
+    ;;
+esac
+
 grubdir=${bootdir}/grub
 device_map=${grubdir}/device.map
 
