@@ -77,6 +77,15 @@ int serial_getkey (void);
 /* The serial part of checkkey.  */
 int serial_checkkey (void);
 
+/* The serial part of cls.  */
+void serial_cls (void);
+
+/* The serial part of getxy.  */
+int serial_getxy (void);
+
+/* The serial part of gotoxy.  */
+void serial_gotoxy (int x, int y);
+
 /* Return the port number for the UNITth serial device.  */
 unsigned short serial_get_port (int unit);
 

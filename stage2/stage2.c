@@ -44,13 +44,23 @@ static void
 print_entries (int y, int size, int first, char *menu_entries)
 {
   int i;
+  int disp_up = DISP_UP;
+  int disp_down = DISP_DOWN;
 
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
+    {
+      disp_up = ACS_UARROW;
+      disp_down = ACS_DARROW;
+    }
+#endif /* SUPPORT_SERIAL */
+  
   gotoxy (77, y + 1);
 
   if (first)
-    putchar (DISP_UP);
+    grub_putchar (disp_up);
   else
-    putchar (' ');
+    grub_putchar (' ');
 
   menu_entries = get_entry (menu_entries, first, 0);
 
@@ -64,7 +74,7 @@ print_entries (int y, int size, int first, char *menu_entries)
 	{
 	  if (j < 71)
 	    {
-	      putchar (*menu_entries);
+	      grub_putchar (*menu_entries);
 	      j++;
 	    }
 
@@ -75,15 +85,15 @@ print_entries (int y, int size, int first, char *menu_entries)
 	menu_entries++;
 
       for (; j < 71; j++)
-	putchar (' ');
+	grub_putchar (' ');
     }
 
   gotoxy (77, y + size);
 
   if (*menu_entries)
-    putchar (DISP_DOWN);
+    grub_putchar (disp_down);
   else
-    putchar (' ');
+    grub_putchar (' ');
 }
 
 
@@ -91,26 +101,49 @@ static void
 print_border (int y, int size)
 {
   int i;
+  int disp_ul = DISP_UL;
+  int disp_ur = DISP_UR;
+  int disp_ll = DISP_LL;
+  int disp_lr = DISP_LR;
+  int disp_horiz = DISP_HORIZ;
+  int disp_vert = DISP_VERT;
 
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
+    {
+      disp_ul = ACS_ULCORNER;
+      disp_ur = ACS_URCORNER;
+      disp_ll = ACS_LLCORNER;
+      disp_lr = ACS_LRCORNER;
+      disp_horiz = ACS_HLINE;
+      disp_vert = ACS_VLINE;
+    }
+#endif /* SUPPORT_SERIAL */
+  
 #ifndef GRUB_UTIL
   /* Color the menu. The menu is 75 * 14 characters.  */
-  for (i = 0; i < 14; i++)
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_CONSOLE)
+#endif
     {
-      int j;
-      for (j = 0; j < 75; j++)
+      for (i = 0; i < 14; i++)
 	{
-	  gotoxy (j + 1, i + y);
-	  set_attrib (normal_color);
+	  int j;
+	  for (j = 0; j < 75; j++)
+	    {
+	      gotoxy (j + 1, i + y);
+	      set_attrib (normal_color);
+	    }
 	}
     }
 #endif
 
   gotoxy (1, y);
 
-  putchar (DISP_UL);
+  grub_putchar (disp_ul);
   for (i = 0; i < 73; i++)
-    putchar (DISP_HORIZ);
-  putchar (DISP_UR);
+    grub_putchar (disp_horiz);
+  grub_putchar (disp_ur);
 
   i = 1;
 
@@ -121,51 +154,79 @@ print_border (int y, int size)
       if (i > size)
 	break;
 
-      putchar (DISP_VERT);
+      grub_putchar (disp_vert);
       gotoxy (75, y + i);
-      putchar (DISP_VERT);
+      grub_putchar (disp_vert);
 
       i++;
     }
 
-  putchar (DISP_LL);
+  grub_putchar (disp_ll);
   for (i = 0; i < 73; i++)
-    putchar (DISP_HORIZ);
-  putchar (DISP_LR);
+    grub_putchar (disp_horiz);
+  grub_putchar (disp_lr);
 }
 
 static void
-set_line (int y, int attr)
+set_line (int y, int entryno, int attr, char *menu_entries)
 {
   int x;
 
-  for (x = 2; x < 75; x++)
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
     {
-      gotoxy (x, y);
-      set_attrib (attr);
+      menu_entries = get_entry (menu_entries, entryno, 0);
+      gotoxy (2, y);
+      grub_putchar (' ');
+      for (x = 3; x < 75; x++)
+	{
+	  if (*menu_entries && x < 71)
+	    grub_putchar (*menu_entries++);
+	  else
+	    grub_putchar (' ');
+	}
+    }
+  else
+#endif /* SUPPORT_SERIAL */
+    {
+      for (x = 2; x < 75; x++)
+	{
+	  gotoxy (x, y);
+	  set_attrib (attr);
+	}
     }
 }
 
 /* Set the attribute of the line Y to normal state.  */
 static void
-set_line_normal (int y)
+set_line_normal (int y, int entryno, char *menu_entries)
 {
 #ifdef GRUB_UTIL
-  set_line (y, A_NORMAL);
+  set_line (y, entryno, A_NORMAL, menu_entries);
 #else
-  set_line (y, normal_color);
+  set_line (y, entryno, normal_color, menu_entries);
 #endif
 }
 
 /* Set the attribute of the line Y to highlight state.  */
 static void
-set_line_highlight (int y)
+set_line_highlight (int y, int entryno, char *menu_entries)
 {
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
+    grub_printf ("\e[7m");
+#endif /* SUPPORT_SERIAL */
+  
 #ifdef GRUB_UTIL
-  set_line (y, A_REVERSE);
+  set_line (y, entryno, A_REVERSE, menu_entries);
 #else
-  set_line (y, highlight_color);
+  set_line (y, entryno, highlight_color, menu_entries);
 #endif
+  
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
+    grub_printf ("\e[0m");
+#endif /* SUPPORT_SERIAL */
 }
 
 static void
@@ -228,8 +289,11 @@ restart:
     {
       init_page ();
 #ifndef GRUB_UTIL
-      nocursor ();
-#endif
+# ifdef SUPPORT_SERIAL
+      if (terminal & TERMINAL_CONSOLE)
+# endif /* SUPPORT_SERIAL */
+	nocursor ();
+#endif /* ! GRUB_UTIL */
 
       print_border (3, 12);
 
@@ -265,7 +329,7 @@ restart:
       print_entries (3, 12, first_entry, menu_entries);
 
       /* highlight initial line */
-      set_line_highlight (4 + entryno);
+      set_line_highlight (4 + entryno, first_entry + entryno, menu_entries);
     }
 
   /* XX using RT clock now, need to initialize value */
@@ -309,15 +373,17 @@ restart:
 	    {
 	      if (entryno > 0)
 		{
-		  set_line_normal (4 + entryno);
+		  set_line_normal (4 + entryno, first_entry + entryno,
+				   menu_entries);
 		  entryno--;
-		  set_line_highlight (4 + entryno);
+		  set_line_highlight (4 + entryno, first_entry + entryno,
+				      menu_entries);
 		}
 	      else if (first_entry > 0)
 		{
 		  first_entry--;
 		  print_entries (3, 12, first_entry, menu_entries);
-		  set_line_highlight (4);
+		  set_line_highlight (4, first_entry + entryno, menu_entries);
 		}
 	    }
 	  if (((c == KEY_DOWN) || (ASCII_CHAR (c) == 14))
@@ -325,15 +391,17 @@ restart:
 	    {
 	      if (entryno < 11)
 		{
-		  set_line_normal (4 + entryno);
+		  set_line_normal (4 + entryno, first_entry + entryno,
+				   menu_entries);
 		  entryno++;
-		  set_line_highlight (4 + entryno);
+		  set_line_highlight (4 + entryno, first_entry + entryno,
+				      menu_entries);
 		}
 	      else if (num_entries > 12 + first_entry)
 		{
 		  first_entry++;
 		  print_entries (3, 12, first_entry, menu_entries);
-		  set_line_highlight (15);
+		  set_line_highlight (15, first_entry + entryno, menu_entries);
 		}
 	    }
 
@@ -348,7 +416,8 @@ restart:
 	    {
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
-		  set_line_normal (4 + entryno);
+		  set_line_normal (4 + entryno, first_entry + entryno,
+				   menu_entries);
 
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
@@ -397,7 +466,8 @@ restart:
 		    }
 
 		  print_entries (3, 12, first_entry, menu_entries);
-		  set_line_highlight (4 + entryno);
+		  set_line_highlight (4 + entryno, first_entry + entryno,
+				      menu_entries);
 		}
 
 	      cur_entry = menu_entries;

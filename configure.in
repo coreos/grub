@@ -479,6 +479,11 @@ AC_ARG_ENABLE(diskless,
   [  --enable-diskless       enable diskless support])
 AM_CONDITIONAL(DISKLESS_SUPPORT, test "x$enable_diskless" = xyes)
 
+dnl Serial terminal
+AC_ARG_ENABLE(serial,
+  [  --enable-serial         enable serial terminal support])
+AM_CONDITIONAL(SERIAL_SUPPORT, test "x$enable_serial" = xyes)
+
 # Sanity check.
 if test "x$enable_diskless" = xyes; then
   if test "x$NET_CFLAGS" = x; then

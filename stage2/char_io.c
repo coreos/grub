@@ -815,6 +815,149 @@ grub_putchar (int c)
 #endif /* ! STAGE1_5 */
 }
 
+#ifndef STAGE1_5
+void
+gotoxy (int x, int y)
+{
+  if (terminal & TERMINAL_CONSOLE)
+    console_gotoxy (x, y);
+#ifdef SUPPORT_SERIAL
+  else if (terminal & TERMINAL_SERIAL)
+    serial_gotoxy (x, y);
+#endif
+}
+
+#ifdef SUPPORT_SERIAL
+/* The serial part of gotoxy.  */
+void
+serial_gotoxy (int x, int y)
+{
+  grub_printf ("\e[%d;%dH", y + 1, x + 1);
+}
+#endif /* SUPPORT_SERIAL */
+
+int
+getxy (void)
+{
+  int ret = 0;
+  
+  if (terminal & TERMINAL_CONSOLE)
+    ret = console_getxy ();
+#ifdef SUPPORT_SERIAL
+  else if (terminal & TERMINAL_SERIAL)
+    ret = serial_getxy ();
+#endif
+  
+  return ret;
+}
+
+#ifdef SUPPORT_SERIAL
+/* The serial part of getxy.  */
+int
+serial_getxy (void)
+{
+  int x, y;
+  int start, now;
+  char buf[32];	/* XXX */
+  int i;
+  int c;
+  char *p;
+  
+  /* Drain the input buffer.  */
+  while (serial_checkkey () != -1)
+    serial_getkey ();
+
+  /* CPR.  */
+  grub_printf ("\e[6n");
+
+  /* Get current time.  */
+  while ((start = getrtsecs ()) == 0xFF)
+    ;
+
+ again:
+  i = 0;
+  c = 0;
+  do
+    {
+      if (serial_checkkey () != -1)
+	{
+	  c = serial_getkey ();
+	  if (i == 1 && c != '[')
+	    i = 0;
+	  
+	  if (i == 0 && c != '\e')
+	    continue;
+
+	  if (i != 0 && c == '\e')
+	    i = 0;
+
+	  buf[i] = c;
+	  i++;
+	}
+      else
+	{
+	  /* Get current time.  */
+	  while ((now = getrtsecs ()) == 0xFF)
+	    ;
+
+	  /* FIXME: Remove this magic number.  */
+	  if (now - start > 10)
+	    {
+	      /* Something is quite wrong.  */
+	      return 0;
+	    }
+	}
+    }
+  while (c != 'R' && i < sizeof (buf));
+  
+  if (c != 'R')
+    goto again;
+
+  p = buf + 2;
+  if (! safe_parse_maxint (&p, &y))
+    {
+      errnum = 0;
+      goto again;
+    }
+  
+  if (*p != ';')
+    goto again;
+
+  p++;
+  if (! safe_parse_maxint (&p, &x))
+    {
+      errnum = 0;
+      goto again;
+    }
+
+  if (*p != 'R')
+    goto again;
+
+  return ((x - 1) << 8) | (y - 1);
+}
+#endif /* SUPPORT_SERIAL */
+
+void
+cls (void)
+{
+  if (terminal & TERMINAL_CONSOLE)
+    console_cls ();
+#ifdef SUPPORT_SERIAL
+  else if (terminal & TERMINAL_SERIAL)
+    serial_cls ();
+#endif
+}
+
+#ifdef SUPPORT_SERIAL
+/* The serial part of cls.  */
+void
+serial_cls (void)
+{
+  grub_printf ("\e[H\e[J");
+}
+#endif /* SUPPORT_SERIAL */
+#endif /* ! STAGE1_5 */
+
 int
 substring (char *s1, char *s2)
 {

@@ -639,6 +639,9 @@ int currticks (void);
 /* Clear the screen. */
 void cls (void);
 
+/* The console part of cls.  */
+void console_cls (void);
+
 #ifndef GRUB_UTIL
 /* Turn off cursor. */
 void nocursor (void);
@@ -649,8 +652,14 @@ void nocursor (void);
    (RET & 0xff) is y. */
 int getxy (void);
 
+/* The console part of getxy.  */
+int console_getxy (void);
+
 /* Set the cursor position. */
 void gotoxy (int x, int y);
+
+/* The console part of gotoxy.  */
+void console_gotoxy (int x, int y);
 
 /* Displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones (see the DISP_* constants). */

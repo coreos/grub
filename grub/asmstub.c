@@ -430,7 +430,7 @@ getrtsecs (void)
 
 /* low-level character I/O */
 void
-cls (void)
+console_cls (void)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)
@@ -441,7 +441,7 @@ cls (void)
 
 /* returns packed values, LSB+1 is x, LSB is y */
 int
-getxy (void)
+console_getxy (void)
 {
   int y, x;
 #ifdef HAVE_LIBCURSES
@@ -455,7 +455,7 @@ getxy (void)
 
 
 void
-gotoxy (int x, int y)
+console_gotoxy (int x, int y)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)

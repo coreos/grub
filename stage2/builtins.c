@@ -3319,6 +3319,12 @@ terminal_func (char *arg, int flags)
 	    {
 	      terminal = TERMINAL_SERIAL;
 	      (void) getkey ();
+	      if (flags & BUILTIN_CMDLINE)
+		{
+		  /* FIXME: It is better to restart enter_cmdline except
+		     for init_cmdline.  */
+		  init_page ();
+		}
 	      break;
 	    }
 

@@ -1756,7 +1756,7 @@ ENTRY(multi_boot)
 
 
 /*
- * cls()
+ * console_cls()
  * BIOS call "INT 10H Function 0Fh" to get current video mode
  *	Call with	%ah = 0x0f
  *      Returns         %al = (video mode)
@@ -1767,7 +1767,7 @@ ENTRY(multi_boot)
  */
 
 
-ENTRY(cls)
+ENTRY(console_cls)
 	push	%ebp
 	push	%eax
 	push	%ebx                    /* save EBX */
@@ -1821,7 +1821,7 @@ ENTRY(nocursor)
 		
 
 /*
- * getxy()
+ * console_getxy()
  * BIOS call "INT 10H Function 03h" to get cursor position
  *	Call with	%ah = 0x03
  *			%bh = page
@@ -1832,7 +1832,7 @@ ENTRY(nocursor)
  */
 
 
-ENTRY(getxy)
+ENTRY(console_getxy)
 	push	%ebp
 	push	%ebx                    /* save EBX */
 	push	%ecx                    /* save ECX */
@@ -1859,7 +1859,7 @@ ENTRY(getxy)
 
 
 /*
- * gotoxy(x,y)
+ * console_gotoxy(x,y)
  * BIOS call "INT 10H Function 02h" to set cursor position
  *	Call with	%ah = 0x02
  *			%bh = page
@@ -1868,7 +1868,7 @@ ENTRY(getxy)
  */
 
 
-ENTRY(gotoxy)
+ENTRY(console_gotoxy)
 	push	%ebp
 	push	%eax
 	push	%ebx                    /* save EBX */

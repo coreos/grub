@@ -19,7 +19,8 @@ libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 	fsys_minix.c fsys_reiserfs.c stage2.c
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/lib \
 	-DGRUB_UTIL=1 -DFSYS_EXT2FS=1 -DFSYS_FAT=1 -DFSYS_FFS=1 \
-	-DFSYS_MINIX=1 -DFSYS_REISERFS=1 -fwritable-strings
+	-DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DSUPPORT_SERIAL \
+	-fwritable-strings
 
 # Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
@@ -48,12 +49,21 @@ PRE_STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8200
 START_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
 NBLOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,0
 PXELOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
+
 if NETBOOT_SUPPORT
-STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
-	-I$(top_srcdir)/netboot -DSUPPORT_NETBOOT=1
+NETBOOT_FLAGS = -I$(top_srcdir)/netboot -DSUPPORT_NETBOOT=1
 else
-STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc
+NETBOOT_FLAGS =
 endif
+
+if SERIAL_SUPPORT
+SERIAL_FLAGS = -DSUPPORT_SERIAL=1
+else
+SERIAL_FLAGS =
+endif
+
+STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	$(NETBOOT_FLAGS) $(SERIAL_FLAGS)
 
 STAGE1_5_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,2000
 STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1

@@ -52,7 +52,7 @@ Priorities:
 
 * Add more filesystems support (XFS, NTFS, etc.)
 
-* Add remote console support (serial, parallel and net). !!
+* Add remote console support (parallel and net). !
 
 * Add RAID support.
 

@@ -1,5 +1,64 @@
 2000-08-20  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* configure.in (--enable-serial): New option. Serial terminal
+	support will be enabled by default, once it is stabilized.
+	(SERIAL_SUPPORT): New conditional.
+	* grub/Makefile.am (AM_CFLAGS): Added -DSUPPORT_SERIAL=1.
+	* grub/asmstub.c (cls): Renamed to ...
+	(console_cls): ... this.
+	(getxy): Renamed to ...
+	(console_getxy): ... this.
+	(gotoxy): Renamed to ...
+	(console_gotoxy): ... this.
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Added
+	-DSUPPORT_SERIAL=1.
+	(NETBOOT_FLAGS): New variable.
+	(SERIAL_FLAGS): Likewise.
+	(STAGE2_COMPILE): Added $(NETBOOT_FLAGS) and $(SERIAL_FLAGS).
+	* stage2/asm.S [!STAGE1_5] (cls): Renamed to ...
+	[!STAGE1_5] (console_cls): ... this.
+	[!STAGE1_5] (getxy): Renamed to ...
+	[!STAGE1_5] (console_getxy): ... this.
+	[!STAGE1_5] (gotoxy): Renamed to ...
+	[!STAGE1_5] (console_gotoxy): ... this.
+	* stage2/builtins.c (terminal_func): If the bit flag
+	BUILTIN_CMDLINE in FLAGS is set, call init_page. But this should
+	be fixed so that it restarts enter_cmdline instead.
+	* stage2/char_io.c [!STAGE1_5] (gotoxy): New function.
+	[!STAGE1_5] (serial_gotoxy): Likewise.
+	[!STAGE1_5] (getxy): Likewise.
+	[!STAGE1_5] (serial_getxy): Likewise.
+	[!STAGE1_5] (cls): Likewise.
+	[!STAGE1_5] (serial_cls): Likewise.
+	* stage2/serial.h (serial_cls): Declared.
+	(serial_getxy): Likewise.
+	(serial_gotoxy): Likewise.
+	* stage2/shared.h (console_cls): Likewise.
+	(console_getxy): Likewise.
+	(console_gotoxy): Likewise.
+	* stage2/stage2.c (print_entries): If serial terminal is
+	enabled, print ACS_UARROW and ACS_DARROW instead of DISP_UP and
+	DISP_DOWN, respectively.
+	(print_border): If serial terminal is enabled, print
+	ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER,
+	ACS_HLINE and ACS_VLINE instead of DISP_UL, DISP_UR, DISP_LL,
+	DISP_LR, DISP_HORIZ and DISP_VERT, respectively.
+	(print_border) [SUPPORT_SERIAL]: Color the menu only if console
+	is used.
+	(set_line): Take two more arguments, ENTRYNO and MENU_ENTRIES.
+	(set_line_normal): Likewise.
+	(set_line_highlight): Likewise.
+	(set_line) [SUPPORT_SERIAL]: If serial terminal is enabled, get
+	the menu entry whose attributes are being changed and redraw the
+	line.
+	(set_line_highlight) [SUPPORT_SERIAL]: If serial terminal is
+	enabled, print `ESC [ 7 m' and `ESC [ 0 m' before and after
+	calling set_line, respectively.
+	(run_menu) [SUPPORT_SERIAL]: Call nocursor only if console is
+	used.
+	
+2000-08-20  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Now the serial console support is partially working.
 	
 	* grub/asmstub.c (serial_checkkey): Specify a pointer to TIMEOUT
