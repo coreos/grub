@@ -1,3 +1,8 @@
+2002-04-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* config.guess: New upstream version.
+	* config.sub: Likewise.
+	
 2002-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* netboot/config.c (PCI_NIC) [INCLUDE_DAVICOM]: Fix typos.
