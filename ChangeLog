@@ -1,3 +1,8 @@
+2000-06-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/tutorial.texi: Fixed some typos and syntax errors.
+	* docs/user-ref.texi: Likewise.
+	
 2000-06-21  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/stage2.c (run_menu): Initialize CUR_ENTRY at the

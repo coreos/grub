@@ -10,7 +10,7 @@ operating system (e.g. a GNU system).
 GRUB can load a wide variety of free operating systems, as well as
 chain-loading@footnote{@dfn{chain-load} is the mechanism for loading
 unsupported operating systems by loading another boot loader. It is
-typically used for loading DOS or Windows} proprietary operating
+typically used for loading DOS or Windows.} proprietary operating
 systems.
 
 The important feature in GRUB is flexibility; GRUB understands
@@ -420,7 +420,7 @@ See the documentation in the Linux source tree for the complete
 information on the available options.
 
 @item
-If you use initrd, execute the command @command{initrd} after
+If you use an initrd, execute the command @command{initrd} after
 @command{kernel}:
 
 @example
@@ -435,7 +435,7 @@ Finally, run the command @command{boot}.
 option to the kernel, to let it use less than actual memory size, you
 will also have to specify the same memory size to GRUB. To let GRUB know
 the size, run the command @command{uppermem} @emph{before} loading the
-kernel. See @xref{Command-line-specific commands}, for more information.
+kernel. @xref{Command-line-specific commands}, for more information.
 
 @node FreeBSD
 @subsection FreeBSD
@@ -467,7 +467,7 @@ Set GRUB's root device with @command{root}.
 
 @item
 Load the kernel with @command{kernel}. You should append the ugly option
-@option{--type=netbsd}, if you want to load a ELF kernel, like this:
+@option{--type=netbsd}, if you want to load an ELF kernel, like this:
 
 @example
 grub> kernel --type=netbsd /netbsd-elf
@@ -479,7 +479,7 @@ Run @command{boot}.
 
 For now, however, GRUB doesn't allow you to pass kernel parameters, so
 it may be better to chain-load it instead, for more information please
-see @xref{Chain-loading}.
+see @ref{Chain-loading}.
 
 
 @node OpenBSD
@@ -751,7 +751,7 @@ This boots GNU/Linux, but from the second hard disk.
 # For booting Mach (getting kernel from floppy)
 title  Utah Mach4 multiboot
 root   (hd0,2)
-pause  Insert the diskette now!!
+pause  Insert the diskette now^G!!
 kernel (fd0)/boot/kernel root=hd0s3
 module (fd0)/boot/bootstrap
 @end group

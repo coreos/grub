@@ -84,8 +84,8 @@ GRUB fully supports the Multiboot feature of loading multiple modules.
 @item Configuration File
 Supports a human-readable text configuration file with preset boot
 commands. The list of commands (@pxref{Commands}) are a superset of
-those supported on the command line. An example command file is provided
-in @ref{Configuration}.
+those supported on the command line. An example configuration file is
+provided in @ref{Configuration}.
 
 @item Menu Interface
 A menu interface listing the preset boot commands, with a programmable
@@ -95,14 +95,14 @@ entries, and the current implementation has space for several hundred.
 @item Flexible Command Line Interface
 A fairly flexible command line interface, accessible from the menu,
 is available to edit any preset commands, or write a new boot command
-set from scratch. If no command file is present, GRUB drops to
+set from scratch. If no configuration file is present, GRUB drops to
 the command line.
 
 The list of commands (@pxref{Commands}) are a subset of those supported
-for command files. Editing commands closely resemble the Bash command
-line (@pxref{Command Line Editing, Bash, Command Line Editing, features,
-Bash Features}), with @key{TAB}-completion of commands, devices,
-partitions, and files in a directory depending on context.
+for configuration files. Editing commands closely resembles the Bash
+command line (@pxref{Command Line Editing, Bash, Command Line Editing,
+features, Bash Features}), with @key{TAB}-completion of commands,
+devices, partitions, and files in a directory depending on context.
 
 @item Multiple Filesystem Types
 Supports multiple filesystem types transparently, plus a useful explicit
@@ -117,7 +117,7 @@ functions operate upon the uncompressed contents of the specified
 files). This greatly reduces file size and loading time, a particularly
 major benefit for floppies.@footnote{There are a few pathological cases
 where loading a very badly organized ELF kernel might take longer, but
-in practice this never happens.}
+in practice this never happen.}
 
 It is conceivable that some kernel modules should be loaded in a
 compressed state, so a different module-loading command can be specified
@@ -146,7 +146,7 @@ In traditional disk calls (called @dfn{CHS mode}), there is a geometry
 translation problem, that is, the BIOS cannot access over 1024
 cylinders, so the accessible space is limited to at least 508 MB and to
 at most 8GB. GRUB can't universally solve this problem, as there is no
-standard interface used in all machines. However, some newer machines
+standard interface used in all machines. However, several newer machines
 have the new interface, Logical Block Address (@dfn{LBA}) mode. GRUB
 automatically detects if LBA mode is available and uses it if
 available. In LBA mode, GRUB can access the entire disk.
@@ -598,8 +598,8 @@ color magenta/blue black/magenta
 @deffn Command device drive file
 In the grub shell, specify the file @var{file} as the actual drive for a
 @sc{bios} drive @var{drive}. You can use this command to create a disk
-image and to fix the drives guessed by GRUB when GRUB fails to determine
-them correctly, like this:
+image, and/or to fix the drives guessed by GRUB when GRUB fails to
+determine them correctly, like this:
 
 @example
 grub> device (fd0) /floppy-image
@@ -647,8 +647,8 @@ A key must be an alphabet, a digit, or one of these symbols:
 @samp{tilde}, @samp{shift}, @samp{backslash}, @samp{bar}, @samp{comma},
 @samp{less}, @samp{period}, @samp{greater}, @samp{slash},
 @samp{question}, @samp{alt}, @samp{space}, @samp{capslock}, @samp{FX}
-(@samp{X} is a digit), and @samp{delete}. This table describes which
-character each of the symbols corresponds to:
+(@samp{X} is a digit), and @samp{delete}. This table describes to which
+character each of the symbols corresponds:
 
 @table @samp
 @item exclam
@@ -815,19 +815,19 @@ bytes like this:
 Differ at the offset 777: 0xbe [foo], 0xef [bar]
 @end example
 
-If they are complete identical, nothing will be printed.
+If they are completely identical, nothing will be printed.
 @end deffn
 
 @deffn Command configfile file
-Load @var{file} as the configuration file.
+Load @var{file} as a configuration file.
 @end deffn
 
 @deffn Command embed stage1_5 device
 Embed the Stage 1.5 @var{stage1_5} in the sectors after the MBR if
 @var{device} is a drive, or in the @dfn{boot loader} area if @var{device}
-is a FFS partition.@footnote{The latter feature has not been implemented
-yet.} Print the number of sectors which @var{stage1_5} occupies if
-successful.
+is a FFS partition or a ReiserFS partition.@footnote{The latter feature
+has not been implemented yet.} Print the number of sectors which
+@var{stage1_5} occupies, if successful.
 @end deffn
 
 @deffn Command displaymem
@@ -875,7 +875,7 @@ based on the C/H/S values automatically.
 Display helpful information about builtin commands. If you do not
 specify @var{pattern}, this command lists the short documents of all
 available commands, and, if you specify one or more @var{pattern}s, it
-displays long documents of the commands which match @var{pattern}.
+displays long documents of the commands which match @var{pattern}(s).
 @end deffn
 
 @deffn Command impsprobe
