@@ -1,3 +1,9 @@
+2005-03-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/fsys_fat.c (fat_mount): Ignore the 3rd bit of a media
+	descriptor, because some BIOSes overwrite this value, according
+	to the storage mode (e.g. USB Floppy or USB HDD).
+
 2005-02-16  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* grub/asmstub.c (grub_stage2): Remove the attribute `volatile'
