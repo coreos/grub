@@ -1,5 +1,16 @@
 2002-12-01  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Alexander Langer <alex@big.endian.de>:
+	* stage2/freebsd.h (RB_GDB): New macro.
+	(RB_MUTE): Likewise.
+	(RB_MULTIPLE): Likewise.
+
+	* stage2/boot.c (bsd_boot): Set the bits of RB_MULTIPLE, RB_GDB
+	and RB_MUTE when "-D", "-g" and "-m" are specified,
+	respectively.
+
+2002-12-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* docs/grub.texi (Reporting bugs): Specify the project page of
 	the BTS instead of the BTS itself.
 

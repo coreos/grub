@@ -887,8 +887,14 @@ bsd_boot (kernel_t type, int bootdev, char *arg)
 		clval |= RB_CONFIG;
 	      if (*str == 'd')
 		clval |= RB_KDB;
+	      if (*str == 'D')
+		clval |= RB_MULTIPLE;
+	      if (*str == 'g')
+		clval |= RB_GDB;
 	      if (*str == 'h')
 		clval |= RB_SERIAL;
+	      if (*str == 'm')
+		clval |= RB_MUTE;
 	      if (*str == 'r')
 		clval |= RB_DFLTROOT;
 	      if (*str == 's')
