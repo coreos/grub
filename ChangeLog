@@ -1,3 +1,13 @@
+2002-05-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* lib/device.c: Don't include linux/hdreg.h, linux/major.h,
+	or linux/kdev_t.h.
+	[__linux__] (HDIO_GETGEO): Defined.
+	[__linux__] (hd_geometry): Likewise.
+	[__linux__] (FLOPPY_MAJOR): Likewise.
+	[__linux__] (MINORBITS): Likewise.
+	[__linux__] (MAJOR): Likewise.
+	
 2002-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* netboot/fsys_tftp.c (tftp_read): Don't call buf_fill unless
