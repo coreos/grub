@@ -1,3 +1,9 @@
+2001-07-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in (convert): Recognize the naming scheme
+	for Linux devfs floppy devices. Reported by Jason Thomas
+	<jason@topic.com.au>.
+	
 2001-07-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* netboot/compile: New file. This was also missing... How many
