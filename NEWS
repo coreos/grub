@@ -33,6 +33,11 @@ New in 0.5.94:
 * The netboot support is heavily rewritten, based on Etherboot-4.4.2.
   Most of the device drivers are stolen from it, so we now have many
   network drivers. See netboot/README.netboot for more details.
+* Now configure accepts the option `--disable-lba-support-bitmap-check'
+  to ignore an incorrect LBA support bitmap returned by a buggy BIOS. If
+  you are sure that your BIOS does support LBA mode but GRUB doesn't
+  work in LBA mode, recompile GRUB with this option specified. You can
+  check if GRUB accesses a drive in LBA mode by the command "geometry".
 
 New in 0.5.93 - 1999-10-30:
 * ELF format of FreeBSD kernel is supported.

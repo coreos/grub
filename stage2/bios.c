@@ -163,7 +163,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 		 read/write is supported, so we cannot help assuming
 		 that the functions are supported by default and
 		 clearing the flag when either of them fails. *sigh*  */
-#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
+#ifdef CHECK_LBA_SUPPORT_BITMAP
 	      /* Make sure that LBA read/write functions are supported.  */
 	      if (drp.flags & 1)
 		{
@@ -174,7 +174,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 		     change the type of TOTAL_SECTORS to unsigned long
 		     long.  */
 		  total_sectors = drp.total_sectors & ~0L;
-#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
+#ifdef CHECK_LBA_SUPPORT_BITMAP
 		}
 #endif
 	    }

@@ -1,3 +1,18 @@
+2000-02-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* grub/asmstub.c (biosdisk) [__linux__]: Use _llseek when
+	__GLIBC_MINOR__ is less than 1 even if __GLIBC__ is 2. Reported
+	by Goran Koruga <goran.koruga@hermes.si>.
+
+	* configure.in (--disable-lba-support-bitmap-check): New option.
+	Don't define CHECK_LBA_SUPPORT_BITMAP if specified.
+	* stage1/stage1.S (real_start): Check if AH=0x42 is supported if
+	CHECK_LBA_SUPPORT_BITMAP instead of NO_BUGGY_BIOS_IN_THE_WORLD
+	is defined.
+	* stage2/bios.c (get_diskinfo): Check if LBA read/write
+	functions are supported iff CHECK_LBA_SUPPORT_BITMAP is defined,
+	instead of NO_BUGGY_BIOS_IN_THE_WORLD.
+	
 2000-02-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	The netboot support is heavily rewritten, based on

@@ -43,11 +43,11 @@ int grub_stage2 (void);
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
-# if __GLIBC__ < 2
+# if (__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */
 #  include <linux/fs.h>		/* BLKFLSBUF */
-# endif /* GLIBC < 2 */
+# endif /* (GLIBC < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR < 1)) */
 # ifndef BLKFLSBUF
 #  define BLKFLSBUF	_IO (0x12,97)
 # endif /* ! BLKFLSBUF */
@@ -1114,7 +1114,8 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
     return BIOSDISK_ERROR_GEOMETRY;
 
   /* Seek to the specified location. */
-#if defined(__linux) && (__GLIBC__ < 2)
+#if defined(__linux__) \
+  && ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
   /* Maybe libc doesn't have large file support.  */
   {
     loff_t offset, result;

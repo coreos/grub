@@ -24,3 +24,6 @@
 
 /* Defined if _end is defined.  */
 #undef HAVE_USCORE_END_SYMBOL
+
+/* Defined if --disable-lba-support-bitmap is specified.  */
+#undef CHECK_LBA_SUPPORT_BITMAP

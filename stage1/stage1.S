@@ -149,11 +149,11 @@ real_start:
 	cmpw	$0xaa55, %bx
 	jne	chs_mode
 
-#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
+#ifdef CHECK_LBA_SUPPORT_BITMAP
 	/* check if AH=0x42 is supported */
 	andw	$1, %cx
 	jz	chs_mode
-#endif
+#endif /* CHECK_LBA_SUPPORT_BITMAP */
 		
 	/* get the geometry (limited to 2TB!) */
 	movb	$0x48, %ah
