@@ -1,3 +1,8 @@
+2002-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* netboot/config.c (PCI_NIC) [INCLUDE_DAVICOM]: Fix typos.
+	Reported by Julien Perrot <julien.perrot@iie.cnam.fr>.
+	
 2002-04-17  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c [SUPPORT_SERIAL] (terminal_func): Set

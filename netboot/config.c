@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -317,8 +317,8 @@ static struct pci_dispatch_table PCI_NIC[] =
   { 0x11F6,                 0x9881,                        tulip_probe },
 # endif /* INCLUDE_TULIP */
 # ifdef INCLUDE_DAVICOM
-  { PC_VENDOR_ID_DAVICOM,   PC_DEVICE_ID_DM9102,           davicom_probe },
-  { PC_VENDOR_ID_DAVICOM,   PC_DEVICE_ID_DM9009,           davicom_probe },
+  { PCI_VENDOR_ID_DAVICOM,   PCI_DEVICE_ID_DM9102,           davicom_probe },
+  { PCI_VENDOR_ID_DAVICOM,   PCI_DEVICE_ID_DM9009,           davicom_probe },
 # endif /* INCLUDE_DAVICOM */
 # ifdef	INCLUDE_VIA_RHINE
   { PCI_VENDOR_ID_VIATEC,   PCI_DEVICE_ID_VIA_VT6102,      rhine_probe },
