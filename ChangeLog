@@ -1,3 +1,8 @@
+1999-04-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/menu.lst: Rewritten, so that it contains up-to-date
+	information and FAQish configuration examples.
+	
 1999-04-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/asm.S (get_diskinfo_floppy): Correct the number of heads

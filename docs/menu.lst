@@ -2,8 +2,21 @@
 # Sample boot menu configuration file
 #
 
-# Timeout here...
-timeout = 30
+# Boot automatically after 30 secs.
+timeout= 30
+
+# By default, boot the first entry.
+default= 0
+
+# For booting the GNU HURD
+title=		GNU/HURD
+root=	(hd0,0)
+kernel=	/boot/gnumach root=hd0s1
+module=	/boot/serverboot
+
+# For booting Linux
+title=		GNU/Linux
+kernel=	(hd1,0)/vmlinuz root=/dev/hdb1
 
 # For booting Mach (getting kernel from floppy)
 title=		Utah Mach4 multiboot
@@ -17,12 +30,6 @@ title=		FreeBSD 2.2-SNAP
 root=	(hd0,2)
 kernel=	(fd0)/kernel
 
-# For booting the GNU HURD (getting kernel from floppy)
-title=		GNU HURD
-root=	(hd0,a)
-kernel=	/boot/kernel root=hd0a
-module= /boot/serverboot
-
 # For booting OS/2  (test, I have no OS/2 to test for!)
 title=		OS/2
 root=		(hd0,1)
@@ -30,15 +37,13 @@ makeactive
 chainloader=	/boot/chain.os2
 # This is similar to "chainload", but loads a specific file
 
-# For booting Windows NT 3.5 or DOS
-title=		Windows NT 3.5/DOS boot menu
+# For booting Windows NT 3.5 or Windows95
+title=		Windows NT 3.5/Windows 95 boot menu
 root=		(0x80,0)
 makeactive
 chainloader=	+1
 
-# For booting DOS from a Windows NT/DOS installation
-title=		DOS
-root=		(0x80,0)
-makeactive
-chainloader=	/bootsect.dos
-
+# For installing GRUB into the hard disk
+title=		Install GRUB into the hard disk
+root=		(hd0,0)
+install=	/boot/grub/stage1 d (hd0) /boot/grub/stage2 0x8000 p

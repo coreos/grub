@@ -9,7 +9,7 @@ personal computer BIOSes:
   - can boot Multiboot-compliant kernels (such as GNU Mach), as well
     as standard Linux and BSD kernels
 
-See the file docs/NEWS for a description of recent changes to GRUB.
+See the file NEWS for a description of recent changes to GRUB.
 
 See the file INSTALL for instructions on how to build and install the
 GRUB data and program files.  See `docs/install.html' for details
