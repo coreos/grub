@@ -1,3 +1,8 @@
+2004-07-24  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/stage2.c (cmain): Terminate DEFAULT_FILE with NUL
+	correctly. Reported by Alban Crequy <alban.crequy@apinc.org>.
+
 2004-07-21  Robert Millan  <robertmh@gnu.org>
 
 	Patch from David Weinehall <tao@debian.org>

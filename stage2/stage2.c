@@ -879,6 +879,7 @@ cmain (void)
 		i++;
 		break;
 	      }
+	  default_file[i] = 0;
 	  grub_strncat (default_file + i, "default", DEFAULT_FILE_BUFLEN - i);
 	  if (grub_open (default_file))
 	    {
