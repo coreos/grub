@@ -597,6 +597,9 @@ embed_func (char *arg, int flags)
 #endif
     }
 
+  /* Clear the cache.  */
+  buf_track = -1;
+  
   /* Now perform the embedding.  */
   for (i = 0; i < size; i++)
     {

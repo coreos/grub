@@ -1,5 +1,12 @@
 1999-10-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* docs/Makefile.am (.texi): Canceled because the dependecies can
+	be circulated.
+	* stage2/builtins.c (embed_func): Set BUF_TRACK to -1 before
+	writing	the Stage 1.5 to the disk to clear the cache.
+	
+1999-10-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/boot.c (load_initrd): Change types of *RAMDISK and
 	MOVETO to unsigned long.
 	Apply the macro RAW_ADDR to MOVETO.

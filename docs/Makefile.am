@@ -9,6 +9,10 @@ noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS)
 
+# Cancel the rule %.texi -> %. This rule may confuse make to determine
+# the dependecies.
+.texi:
+
 %.c.texi: %.c $(srcdir)/$(SRC2TEXI)
 	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
