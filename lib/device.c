@@ -370,6 +370,10 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       /* Skip leading spaces.  */
       while (*ptr && isspace (*ptr))
 	ptr++;
+
+      /* Skip empty lines.  */
+      if (! *ptr)
+	continue;
       
       if (*ptr != '(')
 	{
