@@ -1,7 +1,7 @@
 \input texinfo
 @c -*-texinfo-*-
 @c %**start of header
-@setfilename grub.info
+@c @setfilename grub.info
 @settitle GRUB Manual
 @c %**end of header
 
@@ -20,12 +20,14 @@
 
 @dircategory Kernel
 @direntry
-* GRUB: (grub).                 The GRand Unified Bootloader.
+* GRUB: (grub).                 The GRand Unified Bootloader
 @end direntry
 
 @dircategory Kernel
 @direntry
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
+@end direntry
+
 @setchapternewpage off
 
 @ifinfo
@@ -126,7 +128,7 @@ Appendices and Indices
 
 * FAQ::
 * Obtaining and Building GRUB::
-* Reporting Bugs::
+* Reporting bugs::
 * Index::
 
 @end menu

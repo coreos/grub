@@ -1,0 +1,184 @@
+@node FAQ
+@appendix Frequently asked questions
+
+@table @asis
+@item How does GNU GRUB differ from Erich's original GRUB?
+
+GNU GRUB is the successor of Erich's great GRUB. He couldn't work on
+GRUB because of some other tasks, so the current maintainer Gordon
+Matzigkeit took over the maintainership, and opened the development in
+order for everybody to participate it.
+
+Technically speaking, GNU GRUB has many features that are not
+seen in the original GRUB. For example, GNU GRUB can be installed on
+UNIX-like operating system (i.e. GNU/Linux) via the grub shell
+@file{/sbin/grub}, it supports Logical Block Address (LBA) mode that
+solves the 1024 cylinders problem, and TAB completes a filename when
+it's unique. Of course, many bug fixes are done as well, so it is
+recommended to use GNU GRUB.
+
+@item Can GRUB boot my operating system from over 8GB hard disks?
+
+That depends on your BIOS and your operating system. You must make
+sure that your drive is accessible in LBA mode. Generally, that is
+configurable in BIOS setting utility. Read the manual for your BIOS
+for more information.
+
+Furthermore, some operating systems (i.e. DOS) cannot access any large
+disk, so the problem is not solved by any kind of boot loader. As long
+as I know, at least GNU/Hurd and GNU/Linux can boot from such a large
+disk.
+
+@item Can I put Stage2 into a partition which is over 1024 cylinders?
+
+Yes, if your BIOS supports the LBA mode.
+
+@item How to create a GRUB boot floppy with the menu interface?
+
+The easiest way is:
+
+@enumerate
+@item
+Create filesystem in your floppy disk. For example:
+
+@example
+$ mke2fs /dev/fd0
+@end example
+
+@item
+Mount it on somewhere, say, @file{/mnt}.
+
+@item
+Copy the GRUB images to @file{/mnt/boot/grub}.
+
+@item
+Run the following command:
+
+@example
+$ /sbin/grub --batch <<EOT
+root (fd0)
+setup (fd0)
+quit
+EOT
+@end example
+@end enumerate
+
+@item How to specify a partition?
+
+@xref{Device syntax}.
+
+@item GRUB does not recognize my GNU/Hurd partition.
+
+I don't know why, but the authors of FDISK programs have assigned the
+partition type 0x63 to GNU Hurd incorrectly. A partition type should
+mean what format is used in the partition, such as filesystem and BSD
+slices, and should not be used to represent what operating system owns
+the partition. So use 0x83 if the partition contains ext2fs
+filesystem, and use 0xA5 if the partition contains ffs fielsystem,
+whether the partition owner is Hurd or not. We will use 0x63 for GNU
+Hurd filesystem that has not been implemented yet.
+
+@item I've installed a recent version of binutils, but GRUB still crashes.
+
+Please check for the version of your binutils by this command:
+
+@example
+$ ld -v
+@end example
+
+This will show two versions, but only the latter is important. If the
+version is identical with what you have installed, the installation was
+not bad.
+
+Well, please try:
+
+@example
+$ gcc -Wl,-v 2>&1 | grep "GNU ld"
+@end example
+
+If this is not identical with the result above, you should specify the
+directory where you have installed binutils for the script configure,
+like this:
+
+@example
+$ ./configure --with-binutils=/usr/local/bin
+@end example
+
+If you follow the instructions above but GRUB still crashes, probably
+there is a serious bug in GRUB. @xref{Reporting bugs}.
+
+@item Why doesn't Linux (FreeBSD, NetBSD, etc.) become Multiboot-compliant?
+
+Please ask the maintainers. If all free kernels were
+Multiboot-compliant, the world would be an utopia@dots{}
+@end table
+
+
+@node Obtaining and Building GRUB
+@appendix Obtaining and Building GRUB
+
+@quotation
+@strong{Caution:} GRUB requires binutils-2.9.1.0.23 or later because the
+GNU assembler has been changed so that it can produce real 16bits
+machine code between 2.9.1 and 2.9.1.0.x. The latest version can be
+obtained from @url{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}.
+@end quotation
+
+GRUB can be obtained from the GNU alpha archive site
+@url{ftp://alpha.gnu.org/gnu/hurd/src} or any of its mirrors. The file
+will be named grub-version.tar.gz. The current version is
+@value{VERSION}, so the file you should grab is:
+
+@url{ftp://alpha.gnu.org/gnu/hurd/src/grub-@value{VERSION}.tar.gz}
+
+To unbundle GRUB use the instruction:
+
+@example
+zcat grub-@value{VERSION}.tar.gz | tar xvf -
+@end example
+
+which will create a directory called @file{guile-@value{VERSION}} with
+all the sources. You can look at the file @file{INSTALL} for detailed
+instructions on how to build and install GRUB, but you should be able to
+just do:
+
+@example
+$ cd grub-@value{VERSION}
+$ ./configure
+$ make install
+@end example
+
+This will install the grub shell @file{grub}, the Multiboot checker
+@file{mbchk}, and the GRUB images It will also install the GRUB manual.
+
+Also, you can obtain the latest version from the CVS. Use the repository
+@code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot} and the
+module @code{grub}. The password for anoncvs is empty. So the
+instruction is:
+
+@example
+$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot login
+Password: @key{ENTER}
+$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot co grub
+@end example
+
+Get the recent version of GNU Automake from the CVS to regenerate
+@file{Makefile.in}s. See @url{http://sourceware.cygnus.com/automake/},
+for more information.
+
+
+@node Reporting bugs
+@appendix Reporting bugs
+
+When you encounter any problem or bug, please submit it to
+@email{bug-grub@@gnu.org} with information about your computer and what
+you did @emph{as much as possible}. For example, your operating system,
+the geometries of your drives and the version of GRUB are very
+important.
+
+
+@node Index
+@unnumbered Index
+
+@c Currently, we use only the Concept Index.
+@printindex cp

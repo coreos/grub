@@ -323,7 +323,14 @@ First, set GRUB's root device to the partition by the command
 grub> rootnoverify (hd0,0)
 @end example
 
-Second, load the boot loader by the command @command{chainloader}:
+Second, set the @dfn{active} flags in the partition by the command
+@command{makeactive}:
+
+@example
+grub> makeactive
+@end example
+
+Third, load the boot loader by the command @command{chainloader}:
 
 @example
 grub> chainloader +1

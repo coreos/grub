@@ -106,7 +106,7 @@ partitions, and files in a directory depending on context.
 Supports multiple filesystem types transparently, plus a useful explicit
 blocklist notation. The currently supported filesystem types are
 @dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, and
-@dfn{Linux ext2fs}. @xref{Filesystems}, for more information.
+@dfn{Linux ext2fs}. @xref{Filesystem}, for more information.
 
 @item Decompression Support
 Can decompress files which were compressed by @command{gzip}. This
@@ -743,7 +743,7 @@ emit the standard beep sound, which is useful when prompting the user to
 change floppies.
 
 @item quit
-Exit from the GRUB shell @command{grub} (@pxref{Invoking The grub
+Exit from the GRUB shell @command{grub} (@pxref{Invoking the grub
 shell}). This command is ignored in the native Stage 2.
 
 @item read @var{addr}
@@ -917,7 +917,7 @@ provide.
 
 @item 11 : Device string unrecognizable
 This error is returned if a device string was expected, and the string
-encountered didn't fit the syntax/rules listed in the @ref{Filesystems}.
+encountered didn't fit the syntax/rules listed in the @ref{Filesystem}.
 
 @item 12 : Invalid device requested
 This error is returned if a device string is recognizable but does not
@@ -1059,7 +1059,7 @@ this option.
 @item --config-file=@var{file}
 Read the configuration file @var{file} instead of
 @file{/boot/grub/menu.lst}. The format is the same as the normal GRUB
-syntax. See @ref{Filesystems}, for more information.
+syntax. See @ref{Filesystem}, for more information.
 
 @item --boot-drive=@var{drive}
 Set the stage2 @var{boot_drive} to @var{drive}. This argument should be

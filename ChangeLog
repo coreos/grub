@@ -1,5 +1,12 @@
 1999-10-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* docs/prog-ref.texi: New file.
+	* docs/appendices.texi: Likewise.
+	* docs/Makefile.am (UNFINISHED_MANUALS): Added prog-ref.texi and
+	appendices.texi.
+	
+1999-10-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* docs/user-ref.texi: New file.
 	* docs/Makefile.am (UNFINISHED_MANUALS): Added user-red.texi.
 	
