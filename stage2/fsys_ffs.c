@@ -1,6 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -291,6 +292,24 @@ loop:
 
   /* go back to main loop at top of function */
   goto loop;
+}
+
+int
+ffs_embed (int *start_sector, int needed_sectors)
+{
+  /* XXX: I don't know if this is really correct. Someone who is
+     familiar with BSD should check for this.  */
+  if (needed_sectors > 14)
+    return 0;
+  
+  *start_sector = 1;
+#if 1
+  /* FIXME: Disable the embedding in FFS until someone checks if
+     the code above is correct.  */
+  return 0;
+#else
+  return 1;
+#endif
 }
 
 #endif /* FSYS_FFS */

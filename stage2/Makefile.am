@@ -15,18 +15,19 @@ INCLUDES = -I$(top_srcdir)/stage1
 noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c \
-	fsys_minix.c stage2.c
+	fsys_minix.c fsys_reiserfs.c stage2.c
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
-	-DFSYS_FAT=1 -DFSYS_FFS=1 -DFSYS_MINIX=1 -fwritable-strings
+	-DFSYS_FAT=1 -DFSYS_FFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 \
+	-fwritable-strings
 
 # Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-	minix_stage1_5
+	minix_stage1_5 reiserfs_stage1_5
 noinst_DATA = pre_stage2 start
-noinst_PROGRAMS = pre_stage2.exec start.exec \
-	e2fs_stage1_5.exec fat_stage1_5.exec \
-	ffs_stage1_5.exec minix_stage1_5.exec
+noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
+	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
+	reiserfs_stage1_5.exec
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
 PRE_STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8200
@@ -44,7 +45,8 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c smp-imps.c stage2.c
+	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c smp-imps.c \
+	stage2.c
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 
@@ -102,6 +104,13 @@ minix_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 minix_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
 	-DNO_BLOCK_FILES=1
 minix_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For reiserfs_stage1_5 target.
+reiserfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
+	disk_io.c stage1_5.c fsys_reiserfs.c bios.c
+reiserfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
+	-DNO_BLOCK_FILES=1
+reiserfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # General rule for making a raw binary.
 %: %.exec

@@ -9,6 +9,7 @@ New in 0.5.95 - XXXX-XX-XX:
   "multiboot". Actually, this option will be necessary only if you want
   to load a NetBSD ELF kernel, because GRUB can automatically determine
   a kernel type in the other cases.
+* ReiserFS support is added.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

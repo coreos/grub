@@ -30,8 +30,6 @@ infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
 oldincludedir = /usr/include
-
-DESTDIR =
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
 
@@ -106,21 +104,22 @@ INCLUDES = -I$(top_srcdir)/stage1
 noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c \
-	fsys_minix.c stage2.c
+	fsys_minix.c fsys_reiserfs.c stage2.c
 
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
-	-DFSYS_FAT=1 -DFSYS_FFS=1 -DFSYS_MINIX=1 -fwritable-strings
+	-DFSYS_FAT=1 -DFSYS_FFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 \
+	-fwritable-strings
 
 
 # Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-	minix_stage1_5
+	minix_stage1_5 reiserfs_stage1_5
 
 noinst_DATA = pre_stage2 start
-noinst_PROGRAMS = pre_stage2.exec start.exec \
-	e2fs_stage1_5.exec fat_stage1_5.exec \
-	ffs_stage1_5.exec minix_stage1_5.exec
+noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
+	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
+	reiserfs_stage1_5.exec
 
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
@@ -136,7 +135,8 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c smp-imps.c stage2.c
+	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c smp-imps.c \
+	stage2.c
 
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
@@ -186,6 +186,15 @@ minix_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
 	-DNO_BLOCK_FILES=1
 
 minix_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For reiserfs_stage1_5 target.
+reiserfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
+	disk_io.c stage1_5.c fsys_reiserfs.c bios.c
+
+reiserfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
+	-DNO_BLOCK_FILES=1
+
+reiserfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 subdir = stage2
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -203,7 +212,7 @@ am_libgrub_a_OBJECTS =  libgrub_a-boot.o libgrub_a-builtins.o \
 libgrub_a-common.o libgrub_a-char_io.o libgrub_a-cmdline.o \
 libgrub_a-disk_io.o libgrub_a-gunzip.o libgrub_a-fsys_ffs.o \
 libgrub_a-fsys_ext2fs.o libgrub_a-fsys_fat.o libgrub_a-fsys_minix.o \
-libgrub_a-stage2.o
+libgrub_a-fsys_reiserfs.o libgrub_a-stage2.o
 libgrub_a_OBJECTS =  $(am_libgrub_a_OBJECTS)
 AR = ar
 PROGRAMS =  $(noinst_PROGRAMS)
@@ -247,10 +256,19 @@ pre_stage2_exec-char_io.o pre_stage2_exec-cmdline.o \
 pre_stage2_exec-disk_io.o pre_stage2_exec-gunzip.o \
 pre_stage2_exec-fsys_ext2fs.o pre_stage2_exec-fsys_fat.o \
 pre_stage2_exec-fsys_ffs.o pre_stage2_exec-fsys_minix.o \
-pre_stage2_exec-smp-imps.o pre_stage2_exec-stage2.o
+pre_stage2_exec-fsys_reiserfs.o pre_stage2_exec-smp-imps.o \
+pre_stage2_exec-stage2.o
 pre_stage2_exec_OBJECTS =  $(am_pre_stage2_exec_OBJECTS)
 @NETBOOT_SUPPORT_TRUE@pre_stage2_exec_DEPENDENCIES =  \
 @NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
+am_reiserfs_stage1_5_exec_OBJECTS =  reiserfs_stage1_5_exec-start.o \
+reiserfs_stage1_5_exec-asm.o reiserfs_stage1_5_exec-common.o \
+reiserfs_stage1_5_exec-char_io.o reiserfs_stage1_5_exec-disk_io.o \
+reiserfs_stage1_5_exec-stage1_5.o \
+reiserfs_stage1_5_exec-fsys_reiserfs.o reiserfs_stage1_5_exec-bios.o
+reiserfs_stage1_5_exec_OBJECTS =  $(am_reiserfs_stage1_5_exec_OBJECTS)
+reiserfs_stage1_5_exec_LDADD = $(LDADD)
+reiserfs_stage1_5_exec_DEPENDENCIES = 
 am_start_exec_OBJECTS =  start_exec-start.o
 start_exec_OBJECTS =  $(am_start_exec_OBJECTS)
 start_exec_LDADD = $(LDADD)
@@ -264,7 +282,7 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES =  $(libgrub_a_SOURCES) $(e2fs_stage1_5_exec_SOURCES) \
 $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) \
 $(minix_stage1_5_exec_SOURCES) $(pre_stage2_exec_SOURCES) \
-$(start_exec_SOURCES)
+$(reiserfs_stage1_5_exec_SOURCES) $(start_exec_SOURCES)
 DATA =  $(noinst_DATA) $(pkgdata_DATA)
 
 HEADERS =  $(noinst_HEADERS)
@@ -296,8 +314,9 @@ $(DEPDIR)/libgrub_a-builtins.Po $(DEPDIR)/libgrub_a-char_io.Po \
 $(DEPDIR)/libgrub_a-cmdline.Po $(DEPDIR)/libgrub_a-common.Po \
 $(DEPDIR)/libgrub_a-disk_io.Po $(DEPDIR)/libgrub_a-fsys_ext2fs.Po \
 $(DEPDIR)/libgrub_a-fsys_fat.Po $(DEPDIR)/libgrub_a-fsys_ffs.Po \
-$(DEPDIR)/libgrub_a-fsys_minix.Po $(DEPDIR)/libgrub_a-gunzip.Po \
-$(DEPDIR)/libgrub_a-stage2.Po $(DEPDIR)/minix_stage1_5_exec-asm.Po \
+$(DEPDIR)/libgrub_a-fsys_minix.Po $(DEPDIR)/libgrub_a-fsys_reiserfs.Po \
+$(DEPDIR)/libgrub_a-gunzip.Po $(DEPDIR)/libgrub_a-stage2.Po \
+$(DEPDIR)/minix_stage1_5_exec-asm.Po \
 $(DEPDIR)/minix_stage1_5_exec-bios.Po \
 $(DEPDIR)/minix_stage1_5_exec-char_io.Po \
 $(DEPDIR)/minix_stage1_5_exec-common.Po \
@@ -315,17 +334,26 @@ $(DEPDIR)/pre_stage2_exec-fsys_ext2fs.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_fat.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_ffs.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_minix.Po \
+$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po \
 $(DEPDIR)/pre_stage2_exec-gunzip.Po \
 $(DEPDIR)/pre_stage2_exec-smp-imps.Po \
-$(DEPDIR)/pre_stage2_exec-stage2.Po $(DEPDIR)/start_exec-start.Po
+$(DEPDIR)/pre_stage2_exec-stage2.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-asm.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-bios.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-char_io.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-common.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-disk_io.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.Po \
+$(DEPDIR)/reiserfs_stage1_5_exec-start.Po $(DEPDIR)/start_exec-start.Po
 DIST_COMMON =  $(noinst_HEADERS) Makefile.am Makefile.in compile
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-SOURCES = $(libgrub_a_SOURCES) $(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) $(minix_stage1_5_exec_SOURCES) $(pre_stage2_exec_SOURCES) $(start_exec_SOURCES)
-OBJECTS = $(am_libgrub_a_OBJECTS) $(am_e2fs_stage1_5_exec_OBJECTS) $(am_fat_stage1_5_exec_OBJECTS) $(am_ffs_stage1_5_exec_OBJECTS) $(am_minix_stage1_5_exec_OBJECTS) $(am_pre_stage2_exec_OBJECTS) $(am_start_exec_OBJECTS)
+SOURCES = $(libgrub_a_SOURCES) $(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) $(minix_stage1_5_exec_SOURCES) $(pre_stage2_exec_SOURCES) $(reiserfs_stage1_5_exec_SOURCES) $(start_exec_SOURCES)
+OBJECTS = $(am_libgrub_a_OBJECTS) $(am_e2fs_stage1_5_exec_OBJECTS) $(am_fat_stage1_5_exec_OBJECTS) $(am_ffs_stage1_5_exec_OBJECTS) $(am_minix_stage1_5_exec_OBJECTS) $(am_pre_stage2_exec_OBJECTS) $(am_reiserfs_stage1_5_exec_OBJECTS) $(am_start_exec_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -367,6 +395,7 @@ libgrub_a-fsys_ffs.o: fsys_ffs.c
 libgrub_a-fsys_ext2fs.o: fsys_ext2fs.c
 libgrub_a-fsys_fat.o: fsys_fat.c
 libgrub_a-fsys_minix.o: fsys_minix.c
+libgrub_a-fsys_reiserfs.o: fsys_reiserfs.c
 libgrub_a-stage2.o: stage2.c
 
 libgrub.a: $(libgrub_a_OBJECTS) $(libgrub_a_DEPENDENCIES)
@@ -452,12 +481,27 @@ pre_stage2_exec-fsys_ext2fs.o: fsys_ext2fs.c
 pre_stage2_exec-fsys_fat.o: fsys_fat.c
 pre_stage2_exec-fsys_ffs.o: fsys_ffs.c
 pre_stage2_exec-fsys_minix.o: fsys_minix.c
+pre_stage2_exec-fsys_reiserfs.o: fsys_reiserfs.c
 pre_stage2_exec-smp-imps.o: smp-imps.c
 pre_stage2_exec-stage2.o: stage2.c
 
 pre_stage2.exec: $(pre_stage2_exec_OBJECTS) $(pre_stage2_exec_DEPENDENCIES)
 	@rm -f pre_stage2.exec
 	$(LINK) $(pre_stage2_exec_LDFLAGS) $(pre_stage2_exec_OBJECTS) $(pre_stage2_exec_LDADD) $(LIBS)
+reiserfs_stage1_5_exec-start.o: start.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-start.o `test -f start.S || echo '$(srcdir)/'`start.S
+reiserfs_stage1_5_exec-asm.o: asm.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-asm.o `test -f asm.S || echo '$(srcdir)/'`asm.S
+reiserfs_stage1_5_exec-common.o: common.c
+reiserfs_stage1_5_exec-char_io.o: char_io.c
+reiserfs_stage1_5_exec-disk_io.o: disk_io.c
+reiserfs_stage1_5_exec-stage1_5.o: stage1_5.c
+reiserfs_stage1_5_exec-fsys_reiserfs.o: fsys_reiserfs.c
+reiserfs_stage1_5_exec-bios.o: bios.c
+
+reiserfs_stage1_5.exec: $(reiserfs_stage1_5_exec_OBJECTS) $(reiserfs_stage1_5_exec_DEPENDENCIES)
+	@rm -f reiserfs_stage1_5.exec
+	$(LINK) $(reiserfs_stage1_5_exec_LDFLAGS) $(reiserfs_stage1_5_exec_OBJECTS) $(reiserfs_stage1_5_exec_LDADD) $(LIBS)
 start_exec-start.o: start.S
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(start_exec_CFLAGS) $(CFLAGS) -c -o start_exec-start.o `test -f start.S || echo '$(srcdir)/'`start.S
 
@@ -552,6 +596,7 @@ maintainer-clean-tags:
 @AMDEP@include $(DEPDIR)/libgrub_a-fsys_fat.Po
 @AMDEP@include $(DEPDIR)/libgrub_a-fsys_ffs.Po
 @AMDEP@include $(DEPDIR)/libgrub_a-fsys_minix.Po
+@AMDEP@include $(DEPDIR)/libgrub_a-fsys_reiserfs.Po
 @AMDEP@include $(DEPDIR)/libgrub_a-gunzip.Po
 @AMDEP@include $(DEPDIR)/libgrub_a-stage2.Po
 @AMDEP@include $(DEPDIR)/minix_stage1_5_exec-asm.Po
@@ -574,9 +619,18 @@ maintainer-clean-tags:
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_fat.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_ffs.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_minix.Po
+@AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-gunzip.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-smp-imps.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-stage2.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-asm.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-bios.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-char_io.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-common.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-disk_io.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.Po
+@AMDEP@include $(DEPDIR)/reiserfs_stage1_5_exec-start.Po
 @AMDEP@include $(DEPDIR)/start_exec-start.Po
 
 mostlyclean-depend:
@@ -684,6 +738,14 @@ libgrub_a-fsys_minix.o: fsys_minix.c
 @AMDEP@	depfile='$(DEPDIR)/libgrub_a-fsys_minix.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_minix.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_minix.o `test -f fsys_minix.c || echo '$(srcdir)/'`fsys_minix.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+libgrub_a-fsys_reiserfs.o: fsys_reiserfs.c
+@AMDEP@	source='fsys_reiserfs.c' object='libgrub_a-fsys_reiserfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/libgrub_a-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 
@@ -983,6 +1045,14 @@ pre_stage2_exec-fsys_minix.o: fsys_minix.c
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 
+pre_stage2_exec-fsys_reiserfs.o: fsys_reiserfs.c
+@AMDEP@	source='fsys_reiserfs.c' object='pre_stage2_exec-fsys_reiserfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
 pre_stage2_exec-smp-imps.o: smp-imps.c
 @AMDEP@	source='smp-imps.c' object='pre_stage2_exec-smp-imps.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-smp-imps.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-smp-imps.TPo' @AMDEPBACKSLASH@
@@ -996,6 +1066,54 @@ pre_stage2_exec-stage2.o: stage2.c
 @AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-stage2.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-stage2.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-stage2.o `test -f stage2.c || echo '$(srcdir)/'`stage2.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+reiserfs_stage1_5_exec-common.o: common.c
+@AMDEP@	source='common.c' object='reiserfs_stage1_5_exec-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/reiserfs_stage1_5_exec-common.Po' tmpdepfile='$(DEPDIR)/reiserfs_stage1_5_exec-common.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-common.o `test -f common.c || echo '$(srcdir)/'`common.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+reiserfs_stage1_5_exec-char_io.o: char_io.c
+@AMDEP@	source='char_io.c' object='reiserfs_stage1_5_exec-char_io.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/reiserfs_stage1_5_exec-char_io.Po' tmpdepfile='$(DEPDIR)/reiserfs_stage1_5_exec-char_io.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-char_io.o `test -f char_io.c || echo '$(srcdir)/'`char_io.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+reiserfs_stage1_5_exec-disk_io.o: disk_io.c
+@AMDEP@	source='disk_io.c' object='reiserfs_stage1_5_exec-disk_io.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/reiserfs_stage1_5_exec-disk_io.Po' tmpdepfile='$(DEPDIR)/reiserfs_stage1_5_exec-disk_io.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-disk_io.o `test -f disk_io.c || echo '$(srcdir)/'`disk_io.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+reiserfs_stage1_5_exec-stage1_5.o: stage1_5.c
+@AMDEP@	source='stage1_5.c' object='reiserfs_stage1_5_exec-stage1_5.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.Po' tmpdepfile='$(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-stage1_5.o `test -f stage1_5.c || echo '$(srcdir)/'`stage1_5.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+reiserfs_stage1_5_exec-fsys_reiserfs.o: fsys_reiserfs.c
+@AMDEP@	source='fsys_reiserfs.c' object='reiserfs_stage1_5_exec-fsys_reiserfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+reiserfs_stage1_5_exec-bios.o: bios.c
+@AMDEP@	source='bios.c' object='reiserfs_stage1_5_exec-bios.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/reiserfs_stage1_5_exec-bios.Po' tmpdepfile='$(DEPDIR)/reiserfs_stage1_5_exec-bios.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(reiserfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o reiserfs_stage1_5_exec-bios.o `test -f bios.c || echo '$(srcdir)/'`bios.c
 check-TESTS: $(TESTS)
 	@failed=0; all=0; xfail=0; xpass=0; \
 	srcdir=$(srcdir); export srcdir; \

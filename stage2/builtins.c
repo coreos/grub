@@ -831,7 +831,7 @@ embed_func (char *arg, int flags)
   
   if (errnum)
     return 1;
-
+  
   size = (len + SECTOR_SIZE - 1) / SECTOR_SIZE;
   
   /* Get the device where the Stage 1.5 will be embedded.  */
@@ -874,35 +874,22 @@ embed_func (char *arg, int flags)
     }
   else
     {
-      /* Embed it in the bootloader block in the FFS.  */
-
+      /* Embed it in the bootloader block in the filesystem.  */
+      int start_sector;
+      
       /* Open the partition.  */
-      if (! open_partition ())
+      if (! open_device ())
 	return 1;
 
-      /* Check if the current slice is a BSD slice.  */
-      if (grub_strcmp (fsys_table[fsys_type].name, "ffs") != 0)
+      /* Check if the current slice supports embedding.  */
+      if (fsys_table[fsys_type].embed_func == 0
+	  || ! fsys_table[fsys_type].embed_func (&start_sector, size))
 	{
 	  errnum = ERR_DEV_VALUES;
 	  return 1;
 	}
 
-      /* Sanity check.  */
-      if (size > 14)
-	{
-	  errnum = ERR_BAD_VERSION;
-	  return 1;
-	}
-
-      /* XXX: I don't know this is really correct. Someone who is
-	 familiar with BSD should check for this.  */
-      sector = part_start + 1;
-#if 1
-      /* FIXME: Disable the embedding in FFS until someone checks if
-	 the code above is correct.  */
-      errnum = ERR_DEV_VALUES;
-      return 1;
-#endif
+      sector = part_start + start_sector;
     }
 
   /* Clear the cache.  */
@@ -1003,7 +990,18 @@ find_func (char *arg, int flags)
 	{
 	  errnum = ERR_NONE;
 	  current_partition = (slice << 16) | 0xFFFF;
-	  if (! open_device () && IS_PC_SLICE_TYPE_BSD (current_slice))
+	  if (open_device ())
+	    {
+	      errnum = ERR_NONE;
+	      saved_drive = current_drive;
+	      saved_partition = current_partition;
+	      if (grub_open (filename))
+		{
+		  grub_close ();
+		  grub_printf (" (hd%d,%d)", drive - 0x80, slice);
+		}
+	    }
+	  else if (IS_PC_SLICE_TYPE_BSD (current_slice))
 	    {
 	      unsigned long part;
 
@@ -1022,17 +1020,6 @@ find_func (char *arg, int flags)
 		      grub_printf (" (hd%d,%d,%c)",
 				   drive - 0x80, slice, part + 'a');
 		    }
-		}
-	    }
-	  else
-	    {
-	      errnum = ERR_NONE;
-	      saved_drive = current_drive;
-	      saved_partition = current_partition;
-	      if (grub_open (filename))
-		{
-		  grub_close ();
-		  grub_printf (" (hd%d,%d)", drive - 0x80, slice);
 		}
 	    }
 	}
@@ -2587,7 +2574,8 @@ setup_func (char *arg, int flags)
     {"ext2fs", "/boot/grub/e2fs_stage1_5"},
     {"ffs", "/boot/grub/ffs_stage1_5"},
     {"fat", "/boot/grub/fat_stage1_5"},
-    {"minix", "/boot/grub/minix_stage1_5"}
+    {"minix", "/boot/grub/minix_stage1_5"},
+    {"reiserfs", "/boot/grub/reiserfs_stage1_5"}
   };
 
   /* Initialize some strings.  */
@@ -2689,10 +2677,10 @@ setup_func (char *arg, int flags)
 		    else
 		      goto fail;
 		  }
-		else if (grub_strcmp (fsys, "ffs") == 0)
+		else if (fsys_table[fsys_type].embed_func != 0)
 		  {
 		    /* We can embed the Stage 1.5 into the "bootloader"
-		       area in the FFS partition.  */
+		       area in the FFS or ReiserFS partition.  */
 
 		    /* FIXME */
 		  }

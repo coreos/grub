@@ -42,23 +42,26 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 {
   /* TFTP should come first because others don't handle net device.  */
 # ifdef FSYS_TFTP
-  {"tftp", tftp_mount, tftp_read, tftp_dir, tftp_close},
+  {"tftp", tftp_mount, tftp_read, tftp_dir, tftp_close, 0},
 # endif
 # ifdef FSYS_FAT
-  {"fat", fat_mount, fat_read, fat_dir, 0},
+  {"fat", fat_mount, fat_read, fat_dir, 0, 0},
 # endif
 # ifdef FSYS_EXT2FS
-  {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir, 0},
+  {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir, 0, 0},
 # endif
 # ifdef FSYS_MINIX
-  {"minix", minix_mount, minix_read, minix_dir, 0},
+  {"minix", minix_mount, minix_read, minix_dir, 0, 0},
+# endif
+# ifdef FSYS_REISERFS
+  {"reiserfs", reiserfs_mount, reiserfs_read, reiserfs_dir, 0, reiserfs_embed},
 # endif
   /* XX FFS should come last as it's superblock is commonly crossing tracks
      on floppies from track 1 to 2, while others only use 1.  */
 # ifdef FSYS_FFS
-  {"ffs", ffs_mount, ffs_read, ffs_dir, 0},
+  {"ffs", ffs_mount, ffs_read, ffs_dir, 0, ffs_embed},
 # endif
-  {0, 0, 0, 0, 0}
+  {0, 0, 0, 0, 0, 0}
 };
 
 
@@ -85,7 +88,7 @@ int bsd_evil_hack;
 /* filesystem type */
 int fsys_type = NUM_FSYS;
 #ifndef NO_BLOCK_FILES
-int block_file = 0;
+static int block_file = 0;
 #endif /* NO_BLOCK_FILES */
 
 /* these are the translated numbers for the open partition */
@@ -107,7 +110,7 @@ int filemax;
 int
 rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 {
-  int slen = (byte_offset + byte_len + SECTOR_SIZE - 1) / SECTOR_SIZE;
+  int slen = (byte_offset + byte_len + SECTOR_SIZE - 1) >> SECTOR_BITS;
 
   if (byte_len <= 0)
     return 1;
@@ -172,7 +175,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 				   sector, slen, BUFFERSEG))
 		    errnum = ERR_READ;
 
-		  bufaddr = BUFFERSEG + byte_offset;
+		  bufaddr = BUFFERADDR + byte_offset;
 		}
 	    }
 	  else
@@ -216,7 +219,8 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
    *  Check partition boundaries
    */
   if (sector < 0
-      || (sector + ((byte_offset + byte_len - 1) / SECTOR_SIZE)) >= part_length)
+      || ((sector + ((byte_offset + byte_len - 1) >> SECTOR_BITS))
+	  >= part_length))
     {
       errnum = ERR_OUTSIDE_PART;
       return 0;
@@ -225,11 +229,8 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
   /*
    *  Get the read to the beginning of a partition.
    */
-  while (byte_offset >= SECTOR_SIZE)
-    {
-      byte_offset -= SECTOR_SIZE;
-      sector++;
-    }
+  sector += byte_offset >> SECTOR_BITS;
+  byte_offset &= SECTOR_SIZE - 1;
 
 #if !defined(STAGE1_5)
   if (disk_read_hook && debug)
@@ -1502,11 +1503,11 @@ dir (char *dirname)
 void 
 grub_close (void)
 {
-  if (fsys_type == NUM_FSYS)
+#ifndef NO_BLOCK_FILES
+  if (block_file)
     return;
+#endif /* NO_BLOCK_FILES */
   
-  if (fsys_table[fsys_type].close_func == 0)
-    return;
-  
-  (*(fsys_table[fsys_type].close_func)) ();
+  if (fsys_table[fsys_type].close_func != 0)
+    (*(fsys_table[fsys_type].close_func)) ();
 }

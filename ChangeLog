@@ -1,3 +1,54 @@
+2000-04-15  Jochen Hoenicke  <jochen@gnu.org>
+
+	* configure.in: Added --disable-reiserfs option.
+	* stage2/Makefile.am (libgrub_a_SOURCES): Added fsys_reiserfs.c.
+	(libgrub_a_CFLAGS): Added -DFSYS_REISERFS=1.
+	(pkgdata_DATA): Added reiserfs_stage1_5.
+	(noinst_PROGRAMS): Added reiserfs_stage1_5.exec.
+	(pre_stage2_exec_SOURCES): Added fsys_reiserfs.c.
+	(reiserfs_stage1_5_exec_SOURCES): New variable.
+	(reiserfs_stage1_5_exec_CFLAGS): Likewise.
+	(reiserfs_stage1_5_exec_LDFLAGS): Likewise.
+	* stage2/disk_io.c (fsys_table): Added reiserfs entry.
+	* stage2/filesys.h (FSYS_REISERFS_NUM): New macro.
+	[FSYS_REISERFS] (reiserfs_mount, reiserfs_read, reiserfs_dir,
+ 	reiserfs_embed): Declare external function from fsys_reiserfs.c.
+	[!NUM_FSYS] (NUM_FSYS): Added FSYS_REISERFS_NUM.
+	* stage2/builtins.c (setup_func): Added reiserfs to
+	STAGE1_5_MAP.
+	* stage2/shared.h (STAGE2_ID_REISERFS_STAGE1_5): New macro.
+	[STAGE1_5] [FSYS_REISERFS] (STAGE2_ID): Defined to
+ 	STAGE2_ID_REISERFS_STAGE1_5.
+	* stage2/fsys_reiserfs.c: New file.
+
+	* stage2/builtins.c (embed_func): Call open_device instead of
+	open_partition.
+	Don't check if the filesystem is FFS. Instead, check if
+	FSYS_TABLE[FSYS_TYPE].EMBED_FUNC is NULL and, if not, call it.
+	(find_func): When CURRENT_SLICE is not a BSD slice, check if the
+	file can be opened, only if open_device succeeds.
+	* stage2/filesys.h (fsys_table): New entry embed_func.
+	(ffs_embed): Declared.
+	* stage2/disk_io.c (fsys_table): Fill embed_func entries. The
+	entry for FFS is ffs_embed and the others are NULLs.
+	* stage2/fsys_ffs.c (ffs_embed): New function.
+
+	* stage2/shared.h (SECTOR_SHIFT): New constant with
+	(1 << SECTOR_SHIFT) == SECTOR_SIZE.
+	* stage2/shared.h [!NO_BLOCK_FILES] (block_files): No longer
+	extern.
+	* stage2/disk_io.c [!NO_BLOCK_FILES] (block_files): Likewise.
+	(rawread, devread): Use SECTOR_BITS.
+	(rawread): Fixed calculation of BUFADDR if an error occured. Set
+	it to BUFFERADDR + BYTE_OFFSET instead of BUFFERSEG +
+	BYTE_OFFSET.
+	(grub_close) [!NO_BLOCK_FILES]: If BLOCK_FILE is non-zero,
+	return immediately.
+	(grub_close): Don't check if FSYS_TYPE is NUM_FSYS.
+	* stage2/fsys_fat.c (log2): New inline function.
+	(fat_mount): Use log2 instead of calculating the size/bit by a
+	loop.
+
 2000-04-12  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in: Use AC_PATH_PROG instead of AC_PATH_TOOL,

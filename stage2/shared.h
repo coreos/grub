@@ -169,8 +169,9 @@ extern char *grub_scratch_mem;
  *  General disk stuff
  */
 
-#define SECTOR_SIZE          0x200
-#define BIOS_FLAG_FIXED_DISK 0x80
+#define SECTOR_SIZE		0x200
+#define SECTOR_BITS		9
+#define BIOS_FLAG_FIXED_DISK	0x80
 
 #define BOOTSEC_LOCATION     RAW_ADDR (0x7C00)
 #define BOOTSEC_SIGNATURE    0xAA55
@@ -202,6 +203,7 @@ extern char *grub_scratch_mem;
 #define STAGE2_ID_E2FS_STAGE1_5		2
 #define STAGE2_ID_FAT_STAGE1_5		3
 #define STAGE2_ID_MINIX_STAGE1_5	4
+#define STAGE2_ID_REISERFS_STAGE1_5	5
 
 #ifndef STAGE1_5
 # define STAGE2_ID	STAGE2_ID_STAGE2
@@ -214,6 +216,8 @@ extern char *grub_scratch_mem;
 #  define STAGE2_ID	STAGE2_ID_FAT_STAGE1_5
 # elif defined(FSYS_MINIX)
 #  define STAGE2_ID	STAGE2_ID_MINIX_STAGE1_5
+# elif defined(FSYS_REISERFS)
+#  define STAGE2_ID	STAGE2_ID_REISERFS_STAGE1_5
 # else
 #  error "unknown Stage 2"
 # endif
@@ -476,10 +480,6 @@ extern unsigned long current_drive;
 extern unsigned long current_partition;
 
 extern int fsys_type;
-
-#ifndef NO_BLOCK_FILES
-extern int block_file;
-#endif /* NO_BLOCK_FILES */
 
 /* The information for a disk geometry. The CHS information is only for
    DOS/Partition table compatibility, and the real number of sectors is

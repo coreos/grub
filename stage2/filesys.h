@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 int ffs_mount (void);
 int ffs_read (char *buf, int len);
 int ffs_dir (char *dirname);
+int ffs_embed (int *start_sector, int needed_sectors);
 #else
 #define FSYS_FFS_NUM 0
 #endif
@@ -57,6 +58,16 @@ int minix_dir (char *dirname);
 #define FSYS_MINIX_NUM 0
 #endif
 
+#ifdef FSYS_REISERFS
+#define FSYS_REISERFS_NUM 1
+int reiserfs_mount (void);
+int reiserfs_read (char *buf, int len);
+int reiserfs_dir (char *dirname);
+int reiserfs_embed (int *start_sector, int needed_sectors);
+#else
+#define FSYS_REISERFS_NUM 0
+#endif
+
 #ifdef FSYS_TFTP
 #define FSYS_TFTP_NUM 1
 int tftp_mount (void);
@@ -70,7 +81,7 @@ void tftp_close (void);
 #ifndef NUM_FSYS
 #define NUM_FSYS	\
   (FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM + FSYS_MINIX_NUM	\
-   + FSYS_TFTP_NUM)
+   + FSYS_REISERFS_NUM + FSYS_TFTP_NUM)
 #endif
 
 /* defines for the block filesystem info area */
@@ -94,6 +105,7 @@ struct fsys_entry
   int (*read_func) (char *buf, int len);
   int (*dir_func) (char *dirname);
   void (*close_func) (void);
+  int (*embed_func) (int *start_sector, int needed_sectors);
 };
 
 #ifdef STAGE1_5

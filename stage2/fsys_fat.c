@@ -54,11 +54,19 @@ struct fat_superblock
 
 #define FAT_CACHE_SIZE 2048
 
+static __inline__ unsigned long
+log2 (unsigned long word)
+{
+  __asm__ ("bsfl %1,%0"
+	   : "=r" (word)
+	   : "r" (word));
+  return word;
+}
+
 int
 fat_mount (void)
 {
   struct fat_bpb bpb;
-  int i;
   
   /* Check partition type for harddisk */
   if (((current_drive & 0x80) || (current_slice != 0))
@@ -75,12 +83,9 @@ fat_mount (void)
   if (bpb.sects_per_clust == 0)
     return 0;
   
-  for (i = 0; (1 << i) < FAT_CVT_U16 (bpb.bytes_per_sect); i++)
-    ;
-  FAT_SUPER->sectsize_bits = i;
-  for (i = 0; (1 << i) < bpb.sects_per_clust; i++)
-    ;
-  FAT_SUPER->clustsize_bits = FAT_SUPER->sectsize_bits + i;
+  FAT_SUPER->sectsize_bits = log2 (FAT_CVT_U16 (bpb.bytes_per_sect));
+  FAT_SUPER->clustsize_bits
+    = FAT_SUPER->sectsize_bits + log2 (bpb.sects_per_clust);
   
   /* Fill in info about super block */
   FAT_SUPER->num_sectors = FAT_CVT_U16 (bpb.short_sectors) 
