@@ -157,7 +157,12 @@ get_diskinfo (int drive, struct geometry *geometry)
 	    unsigned char device_path[8];
 	    unsigned char reserved2;
 	    unsigned char checksum;
-	  } drp;
+
+	    /* XXX: This is necessary, because the BIOS of Thinkpad X20
+	       writes a garbage to the tail of drive parameters,
+	       regardless of a size specified in a caller.  */
+	    unsigned char dummy[16];
+	  } __attribute__ ((packed)) drp;
 	  
 	  drp.size = sizeof (drp);
 	  err = get_diskinfo_int13_extensions (drive, &drp);
