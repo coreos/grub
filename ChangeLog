@@ -1,3 +1,16 @@
+2000-08-01  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c: Symlink support added.
+	(S_ISLNK): New macro.
+	(PATH_MAX): Likewise.
+	(MAX_LINK_COUNT): Likewise.
+	(reiserfs_dir): Check for symlink and handle them.
+	(read_tree_node): Take a block number and check if tree node was
+ 	already read in.  If not update the INFO->blocks field.
+	(next_key): Changed call of read_tree_node.
+	(search_stat): Likewise.
+	(journal_init): Fixed a small bug.  Some debugging messages added.
+	
 2000-07-31  Pavel Roskin  <proski@gnu.org>
 
 	* grub/asmstub.c (biosdisk) [__linux__]: The first argument for

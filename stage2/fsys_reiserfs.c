@@ -266,10 +266,6 @@ struct reiserfs_de_head
 #define V2_TYPE_DIRECT 2
 #define V2_TYPE_DIRENTRY 3 
 
-#define S_ISREG(mode) (((mode) & 0170000) == 0100000)
-#define S_ISDIR(mode) (((mode) & 0170000) == 0040000)
-
-
 #define REISERFS_ROOT_OBJECTID 2
 #define REISERFS_ROOT_PARENT_OBJECTID 1
 #define REISERFS_DISK_OFFSET_IN_BYTES (64 * 1024)
@@ -277,8 +273,14 @@ struct reiserfs_de_head
 #define REISERFS_OLD_DISK_OFFSET_IN_BYTES (8 * 1024)
 #define REISERFS_OLD_BLOCKSIZE 4096
 
+#define S_ISREG(mode) (((mode) & 0170000) == 0100000)
+#define S_ISDIR(mode) (((mode) & 0170000) == 0040000)
+#define S_ISLNK(mode) (((mode) & 0170000) == 0120000)
 
-/* The size of the node cache (must be power of two) */
+#define PATH_MAX       1024	/* include/linux/limits.h */
+#define MAX_LINK_COUNT    5	/* number of symbolic links to follow */
+
+/* The size of the node cache */
 #define FSYSREISER_CACHE_SIZE 24*1024
 #define FSYSREISER_MIN_BLOCKSIZE SECTOR_SIZE
 #define FSYSREISER_MAX_BLOCKSIZE FSYSREISER_CACHE_SIZE / 3
@@ -324,7 +326,9 @@ struct fsys_reiser_info
   unsigned int next_key_nr[MAX_HEIGHT];
 };
 
-/* The cached s+tree blocks in FSYS_BUF */
+/* The cached s+tree blocks in FSYS_BUF,  see below
+ * for a more detailed description.
+ */
 #define ROOT     ((char *) ((int) FSYS_BUF))
 #define CACHE(i) (ROOT + ((i) << INFO->fullblocksize_shift))
 #define LEAF     CACHE (DISK_LEAF_NODE_LEVEL)
@@ -334,8 +338,18 @@ struct fsys_reiser_info
 #define KEY(cache)       ((struct key        *) ((int) cache + BLKH_SIZE))
 #define DC(cache)        ((struct disk_child *) \
 			  ((int) cache + BLKH_SIZE + KEY_SIZE * nr_item))
+/* The fsys_reiser_info block.
+ */
 #define INFO \
     ((struct fsys_reiser_info *) ((int) FSYS_BUF + FSYSREISER_CACHE_SIZE))
+/* 
+ * The journal cache.  For each transaction it contains the number of
+ * blocks followed by the real block numbers of this transaction.  
+ *
+ * If the block numbers of some transaction won't fit in this space,
+ * this list is stopped with a 0xffffffff marker and the remaining
+ * uncommitted transactions aren't cached.  
+ */
 #define JOURNAL_START    ((__u32 *) (INFO + 1))
 #define JOURNAL_END      ((__u32 *) (FSYS_BUF + FSYS_BUFLEN))
 
@@ -422,6 +436,10 @@ block_read (int blockNr, int start, int len, char *buffer)
       
     found:
       translatedNr = INFO->journal_block + ((desc_block + i) & journal_mask);
+#ifdef REISERDEBUG
+      printf ("block_read: block %d is mapped to journal block %d.\n", 
+	      blockNr, translatedNr - INFO->journal_block);
+#endif
       /* We must continue the search, as this block may be overwritten
        * in later transactions.
        */
@@ -460,6 +478,11 @@ journal_init (void)
   INFO->journal_first_desc = desc_block;
   next_trans_id = header.j_last_flush_trans_id + 1;
 
+#ifdef REISERDEBUG
+  printf ("journal_init: last flushed %d\n", 
+	  header.j_last_flush_trans_id);
+#endif
+
   while (1) 
     {
       journal_read (desc_block, sizeof (desc), (char *) &desc);
@@ -476,11 +499,16 @@ journal_init (void)
 	/* no more valid transactions */
 	break;
       
+#ifdef REISERDEBUG
+      printf ("Found valid transaction %d/%d at %d.\n", 
+	      desc.j_trans_id, desc.j_mount_id, desc_block);
+#endif
+
       INFO->journal_transactions++;
       next_trans_id++;
       if (journal_table < JOURNAL_END)
 	{
-	  if ((journal_table + 1 + JOURNAL_TRANS_HALF) >= JOURNAL_END)
+	  if ((journal_table + 1 + desc.j_len) >= JOURNAL_END)
 	    {
 	      /* The table is almost full; mark the end of the cached
 	       * journal.*/
@@ -496,13 +524,31 @@ journal_init (void)
 	       */
 	      *journal_table++ = desc.j_len;
 	      for (i = 0; i < desc.j_len && i < JOURNAL_TRANS_HALF; i++)
-		*journal_table++ = desc.j_realblock[i];
+		{
+		  *journal_table++ = desc.j_realblock[i];
+#ifdef REISERDEBUG
+		  printf ("block %d is in journal %d.\n", 
+			  desc.j_realblock[i], desc_block);
+#endif
+		}
 	      for (     ; i < desc.j_len; i++)
-		*journal_table++ = commit.j_realblock[i-JOURNAL_TRANS_HALF];
+		{
+		  *journal_table++ = commit.j_realblock[i-JOURNAL_TRANS_HALF];
+#ifdef REISERDEBUG
+		  printf ("block %d is in journal %d.\n", 
+			  commit.j_realblock[i-JOURNAL_TRANS_HALF], 
+			  desc_block);
+#endif
+		}
 	    }
 	}
       desc_block = (commit_block + 1) & (block_count - 1);
     }
+#ifdef REISERDEBUG
+  printf ("Transaction %d/%d at %d isn't valid.\n", 
+	  desc.j_trans_id, desc.j_mount_id, desc_block);
+#endif
+
   INFO->journal_transactions = next_trans_id - header.j_last_flush_trans_id;
   return errnum == 0;
 }
@@ -594,23 +640,60 @@ reiserfs_mount (void)
   return 1;
 }
 
+/***************** TREE ACCESSING METHODS *****************************/
+
+/* I assume you are familiar with the ReiserFS tree, if not go to
+ * http://devlinux.com/projects/reiserfs/
+ *
+ * My tree node cache is organized as following
+ *   0   ROOT node
+ *   1   LEAF node  (if the ROOT is also a LEAF it is copied here
+ *   2-n other nodes on current path from bottom to top.  
+ *       if there is not enough space in the cache, the top most are
+ *       omitted.
+ *
+ * I have only two methods to find a key in the tree:
+ *   search_stat(dir_id, objectid) searches for the stat entry (always
+ *       the first entry) of an object.
+ *   next_key() gets the next key in tree order.
+ *
+ * This means, that I can only sequential reads of files are
+ * efficient, but this really doesn't hurt for grub.  
+ */
+
+/* Read in the node at the current path and depth into the node cache.
+ * You must set INFO->blocks[depth] before.
+ */
 static char *
-read_tree_node (int depth)
+read_tree_node (unsigned int blockNr, int depth)
 {
-  char* cache = CACHE (depth > INFO->cached_slots ? 1 : depth);
+  char* cache = CACHE(depth);
+  int num_cached = INFO->cached_slots;
+  if (depth < num_cached)
+    {
+      /* This is the cached part of the path.  Check if same block is
+       * needed.  
+       */
+      if (blockNr == INFO->blocks[depth])
+	return cache;
+    }
+  else
+    cache = CACHE(num_cached);
+
 #ifdef REISERDEBUG
   printf ("  next read_in: block=%d (depth=%d)\n",
-	  INFO->blocks[depth], depth);
+	  blockNr, depth);
 #endif /* REISERDEBUG */
-  if (! block_read (INFO->blocks[depth], 0, INFO->blocksize, cache))
+  if (! block_read (blockNr, 0, INFO->blocksize, cache))
     return 0;
-  
   /* Make sure it has the right node level */
   if (BLOCKHEAD (cache)->blk_level != depth)
     {
       errnum = ERR_FSYS_CORRUPT;
       return 0;
     }
+
+  INFO->blocks[depth] = blockNr;
   return cache;
 }
 
@@ -657,8 +740,12 @@ next_key (void)
 	cache = ROOT;
       else if (depth <= INFO->cached_slots)
 	cache = CACHE (depth);
-      else
-	goto read_at_depth;
+      else 
+	{
+	  cache = read_tree_node (INFO->blocks[depth], --depth);
+	  if (! cache)
+	    return 0;
+	}
       
       do
 	{
@@ -670,10 +757,8 @@ next_key (void)
 	  if (key_nr == nr_item)
 	    /* This is the last item in this block, set the next_key_nr to 0 */
 	    INFO->next_key_nr[depth] = 0;
-	  INFO->blocks[--depth] = DC (cache)[key_nr].dc_block_number;
-	  
-	read_at_depth:
-	  cache = read_tree_node (depth);
+
+	  cache = read_tree_node (DC (cache)[key_nr].dc_block_number, --depth);
 	  if (! cache)
 	    return 0;
 	}
@@ -742,9 +827,7 @@ search_stat (__u32 dir_id, __u32 objectid)
       printf ("  depth=%d, i=%d/%d\n", depth, i, nr_item);
 #endif /* REISERDEBUG */
       INFO->next_key_nr[depth] = (i == nr_item) ? 0 : i+1;
-      INFO->blocks[--depth] = DC (cache)[i].dc_block_number;
-      
-      cache = read_tree_node (depth);
+      cache = read_tree_node (DC (cache)[i].dc_block_number, --depth);
       if (! cache)
 	return 0;
     }
@@ -887,10 +970,14 @@ reiserfs_dir (char *dirname)
 {
   struct reiserfs_de_head *de_head;
   char *rest, ch;
-  __u32 dir_id, objectid;
+  __u32 dir_id, objectid, parent_dir_id = 0, parent_objectid = 0;
 #ifndef STAGE1_5
   int do_possibilities = 0;
 #endif /* ! STAGE1_5 */
+  char linkbuf[PATH_MAX];	/* buffer for following symbolic links */
+  int link_count = 0;
+  int mode;
+
   dir_id = REISERFS_ROOT_PARENT_OBJECTID;
   objectid = REISERFS_ROOT_OBJECTID;
   
@@ -910,12 +997,71 @@ reiserfs_dir (char *dirname)
 	      ((struct stat_data *) INFO->current_item)->sd_size);
 #endif /* REISERDEBUG */
       
+      mode = ((struct stat_data *) INFO->current_item)->sd_mode;
+
+      /* If we've got a symbolic link, then chase it. */
+      if (S_ISLNK (mode))
+	{
+	  int len;
+	  if (++link_count > MAX_LINK_COUNT)
+	    {
+	      errnum = ERR_SYMLINK_LOOP;
+	      return 0;
+	    }
+
+	  /* Get the symlink size. */
+	  filemax = ((struct stat_data *) INFO->current_item)->sd_size;
+
+	  /* Find out how long our remaining name is. */
+	  len = 0;
+	  while (dirname[len] && !isspace (dirname[len]))
+	    len++;
+
+	  if (filemax + len > sizeof (linkbuf) - 1)
+	    {
+	      errnum = ERR_FILELENGTH;
+	      return 0;
+	    }
+ 	  
+	  /* Copy the remaining name to the end of the symlink data.
+	     Note that DIRNAME and LINKBUF may overlap! */
+	  grub_memmove (linkbuf + filemax, dirname, len+1);
+
+	  INFO->fileinfo.k_dir_id = dir_id;
+	  INFO->fileinfo.k_objectid = objectid;
+  	  filepos = 0;
+	  if (! next_key ()
+	      || reiserfs_read (linkbuf, filemax) != filemax)
+	    return 0;
+
+#ifdef REISERDEBUG
+	  printf ("symlink=%s\n", linkbuf);
+#endif /* REISERDEBUG */
+
+	  dirname = linkbuf;
+	  if (*dirname == '/')
+	    {
+	      /* It's an absolute link, so look it up in root. */
+	      dir_id = REISERFS_ROOT_PARENT_OBJECTID;
+	      objectid = REISERFS_ROOT_OBJECTID;
+	    }
+	  else
+	    {
+	      /* Relative, so look it up in our parent directory. */
+	      dir_id   = parent_dir_id;
+	      objectid = parent_objectid;
+	    }
+
+	  /* Now lookup the new name. */
+	  continue;
+	}
+
       /* if we have a real file (and we're not just printing possibilities),
 	 then this is where we want to exit */
       
       if (! *dirname || isspace (*dirname))
 	{
-	  if (! S_ISREG (((struct stat_data *) INFO->current_item)->sd_mode))
+	  if (! S_ISREG (mode))
 	    {
 	      errnum = ERR_BAD_FILETYPE;
 	      return 0;
@@ -939,7 +1085,7 @@ reiserfs_dir (char *dirname)
       /* continue with the file/directory name interpretation */
       while (*dirname == '/')
 	dirname++;
-      if (! S_ISDIR (((struct stat_data *) INFO->current_item)->sd_mode))
+      if (! S_ISDIR (mode))
 	{
 	  errnum = ERR_BAD_FILETYPE;
 	  return 0;
@@ -979,9 +1125,12 @@ reiserfs_dir (char *dirname)
 	      if ((de_head->deh_state & DEH_Visible))
 		{
 		  int cmp;
-		  /* Note that this may also overwrite the next block in
-		   * the cache.  But that doesn't hurt as long as we don't
-		   * call next_key ().  */
+		  /* Directory names in ReiserFS are not null
+		   * terminated.  We write a temporary 0 behind it.
+		   * NOTE: that this may overwrite the first block in
+		   * the tree cache.  That doesn't hurt as long as we
+		   * don't call next_key () in between.  
+		   */
 		  *name_end = 0;
 		  cmp = substring (dirname, filename);
 		  *name_end = tmp;
@@ -1023,7 +1172,9 @@ reiserfs_dir (char *dirname)
       
       *rest = ch;
       dirname = rest;
-      
+
+      parent_dir_id = dir_id;
+      parent_objectid = objectid;
       dir_id = de_head->deh_dir_id;
       objectid = de_head->deh_objectid;
     }
