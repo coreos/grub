@@ -120,7 +120,7 @@ iso9660_mount (void)
 	break;
       /* check ISO_VD_PRIMARY and ISO_STANDARD_ID */
       if (PRIMDESC->type.l == ISO_VD_PRIMARY
-	  && !__builtin_memcmp(PRIMDESC->id, ISO_STANDARD_ID, sizeof(PRIMDESC->id)))
+	  && !memcmp(PRIMDESC->id, ISO_STANDARD_ID, sizeof(PRIMDESC->id)))
 	{
 	  ISO_SUPER->vol_sector = sector;
 	  INODE->file_start = 0;
@@ -344,7 +344,7 @@ iso9660_dir (char *dirname)
 
 	      filemax = MAXINT;
 	      if (name_len >= pathlen
-		  && !__builtin_memcmp(name, dirname, pathlen))
+		  && !memcmp(name, dirname, pathlen))
 		{
 		  if (dirname[pathlen] == '/' || !print_possibilities)
 		    {

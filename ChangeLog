@@ -1,3 +1,11 @@
+2004-04-29  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* stage2/char_io.c (grub_memcmp): Define for stage1.5 too.
+
+	* stage2/fsys_iso9660.c (iso9660_mount): Use memcmp() instead of
+	__builtin_memcmp().
+	(iso9660_dir): Likewise.
+
 2004-04-26  Christian Jones  <chjones@aleph0.com>
 
 	* docs/grub.texi (Making a GRUB bootable CD-ROM): minor edits,

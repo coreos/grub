@@ -1,7 +1,7 @@
 /* char_io.c - basic console input and output */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -921,7 +921,6 @@ grub_isspace (int c)
   return 0;
 }
 
-#ifndef STAGE1_5
 int
 grub_memcmp (const char *s1, const char *s2, int n)
 {
@@ -939,6 +938,7 @@ grub_memcmp (const char *s1, const char *s2, int n)
   return 0;
 }
 
+#ifndef STAGE1_5
 int
 grub_strncat (char *s1, const char *s2, int n)
 {
