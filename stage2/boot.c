@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    unsigned long load_flags)
 {
   int len, i, exec_type = 0, align_4k = 1;
+  entry_func real_entry_addr = 0;
   kernel_t type = KERNEL_TYPE_NONE;
   unsigned long flags = 0, text_len = 0, data_len = 0, bss_len = 0;
   char *str = 0, *str2 = 0;
@@ -493,7 +494,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
   else
     /* ELF executable */
     {
-      int loaded = 0, memaddr, memsiz, filesiz;
+      unsigned loaded = 0, memaddr, memsiz, filesiz;
       Elf32_Phdr *phdr;
 
       /* reset this to zero for now */
@@ -519,6 +520,15 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	      memsiz = phdr->p_memsz;
 	      if (memaddr < RAW_ADDR (0x100000))
 		errnum = ERR_BELOW_1MB;
+
+	      /* If the memory range contains the entry address, get the
+		 physical address here.  */
+	      if (type == KERNEL_TYPE_MULTIBOOT
+		  && (unsigned) entry_addr >= phdr->p_vaddr
+		  && (unsigned) entry_addr < phdr->p_vaddr + memsiz)
+		real_entry_addr = (entry_func) ((unsigned) entry_addr
+						+ memaddr - phdr->p_vaddr);
+		
 	      /* make sure we only load what we're supposed to! */
 	      if (filesiz > memsiz)
 		filesiz = memsiz;
@@ -553,8 +563,15 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	}
     }
 
-  if (!errnum)
-    printf (", entry=0x%x]\n", (int) entry_addr);
+  if (! errnum)
+    {
+      grub_printf (", entry=0x%x]\n", (unsigned) entry_addr);
+      
+      /* If the entry address is physically different from that of the ELF
+	 header, correct it here.  */
+      if (real_entry_addr)
+	entry_addr = real_entry_addr;
+    }
   else
     {
       putchar ('\n');

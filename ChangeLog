@@ -1,3 +1,11 @@
+2001-06-19  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/boot.c (load_image): If the image is a Multiboot ELF OS
+	image, get the physical entry address, when a loaded memory
+	segment contains it. And, set ENTRY_ADDR to it, after printing
+	out the virtual one. Suggested by Rogelio M. Serrano Jr.
+	<rogelio@victorio.com>.
+	
 2001-05-30  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/grub.texi: Fix some typos. Reported by Florian Hatat
