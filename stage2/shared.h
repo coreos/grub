@@ -246,7 +246,7 @@ extern char *grub_scratch_mem;
  *   command.
  */
 
-#define ENTRY(x) .globl EXT_C(x) ; EXT_C(x) ## :
+#define ENTRY(x) .globl EXT_C(x) ; EXT_C(x):
 #define VARIABLE(x) ENTRY(x)
 
 
