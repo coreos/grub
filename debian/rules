@@ -34,9 +34,9 @@ binary-arch:	checkroot build
 	install -d debian/tmp debian/tmp/usr/doc/grub debian/tmp/DEBIAN
 ## install files
 
-	dir=`cd debian/tmp && pwd` && make install prefix=$$dir
+	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
+	-rmdir debian/tmp/sbin
 
-	# FIXME: gzip the html files, and make sure cross-refs work fine
 	cp -r docs debian/tmp/usr/doc/grub/
 	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/docs/
 	rm -f debian/tmp/usr/doc/grub/docs/COPYING

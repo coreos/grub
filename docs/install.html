@@ -40,8 +40,8 @@ Execute your OS's equivalent of (this should work for recent FreeBSD
 versions and Linux just fine):<P>
 
 <pre>
-	dd if=bin/stage1 of=/dev/fd0 bs=512 count=1
-	dd if=bin/stage2 of=/dev/fd0 bs=512 seek=1
+	dd if=stage1/stage1 of=/dev/fd0 bs=512 count=1
+	dd if=stage2/stage2 of=/dev/fd0 bs=512 seek=1
 </pre>
 
 Under <B>DOS/Windows/NT</B>, courtesy of Eric
@@ -156,5 +156,3 @@ a filesystem and config file, with an entry such as:<P>
 
 </BODY>
 </HTML>
-
-

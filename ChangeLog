@@ -1,5 +1,9 @@
 1999-03-01  Gordon Matzigkeit  <gord@trick.fig.org>
 
+	* debian/rules (binary-arch): Remove empty /sbin directory until
+	/sbin/grub is installed.  Use $(DESTDIR) instead of $(prefix) to
+	install files.
+
 	* shared_src/asm.S (version_string): Set the version string from
 	the VERSION specified in configure.in.
 

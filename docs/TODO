@@ -1,5 +1,10 @@
 Get /sbin/grub to work.
 
+Automatically generate source dependencies.  This might involve some
+patches to Automake (if so, we should also fix the fact that we
+currently need dummy.c in _SOURCES in order to get the C compiler flag
+variables).
+
 Change partition syntax to correspond with BSD ``slice'' syntax
 (`(hd0,1a)' -> `/dev/hd0s2a').
 
@@ -9,32 +14,30 @@ type''.  We need this for clean Hurd install floppies.
 Find out the size restrictions for FAT and ext2fs stage1.5 boot
 blocks.  Enforce all arbitrary limits using the Makefiles.
 
-Look at network booting.
+Add/Finish LBA and/or Int13 extensions support.
 
-Add stripped-down Guile support, and rewrite current behaviour in
-Scheme.  Make sure not to break backward compatibilty, or else we'll
-be roasted by anti-Guile people.
+Add a real scripting language, possibly retain backward compatibility
+so that old config files can be used.
+
+Look at the network booting patches from L4.
 
 Add internationalization support, emulating gettext as much as is
 feasible.
 
-Maybe add BIOS password support.  In any event, improve the existing
-password support.
+Add support/delays so that a floppy can be installed from another
+floppy.
 
-	Add support/delays so that a floppy can be installed from
-	another floppy.
+Add bootable CDROM support (this probably means I have to support
+ISO-9660 plus maybe even the Rock Ridge extensions...  ugh).
 
-	Add bootable CDROM support (this probably means I have to support
-	ISO-9660 plus maybe even the Rock Ridge extensions...  ugh).
-	Add/Finish LBA and/or Int13 extensions support.
+Make symbolic links work for BSD FFS.
 
-	Fix keyboard/gateA20 bug (????  at least look at the code).
-	The keyboard status bits may be checked wrong.
+Fix keyboard/gateA20 bug (????  at least look at the code).  The
+keyboard status bits may be checked wrong.
 
-	Add indirect block support to the BSD FFS filesystem code, so files
-	larger than 16MB can be read.
-	???  Make symbolic links work for BSD FFS.
+Add indirect block support to the BSD FFS filesystem code, so files
+larger than 16MB can be read.
 
-	???  Add command for modifying partition types.
+???  Add command for modifying partition types.
 
-	Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
+Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
