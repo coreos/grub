@@ -1,3 +1,9 @@
+2003-08-09  Thierry Laronde  <tlaronde@polynum.org>
+
+	* util/mkbimage: NEW File. `mkbimage' depends on GRUB and existed
+	elsewhere. It is now part of GRUB so that people can fix/contribute.
+	* util/Makefile.am: added script `mkbimage'
+
 2003-08-01  Jason Thomas  <jason@intology.com.au>
 
 	* util/grub-install.in: support --no-floppy
