@@ -1,3 +1,12 @@
+1999-07-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/bios.c (get_diskinfo): When DRIVE is a floppy drive,
+	try standard probe routine at first. Reported by Peter Astrand
+	<altic@lysator.liu.se>.
+
+	* grub/main.c (main): Call printf instead of grub_printf.
+	Reported by Klaus Reichl <a8709182@unet.univie.ac.at>.
+	
 1999-07-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/cmdline.c (skip_to): Don't increase CMDLINE if the

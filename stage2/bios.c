@@ -186,10 +186,19 @@ get_diskinfo (int drive, struct geometry *geometry)
   else
     {
       /* floppy disk */
-      err = get_diskinfo_floppy (drive,
-				 &geometry->cylinders,
-				 &geometry->heads,
-				 &geometry->sectors);
+
+      /* First, try INT 13 AH=8h call.  */
+      err = get_diskinfo_standard (drive,
+				   &geometry->cylinders,
+				   &geometry->heads,
+				   &geometry->sectors);
+
+      /* If fails, then try floppy-specific probe routine.  */
+      if (err)
+	err = get_diskinfo_floppy (drive,
+				   &geometry->cylinders,
+				   &geometry->heads,
+				   &geometry->sectors);
       if (err)
 	return err;
 

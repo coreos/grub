@@ -197,8 +197,8 @@ main (int argc, char **argv)
 
   /* Wait until the HOLD variable is cleared by an attached debugger. */
   if (hold && verbose)
-    grub_printf ("Run \"gdb %s %d\", and set HOLD to zero.\n",
-		 program_name, (int) getpid ());
+    printf ("Run \"gdb %s %d\", and set HOLD to zero.\n",
+	    program_name, (int) getpid ());
   while (hold)
     sleep (1);
 

@@ -61,6 +61,7 @@ host_alias = @host_alias@
 host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
+AWK = @AWK@
 CC = @CC@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
@@ -171,7 +172,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
-	  awk '    { files[$$0] = 1; } \
+	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	mkid -f$$here/ID $$unique $(LISP)
 
@@ -188,7 +189,7 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
-	  awk '    { files[$$0] = 1; } \
+	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
 	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
