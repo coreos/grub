@@ -135,9 +135,9 @@ This edition documents version @value{VERSION}.
 
 Briefly, a @dfn{boot loader} is the first software program that runs when
 a computer starts.  It is responsible for loading and transferring
-control to an operating system @dfn{kernel} software (such as the Linux
-or GNU Hurd kernel).  The kernel, in turn, initializes the rest of the
-operating system (e.g. a GNU system).
+control to an operating system @dfn{kernel} software (such as Linux or
+GNU Mach).  The kernel, in turn, initializes the rest of the operating
+system (e.g. a GNU system).
 
 GNU GRUB is a very powerful boot loader, which can load a wide variety
 of free operating systems, as well as proprietary operating systems with
@@ -582,7 +582,7 @@ install GRUB into the MBR of the first IDE disk under Linux:
 # @kbd{grub-install /dev/hda}
 @end example
 
-Likewise, under Hurd, this has the same effect:
+Likewise, under GNU/Hurd, this has the same effect:
 
 @example
 # @kbd{grub-install /dev/hd0}
@@ -1036,7 +1036,7 @@ displays the argument as is, you can write basically anything in there.
 
 @example
 @group
-# For booting the GNU Hurd
+# For booting GNU/Hurd
 title  GNU/Hurd
 root   (hd0,0)
 kernel /boot/gnumach.gz root=hd0s1
@@ -1048,7 +1048,7 @@ This boots GNU/Hurd from the first hard disk.
 
 @example
 @group
-# For booting Linux
+# For booting GNU/Linux
 title  GNU/Linux
 kernel (hd1,0)/vmlinuz root=/dev/hdb1
 @end group
@@ -3487,11 +3487,11 @@ EOT
 @item GRUB does not recognize my GNU/Hurd partition.
 
 I don't know why, but the authors of FDISK programs have assigned the
-partition type @samp{0x63} to GNU Hurd incorrectly. So use @samp{0x83}
-if the partition contains ext2fs filesystem, and use @samp{0xA5} if the
-partition contains ffs filesystem, whether the partition owner is Hurd
-or not. We will use @samp{0x63} for GNU Hurd filesystem that has not
-been implemented yet.
+partition type @samp{0x63} to the GNU Hurd incorrectly. So use
+@samp{0x83} if the partition contains ext2fs filesystem, and use
+@samp{0xA5} if the partition contains ffs filesystem, whether the
+partition owner is the Hurd or not. We will use @samp{0x63} for the
+GNU Hurd filesystem that has not been implemented yet.
 
 @item I've installed a recent version of binutils, but GRUB still crashes.
 
