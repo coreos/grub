@@ -130,7 +130,8 @@ main (int argc, char **argv)
 	  break;
 
 	case OPT_CONFIG_FILE:
-	  config_file = strdup (optarg);
+	  strncpy (config_file, optarg, 127); /* FIXME: arbitrary */
+	  config_file[127] = '\0';
 	  break;
 
 	case OPT_INSTALL_PARTITION:

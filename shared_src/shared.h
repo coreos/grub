@@ -280,7 +280,7 @@ typedef enum
 extern unsigned long install_partition;
 extern unsigned long boot_drive;
 extern char version_string[];
-extern char *config_file;
+extern char config_file[];
 
 #ifdef GRUB_UTIL
 /* If not using config file, this variable is set to zero,

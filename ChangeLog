@@ -1,3 +1,14 @@
+1999-05-03  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	From Pavel Roskin:
+	* shared_src/shared.h: Redeclare.
+
+	* grub/main.c (main): Use strncpy rather than pointer assignment
+	to set the config file name.
+
+	* grub/asmstub.c: Make config_file a static array, not a pointer.
+	Correct the value of VERSION_STRING.
+
 1999-04-10  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* debian/rules (build): Install into /lib instead of /share.

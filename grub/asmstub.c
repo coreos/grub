@@ -60,8 +60,8 @@ int grub_stage2 (void);
 
 unsigned long install_partition = 0x20000;
 unsigned long boot_drive = 0;
-char version_string[] = "0.5";
-char *config_file = "/boot/grub/menu.lst";
+char version_string[] = VERSION;
+char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 
 /* Emulation requirements. */
 char *grub_scratch_mem = 0;
@@ -123,16 +123,16 @@ grub_stage2 (void)
   assert (device_map == 0);
   device_map = malloc (NUM_DISKS * sizeof (char *));
   assert (device_map);
-  
+
   /* Probe devices for creating the device map.  */
 
   /* Iniitialize DEVICE_MAP.  */
   memset (device_map, 0, NUM_DISKS * sizeof (char *));
-  
+
   /* Floppies.  */
   device_map[0] = strdup ("/dev/fd0");
   device_map[1] = strdup ("/dev/fd1");
-  
+
   /* IDE disks.  */
   for (i = 0; i < 2; i++)
     {
@@ -156,7 +156,7 @@ grub_stage2 (void)
       device_map[i + 0x80] = strdup (name);
     }
   first_scsi_disk = i + 0x80;
-  
+
   /* The rest is SCSI disks.  */
   for (i = 0; i < 8; i++)
     {
@@ -170,7 +170,7 @@ grub_stage2 (void)
 #endif
       device_map[i + first_scsi_disk] = name;
     }
-  
+
   /* Check some invariants. */
   assert ((SCRATCHSEG << 4) == SCRATCHADDR);
   assert ((BUFFERSEG << 4) == BUFFERADDR);
@@ -412,7 +412,7 @@ getkey (void)
       return c;
     }
 #endif
-  
+
   return getchar ();
 }
 
@@ -432,7 +432,7 @@ checkkey (void)
       return c;
     }
 #endif
-  
+
   /* Just pretend they hit the space bar. */
   return ' ';
 }
@@ -473,10 +473,10 @@ get_diskinfo (int drive, struct geometry *geometry)
       /* The unpartitioned device name: /dev/XdX */
       char *devname = device_map[drive];
       char buf[512];
-      
+
       if (! devname)
 	return -1;
-      
+
       /* Open read/write, or read-only if that failed. */
       disks[drive].flags = open (devname, O_RDWR);
       if (! disks[drive].flags)
@@ -489,7 +489,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 	  disks[drive].flags = 0;
 	  return -1;
 	}
-      
+
       if (disks[drive].flags)
 	{
 #ifdef __linux__
