@@ -1,5 +1,11 @@
 2001-12-19  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	From Michael Sullivan <mike@trdlnk.com>:
+	* stage1/stage1.S (real_start): Added a workaround for AST BIOS,
+	because it clobbers %dl with INT 13, AH=41H.
+
+2001-12-19  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* stage2/fsys_fat.c (fat_read): Fix the contradictory comment.
 	Reported by Filip Van Raemdonck <mechanix@digibel.org>.
 	

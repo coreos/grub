@@ -1,7 +1,7 @@
 /* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -147,6 +147,13 @@ real_start:
 	movb	$0x41, %ah
 	movw	$0x55aa, %bx
 	int	$0x13
+
+	/* 
+	 *  %dl may have been clobbered by INT 13, AH=41H.
+	 *  This happens, for example, with AST BIOS 1.04.
+	 */
+	popw	%dx
+	pushw	%dx
 
 	/* use CHS if fails */
 	jc	chs_mode
