@@ -78,8 +78,9 @@ NOTE: you should stick to the GNU Coding Standards. Look at the URL
 
 DEVELOPERS: to subscribe to the mailing list, send e-mail to
 <bug-grub-request@gnu.org>.  You can get the latest GRUB CVS tree from
-`:pserver:anoncvs@anoncvs.gnu.org:/gd/gnu/anoncvsroot', module `grub'.
+`:pserver:anoncvs@subversions.gnu.org:/home/cvs', module `grub'.
 Just hit enter when CVS prompts you for a password.
+See <http://www.gnu.org/software/devel.html#CVS> for more details.
 
   IMPORTANT SIZE LIMITS:
 
