@@ -2,7 +2,7 @@ Source: grub
 Section: base
 Priority: extra
 Maintainer: GNU GRUB Maintainers <bug-grub@gnu.org>
-Standards-Version: 2.5.0.0
+Standards-Version: 3.0.1
 
 Package: grub
 Architecture: i386 hurd-i386

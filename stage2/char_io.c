@@ -128,9 +128,9 @@ grub_sprintf (char *buffer, const char *format, ...)
   int *dataptr = (int *) &format;
   char c, *ptr, str[16];
   char *bp = buffer;
-  
+
   dataptr++;
-  
+
   while ((c = *format++) != 0)
     {
       if (c != '%')
@@ -140,26 +140,26 @@ grub_sprintf (char *buffer, const char *format, ...)
 	  {
 	  case 'd': case 'u': case 'x':
 	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++)) = 0;
-	    
+
 	    ptr = str;
-	    
+
 	    while (*ptr)
 	      *bp++ = *(ptr++); /* putchar(*(ptr++)); */
 	    break;
-	    
+
 	  case 'c': *bp++ = (*(dataptr++))&0xff;
-	    /* putchar((*(dataptr++))&0xff); */ 
+	    /* putchar((*(dataptr++))&0xff); */
 	    break;
-	    
+
 	  case 's':
 	    ptr = (char *) (*(dataptr++));
-	    
+
 	    while ((c = *ptr++) != 0)
 	      *bp++ = c; /* putchar(c); */
 	    break;
 	  }
     }
-  
+
   *bp = 0;
   return bp - buffer;
 }
@@ -222,7 +222,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   char *buf = (char *) CMDLINE_BUF;
   /* The kill buffer.  */
   char *kill = (char *) KILL_BUF;
-  
+
   /* nested function definition for code simplicity */
   static void cl_print (char *str, int echo_char)
     {
@@ -241,7 +241,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    }
 	}
     }
-  
+
   /* nested function definition for code simplicity */
   static void cl_setcpos (void)
     {
@@ -249,13 +249,13 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
       xend = ((lpos + plen) % 79);
       gotoxy (xend, yend);
     }
-  
+
   /* nested function definition for initial command-line printing */
   static void cl_init ()
     {
       /* distinguish us from other lines and error messages! */
       putchar ('\n');
-      
+
       /* print full line and set position here */
       ystart = (getxy () & 0xff);
       yend = ystart;
@@ -264,7 +264,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
       cl_print (buf, echo_char);
       cl_setcpos ();
     }
-  
+
   /* nested function definition for erasing to the end of the line */
   static void cl_kill_to_end ()
     {
@@ -283,7 +283,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   static void cl_insert (const char *str)
     {
       int l = grub_strlen (str);
-      
+
       if (llen + l < maxlen)
 	{
 	  if (lpos == llen)
@@ -306,7 +306,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	  llen += l;
 	}
     }
-  
+
   plen = grub_strlen (prompt);
   llen = grub_strlen (cmdline);
 
@@ -321,9 +321,9 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
     }
   lpos = llen;
   grub_strcpy (buf, cmdline);
-  
+
   cl_init ();
-  
+
   while (ASCII_CHAR (c = getkey ()) != '\n' && ASCII_CHAR (c) != '\r')
     {
       switch (c)
@@ -378,7 +378,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		  pos++;
 
 		is_filename = (lpos > pos);
-		
+
 		/* Find the position of the equal character after a
 		   command, and replace it with a space.  */
 		for (i = pos; buf[i] && buf[i] != ' '; i++)
@@ -400,7 +400,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		completion_buffer[lpos - i] = 0;
 		ret = print_completions (is_filename, 1);
 		errnum = ERR_NONE;
-		
+
 		if (ret >= 0)
 		  {
 		    /* Found, so insert COMPLETION_BUFFER.  */
@@ -410,7 +410,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		      {
 			/* There is more than one candidates, so print
 			   the list.  */
-			
+
 			/* Go to the part after the line here.  */
 			yend = ((llen + plen) / 79) + ystart;
 			grub_putchar ('\n');
@@ -419,11 +419,11 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 			print_completions (is_filename, 0);
 		      }
 		  }
-		
+
 		/* Restore the command-line.  */
 		if (equal_pos >= 0)
 		  buf[equal_pos] = '=';
-		
+
 		if (ret)
 		  cl_init ();
 	      }
@@ -478,14 +478,14 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    case 16:		/* C-p fetch the previous command */
 	      {
 		char *p;
-	      
+
 		if (history < 0)
 		  /* Save the working buffer.  */
 		  grub_strcpy (cmdline, buf);
 		else if (grub_strcmp (get_history (history), buf) != 0)
 		  /* If BUF is modified, add it into the history list.  */
 		  add_history (buf, history);
-	      
+
 		history++;
 		p = get_history (history);
 		if (! p)
@@ -493,7 +493,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		    history--;
 		    break;
 		  }
-	      
+
 		lpos = 0;
 		cl_setcpos ();
 		cl_kill_to_end ();
@@ -507,7 +507,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    case 14:		/* C-n fetch the next command */
 	      {
 		char *p;
-	      
+
 		if (history < 0)
 		  {
 		    break;
@@ -515,12 +515,12 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		else if (grub_strcmp (get_history (history), buf) != 0)
 		  /* If BUF is modified, add it into the history list.  */
 		  add_history (buf, history);
-	      
+
 		history--;
 		p = get_history (history);
 		if (! p)
 		  p = cmdline;
-	      
+
 		lpos = 0;
 		cl_setcpos ();
 		cl_kill_to_end ();
@@ -579,7 +579,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    }
 	}
     }
-  
+
   /* Move the cursor to the end of the command.  */
   lpos = llen;
   cl_setcpos ();
@@ -599,7 +599,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
      empty, add it into the history list.  */
   if (readline && lpos < llen)
     add_history (cmdline, 0);
-  
+
   return 0;
 }
 #endif /* STAGE1_5 */
@@ -626,7 +626,7 @@ safe_parse_maxint (char **str_ptr, int *myint_ptr)
 	 (A >= B && A <= C) <=> ((A - B) <= (C - B))
 	 when C > B and A is unsigned.  */
       unsigned int digit;
-      
+
       digit = tolower (*ptr) - '0';
       if (digit > 9)
 	{
@@ -690,7 +690,7 @@ grub_memcmp (const char *s1, const char *s2, int n)
       s2++;
       n--;
     }
-  
+
   return 0;
 }
 
@@ -784,10 +784,10 @@ int
 grub_strlen (const char *str)
 {
   int len = 0;
-  
+
   while (*str++)
     len++;
-  
+
   return len;
 }
 #endif /* ! STAGE1_5 */
@@ -817,7 +817,7 @@ memcheck (int addr, int len)
 # endif
       return ret;
     }
-      
+
   if (start_addr () <= addr && end_addr () > addr + len)
     return ! errnum;
 #endif /* GRUB_UTIL */
@@ -841,7 +841,7 @@ grub_memmove (char *to, const char *from, int len)
 	  linux-2.2.2/include/asm-i386/string.h. This is not very fast
 	  but compact.  */
        int d0, d1, d2;
-       
+
        if (to < from)
 	 {
 	   asm volatile ("cld\n\t"

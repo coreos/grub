@@ -48,7 +48,7 @@ Check if the format of FILE complies with the Multiboot Specification.
 
 Report bugs to <bug-grub@gnu.org>.
 ");
-  
+
   exit (status);
 }
 
@@ -58,7 +58,7 @@ check_multiboot (const char *filename, FILE *fp)
   multiboot_header_t *mbh = 0;
   int i;
   char buf[8192];
-  
+
   if (fread (buf, 1, 8192, fp) < 0)
     {
       fprintf (stderr, "%s: Read error.\n", filename);
@@ -75,17 +75,17 @@ check_multiboot (const char *filename, FILE *fp)
 	  break;
 	}
     }
-  
+
   if (! mbh)
     {
       fprintf (stderr, "%s: No Multiboot header.\n", filename);
       return 0;
     }
-      
+
   if (! quiet)
     printf ("%s: The Multiboot header is found at the offset %d.\n",
 	    filename, i);
-  
+
   /* Check for the checksum.  */
   if (mbh->magic + mbh->flags + mbh->checksum != 0)
     {
@@ -94,7 +94,7 @@ check_multiboot (const char *filename, FILE *fp)
 	       filename, mbh->checksum);
       return 0;
     }
-  
+
   /* Reserved flags must be zero.  */
   if (mbh->flags & ~0x00010003)
     {
@@ -103,7 +103,7 @@ check_multiboot (const char *filename, FILE *fp)
 	       filename, mbh->flags);
       return 0;
     }
-  
+
   if (! quiet)
     {
       printf ("%s: Page alignment is turned %s.\n",
@@ -113,7 +113,7 @@ check_multiboot (const char *filename, FILE *fp)
       printf ("%s: Address fields is turned %s.\n",
 	      filename, (mbh->flags & 0x10000)? "on" : "off");
     }
-  
+
   /* Check for the address fields.  */
   if (mbh->flags & 0x10000)
     {
@@ -125,7 +125,7 @@ check_multiboot (const char *filename, FILE *fp)
 		   filename, mbh->header_addr, mbh->load_addr);
 	  return 0;
 	}
-      
+
       if (mbh->load_addr >= mbh->load_end_addr)
 	{
 	  fprintf (stderr,
@@ -134,7 +134,7 @@ check_multiboot (const char *filename, FILE *fp)
 		   filename, mbh->load_addr, mbh->load_end_addr);
 	  return 0;
 	}
-      
+
       if (mbh->load_end_addr > mbh->bss_end_addr)
 	{
 	  fprintf (stderr,
@@ -143,7 +143,7 @@ check_multiboot (const char *filename, FILE *fp)
 		   filename, mbh->load_end_addr, mbh->bss_end_addr);
 	  return 0;
 	}
-      
+
       if (mbh->load_addr > mbh->entry_addr)
 	{
 	  fprintf (stderr,
@@ -152,7 +152,7 @@ check_multiboot (const char *filename, FILE *fp)
 		   filename, mbh->load_addr, mbh->entry_addr);
 	  return 0;
 	}
-      
+
       if (mbh->load_end_addr <= mbh->entry_addr)
 	{
 	  fprintf (stderr,
@@ -161,7 +161,7 @@ check_multiboot (const char *filename, FILE *fp)
 		   filename, mbh->load_end_addr, mbh->entry_addr);
 	  return 0;
 	}
-      
+
       /* This is a GRUB-specific limitation.  */
       if (mbh->load_addr < 0x100000)
 	{
@@ -172,10 +172,10 @@ check_multiboot (const char *filename, FILE *fp)
 	  return 0;
 	}
     }
-  
+
   if (! quiet)
     printf ("%s: All checks passed.\n", filename);
-  
+
   return 1;
 }
 
@@ -183,7 +183,7 @@ int
 main (int argc, char *argv[])
 {
   int c;
-  
+
   do
     {
       c = getopt_long (argc, argv, optstring, longopts, 0);
@@ -191,20 +191,20 @@ main (int argc, char *argv[])
 	{
 	case EOF:
 	  break;
-	  
+
 	case 'h':
 	  usage (0);
 	  break;
 
 	case 'v':
-	  printf ("mbchk (GNU GRUB) " VERSION "\n");
+	  printf ("mbchk (GNU GRUB " VERSION ")\n");
 	  exit (0);
 	  break;
 
 	case 'q':
 	  quiet = 1;
 	  break;
-	  
+
 	default:
 	  usage (1);
 	  break;
@@ -240,5 +240,3 @@ main (int argc, char *argv[])
 
   return 0;
 }
-
-	

@@ -1,3 +1,19 @@
+1999-11-03  Gordon Matzigkeit  <gord@fig.org>
+
+	* debian/rules: Add variables for cross-compilation.
+
+	* debian/control (Standards-Version): Update to version 3.1.0.
+	* debian/rules (build): Install manpages into /usr/share/man, and
+	info into /usr/share/info in accordance with FHS.
+	(binary-arch): Likewise, and put docs into /usr/share/doc.
+	* debian/postinst: Use /usr/share/info, and manage compatibility
+	/usr/doc/grub -> /usr/share/doc/grub symlink.
+	* debian/prerm: Likewise.
+
+	* stage2/Makefile.am (CLEANFILES): Change to
+	$(nodist_pkgdata_DATA) so that the raw binary files are deleted.
+	* stage1/Makefile.am (CLEANFILES): Likewise.
+
 1999-11-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (grub_putchar) [HAVE_LIBCURSES]: Do not call
@@ -8,13 +24,13 @@
 	function biosdisk is changed from SECTOR + I * SECTOR_SIZE to
 	SECTOR + I.
 	(find_func): Clear ERRNUM before each of the attempts.
-	
+
 1999-11-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/multiboot.texi (Boot information format): Add the members
 	`drives_addr' and `drives_count' into the Multiboot information
 	structure, and added the descriptions.
-	
+
 1999-11-03  Gordon Matzigkeit  <gord@fig.org>
 
 	* util/mbchk.c (main): Move the version number inside the

@@ -1,5 +1,18 @@
 grub (0.5.94) unstable; urgency=low
-	
+
+ --
+
+grub (0.5.93.1) unstable; urgency=low
+
+  * Update to Standards-Version: 3.0.1, mainly for FHS support.
+  * Fix definition of ext2_dir_entry. (closes:bug#49017)
+  * Fix rules for cross-compiling. (closes:bug#49034)
+  * Update synopsis for grub(8). (closes:bug#48991)
+  * Don't clear the line when hitting enter in the GRUB shell.
+    (closes:bug#48989)
+
+ -- Gordon Matzigkeit <gord@debian.org>  Fri,  5 Nov 1999 22:31:30 -0600
+
 grub (0.5.93) unstable; urgency=low
 
   * Updated example configurations. (closes:bug#42136)

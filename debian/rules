@@ -4,13 +4,26 @@
 
 package:=grub
 
+# For cross-compilation.
+DEB_BUILD_ARCH := $(shell dpkg --print-installation-architecture)
+DEB_BUILD_GNU_CPU := $(patsubst hurd-%,%,$(DEB_BUILD_ARCH))
+ifeq ($(filter-out hurd-%,$(DEB_BUILD_ARCH)),)
+ DEB_BUILD_GNU_SYSTEM := gnu
+else
+ DEB_BUILD_GNU_SYSTEM := linux
+endif
+DEB_BUILD_GNU_TYPE := $(DEB_BUILD_GNU_CPU)-$(DEB_BUILD_GNU_SYSTEM)
+DEB_HOST_GNU_TYPE := $(DEB_BUILD_GNU_TYPE)
+
 INSTALL = install -c
 INSTALL_DATA = $(INSTALL) -m 644
 INSTALL_PROGRAM = $(INSTALL) -m 755
 
 build:
 	$(checkdir)
-	./configure --prefix=/usr
+	./configure --prefix=/usr \
+	  $(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
+	  --mandir='$${datadir}/man' --infodir='$${datadir}/info'
 	make
 	echo timestamp > build
 
@@ -31,25 +44,26 @@ binary-arch:	checkroot build
 	$(checkdir)
 	-rm -rf debian/tmp
 ## make dirs
-	install -d debian/tmp debian/tmp/usr/doc/grub debian/tmp/DEBIAN
+	install -d debian/tmp debian/tmp/usr/share/doc/grub debian/tmp/DEBIAN
 ## install files
 
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
-	gzip -f9 debian/tmp/usr/info/* debian/tmp/usr/man/man8/*
+	gzip -f9 debian/tmp/usr/share/info/* debian/tmp/usr/share/man/*/*
 	strip -s debian/tmp/usr/sbin/*
 
-	$(INSTALL_DATA)	TODO BUGS NEWS docs/menu.lst debian/tmp/usr/doc/grub/
+	$(INSTALL_DATA)	TODO BUGS NEWS docs/menu.lst \
+	  debian/tmp/usr/share/doc/grub/
 
-	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/changelog
-	gzip -f9 debian/tmp/usr/doc/grub/changelog
-	$(INSTALL_DATA) debian/changelog debian/tmp/usr/doc/grub/changelog.Debian
-	gzip -f9 debian/tmp/usr/doc/grub/changelog.Debian
-	$(INSTALL_DATA) debian/copyright debian/tmp/usr/doc/grub/
-	$(INSTALL_DATA) debian/README.debian debian/tmp/usr/doc/grub/
+	$(INSTALL_DATA) ChangeLog debian/tmp/usr/share/doc/grub/changelog
+	gzip -f9 debian/tmp/usr/share/doc/grub/changelog
+	$(INSTALL_DATA) debian/changelog debian/tmp/usr/share/doc/grub/changelog.Debian
+	gzip -f9 debian/tmp/usr/share/doc/grub/changelog.Debian
+	$(INSTALL_DATA) debian/copyright debian/tmp/usr/share/doc/grub/
+	$(INSTALL_DATA) debian/README.debian debian/tmp/usr/share/doc/grub/
 
 	# Install control files.
 	$(INSTALL_PROGRAM) debian/postinst debian/prerm debian/tmp/DEBIAN
-	dpkg-shlibdeps debian/tmp/usr/sbin/grub
+	dpkg-shlibdeps debian/tmp/usr/*bin/*
 	dpkg-gencontrol
 	chown -R root.root debian/tmp
 	chmod -R go=rX debian/tmp

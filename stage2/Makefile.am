@@ -23,6 +23,7 @@ libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5
+CLEANFILES = $(nodist_pkgdata_DATA)
 noinst_DATA = pre_stage2 start
 noinst_PROGRAMS = pre_stage2.exec start.exec \
 	e2fs_stage1_5.exec fat_stage1_5.exec \
