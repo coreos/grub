@@ -102,6 +102,10 @@ amiga_partition_map_iterate (grub_disk_t disk,
 	  break;
 	}
     }
+
+  if (next == -1)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE,
+		       "Amiga partition map not found.");
   
   /* The end of the partition list is marked using "-1".  */
   while (next != -1)

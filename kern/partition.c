@@ -56,20 +56,28 @@ grub_partition_t
 grub_partition_probe (struct grub_disk *disk, const char *str)
 {
   grub_partition_t part;
-  
+
   auto int part_map_probe (const grub_partition_map_t partmap);
-  
+
   int part_map_probe (const grub_partition_map_t partmap)
     {
       part = partmap->probe (disk, str);
       if (part)
 	return 1;
-      return 0;
+
+      if (grub_errno == GRUB_ERR_BAD_PART_TABLE)
+	{
+	  /* Continue to next partition map type.  */
+	  grub_errno = GRUB_ERR_NONE;
+	  return 0;
+	}
+
+      return 1;
     }
 
   /* Use the first partition map type found.  */
   grub_partition_map_iterate (part_map_probe);
-  
+
   return part;
 }
 
@@ -78,12 +86,21 @@ grub_partition_iterate (struct grub_disk *disk,
 			int (*hook) (const grub_partition_t partition))
 {
   auto int part_map_iterate (const grub_partition_map_t partmap);
-  
+
   int part_map_iterate (const grub_partition_map_t partmap)
     {
-      return partmap->iterate (disk, hook);
+      grub_err_t err = partmap->iterate (disk, hook);
+
+      if (err == GRUB_ERR_BAD_PART_TABLE)
+	{
+	  /* Continue to next partition map type.  */
+	  grub_errno = GRUB_ERR_NONE;
+	  return 0;
+	}
+
+      return 1;
     }
-  
+
   grub_partition_map_iterate (part_map_iterate);
   return grub_errno;
 }

@@ -1,3 +1,13 @@
+2005-02-12  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/partition.c (grub_partition_probe): Clear `grub_errno' and
+	return 0 if `grub_errno' is GRUB_ERR_BAD_PART_TABLE. 
+	(part_map_iterate): Clear `grub_errno' and return 0 if
+	`partmap->iterate' returns GRUB_ERR_BAD_PART_TABLE. 
+	* partmap/amiga.c (amiga_partition_map_iterate): Return
+	GRUB_ERR_BAD_PART_TABLE if no partition map magic is found.
+	* partmap/apple.c (apple_partition_map_iterate): Likewise.
+
 2005-02-01  Guillem Jover  <guillem@hadrons.org>
 
 	* loader/i386/pc/multiboot_normal.c (GRUB_MOD_INIT): Fix module

@@ -108,7 +108,7 @@ apple_partition_map_iterate (grub_disk_t disk,
   raw.partition = 0;
 
   part.partmap = &grub_apple_partition_map;
-  
+
   for (;;)
     {
       if (grub_disk_read (&raw, pos / GRUB_DISK_SECTOR_SIZE,
@@ -133,6 +133,10 @@ apple_partition_map_iterate (grub_disk_t disk,
       pos += sizeof (struct grub_apple_part);
       partno++;
     }
+
+  if ((pos / GRUB_DISK_SECTOR_SIZE) == 0)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE,
+		       "Apple partition map not found.");
 
   return 0;
 }
@@ -178,7 +182,6 @@ apple_partition_map_probe (grub_disk_t disk, const char *str)
  fail:
   grub_free (p);
   return 0;
-
 }
 
 
