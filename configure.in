@@ -14,7 +14,7 @@ dnl USE OF THIS SOFTWARE.
 
 AC_INIT(stage2/stage2.c)
 dnl Grab the package and version from the top debian/changelog entry.
-AM_INIT_AUTOMAKE(grub, 0.5.96)
+AM_INIT_AUTOMAKE(grub, 0.5.97)
 AM_CONFIG_HEADER(config.h)
 AC_PREREQ(2.13)
 
