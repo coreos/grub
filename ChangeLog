@@ -1,3 +1,19 @@
+2004-12-19  Marco Gerards  <metgerards@student.han.nl>
+
+	* conf/powerpc-ieee1275.rmk (MOSTLYCLEANFILES): Remove
+	`symlist.c', add `grubof_symlist.c'.
+	(symlist.c): Variable removed.
+	(grubof_HEADERS): Variable added.
+	(grubof_symlist.c): New target.
+	(kernel_syms.lst): Use `grubof_HEADERS' instead of
+	`kernel_img_HEADERS'.
+	(grubof_SOURCES): Add `kern/powerpc/dl.c' and `grubof_symlist.c'.
+	* kern/powerpc/dl.c: New file.
+	* kern/powerpc/ieee1275/init.c (grub_arch_dl_check_header):
+	Function removed.
+	(grub_arch_dl_relocate_symbols): Likewise.
+	(grub_register_exported_symbols): Likewise.
+
 2004-12-13  Marco Gerards  <metgerards@student.han.nl>
 
 	* fs/ext2.c (grub_ext2_open): Don't use data after freeing it.

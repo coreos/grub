@@ -84,29 +84,10 @@ grub_machine_init (void)
   grub_ofdisk_init ();
 }
 
-int
-grub_arch_dl_check_header (void *ehdr __attribute ((unused)),
-			   grub_size_t size __attribute ((unused)))
-{
-  return 0;
-}
-
-grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod __attribute ((unused)),
-			       void *ehdr __attribute ((unused)))
-{
-  return 0;
-}
-
 void
 grub_stop (void)
 {
   for (;;);
-}
-
-void
-grub_register_exported_symbols (void)
-{
 }
 
 grub_uint32_t

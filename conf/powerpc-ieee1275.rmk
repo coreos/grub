@@ -6,13 +6,18 @@ COMMON_CFLAGS = -ffreestanding -msoft-float
 
 # Images.
 
-MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+MOSTLYCLEANFILES += grubof_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-symlist.c: $(addprefix include/grub/,$(kernel_img_HEADERS)) gensymlist.sh
+grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
+	file.h fs.h kernel.h misc.h mm.h net.h rescue.h symbol.h \
+	term.h types.h machine/biosdisk.h  \
+	partition.h pc_partition.h machine/time.h machine/ieee1275.h
+
+grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
 	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
 
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
 # Utilities.
@@ -45,7 +50,7 @@ grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
 	partmap/apple.c kern/partition.c \
 	kern/env.c normal/arg.c loader/powerpc/ieee1275/linux.c \
 	loader/powerpc/ieee1275/linux_normal.c commands/boot.c \
-	normal/powerpc/setjmp.S
+	normal/powerpc/setjmp.S kern/powerpc/dl.c grubof_symlist.c
 grubof_HEADERS = grub/powerpc/ieee1275/ieee1275.h
 grubof_CFLAGS = $(COMMON_CFLAGS) -DGRUBOF
 grubof_ASFLAGS = $(COMMON_ASFLAGS)
