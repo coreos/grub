@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 0.92:
+New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.
 * The netboot code goes back to the progress bars instead of dots, for
   the notation of data transfers. And, that is displayed only in debug
