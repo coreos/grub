@@ -355,7 +355,7 @@ ENTRY(biosdisk)
 
 	/* Check whether we have LBA. */
 	movb	0x13(%ebp), %al
-	shrb	$4, %al
+	andb	$0x10, %al
 	jz	disk_compute_args	/* nope. */
 
 	/* set up disk address packet for extended calls (LBA mode) */
@@ -370,12 +370,13 @@ ENTRY(biosdisk)
 	/* set up the buffer address */
 	xorl	%eax, %eax
 	movw	0x1c(%ebp), %ax		/* segment */
-	shll	$4, %eax
+	shll	$16, %eax
 	movl	%eax, dap_buffer
-	
+
 	/* compute the address of disk_address_packet */
 	movl	$disk_address_packet, %eax
 	movw	%ax, %si
+	xorw	%ax, %ax
 	shrl	$4, %eax
 	movw	%ax, %cx		/* save the segment to cx */
 
@@ -392,6 +393,8 @@ ENTRY(biosdisk)
 	movw	%bx, %ax
 	int	$0x13			/* do the operation */
 
+/* FIXME: force people to help test LBA support before releasing 0.6 */
+#define NO_INT13_FALLBACK 1
 #ifdef NO_INT13_FALLBACK
 	/* Save return value. */
 	movb	%ah, %bl
@@ -623,11 +626,11 @@ hard_drive:
 	jc	1f			/* invalid function */
 	cmpw	$0xaa55, %bx
 	data32
-	jnz	1f			/* failed magic */
+	jne	1f			/* failed magic */
 
 	andb	$1, %cx
 	data32
-	jnz	1f			/* LBA not supported */
+	jz	1f			/* LBA not supported */
 
 	/* Wahoo!  Got LBA! */
 	movb	$0x1, %bh
@@ -657,8 +660,8 @@ probe_success:
 #ifdef AWARD_INT13_EXTENSIONS
 	movb	%dh, %al		/* bits 10,11 of cylinder count */
 	andb	$0xc0, %al
-	shlw	$2, %ax			/* << 2 */
 #endif
+	shlw	$2, %ax			/* << 2 */
 	movb	%cl, %al		/* bits 8,9 of cylinder count */
 	andb	$0xc0, %al
 	shlw	$2, %ax			/* << 2 */

@@ -1,7 +1,7 @@
 NEWS - list of user-visible changes between releases of GRUB
 
 New in XXX:
-* Preliminary LBA and AWARD BIOS disk extension support.  Please
+* LBA and AWARD BIOS disk extension support.  Please
   contact bug-grub@gnu.org if you know you have a machine for which
   this support would be useful, and would like to help in debugging.
 

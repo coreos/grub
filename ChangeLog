@@ -1,3 +1,11 @@
+1999-03-10  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/asm.S (biosdisk): Make LBA mode work correctly.  From
+	OKUJI Yoshinori.
+	Unconditionally define NO_INT13_FALLBACK until we release GRUB
+	0.6.  This will help debug any problems with the LBA support until
+	then.
+
 1999-03-09  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/asm.S (biosdisk): Compute location of
