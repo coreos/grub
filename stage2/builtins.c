@@ -26,10 +26,12 @@
 # include <etherboot.h>
 #endif
 
-#ifndef GRUB_UTIL
-# include "apic.h"
-# include "smp-imps.h"
-#endif
+#ifdef GRUB_UTIL
+# include <device.h>
+#else /* ! GRUB_UTIL */
+# include <apic.h>
+# include <smp-imps.h>
+#endif /* ! GRUB_UTIL */
 
 /* The type of kernel loaded.  */
 kernel_t kernel_type;

@@ -1,5 +1,11 @@
 2000-07-12  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Added
+	-I$(top_srcdir)/lib.
+	* stage2/builtins.c [GRUB_UTIL]: Include device.h.
+	
+2000-07-12  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Segreate OS-specific helper functions from asmstub.c.
 	
 	* grub/asmstub.c [__linux__]: Don't include linux/hdreg.h,
