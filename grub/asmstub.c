@@ -19,7 +19,9 @@
  */
 
 /* Try to use glibc's transparant LFS support. */
-#define _LARGEFILE_SOURCE 1
+#define _LARGEFILE_SOURCE	1
+/* lseek becomes synonymous with lseek64.  */
+#define _FILE_OFFSET_BITS	64
 
 /* Simulator entry point. */
 int grub_stage2 (void);
@@ -154,8 +156,10 @@ grub_stage2 (void)
       char buf[512];
 #ifdef __linux__
       char unit = 'a' + i;
-#else
+#elif defined(__GNU__)
       char unit = '0' + i;
+#else
+#warning "BIOS drives cannot be guessed in your operating system."
 #endif
 
       sprintf (name, "/dev/hd%c", unit);
@@ -204,7 +208,7 @@ grub_stage2 (void)
       assert (name);
 #ifdef __linux__
       sprintf (name, "/dev/sd%c", i + 'a');
-#else
+#elif defined(__GNU__)
       sprintf (name, "/dev/sd%d", i);
 #endif
       device_map[num_hd++ + 0x80] = name;
@@ -755,9 +759,13 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
       return -1;
   }
 #else
-  if (lseek (fd, sector * SECTOR_SIZE, SEEK_SET))
-     return -1;
-#endif /* __linux__ */
+  {
+    off_t offset = (off_t) sector * (off_t) SECTOR_SIZE;
+    
+    if (lseek (fd, offset, SEEK_SET) != offset)
+      return -1;
+  }
+#endif
 
   buf = (char *) (segment << 4);
 

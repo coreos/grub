@@ -1,3 +1,11 @@
+1999-09-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (_FILE_OFFSET_BITS): Defined.
+	(biosdisk) [!__linux__]: Pass the offset argument as off_t
+	instead of int to lseek, and compare the return value with
+	OFFSET. Reported by Pavel Roskin.
+	(grub_stage2) [!__linux__ && !__GNU__]: Print a warning message.
+	
 1999-09-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/stage2.c (run_menu): If run_script is successfully
