@@ -87,6 +87,7 @@ noinst_SCRIPTS = $(HELP2MAN)
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS)
 subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 SCRIPTS =  $(noinst_SCRIPTS)
 

@@ -17,7 +17,8 @@ dnl Grab the package and version from the top debian/changelog entry.
 AM_INIT_AUTOMAKE(
    esyscmd([sed 's/ .*$//; q' debian/changelog]),
    esyscmd([sed 's/^.*(\(.*\)).*$/\1/; q' debian/changelog]))dnl
-AC_PREREQ(2.12)
+AM_CONFIG_HEADER(config.h)
+AC_PREREQ(2.13)
 
 AC_CANONICAL_HOST
 
@@ -87,7 +88,7 @@ AC_CHECK_TOOL(LD, ld)
 AC_CHECK_TOOL(OBJCOPY, objcopy)
 
 # Defined in acinclude.m4.
-grub_ASM_EXT_C
+grub_ASM_USCORE
 grub_PROG_OBJCOPY_ABSOLUTE
 if test "x$grub_cv_prog_objcopy_absolute" != xyes; then
   AC_MSG_ERROR([GRUB requires a working absolute objcopy; upgrade your binutils])
@@ -108,14 +109,14 @@ else
 fi
 
 # Check for curses libraries.
-AC_CHECK_LIB(ncurses, getch, [GRUB_LIBS="$GRUB_LIBS -lncurses"
+AC_CHECK_LIB(ncurses, wgetch, [GRUB_LIBS="$GRUB_LIBS -lncurses"
 AC_DEFINE(HAVE_LIBCURSES)],
-		[AC_CHECK_LIB(curses, getch, [GRUB_LIBS="$GRUB_LIBS -lcurses"
+		[AC_CHECK_LIB(curses, wgetch, [GRUB_LIBS="$GRUB_LIBS -lcurses"
 AC_DEFINE(HAVE_LIBCURSES)])])
 AC_SUBST(GRUB_LIBS)
 
 # Check for headers.
-AC_CHECK_HEADERS(string.h strings.h)
+AC_CHECK_HEADERS(string.h strings.h ncurses/curses.h ncurses.h curses.h)
 
 # Check for user options.
 

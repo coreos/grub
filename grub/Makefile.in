@@ -90,11 +90,12 @@ grub_SOURCES = main.c asmstub.c getopt.c getopt1.c getopt.h
 grub_LDADD = ../stage2/libgrub.a $(GRUB_LIBS)
 subdir = grub
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 PROGRAMS =  $(sbin_PROGRAMS)
 
 
-DEFS = @DEFS@ -I. -I$(srcdir) 
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@

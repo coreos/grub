@@ -10,13 +10,14 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
-dnl grub_ASM_EXT_C checks what name gcc will use for C symbol.
-dnl Originally written by Erich Boleyn, the author of GRUB, and modified
-dnl by OKUJI Yoshinori to autoconfiscate the test.
-AC_DEFUN(grub_ASM_EXT_C,
+dnl grub_ASM_USCORE checks if C symbols get an underscore after
+dnl compiling to assembler.
+dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
+dnl Erich Boleyn and modified by OKUJI Yoshinori
+AC_DEFUN(grub_ASM_USCORE,
 [AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING([symbol names produced by ${CC-cc}])
-AC_CACHE_VAL(grub_cv_asm_ext_c,
+AC_MSG_CHECKING([if C symbols get an underscore after compilation])
+AC_CACHE_VAL(grub_cv_asm_uscore,
 [cat > conftest.c <<\EOF
 int
 func (int *list)
@@ -31,23 +32,17 @@ else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 
-set dummy `grep \.globl conftest.s | grep func | sed -e s/\\.globl// | sed -e s/func/\ sym\ /`
-shift
-if test -z "[$]1"; then
-  AC_MSG_ERROR([C symbol not found])
+if grep _func conftest.s >/dev/null 2>&1; then
+  grub_cv_asm_uscore=yes
+  AC_DEFINE_UNQUOTED([HAVE_ASM_USCORE], $grub_cv_asm_uscore,
+    [Define if C symbols get an underscore after compilation])
+else
+  grub_cv_asm_uscore=no
 fi
-grub_cv_asm_ext_c="[$]1"
-while test [$]# != 0; do
-  shift
-  dummy=[$]1
-  if test ! -z ${dummy}; then
-    grub_cv_asm_ext_c="$grub_cv_asm_ext_c ## $dummy"
-  fi
-done
+
 rm -f conftest*])
 
-AC_MSG_RESULT([$grub_cv_asm_ext_c])
-AC_DEFINE_UNQUOTED([EXT_C(sym)], $grub_cv_asm_ext_c)
+AC_MSG_RESULT([$grub_cv_asm_uscore])
 ])
 
 
@@ -254,6 +249,29 @@ else
    AC_MSG_RESULT(missing)
 fi
 AC_SUBST($1)])
+
+# Like AC_CONFIG_HEADER, but automatically create stamp file.
+
+AC_DEFUN(AM_CONFIG_HEADER,
+[AC_PREREQ([2.12])
+AC_CONFIG_HEADER([$1])
+dnl When config.status generates a header, we must update the stamp-h file.
+dnl This file resides in the same directory as the config header
+dnl that is generated.  We must strip everything past the first ":",
+dnl and everything past the last "/".
+AC_OUTPUT_COMMANDS(changequote(<<,>>)dnl
+ifelse(patsubst(<<$1>>, <<[^ ]>>, <<>>), <<>>,
+<<test -z "<<$>>CONFIG_HEADERS" || echo timestamp > patsubst(<<$1>>, <<^\([^:]*/\)?.*>>, <<\1>>)stamp-h<<>>dnl>>,
+<<am_indx=1
+for am_file in <<$1>>; do
+  case " <<$>>CONFIG_HEADERS " in
+  *" <<$>>am_file "*<<)>>
+    echo timestamp > `echo <<$>>am_file | sed -e 's%:.*%%' -e 's%[^/]*$%%'`stamp-h$am_indx
+    ;;
+  esac
+  am_indx=`expr "<<$>>am_indx" + 1`
+done<<>>dnl>>)
+changequote([,]))])
 
 # Define a conditional.
 

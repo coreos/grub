@@ -1,3 +1,14 @@
+1999-09-11  Pavel Roskin  <pavel_roskin@geocities.com>
+	
+	* acconfig.h: New file for autoheader support.
+	* acinclude.m4 (grub_ASM_EXT_C) Renamed to ...
+	(grub_ASM_USCORE): ... this. Define HAVE_ASM_USCORE if a C
+	symbol gets an underscore after compiling to assembler.
+	* configure.in: Added AM_CONFIG_HEADER. Autoconf 2.13 is now
+	required. Test for wgetch(), not getch() in -l[n]curses.
+	* stage2/shared.h (EXT_C): Defined.
+	Include the best existing header for [n]curses.
+
 1999-09-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/boot.c (load_image): Use CURRENT_DRIVE and

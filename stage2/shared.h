@@ -23,6 +23,15 @@
  *  Generic defines to use anywhere
  */
 
+#include <config.h>
+
+/* Add an underscore to a C symbol in assembler code if needed. */
+#ifdef HAVE_ASM_USCORE
+# define EXT_C(sym) _ ## sym
+#else
+# define EXT_C(sym) sym
+#endif
+
 /* Maybe redirect memory requests through grub_scratch_mem. */
 #ifdef GRUB_UTIL
 extern char *grub_scratch_mem;
@@ -226,7 +235,11 @@ extern char *grub_scratch_mem;
 # define KEY_PPAGE       0x5100
 # define A_NORMAL        0x7
 # define A_REVERSE       0x70
-#else
+#elif defined(HAVE_NCURSES_CURSES_H)
+# include <ncurses/curses.h>
+#elif defined(HAVE_NCURSES_H)
+# include <ncurses.h>
+#elif defined(HAVE_CURSES_H)
 # include <curses.h>
 #endif
 

@@ -1,10 +1,11 @@
-dnl grub_ASM_EXT_C checks what name gcc will use for C symbol.
-dnl Originally written by Erich Boleyn, the author of GRUB, and modified
-dnl by OKUJI Yoshinori to autoconfiscate the test.
-AC_DEFUN(grub_ASM_EXT_C,
+dnl grub_ASM_USCORE checks if C symbols get an underscore after
+dnl compiling to assembler.
+dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
+dnl Erich Boleyn and modified by OKUJI Yoshinori
+AC_DEFUN(grub_ASM_USCORE,
 [AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING([symbol names produced by ${CC-cc}])
-AC_CACHE_VAL(grub_cv_asm_ext_c,
+AC_MSG_CHECKING([if C symbols get an underscore after compilation])
+AC_CACHE_VAL(grub_cv_asm_uscore,
 [cat > conftest.c <<\EOF
 int
 func (int *list)
@@ -19,23 +20,17 @@ else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
 
-set dummy `grep \.globl conftest.s | grep func | sed -e s/\\.globl// | sed -e s/func/\ sym\ /`
-shift
-if test -z "[$]1"; then
-  AC_MSG_ERROR([C symbol not found])
+if grep _func conftest.s >/dev/null 2>&1; then
+  grub_cv_asm_uscore=yes
+  AC_DEFINE_UNQUOTED([HAVE_ASM_USCORE], $grub_cv_asm_uscore,
+    [Define if C symbols get an underscore after compilation])
+else
+  grub_cv_asm_uscore=no
 fi
-grub_cv_asm_ext_c="[$]1"
-while test [$]# != 0; do
-  shift
-  dummy=[$]1
-  if test ! -z ${dummy}; then
-    grub_cv_asm_ext_c="$grub_cv_asm_ext_c ## $dummy"
-  fi
-done
+
 rm -f conftest*])
 
-AC_MSG_RESULT([$grub_cv_asm_ext_c])
-AC_DEFINE_UNQUOTED([EXT_C(sym)], $grub_cv_asm_ext_c)
+AC_MSG_RESULT([$grub_cv_asm_uscore])
 ])
 
 

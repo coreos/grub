@@ -82,6 +82,7 @@ install_sh = @install_sh@
 EXTRA_DIST = README.debian changelog control copyright rules
 subdir = debian
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 DIST_SOURCES = 
 DIST_COMMON =  Makefile.am Makefile.in
