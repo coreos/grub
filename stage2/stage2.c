@@ -195,6 +195,8 @@ set_line (int y, int entryno, int attr, char *menu_entries)
 	  set_attrib (attr);
 	}
     }
+
+  gotoxy (74, y);
 }
 
 /* Set the attribute of the line Y to normal state.  */
@@ -235,7 +237,9 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
 {
   int c, time1, time2 = -1, first_entry = 0;
   char *cur_entry = 0;
-
+  int disp_up = DISP_UP;
+  int disp_down = DISP_DOWN;
+  
   /*
    *  Main loop for menu UI.
    */
@@ -243,8 +247,8 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
 restart:
   while (entryno > 11)
     {
-      first_entry ++;
-      entryno --;
+      first_entry++;
+      entryno--;
     }
 
   /* If SHOW_MENU is false, don't display the menu until ESC is pressed.  */
@@ -300,12 +304,24 @@ restart:
 #ifdef GRUB_UTIL
       grub_printf ("\n\
       Use the up and down arrows to select which entry is highlighted.\n");
-#else
+#else /* ! GRUB_UTIL */
+# ifdef SUPPORT_SERIAL
+      if (terminal & TERMINAL_CONSOLE)
+	{
+	  disp_up = DISP_UP;
+	  disp_down = DISP_DOWN;
+	}
+      else
+	{
+	  disp_up = ACS_UARROW;
+	  disp_down = ACS_DARROW;
+	}
+# endif /* SUPPORT_SERIAL */
       grub_printf ("\n\
       Use the %c and %c keys to select which entry is highlighted.\n",
-		   DISP_UP, DISP_DOWN);
-#endif
-
+		   disp_up, disp_down);
+#endif /* ! GRUB_UTIL */
+      
       if (! auth && password)
 	{
 	  printf ("\
@@ -337,7 +353,7 @@ restart:
 
   while (1)
     {
-      /* initilize to NULL just in case... */
+      /* Initialize to NULL just in case...  */
       cur_entry = NULL;
 
       if (grub_timeout >= 0 && (time1 = getrtsecs()) != time2 && time1 != 0xFF)
@@ -356,7 +372,12 @@ restart:
 	  grub_timeout--;
 	}
 
-      if (checkkey () != -1)
+      /* Check for a keypress, however if TIMEOUT has been expired
+	 (GRUB_TIMEOUT == -1) relax in GETKEY even if no key has been
+	 pressed.  
+	 This avoids polling (relevant in the grub-shell and later on
+	 in grub if interrupt driven I/O is done).  */
+      if ((checkkey () != -1) || (grub_timeout == -1)) 
 	{
 	  c = translate_keycode (getkey ());
 
@@ -369,7 +390,9 @@ restart:
 	      gotoxy (74, 4 + entryno);
 	    }
 
-	  if (c == 16)
+	  /* We told them above (at least in SUPPORT_SERIAL) to use
+	     '^' or 'v' so accept these keys.  */
+	  if (c == 16 || c == '^')
 	    {
 	      if (entryno > 0)
 		{
@@ -386,7 +409,7 @@ restart:
 		  set_line_highlight (4, first_entry + entryno, menu_entries);
 		}
 	    }
-	  if (c == 14 && (first_entry + entryno + 1) < num_entries)
+	  if ((c == 14 || c == 'v') && first_entry + entryno + 1 < num_entries)
 	    {
 	      if (entryno < 11)
 		{

@@ -2695,7 +2695,7 @@ serial_func (char *arg, int flags)
 	  if (! safe_parse_maxint (&p, &num))
 	    return 1;
 
-	  port = (unsigned short) num;
+	  speed = (unsigned short) num;
 	}
       else if (grub_memcmp (arg, "--word=", sizeof ("--word=") - 1) == 0)
 	{

@@ -1,3 +1,30 @@
+2000-09-02  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/stage2.c (run_menu): Don't use either `p' or `n' to
+	move the cursor, because `p' is already used for another
+	purpose (password).
+	(run_menu) [SUPPORT_SERIAL]: Don't set the variables DISP_UP and
+	DISP_DOWN at the start time. Instead, set them just before using
+	them actually, because TERMINAL may change when running a menu.
+	
+2000-09-01  Klaus Reichl  <Klaus.Reichl@alcatel.at>
+
+	* stage2/stage2.c (run_menu): Setup and use disp_up, disp_down
+	depending on the terminal mode.
+	(run_menu): Allow '^' (resp. 'p') and 'v' (resp 'n') keys we
+	described in our help above (resp. authors preferences).
+
+2000-08-31  Klaus Reichl  <Klaus.Reichl@alcatel.at>
+
+	* stage2/stage2.c (set_line): Go back one char, which is
+	consistent with the original situation, when a timeout was
+	running.  
+	(run_menu): If GRUB_TIMEOUT is stopped don't loop busy over
+	CHECKKEY, just relax in GETKEY. 
+
+	* stage2/builtins.c (serial_func): --speed handling: corrected
+	typo: set SPEED instead of PORT. 
+	
 2000-08-31  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (terminal_func): Added two new options,
