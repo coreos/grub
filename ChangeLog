@@ -1,3 +1,14 @@
+2003-01-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Ilguiz Latypov:
+	* configure.in: Fix a syntax error in a sed script.
+	* stage2/bios.c (get_diskinfo): PhoenixBIOS 4.0 Revision 6.0 
+	for ZF Micro might understand the greater buffer size for the
+	"get drive parameters" int 0x13 call in its own way.  
+	Supposedly the BIOS assumes even bigger space is available and
+	thus corrupts the stack.  This is why we specify the exactly 
+	necessary size of 0x42 bytes.
+
 2003-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Steven Dick <ssd.gnu@mmae.ucf.edu>:

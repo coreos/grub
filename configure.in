@@ -1,5 +1,5 @@
 dnl Configure script for GRUB.
-dnl Copyright 1999,2000,2001,2002 Free Software Foundation, Inc.
+dnl Copyright 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
 
 dnl Permission to use, copy, modify and distribute this software and its
 dnl documentation is hereby granted, provided that both the copyright
@@ -78,7 +78,7 @@ fi
 if test "x$ac_cv_prog_gcc" = xyes; then
   if test "x$default_CFLAGS" = xyes; then
     # Autoconf may set CFLAGS to -O2 and/or -g. So eliminate them.
-    CFLAGS="`echo $CFLAGS | sed -e 's/-g//g' -e 's/-O[[0-9]]/g'` -g"
+    CFLAGS="`echo $CFLAGS | sed -e 's/-g//g' -e 's/-O[[0-9]]//g'` -g"
     # If the user specify the directory for binutils, add the option `-B'.
     if test "x$with_binutils" != x; then
       CFLAGS="-B$with_binutils/ $CFLAGS"
