@@ -1,3 +1,7 @@
+2003-02-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/grub-install.in (find_device): Fix the sed script.
+
 2003-02-17  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* lib/device.c (check_device): If DEVICE is empty, just return
