@@ -1,5 +1,11 @@
 2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/shared.h (BUILTIN_HIDDEN): Renamed to ...
+	(BUILTIN_NO_ECHO): ... this. The old name was too difficult to
+	see _what_ was hidden.
+	
+2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* netboot/misc.c (twiddle): Go back to the bar progress, copied
 	from etherboot-5.0.5/src/misc.c. Execute the code only if DEBUG
 	is true.

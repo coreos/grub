@@ -2820,7 +2820,7 @@ static struct builtin builtin_password =
 {
   "password",
   password_func,
-  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HIDDEN,
+  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_NO_ECHO,
   "password [--md5] PASSWD [FILE]",
   "If used in the first section of a menu file, disable all"
   " interactive editing control (menu entry editor and"
@@ -2851,7 +2851,7 @@ static struct builtin builtin_pause =
 {
   "pause",
   pause_func,
-  BUILTIN_CMDLINE | BUILTIN_HIDDEN,
+  BUILTIN_CMDLINE | BUILTIN_NO_ECHO,
   "pause [MESSAGE ...]",
   "Print MESSAGE, then wait until a key is pressed."
 };

@@ -1,7 +1,7 @@
 /* cmdline.c - the device-independent GRUB text command line */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -221,7 +221,7 @@ run_script (char *script, char *heap)
 	  continue;
 	}
 
-      if (! (builtin->flags & BUILTIN_HIDDEN))
+      if (! (builtin->flags & BUILTIN_NO_ECHO))
 	grub_printf ("%s\n", old_entry);
 
       /* If BUILTIN cannot be run in the command-line, skip it.  */

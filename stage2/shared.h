@@ -1,7 +1,7 @@
 /* shared.h - definitions used in all GRUB-specific code */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -839,7 +839,7 @@ void stop_floppy (void);
 #define BUILTIN_MENU		0x2	/* Run in the menu.  */
 #define BUILTIN_TITLE		0x4	/* Only for the command title.  */
 #define BUILTIN_SCRIPT		0x8	/* Run in the script.  */
-#define BUILTIN_HIDDEN		0x10	/* Don't print command on booting. */
+#define BUILTIN_NO_ECHO		0x10	/* Don't print command on booting. */
 
 /* The table for a builtin.  */
 struct builtin
