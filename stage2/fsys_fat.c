@@ -124,7 +124,7 @@ fat_mount (void)
  	return 0;
       
       FAT_SUPER->root_cluster = -1;
-      if (FAT_SUPER->num_clust > FAT_MAX_12BIT_CLUST)
+      if (FAT_SUPER->num_clust >= FAT_MAX_12BIT_CLUST)
  	FAT_SUPER->fat_size = 4;
       else
  	FAT_SUPER->fat_size = 3;

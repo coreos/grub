@@ -2,7 +2,8 @@
 
 	* stage2/fsys_fat.c (fat_mount): Fixed calculation of num_clust.
 	It was off by two, since the two non existing clusters 0 and 1
-	were not taken into account.
+	were not taken into account.  Also fixed the boundary between
+	FAT12 and FAT16.
 	
 2000-07-25  OKUJI Yoshinori  <okuji@gnu.org>
 
