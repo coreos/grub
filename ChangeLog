@@ -1,5 +1,11 @@
 1999-08-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/cmdline.c (commands): Added geometry.
+	(enter_cmdline): If CUR_HEAP has the string "geometry", print
+	out the information about a drive that the argument represents.
+	
+1999-08-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/stage2.c (run_menu): Terminate the string PASSWORD
 	before checking if ENTERED is identical to PASSWORD. Reported
 	by Mark Lundeberg <aa026@pgfn.bc.ca>.

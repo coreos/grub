@@ -68,6 +68,7 @@ char commands[] =
 " Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
   \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
+  \"geometry= <drive>\",
   \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
   \"color= <normal> [<highlight>]\", \"makeactive\", \"boot\", \"quit\" and
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
@@ -660,6 +661,33 @@ returnit:
 #else
       grub_printf (" The quit command is ignored in Stage2\n");
 #endif
+    }
+  else if (substring ("geometry", cur_heap) < 1)
+    {
+      set_device (cur_cmdline);
+      
+      if (! errnum)
+	{
+	  struct geometry geom;
+	  
+	  if (get_diskinfo (current_drive, &geom))
+	    errnum = ERR_NO_DISK;
+	  else
+	    {
+	      char *msg;
+	      
+	      if (geom.flags & BIOSDISK_FLAG_LBA_EXTENSION)
+		msg = "LBA";
+	      else
+		msg = "CHS";
+	      
+	      grub_printf ("drive 0x%x: C/H/S = %d/%d/%d, "
+			   "The number of sectors = %d, %s\n",
+			   current_drive,
+			   geom.cylinders, geom.heads, geom.sectors,
+			   geom.total_sectors, msg);
+	    }
+	}
     }
   else if (*cur_heap && *cur_heap != ' ')
     errnum = ERR_UNRECOGNIZED;
