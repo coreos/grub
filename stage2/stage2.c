@@ -797,7 +797,7 @@ cmain (void)
       config_len = 0;
       menu_len = 0;
       num_entries = 0;
-      config_entries = (char *) (mbi.mmap_addr + mbi.mmap_length);
+      config_entries = (char *) mbi.drives_addr + mbi.drives_length;
       menu_entries = (char *) MENU_BUF;
       init_config ();
 

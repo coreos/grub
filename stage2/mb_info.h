@@ -23,17 +23,17 @@
  */
 
 struct mod_list
-  {
-    /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
-    unsigned long mod_start;
-    unsigned long mod_end;
-
-    /* Module command line */
-    unsigned long cmdline;
-
-    /* padding to take it to 16 bytes (must be zero) */
-    unsigned long pad;
-  };
+{
+  /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
+  unsigned long mod_start;
+  unsigned long mod_end;
+  
+  /* Module command line */
+  unsigned long cmdline;
+  
+  /* padding to take it to 16 bytes (must be zero) */
+  unsigned long pad;
+};
 
 
 /*
@@ -44,17 +44,43 @@ struct mod_list
  */
 
 struct AddrRangeDesc
-  {
-    unsigned long size;
-    unsigned long long BaseAddr;
-    unsigned long long Length;
-    unsigned long Type;
-
-    /* unspecified optional padding... */
-  };
+{
+  unsigned long size;
+  unsigned long long BaseAddr;
+  unsigned long long Length;
+  unsigned long Type;
+  
+  /* unspecified optional padding... */
+};
 
 /* usable memory "Type", all others are reserved.  */
 #define MB_ARD_MEMORY       1
+
+
+/* Drive Info structure.  */
+struct drive_info
+{
+  /* The size of this structure.  */
+  unsigned long size;
+
+  /* The BIOS drive number.  */
+  unsigned char drive_number;
+
+  /* The access mode (see below).  */
+  unsigned char drive_mode;
+
+  /* The BIOS geometry.  */
+  unsigned short drive_cylinders;
+  unsigned char drive_heads;
+  unsigned char drive_sectors;
+
+  /* The array of I/O ports used for the drive.  */
+  unsigned short drive_ports[0];
+};
+
+/* Drive Mode.  */
+#define MB_DI_CHS_MODE	0
+#define MB_DI_LBA_MODE	1
 
 
 /*
@@ -65,52 +91,62 @@ struct AddrRangeDesc
  */
 
 struct multiboot_info
+{
+  /* MultiBoot info version number */
+  unsigned long flags;
+  
+  /* Available memory from BIOS */
+  unsigned long mem_lower;
+  unsigned long mem_upper;
+  
+  /* "root" partition */
+  unsigned long boot_device;
+  
+  /* Kernel command line */
+  unsigned long cmdline;
+  
+  /* Boot-Module list */
+  unsigned long mods_count;
+  unsigned long mods_addr;
+  
+  union
   {
-    /* MultiBoot info version number */
-    unsigned long flags;
-
-    /* Available memory from BIOS */
-    unsigned long mem_lower;
-    unsigned long mem_upper;
-
-    /* "root" partition */
-    unsigned long boot_device;
-
-    /* Kernel command line */
-    unsigned long cmdline;
-
-    /* Boot-Module list */
-    unsigned long mods_count;
-    unsigned long mods_addr;
-
-    union
-      {
-	struct
-	  {
-	    /* (a.out) Kernel symbol table info */
-	    unsigned long tabsize;
-	    unsigned long strsize;
-	    unsigned long addr;
-	    unsigned long pad;
-	  }
-	a;
-
-	struct
-	  {
-	    /* (ELF) Kernel section header table */
-	    unsigned long num;
-	    unsigned long size;
-	    unsigned long addr;
-	    unsigned long shndx;
-	  }
-	e;
-      }
-    syms;
-
-    /* Memory Mapping buffer */
-    unsigned long mmap_length;
-    unsigned long mmap_addr;
-  };
+    struct
+    {
+      /* (a.out) Kernel symbol table info */
+      unsigned long tabsize;
+      unsigned long strsize;
+      unsigned long addr;
+      unsigned long pad;
+    }
+    a;
+    
+    struct
+    {
+      /* (ELF) Kernel section header table */
+      unsigned long num;
+      unsigned long size;
+      unsigned long addr;
+      unsigned long shndx;
+    }
+    e;
+  }
+  syms;
+  
+  /* Memory Mapping buffer */
+  unsigned long mmap_length;
+  unsigned long mmap_addr;
+  
+  /* Drive Info buffer */
+  unsigned long drives_length;
+  unsigned long drives_addr;
+  
+  /* ROM configuration table */
+  unsigned long config_table;
+  
+  /* Boot Loader Name */
+  unsigned long boot_loader_name;
+};
 
 /*
  *  Flags to be set in the 'flags' parameter above
@@ -134,6 +170,15 @@ struct multiboot_info
 
 /* is there a full memory map? */
 #define MB_INFO_MEM_MAP         0x40
+
+/* Is there drive info?  */
+#define MB_INFO_DRIVE_INFO	0x80
+
+/* Is there a config table?  */
+#define MB_INFO_CONFIG_TABLE	0x100
+
+/* Is there a boot loader name?  */
+#define MB_INFO_BOOT_LOADER_NAME	0x200
 
 /*
  *  The following value must be present in the EAX register.

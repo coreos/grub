@@ -1597,6 +1597,50 @@ xsmap:
 	ret
 
 /*
+ * get_rom_config_table()
+ *
+ * Get the linear address of a ROM configuration table. Return zero,
+ * if fails.
+ */
+	
+ENTRY(get_rom_config_table)
+	pushl	%ebp
+	pushl	%ebx
+
+	/* zero %ebx for simplicity */
+	xorl	%ebx, %ebx
+	
+	call	EXT_C(prot_to_real)
+	.code16
+
+	movw	$0xc0, %ax
+	int	$0x15
+
+	jc	no_rom_table
+	testb	%ah, %ah
+	jnz	no_rom_table
+	
+	movw	%es, %dx
+	jmp	found_rom_table
+	
+no_rom_table:
+	xorw	%dx, %dx
+	xorw	%bx, %bx
+	
+found_rom_table:
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	/* compute the linear address */
+	movw	%dx, %ax
+	shll	$4, %eax
+	addl	%ebx, %eax
+
+	popl	%ebx
+	popl	%ebp
+	ret
+
+/*
  * gateA20(int linear)
  *
  * Gate address-line 20 for high memory.

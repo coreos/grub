@@ -158,6 +158,7 @@ init_bios_info (void)
 {
 #ifndef STAGE1_5
   unsigned long cont, memtmp, addr;
+  int drive;
 #endif
 
   /*
@@ -260,11 +261,60 @@ init_bios_info (void)
 
   saved_mem_upper = mbi.mem_upper;
 
+  /* Get the drive info.  */
+  /* FIXME: This should be postponed until a Multiboot kernel actually
+     requires it, because this could slow down the start-up
+     unreasonably.  */
+  mbi.drives_length = 0;
+  mbi.drives_addr = addr;
+
+  /* For now, GRUB doesn't probe floppies, since it is trivial to map
+     floppy drives to BIOS drives.  */
+  for (drive = 0x80; drive < 0x88; drive++)
+    {
+      struct geometry geom;
+      struct drive_info *info = (struct drive_info *) addr;
+      unsigned short *port;
+      
+      /* Get the geometry. This ensures that the drive is present.  */
+      if (get_diskinfo (drive, &geom))
+	break;
+      
+      /* Clean out the I/O map.  */
+      grub_memset ((char *) io_map, 0,
+		   IO_MAP_SIZE * sizeof (unsigned short));
+      /* Track the int13 handler.  */
+      track_int13 (drive);
+
+      /* Set the information.  */
+      info->drive_number = drive;
+      info->drive_mode = ((geom.flags & BIOSDISK_FLAG_LBA_EXTENSION)
+			  ? MB_DI_LBA_MODE : MB_DI_CHS_MODE);
+      info->drive_cylinders = geom.cylinders;
+      info->drive_heads = geom.heads;
+      info->drive_sectors = geom.sectors;
+
+      addr += sizeof (struct drive_info);
+      for (port = io_map; *port; port++, addr += sizeof (unsigned short))
+	*((unsigned short *) addr) = *port;
+
+      info->size = addr - (unsigned long) info;
+      mbi.drives_length += info->size;
+    }
+
+  /* Get the ROM configuration table by INT 15, AH=C0h.  */
+  mbi.config_table = get_rom_config_table ();
+
+  /* Set the boot loader name.  */
+  mbi.boot_loader_name = (unsigned long) "GNU GRUB " VERSION;
+  
   /*
    *  Initialize other Multiboot Info flags.
    */
 
-  mbi.flags = MB_INFO_MEMORY | MB_INFO_CMDLINE | MB_INFO_BOOTDEV;
+  mbi.flags = (MB_INFO_MEMORY | MB_INFO_CMDLINE | MB_INFO_BOOTDEV
+	       | MB_INFO_DRIVE_INFO | MB_INFO_CONFIG_TABLE
+	       | MB_INFO_BOOT_LOADER_NAME);
 
 #endif /* STAGE1_5 */
 

@@ -71,6 +71,7 @@ int saved_entryno = 0;
 char version_string[] = VERSION;
 char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 unsigned long linux_text_len = 0;
+unsigned short io_map[IO_MAP_SIZE];
 
 /* Emulation requirements. */
 char *grub_scratch_mem = 0;
@@ -423,6 +424,19 @@ get_mmap_entry (struct mmar_desc *desc, int cont)
   return 0;
 }
 
+/* Track the int13 handler.  */
+void
+track_int13 (int drive)
+{
+  /* Nothing to do in the simulator.  */
+}
+
+/* Get the ROM configuration table.  */
+unsigned long
+get_rom_config_table (void)
+{
+  return 0;
+}
 
 /* low-level timing info */
 int

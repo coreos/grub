@@ -71,7 +71,7 @@ into another language, under the above conditions for modified versions.
 @top Multiboot Specification
 
 This file documents Multiboot Specification, the proposal for the boot
-sequence standard. This edition documents version 0.6.90.
+sequence standard. This edition documents version 0.6.91.
 @end ifnottex
 
 
@@ -567,7 +567,7 @@ follows:
 44      | mmap_length       |    (present if flags[6] is set)
 48      | mmap_addr         |    (present if flags[6] is set)
         +-------------------+
-52      | drives_count      |    (present if flags[7] is set)
+52      | drives_length     |    (present if flags[7] is set)
 56      | drives_addr       |    (present if flags[7] is set)
         +-------------------+
 60      | config_table      |    (present if flags[8] is set)
@@ -765,28 +765,32 @@ be available for normal use.
 
 If bit 7 in the @samp{flags} is set, then the @samp{drives_*} fields
 are valid, and indicate the address of the physical address of the first
-drive structure and the number of drive structures. @samp{drives_addr}
-is the address, and @samp{drives_count} is the
-number. @samp{drives_count} may be zero. Each drive structure is
-formatted as follows:
+drive structure and the size of drive structures. @samp{drives_addr}
+is the address, and @samp{drives_length} is the total size of drive
+structures. Note that @samp{drives_length} may be zero. Each drive
+structure is formatted as follows:
 
 @example
 @group
         +-------------------+
-0       | drive_number      |
+0       | size              |
         +-------------------+
-1       | drive_mode        |
+4       | drive_number      |
         +-------------------+
-2       | drive_cylinders   |
-4       | drive_heads       |
-5       | drive_sectors     |
+5       | drive_mode        |
         +-------------------+
-6       | drive_ports       |
+6       | drive_cylinders   |
+8       | drive_heads       |
+9       | drive_sectors     |
         +-------------------+
-10      | reserved (0)      |
+10 - xx | drive_ports       |
         +-------------------+
 @end group
 @end example
+
+The @samp{size} field specifies the size of this structure. The size
+varies, depending on the number of ports. Note that the size may not be
+equal to (10 + 2 * the number of ports), because of an alignment.
 
 The @samp{drive_number} field contains the BIOS drive number. The
 @samp{drive_mode} field represents the access mode used by the boot
@@ -807,15 +811,11 @@ cylinders. @samp{drive_heads} contains the number of the
 heads. @samp{drive_sectors} contains the number of the sectors per
 track.
 
-The @samp{drive_ports} field contains the physical address of the array
-of the I/O ports used for the drive in the @sc{bios} code. The array
-consists of zero or more unsigned two-bytes integers, and is terminated
-with zero. Note that the array may contain any number of I/O ports that
-are not related to the drive actually (such as @sc{dma} controller's
-ports).
-
-The last field @samp{reserved} is reserved for future use, and must be
-zero. The size is four bytes.
+The @samp{drive_ports} field contains the array of the I/O ports used
+for the drive in the @sc{bios} code. The array consists of zero or more
+unsigned two-bytes integers, and is terminated with zero. Note that the
+array may contain any number of I/O ports that are not related to the
+drive actually (such as @sc{dma} controller's ports).
 
 If bit 8 in the @samp{flags} is set, then the @samp{config_table} field
 is valid, and indicates the address of the @sc{rom} configuration table

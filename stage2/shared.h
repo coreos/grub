@@ -643,6 +643,10 @@ int get_eisamemsize (void);
    map). */
 int get_mmap_entry (struct mmar_desc *desc, int cont);
 
+/* Get the linear address of a ROM configuration table. Return zero,
+   if fails.  */
+unsigned long get_rom_config_table (void);
+
 /* Return the data area immediately following our code. */
 int get_code_end (void);
 

@@ -1,5 +1,33 @@
 2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
 
+	Some of the new Multiboot features are supported. APM support
+	and VESA support are not strictly defined or implemented yet.
+	
+	* docs/multiboot.texi (Top): Increase the version number.
+	(Boot information format): Changed the drive information format,
+	because it was not straightforward.
+	
+	* grub/asmstub.c (io_map): New variable.
+	(track_int13): New function.
+	(get_rom_config_table): Likewise.
+	* stage2/stage2.c (cmain): Set CONFIG_ENTRIES to MBI.DRIVES_ADDR
+	+ MBI.DRIVES.LENGTH instead of MBI.MMAP_ADDR + MBI.MMAP_LENGTH.
+	* stage2/common.c (init_bios_info) [!STAGE1_5]: Added support
+	for drive info, ROM config table, and boot loader name features
+	of the Multiboot Specification.
+	* stage2/mb_info.h (drive_info): New structure.
+	(MB_DI_CHS_MODE): New macro.
+	(MB_DI_LBA_MODE): Likewise.
+	(multiboot_info): Added drives_length, drives_addr,
+	config_table, and boot_loader_name.
+	(MB_INFO_DRIVE_INFO): New macro.
+	(MB_INFO_CONFIG_TABLE): Likewise.
+	(MB_INFO_BOOT_LOADER_NAME): Likewise.
+	* stage2/asm.S (get_rom_config_table): New function.
+	* stage2/shared.h (get_rom_config_table): Declared.
+	
+2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* util/grub-install.in (convert): Check only if the file exists,
 	instead of checking if the file is a block device as well.
 	Because, in a sane operating system, it should be a char device
