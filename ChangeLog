@@ -1,3 +1,10 @@
+2003-08-13  Jason Thomas  <jason@intology.com.au>
+
+	* util/grub-install.in (resolve_symlink): New function to resolve symlinks
+	(find_device): moved symlink code to new function
+	Before we convert the install_device we attempt to resolve it if its a
+	symlink using the new function
+
 2003-06-17  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c (read_tree_node): Fixed a typo; only
