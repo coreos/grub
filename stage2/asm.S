@@ -1698,7 +1698,8 @@ ENTRY(linux_boot)
 
 	/* copy kernel */
 	movl	EXT_C(linux_text_len), %ecx
-	shll	$2, %ecx
+	addl	$3, %ecx
+	shrl	$2, %ecx
 	movl	$LINUX_STAGING_AREA, %esi
 	movl	$LINUX_KERNEL, %edi
 

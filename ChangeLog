@@ -1,3 +1,11 @@
+2000-07-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	The Linux zImage support is working now.
+	
+	* stage2/asm.S (linux_boot): Add 3 into %ecx and shift %ecx to
+	the right by 2 bits, instead of shift %ecx to the left by 2
+	bits.
+	
 2000-07-29  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c (block_read): Changed the variable "len"
