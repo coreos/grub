@@ -12,6 +12,12 @@ New in 0.92:
   "savedefault") are hidden. If you want to see help messages for those
   commands, you will have to specify the names to "help" explicitly.
   (Also, note that <TAB> still shows all the commands.)
+* A built-in, `more'-like pager is added. When a command prints too many
+  lines to fit the screen, GRUB waits until you hit return key. This
+  feature can be turned off by the new command "pager".
+* The command "terminal" accepts a new option, "--lines=LINES". You can
+  set the maximum number of lines arbitrarily with this option. If you
+  don't specify it, the maximum number will be 24.
 
 New in 0.91 - 2002-01-21:
 * Support for Linux DAC960 is added.

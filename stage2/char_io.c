@@ -1,7 +1,7 @@
 /* char_io.c - basic console input and output */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@
 
 #ifndef STAGE1_5
 int auto_fill = 1;
+int max_lines = 24;
+int count_lines = -1;
+int use_pager = 1;
 #endif
 
 void
@@ -1122,6 +1125,34 @@ grub_putchar (int c)
 	grub_putchar ('\n');
 
       col++;
+    }
+  else if (c == '\n')
+    {
+      /* Internal `more'-like feature.  */
+      if (count_lines != -1)
+	{
+	  count_lines++;
+	  if (count_lines >= max_lines - 2)
+	    {
+	      int tmp;
+	      
+	      /* It's important to disable the feature temporarily, because
+		 the following grub_printf call will print newlines.  */
+	      count_lines = -1;
+	      
+	      grub_printf ("\n\n[Hit return to continue]");
+	      do
+		{
+		  tmp = ASCII_CHAR (getkey ());
+		}
+	      while (tmp != '\n' && tmp != '\r');
+	      grub_printf ("\n\n");
+	      
+	      /* Restart to count lines.  */
+	      count_lines = 0;
+	      return;
+	    }
+	}
     }
 
   if (terminal & TERMINAL_CONSOLE)

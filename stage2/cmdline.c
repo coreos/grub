@@ -162,9 +162,16 @@ enter_cmdline (char *heap, int forever)
 	 disks.  */
       buf_drive = -1;
 
+      /* Start to count lines, only if the internal pager is in use.  */
+      if (use_pager)
+	count_lines = 0;
+      
       /* Run BUILTIN->FUNC.  */
       arg = skip_to (1, heap);
       (builtin->func) (arg, BUILTIN_CMDLINE);
+
+      /* Finish the line count.  */
+      count_lines = -1;
     }
 }
 

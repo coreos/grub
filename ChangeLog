@@ -1,5 +1,32 @@
 2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	An internal pager is implemented.
+	
+	* stage2/builtins.c (pager_func): New function.
+	(builtin_pager): New variable.
+	(terminal_func): New option, "--lines=LINES" is added. If this
+	option is specified, set MAX_LINES to the value. Otherwise, set
+	MAX_LINES to 24.
+	(vbeprobe_func): Remove the pager code specific to this
+	function.
+	(builtin_table): Added a pointer to BUILTIN_PAGER.
+	* stage2/char_io.c (max_lines) [!STAGE1_5]: New variable.
+	(count_lines) [!STAGE1_5]: Likewise.
+	(use_pager) [!STAGE1_5]: Likewise.
+	(grub_putchar) [!STAGE1_5]: if C is a newline and COUNT_LINES is
+	not -1, count up the number of lines. If it exceeds the maximum
+	number of lines minus 2, show a message and wait for input of
+	return key. "minus 2" is to reserve space for the message
+	printed by this internal pager.
+	* stage2/cmdline.c (enter_cmdline): If USE_PAGER is true, set
+	COUNT_LINES to zero, before running a command, and reset
+	COUNT_LINES to -1 after that.
+	* stage2/shared.h (max_lines) [!STAGE1_5]: Declared.
+	(count_lines) [!STAGE1_5]: Likewise.
+	(use_pager) [!STAGE1_5]: Likewise.
+	
+2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/fsys_jfs.c (jfs_read) [STAGE1_5]: Set and reset
 	DISK_READ_FUNC even in Stage 1.5.
 	* stage2/fsys_xfs.c (xfs_read) [STAGE1_5]: Likewise.

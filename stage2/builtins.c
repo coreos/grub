@@ -2569,6 +2569,38 @@ static struct builtin builtin_modulenounzip =
 };
 
 
+/* pager [on|off] */
+static int
+pager_func (char *arg, int flags)
+{
+  /* If ARG is empty, toggle the flag.  */
+  if (! *arg)
+    use_pager = ! use_pager;
+  else if (grub_memcmp (arg, "on", 2) == 0)
+    use_pager = 1;
+  else if (grub_memcmp (arg, "off", 3) == 0)
+    use_pager = 0;
+  else
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  grub_printf (" Internal pager is now %s\n", use_pager ? "on" : "off");
+  return 0;
+}
+
+static struct builtin builtin_pager =
+{
+  "pager",
+  pager_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
+  "pager [FLAG]",
+  "Toggle pager mode with no argument. If FLAG is given and its value"
+  " is `on', turn on the mode. If FLAG is `off', turn off the mode."
+};
+
+
 /* partnew PART TYPE START LEN */
 static int
 partnew_func (char *arg, int flags)
@@ -3866,6 +3898,7 @@ terminal_func (char *arg, int flags)
   int to = -1;
   int dumb = 0;
   int saved_terminal = terminal;
+  int lines = 0;
 
   /* Get GNU-style long options.  */
   while (1)
@@ -3878,6 +3911,20 @@ terminal_func (char *arg, int flags)
 	  
 	  if (! safe_parse_maxint (&val, &to))
 	    return 1;
+	}
+      else if (grub_memcmp (arg, "--lines=", sizeof ("--lines=") - 1) == 0)
+	{
+	  char *val = arg + sizeof ("--lines=") - 1;
+
+	  if (! safe_parse_maxint (&val, &lines))
+	    return 1;
+
+	  /* Probably less than four is meaningless....  */
+	  if (lines < 4)
+	    {
+	      errnum = ERR_BAD_ARGUMENT;
+	      return 1;
+	    }
 	}
       else
 	break;
@@ -3998,6 +4045,12 @@ terminal_func (char *arg, int flags)
     }
 #endif /* SUPPORT_SERIAL */
 
+  if (lines)
+    max_lines = lines;
+  else
+    /* 24 would be a good default value.  */
+    max_lines = 24;
+  
   return 0;
 }
 
@@ -4006,14 +4059,14 @@ static struct builtin builtin_terminal =
   "terminal",
   terminal_func,
   BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
-  "terminal [--dumb] [--timeout=SECS] [console] [serial]",
+  "terminal [--dumb] [--timeout=SECS] [--lines=LINES] [console] [serial]",
   "Select a terminal. When serial is specified, wait until you push any key"
   " to continue. If both console and serial are specified, the terminal"
   " to which you input a key first will be selected. If no argument is"
-  " specified, print current setting. The option --dumb speicifies that"
+  " specified, print current setting. The option --dumb specifies that"
   " your terminal is dumb, otherwise, vt100-compatibility is assumed."
   " If --timeout is present, this command will wait at most for SECS"
-  " seconds."
+  " seconds. The option --lines specifies the maximum number of lines."
 };
 #endif /* SUPPORT_SERIAL || SUPPORT_HERCULES */
 
@@ -4334,7 +4387,6 @@ vbeprobe_func (char *arg, int flags)
   struct vbe_controller controller;
   unsigned short *mode_list;
   int mode_number = -1;
-  int count = 1;
   
   auto unsigned long vbe_far_ptr_to_linear (unsigned long);
   
@@ -4416,16 +4468,6 @@ vbeprobe_func (char *arg, int flags)
 	  
 	  if (mode_number != -1)
 	    break;
-
-	  count++;
-
-	  /* XXX: arbitrary.  */
-	  if (count == 22)
-	    {
-	      grub_printf ("\nHit any key to continue.\n");
-	      count = 0;
-	      getkey ();
-	    }
 	}
     }
 
@@ -4494,6 +4536,7 @@ struct builtin *builtin_table[] =
 #endif /* USE_MD5_PASSWORDS */
   &builtin_module,
   &builtin_modulenounzip,
+  &builtin_pager,
   &builtin_partnew,
   &builtin_parttype,
   &builtin_password,

@@ -608,6 +608,11 @@ extern char *password;
 extern password_t password_type;
 extern int auth;
 extern char commands[];
+
+/* For `more'-like feature.  */
+extern int max_lines;
+extern int count_lines;
+extern int use_pager;
 #endif
 
 #ifndef NO_DECOMPRESSION
