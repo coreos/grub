@@ -166,7 +166,7 @@ supporting richer sets of boot options with control statements (which
 would make GRUB its own kind of kernel). Support for non-PC hardware
 architectures is also planned.@footnote{There is already a port to the
 NEC PC-98xx series. See
-@url{http://www.kuis.kyoto-u.ac.jp/~kmc/proj/linux98/arch/i386/boot/grub98/},
+@url{http://www.kmc.kyoto-u.ac.jp/proj/linux98/arch/i386/boot/grub98/},
 for more information.}
 
 

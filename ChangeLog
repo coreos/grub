@@ -1,3 +1,7 @@
+2000-11-05  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/user-ref.texi (Features): Update the URL of grub/98.
+	
 2000-11-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	VBE support is _partially_ implemented.
