@@ -25,7 +25,8 @@ if test -z "[$]1"; then
   AC_MSG_ERROR([C symbol not found])
 fi
 grub_cv_asm_ext_c="[$]1"
-while shift; do
+while test [$]# != 0; do
+  shift
   dummy=[$]1
   if test ! -z ${dummy}; then
     grub_cv_asm_ext_c="$grub_cv_asm_ext_c ## $dummy"

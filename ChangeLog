@@ -1,3 +1,8 @@
+1999-05-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_ASM_EXT_C): Do not overrun the comman
+	shift. Reported by Pavel Roskin <pabel_roskin@geocities.com>.
+
 1999-05-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/Makefile.am (info_TEXINFOS): Added multiboot.texi.
