@@ -687,6 +687,31 @@ pupa_ext2_dir (pupa_device_t device, const char *path,
   return pupa_errno;
 }
 
+static pupa_err_t
+pupa_ext2_label (pupa_device_t device, char **label)
+{
+  struct pupa_ext2_data *data;
+  pupa_disk_t disk = device->disk;
+
+#ifndef PUPA_UTIL
+  pupa_dl_ref (my_mod);
+#endif
+
+  data = pupa_ext2_mount (disk);
+  if (data)
+    *label = pupa_strndup (data->sblock.volume_name, 14);
+  else
+    *label = 0;
+
+#ifndef PUPA_UTIL
+  pupa_dl_unref (my_mod);
+#endif
+
+  pupa_free (data);
+
+  return pupa_errno;
+}
+
 
 static struct pupa_fs pupa_ext2_fs =
   {
@@ -695,6 +720,7 @@ static struct pupa_fs pupa_ext2_fs =
     .open = pupa_ext2_open,
     .read = pupa_ext2_read,
     .close = pupa_ext2_close,
+    .label = pupa_ext2_label,
     .next = 0
   };
 

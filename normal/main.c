@@ -3,6 +3,7 @@
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
  *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Marco Gerards <metgerards@student.han.nl>.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +30,8 @@
 #include <pupa/term.h>
 
 pupa_jmp_buf pupa_exit_env;
+
+#define PUPA_DEFAULT_HISTORY_SIZE	50
 
 /* Read a line from the file FILE.  */
 static int
@@ -332,11 +335,12 @@ pupa_rescue_cmd_normal (int argc, char *argv[])
     pupa_enter_normal_mode (argv[0]);
 }
 
-
 #ifdef PUPA_UTIL
 void
 pupa_normal_init (void)
 {
+  pupa_set_history (PUPA_DEFAULT_HISTORY_SIZE);
+
   /* Register a command "normal" for the rescue mode.  */
   pupa_rescue_register_command ("normal", pupa_rescue_cmd_normal,
 				"enter normal mode");
@@ -349,6 +353,7 @@ pupa_normal_init (void)
 void
 pupa_normal_fini (void)
 {
+  pupa_set_history (0);
   pupa_rescue_unregister_command ("normal");
 
 }
@@ -357,6 +362,8 @@ PUPA_MOD_INIT
 {
   /* Normal mode shouldn't be unloaded.  */
   pupa_dl_ref (mod);
+
+  pupa_set_history (PUPA_DEFAULT_HISTORY_SIZE);
 
   /* Register a command "normal" for the rescue mode.  */
   pupa_rescue_register_command ("normal", pupa_rescue_cmd_normal,
@@ -368,6 +375,7 @@ PUPA_MOD_INIT
 
 PUPA_MOD_FINI
 {
+  pupa_set_history (0);
   pupa_rescue_unregister_command ("normal");
 }
 #endif /* ! PUPA_UTIL */

@@ -2,6 +2,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Marco Gerards <metgerards@student.han.nl>.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,6 +47,11 @@ struct pupa_fs
   
   /* Close the file FILE.  */
   pupa_err_t (*close) (struct pupa_file *file);
+  
+  /* Return the label of the device DEVICE in LABEL.  The label is
+     returned in a pupa_malloc'ed buffer and should be freed by the
+     caller.  */
+  pupa_err_t (*label) (pupa_device_t device, char **label);
 
   /* The next filesystem.  */
   struct pupa_fs *next;

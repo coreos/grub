@@ -3,6 +3,7 @@
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2000,2001  Free Software Foundation, Inc.
  *  Copyright (C) 2002  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Marco Gerards <metgerards@student.han.nl>.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -771,6 +772,70 @@ pupa_fat_close (pupa_file_t file)
   return pupa_errno;
 }
 
+static pupa_err_t
+pupa_fat_label (pupa_device_t device, char **label)
+{
+  struct pupa_fat_data *data;
+  pupa_disk_t disk = device->disk;
+  pupa_ssize_t offset = -sizeof(struct pupa_fat_dir_entry);
+
+
+#ifndef PUPA_UTIL
+  pupa_dl_ref (my_mod);
+#endif
+  
+  data = pupa_fat_mount (disk);
+  if (! data)
+    goto fail;
+
+  if (! (data->attr & PUPA_FAT_ATTR_DIRECTORY))
+    {
+      pupa_error (PUPA_ERR_BAD_FILE_TYPE, "not a directory");
+      return 0;
+    }
+
+  while (1)
+    {
+      struct pupa_fat_dir_entry dir;
+
+      /* Adjust the offset.  */
+      offset += sizeof (dir);
+      
+      /* Read a directory entry.  */
+      if ((pupa_fat_read_data (disk, data, 0,
+			       offset, sizeof (dir), (char *) &dir)
+	   != sizeof (dir))
+	  || dir.name[0] == 0)
+	{
+	  if (pupa_errno != PUPA_ERR_NONE)
+	    goto fail;
+	  else
+	    {
+	      *label = 0;
+	      return PUPA_ERR_NONE;
+	    }
+	}
+
+      if (dir.attr == PUPA_FAT_ATTR_VOLUME_ID)
+	{
+	  *label = pupa_strndup (dir.name, 11);
+	  return PUPA_ERR_NONE;
+	}
+    }
+
+  *label = 0;
+  
+ fail:
+
+#ifndef PUPA_UTIL
+  pupa_dl_unref (my_mod);
+#endif
+
+  pupa_free (data);
+
+  return pupa_errno;
+}
+
 static struct pupa_fs pupa_fat_fs =
   {
     .name = "fat",
@@ -778,6 +843,7 @@ static struct pupa_fs pupa_fat_fs =
     .open = pupa_fat_open,
     .read = pupa_fat_read,
     .close = pupa_fat_close,
+    .label = pupa_fat_label,
     .next = 0
   };
 

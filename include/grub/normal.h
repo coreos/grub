@@ -2,6 +2,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Marco Gerards <metgerards@student.han.nl>.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
 
 #include <pupa/setjmp.h>
 #include <pupa/symbol.h>
+#include <pupa/err.h>
 
 /* The maximum size of a command-line.  */
 #define PUPA_MAX_CMDLINE	1600
@@ -125,6 +127,8 @@ void EXPORT_FUNC(pupa_register_command) (const char *name,
 			    const char *description);
 void EXPORT_FUNC(pupa_unregister_command) (const char *name);
 pupa_command_t pupa_command_find (char *cmdline);
+pupa_err_t pupa_set_history (int newsize);
+int pupa_iterate_commands (int (*iterate) (pupa_command_t));
 int pupa_command_execute (char *cmdline);
 void pupa_command_init (void);
 void pupa_normal_init_page (void);

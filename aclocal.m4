@@ -290,3 +290,42 @@ else
   AC_MSG_ERROR([neither end nor _end is defined])
 fi
 ])
+
+dnl Check if the C compiler has a bug while using nested functions when
+dnl mregparm is used on the i386.  Some gcc versions do not pass the third
+dnl parameter correctly to the nested function.
+dnl Written by Marco Gerards.
+AC_DEFUN(pupa_I386_CHECK_REGPARM_BUG,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if GCC has the regparm=3 bug])
+AC_CACHE_VAL(pupa_cv_i386_check_nested_functions,
+[AC_RUN_IFELSE([AC_LANG_SOURCE(
+[[int *p;
+
+int
+main ()
+{
+  int test;
+
+  int __attribute__ ((__regparm__ (3))) nestedfunc (int a, int b, int c)
+    {
+      return (&test == p);
+    }
+  
+  p = &test;
+  return nestedfunc (0, 0, 0);
+}
+]])],
+	[pupa_cv_i386_check_nested_functions=yes],
+	[pupa_cv_i386_check_nested_functions=no])])
+
+AC_MSG_RESULT([$pupa_cv_i386_check_nested_functions])
+
+if test "x$pupa_cv_i386_check_nested_functions" = xyes; then
+  AC_DEFINE([NESTED_FUNC_ATTR], 
+	[__attribute__ ((__regparm__ (2)))],
+	[Catch gcc bug])
+else
+  AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
+fi
+])

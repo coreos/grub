@@ -88,8 +88,10 @@ if test "x$host_cpu" = xi386; then
   pupa_I386_ASM_PREFIX_REQUIREMENT
   pupa_I386_ASM_ADDR32
   pupa_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
+  pupa_I386_CHECK_REGPARM_BUG
+else
+  AC_DEFINE([NESTED_FUNC_ATTR], [],[Catch gcc bug])
 fi
-
 
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET

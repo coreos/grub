@@ -1,6 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2003  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Marco Gerards <metgerards@student.han.nl>.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -93,6 +94,15 @@ pupa_command_find (char *cmdline)
     *first_space = ' ';
 
   return cmd;
+}
+
+int
+pupa_iterate_commands (int (*iterate) (pupa_command_t))
+{
+  pupa_command_t cmd;
+  for (cmd = pupa_command_list; cmd; cmd = cmd->next)
+    iterate (cmd);
+  return 0;
 }
 
 int

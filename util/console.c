@@ -95,6 +95,9 @@ pupa_ncurses_getkey (void)
       break;
 
     case KEY_BACKSPACE:
+      /* XXX: For some reason ncurses on xterm does not return
+	 KEY_BACKSPACE.  */
+    case 127: 
       c = PUPA_CONSOLE_KEY_BACKSPACE;
       break;
 

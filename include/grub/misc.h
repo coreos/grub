@@ -47,6 +47,7 @@ int EXPORT_FUNC(pupa_isalpha) (int c);
 int EXPORT_FUNC(pupa_tolower) (int c);
 unsigned long EXPORT_FUNC(pupa_strtoul) (const char *str, char **end, int base);
 char *EXPORT_FUNC(pupa_strdup) (const char *s);
+char *EXPORT_FUNC(pupa_strndup) (const char *s, pupa_size_t n);
 void *EXPORT_FUNC(pupa_memset) (void *s, int c, pupa_size_t n);
 pupa_size_t EXPORT_FUNC(pupa_strlen) (const char *s);
 int EXPORT_FUNC(pupa_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));

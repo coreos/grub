@@ -1,3 +1,45 @@
+2003-12-03  Marco Gerards  <metgerards@student.han.nl>
+
+	* fs/ext2.c (pupa_ext2_label): New function.
+	(pupa_ext2_fs): Added label.
+	* fs/fat.c (pupa_fat_label): New function.
+	(pupa_fat_fs): Added label.
+	* include/pupa/fs.h (struct pupa_fs): Added prototype label.
+
+	* kern/misc.c (pupa_strndup): New function.
+	* include/pupa/misc.h (pupa_strndup): New prototype.
+
+	* include/pupa/normal.h: Include <pupa/err.h>.
+	(pupa_set_history): New prototype.
+	(pupa_iterate_commands): New prototype.
+	* normal/cmdline.c: Include <pupa/machine/partition.h>,
+	<pupa/disk.h>, <pupa/file.h>.
+	(hist_size): New variable.
+	(hist_lines): Likewise.
+	(hist_end): Likewise.
+	(hist_used): Likewise.
+	(pupa_set_history): New function.
+	(pupa_history_get): Likewise.
+	(pupa_history_add): Likewise.
+	(pupa_history_replace): Likewise.
+	(pupa_tab_complete): Likewise.
+	(pupa_cmdline_run): Added tab completion and history buffer.  Tab
+	completion shows partitionnames while completing partitions, this
+	feature was suggested by Jeff Bailey.
+	* normal/command.c (pupa_iterate_commands): New function.
+	* normal/main.c (PUPA_DEFAULT_HISTORY_SIZE): New macro.
+	(pupa_normal_init): Initialize history buffer.
+	(PUPA_MOD_INIT): Likewise.
+	(pupa_normal_fini): Free the history buffer.
+	(PUPA_MOD_FINI): Likewise.
+
+	* util/console.c (pupa_ncurses_getkey): Accept 127 as backspace
+	key.
+
+	* aclocal.m4 (pupa_I386_CHECK_REGPARM_BUG): New DEFUN.
+	* configure.ac [i386]: Check for regparam bug.
+	(NESTED_FUNC_ATTR) [! i386]: Defined.
+
 2003-11-17  Marco Gerards  <metgerards@student.han.nl>
 
 	* conf/i386-pc.rmk (sbin_UTILITIES): Added pupa-emu.

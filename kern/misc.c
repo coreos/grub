@@ -301,6 +301,23 @@ pupa_strdup (const char *s)
   return pupa_memcpy (p, s, len);
 }
 
+char *
+pupa_strndup (const char *s, pupa_size_t n)
+{
+  pupa_size_t len = 0;
+  char *p = (char *) s;
+  
+  while (*(p++) && len < n)
+    len++;
+
+  len = pupa_strlen (s) + 1;
+  p = (char *) pupa_malloc (len);
+  if (! p)
+    return 0;
+
+  return pupa_memcpy (p, s, len);
+}
+
 void *
 pupa_memset (void *s, int c, pupa_size_t n)
 {
