@@ -637,8 +637,8 @@ struct geometry
   unsigned long flags;
 };
 
-extern long part_start;
-extern long part_length;
+extern unsigned long part_start;
+extern unsigned long part_length;
 
 extern int current_slice;
 

@@ -107,8 +107,8 @@ static int block_file = 0;
 #endif /* NO_BLOCK_FILES */
 
 /* these are the translated numbers for the open partition */
-long part_start;
-long part_length;
+unsigned long part_start;
+unsigned long part_length;
 
 int current_slice;
 

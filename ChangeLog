@@ -1,3 +1,12 @@
+2003-01-16  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From H.J. Lu <hjl@gnu.org>:
+	* stage2/disk_io.c (part_start): Use unsigned long to support
+	large disks.
+	(part_length): Likewise.
+	* stage2/shared.h (part_start): Likewise.
+	(part_length): Likewise.
+
 2003-01-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.in (CFLAGS): When the default CFLAGS is used,
