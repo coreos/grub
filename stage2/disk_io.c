@@ -337,8 +337,8 @@ devwrite (int sector, int sector_count, char *buf)
       
       for (i = 0; i < sector_count; i++)
 	{
-	  if (! rawwrite(current_drive, part_start + sector + i, 
-			 buf + (i << SECTOR_BITS)))
+	  if (! rawwrite (current_drive, part_start + sector + i, 
+			  buf + (i << SECTOR_BITS)))
 	      return 0;
 
 	}

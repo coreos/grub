@@ -19,6 +19,7 @@ New in 1.0 - XXXX-XX-XX:
   can embed a arbitrary configuration which will be used when Stage 2
   cannot open a real configuration file, with this option. The argument
   must be an existing file.
+* EZ-BIOS support is added.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".
