@@ -32,6 +32,9 @@ New in 1.0 - XXXX-XX-XX:
 * Jump to the physical entry address of a Multiboot kernel when booting
   it up. The old behavior was to use the virtual one, regardless of the
   setting of the physical address.
+* The commands "bootp" and "dhcp" accepts a new option
+  `--with-configfile', so that you can load a remotely specified
+  configuration file automatically, like the network boot images.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".

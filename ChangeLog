@@ -1,3 +1,11 @@
+2001-06-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Thierry Laronde <thierry@cri74.org>:
+	* stage2/builtins.c (configfile_func): Added a prototype.
+	(bootp_func): If `--with-configfile' is given, set
+	WITH_CONFIGFILE to one, and call configfile_func with
+	CONFIG_FILE.
+	
 2001-06-21  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/grub.texi: Update the location of the CVS repository

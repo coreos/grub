@@ -80,6 +80,10 @@ int show_menu = 1;
 /* The BIOS drive map.  */
 static unsigned short bios_drive_map[DRIVE_MAP_SIZE + 1];
 
+/* Prototypes for allowing straightfoward calling of builtins functions
+   inside other functions.  */
+static int configfile_func (char *arg, int flags);
+
 /* Initialize the data for builtins.  */
 void
 init_builtins (void)
@@ -349,6 +353,15 @@ static struct builtin builtin_boot =
 static int
 bootp_func (char *arg, int flags)
 {
+  int with_configfile = 0;
+
+  if (grub_memcmp (arg, "--with-configfile", sizeof ("--with-configfile") - 1)
+      == 0)
+    {
+      with_configfile = 1;
+      arg = skip_to (0, arg);
+    }
+  
   if (! bootp ())
     {
       if (errnum == ERR_NONE)
@@ -359,6 +372,12 @@ bootp_func (char *arg, int flags)
 
   /* Notify the configuration.  */
   print_network_configuration ();
+
+  /* XXX: this can cause an endless loop, but there is no easy way to
+     detect such a loop unfortunately.  */
+  if (with_configfile)
+    configfile_func (config_file, flags);
+  
   return 0;
 }
 
@@ -367,8 +386,10 @@ static struct builtin builtin_bootp =
   "bootp",
   bootp_func,
   BUILTIN_CMDLINE | BUILTIN_MENU,
-  "bootp",
-  "Initialize a network device via BOOTP."
+  "bootp [--with-configfile]",
+  "Initialize a network device via BOOTP. If the option `--with-configfile'"
+  " is given, try to load a configuration file specified by the 150 vendor"
+  " tag."
 };
 #endif /* SUPPORT_NETBOOT */
 
