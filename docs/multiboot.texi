@@ -865,9 +865,8 @@ In this distribution, the example Multiboot kernel @file{kernel} is
 included. The kernel just prints out the Multiboot information structure
 on the screen, so you can make use of the kernel to test a
 Multiboot-compliant boot loader and for reference to how to implement a
-Multiboot kernel. The image and the source files can be found in the
-data directory (usually, @file{/usr/share/multiboot} or
-@file{/usr/local/share/multiboot}).
+Multiboot kernel. The source files can be found under the directory
+@file{docs} in the GRUB distribution.
 
 The kernel @file{kernel} consists of only three files: @file{boot.S},
 @file{kernel.c} and @file{multiboot.h}. The assembly source
@@ -883,7 +882,48 @@ which checks if the magic number passed by the boot loader is valid and
 so on, and some functions to print messages on the screen. The file
 @file{multiboot.h} defines some macros, such as the magic number for the
 Multiboot header, the Multiboot header structure and the Multiboot
-information structure. See the source files for more information.
+information structure.
+
+@menu
+* multiboot.h::
+* boot.S::
+* kernel.c::
+* Other Multiboot kernels::
+@end menu
+
+
+@node multiboot.h
+@subsection multiboot.h
+
+This is the source code in the file @file{multiboot.h}:
+
+@example
+@include multiboot.h.texi
+@end example
+
+
+@node boot.S
+@subsection boot.S
+
+In the file @file{boot.S}:
+
+@example
+@include boot.S.texi
+@end example
+
+
+@node kernel.c
+@subsection kernel.c
+
+And, in the file @file{kernel.c}:
+
+@example
+@include kernel.c.texi
+@end example
+
+
+@node Other Multiboot kernels
+@subsection Other Multiboot kernels
 
 Other useful information should be available in Multiboot kernels, such
 as GNU Mach and Fiasco @url{http://os.inf.tu-dresden.de/fiasco/}. And,

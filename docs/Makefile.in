@@ -83,11 +83,16 @@ install_sh = @install_sh@
 
 
 info_TEXINFOS = grub.texi multiboot.texi
+EXAMPLES = boot.S kernel.c multiboot.h
+multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
 man_MANS = grub.8
 HELP2MAN = help2man
-noinst_SCRIPTS = $(HELP2MAN)
+SRC2TEXI = src2texi
+noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
-EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS)
+EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
+	$(EXAMPLES) $(multiboot_TEXINFOS)
+
 subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -103,8 +108,8 @@ man8dir = $(mandir)/man8
 MANS = $(man_MANS)
 
 NROFF = nroff
-DIST_COMMON =  Makefile.am Makefile.in mdate-sh stamp-vti texinfo.tex \
-version.texi
+DIST_COMMON =  $(multiboot_TEXINFOS) Makefile.am Makefile.in mdate-sh \
+stamp-vti texinfo.tex version.texi
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -148,8 +153,8 @@ grub.info: grub.texi version.texi
 grub.dvi: grub.texi version.texi
 
 
-multiboot.info: multiboot.texi
-multiboot.dvi: multiboot.texi
+multiboot.info: multiboot.texi $(multiboot_TEXINFOS)
+multiboot.dvi: multiboot.texi $(multiboot_TEXINFOS)
 
 
 DVIPS = dvips
@@ -401,6 +406,15 @@ all-redirect all-am all install-strip installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
+
+%.c.texi: %.c $(srcdir)/$(SRC2TEXI)
+	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+
+%.h.texi: %.h $(srcdir)/$(SRC2TEXI)
+	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
+
+%.S.texi: %.S $(srcdir)/$(SRC2TEXI)
+	/bin/sh $(srcdir)/$(SRC2TEXI) $(srcdir) $< $@
 
 # FIXME: Use this rule until Debian has the new Texinfo.
 grub.info: grub.texi

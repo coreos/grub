@@ -1,3 +1,23 @@
+1999-10-16  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/multiboot.texi: Include the example source files of a
+	Multiboot kernel.
+	* docs/src2texi: New file.
+	* docs/boot.S: Likewise.
+	* docs/multiboot.h: Likewise.
+	* docs/kernel.c: Likewise.
+	* docs/boot.S.texi: Likewise.
+	* docs/multiboot.h.texi: Likewise.
+	* docs/kernel.c.texi: Likewise.
+	* docs/Makefile.am (EXAMPLES): New varilable.
+	(multiboot_TEXINFOS): Likewise.
+	(SRC2TEXI): Likewise.
+	(noinst_SCRIPTS): Added $(SRC2TEXI).
+	(EXTRA_DIST): Added $(EXAMPLES) and $(multiboot_TEXINFOS).
+	(%.c.texi): New target.
+	(%.h.texi): Likewise.
+	(%.S.texi): Likewise.
+	
 1999-09-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
         * multiboot.texi (BIOS device mapping techniques): New section.
