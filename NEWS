@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New:
+New in 0.96 - 2005-01-30:
 * The command "fallback" supports mutiple fallback entries.
 * The command "savedefault" supports an optional argument which
   is the number of next boot entry or the special keyword `fallback'.

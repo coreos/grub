@@ -1,4 +1,9 @@
+2005-01-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+        * configure.ac (AC_INIT): Upgraded to 0.96.
+
 2004-10-11 Jason Thomas <jason@staff.pnc.com.au>
+
 	Patch from Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 	* docs/kernel.c.texi (cmain): Incremement mod by one, instead of
 	sizeof(module_t), since it's already a pointer of type module_t.
