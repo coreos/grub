@@ -1,3 +1,8 @@
+2001-02-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/grub.texi (Command-line and menu commands): Renamed to ...
+	(General commands): ... this.
+	
 2001-02-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/asm.S [STAGE1_5] (chain_stage2): Save the second sector

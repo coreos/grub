@@ -1132,9 +1132,8 @@ color light-green/brown blink-red/blue
 
 In the last entry, the command @command{color} is used (@pxref{color}),
 to change the menu colors (try it!). This command is somewhat special,
-because it can be used both in the command-line and in the menu
-(@pxref{Command-line and menu commands}). GRUB has several such
-commands, see the user reference.
+because it can be used both in the command-line and in the menu. GRUB
+has several such commands, see @ref{General commands}.
 
 We hope that you now understand how to use the basic features of
 GRUB. To learn more about GRUB, see the following chapters.
@@ -1703,7 +1702,7 @@ in the menu or in the menu entries.
 
 @menu
 * Menu-specific commands::
-* Command-line and menu commands::
+* General commands::
 * Command-line and menu entry commands::
 @end menu
 
@@ -1807,8 +1806,8 @@ the line, starting with the first non-space character.
 @end deffn
 
 
-@node Command-line and menu commands
-@section The list of command-line and menu commands
+@node General commands
+@section The list of general commands
 
 Commands usable both in the menu and in the command-line.
 
@@ -2229,7 +2228,8 @@ and multiple primary partitions exist in one disk. See also
 @section The list of command-line and menu entry commands
 
 These commands are usable in the command-line and in menu entries.  If
-you forget a command, you can run the command @command{help}.
+you forget a command, you can run the command @command{help}
+(@pxref{help}).
 
 @menu
 * blocklist::                   Get the block list notation of a file
@@ -3265,7 +3265,7 @@ into/from your computer.
 The program @command{grub-md5-crypt} encrypts a password in MD5 format.
 This is just a frontend of the grub shell (@pxref{Invoking the grub
 shell}). Passwords encrypted by this program can be used with the
-command @command{password} (@pxref{Command-line and menu commands}).
+command @command{password} (@pxref{password}).
 
 @command{grub-md5-crypt} accepts the following options:
 
