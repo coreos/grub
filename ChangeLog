@@ -1,3 +1,8 @@
+2000-10-18  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/Makefile.am (noinst_HEADERS): Added md5.h. Reported by
+	Volker Augustin <Volker.Augustin@stud.uni-regensburg.de>.
+	
 2000-10-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (--disable-md5password): Renamed to ...
