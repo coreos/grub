@@ -1,5 +1,10 @@
 2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* configure.in (AM_INIT_AUTOMAKE): The version number is
+	upgraded to 0.91.
+	
+2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* docs/grub.texi (Preset Menu): New chapter.
 	
 2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
