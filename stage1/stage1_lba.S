@@ -123,13 +123,13 @@ after_BPB:
 	int	$0x13
 
 	jc	lba_probe_error
-	
+
 	/* save the total number of sectors */
 	movl	0x10(%si), %ecx
 
 	/* set %si to disk address packet */
 	movw	$ABS(disk_address_packet), %si
-	
+
 	/* this sets up for the first run through "bootloop" */
 	movw	$ABS(firstlist - STAGE1_LISTSIZE), %di
 
@@ -153,7 +153,7 @@ setup_sectors:
 	/* the maximum is limited to 0x7f because of Phoenix EDD */
 	xorl	%eax, %eax
 	movb	$0x7f, %al
-	
+
 	/* how many do we really want to read? */
 	cmpw	%ax, 4(%di)	/* compare against total number of sectors */
 
@@ -188,14 +188,14 @@ more_sectors:
 
 	/* zero %eax */
 	xorl	%eax, %eax
-	
+
 	/* the offset of buffer address */
 	movw	%ax, 4(%si)
 
 	/* the absolute address (high 32 bits) */
 	movl	%eax, 12(%si)
-	
-	
+
+
 /*
  * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
  *	Call with	%ah = 0x42
@@ -248,7 +248,7 @@ more_sectors:
 	popw	%di
 	popw	%si
 	popw	%ds
-	
+
 	/* check if finished with this dataset */
 	cmpw	$0, 4(%di)
 	jne	setup_sectors
@@ -338,16 +338,22 @@ lastlist:
 
         /* fill the first data listing with the default */
 #ifdef  FFS_STAGE1_5
+blocklist_default_start:
 	.long 2		/* this is the sector start parameter, in logical
 			   sectors from the start of the disk, sector 0 */
+blocklist_default_len:
 	.word 14	/* this is the number of sectors to read */
+blocklist_default_seg:
 	.word 0x0200	/* this is the segment of the starting address
 			   to load the data into */
 #else
+blocklist_default_start:
 	.long 1		/* this is the sector start parameter, in logical
 			   sectors from the start of the disk, sector 0 */
+blocklist_default_len:
 			/* this is the number of sectors to read */
 	.word (STAGE2_SIZE + 511) / 512
+blocklist_default_seg:
 	.word 0x0800	/* this is the segment of the starting address
 			   to load the data into */
 #endif
@@ -384,9 +390,9 @@ bootit:
 
 	/* These values are not useful in stage1_lba at all, but these
 	   prevent the installation command `install' from failing.  */
-probe_values:	
+probe_values:
 	.byte	36, 18, 15, 9, 0
-	
+
 	/* This space cannot be used by any bootloader, uggh...  */
 
 	. = _start + STAGE1_PARTEND

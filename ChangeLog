@@ -1,3 +1,13 @@
+1999-09-14  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage1/stage1.S (blocklist_default_start): New label for default
+	blocklist start sector.
+	(blocklist_default_len): New label for default blocklist length.
+	(blocklist_default_seg): New label for default blocklist segment.
+	* stage1/stage1_lba.S (blocklist_default_start): Likewise.
+	(blocklist_default_len): Likewise.
+	(blocklist_default_seg): Likewise.
+
 1999-09-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_ADDR32): First, create a template
@@ -5,7 +15,7 @@
 	"addr32" if GRUB_CV_ASM_PREFIX_REQUIREMENT is yes, otherwise,
 	replace it with "addr32;". Reported by John Tobey
 	<spam@john-edwin-tobey.org>.
-	
+
 1999-09-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (debug_fs_print_func): Renamed to ...
@@ -35,20 +45,20 @@
 	[!STAGE1_5] (disk_read_func): ... this.
 	* docs/grub.texi: Likewise, replace debug_fs and debug_fs_func
 	with disk_read_hook and disk_read_func, respectively.
-	
+
 1999-09-23  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/builtins.c (install_func): New local function,
 	debug_fs_savesect_func. Use debug_fs_savesect_func to determine
 	the first sector of Stage2. Write Stage 1 after patching Stage
 	2.
-	
+
 1999-09-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_USCORE): Do not define HAVE_ASM_USCORE
 	within AC_CACHE_VAL. Define it after AC_CACHE_VAL if
 	GRUB_CV_ASM_USCORE is yes.
-	
+
 1999-09-20  Edmund GRIMLEY EVANS  <edmundo@rano.demon.co.uk>
 
 	* netboot/3c59x.c: INCLUDE_3c59x is replaced by INCLUDE_3C59X
@@ -67,23 +77,23 @@
 	* netboot/pci.h (PCI_VENDOR_ID_VORTEX): New macro.
  	(PCI_DEVICE_ID_VORTEX_3c595): Likewise. Defined as a random
 	value.
-	
+
 1999-09-20  Edward Killips  <ekillips@triton.net>
 
 	* stage2/disk_io.c (set_partition_hidden_flag): Set/clear the
 	hidden flag, whether the hidden flag is set or not.
-	
+
 1999-09-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (install_func): Do not set DEBUG_FS at the
 	first read. Set it to DEBUG_FS_BLOCKLIST_FUNC when reading the
 	whole of Stage 2. Set FILEPOS to zero at the same time to read
 	from the beginning of Stage 2. Reported by Pavel Roskin.
-	
+
 1999-09-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The argument ADDR for the command install is now optional.
-	
+
 	* stage2/builtins.c (install_func): If parsing ADDR fails, set
 	INSTALLADDR to zero and set PTR to ADDR.
 	If INSTALLADDR is zero after parsing the command-line, check if
@@ -98,11 +108,11 @@
 	examples. Add a description about help.
 	* docs/menu.lst: Do not specify the address argument for
 	install.
-	
+
 1999-09-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The completion code is heavily modified.
-	
+
 	* stage2/char_io.c [!STAGE1_5] (get_cmdline): In the completion
 	code, use COMPLETION_BUFFER to get the completion instead of
 	writing to BUF directly.
@@ -143,7 +153,7 @@
 	(MENU_BUF): Set to UNIQUE_BUF + UNIQUE_BUFLEN.
 	(MENU_BUFLEN): Set to 0x8000 + PASSWORD_BUF - UNIQUE_BUF.
 	(print_completions): Adjusted to the definition.
-	
+
 1999-09-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_PREFIX_REQUIREMENT): Do not call
@@ -157,7 +167,7 @@
 	AC_CACHE_VAL. Define HAVE_END_SYMBOL after it.
 	(grub_CHECK_USCORE_END_SYMBOL): Do not call AC_DEFINE within
 	AC_CACHE_VAL. Define HAVE_USCORE_END_SYMBOL after it.
-	
+
 1999-09-17  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* acconfig.h (ADDR32): Removed. This entry is automatically
@@ -177,7 +187,7 @@
 	(MSG): Use ABS(x) instead of x.
 	* stage2/asm.S (putchar): Renamed to ...
 	(grub_putchar): ... this.
-	
+
 1999-09-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/gunzip.c (reset_linalloc): Use the macro RAW_ADDR
@@ -185,7 +195,7 @@
 	* stage2/shared.h [!GRUB_UTIL] (RAW_ADDR): Added parenthesises
 	to avoid a gcc warning.
 	[!GRUB_UTIL] (RAW_SEG): Likewise.
-	
+
 1999-09-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_CHECK_START_SYMBOL): New function.
@@ -221,7 +231,7 @@
 	[HAVE_USCORE_END_SYMBOL]: Use $_end as the end of the bss.
 	* stage2/disk_io.c [!STAGE1_5] (cur_part_desc): Made static.
 	Need not to be global any longer.
-	
+
 1999-09-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/char_io.c [!STAGE1_5] (get_cmdline): The argument
@@ -232,11 +242,11 @@
 	If ECHO_CHAR is not NUL, do not remove the leading spaces in BUF.
 	Add CMDLINE into the history list only if READLINE is non-zero.
 	* stage2/stage2.c (cmain): Initialize the kill buffer.
-	
+
 1999-09-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Killing, yanking and manipulating the history are supported.
-	
+
 	* stage2/shared.h (cur_cmdline): Removed.
 	(MAX_CMDLINE): Moved near the beginning of the file.
 	(NEW_HEAPSIZE): Likewise.
@@ -268,14 +278,14 @@
 	If C is equal to KEY_UP, set C to 16, and if C is equal to
 	KEY_DOWN, set C to 14.
 	[!STAGE1_5] (num_history): New variable.
-	
+
 1999-09-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/size_test: Do not check for the size of Stage 2.
 	* stage1/Makefile.am (stage2_size.h): Use `set' and `echo'
 	instead of awk, since we cannot expect awk is present. Remove
 	stage2_size.h before creating it.
-	
+
 1999-09-15  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* Makefile.am (SUBDIRS): Put stage1 after stage2 so that stage2
@@ -289,7 +299,7 @@
 	to determine how much number of sectors to be read when loading
 	Stage 2.
 	* stage1/stage1_lba.S: Likewise.
-	
+
 1999-09-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* netboot/config.h: Moved to ...
@@ -299,12 +309,12 @@
 	* netboot/ip.c: Likewise.
 	* netboot/Makefile.am (libdrivers_a_SOURCES): Removed config.h
 	and added netboot_config.h.
-	
+
 1999-09-14  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* grub/asmstub.c [__linux__]: On GLibc 2.0 and newer use lseek,
 	don't include <linux/fs.h> and define BLKFLSBUF if needed.
-	
+
 1999-09-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Now the grub shell works fine on FreeBSD. A patch by Pavel
@@ -313,7 +323,7 @@
 	* grub/asmstub.c (get_drive_geometry): New function.
 	(get_diskinfo): Use get_drive_geometry to set the geometry of
 	DRIVE.
-	
+
 1999-09-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in (--enable-ne): Made the description more clear.
@@ -346,11 +356,11 @@
 	TFTP. If so, set IS_TFTP to non-zero, otherwise to zero. And,
 	use IS_TFTP to check if we have GZIP_CRC instead of the equation
 	"FILEMAX == 16 * 1024 * 1024".
-	
+
 1999-09-13  Edmund GRIMLEY EVANS  <edmundo@rano.demon.co.uk>
-	
+
 	The netboot support in the Dresden version of GRUB is integrated.
-	
+
 	* Makefile.am (SUBDIRS): Added netboot.
 	* configure.in (--enable-tftp): New option.
 	(--enable-ne): Likewise.
@@ -370,7 +380,7 @@
 	Do AC_OUTPUT for netboot/Makefile as well.
 	* stage1/stage1.S: Set the number of sectors for Stage 2 to 130.
 	* stage1/stage1_lba.S: Likewise.
-	* stage2/Makefile.am (stage2_exec_LDADD): Added 
+	* stage2/Makefile.am (stage2_exec_LDADD): Added
 	../netboot/libdrivers.a.
 	* stage2/asm.S [!STAGE1_5] (currticks): New function.
 	* stage2/char_io.c [!STAGE1_5] (grub_sprintf): Likewise.
@@ -429,7 +439,7 @@
 	* docs/Makefile.am (grub.8): Regenerated if MAINTAINER_MODE is
 	defined, instead of GRUB_MAINT. Use the variable PERL rather
 	than running help2man directly.
-	
+
 1999-09-13  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/pc_slice.h (IS_PC_SLICE_TYPE_EXTENDED): New macro.
@@ -438,7 +448,7 @@
 	with the extended partition types.
 
 1999-09-11  Pavel Roskin  <pavel_roskin@geocities.com>
-	
+
 	* acconfig.h: New file for autoheader support.
 	* acinclude.m4 (grub_ASM_EXT_C) Renamed to ...
 	(grub_ASM_USCORE): ... this. Define HAVE_ASM_USCORE if a C
@@ -454,13 +464,13 @@
 	CURRENT_PARTITION instead of SAVED_DRIVE and SAVED_PARTITION for
 	the boot device in the Multiboot information. Reported by
 	Stephen Early <steve@greenend.org.uk>.
-	
+
 1999-09-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/disk_io.c (sane_partition) [STAGE1_5]: Defined.
 	(set_device): Use sane_partition to make sure that CURRENT_DRIVE
 	has a valid value. Reported by Pavel Roskin.
-	
+
 1999-09-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin:
@@ -468,7 +478,7 @@
 	in order to make sure that DEVICE exists.
 	* grub/asmstub.c (check_device): New function.
 	(grub_stage2): Use check_device to probe a device.
-	
+
 	* stage2/builtins.c (geometry_func) [GRUB_UTIL]: Copy the
 	modified geometry to GEOM and reset BUF_DRIVE. Reported by Pavel
 	Roskin.
@@ -488,7 +498,7 @@
 	(get_floppy_disk_name): New function.
 	(get_ide_disk_name): Likewise.
 	(get_scsi_disk_name): Likewise.
-	
+
 1999-09-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (device_func): New function.
@@ -499,7 +509,7 @@
 	set the geometry of a drive specified to them.
 	* grub/asmstub.c (disks): Made global.
 	(assign_device_name): New function.
-	
+
 1999-09-09  Gordon Matzigkeit  <gord@fig.org>
 
 	* docs/grub.texi (Commands): Synchronize descriptions with

@@ -24,7 +24,7 @@
 /*
  *  defines for the code go here
  */
-	
+
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
 	   from the linker. (ELF can't relocate 16-bit addresses!) */
@@ -85,7 +85,7 @@ cylinder_start:
 
 stage1_id:
 	.byte	STAGE1_ID_CHS
-	
+
 after_BPB:
 
 /* general setup */
@@ -132,7 +132,7 @@ after_BPB:
 final_init:
 	/* set %si to sectors */
 	movw	$ABS(sectors), %si
-	
+
 	/* save number of heads */
 	xorl	%eax, %eax
 	movb	%dh, %al
@@ -169,7 +169,7 @@ bootloop:
 	/* if zero, go to the start function */
 	je	bootit
 
-setup_sectors:	
+setup_sectors:
 	/* load logical sector start (bottom half) */
 	movl	(%di), %eax
 
@@ -309,7 +309,7 @@ more_sectors:
 
 	/* update position to load from */
 	subw	$STAGE1_LISTSIZE, %di
-	
+
 	/* jump to bootloop */
 	jmp	bootloop
 
@@ -383,7 +383,7 @@ lastlist:
 	. = _start + STAGE1_PARTSTART - STAGE1_MINPARAMSIZE - STAGE1_LISTSIZE
 
 	/* this next data area before the partition area is specifically
-	   sized, you should update "STAGE1_MINPARAMSIZ" to reflect any 
+	   sized, you should update "STAGE1_MINPARAMSIZ" to reflect any
 	   additions or deletions to this area.  */
 
 	.word 0
@@ -391,16 +391,22 @@ lastlist:
 
         /* fill the first data listing with the default */
 #ifdef  FFS_STAGE1_5
+blocklist_default_start:
 	.long 2		/* this is the sector start parameter, in logical
 			   sectors from the start of the disk, sector 0 */
+blocklist_default_len:
 	.word 14	/* this is the number of sectors to read */
+blocklist_default_seg:
 	.word 0x0200	/* this is the segment of the starting address
 			   to load the data into */
 #else
+blocklist_default_start:
 	.long 1		/* this is the sector start parameter, in logical
 			   sectors from the start of the disk, sector 0 */
+blocklist_default_len:
 			/* this is the number of sectors to read */
 	.word (STAGE2_SIZE + 511) / 512
+blocklist_default_seg:
 	.word 0x0800	/* this is the segment of the starting address
 			   to load the data into */
 #endif
