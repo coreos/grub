@@ -1,3 +1,8 @@
+2003-09-05  Robert Millan  <robertmh@gnu.org>
+
+	* docs/menu.lst (GNU/Linux): Add commented initrd command, which is
+	consistent with documentation.
+
 2003-09-01  Robert Millan  <robertmh@gnu.org>
 
 	* docs/menu.lst: Add NetBSD, OpenBSD, GNU/KFreeBSD and GNU/KNetBSD.

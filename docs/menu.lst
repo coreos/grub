@@ -21,6 +21,7 @@ module /boot/serverboot.gz
 title  GNU/Linux
 root (hd1,0)
 kernel /vmlinuz root=/dev/hdb1
+#initrd /initrd.img
 
 # For booting Mach (getting kernel from floppy)
 title  Utah Mach4 multiboot
