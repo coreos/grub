@@ -11,15 +11,38 @@ personal computer BIOSes:
 
 See the file NEWS for a description of recent changes to GRUB.
 
+
 You need recent developmental environment to build GRUB. We recommend
 you use the following utilities:
 
-  - binutils 2.9.1.0.24 and later (Early 2.9.1.0.x is buggy, so don't use it.)
-  - autoconf 19990301 and later (See http://sourceware.cygnus.com/autoconf
-    for the information about how to get it from the CVS.)
-  - automake 1.3, or 19990327 and later (Do not use 1.4!)
-  - ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
-  - texinfo 3.12h and later
+* binutils 2.9.1.0.23 and later (Do not use early 2.9.1.0.x!)
+
+  Binutils has changed the behavior of 16bit assembler between 2.9.1
+and 2.9.1.0.x, and we support only 2.9.1.0.x. It is available from
+ftp.XX.kernel.org (XX is the country code, such as `jp').
+
+* autoconf 19990301 and later
+
+  Autoconf 2.13 has a bug that can't handle any macro with arguments,
+so you need to get the later version from the CVS. See
+http://sourceware.cygnus.com/autoconf for more information.
+
+* automake 1.3, or 19990327 and later (Do not use 1.4!)
+
+  Automake 1.3 works just fine, but 1.4 doesn't work because it complains
+about EXTRA_DATA. This inconsistency has been fixed in the later version
+in the CVS. If you need 1.4 or later, see
+http://sourceware.cygnus.com/automake for more information.
+
+* ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
+
+  Ncurses is used for /sbin/grub, so it may not be needed if you don't
+use /sbin/grub. Ncurses 4.0 is available from many ftp sites.
+
+* texinfo 3.12h and later
+
+  The latest snapshot of Texinfo is available from alpha.gnu.org.
+
 
 See the file INSTALL for instructions on how to build and install the
 GRUB data and program files.  See `docs/install.html' for details
