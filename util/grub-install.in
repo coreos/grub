@@ -76,7 +76,7 @@ convert () {
 	tmp_disk=`echo "$1" | sed 's%\([sh]d[a-z]\)[0-9]*$%\1%'`
 	tmp_part=`echo "$1" | sed "s%$tmp_disk%%"` ;;
     gnu*)
-	tmp_disk=`echo "$1" | sed 's%s[0-9]*[a-g]?%%'`
+	tmp_disk=`echo "$1" | sed 's%\([sh]d[0-9]*\).*%\1%'`
 	tmp_part=`echo "$1" | sed "s%$tmp_disk%%"` ;;
     *)
 	echo "grub-install does not support your OS yet." 1>&2
@@ -84,7 +84,7 @@ convert () {
     esac
 
     # Get the drive name.
-    tmp_drive=`grep -v '^#' $device_map | grep "$tmp_disk" \
+    tmp_drive=`grep -v '^#' $device_map | grep "$tmp_disk *$" \
 	| sed 's%.*\(([hf]d[0-9][a-g0-9,]*)\).*%\1%'`
 
     # If not found, print an error message and exit.
@@ -100,14 +100,17 @@ convert () {
 	linux*)
 	    echo "$tmp_drive" | sed "s%)$%,`expr $tmp_part - 1`)%" ;;
 	gnu*)
-	    tmp_pc_slice=`echo "$tmp_part" | sed "s%s\([0-9]*\)[a-g]?%\1%"`
-	    tmp_bsd_partition=`echo "$tmp_part" \
-		| sed "s%s[0-9]*\([a-g]?\)%\1%"`
-	    tmp_drive=`echo "$tmp_drive" \
-		| sed "s%)%,\`expr "$tmp_pc_slice" - 1\`)%"`
-	    if test "x$tmp_bsd_partition" != x; then
+	    if echo $tmp_part | grep "^s" >/dev/null; then
+		tmp_pc_slice=`echo $tmp_part \
+		    | sed "s%s\([0-9]*\)[a-g]*$%\1%"`
 		tmp_drive=`echo "$tmp_drive" \
-		    | sed "s%)%,\`sed y%abcdefg%0123456%\`)%"`
+		    | sed "s%)%,\`expr "$tmp_pc_slice" - 1\`)%"`
+	    fi
+	    if echo $tmp_part | grep "[a-g]$" >/dev/null; then
+		tmp_bsd_partition=`echo "$tmp_part" \
+		    | sed "s%[^a-g]*\([a-g]\)$%\1%"`
+		tmp_drive=`echo "$tmp_drive" \
+		    | sed "s%)%,$tmp_bsd_partition)%"`
 	    fi
 	    echo "$tmp_drive" ;;
 	esac

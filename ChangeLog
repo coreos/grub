@@ -1,5 +1,12 @@
 2000-09-30  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* util/grub-install.in (convert): The code for gnu* (i.e.
+	GNU/Hurd) was rewritten, since it didn't work for BSD
+	partitions.
+	Use "$tmp_disk *$" instead of "$tmp_disk" to get the drive name.
+	
+2000-09-30  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/fsys_reiserfs.c (reiserfs_mount): Check if the length
 	of the partition is less than the size of a super block, before
 	attempting to read the super block.
