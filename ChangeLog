@@ -1,3 +1,9 @@
+2001-02-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From "Treutwein; Bernhard"
+	<Bernhard.Treutwein@Verwaltung.Uni-Muenchen.DE>:
+	* docs/grub.texi (DOS/Windows): Improved the readability.
+	
 2001-02-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/grub.texi (Command-line and menu commands): Renamed to ...
