@@ -228,7 +228,19 @@ esac
 # Get the root drive.
 # For now, this uses the program `df' to get the device name, but is
 # this really portable?
-root_device=`df ${rootdir}/ | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+root_device=`df ${rootdir}/ | grep /dev/ \
+    | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+bootdir_device=`df ${bootdir} | grep /dev/ \
+    | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+
+# Check if the boot directory is in the same device as the root directory.
+if test "x$root_device" != "x$bootdir_device"; then
+    # Perhaps the user has a separate boot partition.
+    root_device=$bootdir_device
+    grubdir="/grub"
+fi
+
+# Convert the root device to a GRUB drive.
 root_drive=`convert "$root_device"`
 if test "x$root_drive" = x; then
     exit 1
@@ -262,7 +274,7 @@ test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 root $root_drive
-setup $force_lba --stage2=$grubdir/stage2 $install_drive
+setup $force_lba --stage2=$grubdir/stage2 --prefix=$grubdir $install_drive
 quit
 EOF
 

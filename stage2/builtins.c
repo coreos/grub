@@ -3124,8 +3124,28 @@ setup_func (char *arg, int flags)
   char *buffer = (char *) RAW_ADDR (0x100000);
   int is_force_lba = 0;
   char *stage2_arg = 0;
+  char *prefix = 0;
+
+  auto int check_file (char *file);
+  auto void sprint_device (int drive, int partition);
   
-  static void sprint_device (int drive, int partition)
+  /* Check if the file FILE exists like Autoconf.  */
+  int check_file (char *file)
+    {
+      int ret;
+      
+      grub_printf (" Checking if \"%s\" exists... ", file);
+      ret = grub_open (file);
+      if (ret)
+	grub_printf ("yes\n");
+      else
+	grub_printf ("no\n");
+
+      return ret;
+    }
+
+  /* Construct a device name in DEVICE.  */
+  void sprint_device (int drive, int partition)
     {
       grub_sprintf (device, "(%cd%d",
 		    (drive & 0x80) ? 'h' : 'f',
@@ -3151,17 +3171,12 @@ setup_func (char *arg, int flags)
   };
   struct stage1_5_map stage1_5_map[] =
   {
-    {"ext2fs", "/boot/grub/e2fs_stage1_5"},
-    {"ffs", "/boot/grub/ffs_stage1_5"},
-    {"fat", "/boot/grub/fat_stage1_5"},
-    {"minix", "/boot/grub/minix_stage1_5"},
-    {"reiserfs", "/boot/grub/reiserfs_stage1_5"}
+    {"ext2fs",   "/e2fs_stage1_5"},
+    {"ffs",      "/ffs_stage1_5"},
+    {"fat",      "/fat_stage1_5"},
+    {"minix",    "/minix_stage1_5"},
+    {"reiserfs", "/reiserfs_stage1_5"}
   };
-
-  /* Initialize some strings.  */
-  grub_strcpy (stage1, "/boot/grub/stage1");
-  grub_strcpy (stage2, "/boot/grub/stage2");
-  grub_strcpy (config_filename, "/boot/grub/menu.lst");
 
   tmp_drive = saved_drive;
   tmp_partition = saved_partition;
@@ -3173,6 +3188,12 @@ setup_func (char *arg, int flags)
 	{
 	  is_force_lba = 1;
 	  arg = skip_to (0, arg);
+	}
+      else if (grub_memcmp ("--prefix=", arg, sizeof ("--prefix=") - 1) == 0)
+	{
+	  prefix = arg + sizeof ("--prefix=") - 1;
+	  arg = skip_to (0, arg);
+	  nul_terminate (prefix);
 	}
 #ifdef GRUB_UTIL
       else if (grub_memcmp ("--stage2=", arg, sizeof ("--stage2=") - 1) == 0)
@@ -3219,15 +3240,38 @@ setup_func (char *arg, int flags)
   /* Open it.  */
   if (! open_device ())
     goto fail;
-  
-  /* Check for stage1 and stage2. We hardcode the filenames, so
-     if the user installed GRUB in a uncommon directory, this never
-     succeed.  */
-  if (! grub_open (stage1))
-    goto fail;
+
+  /* Check if stage1 exists. If the user doesn't specify the option
+     `--prefix', attempt /boot/grub and /grub.  */
+  /* NOTE: It is dangerous to run this command without `--prefix' in the
+     grub shell, since that affects `--stage2'.  */
+  if (! prefix)
+    {
+      prefix = "/boot/grub";
+      grub_sprintf (stage1, "%s%s", prefix, "/stage1");
+      if (! check_file (stage1))
+	{
+	  errnum = ERR_NONE;
+	  prefix = "/grub";
+	  grub_sprintf (stage1, "%s%s", prefix, "/stage1");
+	  if (! check_file (stage1))
+	    goto fail;
+	}
+    }
+  else
+    {
+      grub_sprintf (stage1, "%s%s", prefix, "/stage1");
+      if (! check_file (stage1))
+	goto fail;
+    }
   grub_close ();
 
-  if (! grub_open (stage2))
+  /* The prefix was determined.  */
+  grub_sprintf (stage2, "%s%s", prefix, "/stage2");
+  grub_sprintf (config_filename, "%s%s", prefix, "/menu.lst");
+
+  /* Check if stage2 exists.  */
+  if (! check_file (stage2))
     goto fail;
   grub_close ();
   
@@ -3244,13 +3288,16 @@ setup_func (char *arg, int flags)
 	if (grub_strcmp (fsys, stage1_5_map[i].fsys) == 0)
 	  {
 	    /* OK, check if the Stage 1.5 exists.  */
-	    if (grub_open (stage1_5_map[i].name))
+	    char stage1_5[64];
+
+	    grub_sprintf (stage1_5, "%s%s", prefix, stage1_5_map[i].name);
+	    if (check_file (stage1_5))
 	      {
 		int blocksize = (filemax + SECTOR_SIZE - 1) >> SECTOR_BITS;
 		
 		grub_close ();
 		grub_strcpy (config_filename, stage2);
-		grub_strcpy (stage2, stage1_5_map[i].name);
+		grub_strcpy (stage2, stage1_5);
 
 		if (installed_partition == 0xFFFFFF)
 		  {
@@ -3344,7 +3391,7 @@ static struct builtin builtin_setup =
   "setup",
   setup_func,
   BUILTIN_CMDLINE,
-  "setup [--stage2=STAGE2_FILE] [--force-lba] INSTALL_DEVICE [IMAGE_DEVICE]",
+  "setup [--prefix=DIR] [--stage2=STAGE2_FILE] [--force-lba] INSTALL_DEVICE [IMAGE_DEVICE]",
   "Set up the installation of GRUB automatically. This command uses"
   " the more flexible command \"install\" in the backend and installs"
   " GRUB into the device INSTALL_DEVICE. If IMAGE_DEVICE is specified,"

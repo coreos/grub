@@ -1,3 +1,24 @@
+2000-09-26  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in (bootdir_device): New variable. If
+	$bootdir_device is not the same as $root_device, set root_device
+	and grubdir to $bootdir_device and "/grub", respectively.
+	Add --prefix=$grubdir into the command "setup".
+	
+2000-09-26  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Add --prefix=DIR to the command "setup".
+	
+	* stage2/builtins.c (setup_func): New nested function,
+	check_file checks if the file FILE exists.
+	Remove the prefix "/boot/grub" in STAGE1_5_MAP.
+	Don't hardcode "/boot/grub/stage1", "/boot/grub/stage2", or
+	"/boot/grub/menu.lst". Instead, check if ARG contains
+	"--prefix=", and if specified, set PREFIX to the value.
+	If not specified, check "/boot/grub/stage1" and, if not found,
+	check "/grub/stage1". If a stage1 was found, set PREFIX to the
+	directory which contains the stage1.
+	
 2000-09-12  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Add additional magic to avoid a bug in Linux. *sigh*

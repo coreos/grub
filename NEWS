@@ -35,6 +35,13 @@ New in 0.5.96 - XXXX-XX-XX:
 * New command, "savedefault". Now you can save current entry number to
   your disk with this command and then you can set the default boot
   entry to it by the command "default saved".
+* Add a new option `--prefix' into the command "setup", so that you can
+  specify the name of a directory which contains GRUB images. And, the
+  behavior of this command changed slightly, that is, this command now
+  searchs stage1 automatically under "/boot/grub" and "/grub", unless
+  you specify the option `--prefix'.
+* The utility `grub-install' recognizes a separate boot partition
+  automatically.
 
 New in 0.5.95 - 2000-06-27:
 * NetBSD ELF kernel support is added. You have to specify the new option
