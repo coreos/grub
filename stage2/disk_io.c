@@ -1011,7 +1011,7 @@ set_device (char *device)
 	  else
 #endif /* SUPPORT_NETBOOT */
 	    {
-	      if (*device == 'c' && cdrom_drive != GRUB_INVALID_DRIVE)
+	      if (ch == 'c' && cdrom_drive != GRUB_INVALID_DRIVE)
 		current_drive = cdrom_drive;
 	      else
 		{

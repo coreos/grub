@@ -485,6 +485,7 @@ directory}, and the directory where the boot loader needs to find them
 * Creating a GRUB boot floppy::
 * Installing GRUB natively::
 * Installing GRUB using grub-install::
+* Making a GRUB bootable CD-ROM::
 @end menu
 
 
@@ -663,6 +664,61 @@ grub shell}). Therefore, you may run @command{grub} directly to install
 GRUB, without using @command{grub-install}. Don't do that, however,
 unless you are very familiar with the internals of GRUB. Installing a
 boot loader on a running OS may be extremely dangerous.
+
+
+@node Making a GRUB bootable CD-ROM
+@section Making a GRUB bootable CD-ROM
+
+GRUB supports the @dfn{no emulation mode} in the El Torito
+specification@footnote{El Torito is a specification for bootable CD
+using BIOS functions.}. This means that you can use the whole CD-ROM
+from GRUB and you don't have to make a floppy or hard disk image file.
+
+For booting from a CD-ROM, GRUB uses a special Stage 2 called
+@file{stage2_eltoriro}. All you need to have in your bootable CD-ROM
+are this @file{stage2_eltorito} and optionally a config file
+@file{menu.lst}. You don't need to use @file{stage1} or @file{stage2},
+because El Torito is quite different from the standard boot process.
+
+Here is an example of procedures to make a bootable CD-ROM
+image. First, make a top directory for the bootable image, say,
+@samp{iso}:
+
+@example
+$ @kbd{mkdir iso}
+@end example
+
+Make a directory for GRUB:
+
+@example
+$ @kbd{mkdir -p iso/boot/grub}
+@end example
+
+Copy the file @file{stage2_eltorito}:
+
+@example
+$ @kbd{cp /usr/share/grub/i386-pc/stage2_eltorito iso/boot/grub}
+@end example
+
+Then, make the config file @file{menu.lst} under @file{iso/boot/grub}
+(@pxref{Configuration}), and copy files and directories to the
+directory @file{iso} as you wish.
+
+Finally, make a ISO9660 image file like this:
+
+@example
+$ @kbd{mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot \
+    -boot-load-size 1 -boot-info-table -o grub.iso iso}
+@end example
+
+This produces a file named @file{grub.iso}, which then can be burned
+into a CD (or a DVD).
+
+Note that you can use the device @samp{(cd)} to access a CD-ROM in your
+config file. But you won't have to use this feature, because GRUB
+automatically sets the root device to @samp{(cd)} when booted from a
+CD-ROM. So it is not necessary to specify the device name explicitly,
+unless you want to access other drives as well.
 
 
 @node Booting
@@ -1504,8 +1560,9 @@ different passwords for different entries.
 @chapter GRUB image files
 
 GRUB consists of several images: two essential stages, optional stages
-called @dfn{Stage 1.5}, and two network boot images. Here is a short
-overview of them. @xref{Internals}, for more details.
+called @dfn{Stage 1.5}, one image for bootable CD-ROM, and two network
+boot images. Here is a short overview of them. @xref{Internals}, for
+more details.
 
 @table @file
 @item stage1
@@ -1543,6 +1600,11 @@ installed.
 While Stage 2 cannot generally be embedded in a fixed area as the size
 is so large, Stage 1.5 can be installed into the area right after an MBR,
 or the boot loader area of a ReiserFS or a FFS.
+
+@item stage2_eltorito
+This is a boot image for CD-ROMs using the @dfn{no emulation mode} in
+El Torito specification. This is identical to Stage 2, except that
+this boots up without Stage 1 and sets up a special drive @samp{(cd)}.
 
 @item nbgrub
 This is a network boot image for the Network Image Proposal used by some
@@ -1616,6 +1678,9 @@ of the partition when installing GRUB).
 If you enabled the network support, the special drive, @samp{(nd)}, is
 also available. Before using the network drive, you must initialize the
 network. @xref{Network}, for more information.
+
+If you boot GRUB from a CD-ROM, @samp{(cd)} is available. @xref{Making
+a GRUB bootable CD-ROM}, for details.
 
 
 @node File name syntax
