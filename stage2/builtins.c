@@ -655,6 +655,87 @@ static struct builtin builtin_fallback =
 };
 
 
+/* find */
+/* Search for the filename ARG in all of partitions.  */
+static int
+find_func (char *arg, int flags)
+{
+  char *filename = arg;
+  unsigned long drive;
+  unsigned long tmp_drive = saved_drive;
+  unsigned long tmp_partition = saved_partition;
+  
+  /* Floppies.  */
+  for (drive = 0; drive < 8; drive++)
+    {
+      current_drive = drive;
+      current_partition = 0xFFFFFF;
+      
+      if (! open_device ())
+	continue;
+
+      saved_drive = current_drive;
+      saved_partition = current_partition;
+      if (grub_open (filename))
+	grub_printf ("(fd%d)%s\n", drive, filename);
+    }
+
+  /* Hard disks.  */
+  for (drive = 0x80; drive < 0x88; drive++)
+    {
+      unsigned long slice;
+      
+      current_drive = drive;
+      /* FIXME: is what maximum number right?  */
+      for (slice = 0; slice < 12; slice++)
+	{
+	  current_partition = (slice << 16) | 0xFFFF;
+	  if (! open_device () && IS_PC_SLICE_TYPE_BSD (current_slice))
+	    {
+	      unsigned long part;
+
+	      for (part = 0; part < 8; part++)
+		{
+		  current_partition = (slice << 16) | (part << 8) | 0xFF;
+		  if (! open_device ())
+		    continue;
+
+		  saved_drive = current_drive;
+		  saved_partition = current_partition;
+		  if (grub_open (filename))
+		    grub_printf ("(hd%d,%d,%c)%s",
+				 drive - 0x80,
+				 slice,
+				 part + 'a',
+				 filename);
+		}
+	    }
+	  else
+	    {
+	      saved_drive = current_drive;
+	      saved_partition = current_partition;
+	      if (grub_open (filename))
+		grub_printf ("(hd%d,%d)%s", drive - 0x80, slice, filename);
+	    }
+	}
+    }
+
+  errnum = 0;
+  saved_drive = tmp_drive;
+  saved_partition = tmp_partition;
+  return 0;
+}
+
+static struct builtin builtin_find =
+{
+  "find",
+  find_func,
+  BUILTIN_CMDLINE,
+  "find FILENAME",
+  "Search for the filename FILENAME in all of partitions."
+};
+
+
 /* fstest */
 static int
 fstest_func (char *arg, int flags)
@@ -886,14 +967,23 @@ static struct builtin builtin_help =
 static int
 hide_func (char *arg, int flags)
 {
+  unsigned long tmp_drive = saved_drive;
+  unsigned long tmp_partition = saved_partition;
+  
   if (! set_device (arg))
     return 1;
 
   saved_partition = current_partition;
   saved_drive = current_drive;
   if (! set_partition_hidden_flag (1))
-    return 1;
+    {
+      saved_drive = tmp_drive;
+      saved_partition = tmp_partition;
+      return 1;
+    }
 
+  saved_drive = tmp_drive;
+  saved_partition = tmp_partition;
   return 0;
 }
 
@@ -1609,8 +1699,9 @@ setup_func (char *arg, int flags)
   /* Point to the string of the drive/parition where the GRUB images
      reside.  */
   char *image_ptr;
-  int install_drive, install_partition;
-  int image_drive, image_partition;
+  unsigned long install_drive, install_partition;
+  unsigned long image_drive, image_partition;
+  unsigned long tmp_drive, tmp_partition;
   char stage1[64];
   char stage2[64];
   char config_file[64];
@@ -1653,6 +1744,9 @@ setup_func (char *arg, int flags)
   grub_strcpy (stage1, "/boot/grub/stage1");
   grub_strcpy (stage2, "/boot/grub/stage2");
   grub_strcpy (config_file, "/boot/grub/menu.lst");
+
+  tmp_drive = saved_drive;
+  tmp_partition = saved_partition;
   
   install_ptr = arg;
   image_ptr = skip_to (0, install_ptr);
@@ -1681,18 +1775,18 @@ setup_func (char *arg, int flags)
       current_partition = saved_partition;
     }
 
-  image_drive = current_drive;
-  image_partition = current_partition;
-  
+  image_drive = saved_drive = current_drive;
+  image_partition = saved_partition = current_partition;
+
   /* Open it.  */
   if (! open_device ())
-    return 1;
+    goto fail;
   
   /* Check for stage1 and stage2. We hardcode the filenames, so
      if the user installed GRUB in a uncommon directory, this never
      succeed.  */
   if (! grub_open (stage1) || ! grub_open (stage2))
-    return 1;
+    goto fail;
 
   /* If the drive where stage2 resides is a hard disk, try to use a
      Stage 1.5.  */
@@ -1768,13 +1862,18 @@ setup_func (char *arg, int flags)
   /* Notify what will be run.  */
   grub_printf (" Run \"install %s\"\n", cmd_arg);
 
-  /* Make sure that CURRENT_DRIVE and CURRENT_PARTITION are identical
+  /* Make sure that SAVED_DRIVE and SAVED_PARTITION are identical
      with IMAGE_DRIVE and IMAGE_PARTITION, respectively.  */
-  current_drive = image_drive;
-  current_partition = image_partition;
+  saved_drive = image_drive;
+  saved_partition = image_partition;
   
   /* Run the command.  */
-  return install_func (cmd_arg, flags);
+  install_func (cmd_arg, flags);
+
+ fail:
+  saved_drive = tmp_drive;
+  saved_partition = tmp_partition;
+  return errnum;
 }
 
 static struct builtin builtin_setup =
@@ -1927,14 +2026,23 @@ static struct builtin builtin_title =
 static int
 unhide_func (char *arg, int flags)
 {
+  unsigned long tmp_drive = saved_drive;
+  unsigned long tmp_partition = saved_partition;
+  
   if (! set_device (arg))
     return 1;
 
   saved_partition = current_partition;
   saved_drive = current_drive;
   if (! set_partition_hidden_flag (0))
-    return 1;
-
+    {
+      saved_drive = tmp_drive;
+      saved_partition = tmp_partition;
+      return 1;
+    }
+  
+  saved_drive = tmp_drive;
+  saved_partition = tmp_partition;
   return 0;
 }
 
@@ -1985,6 +2093,7 @@ struct builtin *builtin_table[] =
   &builtin_displaymem,
   &builtin_embed,
   &builtin_fallback,
+  &builtin_find,
   &builtin_fstest,
   &builtin_geometry,
   &builtin_help,

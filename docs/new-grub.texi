@@ -96,7 +96,7 @@ edition documents version @value{VERSION}.
 Part I: The Tutorial Manual
 
 * Overview::
-* Device syntax::
+* Device Syntax::
 * Installation::
 * Boot::
 * Configuration::

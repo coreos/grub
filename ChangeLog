@@ -1,5 +1,17 @@
 1999-10-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (find_func): New function.
+	(builtin_find): New variable.
+	(hide_func): Save SAVED_DRIVE and SAVED_PARTITION to TMP_DRIVE
+	and TMP_PARTITION, respectively, and resotre them before return.
+	(unhide_func): Likewise.
+	(setup_func): Likewise. And set SAVED_DRIVE and SAVED_PARTITION
+	instead of CURRENT_DRIVE and CURRENT_PARTITION to IMAGE_DRIVE
+	and IMAGE_PARTITION before running install_func.
+	(builtin_table): Added a pointer to BUILTIN_FIND.
+	
+1999-10-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* docs/Makefile.am (UNFINISHED_MANUALS): New variable.
 	(EXTRA_DIST): Added $(UNFINISHED_MANUALS).
 	* docs/new-grub.texi: New file.
