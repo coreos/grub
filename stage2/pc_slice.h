@@ -238,6 +238,10 @@
 #define	FS_HPFS		11	/* OS/2 high-performance file system */
 #define	FS_ISO9660	12	/* ISO 9660, normally CD-ROM */
 #define	FS_BOOT		13	/* partition contains bootstrap */
+#define	FS_ADOS		14	/* AmigaDOS fast file system */
+#define	FS_HFS		15	/* Macintosh HFS */
+#define	FS_FILECORE	16	/* Acorn Filecore Filing System */
+#define	FS_EXT2FS	17	/* Linux Extended 2 file system */
 
 
 #endif /* _PC_SLICE_H */

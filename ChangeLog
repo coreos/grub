@@ -1,3 +1,13 @@
+2000-12-20  Jochen Hoenicke  <jochen@gnu.org>
+
+	From Cedric Ware <ware@com.enst.fr>:
+	* stage2/fsys_ext2.c (ext2fs_mount): Detect ext2 partitions in
+	a OpenBSD/NetBSD FS_EXT2FS slice.
+	* stage2/pc_slice.h (FS_ADOS): New Macro from OpenBSD/NetBSD.
+	(FS_HFS): Likewise.
+	(FS_FILECORE): Likewise.
+	(FS_EXT2FS): Likewise.
+	
 2000-12-17  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/disk_io.c (rawread): Check if there is a EZD partition
