@@ -1,5 +1,10 @@
 Known problems/bugs:
 
+  - In the netboot code, tlan and fa311 are not used, even though they
+    are distributed. That's because the entry for tlan is commented out
+    in the file "NIC" of Etherboot, and fa311 isn't used actually in
+    Etherboot. Probably they will be fixed in next version of Etherboot.
+
   - The command "geometry" doesn't work with a floppy very well. This
     bug was incorporated after the rewrite of the partition scanning
     code by okuji.

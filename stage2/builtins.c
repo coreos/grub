@@ -28,6 +28,7 @@
 #include <filesys.h>
 
 #ifdef SUPPORT_NETBOOT
+# define GRUB	1
 # include <etherboot.h>
 #endif
 
@@ -242,6 +243,11 @@ boot_func (char *arg, int flags)
      not KERNEL_TYPE_NONE. Is this assumption is bad?  */
   if (kernel_type != KERNEL_TYPE_NONE)
     unset_int15_handler ();
+
+#ifdef SUPPORT_NETBOOT
+  /* Shut down the networking.  */
+  cleanup_net ();
+#endif
   
   switch (kernel_type)
     {

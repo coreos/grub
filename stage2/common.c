@@ -21,6 +21,7 @@
 #include <shared.h>
 
 #ifdef SUPPORT_DISKLESS
+# define GRUB	1
 # include <etherboot.h>
 #endif
 

@@ -1,3 +1,91 @@
+2002-01-03  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	Update the netboot stuff to Etherboot-5.0.5.
+	
+	* configure.in (--enable-3c590): Removed. This was a mistake.
+	(--enable-davicom): New option.
+	(--enable-eepro): Likewise.
+	(--enable-natsemi): Likewise.
+	(--enable-ni5010): Likewise.
+	(--enable-sis900): Likewise.
+	(--enable-w89c840): Likewise.
+	(--enable-3c509-hack): Removed.
+	(--enable-ns8390-force-16bit): Likewise.
+
+	* netboot/Makefile.am (libdrivers_a_SOURCES): Added timer.c and
+	timer.h.
+	(EXTRA_libdrivers_a_SOURCES): Added davicom.c, eepro.c, fa311.c,
+	natsemi.c, ni5010.c, sis900.c, sis900.h, tlan.c and w89c840.c.
+	(EXTRA_DIST): Added sis900.txt.
+	(3c595_drivers): Remove 3c590.o from this.
+	(davicom_drivers): New variable.
+	(eepro_drivers): Likewise.
+	(natsemi_drivers): Likewise.
+	(ni5010_drivers): Likewise.
+	(sis900_drivers): Likewise.
+	(w89c840_drivers): Likewise.
+	(3c590_o_CFLAGS): Removed.
+	(davicom_o_CFLAGS): New variable.
+	(eepro_o_CFLAGS): Likewise.
+	(natsemi_o_CFLAGS): Likewise.
+	(ni5010_o_CFLAGS): Likewise.
+	(sis900_o_CFLAGS): Likewise.
+	(w89c840_o_CFLAGS): Likewise.
+
+	* netboot/davicom.c: New file, from Etherboot-5.0.5.
+	* netboot/eepro.c: Likewise.
+	* netboot/natsemi.c: Likewise.
+	* netboot/ni5010.c: Likewise.
+	* netboot/sis900.c: Likewise.
+	* netboot/sis900.h: Likewise.
+	* netboot/sis900.txt: Likewise.
+	* netboot/timer.c: Likewise.
+	* netboot/timer.h: Likewise.
+	* netboot/w89c840.c: Likewise.
+	* netboot/fa311.c: Likewise.
+	* netboot/tlan.c: Likewise.
+	
+	* netboot/3c509.c: Copied from Etherboot-5.0.5.
+	* netboot/3c509.h: Likewise.
+	* netboot/3c595.c: Likewise.
+	* netboot/3c90x.c: Likewise.
+	* netboot/3c90x.txt: Likewise.
+	* netboot/cards.h: Likewise.
+	* netboot/cs89x0.c: Likewise.
+	* netboot/depca.c: Likewise.
+	* netboot/eepro100.c: Likewise.
+	* netboot/epic100.c: Likewise.
+	* netboot/i82586.c: Likewise.
+	* netboot/lance.c: Likewise.
+	* netboot/linux-asm-string.h: Likewise.
+	* netboot/nic.h: Likewise.
+	* netboot/ns8390.c: Likewise.
+	* netboot/ns8390.h: Likewise.
+	* netboot/otulip.c: Likewise.
+	* netboot/pci.h: Likewise.
+	* netboot/rtl8139.c: Likewise.
+	* netboot/sk_g16.c: Likewise.
+	* netboot/smc9000.c: Likewise.
+	* netboot/tiara.c: Likewise.
+	* netboot/tulip.c: Likewise.
+	* netboot/via-rhine.c: Likewise.
+	
+	* netboot/config.c: Applied a diff between Etherboot-4.6.18 and
+	Etherboot-5.0.5 manually.
+	* netboot/main.c: Likewise.
+	* netboot/pci.c: Likewise.
+	* netboot/etherboot.h: Rewritten mostly from scratch, based on
+	the same file in Etherboot-5.0.5.
+	* netboot/misc.c: Likewise.
+	* netboot/osdep.h: Likewise.
+	* netboot/fsys_tftp.c (GRUB): Defined.
+	(buf_fill): Use rfc2131_sleep_interval instead of rfc951_sleep.
+
+	* stage2/builtins.c [SUPPORT_NETBOOT] (GRUB): Defined.
+	(boot_func) [SUPPORT_NETBOOT]: Call cleanup_net.
+	* stage2/cmdline.c [SUPPORT_DISKLESS] (GRUB): Defined.
+	* stage2/common.c [SUPPORT_DISKLESS] (GRUB): Likewise.
+	
 2002-01-02  Jeremy Katz  <katzj@redhat.com>
 	
 	* util/grub-install.in: Support using mktemp as well as tempfile
