@@ -1,5 +1,16 @@
 2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* util/grub-install.in (convert): Check only if the file exists,
+	instead of checking if the file is a block device as well.
+	Because, in a sane operating system, it should be a char device
+	but not a block device (unlike Linux), and it may be a symbolic
+	link (this can happen if you use Linux's devfs without devfsd).
+	(recheck): New variable. Set to "no" by default, and set to
+	"yes", if you specify the new option ``--recheck''. If $recheck
+	is "yes", remove the device map file, if present.
+	
+2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Roderich Schupp:
 	* lib/device.c: Include <limits.h>.
 	[__linux__] (have_devfs): New function.

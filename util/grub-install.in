@@ -36,6 +36,7 @@ grub_prefix=/boot/grub
 
 install_device=
 force_lba=
+recheck=no
 debug=no
 
 # Usage: usage
@@ -50,8 +51,9 @@ Install GRUB on your drive.
   --root-directory=DIR    install GRUB images under the directory DIR
                           instead of the root directory.
   --grub-shell=FILE       use FILE as the grub shell.
-  --force-lba             Force GRUB to use LBA mode even for a buggy
+  --force-lba             force GRUB to use LBA mode even for a buggy
                           BIOS.
+  --recheck               probe a device map even if it already exists.
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
@@ -64,7 +66,7 @@ EOF
 # This part is OS-specific.
 convert () {
     # First, check if the device file exists.
-    if test -b "$1"; then
+    if test -e "$1"; then
 	:
     else
 	echo "$1: Not found or not a block device." 1>&2
@@ -139,6 +141,8 @@ for option in "$@"; do
 	grub_shell=`echo "$option" | sed 's/--grub-shell=//'` ;;
     --force-lba)
 	force_lba="--force-lba" ;;
+    --recheck)
+	recheck=yes ;;
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
@@ -196,6 +200,11 @@ fi
 # Create the GRUB directory if it is not present.
 test -d "$bootdir" || mkdir "$bootdir" || exit 1
 test -d "$grubdir" || mkdir "$grubdir" || exit 1
+
+# If --recheck is specified, remove the device map, if present.
+if test $recheck = yes; then
+    rm -f $device_map
+fi
 
 # Create the device map file if it is not present.
 if test -f "$device_map"; then

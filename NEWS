@@ -4,6 +4,9 @@ New in 1.0 - XXXX-XX-XX:
 * The command "setkey" resets key mappings, when no argument is
   specified.
 * Linux devfs support is added.
+* The utility ``grub-install'' accepts a new option, `--recheck'. If
+  this option is specified, probe a device map, even if it already
+  exists. You should use this option whenever you add/remove a disk.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".
