@@ -391,6 +391,8 @@ extern int no_floppy;
 extern int probe_second_floppy;
 /* The map between BIOS drives and UNIX device file names.  */
 extern char **device_map;
+/* The filename which stores the information about a device map.  */
+extern char *device_map_file;
 /* The array of geometries.  */
 extern struct geometry *disks;
 /* Check if DEVICE can be read. If an error occurs, return zero,

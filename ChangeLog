@@ -1,5 +1,28 @@
 1999-10-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* grub/asmstub.c (assign_device_name): If DEVICE is NULL, set
+	DEVICE_MAP[DRIVE] to NULL.
+	(get_diskinfo): If open or read fails, call assign_device_name
+	to disable accessing the drive DRIVE.
+	(grub_stage2): The device mapping routine is moved to ...
+	(init_device_map): ... here. This new function also reads/writes
+	a device map file. If DEVICE_MAP_FILE already exists, then use
+	the data in it instead of probing devices. Otherwise, guess the
+	map between BIOS drives and OS devices, and write it to the file
+	DEVICE_MAP_FILE if it can be opened.
+	* grub/main.c (device_map_file): New variable.
+	(default_device_map_file): Likewise.
+	(OPT_DEVICE_MAP): New macro.
+	(longopts): Added an entry for "device-map".
+	(usage): Print the usage about --device-map as well.
+	(main): Set DEFAULT_DEVICE_MAP_FILE to DEVICE_MAP_FILE. If
+	OPT_DEVICE_MAP is found, set DEVICE_MAP_FILE to a duplicated
+	string of OPTARG.
+	* stage2/shared.h [GRUB_UTIL] (device_map_file): Declared.
+	* docs/grub.8: Regenerated.
+	
+1999-10-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/builtins.c (color_func): Do not set NORMAL_COLOR or
 	HIGHLIGHT_COLOR directly, but use NEW_NORMAL_COLOR and
 	NEW_HIGHLIGHT_COLOR as temporary storages instead.

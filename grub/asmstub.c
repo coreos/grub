@@ -33,6 +33,7 @@ int grub_stage2 (void);
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -94,6 +95,7 @@ static jmp_buf env_for_exit;
 static void get_floppy_disk_name (char *name, int unit);
 static void get_ide_disk_name (char *name, int unit);
 static void get_scsi_disk_name (char *name, int unit);
+static void init_device_map (void);
 
 /* The main entry point into this mess. */
 int
@@ -102,8 +104,8 @@ grub_stage2 (void)
   /* These need to be static, because they survive our stack transitions. */
   static int status = 0;
   static char *realstack;
-  int i, num_hd = 0;
   char *scratch, *simstack;
+  int i;
 
   /* We need a nested function so that we get a clean stack frame,
      regardless of how the code is optimized. */
@@ -145,59 +147,7 @@ grub_stage2 (void)
   for (i = 0; i < NUM_DISKS; i++)
     disks[i].flags = -1;
 
-  assert (device_map == 0);
-  device_map = malloc (NUM_DISKS * sizeof (char *));
-  assert (device_map);
-
-  /* Probe devices for creating the device map.  */
-
-  /* Initialize DEVICE_MAP.  */
-  for (i = 0; i < NUM_DISKS; i++)
-    device_map[i] = 0;
-
-  /* Print something as the user does not think GRUB has been crashed.  */
-  fprintf (stderr,
-	   "Probe devices to guess BIOS drives. This may take a long time.\n");
-    
-  /* Floppies.  */
-  if (! no_floppy)
-    for (i = 0; i < 2; i++)
-      {
-	char name[16];
-
-	if (i == 1 && ! probe_second_floppy)
-	  break;
-	
-	get_floppy_disk_name (name, i);
-	if (check_device (name))
-	  assign_device_name (i, name);
-      }
-  
-  /* IDE disks.  */
-  for (i = 0; i < 4; i++)
-    {
-      char name[16];
-
-      get_ide_disk_name (name, i);
-      if (check_device (name))
-	{
-	  assign_device_name (num_hd + 0x80, name);
-	  num_hd++;
-	}
-    }
-  
-  /* The rest is SCSI disks.  */
-  for (i = 0; i < 8; i++)
-    {
-      char name[16];
-
-      get_scsi_disk_name (name, i);
-      if (check_device (name))
-	{
-	  assign_device_name (num_hd + 0x80, name);
-	  num_hd++;
-	}
-    }
+  init_device_map ();
 
   /* Check some invariants. */
   assert ((SCRATCHSEG << 4) == SCRATCHADDR);
@@ -261,6 +211,180 @@ grub_stage2 (void)
 
   /* Ahh... at last we're ready to return to caller. */
   return status;
+}
+
+static void
+init_device_map (void)
+{
+  int i;
+  int num_hd = 0;
+  FILE *fp;
+
+  static void print_error (int no, const char *msg)
+    {
+      fprintf (stderr, "%s:%d: error: %s\n", device_map_file, no, msg);
+    }
+  
+  assert (device_map == 0);
+  device_map = malloc (NUM_DISKS * sizeof (char *));
+  assert (device_map);
+
+  /* Probe devices for creating the device map.  */
+
+  /* Initialize DEVICE_MAP.  */
+  for (i = 0; i < NUM_DISKS; i++)
+    device_map[i] = 0;
+
+  /* Open the device map file.  */
+  fp = fopen (device_map_file, "r");
+  if (fp)
+    {
+      /* If there is the device map file, use the data in it instead of
+	 probing devices.  */
+      char buf[1024];		/* XXX */
+      int line_number = 0;
+
+      while (fgets (buf, sizeof (buf), fp))
+	{
+	  char *ptr, *eptr;
+	  int drive;
+	  int is_floppy = 0;
+	  
+	  /* Increase the number of lines.  */
+	  line_number++;
+
+	  /* If the first character is '#', skip it.  */
+	  if (buf[0] == '#')
+	    continue;
+
+	  ptr = buf;
+	  /* Skip leading spaces.  */
+	  while (*ptr && isspace (*ptr))
+	    ptr++;
+
+	  if (*ptr != '(')
+	    {
+	      print_error (line_number, "No open parenthesis found");
+	      stop ();
+	    }
+
+	  ptr++;
+	  if ((*ptr != 'f' && *ptr != 'h') || *(ptr + 1) != 'd')
+	    {
+	      print_error (line_number, "Bad drive name");
+	      stop ();
+	    }
+
+	  if (*ptr == 'f')
+	    is_floppy = 1;
+	  
+	  ptr += 2;
+	  drive = strtoul (ptr, &ptr, 10);
+	  if (drive < 0 || drive > 8)
+	    {
+	      print_error (line_number, "Bad device number");
+	      stop ();
+	    }
+
+	  if (! is_floppy)
+	    drive += 0x80;
+	  
+	  if (*ptr != ')')
+	    {
+	      print_error (line_number, "No close parenthesis found");
+	      stop ();
+	    }
+
+	  ptr++;
+	  /* Skip spaces.  */
+	  while (*ptr && isspace (*ptr))
+	    ptr++;
+
+	  if (! *ptr)
+	    {
+	      print_error (line_number, "No filename found");
+	      stop ();
+	    }
+
+	  /* Terminate the filename.  */
+	  eptr = ptr;
+	  while (*eptr && ! isspace (*eptr))
+	    eptr++;
+	  *eptr = 0;
+
+	  assign_device_name (drive, ptr);
+	}
+      
+      fclose (fp);
+      return;
+    } 
+  
+  /* Print something as the user does not think GRUB has been crashed.  */
+  fprintf (stderr,
+	   "Probe devices to guess BIOS drives. This may take a long time.\n");
+
+  /* Try to open the device map file to write the probed data.  */
+  fp = fopen (device_map_file, "w");
+  
+  /* Floppies.  */
+  if (! no_floppy)
+    for (i = 0; i < 2; i++)
+      {
+	char name[16];
+
+	if (i == 1 && ! probe_second_floppy)
+	  break;
+	
+	get_floppy_disk_name (name, i);
+	if (check_device (name))
+	  {
+	    assign_device_name (i, name);
+
+	    /* If the device map file is opened, write the map.  */
+	    if (fp)
+	      fprintf (fp, "(fd%d)\t%s\n", i, name);
+	  }
+      }
+  
+  /* IDE disks.  */
+  for (i = 0; i < 4; i++)
+    {
+      char name[16];
+
+      get_ide_disk_name (name, i);
+      if (check_device (name))
+	{
+	  assign_device_name (num_hd + 0x80, name);
+	  
+	  /* If the device map file is opened, write the map.  */
+	  if (fp)
+	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
+	  
+	  num_hd++;
+	}
+    }
+  
+  /* The rest is SCSI disks.  */
+  for (i = 0; i < 8; i++)
+    {
+      char name[16];
+
+      get_scsi_disk_name (name, i);
+      if (check_device (name))
+	{
+	  assign_device_name (num_hd + 0x80, name);
+
+	  /* If the device map file is opened, write the map.  */
+	  if (fp)
+	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
+	  
+	  num_hd++;
+	}
+    }
+
+  /* OK, close the device map file if opened.  */
+  if (fp)
+    fclose (fp);
 }
 
 /* These three functions are quite different among OSes.  */
@@ -378,7 +502,10 @@ assign_device_name (int drive, const char *device)
     }
   
   /* Assign DRIVE to DEVICE.  */
-  device_map[drive] = strdup (device);
+  if (! device)
+    device_map[drive] = 0;
+  else
+    device_map[drive] = strdup (device);
 }
 
 void
@@ -714,10 +841,16 @@ get_diskinfo (int drive, struct geometry *geometry)
 	    {
 	      disks[drive].flags = open (devname, O_RDONLY);
 	      if (disks[drive].flags == -1)
-		return -1;
+		{
+		  assign_device_name (drive, 0);
+		  return -1;
+		}
 	    }
 	  else
-	    return -1;
+	    {
+	      assign_device_name (drive, 0);
+	      return -1;
+	    }
 	}
 
       /* Attempt to read the first sector.  */
@@ -725,6 +858,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 	{
 	  close (disks[drive].flags);
 	  disks[drive].flags = -1;
+	  assign_device_name (drive, 0);
 	  return -1;
 	}
 
