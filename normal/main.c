@@ -281,7 +281,7 @@ grub_normal_init_page (void)
 {
   grub_cls ();
   grub_printf ("\n\
-                             GRUB  version %s\n\n",
+                         GNU GRUB  version %s\n\n",
 	       PACKAGE_VERSION);
 }
 

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,14 @@
 #include <grub/types.h>
 #include <grub/device.h>
 
+/* These are used to set a device id. When you add a new disk device,
+   you must define a new id for it here.  */
+enum grub_disk_dev_id
+  {
+    GRUB_DISK_DEVICE_BIOSDISK_ID,
+    GRUB_DISK_DEVICE_OFDISK_ID,
+  };
+
 struct grub_disk;
 
 /* Disk device.  */
@@ -33,6 +41,9 @@ struct grub_disk_dev
   /* The device name.  */
   const char *name;
 
+  /* The device id used by the cache manager.  */
+  unsigned long id;
+  
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
   int (*iterate) (int (*hook) (const char *name));
 

@@ -146,6 +146,7 @@ grub_ofdisk_write (grub_disk_t disk __attribute ((unused)),
 static struct grub_disk_dev grub_ofdisk_dev =
   {
     .name = "ofdisk",
+    .id = GRUB_DISK_DEVICE_OFDISK_ID,
     .iterate = grub_ofdisk_iterate,
     .open = grub_ofdisk_open,
     .close = grub_ofdisk_close,

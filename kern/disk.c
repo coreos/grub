@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ static unsigned long grub_last_time = 0;
 /* Disk cache.  */
 struct grub_disk_cache
 {
-  unsigned long id;
+  unsigned long dev_id;
+  unsigned long disk_id;
   unsigned long sector;
   char *data;
   int lock;
@@ -56,23 +57,27 @@ grub_disk_cache_get_performance (unsigned long *hits, unsigned long *misses)
 #endif
 
 static unsigned
-grub_disk_cache_get_index (unsigned long id, unsigned long sector)
+grub_disk_cache_get_index (unsigned long dev_id, unsigned long disk_id,
+			   unsigned long sector)
 {
-  return ((id * 2606459 + (sector >> GRUB_DISK_CACHE_BITS))
+  return ((dev_id * 524287UL + disk_id * 2606459UL
+	   + (sector >> GRUB_DISK_CACHE_BITS))
 	  % GRUB_DISK_CACHE_NUM);
 }
 
 static void
-grub_disk_cache_invalidate (unsigned long id, unsigned long sector)
+grub_disk_cache_invalidate (unsigned long dev_id, unsigned long disk_id,
+			    unsigned long sector)
 {
   unsigned index;
   struct grub_disk_cache *cache;
 
   sector &= ~(GRUB_DISK_CACHE_SIZE - 1);
-  index = grub_disk_cache_get_index (id, sector);
+  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
   cache = grub_disk_cache_table + index;
 
-  if (cache->id == id && cache->sector == sector && cache->data)
+  if (cache->dev_id == dev_id && cache->disk_id == disk_id
+      && cache->sector == sector && cache->data)
     {
       cache->lock = 1;
       grub_free (cache->data);
@@ -99,15 +104,17 @@ grub_disk_cache_invalidate_all (void)
 }
 
 static char *
-grub_disk_cache_fetch (unsigned long id, unsigned long sector)
+grub_disk_cache_fetch (unsigned long dev_id, unsigned long disk_id,
+		       unsigned long sector)
 {
   struct grub_disk_cache *cache;
   unsigned index;
 
-  index = grub_disk_cache_get_index (id, sector);
+  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
   cache = grub_disk_cache_table + index;
 
-  if (cache->id == id && cache->sector == sector)
+  if (cache->dev_id == dev_id && cache->disk_id == disk_id
+      && cache->sector == sector)
     {
       cache->lock = 1;
 #if 0
@@ -124,28 +131,30 @@ grub_disk_cache_fetch (unsigned long id, unsigned long sector)
 }
 
 static void
-grub_disk_cache_unlock (unsigned long id, unsigned long sector)
+grub_disk_cache_unlock (unsigned long dev_id, unsigned long disk_id,
+			unsigned long sector)
 {
   struct grub_disk_cache *cache;
   unsigned index;
 
-  index = grub_disk_cache_get_index (id, sector);
+  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
   cache = grub_disk_cache_table + index;
 
-  if (cache->id == id && cache->sector == sector)
+  if (cache->dev_id == dev_id && cache->disk_id == disk_id
+      && cache->sector == sector)
     cache->lock = 0;
 }
 
 static grub_err_t
-grub_disk_cache_store (unsigned long id, unsigned long sector,
-		       const char *data)
+grub_disk_cache_store (unsigned long dev_id, unsigned long disk_id,
+		       unsigned long sector, const char *data)
 {
   unsigned index;
   struct grub_disk_cache *cache;
   
-  grub_disk_cache_invalidate (id, sector);
+  grub_disk_cache_invalidate (dev_id, disk_id, sector);
   
-  index = grub_disk_cache_get_index (id, sector);
+  index = grub_disk_cache_get_index (dev_id, disk_id, sector);
   cache = grub_disk_cache_table + index;
   
   cache->data = grub_malloc (GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS);
@@ -154,7 +163,8 @@ grub_disk_cache_store (unsigned long id, unsigned long sector,
   
   grub_memcpy (cache->data, data,
 	       GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS);
-  cache->id = id;
+  cache->dev_id = dev_id;
+  cache->disk_id = disk_id;
   cache->sector = sector;
 
   return GRUB_ERR_NONE;
@@ -259,7 +269,8 @@ grub_disk_open (const char *name)
      closed.  */
   current_time = grub_get_rtc ();
 
-  if (current_time > grub_last_time + GRUB_CACHE_TIMEOUT * GRUB_TICKS_PER_SECOND)
+  if (current_time > (grub_last_time
+		      + GRUB_CACHE_TIMEOUT * GRUB_TICKS_PER_SECOND))
     grub_disk_cache_invalidate_all ();
   
   grub_last_time = current_time;
@@ -354,12 +365,12 @@ grub_disk_read (grub_disk_t disk, unsigned long sector,
 	len = size;
 
       /* Fetch the cache.  */
-      data = grub_disk_cache_fetch (disk->id, start_sector);
+      data = grub_disk_cache_fetch (disk->dev->id, disk->id, start_sector);
       if (data)
 	{
 	  /* Just copy it!  */
 	  grub_memcpy (buf, data + pos + offset, len);
-	  grub_disk_cache_unlock (disk->id, start_sector);
+	  grub_disk_cache_unlock (disk->dev->id, disk->id, start_sector);
 	}
       else
 	{
@@ -404,7 +415,8 @@ grub_disk_read (grub_disk_t disk, unsigned long sector,
 
 	  /* Copy it and store it in the disk cache.  */
 	  grub_memcpy (buf, tmp_buf + pos + offset, len);
-	  grub_disk_cache_store (disk->id, start_sector, tmp_buf);
+	  grub_disk_cache_store (disk->dev->id, disk->id,
+				 start_sector, tmp_buf);
 	}
 
       /* Call the read hook, if any.  */
@@ -466,7 +478,7 @@ grub_disk_write (grub_disk_t disk, unsigned long sector,
 	  
 	  grub_memcpy (tmp_buf + offset, buf, len);
 
-	  grub_disk_cache_invalidate (disk->id, sector);
+	  grub_disk_cache_invalidate (disk->dev->id, disk->id, sector);
 
 	  if ((disk->dev->write) (disk, sector, 1, tmp_buf) != GRUB_ERR_NONE)
 	    goto finish;
@@ -488,7 +500,7 @@ grub_disk_write (grub_disk_t disk, unsigned long sector,
 	    goto finish;
 
 	  while (n--)
-	    grub_disk_cache_invalidate (disk->id, sector++);
+	    grub_disk_cache_invalidate (disk->dev->id, disk->id, sector++);
 
 	  buf += len;
 	  size -= len;

@@ -1,3 +1,27 @@
+2004-08-21  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Each disk device has its own id now. This is useful to make use
+	of multiple disk devices.
+	
+	* include/grub/disk.h (grub_disk_dev_id): New enum.
+	(GRUB_DISK_DEVICE_BIOSDISK_ID): New constant.
+	(GRUB_DISK_DEVICE_OFDISK_ID): Likewise.
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_dev): Specify
+	GRUB_DISK_DEVICE_BIOSDISK_ID as an id.
+
+	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_dev): Specify
+	GRUB_DISK_DEVICE_OFDISK_ID as an id.
+
+	* util/i386/pc/biosdisk.c (grub_util_biosdisk_dev): Specify
+	GRUB_DISK_DEVICE_BIOSDISK_ID as an id.
+
+	* include/grub/disk.h (struct grub_disk_dev): Added a new member
+	"id" which is used by the cache manager.
+
+	* normal/main.c (grub_normal_init_page): Use "GNU GRUB" instead
+	of just "GRUB".
+
 2004-08-18  Marco Gerards  <metgerards@student.han.nl>
 
 	* fs/hfs.c: New file.
