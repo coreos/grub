@@ -1,5 +1,13 @@
 2001-02-28  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From HASEGAWA Tomoki <thasegawa@mta.biglobe.ne.jp>:
+	* lib/device.c (get_ide_disk_name) [__FreeBSD__]: Add support
+	for FreeBSD-4.0 or later. Use "/dev/rad0".
+	* util/grub-install.in (convert): Add code for FreeBSD
+	disklabels.
+
+2001-02-28  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Thierry Laronde <thierry@cri74.org>:
 	* stage2/stage2.c (cmain): If the default entry is wrong, set it
 	to FALLBACK_ENTRY if FALLBACK_ENTRY is valid, otherwise set it

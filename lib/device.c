@@ -208,7 +208,11 @@ get_ide_disk_name (char *name, int unit)
   sprintf (name, "/dev/hd%d", unit);
 #elif defined(__FreeBSD__)
   /* FreeBSD */
+# if __FreeBSD__ >= 4
+  sprintf (name, "/dev/rad%d", unit);
+# else /* __FreeBSD__ <= 3 */
   sprintf (name, "/dev/rwd%d", unit);
+# endif /* __FreeBSD__ <= 3 */
 #elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
   /* NetBSD */
   char shortname[16];
