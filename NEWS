@@ -4,6 +4,7 @@ New in 0.91:
 * Support for Linux DAC960 is added.
 * JFS and XFS support is added.
 * The commands "hide" and "unhide" support logical partitions.
+* The utility ``grub-install'' supports NetBSD.
 * Important bugfixes are made for ReiserFS, APM, TFTP, etc.
 
 New in 0.90 - 2001-07-11:
