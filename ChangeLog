@@ -1,5 +1,13 @@
 1999-09-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/gunzip.c (reset_linalloc): Use the macro RAW_ADDR
+	before setting LINALLOC_TOPADDR.
+	* stage2/shared.h [!GRUB_UTIL] (RAW_ADDR): Added parenthesises
+	to avoid a gcc warning.
+	[!GRUB_UTIL] (RAW_SEG): Likewise.
+	
+1999-09-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* acinclude.m4 (grub_CHECK_START_SYMBOL): New function.
 	(grub_CHECK_USCORE_START_SYMBOL): Likewise.
 	(grub_CHECK_END_SYMBOL): Likewise.

@@ -170,7 +170,7 @@ linalloc (int size)
 static void
 reset_linalloc (void)
 {
-  linalloc_topaddr = (mbi.mem_upper << 10) + 0x100000;
+  linalloc_topaddr = RAW_ADDR ((mbi.mem_upper << 10) + 0x100000);
 }
 
 

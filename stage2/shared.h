@@ -38,8 +38,8 @@ extern char *grub_scratch_mem;
 # define RAW_ADDR(x) ((x) + (int) grub_scratch_mem)
 # define RAW_SEG(x) (RAW_ADDR ((x) << 4) >> 4)
 #else
-# define RAW_ADDR(x) x
-# define RAW_SEG(x) x
+# define RAW_ADDR(x) (x)
+# define RAW_SEG(x) (x)
 #endif
 
 /*
