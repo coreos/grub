@@ -1,3 +1,9 @@
+2004-11-16  Marco Gerards  <metgerards@student.han.nl>
+
+	* kern/powerpc/ieee1275/openfw.c (grub_devalias_iterate): Skip any
+	property named `name'.  Correctly handle the error returned by
+	`grub_ieee1275_finddevice' if a device can not be opened.
+
 2004-11-02  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* term/powerpc/ieee1275/ofconsole.c (grub_ofconsole_readkey): Test

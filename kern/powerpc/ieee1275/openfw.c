@@ -103,6 +103,11 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
       char devtype[64];
   
       grub_ieee1275_get_property_length (devalias, aliasname, &pathlen);
+
+      /* The property `name' is a special case we should skip.  */
+      if (!grub_strcmp (aliasname, "name"))
+	  continue;
+      
       devpath = grub_malloc (pathlen);
       if (! devpath)
 	return grub_errno;
@@ -113,8 +118,8 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	  grub_free (devpath);
 	  continue;
 	}
-
-      if (grub_ieee1275_finddevice (devpath, &dev))
+      
+      if (grub_ieee1275_finddevice (devpath, &dev) || dev == -1)
 	{
 	  grub_free (devpath);
 	  continue;
