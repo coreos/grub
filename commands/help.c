@@ -61,10 +61,12 @@ grub_cmd_help (struct grub_arg_list *state __attribute__ ((unused)), int argc,
 
   int print_command_help (grub_command_t cmd)
     {
-      if (!grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
+      if (! grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
 	{
+	  if (cnt++ > 0)
+	    grub_printf ("\n\n");
+	  
 	  grub_arg_show_help (cmd);
-	  grub_printf ("\n\n");
 	}
       return 0;
     }

@@ -1,5 +1,13 @@
 2005-02-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* normal/arg.c (grub_arg_show_help): Do not show the bug report
+	address.
+
+	* commands/help.c (grub_cmd_help): Do not print newlines after
+	the last command in print_command_help.
+
+2005-02-27  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* commands/default.h: New file.
 	* commands/timeout.h: Likewise.
 	* normal/context.c: Likewise.

@@ -130,7 +130,9 @@ grub_arg_show_help (grub_command_t cmd)
   if (cmd->options)
     showargs (cmd->options);
   showargs (help_options);
+#if 0
   grub_printf ("\nReport bugs to <%s>.\n", PACKAGE_BUGREPORT);
+#endif
 }
 
 
