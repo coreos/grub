@@ -1,4 +1,4 @@
-/* suspend.c - command to suspend GRUB and return to Open Firmware  */
+/* halt.c - command to halt the computer.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2005  Free Software Foundation, Inc.
@@ -24,12 +24,11 @@
 #include <grub/machine/ieee1275.h>
 
 static grub_err_t
-grub_cmd_suspend (struct grub_arg_list *state  __attribute__ ((unused)),
-		  int argc __attribute__ ((unused)),
-		  char **args __attribute__ ((unused)))
+grub_cmd_halt (struct grub_arg_list *state __attribute__ ((unused)),
+	       int argc __attribute__ ((unused)),
+	       char **args __attribute__ ((unused)))
 {
-  grub_printf ("Run 'go' to resume GRUB.\n");
-  grub_ieee1275_enter ();
+  grub_ieee1275_interpret ("shut-down", 0);
   return 0;
 }
 
@@ -37,11 +36,13 @@ grub_cmd_suspend (struct grub_arg_list *state  __attribute__ ((unused)),
 GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("suspend", grub_cmd_suspend, GRUB_COMMAND_FLAG_BOTH,
-			 "suspend", "Return to Open Firmware prompt", 0);
+  grub_register_command ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
+			 "halt", "halts the computer.  This command does not"
+			 " work on every firmware.", 0);
 }
 
 GRUB_MOD_FINI
 {
-  grub_unregister_command ("suspend");
+  grub_unregister_command ("halt");
 }
+

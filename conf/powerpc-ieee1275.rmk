@@ -65,7 +65,7 @@ genmoddep_SOURCES = util/genmoddep.c
 pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
-	pc.mod suspend.mod loopback.mod
+	pc.mod suspend.mod loopback.mod reboot.mod halt.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -160,3 +160,11 @@ loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
 suspend_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For reboot.mod
+reboot_mod_SOURCES = commands/ieee1275/reboot.c
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For halt.mod
+halt_mod_SOURCES = commands/ieee1275/halt.c
+halt_mod_CFLAGS = $(COMMON_CFLAGS)

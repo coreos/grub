@@ -1,3 +1,20 @@
+2005-01-30  Marco Gerards  <metgerards@student.han.nl>
+
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_interpret): New
+	function.
+	* commands/ieee1275/halt.c: New file.
+	* commands/ieee1275/reboot.c: Likewise.
+	* commands/ieee1275/suspend.c (grub_cmd_suspend): Use
+	`__attribute__ ((unused))'.  Some GCS related fixed.
+	(grub_suspend_init) [GRUB_UTIL]: Function removed.
+	(grub_suspend_fini): Likewise.
+	* conf/powerpc-ieee1275.rmk (pkgdata_MODULES): Add `reboot.mod'
+	and `halt.mod'.
+	(reboot_mod_SOURCES, reboot_mod_CFLAGS, halt_mod_SOURCES)
+	(halt_mod_CFLAGS): New variables.
+	* include/grub/powerpc/ieee1275/ieee1275.h
+	(grub_ieee1275_interpret): New prototype.
+
 2005-01-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* include/grub/misc.h (memmove): New prototype.
