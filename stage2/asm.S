@@ -1920,6 +1920,8 @@ translation_table:
 	.word	KEY_END, 5
 	.word	KEY_DC, 4
 	.word	KEY_BACKSPACE, 8
+	.word	KEY_PPAGE, 7
+	.word	KEY_NPAGE, 3
 	.word	0
 	
 /*

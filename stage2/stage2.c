@@ -447,10 +447,36 @@ restart:
 		  }
 		}
 	    }
+	  else if (c == 7)
+	    {
+	      /* Page Up */
+	      first_entry -= 12;
+	      if (first_entry < 0)
+		{
+		  entryno += first_entry;
+		  first_entry = 0;
+		  if (entryno < 0)
+		    entryno = 0;
+		}
+	      print_entries (3, 12, first_entry, entryno, menu_entries);
+	    }
+	  else if (c == 3)
+	    {
+	      /* Page Down */
+	      first_entry += 12;
+	      if (first_entry + entryno + 1 >= num_entries)
+		{
+		  first_entry = num_entries - 12;
+		  if (first_entry < 0)
+		    first_entry = 0;
+		  entryno = num_entries - first_entry - 1;
+		}
+	      print_entries (3, 12, first_entry, entryno, menu_entries);
+	    }
 
 	  if (config_entries)
 	    {
-	      if ((c == '\n') || (c == '\r'))
+	      if ((c == '\n') || (c == '\r') || (c == 6))
 		break;
 	    }
 	  else

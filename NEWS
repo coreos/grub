@@ -22,6 +22,7 @@ New in 0.93:
   if the passwords match.
 * Support for booting Linux is rewritten, so GRUB now supports
   large-EBDA systems.
+* The menu interfaces supports Page Up, Page Down, and Right Key.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.

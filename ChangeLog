@@ -1,3 +1,15 @@
+2002-10-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* grub/asmstub.c (console_translate_key): Deal with KEY_PPAGE
+	and KEY_NPAGE.
+	* stage2/serial.c (serial_translate_key_sequence): Added two new
+	codes for Page Up and Page Down.
+	* stage2/asm.S (translation_table): Added entries for KEY_PPAGE
+	and KEY_NPAGE.
+	* stage2/stage2.c (run_menu): Deal with Page Up and Page Down.
+	Also recognize the right key for the selection of a boot entry.
+	Suggested by Adam Lackorzynski <adam@os.inf.tu-dresden.de>.
+
 2002-10-10  Jason Thomas  <jason@topic.com.au>
 
 	* stage2/builtins.c (setup_func): Added missing space to --force-lba

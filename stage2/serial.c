@@ -218,7 +218,9 @@ serial_translate_key_sequence (void)
   four_code_table[] =
     {
       {('1' | ('~' << 8)), 1},
-      {('3' | ('~' << 8)), 4}
+      {('3' | ('~' << 8)), 4},
+      {('5' | ('~' << 8)), 7},
+      {('6' | ('~' << 8)), 3},
     };
   
   /* The buffer must start with ``ESC [''.  */

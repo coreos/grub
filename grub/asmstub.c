@@ -627,6 +627,10 @@ console_translate_key (int c)
       return 1;
     case KEY_END:
       return 5;
+    case KEY_PPAGE:
+      return 7;
+    case KEY_NPAGE:
+      return 3;
     default:
       break;
     }
