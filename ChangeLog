@@ -1,3 +1,23 @@
+2004-11-01  Marco Gerards  <metgerards@student.han.nl>
+
+	Add support for iso9660 (including rockridge).
+	
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add fs/iso9660.c.
+	(iso9660_mod_SOURCES): New variable.
+	(iso9660_mod_CFLAGS): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add fs/iso9660.c.
+	* include/grub/fs.h (grub_iso9660_init): New prototype.
+	* util/grub-emu.c (main): Call `grub_iso9660_init'.
+	* fs/iso9660.c: New file.
+
+	* include/grub/misc.h (grub_strncat): New prototype.
+	* kern/misc.c (grub_strncat): New function.
+	
+	* fs/hfs.c (grub_hfs_mount): Translate the error
+	`GRUB_ERR_OUT_OF_RANGE' to `GRUB_ERR_BAD_FS'.
+	* fs/jfs.c (grub_jfs_mount): Likewise.
+	* fs/ufs.c (grub_ufs_mount): Likewise.
+
 2004-10-28  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/cmain.c (cmain): Remove asm statements
@@ -66,8 +86,8 @@
 
 2004-10-11  Hollis Blanchard  <hollis@penguinppc.org>
 
-    * boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_claim):
-    Return -1 if args.base was -1.
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_claim): Return
+	-1 if args.base was -1.
 
 2004-10-08  Hollis Blanchard  <hollis@penguinppc.org>
 
@@ -82,7 +102,6 @@
 	the `result' argument optional.
 	(grub_ieee1275_release): change void * arguments to grub_addr_t.
 	All callers updated.
-
 
 2004-09-22  Hollis Blanchard  <hollis@penguinppc.org>
 

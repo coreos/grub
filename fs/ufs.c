@@ -522,6 +522,10 @@ grub_ufs_mount (grub_disk_t disk)
 
  fail:
   grub_free (data);
+  
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not a ufs filesystem");
+  
   return 0;
 }
 

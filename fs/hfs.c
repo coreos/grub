@@ -391,14 +391,14 @@ grub_hfs_mount (grub_disk_t disk)
 
   data->rootdir = grub_be_to_cpu32 (dir.dirid);
   
- fail:
-  if (grub_errno)
-    {
-      grub_free (data);
-      data = 0;
-    }
-
   return data;
+ fail:
+  grub_free (data);
+  
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not a hfs filesystem");
+  
+  return 0;
 }
 
 

@@ -100,6 +100,21 @@ grub_strcat (char *dest, const char *src)
   return dest;
 }
 
+char *
+grub_strncat (char *dest, const char *src, int c)
+{
+  char *p = dest;
+
+  while (*p)
+    p++;
+
+  while ((*p++ = *src++) != '\0' && --c)
+    ;
+  *(--p) = '\0';
+  
+  return dest;
+}
+
 int
 grub_printf (const char *fmt, ...)
 {

@@ -156,6 +156,7 @@ main (int argc, char *argv[])
   grub_util_biosdisk_init (args.dev_map);
 
   /* Initialize the default modules.  */
+  grub_iso9660_init ();
   grub_fat_init ();
   grub_ext2_init ();
   grub_ufs_init ();

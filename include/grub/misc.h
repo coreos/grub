@@ -34,6 +34,7 @@ char *EXPORT_FUNC(grub_strcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strncpy) (char *dest, const char *src, int c);
 char *EXPORT_FUNC(grub_stpcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strcat) (char *dest, const char *src);
+char *EXPORT_FUNC(grub_strncat) (char *dest, const char *src, int c);
 
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
