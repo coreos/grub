@@ -1,5 +1,10 @@
 2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/builtins.c (setup_func): Add a VSTa fs entry into
+	STAGE1_5_MAP.
+	
+2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/shared.h (BUILTIN_HELP_LIST): New macro. Used for
 	commands whose help messages are listed when no argument is
 	specified to the command "help".

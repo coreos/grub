@@ -3650,11 +3650,12 @@ setup_func (char *arg, int flags)
   struct stage1_5_map stage1_5_map[] =
   {
     {"ext2fs",   "/e2fs_stage1_5"},
-    {"ffs",      "/ffs_stage1_5"},
     {"fat",      "/fat_stage1_5"},
+    {"ffs",      "/ffs_stage1_5"},
+    {"jfs",      "/jfs_stage1_5"},
     {"minix",    "/minix_stage1_5"},
     {"reiserfs", "/reiserfs_stage1_5"},
-    {"jfs",      "/jfs_stage1_5"},
+    {"vstafs",   "/vstafs_stage1_5"},
     {"xfs",      "/xfs_stage1_5"}
   };
 
