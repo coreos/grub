@@ -1,5 +1,11 @@
 2004-03-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/serial.c (serial_putchar): Handle the character code
+	127 as a backspace. Reported by Florian Engelhardt
+	<f.engelhardt@gmx.net>.
+
+2004-03-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	From Boji Tony Kannanthanam <boji.t.kannanthanam@intel.com>:
 	* util/grub-install.in (convert): Add support for ATARAID
 	device names.
