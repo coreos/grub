@@ -132,7 +132,7 @@ static int
 cat_func (char *arg, int flags)
 {
   char c;
-  
+
   if (! grub_open (arg))
     return 1;
 
@@ -469,7 +469,7 @@ geometry_func (char *arg, int flags)
 #ifdef GRUB_UTIL
   char *ptr;
 #endif
-  
+
   set_device (device);
   if (errnum)
     return 1;
@@ -511,7 +511,7 @@ geometry_func (char *arg, int flags)
       buf_drive = -1;
     }
 #endif /* GRUB_UTIL */
-  
+
 #ifdef GRUB_UTIL
   msg = device_map[current_drive];
 #else
@@ -520,14 +520,14 @@ geometry_func (char *arg, int flags)
   else
     msg = "CHS";
 #endif
-  
+
   grub_printf ("drive 0x%x: C/H/S = %d/%d/%d, "
 	       "The number of sectors = %d, %s\n",
 	       current_drive,
 	       geom.cylinders, geom.heads, geom.sectors,
 	       geom.total_sectors, msg);
   real_open_partition (1);
-  
+
   return 0;
 }
 
@@ -757,7 +757,7 @@ install_func (char *arg, int flags)
   char *config_file_location;
   /* If FILE is a Stage 1.5?  */
   int is_stage1_5 = 0;
-  
+
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
   static void disk_read_savesect_func (int sector)
     {
@@ -766,7 +766,7 @@ install_func (char *arg, int flags)
 
       stage2_sect = sector;
     }
-  
+
   /* Write SECTOR to INSTALLLIST, and update INSTALLADDR and
      INSTALLSECT.  */
   static void disk_read_blocklist_func (int sector)
@@ -948,9 +948,9 @@ install_func (char *arg, int flags)
 
   /* Check for the Stage 2 id.  */
   if (*((unsigned char *) (SCRATCHADDR + STAGE2_STAGE2_ID))
-      == STAGE2_ID_STAGE2)
+      != STAGE2_ID_STAGE2)
     is_stage1_5 = 1;
-  
+
   /* If INSTALLADDR is not specified explicitly in the command-line,
      determine it by the Stage 2 id.  */
   if (! installaddr)
@@ -962,10 +962,10 @@ install_func (char *arg, int flags)
 	/* Stage 1.5.  */
 	installaddr = 0x2000;
     }
-  
+
   *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
     = installaddr;
-  
+
   /* Read the whole of Stage 2.  */
   filepos = 0;
   disk_read_hook = disk_read_blocklist_func;
@@ -979,7 +979,7 @@ install_func (char *arg, int flags)
   config_file_location = ((char *) (SCRATCHADDR + STAGE2_VER_STR_OFFS));
   while (*(config_file_location++))
     ;
-  
+
   if (*ptr == 'p')
     {
       write_stage2_sect = 1;
@@ -988,17 +988,17 @@ install_func (char *arg, int flags)
 	{
 	  /* Reset the device information in FILE if it is a Stage 1.5.  */
 	  int device = 0xFFFFFFFF;
-	  
+
 	  grub_memmove (config_file_location, (char *) &device,	sizeof (int));
 	}
-      
+
       ptr = skip_to (0, ptr);
     }
 
   if (*ptr)
     {
       write_stage2_sect = 1;
-      
+
       if (! is_stage1_5)
 	/* If it is a Stage 2, just copy PTR to CONFIG_FILE_LOCATION.  */
 	grub_strcpy (config_file_location, ptr);
@@ -1007,7 +1007,7 @@ install_func (char *arg, int flags)
 	  char *config_file;
 	  int device;
 	  int tmp = current_drive;
-	  
+
 	  /* Translate the external device syntax to the internal device
 	     syntax.  */
 	  if (! (config_file = set_device (ptr)))
@@ -1016,7 +1016,7 @@ install_func (char *arg, int flags)
 	      current_drive = 0xFF;
 	      config_file = ptr;
 	    }
-	  
+
 	  device = current_drive << 24 | current_partition;
 	  current_drive = tmp;
 	  grub_memmove (config_file_location, (char *) &device, sizeof (int));
@@ -1036,7 +1036,7 @@ install_func (char *arg, int flags)
       disk_read_hook = 0;
       return 1;
     }
-  
+
   if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
 		dest_sector, 1, (BOOTSEC_LOCATION >> 4)))
     {

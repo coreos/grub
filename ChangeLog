@@ -1,15 +1,22 @@
+1999-10-03  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage2/builtins.c (install_func): Fix check for the Stage 2 id.
+	From Pavel Roskin.
+
+	* debian/Makefile.am (EXTRA_DIST): Add postinst and prerm.
+
 1999-10-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (boot_func): Pass MBI.CMDLINE instead of ARG
 	to bsd_boot.
-	
+
 1999-10-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/gunzip.c (gunzip_test_header): Check if CURRENT_DRIVE
 	is 0x20 instead of if the fs type is TFTP, because GRUB does not
 	mount CURRENT_DRIVE when using a block file. Reported by Pavel
 	Roskin.
-	
+
 1999-10-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (cat_func): Do not read the whole of a file
@@ -19,31 +26,31 @@
 	bindings.
 	(Commands): Added descriptions about "geometry", "device" and
 	"cat".
-	
+
 1999-10-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Now it is possible to build the grub shell with old BSD curses.
-	
+
 	* stage2/shared.h [!A_NORMAL] (A_NORMAL): Set to zero.
 	[!A_REVERSE && A_STANDOUT] (A_REVERSE): Set to A_STANDOUT.
 	[!A_REVERSE && !A_STANDOUT] (A_REVERSE): Set to zero.
-	
+
 1999-09-30  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/disk_io.c (set_bootdev): Mask 0x7F instead of 0x79 of
 	the device number.
-	
+
 1999-10-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in (--without-curses): New option. If WITH_CURSES is
 	no, do not check for curses.
-	
+
 	* stage2/disk_io.c (set_device) [STAGE1_5]: Change the type of
 	DEV to unsigned long.
 	* stage2/builtins.c (install_func): Always check for the Stage 2
 	id in FILE.
 	Reported by Pavel Roskin.
-	
+
 1999-09-30  Gordon Matzigkeit  <gord@fig.org>
 
 	* debian/postinst: New file to call install-info.

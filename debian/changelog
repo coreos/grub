@@ -4,6 +4,7 @@ grub (0.5.93) unstable; urgency=low
   * Highlight color set correctly when editing. (fixes:bug#42549)
   * dpkg-shlibdeps called on /usr/sbin/grub. (fixes:bug#42704)
   * Properly install Texinfo documentation. (fixes:bug#42705,bug#42919)
+  * Update file locations in README.Debian. (fixes:bug#42834)
 
 grub (0.5.92) unstable; urgency=low
 
@@ -81,5 +82,5 @@ grub (0.4-1) unstable; urgency=low
 
 Local variables:
 mode: debian-changelog
-add-log-mailing-address: "bug-grub@gnu.org"
+add-log-mailing-address: "gord@debian.org"
 End:

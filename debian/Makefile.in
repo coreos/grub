@@ -83,7 +83,7 @@ host_vendor = @host_vendor@
 install_sh = @install_sh@
 
 
-EXTRA_DIST = README.debian changelog control copyright rules
+EXTRA_DIST = README.debian changelog control copyright postinst prerm rules
 subdir = debian
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
