@@ -745,12 +745,87 @@ PC partitions.
 This boots the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command-line (it is implicit at the end of
 a config-file entry).
+
+@item color= @var{normal} [@var{highlight}]
+Change the menu colors. The color @var{normal} is used for the normal
+line in the menu, and the color @var{highlight} is used to highlight the
+line where the cursor points to. If you omit @var{highlight}, then the
+inverted color of @var{normal} is used for the highlighted line. You
+must specify an integer for a color value, and the 0-3 bits represents
+the foreground color, the 4-6 bits represents the background color, and
+the 7 bit represents that the foreground blinks.
+
+These are the possible values and the meanings:
+
+@table @asis
+@item 0
+black
+
+@item 1
+blue
+
+@item 2
+green
+
+@item 3
+cyan
+
+@item 4
+red
+
+@item 5
+magenta
+
+@item 6
+brown
+
+@item 7
+light gray
+
+@item
+@strong{These below can be specified only for the foreground.}
+
+@item 8
+dark gray
+
+@item 9
+light blue
+
+@item A
+light green
+
+@item B
+light cyan
+
+@item C
+light red
+
+@item D
+light magenta
+
+@item E
+yellow
+
+@item F
+white
 @end table
 
-Commands usable in configuration files and interactively which are only
-available in the debug version of the GRUB Stage 2.
+The background is represented by 3 bits, so you cannot specify more than
+7 for it.
 
-@table @code
+This command can be used in the configuration file and on the
+command-line, so you may write something like this in your configuration
+file:
+
+@example
+# the default colors (light gray / blue, black / light gray)
+color= 0x17 0x70
+
+# change the colors
+title= OS-BS like
+color= 0x16 0x60
+@end example
+
 @item testload= @var{file}
 Read the entire contents of @var{file} in several different ways and
 compares them, to test the filesystem code. The output is somewhat

@@ -312,6 +312,8 @@ extern void (*debug_fs) (int);
 extern void (*debug_fs_func) (int);
 /* The flag for debug mode.  */
 extern int debug;
+/* Color settings */
+extern int normal_color, highlight_color;
 #endif /* STAGE1_5 */
 
 extern unsigned long current_drive;
@@ -424,6 +426,11 @@ int getrtsecs (void);
 
 /* Clear the screen. */
 void cls (void);
+
+#ifndef GRUB_UTIL
+/* Turn off cursor. */
+void nocursor (void);
+#endif
 
 /* Get the current cursor position (where 0,0 is the top left hand
    corner of the screen).  Returns packed values, (RET >> 8) is x,

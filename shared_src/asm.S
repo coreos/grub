@@ -1133,6 +1133,38 @@ ENTRY(cls)
 	pop	%ebp
 	ret
 
+	
+/*
+ * nocursor()
+ * BIOS call "INT 10H Function 01h" to set cursor type
+ *      Call with       %ah = 0x01
+ *                      %ch = cursor starting scanline
+ *                      %cl = cursor ending scanline
+ */
+
+ENTRY(nocursor)
+	push	%ebp
+	push	%eax
+	push	%ebx                    /* save EBX */
+	push	%edx
+
+	call	EXT_C(prot_to_real)
+	.code16
+
+	movw    $0x2000, %cx
+	movb    $0x1, %ah
+	int     $0x10 
+
+	data32
+	call	EXT_C(real_to_prot)
+	.code32
+
+	pop	%edx
+	pop	%ebx
+	pop	%eax
+	pop	%ebp
+	ret
+		
 
 /*
  * getxy()

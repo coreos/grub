@@ -78,6 +78,10 @@ char *password;
 /* True when the debug mode is turned on, and false when it is turned off.  */
 int debug = 0;
 
+/* Color settings */
+int normal_color;
+int highlight_color;
+
 char *
 skip_to(int after_equal, char *cmdline)
 {
@@ -107,7 +111,7 @@ char commands[] =
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
   \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
   \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
-  \"makeactive\", \"boot\", and
+  \"color= <normal> [<highlight>]\", \"makeactive\", \"boot\", and
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
 
 static void
@@ -632,8 +636,26 @@ returnit:
 	  grub_printf (" Debug mode is turned on\n");
 	}
     }
+  else if (substring ("color", cur_heap) < 1)
+    {
+      char *normal;
+      char *highlight;
+
+      normal = cur_cmdline;
+      highlight = skip_to (0, normal);
+      
+      if (safe_parse_maxint (&normal, &normal_color))
+	{
+	  /* The second argument is optional, so set highlight_color
+	     to inverted NORMAL_COLOR.  */
+	  if (*highlight == 0
+	      || ! safe_parse_maxint (&highlight, &highlight_color))
+	    highlight_color = ((normal_color >> 4)
+			       | ((normal_color & 0xf) << 4));
+	}
+    }
   else if (*cur_heap && *cur_heap != ' ')
     errnum = ERR_UNRECOGNIZED;
-
+  
   goto restart;
 }

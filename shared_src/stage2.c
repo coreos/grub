@@ -89,6 +89,19 @@ print_border(int y, int size)
 {
   int i;
 
+#ifndef GRUB_UTIL
+  /* Color the menu. The menu is 75 * 14 characters.  */
+  for (i = 0; i < 14; i++)
+    {
+      int j;
+      for (j = 0; j < 75; j++) 
+	{
+	  gotoxy (j + 1, i + y); 
+	  set_attrib (normal_color); 
+	}
+    }
+#endif
+  
   gotoxy(1, y);
 
   putchar(DISP_UL);
@@ -152,6 +165,9 @@ restart:
     }
 
   init_page();
+#ifndef GRUB_UTIL
+  nocursor(); 
+#endif
 
   print_border(3, 12);
 
@@ -178,8 +194,13 @@ restart:
 
   print_entries(3, 12, first_entry, menu_entries);
 
-  /* invert initial line */
+  /* highlight initial line */
+#ifdef GRUB_UTIL
   set_line (4 + entryno, A_REVERSE);
+#else
+  set_line (4 + entryno, highlight_color);
+#endif
+  
 
   /* XX using RT clock now, need to initialize value */
   while ((time1 = getrtsecs()) == 0xFF);
@@ -222,15 +243,27 @@ restart:
 	    {
 	      if (entryno > 0)
 		{
+#ifdef GRUB_UTIL
 		  set_line (4 + entryno, A_NORMAL);
+#else
+		  set_line (4 + entryno, normal_color);
+#endif
 		  entryno --;
+#ifdef GRUB_UTIL
 		  set_line (4 + entryno, A_REVERSE);
+#else
+		  set_line (4 + entryno, highlight_color);
+#endif
 		}
 	      else if (first_entry > 0)
 		{
 		  first_entry --;
 		  print_entries(3, 12, first_entry, menu_entries);
+#ifdef GRUB_UTIL
 		  set_line (4, A_REVERSE);
+#else
+		  set_line (4, highlight_color);
+#endif
 		}
 	    }
 	  if (((c == KEY_DOWN) || (ASCII_CHAR(c) == 14))
@@ -238,15 +271,27 @@ restart:
 	    {
 	      if (entryno < 11)
 		{
+#ifdef GRUB_UTIL
 		  set_line (4 + entryno, A_NORMAL);
+#else
+		  set_line (4 + entryno, normal_color);
+#endif
 		  entryno ++;
+#ifdef GRUB_UTIL
 		  set_line (4 + entryno, A_REVERSE);
+#else
+		  set_line (4 + entryno, highlight_color);
+#endif
 		}
 	      else if (num_entries > 12+first_entry)
 		{
 		  first_entry ++;
 		  print_entries (3, 12, first_entry, menu_entries);
+#ifdef GRUB_UTIL
 		  set_line (15, A_REVERSE);
+#else
+		  set_line (15, highlight_color);
+#endif
 		}
 	    }
 
@@ -261,7 +306,11 @@ restart:
 	    {
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
+#ifdef GRUB_UTIL
 		  set_line (4 + entryno, A_NORMAL);
+#else
+		  set_line (4 + entryno, normal_color);
+#endif
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
@@ -518,7 +567,12 @@ cmain(void)
 
   for (;;)
     {
-      config_len = 0; menu_len = 0; num_entries = 0; default_entry = 0;
+      config_len = 0;
+      menu_len = 0;
+      num_entries = 0;
+      default_entry = 0;
+      normal_color = A_NORMAL;
+      highlight_color = A_REVERSE;
       config_entries = (char *)(mbi.mmap_addr + mbi.mmap_length);
       menu_entries = (char *)(BUFFERADDR + (32 * 1024));
       password = NULL; fallback = -1; grub_timeout = -1;
@@ -562,13 +616,30 @@ cmain(void)
 		}
 	      else if (!state)
 		{
-		  if (substring("timeout", cmdline) < 1)
-		    safe_parse_maxint(&ptr, &grub_timeout);
-		  if (substring("fallback", cmdline) < 1)
-		    safe_parse_maxint(&ptr, &fallback);
-		  if (substring("default", cmdline) < 1)
-		    safe_parse_maxint(&ptr, &default_entry);
-		  if (substring("password", cmdline) < 1)
+		  if (substring ("timeout", cmdline) < 1)
+		    safe_parse_maxint (&ptr, &grub_timeout);
+		  else if (substring ("fallback", cmdline) < 1)
+		    safe_parse_maxint (&ptr, &fallback);
+		  else if (substring ("default", cmdline) < 1)
+		    safe_parse_maxint (&ptr, &default_entry);
+		  else if (substring ("color", cmdline) < 1)
+		    {
+		      char *normal;
+		      char *highlight;
+
+		      normal = ptr;
+		      highlight = skip_to (0, normal);
+
+		      if (safe_parse_maxint (&normal, &normal_color))
+			{
+			  if (*highlight == 0
+			      || ! safe_parse_maxint (&highlight,
+						      &highlight_color))
+			    highlight_color = ((normal_color >> 4)
+					       | ((normal_color & 0xf) << 4));
+			}
+		    }
+		  else if (substring ("password", cmdline) < 1)
 		    {
 		      password = config_entries;
 		      while ((*(config_entries++) = *(ptr++)) != 0);

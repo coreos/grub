@@ -1,3 +1,25 @@
+1999-06-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Color-menu support based on Peter Astrand
+	<altic@lysator.liu.se>'s patch.
+	
+	* shared_src/asm.S (nocursor): New function.
+	* shared_src/cmdline.c (normal_color): New variable.
+	(highlight_color): Likewise.
+	(commands): Added "color" command.
+	(enter_cmdline): Handle the color command.
+	* shared_src/shared.h (normal_color): Declared.
+	(highlight_color): Likewise.
+	[!GRUB_UTIL] (nocursor): Likewise.
+	* shared_src/stage2.c (print_border) [!GRUB_UTIL]: Color the
+	menu.
+	(run_menu) [!GRUB_UTIL]: Call nocursor, and call set_line with
+	the second argument HIGHLIGHT_COLOR when highlighting a line,
+	and NORMAL_COLOR when drawing a normal line.
+	(cmain): Initialize normal_color and highlight_color. Handle
+	the color command in the same way as the command-line
+	interface.
+	
 1999-06-07  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* e2fs_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Set to 31744.
