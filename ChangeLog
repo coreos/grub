@@ -1,3 +1,9 @@
+2002-06-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/fsys_xfs.c (le32): Don't use bswap, but use xchgb and
+	roll, because 386 doesn't have bswap. Reported by Frode Vatvedt
+	Fjeld <frodef@acm.org>.
+	
 2002-06-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* netboot/main.c (ifconfig): If GW is specified, clear out the
