@@ -1010,8 +1010,6 @@ gloop2ret:
 	ret
 
 
-#ifdef DEBUG
-
 ENTRY(patch_code)	/* labels start with "pc_" */
 	.code16
 
@@ -1029,8 +1027,6 @@ pc_stop:
 ENTRY(patch_code_end)
 
 	.code32
-
-#endif /* DEBUG */
 
 
 /*

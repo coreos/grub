@@ -419,7 +419,7 @@ lastlist:
 #else
 	.long 1		/* this is the sector start parameter, in logical
 			   sectors from the start of the disk, sector 0 */
-	.word 80	/* this is the number of sectors to read */
+	.word 90	/* this is the number of sectors to read */
 	.word 0x0800	/* this is the segment of the starting address
 			   to load the data into */
 #endif

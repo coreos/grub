@@ -21,7 +21,7 @@
 
 #include "shared.h"
 
-#ifdef DEBUG
+#ifndef GRUB_UTIL
 
 /*
  *  This is the Intel MultiProcessor Spec debugging/display code.
@@ -66,7 +66,7 @@ cmos_read_byte(int loc)
 
 #include "smp-imps.c"
 
-#endif /* DEBUG */
+#endif /* ! GRUB_UTIL */
 
 /*
  *  These are used for determining if the command-line should ask the user
@@ -74,6 +74,9 @@ cmos_read_byte(int loc)
  */
 int fallback;
 char *password;
+
+/* True when the debug mode is turned on, and false when it is turned off.  */
+int debug = 0;
 
 char *
 skip_to(int after_equal, char *cmdline)
@@ -99,39 +102,27 @@ init_cmdline(void)
    completions of a device/filename.  ESC at any time exits. ]\n");
 }
 
-
-#ifdef DEBUG
 char commands[] =
  " Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
-  \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\", \"fstest\",
-  \"module= <file> ...\", \"modulenounzip= <file> ...\", \"makeactive\", \"boot\", and
+  \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
+  \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
+  \"makeactive\", \"boot\", and
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
-#else  /* DEBUG */
-char commands[] =
- " Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
-  \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
-  \"module= <file> ...\", \"modulenounzip= <file> ...\", \"makeactive\", \"boot\", and
-  \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
-#endif /* DEBUG */
 
-#ifdef DEBUG
 static void
 debug_fs_print_func(int sector)
 {
   printf("[%d]", sector);
 }
-#endif /* DEBUG */
-
 
 static int installaddr, installlist, installsect;
 
 static void
 debug_fs_blocklist_func(int sector)
 {
-#ifdef DEBUG
-  printf("[%d]", sector);
-#endif /* DEBUG */
+  if (debug)
+    printf("[%d]", sector);
 
   if (*((unsigned long *)(installlist-4))
       + *((unsigned short *)installlist) != sector
@@ -497,7 +488,6 @@ returnit:
 	  return 1;
 	}
     }
-#ifdef DEBUG
   else if (substring("testload", cur_heap) < 1)
     {
       type = 0;
@@ -514,87 +504,94 @@ returnit:
 	  /* read whole file first */
 	  printf("Whole file: ");
 
-	  grub_read ((char *) 0x100000, -1);
+	  grub_read ((char *) RAW_ADDR (0x100000), -1);
 
 	  /* now compare two sections of the file read differently */
 
 	  for (i = 0; i < 0x10ac0; i++)
 	    {
-	      *((unsigned char *)(0x200000+i)) = 0;
-	      *((unsigned char *)(0x300000+i)) = 1;
+	      *((unsigned char *) RAW_ADDR (0x200000+i)) = 0;
+	      *((unsigned char *) RAW_ADDR (0x300000+i)) = 1;
 	    }
 
 	  /* first partial read */
 	  printf("\nPartial read 1: ");
 
 	  filepos = 0;
-	  grub_read ((char *) 0x200000, 0x7);
-	  grub_read ((char *) 0x200007, 0x100);
-	  grub_read ((char *) 0x200107, 0x10);
-	  grub_read ((char *) 0x200117, 0x999);
-	  grub_read ((char *) 0x200ab0, 0x10);
-	  grub_read ((char *) 0x200ac0, 0x10000);
+	  grub_read ((char *) RAW_ADDR (0x200000), 0x7);
+	  grub_read ((char *) RAW_ADDR (0x200007), 0x100);
+	  grub_read ((char *) RAW_ADDR (0x200107), 0x10);
+	  grub_read ((char *) RAW_ADDR (0x200117), 0x999);
+	  grub_read ((char *) RAW_ADDR (0x200ab0), 0x10);
+	  grub_read ((char *) RAW_ADDR (0x200ac0), 0x10000);
 
 	  /* second partial read */
 	  printf("\nPartial read 2: ");
 
 	  filepos = 0;
-	  grub_read ((char *) 0x300000, 0x10000);
-	  grub_read ((char *) 0x310000, 0x10);
-	  grub_read ((char *) 0x310010, 0x7);
-	  grub_read ((char *) 0x310017, 0x10);
-	  grub_read ((char *) 0x310027, 0x999);
-	  grub_read ((char *) 0x3109c0, 0x100);
+	  grub_read ((char *) RAW_ADDR (0x300000), 0x10000);
+	  grub_read ((char *) RAW_ADDR (0x310000), 0x10);
+	  grub_read ((char *) RAW_ADDR (0x310010), 0x7);
+	  grub_read ((char *) RAW_ADDR (0x310017), 0x10);
+	  grub_read ((char *) RAW_ADDR (0x310027), 0x999);
+	  grub_read ((char *) RAW_ADDR (0x3109c0), 0x100);
 
-	  printf("\nHeader1 = 0x%x, next = 0x%x, next = 0x%x, next = 0x%x\n",
-		 *((int *)0x200000), *((int *)0x200004), *((int *)0x200008),
-		 *((int *)0x20000c));
+	  printf ("\nHeader1 = 0x%x, next = 0x%x, next = 0x%x, next = 0x%x\n",
+		  *((int *) RAW_ADDR (0x200000)),
+		  *((int *) RAW_ADDR (0x200004)),
+		  *((int *) RAW_ADDR (0x200008)),
+		  *((int *) RAW_ADDR (0x20000c)));
 
-	  printf("Header2 = 0x%x, next = 0x%x, next = 0x%x, next = 0x%x\n",
-		 *((int *)0x300000), *((int *)0x300004), *((int *)0x300008),
-		 *((int *)0x30000c));
-
-	  for (i = 0; i < 0x10ac0 && *((unsigned char *)(0x200000+i))
-		 == *((unsigned char *)(0x300000+i)); i++);
+	  printf ("Header2 = 0x%x, next = 0x%x, next = 0x%x, next = 0x%x\n",
+		  *((int *) RAW_ADDR (0x300000)),
+		  *((int *) RAW_ADDR (0x300004)),
+		  *((int *) RAW_ADDR (0x300008)),
+		  *((int *) RAW_ADDR (0x30000c)));
+	  
+	  for (i = 0; i < 0x10ac0 && *((unsigned char *) RAW_ADDR (0x200000+i))
+		 == *((unsigned char *) RAW_ADDR (0x300000+i)); i++);
 
 	  printf("Max is 0x10ac0: i=0x%x, filepos=0x%x\n", i, filepos);
 
 	  debug_fs = NULL;
 	}
     }
-  else if (substring("read", cur_heap) < 1)
+  else if (substring ("read", cur_heap) < 1)
     {
       int myaddr;
-      if (safe_parse_maxint(&cur_cmdline, &myaddr))
-	printf("Address 0x%x: Value 0x%x", myaddr, *((unsigned *)myaddr));
+      if (safe_parse_maxint (&cur_cmdline, &myaddr))
+	printf ("Address 0x%x: Value 0x%x",
+		myaddr, *((unsigned *) RAW_ADDR (myaddr)));
     }
-  else if (substring("fstest", cur_heap) == 0)
+  else if (substring ("fstest", cur_heap) == 0)
     {
       if (debug_fs)
 	{
 	  debug_fs = NULL;
-	  printf(" Filesystem tracing is now off\n");
+	  printf (" Filesystem tracing is now off\n");
 	}
       else
 	{
 	  debug_fs = debug_fs_print_func;
-	  printf(" Filesystem tracing is now on\n");
+	  printf (" Filesystem tracing is now on\n");
 	}
     }
-  else if (substring("impsprobe", cur_heap) == 0)
+  else if (substring ("impsprobe", cur_heap) == 0)
     {
-      if (!imps_probe())
-	printf(" No MPS information found or probe failed\n");
+#ifndef GRUB_UTIL
+      if (!imps_probe ())
+#endif
+	printf (" No MPS information found or probe failed\n");
     }
-  else if (substring("displaymem", cur_heap) == 0)
+  else if (substring ("displaymem", cur_heap) == 0)
     {
-      if (get_eisamemsize() != -1)
-	printf(" EISA Memory BIOS Interface is present\n");
+      if (get_eisamemsize () != -1)
+	printf (" EISA Memory BIOS Interface is present\n");
       if (get_mmap_entry ((void *) SCRATCHADDR, 0) != 0 ||
 	  *((int *) SCRATCHADDR) != 0)
-	printf(" Address Map BIOS Interface is present\n");
+	printf (" Address Map BIOS Interface is present\n");
 
-      printf(" Lower memory: %uK, Upper memory (to first chipset hole): %uK\n",
+      printf (" Lower memory: %uK, Upper memory (to first chipset hole): %uK\n",
 	     mbi.mem_lower, mbi.mem_upper);
 
       if (mbi.flags & MB_INFO_MEM_MAP)
@@ -602,8 +599,8 @@ returnit:
 	  struct AddrRangeDesc *map = (struct AddrRangeDesc *) mbi.mmap_addr;
 	  int end_addr = mbi.mmap_addr + mbi.mmap_length;
 
-	  printf(" [Address Range Descriptor entries immediately follow (values are 64-bit)]\n");
-	  while (end_addr > (int)map)
+	  printf (" [Address Range Descriptor entries immediately follow (values are 64-bit)]\n");
+	  while (end_addr > (int) map)
 	    {
 	      char *str;
 
@@ -611,18 +608,30 @@ returnit:
 		str = "Usable RAM";
 	      else
 		str = "Reserved";
-	      printf("   %s:  Base Address:  0x%x X 4GB + 0x%x,
+	      printf ("   %s:  Base Address:  0x%x X 4GB + 0x%x,
       Length:   %u X 4GB + %u bytes\n",
 		     str, map->BaseAddrHigh, map->BaseAddrLow,
 		     map->LengthHigh, map->LengthLow);
 
-	      map = ((struct AddrRangeDesc *) (((int)map) + 4 + map->size));
+	      map = ((struct AddrRangeDesc *) (((int) map) + 4 + map->size));
 	    }
 	}
     }
-#endif /* DEBUG */
-  else if (substring("makeactive", cur_heap) == 0)
+  else if (substring ("makeactive", cur_heap) == 0)
     make_saved_active();
+  else if (substring ("debug", cur_heap) == 0)
+    {
+      if (debug)
+	{
+	  debug = 0;
+	  grub_printf (" Debug mode is turned off\n");
+	}
+      else
+	{
+	  debug = 1;
+	  grub_printf (" Debug mode is turned on\n");
+	}
+    }
   else if (*cur_heap && *cur_heap != ' ')
     errnum = ERR_UNRECOGNIZED;
 

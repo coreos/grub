@@ -212,10 +212,10 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
       sector++;
     }
 
-#if !defined(STAGE1_5) && defined(DEBUG)
-  if (debug_fs)
+#if !defined(STAGE1_5)
+  if (debug_fs && debug)
     printf ("<%d, %d, %d>", sector, byte_offset, byte_len);
-#endif /* !STAGE1_5 && DEBUG */
+#endif /* !STAGE1_5 */
 
   /*
    *  Call RAWREAD, which is very similar, but:

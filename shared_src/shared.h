@@ -310,6 +310,8 @@ extern int compressed_file;
 /* instrumentation variables */
 extern void (*debug_fs) (int);
 extern void (*debug_fs_func) (int);
+/* The flag for debug mode.  */
+extern int debug;
 #endif /* STAGE1_5 */
 
 extern unsigned long current_drive;

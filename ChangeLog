@@ -1,3 +1,30 @@
+1999-06-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	The debug version of Stage 2 is removed.
+
+	* shared_src/cmdline.c: The imps code is now defined if GRUB_UTIL
+	is not defined, but not if DEBUG.
+	(debug): New global variable.
+	(commands): All commands are always enabled, and added "debug".
+	(debug_fs_print_func): Defined unconditionally.
+	(debug_fs_blocklist_func): If DEBUG is true, then call printf.
+	(enter_cmdline): Handle "testload", "read", "fstest",
+	"impsprobe" and "displaymem" unconditionally, and added "debug"
+	handling.
+	[GRUB_UTIL]: If a command is impsprobe, just fails.
+	* shared_src/disk_io.c (devread) [!STAGE1_5]: If DEBUG_FS and
+	DEBUG are true, then call printf.
+	* shared_src/asm.S (patch_code): Defined unconditionally.
+	(patch_code_end): Likewise.
+	* stage1/stage1.S (firstlist) [!FFS_STAGE1_5]: Increase the
+	number of sectors to 90, because Stage 2 is larger than 80
+	sectors.
+	* configure.in: The option --enable-debug is removed, and do
+	not output "stage2_debug/Makefile".
+	* Makefile.am (SUBDIRS): stage2_debug is removed.
+	* stage2_debug/Makefile.am: Deleted.
+	* stage2_debug/Makefile.in: Likewise.
+	
 1999-06-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/main.c (verbose): New variable.
