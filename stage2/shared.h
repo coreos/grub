@@ -798,6 +798,7 @@ int nul_terminate (char *str);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);
 int memcheck (int start, int len);
+int translate_keycode (int c);
 
 #ifndef NO_DECOMPRESSION
 /* Compression support. */

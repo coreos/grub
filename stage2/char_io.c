@@ -337,36 +337,8 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 
   while (ASCII_CHAR (c = getkey ()) != '\n' && ASCII_CHAR (c) != '\r')
     {
-      switch (c)
-	{
-	case KEY_LEFT:
-	  c = 2;
-	  break;
-	case KEY_RIGHT:
-	  c = 6;
-	  break;
-	case KEY_UP:
-	  c = 16;
-	  break;
-	case KEY_DOWN:
-	  c = 14;
-	  break;
-	case KEY_HOME:
-	  c = 1;
-	  break;
-	case KEY_END:
-	  c = 5;
-	  break;
-	case KEY_DC:
-	  c = 4;
-	  break;
-	case KEY_BACKSPACE:
-	  c = 8;
-	  break;
-	}
-
-      c = ASCII_CHAR (c);
-
+      c = translate_keycode (c);
+      
       /* If READLINE is non-zero, handle readline-like key bindings.  */
       if (readline)
 	{
@@ -617,6 +589,126 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
     add_history (cmdline, 0);
 
   return 0;
+}
+
+/* Translate a special key to a common ascii code.  */
+int
+translate_keycode (int c)
+{
+# ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
+    {
+      /* In a serial terminal, things are complicated, because several
+	 key codes start from the character ESC, while we want to accept
+	 ESC itself.  */
+      if (c == '\e')
+	{
+	  int start;
+
+	  /* Get current time.  */
+	  start = currticks ();
+
+	  while (checkkey () == -1)
+	    {
+	      /* Wait for a next character, at least for 0.1 sec
+		 (18.2 ticks/sec).  */
+	      int now;
+	      
+	      now = currticks ();
+	      if (now - start >= 2)
+		return c;
+	    }
+
+	  c = getkey ();
+	  if (c == '[')
+	    {
+	      int c1, c2;
+
+	      /* To filter illegal states.  */
+	      c = 0;
+	      c1 = getkey ();
+	      switch (c1)
+		{
+		case 'A':	/* KEY_UP */
+		  c = 16;
+		  break;
+		case 'B':	/* KEY_DOWN */
+		  c = 14;
+		  break;
+		case 'C':	/* KEY_RIGHT */
+		  c = 6;
+		  break;
+		case 'D':	/* KEY_LEFT */
+		  c = 2;
+		  break;
+		case 'F':	/* End */
+		  c = 5;
+		  break;
+		case 'H':	/* Home */
+		  c = 1;
+		  break;
+		case '1':
+		  c2 = getkey ();
+		  if (c2 == '~')
+		    {
+		      /* One of control keys (pos1,....).  */
+		      c = 1;
+		    }
+		  break;
+		case '3':
+		  c2 = getkey ();
+		  if (c2 == '~')
+		    {
+		      /* One of control keys (del,....).  */
+		      c = 4;
+		    }
+		  break;
+		case '4':	/* Del */
+		  c = 4;
+		  break;
+		}
+	    }
+
+	  /* Drain the input buffer, because so-called VT100-compatible
+	     terminals could send key codes which aren't handled in the
+	     code above.  */
+	  while (checkkey () != -1)
+	    (void) getkey ();
+	}
+    }
+  else
+# endif /* SUPPORT_SERIAL */
+    {
+      switch (c)
+	{
+	case KEY_LEFT:
+	  c = 2;
+	  break;
+	case KEY_RIGHT:
+	  c = 6;
+	  break;
+	case KEY_UP:
+	  c = 16;
+	  break;
+	case KEY_DOWN:
+	  c = 14;
+	  break;
+	case KEY_HOME:
+	  c = 1;
+	  break;
+	case KEY_END:
+	  c = 5;
+	  break;
+	case KEY_DC:
+	  c = 4;
+	  break;
+	case KEY_BACKSPACE:
+	  c = 8;
+	  break;
+	}
+    }
+  
+  return ASCII_CHAR (c);
 }
 #endif /* STAGE1_5 */
 

@@ -432,6 +432,31 @@ getrtsecs (void)
   return time (0);
 }
 
+int
+currticks (void)
+{
+  struct timeval tv;
+  long csecs;
+  int ticks_per_csec, ticks_per_usec;
+
+  /* Note: 18.2 ticks/sec.  */
+
+  /* Get current time.  */
+  gettimeofday (&tv, 0);
+
+  /* Compute centiseconds.  */
+  csecs = tv.tv_sec / 10;
+
+  /* Ticks per centisecond.  */
+  ticks_per_csec = csecs * 182;
+
+  /* Ticks per microsecond.  */
+  ticks_per_usec = (((tv.tv_sec - csecs * 10) * 1000000 + tv.tv_usec)
+		    * 182 / 10000000);
+
+  /* Sum them.  */
+  return ticks_per_csec + ticks_per_usec;
+}
 
 /* low-level character I/O */
 void

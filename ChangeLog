@@ -1,3 +1,41 @@
+2000-08-26  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Don't save/restore fragile registers unnecessarily.
+	
+	* stage2/asm.S [!STAGE1_5] (track_int13): Don't save/restore
+	%ecx, %edx, or %eax.
+	[!STAGE1_5] (set_int13_handler): Likewise.
+	(biosdisk_int13_extensions): Likewise.
+	(biosdisk_standard): Likewise.
+	(check_int13_extensions): Likewise.
+	(get_diskinfo_int13_extensions): Likewise.
+	(get_diskinfo_standard): Likewise.
+	(get_diskinfo_floppy): Likewise.
+	[!STAGE1_5] (get_eisamemsize): Likewise.
+	[!STAGE1_5] (get_mmap_entry): Likewise.
+	[!STAGE1_5] (console_cls): Likewise.
+	[!STAGE1_5] (nocursor): Likewise.
+	[!STAGE1_5] (console_getxy): Likewise.
+	[!STAGE1_5] (console_gotoxy): Likewise.
+	[!STAGE1_5] (set_attrib): Likewise.
+	[!STAGE1_5] (getrtsecs): Likewise.
+	[!STAGE1_5] (currticks): Likewise, and don't zero %eax
+	explicitly, since prot_to_real does that.
+	
+2000-08-25  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/char_io.c [!STAGE1_5] (translate_keycode): New
+	function. The serial part is stolen from the patch by Christoph
+	Plattner.
+	[!STAGE1_5] (get_cmdline): Call translate_keycode instead of
+	translating special key codes into ASCII characters by itself.
+	* stage2/stage2.c (run_menu): Wrap getkey with the macro
+	ASCII_CHAR, when checking if ESC is pressed.
+	Call translate_keycode as well as getkey, unless checkkey
+	returns -1. So don't check if C is KEY_DOWN or KEY_UP. And don't
+	use the macro ASCII_CHAR for C explicitly.
+	* stage2/shared.h (translate_keycode): Declared.
+	
 2000-08-24  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c [GRUB_UTIL]: Include stdio.h before

@@ -18,6 +18,23 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+
+/*
+ * Note: These functions defined in this file may be called from C.
+ *       Be careful of that you must not modify some registers. Quote
+ *       from gcc-2.95.2/gcc/config/i386/i386.h:
+	
+   1 for registers not available across function calls.
+   These must include the FIXED_REGISTERS and also any
+   registers that can be used without being saved.
+   The latter must include the registers where values are returned
+   and the register where structure-value addresses are passed.
+   Aside from that, you can include as many other registers as you like.
+
+  ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg
+{  1, 1, 1, 0, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1 }
+ */
+
 #define ASM_FILE
 
 #include "shared.h"
@@ -258,7 +275,6 @@ ENTRY(track_int13)
 	pushl	%ebp
 	movl	%esp, %ebp
 
-	pushl	%edx
 	pushl	%ebx
 	pushl	%edi
 
@@ -310,7 +326,6 @@ ENTRY(track_int13)
 
 	popl	%edi
 	popl	%ebx
-	popl	%edx
 	popl	%ebp
 	
 	ret
@@ -605,7 +620,6 @@ ENTRY(set_int13_handler)
 	pushl	%ebp
 	movl	%esp, %ebp
 
-	pushl	%ecx
 	pushl	%edi
 	pushl	%esi
 
@@ -649,7 +663,6 @@ ENTRY(set_int13_handler)
 
 	popl	%esi
 	popl	%edi
-	popl	%ecx
 	popl	%ebp
 	ret
 
@@ -938,8 +951,6 @@ ENTRY(biosdisk_int13_extensions)
 	pushl	%ebp
 	movl	%esp, %ebp
 
-	pushl	%ecx
-	pushl	%edx
 	pushl	%esi
 
 	/* compute the address of disk_address_packet */
@@ -971,8 +982,6 @@ ENTRY(biosdisk_int13_extensions)
 	movb	%dl, %al	/* return value in %eax */
 
 	popl	%esi
-	popl	%edx
-	popl	%ecx
 	popl	%ebp
 
 	ret
@@ -991,8 +1000,6 @@ ENTRY(biosdisk_standard)
 	movl	%esp, %ebp
 
 	pushl	%ebx
-	pushl	%ecx
-	pushl	%edx
 	pushl	%edi
 	pushl	%esi
 
@@ -1044,8 +1051,6 @@ ENTRY(biosdisk_standard)
 	
 	popl	%esi
 	popl	%edi
-	popl	%edx
-	popl	%ecx
 	popl	%ebx
 	popl	%ebp
 
@@ -1064,8 +1069,6 @@ ENTRY(check_int13_extensions)
 	movl	%esp, %ebp
 
 	pushl	%ebx
-	pushl	%ecx
-	pushl	%edx
 
 	/* drive */
 	movb	0x8(%ebp), %dl
@@ -1100,8 +1103,6 @@ ENTRY(check_int13_extensions)
 
 	movb	%bl, %al	/* return value in %eax */
 
-	popl	%edx
-	popl	%ecx
 	popl	%ebx
 	popl	%ebp
 
@@ -1120,7 +1121,6 @@ ENTRY(get_diskinfo_int13_extensions)
 	movl	%esp, %ebp
 
 	pushl	%ebx
-	pushl	%edx
 	pushl	%esi
 
 	/* compute the address of drive parameters */
@@ -1149,7 +1149,6 @@ ENTRY(get_diskinfo_int13_extensions)
 	movb	%bl, %al	/* return value in %eax */
 
 	popl	%esi
-	popl	%edx
 	popl	%ebx
 	popl	%ebp
 	
@@ -1169,8 +1168,6 @@ ENTRY(get_diskinfo_standard)
 	movl	%esp, %ebp
 
 	pushl	%ebx
-	pushl	%ecx
-	pushl	%edx
 	pushl	%edi
 
 	/* drive */
@@ -1196,7 +1193,7 @@ ENTRY(get_diskinfo_standard)
 	.code32
 
 	/* restore %ebp */
-	leal	0x10(%esp), %ebp
+	leal	0x8(%esp), %ebp
 	
 	/* heads */
 	movb	%dh, %al
@@ -1224,8 +1221,6 @@ ENTRY(get_diskinfo_standard)
 	movb	%bl, %al	/* return value in %eax */
 
 	popl	%edi
-	popl	%edx
-	popl	%ecx
 	popl	%ebx
 	popl	%ebp
 
@@ -1245,8 +1240,6 @@ ENTRY(get_diskinfo_floppy)
 	movl	%esp, %ebp
 
 	pushl	%ebx
-	pushl	%ecx
-	pushl	%edx
 	pushl	%esi
 
 	/* drive */
@@ -1291,7 +1284,7 @@ probe_values:
 	.code32
 
 	/* restore %ebp */
-	leal	0x10(%esp), %ebp
+	leal	0x8(%esp), %ebp
 	
 	/* cylinders */
 	movl	0xc(%ebp), %eax
@@ -1313,8 +1306,6 @@ probe_values:
 	incl	%eax		/* %eax = 1 (non-zero) */
 3:
 	popl	%esi
-	popl	%edx
-	popl	%ecx
 	popl	%ebx
 	popl	%ebp
 
@@ -1505,8 +1496,6 @@ xdone:
 ENTRY(get_eisamemsize)
 	push	%ebp
 	push	%ebx
-	push	%ecx
-	push	%edx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
 	.code16
@@ -1527,8 +1516,6 @@ ENTRY(get_eisamemsize)
 	movl	%ebx, %eax
 
 xnoteisa:
-	pop	%edx
-	pop	%ecx
 	pop	%ebx
 	pop	%ebp
 	ret
@@ -1549,13 +1536,11 @@ xnoteisa:
 ENTRY(get_mmap_entry)
 	push	%ebp
 	push	%ebx
-	push	%ecx
-	push	%edx
 	push	%edi
 	push	%esi
 
 	/* place address (+4) in ES:DI */
-	movl	0x1c(%esp), %eax
+	movl	0x14(%esp), %eax
 	addl	$4, %eax
 	movl	%eax, %edi
 	andl	$0xf, %edi
@@ -1563,7 +1548,7 @@ ENTRY(get_mmap_entry)
 	movl	%eax, %esi
 
 	/* set continuation value */
-	movl	0x20(%esp), %ebx
+	movl	0x18(%esp), %ebx
 
 	/* set default maximum buffer size */
 	movl	$0x14, %ecx
@@ -1599,7 +1584,7 @@ xsmap:
 	.code32
 
 	/* write length of buffer (zero if error) into "addr" */
-	movl	0x1c(%esp), %eax
+	movl	0x14(%esp), %eax
 	movl	%ecx, (%eax)
 
 	/* set return value to continuation */
@@ -1607,8 +1592,6 @@ xsmap:
 
 	pop	%esi
 	pop	%edi
-	pop	%edx
-	pop	%ecx
 	pop	%ebx
 	pop	%ebp
 	ret
@@ -1769,7 +1752,6 @@ ENTRY(multi_boot)
 
 ENTRY(console_cls)
 	push	%ebp
-	push	%eax
 	push	%ebx                    /* save EBX */
 
 	call	EXT_C(prot_to_real)
@@ -1784,7 +1766,6 @@ ENTRY(console_cls)
 	.code32
 
 	pop	%ebx
-	pop	%eax
 	pop	%ebp
 	ret
 
@@ -1799,9 +1780,7 @@ ENTRY(console_cls)
 
 ENTRY(nocursor)
 	push	%ebp
-	push	%eax
 	push	%ebx                    /* save EBX */
-	push	%edx
 
 	call	EXT_C(prot_to_real)
 	.code16
@@ -1813,9 +1792,7 @@ ENTRY(nocursor)
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
-	pop	%edx
 	pop	%ebx
-	pop	%eax
 	pop	%ebp
 	ret
 		
@@ -1835,8 +1812,6 @@ ENTRY(nocursor)
 ENTRY(console_getxy)
 	push	%ebp
 	push	%ebx                    /* save EBX */
-	push	%ecx                    /* save ECX */
-	push	%edx
 
 	call	EXT_C(prot_to_real)
 	.code16
@@ -1851,8 +1826,6 @@ ENTRY(console_getxy)
 	movb	%dl, %ah
 	movb	%dh, %al
 
-	pop	%edx
-	pop	%ecx
 	pop	%ebx
 	pop	%ebp
 	ret
@@ -1870,12 +1843,10 @@ ENTRY(console_getxy)
 
 ENTRY(console_gotoxy)
 	push	%ebp
-	push	%eax
 	push	%ebx                    /* save EBX */
-	push	%edx
 
-	movb	0x14(%esp), %dl          /* %dl = x */
-	movb	0x18(%esp), %dh          /* %dh = y */
+	movb	0xc(%esp), %dl           /* %dl = x */
+	movb	0x10(%esp), %dh          /* %dh = y */
 
 	call	EXT_C(prot_to_real)
 	.code16
@@ -1887,9 +1858,7 @@ ENTRY(console_gotoxy)
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
-	pop	%edx
 	pop	%ebx
-	pop	%eax
 	pop	%ebp
 	ret
 
@@ -1931,11 +1900,9 @@ ENTRY(console_gotoxy)
 
 ENTRY(set_attrib)
 	push	%ebp
-	push	%eax
 	push	%ebx
-	push	%ecx
 
-	movl	0x14(%esp), %ecx
+	movl	0xc(%esp), %ecx
 	xorl	%ebx, %ebx
 
 	call	EXT_C(prot_to_real)
@@ -1951,9 +1918,7 @@ ENTRY(set_attrib)
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
-	pop	%ecx
 	pop	%ebx
-	pop	%eax
 	pop	%ebp
 	ret
 
@@ -1978,8 +1943,6 @@ ENTRY(set_attrib)
  */
 ENTRY(getrtsecs)
 	push	%ebp
-	push	%ecx
-	push	%edx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
 	.code16
@@ -1996,8 +1959,6 @@ gottime:
 
 	movb	%dh, %al
 
-	pop	%edx
-	pop	%ecx
 	pop	%ebp
 	ret
 
@@ -2009,13 +1970,11 @@ gottime:
  */
 ENTRY(currticks)
 	pushl	%ebp
-	pushl	%ecx
-	pushl	%edx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
 	.code16
 
-        xorl	%eax, %eax
+	/* %ax is already zero */
         int	$0x1a
 
 	DATA32	call	EXT_C(real_to_prot)
@@ -2025,8 +1984,6 @@ ENTRY(currticks)
 	shll	$16, %eax
 	movw	%dx, %ax
 
-	popl	%edx
-	popl	%ecx
 	popl	%ebp
 	ret
 

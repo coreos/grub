@@ -260,7 +260,7 @@ restart:
       while (1)
 	{
 	  /* Check if ESC is pressed.  */
-	  if (checkkey () != -1 && getkey () == 27)
+	  if (checkkey () != -1 && ASCII_CHAR (getkey ()) == '\e')
 	    {
 	      grub_timeout = -1;
 	      show_menu = 1;
@@ -358,7 +358,7 @@ restart:
 
       if (checkkey () != -1)
 	{
-	  c = getkey ();
+	  c = translate_keycode (getkey ());
 
 	  if (grub_timeout >= 0)
 	    {
@@ -369,7 +369,7 @@ restart:
 	      gotoxy (74, 4 + entryno);
 	    }
 
-	  if ((c == KEY_UP) || (ASCII_CHAR (c) == 16))
+	  if (c == 16)
 	    {
 	      if (entryno > 0)
 		{
@@ -386,8 +386,7 @@ restart:
 		  set_line_highlight (4, first_entry + entryno, menu_entries);
 		}
 	    }
-	  if (((c == KEY_DOWN) || (ASCII_CHAR (c) == 14))
-	      && (first_entry + entryno + 1) < num_entries)
+	  if (c == 14 && (first_entry + entryno + 1) < num_entries)
 	    {
 	      if (entryno < 11)
 		{
@@ -404,8 +403,6 @@ restart:
 		  set_line_highlight (15, first_entry + entryno, menu_entries);
 		}
 	    }
-
-	  c = ASCII_CHAR (c);
 
 	  if (config_entries)
 	    {
