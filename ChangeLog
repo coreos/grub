@@ -1,3 +1,9 @@
+2002-01-06  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* netboot/misc.c (inet_aton): Don't check if *P is an asterisk,
+	if I is 3. Reported by Rick (his real name and address are
+	unknown).
+	
 2002-01-03  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	Update the netboot stuff to Etherboot-5.0.5.

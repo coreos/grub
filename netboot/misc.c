@@ -221,7 +221,7 @@ inet_aton (char *p, in_addr *addr)
       if (val < 0 || val > 255)
 	return 0;
       
-      if (*p++ != '.')
+      if (i != 3 && *p++ != '.')
 	return 0;
       
       ip = (ip << 8) | val;
