@@ -1160,7 +1160,55 @@ more information.
 @node History, Index, Examples, Top
 @chapter The change log of this specification
 
-FIXME: write this chapter!
+@table @asis
+@item 0.7
+@itemize @bullet
+@item
+@dfn{Multiboot Standard} is renamed to @dfn{Multiboot Specification}.
+
+@item
+Graphics fields are added to Multiboot header.
+
+@item
+BIOS drive information, BIOS configuration table, the name of a boot
+loader, APM information, and graphics information are added to Multiboot
+information.
+
+@item
+Rewritten in Texinfo format.
+
+@item
+Rewritten, using more strict words.
+
+@item
+The maintainer changes to the GNU GRUB maintainer team
+@email{bug-grub@@gnu.org}, from Bryan Ford and Erich Stefan Boleyn.
+@end itemize
+
+@item 0.6
+@itemize @bullet
+@item
+A few wording changes.
+
+@item
+Header checksum.
+
+@item
+Clasification of machine state passed to an operating system.
+@end itemize
+
+@item 0.5
+@itemize @bullet
+@item
+Name change.
+@end itemize
+
+@item 0.4
+@itemize @bullet
+@item
+Major changes plus HTMLification.
+@end itemize
+@end table
 
 
 @node Index,  , History, Top
