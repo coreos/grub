@@ -1,3 +1,14 @@
+2001-01-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Bernhard Treutwein
+	<Bernhard.Treutwein@Verwaltung.Uni-Muenchen.DE>:
+	* docs/grub-new.texi (DOS/Windows): Made more readable.
+	
+2001-01-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/multiboot.texi: Start reorganizing Multiboot
+	Specification.
+	
 2001-01-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Thierry Laronde <thierry.laronde@polynum.com>:

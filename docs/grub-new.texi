@@ -928,11 +928,12 @@ primary partitions for DOS/Windows. Certainly you should avoid doing
 this, but there is a solution if you do want to do so. Use the partition
 hiding/unhiding technique.
 
-If GRUB @dfn{hide}s a DOS (or Windows) partition (@pxref{hide}), it
-ignores the partition. If GRUB @dfn{unhide}s a DOS (or Windows)
-partition (@pxref{unhide}), it detects the partition. Thus, if you have
-installed DOS (or Windows) on the first partition and the second of the
-first hard disk, and boot the first copy, do the following:
+If GRUB @dfn{hide}s a DOS (or Windows) partition (@pxref{hide}), DOS (or
+Windows) will ignore the partition. If GRUB @dfn{unhide}s a DOS (or
+Windows) partition (@pxref{unhide}), DOS (or Windows) will detect the
+partition. Thus, if you have installed DOS (or Windows) on the first
+partition and the second of the first hard disk, and boot the first
+copy, do the following:
 
 @example
 @group
