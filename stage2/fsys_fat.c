@@ -175,7 +175,7 @@ fat_read (char *buf, int len)
   
   if (FAT_SUPER->file_cluster < 0)
     {
-      /* root directory for non-fat16 */
+      /* root directory for fat16 */
       size = FAT_SUPER->root_max - filepos;
       if (size > len)
  	size = len;

@@ -1,3 +1,8 @@
+2001-12-19  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* stage2/fsys_fat.c (fat_read): Fix the contradictory comment.
+	Reported by Filip Van Raemdonck <mechanix@digibel.org>.
+	
 2001-12-11  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* stage2/builtins.c (displayapm_func): Don't use multi-line
