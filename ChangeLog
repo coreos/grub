@@ -1,3 +1,11 @@
+2002-02-11  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub-install.in (find_device): New function - find block
+	device for given file or directory.  Resolve symlinks to fix
+	problem on Linux with devfs and old device names in /etc/fstab.
+	Use find_device() for root_device, bootdir_device and
+	grubdir_device.
+
 2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* grub/main.c (OPT_NO_PAGER): New macro.
