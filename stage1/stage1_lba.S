@@ -32,8 +32,6 @@
 #define BUFFERSEG   0x7000	/* segment address of disk buffer, the
 				   disk buffer MUST be 32K long and cannot
 				   straddle a 64K boundary */
-#define BIOS_HD_FLAG 0x80	/* bit set in BIOS drive number to designate
-				   a hard disk vs. a floppy */
 
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
@@ -43,7 +41,7 @@
 	/* Print message string */
 #define MSG(x)	movw $x, %si; call message
 
-	.file	"stage1.S"
+	.file	"stage1_lba.S"
 
 	.text
 
@@ -73,18 +71,14 @@
 	. = _start + 4
 
 	/* scratch space */
-sectors:
-	.long	0
-heads:
-	.long	0
-cylinders:
-	.word	0
-sector_start:
+drive_parameter:
+disk_address_packet:
+	/* Actually, must set these values at the runtime.  */
+	.byte	0x10
 	.byte	0
-head_start:
-	.byte	0
-cylinder_start:
 	.word	0
+	.long	0
+	.quad	0
 	/* more space... */
 
 	. = _start + BPBEND
@@ -119,53 +113,28 @@ after_BPB:
 	/* save drive reference first thing! */
 	pushw	%dx
 
-	/*
-	 *  Determine the hard disk geometry from the BIOS!
-	 *  We do this first, so that LS-120 IDE floppies work correctly.
-	 */
-	movb	$8, %ah
+	/* check if LBA is supported */
+	movb	$0x41, %ah
+	movw	$0x55aa, %bx
 	int	$0x13
-	jnc	final_init
 
-	/*
-	 *  The call failed, so maybe use the floppy probe instead.
-	 */
-	testb	$BIOS_HD_FLAG, %dl
-	jz	floppy_probe
+	jc	lba_probe_error
+	cmpw	$0xaa55, %bx
+	jne	lba_probe_error
 
-	/* Nope, we definitely have a hard disk, and we're screwed. */
-	jmp	hd_probe_error
+	/* get the geometry (limited to 2TB!) */
+	movb	$0x48, %ah
+	movw	$ABS(drive_parameter), %si
+	movw	$0x1a, (%si)
+	int	$0x13
 
-final_init:
-	/* set %si to sectors */
-	movw	$ABS(sectors), %si
+	jc	lba_probe_error
 	
-	/* save number of heads */
-	xorl	%eax, %eax
-	movb	%dh, %al
-	incw	%ax
-	movl	%eax, 4(%si)
-
-	xorw	%dx, %dx
-	movb	%cl, %dl
-	shlw	$2, %dx
-	movb	%ch, %al
-	movb	%dh, %ah
-
-	/* save number of cylinders */
-	incw	%ax
-	movw	%ax, 8(%si)
-
-	xorw	%ax, %ax
-	movb	%dl, %al
-	shrb	$2, %al
-
-	/* save number of sectors */
-	movl	%eax, (%si)
+	/* save the total number of sectors */
+	movl	0x10(%si), %ecx
 
 	/* this sets up for the first run through "bootloop" */
 	movw	$ABS(firstlist - LISTSIZ), %di
-
 
         /* this is the loop for reading the secondary boot-loader in */
 bootloop:
@@ -176,41 +145,20 @@ bootloop:
 	/* if zero, go to the start function */
 	je	bootit
 
-setup_sectors:	
-	/* load logical sector start (bottom half) */
-	movl	(%di), %eax
+setup_sectors:
+	/* load logical sector start */
+	movl	(%di), %ebx
 
-	/* zero %edx */
-	xorl	%edx, %edx
-
-	/* divide by number of sectors */
-	divl	(%si)
-
-	/* save sector start */
-	movb	%dl, 10(%si)
-
-	xorl	%edx, %edx	/* zero %edx */
-	divl	4(%si)		/* divide by number of heads */
-
-	/* save head start */
-	movb	%dl, 11(%si)
-
-	/* save cylinder start */
-	movw	%ax, 12(%si)
-
-	/* do we need too many cylinders? */
-	cmpw	8(%si), %ax
+	/* check for the geometry */
+	cmpl	%ecx, %ebx
 	jge	geometry_error
 
-	/* determine the maximum sector length of this read */
-	movw	(%si), %ax	/* get number of sectors per track/head */
-
-	/* subtract sector start */
-	subb	10(%si), %al
-
+	/* the maximum is limited to 0x7f because of Phoenix EDD */
+	xorl	%eax, %eax
+	movb	$0x7f, %al
+	
 	/* how many do we really want to read? */
 	cmpw	%ax, 4(%di)	/* compare against total number of sectors */
-
 
 	/* which is greater? */
 	jg	more_sectors
@@ -225,55 +173,50 @@ more_sectors:
 	/* add into logical sector start */
 	addl	%eax, (%di)
 
-/*
- *  This is the loop for taking care of BIOS geometry translation (ugh!)
- */
+	/* set up disk address packet */
 
-	/* get high bits of cylinder */
-	movb	13(%si), %dl
+	/* the size and the reserved byte */
+	movw	$0x0010, (%si)
 
-	shlb	$6, %dl		/* shift left by 6 bits */
-	movb	10(%si), %cl	/* get sector */
+	/* the number of sectors */
+	movw	%ax, 2(%si)
 
-	incb	%cl		/* normalize sector (sectors go
-					from 1-N, not 0-(N-1) ) */
-	orb	%dl, %cl	/* composite together */
-	movb	12(%si), %ch	/* sector+hcyl in cl, cylinder in ch */
+	/* the absolute address (low 32 bits) */
+	movl	%ebx, 8(%si)
 
-	/* restore %dx */
-	popw	%dx
-	pushw	%dx
-
-	/* head number */
-	movb	11(%si), %dh
+	/* the segment of buffer address */
+	movw	6(%di), %bx
+	movw	%bx, 6(%si)
 
 	pushw	%ax	/* save %ax from destruction! */
 
+	/* zero %eax */
+	xorl	%eax, %eax
+	
+	/* the offset of buffer address */
+	movw	%ax, 4(%si)
+
+	/* the absolute address (high 32 bits) */
+	movl	%eax, 12(%si)
+	
+	
 /*
- * BIOS call "INT 0x13 Function 0x2" to read sectors from disk into memory
- *	Call with	%ah = 0x2
- *			%al = number of sectors
- *			%ch = cylinder
- *			%cl = sector (bits 6-7 are high bits of "cylinder")
- *			%dh = head
- *			%dl = drive (0x80 for hard disk, 0x0 for floppy disk)
- *			%es:%bx = segment:offset of buffer
+ * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
+ *	Call with	%ah = 0x42
+ *			%dl = drive number
+ *			%ds:%si = segment:offset of disk address packet
  *	Return:
  *			%al = 0x0 on success; err code on failure
  */
 
-	movw	$BUFFERSEG, %bx
-	movw	%bx, %es	/* load %es segment with disk buffer */
-
-	xorw	%bx, %bx	/* %bx = 0, put it at 0 in the segment */
-	movb	$0x2, %ah	/* function 2 */
+	movb	$0x42, %ah
 	int	$0x13
 
 	jc	read_error
 
 	/* save source segment */
-	movw	%es, %dx
-
+	movw	%es, %bx
+	
 	/* load addresses for copy from disk buffer to destination */
 	movw	6(%di), %es	/* load destination segment */
 
@@ -286,18 +229,19 @@ more_sectors:
 	addw	%ax, 6(%di)	/* add the corrected value to the destination
 				   address for next time */
 
-	/* get the copy length */
-	shlw	$4, %ax
-	movw	%ax, %cx
-
 	/* save addressing regs */
 	pushw	%ds
 	pushw	%si
 	pushw	%di
+	pushw	%cx
+
+	/* get the copy length */
+	shlw	$4, %ax
+	movw	%ax, %cx
 
 	xorw	%di, %di	/* zero offset of destination addresses */
 	xorw	%si, %si	/* zero offset of source addresses */
-	movw	%dx, %ds	/* restore the source segment */
+	movw	%bx, %ds	/* restore the source segment */
 
 	cld		/* sets the copy direction to forward */
 
@@ -306,17 +250,18 @@ more_sectors:
 	movsb		/* this runs the actual copy */
 
 	/* restore addressing regs */
+	popw	%cx
 	popw	%di
 	popw	%si
 	popw	%ds
-
+	
 	/* check if finished with this dataset */
 	cmpw	$0, 4(%di)
 	jne	setup_sectors
 
 	/* update position to load from */
 	subw	$LISTSIZ, %di
-	
+
 	/* jump to bootloop */
 	jmp	bootloop
 
@@ -332,8 +277,8 @@ geometry_error:
 /*
  * Disk probe failure.
  */
-hd_probe_error:
-	MSG(hd_probe_error_string)
+lba_probe_error:
+	MSG(lba_probe_error_string)
 	jmp	general_error
 
 /*
@@ -349,7 +294,7 @@ general_error:
 stop:	jmp	stop
 
 geometry_error_string:	.string "Geom"
-hd_probe_error_string:	.string "Hard Disk"
+lba_probe_error_string:	.string "LBA"
 read_error_string:	.string "Read"
 general_error_string:	.string " Error"
 
@@ -441,53 +386,7 @@ bootit:
 
 	. = _start + PARTSTART
 
-probe_values:
-	.byte	36, 18, 15, 9, 0
-
-floppy_probe:
-/*
- *  Perform floppy probe.
- */
-
-	movw	$ABS(probe_values-1), %si
-
-probe_loop:
-	/* reset floppy controller INT 13h AH=0 */
-	xorw	%ax, %ax
-	int	$0x13
-
-	incw	%si
-	movb	(%si), %cl
-
-	/* if number of sectors is 0, display error and die */
-	cmpb	$0, %cl
-	jne	1f
-
-/*
- * Floppy disk probe failure.
- */
-	movw	$fd_probe_error_string, %si
-	call	message
-	jmp	general_error
-
-fd_probe_error_string:	.string "Floppy"
-
-1:
-	/* perform read */
-	movw	$REALSTACK, %bx
-	movw	$0x201, %ax
-	movb	$0, %ch
-	movb	$0, %dh
-	int	$0x13
-
-	/* if error, jump to "probe_loop" */
-	jc	probe_loop
-
-	/* %cl is already the correct value! */
-	movb	$1, %dh
-	movb	$79, %ch
-
-	jmp	final_init
+	/* This space cannot be used by any bootloader, uggh...  */
 
 	. = _start + PARTEND
 

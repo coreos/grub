@@ -1,3 +1,75 @@
+1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/bios.c (get_diskinfo): In LBA mode, compute
+	TOTAL_SECTORS from DRP instead of GEOMETRY.
+	Clear GEOMETRY->FLAGS first.
+	
+	* stage2/boot.c (load_image): Fix inverted lines.
+
+1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Support Linux video mode selection.
+	
+	* stage2/shared.h (LINUX_VID_MODE_OFFSET): New macro.
+	(LINUX_VID_MODE_NORMAL): Likewise.
+	(LINUX_VID_MODE_EXTENDED): Likewise.
+	(LINUX_VID_MODE_ASK): Likewise.
+	[!WITHOUT_LIBC_STUBS] (strlen): Likewise.
+	(grub_strlen): Declared.
+	* stage2/boot.c (load_image): Added Linux video mode selection.
+	* stage2/char_io.c [!STAGE1_5] (grub_strlen): New function.
+	
+1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/char_io.c (print_error): Print ERRNUM in the format of
+	%u instead of %d.
+	(convert_to_ascii) [STAGE1_5]: Eliminate the `x' and `d'
+	handling code.
+	(grub_printf): Declare FORMAT as `const char *'.
+	(grub_printf) [STAGE1_5]: Eliminate the `x' and `d' handling
+	code.
+	(get_based_digit): Removed.
+	(safe_parse_maxint): Remove unnecessary `register' prefixes,
+	because GCC does better optimization.
+	Declare DIGIT as `unsigned int' and calculate the value by more
+	compact instructions.
+	[!STAGE1_5] (grub_strncat): Declare S2 as `const char *'.
+	[!STAGE1_5] (grub_strcmp): Declare S1 and S2 as `const char *'.
+	[!STAGE1_5] (grub_strstr): Likewise.
+	(grub_memmove): Declare FROM as `const char *'.
+	The copy code is replaced with inline assembly code stolen from
+	Linux-2.2.2.
+
+	* stage2/shared.h (grub_printf) : Corrected.
+	(grub_strncat): Likewise.
+	(grub_memmove): Likewise.
+	(grub_strstr): Likewise.
+	(grub_strcmp): Likewise.
+	
+1999-07-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage1/stage1.S (sectors): Change the size to long.
+	(heads): Likewise.
+	(sector_start): New variable.
+	(head_start): Likewise.
+	(cylinder_start): Likewise.
+	(final_init): Set %si to SECTORS first, and use %si for memory
+	references.
+	Zero %eax so that the high 16 bits are always zero.
+	Set %di to FIRSTLIST - LISTSIZ instead of FIRSTLIST.
+	(bootloop): Omit the complex CHS recomputation, and always
+	compute them from LBA address instead.
+	Call 32bits div instructions instead of 16bits div instructions.
+	Update the position where to load data from at the end of this
+	loop, instead of the beginning.
+	
+	* stage1/stage1_lba.S: New file.
+	* stage1/Makefile.am (nodist_pkgdata_DATA): Added stage1_lba.
+	(LDFLAGS): New variable.
+	(noinst_PROGRAMS): Added stage1_lba.exec.
+	(stage1_lba_exec_SOURCES): New variable.
+	(%: %.exec): New rule.
+	
 1999-06-28  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/main.c (main): The third argument for strtoul is changed

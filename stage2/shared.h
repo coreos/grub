@@ -89,6 +89,12 @@ extern char *grub_scratch_mem;
 #define LINUX_SETUP_CODE_START    0x214
 #define LINUX_SETUP_INITRD        0x218
 
+/* Linux's video mode selection support. Actually I hate it!  */
+#define LINUX_VID_MODE_OFFSET	0x1FA
+#define LINUX_VID_MODE_NORMAL	0xFFFF
+#define LINUX_VID_MODE_EXTENDED	0xFFFE
+#define LINUX_VID_MODE_ASK	0xFFFD
+
 #define CL_MY_LOCATION  RAW_ADDR (0x92000)
 #define CL_MY_END_ADDR  RAW_ADDR (0x920FF)
 #define CL_MAGIC_ADDR   RAW_ADDR (0x90020)
@@ -235,6 +241,7 @@ extern char *grub_scratch_mem;
 #define strstr grub_strstr
 #define strcmp grub_strcmp
 #define tolower grub_tolower
+#define strlen grub_strlen
 #endif /* WITHOUT_LIBC_STUBS */
 
 
@@ -503,14 +510,15 @@ cmdline_t enter_cmdline (char *script, char *heap);
 #endif
 
 /* C library replacement functions with identical semantics. */
-void grub_printf (char *format,...);
+void grub_printf (const char *format,...);
 int grub_tolower (int c);
 int grub_isspace (int c);
-int grub_strncat (char *s1, char *s2, int n);
-char *grub_memmove (char *to, char *from, int len);
+int grub_strncat (char *s1, const char *s2, int n);
+char *grub_memmove (char *to, const char *from, int len);
 void *grub_memset (void *start, int c, int len);
-char *grub_strstr (char *s1, char *s2);
-int grub_strcmp (char *s1, char *s2);
+char *grub_strstr (const char *s1, const char *s2);
+int grub_strcmp (const char *s1, const char *s2);
+int grub_strlen (const char *str);
 
 /* misc */
 void init_page (void);

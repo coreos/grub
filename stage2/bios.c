@@ -118,6 +118,9 @@ int
 get_diskinfo (int drive, struct geometry *geometry)
 {
   int err;
+
+  /* Clear the flags.  */
+  geometry->flags = 0;
   
   if (drive & 0x80)
     {
@@ -159,11 +162,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 	      
 	      /* Check if CHS information is valid.  */
 	      if (drp.flags & 0x02)
-		{
-		  total_sectors = (geometry->cylinders
-				   * geometry->heads
-				   * geometry->sectors);
-		}
+		total_sectors = drp.cylinders * drp.heads * drp.sectors;
 	    }
 	}
 

@@ -76,14 +76,16 @@ install_sh = @install_sh@
 
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
-nodist_pkgdata_DATA = stage1
+nodist_pkgdata_DATA = stage1 stage1_lba
 CLEANFILES = $(pkgdata_DATA)
 
 # We can't use builtins or standard includes.
 AM_CFLAGS = @STAGE1_CFLAGS@ -fno-builtin -nostdinc
+LDFLAGS = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 
-noinst_PROGRAMS = stage1.exec
+noinst_PROGRAMS = stage1.exec stage1_lba.exec
 stage1_exec_SOURCES = stage1.S
+stage1_lba_exec_SOURCES = stage1_lba.S
 subdir = stage1
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
@@ -92,18 +94,22 @@ PROGRAMS =  $(noinst_PROGRAMS)
 
 DEFS = @DEFS@ -I. -I$(srcdir) 
 CPPFLAGS = @CPPFLAGS@
-LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 am_stage1_exec_OBJECTS =  stage1.o
 stage1_exec_OBJECTS =  $(am_stage1_exec_OBJECTS)
 stage1_exec_LDADD = $(LDADD)
 stage1_exec_DEPENDENCIES = 
 stage1_exec_LDFLAGS = 
+am_stage1_lba_exec_OBJECTS =  stage1_lba.o
+stage1_lba_exec_OBJECTS =  $(am_stage1_lba_exec_OBJECTS)
+stage1_lba_exec_LDADD = $(LDADD)
+stage1_lba_exec_DEPENDENCIES = 
+stage1_lba_exec_LDFLAGS = 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =  $(stage1_exec_SOURCES)
+DIST_SOURCES =  $(stage1_exec_SOURCES) $(stage1_lba_exec_SOURCES)
 DATA =  $(nodist_pkgdata_DATA)
 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -112,9 +118,9 @@ DIST_COMMON =  Makefile.am Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-DEP_FILES =  .deps/stage1.P
-SOURCES = $(stage1_exec_SOURCES)
-OBJECTS = $(am_stage1_exec_OBJECTS)
+DEP_FILES =  .deps/stage1.P .deps/stage1_lba.P
+SOURCES = $(stage1_exec_SOURCES) $(stage1_lba_exec_SOURCES)
+OBJECTS = $(am_stage1_exec_OBJECTS) $(am_stage1_lba_exec_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -145,6 +151,14 @@ distclean-compile:
 	-rm -f *.tab.c
 
 maintainer-clean-compile:
+
+stage1.exec: $(stage1_exec_OBJECTS) $(stage1_exec_DEPENDENCIES)
+	@rm -f stage1.exec
+	$(LINK) $(stage1_exec_LDFLAGS) $(stage1_exec_OBJECTS) $(stage1_exec_LDADD) $(LIBS)
+
+stage1_lba.exec: $(stage1_lba_exec_OBJECTS) $(stage1_lba_exec_DEPENDENCIES)
+	@rm -f stage1_lba.exec
+	$(LINK) $(stage1_lba_exec_LDFLAGS) $(stage1_lba_exec_OBJECTS) $(stage1_lba_exec_LDADD) $(LIBS)
 .S.o:
 	$(COMPILE) -c $<
 
@@ -305,10 +319,7 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-stage1.exec: stage1.o
-	$(LD) -N -Ttext 7C00 -o $@ $<
-
-stage1: stage1.exec
+%: %.exec
 	$(OBJCOPY) -O binary $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -31,7 +31,7 @@ print_error (void)
     /* printf("\7\n %s\n", err_list[errnum]); */
     printf ("\n %s\n", err_list[errnum]);
 #else /* STAGE1_5 */
-    printf ("Error: %d\n", errnum);
+    printf ("Error: %u\n", errnum);
 #endif /* STAGE1_5 */
 
   errnum = ERR_NONE;
@@ -44,6 +44,7 @@ convert_to_ascii (char *buf, int c,...)
   unsigned long num = *((&c) + 1), mult = 10;
   char *ptr = buf;
 
+#ifndef STAGE1_5
   if (c == 'x')
     mult = 16;
 
@@ -53,6 +54,7 @@ convert_to_ascii (char *buf, int c,...)
       *(ptr++) = '-';
       buf++;
     }
+#endif
 
   do
     {
@@ -80,7 +82,7 @@ convert_to_ascii (char *buf, int c,...)
 
 
 void
-grub_printf (char *format,...)
+grub_printf (const char *format,...)
 {
   int *dataptr = (int *) &format;
   char c, *ptr, str[16];
@@ -94,9 +96,11 @@ grub_printf (char *format,...)
       else
 	switch (c = *(format++))
 	  {
+#ifndef STAGE1_5
 	  case 'd':
-	  case 'u':
 	  case 'x':
+#endif
+	  case 'u':
 	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++)) = 0;
 
 	    ptr = str;
@@ -423,38 +427,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 
 
 int
-get_based_digit (int c, int base)
-{
-  int digit = -1;
-
-  /* make sure letter in the the range we can check! */
-  c = tolower (c);
-
-  /*
-   *  Is it in the range between zero and nine?
-   */
-  if (base > 0 && c >= '0' && c <= '9' && c < (base + '0'))
-    {
-      digit = c - '0';
-    }
-
-  /*
-   *  Is it in the range used by a letter?
-   */
-  if (base > 10 && c >= 'a' && c <= 'z' && c < ((base - 10) + 'a'))
-    {
-      digit = c - 'a' + 10;
-    }
-
-  return digit;
-}
-
-
-int
 safe_parse_maxint (char **str_ptr, int *myint_ptr)
 {
-  register char *ptr = *str_ptr;
-  register int myint = 0, digit;
+  char *ptr = *str_ptr;
+  int myint = 0;
   int mult = 10, found = 0;
 
   /*
@@ -466,8 +442,22 @@ safe_parse_maxint (char **str_ptr, int *myint_ptr)
       mult = 16;
     }
 
-  while ((digit = get_based_digit (*ptr, mult)) != -1)
+  while (1)
     {
+      /* A bit tricky. This below makes use of the equivalence:
+	 (A >= B && A <= C) <=> ((A - B) <= (C - B))
+	 when C > B and A is unsigned.  */
+      unsigned int digit;
+      
+      digit = tolower (*ptr) - '0';
+      if (digit > 9)
+	{
+	  digit -= 'a' - '0';
+	  if (mult == 10 || digit > 5)
+	    break;
+	  digit += 10;
+	}
+
       found = 1;
       if (myint > ((MAXINT - digit) / mult))
 	{
@@ -513,7 +503,7 @@ grub_isspace (int c)
 
 #ifndef STAGE1_5
 int
-grub_strncat (char *s1, char *s2, int n)
+grub_strncat (char *s1, const char *s2, int n)
 {
   int i = -1;
 
@@ -533,7 +523,7 @@ grub_strncat (char *s1, char *s2, int n)
 
 
 int
-grub_strcmp (char *s1, char *s2)
+grub_strcmp (const char *s1, const char *s2)
 {
   while (*s1 || *s2)
     {
@@ -571,9 +561,9 @@ substring (char *s1, char *s2)
 
 #ifndef STAGE1_5
 char *
-grub_strstr (char *s1, char *s2)
+grub_strstr (const char *s1, const char *s2)
 {
-  char *ptr, *tmp;
+  const char *ptr, *tmp;
 
   while (*s1)
     {
@@ -583,10 +573,21 @@ grub_strstr (char *s1, char *s2)
       while (*s1 && *s1++ == *tmp++);
 
       if (tmp > s2 && !*(tmp - 1))
-	return ptr;
+	return (char *) ptr;
     }
 
   return 0;
+}
+
+int
+grub_strlen (const char *str)
+{
+  int len = 0;
+  
+  while (*str++)
+    len++;
+  
+  return len;
 }
 #endif /* ! STAGE1_5 */
 
@@ -616,31 +617,39 @@ memcheck (int start, int len)
 
 
 char *
-grub_memmove (char *to, char *from, int len)
+grub_memmove (char *to, const char *from, int len)
 {
-   char *ret = to;
    if (memcheck ((int) to, len))
      {
-       if ((to >= from + len) || (to <= from))
+       /* This assembly code is stolen from
+	  linux-2.2.2/include/asm-i386/string.h. This is not very fast
+	  but compact.  */
+       int d0, d1, d2;
+       
+       if (to < from)
 	 {
-	   while (len >= sizeof (unsigned long))
-	     {
-	       len -= sizeof (unsigned long);
-	       *(((unsigned long *) to)++) = *(((unsigned long *) from)++);
-	     }
-	   while (len-- > 0)
-	     *(to++) = *(from++);
+	   asm volatile ("cld\n\t"
+			 "rep\n\t"
+			 "movsb"
+			 : "=&c" (d0), "=&S" (d1), "=&D" (d2)
+			 : "0" (len),"1" (from),"2" (to)
+			 : "memory");
 	 }
        else
 	 {
-	   /* We have a region that overlaps, but would be overwritten
-	      if we copied it forward. */
-	   while (len-- > 0)
-	     to[len] = from[len];
+	   asm volatile ("std\n\t"
+			 "rep\n\t"
+			 "movsb\n\t"
+			 "cld"
+			 : "=&c" (d0), "=&S" (d1), "=&D" (d2)
+			 : "0" (len),
+			 "1" (len - 1 + from),
+			 "2" (len - 1 + to)
+			 : "memory");
 	 }
      }
 
-   return errnum ? NULL : ret;
+   return errnum ? NULL : to;
 }
 
 

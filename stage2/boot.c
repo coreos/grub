@@ -198,6 +198,44 @@ load_image (void)
 
       if (mbi.mem_lower >= 608)
 	{
+	  /* Video mode selection support. What a shit!  */
+	  {
+	    char *vga;
+
+	    /* Find the substring "vga=".  */
+	    vga = grub_strstr (cur_cmdline, "vga=");
+	    if (vga)
+	      {
+		char *value = vga + 4;
+		char *vga_end;
+		int vid_mode;
+
+		/* Handle special strings.  */
+		if (substring ("normal", value) < 1)
+		  vid_mode = LINUX_VID_MODE_NORMAL;
+		else if (substring ("ext", value) < 1)
+		  vid_mode = LINUX_VID_MODE_EXTENDED;
+		else if (substring ("ask", value) < 1)
+		  vid_mode = LINUX_VID_MODE_ASK;
+		else if (safe_parse_maxint (&value, &vid_mode))
+		  ;
+		else
+		  /* ERRNUM is already set inside the function
+		     safe_parse_maxint.  */
+		  return 0;
+
+		/* Set the vid mode to VID_MODE. Note that this can work
+		   because i386 architecture is little-endian.  */
+		grub_memmove (buffer + LINUX_VID_MODE_OFFSET,
+			      (char *) &vid_mode,
+			      sizeof (unsigned short));
+		
+		/* Remove the "vga=...".  */
+		vga_end = skip_to (0, vga);
+		grub_memmove (vga, vga_end, grub_strlen (vga_end));
+	      }
+	  }
+		
 	  memmove ((char *) LINUX_SETUP, buffer, data_len + SECTOR_SIZE);
 
 	  /* copy command-line plus memory hack to staging area */

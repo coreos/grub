@@ -1,15 +1,14 @@
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
-nodist_pkgdata_DATA = stage1
+nodist_pkgdata_DATA = stage1 stage1_lba
 CLEANFILES = $(pkgdata_DATA)
 
 # We can't use builtins or standard includes.
 AM_CFLAGS = @STAGE1_CFLAGS@ -fno-builtin -nostdinc
+LDFLAGS = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 
-noinst_PROGRAMS = stage1.exec
+noinst_PROGRAMS = stage1.exec stage1_lba.exec
 stage1_exec_SOURCES = stage1.S
+stage1_lba_exec_SOURCES = stage1_lba.S
 
-stage1.exec: stage1.o
-	$(LD) -N -Ttext 7C00 -o $@ $<
-
-stage1: stage1.exec
+%: %.exec
 	$(OBJCOPY) -O binary $< $@

@@ -14,6 +14,8 @@ New:
 * New command "quit".
 * The man page for /sbin/grub.
 * All documents become Texinfo.
+* Linux video mode selection is supported.
+* The new Stage 1 `stage1_lba' supports LBA addressing mode.
 
 New in 0.5.91 - 1999-03-14, Gordon Matzigkeit:
 * LBA and preliminary AWARD BIOS disk extension support.
