@@ -1,3 +1,21 @@
+2004-01-11  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/terminfo.c (ti_set_term): Use a pointer to struct
+	terminfo instead to avoid GCC's bug, which inserts a reference
+	to memcpy implicitly.
+	(ti_get_term): Likewise.
+	All callers are fixed.
+
+	* stage2/terminfo.h (ti_set_term): Updated.
+	(ti_get_term): Likewise.
+
+	* stage2/shared.h (struct linux_kernel_header): New member,
+	initrd_max_address. Defined in the boot protocol 2.03 or higher.
+
+	* stage2/boot.c (load_initrd): If the boot protocol is greater
+	than or equal to 2.03, use the field ``initrd_max_address''
+	instead of LINUX_INITRD_MAX_ADDRESS.
+
 2003-12-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/fsys_ext2fs.c (ext2_is_fast_symlink): New function.

@@ -1,7 +1,7 @@
 /* shared.h - definitions used in all GRUB-specific code */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -403,6 +403,7 @@ struct linux_kernel_header
   unsigned short heap_end_ptr;		/* Free memory after setup end */
   unsigned short pad1;			/* Unused */
   char *cmd_line_ptr;			/* Points to the kernel command line */
+  unsigned long initrd_addr_max;	/* The highest address of initrd */
 } __attribute__ ((packed));
 
 /* Memory map address range descriptor used by GET_MMAP_ENTRY. */

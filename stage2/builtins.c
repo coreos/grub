@@ -1,7 +1,7 @@
 /* builtins.c - the GRUB builtin commands */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -4208,12 +4208,12 @@ terminfo_func (char *arg, int flags)
 	  return errnum;
 	}
 
-      ti_set_term (term);
+      ti_set_term (&term);
     }
   else
     {
       /* No option specifies printing out current settings.  */
-      term = ti_get_term ();
+      ti_get_term (&term);
 
       grub_printf ("name=%s\n",
 		   ti_escape_string (term.name));
