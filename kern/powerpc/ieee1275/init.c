@@ -58,6 +58,10 @@ grub_machine_init (void)
   grub_env_set ("prefix", "");
 
   grub_ext2_init ();
+  grub_normal_init ();
+  grub_boot_init ();
+  grub_linux_init ();
+  grub_linux_normal_init ();
   grub_ofdisk_init ();
   grub_console_init ();
 }

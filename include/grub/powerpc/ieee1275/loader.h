@@ -1,7 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Yoshinori K. Okuji <okuji@enbug.org>
- *  Copyright (C) 2003  Jeroen Dekkers <jeroen@dekkers.cx>
+ *  Copyright (C) 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,31 +20,13 @@
 #ifndef GRUB_LOADER_MACHINE_HEADER
 #define GRUB_LOADER_MACHINE_HEADER	1
 
-#include <grub/types.h>
-#include <grub/symbol.h>
-#include <grub/machine/multiboot.h>
+/* The symbol shared between the normal mode and rescue mode
+   loader.  */
+void grub_load_linux (int argc, char *argv[]);
 
-extern grub_uint32_t EXPORT_VAR(grub_linux_prot_size);
-extern char *EXPORT_VAR(grub_linux_tmp_addr);
-extern char *EXPORT_VAR(grub_linux_real_addr);
-
-void EXPORT_FUNC(grub_linux_boot_zimage) (void) __attribute__ ((noreturn));
-void EXPORT_FUNC(grub_linux_boot_bzimage) (void) __attribute__ ((noreturn));
-
-/* This is an asm part of the chainloader.  */
-void EXPORT_FUNC(grub_chainloader_real_boot) (int drive, void *part_addr) __attribute__ ((noreturn));
-
-/* The asm part of the multiboot loader.  */
-void EXPORT_FUNC(grub_multiboot_real_boot) (grub_addr_t entry, 
-					    struct grub_multiboot_info *mbi) 
-     __attribute__ ((noreturn));
-
-/* It is necessary to export these functions, because normal mode commands
-   reuse rescue mode commands.  */
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
-void grub_rescue_cmd_linux (int argc, char *argv[]);
-void grub_rescue_cmd_initrd (int argc, char *argv[]);
-void grub_rescue_cmd_multiboot (int argc, char *argv[]);
-void grub_rescue_cmd_module (int argc, char *argv[]);
+void grub_linux_init (void);
+void grub_linux_fini (void);
+void grub_linux_normal_init (void);
+void grub_linux_normal_fini (void);
 
 #endif /* ! GRUB_LOADER_MACHINE_HEADER */

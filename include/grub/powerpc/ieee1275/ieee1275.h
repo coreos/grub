@@ -84,6 +84,7 @@ int EXPORT_FUNC(grub_ieee1275_open) (char *node,
 int EXPORT_FUNC(grub_ieee1275_close) (grub_ieee1275_ihandle_t ihandle);
 int EXPORT_FUNC(grub_ieee1275_claim) (void *p, grub_size_t size, unsigned int align,
 				      void **result);
+int EXPORT_FUNC(grub_ieee1275_release) (void *p, grub_size_t size);
 int EXPORT_FUNC(grub_ieee1275_set_property) (grub_ieee1275_phandle_t phandle,
 					     const char *propname, void *buf,
 					     grub_size_t size,
