@@ -121,6 +121,8 @@ static struct pci_device	pci_nic_list[] = {
 		"LinkSys LNE100TX", 0, 0, 0},
 	{ PCI_VENDOR_ID_LINKSYS,	PCI_DEVICE_ID_DEC_TULIP,
 		"Netgear FA310TX", 0, 0, 0},
+	{ PCI_VENDOR_ID_DAVICOM, PCI_DEVICE_ID_DM9102,
+		"Davicom 9102", 0, 0, 0},
 #endif
 #ifdef	INCLUDE_VIA_RHINE
 	{ PCI_VENDOR_ID_VIATEC,	PCI_DEVICE_ID_VIA_RHINE_I,

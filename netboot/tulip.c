@@ -12,6 +12,7 @@
     model FA310X, based on the LC82C168 chip is supported.
     The TRENDnet TE100-PCIA NIC which uses a genuine Intel 21143-PD
     chipset is supported.
+    Also, Davicom DM9102's.
 
     Documentation and source code used:
       Source for Etherboot driver at
@@ -39,6 +40,7 @@
 /*********************************************************************/
 
 /*
+  27 Apr 2000	njl	?
   29 Feb 2000   mdc     0.75b7
      Increased reset delay to 3 seconds because Macronix cards seem to
      need more reset time before card comes back to a usable state.
@@ -506,6 +508,11 @@ static void tulip_reset(struct nic *nic)
        csr6 |= (DEC_21142_CSR6_HBD | DEC_21142_CSR6_PS);
        csr6 &= ~(DEC_21142_CSR6_TTM);
      }
+  } else if (vendor == PCI_VENDOR_ID_DAVICOM && dev_id == PCI_DEVICE_ID_DM9102){
+      /* setup CR12 */
+      outl(0x180, ioaddr + CSR12);    /* Let bit 7 output port */
+      outl(0x80, ioaddr + CSR12);     /* RESET DM9102 phyxcer */
+      outl(0x0, ioaddr + CSR12);      /* Clear RESET signal */
   }
 
   /* set the chip's operating mode */

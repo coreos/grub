@@ -465,7 +465,7 @@ extern void load P((void));
 extern int load_linux P((int root_mount_port,int swap_mount_port,
 	int root_nfs_port,char *kernel_handle));
 extern int downloadkernel P((unsigned char *, int, int, int));
-extern int tftp P((char *name, int (*)(unsigned char *, int, int, int)));
+extern int tftp P((const char *name, int (*)(unsigned char *, int, int, int)));
 extern void rpc_init(void);
 extern int nfs P((const char *name, int (*)(unsigned char *, int, int, int)));
 extern void nfs_umountall P((int));

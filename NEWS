@@ -21,7 +21,7 @@ New in 0.5.95 - XXXX-XX-XX:
   "grub-install" has the same effect as to the command "install".
 * The configure script doesn't accept the option
   `--disable-lba-support-bitmap-check' any longer. Use the option above.
-* The network support is updated to Etherboot-4.6.0. So now we have
+* The network support is updated to Etherboot-4.6.1. So now we have
   3Com59x and DEPCA drivers.
 * Now you can omit the configuration file argument to the command
   "password". If you omit it, then GRUB will just unlock privileged

@@ -10,8 +10,8 @@
 #undef	virt_to_bus
 #define	virt_to_bus(x)	((unsigned long)x)
 
-#define TX_RING_SIZE	1	/* enough for now */
-#define RX_RING_SIZE	1
+#define TX_RING_SIZE   2       /* use at least 2 buffers for TX */
+#define RX_RING_SIZE   2
 
 #define PKT_BUF_SZ	1536	/* Size of each temporary Tx/Rx buffer.*/
 

@@ -134,6 +134,8 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 #define PCI_VENDOR_ID_VIATEC		0x1106
 #define PCI_DEVICE_ID_VIA_RHINE_I	0x3043
 #define PCI_DEVICE_ID_VIA_86C100A	0x6100
+#define PCI_VENDOR_ID_DAVICOM          0x1282
+#define PCI_DEVICE_ID_DM9102           0x9102
 
 struct pci_device {
 	unsigned short	vendor, dev_id;

@@ -288,7 +288,7 @@ udp_transmit (unsigned long destip, unsigned int srcsock,
 TFTP - Download extended BOOTP data, or kernel image
 **************************************************************************/
 static int
-tftp (char *name, int (*fnc) (unsigned char *, int, int, int))
+tftp (const char *name, int (*fnc) (unsigned char *, int, int, int))
 {
   int retry = 0;
   static unsigned short iport = 2000;

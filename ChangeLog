@@ -1,3 +1,16 @@
+2000-05-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Update the network support to Etherboot-4.6.1.
+
+	* netboot/config.c (pci_nic_list) [INCLUDE_TULIP]: Added an
+	entry for Davicom 9102.
+	* netboot/epic100.c: Just copied.
+	* netboot/pci.h: Likewise.
+	* netboot/tulip.c: Likewise.
+	* netboot/etherboot.h (tftp): Change the type of the first
+	argument to const char * from char *.
+	* netboot/main.c (tftp): Likewise.
+	
 2000-05-13  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in: If the program `cp' fails, exit with the
