@@ -78,9 +78,9 @@ grub_emu_LDFLAGS = -lncurses
 genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod ufs.mod ext2.mod minix.mod \
+pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod
+	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod multiboot.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -121,6 +121,10 @@ jfs_mod_CFLAGS = $(COMMON_CFLAGS)
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
+ 
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/pc/linux_normal.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
@@ -163,3 +167,7 @@ font_mod_CFLAGS = $(COMMON_CFLAGS)
 # For _multiboot.mod.
 _multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
 _multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For multiboot.mod.
+multiboot_mod_SOURCES = loader/i386/pc/multiboot_normal.c
+multiboot_mod_CFLAGS = $(COMMON_CFLAGS)

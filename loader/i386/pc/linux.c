@@ -290,8 +290,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 }
 
 void
-grub_rescue_cmd_initrd (int argc __attribute__ ((unused)),
-			char *argv[] __attribute__ ((unused)))
+grub_rescue_cmd_initrd (int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size;

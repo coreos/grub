@@ -357,7 +357,7 @@ grub_menu_run (grub_menu_t menu, int nested)
       run_menu_entry (e);
 
       /* Deal with a fallback entry.  */
-      /* FIXME: Mutiple fallback entries like GRUB Legacy.  */
+      /* FIXME: Multiple fallback entries like GRUB Legacy.  */
       if (menu->fallback_entry >= 0)
 	{
 	  grub_print_error ();

@@ -786,9 +786,9 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod ufs.mod ext2.mod minix.mod \
+pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod
+	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod multiboot.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -1179,6 +1179,45 @@ _linux_mod-loader_i386_pc_linux.d: loader/i386/pc/linux.c
 -include _linux_mod-loader_i386_pc_linux.d
 
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
+ 
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/pc/linux_normal.c
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux_normal.o def-linux.lst und-linux.lst
+MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux_normal.d
+DEFSYMFILES += def-linux.lst
+UNDSYMFILES += und-linux.lst
+
+linux.mod: pre-linux.o mod-linux.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-linux.o: linux_mod-loader_i386_pc_linux_normal.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-linux.o: mod-linux.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+mod-linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
+
+def-linux.lst: pre-linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+
+und-linux.lst: pre-linux.o
+	echo 'linux' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+linux_mod-loader_i386_pc_linux_normal.o: loader/i386/pc/linux_normal.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+linux_mod-loader_i386_pc_linux_normal.d: loader/i386/pc/linux_normal.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -M $< 	  | sed 's,linux_normal\.o[ :]*,linux_mod-loader_i386_pc_linux_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include linux_mod-loader_i386_pc_linux_normal.d
+
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
@@ -1611,6 +1650,45 @@ _multiboot_mod-loader_i386_pc_multiboot.d: loader/i386/pc/multiboot.c
 -include _multiboot_mod-loader_i386_pc_multiboot.d
 
 _multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For multiboot.mod.
+multiboot_mod_SOURCES = loader/i386/pc/multiboot_normal.c
+CLEANFILES += multiboot.mod mod-multiboot.o mod-multiboot.c pre-multiboot.o multiboot_mod-loader_i386_pc_multiboot_normal.o def-multiboot.lst und-multiboot.lst
+MOSTLYCLEANFILES += multiboot_mod-loader_i386_pc_multiboot_normal.d
+DEFSYMFILES += def-multiboot.lst
+UNDSYMFILES += und-multiboot.lst
+
+multiboot.mod: pre-multiboot.o mod-multiboot.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-multiboot.o: multiboot_mod-loader_i386_pc_multiboot_normal.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-multiboot.o: mod-multiboot.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
+
+mod-multiboot.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'multiboot' $< > $@ || (rm -f $@; exit 1)
+
+def-multiboot.lst: pre-multiboot.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 multiboot/' > $@
+
+und-multiboot.lst: pre-multiboot.o
+	echo 'multiboot' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+multiboot_mod-loader_i386_pc_multiboot_normal.o: loader/i386/pc/multiboot_normal.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
+
+multiboot_mod-loader_i386_pc_multiboot_normal.d: loader/i386/pc/multiboot_normal.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -M $< 	  | sed 's,multiboot_normal\.o[ :]*,multiboot_mod-loader_i386_pc_multiboot_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include multiboot_mod-loader_i386_pc_multiboot_normal.d
+
+multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

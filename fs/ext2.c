@@ -451,14 +451,14 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
 	      
 	      fdiro->inode_read = 1;
 	      
-	      if ((grub_le_to_cpu16 (diro->inode.mode)
+	      if ((grub_le_to_cpu16 (fdiro->inode.mode)
 		   & FILETYPE_INO_MASK) == FILETYPE_INO_DIRECTORY)
 		type = GRUB_FSHELP_DIR;
-	      else if ((grub_le_to_cpu16 (diro->inode.mode)
-			& FILETYPE_INO_MASK) == FILETYPE_INO_DIRECTORY)
+	      else if ((grub_le_to_cpu16 (fdiro->inode.mode)
+			& FILETYPE_INO_MASK) == FILETYPE_INO_SYMLINK)
 		type = GRUB_FSHELP_SYMLINK;
-	      else if ((grub_le_to_cpu16 (diro->inode.mode)
-			& FILETYPE_INO_MASK) == FILETYPE_INO_DIRECTORY)
+	      else if ((grub_le_to_cpu16 (fdiro->inode.mode)
+			& FILETYPE_INO_MASK) == FILETYPE_INO_REG)
 		type = GRUB_FSHELP_REG;
 	    }
 	  

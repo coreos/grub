@@ -160,8 +160,14 @@ grub_command_execute (char *cmdline)
 
   state = grub_malloc (sizeof (struct grub_arg_list) * maxargs);
   grub_memset (state, 0, sizeof (struct grub_arg_list) * maxargs);
-  if (grub_arg_parse (cmd, num, &args[1], state, &arglist, &numargs))
-    ret = (cmd->func) (state, numargs, arglist);
+  if (! (cmd->flags & GRUB_COMMAND_FLAG_NO_ARG_PARSE))
+    {
+      if (grub_arg_parse (cmd, num, &args[1], state, &arglist, &numargs))
+	ret = (cmd->func) (state, numargs, arglist);
+    }
+  else
+    ret = (cmd->func) (state, num, &args[1]);
+  
   grub_free (state);
 
   if (pager && (! grub_strcmp (pager, "1")))

@@ -171,6 +171,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	      
 	      /* Lookup the node the symlink points to.  */
 	      find_file (symlink, oldnode, &currnode);
+	      type = foundtype;
 	      grub_free (symlink);
 	      
 	      if (grub_errno)

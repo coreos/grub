@@ -39,6 +39,8 @@
 #define GRUB_COMMAND_FLAG_TITLE		0x4
 /* Don't print the command on booting.  */
 #define GRUB_COMMAND_FLAG_NO_ECHO	0x8
+/* Don't print the command on booting.  */
+#define GRUB_COMMAND_FLAG_NO_ARG_PARSE	0x10
 
 /* The command description.  */
 struct grub_command

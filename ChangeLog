@@ -1,3 +1,32 @@
+2004-09-17  Marco Gerards  <metgerards@student.han.nl>
+
+	Add `linux.mod' and `multiboot.mod' so linux and multiboot kernels
+	can be loaded from normal mode.
+	
+	* conf/i386-pc.rmk (pkgdata_MODULES): Add `linux.mod' and
+	`multiboot.mod'.
+	(linux_mod_SOURCES, linux_mod_CFLAGS, multiboot_mod_SOURCES)
+	(multiboot_mod_CFLAGS): New variables.
+	* loader/i386/pc/linux_normal.c: New file.
+	* loader/i386/pc/multiboot_normal.c: Likewise.	
+	
+	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Don't use the
+	attribute `unused'.
+	
+	* fs/ext2.c (grub_ext2_iterate_dir): Fix typos in inode type.  Use
+	`fdiro' to read the mode information from instead of `diro'.
+
+	* fs/fshelp.c (grub_fshelp_find_file): Set type to foundtype after
+	looking up a symlink.
+
+	* include/grub/normal.h (GRUB_COMMAND_FLAG_NO_ARG_PARSE): New
+	macro.
+	* normal/command.c (grub_command_execute): Don't parse the
+	arguments when `GRUB_COMMAND_FLAG_NO_ARG_PARSE' is set in the
+	flags of the command.
+
+	* normal/menu.c (grub_menu_run): Fix typo.
+
 2004-09-14  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/init.c (abort): Trap into Open Firmware.
