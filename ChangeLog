@@ -1,3 +1,13 @@
+2004-04-30  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add normal/arg.c,
+	commands/ls.c, commands/terminal.c, commands/boot.c,
+	commands/cmp.c and commands/cat.c.
+	(grubof_LDFLAGS): Add -nostdlib -static-libgcc -lgcc.
+
+	* kern/powerpc/ieee1275/init.c: Include "grub/env.h" instead of
+	"env.h"
+
 2004-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	All symbols prefixed with PUPA_ and pupa_ are renamed to GRUB_

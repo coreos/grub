@@ -27,8 +27,10 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	disk/powerpc/ieee1275/partition.c 					\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
+	normal/arg.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
-	kern/env.c 
+	kern/env.c commands/ls.c		\
+	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
 grub_emu_LDFLAGS = -lncurses
 
 grubof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c \
@@ -43,7 +45,7 @@ grubof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c 
 grubof_HEADERS = grub/powerpc/ieee1275/ieee1275.h
 grubof_CFLAGS = $(COMMON_CFLAGS)
 grubof_ASFLAGS = $(COMMON_ASFLAGS)
-grubof_LDFLAGS = -Wl,-Ttext,0x200000,-Bstatic
+grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-Ttext,0x200000,-Bstatic
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

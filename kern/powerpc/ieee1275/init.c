@@ -27,7 +27,7 @@
 #include <grub/normal.h>
 #include <grub/fs.h>
 #include <grub/setjmp.h>
-#include <env.h>
+#include <grub/env.h>
 
 void grub_ofdisk_init (void);
 void grub_console_init (void);
