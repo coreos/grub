@@ -122,14 +122,7 @@ extern char *grub_scratch_mem;
  *    (in LSB order)
  */
 
-#define COMPAT_VERSION_MAJOR 2
-#define COMPAT_VERSION_MINOR 1
-#define COMPAT_VERSION       ((COMPAT_VERSION_MINOR<<8)|COMPAT_VERSION_MAJOR)
-
-#define STAGE1_VER_MAJ_OFFS  0x1bc
-#define STAGE1_INSTALLSEG    0x1ba
-#define STAGE1_INSTALLADDR   0x1b8
-#define STAGE1_FIRSTLIST     0x1b5
+#include <stage1.h>
 
 #define STAGE2_VER_MAJ_OFFS  0x6
 #define STAGE2_INSTALLPART   0x8

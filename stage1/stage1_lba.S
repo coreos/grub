@@ -18,20 +18,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <stage1.h>
+	
 /*
  *  defines for the code go here
  */
-
-#define SIGNATURE   0xaa55
-#define BPBEND      0x3e
-#define PARTSTART   0x1be	/* starting address of partition table */
-#define PARTEND     0x1fe	/* ending addres of the partition table */
-#define MINPARAMSIZ 13		/* size of extra data parameters */
-#define LISTSIZ     8		/* size of sector list */
-#define REALSTACK   0x2000	/* stack for this code and BIOS calls */
-#define BUFFERSEG   0x7000	/* segment address of disk buffer, the
-				   disk buffer MUST be 32K long and cannot
-				   straddle a 64K boundary */
 
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
@@ -81,11 +72,14 @@ disk_address_packet:
 	.quad	0
 	/* more space... */
 
-	. = _start + BPBEND
+	. = _start + STAGE1_BPBEND
 
 	/*
 	 * End of BIOS parameter block.
 	 */
+
+stage1_id:
+	.byte	STAGE1_ID_LBA
 
 after_BPB:
 
@@ -98,7 +92,7 @@ after_BPB:
 	movw	%ax, %ss
 
 	/* set up the REAL stack */
-	movw	$REALSTACK, %sp
+	movw	$STAGE1_STACKSEG, %sp
 
 	sti		/* we're safe again */
 
@@ -134,7 +128,7 @@ after_BPB:
 	movl	0x10(%si), %ecx
 
 	/* this sets up for the first run through "bootloop" */
-	movw	$ABS(firstlist - LISTSIZ), %di
+	movw	$ABS(firstlist - STAGE1_LISTSIZE), %di
 
         /* this is the loop for reading the secondary boot-loader in */
 bootloop:
@@ -185,8 +179,7 @@ more_sectors:
 	movl	%ebx, 8(%si)
 
 	/* the segment of buffer address */
-	movw	6(%di), %bx
-	movw	%bx, 6(%si)
+	movw	$STAGE1_BUFFERSEG, 6(%si)
 
 	pushw	%ax	/* save %ax from destruction! */
 
@@ -214,9 +207,6 @@ more_sectors:
 
 	jc	read_error
 
-	/* save source segment */
-	movw	%es, %bx
-	
 	/* load addresses for copy from disk buffer to destination */
 	movw	6(%di), %es	/* load destination segment */
 
@@ -241,7 +231,8 @@ more_sectors:
 
 	xorw	%di, %di	/* zero offset of destination addresses */
 	xorw	%si, %si	/* zero offset of source addresses */
-	movw	%bx, %ds	/* restore the source segment */
+	movw	$STAGE1_BUFFERSEG, %ax
+	movw	%ax, %ds
 
 	cld		/* sets the copy direction to forward */
 
@@ -260,7 +251,7 @@ more_sectors:
 	jne	setup_sectors
 
 	/* update position to load from */
-	subw	$LISTSIZ, %di
+	subw	$STAGE1_LISTSIZE, %di
 
 	/* jump to bootloop */
 	jmp	bootloop
@@ -332,11 +323,12 @@ lastlist:
         /*
          *  This data area is for keeping general parameters.
          */
-	. = _start + PARTSTART - MINPARAMSIZ - LISTSIZ
+
+	. = _start + STAGE1_PARTSTART - STAGE1_MINPARAMSIZE - STAGE1_LISTSIZE
 
 	/* this next data area before the partition area is specifically
-	   sized, you should update "MINPARAMSIZ" to reflect any additions
-	   or deletions to this area */
+	   sized, you should update "STAGE1_MINPARAMSIZE" to reflect any
+	   additions or deletions to this area.  */
 
 	.word 0
 	.word 0
@@ -371,12 +363,12 @@ bootit:
 
 	/*
 	 *  This is the compatibility version number.
-	 *  See ../stage2/shared.h for COMPAT_VERSION_* definitions used
+	 *  See stage1.h for COMPAT_VERSION_* definitions used
 	 *  in stage2 and stage1_5 modules.
 	 *
 	 *  DO NOT MOVE THIS!!!
 	 */
-	.byte	2, 1
+	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
 
 	/*
 	 *  This is where an MBR would go if on a hard disk.  The code
@@ -384,11 +376,11 @@ bootit:
 	 *  sneaky, huh?
 	 */
 
-	. = _start + PARTSTART
+	. = _start + STAGE1_PARTSTART
 
 	/* This space cannot be used by any bootloader, uggh...  */
 
-	. = _start + PARTEND
+	. = _start + STAGE1_PARTEND
 
 /* the last 2 bytes in the sector 0 contain the signature */
-	.word	SIGNATURE
+	.word	STAGE1_SIGNATURE

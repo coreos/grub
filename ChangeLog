@@ -1,3 +1,60 @@
+1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+	
+	All constants in stage1s are moved to stage1.h and renamed
+	appropriately, and include stage1.h instead.
+	
+	* grub/Makefile.am (AM_CFLAGS): Added the include path to stage1.
+	* stage2/Makefile.am (INCLUDES): New variable.
+	* stage1/Makefile.am (stage1_exec_SOURCES): Added stage1.h
+	(stage1_lba_exec_SOURCES): Likewise.
+	* stage1/stage1.h: New file.
+	* stage1/stage1.S (SIGNATURE): Renamed to ...
+	* stage1/stage1.h (STAGE1_SIGNATURE): ... this.
+	* stage1/stage1.S (BPBEND): Renamed to ...
+	* stage1/stage1.h (STAGE1_BPBEND): ... this.
+	* stage1/stage1.S (PARTSTART): Renamed to ...
+	* stage1/stage1.h (STAGE1_PARTSTART): ... this.
+	* stage1/stage1.S (MINPARMSIZ): Renamed to ...
+	* stage1/stage1.h (STAGE1_MINPARMSIZE): ... this.
+	* stage1/stage1.S (LISTSIZ): Renamed to ...
+	* stage1/stage1.h (STAGE1_LISTSIZE): ... this.
+	* stage1/stage1.S (REALSTACK): Renamed to ...
+	* stage1/stage1.h (STAGE1_STACKSEG): ... this.
+	* stage1/stage1.S (BUFFERSEG): Renamed to ...
+	* stage1/stage1.h (STAGE1_BUFFERSEG): ... this.
+	* stage1/stage1.S (BIOS_HD_FLAG): Renamed to ...
+	* stage1/stage1.h (STAGE1_BIOS_HD_FLAG): ... this.
+	* stage1/stage1_lba.S (SIGNATURE): Removed.
+	* stage1/stage1_lba.S (BPBEND): Likewise.
+	* stage1/stage1_lba.S (PARTSTART): Likewise.
+	* stage1/stage1_lba.S (MINPARMSIZ): Likewise.
+	* stage1/stage1_lba.S (LISTSIZ): Likewise.
+	* stage1/stage1_lba.S (REALSTACK): Likewise.
+	* stage1/stage1_lba.S (BUFFERSEG): Likewise.
+	* stage1/stage1_lba.S (BIOS_HD_FLAG): Likewise.
+
+	* stage1/stage1.S (stage1_id): New variable.
+	* stage1/stage1_lba.S (stage1_id): Likewise.
+	* stage1/stage1.h (COMPAT_VERSION_MINOR): Set to 2.
+	(STAGE1_ID_OFFSET): New macro.
+	(STAGE1_ID_CHS): Likewise.
+	(STAGE1_ID_LBA): Likewise.
+	* stage2/cmdline.c (enter_cmdline) [!GRUB_UTIL]: When running
+	the command `install' and STAGE1_FILE is stage1_lba, check if
+	LBA is supported.
+	(enter_cmdline) [GRUB_UTIL]: In the same case above, check only
+	if CURRENT_DRIVE is a hard disk and, if so, print a warning
+	message, because /sbin/grub cannot detect if LBA is supported or
+	not.
+
+	* stage1/stage1_lba.S: Fix a bug that incorrectly assigns the
+	segment of buffer address.
+	
+1999-07-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/boot.c (load_image): When removing "vga=...", memmove
+	the length of VGA_END plus one.
+	
 1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/bios.c (get_diskinfo): In LBA mode, compute

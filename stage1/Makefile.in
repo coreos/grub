@@ -84,8 +84,8 @@ AM_CFLAGS = @STAGE1_CFLAGS@ -fno-builtin -nostdinc
 LDFLAGS = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 
 noinst_PROGRAMS = stage1.exec stage1_lba.exec
-stage1_exec_SOURCES = stage1.S
-stage1_lba_exec_SOURCES = stage1_lba.S
+stage1_exec_SOURCES = stage1.S stage1.h
+stage1_lba_exec_SOURCES = stage1_lba.S stage1.h
 subdir = stage1
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
@@ -124,7 +124,7 @@ OBJECTS = $(am_stage1_exec_OBJECTS) $(am_stage1_lba_exec_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .o
+.SUFFIXES: .S .c .h .o
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu stage1/Makefile
 

@@ -52,6 +52,10 @@ See the file INSTALL for instructions on how to build and install the
 GRUB data and program files.  See the GRUB manual for details about
 using GRUB as your bootloader.
 
+GNU GRUB has a page on the web. See:
+
+	http://www.gnu.org/software/grub/grub.html
+
 If you have any suggestions or bug reports, please send electronic
 mail to the GRUB mailing list <bug-grub@gnu.org>.
 

@@ -405,6 +405,41 @@ returnit:
 	    }
 	  else if (grub_open (file))
 	    {
+	      /* If STAGE1_FILE is the LBA version, do a sanity check.  */
+	      if (buffer[STAGE1_ID_OFFSET] == STAGE1_ID_LBA)
+		{
+		  /* The geometry of the drive in which FILE is located.  */
+		  struct geometry load_geom;
+
+		  /* Check if CURRENT_DRIVE is a floppy disk.  */
+		  if (! (current_drive & 0x80))
+		    {
+		      errnum = ERR_DEV_VALUES;
+		      goto install_failure;
+		    }
+		  
+		  /* Get the geometry of CURRENT_DRIVE.  */
+		  if (get_diskinfo (current_drive, &load_geom))
+		    {
+		      errnum = ERR_NO_DISK;
+		      goto install_failure;
+		    }
+
+#ifdef GRUB_UTIL
+		  /* XXX Can we determine if LBA is supported in
+		     /sbin/grub as well?  */
+		  grub_printf ("Warning: make sure that the access mode for"
+			       "(hd%d) is LBA.\n", current_drive - 0x80);
+#else
+		  /* Check if LBA is supported.  */
+		  if (! (load_geom.flags & BIOSDISK_FLAG_LBA_EXTENSION))
+		    {
+		      errnum = ERR_DEV_VALUES;
+		      goto install_failure;
+		    }
+#endif
+		}
+	      
 	      if (!new_drive)
 		new_drive = current_drive;
 
@@ -488,7 +523,9 @@ returnit:
 	  no_decompression = 0;
 #endif
 	}
-
+	  
+    install_failure:
+      
       /* Error running the install script, so drop to command line. */
       if (script)
 	{

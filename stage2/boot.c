@@ -232,7 +232,7 @@ load_image (void)
 		
 		/* Remove the "vga=...".  */
 		vga_end = skip_to (0, vga);
-		grub_memmove (vga, vga_end, grub_strlen (vga_end));
+		grub_memmove (vga, vga_end, grub_strlen (vga_end) + 1);
 	      }
 	  }
 		

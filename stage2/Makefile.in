@@ -87,6 +87,9 @@ noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
 
 EXTRA_DIST = smp-imps.c $(noinst_SCRIPTS)
 
+# For <stage1.h>.
+INCLUDES = -I$(top_srcdir)/stage1
+
 # The library for /sbin/grub.
 noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c common.c char_io.c cmdline.c disk_io.c \

@@ -18,23 +18,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <stage1.h>
+
 /*
  *  defines for the code go here
  */
-
-#define SIGNATURE   0xaa55
-#define BPBEND      0x3e
-#define PARTSTART   0x1be	/* starting address of partition table */
-#define PARTEND     0x1fe	/* ending addres of the partition table */
-#define MINPARAMSIZ 13		/* size of extra data parameters */
-#define LISTSIZ     8		/* size of sector list */
-#define REALSTACK   0x2000	/* stack for this code and BIOS calls */
-#define BUFFERSEG   0x7000	/* segment address of disk buffer, the
-				   disk buffer MUST be 32K long and cannot
-				   straddle a 64K boundary */
-#define BIOS_HD_FLAG 0x80	/* bit set in BIOS drive number to designate
-				   a hard disk vs. a floppy */
-
+	
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
 	   from the linker. (ELF can't relocate 16-bit addresses!) */
@@ -87,12 +76,15 @@ cylinder_start:
 	.word	0
 	/* more space... */
 
-	. = _start + BPBEND
+	. = _start + STAGE1_BPBEND
 
 	/*
 	 * End of BIOS parameter block.
 	 */
 
+stage1_id:
+	.byte	STAGE1_ID_CHS
+	
 after_BPB:
 
 /* general setup */
@@ -104,7 +96,7 @@ after_BPB:
 	movw	%ax, %ss
 
 	/* set up the REAL stack */
-	movw	$REALSTACK, %sp
+	movw	$STAGE1_STACKSEG, %sp
 
 	sti		/* we're safe again */
 
@@ -130,7 +122,7 @@ after_BPB:
 	/*
 	 *  The call failed, so maybe use the floppy probe instead.
 	 */
-	testb	$BIOS_HD_FLAG, %dl
+	testb	$STAGE1_BIOS_HD_FLAG, %dl
 	jz	floppy_probe
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */
@@ -164,7 +156,7 @@ final_init:
 	movl	%eax, (%si)
 
 	/* this sets up for the first run through "bootloop" */
-	movw	$ABS(firstlist - LISTSIZ), %di
+	movw	$ABS(firstlist - STAGE1_LISTSIZE), %di
 
 
         /* this is the loop for reading the secondary boot-loader in */
@@ -262,7 +254,7 @@ more_sectors:
  *			%al = 0x0 on success; err code on failure
  */
 
-	movw	$BUFFERSEG, %bx
+	movw	$STAGE1_BUFFERSEG, %bx
 	movw	%bx, %es	/* load %es segment with disk buffer */
 
 	xorw	%bx, %bx	/* %bx = 0, put it at 0 in the segment */
@@ -315,7 +307,7 @@ more_sectors:
 	jne	setup_sectors
 
 	/* update position to load from */
-	subw	$LISTSIZ, %di
+	subw	$STAGE1_LISTSIZE, %di
 	
 	/* jump to bootloop */
 	jmp	bootloop
@@ -387,11 +379,11 @@ lastlist:
         /*
          *  This data area is for keeping general parameters.
          */
-	. = _start + PARTSTART - MINPARAMSIZ - LISTSIZ
+	. = _start + STAGE1_PARTSTART - STAGE1_MINPARAMSIZE - STAGE1_LISTSIZE
 
 	/* this next data area before the partition area is specifically
-	   sized, you should update "MINPARAMSIZ" to reflect any additions
-	   or deletions to this area */
+	   sized, you should update "STAGE1_MINPARAMSIZ" to reflect any 
+	   additions or deletions to this area.  */
 
 	.word 0
 	.word 0
@@ -426,12 +418,12 @@ bootit:
 
 	/*
 	 *  This is the compatibility version number.
-	 *  See ../stage2/shared.h for COMPAT_VERSION_* definitions used
+	 *  See stage1.h for COMPAT_VERSION_* definitions used
 	 *  in stage2 and stage1_5 modules.
 	 *
 	 *  DO NOT MOVE THIS!!!
 	 */
-	.byte	2, 1
+	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
 
 	/*
 	 *  This is where an MBR would go if on a hard disk.  The code
@@ -439,7 +431,7 @@ bootit:
 	 *  sneaky, huh?
 	 */
 
-	. = _start + PARTSTART
+	. = _start + STAGE1_PARTSTART
 
 probe_values:
 	.byte	36, 18, 15, 9, 0
@@ -474,7 +466,7 @@ fd_probe_error_string:	.string "Floppy"
 
 1:
 	/* perform read */
-	movw	$REALSTACK, %bx
+	movw	$STAGE1_BUFFERSEG, %bx
 	movw	$0x201, %ax
 	movb	$0, %ch
 	movb	$0, %dh
@@ -489,7 +481,7 @@ fd_probe_error_string:	.string "Floppy"
 
 	jmp	final_init
 
-	. = _start + PARTEND
+	. = _start + STAGE1_PARTEND
 
 /* the last 2 bytes in the sector 0 contain the signature */
-	.word	SIGNATURE
+	.word	STAGE1_SIGNATURE
