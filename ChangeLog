@@ -1,3 +1,14 @@
+2001-01-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/shared.h (BOOTSEC_BPB_HIDDEN_SECTORS): New macro.
+	
+	* stage2/builtins.c (chainloader_func): If CURRENT_PARTITION is
+	FAT, set the hidden sectors field of the BPB to PART_START, to
+	avoid a Windows bug which affects only when Windows is booted
+	from a logical partition. And, clear ERRNUM after testing if a
+	partition is FAT, because open_partition or fat_mount may set
+	ERRNUM. Reported by Ingo Korb <ingo@akana.de>.
+	
 2001-01-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (boot_func): In the chain-loading mode,

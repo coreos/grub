@@ -20,6 +20,7 @@ New in 1.0 - XXXX-XX-XX:
   cannot open a real configuration file, with this option. The argument
   must be an existing file.
 * EZ-BIOS support is added.
+* Booting Windows from a logical partition is supported.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".
