@@ -106,7 +106,8 @@ fat_mount (void)
     FAT_SUPER->root_offset
     + ((FAT_SUPER->root_max - 1) >> FAT_SUPER->sectsize_bits) + 1;
   FAT_SUPER->num_clust = 
-    (FAT_SUPER->num_sectors - FAT_SUPER->data_offset) / bpb.sects_per_clust;
+    2 + ((FAT_SUPER->num_sectors - FAT_SUPER->data_offset) 
+	 / bpb.sects_per_clust);
   FAT_SUPER->sects_per_clust = bpb.sects_per_clust;
   
   if (!bpb.fat_length)
@@ -136,7 +137,7 @@ fat_mount (void)
       || FAT_CVT_U16(bpb.bytes_per_sect) != SECTOR_SIZE
       || bpb.sects_per_clust != (1 << (FAT_SUPER->clustsize_bits
  				       - FAT_SUPER->sectsize_bits))
-      || FAT_SUPER->num_clust <= 0
+      || FAT_SUPER->num_clust <= 2
       || (FAT_SUPER->fat_size * FAT_SUPER->num_clust / (2 * SECTOR_SIZE)
  	  > FAT_SUPER->fat_length))
     return 0;

@@ -1,3 +1,9 @@
+2000-07-25  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_fat.c (fat_mount): Fixed calculation of num_clust.
+	It was off by two, since the two non existing clusters 0 and 1
+	were not taken into account.
+	
 2000-07-25  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/asm.S [!STAGE1_5] (linux_text_len): New variable.
