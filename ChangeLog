@@ -1,3 +1,7 @@
+2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* docs/grub.texi: Added some text about JFS and XFS.
+	
 2002-01-08  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* grub/main.c (use_preset_menu): New variable.
