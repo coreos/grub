@@ -553,7 +553,7 @@ AM_CONDITIONAL(HERCULES_SUPPORT, test "x$enable_hercules" != xno)
 
 dnl Serial terminal
 AC_ARG_ENABLE(serial,
-  [  --disable-serial        diable serial terminal support])
+  [  --disable-serial        disable serial terminal support])
 AM_CONDITIONAL(SERIAL_SUPPORT, test "x$enable_serial" != xno)
 
 dnl Simulation of the slowness of a serial device.

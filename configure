@@ -891,7 +891,7 @@ Optional Features:
   --enable-cs-scan=LIST   probe for CS89x0 base address using LIST
   --enable-diskless       enable diskless support
   --disable-hercules      disable hercules terminal support
-  --disable-serial        diable serial terminal support
+  --disable-serial        disable serial terminal support
   --enable-serial-speed-simulation
                           simulate the slowness of a serial device
   --enable-preset-menu=FILE
