@@ -147,7 +147,7 @@ TEXINFOS = grub.texi multiboot.texi
 NROFF = nroff
 MANS = $(man_MANS)
 DIST_COMMON = $(grub_TEXINFOS) $(multiboot_TEXINFOS) Makefile.am \
-	Makefile.in mdate-sh stamp-vti texinfo.tex version.texi
+	Makefile.in compile mdate-sh stamp-vti texinfo.tex version.texi
 SOURCES = $(kernel_SOURCES)
 
 all: all-am

@@ -897,7 +897,7 @@ fi
 
 # Define the identity of the package.
 PACKAGE=grub
-VERSION=0.5.97
+VERSION=0.90
 cat >> confdefs.h <<EOF
 #define PACKAGE "$PACKAGE"
 EOF

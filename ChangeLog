@@ -1,5 +1,16 @@
 2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* configure.in (AM_INIT_AUTOMAKE): Set the version number to
+	0.90.
+
+2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Ughh! I forgot to add this file to the CVS.
+
+	* docs/compile: New file.
+	
+2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* docs/grub.texi: Updated.
 	
 2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
@@ -11,6 +22,12 @@
 	
 2001-07-04  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/compile: New file.
+	* docs/mdate-sh: Likewise.
+	* docs/texinfo.tex: Likewise.
+	* compile: Removed.
+	* mdate-sh: Likewise.
+	* texinfo.tex: Likewise.
 	* config.guess: Updated from automake-1.4h.
 	* config.sub: Likewise.
 	* depcomp: Likewise.
