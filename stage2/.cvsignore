@@ -1,0 +1,14 @@
+.deps
+Makefile
+diskless
+diskless_size.h
+nbgrub
+nbloader
+pre_stage2
+pxegrub
+pxeloader
+stage2
+stage2_size.h
+start
+*.exec
+*_stage1_5
