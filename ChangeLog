@@ -1,3 +1,26 @@
+2000-04-05  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (kernel_func): Added missing ``size''
+	arguments into `grub_memcmp's. Reported by Christoph Plattner
+	<christoph.plattner@dot.at>.
+
+	From Torsten Duwe <duwe@caldera.de>:
+	* stage2/boot.c (load_initrd): Mask the address with 0x3FFFFFFF
+	instead of 0xFFFFFFFF to place the initrd below 1GB.
+	(load_image): In Linux boot, add the option "mem=" only if more
+	than 64MB are present.
+	* grub/asmstub.c [__linux__]: Include <linux/cdrom.h> for
+	CDROM_GET_CAPABILITY.
+	[__FreeBSD__ || __NetBSD__ || __OpenBSD__]: Include <sys/cdio.h>
+	for CDIOCCLRDEBUG.
+	(check_device) [__linux__] [CDROM_GET_CAPABILITY]: If ioctl for
+	CDROM_GET_CAPAIBILITY succeeds, return zero.
+	[__FreeBSD__ || __NetBSD__ || __OpenBSD__] [CDIOCCLRDEBUG]: If
+	ioctl for CDIOCCLRDEBUG succeeds, return zero.
+
+	* stage2/boot.c (load_initrd): Subtract 0x1000 (one page size)
+	from MOVETO, to avoid a Linux 2.3.xx's bug.
+	
 2000-04-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Add a dirty hack into the kernel loader so that the user can

@@ -45,6 +45,7 @@ int grub_stage2 (void);
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
 # include <linux/major.h>	/* FLOPPY_MAJOR */
 # include <linux/kdev_t.h>	/* MAJOR */
+# include <linux/cdrom.h>	/* CDROM_GET_CAPABILITY */
 # if (__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */
@@ -58,6 +59,7 @@ int grub_stage2 (void);
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # include <sys/ioctl.h>		/* ioctl */
 # include <sys/disklabel.h>
+# include <sys/cdio.h>		/* CDIOCCLRDEBUG */
 #endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
 
 #ifdef HAVE_OPENDISK
@@ -521,7 +523,13 @@ check_device (const char *device)
       return 0;
     }
 
+  /* Make sure CD-ROMs don't get assigned a BIOS disk number 
+     before SCSI disks!  */
 #ifdef __linux__
+# ifdef CDROM_GET_CAPABILITY
+  if (ioctl (fileno (fp), CDROM_GET_CAPABILITY, 0) >= 0)
+    return 0;
+# else /* ! CDROM_GET_CAPABILITY */
   /* Check if DEVICE is a CD-ROM drive by the HDIO_GETGEO ioctl.  */
   {
     struct hd_geometry hdg;
@@ -537,7 +545,15 @@ check_device (const char *device)
 	&& ioctl (fileno (fp), HDIO_GETGEO, &hdg))
       return 0;
   }
+# endif /* ! CDROM_GET_CAPABILITY */
 #endif /* __linux__ */
+
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+# ifdef CDIOCCLRDEBUG
+  if (ioctl (fileno (fp), CDIOCCLRDEBUG, 0) >= 0)
+    return 0;
+# endif /* CDIOCCLRDEBUG */
+#endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
   
   /* Attempt to read the first sector.  */
   if (fread (buf, 1, 512, fp) != 512)

@@ -1832,23 +1832,23 @@ kernel_func (char *arg, int flags)
 
   /* If the option `--type=TYPE' is specified, convert the string to
      a kernel type.  */
-  if (grub_memcmp (arg, "--type=") == 0)
+  if (grub_memcmp (arg, "--type=", 7) == 0)
     {
       arg += 7;
       
-      if (grub_memcmp (arg, "netbsd") == 0)
+      if (grub_memcmp (arg, "netbsd", 6) == 0)
 	suggested_type = KERNEL_TYPE_NETBSD;
-      else if (grub_memcmp (arg, "freebsd") == 0)
+      else if (grub_memcmp (arg, "freebsd", 7) == 0)
 	suggested_type = KERNEL_TYPE_FREEBSD;
-      else if (grub_memcmp (arg, "openbsd") == 0)
+      else if (grub_memcmp (arg, "openbsd", 7) == 0)
 	/* XXX: For now, OpenBSD is identical to NetBSD, from GRUB's
 	   point of view.  */
 	suggested_type = KERNEL_TYPE_NETBSD;
-      else if (grub_memcmp (arg, "linux") == 0)
+      else if (grub_memcmp (arg, "linux", 5) == 0)
 	suggested_type = KERNEL_TYPE_LINUX;
-      else if (grub_memcmp (arg, "biglinux") == 0)
+      else if (grub_memcmp (arg, "biglinux", 8) == 0)
 	suggested_type = KERNEL_TYPE_BIG_LINUX;
-      else if (grub_memcmp (arg, "multiboot") == 0)
+      else if (grub_memcmp (arg, "multiboot", 9) == 0)
 	suggested_type = KERNEL_TYPE_MULTIBOOT;
       else
 	{

@@ -271,16 +271,24 @@ load_image (char *kernel, char *arg, kernel_t suggested_type)
 	  /* copy command-line plus memory hack to staging area */
 	  {
 	    char *src = arg;
-	    char *dest = (char *) (CL_MY_LOCATION + 4);
-
-	    memmove ((char *) CL_MY_LOCATION, "mem=", 4);
+	    char *dest = (char *) CL_MY_LOCATION;
 
 	    *((unsigned short *) CL_OFFSET) = CL_MY_LOCATION - CL_BASE_ADDR;
 	    *((unsigned short *) CL_MAGIC_ADDR) = CL_MAGIC;
 
-	    dest = convert_to_ascii (dest, 'u', (mbi.mem_upper + 0x400));
-	    *(dest++) = 'K';
-	    *(dest++) = ' ';
+	    /* Help Linux to find memory only if more than 64MB are present.
+	       Up to that amount it is fairly capable to find by itself, 
+	       and at least newer Phoenix BIOSes are known to put a
+	       10k hole just before 64MB, but report a proper total.  */
+	    if (mbi.mem_upper + 0x400 > 0x10000)
+	      {
+		grub_memmove ((char *) CL_MY_LOCATION, "mem=", 4);
+		dest = (char *) (CL_MY_LOCATION + 4);
+		
+		dest = convert_to_ascii (dest, 'u', (mbi.mem_upper + 0x400));
+		*(dest++) = 'K';
+		*(dest++) = ' ';
+	      }
 
 	    while (*src && *src != ' ')
 	      src++;
@@ -572,7 +580,10 @@ load_initrd (char *initrd)
       return 0;
     }
 
-  moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
+  moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0x3ffff000;
+  /* XXX: Linux 2.3.xx has a bug in the memory range check, so avoid
+     the last page.  */
+  moveto -= 0x1000;
   memmove ((void *) RAW_ADDR (moveto), (void *) cur_addr, len);
 
   printf ("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
