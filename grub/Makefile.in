@@ -61,6 +61,7 @@ host_alias = @host_alias@
 host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
+AWK = @AWK@
 CC = @CC@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
@@ -83,7 +84,7 @@ AM_CFLAGS = @GRUB_CFLAGS@ -DGRUB_UTIL=1 -fwritable-strings \
 	-I$(top_srcdir)/stage2 -I$(top_srcdir)/stage1
 
 
-grub_SOURCES = main.c asmstub.c
+grub_SOURCES = main.c asmstub.c getopt.c getopt1.c getopt.h
 grub_LDADD = ../stage2/libgrub.a @GRUB_LIBS@
 subdir = grub
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -95,7 +96,7 @@ DEFS = @DEFS@ -I. -I$(srcdir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-am_grub_OBJECTS =  main.o asmstub.o
+am_grub_OBJECTS =  main.o asmstub.o getopt.o getopt1.o
 grub_OBJECTS =  $(am_grub_OBJECTS)
 grub_DEPENDENCIES =  ../stage2/libgrub.a
 grub_LDFLAGS = 
@@ -110,13 +111,13 @@ DIST_COMMON =  Makefile.am Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-DEP_FILES =  .deps/asmstub.P .deps/main.P
+DEP_FILES =  .deps/asmstub.P .deps/getopt.P .deps/getopt1.P .deps/main.P
 SOURCES = $(grub_SOURCES)
 OBJECTS = $(am_grub_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .c .h .o
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu grub/Makefile
 
@@ -176,7 +177,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
-	  awk '    { files[$$0] = 1; } \
+	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	mkid -f$$here/ID $$unique $(LISP)
 
@@ -188,7 +189,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
-	  awk '    { files[$$0] = 1; } \
+	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
 	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)

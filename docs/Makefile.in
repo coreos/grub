@@ -61,6 +61,7 @@ host_alias = @host_alias@
 host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
+AWK = @AWK@
 CC = @CC@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
@@ -394,6 +395,7 @@ install-data-am install-data install-am install uninstall-am uninstall \
 all-redirect all-am all install-strip installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
+
 
 # FIXME: Use this rule until Debian has the new Texinfo.
 grub.info: grub.texi

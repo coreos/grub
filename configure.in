@@ -105,5 +105,8 @@ AC_DEFINE(HAVE_LIBCURSES)],
 AC_DEFINE(HAVE_LIBCURSES)])])
 AC_SUBST(GRUB_LIBS)
 
+# Check for headers.
+AC_CHECK_HEADERS(string.h strings.h)
+
 AC_OUTPUT([Makefile stage1/Makefile stage2/Makefile docs/Makefile \
 	debian/Makefile grub/Makefile])

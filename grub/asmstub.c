@@ -89,7 +89,7 @@ grub_stage2 (void)
   {
     /* Make sure our stack lives in the simulated memory area. */
     asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"
-		  : "&=r" (realstack) : "r" (simstack));
+		  : "=&r" (realstack) : "r" (simstack));
 
     /* FIXME: Do a setjmp here for the stop command. */
     if (1)
