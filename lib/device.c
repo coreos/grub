@@ -74,17 +74,54 @@ struct hd_geometry
 # endif /* ! BLKGETSIZE */
 #endif /* __linux__ */
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+/* Use __FreeBSD_kernel__ instead of __FreeBSD__ for compatibility with
+   kFreeBSD-based non-FreeBSD systems (e.g. GNU/kFreeBSD) */
+#if defined(__FreeBSD__) && ! defined(__FreeBSD_kernel__)
+# define __FreeBSD_kernel__
+#endif
+#ifdef __FreeBSD_kernel__
+  /* Obtain version of kFreeBSD headers */
+# include <osreldate.h>
+# ifndef __FreeBSD_kernel_version
+#  define __FreeBSD_kernel_version __FreeBSD_version
+# endif
+
+  /* Runtime detection of kernel */
+# include <sys/utsname.h>
+int
+get_kfreebsd_version ()
+{
+  struct utsname uts;
+  int major; int minor, v[2];
+
+  uname (&uts);
+  sscanf (uts.release, "%d.%d", &major, &minor);
+
+  if (major >= 9)
+    major = 9;
+  if (major >= 5)
+    {
+      v[0] = minor/10; v[1] = minor%10;
+    }
+  else
+    {
+      v[0] = minor%10; v[1] = minor/10;
+    }
+  return major*100000+v[0]*10000+v[1]*1000;
+}
+#endif /* __FreeBSD_kernel__ */
+
+#if defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # include <sys/ioctl.h>		/* ioctl */
 # include <sys/disklabel.h>
 # include <sys/cdio.h>		/* CDIOCCLRDEBUG */
-# if defined(__FreeBSD__)
+# if defined(__FreeBSD_kernel__)
 #  include <sys/param.h>
-#  if __FreeBSD_version >= 500040
+#  if __FreeBSD_kernel_version >= 500040
 #   include <sys/disk.h>
 #  endif
-# endif /* __FreeBSD__ */
-#endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
+# endif /* __FreeBSD_kernel__ */
+#endif /* __FreeBSD_kernel__ || __NetBSD__ || __OpenBSD__ */
 
 #ifdef HAVE_OPENDISK
 # include <util.h>
@@ -132,12 +169,14 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
     goto success;
   }
 
-#elif defined(__FreeBSD__) && __FreeBSD_version >= 500040
-  /* FreeBSD version 5 and later */
+#elif defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__OpenBSD__)
+# if defined(__FreeBSD_kernel__) && __FreeBSD_kernel_version >= 500040
+  /* kFreeBSD version 5 or later */
+  if (get_kfreebsd_version () >= 500040)
   {
-    u_int sector_size;
+    unsigned int sector_size;
     off_t media_size;
-    uint_t tmp;
+    unsigned int tmp;
     
     if(ioctl (fd, DIOCGSECTORSIZE, &sector_size) != 0)
       sector_size = 512;
@@ -145,30 +184,31 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
     if (ioctl (fd, DIOCGMEDIASIZE, &media_size) != 0)
       goto fail;
 
-    geometry->total_sectors = media_size / sector_size;
+    geom->total_sectors = media_size / sector_size;
     
     if (ioctl (fd, DIOCGFWSECTORS, &tmp) == 0)
-      geometry->sectors = tmp;
+      geom->sectors = tmp;
     else
-      geometry->sectors = 63;
+      geom->sectors = 63;
     if (ioctl (fd, DIOCGFWHEADS, &tmp) == 0)
-      geometry->heads = tmp;
-    else if (geometry->total_sectors <= 63 * 1 * 1024)
-      geometry->heads = 1;
-    else if (geometry->total_sectors <= 63 * 16 * 1024)
-      geometry->heads = 16;
+      geom->heads = tmp;
+    else if (geom->total_sectors <= 63 * 1 * 1024)
+      geom->heads = 1;
+    else if (geom->total_sectors <= 63 * 16 * 1024)
+      geom->heads = 16;
     else
-      geometry->heads = 255;
+      geom->heads = 255;
 
-    geometry->cylinders = (geometry->total_sectors
-			   / geometry->heads
-			   / geometry->sectors);
+    geom->cylinders = (geom->total_sectors
+			   / geom->heads
+			   / geom->sectors);
     
     goto success;
   }
-  
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-  /* FreeBSD, NetBSD or OpenBSD */
+  else
+#endif /* defined(__FreeBSD_kernel__) && __FreeBSD_kernel_version >= 500040 */
+
+  /* kFreeBSD < 5, NetBSD or OpenBSD */
   {
     struct disklabel hdg;
     if (ioctl (fd, DIOCGDINFO, &hdg))
@@ -250,13 +290,12 @@ get_floppy_disk_name (char *name, int unit)
 #elif defined(__GNU__)
   /* GNU/Hurd */
   sprintf (name, "/dev/fd%d", unit);
-#elif defined(__FreeBSD__)
-  /* FreeBSD */
-# if __FreeBSD__ >= 4
-  sprintf (name, "/dev/fd%d", unit);
-# else /* __FreeBSD__ < 4 */
-  sprintf (name, "/dev/rfd%d", unit);
-# endif /* __FreeBSD__ < 4 */
+#elif defined(__FreeBSD_kernel__)
+  /* kFreeBSD */
+  if (get_kfreebsd_version () >= 400000)
+    sprintf (name, "/dev/fd%d", unit);
+  else
+    sprintf (name, "/dev/rfd%d", unit);
 #elif defined(__NetBSD__)
   /* NetBSD */
   /* opendisk() doesn't work for floppies.  */
@@ -283,13 +322,12 @@ get_ide_disk_name (char *name, int unit)
 #elif defined(__GNU__)
   /* GNU/Hurd */
   sprintf (name, "/dev/hd%d", unit);
-#elif defined(__FreeBSD__)
-  /* FreeBSD */
-# if __FreeBSD__ >= 4
-  sprintf (name, "/dev/ad%d", unit);
-# else /* __FreeBSD__ <= 3 */
-  sprintf (name, "/dev/rwd%d", unit);
-# endif /* __FreeBSD__ <= 3 */
+#elif defined(__FreeBSD_kernel__)
+  /* kFreeBSD */
+  if (get_kfreebsd_version () >= 400000)
+    sprintf (name, "/dev/ad%d", unit);
+  else
+    sprintf (name, "/dev/rwd%d", unit);
 #elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
   /* NetBSD */
   char shortname[16];
@@ -325,13 +363,12 @@ get_scsi_disk_name (char *name, int unit)
 #elif defined(__GNU__)
   /* GNU/Hurd */
   sprintf (name, "/dev/sd%d", unit);
-#elif defined(__FreeBSD__)
-  /* FreeBSD */
-# if __FreeBSD__ >= 4
-  sprintf (name, "/dev/da%d", unit);
-# else /* __FreeBSD__ < 4 */
-  sprintf (name, "/dev/rda%d", unit);
-# endif /* __FreeBSD__ < 4 */
+#elif defined(__FreeBSD_kernel__)
+  /* kFreeBSD */
+  if (get_kfreebsd_version () >= 400000)
+    sprintf (name, "/dev/da%d", unit);
+  else
+    sprintf (name, "/dev/rda%d", unit);
 #elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
   /* NetBSD */
   char shortname[16];
@@ -434,12 +471,12 @@ check_device (const char *device)
 # endif /* ! CDROM_GET_CAPABILITY */
 #endif /* __linux__ */
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD_kernel__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # ifdef CDIOCCLRDEBUG
   if (ioctl (fileno (fp), CDIOCCLRDEBUG, 0) >= 0)
     return 0;
 # endif /* CDIOCCLRDEBUG */
-#endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
+#endif /* __FreeBSD_kernel__ || __NetBSD__ || __OpenBSD__ */
   
   /* Attempt to read the first sector.  */
   if (fread (buf, 1, 512, fp) != 512)

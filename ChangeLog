@@ -1,3 +1,19 @@
+2004-05-10  Robert Millan  <robertmh@gnu.org>
+
+	* lib/device.c: Mangle __FreeBSD_* macro usage to support
+	kFreeBSD-based non-FreeBSD systems (i.e. GNU/kFreeBSD).
+
+	Implement runtime detection of version of kFreeBSD. Now if
+	we build against kFreeBSD 5.x headers the GRUB shell will work on
+	both 4.x and 5.x.
+
+	Replace `u_int_t' types with portable `unsigned int' and old
+	reference to `geometry' structure to new `geom' one.
+
+	* docs/menu.lst: Split GNU/kFreeBSD and GNU/kNetBSD as separate
+	options than FreeBSD and NetBSD, respectively. There are minor
+	differences now (different paths).
+
 2004-05-03  Pavel Roskin  <proski@gnu.org>
 
 	* stage2/char_io.c (convert_to_ascii): Remove "%b" support.
