@@ -19,7 +19,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "shared.h"
+#include <shared.h>
+
+#ifdef SUPPORT_SERIAL
+# include <serial.h>
+#endif
 
 void
 print_error (void)
@@ -749,29 +753,18 @@ getkey (void)
   
   if (terminal == TERMINAL_CONSOLE)
     c = console_getkey ();
-#ifdef serial_console_is_not_implemented_yet
+#ifdef SUPPORT_SERIAL
   else if (terminal == TERMINAL_SERIAL)
     c = serial_getkey ();
   else
     {
-      while (1)
-	{
-	  c = console_checkkey ();
-	  if (c != -1)
-	    {
-	      c = console_getkey ();
-	      break;
-	    }
-
-	  c = serial_checkkey ();
-	  if (c != -1)
-	    {
-	      c = serial_getkey ();
-	      break;
-	    }
-	}
+      grub_printf ("\
+Warning: Both the console and serial terminals are enabled in getkey!
+The serial terminal will be disabled.\n");
+      terminal = TERMINAL_CONSOLE;
+      c = console_getkey ();
     }
-#endif
+#endif /* SUPPORT_SERIAL */
 
   return c;
 }
@@ -785,10 +778,10 @@ checkkey (void)
   if (terminal & TERMINAL_CONSOLE)
     c = console_checkkey ();
 
-#ifdef serial_console_is_not_implemented_yet
-  if (c == -1 && (terminal & TERMINAL_SERIAL))
+#ifdef SUPPORT_SERIAL
+  if (terminal & TERMINAL_SERIAL)
     c = serial_checkkey ();
-#endif
+#endif /* SUPPORT_SERIAL */
 
   return c;
 }
@@ -809,10 +802,15 @@ grub_putchar (int c)
   if (terminal & TERMINAL_CONSOLE)
     console_putchar (c);
 
-#ifdef serial_console_is_not_implemented_yet
+# ifdef SUPPORT_SERIAL
   if (terminal & TERMINAL_SERIAL)
-    serial_putchar (c);
-#endif
+    {
+      if (c == '\n')
+	serial_putchar ('\r');
+      
+      serial_putchar (c);
+    }
+# endif /* SUPPORT_SERIAL */
   
 #endif /* ! STAGE1_5 */
 }

@@ -26,6 +26,10 @@
 # include <etherboot.h>
 #endif
 
+#ifdef SUPPORT_SERIAL
+# include <serial.h>
+#endif
+
 #ifdef GRUB_UTIL
 # include <stdio.h>
 # include <device.h>
@@ -2636,6 +2640,152 @@ static struct builtin builtin_rootnoverify =
 };
 
 
+/* serial */
+static int
+serial_func (char *arg, int flags)
+{
+#ifdef SUPPORT_SERIAL
+  unsigned short port = serial_get_port (0);
+  unsigned int speed = 9600;
+  int word_len = UART_8BITS_WORD;
+  int parity = UART_NO_PARITY;
+  int stop_bit_len = UART_1_STOP_BIT;
+
+  /* Process GNU-style long options.
+     FIXME: We should implement a getopt-like function, to avoid
+     duplications.  */
+  while (1)
+    {
+      if (grub_memcmp (arg, "--unit=", sizeof ("--unit=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--unit=") - 1;
+	  int unit;
+	  
+	  if (! safe_parse_maxint (&p, &unit))
+	    return 1;
+	  
+	  if (unit < 0 || unit > 3)
+	    {
+	      errnum = ERR_DEV_VALUES;
+	      return 1;
+	    }
+
+	  port = serial_get_port (unit);
+	}
+      else if (grub_memcmp (arg, "--port=", sizeof ("--port=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--port=") - 1;
+	  int num;
+	  
+	  if (! safe_parse_maxint (&p, &num))
+	    return 1;
+
+	  port = (unsigned short) num;
+	}
+      else if (grub_memcmp (arg, "--word=", sizeof ("--word=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--word=") - 1;
+	  int len;
+	  
+	  if (! safe_parse_maxint (&p, &len))
+	    return 1;
+
+	  switch (len)
+	    {
+	    case 5: word_len = UART_5BITS_WORD; break;
+	    case 6: word_len = UART_6BITS_WORD; break;
+	    case 7: word_len = UART_7BITS_WORD; break;
+	    case 8: word_len = UART_8BITS_WORD; break;
+	    default:
+	      errnum = ERR_BAD_ARGUMENT;
+	      return 1;
+	    }
+	}
+      else if (grub_memcmp (arg, "--stop=", sizeof ("--stop=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--stop=") - 1;
+	  int len;
+	  
+	  if (! safe_parse_maxint (&p, &len))
+	    return 1;
+
+	  switch (len)
+	    {
+	    case 1: stop_bit_len = UART_1_STOP_BIT; break;
+	    case 2: stop_bit_len = UART_2_STOP_BITS; break;
+	    default:
+	      errnum = ERR_BAD_ARGUMENT;
+	      return 1;
+	    }
+	}
+      else if (grub_memcmp (arg, "--parity=", sizeof ("--parity=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--parity=") - 1;
+
+	  if (grub_memcmp (p, "no", sizeof ("no") - 1) == 0)
+	    parity = UART_NO_PARITY;
+	  else if (grub_memcmp (p, "odd", sizeof ("odd") - 1) == 0)
+	    parity = UART_ODD_PARITY;
+	  else if (grub_memcmp (p, "even", sizeof ("even") - 1) == 0)
+	    parity = UART_EVEN_PARITY;
+	  else
+	    {
+	      errnum = ERR_BAD_ARGUMENT;
+	      return 1;
+	    }
+	}
+# ifdef GRUB_UTIL
+      /* In the grub shell, don't use any port number but open a tty
+	 device instead.  */
+      else if (grub_memcmp (arg, "--device=", sizeof ("--device=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--device=") - 1;
+	  char dev[256];	/* XXX */
+	  char *q = dev;
+	  
+	  while (*p && ! grub_isspace (*p))
+	    *q++ = *p++;
+	  
+	  *q = 0;
+	  set_serial_device (dev);
+	}
+# endif /* GRUB_UTIL */
+      else
+	break;
+
+      arg = skip_to (0, arg);
+    }
+
+  /* Initialize the serial unit.  */
+  if (! serial_init (port, speed, word_len, parity, stop_bit_len))
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+  
+  return 0;
+  
+#else /* ! SUPPORT_SERIAL */
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#endif /* ! SUPPORT_SERIAL */
+}
+
+static struct builtin builtin_serial =
+{
+  "serial",
+  serial_func,
+  BUILTIN_MENU | BUILTIN_CMDLINE,
+  "serial [--unit=UNIT] [--port=PORT] [--word=WORD] [--parity=PARITY] [--stop=STOP] [--device=DEV]",
+  "Initialize a serial device. UNIT is a digit that specifies which serial"
+  " device is used (e.g. 0 == COM1). If you need to specify the port number,"
+  " set it by --port. WORD is the word length, PARITY is the type of parity,"
+  " which is one of `no', `odd' and `even'. STOP is the length of stop bit(s)."
+  " The option --device can be used only in the grub shell, which specifies"
+  " the file name of a tty device. The default values are COM1, 8N1."
+};
+
+
 /* setkey */
 struct keysym
 {
@@ -3113,6 +3263,91 @@ static struct builtin builtin_setup =
 };
 
 
+/* terminal */
+static int
+terminal_func (char *arg, int flags)
+{
+  /* If no argument is specified, show current setting.  */
+  if (! *arg)
+    {
+      if (terminal & TERMINAL_CONSOLE)
+	grub_printf ("console\n");
+#ifdef SUPPORT_SERIAL
+      else if (terminal & TERMINAL_SERIAL)
+	grub_printf ("serial\n");
+#endif /* SUPPORT_SERIAL */
+      return 0;
+    }
+
+  /* Clear current setting.  */
+  terminal = 0;
+  
+  while (1)
+    {
+      if (grub_memcmp (arg, "console", sizeof ("console") - 1) == 0)
+	terminal |= TERMINAL_CONSOLE;
+#ifdef SUPPORT_SERIAL
+      else if (grub_memcmp (arg, "serial", sizeof ("serial") - 1) == 0)
+	terminal |= TERMINAL_SERIAL;
+#endif /* SUPPORT_SERIAL */
+      else
+	break;
+
+      arg = skip_to (0, arg);
+    }
+
+#ifdef SUPPORT_SERIAL
+  /* If a seial console is turned on, wait until the user pushes any key.  */
+  if (terminal & TERMINAL_SERIAL)
+    {
+      int time1, time2 = -1;
+      
+      /* Get current time.  */
+      while ((time1 = getrtsecs ()) == 0xFF)
+	;
+
+      /* Wait for a key input.  */
+      while (1)
+	{
+	  if ((terminal & TERMINAL_CONSOLE) && console_checkkey () != -1)
+	    {
+	      terminal = TERMINAL_CONSOLE;
+	      (void) getkey ();
+	      break;
+	    }
+	  else if ((terminal & TERMINAL_SERIAL) && serial_checkkey () != -1)
+	    {
+	      terminal = TERMINAL_SERIAL;
+	      (void) getkey ();
+	      break;
+	    }
+
+	  /* Prompt the user, once per sec.  */
+	  if ((time1 = getrtsecs ()) != time2 && time1 != 0xFF)
+	    {
+	      grub_printf ("Press any key to continue.\n");
+	      time2 = time1;
+	    }
+	}
+    }
+#endif /* SUPPORT_SERIAL */
+
+  return 0;
+}
+
+static struct builtin builtin_terminal =
+{
+  "terminal",
+  terminal_func,
+  BUILTIN_MENU | BUILTIN_CMDLINE,
+  "terminal [console] [serial]",
+  "Select a terminal. When serial is specified, wait until you push any key"
+  " to continue. If both console and serial are specified, the terminal"
+  " to which you input a key first will be selected. If no argument is"
+  " specified, print current setting."
+};
+
+
 /* testload */
 static int
 testload_func (char *arg, int flags)
@@ -3363,8 +3598,10 @@ struct builtin *builtin_table[] =
   &builtin_reboot,
   &builtin_root,
   &builtin_rootnoverify,
+  &builtin_serial,
   &builtin_setkey,
   &builtin_setup,
+  &builtin_terminal,
   &builtin_testload,
   &builtin_tftpserver,
   &builtin_timeout,

@@ -1,3 +1,30 @@
+2000-08-20  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Now the serial console support is partially working.
+	
+	* grub/asmstub.c (serial_checkkey): Specify a pointer to TIMEOUT
+	as the fifth argument to select.
+	(serial_get_port): New function. Just a dummy.
+	(serial_init): If a serial device is opened, close SERIAL_FD
+	before opeing a new serial device.
+	Don't specify O_NDELAY to open.
+	* stage2/builtins.c [SUPPORT_SERIAL]: Include serial.h.
+	(serial_func): New function.
+	(builtin_serial): New variable.
+	(terminal_func): New function.
+	(builtin_terminal): New variable.
+	(builtin_table): Add pointers to BUILTIN_SERIAL and
+	BUILTIN_TERMINAL.
+	* stage2/char_io.c [SUPPORT_SERIAL]: Include serial.h.
+	(getkey) [SUPPORT_SERIAL]: If both TERMINAL_CONSOLE and
+	TERMINAL_SERIAL are set in TERMINAL simultaneously, print a
+	warning and force the console terminal.
+	(checkkey) [SUPPORT_SERIAL]: If TERMINAL_SERIAL is set in
+	TERMINAL, call serial_checkkey.
+	(grub_putchar) [SUPPORT_SERIAL]: If TERMINAL_SERIAL is set in
+	TERMINAL, call serial_putchar. If C is a newline, print a
+	carriage return, before printing a newline.
+	
 2000-08-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	The image `nbgrub' now relocates itself from 0x10000 to 0x8000,

@@ -846,7 +846,7 @@ serial_checkkey (void)
   timeout.tv_sec = 0;
   timeout.tv_usec = 100000;
   
-  return select (serial_fd + 1, &fds, 0, 0, 0) > 0 ? : -1;
+  return select (serial_fd + 1, &fds, 0, 0, &timeout) > 0 ? : -1;
 }
 
 /* The serial version of grub_putchar.  */
@@ -880,6 +880,14 @@ get_termios_speed (int speed)
   return B0;
 }
 
+/* Get the port number of the unit UNIT. In the grub shell, this doesn't
+   make sense.  */
+unsigned short
+serial_get_port (int unit)
+{
+  return 0;
+}
+
 /* Initialize a serial device. In the grub shell, PORT is unused.  */
 int
 serial_init (unsigned short port, unsigned int speed,
@@ -892,8 +900,12 @@ serial_init (unsigned short port, unsigned int speed,
   if (! serial_device)
     return 0;
 
+  /* If a serial device is already opened, close it first.  */
+  if (serial_fd >= 0)
+    close (serial_fd);
+  
   /* Open the device file.  */
-  serial_fd = open (serial_device, O_RDWR | O_NOCTTY | O_NDELAY | O_SYNC);
+  serial_fd = open (serial_device, O_RDWR | O_NOCTTY | O_SYNC);
   if (serial_fd < 0)
     return 0;
 
