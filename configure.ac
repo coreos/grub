@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
+# Copyright (C) 2002,2003  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -11,7 +11,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-AC_INIT(PUPA, 0.6, [okuji@enbug.org])
+AC_INIT(GRUB, 1.90, [bug-grub@gnu.org])
 AC_PREREQ(2.53)
 AC_CONFIG_SRCDIR([include/pupa/dl.h])
 AC_CONFIG_HEADER([config.h])

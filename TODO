@@ -13,6 +13,8 @@ Priorities:
   higher priority.
 
 
+* Replace PUPA with GRUB (or GRUB 2). !!!
+
 * Add more filesystems (such as jfs, ffs, and reiserfs). !
 
 * Add journal playback support to ext2fs (so it will become ext3fs).
