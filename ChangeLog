@@ -1,5 +1,14 @@
 2002-06-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* util/grub-md5-crypt.in: Prompt to retype a password, and check
+	if the passwords matches. Suggested by Matt Perry
+	<matt@primefactor.com>.
+	Also, don't use Perl any longer, because *BSD's sh and GNU
+	support ``read -r'', and GRUB doesn't support any other
+	operating system anyway.
+	
+2002-06-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	The terminal handling code is rewritten radically.
 	
 	* stage2/console.c: New file.
