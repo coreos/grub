@@ -123,7 +123,7 @@ after_BPB:
 	/*
 	 *  The call failed, so maybe use the floppy probe instead.
 	 */
-	andb	$BIOS_HD_FLAG, %dl
+	testb	$BIOS_HD_FLAG, %dl
 	jz	floppy_probe
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */

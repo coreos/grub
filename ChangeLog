@@ -1,3 +1,8 @@
+1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage1/stage1.S: Call testb instead of andb when checking if
+	the drive is a floppy.
+	
 1999-06-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c [__linux__]: Include linux/fs.h for BLKFLSBUF.
