@@ -378,6 +378,11 @@ bootit:
 
 	. = _start + STAGE1_PARTSTART
 
+	/* These values are not useful in stage1_lba at all, but these
+	   prevent the installation command `install' from failing.  */
+probe_values:	
+	.byte	36, 18, 15, 9, 0
+	
 	/* This space cannot be used by any bootloader, uggh...  */
 
 	. = _start + STAGE1_PARTEND

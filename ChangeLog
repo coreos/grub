@@ -1,4 +1,10 @@
 1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage1/stage1_lba.S (probe_values): New variable. This is not
+	used actually, but prevents `install' command from failing
+	bogusly.
+	
+1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 	
 	All constants in stage1s are moved to stage1.h and renamed
 	appropriately, and include stage1.h instead.
