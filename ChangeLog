@@ -1,3 +1,16 @@
+2002-01-08  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* stage2/common.c [SUPPORT_DISKLESS]
+	(setup_diskless_environment): Removed. The feature is moved to
+	the preset menu.
+	* stage2/stage2.c [SUPPORT_DISKLESS] (preset_menu): Set to the
+	string "bootp\n".
+	[SUPPORT_DISKLESS] (preset_menu_offset): Defined, as if
+	PRESET_MENU_STRING is defined.
+	[SUPPORT_DISKLESS] (open_preset_menu): Likewise.
+	[SUPPORT_DISKLESS] (read_from_preset_menu): Likewise.
+	[SUPPORT_DISKLESS] (close_preset_menu): Likewise.
+	
 2002-01-06  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	The preset menu has a priority over the configuration file.

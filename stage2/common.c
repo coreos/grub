@@ -135,25 +135,6 @@ mmap_avail_at (unsigned long bottom)
 }
 #endif /* ! STAGE1_5 */
 
-#ifdef SUPPORT_DISKLESS
-/* Set up the diskless environment so that GRUB can get a configuration
-   file from a network.  */
-static int
-setup_diskless_environment (void)
-{
-  /* For now, there is no difference between BOOTP and DHCP in GRUB.  */
-  if (! bootp ())
-    {
-      grub_printf ("BOOTP/DHCP fails.\n");
-      return 0;
-    }
-
-  /* This will be erased soon, though...  */
-  print_network_configuration ();
-  return 1;
-}
-#endif /* SUPPORT_DISKLESS */
-
 /* This queries for BIOS information.  */
 void
 init_bios_info (void)
@@ -332,12 +313,6 @@ init_bios_info (void)
     mbi.flags |= MB_INFO_APM_TABLE;
 
 #endif /* STAGE1_5 */
-
-#ifdef SUPPORT_DISKLESS
-  /* If SUPPORT_DISKLESS is defined, initialize the network here.  */
-  if (! setup_diskless_environment ())
-    return;
-#endif
 
   /* Set boot drive and partition.  */
   saved_drive = boot_drive;
