@@ -9,6 +9,7 @@ New:
 * Display "GNU GRUB" instead of "GRUB" in the menu.
 * Add support for QNX RTP into the grub shell.
 * Add support for the initrd max address of a kernel header in Linux.
+* Support 32 bit and 64 bit dev_t.
 
 New in 0.93 - 2002-12-08:
 * Define the behavior of the boot loader when the load end address is

@@ -59,10 +59,12 @@ struct hd_geometry
 #  define FLOPPY_MAJOR	2	/* the major number for floppy */
 # endif /* ! FLOPPY_MAJOR */
 # ifndef MAJOR
-#  ifndef MINORBITS
-#   define MINORBITS	8
-#  endif /* ! MINORBITS */
-#  define MAJOR(dev)	((unsigned int) ((dev) >> MINORBITS))
+#  define MAJOR(dev)	\
+  ({ \
+     unsigned long long __dev = (dev); \
+     (unsigned) ((__dev >> 8) & 0xfff) \
+                 | ((unsigned int) (__dev >> 32) & ~0xfff); \
+  })
 # endif /* ! MAJOR */
 # ifndef CDROM_GET_CAPABILITY
 #  define CDROM_GET_CAPABILITY	0x5331	/* get capabilities */

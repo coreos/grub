@@ -1,3 +1,9 @@
+2004-01-17  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* lib/device.c [__linux__] (MAJOR): Support 32 bit and 64 bit
+	dev_t. This code is stolen from glibc.
+	Suggested by Shen Feng <shen@nanjing-fnst.com>.
+
 2004-01-11  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/terminfo.c (ti_set_term): Use a pointer to struct
