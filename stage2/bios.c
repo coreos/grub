@@ -163,20 +163,17 @@ get_diskinfo (int drive, struct geometry *geometry)
 		 read/write is supported, so we cannot help assuming
 		 that the functions are supported by default and
 		 clearing the flag when either of them fails. *sigh*  */
-#ifdef CHECK_LBA_SUPPORT_BITMAP
+
 	      /* Make sure that LBA read/write functions are supported.  */
-	      if (drp.flags & 1)
+	      if (force_lba || (drp.flags & 1))
 		{
-#endif
 		  geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
 		  
 		  /* FIXME: when the 2TB limit becomes critical, we must
 		     change the type of TOTAL_SECTORS to unsigned long
 		     long.  */
 		  total_sectors = drp.total_sectors & ~0L;
-#ifdef CHECK_LBA_SUPPORT_BITMAP
 		}
-#endif
 	    }
 	}
 

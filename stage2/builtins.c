@@ -1387,7 +1387,9 @@ install_func (char *arg, int flags)
   int is_stage1_5 = 0;
   /* Must call grub_close?  */
   int is_open = 0;
-
+  /* If LBA is forced?  */
+  int is_force_lba = 0;
+  
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
   static void disk_read_savesect_func (int sector)
     {
@@ -1423,6 +1425,13 @@ install_func (char *arg, int flags)
       installaddr += 512;
     }
 
+  /* First, check the GNU-style long option.  */
+  if (grub_memcmp ("--force-lba", arg, 11) == 0)
+    {
+      is_force_lba = 1;
+      arg = skip_to (0, arg);
+    }
+  
   stage1_file = arg;
   dest_dev = skip_to (0, stage1_file);
   if (*dest_dev == 'd')
@@ -1486,6 +1495,8 @@ install_func (char *arg, int flags)
       goto fail;
     }
 
+  /* This below is not true any longer. But should we leave this alone?  */
+  
   /* If DEST_DRIVE is a floppy, Stage 2 must have the iteration probe
      routine.  */
   if (! (dest_drive & 0x80)
@@ -1514,8 +1525,12 @@ install_func (char *arg, int flags)
 		 " be installed on a\ndifferent drive than the drive where"
 		 " the Stage 2 resides.\n");
 
+  /* Set the boot drive.  */
   *((unsigned char *) (stage1_buffer + STAGE1_BOOT_DRIVE)) = new_drive;
 
+  /* Set the "force LBA" flag.  */
+  *((unsigned char *) (stage1_buffer + STAGE1_FORCE_LBA)) = is_force_lba;
+  
   /* Read the first sector of Stage 2.  */
   disk_read_hook = disk_read_savesect_func;
   if (grub_read (stage2_first_buffer, SECTOR_SIZE) != SECTOR_SIZE)
@@ -1594,6 +1609,10 @@ install_func (char *arg, int flags)
   while (*(config_file_location++))
     ;
 
+  /* Set the "force LBA" flag for Stage2.  */
+  *((unsigned char *) (stage2_second_buffer + STAGE2_FORCE_LBA))
+    = is_force_lba;
+  
   if (*ptr == 'p')
     {
       *((long *) (stage2_second_buffer + STAGE2_INSTALLPART))
@@ -1649,39 +1668,43 @@ install_func (char *arg, int flags)
 	  grub_strcpy (config_file_location + sizeof (device), config_file);
 	}
 
-      /* Check if the configuration filename is specified, if a Stage 1.5
-	 is used.  */
+      /* If a Stage 1.5 is used, then we need to modify the Stage2.  */
       if (is_stage1_5)
 	{
 	  char *real_config_filename = skip_to (0, ptr);
 	  
+	  is_open = grub_open (config_filename);
+	  if (! is_open)
+	    goto fail;
+
+	  /* Skip the first sector.  */
+	  grub_seek (SECTOR_SIZE);
+	  
+	  disk_read_hook = disk_read_savesect_func;
+	  if (grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) != SECTOR_SIZE)
+	    goto fail;
+	  
+	  disk_read_hook = 0;
+	  grub_close ();
+	  is_open = 0;
+	  
+	  /* Sanity check.  */
+	  if (*((unsigned char *) SCRATCHADDR + STAGE2_STAGE2_ID)
+	      != STAGE2_ID_STAGE2)
+	    {
+	      errnum = ERR_BAD_VERSION;
+	      goto fail;
+	    }
+
+	  /* Set the "force LBA" flag for Stage2.  */
+	  *((unsigned char *) (SCRATCHADDR + STAGE2_FORCE_LBA))
+	    = is_force_lba;
+
+	  /* If REAL_CONFIG_FILENAME is specified, copy it to the Stage2.  */
 	  if (*real_config_filename)
 	    {
 	      /* Specified */
 	      char *location;
-	      
-	      is_open = grub_open (config_filename);
-	      if (! is_open)
-		goto fail;
-
-	      /* Skip the first sector.  */
-	      grub_seek (SECTOR_SIZE);
-	      
-	      disk_read_hook = disk_read_savesect_func;
-	      if (grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) != SECTOR_SIZE)
-		goto fail;
-
-	      disk_read_hook = 0;
-	      grub_close ();
-	      is_open = 0;
-	      
-	      /* Sanity check.  */
-	      if (*((unsigned char *) SCRATCHADDR + STAGE2_STAGE2_ID)
-		  != STAGE2_ID_STAGE2)
-		{
-		  errnum = ERR_BAD_VERSION;
-		  goto fail;
-		}
 	      
 	      /* Find a string for the configuration filename.  */
 	      location = (char *) SCRATCHADDR + STAGE2_VER_STR_OFFS;
@@ -1690,15 +1713,16 @@ install_func (char *arg, int flags)
 	      
 	      /* Copy the name.  */
 	      grub_strcpy (location, real_config_filename);
-	      
-	      /* Write it to the disk.  */
-	      buf_track = -1;
-	      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
-			    saved_sector, 1, SCRATCHSEG))
-		{
-		  errnum = ERR_WRITE;
-		  goto fail;
-		}
+
+	    }
+	  
+	  /* Write it to the disk.  */
+	  buf_track = -1;
+	  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+			saved_sector, 1, SCRATCHSEG))
+	    {
+	      errnum = ERR_WRITE;
+	      goto fail;
 	    }
 	}
     }
@@ -1751,7 +1775,7 @@ static struct builtin builtin_install =
   "install",
   install_func,
   BUILTIN_CMDLINE,
-  "install STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE] [REAL_CONFIG_FILE]",
+  "install [--force-lba] STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE] [REAL_CONFIG_FILE]",
   "Install STAGE1 on DEVICE, and install a blocklist for loading STAGE2"
   " as a Stage 2. If the option `d' is present, the Stage 1 will always"
   " look for the disk where STAGE2 was installed, rather than using"
@@ -1763,6 +1787,8 @@ static struct builtin builtin_install =
   " this is the name of the true Stage 2) at boot time. If STAGE2 is a Stage"
   " 1.5 and REAL_CONFIG_FILE is present, then the Stage 2 CONFIG_FILE is"
   " patched with the configuration filename REAL_CONFIG_FILE."
+  " If the option `--force-lba' is specified, disable some sanity checks"
+  " for LBA mode."
 };
 
 
@@ -2544,6 +2570,7 @@ setup_func (char *arg, int flags)
   char cmd_arg[256];
   char device[16];
   char *buffer = (char *) RAW_ADDR (0x100000);
+  int is_force_lba = 0;
   
   static void sprint_device (int drive, int partition)
     {
@@ -2585,6 +2612,13 @@ setup_func (char *arg, int flags)
 
   tmp_drive = saved_drive;
   tmp_partition = saved_partition;
+
+  /* Check if the user specifies --force-lba.  */
+  if (grub_memcmp ("--force-lba", arg, 11) == 0)
+    {
+      is_force_lba = 1;
+      arg = skip_to (0, arg);
+    }
   
   install_ptr = arg;
   image_ptr = skip_to (0, install_ptr);
@@ -2697,7 +2731,8 @@ setup_func (char *arg, int flags)
   
 #ifdef NO_BUGGY_BIOS_IN_THE_WORLD
   /* I prefer this, but...  */
-  grub_sprintf (cmd_arg, "%s %s%s %s p %s",
+  grub_sprintf (cmd_arg, "%s%s %s%s %s p %s",
+		is_force_lba? "--force-lba " : "",
 		stage1,
 		(install_drive != image_drive) ? "d " : "",
 		device,
@@ -2708,7 +2743,8 @@ setup_func (char *arg, int flags)
      may not expect that your BIOS will pass a booting drive to stage1
      correctly. Thus, always specify the option `d', whether
      INSTALL_DRIVE is identical with IMAGE_DRIVE or not. *sigh*  */
-  grub_sprintf (cmd_arg, "%s d %s %s p %s",
+  grub_sprintf (cmd_arg, "%s%s d %s %s p %s",
+		is_force_lba? "--force-lba " : "",
 		stage1,
 		device,
 		stage2,
@@ -2738,13 +2774,14 @@ static struct builtin builtin_setup =
   "setup",
   setup_func,
   BUILTIN_CMDLINE,
-  "setup INSTALL_DEVICE [IMAGE_DEVICE]",
+  "setup [--force-lba] INSTALL_DEVICE [IMAGE_DEVICE]",
   "Set up the installation of GRUB automatically. This command uses"
   " the more flexible command \"install\" in the backend and installs"
   " GRUB into the device INSTALL_DEVICE. If IMAGE_DEVICE is specified,"
   " then find the GRUB images in the device IMAGE_DEVICE, otherwise"
   " use the current \"root device\", which can be set by the command"
-  " \"root\"."
+  " \"root\". If you know that your BIOS should support LBA but GRUB"
+  " doesn't work in LBA mode, specify the option `--force-lba'."
 };
 
 

@@ -73,6 +73,8 @@ VARIABLE(install_partition)
 	.long	0x020000
 VARIABLE(stage2_id)
 	.byte	STAGE2_ID
+VARIABLE(force_lba)
+	.byte	0
 VARIABLE(version_string)
 	.string VERSION
 VARIABLE(config_file)

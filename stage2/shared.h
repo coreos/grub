@@ -192,10 +192,11 @@ extern char *grub_scratch_mem;
 
 #include <stage1.h>
 
-#define STAGE2_VER_MAJ_OFFS  0x6
-#define STAGE2_INSTALLPART   0x8
-#define STAGE2_STAGE2_ID     0xc
-#define STAGE2_VER_STR_OFFS  0xd
+#define STAGE2_VER_MAJ_OFFS	0x6
+#define STAGE2_INSTALLPART	0x8
+#define STAGE2_STAGE2_ID	0xc
+#define STAGE2_FORCE_LBA	0xd
+#define STAGE2_VER_STR_OFFS	0xe
 
 /* Stage 2 identifiers */
 #define STAGE2_ID_STAGE2		0
@@ -423,6 +424,7 @@ extern unsigned long install_partition;
 extern unsigned long boot_drive;
 extern unsigned long boot_part_addr;
 extern unsigned long boot_part_offset;
+extern unsigned char force_lba;
 extern char version_string[];
 extern char config_file[];
 

@@ -91,10 +91,12 @@ stage1_version:
 boot_drive:	
 	.byte 0xff	/* the disk to load stage2 from */
 			/* 0xff means use the boot drive */
-stage2_sector:
-	.long	1
+force_lba:
+	.byte	0
 stage2_address:
 	.word	0x8000
+stage2_sector:
+	.long	1
 stage2_segment:
 	.word	0x800
 
@@ -149,12 +151,15 @@ real_start:
 	cmpw	$0xaa55, %bx
 	jne	chs_mode
 
-#ifdef CHECK_LBA_SUPPORT_BITMAP
-	/* check if AH=0x42 is supported */
+	/* check if AH=0x42 is supported if FORCE_LBA is zero */
+	movb	ABS(force_lba), %al
+	testb	%al, %al
+	jnz	skip_lba_bitmap_check
 	andw	$1, %cx
 	jz	chs_mode
-#endif /* CHECK_LBA_SUPPORT_BITMAP */
-		
+	
+skip_lba_bitmap_check:
+	
 	/* get the geometry (limited to 2TB!) */
 	movb	$0x48, %ah
 	movw	$STAGE1_DRP_ADDR, %si

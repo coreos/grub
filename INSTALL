@@ -188,14 +188,6 @@ operates.
      confusing) to the casual installer. If you are a GRUB developer,
      it is a good idea to specify this option.
 
-`--disable-lba-support-bitmap-check'
-     Disable the check for LBA support bitmap. Specify this option
-     if you are sure that your BIOS has the INT 13 extension support,
-     but GRUB doesn't access your drives in LBA mode. This is
-     necessary because an incorrect LBA support bitmap is returned in
-     several buggy BIOSes. You can check if GRUB recognizes the INT 13
-     extension support by the command `geometry'.
-
 `--disable-ext2fs'
      Omit the ext2fs support in Stage 2.
 

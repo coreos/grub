@@ -10,6 +10,12 @@ New in 0.5.95 - XXXX-XX-XX:
   to load a NetBSD ELF kernel, because GRUB can automatically determine
   a kernel type in the other cases.
 * ReiserFS support is added.
+* Added a new option `--force-lba' into the command "install". This
+  option disables some sanity checks for LBA mode (but not all). If you
+  are sure that your machine supports LBA mode but GRUB doesn't work in
+  LBA mode, you should specify it. It is necessary if your BIOS is too
+  buggy. In the previous version, it was a compile-time option, but you
+  don't have to recompile GRUB any longer.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

@@ -1,3 +1,58 @@
+2000-04-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	The user doesn't have to recompile GRUB for his/her buggy BIOS
+	any longer. It is configurable to ignore the LBA support bitmap
+	at the installation time.
+	
+	* stage1/stage1.S (force_lba): New variable.
+	(stage2_address): Moved forwards, to align some variables in
+	natural boundaries.
+	(real_start): Check if FORCE_LBA is non-zero, if so, jump to
+	skip_lba_bitmap_check, otherwise, check if bit 0 of the support
+	bitmap is non-zero.
+	Don't use #ifdef for CHECK_LBA_SUPPORT_BITMAP.
+	(skip_lba_bitmap_check): New label.
+	* stage1/stage1.h (COMPAT_VERSION_MINOR): Set to 1.
+	(STAGE1_FORCE_LBA): New macro.
+	(STAGE1_STAGE2_ADDRESS): Set to 0x42.
+	(STAGE1_STAGE2_SECTOR): Set to 0x44.
+	(STAGE1_STAGE2_SEGMENT): Set to 0x48.
+	* stage2/asm.S (force_lba): New variable.
+	* stage2/bios.c (get_diskinfo): Don't use #ifdef for
+	CHECK_LBA_SUPPORT_BITMAP. Instead, check if FORCE_LBA is
+	non-zero. If so, don't check the bit 0 of DRP.FLAG.
+	* stage2/builtins.c (install_func): Check if a new option
+	`--force-lba' is specified. If specified, set IS_FORCE_LBA to 1
+	and set ARG to a value returned by skip_to. Otherwise,
+	IS_FORCE_LBA is zero.
+	Set the "force LBA" flag in STAGE1_BUFFER (the offset is
+	STAGE1_FORCE_LBA) to IS_FORCE_LBA.
+	Likewise, set the "force LBA" flag in STAGE2_SECOND_BUFFER
+	(the offset is STAGE2_FORCE_LBA) to IS_FORCE_LBA.
+	If IS_STAGE1_5 is true, then modify the Stage2, regardless of
+	the presence of the option REAL_CONFIG_FILE. Set the "force LBA"
+	flag in SCRATCHADDR (the offset is STAGE2_FORCE_LBA) to
+	IS_FORCE_LBA.
+	(builtin_install): Added description about `--force-lba' into
+	the docs.
+	(setup_func): Check if `--force-lba' is specified in ARG. If
+	specified, set IS_FORCE_LBA to 1 and set ARG to a value returned
+	by skip_to. Otherwise, IS_FORCE_LBA is zero.
+	If IS_FORCE_LBA is true, prepend "--force-lba " to CMD_ARG.
+	(builtin_setup): Added descriptions about `--force-lba' into the
+	docs.
+	* stage2/shared.h (STAGE2_FORCE_LBA): New macro.
+	(STAGE2_VER_STR_OFFS): Set to 0xe.
+	(force_lba): Declared.
+	* util/grub-install.in (force_lba): New variable. Set to an
+	empty sting by default.
+	(usage): Added a description about `--force-lba'.
+	(--force-lba): Checked in the option handling code. If
+	specified, set FORCE_LBA to "--force-lba".
+	Run the command "setup" with $force_lba added before
+	$install_drive.
+	* configure.in (--disable-lba-support-bitmap): Removed.
+	
 2000-04-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (root_device): Append `/' to ${rootdir},

@@ -34,6 +34,7 @@ log_file=/tmp/grub-install.log.$$
 rootdir=
 
 install_device=
+force_lba=
 debug=no
 
 # Usage: usage
@@ -48,6 +49,8 @@ Install GRUB on your drive.
   --root-directory=DIR    install GRUB images under the directory DIR
                           instead of the root directory.
   --grub-shell=FILE       use FILE as the grub shell.
+  --force-lba             Force GRUB to use LBA mode even for a buggy
+                          BIOS.
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
@@ -125,6 +128,8 @@ for option; do
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
     --grub-shell=*)
 	grub_shell=`echo "$option" | sed 's/--grub-shell=//'` ;;
+    --force-lba)
+	force_lba="--force-lba" ;;
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
@@ -239,7 +244,7 @@ test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 root $root_drive
-setup $install_drive
+setup $force_lba $install_drive
 quit
 EOF
 
