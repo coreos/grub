@@ -1,3 +1,14 @@
+2000-01-19  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in (--root): Renamed to ...
+	(--root-directory): ... this, since "root" is vague.
+	* docs/user-ref.texi (Invoking grub-install): Adjusted to the
+	change above, and added an example how to use --root-directory.
+	* docs/grub-install.8: Regenerated.
+
+	* docs/appendices.texi (FAQ): Added an item about the sucked
+	SCSI problem.
+	
 2000-01-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (chainloader_func): If --force is specified

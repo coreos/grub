@@ -1388,10 +1388,15 @@ Print a summary of the command line options and exit.
 @item --version
 Print the version number of GRUB and exit.
 
-@item --root=@var{dir}
+@item --root-directory=@var{dir}
 Install GRUB images under the directory @var{dir} instead of the root
 directory. This option is useful when you want to install GRUB into a
-separate partition and a removable disk.
+separate partition or a removable disk. Here is an example when you have
+a separate @dfn{boot} partition which is mounted on @file{/boot}:
+
+@example
+grub-install --root-directory=/boot '(hd0)'
+@end example
 
 @item --grub-shell=@var{file}
 Use @var{file} as the grub shell. You can append arbitrary options to

@@ -11,7 +11,7 @@ order for everybody to participate it.
 
 Technically speaking, GNU GRUB has many features that are not
 seen in the original GRUB. For example, GNU GRUB can be installed on
-UNIX-like operating system (i.e. GNU/Linux) via the grub shell
+UNIX-like operating system (such as GNU/Linux) via the grub shell
 @file{/sbin/grub}, it supports Logical Block Address (LBA) mode that
 solves the 1024 cylinders problem, and @kbd{@key{TAB}} completes a
 filename when it's unique. Of course, many bug fixes are done as well,
@@ -108,6 +108,29 @@ $ ./configure --with-binutils=/usr/local/bin
 
 If you follow the instructions above but GRUB still crashes, probably
 there is a serious bug in GRUB. @xref{Reporting bugs}.
+
+@item GRUB hangs up when accessing my SCSI disk.
+
+Check if you have turned on the support for INT 13 extension (LBA). If
+so, disable the support and see if GRUB can now access your SCSI
+disk. This will make it clear that your SCSI BIOS sucks.
+
+For now, we know the following doesn't provide working LBA mode:
+
+@table @asis
+@item
+Adaptec AIC-7880
+@end table
+
+In the case where you have such a SCSI controller unfortunately, you
+cannot use the LBA mode, though GRUB still works fine in the CHS mode
+(so the well-known 1024 cylinders problem comes again to you).
+
+@strong{Caution:} Actually it has not been verified yet if this bug is
+due to the SCSI BIOS or GRUB itself, frankly speaking. Because the
+developers haven't seen it by their own eyes. This is why it is
+desirable that you investigate the cause seriously if you have the
+skill.
 
 @item Why doesn't Linux (FreeBSD, NetBSD, etc.) become Multiboot-compliant?
 

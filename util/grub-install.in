@@ -45,7 +45,7 @@ Install GRUB on your drive.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
-  --root=DIR              install GRUB images under the directory DIR
+  --root-directory=DIR    install GRUB images under the directory DIR
                           instead of the root directory.
   --grub-shell=FILE       use FILE as the grub shell.
 
@@ -118,8 +118,8 @@ for option; do
     -v | --version)
 	echo "grub-install (GNU GRUB ${VERSION})"
 	exit 0 ;;
-    --root=*)
-	rootdir=`echo $option | sed 's/--root=//'` ;;
+    --root-directory=*)
+	rootdir=`echo $option | sed 's/--root-directory=//'` ;;
     --grub-shell=*)
 	grub_shell=`echo $option | sed 's/--grub-shell=//'` ;;
     # This is an undocumented feature...
@@ -219,8 +219,8 @@ grubdir_device=`df ${grubdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
 if test $grubdir_device != $root_device; then
     # For now, cannot deal with this situation.
     cat <<EOF 1&>2
-For now, cannot deal with the situation that $grubdir does not exist
-in the root device. Install GRUB manually instead.
+You must set the root directory by the option --root-directory, because
+$grubdir does not exist in the root device $root_device.
 EOF
     exit 1
 fi
