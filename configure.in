@@ -50,6 +50,8 @@ fi
 
 AC_CHECK_TOOL(CC, gcc)
 AC_PROG_CC
+# We need this for older versions of Autoconf.
+_AM_DEPENDENCIES(CC)
 
 dnl Because recent automake complains about AS, set it here.
 AS="$CC"

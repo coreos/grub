@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4h from Makefile.am.
+# Makefile.in generated automatically by automake 1.5 from Makefile.am.
 
 # Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 # Free Software Foundation, Inc.
@@ -63,6 +63,7 @@ ASFLAGS = @ASFLAGS@
 AWK = @AWK@
 CC = @CC@
 DEPDIR = @DEPDIR@
+EXEEXT = @EXEEXT@
 FSYS_CFLAGS = @FSYS_CFLAGS@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
@@ -72,14 +73,15 @@ NETBOOT_DRIVERS = @NETBOOT_DRIVERS@
 NET_CFLAGS = @NET_CFLAGS@
 NET_EXTRAFLAGS = @NET_EXTRAFLAGS@
 OBJCOPY = @OBJCOPY@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
 STAGE1_CFLAGS = @STAGE1_CFLAGS@
 STAGE2_CFLAGS = @STAGE2_CFLAGS@
 VERSION = @VERSION@
-_am_include = @_am_include@
-_am_quote = @_am_quote@
+am__include = @am__include@
+am__quote = @am__quote@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
 install_sh = @install_sh@
@@ -106,8 +108,6 @@ EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS)
 
 CLEANFILES = $(noinst_PROGRAMS)
-EXEEXT =
-OBJEXT = o
 subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -147,7 +147,7 @@ TEXINFOS = grub.texi multiboot.texi
 NROFF = nroff
 MANS = $(man_MANS)
 DIST_COMMON = $(grub_TEXINFOS) $(multiboot_TEXINFOS) Makefile.am \
-	Makefile.in compile mdate-sh stamp-vti texinfo.tex version.texi
+	Makefile.in mdate-sh stamp-vti texinfo.tex version.texi
 SOURCES = $(kernel_SOURCES)
 
 all: all-am
@@ -165,7 +165,7 @@ Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.s
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 kernel-kernel.$(OBJEXT): kernel.c
-kernel$(EXEEXT): $(kernel_OBJECTS) $(kernel_DEPENDENCIES)
+kernel$(EXEEXT): $(kernel_OBJECTS) $(kernel_DEPENDENCIES) 
 	@rm -f kernel$(EXEEXT)
 	$(LINK) $(kernel_LDFLAGS) $(kernel_OBJECTS) $(kernel_LDADD) $(LIBS)
 
@@ -175,7 +175,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/kernel-kernel.Po@_am_quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/kernel-kernel.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -404,10 +404,10 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 GTAGS:
 	here=`CDPATH=: && cd $(top_builddir) && pwd` \
 	  && cd $(top_srcdir) \
-	  && gtags -i $$here
+	  && gtags -i $(GTAGS_ARGS) $$here
 
 distclean-tags:
-	-rm -f TAGS ID
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
@@ -527,7 +527,7 @@ uninstall-am: uninstall-info-am uninstall-man
 
 uninstall-man: uninstall-man1 uninstall-man8
 
-.PHONY: all all-am check check-am clean clean-generic \
+.PHONY: GTAGS all all-am check check-am clean clean-generic \
 	clean-noinstPROGRAMS dist-info distclean distclean-compile \
 	distclean-depend distclean-generic distclean-tags distdir dvi \
 	dvi-am info info-am install install-am install-data \

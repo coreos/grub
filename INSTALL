@@ -43,11 +43,13 @@ configure script.
   Texinfo release. See the webpage
   <http://www.gnu.org/software/texinfo/texinfo.html>.
 
-* GNU Automake 1.4h or later
+* Developers: GNU Automake 1.4h or later
 
-  We use the new feature "per-executable flags" in the pretest releases
-  of automake. So you need to obtain a later version from:
-  <ftp://sources.redhat.com/pub/automake/>.
+  You should not need Automake just to compile GRUB, but you will need
+  it if you edit any of the build files (Makefile.am, configure.in,
+  etc).  We use the new "per-executable flags" feature found in the
+  latest release of automake.  See the webpage
+  <http://www.gnu.org/software/automake/automake.html>.
 
 
 Configuring the GRUB

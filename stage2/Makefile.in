@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4h from Makefile.am.
+# Makefile.in generated automatically by automake 1.5 from Makefile.am.
 
 # Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 # Free Software Foundation, Inc.
@@ -64,6 +64,7 @@ ASFLAGS = @ASFLAGS@
 AWK = @AWK@
 CC = @CC@
 DEPDIR = @DEPDIR@
+EXEEXT = @EXEEXT@
 FSYS_CFLAGS = @FSYS_CFLAGS@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
@@ -73,14 +74,15 @@ NETBOOT_DRIVERS = @NETBOOT_DRIVERS@
 NET_CFLAGS = @NET_CFLAGS@
 NET_EXTRAFLAGS = @NET_EXTRAFLAGS@
 OBJCOPY = @OBJCOPY@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
 STAGE1_CFLAGS = @STAGE1_CFLAGS@
 STAGE2_CFLAGS = @STAGE2_CFLAGS@
 VERSION = @VERSION@
-_am_include = @_am_include@
-_am_quote = @_am_quote@
+am__include = @am__include@
+am__quote = @am__quote@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
 install_sh = @install_sh@
@@ -270,8 +272,6 @@ nbloader_exec_LDFLAGS = $(NBLOADER_LINK)
 pxeloader_exec_SOURCES = pxeloader.S
 pxeloader_exec_ASFLAGS = $(STAGE2_COMPILE)
 pxeloader_exec_LDFLAGS = $(PXELOADER_LINK)
-EXEEXT =
-OBJEXT = o
 subdir = stage2
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
@@ -290,18 +290,27 @@ am_libgrub_a_OBJECTS = libgrub_a-boot.$(OBJEXT) \
 	libgrub_a-fsys_vstafs.$(OBJEXT) libgrub_a-stage2.$(OBJEXT) \
 	libgrub_a-md5.$(OBJEXT)
 libgrub_a_OBJECTS = $(am_libgrub_a_OBJECTS)
-EXTRA_PROGRAMS = nbloader.exec pxeloader.exec diskless.exec
-@DISKLESS_SUPPORT_TRUE@noinst_PROGRAMS = pre_stage2.exec start.exec \
-@DISKLESS_SUPPORT_TRUE@	e2fs_stage1_5.exec fat_stage1_5.exec \
-@DISKLESS_SUPPORT_TRUE@	ffs_stage1_5.exec minix_stage1_5.exec \
-@DISKLESS_SUPPORT_TRUE@	reiserfs_stage1_5.exec \
-@DISKLESS_SUPPORT_TRUE@	vstafs_stage1_5.exec nbloader.exec \
-@DISKLESS_SUPPORT_TRUE@	pxeloader.exec diskless.exec
-@DISKLESS_SUPPORT_FALSE@noinst_PROGRAMS = pre_stage2.exec start.exec \
-@DISKLESS_SUPPORT_FALSE@	e2fs_stage1_5.exec fat_stage1_5.exec \
-@DISKLESS_SUPPORT_FALSE@	ffs_stage1_5.exec minix_stage1_5.exec \
-@DISKLESS_SUPPORT_FALSE@	reiserfs_stage1_5.exec \
-@DISKLESS_SUPPORT_FALSE@	vstafs_stage1_5.exec
+EXTRA_PROGRAMS = nbloader.exec$(EXEEXT) pxeloader.exec$(EXEEXT) \
+	diskless.exec$(EXEEXT)
+@DISKLESS_SUPPORT_TRUE@noinst_PROGRAMS = pre_stage2.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	start.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	e2fs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	fat_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	ffs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	minix_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	reiserfs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	vstafs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	nbloader.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	pxeloader.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	diskless.exec$(EXEEXT)
+@DISKLESS_SUPPORT_FALSE@noinst_PROGRAMS = pre_stage2.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	start.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	e2fs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	fat_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	ffs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	minix_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	reiserfs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	vstafs_stage1_5.exec$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
 am_diskless_exec_OBJECTS = diskless_exec-asm.$(OBJEXT) \
@@ -535,7 +544,7 @@ DATA = $(noinst_DATA) $(pkgdata_DATA)
 
 HEADERS = $(noinst_HEADERS)
 
-DIST_COMMON = $(noinst_HEADERS) Makefile.am Makefile.in compile
+DIST_COMMON = $(noinst_HEADERS) Makefile.am Makefile.in
 SOURCES = $(libgrub_a_SOURCES) $(diskless_exec_SOURCES) $(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) $(minix_stage1_5_exec_SOURCES) $(nbloader_exec_SOURCES) $(pre_stage2_exec_SOURCES) $(pxeloader_exec_SOURCES) $(reiserfs_stage1_5_exec_SOURCES) $(start_exec_SOURCES) $(vstafs_stage1_5_exec_SOURCES)
 
 all: $(BUILT_SOURCES)
@@ -570,7 +579,7 @@ libgrub_a-fsys_reiserfs.$(OBJEXT): fsys_reiserfs.c
 libgrub_a-fsys_vstafs.$(OBJEXT): fsys_vstafs.c
 libgrub_a-stage2.$(OBJEXT): stage2.c
 libgrub_a-md5.$(OBJEXT): md5.c
-libgrub.a: $(libgrub_a_OBJECTS) $(libgrub_a_DEPENDENCIES)
+libgrub.a: $(libgrub_a_OBJECTS) $(libgrub_a_DEPENDENCIES) 
 	-rm -f libgrub.a
 	$(libgrub_a_AR) libgrub.a $(libgrub_a_OBJECTS) $(libgrub_a_LIBADD)
 	$(RANLIB) libgrub.a
@@ -597,7 +606,7 @@ diskless_exec-serial.$(OBJEXT): serial.c
 diskless_exec-smp-imps.$(OBJEXT): smp-imps.c
 diskless_exec-stage2.$(OBJEXT): stage2.c
 diskless_exec-md5.$(OBJEXT): md5.c
-diskless.exec$(EXEEXT): $(diskless_exec_OBJECTS) $(diskless_exec_DEPENDENCIES)
+diskless.exec$(EXEEXT): $(diskless_exec_OBJECTS) $(diskless_exec_DEPENDENCIES) 
 	@rm -f diskless.exec$(EXEEXT)
 	$(LINK) $(diskless_exec_LDFLAGS) $(diskless_exec_OBJECTS) $(diskless_exec_LDADD) $(LIBS)
 e2fs_stage1_5_exec-start.$(OBJEXT): start.S
@@ -608,7 +617,7 @@ e2fs_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
 e2fs_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
 e2fs_stage1_5_exec-fsys_ext2fs.$(OBJEXT): fsys_ext2fs.c
 e2fs_stage1_5_exec-bios.$(OBJEXT): bios.c
-e2fs_stage1_5.exec$(EXEEXT): $(e2fs_stage1_5_exec_OBJECTS) $(e2fs_stage1_5_exec_DEPENDENCIES)
+e2fs_stage1_5.exec$(EXEEXT): $(e2fs_stage1_5_exec_OBJECTS) $(e2fs_stage1_5_exec_DEPENDENCIES) 
 	@rm -f e2fs_stage1_5.exec$(EXEEXT)
 	$(LINK) $(e2fs_stage1_5_exec_LDFLAGS) $(e2fs_stage1_5_exec_OBJECTS) $(e2fs_stage1_5_exec_LDADD) $(LIBS)
 fat_stage1_5_exec-start.$(OBJEXT): start.S
@@ -619,7 +628,7 @@ fat_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
 fat_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
 fat_stage1_5_exec-fsys_fat.$(OBJEXT): fsys_fat.c
 fat_stage1_5_exec-bios.$(OBJEXT): bios.c
-fat_stage1_5.exec$(EXEEXT): $(fat_stage1_5_exec_OBJECTS) $(fat_stage1_5_exec_DEPENDENCIES)
+fat_stage1_5.exec$(EXEEXT): $(fat_stage1_5_exec_OBJECTS) $(fat_stage1_5_exec_DEPENDENCIES) 
 	@rm -f fat_stage1_5.exec$(EXEEXT)
 	$(LINK) $(fat_stage1_5_exec_LDFLAGS) $(fat_stage1_5_exec_OBJECTS) $(fat_stage1_5_exec_LDADD) $(LIBS)
 ffs_stage1_5_exec-start.$(OBJEXT): start.S
@@ -630,7 +639,7 @@ ffs_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
 ffs_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
 ffs_stage1_5_exec-fsys_ffs.$(OBJEXT): fsys_ffs.c
 ffs_stage1_5_exec-bios.$(OBJEXT): bios.c
-ffs_stage1_5.exec$(EXEEXT): $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_DEPENDENCIES)
+ffs_stage1_5.exec$(EXEEXT): $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_DEPENDENCIES) 
 	@rm -f ffs_stage1_5.exec$(EXEEXT)
 	$(LINK) $(ffs_stage1_5_exec_LDFLAGS) $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_LDADD) $(LIBS)
 minix_stage1_5_exec-start.$(OBJEXT): start.S
@@ -641,11 +650,11 @@ minix_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
 minix_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
 minix_stage1_5_exec-fsys_minix.$(OBJEXT): fsys_minix.c
 minix_stage1_5_exec-bios.$(OBJEXT): bios.c
-minix_stage1_5.exec$(EXEEXT): $(minix_stage1_5_exec_OBJECTS) $(minix_stage1_5_exec_DEPENDENCIES)
+minix_stage1_5.exec$(EXEEXT): $(minix_stage1_5_exec_OBJECTS) $(minix_stage1_5_exec_DEPENDENCIES) 
 	@rm -f minix_stage1_5.exec$(EXEEXT)
 	$(LINK) $(minix_stage1_5_exec_LDFLAGS) $(minix_stage1_5_exec_OBJECTS) $(minix_stage1_5_exec_LDADD) $(LIBS)
 nbloader_exec-nbloader.$(OBJEXT): nbloader.S
-nbloader.exec$(EXEEXT): $(nbloader_exec_OBJECTS) $(nbloader_exec_DEPENDENCIES)
+nbloader.exec$(EXEEXT): $(nbloader_exec_OBJECTS) $(nbloader_exec_DEPENDENCIES) 
 	@rm -f nbloader.exec$(EXEEXT)
 	$(LINK) $(nbloader_exec_LDFLAGS) $(nbloader_exec_OBJECTS) $(nbloader_exec_LDADD) $(LIBS)
 pre_stage2_exec-asm.$(OBJEXT): asm.S
@@ -668,11 +677,11 @@ pre_stage2_exec-serial.$(OBJEXT): serial.c
 pre_stage2_exec-smp-imps.$(OBJEXT): smp-imps.c
 pre_stage2_exec-stage2.$(OBJEXT): stage2.c
 pre_stage2_exec-md5.$(OBJEXT): md5.c
-pre_stage2.exec$(EXEEXT): $(pre_stage2_exec_OBJECTS) $(pre_stage2_exec_DEPENDENCIES)
+pre_stage2.exec$(EXEEXT): $(pre_stage2_exec_OBJECTS) $(pre_stage2_exec_DEPENDENCIES) 
 	@rm -f pre_stage2.exec$(EXEEXT)
 	$(LINK) $(pre_stage2_exec_LDFLAGS) $(pre_stage2_exec_OBJECTS) $(pre_stage2_exec_LDADD) $(LIBS)
 pxeloader_exec-pxeloader.$(OBJEXT): pxeloader.S
-pxeloader.exec$(EXEEXT): $(pxeloader_exec_OBJECTS) $(pxeloader_exec_DEPENDENCIES)
+pxeloader.exec$(EXEEXT): $(pxeloader_exec_OBJECTS) $(pxeloader_exec_DEPENDENCIES) 
 	@rm -f pxeloader.exec$(EXEEXT)
 	$(LINK) $(pxeloader_exec_LDFLAGS) $(pxeloader_exec_OBJECTS) $(pxeloader_exec_LDADD) $(LIBS)
 reiserfs_stage1_5_exec-start.$(OBJEXT): start.S
@@ -683,11 +692,11 @@ reiserfs_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
 reiserfs_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
 reiserfs_stage1_5_exec-fsys_reiserfs.$(OBJEXT): fsys_reiserfs.c
 reiserfs_stage1_5_exec-bios.$(OBJEXT): bios.c
-reiserfs_stage1_5.exec$(EXEEXT): $(reiserfs_stage1_5_exec_OBJECTS) $(reiserfs_stage1_5_exec_DEPENDENCIES)
+reiserfs_stage1_5.exec$(EXEEXT): $(reiserfs_stage1_5_exec_OBJECTS) $(reiserfs_stage1_5_exec_DEPENDENCIES) 
 	@rm -f reiserfs_stage1_5.exec$(EXEEXT)
 	$(LINK) $(reiserfs_stage1_5_exec_LDFLAGS) $(reiserfs_stage1_5_exec_OBJECTS) $(reiserfs_stage1_5_exec_LDADD) $(LIBS)
 start_exec-start.$(OBJEXT): start.S
-start.exec$(EXEEXT): $(start_exec_OBJECTS) $(start_exec_DEPENDENCIES)
+start.exec$(EXEEXT): $(start_exec_OBJECTS) $(start_exec_DEPENDENCIES) 
 	@rm -f start.exec$(EXEEXT)
 	$(LINK) $(start_exec_LDFLAGS) $(start_exec_OBJECTS) $(start_exec_LDADD) $(LIBS)
 vstafs_stage1_5_exec-start.$(OBJEXT): start.S
@@ -698,7 +707,7 @@ vstafs_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
 vstafs_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
 vstafs_stage1_5_exec-fsys_vstafs.$(OBJEXT): fsys_vstafs.c
 vstafs_stage1_5_exec-bios.$(OBJEXT): bios.c
-vstafs_stage1_5.exec$(EXEEXT): $(vstafs_stage1_5_exec_OBJECTS) $(vstafs_stage1_5_exec_DEPENDENCIES)
+vstafs_stage1_5.exec$(EXEEXT): $(vstafs_stage1_5_exec_OBJECTS) $(vstafs_stage1_5_exec_DEPENDENCIES) 
 	@rm -f vstafs_stage1_5.exec$(EXEEXT)
 	$(LINK) $(vstafs_stage1_5_exec_LDFLAGS) $(vstafs_stage1_5_exec_OBJECTS) $(vstafs_stage1_5_exec_LDADD) $(LIBS)
 
@@ -708,95 +717,95 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-boot.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-builtins.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-cmdline.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-fsys_ext2fs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-fsys_fat.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-fsys_ffs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-fsys_minix.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-fsys_reiserfs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-fsys_vstafs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-gunzip.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-hercules.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-md5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-serial.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-smp-imps.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/diskless_exec-stage2.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/e2fs_stage1_5_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/e2fs_stage1_5_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/e2fs_stage1_5_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/e2fs_stage1_5_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/e2fs_stage1_5_exec-fsys_ext2fs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/e2fs_stage1_5_exec-stage1_5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/fat_stage1_5_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/fat_stage1_5_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/fat_stage1_5_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/fat_stage1_5_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/fat_stage1_5_exec-fsys_fat.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/fat_stage1_5_exec-stage1_5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/ffs_stage1_5_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/ffs_stage1_5_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/ffs_stage1_5_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/ffs_stage1_5_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/ffs_stage1_5_exec-fsys_ffs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/ffs_stage1_5_exec-stage1_5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-boot.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-builtins.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-cmdline.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-fsys_ext2fs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-fsys_fat.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-fsys_ffs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-fsys_minix.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-fsys_reiserfs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-fsys_vstafs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-gunzip.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-md5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/libgrub_a-stage2.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/minix_stage1_5_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/minix_stage1_5_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/minix_stage1_5_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/minix_stage1_5_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/minix_stage1_5_exec-fsys_minix.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/minix_stage1_5_exec-stage1_5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-boot.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-builtins.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-cmdline.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-fsys_ext2fs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-fsys_fat.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-fsys_ffs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-fsys_minix.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-fsys_vstafs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-gunzip.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-hercules.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-md5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-serial.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-smp-imps.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/pre_stage2_exec-stage2.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/reiserfs_stage1_5_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/reiserfs_stage1_5_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/reiserfs_stage1_5_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/reiserfs_stage1_5_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/vstafs_stage1_5_exec-bios.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/vstafs_stage1_5_exec-char_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/vstafs_stage1_5_exec-common.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/vstafs_stage1_5_exec-disk_io.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/vstafs_stage1_5_exec-fsys_vstafs.Po@_am_quote@
-@AMDEP_TRUE@@_am_include@ @_am_quote@$(DEPDIR)/vstafs_stage1_5_exec-stage1_5.Po@_am_quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-boot.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-cmdline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_ext2fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_fat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_minix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_reiserfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-gunzip.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-hercules.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-md5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-serial.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-smp-imps.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-stage2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/e2fs_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/e2fs_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/e2fs_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/e2fs_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/e2fs_stage1_5_exec-fsys_ext2fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/e2fs_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/fat_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/fat_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/fat_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/fat_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/fat_stage1_5_exec-fsys_fat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/fat_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-boot.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-cmdline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_ext2fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_fat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_minix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_reiserfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-gunzip.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-md5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-stage2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/minix_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/minix_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/minix_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/minix_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/minix_stage1_5_exec-fsys_minix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/minix_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-boot.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-builtins.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-cmdline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_ext2fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_fat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_minix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-gunzip.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-hercules.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-md5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-serial.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-smp-imps.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-stage2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/reiserfs_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/reiserfs_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/reiserfs_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/reiserfs_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-stage1_5.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -2035,10 +2044,10 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 GTAGS:
 	here=`CDPATH=: && cd $(top_builddir) && pwd` \
 	  && cd $(top_srcdir) \
-	  && gtags -i $$here
+	  && gtags -i $(GTAGS_ARGS) $$here
 
 distclean-tags:
-	-rm -f TAGS ID
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH
 
 check-TESTS: $(TESTS)
 	@failed=0; all=0; xfail=0; xpass=0; \
@@ -2188,7 +2197,7 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
 uninstall-am: uninstall-info-am uninstall-pkgdataDATA
 
-.PHONY: all all-am check check-TESTS check-am clean clean-generic \
+.PHONY: GTAGS all all-am check check-TESTS check-am clean clean-generic \
 	clean-noinstLIBRARIES clean-noinstPROGRAMS distclean \
 	distclean-compile distclean-depend distclean-generic \
 	distclean-tags distdir dvi dvi-am info info-am install \

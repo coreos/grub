@@ -1,3 +1,8 @@
+2001-10-14  Gordon Matzigkeit  <gord@fig.org>
+
+	* configure.in: Explicitly call _AM_DEPENDENCIES(CC) for the
+	benefit of older Autoconfs.
+
 2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* netboot/fsys_tftp.c (tftp_read): Move the unused data
@@ -73,7 +78,7 @@
 2001-08-02  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage2/common.c (init_bios_info): Ignore zero-length memory
-	ranges.  From Derrik Pates.
+	ranges.  From Derrik Pates <dpates@dsdk12.net>.
 
 2001-07-26  Jochen Hoenicke  <jochen@gnu.org>
 
