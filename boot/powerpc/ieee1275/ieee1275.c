@@ -398,39 +398,42 @@ grub_ieee1275_close (grub_ieee1275_ihandle_t ihandle)
 }
 
 int
-grub_ieee1275_claim (void *p, grub_size_t size,
-		     unsigned int align, void **result)
+grub_ieee1275_claim (grub_addr_t addr, grub_size_t size, unsigned int align,
+		     grub_addr_t *result)
 {
   struct claim_args {
     struct grub_ieee1275_common_hdr common;
-    void *p;
+    grub_addr_t addr;
     grub_size_t size;
     unsigned int align;
-    void *addr;
+    grub_addr_t base;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "claim", 3, 1);
-  args.p = p;
+  args.addr = addr;
   args.size = size;
   args.align = align;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
-  *result = args.addr;
+
+  if (result)
+    *result = args.base;
+
   return 0;
 }
 
 int
-grub_ieee1275_release (void *p, grub_size_t size)
+grub_ieee1275_release (grub_addr_t addr, grub_size_t size)
 {
  struct release_args {
     struct grub_ieee1275_common_hdr common;
-    void *p;
+    grub_addr_t addr;
     grub_size_t size;
  } args;
 
   INIT_IEEE1275_COMMON (&args.common, "release", 2, 0);
-  args.p = p;
+  args.addr = addr;
   args.size = size;
   
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)

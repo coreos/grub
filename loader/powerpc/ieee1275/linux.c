@@ -76,7 +76,7 @@ grub_linux_release_mem (void)
   grub_free (linux_args);
   linux_args = 0;
   
-  if (linux_addr && grub_ieee1275_release ((void *) linux_addr, linux_size))
+  if (linux_addr && grub_ieee1275_release (linux_addr, linux_size))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
   
   linux_addr = 0;
@@ -188,7 +188,7 @@ grub_load_linux (int argc, char *argv[])
   /* Reserve memory for the kernel.  */
   linux_size += 0x100000;
   
-  if (grub_ieee1275_claim ((void *) entry, linux_size, 0, (void *) &linux_addr) == -1)
+  if (grub_ieee1275_claim (entry, linux_size, 0, &linux_addr) == -1)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
       goto fail;

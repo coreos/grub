@@ -1,3 +1,12 @@
+2004-10-03  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_claim): change
+	void *	arguments to grub_addr_t.  All callers updated.  Also make
+	the `result' argument optional.
+	(grub_ieee1275_release): change void * arguments to grub_addr_t.
+	All callers updated.
+
+
 2004-09-22  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* commands/ls.c (grub_ls_list_files): Use the string following the

@@ -49,9 +49,7 @@ abort (void)
 void
 grub_machine_init (void)
 {
-  void *mem;
-
-  if (grub_ieee1275_claim ((void *) 0x300000, 0x150000, 0, &mem) == -1)
+  if (grub_ieee1275_claim (0x300000, 0x150000, 0, 0) == -1)
     abort (); /* Damn, we are in trouble!  */
   
   /* The memory allocations were copied from yaboot.  */
