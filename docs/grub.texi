@@ -639,10 +639,6 @@ start, where they are ignored.
 Commands usable in configuration files only.
 
 @table @code
-@item timeout @var{sec}
-Set a timeout, in @var{sec} seconds, before automatically booting the
-default entry (normally the first entry defined).
-
 @item default @var{num}
 Set the default entry to entry number @var{num} (if not specified, it is
 0, the first entry).
@@ -651,14 +647,18 @@ Set the default entry to entry number @var{num} (if not specified, it is
 Go into unattended boot mode: if the default boot entry has any errors,
 instead of waiting for the user to do anything, it immediately starts
 over using the @var{num} entry (same numbering as the @code{default}
-command). This obviously doesn't help if the machine was in the middle
-of the boot process (after leaving GRUB's code) and rebooted.
+command). This obviously won't help if the machine was rebooted by a
+kernel that GRUB loaded.
 
 @item password @var{passwd} @var{new-config-file}
 Disable all interactive editing control (menu entry editor and
 command line). If the password @var{passwd} is entered, it loads the
 @var{new-config-file} as a new config file and restarts the GRUB Stage
 2.
+
+@item timeout @var{sec}
+Set a timeout, in @var{sec} seconds, before automatically booting the
+default entry (normally the first entry defined).
 
 @item title @var{name}@dots{}
 Start a new boot entry, and set its name to the contents of the rest of
@@ -668,111 +668,19 @@ the line, starting with the first non-space character.
 Commands usable both interactively and in configuration files:
 
 @table @code
-@item pause @var{message}@dots{}
-Print the @var{message}, then wait until a key is pressed. Note that
-placing @key{^G} (ASCII code 7) in the message will cause the speaker to
-emit the standard beep sound, which is useful when prompting the user to
-change floppies.
-
-@item uppermem @var{kbytes}
-Force GRUB to ignore what it found during the autoprobe of the memory
-available to the system, and to use @var{kbytes} as the number of
-kilobytes of upper memory installed. Any address range maps of the
-system are discarded.
-
-@strong{Caution:} This should be used with great caution, and should
-only be necessary on some old machines. GRUB's BIOS probe can pick up
-all @sc{ram} on all new machines the author has ever heard of. It can
-also be used for debugging purposes to lie to an OS.
-
-@item root @var{device} [@var{hdbias}]
-Set the current @dfn{root partition} to the device @var{device}, then
-attempt to mount it to get the partition size (for passing the partition
-descriptor in @code{ES:ESI}, used by some chain-loaded bootloaders), the
-BSD drive-type (for booting BSD kernels using their native boot format),
-and fix up automatic determination of the PC partition where a BSD
-sub-partition is located. The optional @var{hdbias} parameter is a
-number to tell a kernel which is using one of the BSD boot methodologies
-how many BIOS drive numbers are on controllers before the current
-one. An example is if there is an IDE disk and a SCSI disk, then set the
-root partition normally, except for a kernel using a BSD boot
-methodology (FreeBSD or NetBSD), then use a @samp{1} for @var{hdbias}.
-
-@item rootnoverify @var{device} [@var{hdbias}]
-Similar to @command{root}, but don't attempt to mount the
-partition. This is useful for when an OS is outside of the area of the
-disk that GRUB can read, but setting the correct root partition is still
-desired. Note that the items mentioned in @command{root} above which
-derived from attempting the mount will NOT work correctly.
-
-@item chainloader @var{file}
-Load @var{file} as a chain-loader. Like any other file loaded by the
-filesystem code, it can use the blocklist notation to grab the first
-sector of the current partition with @samp{+1}.
-
-@item kernel @var{file} @dots{}
-Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
-Linux zImage or bzImage, FreeBSD a.out, or NetBSD a.out) from
-@var{file}. This command ignores the rest of the contents of the line,
-except that the entire line starting with the kernel filename is passed
-verbatim as the @dfn{kernel command line}. The module state is reset,
-and so you must reload any modules.
-
-@item module @var{file} @dots{}
-Load a boot module for a Multiboot format boot image (no interpretation
-of the file contents are made, so that user of this command must know
-what the kernel in question works with). The rest of the line is passed
-as the @dfn{module command line} much like with the @command{kernel}
-command.
-
-@item modulenounzip @var{file} @dots{}
-Exactly like @command{module}, except that automatic decompression is
-disabled.
-
-@item initrd @var{file} @dots{}
-Load an initial ramdisk for a Linux format boot image and set the
-appropriate parameters in the Linux setup area in memory.
-
-@item install @var{stage1-file} [d] @var{dest-device} @var{file} @var{addr} [p] [@var{config-file}]
-This command is fairly complex, and for detailed examples one should
-look at @ref{Automated install}. In short, it will perform a full
-install presuming the stage2 or stage1.5@footnote{They're loaded the
-same way, so we will refer to the stage1.5 as a stage2 from now on.}
-is in its final install location.
-
-In slightly more detail, it will load @var{stage1-file}, validate that
-it is a GRUB stage1 of the right version number, install a blocklist for
-loading @var{file} as a stage2.  If the option @samp{d} is present, the
-stage1 will always look for the actual disk @var{file} was installed on,
-rather than using the booting drive.  The stage2 will be loaded at
-address @var{addr}, which must be @samp{0x8000} for a true stage2, and
-@samp{0x2000} for a stage1.5.  It then writes the completed stage1 to
-the first block of the device @var{dest-dev}. If the options @samp{p} or
-@var{config-file} are present, then it reads the first block of stage2,
-modifies it with the values of the partition @var{file} was found on
-(for @samp{p}) or places the string @var{config-file} into the area
-telling the stage2 where to look for a configuration file at boot time.
-This command preserves the DOS BPB (and for hard disks, the partition
-table) of the sector the stage1 is to be installed into.
-
-@item makeactive
-Set the active partition on the root disk to GRUB's root partition (on a
-floppy this has no effect). This is limited to working with @emph{primary}
-PC partitions.
-
 @item boot
 This boots the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command line (it is implicit at the end of
 a config-file entry).
 
 @item color @var{normal} [@var{highlight}]
-Change the menu colors. The color @var{normal} is used for the normal
-line in the menu, and the color @var{highlight} is used to highlight the
-line where the cursor points to. If you omit @var{highlight}, then the
+Change the menu colors. The color @var{normal} is used for most
+lines in the menu, and the color @var{highlight} is used to highlight the
+line where the cursor points. If you omit @var{highlight}, then the
 inverted color of @var{normal} is used for the highlighted line. You
-must specify an integer for a color value, and the 0-3 bits represents
-the foreground color, the 4-6 bits represents the background color, and
-the 7 bit represents that the foreground blinks.
+must specify an integer for a color value, where bits 0-3 represent
+the foreground color, bits 4-6 represent the background color, and
+bit 7 indicates that the foreground blinks.
 
 These are the possible values and the meanings:
 
@@ -845,18 +753,13 @@ title OS-BS like
 color 0x16 0x60
 @end example
 
-@item testload @var{file}
-Read the entire contents of @var{file} in several different ways and
-compares them, to test the filesystem code. The output is somewhat
-cryptic , but if no errors are reported and the final @samp{i=@var{X},
-filepos=@var{Y}} reading has @var{X} and @var{Y} equal, then it is
-definitely consistent, and very likely works correctly subject to a
-consistent offset error. If this test succeeds, then a good next step is
-to try loading a kernel with your code.
+@item chainloader @var{file}
+Load @var{file} as a chain-loader. Like any other file loaded by the
+filesystem code, it can use the blocklist notation to grab the first
+sector of the current partition with @samp{+1}.
 
-@item read @var{addr}
-Read a 32-bit unsigned value from memory at address @var{addr} and
-displays it in hex format.
+@item configfile @var{file}
+Load @var{file} as the configuration file.
 
 @item displaymem
 Display what GRUB thinks the system address space map of the machine is,
@@ -867,10 +770,6 @@ synthesized number from various BIOS interfaces of the memory starting
 at 1MB and going up to the first chipset hole for @dfn{upper memory}
 (the standard PC @dfn{upper memory} interface is limited to reporting a
 maximum of 64MB).
-
-@item impsprobe
-Probe the Intel Multiprocessor Specification 1.1 or 1.4 configuration
-table and boot the various CPUs which are found into a tight loop.
 
 @item fstest
 Toggle filesystem test mode.
@@ -885,9 +784,115 @@ requests from the disk.
 Filesystem test mode is turned off by any use of the @command{install}
 or @command{testload} commands.
 
+@item hide @var{partition}
+Hide @var{partition} by setting the @dfn{hidden} bit in its partition
+type code.
+
+@item impsprobe
+Probe the Intel Multiprocessor Specification 1.1 or 1.4 configuration
+table and boot the various CPUs which are found into a tight loop.
+
+@item initrd @var{file} @dots{}
+Load an initial ramdisk for a Linux format boot image and set the
+appropriate parameters in the Linux setup area in memory.
+
+@item install @var{stage1-file} [d] @var{dest-device} @var{file} @var{addr} [p] [@var{config-file}]
+This command is fairly complex, and for detailed examples one should
+look at @ref{Automated install}. In short, it will perform a full
+install presuming the stage2 or stage1.5@footnote{They're loaded the
+same way, so we will refer to the stage1.5 as a stage2 from now on.}
+is in its final install location.
+
+In slightly more detail, it will load @var{stage1-file}, validate that
+it is a GRUB stage1 of the right version number, install a blocklist for
+loading @var{file} as a stage2.  If the option @samp{d} is present, the
+stage1 will always look for the actual disk @var{file} was installed on,
+rather than using the booting drive.  The stage2 will be loaded at
+address @var{addr}, which must be @samp{0x8000} for a true stage2, and
+@samp{0x2000} for a stage1.5.  It then writes the completed stage1 to
+the first block of the device @var{dest-dev}. If the options @samp{p} or
+@var{config-file} are present, then it reads the first block of stage2,
+modifies it with the values of the partition @var{file} was found on
+(for @samp{p}) or places the string @var{config-file} into the area
+telling the stage2 where to look for a configuration file at boot time.
+This command preserves the DOS BPB (and for hard disks, the partition
+table) of the sector the stage1 is to be installed into.
+
+@item kernel @var{file} @dots{}
+Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
+Linux zImage or bzImage, FreeBSD a.out, or NetBSD a.out) from
+@var{file}. The rest of the line is passed verbatim as the @dfn{kernel
+command line}. Any modules must be reloaded after using this command.
+
+@item makeactive
+Set the active partition on the root disk to GRUB's root partition.
+This command is limited to @emph{primary} PC partitions on a hard disk.
+
+@item module @var{file} @dots{}
+Load a boot module @var{file} for a Multiboot format boot image (no
+interpretation of the file contents are made, so that user of this
+command must know what the kernel in question expects). The rest of the
+line is passed as the @dfn{module command line}, like the
+@command{kernel} command.
+
+@item modulenounzip @var{file} @dots{}
+The same as @command{module}, except that automatic decompression is
+disabled.
+
+@item pause @var{message}@dots{}
+Print the @var{message}, then wait until a key is pressed. Note that
+placing @key{^G} (ASCII code 7) in the message will cause the speaker to
+emit the standard beep sound, which is useful when prompting the user to
+change floppies.
+
 @item quit
-Exit from the grub shell @command{grub} (@pxref{The grub shell}). This
-is just ignored in the native Stage 2.
+Exit from the GRUB shell @command{grub} (@pxref{The grub shell}). This
+command is ignored in the native Stage 2.
+
+@item read @var{addr}
+Read a 32-bit value from memory at address @var{addr} and
+display it in hex format.
+
+@item root @var{device} [@var{hdbias}]
+Set the current @dfn{root partition} to the device @var{device}, then
+attempt to mount it to get the partition size (for passing the partition
+descriptor in @code{ES:ESI}, used by some chain-loaded bootloaders), the
+BSD drive-type (for booting BSD kernels using their native boot format),
+and correctly determine the PC partition where a BSD sub-partition is
+located. The optional @var{hdbias} parameter is a number to tell a BSD
+kernel how many BIOS drive numbers are on controllers before the current
+one. For example, if there is an IDE disk and a SCSI disk, and your
+FreeBSD root partition is on the SCSI disk, then use a @samp{1} for
+@var{hdbias}.
+
+@item rootnoverify @var{device} [@var{hdbias}]
+Similar to @command{root}, but don't attempt to mount the
+partition. This is useful for when an OS is outside of the area of the
+disk that GRUB can read, but setting the correct root partition is still
+desired. Note that the items mentioned in @command{root} above which
+derived from attempting the mount will @emph{not} work correctly.
+
+@item testload @var{file}
+Read the entire contents of @var{file} in several different ways and
+compares them, to test the filesystem code. The output is somewhat
+cryptic , but if no errors are reported and the final @samp{i=@var{X},
+filepos=@var{Y}} reading has @var{X} and @var{Y} equal, then it is
+definitely consistent, and very likely works correctly subject to a
+consistent offset error. If this test succeeds, then a good next step is
+to try loading a kernel.
+
+@item unhide @var{partition}
+Unhide @var{partition} by clearing the @dfn{hidden} bit in its partition
+type code.
+
+@item uppermem @var{kbytes}
+Force GRUB to assume that only @var{kbytes} kilobytes of upper memory
+are installed.  Any system address range maps are discarded.
+
+@strong{Caution:} This should be used with great caution, and should
+only be necessary on some old machines. GRUB's BIOS probe can pick up
+all @sc{ram} on all new machines the author has ever heard of. It can
+also be used for debugging purposes to lie to an OS.
 @end table
 
 

@@ -598,11 +598,8 @@ int open_partition (void);
 /* Sets device to the one represented by the SAVED_* parameters. */
 int make_saved_active (void);
 
-/* Hide a partition.  */
-int hide_partition (void);
-
-/* Unhide a partition. */
-int unhide_partition (void);
+/* Set or clear the current root partition's hidden flag.  */
+int set_partition_hidden_flag (int hidden);
 
 /* Open a file or directory on the active device, using GRUB's
    internal filesystem support. */

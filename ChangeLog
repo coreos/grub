@@ -1,3 +1,19 @@
+1999-09-09  Gordon Matzigkeit  <gord@fig.org>
+
+	* docs/grub.texi (Commands): Synchronize descriptions with
+	builtins.c.
+
+	* stage2/builtins.c (hide_func): Use set_partition_hidden_flag.
+	(unhide_func): Likewise.
+	Many help message cleanups.  From Pavel Roskin.
+
+	* stage2/shared.h (set_partition_hidden_flag): Declare.
+
+	* stage2/disk_io.c (set_partition_hidden_flag): New function
+	merged from hide_partition and unhide_partition.  Make sure we OR
+	with the inverse of the flag bit rather than XORing to unhide the
+	partition.
+
 1999-09-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (_FILE_OFFSET_BITS): Defined.
@@ -5,7 +21,7 @@
 	instead of int to lseek, and compare the return value with
 	OFFSET. Reported by Pavel Roskin.
 	(grub_stage2) [!__linux__ && !__GNU__]: Print a warning message.
-	
+
 1999-09-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/stage2.c (run_menu): If run_script is successfully
@@ -14,13 +30,13 @@
 	zero.
 	* stage2/cmdline.c (run_script): If ERRNUM is non-zero, wait an
 	input character, whether FALLBACK is less than zero or not.
-	
+
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (configfile_func): New function.
 	(builtin_configfile): New variable.
 	(builtin_table): Added the pointer to BUILTIN_CONFIGFILE.
-	
+
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin:
@@ -35,12 +51,12 @@
 	(imps_lapic_addr): Likewise.
 	(imps_cpu_apic_map): Likewise.
 	(imps_apic_cpu_map): Likewise.
-	
+
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (testload_func): Fix the typos: 0x2000000 ->
 	0x200000 and 0x3000000 -> 0x300000.
-	
+
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Hisazumi Kenji <nel@soraneko.com>:
@@ -50,7 +66,7 @@
 	(MAPBUF_LEN): Likewise.
 	(ffs_mount): Set MAPBLOCK_OFFSET to -1.
 	(block_map): Added partial read support.
-	
+
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/cmdline.c (find_command): If COMMAND is less than
@@ -72,7 +88,7 @@
 	(builtin_testload): Likewise.
 	(builtin_unhide): Likewise.
 	(builtin_uppermem): Likewise.
-	
+
 1999-09-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The internal of the command handling is heavily modified, and
@@ -154,7 +170,7 @@
 	new builtin commands interface.
 	Run enter_cmdline forever.
 	If run_menu returns, restart the loop.
-	
+
 1999-09-04  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* docs/menu.lst: More meaningful examples. Not using (0x80,0)
@@ -167,26 +183,26 @@
 	stage2.
 	* stage2/gunzip.c [NO_DECOMPRESSION]: Disable all code if
 	decompression is disabled.
-	
+
 1999-09-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/boot.c (load_image): Use PHDR->P_PADDR instead of
 	PHDR->P_VADDR. Reported by Ramon van Handel <vhandel@chem.vu.nl>.
-	
+
 1999-09-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/help2man: Upgraded to 1.013.
 	* docs/grub.8: Regenerated.
-	
+
 1999-09-02  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/cmdline.c (enter_cmdline) [GRUB_UTIL]: Add a space in
 	the LBA warning	message.
-	
+
 1999-09-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The character `=' after a command is now optional.
-	
+
 	* stage2/char_io.c (get_cmdline): Search for a space or a equal
 	character after the first word in CMDLINE when TAB lists
 	completions, instead of just searching for a eqaul character.
@@ -195,26 +211,26 @@
 	(commands): Delete all the equal characters.
 	* docs/menu.lst: Likewise.
 	* docs/grub.texi: Likewise.
-	
+
 1999-09-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (env_for_exit): New variable.
 	(grub_stage2): Do a setjmp in doit, and when it returns
 	non-zero, set STATUS to 1 if ERRNUM is non-zero.
 	(stop): Call longjmp instead of exit.
-	
+
 1999-08-31  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/boot.c [GRUB_UTIL] (bsd_boot_entry): New function.
 	(bsd_boot) [GRUB_UTIL]: Set ENTRY_ADDR to BSD_BOOT_ENTRY to fake
 	the *BSD boot.
-	
+
 1999-08-31  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/fsys_fat.c (fat_create_blocklist): Cast FAT_BUF to
 	unsigned short * instead of unsigned long *. Suggested by Pavel
 	Roskin.
-	
+
 1999-08-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Edward Killips <ekillips@triton.net>:
@@ -223,7 +239,7 @@
 	* stage2/disk_io.c (unhide_partition): New function.
 	(hide_partition): Likewise.
 	* stage2/pc_slice.h (PC_SLICE_TYPE_HIDDEN_FLAG): New macro.
-	
+
 1999-08-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin <pavel_roskin@geocities.com>:
@@ -233,7 +249,7 @@
 	MINIX_SUPER_MAGIC, and set NAMELEN to 30 if it is
 	MINIX_SUPER_MAGIC2.
 	(minix_dir): Use NAMELEN instead of MINIX_NAME_LEN.
-	
+
 1999-08-29  Pavel Roskin  <pavel_roslin@geocities.com>
 
 	* grub/Makefile.am, stage1/Makefile.am, stage2/Makefile.am:
@@ -244,7 +260,7 @@
 
 	* stage2/fsys_fat.c (fat_create_blocklist): Return 1 for the
 	root directory on FAT12 and FAT16.
-	
+
 1999-08-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/boot.c (load_image): Accept two arguments, KERNEL and
@@ -259,7 +275,7 @@
 	HEAP for the Multiboot command-line buffer.
 	* stage2/shared.h (MB_CMDLINE_BUF): New macro.
 	(MB_CMDLINE_BUFLEN): Likewise.
-	
+
 1999-08-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/Makefile.am [GRUB_MAINT] (grub.8): The argument for the
@@ -267,7 +283,7 @@
 	* docs/grub.8: Regenerated.
 	* docs/grub.texi: Do not use the name "the Stage 2 emulator" any
 	more. Use the name "the grub shell" instead.
-	
+
 1999-08-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Klaus Reichl <klaus.reichl@alcatel.at>:
@@ -291,7 +307,7 @@
 	STAGE2_ID_MINIX_STAGE1_5.
 	* grub/Makefile.am (AM_CFLAGS): Added -DFSYS_MINIX=1.
 	* configure.in (--disable-minix): New option.
-	
+
 1999-08-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Jochen Hoenicke <jochen@gnu.org>:
@@ -316,7 +332,7 @@
 	(PC_SLICE_TYPE_FAT32_LBA): Likewise.
 	(PC_SLICE_TYPE_FAT16_LBA): Likewise.
 	(IS_PC_SLICE_TYPE_FAT): Likewise.
-	
+
 1999-08-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/fsys_ffs.c (ffs_mount): Do not shift the fs type
@@ -324,12 +340,12 @@
 	<takehiro@coral.ocn.ne.jp>.
 	* stage2/fsys_fat.c (fat_mount): Do not shift the fs type
 	FS_MSDOS.
-	
+
 1999-08-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Pavel Roskin's patch that adds new options to disable arbitrary
 	filesystems is heavily modified and applied.
-	
+
 	* configure.in (--disable-ext2fs): New option.
 	(--disable-fat): Likewise.
 	(--disable-ffs): Likewise.
@@ -338,14 +354,14 @@
 	-DFSYS_FAT=1 and -DFSYS_FFS=1.
 	* stage2/Makefile.am (libgrub_a_CFLAGS): Likewise.
 	(stage2_exec_CFLAGS): Added @FSYS_CFLAGS@.
-	* stage2/filesys.h 
+	* stage2/filesys.h
 	[!(FSYS_FFS || FSYS_FAT || FSYS_EXT2FS)] (FSYS_FFS): Deleted.
 	[!(FSYS_FFS || FSYS_FAT || FSYS_EXT2FS)] (FSYS_FAT): Likewise.
 	[!(FSYS_FFS || FSYS_FAT || FSYS_EXT2FS)] (FSYS_EXT2FS): Likewise.
 	* stage2/fsys_ext2fs.c [!FSYS_EXT2FS]: Do not define anything.
 	* stage2/fsys_fat.c [!FSYS_FAT]: Likewise.
 	* stage2/fsys_ffs.c [!FSYS_FFS]: Likewise.
-	
+
 1999-08-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1_lba.S: Use STAGE1_DRP_ADDR for the address of
@@ -353,7 +369,7 @@
 	(drive_parameter): Deleted.
 	* stage1/stage1.h (STAGE1_DRP_ADDR): New macro.
 	(STAGE1_DRP_SIZE): Likewise.
-	
+
 1999-08-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/bios.c (get_diskinfo): In LBA mode, set TOTAL_SECTORS
@@ -365,11 +381,11 @@
 	* stage2/shared.h (device_map): Declared.
 	* grub/asmstub.c (device_map): Defined as a global variable
 	instead of a local variable.
-	
+
 1999-08-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Support the NetBSD and OpenBSD partition slices.
-	
+
 	* stage2/pc_slice.h (PC_SLICE_TYPE_BSD): Deleted.
 	(PC_SLICE_TYPE_FREEBSD): New macro.
 	(PC_SLICE_TYPE_OPENBSD): Likewise.
@@ -387,19 +403,19 @@
 	(real_open_partition): Use the macro IS_PC_SLICE_TYPE_BSD instead
 	of checking if CURRENT_SLICE is	equal to the BSD partition type
 	directly.
-	
+
 1999-08-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/cmdline.c (commands): Added geometry.
 	(enter_cmdline): If CUR_HEAP has the string "geometry", print
 	out the information about a drive that the argument represents.
-	
+
 1999-08-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/stage2.c (run_menu): Terminate the string PASSWORD
 	before checking if ENTERED is identical to PASSWORD. Reported
 	by Mark Lundeberg <aa026@pgfn.bc.ca>.
-	
+
 1999-08-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/stage2.c (set_line_normal): New function.
@@ -410,7 +426,7 @@
 	From Pavel Roskin:
 	* stage2/stage2.c (run_menu) [GRUB_UTIL]: Quit when pushing the
 	key `q'.
-	
+
 1999-08-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_PREFIX_REQUIREMENT): New function.
@@ -418,35 +434,35 @@
 	ADDR32 and DATA32 based on the result.
 	* stage2/asm.S: Replace addr32 and data32 prefixes with	ADDR32
 	and DATA32 respectively.
-	
+
 1999-08-05  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/boot.c (load_image): Use RAW_ADDR macro when loading
 	an a.out kernel.
-	
+
 1999-08-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/asm.S: Make each of the addr32 and data32 prefixes
 	appear in the same line as it modifies, as the gas manual in
 	binutils-2.9.5.0.4 says "it must be in the same line".
-	
+
 1999-08-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* boot.c (load_image): Fix a strcmp test. Reported by Pavel
 	Roskin <pavel_roskin@geocities.com>.
-	
+
 1999-08-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From "Dan J. Walters" <djw@cs.utexas.edu>:
 	* stage2/i386-elf.h (EI_BRAND): New macro.
 	* stage2/boot.c (load_image): If the kernel is ELF, check if it
-	is a FreeBSD kernel as well as a Multiboot kernel, and if it is 
+	is a FreeBSD kernel as well as a Multiboot kernel, and if it is
 	a FreeBSD kernel, then mask ENTRY_ADDR since FreeBSD requires
 	that. Likewise, mask MEMADDR.
 	(bsd_boot): Set the bi_symtab and the bi_esymtab members of BI
 	only if MBI.FLAGS has the flag MB_INFO_AOUT_SYMS. Otherwise,
 	clear them.
-	
+
 1999-07-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin <pavel_roskin@geocities.com>:
@@ -458,13 +474,13 @@
 	* configure.in: Check for string.h and strings.h.
 	* grub/asmstub.c (grub_stage2): Fix a misordering in the output
 	format of the inline assembly.
-	
+
 1999-07-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin <pavel_roskin@geocities.com>:
 	* stage2/asm.S (get_diskinfo_standard): If the number of sectors
 	returned is zero, then return an error code, even if non-carrier.
-	
+
 1999-07-15  Gordon Matzigkeit  <gord@zen.fig.org>
 
 	* docs/Makefile.am (grub.info): Use an ugly hack to downgrade
@@ -478,7 +494,7 @@
 
 	* grub/main.c (main): Call printf instead of grub_printf.
 	Reported by Klaus Reichl <a8709182@unet.univie.ac.at>.
-	
+
 1999-07-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/cmdline.c (skip_to): Don't increase CMDLINE if the
@@ -495,18 +511,18 @@
 	(VIRTUAL_TO_PHYS) (inb) (outb) (cmos_write_byte)
 	(cmos_read_byte): ... here.
 	* stage2/cmdline.c [!GRUB_UTIL]: Include apic.h and smp-imps.h.
-	
+
 1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The function ungetch is simulated so that the user can use a
 	buggy curses.
-	
+
 	* grub/asmstub.c [HAVE_LIBCURSES] (save_char): New variable.
 	(getkey) [HAVE_LIBCURSES]: If SAVE_CHAR is not ERR, return
 	SAVE_CHAR and clear it.
 	(checkkey) [HAVE_LIBCURSES]: If SAVE_CHAR is not ERR, return
 	SAVE_CHAR. If C is not ERR, set SAVE_CHAR to C.
-	
+
 1999-07-14  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/char_io.c (get_cmdline) [GRUB_UTIL]: Recognize
@@ -515,18 +531,18 @@
 	* grub/asmstub.c (grub_stage2) [HAVE_LIBCURSES]: Call wtimeout
 	instead of nodelay.
 	(getkey) [HAVE_LIBCURSES]: Likewise.
-	
+
 1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1_lba.S (probe_values): New variable. This is not
 	used actually, but prevents `install' command from failing
 	bogusly.
-	
+
 1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
-	
+
 	All constants in stage1s are moved to stage1.h and renamed
 	appropriately, and include stage1.h instead.
-	
+
 	* grub/Makefile.am (AM_CFLAGS): Added the include path to stage1.
 	* stage2/Makefile.am (INCLUDES): New variable.
 	* stage1/Makefile.am (stage1_exec_SOURCES): Added stage1.h
@@ -573,24 +589,24 @@
 
 	* stage1/stage1_lba.S: Fix a bug that incorrectly assigns the
 	segment of buffer address.
-	
+
 1999-07-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/boot.c (load_image): When removing "vga=...", memmove
 	the length of VGA_END plus one.
-	
+
 1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/bios.c (get_diskinfo): In LBA mode, compute
 	TOTAL_SECTORS from DRP instead of GEOMETRY.
 	Clear GEOMETRY->FLAGS first.
-	
+
 	* stage2/boot.c (load_image): Fix inverted lines.
 
 1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Support Linux video mode selection.
-	
+
 	* stage2/shared.h (LINUX_VID_MODE_OFFSET): New macro.
 	(LINUX_VID_MODE_NORMAL): Likewise.
 	(LINUX_VID_MODE_EXTENDED): Likewise.
@@ -599,7 +615,7 @@
 	(grub_strlen): Declared.
 	* stage2/boot.c (load_image): Added Linux video mode selection.
 	* stage2/char_io.c [!STAGE1_5] (grub_strlen): New function.
-	
+
 1999-07-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/char_io.c (print_error): Print ERRNUM in the format of
@@ -626,7 +642,7 @@
 	(grub_memmove): Likewise.
 	(grub_strstr): Likewise.
 	(grub_strcmp): Likewise.
-	
+
 1999-07-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1.S (sectors): Change the size to long.
@@ -643,20 +659,20 @@
 	Call 32bits div instructions instead of 16bits div instructions.
 	Update the position where to load data from at the end of this
 	loop, instead of the beginning.
-	
+
 	* stage1/stage1_lba.S: New file.
 	* stage1/Makefile.am (nodist_pkgdata_DATA): Added stage1_lba.
 	(LDFLAGS): New variable.
 	(noinst_PROGRAMS): Added stage1_lba.exec.
 	(stage1_lba_exec_SOURCES): New variable.
 	(%: %.exec): New rule.
-	
+
 1999-06-28  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/main.c (main): The third argument for strtoul is changed
 	to 0 in the case where an option is OPT_INSTALL_PARTIION.
 	Reported by Pavel Roskin <pavel_roskin@geocities.com>.
-	
+
 1999-06-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/shared.h (STAGE2_STAGE2_ID): New macro.
@@ -675,7 +691,7 @@
 	(COMPAT_VERSION_MINOR): Set to 1.
 	* stage2/asm.S (stage2_id): New variable.
 	* stage1/stage1.S: Change the minor version to 1.
-	
+
 1999-06-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in (CFLAGS): Set to "-g", since only this flag is
@@ -693,20 +709,20 @@
 
 	* stage2/asm.S (chain_stage2): Pass CURRENT_PARTITION and
 	CURRENT_DRIVE, instead of INSTALL_PARTITION and BOOT_DRIVE.
-	
+
 1999-06-27  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* configure.in: set CFLAGS to "-Os -g" for compilers which
 	understand "-Os" if CFLAGS is not already set. Use
 	"-O2 -fno-strength-reduce -fno-unroll-loops -g" for older gcc
 	versions.
-	
+
 1999-06-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/disk_io.c (attempt_mount) [STAGE1_5]: Set FSYS_TYPE to
 	0, and set it to NUM_FSYS if mount fails.
 	(real_open_partition): Call rawread in Stage 1.5 as well.
-	
+
 1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* Makefile.am (SUBDIRS): Change the order of the directories so
@@ -716,12 +732,12 @@
 	* docs/help2man: Copied from help2man-1.012, which contains my
 	previous change.
 	* docs/grub.8: Regenerated.
-	
+
 1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Build process is cleaned up. Stage 2 and Stage 1.5's are all
 	built in the directory stage2.
-	
+
 	From Pavel Roskin <pavel_roskin@geocities.com>:
 	* Makefile.am (SUBDIRS): e2fs_stage1_5, ffs_stage1_5,
 	fat_stage1_5 and shared_src are removed.
@@ -853,15 +869,15 @@
 	(ffs_stage1_5_exec_CFLAGS): Likewise.
 	(ffs_stage1_5_exec_LDFLAGS): Likewise.
 	(% : %.exec): New rule.
-	
+
 	* stage2/size_test: New file, for checking for the sizes of
 	Stage 2 and Stage 1.5's.
-	
+
 1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1.S: Call testb instead of andb when checking if
 	the drive is a floppy.
-	
+
 1999-06-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c [__linux__]: Include linux/fs.h for BLKFLSBUF.
@@ -887,11 +903,11 @@
 	(opt_section): New variable.
 	(section): Likewise.
 	* docs/grub.8: Produced by help2man automatically.
-	
+
 1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/char_io.c (get_cmdline): Add two missing `break's.
-	
+
 	* shared_src/cmdline.c (commands): Add quit.
 	(enter_cmdline): Change the return type	to cmdline_t, and return
 	CMDLINE_OK if successful, otherwise CMDLINE_ERROR if fail.
@@ -907,12 +923,12 @@
 	otherwise return MENU_OK.
 	(cmain): If enter_cmdline aborts, then break the command-line
 	loop and return. If run_menu aborts, then return.
-	
+
 1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/Makefile.am (EXTRA_DIST): Add bios.c. Reported by
 	Pavel Roskin <pavel_roskin@geocities.com>.
-	
+
 1999-06-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/Makefile.am (html): Deleted.
@@ -931,7 +947,7 @@
 	* docs/commands.txt: Likewise.
 	* docs/embedded_data.txt: Likewise.
 	* docs/filesystem.txt: Likewise.
-	
+
 1999-06-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Alexander K. Hudek <alexhudek@home.com>:
@@ -940,12 +956,12 @@
 	* shared_src/pc_slice.c (PC_SLICE_TYPE_WIN95_EXTENDED): New
 	macro.
 	* shared_src/bios.c (biosdisk): Clear the reserved member of DAP.
-	
+
 1999-06-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Color-menu support based on Peter Astrand
 	<altic@lysator.liu.se>'s patch.
-	
+
 	* shared_src/asm.S (nocursor): New function.
 	* shared_src/cmdline.c (normal_color): New variable.
 	(highlight_color): Likewise.
@@ -962,12 +978,12 @@
 	(cmain): Initialize normal_color and highlight_color. Handle
 	the color command in the same way as the command-line
 	interface.
-	
+
 1999-06-07  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* e2fs_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Set to 31744.
 	* fat_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Likewise.
-	
+
 1999-06-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The debug version of Stage 2 is removed.
@@ -994,7 +1010,7 @@
 	* Makefile.am (SUBDIRS): stage2_debug is removed.
 	* stage2_debug/Makefile.am: Deleted.
 	* stage2_debug/Makefile.in: Likewise.
-	
+
 1999-06-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/main.c (verbose): New variable.
@@ -1006,7 +1022,7 @@
 	(main): Handle OPT_VERBOSE and OPT_READ_ONLY.
 	If HOLD and VERBOSE are non-zero, then display the message
 	about how to restart /sbin/grub.
-	
+
 	* shared_src/shared.h (verbose) [GRUB_UTIL]: Declared.
 	(read_only) [GRUB_UTIL]: Likewise.
 
@@ -1022,7 +1038,7 @@
 
 	* shared_src/disk_io.c (set_device) [STAGE1_5]: Eliminate
 	completion code.
-	
+
 1999-06-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c: Do not use I_AM_VERY_BRAVE any more.
@@ -1033,7 +1049,7 @@
 	instead of 0, and check if it is equal to -1 instead of 0 when
 	close it.
 	(get_diskinfo): Treat -1 as non-caching state instead of 0.
-	
+
 1999-06-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Reported from Klaus Reichl <a8709182@unet.univie.ac.at>:
@@ -1059,12 +1075,12 @@
 	when the functon print_completion modifies CMDLINE.
 	* shared_src/stage2.c (get_line_from_config): Fix LITERAL
 	handling.
-	
+
 1999-05-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (grub_stage2): Fix a memory leak that FP is
 	not closed.
-	
+
 1999-05-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/main.c: Replace OPT_DISABLE_CONFIG_FILE and
@@ -1076,7 +1092,7 @@
 	Change the help message according to the changes above.
 	(main): Handle OPT_NO_CONFIG_FILE and OPT_NO_CURSES, instead
 	of OPT_DISABLE_CONFIG_FILE and OPT_DISABLE_CURSES.
-	
+
 1999-05-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/TODO: Moved to ...
@@ -1086,7 +1102,7 @@
 	* docs/COPYING: Removed.
 	* docs/Makefile.am (EXTRA_DIST): Get rid of BUGS.
 	* Makefile.am (EXTRA_DIST): Set to BUGS.
-	
+
 1999-05-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_EXT_C): Do not overrun the command
@@ -1096,12 +1112,12 @@
 
 	* docs/Makefile.am (info_TEXINFOS): Added multiboot.texi.
 	* docs/multiboot.texi: New file. From Kunihiro Ishiguro.
-	
+
 1999-05-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c: Include <errno.h>. Reported by Kunihiro
 	Ishiguro <kunihiro@zebra.org>.
-	
+
 1999-05-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Reported by Brian Brunswick <brian@skarpsey.demon.co.uk>:
@@ -1130,7 +1146,7 @@
 	* e2fs_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Set to 81920.
 	* fat_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Likewise.
 	* ffs_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Set to 7168.
-	
+
 1999-05-03  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	From Pavel Roskin:

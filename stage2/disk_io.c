@@ -312,24 +312,28 @@ make_saved_active (void)
 }
 
 int
-unhide_partition (void)
+set_partition_hidden_flag (int hidden)
 {
   if (saved_drive)
     {
       int part = saved_partition >> 16;
-      
+
       if (part > 3)
 	{
           errnum = ERR_NO_PART;
           return 0;
         }
-      
+
       if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
         return 0;
-      
+
       if (PC_SLICE_TYPE (SCRATCHADDR, part) & PC_SLICE_TYPE_HIDDEN_FLAG)
         {
-          PC_SLICE_TYPE (SCRATCHADDR, part) ^= PC_SLICE_TYPE_HIDDEN_FLAG;
+	  if (hidden)
+	    PC_SLICE_TYPE (SCRATCHADDR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
+	  else
+	    PC_SLICE_TYPE (SCRATCHADDR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
+
  	  buf_track = -1;
           if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
 			0, 1, SCRATCHSEG))
@@ -339,41 +343,10 @@ unhide_partition (void)
 	    }
 	}
     }
-  
+
   return 1;
 }
 
-int
-hide_partition (void)
-{
-  if (saved_drive)
-    {
-      int part = saved_partition >> 16;
-      
-      if (part > 3)
-        {
-          errnum = ERR_NO_PART;
-          return 0;
-        }
-      
-      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
-        return 0;
-      
-      if (! (PC_SLICE_TYPE (SCRATCHADDR, part) & PC_SLICE_TYPE_HIDDEN_FLAG))
-        {
-          PC_SLICE_TYPE (SCRATCHADDR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
- 	  buf_track = -1;
-          if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
-			0, 1, SCRATCHSEG))
-	    {
-	      errnum = ERR_WRITE;
-	      return 0;
-	    }
-	}
-    }
-  
-  return 1;
-}
 
 static void
 check_and_print_mount (void)
@@ -472,7 +445,7 @@ real_open_partition (int flags)
   if (! sane_partition ())
     return 0;
 #endif
-  
+
   /*
    *  The "rawread" is probably unnecessary here, but it is good to
    *  know it works.
@@ -653,7 +626,7 @@ open_partition (void)
 static int incomplete, disk_choice;
 #ifndef STAGE1_5
 static int unique;
-static char unique_string[128];	/* XXX Don't know yet */ 
+static char unique_string[128];	/* XXX Don't know yet */
 #endif
 static enum
   {
@@ -681,7 +654,7 @@ set_device (char *device)
     /* user has given '(' only, let disk_choice handle what disks we have */
     return device + 1;
 #endif
-  
+
   if (*device == '(' && *(++device))
     {
       if (*device != ',' && *device != ')')
@@ -691,7 +664,7 @@ set_device (char *device)
 #ifndef STAGE1_5
 	  if (*device == 'f' || *device == 'h')
 	    {
-	      /* user has given '([fh]', check for resp. add 'd' and 
+	      /* user has given '([fh]', check for resp. add 'd' and
 		 let disk_choice handle what disks we have */
 	      if (!*(device + 1))
 		{
@@ -704,7 +677,7 @@ set_device (char *device)
 		return device + 2;
 	    }
 #endif
- 
+
 	  if ((*device == 'f' || *device == 'h')
 	      && (device += 2, (*(device - 1) != 'd')))
 	    errnum = ERR_NUMBER_PARSING;
@@ -993,7 +966,7 @@ print_a_completion (char *filename)
 {
   char *f = filename;
   char *u = unique_string;
-  
+
   if (! *u && unique == 0)
     {
       /* copy first string, this is unique.  */
@@ -1008,7 +981,7 @@ print_a_completion (char *filename)
       *u = '\0';
     }
   unique++;
-  
+
   printf (" %s", filename);
 }
 
@@ -1024,7 +997,7 @@ print_completions (char *filename)
 
   *unique_string = '\0';
   unique = 0;
-  
+
   if (*filename == '/' || (ptr = set_device (filename)) || incomplete)
     {
       errnum = 0;
@@ -1039,8 +1012,8 @@ print_completions (char *filename)
 
 	      printf (" Possible disks are: ");
 
-	      for (i = (ptr && (*(ptr-2) == 'h' && *(ptr-1) == 'd') ? 1 : 0); 
-		   i < (ptr && (*(ptr-2) == 'f' && *(ptr-1) == 'd') ? 1 : 2); 
+	      for (i = (ptr && (*(ptr-2) == 'h' && *(ptr-1) == 'd') ? 1 : 0);
+		   i < (ptr && (*(ptr-2) == 'f' && *(ptr-1) == 'd') ? 1 : 2);
 		   i++)
 		{
 		  for (j = 0; j < 8; j++)
@@ -1077,7 +1050,7 @@ print_completions (char *filename)
 	      if ((*(ptr - 2) == 'f') && (*(ptr - 1) == 'd')
 		  && ('0' <= *ptr && *ptr <= '8'))
 		*(ptr + 1) = ')', *(ptr + 2) = '\0';
-	      
+
 	      putchar ('\n');
 	    }
 	  else
@@ -1113,7 +1086,7 @@ print_completions (char *filename)
 	  dir (filename);
 	  {
 	    char *u = unique_string;
-	    
+
 	    if (*u)
 	      {
 		while (*ptr++)
