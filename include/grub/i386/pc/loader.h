@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,7 +41,6 @@ void EXPORT_FUNC(grub_multiboot_real_boot) (grub_addr_t entry,
 
 /* It is necessary to export these functions, because normal mode commands
    reuse rescue mode commands.  */
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
 void grub_rescue_cmd_linux (int argc, char *argv[]);
 void grub_rescue_cmd_initrd (int argc, char *argv[]);
 void grub_rescue_cmd_multiboot (int argc, char *argv[]);

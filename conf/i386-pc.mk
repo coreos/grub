@@ -788,7 +788,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod
+	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -828,6 +828,45 @@ _chain_mod-loader_i386_pc_chainloader.d: loader/i386/pc/chainloader.c
 -include _chain_mod-loader_i386_pc_chainloader.d
 
 _chain_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For chain.mod.
+chain_mod_SOURCES = loader/i386/pc/chainloader_normal.c
+CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_i386_pc_chainloader_normal.o def-chain.lst und-chain.lst
+MOSTLYCLEANFILES += chain_mod-loader_i386_pc_chainloader_normal.d
+DEFSYMFILES += def-chain.lst
+UNDSYMFILES += und-chain.lst
+
+chain.mod: pre-chain.o mod-chain.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-chain.o: chain_mod-loader_i386_pc_chainloader_normal.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-chain.o: mod-chain.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
+
+mod-chain.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'chain' $< > $@ || (rm -f $@; exit 1)
+
+def-chain.lst: pre-chain.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 chain/' > $@
+
+und-chain.lst: pre-chain.o
+	echo 'chain' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+chain_mod-loader_i386_pc_chainloader_normal.o: loader/i386/pc/chainloader_normal.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
+
+chain_mod-loader_i386_pc_chainloader_normal.d: loader/i386/pc/chainloader_normal.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader_normal\.o[ :]*,chain_mod-loader_i386_pc_chainloader_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include chain_mod-loader_i386_pc_chainloader_normal.d
+
+chain_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c

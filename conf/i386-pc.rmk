@@ -80,11 +80,15 @@ genmoddep_SOURCES = util/genmoddep.c
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod
+	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
 _chain_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For chain.mod.
+chain_mod_SOURCES = loader/i386/pc/chainloader_normal.c
+chain_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c

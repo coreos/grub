@@ -1,3 +1,18 @@
+2004-09-12  Tomas Ebenlendr  <ebik@ucw.cz>
+
+	Added normal mode command `chainloader' as module chain.mod, which
+	depends on normal.mod and _chain.mod.
+	
+	* conf/i386-pc.rmk (pkgdata_MODULES): Add `chain.mod'.
+	(chain_mod_SOURCES, chain_mod_CFLAGS): Variables added.
+	* include/grub/i386/pc/loader.h (grub_rescue_cmd_chainloader):
+	Deleted prototype.
+	* loader/i386/pc/chainloader.c (grub_rescue_cmd_chainloader): All
+	but arguments parsing moved to ...
+	(grub_chainloader_cmd): ... here.  New function.
+	* include/grub/i386/pc/chainloader.h: New file.
+	* loader/i386/pc/chainloader_normal.c: Likewise.
+
 2004-09-11  Marco Gerards  <metgerards@student.han.nl>
 
 	* conf/i386-pc.rmk (kernel_img_SOURCES): Added kern/fshelp.c.

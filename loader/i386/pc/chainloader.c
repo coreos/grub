@@ -1,7 +1,7 @@
 /* chainloader.c - boot another boot loader */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include <grub/loader.h>
 #include <grub/machine/loader.h>
+#include <grub/machine/chainloader.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/device.h>
@@ -82,28 +83,14 @@ grub_chainloader_unload (void)
 }
 
 void
-grub_rescue_cmd_chainloader (int argc, char *argv[])
+grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 {
   grub_file_t file = 0;
   grub_uint16_t signature;
-  int force = 0;
 
   grub_dl_ref (my_mod);
   
-  if (argc > 0 && grub_strcmp (argv[0], "--force") == 0)
-    {
-      force = 1;
-      argc--;
-      argv++;
-    }
-
-  if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
-      goto fail;
-    }
-
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (filename);
   if (! file)
     goto fail;
 
@@ -119,7 +106,8 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
 
   /* Check the signature.  */
   signature = *((grub_uint16_t *) (0x7C00 + GRUB_DISK_SECTOR_SIZE - 2));
-  if (signature != grub_le_to_cpu16 (0xaa55) && ! force)
+  if (signature != grub_le_to_cpu16 (0xaa55)
+      && ! (flags & GRUB_CHAINLOADER_FORCE))
     {
       grub_error (GRUB_ERR_BAD_OS, "invalid signature");
       goto fail;
@@ -135,6 +123,24 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
     grub_file_close (file);
   
   grub_dl_unref (my_mod);
+}
+
+static void
+grub_rescue_cmd_chainloader (int argc, char *argv[])
+{
+  grub_chainloader_flags_t flags = 0;
+
+  if (argc > 0 && grub_strcmp (argv[0], "--force") == 0)
+    {
+      flags |= GRUB_CHAINLOADER_FORCE;
+      argc--;
+      argv++;
+    }
+  
+  if (argc == 0)
+    grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
+  else
+    grub_chainloader_cmd (argv[0], flags);
 }
 
 static const char loader_name[] = "chainloader";
