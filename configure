@@ -1665,6 +1665,7 @@ host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 
 case "$host_cpu" in
 i[3456]86) host_cpu=i386 ;;
+x86_64) host_cpu=x86_64 ;;
 *) { { echo "$as_me:$LINENO: error: unsupported CPU type" >&5
 echo "$as_me: error: unsupported CPU type" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -1750,6 +1751,10 @@ fi
 # This should be checked before AC_PROG_CC
 if test "x$CFLAGS" = x; then
   default_CFLAGS=yes
+fi
+
+if test "x$host_cpu" = xx86_64; then
+  CFLAGS="-m32 $CFLAGS"
 fi
 
 #
@@ -2912,7 +2917,7 @@ fi
 # optimization flags
 if test "x$ac_cv_c_compiler_gnu" = xyes; then
   if test "x$default_CFLAGS" = xyes; then
-    CFLAGS="-g"
+    CFLAGS="$CFLAGS -g"
     # If the user specify the directory for binutils, add the option `-B'.
     if test "x$with_binutils" != x; then
       CFLAGS="-B$with_binutils/ $CFLAGS"
