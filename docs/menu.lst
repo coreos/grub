@@ -30,12 +30,14 @@ title=		FreeBSD 2.2-SNAP
 root=	(hd0,2)
 kernel=	(fd0)/kernel
 
-# For booting OS/2  (test, I have no OS/2 to test for!)
+# For booting OS/2
 title=		OS/2
 root=		(hd0,1)
 makeactive
-chainloader=	/boot/chain.os2
+# chainload OS/2 bootloader from the first sector
+chainloader=	+1
 # This is similar to "chainload", but loads a specific file
+#chainloader=	/boot/chain.os2
 
 # For booting Windows NT 3.5 or Windows95
 title=		Windows NT 3.5/Windows 95 boot menu
