@@ -25,7 +25,7 @@
 #define BPBEND      0x3e
 #define PARTSTART   0x1be	/* starting address of partition table */
 #define PARTEND     0x1fe	/* ending addres of the partition table */
-#define MINPARAMSIZ 18		/* size of extra data parameters */
+#define MINPARAMSIZ 13		/* size of extra data parameters */
 #define LISTSIZ     8		/* size of sector list */
 #define REALSTACK   0x2000	/* stack for this code and BIOS calls */
 #define BUFFERSEG   0x7000	/* segment address of disk buffer, the
@@ -33,28 +33,6 @@
 				   straddle a 64K boundary */
 #define BIOS_HD_FLAG 0x80	/* bit set in BIOS drive number to designate
 				   a hard disk vs. a floppy */
-
-	/* data for debugging */
-#define	CHAR_1 '1'
-#define	CHAR_2 '2'
-#define	CHAR_3 '3'
-#define	CHAR_4 '4'
-#define	CHAR_5 '5'
-#define	CHAR_6 '6'
-#define CHAR_a 'a'
-
-	/* messages displayed at all times */
-#define	CHAR_S 'S'
-#define	CHAR_J 'J'
-
-  /* error messages */
-
-	/* Read error (trying to read non-existent sector, perhaps) */
-#define CHAR_R 'R'
-	/* Geometry translation error (off of probed geometry) */
-#define CHAR_G 'G'
-	/* Disk geometry probe failed! */
-#define CHAR_P 'P'
 
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
@@ -67,9 +45,9 @@
 #define REL(x)  .word x-0f; 0:
 #define RELB(x) .byte x-0f; 0:
 	
-	/* Print message
-	   movb $x, %al; call message */
-#define MSG(x)	movb $x, %al; .byte 0xe8; REL(message)
+	/* Print message string
+	   movw $x, %cx; call message */
+#define MSG(x)	movw $x, %aw; .byte 0xe8; REL(message)
 
 	.file	"stage1.S"
 
@@ -122,17 +100,17 @@ cylinders:
 after_BPB:
 
 /* general setup */
+	cli		/* we're not safe here! */
 
 	/* set up %ds and %ss as offset from 0 */
 	xorw	%ax, %ax
 	movw	%ax, %ds
-	movw	%ax, %es
-
-	cld		/* sets the copy direction to forward */
+	movw	%ax, %ss
 
 	/* set up the REAL stack */
-	movw	%ax, %ss
 	movw	$REALSTACK, %sp
+
+	sti		/* we're safe again */
 
 	/*
 	 *  Check if we have a forced disk reference here
@@ -147,10 +125,6 @@ after_BPB:
 	/* save drive reference first thing! */
 	pushw	%dx
 
-	/* tell the user that we're here before anything else! */
-	MSG(CHAR_S)
-
-#ifndef BIOS_PROBE_ONLY
 	/*
 	 *  Jump to floppy probe instead of the hard disk probe ?
 	 */
@@ -159,11 +133,6 @@ after_BPB:
 
 	/* jz	floppy_probe */
 	.byte	0x0f, 0x84; REL(floppy_probe)
-#endif
-
-#ifdef DEBUG
-	MSG(CHAR_6)
-#endif
 
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
@@ -172,8 +141,8 @@ after_BPB:
 	int	$0x13
 
 	/* if BIOS geometry call fails, display error and die! */
-	/* jc	probe_error   (16-bit)*/
-	.byte	0x0f, 0x82; REL(probe_error)
+	/* jc	hd_probe_error   (16-bit)*/
+	.byte	0x0f, 0x82; REL(hd_probe_error)
 
 final_init:
 	xorb	%ah, %ah
@@ -210,10 +179,6 @@ final_init:
 
         /* this is the loop for reading the secondary boot-loader in */
 bootloop:
-
-#ifdef DEBUG
-	MSG(CHAR_2)
-#endif
 
 	/* update position to load from */
 	subw	$LISTSIZ, %di
@@ -254,10 +219,6 @@ bootloop:
 
 setup_sectors:
 
-#ifdef DEBUG
-	MSG(CHAR_3)
-#endif
-
 	/* determine the maximum sector length of this read */
 	/* movw	(%si), %ax */	/* get number of sectors per track/head */
 	.byte	0x8b, 0x04
@@ -275,25 +236,13 @@ setup_sectors:
 	/* movw	4(%di), %ax */	/* if less than, set to total */
 	.byte	0x8b, 0x45, 0x04
 
-#ifdef DEBUG
-	pushw	%ax
-	MSG(CHAR_4)
-	popw	%ax
-#endif
-
 more_sectors:
 	/* subw	%ax, 4(%di) */	/* subtract from total */
 	.byte	0x29, 0x45, 0x04
 
-	/* this is the loop for taking care of BIOS translation (ugh!) */
-
-#ifdef DEBUG
-	pushw	%ax
-	addb	$CHAR_a, %al
-	/* call message */
-	.byte	0xe8; REL(message)
-	popw	%ax
-#endif
+/*
+ *  This is the loop for taking care of BIOS geometry translation (ugh!)
+ */
 
 	/* movb	3(%di), %dl */	/* get high bits of cylinder */
 	.byte	0x8a, 0x55, 0x03
@@ -338,15 +287,14 @@ more_sectors:
 	int	$0x13
 
 	/* jc	read_error */
-	.byte	0x72
-	RELB(read_error)
+	.byte	0x72; RELB(read_error)
+
+	movw	%es, %ax
+	movw	%ax, %fs	/* load source segment */
 
 	/* load addresses for copy from disk buffer to destination */
 	/* movw	6(%di), %es */	/* load destination segment */
 	.byte	0x8e, 0x45, 0x06
-
-	movw	$BUFFERSEG, %ax
-	movw	%ax, %fs	/* load source segment */
 
 	/* restore %ax */
 	popw	%ax
@@ -368,6 +316,7 @@ more_sectors:
 
 	xorw	%di, %di	/* zero offset of destination addresses */
 	xorw	%si, %si	/* zero offset of source addresses */
+	cld		/* sets the copy direction to forward */
 
 	/* perform copy */
 	rep		/* sets a repeat */
@@ -384,10 +333,6 @@ more_sectors:
 
 	/* je	bootloop */
 	.byte	0x0f, 0x84; REL(bootloop)
-
-#ifdef DEBUG
-	MSG(CHAR_5)
-#endif
 
 	/* find out the next BIOS set to load in */
 	/* movb	$0, (%di) */	/* set the sector start */
@@ -423,46 +368,42 @@ update_heads:
 	/* movb	%al, 1(%di) */	/* store new head number */
 	.byte	0x88, 0x45, 0x01
 
-#ifdef DEBUG
-	addb	$CHAR_a, %al
-	/* call message */
-	.byte	0xe8; REL(message)
-
-	/* movb	2(%di), %al */
-	.byte	0x8a, 0x45, 0x02
-
-	addb	$CHAR_a, %al
-	/* call message */
-	.byte	0xe8; REL(message)
-#endif
-
 	/* jump to "setup_sectors" to determine length of the new read */
 	/* jmp	setup_sectors */
 	.byte	0xe9; REL(setup_sectors)
+
+/* END OF MAIN LOOP */
 
 /*
  * BIOS Geometry translation error (past the end of the disk geometry!).
  */
 geometry_error:
-	movb	$CHAR_G, %al
+	movw	$geometry_error_string, %si
+	/* call message */
+	.byte	0xe8; REL(message)
 	/* jmp	display_error  (8-bit) */
-	.byte	0xeb; RELB(display_error)
+	.byte	0xeb; RELB(general_error)
 
 /*
  * Disk probe failure.
  */
-probe_error:
-	movb	$CHAR_P, %al
+hd_probe_error:
+	movw	$hd_probe_error_string, %si
+	/* call message */
+	.byte	0xe8; REL(message)
 	/* jmp	display_error  (8-bit) */
-	.byte	0xeb; RELB(display_error)
+	.byte	0xeb; RELB(general_error)
 
 /*
  * Read error on the disk.
  */
 read_error:
-	movb	$CHAR_R, %al
+	movw	$read_error_string, %si
+	/* call message */
+	.byte	0xe8; REL(message)
 
-display_error:
+general_error:
+	movw	$general_error_string, %si
 	/* call message */
 	.byte	0xe8; REL(message)
 
@@ -470,26 +411,45 @@ display_error:
 stop:	/* jmp	stop  (8-bit) */
 	.byte	0xeb; RELB(stop)
 
+geometry_error_string:	.string "Geom"
+hd_probe_error_string:	.string "Hard Disk"
+read_error_string:	.string "Read"
+general_error_string:	.string " Error"
 
 /*
- * message: write the character in %al to the console, %ah gets trashed.
+ * message: write the string pointed to by %si
+ *
+ *   WARNING: trashes %si, %ax, and %bx
  */
-message:
+
 	/*
 	 * Use BIOS "int 10H Function 0Eh" to write character in teletype mode
 	 *	%ah = 0xe	%al = character
 	 *	%bh = page	%bl = foreground color (graphics modes)
 	 */
-
-	pushw	%bx
+1:
 	movw	$0x0001, %bx
 	movb	$0xe, %ah
 	int	$0x10		/* display a byte */
-	popw	%bx
+
+	incw	%si
+message:
+	/* movb	(%si), %al */
+	.byte	0x8a, 0x4
+	cmpb	$0, %al
+	/* jne	1b */
+	.byte	0x75; RELB(1b)	/* if not end of string, jmp to display */
 
 	/* ret */
 	.byte	0xc3
 lastlist:
+
+/*
+ *  This area is an empty space between the main body of code below which
+ *  grows up (fixed after compilation, but between releases it may change
+ *  in size easily), and the lists of sectors to read, which grows down
+ *  from a fixed top location.
+ */
 
         /*
          *  This data area is for keeping general parameters.
@@ -517,28 +477,18 @@ lastlist:
 	.word 0x0800	/* this is the segment of the starting address
 			   to load the data into */
 #endif
-firstlist:
+firstlist:	/* this label has to be after the list data!!! */
+
 	.byte 0xff	/* the disk to load stage2 from */
 			/* 0xff means use the boot drive */
-/* the above label has to be after its data!!! */
 
 	/*
-	 *  Jump here when all data loading is done.
+	 *  Jump here when all data loading is done.  This
+	 *  goes to the second stage bootloader.
 	 */
 
 bootit:
-
-	/*
-	 *  Tell the user we're going to the next stage...
-	 */
-	MSG(CHAR_J)
-
 	popw	%dx	/* this makes sure %dl is our "boot" drive */
-
-	/*
-	 * ljmp to the second stage boot loader.
-	 */
-
 	/* ljmp	$myoffset, $myseg */
 	.byte	0xea
 #ifdef  STAGE1_5
@@ -552,7 +502,7 @@ bootit:
 	 *
 	 *  DO NOT MOVE THIS!!!
 	 */
-	.byte	1, 0
+	.byte	2, 0
 
 	/*
 	 *  This is where an MBR would go if on a hard disk.  The code
@@ -562,13 +512,12 @@ bootit:
 
 	. = _start + PARTSTART
 
-#ifndef BIOS_PROBE_ONLY
 probe_values:
 	.byte	36, 18, 15, 9, 0
 
 floppy_probe:
 /*
- *  Perform floppy probe!
+ *  Perform floppy probe.
  */
 
 	movw	$ABS(probe_values-1), %si
@@ -586,9 +535,21 @@ probe_loop:
 	/* if number of sectors is 0, display error and die */
 	cmpb	$0, %cl
 
-	/* je	probe_error   (16-bit)*/
-	.byte	0x0f, 0x84; REL(probe_error)
+	/* jne	1f  (8-bit) */
+	.byte	0x75; RELB(1f)
 
+/*
+ * Floppy disk probe failure.
+ */
+	movw	$fd_probe_error_string, %si
+	/* call message */
+	.byte	0xe8; REL(message)
+	/* jmp	display_error  (16-bit) */
+	.byte	0xe9; REL(general_error)
+
+fd_probe_error_string:	.string "Floppy"
+
+1:
 	/* perform read */
 	movw	$REALSTACK, %bx
 	movw	$0x201, %ax
@@ -607,10 +568,7 @@ probe_loop:
 	/* jmp	final_init */
 	.byte	0xe9; REL(final_init)
 
-#endif /* !BIOS_PROBE_ONLY */
-
 	. = _start + PARTEND
 
 /* the last 2 bytes in the sector 0 contain the signature */
 	.word	SIGNATURE
-
