@@ -191,8 +191,8 @@ Rich functionality for OS experts/designers.
 
 @item
 Compatibility for booting FreeBSD, NetBSD, OpenBSD, and
-Linux. Proprietary OS's such as DOS, Windows NT, and OS/2 are supported
-via a chain-loading function.
+GNU/Linux. Proprietary OS's such as DOS, Windows NT, and OS/2 are
+supported via a chain-loading function.
 @end itemize
 
 Except for specific compatibility modes (chain-loading and the Linux

@@ -1,5 +1,10 @@
 1999-05-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* grub/asmstub.c (grub_stage2): Fix a memory leak that FP is
+	not closed.
+	
+1999-05-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* grub/main.c: Replace OPT_DISABLE_CONFIG_FILE and
 	OPT_DISABLE_CURSES with OPT_NO_CONFIG_FILE and OPT_NO_CURSES
 	respectively.

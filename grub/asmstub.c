@@ -152,8 +152,12 @@ grub_stage2 (void)
 	break;
       /* Attempt to read the first sector.  */
       if (fread (buf, 1, 512, fp) != 512)
-	break;
+	{
+	  fclose (fp);
+	  break;
+	}
 
+      fclose (fp);
       device_map[i + 0x80] = strdup (name);
     }
   first_scsi_disk = i + 0x80;
