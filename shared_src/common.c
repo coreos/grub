@@ -1,6 +1,8 @@
+/* common.c - miscellaneous shared variables and routines */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,10 +19,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#define _COMMON_C
-
 #include "shared.h"
-
 
 /*
  *  Shared BIOS/boot data.
@@ -35,7 +34,7 @@ unsigned long saved_mem_upper;
  *  Error code stuff.
  */
 
-int errnum = 0;
+grub_error_t errnum = ERR_NONE;
 
 #ifndef STAGE1_5
 
@@ -93,7 +92,9 @@ static struct AddrRangeDesc fakemap[3] =
 void
 init_bios_info (void)
 {
+#ifndef STAGE1_5
   int cont, memtmp, addr;
+#endif
 
   /*
    *  Get information from BIOS on installed RAM.
@@ -125,7 +126,7 @@ init_bios_info (void)
 
   do
     {
-      cont = get_mem_map (addr, cont);
+      cont = get_mmap_entry ((void *) addr, cont);
 
       /* If the returned buffer's base is zero, quit. */
       if (!*((int *) addr))

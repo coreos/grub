@@ -1,7 +1,8 @@
-
+/* shared.h - definitions used in all GRUB-specific code */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -176,109 +177,18 @@ extern char *grub_scratch_mem;
 # define KEY_DOWN        0x5000
 # define KEY_IC          0x5200	/* insert char */
 # define KEY_DC          0x5300	/* delete char */
+# define KEY_BACKSPACE   0x0008
 # define KEY_HOME        0x4700
 # define KEY_END         0x4F00
 # define KEY_NPAGE       0x4900
 # define KEY_PPAGE       0x5100
+# define A_NORMAL        0x7
+# define A_REVERSE       0x70
 #else
 # include <curses.h>
 #endif
 
-/* Remap some names so that we don't conflict with libc. */
-#define bcopy grub_bcopy
-#define bzero grub_bzero
-#define isspace grub_isspace
-#define open grub_open
-#define printf grub_printf
-#undef putchar
-#define putchar grub_putchar
-#define read grub_read
-#define strncat grub_strncat
-#define strstr grub_strstr
-#define tolower grub_tolower
-
-
-#ifndef ASM_FILE
-
-
-/*
- *  Below this should be ONLY defines and other constructs for C code.
- */
-
-
-static inline unsigned char
-inb (unsigned short port)
-{
-  unsigned char data;
-
-  __asm __volatile ("inb %1,%0":"=a" (data):"d" (port));
-  return data;
-}
-
-static inline void
-outb (unsigned short port, unsigned char val)
-{
-  __asm __volatile ("outb %0,%1"::"a" (val), "d" (port));
-}
-
-
-/* multiboot stuff */
-
-#include "mb_header.h"
-#include "mb_info.h"
-
-/* this function must be called somewhere... */
-void
-cmain (void)
-__attribute__ ((noreturn));
-
-#undef NULL
-#define NULL         ((void *) 0)
-
-
-/*
- *  From "asm.S"
- */
-
-     extern unsigned long install_partition;
-     extern unsigned long boot_drive;
-     extern char version_string[];
-     extern char config_file[];
-
-void stop (void) __attribute__ ((noreturn));
-
-/* calls for direct boot-loader chaining */
-     void chain_stage1 (int segment, int offset, int part_table_addr)
-__attribute__ ((noreturn));
-     void chain_stage2 (int segment, int offset) __attribute__ ((noreturn));
-
-/* do some funky stuff, then boot linux */
-     void linux_boot (void) __attribute__ ((noreturn));
-
-/* do some funky stuff, then boot bzImage linux */
-     void big_linux_boot (void) __attribute__ ((noreturn));
-
-/* booting a multiboot executable */
-     void multi_boot (int start, int mbi) __attribute__ ((noreturn));
-
-/* sets it to linear or wired A20 operation */
-     void gateA20 (int linear);
-
-/* memory probe routines */
-     int get_memsize (int type);
-     int get_eisamemsize (void);
-     int get_mmap_entry (int buf, int cont);
-
-/* low-level timing info */
-     int getrtsecs (void);
-
-/* low-level character I/O */
-     void cls (void);
-     int getxy (void);		/* returns packed values, LSB+1 is x, LSB is y */
-     void gotoxy (int x, int y);
-
-/* displays an ASCII character.  IBM displays will translate some
-   characters to special graphical ones */
+/* Special graphics characters for IBM displays. */
 #define DISP_UL         218
 #define DISP_UR         191
 #define DISP_LL         192
@@ -289,228 +199,301 @@ __attribute__ ((noreturn));
 #define DISP_RIGHT      0x1a
 #define DISP_UP         0x18
 #define DISP_DOWN       0x19
-     void putchar (int c);
-/* returns packed BIOS/ASCII code */
-     int getkey (void);
 
-/* returns 0 if non-ASCII character */
-#undef getc
-#define getc()  ASCII_CHAR(getkey())
-
-/* like 'getkey', but doesn't wait, returns -1 if nothing available */
-     int checkkey (void);
-
-/* sets text mode character attribute at the cursor position */
-#define ATTRIB_NORMAL    0x7
-#define ATTRIB_INVERSE   0x70
-     void set_attrib (int attr);
-
-/* low-level disk I/O */
-     int get_diskinfo (int drive);
-     int biosdisk (int read, int drive, int geometry,
-		   int sector, int nsec, int segment);
-     void stop_floppy (void);
+/* Remap some libc-API-compatible function names so that we can use
+   them alongside their libc counterparts. */
+#define bcopy grub_bcopy
+#define bzero grub_bzero
+#define isspace grub_isspace
+#define printf grub_printf
+#undef putchar
+#define putchar grub_putchar
+#define strncat grub_strncat
+#define strstr grub_strstr
+#define tolower grub_tolower
 
 
+#ifndef ASM_FILE
 /*
- *  From "cmdline.c"
+ *  Below this should be ONLY defines and other constructs for C code.
  */
 
-#ifndef _CMDLINE_C
+/* multiboot stuff */
 
-     extern int fallback;
-     extern char *password;
-     extern char commands[];
+#include "mb_header.h"
+#include "mb_info.h"
 
-#endif /* _CMDLINE_C */
+/* Memory map address range descriptor used by GET_MMAP_ENTRY. */
+struct mmar_desc
+{
+  unsigned long desc_len;	/* Size of this descriptor. */
+  unsigned long long addr;	/* Base address. */
+  unsigned long long length;	/* Length in bytes. */
+  unsigned long type;		/* Type of address range. */
+};
 
-     char *skip_to (int after_equal, char *cmdline);
-     void init_cmdline (void);
-     int enter_cmdline (char *script, char *heap);
+#undef NULL
+#define NULL         ((void *) 0)
 
+/* Error codes (descriptions are in common.c) */
+typedef enum
+{
+  ERR_NONE = 0,
+  ERR_BAD_FILENAME,
+  ERR_BAD_FILETYPE,
+  ERR_BAD_GZIP_DATA,
+  ERR_BAD_GZIP_HEADER,
+  ERR_BAD_PART_TABLE,
+  ERR_BAD_VERSION,
+  ERR_BELOW_1MB,
+  ERR_BOOT_COMMAND,
+  ERR_BOOT_FAILURE,
+  ERR_BOOT_FEATURES,
+  ERR_DEV_FORMAT,
+  ERR_DEV_VALUES,
+  ERR_EXEC_FORMAT,
+  ERR_FILELENGTH,
+  ERR_FILE_NOT_FOUND,
+  ERR_FSYS_CORRUPT,
+  ERR_FSYS_MOUNT,
+  ERR_GEOM,
+  ERR_NEED_LX_KERNEL,
+  ERR_NEED_MB_KERNEL,
+  ERR_NO_DISK,
+  ERR_NO_PART,
+  ERR_NUMBER_PARSING,
+  ERR_OUTSIDE_PART,
+  ERR_READ,
+  ERR_SYMLINK_LOOP,
+  ERR_UNRECOGNIZED,
+  ERR_WONT_FIT,
+  ERR_WRITE,
 
-/*
- *  From "char_io.c"
- */
+  MAX_ERR_NUM
+} grub_error_t;
 
-#ifndef _CHAR_IO_C
+extern unsigned long install_partition;
+extern unsigned long boot_drive;
+extern char version_string[];
+extern char config_file[];
 
-     int special_attribute;
+#ifndef STAGE1_5
+/* GUI interface variables. */
+extern int fallback;
+extern char *password;
+extern char commands[];
+#endif
 
-#endif /* _CHAR_IO_C */
-
-     enum grub_error_t
-       {
-	 ERR_NONE = 0,
-	 ERR_BAD_FILENAME,
-	 ERR_BAD_FILETYPE,
-	 ERR_BAD_GZIP_DATA,
-	 ERR_BAD_GZIP_HEADER,
-	 ERR_BAD_PART_TABLE,
-	 ERR_BAD_VERSION,
-	 ERR_BELOW_1MB,
-	 ERR_BOOT_COMMAND,
-	 ERR_BOOT_FAILURE,
-	 ERR_BOOT_FEATURES,
-	 ERR_DEV_FORMAT,
-	 ERR_DEV_VALUES,
-	 ERR_EXEC_FORMAT,
-	 ERR_FILELENGTH,
-	 ERR_FILE_NOT_FOUND,
-	 ERR_FSYS_CORRUPT,
-	 ERR_FSYS_MOUNT,
-	 ERR_GEOM,
-	 ERR_NEED_LX_KERNEL,
-	 ERR_NEED_MB_KERNEL,
-	 ERR_NO_DISK,
-	 ERR_NO_PART,
-	 ERR_NUMBER_PARSING,
-	 ERR_OUTSIDE_PART,
-	 ERR_READ,
-	 ERR_SYMLINK_LOOP,
-	 ERR_UNRECOGNIZED,
-	 ERR_WONT_FIT,
-	 ERR_WRITE,
-
-	 MAX_ERR_NUM
-       };
-
-     void init_page (void);
-     void print_error (void);
-     char *convert_to_ascii (char *buf, int c,...);
-     void grub_printf (char *format,...);
-     int get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen);
-     int grub_tolower (int c);
-     int grub_isspace (int c);
-     int grub_strncat (char *s1, char *s2, int n);
-     int substring (char *s1, char *s2);
-     char *grub_strstr (char *s1, char *s2);
-     int bcopy (char *from, char *to, int len);
-     int bzero (char *start, int len);
-     int get_based_digit (int c, int base);
-     int safe_parse_maxint (char **str_ptr, int *myint_ptr);
-     int memcheck (int start, int len);
-
-
-/*
- *  From "gunzip.c"
- */
-
-#ifndef _GUNZIP_C
-
-     extern int no_decompression;
-     extern int compressed_file;
-
-#endif /* _GUNZIP_C */
-
-     int gunzip_test_header (void);
-     int gunzip_read (int addr, int len);
-
-
-/*
- *  From "disk_io.c"
- */
-
-#ifndef _DISK_IO_C
+#ifndef NO_DECOMPRESSION
+extern int no_decompression;
+extern int compressed_file;
+#endif
 
 #ifndef STAGE1_5
 /* instrumentation variables */
-     extern void (*debug_fs) (int);
-     extern void (*debug_fs_func) (int);
+extern void (*debug_fs) (int);
+extern void (*debug_fs_func) (int);
 #endif /* STAGE1_5 */
 
-     extern unsigned long current_drive;
-     extern unsigned long current_partition;
+extern unsigned long current_drive;
+extern unsigned long current_partition;
 
-     extern int fsys_type;
+extern int fsys_type;
 
 #ifndef NO_BLOCK_FILES
-     extern int block_file;
+extern int block_file;
 #endif /* NO_BLOCK_FILES */
 
-     extern long part_start;
-     extern long part_length;
+extern long part_start;
+extern long part_length;
 
-     extern int current_slice;
+extern int current_slice;
 
-     extern int buf_drive;
-     extern int buf_track;
-     extern int buf_geom;
+extern int buf_drive;
+extern int buf_track;
+extern int buf_geom;
 
 /* these are the current file position and maximum file position */
-     extern int filepos;
-     extern int filemax;
-
-#endif /* _DISK_IO_C */
-
-     int rawread (int drive, int sector, int byte_offset, int byte_len, int addr);
-     int devread (int sector, int byte_offset, int byte_len, int addr);
-
-     char *set_device (char *device);	/* this gets a device from the string and
-					   places it into the global parameters */
-     int open_device (void);
-     int make_saved_active (void);	/* sets the active partition to the that
-					   represented by the "saved_" parameters */
-
-     int grub_open (char *filename);
-     int grub_read (int addr, int len);	/* if "length" is -1, read all the
-					   remaining data in the file */
-     int dir (char *dirname);	/* list directory, printing all completions */
-
-     int set_bootdev (int hdbias);
-     void print_fsys_type (void);	/* this prints stats on the currently
-					   mounted filesystem */
-     void print_completions (char *filename);	/* this prints device and filename
-						   completions */
-     void copy_current_part_entry (int addr);	/* copies the current partition data
-						   to the desired address */
-
-
-/*
- *  From "boot.c"
- */
-
-/* for the entry address */
-     typedef void
-       (*entry_func) (int, int, int, int, int, int) __attribute__ ((noreturn));
-
-#ifndef _BOOT_C
-
-     extern char *cur_cmdline;
-     extern entry_func entry_addr;
-
-#endif /* _BOOT_C */
-
-     void bsd_boot (int type, int bootdev) __attribute__ ((noreturn));
-     int load_image (void);
-     int load_module (void);
-
-
-/*
- *  From "common.c"
- */
-
-
-#ifndef _COMMON_C
+extern int filepos;
+extern int filemax;
 
 /*
  *  Common BIOS/boot data.
  */
 
-     extern struct multiboot_info mbi;
-     extern unsigned long saved_drive;
-     extern unsigned long saved_partition;
-     extern unsigned long saved_mem_upper;
+extern struct multiboot_info mbi;
+extern unsigned long saved_drive;
+extern unsigned long saved_partition;
+extern unsigned long saved_mem_upper;
 
 /*
  *  Error variables.
  */
 
-     extern int errnum;
-     extern char *err_list[];
+extern grub_error_t errnum;
+extern char *err_list[];
 
-#endif /* _COMMON_C */
+/* Simplify declaration of entry_addr. */
+typedef void (*entry_func) (int, int, int, int, int, int)
+     __attribute__ ((noreturn));
 
-     void init_bios_info (void) __attribute__ ((noreturn));
+/* Maximum command line size.  Before you blindly increase this value,
+   see the comment in char_io.c (get_cmdline). */
+#define MAX_CMDLINE 1600
+#define NEW_HEAPSIZE 1500
+extern char *cur_cmdline;
+extern entry_func entry_addr;
+
+/* Enter the stage1.5/stage2 C code after the stack is set up. */
+void cmain (void) __attribute__ ((noreturn));
+
+/* Halt the processor (called after an unrecoverable error). */
+void stop (void) __attribute__ ((noreturn));
+
+/* calls for direct boot-loader chaining */
+void chain_stage1 (int segment, int offset, int part_table_addr)
+     __attribute__ ((noreturn));
+void chain_stage2 (int segment, int offset) __attribute__ ((noreturn));
+
+/* do some funky stuff, then boot linux */
+void linux_boot (void) __attribute__ ((noreturn));
+
+/* do some funky stuff, then boot bzImage linux */
+void big_linux_boot (void) __attribute__ ((noreturn));
+
+/* booting a multiboot executable */
+void multi_boot (int start, int mbi) __attribute__ ((noreturn));
+
+/* If LINEAR is nonzero, then set the Intel processor to linear mode.
+   Otherwise, bit 20 of all memory accesses is always forced to zero,
+   causing a wraparound effect for bugwards compatibility with the
+   8086 CPU. */
+void gateA20 (int linear);
+
+/* memory probe routines */
+int get_memsize (int type);
+int get_eisamemsize (void);
+
+/* Fetch the next entry in the memory map and return the continuation
+   value.  DESC is a pointer to the descriptor buffer, and CONT is the
+   previous continuation value (0 to get the first entry in the
+   map). */
+int get_mmap_entry (struct mmar_desc *desc, int cont);
+
+/* Return the data area immediately following our code. */
+int get_code_end (void);
+
+/* low-level timing info */
+int getrtsecs (void);
+
+/* Clear the screen. */
+void cls (void);
+
+/* Get the current cursor position (where 0,0 is the top left hand
+   corner of the screen).  Returns packed values, (RET >> 8) is x,
+   (RET & 0xff) is y. */
+int getxy (void);
+
+/* Set the cursor position. */
+void gotoxy (int x, int y);
+
+/* Displays an ASCII character.  IBM displays will translate some
+   characters to special graphical ones (see the DISP_* constants). */
+void putchar (int c);
+
+/* Wait for a keypress, and return its packed BIOS/ASCII key code.
+   Use ASCII_CHAR(ret) to extract the ASCII code. */
+int getkey (void);
+
+/* returns 0 if non-ASCII character */
+#undef getc
+#define getc()  ASCII_CHAR (getkey ())
+
+/* Like GETKEY, but doesn't block, and returns -1 if no keystroke is
+   available. */
+int checkkey (void);
+
+/* Sets text mode character attribute at the cursor position.  See A_*
+   constants defined above. */
+void set_attrib (int attr);
+
+/* Low-level disk I/O */
+int get_diskinfo (int drive);
+int biosdisk (int read, int drive, int geometry,
+	      int sector, int nsec, int segment);
+void stop_floppy (void);
+
+/* Command-line interface functions. */
+#ifndef STAGE1_5
+char *skip_to (int after_equal, char *cmdline);
+void init_cmdline (void);
+int enter_cmdline (char *script, char *heap);
+#endif
+
+/* C library replacement functions with identical semantics. */
+void grub_printf (char *format,...);
+int grub_tolower (int c);
+int grub_isspace (int c);
+int grub_strncat (char *s1, char *s2, int n);
+int grub_bcopy (char *from, char *to, int len);
+int grub_bzero (char *start, int len);
+char *grub_strstr (char *s1, char *s2);
+
+/* misc */
+void init_page (void);
+void print_error (void);
+char *convert_to_ascii (char *buf, int c,...);
+int get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen);
+int substring (char *s1, char *s2);
+int get_based_digit (int c, int base);
+int safe_parse_maxint (char **str_ptr, int *myint_ptr);
+int memcheck (int start, int len);
+
+#ifndef NO_DECOMPRESSION
+/* Compression support. */
+int gunzip_test_header (void);
+int gunzip_read (char *buf, int len);
+#endif /* NO_DECOMPRESSION */
+
+int rawread (int drive, int sector, int byte_offset, int byte_len, char *buf);
+int devread (int sector, int byte_offset, int byte_len, char *buf);
+
+/* Parse a device string and initialize the global parameters. */
+char *set_device (char *device);
+int open_device (void);
+int open_partition (void);
+
+/* Sets device to the one represented by the SAVED_* parameters. */
+int make_saved_active (void);
+
+/* Open a file or directory on the active device, using GRUB's
+   internal filesystem support. */
+int grub_open (char *filename);
+
+/* Read LEN bytes into BUF from the file that was opened with
+   GRUB_OPEN.  If LEN is -1, read all the remaining data in the file */
+int grub_read (char *buf, int len);
+
+/* List the contents of the directory that was opened with GRUB_OPEN,
+   printing all completions. */
+int dir (char *dirname);
+
+int set_bootdev (int hdbias);
+
+/* Display statistics on the current active device. */
+void print_fsys_type (void);
+
+/* Display device and filename completions. */
+void print_completions (char *filename);
+
+/* Copies the current partition data to the desired address. */
+void copy_current_part_entry (char *buf);
+
+void bsd_boot (int type, int bootdev) __attribute__ ((noreturn));
+int load_image (void);
+int load_module (void);
+int load_initrd (void);
+
+void init_bios_info (void) __attribute__ ((noreturn));
 
 #endif /* ASM_FILE */

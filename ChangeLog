@@ -1,3 +1,37 @@
+1999-03-14  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/stage2.c (run_menu): Use A_REVERSE and A_NORMAL
+	constants instead of magic numbers.
+
+	* shared_src/shared.h (A_REVERSE): Renamed from ATTR_INVERSE for
+	compatibility with curses.
+	(A_NORMAL): Renamed from ATTR_NORMAL.
+
+	* shared_src/cmdline.c (enter_cmdline): Change prompt to "grub> ".
+	(enter_cmdline): Only abort the boot if we are in a script.
+
+	* shared_src/stage2.c (run_menu): Change prompts to "grub edit> ".
+
+	* shared_src/char_io.c (memcheck): Use RAW_ADDR to compute memory
+	locations.
+	(get_cmdline): Change the `goto next line' code to account for
+	newlines deleting to end of line under curses.
+
+	* Innumerable cleanups to fix warnings.  There are still too many
+	typecasts in the wrong places (int variables used to hold
+	pointers, then casted to a pointer type), but things look better.
+
+	* configure.in (CPPFLAGS): Bump up GCC warnings to -Wall
+	-Wmissing-prototypes -Wunused.
+
+	* shared_src/shared.h: Delete stupid declarations, and totally
+	rearrange for clarity.
+	(inb, outb): Move to cmdline.c, since it's only used there.
+	(print_possibilities, fsmax, fsys_table): Move definitions to
+	disk_io.c.
+
+	* grub/asmstub.c: Fill in more stubs.
+
 1999-03-13  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/gunzip.c (border): Rename to bitorder, to resolve

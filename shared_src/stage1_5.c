@@ -29,7 +29,7 @@ cmain (void)
    *  Here load the true second-stage boot-loader.
    */
 
-  if (open (config_file) && read (0x8000, -1))
+  if (grub_open (config_file) && grub_read ((char *) 0x8000, -1))
     chain_stage2 (0, 0x8000);
 
   /*

@@ -1,6 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,7 +33,6 @@
 /* You can do whatever you like with this source file, though I would
    prefer that if you modify it and redistribute it that you include
    comments to that effect with your name and the date.  Thank you.
-   [The history has been moved to the file ChangeLog.]
  */
 
 /*
@@ -216,7 +216,7 @@ bad_field (int len)
 	    break;
 	}
     }
-  while ((not_retval = read ((int) &ch, 1)) == 1);
+  while ((not_retval = grub_read (&ch, 1)) == 1);
 
   return (!not_retval);
 }
@@ -276,7 +276,7 @@ gunzip_test_header (void)
    *  (other than a real error with the disk) then we don't think it
    *  is a compressed file, and simply mark it as such.
    */
-  if (no_decompression || read ((int) buf, 10) != 10
+  if (no_decompression || grub_read (buf, 10) != 10
       || ((*((unsigned short *) buf) != GZIP_HDR_LE)
 	  & (*((unsigned short *) buf) != OLD_GZIP_HDR_LE)))
     {
@@ -291,11 +291,12 @@ gunzip_test_header (void)
    */
   if (buf[2] != DEFLATED || (buf[3] & UNSUPP_FLAGS)
       || ((buf[3] & EXTRA_FIELD)
-	  && (read ((int) buf, 2) != 2 || bad_field (*((unsigned short *) buf))))
+	  && (grub_read (buf, 2) != 2 ||
+	      bad_field (*((unsigned short *) buf))))
       || ((buf[3] & ORIG_NAME) && bad_field (-1))
       || ((buf[3] & COMMENT) && bad_field (-1))
       || ((gzip_data_offset = filepos), (filepos = filemax - 8),
-	  (read ((int) buf, 8) != 8)))
+	  (grub_read (buf, 8) != 8)))
     {
       if (!errnum)
 	errnum = ERR_BAD_GZIP_HEADER;
@@ -481,7 +482,7 @@ get_byte (void)
   if (filepos == gzip_data_offset || bufloc == INBUFSIZ)
     {
       bufloc = 0;
-      read ((int) inbuf, INBUFSIZ);
+      grub_read (inbuf, INBUFSIZ);
     }
 
   return inbuf[bufloc++];
@@ -1166,9 +1167,8 @@ initialize_tables (void)
 
 
 int
-gunzip_read (int addr, int len)
+gunzip_read (char *buf, int len)
 {
-  int size;			/* last block flag */
   int ret = 0;
 
   compressed_file = 0;
@@ -1200,9 +1200,9 @@ gunzip_read (int addr, int len)
       if (size > len)
 	size = len;
 
-      bcopy (srcaddr, (char *) addr, size);
+      bcopy (srcaddr, buf, size);
 
-      addr += size;
+      buf += size;
       len -= size;
       gzip_filepos += size;
       ret += size;

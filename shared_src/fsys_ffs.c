@@ -82,7 +82,7 @@ ffs_mount (void)
   if ((((current_drive & 0x80) || (current_slice != 0))
        && current_slice != (PC_SLICE_TYPE_BSD | (FS_BSDFFS << 8)))
       || part_length < (SBLOCK + (SBSIZE / DEV_BSIZE))
-      || !devread (SBLOCK, 0, SBSIZE, (int) SUPERBLOCK)
+      || !devread (SBLOCK, 0, SBSIZE, (char *) SUPERBLOCK)
       || SUPERBLOCK->fs_magic != FS_MAGIC)
     retval = 0;
 
@@ -101,7 +101,7 @@ block_map (int file_block)
 
   if ((bnum = fsbtodb (SUPERBLOCK, INODE->i_ib[0])) != mapblock)
     {
-      if (!devread (bnum, 0, SUPERBLOCK->fs_bsize, MAPBUF))
+      if (!devread (bnum, 0, SUPERBLOCK->fs_bsize, (char *)MAPBUF))
 	{
 	  mapblock = -1;
 	  errnum = ERR_FSYS_CORRUPT;
@@ -116,7 +116,7 @@ block_map (int file_block)
 
 
 int
-ffs_read (int addr, int len)
+ffs_read (char *buf, int len)
 {
   int logno, off, size, map, ret = 0;
 
@@ -138,13 +138,13 @@ ffs_read (int addr, int len)
       debug_fs_func = debug_fs;
 #endif /* STAGE1_5 */
 
-      devread (fsbtodb (SUPERBLOCK, map), off, size, addr);
+      devread (fsbtodb (SUPERBLOCK, map), off, size, buf);
 
 #ifndef STAGE1_5
       debug_fs_func = NULL;
 #endif /* STAGE1_5 */
 
-      addr += size;
+      buf += size;
       len -= size;
       filepos += size;
       ret += size;
@@ -170,7 +170,7 @@ loop:
   /* load current inode (defaults to the root inode) */
 
   if (!devread (fsbtodb (SUPERBLOCK, itod (SUPERBLOCK, ino)),
-		0, SUPERBLOCK->fs_bsize, FSYS_BUF))
+		0, SUPERBLOCK->fs_bsize, (char *) FSYS_BUF))
     return 0;			/* XXX what return value? */
 
   bcopy ((void *) &(((struct dinode *) FSYS_BUF)[ino % (SUPERBLOCK->fs_inopb)]),
@@ -232,7 +232,8 @@ loop:
 
 	  if ((map = block_map (block)) < 0
 	      || !devread (fsbtodb (SUPERBLOCK, map), 0,
-			   blksize (SUPERBLOCK, INODE, block), FSYS_BUF))
+			   blksize (SUPERBLOCK, INODE, block),
+			   (char *) FSYS_BUF))
 	    {
 	      errnum = ERR_FSYS_CORRUPT;
 	      *rest = ch;

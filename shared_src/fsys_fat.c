@@ -43,7 +43,7 @@ fat_mount (void)
        && (current_slice != PC_SLICE_TYPE_FAT16_LT32M)
        && (current_slice != PC_SLICE_TYPE_FAT16_GT32M)
        && (current_slice != (PC_SLICE_TYPE_BSD | (FS_MSDOS << 8))))
-      || !devread (0, 0, SECTOR_SIZE, BPB)
+      || !devread (0, 0, SECTOR_SIZE, (char *) BPB)
       || FAT_BPB_BYTES_PER_SECTOR (BPB) != SECTOR_SIZE
       || FAT_BPB_SECT_PER_CLUST (BPB) < 1 || FAT_BPB_SECT_PER_CLUST (BPB) > 64
       || (FAT_BPB_SECT_PER_CLUST (BPB) & (FAT_BPB_SECT_PER_CLUST (BPB) - 1))
@@ -112,7 +112,7 @@ fat_create_blocklist (int first_fat_entry)
 		  mapblock = ((new_mapblock < 6) ? 0 :
 			      ((new_mapblock - 6) & ~0x1FF));
 		  if (!devread ((mapblock >> 9) + FAT_BPB_FAT_START (BPB),
-				0, SECTOR_SIZE * 4, FAT_BUF))
+				0, SECTOR_SIZE * 4, (char *) FAT_BUF))
 		    return 0;
 		}
 
@@ -196,7 +196,7 @@ loop:
 
   do
     {
-      if (read ((int) dir_buf, FAT_DIRENTRY_LENGTH) != FAT_DIRENTRY_LENGTH)
+      if (grub_read (dir_buf, FAT_DIRENTRY_LENGTH) != FAT_DIRENTRY_LENGTH)
 	{
 	  if (!errnum)
 	    {

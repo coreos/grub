@@ -1,7 +1,8 @@
-
+/* char_io.c - basic console input and output */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,8 +19,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
-#define _CHAR_IO_C
 
 #include "shared.h"
 
@@ -88,7 +87,7 @@ printf (char *format,...)
 
   dataptr++;
 
-  while (c = *(format++))
+  while ((c = *(format++)) != 0)
     {
       if (c != '%')
 	putchar (c);
@@ -113,7 +112,7 @@ printf (char *format,...)
 	  case 's':
 	    ptr = (char *) (*(dataptr++));
 
-	    while (c = *(ptr++))
+	    while ((c = *(ptr++)) != 0)
 	      putchar (c);
 	    break;
 	  }
@@ -133,13 +132,12 @@ init_page (void)
 }
 
 
-/* don't use this with a maxlen greater than 1600 or so!  the problem
-   is that it depends on the whole thing fitting on the screen at once,
-   and the whole screen is about 2000 characters, minus the prompt...
-   so want to leave space for an error line, etc.
-   maxlen should be at least 1, and we shouldn't have a NULL prompt or
-   cmdline...  the cmdline must be a valid string at the start */
-
+/* Don't use this with a MAXLEN greater than 1600 or so!  The problem
+   is that GET_CMDLINE depends on the everything fitting on the screen
+   at once.  So, the whole screen is about 2000 characters, minus the
+   PROMPT, and space for error and status lines, etc.  MAXLEN must be
+   at least 1, and PROMPT and CMDLINE must be valid strings (not NULL
+   or zero-length). */
 int
 get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 {
@@ -147,8 +145,8 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
   int plen = 0;
   int llen = 0;
 
-  /* nested function definition for code simplicity XXX GCC only, I think */
-  void cl_print (char *str)
+  /* nested function definition for code simplicity */
+  static void cl_print (char *str)
   {
     while (*str != 0)
       {
@@ -157,15 +155,15 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	  {
 	    xend = 0;
 	    putchar (' ');
-	    if (yend == (getxy () & 0xFF))
+	    if (yend == (getxy () & 0xff))
 	      ystart--;
 	    else
 	      yend++;
 	  }
       }
   }
-  /* nested function definition for code simplicity XXX GCC only, I think */
-  void cl_setcpos (void)
+  /* nested function definition for code simplicity */
+  static void cl_setcpos (void)
   {
     yend = ((lpos + plen) / 79) + ystart;
     xend = ((lpos + plen) % 79);
@@ -173,13 +171,13 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
   }
 
   /* nested function definition for initial command-line printing */
-  void cl_init ()
+  static void cl_init ()
   {
     /* distinguish us from other lines and error messages! */
     putchar ('\n');
 
     /* print full line and set position here */
-    ystart = (getxy () & 0xFF);
+    ystart = (getxy () & 0xff);
     yend = ystart;
     xend = 0;
     cl_print (prompt);
@@ -188,10 +186,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
   }
 
   /* nested function definition for erasing to the end of the line */
-  void cl_kill_to_end ()
+  static void cl_kill_to_end ()
   {
     int i;
-      cmdline[lpos] = 0;
+    cmdline[lpos] = 0;
     for (i = lpos; i <= llen; i++)
       {
 	if (i && ((i + plen) % 79) == 0)
@@ -206,14 +204,13 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
     plen++;
   while (cmdline[llen])
     llen++;
-  /* XXX limiting maxlen to 1600 */
-  if (maxlen > 1600)
+  if (maxlen > MAX_CMDLINE)
     {
-      maxlen = 1600;
-      if (llen > 1599)
+      maxlen = MAX_CMDLINE;
+      if (llen >= MAX_CMDLINE)
 	{
-	  llen = 1599;
-	  cmdline[1600] = 0;
+	  llen = MAX_CMDLINE - 1;
+	  cmdline[MAX_CMDLINE] = 0;
 	}
     }
   lpos = llen;
@@ -237,6 +234,8 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	  c = 5;
 	  break;
 	case KEY_DC:
+	  c = 4;
+	case KEY_BACKSPACE:
 	  c = 8;
 	default:
 	}
@@ -261,8 +260,8 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 
 	    /* goto part after line here */
 	    yend = ((llen + plen) / 79) + ystart;
-	    gotoxy (0, yend);
 	    putchar ('\n');
+	    gotoxy (0, getxy () & 0xff);
 
 	    if (lpos > j)
 	      {
@@ -382,8 +381,8 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 
   /* goto part after line here */
   yend = ((llen + plen) / 79) + ystart;
-  gotoxy (0, yend);
   putchar ('\n');
+  gotoxy (0, getxy () & 0xff);
 
   /* remove leading spaces */
   /* use c and lpos as indexes now */
@@ -563,10 +562,12 @@ strstr (char *s1, char *s2)
 int
 memcheck (int start, int len)
 {
-  if ((start < 0x1000) || (start < 0x100000
-			   && (mbi.mem_lower * 1024) < (start + len))
-      || (start >= 0x100000
-	  && (mbi.mem_upper * 1024) < ((start - 0x100000) + len)))
+  /* FIXME: fails when used with addresses on our stack. */
+  if ((start < RAW_ADDR (0x1000)) ||
+      (start < RAW_ADDR (0x100000) &&
+       RAW_ADDR (mbi.mem_lower * 1024) < (start + len)) ||
+      (start >= RAW_ADDR (0x100000) &&
+       RAW_ADDR (mbi.mem_upper * 1024) < ((start - 0x100000) + len)))
     errnum = ERR_WONT_FIT;
 
   return (!errnum);

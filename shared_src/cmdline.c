@@ -1,6 +1,8 @@
+/* cmdline.c - the device-independent GRUB text command line */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,8 +19,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#define _CMDLINE_C
-
 #include "shared.h"
 
 #ifdef DEBUG
@@ -33,6 +33,22 @@
 #define CMOS_READ_BYTE(x)	cmos_read_byte(x)
 #define PHYS_TO_VIRTUAL(x)	(x)
 #define VIRTUAL_TO_PHYS(x)	(x)
+
+static inline unsigned char
+inb (unsigned short port)
+{
+  unsigned char data;
+
+  __asm __volatile ("inb %1,%0":"=a" (data):"d" (port));
+  return data;
+}
+
+static inline void
+outb (unsigned short port, unsigned char val)
+{
+  __asm __volatile ("outb %0,%1"::"a" (val), "d" (port));
+}
+
 
 __inline__ static void
 cmos_write_byte(int loc, int val)
@@ -139,12 +155,9 @@ debug_fs_blocklist_func(int sector)
 
 
 int
-enter_cmdline(char *script, char *heap)
+enter_cmdline (char *script, char *heap)
 {
   int bootdev, cmd_len, type = 0, run_cmdline = 1, have_run_cmdline = 0;
-#ifdef DEBUG
-  int mptest = 0;
-#endif /* DEBUG */
   char *cur_heap = heap, *cur_entry = script, *old_entry;
 
   /* initialization */
@@ -178,7 +191,7 @@ restart:
 	  if (password || errnum == ERR_BOOT_COMMAND)
 	    {
 	      printf("Press any key to continue...");
-	      getc();
+	      (void) getc ();
 returnit:
 	      return 0;
 	    }
@@ -211,7 +224,7 @@ returnit:
       print_error();
     }
 
-  if (run_cmdline && get_cmdline("command> ", commands, cur_heap, 2048))
+  if (run_cmdline && get_cmdline(PACKAGE "> ", commands, cur_heap, 2048))
     return 1;
 
   if (substring("boot", cur_heap) == 0 || (script && !*cur_heap))
@@ -247,9 +260,9 @@ returnit:
 
   if (substring("chainloader", cur_heap) < 1)
     {
-      if (open(cur_cmdline) && (read(BOOTSEC_LOCATION, SECTOR_SIZE)
-				== SECTOR_SIZE)
-	  && (*((unsigned short *) (BOOTSEC_LOCATION+BOOTSEC_SIG_OFFSET))
+      if (grub_open (cur_cmdline) &&
+	  (grub_read ((char *) BOOTSEC_LOCATION, SECTOR_SIZE) == SECTOR_SIZE) &&
+	  (*((unsigned short *) (BOOTSEC_LOCATION+BOOTSEC_SIG_OFFSET))
 	      == BOOTSEC_SIGNATURE))
 	type = 'c';
       else if (!errnum)
@@ -301,7 +314,7 @@ returnit:
       bcopy(cur_heap, heap, cmd_len + (((int)cur_cmdline) - ((int)cur_heap)));
       cur_cmdline = heap + (((int)cur_cmdline) - ((int)cur_heap));
       cur_heap = heap;
-      if (type = load_image())
+      if ((type = load_image()) != 0)
 	cur_heap = cur_cmdline + cmd_len;
     }
   else if (substring("module", cur_heap) < 1)
@@ -324,7 +337,7 @@ returnit:
 	}
       else if (type == 'L' || type == 'l')
 	{
-	  load_initrd();
+	  load_initrd ();
 	}
       else
 	errnum = ERR_NEED_MB_KERNEL;
@@ -333,16 +346,16 @@ returnit:
     {
       if (type == 'L' || type == 'l')
 	{
-	  load_initrd();
+	  load_initrd ();
 	}
       else
 	errnum = ERR_NEED_LX_KERNEL;
     }
   else if (substring("install", cur_heap) < 1)
     {
-      char *stage1_file = cur_cmdline, *dest_dev, *file, *addr, *config_file;
+      char *stage1_file = cur_cmdline, *dest_dev, *file, *addr;
       char buffer[SECTOR_SIZE], old_sect[SECTOR_SIZE];
-      int i = BOOTSEC_LOCATION+STAGE1_FIRSTLIST-4, new_drive = 0xFF;
+      int new_drive = 0xFF;
 
       dest_dev = skip_to(0, stage1_file);
       if (*dest_dev == 'd')
@@ -350,13 +363,14 @@ returnit:
 	  new_drive = 0;
 	  dest_dev = skip_to(0, dest_dev);
 	}
-      file = skip_to(0, dest_dev);
-      addr = skip_to(0, file);
+      file = skip_to (0, dest_dev);
+      addr = skip_to (0, file);
 
-      if (safe_parse_maxint(&addr, &installaddr) && open(stage1_file)
-	  && read((int)buffer, SECTOR_SIZE) == SECTOR_SIZE
-	  && set_device(dest_dev) && open_partition()
-	  && devread(0, 0, SECTOR_SIZE, (int)old_sect))
+      if (safe_parse_maxint (&addr, &installaddr) &&
+	  grub_open (stage1_file) &&
+	  grub_read (buffer, SECTOR_SIZE) == SECTOR_SIZE &&
+	  set_device (dest_dev) && open_partition () &&
+	  devread (0, 0, SECTOR_SIZE, old_sect))
 	{
 	  int dest_drive = current_drive, dest_geom = buf_geom;
 	  int dest_sector = part_start, i;
@@ -383,7 +397,7 @@ returnit:
 	    {
 	      errnum = ERR_BAD_VERSION;
 	    }
-	  else if (open(file))
+	  else if (grub_open (file))
 	    {
 	      if (!new_drive)
 		new_drive = current_drive;
@@ -415,7 +429,8 @@ returnit:
 	      installlist = BOOTSEC_LOCATION+STAGE1_FIRSTLIST+4;
 	      debug_fs = debug_fs_blocklist_func;
 
-	      if (!errnum && read(SCRATCHADDR, SECTOR_SIZE) == SECTOR_SIZE)
+	      if (!errnum &&
+		  grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) == SECTOR_SIZE)
 		{
 		  if (*((long *)SCRATCHADDR) != 0x8070ea
 		      || (*((short *)(SCRATCHADDR+STAGE2_VER_MAJ_OFFS))
@@ -442,10 +457,10 @@ returnit:
 
 			  write_stage2_sect++;
 			  while (*(str++));      /* find string */
-			  while (*(str++) = *(ptr++));    /* do copy */
+			  while ((*(str++) = *(ptr++)) != 0);    /* do copy */
 			}
 
-		      read(0x100000, -1);
+		      grub_read ((char *) 0x100000, -1);
 
 		      buf_track = -1;
 
@@ -468,14 +483,19 @@ returnit:
 	  no_decompression = 0;
 #endif
 	}
-      fallback = -1;
-      return 1;
+
+      /* Error running the install script, so drop to command line. */
+      if (script)
+	{
+	  fallback = -1;
+	  return 1;
+	}
     }
 #ifdef DEBUG
   else if (substring("testload", cur_heap) < 1)
     {
       type = 0;
-      if (open(cur_cmdline))
+      if (grub_open (cur_cmdline))
 	{
 	  int i;
 
@@ -488,7 +508,7 @@ returnit:
 	  /* read whole file first */
 	  printf("Whole file: ");
 
-	  read(0x100000, -1);
+	  grub_read ((char *) 0x100000, -1);
 
 	  /* now compare two sections of the file read differently */
 
@@ -502,23 +522,23 @@ returnit:
 	  printf("\nPartial read 1: ");
 
 	  filepos = 0;
-	  read(0x200000, 0x7);
-	  read(0x200007, 0x100);
-	  read(0x200107, 0x10);
-	  read(0x200117, 0x999);
-	  read(0x200ab0, 0x10);
-	  read(0x200ac0, 0x10000);
+	  grub_read ((char *) 0x200000, 0x7);
+	  grub_read ((char *) 0x200007, 0x100);
+	  grub_read ((char *) 0x200107, 0x10);
+	  grub_read ((char *) 0x200117, 0x999);
+	  grub_read ((char *) 0x200ab0, 0x10);
+	  grub_read ((char *) 0x200ac0, 0x10000);
 
 	  /* second partial read */
 	  printf("\nPartial read 2: ");
 
 	  filepos = 0;
-	  read(0x300000, 0x10000);
-	  read(0x310000, 0x10);
-	  read(0x310010, 0x7);
-	  read(0x310017, 0x10);
-	  read(0x310027, 0x999);
-	  read(0x3109c0, 0x100);
+	  grub_read ((char *) 0x300000, 0x10000);
+	  grub_read ((char *) 0x310000, 0x10);
+	  grub_read ((char *) 0x310010, 0x7);
+	  grub_read ((char *) 0x310017, 0x10);
+	  grub_read ((char *) 0x310027, 0x999);
+	  grub_read ((char *) 0x3109c0, 0x100);
 
 	  printf("\nHeader1 = 0x%x, next = 0x%x, next = 0x%x, next = 0x%x\n",
 		 *((int *)0x200000), *((int *)0x200004), *((int *)0x200008),
@@ -564,7 +584,8 @@ returnit:
     {
       if (get_eisamemsize() != -1)
 	printf(" EISA Memory BIOS Interface is present\n");
-      if (get_mem_map(SCRATCHADDR, 0) != 0 || *((int *) SCRATCHADDR) != 0)
+      if (get_mmap_entry ((void *) SCRATCHADDR, 0) != 0 ||
+	  *((int *) SCRATCHADDR) != 0)
 	printf(" Address Map BIOS Interface is present\n");
 
       printf(" Lower memory: %uK, Upper memory (to first chipset hole): %uK\n",

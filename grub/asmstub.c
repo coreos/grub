@@ -18,6 +18,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* Simulator entry point. */
+int grub_stage2 (void);
+
 #include "shared.h"
 /* We want to prevent any circularararity in our stubs, as well as
    libc name clashes. */
@@ -45,15 +48,37 @@ unsigned long install_partition = 0x20000;
 unsigned long boot_drive = 0;
 char version_string[] = "0.5";
 char config_file[] = "/boot/grub/menu.lst";
+
+/* Emulation requirements. */
 char *grub_scratch_mem = 0;
 
+#define NUM_DISKS 256
+static FILE **disks = 0;
+
 /* The main entry point into this mess. */
-void
-start_stage2 (void)
+int
+grub_stage2 (void)
 {
-  grub_scratch_mem = memalign (16, EXTENDED_MEMSIZE);
+  /* These need to be static, because they survive our stack transitions. */
+  static int status = 0;
+  static char *realstack;
+  int i;
+  char *scratch, *simstack;
+
+  assert (grub_scratch_mem == 0);
+  scratch = malloc (0x100000 + EXTENDED_MEMSIZE + 15);
+  assert (scratch);
+  grub_scratch_mem = (char *) ((((int) scratch) >> 4) << 4);
+
+  /* FIXME: simulate the memory holes using mprot, if available. */
+
+  assert (disks == 0);
+  disks = malloc (NUM_DISKS * sizeof (*disks));
+  assert (disks);
 
   /* Check some invariants. */
+  assert ((SCRATCHSEG << 4) == SCRATCHADDR);
+  assert ((BUFFERSEG << 4) == BUFFERADDR);
   assert (BUFFERADDR + BUFFERLEN == SCRATCHADDR);
   assert (FSYS_BUF % 16 == 0);
   assert (FSYS_BUF + FSYS_BUFLEN == BUFFERADDR);
@@ -63,16 +88,65 @@ start_stage2 (void)
   initscr ();
   cbreak ();
   noecho ();
+  nonl ();
   scrollok (stdscr, TRUE);
+  keypad (stdscr, TRUE);
 #endif
 
-  init_bios_info ();
+  /* Make sure our stack lives in the simulated memory area. */
+  simstack = (char *) RAW_ADDR (PROTSTACKINIT);
+#ifdef SIMULATE_STACK
+  __asm __volatile ("movl %%esp, %0;" : "=d" (realstack));
+  __asm __volatile ("movl %0, %%esp" :: "d" (simstack));
+#endif
+
+  {
+    /* FIXME: Do a setjmp here for the stop command. */
+    if (1)
+      {
+	/* Actually enter the generic stage2 code. */
+	status = 0;
+	init_bios_info ();
+      }
+    else
+      {
+	/* Somebody aborted. */
+	status = 1;
+      }
+  }
+
+#ifdef SIMULATE_STACK
+  /* Replace our stack before we use any local variables. */
+  __asm __volatile ("movl %0, %%esp" :: "d" (realstack));
+#endif
+
+#ifdef HAVE_LIBCURSES
+  endwin ();
+#endif
+
+  /* Close off the file pointers we used. */
+  for (i = 0; i < NUM_DISKS; i ++)
+    if (disks[i])
+      fclose (disks[i]);
+
+  /* Release memory. */
+  free (disks);
+  disks = 0;
+  free (scratch);
+  grub_scratch_mem = 0;
+
+  /* Ahh... at last we're ready to return to caller. */
+  return status;
 }
 
 
 void
 stop (void)
 {
+#ifdef HAVE_LIBCURSES
+  endwin ();
+#endif
+  /* FIXME: If we don't exit, then we need to free our data areas. */
   fprintf (stderr, "grub: aborting...\n");
   exit (1);
 }
@@ -124,11 +198,11 @@ gateA20 (int linear)
 }
 
 
-void *
+int
 get_code_end (void)
 {
   /* Just return a little area for simulation. */
-  return malloc (1024);
+  return BOOTSEC_LOCATION + (60 * 1024);
 }
 
 
@@ -159,21 +233,12 @@ get_eisamemsize (void)
 #define MMAR_DESC_TYPE_ACPI_RECLAIM 3 /* usable by OS after reading ACPI */
 #define MMAR_DESC_TYPE_ACPI_NVS 4 /* required to save between NVS sessions */
 
-/* Memory map address range descriptor. */
-struct mmar_desc
-{
-  unsigned long desc_len;	/* Size of this descriptor. */
-  unsigned long long addr;	/* Base address. */
-  unsigned long long length;	/* Length in bytes. */
-  unsigned long type;		/* Type of address range. */
-};
-
 /* Fetch the next entry in the memory map and return the continuation
    value.  DESC is a pointer to the descriptor buffer, and CONT is the
    previous continuation value (0 to get the first entry in the
    map). */
 int
-get_mem_map (struct mmar_desc *desc, int cont)
+get_mmap_entry (struct mmar_desc *desc, int cont)
 {
   if (! cont)
     {
@@ -204,6 +269,9 @@ getrtsecs (void)
 void
 cls (void)
 {
+#ifdef HAVE_LIBCURSES
+  clear ();
+#endif
 }
 
 
@@ -211,12 +279,22 @@ cls (void)
 int
 getxy (void)
 {
+  int y, x;
+#ifdef HAVE_LIBCURSES
+  getyx (stdscr, y, x);
+#else
+  y = x = 0;
+#endif
+  return (x << 8) | (y & 0xff);
 }
 
 
 void
 gotoxy (int x, int y)
 {
+#ifdef HAVE_LIBCURSES
+  move (y, x);
+#endif
 }
 
 
@@ -225,7 +303,11 @@ gotoxy (int x, int y)
 void
 grub_putchar (int c)
 {
+#ifdef HAVE_LIBCURSES
   addch (c);
+#else
+  putchar (c);
+#endif
 }
 
 
@@ -233,11 +315,15 @@ grub_putchar (int c)
 int
 getkey (void)
 {
+#ifdef HAVE_LIBCURSES
   int c;
   nodelay (stdscr, FALSE);
   c = getch ();
   nodelay (stdscr, TRUE);
   return c;
+#else
+  return getchar ();
+#endif
 }
 
 
@@ -245,7 +331,11 @@ getkey (void)
 int
 checkkey (void)
 {
-  getch ();
+#ifdef HAVE_LIBCURSES
+  return getch ();
+#else
+  return getchar ();
+#endif
 }
 
 
@@ -253,24 +343,71 @@ checkkey (void)
 void
 set_attrib (int attr)
 {
+#ifdef HAVE_LIBCURSES
+  chgat (1, attr, 0, NULL);
+#endif
 }
 
 
-/* low-level disk I/O */
+/* Low-level disk I/O.  Our stubbed version just returns a file
+   descriptor, not the actual geometry. */
 int
 get_diskinfo (int drive)
 {
-}
+  /* The unpartitioned device name: /dev/XdX */
+  char devname[9];
 
+  /* See if we have a cached device. */
+  if (disks[drive])
+    return (int) disks[drive];
+
+  /* Try opening the drive device. */
+  strcpy (devname, "/dev/");
+  if (drive & 0x80)
+    devname[5] = 'h';
+  else
+    devname[5] = 'f';
+  devname[6] = 'd';
+
+  /* Check to make sure we don't exceed /dev/hdz. */
+  devname[7] = (drive & 0x7f) + 'a';
+  if (devname[7] > 'z')
+    return 0;
+  devname[8] = '\0';
+
+  /* Open read/write, or read-only if that failed. */
+  disks[drive] = fopen (devname, "r+");
+  if (! disks[drive])
+    disks[drive] = fopen (devname, "r");
+
+  return (int) disks[drive];
+}
 
 int
 biosdisk (int subfunc, int drive, int geometry,
 	  int sector, int nsec, int segment)
 {
+  char *buf;
+  FILE *fp;
+
+  /* Get the file pointer from the geometry, and make sure it matches. */
+  fp = (FILE *) geometry;
+  if (! fp || fp != disks[drive])
+    return BIOSDISK_ERROR_GEOMETRY;
+
+  /* Seek to the specified location. */
+  if (fseek (fp, sector * SECTOR_SIZE, SEEK_SET))
+    return -1;
+
+  buf = (char *) (segment << 4);
+  if (fread (buf, nsec * SECTOR_SIZE, 1, fp) != 1)
+    return -1;
+  return 0;
 }
 
 
 void
 stop_floppy (void)
 {
+  /* NOTUSED */
 }

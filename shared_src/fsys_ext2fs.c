@@ -238,7 +238,7 @@ struct ext2_dir_entry
  * ffz = Find First Zero in word. Undefined if no zero exists,
  * so code should check against ~0UL first..
  */
-__inline__ unsigned long
+static __inline__ unsigned long
 ffz (unsigned long word)
 {
   __asm__ ("bsfl %1,%0"
@@ -257,33 +257,31 @@ ext2fs_mount (void)
        && (current_slice != PC_SLICE_TYPE_EXT2FS)
        && (current_slice != (PC_SLICE_TYPE_BSD | (FS_OTHER << 8))))
       || part_length < (SBLOCK + (sizeof (struct ext2_super_block) / DEV_BSIZE))
-      || !devread (SBLOCK, 0, sizeof (struct ext2_super_block), (int) SUPERBLOCK)
+      || !devread (SBLOCK, 0, sizeof (struct ext2_super_block),
+		   (char *) SUPERBLOCK)
       || SUPERBLOCK->s_magic != EXT2_SUPER_MAGIC)
       retval = 0;
 
   return retval;
 }
 
-/* not part of the interface
-  takes a file system block number and reads it into area pointed
-  to by buffer */
-int
+/* Takes a file system block number and reads it into BUFFER. */
+static int
 ext2_rdfsb (int fsblock, int buffer)
 {
 #ifdef E2DEBUG
   printf ("fsblock %d buffer %d\n", fsblock, buffer);
 #endif /* E2DEBUG */
   return devread (fsblock * (EXT2_BLOCK_SIZE (SUPERBLOCK) / DEV_BSIZE), 0,
-		  EXT2_BLOCK_SIZE (SUPERBLOCK), (int) buffer);
+		  EXT2_BLOCK_SIZE (SUPERBLOCK), (char *) buffer);
 }
 
 /* from
   ext2/inode.c:ext2_bmap()
 */
-/* not part of interface
-   maps "logical block" (the file offset div blocksize) into
-   "physical blocks" (the location in the file system) via an inode */
-int
+/* Maps LOGICAL_BLOCK (the file offset divided by the blocksize) into
+   a physical block (the location in the file system) via an inode. */
+static int
 ext2fs_block_map (int logical_block)
 {
 
@@ -387,7 +385,7 @@ ext2fs_block_map (int logical_block)
 
 /* preconditions: all preconds of ext2fs_block_map */
 int
-ext2fs_read (int addr, int len)
+ext2fs_read (char *buf, int len)
 {
   int logical_block;
   int offset;
@@ -436,13 +434,13 @@ ext2fs_read (int addr, int len)
 #endif /* STAGE1_5 */
 
       devread (map * (EXT2_BLOCK_SIZE (SUPERBLOCK) / DEV_BSIZE),
-	       offset, size, addr);
+	       offset, size, buf);
 
 #ifndef STAGE1_5
       debug_fs_func = NULL;
 #endif /* STAGE1_5 */
 
-      addr += size;
+      buf += size;
       len -= size;
       filepos += size;
       ret += size;
@@ -592,7 +590,7 @@ ext2fs_dir (char *dirname)
       /* If we've got a symbolic link, then chase it. */
       if (S_ISLNK (INODE->i_mode))
 	{
-	  int len, remaining;
+	  int len;
 	  if (++link_count > MAX_LINK_COUNT)
 	    {
 	      errnum = ERR_SYMLINK_LOOP;
@@ -624,7 +622,7 @@ ext2fs_dir (char *dirname)
 	  if (INODE->i_blocks)
 	    {
 	      /* Read the necessary blocks, and reset the file pointer. */
-	      len = read ((int) linkbuf, filemax);
+	      len = grub_read (linkbuf, filemax);
 	      filepos = 0;
 	      if (!len)
 		return 0;

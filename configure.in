@@ -49,6 +49,11 @@ AC_SUBST(stage2debug)
 #
 
 AC_CHECK_TOOL(CC, gcc)
+AC_PROG_CC
+
+# Enforce coding standards.
+CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
+
 AC_CHECK_TOOL(LD, ld)
 AC_CHECK_TOOL(OBJCOPY, objcopy)
 

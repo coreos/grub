@@ -1,6 +1,8 @@
+/* boot.c - load and bootstrap a kernel */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,8 +19,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
-#define _BOOT_C
 
 #include "shared.h"
 
@@ -41,9 +41,9 @@ static struct mod_list mll[99];
 int
 load_image (void)
 {
-  int len, i, exec_type, align_4k = 1, type = 0;
-  unsigned long flags = 0, text_len, data_len, bss_len;
-  char *str, *str2;
+  int len, i, exec_type = 0, align_4k = 1, type = 0;
+  unsigned long flags = 0, text_len = 0, data_len = 0, bss_len = 0;
+  char *str = 0, *str2 = 0;
   union
     {
       struct multiboot_header *mb;
@@ -59,10 +59,10 @@ load_image (void)
      buffer by default */
   pu.aout = (struct exec *) buffer;
 
-  if (!open (cur_cmdline))
+  if (!grub_open (cur_cmdline))
     return 0;
 
-  if (!(len = read ((int) buffer, MULTIBOOT_SEARCH)) || len < 32)
+  if (!(len = grub_read (buffer, MULTIBOOT_SEARCH)) || len < 32)
     {
       if (!errnum)
 	errnum = ERR_EXEC_FORMAT;
@@ -101,8 +101,6 @@ load_image (void)
 	  || ((pu.elf->e_phoff + (pu.elf->e_phentsize * pu.elf->e_phnum))
 	      >= len))
 	errnum = ERR_EXEC_FORMAT;
-
-      exec_type = 0;
       str = "elf";
     }
   else if (flags & MULTIBOOT_AOUT_KLUDGE)
@@ -228,7 +226,7 @@ load_image (void)
 	  filepos = data_len + SECTOR_SIZE;
 
 	  cur_addr = LINUX_STAGING_AREA + text_len;
-	  if (read (LINUX_STAGING_AREA, text_len) >= (text_len - 16))
+	  if (grub_read ((char *) LINUX_STAGING_AREA, text_len) >= (text_len - 16))
 	    return (big_linux ? 'L' : 'l');
 	  else if (!errnum)
 	    errnum = ERR_EXEC_FORMAT;
@@ -266,7 +264,7 @@ load_image (void)
       printf (", loadaddr=0x%x, text%s=0x%x", cur_addr, str, text_len);
 
       /* read text, then read data */
-      if (read (cur_addr, text_len) == text_len)
+      if (grub_read ((char *) cur_addr, text_len) == text_len)
 	{
 	  cur_addr += text_len;
 
@@ -280,7 +278,8 @@ load_image (void)
 
 	      printf (", data=0x%x", data_len);
 
-	      if (read (cur_addr, data_len) != data_len && !errnum)
+	      if (grub_read ((char *) cur_addr, data_len) != data_len &&
+		  !errnum)
 		errnum = ERR_EXEC_FORMAT;
 	      cur_addr += data_len;
 	    }
@@ -310,12 +309,12 @@ load_image (void)
 
 	  printf (", symtab=0x%x", pu.aout->a_syms);
 
-	  if (read (cur_addr, pu.aout->a_syms) == pu.aout->a_syms)
+	  if (grub_read ((char *) cur_addr, pu.aout->a_syms) == pu.aout->a_syms)
 	    {
 	      cur_addr += pu.aout->a_syms;
 	      mbi.syms.a.tabsize = pu.aout->a_syms;
 
-	      if (read ((int) (&i), sizeof (int)) == sizeof (int))
+	      if (grub_read ((char *) &i, sizeof (int)) == sizeof (int))
 		{
 		  *(((int *) cur_addr)++) = i;
 
@@ -325,7 +324,7 @@ load_image (void)
 
 		  printf (", strtab=0x%x", i);
 
-		  symtab_err = (read (cur_addr, i) != i);
+		  symtab_err = (grub_read ((char *) cur_addr, i) != i);
 		  cur_addr += i;
 		}
 	      else
@@ -383,7 +382,7 @@ load_image (void)
 
 	      /* load the segment */
 	      if (memcheck (memaddr, memsiz)
-		  && read (memaddr, filesiz) == filesiz)
+		  && grub_read ((char *) memaddr, filesiz) == filesiz)
 		{
 		  if (memsiz > filesiz)
 		    bzero ((char *) (memaddr + filesiz), memsiz - filesiz);
@@ -399,7 +398,7 @@ load_image (void)
 	    errnum = ERR_EXEC_FORMAT;
 	  else
 	    {
-	      /* XXX load ELF symbols */
+	      /* FIXME: load ELF symbols */
 	    }
 	}
     }
@@ -423,7 +422,7 @@ load_module (void)
   /* if we are supposed to load on 4K boundaries */
   cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
 
-  if (!open (cur_cmdline) || !(len = read (cur_addr, -1)))
+  if (!grub_open (cur_cmdline) || !(len = grub_read ((char *) cur_addr, -1)))
     return 0;
 
   printf ("   [Multiboot-module @ 0x%x, 0x%x bytes]\n", cur_addr, len);
@@ -450,7 +449,7 @@ load_initrd (void)
   int len;
   long *ramdisk, moveto;
 
-  if (!open (cur_cmdline) || !(len = read (cur_addr, -1)))
+  if (!grub_open (cur_cmdline) || !(len = grub_read ((char *) cur_addr, -1)))
     return 0;
 
   moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;

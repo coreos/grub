@@ -227,8 +227,7 @@ get_checksum (unsigned start, int length)
 static int
 boot_cpu (imps_processor * proc)
 {
-  int apicid = proc->apic_id;
-  unsigned bootaddr, send_status, accept_status, cfg;
+  unsigned bootaddr, accept_status;
   unsigned bios_reset_vector = PHYS_TO_VIRTUAL (BIOS_RESET_VECTOR);
 
   /* %%%%% ESB */

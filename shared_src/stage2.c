@@ -19,7 +19,7 @@
 
 #include "../shared_src/shared.h"
 
-char *
+static char *
 get_entry(char *list, int num, int nested)
 {
   int i;
@@ -37,7 +37,7 @@ get_entry(char *list, int num, int nested)
 }
 
 
-void
+static void
 print_entries(int y, int size, int first, char *menu_entries)
 {
   int i;
@@ -84,7 +84,7 @@ print_entries(int y, int size, int first, char *menu_entries)
 }
 
 
-void
+static void
 print_border(int y, int size)
 {
   int i;
@@ -118,15 +118,15 @@ print_border(int y, int size)
   putchar(DISP_LR);
 }
 
-void
+static void
 set_line(int y, int attr)
 {
   int x;
 
   for (x = 2; x < 75; x++)
     {
-      gotoxy(x, y);
-      set_attrib(attr);
+      gotoxy (x, y);
+      set_attrib (attr);
     }
 }
 
@@ -134,7 +134,7 @@ set_line(int y, int attr)
 static int grub_timeout;
 
 
-void
+static void
 run_menu(char *menu_entries, char *config_entries, int num_entries,
 	 char *heap, int entryno)
 {
@@ -179,7 +179,7 @@ restart:
   print_entries(3, 12, first_entry, menu_entries);
 
   /* invert initial line */
-  set_line(4+entryno, 0x70);
+  set_line (4 + entryno, A_REVERSE);
 
   /* XX using RT clock now, need to initialize value */
   while ((time1 = getrtsecs()) == 0xFF);
@@ -222,15 +222,15 @@ restart:
 	    {
 	      if (entryno > 0)
 		{
-		  set_line(4+entryno, 0x7);
-		  entryno--;
-		  set_line(4+entryno, 0x70);
+		  set_line (4 + entryno, A_NORMAL);
+		  entryno --;
+		  set_line (4 + entryno, A_REVERSE);
 		}
 	      else if (first_entry > 0)
 		{
-		  first_entry--;
+		  first_entry --;
 		  print_entries(3, 12, first_entry, menu_entries);
-		  set_line(4, 0x70);
+		  set_line (4, A_REVERSE);
 		}
 	    }
 	  if (((c == KEY_DOWN) || (ASCII_CHAR(c) == 14))
@@ -238,15 +238,15 @@ restart:
 	    {
 	      if (entryno < 11)
 		{
-		  set_line(4+entryno, 0x7);
-		  entryno++;
-		  set_line(4+entryno, 0x70);
+		  set_line (4 + entryno, A_NORMAL);
+		  entryno ++;
+		  set_line (4 + entryno, A_REVERSE);
 		}
 	      else if (num_entries > 12+first_entry)
 		{
-		  first_entry++;
-		  print_entries(3, 12, first_entry, menu_entries);
-		  set_line(15, 0x70);
+		  first_entry ++;
+		  print_entries (3, 12, first_entry, menu_entries);
+		  set_line (15, A_REVERSE);
 		}
 	    }
 
@@ -261,7 +261,7 @@ restart:
 	    {
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
-		  set_line(4+entryno, 0x7);
+		  set_line (4 + entryno, A_NORMAL);
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
@@ -323,7 +323,7 @@ restart:
 			{
 			  char *new_file = config_file;
 			  while (isspace(*ptr)) ptr++;
-			  while (*(new_file++) = *(ptr++));
+			  while ((*(new_file++) = *(ptr++)) != 0);
 			  return;
 			}
 		      c = ASCII_CHAR(getkey());
@@ -350,14 +350,14 @@ restart:
 		  else
 		    {
 		      /* safe area! */
-		      new_heap = heap+1501;
+		      new_heap = heap + NEW_HEAPSIZE + 1;
 		      cur_entry = get_entry(menu_entries,
 					    first_entry+entryno, 0);
 		    }
 
 		  do
 		    {
-		      while (*(new_heap++) = cur_entry[i++]);
+		      while ((*(new_heap++) = cur_entry[i++]) != 0);
 		      num_entries++;
 		    }
 		  while (config_entries && cur_entry[i]);
@@ -373,13 +373,14 @@ restart:
 		      cls();
 		      init_cmdline();
 
-		      new_heap = heap+1501;
+		      new_heap = heap + NEW_HEAPSIZE + 1;
 
 		      saved_drive = boot_drive;
 		      saved_partition = install_partition;
 		      current_drive = 0xFF;
 
-		      if (!get_cmdline("editing> ", commands, new_heap, 1501))
+		      if (!get_cmdline(PACKAGE " edit> ", commands, new_heap,
+				       NEW_HEAPSIZE + 1))
 			{
 			  int j = 0;
 
@@ -408,7 +409,7 @@ restart:
 		}
 	      if (c == 'c')
 		{
-		  enter_cmdline(NULL, heap);
+		  enter_cmdline (NULL, heap);
 		  goto restart;
 		}
 	    }
@@ -432,7 +433,7 @@ restart:
       if (!cur_entry)
 	cur_entry = get_entry(config_entries, first_entry+entryno, 1);
 
-      if (!(c = enter_cmdline(cur_entry, heap)))
+      if (!(c = enter_cmdline (cur_entry, heap)))
 	{
 	  if (fallback < 0)
 	    break;
@@ -460,7 +461,7 @@ get_line_from_config(char *cmdline, int maxlen)
   int pos = 0, literal = 0, comment = 0;
   char c;  /* since we're loading it a byte at a time! */
 
-  while (read((int)&c, 1))
+  while (grub_read (&c, 1))
     {
       /* translate characters first! */
       if (c == '\\')
@@ -520,12 +521,12 @@ cmain(void)
        *  Here load the configuration file.
        */
 
-      if (open(config_file))
+      if (grub_open (config_file))
 	{
 	  int state = 0, prev_config_len = 0, prev_menu_len = 0;
 	  char cmdline[1502], *ptr;
 
-	  while (get_line_from_config(cmdline, 1500))
+	  while (get_line_from_config (cmdline, NEW_HEAPSIZE))
 	    {
 	      ptr = skip_to(1, cmdline);
 
@@ -547,7 +548,7 @@ cmain(void)
 		  state = 1;
 
 		  /* copy title into menu area */
-		  while (menu_entries[menu_len++] = *(ptr++));
+		  while ((menu_entries[menu_len++] = *(ptr++)) != 0);
 		}
 	      else if (!state)
 		{
@@ -559,9 +560,8 @@ cmain(void)
 		    safe_parse_maxint(&ptr, &default_entry);
 		  if (substring("password", cmdline) < 1)
 		    {
-		      char *ptrend = ptr;
 		      password = config_entries;
-		      while (*(config_entries++) = *(ptr++));
+		      while ((*(config_entries++) = *(ptr++)) != 0);
 		    }
 
 		  errnum = 0;
@@ -573,7 +573,7 @@ cmain(void)
 		  state++;
 
 		  /* copy config file data to config area */
-		  while (config_entries[config_len++] = cmdline[i++]);
+		  while ((config_entries[config_len++] = cmdline[i++]) != 0);
 		}
 	    }
 
@@ -601,7 +601,7 @@ cmain(void)
 
       if (!num_entries)
 	while (1)
-	  enter_cmdline(NULL, config_entries);
+	  enter_cmdline (NULL, config_entries);
 
       /*
        *  Run menu interface (this shouldn't return!).

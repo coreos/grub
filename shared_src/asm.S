@@ -854,7 +854,7 @@ xnoteisa:
 
 /*
  *
- * get_mem_map(addr, cont) :  address and old continuation value (zero to
+ * get_mmap_entry(addr, cont) :  address and old continuation value (zero to
  *		start), for the Query System Address Map BIOS call.
  *
  *  Sets the first 4-byte int value of "addr" to the size returned by
@@ -865,7 +865,7 @@ xnoteisa:
  * NOTE: Currently hard-coded for a maximum buffer length of 1024.
  */
 
-ENTRY(get_mem_map)
+ENTRY(get_mmap_entry)
 	push	%ebp
 	push	%ebx
 	push	%ecx

@@ -1,7 +1,8 @@
-
+/* filesys.h - abstract filesystem interface */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,7 +38,7 @@
 #ifdef FSYS_FFS
 #define FSYS_FFS_NUM 1
 int ffs_mount (void);
-int ffs_read (int addr, int len);
+int ffs_read (char *buf, int len);
 int ffs_dir (char *dirname);
 #else
 #define FSYS_FFS_NUM 0
@@ -58,7 +59,7 @@ int fat_dir (char *dirname);
 #ifdef FSYS_EXT2FS
 #define FSYS_EXT2FS_NUM 1
 int ext2fs_mount (void);
-int ext2fs_read (int addr, int len);
+int ext2fs_read (char *buf, int len);
 int ext2fs_dir (char *dirname);
 #else
 #define FSYS_EXT2FS_NUM 0
@@ -86,44 +87,15 @@ struct fsys_entry
   {
     char *name;
     int (*mount_func) (void);
-    int (*read_func) (int addr, int len);
+    int (*read_func) (char *buf, int len);
     int (*dir_func) (char *dirname);
   };
 
 #ifdef STAGE1_5
 # define print_possibilities 0
-#endif
-
-#ifndef _DISK_IO_C
-
-# ifndef STAGE1_5
+#else
 extern int print_possibilities;
-# endif
+#endif
 
 extern int fsmax;
 extern struct fsys_entry fsys_table[NUM_FSYS + 1];
-
-#else /* _DISK_IO_C */
-
-# ifndef STAGE1_5
-int print_possibilities;
-# endif
-
-int fsmax;
-struct fsys_entry fsys_table[NUM_FSYS + 1] =
-{
-# ifdef FSYS_FAT
-  {"fat", fat_mount, 0, fat_dir},
-# endif
-# ifdef FSYS_EXT2FS
-  {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir},
-# endif
-  /* XX FFS should come last as it's superblock is commonly crossing tracks
-     on floppies from track 1 to 2, while others only use 1.  */
-# ifdef FSYS_FFS
-  {"ffs", ffs_mount, ffs_read, ffs_dir},
-# endif
-  {0, 0, 0, 0}
-};
-
-#endif /* _DISK_IO_C */
