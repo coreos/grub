@@ -225,7 +225,7 @@ restart:
 		  set_line(4, 0x70);
 		}
 	    }
-	  if ((c == KEY_DOWN) || (ASCII_CHAR(c) == 14)
+	  if (((c == KEY_DOWN) || (ASCII_CHAR(c) == 14))
 	      && (first_entry+entryno+1) < num_entries)
 	    {
 	      if (entryno < 11)
