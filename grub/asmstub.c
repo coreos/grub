@@ -71,7 +71,9 @@ char *grub_scratch_mem = 0;
 
 #define NUM_DISKS 256
 static struct geometry *disks = 0;
-static char **device_map = 0;
+
+/* The map between BIOS drives and UNIX device file names.  */
+char **device_map = 0;
 
 /* The main entry point into this mess. */
 int

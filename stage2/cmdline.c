@@ -675,11 +675,15 @@ returnit:
 	  else
 	    {
 	      char *msg;
-	      
+
+#ifdef GRUB_UTIL
+	      msg = device_map[current_drive];
+#else
 	      if (geom.flags & BIOSDISK_FLAG_LBA_EXTENSION)
 		msg = "LBA";
 	      else
 		msg = "CHS";
+#endif
 	      
 	      grub_printf ("drive 0x%x: C/H/S = %d/%d/%d, "
 			   "The number of sectors = %d, %s\n",

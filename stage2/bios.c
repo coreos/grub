@@ -159,10 +159,11 @@ get_diskinfo (int drive, struct geometry *geometry)
 	  if (! err)
 	    {
 	      geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
-	      
-	      /* Check if CHS information is valid.  */
-	      if (drp.flags & 0x02)
-		total_sectors = drp.cylinders * drp.heads * drp.sectors;
+
+	      /* FIXME: when the 2TB limit becomes critical, we must
+		 change the type of TOTAL_SECTORS to unsigned long
+		 long.  */
+	      total_sectors = drp.total_sectors & ~0L;
 	    }
 	}
 

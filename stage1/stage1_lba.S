@@ -62,7 +62,6 @@
 	. = _start + 4
 
 	/* scratch space */
-drive_parameter:
 disk_address_packet:
 	/* Actually, must set these values at the runtime.  */
 	.byte	0x10
@@ -118,8 +117,8 @@ after_BPB:
 
 	/* get the geometry (limited to 2TB!) */
 	movb	$0x48, %ah
-	movw	$ABS(drive_parameter), %si
-	movw	$0x1a, (%si)
+	movw	$STAGE1_DRP_ADDR, %si
+	movw	$STAGE1_DRP_SIZE, (%si)
 	int	$0x13
 
 	jc	lba_probe_error
@@ -127,6 +126,9 @@ after_BPB:
 	/* save the total number of sectors */
 	movl	0x10(%si), %ecx
 
+	/* set %si to disk address packet */
+	movw	$ABS(disk_address_packet), %si
+	
 	/* this sets up for the first run through "bootloop" */
 	movw	$ABS(firstlist - STAGE1_LISTSIZE), %di
 

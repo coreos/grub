@@ -312,6 +312,8 @@ extern int use_curses;
 extern int verbose;
 /* The flag for read-only.  */
 extern int read_only;
+/* The map between BIOS drives and UNIX device file names.  */
+extern char **device_map;
 #endif
 
 #ifndef STAGE1_5

@@ -64,6 +64,12 @@
    cannot straddle a 64K boundary.  */
 #define STAGE1_BUFFERSEG	0x7000
 
+/* The address of drive parameters.  */
+#define STAGE1_DRP_ADDR		0x7f00
+
+/* The size of drive parameters.  */
+#define STAGE1_DRP_SIZE		0x42
+
 /* The flag for BIOS drive number to designate a hard disk vs. a
    floppy.  */
 #define STAGE1_BIOS_HD_FLAG	0x80

@@ -1,3 +1,23 @@
+1999-08-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage1/stage1_lba.S: Use STAGE1_DRP_ADDR for the address of
+	drive parameters instead of DRIVE_PARAMETER.
+	(drive_parameter): Deleted.
+	* stage1/stage1.h (STAGE1_DRP_ADDR): New macro.
+	(STAGE1_DRP_SIZE): Likewise.
+	
+1999-08-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/bios.c (get_diskinfo): In LBA mode, set TOTAL_SECTORS
+	to the low 32bits of DRP.TOTAL_SECTORS instead of the multiple
+	of CHS.
+	* stage2/cmdline.c (enter_cmdline) [GRUB_UTIL]: In the command
+	"geometry", print the device file name instead of CHS/LBA
+	information.
+	* stage2/shared.h (device_map): Declared.
+	* grub/asmstub.c (device_map): Defined as a global variable
+	instead of a local variable.
+	
 1999-08-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Support the NetBSD and OpenBSD partition slices.
