@@ -1,3 +1,12 @@
+grub (0.5.90) unstable; urgency=low
+
+  * Beta-testing release.
+  * GRUB is now officially part of the GNU Project, and the Debian package
+    is maintained by its upstream maintainers.
+  * LS-120 IDE floppy support should work now (fixes: #33720).
+
+ -- Gordon Matzigkeit <gord@debian.org>  Mon,  1 Mar 1999 12:59:06 -0600
+
 grub (0.5-3) unstable; urgency=low
 
   * GRUB now understands symbolic links (fixes: #17306).

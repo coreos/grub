@@ -1,0 +1,14 @@
+GRUB would not be what it is today without the invaluable help of
+everybody who was kind enough to spend time testing it and reporting
+bugs.
+
+The following people made especially gracious contributions of their
+time and energy in helping to track down bugs, add new features, and
+generally assist in the GRUB maintainership process:
+
+Bryan Ford <baford@cs.utah.edu>
+Eric Hanchrow <erich@microsoft.com>
+Heiko Schroeder <heiko@pool.informatik.rwth-aachen.de>
+Miles Bader <miles@gnu.org>
+OKUJI Yoshinori <okuji@kuicr.kyoto-u.ac.jp>
+VaX#n8 <vax@linkdead.paranoia.com>

@@ -10,7 +10,7 @@ INSTALL_PROGRAM = $(INSTALL) -m 755
 
 build:
 	$(checkdir)
-	./configure
+	./configure --prefix=
 	make
 	echo timestamp > build
 
@@ -31,14 +31,14 @@ binary-arch:	checkroot build
 	$(checkdir)
 	-rm -rf debian/tmp
 ## make dirs
-	install -d debian/tmp debian/tmp/lib/grub debian/tmp/usr/doc/grub \
-	   debian/tmp/DEBIAN
+	install -d debian/tmp debian/tmp/usr/doc/grub debian/tmp/DEBIAN
 ## install files
 
-	install -m 644 bin/* debian/tmp/lib/grub
+	dir=`cd debian/tmp && pwd` && make install prefix=$$dir
 
 	# FIXME: gzip the html files, and make sure cross-refs work fine
-	cp -r docs debian/tmp/usr/doc/grub
+	cp -r docs debian/tmp/usr/doc/grub/
+	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/docs/
 	rm -f debian/tmp/usr/doc/grub/docs/COPYING
 
 	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/changelog

@@ -1,0 +1,80 @@
+dnl Configure script for GRUB.
+dnl Copyright 1999 Free Software Foundation, Inc.
+
+dnl Permission to use, copy, modify and distribute this software and its
+dnl documentation is hereby granted, provided that both the copyright
+dnl notice and this permission notice appear in all copies of the
+dnl software, derivative works or modified versions, and any portions
+dnl thereof, and that both notices appear in supporting documentation.
+dnl
+dnl THE FREE SOFTWARE FOUNDATION ALLOWS FREE USE OF THIS SOFTWARE IN ITS
+dnl "AS IS" CONDITION.  THE FREE SOFTWARE FOUNDATION DISCLAIMS ANY
+dnl LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
+dnl USE OF THIS SOFTWARE.
+
+AC_INIT(shared_src/fsys_ext2fs.c)
+AM_INIT_AUTOMAKE(grub,0.5.90)
+AC_PREREQ(2.12)
+
+AC_CANONICAL_HOST
+
+case "$host_cpu" in
+i[[3456]]86) ;;
+*) AC_MSG_ERROR([unsupported CPU type]) ;;
+esac
+
+#
+# Options
+#
+sbingrub=
+stage2debug=
+AC_ARG_ENABLE(sbin-grub,
+[  --enable-sbin-grub      build /sbin/grub command-line utility],
+[test "x$enableval" = xno || sbingrub=grub])
+
+AC_ARG_ENABLE(debug,
+[  --enable-debug          build debugging version of stage2],
+[test "x$enableval" = xno || stage2debug=stage2_debug])
+
+AC_SUBST(sbingrub)
+AC_SUBST(stage2debug)
+
+#
+# Programs
+#
+
+AC_PROG_INSTALL
+AC_CHECK_TOOL(CC, gcc)
+AC_CHECK_TOOL(LD, ld)
+AC_CHECK_TOOL(OBJCOPY, objcopy)
+
+# Defined in acinclude.m4.
+grub_ASM_EXT_C
+grub_PROG_OBJCOPY_WORKS
+grub_GAS_ADDR32
+
+# Create rules for our shared sources.
+AC_SUBST_FILE(SHARED_SRC_RULES)dnl
+SHARED_SRC_RULES=./ssrcrules.mk
+echo creating $SHARED_SRC_RULES
+rm -f $SHARED_SRC_RULES
+cat > $SHARED_SRC_RULES <<EOF
+# $SHARED_SRC_RULES - Rules for building objects from files in shared_src.
+# Generated automatically by configure.
+asm.o: \$(top_srcdir)/shared_src/asm.S
+	\$(COMPILE) -c \$(top_srcdir)/shared_src/asm.S
+EOF
+for f in boot common char_io cmdline disk_io gunzip fsys_ffs \
+         fsys_ext2fs fsys_fat stage1_5 stage2; do
+
+  cat >> $SHARED_SRC_RULES <<EOF
+
+$f.o: \$(top_srcdir)/shared_src/$f.c
+	\$(COMPILE) -c \$(top_srcdir)/shared_src/$f.c
+EOF
+done
+
+AC_OUTPUT([Makefile grub/Makefile stage1/Makefile stage2/Makefile \
+	stage2_debug/Makefile e2fs_stage1_5/Makefile \
+	fat_stage1_5/Makefile ffs_stage1_5/Makefile \
+	docs/Makefile shared_src/Makefile debian/Makefile])

@@ -1,4 +1,14 @@
+1999-03-01  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* Change all Makefiles into Makefile.ams.  Many major build
+	environment changes to get Automake/Autoconf working nicely.
+
 1999-02-28  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* NEWS: Moved from docs/NEWS.
+
+	* configure.in, acinclude.m4: New files for Autoconf.  From OKUJI
+	Yoshinori.
 
 	* AUTHORS, INSTALL: New files.
 

@@ -1,13 +1,13 @@
 This package was debianized by Gordon Matzigkeit <gord@debian.org>.
-It was downloaded from ftp://ftp.uruk.org/public/grub/grub-0.5.tar.gz
+It was downloaded from ftp://alpha.gnu.org/gnu/hurd/src/.
 
 Tom Lees implemented building the e2fs_stage1_5, Steve Dunham adapted
 it to fat_stage1_5.
 
+GRUB's copyright:
 
-Copyright:
-
-GRUB is Copyright (C) 1996 Erich Boleyn <erich@uruk.org>
+   Copyright (C) 1996  Erich Boleyn <erich@uruk.org>
+   Copyright (C) 1999  Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
