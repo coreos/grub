@@ -15,7 +15,9 @@ OKUJI Yoshinori contributed many bugfixes and new features, such as
 working LBA support, /sbin/grub support for configuration files, the
 script /sbin/grub-install, the utility /bin/mbchk, the new engine for
 builtin commands, disk swapping support, keyboard configuration support,
-network support, online help support, and command-line history support.
+network support, online help support, command-line history support,
+hidden menu support, the new Linux loader, serial terminal support,
+single-line editing support, and several new commands.
 
 Peter Astrand added support for a color menu.
 
@@ -30,3 +32,5 @@ Jochen Hoenicke rewrote stage2/fsys_fat.c and wrote
 stage2/fsys_reiserfs.c.
 
 Christoph Plattner added support for Net Boot Image Proposal.
+
+Stefan Ondrejicka added the commands "partnew" and "parttype".

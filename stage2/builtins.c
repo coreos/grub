@@ -2376,6 +2376,209 @@ static struct builtin builtin_modulenounzip =
 };
 
 
+/* partnew PART TYPE START LEN */
+static int
+partnew_func (char *arg, int flags)
+{
+  int new_type, new_start, new_len;
+  int start_cl, start_ch, start_dh;
+  int end_cl, end_ch, end_dh;
+  int entry;
+  char *mbr = (char *) SCRATCHADDR;
+
+  /* Convert a LBA address to a CHS address in the INT 13 format.  */
+  auto void lba_to_chs (int lba, int *cl, int *ch, int *dh);
+  void lba_to_chs (int lba, int *cl, int *ch, int *dh)
+    {
+      int cylinder, head, sector;
+
+      sector = lba % buf_geom.sectors + 1;
+      head = (lba / buf_geom.sectors) % buf_geom.heads;
+      cylinder = lba / (buf_geom.sectors * buf_geom.heads);
+
+      if (cylinder >= buf_geom.cylinders)
+	cylinder = buf_geom.cylinders - 1;
+      
+      *cl = sector | ((cylinder & 0x300) >> 2);
+      *ch = cylinder & 0xFF;
+      *dh = head;
+    }
+      
+  /* Get the drive and the partition.  */
+  if (! set_device (arg))
+    return 1;
+
+  /* The drive must be a hard disk.  */
+  if (! (current_drive & 0x80))
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  /* The partition must a primary partition.  */
+  if ((current_partition >> 16) > 3
+      || (current_partition & 0xFFFF) != 0xFFFF)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  entry = current_partition >> 16;
+  
+  /* Get the new partition type.  */
+  arg = skip_to (0, arg);
+  if (! safe_parse_maxint (&arg, &new_type))
+    return 1;
+
+  /* The partition type is unsigned char.  */
+  if (new_type > 0xFF)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  /* Get the new partition start.  */
+  arg = skip_to (0, arg);
+  if (! safe_parse_maxint (&arg, &new_start))
+    return 1;
+  
+  /* Get the new partition length.  */
+  arg = skip_to (0, arg);
+  if (! safe_parse_maxint (&arg, &new_len))
+    return 1;
+
+  /* Read the MBR.  */
+  if (! rawread (current_drive, 0, 0, SECTOR_SIZE, mbr))
+    return 1;
+
+  /* Check if the new partition will fit in the disk.  */
+  if (new_start + new_len > buf_geom.total_sectors)
+    {
+      errnum = ERR_GEOM;
+      return 1;
+    }
+
+  /* Store the partition information in the MBR.  */
+  lba_to_chs (new_start, &start_cl, &start_ch, &start_dh);
+  lba_to_chs (new_start + new_len - 1, &end_cl, &end_ch, &end_dh);
+
+  PC_SLICE_FLAG (mbr, entry) = 0;
+  PC_SLICE_HEAD (mbr, entry) = start_dh;
+  PC_SLICE_SEC (mbr, entry) = start_cl;
+  PC_SLICE_CYL (mbr, entry) = start_ch;
+  PC_SLICE_TYPE (mbr, entry) = new_type;
+  PC_SLICE_EHEAD (mbr, entry) = end_dh;
+  PC_SLICE_ESEC (mbr, entry) = end_cl;
+  PC_SLICE_ECYL (mbr, entry) = end_ch;
+  PC_SLICE_START (mbr, entry) = new_start;
+  PC_SLICE_LENGTH (mbr, entry) = new_len;
+
+  /* Make sure that the MBR has a valid signature.  */
+  PC_MBR_SIG (mbr) = PC_MBR_SIGNATURE;
+  
+  /* Write back the MBR to the disk.  */
+  buf_track = -1;
+  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom, 0, 1, SCRATCHSEG))
+    {
+      errnum = ERR_WRITE;
+      return 1;
+    }
+
+  return 0;
+}
+
+static struct builtin builtin_partnew =
+{
+  "partnew",
+  partnew_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "partnew PART TYPE START LEN",
+  "Create a primary partition at the starting address START with the"
+  " length LEN, with the type TYPE. START and LEN are in sector units."
+};
+
+
+/* parttype PART TYPE */
+static int
+parttype_func (char *arg, int flags)
+{
+  int new_type;
+  unsigned long part = 0xFFFFFF;
+  unsigned long start, len, offset, ext_offset;
+  int entry, type;
+  char *mbr = (char *) SCRATCHADDR;
+
+  /* Get the drive and the partition.  */
+  if (! set_device (arg))
+    return 1;
+
+  /* The drive must be a hard disk.  */
+  if (! (current_drive & 0x80))
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+  
+  /* The partition must be a PC slice.  */
+  if ((current_partition >> 16) == 0xFF
+      || (current_partition & 0xFFFF) != 0xFFFF)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  /* Get the new partition type.  */
+  arg = skip_to (0, arg);
+  if (! safe_parse_maxint (&arg, &new_type))
+    return 1;
+
+  /* The partition type is unsigned char.  */
+  if (new_type > 0xFF)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  /* Look for the partition.  */
+  while (next_partition (current_drive, 0xFFFFFF, &part, &type,
+			 &start, &len, &offset, &entry,
+			 &ext_offset, mbr))
+    {
+      if (part == current_partition)
+	{
+	  /* Found.  */
+
+	  /* Set the type to NEW_TYPE.  */
+	  PC_SLICE_TYPE (mbr, entry) = new_type;
+	  
+	  /* Write back the MBR to the disk.  */
+	  buf_track = -1;
+	  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+			offset, 1, SCRATCHSEG))
+	    {
+	      errnum = ERR_WRITE;
+	      return 1;
+	    }
+
+	  /* Succeed.  */
+	  return 0;
+	}
+    }
+
+  /* The partition was not found.  ERRNUM was set by next_partition.  */
+  return 1;
+}
+
+static struct builtin builtin_parttype =
+{
+  "parttype",
+  parttype_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "parttype PART TYPE",
+  "Change the type of the partition PART to TYPE."
+};
+
+
 /* password */
 static int
 password_func (char *arg, int flags)
@@ -3778,6 +3981,8 @@ struct builtin *builtin_table[] =
   &builtin_map,
   &builtin_module,
   &builtin_modulenounzip,
+  &builtin_partnew,
+  &builtin_parttype,
   &builtin_password,
   &builtin_pause,
 #ifdef GRUB_UTIL

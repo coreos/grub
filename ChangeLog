@@ -1,3 +1,24 @@
+2000-09-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/fsys_reiserfs.c (reiserfs_mount): Check if the length
+	of the partition is less than the size of a super block, before
+	attempting to read the super block.
+
+	* grub/asmstub.c (console_putchar)
+	[HAVE_LIBCURSES_H && REFRESH_IMMEDIATELY]: Call refresh, to ease
+	debugging.
+	
+2000-09-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Added two new commands, "partnew" and "parttype", based on the
+	patch by Stefan Ondrejicka <ondrej@idata.sk>:
+	* stage2/builtins.c (partnew_func): New function.
+	(builtin_partnew): New variable.
+	(parttype_func): New function.
+	(builtin_parttype): New variable.
+	(builtin_table): Added pointers to BUILTIN_PARTNEW and to
+	BUILTIN_PARTTYPE.
+	
 2000-09-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (find_func): New variable GOT_FILE is set to

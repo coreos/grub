@@ -560,7 +560,8 @@ reiserfs_mount (void)
   struct reiserfs_super_block super;
   int superblock = REISERFS_DISK_OFFSET_IN_BYTES >> SECTOR_BITS;
 
-  if (! devread (superblock, 0, sizeof (struct reiserfs_super_block), 
+  if (part_length < sizeof (struct reiserfs_super_block)
+      || ! devread (superblock, 0, sizeof (struct reiserfs_super_block), 
 		(char *) &super)
       || (substring (REISER2FS_SUPER_MAGIC_STRING, super.s_magic) > 0
 	  && substring (REISERFS_SUPER_MAGIC_STRING, super.s_magic) > 0)
@@ -570,8 +571,9 @@ reiserfs_mount (void)
     {
       /* Try old super block position */
       superblock = REISERFS_OLD_DISK_OFFSET_IN_BYTES >> SECTOR_BITS;
-      if (! devread (superblock, 0, sizeof (struct reiserfs_super_block), 
-		     (char *) &super))
+      if (part_length < sizeof (struct reiserfs_super_block)
+	  || ! devread (superblock, 0, sizeof (struct reiserfs_super_block), 
+			(char *) &super))
 	return 0;
       
       if (substring (REISER2FS_SUPER_MAGIC_STRING, super.s_magic) > 0

@@ -514,7 +514,12 @@ console_putchar (int c)
 	    move (y + 1, x);
 	}
       else
-	addch (c);
+	{
+	  addch (c);
+#ifdef REFRESH_IMMEDIATELY
+	  refresh ();
+#endif
+	}
     }
   else
 #endif
