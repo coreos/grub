@@ -40,6 +40,7 @@ int grub_stage2 (void);
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <setjmp.h>
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
@@ -75,6 +76,9 @@ static struct geometry *disks = 0;
 /* The map between BIOS drives and UNIX device file names.  */
 char **device_map = 0;
 
+/* The jump buffer for exiting correctly.  */
+static jmp_buf env_for_exit;
+
 /* The main entry point into this mess. */
 int
 grub_stage2 (void)
@@ -93,17 +97,18 @@ grub_stage2 (void)
     asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"
 		  : "=&r" (realstack) : "r" (simstack));
 
-    /* FIXME: Do a setjmp here for the stop command. */
-    if (1)
+    /* Do a setjmp here for the stop command.  */
+    if (! setjmp (env_for_exit))
       {
-	/* Actually enter the generic stage2 code. */
+	/* Actually enter the generic stage2 code.  */
 	status = 0;
 	init_bios_info ();
       }
     else
       {
-	/* Somebody aborted. */
-	status = 1;
+	/* If ERRNUM is non-zero, then set STATUS to non-zero.  */
+	if (errnum)
+	  status = 1;
       }
 
     /* Replace our stack before we use any local variables. */
@@ -275,9 +280,9 @@ stop (void)
   if (use_curses)
     endwin ();
 #endif
-  /* FIXME: If we don't exit, then we need to free our data areas. */
-  fprintf (stderr, "grub: aborting...\n");
-  exit (1);
+
+  /* Jump to doit.  */
+  longjmp (env_for_exit, 1);
 }
 
 

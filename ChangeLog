@@ -1,3 +1,10 @@
+1999-09-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (env_for_exit): New variable.
+	(grub_stage2): Do a setjmp in doit, and when it returns
+	non-zero, set STATUS to 1 if ERRNUM is non-zero.
+	(stop): Call longjmp instead of exit.
+	
 1999-08-31  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/boot.c [GRUB_UTIL] (bsd_boot_entry): New function.
