@@ -158,22 +158,17 @@ get_diskinfo (int drive, struct geometry *geometry)
 	  err = get_diskinfo_int13_extensions (drive, &drp);
 	  if (! err)
 	    {
-	      /* How many buggy BIOSes are there in the world...
-		 Some BIOSes don't set the flag correctly, even if LBA
-		 read/write is supported, so we cannot help assuming
-		 that the functions are supported by default and
-		 clearing the flag when either of them fails. *sigh*  */
+	      /* Set the LBA flag.  */
+	      geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
 
-	      /* Make sure that LBA read/write functions are supported.  */
-	      if (force_lba || (drp.flags & 1))
-		{
-		  geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
-		  
-		  /* FIXME: when the 2TB limit becomes critical, we must
-		     change the type of TOTAL_SECTORS to unsigned long
-		     long.  */
-		  total_sectors = drp.total_sectors & ~0L;
-		}
+	      /* I'm not sure if GRUB should check the bit 1 of DRP.FLAGS,
+		 so I omit the check for now. - okuji  */
+	      /* if (drp.flags & (1 << 1)) */
+	       
+	      /* FIXME: when the 2TB limit becomes critical, we must
+		 change the type of TOTAL_SECTORS to unsigned long
+		 long.  */
+	      total_sectors = drp.total_sectors & ~0L;
 	    }
 	}
 

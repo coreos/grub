@@ -1023,6 +1023,11 @@ ENTRY(check_int13_extensions)
 	jc	1f
 	cmpw	$0xaa55, %bx
 	jne	1f
+
+	/* check if AH=0x42 is supported if FORCE_LBA is zero */
+	movb	EXT_C(force_lba), %al
+	testb	%al, %al
+	jnz	1f
 	andw	$1, %cx
 	jz	1f
 

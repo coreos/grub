@@ -1,3 +1,11 @@
+2000-06-03  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S (check_int13_extensions): Check the bitmap only
+	if FORCE_LBA is zero.
+	* stage2/bios.c (get_diskinfo): Get rid of the wrong check for
+	the bit 0 of DRP.FLAGS. Now the bitmap check is correctly
+	performed in the function check_int13_extensions.
+	
 2000-06-02  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/user-ref.texi (Invoking the grub shell): Added a caution.
