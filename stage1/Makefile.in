@@ -60,10 +60,12 @@ host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
+GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
@@ -71,11 +73,11 @@ install_sh = @install_sh@
 
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
-pkgdata_DATA = stage1
+nodist_pkgdata_DATA = stage1
 CLEANFILES = $(pkgdata_DATA)
 
 # We can't use builtins or standard includes.
-COMPILE = $(CC) -fno-builtin -nostdinc $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+AM_CFLAGS = -fno-builtin -nostdinc
 
 noinst_PROGRAMS = stage1.exec
 stage1_exec_SOURCES = stage1.S
@@ -94,13 +96,14 @@ stage1_exec_OBJECTS =  $(am_stage1_exec_OBJECTS)
 stage1_exec_LDADD = $(LDADD)
 stage1_exec_DEPENDENCIES = 
 stage1_exec_LDFLAGS = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES =  $(stage1_exec_SOURCES)
-DATA =  $(pkgdata_DATA)
+DATA =  $(nodist_pkgdata_DATA)
 
-DIST_COMMON =  $(pkgdata_DATA) Makefile.am Makefile.in
+DIST_COMMON =  Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -142,19 +145,19 @@ maintainer-clean-compile:
 .S.o:
 	$(COMPILE) -c $<
 
-install-pkgdataDATA: $(pkgdata_DATA)
+install-nodist_pkgdataDATA: $(nodist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	@list='$(nodist_pkgdata_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgdatadir)/$$f"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgdatadir)/$$f; \
 	done
 
-uninstall-pkgdataDATA:
+uninstall-nodist_pkgdataDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	@list='$(nodist_pkgdata_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(pkgdatadir)/$$f"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$f; \
@@ -235,20 +238,20 @@ installcheck: installcheck-am
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-pkgdataDATA
+install-data-am: install-nodist_pkgdataDATA
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-pkgdataDATA
+uninstall-am: uninstall-nodist_pkgdataDATA
 uninstall: uninstall-am
 all-am: Makefile $(PROGRAMS) $(DATA)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(pkgdatadir)
+	$(mkinstalldirs)  $(DESTDIR)$(nodist_pkgdatadir)
 
 
 mostlyclean-generic:
@@ -288,15 +291,15 @@ maintainer-clean: maintainer-clean-am
 .PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
 clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile uninstall-pkgdataDATA install-pkgdataDATA tags \
-mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
-distdir mostlyclean-depend distclean-depend clean-depend \
-maintainer-clean-depend info-am info dvi-am dvi check check-am \
-installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all install-strip installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+maintainer-clean-compile uninstall-nodist_pkgdataDATA \
+install-nodist_pkgdataDATA tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all install-strip \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 stage1.exec: stage1.o

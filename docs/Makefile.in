@@ -62,10 +62,12 @@ host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
+GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
@@ -74,7 +76,7 @@ install_sh = @install_sh@
 
 info_TEXINFOS = grub.texi multiboot.texi
 man_MANS = grub.8
-HELP2MAN = $(srcdir)/help2man
+HELP2MAN = help2man
 noinst_SCRIPTS = $(HELP2MAN)
 
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS)
@@ -314,7 +316,6 @@ distdir: $(DISTFILES)
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
 	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu docs/Makefile
-	$(mkinstalldirs) $(distdir)/$(srcdir)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -392,9 +393,9 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-@GRUB_MAINT_TRUE@$(srcdir)/grub.8: ../grub/grub $(HELP2MAN)
-@GRUB_MAINT_TRUE@	$(HELP2MAN) --name="the stage2 emulator shell" --section=8 \
-@GRUB_MAINT_TRUE@		--output=$@ $<
+@GRUB_MAINT_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
+@GRUB_MAINT_TRUE@	$(srcdir)/$(HELP2MAN) --name="the stage2 emulator shell" \
+@GRUB_MAINT_TRUE@		--section=8 --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

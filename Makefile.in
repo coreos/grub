@@ -62,21 +62,19 @@ host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
+GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
 install_sh = @install_sh@
 
 
-SUBDIRS = grub stage1 stage2 \
-	e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-	docs shared_src debian
-
-DISTCLEANFILES = ssrcrules.mk
+SUBDIRS = stage1 stage2 docs debian grub
 EXTRA_DIST = BUGS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -302,7 +300,6 @@ clean-generic:
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
-	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-tags mostlyclean-generic

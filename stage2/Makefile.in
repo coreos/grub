@@ -60,67 +60,166 @@ host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
+GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
 install_sh = @install_sh@
 
+# For test target.
 
+
+TESTS = size_test
+noinst_SCRIPTS = $(TESTS)
+
+# For dist target.
+noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
+        fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
+        mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h
+
+EXTRA_DIST = smp-imps.c $(noinst_SCRIPTS)
+
+# The library for /sbin/grub.
+noinst_LIBRARIES = libgrub.a
+libgrub_a_SOURCES = boot.c common.c char_io.c cmdline.c disk_io.c \
+	gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c stage2.c
+
+libgrub_a_CFLAGS = -DGRUB_UTIL=1 -fwritable-strings
+
+# Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
-pkgdata_DATA = stage2
+nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5
 CLEANFILES = $(pkgdata_DATA)
-MOSTLYCLEANFILES = stage2.exec
+noinst_PROGRAMS = stage2.exec e2fs_stage1_5.exec fat_stage1_5.exec \
+	ffs_stage1_5.exec
 
-# We can't use builtins or standard includes.
-COMPILE = $(CC) -fno-builtin -nostdinc $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-INCLUDES = -I$(top_srcdir)/shared_src
+MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
-# asm.o absolutely needs to come first!
-stage2_exec_LDADD = asm.o boot.o common.o char_io.o cmdline.o disk_io.o \
-	gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o bios.o
+STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
+STAGE2_COMPILE = -fno-builtin -nostdinc
+
+STAGE1_5_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,2000
+STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1 \
+	-DCONFIG_FILE_ASM='.string "/boot/grub/stage2"'
 
 
-noinst_PROGRAMS = stage2.exec
+# asm.S absolutely needs to come first!
+# For stage2 target.
+stage2_exec_SOURCES = asm.S boot.c common.c char_io.c cmdline.c \
+	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c stage2.c \
+	bios.c
 
-# FIXME: Automake hackery.
-DEP_FILES = .deps/dummy.P $(wildcard .deps/*.P)
-stage2_exec_SOURCES = dummy.c # needed to drag in C Makefile variables
-DISTFILES = $(DIST_COMMON)
+stage2_exec_CFLAGS = $(STAGE2_COMPILE)
+stage2_exec_LDFLAGS = $(STAGE2_LINK)
+
+# For e2fs_stage1_5 target.
+e2fs_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+	stage1_5.c fsys_ext2fs.c bios.c
+
+e2fs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
+	-DNO_BLOCK_FILES=1
+
+e2fs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For fat_stage1_5 target.
+fat_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+	stage1_5.c fsys_fat.c bios.c
+
+fat_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1
+fat_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For ffs_stage1_5 target.
+ffs_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+	stage1_5.c fsys_ffs.c bios.c
+
+
+ffs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
+	-DNO_BLOCK_FILES=1
+
+ffs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 subdir = stage2
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
-PROGRAMS =  $(noinst_PROGRAMS)
+LIBRARIES =  $(noinst_LIBRARIES)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) 
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-am_stage2_exec_OBJECTS =  dummy.o
+libgrub_a_AR = $(AR) cru
+libgrub_a_LIBADD = 
+am_libgrub_a_OBJECTS =  libgrub_a-boot.o libgrub_a-common.o \
+libgrub_a-char_io.o libgrub_a-cmdline.o libgrub_a-disk_io.o \
+libgrub_a-gunzip.o libgrub_a-fsys_ffs.o libgrub_a-fsys_ext2fs.o \
+libgrub_a-fsys_fat.o libgrub_a-stage2.o
+libgrub_a_OBJECTS =  $(am_libgrub_a_OBJECTS)
+AR = ar
+PROGRAMS =  $(noinst_PROGRAMS)
+
+am_e2fs_stage1_5_exec_OBJECTS =  e2fs_stage1_5_exec-asm.o \
+e2fs_stage1_5_exec-common.o e2fs_stage1_5_exec-char_io.o \
+e2fs_stage1_5_exec-disk_io.o e2fs_stage1_5_exec-stage1_5.o \
+e2fs_stage1_5_exec-fsys_ext2fs.o e2fs_stage1_5_exec-bios.o
+e2fs_stage1_5_exec_OBJECTS =  $(am_e2fs_stage1_5_exec_OBJECTS)
+e2fs_stage1_5_exec_LDADD = $(LDADD)
+e2fs_stage1_5_exec_DEPENDENCIES = 
+am_fat_stage1_5_exec_OBJECTS =  fat_stage1_5_exec-asm.o \
+fat_stage1_5_exec-common.o fat_stage1_5_exec-char_io.o \
+fat_stage1_5_exec-disk_io.o fat_stage1_5_exec-stage1_5.o \
+fat_stage1_5_exec-fsys_fat.o fat_stage1_5_exec-bios.o
+fat_stage1_5_exec_OBJECTS =  $(am_fat_stage1_5_exec_OBJECTS)
+fat_stage1_5_exec_LDADD = $(LDADD)
+fat_stage1_5_exec_DEPENDENCIES = 
+am_ffs_stage1_5_exec_OBJECTS =  ffs_stage1_5_exec-asm.o \
+ffs_stage1_5_exec-common.o ffs_stage1_5_exec-char_io.o \
+ffs_stage1_5_exec-disk_io.o ffs_stage1_5_exec-stage1_5.o \
+ffs_stage1_5_exec-fsys_ffs.o ffs_stage1_5_exec-bios.o
+ffs_stage1_5_exec_OBJECTS =  $(am_ffs_stage1_5_exec_OBJECTS)
+ffs_stage1_5_exec_LDADD = $(LDADD)
+ffs_stage1_5_exec_DEPENDENCIES = 
+am_stage2_exec_OBJECTS =  stage2_exec-asm.o stage2_exec-boot.o \
+stage2_exec-common.o stage2_exec-char_io.o stage2_exec-cmdline.o \
+stage2_exec-disk_io.o stage2_exec-gunzip.o stage2_exec-fsys_ffs.o \
+stage2_exec-fsys_ext2fs.o stage2_exec-fsys_fat.o stage2_exec-stage2.o \
+stage2_exec-bios.o
 stage2_exec_OBJECTS =  $(am_stage2_exec_OBJECTS)
-stage2_exec_DEPENDENCIES =  asm.o boot.o common.o char_io.o cmdline.o \
-disk_io.o gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o bios.o
-stage2_exec_LDFLAGS = 
+stage2_exec_LDADD = $(LDADD)
+stage2_exec_DEPENDENCIES = 
+SCRIPTS =  $(noinst_SCRIPTS)
+
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =  $(stage2_exec_SOURCES)
-DATA =  $(pkgdata_DATA)
+DIST_SOURCES =  $(libgrub_a_SOURCES) $(e2fs_stage1_5_exec_SOURCES) \
+$(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) \
+$(stage2_exec_SOURCES)
+DATA =  $(nodist_pkgdata_DATA)
 
-DIST_COMMON =  $(pkgdata_DATA) Makefile.am Makefile.in
+HEADERS =  $(noinst_HEADERS)
 
+DIST_COMMON =  $(noinst_HEADERS) Makefile.am Makefile.in compile
+
+
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-SOURCES = $(stage2_exec_SOURCES)
-OBJECTS = $(am_stage2_exec_OBJECTS)
+DEP_FILES =  .deps/asm.P .deps/bios.P .deps/boot.P .deps/char_io.P \
+.deps/cmdline.P .deps/common.P .deps/disk_io.P .deps/fsys_ext2fs.P \
+.deps/fsys_fat.P .deps/fsys_ffs.P .deps/gunzip.P .deps/stage1_5.P \
+.deps/stage2.P
+SOURCES = $(libgrub_a_SOURCES) $(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) $(stage2_exec_SOURCES)
+OBJECTS = $(am_libgrub_a_OBJECTS) $(am_e2fs_stage1_5_exec_OBJECTS) $(am_fat_stage1_5_exec_OBJECTS) $(am_ffs_stage1_5_exec_OBJECTS) $(am_stage2_exec_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .c .o
+.SUFFIXES: .S .c .o
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu stage2/Makefile
 
@@ -129,14 +228,14 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-mostlyclean-noinstPROGRAMS:
+mostlyclean-noinstLIBRARIES:
 
-clean-noinstPROGRAMS:
-	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 
-distclean-noinstPROGRAMS:
+distclean-noinstLIBRARIES:
 
-maintainer-clean-noinstPROGRAMS:
+maintainer-clean-noinstLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
@@ -147,22 +246,101 @@ distclean-compile:
 	-rm -f *.tab.c
 
 maintainer-clean-compile:
+libgrub_a-boot.o: boot.c
+libgrub_a-common.o: common.c
+libgrub_a-char_io.o: char_io.c
+libgrub_a-cmdline.o: cmdline.c
+libgrub_a-disk_io.o: disk_io.c
+libgrub_a-gunzip.o: gunzip.c
+libgrub_a-fsys_ffs.o: fsys_ffs.c
+libgrub_a-fsys_ext2fs.o: fsys_ext2fs.c
+libgrub_a-fsys_fat.o: fsys_fat.c
+libgrub_a-stage2.o: stage2.c
+
+libgrub.a: $(libgrub_a_OBJECTS) $(libgrub_a_DEPENDENCIES)
+	-rm -f libgrub.a
+	$(libgrub_a_AR) libgrub.a $(libgrub_a_OBJECTS) $(libgrub_a_LIBADD)
+	$(RANLIB) libgrub.a
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+e2fs_stage1_5_exec-asm.o: asm.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o e2fs_stage1_5_exec-asm.o $<
+e2fs_stage1_5_exec-common.o: common.c
+e2fs_stage1_5_exec-char_io.o: char_io.c
+e2fs_stage1_5_exec-disk_io.o: disk_io.c
+e2fs_stage1_5_exec-stage1_5.o: stage1_5.c
+e2fs_stage1_5_exec-fsys_ext2fs.o: fsys_ext2fs.c
+e2fs_stage1_5_exec-bios.o: bios.c
+
+e2fs_stage1_5.exec: $(e2fs_stage1_5_exec_OBJECTS) $(e2fs_stage1_5_exec_DEPENDENCIES)
+	@rm -f e2fs_stage1_5.exec
+	$(LINK) $(e2fs_stage1_5_exec_LDFLAGS) $(e2fs_stage1_5_exec_OBJECTS) $(e2fs_stage1_5_exec_LDADD) $(LIBS)
+fat_stage1_5_exec-asm.o: asm.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o fat_stage1_5_exec-asm.o $<
+fat_stage1_5_exec-common.o: common.c
+fat_stage1_5_exec-char_io.o: char_io.c
+fat_stage1_5_exec-disk_io.o: disk_io.c
+fat_stage1_5_exec-stage1_5.o: stage1_5.c
+fat_stage1_5_exec-fsys_fat.o: fsys_fat.c
+fat_stage1_5_exec-bios.o: bios.c
+
+fat_stage1_5.exec: $(fat_stage1_5_exec_OBJECTS) $(fat_stage1_5_exec_DEPENDENCIES)
+	@rm -f fat_stage1_5.exec
+	$(LINK) $(fat_stage1_5_exec_LDFLAGS) $(fat_stage1_5_exec_OBJECTS) $(fat_stage1_5_exec_LDADD) $(LIBS)
+ffs_stage1_5_exec-asm.o: asm.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o ffs_stage1_5_exec-asm.o $<
+ffs_stage1_5_exec-common.o: common.c
+ffs_stage1_5_exec-char_io.o: char_io.c
+ffs_stage1_5_exec-disk_io.o: disk_io.c
+ffs_stage1_5_exec-stage1_5.o: stage1_5.c
+ffs_stage1_5_exec-fsys_ffs.o: fsys_ffs.c
+ffs_stage1_5_exec-bios.o: bios.c
+
+ffs_stage1_5.exec: $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_DEPENDENCIES)
+	@rm -f ffs_stage1_5.exec
+	$(LINK) $(ffs_stage1_5_exec_LDFLAGS) $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_LDADD) $(LIBS)
+stage2_exec-asm.o: asm.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o stage2_exec-asm.o $<
+stage2_exec-boot.o: boot.c
+stage2_exec-common.o: common.c
+stage2_exec-char_io.o: char_io.c
+stage2_exec-cmdline.o: cmdline.c
+stage2_exec-disk_io.o: disk_io.c
+stage2_exec-gunzip.o: gunzip.c
+stage2_exec-fsys_ffs.o: fsys_ffs.c
+stage2_exec-fsys_ext2fs.o: fsys_ext2fs.c
+stage2_exec-fsys_fat.o: fsys_fat.c
+stage2_exec-stage2.o: stage2.c
+stage2_exec-bios.o: bios.c
+
+stage2.exec: $(stage2_exec_OBJECTS) $(stage2_exec_DEPENDENCIES)
+	@rm -f stage2.exec
+	$(LINK) $(stage2_exec_LDFLAGS) $(stage2_exec_OBJECTS) $(stage2_exec_LDADD) $(LIBS)
+.S.o:
+	$(COMPILE) -c $<
 .c.o:
 	$(COMPILE) -c $<
 
-install-pkgdataDATA: $(pkgdata_DATA)
+install-nodist_pkgdataDATA: $(nodist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	@list='$(nodist_pkgdata_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgdatadir)/$$f"; \
 	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgdatadir)/$$f; \
 	done
 
-uninstall-pkgdataDATA:
+uninstall-nodist_pkgdataDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	@list='$(nodist_pkgdata_DATA)'; for p in $$list; do \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " rm -f $(DESTDIR)$(pkgdatadir)/$$f"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$f; \
@@ -251,31 +429,824 @@ maintainer-clean-depend:
 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
 	    >> .deps/$(*D)/$(*F).P; \
 	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-boot.o: boot.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-boot.lo: boot.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-common.o: common.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-common.lo: common.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-char_io.o: char_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-char_io.lo: char_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-cmdline.o: cmdline.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-cmdline.lo: cmdline.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-disk_io.o: disk_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-disk_io.lo: disk_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-gunzip.o: gunzip.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-gunzip.lo: gunzip.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-fsys_ffs.o: fsys_ffs.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-fsys_ffs.lo: fsys_ffs.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-fsys_ext2fs.o: fsys_ext2fs.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-fsys_ext2fs.lo: fsys_ext2fs.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-fsys_fat.o: fsys_fat.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-fsys_fat.lo: fsys_fat.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libgrub_a-stage2.o: stage2.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libgrub_a-stage2.lo: stage2.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-common.o: common.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-common.lo: common.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-char_io.o: char_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-char_io.lo: char_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-disk_io.o: disk_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-disk_io.lo: disk_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-stage1_5.o: stage1_5.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-stage1_5.lo: stage1_5.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-fsys_ext2fs.o: fsys_ext2fs.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-fsys_ext2fs.lo: fsys_ext2fs.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-bios.o: bios.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+e2fs_stage1_5_exec-bios.lo: bios.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(e2fs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-common.o: common.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-common.lo: common.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-char_io.o: char_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-char_io.lo: char_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-disk_io.o: disk_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-disk_io.lo: disk_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-stage1_5.o: stage1_5.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-stage1_5.lo: stage1_5.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-fsys_fat.o: fsys_fat.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-fsys_fat.lo: fsys_fat.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-bios.o: bios.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+fat_stage1_5_exec-bios.lo: bios.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(fat_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-common.o: common.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-common.lo: common.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-char_io.o: char_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-char_io.lo: char_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-disk_io.o: disk_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-disk_io.lo: disk_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-stage1_5.o: stage1_5.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-stage1_5.lo: stage1_5.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-fsys_ffs.o: fsys_ffs.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-fsys_ffs.lo: fsys_ffs.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-bios.o: bios.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+ffs_stage1_5_exec-bios.lo: bios.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-boot.o: boot.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-boot.lo: boot.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-common.o: common.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-common.lo: common.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-char_io.o: char_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-char_io.lo: char_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-cmdline.o: cmdline.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-cmdline.lo: cmdline.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-disk_io.o: disk_io.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-disk_io.lo: disk_io.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-gunzip.o: gunzip.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-gunzip.lo: gunzip.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-fsys_ffs.o: fsys_ffs.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-fsys_ffs.lo: fsys_ffs.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-fsys_ext2fs.o: fsys_ext2fs.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-fsys_ext2fs.lo: fsys_ext2fs.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-fsys_fat.o: fsys_fat.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-fsys_fat.lo: fsys_fat.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-stage2.o: stage2.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-stage2.lo: stage2.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+stage2_exec-bios.o: bios.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+stage2_exec-bios.lo: bios.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stage2_exec_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+check-TESTS: $(TESTS)
+	@failed=0; all=0; xfail=0; xpass=0; \
+	srcdir=$(srcdir); export srcdir; \
+	for tst in $(TESTS); do \
+	  if test -f ./$$tst; then dir=./; \
+	  elif test -f $$tst; then dir=; \
+	  else dir="$(srcdir)/"; fi; \
+	  if $(TESTS_ENVIRONMENT) $${dir}$$tst; then \
+	    all=`expr $$all + 1`; \
+	    case " $(XFAIL_TESTS) " in \
+	    *" $$tst "*) \
+	      xpass=`expr $$xpass + 1`; \
+	      failed=`expr $$failed + 1`; \
+	      echo "XPASS: $$tst"; \
+	    ;; \
+	    *) \
+	      echo "PASS: $$tst"; \
+	    ;; \
+	    esac; \
+	  elif test $$? -ne 77; then \
+	    all=`expr $$all + 1`; \
+	    case " $(XFAIL_TESTS) " in \
+	    *" $$tst "*) \
+	      xfail=`expr $$xfail + 1`; \
+	      echo "XFAIL: $$tst"; \
+	    ;; \
+	    *) \
+	      failed=`expr $$failed + 1`; \
+	      echo "FAIL: $$tst"; \
+	    ;; \
+	    esac; \
+	  fi; \
+	done; \
+	if test "$$failed" -eq 0; then \
+	  if test "$$xfail" -eq 0; then \
+	    banner="All $$all tests passed"; \
+	  else \
+	    banner="All $$all tests behaved as expected ($$xfail expected failures)"; \
+	  fi; \
+	else \
+	  if test "$$xpass" -eq 0; then \
+	    banner="$$failed of $$all tests failed"; \
+	  else \
+	    banner="$$failed of $$all tests did not behave as expected ($$xpass unexpected passes)"; \
+	  fi; \
+	fi; \
+	dashes=`echo "$$banner" | sed s/./=/g`; \
+	echo "$$dashes"; \
+	echo "$$banner"; \
+	echo "$$dashes"; \
+	test "$$failed" -eq 0
 info-am:
 info: info-am
 dvi-am:
 dvi: dvi-am
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-pkgdataDATA
+install-data-am: install-nodist_pkgdataDATA
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-pkgdataDATA
+uninstall-am: uninstall-nodist_pkgdataDATA
 uninstall: uninstall-am
-all-am: Makefile $(PROGRAMS) $(DATA)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) $(HEADERS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(pkgdatadir)
+	$(mkinstalldirs)  $(DESTDIR)$(nodist_pkgdatadir)
 
 
 mostlyclean-generic:
@@ -289,23 +1260,26 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
+		mostlyclean-noinstPROGRAMS mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-noinstPROGRAMS clean-compile clean-tags clean-depend \
-		clean-generic mostlyclean-am
+clean-am:  clean-noinstLIBRARIES clean-compile clean-noinstPROGRAMS \
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-noinstPROGRAMS distclean-compile distclean-tags \
+distclean-am:  distclean-noinstLIBRARIES distclean-compile \
+		distclean-noinstPROGRAMS distclean-tags \
 		distclean-depend distclean-generic clean-am
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-noinstPROGRAMS \
-		maintainer-clean-compile maintainer-clean-tags \
+maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
+		maintainer-clean-compile \
+		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
 		maintainer-clean-depend maintainer-clean-generic \
 		distclean-am
 	@echo "This command is intended for maintainers to use;"
@@ -313,27 +1287,25 @@ maintainer-clean-am:  maintainer-clean-noinstPROGRAMS \
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
-clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+.PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile uninstall-pkgdataDATA install-pkgdataDATA tags \
-mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
-distdir mostlyclean-depend distclean-depend clean-depend \
-maintainer-clean-depend info-am info dvi-am dvi check check-am \
-installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all install-strip installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+maintainer-clean-compile mostlyclean-noinstPROGRAMS \
+distclean-noinstPROGRAMS clean-noinstPROGRAMS \
+maintainer-clean-noinstPROGRAMS uninstall-nodist_pkgdataDATA \
+install-nodist_pkgdataDATA tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend check-TESTS \
+info-am info dvi-am dvi check check-am installcheck-am installcheck \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all install-strip \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-stage2.exec: $(stage2_exec_LDADD)
-	$(LD) -N -Ttext 8000 -o stage2.exec $(stage2_exec_LDADD)
-
-stage2: stage2.exec
-	$(OBJCOPY) -O binary stage2.exec stage2
-
-@SHARED_SRC_RULES@
+# General rule for making a raw binary.
+%: %.exec
+	$(OBJCOPY) -O binary $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

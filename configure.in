@@ -12,7 +12,7 @@ dnl "AS IS" CONDITION.  THE FREE SOFTWARE FOUNDATION DISCLAIMS ANY
 dnl LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 dnl USE OF THIS SOFTWARE.
 
-AC_INIT(shared_src/fsys_ext2fs.c)
+AC_INIT(stage2/stage2.c)
 dnl Grab the package and version from the top debian/changelog entry.
 AM_INIT_AUTOMAKE(
    esyscmd([sed 's/ .*$//; q' debian/changelog]),
@@ -49,6 +49,7 @@ AM_CONDITIONAL(GRUB_MAINT, test "x${maintainermode}" = xyes)
 
 AC_CHECK_TOOL(CC, gcc)
 AC_PROG_CC
+AC_PROG_RANLIB
 
 # Enforce coding standards.
 CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
@@ -69,44 +70,11 @@ if test "x$grub_cv_asm_addr32" != xyes; then
 fi
 
 # Check for curses libraries.
-AC_CHECK_LIB(ncurses, getch, [LIBS="$LIBS -lncurses"
+AC_CHECK_LIB(ncurses, getch, [GRUB_LIBS="$GRUB_LIBS -lncurses"
 AC_DEFINE(HAVE_LIBCURSES)],
-		[AC_CHECK_LIB(curses, getch, [LIBS="$LIBS -lcurses"
+		[AC_CHECK_LIB(curses, getch, [GRUB_LIBS="$GRUB_LIBS -lcurses"
 AC_DEFINE(HAVE_LIBCURSES)])])
+AC_SUBST(GRUB_LIBS)
 
-# Create rules for our shared sources.
-AC_SUBST_FILE(SHARED_SRC_RULES)dnl
-SHARED_SRC_RULES=./ssrcrules.mk
-echo creating $SHARED_SRC_RULES
-rm -f $SHARED_SRC_RULES
-cat > $SHARED_SRC_RULES <<EOF
-# $SHARED_SRC_RULES - Rules for building objects from files in shared_src.
-# Generated automatically by configure.
-asm.o: \$(top_srcdir)/shared_src/asm.S
-	@echo '\$(COMPILE) -c \$(top_srcdir)/shared_src/asm.S'; \\
-	if test -d .deps; then \\
-	  \$(COMPILE) -Wp,-MD,.deps/asm.P -c \$(top_srcdir)/shared_src/asm.S; \\
-	else \\
-	  \$(COMPILE) -c \$(top_srcdir)/shared_src/asm.S; \\
-	fi
-EOF
-for f in boot common char_io cmdline disk_io gunzip fsys_ffs \
-         fsys_ext2fs fsys_fat stage1_5 stage2 bios; do
-
-  cat >> $SHARED_SRC_RULES <<EOF
-
-$f.o: \$(top_srcdir)/shared_src/$f.c
-	@echo '\$(COMPILE) -c \$(top_srcdir)/shared_src/$f.c'; \\
-	if test -d .deps; then \\
-	  \$(COMPILE) -Wp,-MD,.deps/$f.P -c \$(top_srcdir)/shared_src/$f.c; \\
-	else \\
-	  \$(COMPILE) -c \$(top_srcdir)/shared_src/$f.c; \\
-	fi
-
-EOF
-done
-
-AC_OUTPUT([Makefile grub/Makefile stage1/Makefile stage2/Makefile \
-	e2fs_stage1_5/Makefile fat_stage1_5/Makefile \
-	ffs_stage1_5/Makefile docs/Makefile shared_src/Makefile \
-	debian/Makefile])
+AC_OUTPUT([Makefile stage1/Makefile stage2/Makefile docs/Makefile \
+	debian/Makefile grub/Makefile])

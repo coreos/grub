@@ -1,7 +1,4 @@
-SUBDIRS = grub stage1 stage2 \
-	e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-	docs shared_src debian
-DISTCLEANFILES = ssrcrules.mk
+SUBDIRS = stage1 stage2 docs debian grub
 EXTRA_DIST = BUGS
 
 # We get $(PACKAGE) and $(VERSION) from debian/changelog.

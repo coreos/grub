@@ -62,10 +62,12 @@ host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
+GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
+RANLIB = @RANLIB@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
@@ -73,18 +75,11 @@ install_sh = @install_sh@
 
 
 sbin_PROGRAMS = grub
-CLEANFILES = $(EXTRA_PROGRAMS)
 
-COMPILE = $(CC) -DGRUB_UTIL=1 -fwritable-strings $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
-INCLUDES = -I$(top_srcdir)/shared_src
+AM_CFLAGS = -DGRUB_UTIL=1 -fwritable-strings -I$(top_srcdir)/stage2
 
 grub_SOURCES = main.c asmstub.c
-grub_LDADD = boot.o common.o char_io.o cmdline.o disk_io.o gunzip.o \
-	fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
-
-
-# FIXME: Automake hackery.
-DEP_FILES = .deps/main.P .deps/asmstub.P $(wildcard .deps/*.P)
+grub_LDADD = ../stage2/libgrub.a @GRUB_LIBS@
 subdir = grub
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
@@ -97,9 +92,9 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 am_grub_OBJECTS =  main.o asmstub.o
 grub_OBJECTS =  $(am_grub_OBJECTS)
-grub_DEPENDENCIES =  boot.o common.o char_io.o cmdline.o disk_io.o \
-gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
+grub_DEPENDENCIES =  ../stage2/libgrub.a
 grub_LDFLAGS = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -110,6 +105,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
+DEP_FILES =  .deps/asmstub.P .deps/main.P
 SOURCES = $(grub_SOURCES)
 OBJECTS = $(am_grub_OBJECTS)
 
@@ -281,7 +277,6 @@ installdirs:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -325,8 +320,6 @@ all-redirect all-am all install-strip installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
-
-@SHARED_SRC_RULES@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

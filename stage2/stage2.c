@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "../shared_src/shared.h"
+#include "shared.h"
 
 static char *
 get_entry(char *list, int num, int nested)

@@ -1,5 +1,145 @@
 1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	Build process is cleaned up. Stage 2 and Stage 1.5's are all
+	built in the directory stage2.
+	
+	From Pavel Roskin <pavel_roskin@geocities.com>:
+	* Makefile.am (SUBDIRS): e2fs_stage1_5, ffs_stage1_5,
+	fat_stage1_5 and shared_src are removed.
+	(DISTCLEANFILES): Deleted.
+	* configure.in: Call AC_PROG_RANLIB.
+	(AC_INIT): Change the argument to stage2/stage2.c.
+	(LIBS): Renamed to ...
+	(GRUB_LIBS): ... this, and call AC_SUBST for this.
+	Our own rules are removed.
+	(AC_OUTPUT): e2fs_stage1_5/Makefile, ffs_stage1_5/Makefile,
+	fat_stage1_5/Makefile and shared_src/Makefile are removed.
+	* docs/Makefile.am (HELP2MAN): The prefix $(srcdir) is removed.
+	[GRUB_MAINT]: Prepend $(srcdir) to $(HELP2MAN).
+	* e2fs_stage1_5/Makefile.am: Deleted.
+	* e2fs_stage1_5/Makefile.in: Likewise.
+	* fat_stage1_5/Makefile.am: Likewise.
+	* fat_stage1_5/Makefile.in: Likewise.
+	* ffs_stage1_5/Makefile.am: Likewise.
+	* ffs_stage1_5/Makefile.in: Likewise.
+	* grub/Makefile.am (CLEANFILES): Likewise.
+	(COMPILE): Likewise.
+	(INCLUDES): Likewise.
+	(DEP_FILES): Likewise.
+	(@SHARED_SRC_RULES@): Likewise.
+	(AM_CFLAGS): New variable.
+	(grub_LDADD): Set to the library libgrub.a and @GRUB_LIBS@.
+	* shared_src/Makefile.am: Deleted.
+	* shared_src/Makefile.in: Likewise.
+	* shared_src/apic.h: Moved to ...
+	* stage2/apic.h: ... here.
+	* shared_src/asm.S: Moved to ...
+	* stage2/asm.S: ... here.
+	* shared_src/bios.c: Moved to ...
+	* stage2/bios.c: ... here.
+	* shared_src/boot.c: Moved to ...
+	* stage2/boot.c: ... here.
+	* shared_src/char_io.c: Moved to ...
+	* stage2/char_io.c: ... here.
+	* shared_src/cmdline.c: Moved to ...
+	* stage2/cmdline.c: ... here.
+	* shared_src/common.c: Moved to ...
+	* stage2/common.c: ... here.
+	* shared_src/defs.h: Moved to ...
+	* stage2/defs.h: ... here.
+	* shared_src/dir.h: Moved to ...
+	* stage2/dir.h: ... here.
+	* shared_src/disk_inode.h: Moved to ...
+	* stage2/disk_inode.h: ... here.
+	* shared_src/disk_inode_ffs.h: Moved to ...
+	* stage2/disk_inode_ffs.h: ... here.
+	* shared_src/disk_io.c: Moved to ...
+	* stage2/disk_io.c: ... here.
+	* shared_src/fat.h: Moved to ...
+	* stage2/fat.h: ... here.
+	* shared_src/filesys.h: Moved to ...
+	* stage2/filesys.h: ... here.
+	* shared_src/freebsd.h: Moved to ...
+	* stage2/freebsd.h: ... here.
+	* shared_src/fs.h: Moved to ...
+	* stage2/fs.h: ... here.
+	* shared_src/fsys_ext2fs.c: Moved to ...
+	* stage2/fsys_ext2fs.c: ... here.
+	* shared_src/fsys_fat.c: Moved to ...
+	* stage2/fsys_fat.c: ... here.
+	* shared_src/fsys_ffs.c: Moved to ...
+	* stage2/fsys_ffs.c: ... here.
+	* shared_src/gunzip.c: Moved to ...
+	* stage2/gunzip.c: ... here.
+	* shared_src/i386-elf.h: Moved to ...
+	* stage2/i386-elf.h: ... here.
+	* shared_src/imgact_aout.h: Moved to ...
+	* stage2/imgact_aout.h: ... here.
+	* shared_src/mb_header.h: Moved to ...
+	* stage2/mb_header.h: ... here.
+	* shared_src/mb_info.h: Moved to ...
+	* stage2/mb_info.h: ... here.
+	* shared_src/pc_slice.h: Moved to ...
+	* stage2/pc_slice.h: ... here.
+	* shared_src/shared.h: Moved to ...
+	* stage2/shared.h: ... here.
+	* shared_src/smp-imps.c: Moved to ...
+	* stage2/smp-imps.c: ... here.
+	* shared_src/smp-imps.h: Moved to ...
+	* stage2/smp-imps.h: ... here.
+	* shared_src/stage1_5.c: Moved to ...
+	* stage2/stage1_5.c: ... here.
+	* shared_src/stage2.c: Moved to ...
+	* stage2/stage2.c: ... here.
+	* stage1/Makefile.am (pkgdata_DATA): Renamed to ...
+	(nodist_pkgdata_DATA): ... this.
+	(COMPILE): Deleted.
+	(AM_CFLAGS): New variable.
+	* stage2/Makefile.am: Completely rewritten from scratch.
+	(TESTS): New variable.
+	(noinst_SCRIPTS): Likewise.
+	(noinst_HEADERS): Likewise.
+	(EXTRA_DIST): Set to smp-imps.c and $(noinst_SCRIPTS).
+	(noinst_LIBRARIES): New variable.
+	(libgrub_a_SOURCES): Likewise.
+	(libgrub_a_CFLAGS): Likewise.
+	(pkgdata_DATA): Deleted.
+	(nodist_pkgdata_DATA): New variable.
+	(MOSTLYCLEANFILES): Set to $(noinst_PROGRAMS).
+	(COMPILE): Deleted.
+	(INCLUDES): Likewise.
+	(stage2_exec_LDADD): Likewise.
+	(DEP_FILES): Likewise.
+	(stage2_exec_SOURCES): Set to the actual source files instead of
+	dummy.
+	(DISTFILES): Deleted.
+	(stage2.exec): Likewise.
+	(stage2): Likewise.
+	(@SHARED_SRC_RULES@): Likewise.
+	(noinst_PROGRAMS): Set to executable formats of Stage 2 and
+	Stage 1.5's.
+	(STAGE2_LINK): New variable.
+	(STAGE2_COMPILE): Likewise.
+	(STAGE1_5_LINK): Likewise.
+	(STAGE1_5_COMPILE): Likewise.
+	(stage2_exec_CFLAGS): Likewise.
+	(stage2_exec_LDFLAGS): Likewise.
+	(e2fs_stage1_5_exec_SOURCES): Likewise.
+	(e2fs_stage1_5_exec_CFLAGS): Likewise.
+	(e2fs_stage1_5_exec_LDFLAGS): Likewise.
+	(fat_stage1_5_exec_SOURCES): Likewise.
+	(fat_stage1_5_exec_CFLAGS): Likewise.
+	(fat_stage1_5_exec_LDFLAGS): Likewise.
+	(ffs_stage1_5_exec_SOURCES): Likewise.
+	(ffs_stage1_5_exec_CFLAGS): Likewise.
+	(ffs_stage1_5_exec_LDFLAGS): Likewise.
+	(% : %.exec): New rule.
+	
+	* stage2/size_test: New file, for checking for the sizes of
+	Stage 2 and Stage 1.5's.
+	
+1999-06-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage1/stage1.S: Call testb instead of andb when checking if
 	the drive is a floppy.
 	
