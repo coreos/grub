@@ -37,6 +37,8 @@ binary-arch:	checkroot build
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
 	-rmdir debian/tmp/sbin
 
+	mv debian/tmp/info debian/tmp/usr/info
+
 	cp -r docs debian/tmp/usr/doc/grub/
 	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/docs/
 	rm -f debian/tmp/usr/doc/grub/docs/COPYING

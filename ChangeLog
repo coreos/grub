@@ -1,3 +1,8 @@
+1999-03-13  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* debian/rules: Make sure info files end up in /usr/info, not
+	/info.
+
 1999-03-10  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/asm.S (biosdisk): Make LBA mode work correctly.  From

@@ -1,9 +1,11 @@
 grub (0.5.91) unstable; urgency=low
 
-  * Added support for LBA mode and AWARD/AMI hard disk BIOS extensions.
+  * Added support for LBA mode and preliminary AWARD/AMI hard disk BIOS
+    extensions.
   * GRUB data now installed in /share/grub/$(host_cpu)-$(host_vendor).
+  * Preliminary Texinfo documentation.
 
- --
+ -- Gordon Matzigkeit <gord@debian.org>  Sat, 13 Mar 1999 17:37:25 -0600
 
 grub (0.5.90) unstable; urgency=low
 
