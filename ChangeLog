@@ -1,3 +1,10 @@
+1999-10-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* docs/grub.texi: Fix typos.
+	* stage2/builtins.c (install_func): Reformat the warning message
+	about the option `d'.
+	
 1999-10-03  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage2/builtins.c (install_func): Fix check for the Stage 2 id.

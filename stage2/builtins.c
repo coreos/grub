@@ -904,7 +904,7 @@ install_func (char *arg, int flags)
     new_drive = current_drive;
   else if (current_drive != dest_drive)
     grub_printf ("Warning: the option `d' was not used, but the Stage 1 will"
-		 "be installed on a\ndifferent drive than the drive where"
+		 " be installed on a\ndifferent drive than the drive where"
 		 " the Stage 2 resides.\n");
 
   memmove ((char*) BOOTSEC_LOCATION, buffer, SECTOR_SIZE);

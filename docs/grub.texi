@@ -471,10 +471,11 @@ First, copy @file{e2fs_stage1_5} to the first sector after the MBR
 dd if=stage2/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
 @end example
 
-Second, specify the stage1.5 argument in blocklist format:
+Second, specify the stage1.5 argument in blocklist format (we assume
+that the size of e2fs_stage1_5 is less than 10KB):
 
 @example
-install (fd0)+1 (hd0) (hd0)1+1 p (hd0,1)/boot/grub/stage2
+install (fd0)+1 (hd0) (hd0)1+20 p (hd0,1)/boot/grub/stage2
 @end example
 
 @item
@@ -1306,7 +1307,7 @@ This option has the same meaning as @samp{--no-config-file --no-curses}.
 Disable writing to any disk.
 
 @item --hold
-Wait until a debegger will attach. This option is useful when you want
+Wait until a debugger will attach. This option is useful when you want
 to debug the startup code.
 @end table
 
@@ -1654,7 +1655,7 @@ The @dfn{Type} field describes the usage of the described address range
 as defined in the table below:
 
 @multitable @columnfractions 0.1 0.35 0.55
-@item Value @tab Pneumonic @tab Description
+@item Value @tab Mnemonic @tab Description
 
 @item 1 @tab @dfn{AddressRangeMemory} @tab This run is available
 @sc{ram} usable by the operating system.
@@ -2014,7 +2015,7 @@ other data about the BIOS drive number.
 
 An ATA disk must implement both CHS and LBA addressing and must at any
 given time support only one P-CHS at the device interface. And, the
-drive must maintain a strick relationship between the sector addressing
+drive must maintain a strict relationship between the sector addressing
 in CHS mode and LBA mode. Quoting @cite{the ATA-2 document}:
 
 @example
@@ -2048,7 +2049,7 @@ must convert that LBA to a CHS in order to call INT 13H.
 The basic problem is that there is no requirement that a CHS translating
 BIOS followed these rules. There are many other algorithms that can be
 implemented to perform a similar function. Today, there are at least two
-popular implementions: the Phoenix implementation (described above) and
+popular implementations: the Phoenix implementation (described above) and
 the non-Phoenix implementations. Because a protected mode OS that does
 not want to use INT 13H must implement the same CHS translation
 algorithm. If it doesn't, your data gets scrambled.
@@ -2186,7 +2187,7 @@ Output:
 @item @code{CL} @tab Maximum sector number in bits 0-5, and high 2 bits
 of maximum cylinder number in bits 6-7.
 
-@item @code{DH} @tab Maxiumum head number.
+@item @code{DH} @tab Maximum head number.
 
 @item @code{DL} @tab The number of drives.
 
@@ -2433,7 +2434,7 @@ memory location 0000:7C00. However, if no boot sector is found on the
 first floppy drive, INT 19H tries to read the MBR from the first hard
 drive. If an MBR is found it is read into memory at location 0000:7C00
 and INT 19H jumps to memory location 0000:7C00. The small program in the
-MBR will atempt to locate an active (bootable) partition in its
+MBR will attempt to locate an active (bootable) partition in its
 partition table@footnote{This behavior is DOS MBR's, and GRUB ignores
 the active flag.}. The small program in the boot sector must locate the
 first part of the operating system's kernel loader program (or perhaps
@@ -2699,7 +2700,7 @@ Amoeba
 Amoeba BBT
 
 @item A0
-IBM Thinkpad hibernatoin
+IBM Thinkpad hibernation
 
 @item A5
 BSD/386
@@ -2925,7 +2926,7 @@ Should be the length of the file.
 Should be set to the value of @samp{disk_read_hook} @emph{only} during
 reading of data for the file, not any other fs data, inodes, FAT tables,
 whatever, then set to @code{NULL} at all other times (it will be
-@code{NULL} by default). If this isn't done corrently, then the
+@code{NULL} by default). If this isn't done correctly, then the
 @command{testload} and @command{install} commands won't work
 correctly.
 @end vtable
