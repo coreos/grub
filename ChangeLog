@@ -1,3 +1,15 @@
+2000-02-26  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/help2man: Upgraded to 1.020.
+	* docs/grub.8: Regenerated.
+	* docs/grub-install.8: Likewise.
+	* docs/mbchk.1: Likewise.
+
+	* docs/tutorial.texi (Boot): Rewritten heavily. Added the notes
+	on FreeBSD, NetBSD, OpenBSD, DOS/Windows and SCO UnixWare.
+	* docs/menu.lst: Load "/boot/loader" instead of "/kernel" in the
+	FreeBSD entry. This is consistent with the documentation.
+	
 2000-02-25  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* netboot/fsys_tftp.c (tftp_read): Set BUF_READ to zero if

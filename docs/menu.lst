@@ -19,7 +19,8 @@ module /boot/serverboot.gz
 
 # For booting Linux
 title  GNU/Linux
-kernel (hd1,0)/vmlinuz root=/dev/hdb1
+root (hd1,0)
+kernel /vmlinuz root=/dev/hdb1
 
 # For booting Mach (getting kernel from floppy)
 title  Utah Mach4 multiboot
@@ -28,10 +29,10 @@ pause  Insert the diskette now!!
 kernel (fd0)/boot/kernel root=hd0s3
 module (fd0)/boot/bootstrap
 
-# For booting FreeBSD (getting kernel from floppy)
-title  FreeBSD
+# For booting FreeBSD
+title  FreeBSD 3.4
 root   (hd0,2,a)
-kernel (fd0)/kernel
+kernel /boot/loader
 
 # For booting OS/2
 title OS/2
@@ -44,9 +45,9 @@ chainloader +1
 
 # For booting Windows NT or Windows95
 title Windows NT / Windows 95 boot menu
-root        (hd0,0)
+rootnoverify (hd0,0)
 makeactive
-chainloader +1
+chainloader  +1
 # For loading DOS if Windows NT is installed
 # chainload /bootsect.dos
 

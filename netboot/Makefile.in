@@ -96,7 +96,7 @@ libdrivers_a_SOURCES = byteorder.h config.c etherboot.h \
 	main.c misc.c netboot_config.h netdevice.h nic.h osdep.h \
 	pci.c pci.h
 
-EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c59x.c 3c90x.c cs89x0.c \
+EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c90x.c cs89x0.c \
 	3c89x0.h eepro100.c epic100.c epic100.h i82586.c lance.c \
 	ns8390.c ns8390.h ntulip.c rtl8139.c sk_g16.c sk_g16.h \
 	smc9000.c smc9000.h tiara.c tulip.c tulip.h via-rhine.c
@@ -115,7 +115,7 @@ EXTRA_DIST = README.netboot 3c90x.txt ntulip.txt
 
 # What objects are derived from a driver?
 3c509_drivers = 3c509.o 3c529.o
-3c59x_drivers = 3c59x.o
+#3c59x_drivers = 3c59x.o
 3c90x_drivers = 3c90x.o
 cs89x0_drivers = cs89x0.o
 eepro100_drivers = eepro100.o
@@ -134,7 +134,7 @@ via_rhine_drivers = via_rhine.o
 # Per-object flags.
 3c509_o_CFLAGS = -DINCLUDE_3C509=1
 3c529_o_CFLAGS = -DINCLUDE_3C529=1
-3c59x_o_CFLAGS = -DINCLUDE_3C59X=1
+#3c59x_o_CFLAGS = -DINCLUDE_3C59X=1
 3c90x_o_CFLAGS = -DINCLUDE_3C90X=1
 cs89x0_o_CFLAGS = -DINCLUDE_CS89X0=1
 eepro100_o_CFLAGS = -DINCLUDE_EEPRO100=1
@@ -184,11 +184,11 @@ DIST_COMMON =  Makefile.am Makefile.in compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-DEP_FILES =  .deps/3c509.P .deps/3c59x.P .deps/3c90x.P .deps/config.P \
-.deps/cs89x0.P .deps/eepro100.P .deps/epic100.P .deps/fsys_tftp.P \
-.deps/i82586.P .deps/lance.P .deps/main.P .deps/misc.P .deps/ns8390.P \
-.deps/ntulip.P .deps/pci.P .deps/rtl8139.P .deps/sk_g16.P \
-.deps/smc9000.P .deps/tiara.P .deps/tulip.P .deps/via-rhine.P
+DEP_FILES =  .deps/3c509.P .deps/3c90x.P .deps/config.P .deps/cs89x0.P \
+.deps/eepro100.P .deps/epic100.P .deps/fsys_tftp.P .deps/i82586.P \
+.deps/lance.P .deps/main.P .deps/misc.P .deps/ns8390.P .deps/ntulip.P \
+.deps/pci.P .deps/rtl8139.P .deps/sk_g16.P .deps/smc9000.P \
+.deps/tiara.P .deps/tulip.P .deps/via-rhine.P
 SOURCES = $(libdrivers_a_SOURCES) $(EXTRA_libdrivers_a_SOURCES)
 OBJECTS = $(am_libdrivers_a_OBJECTS)
 
@@ -227,7 +227,6 @@ libdrivers_a-main.o: main.c
 libdrivers_a-misc.o: misc.c
 libdrivers_a-pci.o: pci.c
 libdrivers_a-3c509.o: 3c509.c
-libdrivers_a-3c59x.o: 3c59x.c
 libdrivers_a-3c90x.o: 3c90x.c
 libdrivers_a-cs89x0.o: cs89x0.c
 libdrivers_a-eepro100.o: eepro100.c
@@ -439,25 +438,6 @@ libdrivers_a-3c509.o: 3c509.c
 	rm .deps/$(*D)/$(*F).pp
 
 libdrivers_a-3c509.lo: 3c509.c
-	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
-	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
-	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm -f .deps/$(*D)/$(*F).pp
-
-libdrivers_a-3c59x.o: 3c59x.c
-	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
-	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
-	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm .deps/$(*D)/$(*F).pp
-
-libdrivers_a-3c59x.lo: 3c59x.c
 	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
@@ -821,10 +801,10 @@ $(3c509_drivers): %.o: 3c509.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
-$(3c59x_drivers): 3c59x.c 3c509.h
-$(3c59x_drivers): %.o: 3c59x.c
-	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
-	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+#$(3c59x_drivers): 3c59x.c 3c509.h
+#$(3c59x_drivers): %.o: 3c59x.c
+#	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+#	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
 $(3c90x_drivers): 3c90x.c
 $(3c90x_drivers): %.o: 3c90x.c

@@ -143,9 +143,11 @@ on the floppy.
 It is easy to create a GRUB boot floppy. Just follow this below:
 
 @example
+@group
 # cd /boot/grub
 # dd if=stage1 of=/dev/fd0 bs=512 count=1
 # dd if=stage2 of=/dev/fd0 bs=512 seek=1
+@end group
 @end example
 
 The device filename may be different. Consult the manual for your OS.
@@ -223,18 +225,37 @@ but, for some free operating systems, you need to use some OS-specific
 magic.
 
 @menu
-* Booting a Multiboot-compliant OS::
-* Booting GNU/Hurd::
-* Booting GNU/Linux::
-* Booting FreeBSD::
-* Booting NetBSD::
-* Booting OpenBSD::
+* General boot methods::
+* OS-specific notes::
+@end menu
+
+
+@node General boot methods
+@section How to boot operating systems
+
+GRUB has two distinct sets of boot methods, that is, loading an
+operating system directly and chain-loading another boot loader which
+then will load an operating system actually. Generally speaking, the
+former is preferable, because you don't need to install or maintain
+other boot loaders and GRUB is flexible enough to load an operating
+system from an arbitrary disk/partition. However, the latter is
+sometimes required, since GRUB doesn't support all the existing
+operating systems natively.
+
+@menu
+* Loading an operating system directly::
 * Chain-loading::
 @end menu
 
 
-@node Booting a Multiboot-compliant OS
-@section Booting a Multiboot-compliant OS
+@node Loading an operating system directly
+@subsection How to boot an OS directly by GRUB
+
+The native format supported by GRUB is Multiboot (@pxref{Top, Multiboot
+Specification, Motivation, multiboot, The Multiboot Specification}), but
+Linux, FreeBSD, NetBSD and OpenBSD are also supported for
+convenience. If you want to boot other operating systems, you will have
+to chain-load them (@pxref{Chain-loading}).
 
 Generally, GRUB can boot any Multiboot-compliant OS in the following
 steps:
@@ -242,22 +263,83 @@ steps:
 @enumerate
 @item
 Set GRUB's root device to the drive where the OS images are stored by
-the command @command{root} (@pxref{Command}).
+the command @command{root}.
 
 @item
-Load the kernel image by the command @command{kernel} (@pxref{Command}).
+Load the kernel image by the command @command{kernel}.
 
 @item
 Load the modules by the command @command{module} or
-@command{modulenounzip} as you need (@pxref{Command}).
+@command{modulenounzip} as you need.
 
 @item
-Run the command @command{boot} (@pxref{Command}).
+Run the command @command{boot}.
 @end enumerate
 
+Linux, FreeBSD, NetBSD and OpenBSD can be booted in a similar
+manner. You can load a kernel image by the command @command{kernel} and
+then run the command @command{boot}. If the kernel requires some
+parameters, just append the parameters to @command{kernel}, after the
+filename of the kernel. Also, please refer to @ref{OS-specific notes},
+for the information on your OS-specific issues.
 
-@node Booting GNU/Hurd
-@section Booting GNU/Hurd
+
+@node Chain-loading
+@subsection Load another boot loader to boot unsupported operating systems
+
+If you want to boot an unsupported operating system (e.g. Windows 95),
+chain-load the boot loader for the operating system. Normally, the boot
+loader is embedded in the @dfn{boot sector} of the partition on which
+the operating system is installed.
+
+First, set GRUB's root device to the partition by the command
+@command{rootnoverify}:
+
+@example
+grub> rootnoverify (hd0,0)
+@end example
+
+Second, set the @dfn{active} flag in the partition by the command
+@command{makeactive}@footnote{This is not necessary for most modern
+operating systems.}:
+
+@example
+grub> makeactive
+@end example
+
+Third, load the boot loader by the command @command{chainloader}:
+
+@example
+grub> chainloader +1
+@end example
+
+@samp{+1} indicates that GRUB should read one sector from the start of
+the partition. The complete description about this syntax can be found
+in @ref{Filesystem}. If this succeeds, run the command @command{boot}.
+
+However, DOS and Windows have a deficiency, so you might have to use
+more complicated instructions. @xref{OS-specific notes}, for more
+information.
+
+
+@node OS-specific notes
+@section Some caveats on OS-specific issues
+
+Here, we describe some caveats on several operating systems.
+
+@menu
+* GNU/Hurd::
+* GNU/Linux::
+* FreeBSD::
+* NetBSD::
+* OpenBSD::
+* DOS/Windows::
+* SCO UnixWare::
+@end menu
+
+
+@node GNU/Hurd
+@subsection GNU/Hurd
 
 Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
 nothing special. But do not forget that you specify a root partition to
@@ -270,19 +352,20 @@ you.
 Second, load the kernel and the module, like this:
 
 @example
+@group
 grub> kernel /boot/gnumach root=hd0s1
 grub> module /boot/serverboot
+@end group
 @end example
 
 And, finally, run the command @command{boot}.
 
 
-@node Booting GNU/Linux
-@section Booting GNU/Linux
+@node GNU/Linux
+@subsection GNU/Linux
 
 It is relatively easy to boot GNU/Linux from GRUB, because booting
-GNU/Linux somewhat resembles booting a Multiboot-compliant OS
-(@pxref{Booting a Multiboot-compliant OS}).
+GNU/Linux somewhat resembles booting a Multiboot-compliant OS.
 
 First, set GRUB's root device to the same drive as
 GNU/Linux's. Probably @code{find /vmlinuz} or such will help
@@ -314,69 +397,65 @@ grub> initrd /initrd
 And, finally, run the command @command{boot}.
 
 
-@node Booting FreeBSD
-@section Booting FreeBSD
+@node FreeBSD
+@subsection FreeBSD
 
-@c Probably we should fix the boot parameters before writing this
-@c section.
-FIXME
+GRUB can directly load both kernel formats, ELF and a.out, but this is
+deprecated, since FreeBSD's bootstrap interface is sometimes changed
+heavily and so GRUB can't guarantee to pass kernel parameters
+correctly.
 
-
-@node Booting NetBSD
-@section Booting NetBSD
-
-@c Likewise.
-FIXME
-
-
-@node Booting OpenBSD
-@section Booting OpenBSD
-
-@c Likewise.
-FIXME
-
-
-@node Chain-loading
-@section Chain-loading
-
-If you want to boot an unsupported operating system (i.e. Windows 95),
-chain-load the boot loader for the operating system. Normally, the boot
-loader is embedded in the @dfn{boot sector} of the partition on which
-the operating system is installed.
-
-First, set GRUB's root device to the partition by the command
-@command{rootnoverify}:
+Thus, we'd recommend loading the very flexible loader
+@file{/boot/loader} instead. See this example:
 
 @example
-grub> rootnoverify (hd0,0)
+@group
+grub> root (hd0,a)
+grub> kernel /boot/loader
+grub> boot
+@end group
 @end example
 
-Second, set the @dfn{active} flag in the partition by the command
-@command{makeactive}:
 
-@example
-grub> makeactive
-@end example
+@node NetBSD
+@subsection NetBSD
 
-Third, load the boot loader by the command @command{chainloader}:
+GRUB can load NetBSD a.out directly, by the following steps:
 
-@example
-grub> chainloader +1
-@end example
+@enumerate
+@item
+Set GRUB's root device by @command{root}.
 
-Do not care about what @samp{+1} is. We describe it later in
-@ref{Filesystem}. If this succeeds, run the command @command{boot}.
+@item
+Load the kernel by @command{kernel}.
 
-@strong{Caution:} Some boot loaders (such as the one in SCO Unixware
-7.1) are defective in the signature, so you will have to specify the
-option @option{--force} to @command{chainloader} for them. The option
-might seem to solve your problem, but we strongly recommend reporting
-the bug to the maintainer.
+@item
+Run @command{boot}.
+@end enumerate
 
-However, some tricks will be necessary if you have installed DOS or
-Windows on a non-first hard disk, because they cannot boot any disks
-except for the first one. The solution is to use the command
-@command{map} (@pxref{Command}), like this:
+For now, however, GRUB doesn't allow you to pass kernel parameters, so
+it may be better to chain-load it instead. @xref{Chain-loading}, for
+more information.
+
+
+@node OpenBSD
+@subsection OpenBSD
+
+The boot instructions are exactly the same as NetBSD (@pxref{NetBSD}).
+
+
+@node DOS/Windows
+@subsection DOS/Windows
+
+GRUB doesn't support DOS or Windows directly, so you must chain-load
+them (@pxref{Chain-loading}). However, their boot loaders have some
+critical deficiencies, so the general methods may not be enough.
+
+If you have installed DOS (or Windows) on a non-first hard disk, the
+disk swapping technique is necessary, because it cannot boot any disks
+but the first one. The solution used in GRUB is the command
+@command{map} (@pxref{Command}). For example, if the installed disk is
+the second hard disk, swap it for the first hard disk:
 
 @example
 @group
@@ -385,8 +464,51 @@ grub> map (hd1) (hd0)
 @end group
 @end example
 
-This performs the @dfn{logical} exchange between your first disk and
-your second one.
+This performs the @dfn{virtual} exchange between the two disks.
+
+@strong{Caution:} This is effective only if DOS (or Windows) uses BIOS
+to access the swapped disks. If it uses a special driver for them,
+probably this doesn't work.
+
+Another problem arises if you install more than one sets of DOS/Windows
+into one disk, because they could be confused if there are more than one
+primary partitions for DOS/Windows. Certainly you should avoid this way,
+but there is a solution if you do want to do so. Use the partition
+hiding/unhiding technique.
+
+If GRUB @dfn{hide}s a DOS (or Windows) partition, then it ignores the
+partition. If GRUB @dfn{unhide}s a DOS (or Windows) partition, it
+detects the partition. Thus, if you have installed DOS (or Windows) into
+the first partition and the second partition of the first hard disk,
+follow these below when booting the first:
+
+@example
+@group
+grub> unhide (hd0,0)
+grub> hide (hd0,1)
+grub> rootnoverify (hd0,0)
+grub> chainloader +1
+grub> makeactive
+grub> boot
+@end group
+@end example
+
+
+@node SCO UnixWare
+@subsection SCO UnixWare
+
+The boot loader in SCO UnixWare is known by the fact that its signature
+is wrong. So you will need to specify the option @option{--force} to
+@command{chainloader}, like this:
+
+@example
+@group
+grub> rootnoverify (hd1,0)
+grub> chainloader --force +1
+grub> makeactive
+grub> boot
+@end group
+@end example
 
 
 @node Configuration
