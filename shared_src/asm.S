@@ -63,7 +63,7 @@ ENTRY(start)
 VARIABLE(install_partition)
 	.long	0xFF00FF
 VARIABLE(version_string)
-	.string "0.4-pre"
+	.string "0.4"
 VARIABLE(config_file)
 #ifndef CONFIG_FILE_ASM
 	.string "/boot/grub/menu.lst"
@@ -932,128 +932,6 @@ gloop2ret:
 
 #ifdef DEBUG
 
-/*
- *  Don't use the next two functions anywhere but in assembly code, called
- *  from C, it might corrupt your register state!!
- */
-
-ENTRY(delay_timer)	/* labels start with "dt_" */
-	pushl	%edx
-	pushl	%ecx
-	movl	0xc(%esp), %ecx
-	jcxz	dt_exit
-	movl	$0x1680, %eax
-	mull	%ecx
-	movl	%eax, %eax
-dt_label1:
-	subl	$0x1, %eax
-	jne	dt_label1
-dt_exit:
-	popl	%ecx
-	popl	%edx
-	ret
-
-
-ENTRY(wait_APIC_done)	/* labels start with "wa_" */
-	testl	$0x1000, (%edx)
-	je	wa_label_before_exit
-	decl	%ecx
-	jne	EXT_C(wait_APIC_done)
-wa_label_before_exit:
-	movl	%ecx, %eax
-	ret
-
-
-ENTRY(start_cpu)	/* labels start with "sc_" */
-	pushl	%ebp
-	movl	%esp, %ebp
-	pushl   %ebx
-	pushl   %edi
-	pushl	%ecx
-	pushl	%edx
-
-	pushl	$0xc8
-	call	EXT_C(delay_timer)
-	popl	%eax
-
-	movl	0x10(%ebp), %edx
-	addl	$0x300, %edx
-	movl	$0x64,%ecx
-	call	EXT_C(wait_APIC_done)
-
-	testl	%eax, %eax
-	jne	sc_label1
-	xorl	%eax, %eax
-	jmp	sc_exit
-
-sc_label1:
-	movl	0x10(%ebp), %eax
-	movl	0x8(%ebp), %edi
-	pushl	$0xa
-	shll	$0x18, %edi
-		/* send assert INIT IPI */
-	movl	%edi, 0x310(%eax)
-	movl	$0xc500, 0x300(%eax)
-
-	call	EXT_C(delay_timer)
-	popl	%eax
-
-	movl	0x10(%ebp), %ecx
-	pushl	$0xc8
-		/* send deassert INIT IPI */
-	movl	$0x8500, 0x300(%ecx)
-
-	call	EXT_C(delay_timer)
-	popl	%eax
-
-/* 486 MP systems should exit here */
-
-	movl	0xc(%ebp), %ebx
-	movl	0x10(%ebp), %eax
-	andl	$0xff000, %ebx
-	orl	$0x600000, %ebx
-	pushl	$0xc8
-	shrl	$0xc, %ebx
-		/* send STARTUP IPI */
-	movl	%edi, 0x310(%eax)
-	movl	%ebx, 0x300(%eax)
-
-	call	EXT_C(delay_timer)
-	popl	%eax
-
-	movl	0x10(%ebp), %edx
-	addl	$0x300, %edx
-	movl	$0x64,%ecx
-	call	EXT_C(wait_APIC_done)
-	testl	%eax,%eax
-	movl	$0x0,%eax
-	je	sc_exit
-
-	pushl	$0x64
-	call	EXT_C(delay_timer)
-	popl	%eax
-
-	movl	0x10(%ebp), %eax
-	pushl	$0xc8
-		/* send STARTUP IPI */
-	movl	%edi, 0x310(%eax)
-	movl	%ebx, 0x300(%eax)
-
-	call	EXT_C(delay_timer)
-	popl	%eax
-
-sc_label_before_exit:
-	movl	$0x1, %eax
-
-sc_exit:
-	popl	%edx
-	popl	%ecx
-	popl	%edi
-	popl	%ebx
-	popl	%ebp
-	ret
-
-
 	.code16
 
 ENTRY(patch_code)	/* labels start with "pc_" */
@@ -1064,8 +942,8 @@ ENTRY(patch_code)	/* labels start with "pc_" */
 	mov	%ax, %gs
 	movl	$0, 0
 pc_stop:
+	hlt
 	jmp	pc_stop
-	movw	%ax, %ax
 ENTRY(patch_code_end)
 
 	.code32
