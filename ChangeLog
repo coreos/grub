@@ -1,3 +1,14 @@
+1999-08-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/stage2.c (set_line_normal): New function.
+	(set_line_highlight): Likewise.
+	(run_menu): Do not call the function set_line directly any
+	longer, call set_line_normal and set_line_highlight instead.
+
+	From Pavel Roskin:
+	* stage2/stage2.c (run_menu) [GRUB_UTIL]: Quit when pushing the
+	key `q'.
+	
 1999-08-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_PREFIX_REQUIREMENT): New function.

@@ -143,6 +143,27 @@ set_line(int y, int attr)
     }
 }
 
+/* Set the attribute of the line Y to normal state.  */
+static void
+set_line_normal (int y)
+{
+#ifdef GRUB_UTIL
+  set_line (y, A_NORMAL);
+#else
+  set_line (y, normal_color);
+#endif
+}
+
+/* Set the attribute of the line Y to highlight state.  */
+static void
+set_line_highlight (int y)
+{
+#ifdef GRUB_UTIL
+  set_line (y, A_REVERSE);
+#else
+  set_line (y, highlight_color);
+#endif
+}
 
 static int grub_timeout;
 
@@ -201,12 +222,7 @@ restart:
   print_entries(3, 12, first_entry, menu_entries);
 
   /* highlight initial line */
-#ifdef GRUB_UTIL
-  set_line (4 + entryno, A_REVERSE);
-#else
-  set_line (4 + entryno, highlight_color);
-#endif
-  
+  set_line_highlight (4 + entryno);
 
   /* XX using RT clock now, need to initialize value */
   while ((time1 = getrtsecs()) == 0xFF);
@@ -249,27 +265,15 @@ restart:
 	    {
 	      if (entryno > 0)
 		{
-#ifdef GRUB_UTIL
-		  set_line (4 + entryno, A_NORMAL);
-#else
-		  set_line (4 + entryno, normal_color);
-#endif
+		  set_line_normal (4 + entryno);
 		  entryno --;
-#ifdef GRUB_UTIL
-		  set_line (4 + entryno, A_REVERSE);
-#else
-		  set_line (4 + entryno, highlight_color);
-#endif
+		  set_line_highlight (4 + entryno);
 		}
 	      else if (first_entry > 0)
 		{
 		  first_entry --;
 		  print_entries(3, 12, first_entry, menu_entries);
-#ifdef GRUB_UTIL
-		  set_line (4, A_REVERSE);
-#else
-		  set_line (4, highlight_color);
-#endif
+		  set_line_highlight (4);
 		}
 	    }
 	  if (((c == KEY_DOWN) || (ASCII_CHAR(c) == 14))
@@ -277,27 +281,15 @@ restart:
 	    {
 	      if (entryno < 11)
 		{
-#ifdef GRUB_UTIL
-		  set_line (4 + entryno, A_NORMAL);
-#else
-		  set_line (4 + entryno, normal_color);
-#endif
+		  set_line_normal (4 + entryno);
 		  entryno ++;
-#ifdef GRUB_UTIL
-		  set_line (4 + entryno, A_REVERSE);
-#else
-		  set_line (4 + entryno, highlight_color);
-#endif
+		  set_line_highlight (4 + entryno);
 		}
 	      else if (num_entries > 12+first_entry)
 		{
 		  first_entry ++;
 		  print_entries (3, 12, first_entry, menu_entries);
-#ifdef GRUB_UTIL
-		  set_line (15, A_REVERSE);
-#else
-		  set_line (15, highlight_color);
-#endif
+		  set_line_highlight (15);
 		}
 	    }
 
@@ -312,11 +304,8 @@ restart:
 	    {
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
-#ifdef GRUB_UTIL
-		  set_line (4 + entryno, A_NORMAL);
-#else
-		  set_line (4 + entryno, normal_color);
-#endif
+		  set_line_normal (4 + entryno);
+		  
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
@@ -354,7 +343,7 @@ restart:
 		    }
 
 		  print_entries(3, 12, first_entry, menu_entries);
-		  set_line(4+entryno, 0x70);
+		  set_line_highlight (4 + entryno);
 		}
 
 	      cur_entry = menu_entries;
@@ -477,6 +466,13 @@ restart:
 		  
 		  goto restart;
 		}
+#ifdef GRUB_UTIL
+	      if (c == 'q')
+		{
+		  /* The same as ``quit''.  */
+		  return MENU_ABORT;
+		}
+#endif
 	    }
 	}
     }
