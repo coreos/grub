@@ -1,5 +1,15 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 0.5.95 - XXXX-XX-XX:
+* NetBSD ELF kernel support is added. You have to specify the new option
+  to the command "kernel". See below.
+* Added a new option `--type=TYPE' into the command "kernel". This
+  option suggests what type of kernel you want to load. TYPE must be
+  either of "netbsd", "freebsd", "openbsd", "linux", "biglinux" and
+  "multiboot". Actually, this option will be necessary only if you want
+  to load a NetBSD ELF kernel, because GRUB can automatically determine
+  a kernel type in the other cases.
+
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.
 * The NetBSD and OpenBSD boot bug is fixed.

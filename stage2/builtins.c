@@ -1826,7 +1826,40 @@ static struct builtin builtin_ioprobe =
 static int
 kernel_func (char *arg, int flags)
 {
-  int len = grub_strlen (arg);
+  int len;
+  char *kernel_arg = arg;
+  kernel_t suggested_type = KERNEL_TYPE_NONE;
+
+  /* If the option `--type=TYPE' is specified, convert the string to
+     a kernel type.  */
+  if (grub_memcmp (arg, "--type=") == 0)
+    {
+      arg += 7;
+      
+      if (grub_memcmp (arg, "netbsd") == 0)
+	suggested_type = KERNEL_TYPE_NETBSD;
+      else if (grub_memcmp (arg, "freebsd") == 0)
+	suggested_type = KERNEL_TYPE_FREEBSD;
+      else if (grub_memcmp (arg, "openbsd") == 0)
+	/* XXX: For now, OpenBSD is identical to NetBSD, from GRUB's
+	   point of view.  */
+	suggested_type = KERNEL_TYPE_NETBSD;
+      else if (grub_memcmp (arg, "linux") == 0)
+	suggested_type = KERNEL_TYPE_LINUX;
+      else if (grub_memcmp (arg, "biglinux") == 0)
+	suggested_type = KERNEL_TYPE_BIG_LINUX;
+      else if (grub_memcmp (arg, "multiboot") == 0)
+	suggested_type = KERNEL_TYPE_MULTIBOOT;
+      else
+	{
+	  errnum = ERR_BAD_ARGUMENT;
+	  return 1;
+	}
+
+      kernel_arg = skip_to (0, arg);
+    }
+      
+  len = grub_strlen (kernel_arg);
 
   /* Reset MB_CMDLINE.  */
   mb_cmdline = (char *) MB_CMDLINE_BUF;
@@ -1837,8 +1870,8 @@ kernel_func (char *arg, int flags)
     }
 
   /* Copy the command-line to MB_CMDLINE.  */
-  grub_memmove (mb_cmdline, arg, len + 1);
-  kernel_type = load_image (arg, mb_cmdline);
+  grub_memmove (mb_cmdline, kernel_arg, len + 1);
+  kernel_type = load_image (kernel_arg, mb_cmdline, suggested_type);
   if (kernel_type == KERNEL_TYPE_NONE)
     return 1;
 
@@ -1851,11 +1884,13 @@ static struct builtin builtin_kernel =
   "kernel",
   kernel_func,
   BUILTIN_CMDLINE,
-  "kernel FILE [ARG ...]",
-  "Attempt to load the primary boot image from"
-  " FILE. The rest of the line is passed verbatim as the"
-  " \"kernel command line\".  Any modules must be reloaded after"
-  " using this command."
+  "kernel [--type=TYPE] FILE [ARG ...]",
+  "Attempt to load the primary boot image from FILE. The rest of the"
+  "line is passed verbatim as the \"kernel command line\".  Any modules"
+  " must be reloaded after using this command. The option --type is used"
+  " to suggest what type of kernel to be loaded. TYPE must be either of"
+  " \"netbsd\", \"freebsd\", \"openbsd\", \"linux\", \"biglinux\" and"
+  " \"multiboot\"."
 };
 
 

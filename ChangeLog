@@ -1,5 +1,41 @@
 2000-04-03  OKUJI Yoshinori  <okuji@gnu.org>
 
+	Add a dirty hack into the kernel loader so that the user can
+	force GRUB to load NetBSD ELF kernels. The support code is
+	mostly stolen from a patch by Pavel Roskin.
+	
+	* stage2/boot.c (load_image): Added an optional argument
+	SUGGESTED_TYPE.
+	If BUFFER is a bootable ELF image and SUGGESTED_TYPE is
+	KERNEL_TYPE_NETBSD, then load it as an ELF image and set STR2 to
+	"NetBSD" and TYPE to SUGGESTED_TYPE.
+	If the image is a Linux kernel and SUGGESTED_TYPE is not
+	KERNEL_TYPE_NONE, make sure that SUGGESTED_TYPE matches up to
+	the Linux kernel type.
+	If TYPE is KERNEL_TYPE_NETBSD, set MEMADDR to
+	RAW_ADDR (phdr->paddr & 0xFFFFFF) like FreeBSD.
+	If SUGGESTED_TYPE is not KERNEL_TYPE_NONE, make sure that
+	SUGGESTED_TYPE is equal to TYPE.
+	(bsd_boot): If TYPE is not KERNEL_TYPE_FREEBSD (i.e. NetBSD or
+	OpenBSD) and the bit MB_INFO_AOUT_SYMS is set, set END_MARK to
+	MBI.SYMS.A.ADDR + 4 + MBI.SYMS.A.TABSIZE + MBI.SYMS.A.STRSIZE.
+	If the bit is clear, set END_MARK to 0.
+	Pass END_MARK to *ENTRY_ADDR instead of directly calculating the
+	end of symbols.
+	* stage2/shared.h (load_image): Added the argument
+	SUGGESTED_TYPE to the prototype.
+	* stage2/builtins.c (kernel_func): Added a new option,
+	`--type=TYPE'. Check if ARG is started with "--type=".
+	If so, set SUGGESTED_TYPE to KERNEL_TYPE_NETBSD,
+	KERNEL_TYPE_FREEBSD, KERNEL_TYPE_NETBSD, KERNEL_TYPE_LINUX,
+	KERNEL_TYPE_BIG_LINUX, KERNEL_TYPE_MULTIBOOT if ARG is "netbsd",
+	"freebsd", "openbsd", "linux", "biglinux", "multiboot",
+	respectively. Otherwise, set ERRNUM to ERR_BAD_ARGUMENT and
+	return 1. Set KERNEL_ARG to a string after the option.
+	(builtin_kernel): Added a description about the new option.
+	
+2000-04-03  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/stage2.c (run_menu) [GRUB_UTIL]: Removed a nested
 	"#ifdef GRUB_UTIL" ... "#endif".
 	* stage2/builtins.c (unhide_func): Don't modify SAVED_DRIVE or

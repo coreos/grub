@@ -38,7 +38,7 @@ static struct mod_list mll[99];
  */
 
 kernel_t
-load_image (char *kernel, char *arg)
+load_image (char *kernel, char *arg, kernel_t suggested_type)
 {
   int len, i, exec_type = 0, align_4k = 1;
   kernel_t type = KERNEL_TYPE_NONE;
@@ -89,9 +89,10 @@ load_image (char *kernel, char *arg)
 	}
     }
 
-  /* ELF loading supported if multiboot and FreeBSD.  */
+  /* ELF loading supported if multiboot, FreeBSD and NetBSD.  */
   if ((type == KERNEL_TYPE_MULTIBOOT
-       || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD") == 0)
+       || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD") == 0
+       || suggested_type == KERNEL_TYPE_NETBSD)
       && len > sizeof (Elf32_Ehdr)
       && BOOTABLE_I386_ELF ((*((Elf32_Ehdr *) buffer))))
     {
@@ -113,8 +114,18 @@ load_image (char *kernel, char *arg)
 
       if (type == KERNEL_TYPE_NONE)
 	{
-	  str2 = "FreeBSD";
-	  type = KERNEL_TYPE_FREEBSD;
+	  /* At the moment, there is no way to identify a NetBSD ELF
+	     kernel, so rely on the suggested type by the user.  */
+	  if (suggested_type == KERNEL_TYPE_NETBSD)
+	    {
+	      str2 = "NetBSD";
+	      type = suggested_type;
+	    }
+	  else
+	    {
+	      str2 = "FreeBSD";
+	      type = KERNEL_TYPE_FREEBSD;
+	    }
 	}
     }
   else if (flags & MULTIBOOT_AOUT_KLUDGE)
@@ -287,6 +298,16 @@ load_image (char *kernel, char *arg)
 	      >= (text_len - 16))
 	    {
 	      grub_close ();
+
+	      /* Sanity check.  */
+	      if (suggested_type != KERNEL_TYPE_NONE
+		  && ((big_linux && suggested_type != KERNEL_TYPE_BIG_LINUX)
+		      || (! big_linux && suggested_type != KERNEL_TYPE_LINUX)))
+		{
+		  errnum = ERR_EXEC_FORMAT;
+		  return KERNEL_TYPE_NONE;
+		}
+	      
 	      return big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX;
 	    }
 	  else if (!errnum)
@@ -436,7 +457,7 @@ load_image (char *kernel, char *arg)
 	      grub_seek (phdr->p_offset);
 	      filesiz = phdr->p_filesz;
 	      
-	      if (type == KERNEL_TYPE_FREEBSD)
+	      if (type == KERNEL_TYPE_FREEBSD || type == KERNEL_TYPE_NETBSD)
 		memaddr = RAW_ADDR (phdr->p_paddr & 0xFFFFFF);
 	      else
 		memaddr = RAW_ADDR (phdr->p_paddr);
@@ -487,6 +508,14 @@ load_image (char *kernel, char *arg)
     }
 
   grub_close ();
+
+  /* Sanity check.  */
+  if (suggested_type != KERNEL_TYPE_NONE && suggested_type != type)
+    {
+      errnum = ERR_EXEC_FORMAT;
+      return KERNEL_TYPE_NONE;
+    }
+  
   return type;
 }
 
@@ -702,9 +731,16 @@ bsd_boot (kernel_t type, int bootdev, char *arg)
        */
 
       /* call entry point */
-      (*entry_addr) (clval, bootdev, 0,
-		     (mbi.syms.a.addr + 4
-		      + mbi.syms.a.tabsize + mbi.syms.a.strsize),
+      unsigned long end_mark;
+
+      if (mbi.flags & MB_INFO_AOUT_SYMS)
+	end_mark = (mbi.syms.a.addr + 4
+		    + mbi.syms.a.tabsize + mbi.syms.a.strsize);
+      else
+	/* FIXME: it should be mbi.syms.e.size.  */
+	end_mark = 0;
+      
+      (*entry_addr) (clval, bootdev, 0, end_mark,
 		     mbi.mem_upper, mbi.mem_lower);
     }
 }
