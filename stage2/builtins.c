@@ -3212,6 +3212,21 @@ setkey_func (char *arg, int flags)
   
   to_key = arg;
   from_key = skip_to (0, to_key);
+
+  if (! to_key)
+    {
+      /* If the user specifies no argument, reset the key mappings.  */
+      bios_key_map[0] = 0;
+      ascii_key_map[0] = 0;
+
+      return 0;
+    }
+  else if (! from_key)
+    {
+      /* The user must specify two arguments or zero argument.  */
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
   
   nul_terminate (to_key);
   nul_terminate (from_key);
@@ -3301,7 +3316,7 @@ static struct builtin builtin_setkey =
   "setkey",
   setkey_func,
   BUILTIN_CMDLINE | BUILTIN_MENU,
-  "setkey TO_KEY FROM_KEY",
+  "setkey [TO_KEY FROM_KEY]",
   "Change the keyboard map. The key FROM_KEY is mapped to the key TO_KEY."
   " A key must be an alphabet, a digit, or one of these: escape, exclam,"
   " at, numbersign, dollar, percent, caret, ampersand, asterisk, parenleft,"
@@ -3309,7 +3324,8 @@ static struct builtin builtin_setkey =
   " braceleft, bracketright, braceright, enter, control, semicolon, colon,"
   " quote, doublequote, backquote, tilde, shift, backslash, bar, comma,"
   " less, period, greater, slash, question, alt, space, capslock, FX (X"
-  " is a digit), and delete."
+  " is a digit), and delete. If no argument is specified, reset key"
+  " mappings."
 };
 
 

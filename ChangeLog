@@ -1,3 +1,11 @@
+2000-10-14  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setkey_func): If TO_KEY is NULL (i.e. the
+	user specifies no argument), clear BIOS_KEY_MAP and
+	ASCII_KEY_MAP.
+	If TO_KEY is non-NULL but FROM_KEY is NULL, set ERRNUM to
+	ERR_BAD_ARGUMENT and return one.
+	
 2000-10-13  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/grub.texi: Added an entry for the new chapter "Security",
