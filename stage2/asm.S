@@ -288,16 +288,10 @@ ENTRY(track_int13)
 	pushl	%ebx
 	pushl	%edi
 
-	/* save the original int13 handler */
+	/* copy the original int13 handler segment:offset */
 	movl	$0x4c, %edi
-	movw	(%edi), %ax
-	movw	%ax, ABS(set_tf_int13_offset)
-	movw	2(%edi), %ax
-	movw	%ax, ABS(set_tf_int13_segment)
-
-	/* save the new int13 handler */
-	movl	$ABS(set_tf_int13_handler), %eax
-	movl	%eax, (%edi)
+	movl	(%edi), %eax
+	movl	%eax, track_int13_addr
 		
 	/* replace the int1 handler */
 	movl	$0x4, %edi
@@ -310,29 +304,39 @@ ENTRY(track_int13)
 	
 	call	EXT_C(prot_to_real)
 	.code16
-		
+
 	movw	$SCRATCHSEG, %ax
 	movw	%ax, %es
 	xorw	%bx, %bx
 	movw	$1, %cx
 	xorb	%dh, %dh
 
-	movw	$0x201, %ax
-	int	$0x13
+	/* save FLAGS on the stack to emulate int13 */
+	pushfw
+	
+	/* set the TF flag */
+	/* FIXME: this can be simplified not to use AX */
+	pushfw
+	popw	%ax
+	orw	$0x100, %ax
+	pushw	%ax
+	popfw
 
+	movw	$0x0201, %ax
+
+	.byte	0x9a		/* lcall */
+track_int13_addr:
+	.word	0		/* offset */
+	.word	0		/* segment */
+
+	/* TF is cleared here automatically */
+	
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
 	/* restore the int1 handler */
 	movl	$0x4, %edi
 	popl	(%edi)
-
-	/* restore the int13 handler */
-	movl	$0x4c, %edi
-	movw	ABS(set_tf_int13_offset), %ax
-	movw	%ax, (%edi)
-	movw	ABS(set_tf_int13_segment), %ax
-	movw	%ax, 2(%edi)
 
 	popl	%edi
 	popl	%ebx
@@ -407,9 +411,8 @@ int1_handler:
 	jg	8f
 
 7:	/* immediate has a port */
-	xorb	%ah, %ah
 	lodsb	(%si), %al
-	movw	%ax, %dx
+	movzbw	%al, %dx
 	
 5:	/* %dx has a port */
 
@@ -447,37 +450,6 @@ int1_handler:
 
 	iret
 	
-
-/*
- * Just set the TF flag. This handler is necessary because any interrupt
- * call clears the flag automatically.
- *
- * Note: we need not to clear this flag after the tracking explicitly,
- * because iret restores the original FLAGS.
- */
-set_tf_int13_handler:
-	/* save %ax int the stack */
-	pushw	%ax
-	
-	/* set the TF flag */
-	pushf
-	popw	%ax
-	orw	$0x100, %ax
-	pushw	%ax
-	popf
-
-	/* restore %ax */
-	popw	%ax
-
-	/* simulate the interrupt call */
-	pushf
-	/* lcall */
-	.byte	0x9a
-set_tf_int13_offset:	.word	0
-set_tf_int13_segment:	.word	0
-
-	iret
-
 	.code32
 
 ENTRY(io_map)

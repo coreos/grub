@@ -4061,7 +4061,7 @@ testvbe_func (char *arg, int flags)
       return 0;
     }
 
-  if (get_vbe_mode_info (mode_number | (1 << 14), &mode) != 0x004F
+  if (get_vbe_mode_info (mode_number, &mode) != 0x004F
       || (mode.mode_attributes & 0x0091) != 0x0091)
     {
       grub_printf (" Mode 0x%x is not supported.\n", mode_number);
@@ -4303,7 +4303,7 @@ vbeprobe_func (char *arg, int flags)
     {
       struct vbe_mode mode;
       
-      if (get_vbe_mode_info (*mode_list | (1 << 14), &mode) != 0x004F)
+      if (get_vbe_mode_info (*mode_list, &mode) != 0x004F)
 	continue;
 
       /* Skip this, if this is not supported or linear frame buffer

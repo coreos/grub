@@ -1,3 +1,21 @@
+2000-11-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Vesa Jaaskelainen <jaaskela@tietomyrsky.fi>:
+	* stage2/builtins.c (testvbe_func): Don't set the bit 14 of a
+	VBE mode number explicitly when calling get_vbe_mode_info.
+	(vbeprobe_func): Likewise.
+	
+2000-11-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	The code for the "INT 13H tracking technique" is somewhat
+	simplified.
+
+	* stage2/asm.S [!STAGE1_5] (track_int13): Don't replace an int13
+	handler with set_tf_int13_handler. Instead, track_int13 itself
+	emulates an int13 interrupt.
+	[!STAGE1_5] (set_tf_int13_handler): Removed.
+	[!STAGE1_5] (int1_handler): Use movzbw instead of xorb and movb.
+	
 2000-11-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* acconfig.h (PRESET_MENU_STRING): New entry.
