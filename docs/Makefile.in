@@ -98,6 +98,14 @@ HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
+# The example kernel is built if you specify --enable-example-kernel.
+@BUILD_EXAMPLE_KERNEL_TRUE@noinst_DATA = @BUILD_EXAMPLE_KERNEL_TRUE@kernel
+@BUILD_EXAMPLE_KERNEL_TRUE@noinst_PROGRAMS = @BUILD_EXAMPLE_KERNEL_TRUE@kernel.exec
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec_SOURCES = @BUILD_EXAMPLE_KERNEL_TRUE@$(EXAMPLES)
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec_CFLAGS = @BUILD_EXAMPLE_KERNEL_TRUE@-fno-builtin -nostdinc -O -g -Wall \
+@BUILD_EXAMPLE_KERNEL_TRUE@	-imacros $(top_builddir)/config.h
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec_LDFLAGS = @BUILD_EXAMPLE_KERNEL_TRUE@-nostdlib -Wl,-N -Wl,-Ttext -Wl,100000
+
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS)
 
@@ -105,9 +113,25 @@ subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(noinst_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+@BUILD_EXAMPLE_KERNEL_TRUE@am_kernel_exec_OBJECTS =  kernel_exec-boot.o \
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec-kernel.o
+kernel_exec_OBJECTS =  $(am_kernel_exec_OBJECTS)
+kernel_exec_LDADD = $(LDADD)
+kernel_exec_DEPENDENCIES = 
 SCRIPTS =  $(noinst_SCRIPTS)
 
-DIST_SOURCES = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CFLAGS = @CFLAGS@
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+DIST_SOURCES =  $(kernel_exec_SOURCES)
 TEXI2DVI = texi2dvi
 INFO_DEPS = grub.info multiboot.info
 DVIS = grub.dvi multiboot.dvi
@@ -117,6 +141,11 @@ man8dir = $(mandir)/man8
 MANS = $(man_MANS)
 
 NROFF = nroff
+DATA =  $(noinst_DATA)
+
+depcomp = $(SHELL) $(top_srcdir)/depcomp
+DEP_FILES =  @AMDEP@ $(DEPDIR)/kernel_exec-boot.Po \
+$(DEPDIR)/kernel_exec-kernel.Po
 DIST_COMMON =  $(grub_TEXINFOS) $(multiboot_TEXINFOS) Makefile.am \
 Makefile.in stamp-vti version.texi
 
@@ -124,9 +153,12 @@ Makefile.in stamp-vti version.texi
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
+SOURCES = $(kernel_exec_SOURCES)
+OBJECTS = $(am_kernel_exec_OBJECTS)
+
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .dvi .info .ps .texi .texinfo .txi
+.SUFFIXES: .S .c .dvi .h .info .o .ps .texi .texinfo .txi
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu docs/Makefile
 
@@ -134,6 +166,34 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+kernel_exec-boot.o: boot.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(kernel_exec_CFLAGS) $(CFLAGS) -c -o kernel_exec-boot.o `test -f boot.S || echo '$(srcdir)/'`boot.S
+kernel_exec-kernel.o: kernel.c
+
+kernel.exec: $(kernel_exec_OBJECTS) $(kernel_exec_DEPENDENCIES)
+	@rm -f kernel.exec
+	$(LINK) $(kernel_exec_LDFLAGS) $(kernel_exec_OBJECTS) $(kernel_exec_LDADD) $(LIBS)
+.S.o:
+	$(COMPILE) -c $<
 
 $(srcdir)/version.texi: @MAINTAINER_MODE_TRUE@stamp-vti
 	@:
@@ -355,9 +415,68 @@ install-man: $(MANS)
 uninstall-man:
 	@$(NORMAL_UNINSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-man1 uninstall-man8
-tags: TAGS
-TAGS:
 
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+@AMDEP@include $(DEPDIR)/kernel_exec-boot.Po
+@AMDEP@include $(DEPDIR)/kernel_exec-kernel.Po
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf $(DEPDIR)
+
+maintainer-clean-depend:
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+.c.o:
+@AMDEP@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(COMPILE) -c -o $@ `test -f $< || echo '$(srcdir)/'`$<
+
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+kernel_exec-kernel.o: kernel.c
+@AMDEP@	source='kernel.c' object='kernel_exec-kernel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/kernel_exec-kernel.Po' tmpdepfile='$(DEPDIR)/kernel_exec-kernel.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(kernel_exec_CFLAGS) $(CFLAGS) -c -o kernel_exec-kernel.o `test -f kernel.c || echo '$(srcdir)/'`kernel.c
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
@@ -393,7 +512,7 @@ install-am: all-am
 install: install-am
 uninstall-am: uninstall-info uninstall-man
 uninstall: uninstall-am
-all-am: Makefile $(INFO_DEPS) $(SCRIPTS) $(MANS)
+all-am: Makefile $(INFO_DEPS) $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
@@ -412,35 +531,52 @@ distclean-generic:
 
 maintainer-clean-generic:
 	-rm -f Makefile.in
-mostlyclean-am:  mostlyclean-vti mostlyclean-aminfo mostlyclean-generic
+mostlyclean-am:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
+		mostlyclean-vti mostlyclean-aminfo mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-vti clean-aminfo clean-generic mostlyclean-am
+clean-am:  clean-noinstPROGRAMS clean-compile clean-vti clean-aminfo \
+		clean-tags clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-vti distclean-aminfo distclean-generic clean-am
+distclean-am:  distclean-noinstPROGRAMS distclean-compile distclean-vti \
+		distclean-aminfo distclean-tags distclean-depend \
+		distclean-generic clean-am
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-vti maintainer-clean-aminfo \
-		maintainer-clean-generic distclean-am
+maintainer-clean-am:  maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-vti \
+		maintainer-clean-aminfo maintainer-clean-tags \
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: mostlyclean-vti distclean-vti clean-vti maintainer-clean-vti \
-install-info-am uninstall-info mostlyclean-aminfo distclean-aminfo \
-clean-aminfo maintainer-clean-aminfo install-man1 uninstall-man1 \
-install-man8 uninstall-man8 install-man uninstall-man tags distdir \
-info-am info dvi-am dvi check check-am installcheck-am installcheck \
-install-exec-am install-exec install-data-am install-data install-am \
-install uninstall-am uninstall all-redirect all-am all install-strip \
-installdirs mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+.PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-vti distclean-vti clean-vti \
+maintainer-clean-vti install-info-am uninstall-info mostlyclean-aminfo \
+distclean-aminfo clean-aminfo maintainer-clean-aminfo install-man1 \
+uninstall-man1 install-man8 uninstall-man8 install-man uninstall-man \
+tags mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend distdir info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all install-strip installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
+
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel: kernel.exec
+@BUILD_EXAMPLE_KERNEL_TRUE@	$(OBJCOPY) -O binary $< $@
 
 # Cancel the rule %.texi -> %. This rule may confuse make to determine
 # the dependecies.

@@ -21,6 +21,8 @@ New in 1.0 - XXXX-XX-XX:
   must be an existing file.
 * EZ-BIOS support is added.
 * Booting Windows from a logical partition is supported.
+* The example Multiboot kernel in the directory "docs" is built, if you
+  specify the option `--enable-example-kernel' to the configure script.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".

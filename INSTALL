@@ -237,6 +237,10 @@ operates.
      you need to set the default terminal to a serial terminal in an
      embedded system).
 
+`--enable-example-kernel'
+     Build the example Multiboot kernel in the directory "docs". You
+     will be able to boot the image "kernel" with GRUB.
+
 
 `configure' also accepts several options for the network support. See
 the file `netboot/README.netboot', for more information.

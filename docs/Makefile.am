@@ -8,6 +8,19 @@ HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
+# The example kernel is built if you specify --enable-example-kernel.
+if BUILD_EXAMPLE_KERNEL
+noinst_DATA = kernel
+noinst_PROGRAMS = kernel.exec
+kernel_exec_SOURCES = $(EXAMPLES)
+kernel_exec_CFLAGS = -fno-builtin -nostdinc -O -g -Wall \
+	-imacros $(top_builddir)/config.h
+kernel_exec_LDFLAGS = -nostdlib -Wl,-N -Wl,-Ttext -Wl,100000
+
+kernel: kernel.exec
+	$(OBJCOPY) -O binary $< $@
+endif
+
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS)
 

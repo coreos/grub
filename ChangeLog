@@ -1,3 +1,17 @@
+2001-01-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/Makefile.am [BUILD_EXAMPLE_KERNEL] (noinst_DATA): New
+	variable.
+	[BUILD_EXAMPLE_KERNEL] (noinst_PROGRAMS): Likewise.
+	[BUILD_EXAMPLE_KERNEL] (kernel_exec_SOURCES): Likewise.
+	[BUILD_EXAMPLE_KERNEL] (kernel_exec_CFLAGS): Likewise.
+	[BUILD_EXAMPLE_KERNEL] (kernel_exec_LDFLAGS): Likewise.
+	[BUILD_EXAMPLE_KERNEL] (kernel): New target.
+	* configure.in (--enable-example-kernel): New option.
+
+	* docs/kernel.c (cmain): Cast unsigned long variables to
+	unsigned explicitly, to suppress GCC warnings.
+	
 2001-01-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/shared.h (BOOTSEC_BPB_HIDDEN_SECTORS): New macro.
