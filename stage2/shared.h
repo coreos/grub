@@ -795,7 +795,14 @@ void copy_current_part_entry (char *buf);
 #ifndef STAGE1_5
 void bsd_boot (kernel_t type, int bootdev, char *arg)
      __attribute__ ((noreturn));
-kernel_t load_image (char *kernel, char *arg, kernel_t suggested_type);
+
+/* Define flags for load_image here.  */
+/* Don't pass a Linux's mem option automatically.  */
+#define KERNEL_LOAD_NO_MEM_OPTION	(1 << 0)
+
+kernel_t load_image (char *kernel, char *arg, kernel_t suggested_type,
+		     unsigned long load_flags);
+
 int load_module (char *module, char *arg);
 int load_initrd (char *initrd);
 #endif

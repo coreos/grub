@@ -4,6 +4,8 @@ New in 0.5.96 - XXXX-XX-XX:
 * New commands, "reboot" and "halt".
 * New command, "hiddenmenu". You can hide the menu interface by default
   with this command.
+* You can specify `--no-mem-option' to the command "kernel", if you want
+  GRUB not to pass a Linux's mem option automatically.
 
 New in 0.5.95 - XXXX-XX-XX:
 * NetBSD ELF kernel support is added. You have to specify the new option

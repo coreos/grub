@@ -1,3 +1,15 @@
+2000-06-23  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/boot.c (load_image): Take an additional argument
+	LOAD_FLAGS.
+	If the kernel type is Linux and the bit
+	KERNEL_LOAD_NO_MEM_OPTION in LOAD_FLAGS is set, don't pass a
+	Linux's mem option automatically.
+	* stage2/shared.h (load_image): Added the new argument.
+	* stage2/builtins.c (kernel_func): If `--no-mem-option' is
+	specified, set the bit KERNEL_LOAD_NO_MEM_OPTION in LOAD_FLAGS,
+	otherwise, LOAD_FLAGS is zero.
+	
 2000-06-22  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/tutorial.texi: Fixed some typos and syntax errors.

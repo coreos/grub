@@ -38,7 +38,8 @@ static struct mod_list mll[99];
  */
 
 kernel_t
-load_image (char *kernel, char *arg, kernel_t suggested_type)
+load_image (char *kernel, char *arg, kernel_t suggested_type,
+	    unsigned long load_flags)
 {
   int len, i, exec_type = 0, align_4k = 1;
   kernel_t type = KERNEL_TYPE_NONE;
@@ -273,7 +274,8 @@ load_image (char *kernel, char *arg, kernel_t suggested_type)
 
 	    /* Add a mem option automatically only if the user doesn't
 	       specify it explicitly.  */
-	    if (! grub_strstr (src, "mem="))
+	    if (! grub_strstr (src, "mem=")
+		&& ! (load_flags & KERNEL_LOAD_NO_MEM_OPTION))
 	      {
 		grub_memmove (dest, "mem=", 4);
 		dest += 4;
