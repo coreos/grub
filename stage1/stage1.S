@@ -200,8 +200,8 @@ lba_mode:
 	movb	$0x42, %ah
 	int	$0x13
 
-	/* should use CHS instead? */
-	jc	read_error
+	/* LBA read is not supported, so fallback to CHS.  */
+	jc	chs_mode
 
 	movw	$STAGE1_BUFFERSEG, %bx
 	jmp	copy_buffer

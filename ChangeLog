@@ -1,3 +1,9 @@
+1999-11-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage1/stage1.S (lba_mode): Jump to chs_mode if INT 13 AH=42h
+	fails.
+	
 1999-11-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Do not use the device map file unless --device-map is specified.
