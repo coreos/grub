@@ -676,7 +676,7 @@ from GRUB and you don't have to make a floppy or hard disk image file,
 which can cause compatibility problems.
 
 For booting from a CD-ROM, GRUB uses a special Stage 2 called
-@file{stage2_eltoriro}. The only GRUB files you need to have in your 
+@file{stage2_eltorito}. The only GRUB files you need to have in your 
 bootable CD-ROM are this @file{stage2_eltorito} and optionally a config file
 @file{menu.lst}. You don't need to use @file{stage1} or @file{stage2},
 because El Torito is quite different from the standard boot process.
