@@ -41,3 +41,5 @@ Add keyboard layout configuration support.
 Clean up and enhance the manuals, especially concept indexes.
 
 Add more filesystems support (minix, FAT32, etc.)
+
+??? Add hide and unhide facilities.
