@@ -88,7 +88,7 @@ install_sh = @install_sh@
 
 
 bin_PROGRAMS = mbchk
-sbin_SCRIPTS = grub-install
+sbin_SCRIPTS = grub-install grub-md5-crypt
 noinst_SCRIPTS = grub-image
 
 # XXX: Need to search for a header file in docs, because of multiboot.h.
@@ -99,7 +99,7 @@ mbchk_LDADD = ../lib/libcommon.a
 subdir = util
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
-CONFIG_CLEAN_FILES =  grub-image grub-install
+CONFIG_CLEAN_FILES =  grub-image grub-install grub-md5-crypt
 PROGRAMS =  $(bin_PROGRAMS)
 
 
@@ -120,7 +120,8 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES =  $(mbchk_SOURCES)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 DEP_FILES =  @AMDEP@ $(DEPDIR)/mbchk.Po
-DIST_COMMON =  Makefile.am Makefile.in grub-image.in grub-install.in
+DIST_COMMON =  Makefile.am Makefile.in grub-image.in grub-install.in \
+grub-md5-crypt.in
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -142,6 +143,8 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 grub-image: $(top_builddir)/config.status grub-image.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 grub-install: $(top_builddir)/config.status grub-install.in
+	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+grub-md5-crypt: $(top_builddir)/config.status grub-md5-crypt.in
 	cd $(top_builddir) && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 mostlyclean-binPROGRAMS:

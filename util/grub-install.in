@@ -49,15 +49,15 @@ Install GRUB on your drive.
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
   --root-directory=DIR    install GRUB images under the directory DIR
-                          instead of the root directory.
-  --grub-shell=FILE       use FILE as the grub shell.
+                          instead of the root directory
+  --grub-shell=FILE       use FILE as the grub shell
   --force-lba             force GRUB to use LBA mode even for a buggy
-                          BIOS.
-  --recheck               probe a device map even if it already exists.
+                          BIOS
+  --recheck               probe a device map even if it already exists
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
-Reports bugs to <bug-grub@gnu.org>.
+Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 

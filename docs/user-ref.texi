@@ -1654,6 +1654,28 @@ grub-install --grub-shell="grub --read-only" /dev/fd0
 @end table
 
 
+@node Invoking grub-md5-crypt
+@chapter Invoking grub-md5-crypt
+
+The program @command{grub-md5-crypt} encrypts a password in MD5 format.
+This is just a frontend of the grub shell (@pxref{Invoking the grub
+shell}). Passwords encrypted by this program can be used with the
+command @command{password} (@pxref{Command-line and menu commands}).
+
+@command{grub-md5-crypt} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command line options and exit.
+
+@item --version
+Print the version information and exit.
+
+@item --grub-shell=@var{file}
+Use @var{file} as the grub shell.
+@end table
+
+
 @node Invoking mbchk
 @chapter Invoking mbchk
 

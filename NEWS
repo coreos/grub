@@ -12,6 +12,8 @@ New in 1.0 - XXXX-XX-XX:
   items with their own passwords.
 * New command, "displayapm".
 * New command, "md5crypt".
+* The new utility ``grub-md5-crypt'' is a fontend of the grub shell. It
+  encrypts a password in MD5 format.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".

@@ -1,5 +1,5 @@
 bin_PROGRAMS = mbchk
-sbin_SCRIPTS = grub-install
+sbin_SCRIPTS = grub-install grub-md5-crypt
 noinst_SCRIPTS = grub-image
 
 # XXX: Need to search for a header file in docs, because of multiboot.h.

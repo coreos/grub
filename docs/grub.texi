@@ -22,6 +22,8 @@
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
+* grub-md5-crypt: (grub)Invoking grub-md5-crypt.        Encrypt a password
+                                                        in MD5 format
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
 @end direntry
 
@@ -113,6 +115,7 @@ Part II: The User Reference Manual
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
+* Invoking grub-md5-crypt::     How to generate a cryptic password
 * Invoking mbchk::              How to use the Multiboot checker
 
 Part III: The Programmer Reference Manual
