@@ -2575,7 +2575,7 @@ Prevent normal users from executing arbitrary menu entries. You must use
 the command @command{password} if you really want this command to be
 useful (@pxref{password}).
 
-This command is used in a menu, as shown in this this example:
+This command is used in a menu, as shown in this example:
 
 @example
 @group
@@ -2777,7 +2777,7 @@ information.
 @deffn Command testload file
 Read the entire contents of @var{file} in several different ways and
 compares them, to test the filesystem code. The output is somewhat
-cryptic , but if no errors are reported and the final @samp{i=@var{X},
+cryptic, but if no errors are reported and the final @samp{i=@var{X},
 filepos=@var{Y}} reading has @var{X} and @var{Y} equal, then it is
 definitely consistent, and very likely works correctly subject to a
 consistent offset error. If this test succeeds, then a good next step is
@@ -2901,7 +2901,7 @@ This error is returned if a file requested is not a regular file, but
 something like a symbolic link, directory, or FIFO.
 
 @item 3 : Bad or corrupt data while decompressing file
-This error is returned the run-length decompression code gets an
+This error is returned if the run-length decompression code gets an
 internal error. This is usually from a corrupt file.
 
 @item 4 : Bad or incompatible header in compressed file
@@ -2909,7 +2909,7 @@ This error is returned if the file header for a supposedly compressed
 file is bad.
 
 @item 5 : Partition table invalid or corrupt
-This error s returned if the sanity checks on the integrity of the
+This error is returned if the sanity checks on the integrity of the
 partition table fail. This is a bad sign.
 
 @item 6 : Mismatched or corrupt version of stage1/stage2
