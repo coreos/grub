@@ -1,3 +1,10 @@
+2001-12-10  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* grub/asmstub.c: Include <signal.h>.
+	(grub_stage2) [HAVE_LIBCURSES]: If USE_CURSES is true, ignore
+	the signal SIGWINCH. Reported by Christian Hudon
+	<chrish@debian.org>.
+
 2001-11-29  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	From Jason Thomas:

@@ -41,6 +41,7 @@ int grub_stage2 (void);
 #include <setjmp.h>
 #include <sys/time.h>
 #include <termios.h>
+#include <signal.h>
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
@@ -168,6 +169,7 @@ grub_stage2 (void)
       scrollok (stdscr, TRUE);
       keypad (stdscr, TRUE);
       wtimeout (stdscr, 100);
+      signal (SIGWINCH, SIG_IGN);
     }
 #endif
 
