@@ -88,9 +88,7 @@ install_sh = @install_sh@
 
 
 info_TEXINFOS = grub.texi multiboot.texi
-grub_TEXINFOS = tutorial.texi user-ref.texi prog-ref.texi \
-	appendices.texi
-
+grub_TEXINFOS = internals.texi
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
 man_MANS = grub.8 mbchk.1 grub-install.8 grub-md5-crypt.8

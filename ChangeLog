@@ -1,3 +1,16 @@
+2001-02-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/grub-new.texi: Moved to ...
+	* docs/grub.texi: ... here. And, include internals.texi.
+	* docs/internals.texi: New file.
+	* docs/prog-ref.texi: Removed.
+	* docs/user-ref.texi: Likewise.
+	* docs/tutorial.texi: Likewise.
+	* docs/appendices.texi: Likewise.
+	* docs/Makefile.am (grub_TEXINFOS): Removed prog-ref.texi,
+	user-ref.texi, tutorial.texi, and appendices.texi. Added
+	internals.texi.
+	
 2001-02-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Erik Schoenfelder <schoenfr@gaertner.de>:
