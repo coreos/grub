@@ -1,5 +1,5 @@
 dnl Configure script for GRUB.
-dnl Copyright 1999 Free Software Foundation, Inc.
+dnl Copyright 1999,2000 Free Software Foundation, Inc.
 
 dnl Permission to use, copy, modify and distribute this software and its
 dnl documentation is hereby granted, provided that both the copyright
@@ -244,12 +244,19 @@ if test "x$enable_3c529" = xyes; then
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c529.o"
 fi
 
-dnl AC_ARG_ENABLE(3c59x,
-dnl   [  --enable-3c59x          enable 3Com59x driver])
-dnl if test "x$enable_3c59x" = xyes; then
-dnl   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C59x=1"
-dnl   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c59x.o"
-dnl fi
+AC_ARG_ENABLE(3c590,
+  [  --enable-3c590          enable 3Com590 driver])
+if test "x$enable_3c590" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C590=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c590.o"
+fi
+
+AC_ARG_ENABLE(3c595,
+  [  --enable-3c595          enable 3Com595 driver])
+if test "x$enable_3c595" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C595=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c595.o"
+fi
 
 AC_ARG_ENABLE(3c90x,
   [  --enable-3c90x          enable 3Com90x driver])
@@ -263,6 +270,13 @@ AC_ARG_ENABLE(cs89x0,
 if test "x$enable_cs89x0" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_CS89X0=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS cs89x0.o"
+fi
+
+AC_ARG_ENABLE(depca,
+  [  --enable-depca          enable DEPCA and EtherWORKS driver])
+if test "x$enable_depca" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_DEPCA=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS depca.o"
 fi
 
 AC_ARG_ENABLE(eepro100,
@@ -300,11 +314,11 @@ if test "x$enable_ni5210" = xyes; then
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni5210.o"
 fi
 
-AC_ARG_ENABLE(lancepci,
-  [  --enable-lancepci       enable Lance PCI PCNet/32 driver])
-if test "x$enable_lancepci" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_LANCEPCI=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS lancepci.o"
+AC_ARG_ENABLE(lance,
+  [  --enable-lance          enable Lance PCI PCNet/32 driver])
+if test "x$enable_lance" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_LANCE=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS lance.o"
 fi
 
 AC_ARG_ENABLE(ne2100,
@@ -335,11 +349,11 @@ if test "x$enable_ne" = xyes; then
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne.o"
 fi
 
-AC_ARG_ENABLE(nepci,
-  [  --enable-nepci          enable NE2000 PCI driver])
-if test "x$enable_nepci" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NEPCI=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS nepci.o"
+AC_ARG_ENABLE(ns8390,
+  [  --enable-ns8390         enable NE2000 PCI driver])
+if test "x$enable_ns8390" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NS8390=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ns8390.o"
 fi
 
 AC_ARG_ENABLE(wd,
@@ -349,11 +363,11 @@ if test "x$enable_wd" = xyes; then
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS wd.o"
 fi
 
-AC_ARG_ENABLE(ntulip,
-  [  --enable-ntulip         enable Tulip driver])
-if test "x$enable_ntulip" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NTULIP=1"
-  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ntulip.o"
+AC_ARG_ENABLE(otulip,
+  [  --enable-otulip         enable old Tulip driver])
+if test "x$enable_otulip" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_OTULIP=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS otulip.o"
 fi
 
 AC_ARG_ENABLE(rtl8139,
@@ -385,7 +399,7 @@ if test "x$enable_tiara" = xyes; then
 fi
 
 AC_ARG_ENABLE(tulip,
-  [  --enable-tulip          enable old Tulip driver])
+  [  --enable-tulip          enable Tulip driver])
 if test "x$enable_tulip" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TULIP=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS tulip.o"
@@ -430,7 +444,7 @@ if test "x$enable_compex_rl2000_fix" = xyes; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCOMPEX_RL2000_FIX=1"
 fi
 
-AC_ARG_ENABLE(smc9000,
+AC_ARG_ENABLE(smc9000-scan,
   [  --enable-smc9000-scan=LIST
                           probe for SMC9000 I/O addresses using LIST],
   [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DSMC9000_SCAN=$enable_smc9000_scan"])

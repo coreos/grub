@@ -43,6 +43,12 @@ drivers at the same time.
 3Com529 == MCA 3c509
   --enable-3c529
 
+3Com590
+  --enable-3c590
+
+3Com595
+  --enable-3c595
+
 3Com90x
   --enable-3c90x
 
@@ -54,6 +60,9 @@ Crystal Semiconductor CS89x0
     a more aggressive probing algorithm. This might be neccessary after
     a soft-reset of the NIC.
 
+Digital DE100 and DE200
+  --enable-depca
+
 Intel Etherexpress Pro/100
   --enable-eepro100
 
@@ -64,12 +73,15 @@ EXOS205
   --enable-exos205
 
 Lance PCI PCNet/32
-  --enable-lancepci
+  --enable-lance
 
 Linksys LNE100TX and other NICs using this Tulip clone chip
 Netgear FA310TX and other NICs using this Tulip clone chip
 Tulip clones based on the Macronix 987x5
-  --enable-ntulip
+Tulip-Fast
+Tulip+
+Tulip 21142
+  --enable-tulip
 
 NE1000/2000 and clones (ISA)
   --enable-ne
@@ -85,7 +97,7 @@ Winbond 86C940
 Compex RL2000
 KTI ET32P2
 NetVin 5000SC
-  --enable-nepci
+  --enable-ns8390
   --enable-compex-rl2000-fix
     If you have a Compex RL2000 PCI 32-bit (11F6:1401), and the probe
     hangs in "Probing...[NE*000/PCI]", try enabling this fix... it
@@ -98,6 +110,7 @@ Racal-Interlan NI6510
   --enable-ni6510
 
 Realtek 8139
+SMC 1211
   --enable-rtl8139
 
 Schneider and Koch G16
@@ -112,7 +125,7 @@ Tiara, Fujitsu Lancard
   --enable-tiara
 
 Old base driver for Tulip clones
-  --enable-tulip
+  --enable-otulip
 
 Rhine-I, e.g. D-Link DFE-530TX
 Rhine-II

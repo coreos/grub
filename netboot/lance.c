@@ -16,9 +16,13 @@ Ken Yap, July 1997
 #include "etherboot.h"
 /* to get the interface to the body of the program */
 #include "nic.h"
+#ifdef	INCLUDE_LANCE
+#include "pci.h"
+#endif
+#include "cards.h"
 
 /* Offsets from base I/O address */
-#if	defined(INCLUDE_NE2100) || defined(INCLUDE_LANCEPCI)
+#if	defined(INCLUDE_NE2100) || defined(INCLUDE_LANCE)
 #define	LANCE_ETH_ADDR	0x0
 #define	LANCE_DATA	0x10
 #define	LANCE_ADDR	0x12
@@ -41,7 +45,7 @@ struct lance_init_block
 	unsigned char	phys_addr[6];
 	unsigned long	filter[2];
 	Address		rx_ring;
-	Address	 	tx_ring;
+	Address		tx_ring;
 };
 
 struct lance_rx_head
@@ -75,9 +79,7 @@ struct lance_interface
 
 #define	LANCE_MUST_PAD		0x00000001
 #define	LANCE_ENABLE_AUTOSELECT	0x00000002
-#define	LANCE_MUST_REINIT_RING	0x00000004
 #define	LANCE_MUST_UNRESET	0x00000008
-#define	LANCE_HAS_MISSED_FRAME	0x00000010
 
 /* A mapping from the chip ID number to the part number and features.
    These are from the datasheets -- in real life the '970 version
@@ -85,31 +87,25 @@ struct lance_interface
 static struct lance_chip_type
 {
 	int	id_number;
-	char	*name;
+	const char	*name;
 	int	flags;
 } chip_table[] = {
 	{0x0000, "LANCE 7990",			/* Ancient lance chip.  */
 		LANCE_MUST_PAD + LANCE_MUST_UNRESET},
 	{0x0003, "PCnet/ISA 79C960",		/* 79C960 PCnet/ISA.  */
-		LANCE_ENABLE_AUTOSELECT + LANCE_MUST_REINIT_RING +
-			LANCE_HAS_MISSED_FRAME},
+		LANCE_ENABLE_AUTOSELECT},
 	{0x2260, "PCnet/ISA+ 79C961",		/* 79C961 PCnet/ISA+, Plug-n-Play.  */
-		LANCE_ENABLE_AUTOSELECT + LANCE_MUST_REINIT_RING +
-			LANCE_HAS_MISSED_FRAME},
+		LANCE_ENABLE_AUTOSELECT},
 	{0x2420, "PCnet/PCI 79C970",		/* 79C970 or 79C974 PCnet-SCSI, PCI. */
-		LANCE_ENABLE_AUTOSELECT + LANCE_MUST_REINIT_RING +
-			LANCE_HAS_MISSED_FRAME},
+		LANCE_ENABLE_AUTOSELECT},
 	/* Bug: the PCnet/PCI actually uses the PCnet/VLB ID number, so just call
 		it the PCnet32. */
 	{0x2430, "PCnet32",			/* 79C965 PCnet for VL bus. */
-		LANCE_ENABLE_AUTOSELECT + LANCE_MUST_REINIT_RING +
-			LANCE_HAS_MISSED_FRAME},
+		LANCE_ENABLE_AUTOSELECT},
         {0x2621, "PCnet/PCI-II 79C970A",        /* 79C970A PCInetPCI II. */
-                LANCE_ENABLE_AUTOSELECT + LANCE_MUST_REINIT_RING +
-                        LANCE_HAS_MISSED_FRAME},
-	{0x0, 	 "PCnet (unknown)",
-		LANCE_ENABLE_AUTOSELECT + LANCE_MUST_REINIT_RING +
-			LANCE_HAS_MISSED_FRAME},
+                LANCE_ENABLE_AUTOSELECT},
+	{0x0, "PCnet (unknown)",
+		LANCE_ENABLE_AUTOSELECT},
 };
 
 /* Define a macro for converting program addresses to real addresses */
@@ -125,9 +121,16 @@ static int			chip_version;
 static unsigned short		ioaddr;
 static int			dma;
 static struct lance_interface	*lp;
-/* additional 8 bytes for 8-byte alignment space */
-static char			lance[sizeof(struct lance_interface)+8];
 
+/* additional 8 bytes for 8-byte alignment space */
+#ifndef	USE_INTERNAL_BUFFER
+#define lance ((char *)0x10000 - (sizeof(struct lance_interface)+8))
+#else
+static char			lance[sizeof(struct lance_interface)+8];
+#endif
+
+
+#ifndef	INCLUDE_LANCE
 /* DMA defines and helper routines */
 
 /* DMA controller registers */
@@ -183,6 +186,7 @@ static void set_dma_mode(unsigned int dmanr, char mode)
 	else
 		outb_p(mode | (dmanr&3), DMA2_MODE_REG);
 }
+#endif	/* !INCLUDE_LANCE */
 
 /**************************************************************************
 RESET - Reset adapter
@@ -202,7 +206,8 @@ static void lance_reset(struct nic *nic)
 		/* This is 79C960 specific; Turn on auto-select of media
 		   (AUI, BNC). */
 		outw(0x2, ioaddr+LANCE_ADDR);
-		outw(0x2, ioaddr+LANCE_BUS_IF);
+		/* Don't touch 10base2 power bit. */
+		outw(inw(ioaddr+LANCE_BUS_IF) | 0x2, ioaddr+LANCE_BUS_IF);
 	}
 	/* Re-initialise the LANCE, and start it when done. */
 	/* Set station address */
@@ -269,10 +274,10 @@ TRANSMIT - Transmit a frame
 ***************************************************************************/
 static void lance_transmit(
 	struct nic *nic,
-	char *d,			/* Destination */
+	const char *d,			/* Destination */
 	unsigned int t,			/* Type */
 	unsigned int s,			/* size */
-	char *p)			/* Packet */
+	const char *p)			/* Packet */
 {
 	unsigned long		time;
 
@@ -312,18 +317,26 @@ static void lance_transmit(
 
 static void lance_disable(struct nic *nic)
 {
+#ifndef	INCLUDE_LANCE
 	disable_dma(dma);
+#endif
 }
 
+#ifdef	INCLUDE_LANCE
+static int lance_probe1(struct nic *nic, struct pci_device *pci)
+#else
 static int lance_probe1(struct nic *nic)
+#endif
 {
-	int			reset_val, lance_version, i;
+	int			reset_val, lance_version;
+	unsigned int		i;
 	Address			l;
 	short			dma_channels;
-	static char		dmas[] = { 5, 6, 7, 3 };
+	static const char	dmas[] = { 5, 6, 7, 3 };
 
 	reset_val = inw(ioaddr+LANCE_RESET);
-#ifdef	INCLUDE_NE2100
+	outw(reset_val, ioaddr+LANCE_RESET);
+#if	1  /* Klaus Espenlaub -- was #ifdef	INCLUDE_NE2100*/
 	outw(0x0, ioaddr+LANCE_ADDR);	/* Switch to window 0 */
 	if (inw(ioaddr+LANCE_DATA) != 0x4)
 		return (-1);
@@ -363,6 +376,7 @@ static int lance_probe1(struct nic *nic)
 	outw(0x915, ioaddr+LANCE_DATA);
 	outw(0x0, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
+#ifndef	INCLUDE_LANCE
 	/* now probe for DMA channel */
 	dma_channels = ((inb(DMA1_STAT_REG) >> 4) & 0xf) |
 		(inb(DMA2_STAT_REG) & 0xf0);
@@ -392,6 +406,9 @@ static int lance_probe1(struct nic *nic)
 		dma = 0;
 	printf("\n%s base 0x%x, DMA %d, addr ",
 		chip_table[lance_version].name, ioaddr, dma);
+#else
+	printf(" %s base 0x%x, addr ", chip_table[lance_version].name, ioaddr);
+#endif
 	/* Get station address */
 	for (i = 0; i < ETHER_ADDR_SIZE; ++i)
 	{
@@ -400,6 +417,13 @@ static int lance_probe1(struct nic *nic)
 			printf(":");
 	}
 	putchar('\n');
+	if (chip_table[chip_version].flags & LANCE_ENABLE_AUTOSELECT) {
+		/* Turn on auto-select of media (10baseT or BNC) so that the
+		 * user watch the LEDs. */
+		outw(0x0002, ioaddr+LANCE_ADDR);
+		/* Don't touch 10base2 power bit. */
+		outw(inw(ioaddr+LANCE_BUS_IF) | 0x0002, ioaddr+LANCE_BUS_IF);
+	}
 	return (lance_version);
 }
 
@@ -407,8 +431,8 @@ static int lance_probe1(struct nic *nic)
 PROBE - Look for an adapter, this routine's visible to the outside
 ***************************************************************************/
 
-#ifdef	INCLUDE_LANCEPCI
-struct nic *lancepci_probe(struct nic *nic, unsigned short *probe_addrs)
+#ifdef	INCLUDE_LANCE
+struct nic *lancepci_probe(struct nic *nic, unsigned short *probe_addrs, struct pci_device *pci)
 #endif
 #ifdef	INCLUDE_NE2100
 struct nic *ne2100_probe(struct nic *nic, unsigned short *probe_addrs)
@@ -425,18 +449,30 @@ struct nic *ni6510_probe(struct nic *nic, unsigned short *probe_addrs)
 		probe_addrs = io_addrs;
 	for (p = probe_addrs; (ioaddr = *p) != 0; ++p)
 	{
-		char		offset15, offset14 = inb(ioaddr + 14);
+		char	offset15, offset14 = inb(ioaddr + 14);
+		short	pci_cmd;
 
 #ifdef	INCLUDE_NE2100
 		if ((offset14 == 0x52 || offset14 == 0x57) &&
 		 ((offset15 = inb(ioaddr + 15)) == 0x57 || offset15 == 0x44))
+			if (lance_probe1(nic) >= 0)
+				break;
 #endif
 #ifdef	INCLUDE_NI6510
 		if ((offset14 == 0x00 || offset14 == 0x52) &&
 		 ((offset15 = inb(ioaddr + 15)) == 0x55 || offset15 == 0x44))
-#endif
 			if (lance_probe1(nic) >= 0)
 				break;
+#endif
+#ifdef	INCLUDE_LANCE
+		pcibios_read_config_word(0, pci->devfn, PCI_COMMAND, &pci_cmd);
+		if (!(pci_cmd & PCI_COMMAND_MASTER)) {
+			pci_cmd |= PCI_COMMAND_MASTER;
+			pcibios_write_config_word(0, pci->devfn, PCI_COMMAND, pci_cmd);
+		}
+		if (lance_probe1(nic, pci) >= 0)
+			break;
+#endif
 	}
 	/* if board found */
 	if (ioaddr != 0)

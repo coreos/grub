@@ -10,36 +10,37 @@ endif
 
 noinst_LIBRARIES = $(LIBDRIVERS)
 
-libdrivers_a_SOURCES = byteorder.h config.c etherboot.h \
-	fsys_tftp.c if.h linux-asm-io.h linux-asm-string.h \
-	main.c misc.c netboot_config.h netdevice.h nic.h osdep.h \
-	pci.c pci.h
-EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c90x.c cs89x0.c \
-	cs89x0.h eepro100.c epic100.c epic100.h i82586.c lance.c \
-	ns8390.c ns8390.h ntulip.c rtl8139.c sk_g16.c sk_g16.h \
-	smc9000.c smc9000.h tiara.c tulip.c tulip.h via-rhine.c
+libdrivers_a_SOURCES = cards.h config.c etherboot.h \
+	fsys_tftp.c linux-asm-io.h linux-asm-string.h \
+	main.c misc.c nic.h osdep.h pci.c pci.h
+EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c595.c 3c595.h 3c90x.c \
+	cs89x0.c cs89x0.h depca.c eepro100.c epic100.c epic100.h \
+	i82586.c lance.c ns8390.c ns8390.h otulip.c otulip.h rtl8139.c \
+	sk_g16.c sk_g16.h smc9000.c smc9000.h tiara.c tulip.c \
+	via-rhine.c
 libdrivers_a_CFLAGS = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
-	-DFSYS_TFTP $(NET_CFLAGS) $(NET_EXTRAFLAGS)
+	-DFSYS_TFTP=1 $(NET_CFLAGS) $(NET_EXTRAFLAGS)
 # Filled by configure.
 libdrivers_a_LIBADD = @NETBOOT_DRIVERS@
 libdrivers_a_DEPENDENCIES = $(libdrivers_a_LIBADD)
 
-EXTRA_DIST = README.netboot 3c90x.txt ntulip.txt
+EXTRA_DIST = README.netboot 3c90x.txt cs89x0.txt tulip.txt
 
 # These below are several special rules for the device drivers.
 # We cannot use a simple rule for them...
 
 # What objects are derived from a driver?
 3c509_drivers = 3c509.o 3c529.o
-#3c59x_drivers = 3c59x.o
+3c595_drivers = 3c590.o 3c595.o
 3c90x_drivers = 3c90x.o
 cs89x0_drivers = cs89x0.o
+depca_drivers = depca.o
 eepro100_drivers = eepro100.o
 epic100_drivers = epic100.o
 i82586_drivers = 3c507.o exos205.o ni5210.o
-lance_drivers = lancepci.o ne2100.o ni6510.o
-ns8390_drivers = 3c503.o ne.o nepci.o wd.o
-ntulip_drivers = ntulip.o
+lance_drivers = lance.o ne2100.o ni6510.o
+ns8390_drivers = 3c503.o ne.o ns8390.o wd.o
+otulip_drivers = otulip.o
 rtl8139_drivers = rtl8139.o
 sk_g16_drivers = sk_g16.o
 smc9000_drivers = smc9000.o
@@ -63,10 +64,10 @@ $(3c509_drivers): %.o: 3c509.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
-#$(3c59x_drivers): 3c59x.c 3c509.h
-#$(3c59x_drivers): %.o: 3c59x.c
-#	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
-#	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+$(3c595_drivers): 3c595.c 3c595.h
+$(3c595_drivers): %.o: 3c595.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
 $(3c90x_drivers): 3c90x.c
 $(3c90x_drivers): %.o: 3c90x.c
@@ -75,6 +76,11 @@ $(3c90x_drivers): %.o: 3c90x.c
 
 $(cs89x0_drivers): cs89x0.c cs89x0.h
 $(cs89x0_drivers): %.o: cs89x0.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(depca_drivers): depca.c
+$(depca_drivers): %.o: depca.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
@@ -93,8 +99,8 @@ $(lance_drivers): %.o: lance.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
-$(ntulip_drivers): ntulip.c
-$(ntulip_drivers): %.o: ntulip.c
+$(tulip_drivers): tulip.c
+$(tulip_drivers): %.o: tulip.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
@@ -118,8 +124,8 @@ $(tiara_drivers): %.o: tiara.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
-$(tulip_drivers): tulip.c tulip.h
-$(tulip_drivers): %.o: tulip.c
+$(otulip_drivers): otulip.c otulip.h
+$(otulip_drivers): %.o: otulip.c
 	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
@@ -132,22 +138,24 @@ $(via_rhine_drivers): %.o: via-rhine.c
 # Per-object flags.
 3c509_o_CFLAGS = -DINCLUDE_3C509=1
 3c529_o_CFLAGS = -DINCLUDE_3C529=1
-#3c59x_o_CFLAGS = -DINCLUDE_3C59X=1
+3c590_o_CFLAGS = -DINCLUDE_3C590=1
+3c595_o_CFLAGS = -DINCLUDE_3C595=1
 3c90x_o_CFLAGS = -DINCLUDE_3C90X=1
 cs89x0_o_CFLAGS = -DINCLUDE_CS89X0=1
+depca_o_CFLAGS = -DINCLUDE_DEPCA=1
 eepro100_o_CFLAGS = -DINCLUDE_EEPRO100=1
 epic100_o_CFLAGS = -DINCLUDE_EPIC100=1
 3c507_o_CFLAGS = -DINCLUDE_3C507=1
 exos205_o_CFLAGS = -DINCLUDE_EXOS205=1
 ni5210_o_CFLAGS = -DINCLUDE_NI5210=1
-lancepci_o_CFLAGS = -DINCLUDE_LANCEPCI=1
+lance_o_CFLAGS = -DINCLUDE_LANCE=1
 ne2100_o_CFLAGS = -DINCLUDE_NE2100=1
 ni6510_o_CFLAGS = -DINCLUDE_NI6510=1
 3c503_o_CFLAGS = -DINCLUDE_3C503=1
 ne_o_CFLAGS = -DINCLUDE_NE=1
-nepci_o_CFLAGS = -DINCLUDE_NEPCI=1
+ns8390_o_CFLAGS = -DINCLUDE_NS8390=1
 wd_o_CFLAGS = -DINCLUDE_WD=1
-ntulip_o_CFLAGS = -DINCLUDE_NTULIP=1
+otulip_o_CFLAGS = -DINCLUDE_OTULIP=1
 rtl8139_o_CFLAGS = -DINCLUDE_RTL8139=1
 sk_g16_o_CFLAGS = -DINCLUDE_SK_G16=1
 smc9000_o_CFLAGS = -DINCLUDE_SMC9000=1

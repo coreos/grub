@@ -11,10 +11,9 @@ Ken Yap, January 1998
  * your option) any later version.
  */
 
-/* to get some global routines like printf */
 #include "etherboot.h"
-/* to get the interface to the body of the program */
 #include "nic.h"
+#include "cards.h"
 
 /* Sources of information:
 
@@ -41,7 +40,7 @@ Ken Yap, January 1998
 
 #define	CUC_START	0x0100
 #define	CUC_RESUME	0x0200
-#define	CUC_SUSPEND 	0x0300
+#define	CUC_SUSPEND	0x0300
 #define	RX_START	0x0010
 #define	RX_RESUME	0x0020
 #define	RX_SUSPEND	0x0030
@@ -67,7 +66,7 @@ enum commands {
 	CmdTx = 4, CmdTDR = 5, CmdDump = 6, CmdDiagnose = 7};
 
 /*
-  		Details of the EtherLink16 Implementation
+		Details of the EtherLink16 Implementation
 
   The 3c507 and NI5210 are generic shared-memory i82586 implementations.
   3c507: The host can map 16K, 32K, 48K, or 64K of the 64K memory into
@@ -116,17 +115,17 @@ enum commands {
 
 /*  Since the 3c507 maps the shared memory window so that the last byte is
 at 82586 address FFFF, the first byte is at 82586 address 0, 16K, 32K, or
-48K corresponding to window sizes of 64K, 48K, 32K and 16K respectively. 
+48K corresponding to window sizes of 64K, 48K, 32K and 16K respectively.
 We can account for this be setting the 'SBC Base' entry in the ISCP table
 below for all the 16 bit offset addresses, and also adding the 'SCB Base'
 value to all 24 bit physical addresses (in the SCP table and the TX and RX
 Buffer Descriptors).
-				-Mark	
+				-Mark
 */
- 
+
 /*
   What follows in 'init_words[]' is the "program" that is downloaded to the
-  82586 memory.	 It's mostly tables and command blocks, and starts at the
+  82586 memory.  It's mostly tables and command blocks, and starts at the
   reset address 0xfffff6.  This is designed to be similar to the EtherExpress,
   thus the unusual location of the SCB at 0x0008.
 
@@ -152,17 +151,17 @@ Buffer Descriptors).
 #define DUMP_DATA	0x56	/* A 170 byte buffer for dump and Set-MC into. */
 
 #define TX_BUF_START	0x0100
-#define TX_BUF_SIZE 	(1518+14+20+16) /* packet+header+TBD */
+#define TX_BUF_SIZE	(1518+14+20+16) /* packet+header+TBD */
 
 #define RX_BUF_START	0x1000
-#define RX_BUF_SIZE 	(1518+14+18)	/* packet+header+RBD */
+#define RX_BUF_SIZE	(1518+14+18)	/* packet+header+RBD */
 #define RX_BUF_END	(mem_end - mem_start - 20)
 
 /*
   That's it: only 86 bytes to set up the beast, including every extra
   command available.  The 170 byte buffer at DUMP_DATA is shared between the
   Dump command (called only by the diagnostic program) and the SetMulticastList
-  command. 
+  command.
 
   To complete the memory setup you only have to write the station address at
   SA_OFFSET and create the Tx & Rx buffer lists.
@@ -223,7 +222,7 @@ static unsigned short init_words[] = {
 	SET_MC_CMD,				/* Next command. */
 	0xaa00,0xb000,0x0bad,	/* Station address (to be filled in) */
 
-	/* 0x0030: NOP, looping back to itself.	 Point to first Tx buffer to Tx. */
+	/* 0x0030: NOP, looping back to itself.  Point to first Tx buffer to Tx. */
 	0, CmdNOp, IDLELOOP, 0 /* pad */,
 
 	/* 0x0038: A unused Time-Domain Reflectometer command. */
@@ -336,7 +335,7 @@ RESET - Reset adapter
 
 static void i82586_reset(struct nic *nic)
 {
-	long		time;
+	unsigned long	time;
 #ifdef	ETHERBOOT32
 	unsigned short	*shmem = (short *)mem_start;
 #endif
@@ -382,14 +381,14 @@ static void i82586_reset(struct nic *nic)
 	time = currticks() + TICKS_PER_SEC;	/* allow 1 second to init */
 	while (
 #ifdef	ETHERBOOT16
-		read_mem(mem_start, shmem),
+			read_mem(mem_start, shmem),
 #endif
-		shmem[iSCB_STATUS>>1] == 0)
+			shmem[iSCB_STATUS>>1] == 0)
 	{
 		if (currticks() > time)
 		{
 			printf("i82586 initialisation timed out with status %x, cmd %x\n",
-				shmem[iSCB_STATUS>>1], shmem[iSCB_CMD>>1]);
+					shmem[iSCB_STATUS>>1], shmem[iSCB_CMD>>1]);
 			break;
 		}
 	}
@@ -405,18 +404,18 @@ static void i82586_reset(struct nic *nic)
 	read_mem(mem_start, shmem);
 #endif
 	printf("i82586 status %x, cmd %x\n",
-		shmem[iSCB_STATUS>>1], shmem[iSCB_CMD>>1]);
+			shmem[iSCB_STATUS>>1], shmem[iSCB_CMD>>1]);
 #endif
 }
 
 /**************************************************************************
-POLL - Wait for a frame
-***************************************************************************/
+  POLL - Wait for a frame
+ ***************************************************************************/
 static int i82586_poll(struct nic *nic)
 {
 	int		status;
 	unsigned short	rfd_cmd, next_rx_frame, data_buffer_addr,
-			frame_status, pkt_len;
+	frame_status, pkt_len;
 #ifdef	ETHERBOOT32
 	unsigned short	*shmem = (short *)mem_start + rx_head;
 #endif
@@ -427,9 +426,9 @@ static int i82586_poll(struct nic *nic)
 	/* return true if there's an ethernet packet ready to read */
 	if (
 #ifdef	ETHERBOOT16
-		read_mem(mem_start + rx_head, shmem),
+			read_mem(mem_start + rx_head, shmem),
 #endif
-		((frame_status = shmem[0]) & 0x8000) == 0)
+			((frame_status = shmem[0]) & 0x8000) == 0)
 		return (0);		/* nope */
 	rfd_cmd = shmem[1];
 	next_rx_frame = shmem[2];
@@ -437,7 +436,7 @@ static int i82586_poll(struct nic *nic)
 	pkt_len = shmem[11];
 	status = 0;
 	if (rfd_cmd != 0 || data_buffer_addr != rx_head + 22
-		|| (pkt_len & 0xC000) != 0xC000)
+			|| (pkt_len & 0xC000) != 0xC000)
 		printf("\nRx frame corrupt, discarded");
 	else if ((frame_status & 0x2000) == 0)
 		printf("\nRx frame had error");
@@ -476,14 +475,14 @@ static int i82586_poll(struct nic *nic)
 }
 
 /**************************************************************************
-TRANSMIT - Transmit a frame
-***************************************************************************/
+  TRANSMIT - Transmit a frame
+ ***************************************************************************/
 static void i82586_transmit(
-struct nic *nic,
-char *d,			/* Destination */
-unsigned int t,			/* Type */
-unsigned int s,			/* size */
-char *p)			/* Packet */
+		struct nic *nic,
+		const char *d,			/* Destination */
+		unsigned int t,			/* Type */
+		unsigned int s,			/* size */
+		const char *p)			/* Packet */
 {
 	Address			bptr;
 	unsigned short		type, z;
@@ -545,9 +544,9 @@ char *p)			/* Packet */
 	/* Wait for transmit completion */
 	while (
 #ifdef	ETHERBOOT16
-		read_mem(mem_start + TX_BUF_START, shmem),
+			read_mem(mem_start + TX_BUF_START, shmem),
 #endif
-		(shmem[0] & 0x2000) == 0)
+			(shmem[0] & 0x2000) == 0)
 		;
 	/* Change the offset in the IDLELOOP back and
 	   change the final loop to point here */
@@ -564,8 +563,8 @@ char *p)			/* Packet */
 }
 
 /**************************************************************************
-DISABLE - Turn off ethernet interface
-***************************************************************************/
+  DISABLE - Turn off ethernet interface
+ ***************************************************************************/
 static void i82586_disable(struct nic *nic)
 {
 #ifdef	ETHERBOOT32
@@ -816,7 +815,7 @@ struct nic *ni5210_probe(struct nic *nic, unsigned short *probe_addrs)
  * Code to download to I186 in EXOS205
  */
 
-static unsigned char exos_i186_init[] = 
+static unsigned char exos_i186_init[] =
 {
 0x08,0x00,0x14,0x00,0x00,0x00,0xaa,0xfa,0x33,0xc0,0xba,0xfe,0xff,0xef,0xb8,0xf8,
 0xff,0xe7,0xa0,0xb8,0x7c,0x00,0xe7,0xa4,0xb8,0xbc,0x80,0xe7,0xa8,0x8c,0xc8,0x8e,

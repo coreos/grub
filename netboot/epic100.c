@@ -1,10 +1,10 @@
-/* epic100.c: A SMC 83c170 EPIC/100 fast ethernet driver for EtherBoot 4.0 */
+/* epic100.c: A SMC 83c170 EPIC/100 fast ethernet driver for Etherboot */
 
 #define LINUX_OUT_MACROS
 
 #include "etherboot.h"
 #include "nic.h"
-/*#include <linux/pci.h>*/
+#include "cards.h"
 #include "epic100.h"
 
 #undef	virt_to_bus
@@ -23,7 +23,7 @@
 #define DEBUG_EEPROM
 */
 
-static int epic_debug = 0;	/* debug level */
+#define EPIC_DEBUG 0	/* debug level */
 
 /* The EPIC100 Rx and Tx buffer descriptors. */
 struct epic_rx_desc {
@@ -50,12 +50,12 @@ struct epic_tx_desc {
 #define delay(nanosec)   do { int _i = 3; while (--_i > 0) \
                                      { __SLOW_DOWN_IO; }} while (0)
 
-static void 	epic100_open();
-static void 	epic100_init_ring();
+static void	epic100_open(void);
+static void	epic100_init_ring(void);
 static void	epic100_disable(struct nic *nic);
-static int  	epic100_poll(struct nic *nic);
-static void 	epic100_transmit(struct nic *nic, char *destaddr, 
-				 unsigned int type, unsigned int len, char *data);
+static int	epic100_poll(struct nic *nic);
+static void	epic100_transmit(struct nic *nic, const char *destaddr,
+				 unsigned int type, unsigned int len, const char *data);
 static int	read_eeprom(int location);
 static int	mii_read(int phy_id, int location);
 
@@ -77,34 +77,39 @@ static int	ptcdar ;
 static int	eththr ;
 
 static unsigned int	cur_rx, cur_tx;		/* The next free ring entry */
-#ifdef DEBUG_EEPROM
+#ifdef	DEBUG_EEPROM
 static unsigned short	eeprom[64];
 #endif
-signed char 		phys[4];		/* MII device addresses. */
-struct epic_rx_desc	rx_ring[RX_RING_SIZE];
-struct epic_tx_desc	tx_ring[TX_RING_SIZE];
-static char 		rx_packet[PKT_BUF_SZ * RX_RING_SIZE];
-static char 		tx_packet[PKT_BUF_SZ * TX_RING_SIZE];
+static signed char	phys[4];		/* MII device addresses. */
+static struct epic_rx_desc	rx_ring[RX_RING_SIZE];
+static struct epic_tx_desc	tx_ring[TX_RING_SIZE];
+#ifndef	USE_INTERNAL_BUFFER
+#define rx_packet ((char *)0x10000 - PKT_BUF_SZ * RX_RING_SIZE)
+#define tx_packet ((char *)0x10000 - PKT_BUF_SZ * RX_RING_SIZE - PKT_BUF_SZ * TX_RING_SIZE)
+#else
+static char		rx_packet[PKT_BUF_SZ * RX_RING_SIZE];
+static char		tx_packet[PKT_BUF_SZ * TX_RING_SIZE];
+#endif
 
 /***********************************************************************/
 /*                    Externally visible functions                     */
 /***********************************************************************/
 
-    static void 
+    static void
 epic100_reset(struct nic *nic)
 {
     /* Soft reset the chip. */
     outl(GC_SOFT_RESET, genctl);
 }
 
-    struct nic* 
+    struct nic*
 epic100_probe(struct nic *nic, unsigned short *probeaddrs)
 {
     unsigned short sum = 0;
     unsigned short value;
-    int i, j;
+    int i;
     unsigned short* ap;
-    int phy, phy_idx;
+    unsigned int phy, phy_idx;
 
     if (probeaddrs == 0 || probeaddrs[0] == 0)
 	return 0;
@@ -131,23 +136,23 @@ epic100_probe(struct nic *nic, unsigned short *probeaddrs)
     prcdar  = ioaddr + PRCDAR;		/* PCI Receive Current Descr Address */
     ptcdar  = ioaddr + PTCDAR;		/* PCI Transmit Current Descr Address */
     eththr  = ioaddr + ETHTHR;		/* Early Transmit Threshold */
-    
+
     /* Reset the chip & bring it out of low-power mode. */
     outl(GC_SOFT_RESET, genctl);
 
     /* Disable ALL interrupts by setting the interrupt mask. */
     outl(INTR_DISABLE, intmask);
 
-    /* 
+    /*
      * set the internal clocks:
      * Application Note 7.15 says:
-     *    In order to set the CLOCK TEST bit in the TEST register, 
+     *    In order to set the CLOCK TEST bit in the TEST register,
      *	  perform the following:
      *
-     *        Write 0x0008 to the test register at least sixteen 
+     *        Write 0x0008 to the test register at least sixteen
      *        consecutive times.
      *
-     * The CLOCK TEST bit is Write-Only. Writing it several times 
+     * The CLOCK TEST bit is Write-Only. Writing it several times
      * consecutively insures a successful write to the bit...
      */
 
@@ -155,46 +160,46 @@ epic100_probe(struct nic *nic, unsigned short *probeaddrs)
 	outl(0x00000008, test);
     }
 
-#ifdef DEBUG_EEPROM
+#ifdef	DEBUG_EEPROM
     for (i = 0; i < 64; i++) {
 	value = read_eeprom(i);
 	eeprom[i] = value;
 	sum += value;
     }
 
-    if (epic_debug > 1) {
-	printf("EEPROM contents\n");
-	for (i = 0; i < 64; i++) {
-	    printf(" %02x%s", eeprom[i], i % 16 == 15 ? "\n" : "");
-	}
+#if	(EPIC_DEBUG > 1)
+    printf("EEPROM contents\n");
+    for (i = 0; i < 64; i++) {
+	printf(" %02x%s", eeprom[i], i % 16 == 15 ? "\n" : "");
     }
+#endif
 #endif
 
     /* This could also be read from the EEPROM. */
     ap = (unsigned short*)nic->node_addr;
     for (i = 0; i < 3; i++)
 	*ap++ = inw(lan0 + i*4);
-	
+
     printf(" I/O %x ", ioaddr);
 
     for (i = 0; i < 6; i++)
-	printf ("%b%c", nic->node_addr[i] , i < 5 ?':':' '); 
-	
+	printf ("%b%c", nic->node_addr[i] , i < 5 ?':':' ');
+
     /* Find the connected MII xcvrs. */
     for (phy = 0, phy_idx = 0; phy < 32 && phy_idx < sizeof(phys); phy++) {
 	int mii_status = mii_read(phy, 0);
 
 	if (mii_status != 0xffff  && mii_status != 0x0000) {
 	    phys[phy_idx++] = phy;
-	    if (epic_debug > 1) {
-		printf("MII transceiver found at address %d.\n", phy);
-	    }
+#if	(EPIC_DEBUG > 1)
+	    printf("MII transceiver found at address %d.\n", phy);
+#endif
 	}
     }
     if (phy_idx == 0) {
-	if (epic_debug > 1) {
-	    printf("***WARNING***: No MII transceiver found!\n");
-	}
+#if	(EPIC_DEBUG > 1)
+	printf("***WARNING***: No MII transceiver found!\n");
+#endif
 	/* Use the known PHY address of the EPII. */
 	phys[0] = 3;
     }
@@ -212,7 +217,6 @@ epic100_probe(struct nic *nic, unsigned short *probeaddrs)
     static void
 epic100_open()
 {
-    int i;
     int mii_reg5;
     int full_duplex = 0;
     unsigned long tmp;
@@ -240,8 +244,8 @@ epic100_open()
     outl(virt_to_bus(&rx_ring), prcdar);
     outl(virt_to_bus(&tx_ring), ptcdar);
 
-    /* Start the chip's Rx process: Don't receive broadcast */
-    outl(0, rxcon);
+    /* Start the chip's Rx process: receive unicast and broadcast */
+    outl(0x04, rxcon);
     outl(CR_START_RX | CR_QUEUE_RX, command);
 
     putchar('\n');
@@ -267,7 +271,7 @@ epic100_init_ring()
     /* Mark the last entry as wrapping the ring. */
     rx_ring[i-1].next = virt_to_bus(&rx_ring[0]);
 
-    /* 
+    /*
      *The Tx buffer descriptor is filled in as needed,
      * but we do need to clear the ownership bit.
      */
@@ -282,7 +286,7 @@ epic100_init_ring()
     tx_ring[i-1].next = virt_to_bus(&tx_ring[0]);
 }
 
-/* function: epic100_transmit / eth_transmit
+/* function: epic100_transmit
  * This transmits a packet.
  *
  * Arguments: char d[6]:          destination ethernet address.
@@ -291,9 +295,9 @@ epic100_init_ring()
  *            char *p:            the data for the packet.
  * returns:   void.
  */
-    static void 
-epic100_transmit(struct nic *nic, char *destaddr, unsigned int type, 
-		 unsigned int len, char *data)
+    static void
+epic100_transmit(struct nic *nic, const char *destaddr, unsigned int type,
+		 unsigned int len, const char *data)
 {
     unsigned short nstype;
     unsigned short status;
@@ -322,9 +326,9 @@ epic100_transmit(struct nic *nic, char *destaddr, unsigned int type,
 
     len += ETHER_HDR_SIZE;
 
-    /* 
-     * Caution: the write order is important here, 
-     * set the base address with the "ownership" 
+    /*
+     * Caution: the write order is important here,
+     * set the base address with the "ownership"
      * bits last.
      */
     tx_ring[entry].txlength  = (len >= 60 ? len : 60);
@@ -344,32 +348,32 @@ epic100_transmit(struct nic *nic, char *destaddr, unsigned int type,
     }
 
     if ((status & TRING_OWN) == 0) {
-#ifdef DEBUG_TX
-	printf("tx done after %d loop(s), status %x\n", 
+#ifdef	DEBUG_TX
+	printf("tx done after %d loop(s), status %x\n",
 	       TIME_OUT-to, tx_ring[entry].status );
 #endif
 	return;
     }
 
     if (to == 0) {
-	printf("OOPS, Something wrong with transmitter. status=%x\n", 
+	printf("OOPS, Something wrong with transmitter. status=%x\n",
 	       tx_ring[entry].status);
     }
 }
 
 /* function: epic100_poll / eth_poll
- * This receives a packet from the network. 
+ * This receives a packet from the network.
  *
  * Arguments: none
- *            
- * returns:   1 if a packet was received. 
+ *
+ * returns:   1 if a packet was received.
  *            0 if no pacet was received.
  * side effects:
  *            returns the packet in the array nic->packet.
  *            returns the length of the packet in nic->packetlen.
  */
 
-    static int 
+    static int
 epic100_poll(struct nic *nic)
 {
     int to;
@@ -380,14 +384,14 @@ epic100_poll(struct nic *nic)
     entry = cur_rx % RX_RING_SIZE;
     cur_rx++;
     to = TIME_OUT;
-    
+
     status = rx_ring[entry].status;
     while ( (status & RRING_OWN) == RRING_OWN && --to) {
 	status = rx_ring[entry].status;
     }
-    
+
     if (to == 0) {
-#ifdef DEBUG_RX
+#ifdef	DEBUG_RX
 	printf("epic_poll: time out! status %x\n", status);
 #endif
 	/* Restart Receiver */
@@ -397,8 +401,9 @@ epic100_poll(struct nic *nic)
 
     /* We own the next entry, it's a new packet. Send it up. */
 
-    if (epic_debug > 4)
-	printf("epic_poll: entry %d status %8x\n", entry, status);
+#if	(EPIC_DEBUG > 4)
+    printf("epic_poll: entry %d status %8x\n", entry, status);
+#endif
 
     if (status & 0x2000) {
 	printf("epic_poll: Giant packet\n");
@@ -427,13 +432,13 @@ epic100_poll(struct nic *nic)
 }
 
 
-    static void 
+    static void
 epic100_disable(struct nic *nic)
 {
 }
 
 
-#ifdef DEBUG_EEPROM
+#ifdef	DEBUG_EEPROM
 /* Serial EEPROM section. */
 
 /*  EEPROM_Ctrl bits. */
@@ -452,16 +457,16 @@ epic100_disable(struct nic *nic)
 
 #define eeprom_delay(n)	delay(n)
 
-    static int 
+    static int
 read_eeprom(int location)
 {
     int i;
     int retval = 0;
     int read_cmd = location | EE_READ_CMD;
-	
+
     outl(EE_ENB & ~EE_CS, eectl);
     outl(EE_ENB, eectl);
-	
+
     /* Shift the read command bits out. */
     for (i = 10; i >= 0; i--) {
 	short dataval = (read_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
@@ -473,7 +478,7 @@ read_eeprom(int location)
 	eeprom_delay(250);
     }
     outl(EE_ENB, eectl);
-    
+
     for (i = 16; i > 0; i--) {
 	outl(EE_ENB | EE_SHIFT_CLK, eectl);
 	eeprom_delay(100);
@@ -492,7 +497,7 @@ read_eeprom(int location)
 #define MII_READOP	1
 #define MII_WRITEOP	2
 
-    static int 
+    static int
 mii_read(int phy_id, int location)
 {
     int i;

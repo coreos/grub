@@ -1,9 +1,9 @@
 /*
  * Taken from Linux /usr/include/asm/string.h
- * All except memcpy, memset and memcmp removed.
+ * All except memcpy, memmove, memset and memcmp removed.
  */
 
-#ifndef _I386_STRING_H_
+#ifndef	_I386_STRING_H_
 #define _I386_STRING_H_
 
 /*
@@ -19,9 +19,15 @@
  *		consider these trivial functions to be PD.
  */
 
-#ifndef	__FreeBSD__
 typedef int	size_t;
-#endif
+
+extern void *__memcpy(void * to, const void * from, size_t n);
+extern void *__constant_memcpy(void * to, const void * from, size_t n);
+extern void *memmove(void * dest,const void * src, size_t n);
+extern void *__memset_generic(void * s, char c,size_t count);
+extern void *__constant_c_memset(void * s, unsigned long c, size_t count);
+extern void *__constant_c_and_count_memset(void * s, unsigned long pattern, size_t count);
+
 
 extern inline void * __memcpy(void * to, const void * from, size_t n)
 {
@@ -108,7 +114,7 @@ __asm__ __volatile__( \
 		default: COMMON("\n\tmovsw\n\tmovsb"); return to;
 	}
 }
-  
+
 #undef COMMON
 }
 
@@ -183,7 +189,7 @@ __asm__ __volatile__(
 	: "=&c" (d0), "=&D" (d1)
 	:"a" (c), "q" (count), "0" (count/4), "1" ((long) s)
 	:"memory");
-return (s);	
+return (s);
 }
 
 /*
@@ -225,7 +231,7 @@ __asm__  __volatile__("cld\n\t" \
 		default: COMMON("\n\tstosw\n\tstosb"); return s;
 	}
 }
-  
+
 #undef COMMON
 }
 
@@ -242,7 +248,7 @@ __asm__  __volatile__("cld\n\t" \
 #define __HAVE_ARCH_MEMSET
 #define memset(s, c, count) \
 (__builtin_constant_p(c) ? \
- __memset((s),(c),(count)) : \
+ __constant_c_x_memset((s),(c),(count)) : \
  __memset((s),(c),(count)))
 
 #endif

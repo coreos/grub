@@ -19,7 +19,7 @@
   * some cosmetic changes
 
   * 2.5
-  
+
   Thu Dec 5 21:00:00 1996  Markus Gutschke  <gutschk@math.uni-muenster.de>
 
   * tested the code against a CS8900 card
@@ -30,7 +30,7 @@
     changes in order to be more tolerant to different environments
 
   * 4
-  
+
   Fri Nov 22 23:00:00 1996  Markus Gutschke  <gutschk@math.uni-muenster.de>
 
   * read the manuals for the CS89x0 chipsets and took note of all the
@@ -50,7 +50,7 @@
   * Cleaned up some of the code and tried to optimize the code size.
 
   * 1.5
-  
+
   Sun Nov 10 16:30:00 1996  Markus Gutschke  <gutschk@math.uni-muenster.de>
 
   * First experimental release. This code compiles fine, but I
@@ -60,17 +60,18 @@
   the time being, it will only work for Etherboot/32.
 
   * 12
-  
+
   */
 
 #include "etherboot.h"
 #include "nic.h"
+#include "cards.h"
 #include "cs89x0.h"
 
 static unsigned short	eth_nic_base;
 static unsigned long    eth_mem_start;
 static unsigned short   eth_irq;
-static unsigned short   eth_cs_type;	 /* one of: CS8900, CS8920, CS8920M  */
+static unsigned short   eth_cs_type;	/* one of: CS8900, CS8920, CS8920M  */
 static unsigned short   eth_auto_neg_cnf;
 static unsigned short   eth_adapter_cnf;
 static unsigned short	eth_linectl;
@@ -80,16 +81,13 @@ static unsigned char	eth_vendor;
 	CS89x0 - specific routines
 **************************************************************************/
 
-static int inline readreg(portno)
-	int portno;
+static inline int readreg(int portno)
 {
 	outw(portno, eth_nic_base + ADD_PORT);
 	return inw(eth_nic_base + DATA_PORT);
 }
 
-static void inline writereg(portno,value)
-	int portno;
-	int value;
+static inline void writereg(int portno, int value)
 {
 	outw(portno, eth_nic_base + ADD_PORT);
 	outw(value, eth_nic_base + DATA_PORT);
@@ -100,27 +98,24 @@ static void inline writereg(portno,value)
 EEPROM access
 **************************************************************************/
 
-static int wait_eeprom_ready()
+static int wait_eeprom_ready(void)
 {
-	long tmo = currticks() + 4*TICKS_PER_SEC;
-	
+	unsigned long tmo = currticks() + 4*TICKS_PER_SEC;
+
 	/* check to see if the EEPROM is ready, a timeout is used -
 	   just in case EEPROM is ready when SI_BUSY in the
 	   PP_SelfST is clear */
 	while(readreg(PP_SelfST) & SI_BUSY) {
-		if (currticks() - tmo >= 0)
+		if (currticks() >= tmo)
 			return -1; }
 	return 0;
 }
 
-static int get_eeprom_data(off,len,buffer)
-	int off;
-	int len;
-	unsigned short *buffer;
+static int get_eeprom_data(int off, int len, unsigned short *buffer)
 {
 	int i;
 
-#if defined(EDEBUG)
+#ifdef	EDEBUG
 	printf("\ncs: EEPROM data from %x for %x:",off,len);
 #endif
 	for (i = 0; i < len; i++) {
@@ -132,23 +127,20 @@ static int get_eeprom_data(off,len,buffer)
 		if (wait_eeprom_ready() < 0)
 			return -1;
 		buffer[i] = readreg(PP_EEData);
-#if defined(EDEBUG)
+#ifdef	EDEBUG
 		if (!(i%10))
 			printf("\ncs: ");
 		printf("%x ", buffer[i]);
 #endif
 	}
-#if defined(EDEBUG)
+#ifdef	EDEBUG
 	putchar('\n');
 #endif
 
 	return(0);
 }
 
-static int get_eeprom_chksum(off, len, buffer)
-	int off;
-	int len;
-	unsigned short *buffer;
+static int get_eeprom_chksum(int off, int len, unsigned short *buffer)
 {
 	int  i, cksum;
 
@@ -165,7 +157,7 @@ static int get_eeprom_chksum(off, len, buffer)
 Activate all of the available media and probe for network
 **************************************************************************/
 
-static void clrline()
+static void clrline(void)
 {
 	int i;
 
@@ -175,11 +167,10 @@ static void clrline()
 	return;
 }
 
-static void control_dc_dc(on_not_off)
-	int on_not_off;
+static void control_dc_dc(int on_not_off)
 {
 	unsigned int selfcontrol;
-	long tmo = currticks() + TICKS_PER_SEC;
+	unsigned long tmo = currticks() + TICKS_PER_SEC;
 
 	/* control the DC to DC convertor in the SelfControl register.  */
 	selfcontrol = HCB1_ENBL; /* Enable the HCB1 bit as an output */
@@ -188,19 +179,19 @@ static void control_dc_dc(on_not_off)
 	else
 		selfcontrol &= ~HCB1;
 	writereg(PP_SelfCTL, selfcontrol);
-  
+
 	/* Wait for the DC/DC converter to power up - 1000ms */
-	while (currticks() - tmo < 0);
+	while (currticks() < tmo);
 
 	return;
 }
 
-static int detect_tp()
+static int detect_tp(void)
 {
-	long tmo;
+	unsigned long tmo;
 
 	/* Turn on the chip auto detection of 10BT/ AUI */
-  
+
 	clrline(); printf("attempting %s:","TP");
 
         /* If connected to another full duplex capable 10-Base-T card
@@ -214,8 +205,8 @@ static int detect_tp()
 
         /* Delay for the hardware to work out if the TP cable is
 	   present - 150ms */
-	for (tmo = currticks() + 4; currticks() - tmo < 0; );
-	
+	for (tmo = currticks() + 4; currticks() < tmo; );
+
 	if ((readreg(PP_LineST) & LINK_OK) == 0)
 		return 0;
 
@@ -248,7 +239,7 @@ static int send_test_pkt(struct nic *nic)
 				     0, 46, /*A 46 in network order       */
 				     0, 0,  /*DSAP=0 & SSAP=0 fields      */
 				     0xf3,0 /*Control (Test Req+P bit set)*/ };
-	long tmo;
+	unsigned long tmo;
 
 	writereg(PP_LineCTL, readreg(PP_LineCTL) | SERIAL_TX_ON);
 
@@ -261,7 +252,7 @@ static int send_test_pkt(struct nic *nic)
 	/* Test to see if the chip has allocated memory for the packet */
 	for (tmo = currticks() + 2;
 	     (readreg(PP_BusST) & READY_FOR_TX_NOW) == 0; )
-		if (currticks() - tmo >= 0)
+		if (currticks() >= tmo)
 			return(0);
 
 	/* Write the contents of the packet */
@@ -270,8 +261,8 @@ static int send_test_pkt(struct nic *nic)
 
 	printf(" sending test packet ");
 	/* wait a couple of timer ticks for packet to be received */
-	for (tmo = currticks() + 2; currticks() - tmo < 0; );
-	
+	for (tmo = currticks() + 2; currticks() < tmo; );
+
 	if ((readreg(PP_TxEvent) & TX_SEND_OK_BITS) == TX_OK) {
 			printf("succeeded");
 			return 1;
@@ -311,10 +302,10 @@ static int detect_bnc(struct nic *nic)
 ETH_RESET - Reset adapter
 ***************************************************************************/
 
-void cs89x0_reset(struct nic *nic)
+static void cs89x0_reset(struct nic *nic)
 {
 	int  i;
-	long reset_tmo;
+	unsigned long reset_tmo;
 
 	if(eth_vendor!=VENDOR_CS89x0)
 		return;
@@ -322,8 +313,7 @@ void cs89x0_reset(struct nic *nic)
 	writereg(PP_SelfCTL, readreg(PP_SelfCTL) | POWER_ON_RESET);
 
 	/* wait for two ticks; that is 2*55ms */
-	for (reset_tmo = currticks() + 2;
-	     reset_tmo > currticks(); );
+	for (reset_tmo = currticks() + 2; currticks() < reset_tmo; );
 
 	if (eth_cs_type != CS8900) {
 		/* Hardware problem requires PNP registers to be reconfigured
@@ -337,11 +327,11 @@ void cs89x0_reset(struct nic *nic)
 			outw(PP_CS8920_ISAMemB, eth_nic_base + ADD_PORT);
 			outb((eth_mem_start >> 8) & 0xff, eth_nic_base + DATA_PORT);
 			outb((eth_mem_start >> 24) & 0xff, eth_nic_base + DATA_PORT + 1); } }
-  
+
 	/* Wait until the chip is reset */
 	for (reset_tmo = currticks() + 2;
 	     (readreg(PP_SelfST) & INIT_DONE) == 0 &&
-		     currticks() - reset_tmo < 0; );
+		     currticks() < reset_tmo; );
 
 	/* disable interrupts and memory accesses */
 	writereg(PP_BusCTL, 0);
@@ -376,12 +366,12 @@ ETH_TRANSMIT - Transmit a frame
 
 static void cs89x0_transmit(
 	struct nic *nic,
-	char *d,			/* Destination */
+	const char *d,			/* Destination */
 	unsigned int t,			/* Type */
 	unsigned int s,			/* size */
-	char *p)			/* Packet */
+	const char *p)			/* Packet */
 {
-	long          tmo;
+	unsigned long tmo;
 	int           sr;
 
 	if(eth_vendor!=VENDOR_CS89x0)
@@ -401,7 +391,7 @@ retry:
 	if ((readreg(PP_BusST) & READY_FOR_TX_NOW) == 0) {
 		/* Oops... this should not happen! */
 		printf("cs: unable to send packet; retrying...\n");
-		for (tmo = currticks() + 5*TICKS_PER_SEC; currticks() - tmo < 0; );
+		for (tmo = currticks() + 5*TICKS_PER_SEC; currticks() < tmo; );
 		cs89x0_reset(nic);
 		goto retry; }
 
@@ -416,8 +406,8 @@ retry:
 
 	/* wait for transfer to succeed */
 	for (tmo = currticks()+5*TICKS_PER_SEC;
-	     (s = readreg(PP_TxEvent)&~0x1F) == 0 && currticks() - tmo < 0;
-	     twiddle());
+	     (s = readreg(PP_TxEvent)&~0x1F) == 0 && currticks() < tmo;)
+		/* nothing */ ;
 	if ((s & TX_SEND_OK_BITS) != TX_OK) {
 		printf("\ntransmission error 0x%x\n", s);
 	}
@@ -460,12 +450,12 @@ ETH_PROBE - Look for an adapter
 struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 {
 	static const unsigned int netcard_portlist[] = {
-#ifdef CS_SCAN
+#ifdef	CS_SCAN
 		CS_SCAN,
-#else /* use "conservative" default values for autoprobing */
+#else	/* use "conservative" default values for autoprobing */
 		0x300,0x320,0x340,0x200,0x220,0x240,
 		0x260,0x280,0x2a0,0x2c0,0x2e0,
-      /* if that did not work, then be more aggressive */
+	/* if that did not work, then be more aggressive */
 		0x301,0x321,0x341,0x201,0x221,0x241,
 		0x261,0x281,0x2a1,0x2c1,0x2e1,
 #endif
@@ -503,7 +493,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 		       eth_cs_type==CS8920M?"M":"",
 		       cs_revision,
 		       eth_nic_base);
-    
+
 		/* First check to see if an EEPROM is attached*/
 		if ((readreg(PP_SelfST) & EEPROM_PRESENT) == 0) {
 			printf("\ncs: no EEPROM...\n");
@@ -530,12 +520,12 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 
 		/* store the initial memory base address */
 		eth_mem_start = eeprom_buff[PACKET_PAGE_OFFSET/2] << 8;
-    
+
 		printf("%s%s%s, addr ",
 		       (eth_adapter_cnf & A_CNF_10B_T)?", RJ-45":"",
 		       (eth_adapter_cnf & A_CNF_AUI)?", AUI":"",
 		       (eth_adapter_cnf & A_CNF_10B_2)?", BNC":"");
-  
+
 		/* If this is a CS8900 then no pnp soft */
 		if (eth_cs_type != CS8900 &&
 		    /* Check if the ISA IRQ has been set  */
@@ -558,7 +548,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			eth_irq = i; }
 
 		/* Retrieve and print the ethernet address. */
-    		for (i=0; i<ETHER_ADDR_SIZE; i++) {
+		for (i=0; i<ETHER_ADDR_SIZE; i++) {
 			printf("%b%s",(int)(nic->node_addr[i] =
 					  ((unsigned char *)eeprom_buff)[i]),
 			       i < ETHER_ADDR_SIZE-1 ? ":" : "\n"); }
@@ -580,13 +570,13 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			break;
 		case A_CNF_MEDIA_10B_2: result = eth_adapter_cnf & A_CNF_10B_2;
 			break;
-		default: result = eth_adapter_cnf & (A_CNF_10B_T | A_CNF_AUI | 
+		default: result = eth_adapter_cnf & (A_CNF_10B_T | A_CNF_AUI |
 						     A_CNF_10B_2);
 		}
 		if (!result) {
 			printf("cs: EEPROM is configured for unavailable media\n");
 		error:
-			writereg(PP_LineCTL, readreg(PP_LineCTL) & 
+			writereg(PP_LineCTL, readreg(PP_LineCTL) &
 				 ~(SERIAL_TX_ON | SERIAL_RX_ON));
 			outw(PP_ChipID, eth_nic_base + ADD_PORT);
 			continue;
@@ -596,7 +586,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 		eth_vendor = VENDOR_CS89x0;
 		cs89x0_reset(nic);
 		eth_vendor = VENDOR_NONE;
-		
+
 		/* set the hardware to the configured choice */
 		switch(eth_adapter_cnf & A_CNF_MEDIA_TYPE) {
 		case A_CNF_MEDIA_10B_T:

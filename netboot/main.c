@@ -17,13 +17,23 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Based on "src/main.c" in etherboot-4.4.2.  */
+/* Based on "src/main.c" in etherboot-4.5.8.  */
 
 /**************************************************************************
 ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
 Author: Martin Renters
   Date: Dec/93
+  
+Literature dealing with the network protocols:
+       ARP - RFC826
+       RARP - RFC903
+       UDP - RFC768
+       BOOTP - RFC951, RFC2132 (vendor extensions)
+       DHCP - RFC2131, RFC2132 (options)
+       TFTP - RFC1350, RFC2347 (options), RFC2348 (blocksize), RFC2349 (tsize)
+       RPC - RFC1831, RFC1832 (XDR), RFC1833 (rpcbind/portmapper)
+       NFS - RFC1094, RFC1813 (v3, useful for clarifications, not implemented)
 
 **************************************************************************/
 
@@ -31,8 +41,6 @@ Author: Martin Renters
 
 #include <etherboot.h>
 #include <nic.h>
-
-#include <netboot_config.h>
 
 struct arptable_t arptable[MAX_ARP];
 
@@ -67,7 +75,7 @@ static char rfc1533_cookie[5] = {RFC1533_COOKIE, RFC1533_END};
 static char rfc1533_cookie[] = {RFC1533_COOKIE};
 static char rfc1533_end[] = {RFC1533_END};
 
-static char dhcpdiscover[] =
+static const char dhcpdiscover[] =
 {
   RFC2132_MSG_TYPE, 1, DHCPDISCOVER,
   RFC2132_MAX_SIZE, 2, 2, 64,
@@ -75,7 +83,7 @@ static char dhcpdiscover[] =
   RFC1533_HOSTNAME, RFC1533_EXTENSIONPATH
 };
 
-static char dhcprequest[] =
+static const char dhcprequest[] =
 {
   RFC2132_MSG_TYPE, 1, DHCPREQUEST,
   RFC2132_SRV_ID, 4, 0, 0, 0, 0,
@@ -83,13 +91,21 @@ static char dhcprequest[] =
   RFC2132_MAX_SIZE, 2, 2, 64,
   /* request parameters */
   RFC2132_PARAM_LIST,
+#ifdef  IMAGE_FREEBSD
   /* 4 standard + 4 vendortags + 8 motd + 16 menu items */
   4 + 4 + 8 + 16,
+#else
+  /* 4 standard + 3 vendortags + 8 motd + 16 menu items */
+  4 + 3 + 8 + 16,
+#endif
   /* Standard parameters */
   RFC1533_NETMASK, RFC1533_GATEWAY,
   RFC1533_HOSTNAME, RFC1533_EXTENSIONPATH,
   /* Etherboot vendortags */
-  RFC1533_VENDOR_MAGIC, RFC1533_VENDOR_HOWTO,
+  RFC1533_VENDOR_MAGIC,
+#ifdef IMAGE_FREEBSD
+  RFC1533_VENDOR_HOWTO,
+#endif
   RFC1533_VENDOR_MNUOPTS, RFC1533_VENDOR_SELECTION,
   /* 8 MOTD entries */
   RFC1533_VENDOR_MOTD,
@@ -121,7 +137,7 @@ static char dhcprequest[] =
 
 #endif /* ! NO_DHCP_SUPPORT */
 
-static char broadcast[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static const char broadcast[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 void
 print_network_configuration (void)
@@ -170,8 +186,8 @@ default_netmask (void)
 UDP_TRANSMIT - Send a UDP datagram
 **************************************************************************/
 int 
-udp_transmit (unsigned long destip, unsigned srcsock, unsigned destsock,
-	      int len, char *buf)
+udp_transmit (unsigned long destip, unsigned int srcsock,
+	      unsigned int destsock, int len, const void *buf)
 {
   struct iphdr *ip;
   struct udphdr *udp;
@@ -180,7 +196,7 @@ udp_transmit (unsigned long destip, unsigned srcsock, unsigned destsock,
   int retry;
 
   ip = (struct iphdr *) buf;
-  udp = (struct udphdr *) (buf + sizeof (struct iphdr));
+  udp = (struct udphdr *) ((unsigned long) buf + sizeof (struct iphdr));
   ip->verhdrlen = 0x45;
   ip->service = 0;
   ip->len = htons (len);
@@ -237,9 +253,20 @@ udp_transmit (unsigned long destip, unsigned srcsock, unsigned destsock,
 	  grub_memset (arpreq.thwaddr, 0, ETHER_ADDR_SIZE);
 	  grub_memmove (arpreq.tipaddr, (char *) &destip, sizeof (in_addr));
 	  
-	  for (retry = 0; retry < MAX_ARP_RETRIES; rfc951_sleep (++retry))
+	  for (retry = 1; retry <= MAX_ARP_RETRIES; retry++)
 	    {
-	      eth_transmit (broadcast, ARP, sizeof (arpreq), (char *) &arpreq);
+	      eth_transmit (broadcast, ARP, sizeof (arpreq), &arpreq);
+	      if (await_reply (AWAIT_ARP, arpentry, arpreq.tipaddr, TIMEOUT))
+		goto xmit;
+
+	      if (ip_abort)
+		return 0;
+	      
+	      rfc951_sleep (retry);
+	      /* We have slept for a while - the packet may
+	       * have arrived by now.  If not, we have at
+	       * least some room in the Rx buffer for the
+	       * next reply.  */
 	      if (await_reply (AWAIT_ARP, arpentry, arpreq.tipaddr, 0))
 		goto xmit;
 	      
@@ -264,28 +291,38 @@ static int
 tftp (char *name, int (*fnc) (unsigned char *, int, int, int))
 {
   int retry = 0;
-  static unsigned short isocket = 2000;
-  unsigned short osocket;
+  static unsigned short iport = 2000;
+  unsigned short oport;
   unsigned short len, block = 0, prevblock = 0;
+  int bcounter = 0;
   struct tftp_t *tr;
   struct tftp_t tp;
   int rc;
   int packetsize = TFTP_DEFAULTSIZE_PACKET;
   
+  /* Clear out the Rx queue first.  It contains nothing of interest,
+   * except possibly ARP requests from the DHCP/TFTP server.  We use
+   * polling throughout Etherboot, so some time may have passed since we
+   * last polled the receive queue, which may now be filled with
+   * broadcast packets.  This will cause the reply to the packets we are
+   * about to send to be lost immediately.  Not very clever.  */
+  await_reply (AWAIT_QDRAIN, 0, NULL, 0);
+  
   tp.opcode = htons (TFTP_RRQ);
   len = (grub_sprintf ((char *)tp.u.rrq, "%s%coctet%cblksize%c%d",
 		       name, 0, 0, 0, TFTP_MAX_PACKET)
 	 + TFTP_MIN_PACKET + 1);
-  if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++isocket, TFTP,
-		      len, (char *) &tp))
+  if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++iport,
+		      TFTP_PORT, len, &tp))
     return 0;
   
   for (;;)
     {
 #ifdef CONGESTED
-      if (! await_reply (AWAIT_TFTP, isocket, NULL, (block ? TFTP_REXMT : 0)))
+      if (! await_reply (AWAIT_TFTP, iport, NULL,
+			 (block ? TFTP_REXMT : TIMEOUT)))
 #else
-      if (! await_reply (AWAIT_TFTP, isocket, NULL, 0))
+      if (! await_reply (AWAIT_TFTP, iport, NULL, TIMEOUT))
 #endif
 	{
 	  if (! block && retry++ < MAX_TFTP_RETRIES)
@@ -293,7 +330,7 @@ tftp (char *name, int (*fnc) (unsigned char *, int, int, int))
 	      /* Maybe initial request was lost.  */
 	      rfc951_sleep (retry);
 	      if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
-				  ++isocket, TFTP, len, (char *) &tp))
+				  ++iport, TFTP_PORT, len, &tp))
 		return 0;
 	      
 	      continue;
@@ -307,8 +344,8 @@ tftp (char *name, int (*fnc) (unsigned char *, int, int, int))
 	      grub_printf ("<REXMT>\n");
 #endif
 	      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
-			    isocket, osocket,
-			    TFTP_MIN_PACKET, (char *)&tp);
+			    iport, oport,
+			    TFTP_MIN_PACKET, &tp);
 	      continue;
 	    }
 #endif
@@ -362,8 +399,8 @@ tftp (char *name, int (*fnc) (unsigned char *, int, int, int))
 				       "RFC1782 error")
 			 + TFTP_MIN_PACKET + 1);
 		  udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
-				isocket, ntohs (tr->udp.src),
-				len, (char *) &tp);
+				iport, ntohs (tr->udp.src),
+				len, &tp);
 		  return 0;
 		}
 	    }
@@ -388,27 +425,28 @@ tftp (char *name, int (*fnc) (unsigned char *, int, int, int))
 	/* Neither TFTP_OACK nor TFTP_DATA.  */
 	break;
       
-      if (block && (block != prevblock+1))
-	/* Block order.  */
+      if ((block || bcounter) && (block != prevblock + 1))
+	/* Block order should be continuous */
 	tp.u.ack.block = htons (block = prevblock);
       
       /* Should be continuous.  */
       tp.opcode = htons (TFTP_ACK);
-      osocket = ntohs (tr->udp.src);
+      oport = ntohs (tr->udp.src);
       /* Ack.  */
-      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, isocket,
-		    osocket, TFTP_MIN_PACKET, (char *) &tp);
+      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, iport,
+		    oport, TFTP_MIN_PACKET, &tp);
       
-      /* Retransmission or OACK.  */
-      if (block <= prevblock)
-	/* Don't process.  */
+      if ((unsigned short) (block - prevblock) != 1)
+	/* Retransmission or OACK, don't process via callback
+	 * and don't change the value of prevblock.  */
 	continue;
       
       prevblock = block;
       /* Is it the right place to zero the timer?  */
       retry = 0;
       
-      if ((rc = fnc (tr->u.data.download, block, len, len < packetsize)) >= 0)
+      if ((rc = fnc (tr->u.data.download,
+		     ++bcounter, len, len < packetsize)) >= 0)
 	return rc;
 
       /* End of data.  */
@@ -453,9 +491,9 @@ rarp (void)
 
   for (retry = 0; retry < MAX_ARP_RETRIES; rfc951_sleep (++retry))
     {
-      eth_transmit (broadcast, RARP, sizeof (rarpreq), (char *) &rarpreq);
+      eth_transmit (broadcast, RARP, sizeof (rarpreq), &rarpreq);
 
-      if (await_reply (AWAIT_RARP, 0, rarpreq.shwaddr, 0))
+      if (await_reply (AWAIT_RARP, 0, rarpreq.shwaddr, TIMEOUT))
 	break;
 
       if (ip_abort)
@@ -516,23 +554,17 @@ bootp (void)
 
   for (retry = 0; retry < MAX_BOOTP_RETRIES;)
     {
-      /*
-       * Discard all received packets - we have no requests
-       * outstanding.  It happened too often that the reply sent
-       * by the BOOTP server caused a RX buffer overrun (which for
-       * most cards - especially the cheap ones with a small
-       * receive buffer - is handled by discarding the whole
-       * receive buffer contents).  An even cruder way to solve
-       * the problem would be to discard all packets while in
-       * rfc951_sleep(), but this may have affected future changes
-       * to the etherboot implementation.
-       */
-      while (eth_poll ())
-	/* Nothing */
-	;
+      /* Clear out the Rx queue first.  It contains nothing of
+       * interest, except possibly ARP requests from the DHCP/TFTP
+       * server.  We use polling throughout Etherboot, so some time
+       * may have passed since we last polled the receive queue,
+       * which may now be filled with broadcast packets.  This will
+       * cause the reply to the packets we are about to send to be
+       * lost immediately.  Not very clever.  */
+      await_reply (AWAIT_QDRAIN, 0, NULL, 0);
 
       udp_transmit (IP_BROADCAST, 0, BOOTP_SERVER,
-		    sizeof (struct bootp_t), (char *) &bp);
+		    sizeof (struct bootp_t), &bp);
 #ifdef T509HACK
       if (flag)
 	{
@@ -542,13 +574,13 @@ bootp (void)
 #endif /* T509HACK */
       
 #ifdef NO_DHCP_SUPPORT
-      if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
+      if (await_reply (AWAIT_BOOTP, 0, NULL, TIMEOUT))
 	{
 	  network_ready = 1;
 	  return 1;
 	}
 #else /* ! NO_DHCP_SUPPORT */
-      if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
+      if (await_reply (AWAIT_BOOTP, 0, NULL, TIMEOUT))
 	{
 	  if (dhcp_reply == DHCPOFFER)
 	    {
@@ -566,9 +598,9 @@ bootp (void)
 	      for (retry1 = 0; retry1 < MAX_BOOTP_RETRIES;)
 		{
 		  udp_transmit (IP_BROADCAST, 0, BOOTP_SERVER,
-				sizeof (struct bootp_t), (char *) &bp);
+				sizeof (struct bootp_t), &bp);
 		  dhcp_reply = 0;
-		  if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
+		  if (await_reply (AWAIT_BOOTP, 0, NULL, TIMEOUT))
 		    if (dhcp_reply == DHCPACK)
 		      {
 			network_ready = 1;
@@ -607,35 +639,26 @@ bootp (void)
 AWAIT_REPLY - Wait until we get a response for our request
 **************************************************************************/
 int 
-await_reply (int type, int ival, char *ptr, int timeout)
+await_reply (int type, int ival, void *ptr, int timeout)
 {
   unsigned long time;
   struct iphdr *ip;
   struct udphdr *udp;
   struct arprequest *arpreply;
   struct bootp_t *bootpreply;
-  struct rpc_t *rpc;
   unsigned short ptype;
-  int protohdrlen = (ETHER_HDR_SIZE + sizeof (struct iphdr)
-		     + sizeof (struct udphdr));
+  unsigned int protohdrlen = (ETHER_HDR_SIZE + sizeof (struct iphdr)
+			      + sizeof (struct udphdr));
 
   /* Clear the abort flag.  */
   ip_abort = 0;
   
-#ifdef CONGESTED
-  time = currticks () + (timeout ? timeout : TIMEOUT);
-#else
   time = currticks () + TIMEOUT;
-#endif
-  while (time > currticks ())
+  /* The timeout check is done below.  The timeout is only checked if
+   * there is no packet in the Rx queue.  This assumes that eth_poll()
+   * needs a negligible amount of time.  */
+  for (;;)
     {
-      /* If Control-C is pushed, return immediately.  */
-      if (checkkey () != -1 && ASCII_CHAR (getkey ()) == CTRL_C)
-	{
-	  ip_abort = 1;
-	  return 0;
-	}
-
       if (eth_poll ())
 	{
 	  /* We have something!  */
@@ -686,7 +709,7 @@ await_reply (int type, int ival, char *ptr, int timeout)
 				ETHER_ADDR_SIZE);
 		  eth_transmit (arpreply->thwaddr, ARP,
 				sizeof (struct arprequest),
-				(char *) arpreply);
+				arpreply);
 #ifdef MDEBUG
 		  grub_memmove (&tmp, arpreply->tipaddr, sizeof (in_addr));
 		  grub_printf ("Sent ARP reply to: %x\n", tmp);
@@ -696,6 +719,11 @@ await_reply (int type, int ival, char *ptr, int timeout)
 	      continue;
 	    }
 
+	  if (type == AWAIT_QDRAIN)
+	    {
+	      continue;
+	    }
+	  
 	  /* Check for RARP - No IP hdr.  */
 	  if (type == AWAIT_RARP
 	      && nic.packetlen >= ETHER_HDR_SIZE + sizeof (struct arprequest)
@@ -761,13 +789,13 @@ await_reply (int type, int ival, char *ptr, int timeout)
 	      grub_memset (arptable[ARP_GATEWAY].node, 0, ETHER_ADDR_SIZE);
 
 	      /* GRUB doesn't autoload any kernel image.  */
-#if 0
+#ifndef GRUB
 	      if (bootpreply->bp_file[0])
 		{
 		  grub_memmove (kernel_buf, bootpreply->bp_file, 128);
 		  kernel = kernel_buf;
 		}
-#endif
+#endif /* ! GRUB */
 	      
 	      grub_memmove ((char *) BOOTP_DATA_ADDR, (char *) bootpreply,
 			    sizeof (struct bootpd_t));
@@ -785,9 +813,24 @@ await_reply (int type, int ival, char *ptr, int timeout)
 	  /* TFTP ? */
 	  if (type == AWAIT_TFTP && ntohs (udp->dest) == ival)
 	    return 1;
+	}
+      else
+	{
+	  /* Check for abort key only if the Rx queue is empty -
+	   * as long as we have something to process, don't
+	   * assume that something failed.  It is unlikely that
+	   * we have no processing time left between packets.  */
+	  if (checkkey () != -1 && ASCII_CHAR (getkey ()) == CTRL_C)
+	    {
+	      ip_abort = 1;
+	      return 0;
+	    }
 	  
-	  /* RPC */
-	  rpc = (struct rpc_t *) &nic.packet[ETHER_HDR_SIZE];
+	  /* Do the timeout after at least a full queue walk.  */
+	  if ((timeout == 0) || (currticks() > time))
+	    {
+	      break;
+	    }
 	}
     }
   
@@ -802,7 +845,7 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 {
   static unsigned char *extdata = NULL, *extend = NULL;
   unsigned char *extpath = NULL;
-  unsigned char *end;
+  unsigned char *endp;
   
   if (block == 0)
     {
@@ -823,7 +866,7 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	return 0;
       
       p += 4;
-      end = p + len;
+      endp = p + len;
     }
   else
     {
@@ -852,12 +895,12 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	}
       
       p = extdata;
-      end = extend;
+      endp = extend;
     }
   
   if (eof)
     {
-      while (p < end)
+      while (p < endp)
 	{
 	  unsigned char c = *p;
 	  
@@ -868,7 +911,7 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	    }
 	  else if (c == RFC1533_END)
 	    {
-	      end_of_rfc1533 = end = p;
+	      end_of_rfc1533 = endp = p;
 	      continue;
 	    }
 	  else if (c == RFC1533_NETMASK)
@@ -898,23 +941,19 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 #endif /* ! NO_DHCP_SUPPORT */
 	  
 	  /* GRUB needs not to use any vendor-specific extension.  */
-#if 0
+#ifndef GRUB
 	  else if (c == RFC1533_VENDOR_MAGIC
-# if	!defined(AOUT_IMAGE) && !defined(ELF_IMAGE)	/* since FreeBSD uses tag 128 for swap definition */
-		   && TAG_LEN (p) >= 6 &&
-		   !memcmp (p + 2, vendorext_magic, 4) &&
+# ifndef IMAGE_FREEBSD   /* since FreeBSD uses tag 128 for swap definition */
+		   && TAG_LEN(p) >= 6 &&
+		   !memcmp(p+2,vendorext_magic,4) &&
 		   p[6] == RFC1533_VENDOR_MAJOR
 # endif
-	    )
+		   )
 	    vendorext_isvalid++;
-# if	defined(AOUT_IMAGE) || defined(ELF_IMAGE)
-	  else if (c == RFC1533_VENDOR_HOWTO)
-	    {
-	      howto = ((p[2] * 256 + p[3]) * 256 + p[4]) * 256 + p[5];
-/*
-   printf("Howto %X %d,%x %x %x %x\n",howto,TAGLEN(p),p[2],p[3],p[4],p[5]);
- */
-	    }
+# ifdef  IMAGE_FREEBSD
+	  else if (c == RFC1533_VENDOR_HOWTO) {
+	    freebsd_howto = ((p[2]*256+p[3])*256+p[4])*256+p[5];
+	  }
 # endif
 # ifdef IMAGE_MENU
 	  else if (c == RFC1533_VENDOR_MNUOPTS)
@@ -936,17 +975,19 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 # endif
 	  else
 	    {
-	      /* printf("Unknown RFC1533-tag ");
-	         for(q=p;q<p+2+TAG_LEN(p);q++)
-	         printf("%x ",*q);
-	         putchar('\n'); */ 
+# if 0
+	      printf("Unknown RFC1533-tag ");
+	      for(q=p;q<p+2+TAG_LEN(p);q++)
+		printf("%x ",*q);
+	      putchar('\n');
+# endif
 	    }
-#endif /* 0 */
+#endif /* ! GRUB */
 	  
 	  p += TAG_LEN (p) + 2;
 	}
       
-      extdata = extend = end;
+      extdata = extend = endp;
 
       /* Perhaps we can eliminate this because we doesn't require so
 	 much information, but I leave this alone.  */
@@ -988,8 +1029,14 @@ void
 rfc951_sleep (int exp)
 {
   static long seed = 0;
-  long q, tmo;
+  long q;
+  unsigned long tmo;
 
+#ifdef BACKOFF_LIMIT
+  if (exp > BACKOFF_LIMIT)
+    exp = BACKOFF_LIMIT;
+#endif
+  
   if (! seed)
     /* Initialize linear congruential generator.  */
     seed = (currticks () + *(long *) &arptable[ARP_CLIENT].node
@@ -1013,3 +1060,32 @@ rfc951_sleep (int exp)
     if (checkkey () != -1 && ASCII_CHAR (getkey ()) == CTRL_C)
       break;
 }
+
+/**************************************************************************
+CLEANUP_NET - shut down networking
+**************************************************************************/
+void
+cleanup_net (void)
+{
+  if (network_ready)
+    {
+#ifdef DOWNLOAD_PROTO_NFS
+      nfs_umountall (ARP_SERVER);
+#endif
+      eth_disable ();
+      network_ready = 0;
+    }
+}
+
+#ifndef GRUB
+/**************************************************************************
+CLEANUP - shut down etherboot so that the OS may be called right away
+**************************************************************************/
+void
+cleanup (void)
+{
+#if    defined(ANSIESC) && defined(CONSOLE_CRT)
+  ansi_reset ();
+#endif
+}
+#endif /* ! GRUB */

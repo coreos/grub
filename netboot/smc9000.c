@@ -12,16 +12,16 @@
  * "Features" of the SMC chip:
  *   4608 byte packet memory. ( for the 91C92/4.  Others have more )
  *   EEPROM for configuration
- *   AUI/TP selection  
+ *   AUI/TP selection
  *
  * Authors
- * 	Erik Stahlman				<erik@vt.edu>
+ *	Erik Stahlman				<erik@vt.edu>
  *      Daniel Engström                         <daniel.engstrom@riksnett.no>
- * 
+ *
  * History
  * 98-09-25              Daniel Engström Etherboot driver crated from Eric's
- *                                       Linux driver. 
- * 
+ *                                       Linux driver.
+ *
  *---------------------------------------------------------------------------*/
 #define LINUX_OUT_MACROS 1
 #define SMC9000_VERBOSE  1
@@ -29,39 +29,40 @@
 
 #include "etherboot.h"
 #include "nic.h"
+#include "cards.h"
 #include "smc9000.h"
 
 # define _outb outb
-# define _outw outw 
+# define _outw outw
 
 static const char       smc9000_version[] = "Version 0.99 98-09-30";
 static unsigned int	smc9000_base=0;
 static const char       *interfaces[ 2 ] = { "TP", "AUI" };
-static const char       *chip_ids[ 15 ] =  { 
-   NULL, NULL, NULL, 
+static const char       *chip_ids[ 15 ] =  {
+   NULL, NULL, NULL,
    /* 3 */ "SMC91C90/91C92",
    /* 4 */ "SMC91C94",
    /* 5 */ "SMC91C95",
    NULL,
-   /* 7 */ "SMC91C100", 
-   /* 8 */ "SMC91C100FD", 
-   NULL, NULL, NULL, 
+   /* 7 */ "SMC91C100",
+   /* 8 */ "SMC91C100FD",
+   NULL, NULL, NULL,
    NULL, NULL, NULL
-};  
+};
 static const char      smc91c96_id[] = "SMC91C96";
 
 /*
  * Function: smc_reset( int ioaddr )
  * Purpose:
- *  	This sets the SMC91xx chip to its normal state, hopefully from whatever
- * 	mess that any other DOS driver has put it in.
+ *	This sets the SMC91xx chip to its normal state, hopefully from whatever
+ *	mess that any other DOS driver has put it in.
  *
  * Maybe I should reset more registers to defaults in here?  SOFTRESET  should
  * do that for me.
  *
  * Method:
  *	1.  send a SOFT RESET
- *	2.  wait for it to finish 
+ *	2.  wait for it to finish
  *	3.  reset the memory management unit
  *      4.  clear all interrupts
  *
@@ -72,19 +73,19 @@ static void smc_reset(int ioaddr)
     * affect EEPROM.  That seems unnecessary */
    SMC_SELECT_BANK(ioaddr, 0);
    _outw( RCR_SOFTRESET, ioaddr + RCR );
-   
+
    /* this should pause enough for the chip to be happy */
    SMC_DELAY(ioaddr);
-   
+
    /* Set the transmit and receive configuration registers to
     * default values */
    _outw(RCR_CLEAR, ioaddr + RCR);
    _outw(TCR_CLEAR, ioaddr + TCR);
-   
+
    /* Reset the MMU */
    SMC_SELECT_BANK(ioaddr, 2);
    _outw( MC_RESET, ioaddr + MMU_CMD );
-   
+
    /* Note:  It doesn't seem that waiting for the MMU busy is needed here,
     * but this is a place where future chipsets _COULD_ break.  Be wary
     * of issuing another MMU command right after this */
@@ -101,7 +102,7 @@ static void smc_reset(int ioaddr)
  *
  * Algorithm:
  *	(1) see if the high byte of BANK_SELECT is 0x33
- * 	(2) compare the ioaddr with the base register's address
+ *	(2) compare the ioaddr with the base register's address
  *	(3) see if I recognize the chip ID in the appropriate register
  *
  * ---------------------------------------------------------------------
@@ -111,7 +112,7 @@ static int smc_probe( int ioaddr )
    word bank;
    word	revision_register;
    word base_address_register;
-   
+
    /* First, see if the high byte is 0x33 */
    bank = inw(ioaddr + BANK_SELECT);
    if ((bank & 0xFF00) != 0x3300) {
@@ -132,7 +133,7 @@ static int smc_probe( int ioaddr )
    base_address_register = inw(ioaddr + BASE);
 
    if (ioaddr != (base_address_register >> 3 & 0x3E0))  {
-#ifdef SMC9000_VERBOSE
+#ifdef	SMC9000_VERBOSE
       printf("SMC9000: IOADDR %x doesn't match configuration (%x)."
 	     "Probably not a SMC chip\n",
 	     ioaddr, base_address_register >> 3 & 0x3E0);
@@ -150,13 +151,13 @@ static int smc_probe( int ioaddr )
    revision_register  = inw(ioaddr + REVISION);
    if (!chip_ids[(revision_register >> 4) & 0xF]) {
       /* I don't recognize this chip, so... */
-#ifdef SMC9000_VERBOSE
+#ifdef	SMC9000_VERBOSE
       printf("SMC9000: IO %x: Unrecognized revision register:"
 	     " %x, Contact author.\n", ioaddr, revision_register);
 #endif
       return -1;
    }
-   
+
    /* at this point I'll assume that the chip is an SMC9xxx.
     * It might be prudent to check a listing of MAC addresses
     * against the hardware address, or do some other tests. */
@@ -178,26 +179,26 @@ static void smc9000_reset(struct nic *nic)
  ***************************************************************************/
 static void smc9000_transmit(
 	struct nic *nic,
-	char *d,			/* Destination */
+	const char *d,			/* Destination */
 	unsigned int t,			/* Type */
 	unsigned int s,			/* size */
-	char *p)			/* Packet */
+	const char *p)			/* Packet */
 {
-   word length; /* real, length incl. header */ 
+   word length; /* real, length incl. header */
    word numPages;
-   long	time_out;
+   unsigned long time_out;
    byte	packet_no;
    word status;
    int i;
-   
+
    /* We dont pad here since we can have the hardware doing it for us */
    length = (s + ETHER_HDR_SIZE + 1)&~1;
-   
+
    /* convert to MMU pages */
    numPages = length / 256;
-   
+
    if (numPages > 7 ) {
-#ifdef SMC9000_VERBOSE
+#ifdef	SMC9000_VERBOSE
       printf("SMC9000: Far too big packet error. \n");
 #endif
       return;
@@ -208,10 +209,10 @@ static void smc9000_transmit(
       /* now, try to allocate the memory */
       SMC_SELECT_BANK(smc9000_base, 2);
       _outw(MC_ALLOC | numPages, smc9000_base + MMU_CMD);
-      
+
       status = 0;
       /* wait for the memory allocation to finnish */
-      for (time_out = currticks() + 5*TICKS_PER_SEC; (currticks() - time_out) < 0; ) {  
+      for (time_out = currticks() + 5*TICKS_PER_SEC; currticks() < time_out; ) {
 	 status = inb(smc9000_base + INTERRUPT);
 	 if ( status & IM_ALLOC_INT ) {
 	    /* acknowledge the interrupt */
@@ -219,8 +220,8 @@ static void smc9000_transmit(
 	    break;
 	 }
       }
-      
-      if ((status & IM_ALLOC_INT) != 0 ) { 
+
+      if ((status & IM_ALLOC_INT) != 0 ) {
 	 /* We've got the memory */
 	 break;
       } else {
@@ -228,7 +229,7 @@ static void smc9000_transmit(
 	 _outw(MC_RESET, smc9000_base + MMU_CMD);
       }
    }
-   
+
    /* If I get here, I _know_ there is a packet slot waiting for me */
    packet_no = inb(smc9000_base + PNR_ARR + 1);
    if (packet_no & 0x80) {
@@ -236,35 +237,35 @@ static void smc9000_transmit(
       printf("SMC9000: Memory allocation failed. \n");
       return;
    }
-   
+
    /* we have a packet address, so tell the card to use it */
    _outb(packet_no, smc9000_base + PNR_ARR);
-   
+
    /* point to the beginning of the packet */
    _outw(PTR_AUTOINC, smc9000_base + POINTER);
-   
-#if SMC9000_DEBUG > 2
+
+#if	SMC9000_DEBUG > 2
    printf("Trying to xmit packet of length %x\n", length );
 #endif
-   
+
    /* send the packet length ( +6 for status, length and ctl byte )
     * and the status word ( set to zeros ) */
    _outw(0, smc9000_base + DATA_1 );
-   
+
    /* send the packet length ( +6 for status words, length, and ctl) */
    _outb((length+6) & 0xFF,  smc9000_base + DATA_1);
    _outb((length+6) >> 8 ,   smc9000_base + DATA_1);
 
    /* Write the contents of the packet */
-   
+
    /* The ethernet header first... */
    outsw(smc9000_base + DATA_1, d, ETHER_ADDR_SIZE >> 1);
    outsw(smc9000_base + DATA_1, nic->node_addr, ETHER_ADDR_SIZE >> 1);
    _outw(htons(t), smc9000_base + DATA_1);
 
-   /* ... the data ... */  
+   /* ... the data ... */
    outsw(smc9000_base + DATA_1 , p, s >> 1);
-  
+
    /* ... and the last byte, if there is one.   */
    if ((s & 1) == 0) {
       _outw(0, smc9000_base + DATA_1);
@@ -272,48 +273,48 @@ static void smc9000_transmit(
       _outb(p[s-1], smc9000_base + DATA_1);
       _outb(0x20, smc9000_base + DATA_1);
    }
-   
+
    /* and let the chipset deal with it */
    _outw(MC_ENQUEUE , smc9000_base + MMU_CMD);
-   
+
    status = 0; time_out = currticks() + 5*TICKS_PER_SEC;
    do {
       status = inb(smc9000_base + INTERRUPT);
-     
+
       if ((status & IM_TX_INT ) != 0) {
 	 word tx_status;
-	 
+
 	 /* ack interrupt */
 	 _outb(IM_TX_INT, smc9000_base + INTERRUPT);
-	 
+
 	 packet_no = inw(smc9000_base + FIFO_PORTS);
 	 packet_no &= 0x7F;
-	 
+
 	 /* select this as the packet to read from */
 	 _outb( packet_no, smc9000_base + PNR_ARR );
-	 
+
 	 /* read the first word from this packet */
 	 _outw( PTR_AUTOINC | PTR_READ, smc9000_base + POINTER );
-	 
+
 	 tx_status = inw( smc9000_base + DATA_1 );
-	 
-	 if (0 == (tx_status & TS_SUCCESS)) { 
-#ifdef SMC9000_VERBOSE
+
+	 if (0 == (tx_status & TS_SUCCESS)) {
+#ifdef	SMC9000_VERBOSE
 	    printf("SMC9000: TX FAIL STATUS: %x \n", tx_status);
 #endif
 	    /* re-enable transmit */
 	    SMC_SELECT_BANK(smc9000_base, 0);
 	    _outw(inw(smc9000_base + TCR ) | TCR_ENABLE, smc9000_base + TCR );
 	 }
-	 
+
 	 /* kill the packet */
 	 SMC_SELECT_BANK(smc9000_base, 2);
 	 _outw(MC_FREEPKT, smc9000_base + MMU_CMD);
-	 
+
 	 return;
       }
-   }while(currticks() - time_out < 0);
-   
+   }while(currticks() < time_out);
+
    printf("SMC9000: Waring TX timed out, resetting board\n");
    smc_reset(smc9000_base);
    return;
@@ -324,26 +325,24 @@ static void smc9000_transmit(
  ***************************************************************************/
 static int smc9000_poll(struct nic *nic)
 {
-   word	status;
-
    if(!smc9000_base)
      return 0;
 
-   SMC_SELECT_BANK(smc9000_base, 2);  
+   SMC_SELECT_BANK(smc9000_base, 2);
    if (inw(smc9000_base + FIFO_PORTS) & FP_RXEMPTY)
      return 0;
-   
+
    /*  start reading from the start of the packet */
    _outw(PTR_READ | PTR_RCV | PTR_AUTOINC, smc9000_base + POINTER);
-   
+
    /* First read the status and check that we're ok */
-   if (!(inw(smc9000_base + DATA_1) & RS_ERRORS)) { 
+   if (!(inw(smc9000_base + DATA_1) & RS_ERRORS)) {
       /* Next: read the packet length and mask off the top bits */
-      nic->packetlen = (inw(smc9000_base + DATA_1) & 0x07ff);    
-      
+      nic->packetlen = (inw(smc9000_base + DATA_1) & 0x07ff);
+
       /* the packet length includes the 3 extra words */
       nic->packetlen -= 6;
-#if SMC9000_DEBUG > 2 
+#if	SMC9000_DEBUG > 2
       printf(" Reading %d words (and %d byte(s))\n",
 	       (nic->packetlen >> 1), nic->packetlen & 1);
 #endif
@@ -352,12 +351,12 @@ static int smc9000_poll(struct nic *nic)
       /* is there an odd last byte ? */
       if (nic->packet[nic->packetlen+1] & 0x20)
 	 nic->packetlen++;
-      
+
       /*  error or good, tell the card to get rid of this packet */
       _outw(MC_RELEASE, smc9000_base + MMU_CMD);
-      return 1;   
+      return 1;
    }
-   
+
    printf("SMC9000: RX error\n");
    /*  error or good, tell the card to get rid of this packet */
    _outw(MC_RELEASE, smc9000_base + MMU_CMD);
@@ -368,11 +367,11 @@ static void smc9000_disable(struct nic *nic)
 {
    if(!smc9000_base)
      return;
-   
+
    /* no more interrupts for me */
    SMC_SELECT_BANK(smc9000_base, 2);
    _outb( 0, smc9000_base + INT_MASK);
-   
+
    /* and tell the card to stay away from that nasty outside world */
    SMC_SELECT_BANK(smc9000_base, 0);
    _outb( RCR_CLEAR, smc9000_base + RCR );
@@ -389,62 +388,61 @@ struct nic *smc9000_probe(struct nic *nic, unsigned short *probe_addrs)
    int	            memory;
    int              media;
    const char *	    version_string;
-   const char *	    if_string;   
-   int              irqval;
-   int              i; 
-   
+   const char *	    if_string;
+   int              i;
+
    /*
     * the SMC9000 can be at any of the following port addresses.  To change,
     * for a slightly different card, you can add it to the array.  Keep in
     * mind that the array must end in zero.
     */
    static unsigned short portlist[] = {
-#ifdef SMC9000_SCAN
-      SMC9000_SCAN, 
+#ifdef	SMC9000_SCAN
+      SMC9000_SCAN,
 #else
       0x200, 0x220, 0x240, 0x260, 0x280, 0x2A0, 0x2C0, 0x2E0,
-      0x300, 0x320, 0x340, 0x360, 0x380, 0x3A0, 0x3C0, 0x3E0, 
+      0x300, 0x320, 0x340, 0x360, 0x380, 0x3A0, 0x3C0, 0x3E0,
 #endif
       0 };
-   
+
    printf("\nSMC9000 %s\n", smc9000_version);
-#ifdef SMC9000_VERBOSE
+#ifdef	SMC9000_VERBOSE
    printf("Copyright (C) 1998 Daniel Engstr\x94m\n");
    printf("Copyright (C) 1996 Eric Stahlman\n");
 #endif
    /* if no addresses supplied, fall back on defaults */
    if (probe_addrs == 0 || probe_addrs[0] == 0)
      probe_addrs = portlist;
-   
+
    /* check every ethernet address */
    for (i = 0; probe_addrs[i]; i++) {
       /* check this specific address */
-      if (smc_probe(probe_addrs[i]) == 0)  
+      if (smc_probe(probe_addrs[i]) == 0)
 	smc9000_base = probe_addrs[i];
    }
-   
+
    /* couldn't find anything */
-   if(0 == smc9000_base) 
+   if(0 == smc9000_base)
      goto out;
-         
+
    /*
     * Get the MAC address ( bank 1, regs 4 - 9 )
     */
    SMC_SELECT_BANK(smc9000_base, 1);
    for ( i = 0; i < 6; i += 2 ) {
       word address;
-      
+
       address = inw(smc9000_base + ADDR0 + i);
       nic->node_addr[i+1] = address >> 8;
       nic->node_addr[i] = address & 0xFF;
    }
-   
-   
-   /* get the memory information */   
+
+
+   /* get the memory information */
    SMC_SELECT_BANK(smc9000_base, 0);
    memory = ( inw(smc9000_base + MCR) >> 9 )  & 0x7;  /* multiplier */
    memory *= 256 * (inw(smc9000_base + MIR) & 0xFF);
-   
+
    /*
     * Now, I want to find out more about the chip.  This is sort of
     * redundant, but it's cleaner to have it in both, rather than having
@@ -453,19 +451,19 @@ struct nic *smc9000_probe(struct nic *nic, unsigned short *probe_addrs)
    SMC_SELECT_BANK(smc9000_base, 3);
    revision  = inw(smc9000_base + REVISION);
    version_string = chip_ids[(revision >> 4) & 0xF];
-   
-   if (((revision & 0xF0) >> 4 == CHIP_9196) && 
+
+   if (((revision & 0xF0) >> 4 == CHIP_9196) &&
        ((revision & 0x0F) >= REV_9196)) {
       /* This is a 91c96. 'c96 has the same chip id as 'c94 (4) but
        * a revision starting at 6 */
       version_string = smc91c96_id;
    }
-     
+
    if ( !version_string ) {
       /* I shouldn't get here because this call was done before.... */
       goto out;
    }
-   
+
    /* is it using AUI or 10BaseT ? */
    SMC_SELECT_BANK(smc9000_base, 1);
    if (inw(smc9000_base + CONFIG) & CFG_AUI_SELECT)
@@ -474,12 +472,12 @@ struct nic *smc9000_probe(struct nic *nic, unsigned short *probe_addrs)
      media = 1;
 
    if_string = interfaces[media - 1];
-   
+
    /* now, reset the chip, and put it into a known state */
    smc_reset(smc9000_base);
-   
+
    printf("%s rev:%d I/O port:%x Interface:%s RAM:%d bytes \n",
-	  version_string, revision & 0xF, 
+	  version_string, revision & 0xF,
 	  smc9000_base, if_string, memory );
    /*
     * Print the Ethernet address
@@ -488,14 +486,14 @@ struct nic *smc9000_probe(struct nic *nic, unsigned short *probe_addrs)
    for (i = 0; i < 5; i++)
      printf("%b:", nic->node_addr[i]);
    printf("%b\n", nic->node_addr[5]);
-   
+
    SMC_SELECT_BANK(smc9000_base, 0);
-   
+
    /* see the header file for options in TCR/RCR NORMAL*/
    _outw(TCR_NORMAL, smc9000_base + TCR);
    _outw(RCR_NORMAL, smc9000_base + RCR);
-   
-   /* Select which interface to use */   
+
+   /* Select which interface to use */
    SMC_SELECT_BANK(smc9000_base, 1);
    if ( media == 1 ) {
       _outw( inw( smc9000_base + CONFIG ) & ~CFG_AUI_SELECT,
@@ -510,12 +508,12 @@ struct nic *smc9000_probe(struct nic *nic, unsigned short *probe_addrs)
    nic->poll = smc9000_poll;
    nic->transmit = smc9000_transmit;
    nic->disable = smc9000_disable;
- 
-   
+
+
    return nic;
 
 out:
-#ifdef SMC9000_VERBOSE
+#ifdef	SMC9000_VERBOSE
    printf("No SMC9000 adapters found\n");
 #endif
    smc9000_base = 0;

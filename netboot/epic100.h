@@ -1,11 +1,11 @@
-#ifndef _EPIC100_H_
+#ifndef	_EPIC100_H_
 # define _EPIC100_H_
 
-#ifndef PCI_VENDOR_SMC
+#ifndef	PCI_VENDOR_SMC
 # define PCI_VENDOR_SMC		0x10B8
 #endif
 
-#ifndef PCI_DEVICE_SMC_EPIC100
+#ifndef	PCI_DEVICE_SMC_EPIC100
 # define PCI_DEVICE_SMC_EPIC100	0x0005
 #endif
 
@@ -16,24 +16,24 @@ enum epic100_registers {
     COMMAND= 0,		/* Control Register */
     INTSTAT= 4,		/* Interrupt Status */
     INTMASK= 8,		/* Interrupt Mask */
-    GENCTL = 0x0C, 	/* General Control */
+    GENCTL = 0x0C,	/* General Control */
     NVCTL  = 0x10,	/* Non Volatile Control */
     EECTL  = 0x14,	/* EEPROM Control  */
-    TEST   = 0x1C, 	/* Test register: marked as reserved (see in source code) */
+    TEST   = 0x1C,	/* Test register: marked as reserved (see in source code) */
     CRCCNT = 0x20,	/* CRC Error Counter */
-    ALICNT = 0x24, 	/* Frame Alignment Error Counter */
+    ALICNT = 0x24,	/* Frame Alignment Error Counter */
     MPCNT  = 0x28,	/* Missed Packet Counter */
     MMCTL  = 0x30,	/* MII Management Interface Control */
-    MMDATA = 0x34, 	/* MII Management Interface Data */
+    MMDATA = 0x34,	/* MII Management Interface Data */
     MIICFG = 0x38,	/* MII Configuration */
     IPG    = 0x3C,	/* InterPacket Gap */
     LAN0   = 0x40,	/* MAC address. (0x40-0x48) */
     IDCHK  = 0x4C,	/* BoardID/ Checksum */
     MC0    = 0x50,	/* Multicast filter table. (0x50-0x5c) */
-    RXCON  = 0x60, 	/* Receive Control */
-    TXCON  = 0x70, 	/* Transmit Control */
+    RXCON  = 0x60,	/* Receive Control */
+    TXCON  = 0x70,	/* Transmit Control */
     TXSTAT = 0x74,	/* Transmit Status */
-    PRCDAR = 0x84, 	/* PCI Receive Current Descriptor Address */
+    PRCDAR = 0x84,	/* PCI Receive Current Descriptor Address */
     PRSTAT = 0xA4,	/* PCI Receive DMA Status */
     PRCPTHR= 0xB0,	/* PCI Receive Copy Threshold */
     PTCDAR = 0xC4,	/* PCI Transmit Current Descriptor Address */
@@ -52,7 +52,7 @@ enum epic100_registers {
 
 /* Interrupt register bits. NI means No Interrupt generated */
 
-#define	INTR_RX_THR_STA		(0x00400000) 	/* rx copy threshold status NI */
+#define	INTR_RX_THR_STA		(0x00400000)	/* rx copy threshold status NI */
 #define	INTR_RX_BUFF_EMPTY	(0x00200000)	/* rx buffers empty. NI */
 #define	INTR_TX_IN_PROG		(0x00100000)	/* tx copy in progess. NI */
 #define	INTR_RX_IN_PROG		(0x00080000)	/* rx copy in progress. NI */
@@ -93,8 +93,8 @@ enum epic100_registers {
 #define GC_RX_PREEMPT_TX	(0x00000040)
 #define GC_TX_PREEMPT_RX	(0x00000080)
 
-/* 
- * Receive FIFO Threshold values 
+/*
+ * Receive FIFO Threshold values
  * Control the level at which the  PCI burst state machine
  * begins to empty the receive FIFO. Possible values: 0-3
  *
@@ -143,7 +143,7 @@ enum epic100_registers {
 #define TX_SLOT_TIME		(0x00000078)
 
 /* Bytes transferred to chip before transmission starts. */
-#define TX_FIFO_THRESH 		128	/* Rounded down to 4 byte units. */
+#define TX_FIFO_THRESH		128	/* Rounded down to 4 byte units. */
 
 /* description of rx descriptors status bits */
 #define RRING_PKT_INTACT	(0x0001)
@@ -170,7 +170,7 @@ enum epic100_registers {
 #define TRING_HB_COLL		(0x0020)	/* Collision detect Heartbeat */
 #define TRING_WIN_COLL		(0x0040)	/* out of window collision */
 #define TRING_DEFERRED		(0x0080)	/* Deferring */
-#define TRING_COLL_COUNT	(0x0F00)	/* collision counter (mask) */ 
+#define TRING_COLL_COUNT	(0x0F00)	/* collision counter (mask) */
 #define TRING_COLL_EXCESS	(0x1000)	/* tx aborted: excessive colls */
 #define TRING_OWN		(0x8000)	/* desc ownership bit */
 
@@ -185,4 +185,4 @@ enum epic100_registers {
 #define TD_NOCRC		(0x0008)	/* No CRC generated */
 #define TD_LASTDESC		(0x0010)	/* Last desc for this frame */
 
-#endif /* _EPIC100_H_ */
+#endif	/* _EPIC100_H_ */

@@ -30,15 +30,15 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  * The Schneider & Koch (SK) G16 Network device driver is based
  * on the 'ni6510' driver from Michael Hipp which can be found at
  * ftp://sunsite.unc.edu/pub/Linux/system/Network/drivers/nidrivers.tar.gz
- * 
+ *
  * Sources: 1) ni6510.c by M. Hipp
  *          2) depca.c  by D.C. Davies
  *          3) skeleton.c by D. Becker
  *          4) Am7990 Local Area Network Controller for Ethernet (LANCE),
  *             AMD, Pub. #05698, June 1989
  *
- * Many Thanks for helping me to get things working to: 
- *                 
+ * Many Thanks for helping me to get things working to:
+ *
  *                 A. Cox (A.Cox@swansea.ac.uk)
  *                 M. Hipp (mhipp@student.uni-tuebingen.de)
  *                 R. Bolz (Schneider & Koch, Germany)
@@ -46,19 +46,19 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  * See README.sk_g16 for details about limitations and bugs for the
  * current version.
  *
- * To Do: 
+ * To Do:
  *        - Support of SK_G8 and other SK Network Cards.
  *        - Autoset memory mapped RAM. Check for free memory and then
- *          configure RAM correctly. 
+ *          configure RAM correctly.
  *        - SK_close should really set card in to initial state.
  *        - Test if IRQ 3 is not switched off. Use autoirq() functionality.
  *          (as in /drivers/net/skeleton.c)
  *        - Implement Multicast addressing. At minimum something like
- *          in depca.c. 
+ *          in depca.c.
  *        - Redo the statistics part.
  *        - Try to find out if the board is in 8 Bit or 16 Bit slot.
  *          If in 8 Bit mode don't use IRQ 11.
- *        - (Try to make it slightly faster.) 
+ *        - (Try to make it slightly faster.)
  */
 
 /* to get some global routines like printf */
@@ -71,23 +71,23 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
 
 #include "sk_g16.h"
 
-/* 
- * Schneider & Koch Card Definitions 
+/*
+ * Schneider & Koch Card Definitions
  * =================================
- */  
+ */
 
 #define SK_NAME   "SK_G16"
 
 /*
  * SK_G16 Configuration
  * --------------------
- */ 
+ */
 
-/* 
+/*
  * Abbreviations
  * -------------
- *  
- * RAM - used for the 16KB shared memory 
+ *
+ * RAM - used for the 16KB shared memory
  * Boot_ROM, ROM - are used for referencing the BootEPROM
  *
  * SK_ADDR is a symbolic constant used to configure
@@ -96,11 +96,11 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  * SK_ADDR defines the address where the RAM will be mapped into the real
  *         host memory.
  *         valid addresses are from 0xa0000 to 0xfc000 in 16Kbyte steps.
- */  
- 
+ */
+
 #define SK_ADDR         0xcc000
 
-/* 
+/*
  * In POS3 are bits A14-A19 of the address bus. These bits can be set
  * to choose the RAM address. That's why we only can choose the RAM address
  * in 16KB steps.
@@ -108,12 +108,12 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
 
 #define POS_ADDR       (rom_addr>>14)  /* Do not change this line */
 
-/* 
+/*
  * SK_G16 I/O PORT's + IRQ's + Boot_ROM locations
  * ----------------------------------------------
  */
 
-/* 
+/*
  * As nearly every card has also SK_G16 a specified I/O Port region and
  * only a few possible IRQ's.
  * In the Installation Guide from Schneider & Koch is listed a possible
@@ -126,14 +126,14 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
 #define SK_IO_PORTS     { 0x100, 0x180, 0x208, 0x220, 0x288, 0x320, 0x328, 0x390, 0 }
 
 /*
- * SK_G16 POS REGISTERS 
+ * SK_G16 POS REGISTERS
  * --------------------
  */
 
 /*
  * SK_G16 has a Programmable Option Select (POS) Register.
- * The POS is composed of 8 separate registers (POS0-7) which 
- * are I/O mapped on an address set by the W1 switch.                    
+ * The POS is composed of 8 separate registers (POS0-7) which
+ * are I/O mapped on an address set by the W1 switch.
  *
  */
 
@@ -147,12 +147,12 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
 
 /* POS5 - POS7 are unused */
 
-/* 
- * SK_G16 MAC PREFIX 
+/*
+ * SK_G16 MAC PREFIX
  * -----------------
  */
 
-/* 
+/*
  * Scheider & Koch manufacturer code (00:00:a5).
  * This must be checked, that we are sure it is a SK card.
  */
@@ -161,22 +161,22 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
 #define SK_MAC1         0x00
 #define SK_MAC2         0x5a
 
-/* 
- * SK_G16 ID 
+/*
+ * SK_G16 ID
  * ---------
- */ 
-
-/* 
- * If POS0,POS1 contain the following ID, then we know
- * at which I/O Port Address we are. 
  */
 
-#define SK_IDLOW  0xfd 
+/*
+ * If POS0,POS1 contain the following ID, then we know
+ * at which I/O Port Address we are.
+ */
+
+#define SK_IDLOW  0xfd
 #define SK_IDHIGH 0x6a
 
 
-/* 
- * LANCE POS Bit definitions 
+/*
+ * LANCE POS Bit definitions
  * -------------------------
  */
 
@@ -185,72 +185,72 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
 #define SK_ROM_ON      (inb(SK_POS2) & POS2_CARD)
 #define SK_ROM_OFF     (inb(SK_POS2) | POS2_EPROM)
 #define SK_RAM_ON      (inb(SK_POS2) | POS2_CARD)
-#define SK_RAM_OFF     (inb(SK_POS2) & POS2_EPROM) 
+#define SK_RAM_OFF     (inb(SK_POS2) & POS2_EPROM)
 
 #define POS2_CARD  0x0001              /* 1 = SK_G16 on      0 = off */
-#define POS2_EPROM 0x0002              /* 1 = Boot EPROM off 0 = on */ 
+#define POS2_EPROM 0x0002              /* 1 = Boot EPROM off 0 = on */
 
-/* 
+/*
  * SK_G16 Memory mapped Registers
  * ------------------------------
  *
- */ 
+ */
 
-#define SK_IOREG        (board->ioreg) /* LANCE data registers.     */ 
+#define SK_IOREG        (board->ioreg) /* LANCE data registers.     */
 #define SK_PORT         (board->port)  /* Control, Status register  */
 #define SK_IOCOM        (board->iocom) /* I/O Command               */
 
-/* 
+/*
  * SK_G16 Status/Control Register bits
  * -----------------------------------
  *
- * (C) Controlreg (S) Statusreg 
+ * (C) Controlreg (S) Statusreg
  */
 
-/* 
+/*
  * Register transfer: 0 = no transfer
- *                    1 = transferring data between LANCE and I/O reg 
+ *                    1 = transferring data between LANCE and I/O reg
  */
-#define SK_IORUN        0x20   
+#define SK_IORUN        0x20
 
-/* 
- * LANCE interrupt: 0 = LANCE interrupt occurred	
+/*
+ * LANCE interrupt: 0 = LANCE interrupt occurred
  *                  1 = no LANCE interrupt occurred
  */
-#define SK_IRQ          0x10   
-			
+#define SK_IRQ          0x10
+
 #define SK_RESET        0x08   /* Reset SK_CARD: 0 = RESET 1 = normal */
 #define SK_RW           0x02   /* 0 = write to 1 = read from */
 #define SK_ADR          0x01   /* 0 = REG DataPort 1 = RAP Reg addr port */
 
-  
+
 #define SK_RREG         SK_RW  /* Transferdirection to read from lance */
 #define SK_WREG         0      /* Transferdirection to write to lance */
 #define SK_RAP          SK_ADR /* Destination Register RAP */
 #define SK_RDATA        0      /* Destination Register REG DataPort */
 
-/* 
- * SK_G16 I/O Command 
+/*
+ * SK_G16 I/O Command
  * ------------------
  */
 
-/* 
- * Any bitcombination sets the internal I/O bit (transfer will start) 
+/*
+ * Any bitcombination sets the internal I/O bit (transfer will start)
  * when written to I/O Command
  */
 
-#define SK_DOIO         0x80   /* Do Transfer */ 
- 
-/* 
- * LANCE RAP (Register Address Port). 
+#define SK_DOIO         0x80   /* Do Transfer */
+
+/*
+ * LANCE RAP (Register Address Port).
  * ---------------------------------
  */
 
-/*   
- * The LANCE internal registers are selected through the RAP. 
+/*
+ * The LANCE internal registers are selected through the RAP.
  * The Registers are:
  *
- * CSR0 - Status and Control flags 
+ * CSR0 - Status and Control flags
  * CSR1 - Low order bits of initialize block (bits 15:00)
  * CSR2 - High order bits of initialize block (bits 07:00, 15:08 are reserved)
  * CSR3 - Allows redefinition of the Bus Master Interface.
@@ -258,22 +258,22 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  *        ACON = 1, BCON = 0;
  *
  */
- 
-#define CSR0            0x00   
-#define CSR1            0x01  
-#define CSR2            0x02 
+
+#define CSR0            0x00
+#define CSR1            0x01
+#define CSR2            0x02
 #define CSR3            0x03
 
-/* 
- * General Definitions 
+/*
+ * General Definitions
  * ===================
  */
 
-/* 
+/*
  * Set the number of Tx and Rx buffers, using Log_2(# buffers).
- * We have 16KB RAM which can be accessed by the LANCE. In the 
+ * We have 16KB RAM which can be accessed by the LANCE. In the
  * memory are not only the buffers but also the ring descriptors and
- * the initialize block. 
+ * the initialize block.
  * Don't change anything unless you really know what you do.
  */
 
@@ -294,29 +294,29 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  * Data Buffer size is set to maximum packet length.
  */
 
-#define PKT_BUF_SZ              1518 
+#define PKT_BUF_SZ              1518
 
-/* 
- * The number of low I/O ports used by the ethercard. 
+/*
+ * The number of low I/O ports used by the ethercard.
  */
 
 #define ETHERCARD_TOTAL_SIZE    SK_POS_SIZE
 
-/* 
- * Portreserve is there to mark the Card I/O Port region as used. 
- * Check_region is to check if the region at ioaddr with the size "size" 
+/*
+ * Portreserve is there to mark the Card I/O Port region as used.
+ * Check_region is to check if the region at ioaddr with the size "size"
  * is free or not.
  * Snarf_region allocates the I/O Port region.
  */
 
-#ifndef HAVE_PORTRESERVE
+#ifndef	HAVE_PORTRESERVE
 
 #define check_region(ioaddr1, size)              0
 #define request_region(ioaddr1, size,name)       do ; while (0)
 
 #endif
 
-/* 
+/*
  * SK_DEBUG
  *
  * Here you can choose what level of debugging wanted.
@@ -328,42 +328,42 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  *  which can help to find some mistakes in configuration or even
  *  in the driver code.
  *
- * If SK_DEBUG2 is defined, many many messages will be printed 
+ * If SK_DEBUG2 is defined, many many messages will be printed
  *  which normally you don't need. I used this to check the interrupt
- *  routine. 
+ *  routine.
  *
- * (If you define only SK_DEBUG2 then only the messages for 
+ * (If you define only SK_DEBUG2 then only the messages for
  *  checking interrupts will be printed!)
  *
- * Normal way of live is: 
+ * Normal way of live is:
  *
  * For the whole thing get going let both symbolic constants
  * undefined. If you face any problems and you know what's going
  * on (you know something about the card and you can interpret some
  * hex LANCE register output) then define SK_DEBUG
- * 
+ *
  */
 
 #undef  SK_DEBUG	/* debugging */
 #undef  SK_DEBUG2	/* debugging with more verbose report */
 
-#ifdef SK_DEBUG
+#ifdef	SK_DEBUG
 #define PRINTF(x) printf x
 #else
 #define PRINTF(x) /**/
 #endif
 
-#ifdef SK_DEBUG2
+#ifdef	SK_DEBUG2
 #define PRINTF2(x) printf x
 #else
 #define PRINTF2(x) /**/
 #endif
 
-/* 
+/*
  * SK_G16 RAM
  *
  * The components are memory mapped and can be set in a region from
- * 0x00000 through 0xfc000 in 16KB steps. 
+ * 0x00000 through 0xfc000 in 16KB steps.
  *
  * The Network components are: dual ported RAM, Prom, I/O Reg, Status-,
  * Controlregister and I/O Command.
@@ -376,19 +376,19 @@ Changes to make it work with Etherboot by Georg Baum <Georg.Baum@gmx.de>
  *       8-Bit PROM, this means only the 16 even addresses are used of the
  *       32 Byte Address region. Access to a odd address results in invalid
  *       data.
- * 
+ *
  * LANCE I/O Reg: The I/O Reg is build of 4 single Registers, Low-Byte Write,
  *       Hi-Byte Write, Low-Byte Read, Hi-Byte Read.
  *       Transfer from or to the LANCE is always in 16Bit so Low and High
  *       registers are always relevant.
  *
  *       The Data from the Readregister is not the data in the Writeregister!!
- *       
- * Port: Status- and Controlregister. 
- *       Two different registers which share the same address, Status is 
+ *
+ * Port: Status- and Controlregister.
+ *       Two different registers which share the same address, Status is
  *       read-only, Control is write-only.
- *    
- * I/O Command: 
+ *
+ * I/O Command:
  *       Any bitcombination written in here starts the transmission between
  *       Host and LANCE.
  */
@@ -405,7 +405,7 @@ typedef struct
 
 /* struct  */
 
-/* 
+/*
  * This is the structure for the dual ported ram. We
  * have exactly 16 320 Bytes. In here there must be:
  *
@@ -426,8 +426,8 @@ struct SK_ram
     char rmdbuf[RMDNUM][PKT_BUF_SZ];
 };
 
-/* 
- * Structure where all necessary information is for ring buffer 
+/*
+ * Structure where all necessary information is for ring buffer
  * management and statistics.
  */
 
@@ -468,10 +468,10 @@ static void SK_reset(struct nic *nic);
 static int SK_poll(struct nic *nic);
 static void SK_transmit(
 struct nic *nic,
-char *d,			/* Destination */
+const char *d,			/* Destination */
 unsigned int t,			/* Type */
 unsigned int s,			/* size */
-char *p);			/* Packet */
+const char *p);			/* Packet */
 static void SK_disable(struct nic *nic);
 struct nic *SK_probe(struct nic *nic, unsigned short *probe_addrs);
 
@@ -481,19 +481,19 @@ struct nic *SK_probe(struct nic *nic, unsigned short *probe_addrs);
  */
 
 static int SK_lance_init(struct nic *nic, unsigned short mode);
-void   SK_reset_board(void);
-void   SK_set_RAP(int reg_number);
-int    SK_read_reg(int reg_number);
-int    SK_rread_reg(void);
-void   SK_write_reg(int reg_number, int value);
+static void SK_reset_board(void);
+static void SK_set_RAP(int reg_number);
+static int SK_read_reg(int reg_number);
+static int SK_rread_reg(void);
+static void SK_write_reg(int reg_number, int value);
 
-/* 
+/*
  * Debugging functions
  * -------------------
  */
 
-void SK_print_pos(struct nic *nic, char *text);
-void SK_print_ram(struct nic *nic);
+static void SK_print_pos(struct nic *nic, char *text);
+static void SK_print_ram(struct nic *nic);
 
 
 /**************************************************************************
@@ -511,7 +511,7 @@ POLL - Wait for a frame
 static int SK_poll(struct nic *nic)
 {
 	/* return true if there's an ethernet packet ready to read */
-    	struct priv *p;         /* SK_G16 private structure */
+	struct priv *p;         /* SK_G16 private structure */
 	struct rmd *rmdp;
 	int csr0, rmdstat, packet_there;
     PRINTF2(("## %s: At beginning of SK_poll(). CSR0: 0x%X\n",
@@ -562,7 +562,7 @@ static int SK_poll(struct nic *nic)
 	    {
 		printf("%s: packet too long\n", SK_NAME);
 	    }
-	
+
 	    /*
              * All other packets will be ignored until a new frame with
 	     * start (RX_STP) set follows.
@@ -583,7 +583,7 @@ static int SK_poll(struct nic *nic)
 	{
 
 	    int len = (rmdp->mlen & 0x0fff);  /* extract message length from receive buffer */
-	
+
 	    /*
              * Copy data out of our receive descriptor into nic->packet.
 	     *
@@ -592,7 +592,7 @@ static int SK_poll(struct nic *nic)
 	     */
 
 	    memcpy(nic->packet, (unsigned char *) (rmdp->u.buffer & 0x00ffffff), nic->packetlen = len);
- 	    packet_there = 1;
+	    packet_there = 1;
 
 
 	    /*
@@ -617,17 +617,17 @@ TRANSMIT - Transmit a frame
 ***************************************************************************/
 static void SK_transmit(
 struct nic *nic,
-char *d,			/* Destination */
+const char *d,			/* Destination */
 unsigned int t,			/* Type */
 unsigned int s,			/* size */
-char *pack)			/* Packet */
+const char *pack)		/* Packet */
 {
 	/* send the packet to destination */
     struct priv *p;         /* SK_G16 private structure */
     struct tmd *tmdp;
     short len;
     int csr0, i, tmdstat;
-	
+
     PRINTF2(("## %s: At beginning of SK_transmit(). CSR0: 0x%X\n",
            SK_NAME, SK_read_reg(CSR0)));
 	p = nic->priv_data;
@@ -659,7 +659,7 @@ char *pack)			/* Packet */
 	 */
 
 	tmdp->u.s.status = TX_OWN | TX_STP | TX_ENP;
-	
+
 	/* Start Demand Transmission */
 	SK_write_reg(CSR0, CSR0_TDMD | CSR0_INEA);
 
@@ -713,7 +713,7 @@ char *pack)			/* Packet */
 
             SK_lance_init(nic, MODE_NORMAL);
         }
-	
+
 	tmdp->status2 = 0;             /* Clear error flags */
     }
 
@@ -798,7 +798,7 @@ int SK_probe1(struct nic *nic, short ioaddr1)
     outb(SK_ROM_RAM_OFF, SK_POS2); /* Boot_ROM + RAM off */
     outb(POS_ADDR, SK_POS3);       /* Set RAM address */
     outb(SK_ROM_RAM_ON, SK_POS2);  /* RAM on, BOOT_ROM on */
-#ifdef SK_DEBUG
+#ifdef	SK_DEBUG
     SK_print_pos(nic, "POS registers after ROM, RAM config");
 #endif
 
@@ -813,7 +813,7 @@ int SK_probe1(struct nic *nic, short ioaddr1)
     }
 
     /* Check for manufacturer code */
-#ifdef SK_DEBUG
+#ifdef	SK_DEBUG
     if (!(*(nic->node_addr+0) == SK_MAC0 &&
 	  *(nic->node_addr+1) == SK_MAC1 &&
 	  *(nic->node_addr+2) == SK_MAC2) )
@@ -851,14 +851,14 @@ int SK_probe1(struct nic *nic, short ioaddr1)
 
     for (i = 0; i < RMDNUM; i++)
     {
-	p->rmdbufs[i] = p->ram->rmdbuf[i]; 
+	p->rmdbufs[i] = p->ram->rmdbuf[i];
     }
     i = 0;
 
     if (!(i = SK_lance_init(nic, MODE_NORMAL)))  /* LANCE init OK? */
     {
 
-#ifdef SK_DEBUG
+#ifdef	SK_DEBUG
         /*
          * This debug block tries to stop LANCE,
          * reinit LANCE with transmitter and receiver disabled,
@@ -881,7 +881,7 @@ int SK_probe1(struct nic *nic, short ioaddr1)
                SK_NAME, SK_read_reg(CSR0));
         SK_print_pos(nic, "POS regs before returning OK");
 
-#endif /* SK_DEBUG */
+#endif	/* SK_DEBUG */
 
     }
     else /* LANCE init failed */
@@ -892,10 +892,10 @@ int SK_probe1(struct nic *nic, short ioaddr1)
 	return -1;
     }
 
-#ifdef SK_DEBUG
+#ifdef	SK_DEBUG
     SK_print_pos(nic, "End of SK_probe1");
     SK_print_ram(nic);
-#endif 
+#endif
 
     return 0;                            /* Initialization done */
 
@@ -915,15 +915,15 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
     SK_reset_board();
 
     /* Initialize TMD's with start values */
-    p->tmdnum = 0;                   /* First descriptor for transmitting */ 
+    p->tmdnum = 0;                   /* First descriptor for transmitting */
     p->tmdlast = 0;                  /* First descriptor for reading stats */
 
     for (i = 0; i < TMDNUM; i++)     /* Init all TMD's */
     {
-	tmdp = p->tmdhead + i; 
+	tmdp = p->tmdhead + i;
 
 	tmdp->u.buffer = (unsigned long) p->tmdbufs[i]; /* assign buffer */
-	
+
 	/* Mark TMD as start and end of packet */
 	tmdp->u.s.status = TX_STP | TX_ENP;
     }
@@ -932,25 +932,25 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
     /* Initialize RMD's with start values */
 
     p->rmdnum = 0;                   /* First RMD which will be used */
- 
+
     for (i = 0; i < RMDNUM; i++)     /* Init all RMD's */
     {
 	rmdp = p->rmdhead + i;
 
-	
+
 	rmdp->u.buffer = (unsigned long) p->rmdbufs[i]; /* assign buffer */
-	
-	/* 
-         * LANCE must be owner at beginning so that he can fill in 
-	 * receiving packets, set status and release RMD 
+
+	/*
+         * LANCE must be owner at beginning so that he can fill in
+	 * receiving packets, set status and release RMD
 	 */
 
-	rmdp->u.s.status = RX_OWN;  
+	rmdp->u.s.status = RX_OWN;
 
 	rmdp->blen = -PKT_BUF_SZ;    /* Buffer Size in a two's complement */
 
-	rmdp->mlen = 0;              /* init message length */       
-	
+	rmdp->mlen = 0;              /* init message length */
+
     }
 
     /* Fill LANCE Initialize Block */
@@ -965,7 +965,7 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
     for (i = 0; i < 8; i++)          /* Set multicast, logical address */
     {
 	(p->ram)->ib.laddr[i] = 0;   /* We do not use logical addressing */
-    } 
+    }
 
     /* Set ring descriptor pointers and set number of descriptors */
 
@@ -975,8 +975,8 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
     /* Prepare LANCE Control and Status Registers */
 
     SK_write_reg(CSR3, CSR3_ACON);   /* Ale Control !!!THIS MUST BE SET!!!! */
- 
-    /* 
+
+    /*
      * LANCE addresses the RAM from 0x0000 to 0x3fbf and has no access to
      * PC Memory locations.
      *
@@ -985,33 +985,33 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
      * 0x0000
      *
      * CSR1 contains low order bits 15:0 of initialization block address
-     * CSR2 is built of: 
+     * CSR2 is built of:
      *    7:0  High order bits 23:16 of initialization block address
      *   15:8  reserved, must be 0
      */
-    
+
     /* Set initialization block address (must be on word boundary) */
     SK_write_reg(CSR1, 0);          /* Set low order bits 15:0 */
-    SK_write_reg(CSR2, 0);          /* Set high order bits 23:16 */ 
-    
+    SK_write_reg(CSR2, 0);          /* Set high order bits 23:16 */
+
 
     PRINTF(("## %s: After setting CSR1-3. CSR0: 0x%X\n",
            SK_NAME, SK_read_reg(CSR0)));
 
     /* Initialize LANCE */
 
-    /* 
+    /*
      * INIT = Initialize, when set, causes the LANCE to begin the
      * initialization procedure and access the Init Block.
      */
 
-    SK_write_reg(CSR0, CSR0_INIT); 
+    SK_write_reg(CSR0, CSR0_INIT);
 
     /* Wait until LANCE finished initialization */
-    
+
     SK_set_RAP(CSR0);              /* Register Address Pointer to CSR0 */
 
-    for (i = 0; (i < 100) && !(SK_rread_reg() & CSR0_IDON); i++) 
+    for (i = 0; (i < 100) && !(SK_rread_reg() & CSR0_IDON); i++)
 	; /* Wait until init done or go ahead if problems (i>=100) */
 
     if (i >= 100) /* Something is wrong ! */
@@ -1021,7 +1021,7 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
 		SK_NAME, (int) SK_read_reg(CSR0),
 		(unsigned int) &(p->ram)->ib);
 
-#ifdef SK_DEBUG
+#ifdef	SK_DEBUG
 	SK_print_pos(nic, "LANCE INIT failed");
 #endif
 
@@ -1046,7 +1046,7 @@ static int SK_lance_init(struct nic *nic, unsigned short mode)
  * ! CSR1-3 can only be accessed when in CSR0 the STOP bit is set !
  */
 
-void SK_reset_board(void)
+static void SK_reset_board(void)
 {
     int i;
 
@@ -1058,17 +1058,17 @@ void SK_reset_board(void)
 
 } /* End of SK_reset_board() */
 
-void SK_set_RAP(int reg_number)
+static void SK_set_RAP(int reg_number)
 {
     SK_IOREG = reg_number;
     SK_PORT  = SK_RESET | SK_RAP | SK_WREG;
     SK_IOCOM = SK_DOIO;
 
-    while (SK_PORT & SK_IORUN) 
+    while (SK_PORT & SK_IORUN)
 	;
 } /* End of SK_set_RAP() */
 
-int SK_read_reg(int reg_number)
+static int SK_read_reg(int reg_number)
 {
     SK_set_RAP(reg_number);
 
@@ -1081,7 +1081,7 @@ int SK_read_reg(int reg_number)
 
 } /* End of SK_read_reg() */
 
-int SK_rread_reg(void)
+static int SK_rread_reg(void)
 {
     SK_PORT  = SK_RESET | SK_RDATA | SK_RREG;
 
@@ -1093,7 +1093,7 @@ int SK_rread_reg(void)
 
 } /* End of SK_rread_reg() */
 
-void SK_write_reg(int reg_number, int value)
+static void SK_write_reg(int reg_number, int value)
 {
     SK_set_RAP(reg_number);
 
@@ -1110,8 +1110,8 @@ void SK_write_reg(int reg_number, int value)
  * -------------------
  */
 
-#ifdef SK_DEBUG
-void SK_print_pos(struct nic *nic, char *text)
+#ifdef	SK_DEBUG
+static void SK_print_pos(struct nic *nic, char *text)
 {
 
     unsigned char pos0 = inb(SK_POS0),
@@ -1127,20 +1127,20 @@ void SK_print_pos(struct nic *nic, char *text)
 
 } /* End of SK_print_pos() */
 
-void SK_print_ram(struct nic *nic)
+static void SK_print_ram(struct nic *nic)
 {
 
-    int i;    
+    int i;
     struct priv *p = (struct priv *) nic->priv_data;
 
     printf("## %s: RAM Details.\n"
            "##   RAM at 0x%X tmdhead: 0x%X rmdhead: 0x%X initblock: 0x%X\n",
-           SK_NAME, 
+           SK_NAME,
            (unsigned int) p->ram,
-           (unsigned int) p->tmdhead, 
-           (unsigned int) p->rmdhead, 
+           (unsigned int) p->tmdhead,
+           (unsigned int) p->rmdhead,
            (unsigned int) &(p->ram)->ib);
-           
+
     printf("##   ");
 
     for(i = 0; i < TMDNUM; i++)
@@ -1160,7 +1160,7 @@ void SK_print_ram(struct nic *nic)
                printf("\n##   ");
            }
         printf("rmdbufs%d: 0x%X ", (i+1), (int) p->rmdbufs[i]);
-    } 
+    }
     putchar('\n');
 
 } /* End of SK_print_ram() */

@@ -56,14 +56,12 @@
 
 */
 
-/* to get some global routines like printf */
 #include "etherboot.h"
-/* to get the interface to the body of the program */
 #include "nic.h"
-/* we have a PIC card */
 #include "pci.h"
+#include "cards.h"
 
-#define RTL_TIMEOUT (1*TICKS_PER_SEC) 
+#define RTL_TIMEOUT (1*TICKS_PER_SEC)
 
 /* PCI Tuning Parameters
    Threshold is bytes transferred to chip before transmission starts. */
@@ -153,7 +151,7 @@ enum rx_mode_bits {
 };
 
 static int ioaddr;
-unsigned int cur_rx,cur_tx;
+static unsigned int cur_rx,cur_tx;
 
 /* The RTL8139 can only transmit from a contiguous, aligned memory block.  */
 static unsigned char tx_buffer[TX_BUF_SIZE] __attribute__((aligned(4)));
@@ -163,18 +161,18 @@ static unsigned char tx_buffer[TX_BUF_SIZE] __attribute__((aligned(4)));
 /* But we still give the user the choice of using an internal buffer
    just in case - Ken */
 #ifdef	USE_INTERNAL_BUFFER
-static unsigned char rx_ring[RX_BUF_LEN+16] __attribute__ ((aligned(4)));
+static unsigned char rx_ring[RX_BUF_LEN+16] __attribute__((aligned(4)));
 #else
-static unsigned char *rx_ring = (unsigned char *)(0x10000 - (RX_BUF_LEN + 16));
+#define rx_ring ((unsigned char *)(0x10000 - (RX_BUF_LEN + 16)))
 #endif
 
 
 struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 	struct pci_device *pci);
-static int read_eeprom(long ioaddr, int location);
+static int read_eeprom(int location);
 static void rtl_reset(struct nic *nic);
-static void rtl_transmit(struct nic *nic, char *destaddr,
-	unsigned int type, unsigned int len, char *data);
+static void rtl_transmit(struct nic *nic, const char *destaddr,
+	unsigned int type, unsigned int len, const char *data);
 static int rtl_poll(struct nic *nic);
 static void rtl_disable(struct nic*);
 
@@ -191,13 +189,13 @@ struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 	printf(" - ");
 	if (probeaddrs == 0 || probeaddrs[0] == 0) {
 		printf("\nERROR: no probeaddrs given, using pci_device\n");
-		for (p = pci; p; p++) {
+		for (p = pci; p->vendor; p++) {
 			if ( ( (p->vendor == PCI_VENDOR_ID_REALTEK)
 			    && (p->dev_id == PCI_DEVICE_ID_REALTEK_8139) )
 			  || ( (p->vendor == PCI_VENDOR_ID_SMC_1211)
 			    && (p->dev_id == PCI_DEVICE_ID_SMC_1211) ) ) {
 				probeaddrs[0] = p->ioaddr;
-				printf("rtl8139: probing %x (membase would be %x)\n",
+				printf("rtl8139: probing %x (membase %x)\n",
 					p->ioaddr, p->membase);
 			}
 		}
@@ -210,10 +208,10 @@ struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 	/* Bring the chip out of low-power mode. */
 	outb(0x00, ioaddr + Config1);
 
-	if (read_eeprom(ioaddr, 0) != 0xffff) {
+	if (read_eeprom(0) != 0xffff) {
 		unsigned short *ap = (unsigned short*)nic->node_addr;
 		for (i = 0; i < 3; i++)
-			*ap++ = read_eeprom(ioaddr, i + 7);
+			*ap++ = read_eeprom(i + 7);
 	} else {
 		unsigned char *ap = (unsigned char*)nic->node_addr;
 		for (i = 0; i < ETHER_ADDR_SIZE; i++)
@@ -264,7 +262,7 @@ struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 #define EE_READ_CMD     (6 << 6)
 #define EE_ERASE_CMD    (7 << 6)
 
-static int read_eeprom(long ioaddr, int location)
+static int read_eeprom(int location)
 {
 	int i;
 	unsigned int retval = 0;
@@ -329,7 +327,7 @@ static void rtl_reset(struct nic* nic)
 	 * from the configuration EEPROM default, because the card manufacturer
 	 * should have set that to match the card.  */
 
-#ifdef DEBUG_RX
+#ifdef	DEBUG_RX
 	printf("rx ring address is %X\n",(unsigned long)rx_ring);
 #endif
 	outl((unsigned long)rx_ring, ioaddr + RxBuf);
@@ -347,10 +345,10 @@ static void rtl_reset(struct nic* nic)
 	outw(0, ioaddr + IntrMask);
 }
 
-static void rtl_transmit(struct nic *nic, char *destaddr,
-	unsigned int type, unsigned int len, char *data)
+static void rtl_transmit(struct nic *nic, const char *destaddr,
+	unsigned int type, unsigned int len, const char *data)
 {
-	unsigned int i, status, to, nstype;
+	unsigned int status, to, nstype;
 	unsigned long txstatus;
 
 	memcpy(tx_buffer, destaddr, ETHER_ADDR_SIZE);
@@ -360,7 +358,7 @@ static void rtl_transmit(struct nic *nic, char *destaddr,
 	memcpy(tx_buffer + ETHER_HDR_SIZE, data, len);
 
 	len += ETHER_HDR_SIZE;
-#ifdef DEBUG_TX
+#ifdef	DEBUG_TX
 	printf("sending %d bytes ethtype %x\n", len, type);
 #endif
 
@@ -389,12 +387,12 @@ static void rtl_transmit(struct nic *nic, char *destaddr,
 
 	if (status & TxOK) {
 		cur_tx = ++cur_tx % NUM_TX_DESC;
-#ifdef DEBUG_TX
+#ifdef	DEBUG_TX
 		printf("tx done (%d ticks), status %x txstatus %X\n",
 			to-currticks(), status, txstatus);
 #endif
 	} else {
-#ifdef DEBUG_TX
+#ifdef	DEBUG_TX
 		printf("tx timeout/error (%d ticks), status %x txstatus %X\n",
 			currticks()-to, status, txstatus);
 #endif
@@ -416,7 +414,7 @@ static int rtl_poll(struct nic *nic)
 	/* See below for the rest of the interrupt acknowledges.  */
 	outw(status & ~(RxFIFOOver | RxOverflow | RxOK), ioaddr + IntrStatus);
 
-#ifdef DEBUG_RX
+#ifdef	DEBUG_RX
 	printf("rtl_poll: int %x ", status);
 #endif
 
@@ -439,16 +437,16 @@ static int rtl_poll(struct nic *nic)
 
 		memcpy(nic->packet, rx_ring + ring_offs + 4, semi_count);
 		memcpy(nic->packet+semi_count, rx_ring, rx_size-4-semi_count);
-#ifdef DEBUG_RX
+#ifdef	DEBUG_RX
 		printf("rx packet %d+%d bytes", semi_count,rx_size-4-semi_count);
 #endif
 	} else {
 		memcpy(nic->packet, rx_ring + ring_offs + 4, nic->packetlen);
-#ifdef DEBUG_RX
+#ifdef	DEBUG_RX
 		printf("rx packet %d bytes", rx_size-4);
 #endif
 	}
-#ifdef DEBUG_RX
+#ifdef	DEBUG_RX
 	printf(" at %X type %b%b rxstatus %x\n",
 		(unsigned long)(rx_ring+ring_offs+4),
 		nic->packet[12], nic->packet[13], rx_status);

@@ -1,4 +1,4 @@
-/*  
+/*
  * 3c90x.c -- This file implements the 3c90x driver for etherboot.  Written
  * by Greg Beeley, Greg.Beeley@LightSys.org.  Modified by Steve Smith,
  * Steve.Smith@Juno.Com
@@ -6,13 +6,13 @@
  * This program Copyright (C) 1999 LightSys Technology Services, Inc.
  * Portions Copyright (C) 1999 Steve Smith
  *
- * This program may be re-distributed in source or binary form, modified, 
+ * This program may be re-distributed in source or binary form, modified,
  * sold, or copied for any purpose, provided that the above copyright message
  * and this text are included with all source copies or derivative works, and
  * provided that the above copyright message and this text are included in the
  * documentation of any binary-only distributions.  This program is distributed
  * WITHOUT ANY WARRANTY, without even the warranty of FITNESS FOR A PARTICULAR
- * PURPOSE or MERCHANTABILITY.  Please read the associated documentation 
+ * PURPOSE or MERCHANTABILITY.  Please read the associated documentation
  * "3c90x.txt" before compiling and using this driver.
  *
  * --------
@@ -37,11 +37,7 @@
 #include "etherboot.h"
 #include "nic.h"
 #include "pci.h"
-#if 0
-#ifndef __FreeBSD__
-#include <linux/pci.h>
-#endif
-#endif
+#include "cards.h"
 
 #define	TIME_OUT	60000
 #define	XCVR_MAGIC	(0x5A00)
@@ -261,7 +257,7 @@ a3c90x_internal_IssueCommand(int ioaddr, int cmd, int param)
     {
     unsigned int val;
 
-    	/** Build the cmd. **/
+	/** Build the cmd. **/
 	val = cmd;
 	val <<= 11;
 	val |= param;
@@ -282,7 +278,7 @@ static int
 a3c90x_internal_SetWindow(int ioaddr, int window)
     {
 
-    	/** Window already as set? **/
+	/** Window already as set? **/
 	if (INF_3C90X.CurrentWindow == window) return 0;
 
 	/** Issue the window command. **/
@@ -303,7 +299,7 @@ a3c90x_internal_ReadEeprom(int ioaddr, int address)
 	/** Select correct window **/
         a3c90x_internal_SetWindow(INF_3C90X.IOAddr, winEepromBios0);
 
-    	/** Make sure the eeprom isn't busy **/
+	/** Make sure the eeprom isn't busy **/
 	while((1<<15) & inw(ioaddr + regEepromCommand_0_w));
 
 	/** Read the value. **/
@@ -315,7 +311,7 @@ a3c90x_internal_ReadEeprom(int ioaddr, int address)
     }
 
 
-/*** a3c90x_internal_WriteEepromWord - write a physical word of 
+/*** a3c90x_internal_WriteEepromWord - write a physical word of
  *** data to the onboard serial eeprom (not the BIOS prom, but the
  *** nvram in the card that stores, among other things, the MAC
  *** address).
@@ -323,7 +319,7 @@ a3c90x_internal_ReadEeprom(int ioaddr, int address)
 static int
 a3c90x_internal_WriteEepromWord(int ioaddr, int address, unsigned short value)
     {
-    	/** Select register window **/
+	/** Select register window **/
         a3c90x_internal_SetWindow(ioaddr, winEepromBios0);
 
 	/** Verify Eeprom not busy **/
@@ -371,7 +367,7 @@ a3c90x_internal_WriteEeprom(int ioaddr, int address, unsigned short value)
 	    cksumAddress=0x17;
 	    }
 
-    	/** Write the value. **/
+	/** Write the value. **/
 	if (a3c90x_internal_WriteEepromWord(ioaddr, address, value) == -1)
 	    return -1;
 
@@ -397,12 +393,12 @@ a3c90x_internal_WriteEeprom(int ioaddr, int address, unsigned short value)
  *** not alter the selected transceiver that we used to download the boot
  *** image.
  ***/
-static void 
+static void
 a3c90x_reset(struct nic *nic)
     {
     int cfg;
 
-#ifdef CFG_3C90X_PRESERVE_XCVR
+#ifdef	CFG_3C90X_PRESERVE_XCVR
     /** Read the current InternalConfig value. **/
     a3c90x_internal_SetWindow(INF_3C90X.IOAddr, winTxRxOptions3);
     cfg = inl(INF_3C90X.IOAddr + regInternalConfig_3_l);
@@ -415,7 +411,7 @@ a3c90x_reset(struct nic *nic)
     /** wait for reset command to complete **/
     while (inw(INF_3C90X.IOAddr + regCommandIntStatus_w) & INT_CMDINPROGRESS);
 
-    /** global reset command resets station mask, non-B revision cards 
+    /** global reset command resets station mask, non-B revision cards
      ** require explicit reset of values
      **/
     a3c90x_internal_SetWindow(INF_3C90X.IOAddr, winAddressing2);
@@ -423,7 +419,7 @@ a3c90x_reset(struct nic *nic)
     outw(0, INF_3C90X.IOAddr + regStationMask_2_3w+2);
     outw(0, INF_3C90X.IOAddr + regStationMask_2_3w+4);
 
-#ifdef CFG_3C90X_PRESERVE_XCVR
+#ifdef	CFG_3C90X_PRESERVE_XCVR
     /** Re-set the original InternalConfig value from before reset **/
     a3c90x_internal_SetWindow(INF_3C90X.IOAddr, winTxRxOptions3);
     outl(cfg, INF_3C90X.IOAddr + regInternalConfig_3_l);
@@ -476,12 +472,12 @@ a3c90x_reset(struct nic *nic)
  *** s - size of the non-header part of the packet that needs transmitted;
  *** p - the pointer to the packet data itself.
  ***/
-static void 
-a3c90x_transmit(struct nic *nic, char *d, unsigned int t,
-                unsigned int s, char *p)
+static void
+a3c90x_transmit(struct nic *nic, const char *d, unsigned int t,
+                unsigned int s, const char *p)
     {
 
-    struct eth_hdr 
+    struct eth_hdr
 	{
 	unsigned char dst_addr[6];
 	unsigned char src_addr[6];
@@ -539,7 +535,7 @@ a3c90x_transmit(struct nic *nic, char *d, unsigned int t,
 
 	if (timeout==0)
 	    {
-	    printf("3C90X: Transmission Timeout\n");
+	    printf("3C90X: Tx Timeout\n");
 	    continue;
 	    }
 
@@ -556,31 +552,31 @@ a3c90x_transmit(struct nic *nic, char *d, unsigned int t,
 	/** check error codes **/
 	if (status & 0x02)
 	    {
-	    printf("3C90X: Transmitter Reclaim Error (%x)\n", status);
+	    printf("3C90X: Tx Reclaim Error (%x)\n", status);
 	    a3c90x_reset(NULL);
 	    }
 	else if (status & 0x04)
 	    {
-	    printf("3C90X: Transmitter Status Overflow (%x)\n", status);
-	    for (i=0; i<32; i++) 
+	    printf("3C90X: Tx Status Overflow (%x)\n", status);
+	    for (i=0; i<32; i++)
 		outb(0x00, INF_3C90X.IOAddr + regTxStatus_b);
 	    /** must re-enable after max collisions before re-issuing tx **/
 	    a3c90x_internal_IssueCommand(INF_3C90X.IOAddr, cmdTxEnable, 0);
 	    }
 	else if (status & 0x08)
 	    {
-	    printf("3C90X: Transmitter Max Collisions (%x)\n", status);
+	    printf("3C90X: Tx Max Collisions (%x)\n", status);
 	    /** must re-enable after max collisions before re-issuing tx **/
 	    a3c90x_internal_IssueCommand(INF_3C90X.IOAddr, cmdTxEnable, 0);
 	    }
 	else if (status & 0x10)
 	    {
-	    printf("3C90X: Transmitter Underrun (%x)\n", status);
+	    printf("3C90X: Tx Underrun (%x)\n", status);
 	    a3c90x_reset(NULL);
 	    }
 	else if (status & 0x20)
 	    {
-	    printf("3C90X: Transmitter Jabber (%x)\n", status);
+	    printf("3C90X: Tx Jabber (%x)\n", status);
 	    a3c90x_reset(NULL);
 	    }
 	else if ((status & 0x80) != 0x80)
@@ -604,7 +600,7 @@ a3c90x_transmit(struct nic *nic, char *d, unsigned int t,
  *** copy the packet to nic->packet if it gets a packet and set the size
  *** in nic->packetlen.  Return 1 if a packet was found.
  ***/
-static int 
+static int
 a3c90x_poll(struct nic *nic)
     {
     int i, errcode;
@@ -634,11 +630,11 @@ a3c90x_poll(struct nic *nic)
 	for(i=0;i<40000;i++);
 
     /** Check for Error (else we have good packet) **/
-    if (INF_3C90X.ReceiveUPD.UpPktStatus & (1<<14)) 
+    if (INF_3C90X.ReceiveUPD.UpPktStatus & (1<<14))
 	{
 	errcode = INF_3C90X.ReceiveUPD.UpPktStatus;
 	if (errcode & (1<<16))
-	    printf("3C90X: Receiver Overrun (%x)\n",errcode>>16);
+	    printf("3C90X: Rx Overrun (%x)\n",errcode>>16);
 	else if (errcode & (1<<17))
 	    printf("3C90X: Runt Frame (%x)\n",errcode>>16);
 	else if (errcode & (1<<18))
@@ -657,14 +653,14 @@ a3c90x_poll(struct nic *nic)
 
     return 1;
     }
-	
+
 
 
 /*** a3c90x_disable: exported routine to disable the card.  What's this for?
  *** the eepro100.c driver didn't have one, so I just left this one empty too.
  *** Ideas anyone?
  ***/
-static void 
+static void
 a3c90x_disable(struct nic *nic)
     {
     }
@@ -676,9 +672,9 @@ a3c90x_disable(struct nic *nic)
  *** card.  We just have to init it here.
  ***/
 struct nic*
-a3c90x_probe(struct nic *nic, unsigned short *probeaddrs)
+a3c90x_probe(struct nic *nic, unsigned short *probeaddrs, struct pci_device *pci)
     {
-    int i, j, to, v, c;
+    int i, c;
     unsigned short eeprom[0x21];
     unsigned int cfg;
     unsigned int mopt;
@@ -695,7 +691,7 @@ a3c90x_probe(struct nic *nic, unsigned short *probeaddrs)
 	case 0x9001: /** 10/100 T4               **/
 	case 0x9050: /** 10/100 TPO              **/
 	case 0x9051: /** 10 Base Combo           **/
-    		INF_3C90X.isBrev = 0;
+		INF_3C90X.isBrev = 0;
 		break;
 
 	case 0x9004: /** 10 Base TPO             **/
@@ -706,7 +702,7 @@ a3c90x_probe(struct nic *nic, unsigned short *probeaddrs)
 	case 0x9056: /** 10/100 T4               **/
 	case 0x905A: /** 10 Base FX              **/
 	default:
-    		INF_3C90X.isBrev = 1;
+		INF_3C90X.isBrev = 1;
 		break;
 	}
 
@@ -718,11 +714,13 @@ a3c90x_probe(struct nic *nic, unsigned short *probeaddrs)
 	    eeprom[i] = a3c90x_internal_ReadEeprom(INF_3C90X.IOAddr, i);
 	    }
 
+#ifdef	CFG_3C90X_BOOTROM_FIX
 	/** Set xcvrSelect in InternalConfig in eeprom. **/
 	/* only necessary for 3c905b revision cards with boot PROM bug!!! */
-    	a3c90x_internal_WriteEeprom(INF_3C90X.IOAddr, 0x13, 0x0160);
+	a3c90x_internal_WriteEeprom(INF_3C90X.IOAddr, 0x13, 0x0160);
+#endif
 
-#ifdef CFG_3C90X_XCVR
+#ifdef	CFG_3C90X_XCVR
 	if (CFG_3C90X_XCVR == 255)
 	    {
 	    /** Clear the LanWorks register **/
@@ -795,27 +793,27 @@ a3c90x_probe(struct nic *nic, unsigned short *probeaddrs)
     printf("Connectors present: ");
     c = 0;
     linktype = 0x0008;
-    if (mopt & 0x01) 
+    if (mopt & 0x01)
 	{
 	printf("%s100Base-T4",(c++)?", ":"");
 	linktype = 0x0006;
 	}
-    if (mopt & 0x04) 
+    if (mopt & 0x04)
 	{
 	printf("%s100Base-FX",(c++)?", ":"");
 	linktype = 0x0005;
 	}
-    if (mopt & 0x10) 
+    if (mopt & 0x10)
 	{
 	printf("%s10Base-2",(c++)?", ":"");
 	linktype = 0x0003;
 	}
-    if (mopt & 0x20) 
+    if (mopt & 0x20)
 	{
 	printf("%sAUI",(c++)?", ":"");
 	linktype = 0x0001;
 	}
-    if (mopt & 0x40) 
+    if (mopt & 0x40)
 	{
 	printf("%sMII",(c++)?", ":"");
 	linktype = 0x0006;
@@ -850,10 +848,10 @@ a3c90x_probe(struct nic *nic, unsigned short *probeaddrs)
 	}
     else
 	{
-#ifdef CFG_3C90X_XCVR
+#ifdef	CFG_3C90X_XCVR
 	    if (CFG_3C90X_XCVR != 255)
 		linktype = CFG_3C90X_XCVR;
-#endif // CFG_3C90X_XCVR
+#endif	/* CFG_3C90X_XCVR */
 
 	    /** I don't know what MII MAC only mode is!!! **/
 	    if (linktype == 0x0009)

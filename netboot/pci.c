@@ -9,9 +9,6 @@
 ** /usr/src/linux/arch/i386/bios32.c
 ** /usr/src/linux/include/linux/bios32.h
 ** /usr/src/linux/drivers/net/ne.c
-**
-** Limitations: only finds devices on bus 0 (I figure that anybody with
-** a multi-pcibus machine will have something better than an ne2000)
 */
 
 /*
@@ -27,7 +24,7 @@
 /*#define	DEBUG	1*/
 static unsigned int pci_ioaddr = 0;
 
-#ifdef CONFIG_PCI_DIRECT
+#ifdef	CONFIG_PCI_DIRECT
 #define  PCIBIOS_SUCCESSFUL                0x00
 
 /*
@@ -47,28 +44,28 @@ int pcibios_read_config_byte(unsigned char bus, unsigned char device_fn,
 int pcibios_read_config_word (unsigned char bus,
     unsigned char device_fn, unsigned char where, unsigned short *value)
 {
-    outl(CONFIG_CMD(bus,device_fn,where), 0xCF8);    
+    outl(CONFIG_CMD(bus,device_fn,where), 0xCF8);
     *value = inw(0xCFC + (where&2));
-    return PCIBIOS_SUCCESSFUL;    
+    return PCIBIOS_SUCCESSFUL;
 }
 
-static int pcibios_read_config_dword (unsigned char bus, unsigned char device_fn, 
+static int pcibios_read_config_dword (unsigned char bus, unsigned char device_fn,
 				 unsigned char where, unsigned int *value)
 {
     outl(CONFIG_CMD(bus,device_fn,where), 0xCF8);
     *value = inl(0xCFC);
-    return PCIBIOS_SUCCESSFUL;    
+    return PCIBIOS_SUCCESSFUL;
 }
 
-int pcibios_write_config_byte (unsigned char bus, unsigned char device_fn, 
+int pcibios_write_config_byte (unsigned char bus, unsigned char device_fn,
 				 unsigned char where, unsigned char value)
 {
-    outl(CONFIG_CMD(bus,device_fn,where), 0xCF8);    
+    outl(CONFIG_CMD(bus,device_fn,where), 0xCF8);
     outb(value, 0xCFC + (where&3));
     return PCIBIOS_SUCCESSFUL;
 }
 
-int pcibios_write_config_word (unsigned char bus, unsigned char device_fn, 
+int pcibios_write_config_word (unsigned char bus, unsigned char device_fn,
 				 unsigned char where, unsigned short value)
 {
     outl(CONFIG_CMD(bus,device_fn,where), 0xCF8);
@@ -85,7 +82,7 @@ int pcibios_write_config_dword (unsigned char bus, unsigned char device_fn, unsi
 
 #undef CONFIG_CMD
 
-#else  /* CONFIG_PCI_DIRECT  not defined */
+#else	 /* CONFIG_PCI_DIRECT  not defined */
 
 static unsigned long bios32_entry = 0;
 static struct {
@@ -93,10 +90,10 @@ static struct {
 	unsigned short segment;
 } bios32_indirect = { 0, KERN_CODE_SEG };
 
-static long pcibios_entry = 0;             
-static struct {                    
-	unsigned long address;            
-	unsigned short segment;                
+static long pcibios_entry = 0;
+static struct {
+	unsigned long address;
+	unsigned short segment;
 } pci_indirect = { 0, KERN_CODE_SEG };
 
 static unsigned long bios32_service(unsigned long service)
@@ -265,11 +262,11 @@ int pcibios_write_config_dword (unsigned char bus,
 
 static void check_pcibios(void)
 {
-	unsigned long signature;          
+	unsigned long signature;
 	unsigned char present_status;
 	unsigned char major_revision;
-	unsigned char minor_revision;                                           
-	unsigned long flags;                                            
+	unsigned char minor_revision;
+	unsigned long flags;
 	int pack;
 
 	if ((pcibios_entry = bios32_service(PCI_SERVICE))) {
@@ -287,7 +284,7 @@ static void check_pcibios(void)
 			  "D" (&pci_indirect)
 			: "bx", "cx");
 		restore_flags(flags);
-		
+
 		present_status = (pack >> 16) & 0xff;
 		major_revision = (pack >> 8) & 0xff;
 		minor_revision = pack & 0xff;
@@ -296,7 +293,7 @@ static void check_pcibios(void)
 				"BIOS????\n");
 			pcibios_entry = 0;
 		}
-#if DEBUG
+#if	DEBUG
 		if (pcibios_entry) {
 			printf ("pcibios_init : PCI BIOS revision %b.%b"
 				" entry at 0x%X\n", major_revision,
@@ -335,7 +332,7 @@ static void pcibios_init(void)
 				check->fields.revision, check);
 			continue;
 		}
-#if DEBUG
+#if	DEBUG
 		printf("pcibios_init : BIOS32 Service Directory "
 			"structure at 0x%X\n", check);
 #endif
@@ -346,7 +343,7 @@ static void pcibios_init(void)
 				return;
 			} else {
 				bios32_entry = check->fields.entry;
-#if DEBUG
+#if	DEBUG
 				printf("pcibios_init : BIOS32 Service Directory"
 					" entry at 0x%X\n", bios32_entry);
 #endif
@@ -357,7 +354,7 @@ static void pcibios_init(void)
 	if (bios32_entry)
 		check_pcibios();
 }
-#endif /* CONFIG_PCI_DIRECT not defined*/
+#endif	/* CONFIG_PCI_DIRECT not defined*/
 
 static void scan_bus(struct pci_device *pcidev)
 {
@@ -391,10 +388,10 @@ static void scan_bus(struct pci_device *pcidev)
 			if (class == 0x06 && subclass == 0x04)
 				buses++;
 
-	#if DEBUG
+#if	DEBUG
 			printf("bus %x, function %x, vendor %x, device %x\n",
 				bus, devfn, vendor, device);
-	#endif
+#endif
 			for (i = 0; pcidev[i].vendor != 0; i++) {
 				if (vendor != pcidev[i].vendor
 				    || device != pcidev[i].dev_id)
@@ -415,11 +412,11 @@ static void scan_bus(struct pci_device *pcidev)
 					printf("Found %s at 0x%x, ROM address 0x%X\n",
 						pcidev[i].name, ioaddr, romaddr);
 					/* Take the first one or the one that matches in boot ROM address */
-					if (pci_ioaddr == 0 || romaddr == ((long) rom.rom_segment >> 4)) {
+					if (pci_ioaddr == 0 || romaddr == ((unsigned long) rom.rom_segment << 4)) {
 						pcidev[i].membase = membase;
 						pcidev[i].ioaddr = ioaddr;
 						pcidev[i].devfn = devfn;
-						
+
 						return;
 					}
 				}
@@ -430,7 +427,7 @@ static void scan_bus(struct pci_device *pcidev)
 
 void eth_pci_init(struct pci_device *pcidev)
 {
-#ifndef CONFIG_PCI_DIRECT
+#ifndef	CONFIG_PCI_DIRECT
 	pcibios_init();
 	if (!pcibios_entry) {
 		printf("pci_init: no BIOS32 detected\n");

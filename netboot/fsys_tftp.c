@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Based on "src/main.c" in etherboot-4.4.2.  */
+/* Based on "src/main.c" in etherboot-4.5.8.  */
 /**************************************************************************
 ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
@@ -32,12 +32,12 @@ Author: Martin Renters
 
 #include <etherboot.h>
 #include <nic.h>
-#include <netboot_config.h>
 
 static int retry;
-static unsigned short isocket = 2000;
-static unsigned short osocket;
+static unsigned short iport = 2000;
+static unsigned short oport;
 static unsigned short block, prevblock;
+static int bcounter;
 static struct tftp_t tp, saved_tp;
 static int packetsize;
 static int buf_eof, buf_read;
@@ -58,9 +58,10 @@ buf_fill (int abort)
       struct tftp_t *tr;
   
 #ifdef CONGESTED
-      if (! await_reply (AWAIT_TFTP, isocket, NULL, block ? TFTP_REXMT : 0))
+      if (! await_reply (AWAIT_TFTP, iport, NULL,
+			 block ? TFTP_REXMT : TIMEOUT))
 #else
-      if (! await_reply (AWAIT_TFTP, isocket, NULL, 0))
+      if (! await_reply (AWAIT_TFTP, iport, NULL, TIMEOUT))
 #endif
 	{
 	  if (ip_abort)
@@ -74,7 +75,7 @@ buf_fill (int abort)
 #endif
 	      rfc951_sleep (retry);
 	      if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
-				  ++isocket, TFTP, len, (char *) &tp))
+				  ++iport, TFTP_PORT, len, &tp))
 		return 0;
 	      
 	      continue;
@@ -88,8 +89,8 @@ buf_fill (int abort)
 	      grub_printf ("<REXMT>\n");
 # endif
 	      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
-			    isocket, osocket,
-			    TFTP_MIN_PACKET, (char *) &tp);
+			    iport, oport,
+			    TFTP_MIN_PACKET, &tp);
 	      continue;
 	    }
 #endif
@@ -158,8 +159,8 @@ buf_fill (int abort)
 				       "RFC1782 error")
 			 + TFTP_MIN_PACKET + 1);
 		  udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
-				isocket, ntohs (tr->udp.src),
-				len, (char *) &tp);
+				iport, ntohs (tr->udp.src),
+				len, &tp);
 		  return 0;
 		}
 	      
@@ -195,20 +196,20 @@ buf_fill (int abort)
 	/* Neither TFTP_OACK nor TFTP_DATA.  */
 	break;
 
-      /* Block order.  */
-      if (block && (block != prevblock + 1))
+      if ((block || bcounter) && (block != prevblock + 1))
+	/* Block order should be continuous */
 	tp.u.ack.block = htons (block = prevblock);
       
       /* Should be continuous.  */
       tp.opcode = abort ? htons (TFTP_ERROR) : htons (TFTP_ACK);
-      osocket = ntohs (tr->udp.src);
+      oport = ntohs (tr->udp.src);
 
 #ifdef TFTP_DEBUG
       grub_printf ("ACK\n");
 #endif
       /* Ack.  */
-      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, isocket,
-		    osocket, TFTP_MIN_PACKET, (char *) &tp);
+      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, iport,
+		    oport, TFTP_MIN_PACKET, &tp);
       
       if (abort)
 	{
@@ -217,7 +218,7 @@ buf_fill (int abort)
 	}
 
       /* Retransmission or OACK.  */
-      if (block <= prevblock)
+      if ((unsigned short) (block - prevblock) != 1)
 	/* Don't process.  */
 	continue;
       
@@ -225,6 +226,10 @@ buf_fill (int abort)
       /* Is it the right place to zero the timer?  */
       retry = 0;
 
+      /* In GRUB, this variable doesn't play any important role at all,
+	 but use it for consistency with Etherboot.  */
+      bcounter++;
+      
       /* Copy the downloaded data to the buffer.  */
       grub_memmove (buf + buf_read, tr->u.data.download, len);
       buf_read += len;
@@ -246,18 +251,27 @@ send_rrq (void)
   block = 0;
   prevblock = 0;
   packetsize = TFTP_DEFAULTSIZE_PACKET;
+  bcounter = 0;
 
   buf = (char *) FSYS_BUF;
   buf_eof = 0;
   buf_read = 0;
   saved_filepos = 0;
 
+  /* Clear out the Rx queue first.  It contains nothing of interest,
+   * except possibly ARP requests from the DHCP/TFTP server.  We use
+   * polling throughout Etherboot, so some time may have passed since we
+   * last polled the receive queue, which may now be filled with
+   * broadcast packets.  This will cause the reply to the packets we are
+   * about to send to be lost immediately.  Not very clever.  */
+  await_reply (AWAIT_QDRAIN, 0, NULL, 0);
+  
 #ifdef TFTP_DEBUG
   grub_printf ("send_rrq ()\n");
 #endif
   /* Send the packet.  */
-  return udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++isocket, TFTP,
-		       len, (char *) &tp);
+  return udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++iport,
+		       TFTP_PORT, len, &tp);
 }
 
 /* Mount the network drive. If the drive is ready, return one, otherwise

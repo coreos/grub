@@ -6,13 +6,31 @@ Author: Martin Renters
 
 **************************************************************************/
 
+/* Enable GRUB-specific stuff.  */
+#define GRUB	1
+
+#ifdef GRUB
 /* Include GRUB-specific macros and prototypes here.  */
-#include <shared.h>
+# include <shared.h>
 
 /* FIXME: For now, enable the DHCP support. Perhaps I should segregate
    the DHCP support from the BOOTP support, and permit both to
    co-exist.  */
-#undef NO_DHCP_SUPPORT
+# undef NO_DHCP_SUPPORT
+
+/* In GRUB, the relocated address in Etherboot doesn't have any sense.
+   Just define it as a bogus value.  */
+# define RELOC	0
+
+/* Force to use the internal buffer.  */
+# define INTERNAL_BOOTP_DATA	1
+
+/* Likewise.  */
+# define USE_INTERNAL_BUFFER	1
+
+/* FIXME: Should be an option.  */
+# define BACKOFF_LIMIT	7
+#endif /* GRUB */
 
 #include "osdep.h"
 
@@ -29,37 +47,74 @@ Author: Martin Renters
 #define	TAGGED_IMAGE		/* choose at least one */
 #endif
 
-#if 0
-# define ESC		0x1B
-#else
+#ifdef GRUB
 # define CTRL_C		3
-#endif
+#else /* ! GRUB */
+# define ESC		0x1B
+#endif /* ! GRUB */
 
-#ifndef DEFAULT_BOOTFILE
+#ifndef	DEFAULT_BOOTFILE
 #define DEFAULT_BOOTFILE	"/tftpboot/kernel"
 #endif
 
-#ifndef MAX_TFTP_RETRIES
+/* Clean up console settings... mainly CONSOLE_CRT and CONSOLE_SERIAL are used
+ * in the sources (except start.S and serial.S which cannot include
+ * etherboot.h).  At least one of the CONSOLE_xxx has to be set, and
+ * CONSOLE_DUAL sets both CONSOLE_CRT and CONSOLE_SERIAL.  If none is set,
+ * CONSOLE_CRT is assumed.  */
+#ifdef	CONSOLE_DUAL
+#undef CONSOLE_CRT
+#define CONSOLE_CRT
+#undef CONSOLE_SERIAL
+#define CONSOLE_SERIAL
+#endif
+#if	defined(CONSOLE_CRT) && defined(CONSOLE_SERIAL)
+#undef CONSOLE_DUAL
+#define CONSOLE_DUAL
+#endif
+#if	!defined(CONSOLE_CRT) && !defined(CONSOLE_SERIAL)
+#define CONSOLE_CRT
+#endif
+
+#ifndef	DOWNLOAD_PROTO_NFS
+#undef DOWNLOAD_PROTO_TFTP
+#define DOWNLOAD_PROTO_TFTP	/* default booting protocol */
+#endif
+
+#ifdef	DOWNLOAD_PROTO_TFTP
+#define download(fname,loader) tftp((fname),(loader))
+#endif
+#ifdef	DOWNLOAD_PROTO_NFS
+#define download(fname,loader) nfs((fname),(loader))
+#endif
+
+#ifndef	MAX_TFTP_RETRIES
 #define MAX_TFTP_RETRIES	20
 #endif
 
-#ifndef MAX_BOOTP_RETRIES
+#ifndef	MAX_BOOTP_RETRIES
 #define MAX_BOOTP_RETRIES	20
 #endif
 
-#ifndef MAX_BOOTP_EXTLEN
-#if	defined(INTERNAL_BOOTP_DATA) || (RELOC >= 0x94200)
+#ifndef	MAX_BOOTP_EXTLEN
+#if	(RELOC < 0x94000)
+/* Force internal buffer (if external buffer would overlap with our code...) */
+#undef INTERNAL_BOOTP_DATA
+#define INTERNAL_BOOTP_DATA
+#endif
+/* sizeof(struct bootp_t) == 0x240 */
+#if	defined(INTERNAL_BOOTP_DATA) || (RELOC >= 0x94240)
 #define MAX_BOOTP_EXTLEN	1024
 #else
 #define MAX_BOOTP_EXTLEN	(1024-sizeof(struct bootp_t))
-#endif	/* INTERNAL_BOOTP_DATA || RELOC > 0x94200 */
+#endif
 #endif
 
-#ifndef MAX_ARP_RETRIES
+#ifndef	MAX_ARP_RETRIES
 #define MAX_ARP_RETRIES		20
 #endif
 
-#ifndef MAX_RPC_RETRIES
+#ifndef	MAX_RPC_RETRIES
 #define MAX_RPC_RETRIES		20
 #endif
 
@@ -74,7 +129,7 @@ Author: Martin Renters
 /* packet retransmission timeout in ticks */
 #define TFTP_REXMT		(3*TICKS_PER_SEC)
 
-#ifndef NULL
+#ifndef	NULL
 #define NULL	((void *)0)
 #endif
 
@@ -113,7 +168,8 @@ Author: Martin Renters
 
 #define BOOTP_SERVER	67
 #define BOOTP_CLIENT	68
-#define TFTP		69
+#define TFTP_PORT	69
+#define SUNRPC_PORT	111
 
 #define IP_UDP		17
 /* Same after going through htonl */
@@ -195,7 +251,9 @@ Author: Martin Renters
 
 #define RFC1533_VENDOR_MAGIC	128
 #define RFC1533_VENDOR_ADDPARM	129
-#define RFC1533_VENDOR_HOWTO    132		/* used by FreeBSD */
+#ifdef	IMAGE_FREEBSD
+#define RFC1533_VENDOR_HOWTO    132
+#endif
 #define RFC1533_VENDOR_MNUOPTS	160
 #define RFC1533_VENDOR_SELECTION 176
 #define RFC1533_VENDOR_MOTD	184
@@ -228,7 +286,9 @@ Author: Martin Renters
 #define AWAIT_ARP	0
 #define AWAIT_BOOTP	1
 #define AWAIT_TFTP	2
-#define AWAIT_RARP   3
+#define AWAIT_RARP	3
+#define AWAIT_RPC	4
+#define AWAIT_QDRAIN	5	/* drain queue, process ARP requests */
 
 typedef struct {
 	unsigned long	s_addr;
@@ -296,7 +356,7 @@ struct bootp_t {
 	char bp_vend[BOOTP_VENDOR_LEN];
 #else
 	char bp_vend[DHCP_OPT_LEN];
-#endif /* NO_DHCP_SUPPORT */
+#endif	/* NO_DHCP_SUPPORT */
 };
 
 struct bootpd_t {
@@ -329,6 +389,60 @@ struct tftp_t {
 
 #define TFTP_MIN_PACKET	(sizeof(struct iphdr) + sizeof(struct udphdr) + 4)
 
+struct rpc_t {
+	struct iphdr ip;
+	struct udphdr udp;
+	union {
+		char data[300];		/* longest RPC call must fit!!!! */
+		struct {
+			long id;
+			long type;
+			long rpcvers;
+			long prog;
+			long vers;
+			long proc;
+			long data[1];
+		} call;
+		struct {
+			long id;
+			long type;
+			long rstatus;
+			long verifier;
+			long v2;
+			long astatus;
+			long data[1];
+		} reply;
+	} u;
+};
+
+#define PROG_PORTMAP	100000
+#define PROG_NFS	100003
+#define PROG_MOUNT	100005
+
+#define MSG_CALL	0
+#define MSG_REPLY	1
+
+#define PORTMAP_GETPORT	3
+
+#define MOUNT_ADDENTRY	1
+#define MOUNT_UMOUNTALL	4
+
+#define NFS_LOOKUP	4
+#define NFS_READ	6
+
+#define NFS_FHSIZE	32
+
+#define NFSERR_PERM	1
+#define NFSERR_NOENT	2
+#define NFSERR_ACCES	13
+
+/* Block size used for NFS read accesses.  A RPC reply packet (including  all
+ * headers) must fit within a single Ethernet frame to avoid fragmentation.
+ * Chosen to be a power of two, as most NFS servers are optimized for this.  */
+#define NFS_READ_SIZE	1024
+
+#define	FLOPPY_BOOT_LOCATION	0x7c00
+
 #define	ROM_INFO_LOCATION	0x7dfa
 /* at end of floppy boot block */
 
@@ -338,30 +452,45 @@ struct rom_info {
 };
 
 /***************************************************************************
-extern int rarp P((void));
 External prototypes
 ***************************************************************************/
 /* main.c */
-extern void print_network_configuration (void);
+#ifdef GRUB
+extern void print_network_configuration P((void));
+#endif /* GRUB */
 
-#if 0
+#ifndef GRUB
 extern void print_bytes P((unsigned char *bytes, int len));
 extern void load P((void));
 extern int load_linux P((int root_mount_port,int swap_mount_port,
 	int root_nfs_port,char *kernel_handle));
-extern int tftpkernel P((unsigned char *, int, int, int));
+extern int downloadkernel P((unsigned char *, int, int, int));
 extern int tftp P((char *name, int (*)(unsigned char *, int, int, int)));
-#endif
+extern void rpc_init(void);
+extern int nfs P((const char *name, int (*)(unsigned char *, int, int, int)));
+extern void nfs_umountall P((int));
+#endif /* ! GRUB */
 extern int bootp P((void));
 extern int rarp P((void));
 extern int udp_transmit P((unsigned long destip, unsigned int srcsock,
-	unsigned int destsock, int len, char *buf));
-extern int await_reply P((int type, int ival, char *ptr, int timeout));
+	unsigned int destsock, int len, const void *buf));
+
+extern int await_reply P((int type, int ival, void *ptr, int timeout));
 extern int decode_rfc1533 P((unsigned char *, int, int, int));
 extern unsigned short ipchksum P((unsigned short *, int len));
 extern void rfc951_sleep P((int));
+extern void cleanup_net P((void));
+extern void cleanup P((void));
 
-#if 0
+/* config.c */
+extern void print_config(void);
+extern void eth_reset(void);
+extern int eth_probe(void);
+extern int eth_poll(void);
+extern void eth_transmit(const char *d, unsigned int t, unsigned int s, const void *p);
+extern void eth_disable(void);
+
+#ifndef GRUB
 /* bootmenu.c */
 extern int execute P((char *string));
 extern void bootmenu P((int));
@@ -374,49 +503,53 @@ extern void selectImage P((char **));
 #if	defined(AOUT_IMAGE) || defined(ELF_IMAGE)
 extern int howto;
 #endif
-extern int os_tftp P((unsigned int block,unsigned char *data,int len));
-#endif
+extern int os_download P((unsigned int, unsigned char *,unsigned int));
+#endif /* ! GRUB */
 
 /* misc.c */
 extern void twiddle P((void));
 extern void sleep P((int secs));
-#if 0
+#ifndef GRUB
 extern int strcasecmp P((char *a, char *b));
 extern char *substr P((char *a, char *b));
-#endif
+#endif /* ! GRUB */
 extern int getdec P((char **));
-#if 0
-extern void printf();		/* old style to avoid varargs */
-extern char *sprintf();
-extern int inet_ntoa P((char *p, in_addr *i));
-extern void gateA20 P((void));
+#ifndef GRUB
+extern void printf P((const char *, ...));
+extern char *sprintf P((char *, const char *, ...));
+extern int inet_aton P((char *p, in_addr *i));
+extern void gateA20_set P((void));
+extern void gateA20_unset P((void));
 extern void putchar P((int));
-extern int getchar ();  
-extern int iskey P((void));     
+extern int getchar P((void));
+extern int iskey P((void));
 
 /* start*.S */
 extern int getc P((void));
-extern void putc P((int));      
+extern void putc P((int));
 extern int ischar P((void));
 extern int getshift P((void));
-extern unsigned short memsize P((void));
+extern unsigned int memsize P((void));
+extern unsigned short basememsize P((void));
 extern void disk_init P((void));
 extern unsigned int disk_read P((int drv,int c,int h,int s,char *buf));
 extern void xstart P((unsigned long, unsigned long, char *));
-extern long currticks P((void));
+extern unsigned long currticks P((void));
 extern int setjmp P((void *jmpbuf));
 extern void longjmp P((void *jmpbuf, int where));
 extern void exit P((int status));
+extern void slowdownio P((void));
 
 /* serial.S */
 extern int serial_getc P((void));
 extern void serial_putc P((int));
 extern int serial_ischar P((void));
-extern void serial_init P((void));
+extern int serial_init P((void));
 
 /* ansiesc.c */
 extern void ansi_reset P((void));
 extern void enable_cursor P((int));
+extern void handleansi P((unsigned char));
 
 /* md5.c */
 extern void md5_put P((unsigned int ch));
@@ -424,53 +557,58 @@ extern void md5_done P((unsigned char *buf));
 
 /* floppy.c */
 extern int bootdisk P((int dev,int part));
-#endif
+#endif /* ! GRUB */
 
 /***************************************************************************
 External variables
 ***************************************************************************/
 /* main.c */
+#ifdef GRUB
 extern int ip_abort;
 extern int network_ready;
-#if 0
-extern char *kernel;
-extern char kernel_buf[];
-#endif
+#endif /* GRUB */
+
+#ifndef GRUB
+extern const char *kernel;
+extern char kernel_buf[128];
+#endif /* ! GRUB */
 extern struct rom_info rom;
-#if 0
+#ifndef GRUB
 extern int hostnamelen;
 extern unsigned long netmask;
-extern int    jmp_bootmenu[10];
-extern char   kernel_buf[128];
-#endif
+extern int jmp_bootmenu[10];
+#endif /* ! GRUB */
 extern struct arptable_t arptable[MAX_ARP];
-#if 0
-extern char   *imagelist[RFC1533_VENDOR_NUMOFIMG];
-extern char   *motd[RFC1533_VENDOR_NUMOFMOTD];
-extern int    menutmo,menudefault;
-extern struct bootpd_t bootp_data;
+#ifndef GRUB
+#ifdef	IMAGE_MENU
+extern char *motd[RFC1533_VENDOR_NUMOFMOTD];
+extern int menutmo,menudefault;
+extern unsigned char *defparams;
+extern int defparams_max;
 #endif
-#ifdef	ETHERBOOT32
-#define INTERNAL_BOOTP_DATA	1
-#ifdef	INTERNAL_BOOTP_DATA
-#define	BOOTP_DATA_ADDR	(&bootp_data)
-#else
+#endif /* ! GRUB */
+#if	defined(ETHERBOOT32) && !defined(INTERNAL_BOOTP_DATA)
 #define	BOOTP_DATA_ADDR	((struct bootpd_t *)0x93C00)
-#endif	/* INTERNAL_BOOTP_DATA */
-#endif
-#ifdef	ETHERBOOT16
+#else
+extern struct bootpd_t bootp_data;
 #define	BOOTP_DATA_ADDR	(&bootp_data)
 #endif
 extern unsigned char *end_of_rfc1533;
+#ifdef	IMAGE_FREEBSD
+extern int freebsd_howto;
+#endif
+
+/* config.c */
+extern struct nic nic;
 
 /* bootmenu.c */
 
 /* osloader.c */
 
-#if 0
+#ifndef GRUB
 /* created by linker */
-extern char _edata[], _end[];
-#endif
+extern char _start[], _edata[], _end[];
+#endif /* ! GRUB */
 
 /*
  * Local variables:

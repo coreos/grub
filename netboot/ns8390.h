@@ -17,7 +17,7 @@ Western Digital/SMC Board Definitions
 **************************************************************************/
 #define WD_LOW_BASE	0x200
 #define WD_HIGH_BASE	0x3e0
-#ifndef WD_DEFAULT_MEM
+#ifndef	WD_DEFAULT_MEM
 #define WD_DEFAULT_MEM	0xD0000
 #endif
 #define WD_NIC_ADDR	0x10
@@ -67,7 +67,7 @@ Western Digital/SMC Board Types
 3com 3c503 definitions
 **************************************************************************/
 
-#ifndef _3COM_BASE
+#ifndef	_3COM_BASE
 #define _3COM_BASE 0x300
 #endif
 

@@ -1,3 +1,6 @@
+#ifndef	PCI_H
+#define PCI_H
+
 /*
 ** Support for NE2000 PCI clones added David Monro June 1997
 ** Generalised for other PCI NICs by Ken Yap July 1997
@@ -63,10 +66,10 @@
 #define BIOS32_SIGNATURE        (('_' << 0) + ('3' << 8) + ('2' << 16) + ('_' << 24))
 
 /* PCI signature: "PCI " */
-#define PCI_SIGNATURE           (('P' << 0) + ('C' << 8) + ('I' << 16) + (' ' << 24))                                
- 
-/* PCI service signature: "$PCI" */                       
-#define PCI_SERVICE             (('$' << 0) + ('P' << 8) + ('C' << 16) + ('I' << 24))                    
+#define PCI_SIGNATURE           (('P' << 0) + ('C' << 8) + ('I' << 16) + (' ' << 24))
+
+/* PCI service signature: "$PCI" */
+#define PCI_SERVICE             (('$' << 0) + ('P' << 8) + ('C' << 16) + ('I' << 24))
 
 union bios32 {
 	struct {
@@ -121,7 +124,7 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 #define PCI_DEVICE_ID_DEC_TULIP_PLUS	0x0014
 #define PCI_DEVICE_ID_DEC_21142		0x0019
 #define PCI_VENDOR_ID_SMC		0x10B8
-#ifndef PCI_DEVICE_ID_SMC_EPIC100
+#ifndef	PCI_DEVICE_ID_SMC_EPIC100
 # define PCI_DEVICE_ID_SMC_EPIC100	0x0005
 #endif
 #define PCI_VENDOR_ID_MACRONIX		0x10d9
@@ -134,7 +137,7 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 
 struct pci_device {
 	unsigned short	vendor, dev_id;
-	char		*name;
+	const char	*name;
 	unsigned int	membase;
 	unsigned short	ioaddr;
 	unsigned short	devfn;
@@ -148,3 +151,5 @@ extern int pcibios_read_config_word(unsigned char bus, unsigned char device_fn, 
 extern int pcibios_write_config_word (unsigned char bus, unsigned char device_fn, unsigned char where, unsigned short value);
 extern int pcibios_write_config_dword(unsigned char bus,
 	unsigned char device_fn, unsigned char where, unsigned int value);
+
+#endif	/* PCI_H */

@@ -16,8 +16,6 @@
 	This driver is designed for the VIA VT86C100A Rhine-II PCI Fast Ethernet
 	controller.
 
-	TODO: Some block comments are C++ style. Can get away with it
-	with gcc, but not nice.
 */
 
 static const char *version = "rhine.c v1.0.0 2000-01-07\n";
@@ -48,370 +46,371 @@ static const char *version = "rhine.c v1.0.0 2000-01-07\n";
 #include "etherboot.h"
 #include "nic.h"
 #include "pci.h"
+#include "cards.h"
 
 /* define all ioaddr */
 
-#define byPAR0                       ioaddr
-#define byRCR                        ioaddr + 6
-#define byTCR                        ioaddr + 7
-#define byCR0                        ioaddr + 8
-#define byCR1                        ioaddr + 9
-#define byISR0                       ioaddr + 0x0c
-#define byISR1                       ioaddr + 0x0d
-#define byIMR0                       ioaddr + 0x0e
-#define byIMR1                       ioaddr + 0x0f
-#define byMAR0                       ioaddr + 0x10
-#define byMAR1                       ioaddr + 0x11
-#define byMAR2                       ioaddr + 0x12
-#define byMAR3                       ioaddr + 0x13
-#define byMAR4                       ioaddr + 0x14
-#define byMAR5                       ioaddr + 0x15
-#define byMAR6                       ioaddr + 0x16
-#define byMAR7                       ioaddr + 0x17
-#define dwCurrentRxDescAddr          ioaddr + 0x18
-#define dwCurrentTxDescAddr          ioaddr + 0x1c
-#define dwCurrentRDSE0               ioaddr + 0x20
-#define dwCurrentRDSE1               ioaddr + 0x24
-#define dwCurrentRDSE2               ioaddr + 0x28
-#define dwCurrentRDSE3               ioaddr + 0x2c
-#define dwNextRDSE0                  ioaddr + 0x30
-#define dwNextRDSE1                  ioaddr + 0x34
-#define dwNextRDSE2                  ioaddr + 0x38
-#define dwNextRDSE3                  ioaddr + 0x3c
-#define dwCurrentTDSE0               ioaddr + 0x40
-#define dwCurrentTDSE1               ioaddr + 0x44
-#define dwCurrentTDSE2               ioaddr + 0x48
-#define dwCurrentTDSE3               ioaddr + 0x4c
-#define dwNextTDSE0                  ioaddr + 0x50
-#define dwNextTDSE1                  ioaddr + 0x54
-#define dwNextTDSE2                  ioaddr + 0x58
-#define dwNextTDSE3                  ioaddr + 0x5c
-#define dwCurrRxDMAPtr               ioaddr + 0x60
-#define dwCurrTxDMAPtr               ioaddr + 0x64
-#define byMPHY                       ioaddr + 0x6c
-#define byMIISR                      ioaddr + 0x6d
-#define byBCR0                       ioaddr + 0x6e
-#define byBCR1                       ioaddr + 0x6f
-#define byMIICR                      ioaddr + 0x70
-#define byMIIAD                      ioaddr + 0x71
-#define wMIIDATA                     ioaddr + 0x72
-#define byEECSR                      ioaddr + 0x74
-#define byTEST                       ioaddr + 0x75
-#define byGPIO                       ioaddr + 0x76
-#define byCFGA                       ioaddr + 0x78
-#define byCFGB                       ioaddr + 0x79
-#define byCFGC                       ioaddr + 0x7a
-#define byCFGD                       ioaddr + 0x7b
-#define wTallyCntMPA                 ioaddr + 0x7c
-#define wTallyCntCRC                 ioaddr + 0x7d
+#define byPAR0				ioaddr
+#define byRCR				ioaddr + 6
+#define byTCR				ioaddr + 7
+#define byCR0				ioaddr + 8
+#define byCR1				ioaddr + 9
+#define byISR0				ioaddr + 0x0c
+#define byISR1				ioaddr + 0x0d
+#define byIMR0				ioaddr + 0x0e
+#define byIMR1				ioaddr + 0x0f
+#define byMAR0				ioaddr + 0x10
+#define byMAR1				ioaddr + 0x11
+#define byMAR2				ioaddr + 0x12
+#define byMAR3				ioaddr + 0x13
+#define byMAR4				ioaddr + 0x14
+#define byMAR5				ioaddr + 0x15
+#define byMAR6				ioaddr + 0x16
+#define byMAR7				ioaddr + 0x17
+#define dwCurrentRxDescAddr		ioaddr + 0x18
+#define dwCurrentTxDescAddr		ioaddr + 0x1c
+#define dwCurrentRDSE0			ioaddr + 0x20
+#define dwCurrentRDSE1			ioaddr + 0x24
+#define dwCurrentRDSE2			ioaddr + 0x28
+#define dwCurrentRDSE3			ioaddr + 0x2c
+#define dwNextRDSE0			ioaddr + 0x30
+#define dwNextRDSE1			ioaddr + 0x34
+#define dwNextRDSE2			ioaddr + 0x38
+#define dwNextRDSE3			ioaddr + 0x3c
+#define dwCurrentTDSE0			ioaddr + 0x40
+#define dwCurrentTDSE1			ioaddr + 0x44
+#define dwCurrentTDSE2			ioaddr + 0x48
+#define dwCurrentTDSE3			ioaddr + 0x4c
+#define dwNextTDSE0			ioaddr + 0x50
+#define dwNextTDSE1			ioaddr + 0x54
+#define dwNextTDSE2			ioaddr + 0x58
+#define dwNextTDSE3			ioaddr + 0x5c
+#define dwCurrRxDMAPtr			ioaddr + 0x60
+#define dwCurrTxDMAPtr			ioaddr + 0x64
+#define byMPHY				ioaddr + 0x6c
+#define byMIISR				ioaddr + 0x6d
+#define byBCR0				ioaddr + 0x6e
+#define byBCR1				ioaddr + 0x6f
+#define byMIICR				ioaddr + 0x70
+#define byMIIAD				ioaddr + 0x71
+#define wMIIDATA			ioaddr + 0x72
+#define byEECSR				ioaddr + 0x74
+#define byTEST				ioaddr + 0x75
+#define byGPIO				ioaddr + 0x76
+#define byCFGA				ioaddr + 0x78
+#define byCFGB				ioaddr + 0x79
+#define byCFGC				ioaddr + 0x7a
+#define byCFGD				ioaddr + 0x7b
+#define wTallyCntMPA			ioaddr + 0x7c
+#define wTallyCntCRC			ioaddr + 0x7d
 /*---------------------  Exioaddr Definitions -------------------------*/
 
-//
-// Bits in the RCR register
-//
+/*
+ * Bits in the RCR register
+ */
 
-#define RCR_RRFT2           0x80	//
-#define RCR_RRFT1           0x40	//
-#define RCR_RRFT0           0x20	//
-#define RCR_PROM            0x10	//
-#define RCR_AB              0x08	//
-#define RCR_AM              0x04	//
-#define RCR_AR              0x02	//
-#define RCR_SEP             0x01	//
+#define RCR_RRFT2		0x80
+#define RCR_RRFT1		0x40
+#define RCR_RRFT0		0x20
+#define RCR_PROM		0x10
+#define RCR_AB			0x08
+#define RCR_AM			0x04
+#define RCR_AR			0x02
+#define RCR_SEP			0x01
 
-//
-// Bits in the TCR register
-//
+/*
+ * Bits in the TCR register
+ */
 
-#define TCR_RTSF            0x80	//
-#define TCR_RTFT1           0x40	//
-#define TCR_RTFT0           0x20	//
-#define TCR_OFSET           0x08	//
-#define TCR_LB1             0x04	// loopback[1]
-#define TCR_LB0             0x02	// loopback[0]
+#define TCR_RTSF		0x80
+#define TCR_RTFT1		0x40
+#define TCR_RTFT0		0x20
+#define TCR_OFSET		0x08
+#define TCR_LB1			0x04	/* loopback[1] */
+#define TCR_LB0			0x02	/* loopback[0] */
 
-//
-// Bits in the CR0 register
-//
+/*
+ * Bits in the CR0 register
+ */
 
-#define CR0_RDMD            0x40	// rx descriptor polling demand
-#define CR0_TDMD            0x20	// tx descriptor polling demand
-#define CR0_TXON            0x10	//
-#define CR0_RXON            0x08	//
-#define CR0_STOP            0x04	// stop NIC, default = 1
-#define CR0_STRT            0x02	// start NIC
-#define CR0_INIT            0x01	// start init process
+#define CR0_RDMD		0x40	/* rx descriptor polling demand */
+#define CR0_TDMD		0x20	/* tx descriptor polling demand */
+#define CR0_TXON		0x10
+#define CR0_RXON		0x08
+#define CR0_STOP		0x04	/* stop NIC, default = 1 */
+#define CR0_STRT		0x02	/* start NIC */
+#define CR0_INIT		0x01	/* start init process */
 
 
-//
-// Bits in the CR1 register
-//
+/*
+ * Bits in the CR1 register
+ */
 
-#define CR1_SFRST           0x80	// software reset
-#define CR1_RDMD1           0x40	// RDMD1
-#define CR1_TDMD1           0x20	// TDMD1
-#define CR1_KEYPAG          0x10	// turn on par/key
-#define CR1_DPOLL           0x08	// disable rx/tx auto polling
-#define CR1_FDX             0x04	// full duplex mode
-#define CR1_ETEN            0x02	// early tx mode
-#define CR1_EREN            0x01	// early rx mode
+#define CR1_SFRST		0x80	/* software reset */
+#define CR1_RDMD1		0x40	/* RDMD1 */
+#define CR1_TDMD1		0x20	/* TDMD1 */
+#define CR1_KEYPAG		0x10	/* turn on par/key */
+#define CR1_DPOLL		0x08	/* disable rx/tx auto polling */
+#define CR1_FDX			0x04	/* full duplex mode */
+#define CR1_ETEN		0x02	/* early tx mode */
+#define CR1_EREN		0x01	/* early rx mode */
 
-//
-// Bits in the CR register
-//
+/*
+ * Bits in the CR register
+ */
 
-#define CR_RDMD            0x0040	// rx descriptor polling demand
-#define CR_TDMD            0x0020	// tx descriptor polling demand
-#define CR_TXON            0x0010	//
-#define CR_RXON            0x0008	//
-#define CR_STOP            0x0004	// stop NIC, default = 1
-#define CR_STRT            0x0002	// start NIC
-#define CR_INIT            0x0001	// start init process
-#define CR_SFRST           0x8000	// software reset
-#define CR_RDMD1           0x4000	// RDMD1
-#define CR_TDMD1           0x2000	// TDMD1
-#define CR_KEYPAG          0x1000	// turn on par/key
-#define CR_DPOLL           0x0800	// disable rx/tx auto polling
-#define CR_FDX             0x0400	// full duplex mode
-#define CR_ETEN            0x0200	// early tx mode
-#define CR_EREN            0x0100	// early rx mode
+#define CR_RDMD			0x0040	/* rx descriptor polling demand */
+#define CR_TDMD			0x0020	/* tx descriptor polling demand */
+#define CR_TXON			0x0010
+#define CR_RXON			0x0008
+#define CR_STOP			0x0004	/* stop NIC, default = 1 */
+#define CR_STRT			0x0002	/* start NIC */
+#define CR_INIT			0x0001	/* start init process */
+#define CR_SFRST		0x8000	/* software reset */
+#define CR_RDMD1		0x4000	/* RDMD1 */
+#define CR_TDMD1		0x2000	/* TDMD1 */
+#define CR_KEYPAG		0x1000	/* turn on par/key */
+#define CR_DPOLL		0x0800	/* disable rx/tx auto polling */
+#define CR_FDX			0x0400	/* full duplex mode */
+#define CR_ETEN			0x0200	/* early tx mode */
+#define CR_EREN			0x0100	/* early rx mode */
 
-//
-// Bits in the IMR0 register
-//
+/*
+ * Bits in the IMR0 register
+ */
 
-#define IMR0_CNTM           0x80	//
-#define IMR0_BEM            0x40	//
-#define IMR0_RUM            0x20	//
-#define IMR0_TUM            0x10	//
-#define IMR0_TXEM           0x08	//
-#define IMR0_RXEM           0x04	//
-#define IMR0_PTXM           0x02	//
-#define IMR0_PRXM           0x01	//
+#define IMR0_CNTM		0x80
+#define IMR0_BEM		0x40
+#define IMR0_RUM		0x20
+#define IMR0_TUM		0x10
+#define IMR0_TXEM		0x08
+#define IMR0_RXEM		0x04
+#define IMR0_PTXM		0x02
+#define IMR0_PRXM		0x01
 
-// define imrshadow
+/* define imrshadow */
 
-#define IMRShadow         0x5AFF
+#define IMRShadow		0x5AFF
 
-//
-// Bits in the IMR1 register
-//
+/*
+ * Bits in the IMR1 register
+ */
 
-#define IMR1_INITM          0x80	//
-#define IMR1_SRCM           0x40	//
-#define IMR1_NBFM           0x10	//
-#define IMR1_PRAIM          0x08	//
-#define IMR1_RES0M          0x04	//
-#define IMR1_ETM            0x02	//
-#define IMR1_ERM            0x01	//
+#define IMR1_INITM		0x80
+#define IMR1_SRCM		0x40
+#define IMR1_NBFM		0x10
+#define IMR1_PRAIM		0x08
+#define IMR1_RES0M		0x04
+#define IMR1_ETM		0x02
+#define IMR1_ERM		0x01
 
-//
-// Bits in the ISR register
-//
+/*
+ * Bits in the ISR register
+ */
 
-#define ISR_INITI           0x8000	//
-#define ISR_SRCI            0x4000	//
-#define ISR_ABTI            0x2000	//
-#define ISR_NORBF           0x1000	//
-#define ISR_PKTRA           0x0800	//
-#define ISR_RES0            0x0400	//
-#define ISR_ETI             0x0200	//
-#define ISR_ERI             0x0100	//
-#define ISR_CNT             0x0080	//
-#define ISR_BE              0x0040	//
-#define ISR_RU              0x0020	//
-#define ISR_TU              0x0010	//
-#define ISR_TXE             0x0008	//
-#define ISR_RXE             0x0004	//
-#define ISR_PTX             0x0002	//
-#define ISR_PRX             0x0001	//
+#define ISR_INITI		0x8000
+#define ISR_SRCI		0x4000
+#define ISR_ABTI		0x2000
+#define ISR_NORBF		0x1000
+#define ISR_PKTRA		0x0800
+#define ISR_RES0		0x0400
+#define ISR_ETI			0x0200
+#define ISR_ERI			0x0100
+#define ISR_CNT			0x0080
+#define ISR_BE			0x0040
+#define ISR_RU			0x0020
+#define ISR_TU			0x0010
+#define ISR_TXE			0x0008
+#define ISR_RXE			0x0004
+#define ISR_PTX			0x0002
+#define ISR_PRX			0x0001
 
-//
-// Bits in the ISR0 register
-//
+/*
+ * Bits in the ISR0 register
+ */
 
-#define ISR0_CNT            0x80	//
-#define ISR0_BE             0x40	//
-#define ISR0_RU             0x20	//
-#define ISR0_TU             0x10	//
-#define ISR0_TXE            0x08	//
-#define ISR0_RXE            0x04	//
-#define ISR0_PTX            0x02	//
-#define ISR0_PRX            0x01	//
+#define ISR0_CNT		0x80
+#define ISR0_BE			0x40
+#define ISR0_RU			0x20
+#define ISR0_TU			0x10
+#define ISR0_TXE		0x08
+#define ISR0_RXE		0x04
+#define ISR0_PTX		0x02
+#define ISR0_PRX		0x01
 
-//
-// Bits in the ISR1 register
-//
+/*
+ * Bits in the ISR1 register
+ */
 
-#define ISR1_INITI          0x80	//
-#define ISR1_SRCI           0x40	//
-#define ISR1_NORBF          0x10	//
-#define ISR1_PKTRA          0x08	//
-#define ISR1_ETI            0x02	//
-#define ISR1_ERI            0x01	//
+#define ISR1_INITI		0x80
+#define ISR1_SRCI		0x40
+#define ISR1_NORBF		0x10
+#define ISR1_PKTRA		0x08
+#define ISR1_ETI		0x02
+#define ISR1_ERI		0x01
 
-// ISR ABNORMAL CONDITION
+/* ISR ABNORMAL CONDITION */
 
 #define ISR_ABNORMAL ISR_BE+ISR_RU+ISR_TU+ISR_CNT+ISR_NORBF+ISR_PKTRA
 
-//
-// Bits in the MIISR register
-//
+/*
+ * Bits in the MIISR register
+ */
 
-#define MIISR_MIIERR        0x08	//
-#define MIISR_MRERR         0x04	//
-#define MIISR_LNKFL         0x02	//
-#define MIISR_SPEED         0x01	//
+#define MIISR_MIIERR		0x08
+#define MIISR_MRERR		0x04
+#define MIISR_LNKFL		0x02
+#define MIISR_SPEED		0x01
 
-//
-// Bits in the MIICR register
-//
+/*
+ * Bits in the MIICR register
+ */
 
-#define MIICR_MAUTO         0x80	//
-#define MIICR_RCMD          0x40	//
-#define MIICR_WCMD          0x20	//
-#define MIICR_MDPM          0x10	//
-#define MIICR_MOUT          0x08	//
-#define MIICR_MDO           0x04	//
-#define MIICR_MDI           0x02	//
-#define MIICR_MDC           0x01	//
+#define MIICR_MAUTO		0x80
+#define MIICR_RCMD		0x40
+#define MIICR_WCMD		0x20
+#define MIICR_MDPM		0x10
+#define MIICR_MOUT		0x08
+#define MIICR_MDO		0x04
+#define MIICR_MDI		0x02
+#define MIICR_MDC		0x01
 
-//
-// Bits in the EECSR register
-//
+/*
+ * Bits in the EECSR register
+ */
 
-#define EECSR_EEPR          0x80	// eeprom programed status, 73h means programed
-#define EECSR_EMBP          0x40	// eeprom embeded programming
-#define EECSR_AUTOLD        0x20	// eeprom content reload
-#define EECSR_DPM           0x10	// eeprom direct programming
-#define EECSR_CS            0x08	// eeprom CS pin
-#define EECSR_SK            0x04	// eeprom SK pin
-#define EECSR_DI            0x02	// eeprom DI pin
-#define EECSR_DO            0x01	// eeprom DO pin
+#define EECSR_EEPR		0x80	/* eeprom programed status, 73h means programed */
+#define EECSR_EMBP		0x40	/* eeprom embeded programming */
+#define EECSR_AUTOLD		0x20	/* eeprom content reload */
+#define EECSR_DPM		0x10	/* eeprom direct programming */
+#define EECSR_CS		0x08	/* eeprom CS pin */
+#define EECSR_SK		0x04	/* eeprom SK pin */
+#define EECSR_DI		0x02	/* eeprom DI pin */
+#define EECSR_DO		0x01	/* eeprom DO pin */
 
-//
-// Bits in the BCR0 register
-//
+/*
+ * Bits in the BCR0 register
+ */
 
-#define BCR0_CRFT2          0x20	//
-#define BCR0_CRFT1          0x10	//
-#define BCR0_CRFT0          0x08	//
-#define BCR0_DMAL2          0x04	//
-#define BCR0_DMAL1          0x02	//
-#define BCR0_DMAL0          0x01	//
+#define BCR0_CRFT2		0x20
+#define BCR0_CRFT1		0x10
+#define BCR0_CRFT0		0x08
+#define BCR0_DMAL2		0x04
+#define BCR0_DMAL1		0x02
+#define BCR0_DMAL0		0x01
 
-//
-// Bits in the BCR1 register
-//
+/*
+ * Bits in the BCR1 register
+ */
 
-#define BCR1_CTSF           0x20	//
-#define BCR1_CTFT1          0x10	//
-#define BCR1_CTFT0          0x08	//
-#define BCR1_POT2           0x04	//
-#define BCR1_POT1           0x02	//
-#define BCR1_POT0           0x01	//
+#define BCR1_CTSF		0x20
+#define BCR1_CTFT1		0x10
+#define BCR1_CTFT0		0x08
+#define BCR1_POT2		0x04
+#define BCR1_POT1		0x02
+#define BCR1_POT0		0x01
 
-//
-// Bits in the CFGA register
-//
+/*
+ * Bits in the CFGA register
+ */
 
-#define CFGA_EELOAD         0x80	// enable eeprom embeded and direct programming
-#define CFGA_JUMPER         0x40	//
-#define CFGA_MTGPIO         0x08	//
-#define CFGA_T10EN          0x02	//
-#define CFGA_AUTO           0x01	//
+#define CFGA_EELOAD		0x80	/* enable eeprom embeded and direct programming */
+#define CFGA_JUMPER		0x40
+#define CFGA_MTGPIO		0x08
+#define CFGA_T10EN		0x02
+#define CFGA_AUTO		0x01
 
-//
-// Bits in the CFGB register
-//
+/*
+ * Bits in the CFGB register
+ */
 
-#define CFGB_PD             0x80	//
-#define CFGB_POLEN          0x02	//
-#define CFGB_LNKEN          0x01	//
+#define CFGB_PD			0x80
+#define CFGB_POLEN		0x02
+#define CFGB_LNKEN		0x01
 
-//
-// Bits in the CFGC register
-//
+/*
+ * Bits in the CFGC register
+ */
 
-#define CFGC_M10TIO         0x80	//
-#define CFGC_M10POL         0x40	//
-#define CFGC_PHY1           0x20	//
-#define CFGC_PHY0           0x10	//
-#define CFGC_BTSEL          0x08	//
-#define CFGC_BPS2           0x04	// bootrom select[2]
-#define CFGC_BPS1           0x02	// bootrom select[1]
-#define CFGC_BPS0           0x01	// bootrom select[0]
+#define CFGC_M10TIO		0x80
+#define CFGC_M10POL		0x40
+#define CFGC_PHY1		0x20
+#define CFGC_PHY0		0x10
+#define CFGC_BTSEL		0x08
+#define CFGC_BPS2		0x04	/* bootrom select[2] */
+#define CFGC_BPS1		0x02	/* bootrom select[1] */
+#define CFGC_BPS0		0x01	/* bootrom select[0] */
 
-//
-// Bits in the CFGD register
-//
+/*
+ * Bits in the CFGD register
+ */
 
-#define CFGD_GPIOEN         0x80	//
-#define CFGD_DIAG           0x40	//
-#define CFGD_MAGIC          0x10	//
-#define CFGD_CFDX           0x04	//
-#define CFGD_CEREN          0x02	//
-#define CFGD_CETEN          0x01	//
+#define CFGD_GPIOEN		0x80
+#define CFGD_DIAG		0x40
+#define CFGD_MAGIC		0x10
+#define CFGD_CFDX		0x04
+#define CFGD_CEREN		0x02
+#define CFGD_CETEN		0x01
 
-// Bits in RSR
-#define RSR_RERR            0x00000001
-#define RSR_CRC             0x00000002
-#define RSR_FAE             0x00000004
-#define RSR_FOV             0x00000008
-#define RSR_LONG            0x00000010
-#define RSR_RUNT            0x00000020
-#define RSR_SERR            0x00000040
-#define RSR_BUFF            0x00000080
-#define RSR_EDP             0x00000100
-#define RSR_STP             0x00000200
-#define RSR_CHN             0x00000400
-#define RSR_PHY             0x00000800
-#define RSR_BAR             0x00001000
-#define RSR_MAR             0x00002000
-#define RSR_RXOK            0x00008000
-#define RSR_ABNORMAL        RSR_RERR+RSR_LONG+RSR_RUNT
+/* Bits in RSR */
+#define RSR_RERR		0x00000001
+#define RSR_CRC			0x00000002
+#define RSR_FAE			0x00000004
+#define RSR_FOV			0x00000008
+#define RSR_LONG		0x00000010
+#define RSR_RUNT		0x00000020
+#define RSR_SERR		0x00000040
+#define RSR_BUFF		0x00000080
+#define RSR_EDP			0x00000100
+#define RSR_STP			0x00000200
+#define RSR_CHN			0x00000400
+#define RSR_PHY			0x00000800
+#define RSR_BAR			0x00001000
+#define RSR_MAR			0x00002000
+#define RSR_RXOK		0x00008000
+#define RSR_ABNORMAL		RSR_RERR+RSR_LONG+RSR_RUNT
 
-//Bits in TSR
-#define TSR_NCR0            0x00000001
-#define TSR_NCR1            0x00000002
-#define TSR_NCR2            0x00000004
-#define TSR_NCR3            0x00000008
-#define TSR_COLS            0x00000010
-#define TSR_CDH             0x00000080
-#define TSR_ABT             0x00000100
-#define TSR_OWC             0x00000200
-#define TSR_CRS             0x00000400
-#define TSR_UDF             0x00000800
-#define TSR_TBUFF           0x00001000
-#define TSR_SERR            0x00002000
-#define TSR_JAB             0x00004000
-#define TSR_TERR            0x00008000
-#define TSR_ABNORMAL        TSR_TERR+TSR_OWC+TSR_ABT+TSR_JAB+TSR_CRS
-#define TSR_OWN_BIT         0x80000000
+/* Bits in TSR */
+#define TSR_NCR0		0x00000001
+#define TSR_NCR1		0x00000002
+#define TSR_NCR2		0x00000004
+#define TSR_NCR3		0x00000008
+#define TSR_COLS		0x00000010
+#define TSR_CDH			0x00000080
+#define TSR_ABT			0x00000100
+#define TSR_OWC			0x00000200
+#define TSR_CRS			0x00000400
+#define TSR_UDF			0x00000800
+#define TSR_TBUFF		0x00001000
+#define TSR_SERR		0x00002000
+#define TSR_JAB			0x00004000
+#define TSR_TERR		0x00008000
+#define TSR_ABNORMAL		TSR_TERR+TSR_OWC+TSR_ABT+TSR_JAB+TSR_CRS
+#define TSR_OWN_BIT		0x80000000
 
-#define CB_DELAY_LOOP_WAIT  (10)	// 10ms
-// enabled mask value of irq
+#define CB_DELAY_LOOP_WAIT	10	/* 10ms */
+/* enabled mask value of irq */
 
-#define W_IMR_MASK_VALUE    0x1BFF	// initial value of IMR
+#define W_IMR_MASK_VALUE	0x1BFF	/* initial value of IMR */
 
-// Ethernet address filter type
-#define PKT_TYPE_DIRECTED           0x0001	// obselete, directed address is always accepted
-#define PKT_TYPE_MULTICAST          0x0002
-#define PKT_TYPE_ALL_MULTICAST      0x0004
-#define PKT_TYPE_BROADCAST          0x0008
-#define PKT_TYPE_PROMISCUOUS        0x0020
-//#define PKT_TYPE_LONG               0x2000
-#define PKT_TYPE_RUNT               0x4000
-#define PKT_TYPE_ERROR              0x8000	// accept error packets, e.g. CRC error
+/* Ethernet address filter type */
+#define PKT_TYPE_DIRECTED	0x0001	/* obsolete, directed address is always accepted */
+#define PKT_TYPE_MULTICAST	0x0002
+#define PKT_TYPE_ALL_MULTICAST	0x0004
+#define PKT_TYPE_BROADCAST	0x0008
+#define PKT_TYPE_PROMISCUOUS	0x0020
+#define PKT_TYPE_LONG		0x2000
+#define PKT_TYPE_RUNT		0x4000
+#define PKT_TYPE_ERROR		0x8000	/* accept error packets, e.g. CRC error */
 
-// Loopback mode
+/* Loopback mode */
 
-#define NIC_LB_NONE         0x00	//
-#define NIC_LB_INTERNAL     0x01	//
-#define NIC_LB_PHY          0x02	// MII or Internal-10BaseT loopback
+#define NIC_LB_NONE		0x00
+#define NIC_LB_INTERNAL		0x01
+#define NIC_LB_PHY		0x02	/* MII or Internal-10BaseT loopback */
 
-#define TX_RING_SIZE    2
-#define RX_RING_SIZE    2
+#define TX_RING_SIZE		2
+#define RX_RING_SIZE		2
 #define PKT_BUF_SZ		1536	/* Size of each temporary Rx buffer. */
 
 /* Transmit and receive descriptors definition */
@@ -522,7 +521,7 @@ struct rhine_rx_desc
 /* The I/O extent. */
 #define rhine_TOTAL_SIZE 0x80
 
-#ifdef HAVE_DEVLIST
+#ifdef	HAVE_DEVLIST
 struct netdev_entry rhine_drv =
     { "rhine", rhine_probe, rhine_TOTAL_SIZE, NULL };
 #endif
@@ -619,7 +618,7 @@ The chip does not pad to minimum transmit length.
 */
 
 #define PCI_VENDOR_ID_FET		0x1106
-#define PCI_DEVICE_ID_FET_3043	        0x3043
+#define PCI_DEVICE_ID_FET_3043		0x3043
 
 /* The rest of these values should never change. */
 #define NUM_TX_DESC	2	/* Number of Tx descriptor registers. */
@@ -659,14 +658,16 @@ static int QueryAuto (int);
 static int ReadMII (int byMIIIndex, int);
 static void WriteMII (char, char, char, int);
 static void MIIDelay (void);
-static void post_reset_delay (void);
-static unsigned int read_tick_counter (void);
 static void rhine_init_ring (struct nic *dev);
 static void rhine_disable (struct nic *nic);
 static void rhine_reset (struct nic *nic);
 static int rhine_poll (struct nic *nic);
-static void rhine_transmit (struct nic *nic, char *d, unsigned int t,
-			    unsigned int s, char *p);
+static void rhine_transmit (struct nic *nic, const char *d, unsigned int t,
+			    unsigned int s, const char *p);
+
+/* Linux support functions */
+#define virt_to_bus(x) ((unsigned long)x)
+#define bus_to_virt(x) ((void *)x)
 
 /* Initialize the Rx and Tx rings, along with various 'dev' bits. */
 static void
@@ -687,12 +688,12 @@ rhine_init_ring (struct nic *nic)
 
 	tp->rx_ring[i].buf_addr_1 = virt_to_bus (tp->rx_buffs[i]);
 	tp->rx_ring[i].buf_addr_2 = virt_to_bus (&tp->rx_ring[i + 1]);
-	// printf("[%d]buf1=%x,buf2=%x",i,tp->rx_ring[i].buf_addr_1,tp->rx_ring[i].buf_addr_2);
+	/* printf("[%d]buf1=%x,buf2=%x",i,tp->rx_ring[i].buf_addr_1,tp->rx_ring[i].buf_addr_2); */
     }
     /* Mark the last entry as wrapping the ring. */
-    // tp->rx_ring[i-1].rx_ctrl.bits.rx_buf_size =1518;
+    /* tp->rx_ring[i-1].rx_ctrl.bits.rx_buf_size =1518; */
     tp->rx_ring[i - 1].buf_addr_2 = virt_to_bus (&tp->rx_ring[0]);
-    //printf("[%d]buf1=%x,buf2=%x",i-1,tp->rx_ring[i-1].buf_addr_1,tp->rx_ring[i-1].buf_addr_2);
+    /*printf("[%d]buf1=%x,buf2=%x",i-1,tp->rx_ring[i-1].buf_addr_1,tp->rx_ring[i-1].buf_addr_2); */
 
     /* The Tx buffer descriptor is filled in as needed, but we
        do need to clear the ownership bit. */
@@ -704,11 +705,11 @@ rhine_init_ring (struct nic *nic)
 	tp->tx_ring[i].tx_ctrl.lw = 0x00e08000;
 	tp->tx_ring[i].buf_addr_1 = virt_to_bus (tp->tx_buffs[i]);
 	tp->tx_ring[i].buf_addr_2 = virt_to_bus (&tp->tx_ring[i + 1]);
-	// printf("[%d]buf1=%x,buf2=%x",i,tp->tx_ring[i].buf_addr_1,tp->tx_ring[i].buf_addr_2);
+	/* printf("[%d]buf1=%x,buf2=%x",i,tp->tx_ring[i].buf_addr_1,tp->tx_ring[i].buf_addr_2); */
     }
 
     tp->tx_ring[i - 1].buf_addr_2 = virt_to_bus (&tp->tx_ring[0]);
-    // printf("[%d]buf1=%x,buf2=%x",i,tp->tx_ring[i-1].buf_addr_1,tp->tx_ring[i-1].buf_addr_2);
+    /* printf("[%d]buf1=%x,buf2=%x",i,tp->tx_ring[i-1].buf_addr_1,tp->tx_ring[i-1].buf_addr_2); */
 }
 
 int
@@ -862,44 +863,6 @@ MIIDelay (void)
     }
 }
 
-static unsigned int
-read_tick_counter (void)
-{
-    unsigned int current_time = 0;
-
-    /* Program 8254 to latch T0's count */
-    outb (0x43, 0x6);
-    /* Read the counter */
-    current_time = inb (0x40);
-    current_time = current_time | (inb (0x40) << 8);
-    return current_time;
-
-}
-
-static void
-post_reset_delay (void)
-{
-
-    unsigned int initial_time, current_time;
-
-    /* need to wait 10 mini seconds */
-
-    initial_time = read_tick_counter ();
-
-    /* 8254 time tick gives 419 nsec per count. We have to delay a delta
-       count of 10,000,000ns/419ns = 23866. We will round it up to 23866
-     */
-
-    while (1)
-    {
-	current_time = read_tick_counter ();
-	if ((initial_time - current_time) >= 23866)
-	{			/* 10 mini second */
-	    return;
-	}
-    }
-}
-
 struct nic *
 rhine_probe (struct nic *nic, unsigned short *probeaddrs,
 	       struct pci_device *pci)
@@ -947,7 +910,8 @@ rhine_probe1 (struct nic *nic, int ioaddr, int chip_id, int options)
 {
     struct rhine_private *tp;
     static int did_version = 0;	/* Already printed version info. */
-    int i, x;
+    int i;
+    unsigned int timeout;
     int FDXFlag;
     int byMIIvalue, LineSpeed, MIICRbak;
 
@@ -967,8 +931,10 @@ rhine_probe1 (struct nic *nic, int ioaddr, int chip_id, int options)
     printf ("Analyzing Media type,this will take several seconds........");
     for (i = 0; i < 5; i++)
     {
-	for (x = 0; x < 100; x++)
-	    post_reset_delay ();
+	/* need to wait 1 millisecond - we will round it up to 50-100ms */
+	timeout = currticks() + 2;
+	for (timeout = currticks() + 2; currticks() < timeout;)
+	    /* nothing */;
 	if (ReadMII (1, ioaddr) & 0x0020)
 	    break;
     }
@@ -1005,8 +971,7 @@ rhine_probe1 (struct nic *nic, int ioaddr, int chip_id, int options)
     outb (0x41, byMIIAD);
     MIIDelay ();
 
-    //   while((inb(byMIIAD)&0x20)==0)
-    //               ;              
+    /* while((inb(byMIIAD)&0x20)==0) ; */
     outb (MIICRbak | 0x80, byMIICR);
 
     nic->priv_data = &rhine;
@@ -1048,14 +1013,21 @@ rhine_reset (struct nic *nic)
     int rx_bufs_tmp, rx_bufs_tmp1;
     int tx_bufs_tmp, tx_bufs_tmp1;
 
+#ifndef	USE_INTERNAL_BUFFER
+#define buf1 (0x10000 - (RX_RING_SIZE * PKT_BUF_SZ + 32))
+#define buf2 (buf1 - (RX_RING_SIZE * PKT_BUF_SZ + 32))
+#define desc1 (buf2 - (TX_RING_SIZE * sizeof (struct rhine_tx_desc) + 32))
+#define desc2 (desc1 - (TX_RING_SIZE * sizeof (struct rhine_tx_desc) + 32))
+#else
     static char buf1[RX_RING_SIZE * PKT_BUF_SZ + 32];
     static char buf2[RX_RING_SIZE * PKT_BUF_SZ + 32];
     static char desc1[TX_RING_SIZE * sizeof (struct rhine_tx_desc) + 32];
     static char desc2[TX_RING_SIZE * sizeof (struct rhine_tx_desc) + 32];
+#endif
 
-    // printf ("rhine_reset\n");
+    /* printf ("rhine_reset\n"); */
     /* Soft reset the chip. */
-    //outb(CmdReset, ioaddr + ChipCmd);
+    /*outb(CmdReset, ioaddr + ChipCmd); */
 
     tx_bufs_tmp = (int) buf1;
     tx_ring_tmp = (int) desc1;
@@ -1065,40 +1037,40 @@ rhine_reset (struct nic *nic)
     /* tune RD TD 32 byte alignment */
     rx_ring_tmp1 = (int) virt_to_bus ((char *) rx_ring_tmp);
     j = (rx_ring_tmp1 + 32) & (~0x1f);
-    // printf ("txring[%d]", j);
+    /* printf ("txring[%d]", j); */
     tp->rx_ring = (struct rhine_rx_desc *) bus_to_virt (j);
 
     tx_ring_tmp1 = (int) virt_to_bus ((char *) tx_ring_tmp);
     j = (tx_ring_tmp1 + 32) & (~0x1f);
     tp->tx_ring = (struct rhine_tx_desc *) bus_to_virt (j);
-    // printf ("rxring[%x]", j);
+    /* printf ("rxring[%x]", j); */
 
 
     tx_bufs_tmp1 = (int) virt_to_bus ((char *) tx_bufs_tmp);
     j = (int) (tx_bufs_tmp1 + 32) & (~0x1f);
     tx_bufs_tmp = (int) bus_to_virt (j);
-    // printf ("txb[%x]", j);
+    /* printf ("txb[%x]", j); */
 
     rx_bufs_tmp1 = (int) virt_to_bus ((char *) rx_bufs_tmp);
     j = (int) (rx_bufs_tmp1 + 32) & (~0x1f);
     rx_bufs_tmp = (int) bus_to_virt (j);
-    // printf ("rxb[%x][%x]", rx_bufs_tmp1, j);
+    /* printf ("rxb[%x][%x]", rx_bufs_tmp1, j); */
 
     for (i = 0; i < RX_RING_SIZE; i++)
     {
 	tp->rx_buffs[i] = (char *) rx_bufs_tmp;
-	// printf("r[%x]",tp->rx_buffs[i]);  
+	/* printf("r[%x]",tp->rx_buffs[i]); */
 	rx_bufs_tmp += 1536;
     }
 
     for (i = 0; i < TX_RING_SIZE; i++)
     {
 	tp->tx_buffs[i] = (char *) tx_bufs_tmp;
-	// printf("t[%x]",tp->tx_buffs[i]);  
+	/* printf("t[%x]",tp->tx_buffs[i]);  */
 	tx_bufs_tmp += 1536;
     }
 
-    // printf ("init ring");
+    /* printf ("init ring"); */
     rhine_init_ring (nic);
     /*write TD RD Descriptor to MAC */
     outl (virt_to_bus (tp->rx_ring), dwCurrentRxDescAddr);
@@ -1123,9 +1095,9 @@ rhine_reset (struct nic *nic)
 	outw (CR_FDX, byCR0);
     }
 
-    /*KICK NIC to WORK */
+    /* KICK NIC to WORK */
     CRbak = inw (byCR0);
-    CRbak = CRbak & 0xFFFB;	/*not CR_STOP */
+    CRbak = CRbak & 0xFFFB;	/* not CR_STOP */
     outw ((CRbak | CR_STRT | CR_TXON | CR_RXON | CR_DPOLL), byCR0);
 
     /*set IMR to work */
@@ -1136,7 +1108,6 @@ static int
 rhine_poll (struct nic *nic)
 {
     struct rhine_private *tp = (struct rhine_private *) nic->priv_data;
-    int ioaddr = tp->ioaddr;
     int rxstatus, good = 0;;
 
     if (tp->rx_ring[tp->cur_rx].rx_status.bits.own_bit == 0)
@@ -1157,7 +1128,7 @@ rhine_poll (struct nic *nic)
 	{
 	    nic->packetlen = tp->rx_ring[tp->cur_rx].rx_status.bits.frame_length;
 	    memcpy (nic->packet, tp->rx_buffs[tp->cur_rx], nic->packetlen);
-	    // printf ("Packet RXed\n");
+	    /* printf ("Packet RXed\n"); */
 	}
 	tp->rx_ring[tp->cur_rx].rx_status.bits.own_bit = 1;
 	tp->cur_rx++;
@@ -1168,14 +1139,14 @@ rhine_poll (struct nic *nic)
 
 static void
 rhine_transmit (struct nic *nic,
-		char *d, unsigned int t, unsigned int s, char *p)
+		const char *d, unsigned int t, unsigned int s, const char *p)
 {
     struct rhine_private *tp = (struct rhine_private *) nic->priv_data;
     int ioaddr = tp->ioaddr;
     int entry;
     unsigned char CR1bak;
 
-    //printf ("rhine_transmit\n");
+    /*printf ("rhine_transmit\n"); */
     /* setup ethernet header */
 
 
@@ -1199,21 +1170,21 @@ rhine_transmit (struct nic *nic,
     CR1bak = inb (byCR1);
 
     CR1bak = CR1bak | CR1_TDMD1;
-    //printf("tdsw=[%x]",tp->tx_ring[entry].tx_status.lw);
-    //printf("tdcw=[%x]",tp->tx_ring[entry].tx_ctrl.lw);
-    //printf("tdbuf1=[%x]",tp->tx_ring[entry].buf_addr_1);
-    //printf("tdbuf2=[%x]",tp->tx_ring[entry].buf_addr_2);
-    //printf("td1=[%x]",inl(dwCurrentTDSE0));       
-    //printf("td2=[%x]",inl(dwCurrentTDSE1));       
-    //printf("td3=[%x]",inl(dwCurrentTDSE2));       
-    //printf("td4=[%x]",inl(dwCurrentTDSE3));       
+    /*printf("tdsw=[%x]",tp->tx_ring[entry].tx_status.lw); */
+    /*printf("tdcw=[%x]",tp->tx_ring[entry].tx_ctrl.lw); */
+    /*printf("tdbuf1=[%x]",tp->tx_ring[entry].buf_addr_1); */
+    /*printf("tdbuf2=[%x]",tp->tx_ring[entry].buf_addr_2); */
+    /*printf("td1=[%x]",inl(dwCurrentTDSE0)); */
+    /*printf("td2=[%x]",inl(dwCurrentTDSE1)); */
+    /*printf("td3=[%x]",inl(dwCurrentTDSE2)); */
+    /*printf("td4=[%x]",inl(dwCurrentTDSE3)); */
 
     outb (CR1bak, byCR1);
     tp->cur_tx++;
 
-    //outw(IMRShadow,byIMR0);
-    //dev_kfree_skb(tp->tx_skbuff[entry], FREE_WRITE);
-    //tp->tx_skbuff[entry] = 0;
+    /*outw(IMRShadow,byIMR0); */
+    /*dev_kfree_skb(tp->tx_skbuff[entry], FREE_WRITE); */
+    /*tp->tx_skbuff[entry] = 0; */
 }
 
-// EOF via-rhine.c
+/* EOF via-rhine.c */

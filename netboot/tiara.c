@@ -21,6 +21,7 @@ Fujitsu MB86960 spec sheet (different chip but same family)
 #include "etherboot.h"
 /* to get the interface to the body of the program */
 #include "nic.h"
+#include "cards.h"
 
 /*
 	EtherStar I/O Register offsets
@@ -159,10 +160,10 @@ TRANSMIT - Transmit a frame
 ***************************************************************************/
 static void tiara_transmit(
 struct nic *nic,
-char *d,			/* Destination */
+const char *d,			/* Destination */
 unsigned int t,			/* Type */
 unsigned int s,			/* size */
-char *p)			/* Packet */
+const char *p)			/* Packet */
 {
 	unsigned int	len;
 	unsigned long	time;
@@ -203,7 +204,7 @@ static int tiara_probe1(struct nic *nic)
 	/* Hope all the Tiara cards have this vendor prefix */
 	static char	vendor_prefix[] = { 0x08, 0x00, 0x1A };
 	static char	all_ones[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-	int		i, b;
+	int		i;
 
 	for (i = 0; i < ETHER_ADDR_SIZE; ++i)
 		nic->node_addr[i] = inb(ioaddr + PROM_ID + i);

@@ -1,4 +1,3 @@
-
 /**************************************************************************
 ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
@@ -25,6 +24,10 @@ RX overrun by Klaus Espenlaub (espenlaub@informatik.uni-ulm.de) on 3/10/99
 #include "etherboot.h"
 #include "nic.h"
 #include "ns8390.h"
+#ifdef	INCLUDE_NS8390
+#include "pci.h"
+#endif
+#include "cards.h"
 
 static unsigned char	eth_vendor, eth_flags, eth_laar;
 static unsigned short	eth_nic_base, eth_asic_base;
@@ -32,9 +35,9 @@ static unsigned char	eth_memsize, eth_rx_start, eth_tx_start;
 static Address		eth_bmem, eth_rmem;
 static unsigned char	eth_drain_receiver;
 
-#ifdef INCLUDE_WD
+#ifdef	INCLUDE_WD
 static struct wd_board {
-	char *name;
+	const char *name;
 	char id;
 	char flags;
 	char memsize;
@@ -54,7 +57,7 @@ static struct wd_board {
 	{"SMC8416T",	TYPE_SMC8416T,	FLAG_16BIT | FLAG_790,	MEM_8192},
 	{"SMC8416C/BT",	TYPE_SMC8416C,	FLAG_16BIT | FLAG_790,	MEM_8192},
 	{"SMC8013EBP",	TYPE_SMC8013EBP,FLAG_16BIT,		MEM_16384},
-	{NULL,		0,		0}
+	{NULL,		0,		0,			0}
 };
 #endif
 
@@ -64,48 +67,45 @@ static unsigned char	t503_output;	/* AUI or internal xcvr (Thinnet) */
 
 #if	defined(INCLUDE_WD)
 #define	eth_probe	wd_probe
-#if	defined(INCLUDE_3C503) || defined(INCLUDE_NE) || defined(INCLUDE_NEPCI)
-Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#if	defined(INCLUDE_3C503) || defined(INCLUDE_NE) || defined(INCLUDE_NS8390)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE, INCLUDE_NS8390
 #endif
 #endif
 
 #if	defined(INCLUDE_3C503)
 #define	eth_probe	t503_probe
-#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || defined(INCLUDE_WD)
-Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NS8390) || defined(INCLUDE_WD)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE, INCLUDE_NS8390
 #endif
 #endif
 
 #if	defined(INCLUDE_NE)
 #define	eth_probe	ne_probe
-#if	defined(INCLUDE_NEPCI) || defined(INCLUDE_3C503) || defined(INCLUDE_WD)
-Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#if	defined(INCLUDE_NS8390) || defined(INCLUDE_3C503) || defined(INCLUDE_WD)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE, INCLUDE_NS8390
 #endif
 #endif
 
-#if	defined(INCLUDE_NEPCI)
+#if	defined(INCLUDE_NS8390)
 #define	eth_probe	nepci_probe
 #if	defined(INCLUDE_NE) || defined(INCLUDE_3C503) || defined(INCLUDE_WD)
-Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE, INCLUDE_NS8390
 #endif
 #endif
 
 #if	defined(INCLUDE_3C503)
 #define	ASIC_PIO	_3COM_RFMSB
 #else
-#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI)
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NS8390)
 #define	ASIC_PIO	NE_DATA
 #endif
 #endif
 
-#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || (defined(INCLUDE_3C503) && !defined(T503_SHMEM))
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NS8390) || (defined(INCLUDE_3C503) && !defined(T503_SHMEM))
 /**************************************************************************
 ETH_PIO_READ - Read a frame via Programmed I/O
 **************************************************************************/
-static void eth_pio_read(src, dst, cnt)
-	unsigned int src;
-	unsigned char *dst;
-	unsigned int cnt;
+static void eth_pio_read(unsigned int src, unsigned char *dst, unsigned int cnt)
 {
 	if (eth_flags & FLAG_16BIT) { ++cnt; cnt &= ~1; }
 	outb(D8390_COMMAND_RD2 |
@@ -122,17 +122,17 @@ static void eth_pio_read(src, dst, cnt)
 	outb(src >> 8, eth_asic_base + _3COM_DAMSB);
 	outb(t503_output | _3COM_CR_START, eth_asic_base + _3COM_CR);
 #endif
-    
+
 	if (eth_flags & FLAG_16BIT)
-    		cnt >>= 1;
+		cnt >>= 1;
 
 	while(cnt--) {
 #ifdef	INCLUDE_3C503
-    		while((inb(eth_asic_base + _3COM_STREG) & _3COM_STREG_DPRDY) == 0)
-    			;
+		while((inb(eth_asic_base + _3COM_STREG) & _3COM_STREG_DPRDY) == 0)
+			;
 #endif
 
-    		if (eth_flags & FLAG_16BIT) {
+		if (eth_flags & FLAG_16BIT) {
 			*((unsigned short *)dst) = inw(eth_asic_base + ASIC_PIO);
 			dst += 2;
 		}
@@ -148,10 +148,7 @@ static void eth_pio_read(src, dst, cnt)
 /**************************************************************************
 ETH_PIO_WRITE - Write a frame via Programmed I/O
 **************************************************************************/
-static void eth_pio_write(src, dst, cnt)
-	unsigned char *src;
-	unsigned int dst;
-	unsigned int cnt;
+static void eth_pio_write(const unsigned char *src, unsigned int dst, unsigned int cnt)
 {
 #ifdef	COMPEX_RL2000_FIX
 	unsigned int x;
@@ -166,7 +163,7 @@ static void eth_pio_write(src, dst, cnt)
 	outb(dst>>8, eth_nic_base + D8390_P0_RSAR1);
 	outb(D8390_COMMAND_RD1 |
 		D8390_COMMAND_STA, eth_nic_base + D8390_P0_COMMAND);
-		
+
 #ifdef	INCLUDE_3C503
 	outb(dst & 0xff, eth_asic_base + _3COM_DALSB);
 	outb(dst >> 8, eth_asic_base + _3COM_DAMSB);
@@ -175,21 +172,21 @@ static void eth_pio_write(src, dst, cnt)
 #endif
 
 	if (eth_flags & FLAG_16BIT)
-    		cnt >>= 1;
+		cnt >>= 1;
 
 	while(cnt--)
 	{
 #ifdef	INCLUDE_3C503
-    		while((inb(eth_asic_base + _3COM_STREG) & _3COM_STREG_DPRDY) == 0)
-    	    		;
+		while((inb(eth_asic_base + _3COM_STREG) & _3COM_STREG_DPRDY) == 0)
+			;
 #endif
 
-    		if (eth_flags & FLAG_16BIT) {
+		if (eth_flags & FLAG_16BIT) {
 			outw(*((unsigned short *)src), eth_asic_base + ASIC_PIO);
 			src += 2;
 		}
 		else
-	    		outb(*(src++), eth_asic_base + ASIC_PIO);
+			outb(*(src++), eth_asic_base + ASIC_PIO);
 	}
 
 #ifdef	INCLUDE_3C503
@@ -216,9 +213,9 @@ static void eth_pio_read(unsigned int src, unsigned char *dst, unsigned int cnt)
 #endif
 
 /**************************************************************************
-ETH_RESET - Reset adapter
+NS8390_RESET - Reset adapter
 **************************************************************************/
-static void eth_reset(struct nic *nic)
+static void ns8390_reset(struct nic *nic)
 {
 	int i;
 
@@ -272,19 +269,19 @@ static void eth_reset(struct nic *nic)
 	outb(0, eth_nic_base+D8390_P0_TCR);
 	outb(4, eth_nic_base+D8390_P0_RCR);	/* allow broadcast frames */
 
-#ifdef INCLUDE_3C503
+#ifdef	INCLUDE_3C503
         /*
          * No way to tell whether or not we're supposed to use
          * the 3Com's transceiver unless the user tells us.
          * 'aui' should have some compile time default value
          * which can be changed from the command menu.
          */
-       	t503_output = (nic->aui) ? 0 : _3COM_CR_XSEL;
-       	outb(t503_output, eth_asic_base + _3COM_CR);
+	t503_output = (nic->aui) ? 0 : _3COM_CR_XSEL;
+	outb(t503_output, eth_asic_base + _3COM_CR);
 #endif
 }
 
-static int eth_poll(struct nic *nic);
+static int ns8390_poll(struct nic *nic);
 
 #ifndef	INCLUDE_3C503
 /**************************************************************************
@@ -327,7 +324,7 @@ static void eth_rx_overrun(struct nic *nic)
 
 	/* clear the RX ring, acknowledge overrun interrupt */
 	eth_drain_receiver = 1;
-	while (eth_poll(nic))
+	while (ns8390_poll(nic))
 		/* Nothing */;
 	eth_drain_receiver = 0;
 	outb(D8390_ISR_OVW, eth_nic_base+D8390_P0_ISR);
@@ -338,18 +335,18 @@ static void eth_rx_overrun(struct nic *nic)
 #endif	/* INCLUDE_3C503 */
 
 /**************************************************************************
-ETH_TRANSMIT - Transmit a frame
+NS8390_TRANSMIT - Transmit a frame
 **************************************************************************/
-static void eth_transmit(
+static void ns8390_transmit(
 	struct nic *nic,
-	char *d,			/* Destination */
+	const char *d,			/* Destination */
 	unsigned int t,			/* Type */
 	unsigned int s,			/* size */
-	char *p)			/* Packet */
+	const char *p)			/* Packet */
 {
 	int c;				/* used in ETHERBOOT16 */
 
-#ifdef INCLUDE_3C503
+#ifdef	INCLUDE_3C503
         if (!(eth_flags & FLAG_PIO)) {
 #ifdef	ETHERBOOT32
                 memcpy((void *)eth_bmem, d, ETHER_ADDR_SIZE);	/* dst */
@@ -374,8 +371,8 @@ static void eth_transmit(
 #endif
         }
 #endif
-        
-#ifdef INCLUDE_WD
+
+#ifdef	INCLUDE_WD
 	/* Memory interface */
 	if (eth_flags & FLAG_16BIT) {
 		outb(eth_laar | WD_LAAR_M16EN, eth_asic_base + WD_LAAR);
@@ -421,8 +418,8 @@ static void eth_transmit(
 #if	defined(INCLUDE_3C503)
 	if (eth_flags & FLAG_PIO) {
 #endif
-#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || (defined(INCLUDE_3C503) && !defined(T503_SHMEM))
-	    	/* Programmed I/O */
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NS8390) || (defined(INCLUDE_3C503) && !defined(T503_SHMEM))
+		/* Programmed I/O */
 		unsigned short type;
 		type = (t >> 8) | (t << 8);
 		eth_pio_write(d, eth_tx_start<<8, ETHER_ADDR_SIZE);
@@ -460,9 +457,9 @@ static void eth_transmit(
 }
 
 /**************************************************************************
-ETH_POLL - Wait for a frame
+NS8390_POLL - Wait for a frame
 **************************************************************************/
-static int eth_poll(struct nic *nic)
+static int ns8390_poll(struct nic *nic)
 {
 	int ret = 0;
 	unsigned char rstat, curr, next;
@@ -564,16 +561,21 @@ static int eth_poll(struct nic *nic)
 }
 
 /**************************************************************************
-ETH_DISABLE - Turn off adapter
+NS8390_DISABLE - Turn off adapter
 **************************************************************************/
-static void eth_disable(struct nic *nic)
+static void ns8390_disable(struct nic *nic)
 {
 }
 
 /**************************************************************************
 ETH_PROBE - Look for an adapter
 **************************************************************************/
+#ifdef	INCLUDE_NS8390
+struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs,
+		      struct pci_device *pci)
+#else
 struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
+#endif
 {
 	int i;
 	struct wd_board *brd;
@@ -585,7 +587,7 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 	eth_vendor = VENDOR_NONE;
 	eth_drain_receiver = 0;
 
-#ifdef INCLUDE_WD
+#ifdef	INCLUDE_WD
 	/******************************************************************
 	Search for WD/SMC cards
 	******************************************************************/
@@ -709,7 +711,7 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 	}
 	putchar('\n');
 #endif
-#ifdef INCLUDE_3C503
+#ifdef	INCLUDE_3C503
         /******************************************************************
         Search for 3Com 3c503 if no WD/SMC cards
         ******************************************************************/
@@ -780,7 +782,7 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 		eth_vendor = VENDOR_3COM;
 
 
-        /* Need this to make eth_poll() happy. */
+        /* Need this to make ns8390_poll() happy. */
 
                 eth_rmem = eth_bmem - 0x2000;
 
@@ -794,9 +796,9 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
                 outb(_3COM_CR_EALO | _3COM_CR_XSEL, eth_asic_base + _3COM_CR);
                 printf("\n3Com 3c503 base 0x%x, ", eth_nic_base);
                 if (eth_flags & FLAG_PIO)
-                	printf("PIO mode");
+			printf("PIO mode");
                 else
-                	printf("memory 0x%X", eth_bmem);
+			printf("memory 0x%X", eth_bmem);
                 printf(", %s, addr ", nic->aui ? "AUI" : "internal xcvr");
                 for (i=0; i<ETHER_ADDR_SIZE; i++) {
                         printf("%b",(int)(nic->node_addr[i] =
@@ -818,23 +820,23 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
          * Clear memory and verify that it worked (we use only 8K)
          */
 
-        	if (!(eth_flags & FLAG_PIO)) {
+		if (!(eth_flags & FLAG_PIO)) {
 #ifdef	ETHERBOOT32
-                	memset((char *)eth_bmem, 0, 0x2000);
-                	for(i = 0; i < 0x2000; ++i)
-                        	if (*(((char *)eth_bmem)+i)) {
-                                	printf ("Failed to clear 3c503 shared mem.\n");
-                                	return (0);
-                        	}
+			memset((char *)eth_bmem, 0, 0x2000);
+			for(i = 0; i < 0x2000; ++i)
+				if (*(((char *)eth_bmem)+i)) {
+					printf ("Failed to clear 3c503 shared mem.\n");
+					return (0);
+				}
 #endif
 #ifdef	ETHERBOOT16
-                	bzerof(eth_bmem, 0x2000);
+			bzerof(eth_bmem, 0x2000);
 			if (!fbsame(eth_bmem, 0, 0x2000)) {
 				printf ("Failed to clear 3c503 shared mem.\n");
 				return (0);
 			}
 #endif
-        	}
+		}
         /*
          * Initialize GA page/start/stop registers.
          */
@@ -845,14 +847,14 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 
         }
 #endif
-#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI)
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NS8390)
 	/******************************************************************
 	Search for NE1000/2000 if no WD/SMC or 3com cards
 	******************************************************************/
 	if (eth_vendor == VENDOR_NONE) {
 		char romdata[16], testbuf[32];
 		int idx;
-		static char test[] = "NE1000/2000 memory";
+		static char test[] = "NE*000 memory";
 		static unsigned short base[] = {
 #ifdef	NE_SCAN
 			NE_SCAN,
@@ -877,6 +879,10 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 			outb(D8390_DCR_FT1 | D8390_DCR_LS, eth_nic_base + D8390_P0_DCR);
 			outb(MEM_8192, eth_nic_base + D8390_P0_PSTART);
 			outb(MEM_16384, eth_nic_base + D8390_P0_PSTOP);
+#ifdef	INCLUDE_NS8390
+			eth_flags |= FLAG_16BIT;	/* force 16-bit mode */
+#endif
+
 			eth_pio_write(test, 8192, sizeof(test));
 			eth_pio_read(8192, testbuf, sizeof(test));
 			if (!memcmp(test, testbuf, sizeof(test)))
@@ -914,11 +920,11 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 		return(0);
         if (eth_vendor != VENDOR_3COM)
 		eth_rmem = eth_bmem;
-	eth_reset(nic);
-	nic->reset = eth_reset;
-	nic->poll = eth_poll;
-	nic->transmit = eth_transmit;
-	nic->disable = eth_disable;
+	ns8390_reset(nic);
+	nic->reset = ns8390_reset;
+	nic->poll = ns8390_poll;
+	nic->transmit = ns8390_transmit;
+	nic->disable = ns8390_disable;
 	return(nic);
 }
 

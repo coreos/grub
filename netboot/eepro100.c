@@ -1,4 +1,4 @@
-/*  
+/*
  * eepro100.c -- This file implements the eepro100 driver for etherboot.
  *
  *
@@ -8,9 +8,9 @@
  *
  * AW Computer Systems is contributing to the free software community
  * by paying for this driver and then putting the result under GPL.
- * 
+ *
  * If you need a Linux device driver, please contact BitWizard for a
- * quote. 
+ * quote.
  *
  *
  * This program is free software; you can redistribute it and/or
@@ -36,28 +36,28 @@
  *              Jul 25 1997  V1.00  REW  Tested by AW to work in a PROM
  *                                       Cleanup for publication
  *
- * This is the etherboot-3.1 compatible intel etherexpress Pro/100B 
- * driver. 
- * 
+ * This is the etherboot intel etherexpress Pro/100B driver.
+ *
  * It was written from scratch, with Donald Beckers eepro100.c kernel
  * driver as a guideline. Mostly the 82557 related definitions and the
  * lower level routines have been cut-and-pasted into this source.
- * 
+ *
  * The driver was finished before Intel got the NDA out of the closet.
- * I still don't have the docs. 
+ * I still don't have the docs.
  * */
 
 
 
 /* Philosophy of this driver.
- * 
- * Probing: 
  *
- * Using a subset of "bios32" and "pci" functions of the linux kernel,
- * the pci 82557 chip is detected.
+ * Probing:
  *
- * 
- * Initialization: 
+ * Using the pci.c functions of the Etherboot code, the 82557 chip is detected.
+ * It is verified that the BIOS initialized everything properly and if
+ * something is missing it is done now.
+ *
+ *
+ * Initialization:
  *
  *
  * The chip is then initialized to "know" its ethernet address, and to
@@ -74,12 +74,12 @@
  * Transmitting and recieving.
  *
  * We have only one transmit descriptor. It has two buffer descriptors:
- * one for the header, and the other for the data. 
+ * one for the header, and the other for the data.
  * We have only one receive buffer. The chip is told to recieve packets,
  * and suspend itself once it got one. The recieve (poll) routine simply
  * looks at the recieve buffer to see if there is already a packet there.
- * if there is, the buffer is copied, and the reciever is restarted. 
- * 
+ * if there is, the buffer is copied, and the reciever is restarted.
+ *
  * Caveats:
  *
  * The etherboot framework moves the code to the 32k segment from
@@ -88,12 +88,8 @@
  * features, this will overflow.
  * The number under "hex" in the output of size that scrolls by while
  * compiling should be less than 8000. Maybe even the stack is up there,
- * so that you need even more headroom. 
- * 
- * If you run into trouble, the method used to give "pci.c" dynamic
- * allocation should be used to allocate the larger variables (like
- * the packet buffers)
- * */
+ * so that you need even more headroom.
+ */
 
 
 /* The etherboot authors seem to dislike the argument ordering in
@@ -104,6 +100,7 @@
 #include "etherboot.h"
 #include "nic.h"
 #include "pci.h"
+#include "cards.h"
 
 #undef	virt_to_bus
 #define	virt_to_bus(x)	((unsigned long)x)
@@ -128,7 +125,7 @@ enum speedo_offsets {
 };
 
 
-static int read_eeprom(int ioaddr, int location);
+static int read_eeprom(int location);
 static void udelay (int val);
 void hd (void *where, int n);
 
@@ -183,13 +180,13 @@ enum phy_chips { NonSuchPhy=0, I82553AB, I82553C, I82503, DP83840, S80C240,
 
 /* Commands that can be put in a command list entry. */
 enum commands {
-  CmdNOp = 0, 
-  CmdIASetup = 1, 
-  CmdConfigure = 2, 
+  CmdNOp = 0,
+  CmdIASetup = 1,
+  CmdConfigure = 2,
   CmdMulticastList = 3,
-  CmdTx = 4, 
-  CmdTDR = 5, 
-  CmdDump = 6, 
+  CmdTx = 4,
+  CmdTDR = 5,
+  CmdDump = 6,
   CmdDiagnose = 7,
 
   /* And some extra flags: */
@@ -210,7 +207,7 @@ static inline void wait_for_cmd_done(int cmd_ioaddr)
 
 
 /* Elements of the dump_statistics block. This block must be lword aligned. */
-struct speedo_stats {
+static struct speedo_stats {
         u32 tx_good_frames;
         u32 tx_coll16_errs;
         u32 tx_late_colls;
@@ -232,7 +229,7 @@ struct speedo_stats {
 
 
 /* A speedo3 TX buffer descriptor with two buffers... */
-struct TxFD {
+static struct TxFD {
   volatile s16 status;
   s16 command;
   u32 link;          /* void * */
@@ -243,11 +240,9 @@ struct TxFD {
   s32 tx_buf_size0;  /* Length of Tx hdr. */
   u32 tx_buf_addr1;  /* void *, data to be transmitted.  */
   s32 tx_buf_size1;  /* Length of Tx data. */
-} txfd; 
+} txfd;
 
 
-
-/* The Speedo3 Rx buffer descriptors. */
 struct RxFD {               /* Receive frame descriptor. */
   volatile s16 status;
   s16 command;
@@ -256,7 +251,15 @@ struct RxFD {               /* Receive frame descriptor. */
   u16 count;
   u16 size;
   char packet[1518];
-} rxfd;
+};
+
+#ifndef	USE_INTERNAL_BUFFER
+#define rxfd ((struct RxFD *)(0x10000 - sizeof(struct RxFD)))
+#define ACCESS(x) x->
+#else
+static struct RxFD rxfd;
+#define ACCESS(x) x.
+#endif
 
 
 
@@ -270,14 +273,14 @@ static int rxdmacount = 0;      /* Rx DMA length, 0 means no preemption. */
 
 /* I don't understand a byte in this structure. It was copied from the
  * Linux kernel initialization for the eepro100. -- REW */
-struct ConfCmd {
+static struct ConfCmd {
   s16 status;
   s16 command;
   u32 link;
   unsigned char data[22];
 } confcmd = {
   0, CmdConfigure,
-  (u32) & txfd, 
+  (u32) & txfd,
   {22, 0x08, 0, 0,  0, 0x80, 0x32, 0x03,  1, /* 1=Use MII  0=Use AUI */
    0, 0x2E, 0,  0x60, 0,
    0xf2, 0x48,   0, 0x40, 0xf2, 0x80,        /* 0x40=Force full-duplex */
@@ -288,18 +291,7 @@ struct ConfCmd {
 
 #define TIME_OUT 1000000
 
-/* The "pci" code needs to allocate a few structures. It wants to
- * increment the "kernel memory ends here" pointer to allocate memory.
- * I guess that a machine with PCI has more than 2Mb of memory, so
- * that is where those things are put. Those structures don't survive
- * the "jump to kernel start".
- *   */
-#define MEM_START 0x200000   /* Memory starts at 2Mb for now....  */
-#define MEM_END   0
-
 static unsigned short eeprom [0x40];
-
-static void calibrate_delay (void);
 
 
 /***********************************************************************/
@@ -309,12 +301,12 @@ static void calibrate_delay (void);
 
 /* Support function: mdio_write
  *
- * This probably writes to the "physical media interface chip". 
+ * This probably writes to the "physical media interface chip".
  * -- REW
  */
 
 
-static int mdio_write(int ioaddr, int phy_id, int location, int value)
+static int mdio_write(int phy_id, int location, int value)
 {
   int val, boguscnt = 64*4;         /* <64 usec. to complete, typ 27 ticks */
 
@@ -334,10 +326,10 @@ static int mdio_write(int ioaddr, int phy_id, int location, int value)
 
 /* Support function: mdio_read
  *
- * This probably reads a register in the "physical media interface chip". 
+ * This probably reads a register in the "physical media interface chip".
  * -- REW
  */
-static int mdio_read(int ioaddr, int phy_id, int location)
+static int mdio_read(int phy_id, int location)
 {
   int val, boguscnt = 64*4;               /* <64 usec. to complete, typ 27 ticks */
   outl(0x08000000 | (location<<16) | (phy_id<<21), ioaddr + SCBCtrlMDI);
@@ -355,20 +347,19 @@ static int mdio_read(int ioaddr, int phy_id, int location)
 
 /* Support function: read_eeprom
  * reads a value from the eeprom at a specified location.
- * Arguments: ioaddr:    address of the 82557 chip
- *            location:  address of the location to read from the eeprom.
+ * Arguments: location:  address of the location to read from the eeprom.
  * returns:   value read from eeprom at location.
  */
-static int read_eeprom(int ioaddr, int location)
+static int read_eeprom(int location)
 {
         int i;
         unsigned short retval = 0;
         int ee_addr = ioaddr + SCBeeprom;
         int read_cmd = location | EE_READ_CMD;
-        
+
         outw(EE_ENB & ~EE_CS, ee_addr);
         outw(EE_ENB, ee_addr);
-        
+
         /* Shift the read command bits out. */
         for (i = 10; i >= 0; i--) {
                 short dataval = (read_cmd & (1 << i)) ? EE_DATA_WRITE : 0;
@@ -380,7 +371,7 @@ static int read_eeprom(int ioaddr, int location)
                 eeprom_delay(250);
         }
         outw(EE_ENB, ee_addr);
-        
+
         for (i = 15; i >= 0; i--) {
                 outw(EE_ENB | EE_SHIFT_CLK, ee_addr);
                 eeprom_delay(100);
@@ -395,9 +386,9 @@ static int read_eeprom(int ioaddr, int location)
 }
 
 
-static void inline whereami (char *str)
+static inline void whereami (const char *str)
 {
-#if 0
+#if	0
   printf ("%s\n", str);
   sleep (2);
 #endif
@@ -412,9 +403,9 @@ static void inline whereami (char *str)
 
 /* function: eepro100_reset / eth_reset
  * resets the card. This is used to allow Linux to probe the card again
- * from a "virginal" state.... 
+ * from a "virginal" state....
  * Arguments: none
- *            
+ *
  * returns:   void.
  */
 
@@ -425,7 +416,7 @@ static void eepro100_reset(struct nic *nic)
 
 
 
-/* function: eepro100_transmit / eth_transmit
+/* function: eepro100_transmit
  * This transmits a packet.
  *
  * Arguments: char d[6]:          destination ethernet address.
@@ -435,7 +426,7 @@ static void eepro100_reset(struct nic *nic)
  * returns:   void.
  */
 
-static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned int s, char *p)
+static void eepro100_transmit(struct nic *nic, const char *d, unsigned int t, unsigned int s, const char *p)
 {
   struct eth_hdr {
     unsigned char dst_addr[6];
@@ -445,13 +436,13 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
   unsigned short status;
   int to;
   int s1, s2;
-  
+
   status = inw(ioaddr + SCBStatus);
   /* Acknowledge all of the current interrupt sources ASAP. */
   outw(status & 0xfc00, ioaddr + SCBStatus);
-  
-#ifdef DEBUG
-  printf ("transmitting type %x packet (%d bytes). status = %x, cmd=%x\n", 
+
+#ifdef	DEBUG
+  printf ("transmitting type %x packet (%d bytes). status = %x, cmd=%x\n",
 	  t, s, status, inw (ioaddr + SCBCmd));
 #endif
 
@@ -473,7 +464,7 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
   txfd.tx_buf_addr1 = virt_to_bus (p);
   txfd.tx_buf_size1 = s;
 
-#ifdef DEBUG
+#ifdef	DEBUG
   printf ("txfd: \n");
   hd (&txfd, sizeof (txfd));
 #endif
@@ -488,7 +479,7 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
     /* Wait */;
   s2 = inw (ioaddr + SCBStatus);
 
-#ifdef DEBUG 
+#ifdef	DEBUG
   printf ("Tx: Loop executed %d times.\n", TIME_OUT-to);
   printf ("s1 = %x, s2 = %x.\n", s1, s2);
 #endif
@@ -496,11 +487,11 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
 
 
 /* function: eepro100_poll / eth_poll
- * This recieves a packet from the network. 
+ * This recieves a packet from the network.
  *
  * Arguments: none
- *            
- * returns:   1 if a packet was recieved. 
+ *
+ * returns:   1 if a packet was recieved.
  *            0 if no pacet was recieved.
  * side effects:
  *            returns the packet in the array nic->packet.
@@ -512,23 +503,23 @@ static int eepro100_poll(struct nic *nic)
   int to;
 
   to = TIME_OUT;
-  while (!rxfd.status && --to)
+  while (!ACCESS(rxfd)status && --to)
     /* Wait */;
 
   /* Ok. We got a packet. Now restart the reciever.... */
-  rxfd.status = 0;
-  rxfd.command = 0xc000;
-  outl(virt_to_bus(&rxfd), ioaddr + SCBPointer);
+  ACCESS(rxfd)status = 0;
+  ACCESS(rxfd)command = 0xc000;
+  outl(virt_to_bus(&(ACCESS(rxfd)status)), ioaddr + SCBPointer);
   outw(INT_MASK | RX_START, ioaddr + SCBCmd);
   wait_for_cmd_done(ioaddr + SCBCmd);
 
   if (to) {
-#ifdef DEBUG
-    printf ("Got a packet: Len = %d.\n", rxfd.count & 0x3fff);
+#ifdef	DEBUG
+    printf ("Got a packet: Len = %d.\n", ACCESS(rxfd)count & 0x3fff);
 #endif
-    nic->packetlen =  rxfd.count & 0x3fff;
-    memcpy (nic->packet, rxfd.packet, sizeof (rxfd.packet));
-#ifdef DEBUG
+    nic->packetlen =  ACCESS(rxfd)count & 0x3fff;
+    memcpy (nic->packet, ACCESS(rxfd)packet, nic->packetlen);
+#ifdef	DEBUG
     hd (nic->packet, 0x30);
 #endif
     return 1;
@@ -542,15 +533,14 @@ static void eepro100_disable(struct nic *nic)
 
 /* exported function: eepro100_probe / eth_probe
  * initializes a card
- *            
- * side effects: 
+ *
+ * side effects:
  *            leaves the ioaddress of the 82557 chip in the variable ioaddr.
  *            leaves the 82557 initialized, and ready to recieve packets.
  */
 
 struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct pci_device *p)
 {
-  int pci_index;
   u16 sum = 0;
   int i, j, to;
   unsigned short value;
@@ -569,19 +559,19 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
 
   /* Ok. Got one. Read the eeprom. */
   for (j = 0, i = 0; i < 0x40; i++) {
-	value = read_eeprom(ioaddr, i);
+	value = read_eeprom(i);
 	eeprom[i] = value;
 	sum += value;
   }
 
 	/* From Matt Hortman <mbhortman@acpthinclient.com> */
-	if (p->dev_id == PCI_DEVICE_ID_INTEL_82557 ){		
+	if (p->dev_id == PCI_DEVICE_ID_INTEL_82557 ){
 		/*
 		* check to make sure the bios properly set the
 		* 82557 (or 82558) to be bus master
 		*
-		* from eepro100.c in 2.2.9 kernel source 
-		*/			
+		* from eepro100.c in 2.2.9 kernel source
+		*/
 
 		pcibios_read_config_word(pci_bus, p->devfn, PCI_COMMAND, &pci_command);
 		new_command = pci_command | PCI_COMMAND_MASTER|PCI_COMMAND_IO;
@@ -597,12 +587,12 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
 			printf("\nPCI latency timer (CFLT) is unreasonably low at %d. Setting to 32 clocks.\n", pci_latency);
 			pcibios_write_config_byte(pci_bus, p->devfn, PCI_LATENCY_TIMER, 32);
 			}
-		}	
+		}
 
   printf ("Ethernet addr: ");
   for (i=0;i<6;i++) {
 	nic->node_addr[i] =  (eeprom[i/2] >> (8*(i&1))) & 0xff;
-	printf ("%b%c", nic->node_addr[i] , i < 5?':':' '); 
+	printf ("%b%c", nic->node_addr[i] , i < 5?':':' ');
   }
   printf ("\n");
 
@@ -617,37 +607,37 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
   outl(virt_to_bus(&lstats), ioaddr + SCBPointer);
   outw(INT_MASK | CU_STATSADDR, ioaddr + SCBCmd);
   wait_for_cmd_done(ioaddr + SCBCmd);
-  
+
   whereami ("set stats addr.");
   /* INIT RX stuff. */
-  
+
   /* Base = 0 */
   outl(0, ioaddr + SCBPointer);
   outw(INT_MASK | RX_ADDR_LOAD, ioaddr + SCBCmd);
   wait_for_cmd_done(ioaddr + SCBCmd);
 
   whereami ("set rx base addr.");
-  
-  rxfd.status  = 0x0001;
-  rxfd.command = 0x0000;
-  rxfd.link    = virt_to_bus(&rxfd);
-  rxfd.rx_buf_addr = (int) &nic->packet;
-  rxfd.count   = 0;
-  rxfd.size    = 1528;
-  
-  outl(virt_to_bus(&rxfd), ioaddr + SCBPointer);
+
+  ACCESS(rxfd)status  = 0x0001;
+  ACCESS(rxfd)command = 0x0000;
+  ACCESS(rxfd)link    = virt_to_bus(&(ACCESS(rxfd)status));
+  ACCESS(rxfd)rx_buf_addr = (int) &nic->packet;
+  ACCESS(rxfd)count   = 0;
+  ACCESS(rxfd)size    = 1528;
+
+  outl(virt_to_bus(&(ACCESS(rxfd)status)), ioaddr + SCBPointer);
   outw(INT_MASK | RX_START, ioaddr + SCBCmd);
   wait_for_cmd_done(ioaddr + SCBCmd);
 
   whereami ("started RX process.");
 
   /* Start the reciever.... */
-  rxfd.status = 0;
-  rxfd.command = 0xc000;
-  outl(virt_to_bus(&rxfd), ioaddr + SCBPointer);
+  ACCESS(rxfd)status = 0;
+  ACCESS(rxfd)command = 0xc000;
+  outl(virt_to_bus(&(ACCESS(rxfd)status)), ioaddr + SCBPointer);
   outw(INT_MASK | RX_START, ioaddr + SCBCmd);
 
-  
+
   /* INIT TX stuff. */
 
   /* Base = 0 */
@@ -660,15 +650,15 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
   txfd.command      = (CmdIASetup);
   txfd.status       = 0x0000;
   txfd.link         = virt_to_bus (&confcmd);
-  
-  { 
-	char *p = (char *)&txfd.tx_desc_addr;
+
+  {
+	char *t = (char *)&txfd.tx_desc_addr;
 
 	for (i=0;i<6;i++)
-	p[i] = nic->node_addr[i];
+		t[i] = nic->node_addr[i];
   }
-  
-#ifdef DEBUG
+
+#ifdef	DEBUG
   printf ("Setup_eaddr:\n");
   hd (&txfd, 0x20);
 #endif
@@ -676,20 +666,20 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
   options = 0x00;            /* Autosense */
 
   promisc = 0;
-  
+
   printf ("eeprom[6] = %x \n", eeprom[6]);
   if (   ((eeprom[6]>>8) & 0x3f) == DP83840
 	  || ((eeprom[6]>>8) & 0x3f) == DP83840A) {
-	int mdi_reg23 = mdio_read(ioaddr, eeprom[6] & 0x1f, 23) | 0x0422;
+	int mdi_reg23 = mdio_read(eeprom[6] & 0x1f, 23) | 0x0422;
 	if (congenb)
 	  mdi_reg23 |= 0x0100;
 	printf("  DP83840 specific setup, setting register 23 to %x.\n",
 	       mdi_reg23);
-	mdio_write(ioaddr, eeprom[6] & 0x1f, 23, mdi_reg23);
+	mdio_write(eeprom[6] & 0x1f, 23, mdi_reg23);
   }
   whereami ("Done DP8340 special setup.");
   if (options != 0) {
-	mdio_write(ioaddr, eeprom[6] & 0x1f, 0,
+	mdio_write(eeprom[6] & 0x1f, 0,
 		   ((options & 0x20) ? 0x2000 : 0) |    /* 100mbps? */
 		   ((options & 0x10) ? 0x0100 : 0)); /* Full duplex? */
 	whereami ("set mdio_register.");
@@ -715,7 +705,7 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
   while (!txfd.status && --to)
 	/* Wait */;
 
-#ifdef DEBUG 
+#ifdef	DEBUG
   printf ("\nLoop executed %d times.\n", TIME_OUT-to);
 #endif
   nic->reset = eepro100_reset;
@@ -725,8 +715,7 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
   return nic;
 }
 
-static int loops_per_sec;
-static int loops_per_usec;
+static int loops_per_usec = 300; /* totally bogus value */
 
 static void udelay (int val)
 {
@@ -737,79 +726,9 @@ static void udelay (int val)
   }
 }
 
-
-#if 1
-
-/* I don't have the possibility to test the below code. Murphey tells me
- * it won't work.
- */
-
-static void calibrate_delay (void)
-{
-  loops_per_usec = 500;
-}
-#else
-
-
-#define __delay udelay
-#define jiffies currticks()
-#define HZ 18
-
-#define LPS_PREC 8
-
-/* Copied from /usr/src/linux/init/main.c */
-/* with just a few modifications. */
-void calibrate_delay (void)
-{
-  int ticks;
-  int loopbit;
-  int lps_precision = LPS_PREC;
-
-  loops_per_sec = (1<<12);
-  loops_per_usec = 1;
-
-  printk("Calibrating delay loop.. ");
-  while (loops_per_sec <<= 1) {
-    /* wait for "start of" clock tick */
-    ticks = jiffies;
-    while (ticks == jiffies)
-      /* nothing */;
-    /* Go .. */
-    ticks = jiffies;
-    __delay(loops_per_sec);
-    ticks = jiffies - ticks;
-    if (ticks)
-      break;
-  }
-
-  /* Do a binary approximation to get loops_per_second set to equal one clock
-     (up to lps_precision bits) */
-  loops_per_sec >>= 1;
-  loopbit = loops_per_sec;
-  while ( lps_precision-- && (loopbit >>= 1) ) {
-    loops_per_sec |= loopbit;
-    ticks = jiffies;
-    while (ticks == jiffies);
-    ticks = jiffies;
-    __delay(loops_per_sec);
-    if (jiffies != ticks)   /* longer than 1 tick */
-      loops_per_sec &= ~loopbit;
-  }
-
-  /* finally, adjust loops per second in terms of seconds instead of clocks */    
-  loops_per_sec *= HZ;
-  /* Round the value and print it */      
-  printk("ok - %d.%d BogoMIPS\n",
-	 (loops_per_sec+25000)/500000,
-	 ((loops_per_sec+25000)/50000) % 10);
-  loops_per_usec = loops_per_sec / 1000000;
-}
-#endif
-
-
 /*********************************************************************/
 
-#ifdef DEBUG
+#ifdef	DEBUG
 
 /* Hexdump a number of bytes from memory... */
 void hd (void *where, int n)

@@ -78,7 +78,7 @@
 
 #define CHIP_EISA_ID_SIG 0x630E   /*  Product ID Code for Crystal Chip (CS8900 spec 4.3) */
 
-#ifdef IBMEIPKT
+#ifdef	IBMEIPKT
 #define EISA_ID_SIG 0x4D24	/*  IBM */
 #define PART_NO_SIG 0x1010	/*  IBM */
 #define MONGOOSE_BIT 0x0000	/*  IBM */
@@ -343,7 +343,7 @@
 
 /*  for bios scan */
 /*  */
-#ifdef CSDEBUG
+#ifdef	CSDEBUG
 /*  use these values for debugging bios scan */
 #define BIOS_START_SEG 0x00000
 #define BIOS_OFFSET_INC 0x0010
@@ -369,7 +369,7 @@
 #define EE_ALLOW_FDX 0x0080
 #define EE_AUTO_NEG_CNF_MASK (EE_FORCE_FDX|EE_NLP_ENABLE|EE_AUTO_NEG_ENABLE|EE_ALLOW_FDX)
 
-#define IMM_BIT 0x0040		/*  ignore missing media	 */
+#define IMM_BIT 0x0040		/*  ignore missing media */
 
 #define ADAPTER_CNF_OFFSET (AUTO_NEG_CNF_OFFSET + 2)
 #define A_CNF_10B_T 0x0001
@@ -417,8 +417,8 @@
 #define DMA_SIZE (16*1024) /*  Size of dma buffer - 16k */
 
 #define CS8900 0x0000
-#define CS8920 0x4000   
-#define CS8920M 0x6000   
+#define CS8920 0x4000
+#define CS8920M 0x6000
 #define REVISON_BITS 0x1F00
 #define EEVER_NUMBER 0x12
 #define CHKSUM_LEN 0x14

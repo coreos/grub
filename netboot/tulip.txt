@@ -1,15 +1,19 @@
 This software may be used and distributed according to the terms of
 the GNU Public License, incorporated herein by reference.
 
+This is a tulip and clone driver for Etherboot.  See the revision
+history in the tulip.c file for information on changes.  This version
+of the driver incorporates changes from Bob Edwards and Paul Mackerras
+who cantributed changes to support the TRENDnet TE100-PCIA NIC which
+uses a genuine Intel 21143-PD chipset.  There are also various code
+cleanups to make time-based activities more reliable.
+
 Of course you have to have all the usual Etherboot environment
 (bootp/dhcp/NFS) set up, and you need a Linux kernel with v0.91g
 (7.16.99) or later of the tulip.c driver compiled in to support some
 MX98715 based cards.  That file is available at:
 
   http://cesdis.gsfc.nasa.gov/linux/drivers/test/tulip.c
-
-See the comments at the beginning of ntulip.c for more information
-on the code.  
 
 NOTES
 
@@ -46,3 +50,4 @@ Regards,
 
 Marty Connor
 mdc@thinguin.org
+http://www.thinguin.org/

@@ -1,4 +1,4 @@
-#ifndef __OSDEP_H__
+#ifndef	__OSDEP_H__
 #define __OSDEP_H__
 
 /*
@@ -8,30 +8,39 @@
  * your option) any later version.
  */
 
-#if 1
-# define ETHERBOOT32
-# include <byteorder.h>
-# if 0
-#  include <linux-asm-string.h>
-# endif
-# include <linux-asm-io.h>
-#else
-#ifdef	__linux__
+#if	defined(__linux__) || defined(__FreeBSD__) || defined(GRUB)
 #define	ETHERBOOT32
-#include <asm/byteorder.h>
-#include "linux-asm-string.h"
-#include "linux-asm-io.h"
-#define	_edata	edata			/* ELF does not prepend a _ */
-#define	_end	end
-#endif
+#define ntohl(x) swap32(x)
+#define htonl(x) swap32(x)
+#define ntohs(x) swap16(x)
+#define htons(x) swap16(x)
 
-#ifdef	__FreeBSD__
-#define	ETHERBOOT32
-#include <sys/types.h>
-#include "linux-asm-string.h"
+static inline unsigned long int swap32(unsigned long int x)
+{
+	__asm__("xchgb %b0,%h0\n\t"
+		"rorl $16,%0\n\t"
+		"xchgb %b0,%h0"
+		: "=q" (x)
+		: "0" (x));
+	return x;
+}
+
+static inline unsigned short int swap16(unsigned short int x)
+{
+	__asm__("xchgb %b0,%h0"
+		: "=q" (x)
+		: "0" (x));
+	return x;
+}
+
+#ifndef GRUB
+# include "linux-asm-string.h"
+#endif /* ! GRUB */
 #include "linux-asm-io.h"
+#ifndef GRUB
 #define	_edata	edata			/* ELF does not prepend a _ */
 #define	_end	end
+#endif /* ! GRUB */
 #endif
 
 #ifdef	__BCC__
@@ -47,7 +56,6 @@ typedef unsigned char u_char;
 typedef unsigned short u_short;
 typedef unsigned int u_int;
 typedef unsigned long u_long;
-#endif
 #endif
 
 #if	!defined(ETHERBOOT16) && !defined(ETHERBOOT32)

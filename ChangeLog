@@ -1,3 +1,146 @@
+2000-04-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Update the network support to Etherboot 4.5.8.
+
+	* configure.in (--enable-3c590): New option.
+	(--enable-3c595): Likewise.
+	(--enable-depca): Likewise.
+	(--enable-lance): Likewise.
+	(--enable-ns8390): Likewise.
+	(--enable-ntulip): Likewise.
+	(--enable-lancepci): Removed.
+	(--enable-nepci): Likewise.
+	(--enable-otulip): Likewise.
+	(--enable-smc9000): The duplicated one is named to ...
+	(--enable-smc9000-scan): ... this. This was a typo, perhaps.
+	
+	* netboot/Makefile.am (libdrivers_a_SOURCES): Removed
+	byteorder.h, if.h, netboot_config.h and netdevice.h, and added
+	cards.h.
+	(EXTRA_libdrivers_a_SOURCES): Removed ntulip.c and tulip.h, and
+	added 3c595.c, 3c595.h, depca.c, otulip.c and otulip.h.
+	(libdrivers_a_CFLAGS): Define FSYS_TFTP as 1 instead of empty.
+	(EXTRA_DIST): Removed ntulip.txt, and added cs89x0.txt and
+	tulip.txt.
+	(3c595_drivers): New variable.
+	(depca_drivers): Likewise.
+	(lance_drivers): Removed lancepci.o and added lance.o.
+	(ns8390_drivers): Removed nepci.o and added ns8390.o.
+	(ntulip_drivers): Deleted.
+	(otulip_drivers): New variable.
+	($(3c595_drivers)): New target.
+	($(depca_drivers)): Likewise.
+	($(ntulip_drivers)): Deleted.
+	($(otulip_drivers)): New target.
+	(3c590_o_CFLAGS): New variable.
+	(3c595_o_CFLAGS): Likewise.
+	(depca_o_CFLAGS): Likewise.
+	(lancepci_o_CFLAGS): Deleted.
+	(lance_o_CFLAGS): New variable.
+	(nepci_o_CFLAGS): Deleted.
+	(ns8390_o_CFLAGS): New variable.
+	(ntulip_o_CFLAGS): Deleted.
+	(otulip_o_CFLAGS): New variable.
+	
+	* netboot/3c90x.c: Updated to Etherboot-4.5.8.
+	* netboot/3c90x.txt: Likewise.
+	* netboot/cs89x0.c: Likewise.
+	* netboot/cs89x0.h: Likewise.
+	* netboot/eepro100.c: Likewise.
+	* netboot/epic100.c: Likewise.
+	* netboot/epic100.h: Likewise.
+	* netboot/i82586.c: Likewise.
+	* netboot/lance.c: Likewise.
+	* netboot/linux-asm-io.h: Likewise.
+	* netboot/linux-asm-string.h: Likewise.
+	* netboot/nic.h: Likewise.
+	* netboot/ns8390.c: Likewise.
+	* netboot/ns8390.h: Likewise.
+	* netboot/pci.c: Likewise.
+	* netboot/pci.h: Likewise.
+	* netboot/rtl8139.c: Likewise.
+	* netboot/sk_g16.c: Likewise.
+	* netboot/sk_g16.h: Likewise.
+	* netboot/smc9000.c: Likewise.
+	* netboot/smc9000.h: Likewise.
+	* netboot/tiara.c: Likewise.
+	* netboot/tulip.c: Likewise.
+	* netboot/via-rhine.c: Likewise.
+
+	* netboot/config.c: Updated to Etherboot-4.5.8 and modified (see
+	below).
+	[GRUB] (print_config): Undefined.
+	(eth_probe) [GRUB]: If PROBED is true, do nothing. Otherwise,
+	clear NETWORK_READY and ARPTABLE, set ROM to ROM_INFO_LOCATION,
+	and set PROBED to 1 if succeeds.
+	* netboot/etherboot.h: Likewise,
+	(GRUB): New macro.
+	[GRUB]: Include <shared.h>.
+	[GRUB] (NO_DHCP_SUPPORT): Undefined.
+	[GRUB] (RELOC): Defined as zero.
+	[GRUB] (INTERNAL_BOOTP_DATA): Defined as one.
+	[GRUB] (USE_INTERNAL_BUFFER): Likewise.
+	[GRUB] (BACKOFF_LIMIT): Defined as 7.
+	[GRUB] (CTRL_C): New macro.
+	[GRUB] (print_network_configuration): Declared.
+	[GRUB] (ip_abort): Likewise.
+	[GRUB] (network_ready): Likewise.
+	* netboot/fsys_tftp.c: Don't include <netboot_config.h>.
+	(isocket): Renamed to ...
+	(iport): ... this.
+	(osocket): Renamed to ...
+	(oport): ... this.
+	(bcounter): New variable.
+	(buf_fill): When checking the block order, see BCOUNTER as well
+	as BLOCK.
+	Don't process a packet, if BLOCK minus PREVBLOCK is not 1,
+	instead of if BLOCK is less than or equal to PREVBLOCK.
+	Increment BCOUNTER after reseting RETRY.
+	(send_rrq): Clear BCOUNTER.
+	Call await_reply with AWAIT_QDRAIN.
+	* netboot/main.c: Don't include <netboot_config.h>.
+	(dhcpdiscover): Made const.
+	(dhcprequest): Likewise. Updated the contents.
+	(broadcast): Made const.
+	(udp_transmit): Copied.
+	(tftp): Likewise.
+	(bootp): Likewise.
+	(rarp): Likewise.
+	(await_reply): Likewise.
+	(decode_rfc1533): Likewise.
+	(rfc951_sleep): Likewise.
+	(cleanup_net): Likewise.
+	* netboot/misc.c (sleep): Copied.
+	(twiddle): Likewise.
+	(getdec): Likewise.
+	* netboot/osdep.h: Copied and modified (see below).
+	[GRUB] (ETHERBOOT32): Used the same definition as Linux and
+	FreeBSD.
+	[GRUB] (ntohl): Likewise.
+	[GRUB] (htonl): Likewise.
+	[GRUB] (ntohs): Likewise.
+	[GRUB] (htons): Likewise.
+	[GRUB] (swap32): Likewise.
+	[GRUB] (swap16): Likewise.
+	[GRUB]: Include "linux-asm-io.h".
+
+	* netboot/byteorder.h: Removed.
+	* netboot/if.h: Likewise.
+	* netboot/netboot_config.h: Likewise.
+	* netboot/netdevice.h: Likewise.
+	* netboot/ntulip.c: Likewise.
+	* netboot/ntulip.txt: Likewise.
+	* netboot/tulip.h: Likewise.
+	
+	* netboot/3c595.c: New file. Copied from Etherboot-4.5.8.
+	* netboot/3c595.h: Likewise.
+	* netboot/cards.h: Likewise.
+	* netboot/cs89x0.txt: Likewise.
+	* netboot/depca.c: Likewise.
+	* netboot/otulip.c: Likewise.
+	* netboot/otulip.h: Likewise.
+	* netboot/tulip.txt: Likewise.
+	
 2000-02-29  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/common.c (err_list): Added message for ERR_UNALIGNED.
