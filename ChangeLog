@@ -1,5 +1,55 @@
 2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/shared.h (BUILTIN_HELP_LIST): New macro. Used for
+	commands whose help messages are listed when no argument is
+	specified to the command "help".
+	* stage2/builtins.c (builtin_blocklist): Added the attribute
+	BUILTIN_HELP_LIST.
+	(builtin_boot): Likewise.
+	(builtin_bootp): Likewise.
+	(builtin_cat): Likewise.
+	(builtin_chainloader): Likewise.
+	(builtin_color): Likewise.
+	(builtin_configfile): Likewise.
+	(builtin_device): Likewise.
+	(builtin_dhcp): Likewise.
+	(builtin_displayapm): Likewise.
+	(builtin_displaymem): Likewise.
+	(builtin_find): Likewise.
+	(builtin_geometry): Likewise.
+	(builtin_halt): Likewise.
+	(builtin_help): Likewise.
+	(builtin_hide): Likewise.
+	(builtin_ifconfig): Likewise.
+	(builtin_initrd): Likewise.
+	(builtin_kernel): Likewise.
+	(builtin_makeactive): Likewise.
+	(builtin_map): Likewise.
+	(builtin_md5crypt): Likewise.
+	(builtin_module): Likewise.
+	(builtin_modulenounzip): Likewise.
+	(builtin_partnew): Likewise.
+	(builtin_parttype): Likewise.
+	(builtin_quit): Likewise.
+	(builtin_rarp): Likewise.
+	(builtin_reboot): Likewise.
+	(builtin_root): Likewise.
+	(builtin_rootnoverify): Likewise.
+	(builtin_serial): Likewise.
+	(builtin_setkey): Likewise.
+	(builtin_setup): Likewise.
+	(builtin_terminal): Likewise.
+	(builtin_testvbe): Likewise.
+	(builtin_tftpserver): Likewise.
+	(builtin_unhide): Likewise.
+	(builtin_uppermem): Likewise.
+	(builtin_vbeprobe): Likewise.
+
+	(help_func): When no argument is specified, if the last entry
+	was at the left column, print an extra newline.
+	
+2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/shared.h (BUILTIN_HIDDEN): Renamed to ...
 	(BUILTIN_NO_ECHO): ... this. The old name was too difficult to
 	see _what_ was hidden.

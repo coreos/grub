@@ -840,6 +840,7 @@ void stop_floppy (void);
 #define BUILTIN_TITLE		0x4	/* Only for the command title.  */
 #define BUILTIN_SCRIPT		0x8	/* Run in the script.  */
 #define BUILTIN_NO_ECHO		0x10	/* Don't print command on booting. */
+#define BUILTIN_HELP_LIST	0x20	/* Show help in listing.  */
 
 /* The table for a builtin.  */
 struct builtin

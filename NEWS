@@ -2,10 +2,16 @@ NEWS - list of user-visible changes between releases of GRUB
 
 New in 0.92:
 * The command "displaymem" uses only hex digits for consistency.
-* The netboot code go backs to the progress bars instead of dots, for the
-  notation of data transfers. And, that is displayed only in debug mode,
-  that is to say, nothing is displayed by default. Remember that you can
-  turn on debug mode via the command "debug".
+* The netboot code goes back to the progress bars instead of dots, for
+  the notation of data transfers. And, that is displayed only in debug
+  mode, that is to say, nothing is displayed by default. Remember that
+  you can turn on debug mode via the command "debug".
+* The command "help" doesn't show all the available commands any longer,
+  when no argument is specified. Rarely used commands (such as
+  "testload") and useless commands in interactive use (such as
+  "savedefault") are hidden. If you want to see help messages for those
+  commands, you will have to specify the names to "help" explicitly.
+  (Also, note that <TAB> still shows all the commands.)
 
 New in 0.91 - 2002-01-21:
 * Support for Linux DAC960 is added.

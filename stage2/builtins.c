@@ -229,7 +229,7 @@ static struct builtin builtin_blocklist =
 {
   "blocklist",
   blocklist_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "blocklist FILE",
   "Print the blocklist notation of the file FILE."
 };
@@ -347,7 +347,7 @@ static struct builtin builtin_boot =
 {
   "boot",
   boot_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "boot",
   "Boot the OS/chain-loader which has been loaded."
 };
@@ -390,7 +390,7 @@ static struct builtin builtin_bootp =
 {
   "bootp",
   bootp_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "bootp [--with-configfile]",
   "Initialize a network device via BOOTP. If the option `--with-configfile'"
   " is given, try to load a configuration file specified by the 150 vendor"
@@ -419,7 +419,7 @@ static struct builtin builtin_cat =
 {
   "cat",
   cat_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "cat FILE",
   "Print the contents of the file FILE."
 };
@@ -491,7 +491,7 @@ static struct builtin builtin_chainloader =
 {
   "chainloader",
   chainloader_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "chainloader [--force] FILE",
   "Load the chain-loader FILE. If --force is specified, then load it"
   " forcibly, whether the boot loader signature is present or not."
@@ -701,7 +701,7 @@ static struct builtin builtin_color =
 {
   "color",
   color_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "color NORMAL [HIGHLIGHT]",
   "Change the menu colors. The color NORMAL is used for most"
   " lines in the menu, and the color HIGHLIGHT is used to highlight the"
@@ -751,7 +751,7 @@ static struct builtin builtin_configfile =
 {
   "configfile",
   configfile_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "configfile FILE",
   "Load FILE as the configuration file."
 };
@@ -849,7 +849,7 @@ static struct builtin builtin_device =
 {
   "device",
   device_func,
-  BUILTIN_MENU | BUILTIN_CMDLINE,
+  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "device DRIVE DEVICE",
   "Specify DEVICE as the actual drive for a BIOS drive DRIVE. This command"
   " can be used only in the grub shell."
@@ -870,7 +870,7 @@ static struct builtin builtin_dhcp =
 {
   "dhcp",
   dhcp_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "dhcp",
   "Initialize a network device via DHCP."
 };
@@ -913,7 +913,7 @@ static struct builtin builtin_displayapm =
 {
   "displayapm",
   displayapm_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "displayapm",
   "Display APM BIOS information."
 };
@@ -967,7 +967,7 @@ static struct builtin builtin_displaymem =
 {
   "displaymem",
   displaymem_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "displaymem",
   "Display what GRUB thinks the system address space map of the"
   " machine is, including all regions of physical RAM installed."
@@ -1232,7 +1232,7 @@ static struct builtin builtin_find =
 {
   "find",
   find_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "find FILENAME",
   "Search for the filename FILENAME in all of partitions and print the list of"
   " the devices which contain the file."
@@ -1354,7 +1354,7 @@ static struct builtin builtin_geometry =
 {
   "geometry",
   geometry_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "geometry DRIVE [CYLINDER HEAD SECTOR [TOTAL_SECTOR]]",
   "Print the information for a drive DRIVE. In the grub shell, you can"
   " set the geometry of the drive arbitrarily. The number of the cylinders,"
@@ -1382,7 +1382,7 @@ static struct builtin builtin_halt =
 {
   "halt",
   halt_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "halt [--no-apm]",
   "Halt your system. If APM is avaiable on it, turn off the power using"
   " the APM BIOS, unless you specify the option `--no-apm'."
@@ -1407,9 +1407,9 @@ help_func (char *arg, int flags)
 	  int len;
 	  int i;
 
-	  /* If this cannot be run in the command-line interface,
+	  /* If this doesn't need to be listed automatically,
 	     skip this.  */
-	  if (! ((*builtin)->flags & BUILTIN_CMDLINE))
+	  if (! ((*builtin)->flags & BUILTIN_HELP_LIST))
 	    continue;
 
 	  len = grub_strlen ((*builtin)->short_doc);
@@ -1428,6 +1428,11 @@ help_func (char *arg, int flags)
 
 	  left = ! left;
 	}
+
+      /* If the last entry was at the left column, no newline was printed
+	 at the end.  */
+      if (! left)
+	grub_putchar ('\n');
     }
   else
     {
@@ -1492,7 +1497,7 @@ static struct builtin builtin_help =
 {
   "help",
   help_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "help [PATTERN ...]",
   "Display helpful information about builtin commands."
 };
@@ -1535,7 +1540,7 @@ static struct builtin builtin_hide =
 {
   "hide",
   hide_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "hide PARTITION",
   "Hide PARTITION by setting the \"hidden\" bit in"
   " its partition type code."
@@ -1589,7 +1594,7 @@ static struct builtin builtin_ifconfig =
 {
   "ifconfig",
   ifconfig_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "ifconfig [--address=IP] [--gateway=IP] [--mask=MASK] [--server=IP]",
   "Configure the IP address, the netmask, the gateway and the server"
   " address or print current network configuration."
@@ -1649,7 +1654,7 @@ static struct builtin builtin_initrd =
 {
   "initrd",
   initrd_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "initrd FILE [ARG ...]",
   "Load an initial ramdisk FILE for a Linux format boot image and set the"
   " appropriate parameters in the Linux setup area in memory."
@@ -2307,7 +2312,7 @@ static struct builtin builtin_kernel =
 {
   "kernel",
   kernel_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "kernel [--no-mem-option] [--type=TYPE] FILE [ARG ...]",
   "Attempt to load the primary boot image from FILE. The rest of the"
   " line is passed verbatim as the \"kernel command line\".  Any modules"
@@ -2356,7 +2361,7 @@ static struct builtin builtin_makeactive =
 {
   "makeactive",
   makeactive_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "makeactive",
   "Set the active partition on the root disk to GRUB's root device."
   " This command is limited to _primary_ PC partitions on a hard disk."
@@ -2419,7 +2424,7 @@ static struct builtin builtin_map =
 {
   "map",
   map_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "map TO_DRIVE FROM_DRIVE",
   "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
   " when you chain-load some operating systems, such as DOS, if such an"
@@ -2479,7 +2484,7 @@ static struct builtin builtin_md5crypt =
 {
   "md5crypt",
   md5crypt_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "md5crypt",
   "Generate a password in MD5 format."
 };
@@ -2524,7 +2529,7 @@ static struct builtin builtin_module =
 {
   "module",
   module_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "module FILE [ARG ...]",
   "Load a boot module FILE for a Multiboot format boot image (no"
   " interpretation of the file contents is made, so users of this"
@@ -2557,7 +2562,7 @@ static struct builtin builtin_modulenounzip =
 {
   "modulenounzip",
   modulenounzip_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "modulenounzip FILE [ARG ...]",
   "The same as `module', except that automatic decompression is"
   " disabled."
@@ -2676,7 +2681,7 @@ static struct builtin builtin_partnew =
 {
   "partnew",
   partnew_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "partnew PART TYPE START LEN",
   "Create a primary partition at the starting address START with the"
   " length LEN, with the type TYPE. START and LEN are in sector units."
@@ -2754,7 +2759,7 @@ static struct builtin builtin_parttype =
 {
   "parttype",
   parttype_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "parttype PART TYPE",
   "Change the type of the partition PART to TYPE."
 };
@@ -2872,7 +2877,7 @@ static struct builtin builtin_quit =
 {
   "quit",
   quit_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "quit",
   "Exit from the GRUB shell."
 };
@@ -2901,7 +2906,7 @@ static struct builtin builtin_rarp =
 {
   "rarp",
   rarp_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "rarp",
   "Initialize a network device via RARP."
 };
@@ -2946,7 +2951,7 @@ static struct builtin builtin_reboot =
 {
   "reboot",
   reboot_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "reboot",
   "Reboot your system."
 };
@@ -3030,7 +3035,7 @@ static struct builtin builtin_root =
 {
   "root",
   root_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "root [DEVICE [HDBIAS]]",
   "Set the current \"root device\" to the device DEVICE, then"
   " attempt to mount it to get the partition size (for passing the"
@@ -3069,7 +3074,7 @@ static struct builtin builtin_rootnoverify =
 {
   "rootnoverify",
   rootnoverify_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "rootnoverify [DEVICE [HDBIAS]]",
   "Similar to `root', but don't attempt to mount the partition. This"
   " is useful for when an OS is outside of the area of the disk that"
@@ -3290,7 +3295,7 @@ static struct builtin builtin_serial =
 {
   "serial",
   serial_func,
-  BUILTIN_MENU | BUILTIN_CMDLINE,
+  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "serial [--unit=UNIT] [--port=PORT] [--speed=SPEED] [--word=WORD] [--parity=PARITY] [--stop=STOP] [--device=DEV]",
   "Initialize a serial device. UNIT is a digit that specifies which serial"
   " device is used (e.g. 0 == COM1). If you need to specify the port number,"
@@ -3533,7 +3538,7 @@ static struct builtin builtin_setkey =
 {
   "setkey",
   setkey_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "setkey [TO_KEY FROM_KEY]",
   "Change the keyboard map. The key FROM_KEY is mapped to the key TO_KEY."
   " A key must be an alphabet, a digit, or one of these: escape, exclam,"
@@ -3836,7 +3841,7 @@ static struct builtin builtin_setup =
 {
   "setup",
   setup_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "setup [--prefix=DIR] [--stage2=STAGE2_FILE] [--force-lba] INSTALL_DEVICE [IMAGE_DEVICE]",
   "Set up the installation of GRUB automatically. This command uses"
   " the more flexible command \"install\" in the backend and installs"
@@ -3999,7 +4004,7 @@ static struct builtin builtin_terminal =
 {
   "terminal",
   terminal_func,
-  BUILTIN_MENU | BUILTIN_CMDLINE,
+  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "terminal [--dumb] [--timeout=SECS] [console] [serial]",
   "Select a terminal. When serial is specified, wait until you push any key"
   " to continue. If both console and serial are specified, the terminal"
@@ -4199,7 +4204,7 @@ static struct builtin builtin_testvbe =
 {
   "testvbe",
   testvbe_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "testvbe MODE",
   "Test the VBE mode MODE. Hit any key to return."
 };
@@ -4224,7 +4229,7 @@ static struct builtin builtin_tftpserver =
 {
   "tftpserver",
   tftpserver_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "tftpserver IPADDR",
   "Override the TFTP server address."
 };
@@ -4292,7 +4297,7 @@ static struct builtin builtin_unhide =
 {
   "unhide",
   unhide_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
+  BUILTIN_CMDLINE | BUILTIN_MENU | BUILTIN_HELP_LIST,
   "unhide PARTITION",
   "Unhide PARTITION by clearing the \"hidden\" bit in its"
   " partition type code."
@@ -4314,7 +4319,7 @@ static struct builtin builtin_uppermem =
 {
   "uppermem",
   uppermem_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "uppermem KBYTES",
   "Force GRUB to assume that only KBYTES kilobytes of upper memory are"
   " installed.  Any system address range maps are discarded."
@@ -4433,7 +4438,7 @@ static struct builtin builtin_vbeprobe =
 {
   "vbeprobe",
   vbeprobe_func,
-  BUILTIN_CMDLINE,
+  BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
   "vbeprobe [MODE]",
   "Probe VBE information. If the mode number MODE is specified, show only"
   " the information about only the mode."
