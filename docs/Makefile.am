@@ -13,6 +13,6 @@ grub.info: grub.texi
 
 if GRUB_MAINT
 $(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
-	$(srcdir)/$(HELP2MAN) --name="the stage2 emulator shell" \
+	$(srcdir)/$(HELP2MAN) --name="the grub shell" \
 		--section=8 --output=$@ $<
 endif

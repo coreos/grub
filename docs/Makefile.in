@@ -405,7 +405,7 @@ grub.info: grub.texi
 	  && sed 's/@command/@file/g; s/ifnottex/ifinfo/' grub.texi | $(MAKEINFO)
 
 @GRUB_MAINT_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
-@GRUB_MAINT_TRUE@	$(srcdir)/$(HELP2MAN) --name="the stage2 emulator shell" \
+@GRUB_MAINT_TRUE@	$(srcdir)/$(HELP2MAN) --name="the grub shell" \
 @GRUB_MAINT_TRUE@		--section=8 --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -33,7 +33,7 @@ Add keyboard layout configuration support.
 
 Clean up and enhance the manuals, especially concept indexes.
 
-Add more filesystems support (minix, NTFS, etc.)
+Add more filesystems support (XFS, NTFS, etc.)
 
 ??? Add hide and unhide facilities.
 

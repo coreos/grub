@@ -82,7 +82,7 @@ edition documents version @value{VERSION}.
 * Using::                       Booting your operating system.
 * Filesystems::                 Filesystem syntax and semantics.
 * Troubleshooting::             Error messages produced by GRUB.
-* Stage 2 emulator::            The @command{grub} command.
+* The grub shell::              The @command{grub} command.
 * Hacking::                     Implementation details.
 * Index::                       Index.
 
@@ -120,7 +120,7 @@ Error messages reported by GRUB
 
 The @command{grub} command
 
-* Basic usage::                 How to use the Stage 2 emulator.
+* Basic usage::                 How to use the grub shell.
 * Installation under UNIX::     How to install GRUB via @command{grub}.
 
 Implementation details
@@ -250,8 +250,8 @@ partitions, and files in a directory depending on context.
 @item Multiple Filesystem Types
 Supports multiple filesystem types transparently, plus a useful explicit
 blocklist notation. The currently supported filesystem types are
-@dfn{BSD FFS}, @dfn{DOS FAT}, and @dfn{Linux ext2fs}.
-@xref{Filesystems}, for more information.
+@dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, and
+@dfn{Linux ext2fs}. @xref{Filesystems}, for more information.
 
 @item Decompression Support
 Can decompress files which were compressed by
@@ -890,8 +890,8 @@ Filesystem test mode is turned off by any use of the @command{install=}
 or @command{testload=} commands.
 
 @item quit
-Exit from the GRUB stage2 emulator @command{grub} (@pxref{Stage 2
-emulator}). This is just ignored in the native Stage 2.
+Exit from the grub shell @command{grub} (@pxref{The grub shell}). This
+is just ignored in the native Stage 2.
 @end table
 
 
@@ -1177,19 +1177,19 @@ install of set active partition command.
 @end table
 
 
-@node Stage 2 emulator
+@node The grub shell
 @chapter The command @command{grub}
 
-This chapter documents the Stage 2 emulator @command{grub}.
+This chapter documents the grub shell @command{grub}.
 
 @menu
-* Basic usage::                 How to use the Stage 2 emulator.
+* Basic usage::                 How to use the grub shell.
 * Installation under UNIX::     How to install GRUB via @command{grub}.
 @end menu
 
 
 @node Basic usage
-@section Introduction into the Stage 2 emulator
+@section Introduction into the grub shell
 
 You can use the command @command{grub} for installing GRUB under your
 operating systems and for a testbed when you add a new feature into GRUB

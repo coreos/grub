@@ -1,3 +1,35 @@
+1999-08-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/Makefile.am [GRUB_MAINT] (grub.8): The argument for the
+	option --name is changed to "the grub shell".
+	* docs/grub.8: Regenerated.
+	* docs/grub.texi: Do not use the name "the Stage 2 emulator" any
+	more. Use the name "the grub shell" instead.
+	
+1999-08-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Klaus Reichl <klaus.reichl@alcatel.at>:
+	* stage2/fsys_minix.c: New file.
+	* stage2/size_test: Added a check for the size of minix_stage1_5.
+	* stage2/Makefile.am (libgrub_a_SOURCES): Added fsys_minix.c.
+	(libgrub_a_CFLAGS): Added -DFSYS_MINIX=1.
+	(nodist_pkgdata_DATA): Added minix_stage1_5.
+	(noinst_PROGRAMS): Added minix_stage1_5.exec.
+	(stage2_exec_SOURCES): Added fsys_minix.c.
+	(minix_stage1_5_exec_SOURCES): New variable.
+	(minix_stage1_5_exec_CFLAGS): Likewise.
+	(minix_stage1_5_exec_LDFLAGS): Likewise.
+	* stage2/pc_slice.h (PC_SLICE_TYPE_MINIX): New macro.
+	* stage2/disk_io.c (fsys_table) [FSYS_MINIX]: Added minix entry.
+	* stage2/filesys.h [FSYS_MINIX] (FSYS_MINIX_NUM): Set to 1.
+	[!FSYS_MINIX] (FSYS_MINIX_NUM): Set to 0.
+	[!NUM_FSYS] (NUM_FSYS): Added FSYS_MINIX_NUM.
+	* stage2/shared.h (STAGE2_ID_MINIX_STAGE1_5): New macro.
+	[STAGE1_5 && FSYS_MINIX] (STAGE2_ID): Set to
+	STAGE2_ID_MINIX_STAGE1_5.
+	* grub/Makefile.am (AM_CFLAGS): Added -DFSYS_MINIX=1.
+	* configure.in (--disable-minix): New option.
+	
 1999-08-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Jochen Hoenicke <jochen@gnu.org>:

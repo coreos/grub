@@ -41,6 +41,9 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 # ifdef FSYS_EXT2FS
   {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir},
 # endif
+# ifdef FSYS_MINIX
+  {"minix", minix_mount, minix_read, minix_dir},
+# endif
   /* XX FFS should come last as it's superblock is commonly crossing tracks
      on floppies from track 1 to 2, while others only use 1.  */
 # ifdef FSYS_FFS

@@ -106,6 +106,7 @@
 #define PC_SLICE_TYPE_FAT32_LBA		0xc
 #define PC_SLICE_TYPE_FAT16_LBA		0xe
 #define PC_SLICE_TYPE_WIN95_EXTENDED	0xf
+#define PC_SLICE_TYPE_MINIX		0x80
 #define PC_SLICE_TYPE_EXT2FS       	0x83
 
 /* For convinience.  */

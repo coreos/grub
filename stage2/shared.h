@@ -130,23 +130,26 @@ extern char *grub_scratch_mem;
 #define STAGE2_VER_STR_OFFS  0xd
 
 /* Stage 2 identifiers */
-#define STAGE2_ID_STAGE2	0
-#define STAGE2_ID_FFS_STAGE1_5	1
-#define STAGE2_ID_E2FS_STAGE1_5	2
-#define STAGE2_ID_FAT_STAGE1_5	3
+#define STAGE2_ID_STAGE2		0
+#define STAGE2_ID_FFS_STAGE1_5		1
+#define STAGE2_ID_E2FS_STAGE1_5		2
+#define STAGE2_ID_FAT_STAGE1_5		3
+#define STAGE2_ID_MINIX_STAGE1_5	4
 
 #ifndef STAGE1_5
-#define STAGE2_ID	STAGE2_ID_STAGE2
+# define STAGE2_ID	STAGE2_ID_STAGE2
 #else
-#if defined(FSYS_FFS)
-#define STAGE2_ID	STAGE2_ID_FFS_STAGE1_5
-#elif defined(FSYS_EXT2FS)
-#define STAGE2_ID	STAGE2_ID_E2FS_STAGE1_5
-#elif defined(FSYS_FAT)
-#define STAGE2_ID	STAGE2_ID_FAT_STAGE1_5
-#else
-#error "unknown Stage 2"
-#endif
+# if defined(FSYS_FFS)
+#  define STAGE2_ID	STAGE2_ID_FFS_STAGE1_5
+# elif defined(FSYS_EXT2FS)
+#  define STAGE2_ID	STAGE2_ID_E2FS_STAGE1_5
+# elif defined(FSYS_FAT)
+#  define STAGE2_ID	STAGE2_ID_FAT_STAGE1_5
+# elif defined(FSYS_MINIX)
+#  define STAGE2_ID	STAGE2_ID_MINIX_STAGE1_5
+# else
+#  error "unknown Stage 2"
+# endif
 #endif
 
 /*

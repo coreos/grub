@@ -51,8 +51,18 @@ int ext2fs_dir (char *dirname);
 #define FSYS_EXT2FS_NUM 0
 #endif
 
+#ifdef FSYS_MINIX
+#define FSYS_MINIX_NUM 1
+int minix_mount (void);
+int minix_read (char *buf, int len);
+int minix_dir (char *dirname);
+#else
+#define FSYS_MINIX_NUM 0
+#endif
+
 #ifndef NUM_FSYS
-#define NUM_FSYS  ( FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM )
+#define NUM_FSYS	\
+  (FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM + FSYS_MINIX_NUM)
 #endif
 
 /* defines for the block filesystem info area */

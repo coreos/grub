@@ -47,6 +47,9 @@ check fat_stage1_5 31744
 # Likewise.
 check e2fs_stage1_5 31744
 
+# Likewise.
+check minix_stage1_5 31744
+
 # This limitation is arbitrary; If you want to make this larger, just
 # modify Stage 1.
 check stage2 46080
