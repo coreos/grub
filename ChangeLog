@@ -1,3 +1,34 @@
+2002-09-20  Jason Thomas <jason@topic.com.au>
+
+	Changed highlight state code for hercules, console and serial.
+	The state was 0 - normal or 1 - highlight.
+	The state is now defined using an enum called color_state.
+
+	* stage2/term.h (color_state): New enum.
+	(COLOR_STATE_STANDARD): Standard color to use when not using user defined.
+	(COLOR_STATE_NORMAL): User defined normal color.
+	(COLOR_STATE_HIGHLIGHT): User defined highlight color.
+	(console_highlight): Renamed to console_setcolorstate.
+	(serial_highlight): Renamed to serial_setcolorstate.
+	(hercules_highlight): Renamed to hercules_setcolorstate.
+	* stage2/hercules.c (herc_highlight_state): Removed.
+	(herc_standard_color): New variable.
+	(herc_color_state): Likewise.
+	(herc_highlight): Renamed to herc_setcolorstate.
+	(herc_setcolorstate): Added switch to handle new states.
+	* stage2/console.c (console_highlight_state): Removed.
+	(console_standard_color): New variable.
+	(console_color_state): Likewise.
+	(console_highlight): Renamed to console_setcolorstate.
+	(console_setcolorstate): Added switch to handle new states.
+	* stage2/serial.c (serial_highlight): Renamed to serial_setcolorstate.
+	(serial_setcolorstate): Adjusted 'if' to suit new states.
+	* grub/asmstub.c (console_highlight): Renamed to console_setcolorstate.
+	(console_setcolorstate): Adjusted 'if' to suit new states.
+	* stage2/stage2.c (print_entry): Set color states using new states.
+	(print_border): Likewise.
+	* stage2/stage2.c (run_menu): Reverse if (!) to if () for uniformitty.
+
 2002-07-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/boot.c (load_image): Rewrite the Linux booting support

@@ -98,11 +98,12 @@ static void
 print_entry (int y, int highlight, char *entry)
 {
   int x;
+
+  if (current_term->setcolorstate)
+    current_term->setcolorstate (COLOR_STATE_NORMAL);
   
-  highlight = (highlight && current_term->highlight);
-  
-  if (highlight)
-    current_term->highlight (1);
+  if (highlight && current_term->setcolorstate)
+    current_term->setcolorstate (COLOR_STATE_HIGHLIGHT);
 
   gotoxy (2, y);
   grub_putchar (' ');
@@ -115,8 +116,8 @@ print_entry (int y, int highlight, char *entry)
     }
   gotoxy (74, y);
 
-  if (highlight)
-    current_term->highlight (0);
+  if (current_term->setcolorstate)
+    current_term->setcolorstate (COLOR_STATE_STANDARD);
 }
 
 /* Print entries in the menu box.  */
@@ -186,6 +187,9 @@ static void
 print_border (int y, int size)
 {
   int i;
+
+  if (current_term->setcolorstate)
+    current_term->setcolorstate (COLOR_STATE_NORMAL);
   
   gotoxy (1, y);
 
@@ -213,6 +217,9 @@ print_border (int y, int size)
   for (i = 0; i < 73; i++)
     grub_putchar (DISP_HORIZ);
   grub_putchar (DISP_LR);
+
+  if (current_term->setcolorstate)
+    current_term->setcolorstate (COLOR_STATE_STANDARD);
 }
 
 static void
@@ -287,10 +294,10 @@ restart:
       init_page ();
       nocursor ();
 
-      if (! (current_term->flags & TERM_DUMB))
-	print_border (3, 12);
-      else
+      if (current_term->flags & TERM_DUMB)
 	print_entries_raw (num_entries, first_entry, menu_entries);
+      else
+	print_border (3, 12);
 
       grub_printf ("\n\
       Use the %c and %c keys to select which entry is highlighted.\n",

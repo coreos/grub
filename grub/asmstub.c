@@ -727,9 +727,10 @@ console_cls (void)
 }
 
 void
-console_highlight (int state)
+console_setcolorstate (color_state state)
 {
-  console_current_color = state ? A_REVERSE : A_NORMAL;
+  console_current_color = 
+    (state == COLOR_STATE_HIGHLIGHT) ? A_REVERSE : A_NORMAL;
 }
 
 void
@@ -1250,9 +1251,9 @@ hercules_cls (void)
 }
 
 void
-hercules_highlight (int state)
+hercules_setcolorstate (color_state state)
 {
-  console_highlight (state);
+  console_setcolorstate (state);
 }
 
 void

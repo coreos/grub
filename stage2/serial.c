@@ -414,10 +414,10 @@ serial_cls (void)
 }
 
 void
-serial_highlight (int state)
+serial_setcolorstate (color_state state)
 {
   keep_track = 0;
-  grub_printf ("\e[%cm", state ? '7' : '0');
+  grub_printf ("\e[%cm", (state == COLOR_STATE_HIGHLIGHT) ? '7' : '0');
   keep_track = 1;
 }
 

@@ -41,7 +41,7 @@ struct term_entry term_table[] =
       console_getxy,
       console_gotoxy,
       console_cls,
-      console_highlight,
+      console_setcolorstate,
       console_setcolor,
       console_nocursor
     },
@@ -56,7 +56,7 @@ struct term_entry term_table[] =
       serial_getxy,
       serial_gotoxy,
       serial_cls,
-      serial_highlight,
+      serial_setcolorstate,
       0,
       0
     },
@@ -71,7 +71,7 @@ struct term_entry term_table[] =
       hercules_getxy,
       hercules_gotoxy,
       hercules_cls,
-      hercules_highlight,
+      hercules_setcolorstate,
       hercules_setcolor,
       hercules_nocursor
     },      
@@ -1028,13 +1028,13 @@ grub_putchar (int c)
 		 the following grub_printf call will print newlines.  */
 	      count_lines = -1;
 
-	      if (current_term->highlight)
-		current_term->highlight (1);
+	      if (current_term->setcolorstate)
+		current_term->setcolorstate (COLOR_STATE_HIGHLIGHT);
 	      
 	      grub_printf ("\n[Hit return to continue]");
 
-	      if (current_term->highlight)
-		current_term->highlight (0);
+	      if (current_term->setcolorstate)
+		current_term->setcolorstate (COLOR_STATE_NORMAL);
 	      
 	      do
 		{

@@ -21,6 +21,19 @@
 #ifndef GRUB_TERM_HEADER
 #define GRUB_TERM_HEADER	1
 
+/* These are used to represent the various color states we use */
+typedef enum
+{
+  /* represents the color used to display all text that does not use the user
+   * defined colors below
+   */
+  COLOR_STATE_STANDARD,
+  /* represents the user defined colors for normal text */
+  COLOR_STATE_NORMAL,
+  /* represents the user defined colors for highlighted text */
+  COLOR_STATE_HIGHLIGHT
+} color_state;
+
 #ifndef STAGE1_5
 
 /* Flags for representing the capabilities of a terminal.  */
@@ -59,8 +72,8 @@ struct term_entry
   void (*gotoxy) (int x, int y);
   /* Clear the screen.  */
   void (*cls) (void);
-  /* Highlight characters written after this call, if STATE is true.  */
-  void (*highlight) (int state);
+  /* Set the current color to be used */
+  void (*setcolorstate) (color_state state);
   /* Set the normal color and the highlight color. The format of each
      color is VGA's.  */
   void (*setcolor) (int normal_color, int highlight_color);
@@ -86,7 +99,7 @@ int console_getkey (void);
 int console_getxy (void);
 void console_gotoxy (int x, int y);
 void console_cls (void);
-void console_highlight (int state);
+void console_setcolorstate (color_state state);
 void console_setcolor (int normal_color, int highlight_color);
 void console_nocursor (void);
 #endif
@@ -98,7 +111,7 @@ int serial_getkey (void);
 int serial_getxy (void);
 void serial_gotoxy (int x, int y);
 void serial_cls (void);
-void serial_highlight (int state);
+void serial_setcolorstate (color_state state);
 #endif
 
 #ifdef SUPPORT_HERCULES
@@ -106,7 +119,7 @@ void hercules_putchar (int c);
 int hercules_getxy (void);
 void hercules_gotoxy (int x, int y);
 void hercules_cls (void);
-void hercules_highlight (int state);
+void hercules_setcolorstate (color_state state);
 void hercules_setcolor (int normal_color, int highlight_color);
 void hercules_nocursor (void);
 #endif
