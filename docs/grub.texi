@@ -3466,7 +3466,7 @@ Use @var{file} as the grub shell.
 
 
 @node Invoking grub-terminfo
-@chapter Invoking grub-md5-crypt
+@chapter Invoking grub-terminfo
 
 The program @command{grub-terminfo} generates a terminfo command from
 a terminfo name (@pxref{terminfo}). The result can be used in the

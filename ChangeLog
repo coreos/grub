@@ -1,3 +1,14 @@
+2004-04-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* netboot/fsys_tftp.c (buf_fill): Cast 1 to unsigned short
+	explicitly so that the constant doesn't extend unsigned short
+	to int automatically.
+	Reported by Eduard Guzovsky <eguzovsk@enterasys.com>.
+
+	* docs/grub.texi (Invoking grub-md5-crypt): Fixed the chapter
+	name.
+	Reported by Martin Pool <mbp@sourcefrog.net>.
+
 2004-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac (STAGE2_CFLAGS): Check if -fno-stack-protector is
