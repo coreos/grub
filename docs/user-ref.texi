@@ -1144,7 +1144,7 @@ The following is a comprehensive list of error messages for the Stage 2
 description):
 
 @table @asis
-@item 1 : Bad filename (must be absolute filename or blocklist)
+@item 1 : Filename must be either an absolute filename or blocklist
 This error is returned if a filename is requested which doesn't fit the
 syntax/rules listed in the @ref{Filesystem}.
 
@@ -1156,7 +1156,7 @@ something like a symbolic link, directory, or FIFO.
 This error is returned the run-length decompression code gets an
 internal error. This is usually from a corrupt file.
 
-@item 4 : Bad or incompatible header on compressed file
+@item 4 : Bad or incompatible header in compressed file
 This error is returned if the file header for a supposedly compressed
 file is bad.
 
@@ -1164,7 +1164,7 @@ file is bad.
 This error s returned if the sanity checks on the integrity of the
 partition table fail. This is a bad sign.
 
-@item 6 : Bad or corrupt version of stage1/stage2
+@item 6 : Mismatched or corrupt version of stage1/stage2
 This error is returned if the install command is pointed to incompatible
 or corrupt versions of the stage1 or stage2. It can't detect corruption
 in general, but this is a sanity check on the version numbers, which
@@ -1175,7 +1175,7 @@ This error is returned if the lowest address in a kernel is below the
 1MB boundary. The Linux zImage format is a special case and can be
 handled since it has a fixed loading address and maximum size.
 
-@item 8 : Cannot boot without kernel loaded
+@item 8 : Kernel must be loaded before booting
 This error is returned if GRUB is told to execute the boot sequence
 without having a kernel to start.
 
@@ -1189,7 +1189,7 @@ header requires a feature that is not recognized. The point of this is
 that the kernel requires special handling which GRUB is likely unable to
 provide.
 
-@item 11 : Device string unrecognizable
+@item 11 : Unrecognized device string
 This error is returned if a device string was expected, and the string
 encountered didn't fit the syntax/rules listed in the @ref{Filesystem}.
 
@@ -1202,7 +1202,7 @@ This error is returned if the kernel image being loaded is not
 recognized as Multiboot or one of the supported native formats (Linux
 zImage or bzImage, FreeBSD, or NetBSD).
 
-@item 14 : Filesystem compatibility error, can't read whole file
+@item 14 : Filesystem compatibility error, cannot read whole file
 Some of the filesystem reading code in GRUB has limits on the length of
 the files it can read. This error is returned when the user runs into
 such a limit.
@@ -1227,12 +1227,12 @@ address beyond the end of the BIOS translated area. This generally
 happens if your disk is larger than the BIOS can handle (512MB for
 (E)IDE disks on older machines or larger than 8GB in general).
 
-@item 19 : Must load Linux kernel before initrd
+@item 19 : Linux kernel must be loaded before initrd
 This error is returned if the initrd command is used before loading a
 Linux kernel. Similar to the above error, it only makes sense in that
 case anyway.
 
-@item 20 : Must load Multiboot kernel before modules
+@item 20 : Multiboot kernel must be loaded before modules
 This error is returned if the module load command is used before loading
 a Multiboot kernel. It only makes sense in this case anyway, as GRUB has
 no idea how to communicate the presence of location of such modules to a
@@ -1270,7 +1270,7 @@ This error is returned if an unrecognized command is entered into the
 command line or in a boot sequence section of a configuration file and
 that entry is selected.
 
-@item 28 : Selected item won't fit into memory
+@item 28 : Selected item cannot fit into memory
 This error is returned if a kernel, module, or raw file load command is
 either trying to load its data such that it won't fit into memory or it
 is simply too big.
@@ -1280,7 +1280,7 @@ This error is returned if there is a disk write error when trying to
 write to a particular disk. This would generally only occur during an
 install of set active partition command.
 
-@item 30 : Invalid argument specified
+@item 30 : Invalid argument
 This error is returned if an argument specified to a command is invalid.
 
 @item 31 : File is not sector aligned
@@ -1288,7 +1288,7 @@ This error may occur only when you access a ReiserFS partition by
 block-lists (e.g. the command @command{install}). In this case, you
 should mount the partition with the @samp{-o notail} option.
 
-@item 32 : Must be autheticated
+@item 32 : Must be authenticated
 This error is returned if you try to run a locked entry. You should
 enter a correct password before running such an entry.
 @end table

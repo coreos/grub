@@ -1,3 +1,7 @@
+2000-05-30  Gordon Matzigkeit  <gord@fig.org>
+
+	* docs/user-ref.texi (Stage2 errors): Update error messages.
+
 2000-05-29  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* util/grub-install.in: Fix a typo that prevented error messages
