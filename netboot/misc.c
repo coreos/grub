@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,20 @@ sleep (int secs)
 void
 twiddle (void)
 {
-  grub_putchar('.');
+  static unsigned long lastticks = 0;
+  static int count = 0;
+  static const char tiddles[]="-\\|/";
+  unsigned long ticks;
+
+  if (debug)
+    {
+      if ((ticks = currticks ()) == lastticks)
+	return;
+      
+      lastticks = ticks;
+      grub_putchar (tiddles[(count++) & 3]);
+      grub_putchar ('\b');
+    }
 }
 
 /* Because Etherboot uses its own formats for the printf family,

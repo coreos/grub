@@ -1,5 +1,12 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 0.92:
+* The command "displaymem" uses only hex digits for consistency.
+* The netboot code go backs to the progress bars instead of dots, for the
+  notation of data transfers. And, that is displayed only in debug mode,
+  that is to say, nothing is displayed by default. Remember that you can
+  turn on debug mode via the command "debug".
+
 New in 0.91 - 2002-01-21:
 * Support for Linux DAC960 is added.
 * JFS and XFS support is added.

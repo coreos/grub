@@ -1,5 +1,11 @@
 2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* netboot/misc.c (twiddle): Go back to the bar progress, copied
+	from etherboot-5.0.5/src/misc.c. Execute the code only if DEBUG
+	is true.
+	
+2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/builtins.c (displaymem_func): Use hex digits to display
 	for consistency.
 	
