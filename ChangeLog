@@ -1,5 +1,44 @@
 2002-12-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	Change the terminal structure a bit, to turn the cursor state
+	explicitly. Suggested by Pavel Roskin.
+	
+	* stage2/term.h (struct term_entry): Remove the member
+	`nocursor' and add `setcursor'.
+	[!STAGE1_5] (console_setcursor): New prototype.
+	[SUPPORT_HERCULES] (hercules_setcursor): Likewise.
+	[!STAGE1_5] (console_nocursor): Removed.
+	[SUPPORT_HERCULES] (hercules_nocursor): Likewise.
+
+	* stage2/stage2.c (run_menu): Call setcursor instead of
+	nocursor.
+	Call setcursor with 1 before starting a boot entry.
+
+	* stage2/shared.h (nocursor): Removed.
+	(setcursor): New prototype.
+
+	* stage2/hercules.c (herc_cursor_state): New variable.
+	(herc_turn_cursor): Removed.
+	(hercules_nocursor): Likewise.
+	(hercules_setcursor): New function.
+
+	* stage2/char_io.c (get_cmdline): Turn on the cursor at the
+	beginning, and restore it before returning.
+	(nocursor): Removed.
+	(setcursor): New function.
+
+	* stage2/asm.S (console_cursor_state): New variable.
+	(console_cursor_shape): Likewise.
+	(console_setcursor): New function.
+	(console_nocursor): Removed.
+
+	* grub/asmstub.c (console_setcursor): New function.
+	(hercules_setcursor): Likewise.
+	(console_nocursor): Removed.
+	(hercules_nocursor): Likewise.
+
+2002-12-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* docs/grub.texi (terminfo): Fix a misleading English sentence.
 	Reported by Pavel Roskin.
 	* stage2/builtins.c (builtin_terminfo): Likewise.

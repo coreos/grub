@@ -77,8 +77,8 @@ struct term_entry
   /* Set the normal color and the highlight color. The format of each
      color is VGA's.  */
   void (*setcolor) (int normal_color, int highlight_color);
-  /* Don't show the cursor.  */
-  void (*nocursor) (void);
+  /* Turn on/off the cursor.  */
+  int (*setcursor) (int on);
 };
 
 /* This lists up available terminals.  */
@@ -101,7 +101,7 @@ void console_gotoxy (int x, int y);
 void console_cls (void);
 void console_setcolorstate (color_state state);
 void console_setcolor (int normal_color, int highlight_color);
-void console_nocursor (void);
+int console_setcursor (int on);
 #endif
 
 #ifdef SUPPORT_SERIAL
@@ -121,7 +121,7 @@ void hercules_gotoxy (int x, int y);
 void hercules_cls (void);
 void hercules_setcolorstate (color_state state);
 void hercules_setcolor (int normal_color, int highlight_color);
-void hercules_nocursor (void);
+int hercules_setcursor (int on);
 #endif
 
 #endif /* ! GRUB_TERM_HEADER */

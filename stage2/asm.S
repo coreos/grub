@@ -2169,26 +2169,59 @@ ENTRY(console_cls)
 
 	
 /*
- * void console_nocursor (void)
+ * int console_setcursor (int on)
  * BIOS call "INT 10H Function 01h" to set cursor type
  *      Call with       %ah = 0x01
  *                      %ch = cursor starting scanline
  *                      %cl = cursor ending scanline
  */
 
-ENTRY(console_nocursor)
+console_cursor_state:
+	.byte	1
+console_cursor_shape:
+	.word	0
+	
+ENTRY(console_setcursor)
 	push	%ebp
+	push	%ebx
+
+	/* check if the standard cursor shape has already been saved */
+	movw	console_cursor_shape, %ax
+	testw	%ax, %ax
+	jne	1f
 
 	call	EXT_C(prot_to_real)
 	.code16
 
-	movw    $0x2000, %cx
+	movb	$0x03, %ah
+	xorb	%bh, %bh
+	int	$0x10
+
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	movw	%cx, console_cursor_shape
+1:
+	/* set %cx to the designated cursor shape */
+	movw	$0x2000, %cx
+	movl	0xc(%esp), %ebx
+	testl	%ebx, %ebx
+	jz	2f
+	movw	console_cursor_shape, %cx
+2:	
+	call	EXT_C(prot_to_real)
+	.code16
+
 	movb    $0x1, %ah
 	int     $0x10 
 
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
+	movzbl	console_cursor_state, %eax
+	movb	%bl, console_cursor_state
+	
+	pop	%ebx
 	pop	%ebp
 	ret
 		

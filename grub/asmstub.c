@@ -743,10 +743,10 @@ console_setcolor (int normal_color, int highlight_color)
   /* Nothing to do.  */
 }
 
-void
-console_nocursor (void)
+int
+console_setcursor (int on)
 {
-  /* Nothing to do.  */
+  return 1;
 }
 
 /* Low-level disk I/O.  Our stubbed version just returns a file
@@ -1266,8 +1266,8 @@ hercules_setcolor (int normal_color, int highlight_color)
   console_setcolor (normal_color, highlight_color);
 }
 
-void
-hercules_nocursor (void)
+int
+hercules_setcursor (int on)
 {
-  console_nocursor ();
+  return 1;
 }

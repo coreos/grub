@@ -292,7 +292,7 @@ restart:
   if (show_menu)
     {
       init_page ();
-      nocursor ();
+      setcursor (0);
 
       if (current_term->flags & TERM_DUMB)
 	print_entries_raw (num_entries, first_entry, menu_entries);
@@ -708,6 +708,7 @@ restart:
  boot_entry:
   
   cls ();
+  setcursor (1);
   
   while (1)
     {

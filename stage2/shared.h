@@ -764,8 +764,8 @@ int currticks (void);
 /* Clear the screen. */
 void cls (void);
 
-/* Turn off cursor. */
-void nocursor (void);
+/* Turn on/off cursor. */
+int setcursor (int on);
 
 /* Get the current cursor position (where 0,0 is the top left hand
    corner of the screen).  Returns packed values, (RET >> 8) is x,

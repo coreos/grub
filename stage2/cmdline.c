@@ -129,7 +129,7 @@ enter_cmdline (char *heap, int forever)
   grub_putchar ('\n');
 #endif
   print_cmdline_message (forever);
-
+  
   while (1)
     {
       struct builtin *builtin;

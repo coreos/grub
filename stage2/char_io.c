@@ -43,7 +43,7 @@ struct term_entry term_table[] =
       console_cls,
       console_setcolorstate,
       console_setcolor,
-      console_nocursor
+      console_setcursor
     },
 #ifdef SUPPORT_SERIAL
     {
@@ -73,7 +73,7 @@ struct term_entry term_table[] =
       hercules_cls,
       hercules_setcolorstate,
       hercules_setcolor,
-      hercules_nocursor
+      hercules_setcursor
     },      
 #endif /* SUPPORT_HERCULES */
     /* This must be the last entry.  */
@@ -790,6 +790,11 @@ int
 get_cmdline (char *prompt, char *cmdline, int maxlen,
 	     int echo_char, int readline)
 {
+  int old_cursor;
+  int ret;
+
+  old_cursor = setcursor (1);
+  
   /* Because it is hard to deal with different conditions simultaneously,
      less functional cases are handled here. Assume that TERM_NO_ECHO
      implies TERM_NO_EDIT.  */
@@ -811,7 +816,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	{
 	  /* Return immediately if ESC is pressed.  */
 	  if (c == 27)
-	    return 1;
+	    {
+	      setcursor (old_cursor);
+	      return 1;
+	    }
 
 	  /* Printable characters are added into CMDLINE.  */
 	  if (c >= ' ' && c <= '~')
@@ -829,12 +837,15 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 
       if (! (current_term->flags & TERM_NO_ECHO))
 	grub_putchar ('\n');
-      
+
+      setcursor (old_cursor);
       return 0;
     }
 
   /* Complicated features are left to real_get_cmdline.  */
-  return real_get_cmdline (prompt, cmdline, maxlen, echo_char, readline);
+  ret = real_get_cmdline (prompt, cmdline, maxlen, echo_char, readline);
+  setcursor (old_cursor);
+  return ret;
 }
 #endif /* STAGE1_5 */
 
@@ -1078,11 +1089,13 @@ cls (void)
     current_term->cls ();
 }
 
-void
-nocursor (void)
+int
+setcursor (int on)
 {
-  if (current_term->nocursor)
-    current_term->nocursor ();
+  if (current_term->setcursor)
+    return current_term->setcursor (on);
+
+  return 1;
 }
 #endif /* ! STAGE1_5 */
 

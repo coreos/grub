@@ -33,6 +33,7 @@ static int herc_normal_color = A_NORMAL;
 static int herc_highlight_color = A_REVERSE;
 static int herc_current_color = A_NORMAL;
 static color_state herc_color_state = COLOR_STATE_STANDARD;
+static int herc_cursor_state = 1;
 
 /* Write a byte to a port.  */
 static inline void
@@ -54,15 +55,6 @@ herc_set_cursor (void)
   outb (HERCULES_INDEX_REG, 0x0e);
   outb (0x80, 0);
   outb (HERCULES_DATA_REG, offset >> 8);
-  outb (0x80, 0);
-}
-
-static void
-herc_turn_cursor (int state)
-{
-  outb (HERCULES_INDEX_REG, 0x0a);
-  outb (0x80, 0);
-  outb (HERCULES_DATA_REG, state ? 0 : (1 << 5));
   outb (0x80, 0);
 }
 
@@ -131,7 +123,6 @@ hercules_cls (void)
 
   herc_x = herc_y = 0;
   herc_set_cursor ();
-  herc_turn_cursor (1);
 }
 
 int
@@ -178,10 +169,18 @@ hercules_setcolor (int normal_color, int highlight_color)
   hercules_setcolorstate (herc_color_state);
 }
 
-void
-hercules_nocursor (void)
+int
+hercules_setcursor (int on)
 {
-  herc_turn_cursor (0);
+  int old_state = herc_cursor_state;
+  
+  outb (HERCULES_INDEX_REG, 0x0a);
+  outb (0x80, 0);
+  outb (HERCULES_DATA_REG, on ? 0 : (1 << 5));
+  outb (0x80, 0);
+  herc_cursor_state = on;
+
+  return old_state;
 }
 
 #endif /* SUPPORT_HERCULES */
