@@ -1,3 +1,10 @@
+2000-09-12  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Add additional magic to avoid a bug in Linux. *sigh*
+	
+	* stage2/boot.c (load_image): Copy SRC to DEST first, and append
+	a "mem=" option to DEST instead of prepending.
+	
 2000-09-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Reported by Alessandro Rubini:

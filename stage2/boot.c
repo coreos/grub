@@ -304,28 +304,34 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 			 0,
 			 (64 - setup_sects - 1) << 9);
 
-	  /* copy command-line plus memory hack to staging area */
+	  /* Copy command-line plus memory hack to staging area.
+	     NOTE: Linux has a bug that it doesn't handle multiple spaces
+	     between two options and a space after a "mem=" option isn't
+	     removed correctly so the arguments to init could be like
+	     {"init", "", "", NULL}. This affects some not-very-clever
+	     shells. Thus, the code below does a trick to avoid the bug.
+	     That is, copy "mem=XXX" to the end of the command-line, and
+	     avoid to copy spaces unnecessarily. Hell.  */
 	  {
-	    char *src = arg;
+	    char *src = skip_to (0, arg);
 	    char *dest = (char *) CL_MY_LOCATION;
+
+	    while (((int) dest) < CL_MY_END_ADDR && (*(dest++) = *(src++)));
 
 	    /* Add a mem option automatically only if the user doesn't
 	       specify it explicitly.  */
-	    if (! grub_strstr (src, "mem=")
+	    if (! grub_strstr (arg, "mem=")
 		&& ! (load_flags & KERNEL_LOAD_NO_MEM_OPTION))
 	      {
+		if (dest != (char *) CL_MY_LOCATION)
+		  *(dest++) = ' ';
+		
 		grub_memmove (dest, "mem=", 4);
 		dest += 4;
 		
 		dest = convert_to_ascii (dest, 'u', (extended_memory + 0x400));
 		*(dest++) = 'K';
-		*(dest++) = ' ';
 	      }
-
-	    while (*src && *src != ' ')
-	      src++;
-
-	    while (((int) dest) < CL_MY_END_ADDR && (*(dest++) = *(src++)));
 
 	    *dest = 0;
 	  }
