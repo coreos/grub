@@ -32,9 +32,7 @@ GNU ld version 2.9.5 (with BFD 2.9.5.0.13)
 
 The latter is what you should see. If you have installed a recent
 version of binutils but this version number is not identical with it,
-GCC uses a fixed path rather than the environment variable PATH to find
-binutils. In this case, you need to install your binutils into the path
-which GCC sees (typically, /usr/bin), or reinstall GCC.
+you need to specify the option ``--with-binutils=DIR'' for configure.
 
 
 These below are required when you develop GRUB or when you get it from

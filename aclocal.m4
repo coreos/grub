@@ -27,7 +27,7 @@ func (int *list)
 }
 EOF
 
-if AC_TRY_COMMAND([${CC-cc} -S conftest.c]) && test -s conftest.s; then
+if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -S conftest.c]) && test -s conftest.s; then
   true
 else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
@@ -57,7 +57,7 @@ AC_DEFUN(grub_PROG_OBJCOPY_ABSOLUTE,
 AC_CACHE_VAL(grub_cv_prog_objcopy_absolute,
 [cat > conftest.c <<\EOF
 void
-blah (void)
+main (void)
 {
    *((int *) 0x1000) = 2;
 }
@@ -69,9 +69,9 @@ else
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 2000 8000 7C00; do
-  if AC_TRY_COMMAND([${LD-ld} -N -Ttext $link_addr conftest.o -o conftest.exec]); then :
+  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib -Wl,-N -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec]); then :
   else
-    AC_MSG_ERROR([${LD-ld} cannot link at address $link_addr])
+    AC_MSG_ERROR([${CC-cc} cannot link at address $link_addr])
   fi
   if AC_TRY_COMMAND([${OBJCOPY-objcopy} -O binary conftest.exec conftest]); then :
   else
@@ -116,7 +116,7 @@ else
   sed -e s/@ADDR32@/addr32\;/ < conftest.s.in > conftest.s
 fi
 
-if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
+if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
   grub_cv_asm_addr32=yes
 else
   grub_cv_asm_addr32=no
@@ -140,7 +140,7 @@ AC_CACHE_VAL(grub_cv_asm_prefix_requirement,
 l1:	addr32	movb	%al, l1
 EOF
 
-if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
+if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -c conftest.s]) && test -s conftest.o; then
   grub_cv_asm_prefix_requirement=yes
 else
   grub_cv_asm_prefix_requirement=no

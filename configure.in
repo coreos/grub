@@ -53,12 +53,24 @@ fi
 
 AC_CHECK_TOOL(CC, gcc)
 AC_PROG_CC
-AC_PROG_RANLIB
+
+AC_ARG_WITH(binutils,
+  [  --with-binutils=DIR     search the directory DIR to find binutils])
+
+if test "x$with_binutils" != x; then
+  AC_PATH_PROG(RANLIB, ranlib, :, "$with_binutils:$PATH")
+else
+  AC_PROG_RANLIB
+fi
 
 # optimization flags
 if test "x$ac_cv_prog_gcc" = xyes; then
   if test "x$default_CFLAGS" = xyes; then
     CFLAGS="-g"
+    # If the user specify the directory for binutils, add the option `-B'.
+    if test "x$with_binutils" != x; then
+      CFLAGS="-B$with_binutils/ $CFLAGS"
+    fi
     STAGE1_CFLAGS="-O2"
     GRUB_CFLAGS="-O2"
     AC_CACHE_CHECK([whether optimization for size works], size_flag, [
@@ -82,8 +94,11 @@ AC_SUBST(GRUB_CFLAGS)
 # Enforce coding standards.
 CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
 
-AC_CHECK_TOOL(LD, ld)
-AC_CHECK_TOOL(OBJCOPY, objcopy)
+if test "x$with_binutils" != x; then
+  AC_PATH_PROG(OBJCOPY, objcopy, , "$with_binutils:$PATH")
+else
+  AC_CHECK_TOOL(OBJCOPY, objcopy)
+fi
 
 # Defined in acinclude.m4.
 grub_ASM_USCORE

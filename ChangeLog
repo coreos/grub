@@ -1,3 +1,18 @@
+1999-10-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* configure.in (--with-binutils): New option to specify a
+	directory to find binutils.
+	(CFLAGS): If WITH_BINUTILS is not empty, added the option `-B'.
+	(LD): Do not check for this. We don't use ld directly anyway.
+	(RANLIB): If WITH_BINUTILS is not empty, search the directory
+	WITH_BINUTILS first.
+	(OBJCOPY): Likewise.
+	* acinclude.m4 (grub_ASM_USCORE): Add CFLAGS into
+	AC_TRY_COMMAND.
+	(grub_ASM_ADDR32): Likewise.
+	(grub_ASM_PREFIX_REQUIREMENT): Likewise.
+	(grub_PROG_OBJCOPY_ABSOLUTE): Use CC instead of LD.
+	
 1999-10-04  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/freebsd.h (struct bootinfo): New member, bi_bios_dev.
