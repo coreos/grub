@@ -2378,7 +2378,7 @@ md5crypt_func (char *arg, int flags)
 {
   char crypted[36];
   char key[32];
-  int seed;
+  unsigned int seed;
   int i;
   const char *const seedchars =
     "./0123456789ABCDEFGHIJKLMNOPQRST"
