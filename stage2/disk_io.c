@@ -679,8 +679,8 @@ set_device (char *device)
 {
 #ifdef STAGE1_5
     /* In Stage 1.5, the first 4 bytes of FILENAME has a device number.  */
-  int dev = *((int *) device);
-  int drive = dev >> 24;
+  unsigned long dev = *((unsigned long *) device);
+  int drive = (dev >> 24) & 0xFF;
   int partition = dev & 0xFFFFFF;
 
   if (drive == 0xFF)
@@ -694,7 +694,7 @@ set_device (char *device)
       current_partition = partition;
     }
   
-  return device + sizeof (int);
+  return device + sizeof (unsigned long);
   
 #else /* ! STAGE1_5 */
   
@@ -937,7 +937,7 @@ set_bootdev (int hdbias)
     j = bsd_evil_hack;
 
   return MAKEBOOTDEV (j, (i >> 4), (i & 0xF),
-		      ((saved_drive - hdbias) & 0x79),
+		      ((saved_drive - hdbias) & 0x7F),
 		      ((saved_partition >> 8) & 0xFF));
 }
 #endif /* STAGE1_5 */

@@ -953,20 +953,21 @@ install_func (char *arg, int flags)
       return 1;
     }
 
+  /* Check for the Stage 2 id.  */
+  if (*((unsigned char *) (SCRATCHADDR + STAGE2_STAGE2_ID))
+      == STAGE2_ID_STAGE2)
+    is_stage1_5 = 1;
+  
   /* If INSTALLADDR is not specified explicitly in the command-line,
      determine it by the Stage 2 id.  */
   if (! installaddr)
     {
-      if (*((unsigned char *) (SCRATCHADDR + STAGE2_STAGE2_ID))
-	  == STAGE2_ID_STAGE2)
+      if (! is_stage1_5)
 	/* Stage 2.  */
 	installaddr = 0x8000;
       else
-	{
-	  /* Stage 1.5.  */
-	  installaddr = 0x2000;
-	  is_stage1_5 = 1;
-	}
+	/* Stage 1.5.  */
+	installaddr = 0x2000;
     }
   
   *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
