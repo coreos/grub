@@ -130,9 +130,11 @@ pupa_machine_init (void)
   /* Sanity check.  */
   if (pupa_lower_mem < PUPA_MEMORY_MACHINE_RESERVED_END)
     pupa_fatal ("too small memory");
-  
+
+#if 0
   /* Turn on Gate A20 to access >1MB.  */
   pupa_gate_a20 (1);
+#endif
 
   /* Add the lower memory into free memory.  */
   if (pupa_lower_mem >= PUPA_MEMORY_MACHINE_RESERVED_END)

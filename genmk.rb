@@ -1,6 +1,6 @@
 #! /usr/bin/ruby -w
 #
-# Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+# Copyright (C) 2002,2003 Yoshinori K. Okuji <okuji@enbug.org>
 #
 # This genmk.rb is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -60,7 +60,7 @@ MOSTLYCLEANFILES += #{deps_str}
 	$(OBJCOPY) -O binary -R .note -R .comment $< $@
 
 #{exe}: #{objs_str}
-	$(CC) $(LDFLAGS) $(#{prefix}_LDFLAGS) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS) $(#{prefix}_LDFLAGS)
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -181,7 +181,7 @@ class Utility
 MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: #{objs_str}
-	$(BUILD_CC) $(BUILD_LDFLAGS) $(#{prefix}_LDFLAGS) -o $@ $^
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(#{prefix}_LDFLAGS)
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]

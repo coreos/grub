@@ -135,7 +135,7 @@ static void *
 pupa_real_malloc (pupa_mm_header_t *first, pupa_size_t n, pupa_size_t align)
 {
   pupa_mm_header_t p, q;
-  
+
   if ((*first)->magic == PUPA_MM_ALLOC_MAGIC)
     return 0;
 

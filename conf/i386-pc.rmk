@@ -50,6 +50,7 @@ noinst_UTILITIES = genmoddep
 # For pupa-mkimage.
 pupa_mkimage_SOURCES = util/i386/pc/pupa-mkimage.c util/misc.c \
 	util/resolve.c
+pupa_mkimage_LDFLAGS = -llzo
 
 # For pupa-setup.
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \

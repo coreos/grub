@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ char *xstrdup (const char *str);
 char *pupa_util_get_path (const char *dir, const char *file);
 size_t pupa_util_get_image_size (const char *path);
 char *pupa_util_read_image (const char *path);
+void pupa_util_load_image (const char *path, char *buf);
 void pupa_util_write_image (const char *img, size_t size, FILE *out);
 
 #endif /* ! PUPA_UTIL_MISC_HEADER */

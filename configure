@@ -3358,6 +3358,8 @@ tmp_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
 CFLAGS="$BUILD_CFLAGS"
 CPPFLAGS="$BUILD_CPPFLAGS"
+
+# Identify characteristics of the build architecture.
 echo "$as_me:$LINENO: checking whether byte ordering is bigendian" >&5
 echo $ECHO_N "checking whether byte ordering is bigendian... $ECHO_C" >&6
 if test "${ac_cv_c_bigendian+set}" = set; then
@@ -4680,6 +4682,150 @@ echo "${ECHO_T}$ac_cv_sizeof_long" >&6
 cat >>confdefs.h <<_ACEOF
 #define SIZEOF_LONG $ac_cv_sizeof_long
 _ACEOF
+
+
+
+# Check LZO.
+
+echo "$as_me:$LINENO: checking for __lzo_init2 in -llzo" >&5
+echo $ECHO_N "checking for __lzo_init2 in -llzo... $ECHO_C" >&6
+if test "${ac_cv_lib_lzo___lzo_init2+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-llzo  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char __lzo_init2 ();
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+__lzo_init2 ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_lzo___lzo_init2=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_lzo___lzo_init2=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_lzo___lzo_init2" >&5
+echo "${ECHO_T}$ac_cv_lib_lzo___lzo_init2" >&6
+if test $ac_cv_lib_lzo___lzo_init2 = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBLZO 1
+_ACEOF
+
+  LIBS="-llzo $LIBS"
+
+else
+  { { echo "$as_me:$LINENO: error: LZO library version 1.02 or later is required" >&5
+echo "$as_me: error: LZO library version 1.02 or later is required" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+echo "$as_me:$LINENO: checking for lzo1x_999_compress" >&5
+echo $ECHO_N "checking for lzo1x_999_compress... $ECHO_C" >&6
+if test "${ac_cv_func_lzo1x_999_compress+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char lzo1x_999_compress (); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char lzo1x_999_compress ();
+char (*f) ();
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_lzo1x_999_compress) || defined (__stub___lzo1x_999_compress)
+choke me
+#else
+f = lzo1x_999_compress;
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_func_lzo1x_999_compress=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_func_lzo1x_999_compress=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_func_lzo1x_999_compress" >&5
+echo "${ECHO_T}$ac_cv_func_lzo1x_999_compress" >&6
+if test $ac_cv_func_lzo1x_999_compress = yes; then
+  :
+else
+  { { echo "$as_me:$LINENO: error: LZO1X-999 must be enabled" >&5
+echo "$as_me: error: LZO1X-999 must be enabled" >&2;}
+   { (exit 1); exit 1; }; }
+fi
 
 
 CC="$tmp_CC"

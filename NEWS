@@ -15,6 +15,12 @@ New in 0.7:
 
 * Linux support is added. Initrd is not support yet.
 
+* Reduce the size of a core image significantly by compressing a large
+  part of the core image and decompressing itself at boot time. The
+  currently used algorithm is LZO (more precisely, LZO1X-999). So you
+  have to install LZO to build PUPA. See
+  <http://www.oberhumer.com/opensource/lzo/>, for more information.
+
 
 New in 0.6 - 2002-12-27, Yoshinori K. Okuji:
 

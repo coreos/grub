@@ -1,3 +1,43 @@
+2003-01-31  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/i386/pc/lzo1x.S: New file.
+	
+	* util/i386/pc/pupa-mkimage.c: Include lzo1x.h.
+	(compress_kernel): New variable.
+	(generate_image): Heavily modified to support compressing a
+	large part of the core image.
+
+	* util/misc.c (pupa_util_read_image): Fix a file descriptor
+	leak.
+	(pupa_util_load_image): New function.
+
+	* kern/i386/pc/startup.S: Include pupa/machine/kernel.h.
+	(pupa_compressed_size): New variable.
+	(codestart): Enable Gate A20 here.
+	Decompress the compressed part of the core image.
+	Rearrange the code to put functions and variables which are
+	required for initialization in the non-compressed part.
+	Include lzo1x.S.
+
+	* kern/i386/pc/init.c (pupa_machine_init): Don't enable Gate A20
+	here.
+
+	* include/pupa/util/misc.h (pupa_util_write_image): Declared.
+
+	* include/pupa/i386/pc/kernel.h 
+	(PUPA_KERNEL_MACHINE_COMPRESSED_SIZE): New macro.
+	(PUPA_KERNEL_MACHINE_INSTALL_DOS_PART): Increased by 4.
+	(PUPA_KERNEL_MACHINE_INSTALL_BSD_PART): Likewise.
+	(PUPA_KERNEL_MACHINE_PREFIX): Likewise.
+	(PUPA_KERNEL_MACHINE_RAW_SIZE): New macro.
+
+	* conf/i386-pc.rmk (pupa_mkimage_LDFLAGS): New variable.
+
+	* genmk.rb (Image#rule): Put LDFLAGS at the end of a line.
+	(Utility#rule): Likewise.
+
+	* configure.ac: Check if LZO is available.
+
 2003-01-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* include/pupa/normal.h: New file.

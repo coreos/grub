@@ -15,7 +15,7 @@ boot.img: boot.exec
 	$(OBJCOPY) -O binary -R .note -R .comment $< $@
 
 boot.exec: boot_img-boot_i386_pc_boot.o
-	$(CC) $(LDFLAGS) $(boot_img_LDFLAGS) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS) $(boot_img_LDFLAGS)
 
 boot_img-boot_i386_pc_boot.o: boot/i386/pc/boot.S
 	$(CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(CPPFLAGS) -DASM_FILE=1 $(ASFLAGS) $(boot_img_ASFLAGS) -c -o $@ $<
@@ -37,7 +37,7 @@ diskboot.img: diskboot.exec
 	$(OBJCOPY) -O binary -R .note -R .comment $< $@
 
 diskboot.exec: diskboot_img-boot_i386_pc_diskboot.o
-	$(CC) $(LDFLAGS) $(diskboot_img_LDFLAGS) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS) $(diskboot_img_LDFLAGS)
 
 diskboot_img-boot_i386_pc_diskboot.o: boot/i386/pc/diskboot.S
 	$(CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(CPPFLAGS) -DASM_FILE=1 $(ASFLAGS) $(diskboot_img_ASFLAGS) -c -o $@ $<
@@ -65,7 +65,7 @@ kernel.img: kernel.exec
 	$(OBJCOPY) -O binary -R .note -R .comment $< $@
 
 kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-disk_i386_pc_partition.o kernel_img-disk_i386_pc_biosdisk.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
-	$(CC) $(LDFLAGS) $(kernel_img_LDFLAGS) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS) $(kernel_img_LDFLAGS)
 
 kernel_img-kern_i386_pc_startup.o: kern/i386/pc/startup.S
 	$(CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(CPPFLAGS) -DASM_FILE=1 $(ASFLAGS) $(kernel_img_ASFLAGS) -c -o $@ $<
@@ -249,7 +249,7 @@ CLEANFILES += pupa-mkimage pupa_mkimage-util_i386_pc_pupa_mkimage.o pupa_mkimage
 MOSTLYCLEANFILES += pupa_mkimage-util_i386_pc_pupa_mkimage.d pupa_mkimage-util_misc.d pupa_mkimage-util_resolve.d
 
 pupa-mkimage: pupa_mkimage-util_i386_pc_pupa_mkimage.o pupa_mkimage-util_misc.o pupa_mkimage-util_resolve.o
-	$(BUILD_CC) $(BUILD_LDFLAGS) $(pupa_mkimage_LDFLAGS) -o $@ $^
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_mkimage_LDFLAGS)
 
 pupa_mkimage-util_i386_pc_pupa_mkimage.o: util/i386/pc/pupa-mkimage.c
 	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_mkimage_CFLAGS) -c -o $@ $<
@@ -275,6 +275,7 @@ pupa_mkimage-util_resolve.d: util/resolve.c
 
 -include pupa_mkimage-util_resolve.d
 
+pupa_mkimage_LDFLAGS = -llzo
 
 # For pupa-setup.
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
@@ -284,7 +285,7 @@ CLEANFILES += pupa-setup pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i3
 MOSTLYCLEANFILES += pupa_setup-util_i386_pc_pupa_setup.d pupa_setup-util_i386_pc_biosdisk.d pupa_setup-util_misc.d pupa_setup-kern_device.d pupa_setup-kern_disk.d pupa_setup-kern_file.d pupa_setup-kern_fs.d pupa_setup-kern_err.d pupa_setup-kern_misc.d pupa_setup-disk_i386_pc_partition.d pupa_setup-fs_fat.d
 
 pupa-setup: pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o
-	$(BUILD_CC) $(BUILD_LDFLAGS) $(pupa_setup_LDFLAGS) -o $@ $^
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_setup_LDFLAGS)
 
 pupa_setup-util_i386_pc_pupa_setup.o: util/i386/pc/pupa-setup.c
 	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
@@ -381,7 +382,7 @@ CLEANFILES += genmoddep genmoddep-util_genmoddep.o
 MOSTLYCLEANFILES += genmoddep-util_genmoddep.d
 
 genmoddep: genmoddep-util_genmoddep.o
-	$(BUILD_CC) $(BUILD_LDFLAGS) $(genmoddep_LDFLAGS) -o $@ $^
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(genmoddep_LDFLAGS)
 
 genmoddep-util_genmoddep.o: util/genmoddep.c
 	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(genmoddep_CFLAGS) -c -o $@ $<

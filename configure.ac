@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+# Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -117,9 +117,18 @@ tmp_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
 CFLAGS="$BUILD_CFLAGS"
 CPPFLAGS="$BUILD_CPPFLAGS"
+
+# Identify characteristics of the build architecture.
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
+
+# Check LZO.
+AC_CHECK_LIB(lzo, __lzo_init2, ,
+	     AC_MSG_ERROR([LZO library version 1.02 or later is required]))
+AC_CHECK_FUNC(lzo1x_999_compress, , 
+	      [AC_MSG_ERROR([LZO1X-999 must be enabled])])
+
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"
 CPPFLAGS="$tmp_CPPFLAGS"

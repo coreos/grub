@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002,2003 Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -136,7 +136,29 @@ pupa_util_read_image (const char *path)
   if (fread (img, 1, size, fp) != size)
     pupa_util_error ("cannot read %s", path);
 
+  fclose (fp);
+  
   return img;
+}
+
+void
+pupa_util_load_image (const char *path, char *buf)
+{
+  FILE *fp;
+  size_t size;
+  
+  pupa_util_info ("reading %s", path);
+
+  size = pupa_util_get_image_size (path);
+  
+  fp = fopen (path, "rb");
+  if (! fp)
+    pupa_util_error ("cannot open %s", path);
+
+  if (fread (buf, 1, size, fp) != size)
+    pupa_util_error ("cannot read %s", path);
+
+  fclose (fp);
 }
 
 void

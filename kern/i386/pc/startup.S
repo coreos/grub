@@ -1,7 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 1999,2000,2001,2002 Free Software Foundation, Inc.
- *  Copyright (C) 2002  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,7 +50,8 @@
 #include <pupa/machine/memory.h>
 #include <pupa/machine/console.h>
 #include <pupa/machine/linux.h>
-	
+#include <pupa/machine/kernel.h>
+		
 #define ABS(x)	((x) - EXT_C(start) + PUPA_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 	
 	.file	"startup.S"
@@ -87,6 +88,8 @@ _start:
 VARIABLE(pupa_total_module_size)
 	.long	0
 VARIABLE(pupa_kernel_image_size)
+	.long	0
+VARIABLE(pupa_compressed_size)
 	.long	0
 VARIABLE(pupa_install_dos_part)
 	.long	0xFFFFFFFF
@@ -129,6 +132,25 @@ codestart:
 	/* The ".code32" directive takes GAS out of 16-bit mode. */
 	.code32
 
+	incl	%eax
+	call	EXT_C(pupa_gate_a20)
+
+	/* decompress the compressed part and put the result at 1MB */
+	movl	$0x100000, %esi
+	movl	$(START_SYMBOL + PUPA_KERNEL_MACHINE_RAW_SIZE), %edi
+
+	pushl	%esi
+	pushl	EXT_C(pupa_compressed_size)
+	pushl	%edi
+	call	lzo1x_decompress
+	addl	$12, %esp
+
+	/* copy back the decompressed part */
+	movl	%eax, %ecx
+	cld
+	rep
+	movsb
+
 	/* copy modules before cleaning out the bss */
 	movl	EXT_C(pupa_total_module_size), %ecx
 	movl	EXT_C(pupa_kernel_image_size), %esi
@@ -148,8 +170,9 @@ codestart:
 	/* compute the bss length */
 	movl	$END_SYMBOL, %ecx
 	subl	%edi, %ecx
-		
+			
 	/* clean out */
+	xorl	%eax, %eax
 	cld
 	rep
 	stosb
@@ -158,6 +181,255 @@ codestart:
 	 *  Call the start of main body of C code.
 	 */
 	call EXT_C(pupa_main)
+
+
+/*
+ *  This is the area for all of the special variables.
+ */
+
+	.p2align	2	/* force 4-byte alignment */
+
+protstack:
+	.long	PUPA_MEMORY_MACHINE_PROT_STACK
+
+VARIABLE(pupa_boot_drive)
+	.long	0
+
+VARIABLE(pupa_start_addr)
+	.long	START_SYMBOL
+
+VARIABLE(pupa_end_addr)
+	.long	END_SYMBOL
+	
+VARIABLE(pupa_apm_bios_info)
+	.word	0	/* version */
+	.word	0	/* cseg */
+	.long	0	/* offset */
+	.word	0	/* cseg_16 */
+	.word	0	/* dseg_16 */
+	.word	0	/* cseg_len */
+	.word	0	/* cseg_16_len */
+	.word	0	/* dseg_16_len */
+	
+/*
+ * This is the Global Descriptor Table
+ *
+ *  An entry, a "Segment Descriptor", looks like this:
+ *
+ * 31          24         19   16                 7           0
+ * ------------------------------------------------------------
+ * |             | |B| |A|       | |   |1|0|E|W|A|            |
+ * | BASE 31..24 |G|/|0|V| LIMIT |P|DPL|  TYPE   | BASE 23:16 |
+ * |             | |D| |L| 19..16| |   |1|1|C|R|A|            |
+ * ------------------------------------------------------------
+ * |                             |                            |
+ * |        BASE 15..0           |       LIMIT 15..0          |
+ * |                             |                            |
+ * ------------------------------------------------------------
+ *
+ *  Note the ordering of the data items is reversed from the above
+ *  description.
+ */
+
+	.p2align	2	/* force 4-byte alignment */
+gdt:
+	.word	0, 0
+	.byte	0, 0, 0, 0
+
+	/* code segment */
+	.word	0xFFFF, 0
+	.byte	0, 0x9A, 0xCF, 0
+
+	/* data segment */
+	.word	0xFFFF, 0
+	.byte	0, 0x92, 0xCF, 0
+
+	/* 16 bit real mode CS */
+	.word	0xFFFF, 0
+	.byte	0, 0x9E, 0, 0
+
+	/* 16 bit real mode DS */
+	.word	0xFFFF, 0
+	.byte	0, 0x92, 0, 0
+
+
+/* this is the GDT descriptor */
+gdtdesc:
+	.word	0x27			/* limit */
+	.long	gdt			/* addr */
+
+	
+/*
+ *  These next two routines, "real_to_prot" and "prot_to_real" are structured
+ *  in a very specific way.  Be very careful when changing them.
+ *
+ *  NOTE:  Use of either one messes up %eax and %ebp.
+ */
+
+real_to_prot:
+	.code16
+	cli
+
+	/* load the GDT register */
+	DATA32	ADDR32	lgdt	gdtdesc
+
+	/* turn on protected mode */
+	movl	%cr0, %eax
+	orl	$PUPA_MEMORY_MACHINE_CR0_PE_ON, %eax
+	movl	%eax, %cr0
+
+	/* jump to relocation, flush prefetch queue, and reload %cs */
+	DATA32	ljmp	$PUPA_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
+
+	.code32
+protcseg:
+	/* reload other segment registers */
+	movw	$PUPA_MEMORY_MACHINE_PROT_MODE_DSEG, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	movw	%ax, %fs
+	movw	%ax, %gs
+	movw	%ax, %ss
+
+	/* put the return address in a known safe location */
+	movl	(%esp), %eax
+	movl	%eax, PUPA_MEMORY_MACHINE_REAL_STACK
+
+	/* get protected mode stack */
+	movl	protstack, %eax
+	movl	%eax, %esp
+	movl	%eax, %ebp
+
+	/* get return address onto the right stack */
+	movl	PUPA_MEMORY_MACHINE_REAL_STACK, %eax
+	movl	%eax, (%esp)
+
+	/* zero %eax */
+	xorl	%eax, %eax
+
+	/* return on the old (or initialized) stack! */
+	ret
+
+
+prot_to_real:
+	/* just in case, set GDT */
+	lgdt	gdtdesc
+
+	/* save the protected mode stack */
+	movl	%esp, %eax
+	movl	%eax, protstack
+
+	/* get the return address */
+	movl	(%esp), %eax
+	movl	%eax, PUPA_MEMORY_MACHINE_REAL_STACK
+
+	/* set up new stack */
+	movl	$PUPA_MEMORY_MACHINE_REAL_STACK, %eax
+	movl	%eax, %esp
+	movl	%eax, %ebp
+
+	/* set up segment limits */
+	movw	$PUPA_MEMORY_MACHINE_PSEUDO_REAL_DSEG, %ax
+	movw	%ax, %ds
+	movw	%ax, %es
+	movw	%ax, %fs
+	movw	%ax, %gs
+	movw	%ax, %ss
+
+	/* this might be an extra step */
+	/* jump to a 16 bit segment */
+	ljmp	$PUPA_MEMORY_MACHINE_PSEUDO_REAL_CSEG, $tmpcseg
+
+tmpcseg:
+	.code16
+
+	/* clear the PE bit of CR0 */
+	movl	%cr0, %eax
+	andl 	$(~PUPA_MEMORY_MACHINE_CR0_PE_ON), %eax
+	movl	%eax, %cr0
+
+	/* flush prefetch queue, reload %cs */
+	DATA32	ljmp	$0, $realcseg
+
+realcseg:
+	/* we are in real mode now
+	 * set up the real mode segment registers : DS, SS, ES
+	 */
+	/* zero %eax */
+	xorl	%eax, %eax
+
+	movw	%ax, %ds
+	movw	%ax, %es
+	movw	%ax, %fs
+	movw	%ax, %gs
+	movw	%ax, %ss
+
+	/* restore interrupts */
+	sti
+
+	/* return on new stack! */
+	DATA32	ret
+
+	.code32
+
+
+/*
+ * pupa_gate_a20(int on)
+ *
+ * Gate address-line 20 for high memory.
+ *
+ * This routine is probably overconservative in what it does, but so what?
+ *
+ * It also eats any keystrokes in the keyboard buffer.  :-(
+ */
+
+FUNCTION(pupa_gate_a20)
+	movl	%eax, %ecx
+
+	call    gloop1
+
+	movb	$0xd1, %al
+	outb	$0x64
+
+gloopint1:
+	inb	$0x64
+	andb	$0x02, %al
+	jnz	gloopint1
+
+	movb	$0xdd, %al
+	testl	%ecx, %ecx
+	jz	gdoit
+
+	orb	$0x02, %al
+gdoit:
+	outb	$0x60
+
+	call	gloop1
+
+	/* output a dummy command (USB keyboard hack) */
+	movb	$0xff, %al
+	outb	$0x64
+	call	gloop1
+	
+	ret
+
+gloop1:
+	inb	$0x64
+	andb	$0x02, %al
+	jnz	gloop1
+
+gloop2:
+	inb	$0x64
+	andb	$0x01, %al
+	jz	gloop2ret
+	inb	$0x60
+	jmp	gloop2
+
+gloop2ret:
+	ret
+
+
+#include "lzo1x.S"
 
 
 /*
@@ -348,120 +620,6 @@ linux_setup_seg:
 	.code32
 
 		
-/*
- *  These next two routines, "real_to_prot" and "prot_to_real" are structured
- *  in a very specific way.  Be very careful when changing them.
- *
- *  NOTE:  Use of either one messes up %eax and %ebp.
- */
-
-real_to_prot:
-	.code16
-	cli
-
-	/* load the GDT register */
-	DATA32	ADDR32	lgdt	gdtdesc
-
-	/* turn on protected mode */
-	movl	%cr0, %eax
-	orl	$PUPA_MEMORY_MACHINE_CR0_PE_ON, %eax
-	movl	%eax, %cr0
-
-	/* jump to relocation, flush prefetch queue, and reload %cs */
-	DATA32	ljmp	$PUPA_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
-
-	.code32
-protcseg:
-	/* reload other segment registers */
-	movw	$PUPA_MEMORY_MACHINE_PROT_MODE_DSEG, %ax
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	movw	%ax, %ss
-
-	/* put the return address in a known safe location */
-	movl	(%esp), %eax
-	movl	%eax, PUPA_MEMORY_MACHINE_REAL_STACK
-
-	/* get protected mode stack */
-	movl	protstack, %eax
-	movl	%eax, %esp
-	movl	%eax, %ebp
-
-	/* get return address onto the right stack */
-	movl	PUPA_MEMORY_MACHINE_REAL_STACK, %eax
-	movl	%eax, (%esp)
-
-	/* zero %eax */
-	xorl	%eax, %eax
-
-	/* return on the old (or initialized) stack! */
-	ret
-
-
-prot_to_real:
-	/* just in case, set GDT */
-	lgdt	gdtdesc
-
-	/* save the protected mode stack */
-	movl	%esp, %eax
-	movl	%eax, protstack
-
-	/* get the return address */
-	movl	(%esp), %eax
-	movl	%eax, PUPA_MEMORY_MACHINE_REAL_STACK
-
-	/* set up new stack */
-	movl	$PUPA_MEMORY_MACHINE_REAL_STACK, %eax
-	movl	%eax, %esp
-	movl	%eax, %ebp
-
-	/* set up segment limits */
-	movw	$PUPA_MEMORY_MACHINE_PSEUDO_REAL_DSEG, %ax
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	movw	%ax, %ss
-
-	/* this might be an extra step */
-	/* jump to a 16 bit segment */
-	ljmp	$PUPA_MEMORY_MACHINE_PSEUDO_REAL_CSEG, $tmpcseg
-
-tmpcseg:
-	.code16
-
-	/* clear the PE bit of CR0 */
-	movl	%cr0, %eax
-	andl 	$(~PUPA_MEMORY_MACHINE_CR0_PE_ON), %eax
-	movl	%eax, %cr0
-
-	/* flush prefetch queue, reload %cs */
-	DATA32	ljmp	$0, $realcseg
-
-realcseg:
-	/* we are in real mode now
-	 * set up the real mode segment registers : DS, SS, ES
-	 */
-	/* zero %eax */
-	xorl	%eax, %eax
-
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	movw	%ax, %ss
-
-	/* restore interrupts */
-	sti
-
-	/* return on new stack! */
-	DATA32	ret
-
-	.code32
-
-
 /*
  *   int pupa_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
  *
@@ -932,63 +1090,6 @@ xsmap:
 
 	
 /*
- * pupa_gate_a20(int on)
- *
- * Gate address-line 20 for high memory.
- *
- * This routine is probably overconservative in what it does, but so what?
- *
- * It also eats any keystrokes in the keyboard buffer.  :-(
- */
-
-FUNCTION(pupa_gate_a20)
-	pushl	%eax
-
-	call    gloop1
-
-	movb	$0xd1, %al
-	outb	$0x64
-
-gloopint1:
-	inb	$0x64
-	andb	$0x02, %al
-	jnz	gloopint1
-
-	movb	$0xdd, %al
-	cmpb	$0, 0x8(%esp)
-	jz	gdoit
-
-	orb	$0x02, %al
-gdoit:
-	outb	$0x60
-
-	call	gloop1
-
-	/* output a dummy command (USB keyboard hack) */
-	movb	$0xff, %al
-	outb	$0x64
-	call	gloop1
-	
-	popl	%eax
-	ret
-
-gloop1:
-	inb	$0x64
-	andb	$0x02, %al
-	jnz	gloop1
-
-gloop2:
-	inb	$0x64
-	andb	$0x01, %al
-	jz	gloop2ret
-	inb	$0x60
-	jmp	gloop2
-
-gloop2ret:
-	ret
-
-
-/*
  * void pupa_console_putchar (int c)
  *
  * Put the character C on the console. Because GRUB wants to write a
@@ -1413,79 +1514,3 @@ FUNCTION(pupa_currticks)
 
 	popl	%ebp
 	ret
-
-
-/*
- *  This is the area for all of the special variables.
- */
-
-	.p2align	2	/* force 4-byte alignment */
-
-protstack:
-	.long	PUPA_MEMORY_MACHINE_PROT_STACK
-
-VARIABLE(pupa_boot_drive)
-	.long	0
-
-VARIABLE(pupa_start_addr)
-	.long	START_SYMBOL
-
-VARIABLE(pupa_end_addr)
-	.long	END_SYMBOL
-	
-VARIABLE(pupa_apm_bios_info)
-	.word	0	/* version */
-	.word	0	/* cseg */
-	.long	0	/* offset */
-	.word	0	/* cseg_16 */
-	.word	0	/* dseg_16 */
-	.word	0	/* cseg_len */
-	.word	0	/* cseg_16_len */
-	.word	0	/* dseg_16_len */
-	
-/*
- * This is the Global Descriptor Table
- *
- *  An entry, a "Segment Descriptor", looks like this:
- *
- * 31          24         19   16                 7           0
- * ------------------------------------------------------------
- * |             | |B| |A|       | |   |1|0|E|W|A|            |
- * | BASE 31..24 |G|/|0|V| LIMIT |P|DPL|  TYPE   | BASE 23:16 |
- * |             | |D| |L| 19..16| |   |1|1|C|R|A|            |
- * ------------------------------------------------------------
- * |                             |                            |
- * |        BASE 15..0           |       LIMIT 15..0          |
- * |                             |                            |
- * ------------------------------------------------------------
- *
- *  Note the ordering of the data items is reversed from the above
- *  description.
- */
-
-	.p2align	2	/* force 4-byte alignment */
-gdt:
-	.word	0, 0
-	.byte	0, 0, 0, 0
-
-	/* code segment */
-	.word	0xFFFF, 0
-	.byte	0, 0x9A, 0xCF, 0
-
-	/* data segment */
-	.word	0xFFFF, 0
-	.byte	0, 0x92, 0xCF, 0
-
-	/* 16 bit real mode CS */
-	.word	0xFFFF, 0
-	.byte	0, 0x9E, 0, 0
-
-	/* 16 bit real mode DS */
-	.word	0xFFFF, 0
-	.byte	0, 0x92, 0, 0
-
-
-/* this is the GDT descriptor */
-gdtdesc:
-	.word	0x27			/* limit */
-	.long	gdt			/* addr */

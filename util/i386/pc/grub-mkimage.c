@@ -1,7 +1,7 @@
 /* pupa-mkimage.c - make a bootable image */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,14 +35,49 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
+#include <lzo1x.h>
+
+static void
+compress_kernel (char *kernel_img, size_t kernel_size,
+		 char **core_img, size_t *core_size)
+{
+  lzo_uint size;
+  char *wrkmem;
+  
+  pupa_util_info ("kernel_img=%p, kernel_size=0x%x", kernel_img, kernel_size);
+  if (kernel_size < PUPA_KERNEL_MACHINE_RAW_SIZE)
+    pupa_util_error ("the core image is too small");
+  
+  if (lzo_init () != LZO_E_OK)
+    pupa_util_error ("cannot initialize LZO");
+
+  *core_img = xmalloc (kernel_size + kernel_size / 64 + 16 + 3);
+  wrkmem = xmalloc (LZO1X_999_MEM_COMPRESS);
+
+  memcpy (*core_img, kernel_img, PUPA_KERNEL_MACHINE_RAW_SIZE);
+  
+  pupa_util_info ("compressing the core image");
+  if (lzo1x_999_compress (kernel_img + PUPA_KERNEL_MACHINE_RAW_SIZE,
+			  kernel_size - PUPA_KERNEL_MACHINE_RAW_SIZE,
+			  *core_img + PUPA_KERNEL_MACHINE_RAW_SIZE,
+			  &size, wrkmem)
+      != LZO_E_OK)
+    pupa_util_error ("cannot compress the kernel image");
+
+  free (wrkmem);
+
+  *core_size = (size_t) size + PUPA_KERNEL_MACHINE_RAW_SIZE;
+}
+
 static void
 generate_image (const char *dir, FILE *out, char *mods[])
 {
   pupa_addr_t module_addr = 0;
-  char *kernel_img, *boot_img;
-  size_t kernel_size, boot_size, total_module_size;
+  char *kernel_img, *boot_img, *core_img;
+  size_t kernel_size, boot_size, total_module_size, core_size;
   char *kernel_path, *boot_path;
   unsigned num;
+  size_t offset;
   struct pupa_util_path_list *path_list, *p, *next;
 
   path_list = pupa_util_resolve_dependencies (dir, "moddep.lst", mods);
@@ -56,9 +91,32 @@ generate_image (const char *dir, FILE *out, char *mods[])
 			  + sizeof (struct pupa_module_header));
 
   pupa_util_info ("the total module size is 0x%x", total_module_size);
+
+  kernel_img = xmalloc (kernel_size + total_module_size);
+  pupa_util_load_image (kernel_path, kernel_img);
+  offset = kernel_size;
+  for (p = path_list; p; p = p->next)
+    {
+      struct pupa_module_header *header;
+      size_t mod_size;
+
+      mod_size = pupa_util_get_image_size (p->name);
+      
+      header = (struct pupa_module_header *) (kernel_img + offset);
+      header->offset = pupa_cpu_to_le32 (sizeof (*header));
+      header->size = pupa_cpu_to_le32 (mod_size + sizeof (*header));
+      
+      pupa_util_load_image (p->name, kernel_img + offset + sizeof (*header));
+
+      offset += sizeof (*header) + mod_size;
+    }
+
+  compress_kernel (kernel_img, kernel_size + total_module_size,
+		   &core_img, &core_size);
+
+  pupa_util_info ("the core size is 0x%x", core_size);
   
-  num = ((kernel_size + total_module_size + PUPA_DISK_SECTOR_SIZE - 1)
-	 >> PUPA_DISK_SECTOR_BITS);
+  num = ((core_size + PUPA_DISK_SECTOR_SIZE - 1) >> PUPA_DISK_SECTOR_BITS);
   if (num > 0xffff)
     pupa_util_error ("the core image is too big");
 
@@ -78,42 +136,27 @@ generate_image (const char *dir, FILE *out, char *mods[])
   free (boot_img);
   free (boot_path);
   
-  kernel_img = pupa_util_read_image (kernel_path);
   module_addr = (path_list
 		 ? (PUPA_BOOT_MACHINE_KERNEL_ADDR + PUPA_DISK_SECTOR_SIZE
 		    + kernel_size)
 		 : 0);
 
   pupa_util_info ("the first module address is 0x%x", module_addr);
-  *((pupa_uint32_t *) (kernel_img + PUPA_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
+  *((pupa_uint32_t *) (core_img + PUPA_KERNEL_MACHINE_TOTAL_MODULE_SIZE))
     = pupa_cpu_to_le32 (total_module_size);
-  *((pupa_uint32_t *) (kernel_img + PUPA_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
+  *((pupa_uint32_t *) (core_img + PUPA_KERNEL_MACHINE_KERNEL_IMAGE_SIZE))
     = pupa_cpu_to_le32 (kernel_size);
+  *((pupa_uint32_t *) (core_img + PUPA_KERNEL_MACHINE_COMPRESSED_SIZE))
+    = pupa_cpu_to_le32 (core_size - PUPA_KERNEL_MACHINE_RAW_SIZE);
   
-  pupa_util_write_image (kernel_img, kernel_size, out);
+  pupa_util_write_image (core_img, core_size, out);
   free (kernel_img);
+  free (core_img);
   free (kernel_path);
 
   while (path_list)
     {
-      struct pupa_module_header header;
-      size_t mod_size;
-      char *mod_img;
-      
       next = path_list->next;
-      
-      mod_size = pupa_util_get_image_size (path_list->name);
-
-      header.offset = pupa_cpu_to_le32 (sizeof (header));
-      header.size = pupa_cpu_to_le32 (mod_size + sizeof (header));
-
-      pupa_util_info ("offset=0x%x, size=0x%x", header.offset, header.size);
-      pupa_util_write_image ((char *) &header, sizeof (header), out);
-      
-      mod_img = pupa_util_read_image (path_list->name);
-      pupa_util_write_image (mod_img, mod_size, out);
-      free (mod_img);
-
       free ((void *) path_list->name);
       free (path_list);
       path_list = next;

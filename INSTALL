@@ -15,6 +15,7 @@ configuring the PUPA.
 * GNU Make
 * GNU binutils 2.9.1.0.23 or later
 * Other standard GNU/Unix tools
+* LZO 1.02 or later
 
 If you'd like to develop PUPA, these below are also required.
 

@@ -9,8 +9,8 @@ generally assist in the PUPA maintainership process:
 NIIBE Yutaka <gniibe@m17n.org>
 Tsuneyoshi Yasuo <tuneyoshi@naic.co.jp>
 
-Also, we thank the projects GNU GRUB and GNU Automake. Some code were
-stolen from them.
+Also, we thank the projects GNU GRUB, GNU Automake and LZO. Some code
+were stolen from them.
 
 This project is supported by Information-technology Promotion Agency,
 Japan.
