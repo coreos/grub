@@ -373,57 +373,65 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    {
 	    case 9:		/* TAB lists completions */
 	      {
-		int i, j = 0, llen_old = llen;
-		
+		int i;
+		/* POS points to the first space after a command.  */
+		int pos = 0;
+		int ret;
+		char *completion_buffer = (char *) COMPLETION_BUF;
+		int equal_pos = -1;
+		int is_filename;
+
 		/* Find the first word.  */
-		while (buf[j] == ' ')
-		  j++;
-		while (buf[j] && buf[j] != '=' && buf[j] != ' ')
-		  j++;
+		while (buf[pos] == ' ')
+		  pos++;
+		while (buf[pos] && buf[pos] != '=' && buf[pos] != ' ')
+		  pos++;
+
+		is_filename = (lpos > pos);
 		
-		/* Since the command line cannot have a '\n', we're OK to
-		   use C.  */
-		c = buf[lpos];
-		
-		cl_kill_to_end ();
-		
-		/* goto part after line here */
-		yend = ((llen + plen) / 79) + ystart;
-		putchar ('\n');
-		gotoxy (0, getxy () & 0xff);
-		
-		
-		if (lpos > j)
+		/* Find the position of the equal character after a
+		   command, and replace it with a space.  */
+		for (i = pos; buf[i] && buf[i] != ' '; i++)
+		  if (buf[i] == '=')
+		    {
+		      equal_pos = i;
+		      buf[i] = ' ';
+		      break;
+		    }
+
+		/* Find the position of the first character in this
+		   word.  */
+		for (i = lpos; i > 0 && buf[i - 1] != ' '; i--)
+		  ;
+
+		/* Copy this word to COMPLETION_BUFFER and do the
+		   completion.  */
+		grub_memmove (completion_buffer, buf + i, lpos - i);
+		completion_buffer[lpos - i] = 0;
+		ret = print_completions (is_filename, 1);
+
+		if (ret >= 0)
 		  {
-		    for (i = lpos; i > 0 && buf[i - 1] != ' '; i--);
-		    if (i <= j)
-		      i = j + 1;
-		    /* print possible completions */
-		    print_completions (buf + i);
-		    /* if somebody in print_completions has added something, 
-		       account for that */
-		    while (buf[lpos])
-		      lpos++, llen_old++;
-		  }
-		else 
-		  {
-		    /* Print the command list.  */
-		    struct builtin **builtin;
+		    /* Found, so insert COMPLETION_BUFFER.  */
+		    cl_insert (completion_buffer + lpos - i);
 		    
-		    for (builtin = builtin_table; *builtin != 0; builtin++)
+		    if (ret > 0)
 		      {
-			/* Do not print the name if it cannot be run in
-			   the command-line interface.  */
-			if (! ((*builtin)->flags & BUILTIN_CMDLINE))
-			  continue;
+			/* There is more than one candidates, so print
+			   the list.  */
 			
-			grub_printf ("%s ", (*builtin)->name);
+			/* Go to the part after the line here.  */
+			yend = ((llen + plen) / 79) + ystart;
+			grub_putchar ('\n');
+			gotoxy (0, getxy () & 0xff);
+
+			print_completions (is_filename, 0);
 		      }
 		  }
 		
-		/* restore command-line */
-		buf[lpos] = c;
-		llen = llen_old;
+		/* Restore the command-line.  */
+		if (equal_pos >= 0)
+		  buf[equal_pos] = '=';
 		cl_init ();
 	      }
 	      break;

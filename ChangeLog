@@ -1,5 +1,50 @@
 1999-09-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	The completion code is heavily modified.
+	
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): In the completion
+	code, use COMPLETION_BUFFER to get the completion instead of
+	writing to BUF directly.
+	Save the position of a possible equal character after a command
+	in EQUAL_POS and replace the equal character with a space
+	temporarily for the code simplicity.
+	At first, just get completions, and, if there is more than one
+	completions, then print the list of the completions.
+	* stage2/disk_io.c [!STAGE1_5] (do_completion): New variable.
+	[!STAGE1_5] (unique): Moved the definition near the beginning.
+	[!STAGE1_5] (unique_string): Likewise. And changed the type to
+	char *.
+	(check_BSD_parts) [!STAGE1_5]: If DO_COMPLETION is non-zero, do
+	not print anything.
+	(real_open_partition) [!STAGE1_5]: Likewise.
+	[!STAGE1_5] (print_fsys_type): Likewise.
+	[!STAGE1_5] (print_a_completion): The argument FILENAME is
+	renamed	to NAME.
+	If DO_COMPLETION is non-zero, get the unique part from NAME and
+	set UNIQUE_STRING to it.
+	If DO_COMPLETION is zero, just print NAME.
+	Do not call printf unconditionally.
+	[!STAGE1_5] (print_completions): Accept two arguements
+	IS_FILENAME and IS_COMPLETION instead of FILENAME.
+	Set UNIQUE_STRING to UNIQUE_BUF.
+	Set DO_COMPLETION to IS_COMPLETION and set it to zero before
+	returning.
+	If IS_FILENAME is zero, then complete builtin commands and
+	return UNIQUE - 1.
+	Use BUF instead of FILENAME.
+	If IS_COMPLETION is non-zero, do not print anything.
+	Copy UNIQUE_STRING to PTR only if IS_COMPLETION and
+	*UNIQUE_STRING are non-zero.
+	* stage2/shared.h (COMPLETION_BUF): New macro.
+	(COMPLETION_BUFLEN): Likewise.
+	(UNIQUE_BUF): Likewise.
+	(UNIQUE_BUFLEN): Likewise.
+	(MENU_BUF): Set to UNIQUE_BUF + UNIQUE_BUFLEN.
+	(MENU_BUFLEN): Set to 0x8000 + PASSWORD_BUF - UNIQUE_BUF.
+	(print_completions): Adjusted to the definition.
+	
+1999-09-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* acinclude.m4 (grub_ASM_PREFIX_REQUIREMENT): Do not call
 	AC_DEFINE_UNQUOTEs within AC_CACHE_VAL. Define ADDR32 and DATA32
 	after it.

@@ -105,9 +105,17 @@ extern char *grub_scratch_mem;
 #define HISTORY_SIZE		5
 #define HISTORY_BUFLEN		(MAX_CMDLINE * HISTORY_SIZE)
 
+/* The buffer for the completion.  */
+#define COMPLETION_BUF		(HISTORY_BUF + HISTORY_BUFLEN)
+#define COMPLETION_BUFLEN	MAX_CMDLINE
+
+/* The buffer for the unique string.  */
+#define UNIQUE_BUF		(COMPLETION_BUF + COMPLETION_BUFLEN)
+#define UNIQUE_BUFLEN		MAX_CMDLINE
+
 /* The buffer for the menu entries.  */
-#define MENU_BUF		(HISTORY_BUF + HISTORY_BUFLEN)
-#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - HISTORY_BUF)
+#define MENU_BUF		(UNIQUE_BUF + UNIQUE_BUFLEN)
+#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - UNIQUE_BUF)
 
 /*
  *  Linux setup parameters
@@ -659,7 +667,7 @@ void print_fsys_type (void);
 
 /* Display device and filename completions. */
 void print_a_completion (char *filename);
-void print_completions (char *filename);
+int print_completions (int is_filename, int is_completion);
 
 /* Copies the current partition data to the desired address. */
 void copy_current_part_entry (char *buf);

@@ -30,6 +30,11 @@ void (*debug_fs) (int) = NULL;
 void (*debug_fs_func) (int) = NULL;
 
 int print_possibilities;
+
+static int do_completion;
+static int unique;
+static char *unique_string;
+
 #endif
 
 int fsmax;
@@ -406,10 +411,13 @@ check_BSD_parts (int flags)
 		{
 		  if (!got_part)
 		    {
-		      printf ("[BSD sub-partitions immediately follow]\n");
+		      if (! do_completion)
+			printf ("[BSD sub-partitions immediately follow]\n");
 		      got_part = 1;
 		    }
-		  printf ("     BSD Partition num: \'%c\', ", part_no + 'a');
+
+		  if (! do_completion)
+		    printf ("     BSD Partition num: \'%c\', ", part_no + 'a');
 		  check_and_print_mount ();
 		}
 	      else
@@ -537,7 +545,8 @@ real_open_partition (int flags)
 		  else if (flags)
 		    {
 		      current_partition |= 0xFFFF;
-		      printf ("   Partition num: %d, ", slice_no);
+		      if (! do_completion)
+			printf ("   Partition num: %d, ", slice_no);
 		      if (! IS_PC_SLICE_TYPE_BSD (current_slice))
 			check_and_print_mount ();
 		      else
@@ -632,10 +641,6 @@ open_partition (void)
 
 /* XX used for device completion in 'set_device' and 'print_completions' */
 static int incomplete, disk_choice;
-#ifndef STAGE1_5
-static int unique;
-static char unique_string[128];	/* XXX Don't know yet */
-#endif
 static enum
   {
     PART_UNSPECIFIED = 0,
@@ -957,48 +962,51 @@ setup_part (char *filename)
 void
 print_fsys_type (void)
 {
-  printf (" Filesystem type ");
-
-  if (fsys_type != NUM_FSYS)
-    printf ("is %s, ", fsys_table[fsys_type].name);
-  else
-    printf ("unknown, ");
-
-  if (current_partition == 0xFFFFFF)
-    printf ("using whole disk\n");
-  else
-    printf ("partition type 0x%x\n", current_slice);
+  if (! do_completion)
+    {
+      printf (" Filesystem type ");
+      
+      if (fsys_type != NUM_FSYS)
+	printf ("is %s, ", fsys_table[fsys_type].name);
+      else
+	printf ("unknown, ");
+      
+      if (current_partition == 0xFFFFFF)
+	printf ("using whole disk\n");
+      else
+	printf ("partition type 0x%x\n", current_slice);
+    }
 }
 #endif /* STAGE1_5 */
 
 #ifndef STAGE1_5
-/*
- *  print_a_completion saves what has been printed to unique_string
- *  printf's with a leading ' '.
- */
-
+/* If DO_COMPLETION is true, just print NAME. Otherwise save the unique
+   part into UNIQUE_STRING.  */
 void
-print_a_completion (char *filename)
+print_a_completion (char *name)
 {
-  char *f = filename;
-  char *u = unique_string;
-
-  if (! *u && unique == 0)
+  if (do_completion)
     {
-      /* copy first string, this is unique.  */
-      while ((*u++ = *f++))
-	;
+      char *buf = unique_string;
+      
+      if (! unique)
+	while ((*buf++ = *name++))
+	  ;
+      else
+	{
+	  while (*buf && (*buf == *name))
+	    {
+	      buf++;
+	      name++;
+	    }
+	  /* mismatch, strip it.  */
+	  *buf = '\0';
+	}
     }
   else
-    {
-      while (*u && (*u == *f))
-	u++, f++;
-      /* mismatch, strip it.  */
-      *u = '\0';
-    }
+    grub_printf (" %s", name);
+  
   unique++;
-
-  printf (" %s", filename);
 }
 
 /*
@@ -1006,27 +1014,66 @@ print_a_completion (char *filename)
  *  any sane combination of the two.
  */
 
-void
-print_completions (char *filename)
+int
+print_completions (int is_filename, int is_completion)
 {
-  char *ptr = filename;
+  char *buf = (char *) COMPLETION_BUF;
+  char *ptr = buf;
 
-  *unique_string = '\0';
+  unique_string = (char *) UNIQUE_BUF;
+  *unique_string = 0;
   unique = 0;
+  do_completion = is_completion;
 
-  if (*filename == '/' || (ptr = set_device (filename)) || incomplete)
+  if (! is_filename)
+    {
+      /* Print the completions of builtin commands.  */
+      struct builtin **builtin;
+
+      if (! is_completion)
+	grub_printf (" Possible commands are:");
+      
+      for (builtin = builtin_table; (*builtin); builtin++)
+	{
+	  /* If *BUILTIN cannot be run in the command-line, skip it.  */
+	  if (! ((*builtin)->flags & BUILTIN_CMDLINE))
+	    continue;
+
+	  if (substring (buf, (*builtin)->name) <= 0)
+	    print_a_completion ((*builtin)->name);
+	}
+
+      if (is_completion && *unique_string)
+	{
+	  if (unique == 1)
+	    {
+	      char *u = unique_string + grub_strlen (unique_string);
+
+	      *u++ = ' ';
+	      *u = 0;
+	    }
+	  
+	  grub_strcpy (buf, unique_string);
+	}
+
+      do_completion = 0;
+      return unique - 1;
+    }
+
+  if (*buf == '/' || (ptr = set_device (buf)) || incomplete)
     {
       errnum = 0;
 
-      if (*filename != '/' && (incomplete || !*ptr))
+      if (*buf != '/' && (incomplete || ! *ptr))
 	{
-	  if (!part_choice)
+	  if (! part_choice)
 	    {
 	      /* disk completions */
 	      int disk_no, i, j;
 	      struct geometry geom;
 
-	      printf (" Possible disks are: ");
+	      if (! is_completion)
+		grub_printf (" Possible disks are: ");
 
 	      for (i = (ptr && (*(ptr-2) == 'h' && *(ptr-1) == 'd') ? 1 : 0);
 		   i < (ptr && (*(ptr-2) == 'f' && *(ptr-1) == 'd') ? 1 : 2);
@@ -1035,8 +1082,8 @@ print_completions (char *filename)
 		  for (j = 0; j < 8; j++)
 		    {
 		      disk_no = (i * 0x80) + j;
-		      if ((disk_choice || disk_no == current_drive) &&
-			  ! get_diskinfo (disk_no, &geom))
+		      if ((disk_choice || disk_no == current_drive)
+			  && ! get_diskinfo (disk_no, &geom))
 			{
 			  char dev_name[4];
 
@@ -1049,32 +1096,36 @@ print_completions (char *filename)
 		    }
 		}
 
-	      ptr = filename;
-	      while (*ptr != '(')
-		ptr--;
-	      ptr++;
-	      {
-		char *u = unique_string;
-		while ((*ptr++ = *u++))
-		  ;
-		ptr--;
-	      }
-	      ptr--;
-	      if ((*(ptr - 2) == 'h') && (*(ptr - 1) == 'd')
-		  && ('0' <= *ptr && *ptr <= '8'))
-		*(ptr + 1) = ',', *(ptr + 2) = '\0';
-	      if ((*(ptr - 2) == 'f') && (*(ptr - 1) == 'd')
-		  && ('0' <= *ptr && *ptr <= '8'))
-		*(ptr + 1) = ')', *(ptr + 2) = '\0';
-
-	      putchar ('\n');
+	      if (is_completion && *unique_string)
+		{
+		  ptr = buf;
+		  while (*ptr != '(')
+		    ptr--;
+		  ptr++;
+		  {
+		    char *u = unique_string;
+		    while ((*ptr++ = *u++))
+		      ;
+		    ptr--;
+		  }
+		  ptr--;
+		  if ((*(ptr - 2) == 'h') && (*(ptr - 1) == 'd')
+		      && ('0' <= *ptr && *ptr <= '8'))
+		    *(ptr + 1) = ',', *(ptr + 2) = '\0';
+		  if ((*(ptr - 2) == 'f') && (*(ptr - 1) == 'd')
+		      && ('0' <= *ptr && *ptr <= '8'))
+		    *(ptr + 1) = ')', *(ptr + 2) = '\0';
+		  
+		  grub_putchar ('\n');
+		}
 	    }
 	  else
 	    {
 	      /* partition completions */
 	      if (part_choice == PART_DISK)
 		{
-		  printf (" Possible partitions are:\n");
+		  if (! is_completion)
+		    grub_printf (" Possible partitions are:\n");
 		  real_open_partition (1);
 		}
 	      else
@@ -1084,7 +1135,7 @@ print_completions (char *filename)
 		      check_and_print_mount ();
 		      /* FIXME: Can talk about linux only, do we need
 			 to know about syntax here?  */
-		      ptr = filename;
+		      ptr = buf;
 		      while (*ptr)
 			ptr++;
 		      if (*(ptr - 1) != ')')
@@ -1098,28 +1149,36 @@ print_completions (char *filename)
       else if (*ptr == '/')
 	{
 	  /* filename completions */
-	  printf (" Possible files are:");
-	  dir (filename);
-	  {
-	    char *u = unique_string;
+	  if (! is_completion)
+	    grub_printf (" Possible files are:");
+	  
+	  dir (buf);
+	  
+	  if (is_completion && *unique_string)
+	    {
+	      ptr += grub_strlen (ptr);
+	      while (*ptr != '/')
+		ptr--;
+	      ptr++;
+	      
+	      if (unique == 1)
+		{
+		  char *u = unique_string + grub_strlen (unique_string);
+		  
+		  *u++ = ' ';
+		  *u = 0;
+		}
 
-	    if (*u)
-	      {
-		while (*ptr++)
-		  ;
-		while (*ptr != '/')
-		  ptr--;
-		ptr++;
-		while ((*ptr++ = *u++))
-		  ;
-	      }
-	  }
+	      grub_strcpy (ptr, unique_string);
+	    }
 	}
       else
 	errnum = ERR_BAD_FILENAME;
     }
 
   print_error ();
+  do_completion = 0;
+  return unique - 1;
 }
 #endif /* STAGE1_5 */
 
