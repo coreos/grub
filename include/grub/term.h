@@ -124,6 +124,7 @@ void EXPORT_FUNC(pupa_setcolor) (pupa_uint8_t normal_color,
 				 pupa_uint8_t highlight_color);
 int EXPORT_FUNC(pupa_setcursor) (int on);
 void EXPORT_FUNC(pupa_refresh) (void);
+void EXPORT_FUNC(pupa_set_more) (int onoff);
 
 /* For convenience.  */
 #define PUPA_TERM_ASCII_CHAR(c)	((c) & 0xff)

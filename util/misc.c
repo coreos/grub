@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/times.h>
+#include <malloc.h>
 
 #include <pupa/util/misc.h>
 #include <pupa/mm.h>
@@ -173,7 +174,7 @@ pupa_util_write_image (const char *img, size_t size, FILE *out)
 void *
 pupa_malloc (unsigned size)
 {
-  return malloc (size);
+  return xmalloc (size);
 }
 
 void
@@ -185,18 +186,25 @@ pupa_free (void *ptr)
 void *
 pupa_realloc (void *ptr, unsigned size)
 {
-  return realloc (ptr, size);
+  return xrealloc (ptr, size);
 }
 
 void *
 pupa_memalign (pupa_size_t align, pupa_size_t size)
 {
-  return memalign (align, size);
+  void *p;
+  
+  p = memalign (align, size);
+  if (! p)
+    pupa_util_error ("out of memory");
+  
+  return p;
 }
 
 /* Some functions that we don't use.  */
 void
-pupa_mm_init_region (void *addr, pupa_size_t size)
+pupa_mm_init_region (void *addr __attribute__ ((unused)),
+		     pupa_size_t size __attribute__ ((unused)))
 {
 }
 

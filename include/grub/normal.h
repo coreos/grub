@@ -24,6 +24,7 @@
 #include <pupa/setjmp.h>
 #include <pupa/symbol.h>
 #include <pupa/err.h>
+#include <pupa/arg.h>
 
 /* The maximum size of a command-line.  */
 #define PUPA_MAX_CMDLINE	1600
@@ -46,7 +47,7 @@ struct pupa_command
   const char *name;
 
   /* The callback function.  */
-  int (*func) (int argc, char *argv[]);
+  pupa_err_t (*func) (struct pupa_arg_list *state, int argc, char **args);
 
   /* The flags.  */
   unsigned flags;
@@ -56,6 +57,9 @@ struct pupa_command
 
   /* The description of the command.  */
   const char *description;
+
+  /* The argument parser optionlist.  */
+  const struct pupa_arg_option *options;
 
   /* The next element.  */
   struct pupa_command *next;
@@ -120,10 +124,12 @@ void pupa_cmdline_run (int nested);
 int pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
 void EXPORT_FUNC(pupa_register_command) (const char *name,
-			    int (*func) (int argc, char *argv[]),
+			    pupa_err_t (*func) (struct pupa_arg_list *state,
+						int argc, char **args),
 			    unsigned flags,
 			    const char *summary,
-			    const char *description);
+			    const char *description,
+			    const struct pupa_arg_option *parser);
 void EXPORT_FUNC(pupa_unregister_command) (const char *name);
 pupa_command_t pupa_command_find (char *cmdline);
 pupa_err_t pupa_set_history (int newsize);
@@ -131,10 +137,25 @@ int pupa_iterate_commands (int (*iterate) (pupa_command_t));
 int pupa_command_execute (char *cmdline);
 void pupa_command_init (void);
 void pupa_normal_init_page (void);
+int pupa_arg_parse (pupa_command_t parser, int argc, char **argv,
+		    struct pupa_arg_list *usr, char ***args, int *argnum);
+
 
 #ifdef PUPA_UTIL
 void pupa_normal_init (void);
 void pupa_normal_fini (void);
+void pupa_hello_init (void);
+void pupa_hello_fini (void);
+void pupa_ls_init (void);
+void pupa_ls_fini (void);
+void pupa_cat_init (void);
+void pupa_cat_fini (void);
+void pupa_boot_init (void);
+void pupa_boot_fini (void);
+void pupa_cmp_init (void);
+void pupa_cmp_fini (void);
+void pupa_terminal_init (void);
+void pupa_terminal_fini (void);
 #endif
 
 #endif /* ! PUPA_NORMAL_HEADER */

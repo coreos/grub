@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <pupa/dl.h>
 #include <pupa/misc.h>
 #include <pupa/loader.h>
+#include <pupa/env.h>
 
 struct mem_region
 {
@@ -222,6 +223,7 @@ pupa_machine_init (void)
   /* The memory system was initialized, thus register built-in devices.  */
   pupa_biosdisk_init ();
 
+
   /* Initialize the prefix.  */
-  pupa_dl_set_prefix (make_install_device ());
+  pupa_env_set ("prefix", make_install_device ());
 }

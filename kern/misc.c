@@ -23,6 +23,7 @@
 #include <pupa/mm.h>
 #include <stdarg.h>
 #include <pupa/term.h>
+#include <pupa/env.h>
 
 void *
 pupa_memmove (void *dest, const void *src, pupa_size_t n)
@@ -212,6 +213,18 @@ pupa_isalpha (int c)
 }
 
 int
+pupa_isdigit (int c)
+{
+  return (c >= '0' && c <= '9');
+}
+
+int
+pupa_isgraph (int c)
+{
+  return (c >= '!' && c <= '~');
+}
+
+int
 pupa_tolower (int c)
 {
   if (c >= 'A' && c <= 'Z')
@@ -380,6 +393,24 @@ pupa_itoa (char *str, int c, unsigned n)
   return p;
 }
 
+static char *
+pupa_ftoa (char *str, double f, int round)
+{
+  unsigned int intp;
+  unsigned int fractp;
+  unsigned int power = 1;
+  int i;
+
+  for (i = 0; i < round; i++)
+    power *= 10;
+
+  intp = f;
+  fractp = (f - (float) intp) * power;
+
+  pupa_sprintf (str, "%d.%d", intp, fractp);
+  return str;
+}
+
 int
 pupa_vsprintf (char *str, const char *fmt, va_list args)
 {
@@ -387,6 +418,7 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
   int count = 0;
   auto void write_char (unsigned char ch);
   auto void write_str (const char *s);
+  auto void write_fill (const char ch, int n);
   
   void write_char (unsigned char ch)
     {
@@ -403,6 +435,13 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
       while (*s)
 	write_char (*s++);
     }
+
+  void write_fill (const char ch, int n)
+    {
+      int i;
+      for (i = 0; i < n; i++)
+	write_char (ch);
+    }
   
   while ((c = *fmt++) != 0)
     {
@@ -412,10 +451,50 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	{
 	  char tmp[16];
 	  char *p;
+	  unsigned int format1 = 0;
+	  unsigned int format2 = 3;
+	  char zerofill = ' ';
+	  int rightfill = 0;
 	  int n;
 	  
-	  c = *fmt++;
+	  if (*fmt && *fmt =='-')
+	    {
+	      rightfill = 1;
+	      fmt++;
+	    }
 	  
+	  p = (char *) fmt;
+	  /* Read formatting parameters.  */
+	  while (*p && pupa_isdigit (*p))
+	    p++;
+
+	  if (p > fmt)
+	    {
+	      char s[p - fmt];
+	      pupa_strncpy (s, fmt, p - fmt);
+	      if (s[0] == '0')
+		zerofill = '0';
+	      format1 = pupa_strtoul (s, 0, 10);
+	      fmt = p;
+	      if (*p && *p == '.')
+		{
+		  p++;
+		  fmt++;
+		  while (*p && pupa_isdigit (*p))
+		    p++;
+		  
+		  if (p > fmt)
+		    {
+		      char fstr[p - fmt];
+		      pupa_strncpy (fstr, fmt, p - fmt);
+		      format2 = pupa_strtoul (fstr, 0, 10);
+		      fmt = p;
+		    }
+		}
+	    }
+
+	  c = *fmt++;
+
 	  switch (c)
 	    {
 	    case 'p':
@@ -427,14 +506,31 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	    case 'd':
 	      n = va_arg (args, int);
 	      pupa_itoa (tmp, c, n);
+	      if (!rightfill && pupa_strlen (tmp) < format1)
+		write_fill (zerofill, format1 - pupa_strlen (tmp));
 	      write_str (tmp);
+	      if (rightfill && pupa_strlen (tmp) < format1)
+		write_fill (zerofill, format1 - pupa_strlen (tmp));
 	      break;
-
+	      
 	    case 'c':
 	      n = va_arg (args, int);
 	      write_char (n & 0xff);
 	      break;
 
+	    case 'f':
+	      {
+		float f;
+		f = va_arg (args, double);
+		pupa_ftoa (tmp, f, format2);
+		if (!rightfill && pupa_strlen (tmp) < format1)
+		  write_fill (zerofill, format1 - pupa_strlen (tmp));
+		write_str (tmp);
+		if (rightfill && pupa_strlen (tmp) < format1)
+		  write_fill (zerofill, format1 - pupa_strlen (tmp));
+		break;
+	      }
+	      
 	    case 'C':
 	      {
 		pupa_uint32_t code = va_arg (args, pupa_uint32_t);
@@ -488,9 +584,18 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 	    case 's':
 	      p = va_arg (args, char *);
 	      if (p)
-		write_str (p);
+		{
+		  if (!rightfill && pupa_strlen (p) < format1)
+		    write_fill (zerofill, format1 - pupa_strlen (p));
+		  
+		  write_str (p);
+		  
+		  if (rightfill && pupa_strlen (p) < format1)
+		    write_fill (zerofill, format1 - pupa_strlen (p));
+		}
 	      else
 		write_str ("(null)");
+	      
 	      break;
 
 	    default:
@@ -520,4 +625,225 @@ pupa_sprintf (char *str, const char *fmt, ...)
   va_end (ap);
 
   return ret;
+}
+
+pupa_err_t
+pupa_split_cmdline (const char *cmdline, pupa_err_t (* getline) (char **), int *argc, char ***argv)
+{
+  /* XXX: Fixed size buffer, perhaps this buffer should be dynamically
+     allocated.  */
+  char buffer[1024];
+  char *bp = buffer;
+  char *rd = (char *) cmdline;
+  char unputbuf;
+  int unput = 0;
+  char *args;
+  int i;
+
+  auto char getchar (void);
+  auto void unputc (char c);
+  auto void getenvvar (void);
+  auto int getarg (void);
+
+  /* Get one character from the commandline.  If the caller reads
+     beyond the end of the string a new line will be read.  This
+     function will not chech for errors, the caller has to check for
+     pupa_errno.  */
+  char getchar (void)
+    {
+      int c;
+      if (unput)
+	{
+	  unput = 0;
+	  return unputbuf;
+	}
+
+      if (! rd)
+	{
+	  getline (&rd);
+	  /* Error is ignored here, the caller will check for this
+	     when it reads beyond the EOL.  */
+	  c = *(rd)++;
+	  return c;
+	}
+
+      c = *(rd)++;
+      if (! c)
+	{
+	  rd = 0;
+	  return '\n';
+	}
+
+      return c;
+    }
+
+  void unputc (char c)
+    {
+      unputbuf = c;
+      unput = 1;
+    }
+
+  /* Read a variable name from the commandline and insert its content
+     into the buffer.  */
+  void getenvvar (void)
+    {
+      char varname[100];
+      char *p = varname;
+      char *val;
+      char c;
+
+      c = getchar ();
+      if (c == '{')
+	while ((c = getchar ()) != '}')
+	  *(p++) = c;
+      else
+	{
+	  /* XXX: An env. variable can have characters and digits in
+	     its name, are more characters allowed here?  */
+	  while (c && (pupa_isalpha (c) || pupa_isdigit (c)))
+	    {
+	      *(p++) = c;
+	      c = getchar ();
+	    }
+	  unputc (c);
+	}
+      *p = '\0';
+
+      /* The variable does not exist.  */
+      val = pupa_env_get (varname);
+      if (! val)
+	return;
+
+      /* Copy the contents of the variable into the buffer.  */
+      for (p = val; *p; p++)
+	*(bp++) = *p;
+    }
+
+  /* Read one argument.  Return 1 if no variables can be read anymore,
+     otherwise return 0.  If there is an error, return 1, the caller
+     has to check pupa_errno.  */
+  int getarg (void)
+    {
+      char c;
+
+      /* Skip all whitespaces before an argument.  */
+      do {
+	c = getchar ();
+      } while (c == ' ' || c == '\t');
+
+      do {
+	switch (c)
+	  {
+	  case '"':
+	    /* Double quote.  */
+	    while ((c = getchar ()))
+	      {
+		if (pupa_errno)
+		  return 1;
+		/* Read in an escaped character.  */
+		if (c == '\\')
+		  {
+		    c = getchar ();
+		    *(bp++) = c;
+		    continue;
+		  }
+		else if (c == '"')
+		  break;
+		/* Read a variable.  */
+		if (c == '$')
+		  {
+		    getenvvar ();
+		    continue;
+		  }
+		*(bp++) = c;
+	      }
+	    break;
+
+	  case '\'':
+	    /* Single quote.  */
+	    while ((c = getchar ()) != '\'')
+	      {
+		if (pupa_errno)
+		  return 1;
+
+		*(bp++) = c;
+	      }
+	    break;
+
+	  case '\n':
+	    /* This was not a argument afterall.  */
+	    return 1;
+
+	  default:
+	    /* A normal option.  */
+	    while (c && (pupa_isalpha (c)
+			 || pupa_isdigit (c) || pupa_isgraph (c)))
+	      {
+		/* Read in an escaped character.  */
+		if (c == '\\')
+		  {
+		    c = getchar ();
+		    *(bp++) = c;
+		    c = getchar ();
+		    continue;
+		  }
+		/* Read a variable.  */
+		if (c == '$')
+		  {
+		    getenvvar ();
+		    c = getchar ();
+		    continue;
+		  }
+		*(bp++) = c;
+		c = getchar ();
+	      }
+	    unputc (c);
+
+	    break;
+	  }
+      } while (! pupa_isspace (c) && c != '\'' && c != '"');
+
+      return 0;
+    }
+
+  /* Read in all arguments and count them.  */
+  *argc = 0;
+  while (1)
+    {
+      if (getarg ())
+	break;
+      *(bp++) = '\0';
+      (*argc)++;
+    }
+
+  /* Check if there were no errors.  */
+  if (pupa_errno)
+    return pupa_errno;
+
+  /* Reserve memory for the return values.  */
+  args = pupa_malloc (bp - buffer);
+  if (! args)
+    return pupa_errno;
+  pupa_memcpy (args, buffer, bp - buffer);
+  
+  *argv = pupa_malloc (sizeof (char *) * (*argc + 1));
+  if (! *argv)
+    {
+      pupa_free (args);
+      return pupa_errno;
+    }
+
+  /* The arguments are separated with 0's, setup argv so it points to
+     the right values.  */
+  bp = args;
+  for (i = 0; i < *argc; i++)
+    {
+      (*argv)[i] = bp;
+      while (*bp)
+	bp++;
+      bp++;
+    }
+
+  (*argc)--;
+  return 0;
 }

@@ -1,7 +1,7 @@
 /* rescue.c - rescue mode */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <pupa/loader.h>
 #include <pupa/dl.h>
 #include <pupa/machine/partition.h>
+#include <pupa/env.h>
 
 #define PUPA_RESCUE_BUF_SIZE	256
 #define PUPA_RESCUE_MAX_ARGS	20
@@ -114,29 +115,6 @@ pupa_rescue_get_command_line (const char *prompt)
 
   pupa_putchar ('\n');
   pupa_refresh ();
-}
-
-/* Get the next word in STR and return a next pointer.  */
-static char *
-next_word (char **str)
-{
-  char *word;
-  char *p = *str;
-  
-  /* Skip spaces.  */
-  while (*p && pupa_isspace (*p))
-    p++;
-
-  word = p;
-
-  /* Find a space.  */
-  while (*p && ! pupa_isspace (*p))
-    p++;
-
-  *p = '\0';
-  *str = p + 1;
-  
-  return word;
 }
 
 /* boot */
@@ -506,27 +484,6 @@ pupa_rescue_cmd_dump (int argc, char *argv[])
     }
 }
 
-/* prefix [DIR] */
-static void
-pupa_rescue_cmd_prefix (int argc, char *argv[])
-{
-  static char prefix[100];
-  
-  if (argc == 0)
-    pupa_printf ("%s\n", pupa_dl_get_prefix ());
-  else
-    {
-      if (pupa_strlen (argv[0]) >= sizeof (prefix))
-	{
-	  pupa_error (PUPA_ERR_BAD_ARGUMENT, "too long prefix");
-	  return;
-	}
-      
-      pupa_strcpy (prefix, argv[0]);
-      pupa_dl_set_prefix (prefix);
-    }
-}
-
 /* insmod MODULE */
 static void
 pupa_rescue_cmd_insmod (int argc, char *argv[])
@@ -602,6 +559,52 @@ pupa_rescue_cmd_lsmod (int argc __attribute__ ((unused)),
   pupa_dl_iterate (print_module);
 }
 
+/* set ENVVAR=VALUE */
+static void
+pupa_rescue_cmd_set (int argc, char *argv[])
+{
+  char *var;
+  char *val;
+
+  auto int print_env (struct pupa_env_var *env);
+
+  int print_env (struct pupa_env_var *env)
+    {
+      pupa_printf ("%s=%s\n", env->name, env->value);
+      return 0;
+    }
+
+  if (argc < 1)
+    {
+      pupa_env_iterate (print_env);
+      return;
+    }
+
+  var = argv[0];
+  val = pupa_strchr (var, '=');
+  if (! val)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "not an assignment");
+      return;
+    }
+
+  val[0] = 0;
+  pupa_env_set (var, val + 1);
+  val[0] = '=';
+}
+
+static void
+pupa_rescue_cmd_unset (int argc, char *argv[])
+{
+  if (argc < 1)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no environment variable specified");
+      return;
+    }
+
+  pupa_env_unset (argv[0]);
+}
+
 static void
 attempt_normal_mode (void)
 {
@@ -621,6 +624,15 @@ attempt_normal_mode (void)
 void
 pupa_enter_rescue_mode (void)
 {
+  auto pupa_err_t getline (char **line);
+  
+  pupa_err_t getline (char **line)
+    {
+      pupa_rescue_get_command_line ("> ");
+      *line = linebuf;
+      return 0;
+    }
+
   /* First of all, attempt to execute the normal mode.  */
   attempt_normal_mode ();
 
@@ -638,14 +650,16 @@ pupa_enter_rescue_mode (void)
 				"set the root device");
   pupa_rescue_register_command ("dump", pupa_rescue_cmd_dump,
 				"dump memory");
-  pupa_rescue_register_command ("prefix", pupa_rescue_cmd_prefix,
-				"set the prefix");
   pupa_rescue_register_command ("insmod", pupa_rescue_cmd_insmod,
 				"insert a module");
   pupa_rescue_register_command ("rmmod", pupa_rescue_cmd_rmmod,
 				"remove a module");
   pupa_rescue_register_command ("lsmod", pupa_rescue_cmd_lsmod,
 				"show loaded modules");
+  pupa_rescue_register_command ("set", pupa_rescue_cmd_set,
+				"set an environment variable");
+  pupa_rescue_register_command ("unset", pupa_rescue_cmd_unset,
+				"remove an environment variable");
   
   while (1)
     {
@@ -653,36 +667,42 @@ pupa_enter_rescue_mode (void)
       char *name;
       int n;
       pupa_rescue_command_t cmd;
-      char *args[PUPA_RESCUE_MAX_ARGS + 1];
+      char **args;
+
+      /* Print an error, if any.  */
+      pupa_print_error ();
+      pupa_errno = PUPA_ERR_NONE;
 
       /* Get a command line.  */
       pupa_rescue_get_command_line ("pupa rescue> ");
 
+      if (pupa_split_cmdline (line, getline, &n, &args))
+	continue;
+
+      /* In case of an assignment set the environment accordingly
+	 instead of calling a function.  */
+      if (n == 0 && pupa_strchr (line, '='))
+	{
+	  char *val = pupa_strchr (args[0], '=');
+	  val[0] = 0;
+	  pupa_env_set (args[0], val + 1);
+	  val[0] = '=';
+	  continue;
+	}
+
       /* Get the command name.  */
-      name = next_word (&line);
+      name = args[0];
 
       /* If nothing is specified, restart.  */
       if (*name == '\0')
 	continue;
-
-      /* Get arguments.  */
-      for (n = 0; n <= PUPA_RESCUE_MAX_ARGS; n++)
-	{
-	  char *arg = next_word (&line);
-	  
-	  if (*arg)
-	    args[n] = arg;
-	  else
-	    break;
-	}
-      args[n] = 0;
 
       /* Find the command and execute it.  */
       for (cmd = pupa_rescue_command_list; cmd; cmd = cmd->next)
 	{
 	  if (pupa_strcmp (name, cmd->name) == 0)
 	    {
-	      (cmd->func) (n, args);
+	      (cmd->func) (n, &args[1]);
 	      break;
 	    }
 	}
@@ -693,9 +713,5 @@ pupa_enter_rescue_mode (void)
 	  pupa_printf ("Unknown command `%s'\n", name);
 	  pupa_printf ("Try `help' for usage\n");
 	}
-      
-      /* Print an error, if any.  */
-      pupa_print_error ();
-      pupa_errno = PUPA_ERR_NONE;
     }
 }

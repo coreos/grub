@@ -1,6 +1,7 @@
 /* hello.c - test module for dynamic loading */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  Copyright (C) 2003  Free Software Foundation, Inc.
  *  Copyright (C) 2003  NIIBE Yutaka <gniibe@m17n.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -25,10 +26,11 @@
 #include <pupa/dl.h>
 #include <pupa/normal.h>
 
-static int
-pupa_cmd_hello (int argc, char *argv[])
+static pupa_err_t
+pupa_cmd_hello (struct pupa_arg_list *state __attribute__ ((unused)),
+		int argc __attribute__ ((unused)),
+		char **args __attribute__ ((unused)))
 {
-  (void)argc;  (void)argv;	/* To stop warning. */
   pupa_printf ("Hello World\n");
   return 0;
 }
@@ -37,7 +39,7 @@ PUPA_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
   pupa_register_command ("hello", pupa_cmd_hello, PUPA_COMMAND_FLAG_BOTH,
-			 "hello", "Say hello");
+			 "hello", "Say hello", 0);
 }
 
 PUPA_MOD_FINI

@@ -20,12 +20,19 @@
 #include <pupa/term.h>
 #include <pupa/err.h>
 #include <pupa/mm.h>
+#include <pupa/misc.h>
 
 /* The list of terminals.  */
 static pupa_term_t pupa_term_list;
 
 /* The current terminal.  */
 static pupa_term_t pupa_cur_term;
+
+/* The amount of lines counted by the pager.  */
+static int pupa_more_lines;
+
+/* If the more pager is active.  */
+static int pupa_more;
 
 void
 pupa_term_register (pupa_term_t term)
@@ -97,7 +104,36 @@ pupa_putcode (pupa_uint32_t code)
   (pupa_cur_term->putchar) (code);
   
   if (code == '\n')
-    pupa_putcode ('\r');
+    {
+      pupa_putcode ('\r');
+
+      pupa_more_lines++;
+      /* XXX: Don't use a fixed height!  */
+      if (pupa_more && pupa_more_lines == 24 - 1)
+	{
+	  char key;
+	  int pos = pupa_getxy ();
+
+	  /* Show --MORE-- on the lower left side of the screen.  */
+	  pupa_gotoxy (1, 24 - 1);
+	  pupa_setcolorstate (PUPA_TERM_COLOR_HIGHLIGHT);
+	  pupa_printf ("--MORE--");
+	  pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
+
+	  key = pupa_getkey ();
+	  
+	  /* Remove the message.  */
+	  pupa_gotoxy (1, 24 -1);
+	  pupa_printf ("        ");
+	  pupa_gotoxy (pos >> 8, pos & 0xFF);
+	  
+	  /* Scroll one lines or an entire page, depending on the key.  */
+	  if (key == '\r' || key =='\n')
+	    pupa_more_lines--;
+	  else
+	    pupa_more_lines = 0;
+	}
+    }
 }
 
 /* Put a character. C is one byte of a UTF-8 stream.
@@ -234,4 +270,15 @@ pupa_refresh (void)
 {
   if (pupa_cur_term->refresh)
     (pupa_cur_term->refresh) ();
+}
+
+void
+pupa_set_more (int onoff)
+{
+  if (onoff == 1)
+    pupa_more++;
+  else
+    pupa_more--;
+
+  pupa_more_lines = 0;
 }

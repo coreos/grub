@@ -83,8 +83,6 @@ pupa_dl_t EXPORT_FUNC(pupa_dl_get) (const char *name);
 pupa_err_t EXPORT_FUNC(pupa_dl_register_symbol) (const char *name, void *addr,
 					    pupa_dl_t mod);
 void *EXPORT_FUNC(pupa_dl_resolve_symbol) (const char *name);
-void EXPORT_FUNC(pupa_dl_set_prefix) (const char *dir);
-const char *EXPORT_FUNC(pupa_dl_get_prefix) (void);
 
 int pupa_arch_dl_check_header (void *ehdr, pupa_size_t size);
 pupa_err_t pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr);

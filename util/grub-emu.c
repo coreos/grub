@@ -33,6 +33,7 @@
 #include <pupa/kernel.h>
 #include <pupa/normal.h>
 #include <pupa/util/getroot.h>
+#include <pupa/env.h>
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
@@ -77,11 +78,11 @@ const char *argp_program_bug_address = PACKAGE_BUGREPORT;
 static char doc[] = "PUPA emulator";
 
 static struct argp_option options[] = {
-  {"root-device", 'r', "DEV",  0, "use DEV as the root device [default=guessed]"},
-  {"device-map",  'm', "FILE", 0, "use FILE as the device map"},
-  {"directory",   'd', "DIR",  0, "use PUPA files in the directory DIR"},
-  {"verbose",     'v', 0     , 0, "print verbose messages"},
-  { 0 }
+  {"root-device", 'r', "DEV",  0, "use DEV as the root device [default=guessed]", 0},
+  {"device-map",  'm', "FILE", 0, "use FILE as the device map", 0},
+  {"directory",   'd', "DIR",  0, "use PUPA files in the directory DIR", 0},
+  {"verbose",     'v', 0     , 0, "print verbose messages", 0},
+  { 0, 0, 0, 0, 0, 0 }
 };
 
 struct arguments
@@ -118,7 +119,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
-static struct argp argp = {options, parse_opt, 0, doc};
+static struct argp argp = {options, parse_opt, 0, doc, 0, 0, 0};
 
 
 int
@@ -148,7 +149,8 @@ main (int argc, char *argv[])
 
   prefix = pupa_get_prefix (args.dir ? : DEFAULT_DIRECTORY);
   sprintf (rootprefix, "%s%s", args.root_dev, prefix);
-  pupa_dl_set_prefix (rootprefix);
+
+  pupa_env_set ("prefix", rootprefix);
   
   /* XXX: This is a bit unportable.  */
   pupa_util_biosdisk_init (args.dev_map);
@@ -156,6 +158,11 @@ main (int argc, char *argv[])
   /* Initialize the default modules.  */
   pupa_fat_init ();
   pupa_ext2_init ();
+  pupa_ls_init ();
+  pupa_boot_init ();
+  pupa_cmp_init ();
+  pupa_cat_init ();
+  pupa_terminal_init ();
 
   /* XXX: Should normal mode be started by default?  */
   pupa_normal_init ();
@@ -167,6 +174,10 @@ main (int argc, char *argv[])
   pupa_normal_fini ();
   pupa_ext2_fini ();
   pupa_fat_fini ();
+  pupa_boot_fini ();
+  pupa_cmp_fini ();
+  pupa_cat_fini ();
+  pupa_terminal_fini ();
 
   return 0;
 }

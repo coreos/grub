@@ -22,15 +22,19 @@
 #include <pupa/mm.h>
 #include <pupa/err.h>
 #include <pupa/term.h>
+#include <pupa/env.h>
+#include <pupa/dl.h>
 
 static pupa_command_t pupa_command_list;
 
 void
 pupa_register_command (const char *name,
-		       int (*func) (int argc, char *argv[]),
+		       pupa_err_t (*func) (struct pupa_arg_list *state,
+					   int argc, char **args),
 		       unsigned flags,
 		       const char *summary,
-		       const char *description)
+		       const char *description,
+		       const struct pupa_arg_option *options)
 {
   pupa_command_t cmd, *p;
 
@@ -43,6 +47,7 @@ pupa_register_command (const char *name,
   cmd->flags = flags;
   cmd->summary = summary;
   cmd->description = description;
+  cmd->options = options;
 
   /* Keep the list sorted for simplicity.  */
   p = &pupa_command_list;
@@ -107,66 +112,69 @@ pupa_iterate_commands (int (*iterate) (pupa_command_t))
 int
 pupa_command_execute (char *cmdline)
 {
-  pupa_command_t cmd;
-  char *p;
-  char **args;
-  int num = 0;
-  int i;
-  int ret;
+  auto pupa_err_t cmdline_get (char **s);
+  pupa_err_t cmdline_get (char **s)
+    {
+      *s = pupa_malloc (PUPA_MAX_CMDLINE);
+      *s[0] = '\0';
+      return pupa_cmdline_get (">", *s, PUPA_MAX_CMDLINE, 0, 1);
+    }
 
-  cmd = pupa_command_find (cmdline);
+  pupa_command_t cmd;
+  pupa_err_t ret = 0;
+  char *pager;
+  int num;
+  char **args;
+  struct pupa_arg_list *state;
+  struct pupa_arg_option *parser;
+  int maxargs = 0;
+  char **arglist;
+  int numargs;
+
+  if (pupa_split_cmdline (cmdline, cmdline_get, &num, &args))
+    return 0;
+  
+  /* In case of an assignment set the environment accordingly instead
+     of calling a function.  */
+  if (num == 0 && pupa_strchr (args[0], '='))
+    {
+      char *val = pupa_strchr (args[0], '=');
+      val[0] = 0;
+      pupa_env_set (args[0], val + 1);
+      val[0] = '=';
+      return 0;
+    }
+  
+  cmd = pupa_command_find (args[0]);
   if (! cmd)
     return -1;
 
-  /* Count arguments.  */
-  p = cmdline;
-  while (1)
-    {
-      while (*p && *p != ' ')
-	p++;
+  /* Enable the pager if the environment pager is set to 1.  */
+  pager = pupa_env_get ("pager");
+  if (pager && (! pupa_strcmp (pager, "1")))
+    pupa_set_more (1);
+  
+  parser = (struct pupa_arg_option *) cmd->options;
+  while (parser && (parser++)->doc)
+    maxargs++;
 
-      if (! *p)
-	break;
-      
-      while (*p == ' ')
-	p++;
+  state = pupa_malloc (sizeof (struct pupa_arg_list) * maxargs);
+  pupa_memset (state, 0, sizeof (struct pupa_arg_list) * maxargs);
+  if (pupa_arg_parse (cmd, num, &args[1], state, &arglist, &numargs))
+    ret = (cmd->func) (state, numargs, arglist);
+  pupa_free (state);
 
-      num++;
-    }
-
-  args = (char **) pupa_malloc (sizeof (char *) * (num + 1));
-  if (! args)
-    return -1;
-
-  /* Fill arguments.  */
-  for (i = 0, p = pupa_strchr (cmdline, ' '); i < num && p; i++)
-    {
-      if (! p)
-	break;
-      
-      while (*p == ' ')
-	p++;
-
-      args[i] = p;
-
-      while (*p && *p != ' ')
-	p++;
-
-      *p++ = '\0';
-    }
-
-  /* Terminate the array with NULL.  */
-  args[i] = 0;
-
-  ret = (cmd->func) (num, args);
-
+  if (pager && (! pupa_strcmp (pager, "1")))
+    pupa_set_more (0);
+  
   pupa_free (args);
   return ret;
 }
 
-static int
-rescue_command (int argc __attribute__ ((unused)),
-		char *argv[] __attribute__ ((unused)))
+static pupa_err_t
+rescue_command (struct pupa_arg_list *state __attribute__ ((unused)),
+		int argc __attribute__ ((unused)),
+		char **args __attribute__ ((unused)))
 {
   pupa_longjmp (pupa_exit_env, 0);
 
@@ -174,61 +182,145 @@ rescue_command (int argc __attribute__ ((unused)),
   return 0;
 }
 
-static int
-terminal_command (int argc, char *argv[])
+
+static pupa_err_t
+set_command (struct pupa_arg_list *state __attribute__ ((unused)),
+	     int argc, char **args)
 {
-  pupa_term_t term = 0;
-  
-  auto int print_terminal (pupa_term_t);
-  auto int find_terminal (pupa_term_t);
-  
-  int print_terminal (pupa_term_t t)
+  char *var;
+  char *val;
+
+  auto int print_env (struct pupa_env_var *env);
+  int print_env (struct pupa_env_var *env)
     {
-      pupa_printf (" %s", t->name);
+      pupa_printf ("%s=%s\n", env->name, env->value);
       return 0;
     }
-
-  int find_terminal (pupa_term_t t)
+  
+  if (! argc)
     {
-      if (pupa_strcmp (t->name, argv[0]) == 0)
-	{
-	  term = t;
-	  return 1;
-	}
-
+      pupa_env_iterate (print_env);
       return 0;
     }
+  
+  var = args[0];
+  val = pupa_strchr (var, '=');
+  if (! val)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "not an assignment");
+      return pupa_errno;
+    }
+  
+  val[0] = 0;
+  pupa_env_set (var, val + 1);
+  val[0] = '=';
+  return 0;
+}
+
+static pupa_err_t
+unset_command (struct pupa_arg_list *state __attribute__ ((unused)),
+	       int argc, char **args)
+{
+  if (argc < 1)
+    return pupa_error (PUPA_ERR_BAD_ARGUMENT,
+		       "no environment variable specified");
+
+  pupa_env_unset (args[0]);
+  return 0;
+}
+
+static pupa_err_t
+insmod_command (struct pupa_arg_list *state __attribute__ ((unused)),
+		int argc, char **args)
+{
+  char *p;
+  pupa_dl_t mod;
   
   if (argc == 0)
-    {
-      pupa_printf ("Available terminal(s):");
-      pupa_term_iterate (print_terminal);
-      pupa_putchar ('\n');
-      
-      pupa_printf ("Current terminal: %s\n", pupa_term_get_current ()->name);
-    }
+    return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no module specified");
+
+  p = pupa_strchr (args[0], '/');
+  if (! p)
+    mod = pupa_dl_load (args[0]);
   else
-    {
-      pupa_term_iterate (find_terminal);
-      if (! term)
-	return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no such terminal");
+    mod = pupa_dl_load_file (args[0]);
 
-      pupa_term_set_current (term);
+  if (mod)
+    pupa_dl_ref (mod);
+
+  return 0;
+}
+
+static pupa_err_t
+rmmod_command (struct pupa_arg_list *state __attribute__ ((unused)),
+		int argc, char **args)
+{
+  pupa_dl_t mod;
+  
+  if (argc == 0)
+    return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no module specified");
+  
+  mod = pupa_dl_get (args[0]);
+  if (! mod)
+    return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no such module");
+
+  if (! pupa_dl_unref (mod))
+    pupa_dl_unload (mod);
+
+  return 0;
+}
+
+static pupa_err_t
+lsmod_command (struct pupa_arg_list *state __attribute__ ((unused)),
+	       int argc __attribute__ ((unused)),
+	       char **args __attribute__ ((unused)))
+{
+  auto int print_module (pupa_dl_t mod);
+
+  int print_module (pupa_dl_t mod)
+    {
+      pupa_dl_dep_t dep;
+      
+      pupa_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
+      for (dep = mod->dep; dep; dep = dep->next)
+	{
+	  if (dep != mod->dep)
+	    pupa_putchar (',');
+
+	  pupa_printf ("%s", dep->mod->name);
+	}
+      pupa_putchar ('\n');
+      pupa_refresh ();
+
+      return 0;
     }
 
-  return PUPA_ERR_NONE;
+  pupa_printf ("Name\tRef Count\tDependencies\n");
+  pupa_dl_iterate (print_module);
+  return 0;
 }
 
 void
 pupa_command_init (void)
 {
   /* This is a special command, because this never be called actually.  */
-  pupa_register_command ("title", 0, PUPA_COMMAND_FLAG_TITLE, 0, 0);
+  pupa_register_command ("title", 0, PUPA_COMMAND_FLAG_TITLE, 0, 0, 0);
 
   pupa_register_command ("rescue", rescue_command, PUPA_COMMAND_FLAG_BOTH,
-			 "rescue",
-			 "Enter into the rescue mode.");
-  pupa_register_command ("terminal", terminal_command, PUPA_COMMAND_FLAG_BOTH,
-			 "terminal [TERM...]",
-			 "Select a terminal.");
+			 "rescue", "Enter into the rescue mode.", 0);
+
+  pupa_register_command ("set", set_command, PUPA_COMMAND_FLAG_BOTH,
+			 "unset ENVVAR", "Set an environment variable.", 0);
+
+  pupa_register_command ("unset", unset_command, PUPA_COMMAND_FLAG_BOTH,
+			 "set [ENVVAR=VALUE]", "Remove an environment variable.", 0);
+
+  pupa_register_command ("insmod", insmod_command, PUPA_COMMAND_FLAG_BOTH,
+			 "insmod MODULE|FILE", "Insert a module.", 0);
+
+  pupa_register_command ("rmmod", rmmod_command, PUPA_COMMAND_FLAG_BOTH,
+			 "rmmod MODULE", "Remove a module.", 0);
+
+  pupa_register_command ("lsmod", lsmod_command, PUPA_COMMAND_FLAG_BOTH,
+			 "lsmod", "Show loaded modules.", 0);
 }

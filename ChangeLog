@@ -1,3 +1,157 @@
+2004-03-14  Marco Gerards  <metgerards@student.han.nl>
+
+	* commands/boot.c: New file.
+	* commands/cat.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/terminal.c: Likewise.
+	* normal/command.c: Include <pupa/env.h> and <pupa/dl.h>.
+	(pupa_register_command): Changed interface to match the new
+	argument parser.
+	(pupa_command_execute): Changed (almost rewritten) so it uses
+	pupa_split_command.  Added support for setting variables using the
+	syntax `foo=bar'.
+	(rescue_command): Changed to work with the new argument parser.
+	(terminal_command): Moved from here to commands/terminal.c.
+	(set_command): New function.
+	(unset_command): New function.
+	(insmod_command): New function.
+	(rmmod_command): New function.
+	(lsmod_command): New function.
+	(pupa_command_init): Don't initialize the command terminal
+	anymore.  Initialize the commands set, unset, insmod, rmmod and
+	lsmod.
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add kern/env.c.
+	(kernel_img_HEADERS): Add arg.h and env.h.
+	(pupa_mkimage_LDFLAGS): Add kern/env.c.
+	(pupa_emu_SOURCES): Add kern/env.c, commands/ls.c,
+	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c,
+	normal/arg.c.
+	(pkgdata_MODULES): Add ls.mod, boot.mod, cmp.mod, cat.mod and
+	terminal.mod.
+	(normal_mod_SOURCES): Add normal/arg.c and normal/arg.c.
+	(boot_mod_SOURCES): New variable.
+	(terminal_mod_SOURCES): Likewise.
+	(ls_mod_SOURCES): Likewise.
+	(cmp_mod_SOURCES): Likewise.
+	(cat_mod_SOURCES): Likewise.
+
+	* normal/arg.c: New file.
+	* kern/env.c: Likewise.
+	* include/pupa/arg.h: Likewise.
+	* include/pupa/env.h: Likewise.
+	* font/manager.c (font_command): Changed to match argument parsing
+	interface changes.
+	(PUPA_MOD_INIT): Likewise.
+	* hello/hello.c (pupa_cmd_hello): Likewise.
+	(PUPA_MOD_INIT): Likewise.
+	* include/pupa/disk.h: Include <pupa/device.h>.
+	(pupa_print_partinfo): New prototype.
+	* include/pupa/dl.h (pupa_dl_set_prefix): Prototype removed.
+	(pupa_dl_get_prefix): Likewise.
+	* include/pupa/misc.h: Include <pupa/err.h>.
+	(pupa_isgraph): New prototype.
+	(pupa_isdigit): Likewise.
+	(pupa_split_cmdline): Likewise.
+	* include/pupa/normal.h: Include <pupa/arg.h>.
+	(pupa_command): Changed the prototype of the member `func' to
+	match the argument parsing interface.  Added member `options'.
+	(pupa_register_command): Updated to match function.
+	(pupa_arg_parse): New prototype.
+	(pupa_hello_init) [PUPA_UTIL]: New prototype.
+	(pupa_hello_fini) [PUPA_UTIL]: Likewise.
+	(pupa_ls_init) [PUPA_UTIL]: Likewise.
+	(pupa_ls_fini) [PUPA_UTIL]: Likewise.
+	(pupa_cat_init) [PUPA_UTIL]: Likewise.
+	(pupa_cat_fini) [PUPA_UTIL]: Likewise.
+	(pupa_boot_init) [PUPA_UTIL]: Likewise.
+	(pupa_boot_fini) [PUPA_UTIL]: Likewise.
+	(pupa_cmp_init) [PUPA_UTIL]: Likewise.
+	(pupa_cmp_fini) [PUPA_UTIL]: Likewise.
+	(pupa_terminal_init) [PUPA_UTIL]: Likewise.
+	(pupa_terminal_fini) [PUPA_UTIL]: Likewise.
+	* kern/disk.c: Include <pupa/file.h>.
+	(pupa_print_partinfo): New function.
+	* kern/dl.c: Include <pupa/env.h>.
+	(pupa_dl_dir): Variable removed.
+	(pupa_dl_load): Use the environment variable `prefix' instead of
+	the variable pupa_dl_dir.
+	(pupa_dl_set_prefix): Function removed.
+	(pupa_dl_get_prefix): Likewise.
+	* kern/i386/pc/init.c: Include <pupa/env.h>.
+	(pupa_machine_init): Use the environment variable `prefix' instead of
+	using pupa_dl_set_prefix to set the prefix.
+	* kern/main.c: Include <pupa/env.h>.
+	(pupa_set_root_dev): Use the environment variable `prefix' instead of
+	using pupa_dl_get_prefix to get the prefix.
+	* kern/misc.c: Include <pupa/env.h>.
+	(pupa_isdigit): New function.
+	(pupa_isgraph): Likewise.
+	(pupa_ftoa): Likewise.
+	(pupa_vsprintf): Added support for printing values of the type
+	`double'.  Make it possible to format variable output when using
+	formatting like `%1.2%f'.
+	(pupa_split_cmdline): New function.
+	* kern/rescue.c: Include <pupa/env.h>.
+	(next_word): Removed function.
+	(pupa_rescue_cmd_prefix): Likewise.
+	(pupa_rescue_cmd_set): New function.
+	(pupa_rescue_cmd_unset): New function.
+	(pupa_enter_rescue_mode): Use the `pupa_split_cmdline' function to
+	split the command line instead of splitting it here.  Added
+	support for setting variables using the syntax `foo=bar'.  Don't
+	initialize the prefix command anymore.  Initialized the set and
+	unset commands.
+	* normal/cmdline.c: Include <pupa/env.h>.
+	(pupa_tab_complete): Added prototypes for print_simple_completion,
+	print_partition_completion, add_completion, iterate_commands,
+	iterate_dev, iterate_part and iterate_dir. Moved code to print
+	partition information from here to kern/disk.c.
+	(pupa_cmdline_run): Don't check if the funtion exists anymore.
+	* normal/main.c: Include <pupa/env.h>.
+	(pupa_rescue_cmd_normal): Use the environment variable `prefix'
+	instead of using pupa_dl_get_prefix to get the prefix.
+	* term/i386/pc/vga.c: Include <pupa/arg.h>.
+	(check_vga_mem): Cast pointers to `void *' to silence a gcc
+	warning.
+	(pupa_vga_putchar) [! DEBUG_VGA]: Removed for this case.
+	(pupa_vga_setcolor): Declare unused variables with `__attribute__
+	((unused))' to silence a gcc warning.
+	(pupa_vga_setcolor): Likewise.
+	(debug_command): Changed to match argument parsing
+	interface changes.
+	* util/pupa-emu.c: Include <pupa/env.h>.
+	(options): Added 0's for unused fields to silence a gcc warning.
+	(argp): Likewise.
+	(main): Use the environment variable `prefix' instead of using
+	pupa_dl_set_prefix to set the prefix.  Initialize the commands ls,
+	boot, cmp, cat and terminal.  Finish the commands boot, cmp, cat
+	and terminal.
+
+	* util/i386/pc/getroot.c: Include <pupa/i386/pc/util/biosdisk.h>.
+	* util/misc.c: Include <malloc.h>.
+	(pupa_malloc): Rewritten so errors are correctly reported.
+	(pupa_realloc): Likewise.
+	(pupa_memalign): Likewise.
+	(pupa_mm_init_region): Declare unused variables with
+	`__attribute__ ((unused))' to silence a gcc warning.
+	* normal/i386/setjmp.S: Remove tab at the end of the file to
+	silence a gcc warning.
+	* loader/i386/pc/linux.c (pupa_rescue_cmd_initrd): Declare unused
+	variables with `__attribute__ ((unused))' to silence a gcc
+	warning.
+	* loader/i386/pc/multiboot.c (pupa_multiboot_unload): Make the
+	local variable i unsigned to silence a gcc warning.
+
+	* kern/term.c: Include <pupa/misc.h>.
+	(pupa_more_lines): New variable.
+	(pupa_more): Likewise.
+	(pupa_putcode): When the pager is active pause at the end of every
+	screen.
+	(pupa_set_more): New function.
+	* include/pupa/term.h (pupa_set_more): New prototype.
+
+
 2004-03-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Now this project is GRUB 2 rather than PUPA. The location of

@@ -24,6 +24,7 @@
 #include <dirent.h>
 
 #include <pupa/util/misc.h>
+#include <pupa/i386/pc/util/biosdisk.h>
 
 static void
 strip_extra_slashes (char *dir)

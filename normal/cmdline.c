@@ -26,6 +26,7 @@
 #include <pupa/machine/partition.h>
 #include <pupa/disk.h>
 #include <pupa/file.h>
+#include <pupa/env.h>
 
 static char *kill_buf;
 
@@ -156,6 +157,18 @@ pupa_tab_complete (char *buf, int *restore)
   /* String that is added when matched.  */
   char *matchstr;
 
+  auto void print_simple_completion (char *comp);
+  auto void print_partition_completion (char *comp);
+  auto int NESTED_FUNC_ATTR add_completion (const char *comp, const char *match,
+					    const char *what, 
+					    void (*print_completion) (char *));
+  auto int iterate_commands (pupa_command_t cmd);
+  auto int iterate_dev (const char *devname);
+  auto int iterate_part (const pupa_partition_t p);
+  auto int iterate_dir (const char *filename, int dir);
+  
+
+
   void print_simple_completion (char *comp)
     {
       pupa_printf (" %s", comp);
@@ -163,39 +176,8 @@ pupa_tab_complete (char *buf, int *restore)
 
   void print_partition_completion (char *comp)
     {
-      pupa_fs_t fs = 0;
-      pupa_device_t part;
-      char devname[20];
-      
-      pupa_sprintf (devname, "%s,%s", partdev->disk->name, comp);
-      part = pupa_device_open (devname);
-      if (!part)
-	pupa_printf ("\n\tPartition num:%s, Filesystem cannot be accessed", 
-		     comp);
-      else
-	{
-	  char *label;
-
-	  fs = pupa_fs_probe (part);
-	  /* Ignore all errors.  */
-	  pupa_errno = 0;
-
-	  pupa_printf ("\n\tPartition num:%s, Filesystem type %s",
-		       comp, fs ? fs->name : "Unknown");
-	  
-	  if (fs)
-	    {
-	      (fs->label) (part, &label);
-	      if (pupa_errno == PUPA_ERR_NONE)
-		{
-		  if (label && pupa_strlen (label))
-		    pupa_printf (", Label: %s", label);
-		  pupa_free (label);
-		}
-	      pupa_errno = PUPA_ERR_NONE;
-	    }
-	  pupa_device_close (part);
-	}
+      pupa_print_partinfo (partdev, comp);
+      pupa_errno = 0;
     }
 
   /* Add a string to the list of possible completions.  COMP is the
@@ -206,9 +188,9 @@ pupa_tab_complete (char *buf, int *restore)
      multiple matches.  XXX: Because of a bug in gcc it is required to
      use __regparm__ in some cases.  */
 
-  int NESTED_FUNC_ATTR
-    add_completion (const char *comp, const char *match, const char *what,
-		    void (*print_completion) (char *))
+  int NESTED_FUNC_ATTR add_completion (const char *comp, const char *match,
+				       const char *what, 
+				       void (*print_completion) (char *))
     {
       /* Bug in strncmp then len ==0.  */
       if (!len || pupa_strncmp (pos, comp, len) == 0)
@@ -460,7 +442,6 @@ pupa_cmdline_run (int nested)
   while (1)
     {
       static char cmdline[PUPA_MAX_CMDLINE];
-      pupa_command_t cmd;
 
       pupa_print_error ();
       pupa_errno = PUPA_ERR_NONE;
@@ -472,17 +453,6 @@ pupa_cmdline_run (int nested)
 
       if (! *cmdline)
 	continue;
-
-      cmd = pupa_command_find (cmdline);
-      if (! cmd)
-	continue;
-
-      if (! (cmd->flags & PUPA_COMMAND_FLAG_CMDLINE))
-	{
-	  pupa_error (PUPA_ERR_UNKNOWN_COMMAND,
-		      "invalid command `%s'", cmd->name);
-	  continue;
-	}
 
       pupa_command_execute (cmdline);
     }

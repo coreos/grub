@@ -217,14 +217,16 @@ pupa_font_get_glyph (pupa_uint32_t code,
   return 0;
 }
 
-static int
-font_command (int argc, char *argv[])
+static pupa_err_t
+font_command (struct pupa_arg_list *state __attribute__ ((unused)),
+	      int argc  __attribute__ ((unused)),
+	      char **args __attribute__ ((unused)))
 {
   if (argc == 0)
     return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no font specified");
 
   while (argc--)
-    if (! add_font (*argv++))
+    if (! add_font (*args++))
       return 1;
 
   return 0;
@@ -232,9 +234,9 @@ font_command (int argc, char *argv[])
 
 PUPA_MOD_INIT
 {
+  (void) mod; /* Stop warning.  */
   pupa_register_command ("font", font_command, PUPA_COMMAND_FLAG_BOTH,
-			 "font FILE...",
-			 "Specify a font file to display.");
+			 "font FILE...", "Specify a font file to display.", 0);
 }
 
 PUPA_MOD_FINI

@@ -290,7 +290,8 @@ pupa_rescue_cmd_linux (int argc, char *argv[])
 }
 
 void
-pupa_rescue_cmd_initrd (int argc, char *argv[])
+pupa_rescue_cmd_initrd (int argc __attribute__ ((unused)),
+			char *argv[] __attribute__ ((unused)))
 {
   pupa_file_t file = 0;
   pupa_ssize_t size;

@@ -26,6 +26,7 @@
 #include <pupa/file.h>
 #include <pupa/mm.h>
 #include <pupa/term.h>
+#include <pupa/env.h>
 
 pupa_jmp_buf pupa_exit_env;
 
@@ -315,7 +316,7 @@ pupa_rescue_cmd_normal (int argc, char *argv[])
       char *config;
       const char *prefix;
       
-      prefix = pupa_dl_get_prefix ();
+      prefix = pupa_env_get ("prefix");
       if (prefix)
 	{
 	  config = pupa_malloc (pupa_strlen (prefix) + sizeof ("/pupa.cfg"));

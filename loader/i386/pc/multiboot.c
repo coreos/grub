@@ -61,7 +61,7 @@ pupa_multiboot_unload (void)
 {
   if (mbi)
     {
-      int i;
+      unsigned int i;
       for (i = 0; i < mbi->mods_count; i++)
 	{
 	  pupa_free ((void *)

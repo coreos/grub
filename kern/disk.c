@@ -24,6 +24,7 @@
 #include <pupa/machine/partition.h>
 #include <pupa/misc.h>
 #include <pupa/machine/time.h>
+#include <pupa/file.h>
 
 #define	PUPA_CACHE_TIMEOUT	2
 
@@ -496,5 +497,46 @@ pupa_disk_write (pupa_disk_t disk, unsigned long sector,
 
  finish:
 
+  return pupa_errno;
+}
+
+pupa_err_t
+pupa_print_partinfo (pupa_device_t disk, char *partname)
+{
+  pupa_fs_t fs = 0;
+  pupa_device_t part;
+  char devname[20];
+      
+  pupa_sprintf (devname, "%s,%s", disk->disk->name, partname);
+  part = pupa_device_open (devname);
+  if (!part)
+    pupa_printf ("\tPartition num:%s, Filesystem cannot be accessed",
+		 partname);
+  else
+    {
+      char *label;
+
+      fs = pupa_fs_probe (part);
+      /* Ignore all errors.  */
+      pupa_errno = 0;
+
+      pupa_printf ("\tPartition num:%s, Filesystem type %s",
+		   partname, fs ? fs->name : "Unknown");
+	  
+      if (fs)
+	{
+	  (fs->label) (part, &label);
+	  if (pupa_errno == PUPA_ERR_NONE)
+	    {
+	      if (label && pupa_strlen (label))
+		pupa_printf (", Label: %s", label);
+	      pupa_free (label);
+	    }
+	  pupa_errno = PUPA_ERR_NONE;
+	}
+      pupa_device_close (part);
+    }
+
+  pupa_printf ("\n");
   return pupa_errno;
 }

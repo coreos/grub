@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <pupa/types.h>
 #include <pupa/symbol.h>
+#include <pupa/err.h>
 
 /* XXX: If pupa_memmove is too slow, we must implement pupa_memcpy.  */
 #define pupa_memcpy(d,s,n)	pupa_memmove ((d), (s), (n))
@@ -43,6 +44,8 @@ char *EXPORT_FUNC(pupa_strrchr) (const char *s, int c);
 int EXPORT_FUNC(pupa_isspace) (int c);
 int EXPORT_FUNC(pupa_isprint) (int c);
 int EXPORT_FUNC(pupa_isalpha) (int c);
+int EXPORT_FUNC(pupa_isgraph) (int c);
+int EXPORT_FUNC(pupa_isdigit) (int c);
 int EXPORT_FUNC(pupa_tolower) (int c);
 unsigned long EXPORT_FUNC(pupa_strtoul) (const char *str, char **end, int base);
 char *EXPORT_FUNC(pupa_strdup) (const char *s);
@@ -54,5 +57,8 @@ int EXPORT_FUNC(pupa_vprintf) (const char *fmt, va_list args);
 int EXPORT_FUNC(pupa_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 int EXPORT_FUNC(pupa_vsprintf) (char *str, const char *fmt, va_list args);
 void EXPORT_FUNC(pupa_stop) (void) __attribute__ ((noreturn));
+pupa_err_t EXPORT_FUNC(pupa_split_cmdline) (const char *str, 
+					    pupa_err_t (* getline) (char **),
+					    int *argc, char ***argv);
 
 #endif /* ! PUPA_MISC_HEADER */

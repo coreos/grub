@@ -1,7 +1,7 @@
 /* main.c - the kernel main routine */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <pupa/rescue.h>
 #include <pupa/file.h>
 #include <pupa/device.h>
+#include <pupa/env.h>
 
 /* Return the end of the core image.  */
 pupa_addr_t
@@ -65,7 +66,7 @@ pupa_set_root_dev (void)
 {
   const char *prefix;
 
-  prefix = pupa_dl_get_prefix ();
+  prefix = pupa_env_get ("prefix");
   
   if (prefix)
     {

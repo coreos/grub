@@ -25,6 +25,7 @@
 #include <pupa/misc.h>
 #include <pupa/normal.h>
 #include <pupa/font.h>
+#include <pupa/arg.h>
 
 #define DEBUG_VGA	0
 
@@ -215,7 +216,7 @@ invalidate_char (struct colored_char *p)
 static int
 check_vga_mem (void *p)
 {
-  return p >= VGA_MEM && p <= VGA_MEM + VGA_WIDTH * VGA_HEIGHT / 8;
+  return p >= (void *) VGA_MEM && p <= (void *) (VGA_MEM + VGA_WIDTH * VGA_HEIGHT / 8);
 }
 
 static void
@@ -310,7 +311,9 @@ scroll_up (void)
 static void
 pupa_vga_putchar (pupa_uint32_t c)
 {
+#if DEBUG_VGA
   static int show = 1;
+#endif
   
   if (c == '\a')
     /* FIXME */
@@ -469,7 +472,8 @@ pupa_vga_putchar (pupa_uint32_t c)
  }
 
  static void
- pupa_vga_setcolor (pupa_uint8_t normal_color, pupa_uint8_t highlight_color)
+ pupa_vga_setcolor (pupa_uint8_t normal_color __attribute__ ((unused)),
+		    pupa_uint8_t highlight_color __attribute__ ((unused)))
  {
    /* FIXME */
  }
@@ -506,8 +510,10 @@ pupa_vga_putchar (pupa_uint32_t c)
      .next = 0
    };
 
-static int
-debug_command (int argc, char *argv[])
+static pupa_err_t
+debug_command (struct pupa_arg_list *state __attribute__ ((unused)),
+	       int argc  __attribute__ ((unused)),
+	       char **args __attribute__ ((unused)))
 {
   pupa_printf ("???????бу??n");
 
@@ -519,7 +525,7 @@ PUPA_MOD_INIT
   my_mod = mod;
   pupa_term_register (&pupa_vga_term);
   pupa_register_command ("debug", debug_command, PUPA_COMMAND_FLAG_CMDLINE,
-			 "debug", "Debug it!");
+			 "debug", "Debug it!", 0);
 }
 
 PUPA_MOD_FINI

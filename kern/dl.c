@@ -1,7 +1,7 @@
 /* dl.c - loadable module support */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <pupa/types.h>
 #include <pupa/symbol.h>
 #include <pupa/file.h>
+#include <pupa/env.h>
 
 #if PUPA_HOST_SIZEOF_VOID_P == 4
 
@@ -556,14 +557,13 @@ pupa_dl_load_file (const char *filename)
   return mod;
 }
 
-static char *pupa_dl_dir;
-
 /* Load a module using a symbolic name.  */
 pupa_dl_t
 pupa_dl_load (const char *name)
 {
   char *filename;
   pupa_dl_t mod;
+  char *pupa_dl_dir = pupa_env_get ("prefix");
 
   mod = pupa_dl_get (name);
   if (mod)
@@ -663,16 +663,4 @@ pupa_dl_unload_all (void)
       for (p = pupa_dl_head; p; p = p->next)
 	p->mod->ref_count--;
     }
-}
-
-void
-pupa_dl_set_prefix (const char *dir)
-{
-  pupa_dl_dir = (char *) dir;
-}
-
-const char *
-pupa_dl_get_prefix (void)
-{
-  return pupa_dl_dir;
 }

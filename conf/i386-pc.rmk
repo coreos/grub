@@ -21,14 +21,14 @@ kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/i386/dl.c kern/i386/pc/init.c disk/i386/pc/partition.c \
-	disk/i386/pc/biosdisk.c \
+	kern/env.c disk/i386/pc/biosdisk.c \
 	term/i386/pc/console.c \
 	symlist.c
 kernel_img_HEADERS = boot.h device.h disk.h dl.h elf.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h rescue.h symbol.h \
 	term.h types.h machine/biosdisk.h machine/boot.h \
 	machine/console.h machine/init.h machine/memory.h \
-	machine/loader.h machine/partition.h machine/vga.h
+	machine/loader.h machine/partition.h machine/vga.h arg.h env.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
@@ -56,15 +56,16 @@ pupa_mkimage_LDFLAGS = -llzo
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
-	kern/file.c kern/fs.c
+	kern/file.c kern/fs.c kern/env.c
 
 # For pupa
 pupa_emu_SOURCES = kern/main.c kern/device.c				\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
-	disk/i386/pc/partition.c 					\
+	disk/i386/pc/partition.c kern/env.c commands/ls.c		\
+	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
-	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
+	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
 	util/console.c util/pupa-emu.c util/misc.c util/i386/pc/getroot.c
 pupa_emu_LDFLAGS = -lncurses
 
@@ -73,7 +74,7 @@ genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
-	vga.mod font.mod _multiboot.mod
+	 vga.mod font.mod _multiboot.mod ls.mod boot.mod cmp.mod cat.mod terminal.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -93,13 +94,33 @@ _linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
-	normal/menu.c normal/i386/setjmp.S
+	normal/menu.c normal/arg.c normal/i386/setjmp.S
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For boot.mod.
+boot_mod_SOURCES = commands/boot.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For terminal.mod.
+terminal_mod_SOURCES = commands/terminal.c
+terminal_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ls.mod.
+ls_mod_SOURCES = commands/ls.c
+ls_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For cmp.mod.
+cmp_mod_SOURCES = commands/cmp.c
+cmp_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For cat.mod.
+cat_mod_SOURCES = commands/cat.c
+cat_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For vga.mod.
 vga_mod_SOURCES = term/i386/pc/vga.c

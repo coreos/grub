@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <pupa/symbol.h>
 #include <pupa/err.h>
 #include <pupa/types.h>
+#include <pupa/device.h>
 
 struct pupa_disk;
 
@@ -115,5 +116,8 @@ pupa_err_t EXPORT_FUNC(pupa_disk_write) (pupa_disk_t disk,
 					 unsigned long offset,
 					 unsigned long size,
 					 const char *buf);
+
+pupa_err_t EXPORT_FUNC(pupa_print_partinfo) (pupa_device_t disk,
+					     char *partname);
 
 #endif /* ! PUPA_DISK_HEADER */
