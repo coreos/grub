@@ -1,3 +1,9 @@
+2000-05-23  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/fsys_tftp.c (tftp_dir): Append "0\0" to the request
+	string, because the "tsize" option must be followed by zero,
+	according to RFC 2349.
+	
 2000-05-22  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Synchronize the documentation with the code.

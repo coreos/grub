@@ -401,8 +401,8 @@ tftp_dir (char *dirname)
   ch = nul_terminate (dirname);
   /* Make the request string (octet, blksize and tsize).  */
   len = (grub_sprintf ((char *) tp.u.rrq,
-		       "%s%coctet%cblksize%c%d%ctsize%c0",
-		       dirname, 0, 0, 0, TFTP_MAX_PACKET, 0, 0)
+		       "%s%coctet%cblksize%c%d%ctsize%c0%c0",
+		       dirname, 0, 0, 0, TFTP_MAX_PACKET, 0, 0, 0)
 	 + TFTP_MIN_PACKET + 1);
   /* Restore the original DIRNAME.  */
   dirname[grub_strlen (dirname)] = ch;
