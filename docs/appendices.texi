@@ -125,11 +125,15 @@ utopia@dots{}
 @strong{Caution:} GRUB requires binutils-2.9.1.0.23 or later because the
 GNU assembler has been changed so that it can produce real 16bits
 machine code between 2.9.1 and 2.9.1.0.x. The latest version can be
-obtained from @url{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}.
+obtained from:
+
+@url{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}
 @end quotation
 
-GRUB can be obtained from the GNU alpha archive site
-@url{ftp://alpha.gnu.org/gnu/hurd/src} or any of its mirrors. The file
+@c Do not change alpha.gnu.org:/gnu/hurd/src to the URI, since TeX does
+@c not format it well.
+GRUB is avaliable from the GNU alpha archive site
+@url{alpha.gnu.org:/gnu/hurd/src} or any of its mirrors. The file
 will be named grub-version.tar.gz. The current version is
 @value{VERSION}, so the file you should grab is:
 
@@ -158,16 +162,23 @@ This will install the grub shell @file{grub} (@pxref{Invoking the grub
 shell}), the Multiboot checker @file{mbchk} (@pxref{Invoking mbchk}),
 and the GRUB images It will also install the GRUB manual.
 
-Also, you can obtain the latest version from the CVS. Use the repository
-@code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot} and the
-module @code{grub}. The password for anoncvs is empty. So the
-instruction is:
+Also, the latest version is available from the CVS. The repository is:
+
+@code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot}
+
+and the module is:
+
+@code{grub}
+
+The password for anoncvs is empty. So the instruction is:
 
 @example
 @group
-$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot login
+$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot \
+    login
 Password: @key{ENTER}
-$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot co grub
+$ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot \
+    co grub
 @end group
 @end example
 

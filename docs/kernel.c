@@ -120,8 +120,10 @@ cmain (unsigned long magic, unsigned long addr)
     {
       elf_section_header_table_t *elf_sec = &(mbi->u.elf_sec);
 
-      printf ("elf_sec: num = %d, size = 0x%x, addr = 0x%x, shndx = 0x%x\n",
-	      elf_sec->num, elf_sec->size, elf_sec->addr, elf_sec->shndx);
+      printf ("elf_sec: num = %d, size = 0x%x,"
+	      " addr = 0x%x, shndx = 0x%x\n",
+	      elf_sec->num, elf_sec->size,
+	      elf_sec->addr, elf_sec->shndx);
     }
 
   /* Are mmap_* valid?  */

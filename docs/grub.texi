@@ -80,9 +80,7 @@ by Free Software Foundation.
 @finalout
 @headings double
 
-@c The Top node should not appear in TeX.
 @ifnottex
-
 @node Top
 @top GRUB
 

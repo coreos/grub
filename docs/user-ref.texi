@@ -257,9 +257,9 @@ There are two ways to specify files, by @dfn{absolute filename} and by
 @dfn{blocklist}.
 
 An absolute filename resembles a Unix absolute filename, using @samp{/}
-for the directory separator (not @samp{\} as in DOS). One example of an
-absolute filename is @samp{(hd0,0)/boot/grub/menu.lst}. This means the
-file @file{/boot/grub/menu.lst} in the first partition of the first hard
+for the directory separator (not @samp{\} as in DOS). One example is
+@samp{(hd0,0)/boot/grub/menu.lst}. This means the file
+@file{/boot/grub/menu.lst} in the first partition of the first hard
 disk. If you omit the device name in an absolute filename, GRUB uses
 GRUB's @dfn{root device} implicitly. So if you set the root device to,
 say, @samp{(hd1,0)} by the command @command{root}, then
@@ -657,8 +657,9 @@ maximum of 64MB).
 
 @deffn Command find filename
 Search for the filename @var{filename} in all of partitions and print
-the list of the devices which contain the file. @var{filename} should be
-an absolute filename like @code{/boot/grub/stage1}.
+the list of the devices which contain the file. The filename
+@var{filename} should be an absolute filename like
+@code{/boot/grub/stage1}.
 @end deffn
 
 @deffn Command fstest

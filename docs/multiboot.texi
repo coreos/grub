@@ -67,7 +67,6 @@ into another language, under the above conditions for modified versions.
 @end titlepage
 
 @ifnottex
-
 @node Top
 @top Multiboot Specification
 
@@ -936,11 +935,14 @@ library supporting the specification.
 @section Example boot loader code
 
 The GNU GRUB (@pxref{Top, , GRUB, grub.info, The GRUB manual}) project
-@url{http://www.gnu.org/software/grub/grub.en.html} is a full
-Multiboot-compliant boot loader, supporting all required and optional
-features present in this specification. A public release has not been
-made, but the test release is available in
-@url{ftp://alpha.gnu.org/gnu/hurd/src/}.
+is a full Multiboot-compliant boot loader, supporting all required and
+optional features present in this specification. A public release has
+not been made, but the test release is available from:
+
+@url{ftp://alpha.gnu.org/gnu/hurd/src/}
+
+See the webpage @url{http://www.gnu.org/software/grub/grub.html}, for
+more information.
 
 
 @node Index

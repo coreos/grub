@@ -121,9 +121,9 @@ a UNIX-like OS. If you install GRUB on a UNIX-like OS, make sure that
 you have a boot floppy disk so that you can rescue your computer when it
 crashes.
 
-Anyhow, copy your GRUB images (@file{stage1}, @file{stage2}, etc.) to
-the directory @file{/boot/grub} before staring to install
-GRUB. Normally, the images are installed under the directory
+Anyhow, copy your GRUB images (@file{stage1}, @file{stage2}, and
+@file{*stage1_5}) to the directory @file{/boot/grub} before staring to
+install GRUB. Normally, the images are installed under the directory
 @file{/usr/share/grub/i386-pc}.
 
 @menu
