@@ -1,5 +1,19 @@
 2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	Based on a patch from Jeremy Katz <katzj@redhat.com>:
+	* docs/grub.texi (Stage2 errors): Added documentation on the
+	error number 33 (Serial device not configured).
+	* grub/asmstub.c (serial_exists): New function.
+	* stage2/serial.c (serial_exists): Likewise.
+	* stage2/serial.h (serial_exists): New prototype.
+	* stage2/shared.h (grub_error_t): ERR_NEED_SERIAL is added.
+	* stage2/builtins.c (terminal_func) [SUPPORT_SERIAL]: If a
+	serial device is not configured yet, restore the terminal and
+	set ERRNUM to ERR_NEED_SERIAL.
+	* stage2/common.c (err_list): Added an item for ERR_NEED_SERIAL.
+	
+2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	From Jason Thomas <jason@topic.com.au>:
 	* util/grub-install.in (convert): Add support for DAC960.
 

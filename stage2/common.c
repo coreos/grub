@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ char *err_list[] =
   [ERR_GEOM] = "Selected cylinder exceeds maximum supported by BIOS",
   [ERR_NEED_LX_KERNEL] = "Linux kernel must be loaded before initrd",
   [ERR_NEED_MB_KERNEL] = "Multiboot kernel must be loaded before modules",
+  [ERR_NEED_SERIAL] = "Serial device not configured",
   [ERR_NO_DISK] = "Selected disk does not exist",
   [ERR_NO_PART] = "No such partition",
   [ERR_NUMBER_PARSING] = "Error while parsing number",

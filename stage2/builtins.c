@@ -3914,9 +3914,18 @@ terminal_func (char *arg, int flags)
 #ifdef SUPPORT_SERIAL
       else if (grub_memcmp (arg, "serial", sizeof ("serial") - 1) == 0)
 	{
-	  terminal |= TERMINAL_SERIAL;
-	  if (! default_terminal)
-	    default_terminal = TERMINAL_SERIAL;
+	  if (serial_exists ())
+	    {
+	      terminal |= TERMINAL_SERIAL;
+	      if (! default_terminal)
+		default_terminal = TERMINAL_SERIAL;
+	    }
+	  else
+	    {
+	      terminal = saved_terminal;
+	      errnum = ERR_NEED_SERIAL;
+	      return 1;
+	    }
 	}
 #endif /* SUPPORT_SERIAL */
       else

@@ -3054,6 +3054,10 @@ should mount the partition with the @samp{-o notail} option.
 @item 32 : Must be authenticated
 This error is returned if you try to run a locked entry. You should
 enter a correct password before running such an entry.
+
+@item 33 : Serial device not configured
+This error is returned if you try to change your terminal to a serial
+one before initializing any serial device.
 @end table
 
 

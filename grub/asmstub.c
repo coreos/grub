@@ -1026,6 +1026,13 @@ serial_get_port (int unit)
   return 0;
 }
 
+/* Check if a serial port is set up.  */
+int
+serial_exists (void)
+{
+  return serial_fd >= 0;
+}
+
 /* Initialize a serial device. In the grub shell, PORT is unused.  */
 int
 serial_init (unsigned short port, unsigned int speed,
