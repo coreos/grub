@@ -23,288 +23,32 @@
 
 #ifdef DEBUG
 
-unsigned long apic_addr;
+/*
+ *  This is the Intel MultiProcessor Spec debugging/display code.
+ */
 
-int start_cpu(int cpu_num, int start_addr, unsigned long my_apic_addr);
+#define IMPS_DEBUG
+#define KERNEL_PRINT(x)         printf x
+#define CMOS_WRITE_BYTE(x, y)	cmos_write_byte(x, y)
+#define CMOS_READ_BYTE(x)	cmos_read_byte(x)
+#define PHYS_TO_VIRTUAL(x)	(x)
+#define VIRTUAL_TO_PHYS(x)	(x)
 
-extern char patch_code[];
-extern char patch_code_end[];
-
-unsigned long reg_table[] =
-  { 0x20, 0x30, 0x80, 0x90, 0xa0, 0xd0, 0xe0, 0xf0, 0x280, 0x300, 0x310,
-    0x320, 0x350, 0x360, 0x370, 0x380, 0x390, 0x3e0, 0 };
-
-
-int
-get_remote_APIC_reg(int cpu_num, int reg, unsigned long *retval)
+__inline__ static void
+cmos_write_byte(int loc, int val)
 {
-  int i, j = 1000;
-
-  i = *((volatile unsigned long *) (apic_addr+0xc0));
-  *((volatile unsigned long *) (apic_addr+0x310)) = (cpu_num << 24);
-  i = *((volatile unsigned long *) (apic_addr+0xc0));
-  *((volatile unsigned long *) (apic_addr+0x300)) = (0x300 | (reg>>4));
-
-  while (((i = (*((volatile unsigned long *) (apic_addr+0x300)) & 0x30000))
-	  == 1) && (--j));
-
-  if (!i || i == 3 || j == 0)
-    return 1;
-
-  *retval = *((volatile unsigned long *) (apic_addr+0xc0));
-
-  return 0;
+	outb(0x70, loc);
+	outb(0x71, val);
 }
 
-
-void
-list_regs(int cpu_num)
+__inline__ static unsigned
+cmos_read_byte(int loc)
 {
-  int i = 0, j = 0;
-  unsigned long tmpval;
-
-  while (reg_table[i] != 0)
-    {
-      printf(" %x: ", reg_table[i]);
-
-      if (cpu_num == -1)
-        tmpval = *((volatile unsigned long *) (apic_addr+reg_table[i]));
-      else if (get_remote_APIC_reg(cpu_num, reg_table[i], &tmpval))
-        printf("error!");
-
-      printf("%x", tmpval);
-
-      i++;
-      j++;
-
-      if (j == 5 || reg_table[i] == 0)
-	{
-	  j = 0;
-          putchar('\n');
-	}
-      else
-	putchar(',');
-    }
+	outb(0x70, loc);
+	return inb(0x71);
 }
 
-
-void
-boot_cpu(int cpu_num)
-{
-  int i, start_addr = (128 * 1024);
-
-  bcopy( patch_code, ((char *) start_addr),
-	 ((int) patch_code_end) - ((int) patch_code) );
-
-  outb(0x70, 0xf);
-  *((volatile unsigned short *) 0x467) = 0;
-  *((volatile unsigned short *) 0x469) = ((unsigned short)(start_addr >> 4));
-  outb(0x71, 0xa);
-
-  print_error();
-
-  printf("Starting probe for CPU #%d...  value = (%x)\n",
-	 cpu_num, *((int *) start_addr) );
-
-  i = start_cpu(cpu_num, start_addr, apic_addr);
-
-  printf("Return value = (%x), waiting for RET...", i);
-
-  i = getc();
-
-  outb(0x70, 0xf);
-  printf("\nEnding value = (%x), Status code = (%x)\n",
-	 *((int *) start_addr), (unsigned long)inb(0x71));
-}
-
-
-unsigned char
-sum(unsigned char *addr, int len)
-{
-  int i;
-  unsigned long retval = 0;
-
-  for (i = 0; i < len; i++)
-    {
-      retval += addr[len];
-    }
-
-  return ((unsigned char)(retval & 0xFF));
-}
-
-
-int
-get_mp_parameters(unsigned char *addr)
-{
-  int i, may_be_bad;
-  unsigned long backup;
-
-  if (((int)addr)&0xF || addr[0] != '_' || addr[1] != 'M' || addr[2] != 'P'
-      || addr[3] != '_')
-    return 0;
-
-  may_be_bad = 0;
-
-  if (sum(addr, addr[8] * 16))
-    {
-      printf("Found MP structure but checksum bad, use (y/n) ?");
-      i = getc();
-      putchar('\n');
-      if (i != 'y')
-        return 0;
-      may_be_bad = 1;
-    }
-
-  backup = apic_addr;
-
-  printf("MP Floating Pointer Structure (address, then 12 bytes starting at 4):
-        %x, %x, %x, %x\n", (int)addr,
-	 *((int *)(addr+4)), *((int *)(addr+8)), *((int *)(addr+12)));
-
-  if (*((int *)(addr+4)) != 0)
-    {
-      addr = *((unsigned char **)(addr+4));
-      apic_addr = *((unsigned long *)(addr+0x24));
-      printf("MP Configuration Table, local APIC at (%x)\n", apic_addr);
-    }
-
-  if (may_be_bad)
-    {
-      printf("Use this entry (y/n) ?");
-      i = getc();
-      putchar('\n');
-      if (i != 'y')
-	{
-	  apic_addr = backup;
-          return 0;
-	}
-    }
-
-  return 1;
-}
-
-
-int
-probe_mp_table(void)
-{
-  int i, probe_addr = *((unsigned short *)0x40E);
-
-  probe_addr <<= 4;
-
-  if (probe_addr > 0 && probe_addr <= 639*1024
-      && *((unsigned char *) probe_addr) > 0
-      && probe_addr + *((unsigned char *) probe_addr) * 0x400 <= 640*1024)
-    {
-      for (i = 0; i < 1024; i += 16)
-	{
-	  if (get_mp_parameters((unsigned char *)(probe_addr+i)))
-	    return 1;
-	}
-    }
-
-  /*
-   *  Technically, if there is an EBDA, we shouldn't search the last
-   *  KB of memory, but I don't think it will be a problem.
-   */
-
-  if (mbi.mem_lower > 512)
-    probe_addr = 639 * 1024;
-  else
-    probe_addr = 511 * 1024;
-
-  for (i = 0; i < 1024; i += 16)
-    {
-      if (get_mp_parameters((unsigned char *)(probe_addr+i)))
-	return 1;
-    }
-
-  for (probe_addr = 0xF0000; probe_addr < 0x100000; probe_addr += 16)
-    {
-      if (get_mp_parameters((unsigned char *)probe_addr))
-	return 1;
-    }
-
-  return 0;
-}
-
-
-void
-copy_patch_code(void)
-{
-  int start_addr = (128 * 1024);
-
-  bcopy( patch_code, ((char *) start_addr),
-	 ((int) patch_code_end) - ((int) patch_code) );
-
-  outb(0x70, 0xf);
-  *((volatile unsigned short *) 0x467) = 0;
-  *((volatile unsigned short *) 0x469) = ((unsigned short)(start_addr >> 4));
-  outb(0x71, 0xa);
-
-  print_error();
-}
-
-
-void
-send_init(int cpu_num)
-{
-  int i, start_addr = (128 * 1024);
-
-  *((volatile unsigned long *) (apic_addr+0x280)) = 0;
-  i = *((volatile unsigned long *) (apic_addr+0x280));
-
-  *((volatile unsigned long *) (apic_addr+0x310)) = (cpu_num << 24);
-  i = *((volatile unsigned long *) (apic_addr+0x280));
-  *((volatile unsigned long *) (apic_addr+0x300)) = 0xc500;
-
-  for (i = 0; i < 100000; i++);
-
-  *((volatile unsigned long *) (apic_addr+0x300)) = 0x8500;
-
-  for (i = 0; i < 1000000; i++);
-
-  i = *((volatile unsigned long *) (apic_addr+0x280));
-
-  i &= 0xEF;
-
-  if (i)
-    printf("APIC error (%x)\n", i);
-}
-
-
-void
-send_startup(int cpu_num)
-{
-  int i, start_addr = (128 * 1024);
-
-  printf("Starting value = (%x)\n", *((int *) start_addr) );
-
-  *((volatile unsigned long *) (apic_addr+0x280)) = 0;
-  i = *((volatile unsigned long *) (apic_addr+0x280));
-
-  *((volatile unsigned long *) (apic_addr+0x310)) = (cpu_num << 24);
-  i = *((volatile unsigned long *) (apic_addr+0x280));
-  *((volatile unsigned long *) (apic_addr+0x300)) = (0x600 | (start_addr>>12));
-
-  for (i = 0; i < 100000; i++);
-
-  i = *((volatile unsigned long *) (apic_addr+0x280));
-
-  i &= 0xEF;
-
-  if (i)
-    printf("APIC error (%x)\n", i);
-  else
-    {
-      printf("Waiting for RET...");
-
-      i = getc();
-
-      outb(0x70, 0xf);
-      printf("\nEnding value = (%x), Status code = (%x)\n",
-             *((int *) start_addr), (unsigned long)inb(0x71));
-    }
-}
+#include "smp-imps.c"
 
 #endif /* DEBUG */
 
@@ -343,7 +87,7 @@ init_cmdline(void)
 char commands[] =
  " Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
-  \"testload= <file>\", \"syscmd= <cmd>\", \"displaymem\", \"probemps\",
+  \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\", \"fstest\",
   \"module= <file> ...\", \"modulenounzip= <file> ...\", \"makeactive\", \"boot\", and
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
 #else  /* DEBUG */
@@ -410,11 +154,11 @@ enter_cmdline(char *script, char *heap)
 
   /* restore memory probe state */
   mbi.mem_upper = saved_mem_upper;
-  if (mem_map)
+  if (mbi.mmap_length)
     mbi.flags |= MB_INFO_MEM_MAP;
 
-  /* XXX evil hack !! */
-  bootdev = bsd_bootdev();
+  /* BSD and chainloading evil hacks !! */
+  bootdev = set_bootdev();
 
   if (!script)
     {
@@ -540,8 +284,8 @@ restart:
 
 	  if (cur_heap[4] != 'n')
 	    {
-	      /* XXX evil hack !! */
-	      bootdev = bsd_bootdev();
+	      /* BSD and chainloading evil hacks !! */
+	      bootdev = set_bootdev();
 
 	      print_fsys_type();
 	    }
@@ -774,77 +518,29 @@ restart:
 	  debug_fs = NULL;
 	}
     }
-  else if (strcmp("syscmd", cur_heap) < 1)
+  else if (strcmp("read", cur_heap) < 1)
     {
-      switch(cur_cmdline[0])
+      int myaddr;
+      if (safe_parse_maxint(&cur_cmdline, &myaddr))
+	printf("Address 0x%x: Value 0x%x", myaddr, *((unsigned *)myaddr));
+    }
+  else if (strcmp("fstest", cur_heap) == 0)
+    {
+      if (debug_fs)
 	{
-	case 'F':
-	  if (debug_fs)
-	    {
-	      debug_fs = NULL;
-	      printf(" Filesystem tracing is now off\n");
-	    }
-	  else
-	    {
-	      debug_fs = debug_fs_print_func;
-	      printf(" Filesystem tracing if now on\n");
-	    }
-	  break;
-	case 'R':
-	  {
-	    char *ptr = cur_cmdline+1;
-	    int myaddr;
-	    if (safe_parse_maxint(&ptr, &myaddr))
-	      printf("0x%x: 0x%x", myaddr, *((unsigned *)myaddr));
-	  }
-	  break;
-	case 'r':
-	  if (mptest)
-	    {
-	      list_regs(-1);
-	      break;
-	    }
-	case 'p':
-	  if (mptest)
-	    {
-	      copy_patch_code();
-	      break;
-	    }
-	case '0': case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8': case '9':
-	  if (mptest)
-	    {
-	      int j = cur_cmdline[0] - '0';
-	      switch (cur_cmdline[1])
-		{
-		case 'i':
-		  send_init(j);
-		  break;
-		case 's':
-		  send_startup(j);
-		  break;
-		case 'r':
-		  list_regs(j);
-		  break;
-		case 'b':
-		  boot_cpu(j);
-		}
-	      break;
-	    }
-	default:
-	  printf("Bad subcommand, try again please\n");
+	  debug_fs = NULL;
+	  printf(" Filesystem tracing is now off\n");
+	}
+      else
+	{
+	  debug_fs = debug_fs_print_func;
+	  printf(" Filesystem tracing is now on\n");
 	}
     }
-  else if (strcmp("probemps", cur_heap) == 0)
+  else if (strcmp("impsprobe", cur_heap) == 0)
     {
-      apic_addr = 0xFEE00000;
-
-      if (mptest = probe_mp_table())
-	printf("APIC test (%x), SPIV test(%x)\n",
-	       *((volatile unsigned long *) (apic_addr+0x30)),
-	       *((volatile unsigned long *) (apic_addr+0xf0)));
-      else
-	printf("No MPS information found\n");
+      if (!imps_probe())
+	printf(" No MPS information found or probe failed\n");
     }
   else if (strcmp("displaymem", cur_heap) == 0)
     {
