@@ -560,7 +560,7 @@ noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h hercules.h i386-elf.h \
 	imgact_aout.h iso9660.h jfs.h mb_header.h mb_info.h md5.h \
 	nbi.h pc_slice.h serial.h shared.h smp-imps.h term.h \
-	terminfo.h tparm.h nbi.h vstafs.h xfs.h
+	terminfo.h tparm.h nbi.h ufs2.h vstafs.h xfs.h
 
 EXTRA_DIST = setjmp.S apm.S $(noinst_SCRIPTS)
 
