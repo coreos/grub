@@ -406,7 +406,7 @@ real_open_partition (int flags)
   bsd_evil_hack = 0;
   current_slice = 0;
   part_start = 0;
-  part_length = buf_geom.sectors * buf_geom.heads * buf_geom.cylinders;
+  part_length = buf_geom.total_sectors;
 
   if (current_drive & 0x80)
     {

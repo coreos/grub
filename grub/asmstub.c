@@ -441,6 +441,10 @@ get_diskinfo (int drive, struct geometry *geometry)
 	      disks[drive].cylinders = hdg.cylinders;
 	      disks[drive].heads = hdg.heads;
 	      disks[drive].sectors = hdg.sectors;
+	      /* FIXME: Should get the real number of sectors.  */
+	      disks[drive].total_sectors = (hdg.cylinders
+					    * hdg.heads
+					    * hdg.sectors);
 	    }
 	  else
 	    /* FIXME: should have some other alternatives before using
@@ -453,6 +457,9 @@ get_diskinfo (int drive, struct geometry *geometry)
 	      disks[drive].cylinders = DEFAULT_HD_CYLINDERS;
 	      disks[drive].heads = DEFAULT_HD_HEADS;
 	      disks[drive].sectors = DEFAULT_HD_SECTORS;
+	      disks[drive].total_sectors = (DEFAULT_HD_CYLINDERS
+					    * DEFAULT_HD_HEADS
+					    * DEFAULT_HD_SECTORS);
 	    }
 	  else
 	    {
@@ -460,6 +467,9 @@ get_diskinfo (int drive, struct geometry *geometry)
 	      disks[drive].cylinders = DEFAULT_FD_CYLINDERS;
 	      disks[drive].heads = DEFAULT_FD_HEADS;
 	      disks[drive].sectors = DEFAULT_FD_SECTORS;
+	      disks[drive].total_sectors = (DEFAULT_FD_CYLINDERS
+					    * DEFAULT_FD_HEADS
+					    * DEFAULT_FD_SECTORS);
 	    }
 	}
     }

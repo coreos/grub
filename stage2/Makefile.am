@@ -9,7 +9,7 @@ INCLUDES = -I$(top_srcdir)/shared_src
 
 # asm.o absolutely needs to come first!
 stage2_exec_LDADD = asm.o boot.o common.o char_io.o cmdline.o disk_io.o \
-	gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
+	gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o bios.o
 
 noinst_PROGRAMS = stage2.exec
 

@@ -1,6 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -335,370 +336,292 @@ realcseg:
 
 
 /*
- * biosdisk(write, drive, geometry, sector, nsec, segment)
- *	Read/write "nsec" sectors from disk to real segment "segment"
- *		offset zero
+ *   int biosdisk_int13_extensions (int ah, int drive, void *dap)
  *
- *   Will try INT 0x13 LBA (AH=0x42/0x43) or standard (AH=0x2/0x3)
- *   depending on probed geometry.  For addresses out of the translated
- *   area, it returns BIOS_GEOMETRY_ERROR.
+ *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
+ *   is passed for disk address packet. If an error occurs, return
+ *   non-zero, otherwise zero.
  */
 
-ENTRY(biosdisk)
-	push	%ebp
-	mov	%esp, %ebp
+ENTRY(biosdisk_int13_extensions)
+	pushl	%ebp
+	movl	%esp, %ebp
 
-	push	%ebx
-	push	%ecx
-	push	%edx
-	push	%esi
-	push	%edi
-
-	/* Check whether we have LBA. */
-	movl	0x10(%ebp), %eax
-	andb	0xc(%eax), %eax
-	andl	$BIOSDISK_FLAG_LBA_EXTENSION, %eax
-	jz	disk_compute_args	/* nope. */
-
-	/* set up disk address packet for extended calls (LBA mode) */
-	movl	0x14(%ebp), %eax	/* absolute block number */
-	movl	%eax, dap_block
-	xorl	%eax, %eax
-	movl	%eax, dap_block + 4
-
-	movb	0x18(%ebp), %al		/* number of sectors */
-	movw	%ax, dap_blocks
-
-	/* set up the buffer address */
-	xorl	%eax, %eax
-	movw	0x1c(%ebp), %ax		/* segment */
-	shll	$16, %eax
-	movl	%eax, dap_buffer
+	pushl	%ecx
+	pushl	%edx
+	pushl	%esi
 
 	/* compute the address of disk_address_packet */
-	movl	$disk_address_packet, %eax
+	movl	0x10(%ebp), %eax
 	movw	%ax, %si
 	xorw	%ax, %ax
 	shrl	$4, %eax
-	movw	%ax, %cx		/* save the segment to cx */
+	movw	%ax, %cx	/* save the segment to cx */
 
-	xorb	%bl, %bl
-	movb	0x8(%ebp), %bh		/* read=0, write=1 */
-	addb	$0x42, %bh		/* convert to extended subfunction */
-
-	movb	0xc(%ebp), %dl		/* drive */
-
-	call	EXT_C(prot_to_real)	/* enter real mode */
+	/* drive */
+	movb	0xc(%ebp), %dl
+	/* ah */
+	movb	0x8(%ebp), %dh
+	/* enter real mode */
+	call	EXT_C(prot_to_real)
+	
 	.code16
-
+	movb	%dh, %ah
 	movw	%cx, %ds
-	movw	%bx, %ax
-	int	$0x13			/* do the operation */
-
-/* FIXME: force people to help test LBA support before releasing 0.6 */
-#define NO_INT13_FALLBACK 1
-#ifdef NO_INT13_FALLBACK
-	/* Save return value. */
-	movb	%ah, %bl
+	int	$0x13		/* do the operation */
+	movb	%ah, %dl	/* save return value */
+	/* clear the data segment */
+	xorw	%ax, %ax
+	movw	%ax, %ds
+	/* back to protected mode */
 	data32
-	jmp	disk_exit_16
-#else
-	/* set success return value */
-	movb	$0, %bl
-
-	/* did we actually succeed? */
-	data32
-	jnc	disk_exit_16
-
-	data32
-	call	EXT_C(real_to_prot)	/* back to protected mode */
-#endif
+	call	EXT_C(real_to_prot)
 	.code32
 
-	/* either failed, or a floppy, so try standard BIOS calls */
-disk_compute_args:
-	/*
-	 * GEOMETRY is a structure representing the BIOS geometry:
-	 *      32 bit flags      (bytes 12-15)
-	 *	32 bit cylinders  (bytes 8-11)
-	 *	32 bit heads      (bytes 4-7)
-	 *	32 bit sectors    (bytes 0-3)
-	 */
+	movb	%dl, %al	/* return value in %eax */
 
-	/* set up original sector number */
-	xorl	%edx, %edx
-	movl	0x14(%ebp), %eax
-
-	/* get the pointer to GEOMETRY */
-	movl	0x10(%ebp), %edi
-
-	/* get sector offset, place in %ecx */
-	movl	0x8(%edi), %ebx
-	divl	%ebx
-	movl	%edx, %ecx
-
-	/* get track offset (head number) in %edx,
-	   and cylinder offset in %eax */
-	xorl	%edx, %edx
-	movl	0x4(%edi), %ebx
-	divl	%ebx
-
-	/* check cylinder offset, is there a geometry problem here? */
-	movl	(%edi), %ebx
-	cmpl	%ebx, %eax
-
-	/* if not, go on to standard read function */
-	jl	disk_use_standard_bios
-
-	movl	$BIOSDISK_ERROR_GEOMETRY, %eax
-	jmp	disk_exit_32
-
-	.align	4
-disk_address_packet:
-	.byte	0x10			/* length of packet */
-	.byte	0			/* reserved */
-dap_blocks:
-	.word	0			/* number of blocks */
-dap_buffer:
-	.long	0			/* buffer address */
-dap_block:
-	.long	0			/* absolute block number */
-	.long	0
-
-	/*
-	 *  This portion implements the BIOS standardized
-	 *  INT 0x13/AH=<subfunc> interface.
-	 */
-disk_use_standard_bios:
-
-	shll	$8, %edx		/* get head number to %dh */
-	xchgl	%eax, %ecx		/* cylinder to %cx, sector to %al */
-#ifdef AWARD_INT13_EXTENSIONS
-	/* FIXME: cylinder; bits 10,11 of cyl are in %dh */
-#endif
-	/* cylinder; bits 8,9 of cyl are in %cl */
-	xchgb	%ch, %cl
-	shlb	$6, %cl
-	incb	%al			/* sector; sec starts from 1, not 0 */
-	orb	%al, %cl
-	movb	0xc(%ebp), %dl		/* drive */
-
-	/* prot_to_real will set %es to 0, so must set it ourselves
-	   after it is called */
-	movb	0x18(%ebp), %bl		/* number of sectors */
-	movb	0x8(%ebp), %bh		/* read=0, write=1 */
-	addb	$0x2, %bh		/* convert to subfunction */
-	shll	$16, %ebx		/* shift num sect. and subfunction */
-	movw	0x1c(%ebp), %bx		/* segment */
-
-	call	EXT_C(prot_to_real)	/* enter real mode */
-	.code16
-
-	movw	%bx, %es		/* load segment */
-	/*
-	 *  Shift num sectors and subfunction back
-	 */
-	data32
-	shrl	$16, %ebx
-	pushw	%bx			/* save num sectors */
-	xorw	%bx, %bx
-
-	movw	$3, %si
-
-disk_loop:
-	popw	%ax			/* restore num sectors */
-	pushw	%ax			/* save num sectors */
-
-	/* BIOS call for reading/writing */
-	int	$0x13
-
-	/* set success return value */
-	movb	$0, %bl
-
-	/* did we actually succeed? */
-	data32
-	jnc	disk_exit_16
-
-	/* do we try again? */
-	decw	%si
-	cmpw	$0, %si
-
-	/* if this isn't the third try, go again */
-	data32
-	jne	disk_loop
-
-	/* save return value */
-	movb	%ah, %bl
-
-disk_exit_16:
-	data32
-	call	EXT_C(real_to_prot)	/* back to protected mode */
-	.code32
-
-	movb	%bl, %al		/* return value in %eax */
-
-disk_exit_32:
-	pop	%edi
-	pop	%esi
-	pop	%edx
-	pop	%ecx
-	pop	%ebx
-	pop	%ebp
+	popl	%esi
+	popl	%edx
+	popl	%ecx
+	popl	%ebp
 
 	ret
-
-
+	
 /*
+ *   int biosdisk_standard (int ah, int drive, int coff, int hoff, int soff,
+ *                          int nsec, int segment)
  *
- * get_diskinfo(drive, geometry):  return a structure that represents the
- *	max number of sectors and heads and cylinders for DRIVE in GEOMETRY.
- *	If an error occures, return non-zero, otherwise return zero.
- *
+ *   Call standard and old INT13 (int 13 %ah=AH) for DRIVE. Read/write
+ *   NSEC sectors from COFF/HOFF/SOFF into SEGMENT. If an error occurs,
+ *   return non-zero, otherwise zero.
  */
 
-ENTRY(get_diskinfo)
+ENTRY(biosdisk_standard)
 	pushl	%ebp
 	movl	%esp, %ebp
+
 	pushl	%ebx
 	pushl	%ecx
 	pushl	%edx
 	pushl	%edi
 	pushl	%esi
 
-	movw	0x8(%ebp), %dx		/* diskinfo(drive #) */
+	/* set up CHS information */
+	movl	0x10(%ebp), %eax
+	movb	%al, %ch
+	movb	0x18(%ebp), %al
+	shlb	$2, %al
+	shrw	$2, %ax
+	movb	%al, %cl
+	movb	0x14(%ebp), %dh
+	/* drive */
+	movb	0xc(%ebp), %dl
+	/* segment */
+	movw	0x20(%ebp), %bx
+	/* save nsec and ah to %di */
+	movb	0x8(%ebp), %ah
+	movb	0x1c(%ebp), %al
+	movw	%ax, %di
+	/* enter real mode */
+	call	EXT_C(prot_to_real)
 
-	call	EXT_C(prot_to_real)	/* enter real mode */
 	.code16
+	movw	%bx, %es
+	xorw	%bx, %bx
+	movw	$3, %si		/* attempt at least three times */
 
-	movb	%dl, %al
-	andb	$0x80, %al
-	data32
-	jnz	hard_drive
+1:	
+	movw	%di, %ax
+	int	$0x13		/* do the operation */
+	jnc	2f		/* check if successful */
 
-/*
- *  Perform floppy probe!
- */
-
-	movl	$probe_values-1, %esi
-
-probe_loop:
-	/* reset floppy controller INT 13h AH=0 */
+	movb	%ah, %bl	/* save return value */
+	/* if fail, reset the disk system */
 	xorw	%ax, %ax
 	int	$0x13
-
-	incw	%si
-	movb	(%si), %cl
-
-	/* if number of sectors is 0, display error and die */
-	cmpb	$0, %cl
-
-	data32
-	je	probe_failed
-
-	/* perform read */
-	movw	$SCRATCHSEG, %ax
-	movw	%ax, %es
-	xorw	%bx, %bx
-	movw	$0x201, %ax
-	movb	$0, %ch
-	movb	$0, %dh
-	int	$0x13
-
-	data32
-	jc	probe_loop
-
-	/* %cl is already the correct value! */
-	movb	$1, %dh
-	movb	$79, %ch
-
-	xorb	%bh, %bh		/* no BIOS extensions */
-	data32
-	jmp	probe_success
-
-probe_values:
-	.byte	36, 18, 15, 9, 0
-
-hard_drive:
-	/* Check for LBA. */
-	movb	$0x41, %ah
-	movw	$0x55aa, %bx
-	int	$0x13			/* int 13 extensions install check */
-
-	data32
-	jc	1f			/* invalid function */
-	cmpw	$0xaa55, %bx
-	data32
-	jne	1f			/* failed magic */
-
-	andb	$1, %cx
-	data32
-	jz	1f			/* LBA not supported */
-
-	/* Wahoo!  Got LBA! */
-	movl	$BIOSDISK_FLAG_LBA_EXTENSION, %edi
-	/* FIXME: Should use INT 13 AH=42h */
-	data32
-	jmp	2f
-
-1:	xorl	%edi, %edi		/* Too bad, no LBA */
-2:	movb	$0x8, %ah		/* ask for disk info */
-	int	$0x13
-
-	data32
-	jc	probe_failed
-
-	/* es:di = parameter table */
-	/* carry = 0 */
-
-probe_success:
-	/*
-	 * Store the information for CHS and BIOS extension to registers:
-	 *      32 bit BIOS extension -> edi
-	 *	32 bit cylinder       -> ebx
-	 *	32 bit head           -> ecx
-	 *	32 bit sector         -> edx
-	 */
-#ifdef AWARD_INT13_EXTENSIONS
-	movb	%dh, %al		/* bits 10,11 of cylinder count */
-	andb	$0xc0, %al
-	shlw	$2, %ax			/* << 2 */
-#endif
-	movb	%cl, %al		/* bits 8,9 of cylinder count */
-	andb	$0xc0, %al
-	shlw	$2, %ax			/* << 2 */
-	movb	%ch, %al		/* Lower 8 bits */
-	movswl	%ax, %ebx		/* max cylinder */
-	incl	%ebx			/* number of cylinders */
-	shll	$16, %eax		/* << 16 */
-
-#ifdef AWARD_INT13_EXTENSIONS
-	andb	$0x3f, %dh		/* mask off cylinder gunk */
-#endif
-	movb	%dh, %al		/* max head */
 	
-	andb	$0x3f, %cl		/* mask off cylinder gunk */
-	movsbl	%cl, %edx		/* max sector (and # sectors) */
-
-	movsbl	%al, %ecx
-	incl	%ecx			/* number of heads */
-
-	data32
-	jmp	got_drive
-
-probe_failed:
-	/*
-	 * Urk.  Call failed.  It is not supported for floppies by old
-	 * BIOSes, but it should work for all hard drives!!
-	 *
-	 * Return a 1 here...  presume there is no drive present.  ????
-	 */
-
+	decw	%si
+	cmpw	$0, %si
+	je	2f
+	xorb	%bl, %bl
+	jmp	1b		/* retry */
+2:	
+	/* back to protected mode */
 	data32
 	call	EXT_C(real_to_prot)
 	.code32
 
-	movl	$1, %eax
+	movb	%bl, %al	/* return value in %eax */
+	
 	popl	%esi
+	popl	%edi
+	popl	%edx
+	popl	%ecx
+	popl	%ebx
+
+	ret
+
+
+/*
+ *   int check_int13_extensions (int drive)
+ *
+ *   Check if LBA is supported for DRIVE. If it is supported, then return
+ *   the major version of extensions, otherwise zero.
+ */
+
+ENTRY(check_int13_extensions)
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	pushl	%ebx
+	pushl	%ecx
+	pushl	%edx
+
+	/* drive */
+	movb	0x8(%ebp), %dl
+	/* enter real mode */
+	call	EXT_C(prot_to_real)
+
+	.code16
+	movb	$0x41, %ah
+	movw	$0x55aa, %bx
+	int	$0x13		/* do the operation */
+	
+	/* check the result */
+	jc	1f
+	cmpw	$0xaa55, %bx
+	jne	1f
+	andw	$1, %cx
+	jz	1f
+
+	movb	%ah, %bl	/* save the major version into %bl */
+	jmp	2f
+1:
+	xorb	%bl, %bl
+2:
+	/* back to protected mode */
+	data32
+	call	EXT_C(real_to_prot)
+	.code32
+
+	movb	%bl, %al	/* return value in %eax */
+
+	popl	%edx
+	popl	%ecx
+	popl	%ebx
+	popl	%ebp
+
+	ret
+
+
+/*
+ *   int get_diskinfo_int13_extensions (int drive, void *drp)
+ *
+ *   Return the geometry of DRIVE in a drive parameters, DRP. If an error
+ *   occurs, then return non-zero, otherwise zero.
+ */
+
+ENTRY(get_diskinfo_int13_extensions)
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	pushl	%ebx
+	pushl	%edx
+	pushl	%esi
+
+	/* compute the address of drive parameters */
+	movl	0xc(%ebp), %eax
+	movw	%ax, %si
+	xorw	%ax, %ax
+	shrl	$4, %eax
+	movw	%ax, %bx	/* save the segment into %bx */
+	/* drive */
+	movb	0x8(%ebp), %dl
+	/* enter real mode */
+	call	EXT_C(prot_to_real)
+
+	.code16
+	movb	$0x48, %ah
+	movw	%bx, %ds
+	int	$0x13		/* do the operation */
+	movb	%ah, %bl	/* save return value in %bl */
+	/* clear the data segment */
+	xorw	%ax, %ax
+	movw	%ax, %ds
+	/* back to protected mode */
+	data32
+	call	EXT_C(real_to_prot)
+	.code32
+
+	movb	%bl, %al	/* return value in %eax */
+
+	popl	%esi
+	popl	%edx
+	popl	%ebx
+	popl	%ebp
+	
+	ret
+
+
+/*
+ *   int get_diskinfo_standard (int drive, unsigned long *cylinders, 
+ *                              unsigned long *heads, unsigned long *sectors)
+ *
+ *   Return the geometry of DRIVE in CYLINDERS, HEADS and SECTORS. If an
+ *   error occurs, then return non-zero, otherwise zero.
+ */
+
+ENTRY(get_diskinfo_standard)
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	pushl	%ebx
+	pushl	%ecx
+	pushl	%edx
+	pushl	%edi
+
+	/* drive */
+	movb	0x8(%ebp), %dl
+	/* enter real mode */
+	call	EXT_C(prot_to_real)
+
+	.code16
+	movb	$0x8, %ah
+	int	$0x13		/* do the operation */
+	movb	%ah, %bl	/* save return value in %bl */
+	/* back to protected mode */
+	data32
+	call	EXT_C(real_to_prot)
+	.code32
+
+	/* restore %ebp */
+	leal	0x10(%esp), %ebp
+	
+	/* heads */
+	movb	%dh, %al
+	incl	%eax		/* the number of heads is counted from zero */
+	movl	0x10(%ebp), %edi
+	movl	%eax, (%edi)
+
+	/* sectors */
+	xorl	%eax, %eax
+	movb	%cl, %al
+	andb	$0x3f, %al
+	movl	0x14(%ebp), %edi
+	movl	%eax, (%edi)
+
+	/* cylinders */
+	shrb	$6, %cl
+	movb	%cl, %ah
+	movb	%ch, %al
+	incl	%eax		/* the number of cylinders is 
+				   counted from zero */
+	movl	0xc(%ebp), %edi
+	movl	%eax, (%edi)
+
+	xorl	%eax, %eax
+	movb	%bl, %al	/* return value in %eax */
+
 	popl	%edi
 	popl	%edx
 	popl	%ecx
@@ -707,23 +630,89 @@ probe_failed:
 
 	ret
 
+		
+/*
+ *   int get_diskinfo_floppy (int drive, unsigned long *cylinders, 
+ *                            unsigned long *heads, unsigned long *sectors)
+ *
+ *   Return the geometry of DRIVE in CYLINDERS, HEADS and SECTORS. If an
+ *   error occurs, then return non-zero, otherwise zero.
+ */
+
+ENTRY(get_diskinfo_floppy)
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	pushl	%ebx
+	pushl	%ecx
+	pushl	%edx
+	pushl	%esi
+
+	/* drive */
+	movb	0x8(%ebp), %dl
+	/* enter real mode */
+	call	EXT_C(prot_to_real)
+
 	.code16
-got_drive:
+	/* init probe value */
+	movl	$probe_values-1, %esi
+1:
+	xorw	%ax, %ax
+	int	$0x13		/* reset floppy controller */
+
+	incw	%si
+	movb	(%si), %cl
+	cmpb	$0, %cl		/* probe failed if zero */
+	je	2f
+
+	/* perform read */
+	movw	$SCRATCHSEG, %ax
+	movw	%ax, %es
+	xorw	%bx, %bx
+	movw	$0x0201, %ax
+	movb	$0, %ch
+	movb	$0, %dh
+	int	$0x13
+
+	/* FIXME: Read from floppy may fail even if the geometry is correct.
+	   So should retry at least three times.  */
+	jc	1b		/* next value */
+	
+	/* succeed */
+	jmp	2f
+	
+probe_values:
+	.byte	36, 18, 15, 9, 0
+	
+2:
+	/* back to protected mode */
 	data32
-	call	EXT_C(real_to_prot)	/* back to protected mode */
+	call	EXT_C(real_to_prot)
 	.code32
 
-	/* set up return structure */
-	movl	0x0c(%ebp), %eax
-	movl	%ebx, (%eax)
-	movl	%ecx, 0x04(%eax)
-	movl	%edx, 0x08(%eax)
-	movl	%edi, 0x0c(%eax)
+	/* restore %ebp */
+	leal	0x10(%esp), %ebp
 	
-	xorl	%eax, %eax
+	/* cylinders */
+	movl	0xc(%ebp), %eax
+	movl	$80, %ebx
+	movl	%ebx, (%eax)
+	/* heads */
+	movl	0x10(%ebp), %eax
+	movl	$2, %ebx
+	movl	%ebx, (%eax)
+	/* sectors */
+	movl	0x14(%ebp), %eax
+	movzbl	%cl, %ebx
+	movl	%ebx, (%eax)
 
+	/* return value in %eax */
+	xorl	%eax, %eax
+	cmpb	$0, %cl
+	jne	3f
+	incl	%eax		/* %eax = 1 (non-zero) */
+3:
 	popl	%esi
-	popl	%edi
 	popl	%edx
 	popl	%ecx
 	popl	%ebx

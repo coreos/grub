@@ -94,7 +94,7 @@ asm.o: \$(top_srcdir)/shared_src/asm.S
 	fi
 EOF
 for f in boot common char_io cmdline disk_io gunzip fsys_ffs \
-         fsys_ext2fs fsys_fat stage1_5 stage2; do
+         fsys_ext2fs fsys_fat stage1_5 stage2 bios; do
 
   cat >> $SHARED_SRC_RULES <<EOF
 

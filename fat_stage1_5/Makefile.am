@@ -13,7 +13,7 @@ INCLUDES = -I$(top_srcdir)/shared_src
 
 # asm.o absolutely needs to come first!
 fat_stage1_5_exec_LDADD = asm.o common.o char_io.o disk_io.o \
-	stage1_5.o fsys_fat.o
+	stage1_5.o fsys_fat.o bios.o
 
 # FIXME: Automake hackery.
 DEP_FILES = .deps/dummy.P $(wildcard .deps/*.P)

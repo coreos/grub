@@ -49,7 +49,7 @@ print_entries(int y, int size, int first, char *menu_entries)
   else
     putchar(' ');
 
-  get_entry(menu_entries, first, 0);
+  menu_entries = get_entry (menu_entries, first, 0);
 
   for (i = 1; i <= size; i++)
     {

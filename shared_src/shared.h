@@ -309,7 +309,9 @@ extern int fsys_type;
 extern int block_file;
 #endif /* NO_BLOCK_FILES */
 
-/* The information for a disk geometry */
+/* The information for a disk geometry. The CHS information is only for
+   DOS/Partition table compatibility, and the real number of sectors is
+   stored in TOTAL_SECTORS.  */
 struct geometry
 {
   /* The number of cylinders */
@@ -318,6 +320,8 @@ struct geometry
   unsigned long heads;
   /* The number of sectors */
   unsigned long sectors;
+  /* The total number of sectors */
+  unsigned long total_sectors;
   /* Flags */
   unsigned long flags;
 };

@@ -1,3 +1,67 @@
+1999-04-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* shared_src/asm.S (get_diskinfo_floppy): Correct the number of heads
+	and the one of cylinders.
+	
+1999-04-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (get_diskinfo): Compute the total number of sectors
+	for DRIVE.
+
+	* shared_src/asm.S (get_diskinfo_standard): Clear the data segment
+	after calling int 0x13. Restore the base pointer after returning
+	to protected mode.
+	(get_diskinfo_floppy): Likewise.
+
+	* shared_src/bios.c (get_diskinfo): Always set the size of DRP to
+	the max size of DRP, regardless of the major version of extensions.
+	
+1999-04-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* shared_src/shared.h (struct geometry): Declare total_sectors as
+	unsigned long instead of unsigned long long, because GRUB represents
+	a sector number by 4bytes integer, so it doesn't make sense.
+	
+	* shared_src/bios.c (biosdisk) [!NO_INT13_FALLBACK]: Recompute
+	TOTAL_SECTORS according to CHS information.
+	(get_diskinfo) [DEBUG]: Print the geometry of DRIVE.
+	
+	* shared_src/disk_io.c (real_open_partition): Set PART_LENGTH to
+	BUF_GEOM.TOTAL_SECTORS.
+	
+1999-04-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/texinfo.tex: Copied from automake-1.4a.
+	
+	* configure.in (SHARED_SRC_RULES): Add bios into shared sources.
+	
+	* e2fs_stage1_5/Makefile.am (e2fs_stage1_5_exec_LDADD): Added bios.o.
+	* fat_stage1_5/Makefile.am (fat_stage1_5_exec_LDADD): Likewise.
+	* ffs_stage1_5/Makefile.am (ffs_stage1_5_exec_LDADD): Likewise.
+	* stage2/Makefile.am (stage2_exec_LDADD): Likewise.
+	* stage2_debug/Makefile.am (stage2_debug_exec_LDADD): Likewise.
+	
+	* shared_src/Makefile.am (EXTRA_DIST): Added bios.c.
+	
+	* shared_src/asm.S (biosdisk): Deleted. Now defined in bios.c.
+	(get_diskinfo): Likewise.
+	(biosdisk_int13_extensions): New function.
+	(biosdisk_standard): Likewise.
+	(check_int13_extensions): Likewise.
+	(get_diskinfo_int13_extensions): Likewise.
+	(get_diskinfo_standard): Likewise.
+	(get_diskinfo_floppy): Likewise.
+	
+	* shared_src/bios.c: New file.
+	
+	* shared_src/shared.h (struct geometry): Added new member,
+	total_sectors.
+
+1999-03-28  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* shared_src/stage2.c (print_entries): Correctly assign MENU_ENTRIES
+	the entries starting from FIRST.
+	
 1999-03-27  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* Change everything to use memset and memmove instead of bzero and
