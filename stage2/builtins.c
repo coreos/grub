@@ -827,6 +827,48 @@ static struct builtin builtin_dhcp =
 #endif /* SUPPORT_NETBOOT */
 
 
+/* displayapm */
+static int
+displayapm_func (char *arg, int flags)
+{
+  if (mbi.flags & MB_INFO_APM_TABLE)
+    {
+      grub_printf ("APM BIOS information:
+ Version:          0x%x
+ 32-bit CS:        0x%x
+ Offset:           0x%x
+ 16-bit CS:        0x%x
+ 16-bit DS:        0x%x
+ 32-bit CS length: 0x%x
+ 16-bit CS length: 0x%x
+ 16-bit DS length: 0x%x\n",
+		   (unsigned) apm_bios_info.version,
+		   (unsigned) apm_bios_info.cseg,
+		   apm_bios_info.offset,
+		   (unsigned) apm_bios_info.cseg_16,
+		   (unsigned) apm_bios_info.dseg_16,
+		   (unsigned) apm_bios_info.cseg_len,
+		   (unsigned) apm_bios_info.cseg_16_len,
+		   (unsigned) apm_bios_info.dseg_16_len);
+    }
+  else
+    {
+      grub_printf ("No APM BIOS found or probe failed\n");
+    }
+
+  return 0;
+}
+
+static struct builtin builtin_displayapm =
+{
+  "displayapm",
+  displayapm_func,
+  BUILTIN_CMDLINE,
+  "displayapm",
+  "Display APM BIOS information."
+};
+
+
 /* displaymem */
 static int
 displaymem_func (char *arg, int flags)
@@ -4057,6 +4099,7 @@ struct builtin *builtin_table[] =
 #ifdef SUPPORT_NETBOOT
   &builtin_dhcp,
 #endif /* SUPPORT_NETBOOT */
+  &builtin_displayapm,
   &builtin_displaymem,
   &builtin_embed,
   &builtin_fallback,

@@ -7,9 +7,10 @@ New in 1.0 - XXXX-XX-XX:
 * The utility ``grub-install'' accepts a new option, `--recheck'. If
   this option is specified, probe a device map, even if it already
   exists. You should use this option whenever you add/remove a disk.
-* The command "password" supports md5 passwords if the option `--md5'
+* The command "password" supports a md5 password if the option `--md5'
   is given.  This command can now also be used to protect specific menu
-  items with their own password.
+  items with their own passwords.
+* New command, "displayapm".
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".

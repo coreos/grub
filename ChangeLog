@@ -1,5 +1,11 @@
 2000-10-20  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/builtins.c (displayapm_func): New function.
+	(builtin_displayapm): New variable.
+	(builtin_table): Added a pointer to BUILTIN_DISPLAYAPM.
+	
+2000-10-20  OKUJI Yoshinori  <okuji@gnu.org>
+
 	APM BIOS table support is added, based on a patch by Matt Yourst
 	<yourst@mit.edu>.
 	
