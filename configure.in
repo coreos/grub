@@ -464,6 +464,17 @@ AC_ARG_ENABLE(cs-scan,
   [  --enable-cs-scan=LIST   probe for CS89x0 base address using LIST],
   [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCS_SCAN=$enable_cs_scan"])
 
+dnl Diskless
+AC_ARG_ENABLE(diskless,
+  [  --enable-diskless       enable diskless support])
+AM_CONDITIONAL(DISKLESS_SUPPORT, test "x$enable_diskless" = xyes)
+
+# Sanity check.
+if test "x$enable_diskless" = xyes; then
+  if test "x$NET_CFLAGS" = x; then
+    AC_MSG_ERROR([You must enable at least one network driver])
+  fi
+fi
 
 dnl Now substitute the variables.
 AC_SUBST(FSYS_CFLAGS)

@@ -31,6 +31,10 @@ New in 0.5.95 - XXXX-XX-XX:
   enters a correct password.
 * Recognize the Linux extended partition type.
 * Pass a correct memory size to Linux and *BSD.
+* Diskless support is added. Now configure accepts --enable-diskless,
+  and "make" will produce two additional images, ``nbgrub'' for Net Boot
+  Image Proposal and ``pxegrub'' for Preboot Execution Environment. See
+  the documentation, for more details.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

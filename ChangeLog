@@ -1,3 +1,54 @@
+2000-05-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Add diskless support, mostly based on patches by Christoph
+	Plattner <Christoph.Plattner@dot.at>, but also based on a patch
+	by Chip Salzenberg <chip@valinux.com> for PXE. Of course, I've
+	modified both the patches thoroughly to adapt them to my
+	preference.
+
+	* configure.in (--enable-diskless): New option. Set a
+	conditional DISKLESS_SUPPORT.
+	* stage2/Makefile.am (noinst_HEADERS): Added nbi.h.
+	(EXTRA_PROGRAMS): New variable.
+	(pkgdata_DATA) [DISKLESS_SUPPORT]: Added
+	nbgrub and pxegrub.
+	(noinst_DATA) [DISKLESS_SUPPORT]: Added nbloader, pxeloader and
+	diskless.
+	(noinst_PROGRAMS) [DISKLESS_SUPPORT]: Added nbloader.exec,
+	pxeloader.exec and diskless.exec.
+	(PXELOADER_LINK): New variable.
+	(BUILT_SOURCES) [DISKLESS_SUPPORT]: Added diskless_size.h.
+	(diskless_exec_SOURCES): New variable.
+	(diskless_exec_CFLAGS): Likewise.
+	(diskless_exec_LDFLAGS): Likewise.
+	(diskless_exec_LDADD): Likewise.
+	(diskless_size.h): New target.
+	(nbloader_exec_SOURCES): New variable.
+	(nbloader_exec_CFLAGS): Likewise.
+	(nbloader_exec_LDFLAGS): Likewise.
+	(nbloader_exec-nbloader.o): New dependency.
+	(nbgrub): New target.
+	(pxeloader_exec_SOURCES): new variable.
+	(pxeloader_exec_CFLAGS): Likewise.
+	(pxeloader_exec_LDFLAGS): Likewise.
+	(pxegrub): New target.
+	* stage2/asm.S (install_partition): Set to 0xFFFFFF instead of
+	0x020000. What was the benefit from the previous setting?
+	(codestart) [SUPPORT_DISKLESS]: Don't move %dl to BOOT_DRIVE.
+	(boot_drive) [SUPPORT_DISKLESS]: Set to NETWORK_DRIVE instead of
+	zero.
+	* stage2/common.c: Include <shared.h> instead of "shared.h",
+	just for a cosmetic reason.
+	[SUPPORT_DISKLESS]: Include etherboot.h.
+	[SUPPORT_DISKLESS] (setup_diskless_environment): New internal
+	function.
+	(init_bios_info) [SUPPORT_DISKLESS]: Call
+	setup_diskless_environment after the memory initialization is
+	finished. Return if fails.
+	* stage2/nbloader.S: New file.
+	* stage2/pxeloader.S: Likewise.
+	* stage2/nbi.h: Likewise.
+	
 2000-05-25  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* netboot/fsys_tftp.c (buf_fill): Warn when amazing things

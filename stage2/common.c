@@ -19,7 +19,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "shared.h"
+#include <shared.h>
+
+#ifdef SUPPORT_DISKLESS
+# include <etherboot.h>
+#endif
 
 /*
  *  Shared BIOS/boot data.
@@ -124,6 +128,25 @@ mmap_avail_at (unsigned long bottom)
   return top - bottom;
 }
 #endif /* ! STAGE1_5 */
+
+#ifdef SUPPORT_DISKLESS
+/* Set up the diskless environment so that GRUB can get a configuration
+   file from a network.  */
+static int
+setup_diskless_environment (void)
+{
+  /* For now, there is no difference between BOOTP and DHCP in GRUB.  */
+  if (! bootp ())
+    {
+      grub_printf ("BOOTP/DHCP fails.\n");
+      return 0;
+    }
+
+  /* This will be erased soon, though...  */
+  print_network_configuration ();
+  return 1;
+}
+#endif /* SUPPORT_DISKLESS */
 
 /* This queries for BIOS information.  */
 void
@@ -240,16 +263,16 @@ init_bios_info (void)
 
 #endif /* STAGE1_5 */
 
-  /*
-   *  Set boot drive and partition.
-   */
-
+#ifdef SUPPORT_DISKLESS
+  /* If SUPPORT_DISKLESS is defined, initialize the network here.  */
+  if (! setup_diskless_environment ())
+    return;
+#endif
+  
+  /* Set boot drive and partition.  */
   saved_drive = boot_drive;
   saved_partition = install_partition;
 
-  /*
-   *  Start main routine here.
-   */
-
+  /* Start main routine here.  */
   cmain ();
 }

@@ -28,3 +28,5 @@ Per Lundberg added graphics support to the Multiboot Specification.
 
 Jochen Hoenicke rewrote stage2/fsys_fat.c and wrote
 stage2/fsys_reiserfs.c.
+
+Christoph Plattner added support for Net Boot Image Proposal.

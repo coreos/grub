@@ -5,7 +5,7 @@ noinst_SCRIPTS = $(TESTS)
 # For dist target.
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
-        mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h
+        mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h nbi.h
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 # For <stage1.h>.
@@ -22,16 +22,30 @@ libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
 
 # Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
+
+EXTRA_PROGRAMS = nbloader.exec pxeloader.exec diskless.exec
+
+if DISKLESS_SUPPORT
+pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
+	minix_stage1_5 reiserfs_stage1_5 nbgrub pxegrub
+noinst_DATA = pre_stage2 start nbloader pxeloader diskless
+noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
+	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
+	reiserfs_stage1_5.exec nbloader.exec pxeloader.exec \
+	diskless.exec
+else
 pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5 reiserfs_stage1_5
 noinst_DATA = pre_stage2 start
 noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
 	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
 	reiserfs_stage1_5.exec
+endif
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
 PRE_STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8200
 START_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
+PXELOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 if NETBOOT_SUPPORT
 STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	-I$(top_srcdir)/netboot -DSUPPORT_NETBOOT=1
@@ -54,7 +68,12 @@ if NETBOOT_SUPPORT
 pre_stage2_exec_LDADD = ../netboot/libdrivers.a
 endif
 
+if DISKLESS_SUPPORT
+BUILT_SOURCES = stage2_size.h diskless_size.h
+else
 BUILT_SOURCES = stage2_size.h
+endif
+
 CLEANFILES = $(pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
 
 stage2_size.h: pre_stage2
@@ -111,6 +130,41 @@ reiserfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 reiserfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
 	-DNO_BLOCK_FILES=1
 reiserfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For diskless target.
+diskless_exec_SOURCES = $(pre_stage2_exec_SOURCES)
+diskless_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
+	-DSUPPORT_DISKLESS=1
+diskless_exec_LDFLAGS = $(PRE_STAGE2_LINK)
+diskless_exec_LDADD = ../netboot/libdrivers.a
+
+diskless_size.h: diskless
+	-rm -f $@
+	set dummy `ls -l $^`; \
+	echo "#define DISKLESS_SIZE $$6" > $@
+
+# For nbloader target.
+nbloader_exec_SOURCES = nbloader.S
+nbloader_exec_CFLAGS = $(STAGE2_COMPILE)
+nbloader_exec_LDFLAGS = $(START_LINK)
+
+# XXX: See the comment for start_exec-start.o.
+nbloader_exec-nbloader.o: diskless_size.h
+
+# For nbgrub target.
+nbgrub: nbloader diskless
+	-rm -f $@
+	cat $^ > $@
+
+# For pxeloader target.
+pxeloader_exec_SOURCES = pxeloader.S
+pxeloader_exec_CFLAGS = $(STAGE2_COMPILE)
+pxeloader_exec_LDFLAGS = $(PXELOADER_LINK)
+
+# For pxegrub target.
+pxegrub: pxeloader diskless
+	-rm -f $@
+	cat $^ > $@
 
 # General rule for making a raw binary.
 %: %.exec

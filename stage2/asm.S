@@ -70,7 +70,7 @@ ENTRY(main)
 	. = EXT_C(main) + 0x8
 
 VARIABLE(install_partition)
-	.long	0x020000
+	.long	0xFFFFFF
 VARIABLE(stage2_id)
 	.byte	STAGE2_ID
 VARIABLE(force_lba)
@@ -107,8 +107,10 @@ codestart:
 
 	sti		/* we're safe again */
 
+#ifndef DISKLESS_SUPPORT
 	/* save boot drive reference */
 	ADDR32	movb	%dl, EXT_C(boot_drive)
+#endif
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
@@ -2071,7 +2073,11 @@ protstack:
 	.long	PROTSTACKINIT
 
 VARIABLE(boot_drive)
+#ifdef SUPPORT_DISKLESS
+	.long	NETWORK_DRIVE
+#else
 	.long	0
+#endif
 
 	/* an address can only be long-jumped to if it is in memory, this
 	   is used by multiple routines */
