@@ -117,12 +117,12 @@ UNDSYMFILES += #{undsym}
 
 #{@name}: #{pre_obj} #{mod_obj}
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 #{pre_obj}: #{objs_str}
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 #{mod_obj}: #{mod_src}
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<

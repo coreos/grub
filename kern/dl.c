@@ -560,6 +560,9 @@ grub_dl_load_file (const char *filename)
     goto failed;
 
   mod = grub_dl_load_core (core, size);
+  if (! mod)
+    goto failed;
+  
   mod->ref_count = 0;
 
  failed:

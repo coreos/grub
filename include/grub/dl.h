@@ -26,12 +26,12 @@
 #include <grub/types.h>
 
 #define GRUB_MOD_INIT	\
-static void grub_mod_init (grub_dl_t mod) __attribute__ ((unused)); \
+static void grub_mod_init (grub_dl_t mod) __attribute__ ((used)); \
 static void \
 grub_mod_init (grub_dl_t mod)
 
 #define GRUB_MOD_FINI	\
-static void grub_mod_fini (void) __attribute__ ((unused)); \
+static void grub_mod_fini (void) __attribute__ ((used)); \
 static void \
 grub_mod_fini (void)
 

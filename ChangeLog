@@ -1,3 +1,12 @@
+2005-01-20  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
+
+	* include/grub/dl.h (GRUB_MOD_INIT): Changed `__attribute__
+	((unused))' to `__attribute__ ((used))'.	
+	(GRUB_MOD_FINI): Likewise.
+	* kern/dl.c (grub_dl_load_file): Fix null pointer dereference.
+	* genmk.rb (PModule): Assign space to common symbols when linking
+	modules.
+
 2005-01-20  Marco Gerards  <metgerards@student.han.nl>
 
 	* include/grub/mm.h (grub_mm_init_region): Change the type of the
