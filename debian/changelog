@@ -2,11 +2,18 @@ grub (0.5.94) unstable; urgency=low
 	
 grub (0.5.93) unstable; urgency=low
 
-  * Updated example configurations. (fixes:bug#42136)
-  * Highlight color set correctly when editing. (fixes:bug#42549)
-  * dpkg-shlibdeps called on /usr/sbin/grub. (fixes:bug#42704)
-  * Properly install Texinfo documentation. (fixes:bug#42705,bug#42919)
-  * Update file locations in README.Debian. (fixes:bug#42834)
+  * Updated example configurations. (closes:bug#42136)
+  * Highlight color set correctly when editing. (closes:bug#42549)
+  * dpkg-shlibdeps called on /usr/sbin/grub. (closes:bug#42704)
+  * Properly install Texinfo documentation. (closes:bug#42705,bug#42919)
+    (closes:bug#43080,bug#45150)
+  * Update file locations in README.debian. (closes:bug#42834)
+  * Upstream fixes for new binutils assembler syntax. (closes:bug#47946)
+  * FAT32 support. (closes:bug#47970)
+  * Password option fixed. (closes:bug#43798)
+  * Sample menu.lst included in doc directory. (closes:bug#47181)
+
+ -- Gordon Matzigkeit <gord@debian.org>  Sat, 30 Oct 1999 09:59:09 -0600
 
 grub (0.5.92) unstable; urgency=low
 

@@ -35,11 +35,10 @@ binary-arch:	checkroot build
 ## install files
 
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
-	gzip -f9 debian/tmp/usr/info/*
+	gzip -f9 debian/tmp/usr/info/* debian/tmp/usr/man/man8/*
+	strip -s debian/tmp/usr/sbin/*
 
-	$(INSTALL_DATA)	TODO debian/tmp/usr/doc/grub/
-	$(INSTALL_DATA)	BUGS debian/tmp/usr/doc/grub/
-	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/
+	$(INSTALL_DATA)	TODO BUGS NEWS docs/menu.lst debian/tmp/usr/doc/grub/
 
 	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/changelog
 	gzip -f9 debian/tmp/usr/doc/grub/changelog

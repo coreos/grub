@@ -49,7 +49,7 @@ that you can specify a drive/partition. See this example:
 This means the first floppy disk drive. GRUB requires that the device
 name is enclosed with @samp{(} and @samp{)}. The number @samp{0} is the
 drive number, which is counted from @emph{zero}. In this case, GRUB uses
-the whole of the floppy disk.
+the whole floppy disk.
 
 @example
 (hd0,1)
@@ -60,7 +60,7 @@ integer @samp{0} indicates the drive number, that is, the first hard
 disk, while the second integer @samp{1} indicates the partition number
 (or the @sc{pc} slice number in the BSD terminology). Note that the
 partition numbers are counted from @emph{zero} but not from one. In this
-case, GRUB uses the partition of the disk instead of the whole of the
+case, GRUB uses the partition of the disk instead of the whole
 disk.
 
 @example
@@ -101,7 +101,7 @@ Now the question is how to specify a file. Again, see this example:
 This specifies the file whose name is @samp{vmlinuz} on the first
 partition of the first hard disk drive. Isn't that easy? All you should
 do is type the absolute filename. If you are tired of typing the
-whole of the filename, press the @key{TAB} key. @kbd{@key{TAB}}
+whole filename, press the @key{TAB} key. @kbd{@key{TAB}}
 completes the filename if it is unique. Otherwise, it displays the list
 of the candidates.
 
