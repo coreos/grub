@@ -1,7 +1,7 @@
 /* asmstub.c - a version of shared_src/asm.S that works under Unix */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,11 +25,6 @@
 
 /* Simulator entry point. */
 int grub_stage2 (void);
-
-/* We want to prevent any circularararity in our stubs, as well as
-   libc name clashes. */
-#define WITHOUT_LIBC_STUBS 1
-#include "shared.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,8 +62,13 @@ int grub_stage2 (void);
 # include <util.h>
 #endif /* HAVE_OPENDISK */
 
+/* We want to prevent any circularararity in our stubs, as well as
+   libc name clashes. */
+#define WITHOUT_LIBC_STUBS 1
+#include "shared.h"
+
 /* Simulated memory sizes. */
-#define EXTENDED_MEMSIZE (4 * 1024 * 1024)	/* 4MB */
+#define EXTENDED_MEMSIZE (3 * 1024 * 1024)	/* 3MB */
 #define CONVENTIONAL_MEMSIZE (640) /* 640kB */
 
 /* Simulated disk sizes. */
@@ -751,6 +751,17 @@ gotoxy (int x, int y)
 #endif
 }
 
+int
+grub_setjmp (grub_jmp_buf env)
+{
+  return setjmp (env);
+}
+
+void
+grub_longjmp (grub_jmp_buf env, int val)
+{
+  longjmp (env, val);
+}
 
 /* displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones */

@@ -19,6 +19,8 @@
 
 #include "shared.h"
 
+grub_jmp_buf restart_env;
+
 static char *
 get_entry (char *list, int num, int nested)
 {
@@ -580,6 +582,9 @@ cmain (void)
   char *config_entries, *menu_entries;
   char *kill = (char *) KILL_BUF;
 
+  /* Initialize the environment for restarting Stage 2.  */
+  grub_setjmp (restart_env);
+  
   /* Initialize the kill buffer.  */
   *kill = 0;
 

@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -451,7 +451,7 @@ configfile_func (char *arg, int flags)
 #endif
 
   /* Restart cmain.  */
-  cmain ();
+  grub_longjmp (restart_env, 0);
 
   /* Never reach here.  */
   return 0;

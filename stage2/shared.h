@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -688,6 +688,20 @@ int grub_memcmp (const char *s1, const char *s2, int n);
 int grub_strcmp (const char *s1, const char *s2);
 int grub_strlen (const char *str);
 char *grub_strcpy (char *dest, const char *src);
+
+#ifndef GRUB_UTIL
+typedef unsigned long grub_jmp_buf[6];
+#else
+/* In the grub shell, use the libc jmp_buf instead.  */
+# include <setjmp.h>
+# define grub_jmp_buf jmp_buf
+#endif
+
+int grub_setjmp (grub_jmp_buf env);
+void grub_longjmp (grub_jmp_buf env, int val);
+
+/* The environment for restarting Stage 2.  */
+extern grub_jmp_buf restart_env;
 
 /* misc */
 void init_page (void);

@@ -1,3 +1,24 @@
+2000-01-05  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* grub/asmstub.c: Include the header shared.h after including
+	all the system headers, but not before.
+	(EXTENDED_MEMSIZE): Reduced to 3MB.
+	(grub_setjmp): New function.
+	(grub_longjmp): Likewise.
+	* grub/main.c: Include setjmp.h.
+	* stage2/asm.S (grub_setjmp): New function. Stolen from the
+	OSKit (which stole it from Mach).
+	(grub_longjmp): Likewise.
+	* stage2/shared.h [GRUB_UTIL] (grub_jmp_buf): New type.
+	[!GRUB_UTIL] (grub_jmp_buf): New macro. Defined as jmp_buf.
+	(grub_setjmp): Declared.
+	(grub_longjmp): Likewise.
+	(restart_env): Likewise.
+	* stage2/builtins.c (configfile_func): Use grub_longjmp instead
+	of invoking cmain again.
+	* stage2/stage2.c (restart_env): New variable.
+	(cmain): Call grub_setjmp first to initialize RESTART_ENV.
+	
 2000-01-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/multiboot.texi (Boot information format): Added the

@@ -1,7 +1,7 @@
 /* main.c - experimental GRUB stage2 that runs under Unix */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ int grub_stage2 (void);
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <setjmp.h>
 
 #define WITHOUT_LIBC_STUBS 1
 #include "shared.h"
