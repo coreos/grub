@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 0.93:
+New in 0.93 - 2002-12-08:
 * Define the behavior of the boot loader when the load end address is
   zero and the bss end address is zero in the Multiboot Specification.
   Also, add the support into GRUB.
@@ -24,6 +24,7 @@ New in 0.93:
   large-EBDA systems.
 * The menu interfaces supports Page Up, Page Down, and Right Key.
 * New command "terminfo", for vt100-incompatible terminals.
+* New options, ``-D'', ``-g'' and ``-m'' are supported for FreeBSD.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.
