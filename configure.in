@@ -254,7 +254,7 @@ fi
 AC_ARG_ENABLE(3c90x,
   [  --enable-3c90x          enable 3Com90x driver])
 if test "x$enable_3c90x" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90x=1"
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90X=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c90x.o"
 fi
 

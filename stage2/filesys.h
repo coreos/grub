@@ -33,11 +33,8 @@ int ffs_dir (char *dirname);
 #ifdef FSYS_FAT
 #define FSYS_FAT_NUM 1
 int fat_mount (void);
-/* XX FAT filesystem uses block filesystem code for read! */
+int fat_read (char *buf, int len);
 int fat_dir (char *dirname);
-#ifdef NO_BLOCK_FILES
-#undef NO_BLOCK_FILES
-#endif /* NO_BLOCK_FILES */
 #else
 #define FSYS_FAT_NUM 0
 #endif

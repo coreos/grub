@@ -2479,7 +2479,7 @@ if test "${enable_3c90x+set}" = set; then
 fi
 
 if test "x$enable_3c90x" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90x=1"
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90X=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c90x.o"
 fi
 

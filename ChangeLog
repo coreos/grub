@@ -1,3 +1,52 @@
+2000-02-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (--enable-3c90x): Add -DINCLUDE_3C90X=1 instead
+	of -DINCLUDE_3C90x=1. This was just a typo. Reported by Per
+	Lundberg.
+	
+2000-02-17  Jochen Hoenicke  <jochen@gnu.org>
+	
+	* stage2/fsys_fat.c (fat_read): Forgot to increase BUF.
+	(fat_dir): Use fat_read instead of grub_read; this makes
+	setting the FSMAX unnecessary.
+	(fat_mount): FSMAX is no longer set.
+	
+2000-02-16  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/char_io.c (grub_isspace): Make carriage return a white
+	space.
+	
+	* stage2/fsys_fat.c (fat_dir): Long filename support.
+	(NAME_BUF): New macro.
+	* stage2/fat.h (FAT_LONGDIR_ID, FAT_LONGDIR_ALIASCHECKSUM,
+	FAT_ATTRIB_LONGNAME): New Macros.
+
+	* stage2/fsys_fat.c (fat_create_blocklist): Deleted, instead
+	fat_read is implemented.
+	(fat_read): new function.
+	* stage2/disk_io.c (fsys_table): Use fat_read.
+	* stage2/filesys.h: Declare fat_read, remove NO_BLOCK_FILES
+	hack.
+	* stage2/Makefile.am: Compile fat_stage1_5 with
+	-DNO_BLOCK_FILES=1.
+	
+	* stage2/fat.h (fat_bpb): New structure describing bpb.
+	(FAT_CVT_U16): New macro.
+	(FAT_BPB_CHECK_SIG, FAT_BPB_NUM_SECTORS,
+	FAT_BPB_BYTES_PER_SECTOR, FAT_BPB_SECT_PER_CLUS, FAT_BPB_NUMFAT,
+	FAT_BPB_RESERVED_SECTORS, FAT_BPB_FAT_SECTORS_16,
+	FAT_BPB_FAT_SECTORS_32, FAT_BPB_IS_FAT32, FAT_BPB_FAT_SECTORS,
+	FAT_BPB_FAT_START, FAT_BPB_ROOT_DIR_CLUSTER,
+	FAT_BPB_HIDDEN_SECTORS, FAT_BPB_ROOT_DIR_START,
+	FAT_BPB_ROOT_DIR_LENGTH, FAT_BPB_DATA_OFFSET,
+	FAT_BPB_NUM_CLUST): Macros removed.
+	* stage2/fsys_fat.c (fat_superblock): New structure containing
+	all info about currently mounted filesystem.
+	(FAT_SUPER): New Macro.
+	(BPB): Macro removod.
+	(fat_mount): Use fat_bpb structure, fill FAT_SUPER.
+	(fat_read, fat_dir): Use FAT_SUPER info.
+
 2000-02-16  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Pass the boot partition information to a chain-loader, in the

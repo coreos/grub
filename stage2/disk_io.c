@@ -45,7 +45,7 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
   {"tftp", tftp_mount, tftp_read, tftp_dir, tftp_close},
 # endif
 # ifdef FSYS_FAT
-  {"fat", fat_mount, 0, fat_dir, 0},
+  {"fat", fat_mount, fat_read, fat_dir, 0},
 # endif
 # ifdef FSYS_EXT2FS
   {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir, 0},

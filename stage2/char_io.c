@@ -675,7 +675,7 @@ grub_tolower (int c)
 int
 grub_isspace (int c)
 {
-  if (c == ' ' || c == '\t' || c == '\n')
+  if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
     return 1;
 
   return 0;

@@ -158,7 +158,8 @@ e2fs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 fat_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_fat.c bios.c
 
-fat_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1
+fat_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1 \
+	-DNO_BLOCK_FILES=1
 fat_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For ffs_stage1_5 target.

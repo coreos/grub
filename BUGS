@@ -1,5 +1,7 @@
-
 Known problems/bugs:
+
+  - GRUB cannot boot FreeBSD 3.4 and 4.0 directly. So you must
+    chain-load them instead.
 
   - GRUB hangs up when accessing a disk via Adaptec AIC-7880
     SCSI-controller in LBA mode. It is unknown if this is due to GRUB or

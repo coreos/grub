@@ -40,6 +40,7 @@ New in 0.5.94:
   check if GRUB accesses a drive in LBA mode by the command "geometry".
 * New commands "bootp", "dhcp" and "rarp" can be used to initialize a
   network device and get IP addresses from a network.
+* Long filename support in the FAT filesystem is added.
 
 New in 0.5.93 - 1999-10-30:
 * ELF format of FreeBSD kernel is supported.

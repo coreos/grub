@@ -23,78 +23,50 @@
  *  of the partition.
  */
 
-#define FAT_BPB_SIGNATURE             0x29
+typedef __signed__ char __s8;
+typedef unsigned char __u8;
+typedef __signed__ short __s16;
+typedef unsigned short __u16;
+typedef __signed__ int __s32;
+typedef unsigned int __u32;
 
-/* is checking for this signature thing even valid? */
-#define FAT_BPB_CHECK_SIG(bpb) \
-  (*((unsigned char *) (((int)bpb) + 38)) == FAT_BPB_SIGNATURE)
-
-#define FAT_BPB_NUM_SECTORS(bpb) \
-  ( *((unsigned short *) (((int)bpb) + 19)) ? \
-    *((unsigned short *) (((int)bpb) + 19)) : \
-    *((unsigned long *) (((int)bpb) + 32)) )
-
-#define FAT_BPB_BYTES_PER_SECTOR(bpb) \
-  (*((unsigned short *) (((int)bpb) + 11)))
-#define FAT_BPB_SECT_PER_CLUST(bpb) \
-  (*((unsigned char *) (((int)bpb) + 13)))
-#define FAT_BPB_NUM_FAT(bpb) \
-  (*((unsigned char *) (((int)bpb) + 16)))
-
-#define FAT_BPB_RESERVED_SECTORS(bpb) \
-  (*((unsigned short *) (((int)bpb) + 14)))
-#define FAT_BPB_FAT_SECTORS_16(bpb) \
-  (*((unsigned short *) (((int)bpb) + 22)))
-#define FAT_BPB_FAT_SECTORS_32(bpb) \
-  (*((unsigned long *) (((int)bpb) + 36)))
-#define FAT_BPB_IS_FAT32(bpb) \
-  (FAT_BPB_FAT_SECTORS_16(bpb) == 0)
-#define FAT_BPB_FAT_SECTORS(bpb) \
-  (FAT_BPB_FAT_SECTORS_16(bpb) \
-   ? FAT_BPB_FAT_SECTORS_16(bpb) : FAT_BPB_FAT_SECTORS_32(bpb))
-#define FAT_BPB_FAT_START(bpb) FAT_BPB_RESERVED_SECTORS(bpb)
-
-#define FAT_BPB_ROOT_DIR_CLUSTER(bpb) \
-  (*((unsigned long *) (((int)bpb) + 44)))
-
-/*
- *  This appears to be a MAJOR kludge!!  Don't use it if possible...
+/* Note that some shorts are not aligned, and must therefore
+ * be declared as array of two bytes.
  */
-#define FAT_BPB_HIDDEN_SECTORS(bpb) \
-  (*((unsigned long *) (((int)bpb) + 28)))
+struct fat_bpb {
+	__s8	ignored[3];	/* Boot strap short or near jump */
+	__s8	system_id[8];	/* Name - can be used to special case
+				   partition manager volumes */
+	__u8	bytes_per_sect[2];	/* bytes per logical sector */
+	__u8	sects_per_clust;/* sectors/cluster */
+	__u8	reserved_sects[2];	/* reserved sectors */
+	__u8	num_fats;	/* number of FATs */
+	__u8	dir_entries[2];	/* root directory entries */
+	__u8	short_sectors[2];	/* number of sectors */
+	__u8	media;		/* media code (unused) */
+	__u16	fat_length;	/* sectors/FAT */
+	__u16	secs_track;	/* sectors per track */
+	__u16	heads;		/* number of heads */
+	__u32	hidden;		/* hidden sectors (unused) */
+	__u32	long_sectors;	/* number of sectors (if short_sectors == 0) */
 
-#define FAT_BPB_ROOT_DIR_START(bpb) \
-  ( FAT_BPB_NUM_FAT(bpb) * FAT_BPB_FAT_SECTORS(bpb) \
-    + FAT_BPB_FAT_START(bpb) )
+	/* The following fields are only used by FAT32 */
+	__u32	fat32_length;	/* sectors/FAT */
+	__u16	flags;		/* bit 8: fat mirroring, low 4: active fat */
+	__u8	version[2];	/* major, minor filesystem version */
+	__u32	root_cluster;	/* first cluster in root directory */
+	__u16	info_sector;	/* filesystem info sector */
+	__u16	backup_boot;	/* backup boot sector */
+	__u16	reserved2[6];	/* Unused */
+};
 
-#define FAT_BPB_ROOT_DIR_LENGTH(bpb) \
-  ( (*((unsigned short *) (((int)bpb) + 17)) + 0xF) >> 4 )
-
-#define FAT_BPB_DATA_OFFSET(bpb) \
-  ( FAT_BPB_ROOT_DIR_START(bpb) + FAT_BPB_ROOT_DIR_LENGTH(bpb) )
-
-#define FAT_BPB_NUM_CLUST(bpb) \
-  ( ( FAT_BPB_NUM_SECTORS(bpb) - FAT_BPB_DATA_OFFSET(bpb) ) \
-    / FAT_BPB_SECT_PER_CLUST(bpb) )
-
-/*
- *  Defines minimum disk size to be considered a FAT partition
- */
-
-#define FAT_MIN_NUM_SECTORS       720	/* 360 K disk */
+#define FAT_CVT_U16(bytarr) (* (__u16*)(bytarr))
 
 /*
  *  Defines how to differentiate a 12-bit and 16-bit FAT.
  */
 
 #define FAT_MAX_12BIT_CLUST       4087	/* 4085 + 2 */
-
-#define FAT_BPB_FLOPPY_NUM_SECTORS(bpb) \
-  ( *((unsigned short *) (((int)bpb) + 19)) \
-    && !*((unsigned long *) (((int)bpb) + 32)) \
-    && *((unsigned short *) (((int)bpb) + 19)) >= FAT_MIN_NUM_SECTORS \
-    && ((*((unsigned short *) (((int)bpb) + 19)) - FAT_BPB_DATA_OFFSET(bpb)) \
-	/ FAT_BPB_SECT_PER_CLUST(bpb)) < (FAT_BPB_FAT_SECTORS(bpb) * 342) )
 
 /*
  *  Defines for the file "attribute" byte
@@ -103,7 +75,7 @@
 #define FAT_ATTRIB_OK_MASK        0x37
 #define FAT_ATTRIB_NOT_OK_MASK    0xC8
 #define FAT_ATTRIB_DIR            0x10
-
+#define FAT_ATTRIB_LONGNAME       0x0F
 
 /*
  *  Defines for FAT directory entries
@@ -115,9 +87,14 @@
   (*((unsigned char *) (entry+11)))
 #define FAT_DIRENTRY_VALID(entry) \
   ( ((*((unsigned char *) entry)) != 0) \
-    & ((*((unsigned char *) entry)) != 0xE5) \
-    & !(FAT_DIRENTRY_ATTRIB(entry) & FAT_ATTRIB_NOT_OK_MASK) )
+    && ((*((unsigned char *) entry)) != 0xE5) \
+    && !(FAT_DIRENTRY_ATTRIB(entry) & FAT_ATTRIB_NOT_OK_MASK) )
 #define FAT_DIRENTRY_FIRST_CLUSTER(entry) \
   ((*((unsigned short *) (entry+26)))+(*((unsigned short *) (entry+20)) << 16))
 #define FAT_DIRENTRY_FILELENGTH(entry) \
   (*((unsigned long *) (entry+28)))
+
+#define FAT_LONGDIR_ID(entry) \
+  (*((unsigned char *) (entry)))
+#define FAT_LONGDIR_ALIASCHECKSUM(entry) \
+  (*((unsigned char *) (entry+13)))
