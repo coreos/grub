@@ -211,9 +211,14 @@ ENTRY(hard_stop)
  * jumped to with a known state.
  */
 ENTRY(stop_floppy)
-	movw	$0x3F2, %dx
-	xorb	%al, %al
-	outb	%al, %dx
+	call	EXT_C(prot_to_real)
+	.code16
+	pusha
+	xorb	%dl, %dl
+	int	$0x13
+	popa
+	DATA32  call EXT_C(real_to_prot)
+	.code32
 	ret
 
 /*

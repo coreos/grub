@@ -1,3 +1,9 @@
+2004-03-13  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Daniele Zelante <zeldan@email.it>:
+	* stage2/asm.S (stop_floppy): Use INT 13, AH=00h to stop the
+	floppy controller instead of a direct I/O.
+
 2004-03-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/serial.c (serial_putchar): Handle the character code
