@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004 Marco Gerards <metgerards@student.han.nl>
+ *  Copyright (C) 2003,2004, 2005 Marco Gerards <metgerards@student.han.nl>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # include <time.h>
 # define GRUB_TICKS_PER_SECOND	CLOCKS_PER_SEC
 #else
-# define GRUB_TICKS_PER_SECOND	18
+# define GRUB_TICKS_PER_SECOND	1000
 #endif
 
 /* Return the real time in ticks.  */

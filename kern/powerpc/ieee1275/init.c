@@ -1,7 +1,7 @@
 /*  init.c -- Initialize GRUB on the newworld mac (PPC).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004,2005 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -82,5 +82,10 @@ grub_stop (void)
 grub_uint32_t
 grub_get_rtc (void)
 {
-  return 0;
+  grub_uint32_t msecs;
+
+  if (grub_ieee1275_milliseconds (&msecs))
+    return 0;
+
+  return msecs;
 }

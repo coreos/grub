@@ -119,6 +119,7 @@ int EXPORT_FUNC(grub_ieee1275_set_property) (grub_ieee1275_phandle_t phandle,
 					     grub_size_t *actual);
 int EXPORT_FUNC(grub_ieee1275_set_color) (grub_ieee1275_ihandle_t ihandle,
 					  int index, int r, int g, int b);
+int EXPORT_FUNC(grub_ieee1275_milliseconds) (grub_uint32_t *msecs);
 
 
 grub_err_t EXPORT_FUNC(grub_devalias_iterate)

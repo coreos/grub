@@ -1,7 +1,7 @@
 /* ieee1275.c - Access the Open Firmware client interface.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -480,5 +480,21 @@ grub_ieee1275_set_color (grub_ieee1275_ihandle_t ihandle,
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
   
+  return 0;
+}
+
+int
+grub_ieee1275_milliseconds (grub_uint32_t *msecs)
+{
+  struct milliseconds_args {
+    struct grub_ieee1275_common_hdr common;
+    grub_uint32_t msecs;
+  } args;
+
+  INIT_IEEE1275_COMMON (&args.common, "milliseconds", 0, 1);
+
+  if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+    return -1;
+  *msecs = args.msecs;
   return 0;
 }
