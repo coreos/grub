@@ -39,6 +39,8 @@ int grub_stage2 (void);
 #include <string.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <sys/time.h>
+#include <termios.h>
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
@@ -58,6 +60,7 @@ int grub_stage2 (void);
 #define WITHOUT_LIBC_STUBS 1
 #include <shared.h>
 #include <device.h>
+#include <serial.h>
 
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (3 * 1024 * 1024)	/* 3MB */
@@ -79,6 +82,12 @@ char **device_map = 0;
 
 /* The jump buffer for exiting correctly.  */
 static jmp_buf env_for_exit;
+
+/* The file descriptor for a serial device.  */
+static int serial_fd = -1;
+
+/* The file name of a serial device.  */
+static char *serial_device = 0;
 
 /* The main entry point into this mess. */
 int
@@ -183,6 +192,9 @@ grub_stage2 (void)
 	close (disks[i].flags);
       }
 
+  if (serial_fd >= 0)
+    close (serial_fd);
+  
   /* Release memory. */
   restore_device_map (device_map);
   device_map = 0;
@@ -191,6 +203,10 @@ grub_stage2 (void)
   free (scratch);
   grub_scratch_mem = 0;
 
+  if (serial_device)
+    free (serial_device);
+  serial_device = 0;
+  
   /* Ahh... at last we're ready to return to caller. */
   return status;
 }
@@ -801,4 +817,171 @@ void
 stop_floppy (void)
 {
   /* NOTUSED */
+}
+
+/* The serial version of getkey.  */
+int
+serial_getkey (void)
+{
+  char c;
+
+  if (nread (serial_fd, &c, 1) != 1)
+    stop ();
+
+  return c;
+}
+
+/* The serial version of checkkey.  */
+int
+serial_checkkey (void)
+{
+  fd_set fds;
+  struct timeval timeout;
+
+  /* Wait only for the serial device.  */
+  FD_ZERO (&fds);
+  FD_SET (serial_fd, &fds);
+
+  /* Set the timeout to 100ms.  */
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 100000;
+  
+  return select (serial_fd + 1, &fds, 0, 0, 0) > 0 ? : -1;
+}
+
+/* The serial version of grub_putchar.  */
+void
+serial_putchar (int c)
+{
+  char ch = (char) c;
+  
+  if (nwrite (serial_fd, &ch, 1) != 1)
+    stop ();
+}
+
+static speed_t
+get_termios_speed (int speed)
+{
+  switch (speed)
+    {
+    case 2400: return B2400;
+    case 4800: return B4800;
+    case 9600: return B9600;
+    case 19200: return B19200;
+    case 38400: return B38400;
+#ifdef B57600
+    case 57600: return B57600;
+#endif
+#ifdef B115200      
+    case 115200: return B115200;
+#endif
+    }
+
+  return B0;
+}
+
+/* Initialize a serial device. In the grub shell, PORT is unused.  */
+int
+serial_init (unsigned short port, unsigned int speed,
+	     int word_len, int parity, int stop_bit_len)
+{
+  struct termios termios;
+  speed_t termios_speed;
+  
+  /* Check if the file name is specified.  */
+  if (! serial_device)
+    return 0;
+
+  /* Open the device file.  */
+  serial_fd = open (serial_device, O_RDWR | O_NOCTTY | O_NDELAY | O_SYNC);
+  if (serial_fd < 0)
+    return 0;
+
+  /* Get the termios parameters.  */
+  if (tcgetattr (serial_fd, &termios))
+    goto fail;
+
+  /* Raw mode.  */
+  cfmakeraw (&termios);
+
+  /* Set the speed.  */
+  termios_speed = get_termios_speed (speed);
+  if (termios_speed == B0)
+    goto fail;
+  
+  cfsetispeed (&termios, termios_speed);
+  cfsetospeed (&termios, termios_speed);
+
+  /* Set the word length.  */
+  termios.c_cflag &= ~CSIZE;
+  switch (word_len)
+    {
+    case UART_5BITS_WORD:
+      termios.c_cflag |= CS5;
+      break;
+    case UART_6BITS_WORD:
+      termios.c_cflag |= CS6;
+      break;
+    case UART_7BITS_WORD:
+      termios.c_cflag |= CS7;
+      break;
+    case UART_8BITS_WORD:
+      termios.c_cflag |= CS8;
+      break;
+    default:
+      goto fail;
+    }
+
+  /* Set the parity.  */
+  switch (parity)
+    {
+    case UART_NO_PARITY:
+      termios.c_cflag &= ~PARENB;
+      break;
+    case UART_ODD_PARITY:
+      termios.c_cflag |= PARENB;
+      termios.c_cflag |= PARODD;
+      break;
+    case UART_EVEN_PARITY:
+      termios.c_cflag |= PARENB;
+      termios.c_cflag &= ~PARODD;
+      break;
+    default:
+      goto fail;
+    }
+
+  /* Set the length of stop bit.  */
+  switch (stop_bit_len)
+    {
+    case UART_1_STOP_BIT:
+      termios.c_cflag &= ~CSTOPB;
+      break;
+    case UART_2_STOP_BITS:
+      termios.c_cflag |= CSTOPB;
+      break;
+    default:
+      goto fail;
+    }
+
+  /* Set the parameters.  */
+  if (tcsetattr (serial_fd, TCSANOW, &termios))
+    goto fail;
+  
+  return 1;
+
+ fail:
+  close (serial_fd);
+  serial_fd = -1;
+  return 0;
+}
+
+/* Set the file name of a serial device (or a pty device). This is a
+   function specific to the grub shell.  */
+void
+set_serial_device (const char *device)
+{
+  if (serial_device)
+    free (serial_device);
+  
+  serial_device = strdup (device);
 }

@@ -1,3 +1,31 @@
+2000-08-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* grub/main.c (main): Move the version number inside the
+	parentheses, since the grub shell is merely one of the programs
+	included in GNU GRUB.
+	
+2000-08-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Add a serial device emulation into the grub shell.
+	
+	* grub/asmstub.c: Include sys/time.h and termios.h.
+	(serial_fd): New variable.
+	(serial_device): Likewise.
+	(serial_getkey): New function.
+	(serial_checkkey): Likewise.
+	(serial_putchar): Likewise.
+	(get_termios_speed): Likewise.
+	(serial_init): Likewise.
+	(set_serial_device): Likewise.
+	(grub_stage2): Restore SERIAL_DEVICE and SERIAL_FD, if they were
+	allocated.
+	* stage2/serial.h [GRUB_UTIL] (set_serial_device): Declared.
+	
+2000-08-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S (codestart) [SUPPORT_DISKLESS]: Don't reset a
+	disk system. That is not only uncessary but also harmful.
+	
 2000-08-12  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Add a serial device driver (but only the driver).

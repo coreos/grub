@@ -110,10 +110,10 @@ codestart:
 #ifndef SUPPORT_DISKLESS
 	/* save boot drive reference */
 	ADDR32	movb	%dl, EXT_C(boot_drive)
-#endif
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
+#endif
 
 	/* transition to protected mode */
 	DATA32	call EXT_C(real_to_prot)

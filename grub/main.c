@@ -148,7 +148,7 @@ main (int argc, char **argv)
 	  break;
 
 	case OPT_VERSION:
-	  printf ("GNU GRUB " VERSION "\n");
+	  printf ("grub (GNU GRUB " VERSION ")\n");
 	  exit (0);
 	  break;
 
