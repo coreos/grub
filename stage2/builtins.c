@@ -152,7 +152,7 @@ static struct builtin builtin_chainloader =
   "chainloader",
   chainloader_func,
   BUILTIN_CMDLINE,
-  "chainloader file",
+  "chainloader FILE",
   "Load FILE as a chain-loader."
 };
 
@@ -186,7 +186,7 @@ static struct builtin builtin_color =
   "color",
   color_func,
   BUILTIN_CMDLINE | BUILTIN_MENU,
-  "color normal [highlight]",
+  "color NORMAL [HIGHLIGHT]",
   "Change the menu colors. The color NORMAL is used for the normal"
   " line in the menu, and the color HIGHLIGHT is used to highlight the"
   " line where the cursor points to. If you omit HIGHLIGHT, then the"
@@ -242,7 +242,7 @@ static struct builtin builtin_default =
   default_func,
   BUILTIN_MENU,
 #if 0
-  "default num",
+  "default NUM",
   "Set the default entry to entry number NUM (if not specified, it is"
   " 0, the first entry)."
 #endif
@@ -317,7 +317,7 @@ static struct builtin builtin_fallback =
   fallback_func,
   BUILTIN_MENU,
 #if 0
-  "fallback num",
+  "fallback NUM",
   "Go into unattended boot mode: if the default boot entry has any"
   " errors, instead of waiting for the user to do anything, it"
   " immediately starts over using the NUM entry (same numbering as the"
@@ -399,7 +399,7 @@ static struct builtin builtin_geometry =
   "geometry",
   geometry_func,
   BUILTIN_CMDLINE,
-  "geometry drive",
+  "geometry DRIVE",
   "Print the information for the drive DRIVE."
 };
 
@@ -511,7 +511,7 @@ static struct builtin builtin_help =
   "help",
   help_func,
   BUILTIN_CMDLINE,
-  "help [pattern ...]",
+  "help [PATTERN ...]",
   "Display helpful information about builtin commands."
 };
 	  
@@ -536,7 +536,7 @@ static struct builtin builtin_hide =
   "hide",
   hide_func,
   BUILTIN_CMDLINE | BUILTIN_MENU,
-  "hide drive",
+  "hide DRIVE",
   "Hide the drive DRIVE by adding 0x10 into the partition type."
 };
 
@@ -590,7 +590,7 @@ static struct builtin builtin_initrd =
   "initrd",
   initrd_func,
   BUILTIN_CMDLINE,
-  "initrd file [arg ...]",
+  "initrd FILE [ARG ...]",
   "Load an initial ramdisk FILE for a Linux format boot image and set the"
   " appropriate parameters in the Linux setup area in memory."
 };
@@ -847,7 +847,7 @@ static struct builtin builtin_install =
   "install",
   install_func,
   BUILTIN_CMDLINE,
-  "install stage1 [d] device stage2 addr [p] [config_file]",
+  "install STAGE1 [d] DEVICE STAGE2 ADDR [p] [CONFIG_FILE]",
   "Install STAGE1 into DEVICE, and install a blocklist for loading STAGE2"
   " as a Stage 2. If the option `d' is present, the Stage 1 will always"
   " look for the actual disk STAGE2 is installed on, rather than using"
@@ -890,7 +890,7 @@ static struct builtin builtin_kernel =
   "kernel",
   kernel_func,
   BUILTIN_CMDLINE,
-  "kernel file [arg ...]",
+  "kernel FILE [ARG ...]",
   "Attempt to load the primary boot image (Multiboot a.out or ELF,"
   " Linux zImage or bzImage, FreeBSD a.out, or NetBSD a.out) from"
   " FILE. This command ignores the rest of the contents of the line,"
@@ -961,7 +961,7 @@ static struct builtin builtin_module =
   "module",
   module_func,
   BUILTIN_CMDLINE,
-  "module file [arg ...]",
+  "module FILE [ARG ...]",
   "Load a boot module FILE for a Multiboot format boot image (no"
   " interpretation of the file contents are made, so that user of this"
   " command must know what the kernel in question works with). The"
@@ -994,7 +994,7 @@ static struct builtin builtin_modulenounzip =
   "modulenounzip",
   modulenounzip_func,
   BUILTIN_CMDLINE,
-  "modulenounzip file [arg ...]",
+  "modulenounzip FILE [ARG ...]",
   "Exactly like `module=', except that automatic decompression is"
   " disabled."
 };
@@ -1023,7 +1023,7 @@ static struct builtin builtin_password =
   password_func,
   BUILTIN_MENU,
 #if 0
-  "password passwd file",
+  "password PASSWD FILE",
   "Disable all interactive editing control (menu entry editor and"
   " command line). If the password PASSWD is entered, it loads the"
   " FILE as a new config file and restarts the GRUB Stage 2."
@@ -1047,7 +1047,7 @@ static struct builtin builtin_pause =
   "pause",
   pause_func,
   BUILTIN_CMDLINE,
-  "pause [message ...]",
+  "pause [MESSAGE ...]",
   "Print the MESSAGE, then wait until a key is pressed. Note that"
   " placing <^G> (ASCII code 7) in the message will cause the speaker"
   " to emit the standard beep sound, which is useful when prompting"
@@ -1095,7 +1095,7 @@ static struct builtin builtin_read =
   "read",
   read_func,
   BUILTIN_CMDLINE,
-  "read addr",
+  "read ADDR",
   "Read a 32-bit unsigned value from memory at address ADDR and"
   " displays it in hex format."
 };
@@ -1139,7 +1139,7 @@ static struct builtin builtin_root =
   "root",
   root_func,
   BUILTIN_CMDLINE,
-  "root device [hdbias]",
+  "root DEVICE [HDBIAS]",
   "Set the current \"root partition\" to the device DEVICE, then"
   " attempt to mount it to get the partition size (for passing the"
   " partition descriptor in `ES:ESI', used by some chain-loaded"
@@ -1258,7 +1258,7 @@ static struct builtin builtin_testload =
   "testload",
   testload_func,
   BUILTIN_CMDLINE,
-  "testload file",
+  "testload FILE",
   "Read the entire contents of FILE in several different ways and"
   " compares them, to test the filesystem code. The output is somewhat"
   " cryptic, but if no errors are reported and the final `i=X,"
@@ -1285,7 +1285,7 @@ static struct builtin builtin_timeout =
   timeout_func,
   BUILTIN_MENU,
 #if 0
-  "timeout sec",
+  "timeout SEC",
   "Set a timeout, in SEC seconds, before automatically booting the"
   " default entry (normally the first entry defined)."
 #endif
@@ -1296,7 +1296,7 @@ static struct builtin builtin_timeout =
 static int
 title_func (char *arg, int flags)
 {
-  /* This function is not actually at least currently.  */
+  /* This function is not actually used at least currently.  */
   return 0;
 }
 
@@ -1306,7 +1306,7 @@ static struct builtin builtin_title =
   title_func,
   BUILTIN_TITLE,
 #if 0
-  "title name [...]",
+  "title [NAME ...]",
   "Start a new boot entry, and set its name to the contents of the"
   " rest of the line, starting with the first non-space character."
 #endif

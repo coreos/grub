@@ -45,7 +45,7 @@ skip_to (int after_equal, char *cmdline)
   return cmdline;
 }
 
-
+/* Print a helpful message for the command-line interface.  */
 void
 print_cmdline_message (void)
 {
@@ -73,11 +73,16 @@ find_command (char *command)
   /* Seek out the builtin whose command name is COMMAND.  */
   for (builtin = builtin_table; *builtin != 0; builtin++)
     {
-      if (grub_strcmp (command, (*builtin)->name) == 0)
+      int ret = grub_strcmp (command, (*builtin)->name);
+      
+      if (ret == 0)
 	{
+	  /* Find the builtin for COMMAND.  */
 	  *ptr = c;
 	  return *builtin;
 	}
+      else if (ret < 0)
+	break;
     }
   
   /* Cannot find COMMAND.  */
@@ -86,6 +91,7 @@ find_command (char *command)
   return 0;
 }
 
+/* Initialize the data for the command-line.  */
 static void
 init_cmdline (void)
 {
@@ -100,9 +106,12 @@ init_cmdline (void)
   if (mbi.mmap_length)
     mbi.flags |= MB_INFO_MEM_MAP;
 
+  /* Initialize the data for the builtin commands.  */
   init_builtins ();
 }
 
+/* Enter the command-line interface. HEAP is used for the command-line
+   buffer. Return only if get_cmdline returns non-zero (ESC is pushed).  */
 void
 enter_cmdline (char *heap)
 {
@@ -123,21 +132,27 @@ enter_cmdline (char *heap)
       if (get_cmdline (PACKAGE "> ", heap, 2048, 0, 1))
 	return;
 
+      /* Find a builtin.  */
       builtin = find_command (heap);
       if (! builtin)
 	continue;
 
+      /* If BUILTIN cannot be run in the command-line, skip it.  */
       if (! (builtin->flags & BUILTIN_CMDLINE))
 	{
 	  errnum = ERR_UNRECOGNIZED;
 	  continue;
 	}
 
+      /* Run BUILTIN->FUNC.  */
       arg = skip_to (1, heap);
       (builtin->func) (arg, BUILTIN_CMDLINE);
     }
 }
 
+/* Run an entry from the script SCRIPT. HEAP is used for the
+   command-line buffer. If an error occurs, return non-zero, otherwise
+   return zero.  */
 int
 run_script (char *script, char *heap)
 {
@@ -156,6 +171,8 @@ run_script (char *script, char *heap)
       
       if (errnum)
 	{
+	  /* If FALLBACK_ENTRY does not have any meaningful value, do
+	     not wait for the input.  */
 	  if (fallback_entry < 0)
 	    return 1;
 	  
@@ -164,6 +181,7 @@ run_script (char *script, char *heap)
 	  return 1;
 	}
 
+      /* Copy the first string in CUR_ENTRY to HEAP.  */
       old_entry = cur_entry;
       while (*cur_entry++)
 	;
@@ -173,22 +191,29 @@ run_script (char *script, char *heap)
 
       if (! *heap)
 	{
+	  /* If there is no more command in SCRIPT...  */
+
+	  /* If any kernel is not loaded, just exit successfully.  */
 	  if (kernel_type == KERNEL_TYPE_NONE)
 	    return 0;
 
+	  /* Otherwise, the command boot is run implicitly.  */
 	  grub_memmove (heap, "boot", 5);
 	}
-      
+
+      /* Find a builtin.  */
       builtin = find_command (heap);
       if (! builtin)
 	continue;
 
+      /* If BUILTIN cannot be run in the command-line, skip it.  */
       if (! (builtin->flags & BUILTIN_CMDLINE))
 	{
 	  errnum = ERR_UNRECOGNIZED;
 	  continue;
 	}
 
+      /* Run BUILTIN->FUNC.  */
       arg = skip_to (1, heap);
       (builtin->func) (arg, BUILTIN_CMDLINE);
     }

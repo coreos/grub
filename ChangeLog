@@ -1,3 +1,25 @@
+1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/cmdline.c (find_command): If COMMAND is less than
+	(*BUILTIN)->NAME in dictionary order, break the loop.
+	* stage2/builtins.c (builtin_chainloader): Capitalize the
+	variable name in the short doc.
+	(builtin_color): Likewise.
+	(builtin_geometry): Likewise.
+	(builtin_help): Likewise.
+	(builtin_hide): Likewise.
+	(builtin_initrd): Likewise.
+	(builtin_install): Likewise.
+	(builtin_kernel): Likewise.
+	(builtin_module): Likewise.
+	(builtin_modulenounzip): Likewise.
+	(builtin_pause): Likewise.
+	(builtin_read): Likewise.
+	(builtin_root): Likewise.
+	(builtin_testload): Likewise.
+	(builtin_unhide): Likewise.
+	(builtin_uppermem): Likewise.
+	
 1999-09-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The internal of the command handling is heavily modified, and
