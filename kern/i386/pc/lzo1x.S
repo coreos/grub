@@ -1,7 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 1996-2002 Markus Franz Xaver Johannes Oberhumer
- *  Copyright (C) 2003  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

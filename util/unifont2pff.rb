@@ -1,6 +1,6 @@
 #! /usr/bin/ruby -w
 #
-# Copyright (C) 2003  Yoshinori K. Okuji <okuji@enbug.org>
+# Copyright (C) 2003  Free Software Foundation, Inc.
 #
 # This unifont2pff.rb is free software; the author
 # gives unlimited permission to copy and/or distribute it,

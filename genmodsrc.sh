@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+# Copyright (C) 2002  Free Software Foundation, Inc.
 #
 # This genmodsrc.sh is free software; the author
 # gives unlimited permission to copy and/or distribute it,

@@ -1,9 +1,7 @@
 /* misc.c - definitions of misc functions */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
- *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
- *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
+ *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

@@ -1,7 +1,7 @@
 /* pupa-mkimage.c - make a bootable image */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
