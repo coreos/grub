@@ -1,3 +1,9 @@
+2000-09-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Alessandro Rubini:
+	* configure.in (CPPFLAGS): Added -malign-jumps=1,
+	-malign-loops=1 and -malign-functions=1.
+	
 2000-09-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Hal Snyder <hal@vailsys.com>:

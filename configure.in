@@ -103,6 +103,9 @@ AC_CACHE_CHECK([whether -Wundef works], undef_flag, [
   CPPFLAGS=$saved_CPPFLAGS
 ])
 
+# Force no alignment to save space.
+CPPFLAGS="$CPPFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
+
 if test "x$undef_flag" = xyes; then
   CPPFLAGS="$CPPFLAGS -Wundef"
 fi
