@@ -72,47 +72,6 @@ RUBY = @RUBY@
 RMKFILES = $(addprefix conf/,i386-pc.rmk powerpc-ieee1275.rmk)
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
-COMMON_DISTFILES = AUTHORS COPYING ChangeLog INSTALL NEWS README \
-	THANKS TODO Makefile.in aclocal.m4 autogen.sh config.guess \
-	config.h.in config.sub configure configure.ac gencmdlist.sh \
-	genkernsyms.sh genmk.rb genmodsrc.sh gensymlist.sh install-sh \
-	mkinstalldirs stamp-h.in
-
-BOOT_DISTFILES = $(addprefix boot/i386/pc/,boot.S diskboot.S)
-
-CONF_DISTFILES = $(RMKFILES) $(MKFILES)
-
-DISK_DISTFILES = $(addprefix disk/i386/pc/,biosdisk.c partition.c)
-
-FS_DISTFILES = $(addprefix fs/,fat.c)
-
-INCLUDE_DISTFILES = $(addprefix include/grub/,boot.h device.h disk.h \
-	  dl.h elf.h err.h file.h fs.h kernel.h loader.h misc.h mm.h \
-	  net.h rescue.h symbol.h term.h types.h) \
-	$(addprefix include/grub/util/,misc.h resolve.h) \
-	include/grub/i386/types.h \
-	$(addprefix include/grub/i386/pc/,biosdisk.h boot.h \
-	  console.h init.h kernel.h loader.h memory.h partition.h) \
-	$(addprefix include/grub/i386/pc/util/,biosdisk.h)
-
-KERN_DISTFILES = $(addprefix kern/,device.c disk.c dl.c err.c file.c \
-	  fs.c loader.c main.c misc.c mm.c rescue.c term.c) \
-	kern/i386/dl.c \
-	$(addprefix kern/i386/pc/,init.c startup.S)
-
-LOADER_DISTFILES = $(addprefix loader/i386/pc/,chainloader.c)
-
-TERM_DISTFILES = $(addprefix term/i386/pc/,console.c)
-
-UTIL_DISTFILES = $(addprefix util/,genmoddep.c misc.c resolve.c) \
-	$(addprefix util/i386/pc/,biosdisk.c grub-mkimage.c \
-	  grub-setup.c)
-
-DISTFILES = $(COMMON_DISTFILES) $(BOOT_DISTFILES) $(CONF_DISTFILES) \
-	$(DISK_DISTFILES) $(FS_DISTFILES) $(INCLUDE_DISTFILES) \
-	$(KERN_DISTFILES) $(LOADER_DISTFILES) $(TERM_DISTFILES) \
-	$(UTIL_DISTFILES)
-
 DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \
 	$(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
@@ -168,7 +127,8 @@ install-strip:
 	$(MAKE) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" install
 
 uninstall:
-	@list='$(pkgdata_IMAGES) $(pkgdata_MODULES)'; for file in $$list; do \
+	@list='$(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_DATA)'; \
+	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
@@ -200,10 +160,13 @@ dvi:
 
 distdir=$(PACKAGE_TARNAME)-$(PACKAGE_VERSION)
 
-distdir: $(DISTFILES)
+DISTLIST: gendistlist.sh
+	sh $(srcdir)/gendistlist.sh > $(srcdir)/DISTLIST
+
+distdir: DISTLIST
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 	$(mkinstalldirs) $(distdir)
-	for i in $(DISTFILES); do \
+	for i in `cat $(srcdir)/DISTLIST`; do \
 	  dir=`echo "$$i" | sed 's:/[^/]*$$::'`; \
 	  if test -d $(srcdir)/$$dir; then \
 	    $(mkinstalldirs) $(distdir)/$$dir; \

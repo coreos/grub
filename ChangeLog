@@ -1,3 +1,24 @@
+2005-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: New file.
+	* gendistlist.sh: Likewise.
+	
+	* Makefile.in (COMMON_DISTFILES): Removed.
+	(BOOT_DISTFILES): Likewise.
+	(CONF_DISTFILES): Likewise.
+	(DISK_DISTFILES): Likewise.
+	(FS_DISTFILES): Likewise.
+	(INCLUDE_DISTFILES): Likewise.
+	(KERN_DISTFILES): Likewise.
+	(LOADER_DISTFILES): Likewise.
+	(TERM_DISTFILES): Likewise.
+	(UTIL_DISTFILES): Likewise.
+	(DISTFILES): Likewise.
+	(uninstall): Uninstall files in $(pkgdata_DATA).
+	(DISTLIST): New target.
+	(distdir): Use the contents of the file DISTLIST to get a list of
+	distributed files.
+
 2005-03-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* fs/fat.c (grub_fat_mount): Ignore the 3rd bit of a media
