@@ -43,6 +43,7 @@ int grub_stage2 (void);
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
+# include <linux/major.h>	/* FLOPPY_MAJOR */
 # if (__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */
@@ -526,8 +527,12 @@ check_device (const char *device)
 
     if (fstat (fileno (fp), &st))
       return 0;
-    
-    if (S_ISBLK (st.st_mode) && ioctl (fileno (fp), HDIO_GETGEO, &hdg))
+
+    /* If it is a block device and isn't a floppy, check if HDIO_GETGEO
+       succeeds.  */
+    if (S_ISBLK (st.st_mode)
+	&& MAJOR (st.st_rdev) != FLOPPY_MAJOR
+	&& ioctl (fileno (fp), HDIO_GETGEO, &hdg))
       return 0;
   }
 #endif /* __linux__ */

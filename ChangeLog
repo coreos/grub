@@ -1,3 +1,13 @@
+2000-02-24  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c [!STAGE1_5] (print_fsys_type): Mask
+	CURRENT_SLICE with 0xFF when printing the partition type.
+
+	* grub/asmstub.c [__linux__]: Include <linux/major.h> for the
+	definition FLOPPY_MAJOR.
+	(check_device) [__linux__]: Skip the HDIO_GETGEO ioctl if the
+	major number of ST.ST_RDEV is FLOPPY_MAJOR.
+	
 2000-02-21  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/disk_io.c (check_BSD_parts) [!STAGE1_5]: Use the term

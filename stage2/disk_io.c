@@ -1002,7 +1002,7 @@ print_fsys_type (void)
       if (current_partition == 0xFFFFFF)
 	printf ("using whole disk\n");
       else
-	printf ("partition type 0x%x\n", current_slice);
+	printf ("partition type 0x%x\n", current_slice & 0xFF);
     }
 }
 #endif /* STAGE1_5 */
