@@ -418,6 +418,12 @@ chainloader_func (char *arg, int flags)
     {
       grub_close ();
       kernel_type = KERNEL_TYPE_NONE;
+
+      /* This below happens, if a file whose size is less than 512 bytes
+	 is loaded.  */
+      if (errnum == ERR_NONE)
+	errnum = ERR_EXEC_FORMAT;
+      
       return 1;
     }
 

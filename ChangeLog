@@ -1,3 +1,9 @@
+2000-12-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (chainloader_func): Set ERRNUM to
+	ERR_EXEC_FORMAT, when ERRNUM is ERR_NONE, even if grub_read
+	fails in reading one sector.
+	
 2000-12-14  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/prog-ref.texi (Partition types): Rewrite the footnotes.
