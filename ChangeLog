@@ -1,3 +1,14 @@
+2005-01-03  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/cmain.c (grub_ieee1275_realmode): New
+	variable.
+	(find_options): New function.
+	(cmain): Call find_options.
+	* include/grub/powerpc/ieee1275/ieee1275.h
+	(grub_ieee1275_realmode): New extern variable.
+	* kern/powerpc/ieee1275/openfw.c (grub_claimmap): Only call
+	grub_map if grub_ieee1275_realmode is false.
+
 2004-12-29  Marco Gerards  <metgerards@student.han.nl>
 
 	* normal/cmdline.c (grub_cmdline_get): Redone logic so no empty

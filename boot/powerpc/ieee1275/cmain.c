@@ -1,7 +1,7 @@
 /* cmain.c - Startup code for the PowerPC.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,8 +37,20 @@ struct module_info
 intptr_t (*grub_ieee1275_entry_fn) (void *);
 
 grub_uint32_t grub_ieee1275_flags;
+int grub_ieee1275_realmode;
 
 
+
+static void
+find_options (void)
+{
+  grub_ieee1275_phandle_t options;
+
+  grub_ieee1275_finddevice ("/options", &options);
+  grub_ieee1275_get_property (options, "real-mode?", &grub_ieee1275_realmode,
+			      sizeof (grub_ieee1275_realmode), 0);
+}
+
 /* Setup the argument vector and pass control over to the main
    function.  */
 void
@@ -71,6 +83,8 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
       /* Assume we were entered from Open Firmware.  */
       grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r5;
     }
+
+  find_options ();
 
   /* If any argument was passed to the kernel (us), they are
      put in the bootargs property of /chosen.  The string can

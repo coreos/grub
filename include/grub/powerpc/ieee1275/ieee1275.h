@@ -1,7 +1,7 @@
 /* ieee1275.h - Access the Open Firmware client interface.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ typedef intptr_t grub_ieee1275_phandle_t;
 
 extern intptr_t (*grub_ieee1275_entry_fn) (void *);
 extern grub_uint32_t grub_ieee1275_flags;
+extern int grub_ieee1275_realmode;
 
 /* Old World firmware fails seek when "dev:0" is opened.  */
 #define GRUB_IEEE1275_NO_PARTITION_0 0x1

@@ -1,7 +1,7 @@
 /*  openfw.c -- Open firmware support funtions.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -189,10 +189,13 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
 {
   if (grub_ieee1275_claim (addr, size, 0, 0))
     return -1;
-  if (grub_map (addr, addr, size, 0x00))
+
+  if ((! grub_ieee1275_realmode) && grub_map (addr, addr, size, 0x00))
     {
+      grub_printf ("map failed: address 0x%x, size 0x%x\n", addr, size);
       grub_ieee1275_release (addr, size);
       return -1;
     }
+
   return 0;
 }
