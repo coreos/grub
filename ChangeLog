@@ -1,3 +1,11 @@
+2000-05-29  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* util/grub-install.in: Fix a typo that prevented error messages
+	from appearing.
+	Copy and remove files individually and exit with an error as
+	soon as it fails.
+	Show $log_file if --debug was given on the command line.
+
 2000-04-19  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage2/cmdline.c (enter_cmdline): Don't give errors on empty

@@ -240,7 +240,7 @@ grubdir_device=`df ${grubdir} | grep /dev/ \
     | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
 if test "x$grubdir_device" != "x$root_device"; then
     # For now, cannot deal with this situation.
-    cat <<EOF 1&>2
+    cat <<EOF 1>&2
 You must set the root directory by the option --root-directory, because
 $grubdir does not exist in the root device $root_device.
 EOF
@@ -248,9 +248,13 @@ EOF
 fi
 
 # Copy the GRUB images to the GRUB directory.
-rm -f ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5
-cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 \
-    ${grubdir} || exit 1
+for file in ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5; do
+    rm -f $file || exit 1
+done
+for file in \
+    ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5; do
+    cp -f $file ${grubdir} || exit 1
+done
 
 # Create a safe temporary file.
 test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
@@ -262,7 +266,7 @@ setup $force_lba $install_drive
 quit
 EOF
 
-if grep "Error: " $log_file >/dev/null; then
+if grep "Error: " $log_file >/dev/null || test $debug = yes; then
     cat $log_file 1>&2
     exit 1
 fi
