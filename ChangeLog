@@ -1,3 +1,65 @@
+2003-09-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	I forgot to check in these changes for a long time. This adds
+	incomplete support for VGA console, and this is still very
+	buggy. Also, a lot of consideration is required for I18N,
+	UNICODE, and VGA font issues. Therefore, assume that this is
+	such that "better than nothing".
+	
+	* font/manager.c: New file.
+	* include/pupa/font.h: Likewise.
+	* include/pupa/i386/pc/vga.h: Likewise.
+	* term/i386/pc/vga.c: Likewise.
+	* util/unifont2pff.rb: Likewise.
+
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Added machine/vga.h.
+	(pkgdata_MODULES): Added vga.mod and font.mod.
+	(vga_mod_SOURCES): New variables.
+	(vga_mod_CFLAGS): Likewise.
+	(font_mod_SOURCES): Likewise.
+	(font_mod_CFLAGS): Likewise.
+
+	* include/pupa/err.h (PUPA_ERR_BAD_FONT): New constant.
+
+	* include/pupa/term.h: Include pupa/err.h.
+	(struct pupa_term): Added init and fini. 
+	Changed the argument of putchar to pupa_uint32_t.
+
+	* include/pupa/i386/pc/console.h: Include pupa/symbol.h.
+	(pupa_console_real_putchar): New prototype.
+	(pupa_console_putchar): Removed.
+	(pupa_console_checkkey): Exported.
+	(pupa_console_getkey): Likewise.
+
+	* kern/misc.c (pupa_vsprintf): Add support for UNICODE
+	characters.
+
+	* kern/term.c (pupa_term_set_current): Rewritten.
+	(pupa_putchar): Likewise.
+	(pupa_putcode): New function.
+
+	* kern/i386/pc/startup.S (pupa_console_putchar): Renamed to ...
+	(pupa_console_real_putchar): ... this.
+	(pupa_vga_set_mode): New function.
+	(pupa_vga_get_font): Likewise.
+
+	* normal/command.c: Include pupa/term.h.
+	(terminal_command): New function.
+	(pupa_command_init): Register the command "terminal".
+
+	* normal/menu.c (DISP_LEFT): Changed to a UNICODE value.
+	(DISP_UP): Likewise.
+	(DISP_RIGHT): Likewise.
+	(DISP_DOWN): Likewise.
+	(DISP_HLINE): Likewise.
+	(DISP_VLINE): Likewise.
+	(DISP_UL): Likewise.
+	(DISP_UR): Likewise.
+	(DISP_LL): Likewise.
+	(DISP_LR): Likewise.
+
+	* term/i386/pc/console.c (pupa_console_putchar): New function.
+	
 2003-02-08  NIIBE Yutaka  <gniibe@m17n.org>
 
 	* util/resolve.c (pupa_util_resolve_dependencies): BUG

@@ -1090,7 +1090,7 @@ xsmap:
 
 	
 /*
- * void pupa_console_putchar (int c)
+ * void pupa_console_real_putchar (int c)
  *
  * Put the character C on the console. Because GRUB wants to write a
  * character with an attribute, this implementation is a bit tricky.
@@ -1103,7 +1103,7 @@ xsmap:
  * get the height of the screen, and the TELETYPE OUPUT BIOS call doesn't
  * support setting a background attribute.
  */
-FUNCTION(pupa_console_putchar)
+FUNCTION(pupa_console_real_putchar)
 	movl	%eax, %edx
 	pusha
 	movb	EXT_C(pupa_console_cur_color), %bl
@@ -1512,5 +1512,62 @@ FUNCTION(pupa_currticks)
 	shll	$16, %eax
 	movw	%dx, %ax
 
+	popl	%ebp
+	ret
+
+
+/*
+ * unsigned char pupa_vga_set_mode (unsigned char mode)
+ */
+FUNCTION(pupa_vga_set_mode)
+	pushl	%ebp
+	pushl	%ebx
+	movl	%eax, %ecx
+
+	call	prot_to_real
+	.code16
+	/* get current mode */
+	xorw	%bx, %bx
+	movb	$0x0f, %ah
+	int	$0x10
+	movb	%al, %dl
+
+	/* set the new mode */
+	movb	%cl, %al
+	xorb	%ah, %ah
+	int	$0x10
+
+	DATA32	call	real_to_prot
+	.code32
+
+	movb	%dl, %al
+	popl	%ebx
+	popl	%ebp
+	ret
+
+
+/*
+ * unsigned char *pupa_vga_get_font (void)
+ */
+FUNCTION(pupa_vga_get_font)
+	pushl	%ebp
+	pushl	%ebx
+
+	call	prot_to_real
+	.code16
+	movw	$0x1130, %ax
+	movb	$0x06, %bh
+	int	$0x10
+	movw	%es, %bx
+	movw	%bp, %dx
+	DATA32	call	real_to_prot
+	.code32
+
+	movzwl	%bx, %ecx
+	shll	$4, %ecx
+	movw	%dx, %ax
+	addl	%ecx, %eax
+
+	popl	%ebx
 	popl	%ebp
 	ret

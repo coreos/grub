@@ -223,7 +223,7 @@ kernel_img_HEADERS = boot.h device.h disk.h dl.h elf.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h rescue.h symbol.h \
 	term.h types.h machine/biosdisk.h machine/boot.h \
 	machine/console.h machine/init.h machine/memory.h \
-	machine/loader.h machine/partition.h
+	machine/loader.h machine/partition.h machine/vga.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
@@ -394,7 +394,8 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod hello.mod \
+	vga.mod font.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -585,6 +586,123 @@ normal_mod-normal_i386_setjmp.d: normal/i386/setjmp.S
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+# For hello.mod.
+hello_mod_SOURCES = hello/hello.c
+CLEANFILES += hello.mod mod-hello.o mod-hello.c pre-hello.o hello_mod-hello_hello.o def-hello.lst und-hello.lst
+MOSTLYCLEANFILES += hello_mod-hello_hello.d
+DEFSYMFILES += def-hello.lst
+UNDSYMFILES += und-hello.lst
+
+hello.mod: pre-hello.o mod-hello.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-hello.o: hello_mod-hello_hello.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-hello.o: mod-hello.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
+
+mod-hello.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'hello' $< > $@ || (rm -f $@; exit 1)
+
+def-hello.lst: pre-hello.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 hello/' > $@
+
+und-hello.lst: pre-hello.o
+	echo 'hello' > $@
+	$(NM) -u -P -p $< >> $@
+
+hello_mod-hello_hello.o: hello/hello.c
+	$(CC) -Ihello -I$(srcdir)/hello $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
+
+hello_mod-hello_hello.d: hello/hello.c
+	set -e; 	  $(CC) -Ihello -I$(srcdir)/hello $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -M $< 	  | sed 's,hello\.o[ :]*,hello_mod-hello_hello.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include hello_mod-hello_hello.d
+
+hello_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For vga.mod.
+vga_mod_SOURCES = term/i386/pc/vga.c
+CLEANFILES += vga.mod mod-vga.o mod-vga.c pre-vga.o vga_mod-term_i386_pc_vga.o def-vga.lst und-vga.lst
+MOSTLYCLEANFILES += vga_mod-term_i386_pc_vga.d
+DEFSYMFILES += def-vga.lst
+UNDSYMFILES += und-vga.lst
+
+vga.mod: pre-vga.o mod-vga.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-vga.o: vga_mod-term_i386_pc_vga.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-vga.o: mod-vga.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
+
+mod-vga.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vga' $< > $@ || (rm -f $@; exit 1)
+
+def-vga.lst: pre-vga.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vga/' > $@
+
+und-vga.lst: pre-vga.o
+	echo 'vga' > $@
+	$(NM) -u -P -p $< >> $@
+
+vga_mod-term_i386_pc_vga.o: term/i386/pc/vga.c
+	$(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
+
+vga_mod-term_i386_pc_vga.d: term/i386/pc/vga.c
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -M $< 	  | sed 's,vga\.o[ :]*,vga_mod-term_i386_pc_vga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vga_mod-term_i386_pc_vga.d
+
+vga_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For font.mod.
+font_mod_SOURCES = font/manager.c
+CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_manager.o def-font.lst und-font.lst
+MOSTLYCLEANFILES += font_mod-font_manager.d
+DEFSYMFILES += def-font.lst
+UNDSYMFILES += und-font.lst
+
+font.mod: pre-font.o mod-font.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-font.o: font_mod-font_manager.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-font.o: mod-font.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
+
+mod-font.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'font' $< > $@ || (rm -f $@; exit 1)
+
+def-font.lst: pre-font.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 font/' > $@
+
+und-font.lst: pre-font.o
+	echo 'font' > $@
+	$(NM) -u -P -p $< >> $@
+
+font_mod-font_manager.o: font/manager.c
+	$(CC) -Ifont -I$(srcdir)/font $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
+
+font_mod-font_manager.d: font/manager.c
+	set -e; 	  $(CC) -Ifont -I$(srcdir)/font $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -M $< 	  | sed 's,manager\.o[ :]*,font_mod-font_manager.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include font_mod-font_manager.d
+
+font_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

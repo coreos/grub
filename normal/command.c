@@ -21,6 +21,7 @@
 #include <pupa/misc.h>
 #include <pupa/mm.h>
 #include <pupa/err.h>
+#include <pupa/term.h>
 
 static pupa_command_t pupa_command_list;
 
@@ -164,6 +165,51 @@ rescue_command (int argc __attribute__ ((unused)),
   return 0;
 }
 
+static int
+terminal_command (int argc, char *argv[])
+{
+  pupa_term_t term = 0;
+  
+  auto int print_terminal (pupa_term_t);
+  auto int find_terminal (pupa_term_t);
+  
+  int print_terminal (pupa_term_t t)
+    {
+      pupa_printf (" %s", t->name);
+      return 0;
+    }
+
+  int find_terminal (pupa_term_t t)
+    {
+      if (pupa_strcmp (t->name, argv[0]) == 0)
+	{
+	  term = t;
+	  return 1;
+	}
+
+      return 0;
+    }
+  
+  if (argc == 0)
+    {
+      pupa_printf ("Available terminal(s):");
+      pupa_term_iterate (print_terminal);
+      pupa_putchar ('\n');
+      
+      pupa_printf ("Current terminal: %s\n", pupa_term_get_current ()->name);
+    }
+  else
+    {
+      pupa_term_iterate (find_terminal);
+      if (! term)
+	return pupa_error (PUPA_ERR_BAD_ARGUMENT, "no such terminal");
+
+      pupa_term_set_current (term);
+    }
+
+  return PUPA_ERR_NONE;
+}
+
 void
 pupa_command_init (void)
 {
@@ -173,4 +219,7 @@ pupa_command_init (void)
   pupa_register_command ("rescue", rescue_command, PUPA_COMMAND_FLAG_BOTH,
 			 "rescue",
 			 "Enter into the rescue mode.");
+  pupa_register_command ("terminal", terminal_command, PUPA_COMMAND_FLAG_BOTH,
+			 "terminal [TERM...]",
+			 "Select a terminal.");
 }

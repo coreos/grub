@@ -1,7 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002 Free Software Foundation, Inc.
- *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -58,10 +58,20 @@ pupa_term_iterate (int (*hook) (pupa_term_t term))
       break;
 }
 
-void
+pupa_err_t
 pupa_term_set_current (pupa_term_t term)
 {
+  if (pupa_cur_term && pupa_cur_term->fini)
+    if ((pupa_cur_term->fini) () != PUPA_ERR_NONE)
+      return pupa_errno;
+
+  if (term->init)
+    if ((term->init) () != PUPA_ERR_NONE)
+      return pupa_errno;
+  
   pupa_cur_term = term;
+  pupa_cls ();
+  return PUPA_ERR_NONE;
 }
 
 pupa_term_t
@@ -70,24 +80,89 @@ pupa_term_get_current (void)
   return pupa_cur_term;
 }
 
+/* Put a Unicode character.  */
 void
-pupa_putchar (int c)
+pupa_putcode (pupa_uint32_t code)
 {
-  if (c == '\t' && pupa_cur_term->getxy)
+  if (code == '\t' && pupa_cur_term->getxy)
     {
       int n;
-
+      
       n = 8 - ((pupa_getxy () >> 8) & 7);
       while (n--)
-	pupa_putchar (' ');
+	pupa_putcode (' ');
 
       return;
     }
   
-  (pupa_cur_term->putchar) (c);
+  (pupa_cur_term->putchar) (code);
   
-  if (c == '\n')
-    pupa_putchar ('\r');
+  if (code == '\n')
+    pupa_putcode ('\r');
+}
+
+/* Put a character. C is one byte of a UTF-8 stream.
+   This function gathers bytes until a valid Unicode character is found.  */
+void
+pupa_putchar (int c)
+{
+  static pupa_uint32_t code = 0;
+  static int count = 0;
+
+  if (count)
+    {
+      if ((c & 0xc0) != 0x80)
+	{
+	  /* invalid */
+	  code = '@';
+	  count = 0;
+	}
+      else
+	{
+	  code <<= 6;
+	  code |= (c & 0x3f);
+	  count--;
+	}
+    }
+  else
+    {
+      if ((c & 0x80) == 0x00)
+	code = c;
+      else if ((c & 0xe0) == 0xc0)
+	{
+	  count = 1;
+	  code = c & 0x1f;
+	}
+      else if ((c & 0xf0) == 0xe0)
+	{
+	  count = 2;
+	  code = c & 0x0f;
+	}
+      else if ((c & 0xf8) == 0xf0)
+	{
+	  count = 3;
+	  code = c & 0x07;
+	}
+      else if ((c & 0xfc) == 0xf8)
+	{
+	  count = 4;
+	  code = c & 0x03;
+	}
+      else if ((c & 0xfe) == 0xfc)
+	{
+	  count = 5;
+	  code = c & 0x01;
+	}
+      else
+	/* invalid */
+	code = '?';
+    }	
+
+  if (count)
+    /* Not finished yet.  */
+    return;
+
+  pupa_putcode (code);
 }
 
 int

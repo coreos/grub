@@ -36,12 +36,13 @@
 #ifndef ASM_FILE
 
 #include <pupa/types.h>
+#include <pupa/symbol.h>
 
 /* These are global to share code between C and asm.  */
 extern pupa_uint8_t pupa_console_cur_color;
-void pupa_console_putchar (int c);
-int pupa_console_checkkey (void);
-int pupa_console_getkey (void);
+void pupa_console_real_putchar (int c);
+int EXPORT_FUNC(pupa_console_checkkey) (void);
+int EXPORT_FUNC(pupa_console_getkey) (void);
 pupa_uint16_t pupa_console_getxy (void);
 void pupa_console_gotoxy (pupa_uint8_t x, pupa_uint8_t y);
 void pupa_console_cls (void);

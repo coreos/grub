@@ -328,10 +328,10 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 {
   char c;
   int count = 0;
-  auto void write_char (char ch);
+  auto void write_char (unsigned char ch);
   auto void write_str (const char *s);
   
-  void write_char (char ch)
+  void write_char (unsigned char ch)
     {
       if (str)
 	*str++ = ch;
@@ -375,7 +375,57 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 
 	    case 'c':
 	      n = va_arg (args, int);
-	      write_char (n);
+	      write_char (n & 0xff);
+	      break;
+
+	    case 'C':
+	      {
+		pupa_uint32_t code = va_arg (args, pupa_uint32_t);
+		int shift;
+		unsigned mask;
+		
+		if (code <= 0x7f)
+		  {
+		    shift = 0;
+		    mask = 0;
+		  }
+		else if (code <= 0x7ff)
+		  {
+		    shift = 6;
+		    mask = 0xc0;
+		  }
+		else if (code <= 0xffff)
+		  {
+		    shift = 12;
+		    mask = 0xe0;
+		  }
+		else if (code <= 0x1fffff)
+		  {
+		    shift = 18;
+		    mask = 0xf0;
+		  }
+		else if (code <= 0x3ffffff)
+		  {
+		    shift = 24;
+		    mask = 0xf8;
+		  }
+		else if (code <= 0x7fffffff)
+		  {
+		    shift = 30;
+		    mask = 0xfc;
+		  }
+		else
+		  {
+		    code = '?';
+		    shift = 0;
+		    mask = 0;
+		  }
+
+		write_char (mask | (code >> shift));
+		
+		for (shift -= 6; shift >= 0; shift -= 6)
+		  write_char (0x80 | (0x3f & (code >> shift)));
+	      }
 	      break;
 
 	    case 's':

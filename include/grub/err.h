@@ -46,6 +46,7 @@ typedef enum
     PUPA_ERR_UNKNOWN_OS,
     PUPA_ERR_BAD_OS,
     PUPA_ERR_NO_KERNEL,
+    PUPA_ERR_BAD_FONT,
     PUPA_ERR_NOT_IMPLEMENTED_YET,
   }
 pupa_err_t;

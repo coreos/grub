@@ -1,7 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2002 Free Software Foundation, Inc.
- *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #ifndef PUPA_TERM_HEADER
 #define PUPA_TERM_HEADER	1
 
+#include <pupa/err.h>
 #include <pupa/symbol.h>
 #include <pupa/types.h>
 
@@ -59,9 +60,15 @@ struct pupa_term
 {
   /* The terminal name.  */
   const char *name;
+
+  /* Initialize the terminal.  */
+  pupa_err_t (*init) (void);
+
+  /* Clean up the terminal.  */
+  pupa_err_t (*fini) (void);
   
-  /* Put a character.  */
-  void (*putchar) (int c);
+  /* Put a character. C is encoded in Unicode.  */
+  void (*putchar) (pupa_uint32_t c);
   
   /* Check if any input character is available.  */
   int (*checkkey) (void);
@@ -100,10 +107,11 @@ void EXPORT_FUNC(pupa_term_register) (pupa_term_t term);
 void EXPORT_FUNC(pupa_term_unregister) (pupa_term_t term);
 void EXPORT_FUNC(pupa_term_iterate) (int (*hook) (pupa_term_t term));
 
-void EXPORT_FUNC(pupa_term_set_current) (pupa_term_t term);
+pupa_err_t EXPORT_FUNC(pupa_term_set_current) (pupa_term_t term);
 pupa_term_t EXPORT_FUNC(pupa_term_get_current) (void);
 
 void EXPORT_FUNC(pupa_putchar) (int c);
+void EXPORT_FUNC(pupa_putcode) (pupa_uint32_t code);
 int EXPORT_FUNC(pupa_getkey) (void);
 int EXPORT_FUNC(pupa_checkkey) (void);
 pupa_uint16_t EXPORT_FUNC(pupa_getxy) (void);

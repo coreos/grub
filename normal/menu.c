@@ -23,15 +23,16 @@
 
 /* FIXME: These below are all runaround.  */
 
-#define DISP_UP		0x18
-#define DISP_DOWN	0x19
-#define DISP_RIGHT	0x1a
-#define DISP_HLINE	0xc4
-#define DISP_VLINE	0xb3
-#define DISP_UL		0xda
-#define DISP_UR		0xbf
-#define DISP_LL		0xc0
-#define DISP_LR		0xd9
+#define DISP_LEFT	0x2190
+#define DISP_UP		0x2191
+#define DISP_RIGHT	0x2192
+#define DISP_DOWN	0x2193
+#define DISP_HLINE	0x2501
+#define DISP_VLINE	0x2503
+#define DISP_UL		0x250F
+#define DISP_UR		0x2513
+#define DISP_LL		0x2517
+#define DISP_LR		0x251B
 
 static void
 draw_border (void)
@@ -41,10 +42,10 @@ draw_border (void)
   pupa_setcolorstate (PUPA_TERM_COLOR_NORMAL);
   
   pupa_gotoxy (1, 3);
-  pupa_putchar (DISP_UL);
+  pupa_putcode (DISP_UL);
   for (i = 0; i < 73; i++)
-    pupa_putchar (DISP_HLINE);
-  pupa_putchar (DISP_UR);
+    pupa_putcode (DISP_HLINE);
+  pupa_putcode (DISP_UR);
 
   i = 1;
   while (1)
@@ -54,17 +55,17 @@ draw_border (void)
       if (i > 12)
 	break;
 
-      pupa_putchar (DISP_VLINE);
+      pupa_putcode (DISP_VLINE);
       pupa_gotoxy (75, 3 + i);
-      pupa_putchar (DISP_VLINE);
+      pupa_putcode (DISP_VLINE);
 
       i++;
     }
 
-  pupa_putchar (DISP_LL);
+  pupa_putcode (DISP_LL);
   for (i = 0; i < 73; i++)
-    pupa_putchar (DISP_HLINE);
-  pupa_putchar (DISP_LR);
+    pupa_putcode (DISP_HLINE);
+  pupa_putcode (DISP_LR);
 
   pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
 }
@@ -73,8 +74,8 @@ static void
 print_message (int nested)
 {
   pupa_printf ("\n\
-      Use the %c and %c keys to select which entry is highlighted.\n",
-	       DISP_UP, DISP_DOWN);
+      Use the %C and %C keys to select which entry is highlighted.\n",
+	       (pupa_uint32_t) DISP_UP, (pupa_uint32_t) DISP_DOWN);
   pupa_printf ("\
       Press enter to boot the selected OS, \'e\' to edit the\n\
       commands before booting, or \'c\' for a command-line.");
@@ -113,7 +114,7 @@ print_entry (int y, int highlight, pupa_menu_entry_t entry)
       if (*title && x <= 72)
 	{
 	  if (x == 72)
-	    pupa_putchar (DISP_RIGHT);
+	    pupa_putcode (DISP_RIGHT);
 	  else
 	    pupa_putchar (*title++);
 	}
@@ -134,7 +135,7 @@ print_entries (pupa_menu_t menu, int first, int offset)
   pupa_gotoxy (77, 4);
 
   if (first)
-    pupa_putchar (DISP_UP);
+    pupa_putcode (DISP_UP);
   else
     pupa_putchar (' ');
 
@@ -150,7 +151,7 @@ print_entries (pupa_menu_t menu, int first, int offset)
   pupa_gotoxy (77, 4 + 12);
 
   if (e)
-    pupa_putchar (DISP_DOWN);
+    pupa_putcode (DISP_DOWN);
   else
     pupa_putchar (' ');
 

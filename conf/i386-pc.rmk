@@ -28,7 +28,7 @@ kernel_img_HEADERS = boot.h device.h disk.h dl.h elf.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h rescue.h symbol.h \
 	term.h types.h machine/biosdisk.h machine/boot.h \
 	machine/console.h machine/init.h machine/memory.h \
-	machine/loader.h machine/partition.h
+	machine/loader.h machine/partition.h machine/vga.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
@@ -61,7 +61,8 @@ pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
 genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod hello.mod
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod hello.mod \
+	vga.mod font.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -84,3 +85,11 @@ normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For vga.mod.
+vga_mod_SOURCES = term/i386/pc/vga.c
+vga_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For font.mod.
+font_mod_SOURCES = font/manager.c
+font_mod_CFLAGS = $(COMMON_CFLAGS)
