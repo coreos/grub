@@ -3690,7 +3690,7 @@ The password for anoncvs is empty. So the instruction is:
 @appendix Reporting bugs
 
 This is the guideline of how to report bugs. Take a look at this list
-below before you send e-mail to @email{bug-grub@@gnu.org}:
+below before you submit bugs:
 
 @enumerate
 @item
@@ -3743,8 +3743,13 @@ Reporting too many things is quite better than omitting an important
 thing.
 @end enumerate
 
-If you realize the guideline above, send e-mail to
-@email{bug-grub@@gnu.org}, and we will try to fix the bugs.
+If you realize the guideline above, submit a report to the
+@uref{http://savannah.gnu.org/bugs/?group_id=68, Bug Tracking System}.
+Alternatively, you can submit a report via electronic mail to
+@email{bug-grub@@gnu.org}, but we strongly recommend that you use the
+Bug Tracking System, because e-mail can be passed over easily.
+
+Once we get your report, we will try to fix the bugs.
 
 
 @node Future
