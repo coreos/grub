@@ -1,3 +1,12 @@
+2003-12-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/fsys_ext2fs.c (ext2_is_fast_symlink): New function.
+	(ext2fs_dir): Use ext2_is_fast_symlink to check if the current
+	inode is a fast or slow symlink. This change was required
+	because Linux now uses acl seriously (i.e. incompatibility).
+	Reported by Chris PeBenito <pebenito@gentoo.org> and Seemant
+	Kulleen <seemant@gentoo.org>
+
 2003-11-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* lib/device.c (read_device_map) (sho_warning): New internal
