@@ -89,7 +89,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  
 	  /* The node is found, stop iterating over the nodes.  */
 	  type = filetype;
-	  oldnode = currnode == rootnode ? 0 : currnode;
+	  oldnode = currnode;
 	  currnode = node;
 	  
 	  return 1;

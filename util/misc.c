@@ -206,7 +206,7 @@ grub_util_write_image (const char *img, size_t size, FILE *out)
 }
 
 void *
-grub_malloc (unsigned size)
+grub_malloc (grub_size_t size)
 {
   return xmalloc (size);
 }
@@ -218,7 +218,7 @@ grub_free (void *ptr)
 }
 
 void *
-grub_realloc (void *ptr, unsigned size)
+grub_realloc (void *ptr, grub_size_t size)
 {
   return xrealloc (ptr, size);
 }

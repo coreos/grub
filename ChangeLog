@@ -1,3 +1,23 @@
+2005-01-20  Marco Gerards  <metgerards@student.han.nl>
+
+	* include/grub/mm.h (grub_mm_init_region): Change the type of the
+	`unsigned' arguments to `grub_size_t'.
+	(grub_malloc): Likewise.
+	(grub_realloc): Likewise.
+	(grub_memalign): Likewise.
+	* kern/i386/dl.c (grub_arch_dl_check_header): Likewise.
+	* kern/powerpc/dl.c (grub_arch_dl_check_header): Likewise.
+	* util/misc.c (grub_malloc): Likewise.
+	(grub_realloc): Likewise.
+	* kern/mm.c (get_header_from_pointer): Change the casts to
+	`unsigned' into a cast to `grub_size_t'.
+
+	* fs/fshelp.c (grub_fshelp_find_file): The `oldnode' should always
+	point to `currnode' when `currnode' is changed.
+
+	* util/grub-emu.c (main): Initialize `progname'.  Reported by Nico
+	Schottelius <nico-linux@schottelius.org>.
+
 2005-01-09  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* util/powerpc/ieee1275/grub-mkimage.c: Include <string.h>.

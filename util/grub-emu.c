@@ -135,7 +135,9 @@ main (int argc, char *argv[])
       .dir = DEFAULT_DIRECTORY,
       .dev_map = DEFAULT_DEVICE_MAP
     };
-
+  
+  progname = "grub-emu";
+  
   argp_parse (&argp, argc, argv, 0, 0, &args);
 
   /* More sure there is a root device.  */

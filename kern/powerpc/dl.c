@@ -25,7 +25,7 @@
 
 /* Check if EHDR is a valid ELF header.  */
 int
-grub_arch_dl_check_header (void *ehdr, unsigned size)
+grub_arch_dl_check_header (void *ehdr, grub_size_t size)
 {
   Elf32_Ehdr *e = ehdr;
 

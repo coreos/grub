@@ -72,12 +72,12 @@ static grub_mm_region_t base;
 static void
 get_header_from_pointer (void *ptr, grub_mm_header_t *p, grub_mm_region_t *r)
 {
-  if ((unsigned) ptr & (GRUB_MM_ALIGN - 1))
+  if ((grub_addr_t) ptr & (GRUB_MM_ALIGN - 1))
     grub_fatal ("unaligned pointer %p", ptr);
 
   for (*r = base; *r; *r = (*r)->next)
-    if ((unsigned) ptr > (*r)->addr
-	&& (unsigned) ptr <= (*r)->addr + (*r)->size)
+    if ((grub_addr_t) ptr > (*r)->addr
+	&& (grub_addr_t) ptr <= (*r)->addr + (*r)->size)
       break;
 
   if (! *r)
