@@ -20,7 +20,7 @@
 #include "shared.h"
 
 static char *
-get_entry(char *list, int num, int nested)
+get_entry (char *list, int num, int nested)
 {
   int i;
 
@@ -38,16 +38,16 @@ get_entry(char *list, int num, int nested)
 
 
 static void
-print_entries(int y, int size, int first, char *menu_entries)
+print_entries (int y, int size, int first, char *menu_entries)
 {
   int i;
 
-  gotoxy(77, y+1);
+  gotoxy (77, y + 1);
 
   if (first)
-    putchar(DISP_UP);
+    putchar (DISP_UP);
   else
-    putchar(' ');
+    putchar (' ');
 
   menu_entries = get_entry (menu_entries, first, 0);
 
@@ -55,37 +55,37 @@ print_entries(int y, int size, int first, char *menu_entries)
     {
       int j = 0;
 
-      gotoxy(3, y+i);
+      gotoxy (3, y + i);
 
       while (*menu_entries)
 	{
 	  if (j < 71)
 	    {
-	      putchar(*menu_entries);
+	      putchar (*menu_entries);
 	      j++;
 	    }
 
 	  menu_entries++;
 	}
 
-      if (*(menu_entries-1))
+      if (*(menu_entries - 1))
 	menu_entries++;
 
       for (; j < 71; j++)
-	putchar(' ');
+	putchar (' ');
     }
 
-  gotoxy(77, y+size);
+  gotoxy (77, y + size);
 
   if (*menu_entries)
-    putchar(DISP_DOWN);
+    putchar (DISP_DOWN);
   else
-    putchar(' ');
+    putchar (' ');
 }
 
 
 static void
-print_border(int y, int size)
+print_border (int y, int size)
 {
   int i;
 
@@ -102,37 +102,37 @@ print_border(int y, int size)
     }
 #endif
   
-  gotoxy(1, y);
+  gotoxy (1, y);
 
-  putchar(DISP_UL);
+  putchar (DISP_UL);
   for (i = 0; i < 73; i++)
-    putchar(DISP_HORIZ);
-  putchar(DISP_UR);
+    putchar (DISP_HORIZ);
+  putchar (DISP_UR);
 
   i = 1;
 
   while (1)
     {
-      gotoxy(1, y+i);
+      gotoxy (1, y + i);
 
       if (i > size)
 	break;
 
-      putchar(DISP_VERT);
-      gotoxy(75, y+i);
-      putchar(DISP_VERT);
+      putchar (DISP_VERT);
+      gotoxy (75, y + i);
+      putchar (DISP_VERT);
 
       i++;
     }
 
-  putchar(DISP_LL);
+  putchar (DISP_LL);
   for (i = 0; i < 73; i++)
-    putchar(DISP_HORIZ);
-  putchar(DISP_LR);
+    putchar (DISP_HORIZ);
+  putchar (DISP_LR);
 }
 
 static void
-set_line(int y, int attr)
+set_line (int y, int attr)
 {
   int x;
 
@@ -165,18 +165,9 @@ set_line_highlight (int y)
 #endif
 }
 
-static int grub_timeout;
-
-
-typedef enum
-{
-  MENU_OK = 0,
-  MENU_ABORT
-} menu_t;
-
-static menu_t
-run_menu(char *menu_entries, char *config_entries, int num_entries,
-	 char *heap, int entryno)
+static void
+run_menu (char *menu_entries, char *config_entries, int num_entries,
+	  char *heap, int entryno)
 {
   int c, time1, time2 = -1, first_entry = 0;
   char *cur_entry;
@@ -188,38 +179,39 @@ run_menu(char *menu_entries, char *config_entries, int num_entries,
 restart:
   while (entryno > 11)
     {
-      first_entry++; entryno--;
+      first_entry++;
+      entryno--;
     }
 
-  init_page();
+  init_page ();
 #ifndef GRUB_UTIL
-  nocursor(); 
+  nocursor (); 
 #endif
 
-  print_border(3, 12);
+  print_border (3, 12);
 
-  printf("\n
+  printf ("\n
       Use the \x18 and \x19 keys for selecting which entry is highlighted.\n");
 
   if (password)
     {
-      printf("       Press enter to boot the selected OS or \'p\' to enter a
+      printf ("       Press enter to boot the selected OS or \'p\' to enter a
         password to unlock the next set of features.");
     }
   else
     {
       if (config_entries)
-	printf("       Press enter to boot the selected OS, \'e\' to edit the
+	printf ("       Press enter to boot the selected OS, \'e\' to edit the
         commands before booting, or \'c\' for a command-line.");
       else
-	printf(
+	printf (
 "      Press \'b\' to boot, \'e\' to edit the selected command in the
       boot sequence, \'c\' for a command-line, \'o\' to open a new line
       after (\'O\' for before) the selected line, \'d\' to remove the
       selected line, or escape to go back to the main menu.");
     }
 
-  print_entries(3, 12, first_entry, menu_entries);
+  print_entries (3, 12, first_entry, menu_entries);
 
   /* highlight initial line */
   set_line_highlight (4 + entryno);
@@ -242,58 +234,58 @@ restart:
 
 	  /* else not booting yet! */
 	  time2  = time1;
-	  gotoxy(3, 22);
-	  printf("The highlighted entry will be booted automatically in %d seconds.    ", grub_timeout);
-	  gotoxy(74, 4+entryno);
-	  grub_timeout --;
+	  gotoxy (3, 22);
+	  printf ("The highlighted entry will be booted automatically in %d seconds.    ", grub_timeout);
+	  gotoxy (74, 4 + entryno);
+	  grub_timeout--;
 	}
 
-      if (checkkey() != -1)
+      if (checkkey () != -1)
 	{
-	  c = getkey();
+	  c = getkey ();
 
 	  if (grub_timeout >= 0)
 	    {
-	      gotoxy(3, 22);
-	      printf("                                                                    ");
+	      gotoxy (3, 22);
+	      printf ("                                                                    ");
 	      grub_timeout = -1;
-	      fallback = -1;
-	      gotoxy(74, 4+entryno);
+	      fallback_entry = -1;
+	      gotoxy (74, 4 + entryno);
 	    }
 
-	  if ((c == KEY_UP) || (ASCII_CHAR(c) == 16))
+	  if ((c == KEY_UP) || (ASCII_CHAR (c) == 16))
 	    {
 	      if (entryno > 0)
 		{
 		  set_line_normal (4 + entryno);
-		  entryno --;
+		  entryno--;
 		  set_line_highlight (4 + entryno);
 		}
 	      else if (first_entry > 0)
 		{
-		  first_entry --;
-		  print_entries(3, 12, first_entry, menu_entries);
+		  first_entry--;
+		  print_entries (3, 12, first_entry, menu_entries);
 		  set_line_highlight (4);
 		}
 	    }
-	  if (((c == KEY_DOWN) || (ASCII_CHAR(c) == 14))
-	      && (first_entry+entryno+1) < num_entries)
+	  if (((c == KEY_DOWN) || (ASCII_CHAR (c) == 14))
+	      && (first_entry + entryno + 1) < num_entries)
 	    {
 	      if (entryno < 11)
 		{
 		  set_line_normal (4 + entryno);
-		  entryno ++;
+		  entryno++;
 		  set_line_highlight (4 + entryno);
 		}
-	      else if (num_entries > 12+first_entry)
+	      else if (num_entries > 12 + first_entry)
 		{
-		  first_entry ++;
+		  first_entry++;
 		  print_entries (3, 12, first_entry, menu_entries);
 		  set_line_highlight (15);
 		}
 	    }
 
-	  c = ASCII_CHAR(c);
+	  c = ASCII_CHAR (c);
 
 	  if (config_entries)
 	    {
@@ -313,12 +305,14 @@ restart:
 		      c = 'O';
 		    }
 
-		  cur_entry = get_entry(menu_entries, first_entry+entryno, 0);
+		  cur_entry = get_entry (menu_entries,
+					 first_entry + entryno,
+					 0);
 
 		  if (c == 'O')
 		    {
 		      memmove (cur_entry + 2, cur_entry,
-			       ((int)heap) - ((int)cur_entry));
+			       ((int) heap) - ((int) cur_entry));
 
 		      cur_entry[0] = ' ';
 		      cur_entry[1] = 0;
@@ -330,25 +324,27 @@ restart:
 		  else if (num_entries > 0)
 		    {
 		      char *ptr = get_entry(menu_entries,
-					    first_entry+entryno+1, 0);
-		      memmove (cur_entry, ptr, ((int)heap) - ((int)ptr));
-		      heap -= (((int)ptr) - ((int)cur_entry));
+					    first_entry + entryno + 1,
+					    0);
+		      
+		      memmove (cur_entry, ptr, ((int) heap) - ((int) ptr));
+		      heap -= (((int) ptr) - ((int) cur_entry));
 
 		      num_entries--;
 
 		      if (entryno >= num_entries)
 			entryno--;
-		      if (first_entry && num_entries < 12+first_entry)
+		      if (first_entry && num_entries < 12 + first_entry)
 			first_entry--;
 		    }
 
-		  print_entries(3, 12, first_entry, menu_entries);
+		  print_entries (3, 12, first_entry, menu_entries);
 		  set_line_highlight (4 + entryno);
 		}
 
 	      cur_entry = menu_entries;
 	      if (c == 27)
-		return MENU_OK;
+		return;
 	      if (c == 'b')
 		break;
 	    }
@@ -361,14 +357,14 @@ restart:
 		  char entered[32];
 		  char *pptr = password;
 
-		  gotoxy(1, 21);
+		  gotoxy (1, 21);
 		  
 		  /* Wipe out the previously entered password */
 		  memset (entered, 0, sizeof (entered));
-		  get_cmdline (" Password: ", NULL, entered, 31, '*');
+		  get_cmdline (" Password: ", entered, 31, '*', 0);
 
 		  while (! isspace (*pptr) && *pptr)
-		    pptr ++;
+		    pptr++;
 
 		  /* Make sure that PASSWORD is NUL-terminated.  */
 		  *pptr++ = 0;
@@ -377,13 +373,14 @@ restart:
 		    {
 		      char *new_file = config_file;
 		      while (isspace (*pptr))
-			pptr ++;
-		      while ((*(new_file ++) = *(pptr ++)) != 0);
-		      return MENU_OK;
+			pptr++;
+		      while ((*(new_file++) = *(pptr++)) != 0)
+			;
+		      return;
 		    }
 		  else
 		    {
-		      printf("Failed!\n      Press any key to continue...");
+		      printf ("Failed!\n      Press any key to continue...");
 		      getkey ();
 		      goto restart;
 		    }
@@ -399,15 +396,17 @@ restart:
 		  if (config_entries)
 		    {
 		      new_heap = heap;
-		      cur_entry = get_entry(config_entries,
-					    first_entry+entryno, 1);
+		      cur_entry = get_entry (config_entries,
+					     first_entry + entryno,
+					     1);
 		    }
 		  else
 		    {
 		      /* safe area! */
 		      new_heap = heap + NEW_HEAPSIZE + 1;
-		      cur_entry = get_entry(menu_entries,
-					    first_entry+entryno, 0);
+		      cur_entry = get_entry (menu_entries,
+					     first_entry + entryno,
+					     0);
 		    }
 
 		  do
@@ -422,11 +421,11 @@ restart:
 		  *(new_heap++) = 0;
 
 		  if (config_entries)
-		    run_menu(heap, NULL, num_entries, new_heap, 0);
+		    run_menu (heap, NULL, num_entries, new_heap, 0);
 		  else
 		    {
-		      cls();
-		      init_cmdline();
+		      cls ();
+		      print_cmdline_message ();
 
 		      new_heap = heap + NEW_HEAPSIZE + 1;
 
@@ -434,13 +433,14 @@ restart:
 		      saved_partition = install_partition;
 		      current_drive = 0xFF;
 
-		      if (! get_cmdline(PACKAGE " edit> ", commands, new_heap,
-					NEW_HEAPSIZE + 1, 0))
+		      if (! get_cmdline (PACKAGE " edit> ", new_heap,
+					 NEW_HEAPSIZE + 1, 0, 1))
 			{
 			  int j = 0;
 
 			  /* get length of new command */
-			  while (new_heap[j++]);
+			  while (new_heap[j++])
+			    ;
 
 			  if (j < 2)
 			    {
@@ -451,7 +451,7 @@ restart:
 
 			  /* align rest of commands properly */
 			  memmove (cur_entry + j, cur_entry + i,
-				   ((int)heap) - (((int)cur_entry) + i));
+				   ((int) heap) - (((int) cur_entry) + i));
 
 			  /* copy command to correct area */
 			  memmove (cur_entry, new_heap, j);
@@ -464,18 +464,16 @@ restart:
 		}
 	      if (c == 'c')
 		{
-		  /* Call the command-line interface, and if it aborts
-		     (by ``quit'' command), then return.  */
-		  if (enter_cmdline (NULL, heap) == CMDLINE_ABORT)
-		    return MENU_ABORT;
-		  
+		  enter_cmdline (heap);
 		  goto restart;
 		}
 #ifdef GRUB_UTIL
 	      if (c == 'q')
 		{
 		  /* The same as ``quit''.  */
-		  return MENU_ABORT;
+#ifdef GRUB_UTIL
+		  stop ();
+#endif
 		}
 #endif
 	    }
@@ -486,47 +484,45 @@ restart:
    *  Attempt to boot an entry.
    */
 
-  do
+  while (1)
     {
-      cls();
+      cls ();
 
       if (config_entries)
-	printf("  Booting \'%s\'\n\n",
-	       get_entry(menu_entries, first_entry+entryno, 0));
+	printf ("  Booting \'%s\'\n\n",
+		get_entry (menu_entries, first_entry + entryno, 0));
       else
-	printf("  Booting command-list\n\n");
+	printf ("  Booting command-list\n\n");
 
-      if (!cur_entry)
-	cur_entry = get_entry(config_entries, first_entry+entryno, 1);
+      if (! cur_entry)
+	cur_entry = get_entry (config_entries, first_entry + entryno, 1);
 
-      if ((c = enter_cmdline (cur_entry, heap)) == CMDLINE_OK)
+      if (run_script (cur_entry, heap))
 	{
-	  if (fallback < 0)
-	    break;
+	  if (fallback_entry < 0)
+	    {
+	      /* Both the entry and the fallback failed, so wait for
+		 input.  */
+	      grub_printf ("      Press any key to continue...");
+	      (void) getkey ();
+	      break;
+	    }
 	  else
 	    {
 	      cur_entry = NULL;
 	      first_entry = 0;
-	      entryno = fallback;
-	      fallback = -1;
+	      entryno = fallback_entry;
+	      fallback_entry = -1;
 	    }
 	}
     }
-  while (c == CMDLINE_OK);
-
-  /* If aborted, then return.  */
-  if (c == CMDLINE_ABORT)
-    return MENU_ABORT;
   
-  /* Both the entry and the fallback failed, so wait for input. */
-  printf ("      Press any key to continue...");
-  getkey ();
   goto restart;
 }
 
 
 static int
-get_line_from_config(char *cmdline, int maxlen)
+get_line_from_config (char *cmdline, int maxlen)
 {
   int pos = 0, literal = 0, comment = 0;
   char c;  /* since we're loading it a byte at a time! */
@@ -551,7 +547,7 @@ get_line_from_config(char *cmdline, int maxlen)
 	  if (c == '\n')
 	    comment = 0;
 	}
-      else if (!pos)
+      else if (! pos)
 	{
 	  if (c == '#')
 	    comment = 1;
@@ -574,27 +570,24 @@ get_line_from_config(char *cmdline, int maxlen)
 }
 
 
+/* This is the starting function in C.  */
 void
-cmain(void)
+cmain (void)
 {
-  int config_len, menu_len, num_entries, default_entry;
+  int config_len, menu_len, num_entries;
   char *config_entries, *menu_entries;
 
+  /* Never return.  */
   for (;;)
     {
       config_len = 0;
       menu_len = 0;
       num_entries = 0;
-      default_entry = 0;
-      normal_color = A_NORMAL;
-      highlight_color = A_REVERSE;
-      config_entries = (char *)(mbi.mmap_addr + mbi.mmap_length);
-      menu_entries = (char *)(BUFFERADDR + (32 * 1024));
-      password = NULL; fallback = -1; grub_timeout = -1;
+      config_entries = (char *) (mbi.mmap_addr + mbi.mmap_length);
+      menu_entries = (char *) MENU_BUF;
+      init_config ();
 
-      /*
-       *  Here load the configuration file.
-       */
+      /* Here load the configuration file.  */
 
 #ifdef GRUB_UTIL
       if (use_config_file && grub_open (config_file))
@@ -602,17 +595,31 @@ cmain(void)
       if (grub_open (config_file))
 #endif
 	{
+	  /* STATE 0:  Before any title command.
+	     STATE 1:  In a title command.
+	     STATE >1: In a entry after a title command.  */
 	  int state = 0, prev_config_len = 0, prev_menu_len = 0;
-	  char cmdline[1502], *ptr;
+	  char *cmdline;
 
+	  cmdline = (char *) CMDLINE_BUF;
 	  while (get_line_from_config (cmdline, NEW_HEAPSIZE))
 	    {
-	      ptr = skip_to(1, cmdline);
+	      struct builtin *builtin;
 
-	      if (substring("title", cmdline) < 1)
+	      /* Get the pointer to the builtin structure.  */
+	      builtin = find_command (cmdline);
+	      if (! builtin)
+		/* Unknown command. Just skip now.  */
+		continue;
+
+	      if (builtin->flags & BUILTIN_TITLE)
 		{
+		  char *ptr;
+		  
+		  /* the command "title" is specially treated.  */
 		  if (state > 1)
 		    {
+		      /* The next title is found.  */
 		      num_entries++;
 		      config_entries[config_len++] = 0;
 		      prev_menu_len = menu_len;
@@ -620,61 +627,46 @@ cmain(void)
 		    }
 		  else
 		    {
+		      /* The first title is found.  */
 		      menu_len = prev_menu_len;
 		      config_len = prev_config_len;
 		    }
 
+		  /* Reset the state.  */
 		  state = 1;
-
-		  /* copy title into menu area */
-		  while ((menu_entries[menu_len++] = *(ptr++)) != 0);
+		  
+		  /* Copy title into menu area.  */
+		  ptr = skip_to (1, cmdline);
+		  while ((menu_entries[menu_len++] = *(ptr++)) != 0)
+		    ;
 		}
-	      else if (!state)
+	      else if (! state)
 		{
-		  if (substring ("timeout", cmdline) < 1)
-		    safe_parse_maxint (&ptr, &grub_timeout);
-		  else if (substring ("fallback", cmdline) < 1)
-		    safe_parse_maxint (&ptr, &fallback);
-		  else if (substring ("default", cmdline) < 1)
-		    safe_parse_maxint (&ptr, &default_entry);
-		  else if (substring ("color", cmdline) < 1)
+		  /* Run a command found is possible.  */
+		  if (builtin->flags & BUILTIN_MENU)
 		    {
-		      char *normal;
-		      char *highlight;
-
-		      normal = ptr;
-		      highlight = skip_to (0, normal);
-
-		      if (safe_parse_maxint (&normal, &normal_color))
-			{
-			  if (*highlight == 0
-			      || ! safe_parse_maxint (&highlight,
-						      &highlight_color))
-			    highlight_color = ((normal_color >> 4)
-					       | ((normal_color & 0xf) << 4));
-			}
+		      char *arg = skip_to (1, cmdline);
+		      (builtin->func) (arg, BUILTIN_MENU);
+		      errnum = 0;
 		    }
-		  else if (substring ("password", cmdline) < 1)
-		    {
-		      password = config_entries;
-		      while ((*(config_entries++) = *(ptr++)) != 0);
-		    }
-
-		  errnum = 0;
+		  else
+		    /* Ignored.  */
+		    continue;
 		}
 	      else
 		{
-		  int i = 0;
-
+		  char *ptr = cmdline;
+		  
 		  state++;
-
-		  /* copy config file data to config area */
-		  while ((config_entries[config_len++] = cmdline[i++]) != 0);
+		  /* Copy config file data to config area.  */
+		  while ((config_entries[config_len++] = *ptr++) != 0)
+		    ;
 		}
 	    }
-
+	  
 	  if (state > 1)
 	    {
+	      /* Finish the last entry.  */
 	      num_entries++;
 	      config_entries[config_len++] = 0;
 	    }
@@ -683,29 +675,26 @@ cmain(void)
 	      menu_len = prev_menu_len;
 	      config_len = prev_config_len;
 	    }
-
+	  
 	  menu_entries[menu_len++] = 0;
 	  config_entries[config_len++] = 0;
-	  memmove (config_entries + config_len, menu_entries, menu_len);
+	  grub_memmove (config_entries + config_len, menu_entries, menu_len);
 	  menu_entries = config_entries + config_len;
 	}
-
+      
       if (! num_entries)
 	{
 	  /* If no acceptable config file, goto command-line, starting
 	     heap from where the config entries would have been stored
 	     if there were any.  */
-	  while (enter_cmdline (NULL, config_entries) != CMDLINE_ABORT)
-	    ;
-
-	  return;
+	  while (1)
+	    enter_cmdline (config_entries);
 	}
       else
 	{
 	  /* Run menu interface.  */
-	  if (run_menu(menu_entries, config_entries, num_entries,
-		       menu_entries+menu_len, default_entry) == MENU_ABORT)
-	    return;
+	  run_menu (menu_entries, config_entries, num_entries,
+		    menu_entries + menu_len, default_entry);
 	}
     }
 }

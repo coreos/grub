@@ -38,10 +38,11 @@ static struct mod_list mll[99];
  *  of the gory details of loading in a bootable image and the modules.
  */
 
-int
+kernel_t
 load_image (char *kernel, char *arg)
 {
-  int len, i, exec_type = 0, align_4k = 1, type = 0;
+  int len, i, exec_type = 0, align_4k = 1;
+  kernel_t type = KERNEL_TYPE_NONE;
   unsigned long flags = 0, text_len = 0, data_len = 0, bss_len = 0;
   char *str = 0, *str2 = 0;
   union
@@ -60,14 +61,14 @@ load_image (char *kernel, char *arg)
   pu.aout = (struct exec *) buffer;
 
   if (!grub_open (kernel))
-    return 0;
+    return KERNEL_TYPE_NONE;
 
   if (!(len = grub_read (buffer, MULTIBOOT_SEARCH)) || len < 32)
     {
       if (!errnum)
 	errnum = ERR_EXEC_FORMAT;
 
-      return 0;
+      return KERNEL_TYPE_NONE;
     }
 
   for (i = 0; i < len; i++)
@@ -78,20 +79,21 @@ load_image (char *kernel, char *arg)
 	  if (flags & MULTIBOOT_UNSUPPORTED)
 	    {
 	      errnum = ERR_BOOT_FEATURES;
-	      return 0;
+	      return KERNEL_TYPE_NONE;
 	    }
-	  type = 'm';
+	  type = KERNEL_TYPE_MULTIBOOT;
 	  str2 = "Multiboot";
 	  break;
 	}
     }
 
   /* ELF loading supported if multiboot and FreeBSD.  */
-  if ((type == 'm' || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD") == 0)
+  if ((type == KERNEL_TYPE_MULTIBOOT
+       || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD") == 0)
       && len > sizeof (Elf32_Ehdr)
       && BOOTABLE_I386_ELF ((*((Elf32_Ehdr *) buffer))))
     {
-      if (type == 'm')
+      if (type == KERNEL_TYPE_MULTIBOOT)
 	entry_addr = (entry_func) pu.elf->e_entry;
       else
 	entry_addr = (entry_func) (pu.elf->e_entry & 0xFFFFFF);
@@ -107,10 +109,10 @@ load_image (char *kernel, char *arg)
 	errnum = ERR_EXEC_FORMAT;
       str = "elf";
 
-      if (! type)
+      if (type == KERNEL_TYPE_NONE)
 	{
 	  str2 = "FreeBSD";
-	  type = 'f';
+	  type = KERNEL_TYPE_FREEBSD;
 	}
     }
   else if (flags & MULTIBOOT_AOUT_KLUDGE)
@@ -141,7 +143,7 @@ load_image (char *kernel, char *arg)
     {
       entry_addr = (entry_func) pu.aout->a_entry;
 
-      if (!type)
+      if (type == KERNEL_TYPE_NONE)
 	{
 	  /*
 	   *  If it doesn't have a Multiboot header, then presume
@@ -156,13 +158,13 @@ load_image (char *kernel, char *arg)
 	   */
 	  if (buffer[0] == 0xb && buffer[1] == 1)
 	    {
-	      type = 'f';
+	      type = KERNEL_TYPE_FREEBSD;
 	      entry_addr = (entry_func) (((int) entry_addr) & 0xFFFFFF);
 	      str2 = "FreeBSD";
 	    }
 	  else
 	    {
-	      type = 'n';
+	      type = KERNEL_TYPE_NETBSD;
 	      entry_addr = (entry_func) (((int) entry_addr) & 0xF00000);
 	      if (N_GETMAGIC ((*(pu.aout))) != NMAGIC)
 		align_4k = 0;
@@ -200,7 +202,7 @@ load_image (char *kernel, char *arg)
 	{
 	  printf (" linux 'zImage' kernel too big, try 'make bzImage'\n");
 	  errnum = ERR_WONT_FIT;
-	  return 0;
+	  return KERNEL_TYPE_NONE;
 	}
 
       printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
@@ -232,7 +234,7 @@ load_image (char *kernel, char *arg)
 		else
 		  /* ERRNUM is already set inside the function
 		     safe_parse_maxint.  */
-		  return 0;
+		  return KERNEL_TYPE_NONE;
 
 		/* Set the vid mode to VID_MODE. Note that this can work
 		   because i386 architecture is little-endian.  */
@@ -275,7 +277,7 @@ load_image (char *kernel, char *arg)
 
 	  cur_addr = LINUX_STAGING_AREA + text_len;
 	  if (grub_read ((char *) LINUX_STAGING_AREA, text_len) >= (text_len - 16))
-	    return (big_linux ? 'L' : 'l');
+	    return (big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX);
 	  else if (!errnum)
 	    errnum = ERR_EXEC_FORMAT;
 	}
@@ -287,7 +289,7 @@ load_image (char *kernel, char *arg)
 
   /* return if error */
   if (errnum)
-    return 0;
+    return KERNEL_TYPE_NONE;
 
   /* fill the multiboot info structure */
   mbi.cmdline = (int) arg;
@@ -419,7 +421,7 @@ load_image (char *kernel, char *arg)
 	      filepos = phdr->p_offset;
 	      filesiz = phdr->p_filesz;
 	      
-	      if (type == 'f')
+	      if (type == KERNEL_TYPE_FREEBSD)
 		memaddr = RAW_ADDR (phdr->p_paddr & 0xFFFFFF);
 	      else
 		memaddr = RAW_ADDR (phdr->p_paddr);
@@ -466,7 +468,7 @@ load_image (char *kernel, char *arg)
   else
     {
       putchar ('\n');
-      type = 0;
+      type = KERNEL_TYPE_NONE;
     }
 
   return type;
@@ -543,7 +545,7 @@ bsd_boot_entry (int flags, int bootdev, int sym_start, int sym_end,
 
 
 void
-bsd_boot (int type, int bootdev, char *arg)
+bsd_boot (kernel_t type, int bootdev, char *arg)
 {
   char *str;
   int clval = 0, i;
@@ -588,7 +590,7 @@ bsd_boot (int type, int bootdev, char *arg)
       str++;
     }
 
-  if (type == 'f')
+  if (type == KERNEL_TYPE_FREEBSD)
     {
       clval |= RB_BOOTINFO;
 

@@ -1,3 +1,85 @@
+1999-09-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	The internal of the command handling is heavily modified, and
+	a new command "help" is added.
+
+	* stage1/stage1.S: Set the number of sectors for Stage 2 to 110.
+	* stage1/stage1_lba.S: Likewise.
+	* stage2/builtins.c: New file.
+	* stage2/Makefile.am (libgrub_a_SOURCES): Added builtins.c.
+	(stage2_exec_SOURCES): Likewise.
+	* stage2/boot.c (load_image): Return kernel_t instead int.
+	(bsd_boot): Change the type of the first argument to kernel_t.
+	* stage2/char_io.c (get_cmdline): Do not accept the argument
+	COMMANDS and accept the argument COMPLETION.
+	Print completions only if COMPLETION is non-zero.
+	Print the list of short docs when the command is completed.
+	* stage2/cmdline.c [GRUB_UTIL]: Do not include apic.h and
+	smp-imps.h.
+	(fallback): Deleted.
+	(password): Likewise.
+	(debug): Likewise.
+	(normal_color): Likewise.
+	(highlight_color): Likewise.
+	(print_cmdline_message): New function.
+	(commands): Deleted.
+	(debug_fs_print_func): Likewise.
+	(installaddr): Likewise.
+	(installlist): Likewise.
+	(installsect): Likewise.
+	(debug_fs_blocklist_func): Likewise.
+	(find_command): New function.
+	(init_cmdline): Initialize the data for the command-line
+	interface. The function to print the message is moved to
+	print_cmdline_message.
+	(enter_cmdline): Rewritten from scratch. Now deal with only the
+	pure command-line and the function to deal with a menu entry is
+	moved to run_script.
+	(run_script): New function.
+	* stage2/shared.h (PASSWORD_BUF): New macro.
+	(PASSWORD_BUFLEN): Likewise.
+	(CMDLINE_BUF): Likewise.
+	(CMDLINE_BUFLEN): Likewise.
+	(MENU_BUF): Likewise.
+	(MENU_BUFLEN): Likewise.
+	(fallback): Deleted.
+	(fallback_entry): Declared.
+	(default_entry): Likewise.
+	(BUILTIN_CMDLINE): New macro.
+	(BUILTIN_MENU): Likewise.
+	(BUILTIN_TITLE): Likewise.
+	(struct builtin): New tag.
+	(builtin_table): Declared.
+	(cmdline_t): Deleted.
+	(kernel_t): New type.
+	(kernel_type): Declared.
+	(grub_timeout): Likewise.
+	(init_builtins): Likewise.
+	(init_config): Likewise.
+	(find_command): Likewise.
+	(print_cmdline_message): Likewise.
+	(run_script): Likewise.
+	[!STAGE1_5] (bsd_boot): Deleted.
+	[!STAGE1_5] (load_image): Likewise.
+	[!STAGE1_5] (load_module): Likewise.
+	[!STAGE1_5] (load_initrd): Likewise.
+	* stage2/size_test: Set the maximum size of Stage 2 to 56320.
+	* stage2/stage2.c (grub_timeout): Deleted.
+	(menu_t): Likewise.
+	(run_menu): Changed the return type to void.
+	Use FALLBACK_ENTRY instead of FALLBACK.
+	Do not check the return value of enter_cmdline.
+	(run_menu) [GRUB_UTIL]: Call stop instead of returning
+	MENU_ABORT.
+	(cmain): Set MENU_ENTRIES to MENU_BUF.
+	Call init_config instead of clearing the variables directly.
+	Use CMDLINE_BUF for the command-line buffer instead of the
+	stack.
+	Adapted the analysis routine for the configuration file to the
+	new builtin commands interface.
+	Run enter_cmdline forever.
+	If run_menu returns, restart the loop.
+	
 1999-09-04  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* docs/menu.lst: More meaningful examples. Not using (0x80,0)

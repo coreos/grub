@@ -74,6 +74,19 @@ extern char *grub_scratch_mem;
 #define MB_CMDLINE_BUF		RAW_ADDR (0x2000)
 #define MB_CMDLINE_BUFLEN	0x6000
 
+/* The buffer for the password.  */
+#define PASSWORD_BUF		RAW_ADDR (0x78000)
+#define PASSWORD_BUFLEN		0x200
+
+/* The buffer for the command-line.  */
+#define CMDLINE_BUF		(PASSWORD_BUF + PASSWORD_BUFLEN)
+/* Make sure that this is larger than NEW_HEAPSIZE defined below.  */
+#define CMDLINE_BUFLEN		0x600
+
+/* The buffer for the menu entries.  */
+#define MENU_BUF		(CMDLINE_BUF + CMDLINE_BUFLEN)
+#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - MENU_BUF)
+
 /*
  *  Linux setup parameters
  */
@@ -327,7 +340,8 @@ extern char **device_map;
 
 #ifndef STAGE1_5
 /* GUI interface variables. */
-extern int fallback;
+extern int fallback_entry;
+extern int default_entry;
 extern char *password;
 extern char commands[];
 #endif
@@ -495,22 +509,43 @@ void stop_floppy (void);
 
 /* Command-line interface functions. */
 #ifndef STAGE1_5
-char *skip_to (int after_equal, char *cmdline);
-void init_cmdline (void);
 
-/* The constants for the return value of enter_cmdline.  */
+#define BUILTIN_CMDLINE		0x1
+#define BUILTIN_MENU		0x2
+#define BUILTIN_TITLE		0x4
+
+struct builtin
+{
+  char *name;
+  int (*func) (char *, int);
+  int flags;
+  char *short_doc;
+  char *long_doc;
+};
+
+extern struct builtin *builtin_table[];
+
 typedef enum
 {
-  CMDLINE_OK = 0,
-  CMDLINE_ABORT,
-  CMDLINE_ERROR
-} cmdline_t;
+  KERNEL_TYPE_NONE,
+  KERNEL_TYPE_MULTIBOOT,
+  KERNEL_TYPE_LINUX,
+  KERNEL_TYPE_BIG_LINUX,
+  KERNEL_TYPE_FREEBSD,
+  KERNEL_TYPE_NETBSD,
+  KERNEL_TYPE_CHAINLOADER
+} kernel_t;
 
-/* Run the command-line interface or execute a command from SCRIPT if
-   SCRIPT is not NULL. Return CMDLINE_OK if successful, CMDLINE_ABORT
-   if ``quit'' command is executed, and CMDLINE_ERROR if an error
-   occures or ESC is pushed.  */
-cmdline_t enter_cmdline (char *script, char *heap);
+extern kernel_t kernel_type;
+extern int grub_timeout;
+
+void init_builtins (void);
+void init_config (void);
+char *skip_to (int after_equal, char *cmdline);
+struct builtin *find_command (char *command);
+void print_cmdline_message (void);
+void enter_cmdline (char *heap);
+int run_script (char *script, char *heap);
 #endif
 
 /* C library replacement functions with identical semantics. */
@@ -528,8 +563,8 @@ int grub_strlen (const char *str);
 void init_page (void);
 void print_error (void);
 char *convert_to_ascii (char *buf, int c,...);
-int get_cmdline (char *prompt, char *commands, char *cmdline,
-		 int maxlen, int echo_char);
+int get_cmdline (char *prompt, char *cmdline, int maxlen,
+		 int echo_char, int completion);
 int substring (char *s1, char *s2);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);
@@ -582,10 +617,13 @@ void print_completions (char *filename);
 /* Copies the current partition data to the desired address. */
 void copy_current_part_entry (char *buf);
 
-void bsd_boot (int type, int bootdev, char *arg) __attribute__ ((noreturn));
-int load_image (char *kernel, char *arg);
+#ifndef STAGE1_5
+void bsd_boot (kernel_t type, int bootdev, char *arg)
+     __attribute__ ((noreturn));
+kernel_t load_image (char *kernel, char *arg);
 int load_module (char *module, char *arg);
 int load_initrd (char *initrd);
+#endif
 
 void init_bios_info (void);
 

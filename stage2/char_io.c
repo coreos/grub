@@ -147,8 +147,8 @@ init_page (void)
 
    If ECHO_CHAR is nonzero, echo it instead of the typed character. */
 int
-get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
-	     int echo_char)
+get_cmdline (char *prompt, char *cmdline, int maxlen,
+	     int echo_char, int completion)
 {
   int ystart, yend, xend, lpos, c;
   int plen = 0;
@@ -160,7 +160,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
     while (*str != 0)
       {
 	putchar (echo_char ? echo_char : *str);
-	str ++;
+	str++;
 	if (++xend > 78)
 	  {
 	    xend = 0;
@@ -259,45 +259,61 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 	case 27:		/* ESC immediately return 1 */
 	  return 1;
 	case 9:		/* TAB lists completions */
-	  {
-	    int i, j = 0, llen_old = llen;
+	  if (completion)
+	    {
+	      int i, j = 0, llen_old = llen;
+	      
+	      /* Find the first word.  */
+	      while (cmdline[j] == ' ')
+		j++;
+	      while (cmdline[j] && cmdline[j] != '=' && cmdline[j] != ' ')
+		j++;
+	      
+	      /* Since the command line cannot have a '\n', we're OK to
+		 use C.  */
+	      c = cmdline[lpos];
+	      
+	      cl_kill_to_end ();
+	      
+	      /* goto part after line here */
+	      yend = ((llen + plen) / 79) + ystart;
+	      putchar ('\n');
+	      gotoxy (0, getxy () & 0xff);
+	      
+	      
+	      if (lpos > j)
+		{
+		  for (i = lpos; i > 0 && cmdline[i - 1] != ' '; i--);
+		  if (i <= j)
+		    i = j + 1;
+		  /* print possible completions */
+		  print_completions (cmdline + i);
+		  /* if somebody in print_completions has added something, 
+		     account for that */
+		  while (cmdline[lpos])
+		    lpos++, llen_old++;
+		}
+	      else 
+		{
+		  /* Print the command list.  */
+		  struct builtin **builtin;
 
-	    /* Find the first word.  */
-	    while (cmdline[j] == ' ')
-	      j++;
-	    while (cmdline[j] && cmdline[j] != '=' && cmdline[j] != ' ')
-	      j++;
+		  for (builtin = builtin_table; *builtin != 0; builtin++)
+		    {
+		      /* Do not print the name if it cannot be run in
+			 the command-line interface.  */
+		      if (! ((*builtin)->flags & BUILTIN_CMDLINE))
+			continue;
 
-	    /* since the command line cannot have a '\n', we're OK to use c */
-	    c = cmdline[lpos];
-
-	    cl_kill_to_end ();
-
-	    /* goto part after line here */
-	    yend = ((llen + plen) / 79) + ystart;
-	    putchar ('\n');
-	    gotoxy (0, getxy () & 0xff);
-
-	    if (lpos > j)
-	      {
-		for (i = lpos; i > 0 && cmdline[i - 1] != ' '; i--);
-		if (i <= j)
-		  i = j + 1;
-		/* print possible completions */
-		print_completions (cmdline + i);
-		/* if somebody in print_completions has added something, 
-		   account for that */
-		while (cmdline[lpos])
-		  lpos++, llen_old++;
-	      }
-	    else if (commands)
-	      printf (commands);
-
-	    /* restore command-line */
-	    cmdline[lpos] = c;
-	    llen = llen_old;
-	    cl_init ();
-	  }
+		      grub_printf ("%s ", (*builtin)->name);
+		    }
+		}
+	      
+	      /* restore command-line */
+	      cmdline[lpos] = c;
+	      llen = llen_old;
+	      cl_init ();
+	    }
 	  break;
 	case 1:		/* C-a go to beginning of line */
 	  lpos = 0;

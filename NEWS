@@ -10,6 +10,9 @@ New in 0.5.93:
 * New commands "hide" and "unhide".
 * The character `=' after a command is not necessary any longer, but it
   is supported for backward compatibility.
+* The command "help" displays helpful information about builtin
+  commands.
+* The command "geometry" displays the information of a drive specified.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).
