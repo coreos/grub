@@ -2328,7 +2328,7 @@ The option @option{--no-edit} disables the BASH-like editing feature.
 
 @deffn Command terminfo @option{--name=name} @option{--cursor-address=seq} [@option{--clear-screen=seq}] [@option{--enter-standout-mode=seq}] [@option{--exit-standout-mode=seq}]
 Define the capabilities of your terminal. Use this command to define
-escape sequences, unless it is vt100-compatible. You may use @samp{\e}
+escape sequences, if it is not vt100-compatible. You may use @samp{\e}
 for @key{ESC} and @samp{^X} for a control character.
 
 You can use the utility @command{grub-terminfo} to generate

@@ -4226,7 +4226,7 @@ static struct builtin builtin_terminfo =
   " [--enter-standout-mode=SEQ] [--exit-standout-mode=SEQ]]",
   
   "Define the capabilities of your terminal. Use this command to"
-  " define escape sequences, unless it is vt100-compatible."
+  " define escape sequences, if it is not vt100-compatible."
   " You may use \\e for ESC and ^X for a control character."
   " If no option is specified, the current settings are printed."
 };
