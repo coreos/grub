@@ -446,6 +446,30 @@ get_apm_info (void)
   /* Nothing to do in the simulator.  */
 }
 
+/* Get VBE controller information.  */
+int
+get_vbe_controller_info (struct vbe_controller *controller)
+{
+  /* Always fails.  */
+  return 0;
+}
+
+/* Get VBE mode information.  */
+int
+get_vbe_mode_info (int mode_number, struct vbe_mode *mode)
+{
+  /* Always fails.  */
+  return 0;
+}
+
+/* Set VBE mode.  */
+int
+set_vbe_mode (int mode_number)
+{
+  /* Always fails.  */
+  return 0;
+}
+
 /* low-level timing info */
 int
 getrtsecs (void)

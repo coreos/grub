@@ -1,3 +1,38 @@
+2000-11-03  OKUJI Yoshinori  <okuji@gnu.org>
+
+	VBE support is _partially_ implemented.
+	
+	* stage2/mb_header.h (multiboot_header): Added new fields,
+	mode_type, width, height, and depth.
+	(MULTIBOOT_FOUND): Check if MULTIBOOT_VIDEO_MODE is set, and
+	check if LEN is greater than or equal to 48, if set.
+	(MULTIBOOT_UNSUPPORTED): Set to 0x0000FFF8.
+	(MULTIBOOT_VIDEO_MODE): New macro.
+	* stage2/mb_info.h (multiboot_info): Added new fields,
+	vbe_control_info, vbe_mode_info, vbe_mode, vbe_interface_seg,
+	vbe_interface_off, and vbe_interface_len.
+	(MB_INFO_VIDEO_INFO): New macro.
+	
+	* stage2/shared.h (vbe_controller): New structure.
+	(vbe_mode): Likewise.
+	(get_vbe_controller_info): Declared.
+	(get_vbe_mode_info): Likewise.
+	(set_vbe_mode): Likewise.
+	* stage2/asm.S [!STAGE1_5] (get_vbe_controller_info): New
+	function.
+	[!STAGE1_5] (get_vbe_mode_info): Likewise.
+	[!STAGE1_5] (set_vbe_mode): Likewise.
+	* grub/asmstub.c (get_vbe_controller_info): Likewise.
+	(get_vbe_mode_info): Likewise.
+	(set_vbe_mode): Likewise.
+
+	* stage2/builtins.c (testvbe_func): New function.
+	(builtin_testvbe): New variable.
+	(vbeprobe_func): New function.
+	(builtin_vbeprobe): New variable.
+	(builtin_table): Added pointers to BUILTIN_TESTVBE and
+	BUILTIN_VBEPROBE.
+	
 2000-11-01  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/help2man: Copied from help2man-1.23.

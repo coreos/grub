@@ -4026,6 +4026,111 @@ static struct builtin builtin_testload =
 };
 
 
+/* testvbe MODE */
+static int
+testvbe_func (char *arg, int flags)
+{
+  int mode_number;
+  struct vbe_controller controller;
+  struct vbe_mode mode;
+  
+  if (! *arg)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  if (! safe_parse_maxint (&arg, &mode_number))
+    return 1;
+
+  /* Preset `VBE2'.  */
+  grub_memmove (controller.signature, "VBE2", 4);
+
+  /* Detect VBE BIOS.  */
+  if (get_vbe_controller_info (&controller) != 0x004F)
+    {
+      grub_printf (" VBE BIOS is not present.\n");
+      return 0;
+    }
+  
+  if (controller.version < 0x0200)
+    {
+      grub_printf (" VBE version %d.%d is not supported.\n",
+		   (int) (controller.version >> 8),
+		   (int) (controller.version & 0xFF));
+      return 0;
+    }
+
+  if (get_vbe_mode_info (mode_number | (1 << 14), &mode) != 0x004F
+      || (mode.mode_attributes & 0x0091) != 0x0091)
+    {
+      grub_printf (" Mode 0x%x is not supported.\n", mode_number);
+      return 0;
+    }
+
+  /* Now trip to the graphics mode.  */
+  if (set_vbe_mode (mode_number | (1 << 14)) != 0x004F)
+    {
+      grub_printf (" Switching to Mode 0x%x failed.\n", mode_number);
+      return 0;
+    }
+
+  /* Draw something on the screen...  */
+  {
+    unsigned char *base_buf = (unsigned char *) mode.phys_base;
+    int scanline = controller.version >= 0x0300
+      ? mode.linear_bytes_per_scanline : mode.bytes_per_scanline;
+    /* FIXME: this assumes that any depth is a modulo of 8.  */
+    int bpp = mode.bits_per_pixel / 8;
+    int width = mode.x_resolution;
+    int height = mode.y_resolution;
+    int x, y;
+    unsigned color = 0;
+
+    /* Iterate drawing on the screen, until the user hits any key.  */
+    while (checkkey () == -1)
+      {
+	for (y = 0; y < height; y++)
+	  {
+	    unsigned char *line_buf = base_buf + scanline * y;
+	    
+	    for (x = 0; x < width; x++)
+	      {
+		unsigned char *buf = line_buf + bpp * x;
+		int i;
+
+		for (i = 0; i < bpp; i++, buf++)
+		  *buf = (color >> (i * 8)) & 0xff;
+	      }
+
+	    color++;
+	  }
+      }
+
+    /* Discard the input.  */
+    getkey ();
+  }
+  
+  /* Back to the default text mode.  */
+  if (set_vbe_mode (0x03) != 0x004F)
+    {
+      /* Why?!  */
+      grub_reboot ();
+    }
+
+  return 0;
+}
+
+static struct builtin builtin_testvbe =
+{
+  "testvbe",
+  testvbe_func,
+  BUILTIN_CMDLINE,
+  "testvbe MODE",
+  "Test the VBE mode MODE. Hit any key to return."
+};
+
+
 #ifdef SUPPORT_NETBOOT
 /* tftpserver */
 static int
@@ -4142,6 +4247,125 @@ static struct builtin builtin_uppermem =
 };
 
 
+/* vbeprobe */
+static int
+vbeprobe_func (char *arg, int flags)
+{
+  struct vbe_controller controller;
+  unsigned short *mode_list;
+  int mode_number = -1;
+  int count = 1;
+  
+  auto unsigned long vbe_far_ptr_to_linear (unsigned long);
+  
+  unsigned long vbe_far_ptr_to_linear (unsigned long ptr)
+    {
+      unsigned short seg = (ptr >> 16);
+      unsigned short off = (ptr & 0xFFFF);
+
+      return (seg << 4) + off;
+    }
+  
+  if (*arg)
+    {
+      if (! safe_parse_maxint (&arg, &mode_number))
+	return 1;
+    }
+  
+  /* Set the signature to `VBE2', to obtain VBE 3.0 information.  */
+  grub_memmove (controller.signature, "VBE2", 4);
+  
+  if (get_vbe_controller_info (&controller) != 0x004F)
+    {
+      grub_printf (" VBE BIOS is not present.\n");
+      return 0;
+    }
+
+  /* Check the version.  */
+  if (controller.version < 0x0200)
+    {
+      grub_printf (" VBE version %d.%d is not supported.\n",
+		   (int) (controller.version >> 8),
+		   (int) (controller.version & 0xFF));
+      return 0;
+    }
+
+  /* Print some information.  */
+  grub_printf (" VBE version %d.%d\n",
+	       (int) (controller.version >> 8),
+	       (int) (controller.version & 0xFF));
+
+  /* Iterate probing modes.  */
+  for (mode_list
+	 = (unsigned short *) vbe_far_ptr_to_linear (controller.video_mode);
+       *mode_list != 0xFFFF;
+       mode_list++)
+    {
+      struct vbe_mode mode;
+      
+      if (get_vbe_mode_info (*mode_list | (1 << 14), &mode) != 0x004F)
+	continue;
+
+      /* Skip this, if this is not supported or linear frame buffer
+	 mode is not support.  */
+      if ((mode.mode_attributes & 0x0081) != 0x0081)
+	continue;
+
+      if (mode_number == -1 || mode_number == *mode_list)
+	{
+	  char *model;
+	  switch (mode.memory_model)
+	    {
+	    case 0x00: model = "Text"; break;
+	    case 0x01: model = "CGA graphics"; break;
+	    case 0x02: model = "Hercules graphics"; break;
+	    case 0x03: model = "Planar"; break;
+	    case 0x04: model = "Packed pixel"; break;
+	    case 0x05: model = "Non-chain 4, 256 color"; break;
+	    case 0x06: model = "Direct Color"; break;
+	    case 0x07: model = "YUV"; break;
+	    default: model = "Unknown"; break;
+	    }
+	  
+	  grub_printf ("  0x%x: %s, %ux%ux%u\n",
+		       (unsigned) *mode_list,
+		       model,
+		       (unsigned) mode.x_resolution,
+		       (unsigned) mode.y_resolution,
+		       (unsigned) mode.bits_per_pixel);
+	  
+	  if (mode_number != -1)
+	    break;
+
+	  count++;
+
+	  /* XXX: arbitrary.  */
+	  if (count == 22)
+	    {
+	      grub_printf ("\nHit any key to continue.\n");
+	      count = 0;
+	      getkey ();
+	    }
+	}
+    }
+
+  if (mode_number != -1 && mode_number != *mode_list)
+    grub_printf ("  Mode 0x%x is not found or supported.\n", mode_number);
+  
+  return 0;
+}
+
+static struct builtin builtin_vbeprobe =
+{
+  "vbeprobe",
+  vbeprobe_func,
+  BUILTIN_CMDLINE,
+  "vbeprobe [MODE]",
+  "Probe VBE information. If the mode number MODE is specified, show only"
+  "the information about only the mode."
+};
+  
+
 /* The table of builtin commands. Sorted in dictionary order.  */
 struct builtin *builtin_table[] =
 {
@@ -4211,6 +4435,7 @@ struct builtin *builtin_table[] =
   &builtin_terminal,
 #endif /* SUPPORT_SERIAL */
   &builtin_testload,
+  &builtin_testvbe,
 #ifdef SUPPORT_NETBOOT
   &builtin_tftpserver,
 #endif /* SUPPORT_NETBOOT */
@@ -4218,5 +4443,6 @@ struct builtin *builtin_table[] =
   &builtin_title,
   &builtin_unhide,
   &builtin_uppermem,
+  &builtin_vbeprobe,
   0
 };

@@ -1582,6 +1582,122 @@ found_rom_table:
 	popl	%ebp
 	ret
 
+
+/*
+ * int get_vbe_controller_info (struct vbe_controller *controller_ptr)
+ *
+ * Get VBE controller information.
+ */
+
+ENTRY(get_vbe_controller_info)
+	pushl	%ebp
+	movl	%esp, %ebp
+	
+	pushl	%edi
+	pushl	%ebx
+
+	/* Convert the linear address to segment:offset */
+	movl	8(%ebp), %eax
+	movl	%eax, %edi
+	andl	$0x0000000f, %edi
+	shrl	$4, %eax
+	movl	%eax, %ebx
+
+	call	EXT_C(prot_to_real)
+	.code16
+
+	movw	%bx, %es
+	movw	$0x4F00, %ax
+	int	$0x10
+
+	movw	%ax, %bx
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	movzwl	%bx, %eax
+
+	popl	%ebx
+	popl	%edi
+	popl	%ebp
+	ret
+
+	
+/*
+ * int get_vbe_mode_info (int mode_number, struct vbe_mode *mode_ptr)
+ *
+ * Get VBE mode information.
+ */
+
+ENTRY(get_vbe_mode_info)
+	pushl	%ebp
+	movl	%esp, %ebp
+	
+	pushl	%edi
+	pushl	%ebx
+
+	/* Convert the linear address to segment:offset */
+	movl	0xc(%ebp), %eax
+	movl	%eax, %edi
+	andl	$0x0000000f, %edi
+	shrl	$4, %eax
+	movl	%eax, %ebx
+
+	/* Save the mode number in %cx */
+	movl	0x8(%ebp), %ecx
+	
+	call	EXT_C(prot_to_real)
+	.code16
+
+	movw	%bx, %es
+	movw	$0x4F01, %ax
+	int	$0x10
+
+	movw	%ax, %bx
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	movzwl	%bx, %eax
+
+	popl	%ebx
+	popl	%edi
+	popl	%ebp
+	ret
+
+	
+/*
+ * int set_vbe_mode (int mode_number)
+ *
+ * Set VBE mode. Don't support user-specified CRTC information.
+ */
+
+ENTRY(set_vbe_mode)
+	pushl	%ebp
+	movl	%esp, %ebp
+	
+	pushl	%ebx
+
+	/* Save the mode number in %bx */
+	movl	0x8(%ebp), %ebx
+	/* Clear bit D11 */
+	andl	0xF7FF, %ebx
+	
+	call	EXT_C(prot_to_real)
+	.code16
+
+	movw	$0x4F02, %ax
+	int	$0x10
+
+	movw	%ax, %bx
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	movzwl	%bx, %eax
+
+	popl	%ebx
+	popl	%ebp
+	ret
+
+		
 /*
  * gateA20(int linear)
  *
