@@ -1,3 +1,11 @@
+2002-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/boot.c (load_image): For Linux, don't check if the
+	length of protected mode code is greater than or equal to the
+	expected length minus 16. Instead, just check if no error
+	occurred. That was problematic, because memdisk has no protected
+	mode code. Also, I don't see what the magic number 16 was for.
+	
 2002-04-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c [SUPPORT_SERIAL] (terminal_func): Added a

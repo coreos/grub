@@ -399,8 +399,9 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	  grub_seek (data_len + SECTOR_SIZE);
 
 	  cur_addr = LINUX_STAGING_AREA + text_len;
-	  if (grub_read ((char *) LINUX_STAGING_AREA, text_len)
-	      >= (text_len - 16))
+	  grub_read ((char *) LINUX_STAGING_AREA, text_len);
+	  
+	  if (errnum == ERR_NONE)
 	    {
 	      grub_close ();
 
@@ -418,8 +419,8 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	      
 	      return big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX;
 	    }
-	  else if (! errnum)
-	    errnum = ERR_EXEC_FORMAT;
+	  
+	  grub_close ();
 	}
       else
 	errnum = ERR_WONT_FIT;
