@@ -680,6 +680,9 @@ int grub_open (char *filename);
    GRUB_OPEN.  If LEN is -1, read all the remaining data in the file */
 int grub_read (char *buf, int len);
 
+/* Close a file.  */
+void grub_close (void);
+
 /* List the contents of the directory that was opened with GRUB_OPEN,
    printing all completions. */
 int dir (char *dirname);

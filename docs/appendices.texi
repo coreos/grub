@@ -49,7 +49,9 @@ $ mke2fs /dev/fd0
 Mount it on somewhere, say, @file{/mnt}.
 
 @item
-Copy the GRUB images to @file{/mnt/boot/grub}.
+Copy the GRUB images to @file{/mnt/boot/grub}. Only @file{stage1},
+@file{stage2} and @file{menu.lst} are necessary. You may not copy
+@dfn{stage1.5}s.
 
 @item
 Run the following command:
@@ -115,7 +117,7 @@ Multiboot-compliant, the world would be an utopia@dots{}
 
 
 @node Obtaining and Building GRUB
-@appendix Obtaining and Building GRUB
+@appendix How to obtain and build GRUB
 
 @quotation
 @strong{Caution:} GRUB requires binutils-2.9.1.0.23 or later because the

@@ -117,6 +117,37 @@ codestart:
 	/* The ".code32" directive takes GAS out of 16-bit mode. */
 	.code32
 
+	/* clean out the bss */
+
+	/* set %edi to the bss starting address */
+#if defined(HAVE_USCORE_USCORE_BSS_START_SYMBOL)
+	movl	$__bss_start, %edi
+#elif defined(HAVE_USCORE_EDATA_SYMBOL)
+	movl	$_edata, %edi
+#elif defined(HAVE_EDATA_SYMBOL)
+	movl	$edata, %edi
+#endif
+
+	/* set %ecx to the bss end */	
+#if defined(HAVE_END_SYMBOL)
+	movl	$end, %ecx
+#elif defined(HAVE_USCORE_END_SYMBOL)
+	movl	$_end, %ecx
+#endif
+
+	/* compute the bss length */
+	subl	%edi, %ecx
+	
+	/* zero %al */
+	xorb	%al, %al
+	
+	/* set the direction */
+	cld
+	
+	/* clean out */
+	rep
+	stosb
+	
 	/*
 	 *  Call the start of main body of C code, which does some
 	 *  of it's own initialization before transferring to "cmain".

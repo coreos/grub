@@ -64,6 +64,8 @@ load_image (char *kernel, char *arg)
 
   if (!(len = grub_read (buffer, MULTIBOOT_SEARCH)) || len < 32)
     {
+      grub_close ();
+      
       if (!errnum)
 	errnum = ERR_EXEC_FORMAT;
 
@@ -77,6 +79,7 @@ load_image (char *kernel, char *arg)
 	  flags = ((struct multiboot_header *) (buffer + i))->flags;
 	  if (flags & MULTIBOOT_UNSUPPORTED)
 	    {
+	      grub_close ();
 	      errnum = ERR_BOOT_FEATURES;
 	      return KERNEL_TYPE_NONE;
 	    }
@@ -198,9 +201,10 @@ load_image (char *kernel, char *arg)
     {
       int big_linux = buffer[LINUX_SETUP_LOAD_FLAGS] & LINUX_FLAG_BIG_KERNEL;
       buffer[LINUX_SETUP_LOADER] = 0x70;
-      if (!big_linux && text_len > LINUX_KERNEL_MAXLEN)
+      if (! big_linux && text_len > LINUX_KERNEL_MAXLEN)
 	{
 	  printf (" linux 'zImage' kernel too big, try 'make bzImage'\n");
+	  grub_close ();
 	  errnum = ERR_WONT_FIT;
 	  return KERNEL_TYPE_NONE;
 	}
@@ -232,9 +236,12 @@ load_image (char *kernel, char *arg)
 		else if (safe_parse_maxint (&value, &vid_mode))
 		  ;
 		else
-		  /* ERRNUM is already set inside the function
-		     safe_parse_maxint.  */
-		  return KERNEL_TYPE_NONE;
+		  {
+		    /* ERRNUM is already set inside the function
+		       safe_parse_maxint.  */
+		    return KERNEL_TYPE_NONE;
+		    grub_close ();
+		  }
 
 		/* Set the vid mode to VID_MODE. Note that this can work
 		   because i386 architecture is little-endian.  */
@@ -276,8 +283,12 @@ load_image (char *kernel, char *arg)
 	  filepos = data_len + SECTOR_SIZE;
 
 	  cur_addr = LINUX_STAGING_AREA + text_len;
-	  if (grub_read ((char *) LINUX_STAGING_AREA, text_len) >= (text_len - 16))
-	    return (big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX);
+	  if (grub_read ((char *) LINUX_STAGING_AREA, text_len)
+	      >= (text_len - 16))
+	    {
+	      grub_close ();
+	      return big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX;
+	    }
 	  else if (!errnum)
 	    errnum = ERR_EXEC_FORMAT;
 	}
@@ -289,7 +300,10 @@ load_image (char *kernel, char *arg)
 
   /* return if error */
   if (errnum)
-    return KERNEL_TYPE_NONE;
+    {
+      grub_close ();
+      return KERNEL_TYPE_NONE;
+    }
 
   /* fill the multiboot info structure */
   mbi.cmdline = (int) arg;
@@ -472,6 +486,7 @@ load_image (char *kernel, char *arg)
       type = KERNEL_TYPE_NONE;
     }
 
+  grub_close ();
   return type;
 }
 
@@ -483,8 +498,15 @@ load_module (char *module, char *arg)
   /* if we are supposed to load on 4K boundaries */
   cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
 
-  if (!grub_open (module) || !(len = grub_read ((char *) cur_addr, -1)))
+  if (!grub_open (module))
     return 0;
+
+  len = grub_read ((char *) cur_addr, -1);
+  if (! len)
+    {
+      grub_close ();
+      return 0;
+    }
 
   printf ("   [Multiboot-module @ 0x%x, 0x%x bytes]\n", cur_addr, len);
 
@@ -501,6 +523,7 @@ load_module (char *module, char *arg)
   /* increment number of modules included */
   mbi.mods_count++;
 
+  grub_close ();
   return 1;
 }
 
@@ -510,8 +533,15 @@ load_initrd (char *initrd)
   int len;
   unsigned long *ramdisk, moveto;
 
-  if (! grub_open (initrd) || ! (len = grub_read ((char *) cur_addr, -1)))
+  if (! grub_open (initrd))
     return 0;
+
+  len = grub_read ((char *) cur_addr, -1);
+  if (! len)
+    {
+      grub_close ();
+      return 0;
+    }
 
   moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
   memmove ((void *) RAW_ADDR (moveto), (void *) cur_addr, len);
@@ -522,6 +552,7 @@ load_initrd (char *initrd)
   ramdisk[0] = RAW_ADDR (moveto);
   ramdisk[1] = len;
 
+  grub_close ();
   return 1;
 }
 

@@ -1,3 +1,58 @@
+1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Michael Hohmuth <hohmuth@innocent.com>:
+	* acconfig.h (HAVE_USCORE_USCORE_BSS_START_SYMBOL): Added the
+	`undef' entry.
+	(HAVE_EDATA_SYMBOL): Likewise.
+	(HAVE_USCORE_EDATA_SYMBOL): Likewise.
+	* acinclude.m4 (grub_CHECK_USCORE_USCORE_BSS_START_SYMBOL): New
+	function.
+	(grub_CHECK_EDATA_SYMBOL): Likewise.
+	(grub_CHECK_USCORE_EDATA_SYMBOL): Likewise.
+	* configure.in: Check for __bss, edata and _edata.
+	* netboot/Makefile.am (DRIVERS): Deleted ns8390.c and ns8390.h.
+	(libdrivers_a_LIBADD): New variable.
+	($(libdrivers_a_LIBADD)): New target.
+	(nepci_o_CFLAGS): New variable.
+	(ne_o_CFLAGS): Likewise.
+	(wd_o_CFLAGS): Likewise.
+	(t503_o_CFLAGS): Likewise.
+	* netboot/fsys_tftp.c (tftp_close): New function.
+	* stage2/boot.c (load_image): Call grub_close before return.
+	(load_initrd): Likewise.
+	(load_module): Likewise.
+	* stage2/builtins.c (cat_func): Likewise.
+	(chainloader_func): Likewise.
+	(configfile_func): Likewise.
+	(embed_func): Likewise.
+	(find_func): Likewise.
+	(install_func): Set IS_OPEN to the value returned by grub_open.
+	If IS_OPEN is non-zero, call grub_close before return.
+	(setup_func): Call grub_close after grub_open.
+	(testload): Call grub_close before return.
+	* stage2/disk_io.c (fsys_table): Add the `close' member into
+	each of the entries. For TFTP, tftp_close is added, and for the
+	rest, NULL is added.
+	(grub_read): "|" -> "||".
+	(grub_close): New function.
+	* stage2/filesys.h [FSYS_TFTP] (tftp_close): Declared.
+	(struct fsys_entry): Added close_func.
+	* stage2/shared.h (grub_close): Declared.
+	* stage2/stage1_5.c (cmain): Call grub_close after grub_open.
+	* stage2/stage2.c (cmain): Clear ERRNUM after calling
+	find_command to just ignore the error code.
+	Call grub_close after loading the configuration file.
+	
+	* stage2/asm.S (main): Clean out the bss.
+
+1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/new-grub.texi: Updated.
+	* docs/user-ref.texi: Likewise.
+	* docs/tutorial.texi: Likewise.
+	* docs/prog-ref.texi: Likewise.
+	* docs/appendices.texi: Likewise.
+	
 1999-10-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/prog-ref.texi: New file.

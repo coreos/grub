@@ -276,6 +276,9 @@ command. An example is to set @samp{vga} to @samp{ext}:
 grub> kernel /vmlinuz root=/dev/hda1 vga=ext
 @end example
 
+See the documentation in the Linux source tree, for the complete
+information on the available options.
+
 If you use initrd, execute the command @command{initrd} after
 @command{kernel}:
 

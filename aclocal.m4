@@ -10,6 +10,18 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
+dnl aclocal.m4 generated automatically by aclocal 1.4a
+
+dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+dnl PARTICULAR PURPOSE.
+
 dnl grub_ASM_USCORE checks if C symbols get an underscore after
 dnl compiling to assembler.
 dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
@@ -199,6 +211,63 @@ if test "x$grub_cv_check_uscore_start_symbol" = xyes; then
 fi
 
 AC_MSG_RESULT([$grub_cv_check_uscore_start_symbol])
+])
+
+dnl
+dnl grub_CHECK_USCORE_USCORE_BSS_START_SYMBOL checks if __bss_start is
+dnl automatically defined by the compiler.
+dnl Written by Michael Hohmoth.
+AC_DEFUN(grub_CHECK_USCORE_USCORE_BSS_START_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if __bss_start is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_uscore_uscore_bss_start_symbol,
+[AC_TRY_LINK([], [asm ("incl __bss_start")],
+   grub_cv_check_uscore_uscore_bss_start_symbol=yes,
+   grub_cv_check_uscore_uscore_bss_start_symbol=no)])
+
+if test "x$grub_cv_check_uscore_uscore_bss_start_symbol" = xyes; then
+  AC_DEFINE([HAVE_USCORE_USCORE_BSS_START_SYMBOL])
+fi
+
+AC_MSG_RESULT([$grub_cv_check_uscore_uscore_bss_start_symbol])
+])
+
+dnl
+dnl grub_CHECK_EDATA_SYMBOL checks if edata is automatically defined by the
+dnl compiler.
+dnl Written by Michael Hohmuth.
+AC_DEFUN(grub_CHECK_EDATA_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if edata is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_edata_symbol,
+[AC_TRY_LINK([], [asm ("incl edata")],
+   grub_cv_check_edata_symbol=yes,
+   grub_cv_check_edata_symbol=no)])
+
+if test "x$grub_cv_check_edata_symbol" = xyes; then
+  AC_DEFINE([HAVE_EDATA_SYMBOL])
+fi
+
+AC_MSG_RESULT([$grub_cv_check_edata_symbol])
+])
+
+dnl
+dnl grub_CHECK_USCORE_EDATA_SYMBOL checks if _edata is automatically
+dnl defined by the compiler.
+dnl Written by Michael Hohmuth.
+AC_DEFUN(grub_CHECK_USCORE_EDATA_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if _edata is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_uscore_edata_symbol,
+[AC_TRY_LINK([], [asm ("incl _edata")],
+   grub_cv_check_uscore_edata_symbol=yes,
+   grub_cv_check_uscore_edata_symbol=no)])
+
+if test "x$grub_cv_check_uscore_edata_symbol" = xyes; then
+  AC_DEFINE([HAVE_USCORE_EDATA_SYMBOL])
+fi
+
+AC_MSG_RESULT([$grub_cv_check_uscore_edata_symbol])
 ])
 
 dnl
@@ -408,4 +477,5 @@ else
   $1_TRUE='#'
   $1_FALSE=
 fi])
+
 

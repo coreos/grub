@@ -97,38 +97,39 @@ edition documents version @value{VERSION}.
 @menu
 Part I: The Tutorial Manual
 
-* Overview::
-* Device Syntax::
-* Installation::
-* Boot::
-* Configuration::
+* Overview::                    Starting to use GRUB
+* Device Syntax::               How to specify a device
+* Installation::                How to install GRUB on your drive
+* Boot::                        How to boot your operating systems
+* Configuration::               Writing your configuration file
 
 Part II: The User Reference Manual
 
-* Introduction::
-* Filesystem::
-* Interface::
-* Command::
-* Troubleshooting::
-* Invoking the grub shell::
-* Invoking mbchk::
+* Introduction::                Capturing the spirit of GRUB
+* Filesystem::                  Filesystem syntax and semantics
+* Interface::                   The menu and the command-line
+* Command::                     The list of available builtin commands
+* Troubleshooting::             Error messages produced by GRUB
+* Invoking the grub shell::     How to use the grub shell
+* Invoking mbchk::              How to use the Multiboot checker
 
 Part III: The Programmer Reference Manual
 
-* Memory map::
-* Embedded data::
-* Filesystem interface::
-* Bootstrap tricks::
-* Memory detection::
-* Low-level disk I/O::
-* MBR::
-* Partition table::
+* Hacking::                     Implementation details
+* Memory map::                  The memory map of various components
+* Embedded data::               Embedded variables in GRUB
+* Filesystem interface::        The generic interface for the fs code
+* Bootstrap tricks::            The bootstrap mechanism used in GRUB
+* Memory detection::            How to detect all installed @sc{ram}
+* Low-level disk I/O::          INT 13H disk I/O interrupts
+* MBR::                         The structure of Master Boot Record
+* Partition table::             The format of partition table
 
 Appendices and Indices
 
-* FAQ::
-* Obtaining and Building GRUB::
-* Reporting bugs::
+* FAQ::                         Frequently asked questions
+* Obtaining and Building GRUB:: How to obtain and build GRUB
+* Reporting bugs::              Where you should send a bug report
 * Index::
 
 @end menu

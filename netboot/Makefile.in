@@ -91,7 +91,7 @@ INCLUDES = -I$(top_srcdir)/stage1
 noinst_LIBRARIES = $(LIBDRIVERS)
 
 DRIVERS = 3c509.c 3c509.h 3c59x.c cs89x0.c cs89x0.h eepro100.c \
-	lance.c ns8390.c ns8390.h
+	lance.c
 
 
 libdrivers_a_SOURCES = byteorder.h config.c netboot_config.h \
@@ -100,6 +100,21 @@ libdrivers_a_SOURCES = byteorder.h config.c netboot_config.h \
 
 libdrivers_a_CFLAGS = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	-DFSYS_TFTP $(NET_CFLAGS) $(NET_EXTRAFLAGS)
+
+
+libdrivers_a_LIBADD = nepci.o ne.o wd.o t503.o
+
+nepci_o_CFLAGS = $(filter-out -DINCLUDE_T503=1 -DINCLUDE_NE=1 \
+	-DINCLUDE_WD=1, $(libdrivers_a_CFLAGS))
+
+ne_o_CFLAGS = $(filter-out -DINCLUDE_T503=1 -DINCLUDE_NEPCI=1 \
+	-DINCLUDE_WD=1, $(libdrivers_a_CFLAGS))
+
+wd_o_CFLAGS = $(filter-out -DINCLUDE_T503=1 -DINCLUDE_NE=1 \
+	-DINCLUDE_NEPCI=1, $(libdrivers_a_CFLAGS))
+
+t503_o_CFLAGS = $(filter-out -DINCLUDE_NE=1 -DINCLUDE_NEPCI=1 \
+	-DINCLUDE_WD=1, $(libdrivers_a_CFLAGS))
 
 subdir = netboot
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -113,11 +128,11 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libdrivers_a_AR = $(AR) cru
-libdrivers_a_LIBADD = 
+libdrivers_a_DEPENDENCIES =  nepci.o ne.o wd.o t503.o
 am_libdrivers_a_OBJECTS =  libdrivers_a-config.o \
 libdrivers_a-fsys_tftp.o libdrivers_a-ip.o libdrivers_a-pci.o \
 libdrivers_a-3c509.o libdrivers_a-3c59x.o libdrivers_a-cs89x0.o \
-libdrivers_a-eepro100.o libdrivers_a-lance.o libdrivers_a-ns8390.o
+libdrivers_a-eepro100.o libdrivers_a-lance.o
 libdrivers_a_OBJECTS =  $(am_libdrivers_a_OBJECTS)
 AR = ar
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -132,8 +147,7 @@ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
 DEP_FILES =  .deps/3c509.P .deps/3c59x.P .deps/config.P .deps/cs89x0.P \
-.deps/eepro100.P .deps/fsys_tftp.P .deps/ip.P .deps/lance.P \
-.deps/ns8390.P .deps/pci.P
+.deps/eepro100.P .deps/fsys_tftp.P .deps/ip.P .deps/lance.P .deps/pci.P
 SOURCES = $(libdrivers_a_SOURCES)
 OBJECTS = $(am_libdrivers_a_OBJECTS)
 
@@ -175,7 +189,6 @@ libdrivers_a-3c59x.o: 3c59x.c
 libdrivers_a-cs89x0.o: cs89x0.c
 libdrivers_a-eepro100.o: eepro100.c
 libdrivers_a-lance.o: lance.c
-libdrivers_a-ns8390.o: ns8390.c
 
 libdrivers.a: $(libdrivers_a_OBJECTS) $(libdrivers_a_DEPENDENCIES)
 	-rm -f libdrivers.a
@@ -438,25 +451,6 @@ libdrivers_a-lance.lo: lance.c
 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
 	    >> .deps/$(*D)/$(*F).P; \
 	rm -f .deps/$(*D)/$(*F).pp
-
-libdrivers_a-ns8390.o: ns8390.c
-	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
-	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
-	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm .deps/$(*D)/$(*F).pp
-
-libdrivers_a-ns8390.lo: ns8390.c
-	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
-	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
-	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
-	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm -f .deps/$(*D)/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -529,6 +523,10 @@ uninstall-am uninstall all-redirect all-am all install-strip \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+$(libdrivers_a_LIBADD): ns8390.c ns8390.h
+$(libdrivers_a_LIBADD): %.o: ns8390.c
+	$(COMPILE) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

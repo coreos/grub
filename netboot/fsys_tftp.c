@@ -146,13 +146,11 @@ int tftp_dir(char *dirname)
   return 1;
 }
 
-#if 0
 void tftp_close(void)
 {
   buf_read = 0;
-  buf_fill(1);			/* abort. */
+  buf_fill (1);			/* abort. */
 }
-#endif
 
 static int buf_fill(int abort)
 {

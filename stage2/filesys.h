@@ -65,6 +65,7 @@ int minix_dir (char *dirname);
 int tftp_mount (void);
 int tftp_read (char *buf, int len);
 int tftp_dir (char *dirname);
+void tftp_close (void);
 #else
 #define FSYS_TFTP_NUM 0
 #endif
@@ -90,12 +91,13 @@ int tftp_dir (char *dirname);
 /* this next part is pretty ugly, but it keeps it in one place! */
 
 struct fsys_entry
-  {
-    char *name;
-    int (*mount_func) (void);
-    int (*read_func) (char *buf, int len);
-    int (*dir_func) (char *dirname);
-  };
+{
+  char *name;
+  int (*mount_func) (void);
+  int (*read_func) (char *buf, int len);
+  int (*dir_func) (char *dirname);
+  void (*close_func) (void);
+};
 
 #ifdef STAGE1_5
 # define print_possibilities 0

@@ -608,6 +608,7 @@ cmain (void)
 
 	      /* Get the pointer to the builtin structure.  */
 	      builtin = find_command (cmdline);
+	      errnum = 0;
 	      if (! builtin)
 		/* Unknown command. Just skip now.  */
 		continue;
@@ -680,6 +681,8 @@ cmain (void)
 	  config_entries[config_len++] = 0;
 	  grub_memmove (config_entries + config_len, menu_entries, menu_len);
 	  menu_entries = config_entries + config_len;
+
+	  grub_close ();
 	}
       
       if (! num_entries)

@@ -1,4 +1,3 @@
-
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
@@ -29,8 +28,13 @@ cmain (void)
    *  Here load the true second-stage boot-loader.
    */
 
-  if (grub_open (config_file) && grub_read ((char *) 0x8000, -1))
-    chain_stage2 (0, 0x8200);
+  if (grub_open (config_file))
+    {
+      grub_close ();
+      
+      if (grub_read ((char *) 0x8000, -1))
+	chain_stage2 (0, 0x8200);
+    }
 
   /*
    *  If not, then print error message and die.

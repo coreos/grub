@@ -165,6 +165,7 @@ cat_func (char *arg, int flags)
   while (grub_read (&c, 1))
     grub_putchar (c);
 
+  grub_close ();
   return 0;
 }
 
@@ -182,18 +183,25 @@ static struct builtin builtin_cat =
 static int
 chainloader_func (char *arg, int flags)
 {
-  if (grub_open (arg)
-      && grub_read ((char *) BOOTSEC_LOCATION, SECTOR_SIZE) == SECTOR_SIZE
+  if (! grub_open (arg))
+    {
+      kernel_type = KERNEL_TYPE_NONE;
+      return 1;
+    }
+      
+  if (grub_read ((char *) BOOTSEC_LOCATION, SECTOR_SIZE) == SECTOR_SIZE
       && (*((unsigned short *) (BOOTSEC_LOCATION + BOOTSEC_SIG_OFFSET))
 	  == BOOTSEC_SIGNATURE))
     kernel_type = KERNEL_TYPE_CHAINLOADER;
   else if (! errnum)
     {
+      grub_close ();
       errnum = ERR_EXEC_FORMAT;
       kernel_type = KERNEL_TYPE_NONE;
       return 1;
     }
 
+  grub_close ();
   return 0;
 }
 
@@ -351,6 +359,8 @@ configfile_func (char *arg, int flags)
   if (! grub_open (arg))
     return 1;
 
+  grub_close ();
+  
   /* Copy ARG to CONFIG_FILE.  */
   while ((*new_config++ = *arg++) != 0)
     ;
@@ -546,6 +556,8 @@ embed_func (char *arg, int flags)
 
   /* Read the whole of the Stage 1.5.  */
   len = grub_read (stage1_5_buffer, -1);
+  grub_close ();
+  
   if (errnum)
     return 1;
 
@@ -702,7 +714,10 @@ find_func (char *arg, int flags)
       saved_drive = current_drive;
       saved_partition = current_partition;
       if (grub_open (filename))
-	grub_printf (" (fd%d)\n", drive);
+	{
+	  grub_close ();
+	  grub_printf (" (fd%d)\n", drive);
+	}
     }
 
   /* Hard disks.  */
@@ -728,8 +743,11 @@ find_func (char *arg, int flags)
 		  saved_drive = current_drive;
 		  saved_partition = current_partition;
 		  if (grub_open (filename))
-		    grub_printf (" (hd%d,%d,%c)",
-				 drive - 0x80, slice, part + 'a');
+		    {
+		      grub_close ();
+		      grub_printf (" (hd%d,%d,%c)",
+				   drive - 0x80, slice, part + 'a');
+		    }
 		}
 	    }
 	  else
@@ -737,7 +755,10 @@ find_func (char *arg, int flags)
 	      saved_drive = current_drive;
 	      saved_partition = current_partition;
 	      if (grub_open (filename))
-		grub_printf (" (hd%d,%d)", drive - 0x80, slice);
+		{
+		  grub_close ();
+		  grub_printf (" (hd%d,%d)", drive - 0x80, slice);
+		}
 	    }
 	}
     }
@@ -1098,6 +1119,8 @@ install_func (char *arg, int flags)
   char *config_file_location;
   /* If FILE is a Stage 1.5?  */
   int is_stage1_5 = 0;
+  /* Must call grub_close?  */
+  int is_open = 0;
 
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
   static void disk_read_savesect_func (int sector)
@@ -1161,7 +1184,8 @@ install_func (char *arg, int flags)
 #endif
 
   /* Read Stage 1.  */
-  if (! grub_open (stage1_file)
+  is_open = grub_open (stage1_file);
+  if (! is_open
       || ! grub_read (stage1_buffer, SECTOR_SIZE) == SECTOR_SIZE)
     goto fail;
 
@@ -1206,8 +1230,11 @@ install_func (char *arg, int flags)
       goto fail;
     }
 
+  grub_close ();
+  
   /* Open Stage 2.  */
-  if (! grub_open (file))
+  is_open = grub_open (file);
+  if (! is_open)
     goto fail;
 
   if (! new_drive)
@@ -1371,7 +1398,9 @@ install_func (char *arg, int flags)
     }
 
  fail:
-
+  if (is_open)
+    grub_close ();
+  
   disk_read_hook = 0;
   
 #ifndef NO_DECOMPRESSION
@@ -1864,9 +1893,14 @@ setup_func (char *arg, int flags)
   /* Check for stage1 and stage2. We hardcode the filenames, so
      if the user installed GRUB in a uncommon directory, this never
      succeed.  */
-  if (! grub_open (stage1) || ! grub_open (stage2))
+  if (! grub_open (stage1))
     goto fail;
+  grub_close ();
 
+  if (! grub_open (stage2))
+    goto fail;
+  grub_close ();
+  
   /* If the drive where stage2 resides is a hard disk, try to use a
      Stage 1.5.  */
   if (image_drive & 0x80)
@@ -1882,6 +1916,7 @@ setup_func (char *arg, int flags)
 	    /* OK, check if the Stage 1.5 exists.  */
 	    if (grub_open (stage1_5_map[i].name))
 	      {
+		grub_close ();
 		grub_strcpy (config_file, stage2);
 		grub_strcpy (stage2, stage1_5_map[i].name);
 
@@ -2038,6 +2073,7 @@ testload_func (char *arg, int flags)
 
   grub_printf ("Max is 0x10ac0: i=0x%x, filepos=0x%x\n", i, filepos);
   disk_read_hook = 0;
+  grub_close ();
   return 0;
 }
 

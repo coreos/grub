@@ -42,23 +42,23 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 {
   /* TFTP should come first because others don't handle net device.  */
 # ifdef FSYS_TFTP
-  {"tftp", tftp_mount, tftp_read, tftp_dir},
+  {"tftp", tftp_mount, tftp_read, tftp_dir, tftp_close},
 # endif
 # ifdef FSYS_FAT
-  {"fat", fat_mount, 0, fat_dir},
+  {"fat", fat_mount, 0, fat_dir, 0},
 # endif
 # ifdef FSYS_EXT2FS
-  {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir},
+  {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir, 0},
 # endif
 # ifdef FSYS_MINIX
-  {"minix", minix_mount, minix_read, minix_dir},
+  {"minix", minix_mount, minix_read, minix_dir, 0},
 # endif
   /* XX FFS should come last as it's superblock is commonly crossing tracks
      on floppies from track 1 to 2, while others only use 1.  */
 # ifdef FSYS_FFS
-  {"ffs", ffs_mount, ffs_read, ffs_dir},
+  {"ffs", ffs_mount, ffs_read, ffs_dir, 0},
 # endif
-  {0, 0, 0, 0}
+  {0, 0, 0, 0, 0}
 };
 
 
@@ -1391,11 +1391,11 @@ int
 grub_read (char *buf, int len)
 {
   /* Make sure "filepos" is a sane value */
-  if ((filepos < 0) | (filepos > filemax))
+  if ((filepos < 0) || (filepos > filemax))
     filepos = filemax;
 
   /* Make sure "len" is a sane value */
-  if ((len < 0) | (len > (filemax - filepos)))
+  if ((len < 0) || (len > (filemax - filepos)))
     len = filemax - filepos;
 
   /* if target file position is past the end of
@@ -1513,3 +1513,18 @@ dir (char *dirname)
   return (*(fsys_table[fsys_type].dir_func)) (dirname);
 }
 #endif /* STAGE1_5 */
+
+void 
+grub_close (void)
+{
+  if (fsys_type == NUM_FSYS)
+    {
+      errnum = ERR_FSYS_MOUNT;
+      return;
+    }
+  
+  if (fsys_table[fsys_type].close_func == 0)
+    return;
+  
+  (*(fsys_table[fsys_type].close_func)) ();
+}

@@ -1,7 +1,9 @@
 @node Introduction
 @chapter Introduction
 
-This chapter documents the history and the features of GRUB.
+This part documents the user-visible aspect of GRUB. If you are looking
+for the information on the internals, see the Programmer Reference
+Manual (@pxref{Hacking}).
 
 @menu
 * History::                     From maggot to house fly.
