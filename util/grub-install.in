@@ -210,7 +210,7 @@ fi
 # Get the root drive.
 # For now, this uses the program `df' to get the device name, but is
 # this really portable?
-root_device=`df ${rootdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+root_device=`df ${rootdir}/ | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
 root_drive=`convert "$root_device"`
 if test "x$root_drive" = x; then
     exit 1

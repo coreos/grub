@@ -1,3 +1,9 @@
+2000-04-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in (root_device): Append `/' to ${rootdir},
+	since ROOTDIR may be empty. Reported by Satoshi Nagayasu
+	<snaga@oak.forus.or.jp>.
+	
 2000-04-15  Jochen Hoenicke  <jochen@gnu.org>
 
 	* configure.in: Added --disable-reiserfs option.
