@@ -1,3 +1,9 @@
+2004-10-11 Jason Thomas <jason@staff.pnc.com.au>
+	Patch from Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+	* docs/kernel.c.texi (cmain): Incremement mod by one, instead of
+	sizeof(module_t), since it's already a pointer of type module_t.
+	* docs/kernel.c (cmain): Do the same.
+
 2004-09-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/internals.texi (Internals): Changed to an appendix.
