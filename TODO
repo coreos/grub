@@ -36,8 +36,6 @@ Priorities:
 
 * Add ISA PnP support.
 
-* Accept any extended partition when using it for chain-loading. !!!
-
 * Fix the completion so that it works for BSD partitions as well. !!
 
 * Add more filesystems support (XFS, NTFS, etc.)

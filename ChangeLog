@@ -1,3 +1,26 @@
+1999-11-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/disk_io.c (real_open_partition): Check for the right
+	partition for any extended partition as well. Set EXT to I after
+	the check is done. Reported by Jeff Scheinberg
+	<jeffsh@erols.com>.
+	
+	* stage2/builtins.c (color_func): Use the function
+	nul_terminate.
+	(device_func) [GRUB_UTIL]: Likewise.
+	(help_func): Likewise.
+	(install_func): Save CURRENT_DRIVE, CURRENT_PARTITION and
+	BUG_GEOM in SRC_DRIVE, SRC_PARTITION and SRC_GEOM respectively,
+	and use them when patching the Stage 2.
+	NUL-terminate the configuration filename CONFIG_FILENAME.
+	If IS_STAGE1_5 is true, then check if the "real config file"
+	option is present, and, if so, patch the Stage 2 CONFIG_FILENAME
+	with the configuration filename REAL_CONFIG_FILENAME.
+	(setkey_func): Use nul_terminate instead of the local function
+	null_terminate.
+	* stage2/char_io.c [!STAGE1_5] (nul_terminate): New function.
+	* stage2/shared.h (nul_terminate): Declared.
+	
 1999-11-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/grub.texi: Add "I/O ports detection" into the menu.

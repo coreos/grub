@@ -24,6 +24,8 @@ New in 0.5.94:
 * The command "ioprobe" detects what I/O ports are used for a BIOS
   drive.
 * OpenBSD support in the grub shell is improved.
+* The command "install" can now patch a Stage 2 with a different
+  filename from "/boot/grub/menu.lst" even if a Stage 1.5 is used.
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.

@@ -19,9 +19,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-
 #include "shared.h"
-
 
 void
 print_error (void)
@@ -34,7 +32,6 @@ print_error (void)
     printf ("Error: %u\n", errnum);
 #endif /* STAGE1_5 */
 }
-
 
 char *
 convert_to_ascii (char *buf, int c,...)
@@ -77,7 +74,6 @@ convert_to_ascii (char *buf, int c,...)
 
   return ptr;
 }
-
 
 void
 grub_printf (const char *format,...)
@@ -123,7 +119,6 @@ grub_printf (const char *format,...)
     }
 }
 
-
 #ifndef STAGE1_5
 int
 grub_sprintf (char *buffer, const char *format, ...)
@@ -168,10 +163,6 @@ grub_sprintf (char *buffer, const char *format, ...)
   *bp = 0;
   return bp - buffer;
 }
-#endif /* ! STAGE1_5 */
-
-
-#ifndef STAGE1_5
 
 void
 init_page (void)
@@ -611,9 +602,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   
   return 0;
 }
-
 #endif /* STAGE1_5 */
-
 
 int
 safe_parse_maxint (char **str_ptr, int *myint_ptr)
@@ -669,7 +658,6 @@ safe_parse_maxint (char **str_ptr, int *myint_ptr)
   return 1;
 }
 
-
 int
 grub_tolower (int c)
 {
@@ -678,7 +666,6 @@ grub_tolower (int c)
 
   return c;
 }
-
 
 int
 grub_isspace (int c)
@@ -706,9 +693,7 @@ grub_memcmp (const char *s1, const char *s2, int n)
   
   return 0;
 }
-#endif /* ! STAGE1_5 */
 
-#ifndef STAGE1_5
 int
 grub_strncat (char *s1, const char *s2, int n)
 {
@@ -727,9 +712,7 @@ grub_strncat (char *s1, const char *s2, int n)
 
   return 1;
 }
-#endif /* ! STAGE1_5 */
 
-#ifndef STAGE1_5
 int
 grub_strcmp (const char *s1, const char *s2)
 {
@@ -766,8 +749,18 @@ substring (char *s1, char *s2)
   return 1;
 }
 
-
 #ifndef STAGE1_5
+/* Terminate the string STR with NUL.  */
+char *
+nul_terminate (char *str)
+{
+  while (*str && ! grub_isspace (*str))
+    str++;
+
+  *str++ = 0;
+  return str;
+}
+
 char *
 grub_strstr (const char *s1, const char *s2)
 {
@@ -798,7 +791,6 @@ grub_strlen (const char *str)
   return len;
 }
 #endif /* ! STAGE1_5 */
-
 
 int
 memcheck (int addr, int len)
@@ -840,7 +832,6 @@ memcheck (int addr, int len)
   return ! errnum;
 }
 
-
 char *
 grub_memmove (char *to, const char *from, int len)
 {
@@ -876,7 +867,6 @@ grub_memmove (char *to, const char *from, int len)
 
    return errnum ? NULL : to;
 }
-
 
 #ifndef STAGE1_5
 void *

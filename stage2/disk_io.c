@@ -494,7 +494,7 @@ real_open_partition (int flags)
       slice_no = 0;
 
       /* if this is the whole disk, return here */
-      if (!flags && current_partition == 0xFFFFFFuL)
+      if (! flags && current_partition == 0xFFFFFFuL)
 	return 1;
 
       /*
@@ -508,7 +508,7 @@ real_open_partition (int flags)
 	  /*
 	   *  If the table isn't valid, we can't continue
 	   */
-	  if (!PC_MBR_CHECK_SIG (mbr_buf))
+	  if (! PC_MBR_CHECK_SIG (mbr_buf))
 	    {
 	      errnum = ERR_BAD_PART_TABLE;
 	      return 0;
@@ -527,7 +527,9 @@ real_open_partition (int flags)
 	      part_start = part_offset + PC_SLICE_START (mbr_buf, i);
 	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
 #ifndef STAGE1_5
-	      memmove (cur_part_desc, mbr_buf + PC_SLICE_OFFSET + (i << 4), 16);
+	      grub_memmove (cur_part_desc,
+			    mbr_buf + PC_SLICE_OFFSET + (i << 4),
+			    16);
 #endif
 
 	      /*
@@ -535,21 +537,11 @@ real_open_partition (int flags)
 	       */
 	      if (current_slice)
 		{
-		  /*
-		   *  Is this an extended partition?
-		   */
-		  if (IS_PC_SLICE_TYPE_EXTENDED (current_slice))
-		    {
-		      if (ext == -1)
-			{
-			  ext = i;
-			}
-		    }
-# ifndef STAGE1_5
+#ifndef STAGE1_5
 		  /*
 		   *  Display partition information
 		   */
-		  else if (flags)
+		  if (flags && ! IS_PC_SLICE_TYPE_EXTENDED (current_slice))
 		    {
 		      current_partition |= 0xFFFF;
 		      if (! do_completion)
@@ -576,13 +568,15 @@ real_open_partition (int flags)
 		      
 		      errnum = ERR_NONE;
 		    }
-# endif /* ! STAGE1_5 */
+#endif /* ! STAGE1_5 */
+		  
 		  /*
 		   *  If we've found the right partition, we're done
 		   */
-		  else if (part_no == slice_no
-			   || (part_no == 0xFF
-			       && IS_PC_SLICE_TYPE_BSD (current_slice)))
+		  if (! flags
+		      && (part_no == slice_no
+			  || (part_no == 0xFF
+			      && IS_PC_SLICE_TYPE_BSD (current_slice))))
 		    {
 		      if ((current_partition & 0xFF00) != 0xFF00)
 			{
@@ -594,6 +588,15 @@ real_open_partition (int flags)
 
 		      ext = -2;
 		      break;
+		    }
+
+		  /*
+		   *  Is this an extended partition?
+		   */
+		  if (IS_PC_SLICE_TYPE_EXTENDED (current_slice))
+		    {
+		      if (ext == -1)
+			ext = i;
 		    }
 		}
 
@@ -609,7 +612,7 @@ real_open_partition (int flags)
 	    }
 
 	  part_offset = ext_offset + PC_SLICE_START (mbr_buf, ext);
-	  if (!ext_offset)
+	  if (! ext_offset)
 	    ext_offset = part_offset;
 	}
     }
@@ -634,14 +637,14 @@ real_open_partition (int flags)
 		  ext = -2;
 		}
 	    }
-# ifndef STAGE1_5
+#ifndef STAGE1_5
 	  else
 	    {
 	      current_partition = 0xFFFFFF;
 	      check_and_print_mount ();
 	      errnum = 0;
 	    }
-# endif /* STAGE1_5 */
+#endif /* STAGE1_5 */
 	}
     }
 

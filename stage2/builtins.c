@@ -290,12 +290,7 @@ color_func (char *arg, int flags)
 	return -1;
 
       str = ptr;
-      /* Find a space.  */
-      for (; *ptr && ! grub_isspace (*ptr); ptr++)
-	;
-
-      /* Terminate the string STR.  */
-      *ptr = 0;
+      nul_terminate (str);
 
       /* Search for the color name.  */      
       for (i = 0; i < 8; i++)
@@ -451,7 +446,6 @@ device_func (char *arg, int flags)
 #ifdef GRUB_UTIL
   char *drive = arg;
   char *device;
-  char *ptr;
 
   /* Get the drive number from DRIVE.  */
   if (! set_device (drive))
@@ -466,10 +460,7 @@ device_func (char *arg, int flags)
     }
 
   /* Terminate DEVICE.  */
-  ptr = device;
-  while (*ptr && *ptr != ' ')
-    ptr++;
-  *ptr = 0;
+  nul_terminate (device);
 
   assign_device_name (current_drive, device);
   
@@ -951,16 +942,13 @@ help_func (char *arg, int flags)
       do
 	{
 	  struct builtin **builtin;
-	  char *ptr = arg;
 	  char *next_arg;
 
 	  /* Get the next argument.  */
 	  next_arg = skip_to (0, arg);
 
 	  /* Terminate ARG.  */
-	  while (*ptr && *ptr != ' ')
-	    ptr++;
-	  *ptr = 0;
+	  nul_terminate (arg);
 
 	  for (builtin = builtin_table; *builtin; builtin++)
 	    {
@@ -1120,11 +1108,14 @@ install_func (char *arg, int flags)
   char *old_sect = stage1_buffer + SECTOR_SIZE;
   char *stage2_first_buffer = old_sect + SECTOR_SIZE;
   char *stage2_second_buffer = stage2_first_buffer + SECTOR_SIZE;
-  char *dummy = stage2_second_buffer + SECTOR_SIZE;
+  /* XXX: Probably SECTOR_SIZE is reasonable.  */
+  char *config_filename = stage2_second_buffer + SECTOR_SIZE;
+  char *dummy = config_filename + SECTOR_SIZE;
   int new_drive = 0xFF;
   int dest_drive, dest_sector;
+  int src_drive, src_partition;
   int i;
-  struct geometry dest_geom;
+  struct geometry dest_geom, src_geom;
   int saved_sector;
   int stage2_first_sector, stage2_second_sector;
   char *ptr;
@@ -1251,9 +1242,13 @@ install_func (char *arg, int flags)
   if (! is_open)
     goto fail;
 
+  src_drive = current_drive;
+  src_partition = current_partition;
+  src_geom = buf_geom;
+  
   if (! new_drive)
-    new_drive = current_drive;
-  else if (current_drive != dest_drive)
+    new_drive = src_drive;
+  else if (src_drive != dest_drive)
     grub_printf ("Warning: the option `d' was not used, but the Stage 1 will"
 		 " be installed on a\ndifferent drive than the drive where"
 		 " the Stage 2 resides.\n");
@@ -1340,7 +1335,7 @@ install_func (char *arg, int flags)
   if (*ptr == 'p')
     {
       *((long *) (stage2_second_buffer + STAGE2_INSTALLPART))
-	= current_partition;
+	= src_partition;
       if (is_stage1_5)
 	{
 	  /* Reset the device information in FILE if it is a Stage 1.5.  */
@@ -1355,6 +1350,9 @@ install_func (char *arg, int flags)
 
   if (*ptr)
     {
+      grub_strcpy (config_filename, ptr);
+      nul_terminate (config_filename);
+	
       if (! is_stage1_5)
 	/* If it is a Stage 2, just copy PTR to CONFIG_FILE_LOCATION.  */
 	grub_strcpy (config_file_location, ptr);
@@ -1362,7 +1360,6 @@ install_func (char *arg, int flags)
 	{
 	  char *config_file;
 	  unsigned long device;
-	  int tmp = current_drive;
 
 	  /* Translate the external device syntax to the internal device
 	     syntax.  */
@@ -1374,10 +1371,62 @@ install_func (char *arg, int flags)
 	    }
 
 	  device = current_drive << 24 | current_partition;
-	  current_drive = tmp;
 	  grub_memmove (config_file_location, (char *) &device,
 			sizeof (device));
 	  grub_strcpy (config_file_location + sizeof (device), config_file);
+	}
+
+      /* Check if the configuration filename is specified, if a Stage 1.5
+	 is used.  */
+      if (is_stage1_5)
+	{
+	  char *real_config_filename = skip_to (0, ptr);
+	  
+	  if (*real_config_filename)
+	    {
+	      /* Specified */
+	      char *location;
+	      
+	      is_open = grub_open (config_filename);
+	      if (! is_open)
+		goto fail;
+
+	      /* Skip the first sector.  */
+	      filepos = SECTOR_SIZE;
+	      
+	      disk_read_hook = disk_read_savesect_func;
+	      if (grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) != SECTOR_SIZE)
+		goto fail;
+
+	      disk_read_hook = 0;
+	      grub_close ();
+	      is_open = 0;
+	      
+	      /* Sanity check.  */
+	      if (*((unsigned char *) SCRATCHADDR + STAGE2_STAGE2_ID)
+		  != STAGE2_ID_STAGE2)
+		{
+		  errnum = ERR_BAD_VERSION;
+		  goto fail;
+		}
+	      
+	      /* Find a string for the configuration filename.  */
+	      location = (char *) SCRATCHADDR + STAGE2_VER_STR_OFFS;
+	      while (*(location++))
+		;
+	      
+	      /* Copy the name.  */
+	      grub_strcpy (location, real_config_filename);
+	      
+	      /* Write it to the disk.  */
+	      buf_track = -1;
+	      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+			    saved_sector, 1, SCRATCHSEG))
+		{
+		  errnum = ERR_WRITE;
+		  goto fail;
+		}
+	    }
 	}
     }
 
@@ -1386,7 +1435,7 @@ install_func (char *arg, int flags)
 
   /* Write the modified first sector of Stage2 to the disk.  */
   grub_memmove ((char *) SCRATCHADDR, stage2_first_buffer, SECTOR_SIZE);
-  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+  if (biosdisk (BIOSDISK_WRITE, src_drive, &src_geom,
 		stage2_first_sector, 1, SCRATCHSEG))
     {
       errnum = ERR_WRITE;
@@ -1395,7 +1444,7 @@ install_func (char *arg, int flags)
   
   /* Write the modified second sector of Stage2 to the disk.  */
   grub_memmove ((char *) SCRATCHADDR, stage2_second_buffer, SECTOR_SIZE);
-  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+  if (biosdisk (BIOSDISK_WRITE, src_drive, &src_geom,
 		stage2_second_sector, 1, SCRATCHSEG))
     {
       errnum = ERR_WRITE;
@@ -1429,7 +1478,7 @@ static struct builtin builtin_install =
   "install",
   install_func,
   BUILTIN_CMDLINE,
-  "install STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE]",
+  "install STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE] [REAL_CONFIG_FILE]",
   "Install STAGE1 on DEVICE, and install a blocklist for loading STAGE2"
   " as a Stage 2. If the option `d' is present, the Stage 1 will always"
   " look for the disk where STAGE2 was installed, rather than using"
@@ -1438,7 +1487,9 @@ static struct builtin builtin_install =
   " the option `p' or CONFIG_FILE is present, then the first block"
   " of Stage 2 is patched with new values of the partition and name"
   " of the configuration file used by the true Stage 2 (for a Stage 1.5,"
-  " this is the name of the true Stage 2) at boot time."
+  " this is the name of the true Stage 2) at boot time. If STAGE2 is a Stage"
+  " 1.5 and REAL_CONFIG_FILE is present, then the Stage 2 CONFIG_FILE is"
+  " patched with the configuration filename REAL_CONFIG_FILE."
 };
 
 
@@ -1875,7 +1926,7 @@ struct keysym
   unsigned char keycode;		/* keyboard scancode */
 };
 
-/* The table for key symbols. If the "unshifted" member of an entry is
+/* The table for key symbols. If the "shifted" member of an entry is
    NULL, the entry does not have shifted state.  */
 static struct keysym keysym_table[] =
 {
@@ -1956,13 +2007,6 @@ setkey_func (char *arg, int flags)
   int to_code, from_code;
   int map_in_interrupt = 0;
   
-  static void null_terminate (char *str)
-    {
-      while (*str && ! grub_isspace (*str))
-	str++;
-      *str = 0;
-    }
-  
   static int find_key_code (char *key)
     {
       int i;
@@ -1996,8 +2040,8 @@ setkey_func (char *arg, int flags)
   to_key = arg;
   from_key = skip_to (0, to_key);
 
-  null_terminate (to_key);
-  null_terminate (from_key);
+  nul_terminate (to_key);
+  nul_terminate (from_key);
 
   to_code = find_ascii_code (to_key);
   from_code = find_ascii_code (from_key);
