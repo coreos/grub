@@ -1,3 +1,8 @@
+2000-07-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* lib/device.c: Include errno.h. Reported by Thierry DELHAISE
+	<thierry.delhaise@delhaise.com>.
+	
 2000-07-12  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Just to start implementing serial console support...
