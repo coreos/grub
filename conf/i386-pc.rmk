@@ -62,7 +62,7 @@ genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
-	vga.mod font.mod
+	vga.mod font.mod _multiboot.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -97,3 +97,7 @@ vga_mod_CFLAGS = $(COMMON_CFLAGS)
 # For font.mod.
 font_mod_SOURCES = font/manager.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For _multiboot.mod.
+_multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
+_multiboot_mod_CFLAGS = $(COMMON_CFLAGS)

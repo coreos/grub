@@ -2,6 +2,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Jeroen Dekkers <jeroen@dekkers.cx>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,6 +32,7 @@ extern pupa_size_t EXPORT_VAR(pupa_os_area_size);
 
 void EXPORT_FUNC(pupa_loader_set) (pupa_err_t (*boot) (void),
 				   pupa_err_t (*unload) (void));
+void EXPORT_FUNC(pupa_loader_unset) (void);
 
 pupa_err_t EXPORT_FUNC(pupa_loader_boot) (void);
 

@@ -71,6 +71,19 @@ pupa_strncpy (char *dest, const char *src, int c)
 }
 
 char *
+pupa_stpcpy (char *dest, const char *src)
+{
+  char *d = dest;
+  const char *s = src;
+
+  do
+    *d++ = *s;
+  while (*s++ != '\0');
+
+  return d - 1;
+}
+
+char *
 pupa_strcat (char *dest, const char *src)
 {
   char *p = dest;

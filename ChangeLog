@@ -1,3 +1,25 @@
+2003-11-16  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Add _multiboot.mod.
+	(_multiboot_mod_SOURCES): New variable.
+	(_multiboot_mod_CFLAGS): Likewise.
+	* loader/i386/pc/multiboot.c: New file.
+	* include/pupa/i386/pc/multiboot.h: Likewise.
+	* kern/i386/pc/startup.S: Include pupa/machine/multiboot.h.
+	(pupa_multiboot_real_boot): New function.
+	* include/pupa/i386/pc/loader.h: Include pupa/machine/multiboot.h.
+	(pupa_multiboot_real_boot): New prototype.
+	(pupa_rescue_cmd_multiboot): Likewise
+	(pupa_rescue_cmd_module): Likewise.
+
+	* kern/loader.c (pupa_loader_set): Continue when
+	pupa_loader_unload_func() fails.
+	(pupa_loader_unset): New function.
+	* include/pupa/loader.h (pupa_loader_unset): New prototype.
+
+	* kern/misc.c (pupa_stpcpy): New function.
+	* include/pupa/misc.h (pupa_stpcpy): New prototype.
+
 2003-11-12  Marco Gerards  <metgerards@student.han.nl>
 
 	* disk/i386/pc/biosdisk.c (pupa_biosdisk_open): Correctly check

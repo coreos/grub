@@ -3,6 +3,7 @@
  *  Copyright (C) 1999,2000,2001,2002 Free Software Foundation, Inc.
  *  Copyright (C) 2002,2003  Yoshinori K. Okuji <okuji@enbug.org>
  *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
+ *  Copyright (C) 2003 Jeroen Dekkers <jeroen@dekkers.cx>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,6 +53,7 @@
 #include <pupa/machine/console.h>
 #include <pupa/machine/linux.h>
 #include <pupa/machine/kernel.h>
+#include <pupa/machine/multiboot.h>
 		
 #define ABS(x)	((x) - EXT_C(start) + PUPA_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 	
@@ -621,6 +623,29 @@ linux_setup_seg:
 	.code32
 
 		
+/*
+ * This starts the multiboot kernel.
+ */
+
+FUNCTION(pupa_multiboot_real_boot)
+	/* Push the entry address on the stack.  */
+	pushl	%eax
+	/* Move the address of the multiboot information structure to ebx.  */
+	movl	%edx,%ebx
+	
+	/* Unload all modules and stop the floppy driver.  */
+	call	EXT_C(pupa_dl_unload_all)
+	call	EXT_C(pupa_stop_floppy)
+
+	/* Interrupts should be disabled.  */
+	cli
+	
+	/* Move the magic value into eax and jump to the kernel.  */
+	movl	$PUPA_MB_MAGIC2,%eax
+	popl	%ecx
+	jmp 	*%ecx
+	
+	
 /*
  *   int pupa_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
  *

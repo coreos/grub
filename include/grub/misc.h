@@ -32,6 +32,7 @@
 void *EXPORT_FUNC(pupa_memmove) (void *dest, const void *src, pupa_size_t n);
 char *EXPORT_FUNC(pupa_strcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(pupa_strncpy) (char *dest, const char *src, int c);
+char *EXPORT_FUNC(pupa_stpcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(pupa_strcat) (char *dest, const char *src);
 
 

@@ -1,6 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003  Jeroen Dekkers <jeroen@dekkers.cx>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,13 +33,24 @@ pupa_loader_set (pupa_err_t (*boot) (void),
 		 pupa_err_t (*unload) (void))
 {
   if (pupa_loader_loaded && pupa_loader_unload_func)
-    if (pupa_loader_unload_func () != PUPA_ERR_NONE)
-      return;
+    pupa_loader_unload_func ();
   
   pupa_loader_boot_func = boot;
   pupa_loader_unload_func = unload;
 
   pupa_loader_loaded = 1;
+}
+
+void
+pupa_loader_unset(void)
+{
+  if (pupa_loader_loaded && pupa_loader_unload_func)
+    pupa_loader_unload_func ();
+  
+  pupa_loader_boot_func = 0;
+  pupa_loader_unload_func = 0;
+
+  pupa_loader_loaded = 0;
 }
 
 pupa_err_t

@@ -403,7 +403,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
-	vga.mod font.mod
+	vga.mod font.mod _multiboot.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -750,6 +750,45 @@ font_mod-font_manager.d: font/manager.c
 -include font_mod-font_manager.d
 
 font_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For _multiboot.mod.
+_multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
+CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_i386_pc_multiboot.o def-_multiboot.lst und-_multiboot.lst
+MOSTLYCLEANFILES += _multiboot_mod-loader_i386_pc_multiboot.d
+DEFSYMFILES += def-_multiboot.lst
+UNDSYMFILES += und-_multiboot.lst
+
+_multiboot.mod: pre-_multiboot.o mod-_multiboot.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-_multiboot.o: _multiboot_mod-loader_i386_pc_multiboot.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-_multiboot.o: mod-_multiboot.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
+
+mod-_multiboot.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_multiboot' $< > $@ || (rm -f $@; exit 1)
+
+def-_multiboot.lst: pre-_multiboot.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _multiboot/' > $@
+
+und-_multiboot.lst: pre-_multiboot.o
+	echo '_multiboot' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+_multiboot_mod-loader_i386_pc_multiboot.o: loader/i386/pc/multiboot.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
+
+_multiboot_mod-loader_i386_pc_multiboot.d: loader/i386/pc/multiboot.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -M $< 	  | sed 's,multiboot\.o[ :]*,_multiboot_mod-loader_i386_pc_multiboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include _multiboot_mod-loader_i386_pc_multiboot.d
+
+_multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep
