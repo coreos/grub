@@ -63,14 +63,14 @@ struct reiserfs_super_block
   __u32 s_journal_max_commit_age ;      /* in seconds, how old can an async commit be */
   __u32 s_journal_max_trans_age ;       /* in seconds, how old can a transaction be */
   __u16 s_blocksize;                   	/* block size           */
-  __u16 s_oid_maxsize;			/* max size of object id array, see get_objectid() commentary  */
+  __u16 s_oid_maxsize;			/* max size of object id array  */
   __u16 s_oid_cursize;			/* current size of object id array */
   __u16 s_state;                       	/* valid or error       */
   char s_magic[16];                     /* reiserfs magic string indicates that file system is reiserfs */
   __u16 s_tree_height;                  /* height of disk tree */
   __u16 s_bmap_nr;                      /* amount of bitmap blocks needed to address each block of file system */
   __u16 s_version;
-  char s_unused[128] ;			/* zero filled by mkreiserfs */
+  char s_unused[128];			/* zero filled by mkreiserfs */
 };
 
 #define REISERFS_MAX_SUPPORTED_VERSION 2
@@ -78,6 +78,45 @@ struct reiserfs_super_block
 #define REISER2FS_SUPER_MAGIC_STRING "ReIsEr2Fs"
 
 #define MAX_HEIGHT 7
+
+/* must be correct to keep the desc and commit structs at 4k */
+#define JOURNAL_TRANS_HALF 1018
+
+/* first block written in a commit.  */
+struct reiserfs_journal_desc {
+  __u32 j_trans_id;			/* id of commit */
+  __u32 j_len;				/* length of commit. len +1 is the commit block */
+  __u32 j_mount_id;			/* mount id of this trans*/
+  __u32 j_realblock[JOURNAL_TRANS_HALF]; /* real locations for the first blocks */
+  char j_magic[12];
+};
+
+/* last block written in a commit */
+struct reiserfs_journal_commit {
+  __u32 j_trans_id;			/* must match j_trans_id from the desc block */
+  __u32 j_len;			/* ditto */
+  __u32 j_realblock[JOURNAL_TRANS_HALF]; /* real locations for the last blocks */
+  char j_digest[16];			/* md5 sum of all the blocks involved, including desc and commit. not used, kill it */
+};
+
+/* this header block gets written whenever a transaction is considered
+   fully flushed, and is more recent than the last fully flushed
+   transaction.  
+   fully flushed means all the log blocks and all the real blocks are
+   on disk, and this transaction does not need to be replayed.  
+*/
+struct reiserfs_journal_header {
+  /* id of last fully flushed transaction */
+  __u32 j_last_flush_trans_id;
+  /* offset in the log of where to start replay after a crash */
+  __u32 j_first_unflushed_offset;
+  /* mount id to detect very old transactions */
+  __u32 long j_mount_id;
+};
+
+/* magic string to find desc blocks in the journal */
+#define JOURNAL_DESC_MAGIC "ReIsErLB" 
+
 
 /*
  * directories use this key as well as old files
@@ -146,7 +185,7 @@ struct block_head
   struct key  blk_right_delim_key; /* Right delimiting key for this block (supported for leaf level nodes
 				      only) */
 };
-#define BLKH_SIZE (sizeof(struct block_head))
+#define BLKH_SIZE (sizeof (struct block_head))
 #define DISK_LEAF_NODE_LEVEL  1 /* Leaf node level.                       */
 
 struct item_head
@@ -251,15 +290,34 @@ struct fsys_reiser_fileinfo
 
 struct fsys_reiser_info
 {
+  /* The last read item head */
   struct item_head *current_ih;
+  /* The last read item */
   char *current_item;
+  /* The information for the currently open file */
   struct fsys_reiser_fileinfo fileinfo;
+  /* The start of the journal */
+  __u32 journal_block;
+  /* The size of the journal */
+  __u32 journal_block_count;
+  /* The first valid descriptor block in journal
+     (relative to journal_block) */
+  __u32 journal_first_desc;
+
+  /* The ReiserFS version. */
   __u16 version;
+  /* The current depth of the reiser tree. */
   __u16 tree_depth;
+  /* SECTOR_SIZE << blocksize_shift == blocksize. */
   __u8  blocksize_shift;
+  /* 1 << full_blocksize_shift == blocksize. */
   __u8  fullblocksize_shift;
+  /* The reiserfs block size  (must be a power of 2) */
   __u16 blocksize;
+  /* The number of cached tree nodes */
   __u16 cached_slots;
+  /* The number of valid transactions in journal */
+  __u16 journal_transactions;
   
   unsigned int blocks[MAX_HEIGHT];
   unsigned int next_key_nr[MAX_HEIGHT];
@@ -277,6 +335,8 @@ struct fsys_reiser_info
 			  ((int) cache + BLKH_SIZE + KEY_SIZE * nr_item))
 #define INFO \
     ((struct fsys_reiser_info *) ((int) FSYS_BUF + FSYSREISER_CACHE_SIZE))
+#define JOURNAL_START    ((__u32 *) (INFO + 1))
+#define JOURNAL_END      ((__u32 *) (FSYS_BUF + FSYS_BUFLEN))
 
 
 static __inline__ unsigned long
@@ -288,14 +348,173 @@ log2 (unsigned long word)
   return word;
 }
 
+static __inline__ int
+is_power_of_two (unsigned long word)
+{
+  return (word & -word) == word;
+}
+
+static int 
+journal_read (int block, int len, char *buffer) 
+{
+  return devread ((INFO->journal_block + block) << INFO->blocksize_shift, 
+		  0, len, buffer);
+}
+
+/* Read a block from ReiserFS file system, taking the journal into
+ * account.  If the block nr is in the journal, the block from the
+ * journal taken.  
+ */
+static int
+block_read (int blockNr, int start, int len, char *buffer)
+{
+  int transactions = INFO->journal_transactions;
+  int desc_block = INFO->journal_first_desc;
+  int journal_mask = INFO->journal_block_count - 1;
+  int translatedNr = blockNr;
+  __u32 *journal_table = JOURNAL_START;
+  while (transactions-- > 0) 
+    {
+      int i = 0;
+      int len;
+      if (*journal_table != 0xffffffff)
+	{
+	  /* Search for the blockNr in cached journal */
+	  len = *journal_table++;
+	  while (i++ < len)
+	    {
+	      if (*journal_table++ == blockNr)
+		{
+		  journal_table += len - i;
+		  goto found;
+		}
+	    }
+	}
+      else
+	{
+	  /* This is the end of cached journal marker.  The remaining
+	   * transactions are still on disk.
+	   */
+	  struct reiserfs_journal_desc   desc;
+	  struct reiserfs_journal_commit commit;
+
+	  if (! journal_read (desc_block, sizeof (desc), (char *) &desc))
+	    return 0;
+
+	  len = desc.j_len;
+	  while (i < len && i < JOURNAL_TRANS_HALF)
+	    if (desc.j_realblock[i++] == blockNr)
+	      goto found;
+	  
+	  if (len >= JOURNAL_TRANS_HALF)
+	    {
+	      int commit_block = (desc_block + 1 + len) & journal_mask;
+	      if (! journal_read (commit_block, 
+				  sizeof (commit), (char *) &commit))
+		return 0;
+	      while (i < len)
+		if (commit.j_realblock[i++ - JOURNAL_TRANS_HALF] == blockNr)
+		  goto found;
+	    }
+	}
+      goto not_found;
+      
+    found:
+      translatedNr = INFO->journal_block + ((desc_block + i) & journal_mask);
+      /* We must continue the search, as this block may be overwritten
+       * in later transactions.
+       */
+    not_found:
+      desc_block = (desc_block + 2 + len) & journal_mask;
+    }
+  return devread (translatedNr << INFO->blocksize_shift, start, len, buffer);
+}
+
+/* Init the journal data structure.  We try to cache as much as
+ * possible in the JOURNAL_START-JOURNAL_END space, but if it is full
+ * we can still read the rest from the disk on demand.
+ *
+ * The first number of valid transactions and the descriptor block of the
+ * first valid transaction are held in INFO.  The transactions are all 
+ * adjacent, but we must take care of the journal wrap around. 
+ */
+static int
+journal_init (void)
+{
+  unsigned int block_count = INFO->journal_block_count;
+  unsigned int desc_block;
+  unsigned int commit_block;
+  unsigned int next_trans_id;
+  struct reiserfs_journal_header header;
+  struct reiserfs_journal_desc   desc;
+  struct reiserfs_journal_commit commit;
+  __u32 *journal_table = JOURNAL_START;
+
+  journal_read (block_count, sizeof (header), (char *) &header);
+  desc_block = header.j_first_unflushed_offset;
+  if (desc_block >= block_count)
+    return 0;
+
+  INFO->journal_transactions = 0;
+  INFO->journal_first_desc = desc_block;
+  next_trans_id = header.j_last_flush_trans_id + 1;
+
+  while (1) 
+    {
+      journal_read (desc_block, sizeof (desc), (char *) &desc);
+      if (substring (JOURNAL_DESC_MAGIC, desc.j_magic) > 0
+	  || desc.j_trans_id != next_trans_id
+	  || desc.j_mount_id != header.j_mount_id)
+	/* no more valid transactions */
+	break;
+      
+      commit_block = (desc_block + desc.j_len + 1) & (block_count - 1);
+      journal_read (commit_block, sizeof (commit), (char *) &commit);
+      if (desc.j_trans_id != commit.j_trans_id
+	  || desc.j_len != commit.j_len)
+	/* no more valid transactions */
+	break;
+      
+      INFO->journal_transactions++;
+      next_trans_id++;
+      if (journal_table < JOURNAL_END)
+	{
+	  if ((journal_table + 1 + JOURNAL_TRANS_HALF) >= JOURNAL_END)
+	    {
+	      /* The table is almost full; mark the end of the cached
+	       * journal.*/
+	      *journal_table = 0xffffffff;
+	      journal_table = JOURNAL_END;
+	    }
+	  else
+	    {
+	      int i;
+	      /* Cache the length and the realblock numbers in the table.
+	       * The block number of descriptor can easily be computed.
+	       * and need not to be stored here.
+	       */
+	      *journal_table++ = desc.j_len;
+	      for (i = 0; i < desc.j_len && i < JOURNAL_TRANS_HALF; i++)
+		*journal_table++ = desc.j_realblock[i];
+	      for (     ; i < desc.j_len; i++)
+		*journal_table++ = commit.j_realblock[i-JOURNAL_TRANS_HALF];
+	    }
+	}
+      desc_block = (commit_block + 1) & (block_count - 1);
+    }
+  INFO->journal_transactions = next_trans_id - header.j_last_flush_trans_id;
+  return errnum == 0;
+}
+
 /* check filesystem types and read superblock into memory buffer */
 int
 reiserfs_mount (void)
 {
   struct reiserfs_super_block super;
-  
-  if (! devread (REISERFS_DISK_OFFSET_IN_BYTES >> SECTOR_BITS, 0, 
-		 sizeof (struct reiserfs_super_block), (char *) &super)
+  int superblock = REISERFS_DISK_OFFSET_IN_BYTES >> SECTOR_BITS;
+
+  if (! devread (superblock, 0, sizeof (struct reiserfs_super_block), 
+		(char *) &super)
       || (substring (REISER2FS_SUPER_MAGIC_STRING, super.s_magic) > 0
 	  && substring (REISERFS_SUPER_MAGIC_STRING, super.s_magic) > 0)
       || (/* check that this is not a copy inside the journal log */
@@ -303,18 +522,21 @@ reiserfs_mount (void)
 	  <= REISERFS_DISK_OFFSET_IN_BYTES))
     {
       /* Try old super block position */
-      if (! devread (REISERFS_OLD_DISK_OFFSET_IN_BYTES >> SECTOR_BITS, 0, 
-		     sizeof (struct reiserfs_super_block), (char *) &super))
+      superblock = REISERFS_OLD_DISK_OFFSET_IN_BYTES >> SECTOR_BITS;
+      if (! devread (superblock, 0, sizeof (struct reiserfs_super_block), 
+		     (char *) &super))
 	return 0;
       
       if (substring (REISER2FS_SUPER_MAGIC_STRING, super.s_magic) > 0
 	  && substring (REISERFS_SUPER_MAGIC_STRING, super.s_magic) > 0)
 	{
 	  /* pre journaling super block ? */
-	  if (substring ("ReIsErFs", (char *) ((int) &super + 20)) > 0)
+	  if (substring (REISERFS_SUPER_MAGIC_STRING, 
+			 (char*) ((int) &super + 20)) > 0)
 	    return 0;
 	  
 	  super.s_blocksize = REISERFS_OLD_BLOCKSIZE;
+	  super.s_journal_block = 0;
 	  super.s_version = 0;
 	}
     }
@@ -332,9 +554,25 @@ reiserfs_mount (void)
   
   if (super.s_blocksize < FSYSREISER_MIN_BLOCKSIZE
       || super.s_blocksize > FSYSREISER_MAX_BLOCKSIZE
-      || (SECTOR_SIZE << INFO->blocksize_shift) != super.s_blocksize
-      || ! devread (super.s_root_block << INFO->blocksize_shift, 
-		    0, INFO->blocksize, (char *) ROOT))
+      || (SECTOR_SIZE << INFO->blocksize_shift) != super.s_blocksize)
+    return 0;
+
+  if (super.s_journal_block != 0)
+    {
+      INFO->journal_block = super.s_journal_block;
+      INFO->journal_block_count = super.s_journal_block_count;
+      if (INFO->journal_block_count == 0)
+	INFO->journal_block_count = super.s_orig_journal_size;
+      if (! is_power_of_two (INFO->journal_block_count))
+	return 0;
+
+      journal_init ();
+      /* Read in super block again, maybe it is in the journal */
+      block_read (superblock >> INFO->blocksize_shift, 
+		  0, sizeof (struct reiserfs_super_block), (char *) &super);
+    }
+
+  if (! block_read (super.s_root_block, 0, INFO->blocksize, (char*) ROOT))
     return 0;
   
   INFO->tree_depth = BLOCKHEAD (ROOT)->blk_level;
@@ -363,8 +601,7 @@ read_tree_node (int depth)
   printf ("  next read_in: block=%d (depth=%d)\n",
 	  INFO->blocks[depth], depth);
 #endif /* REISERDEBUG */
-  if (! devread (INFO->blocks[depth] << INFO->blocksize_shift,
-		 0, INFO->blocksize, cache))
+  if (! block_read (INFO->blocks[depth], 0, INFO->blocksize, cache))
     return 0;
   
   /* Make sure it has the right node level */
@@ -581,9 +818,8 @@ reiserfs_read (char *buf, int len)
 	    {
 	      disk_read_func = disk_read_hook;
 	      
-	      devread (INFO->blocks[DISK_LEAF_NODE_LEVEL] 
-		       << INFO->blocksize_shift,
-		       (INFO->current_item - LEAF + offset), to_read, buf);
+	      block_read (INFO->blocks[DISK_LEAF_NODE_LEVEL],
+			  (INFO->current_item - LEAF + offset), to_read, buf);
 	      
 	      disk_read_func = NULL;
 	    }
@@ -612,7 +848,10 @@ reiserfs_read (char *buf, int len)
 	      disk_read_func = disk_read_hook;
 #endif /* ! STAGE1_5 */
 	      
-	      devread (blocknr << INFO->blocksize_shift, 
+	      /* Journal is only for meta data.  Data blocks can be read
+	       * directly without using block_read
+	       */
+	      devread (blocknr << INFO->blocksize_shift,
 		       blk_offset, to_read, buf);
 	      
 #ifndef STAGE1_5
@@ -704,7 +943,7 @@ reiserfs_dir (char *dirname)
 	  errnum = ERR_BAD_FILETYPE;
 	  return 0;
 	}
-      for (rest = dirname; (ch = *rest) && !isspace (ch) && ch != '/'; rest++);
+      for (rest = dirname; (ch = *rest) && ! isspace (ch) && ch != '/'; rest++);
       *rest = 0;
       
 # ifndef STAGE1_5
