@@ -1,3 +1,13 @@
+1999-11-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/fsys_ext2fs.c (struct ext2_dir_entry): Changed the type
+	of `name_len' to __u8 and added the new member `file_type' after
+	it. This is stolen from linux/ext2_fs.h in Linux 2.2.13.
+	Reported by Ben Harris <bjh21@cam.ac.uk>.
+
+	* stage2/builtins.c (device_func) [GRUB_UTIL]: Call
+	nul_terminate before calling check_device.
+	
 1999-11-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/disk_io.c (real_open_partition): Check for the right

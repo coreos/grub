@@ -453,14 +453,15 @@ device_func (char *arg, int flags)
 
   /* Get the device argument.  */
   device = skip_to (0, drive);
+  
+  /* Terminate DEVICE.  */
+  nul_terminate (device);
+
   if (! *device || ! check_device (device))
     {
       errnum = ERR_FILE_NOT_FOUND;
       return 1;
     }
-
-  /* Terminate DEVICE.  */
-  nul_terminate (device);
 
   assign_device_name (current_drive, device);
   

@@ -741,7 +741,10 @@ grub_putchar (int c)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)
-    addch (c);
+    {
+      addch (c);
+      wrefresh (stdscr);
+    }
   else
 #endif
   putchar (c);
