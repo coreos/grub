@@ -1,5 +1,36 @@
 2004-01-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Thomas Schwinge <kischde@gmx.net>:
+	* grub/Makefile.am (AM_CPPFLAGS): New variable.
+	(AM_CFLAGS): Removed all cpp flags.
+
+	* stage2/xfs.h (__int8_t): Renamed to ...
+	(xfs_int8_t): ... this.
+	(__uint8_t): Renamed to ...
+	(xfs_uint8_t): ... this.
+	(__int16_t): Renamed to ...
+	(xfs_int16_t): ... this.
+	(__uint16_t): Renamed to ...
+	(xfs_uint16_t): ... this.
+	(__int32_t): Renamed to ...
+	(xfs_int32_t): ... this.
+	(__uint32_t): Renamed to ...
+	(xfs_uint32_t): ... this.
+	(__int64_t): Renamed to ...
+	(xfs_int64_t): ... this.
+	(__uint64_t): Renamed to ...
+	(xfs_uint64_t): ... this.
+	All callers are changed.x
+
+	From Egmont Koblinger <egmont@uhulinux.hu>:
+	* util/grub-install.in: Support an install devices in GRUB's
+	notation without parentheses.
+
+	* docs/grub.texi (Installing GRUB using grub-install): Added an
+	example of using grub-install without parentheses.
+
+2004-01-18  Yoshinori K. Okuji  <okuji@enbug.org>
+	
 	* util/grub-install.in: Use the first word of GRUB_SHELL when
 	checking if the grub shell is present. This is necessary to
 	support options to the grub shell (e.g. grub --read-only).

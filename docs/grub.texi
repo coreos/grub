@@ -620,6 +620,12 @@ If it is the first BIOS drive, this is the same as well:
 # @kbd{grub-install '(hd0)'}
 @end example
 
+Or you can omit the parentheses:
+
+@example
+# @kbd{grub-install hd0}
+@end example
+
 But all the above examples assume that GRUB should use images under
 the root directory. If you want GRUB to use images under a directory
 other than the root directory, you need to specify the option
@@ -630,7 +636,7 @@ boot floppy with a filesystem. Here is an example:
 @group
 # @kbd{mke2fs /dev/fd0}
 # @kbd{mount -t ext2 /dev/fd0 /mnt}
-# @kbd{grub-install --root-directory=/mnt '(fd0)'}
+# @kbd{grub-install --root-directory=/mnt fd0}
 # @kbd{umount /mnt}
 @end group
 @end example
@@ -3419,7 +3425,7 @@ you have a separate @dfn{boot} partition which is mounted on
 @file{/boot}:
 
 @example
-@kbd{grub-install --root-directory=/boot '(hd0)'}
+@kbd{grub-install --root-directory=/boot hd0}
 @end example
 
 @item --grub-shell=@var{file}
