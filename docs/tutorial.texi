@@ -952,7 +952,7 @@ However, note that GRUB assumes that your terminal emulator is
 compatible with VT100 by default. This is true for most terminal
 emulators nowadays, but you should pass the option @option{--dumb} to
 the command, if your terminal emulator is not VT100-compatible or
-implement few VT100 escape sequences. If you specify the option, then
+implements few VT100 escape sequences. If you specify the option, then
 GRUB doesn't provide you with the menu interface, because the menu
 requires several fancy features for your terminal. Instead, GRUB only
 gives you the hidden menu interface and the command-line interface.

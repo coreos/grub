@@ -1,5 +1,9 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 1.0 - XXXX-XX-XX:
+* The command "setkey" resets key mappings, when no argument is
+  specified.
+
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".
 * New command, "hiddenmenu". You can hide the menu interface by default

@@ -1,5 +1,11 @@
 2000-10-14  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/tutorial.texi (Serial terminal): Fixed a typo.
+	* docs/user-ref.texi (GRUB images): New chapter.
+	* docs/grub.texi: Added an entry for the chapter "GRUB images".
+	
+2000-10-14  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/builtins.c (setkey_func): If TO_KEY is NULL (i.e. the
 	user specifies no argument), clear BIOS_KEY_MAP and
 	ASCII_KEY_MAP.

@@ -197,6 +197,60 @@ recognition.  We hope that you enjoy using GNU GRUB as much as we did
 writing it.
 
 
+@node GRUB images
+@chapter GRUB images
+
+GRUB consists of several images: two essential stages, optional stages
+called @dfn{Stage 1.5}, and two network boot images. Here is a short
+overview of them. See @ref{Hacking}, for more details.
+
+@table @file
+@item stage1
+This is an essential image used for booting up GRUB. Usually, this is
+embedded in a MBR or the boot sector of a partition. Because a PC boot
+sector is 512 bytes, the size of this image is exactly 512 bytes.
+
+All @file{stage1} must do is to load Stage 2 or Stage 1.5 from a local
+disk. Because of the size restriction, @file{stage1} encodes the
+location of Stage 2 (or Stage 1.5) in a block list format, so it never
+understand any filesystem structure.
+
+@item stage2
+This is the core image of GRUB. This does all things but booting up
+itself. Usually, this is put in a filesystem, but that is not required.
+
+@item e2fs_stage1_5
+@itemx ffs_stage1_5
+@itemx reiserfs_stage1_5
+@itemx fat_stage1_5
+@itemx minix_stage1_5
+
+These are called @dfn{Stage 1.5}, because the purpose is a bridge
+between @file{stage1} and @file{stage2}, that is to say, Stage 1.5 is
+loaded by Stage 1 and Stage 1.5 loads Stage 2. The difference between
+@file{stage1} and @file{*_stage1_5} is that the former doesn't
+understand any filesystem but the latter does an filesystem
+(e.g. @file{e2fs_stage1_5} understands ext2fs). So you can move the
+location of Stage 2 to another safely, even after GRUB has been
+installed.
+
+While Stage 2 cannot generally be embedded in a fixed area as the size
+is so large, Stage 1.5 can be installed into the area right after a MBR,
+or the boot loader area of a ReiserFS or a FFS.
+
+@item nbgrub
+This is a network boot image for the Network Image Proposal used by some
+network boot loaders, such as Etherboot. This is mostly the same as
+Stage 2, but this also sets up a network and loads a configuration file
+from the network.
+
+@item pxegrub
+This is another network boot image for the Preboot Execution Environment
+used by several Netboot ROMs. This is identical to @file{nbgrub}, except
+for the format.
+@end table
+
+
 @node Filesystem
 @chapter Filesystem syntax and semantics
 

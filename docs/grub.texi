@@ -106,6 +106,7 @@ Part I: The Tutorial Manual
 Part II: The User Reference Manual
 
 * Introduction::                Capturing the spirit of GRUB
+* GRUB images::                 GRUB images
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
 * Commands::                    The list of available builtin commands

@@ -74,8 +74,6 @@ Priorities:
 * Add internationalization support, emulating gettext as much as is
   feasible.
 
-? Add command for modifying partition types.
-
 * Add CDROM-chainloading support. It would be enough to support only
   BIOSes which have bootable-CDROM support (so you may use the "Bootable
   CDROM" BIOS calls). It is not trivial to support BIOSes without the
