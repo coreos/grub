@@ -1,3 +1,12 @@
+2000-06-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in (convert): When $host_os is linux*, use
+	the expression 's%\([sh]d[a-z]\)[0-9]*$%\1%' instead of
+	's%[0-9]*$%%', to get rid of the partition part. This fixes the
+	bug "/dev/fd0" -> "/dev/fd". (But don't you think the naming is
+	quite inconsistent with hard disks? Why not /dev/fd[a-z]?)
+	Report by Pavel Roskin.
+	
 2000-06-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/tutorial.texi (Network): The body is moved to ...

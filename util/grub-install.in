@@ -73,7 +73,7 @@ convert () {
     # Break the device name into the disk part and the partition part.
     case "$host_os" in
     linux*)
-	tmp_disk=`echo "$1" | sed 's%[0-9]*$%%'`
+	tmp_disk=`echo "$1" | sed 's%\([sh]d[a-z]\)[0-9]*$%\1%'`
 	tmp_part=`echo "$1" | sed "s%$tmp_disk%%"` ;;
     gnu*)
 	tmp_disk=`echo "$1" | sed 's%s[0-9]*[a-g]?%%'`
