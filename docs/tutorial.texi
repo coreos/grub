@@ -149,7 +149,7 @@ desirable. However, if you don't want to reboot your computer, run the
 program @file{/sbin/grub}.
 
 In both, GRUB will show the command-line interface. First, set the
-GRUB's @dfn{root partition}@footnote{Note that GRUB's root partition is
+GRUB's @dfn{root device}@footnote{Note that GRUB's root device is
 not your OS's root partition; if you need to specify a root partition
 for your OS, add the argument into the command @command{kernel}.} to the
 partition which has your GRUB images, like this:
@@ -168,7 +168,7 @@ grub> find /boot/grub/stage1
 This will search for the filename @file{/boot/grub/stage1} and show the
 device which contains the images.
 
-If you set the root partition correctly, run the command
+If you set the root device correctly, run the command
 @command{setup}:
 
 @example
@@ -217,7 +217,7 @@ steps:
 
 @enumerate
 @item
-Set GRUB's root partition to the drive where the OS images is stored by
+Set GRUB's root device to the drive where the OS images is stored by
 the command @command{root}.
 
 @item
@@ -239,7 +239,7 @@ Since GNU/Hurd is Multiboot-compliant, it is easy to boot it; there is
 nothing special. But do not forget that you specify a root partition to
 the kernel.
 
-First, set GRUB's root partition to the same drive as
+First, set GRUB's root device to the same drive as
 GNU/Hurd's. Probably @code{find /boot/gnumach} or such will help
 you.
 
@@ -259,7 +259,7 @@ And, finally, run the command @command{boot}.
 It is relatively easy to boot GNU/Linux from GRUB, because booting
 GNU/Linux somewhat resembles booting a Multiboot-compliant OS.
 
-First, set GRUB's root partition to the same drive as
+First, set GRUB's root device to the same drive as
 GNU/Linux's. Probably @code{find /vmlinuz} or such will help
 you.
 
@@ -316,7 +316,7 @@ chain-load the boot loader for the operating system. Normally, the boot
 loader is embedded in the @dfn{boot sector} of the partition on which
 the operating system is installed.
 
-First, set GRUB's root partition to the partition by the command
+First, set GRUB's root device to the partition by the command
 @command{rootnoverify}:
 
 @example

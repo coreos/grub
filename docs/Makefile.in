@@ -91,7 +91,7 @@ SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
 # The unfinished manuals.
-UNFINISHED_MANUALS = new-grub.texi tutorial.texi
+UNFINISHED_MANUALS = new-grub.texi tutorial.texi user-ref.texi
 
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS) $(UNFINISHED_MANUALS)

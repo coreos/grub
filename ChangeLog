@@ -1,3 +1,8 @@
+1999-10-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/user-ref.texi: New file.
+	* docs/Makefile.am (UNFINISHED_MANUALS): Added user-red.texi.
+	
 1999-10-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Add BIOS drive remapping support for chain-loading some foolish

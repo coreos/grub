@@ -340,9 +340,9 @@ general_error:
 stop:	jmp	stop
 
 #ifdef STAGE1_5
-notification_string:	.string " stage1.5"
+notification_string:	.string "stage1.5 "
 #else
-notification_string:	.string " stage2"
+notification_string:	.string "stage2 "
 #endif
 	
 geometry_error_string:	.string "Geom"
