@@ -1,3 +1,8 @@
+2000-05-29  Chip Salzenberg  <chip@valinux.com>
+
+	* stage2/shared.h (grub_memmove): Prototype to use void *.
+	* stage2/char_io.c (grub_memmove): Define likewise.
+
 2000-05-30  Gordon Matzigkeit  <gord@fig.org>
 
 	* docs/user-ref.texi (Stage2 errors): Update error messages.

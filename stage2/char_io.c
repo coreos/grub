@@ -846,8 +846,8 @@ memcheck (int addr, int len)
   return ! errnum;
 }
 
-char *
-grub_memmove (char *to, const char *from, int len)
+void *
+grub_memmove (void *to, const void *from, int len)
 {
    if (memcheck ((int) to, len))
      {
@@ -873,8 +873,8 @@ grub_memmove (char *to, const char *from, int len)
 			 "cld"
 			 : "=&c" (d0), "=&S" (d1), "=&D" (d2)
 			 : "0" (len),
-			 "1" (len - 1 + from),
-			 "2" (len - 1 + to)
+			 "1" (len - 1 + (const char *) from),
+			 "2" (len - 1 + (char *) to)
 			 : "memory");
 	 }
      }

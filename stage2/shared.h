@@ -698,7 +698,7 @@ int grub_sprintf (char *buffer, const char *format, ...);
 int grub_tolower (int c);
 int grub_isspace (int c);
 int grub_strncat (char *s1, const char *s2, int n);
-char *grub_memmove (char *to, const char *from, int len);
+void *grub_memmove (void *to, const void *from, int len);
 void *grub_memset (void *start, int c, int len);
 int grub_strncat (char *s1, const char *s2, int n);
 char *grub_strstr (const char *s1, const char *s2);
