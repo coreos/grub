@@ -1,3 +1,37 @@
+1999-09-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_ASM_PREFIX_REQUIREMENT): Do not call
+	AC_DEFINE_UNQUOTEs within AC_CACHE_VAL. Define ADDR32 and DATA32
+	after it.
+	(grub_CHECK_START_SYMBOL): Do not call AC_DEFINE within
+	AC_CACHE_VAL. Define HAVE_START_SYMBOL after it.
+	(grub_CHECK_USCORE_START_SYMBOL): Do not call AC_DEFINE within
+	AC_CACHE_VAL. Define HAVE_USCORE_START_SYMBOL after it.
+	(grub_CHECK_END_SYMBOL): Do not call AC_DEFINE within
+	AC_CACHE_VAL. Define HAVE_END_SYMBOL after it.
+	(grub_CHECK_USCORE_END_SYMBOL): Do not call AC_DEFINE within
+	AC_CACHE_VAL. Define HAVE_USCORE_END_SYMBOL after it.
+	
+1999-09-17  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* acconfig.h (ADDR32): Removed. This entry is automatically
+	created by autoheader.
+	(DATA32): Likewise.
+	* acinclude.m4 (grub_ASM_ADD32): Use ADDR32 instead of addr32.
+	Require grub_ASM_PREFIX_REQUIREMENT.
+	(grub_ASM_PREFIX_REQUIREMENT): Define ADDR32 and DATA32.
+	* configure.in: Call grub_ASM_PREFIX_REQUIREMENT before
+	grub_ASM_ADDR32. Do not define ADDR32 and DATA32.
+	* stage1/stage1.S (after_BPB): Use ABS(firstlist) instead of
+	firstlist.
+	(MSG): Use ABS(x) instead of x.
+	(probe_loop): Use the macro MSG for fd_probe_error_string.
+	* stage1/stage1_lba.S (after_BPB): Use ABS(firstlist) instead of
+	firstlist.
+	(MSG): Use ABS(x) instead of x.
+	* stage2/asm.S (putchar): Renamed to ...
+	(grub_putchar): ... this.
+	
 1999-09-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/gunzip.c (reset_linalloc): Use the macro RAW_ADDR

@@ -15,7 +15,8 @@ func (int *list)
 }
 EOF
 
-if AC_TRY_COMMAND([${CC-cc} -S conftest.c]) && test -s conftest.s; then :
+if AC_TRY_COMMAND([${CC-cc} -S conftest.c]) && test -s conftest.s; then
+  true
 else
   AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
 fi
@@ -86,12 +87,12 @@ dnl major pain, by requiring manual assembly to get 16-bit instructions into
 dnl stage1/stage1.S.
 AC_DEFUN(grub_ASM_ADDR32,
 [AC_REQUIRE([AC_PROG_CC])
+AC_REQUIRE([grub_ASM_PREFIX_REQUIREMENT])
 AC_MSG_CHECKING([for .code16 addr32 assembler support])
 AC_CACHE_VAL(grub_cv_asm_addr32,
 [cat > conftest.s <<\EOF
 	.code16
-l1:	addr32
-	movb	%al, l1
+l1:	ADDR32	movb	%al, l1
 EOF
 
 if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
@@ -121,7 +122,22 @@ if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
 else
   grub_cv_asm_prefix_requirement=no
 fi
+
 rm -f conftest*])
+
+if test "x$grub_cv_asm_prefix_requirement" = xyes; then
+  grub_tmp_addr32="addr32"
+  grub_tmp_data32="data32"
+else
+  grub_tmp_addr32="addr32;"
+  grub_tmp_data32="data32;"
+fi
+
+AC_DEFINE_UNQUOTED([ADDR32], $grub_tmp_addr32,
+  [Define it to \"addr32\" or \"addr32;\" to make GAS happy])
+AC_DEFINE_UNQUOTED([DATA32], $grub_tmp_data32,
+  [Define it to \"data32\" or \"data32;\" to make GAS happy])
+
 AC_MSG_RESULT([$grub_cv_asm_prefix_requirement])])
 
 dnl
@@ -143,12 +159,15 @@ EOF
 
 if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
   grub_cv_check_start_symbol=yes
-  AC_DEFINE([HAVE_START_SYMBOL])
 else
   grub_cv_check_start_symbol=no
 fi
 
 rm -f conftest*])
+
+if test "x$grub_cv_check_start_symbol" = xyes; then
+  AC_DEFINE([HAVE_START_SYMBOL])
+fi
 
 AC_MSG_RESULT([$grub_cv_check_start_symbol])
 ])
@@ -172,12 +191,15 @@ EOF
 
 if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
   grub_cv_check_uscore_start_symbol=yes
-  AC_DEFINE([HAVE_USCORE_START_SYMBOL])
 else
   grub_cv_check_uscore_start_symbol=no
 fi
 
 rm -f conftest*])
+
+if test "x$grub_cv_check_uscore_start_symbol" = xyes; then
+  AC_DEFINE([HAVE_USCORE_START_SYMBOL])
+fi
 
 AC_MSG_RESULT([$grub_cv_check_uscore_start_symbol])
 ])
@@ -201,12 +223,15 @@ EOF
 
 if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
   grub_cv_check_end_symbol=yes
-  AC_DEFINE([HAVE_END_SYMBOL])
 else
   grub_cv_check_end_symbol=no
 fi
 
 rm -f conftest*])
+
+if test "x$grub_cv_check_end_symbol" = xyes; then
+  AC_DEFINE([HAVE_END_SYMBOL])
+fi
 
 AC_MSG_RESULT([$grub_cv_check_end_symbol])
 ])
@@ -230,9 +255,12 @@ EOF
 
 if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
   grub_cv_check_uscore_end_symbol=yes
-  AC_DEFINE([HAVE_USCORE_END_SYMBOL])
 else
   grub_cv_check_uscore_end_symbol=no
+fi
+
+if test "x$grub_cv_check_uscore_end_symbol" = xyes; then
+  AC_DEFINE([HAVE_USCORE_END_SYMBOL])
 fi
 
 rm -f conftest*])

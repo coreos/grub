@@ -735,7 +735,7 @@ probe_values:
  */
 
 
-ENTRY(putchar)
+ENTRY(grub_putchar)
 	push	%ebp
 	push	%eax
 	push	%ebx
@@ -748,7 +748,7 @@ ENTRY(putchar)
 
 	/* if newline, print CR as well */
 	pushl	$0xd
-	call	EXT_C(putchar)
+	call	EXT_C(grub_putchar)
 	popl	%eax
 
 pc_notnewline:

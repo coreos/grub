@@ -92,18 +92,11 @@ if test "x$grub_cv_prog_objcopy_absolute" != xyes; then
   AC_MSG_ERROR([GRUB requires a working absolute objcopy; upgrade your binutils])
 fi
 
+grub_ASM_PREFIX_REQUIREMENT
+
 grub_ASM_ADDR32
 if test "x$grub_cv_asm_addr32" != xyes; then
   AC_MSG_ERROR([GRUB requires GAS .code16 addr32 support; upgrade your binutils])
-fi
-
-grub_ASM_PREFIX_REQUIREMENT
-if test "x$grub_cv_asm_prefix_requirement" != xyes; then
-  AC_DEFINE_UNQUOTED([ADDR32], [addr32; ])
-  AC_DEFINE_UNQUOTED([DATA32], [data32; ])
-else
-  AC_DEFINE_UNQUOTED([ADDR32], [addr32])
-  AC_DEFINE_UNQUOTED([DATA32], [data32])
 fi
 
 grub_CHECK_START_SYMBOL

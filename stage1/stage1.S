@@ -31,7 +31,7 @@
 #define ABS(x) (x-_start+0x7c00)
 
 	/* Print message string */
-#define MSG(x)	movw $x, %si; call message
+#define MSG(x)	movw $ABS(x), %si; call message
 
 	.file	"stage1.S"
 
@@ -104,7 +104,7 @@ after_BPB:
 	/*
 	 *  Check if we have a forced disk reference here
 	 */
-	movb	firstlist, %al
+	movb	ABS(firstlist), %al
 	cmpb	$0xff, %al
 	je	1f
 	movb	%al, %dl
@@ -460,8 +460,7 @@ probe_loop:
 /*
  * Floppy disk probe failure.
  */
-	movw	$fd_probe_error_string, %si
-	call	message
+	MSG(fd_probe_error_string)
 	jmp	general_error
 
 fd_probe_error_string:	.string "Floppy"
