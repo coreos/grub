@@ -1,3 +1,8 @@
+2002-06-30  Yoshinori K. Okuji  <okuji@alien>
+
+	* stage2/serial.c [!GRUB_UTIL] (serial_hw_fetch): Fixed the
+	conditional statement. Reported by Ilguiz Latypov.
+	
 2002-06-24  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* MAINTENANCE: New file.
