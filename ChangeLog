@@ -1,3 +1,17 @@
+2004-10-13  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_iterate):
+	Call grub_children_iterate for device nodes of type `scsi',
+	`ide', or `ata'.
+	(grub_ofdisk_open): Remove manual device alias resolution.
+	Fix memory leak when device cannot be opened.
+	* include/grub/powerpc/ieee1275/ieee1275.h 
+	(grub_children_iterate): New prototype.
+	* kern/powerpc/ieee1275/openfw.c (grub_children_iterate):
+	New function.
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_get_property):
+	Return -1 if args.size was -1.
+
 2004-10-11  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/cmain.c (grub_ieee1275_flags): New global.

@@ -98,6 +98,8 @@ grub_ieee1275_get_property (grub_ieee1275_phandle_t handle,
     return -1;
   if (actual)
     *actual = args.size;
+  if (args.size == -1)
+    return -1;
   return 0;
 }
 

@@ -30,6 +30,11 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
     {
       if (! grub_strcmp (alias->type, "block"))
 	hook (alias->name);
+      else if ((! grub_strcmp (alias->type, "scsi"))
+	       || (! grub_strcmp (alias->type, "ide"))
+	       || (! grub_strcmp (alias->type, "ata")))
+	/* Search for block-type children of these bus controllers.  */
+	grub_children_iterate (alias->name, dev_iterate);
       return 0;
     }
 
@@ -40,31 +45,25 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 static grub_err_t
 grub_ofdisk_open (const char *name, grub_disk_t disk)
 {
-  grub_ieee1275_phandle_t devalias;
   grub_ieee1275_phandle_t dev;
   grub_ieee1275_ihandle_t dev_ihandle = 0;
   char *devpath = 0;
   /* XXX: This should be large enough for any possible case.  */
   char prop[64];
-  grub_size_t pathlen;
   int actual;
 
-  if (grub_ieee1275_finddevice ("/aliases", &devalias))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't read the aliases");
-  
-  grub_ieee1275_get_property_length (devalias, name, &pathlen);
-  devpath = grub_malloc (pathlen);
+  devpath = grub_strndup (name, grub_strlen (devpath) + 2);
   if (! devpath)
     return grub_errno;
-
-  if (grub_ieee1275_get_property (devalias, name, devpath, pathlen, &actual))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such device alias");
 
   /* To access the complete disk add `:0'.  */
   grub_strcat (devpath, ":0");
   grub_ieee1275_open (devpath, &dev_ihandle);
   if (! dev_ihandle)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+    {
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
+      goto fail;
+    }
   
   if (grub_ieee1275_finddevice (devpath, &dev))
     {
@@ -99,7 +98,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   disk->data = (void *) dev_ihandle;
 
  fail:
-  if (grub_errno)
+  if (grub_errno && dev_ihandle)
     grub_ieee1275_close (dev_ihandle);
   grub_free (devpath);
   return grub_errno;

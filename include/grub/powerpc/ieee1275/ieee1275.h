@@ -101,6 +101,8 @@ int EXPORT_FUNC(grub_ieee1275_set_color) (grub_ieee1275_ihandle_t ihandle,
 
 grub_err_t EXPORT_FUNC(grub_devalias_iterate)
      (int (*hook) (struct grub_ieee1275_devalias *alias));
+grub_err_t EXPORT_FUNC(grub_children_iterate) (char *devpath,
+     int (*hook) (struct grub_ieee1275_devalias *alias));
 
 
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */

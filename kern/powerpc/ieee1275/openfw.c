@@ -23,6 +23,59 @@
 #include <grub/mm.h>
 #include <grub/machine/ieee1275.h>
 
+/* Walk children of 'devpath', calling hook for each.  */
+grub_err_t
+grub_children_iterate (char *devpath,
+		  int (*hook) (struct grub_ieee1275_devalias *alias))
+{
+  grub_ieee1275_phandle_t dev;
+  grub_ieee1275_phandle_t child;
+
+  grub_ieee1275_finddevice (devpath, &dev);
+  if (dev == -1)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
+
+  grub_ieee1275_child (dev, &child);
+  if (child == -1)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "Device has no children");
+
+  do
+    {
+      /* XXX: Don't use hardcoded path lengths.  */
+      char childtype[64];
+      char childpath[64];
+      char childname[64];
+      char fullname[64];
+      struct grub_ieee1275_devalias alias;
+      int actual;
+
+      grub_ieee1275_get_property (child, "device_type", &childtype,
+				  sizeof childtype, &actual);
+      if (actual == -1)
+	continue;
+
+      grub_ieee1275_package_to_path (child, childpath, sizeof childpath,
+      				     &actual);
+      if (actual == -1)
+	continue;
+
+      grub_ieee1275_get_property (child, "name", &childname,
+				  sizeof childname, &actual);
+      if (actual == -1)
+	continue;
+
+      grub_sprintf(fullname, "%s/%s", devpath, childname);
+
+      alias.type = childtype;
+      alias.path = childpath;
+      alias.name = fullname;
+      hook (&alias);
+    }
+  while (grub_ieee1275_peer (child, &child));
+
+  return 0;
+}
+
 /* Iterate through all device aliasses.  Thisfunction can be used to
    find a device of a specific type.  */
 grub_err_t
