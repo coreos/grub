@@ -13,6 +13,11 @@ Priorities:
   higher priority.
 
 
+* Port the script ``grub-install'' to FreeBSD, NetBSD and OpenBSD. At
+  least you will have to modify the function `convert' so that it can
+  translate a native device name into the corresponding GRUB drive
+  representation.
+
 * Add configuration inclusion support by adding a command "include".
 
 * Make symbolic links work for BSD FFS.

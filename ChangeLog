@@ -1,3 +1,13 @@
+2000-01-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in (grubdir_device): New variable.
+	If GRUBDIR_DEVICE is not equal to ROOT_DEVICE, print an error
+	message and exit.
+	* README: Added a caution about Automake.
+	* TODO: Updated. Only the things that should be done until 0.6
+	have one or more exclamations. Things with zero exclamation
+	will be done after 0.6 unless someone sends a patch for it.
+	
 2000-01-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* grub/asmstub.c: Include the header shared.h after including

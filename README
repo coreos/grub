@@ -50,6 +50,10 @@ the CVS:
 an unreleased version from the CVS. See
 http://sourceware.cygnus.com/automake/, for more information.
 
+Caution: The recent versions are quite unstable, so check out a rather
+old version from the CVS (1999-10-01 works fine, though it has some
+non-critical bugs).
+
 
 See the file INSTALL for instructions on how to build and install the
 GRUB data and program files.  See the GRUB manual for details about

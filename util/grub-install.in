@@ -197,9 +197,21 @@ fi
 # Get the root drive.
 # For now, this uses the program `df' to get the device name, but is
 # this really portable?
-root_device=`df ${grubdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+root_device=`df / | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
 root_drive=`convert $root_device`
 if test "x$root_drive" = x; then
+    exit 1
+fi
+
+# Check if the root directory exists in the same device as the grub
+# directory.
+grubdir_device=`df ${grubdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+if test $grubdir_device != $root_device; then
+    # For now, cannot deal with this situation.
+    cat <<EOF 1&>2
+For now, cannot deal with the situation that $grubdir does not exist
+in the root device. Install GRUB manually instead.
+EOF
     exit 1
 fi
 
