@@ -48,14 +48,14 @@ Priorities:
       struct multiboot_header mb_header;
       /* The version number to avoid incompatibilities.  */
       unsigned short compat_version;
-      /* The identifier (should be "netboot" with NUL-terminated).  */
-      char identifier[14];
+      /* The identifier.  */
+      unsigned short identifier;
       /* some pointers to callback functions.  */
       unsigned long init_func;
       unsigned long fini_func;
-      unsigned long mount_func;
+      unsigned long open_func;
       unsinged long read_func;
-      unsinged long dir_func;
+      unsinged long seek_func;
       unsinged long close_func;
       /* The address of the message buffer. The module should not print
          anything on the screen directly.  */
@@ -93,11 +93,12 @@ Priorities:
   - The rest of the callback functions are equivalent to the filesystem
     callbacks. Their prototypes are:
 
-    grub_error_t mount_func (const struct multiboot_info *mbi);
-    grub_error_t dir_func (const struct multiboot_info *mbi,
-                           const char *filename);
+    grub_error_t open_func (const struct multiboot_info *mbi,
+                            const char *filename);
     grub_error_t read_func (const struct multiboot_info *mbi,
                             char *buffer, int len);
+    grub_error_t seek_func (const struct multiboot_info *mbi,
+                            int offset);
     grub_error_t close_func (const struct multiboot_info *mbi);
 
     FIXME: How to add decompression support?
@@ -139,3 +140,8 @@ Priorities:
   feasible.
 
 ? Add command for modifying partition types.
+
+* Add CDROM-chainloading support. It would be enough to support only
+  BIOSes which have bootable-CDROM support (so you may use the "Bootable
+  CDROM" BIOS calls). It is not trivial to support BIOSes without the
+  capability to boot CDROM.
