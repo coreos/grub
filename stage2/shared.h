@@ -264,6 +264,19 @@ extern char *grub_scratch_mem;
 # include <curses.h>
 #endif
 
+/* In old BSD curses, A_NORMAL and A_REVERSE are not defined, so we
+   define them here if they are undefined.  */
+#ifndef A_NORMAL
+# define A_NORMAL	0
+#endif /* ! A_NORMAL */
+#ifndef A_REVERSE
+# ifdef A_STANDOUT
+#  define A_REVERSE	A_STANDOUT
+# else /* ! A_STANDOUT */
+#  define A_REVERSE	0
+# endif /* ! A_STANDOUT */
+#endif /* ! A_REVERSE */
+
 /* Special graphics characters for IBM displays. */
 #define DISP_UL         218
 #define DISP_UR         191

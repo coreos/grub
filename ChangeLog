@@ -1,3 +1,11 @@
+1999-10-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Now it is possible to build the grub shell with old BSD curses.
+	
+	* stage2/shared.h [!A_NORMAL] (A_NORMAL): Set to zero.
+	[!A_REVERSE && A_STANDOUT] (A_REVERSE): Set to A_STANDOUT.
+	[!A_REVERSE && !A_STANDOUT] (A_REVERSE): Set to zero.
+	
 1999-09-30  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/disk_io.c (set_bootdev): Mask 0x7F instead of 0x79 of
