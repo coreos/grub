@@ -620,9 +620,10 @@ reiserfs_mount (void)
   if (super.s_journal_block != 0)
     {
       INFO->journal_block = super.s_journal_block;
-      INFO->journal_block_count = super.s_journal_block_count;
-      if (INFO->journal_block_count == 0)
-	INFO->journal_block_count = super.s_orig_journal_size;
+      /* I am not using s_journal_block_count here, because
+       * that field doesn't contain any sane value.
+       */
+      INFO->journal_block_count = super.s_orig_journal_size;
       if (! is_power_of_two (INFO->journal_block_count))
 	return 0;
 

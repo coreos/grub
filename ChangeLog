@@ -1,3 +1,11 @@
+2001-10-10  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c (reiserfs_mount):  Don't look at
+	the superblock field s_journal_block_count anymore.  It used
+	to contain 0, it never contained a valid value, and now I
+	have a report that it can contain an invalid value.
+	Bug reported by Jim Caley <caley@chesco.com>.
+	
 2001-09-24  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c (reiserfs_dir):  Set errnum to 
