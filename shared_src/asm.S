@@ -63,7 +63,7 @@ ENTRY(start)
 VARIABLE(install_partition)
 	.long	0xFF00FF
 VARIABLE(version_string)
-	.string "0.4"
+	.string "0.5"
 VARIABLE(config_file)
 #ifndef CONFIG_FILE_ASM
 	.string "/boot/grub/menu.lst"
@@ -79,6 +79,8 @@ VARIABLE(config_file)
 
 /* the code continues... */
 codestart:
+	cli		/* we're not safe here! */
+
 	/* set up %ds, %ss, and %es */
 	xorw	%ax, %ax
 	movw	%ax, %ds
@@ -88,6 +90,8 @@ codestart:
 	/* set up the real mode/BIOS stack */
 	movl	$STACKOFF, %esp
 	movl	$STACKOFF, %ebp
+
+	sti		/* we're safe again */
 
 	/* save boot drive reference */
 	movb	%dl, EXT_C(boot_drive)
@@ -128,6 +132,18 @@ ENTRY(stop)
 ENTRY(hard_stop)
 	hlt
 	jmp EXT_C(hard_stop)
+
+/*
+ * stop_floppy()
+ *
+ * Stops the floppy drive from spinning, so that other software is
+ * jumped to with a known state.
+ */
+ENTRY(stop_floppy)
+	movw	$0x3F2, %dx
+	xorb	%al, %al
+	outb	%al, %dx
+	ret
 
 /*
  * chain_stage1(segment, offset, part_table_addr)
@@ -639,7 +655,7 @@ ENTRY(putchar)
 	push	%eax
 	push	%ebx
 
-	movl	0x10(%esp), %bl
+	movb	0x10(%esp), %bl
 
 	/* if not '\n', just print the character */
 	cmpb	$0xa, %bl
@@ -960,6 +976,7 @@ ENTRY(patch_code_end)
 
 ENTRY(linux_boot)
 	/* don't worry about saving anything, we're committed at this point */
+	call	EXT_C(stop_floppy)
 	cld	/* forward copying */
 
 	/* XXX new stack pointer in safe area for calling functions */
@@ -1016,6 +1033,8 @@ ENTRY(linux_boot)
 
 ENTRY(multi_boot)
 	/* no need to save anything */
+	call	EXT_C(stop_floppy)
+
 	movl	$0x2BADB002, %eax
 	movl	0x8(%esp), %ebx
 
@@ -1396,6 +1415,8 @@ pending:
  *  This is the area for all of the special variables.
  */
 
+	.p2align	2	/* force 4-byte alignment */
+
 protstack:
 	.long	PROTSTACKINIT
 
@@ -1429,13 +1450,14 @@ segment:
  *  description.
  */
 
+	.p2align	2	/* force 4-byte alignment */
 gdt:
 	.word	0, 0
 	.byte	0, 0, 0, 0
 
 	/* code segment */
 	.word	0xFFFF, 0
-	.byte	0, 0x9E, 0xCF, 0
+	.byte	0, 0x9A, 0xCF, 0
 
 	/* data segment */
 	.word	0xFFFF, 0
