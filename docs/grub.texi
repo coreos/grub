@@ -979,7 +979,11 @@ where to find Stage 2, and the Stage 2 has to know where to find its
 configuration file (if Stage 2 doesn't have a configuration file, it
 drops into the command-line interface and waits for a user command).
 
-Here is the memory map of the various components:
+Here is the memory map of the various components
+@footnote{Currently GRUB does not use the extended memory for itself,
+since it is used to load an operating system. But we are planning to use
+it for GRUB itself in the future by @dfn{lazy loading}. Ask okuji for
+more information.}:
 
 @table @asis
 @item 0 to 4K-1
@@ -1141,19 +1145,346 @@ which address range should be treated by operating systems.
 @node Query System Address Map
 @subsection INT 15H, AX=E820h interrupt call
 
-mem64mb.html
+Real mode only.
+
+This call returns a memory map of all the installed @sc{ram}, and of
+physical memory ranges reserved by the BIOS. The address map is returned
+by making successive calls to this API, each returning one "run" of
+physical address information.  Each run has a type which dictates how
+this run of physical address range should be treated by the operating
+system.
+
+If the information returned from INT 15h, AX=E820h in some way differs
+from INT 15h, AX=E801h (@pxref{Get Large Memory Size}) or INT 15h AH=88h
+(@pxref{Get Extended Memory Size}), then the information returned from
+E820h supersedes what is returned from these older interfaces. This
+allows the BIOS to return whatever information it wishes to for
+compatibility reasons.
+
+Input:
+
+@multitable @columnfractions .15 .25 .6
+@item @code{EAX} @tab Function Code @tab E820h
+
+@item @code{EBX} @tab Continuation @tab Contains the @dfn{continuation
+value} to get the next run of physical memory. This is the value
+returned by a previous call to this routine. If this is the first call,
+@code{EBX} must contain zero.
+
+@item @code{ES:DI} @tab Buffer Pointer @tab Pointer to an Address Range
+Descriptor structure which the BIOS is to fill in.
+
+@item @code{ECX} @tab Buffer Size @tab The length in bytes of the
+structure passed to the BIOS. The BIOS will fill in at most @code{ECX}
+bytes of the structure or however much of the structure the BIOS
+implements. The minimum size which must be supported by both the BIOS
+and the caller is 20 bytes. Future implementations may extend this
+structure.
+
+@item @code{EDX} @tab Signature @tab @samp{SMAP} - Used by the BIOS to
+verify the caller is requesting the system map information to be
+returned in @code{ES:DI}.
+@end multitable
+
+Output:
+
+@multitable @columnfractions 0.15 0.25 0.6
+@item @code{CF} @tab Carry Flag @tab Non-Carry - indicates no error
+
+@item @code{EAX} @tab Signature @tab @samp{SMAP} - Signature to verify
+correct BIOS revision.
+
+@item @code{ES:DI} @tab Buffer Pointer @tab Returned Address Range
+Descriptor pointer. Same value as on input.
+
+@item @code{ECX} @tab Buffer Size @tab Number of bytes returned by the
+BIOS in the address range descriptor. The minimum size structure
+returned by the BIOS is 20 bytes.
+
+@item @code{EBX} @tab Continuation @tab Contains the continuation value
+to get the next address descriptor. The actual significance of the
+continuation value is up to the discretion of the BIOS. The caller must
+pass the continuation value unchanged as input to the next iteration of
+the E820h call in order to get the next Address Range Descriptor. A
+return value of zero means that this is the last descriptor. Note that
+the BIOS indicate that the last valid descriptor has been returned by
+either returning a zero as the continuaition value, or by returning
+carry.
+@end multitable
+
+The Address Range Descriptor Structure is:
+
+@multitable @columnfractions 0.25 0.3 0.45
+@item Offset in Bytes @tab Name @tab Description
+
+@item 0 @tab @dfn{BaseAddrLow} @tab Low 32 Bits of Base Address
+
+@item 4 @tab @dfn{BaseAddrHigh} @tab High 32 Bits of Base Address
+
+@item 8 @tab @dfn{LengthLow} @tab Low 32 Bits of Length in Bytes
+
+@item 12 @tab @dfn{LengthHigh} @tab High 32 Bits of Length in Bytes
+
+@item 16 @tab @dfn{Type} @tab Address type of this range
+@end multitable
+
+The @dfn{BaseAddrLow} and @dfn{BaseAddrHigh} together are the 64 bit
+@dfn{BaseAddress} of this range. The @dfn{BaseAddress} is the physical
+address of the start of the range being specified.
+
+The @dfn{LengthLow} and @dfn{LengthHigh} together are the 64 bit
+@dfn{Length} of this range. The @dfn{Length} is the physical contiguous
+length in bytes of a range being specified.
+
+The @dfn{Type} field describes the usage of the described address range
+as defined in the table below:
+
+@multitable @columnfractions 0.1 0.35 0.55
+@item Value @tab Pneumonic @tab Description
+
+@item 1 @tab @dfn{AddressRangeMemory} @tab This run is available
+@sc{ram} usable by the operating system.
+
+@item 2 @tab @dfn{AddressRangeReserved} @tab This run of addresses is in
+use or reserved by the system, and must not be used by the operating
+system.
+
+@item Other @tab @dfn{Undefined} @tab Undefined - Reserved for future
+use. Any range of this type must be treated by the OS as if the type
+returned was @dfn{AddressRangeReserved}.
+@end multitable
+
+The BIOS can use the @dfn{AddressRangeReserved} address range type to
+block out various addresses as @emph{not suitable} for use by a
+programmable device.
+
+Some of the reasons a BIOS would do this are:
+
+@itemize @bullet
+@item
+The address range contains system @sc{rom}.
+
+@item
+The address range contains @sc{ram} in use by the @sc{rom}.
+
+@item
+The address range is in use by a memory mapped system device.
+
+@item
+The address range is for whatever reason are unsuitable for a
+standard device to use as a device memory space.
+@end itemize
+
+Here is the list of assumptions and limitations:
+
+@enumerate
+@item
+The BIOS will return address ranges describing base board memory and ISA
+or PCI memory that is contiguous with that base board memory.
+
+@item
+The BIOS @emph{will not} return a range description for the memory
+mapping of PCI devices. ISA Option @sc{rom}'s, and ISA plug & play
+cards. This is because the OS has mechanisms available to detect them.
+
+@item
+The BIOS will return chipset defined address holes that are not being
+used by devices as reserved.
+
+@item
+Address ranges defined for base board memory mapped I/O devices (for
+example APICs) will be returned as reserved.
+
+@item
+All occurrences of the system BIOS will be mapped as reserved. This
+includes the area below 1 MB, at 16 MB (if present) and at end of the
+address space (4 GB).
+
+@item
+Standard PC address ranges will not be reported. Example video memory at
+A0000 to BFFFF physical will not be described by this function. THe
+range from E0000 to EFFFF is base board specific and will be reported as
+suits the bas board.
+
+@item
+All of lower memory is reported as normal memory. It is OS's
+responsibility to handle standard @sc{ram} locations reserved for
+specific uses, for example: the interrupt vector table (0:0) and the
+BIOS data area (40:0).
+@end enumerate
+
+Here we explain an example address map. This sample address map
+describes a machine which has 128 MB @sc{ram}, 640K of base memory and
+127 MB extended.  The base memory has 639K available for the user and 1K
+for an extended BIOS data area.  There is a 4 MB Linear Frame Buffer
+(LFB) based at 12 MB.  The memory hole created by the chipset is from 8
+M to 16 M.  There are memory mapped APIC devices in the system.  The IO
+Unit is at FEC00000 and the Local Unit is at FEE00000.  The system BIOS
+is remapped to 4G - 64K.
+
+Note that the 639K endpoint of the first memory range is also the base
+memory size reported in the BIOS data segment at 40:13.
+
+Key to types: @dfn{ARM} is AddressRangeMemory, @dfn{ARR} is
+AddressRangeReserved.
+
+@multitable @columnfractions 0.15 0.1 0.1 0.65
+@item Base (Hex) @tab Length @tab Type @tab Description
+
+@item 0000 0000 @tab 639K @tab ARM @tab Available Base memory -
+typically the same value as is returned via the INT 12 function.
+
+@item 0009 FC00 @tab 1K @tab ARR @tab Memory reserved for use by the
+BIOS(s). This area typically includes the Extended BIOS data area.
+
+@item 000F 0000 @tab 64K @tab ARR @tab System BIOS.
+
+@item 0010 0000 @tab 7M @tab ARM @tab Extended memory, this is not
+limited to the 64MB address range.
+
+@item 0080 0000 @tab 8M @tab ARR @tab Chipset memory hole required to
+support the LFB mapping at 12 MB.
+
+@item 0100 0000 @tab 120M @tab ARM @tab Base board @sc{ram} relocated
+above a chipset memory hole.
+
+@item FE00 0000 @tab 4K @tab ARR @tab IO APIC memory mapped I/O at
+FEC00000. Note the range of addresses required for an APIC device may
+vary from base OEM to OEM.
+
+@item FEE0 0000 @tab 4K @tab ARR @tab Local APIC memory mapped I/O at
+FEE00000.
+
+@item FFFF 0000 @tab 64K @tab ARR @tab Remapped System BIOS at end of
+address space.
+@end multitable
+
+The following code segment is intended to describe the algorithm needed
+when calling the Query System Address Map function. It is an
+implementation example and uses non standard mechanisms.
+
+@example
+E820Present = FALSE;
+Regs.ebx = 0;
+do
+  @{
+    Regs.eax = 0xE820;
+    Regs.es = SEGMENT (&Descriptor);
+    Regs.di = OFFSET (&Descriptor);
+    Regs.ecx = sizeof (Descriptor);
+    Regs.edx = 'SMAP';
+    
+    _int (0x15, Regs);
+    
+    if ((Regs.eflags & EFLAGS_CARRY) || Regs.eax != 'SMAP')
+      @{
+        break;
+      @}
+    
+    if (Regs.ecx < 20 || Regs.ecx > sizeof (Descriptor))
+      @{
+        /* bug in bios - all returned descriptors must be at
+           least 20 bytes long, and can not be larger than
+           the input buffer.  */
+        break;
+      @}
+    
+    E820Present = TRUE;
+    .
+    .
+    .
+    Add address range Descriptor.BaseAddress through
+    Descriptor.BaseAddress + Descriptor.Length
+    as type Descriptor.Type
+    .
+    .
+    .
+  @}
+while (Regs.ebx != 0);
+
+if (! E820Present)
+  @{
+    .
+    .
+    .
+    call INT 15H, AX E801h and/or INT 15H, AH=88h to obtain old style
+    memory information
+    .
+    .
+    .
+  @}
+@end example
 
 
 @node Get Large Memory Size
 @subsection INT 15H, AX=E801h interrupt call
 
-mem64mb.html
+Real mode only.
+
+Originally defined for EISA servers, this interface is capable of
+reporting up to 4 GB of @sc{ram}.  While not nearly as flexible as
+E820h, it is present in many more systems.
+
+Input:
+
+@multitable @columnfractions 0.15 0.25 0.6
+@item @code{AX} @tab Function Code @tab E801h
+@end multitable
+
+Output:
+
+@multitable @columnfractions 0.15 0.25 0.6
+@item @code{CF} @tab Carry Flag @tab Non-Carry - indicates no error.
+
+@item @code{AX} @tab Extended 1 @tab Number of contiguous KB between 1
+and 16 MB, maximum 0x3C00 = 15 MB.
+
+@item @code{BX} @tab Extended 2 @tab Number of contiguous 64KB blocks
+between 16 MB and 4GB.
+
+@item @code{CX} @tab Configured 1 @tab Number of contiguous KB between 1
+and 16 MB, maximum 0x3c00 = 15 MB.
+
+@item @code{DX} @tab Configured 2 @tab Number of contiguous 64KB blocks
+between 16 MB and 4 GB.
+@end multitable
+
+Not sure what this difference between the @dfn{Extended} and
+@dfn{Configured} numbers are, but they appear to be identical, as
+reported from the BIOS.
+
+It is possible for a machine using this interface to report a memory
+hole just under 16 MB (Count 1 is less than 15 MB, but Count 2 is
+non-zero).
 
 
 @node Get Extended Memory Size
 @subsection INT 15H, AX=88h interrupt call
 
-mem64mb.html
+Real mode only.
+
+This interface is quite primitive.  It returns a single value for
+contiguous memory above 1 MB.  The biggest limitation is that the value
+returned is a 16-bit value, in KB, so it has a maximum saturation of
+just under 64 MB even presuming it returns as much as it can.  On some
+systems, it won't return anything above the 16 MB boundary.
+
+The one useful point is that it works on every PC available.
+
+Input:
+
+@multitable @columnfractions 0.15 0.25 0.6
+@item @code{AH} @tab Function Code @tab 88h
+@end multitable
+
+Output:
+
+@multitable @columnfractions 0.15 0.25 0.6
+@item @code{CF} @tab Carry Flag @tab Non-Carry - indicates no error.
+
+@item @code{AX} @tab Memory Count @tab Number of contiguous KB above 1
+MB.
+@end multitable
 
 
 @node Low-level disk I/O
