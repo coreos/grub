@@ -183,6 +183,27 @@ grub> install /grub/stage1 d (hd0) /grub/stage2 p /grub/menu.lst
 @end example
 @end enumerate
 
+@item How to uninstall GRUB from my hard disk drive?
+
+There is no concept @dfn{uninstall} in boot loaders, because if you
+@dfn{uninstall} a boot loader, an unbootable machine would simply
+remain. So all you need to do is overwrite another boot loader you like
+to your disk, that is, install the boot loader without uninstalling
+GRUB.
+
+For example, if you want to install the boot loader for Windows, just
+run @code{FDISK /MBR} on Windows. If you want to install LILO@footnote{I
+can't imagine why you want to do such a thing, though}, run
+@code{/sbin/lilo} on GNU/Linux.
+
+@item GRUB hangs when accessing my large IDE disk.
+
+If your disk is bigger than 32GB, probably updating your mainboard BIOS
+will solve your problem. This bug is well-known and most vendors should
+provide fixed versions. For example, if you have ASUS-P3BF, upgrading
+the BIOS to V1007beta1 or later can fix it. Please ask your vendor, for
+more information.
+
 @item Why don't Linux, FreeBSD, NetBSD, etc. become Multiboot-compliant?
 
 Please ask the relevant maintainers. If all free kernels were

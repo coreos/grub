@@ -810,7 +810,7 @@ Reference Manual (@pxref{Introduction}).
 @node Network
 @chapter Downloading OS images from a network
 
-Although GRUB is a disk-based boot loader, it does provide some network
+Although GRUB is a disk-based boot loader, it does provide network
 support. To use the network support, you need to enable at least one
 network driver in the GRUB build process. For more information please
 see @file{netboot/README.netboot} in the source distribution.
@@ -983,7 +983,7 @@ password --md5 PASSWORD
 @end example
 
 If this is specified, GRUB disallows any interactive control, until you
-press the key @key{p} and enter @samp{PASSWORD}.  The option
+press the key @key{p} and enter a correct password.  The option
 @option{--md5} tells GRUB that @samp{PASSWORD} is in MD5 format.  If it
 is omitted, GRUB assumes the @samp{PASSWORD} is in clear text.
 
@@ -1036,5 +1036,5 @@ any user can execute commands in an entry, until GRUB encounters
 You can also use the command @command{password} instead of
 @command{lock}. In this case the boot process will ask for the password
 and stop if it was entered incorrectly.  Since the @command{password}
-takes its own @samp{PASSWORD} argument this is useful if you want
+takes its own @var{PASSWORD} argument this is useful if you want
 different passwords for different entries.

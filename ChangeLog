@@ -1,5 +1,11 @@
 2000-10-22  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/tutorial.texi: Miscellaneous updates.
+	* docs/user-ref.texi: Likewise.
+	* docs/appendices.texi: Likewise.
+	
+2000-10-22  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* util/grub-install.in (usage): Removed unnecessary commas.
 	
 	* util/grub-md5-crypt.in: New file.

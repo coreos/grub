@@ -154,6 +154,11 @@ available. In LBA mode, GRUB can access the entire disk.
 @item Network support
 GRUB is a disk-based boot loader but also has network support. You can
 load OS images from a network by using the @dfn{TFTP} protocol.
+
+@item Remote terminal support
+To support computers with no console, GRUB provides remote terminal
+support, so that you can control GRUB from a remote host. Only serial
+terminal support is implemented at the moment.
 @end table
 
 Future directions might include an internal programming language for
