@@ -1,3 +1,11 @@
+2000-09-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Hal Snyder <hal@vailsys.com>:
+	* lib/device.c (get_drive_geometry) [__FreeBSD__ || __NetBSD__
+	|| __OpenBSD__]: Call ioctl for FD instead of
+	DISKS[DRIVE].FLAGS. This was a mistake when I segregated this
+	function from asmstub.c.
+	
 2000-09-07  Alessandro Rubini  <rubini@gnu.org>
 
 	* docs/tutorial.texi: Fixed a few typos and minor imprecisions.

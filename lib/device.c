@@ -99,7 +99,7 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
   /* FreeBSD, NetBSD or OpenBSD */
   {
     struct disklabel hdg;
-    if (ioctl (disks[drive].flags, DIOCGDINFO, &hdg))
+    if (ioctl (fd, DIOCGDINFO, &hdg))
       goto fail;
     
     geom->cylinders = hdg.d_ncylinders;
