@@ -2128,13 +2128,12 @@ ENTRY(console_gotoxy)
 	
 /*
  * void console_cls (void)
- * BIOS call "INT 10H Function 0Fh" to get current video mode
- *	Call with	%ah = 0x0f
- *      Returns         %al = (video mode)
+ * BIOS call "INT 10H Function 09h" to write character and attribute
+ *	Call with	%ah = 0x09
+ *                      %al = (character)
  *                      %bh = (page number)
- * BIOS call "INT 10H Function 00h" to set the video mode (clears screen)
- *	Call with	%ah = 0x00
- *                      %al = (video mode)
+ *                      %bl = (attribute)
+ *                      %cx = (number of times)
  */
 
 
@@ -2145,10 +2144,21 @@ ENTRY(console_cls)
 	call	EXT_C(prot_to_real)
 	.code16
 
-	movb	$0xf, %ah
-	int	$0x10			/* Get Current Video mode */
-        xorb	%ah, %ah
-        int	$0x10                   /* Set Video mode (clears screen) */
+	/* move the cursor to the beginning */
+	movb	$0x02, %ah
+	xorb	%bh, %bh
+	xorw	%dx, %dx
+	int	$0x10
+
+	/* write spaces to the entire screen */
+	movw	$0x0920, %ax
+	movw	$0x07, %bx
+	movw	$(80 * 25), %cx
+        int	$0x10
+
+	/* move back the cursor */
+	movb	$0x02, %ah
+	int	$0x10
 
 	DATA32	call	EXT_C(real_to_prot)
 	.code32

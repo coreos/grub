@@ -1,3 +1,9 @@
+2002-11-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/asm.S (console_cls): Write spaces to the entire screen
+	instead of getting/setting the video mode, because this flickers
+	the screen and is quite annoying, if using a LCD.
+
 2002-11-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (QNX): New subsection. Reported by
