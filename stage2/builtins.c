@@ -4080,6 +4080,9 @@ terminal_func (char *arg, int flags)
   if (terminal & TERMINAL_SERIAL)
     {
       int time1, time2 = -1;
+
+      /* XXX: Disable the pager.  */
+      count_lines = -1;
       
       /* Get current time.  */
       while ((time1 = getrtsecs ()) == 0xFF)
