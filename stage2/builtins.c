@@ -1,7 +1,7 @@
 /* builtins.c - the GRUB builtin commands */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -4188,7 +4188,7 @@ terminfo_func (char *arg, int flags)
 	      
 	      if (! grub_memcmp (arg, name, len))
 		{
-		  grub_strcpy (options[i].var, arg + len);
+		  grub_strcpy (options[i].var, ti_unescape_string (arg + len));
 		  break;
 		}
 	    }
@@ -4215,11 +4215,16 @@ terminfo_func (char *arg, int flags)
       /* No option specifies printing out current settings.  */
       term = ti_get_term ();
 
-      grub_printf ("name=%s\n", term.name);
-      grub_printf ("cursor_address=%s\n", term.cursor_address);
-      grub_printf ("clear_screen=%s\n", term.clear_screen);
-      grub_printf ("enter_standout_mode=%s\n", term.enter_standout_mode);
-      grub_printf ("exit_standout_mode=%s\n", term.exit_standout_mode);
+      grub_printf ("name=%s\n",
+		   ti_escape_string (term.name));
+      grub_printf ("cursor_address=%s\n",
+		   ti_escape_string (term.cursor_address));
+      grub_printf ("clear_screen=%s\n",
+		   ti_escape_string (term.clear_screen));
+      grub_printf ("enter_standout_mode=%s\n",
+		   ti_escape_string (term.enter_standout_mode));
+      grub_printf ("exit_standout_mode=%s\n",
+		   ti_escape_string (term.exit_standout_mode));
     }
 
   return 0;

@@ -1,3 +1,11 @@
+2003-03-10  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Tilmann Bubeck:
+	* stage2/builtins.c [SUPPORT_SERIAL] (terminfo_func): Unescape
+	arguments before copying them, and escape sequences before
+	printing them.
+	* stage2/terminfo.h (TERMINFO_LEN): Changed to 40.
+
 2003-02-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/grub-install.in (find_device): Fix the sed script.
