@@ -32,6 +32,8 @@ int grub_stage2 (void);
 #include "shared.h"
 
 char *program_name = 0;
+int use_config_file = 1;
+int use_curses = 1;
 static int default_boot_drive;
 static int default_install_partition;
 static char *default_config_file;
@@ -42,6 +44,9 @@ static char *default_config_file;
 #define OPT_CONFIG_FILE -5
 #define OPT_INSTALL_PARTITION -6
 #define OPT_BOOT_DRIVE -7
+#define OPT_DISABLE_CONFIG_FILE -8
+#define OPT_DISABLE_CURSES -9
+#define OPT_BATCH -10
 #define OPTSTRING ""
 
 static struct option longopts[] =
@@ -52,6 +57,9 @@ static struct option longopts[] =
   {"config-file", required_argument, 0, OPT_CONFIG_FILE},
   {"install-partition", required_argument, 0, OPT_INSTALL_PARTITION},
   {"boot-drive", required_argument, 0, OPT_BOOT_DRIVE},
+  {"disable-config-file", no_argument, 0, OPT_DISABLE_CONFIG_FILE},
+  {"disable-curses", no_argument, 0, OPT_DISABLE_CURSES},
+  {"batch", no_argument, 0, OPT_BATCH},
   {0},
 };
 
@@ -68,8 +76,11 @@ Usage: %s [OPTION]...\n\
 \n\
 Enter the GRand Unified Bootloader command shell.\n\
 \n\
+    --batch                  turn on batch mode for non-interactive use\n\
     --boot-drive=DRIVE       specify stage2 boot_drive [default=0x%x]\n\
     --config-file=FILE       specify stage2 config_file [default=%s]\n\
+    --disable-config-file    disable to use the config file\n\
+    --disable-curses         disable to use curses\n\
     --help                   display this message and exit\n\
     --hold                   wait until a debugger will attach\n\
     --install-partition=PAR  specify stage2 install_partition [default=0x%x]\n\
@@ -138,6 +149,20 @@ main (int argc, char **argv)
 	      perror ("strtoul");
 	      exit (1);
 	    }
+	  break;
+
+	case OPT_DISABLE_CONFIG_FILE:
+	  use_config_file = 0;
+	  break;
+
+	case OPT_DISABLE_CURSES:
+	  use_curses = 0;
+	  break;
+
+	case OPT_BATCH:
+	  /* This is the same as "--disable-config-file --disable-curses".  */
+	  use_config_file = 0;
+	  use_curses = 0;
 	  break;
 
 	default:

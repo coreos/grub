@@ -191,7 +191,7 @@ restart:
 	  if (password || errnum == ERR_BOOT_COMMAND)
 	    {
 	      printf("Press any key to continue...");
-	      (void) getc ();
+	      (void) getkey ();
 returnit:
 	      return 0;
 	    }
@@ -273,7 +273,7 @@ returnit:
     }
   else if (substring("pause", cur_heap) < 1)
     {
-      if (getc() == 27)
+      if (ASCII_CHAR (getkey ()) == 27)
 	return 1;
     }
   else if (substring("uppermem", cur_heap) < 1)

@@ -527,7 +527,11 @@ cmain(void)
        *  Here load the configuration file.
        */
 
+#ifdef GRUB_UTIL
+      if (use_config_file && grub_open (config_file))
+#else
       if (grub_open (config_file))
+#endif
 	{
 	  int state = 0, prev_config_len = 0, prev_menu_len = 0;
 	  char cmdline[1502], *ptr;

@@ -1,5 +1,40 @@
 1999-05-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	Preliminary non-interactive use support.
+	
+	* grub/main.c (use_config_file): New variable.
+	(use_curses): Likewise.
+	(OPT_DISABLE_CONFIG_FILE): New constant.
+	(OPT_DISABLE_CURSES): Likewise.
+	(OPT_BATCH): Likewise.
+	(longopts): Add new options, --disable-config-file, --disable-curses,
+	and --batch.
+	(usage): Print the help messages about these new options.
+	(main): Handle them.
+
+	* grub/asmstub.c (grub_stage2) [HAVE_LIBCURSES]: If ! USE_CURSES,
+	fallback non-curses code.
+	(stop) [HAVE_LIBCURSES]: Likewise.
+	(cls) [HAVE_LIBCURSES]: Likewise.
+	(getxy) [HAVE_LIBCURSES]: Likewise.
+	(gotoxy) [HAVE_LIBCURSES]: Likewise.
+	(grub_putchar) [HAVE_LIBCURSES]: Likewise.
+	(getkey) [HAVE_LIBCURSES]: Likewise.
+	(checkkey) [HAVE_LIBCURSES]: Likewise.
+	(set_attrib) [HAVE_LIBCURSES]: Likewise.
+
+	* shared_src/cmdline.c (enter_cmdline): Do not use getc, but use
+	getkey.
+
+	* shared_src/stage2.c (cmain) [GRUB_UTIL]: Check if USE_CONFIG_FILE
+	is non-zero or not.
+
+	* shared_src/shared.h (getc): Removed.
+	(use_config_file) [GRUB_UTIL]: Add the declaration.
+	(use_curses) [GRUB_UTIL]: Likewise.
+	
+1999-05-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* grub/asmstub.c (device_map): New variable.
 	(grub_stage2): Initialize DISKS.
 	Probe devices and fill the result in DEVICE_MAP.

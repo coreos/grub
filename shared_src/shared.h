@@ -282,6 +282,14 @@ extern unsigned long boot_drive;
 extern char version_string[];
 extern char *config_file;
 
+#ifdef GRUB_UTIL
+/* If not using config file, this variable is set to zero,
+   otherwise non-zero.  */
+extern int use_config_file;
+/* If not using curses, this variable is set to zero, otherwise non-zero.  */
+extern int use_curses;
+#endif
+
 #ifndef STAGE1_5
 /* GUI interface variables. */
 extern int fallback;
@@ -426,10 +434,6 @@ void grub_putchar (int c);
 /* Wait for a keypress, and return its packed BIOS/ASCII key code.
    Use ASCII_CHAR(ret) to extract the ASCII code. */
 int getkey (void);
-
-/* returns 0 if non-ASCII character */
-#undef getc
-#define getc()  ASCII_CHAR (getkey ())
 
 /* Like GETKEY, but doesn't block, and returns -1 if no keystroke is
    available. */

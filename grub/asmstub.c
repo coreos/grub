@@ -180,13 +180,16 @@ grub_stage2 (void)
 
 #ifdef HAVE_LIBCURSES
   /* Get into char-at-a-time mode. */
-  initscr ();
-  cbreak ();
-  noecho ();
-  nonl ();
-  scrollok (stdscr, TRUE);
-  keypad (stdscr, TRUE);
-  nodelay (stdscr, TRUE);
+  if (use_curses)
+    {
+      initscr ();
+      cbreak ();
+      noecho ();
+      nonl ();
+      scrollok (stdscr, TRUE);
+      keypad (stdscr, TRUE);
+      nodelay (stdscr, TRUE);
+    }
 #endif
 
   /* Set our stack, and go for it. */
@@ -194,7 +197,8 @@ grub_stage2 (void)
   doit ();
 
 #ifdef HAVE_LIBCURSES
-  endwin ();
+  if (use_curses)
+    endwin ();
 #endif
 
   /* Close off the file descriptors we used. */
@@ -221,7 +225,8 @@ void
 stop (void)
 {
 #ifdef HAVE_LIBCURSES
-  endwin ();
+  if (use_curses)
+    endwin ();
 #endif
   /* FIXME: If we don't exit, then we need to free our data areas. */
   fprintf (stderr, "grub: aborting...\n");
@@ -348,7 +353,8 @@ void
 cls (void)
 {
 #ifdef HAVE_LIBCURSES
-  clear ();
+  if (use_curses)
+    clear ();
 #endif
 }
 
@@ -359,10 +365,11 @@ getxy (void)
 {
   int y, x;
 #ifdef HAVE_LIBCURSES
-  getyx (stdscr, y, x);
-#else
-  y = x = 0;
+  if (use_curses)
+    getyx (stdscr, y, x);
+  else
 #endif
+  y = x = 0;
   return (x << 8) | (y & 0xff);
 }
 
@@ -371,7 +378,8 @@ void
 gotoxy (int x, int y)
 {
 #ifdef HAVE_LIBCURSES
-  move (y, x);
+  if (use_curses)
+    move (y, x);
 #endif
 }
 
@@ -382,10 +390,11 @@ void
 grub_putchar (int c)
 {
 #ifdef HAVE_LIBCURSES
-  addch (c);
-#else
-  putchar (c);
+  if (use_curses)
+    addch (c);
+  else
 #endif
+  putchar (c);
 }
 
 
@@ -394,14 +403,17 @@ int
 getkey (void)
 {
 #ifdef HAVE_LIBCURSES
-  int c;
-  nodelay (stdscr, FALSE);
-  c = getch ();
-  nodelay (stdscr, TRUE);
-  return c;
-#else
-  return getchar ();
+  if (use_curses)
+    {
+      int c;
+      nodelay (stdscr, FALSE);
+      c = getch ();
+      nodelay (stdscr, TRUE);
+      return c;
+    }
 #endif
+  
+  return getchar ();
 }
 
 
@@ -410,16 +422,19 @@ int
 checkkey (void)
 {
 #ifdef HAVE_LIBCURSES
-  int c;
-  c = getch ();
-  /* If C is not ERR, then put it back in the input queue.  */
-  if (c != ERR)
-    ungetch (c);	/* FIXME: ncurses-1.9.9g ungetch is buggy.  */
-  return c;
-#else
+  if (use_curses)
+    {
+      int c;
+      c = getch ();
+      /* If C is not ERR, then put it back in the input queue.  */
+      if (c != ERR)
+	ungetch (c);	/* FIXME: ncurses-1.9.9g ungetch is buggy.  */
+      return c;
+    }
+#endif
+  
   /* Just pretend they hit the space bar. */
   return ' ';
-#endif
 }
 
 
@@ -428,13 +443,16 @@ void
 set_attrib (int attr)
 {
 #ifdef HAVE_LIBCURSES
-  /* FIXME: I don't know why, but chgat doesn't work as expected, so
-     use this dirty way... - okuji  */
-  chtype ch = inch ();
-  addch ((ch & A_CHARTEXT) | attr);
+  if (use_curses)
+    {
+      /* FIXME: I don't know why, but chgat doesn't work as expected, so
+	 use this dirty way... - okuji  */
+      chtype ch = inch ();
+      addch ((ch & A_CHARTEXT) | attr);
 # if 0
-  chgat (1, attr, 0, NULL);
+      chgat (1, attr, 0, NULL);
 # endif
+    }
 #endif
 }
 
