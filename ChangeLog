@@ -1,3 +1,16 @@
+2002-01-18  Klaus Reichl  <Klaus.Reichl@alcatel.at>
+
+	* stage2/fsys_minix.c (minix_dir): Fixed bug getting filenames
+	with MAXNAMELEN right.
+
+       * stage2/char_io.c (get_cmdline, cl_refresh): If TERMINAL_DUMB
+       section is always 0.
+       Line is only cleared if !TERMINAL_DUMB.
+
+       * grub/main.c (use_curses): Initialize to 0 if !HAVE_LIBCURSES
+       (main): Check for curses use and set terminal to dumb if we don't
+       use it (helps for --batch and variants of non-curses setup).
+
 2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* configure.in (AM_INIT_AUTOMAKE): The version number is
