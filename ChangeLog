@@ -1,3 +1,7 @@
+2003-09-05  KB Sriram  <mail_kb@yahoo.com>
+
+	* stage2/fsys_fat.c: Fix missdetection of ext2fs as fatfs.
+
 2003-09-05  Robert Millan  <robertmh@gnu.org>
 
 	* docs/menu.lst (GNU/Linux): Add commented initrd command, which is
