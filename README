@@ -1,0 +1,26 @@
+This is PUPA, the Preliminary Universal Programming Architecture for
+GRUB.  PUPA is a research project for the next generation of GNU GRUB.
+The most important goal is to make GNU GRUB cleaner, safer, more robust,
+more powerful, and more portable.
+
+See the file NEWS for a description of recent changes to PUPA.
+
+See the file INSTALL for instructions on how to build and install the
+PUPA data and program files.
+
+Please visit the official web page of PUPA, for more information.
+The URL is <http://www.nongnu.org/pupa/>.
+
+
+
+Because PUPA is still in developmental stage, PUPA is not for general
+use (yet). For now, you can install PUPA into a floppy by these
+instructions:
+
+$ configure && make
+$ ./pupa-mkimage -v -d . -o core.img chain fat
+$ dd if=boot.img of=/dev/fd0 bs=512 count=1
+$ dd if=core.img of=/dev/fd0 bs=512 seek=1
+
+It would be easier to use Bochs <http://bochs.sf.net/> than a real
+machine.

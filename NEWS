@@ -1,0 +1,12 @@
+New in 0.6 - 2002-12-27, Yoshinori K. Okuji:
+
+* The chainloader and the FAT filesystem are modularized.
+
+* The structure of the source tree is a bit changed.
+
+* Support for building loadable modules is added.
+
+* Some generic parts of pupa-mkimage are segregated.
+
+* Some documentation files are added, according to the GNU Coding
+  Standards.

@@ -1,0 +1,65 @@
+# -*- makefile -*-
+
+COMMON_ASFLAGS = -nostdinc -fno-builtin
+COMMON_CFLAGS = -fno-builtin
+
+# Images.
+pkgdata_IMAGES = boot.img diskboot.img kernel.img
+
+# For boot.img.
+boot_img_SOURCES = boot/i386/pc/boot.S
+boot_img_ASFLAGS = $(COMMON_ASFLAGS)
+boot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
+
+# For diskboot.img.
+diskboot_img_SOURCES = boot/i386/pc/diskboot.S
+diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
+diskboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8000
+
+# For kernel.img.
+kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
+	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
+	kern/i386/dl.c kern/i386/pc/init.c disk/i386/pc/partition.c \
+	disk/i386/pc/biosdisk.c \
+	term/i386/pc/console.c \
+	symlist.c
+kernel_img_HEADERS = boot.h device.h disk.h dl.h elf.h err.h \
+	file.h fs.h kernel.h loader.h misc.h mm.h net.h rescue.h symbol.h \
+	term.h types.h machine/biosdisk.h machine/boot.h \
+	machine/console.h machine/init.h machine/memory.h \
+	machine/loader.h machine/partition.h
+kernel_img_CFLAGS = $(COMMON_CFLAGS)
+kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
+
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
+DEFSYMFILES += kernel_syms.lst
+
+symlist.c: $(addprefix include/pupa/,$(kernel_img_HEADERS)) gensymlist.sh
+	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
+
+kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
+	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
+
+# Utilities.
+bin_UTILITIES = pupa-mkimage
+noinst_UTILITIES = genmoddep
+
+# For pupa-mkimage.
+pupa_mkimage_SOURCES = util/i386/pc/pupa-mkimage.c util/misc.c \
+	util/resolve.c
+
+# For genmoddep.
+genmoddep_SOURCES = util/genmoddep.c
+
+# Modules.
+pkgdata_MODULES = chain.mod fat.mod
+
+# For chain.mod.
+chain_mod_SOURCES = loader/i386/pc/chainloader.c
+chain_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For fat.mod.
+fat_mod_SOURCES = fs/fat.c
+fat_mod_CFLAGS = $(COMMON_CFLAGS)

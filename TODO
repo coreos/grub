@@ -1,0 +1,37 @@
+-*- Mode: Outline -*-
+
+Before working on anything in this file, it's very important that you
+make contact with the core PUPA developers. Things herein might be
+slightly out of date or otherwise not easy to understand at first
+glance. So write to <pupa-devel@nongnu.org> first.
+
+Priorities:
+  Reported bugs generally have top priority.
+  Non-reported and non-encountered bugs (things we know don't work,
+    but don't really impede things) have lower priority.
+  Things in this file are ranked with one to three !; the more, the
+  higher priority.
+
+
+* Add more filesystems (such as ext2fs, ffs, and reiserfs). !
+
+* Add support for internationalization. !!!
+
+* Add more loaders (such as Multiboot, Linux and FreeBSD). !!
+
+* Implement an installer. !!!
+
+* Add more terminals (such as serial). !
+
+* Implement a normal mode. !!!
+
+* Write a manual.
+
+* Shrink the kernel code.
+
+* Add support for compressed files.
+
+* Add support for network devices.
+
+* Compress the core image and decompress it at loading time, to make it
+  smaller. ?

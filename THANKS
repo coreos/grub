@@ -1,0 +1,16 @@
+PUPA would not be what it is today without the invaluable help of
+everybody who was kind enough to spend time testing it and reporting
+bugs.
+
+The following people made especially gracious contributions of their
+time and energy in helping to track down bugs, add new features, and
+generally assist in the PUPA maintainership process:
+
+NIIBE Yutaka <gniibe@m17n.org>
+Tsuneyoshi Yasuo <tuneyoshi@naic.co.jp>
+
+Also, we thank the projects GNU GRUB and GNU Automake. Some code were
+stolen from them.
+
+This project is supported by Information-technology Promotion Agency,
+Japan.
