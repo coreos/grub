@@ -1,3 +1,10 @@
+2000-11-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* grub/asmstub.c (serial_init) [!O_SYNC]: Don't specify O_SYNC
+	to open SERIAL_DEVICE.
+	(serial_init) [O_FSYNC]: Specify O_FSYNC to open SERIAL_DEVICE.
+	Reported by Farid Hajji <farid.hajji@ob.kamp.net>.
+	
 2000-11-22  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Vesa Jaaskelainen <jaaskela@tietomyrsky.fi>:

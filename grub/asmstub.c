@@ -1029,7 +1029,16 @@ serial_init (unsigned short port, unsigned int speed,
     close (serial_fd);
   
   /* Open the device file.  */
-  serial_fd = open (serial_device, O_RDWR | O_NOCTTY | O_SYNC);
+  serial_fd = open (serial_device,
+		    O_RDWR | O_NOCTTY
+#if defined(O_SYNC)
+		    /* O_SYNC is used in Linux (and some others?).  */
+		    | O_SYNC
+#elif defined(O_FSYNC)
+		    /* O_FSYNC is used in FreeBSD.  */
+		    | O_FSYNC
+#endif
+		    );
   if (serial_fd < 0)
     return 0;
 
