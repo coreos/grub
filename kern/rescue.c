@@ -337,13 +337,6 @@ pupa_rescue_cmd_info (void)
 }
 #endif
 
-/* (module|initrd) FILE [ARGS] */
-static void
-pupa_rescue_cmd_module (int argc, char *argv[])
-{
-  pupa_loader_load_module (argc, argv);
-}
-
 /* root [DEVICE] */
 static void
 pupa_rescue_cmd_root (int argc, char *argv[])
@@ -607,12 +600,8 @@ pupa_enter_rescue_mode (void)
 				"show the contents of a file");
   pupa_rescue_register_command ("help", pupa_rescue_cmd_help,
 				"show this message");
-  pupa_rescue_register_command ("initrd", pupa_rescue_cmd_module,
-				"load an initrd");
   pupa_rescue_register_command ("ls", pupa_rescue_cmd_ls,
 				"list devices or files");
-  pupa_rescue_register_command ("module", pupa_rescue_cmd_module,
-				"load an OS module");
   pupa_rescue_register_command ("root", pupa_rescue_cmd_root,
 				"set the root device");
   pupa_rescue_register_command ("dump", pupa_rescue_cmd_dump,

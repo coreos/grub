@@ -32,9 +32,6 @@
 #include <pupa/rescue.h>
 #include <pupa/dl.h>
 
-/* Allocate space statically, because this is very small anyway.  */
-static char pupa_chainloader_boot_sector[PUPA_DISK_SECTOR_SIZE];
-
 static pupa_dl_t my_mod;
 
 static pupa_err_t
@@ -81,6 +78,7 @@ static pupa_err_t
 pupa_chainloader_unload (void)
 {
   pupa_dl_unref (my_mod);
+  return PUPA_ERR_NONE;
 }
 
 static void
@@ -110,8 +108,8 @@ pupa_rescue_cmd_chainloader (int argc, char *argv[])
     goto fail;
 
   /* Read the first block.  */
-  if (pupa_file_read (file, pupa_chainloader_boot_sector,
-		      PUPA_DISK_SECTOR_SIZE) != PUPA_DISK_SECTOR_SIZE)
+  if (pupa_file_read (file, (char *) 0x7C00, PUPA_DISK_SECTOR_SIZE)
+      != PUPA_DISK_SECTOR_SIZE)
     {
       if (pupa_errno == PUPA_ERR_NONE)
 	pupa_error (PUPA_ERR_BAD_OS, "too small");
@@ -120,8 +118,7 @@ pupa_rescue_cmd_chainloader (int argc, char *argv[])
     }
 
   /* Check the signature.  */
-  signature = *((pupa_uint16_t *) (pupa_chainloader_boot_sector
-				   + PUPA_DISK_SECTOR_SIZE - 2));
+  signature = *((pupa_uint16_t *) (0x7C00 + PUPA_DISK_SECTOR_SIZE - 2));
   if (signature != pupa_le_to_cpu16 (0xaa55) && ! force)
     {
       pupa_error (PUPA_ERR_BAD_OS, "invalid signature");
@@ -129,7 +126,7 @@ pupa_rescue_cmd_chainloader (int argc, char *argv[])
     }
 
   pupa_file_close (file);
-  pupa_loader_set (0, pupa_chainloader_boot, pupa_chainloader_unload);
+  pupa_loader_set (pupa_chainloader_boot, pupa_chainloader_unload);
   return;
   
  fail:

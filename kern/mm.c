@@ -24,6 +24,7 @@
 #include <pupa/err.h>
 #include <pupa/types.h>
 #include <pupa/disk.h>
+#include <pupa/dl.h>
 
 /* Magic words.  */
 #define PUPA_MM_FREE_MAGIC	0x2d3c2808
@@ -95,6 +96,10 @@ pupa_mm_init_region (void *addr, pupa_size_t size)
   pupa_mm_header_t h;
   pupa_mm_region_t r, *p, q;
 
+#if 0
+  pupa_printf ("%s:%d: addr=%p, size=%u\n", __FILE__, __LINE__, addr, size);
+#endif
+  
   /* If this region is too small, ignore it.  */
   if (size < PUPA_MM_ALIGN * 2)
     return;

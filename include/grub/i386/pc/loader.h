@@ -23,6 +23,13 @@
 #include <pupa/types.h>
 #include <pupa/symbol.h>
 
+extern pupa_uint32_t EXPORT_VAR(pupa_linux_prot_size);
+extern char *EXPORT_VAR(pupa_linux_tmp_addr);
+extern char *EXPORT_VAR(pupa_linux_real_addr);
+
+void EXPORT_FUNC(pupa_linux_boot_zimage) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC(pupa_linux_boot_bzimage) (void) __attribute__ ((noreturn));
+
 /* This is an asm part of the chainloader.  */
 void EXPORT_FUNC(pupa_chainloader_real_boot) (int drive, void *part_addr) __attribute__ ((noreturn));
 

@@ -26,12 +26,12 @@
 #include <pupa/err.h>
 #include <pupa/types.h>
 
-void EXPORT_FUNC(pupa_loader_set) (pupa_err_t (*load_module) (int argc,
-							      char *argv[]),
-				   pupa_err_t (*boot) (void),
+extern pupa_addr_t EXPORT_VAR(pupa_os_area_addr);
+extern pupa_size_t EXPORT_VAR(pupa_os_area_size);
+
+void EXPORT_FUNC(pupa_loader_set) (pupa_err_t (*boot) (void),
 				   pupa_err_t (*unload) (void));
 
-pupa_err_t EXPORT_FUNC(pupa_loader_load_module) (int argc, char *argv[]);
 pupa_err_t EXPORT_FUNC(pupa_loader_boot) (void);
 
 #endif /* ! PUPA_LOADER_HEADER */

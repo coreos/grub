@@ -49,7 +49,8 @@
 #include <pupa/machine/boot.h>
 #include <pupa/machine/memory.h>
 #include <pupa/machine/console.h>
-
+#include <pupa/machine/linux.h>
+	
 #define ABS(x)	((x) - EXT_C(start) + PUPA_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 	
 	.file	"startup.S"
@@ -282,6 +283,71 @@ FUNCTION(pupa_chainloader_real_boot)
 	.code32
 
 
+/*
+ * void pupa_linux_boot_zimage (void)
+ */
+VARIABLE(pupa_linux_prot_size)
+	.long	0
+VARIABLE(pupa_linux_tmp_addr)
+	.long	0
+VARIABLE(pupa_linux_real_addr)
+	.long	0
+	
+FUNCTION(pupa_linux_boot_zimage)
+	/* copy the kernel */
+	movl	EXT_C(pupa_linux_prot_size), %ecx
+	addl	$3, %ecx
+	shrl	$2, %ecx
+	movl	$PUPA_LINUX_BZIMAGE_ADDR, %esi
+	movl	$PUPA_LINUX_ZIMAGE_ADDR, %edi
+	cld
+	rep
+	movsl
+
+FUNCTION(pupa_linux_boot_bzimage)
+	call	EXT_C(pupa_dl_unload_all)
+	
+	movl	EXT_C(pupa_linux_real_addr), %ebx
+
+	/* copy the real mode code */
+	movl	EXT_C(pupa_linux_tmp_addr), %esi
+	movl	%ebx, %edi
+	movl	$PUPA_LINUX_SETUP_MOVE_SIZE, %ecx
+	cld
+	rep
+	movsb
+
+	/* change %ebx to the segment address */
+	shrl	$4, %ebx
+	movl	%ebx, %eax
+	addl	$0x20, %eax
+	movw	%ax, linux_setup_seg
+
+	/* XXX new stack pointer in safe area for calling functions */
+	movl	$0x4000, %esp
+	call	EXT_C(pupa_stop_floppy)
+
+	/* final setup for linux boot */
+	call	prot_to_real
+	.code16
+
+	cli
+	movw	%bx, %ss
+	movw	$PUPA_LINUX_SETUP_STACK, %sp
+
+	movw	%bx, %ds
+	movw	%bx, %es
+	movw	%bx, %fs
+	movw	%bx, %gs
+
+	/* ljmp */
+	.byte	0xea
+	.word	0
+linux_setup_seg:
+	.word	0
+	.code32
+
+		
 /*
  *  These next two routines, "real_to_prot" and "prot_to_real" are structured
  *  in a very specific way.  Be very careful when changing them.

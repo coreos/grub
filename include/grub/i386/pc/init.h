@@ -23,6 +23,10 @@
 #include <pupa/types.h>
 #include <pupa/symbol.h>
 
+/* FIXME: Should these be declared in memory.h?  */
+extern pupa_size_t EXPORT_VAR(pupa_lower_mem);
+extern pupa_size_t EXPORT_VAR(pupa_upper_mem);
+
 /* Get the memory size in KB. If EXTENDED is zero, return conventional
    memory, otherwise return extended memory.  */
 pupa_uint16_t pupa_get_memsize (int extended);
@@ -45,6 +49,6 @@ pupa_uint32_t pupa_get_mmap_entry (struct pupa_machine_mmap_entry *entry,
 				   pupa_uint32_t cont);
 
 /* Turn on/off Gate A20.  */
-void EXPORT_FUNC(pupa_gate_a20) (int on);
+void pupa_gate_a20 (int on);
 
 #endif /* ! PUPA_INIT_MACHINE_HEADER */

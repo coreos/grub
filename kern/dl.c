@@ -569,11 +569,11 @@ pupa_dl_load (const char *name)
     pupa_fatal ("module dir is not initialized yet");
 
   filename = (char *) pupa_malloc (pupa_strlen (pupa_dl_dir) + 1
-				   + pupa_strlen (name) + 3);
+				   + pupa_strlen (name) + 4 + 1);
   if (! filename)
     return 0;
   
-  pupa_sprintf (filename, "%s/%s.o", pupa_dl_dir, name);
+  pupa_sprintf (filename, "%s/%s.mod", pupa_dl_dir, name);
   mod = pupa_dl_load_file (filename);
   pupa_free (filename);
 

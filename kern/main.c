@@ -25,6 +25,8 @@
 #include <pupa/dl.h>
 #include <pupa/term.h>
 #include <pupa/rescue.h>
+#include <pupa/file.h>
+#include <pupa/device.h>
 
 /* Return the end of the core image.  */
 pupa_addr_t

@@ -393,7 +393,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = chain.mod fat.mod
+pkgdata_MODULES = chain.mod fat.mod linux.mod
 
 # For chain.mod.
 chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -472,6 +472,45 @@ fat_mod-fs_fat.d: fs/fat.c
 -include fat_mod-fs_fat.d
 
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/pc/linux.c
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux.o def-linux.lst und-linux.lst
+MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux.d
+DEFSYMFILES += def-linux.lst
+UNDSYMFILES += und-linux.lst
+
+linux.mod: pre-linux.o mod-linux.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-linux.o: linux_mod-loader_i386_pc_linux.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-linux.o: mod-linux.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+mod-linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
+
+def-linux.lst: pre-linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+
+und-linux.lst: pre-linux.o
+	echo 'linux' > $@
+	$(NM) -u -P -p $< >> $@
+
+linux_mod-loader_i386_pc_linux.o: loader/i386/pc/linux.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+linux_mod-loader_i386_pc_linux.d: loader/i386/pc/linux.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -M $< 	  | sed 's,linux\.o[ :]*,linux_mod-loader_i386_pc_linux.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include linux_mod-loader_i386_pc_linux.d
+
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

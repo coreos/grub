@@ -13,6 +13,8 @@ New in 0.7:
 * New commands, "prefix", "insmod", "rmmod" and "lsmod" are added into
   the rescue mode to manipulate PUPA modules.
 
+* Linux support is added. Initrd is not support yet.
+
 
 New in 0.6 - 2002-12-27, Yoshinori K. Okuji:
 

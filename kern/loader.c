@@ -22,38 +22,23 @@
 #include <pupa/mm.h>
 #include <pupa/err.h>
 
-static pupa_err_t (*pupa_loader_load_module_func) (int argc, char *argv[]);
 static pupa_err_t (*pupa_loader_boot_func) (void);
 static pupa_err_t (*pupa_loader_unload_func) (void);
 
 static int pupa_loader_loaded;
 
 void
-pupa_loader_set (pupa_err_t (*load_module) (int argc, char *argv[]),
-		 pupa_err_t (*boot) (void),
+pupa_loader_set (pupa_err_t (*boot) (void),
 		 pupa_err_t (*unload) (void))
 {
   if (pupa_loader_loaded && pupa_loader_unload_func)
     if (pupa_loader_unload_func () != PUPA_ERR_NONE)
       return;
   
-  pupa_loader_load_module_func = load_module;
   pupa_loader_boot_func = boot;
   pupa_loader_unload_func = unload;
 
   pupa_loader_loaded = 1;
-}
-
-pupa_err_t
-pupa_loader_load_module (int argc, char *argv[])
-{
-  if (! pupa_loader_loaded)
-    return pupa_error (PUPA_ERR_NO_KERNEL, "no loaded kernel");
-
-  if (! pupa_loader_load_module_func)
-    return pupa_error (PUPA_ERR_BAD_OS, "module not supported");
-
-  return pupa_loader_load_module_func (argc, argv);
 }
 
 pupa_err_t

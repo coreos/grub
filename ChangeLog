@@ -1,3 +1,74 @@
+2003-01-17  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/pupa/i386/pc/linux.h: New file.
+	* loader/i386/pc/linux.c: Likewise.
+	
+	* loader/i386/pc/chainloader.c (pupa_chainloader_boot_sector):
+	Removed.
+	(pupa_chainloader_unload): Return PUPA_ERR_NONE.
+	(pupa_rescue_cmd_chainloader): Read the image to 0x7C00 instead
+	of PUPA_CHAINLOADER_BOOT_SECTOR.
+
+	* kern/i386/pc/startup.S: Include pupa/machine/linux.h.
+	(pupa_linux_prot_size): New variable.
+	(pupa_linux_tmp_addr): Likewise.
+	(pupa_linux_real_addr): Likewise.
+	(pupa_linux_boot_zimage): New function.
+	(pupa_linux_boot_bzimage): Likewise.
+
+	* kern/i386/pc/init.c (struct mem_region): New structure.
+	(MAX_REGIONS): New macro.
+	(mem_regions): New variable.
+	(num_regions): Likewise.
+	(pupa_os_area_addr): Likewise.
+	(pupa_os_area_size): Likewise.
+	(pupa_lower_mem): Likewise.
+	(pupa_upper_mem): Likewise.
+	(add_mem_region): New function.
+	(compact_mem_regions): Likewise.
+	(pupa_machine_init): Set PUPA_LOWER_MEM and PUPA_UPPER_MEM to
+	the size of the conventional memory and that of so-called upper
+	memory (before the first memory hole).
+	Instead of adding each found region to free memory, use
+	add_mem_region and add them after removing overlaps.
+	Also, add only 1/4 of the upper memory to free memory. The rest
+	is used for loading OS images. Maybe this is ad hoc, but this
+	makes it much easier to relocate OS images when booting.
+
+	* kern/rescue.c (pupa_rescue_cmd_module): Removed.
+	(pupa_enter_rescue_mode): Don't register initrd and module.
+
+	* kern/mm.c: Include pupa/dl.h.
+
+	* kern/main.c: Include pupa/file.h and pupa/device.h.
+
+	* kern/loader.c (pupa_loader_load_module_func): Removed.
+	(pupa_loader_load_module): Likewise.
+
+	* kern/dl.c (pupa_dl_load): Use the suffix ``.mod'' instead of
+	``.o''.
+
+	* include/pupa/i386/pc/loader.h (pupa_linux_prot_size): Declared.
+	(pupa_linux_tmp_addr): Likewise.
+	(pupa_linux_real_addr): Likewise.
+	(pupa_linux_boot_zimage): Likewise.
+	(pupa_linux_boot_bzimage): Likewise.
+
+	* include/pupa/i386/pc/init.h (pupa_lower_mem): Declared.
+	(pupa_upper_mem): Likewise.
+	(pupa_gate_a20): Don't export, because turning off Gate A20 in a
+	module is too dangerous.
+
+	* include/pupa/loader.h (pupa_os_area_addr): Declared.
+	(pupa_os_area_size): Likewise.
+	(pupa_loader_set): Remove the first argument. Loader doesn't
+	manage modules or initrd any longer.
+	(pupa_loader_load_module): Removed.
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added linux.mod.
+	(linux_mod_SOURCES): New variable.
+	(linux_mod_CFLAGS): Likewise.
+
 2003-01-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/pupa-setup.c (setup): Convert the endianness of
