@@ -1,5 +1,20 @@
 1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* grub/getopt.c: Moved to ...
+	* lib/getopt.c: ... here.
+	* grub/getopt1.c: Moved to ...
+	* lib/getopt1.c: ... here.
+	* grub/getopt.h: Moved to ...
+	* lib/getopt.h: ... here.
+	* grub/Makefile.am (AM_CFLAGS): Added -I$(top_srcdir)/lib.
+	(grub_LDADD): Added ../lib/libcommon.a.
+	* lib/Makefile.am: New file.
+	* Makefile.am (SUBDIRS): Added lib.
+	* configure.in: lib/Makefile is added into the arguments for
+	AC_OUTPUT.
+	
+1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	From Pavel Roskin:
 	* stage2/defs.h (time_t): Renamed to ...
 	(mach_time_t): ... this.

@@ -86,7 +86,7 @@ install_sh = @install_sh@
 # encoded into Stage 1.
 
 
-SUBDIRS = netboot stage2 stage1 grub docs debian
+SUBDIRS = netboot stage2 stage1 lib grub docs debian
 EXTRA_DIST = BUGS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
