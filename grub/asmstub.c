@@ -600,6 +600,17 @@ stop (void)
   longjmp (env_for_exit, 1);
 }
 
+void
+grub_reboot (void)
+{
+  stop ();
+}
+
+void
+grub_halt (int no_apm)
+{
+  stop ();
+}
 
 /* calls for direct boot-loader chaining */
 void

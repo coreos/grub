@@ -1,3 +1,21 @@
+2000-06-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (AM_INIT_AUTOMAKE): Increase the version number.
+	I wish that 0.5.96 will not be released actually...
+	
+	* stage2/builtins.c (halt_func): New function.
+	(builtin_halt): New variable.
+	(reboot_func): New function.
+	(builtin_reboot): New variable.
+	(builtin_table): Added pointers to BUILTIN_HALT and
+	BUILTIN_REBOOT.
+	* stage2/asm.S (grub_halt): New function.
+	(grub_reboot): Likewise.
+	* stage2/shared.h (grub_halt): Declared.
+	(grub_reboot): Likewise.
+	* grub/asmstub.c (grub_reboot): New function.
+	(grub_halt): Likewise.
+	
 2000-06-12  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage2/stage2.c (run_menu): Don't display the menu if the

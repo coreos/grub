@@ -1194,6 +1194,30 @@ static struct builtin builtin_geometry =
 };
 
 
+/* halt */
+static int
+halt_func (char *arg, int flags)
+{
+  int no_apm;
+
+  no_apm = (grub_memcmp (arg, "--no-apm", 8) == 0);
+  grub_halt (no_apm);
+  
+  /* Never reach here.  */
+  return 1;
+}
+
+static struct builtin builtin_halt =
+{
+  "halt",
+  halt_func,
+  BUILTIN_CMDLINE,
+  "halt [--no-apm]",
+  "Halt your system. If APM is avaiable on it, turn off the power using"
+  " the APM BIOS, unless you specify the option `--no-apm'."
+};
+
+
 /* help */
 #define MAX_SHORT_DOC_LEN	39
 #define MAX_LONG_DOC_LEN	66
@@ -2273,6 +2297,26 @@ static struct builtin builtin_read =
 };
 
 
+/* reboot */
+static int
+reboot_func (char *arg, int flags)
+{
+  grub_reboot ();
+
+  /* Never reach here.  */
+  return 1;
+}
+
+static struct builtin builtin_reboot =
+{
+  "reboot",
+  reboot_func,
+  BUILTIN_CMDLINE,
+  "reboot",
+  "Reboot your system."
+};
+
+
 /* Print the root device information.  */
 static void
 print_root_device (void)
@@ -3084,6 +3128,7 @@ struct builtin *builtin_table[] =
   &builtin_find,
   &builtin_fstest,
   &builtin_geometry,
+  &builtin_halt,
   &builtin_help,
   &builtin_hide,
   &builtin_impsprobe,
@@ -3101,6 +3146,7 @@ struct builtin *builtin_table[] =
   &builtin_quit,
   &builtin_rarp,
   &builtin_read,
+  &builtin_reboot,
   &builtin_root,
   &builtin_rootnoverify,
   &builtin_setkey,

@@ -547,6 +547,13 @@ void cmain (void);
 /* Halt the processor (called after an unrecoverable error). */
 void stop (void) __attribute__ ((noreturn));
 
+/* Reboot the system.  */
+void grub_reboot (void) __attribute__ ((noreturn));
+
+/* Halt the system, using APM if possible. If NO_APM is true, don't use
+   APM even if it is available.  */
+void grub_halt (int no_apm) __attribute__ ((noreturn));
+
 /* Copy MAP to the drive map and set up int13_handler.  */
 void set_int13_handler (unsigned short *map);
 

@@ -190,7 +190,65 @@ ENTRY(stop_floppy)
 	outb	%al, %dx
 	ret
 
+/*
+ * grub_reboot()
+ *
+ * Reboot the system. At the moment, rely on BIOS.
+ */
+ENTRY(grub_reboot)
+	call	EXT_C(prot_to_real)
+	.code16
+	/* cold boot */
+	movw	$0x0472, %di
+	movw	%ax, (%di)
+	ljmp	$0xFFFF, $0x0000
+	.code32
+	
+/*
+ * grub_halt(int no_apm)
+ *
+ * Halt the system, using APM if possible. If NO_APM is true, don't use
+ * APM even if it is available.
+ */
+ENTRY(grub_halt)
+	/* get the argument */
+	movl	4(%esp), %eax
+	
+	/* see if zero */
+	testl	%eax, %eax
+	jnz	EXT_C(stop)
 
+	call	EXT_C(prot_to_real)
+	.code16
+	
+	/* detect APM */
+	movw	$0x5300, %ax
+	xorw	%bx, %bx
+	int	$0x15
+	jc	EXT_C(hard_stop)
+	/* don't check %bx for buggy BIOSes... */
+
+	/* disconnect APM first */
+	movw	$0x5304, %ax
+	xorw	%bx, %bx
+	int	$0x15
+
+	/* connect APM (Is this really necessary?) */
+	movw	$0x5301, %ax
+	xorw	%bx, %bx
+	int	$0x15
+	jc	EXT_C(hard_stop)
+
+	/* set the power state to off */
+	movw	$0x5307, %ax
+	movw	$1, %bx
+	movw	$3, %cx
+	int	$0x15
+
+	/* shouldn't reach here */
+	jc	EXT_C(hard_stop)
+	.code32
+	
 /*
  * track_int13(int drive)
  *
