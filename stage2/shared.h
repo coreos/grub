@@ -545,7 +545,6 @@ extern unsigned long boot_drive;
 extern unsigned long install_second_sector;
 extern struct apm_info apm_bios_info;
 extern unsigned long boot_part_addr;
-extern unsigned long boot_part_offset;
 extern int saved_entryno;
 extern unsigned char force_lba;
 extern char version_string[];

@@ -90,7 +90,6 @@ unsigned long current_partition;
 /* The register ESI should contain the address of the partition to be
    used for loading a chain-loader when chain-loading the loader.  */
 unsigned long boot_part_addr = 0;
-unsigned long boot_part_offset;
 #endif
 
 /*
@@ -1072,9 +1071,32 @@ set_bootdev (int hdbias)
 {
   int i, j;
 
-  /* Save the boot partition for chain-loading.  */
-  boot_part_offset = cur_part_offset;
-  boot_part_addr = cur_part_addr;
+  /* Copy the boot partition information to 0x7be-0x7fd for chain-loading.  */
+  if ((saved_drive & 0x80) && cur_part_addr)
+    {
+      if (rawread (saved_drive, cur_part_offset,
+		   0, SECTOR_SIZE, (char *) SCRATCHADDR))
+	{
+	  char *dst, *src;
+      
+	  /* Need only the partition table.
+	     XXX: We cannot use grub_memmove because BOOT_PART_TABLE
+	     (0x07be) is less than 0x1000.  */
+	  dst = (char *) BOOT_PART_TABLE;
+	  src = (char *) SCRATCHADDR + BOOTSEC_PART_OFFSET;
+	  while (dst < (char *) BOOT_PART_TABLE + BOOTSEC_PART_LENGTH)
+	    *dst++ = *src++;
+	  
+	  /* Set the active flag of the booted partition.  */
+	  for (i = 0; i < 4; i++)
+	    PC_SLICE_FLAG (BOOT_PART_TABLE, i) = 0;
+	  
+	  *((unsigned char *) cur_part_addr) = PC_SLICE_FLAG_BOOTABLE;
+	  boot_part_addr = cur_part_addr;
+	}
+      else
+	return 0;
+    }
   
   /*
    *  Set BSD boot device.

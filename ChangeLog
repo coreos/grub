@@ -1,3 +1,15 @@
+2002-07-06  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/shared.h (boot_part_offset): Removed.
+	
+	* stage2/disk_io.c (set_bootdev): Copy the partition information
+	here. Now this function can call rawread, so it can fail.
+	(boot_part_offset): Removed.
+
+	* stage2/builtins.c (boot_func): Don't copy the partition
+	information here.
+	(real_root_func): Check ERRNUM after calling set_bootdev.
+
 2002-07-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (Reporting bugs): Use the group name (i.e.
