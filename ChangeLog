@@ -1,3 +1,8 @@
+2002-07-01  Yoshinori K. Okuji <okuji@enbug.org>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): New variable. Specify the
+	required Automake version explicitly.
+	
 2002-06-30  Yoshinori K. Okuji <okuji@enbug.org>
 
 	* stage2/builtins.c [SUPPORT_SERIAL || SUPPORT_HERCULES]
