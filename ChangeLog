@@ -1,3 +1,8 @@
+2002-10-10  Jason Thomas  <jason@topic.com.au>
+
+	* stage2/builtins.c (setup_func): Added missing space to --force-lba
+	option. Reported by Kenneth Crudup <kenny@panix.com>
+
 2002-10-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/asm.S (gateA20): Output a dummy command (0xff), as a

@@ -3880,7 +3880,7 @@ setup_func (char *arg, int flags)
 #if 1
   /* Don't embed a drive number unnecessarily.  */
   grub_sprintf (cmd_arg, "%s%s%s%s %s%s %s p %s %s",
-		is_force_lba? "--force-lba" : "",
+		is_force_lba? "--force-lba " : "",
 		stage2_arg? stage2_arg : "",
 		stage2_arg? " " : "",
 		stage1,
