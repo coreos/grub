@@ -1,3 +1,16 @@
+2000-05-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Synchronize the documentation with the code.
+	
+	* docs/user-ref.texi: Added ReiserFS as a supported filesystem.
+	Updated the descriptions about `password', `install', `kernel',
+	and `setup'.
+	Added a description about `lock'.
+	Added descriptions about ERR_UNALIGNED and ERR_PRIVILEGED.
+	Added a description about the option `--force-lba' of
+	the program `grub-install'.
+	* docs/tutorial.texi: Updated the subsection for NetBSD.
+	
 2000-05-21  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/asm.S (set_int13_handler): Don't use MBI to get the

@@ -236,6 +236,8 @@ If you install GRUB into a partition or a drive except for the first
 one, you must chain-load GRUB from another boot loader. Refer the manual
 for the boot loader to know how to chain-load GRUB.
 
+@c FIXME: you should specify --force-lba when...
+
 That's all there is to it: now you can boot GRUB without a GRUB
 floppy. See the next chapter to find out how to boot your operating
 systems from GRUB.
@@ -452,14 +454,19 @@ grub> boot
 @node NetBSD
 @subsection NetBSD
 
-GRUB can load NetBSD a.out directly, follow these steps:
+GRUB can load NetBSD a.out and ELF directly, follow these steps:
 
 @enumerate
 @item
 Set GRUB's root device with @command{root}.
 
 @item
-Load the kernel with @command{kernel}.
+Load the kernel with @command{kernel}. You should append the ugly option
+@option{--type=netbsd}, if you want to load a ELF kernel, like this:
+
+@example
+grub> kernel --type=netbsd /netbsd-elf
+@end example
 
 @item
 Run @command{boot}.
@@ -763,3 +770,11 @@ GRUB. To learn more about GRUB, see the User Reference Manual
 (@pxref{Introduction}).
 
 Have fun!
+
+@c FIXME: I think we should write some notes on the security here, or in
+@c another chapter. Perhaps we should pick up all the user-visible
+@c features in this tutorial and make the reference manual just a record
+@c of the pure information. - okuji
+@c
+@c BTW, how many people think that this tutorial is easy to read? I
+@c don't know. God knows? I don't think so. :p - okuji

@@ -107,8 +107,8 @@ partitions, and files in a directory depending on context.
 @item Multiple Filesystem Types
 Supports multiple filesystem types transparently, plus a useful explicit
 blocklist notation. The currently supported filesystem types are
-@dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, and
-@dfn{Linux ext2fs}. @xref{Filesystem}, for more information.
+@dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, @dfn{Linux
+ext2fs}, and @dfn{ReiserFS}. @xref{Filesystem}, for more information.
 
 @item Decompression Support
 Can decompress files which were compressed by @command{gzip}. This
@@ -487,11 +487,13 @@ command). This obviously won't help if the machine was rebooted by a
 kernel that GRUB loaded.
 @end deffn
 
-@deffn Command password passwd new-config-file
+@deffn Command password passwd [new-config-file]
 Disable all interactive editing control (menu entry editor and
-command line). If the password @var{passwd} is entered, it loads the
-@var{new-config-file} as a new config file and restarts the GRUB Stage
-2.
+command line) and entries protected by the command @command{lock}. If
+the password @var{passwd} is entered, it loads the @var{new-config-file}
+as a new config file and restarts the GRUB Stage 2, if
+@var{new-config-file} is specified. Otherwise, GRUB will just unlock the
+privileged instructions.
 @end deffn
 
 @deffn Command timeout sec
@@ -881,7 +883,7 @@ Load an initial ramdisk for a Linux format boot image and set the
 appropriate parameters in the Linux setup area in memory.
 @end deffn
 
-@deffn Command install stage1_file [@option{d}] dest_dev stage2_file [addr] [@option{p}] [config_file] [real_config_file]
+@deffn Command install [@option{--force-lba}] stage1_file [@option{d}] dest_dev stage2_file [addr] [@option{p}] [config_file] [real_config_file]
 This command is fairly complex, and you should not use this command
 unless you are familiar with GRUB. In short, it will perform a full
 install presuming the Stage 2 or Stage 1.5@footnote{They're loaded the
@@ -921,6 +923,11 @@ Fujitsu LifeBook 400 BIOS version 31J0103A
 @item
 HP Vectra XU 6/200 BIOS version GG.06.11
 @end table
+
+@strong{Caution2:} A number of BIOSes don't return a correct LBA support
+bitmap even if they do have the support. So GRUB provides a solution to
+ignore the wrong bitmap, that is, the option @option{--force-lba}. Don't
+use this option if you know that your BIOS doesn't have LBA support.
 @end deffn
 
 @deffn Command ioprobe drive
@@ -929,11 +936,34 @@ the I/O ports on the screen. For technical information, @xref{I/O ports
 detection}.
 @end deffn
 
-@deffn Command kernel file @dots{}
+@deffn Command kernel [@option{--type=type}] file @dots{}
 Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
 Linux zImage or bzImage, FreeBSD a.out, NetBSD a.out, etc.) from
 @var{file}. The rest of the line is passed verbatim as the @dfn{kernel
 command line}. Any modules must be reloaded after using this command.
+
+This command also accepts the option @option{--type} so that you can
+specify the kernel type of @var{file} explicitly. The argument
+@var{type} must be one of these: @samp{netbsd}, @samp{freebsd},
+@samp{openbsd}, @samp{linux}, @samp{biglinux}, and
+@samp{multiboot}. However, you need to specify it only if you want to
+load a NetBSD @sc{elf} kernel, because GRUB can automatically determine
+a kernel type in the other cases, quite safely.
+@end deffn
+
+@deffn Command lock
+Prevent normal users from executing arbitrary menu entries. You must use
+the command @command{password} if you really want this command to be
+useful.
+
+This command will be used like this example:
+
+@example
+title This is a too dangerous entry to be executed by normal users
+lock
+root (hd0,a)
+kernel /no-security-os
+@end example
 @end deffn
 
 @deffn Command makeactive
@@ -1007,7 +1037,7 @@ desired. Note that the items mentioned in @command{root} above which
 derived from attempting the mount will @emph{not} work correctly.
 @end deffn
 
-@deffn Command setup install_device [image_device]
+@deffn Command setup [@option{--force-lba}] install_device [image_device]
 Set up the installation of GRUB automatically. This command uses the
 more flexible command @command{install} in the backend and installs GRUB
 into the device @var{install_device}. If @var{image_device} is
@@ -1015,6 +1045,10 @@ specified, then find the GRUB images in the device @var{image_device},
 otherwise use the current @dfn{root device}, which can be set by the
 command @command{root}. If @var{install_device} is a hard disk, then
 embed a Stage 1.5 in the disk if possible.
+
+The option @option{--force-lba} is just passed to @command{install} if
+specified. See the description on @command{install}, for more
+information.
 @end deffn
 
 @deffn Command testload file
@@ -1248,6 +1282,15 @@ install of set active partition command.
 
 @item 30 : Invalid argument specified
 This error is returned if an argument specified to a command is invalid.
+
+@item 31 : File is not sector aligned
+This error may occur only when you access a ReiserFS partition by
+block-lists (e.g. the command @command{install}). In this case, you
+should mount the partition with the @samp{-o notail} option.
+
+@item 32 : Must be autheticated
+This error is returned if you try to run a locked entry. You should
+enter a correct password before running such an entry.
 @end table
 
 
@@ -1430,6 +1473,10 @@ Print a summary of the command line options and exit.
 
 @item --version
 Print the version number of GRUB and exit.
+
+@item --force-lba
+Force GRUB to use LBA mode even for a buggy BIOS. Use this option only
+if your BIOS doesn't work in LBA mode even though it supports LBA mode.
 
 @item --root-directory=@var{dir}
 Install GRUB images under the directory @var{dir} instead of the root
