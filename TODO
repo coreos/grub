@@ -33,5 +33,9 @@ Priorities:
 
 * Add support for network devices.
 
-* Compress the core image and decompress it at loading time, to make it
-  smaller. !
+* Fix the graphics mode completely and improve it to support VESA
+  as well as VGA modes. !
+
+* Add a fancy menu interface which utilizes the graphics mode
+  extensively with many eye-candies. This is important to beat
+  GRUB legacy. :)
