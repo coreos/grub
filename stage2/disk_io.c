@@ -686,16 +686,14 @@ set_device (char *device)
   int drive = (dev >> 24) & 0xFF;
   int partition = dev & 0xFFFFFF;
 
+  /* If DRIVE is disabled (0xFF), use SAVED_DRIVE instead.  */
   if (drive == 0xFF)
-    {
-      current_drive = saved_drive;
-      current_partition = saved_partition;
-    }
+    current_drive = saved_drive;
   else
-    {
-      current_drive = drive;
-      current_partition = partition;
-    }
+    current_drive = drive;
+
+  /* The `partition' part must always have a valid number.  */
+  current_partition = partition;
   
   return device + sizeof (unsigned long);
   

@@ -1,5 +1,15 @@
 1999-11-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (install_func): When using a Stage 1.5, set
+	CURRENT_DRIVE to SAVED_DRIVE and CURRENT_PARTITION to
+	SAVED_PARTITION if set_device fails. If CURRENT_DRIVE is equal
+	to SRC_DRIVE, then set CURRENT_DRIVE to 0xFF. We don't want to
+	embed any drive number whenever possible.
+	* stage2/disk_io.c (set_device) [STAGE1_5]: Always set
+	CURRENT_PARTITION to PARTITION.
+	
+1999-11-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	From Pavel Roskin:
 	* stage1/stage1.S (lba_mode): Jump to chs_mode if INT 13 AH=42h
 	fails.

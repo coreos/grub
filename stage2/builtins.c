@@ -1370,12 +1370,23 @@ install_func (char *arg, int flags)
 	     syntax.  */
 	  if (! (config_file = set_device (ptr)))
 	    {
-	      errnum = 0;
-	      current_drive = 0xFF;
+	      /* The Stage 2 PTR does not contain the device name, so
+		 use the root device instead.  */
+	      errnum = ERR_NONE;
+	      current_drive = saved_drive;
+	      current_partition = saved_partition;
 	      config_file = ptr;
 	    }
+	  
+	  if (current_drive == src_drive)
+	    {
+	      /* If the drive where the Stage 2 resides is the same as
+		 the one where the Stage 1.5 resides, do not embed the
+		 drive number.  */
+	      current_drive = 0xFF;
+	    }
 
-	  device = current_drive << 24 | current_partition;
+	  device = (current_drive << 24) | current_partition;
 	  grub_memmove (config_file_location, (char *) &device,
 			sizeof (device));
 	  grub_strcpy (config_file_location + sizeof (device), config_file);
