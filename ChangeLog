@@ -1,3 +1,8 @@
+2004-07-21  Robert Millan  <robertmh@gnu.org>
+
+	Patch from David Weinehall <tao@debian.org>
+	* util/mkbimage: Fix XSI-isms (for supporting POSIX-only shells).
+
 2004-07-20  Robert Millan  <robertmh@gnu.org>
 
 	* util/grub-install.in: Detect GNU/k*BSD systems as well.
