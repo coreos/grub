@@ -1,3 +1,9 @@
+2000-04-12  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in: Use AC_PATH_PROG instead of AC_PATH_TOOL,
+	because I don't want to use the CVS version. Now you can use
+	autoconf 2.13.
+	
 2000-04-10  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/stage2.c (run_menu): In the case where C is `o', check

@@ -41,12 +41,6 @@ configure script.
   Texinfo release. See the webpage
   <http://www.gnu.org/software/texinfo/texinfo.html>.
 
-* GNU Autoconf 20000116 or later
-
-  Some new macros are required, so you need to get an unrelease
-  version from the CVS. See the webpage
-  <http://sourceware.cygnus.com/autoconf/>.
-
 * GNU Automake 20000319 or later
 
   The new feature "per-executable flags" is required, so you need to

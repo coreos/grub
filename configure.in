@@ -56,7 +56,10 @@ AC_ARG_WITH(binutils,
   [  --with-binutils=DIR     search the directory DIR to find binutils])
 
 if test "x$with_binutils" != x; then
-  AC_PATH_TOOL(RANLIB, ranlib, :, "$with_binutils:$PATH")
+dnl AC_PATH_TOOL is not seen in autoconf 2.13, so use AC_PATH_PROG
+dnl instead for now. It is preferable when you cross-compile GRUB.
+dnl  AC_PATH_TOOL(RANLIB, ranlib, :, "$with_binutils:$PATH")
+  AC_PATH_PROG(RANLIB, ranlib, :, "$with_binutils:$PATH")
 else
   AC_PROG_RANLIB
 fi
@@ -93,7 +96,8 @@ AC_SUBST(GRUB_CFLAGS)
 CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
 
 if test "x$with_binutils" != x; then
-  AC_PATH_TOOL(OBJCOPY, objcopy, , "$with_binutils:$PATH")
+dnl  AC_PATH_TOOL(OBJCOPY, objcopy, , "$with_binutils:$PATH")
+  AC_PATH_PROG(OBJCOPY, objcopy, , "$with_binutils:$PATH")
 else
   AC_CHECK_TOOL(OBJCOPY, objcopy)
 fi
