@@ -170,6 +170,11 @@ for option in "$@"; do
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
+    -*)
+	echo "Unrecognized option \`$option'" 1>&2
+	usage
+	exit 1
+	;;
     *)
 	if test "x$install_device" != x; then
 	    echo "More than one install_devices?" 1>&2
