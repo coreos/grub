@@ -1,3 +1,20 @@
+2000-06-21  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/stage2.c (run_menu): Initialize CUR_ENTRY at the
+	definition.
+	If SHOW_MENU is zero, don't display the menu interface. Instead,
+	wait until the timeout is expired and then boot the default
+	entry. If the user presses `ESC' during the timeout, set
+	SHOW_MENU to one and break the loop.
+	Display the menu if SHOW_MENU is true, instead of if
+	GRUB_TIMEOUT is non-zero.
+	Set SHOW_MENU to one before go to the label `restart'.
+	* stage2/builtins.c (show_menu): New global variable.
+	(hiddenmenu_func): New function.
+	(builtin_hiddenmenu): New variable.
+	(builtin_table): Added a pointer to BUILTIN_HIDDENMENU.
+	* stage2/shared.h (show_menu): Declared.
+	
 2000-06-19  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/mdate-sh: Moved to ...

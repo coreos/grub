@@ -688,6 +688,7 @@ typedef enum
 kernel_t;
 
 extern kernel_t kernel_type;
+extern int show_menu;
 extern int grub_timeout;
 
 void init_builtins (void);

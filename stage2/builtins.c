@@ -52,6 +52,8 @@ int normal_color;
 int highlight_color;
 /* The timeout.  */
 int grub_timeout = -1;
+/* Whether to show the menu or not.  */
+int show_menu = 1;
 /* The BIOS drive map.  */
 static unsigned short bios_drive_map[DRIVE_MAP_SIZE + 1];
 
@@ -1327,6 +1329,26 @@ static struct builtin builtin_help =
   BUILTIN_CMDLINE,
   "help [PATTERN ...]",
   "Display helpful information about builtin commands."
+};
+
+
+/* hiddenmenu */
+static int
+hiddenmenu_func (char *arg, int flags)
+{
+  show_menu = 0;
+  return 0;
+}
+
+static struct builtin builtin_hiddenmenu =
+{
+  "hiddenmenu",
+  hiddenmenu_func,
+  BUILTIN_MENU,
+#if 0
+  "hiddenmenu",
+  "Hide the menu."
+#endif
 };
 
 
@@ -3133,6 +3155,7 @@ struct builtin *builtin_table[] =
   &builtin_geometry,
   &builtin_halt,
   &builtin_help,
+  &builtin_hiddenmenu,
   &builtin_hide,
   &builtin_impsprobe,
   &builtin_initrd,

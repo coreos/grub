@@ -173,7 +173,7 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
 	  char *heap, int entryno)
 {
   int c, time1, time2 = -1, first_entry = 0;
-  char *cur_entry;
+  char *cur_entry = 0;
 
   /*
    *  Main loop for menu UI.
@@ -186,8 +186,45 @@ restart:
       entryno --;
     }
 
-  /* Only display the menu if we're not out of time. */
-  if (grub_timeout != 0)
+  /* If SHOW_MENU is false, don't display the menu until ESC is pressed.  */
+  if (! show_menu)
+    {
+      /* Print a message.  */
+      grub_printf ("Press `ESC' to enter the menu...\n");
+
+      /* Get current time.  */
+      while ((time1 = getrtsecs ()) == 0xFF)
+	;
+
+      while (1)
+	{
+	  /* Check if ESC is pressed.  */
+	  if (checkkey () != -1 && getkey () == 27)
+	    {
+	      grub_timeout = -1;
+	      show_menu = 1;
+	      break;
+	    }
+
+	  /* If GRUB_TIMEOUT is expired, boot the default entry.  */
+	  if (grub_timeout >=0
+	      && (time1 = getrtsecs ()) != time2
+	      && time1 != 0xFF)
+	    {
+	      if (grub_timeout <= 0)
+		{
+		  grub_timeout = -1;
+		  goto boot_entry;
+		}
+	      
+	      time2 = time1;
+	      grub_timeout--;
+	    }
+	}
+    }
+      
+  /* Only display the menu if the user wants to see it. */
+  if (show_menu)
     {
       init_page ();
 #ifndef GRUB_UTIL
@@ -519,7 +556,7 @@ restart:
   /*
    *  Attempt to boot an entry.
    */
-
+ boot_entry:
   while (1)
     {
       cls ();
@@ -549,6 +586,7 @@ restart:
 	break;
     }
 
+  show_menu = 1;
   goto restart;
 }
 
