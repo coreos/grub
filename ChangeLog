@@ -1,3 +1,22 @@
+2000-03-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage1/depcomp: New file. Automake forces to install it. This
+	is a known bug, so I will remove this when Tom fixes it.
+	* configure.in (AM_INIT_AUTOMAKE): Don't get the package name
+	and the version from debian/changelog. This is a workaround.
+	
+2000-03-20  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/Makefile.am (nodist_pkgdata_DATA): Renamed to ...
+	(pkgdata_DATA): ... this. DATA is not distributed by default.
+	(CLEANFILES): Delete the first one. I don't know why this
+	variable was duplicated.
+	Set to $(pkgdata_DATA) instead of $(nodist_pkgdata_DATA).
+	(start_exec_DEPENDENCIES): Removed. This doesn't make sense.
+	(start_exec-start.o): New rule.
+	* depcomp: New file. Copied from automake.
+	* missing: Updated from automake.
+	
 2000-03-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* netboot/Makefile.am (EXTRA_libdrivers_a_SOURCES): 3c89x0.h ->

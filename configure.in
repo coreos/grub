@@ -14,9 +14,7 @@ dnl USE OF THIS SOFTWARE.
 
 AC_INIT(stage2/stage2.c)
 dnl Grab the package and version from the top debian/changelog entry.
-AM_INIT_AUTOMAKE(
-   esyscmd([sed 's/ .*$//; q' debian/changelog]),
-   esyscmd([sed 's/^.*(\(.*\)).*$/\1/; q' debian/changelog]))dnl
+AM_INIT_AUTOMAKE(grub, 0.5.95)
 AM_CONFIG_HEADER(config.h)
 AC_PREREQ(2.13)
 

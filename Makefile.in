@@ -1,6 +1,6 @@
 # Makefile.in generated automatically by automake 1.4a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-9, 2000 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -57,12 +57,18 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+
+@SET_MAKE@
 host_alias = @host_alias@
 host_triplet = @host@
+AMDEP = @AMDEP@
 AMTAR = @AMTAR@
-AMTARFLAGS = @AMTARFLAGS@
 AWK = @AWK@
 CC = @CC@
+CPP = @CPP@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
+DEPDIR = @DEPDIR@
 FSYS_CFLAGS = @FSYS_CFLAGS@
 GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
@@ -96,7 +102,7 @@ DIST_SOURCES =
 DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
 Makefile.am Makefile.in NEWS THANKS TODO acconfig.h acinclude.m4 \
 aclocal.m4 config.guess config.h.in config.sub configure configure.in \
-install-sh missing mkinstalldirs
+depcomp install-sh missing mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -107,7 +113,7 @@ all: all-redirect
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -157,8 +163,6 @@ maintainer-clean-hdr:
 # (1) if the variable is set in `config.status', edit `config.status'
 #     (which will cause the Makefiles to be regenerated when you run `make');
 # (2) otherwise, pass the desired values on the `make' command line.
-
-@SET_MAKE@
 
 all-recursive install-data-recursive install-exec-recursive \
 installdirs-recursive install-recursive uninstall-recursive  \
@@ -215,7 +219,7 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	  done | \
 	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
-	mkid -f$$here/ID $$unique $(LISP)
+	mkid -fID $$unique $(LISP)
 
 TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
@@ -247,15 +251,18 @@ maintainer-clean-tags:
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
 
+
 # This target untars the dist file and tries a VPATH configuration.  Then
 # it guarantees that the distribution is self-contained by making another
 # tarfile.
 distcheck: dist
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 	GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(AMTAR) xf -
+	chmod -R a-w $(distdir); chmod a+w $(distdir)
 	mkdir $(distdir)/=build
 	mkdir $(distdir)/=inst
-	dc_install_base=`cd $(distdir)/=inst && pwd` \
+	chmod a-w $(distdir)
+	dc_install_base=`CDPATH=: && cd $(distdir)/=inst && pwd` \
 	  && cd $(distdir)/=build \
 	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
 	  && $(MAKE) $(AM_MAKEFLAGS) \
@@ -263,8 +270,13 @@ distcheck: dist
 	  && $(MAKE) $(AM_MAKEFLAGS) check \
 	  && $(MAKE) $(AM_MAKEFLAGS) install \
 	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
-	  && $(MAKE) $(AM_MAKEFLAGS) dist
-	-rm -rf $(distdir)
+	  && $(MAKE) $(AM_MAKEFLAGS) uninstall \
+	  && test `find $$dc_install_base -type f -print | wc -l` -le 1 \
+	  && $(MAKE) $(AM_MAKEFLAGS) dist \
+	  && $(MAKE) $(AM_MAKEFLAGS) distclean \
+	  && rm -f $(distdir).tar.gz \
+	  && test `find . -type f -print | wc -l` -eq 0
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 	@banner="$(distdir).tar.gz is ready for distribution"; \
 	dashes=`echo "$$banner" | sed s/./=/g`; \
 	echo "$$dashes"; \
@@ -273,33 +285,31 @@ distcheck: dist
 dist: distdir
 	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
 	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
+	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
 	|| chmod -R a+r $(distdir)
-	$(AMTAR) ch$(AMTARFLAGS)f - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
-	-rm -rf $(distdir)
+	$(AMTAR) chof - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 dist-all: distdir
 	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
 	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
+	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
 	|| chmod -R a+r $(distdir)
-	$(AMTAR) ch$(AMTARFLAGS)f - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
-	-rm -rf $(distdir)
+	$(AMTAR) chof - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 distdir: $(DISTFILES)
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
-	here=`cd $(top_builddir) && pwd`; \
-	top_distdir=`cd $(distdir) && pwd`; \
-	distdir=`cd $(distdir) && pwd`; \
-	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pR $$d/$$file $(distdir) \
+	    || exit 1; \
 	  else \
 	    test -f $(distdir)/$$file \
-	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
-	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	    || cp -p $$d/$$file $(distdir)/$$file \
+	    || exit 1; \
 	  fi; \
 	done
 	for subdir in $(SUBDIRS); do \
@@ -350,6 +360,7 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
+	-rm -f Makefile.in
 mostlyclean-am:  mostlyclean-hdr mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive

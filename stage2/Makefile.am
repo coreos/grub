@@ -21,9 +21,8 @@ libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
 
 # Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
-nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
+pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5
-CLEANFILES = $(nodist_pkgdata_DATA)
 noinst_DATA = pre_stage2 start
 noinst_PROGRAMS = pre_stage2.exec start.exec \
 	e2fs_stage1_5.exec fat_stage1_5.exec \
@@ -54,7 +53,7 @@ pre_stage2_exec_LDADD = ../netboot/libdrivers.a
 endif
 
 BUILT_SOURCES = stage2_size.h
-CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
+CLEANFILES = $(pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
 
 stage2_size.h: pre_stage2
 	-rm -f stage2_size.h
@@ -64,7 +63,12 @@ stage2_size.h: pre_stage2
 start_exec_SOURCES = start.S
 start_exec_CFLAGS = $(STAGE2_COMPILE)
 start_exec_LDFLAGS = $(START_LINK)
-start_exec_DEPENDENCIES = stage2_size.h
+
+# XXX: automake doesn't provide a way to specify dependencies for object
+# files explicitly, so we must write this by a general Makefile scheme.
+# If automake change the naming scheme for per-executable objects, this
+# will be broken.
+start_exec-start.o: stage2_size.h
 
 stage2: pre_stage2 start
 	-rm -f stage2
