@@ -1,3 +1,15 @@
+2000-10-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* lib/device.c [__linux__]: Don't include <linux/cdrom.h>.
+	[__linux__ && !CDROM_GET_CAPABILITY] (CDROM_GET_CAPABILITY):
+	Defined as 0x5331.
+	
+2000-10-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* lib/device.c (get_drive_geometry) [__GNU__]: Get the number of
+	total sectors by fstat. The rest are filled with arbitrary
+	values.
+	
 2000-09-30  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (convert): The code for gnu* (i.e.

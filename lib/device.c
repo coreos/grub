@@ -44,7 +44,9 @@
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
 # include <linux/major.h>	/* FLOPPY_MAJOR */
 # include <linux/kdev_t.h>	/* MAJOR */
-# include <linux/cdrom.h>	/* CDROM_GET_CAPABILITY */
+# ifndef CDROM_GET_CAPABILITY
+#  define CDROM_GET_CAPABILITY	0x5331	/* get capabilities */
+# endif /* ! CDROM_GET_CAPABILITY */
 # ifndef BLKGETSIZE
 #  define BLKGETSIZE	_IO(0x12,96)	/* return device size */
 # endif /* ! BLKGETSIZE */
@@ -94,7 +96,39 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
     close (fd);
     return;
   }
-  
+
+#elif defined(__GNU__)
+# warning "Automatic detection of geometries will be performed only \
+partially. This is not fatal."
+  /* Hurd */
+  {
+    /* For now, Hurd doesn't support the system call to get a geometry
+       from Mach, so get only the number of total sectors.  */
+    struct stat st;
+
+    if (fstat (fd, &st) || ! st.st_blocks)
+      goto fail;
+
+    geom->total_sectors = st.st_blocks;
+
+    /* Set the rest arbitrarily.  */
+    if (drive & 0x80)
+      {
+	geom->cylinders = DEFAULT_HD_CYLINDERS;
+	geom->heads = DEFAULT_HD_HEADS;
+	geom->sectors = DEFAULT_HD_SECTORS;
+      }
+    else
+      {
+	geom->cylinders = DEFAULT_FD_CYLINDERS;
+	geom->heads = DEFAULT_FD_HEADS;
+	geom->sectors = DEFAULT_FD_SECTORS;
+      }
+    
+    close (fd);
+    return;
+  }
+    
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
   /* FreeBSD, NetBSD or OpenBSD */
   {
