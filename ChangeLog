@@ -1,3 +1,14 @@
+2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/fsys_jfs.c (jfs_read) [STAGE1_5]: Set and reset
+	DISK_READ_FUNC even in Stage 1.5.
+	* stage2/fsys_xfs.c (xfs_read) [STAGE1_5]: Likewise.
+
+	* stage2/stage1_5.c (saved_sector): Initialized with -1.
+	(cmain): Check if SAVED_SECTOR was set appropriately after
+	reading the second sector of Stage 2. If SAVED_SECTOR is not
+	set (i.e. it is equal to -1), print an error and stop.
+	
 2002-02-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (setup_func): Add a VSTa fs entry into
