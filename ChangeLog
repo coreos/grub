@@ -1,3 +1,39 @@
+1999-09-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Killing, yanking and manipulating the history are supported.
+	
+	* stage2/shared.h (cur_cmdline): Removed.
+	(MAX_CMDLINE): Moved near the beginning of the file.
+	(NEW_HEAPSIZE): Likewise.
+	(CMDLINE_BUFLEN): Set to MAX_CMDLINE.
+	(KILL_BUF): New macro.
+	(KILL_BUFLEN): Likewise.
+	(HISTORY_BUF): Likewise.
+	(HISTORY_SIZE): Likewise.
+	(HISTORY_BUFLEN): Likewise.
+	(MENU_BUF): Set to HISTORY_BUF + HISTORY_BUFLEN.
+	(MENU_BUFLEN): Set to 0x8000 + PASSWORD_BUF - HISTORY_BUF.
+	(strcpy): New macro.
+	(grub_strcpy): Delared.
+	* stage2/boot.c (cur_cmdline): Removed.
+	* stage2/char_io.c [!STAGE1_5] (grub_strcpy): New function.
+	[!STAGE1_5] (get_history): Likewise.
+	[!STAGE1_5] (add_history): Likewise.
+	[!STAGE1_5] (get_cmdline): Use BUF instead of CMDLINE for the
+	working buffer for the command-line.
+	A new function cl_insert is used to insert a string to the
+	command-line.
+	In the case where C-u or C-k is pressed, copy the string being
+	deleted to KILL.
+	If C-y is pressed, insert KILL to the command-line.
+	If C-p is pressed, fetch the previous command from the history
+	list HISTORY, and if C-n is pressed, fetch the next command from
+	it.
+	If LPOS is less than LLEN, add CMDLINE into the history list.
+	If C is equal to KEY_UP, set C to 16, and if C is equal to
+	KEY_DOWN, set C to 14.
+	[!STAGE1_5] (num_history): New variable.
+	
 1999-09-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/size_test: Do not check for the size of Stage 2.

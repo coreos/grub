@@ -184,6 +184,31 @@ init_page (void)
 	  version_string, mbi.mem_lower, mbi.mem_upper);
 }
 
+/* The number of the history entries.  */
+static int num_history = 0;
+
+/* Get the NOth history. If NO is less than zero or greater than or
+   equal to NUM_HISTORY, return NULL. Otherwise return a valid string.  */
+static char *
+get_history (int no)
+{
+  if (no < 0 || no >= num_history)
+    return 0;
+
+  return (char *) HISTORY_BUF + MAX_CMDLINE * no;
+}
+
+/* Add CMDLINE to the history buffer.  */
+static void
+add_history (const char *cmdline, int no)
+{
+  grub_memmove ((char *) HISTORY_BUF + MAX_CMDLINE * (no + 1),
+		(char *) HISTORY_BUF + MAX_CMDLINE * no,
+		MAX_CMDLINE * (num_history - no));
+  grub_strcpy ((char *) HISTORY_BUF + MAX_CMDLINE * no, cmdline);
+  if (num_history < HISTORY_SIZE)
+    num_history++;
+}
 
 /* Don't use this with a MAXLEN greater than 1600 or so!  The problem
    is that GET_CMDLINE depends on the everything fitting on the screen
@@ -198,69 +223,103 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	     int echo_char, int completion)
 {
   int ystart, yend, xend, lpos, c;
+  /* The length of PROMPT.  */
   int plen = 0;
+  /* The length of the command-line.  */
   int llen = 0;
-
+  /* The index for the history.  */
+  int history = -1;
+  /* The working buffer for the command-line.  */
+  char *buf = (char *) CMDLINE_BUF;
+  /* The kill buffer.  */
+  char *kill = (char *) KILL_BUF;
+  
   /* nested function definition for code simplicity */
   static void cl_print (char *str, int echo_char)
-  {
-    while (*str != 0)
-      {
-	putchar (echo_char ? echo_char : *str);
-	str++;
-	if (++xend > 78)
-	  {
-	    xend = 0;
-	    putchar (' ');
-	    if (yend == (getxy () & 0xff))
-	      ystart--;
-	    else
-	      yend++;
-	  }
-      }
-  }
+    {
+      while (*str != 0)
+	{
+	  putchar (echo_char ? echo_char : *str);
+	  str++;
+	  if (++xend > 78)
+	    {
+	      xend = 0;
+	      putchar (' ');
+	      if (yend == (getxy () & 0xff))
+		ystart--;
+	      else
+		yend++;
+	    }
+	}
+    }
+  
   /* nested function definition for code simplicity */
   static void cl_setcpos (void)
-  {
-    yend = ((lpos + plen) / 79) + ystart;
-    xend = ((lpos + plen) % 79);
-    gotoxy (xend, yend);
-  }
-
+    {
+      yend = ((lpos + plen) / 79) + ystart;
+      xend = ((lpos + plen) % 79);
+      gotoxy (xend, yend);
+    }
+  
   /* nested function definition for initial command-line printing */
   static void cl_init ()
-  {
-    /* distinguish us from other lines and error messages! */
-    putchar ('\n');
-
-    /* print full line and set position here */
-    ystart = (getxy () & 0xff);
-    yend = ystart;
-    xend = 0;
-    cl_print (prompt, 0);
-    cl_print (cmdline, echo_char);
-    cl_setcpos ();
-  }
-
+    {
+      /* distinguish us from other lines and error messages! */
+      putchar ('\n');
+      
+      /* print full line and set position here */
+      ystart = (getxy () & 0xff);
+      yend = ystart;
+      xend = 0;
+      cl_print (prompt, 0);
+      cl_print (buf, echo_char);
+      cl_setcpos ();
+    }
+  
   /* nested function definition for erasing to the end of the line */
   static void cl_kill_to_end ()
-  {
-    int i;
-    cmdline[lpos] = 0;
-    for (i = lpos; i <= llen; i++)
-      {
-	if (i && ((i + plen) % 79) == 0)
+    {
+      int i;
+      buf[lpos] = 0;
+      for (i = lpos; i <= llen; i++)
+	{
+	  if (i && ((i + plen) % 79) == 0)
+	    putchar (' ');
 	  putchar (' ');
-	putchar (' ');
-      }
-    llen = lpos;
-    cl_setcpos ();
-  }
+	}
+      llen = lpos;
+      cl_setcpos ();
+    }
 
-  while (prompt[plen])
-    plen++;
-  while (cmdline[llen])
-    llen++;
+  static void cl_insert (const char *str)
+    {
+      int l = grub_strlen (str);
+      
+      if (llen + l < maxlen)
+	{
+	  if (lpos == llen)
+	    {
+	      grub_memmove (buf + lpos, str, l + 1);
+	      cl_print (buf + lpos, echo_char);
+	      lpos += l;
+	      cl_setcpos ();
+	    }
+	  else
+	    {
+	      grub_memmove (buf + lpos + l, buf + lpos, llen - lpos + 1);
+	      grub_memmove (buf + lpos, str, l);
+	      cl_setcpos ();
+	      cl_print (buf + lpos, echo_char);
+	      lpos += l;
+	      cl_setcpos ();
+	    }
+	  llen += l;
+	}
+    }
+  
+  plen = grub_strlen (prompt);
+  llen = grub_strlen (cmdline);
+
   if (maxlen > MAX_CMDLINE)
     {
       maxlen = MAX_CMDLINE;
@@ -271,9 +330,11 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	}
     }
   lpos = llen;
-
+  grub_strcpy (buf, cmdline);
+  *kill = 0;
+  
   cl_init ();
-
+  
   while (ASCII_CHAR (c = getkey ()) != '\n' && ASCII_CHAR (c) != '\r')
     {
       switch (c)
@@ -283,6 +344,12 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	  break;
 	case KEY_RIGHT:
 	  c = 6;
+	  break;
+	case KEY_UP:
+	  c = 16;
+	  break;
+	case KEY_DOWN:
+	  c = 14;
 	  break;
 	case KEY_HOME:
 	  c = 1;
@@ -296,11 +363,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	case KEY_BACKSPACE:
 	  c = 8;
 	  break;
-	default:
 	}
 
       c = ASCII_CHAR (c);
-
+      
       switch (c)
 	{
 	case 27:		/* ESC immediately return 1 */
@@ -311,14 +377,14 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	      int i, j = 0, llen_old = llen;
 	      
 	      /* Find the first word.  */
-	      while (cmdline[j] == ' ')
+	      while (buf[j] == ' ')
 		j++;
-	      while (cmdline[j] && cmdline[j] != '=' && cmdline[j] != ' ')
+	      while (buf[j] && buf[j] != '=' && buf[j] != ' ')
 		j++;
 	      
 	      /* Since the command line cannot have a '\n', we're OK to
 		 use C.  */
-	      c = cmdline[lpos];
+	      c = buf[lpos];
 	      
 	      cl_kill_to_end ();
 	      
@@ -330,21 +396,21 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	      
 	      if (lpos > j)
 		{
-		  for (i = lpos; i > 0 && cmdline[i - 1] != ' '; i--);
+		  for (i = lpos; i > 0 && buf[i - 1] != ' '; i--);
 		  if (i <= j)
 		    i = j + 1;
 		  /* print possible completions */
-		  print_completions (cmdline + i);
+		  print_completions (buf + i);
 		  /* if somebody in print_completions has added something, 
 		     account for that */
-		  while (cmdline[lpos])
+		  while (buf[lpos])
 		    lpos++, llen_old++;
 		}
 	      else 
 		{
 		  /* Print the command list.  */
 		  struct builtin **builtin;
-
+		  
 		  for (builtin = builtin_table; *builtin != 0; builtin++)
 		    {
 		      /* Do not print the name if it cannot be run in
@@ -357,7 +423,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		}
 	      
 	      /* restore command-line */
-	      cmdline[lpos] = c;
+	      buf[lpos] = c;
 	      llen = llen_old;
 	      cl_init ();
 	    }
@@ -373,7 +439,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	case 6:		/* C-f forward one character */
 	  if (lpos < llen)
 	    {
-	      lpos ++;
+	      lpos++;
 	      cl_setcpos ();
 	    }
 	  break;
@@ -387,7 +453,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	case 4:		/* C-d delete character under cursor */
 	  if (lpos == llen)
 	    break;
-	  lpos ++;
+	  lpos++;
 	  /* fallthrough is on purpose! */
 	case 8:		/* C-h backspace */
 #ifdef GRUB_UTIL
@@ -396,8 +462,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	  if (lpos > 0)
 	    {
 	      int i;
-	      for (i = lpos - 1; i < llen; i++)
-		cmdline[i] = cmdline[i + 1];
+	      grub_memmove (buf + lpos - 1, buf + lpos, llen - lpos + 1);
 	      i = lpos;
 	      lpos = llen - 1;
 	      cl_setcpos ();
@@ -407,7 +472,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	      cl_setcpos ();
 	      if (lpos != llen)
 		{
-		  cl_print (cmdline + lpos, echo_char);
+		  cl_print (buf + lpos, echo_char);
 		  cl_setcpos ();
 		}
 	    }
@@ -415,78 +480,108 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	case 21:		/* C-u kill to beginning of line */
 	  if (lpos == 0)
 	    break;
-	  {
-	    int i;
-	    for (i = 0; i < (llen - lpos); i++)
-	      cmdline[i] = cmdline[lpos + i];
-	  }
+	  /* Copy the string being deleted to KILL.  */
+	  grub_memmove (kill, buf, lpos);
+	  kill[lpos] = 0;
+	  grub_memmove (buf, buf + lpos, llen - lpos + 1);
 	  lpos = llen - lpos;
 	  cl_setcpos ();
-	  /* fallthrough on purpose! */
+	  cl_kill_to_end ();
+	  lpos = 0;
+	  cl_setcpos ();
+	  cl_print (buf, echo_char);
+	  cl_setcpos ();
+	  break;
 	case 11:		/* C-k kill to end of line */
-	  if (lpos < llen)
-	    {
-	      cl_kill_to_end ();
-	      if (c == 21)
-		{
-		  lpos = 0;
-		  cl_setcpos ();
-		  cl_print (cmdline, echo_char);
-		  cl_setcpos ();
-		}
-	    }
+	  if (lpos == llen)
+	    break;
+	  /* Copy the string being deleted to KILL.  */
+	  grub_memmove (kill, buf + lpos, llen - lpos + 1);
+	  cl_kill_to_end ();
+	  break;
+	case 25:		/* C-y yank the kill buffer */
+	  cl_insert (kill);
+	  break;
+	case 16:		/* C-p fetch the previous command */
+	  {
+	    char *p;
+
+	    if (history < 0)
+	      /* Save the working buffer.  */
+	      grub_strcpy (cmdline, buf);
+	    else if (grub_strcmp (get_history (history), buf) != 0)
+	      /* If BUF is modified, add it into the history list.  */
+	      add_history (buf, history);
+	    
+	    history++;
+	    p = get_history (history);
+	    if (! p)
+	      {
+		history--;
+		break;
+	      }
+
+	    lpos = 0;
+	    cl_setcpos ();
+	    cl_kill_to_end ();
+	    grub_strcpy (buf, p);
+	    llen = grub_strlen (buf);
+	    lpos = llen;
+	    cl_print (buf, 0);
+	    cl_setcpos ();
+	  }
+	  break;
+	case 14:		/* C-n fetch the next command */
+	  {
+	    char *p;
+
+	    if (history < 0)
+	      {
+		break;
+	      }
+	    else if (grub_strcmp (get_history (history), buf) != 0)
+	      /* If BUF is modified, add it into the history list.  */
+	      add_history (buf, history);
+	    
+	    history--;
+	    p = get_history (history);
+	    if (! p)
+	      p = cmdline;
+	    
+	    lpos = 0;
+	    cl_setcpos ();
+	    cl_kill_to_end ();
+	    grub_strcpy (buf, p);
+	    llen = grub_strlen (buf);
+	    lpos = llen;
+	    cl_print (buf, 0);
+	    cl_setcpos ();
+	  }
 	  break;
 	default:		/* insert printable character into line */
-	  if (llen < (maxlen - 1) && c >= ' ' && c <= '~')
+	  if (c >= ' ' && c <= '~')
 	    {
-	      if (lpos == llen)
-		{
-		  cmdline[lpos] = c;
-		  cmdline[lpos + 1] = 0;
-		  cl_print (cmdline + lpos, echo_char);
-		  lpos ++;
-		  cl_setcpos ();
-		}
-	      else
-		{
-		  int i;
-		  for (i = llen; i >= lpos; i--)
-		    cmdline[i + 1] = cmdline[i];
-		  cmdline[lpos] = c;
-		  cl_setcpos ();
-		  cl_print (cmdline + lpos, echo_char);
-		  lpos++;
-		  cl_setcpos ();
-		}
-	      llen++;
+	      char str[2];
+
+	      str[0] = c;
+	      str[1] = 0;
+	      cl_insert (str);
 	    }
 	}
     }
-
+  
   /* goto part after line here */
   yend = ((llen + plen) / 79) + ystart;
   putchar ('\n');
   gotoxy (0, getxy () & 0xff);
-
+  
   /* remove leading spaces */
-  /* use c and lpos as indexes now */
-  for (lpos = 0; cmdline[lpos] == ' '; lpos++);
-
-  if (lpos != 0)
-    {
-      c = 0;
-      do
-	{
-	  cmdline[c] = cmdline[lpos];
-	  c++;
-	  lpos++;
-	}
-      while (cmdline[lpos]);
-
-      /* Zero-terminate the string. */
-      cmdline[c] = 0;
-    }
-
+  for (lpos = 0; buf[lpos] == ' '; lpos++);
+  
+  grub_memmove (cmdline, buf + lpos, llen - lpos + 1);
+  if (lpos < llen)
+    add_history (cmdline, 0);
+  
   return 0;
 }
 
@@ -752,5 +847,12 @@ grub_memset (void *start, int c, int len)
     }
 
   return errnum ? NULL : start;
+}
+
+char *
+grub_strcpy (char *dest, const char *src)
+{
+  grub_memmove (dest, src, grub_strlen (src) + 1);
+  return dest;
 }
 #endif /* ! STAGE1_5 */

@@ -26,7 +26,6 @@
 #include "imgact_aout.h"
 #include "i386-elf.h"
 
-char *cur_cmdline;
 static int cur_addr;
 entry_func entry_addr;
 static struct mod_list mll[99];

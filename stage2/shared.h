@@ -48,6 +48,11 @@ extern char *grub_scratch_mem;
 
 #define MAXINT     0x7FFFFFFF
 
+/* Maximum command line size. Before you blindly increase this value,
+   see the comment in char_io.c (get_cmdline).  */
+#define MAX_CMDLINE 1600
+#define NEW_HEAPSIZE 1500
+
 /* 512-byte scratch area */
 #define SCRATCHADDR  RAW_ADDR (0x77e00)
 #define SCRATCHSEG   RAW_SEG (0x77e0)
@@ -89,12 +94,20 @@ extern char *grub_scratch_mem;
 
 /* The buffer for the command-line.  */
 #define CMDLINE_BUF		(PASSWORD_BUF + PASSWORD_BUFLEN)
-/* Make sure that this is larger than NEW_HEAPSIZE defined below.  */
-#define CMDLINE_BUFLEN		0x600
+#define CMDLINE_BUFLEN		MAX_CMDLINE
+
+/* The kill buffer for the command-line.  */
+#define KILL_BUF		(CMDLINE_BUF + CMDLINE_BUFLEN)
+#define KILL_BUFLEN		MAX_CMDLINE
+
+/* The history buffer for the command-line.  */
+#define HISTORY_BUF		(KILL_BUF + KILL_BUFLEN)
+#define HISTORY_SIZE		5
+#define HISTORY_BUFLEN		(MAX_CMDLINE * HISTORY_SIZE)
 
 /* The buffer for the menu entries.  */
-#define MENU_BUF		(CMDLINE_BUF + CMDLINE_BUFLEN)
-#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - MENU_BUF)
+#define MENU_BUF		(HISTORY_BUF + HISTORY_BUFLEN)
+#define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - HISTORY_BUF)
 
 /*
  *  Linux setup parameters
@@ -272,6 +285,7 @@ extern char *grub_scratch_mem;
 #define strcmp grub_strcmp
 #define tolower grub_tolower
 #define strlen grub_strlen
+#define strcpy grub_strcpy
 #endif /* WITHOUT_LIBC_STUBS */
 
 
@@ -448,11 +462,6 @@ extern char *err_list[];
 typedef void (*entry_func) (int, int, int, int, int, int)
      __attribute__ ((noreturn));
 
-/* Maximum command line size.  Before you blindly increase this value,
-   see the comment in char_io.c (get_cmdline). */
-#define MAX_CMDLINE 1600
-#define NEW_HEAPSIZE 1500
-extern char *cur_cmdline;
 extern entry_func entry_addr;
 
 /* Enter the stage1.5/stage2 C code after the stack is set up. */
@@ -598,6 +607,7 @@ char *grub_strstr (const char *s1, const char *s2);
 int grub_memcmp (const char *s1, const char *s2, int n);
 int grub_strcmp (const char *s1, const char *s2);
 int grub_strlen (const char *str);
+char *grub_strcpy (char *dest, const char *src);
 
 /* misc */
 void init_page (void);

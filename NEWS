@@ -24,6 +24,8 @@ New in 0.5.93:
   the second floppy drive.
 * Integrated the netboot support in the Dresden version of GRUB.
 * FreeBSD support in the grub shell is improved.
+* Killing (C-u and C-k), yanking (C-y) and manipulating the history
+  (C-p and C-n) are supported.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).
