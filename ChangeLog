@@ -1,4 +1,8 @@
 2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* Makefile.in (BUILD_CC): CC -> BUILD_CC.
+
+2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* Changelog: New file.
 
