@@ -1,3 +1,11 @@
+2004-09-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/internals.texi (Internals): Changed to an appendix.
+
+	* docs/grub.texi (@setchapternewpage): Changed to odd from off.
+	(@contents): Moved to the beginning.
+	(Future): Changed to an appendix.
+
 2004-08-17  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/cmdline.c (run_script): Fix a reversed conditional.

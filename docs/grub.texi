@@ -32,7 +32,7 @@
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
 @end direntry
 
-@setchapternewpage off
+@setchapternewpage odd
 
 @ifinfo
 Copyright @copyright{} 1999,2000,2001,2002,2004 Free Software Foundation, Inc.
@@ -82,6 +82,9 @@ into another language, under the above conditions for modified versions,
 except that this permission notice may be stated in a translation approved
 by Free Software Foundation.
 @end titlepage
+
+@c Output the table of contents at the beginning.
+@contents
 
 @finalout
 @headings double
@@ -1124,8 +1127,8 @@ try the new kernel only once and boot the old kernel after that.
 
 First, modify your configuration file. Here is an example:
 
-@group
 @example
+@group
 default saved        # This is important!!!
 timeout 10
 
@@ -1138,8 +1141,8 @@ title the new kernel
 root (hd0,0)
 kernel /new_kernel
 savedefault 0         # This is important!!!
-@end example
 @end group
+@end example
 
 Note that this configuration file uses @samp{default saved}
 (@pxref{default}) at the head and @samp{savedefault 0}
@@ -1186,8 +1189,8 @@ Then you may want GRUB to boot the first system which is bootable
 among @samp{A}, @samp{B} and @samp{C}. A configuration file can be
 written in this way:
 
-@group
 @example
+@group
 default saved        # This is important!!!
 timeout 10
 fallback 1 2         # This is important!!!
@@ -1206,8 +1209,8 @@ title C
 root (hd2,0)
 kernel /kernel
 savedefault
-@end example
 @end group
+@end example
 
 Note that @samp{default saved} (@pxref{default}), @samp{fallback 1 2}
 and @samp{savedefault fallback} are used. GRUB will boot a saved entry
@@ -3783,8 +3786,8 @@ You must specify a single argument to @command{grub-set-default}. This
 argument is normally the number of a default boot entry. For example,
 if you have this configuration file:
 
-@group
 @example
+@group
 default saved
 timeout 10
 
@@ -3795,8 +3798,8 @@ root (hd0,0)
 title GNU/Linux
 root (hd0,1)
 ...
-@end example
 @end group
+@end example
 
 and if you want to set the next default boot entry to GNU/Linux, you
 may execute this command:
@@ -3948,7 +3951,7 @@ Once we get your report, we will try to fix the bugs.
 
 
 @node Future
-@chapter Where GRUB will go
+@appendix Where GRUB will go
 
 We started the next generation of GRUB, GRUB 2. This will include
 internationalization, dynamic module loading, real memory management,
@@ -3969,7 +3972,6 @@ homepage}.
 @printindex cp
 
 
-@contents
 @bye
 
 Some notes:
