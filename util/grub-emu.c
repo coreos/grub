@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,9 +45,11 @@
 
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
 
-/* XXX.  */
-grub_addr_t grub_end_addr = -1;
-grub_addr_t grub_total_module_size = 0;
+grub_addr_t
+grub_arch_modules_addr (void)
+{
+  return 0;
+}
 
 int
 grub_arch_dl_check_header (void *ehdr, grub_size_t size)

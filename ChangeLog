@@ -1,3 +1,52 @@
+2005-01-04  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* TODO: Add note about endianness in grub-mkimage.
+	* boot/powerpc/ieee1275/crt0.S (note): Remove unused .note
+	section.
+	* conf/powerpc-ieee1275.rmk (bin_UTILITIES): Add grub-mkimage.
+	(grub_mkimage_SOURCES): New target.
+	* include/grub/kernel.h (grub_start_addr): Remove variable.
+	(grub_end_addr): Likewise.
+	(grub_total_module_size): Likewise.
+	(grub_kernel_image_size): Likewise.
+	(GRUB_MODULE_MAGIC): New constant.
+	(grub_module_info): New structure.
+	(grub_arch_modules_addr): New prototype.
+	(grub_get_end_addr): Remove prototype.
+	* include/grub/i386/pc/kernel.h (grub_end_addr): New prototype.
+	* include/grub/powerpc/ieee1275/kernel.h: New file.
+	* include/grub/util/misc.h (grub_util_get_fp_size): New
+	prototype.
+	(grub_util_read_at): Likewise.
+	(grub_util_write_image_at): Likewise.
+	* kern/main.c (grub_get_end_addr): Remove function.
+	(grub_load_modules): Call grub_arch_modules_addr instead of using
+	grub_end_addr.  Look for a grub_module_info struct in memory.  Use
+	the grub_module_info fields instead of calling grub_get_end_addr
+	as loop conditions.  Move grub_add_unused_region code here.
+	(grub_add_unused_region): Remove function.
+	* kern/i386/pc/init.c: Include grub/cache.h.
+	(grub_machine_init): Remove call to grub_get_end_addr.  Remove
+	one call to add_mem_region.
+	(grub_arch_modules_addr): New function.
+	* kern/powerpc/ieee1275/init.c (grub_end_addr): Remove variable.
+	(grub_total_module_size): Likewise.
+	Include grub/machine/kernel.h.
+	(grub_arch_modules_addr): New function.
+	* util/grub-emu.c (grub_end_addr): Remove variable.
+	(grub_total_module_size): Likewise.
+	(grub_arch_modules_addr): New function.
+	* util/misc.c: Include unistd.h.
+	(grub_util_get_fp_size): New function.
+	(grub_util_read_at): Likewise.
+	(grub_util_write_image_at): Likewise.
+	(grub_util_read_image): Call grub_util_read_at.
+	(grub_util_write_image): Call grub_util_write_image_at.
+	* util/i386/pc/grub-mkimage.c (generate_image): Allocate
+	additional memory in kernel_img for a struct grub_module_info.
+	Fill in that grub_module_info.
+	* util/powerpc/ieee1275/grub-mkimage.c: New file.
+
 2005-01-03  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_milliseconds):

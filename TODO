@@ -39,3 +39,5 @@ Priorities:
 * Add a fancy menu interface which utilizes the graphics mode
   extensively with many eye-candies. This is important to beat
   GRUB legacy. :)
+
+* Audit util/powerpc/ieee1275/grub-mkimage.c for endianness fixes.

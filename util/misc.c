@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <sys/times.h>
 #include <malloc.h>
+#include <unistd.h>
 
 #include <grub/util/misc.h>
 #include <grub/mm.h>
@@ -107,6 +108,20 @@ grub_util_get_path (const char *dir, const char *file)
 }
 
 size_t
+grub_util_get_fp_size (FILE *fp)
+{
+  struct stat st;
+  
+  if (fflush (fp) == EOF)
+    grub_util_error ("fflush failed");
+
+  if (fstat (fileno (fp), &st) == -1)
+    grub_util_error ("fstat failed");
+  
+  return st.st_size;
+}
+
+size_t
 grub_util_get_image_size (const char *path)
 {
   struct stat st;
@@ -117,6 +132,16 @@ grub_util_get_image_size (const char *path)
     grub_util_error ("cannot stat %s", path);
   
   return st.st_size;
+}
+
+void
+grub_util_read_at (void *img, size_t size, off_t offset, FILE *fp)
+{
+  if (fseek (fp, offset, SEEK_SET) == -1)
+    grub_util_error ("fseek failed");
+
+  if (fread (img, 1, size, fp) != size)
+    grub_util_error ("read failed");
 }
 
 char *
@@ -134,9 +159,8 @@ grub_util_read_image (const char *path)
   fp = fopen (path, "rb");
   if (! fp)
     grub_util_error ("cannot open %s", path);
-  
-  if (fread (img, 1, size, fp) != size)
-    grub_util_error ("cannot read %s", path);
+
+  grub_util_read_at (img, size, 0, fp);
 
   fclose (fp);
   
@@ -164,11 +188,19 @@ grub_util_load_image (const char *path, char *buf)
 }
 
 void
-grub_util_write_image (const char *img, size_t size, FILE *out)
+grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out)
 {
-  grub_util_info ("writing 0x%x bytes", size);
+  grub_util_info ("writing 0x%x bytes at offset 0x%x", size, offset);
+  if (fseek (out, offset, SEEK_SET) == -1)
+    grub_util_error ("seek failed");
   if (fwrite (img, 1, size, out) != size)
     grub_util_error ("write failed");
+}
+
+void
+grub_util_write_image (const char *img, size_t size, FILE *out)
+{
+  grub_util_write_image_at (img, size, 0, out);
 }
 
 void *

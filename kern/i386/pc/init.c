@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include <grub/misc.h>
 #include <grub/loader.h>
 #include <grub/env.h>
+#include <grub/cache.h>
 
 struct mem_region
 {
@@ -126,7 +127,6 @@ grub_machine_init (void)
   grub_uint32_t cont;
   struct grub_machine_mmap_entry *entry
     = (struct grub_machine_mmap_entry *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-  grub_addr_t end_addr = grub_get_end_addr ();
   int i;
   
   /* Initialize the console as early as possible.  */
@@ -148,8 +148,6 @@ grub_machine_init (void)
     add_mem_region (GRUB_MEMORY_MACHINE_RESERVED_END,
 		    grub_lower_mem - GRUB_MEMORY_MACHINE_RESERVED_END);
   
-  add_mem_region (end_addr, GRUB_MEMORY_MACHINE_RESERVED_START - end_addr);
-
   /* Check if grub_get_mmap_entry works.  */
   cont = grub_get_mmap_entry (entry, 0);
 
@@ -232,4 +230,11 @@ grub_machine_init (void)
 
   /* Initialize the prefix.  */
   grub_env_set ("prefix", make_install_device ());
+}
+
+/* Return the end of the core image.  */
+grub_addr_t
+grub_arch_modules_addr (void)
+{
+  return grub_end_addr;
 }

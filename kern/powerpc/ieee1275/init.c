@@ -1,7 +1,7 @@
 /*  init.c -- Initialize GRUB on the newworld mac (PPC).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004,2005 Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,10 +31,7 @@
 #include <grub/misc.h>
 #include <grub/machine/init.h>
 #include <grub/machine/time.h>
-
-/* XXX: Modules are not yet supported.  */
-grub_addr_t grub_end_addr = -1;
-grub_addr_t grub_total_module_size = 0;
+#include <grub/machine/kernel.h>
 
 void
 abort (void)
@@ -88,4 +85,10 @@ grub_get_rtc (void)
     return 0;
 
   return msecs;
+}
+
+grub_addr_t
+grub_arch_modules_addr (void)
+{
+  return GRUB_IEEE1275_MODULE_BASE;
 }

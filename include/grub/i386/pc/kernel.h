@@ -58,6 +58,9 @@ extern char grub_prefix[];
 /* The boot BIOS drive number.  */
 extern grub_int32_t grub_boot_drive;
 
+/* The end address of the kernel.  */
+extern grub_addr_t grub_end_addr;
+
 #endif /* ! ASM_FILE */
 
 #endif /* ! KERNEL_MACHINE_HEADER */

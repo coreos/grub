@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,26 +31,26 @@ struct grub_module_header
   grub_size_t size;
 };
 
-/* The start address of the kernel.  */
-extern grub_addr_t grub_start_addr;
+/* "gmim" (GRUB Module Info Magic).  */
+#define GRUB_MODULE_MAGIC 0x676d696d
 
-/* The end address of the kernel.  */
-extern grub_addr_t grub_end_addr;
+struct grub_module_info
+{
+  /* Magic number so we know we have modules present.  */
+  grub_uint32_t magic;
+  /* The offset of the modules.  */
+  grub_off_t offset;
+  /* The size of all modules plus this header.  */
+  grub_size_t size;
+};
 
-/* The total size of modules including their headers.  */
-extern grub_size_t grub_total_module_size;
-
-/* The size of the kernel image.  */
-extern grub_size_t grub_kernel_image_size;
+extern grub_addr_t grub_arch_modules_addr (void);
 
 /* The start point of the C code.  */
 void grub_main (void);
 
 /* The machine-specific initialization. This must initialize memory.  */
 void grub_machine_init (void);
-
-/* Return the end address of the core image.  */
-grub_addr_t grub_get_end_addr (void);
 
 /* Register all the exported symbols. This is automatically generated.  */
 void grub_register_exported_symbols (void);

@@ -1,7 +1,6 @@
-/* crt0.S - Startup code for the PowerPC.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,31 +17,10 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-.extern __bss_start
-.extern _end
+#ifndef GRUB_KERNEL_MACHINE_HEADER
+#define GRUB_KERNEL_MACHINE_HEADER	1
 
-	.text
-	.align	2
-	.globl	_start
-_start:	
-	li      2, 0
-	li      13, 0
+/* Where grub-mkimage places the core modules in memory.  */
+#define GRUB_IEEE1275_MODULE_BASE 0x0300000
 
-	/* Stage1 won't zero BSS for us. In other cases, why not do it again?  */
-	lis	6, (__bss_start - 4)@h
-	ori	6, 6, (__bss_start - 4)@l
-	lis	7, (_end - 4)@h
-	ori	7, 7, (_end - 4)@l
-	subf	7, 6, 7
-	srwi	7, 7, 2 /* We store 4 bytes at a time.  */
-	mtctr	7
-2:	stwu	2, 4(6) /* We know r2 is already 0 from above.  */
-	bdnz	2b
-
-	bl	cmain
-1:	b	1b
-
-	.section ".bss"
-	.lcomm	_ppc_init_stack, 4096*2, 16
-init_stack:
-
+#endif /* ! GRUB_KERNEL_MACHINE_HEADER */

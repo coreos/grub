@@ -1,7 +1,7 @@
 /* grub-mkimage.c - make a bootable image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -79,13 +79,14 @@ generate_image (const char *dir, FILE *out, char *mods[])
   unsigned num;
   size_t offset;
   struct grub_util_path_list *path_list, *p, *next;
+  struct grub_module_info *modinfo;
 
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
   kernel_path = grub_util_get_path (dir, "kernel.img");
   kernel_size = grub_util_get_image_size (kernel_path);
 
-  total_module_size = 0;
+  total_module_size = sizeof (struct grub_module_info);
   for (p = path_list; p; p = p->next)
     total_module_size += (grub_util_get_image_size (p->name)
 			  + sizeof (struct grub_module_header));
@@ -94,7 +95,14 @@ generate_image (const char *dir, FILE *out, char *mods[])
 
   kernel_img = xmalloc (kernel_size + total_module_size);
   grub_util_load_image (kernel_path, kernel_img);
-  offset = kernel_size;
+
+  /* Fill in the grub_module_info structure.  */
+  modinfo = (struct grub_module_info *) (kernel_img + kernel_size);
+  modinfo->magic = GRUB_MODULE_MAGIC;
+  modinfo->offset = sizeof (struct grub_module_info);
+  modinfo->size = total_module_size;
+
+  offset = kernel_size + sizeof (struct grub_module_info);
   for (p = path_list; p; p = p->next)
     {
       struct grub_module_header *header;

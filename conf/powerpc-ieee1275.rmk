@@ -24,8 +24,12 @@ kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 pkgdata_PROGRAMS = grubof
 
 # Utilities.
-bin_UTILITIES = grub-emu
+bin_UTILITIES = grub-emu grub-mkimage
 noinst_UTILITIES = genmoddep
+
+# For grub-mkimage.
+grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
+        util/resolve.c 
 
 # For grub-emu
 grub_emu_SOURCES = kern/main.c kern/device.c				\

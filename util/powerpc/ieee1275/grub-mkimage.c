@@ -1,0 +1,299 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
+
+#include <stdio.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <getopt.h>
+#include <stdlib.h>
+#include <grub/elf.h>
+#include <grub/util/misc.h>
+#include <grub/util/resolve.h>
+#include <grub/kernel.h>
+#include <grub/machine/kernel.h>
+
+#define ALIGN_UP(addr, align) ((long)((char *)addr + align - 1) & ~(align - 1))
+
+static char *kernel_path = "grubof";
+static char *note_path = "note";
+
+
+void
+load_note (Elf32_Phdr *phdr, const char *dir, FILE *out)
+{
+  char *note_img;
+  char *path;
+  int note_size;
+
+  grub_util_info ("adding CHRP NOTE segment");
+
+  path = grub_util_get_path (dir, note_path);
+  note_size = grub_util_get_image_size (path);
+  note_img = xmalloc (note_size);
+  grub_util_load_image (path, note_img);
+  free (path);
+
+  /* Write the note data to the new segment.  */
+  grub_util_write_image_at (note_img, note_size, phdr->p_offset, out);
+
+  /* Fill in the rest of the segment header.  */
+  phdr->p_type = PT_NOTE;
+  phdr->p_flags = PF_R;
+  phdr->p_align = sizeof (long);
+  phdr->p_vaddr = 0;
+  phdr->p_paddr = 0;
+  phdr->p_filesz = note_size;
+  phdr->p_memsz = 0;
+}
+
+void
+load_modules (Elf32_Phdr *phdr, const char *dir, char *mods[], FILE *out)
+{
+  char *module_img;
+  struct grub_util_path_list *path_list;
+  struct grub_util_path_list *p;
+  struct grub_module_info *modinfo;
+  size_t offset;
+  size_t total_module_size;
+
+  path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
+
+  offset = sizeof (struct grub_module_info);
+  total_module_size = sizeof (struct grub_module_info);
+  for (p = path_list; p; p = p->next)
+    {
+      total_module_size += (grub_util_get_image_size (p->name)
+	  + sizeof (struct grub_module_header));
+    }
+
+  grub_util_info ("the total module size is 0x%x", total_module_size);
+
+  module_img = xmalloc (total_module_size);
+  modinfo = (struct grub_module_info *) module_img;
+  modinfo->magic = GRUB_MODULE_MAGIC;
+  modinfo->offset = sizeof (struct grub_module_info);
+  modinfo->size = total_module_size;
+
+  /* Load all the modules, with headers, into module_img.  */
+  for (p = path_list; p; p = p->next)
+    {
+      struct grub_module_header *header;
+      size_t mod_size;
+
+      grub_util_info ("adding module %s", p->name);
+
+      mod_size = grub_util_get_image_size (p->name);
+
+      header = (struct grub_module_header *) (module_img + offset);
+      header->offset = grub_cpu_to_be32 (sizeof (*header));
+      header->size = grub_cpu_to_be32 (mod_size + sizeof (*header));
+
+      grub_util_load_image (p->name, module_img + offset + sizeof (*header));
+
+      offset += sizeof (*header) + mod_size;
+    }
+
+  /* Write the module data to the new segment.  */
+  grub_util_write_image_at (module_img, total_module_size, phdr->p_offset, out);
+
+  /* Fill in the rest of the segment header.  */
+  phdr->p_type = PT_LOAD;
+  phdr->p_flags = PF_R | PF_W | PF_X;
+  phdr->p_align = sizeof (long);
+  phdr->p_vaddr = MODULE_BASE;
+  phdr->p_paddr = MODULE_BASE;
+  phdr->p_filesz = total_module_size;
+  phdr->p_memsz = total_module_size;
+}
+
+void
+add_segments (char *dir, FILE *out, int chrp, char *mods[])
+{
+  Elf32_Ehdr ehdr;
+  Elf32_Phdr *phdrs = NULL;
+  Elf32_Phdr *phdr;
+  FILE *in;
+  off_t phdroff;
+  int i;
+
+  /* Read ELF header.  */
+  in = fopen (kernel_path, "rb");
+  if (! in)
+    grub_util_error ("cannot open %s", kernel_path);
+  grub_util_read_at (&ehdr, sizeof (ehdr), 0, in);
+
+  phdrs = xmalloc (ehdr.e_phentsize * (ehdr.e_phnum + 2));
+
+  /* Copy all existing segments.  */
+  for (i = 0; i < ehdr.e_phnum; i++)
+    {
+      char *segment_img;
+
+      phdr = phdrs + i;
+
+      /* Read segment header.  */
+      grub_util_read_at (phdr, sizeof (Elf32_Phdr), (ehdr.e_phoff
+						     + (i * ehdr.e_phentsize)),
+			 in);
+      grub_util_info ("copying segment %d, type %d", i, phdr->p_type);
+
+      /* Read segment data and write it to new file.  */
+      segment_img = xmalloc (phdr->p_filesz);
+      grub_util_read_at (segment_img, phdr->p_filesz, phdr->p_offset, in);
+      grub_util_write_image_at (segment_img, phdr->p_filesz, phdr->p_offset, out);
+
+      free (segment_img);
+    }
+
+  if (mods[0] != NULL)
+    {
+      /* Construct new segment header for modules.  */
+      phdr = phdrs + ehdr.e_phnum;
+      ehdr.e_phnum++;
+
+      /* Fill in p_offset so the callees know where to write.  */
+      phdr->p_offset = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
+
+      load_modules (phdr, dir, mods, out);
+    }
+
+  if (chrp)
+    {
+      /* Construct new segment header for the CHRP note.  */
+      phdr = phdrs + ehdr.e_phnum;
+      ehdr.e_phnum++;
+
+      /* Fill in p_offset so the callees know where to write.  */
+      phdr->p_offset = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
+
+      load_note (phdr, dir, out);
+    }
+
+  /* Don't bother preserving the section headers.  */
+  ehdr.e_shoff = 0;
+  ehdr.e_shnum = 0;
+  ehdr.e_shstrndx = 0;
+
+  /* Append entire segment table to the file.  */
+  phdroff = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
+  grub_util_write_image_at (phdrs, ehdr.e_phentsize * ehdr.e_phnum, phdroff,
+			    out);
+
+  /* Write ELF header.  */
+  ehdr.e_phoff = phdroff;
+  grub_util_write_image_at (&ehdr, sizeof (ehdr), 0, out);
+
+  free (phdrs);
+}
+
+static struct option options[] =
+  {
+    {"directory", required_argument, 0, 'd'},
+    {"output", required_argument, 0, 'o'},
+    {"help", no_argument, 0, 'h'},
+    {"note", no_argument, 0, 'n'},
+    {"version", no_argument, 0, 'V'},
+    {"verbose", no_argument, 0, 'v'},
+    { 0, 0, 0, 0 },
+  };
+
+static void
+usage (int status)
+{
+  if (status)
+    fprintf (stderr, "Try ``grub-mkimage --help'' for more information.\n");
+  else
+    printf ("\
+Usage: grub-mkimage -o FILE [OPTION]... [MODULES]\n\
+\n\
+Make a bootable image of GRUB.\n\
+\n\
+-d, --directory=DIR     use images and modules under DIR [default=%s]\n\
+-o, --output=FILE       output a generated image to FILE\n\
+-h, --help              display this message and exit\n\
+-n, --note              add NOTE segment for CHRP Open Firmware\n\
+-V, --version           print version information and exit\n\
+-v, --verbose           print verbose messages\n\
+\n\
+Report bugs to <%s>.\n\
+", GRUB_DATADIR, PACKAGE_BUGREPORT);
+
+  exit (status);
+}
+
+int
+main (int argc, char *argv[])
+{
+  FILE *fp;
+  char *output = NULL;
+  char *dir = NULL;
+  int chrp = 0;
+
+  progname = "grub-mkimage";
+
+  while (1)
+    {
+      int c = getopt_long (argc, argv, "d:o:hVvn", options, 0);
+      if (c == -1)
+	break;
+
+      switch (c)
+	{
+	  case 'd':
+	    if (dir)
+	      free (dir);
+	    dir = xstrdup (optarg);
+	    break;
+	  case 'h':
+	    usage (0);
+	    break;
+	  case 'n':
+	    chrp = 1;
+	    break;
+	  case 'o':
+	    if (output)
+	      free (output);
+	    output = xstrdup (optarg);
+	    break;
+	  case 'V':
+	    printf ("grub-mkimage (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+	    return 0;
+	  case 'v':
+	    verbosity++;
+	    break;
+	  default:
+	    usage (1);
+	    break;
+	}
+  }
+
+  if (!output)
+    usage (1);
+
+  fp = fopen (output, "wb");
+  if (! fp)
+    grub_util_error ("cannot open %s", output);
+
+  add_segments (dir ? : GRUB_DATADIR, fp, chrp, argv + optind);
+
+  fclose (fp);
+
+  return 0;
+}

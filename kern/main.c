@@ -1,7 +1,7 @@
 /* main.c - the kernel main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,35 +29,32 @@
 #include <grub/device.h>
 #include <grub/env.h>
 
-/* Return the end of the core image.  */
-grub_addr_t
-grub_get_end_addr (void)
-{
-  return grub_total_module_size + grub_end_addr;
-}
-
 /* Load all modules in core.  */
 static void
 grub_load_modules (void)
 {
+  struct grub_module_info *modinfo;
   struct grub_module_header *header;
+  grub_addr_t modbase;
 
-  for (header = (struct grub_module_header *) grub_end_addr;
-       header < (struct grub_module_header *) grub_get_end_addr ();
+  modbase = grub_arch_modules_addr ();
+  modinfo = (struct grub_module_info *) modbase;
+  
+  /* Check if there are any modules.  */
+  if ((modinfo == 0) || modinfo->magic != GRUB_MODULE_MAGIC)
+    return;
+
+  for (header = (struct grub_module_header *) (modbase + modinfo->offset);
+       header < (struct grub_module_header *) (modbase + modinfo->size);
        header = (struct grub_module_header *) ((char *) header + header->size))
     {
       if (! grub_dl_load_core ((char *) header + header->offset,
 			       (header->size - header->offset)))
 	grub_fatal ("%s", grub_errmsg);
     }
-}
 
-/* Add the region where modules reside into dynamic memory.  */
-static void
-grub_add_unused_region (void)
-{
-  if (grub_total_module_size)
-    grub_mm_init_region ((void *) grub_end_addr, grub_total_module_size);
+  /* Add the region where modules reside into dynamic memory.  */
+  grub_mm_init_region ((void *) modinfo, modinfo->size);
 }
 
 /* Set the root device according to the dl prefix.  */
@@ -111,7 +108,6 @@ grub_main (void)
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
   grub_load_modules ();
-  grub_add_unused_region ();
 
   /* Load the normal mode module.  */
   grub_load_normal_mode ();
