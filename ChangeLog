@@ -1,3 +1,9 @@
+2000-10-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Matthias Granberry <matthias@slurpee.org>:
+	* util/grub-install.in (convert): Added backslashes into
+	continuous lines.
+	
 2000-10-21  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/md5.c (check_md5_password): Removed.
