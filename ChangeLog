@@ -1,3 +1,18 @@
+2004-02-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Yury V. Umanets <umka@namesys.com>:
+	* stage2/fsys_reiserfs.c (REISER3FS_SUPER_MAGIC_STRING): New
+	macro.
+	(reiserfs_mount): Added checks for ReiserFS 3.
+	(reiserfs_embed): Likewise.
+
+2004-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (Obtaining and Building GRUB): Instead of
+	describing how to use the anoncvs method, specify the URL of
+	the description page on Savannah.
+	Reported by Bernhard Treutwein.
+
 2004-01-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Thomas Schwinge <kischde@gmx.net>:
