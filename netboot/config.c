@@ -433,6 +433,9 @@ int eth_probe(void)
 
 	/* Clear the ready flag.  */
 	network_ready = 0;
+	/* Clear the ARP table.  */
+	grub_memset ((char *) arptable, 0,
+		     MAX_ARP * sizeof (struct arptable_t));
 	
 	p = 0;
 #ifdef	INCLUDE_PCI

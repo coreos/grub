@@ -1,5 +1,26 @@
 2000-02-11  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Pavel Roskin:
+	* stage2/shared.h [!GRUB_SHARED_HEADER] (GRUB_SHARED_HEADER):
+	Defined.
+	[GRUB_SHARED_HEADER]: Don't declare or define anything.
+
+	* netboot/main.c (print_network_configuration): New function.
+	(await_reply): Check for Control-C instead of ESC, because GRUB
+	already uses ESC for another purpose.
+	(rfc951_sleep): Check for the key input in the loop. If
+	Control-C is pushed, return immediately.
+	* netboot/etherboot (print_network_configuration): Declared.
+	(CTRL_C): New macro.
+	(ESC): Undefined.
+	* netboot/config.c (eth_probe): Clear ARPTABLE after clearing
+	NETWORK_READY.
+	* stage2/builtins.c (bootp_func): Call
+	print_network_configuration if bootp succeeds.
+	(rarp_func): Call print_network_configuration if rarp succeeds.
+	
+2000-02-11  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Per Lundberg <plundis@byggdok.se>:
 	* docs/multiboot.texi: Added graphics support.
 	

@@ -36,7 +36,7 @@ Author: Martin Renters
 
 struct arptable_t arptable[MAX_ARP];
 
-/* Set if the user pushes the ESC key.  */
+/* Set if the user pushes Control-C.  */
 int ip_abort = 0;
 /* Set if an ethernet card is probed and IP addresses are set.  */
 int network_ready = 0;
@@ -122,6 +122,34 @@ static char dhcprequest[] =
 #endif /* ! NO_DHCP_SUPPORT */
 
 static char broadcast[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+void
+print_network_configuration (void)
+{
+  static void sprint_ip_addr (char *buf, unsigned long addr)
+    {
+      grub_sprintf (buf, "%d.%d.%d.%d",
+		    addr >> 24, (addr >> 16) & 0xFF,
+		    (addr >> 8) & 0xFF, addr & 0xFF);
+    }
+  
+  if (! eth_probe ())
+    grub_printf ("No ethernet card found.\n");
+  else if (! network_ready)
+    grub_printf ("Not initialized yet.\n");
+  else
+    {
+      char me[16], my_mask[16], server[16], gw[16];
+
+      sprint_ip_addr (me, arptable[ARP_CLIENT].ipaddr.s_addr);
+      sprint_ip_addr (my_mask, netmask);
+      sprint_ip_addr (server, arptable[ARP_SERVER].ipaddr.s_addr);
+      sprint_ip_addr (gw, arptable[ARP_GATEWAY].ipaddr.s_addr);
+		       
+      grub_printf ("Address: %s    Netmask: %s\nServer: %s    Gateway: %s\n",
+		   me, my_mask, server, gw);
+    }
+}
 
 /**************************************************************************
 DEFAULT_NETMASK - Return default netmask for IP address
@@ -591,6 +619,7 @@ await_reply (int type, int ival, char *ptr, int timeout)
   int protohdrlen = (ETHER_HDR_SIZE + sizeof (struct iphdr)
 		     + sizeof (struct udphdr));
 
+  /* Clear the abort flag.  */
   ip_abort = 0;
   
 #ifdef CONGESTED
@@ -600,7 +629,8 @@ await_reply (int type, int ival, char *ptr, int timeout)
 #endif
   while (time > currticks ())
     {
-      if (checkkey () != -1 && getkey () == ESC)
+      /* If Control-C is pushed, return immediately.  */
+      if (checkkey () != -1 && ASCII_CHAR (getkey ()) == CTRL_C)
 	{
 	  ip_abort = 1;
 	  return 0;
@@ -979,5 +1009,7 @@ rfc951_sleep (int exp)
   grub_printf ("<sleep>\n");
   
   for (tmo = (tmo & seed) + currticks (); currticks () < tmo;)
-    ;
+    /* If the user interrupts, return immediately.  */ 
+    if (checkkey () != -1 && ASCII_CHAR (getkey ()) == CTRL_C)
+      break;
 }

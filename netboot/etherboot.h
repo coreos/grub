@@ -29,7 +29,11 @@ Author: Martin Renters
 #define	TAGGED_IMAGE		/* choose at least one */
 #endif
 
-#define ESC		0x1B
+#if 0
+# define ESC		0x1B
+#else
+# define CTRL_C		3
+#endif
 
 #ifndef DEFAULT_BOOTFILE
 #define DEFAULT_BOOTFILE	"/tftpboot/kernel"
@@ -338,6 +342,8 @@ extern int rarp P((void));
 External prototypes
 ***************************************************************************/
 /* main.c */
+extern void print_network_configuration (void);
+
 #if 0
 extern void print_bytes P((unsigned char *bytes, int len));
 extern void load P((void));

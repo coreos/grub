@@ -23,6 +23,9 @@
  *  Generic defines to use anywhere
  */
 
+#ifndef GRUB_SHARED_HEADER
+#define GRUB_SHARED_HEADER	1
+
 #include <config.h>
 
 /* Add an underscore to a C symbol in assembler code if needed. */
@@ -780,3 +783,5 @@ int load_initrd (char *initrd);
 void init_bios_info (void);
 
 #endif /* ASM_FILE */
+
+#endif /* ! GRUB_SHARED_HEADER */

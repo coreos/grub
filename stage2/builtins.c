@@ -256,6 +256,8 @@ bootp_func (char *arg, int flags)
       return 1;
     }
 
+  /* Notify the configuration.  */
+  print_network_configuration ();
   return 0;
 #else
   errnum = ERR_UNRECOGNIZED;
@@ -1994,6 +1996,8 @@ rarp_func (char *arg, int flags)
       return 1;
     }
 
+  /* Notify the configuration.  */
+  print_network_configuration ();
   return 0;
 #else
   errnum = ERR_UNRECOGNIZED;
