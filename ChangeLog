@@ -1,3 +1,9 @@
+2000-12-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* lib/device.c [__linux__] (write_to_partition): Use strcpy
+	instead of strcat, to overwrite "/disc". Reported by Thiago
+	Macieira <thiagom@mail.com>.
+	
 2000-12-05  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_minix.c (minix_mount): Corrected the check for

@@ -618,7 +618,7 @@ write_to_partition (char **map, int drive, int partition,
   if (have_devfs ())
     {
       if (strcmp (dev + strlen(dev) - 5, "/disc") == 0)
-	strcat (dev + strlen(dev) - 5, "/part");
+	strcpy (dev + strlen(dev) - 5, "/part");
     }
   sprintf (dev + strlen(dev), "%d", ((partition >> 16) & 0xFF) + 1);
   
