@@ -1,3 +1,9 @@
+2000-02-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S: Undo the previous changes. Is
+	binutils-2.9.5.0.25 too strict to break the compatibility?
+	Reported by Kalle Olavi Niemitalo <tosi@ees2.oulu.fi>.
+	
 2000-02-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/cmdline.c (enter_cmdline): Set BUF_DRIVE to -1 before
