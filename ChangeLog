@@ -1,3 +1,40 @@
+1999-06-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c: Do not use I_AM_VERY_BRAVE any more.
+	(grub_stage2): Delete first_scsi_disk and add a variable
+	num_hd, which is used for counting how many drives are
+	detected.
+	Initialize the flags member of each element of disks to -1
+	instead of 0, and check if it is equal to -1 instead of 0 when
+	close it.
+	(get_diskinfo): Treat -1 as non-caching state instead of 0.
+	
+1999-06-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Reported from Klaus Reichl <a8709182@unet.univie.ac.at>:
+	* docs/.cvsignore: New file.
+	* shared_src/disk_io.c (print_a_completion): New function
+	which saves what has been printed to UNIQUE_STRING and printf
+	it.
+	(unique) [!STAGE1_5]: New variable.
+	(unique_string): Likewise.
+	(print_completions): Use print_a_completion, and improve the
+	completion facility.
+	* shared_src/fsys_ext2fs.c (ext2fs_dir) [!STAGE1_5]: Use
+	print_a_completion instead of just printf.
+	* shared_src/fsys_ffs.c (ffs_dir) [!STAGE1_5]: Likewise.
+	* shared_src/fsys_fat.c (fat_dir) [!STAGE1_5]: Likewise.
+	* shared_src/shared.h (print_a_completion): Declared.
+	* shared_src/cmdline.c (enter_cmdline): Explicitly cast
+	int to pointer to char for grub_read.
+	* grub/asmstub.c (grub_stage2) [__linux__]: Don't use /dev/fd1.
+	Probe 4 IDE drives instead of 2.
+	(biosdisk) [__linux__]: Add a prototype for _llseek.
+	* shared_src/char_io.c (get_cmdline): Update LPOS and LLEN_OLD
+	when the functon print_completion modifies CMDLINE.
+	* shared_src/stage2.c (get_line_from_config): Fix LITERAL
+	handling.
+	
 1999-05-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (grub_stage2): Fix a memory leak that FP is

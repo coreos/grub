@@ -470,7 +470,7 @@ get_line_from_config(char *cmdline, int maxlen)
   while (grub_read (&c, 1))
     {
       /* translate characters first! */
-      if (c == '\\')
+      if (c == '\\' && ! literal)
 	{
 	  literal = 1;
 	  continue;

@@ -757,7 +757,7 @@ ext2fs_dir (char *dirname)
 		{
 		  if (print_possibilities > 0)
 		    print_possibilities = -print_possibilities;
-		  printf ("  %s", dp->name);
+		  print_a_completion (dp->name);
 		}
 # endif
 

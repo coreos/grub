@@ -252,7 +252,7 @@ loop:
 	  if (print_possibilities > 0)
 	    print_possibilities = -print_possibilities;
 
-	  printf ("  %s", dp->d_name);
+	  print_a_completion (dp->d_name);
 	}
 #endif /* STAGE1_5 */
     }

@@ -466,7 +466,7 @@ returnit:
 			  while ((*(str++) = *(ptr++)) != 0);    /* do copy */
 			}
 
-		      grub_read (RAW_ADDR (0x100000), -1);
+		      grub_read ((char *) RAW_ADDR (0x100000), -1);
 
 		      buf_track = -1;
 

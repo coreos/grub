@@ -38,6 +38,7 @@ int grub_stage2 (void);
 #include <fcntl.h>
 #include <time.h>
 #include <errno.h>
+#include <string.h>
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
@@ -78,8 +79,7 @@ grub_stage2 (void)
   /* These need to be static, because they survive our stack transitions. */
   static int status = 0;
   static char *realstack;
-  int i;
-  int first_scsi_disk;
+  int i, num_hd = 0;
   char *scratch, *simstack;
 
   /* We need a nested function so that we get a clean stack frame,
@@ -119,7 +119,7 @@ grub_stage2 (void)
   assert (disks);
   /* Initialize DISKS.  */
   for (i = 0; i < NUM_DISKS; i++)
-    disks[i].flags = 0;
+    disks[i].flags = -1;
 
   assert (device_map == 0);
   device_map = malloc (NUM_DISKS * sizeof (char *));
@@ -132,10 +132,14 @@ grub_stage2 (void)
 
   /* Floppies.  */
   device_map[0] = strdup ("/dev/fd0");
+#ifndef __linux__
+  /* FIXME: leave linux out for now /dev/fd1 blocks for long time
+     if there is no second floppy ?  */
   device_map[1] = strdup ("/dev/fd1");
+#endif
 
   /* IDE disks.  */
-  for (i = 0; i < 2; i++)
+  for (i = 0; i < 4; i++)
     {
       char name[10];
       FILE *fp;
@@ -149,7 +153,30 @@ grub_stage2 (void)
       sprintf (name, "/dev/hd%c", unit);
       fp = fopen (name, "r");
       if (! fp)
-	break;
+	{
+	  switch (errno)
+	    {
+#ifdef ENOMEDIUM
+	    case ENOMEDIUM:
+#if 0
+	      /* At the moment, this finds only CDROMs, which can't be
+		 read anyway, so leave it out. Code should be
+		 reactivated if `removable disks' and CDROMs are
+		 supported.  */
+	      /* register it, it may be inserted.  */
+	      device_map[num_hd++ + 0x80] = strdup (name);
+#endif
+	      break;
+#endif /* ENOMEDIUM */
+	    default:
+	      /* break case and leave */
+	      break;
+	    }
+	  /* continue: there may be more disks sitting sparse on the
+	     controllers */
+	  continue;
+	}
+
       /* Attempt to read the first sector.  */
       if (fread (buf, 1, 512, fp) != 512)
 	{
@@ -158,9 +185,8 @@ grub_stage2 (void)
 	}
 
       fclose (fp);
-      device_map[i + 0x80] = strdup (name);
+      device_map[num_hd++ + 0x80] = strdup (name);
     }
-  first_scsi_disk = i + 0x80;
 
   /* The rest is SCSI disks.  */
   for (i = 0; i < 8; i++)
@@ -173,7 +199,7 @@ grub_stage2 (void)
 #else
       sprintf (name, "/dev/sd%d", i);
 #endif
-      device_map[i + first_scsi_disk] = name;
+      device_map[num_hd++ + 0x80] = name;
     }
 
   /* Check some invariants. */
@@ -208,7 +234,7 @@ grub_stage2 (void)
 
   /* Close off the file descriptors we used. */
   for (i = 0; i < NUM_DISKS; i ++)
-    if (disks[i].flags)
+    if (disks[i].flags != -1)
       close (disks[i].flags);
 
   /* Release memory. */
@@ -473,7 +499,7 @@ get_diskinfo (int drive, struct geometry *geometry)
      or my reputation would be ruined. --Gord */
 
   /* See if we have a cached device. */
-  if (! disks[drive].flags)
+  if (disks[drive].flags == -1)
     {
       /* The unpartitioned device name: /dev/XdX */
       char *devname = device_map[drive];
@@ -484,18 +510,27 @@ get_diskinfo (int drive, struct geometry *geometry)
 
       /* Open read/write, or read-only if that failed. */
       disks[drive].flags = open (devname, O_RDWR);
-      if (! disks[drive].flags)
-	disks[drive].flags = open (devname, O_RDONLY);
+      if (disks[drive].flags == -1)
+	{
+	  if (errno == EACCES || errno == EROFS)
+	    {
+	      disks[drive].flags = open (devname, O_RDONLY);
+	      if (disks[drive].flags == -1)
+		return -1;
+	    }
+	  else
+	    return -1;
+	}
 
       /* Attempt to read the first sector.  */
       if (read (disks[drive].flags, buf, 512) != 512)
 	{
 	  close (disks[drive].flags);
-	  disks[drive].flags = 0;
+	  disks[drive].flags = -1;
 	  return -1;
 	}
 
-      if (disks[drive].flags)
+      if (disks[drive].flags != -1)
 	{
 #ifdef __linux__
 	  struct hd_geometry hdg;
@@ -538,7 +573,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 	}
     }
 
-  if (! disks[drive].flags)
+  if (disks[drive].flags == -1)
     return -1;
 
   *geometry = disks[drive];
@@ -613,6 +648,7 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
   /* FIXME: only use this section if libc doesn't have large file support */
   {
     loff_t offset, result;
+    static int _llseek (uint fd, ulong hi, ulong lo, loff_t *res, uint wh);
     _syscall5 (int, _llseek, uint, fd, ulong, hi, ulong, lo,
 	       loff_t *, res, uint, wh);
 
@@ -633,15 +669,10 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
       if (nread (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
 	return -1;
       break;
-      /* For now, I don't want to turn on this write code by default,
-	 because a bug that I haven't known yet may destroy all disks
-	 in the world.  */
-#ifdef I_AM_VERY_BRAVE
     case BIOSDISK_WRITE:
       if (nwrite (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
 	return -1;
       break;
-#endif
     default:
       grub_printf ("unknown subfunc %d\n", subfunc);
       break;

@@ -574,6 +574,10 @@ open_partition (void)
 
 /* XX used for device completion in 'set_device' and 'print_completions' */
 static int incomplete, disk_choice;
+#ifndef STAGE1_5
+static int unique;
+static char unique_string[128];	/* XXX Don't know yet */ 
+#endif
 static enum
   {
     PART_UNSPECIFIED = 0,
@@ -595,12 +599,31 @@ set_device (char *device)
   current_drive = saved_drive;
   current_partition = 0xFFFFFF;
 
+  if (*device == '(' && !*(device + 1))
+    /* user has given '(' only, let disk_choice handle what disks we have */
+    return device + 1;
+  
   if (*device == '(' && *(++device))
     {
       if (*device != ',' && *device != ')')
 	{
 	  char ch = *device;
 
+	  if (*device == 'f' || *device == 'h')
+	    {
+	      /* user has given '([fh]', check for resp. add 'd' and 
+		 let disk_choice handle what disks we have */
+	      if (!*(device + 1))
+		{
+		  device++;
+		  *device++ = 'd';
+		  *device = '\0';
+		  return device;
+		}
+	      else if (*(device + 1) == 'd' && !*(device + 2))
+		return device + 2;
+	    }
+ 
 	  if ((*device == 'f' || *device == 'h')
 	      && (device += 2, (*(device - 1) != 'd')))
 	    errnum = ERR_NUMBER_PARSING;
@@ -880,6 +903,35 @@ print_fsys_type (void)
 
 #ifndef STAGE1_5
 /*
+ *  print_a_completion saves what has been printed to unique_string
+ *  printf's with a leading ' '.
+ */
+
+void
+print_a_completion (char *filename)
+{
+  char *f = filename;
+  char *u = unique_string;
+  
+  if (! *u && unique == 0)
+    {
+      /* copy first string, this is unique.  */
+      while ((*u++ = *f++))
+	;
+    }
+  else
+    {
+      while (*u && (*u == *f))
+	u++, f++;
+      /* mismatch, strip it.  */
+      *u = '\0';
+    }
+  unique++;
+  
+  printf (" %s", filename);
+}
+
+/*
  *  This lists the possible completions of a device string, filename, or
  *  any sane combination of the two.
  */
@@ -889,6 +941,9 @@ print_completions (char *filename)
 {
   char *ptr = filename;
 
+  *unique_string = '\0';
+  unique = 0;
+  
   if (*filename == '/' || (ptr = set_device (filename)) || incomplete)
     {
       errnum = 0;
@@ -903,17 +958,45 @@ print_completions (char *filename)
 
 	      printf (" Possible disks are: ");
 
-	      for (i = 0; i < 2; i++)
+	      for (i = (ptr && (*(ptr-2) == 'h' && *(ptr-1) == 'd') ? 1 : 0); 
+		   i < (ptr && (*(ptr-2) == 'f' && *(ptr-1) == 'd') ? 1 : 2); 
+		   i++)
 		{
 		  for (j = 0; j < 8; j++)
 		    {
 		      disk_no = (i * 0x80) + j;
 		      if ((disk_choice || disk_no == current_drive) &&
 			  ! get_diskinfo (disk_no, &geom))
-			printf (" %cd%d", (i ? 'h' : 'f'), j);
+			{
+			  char dev_name[4];
+
+			  dev_name[0] = (i ? 'h' : 'f');
+			  dev_name[1] = 'd';
+			  dev_name[2] = '0' + j;
+			  dev_name[3] = '\0';
+			  print_a_completion (dev_name);
+			}
 		    }
 		}
 
+	      ptr = filename;
+	      while (*ptr != '(')
+		ptr--;
+	      ptr++;
+	      {
+		char *u = unique_string;
+		while ((*ptr++ = *u++))
+		  ;
+		ptr--;
+	      }
+	      ptr--;
+	      if ((*(ptr - 2) == 'h') && (*(ptr - 1) == 'd')
+		  && ('0' <= *ptr && *ptr <= '8'))
+		*(ptr + 1) = ',', *(ptr + 2) = '\0';
+	      if ((*(ptr - 2) == 'f') && (*(ptr - 1) == 'd')
+		  && ('0' <= *ptr && *ptr <= '8'))
+		*(ptr + 1) = ')', *(ptr + 2) = '\0';
+	      
 	      putchar ('\n');
 	    }
 	  else
@@ -927,7 +1010,18 @@ print_completions (char *filename)
 	      else
 		{
 		  if (open_partition ())
-		    check_and_print_mount ();
+		    {
+		      check_and_print_mount ();
+		      /* FIXME: Can talk about linux only, do we need
+			 to know about syntax here?  */
+		      ptr = filename;
+		      while (*ptr)
+			ptr++;
+		      if (*(ptr - 1) != ')')
+			*ptr++ = ')';
+		      *ptr++ = '/';
+		      *ptr = '\0';
+		    }
 		}
 	    }
 	}
@@ -936,6 +1030,20 @@ print_completions (char *filename)
 	  /* filename completions */
 	  printf (" Possible files are:");
 	  dir (filename);
+	  {
+	    char *u = unique_string;
+	    
+	    if (*u)
+	      {
+		while (*ptr++)
+		  ;
+		while (*ptr != '/')
+		  ptr--;
+		ptr++;
+		while ((*ptr++ = *u++))
+		  ;
+	      }
+	  }
 	}
       else
 	errnum = ERR_BAD_FILENAME;

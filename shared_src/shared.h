@@ -512,6 +512,7 @@ int set_bootdev (int hdbias);
 void print_fsys_type (void);
 
 /* Display device and filename completions. */
+void print_a_completion (char *filename);
 void print_completions (char *filename);
 
 /* Copies the current partition data to the desired address. */

@@ -240,7 +240,7 @@ loop:
 	{
 	  if (print_possibilities > 0)
 	    print_possibilities = -print_possibilities;
-	  printf ("  %s", filename);
+	  print_a_completion (filename);
 	}
 # endif /* STAGE1_5 */
     }

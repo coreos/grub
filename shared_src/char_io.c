@@ -276,6 +276,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 		  i = j + 1;
 		/* print possible completions */
 		print_completions (cmdline + i);
+		/* if somebody in print_completions has added something, 
+		   account for that */
+		while (cmdline[lpos])
+		  lpos++, llen_old++;
 	      }
 	    else if (commands)
 	      printf (commands);
