@@ -206,6 +206,49 @@ default_netmask (void)
     return (htonl (0xffffff00));
 }
 
+/* ifconfig - configure network interface.  */
+int
+ifconfig (char *ip, char *sm, char *gw, char *svr)
+{
+  in_addr tmp;
+  
+  if (sm) 
+    {
+      if (! inet_aton (sm, &tmp))
+	return 0;
+      
+      netmask = tmp.s_addr;
+    }
+  
+  if (ip) 
+    {
+      if (! inet_aton (ip, &arptable[ARP_CLIENT].ipaddr)) 
+	return 0;
+      
+      if (! netmask && ! sm) 
+	netmask = default_netmask ();
+    }
+  
+  if (gw && ! inet_aton (gw, &arptable[ARP_GATEWAY].ipaddr)) 
+    return 0;
+  
+  if (svr && ! inet_aton (svr, &arptable[ARP_SERVER].ipaddr)) 
+    return 0;
+  
+  if (ip || sm)
+    {
+      if (IP_BROADCAST == (netmask | arptable[ARP_CLIENT].ipaddr.s_addr)
+	  || netmask == (netmask | arptable[ARP_CLIENT].ipaddr.s_addr)
+	  || ! netmask)
+	network_ready = 0;
+      else
+	network_ready = 1;
+    }
+  
+  return 1;
+}
+
+
 /**************************************************************************
 UDP_TRANSMIT - Send a UDP datagram
 **************************************************************************/

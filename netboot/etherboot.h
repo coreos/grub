@@ -462,6 +462,7 @@ External prototypes
 #ifdef GRUB
 extern void print_network_configuration P((void));
 extern int arp_server_override P((const char *buf));
+extern int ifconfig P((char *ip, char *sm, char *gw, char *svr));
 #endif /* GRUB */
 
 #ifndef GRUB

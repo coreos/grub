@@ -1,3 +1,13 @@
+2001-01-11  Eugene Doudine  <dudin@np.nk.nornik.ru>
+	
+	* stage2/builtins.c [SUPPORT_NETBOOT] (ifconfig_func): New
+	function to configure network interface from command line.
+	[SUPPORT_NETBOOT] (builtin_ifconfig): New variable.
+	[SUPPORT_NETBOOT] (builtin_table): Added a pointer to
+	BUILTIN_IFCONFIG.
+	* netboot/main.c (ifconfig): New function.
+	* netboot/etherboot.h (ifconfig): Added the prototype.
+	
 2001-01-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/Makefile.am [BUILD_EXAMPLE_KERNEL] (noinst_DATA): New

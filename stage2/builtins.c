@@ -1517,6 +1517,66 @@ static struct builtin builtin_hide =
 };
 
 
+#ifdef SUPPORT_NETBOOT
+/* ifconfig */
+static int
+ifconfig_func (char *arg, int flags)
+{
+  char *svr = 0, *ip = 0, *gw = 0, *sm = 0;
+  
+  if (! eth_probe ())
+    {
+      grub_printf ("No ethernet card found.\n");
+      errnum = ERR_DEV_VALUES;
+      return 1;
+    }
+  
+  if (! *arg)
+    {
+      print_network_configuration ();
+      return 0;
+    }
+  
+  while (*arg) 
+    {
+      if (! grub_memcmp ("--server=", arg, sizeof ("--server=") - 1))
+	svr = arg + sizeof("--server=") - 1;
+      else if (! grub_memcmp ("--address=", arg, sizeof ("--address=") - 1))
+	ip = arg + sizeof ("--address=") - 1;
+      else if (! grub_memcmp ("--gateway=", arg, sizeof ("--gateway=") - 1))
+	gw = arg + sizeof ("--gateway=") - 1;
+      else if (! grub_memcmp ("--mask=", arg, sizeof("--mask=") - 1))
+	sm = arg + sizeof ("--mask=") - 1;
+      else
+	{
+	  errnum = ERR_BAD_ARGUMENT;
+	  return 1;
+	}
+      
+      arg = skip_to (0, arg);
+    }
+  
+  if (! ifconfig (ip, sm, gw, svr))
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+  
+  return 0;
+}
+
+static struct builtin builtin_ifconfig =
+{
+  "ifconfig",
+  ifconfig_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "ifconfig [--address=IP] [--gateway=IP] [--mask=MASK] [--server=IP]",
+  "Configure the IP address, the netmask, the gateway and the server"
+  " address or print current network configuration."
+};
+#endif /* SUPPORT_NETBOOT */
+
+
 /* impsprobe */
 static int
 impsprobe_func (char *arg, int flags)
@@ -4349,6 +4409,9 @@ struct builtin *builtin_table[] =
   &builtin_help,
   &builtin_hiddenmenu,
   &builtin_hide,
+#ifdef SUPPORT_NETBOOT
+  &builtin_ifconfig,
+#endif /* SUPPORT_NETBOOT */
   &builtin_impsprobe,
   &builtin_initrd,
   &builtin_install,
