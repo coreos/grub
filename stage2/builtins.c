@@ -451,7 +451,8 @@ chainloader_func (char *arg, int flags)
   /* XXX: Windows evil hack. For now, only the first five letters are
      checked.  */
   if (IS_PC_SLICE_TYPE_FAT (current_slice)
-      && ! grub_memcmp (BOOTSEC_LOCATION + BOOTSEC_BPB_SYSTEM_ID, "MSWIN", 5))
+      && ! grub_memcmp ((char *) BOOTSEC_LOCATION + BOOTSEC_BPB_SYSTEM_ID,
+			"MSWIN", 5))
     *((unsigned long *) (BOOTSEC_LOCATION + BOOTSEC_BPB_HIDDEN_SECTORS))
       = part_start;
 
@@ -2210,6 +2211,10 @@ kernel_func (char *arg, int flags)
   int len;
   kernel_t suggested_type = KERNEL_TYPE_NONE;
   unsigned long load_flags = 0;
+
+#ifndef AUTO_LINUX_MEM_OPT
+  load_flags |= KERNEL_LOAD_NO_MEM_OPTION;
+#endif
 
   /* Deal with GNU-style long options.  */
   while (1)

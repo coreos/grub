@@ -542,6 +542,15 @@ AC_ARG_ENABLE(example-kernel,
                           build the example Multiboot kernel])
 AM_CONDITIONAL(BUILD_EXAMPLE_KERNEL, test "x$enable_example_kernel" = xyes)
 
+dnl Automatic Linux mem= option.
+AC_ARG_ENABLE(auto-linux-mem-opt,
+  [  --disable-auto-linux-mem-opt
+                          don't pass Linux mem= option automatically])
+if test "x$enable_auto_linux_mem_opt" = xno; then
+  :
+else
+  AC_DEFINE(AUTO_LINUX_MEM_OPT)
+fi
 
 dnl Now substitute the variables.
 AC_SUBST(FSYS_CFLAGS)

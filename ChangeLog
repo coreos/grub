@@ -1,3 +1,11 @@
+2001-02-28  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* acconfig.h (AUTO_LINUX_MEM_OPT): New entry.
+	* configure.in (--disable-auto-linux-mem-opt): New option.
+	* stage2/builtins.c (kernel_func) [!AUTO_LINUX_MEM_OPT]: Add
+	KERNEL_LOAD_NO_MEM_OPTION into LOAD_FLAGS, whether the user
+	specifies --no-mem-option or not.
+	
 2001-02-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (chainloader_func): Don't check if the

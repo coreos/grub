@@ -26,6 +26,9 @@ New in 1.0 - XXXX-XX-XX:
 * New command, "ifconfig".
 * Linux software RAID support is added (only for RAID-1).
 * Hercules support is added.
+* The configure script now accepts `--disable-auto-linux-mem-opt', which
+  has the same meaning as you specify the option `--no-mem-option' to the
+  command "kernel".
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".
