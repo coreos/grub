@@ -1,3 +1,8 @@
+2000-07-29  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c (block_read): Changed the variable "len"
+	to "j_len" (it shadowed a parameter).
+	
 2000-07-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (CPPFLAGS): Added -Wshadow, -Wpointer-arith and

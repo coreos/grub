@@ -377,16 +377,16 @@ block_read (int blockNr, int start, int len, char *buffer)
   while (transactions-- > 0) 
     {
       int i = 0;
-      int len;
+      int j_len;
       if (*journal_table != 0xffffffff)
 	{
 	  /* Search for the blockNr in cached journal */
-	  len = *journal_table++;
-	  while (i++ < len)
+	  j_len = *journal_table++;
+	  while (i++ < j_len)
 	    {
 	      if (*journal_table++ == blockNr)
 		{
-		  journal_table += len - i;
+		  journal_table += j_len - i;
 		  goto found;
 		}
 	    }
@@ -402,18 +402,18 @@ block_read (int blockNr, int start, int len, char *buffer)
 	  if (! journal_read (desc_block, sizeof (desc), (char *) &desc))
 	    return 0;
 
-	  len = desc.j_len;
-	  while (i < len && i < JOURNAL_TRANS_HALF)
+	  j_len = desc.j_len;
+	  while (i < j_len && i < JOURNAL_TRANS_HALF)
 	    if (desc.j_realblock[i++] == blockNr)
 	      goto found;
 	  
-	  if (len >= JOURNAL_TRANS_HALF)
+	  if (j_len >= JOURNAL_TRANS_HALF)
 	    {
-	      int commit_block = (desc_block + 1 + len) & journal_mask;
+	      int commit_block = (desc_block + 1 + j_len) & journal_mask;
 	      if (! journal_read (commit_block, 
 				  sizeof (commit), (char *) &commit))
 		return 0;
-	      while (i < len)
+	      while (i < j_len)
 		if (commit.j_realblock[i++ - JOURNAL_TRANS_HALF] == blockNr)
 		  goto found;
 	    }
@@ -426,7 +426,7 @@ block_read (int blockNr, int start, int len, char *buffer)
        * in later transactions.
        */
     not_found:
-      desc_block = (desc_block + 2 + len) & journal_mask;
+      desc_block = (desc_block + 2 + j_len) & journal_mask;
     }
   return devread (translatedNr << INFO->blocksize_shift, start, len, buffer);
 }
