@@ -65,6 +65,7 @@ BUILD_CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W \
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
 NM = @NM@
+LD = @LD@
 RUBY = @RUBY@
 
 ### General variables.

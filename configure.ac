@@ -95,6 +95,7 @@ AC_CHECK_TOOL(OBJCOPY, objcopy)
 pupa_PROG_OBJCOPY_ABSOLUTE
 AC_CHECK_TOOL(STRIP, strip)
 AC_CHECK_TOOL(NM, nm)
+AC_CHECK_TOOL(LD, ld)
 
 # This is not a "must".
 AC_PATH_PROG(RUBY, ruby)
@@ -109,12 +110,18 @@ else
 fi
 
 # Test the C compiler for the build environment.
-pupa_tmp_CC="$CC"
+tmp_CC="$CC"
+tmp_CFLAGS="$CFLAGS"
+tmp_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
+CFLAGS="$BUILD_CFLAGS"
+CPPFLAGS="$BUILD_CPPFLAGS"
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
-CC="$pupa_tmp_CC"
+CC="$tmp_CC"
+CFLAGS="$tmp_CFLAGS"
+CPPFLAGS="$tmp_CPPFLAGS"
 
 # Output files.
 AC_CONFIG_LINKS([include/pupa/cpu:include/pupa/$host_cpu

@@ -1,5 +1,13 @@
 2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* configure.ac: Check ld.
+	Replace CFLAGS and CPPFLAGS with BUILD_CFLAGS and BUILD_CPPFLAGS
+	respectively, before checking endianness and sizes.
+
+	* Makefile.in (LD): New variable.
+	
+2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* Makefile.in (BUILD_CC): CC -> BUILD_CC.
 
 2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
