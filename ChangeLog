@@ -1,3 +1,19 @@
+2001-05-25  Klaus Reichl  <Klaus.Reichl@alcatel.at>
+
+	* stage2/stage2.c (print_entries_raw): New function.
+	(run_menu): Use it to implement menu & command-list if on dumb
+	terminals.  
+	Changes are:
+	  Adjust FIRST_ENTRY only on non-dumb terminals.
+	  Setting of SHOW_MENU is honoured also on dumb
+	    terminals. 
+	  Likely if SHOW_MENU is false, ESC brings her to the
+	    menu - not to the command-line as before.
+	  PRINT_BORDER, GOTOXY, SET_LINE_xxx are only called if
+	    not on dumb terminals.
+	  Show entry number when timeout is running if terminal is dumb.
+	  Prompt with entry number when waiting for keys.
+
 2001-05-14  Pavel Roskin  <proski@gnu.org>
 
 	* stage2/shared.h (ENTRY): Remove unnecessary `##'.

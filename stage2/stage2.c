@@ -139,6 +139,33 @@ print_entries (int y, int size, int first, char *menu_entries)
 
 
 static void
+print_entries_raw (int size, int first, char *menu_entries)
+{
+  int i;
+
+#define LINE_LENGTH 67
+
+  for (i = 0; i < LINE_LENGTH; i++)
+    grub_putchar ('-');
+  grub_putchar ('\n');
+
+  for (i = first; i < size; i++)
+    {
+      /* grub's printf can't %02d so ... */
+      if (i < 10)
+	grub_putchar (' ');
+      grub_printf ("%d: %s\n", i, get_entry (menu_entries, i, 0));
+    }
+
+  for (i = 0; i < LINE_LENGTH; i++)
+    grub_putchar ('-');
+  grub_putchar ('\n');
+
+#undef LINE_LENGTH
+}
+
+
+static void
 print_border (int y, int size)
 {
   int i;
@@ -290,20 +317,21 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
    */
 
 restart:
-  while (entryno > 11)
+  /* Dumb terminal always use all entries for display 
+     invariant for TERMINAL_DUMB: first_entry == 0  */
+  if (! (terminal & TERMINAL_DUMB))
     {
-      first_entry++;
-      entryno--;
+      while (entryno > 11)
+	{
+	  first_entry++;
+	  entryno--;
+	}
     }
 
   /* If the timeout was expired or wasn't set, force to show the menu
-     interface. If the terminal is dumb and the timeout is set, hide
-     the menu to boot the default entry automatically when the timeout
-     is expired.  */
+     interface. */
   if (grub_timeout < 0)
     show_menu = 1;
-  else if (terminal & TERMINAL_DUMB)
-    show_menu = 0;
   
   /* If SHOW_MENU is false, don't display the menu until ESC is pressed.  */
   if (! show_menu)
@@ -337,38 +365,12 @@ restart:
 	      grub_timeout--;
 	      
 	      /* Print a message.  */
-	      if (terminal & TERMINAL_DUMB)
-		grub_printf ("\rPress `ESC' to enter the command-line... %d   ",
-			     grub_timeout);
-	      else
-		grub_printf ("\rPress `ESC' to enter the menu... %d   ",
-			     grub_timeout);
+	      grub_printf ("\rPress `ESC' to enter the menu... %d   ",
+			   grub_timeout);
 	    }
 	}
     }
 
-  /* If the terminal is dumb, enter the command-line interface instead.  */
-  if (show_menu && (terminal & TERMINAL_DUMB))
-    {
-      if (! auth && password)
-	{
-	  /* The user must enter a correct password.  */
-	  char entered[32];
-
-	  /* Make sure that PASSWORD is NUL-terminated.  */
-	  nul_terminate (password);
-	  
-	  do
-	    {
-	      grub_memset (entered, 0, sizeof (entered));
-	      get_cmdline ("Password: ", entered, 31, '*', 0);
-	    }
-	  while (check_password (entered, password, password_type) != 0);
-	}
-	  
-      enter_cmdline (heap, 1);
-    }
-  
   /* Only display the menu if the user wants to see it. */
   if (show_menu)
     {
@@ -383,7 +385,8 @@ restart:
 	nocursor ();
 #endif /* ! GRUB_UTIL */
 
-      print_border (3, 12);
+      if (! (terminal & TERMINAL_DUMB))      
+	  print_border (3, 12);
 
 #ifdef GRUB_UTIL
       /* In the grub shell, always use ACS_*.  */
@@ -408,6 +411,9 @@ restart:
 # endif /* SUPPORT_SERIAL */
 #endif /* ! GRUB_UTIL */
       
+      if (terminal & TERMINAL_DUMB)
+	  print_entries_raw (num_entries, first_entry, menu_entries);
+
       grub_printf ("\n\
       Use the %c and %c keys to select which entry is highlighted.\n",
 		   disp_up, disp_down);
@@ -432,10 +438,16 @@ restart:
       selected line, or escape to go back to the main menu.");
 	}
 
-      print_entries (3, 12, first_entry, menu_entries);
-
-      /* highlight initial line */
-      set_line_highlight (4 + entryno, first_entry + entryno, menu_entries);
+      if (terminal & TERMINAL_DUMB)      
+	grub_printf ("\n\nThe selected entry is %d ", entryno);
+      else
+      {
+	  print_entries (3, 12, first_entry, menu_entries);
+	  
+	  /* highlight initial line */
+	  set_line_highlight (4 + entryno, first_entry + entryno, 
+			      menu_entries);
+      }
     }
 
   /* XX using RT clock now, need to initialize value */
@@ -456,9 +468,17 @@ restart:
 
 	  /* else not booting yet! */
 	  time2  = time1;
-	  gotoxy (3, 22);
-	  printf ("The highlighted entry will be booted automatically in %d seconds.    ", grub_timeout);
-	  gotoxy (74, 4 + entryno);
+
+	  if (terminal & TERMINAL_DUMB)
+	      grub_printf ("\r    Entry %d will be booted automatically in %d seconds.   ", 
+			   entryno, grub_timeout);
+	  else
+	  {
+	      gotoxy (3, 22);
+	      printf ("The highlighted entry will be booted automatically in %d seconds.    ", grub_timeout);
+	      gotoxy (74, 4 + entryno);
+	  }
+	  
 	  grub_timeout--;
 	}
 
@@ -469,52 +489,74 @@ restart:
 	 in grub if interrupt driven I/O is done).  */
       if ((checkkey () != -1) || (grub_timeout == -1)) 
 	{
+	  /* Key was pressed, show which entry is selected before GETKEY,
+	     since we're comming in here also on GRUB_TIMEOUT == -1 and
+	     hang in GETKEY */
+	  if (terminal & TERMINAL_DUMB)
+	    grub_printf ("\r    Highlighted entry is %d: ", entryno);
+
 	  c = translate_keycode (getkey ());
 
 	  if (grub_timeout >= 0)
 	    {
-	      gotoxy (3, 22);
+	      if (terminal & TERMINAL_DUMB)
+		grub_putchar ('\r');
+	      else
+		gotoxy (3, 22);
 	      printf ("                                                                    ");
 	      grub_timeout = -1;
 	      fallback_entry = -1;
-	      gotoxy (74, 4 + entryno);
+	      if (! (terminal & TERMINAL_DUMB))
+		gotoxy (74, 4 + entryno);
 	    }
 
 	  /* We told them above (at least in SUPPORT_SERIAL) to use
 	     '^' or 'v' so accept these keys.  */
 	  if (c == 16 || c == '^')
 	    {
-	      if (entryno > 0)
+	      if (terminal & TERMINAL_DUMB)
 		{
-		  set_line_normal (4 + entryno, first_entry + entryno,
-				   menu_entries);
-		  entryno--;
-		  set_line_highlight (4 + entryno, first_entry + entryno,
-				      menu_entries);
+		  if (entryno > 0)
+		    entryno--;
 		}
-	      else if (first_entry > 0)
+	      else
 		{
-		  first_entry--;
-		  print_entries (3, 12, first_entry, menu_entries);
-		  set_line_highlight (4, first_entry + entryno, menu_entries);
+		  if (entryno > 0)
+		    {
+		      set_line_normal (4 + entryno, first_entry + entryno,
+				       menu_entries);
+		      entryno--;
+		      set_line_highlight (4 + entryno, first_entry + entryno,
+					  menu_entries);
+		    }
+		  else if (first_entry > 0)
+		    {
+		      first_entry--;
+		      print_entries (3, 12, first_entry, menu_entries);
+		      set_line_highlight (4, first_entry + entryno, 
+					  menu_entries);
+		    }
 		}
 	    }
 	  if ((c == 14 || c == 'v') && first_entry + entryno + 1 < num_entries)
 	    {
-	      if (entryno < 11)
-		{
-		  set_line_normal (4 + entryno, first_entry + entryno,
-				   menu_entries);
-		  entryno++;
-		  set_line_highlight (4 + entryno, first_entry + entryno,
-				      menu_entries);
-		}
-	      else if (num_entries > 12 + first_entry)
-		{
-		  first_entry++;
-		  print_entries (3, 12, first_entry, menu_entries);
-		  set_line_highlight (15, first_entry + entryno, menu_entries);
-		}
+	      if (terminal & TERMINAL_DUMB)
+		entryno++;
+	      else
+		if (entryno < 11)
+		  {
+		    set_line_normal (4 + entryno, first_entry + entryno,
+				     menu_entries);
+		    entryno++;
+		    set_line_highlight (4 + entryno, first_entry + entryno,
+					menu_entries);
+		  }
+		else if (num_entries > 12 + first_entry)
+		  {
+		    first_entry++;
+		    print_entries (3, 12, first_entry, menu_entries);
+		    set_line_highlight (15, first_entry + entryno, menu_entries);
+		  }
 	    }
 
 	  if (config_entries)
@@ -526,15 +568,16 @@ restart:
 	    {
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
-		  set_line_normal (4 + entryno, first_entry + entryno,
-				   menu_entries);
+		  if (! (terminal & TERMINAL_DUMB))
+		    set_line_normal (4 + entryno, first_entry + entryno,
+				     menu_entries);
 
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
 		      /* But `o' differs from `O', since it may causes
 			 the menu screen to scroll up.  */
-		      if (entryno < 11)
+		      if (entryno < 11 || (terminal & TERMINAL_DUMB))
 			entryno++;
 		      else
 			first_entry++;
@@ -575,9 +618,19 @@ restart:
 			first_entry--;
 		    }
 
-		  print_entries (3, 12, first_entry, menu_entries);
-		  set_line_highlight (4 + entryno, first_entry + entryno,
-				      menu_entries);
+		  if (terminal & TERMINAL_DUMB)
+		    {
+		      grub_printf ("\n\n");
+		      print_entries_raw (num_entries, first_entry,
+					 menu_entries);
+		      grub_printf ("\n");
+		    }
+		  else
+		    {
+		      print_entries (3, 12, first_entry, menu_entries);
+		      set_line_highlight (4 + entryno, first_entry + entryno,
+					  menu_entries);
+		    }
 		}
 
 	      cur_entry = menu_entries;
@@ -595,7 +648,10 @@ restart:
 		  char entered[32];
 		  char *pptr = password;
 
-		  gotoxy (1, 21);
+		  if (terminal & TERMINAL_DUMB)
+		    grub_printf ("\r                                    ");
+		  else
+		    gotoxy (1, 21);
 
 		  /* Wipe out the previously entered password */
 		  memset (entered, 0, sizeof (entered));
