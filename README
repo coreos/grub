@@ -47,8 +47,21 @@ GNU GRUB has a page on the web. See:
 	http://www.gnu.org/software/grub/grub.en.html (English)
 	http://www.gnu.org/software/grub/grub.ja.html (Japanese)
 
-If you have any suggestions or bug reports, please send electronic
-mail to the GRUB mailing list <bug-grub@gnu.org>.
+If you have any suggestions or ideas, please send electronic mail to the
+GRUB mailing list <bug-grub@gnu.org>.
+
+When you encounter any problem or bug, please submit it to
+<bug-grub@gnu.org> with information about your computer and what you did
+as much as possible. For example, your operating system and the
+geometries of your drives are very important.
+
+When you enhance/fix GRUB, please send the patch to <bug-grub@gnu.org>.
+Do not forget to write your changes to ChangeLog; That helps us to
+understand your changes correctly. And it is preferable that your patch
+is the unified format. Just append `-u' option to the command `diff'.
+
+NOTE: you should stick to the GNU Coding Standards. Look at the URL
+<http://www.gnu.org/prep/standards_toc.html> to understand it.
 
 DEVELOPERS: to subscribe to the mailing list, send e-mail to
 <bug-grub-request@gnu.org>.  You can get the latest GRUB CVS tree from
