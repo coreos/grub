@@ -694,7 +694,7 @@ ENTRY(chain_stage1)
 	call	EXT_C(prot_to_real)
 	.code16
 
-	DATA32	ADDR32	ljmp	(offset)
+	DATA32	ADDR32	ljmp	*(offset)
 	.code32
 #endif /* STAGE1_5 */
 
@@ -734,7 +734,7 @@ ENTRY(chain_stage2)
 	call	EXT_C(prot_to_real)
 	.code16
 
-	DATA32	ADDR32	ljmp	(offset)
+	DATA32	ADDR32	ljmp	*(offset)
 
 	.code32
 #endif /* STAGE1_5 */
@@ -1651,7 +1651,7 @@ ENTRY(big_linux_boot)
 	movw	%ax, %ss
 
 	/* jump to start */
-	DATA32	ADDR32	ljmp	(offset)
+	DATA32	ADDR32	ljmp	*(offset)
 	.code32
 
 

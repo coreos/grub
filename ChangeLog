@@ -1,3 +1,18 @@
+2000-02-03  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/cmdline.c (enter_cmdline): Set BUF_DRIVE to -1 before
+	running a command to invalidate the cache.
+	(run_script): Likewise.
+	* stage2/char_io.c (get_cmdline): Set BUF_DRIVE to -1 before the
+	completion to invalidate the cache.
+	Reported by Jeff Sheinberg <jeffsh@erols.com>.
+
+	* configure.in: Use AC_PATH_TOOL instead of AC_PATH_PROG.
+	* stage2/asm.S (chain_stage1): Prepend `*' to the argument for
+	ljmp.
+	(chain_stage2): Likewise.
+	(big_linux_boot): Likewise.
+	
 2000-01-19  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (--root): Renamed to ...

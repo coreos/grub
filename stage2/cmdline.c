@@ -143,6 +143,10 @@ enter_cmdline (char *heap, int forever)
 	  continue;
 	}
 
+      /* Invalidate the cache, because the user may exchange removable
+	 disks.  */
+      buf_drive = -1;
+
       /* Run BUILTIN->FUNC.  */
       arg = skip_to (1, heap);
       (builtin->func) (arg, BUILTIN_CMDLINE);
@@ -207,6 +211,10 @@ run_script (char *script, char *heap)
 	  errnum = ERR_UNRECOGNIZED;
 	  continue;
 	}
+
+      /* Invalidate the cache, because the user may exchange removable
+	 disks.  */
+      buf_drive = -1;
 
       /* Run BUILTIN->FUNC.  */
       arg = skip_to (1, heap);

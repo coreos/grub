@@ -394,6 +394,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		for (i = lpos; i > 0 && buf[i - 1] != ' '; i--)
 		  ;
 
+		/* Invalidate the cache, because the user may exchange
+		   removable disks.  */
+		buf_drive = -1;
+
 		/* Copy this word to COMPLETION_BUFFER and do the
 		   completion.  */
 		grub_memmove (completion_buffer, buf + i, lpos - i);
