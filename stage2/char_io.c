@@ -842,7 +842,6 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   setcursor (old_cursor);
   return ret;
 }
-#endif /* STAGE1_5 */
 
 int
 safe_parse_maxint (char **str_ptr, int *myint_ptr)
@@ -897,7 +896,9 @@ safe_parse_maxint (char **str_ptr, int *myint_ptr)
 
   return 1;
 }
+#endif /* STAGE1_5 */
 
+#if !defined(STAGE1_5) || defined(FSYS_FAT)
 int
 grub_tolower (int c)
 {
@@ -906,6 +907,7 @@ grub_tolower (int c)
 
   return c;
 }
+#endif /* ! STAGE1_5 || FSYS_FAT */
 
 int
 grub_isspace (int c)
@@ -916,6 +918,7 @@ grub_isspace (int c)
   return 0;
 }
 
+#if !defined(STAGE1_5) || defined(FSYS_ISO9660)
 int
 grub_memcmp (const char *s1, const char *s2, int n)
 {
@@ -932,6 +935,7 @@ grub_memcmp (const char *s1, const char *s2, int n)
 
   return 0;
 }
+#endif /* ! STAGE1_5 || FSYS_ISO9660 */
 
 #ifndef STAGE1_5
 int

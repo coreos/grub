@@ -1,3 +1,9 @@
+2004-05-17  Pavel Roskin  <proski@gnu.org>
+
+	* stage2/char_io.c (safe_parse_maxint): Disable for stage 1.5.
+	(grub_tolower): Disable for stage 1.5 except fat_stage1_5.
+	(grub_memcmp): Disable for stage 1.5 except iso9660_stage1_5.
+
 2004-05-14  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Sergey Matveychuk <sem@ciam.ru>:
