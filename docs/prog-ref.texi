@@ -215,7 +215,7 @@ Contain the @dfn{drive} part of the root device.
 Contain the @dfn{partition} part of the root device.
 
 @item part_start
-Contain the current parition starting address.
+Contain the current partition starting address.
 
 @item part_length
 Contain the current partition length, in sectors.
@@ -349,7 +349,7 @@ describes some techniques on how to guess mappings (@pxref{BIOS device
 mapping techniques, Multiboot Specification, BIOS device mapping
 techniques, multiboot, The Multiboot Specification}).
 
-However, the techniques decribed are unreliable or difficult to be
+However, the techniques described are unreliable or difficult to be
 implemented, so we use a different technique from them in GRUB. Our
 technique is @dfn{INT 13H tracking technique}. More precisely, it runs
 the INT 13 call (@pxref{Low-level disk I/O}) in single-step mode just

@@ -231,7 +231,7 @@ which is a BIOS drive number, so the following are equivalent:
 @end example
 
 @var{part-num} represents the partition number of @var{bios-device},
-starting from zero for primary partitions and from four for extened
+starting from zero for primary partitions and from four for extended
 partitions, and @var{bsd-subpart-letter} represents the BSD disklabel
 subpartition, such as @samp{a} or @samp{e}.
 
@@ -948,7 +948,7 @@ more flexible command @command{install} in the backend and installs GRUB
 into the device @var{install_device}. If @var{image_device} is
 specified, then find the GRUB images in the device @var{image_device},
 otherwise use the current @dfn{root device}, which can be set by the
-command @command{root}. If @var{install_dvice} is a hard disk, then
+command @command{root}. If @var{install_device} is a hard disk, then
 embed a Stage 1.5 in the disk if possible.
 @end deffn
 
@@ -1361,5 +1361,5 @@ Print a summary of the command line options and exit.
 Print the version number of GRUB and exit.
 
 @item --quiet
-Supress all normal output.
+Suppress all normal output.
 @end table

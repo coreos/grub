@@ -77,7 +77,7 @@ should mean what format is used in the partition, such as filesystem and
 BSD slices, and should not be used to represent what operating system
 owns the partition. So use @samp{0x83} if the partition contains ext2fs
 filesystem, and use @samp{0xA5} if the partition contains ffs
-fielsystem, whether the partition owner is Hurd or not. We will use
+filesystem, whether the partition owner is Hurd or not. We will use
 @samp{0x63} for GNU Hurd filesystem that has not been implemented yet.
 
 @item I've installed a recent version of binutils, but GRUB still crashes.
@@ -132,7 +132,7 @@ obtained from:
 
 @c Do not change alpha.gnu.org:/gnu/hurd/src to the URI, since TeX does
 @c not format it well.
-GRUB is avaliable from the GNU alpha archive site
+GRUB is available from the GNU alpha archive site
 @url{alpha.gnu.org:/gnu/hurd/src} or any of its mirrors. The file
 will be named grub-version.tar.gz. The current version is
 @value{VERSION}, so the file you should grab is:

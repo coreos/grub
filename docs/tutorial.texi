@@ -8,11 +8,11 @@ or GNU Hurd kernel).  The kernel, in turn, initializes the rest of the
 operating system (usually GNU).
 
 GRUB can load a wide variety of free operating systems as well as
-chain-loading@footnote{@dfn{chain-load} is the machanism for loading
+chain-loading@footnote{@dfn{chain-load} is the mechanism for loading
 unsupported operating systems by loading another boot loader.}
 proprietary operating systems. The important feature in GRUB
 is flexibility; GRUB can understand filesystems and kernel executable
-formats, so you can load an arbitary operating system as you like
+formats, so you can load an arbitrary operating system as you like
 without recording the position of your kernel on the disk.
 
 Therefore, you have to specify the drive/partition where your kernel
@@ -220,7 +220,7 @@ how to boot your operating systems from GRUB in the next chapter.
 
 For Multiboot-compliant kernels, GRUB can load them in a consistent way,
 but, for some free operating systems, you need to use some OS-specific
-magics.
+magic.
 
 @menu
 * Booting a Multiboot-compliant OS::

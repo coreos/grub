@@ -1,5 +1,12 @@
 1999-11-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* docs/tutorial.texi: Fix typos by ispell.
+	* docs/user-ref.texi: Likewise.
+	* docs/prog-ref.texi: Likewise.
+	* docs/appendices.texi: Likewise.
+	
+1999-11-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/fsys_ext2fs.c (struct ext2_dir_entry): Changed the type
 	of `name_len' to __u8 and added the new member `file_type' after
 	it. This is stolen from linux/ext2_fs.h in Linux 2.2.13.
