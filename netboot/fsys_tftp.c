@@ -290,6 +290,7 @@ tftp_read (char *addr, int size)
   if (filepos < saved_filepos)
     {
       /* Uggh.. FILEPOS has been moved backwards. So reopen the file.  */
+      buf_read = 0;
       buf_fill (1);
       grub_memmove ((char *) &tp, (char *) &saved_tp, saved_len);
       len = saved_len;
@@ -331,18 +332,16 @@ tftp_read (char *addr, int size)
 	  size -= amt;
 	  addr += amt;
 	  filepos += amt;
-	  saved_filepos = filepos;
 	  ret += amt;
-
-	  /* Move the unused data forwards.  */
-	  grub_memmove (buf, buf + amt, buf_read - amt);
-	  buf_read -= amt;
 	}
-      else
+
+      /* If the size of the empty space becomes small, move the unused
+	 data forwards.  */
+      if (filepos - saved_filepos > FSYS_BUFLEN / 2)
 	{
-	  /* Reset the reading offset.  */
-	  saved_filepos += buf_read;
-	  buf_read = 0;
+	  grub_memmove (buf, buf + FSYS_BUFLEN / 2, FSYS_BUFLEN / 2);
+	  buf_read -= FSYS_BUFLEN / 2;
+	  saved_filepos += FSYS_BUFLEN / 2;
 	}
 
       /* Read the data.  */
