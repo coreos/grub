@@ -1,3 +1,7 @@
+2004-08-07  Jason Thomas  <jason@staff.pnc.com.au>
+	From Michael Hohnbaum <hohnbaum@us.ibm.com>:
+	* stage2/fsys_ext2fs.c (ext2fs_read): Handle sparse files.
+
 2004-07-24  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/stage2.c (cmain): Terminate DEFAULT_FILE with NUL
