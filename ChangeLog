@@ -1,3 +1,7 @@
+2003-09-18  Robert Millan  <robertmh@gnu.org>
+
+	* docs/texinfo.tex: Update from ftp.gnu.org.
+
 2003-09-05  KB Sriram  <mail_kb@yahoo.com>
 
 	* stage2/fsys_fat.c: Fix missdetection of ext2fs as fatfs.
