@@ -1,3 +1,20 @@
+2002-12-11  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Add a workaround for buggy BIOSes which don't pass boot drive
+	correctly. The idea is that GRUB forces the fixed disk flag
+	when booted from a hard disk. When BIOS loads GRUB directly,
+	the boot drive must be either of 0x00 and 0x80, so this should
+	work, if those BIOSes always pass zero to %dl. AFAIK, this
+	assumption is always correct.
+
+	* stage2/builtins.c (install_func): Store the fixed disk flag of
+	the destination drive in BOOT_DRIVE_MASK in Stage 1.
+
+	* stage1/stage1.h (STAGE1_BOOT_DRIVE_MASK): New macro.
+
+	* stage1/stage1.S (boot_drive_mask): New variable. It is or'ed
+	to %dl.
+
 2002-12-09  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/char_io.c (init_page): Change the software name from
