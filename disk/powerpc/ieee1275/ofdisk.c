@@ -50,12 +50,12 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 {
   grub_ieee1275_phandle_t dev;
   grub_ieee1275_ihandle_t dev_ihandle = 0;
-  char *devpath = 0;
+  char *devpath;
   /* XXX: This should be large enough for any possible case.  */
   char prop[64];
   int actual;
 
-  devpath = grub_strndup (name, grub_strlen (devpath) + 2);
+  devpath = grub_strndup (name, grub_strlen (name) + 2);
   if (! devpath)
     return grub_errno;
 

@@ -1,3 +1,8 @@
+2005-01-22  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_open): Don't initialize
+	`devpath' to 0.  Use `name' instead of `devpath' with `grub_strndup'.
+
 2005-01-22  Marco Gerards  <metgerards@student.han.nl>
 
 	* kern/misc.c (grub_strndup): Function rewritten.
