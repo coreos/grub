@@ -27,17 +27,22 @@
 
 #define MAXINT     0x7FFFFFFF
 
+/* 512-byte scratch area */
+#define SCRATCHADDR  0x77e00
+#define SCRATCHSEG   0x77e0
+
 /*
  *  This is the location of the raw device buffer.  It is 31.5K
  *  in size.
  */
 
-#define BUFFERSEG    0x7000
-#define BUFFERADDR   0x70000
+#define BUFFERLEN   0x7e00
+#define BUFFERADDR  0x70000
+#define BUFFERSEG   0x7000
 
-/* 512-byte scratch area */
-#define SCRATCHSEG   0x77e0
-#define SCRATCHADDR  0x77e00
+#if (BUFFERADDR + BUFFERLEN) != SCRATCHADDR
+# error "scratch area isn't at the end of the device buffer"
+#endif
 
 /*
  *  BIOS disk defines
@@ -47,11 +52,20 @@
 #define BIOSDISK_ERROR_GEOMETRY     0x100
 
 /*
- *  This is the location of the filesystem (not raw device) buffer.
+ *  This is the filesystem (not raw device) buffer.
  *  It is 32K in size, do not overrun!
  */
 
+#define FSYS_BUFLEN  0x8000
 #define FSYS_BUF 0x68000
+
+#if (FSYS_BUF % 16) != 0
+# error "FSYS_BUF is not segment-aligned"
+#endif
+
+#if (FSYS_BUF + FSYS_BUFLEN) != BUFFERADDR
+# error "device buffer buffer isn't at the end of the filesystem buffer"
+#endif
 
 /*
  *  Linux setup parameters
@@ -119,8 +133,6 @@
  *  defines for use when switching between real and protected mode
  */
 
-#define data32		.byte 0x66
-#define addr32		.byte 0x67
 #define CR0_PE_ON	0x1
 #define CR0_PE_OFF	0xfffffffe
 #define PROT_MODE_CSEG	0x8

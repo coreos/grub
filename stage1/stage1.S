@@ -36,28 +36,18 @@
 
 	/* Absolute addresses
 	   This makes the assembler generate the address without support
-	   from the linker. (ELF can't relocate 16bit addresses!) */
+	   from the linker. (ELF can't relocate 16-bit addresses!) */
 #define ABS(x) (x-_start+0x7c00)
-	
-	/* Relative addresses (for jumps)
-	   These macros use the local label 0, so start with your local
-	   label at 1! */
-#define REL(x)  .word x-0f; 0:
-#define RELB(x) .byte x-0f; 0:
-	
-	/* Print message string
-	   movw $x, %cx; call message */
-#define MSG(x)	movw $x, %aw; .byte 0xe8; REL(message)
+
+	/* Print message string */
+#define MSG(x)	movw $x, %si; call message
 
 	.file	"stage1.S"
 
 	.text
 
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
+	/* Tell GAS to generate 16-bit instructions so that this code works
+	   in real mode. */
 	.code16
 
 .globl _start; _start:
@@ -70,8 +60,7 @@
 	 * parameter block.
 	 */
 
-	/* jmp after_BPB */
-	.byte 0xeb; RELB(after_BPB)
+	jmp after_BPB
 	nop	/* do I care about this ??? */
 
 	/*
@@ -115,13 +104,11 @@ after_BPB:
 	/*
 	 *  Check if we have a forced disk reference here
 	 */
-	/* movb	firstlist, %al */
-	.byte	0xa0; .word ABS(firstlist)
+	movb	firstlist, %al
 	cmpb	$0xff, %al
-	/* je	1f */
-	.byte	0x74; RELB(1f)
+	je	1f
 	movb	%al, %dl
-1:	
+1:
 	/* save drive reference first thing! */
 	pushw	%dx
 
@@ -130,9 +117,7 @@ after_BPB:
 	 */
 	movb	%dl, %al
 	andb	$BIOS_HD_FLAG, %al
-
-	/* jz	floppy_probe */
-	.byte	0x0f, 0x84; REL(floppy_probe)
+	jz	floppy_probe
 
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
@@ -141,16 +126,14 @@ after_BPB:
 	int	$0x13
 
 	/* if BIOS geometry call fails, display error and die! */
-	/* jc	hd_probe_error   (16-bit)*/
-	.byte	0x0f, 0x82; REL(hd_probe_error)
+	jc	hd_probe_error
 
 final_init:
+	/* save number of heads */
 	xorb	%ah, %ah
 	movb	%dh, %al
 	incw	%ax
-
-	/* movw	%ax, heads */	/* save num heads */
-	.byte	0xA3; .word ABS(heads)
+	movw	%ax, heads
 
 	xorw	%dx, %dx
 	movb	%cl, %dl
@@ -158,20 +141,17 @@ final_init:
 	movb	%ch, %al
 	movb	%dh, %ah
 
+	/* save number of cylinders */
 	incw	%ax
-
-	/* movw	%ax, cylinders */	/* save num cylinders */
-	.byte	0xA3; .word ABS(cylinders)
+	movw	%ax, cylinders
 
 	xorw	%ax, %ax
 	movb	%dl, %al
 	shrb	$2, %al
 
-	/* save a byte on addressing by moving this forward ?? */
+	/* save number of sectors */
 	movw	$ABS(sectors), %si
-
-	/* movw	%ax, (%si) */	/* save num sectors */
-	.byte	0x89, 0x04
+	movw	%ax, (%si)
 
 	/* this sets up for the first run through "bootloop" */
 	movw	$ABS(firstlist), %di
@@ -183,86 +163,80 @@ bootloop:
 	/* update position to load from */
 	subw	$LISTSIZ, %di
 
-	/* cmpw	$0, 4(%di) */   /* check the number of sectors to read */
-	.byte	0x81, 0x7d, 0x04; .word	0
+	/* check the number of sectors to read */
+	cmpw	$0, 4(%di)
 
-	/* je	bootit	  (16-bit)*/	/* if zero, go to the start function */
-	.byte	0x0f, 0x84; REL(bootit)
+	/* if zero, go to the start function */
+	je	bootit
 
-	/* movl	(%di), %ax */	/* load logical sector start (bottom half) */
-	.byte	0x8b, 0x05
+	/* load logical sector start (bottom half) */
+	movw	(%di), %ax
 
-	/* movl	2(%di), %dx */	/* load logical sector start (top half) */
-	.byte	0x8b, 0x55, 0x02
+	/* load logical sector start (top half) */
+	movw	2(%di), %dx
 
-	/* divw	(%si), %dx:%ax */	/* divide by number of sectors */
-	.byte	0xf7, 0x34
+	/* divide by number of sectors */
+	divw	(%si)
 
-	/* movb	%dl, (%di) */	/* save sector start */
-	.byte	0x88, 0x15
+	/* save sector start */
+	movb	%dl, (%di)
 
 	xorw	%dx, %dx	/* zero %dx */
-	/* divw	2(%si), %dx:%ax */	/* divide by number of heads */
-	.byte	0xf7, 0x74, 0x02
+	divw	2(%si)		/* divide by number of heads */
 
-	/* movb	%dl, 1(%di) */	/* save head start */
-	.byte	0x88, 0x55, 0x01
+	/* save head start */
+	movb	%dl, 1(%di)
 
-	/* movw	%ax, 2(%di) */	/* save cylinder start */
-	.byte	0x89, 0x45, 0x02
+	/* save cylinder start */
+	movw	%ax, 2(%di)
 
-	/* cmpw	4(%si), %ax */	/* do we need too many cylinders? */
-	.byte	0x3b, 0x44, 0x04
-
-	/* jge	geometry_error (16-bit) */
-	.byte	0x0f, 0x8d; REL(geometry_error)
+	/* do we need too many cylinders? */
+	cmpw	4(%si), %ax
+	jge	geometry_error
 
 setup_sectors:
 
 	/* determine the maximum sector length of this read */
-	/* movw	(%si), %ax */	/* get number of sectors per track/head */
-	.byte	0x8b, 0x04
+	movw	(%si), %ax	/* get number of sectors per track/head */
 
-	/* subb	(%di), %al */	/* subtract sector start */
-	.byte	0x2a, 0x05
+	/* subtract sector start */
+	subb	(%di), %al
 
 	/* how many do we really want to read? */
-	/* cmpw	%ax, 4(%di) */	/* compare against total number of sectors */
-	.byte	0x39, 0x45, 0x04
+	cmpw	%ax, 4(%di)	/* compare against total number of sectors */
 
-	/* jg	more_sectors  (8-bit)*/	/* which is greater? */
-	.byte	0x7f; RELB(more_sectors)
 
-	/* movw	4(%di), %ax */	/* if less than, set to total */
-	.byte	0x8b, 0x45, 0x04
+	/* which is greater? */
+	jg	more_sectors
+
+	/* if less than, set to total */
+	movw	4(%di), %ax
 
 more_sectors:
-	/* subw	%ax, 4(%di) */	/* subtract from total */
-	.byte	0x29, 0x45, 0x04
+	/* subtract from total */
+	subw	%ax, 4(%di)
 
 /*
  *  This is the loop for taking care of BIOS geometry translation (ugh!)
  */
 
-	/* movb	3(%di), %dl */	/* get high bits of cylinder */
-	.byte	0x8a, 0x55, 0x03
+	/* get high bits of cylinder */
+	movb	3(%di), %dl
 
 	shlb	$6, %dl		/* shift left by 6 bits */
-	/* movw	(%di), %cl */	/* get sector */
-	.byte	0x8b, 0x0d
+	movb	(%di), %cl	/* get sector */
 
 	incb	%cl		/* normalize sector (sectors go
 					from 1-N, not 0-(N-1) ) */
 	orb	%dl, %cl	/* composite together */
-	/* movb	2(%di), %ch */	/* sector+hcyl in cl, cylinder in ch */
-	.byte	0x8a, 0x6d, 0x02
+	movb	2(%di), %ch	/* sector+hcyl in cl, cylinder in ch */
 
 	/* restore %dx */
 	popw	%dx
 	pushw	%dx
 
-	/* movb	1(%di), %dh */	/* head num */
-	.byte	0x8a, 0x75, 0x01
+	/* head number */
+	movb	1(%di), %dh
 
 	pushw	%ax	/* save %ax from destruction! */
 
@@ -286,15 +260,13 @@ more_sectors:
 	movb	$0x2, %ah	/* function 2 */
 	int	$0x13
 
-	/* jc	read_error */
-	.byte	0x72; RELB(read_error)
+	jc	read_error
 
-	movw	%es, %ax
-	movw	%ax, %fs	/* load source segment */
+	/* save source segment */
+	movw	%es, %dx
 
 	/* load addresses for copy from disk buffer to destination */
-	/* movw	6(%di), %es */	/* load destination segment */
-	.byte	0x8e, 0x45, 0x06
+	movw	6(%di), %es	/* load destination segment */
 
 	/* restore %ax */
 	popw	%ax
@@ -302,75 +274,63 @@ more_sectors:
 	/* determine the next possible destination address (presuming
 		512 byte sectors!) */
 	shlw	$5, %ax		/* shift %ax five bits to the left */
-	/* addw	%ax, 6(%di) */	/* add the corrected value to the destination
+	addw	%ax, 6(%di)	/* add the corrected value to the destination
 				   address for next time */
-	.byte	0x01, 0x45, 0x06
 
 	/* get the copy length */
 	shlw	$4, %ax
 	movw	%ax, %cx
 
 	/* save addressing regs */
+	pushw	%ds
 	pushw	%si
 	pushw	%di
 
 	xorw	%di, %di	/* zero offset of destination addresses */
 	xorw	%si, %si	/* zero offset of source addresses */
+	movw	%dx, %ds	/* restore the source segment */
+
 	cld		/* sets the copy direction to forward */
 
 	/* perform copy */
 	rep		/* sets a repeat */
-	fs		/* this overrides the source segment from %ds to %fs */
 	movsb		/* this runs the actual copy */
 
 	/* restore addressing regs */
 	popw	%di
 	popw	%si
+	popw	%ds
 
 	/* check if finished with this dataset */
-	/* cmpw	$0, 4(%di) */
-	.byte	0x81, 0x7d, 0x04; .word	0
-
-	/* je	bootloop */
-	.byte	0x0f, 0x84; REL(bootloop)
+	cmpw	$0, 4(%di)
+	je	bootloop
 
 	/* find out the next BIOS set to load in */
-	/* movb	$0, (%di) */	/* set the sector start */
-	.byte	0xc6, 0x05, 0
+	movb	$0, (%di)	/* set the sector start */
 
 	xorb	%ah, %ah	/* zero %ah */
-	/* movb	1(%di), %al */	/* load head number into %al */
-	.byte	0x8a, 0x45, 0x01
+	movb	1(%di), %al	/* load head number into %al */
 
 	incw	%ax		/* increment current head number */
-	/* cmpw	2(%si), %ax */	/* compare to total number of heads */
-	.byte	0x3b, 0x44, 0x02
+	cmpw	2(%si), %ax	/* compare to total number of heads */
+	jne	update_heads
 
-	/* jne	update_heads   (8-bit)*/
-	.byte	0x75; RELB(update_heads)
-
-	/* movw	2(%di), %ax */	/* load cylinder number into %ax */
-	.byte	0x8b, 0x45, 0x02
+	movw	2(%di), %ax	/* load cylinder number into %ax */
 
 	incw	%ax		/* increment current cylinder number */
-	/* cmpw	4(%si), %ax */	/* compare to total number of cylinders */
-	.byte	0x3b, 0x44, 0x04
+	cmpw	4(%si), %ax	/* compare to total number of cylinders */
 
-	/* je	geometry_error */	/* display error and die if greater */
-	.byte	0x74; RELB(geometry_error)
+	je	geometry_error	/* display error and die if greater */
 
-	/* movw	%ax, 2(%di) */	/* store new cylinder number */
-	.byte	0x89, 0x45, 0x02
+	movw	%ax, 2(%di)	/* store new cylinder number */
 
 	movb	$0, %al		/* for storing new head number */
 
 update_heads:
-	/* movb	%al, 1(%di) */	/* store new head number */
-	.byte	0x88, 0x45, 0x01
+	movb	%al, 1(%di)	/* store new head number */
 
 	/* jump to "setup_sectors" to determine length of the new read */
-	/* jmp	setup_sectors */
-	.byte	0xe9; REL(setup_sectors)
+	jmp	setup_sectors
 
 /* END OF MAIN LOOP */
 
@@ -378,38 +338,27 @@ update_heads:
  * BIOS Geometry translation error (past the end of the disk geometry!).
  */
 geometry_error:
-	movw	$geometry_error_string, %si
-	/* call message */
-	.byte	0xe8; REL(message)
-	/* jmp	display_error  (8-bit) */
-	.byte	0xeb; RELB(general_error)
+	MSG(geometry_error_string)
+	jmp	general_error
 
 /*
  * Disk probe failure.
  */
 hd_probe_error:
-	movw	$hd_probe_error_string, %si
-	/* call message */
-	.byte	0xe8; REL(message)
-	/* jmp	display_error  (8-bit) */
-	.byte	0xeb; RELB(general_error)
+	MSG(hd_probe_error_string)
+	jmp	general_error
 
 /*
  * Read error on the disk.
  */
 read_error:
-	movw	$read_error_string, %si
-	/* call message */
-	.byte	0xe8; REL(message)
+	MSG(read_error_string)
 
 general_error:
-	movw	$general_error_string, %si
-	/* call message */
-	.byte	0xe8; REL(message)
+	MSG(general_error_string)
 
 /* go here when you need to stop the machine hard after an error condition */
-stop:	/* jmp	stop  (8-bit) */
-	.byte	0xeb; RELB(stop)
+stop:	jmp	stop
 
 geometry_error_string:	.string "Geom"
 hd_probe_error_string:	.string "Hard Disk"
@@ -434,14 +383,10 @@ general_error_string:	.string " Error"
 
 	incw	%si
 message:
-	/* movb	(%si), %al */
-	.byte	0x8a, 0x4
+	movb	(%si), %al
 	cmpb	$0, %al
-	/* jne	1b */
-	.byte	0x75; RELB(1b)	/* if not end of string, jmp to display */
-
-	/* ret */
-	.byte	0xc3
+	jne	1b	/* if not end of string, jmp to display */
+	ret
 lastlist:
 
 /*
@@ -489,16 +434,12 @@ firstlist:	/* this label has to be after the list data!!! */
 
 bootit:
 	popw	%dx	/* this makes sure %dl is our "boot" drive */
-	/* ljmp	$myoffset, $myseg */
-	.byte	0xea
-#ifdef  STAGE1_5
-	.word	0x2000, 0
-#else
-	.word	0x8000, 0
-#endif
+	ljmp	$0, $0x8000	/* FIXME: make 0x2000 for stage1_5 */
 
 	/*
 	 *  This is the compatibility version number.
+	 *  See ../stage2/shared.h for COMPAT_VERSION_* definitions used
+	 *  in stage2 and stage1_5 modules.
 	 *
 	 *  DO NOT MOVE THIS!!!
 	 */
@@ -528,24 +469,18 @@ probe_loop:
 	int	$0x13
 
 	incw	%si
-
-	/* movb	  (%si), %cl */
-	.byte	0x8a, 0x0c
+	movb	(%si), %cl
 
 	/* if number of sectors is 0, display error and die */
 	cmpb	$0, %cl
-
-	/* jne	1f  (8-bit) */
-	.byte	0x75; RELB(1f)
+	jne	1f
 
 /*
  * Floppy disk probe failure.
  */
 	movw	$fd_probe_error_string, %si
-	/* call message */
-	.byte	0xe8; REL(message)
-	/* jmp	display_error  (16-bit) */
-	.byte	0xe9; REL(general_error)
+	call	message
+	jmp	general_error
 
 fd_probe_error_string:	.string "Floppy"
 
@@ -558,15 +493,13 @@ fd_probe_error_string:	.string "Floppy"
 	int	$0x13
 
 	/* if error, jump to "probe_loop" */
-	/* jc probe_loop	(8-bit)*/
-	.byte	0x72; RELB(probe_loop)
+	jc	probe_loop
 
 	/* %cl is already the correct value! */
 	movb	$1, %dh
 	movb	$79, %ch
 
-	/* jmp	final_init */
-	.byte	0xe9; REL(final_init)
+	jmp	final_init
 
 	. = _start + PARTEND
 

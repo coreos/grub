@@ -170,7 +170,7 @@ restart:
         commands before booting, or \'c\' for a command-line.");
       else
 	printf(
-"      Press \'b\' to boot, enter to edit the selected command in the
+"      Press \'b\' to boot, \'e\' to edit the selected command in the
       boot sequence, \'c\' for a command-line, \'o\' to open a new line
       after (\'O\' for before) the selected line, \'d\' to remove the
       selected line, or escape to go back to the main menu.");
@@ -336,8 +336,7 @@ restart:
 	    }
 	  else
 	    {
-	      if ((config_entries && (c == 'e'))
-		  || (!config_entries && ((c == '\n') || (c == '\r'))))
+	      if (c == 'e')
 		{
 		  int num_entries = 0, i = 0;
 		  char *new_heap;
@@ -435,14 +434,22 @@ restart:
 
       if (!(c = enter_cmdline(cur_entry, heap)))
 	{
-	  cur_entry = NULL;
-	  first_entry = 0;
-	  entryno = fallback;
-	  fallback = -1;
+	  if (fallback < 0)
+	    break;
+	  else
+	    {
+	      cur_entry = NULL;
+	      first_entry = 0;
+	      entryno = fallback;
+	      fallback = -1;
+	    }
 	}
     }
   while (!c);
 
+  /* Both the entry and the fallback failed, so wait for input. */
+  printf("Failed!\n      Press any key to continue...");
+  getkey();
   goto restart;
 }
 

@@ -33,8 +33,8 @@ void (*debug_fs)(int) = NULL;
 void (*debug_fs_func)(int) = NULL;
 #endif  /* NO_FANCY_STUFF */
 
-/* these have the same format as "boot_drive" and "install_partition", but
-   are meant to be working values */
+/* These have the same format as "boot_drive" and "install_partition", but
+   are meant to be working values. */
 unsigned long current_drive = 0xFF;
 unsigned long current_partition;
 
@@ -543,7 +543,13 @@ open_partition(void)
 
 
 /* XX used for device completion in 'set_device' and 'print_completions' */
-static int incomplete, disk_choice, part_choice;
+static int incomplete, disk_choice;
+static enum
+{
+  PART_UNSPECIFIED = 0,
+  PART_DISK,
+  PART_CHOSEN,
+} part_choice;
 
 
 char *
@@ -554,7 +560,7 @@ set_device(char *device)
 
   incomplete = 0;
   disk_choice = 1;
-  part_choice = 0;
+  part_choice = PART_UNSPECIFIED;
   current_drive = saved_drive;
   current_partition = 0xFFFFFF;
 
@@ -580,11 +586,12 @@ set_device(char *device)
 
       if (*device == ')')
 	{
-	  part_choice = 2;
+	  part_choice = PART_CHOSEN;
 	  retval++;
 	}
       if (*device == ',')
 	{
+	  /* Either an absolute PC or BSD partition. */
 	  disk_choice = 0;
 	  part_choice++;
 	  device++;
@@ -620,7 +627,7 @@ set_device(char *device)
 
 	  if (*device == ')')
 	    {
-	      if (part_choice == 1)
+	      if (part_choice == PART_DISK)
 		{
 		  current_partition = saved_partition;
 		  part_choice++;
@@ -751,15 +758,14 @@ print_fsys_type(void)
   printf(" Filesystem type ");
 
   if (fsys_type != NUM_FSYS)
-    printf("is %s\n", fsys_table[fsys_type].name);
+    printf("is %s, ", fsys_table[fsys_type].name);
   else
-    {
-      printf("unknown, ");
-      if (current_partition == 0xFFFFFF)
-	printf("using whole disk\n");
-      else
-	printf("partition type 0x%x\n", current_slice);
-    }
+    printf("unknown, ");
+
+  if (current_partition == 0xFFFFFF)
+    printf("using whole disk\n");
+  else
+    printf("partition type 0x%x\n", current_slice);
 }
 
 /*
@@ -801,7 +807,7 @@ print_completions(char *filename)
 	  else
 	    {
 	      /* partition completions */
-	      if (part_choice == 1)
+	      if (part_choice == PART_DISK)
 		{
 		  printf(" Possible partitions are:\n");
 		  real_open_partition(1);
@@ -1064,4 +1070,3 @@ dir(char *dirname)
 
   return (*(fsys_table[fsys_type].dir_func))(dirname);
 }
-
