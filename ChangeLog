@@ -1,3 +1,10 @@
+1999-06-27  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* configure.in: set CFLAGS to "-Os -g" for compilers which
+	understand "-Os" if CFLAGS is not already set. Use
+	"-O2 -fno-strength-reduce -fno-unroll-loops -g" for older gcc
+	versions.
+	
 1999-06-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/disk_io.c (attempt_mount) [STAGE1_5]: Set FSYS_TYPE to

@@ -43,6 +43,11 @@ AC_ARG_ENABLE(maintainer-mode,
 esac],[maintainermode=no])
 AM_CONDITIONAL(GRUB_MAINT, test "x${maintainermode}" = xyes)
 
+# This should be checked before AC_PROG_CC
+if test "x$CFLAGS" = x; then
+  default_CFLAGS=yes
+fi
+
 #
 # Programs
 #
@@ -50,6 +55,20 @@ AM_CONDITIONAL(GRUB_MAINT, test "x${maintainermode}" = xyes)
 AC_CHECK_TOOL(CC, gcc)
 AC_PROG_CC
 AC_PROG_RANLIB
+
+if test "x$ac_cv_prog_gcc" = xyes; then
+  if test "x$default_CFLAGS" = xyes; then
+    AC_CACHE_CHECK([whether optimization for size works], size_flag, [
+      CFLAGS="-Os -g"
+      AC_TRY_COMPILE(, , size_flag=yes, size_flag=no)
+    ])
+    if test "x$size_flag" = xyes; then
+      CFLAGS="-Os -g"
+    else
+      CFLAGS="-O2 -fno-strength-reduce -fno-unroll-loops -g"
+    fi
+  fi
+fi
 
 # Enforce coding standards.
 CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
