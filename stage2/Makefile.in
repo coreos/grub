@@ -113,7 +113,9 @@ libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/lib \
 	-DGRUB_UTIL=1 -DFSYS_EXT2FS=1 -DFSYS_FAT=1 -DFSYS_FFS=1 \
-	-DFSYS_JFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1
+	-DFSYS_JFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1 \
+	-DFSYS_XFS=1 -DUSE_MD5_PASSWORDS=1 \
+	-DSUPPORT_SERIAL=1 -DSUPPORT_HERCULES=1 -fwritable-strings
 
 
 EXTRA_PROGRAMS = nbloader.exec pxeloader.exec diskless.exec
@@ -2572,8 +2574,6 @@ uninstall-am: uninstall-info-am uninstall-pkgdataDATA
 	mostlyclean mostlyclean-compile mostlyclean-generic tags \
 	uninstall uninstall-am uninstall-info-am uninstall-pkgdataDATA
 
-	-DFSYS_XFS=1 -DUSE_MD5_PASSWORDS=1 \
-	-DSUPPORT_SERIAL=1 -DSUPPORT_HERCULES=1 -fwritable-strings
 
 stage2_size.h: pre_stage2
 	-rm -f stage2_size.h

@@ -1,3 +1,10 @@
+2002-02-04  Jason Thomas  <jason@topic.com.ah>
+
+	From Denis Kitzman  <dkitzman@blue.weeg.uiowa.edu>:
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Fixed a typo.
+	FSYS_XFS, USE_MD5_PASSWORDS, SUPPORT_SERIAL, and
+	SUPPORT_HERCULES did not get defined.
+
 2002-01-20  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* util/grub-image.in: Check stage2 instead of stage2.c to
