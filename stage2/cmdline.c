@@ -1,7 +1,7 @@
 /* cmdline.c - the device-independent GRUB text command line */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -49,10 +49,9 @@ skip_to (int after_equal, char *cmdline)
 void
 print_cmdline_message (int forever)
 {
-  printf ("\
- [ Minimal BASH-like line editing is supported.  For the first word, TAB
-   lists possible command completions.  Anywhere else TAB lists the possible
-   completions of a device/filename.%s ]\n",
+  printf (" [ Minimal BASH-like line editing is supported.  For the first word, TAB\n"
+	  "   lists possible command completions.  Anywhere else TAB lists the possible\n"
+	  "   completions of a device/filename.%s ]\n",
 	  (forever ? "" : "  ESC at any time exits."));
 }
 

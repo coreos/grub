@@ -31,7 +31,7 @@ struct divisor
 };
 
 /* Store the port number of a serial unit.  */
-static unsigned short serial_port = -1;
+static unsigned short serial_port = 0;
 
 /* The table which lists common configurations.  */
 static struct divisor divisor_tab[] =
@@ -106,7 +106,7 @@ serial_putchar (int c)
 int
 serial_exists (void)
 {
-  return serial_port != -1;
+  return serial_port != 0;
 }
 
 /* Return the port number for the UNITth serial device.  */

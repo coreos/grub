@@ -877,15 +877,15 @@ displayapm_func (char *arg, int flags)
 {
   if (mbi.flags & MB_INFO_APM_TABLE)
     {
-      grub_printf ("APM BIOS information:
- Version:          0x%x
- 32-bit CS:        0x%x
- Offset:           0x%x
- 16-bit CS:        0x%x
- 16-bit DS:        0x%x
- 32-bit CS length: 0x%x
- 16-bit CS length: 0x%x
- 16-bit DS length: 0x%x\n",
+      grub_printf ("APM BIOS information:\n"
+		   " Version:          0x%x\n"
+		   " 32-bit CS:        0x%x\n"
+		   " Offset:           0x%x\n"
+		   " 16-bit CS:        0x%x\n"
+		   " 16-bit DS:        0x%x\n"
+		   " 32-bit CS length: 0x%x\n"
+		   " 16-bit CS length: 0x%x\n"
+		   " 16-bit DS length: 0x%x\n",
 		   (unsigned) apm_bios_info.version,
 		   (unsigned) apm_bios_info.cseg,
 		   apm_bios_info.offset,

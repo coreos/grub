@@ -1,3 +1,22 @@
+2001-12-11  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* stage2/builtins.c (displayapm_func): Don't use multi-line
+	string literals but string concatenation instead, to suppress
+	warnings from gcc-3.0.x.
+	* stage2/cmdline.c (print_cmdline_message): Likewise.
+	* util/mbchk.c (usage): Likewise.
+	
+	* stage2/smp-imps.c (imps_read_config_table): Add a break
+	statement after the label ``default''.
+	
+	* util/mbchk.c: Include <stdlib.h> for the prototype of exit.
+
+	* stage2/serial.c (serial_port): Initialize with 0 instead of
+	-1, as an invalid value, because SERIAL_PORT is unsigned. This
+	change shouldn't affect anything.
+	(serial_exists): For the above change, check SERIAL_PORT with 0
+	instead of -1.
+	
 2001-12-10  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* stage2/shared.h (ERR_NO_DISK_SPACE): New constant.
