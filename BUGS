@@ -1,6 +1,11 @@
 
 Known problems/bugs:
 
+  - GRUB hangs up when accessing a disk via Adaptec AIC-7880
+    SCSI-controller in LBA mode. It is unknown if this is due to GRUB or
+    the SCSI BIOS. For now, you need to disable the BIOS support for
+    INT 13 Extension (that is, you can't use the LBA mode).
+
   - FreeBSD boot command-line options are slightly problematic, and
     OpenBSD options are probably quite wrong.  This is because they
     use options that are bits in a data word passed at boot time, and
