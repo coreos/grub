@@ -89,9 +89,9 @@ install_sh = @install_sh@
 bin_PROGRAMS = mbchk
 sbin_SCRIPTS = grub-install grub-md5-crypt
 noinst_SCRIPTS = grub-image
-noinst_DATA = menu.lst
+#noinst_DATA = menu.lst
 
-EXTRA_DIST = $(noinst_DATA)
+#EXTRA_DIST = $(noinst_DATA)
 
 # XXX: Need to search for a header file in docs, because of multiboot.h.
 AM_CFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/docs
@@ -125,8 +125,6 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(mbchk_SOURCES)
-DATA = $(noinst_DATA)
-
 DIST_COMMON = Makefile.am Makefile.in grub-image.in grub-install.in \
 	grub-md5-crypt.in
 SOURCES = $(mbchk_SOURCES)
@@ -276,7 +274,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
+all-am: Makefile $(PROGRAMS) $(SCRIPTS)
 
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(bindir) $(DESTDIR)$(sbindir)

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000 Free Software Foundation, Inc.
+ *  Copyright (C) 2000, 2001 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -91,12 +91,12 @@ ENTRY(get_apm_info)
 	xorw	%cx, %cx
 	int     $0x15
 	/* error -> should not happen, tidy up */
-	jc	apm_disconnect
+	jc	done_apm_bios
 
 	/* check for "PM" signature */
 	cmpw	$0x504d, %bx
 	/* no signature -> should not happen, tidy up */
-	jne	apm_disconnect
+	jne	done_apm_bios
 
 	/* record the APM BIOS version */
 	movw	%ax, ABS(EXT_C(apm_bios_info))
@@ -104,19 +104,17 @@ ENTRY(get_apm_info)
 	movw	%cx, ABS(EXT_C(apm_bios_info)) + 12
 	jmp	done_apm_bios
 
-apm_disconnect:
-	/* Disconnect */
-	movw	$0x5304, %ax
-	xorw	%bx, %bx
-	/* ignore return code */
-	int     $0x15
-	jmp	done_apm_bios
-
 no_32_apm_bios:
 	/* remove 32 bit support bit */
 	andw     $0xfffd, ABS(EXT_C(apm_bios_info)) + 12
 
 done_apm_bios:
+	/* Some paranoia here: Always Disconnect from APM */
+	movw	$0x5304, %ax
+	xorw	%bx, %bx
+	/* ignore return code */
+	int     $0x15
+
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 

@@ -1,3 +1,11 @@
+2001-10-27  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* stage2/apm.S: Always disconnect from APM. Written by Erich
+	Stefan Boleyn.
+
+	* util/Makefile.am (noinst_DATA): Removed.
+	(EXTRA_DIST): Likewise.
+	
 2001-10-14  Gordon Matzigkeit  <gord@fig.org>
 
 	* configure.in: Explicitly call _AM_DEPENDENCIES(CC) for the
