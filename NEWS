@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 0.91:
+New in 0.91 - 2002-01-21:
 * Support for Linux DAC960 is added.
 * JFS and XFS support is added.
 * The commands "hide" and "unhide" support logical partitions.
