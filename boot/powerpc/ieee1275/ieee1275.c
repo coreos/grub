@@ -75,7 +75,8 @@ grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
 }
 
 int
-grub_ieee1275_get_property (int handle, const char *property, void *buf,
+grub_ieee1275_get_property (grub_ieee1275_phandle_t handle,
+			    const char *property, void *buf,
 			    grub_size_t size, grub_size_t *actual)
 {
   struct get_property_args {

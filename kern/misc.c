@@ -45,6 +45,8 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
   
   return dest;
 }
+void *memmove (void *dest, const void *src, grub_size_t n)
+  __attribute__ ((alias ("grub_memmove")));
 /* GCC emits references to memcpy() for struct copies etc.  */
 void *memcpy (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
@@ -134,6 +136,8 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 
   return 0;
 }
+void *memcmp (const void *s1, const void *s2, grub_size_t n)
+  __attribute__ ((alias ("grub_memcmp")));
 
 int
 grub_strcmp (const char *s1, const char *s2)
@@ -359,6 +363,8 @@ grub_memset (void *s, int c, grub_size_t n)
 
   return s;
 }
+void *memset (void *s, int c, grub_size_t n)
+  __attribute__ ((alias ("grub_memset")));
 
 grub_size_t
 grub_strlen (const char *s)

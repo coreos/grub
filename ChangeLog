@@ -1,3 +1,14 @@
+2004-09-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Hollis Blanchard <hollis@penguinppc.org>:
+	* kern/misc.c (memmove): New alias for grub_memmove.
+	(memcmp): New alias for grub_memcmp.
+	(memset): New alias for grub_memset.
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_get_property): 
+	Change "int handle" to "grub_ieee1275_phandle_t handle".
+	* include/grub/powerpc/ieee1275/ieee1275.h 
+	(grub_ieee1275_get_property): Likewise.
+	
 2004-09-12  Tomas Ebenlendr  <ebik@ucw.cz>
 
 	Added normal mode command `chainloader' as module chain.mod, which
