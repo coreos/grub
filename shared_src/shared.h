@@ -204,8 +204,9 @@ extern char *grub_scratch_mem;
 /* Remap some libc-API-compatible function names so that we prevent
    circularararity. */
 #ifndef WITHOUT_LIBC_STUBS
-#define bcopy grub_bcopy
-#define bzero grub_bzero
+#define memmove grub_memmove
+#define memcpy grub_memmove	/* we don't need a separate memcpy */
+#define memset grub_memset
 #define isspace grub_isspace
 #define printf grub_printf
 #undef putchar
@@ -452,8 +453,8 @@ void grub_printf (char *format,...);
 int grub_tolower (int c);
 int grub_isspace (int c);
 int grub_strncat (char *s1, char *s2, int n);
-int grub_bcopy (char *from, char *to, int len);
-int grub_bzero (char *start, int len);
+char *grub_memmove (char *to, char *from, int len);
+void *grub_memset (void *start, int c, int len);
 char *grub_strstr (char *s1, char *s2);
 int grub_strcmp (char *s1, char *s2);
 

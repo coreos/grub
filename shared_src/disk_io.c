@@ -177,7 +177,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
       if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
 	size = (num_sect * SECTOR_SIZE) - byte_offset;
 
-      bcopy ((char *) bufaddr, buf, size);
+      memmove (buf, (char *) bufaddr, size);
 
       buf += size;
       byte_len -= size;
@@ -451,7 +451,7 @@ real_open_partition (int flags)
 	      current_slice = PC_SLICE_TYPE (mbr_buf, i);
 	      part_start = part_offset + PC_SLICE_START (mbr_buf, i);
 	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
-	      bcopy (mbr_buf + PC_SLICE_OFFSET + (i << 4), cur_part_desc, 16);
+	      memmove (cur_part_desc, mbr_buf + PC_SLICE_OFFSET + (i << 4), 16);
 
 	      /*
 	       *  Is this PC partition entry valid?
@@ -781,7 +781,7 @@ set_bootdev (int hdbias)
   /*
    *  Set chainloader boot device.
    */
-  bcopy (cur_part_desc, (char *) (BOOTSEC_LOCATION - 16), 16);
+  memmove ((char *) (BOOTSEC_LOCATION - 16), cur_part_desc, 16);
 
   /*
    *  Set BSD boot device.

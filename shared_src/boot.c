@@ -198,14 +198,14 @@ load_image (void)
 
       if (mbi.mem_lower >= 608)
 	{
-	  bcopy (buffer, (char *) LINUX_SETUP, data_len + SECTOR_SIZE);
+	  memmove ((char *) LINUX_SETUP, buffer, data_len + SECTOR_SIZE);
 
 	  /* copy command-line plus memory hack to staging area */
 	  {
 	    char *src = cur_cmdline;
 	    char *dest = (char *) (CL_MY_LOCATION + 4);
 
-	    bcopy ("mem=", (char *) CL_MY_LOCATION, 4);
+	    memmove ((char *) CL_MY_LOCATION, "mem=", 4);
 
 	    *((unsigned short *) CL_OFFSET) = CL_MY_LOCATION - CL_BASE_ADDR;
 	    *((unsigned short *) CL_MAGIC_ADDR) = CL_MAGIC;
@@ -286,7 +286,7 @@ load_image (void)
 
 	  if (!errnum)
 	    {
-	      bzero ((char *) cur_addr, bss_len);
+	      memset ((char *) cur_addr, 0, bss_len);
 	      cur_addr += bss_len;
 
 	      printf (", bss=0x%x", bss_len);
@@ -386,7 +386,7 @@ load_image (void)
 		  && grub_read ((char *) memaddr, filesiz) == filesiz)
 		{
 		  if (memsiz > filesiz)
-		    bzero ((char *) (memaddr + filesiz), memsiz - filesiz);
+		    memset ((char *) (memaddr + filesiz), 0, memsiz - filesiz);
 		}
 	      else
 		break;
@@ -454,7 +454,7 @@ load_initrd (void)
     return 0;
 
   moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
-  bcopy ((void *) cur_addr, (void *) moveto, len);
+  memmove ((void *) moveto, (void *) cur_addr, len);
 
   printf ("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
 

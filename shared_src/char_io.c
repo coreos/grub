@@ -586,7 +586,7 @@ int
 memcheck (int start, int len)
 {
 #ifdef GRUB_UTIL
-  /* FIXME: cur_part_desc is the only global variable that we bcopy
+  /* FIXME: cur_part_desc is the only global variable that we memmove
      to.  We should fix this so that we don't need a special case
      (i.e. so that it lives on the stack, or somewhere inside
      grub_scratch_mem). */
@@ -606,42 +606,45 @@ memcheck (int start, int len)
 }
 
 
-int
-grub_bcopy (char *from, char *to, int len)
+char *
+grub_memmove (char *to, char *from, int len)
 {
-  if (memcheck ((int) to, len))
-    {
-      if ((to >= from + len) || (to <= from))
-	{
-	  while (len >= sizeof (unsigned long))
-	    {
-	      len -= sizeof (unsigned long);
-	      *(((unsigned long *) to)++) = *(((unsigned long *) from)++);
-	    }
-	  while (len-- > 0)
-	    *(to++) = *(from++);
-	}
-      else
-	{
-	  /* We have a region that overlaps, but would be overwritten
-	     if we copied it forward. */
-	  while (len-- > 0)
-	    to[len] = from[len];
-	}
-    }
+   char *ret = to;
+   if (memcheck ((int) to, len))
+     {
+       if ((to >= from + len) || (to <= from))
+	 {
+	   while (len >= sizeof (unsigned long))
+	     {
+	       len -= sizeof (unsigned long);
+	       *(((unsigned long *) to)++) = *(((unsigned long *) from)++);
+	     }
+	   while (len-- > 0)
+	     *(to++) = *(from++);
+	 }
+       else
+	 {
+	   /* We have a region that overlaps, but would be overwritten
+	      if we copied it forward. */
+	   while (len-- > 0)
+	     to[len] = from[len];
+	 }
+     }
 
-  return (!errnum);
+   return errnum ? NULL : ret;
 }
 
 
-int
-grub_bzero (char *start, int len)
+void *
+grub_memset (void *start, int c, int len)
 {
+  char *p = start;
+
   if (memcheck ((int) start, len))
     {
-      while (len-- > 0)
-	*(start++) = 0;
+      while (len -- > 0)
+	*p ++ = c;
     }
 
-  return (!errnum);
+  return errnum ? NULL : start;
 }

@@ -213,7 +213,7 @@ returnit:
 	  while (*(cur_entry++));
 
 	  /* copy to work area */
-	  bcopy(old_entry, cur_heap, ((int)cur_entry) - ((int)old_entry));
+	  memmove (cur_heap, old_entry, ((int)cur_entry) - ((int)old_entry));
 
 	  printf("%s\n", old_entry);
 	}
@@ -316,7 +316,8 @@ returnit:
   else if (substring("kernel", cur_heap) < 1)
     {
       /* make sure it's at the beginning of the boot heap area */
-      bcopy(cur_heap, heap, cmd_len + (((int)cur_cmdline) - ((int)cur_heap)));
+      memmove (heap, cur_heap,
+	       cmd_len + (((int)cur_cmdline) - ((int)cur_heap)));
       cur_cmdline = heap + (((int)cur_cmdline) - ((int)cur_heap));
       cur_heap = heap;
       if ((type = load_image()) != 0)
@@ -386,13 +387,13 @@ returnit:
 #endif
 
 	  /* copy possible DOS BPB, 59 bytes at byte offset 3 */
-	  bcopy(old_sect+BOOTSEC_BPB_OFFSET, buffer+BOOTSEC_BPB_OFFSET,
-		BOOTSEC_BPB_LENGTH);
+	  memmove (buffer+BOOTSEC_BPB_OFFSET, old_sect+BOOTSEC_BPB_OFFSET,
+		   BOOTSEC_BPB_LENGTH);
 
 	  /* if for a hard disk, copy possible MBR/extended part table */
 	  if ((dest_drive & 0x80) && current_partition == 0xFFFFFF)
-	    bcopy(old_sect+BOOTSEC_PART_OFFSET, buffer+BOOTSEC_PART_OFFSET,
-		  BOOTSEC_PART_LENGTH);
+	    memmove (buffer+BOOTSEC_PART_OFFSET, old_sect+BOOTSEC_PART_OFFSET,
+		     BOOTSEC_PART_LENGTH);
 
 	  if (*((short *)(buffer+STAGE1_VER_MAJ_OFFS)) != COMPAT_VERSION
 	      || (*((unsigned short *) (buffer+BOOTSEC_SIG_OFFSET))
@@ -408,7 +409,7 @@ returnit:
 	      if (!new_drive)
 		new_drive = current_drive;
 
-	      bcopy(buffer, (char*)BOOTSEC_LOCATION, SECTOR_SIZE);
+	      memmove ((char*)BOOTSEC_LOCATION, buffer, SECTOR_SIZE);
 
 	      *((unsigned char *)(BOOTSEC_LOCATION+STAGE1_FIRSTLIST))
 		= new_drive;

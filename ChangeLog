@@ -1,5 +1,11 @@
 1999-03-27  Gordon Matzigkeit  <gord@trick.fig.org>
 
+	* Change everything to use memset and memmove instead of bzero and
+	bcopy.  GNB's Not BSD.
+
+	* shared_src/shared.h (grub_memset): Adapted from grub_bzero.
+	(grub_memmove): Adapted from grub_bcopy.
+
 	* grub/asmstub.c (checkkey): Fix unterminated comment.
 
 	* shared_src/char_io.c (grub_printf): Renamed from printf.

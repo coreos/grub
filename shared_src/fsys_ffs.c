@@ -173,8 +173,9 @@ loop:
 		0, SUPERBLOCK->fs_bsize, (char *) FSYS_BUF))
     return 0;			/* XXX what return value? */
 
-  bcopy ((void *) &(((struct dinode *) FSYS_BUF)[ino % (SUPERBLOCK->fs_inopb)]),
-	 (void *) INODE, sizeof (struct dinode));
+  memmove ((void *) INODE,
+	   (void *) &(((struct dinode *) FSYS_BUF)[ino % (SUPERBLOCK->fs_inopb)]),
+	   sizeof (struct dinode));
 
   /* if we have a real file (and we're not just printing possibilities),
      then this is where we want to exit */

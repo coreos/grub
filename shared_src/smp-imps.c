@@ -233,7 +233,7 @@ boot_cpu (imps_processor * proc)
   /* %%%%% ESB */
   extern char patch_code[];
   bootaddr = 256 * 1024;
-  bcopy (patch_code, (char *) bootaddr, 32);
+  memmove ((char *) bootaddr, patch_code, 32);
 
   /*
    *  Generic CPU startup sequence starts here.
@@ -319,7 +319,7 @@ add_bus (imps_bus * bus)
 {
   char str[8];
 
-  bcopy (bus->bus_type, str, 6);
+  memmove (str, bus->bus_type, 6);
   str[6] = 0;
   KERNEL_PRINT (("  Bus id %d is %s\n", bus->id, str));
 
@@ -488,9 +488,9 @@ imps_read_bios (imps_fps * fps_ptr)
   if (fps_ptr->cth_ptr)
     {
       char str1[16], str2[16];
-      bcopy (local_cth_ptr->oem_id, str1, 8);
+      memcpy (str1, local_cth_ptr->oem_id, 8);
       str1[8] = 0;
-      bcopy (local_cth_ptr->prod_id, str2, 12);
+      memcpy (str2, local_cth_ptr->prod_id, 12);
       str2[12] = 0;
       KERNEL_PRINT (("  OEM id: %s  Product id: %s\n", str1, str2));
       cth_start = ((unsigned) local_cth_ptr) + sizeof (imps_cth);
@@ -513,12 +513,12 @@ imps_read_bios (imps_fps * fps_ptr)
       if (fps_ptr->feature_info[0] == 1
 	  || fps_ptr->feature_info[0] == 5)
 	{
-	  bcopy ("ISA   ", defconfig.bus[0].bus_type, 6);
+	  memcpy (defconfig.bus[0].bus_type, "ISA   ", 6);
 	}
       if (fps_ptr->feature_info[0] == 4
 	  || fps_ptr->feature_info[0] == 7)
 	{
-	  bcopy ("MCA   ", defconfig.bus[0].bus_type, 6);
+	  memcpy (defconfig.bus[0].bus_type, "MCA   ", 6);
 	}
       if (fps_ptr->feature_info[0] > 4)
 	{

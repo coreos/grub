@@ -273,8 +273,8 @@ restart:
 
 		  if (c == 'O')
 		    {
-		      bcopy(cur_entry, cur_entry+2,
-			    ((int)heap) - ((int)cur_entry));
+		      memmove (cur_entry + 2, cur_entry,
+			       ((int)heap) - ((int)cur_entry));
 
 		      cur_entry[0] = ' ';
 		      cur_entry[1] = 0;
@@ -287,7 +287,7 @@ restart:
 		    {
 		      char *ptr = get_entry(menu_entries,
 					    first_entry+entryno+1, 0);
-		      bcopy(ptr, cur_entry, ((int)heap) - ((int)ptr));
+		      memmove (cur_entry, ptr, ((int)heap) - ((int)ptr));
 		      heap -= (((int)ptr) - ((int)cur_entry));
 
 		      num_entries--;
@@ -325,7 +325,7 @@ restart:
 		  if (! strcmp (password, entered))
 		    {
 		      char *new_file = config_file;
-		      bzero (entered, sizeof (entered));
+		      memset (entered, 0, sizeof (entered));
 		      while (isspace (*pptr))
 			pptr ++;
 		      while ((*(new_file ++) = *(pptr ++)) != 0);
@@ -333,7 +333,7 @@ restart:
 		    }
 		  else
 		    {
-		      bzero (entered, sizeof (entered));
+		      memset (entered, 0, sizeof (entered));
 		      printf("Failed!\n      Press any key to continue...");
 		      getkey ();
 		      goto restart;
@@ -401,11 +401,11 @@ restart:
 			    }
 
 			  /* align rest of commands properly */
-			  bcopy(cur_entry+i, cur_entry+j,
-				((int)heap) - (((int)cur_entry) + i));
+			  memmove (cur_entry + j, cur_entry + i,
+				   ((int)heap) - (((int)cur_entry) + i));
 
 			  /* copy command to correct area */
-			  bcopy(new_heap, cur_entry, j);
+			  memmove (cur_entry, new_heap, j);
 
 			  heap += (j - i);
 			}
@@ -596,8 +596,8 @@ cmain(void)
 
 	  menu_entries[menu_len++] = 0;
 	  config_entries[config_len++] = 0;
-	  bcopy(menu_entries, config_entries+config_len, menu_len);
-	  menu_entries = config_entries+config_len;
+	  memmove (config_entries + config_len, menu_entries, menu_len);
+	  menu_entries = config_entries + config_len;
 	}
 
       /*

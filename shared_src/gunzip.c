@@ -537,7 +537,7 @@ huft_build (unsigned *b,	/* code lengths in bits (all assumed <= BMAX) */
   unsigned z;			/* number of entries in current table */
 
   /* Generate counts for each bit length */
-  bzero ((char *) c, sizeof (c));
+  memset ((char *) c, 0, sizeof (c));
   p = b;
   i = n;
   do
@@ -795,7 +795,7 @@ inflate_codes_in_window (void)
 		    : e);
 	      if (w - d >= e)
 		{
-		  bcopy (slide + d, slide + w, e);
+		  memmove (slide + w, slide + d, e);
 		  w += e;
 		  d += e;
 		}
@@ -1200,7 +1200,7 @@ gunzip_read (char *buf, int len)
       if (size > len)
 	size = len;
 
-      bcopy (srcaddr, buf, size);
+      memmove (buf, srcaddr, size);
 
       buf += size;
       len -= size;
