@@ -1,3 +1,82 @@
+1999-10-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/asm.S [!STAGE1_5] (start): New label to force ld quiet.
+	[!STAGE1_5] (_start): Likewise.
+	* stage2/builtins.c (install_func): Rewritten heavily almost
+	from scratch. As the blocklist was moved to the first sector of
+	Stage 2, always write sectors of Stage 2 to the disk.
+	* stage1/stage1.h (STAGE1_STAGE2_SECTOR): 0x40 -> 0x41.
+	(STAGE1_STAGE2_ADDRESS): 0x44 -> 0x45.
+	(STAGE1_STAGE2_SEGMENT): 0x46 -> 0x47.
+	(STAGE1_BOOT_DRIVE): 0x3f -> 0x40.
+	
+1999-10-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Stage1 supports both the CHS mode and the LBA mode.
+	
+	* stage1/Makefile.am (nodist_pkgdata_DATA): Removed stage1_lba.
+	(BUILT_SOURCES): Deleted.
+	(CLEANFILES): Likewise.
+	(noinst_PROGRAMS): Removed stage1_lba.exec.
+	(stage1_exec_SOURCES): Removed stage2_size.h.
+	(stage2_size.h): Deleted.
+	(stage1_lba_exec_SOURCES): Likewise.
+	* stage1/stage1.S: Rewritten from scratch.
+	* stage1/stage1_lba.S: Deleted.
+	* stage1/stage1.h (COMPAT_VERSION_MAJOR): Set to 3.
+	(COMPAT_VERSION_MINOR): Set to 0.
+	(STAGE1_VER_MAJ_OFFS): Set to 0x3e.
+	(STAGE1_FIRSTLIST): Deleted.
+	(STAGE1_INSTALLSEG): Likewise.
+	(STAGE1_INSTALLADDR): Likewise.
+	(STAGE1_MINPARAMSIZE): Likewise.
+	(STAGE1_LISTSIZE): Likewise.
+	(STAGE1_ID_OFFSET): Likewise.
+	(STAGE1_ID_CHS): Likewise.
+	(STAGE1_ID_LBA): Likewise.
+	(STAGE1_STAGE2_SECTOR): New macro.
+	(STAGE1_STAGE2_ADDRESS): Likewise.
+	(STAGE1_STAGE2_SEGMENT): Likewise.
+	(STAGE1_BOOT_DRIVE): Likewise.
+	* stage2/start.S: New file.
+	* stage2/Makefile.am (noinst_DATA): New variable.
+	(CLEANFILES): Set to "$(nodist_pkgdata_DATA) $(noinst_DATA)
+	$(BUILT_SOURCES)".
+	(noinst_PROGRAMS): Removed stage2.exec, and added start.exec and
+	pre_stage2.exec.
+	(STAGE2_LINK): Deleted.
+	(PRE_STAGE2_LINK): New variable.
+	(START_LINK): Likewise.
+	(stage2_exec_SOURCES): Deleted.
+	(stage2_exec_CFLAGS): Likewise.
+	(stage2_exec_LDFLAGS): Likewise.
+	[NETBOOT_SUPPORT] (stage2_exec_LDADD): Likewise.
+	(pre_stage2_exec_SOURCES): New variable.
+	(pre_stage2_exec_CFLAGS): Likewise.
+	(pre_stage2_exec_LDFLAGS): Likewise.
+	[NETBOOT_SUPPORT] (pre_stage2_exec_LDADD): Likewise.
+	(BUILT_SOURCES): Likewise.
+	(start_exec_SOURCES): Likewise.
+	(start_exec_CFLAGS): Likewise.
+	(start_exec_LDFLAGS): Likewise.
+	(start_exec_DEPENDENCIES): Likewise.
+	(stage2_size.h): New rule.
+	(stage2): Likewise.
+	(e2fs_stage1_5_exec_SOURCES): Added start.S.
+	(fat_stage1_5_exec_SOURCES): Likewise.
+	(ffs_stage1_5_exec_SOURCES): Likewise.
+	(minix_stage1_5_exec_SOURCES): Likewise.
+	* stage2/asm.S (start): Renamed to ...
+	(main): ... this.
+	[STAGE1_5] (main): Jump to (codestart - EXT_C(main) + 0x2200)
+	instead of (codestart - EXT_C(start) + 0x2000).
+	[!STAGE1_5] (main): Jump to (codestart - EXT_C(main) + 0x8200)
+	instead of (codestart - EXT_C(start) + 0x8000).
+	[STAGE1_5] (chain_stage2): Use main instead of start.
+	* stage2/shared.h (BOOTSEC_LISTSIZE): New macro.
+	* stage2/stage1_5.c: Change the second argument for chain_stage2
+	to 0x8200.
+	
 1999-10-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in (--with-binutils): New option to specify a

@@ -30,18 +30,26 @@
 	   in real mode. */
 	.code16
 
-ENTRY(start)
-	/* Suppress ld warnings. */
-	.globl _start
+#ifndef STAGE1_5
+	/* 
+	 * In stage2, do not link start.S with the rest of the source
+	 * files directly, so define the start symbols here just to
+	 * force ld quiet. These are not referred anyway.
+	 */
+	.globl	start, _start
+start:
 _start:
+#endif /* ! STAGE1_5 */
+	
+ENTRY(main)
 	/*
-	 *  Guarantee that "start" is loaded at 0x0:0x8000 in stage2 and
-	 *  at 0x0:0x2000 in stage1.5.
+	 *  Guarantee that "main" is loaded at 0x0:0x8200 in stage2 and
+	 *  at 0x0:0x2200 in stage1.5.
 	 */
 #ifndef STAGE1_5
-	ljmp $0, $(codestart - EXT_C(start) + 0x8000)
+	ljmp $0, $(codestart - EXT_C(main) + 0x8200)
 #else
-	ljmp $0, $(codestart - EXT_C(start) + 0x2000)
+	ljmp $0, $(codestart - EXT_C(main) + 0x2200)
 #endif
 
 	/*
@@ -50,14 +58,14 @@ _start:
 	 *  These MUST be at byte offset 6 and 7 of the executable
 	 *  DO NOT MOVE !!!
 	 */
-	. = EXT_C(start) + 0x6
+	. = EXT_C(main) + 0x6
 	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
 
 	/*
 	 *  This is a special data area 8 bytes from the beginning.
 	 */
 
-	. = EXT_C(start) + 0x8
+	. = EXT_C(main) + 0x8
 
 VARIABLE(install_partition)
 	.long	0x020000
@@ -77,7 +85,7 @@ VARIABLE(config_file)
 	 *  Leave some breathing room for the config file name.
 	 */
 
-	. = EXT_C(start) + 0x70
+	. = EXT_C(main) + 0x70
 
 /* the real mode code continues... */
 codestart:
@@ -203,7 +211,7 @@ ENTRY(chain_stage2)
 
 	/* set up to pass the partition where stage2 is located in */
 	movl	EXT_C(current_partition), %eax
-	movl	%eax, EXT_C(install_partition)-EXT_C(start)(%ebx)
+	movl	%eax, (EXT_C(install_partition)-EXT_C(main))(%ebx)
 
 	/* set up to pass the drive where stage2 is located in */
 	movb	EXT_C(current_drive), %dl

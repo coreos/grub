@@ -165,6 +165,7 @@ extern char *grub_scratch_mem;
 #define BOOTSEC_PART_OFFSET  0x1BE
 #define BOOTSEC_PART_LENGTH  0x40
 #define BOOTSEC_SIG_OFFSET   0x1FE
+#define BOOTSEC_LISTSIZE     8
 
 /*
  *  GRUB specific information

@@ -23,44 +23,62 @@ libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5
-CLEANFILES = $(pkgdata_DATA)
-noinst_PROGRAMS = stage2.exec e2fs_stage1_5.exec fat_stage1_5.exec \
+noinst_DATA = pre_stage2 start
+noinst_PROGRAMS = pre_stage2.exec start.exec \
+	e2fs_stage1_5.exec fat_stage1_5.exec \
 	ffs_stage1_5.exec minix_stage1_5.exec
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
-STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
+PRE_STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8200
+START_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
 STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc
 
 STAGE1_5_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,2000
 STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 
-# asm.S absolutely needs to come first!
 # For stage2 target.
-stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
+pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
 	fsys_fat.c fsys_ffs.c fsys_minix.c smp-imps.c stage2.c
-stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
-stage2_exec_LDFLAGS = $(STAGE2_LINK)
+pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
+pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 
 if NETBOOT_SUPPORT
-stage2_exec_LDADD = ../netboot/libdrivers.a
+pre_stage2_exec_LDADD = ../netboot/libdrivers.a
 endif
 
+BUILT_SOURCES = stage2_size.h
+CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
+
+stage2_size.h: pre_stage2
+	-rm -f stage2_size.h
+	set dummy `ls -l ../stage2/stage2`; \
+	echo "#define STAGE2_SIZE $$6" > stage2_size.h
+
+start_exec_SOURCES = start.S
+start_exec_CFLAGS = $(STAGE2_COMPILE)
+start_exec_LDFLAGS = $(START_LINK)
+start_exec_DEPENDENCIES = stage2_size.h
+
+stage2: pre_stage2 start
+	-rm -f stage2
+	cat start pre_stage2 > stage2
+
 # For e2fs_stage1_5 target.
-e2fs_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+e2fs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ext2fs.c bios.c
 e2fs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
 	-DNO_BLOCK_FILES=1
 e2fs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For fat_stage1_5 target.
-fat_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+fat_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_fat.c bios.c
 fat_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1
 fat_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For ffs_stage1_5 target.
-ffs_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+ffs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ffs.c bios.c
 
 ffs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
@@ -68,7 +86,7 @@ ffs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
 ffs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For minix_stage1_5 target.
-minix_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
+minix_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_minix.c bios.c
 minix_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
 	-DNO_BLOCK_FILES=1

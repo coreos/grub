@@ -19,7 +19,6 @@
  */
 
 #include <stage1.h>
-#include <stage2_size.h>
 	
 /*
  *  defines for the code go here
@@ -51,7 +50,7 @@
 	 * parameter block.
 	 */
 
-	jmp after_BPB
+	jmp	after_BPB
 	nop	/* do I care about this ??? */
 
 	/*
@@ -63,6 +62,9 @@
 	. = _start + 4
 
 	/* scratch space */
+mode:
+	.byte	0
+disk_address_packet:	
 sectors:
 	.long	0
 heads:
@@ -83,8 +85,17 @@ cylinder_start:
 	 * End of BIOS parameter block.
 	 */
 
-stage1_id:
-	.byte	STAGE1_ID_CHS
+stage1_version:	
+	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
+boot_drive:	
+	.byte 0xff	/* the disk to load stage2 from */
+			/* 0xff means use the boot drive */
+stage2_sector:
+	.long	1
+stage2_address:
+	.word	0x8000
+stage2_segment:
+	.word	0x800
 
 after_BPB:
 
@@ -104,7 +115,7 @@ after_BPB:
 	/*
 	 *  Check if we have a forced disk reference here
 	 */
-	movb	ABS(firstlist), %al
+	movb	ABS(boot_drive), %al
 	cmpb	$0xff, %al
 	je	1f
 	movb	%al, %dl
@@ -112,6 +123,82 @@ after_BPB:
 	/* save drive reference first thing! */
 	pushw	%dx
 
+	/* print a notification message on the screen */
+	MSG(notification_string)
+
+	/* do not probe LBA if the drive is a floppy */
+	testb	$STAGE1_BIOS_HD_FLAG, %dl
+	jz	chs_mode
+			
+	/* check if LBA is supported */
+	movb	$0x41, %ah
+	movw	$0x55aa, %bx
+	int	$0x13
+
+	/* use CHS if fails */
+	jc	chs_mode
+	cmpw	$0xaa55, %bx
+	jne	chs_mode
+	
+	/* get the geometry (limited to 2TB!) */
+	movb	$0x48, %ah
+	movw	$STAGE1_DRP_ADDR, %si
+	movw	$STAGE1_DRP_SIZE, (%si)
+	int	$0x13
+
+	/* use CHS if fails */
+	jc	chs_mode
+
+lba_mode:
+	/* save the total number of sectors */
+	movl	0x10(%si), %ecx
+
+	/* set %si to the disk address packet */
+	movw	$ABS(disk_address_packet), %si
+
+	/* set the mode to non-zero */
+	movb	$1, -1(%si)
+	
+	movl	ABS(stage2_sector), %ebx
+
+	cmpl	%ecx, %ebx
+	jge	geometry_error
+	
+	/* the size and the reserved byte */
+	movw	$0x0010, (%si)
+
+	/* the blocks */
+	movw	$1, 2(%si)
+	
+	/* the absolute address (low 32 bits) */
+	movl	%ebx, 8(%si)
+
+	/* the segment of buffer address */
+	movw	$STAGE1_BUFFERSEG, 6(%si)
+
+	xorl	%eax, %eax
+	movw	%ax, 4(%si)
+	movl	%eax, 12(%si)
+	
+/*
+ * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
+ *	Call with	%ah = 0x42
+ *			%dl = drive number
+ *			%ds:%si = segment:offset of disk address packet
+ *	Return:
+ *			%al = 0x0 on success; err code on failure
+ */
+
+	movb	$0x42, %ah
+	int	$0x13
+
+	/* should use CHS instead? */
+	jc	read_error
+
+	movw	$STAGE1_BUFFERSEG, %bx
+	jmp	copy_buffer
+		
+chs_mode:	
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
 	 *  We do this first, so that LS-120 IDE floppies work correctly.
@@ -130,9 +217,12 @@ after_BPB:
 	jmp	hd_probe_error
 
 final_init:
-	/* set %si to sectors */
+	
 	movw	$ABS(sectors), %si
 
+	/* set the mode to zero */
+	movb	$0, -1(%si)
+	
 	/* save number of heads */
 	xorl	%eax, %eax
 	movb	%dh, %al
@@ -156,22 +246,9 @@ final_init:
 	/* save number of sectors */
 	movl	%eax, (%si)
 
-	/* this sets up for the first run through "bootloop" */
-	movw	$ABS(firstlist - STAGE1_LISTSIZE), %di
-
-
-        /* this is the loop for reading the secondary boot-loader in */
-bootloop:
-
-	/* check the number of sectors to read */
-	cmpw	$0, 4(%di)
-
-	/* if zero, go to the start function */
-	je	bootit
-
 setup_sectors:
 	/* load logical sector start (bottom half) */
-	movl	(%di), %eax
+	movl	ABS(stage2_sector), %eax
 
 	/* zero %edx */
 	xorl	%edx, %edx
@@ -195,29 +272,6 @@ setup_sectors:
 	cmpw	8(%si), %ax
 	jge	geometry_error
 
-	/* determine the maximum sector length of this read */
-	movw	(%si), %ax	/* get number of sectors per track/head */
-
-	/* subtract sector start */
-	subb	10(%si), %al
-
-	/* how many do we really want to read? */
-	cmpw	%ax, 4(%di)	/* compare against total number of sectors */
-
-
-	/* which is greater? */
-	jg	more_sectors
-
-	/* if less than, set to total */
-	movw	4(%di), %ax
-
-more_sectors:
-	/* subtract from total */
-	subw	%ax, 4(%di)
-
-	/* add into logical sector start */
-	addl	%eax, (%di)
-
 /*
  *  This is the loop for taking care of BIOS geometry translation (ugh!)
  */
@@ -235,12 +289,9 @@ more_sectors:
 
 	/* restore %dx */
 	popw	%dx
-	pushw	%dx
-
+	
 	/* head number */
 	movb	11(%si), %dh
-
-	pushw	%ax	/* save %ax from destruction! */
 
 /*
  * BIOS call "INT 0x13 Function 0x2" to read sectors from disk into memory
@@ -259,59 +310,40 @@ more_sectors:
 	movw	%bx, %es	/* load %es segment with disk buffer */
 
 	xorw	%bx, %bx	/* %bx = 0, put it at 0 in the segment */
-	movb	$0x2, %ah	/* function 2 */
+	movw	$0x0201, %ax	/* function 2 */
 	int	$0x13
 
 	jc	read_error
 
-	/* save source segment */
-	movw	%es, %dx
+	movw	%es, %bx
+	
+copy_buffer:
+	movw	ABS(stage2_segment), %es
 
-	/* load addresses for copy from disk buffer to destination */
-	movw	6(%di), %es	/* load destination segment */
-
-	/* restore %ax */
-	popw	%ax
-
-	/* determine the next possible destination address (presuming
-		512 byte sectors!) */
-	shlw	$5, %ax		/* shift %ax five bits to the left */
-	addw	%ax, 6(%di)	/* add the corrected value to the destination
-				   address for next time */
-
-	/* get the copy length */
-	shlw	$4, %ax
-	movw	%ax, %cx
-
-	/* save addressing regs */
+	/*
+	 * We need to save %cx and %si because the startup code in
+	 * stage2 uses them without initializing them.
+	 */
+	pushw	%cx
 	pushw	%ds
 	pushw	%si
-	pushw	%di
+	
+	movw	$0x200, %cx
+	movw	%bx, %ds
+	xorw	%si, %si
+	xorw	%di, %di
+	
+	cld
+	
+	rep
+	movsb
 
-	xorw	%di, %di	/* zero offset of destination addresses */
-	xorw	%si, %si	/* zero offset of source addresses */
-	movw	%dx, %ds	/* restore the source segment */
-
-	cld		/* sets the copy direction to forward */
-
-	/* perform copy */
-	rep		/* sets a repeat */
-	movsb		/* this runs the actual copy */
-
-	/* restore addressing regs */
-	popw	%di
 	popw	%si
 	popw	%ds
+	popw	%cx
 
-	/* check if finished with this dataset */
-	cmpw	$0, 4(%di)
-	jne	setup_sectors
-
-	/* update position to load from */
-	subw	$STAGE1_LISTSIZE, %di
-
-	/* jump to bootloop */
-	jmp	bootloop
+	/* boot stage2 */
+	jmp	*(stage2_address)
 
 /* END OF MAIN LOOP */
 
@@ -341,6 +373,7 @@ general_error:
 /* go here when you need to stop the machine hard after an error condition */
 stop:	jmp	stop
 
+notification_string:	.string "stage1"
 geometry_error_string:	.string "Geom"
 hd_probe_error_string:	.string "Hard Disk"
 read_error_string:	.string "Read"
@@ -368,70 +401,6 @@ message:
 	cmpb	$0, %al
 	jne	1b	/* if not end of string, jmp to display */
 	ret
-lastlist:
-
-/*
- *  This area is an empty space between the main body of code below which
- *  grows up (fixed after compilation, but between releases it may change
- *  in size easily), and the lists of sectors to read, which grows down
- *  from a fixed top location.
- */
-
-        /*
-         *  This data area is for keeping general parameters.
-         */
-	. = _start + STAGE1_PARTSTART - STAGE1_MINPARAMSIZE - STAGE1_LISTSIZE
-
-	/* this next data area before the partition area is specifically
-	   sized, you should update "STAGE1_MINPARAMSIZ" to reflect any
-	   additions or deletions to this area.  */
-
-	.word 0
-	.word 0
-
-        /* fill the first data listing with the default */
-#ifdef  FFS_STAGE1_5
-blocklist_default_start:
-	.long 2		/* this is the sector start parameter, in logical
-			   sectors from the start of the disk, sector 0 */
-blocklist_default_len:
-	.word 14	/* this is the number of sectors to read */
-blocklist_default_seg:
-	.word 0x0200	/* this is the segment of the starting address
-			   to load the data into */
-#else
-blocklist_default_start:
-	.long 1		/* this is the sector start parameter, in logical
-			   sectors from the start of the disk, sector 0 */
-blocklist_default_len:
-			/* this is the number of sectors to read */
-	.word (STAGE2_SIZE + 511) >> 9
-blocklist_default_seg:
-	.word 0x0800	/* this is the segment of the starting address
-			   to load the data into */
-#endif
-firstlist:	/* this label has to be after the list data!!! */
-
-	.byte 0xff	/* the disk to load stage2 from */
-			/* 0xff means use the boot drive */
-
-	/*
-	 *  Jump here when all data loading is done.  This
-	 *  goes to the second stage bootloader.
-	 */
-
-bootit:
-	popw	%dx	/* this makes sure %dl is our "boot" drive */
-	ljmp	$0, $0x8000	/* FIXME: make 0x2000 for stage1_5 */
-
-	/*
-	 *  This is the compatibility version number.
-	 *  See stage1.h for COMPAT_VERSION_* definitions used
-	 *  in stage2 and stage1_5 modules.
-	 *
-	 *  DO NOT MOVE THIS!!!
-	 */
-	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
 
 	/*
 	 *  This is where an MBR would go if on a hard disk.  The code

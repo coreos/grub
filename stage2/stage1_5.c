@@ -30,7 +30,7 @@ cmain (void)
    */
 
   if (grub_open (config_file) && grub_read ((char *) 0x8000, -1))
-    chain_stage2 (0, 0x8000);
+    chain_stage2 (0, 0x8200);
 
   /*
    *  If not, then print error message and die.

@@ -744,13 +744,17 @@ static int
 install_func (char *arg, int flags)
 {
   char *stage1_file, *dest_dev, *file, *addr;
-  char buffer[SECTOR_SIZE], old_sect[SECTOR_SIZE];
+  char *stage1_buffer = (char *) RAW_ADDR (0x100000);
+  char *old_sect = stage1_buffer + SECTOR_SIZE;
+  char *stage2_first_buffer = old_sect + SECTOR_SIZE;
+  char *stage2_second_buffer = stage2_first_buffer + SECTOR_SIZE;
+  char *dummy = stage2_second_buffer + SECTOR_SIZE;
   int new_drive = 0xFF;
   int dest_drive, dest_sector;
   int i;
   struct geometry dest_geom;
-  int write_stage2_sect = 0;
-  int stage2_sect;
+  int saved_sector;
+  int stage2_first_sector, stage2_second_sector;
   char *ptr;
   int installaddr, installlist;
   /* Point to the location of the name of a configuration file in Stage 2.  */
@@ -764,7 +768,7 @@ install_func (char *arg, int flags)
       if (debug)
 	printf ("[%d]", sector);
 
-      stage2_sect = sector;
+      saved_sector = sector;
     }
 
   /* Write SECTOR to INSTALLLIST, and update INSTALLADDR and
@@ -776,7 +780,7 @@ install_func (char *arg, int flags)
 
       if (*((unsigned long *) (installlist - 4))
 	  + *((unsigned short *) installlist) != sector
-	  || installlist == BOOTSEC_LOCATION + STAGE1_FIRSTLIST + 4)
+	  || installlist == (int) stage2_first_buffer + SECTOR_SIZE + 4)
 	{
 	  installlist -= 8;
 
@@ -814,91 +818,60 @@ install_func (char *arg, int flags)
   else
     ptr = skip_to (0, addr);
 
+#ifndef NO_DECOMPRESSION
+  /* Do not decompress Stage 1 or Stage 2.  */
+  no_decompression = 1;
+#endif
+
   /* Read Stage 1.  */
   if (! grub_open (stage1_file)
-      || ! grub_read (buffer, SECTOR_SIZE) == SECTOR_SIZE)
-    return 1;
+      || ! grub_read (stage1_buffer, SECTOR_SIZE) == SECTOR_SIZE)
+    goto fail;
 
   /* Read the old sector from DEST_DEV.  */
   if (! set_device (dest_dev)
       || ! open_partition ()
       || ! devread (0, 0, SECTOR_SIZE, old_sect))
-    return 1;
+    goto fail;
 
   /* Store the information for the destination device.  */
   dest_drive = current_drive;
   dest_geom = buf_geom;
   dest_sector = part_start;
 
-#ifndef NO_DECOMPRESSION
-  /* Do not decompress Stage 2.  */
-  no_decompression = 1;
-#endif
-
-  /* copy possible DOS BPB, 59 bytes at byte offset 3 */
-  grub_memmove (buffer + BOOTSEC_BPB_OFFSET,
+  /* Copy the possible DOS BPB, 59 bytes at byte offset 3.  */
+  grub_memmove (stage1_buffer + BOOTSEC_BPB_OFFSET,
 		old_sect + BOOTSEC_BPB_OFFSET,
 		BOOTSEC_BPB_LENGTH);
 
-  /* if for a hard disk, copy possible MBR/extended part table */
+  /* If for a hard disk, copy the possible MBR/extended part table.  */
   if ((dest_drive & 0x80) && current_partition == 0xFFFFFF)
-    grub_memmove (buffer + BOOTSEC_PART_OFFSET,
+    grub_memmove (stage1_buffer + BOOTSEC_PART_OFFSET,
 		  old_sect + BOOTSEC_PART_OFFSET,
 		  BOOTSEC_PART_LENGTH);
 
   /* Check for the version and the signature of Stage 1.  */
-  if (*((short *)(buffer + STAGE1_VER_MAJ_OFFS)) != COMPAT_VERSION
-      || (*((unsigned short *) (buffer + BOOTSEC_SIG_OFFSET))
-	  != BOOTSEC_SIGNATURE)
-      || (! (dest_drive & 0x80)
-	  && (*((unsigned char *) (buffer + BOOTSEC_PART_OFFSET)) == 0x80
-	      || buffer[BOOTSEC_PART_OFFSET] == 0))
-      || (buffer[STAGE1_ID_OFFSET] != STAGE1_ID_LBA
-	  && buffer[STAGE1_ID_OFFSET] != STAGE1_ID_CHS))
+  if (*((short *)(stage1_buffer + STAGE1_VER_MAJ_OFFS)) != COMPAT_VERSION
+      || (*((unsigned short *) (stage1_buffer + BOOTSEC_SIG_OFFSET))
+	  != BOOTSEC_SIGNATURE))
     {
       errnum = ERR_BAD_VERSION;
-      return 1;
+      goto fail;
+    }
+
+  /* If DEST_DRIVE is a floppy, Stage 2 must have the iteration probe
+     routine.  */
+  if (! (dest_drive & 0x80)
+      && (*((unsigned char *) (stage1_buffer + BOOTSEC_PART_OFFSET)) == 0x80
+	  || stage1_buffer[BOOTSEC_PART_OFFSET] == 0))
+    {
+      errnum = ERR_BAD_VERSION;
+      goto fail;
     }
 
   /* Open Stage 2.  */
   if (! grub_open (file))
-    return 1;
-
-  /* If STAGE1_FILE is the LBA version, do a sanity check.  */
-  if (buffer[STAGE1_ID_OFFSET] == STAGE1_ID_LBA)
-    {
-      /* The geometry of the drive in which FILE is located.  */
-      struct geometry load_geom;
-
-      /* Check if CURRENT_DRIVE is a floppy disk.  */
-      if (! (current_drive & 0x80))
-	{
-	  errnum = ERR_DEV_VALUES;
-	  return 1;
-	}
-
-      /* Get the geometry of CURRENT_DRIVE.  */
-      if (get_diskinfo (current_drive, &load_geom))
-	{
-	  errnum = ERR_NO_DISK;
-	  return 1;
-	}
-
-#ifdef GRUB_UTIL
-      /* XXX Can we determine if LBA is supported in
-	 the grub shell as well?  */
-      grub_printf ("Warning: make sure that the access mode for "
-		   "(hd%d) is LBA.\n",
-		   current_drive - 0x80);
-#else
-      /* Check if LBA is supported.  */
-      if (! (load_geom.flags & BIOSDISK_FLAG_LBA_EXTENSION))
-	{
-	  errnum = ERR_DEV_VALUES;
-	  return 1;
-	}
-#endif
-    }
+    goto fail;
 
   if (! new_drive)
     new_drive = current_drive;
@@ -907,48 +880,31 @@ install_func (char *arg, int flags)
 		 " be installed on a\ndifferent drive than the drive where"
 		 " the Stage 2 resides.\n");
 
-  memmove ((char*) BOOTSEC_LOCATION, buffer, SECTOR_SIZE);
-
-  *((unsigned char *) (BOOTSEC_LOCATION + STAGE1_FIRSTLIST))
-    = new_drive;
-
-  i = BOOTSEC_LOCATION+STAGE1_FIRSTLIST - 4;
-  while (*((unsigned long *) i))
-    {
-      if (i < BOOTSEC_LOCATION + STAGE1_FIRSTLIST - 256
-	  || (*((int *) (i - 4)) & 0x80000000)
-	  || *((unsigned short *) i) >= 0xA00
-	  || *((short *) (i + 2)) == 0)
-	{
-	  errnum = ERR_BAD_VERSION;
-	  return 1;
-	}
-
-      *((int *) i) = 0;
-      *((int *) (i - 4)) = 0;
-      i -= 8;
-    }
-
-  installlist = BOOTSEC_LOCATION + STAGE1_FIRSTLIST + 4;
+  *((unsigned char *) (stage1_buffer + STAGE1_BOOT_DRIVE)) = new_drive;
 
   /* Read the first sector of Stage 2.  */
   disk_read_hook = disk_read_savesect_func;
-  if (! grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) == SECTOR_SIZE)
-    {
-      disk_read_hook = 0;
-      return 1;
-    }
+  if (grub_read (stage2_first_buffer, SECTOR_SIZE) != SECTOR_SIZE)
+    goto fail;
 
+  stage2_first_sector = saved_sector;
+  
+  /* Read the second sector of Stage 2.  */
+  if (grub_read (stage2_second_buffer, SECTOR_SIZE) != SECTOR_SIZE)
+    goto fail;
+
+  stage2_second_sector = saved_sector;
+  
   /* Check for the version of Stage 2.  */
-  if (*((short *) (SCRATCHADDR + STAGE2_VER_MAJ_OFFS)) != COMPAT_VERSION)
+  if (*((short *) (stage2_second_buffer + STAGE2_VER_MAJ_OFFS))
+      != COMPAT_VERSION)
     {
       errnum = ERR_BAD_VERSION;
-      return 1;
+      goto fail;
     }
 
   /* Check for the Stage 2 id.  */
-  if (*((unsigned char *) (SCRATCHADDR + STAGE2_STAGE2_ID))
-      != STAGE2_ID_STAGE2)
+  if (stage2_second_buffer[STAGE2_STAGE2_ID] != STAGE2_ID_STAGE2)
     is_stage1_5 = 1;
 
   /* If INSTALLADDR is not specified explicitly in the command-line,
@@ -963,33 +919,57 @@ install_func (char *arg, int flags)
 	installaddr = 0x2000;
     }
 
-  *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
+  *((unsigned long *) (stage1_buffer + STAGE1_STAGE2_SECTOR))
+    = stage2_first_sector;
+  *((unsigned short *) (stage1_buffer + STAGE1_STAGE2_ADDRESS))
     = installaddr;
+  *((unsigned short *) (stage1_buffer + STAGE1_STAGE2_SEGMENT))
+    = installaddr >> 4;
 
-  /* Read the whole of Stage 2.  */
-  filepos = 0;
-  disk_read_hook = disk_read_blocklist_func;
-  if (! grub_read ((char *) RAW_ADDR (0x100000), -1))
+  i = (int) stage2_first_buffer + SECTOR_SIZE - 4;
+  while (*((unsigned long *) i))
     {
-      disk_read_hook = 0;
-      return 1;
+      if (i < (int) stage2_first_buffer
+	  || (*((int *) (i - 4)) & 0x80000000)
+	  || *((unsigned short *) i) >= 0xA00
+	  || *((short *) (i + 2)) == 0)
+	{
+	  errnum = ERR_BAD_VERSION;
+	  goto fail;
+	}
+
+      *((int *) i) = 0;
+      *((int *) (i - 4)) = 0;
+      i -= 8;
     }
 
+  installlist = (int) stage2_first_buffer + SECTOR_SIZE + 4;
+  installaddr += SECTOR_SIZE;
+  
+  /* Read the whole of Stage2 except for the first sector.  */
+  filepos = SECTOR_SIZE;
+  disk_read_hook = disk_read_blocklist_func;
+  if (! grub_read (dummy, -1))
+    goto fail;
+  
+  disk_read_hook = 0;
+  
   /* Find a string for the configuration filename.  */
-  config_file_location = ((char *) (SCRATCHADDR + STAGE2_VER_STR_OFFS));
+  config_file_location = stage2_second_buffer + STAGE2_VER_STR_OFFS;
   while (*(config_file_location++))
     ;
 
   if (*ptr == 'p')
     {
-      write_stage2_sect = 1;
-      *((long *) (SCRATCHADDR + STAGE2_INSTALLPART)) = current_partition;
+      *((long *) (stage2_second_buffer + STAGE2_INSTALLPART))
+	= current_partition;
       if (is_stage1_5)
 	{
 	  /* Reset the device information in FILE if it is a Stage 1.5.  */
-	  int device = 0xFFFFFFFF;
+	  unsigned long device = 0xFFFFFFFF;
 
-	  grub_memmove (config_file_location, (char *) &device,	sizeof (int));
+	  grub_memmove (config_file_location, (char *) &device,
+			sizeof (device));
 	}
 
       ptr = skip_to (0, ptr);
@@ -997,15 +977,13 @@ install_func (char *arg, int flags)
 
   if (*ptr)
     {
-      write_stage2_sect = 1;
-
       if (! is_stage1_5)
 	/* If it is a Stage 2, just copy PTR to CONFIG_FILE_LOCATION.  */
 	grub_strcpy (config_file_location, ptr);
       else
 	{
 	  char *config_file;
-	  int device;
+	  unsigned long device;
 	  int tmp = current_drive;
 
 	  /* Translate the external device syntax to the internal device
@@ -1019,8 +997,9 @@ install_func (char *arg, int flags)
 
 	  device = current_drive << 24 | current_partition;
 	  current_drive = tmp;
-	  grub_memmove (config_file_location, (char *) &device, sizeof (int));
-	  grub_strcpy (config_file_location + sizeof (int), config_file);
+	  grub_memmove (config_file_location, (char *) &device,
+			sizeof (device));
+	  grub_strcpy (config_file_location + sizeof (device), config_file);
 	}
     }
 
@@ -1028,30 +1007,41 @@ install_func (char *arg, int flags)
   buf_track = -1;
 
   /* Write the modified first sector of Stage2 to the disk.  */
-  if (write_stage2_sect
-      && biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
-		   stage2_sect, 1, SCRATCHSEG))
+  grub_memmove ((char *) SCRATCHADDR, stage2_first_buffer, SECTOR_SIZE);
+  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+		stage2_first_sector, 1, SCRATCHSEG))
     {
       errnum = ERR_WRITE;
-      disk_read_hook = 0;
-      return 1;
+      goto fail;
+    }
+  
+  /* Write the modified second sector of Stage2 to the disk.  */
+  grub_memmove ((char *) SCRATCHADDR, stage2_second_buffer, SECTOR_SIZE);
+  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+		stage2_second_sector, 1, SCRATCHSEG))
+    {
+      errnum = ERR_WRITE;
+      goto fail;
+    }
+  
+  /* Write the modified sector of Stage 1 to the disk.  */
+  grub_memmove ((char *) SCRATCHADDR, stage1_buffer, SECTOR_SIZE);
+  if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
+		dest_sector, 1, SCRATCHSEG))
+    {
+      errnum = ERR_WRITE;
+      goto fail;
     }
 
-  if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
-		dest_sector, 1, (BOOTSEC_LOCATION >> 4)))
-    {
-      errnum = ERR_WRITE;
-      disk_read_hook = 0;
-      return 1;
-    }
+ fail:
 
   disk_read_hook = 0;
-
+  
 #ifndef NO_DECOMPRESSION
   no_decompression = 0;
 #endif
 
-  return 0;
+  return errnum;
 }
 
 static struct builtin builtin_install =
