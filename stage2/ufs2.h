@@ -64,17 +64,6 @@ typedef uint16_t               u_int16_t;
 typedef uint32_t               u_int32_t;
 typedef uint64_t               u_int64_t;
 
-/*
- * __uint* constants already defined in
- * FreeBSD's /usr/include/machine/_types.h
- */
-#ifndef _MACHINE__TYPES_H_
-typedef uint8_t                __uint8_t;
-typedef uint16_t               __uint16_t;
-typedef uint32_t               __uint32_t;
-typedef uint64_t               __uint64_t;
-#endif /* _MACHINE__TYPES_H_ */
-
 #define i_size di_size
 
 
@@ -97,7 +86,7 @@ typedef int64_t ufs_lbn_t;
 typedef int64_t ufs_time_t;
 
 /* inode number */
-typedef __uint32_t      ino_t;
+typedef uint32_t      ino_t;
 
 /* File permissions. */
 #define	IEXEC		0000100		/* Executable. */

@@ -1,3 +1,11 @@
+2004-06-14  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* stage2/ufs2.h (__uint8_t): Remove.
+	(__uint16_t): Likewise.
+	(__uint32_t): Likewise.
+	(__uint64_t): Likewise.
+	(ino_t): Typedef to uint32_t.
+
 2004-06-13  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/Makefile.am (noinst_HEADERS): Added ufs2.h.
