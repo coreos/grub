@@ -66,7 +66,7 @@ static struct option longopts[] =
   {"config-file", required_argument, 0, OPT_CONFIG_FILE},
   {"device-map", required_argument, 0, OPT_DEVICE_MAP},
   {"help", no_argument, 0, OPT_HELP},
-  {"hold", no_argument, 0, OPT_HOLD},
+  {"hold", optional_argument, 0, OPT_HOLD},
   {"install-partition", required_argument, 0, OPT_INSTALL_PARTITION},
   {"no-config-file", no_argument, 0, OPT_NO_CONFIG_FILE},
   {"no-curses", no_argument, 0, OPT_NO_CURSES},
@@ -153,7 +153,10 @@ main (int argc, char **argv)
 	  break;
 
 	case OPT_HOLD:
-	  hold = 1;
+	  if (! optarg)
+	    hold = -1;
+	  else
+	    hold = atoi (optarg);
 	  break;
 
 	case OPT_CONFIG_FILE:
@@ -224,7 +227,12 @@ main (int argc, char **argv)
     printf ("Run \"gdb %s %d\", and set HOLD to zero.\n",
 	    program_name, (int) getpid ());
   while (hold)
-    sleep (1);
+    {
+      if (hold > 0)
+	hold--;
+      
+      sleep (1);
+    }
 
   /* Transfer control to the stage2 simulator. */
   exit (grub_stage2 ());

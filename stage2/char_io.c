@@ -222,11 +222,47 @@ int
 get_cmdline (char *prompt, char *cmdline, int maxlen,
 	     int echo_char, int readline)
 {
-  int ystart, yend, xend, lpos, c;
+  /* This is a rather complicated function. So explain the concept.
+     
+     A command-line consists of ``section''s. A section is a part of the
+     line which may be displayed on the screen, but a section is never
+     displayed with another section simultaneously.
+
+     Each section is basically 77 or less characters, but the exception
+     is the first section, which is 78 or less characters, because the
+     starting point is special. See below.
+
+     The first section contains a prompt and a command-line (or the
+     first part of a command-line when it is too long to be fit in the
+     screen). So, in the first section, the number of command-line
+     characters displayed is 78 minus the length of the prompt (or
+     less). If the command-line has more characters, `>' is put at the
+     position 78 (zero-origin), to inform the user of the hidden
+     characters.
+
+     Other sections always have `<' at the first position, since there
+     is absolutely a section before each section. If there is a section
+     after another section, this section consists of 77 characters and
+     `>' at the last position. The last section has 77 or less
+     characters and doesn't have `>'.
+
+     Each section other than the last shares some characters with the
+     previous section. This region is called ``margin''. If the cursor
+     is put at the magin which is shared by the first section and the
+     second, the first section is displayed. Otherwise, a displayed
+     section is switched to another section, only if the cursor is put
+     outside that section.  */
+
+  /* XXX: These should be defined in shared.h, but I leave these here,
+     until this code is freezed.  */
+#define CMDLINE_WIDTH	78
+#define CMDLINE_MARGIN	10
+  
+  int xpos, lpos, c, section;
   /* The length of PROMPT.  */
-  int plen = 0;
+  int plen;
   /* The length of the command-line.  */
-  int llen = 0;
+  int llen;
   /* The index for the history.  */
   int history = -1;
   /* The working buffer for the command-line.  */
@@ -234,88 +270,274 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   /* The kill buffer.  */
   char *kill_buf = (char *) KILL_BUF;
 
-  /* nested function definition for code simplicity */
-  static void cl_print (char *str, int real_echo_char)
+  /* Nested function definitions for code simplicity.  */
+
+  /* The forward declarations of nested functions are prefixed
+     with `auto'.  */
+  auto void cl_refresh (int full, int len);
+  auto void cl_backward (int count);
+  auto void cl_forward (int count);
+  auto void cl_insert (const char *str);
+  auto void cl_delete (int count);
+  auto void cl_init (void);
+  
+  /* Move the cursor backward.  */
+  void cl_backward (int count)
     {
-      while (*str != 0)
+      lpos -= count;
+      
+      /* If the cursor is in the first section, display the first section
+	 instead of the second.  */
+      if (section == 1 && plen + lpos < CMDLINE_WIDTH)
+	cl_refresh (1, 0);
+      else if (xpos - count < 1)
+	cl_refresh (1, 0);
+      else
 	{
-	  putchar (real_echo_char ? real_echo_char : *str);
-	  str++;
-	  if (++xend > 78)
+	  int i;
+	  
+	  xpos -= count;
+
+	  if (! (terminal & TERMINAL_DUMB))
 	    {
-	      xend = 0;
-	      putchar (' ');
-	      if (yend == (getxy () & 0xff))
-		ystart--;
+	      if (terminal & TERMINAL_CONSOLE)
+		{
+		  int y = getxy () & 0xFF;
+		  
+		  gotoxy (xpos, y);
+		  return;
+		}
+# ifdef SUPPORT_SERIAL
+	      else if (terminal & TERMINAL_SERIAL)
+		{
+		  /* Ugly optimization.  */
+		  if (count > 4)
+		    {
+		      grub_printf ("\e[%dD", count);
+		      return;
+		    }
+		}
+# endif /* SUPPORT_SERIAL */
+	    }
+	  
+	  for (i = 0; i < count; i++)
+	    grub_putchar ('\b');
+	}
+    }
+
+  /* Move the cursor forward.  */
+  void cl_forward (int count)
+    {
+      lpos += count;
+
+      /* If the cursor goes outside, scroll the screen to the right.  */
+      if (xpos + count >= CMDLINE_WIDTH)
+	cl_refresh (1, 0);
+      else
+	{
+	  int i;
+	  
+	  xpos += count;
+
+	  if (! (terminal & TERMINAL_DUMB))
+	    {
+	      if (terminal & TERMINAL_CONSOLE)
+		{
+		  int y = getxy () & 0xFF;
+		  
+		  gotoxy (xpos, y);
+		  return;
+		}
+# ifdef SUPPORT_SERIAL
+	      else if (terminal & TERMINAL_SERIAL)
+		{
+		  /* Ugly optimization.  */
+		  if (count > 4)
+		    {
+		      grub_printf ("\e[%dC", count);
+		      return;
+		    }
+		}
+# endif /* SUPPORT_SERIAL */
+	    }
+	  
+	  for (i = lpos - count; i < lpos; i++)
+	    {
+	      if (! echo_char)
+		grub_putchar (buf[i]);
 	      else
-		yend++;
+		grub_putchar (echo_char);
 	    }
 	}
     }
 
-  /* nested function definition for code simplicity */
-  static void cl_setcpos (void)
-    {
-      yend = ((lpos + plen) / 79) + ystart;
-      xend = ((lpos + plen) % 79);
-      gotoxy (xend, yend);
-    }
-
-  /* nested function definition for initial command-line printing */
-  static void cl_init ()
-    {
-      /* distinguish us from other lines and error messages! */
-      putchar ('\n');
-
-      /* print full line and set position here */
-      ystart = (getxy () & 0xff);
-      yend = ystart;
-      xend = 0;
-      cl_print (prompt, 0);
-      cl_print (buf, echo_char);
-      cl_setcpos ();
-    }
-
-  /* nested function definition for erasing to the end of the line */
-  static void cl_kill_to_end ()
+  /* Refresh the screen. If FULL is true, redraw the full line, otherwise,
+     only LEN characters from LPOS.  */
+  void cl_refresh (int full, int len)
     {
       int i;
-      buf[lpos] = 0;
-      for (i = lpos; i <= llen; i++)
+      int start;
+      int pos = xpos;
+      
+      if (full)
 	{
-	  if (i && ((i + plen) % 79) == 0)
-	    putchar (' ');
-	  putchar (' ');
+	  /* Recompute the section number.  */
+	  if (lpos + plen < CMDLINE_WIDTH)
+	    section = 0;
+	  else
+	    section = ((lpos + plen - CMDLINE_WIDTH)
+		       / (CMDLINE_WIDTH - 1 - CMDLINE_MARGIN) + 1);
+
+	  /* From the start to the end.  */
+	  len = CMDLINE_WIDTH;
+	  pos = 0;
+	  grub_putchar ('\r');
+
+	  /* If SECTION is the first section, print the prompt, otherwise,
+	     print `<'.  */
+	  if (section == 0)
+	    {
+	      grub_printf ("%s", prompt);
+	      len -= plen;
+	      pos += plen;
+	    }
+	  else
+	    {
+	      grub_putchar ('<');
+	      len--;
+	      pos++;
+	    }
 	}
-      llen = lpos;
-      cl_setcpos ();
+
+      /* Compute the index to start writing BUF and the resulting position
+	 on the screen.  */
+      if (section == 0)
+	{
+	  int offset = 0;
+	  
+	  if (! full)
+	    offset = xpos - plen;
+	  
+	  start = 0;
+	  xpos = lpos + plen;
+	  start += offset;
+	}
+      else
+	{
+	  int offset = 0;
+	  
+	  if (! full)
+	    offset = xpos - 1;
+	  
+	  start = ((section - 1) * (CMDLINE_WIDTH - 1 - CMDLINE_MARGIN)
+		   + CMDLINE_WIDTH - plen - CMDLINE_MARGIN);
+	  xpos = lpos + 1 - start;
+	  start += offset;
+	}
+
+      /* Print BUF. If ECHO_CHAR is not zero, put it instead.  */
+      for (i = start; i < start + len && i < llen; i++)
+	{
+	  if (! echo_char)
+	    grub_putchar (buf[i]);
+	  else
+	    grub_putchar (echo_char);
+
+	  pos++;
+	}
+
+      /* Fill up the rest of the line with spaces.  */
+      for (; i < start + len; i++)
+	{
+	  grub_putchar (' ');
+	  pos++;
+	}
+
+      /* If the cursor is at the last position, put `>' or a space,
+	 depending on if there are more characters in BUF.  */
+      if (pos == CMDLINE_WIDTH)
+	{
+	  if (start + len < llen)
+	    grub_putchar ('>');
+	  else
+	    grub_putchar (' ');
+	  
+	  pos++;
+	}
+
+      /* Back to XPOS.  */
+      if (! (terminal & TERMINAL_DUMB))
+	{
+	  if (terminal & TERMINAL_CONSOLE)
+	    {
+	      int y = getxy () & 0xFF;
+	      
+	      gotoxy (xpos, y);
+	      return;
+	    }
+# ifdef SUPPORT_SERIAL
+	  else if (terminal & TERMINAL_SERIAL)
+	    {
+	      /* Ugly optimization.  */
+	      if (pos - xpos > 4)
+		{
+		  grub_printf ("\e[%dD", pos - xpos);
+		  return;
+		}
+	    }
+# endif /* SUPPORT_SERIAL */
+	}
+      
+      for (i = 0; i < pos - xpos; i++)
+	grub_putchar ('\b');
     }
 
-  static void cl_insert (const char *str)
+  /* Initialize the command-line.  */
+  void cl_init (void)
+    {
+      /* Distinguish us from other lines and error messages!  */
+      grub_putchar ('\n');
+
+      /* Print full line and set position here.  */
+      cl_refresh (1, 0);
+    }
+
+  /* Insert STR to BUF.  */
+  void cl_insert (const char *str)
     {
       int l = grub_strlen (str);
 
       if (llen + l < maxlen)
 	{
 	  if (lpos == llen)
-	    {
-	      grub_memmove (buf + lpos, str, l + 1);
-	      cl_setcpos ();
-	      cl_print (buf + lpos, echo_char);
-	      lpos += l;
-	      cl_setcpos ();
-	    }
+	    grub_memmove (buf + lpos, str, l + 1);
 	  else
 	    {
 	      grub_memmove (buf + lpos + l, buf + lpos, llen - lpos + 1);
 	      grub_memmove (buf + lpos, str, l);
-	      cl_setcpos ();
-	      cl_print (buf + lpos, echo_char);
-	      lpos += l;
-	      cl_setcpos ();
 	    }
+	  
 	  llen += l;
+	  lpos += l;
+	  if (xpos + l >= CMDLINE_WIDTH)
+	    cl_refresh (1, 0);
+	  else if (xpos + l + llen - lpos > CMDLINE_WIDTH)
+	    cl_refresh (0, CMDLINE_WIDTH - xpos);
+	  else
+	    cl_refresh (0, l + llen - lpos);
 	}
+    }
+
+  /* Delete COUNT characters in BUF.  */
+  void cl_delete (int count)
+    {
+      grub_memmove (buf + lpos, buf + lpos + count, llen - count + 1);
+      llen -= count;
+      
+      if (xpos + llen + count - lpos > CMDLINE_WIDTH)
+	cl_refresh (0, CMDLINE_WIDTH - xpos);
+      else
+	cl_refresh (0, llen + count - lpos);
     }
 
   plen = grub_strlen (prompt);
@@ -395,14 +617,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 
 		    if (ret > 0)
 		      {
-			/* There is more than one candidates, so print
+			/* There are more than one candidates, so print
 			   the list.  */
 
-			/* Go to the part after the line here.  */
-			yend = ((llen + plen) / 79) + ystart;
 			grub_putchar ('\n');
-			gotoxy (0, getxy () & 0xff);
-
 			print_completions (is_filename, 0);
 			errnum = ERR_NONE;
 		      }
@@ -417,26 +635,18 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	      }
 	      break;
 	    case 1:		/* C-a go to beginning of line */
-	      lpos = 0;
-	      cl_setcpos ();
+	      cl_backward (lpos);
 	      break;
 	    case 5:		/* C-e go to end of line */
-	      lpos = llen;
-	      cl_setcpos ();
+	      cl_forward (llen - lpos);
 	      break;
 	    case 6:		/* C-f forward one character */
 	      if (lpos < llen)
-		{
-		  lpos++;
-		  cl_setcpos ();
-		}
+		cl_forward (1);
 	      break;
 	    case 2:		/* C-b backward one character */
 	      if (lpos > 0)
-		{
-		  lpos--;
-		  cl_setcpos ();
-		}
+		cl_backward (1);
 	      break;
 	    case 21:		/* C-u kill to beginning of line */
 	      if (lpos == 0)
@@ -444,21 +654,21 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	      /* Copy the string being deleted to KILL_BUF.  */
 	      grub_memmove (kill_buf, buf, lpos);
 	      kill_buf[lpos] = 0;
-	      grub_memmove (buf, buf + lpos, llen - lpos + 1);
-	      lpos = llen - lpos;
-	      cl_setcpos ();
-	      cl_kill_to_end ();
-	      lpos = 0;
-	      cl_setcpos ();
-	      cl_print (buf, echo_char);
-	      cl_setcpos ();
+	      {
+		/* XXX: Not very clever.  */
+		
+		int count = lpos;
+		
+		cl_backward (lpos);
+		cl_delete (count);
+	      }
 	      break;
 	    case 11:		/* C-k kill to end of line */
 	      if (lpos == llen)
 		break;
 	      /* Copy the string being deleted to KILL_BUF.  */
 	      grub_memmove (kill_buf, buf + lpos, llen - lpos + 1);
-	      cl_kill_to_end ();
+	      cl_delete (llen - lpos);
 	      break;
 	    case 25:		/* C-y yank the kill buffer */
 	      cl_insert (kill_buf);
@@ -482,14 +692,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		    break;
 		  }
 
-		lpos = 0;
-		cl_setcpos ();
-		cl_kill_to_end ();
 		grub_strcpy (buf, p);
 		llen = grub_strlen (buf);
 		lpos = llen;
-		cl_print (buf, 0);
-		cl_setcpos ();
+		cl_refresh (1, 0);
 	      }
 	      break;
 	    case 14:		/* C-n fetch the next command */
@@ -509,14 +715,10 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		if (! p)
 		  p = cmdline;
 
-		lpos = 0;
-		cl_setcpos ();
-		cl_kill_to_end ();
 		grub_strcpy (buf, p);
 		llen = grub_strlen (buf);
 		lpos = llen;
-		cl_print (buf, 0);
-		cl_setcpos ();
+		cl_refresh (1, 0);
 	      }
 	      break;
 	    }
@@ -532,28 +734,16 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	case 4:		/* C-d delete character under cursor */
 	  if (lpos == llen)
 	    break;
-	  lpos++;
-	  /* fallthrough is on purpose! */
+	  cl_delete (1);
+	  break;
 	case 8:		/* C-h backspace */
-#ifdef GRUB_UTIL
+# ifdef GRUB_UTIL
 	case 127:	/* also backspace */
-#endif
+# endif
 	  if (lpos > 0)
 	    {
-	      int i;
-	      grub_memmove (buf + lpos - 1, buf + lpos, llen - lpos + 1);
-	      i = lpos;
-	      lpos = llen - 1;
-	      cl_setcpos ();
-	      putchar (' ');
-	      lpos = i - 1;	/* restore lpos and decrement */
-	      llen--;
-	      cl_setcpos ();
-	      if (lpos != llen)
-		{
-		  cl_print (buf + lpos, echo_char);
-		  cl_setcpos ();
-		}
+	      cl_backward (1);
+	      cl_delete (1);
 	    }
 	  break;
 	default:		/* insert printable character into line */
@@ -568,11 +758,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	}
     }
 
-  /* Move the cursor to the end of the command.  */
-  lpos = llen;
-  cl_setcpos ();
   grub_putchar ('\n');
-  gotoxy (0, getxy () & 0xff);
 
   /* If ECHO_CHAR is NUL, remove the leading spaces.  */
   lpos = 0;

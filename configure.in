@@ -94,7 +94,18 @@ AC_SUBST(GRUB_CFLAGS)
 
 # Enforce coding standards.
 CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused -Wshadow"
-CPPFLAGS="$CPPFLAGS -Wpointer-arith -Wundef"
+CPPFLAGS="$CPPFLAGS -Wpointer-arith"
+
+AC_CACHE_CHECK([whether -Wundef works], undef_flag, [
+  saved_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS="-Wundef"
+  AC_TRY_COMPILE(, , undef_flag=yes, undef_flag=no)
+  CPPFLAGS=$saved_CPPFLAGS
+])
+
+if test "x$undef_flag" = xyes; then
+  CPPFLAGS="$CPPFLAGS -Wundef"
+fi
 
 if test "x$with_binutils" != x; then
 dnl  AC_PATH_TOOL(OBJCOPY, objcopy, , "$with_binutils:$PATH")

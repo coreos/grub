@@ -1,3 +1,29 @@
+2000-08-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (CPPFLAGS): Remove -Wundef by default. Add the
+	option only if the C compiler supports it, because GCC 2.7.x
+	doesn't support it.
+	* grub/main.c (longopts): The type of the argument for "hold" is
+	changed to OPTIONAL_ARGUMENT.
+	(main): If --hold is specified, check if OPTARG is zero. If so,
+	set HOLD to -1, otherwise, set it to the digit OPTARG.
+	If HOLD is greater than zero, decrease it once per loop.
+	
+2000-08-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	The command-line interface is switched to single-line editing
+	mode.
+	
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): Extensively
+	rewritten. The nested functions cl_print and cl_kill_to_end are
+	removed, cl_refresh, cl_backward, cl_forward and cl_delete are
+	added, and, cl_init and cl_insert are rewritten from scratch.
+	See the source code, for more information. I don't think this
+	kind of changes can be represented in ChangeLog.
+	[!STAGE1_5] (CMDLINE_WIDTH): New macro.
+	[!STAGE1_5] (CMDLINE_MARGIN): Likewise.
+	* stage2/shared.h (TERMINAL_DUMB): Likewise.
+	
 2000-08-28  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* grub/asmstub.c (console_putchar) [HAVE_LIBCURSES]: If

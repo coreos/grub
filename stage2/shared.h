@@ -742,6 +742,8 @@ extern int terminal;
 #define TERMINAL_CONSOLE	(1 << 0)	/* keyboard and screen */
 #define TERMINAL_SERIAL		(1 << 1)	/* serial console */
 
+#define TERMINAL_DUMB		(1 << 16)	/* dumb terminal */
+
 void init_builtins (void);
 void init_config (void);
 char *skip_to (int after_equal, char *cmdline);
