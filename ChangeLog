@@ -1,5 +1,14 @@
 2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* grub/main.c (OPT_NO_PAGER): New macro.
+	(longopts): Added an entry for "--no-pager".
+	(usage): Added a description about "--no-pager".
+	(main): In case of OPT_NO_PAGER, set USE_PAGER to zero. The same
+	thing is done with OPT_BATCH, because the pager is just harmful
+	in batch mode.
+	
+2002-02-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/builtins.c (help_func): Show all the commands runnable
 	with the command-line interface, if "--all" is specified.
 	

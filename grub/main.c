@@ -1,7 +1,7 @@
 /* main.c - experimental GRUB stage2 that runs under Unix */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -63,6 +63,7 @@ static char *default_config_file;
 #define OPT_NO_FLOPPY		-14
 #define OPT_DEVICE_MAP		-15
 #define OPT_PRESET_MENU		-16
+#define OPT_NO_PAGER		-17
 #define OPTSTRING ""
 
 static struct option longopts[] =
@@ -77,6 +78,7 @@ static struct option longopts[] =
   {"no-config-file", no_argument, 0, OPT_NO_CONFIG_FILE},
   {"no-curses", no_argument, 0, OPT_NO_CURSES},
   {"no-floppy", no_argument, 0, OPT_NO_FLOPPY},
+  {"no-pager", no_argument, 0, OPT_NO_PAGER},
   {"preset-menu", no_argument, 0, OPT_PRESET_MENU},
   {"probe-second-floppy", no_argument, 0, OPT_PROBE_SECOND_FLOPPY},
   {"read-only", no_argument, 0, OPT_READ_ONLY},
@@ -107,6 +109,7 @@ Enter the GRand Unified Bootloader command shell.\n\
     --no-config-file         do not use the config file\n\
     --no-curses              do not use curses\n\
     --no-floppy              do not probe any floppy drive\n\
+    --no-pager               do not use internal pager\n\
     --preset-menu            use the preset menu\n\
     --probe-second-floppy    probe the second floppy drive\n\
     --read-only              do not write anything to devices\n\
@@ -198,10 +201,15 @@ main (int argc, char **argv)
 	  use_curses = 0;
 	  break;
 
+	case OPT_NO_PAGER:
+	  use_pager = 0;
+	  break;
+
 	case OPT_BATCH:
-	  /* This is the same as "--no-config-file --no-curses".  */
+	  /* This is the same as "--no-config-file --no-curses --no-pager".  */
 	  use_config_file = 0;
 	  use_curses = 0;
+	  use_pager = 0;
 	  break;
 
 	case OPT_READ_ONLY:
