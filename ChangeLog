@@ -1,3 +1,8 @@
+1999-05-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* shared_src/asm.S (biosdisk_standard): Pop %ebp correctly, reported
+	by Pavel Roskin <pavel_roskin@geocities.com>.
+	
 1999-04-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/menu.lst: Rewritten, so that it contains up-to-date

@@ -458,6 +458,7 @@ ENTRY(biosdisk_standard)
 	popl	%edx
 	popl	%ecx
 	popl	%ebx
+	popl	%ebp
 
 	ret
 
