@@ -24,8 +24,11 @@
 /* The signature for bootloader.  */
 #define PUPA_BOOT_MACHINE_SIGNATURE	0xaa55
 
+/* The offset of the start of BPB (BIOS Parameter Block).  */
+#define PUPA_BOOT_MACHINE_BPB_START	0x3
+
 /* The offset of the end of BPB (BIOS Parameter Block).  */
-#define PUPA_BOOT_MACHINE_BPBEND	0x3e
+#define PUPA_BOOT_MACHINE_BPB_END	0x3e
 
 /* The offset of the major version.  */
 #define PUPA_BOOT_MACHINE_VER_MAJ	0x3e

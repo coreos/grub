@@ -25,6 +25,8 @@
 #include <sys/stat.h>
 
 #include <pupa/util/misc.h>
+#include <pupa/mm.h>
+#include <pupa/term.h>
 
 char *progname = 0;
 int verbosity = 0;
@@ -67,6 +69,16 @@ xmalloc (size_t size)
     pupa_util_error ("out of memory");
 
   return p;
+}
+
+void *
+xrealloc (void *ptr, size_t size)
+{
+  ptr = realloc (ptr, size);
+  if (! ptr)
+    pupa_util_error ("out of memory");
+
+  return ptr;
 }
 
 char *
@@ -135,3 +147,32 @@ pupa_util_write_image (const char *img, size_t size, FILE *out)
     pupa_util_error ("write failed");
 }
 
+void *
+pupa_malloc (unsigned size)
+{
+  return malloc (size);
+}
+
+void
+pupa_free (void *ptr)
+{
+  free (ptr);
+}
+
+void *
+pupa_realloc (void *ptr, unsigned size)
+{
+  return realloc (ptr, size);
+}
+
+void
+pupa_stop (void)
+{
+  exit (1);
+}
+
+void
+pupa_putchar (int c)
+{
+  putchar (c);
+}

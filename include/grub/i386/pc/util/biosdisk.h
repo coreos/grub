@@ -1,3 +1,4 @@
+/* biosdisk.h - emulate biosdisk */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
@@ -17,25 +18,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_UTIL_MISC_HEADER
-#define PUPA_UTIL_MISC_HEADER	1
+#ifndef PUPA_BIOSDISK_MACHINE_UTIL_HEADER
+#define PUPA_BIOSDISK_MACHINE_UTIL_HEADER	1
 
-#include <stdlib.h>
-#include <stdio.h>
+void pupa_util_biosdisk_init (const char *dev_map);
+void pupa_util_biosdisk_fini (void);
+char *pupa_util_biosdisk_get_pupa_dev (const char *os_dev);
 
-extern char *progname;
-extern int verbosity;
-
-void pupa_util_info (const char *fmt, ...);
-void pupa_util_error (const char *fmt, ...) __attribute__ ((noreturn));
-
-void *xmalloc (size_t size);
-void *xrealloc (void *ptr, size_t size);
-char *xstrdup (const char *str);
-
-char *pupa_util_get_path (const char *dir, const char *file);
-size_t pupa_util_get_image_size (const char *path);
-char *pupa_util_read_image (const char *path);
-void pupa_util_write_image (const char *img, size_t size, FILE *out);
-
-#endif /* ! PUPA_UTIL_MISC_HEADER */
+#endif /* ! PUPA_BIOSDISK_MACHINE_UTIL_HEADER */

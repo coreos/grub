@@ -745,12 +745,20 @@ static struct pupa_fs pupa_fat_fs =
     .next = 0
   };
 
+#ifdef PUPA_UTIL
+void pupa_fat_init (void)
+#else
 PUPA_MOD_INIT
+#endif
 {
   pupa_fs_register (&pupa_fat_fs);
 }
 
+#ifdef PUPA_UTIL
+void pupa_fat_fini (void)
+#else
 PUPA_MOD_FINI
+#endif
 {
   pupa_fs_unregister (&pupa_fat_fs);
 }

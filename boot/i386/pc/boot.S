@@ -84,7 +84,7 @@ cylinder_start:
 	.word	0
 	/* more space... */
 
-	. = _start + PUPA_BOOT_MACHINE_BPBEND
+	. = _start + PUPA_BOOT_MACHINE_BPB_END
 
 	/*
 	 * End of BIOS parameter block.

@@ -44,11 +44,17 @@ kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
 
 # Utilities.
 bin_UTILITIES = pupa-mkimage
+sbin_UTILITIES = pupa-setup
 noinst_UTILITIES = genmoddep
 
 # For pupa-mkimage.
 pupa_mkimage_SOURCES = util/i386/pc/pupa-mkimage.c util/misc.c \
 	util/resolve.c
+
+# For pupa-setup.
+pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
+	util/misc.c kern/device.c kern/disk.c kern/file.c kern/fs.c \
+	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

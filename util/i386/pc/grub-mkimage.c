@@ -145,7 +145,7 @@ Make a bootable image of PUPA.\n\
 \n\
   -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
-  -h, --help              display this image and exit\n\
+  -h, --help              display this message and exit\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
 \n\

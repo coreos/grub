@@ -93,7 +93,8 @@ INCLUDE_DISTFILES = $(addprefix include/pupa/,boot.h device.h disk.h \
 	$(addprefix include/pupa/util/,misc.h resolve.h) \
 	include/pupa/i386/types.h \
 	$(addprefix include/pupa/i386/pc/,biosdisk.h boot.h \
-	  console.h init.h kernel.h loader.h memory.h partition.h)
+	  console.h init.h kernel.h loader.h memory.h partition.h) \
+	$(addprefix include/pupa/i386/pc/util/,biosdisk.h)
 
 KERN_DISTFILES = $(addprefix kern/,device.c disk.c dl.c err.c file.c \
 	  fs.c loader.c main.c misc.c mm.c rescue.c term.c) \
@@ -105,7 +106,8 @@ LOADER_DISTFILES = $(addprefix loader/i386/pc/,chainloader.c)
 TERM_DISTFILES = $(addprefix term/i386/pc/,console.c)
 
 UTIL_DISTFILES = $(addprefix util/,genmoddep.c misc.c resolve.c) \
-	util/i386/pc/pupa-mkimage.c
+	$(addprefix util/i386/pc/,biosdisk.c pupa-mkimage.c \
+	  pupa-setup.c)
 
 DISTFILES = $(COMMON_DISTFILES) $(BOOT_DISTFILES) $(CONF_DISTFILES) \
 	$(DISK_DISTFILES) $(FS_DISTFILES) $(INCLUDE_DISTFILES) \
@@ -154,6 +156,12 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
 	done
+	$(mkinstalldirs) $(DESTDIR)$(sbindir)
+	@list='$(sbin_UTILITIES)'; for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
+	done
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" install
@@ -163,9 +171,13 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
-	@list = '$(bin_UTILITIES)'; for file in $$list; do \
+	@list='$(bin_UTILITIES)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
+	done
+	@list='$(sbin_UTILITIES)'; for file in $$list; do \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  rm -f $(DESTDIR)$(sbindir)/$$dest; \
 	done
 
 clean:

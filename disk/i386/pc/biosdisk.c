@@ -92,7 +92,7 @@ pupa_biosdisk_get_drive (const char *name)
 static int
 pupa_biosdisk_call_hook (int (*hook) (const char *name), int drive)
 {
-  char name[4];
+  char name[10];
 
   pupa_sprintf (name, (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
   return hook (name);
@@ -111,7 +111,7 @@ pupa_biosdisk_iterate (int (*hook) (const char *name))
       return 1;
   
   /* For hard disks, attempt to read the MBR.  */
-  for (drive = 0x80; drive < 0x88; drive++)
+  for (drive = 0x80; drive < 0x90; drive++)
     {
       if (pupa_biosdisk_rw_standard (0x02, drive, 0, 0, 1, 1,
 				     PUPA_MEMORY_MACHINE_SCRATCH_SEG) != 0)

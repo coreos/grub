@@ -396,6 +396,10 @@ pupa_disk_read (pupa_disk_t disk, unsigned long sector,
 				 ((l > PUPA_DISK_SECTOR_SIZE)
 				  ? PUPA_DISK_SECTOR_SIZE
 				  : l));
+	      
+	      if (l < PUPA_DISK_SECTOR_SIZE - offset)
+		break;
+	      
 	      s++;
 	      l -= PUPA_DISK_SECTOR_SIZE - offset;
 	      offset = 0;

@@ -190,11 +190,11 @@ MOSTLYCLEANFILES += #{deps_str}
       dir = File.dirname(src)
 
       "#{obj}: #{src}
-	$(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) -DPUPA_UTIL=1 $(#{prefix}_CFLAGS) -c -o $@ $<
+	$(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(#{prefix}_CFLAGS) -c -o $@ $<
 
 #{dep}: #{src}
 	set -e; \
-	  $(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) -DPUPA_UTIL=1 $(#{prefix}_CFLAGS) -M $< \
+	  $(BUILD_CC) -I#{dir} -I$(srcdir)/#{dir} $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(#{prefix}_CFLAGS) -M $< \
 	  | sed 's,#{Regexp.quote(fake_obj)}[ :]*,#{obj} $@ : ,g' > $@; \
 	  [ -s $@ ] || rm -f $@
 

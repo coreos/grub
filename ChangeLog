@@ -1,3 +1,51 @@
+2003-01-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/i386/pc/util/biosdisk.h: New file.
+	* util/i386/pc/biosdisk.c: Likewise.
+	* util/i386/pc/pupa-setup.c: Likewise.
+	
+	* Makefile.in (INCLUDE_DISTFILES): Added
+	include/pupa/i386/pc/util/biosdisk.h.
+	(UTIL_DISTFILES): Added biosdisk.c and pupa-setup.c under the
+	directory util/i386/pc.
+	(install-local): Added a rule for sbin_UTILITIES.
+	(uninstall): Likewise.
+
+	* util/i386/pc/pupa-mkimage.c (usage): Fix a typo in the doc.
+
+	* util/misc.c (xrealloc): New function.
+	(pupa_malloc): Likewise.
+	(pupa_free): Likewise.
+	(pupa_realloc): Likewise.
+	(pupa_stop): Likewise.
+	(pupa_putchar): Likewise.
+
+	* kern/disk.c (pupa_disk_read): Prevent L from underflowing.
+
+	* include/pupa/util/misc.h (xrealloc): Declared.
+
+	* include/pupa/i386/pc/boot.h (PUPA_BOOT_MACHINE_BPB_START): New
+	macro.
+	(PUPA_BOOT_MACHINE_BPBEND): Renamed to ...
+	(PUPA_BOOT_MACHINE_BPB_END): ... this.
+
+	* include/pupa/fs.h [PUPA_UTIL] (pupa_fat_init): Declared.
+	[PUPA_UTIL] (pupa_fat_fini): Likewise.
+
+	* fs/fat.c [PUPA_UTIL] (pupa_fat_init): Defined. Maybe a better
+	way should be implemented.
+	[PUPA_UTIL] (pupa_fat_fini): Likewise.
+
+	* disk/i386/pc/biosdisk.c (pupa_biosdisk_call_hook): Increase
+	the size of NAME for safety.
+	(pupa_biosdisk_iterate): Search hard disks to 0x90 instead of
+	0x88.
+
+	* conf/i386-pc.rmk (sbin_UTILITIES): New variable.
+	(pupa_setup_SOURCES): Likewise.
+
+	* genmk.rb (Utility#rule): Add $(BUILD_CFLAGS) into the rules.
+
 2002-12-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/i386/pc/startup.S (push_get_mmap_entry): Revert to a

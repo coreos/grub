@@ -60,4 +60,9 @@ void EXPORT_FUNC(pupa_fs_unregister) (pupa_fs_t fs);
 void EXPORT_FUNC(pupa_fs_iterate) (int (*hook) (const pupa_fs_t fs));
 pupa_fs_t EXPORT_FUNC(pupa_fs_probe) (pupa_device_t device);
 
+#ifdef PUPA_UTIL
+void pupa_fat_init (void);
+void pupa_fat_fini (void);
+#endif /* PUPA_UTIL */
+
 #endif /* ! PUPA_FS_HEADER */
