@@ -17,17 +17,27 @@ without recording the position of your kernel on the disk.
 
 Therefore, you have to specify the drive/partition where your kernel
 resides and the filename at hand. If you don't want to type the
-drive and the filename every time, the menu interface will help
-you. GRUB loads a configuration file if found and provides the menu so
-that you can select which OS is booted at ease. Of course, you can enter
-the command-line interface whenever you like.
+drive and the filename every time, the menu interface (@pxref{Menu})
+will help you. GRUB loads a configuration file (@pxref{Configuration})
+if found and provides the menu so that you can select which OS is booted
+at ease. Of course, you can enter the command-line interface
+(@pxref{Command line}) whenever you like.
 
-In the following chapters, we teach you how to specify your drive, how
-to install GRUB on your drive, and how to boot your OSes, step by step.
+In the following chapters, we teach you how to specify a
+drive/partition and a filename (@pxref{Filename}), how to install GRUB
+on your drive (@pxref{Installation}), and how to boot your OSes
+(@pxref{Boot}), step by step.
 
 
-@node Device Syntax
-@chapter Device Syntax
+@c @node Fundamentals
+@c @chapter Introduction to the technical basic knowledge
+@c
+@c I'm going to include Bill White's documentation here, once his
+@c copyright problem will be solved.
+
+
+@node Filename
+@chapter Filename
 
 Now is the time when you should learn the device syntax used in GRUB, so
 that you can specify a drive/partition. See this example:
@@ -37,8 +47,9 @@ that you can specify a drive/partition. See this example:
 @end example
 
 This means the first floppy disk drive. GRUB requires that the device
-name is enclosed with @samp{(} and @samp{)}. In this case, GRUB 
-uses the whole of the floppy disk.
+name is enclosed with @samp{(} and @samp{)}. The number @samp{0} is the
+drive number, which is counted from @emph{zero}. In this case, GRUB uses
+the whole of the floppy disk.
 
 @example
 (hd0,1)
@@ -53,6 +64,15 @@ case, GRUB uses the partition of the disk instead of the whole of the
 disk.
 
 @example
+(hd0,4)
+@end example
+
+This specifies the first @dfn{extended partition} of the first hard disk
+drive. Note that the partition numbers for extended partitions are
+counted from @samp{4}, whether your disks has four primary partitions or
+less.
+
+@example
 (hd1,a)
 @end example
 
@@ -63,13 +83,14 @@ searches for the first @sc{pc} slice which has a BSD @samp{a} partition.
 
 Note that GRUB does @emph{not} distinguish IDE from SCSI; just count the
 drive numbers from zero. Normally, any IDE drive number is less than any
-SCSI drive number, but this is not correct if you exchange the boot
+SCSI drive number, but this is not true if you exchange the boot
 sequence between IDE and SCSI in your BIOS. But do not worry. In the
-GRUB command-line, you can always use the @key{TAB} completion which
-displays the list of drives, the list of the partitions of a drive, or
-the list of the filenames on a partition, depending on where you push
-the @key{TAB} key in the command-line. So it should be possible to
-determine which drive and which partition are what you seek for.
+GRUB command-line (@pxref{Command line}), you can always use the
+@key{TAB} completion which displays the list of drives, the list of the
+partitions of a drive, or the list of the filenames on a partition,
+depending on where you push the @key{TAB} key in the command-line. So it
+should be possible to determine which drive and which partition are what
+you seek for.
 
 Now the question is how to specify a file. Again, see this example:
 
@@ -79,10 +100,10 @@ Now the question is how to specify a file. Again, see this example:
 
 This specifies the file whose name is @samp{vmlinuz} on the first
 partition of the first hard disk drive. Isn't that easy? All you should
-do is just type the absolute filename. If you are tired of typing the
-whole of the filename, press the @key{TAB} key. @key{TAB} completes the
-filename if it is unique. Otherwise, it displays the list of the
-candidates.
+do is type the absolute filename. If you are tired of typing the
+whole of the filename, press the @key{TAB} key. @kbd{@key{TAB}}
+completes the filename if it is unique. Otherwise, it displays the list
+of the candidates.
 
 OK, the next chapter introduces how to install GRUB on your drive.
 
@@ -93,11 +114,12 @@ OK, the next chapter introduces how to install GRUB on your drive.
 At first, install GRUB by @code{make install} (@pxref{Obtaining and
 Building GRUB}) or by the GRUB package for your OS. If this is done,
 let's install GRUB on your drive. There are two ways to install GRUB:
-using the grub shell on a UNIX-like OS and using the native Stage 2. The
-two ways are almost same, but the main difference is that the grub shell
-might probe a wrong BIOS drive on a UNIX-like OS. If you install GRUB on
-a UNIX-like OS, make sure that you have a boot floppy disk so that you
-can rescue your computer when it crashes.
+using the grub shell (@pxref{Invoking the grub shell}) on a UNIX-like OS
+and using the native Stage 2. The two ways are almost the same, but the
+main difference is that the grub shell might probe a wrong BIOS drive on
+a UNIX-like OS. If you install GRUB on a UNIX-like OS, make sure that
+you have a boot floppy disk so that you can rescue your computer when it
+crashes.
 
 Anyhow, copy your GRUB images (@file{stage1}, @file{stage2}, etc.) to
 the directory @file{/boot/grub} before staring to install
@@ -146,13 +168,14 @@ DOS).
 OK, now reboot your computer with a GRUB boot floppy inserted if you
 decide to install GRUB in the native environment. That's definitely
 desirable. However, if you don't want to reboot your computer, run the
-program @file{/sbin/grub}.
+program @file{/sbin/grub} (@pxref{Invoking the grub shell}).
 
-In both, GRUB will show the command-line interface. First, set the
-GRUB's @dfn{root device}@footnote{Note that GRUB's root device is
-not your OS's root partition; if you need to specify a root partition
-for your OS, add the argument into the command @command{kernel}.} to the
-partition which has your GRUB images, like this:
+In both, GRUB will show the command-line interface (@pxref{Command
+line}). First, set the GRUB's @dfn{root device}@footnote{Note that
+GRUB's root device is not your OS's root partition; if you need to
+specify a root partition for your OS, add the argument into the command
+@command{kernel}.} to the partition which has your GRUB images, like
+this:
 
 @example
 grub> root (hd0,0)
@@ -166,7 +189,7 @@ grub> find /boot/grub/stage1
 @end example
 
 This will search for the filename @file{/boot/grub/stage1} and show the
-device which contains the images.
+devices which contain the image.
 
 If you set the root device correctly, run the command
 @command{setup}:
@@ -175,9 +198,10 @@ If you set the root device correctly, run the command
 grub> setup (hd0)
 @end example
 
-This command will install GRUB on the MBR in the first drive. If you
-want to install GRUB into the @dfn{boot sector} of a partition instead
-of the MBR, specify a partition into which you want to install GRUB:
+This command will install GRUB on the MBR (@pxref{MBR}) in the first
+drive. If you want to install GRUB into the @dfn{boot sector} of a
+partition instead of the MBR, specify a partition into which you want to
+install GRUB:
 
 @example
 grub> setup (hd0,0)
@@ -217,18 +241,18 @@ steps:
 
 @enumerate
 @item
-Set GRUB's root device to the drive where the OS images is stored by
-the command @command{root}.
+Set GRUB's root device to the drive where the OS images are stored by
+the command @command{root} (@pxref{Command}).
 
 @item
-Load the kernel image by the command @command{kernel}.
+Load the kernel image by the command @command{kernel} (@pxref{Command}).
 
 @item
 Load the modules by the command @command{module} or
-@command{modulenounzip} as you need.
+@command{modulenounzip} as you need (@pxref{Command}).
 
 @item
-Run the command @command{boot}.
+Run the command @command{boot} (@pxref{Command}).
 @end enumerate
 
 
@@ -257,7 +281,8 @@ And, finally, run the command @command{boot}.
 @section Booting GNU/Linux
 
 It is relatively easy to boot GNU/Linux from GRUB, because booting
-GNU/Linux somewhat resembles booting a Multiboot-compliant OS.
+GNU/Linux somewhat resembles booting a Multiboot-compliant OS
+(@pxref{Booting a Multiboot-compliant OS}).
 
 First, set GRUB's root device to the same drive as
 GNU/Linux's. Probably @code{find /vmlinuz} or such will help
@@ -270,7 +295,7 @@ grub> kernel /vmlinuz root=/dev/hda1
 @end example
 
 If you need to specify some kernel parameters, just append them to the
-command. An example is to set @samp{vga} to @samp{ext}:
+command. An example is to set @option{vga} to @samp{ext}:
 
 @example
 grub> kernel /vmlinuz root=/dev/hda1 vga=ext
@@ -314,7 +339,7 @@ FIXME
 @node Chain-loading
 @section Chain-loading
 
-If you want to boot a unsupported operating system (i.e. Windows 95),
+If you want to boot an unsupported operating system (i.e. Windows 95),
 chain-load the boot loader for the operating system. Normally, the boot
 loader is embedded in the @dfn{boot sector} of the partition on which
 the operating system is installed.
@@ -326,7 +351,7 @@ First, set GRUB's root device to the partition by the command
 grub> rootnoverify (hd0,0)
 @end example
 
-Second, set the @dfn{active} flags in the partition by the command
+Second, set the @dfn{active} flag in the partition by the command
 @command{makeactive}:
 
 @example
@@ -340,18 +365,33 @@ grub> chainloader +1
 @end example
 
 Do not care about what @samp{+1} is. We describe it later in
-@xref{Filesystem}. If this succeeds, run the command @command{boot}.
+@ref{Filesystem}. If this succeeds, run the command @command{boot}.
+
+However, some tricks will be necessary if you have installed DOS or
+Windows on a non-first hard disk, because they cannot boot any disks
+except for the first one. The solution is to use the command
+@command{map} (@pxref{Command}), like this:
+
+@example
+@group
+grub> map (hd0) (hd1)
+grub> map (hd1) (hd0)
+@end group
+@end example
+
+This performs the @dfn{logical} exchange between your first disk and
+your second one.
 
 
 @node Configuration
 @chapter Configuration
 
 Probably it is bothersome to type the commands to boot your OS. So
-GRUB provides the menu interface so that you can just select an item
-from the menu.
+GRUB provides the menu interface (@pxref{Menu}) so that you can just
+select an item from the menu.
 
 To enable the menu, write a configuration file and save it in
-@file{/boot/grub/menu.lst}. Here is the sample configuration file:
+@file{/boot/grub/menu.lst}. Here is a sample configuration file:
 
 @example
 @include menu.lst
@@ -366,10 +406,10 @@ The argument for the command @command{title} is used to display the
 message about the entry. Since @command{title} displays the argument as
 it is, you can write any words as you like.
 
-You can write the menu interface specific commands before any
-@command{title}. There are several commands you can use in there, but we
-describe a few of them. The complete descriptions can be found in
-@xref{Command}.
+You can write the menu interface specific commands (@pxref{Menu-specific
+commands}) before any @command{title}. There are several commands you
+can use in there, but we describe a few of them. The complete
+descriptions can be found in @ref{Command}.
 
 The command @command{default} specifies which entry will be selected
 when you do not select an entry explicitly. The argument is the entry
@@ -380,16 +420,16 @@ The default entry will be executed when you do not select any entry
 during certain seconds, which is defined by the command
 @command{timeout}. So in the example above, the timeout is 30 seconds.
 
-The command @command{fallback} is used if the default entry fails. If
-GRUB executes the default entry and it fails, then it executes the
-@dfn{fallback} entry. The argument is the same meaning as the one for
-@command{default}. This command is rarely used.
+The command @command{fallback} is used only if the default entry
+fails. If GRUB executes the default entry and it fails, then it executes
+the @dfn{fallback} entry. The argument is the same meaning as the one
+for @command{default}. This command is rarely used.
 
 In the last entry, @command{color} is used. This command is somewhat
 special because it can be used both in the command-line and in the
-menu. GRUB has such several commands. The command @command{color}
-changes the menu colors. It is best to run the command actually to
-understand what happens.
+menu (@pxref{General commands}). GRUB has such several commands. The
+command @command{color} changes the menu colors. It is best to run the
+command actually to understand what happens.
 
 We hope that you now understand how to use GRUB. To understand more
 about GRUB, see the User Reference Manual (@pxref{Introduction}). Have

@@ -13,9 +13,9 @@ Technically speaking, GNU GRUB has many features that are not
 seen in the original GRUB. For example, GNU GRUB can be installed on
 UNIX-like operating system (i.e. GNU/Linux) via the grub shell
 @file{/sbin/grub}, it supports Logical Block Address (LBA) mode that
-solves the 1024 cylinders problem, and TAB completes a filename when
-it's unique. Of course, many bug fixes are done as well, so it is
-recommended to use GNU GRUB.
+solves the 1024 cylinders problem, and @kbd{@key{TAB}} completes a
+filename when it's unique. Of course, many bug fixes are done as well,
+so it is recommended to use GNU GRUB.
 
 @item Can GRUB boot my operating system from over 8GB hard disks?
 
@@ -72,13 +72,13 @@ EOT
 @item GRUB does not recognize my GNU/Hurd partition.
 
 I don't know why, but the authors of FDISK programs have assigned the
-partition type 0x63 to GNU Hurd incorrectly. A partition type should
-mean what format is used in the partition, such as filesystem and BSD
-slices, and should not be used to represent what operating system owns
-the partition. So use 0x83 if the partition contains ext2fs
-filesystem, and use 0xA5 if the partition contains ffs fielsystem,
-whether the partition owner is Hurd or not. We will use 0x63 for GNU
-Hurd filesystem that has not been implemented yet.
+partition type @samp{0x63} to GNU Hurd incorrectly. A partition type
+should mean what format is used in the partition, such as filesystem and
+BSD slices, and should not be used to represent what operating system
+owns the partition. So use @samp{0x83} if the partition contains ext2fs
+filesystem, and use @samp{0xA5} if the partition contains ffs
+fielsystem, whether the partition owner is Hurd or not. We will use
+@samp{0x63} for GNU Hurd filesystem that has not been implemented yet.
 
 @item I've installed a recent version of binutils, but GRUB still crashes.
 
@@ -112,7 +112,9 @@ there is a serious bug in GRUB. @xref{Reporting bugs}.
 @item Why doesn't Linux (FreeBSD, NetBSD, etc.) become Multiboot-compliant?
 
 Please ask the maintainers. If all free kernels were
-Multiboot-compliant, the world would be an utopia@dots{}
+Multiboot-compliant (@pxref{Top, Multiboot Specification, Motivation,
+multiboot, The Multiboot Specification}), the world would be an
+utopia@dots{}
 @end table
 
 
@@ -145,13 +147,16 @@ instructions on how to build and install GRUB, but you should be able to
 just do:
 
 @example
+@group
 $ cd grub-@value{VERSION}
 $ ./configure
 $ make install
+@end group
 @end example
 
-This will install the grub shell @file{grub}, the Multiboot checker
-@file{mbchk}, and the GRUB images It will also install the GRUB manual.
+This will install the grub shell @file{grub} (@pxref{Invoking the grub
+shell}), the Multiboot checker @file{mbchk} (@pxref{Invoking mbchk}),
+and the GRUB images It will also install the GRUB manual.
 
 Also, you can obtain the latest version from the CVS. Use the repository
 @code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot} and the
@@ -159,9 +164,11 @@ module @code{grub}. The password for anoncvs is empty. So the
 instruction is:
 
 @example
+@group
 $ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot login
 Password: @key{ENTER}
 $ cvs -d :pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot co grub
+@end group
 @end example
 
 Get the recent version of GNU Automake from the CVS to regenerate

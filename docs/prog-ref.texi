@@ -161,7 +161,7 @@ file.  It will, by default, look in the @dfn{install_partition} of the
 disk GRUB was loaded from, though one can use any valid GRUB filesystem
 string, up to and including making it look on other disks.
 
-The bootloader itself doesn't search for the end of
+The boot loader itself doesn't search for the end of
 @dfn{version_string}, it simply knows where @dfn{config_file} is, so the
 beginning of the string cannot be moved after compile-time.  This should
 be OK, since the @dfn{version_string} is meant to be static.
@@ -291,8 +291,8 @@ distinct components, @dfn{stage1} and @dfn{stage2} (and optionally
 @dfn{stage1.5}). @xref{Memory map}, for more information.
 
 We embed @dfn{stage1} in a MBR or in the boot sector of a partition
-table, and place @dfn{stage2} in a filesystem. The optional
-@dfn{stage1.5} can be installed in a filesystem, in the @dfn{bootloader}
+, and place @dfn{stage2} in a filesystem. The optional
+@dfn{stage1.5} can be installed in a filesystem, in the @dfn{boot loader}
 area in a FFS, and in the sectors right after a MBR, because
 @dfn{stage1.5} is enough small and the sectors right after a MBR is
 normally an unused region. The size of this region is the number of
@@ -310,7 +310,7 @@ loads the rest. The flow of @dfn{stage1} is:
 
 @enumerate
 @item
-Initialize the symtem briefly.
+Initialize the system briefly.
 
 @item
 Detect the geometry and the accessing mode of the @dfn{loading drive}.

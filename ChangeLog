@@ -1,3 +1,26 @@
+1999-10-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	The new GRUB manual becomes official.
+	
+	* docs/grub.texi: Replaced with new-grub.texi.
+	* docs/new-grub.texi: Removed.
+	* docs/Makefile.am (grub_TEXINFOS): New variable.
+	(UNFINISHED_MANUALS): Removed.
+	(EXTRA_DIST): Deleted $(UNFINISHED_MANUALS).
+	
+1999-10-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (device_func) [!GRUB_UTIL]: Set ERRNUM to
+	ERR_UNRECOGINIZED and return 1.
+	(impsprobe_func) [GRUB_UTIL]: Likewise.
+	(quit_func) [!GRUB_UTIL]: Likewise.
+	* docs/tutorial.texi: Rename "Device Syntax" to "Filename".
+	Added many cross-references.
+	* docs/new-grub.texi: "Device Syntax" -> "Filename".
+	* docs/user-ref.texi: Fix typos and added some cross-references.
+	* docs/prog-ref.texi: Likewise.
+	* docs/appendices.texi: Likewise.
+	
 1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (map_func): If BIOS_DRIVE_MAP already

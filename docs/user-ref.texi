@@ -8,7 +8,7 @@ Manual (@pxref{Hacking}).
 @menu
 * History::                     From maggot to house fly.
 * Features::                    How GRUB is different.
-* Role of a bootloader::        Judging a system by its bootloader.
+* Role of a boot loader::       Judging a system by its boot loader.
 @end menu
 
 
@@ -17,15 +17,15 @@ Manual (@pxref{Hacking}).
 
 GRUB originated in 1995 when Erich Boleyn was trying to boot the GNU
 Hurd with the University of Utah's Mach 4 microkernel (now known as GNU
-Mach).  Erich and Brian Ford designed the Multiboot Standard
+Mach).  Erich and Brian Ford designed the Multiboot Specification
 (@pxref{Top, Multiboot Specification, Motivation, multiboot, The Multiboot
 Specification}), because they were determined not to add to the large
 number of mutually-incompatible PC boot methods.
 
-Erich then began modifying the FreeBSD bootloader so that it would
+Erich then began modifying the FreeBSD boot loader so that it would
 understand Multiboot. He soon realized that it would be a lot easier
-to write his own bootloader from scratch than to keep working on the
-FreeBSD bootloader, and so GRUB was born.
+to write his own boot loader from scratch than to keep working on the
+FreeBSD boot loader, and so GRUB was born.
 
 Erich added many features to GRUB, but other priorities prevented him
 from keeping up with the demands of its quickly-expanding user base. In
@@ -59,7 +59,7 @@ supported via a chain-loading function.
 
 Except for specific compatibility modes (chain-loading and the Linux
 @dfn{piggyback} format), all kernels will be started in much the same
-state as in the Multiboot Standard. Only kernels loaded at 1 megabyte
+state as in the Multiboot Specification. Only kernels loaded at 1 megabyte
 or above are presently supported. Any attempt to load below that
 boundary will simply result in immediate failure and an error message
 reporting the problem.
@@ -73,12 +73,12 @@ that GRUB supports):
 Supports many of the @dfn{a.out} variants plus @dfn{ELF}. Symbol
 tables are also loaded.
 
-@item Supports Non-Multiboot Kernels
+@item Support Non-Multiboot Kernels
 Supports many of the various free 32-bit kernels that lack Multiboot
 compliance (primarily FreeBSD, NetBSD, OpenBSD, and
-Linux). Chain-loading of other bootloaders is also supported.
+Linux). Chain-loading of other boot loaders is also supported.
 
-@item Loads Multiples Modules
+@item Load Multiples Modules
 GRUB fully supports the Multiboot feature of loading multiple modules.
 
 @item Configuration File
@@ -128,12 +128,12 @@ Supports reading data from any or all floppy or hard disk(s) recognized
 by the BIOS, independent of the setting of the root device.
 
 @item Independent of Drive Geometry Translation
-Unlike many other bootloaders, GRUB makes the particular drive
+Unlike many other boot loaders, GRUB makes the particular drive
 translation irrelevant. A drive installed and running with one
 translation may be converted to another translation without any adverse
 effects or changes in GRUB's configuration.
 
-@item Detects All Installed @sc{ram}
+@item Detect All Installed @sc{ram}
 GRUB can generally find all the installed @sc{ram} on a PC-compatible
 machine. It uses an advanced BIOS query technique for finding all
 memory regions (@pxref{Memory detection}). As described on the Multiboot
@@ -141,7 +141,7 @@ Specification (@pxref{Top, Multiboot Specification, Motivation,
 multiboot, The Multiboot Specification}), not all kernels make use of
 this information, but GRUB provides it for those who do.
 
-@item Supports Logical Block Address Mode
+@item Support Logical Block Address Mode
 In traditional disk calls (called @dfn{CHS mode}), there is a geometry
 translation problem, that is, the BIOS cannot access over 1024
 cylinders, so the accessible space is limited to at least 508 MB and to
@@ -161,8 +161,8 @@ NEC PC-98xx series. See
 for more information.}
 
 
-@node Role of a bootloader
-@section The role of a bootloader
+@node Role of a boot loader
+@section The role of a boot loader
 
 The following is a quotation from Gordon Matzigkeit, a GRUB fanatic:
 
@@ -176,7 +176,7 @@ their GNU operating systems ``Linux systems.''
 I, personally, believe that this is a grave injustice, because the
 @emph{boot loader} is the most important software of all. I used to
 refer to the above systems as either ``LILO''@footnote{The LInux LOader,
-a bootloader that everybody uses, but nobody likes.} or ``GRUB''
+a boot loader that everybody uses, but nobody likes.} or ``GRUB''
 systems.
 
 Unfortunately, nobody ever understood what I was talking about; now I
@@ -200,7 +200,8 @@ GRUB uses a special syntax for specifying disk drives which can be
 accessed by BIOS. Because of BIOS limitations, GRUB cannot distinguish
 between IDE, ESDI, SCSI, or others. You must know yourself which BIOS
 device is equivalent to which OS device. Normally, that will be clear if
-you see the files in a device or use the command @command{find}.
+you see the files in a device or use the command @command{find}
+(@pxref{Command}).
 
 @menu
 * Device syntax::               How to specify devices
@@ -230,8 +231,9 @@ which is a BIOS drive number, so the following are equivalent:
 @end example
 
 @var{part-num} represents the partition number of @var{bios-device},
-starting from zero, and @var{bsd-subpart-letter} represents the BSD
-disklabel subpartition, such as @samp{a} or @samp{e}.
+starting from zero for primary partitions and from four for extened
+partitions, and @var{bsd-subpart-letter} represents the BSD disklabel
+subpartition, such as @samp{a} or @samp{e}.
 
 A shortcut for specifying BSD subpartitions is
 @code{(@var{bios-device},@var{bsd-subpart-letter})}, in this case, GRUB
@@ -313,19 +315,19 @@ The command line interface provides a prompt and after it an editable
 text area much like a command line in Unix or DOS. Each command is
 immediately executed after it is entered @footnote{However, this
 behavior will be changed in the future version, in a user-invisible
-way.}. The commands are a subset of those available in the configuration
-file, used with exactly the same syntax.
+way.}. The commands (@pxref{Command}) are a subset of those available in
+the configuration file, used with exactly the same syntax.
 
 Cursor movement and editing of the text on the line can be done via a
 subset of the functions available in the Bash shell:
 
 @table @key
 @item C-f
-@itemx PC left key
+@itemx PC right key
 Move forward one character.
 
 @item C-b
-@itemx PC right key
+@itemx PC left key
 Move back one character.
 
 @item C-a
@@ -365,8 +367,9 @@ Move down through the history list.
 When typing commands interactively, if the cursor is within or before
 the first word in the command-line, pressing the @key{TAB} key (or
 @key{C-i}) will display a listing of the available commands, and if the
-cursor is after the first word, the @key{TAB} will provide a completion
-listing of disks, partitions, and filenames depending on the context.
+cursor is after the first word, the @kbd{@key{TAB}} will provide a
+completion listing of disks, partitions, and filenames depending on the
+context.
 
 
 @node Menu
@@ -585,7 +588,8 @@ grub> device (fd0) /floppy-image
 grub> device (hd0) /dev/sd0
 @end example
 
-This command is just ignored in Stage 2.
+This command can be used only in the grub shell (@pxref{Invoking the
+grub shell}).
 @end deffn
 
 @deffn Command hide partition
@@ -632,9 +636,9 @@ sector of the current partition with @samp{+1}.
 Load @var{file} as the configuration file.
 @end deffn
 
-@deffn Command  embed stage1_5 device
+@deffn Command embed stage1_5 device
 Embed the Stage 1.5 @var{stage1_5} in the sectors after the MBR if
-@var{device} is a drive, or in the @dfn{bootloader} area if @var{device}
+@var{device} is a drive, or in the @dfn{boot loader} area if @var{device}
 is a FFS partition.@footnote{The latter feature has not been implemented
 yet.} Print the number of sectors which @var{stage1_5} occupies if
 successful.
@@ -689,7 +693,8 @@ displays long documents of the commands which match @var{pattern}.
 
 @deffn Command impsprobe
 Probe the Intel Multiprocessor Specification 1.1 or 1.4 configuration
-table and boot the various CPUs which are found into a tight loop.
+table and boot the various CPUs which are found into a tight loop. This
+command can be used only in the Stage 2.
 @end deffn
 
 @deffn Command initrd file @dots{}
@@ -770,7 +775,7 @@ change floppies.
 
 @deffn Command quit
 Exit from the GRUB shell @command{grub} (@pxref{Invoking the grub
-shell}). This command is ignored in the native Stage 2.
+shell}). This command can be used only in the grub shell.
 @end deffn
 
 @deffn Command read addr
@@ -781,7 +786,7 @@ hex format.
 @deffn Command root device [hdbias]
 Set the current @dfn{root device} to the device @var{device}, then
 attempt to mount it to get the partition size (for passing the partition
-descriptor in @code{ES:ESI}, used by some chain-loaded bootloaders), the
+descriptor in @code{ES:ESI}, used by some chain-loaded boot loaders), the
 BSD drive-type (for booting BSD kernels using their native boot format),
 and correctly determine the PC partition where a BSD sub-partition is
 located. The optional @var{hdbias} parameter is a number to tell a BSD
@@ -819,7 +824,7 @@ consistent offset error. If this test succeeds, then a good next step is
 to try loading a kernel.
 @end deffn
 
-@deffn uppermem kbytes
+@deffn Command uppermem kbytes
 Force GRUB to assume that only @var{kbytes} kilobytes of upper memory
 are installed. Any system address range maps are discarded.
 
@@ -1059,8 +1064,8 @@ You can use the command @command{grub} for installing GRUB under your
 operating systems and for a testbed when you add a new feature into GRUB
 or when fix a bug. @command{grub} is almost the same as the Stage 2,
 and, in fact, it shares the source code with the Stage 2 and you can use
-the same commands in @command{grub}. It is emulated by replacing BIOS
-calls with UNIX system calls and libc functions.
+the same commands (@pxref{Command}) in @command{grub}. It is emulated by
+replacing BIOS calls with UNIX system calls and libc functions.
 
 The command @command{grub} accepts the following options:
 
@@ -1185,13 +1190,13 @@ drives to OS devices. This file consists of lines like this:
 @end example
 
 @var{device} is a drive, which syntax is the same as the one in GRUB
-(@pxref{Device syntax}), and @var{file} is a OS's file, which is
+(@pxref{Device syntax}), and @var{file} is an OS's file, which is
 normally a device file.
 
 The reason why the grub shell gives you the device map file is that it
-cannot guess the map between BIOS drives and OS devices in some
-environments. For example, if you exchange the boot sequence between IDE
-and SCSI in your BIOS, it mistakes the order.
+cannot guess the map between BIOS drives and OS devices correctly in
+some environments. For example, if you exchange the boot sequence
+between IDE and SCSI in your BIOS, it mistakes the order.
 
 Thus, edit the file if the grub shell makes a mistake. You can put any
 comments in the file if needed, as the grub shell assumes that a line is

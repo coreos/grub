@@ -1,4 +1,6 @@
 info_TEXINFOS = grub.texi multiboot.texi
+grub_TEXINFOS = tutorial.texi user-ref.texi prog-ref.texi \
+	appendices.texi
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
 man_MANS = grub.8 mbchk.1
@@ -6,12 +8,8 @@ HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
-# The unfinished manuals.
-UNFINISHED_MANUALS = new-grub.texi tutorial.texi user-ref.texi \
-	prog-ref.texi appendices.texi
-
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
-	$(EXAMPLES) $(multiboot_TEXINFOS) $(UNFINISHED_MANUALS)
+	$(EXAMPLES) $(multiboot_TEXINFOS)
 
 # Cancel the rule %.texi -> %. This rule may confuse make to determine
 # the dependecies.

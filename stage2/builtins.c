@@ -472,9 +472,13 @@ device_func (char *arg, int flags)
   *ptr = 0;
 
   assign_device_name (current_drive, device);
-#endif /* GRUB_UTIL */
-
+  
   return 0;
+#else /* ! GRUB_UTIL */
+  /* In Stage 2, this command cannot be used.  */
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#endif /* GRUB_UTIL */
 }
 
 static struct builtin builtin_device =
@@ -484,7 +488,7 @@ static struct builtin builtin_device =
   BUILTIN_MENU | BUILTIN_CMDLINE,
   "device DRIVE DEVICE",
   "Specify DEVICE as the actual drive for a BIOS drive DRIVE. This command"
-  " is just ignored in the native Stage 2."
+  " can be used only in the grub shell."
 };
 
 
@@ -1052,12 +1056,16 @@ static struct builtin builtin_hide =
 static int
 impsprobe_func (char *arg, int flags)
 {
-#ifndef GRUB_UTIL
+#ifdef GRUB_UTIL
+  /* In the grub shell, we cannot probe IMPS.  */
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#else /* ! GRUB_UTIL */
   if (!imps_probe ())
-#endif
     printf (" No MPS information found or probe failed\n");
 
   return 0;
+#endif /* ! GRUB_UTIL */
 }
 
 static struct builtin builtin_impsprobe =
@@ -1767,10 +1775,13 @@ quit_func (char *arg, int flags)
 {
 #ifdef GRUB_UTIL
   stop ();
-#endif
-
-  /* In Stage 2, just ignore this command.  */
+  
+  /* Never reach here.  */
   return 0;
+#else /* ! GRUB_UTIL */
+  errnum = ERR_UNRECOGINIZED;
+  return 1;
+#endif /* ! GRUB_UTIL */
 }
 
 static struct builtin builtin_quit =

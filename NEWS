@@ -19,6 +19,8 @@ New in 0.5.94:
   chain-load some foolish operating systems (such as DOS) even if such
   an operating system resides at a non-first drive.
 * The command "keycode" maps a key code to another.
+* The GRUB manual is rewritten, and now consists of three parts and
+  appendices.
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.
