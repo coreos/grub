@@ -228,6 +228,20 @@ if test x"$enable_vstafs" != xno; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_VSTAFS=1"
 fi
 
+AC_ARG_ENABLE(jfs,
+  [  --disable-jfs           disable IBM JFS support in Stage 2])
+
+if test x"$enable_jfs" != xno; then
+  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_JFS=1"
+fi
+
+AC_ARG_ENABLE(xfs,
+  [  --disable-xfs           disable SGI XFS support in Stage 2])
+
+if test x"$enable_xfs" != xno; then
+  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_XFS=1"
+fi
+
 dnl AC_ARG_ENABLE(tftp,
 dnl [  --enable-tftp           enable TFTP support in Stage 2])
 dnl 

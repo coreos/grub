@@ -96,8 +96,8 @@ noinst_SCRIPTS = $(TESTS)
 # For dist target.
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h hercules.h i386-elf.h \
-	imgact_aout.h mb_header.h mb_info.h md5.h pc_slice.h serial.h \
-	shared.h smp-imps.h nbi.h vstafs.h
+	imgact_aout.h jfs.h mb_header.h mb_info.h md5.h pc_slice.h \
+	serial.h shared.h smp-imps.h nbi.h vstafs.h xfs.h
 
 EXTRA_DIST = setjmp.S apm.S $(noinst_SCRIPTS)
 
@@ -108,33 +108,36 @@ INCLUDES = -I$(top_srcdir)/stage1
 noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c \
-	fsys_minix.c fsys_reiserfs.c  fsys_vstafs.c stage2.c md5.c
+	fsys_jfs.c fsys_minix.c fsys_reiserfs.c fsys_vstafs.c \
+	fsys_xfs.c stage2.c md5.c
 
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/lib \
 	-DGRUB_UTIL=1 -DFSYS_EXT2FS=1 -DFSYS_FAT=1 -DFSYS_FFS=1 \
-	-DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1 \
-	-DUSE_MD5_PASSWORDS=1 \
-	-DSUPPORT_SERIAL=1 -DSUPPORT_HERCULES=1 -fwritable-strings
+	-DFSYS_JFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1
 
 
 EXTRA_PROGRAMS = nbloader.exec pxeloader.exec diskless.exec
 
 @DISKLESS_SUPPORT_TRUE@pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-@DISKLESS_SUPPORT_TRUE@	minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5 nbgrub pxegrub
+@DISKLESS_SUPPORT_TRUE@	jfs_stage1_5 minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5 \
+@DISKLESS_SUPPORT_TRUE@	xfs_stage1_5 nbgrub pxegrub
 
 @DISKLESS_SUPPORT_FALSE@pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-@DISKLESS_SUPPORT_FALSE@	minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5
+@DISKLESS_SUPPORT_FALSE@	jfs_stage1_5 minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5 \
+@DISKLESS_SUPPORT_FALSE@	xfs_stage1_5
 
 @DISKLESS_SUPPORT_TRUE@noinst_DATA = pre_stage2 start nbloader pxeloader diskless
 @DISKLESS_SUPPORT_FALSE@noinst_DATA = pre_stage2 start
 @DISKLESS_SUPPORT_TRUE@noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
-@DISKLESS_SUPPORT_TRUE@	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
-@DISKLESS_SUPPORT_TRUE@	reiserfs_stage1_5.exec vstafs_stage1_5.exec nbloader.exec \
+@DISKLESS_SUPPORT_TRUE@	fat_stage1_5.exec ffs_stage1_5.exec jfs_stage1_5.exec \
+@DISKLESS_SUPPORT_TRUE@	minix_stage1_5.exec reiserfs_stage1_5.exec \
+@DISKLESS_SUPPORT_TRUE@	vstafs_stage1_5.exec xfs_stage1_5.exec nbloader.exec \
 @DISKLESS_SUPPORT_TRUE@	pxeloader.exec diskless.exec
 
 @DISKLESS_SUPPORT_FALSE@noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
-@DISKLESS_SUPPORT_FALSE@	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
-@DISKLESS_SUPPORT_FALSE@	reiserfs_stage1_5.exec vstafs_stage1_5.exec
+@DISKLESS_SUPPORT_FALSE@	fat_stage1_5.exec ffs_stage1_5.exec jfs_stage1_5.exec \
+@DISKLESS_SUPPORT_FALSE@	minix_stage1_5.exec reiserfs_stage1_5.exec \
+@DISKLESS_SUPPORT_FALSE@	vstafs_stage1_5.exec xfs_stage1_5.exec
 
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
@@ -162,8 +165,9 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c \
-	fsys_vstafs.c hercules.c serial.c smp-imps.c stage2.c md5.c
+	fsys_fat.c fsys_ffs.c fsys_jfs.c fsys_minix.c fsys_reiserfs.c \
+	fsys_vstafs.c fsys_xfs.c hercules.c serial.c smp-imps.c \
+	stage2.c md5.c
 
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
@@ -252,6 +256,30 @@ vstafs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
 
 vstafs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
+# For jfs_stage1_5 target.
+jfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
+	disk_io.c stage1_5.c fsys_jfs.c bios.c
+
+jfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
+	-DNO_BLOCK_FILES=1
+
+jfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
+	-DNO_BLOCK_FILES=1
+
+jfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For xfs_stage1_5 target.
+xfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
+	disk_io.c stage1_5.c fsys_xfs.c bios.c
+
+xfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
+	-DNO_BLOCK_FILES=1
+
+xfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
+	-DNO_BLOCK_FILES=1
+
+xfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
 # For diskless target.
 diskless_exec_SOURCES = $(pre_stage2_exec_SOURCES)
 diskless_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
@@ -285,10 +313,11 @@ am_libgrub_a_OBJECTS = libgrub_a-boot.$(OBJEXT) \
 	libgrub_a-char_io.$(OBJEXT) libgrub_a-cmdline.$(OBJEXT) \
 	libgrub_a-disk_io.$(OBJEXT) libgrub_a-gunzip.$(OBJEXT) \
 	libgrub_a-fsys_ffs.$(OBJEXT) libgrub_a-fsys_ext2fs.$(OBJEXT) \
-	libgrub_a-fsys_fat.$(OBJEXT) libgrub_a-fsys_minix.$(OBJEXT) \
+	libgrub_a-fsys_fat.$(OBJEXT) libgrub_a-fsys_jfs.$(OBJEXT) \
+	libgrub_a-fsys_minix.$(OBJEXT) \
 	libgrub_a-fsys_reiserfs.$(OBJEXT) \
-	libgrub_a-fsys_vstafs.$(OBJEXT) libgrub_a-stage2.$(OBJEXT) \
-	libgrub_a-md5.$(OBJEXT)
+	libgrub_a-fsys_vstafs.$(OBJEXT) libgrub_a-fsys_xfs.$(OBJEXT) \
+	libgrub_a-stage2.$(OBJEXT) libgrub_a-md5.$(OBJEXT)
 libgrub_a_OBJECTS = $(am_libgrub_a_OBJECTS)
 EXTRA_PROGRAMS = nbloader.exec$(EXEEXT) pxeloader.exec$(EXEEXT) \
 	diskless.exec$(EXEEXT)
@@ -297,9 +326,11 @@ EXTRA_PROGRAMS = nbloader.exec$(EXEEXT) pxeloader.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	e2fs_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	fat_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	ffs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	jfs_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	minix_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	reiserfs_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	vstafs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_TRUE@	xfs_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	nbloader.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	pxeloader.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_TRUE@	diskless.exec$(EXEEXT)
@@ -308,9 +339,11 @@ EXTRA_PROGRAMS = nbloader.exec$(EXEEXT) pxeloader.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_FALSE@	e2fs_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_FALSE@	fat_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_FALSE@	ffs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	jfs_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_FALSE@	minix_stage1_5.exec$(EXEEXT) \
 @DISKLESS_SUPPORT_FALSE@	reiserfs_stage1_5.exec$(EXEEXT) \
-@DISKLESS_SUPPORT_FALSE@	vstafs_stage1_5.exec$(EXEEXT)
+@DISKLESS_SUPPORT_FALSE@	vstafs_stage1_5.exec$(EXEEXT) \
+@DISKLESS_SUPPORT_FALSE@	xfs_stage1_5.exec$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
 am_diskless_exec_OBJECTS = diskless_exec-asm.$(OBJEXT) \
@@ -321,9 +354,11 @@ am_diskless_exec_OBJECTS = diskless_exec-asm.$(OBJEXT) \
 	diskless_exec-fsys_ext2fs.$(OBJEXT) \
 	diskless_exec-fsys_fat.$(OBJEXT) \
 	diskless_exec-fsys_ffs.$(OBJEXT) \
+	diskless_exec-fsys_jfs.$(OBJEXT) \
 	diskless_exec-fsys_minix.$(OBJEXT) \
 	diskless_exec-fsys_reiserfs.$(OBJEXT) \
 	diskless_exec-fsys_vstafs.$(OBJEXT) \
+	diskless_exec-fsys_xfs.$(OBJEXT) \
 	diskless_exec-hercules.$(OBJEXT) diskless_exec-serial.$(OBJEXT) \
 	diskless_exec-smp-imps.$(OBJEXT) diskless_exec-stage2.$(OBJEXT) \
 	diskless_exec-md5.$(OBJEXT)
@@ -362,6 +397,17 @@ am_ffs_stage1_5_exec_OBJECTS = ffs_stage1_5_exec-start.$(OBJEXT) \
 ffs_stage1_5_exec_OBJECTS = $(am_ffs_stage1_5_exec_OBJECTS)
 ffs_stage1_5_exec_LDADD = $(LDADD)
 ffs_stage1_5_exec_DEPENDENCIES =
+am_jfs_stage1_5_exec_OBJECTS = jfs_stage1_5_exec-start.$(OBJEXT) \
+	jfs_stage1_5_exec-asm.$(OBJEXT) \
+	jfs_stage1_5_exec-common.$(OBJEXT) \
+	jfs_stage1_5_exec-char_io.$(OBJEXT) \
+	jfs_stage1_5_exec-disk_io.$(OBJEXT) \
+	jfs_stage1_5_exec-stage1_5.$(OBJEXT) \
+	jfs_stage1_5_exec-fsys_jfs.$(OBJEXT) \
+	jfs_stage1_5_exec-bios.$(OBJEXT)
+jfs_stage1_5_exec_OBJECTS = $(am_jfs_stage1_5_exec_OBJECTS)
+jfs_stage1_5_exec_LDADD = $(LDADD)
+jfs_stage1_5_exec_DEPENDENCIES =
 am_minix_stage1_5_exec_OBJECTS = minix_stage1_5_exec-start.$(OBJEXT) \
 	minix_stage1_5_exec-asm.$(OBJEXT) \
 	minix_stage1_5_exec-common.$(OBJEXT) \
@@ -388,9 +434,11 @@ am_pre_stage2_exec_OBJECTS = pre_stage2_exec-asm.$(OBJEXT) \
 	pre_stage2_exec-fsys_ext2fs.$(OBJEXT) \
 	pre_stage2_exec-fsys_fat.$(OBJEXT) \
 	pre_stage2_exec-fsys_ffs.$(OBJEXT) \
+	pre_stage2_exec-fsys_jfs.$(OBJEXT) \
 	pre_stage2_exec-fsys_minix.$(OBJEXT) \
 	pre_stage2_exec-fsys_reiserfs.$(OBJEXT) \
 	pre_stage2_exec-fsys_vstafs.$(OBJEXT) \
+	pre_stage2_exec-fsys_xfs.$(OBJEXT) \
 	pre_stage2_exec-hercules.$(OBJEXT) \
 	pre_stage2_exec-serial.$(OBJEXT) \
 	pre_stage2_exec-smp-imps.$(OBJEXT) \
@@ -430,6 +478,17 @@ am_vstafs_stage1_5_exec_OBJECTS = vstafs_stage1_5_exec-start.$(OBJEXT) \
 vstafs_stage1_5_exec_OBJECTS = $(am_vstafs_stage1_5_exec_OBJECTS)
 vstafs_stage1_5_exec_LDADD = $(LDADD)
 vstafs_stage1_5_exec_DEPENDENCIES =
+am_xfs_stage1_5_exec_OBJECTS = xfs_stage1_5_exec-start.$(OBJEXT) \
+	xfs_stage1_5_exec-asm.$(OBJEXT) \
+	xfs_stage1_5_exec-common.$(OBJEXT) \
+	xfs_stage1_5_exec-char_io.$(OBJEXT) \
+	xfs_stage1_5_exec-disk_io.$(OBJEXT) \
+	xfs_stage1_5_exec-stage1_5.$(OBJEXT) \
+	xfs_stage1_5_exec-fsys_xfs.$(OBJEXT) \
+	xfs_stage1_5_exec-bios.$(OBJEXT)
+xfs_stage1_5_exec_OBJECTS = $(am_xfs_stage1_5_exec_OBJECTS)
+xfs_stage1_5_exec_LDADD = $(LDADD)
+xfs_stage1_5_exec_DEPENDENCIES =
 SCRIPTS = $(noinst_SCRIPTS)
 
 
@@ -449,9 +508,11 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_ext2fs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_fat.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_ffs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_jfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_minix.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_reiserfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_vstafs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/diskless_exec-fsys_xfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-gunzip.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-hercules.Po \
 @AMDEP_TRUE@	$(DEPDIR)/diskless_exec-md5.Po \
@@ -476,6 +537,12 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/ffs_stage1_5_exec-disk_io.Po \
 @AMDEP_TRUE@	$(DEPDIR)/ffs_stage1_5_exec-fsys_ffs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/ffs_stage1_5_exec-stage1_5.Po \
+@AMDEP_TRUE@	$(DEPDIR)/jfs_stage1_5_exec-bios.Po \
+@AMDEP_TRUE@	$(DEPDIR)/jfs_stage1_5_exec-char_io.Po \
+@AMDEP_TRUE@	$(DEPDIR)/jfs_stage1_5_exec-common.Po \
+@AMDEP_TRUE@	$(DEPDIR)/jfs_stage1_5_exec-disk_io.Po \
+@AMDEP_TRUE@	$(DEPDIR)/jfs_stage1_5_exec-fsys_jfs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/jfs_stage1_5_exec-stage1_5.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-boot.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-builtins.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-char_io.Po \
@@ -485,9 +552,11 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_ext2fs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_fat.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_ffs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_jfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_minix.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_reiserfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_vstafs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/libgrub_a-fsys_xfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-gunzip.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-md5.Po \
 @AMDEP_TRUE@	$(DEPDIR)/libgrub_a-stage2.Po \
@@ -507,9 +576,11 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_ext2fs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_fat.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_ffs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_jfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_minix.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_vstafs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-fsys_xfs.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-gunzip.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-hercules.Po \
 @AMDEP_TRUE@	$(DEPDIR)/pre_stage2_exec-md5.Po \
@@ -527,7 +598,13 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/vstafs_stage1_5_exec-common.Po \
 @AMDEP_TRUE@	$(DEPDIR)/vstafs_stage1_5_exec-disk_io.Po \
 @AMDEP_TRUE@	$(DEPDIR)/vstafs_stage1_5_exec-fsys_vstafs.Po \
-@AMDEP_TRUE@	$(DEPDIR)/vstafs_stage1_5_exec-stage1_5.Po
+@AMDEP_TRUE@	$(DEPDIR)/vstafs_stage1_5_exec-stage1_5.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xfs_stage1_5_exec-bios.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xfs_stage1_5_exec-char_io.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xfs_stage1_5_exec-common.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xfs_stage1_5_exec-disk_io.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xfs_stage1_5_exec-fsys_xfs.Po \
+@AMDEP_TRUE@	$(DEPDIR)/xfs_stage1_5_exec-stage1_5.Po
 ASCOMPILE = $(AS) $(AM_ASFLAGS) $(ASFLAGS)
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -536,16 +613,17 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(libgrub_a_SOURCES) $(diskless_exec_SOURCES) \
 	$(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) \
-	$(ffs_stage1_5_exec_SOURCES) $(minix_stage1_5_exec_SOURCES) \
-	$(nbloader_exec_SOURCES) $(pre_stage2_exec_SOURCES) \
-	$(pxeloader_exec_SOURCES) $(reiserfs_stage1_5_exec_SOURCES) \
-	$(start_exec_SOURCES) $(vstafs_stage1_5_exec_SOURCES)
+	$(ffs_stage1_5_exec_SOURCES) $(jfs_stage1_5_exec_SOURCES) \
+	$(minix_stage1_5_exec_SOURCES) $(nbloader_exec_SOURCES) \
+	$(pre_stage2_exec_SOURCES) $(pxeloader_exec_SOURCES) \
+	$(reiserfs_stage1_5_exec_SOURCES) $(start_exec_SOURCES) \
+	$(vstafs_stage1_5_exec_SOURCES) $(xfs_stage1_5_exec_SOURCES)
 DATA = $(noinst_DATA) $(pkgdata_DATA)
 
 HEADERS = $(noinst_HEADERS)
 
 DIST_COMMON = $(noinst_HEADERS) Makefile.am Makefile.in
-SOURCES = $(libgrub_a_SOURCES) $(diskless_exec_SOURCES) $(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) $(minix_stage1_5_exec_SOURCES) $(nbloader_exec_SOURCES) $(pre_stage2_exec_SOURCES) $(pxeloader_exec_SOURCES) $(reiserfs_stage1_5_exec_SOURCES) $(start_exec_SOURCES) $(vstafs_stage1_5_exec_SOURCES)
+SOURCES = $(libgrub_a_SOURCES) $(diskless_exec_SOURCES) $(e2fs_stage1_5_exec_SOURCES) $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) $(jfs_stage1_5_exec_SOURCES) $(minix_stage1_5_exec_SOURCES) $(nbloader_exec_SOURCES) $(pre_stage2_exec_SOURCES) $(pxeloader_exec_SOURCES) $(reiserfs_stage1_5_exec_SOURCES) $(start_exec_SOURCES) $(vstafs_stage1_5_exec_SOURCES) $(xfs_stage1_5_exec_SOURCES)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -574,9 +652,11 @@ libgrub_a-gunzip.$(OBJEXT): gunzip.c
 libgrub_a-fsys_ffs.$(OBJEXT): fsys_ffs.c
 libgrub_a-fsys_ext2fs.$(OBJEXT): fsys_ext2fs.c
 libgrub_a-fsys_fat.$(OBJEXT): fsys_fat.c
+libgrub_a-fsys_jfs.$(OBJEXT): fsys_jfs.c
 libgrub_a-fsys_minix.$(OBJEXT): fsys_minix.c
 libgrub_a-fsys_reiserfs.$(OBJEXT): fsys_reiserfs.c
 libgrub_a-fsys_vstafs.$(OBJEXT): fsys_vstafs.c
+libgrub_a-fsys_xfs.$(OBJEXT): fsys_xfs.c
 libgrub_a-stage2.$(OBJEXT): stage2.c
 libgrub_a-md5.$(OBJEXT): md5.c
 libgrub.a: $(libgrub_a_OBJECTS) $(libgrub_a_DEPENDENCIES) 
@@ -598,9 +678,11 @@ diskless_exec-gunzip.$(OBJEXT): gunzip.c
 diskless_exec-fsys_ext2fs.$(OBJEXT): fsys_ext2fs.c
 diskless_exec-fsys_fat.$(OBJEXT): fsys_fat.c
 diskless_exec-fsys_ffs.$(OBJEXT): fsys_ffs.c
+diskless_exec-fsys_jfs.$(OBJEXT): fsys_jfs.c
 diskless_exec-fsys_minix.$(OBJEXT): fsys_minix.c
 diskless_exec-fsys_reiserfs.$(OBJEXT): fsys_reiserfs.c
 diskless_exec-fsys_vstafs.$(OBJEXT): fsys_vstafs.c
+diskless_exec-fsys_xfs.$(OBJEXT): fsys_xfs.c
 diskless_exec-hercules.$(OBJEXT): hercules.c
 diskless_exec-serial.$(OBJEXT): serial.c
 diskless_exec-smp-imps.$(OBJEXT): smp-imps.c
@@ -642,6 +724,17 @@ ffs_stage1_5_exec-bios.$(OBJEXT): bios.c
 ffs_stage1_5.exec$(EXEEXT): $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_DEPENDENCIES) 
 	@rm -f ffs_stage1_5.exec$(EXEEXT)
 	$(LINK) $(ffs_stage1_5_exec_LDFLAGS) $(ffs_stage1_5_exec_OBJECTS) $(ffs_stage1_5_exec_LDADD) $(LIBS)
+jfs_stage1_5_exec-start.$(OBJEXT): start.S
+jfs_stage1_5_exec-asm.$(OBJEXT): asm.S
+jfs_stage1_5_exec-common.$(OBJEXT): common.c
+jfs_stage1_5_exec-char_io.$(OBJEXT): char_io.c
+jfs_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
+jfs_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
+jfs_stage1_5_exec-fsys_jfs.$(OBJEXT): fsys_jfs.c
+jfs_stage1_5_exec-bios.$(OBJEXT): bios.c
+jfs_stage1_5.exec$(EXEEXT): $(jfs_stage1_5_exec_OBJECTS) $(jfs_stage1_5_exec_DEPENDENCIES) 
+	@rm -f jfs_stage1_5.exec$(EXEEXT)
+	$(LINK) $(jfs_stage1_5_exec_LDFLAGS) $(jfs_stage1_5_exec_OBJECTS) $(jfs_stage1_5_exec_LDADD) $(LIBS)
 minix_stage1_5_exec-start.$(OBJEXT): start.S
 minix_stage1_5_exec-asm.$(OBJEXT): asm.S
 minix_stage1_5_exec-common.$(OBJEXT): common.c
@@ -669,9 +762,11 @@ pre_stage2_exec-gunzip.$(OBJEXT): gunzip.c
 pre_stage2_exec-fsys_ext2fs.$(OBJEXT): fsys_ext2fs.c
 pre_stage2_exec-fsys_fat.$(OBJEXT): fsys_fat.c
 pre_stage2_exec-fsys_ffs.$(OBJEXT): fsys_ffs.c
+pre_stage2_exec-fsys_jfs.$(OBJEXT): fsys_jfs.c
 pre_stage2_exec-fsys_minix.$(OBJEXT): fsys_minix.c
 pre_stage2_exec-fsys_reiserfs.$(OBJEXT): fsys_reiserfs.c
 pre_stage2_exec-fsys_vstafs.$(OBJEXT): fsys_vstafs.c
+pre_stage2_exec-fsys_xfs.$(OBJEXT): fsys_xfs.c
 pre_stage2_exec-hercules.$(OBJEXT): hercules.c
 pre_stage2_exec-serial.$(OBJEXT): serial.c
 pre_stage2_exec-smp-imps.$(OBJEXT): smp-imps.c
@@ -710,6 +805,17 @@ vstafs_stage1_5_exec-bios.$(OBJEXT): bios.c
 vstafs_stage1_5.exec$(EXEEXT): $(vstafs_stage1_5_exec_OBJECTS) $(vstafs_stage1_5_exec_DEPENDENCIES) 
 	@rm -f vstafs_stage1_5.exec$(EXEEXT)
 	$(LINK) $(vstafs_stage1_5_exec_LDFLAGS) $(vstafs_stage1_5_exec_OBJECTS) $(vstafs_stage1_5_exec_LDADD) $(LIBS)
+xfs_stage1_5_exec-start.$(OBJEXT): start.S
+xfs_stage1_5_exec-asm.$(OBJEXT): asm.S
+xfs_stage1_5_exec-common.$(OBJEXT): common.c
+xfs_stage1_5_exec-char_io.$(OBJEXT): char_io.c
+xfs_stage1_5_exec-disk_io.$(OBJEXT): disk_io.c
+xfs_stage1_5_exec-stage1_5.$(OBJEXT): stage1_5.c
+xfs_stage1_5_exec-fsys_xfs.$(OBJEXT): fsys_xfs.c
+xfs_stage1_5_exec-bios.$(OBJEXT): bios.c
+xfs_stage1_5.exec$(EXEEXT): $(xfs_stage1_5_exec_OBJECTS) $(xfs_stage1_5_exec_DEPENDENCIES) 
+	@rm -f xfs_stage1_5.exec$(EXEEXT)
+	$(LINK) $(xfs_stage1_5_exec_LDFLAGS) $(xfs_stage1_5_exec_OBJECTS) $(xfs_stage1_5_exec_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -727,9 +833,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_ext2fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_fat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_jfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_minix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_reiserfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-fsys_xfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-gunzip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-hercules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/diskless_exec-md5.Po@am__quote@
@@ -754,6 +862,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-disk_io.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-fsys_ffs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ffs_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/jfs_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/jfs_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/jfs_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/jfs_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/jfs_stage1_5_exec-fsys_jfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/jfs_stage1_5_exec-stage1_5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-boot.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-builtins.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-char_io.Po@am__quote@
@@ -763,9 +877,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_ext2fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_fat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_jfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_minix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_reiserfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-fsys_xfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-gunzip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/libgrub_a-stage2.Po@am__quote@
@@ -785,9 +901,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_ext2fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_fat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_ffs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_jfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_minix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_vstafs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-fsys_xfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-gunzip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-hercules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pre_stage2_exec-md5.Po@am__quote@
@@ -806,6 +924,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-disk_io.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-fsys_vstafs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/vstafs_stage1_5_exec-stage1_5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xfs_stage1_5_exec-bios.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xfs_stage1_5_exec-char_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xfs_stage1_5_exec-common.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xfs_stage1_5_exec-disk_io.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xfs_stage1_5_exec-fsys_xfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/xfs_stage1_5_exec-stage1_5.Po@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -857,6 +981,18 @@ ffs_stage1_5_exec-asm.o: asm.S
 
 ffs_stage1_5_exec-asm.obj: asm.S
 	$(AS) $(ffs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o ffs_stage1_5_exec-asm.obj `cygpath -w asm.S`
+
+jfs_stage1_5_exec-start.o: start.S
+	$(AS) $(jfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o jfs_stage1_5_exec-start.o `test -f start.S || echo '$(srcdir)/'`start.S
+
+jfs_stage1_5_exec-start.obj: start.S
+	$(AS) $(jfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o jfs_stage1_5_exec-start.obj `cygpath -w start.S`
+
+jfs_stage1_5_exec-asm.o: asm.S
+	$(AS) $(jfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o jfs_stage1_5_exec-asm.o `test -f asm.S || echo '$(srcdir)/'`asm.S
+
+jfs_stage1_5_exec-asm.obj: asm.S
+	$(AS) $(jfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o jfs_stage1_5_exec-asm.obj `cygpath -w asm.S`
 
 minix_stage1_5_exec-start.o: start.S
 	$(AS) $(minix_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o minix_stage1_5_exec-start.o `test -f start.S || echo '$(srcdir)/'`start.S
@@ -917,6 +1053,18 @@ vstafs_stage1_5_exec-asm.o: asm.S
 
 vstafs_stage1_5_exec-asm.obj: asm.S
 	$(AS) $(vstafs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o vstafs_stage1_5_exec-asm.obj `cygpath -w asm.S`
+
+xfs_stage1_5_exec-start.o: start.S
+	$(AS) $(xfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o xfs_stage1_5_exec-start.o `test -f start.S || echo '$(srcdir)/'`start.S
+
+xfs_stage1_5_exec-start.obj: start.S
+	$(AS) $(xfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o xfs_stage1_5_exec-start.obj `cygpath -w start.S`
+
+xfs_stage1_5_exec-asm.o: asm.S
+	$(AS) $(xfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o xfs_stage1_5_exec-asm.o `test -f asm.S || echo '$(srcdir)/'`asm.S
+
+xfs_stage1_5_exec-asm.obj: asm.S
+	$(AS) $(xfs_stage1_5_exec_ASFLAGS) $(ASFLAGS) -c -o xfs_stage1_5_exec-asm.obj `cygpath -w asm.S`
 
 .c.o:
 @AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -1050,6 +1198,18 @@ libgrub_a-fsys_fat.obj: fsys_fat.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_fat.obj `cygpath -w fsys_fat.c`
 
+libgrub_a-fsys_jfs.o: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='libgrub_a-fsys_jfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/libgrub_a-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_jfs.o `test -f fsys_jfs.c || echo '$(srcdir)/'`fsys_jfs.c
+
+libgrub_a-fsys_jfs.obj: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='libgrub_a-fsys_jfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/libgrub_a-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_jfs.obj `cygpath -w fsys_jfs.c`
+
 libgrub_a-fsys_minix.o: fsys_minix.c
 @AMDEP_TRUE@	source='fsys_minix.c' object='libgrub_a-fsys_minix.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/libgrub_a-fsys_minix.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_minix.TPo' @AMDEPBACKSLASH@
@@ -1085,6 +1245,18 @@ libgrub_a-fsys_vstafs.obj: fsys_vstafs.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/libgrub_a-fsys_vstafs.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_vstafs.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_vstafs.obj `cygpath -w fsys_vstafs.c`
+
+libgrub_a-fsys_xfs.o: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='libgrub_a-fsys_xfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/libgrub_a-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_xfs.o `test -f fsys_xfs.c || echo '$(srcdir)/'`fsys_xfs.c
+
+libgrub_a-fsys_xfs.obj: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='libgrub_a-fsys_xfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/libgrub_a-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/libgrub_a-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgrub_a_CFLAGS) $(CFLAGS) -c -o libgrub_a-fsys_xfs.obj `cygpath -w fsys_xfs.c`
 
 libgrub_a-stage2.o: stage2.c
 @AMDEP_TRUE@	source='stage2.c' object='libgrub_a-stage2.o' libtool=no @AMDEPBACKSLASH@
@@ -1242,6 +1414,18 @@ diskless_exec-fsys_ffs.obj: fsys_ffs.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_ffs.obj `cygpath -w fsys_ffs.c`
 
+diskless_exec-fsys_jfs.o: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='diskless_exec-fsys_jfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/diskless_exec-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_jfs.o `test -f fsys_jfs.c || echo '$(srcdir)/'`fsys_jfs.c
+
+diskless_exec-fsys_jfs.obj: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='diskless_exec-fsys_jfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/diskless_exec-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_jfs.obj `cygpath -w fsys_jfs.c`
+
 diskless_exec-fsys_minix.o: fsys_minix.c
 @AMDEP_TRUE@	source='fsys_minix.c' object='diskless_exec-fsys_minix.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/diskless_exec-fsys_minix.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_minix.TPo' @AMDEPBACKSLASH@
@@ -1277,6 +1461,18 @@ diskless_exec-fsys_vstafs.obj: fsys_vstafs.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/diskless_exec-fsys_vstafs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_vstafs.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_vstafs.obj `cygpath -w fsys_vstafs.c`
+
+diskless_exec-fsys_xfs.o: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='diskless_exec-fsys_xfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/diskless_exec-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_xfs.o `test -f fsys_xfs.c || echo '$(srcdir)/'`fsys_xfs.c
+
+diskless_exec-fsys_xfs.obj: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='diskless_exec-fsys_xfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/diskless_exec-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_xfs.obj `cygpath -w fsys_xfs.c`
 
 diskless_exec-hercules.o: hercules.c
 @AMDEP_TRUE@	source='hercules.c' object='diskless_exec-hercules.o' libtool=no @AMDEPBACKSLASH@
@@ -1554,6 +1750,78 @@ ffs_stage1_5_exec-bios.obj: bios.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ffs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o ffs_stage1_5_exec-bios.obj `cygpath -w bios.c`
 
+jfs_stage1_5_exec-common.o: common.c
+@AMDEP_TRUE@	source='common.c' object='jfs_stage1_5_exec-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-common.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-common.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-common.o `test -f common.c || echo '$(srcdir)/'`common.c
+
+jfs_stage1_5_exec-common.obj: common.c
+@AMDEP_TRUE@	source='common.c' object='jfs_stage1_5_exec-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-common.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-common.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-common.obj `cygpath -w common.c`
+
+jfs_stage1_5_exec-char_io.o: char_io.c
+@AMDEP_TRUE@	source='char_io.c' object='jfs_stage1_5_exec-char_io.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-char_io.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-char_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-char_io.o `test -f char_io.c || echo '$(srcdir)/'`char_io.c
+
+jfs_stage1_5_exec-char_io.obj: char_io.c
+@AMDEP_TRUE@	source='char_io.c' object='jfs_stage1_5_exec-char_io.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-char_io.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-char_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-char_io.obj `cygpath -w char_io.c`
+
+jfs_stage1_5_exec-disk_io.o: disk_io.c
+@AMDEP_TRUE@	source='disk_io.c' object='jfs_stage1_5_exec-disk_io.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-disk_io.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-disk_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-disk_io.o `test -f disk_io.c || echo '$(srcdir)/'`disk_io.c
+
+jfs_stage1_5_exec-disk_io.obj: disk_io.c
+@AMDEP_TRUE@	source='disk_io.c' object='jfs_stage1_5_exec-disk_io.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-disk_io.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-disk_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-disk_io.obj `cygpath -w disk_io.c`
+
+jfs_stage1_5_exec-stage1_5.o: stage1_5.c
+@AMDEP_TRUE@	source='stage1_5.c' object='jfs_stage1_5_exec-stage1_5.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-stage1_5.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-stage1_5.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-stage1_5.o `test -f stage1_5.c || echo '$(srcdir)/'`stage1_5.c
+
+jfs_stage1_5_exec-stage1_5.obj: stage1_5.c
+@AMDEP_TRUE@	source='stage1_5.c' object='jfs_stage1_5_exec-stage1_5.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-stage1_5.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-stage1_5.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-stage1_5.obj `cygpath -w stage1_5.c`
+
+jfs_stage1_5_exec-fsys_jfs.o: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='jfs_stage1_5_exec-fsys_jfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-fsys_jfs.o `test -f fsys_jfs.c || echo '$(srcdir)/'`fsys_jfs.c
+
+jfs_stage1_5_exec-fsys_jfs.obj: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='jfs_stage1_5_exec-fsys_jfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-fsys_jfs.obj `cygpath -w fsys_jfs.c`
+
+jfs_stage1_5_exec-bios.o: bios.c
+@AMDEP_TRUE@	source='bios.c' object='jfs_stage1_5_exec-bios.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-bios.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-bios.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-bios.o `test -f bios.c || echo '$(srcdir)/'`bios.c
+
+jfs_stage1_5_exec-bios.obj: bios.c
+@AMDEP_TRUE@	source='bios.c' object='jfs_stage1_5_exec-bios.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/jfs_stage1_5_exec-bios.Po' tmpdepfile='$(DEPDIR)/jfs_stage1_5_exec-bios.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(jfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o jfs_stage1_5_exec-bios.obj `cygpath -w bios.c`
+
 minix_stage1_5_exec-common.o: common.c
 @AMDEP_TRUE@	source='common.c' object='minix_stage1_5_exec-common.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/minix_stage1_5_exec-common.Po' tmpdepfile='$(DEPDIR)/minix_stage1_5_exec-common.TPo' @AMDEPBACKSLASH@
@@ -1758,6 +2026,18 @@ pre_stage2_exec-fsys_ffs.obj: fsys_ffs.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_ffs.obj `cygpath -w fsys_ffs.c`
 
+pre_stage2_exec-fsys_jfs.o: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='pre_stage2_exec-fsys_jfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_jfs.o `test -f fsys_jfs.c || echo '$(srcdir)/'`fsys_jfs.c
+
+pre_stage2_exec-fsys_jfs.obj: fsys_jfs.c
+@AMDEP_TRUE@	source='fsys_jfs.c' object='pre_stage2_exec-fsys_jfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_jfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_jfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_jfs.obj `cygpath -w fsys_jfs.c`
+
 pre_stage2_exec-fsys_minix.o: fsys_minix.c
 @AMDEP_TRUE@	source='fsys_minix.c' object='pre_stage2_exec-fsys_minix.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_minix.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_minix.TPo' @AMDEPBACKSLASH@
@@ -1793,6 +2073,18 @@ pre_stage2_exec-fsys_vstafs.obj: fsys_vstafs.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_vstafs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_vstafs.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_vstafs.obj `cygpath -w fsys_vstafs.c`
+
+pre_stage2_exec-fsys_xfs.o: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='pre_stage2_exec-fsys_xfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_xfs.o `test -f fsys_xfs.c || echo '$(srcdir)/'`fsys_xfs.c
+
+pre_stage2_exec-fsys_xfs.obj: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='pre_stage2_exec-fsys_xfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_xfs.obj `cygpath -w fsys_xfs.c`
 
 pre_stage2_exec-hercules.o: hercules.c
 @AMDEP_TRUE@	source='hercules.c' object='pre_stage2_exec-hercules.o' libtool=no @AMDEPBACKSLASH@
@@ -1997,6 +2289,78 @@ vstafs_stage1_5_exec-bios.obj: bios.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/vstafs_stage1_5_exec-bios.Po' tmpdepfile='$(DEPDIR)/vstafs_stage1_5_exec-bios.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(vstafs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o vstafs_stage1_5_exec-bios.obj `cygpath -w bios.c`
+
+xfs_stage1_5_exec-common.o: common.c
+@AMDEP_TRUE@	source='common.c' object='xfs_stage1_5_exec-common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-common.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-common.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-common.o `test -f common.c || echo '$(srcdir)/'`common.c
+
+xfs_stage1_5_exec-common.obj: common.c
+@AMDEP_TRUE@	source='common.c' object='xfs_stage1_5_exec-common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-common.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-common.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-common.obj `cygpath -w common.c`
+
+xfs_stage1_5_exec-char_io.o: char_io.c
+@AMDEP_TRUE@	source='char_io.c' object='xfs_stage1_5_exec-char_io.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-char_io.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-char_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-char_io.o `test -f char_io.c || echo '$(srcdir)/'`char_io.c
+
+xfs_stage1_5_exec-char_io.obj: char_io.c
+@AMDEP_TRUE@	source='char_io.c' object='xfs_stage1_5_exec-char_io.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-char_io.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-char_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-char_io.obj `cygpath -w char_io.c`
+
+xfs_stage1_5_exec-disk_io.o: disk_io.c
+@AMDEP_TRUE@	source='disk_io.c' object='xfs_stage1_5_exec-disk_io.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-disk_io.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-disk_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-disk_io.o `test -f disk_io.c || echo '$(srcdir)/'`disk_io.c
+
+xfs_stage1_5_exec-disk_io.obj: disk_io.c
+@AMDEP_TRUE@	source='disk_io.c' object='xfs_stage1_5_exec-disk_io.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-disk_io.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-disk_io.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-disk_io.obj `cygpath -w disk_io.c`
+
+xfs_stage1_5_exec-stage1_5.o: stage1_5.c
+@AMDEP_TRUE@	source='stage1_5.c' object='xfs_stage1_5_exec-stage1_5.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-stage1_5.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-stage1_5.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-stage1_5.o `test -f stage1_5.c || echo '$(srcdir)/'`stage1_5.c
+
+xfs_stage1_5_exec-stage1_5.obj: stage1_5.c
+@AMDEP_TRUE@	source='stage1_5.c' object='xfs_stage1_5_exec-stage1_5.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-stage1_5.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-stage1_5.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-stage1_5.obj `cygpath -w stage1_5.c`
+
+xfs_stage1_5_exec-fsys_xfs.o: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='xfs_stage1_5_exec-fsys_xfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-fsys_xfs.o `test -f fsys_xfs.c || echo '$(srcdir)/'`fsys_xfs.c
+
+xfs_stage1_5_exec-fsys_xfs.obj: fsys_xfs.c
+@AMDEP_TRUE@	source='fsys_xfs.c' object='xfs_stage1_5_exec-fsys_xfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-fsys_xfs.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-fsys_xfs.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-fsys_xfs.obj `cygpath -w fsys_xfs.c`
+
+xfs_stage1_5_exec-bios.o: bios.c
+@AMDEP_TRUE@	source='bios.c' object='xfs_stage1_5_exec-bios.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-bios.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-bios.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-bios.o `test -f bios.c || echo '$(srcdir)/'`bios.c
+
+xfs_stage1_5_exec-bios.obj: bios.c
+@AMDEP_TRUE@	source='bios.c' object='xfs_stage1_5_exec-bios.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/xfs_stage1_5_exec-bios.Po' tmpdepfile='$(DEPDIR)/xfs_stage1_5_exec-bios.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(xfs_stage1_5_exec_CFLAGS) $(CFLAGS) -c -o xfs_stage1_5_exec-bios.obj `cygpath -w bios.c`
 CCDEPMODE = @CCDEPMODE@
 uninstall-info-am:
 install-pkgdataDATA: $(pkgdata_DATA)
@@ -2208,6 +2572,8 @@ uninstall-am: uninstall-info-am uninstall-pkgdataDATA
 	mostlyclean mostlyclean-compile mostlyclean-generic tags \
 	uninstall uninstall-am uninstall-info-am uninstall-pkgdataDATA
 
+	-DFSYS_XFS=1 -DUSE_MD5_PASSWORDS=1 \
+	-DSUPPORT_SERIAL=1 -DSUPPORT_HERCULES=1 -fwritable-strings
 
 stage2_size.h: pre_stage2
 	-rm -f stage2_size.h

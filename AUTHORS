@@ -37,3 +37,5 @@ Christoph Plattner added support for Net Boot Image Proposal.
 Frank Mehnert added support for hercules console.
 
 Kristoffer Branemyr added VSTa filesystem support.
+
+Serguei Tzukanov added JFS and XFS support.

@@ -3643,7 +3643,9 @@ setup_func (char *arg, int flags)
     {"ffs",      "/ffs_stage1_5"},
     {"fat",      "/fat_stage1_5"},
     {"minix",    "/minix_stage1_5"},
-    {"reiserfs", "/reiserfs_stage1_5"}
+    {"reiserfs", "/reiserfs_stage1_5"},
+    {"jfs",      "/jfs_stage1_5"},
+    {"xfs",      "/xfs_stage1_5"}
   };
 
   tmp_drive = saved_drive;

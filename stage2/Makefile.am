@@ -5,8 +5,8 @@ noinst_SCRIPTS = $(TESTS)
 # For dist target.
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h hercules.h i386-elf.h \
-	imgact_aout.h mb_header.h mb_info.h md5.h pc_slice.h serial.h \
-	shared.h smp-imps.h nbi.h vstafs.h
+	imgact_aout.h jfs.h mb_header.h mb_info.h md5.h pc_slice.h \
+	serial.h shared.h smp-imps.h nbi.h vstafs.h xfs.h
 EXTRA_DIST = setjmp.S apm.S $(noinst_SCRIPTS)
 
 # For <stage1.h>.
@@ -16,11 +16,12 @@ INCLUDES = -I$(top_srcdir)/stage1
 noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c \
-	fsys_minix.c fsys_reiserfs.c  fsys_vstafs.c stage2.c md5.c
+	fsys_jfs.c fsys_minix.c fsys_reiserfs.c fsys_vstafs.c \
+	fsys_xfs.c stage2.c md5.c
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/lib \
 	-DGRUB_UTIL=1 -DFSYS_EXT2FS=1 -DFSYS_FAT=1 -DFSYS_FFS=1 \
-	-DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1 \
-	-DUSE_MD5_PASSWORDS=1 \
+	-DFSYS_JFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1
+	-DFSYS_XFS=1 -DUSE_MD5_PASSWORDS=1 \
 	-DSUPPORT_SERIAL=1 -DSUPPORT_HERCULES=1 -fwritable-strings
 
 # Stage 2 and Stage 1.5's.
@@ -30,19 +31,23 @@ EXTRA_PROGRAMS = nbloader.exec pxeloader.exec diskless.exec
 
 if DISKLESS_SUPPORT
 pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-	minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5 nbgrub pxegrub
+	jfs_stage1_5 minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5 \
+	xfs_stage1_5 nbgrub pxegrub
 noinst_DATA = pre_stage2 start nbloader pxeloader diskless
 noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
-	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
-	reiserfs_stage1_5.exec vstafs_stage1_5.exec nbloader.exec \
+	fat_stage1_5.exec ffs_stage1_5.exec jfs_stage1_5.exec \
+	minix_stage1_5.exec reiserfs_stage1_5.exec \
+	vstafs_stage1_5.exec xfs_stage1_5.exec nbloader.exec \
 	pxeloader.exec diskless.exec
 else
 pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
-	minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5
+	jfs_stage1_5 minix_stage1_5 reiserfs_stage1_5 vstafs_stage1_5 \
+	xfs_stage1_5
 noinst_DATA = pre_stage2 start
 noinst_PROGRAMS = pre_stage2.exec start.exec e2fs_stage1_5.exec \
-	fat_stage1_5.exec ffs_stage1_5.exec minix_stage1_5.exec \
-	reiserfs_stage1_5.exec vstafs_stage1_5.exec
+	fat_stage1_5.exec ffs_stage1_5.exec jfs_stage1_5.exec \
+	minix_stage1_5.exec reiserfs_stage1_5.exec \
+	vstafs_stage1_5.exec xfs_stage1_5.exec
 endif
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
@@ -78,8 +83,9 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c \
-	fsys_vstafs.c hercules.c serial.c smp-imps.c stage2.c md5.c
+	fsys_fat.c fsys_ffs.c fsys_jfs.c fsys_minix.c fsys_reiserfs.c \
+	fsys_vstafs.c fsys_xfs.c hercules.c serial.c smp-imps.c \
+	stage2.c md5.c
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
@@ -168,6 +174,24 @@ vstafs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
 vstafs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
 	-DNO_BLOCK_FILES=1
 vstafs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For jfs_stage1_5 target.
+jfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
+	disk_io.c stage1_5.c fsys_jfs.c bios.c
+jfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
+	-DNO_BLOCK_FILES=1
+jfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
+	-DNO_BLOCK_FILES=1
+jfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
+
+# For xfs_stage1_5 target.
+xfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
+	disk_io.c stage1_5.c fsys_xfs.c bios.c
+xfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
+	-DNO_BLOCK_FILES=1
+xfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
+	-DNO_BLOCK_FILES=1
+xfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For diskless target.
 diskless_exec_SOURCES = $(pre_stage2_exec_SOURCES)

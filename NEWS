@@ -1,5 +1,10 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 0.91:
+* Support for Linux DAC960 is added.
+* JFS and XFS support is added.
+* Important bugfixes are made for ReiserFS, APM, TFTP, etc.
+
 New in 0.90 - 2001-07-11:
 * The command "setkey" resets key mappings, when no argument is
   specified.

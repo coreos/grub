@@ -63,6 +63,12 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 # ifdef FSYS_VSTAFS
   {"vstafs", vstafs_mount, vstafs_read, vstafs_dir, 0, 0},
 # endif
+# ifdef FSYS_JFS
+  {"jfs", jfs_mount, jfs_read, jfs_dir, 0, jfs_embed},
+# endif
+# ifdef FSYS_XFS
+  {"xfs", xfs_mount, xfs_read, xfs_dir, 0, 0},
+# endif
   /* XX FFS should come last as it's superblock is commonly crossing tracks
      on floppies from track 1 to 2, while others only use 1.  */
 # ifdef FSYS_FFS

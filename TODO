@@ -80,7 +80,7 @@ Things that may be done anytime:
 
 * Add ISA PnP support.
 
-* Add more filesystems support (XFS, NTFS, etc.)
+* Add more filesystems support (NTFS, etc.)
 
 * Add more remote console support (parallel and net).
 

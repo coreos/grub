@@ -1,4 +1,6 @@
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* This file is still needed because the defines below are
+   AC_DEFINEd in more than one place. */
 
 /* Defined if you have a curses library (ncurses preferred). */
 #undef HAVE_LIBCURSES
@@ -33,36 +35,35 @@
 /* Defined if the user specified --enable-auto-linux-mem-opt.  */
 #undef AUTO_LINUX_MEM_OPT
 
-/* Define if you have the <curses.h> header file.  */
-#undef HAVE_CURSES_H
-
-/* Define if you have the <ncurses.h> header file.  */
-#undef HAVE_NCURSES_H
-
-/* Define if you have the <ncurses/curses.h> header file.  */
-#undef HAVE_NCURSES_CURSES_H
-
-/* Define if you have the <string.h> header file.  */
-#undef HAVE_STRING_H
-
-/* Define if you have the <strings.h> header file.  */
-#undef HAVE_STRINGS_H
-
-/* Name of package */
-#undef PACKAGE
-
-/* Version number of package */
-#undef VERSION
-
-/* Define if C symbols get an underscore after compilation */
-#undef HAVE_ASM_USCORE
-
 /* Define it to "addr32" or "addr32;" to make GAS happy */
 #undef ADDR32
 
 /* Define it to "data32" or "data32;" to make GAS happy */
 #undef DATA32
 
+/* Define if C symbols get an underscore after compilation */
+#undef HAVE_ASM_USCORE
+
+/* Define if you have the <curses.h> header file. */
+#undef HAVE_CURSES_H
+
+/* Define if you have the <ncurses/curses.h> header file. */
+#undef HAVE_NCURSES_CURSES_H
+
+/* Define if you have the <ncurses.h> header file. */
+#undef HAVE_NCURSES_H
+
 /* Define if opendisk() in -lutil can be used */
 #undef HAVE_OPENDISK
 
+/* Define if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION

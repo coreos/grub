@@ -1,5 +1,50 @@
 2001-10-27  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	JFS and XFS support is added.
+	
+	From Serguei Tzukanov <tzukanov@narod.ru>:
+	* configure.in (--disable-jfs): New option.
+	(--disable-xfs): Likewise.
+	* stage2/Makefile.am (noinst_HEADERS): Added jfs.h and xfs.h.
+	(libgrub_a_SOURCES): Added fsys_jfs.c and fsys_xfs.c.
+	(libgrub_a_CFLAGS): Added -DFSYS_JFS=1 and -DFSYS_XFS=1.
+	(pkgdata_DATA): Added jfs_stage1_5 and xfs_stage1_5.
+	(noinst_PROGRAMS): Added jfs_stage1_5.exec and
+	xfs_stage1_5.exec.
+	(pre_stage2_exec_SOURCES): Added fsys_jfs.c and fsys_xfs.c.
+	(jfs_stage1_5_exec_SOURCES): New variable.
+	(jfs_stage1_5_exec_CFLAGS): Likewise.
+	(jfs_stage1_5_exec_ASFLAGS): Likewise.
+	(jfs_stage1_5_exec_LDFLAGS): Likewise.
+	(xfs_stage1_5_exec_SOURCES): Likewise.
+	(xfs_stage1_5_exec_CFLAGS): Likewise.
+	(xfs_stage1_5_exec_ASFLAGS): Likewise.
+	(xfs_stage1_5_exec_LDFLAGS): Likewise.
+	* stage2/builtins.c (setup_func): Add items for JFS and XFS into
+	STAGE1_5_MAP.
+	* stage2/disk_io.c (fsys_table): Added entries for JFS and XFS.
+	* stage2/filesys.h [FSYS_JFS] (FSYS_JFS_NUM): Set to 1.
+	[FSYS_JFS] (jfs_mount): Declared.
+	[FSYS_JFS] (jfs_read): Likewise.
+	[FSYS_JFS] (jfs_dir): Likewise.
+	[FSYS_JFS] (jfs_embed): Likewise.
+	[!FSYS_JFS] (FSYS_JFS_NUM): Set to 0.
+	[FSYS_XFS] (FSYS_XFS_NUM): Set to 1.
+	[FSYS_XFS] (xfs_mount): Declared.
+	[FSYS_XFS] (xfs_read): Likewise.
+	[FSYS_XFS] (xfs_dir): Likewise.
+	(NUM_FSYS): Added FSYS_JFS_NUM and FSYS_XFS_NUM.
+	* stage2/shared.h (STAGE2_ID_JFS_STAGE1_5): New macro.
+	(STAGE2_ID_XFS_STAGE1_5): Likewise.
+	[FSYS_JFS] (STAGE2_ID): Set to STAGE2_ID_JFS_STAGE1_5.
+	[FSYS_XFS] (STAGE2_ID): Set to STAGE2_ID_XFS_STAGE1_5.
+	* stage2/fsys_jfs.c: New file.
+	* stage2/fsys_xfs.c: Likewise.
+	* stage2/jfs.h: Likewise.
+	* stage2/xfs.h: Likewise.
+
+2001-10-27  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* stage2/apm.S: Always disconnect from APM. Written by Erich
 	Stefan Boleyn.
 

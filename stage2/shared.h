@@ -207,6 +207,8 @@ extern char *grub_scratch_mem;
 #define STAGE2_ID_MINIX_STAGE1_5	4
 #define STAGE2_ID_REISERFS_STAGE1_5	5
 #define STAGE2_ID_VSTAFS_STAGE1_5	6
+#define STAGE2_ID_JFS_STAGE1_5		7
+#define STAGE2_ID_XFS_STAGE1_5		8
 
 #ifndef STAGE1_5
 # define STAGE2_ID	STAGE2_ID_STAGE2
@@ -223,6 +225,10 @@ extern char *grub_scratch_mem;
 #  define STAGE2_ID	STAGE2_ID_REISERFS_STAGE1_5
 # elif defined(FSYS_VSTAFS)
 #  define STAGE2_ID	STAGE2_ID_VSTAFS_STAGE1_5
+# elif defined(FSYS_JFS)
+#  define STAGE2_ID	STAGE2_ID_JFS_STAGE1_5
+# elif defined(FSYS_XFS)
+#  define STAGE2_ID	STAGE2_ID_XFS_STAGE1_5
 # else
 #  error "unknown Stage 2"
 # endif
