@@ -17,4 +17,8 @@ working LBA support, and /sbin/grub support for configuration files.
 Peter Astrand added support for a color menu.
 
 Pavel Roskin contributed many bugfixes and new features, such as FreeBSD
-support in the grub shell, and configure process cleanups.
+support for the grub shell, and configure process cleanups.
+
+Klaus Reichl wrote stage2/fsys_minix.c.
+
+Per Lundberg added graphics support to the Multiboot Specification.
