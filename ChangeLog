@@ -1,5 +1,12 @@
 2000-05-05  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/common.c (init_bios_info) [!STAGE1_5]: When the memory
+	map is present, search the maximum for MEMTMP in bytes instead
+	of kilobytes and set EXTENDED_MEMORY to MEMTMP minus 1MB in
+	kilobytes.
+	
+2000-05-05  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Ignore any memory holes when passing the maximum memory address
 	to non-Multiboot kernels (i.e. Linux and *BSD).
 	

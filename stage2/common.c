@@ -194,9 +194,11 @@ init_bios_info (void)
 	  
 	  if (desc->BaseAddrHigh == 0
 	      && desc->Type == MB_ARD_MEMORY
-	      && desc->BaseAddrLow + desc->LengthLow > extended_memory)
-	    extended_memory = desc->BaseAddrLow + desc->LengthLow;
+	      && desc->BaseAddrLow + desc->LengthLow > memtmp)
+	    memtmp = desc->BaseAddrLow + desc->LengthLow;
 	}
+
+      extended_memory = (memtmp - 0x100000) >> 10;
     }
   else if ((memtmp = get_eisamemsize ()) != -1)
     {

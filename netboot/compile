@@ -2,7 +2,7 @@
 
 # Wrapper for compilers which do not understand `-c -o'.
 
-# Copyright (C) 1999 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 # Written by Tom Tromey <tromey@cygnus.com>.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 # compile PROGRAM [ARGS]...
 # `-o FOO.o' is removed from the args passed to the actual compile.
 
-prog="$1"
+prog=$1
 shift
 
 ofile=
@@ -32,11 +32,11 @@ args=
 while test $# -gt 0; do
    case "$1" in
     -o)
-       ofile="$2"
+       ofile=$2
        shift
        ;;
     *.c)
-       cfile="$1"
+       cfile=$1
        args="$args $1"
        ;;
     *)
@@ -57,10 +57,10 @@ test -z "$cfile" && {
 }
 
 # Name of file we expect compiler to create.
-cofile="`echo $cfile | sed -e 's|^.*/||' -e 's/\.c$/.o/'`"
+cofile=`echo $cfile | sed -e 's|^.*/||' -e 's/\.c$/.o/'`
 
 # Create the lock directory.
-lockdir="`echo $ofile | sed -e 's|/|_|g'`"
+lockdir=`echo $ofile | sed -e 's|/|_|g'`
 while true; do
    if mkdir $lockdir > /dev/null 2>&1; then
       break
