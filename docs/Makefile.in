@@ -59,23 +59,26 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
-TAR = @TAR@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
+install_sh = @install_sh@
 sbingrub = @sbingrub@
 
 
 info_TEXINFOS = grub.texi multiboot.texi
 EXTRA_DIST = menu.lst
+subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
+DIST_SOURCES = 
 TEXI2DVI = texi2dvi
 INFO_DEPS = grub.info multiboot.info
 DVIS = grub.dvi multiboot.dvi
@@ -84,7 +87,7 @@ DIST_COMMON =  Makefile.am Makefile.in mdate-sh stamp-vti texinfo.tex \
 version.texi
 
 
-DISTFILES = $(DIST_COMMON) $(SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
 all: all-redirect
@@ -202,8 +205,9 @@ uninstall-info:
 	@if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	  list='$(INFO_DEPS)'; \
 	  for file in $$list; do \
-	    echo " install-info --info-dir=$(DESTDIR)$(infodir) --remove $$file"; \
-	    install-info --info-dir=$(DESTDIR)$(infodir) --remove $$file; \
+	    d=$(srcdir); \
+	    echo " install-info --info-dir=$(DESTDIR)$(infodir) --remove $$d/$$file"; \
+	    install-info --info-dir=$(DESTDIR)$(infodir) --remove $$d/$$file; \
 	  done; \
 	else :; fi
 	@$(NORMAL_UNINSTALL)
@@ -253,8 +257,6 @@ TAGS:
 
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
-
-subdir = docs
 
 distdir: $(DISTFILES)
 	here=`cd $(top_builddir) && pwd`; \

@@ -1,3 +1,8 @@
+1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* shared_src/Makefile.am (EXTRA_DIST): Add bios.c. Reported by
+	Pavel Roskin <pavel_roskin@geocities.com>.
+	
 1999-06-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/Makefile.am (html): Deleted.
