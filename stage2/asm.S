@@ -1324,7 +1324,8 @@ probe_values:
 
 /* Source files are splitted, as they have different copyrights.  */
 #include "setjmp.S"
-	
+#include "apm.S"
+		
 /*
  * console_putchar(c)
  *
@@ -2106,6 +2107,16 @@ offset:
 segment:
 	.word	0
 
+VARIABLE(apm_bios_info)
+	.word	0	/* version */
+	.word	0	/* cseg */
+	.long	0	/* offset */
+	.word	0	/* cseg_16 */
+	.word	0	/* dseg_16 */
+	.word	0	/* cseg_len */
+	.word	0	/* cseg_16_len */
+	.word	0	/* dseg_16_len */
+	
 /*
  * This is the Global Descriptor Table
  *

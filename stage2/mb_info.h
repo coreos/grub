@@ -83,6 +83,20 @@ struct drive_info
 #define MB_DI_LBA_MODE	1
 
 
+/* APM BIOS info.  */
+struct apm_info
+{
+  unsigned short version;
+  unsigned short cseg;
+  unsigned long offset;
+  unsigned short cseg_16;
+  unsigned short dseg_16;
+  unsigned short cseg_len;
+  unsigned short cseg_16_len;
+  unsigned short dseg_16_len;
+};
+
+
 /*
  *  MultiBoot Info description
  *
@@ -146,6 +160,9 @@ struct multiboot_info
   
   /* Boot Loader Name */
   unsigned long boot_loader_name;
+
+  /* APM table */
+  unsigned long apm_table;
 };
 
 /*
@@ -179,6 +196,9 @@ struct multiboot_info
 
 /* Is there a boot loader name?  */
 #define MB_INFO_BOOT_LOADER_NAME	0x200
+
+/* Is there a APM table?  */
+#define MB_INFO_APM_TABLE	0x400
 
 /*
  *  The following value must be present in the EAX register.

@@ -7,7 +7,7 @@ noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
         mb_header.h mb_info.h md5.h pc_slice.h serial.h shared.h \
 	smp-imps.h nbi.h
-EXTRA_DIST = setjmp.S $(noinst_SCRIPTS)
+EXTRA_DIST = setjmp.S apm.S $(noinst_SCRIPTS)
 
 # For <stage1.h>.
 INCLUDES = -I$(top_srcdir)/stage1

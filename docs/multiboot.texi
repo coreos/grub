@@ -574,7 +574,7 @@ follows:
         +-------------------+
 64      | boot_loader_name  |    (present if flags[9] is set)
         +-------------------+
-68 - ?? | apm_table         |    (present if flags[10] is set)
+68      | apm_table         |    (present if flags[10] is set)
         +-------------------+
 ?? - ?? | graphics_table    |    (present if flags[11] is set)
         +-------------------+
@@ -823,11 +823,41 @@ returned by the @dfn{GET CONFIGURATION} @sc{bios} call. If the @sc{bios}
 call fails, then the size of the table must be @emph{zero}.
 
 If bit 9 in the @samp{flags} is set, the @samp{boot_loader_name} field
-is valid, and contains the physical address of the name of the boot
+is valid, and contains the physical address of the name of a boot
 loader booting the kernel. The name is a normal C-style zero-terminated
 string.
 
-@c I haven't defined the apm_table field yet. - okuji
+If bit 10 in the @samp{flags} is set, the @samp{apm_table} field is
+valid, and contains the physical address of an @sc{apm} table defined as
+below:
+
+@example
+@group
+        +----------------------+
+0       | version              |
+2       | cseg                 |
+4       | offset               |
+8       | cseg_16              |
+10      | dseg                 |
+12      | flags                |
+14      | cseg_len             |
+16      | cseg_16_len          |
+18      | dseg_len             |
+        +----------------------+
+@end group
+@end example
+
+The fields @samp{version}, @samp{cseg}, @samp{offset}, @samp{cseg_16},
+@samp{dseg}, @samp{flags}, @samp{cseg_len}, @samp{cseg_16_len},
+@samp{dseg_len} indicate the version number, the protected mode 32-bit
+code segment, the offset of the entry point, the protected mode 16-bit
+code segment, the protected mode 16-bit data segment, the flags, the
+length of the protected mode 32-bit code segment, the length of the
+protected mode 16-bit code segment, and the length of the protected mode
+16-bit data segment, respectively. Only the field @samp{offset} is 4
+bytes, and the others are 2 bytes. See
+@uref{http://www.microsoft.com/hwdev/busbios/amp_12.htm, Advanced Power
+Management (APM) BIOS Interface Specification}, for more information.
 
 If bit 11 in the @samp{flags} is set, video mode information is
 available in the mode table. This should only be done if the kernel has

@@ -307,6 +307,11 @@ init_bios_info (void)
 
   /* Set the boot loader name.  */
   mbi.boot_loader_name = (unsigned long) "GNU GRUB " VERSION;
+
+  /* Get the APM BIOS table.  */
+  get_apm_info ();
+  if (apm_bios_info.version)
+    mbi.apm_table = (unsigned long) &apm_bios_info;
   
   /*
    *  Initialize other Multiboot Info flags.
@@ -315,6 +320,9 @@ init_bios_info (void)
   mbi.flags = (MB_INFO_MEMORY | MB_INFO_CMDLINE | MB_INFO_BOOTDEV
 	       | MB_INFO_DRIVE_INFO | MB_INFO_CONFIG_TABLE
 	       | MB_INFO_BOOT_LOADER_NAME);
+  
+  if (apm_bios_info.version)
+    mbi.flags |= MB_INFO_APM_TABLE;
 
 #endif /* STAGE1_5 */
 

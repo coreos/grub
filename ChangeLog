@@ -1,3 +1,25 @@
+2000-10-20  OKUJI Yoshinori  <okuji@gnu.org>
+
+	APM BIOS table support is added, based on a patch by Matt Yourst
+	<yourst@mit.edu>.
+	
+	* docs/multiboot.texi (Boot information format): Added the
+	definition of APM table format.
+	
+	* stage2/mb_info.h (apm_info): New structure.
+	(multiboot_info): Added a new element, apm_table.
+	(MB_INFO_APM_TABLE): New macro.
+	* stage2/asm.S (apm_bios_info): New variable.
+	Include "apm.S".
+	* stage2/apm.S: New file.
+	* stage2/common.c (init_bios_info) [!STAGE1_5]: Added APM BIOS
+	table support.
+	* stage2/shared.h (apm_bios_info): Declared.
+	(get_apm_info): Likewise.
+	* stage2/Makefile.am (EXTRA_DIST): Added apm.S.
+	* grub/asmstub.c (apm_bios_info): New variable.
+	(get_apm_info): New function.
+	
 2000-10-19  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Segregate functions which are copyrighted differently.

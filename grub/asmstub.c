@@ -72,6 +72,7 @@ char version_string[] = VERSION;
 char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 unsigned long linux_text_len = 0;
 unsigned short io_map[IO_MAP_SIZE];
+struct apm_info apm_bios_info;
 
 /* Emulation requirements. */
 char *grub_scratch_mem = 0;
@@ -436,6 +437,13 @@ unsigned long
 get_rom_config_table (void)
 {
   return 0;
+}
+
+/* Get APM BIOS information.  */
+void
+get_apm_info (void)
+{
+  /* Nothing to do in the simulator.  */
 }
 
 /* low-level timing info */

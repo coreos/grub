@@ -466,6 +466,7 @@ typedef enum
 extern unsigned long install_partition;
 extern unsigned long boot_drive;
 extern unsigned long install_second_sector;
+extern struct apm_info apm_bios_info;
 extern unsigned long boot_part_addr;
 extern unsigned long boot_part_offset;
 extern int saved_entryno;
@@ -657,6 +658,9 @@ int get_mmap_entry (struct mmar_desc *desc, int cont);
 /* Get the linear address of a ROM configuration table. Return zero,
    if fails.  */
 unsigned long get_rom_config_table (void);
+
+/* Get APM BIOS information.  */
+void get_apm_info (void);
 
 /* Return the data area immediately following our code. */
 int get_code_end (void);
