@@ -1,3 +1,17 @@
+1999-09-14  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* grub/asmstub.c [__linux__]: On GLibc 2.0 and newer use lseek,
+	don't include <linux/fs.h> and define BLKFLSBUF if needed.
+	
+1999-09-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Now the grub shell works fine on FreeBSD. A patch by Pavel
+	Roskin is modified and applied.
+
+	* grub/asmstub.c (get_drive_geometry): New function.
+	(get_diskinfo): Use get_drive_geometry to set the geometry of
+	DRIVE.
+	
 1999-09-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in (--enable-ne): Made the description more clear.

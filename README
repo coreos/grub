@@ -74,7 +74,7 @@ Just hit enter when CVS prompts you for a password.
     in the stage1, then be sure your blocklist is big enough.  The
     automated install will generally do this for you, it's just when
     dropping it on a raw floppy, you get the default compiled in, which
-    is 512 * 110 disk sectors, or 56320 bytes.
+    is 512 * 130 disk sectors, or 66560 bytes.
 
   - For the FFS stage1.5, if you want to fit into the "bootloader" area
     of an FFS partition, it cannot be larger than 512 * 14 disk sectors,

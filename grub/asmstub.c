@@ -47,10 +47,19 @@ int grub_stage2 (void);
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
-/* FIXME: only include if libc doesn't have large file support. */
-# include <linux/unistd.h>	/* _llseek */
-# include <linux/fs.h>		/* BLKFLSBUF */
+# if __GLIBC__ < 2
+/* Maybe libc doesn't have large file support.  */
+#  include <linux/unistd.h>	/* _llseek */
+#  include <linux/fs.h>		/* BLKFLSBUF */
+# endif /* GLIBC < 2 */
+# ifndef BLKFLSBUF
+#  define BLKFLSBUF	_IO (0x12,97)
+# endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
+
+#ifdef __FreeBSD__
+# include <sys/disklabel.h>
+#endif /* __FreeBSD__ */
 
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (4 * 1024 * 1024)	/* 4MB */
@@ -261,6 +270,9 @@ get_floppy_disk_name (char *name, int unit)
 #if defined(__linux__) || defined(__GNU__)
   /* GNU/Linux and GNU/Hurd */
   sprintf (name, "/dev/fd%d", unit);
+#elif defined(__FreeBSD__)
+  /* FreeBSD */
+  sprintf (name, "/dev/rfd%d", unit);
 #else
 # warning "BIOS drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -277,6 +289,9 @@ get_ide_disk_name (char *name, int unit)
 #elif defined(__GNU__)
   /* GNU/Hurd */
   sprintf (name, "/dev/hd%d", unit);
+#elif defined(__FreeBSD__)
+  /* FreeBSD */
+  sprintf (name, "/dev/rwd%d", unit);
 #else
 # warning "BIOS drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -293,6 +308,9 @@ get_scsi_disk_name (char *name, int unit)
 #elif defined(__GNU__)
   /* GNU/Hurd */
   sprintf (name, "/dev/sd%d", unit);
+#elif defined(__FreeBSD__)
+  /* FreeBSD */
+  sprintf (name, "/dev/rda%d", unit);
 #else
 # warning "BIOS drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -621,6 +639,47 @@ set_attrib (int attr)
 }
 
 
+/* Get the geometry of a drive DRIVE. If an error occurs, return zero,
+   otherwise non-zero.  */
+static int
+get_drive_geometry (int drive)
+{
+  struct geometry *geom = &disks[drive];
+
+#if defined(__linux__)
+  /* Linux */
+  struct hd_geometry hdg;
+  if (ioctl (geom->flags, HDIO_GETGEO, &hdg))
+    return 0;
+  
+  /* Got the geometry, so save it. */
+  geom->cylinders = hdg.cylinders;
+  geom->heads = hdg.heads;
+  geom->sectors = hdg.sectors;
+  /* FIXME: Should get the real number of sectors.  */
+  geom->total_sectors = hdg.cylinders * hdg.heads * hdg.sectors;
+  return 1;
+  
+#elif defined(__FreeBSD__)
+  /* FreeBSD */
+  struct disklabel hdg;
+  if (ioctl (disks[drive].flags, DIOCGDINFO, &hdg))
+    return 0;
+  
+  disks[drive].cylinders = hdg.d_ncylinders;
+  disks[drive].heads = hdg.d_ntracks;
+  disks[drive].sectors = hdg.d_nsectors;
+  disks[drive].total_sectors = hdg.d_secperunit;
+  return 1;
+  
+#else
+# warning "In your operating system, automatic detection of geometries \
+will not be performed."
+  return 0;
+#endif
+}
+
+  
 /* Low-level disk I/O.  Our stubbed version just returns a file
    descriptor, not the actual geometry. */
 int
@@ -671,46 +730,29 @@ get_diskinfo (int drive, struct geometry *geometry)
 
       if (disks[drive].flags != -1)
 	{
-#ifdef __linux__
-	  struct hd_geometry hdg;
-	  if (! ioctl (disks[drive].flags, HDIO_GETGEO, &hdg))
+	  if (! get_drive_geometry (drive))
 	    {
-	      /* Got the geometry, so save it. */
-	      disks[drive].cylinders = hdg.cylinders;
-	      disks[drive].heads = hdg.heads;
-	      disks[drive].sectors = hdg.sectors;
-	      /* FIXME: Should get the real number of sectors.  */
-	      disks[drive].total_sectors = (hdg.cylinders
-					    * hdg.heads
-					    * hdg.sectors);
-	    }
-	  else
-	    /* FIXME: should have some other alternatives before using
-	       arbitrary defaults. */
-#else
-# warning "In your operating system, automatic detection of geometries \
-will not be performed."
-#endif
-	  /* Set some arbitrary defaults. */
-	  if (drive & 0x80)
-	    {
-	      /* Hard drive. */
-	      disks[drive].cylinders = DEFAULT_HD_CYLINDERS;
-	      disks[drive].heads = DEFAULT_HD_HEADS;
-	      disks[drive].sectors = DEFAULT_HD_SECTORS;
-	      disks[drive].total_sectors = (DEFAULT_HD_CYLINDERS
-					    * DEFAULT_HD_HEADS
-					    * DEFAULT_HD_SECTORS);
-	    }
-	  else
-	    {
-	      /* Floppy. */
-	      disks[drive].cylinders = DEFAULT_FD_CYLINDERS;
-	      disks[drive].heads = DEFAULT_FD_HEADS;
-	      disks[drive].sectors = DEFAULT_FD_SECTORS;
-	      disks[drive].total_sectors = (DEFAULT_FD_CYLINDERS
-					    * DEFAULT_FD_HEADS
-					    * DEFAULT_FD_SECTORS);
+	      /* Set some arbitrary defaults. */
+	      if (drive & 0x80)
+		{
+		  /* Hard drive. */
+		  disks[drive].cylinders = DEFAULT_HD_CYLINDERS;
+		  disks[drive].heads = DEFAULT_HD_HEADS;
+		  disks[drive].sectors = DEFAULT_HD_SECTORS;
+		  disks[drive].total_sectors = (DEFAULT_HD_CYLINDERS
+						* DEFAULT_HD_HEADS
+						* DEFAULT_HD_SECTORS);
+		}
+	      else
+		{
+		  /* Floppy. */
+		  disks[drive].cylinders = DEFAULT_FD_CYLINDERS;
+		  disks[drive].heads = DEFAULT_FD_HEADS;
+		  disks[drive].sectors = DEFAULT_FD_SECTORS;
+		  disks[drive].total_sectors = (DEFAULT_FD_CYLINDERS
+						* DEFAULT_FD_HEADS
+						* DEFAULT_FD_SECTORS);
+		}
 	    }
 	}
     }
@@ -835,8 +877,8 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
     return BIOSDISK_ERROR_GEOMETRY;
 
   /* Seek to the specified location. */
-#ifdef __linux__
-  /* FIXME: only use this section if libc doesn't have large file support */
+#if defined(__linux) && (__GLIBC__ < 2)
+  /* Maybe libc doesn't have large file support.  */
   {
     loff_t offset, result;
     static int _llseek (uint fd, ulong hi, ulong lo, loff_t *res, uint wh);
