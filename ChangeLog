@@ -1,3 +1,15 @@
+2004-05-23  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/char_io.c (grub_isspace): Use a switch sentense instead
+	of an if sentense, because that reduces the size.
+
+	* lib/device.c (read_device_map): Change the max number of DRIVE
+	to 127 from 8. This was too strict.
+
+	* stage2/asm.S (stop_floppy): Call pusha and popa outside the
+	block of real mode code. Reported by Guillem Jover
+	<guillem@debian.org>.
+
 2004-05-20  Damian Ivereigh  <damian@cisco.com>
 
 	* netboot/main.c: Fixed bootp only code so that options

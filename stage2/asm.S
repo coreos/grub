@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -211,14 +211,14 @@ ENTRY(hard_stop)
  * jumped to with a known state.
  */
 ENTRY(stop_floppy)
+	pusha
 	call	EXT_C(prot_to_real)
 	.code16
-	pusha
 	xorb	%dl, %dl
 	int	$0x13
-	popa
 	DATA32  call EXT_C(real_to_prot)
 	.code32
+	popa
 	ret
 
 /*

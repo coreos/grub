@@ -558,7 +558,7 @@ read_device_map (FILE *fp, char **map, const char *map_file)
 	  show_error (line_number, "Bad device number");
 	  return 0;
 	}
-      else if (drive > 8)
+      else if (drive > 127)
 	{
 	  show_warning (line_number,
 			"Ignoring %cd%d due to a BIOS limitation",
@@ -821,9 +821,20 @@ restore_device_map (char **map)
 }
 
 #ifdef __linux__
-/* Linux-only function, because Linux has a bug that the disk cache for
+/* Linux-only functions, because Linux has a bug that the disk cache for
    a whole disk is not consistent with the one for a partition of the
    disk.  */
+int
+is_disk_device (char **map, int drive)
+{
+  struct stat st;
+  
+  assert (map[drive] != 0);
+  assert (stat (map[drive], &st) == 0);
+  /* For now, disk devices under Linux are all block devices.  */
+  return S_ISBLK (st.st_mode);
+}
+
 int
 write_to_partition (char **map, int drive, int partition,
 		    int sector, int size, const char *buf)

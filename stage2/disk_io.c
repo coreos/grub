@@ -366,7 +366,8 @@ int
 devwrite (int sector, int sector_count, char *buf)
 {
 #if defined(GRUB_UTIL) && defined(__linux__)
-  if (current_partition != 0xFFFFFF)
+  if (current_partition != 0xFFFFFF
+      && is_disk_device (device_map, current_drive))
     {
       /* If the grub shell is running under Linux and the user wants to
 	 embed a Stage 1.5 into a partition instead of a MBR, use system
