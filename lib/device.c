@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 
 #ifdef __linux__
 # if !defined(__GLIBC__) || \
@@ -148,12 +149,36 @@ partially. This is not fatal."
   close (fd);
 }
 
+#ifdef __linux__
+/* Check if we have devfs support.  */
+static int
+have_devfs (void)
+{
+  static int dev_devfsd_exists = -1;
+  
+  if (dev_devfsd_exists < 0)
+    {
+      struct stat st;
+      
+      dev_devfsd_exists = stat ("/dev/.devfsd", &st) == 0;
+    }
+  
+  return dev_devfsd_exists;
+}
+#endif /* __linux__ */
+
 /* These three functions are quite different among OSes.  */
 static void
 get_floppy_disk_name (char *name, int unit)
 {
-#if defined(__linux__) || defined(__GNU__)
-  /* GNU/Linux and GNU/Hurd */
+#if defined(__linux__)
+  /* GNU/Linux */
+  if (have_devfs ())
+    sprintf (name, "/dev/floppy/%d", unit);
+  else
+    sprintf (name, "/dev/fd%d", unit);
+#elif defined(__GNU__)
+  /* GNU/Hurd */
   sprintf (name, "/dev/fd%d", unit);
 #elif defined(__FreeBSD__)
   /* FreeBSD */
@@ -469,6 +494,43 @@ init_device_map (char ***map, const char *map_file, int floppy_disks)
 	}
     }
   
+#ifdef __linux__
+  if (have_devfs ())
+    {
+      while (1)
+	{
+	  char discn[32];
+	  char name[PATH_MAX];
+	  struct stat st;
+
+	  /* Linux creates symlinks "/dev/discs/discN" for convenience.
+	     The way to number disks is the same as GRUB's.  */
+	  sprintf (discn, "/dev/discs/disc%d", num_hd);
+	  if (stat (discn, &st) < 0)
+	    break;
+	  
+	  if (realpath (discn, name))
+	    {
+	      strcat (name, "/disc");
+	      (*map)[num_hd + 0x80] = strdup (name);
+	      assert ((*map)[num_hd + 0x80]);
+	      
+	      /* If the device map file is opened, write the map.  */
+	      if (fp)
+		fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
+	    }
+	  
+	  num_hd++;
+	}
+      
+      /* OK, close the device map file if opened.  */
+      if (fp)
+	fclose (fp);
+      
+      return 1;
+    }
+#endif /* __linux__ */
+    
   /* IDE disks.  */
   for (i = 0; i < 8; i++)
     {
@@ -535,7 +597,7 @@ int
 write_to_partition (char **map, int drive, int partition,
 		    int sector, int size, const char *buf)
 {
-  char dev[64];	/* XXX */
+  char dev[PATH_MAX];	/* XXX */
   int fd;
   
   if ((partition & 0x00FF00) != 0x00FF00)
@@ -547,7 +609,14 @@ write_to_partition (char **map, int drive, int partition,
     }
   
   assert (map[drive] != 0);
-  sprintf (dev, "%s%d", map[drive], ((partition >> 16) & 0xFF) + 1);
+  
+  strcpy (dev, map[drive]);
+  if (have_devfs ())
+    {
+      if (strcmp (dev + strlen(dev) - 5, "/disc") == 0)
+	strcat (dev + strlen(dev) - 5, "/part");
+    }
+  sprintf (dev + strlen(dev), "%d", ((partition >> 16) & 0xFF) + 1);
   
   /* Open the partition.  */
   fd = open (dev, O_RDWR);

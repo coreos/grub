@@ -1,3 +1,17 @@
+2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Roderich Schupp:
+	* lib/device.c: Include <limits.h>.
+	[__linux__] (have_devfs): New function.
+	(get_floppy_disk_name) [__linux__]: If devfs is supported, use
+	the name "/dev/floppy/N" instead.
+	(init_device_map) [__linux__]: If devfs is supported, use
+	"/dev/discs/discN" instead.
+	[__linux__] (write_to_partition): Change the size of DEV to
+	PATH_MAX instead of 64.
+	If devfs is supported, replace "/disc" in the device name with
+	"/part".
+	
 2000-10-15  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Roderich Schupp <rsch@ExperTeam.de>:
