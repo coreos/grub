@@ -189,7 +189,7 @@ grub_arg_parse (grub_command_t cmd, int argc, char **argv,
   grub_err_t add_arg (char *s)
     {
       argl = grub_realloc (argl, (++num) * sizeof (char *));
-      if (! args)
+      if (! argl)
 	return grub_errno;
       argl[num - 1] = s;
       return 0;

@@ -335,7 +335,7 @@ grub_realloc (void *ptr, grub_size_t size)
   get_header_from_pointer (ptr, &p, &r);
   
   if (p->size >= n)
-    return p;
+    return ptr;
   
   q = grub_malloc (size);
   if (! q)

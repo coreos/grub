@@ -1,3 +1,11 @@
+2004-07-12  Marco Gerards  <metgerards@student.han.nl>
+
+	* normal/arg.c (grub_arg_parse): Correct error handling after
+	reallocating the argumentlist (check if `argl' is not null instead
+	of checking if `args' is not null).
+	* kern/mm.c (grub_realloc): Return the same pointer when using the
+	same region, instead of returning the header address.
+
 2004-07-11  Marco Gerards  <metgerards@student.han.nl>
 
 	* disk/powerpc/ieee1275/partition.c (grub_partition_iterate): Skip
