@@ -33,10 +33,12 @@ extern int get_diskinfo_standard (int drive,
 				  unsigned long *cylinders,
 				  unsigned long *heads,
 				  unsigned long *sectors);
+#if 0
 extern int get_diskinfo_floppy (int drive,
 				unsigned long *cylinders,
 				unsigned long *heads,
 				unsigned long *sectors);
+#endif
 
 
 /* Read/write NSEC sectors starting from SECTOR in DRIVE disk with GEOMETRY
@@ -215,12 +217,15 @@ get_diskinfo (int drive, struct geometry *geometry)
 				   &geometry->heads,
 				   &geometry->sectors);
 
+#if 0
       /* If fails, then try floppy-specific probe routine.  */
       if (err)
 	err = get_diskinfo_floppy (drive,
 				   &geometry->cylinders,
 				   &geometry->heads,
 				   &geometry->sectors);
+#endif
+      
       if (err)
 	return err;
 

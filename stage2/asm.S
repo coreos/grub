@@ -1220,7 +1220,8 @@ ENTRY(get_diskinfo_standard)
 
 	ret
 
-		
+
+#if 0		
 /*
  *   int get_diskinfo_floppy (int drive, unsigned long *cylinders, 
  *                            unsigned long *heads, unsigned long *sectors)
@@ -1304,7 +1305,8 @@ probe_values:
 	popl	%ebp
 
 	ret
-
+#endif
+	
 
 /* Source files are splitted, as they have different copyrights.  */
 #ifndef STAGE1_5

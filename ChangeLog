@@ -1,5 +1,14 @@
 2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	Don't use get_diskinfo_floppy. Reported by Ben Liblit
+	<liblit@eecs.berkeley.edu>.
+	
+	* stage2/asm.S (get_diskinfo_floppy): Removed (by cpp).
+	* stage2/bios.c (get_diskinfo_floppy): Removed.
+	(get_diskinfo): Don't call get_diskinfo_floppy any longer.
+	
+2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	Based on a patch from Jeremy Katz <katzj@redhat.com>:
 	* docs/grub.texi (Stage2 errors): Added documentation on the
 	error number 33 (Serial device not configured).
