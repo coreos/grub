@@ -1,3 +1,9 @@
+2002-09-13  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/serial.c (fill_input_buf): Take a new argument NOWAIT.
+	If NOWAIT is true, don't loop.
+	All callers are changed.
+
 2002-09-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.in (--disable-serial): Fix a typo in the

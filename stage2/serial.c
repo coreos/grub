@@ -260,7 +260,7 @@ serial_translate_key_sequence (void)
 }
     
 static
-int fill_input_buf (void)
+int fill_input_buf (int nowait)
 {
   int i;
 
@@ -276,6 +276,9 @@ int fill_input_buf (void)
 	  /* Reset the counter to zero, to wait for the same interval.  */
 	  i = 0;
 	}
+      
+      if (nowait)
+	break;
     }
 
   /* Translate some key sequences.  */
@@ -290,7 +293,7 @@ serial_getkey (void)
 {
   int c;
   
-  while (! fill_input_buf ())
+  while (! fill_input_buf (0))
     ;
 
   c = input_buf[0];
@@ -304,7 +307,7 @@ serial_getkey (void)
 int
 serial_checkkey (void)
 {
-  if (fill_input_buf ())
+  if (fill_input_buf (1))
     return input_buf[0];
 
   return -1;
