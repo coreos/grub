@@ -3747,6 +3747,7 @@ setup_func (char *arg, int flags)
   {
     {"ext2fs",   "/e2fs_stage1_5"},
     {"fat",      "/fat_stage1_5"},
+    {"ufs2",     "/ufs2_stage1_5"},
     {"ffs",      "/ffs_stage1_5"},
     {"iso9660",  "/iso9660_stage1_5"},
     {"jfs",      "/jfs_stage1_5"},

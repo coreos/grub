@@ -1,3 +1,41 @@
+2004-05-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Sergey Matveychuk <sem@ciam.ru>:
+	* stage2/size_test: Added a check for ufs2_stage1_5.
+
+	* stage2/shared.h (STAGE2_ID_UFS2_STAGE1_5): New macro.
+	[FSYS_UFS2] (STAGE2_ID): Set to STAGE2_ID_UFS2_STAGE1_5.
+
+	* stage2/filesys.h (FSYS_UFS2_NUM): New macro.
+	[FSYS_UFS2] (ufs2_mount): New prototype.
+	[FSYS_UFS2] (ufs2_read): Likewise.
+	[FSYS_UFS2] (ufs2_dir): Likewise.
+	[FSYS_UFS2] (ufs2_embed): Likewise.
+	(NUM_FSYS): Added FSYS_UFS2_NUM.
+
+	* stage2/disk_io.c (fsys_table): Added an ufs2 entry.
+
+	* stage2/builtins.c (setup_func): Added ufs2 into the
+	STAGE1_5_MAP.
+
+	* stage2/Makefile.am (libgrub_a_SOURCES): Added fsys_ufs2.c.
+	(libgrub_a_CFLAGS): Added -DFSYS_UFS2=1.
+	(pkgdata_DATA): Added ufs2_stage1_5.
+	(noinst_PROGRAMS): Added ufs2_stage1_5.exec.
+	(ufs2_stage1_5_exec_SOURCES): New variable.
+	(ufs2_stage1_5_exec_CFLAGS): Likewise.
+	(ufs2_stage1_5_exec_CCASFLAGS): Likewise.
+	(ufs2_stage1_5_exec_LDFLAGS): Likewise.
+
+	* grub/Makefile.am (AM_CPPFLAGS): Added -DFSYS_ISO9660=1,
+	-DFSYS_JFS=1, -DFSYS_REISERFS=1, -DFSYS_UFS2=1, -DFSYS_VSTAFS=1,
+	-DFSYS_XFS=1, and -DUSE_MD5_PASSWORDS=1.
+
+	* configure.ac (--disable-ufs2): New option.
+
+	* stage2/fsys_ufs2.c: New file.
+	* stage2/ufs2.h: Likewise.
+
 2004-05-10  Robert Millan  <robertmh@gnu.org>
 
 	* lib/device.c: Mangle __FreeBSD_* macro usage to support

@@ -7,6 +7,7 @@ New:
 * Add CDROM support for El Torito with no emulation mode. You can use
   (cd) as a CDROM drive in the config file.
 * Option --no-mem-option is implied for Linux 2.4.18 and newer.
+* Add support for UFS2.
 
 New in 0.94 - 2004-01-25:
 * Support building on x86-64 with gcc -m32.

@@ -242,6 +242,13 @@ if test x"$enable_ffs" != xno; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_FFS=1"
 fi
 
+AC_ARG_ENABLE(ufs2,
+  [  --disable-ufs2          disable UFS2 support in Stage 2])
+
+if test x"$enable_ufs2" != xno; then
+  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_UFS2=1"
+fi
+
 AC_ARG_ENABLE(minix,
   [  --disable-minix         disable Minix fs support in Stage 2])
 

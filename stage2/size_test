@@ -38,6 +38,8 @@ check ()
 # The bootloader area of a FFS partition is 14 sectors.
 check ffs_stage1_5 7168
 
+check ufs2_stage1_5 7168
+
 # Stage 1.5 can be installed in the sectors immediately after MBR in the
 # first cylinder, so the size is (63 - 1) sectors.
 check fat_stage1_5 31744

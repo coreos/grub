@@ -30,6 +30,16 @@ int ffs_embed (int *start_sector, int needed_sectors);
 #define FSYS_FFS_NUM 0
 #endif
 
+#ifdef FSYS_UFS2
+#define FSYS_UFS2_NUM 1
+int ufs2_mount (void);
+int ufs2_read (char *buf, int len);
+int ufs2_dir (char *dirname);
+int ufs2_embed (int *start_sector, int needed_sectors);
+#else
+#define FSYS_UFS2_NUM 0
+#endif
+
 #ifdef FSYS_FAT
 #define FSYS_FAT_NUM 1
 int fat_mount (void);
@@ -118,7 +128,7 @@ int iso9660_dir (char *dirname);
 #define NUM_FSYS	\
   (FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM + FSYS_MINIX_NUM	\
    + FSYS_REISERFS_NUM + FSYS_VSTAFS_NUM + FSYS_JFS_NUM + FSYS_XFS_NUM	\
-   + FSYS_TFTP_NUM + FSYS_ISO9660_NUM)
+   + FSYS_TFTP_NUM + FSYS_ISO9660_NUM + FSYS_UFS2_NUM)
 #endif
 
 /* defines for the block filesystem info area */
