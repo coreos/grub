@@ -1178,7 +1178,10 @@ int
 memcheck (int addr, int len)
 {
 #ifdef GRUB_UTIL
-  static int start_addr (void)
+  auto int start_addr (void);
+  auto int end_addr (void);
+  
+  auto int start_addr (void)
     {
       int ret;
 # if defined(HAVE_START_SYMBOL)
@@ -1189,7 +1192,7 @@ memcheck (int addr, int len)
       return ret;
     }
 
-  static int end_addr (void)
+  auto int end_addr (void)
     {
       int ret;
 # if defined(HAVE_END_SYMBOL)

@@ -493,12 +493,15 @@ check_device (const char *device)
 static int
 read_device_map (FILE *fp, char **map, const char *map_file)
 {
-  static void show_error (int no, const char *msg)
+  auto void show_error (int no, const char *msg);
+  auto void show_warning (int no, const char *msg, ...);
+  
+  auto void show_error (int no, const char *msg)
     {
       fprintf (stderr, "%s:%d: error: %s\n", map_file, no, msg);
     }
   
-  static void show_warning (int no, const char *msg, ...)
+  auto void show_warning (int no, const char *msg, ...)
     {
       va_list ap;
       

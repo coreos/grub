@@ -1,3 +1,17 @@
+2005-02-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* grub/asmstub.c (grub_stage2): Use auto instead of static for
+	nested functions.
+
+	* stage2/char_io.c (memcheck) [GRUB_UTIL]: Likewise.
+
+	* stage2/builtins.c (blocklist_func): Likewise.
+	(color_func): Likewise.
+	(install_func): Likewise.
+	(setkey_func): Likewise.
+
+	* lib/device.c (read_device_map): Likewise.
+
 2005-01-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
         * configure.ac (AC_INIT): Upgraded to 0.96.

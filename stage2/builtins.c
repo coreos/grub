@@ -141,9 +141,11 @@ blocklist_func (char *arg, int flags)
   int num_entries = 0;
   int last_length = 0;
 
+  auto void disk_read_blocklist_func (int sector, int offset, int length);
+  
   /* Collect contiguous blocks into one entry as many as possible,
      and print the blocklist notation on the screen.  */
-  static void disk_read_blocklist_func (int sector, int offset, int length)
+  auto void disk_read_blocklist_func (int sector, int offset, int length)
     {
       if (num_sectors > 0)
 	{
@@ -589,8 +591,10 @@ color_func (char *arg, int flags)
     "white"
   };
 
+  auto int color_number (char *str);
+  
   /* Convert the color name STR into the magical number.  */
-  static int color_number (char *str)
+  auto int color_number (char *str)
     {
       char *ptr;
       int i;
@@ -1774,8 +1778,11 @@ install_func (char *arg, int flags)
   char *stage2_os_file = 0;
 #endif /* GRUB_UTIL */
   
+  auto void disk_read_savesect_func (int sector, int offset, int length);
+  auto void disk_read_blocklist_func (int sector, int offset, int length);
+  
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
-  static void disk_read_savesect_func (int sector, int offset, int length)
+  auto void disk_read_savesect_func (int sector, int offset, int length)
     {
       if (debug)
 	printf ("[%d]", sector);
@@ -1791,7 +1798,7 @@ install_func (char *arg, int flags)
 
   /* Write SECTOR to INSTALLLIST, and update INSTALLADDR and
      INSTALLSECT.  */
-  static void disk_read_blocklist_func (int sector, int offset, int length)
+  auto void disk_read_blocklist_func (int sector, int offset, int length)
     {
       if (debug)
 	printf("[%d]", sector);
@@ -3610,7 +3617,10 @@ setkey_func (char *arg, int flags)
   int to_code, from_code;
   int map_in_interrupt = 0;
   
-  static int find_key_code (char *key)
+  auto int find_key_code (char *key);
+  auto int find_ascii_code (char *key);
+  
+  auto int find_key_code (char *key)
     {
       int i;
 
@@ -3627,7 +3637,7 @@ setkey_func (char *arg, int flags)
       return 0;
     }
   
-  static int find_ascii_code (char *key)
+  auto int find_ascii_code (char *key)
     {
       int i;
       

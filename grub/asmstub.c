@@ -113,31 +113,33 @@ grub_stage2 (void)
   char *scratch, *simstack;
   int i;
 
+  auto volatile void doit (void);
+  
   /* We need a nested function so that we get a clean stack frame,
      regardless of how the code is optimized. */
-  static volatile void doit ()
-  {
-    /* Make sure our stack lives in the simulated memory area. */
-    asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"
-		  : "=&r" (realstack) : "r" (simstack));
-
-    /* Do a setjmp here for the stop command.  */
-    if (! setjmp (env_for_exit))
-      {
-	/* Actually enter the generic stage2 code.  */
-	status = 0;
-	init_bios_info ();
-      }
-    else
-      {
-	/* If ERRNUM is non-zero, then set STATUS to non-zero.  */
-	if (errnum)
-	  status = 1;
-      }
-
-    /* Replace our stack before we use any local variables. */
-    asm volatile ("movl %0, %%esp\n" : : "r" (realstack));
-  }
+  auto volatile void doit (void)
+    {
+      /* Make sure our stack lives in the simulated memory area. */
+      asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"
+		    : "=&r" (realstack) : "r" (simstack));
+      
+      /* Do a setjmp here for the stop command.  */
+      if (! setjmp (env_for_exit))
+	{
+	  /* Actually enter the generic stage2 code.  */
+	  status = 0;
+	  init_bios_info ();
+	}
+      else
+	{
+	  /* If ERRNUM is non-zero, then set STATUS to non-zero.  */
+	  if (errnum)
+	    status = 1;
+	}
+      
+      /* Replace our stack before we use any local variables. */
+      asm volatile ("movl %0, %%esp\n" : : "r" (realstack));
+    }
 
   assert (grub_scratch_mem == 0);
   scratch = malloc (0x100000 + EXTENDED_MEMSIZE + 15);
