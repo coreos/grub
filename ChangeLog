@@ -1,5 +1,14 @@
 2000-08-28  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* grub/asmstub.c (console_putchar) [HAVE_LIBCURSES]: If
+	USE_CURSES is true, emulate a new line like a ordinary terminal,
+	because ncurses treats it badly. If current position on y-axis
+	is the bottom of the screen, call scroll. Otherwise, call move
+	with the arguments, Y + 1 and X, where X and Y are current
+	position of the cursor.
+	
+2000-08-28  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/asm.S (console_putchar): Don't print a carriage return
 	when C is a newline.
 	* stage2/char_io.c (grub_putchar): Call grub_putchar with the

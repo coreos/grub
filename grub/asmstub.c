@@ -499,7 +499,22 @@ console_putchar (int c)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)
-    addch (c);
+    {
+      /* In ncurses, a newline is treated badly, so we emulate it in our
+	 own way.  */
+      if (c == '\n')
+	{
+	  int x, y;
+
+	  getyx (stdscr, y, x);
+	  if (y + 1 == LINES)
+	    scroll (stdscr);
+	  else
+	    move (y + 1, x);
+	}
+      else
+	addch (c);
+    }
   else
 #endif
   putchar (c);
