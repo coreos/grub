@@ -1,3 +1,21 @@
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
 /*
  *  <Insert copyright here : it must be BSD-like so anyone can use it>
@@ -41,9 +59,52 @@
 
 
 /*
+ *  This is the Intel MultiProcessor Spec debugging/display code.
+ */
+
+#define IMPS_DEBUG
+#define KERNEL_PRINT(x)         printf x
+#define CMOS_WRITE_BYTE(x, y)	cmos_write_byte(x, y)
+#define CMOS_READ_BYTE(x)	cmos_read_byte(x)
+#define PHYS_TO_VIRTUAL(x)	(x)
+#define VIRTUAL_TO_PHYS(x)	(x)
+
+static inline unsigned char
+inb (unsigned short port)
+{
+  unsigned char data;
+
+  __asm __volatile ("inb %1,%0" :"=a" (data):"d" (port));
+  return data;
+}
+
+static inline void
+outb (unsigned short port, unsigned char val)
+{
+  __asm __volatile ("outb %0,%1"::"a" (val), "d" (port));
+}
+
+
+static inline void
+cmos_write_byte (int loc, int val)
+{
+  outb (0x70, loc);
+  outb (0x71, val);
+}
+
+static inline unsigned
+cmos_read_byte (int loc)
+{
+  outb (0x70, loc);
+  return inb (0x71);
+}
+
+
+/*
  *  Includes here
  */
 
+#include "shared.h"
 #include "apic.h"
 #include "smp-imps.h"
 

@@ -1,3 +1,20 @@
+1999-07-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/cmdline.c (skip_to): Don't increase CMDLINE if the
+	character to which CMDLINE points is NUL.
+
+	* stage2/Makefile.am (EXTRA_DIST): Removed smp-imps.c.
+	(stage2_exec_SOURCES): Added smp-imps.c.
+	* stage2/cmdline.c [!GRUB_UTIL] (IMPS_DEBUG) (KERNEL_PRINT)
+	(CMOS_WRITE_BYTE) (CMOS_READ_BYTE) (PHYS_TO_VIRTUAL)
+	(VIRTUAL_TO_PHYS) (inb) (outb) (cmos_write_byte)
+	(cmos_read_byte): These are now defined in ...
+	* stage2/smp-imps.c (IMPS_DEBUG) (KERNEL_PRINT)
+	(CMOS_WRITE_BYTE) (CMOS_READ_BYTE) (PHYS_TO_VIRTUAL)
+	(VIRTUAL_TO_PHYS) (inb) (outb) (cmos_write_byte)
+	(cmos_read_byte): ... here.
+	* stage2/cmdline.c [!GRUB_UTIL]: Include apic.h and smp-imps.h.
+	
 1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The function ungetch is simulated so that the user can use a

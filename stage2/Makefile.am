@@ -6,7 +6,7 @@ noinst_SCRIPTS = $(TESTS)
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
         mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h
-EXTRA_DIST = smp-imps.c $(noinst_SCRIPTS)
+EXTRA_DIST = $(noinst_SCRIPTS)
 
 # For <stage1.h>.
 INCLUDES = -I$(top_srcdir)/stage1
@@ -36,7 +36,7 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1 \
 # For stage2 target.
 stage2_exec_SOURCES = asm.S boot.c common.c char_io.c cmdline.c \
 	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c stage2.c \
-	bios.c
+	bios.c smp-imps.c
 stage2_exec_CFLAGS = $(STAGE2_COMPILE)
 stage2_exec_LDFLAGS = $(STAGE2_LINK)
 

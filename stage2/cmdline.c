@@ -22,51 +22,9 @@
 #include "shared.h"
 
 #ifndef GRUB_UTIL
-
-/*
- *  This is the Intel MultiProcessor Spec debugging/display code.
- */
-
-#define IMPS_DEBUG
-#define KERNEL_PRINT(x)         printf x
-#define CMOS_WRITE_BYTE(x, y)	cmos_write_byte(x, y)
-#define CMOS_READ_BYTE(x)	cmos_read_byte(x)
-#define PHYS_TO_VIRTUAL(x)	(x)
-#define VIRTUAL_TO_PHYS(x)	(x)
-
-static inline unsigned char
-inb (unsigned short port)
-{
-  unsigned char data;
-
-  __asm __volatile ("inb %1,%0":"=a" (data):"d" (port));
-  return data;
-}
-
-static inline void
-outb (unsigned short port, unsigned char val)
-{
-  __asm __volatile ("outb %0,%1"::"a" (val), "d" (port));
-}
-
-
-__inline__ static void
-cmos_write_byte(int loc, int val)
-{
-	outb(0x70, loc);
-	outb(0x71, val);
-}
-
-__inline__ static unsigned
-cmos_read_byte(int loc)
-{
-	outb(0x70, loc);
-	return inb(0x71);
-}
-
-#include "smp-imps.c"
-
-#endif /* ! GRUB_UTIL */
+# include "apic.h"
+# include "smp-imps.h"
+#endif
 
 /*
  *  These are used for determining if the command-line should ask the user
@@ -83,12 +41,12 @@ int normal_color;
 int highlight_color;
 
 char *
-skip_to(int after_equal, char *cmdline)
+skip_to (int after_equal, char *cmdline)
 {
   while (*cmdline && (*cmdline != (after_equal ? '=' : ' ')))
     cmdline++;
 
-  if (after_equal)
+  if (after_equal && *cmdline)
     cmdline++;
 
   while (*cmdline == ' ')
@@ -99,15 +57,15 @@ skip_to(int after_equal, char *cmdline)
 
 
 void
-init_cmdline(void)
+init_cmdline (void)
 {
-  printf(" [ Minimal BASH-like line editing is supported.  For the first word, TAB
+  printf (" [ Minimal BASH-like line editing is supported.  For the first word, TAB
    lists possible command completions.  Anywhere else TAB lists the possible
    completions of a device/filename.  ESC at any time exits. ]\n");
 }
 
 char commands[] =
- " Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
+" Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
   \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
   \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
@@ -115,15 +73,15 @@ char commands[] =
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
 
 static void
-debug_fs_print_func(int sector)
+debug_fs_print_func (int sector)
 {
-  printf("[%d]", sector);
+  printf ("[%d]", sector);
 }
 
 static int installaddr, installlist, installsect;
 
 static void
-debug_fs_blocklist_func(int sector)
+debug_fs_blocklist_func (int sector)
 {
   if (debug)
     printf("[%d]", sector);
