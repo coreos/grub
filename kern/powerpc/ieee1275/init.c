@@ -73,8 +73,6 @@ grub_machine_init (void)
 void
 grub_machine_fini (void)
 {
-  grub_loader_unset ();
-
   grub_ofdisk_fini ();
   grub_console_fini ();
 

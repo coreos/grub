@@ -1,3 +1,8 @@
+2005-03-30  Marco Gerards  <metgerards@student.han.nl>
+
+	* kern/powerpc/ieee1275/init.c (grub_machine_fini): Don't call
+	`grub_loader_unset'.
+
 2005-03-26  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* commands/ieee1275/halt.c (grub_cmd_halt): Call grub_halt
