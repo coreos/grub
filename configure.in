@@ -98,6 +98,15 @@ if test "x$grub_cv_asm_addr32" != xyes; then
   AC_MSG_ERROR([GRUB requires GAS .code16 addr32 support; upgrade your binutils])
 fi
 
+grub_ASM_PREFIX_REQUIREMENT
+if test "x$grub_cv_asm_prefix_requirement" != xyes; then
+  AC_DEFINE_UNQUOTED([ADDR32], [addr32; ])
+  AC_DEFINE_UNQUOTED([DATA32], [data32; ])
+else
+  AC_DEFINE_UNQUOTED([ADDR32], [addr32])
+  AC_DEFINE_UNQUOTED([DATA32], [data32])
+fi
+
 # Check for curses libraries.
 AC_CHECK_LIB(ncurses, getch, [GRUB_LIBS="$GRUB_LIBS -lncurses"
 AC_DEFINE(HAVE_LIBCURSES)],

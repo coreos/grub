@@ -1,3 +1,11 @@
+1999-08-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_ASM_PREFIX_REQUIREMENT): New function.
+	* configure.in: Call grub_ASM_PREFIX_REQUIREMENT, and define
+	ADDR32 and DATA32 based on the result.
+	* stage2/asm.S: Replace addr32 and data32 prefixes with	ADDR32
+	and DATA32 respectively.
+	
 1999-08-05  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/boot.c (load_image): Use RAW_ADDR macro when loading

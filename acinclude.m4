@@ -106,3 +106,25 @@ else
 fi
 rm -f conftest*])
 AC_MSG_RESULT([$grub_cv_asm_addr32])])
+
+dnl
+dnl Later versions of GAS requires that addr32 and data32 prefixes
+dnl appear in the same lines as the instructions they modify, while
+dnl earlier versions requires that they appear in separate lines.
+AC_DEFUN(grub_ASM_PREFIX_REQUIREMENT,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING(dnl
+[whether addr32 must be in the same line as the instruction])
+AC_CACHE_VAL(grub_cv_asm_prefix_requirement,
+[cat > conftest.s <<\EOF
+	.code16
+l1:	addr32	movb	%al, l1
+EOF
+
+if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
+  grub_cv_asm_prefix_requirement=yes
+else
+  grub_cv_asm_prefix_requirement=no
+fi
+rm -f conftest*])
+AC_MSG_RESULT([$grub_cv_asm_prefix_requirement])])
