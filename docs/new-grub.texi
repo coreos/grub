@@ -1,0 +1,163 @@
+\input texinfo
+@c -*-texinfo-*-
+@c %**start of header
+@setfilename grub.info
+@settitle GRUB Manual
+@c %**end of header
+
+@c This new manual is under development. When it will be completed, I'll
+@c replace it with the old one. If you'd like to help it, please let me
+@c know. - okuji
+
+@include version.texi
+
+@c Unify all our little indices for now.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@dircategory Kernel
+@direntry
+* GRUB: (grub).                 The GRand Unified Bootloader.
+@end direntry
+
+@dircategory Kernel
+@direntry
+* mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
+@setchapternewpage off
+
+@ifinfo
+Copyright @copyright{} 1996 Erich Boleyn
+Copyright @copyright{} 1999 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries a copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions.
+@end ifinfo
+
+@titlepage
+@sp 10
+@title The GRUB Manual
+@author Gordon Matzigkeit
+@author OKUJI Yoshinori
+@c The following two commands start the copyright page.
+@page
+@vskip 0pt plus 1filll
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1996 Erich Boleyn
+Copyright @copyright{} 1999 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by Free Software Foundation.
+@end titlepage
+
+@finalout
+@headings double
+
+@c The Top node should not appear in TeX.
+@ifnottex
+
+@node Top
+@top GRUB
+
+This file documents GNU GRUB, the Grand Unified Bootloader.  This
+edition documents version @value{VERSION}.
+@end ifnottex
+
+@menu
+Part I: The Tutorial Manual
+
+* Overview::
+* Device syntax::
+* Installation::
+* Boot::
+* Configuration::
+* FAQ::
+
+Part II: The User Reference Manual
+
+* Introduction::
+* Filesystem::
+* Interface::
+* Command::
+* Troubleshooting::
+* Invoking the grub shell::
+* Invoking mbchk::
+
+Part III: The Programmer Reference Manual
+
+* Memory map::
+* Embedded data::
+* Filesystem interface::
+* Bootstrap tricks::
+* Memory detection::
+* Low-level disk I/O::
+* MBR::
+* Partition table::
+
+Appendices and Indices
+
+* Obtaining and Building GRUB::
+* Reporting Bugs::
+* Index::
+
+@end menu
+
+@iftex
+@page
+@unnumbered{Part I: The Tutorial Manual}
+@end iftex
+
+@include tutorial.texi
+
+@iftex
+@page
+@unnumbered{Part II: The User Reference Manual}
+@end iftex
+
+@include user-ref.texi
+
+@iftex
+@page
+@unnumbered{Part III: The Programmer Reference Manual}
+@end iftex
+
+@include prog-ref.texi
+
+@iftex
+@page
+@unnumbered{Appendices and Indices}
+@end iftex
+
+@include appendices.texi
+
+@contents
+@bye

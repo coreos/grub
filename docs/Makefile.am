@@ -6,8 +6,11 @@ HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
 
+# The unfinished manuals.
+UNFINISHED_MANUALS = new-grub.texi
+
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
-	$(EXAMPLES) $(multiboot_TEXINFOS)
+	$(EXAMPLES) $(multiboot_TEXINFOS) $(UNFINISHED_MANUALS)
 
 # Cancel the rule %.texi -> %. This rule may confuse make to determine
 # the dependecies.
