@@ -6,7 +6,22 @@ New in 0.91:
 * The commands "hide" and "unhide" support logical partitions.
 * The utility ``grub-install'' supports NetBSD.
 * The network support is updated to Etherboot-5.0.5.
-* Important bugfixes are made for ReiserFS, APM, TFTP, etc.
+* The manner of handling the preset menu changes. In the previous
+  implementation, the preset menu is used only when opening the
+  configuration file failed. Now try to use the preset menu first. And,
+  if the configuration file is available, it is read after readoing the
+  preset menu. In this case, menu entries in the preset menu (if any)
+  are overrided by the configuration file.
+* Diskless support is a bit changed. In the previous, GRUB set up a
+  network automatically via a special function. In the current, the
+  function is gone and the preset menu feature is used (i.e. just
+  execute the command "bootp" as if you specified it in the preset
+  menu). This has no impact against most users, but you should take care
+  if using the preset menu for your own purpose, because GRUB doesn't
+  call "bootp" implicitly when the preset menu is used explicitly. In
+  this case, you would probably need to insert commands to initialize a
+  network into your preset menu.
+* Important bugfixes are made for ReiserFS, APM, TFTP, LBA, etc.
 
 New in 0.90 - 2001-07-11:
 * The command "setkey" resets key mappings, when no argument is

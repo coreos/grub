@@ -35,6 +35,13 @@ static int preset_menu_offset;
 static int
 open_preset_menu (void)
 {
+#ifdef GRUB_UTIL
+  /* Unless the user explicitly requests to use the preset menu,
+     always opening the preset menu fails in the grub shell.  */
+  if (! use_preset_menu)
+    return 0;
+#endif /* GRUB_UTIL */
+  
   preset_menu_offset = 0;
   return preset_menu != 0;
 }

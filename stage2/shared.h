@@ -568,6 +568,9 @@ extern unsigned long linux_text_len;
 /* If not using config file, this variable is set to zero,
    otherwise non-zero.  */
 extern int use_config_file;
+/* If using the preset menu, this variable is set to non-zero,
+   otherwise zero.  */
+extern int use_preset_menu;
 /* If not using curses, this variable is set to zero, otherwise non-zero.  */
 extern int use_curses;
 /* The flag for verbose messages.  */

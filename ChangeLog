@@ -1,5 +1,19 @@
 2002-01-08  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* grub/main.c (use_preset_menu): New variable.
+	(OPT_PRESET_MENU): New macro.
+	(longopts): Added an entry for "--preset-menu".
+	(usage): Added a description for "--preset-menu". Also, change
+	the first character of the description for "--device-map" to
+	lower case for consistency.
+	(main): Set USE_PRESET_MENU to 1 in the case of OPT_PRESET_MENU.
+	* stage2/shared.h (use_preset_menu): Declared.
+	* stage2/stage2.c [PRESET_MENU_STRING || SUPPORT_DISKLESS]
+	(open_preset_menu) [GRUB_UTIL]: If USE_PRESET_MENU is false,
+	return zero immediately.
+
+2002-01-08  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* stage2/common.c [SUPPORT_DISKLESS]
 	(setup_diskless_environment): Removed. The feature is moved to
 	the preset menu.
