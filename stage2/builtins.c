@@ -1503,7 +1503,7 @@ keycode_func (char *arg, int flags)
   safe_parse_maxint (&from_code, &from);
   if (errnum)
     return 1;
-  if (from < 0 || to > 0xff)
+  if (from < 0 || from > 0xff)
     {
       /* FIXME: more appropriate error code!  */
       errnum = ERR_NUMBER_PARSING;
@@ -1513,13 +1513,13 @@ keycode_func (char *arg, int flags)
   /* Find an empty slot.  */
   for (i = 0; i < KEY_MAP_SIZE; i++)
     {
-      if ((key_map[i] & 0xff) == from)
+      if ((bios_key_map[i] & 0xff) == from)
 	{
 	  /* Perhaps the user wants to overwrite the map.  */
 	  break;
 	}
 
-      if (! key_map[i])
+      if (! bios_key_map[i])
 	break;
     }
 
@@ -1531,10 +1531,10 @@ keycode_func (char *arg, int flags)
 
   if (to == from)
     /* If TO is equal to FROM, delete the entry.  */
-    grub_memmove ((char *) &key_map[i], (char *) &key_map[i + 1],
+    grub_memmove ((char *) &bios_key_map[i], (char *) &bios_key_map[i + 1],
 		  sizeof (unsigned short) * (KEY_MAP_SIZE - i));
   else
-    key_map[i] = (to << 8) | from;
+    bios_key_map[i] = (to << 8) | from;
 
   /* Ugly but should work.  */
   unset_int15_handler ();

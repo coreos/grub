@@ -12,8 +12,6 @@ Priorities:
   Things in this file are ranked with one to three !; the more, the
   higher priority.
 
-* Support partition syntax to correspond with BSD ``slice'' syntax
-  (`(hd0,1a)' -> `/dev/hd0s2a'). !!
 ? Add a partition naming syntax that means ``the first partition of
   this type''.  We need this for clean Hurd install floppies.
 * Add a real scripting language, possibly retaining backward

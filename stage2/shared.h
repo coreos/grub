@@ -121,7 +121,7 @@ extern char *grub_scratch_mem;
 #define DRIVE_MAP_SIZE		8
 
 /* The size of the key map.  */
-#define KEY_MAP_SIZE		8
+#define KEY_MAP_SIZE		32
 
 
 /*
@@ -511,7 +511,7 @@ void set_int15_handler (void);
 void unset_int15_handler (void);
 
 /* The key map.  */
-extern unsigned short key_map[];
+extern unsigned short bios_key_map[];
 
 /* calls for direct boot-loader chaining */
 void chain_stage1 (int segment, int offset, int part_table_addr)

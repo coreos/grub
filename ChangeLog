@@ -1,3 +1,31 @@
+1999-10-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/disk_io.c (set_device) [!STAGE1_5]: Remove the
+	preliminary Mach-style device name support. I've decided that
+	the support is not necessary.
+	(setup_part) [!STAGE1_5]: Do not strip the leading "/dev/".
+	* docs/help2man: Upgraded to 1.016.
+	* docs/mbchk.1: Regenerated.
+	* docs/grub.8: Likewise.
+	* grub/asmstub.c: Rename KEY_MAP to BIOS_KEY_MAP.
+	
+	* stage2/asm.S [!STAGE1_5] (set_int15_handler): Use 0 instead of
+	the maximum number for the segment.
+	[!STAGE1_5] (unset_int15_handler): Likewise.
+	[!STAGE1_5] (int15_handler): Almost rewritten. If non-carrier,
+	ignore the scancode. If the scancode is E1 or E0, then set
+	INT15_SKIP_FLAG to 0x74, and if the previous scancode is E1 or
+	E0, set INT15_SKIP_FLAG to 0xea. Clear bit 7 in %dl. Save bit 7
+	of %al in %bl. Do not lcall. Use ljmp instead.
+	[!STAGE1_5] (key_map): Renamed to ...
+	[!STAGE1_5] (bios_key_map): ... this.
+	* stage2/builtins.c (keycode_func): Check if FROM is greater
+	than 0xff instead of double-checking for TO. Use BIOS_KEY_MAP
+	instead of KEY_MAP.
+	* stage2/shared.h (KEY_MAP_SIZE): Set to 32.
+	(key_map): Removed.
+	(bios_key_map): Declared.
+	
 1999-10-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Now the BIOS drive remapping is functional.

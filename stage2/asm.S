@@ -433,11 +433,10 @@ ENTRY(set_int15_handler)
 	movw	%ax, ABS(int15_segment)
 
 	/* save the new int15 handler */
-	movl	$ABS(int15_handler), %eax
-	rorl	$4, %eax
-	movw	%ax, 2(%edi)
-	shrl	$28, %eax
+	movw	$ABS(int15_handler), %ax
 	movw	%ax, (%edi)
+	xorw	%ax, %ax
+	movw	%ax, 2(%edi)
 
 	popl	%edi
 	ret
@@ -453,12 +452,11 @@ ENTRY(unset_int15_handler)
 	
 	/* check if int15_handler is set */
 	movl	$0x54, %edi
-	movl	$ABS(int15_handler), %eax
-	rorl	$4, %eax
-	cmpw	%ax, 2(%edi)
-	jne	1f
-	shrl	$28, %eax
+	movw	$ABS(int15_handler), %ax
 	cmpw	%ax, (%edi)
+	jne	1f
+	xorw	%ax, %ax
+	cmpw	%ax, 2(%edi)
 	jne	1f
 
 	/* restore the original */
@@ -474,24 +472,46 @@ ENTRY(unset_int15_handler)
 
 /*
  * Translate a key code to another.
+ *
+ * Note: This implementation cannot handle more than one length
+ * scancodes (such as Right Ctrl).
  */
 	.code16
 int15_handler:
+	/* if non-carrier, ignore it */
+	jnc	1f
 	/* check if AH=4F */
 	cmpb	$0x4F, %ah
-	jmp	1f
+	jne	1f
 
+	/* E0 and E1 are special */
+	cmpb	$0xE1, %al
+	je	4f
+	cmpb	$0xE0, %al
+	/* this flag is actually the machine code (je or jmp) */
+int15_skip_flag:	
+	je	4f
+	
+	pushw	%bp
+	movw	%sp, %bp
+	
+	pushw	%bx
 	pushw	%dx
 	pushw	%ds
 	pushw	%si
 
-	/* save %ax in %dx */
+	/* save bits 0-6 of %al in %dl */
 	movw	%ax, %dx
+	andb	$0x7f, %dl
+	/* save the highest bit in %bl */
+	movb	%al, %bl
+	xorb	%dl, %bl
 	/* set %ds to 0 */
 	xorw	%ax, %ax
 	movw	%ax, %ds
 	/* set %si to the key map */
-	movw	$ABS(key_map), %si
+	movw	$ABS(bios_key_map), %si
+
 	/* find the key code from the key map */
 2:
 	lodsw
@@ -506,23 +526,31 @@ int15_handler:
 3:
 	/* restore %ax */
 	movw	%dx, %ax
+	orb	%bl, %al
+	/* make sure that CF is set */
+	orw	$1, 6(%bp)
 	/* restore other registers */
 	popw	%si
 	popw	%ds
 	popw	%dx
+	popw	%bx
+	popw	%bp
 	iret
+	
+4:
+	/* tricky: jmp (0x74) <-> je (0xeb) */
+	xorb	$(0x74 ^ 0xeb), ABS(int15_skip_flag)
 1:
-	/* simulate the interrupt call */
-	pushf
+	/* just cascade to the original */
 	/* ljmp */
-	.byte	0x9a
+	.byte	0xea
 int15_offset:	.word	0
 int15_segment:	.word	0
-	iret
 
 	.code32
-	
-ENTRY(key_map)
+
+	.align	4	
+ENTRY(bios_key_map)
 	.space	(KEY_MAP_SIZE + 1) * 2
 	
 	
@@ -622,7 +650,7 @@ int13_handler:
 	/* set %ax and %bp to the original values */
 	movw	2(%bp), %ax
 	movw	(%bp), %bp
-	/* ljmp */
+	/* lcall */
 	.byte	0x9a
 int13_offset:	.word	0
 int13_segment:	.word	0
