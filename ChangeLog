@@ -1,3 +1,8 @@
+2004-07-16  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/grub-install.in (convert): Fix the sed statement for
+	Linux. The expression was ambigious in some cases.
+
 2004-06-29  Robert Millan  <robertmh@gnu.org>
 
 	* util/grub-set-default.in: Fix minor syntax error (non-escaped
