@@ -3099,9 +3099,9 @@ print_root_device (void)
   current_drive = saved_drive;
   print_fsys_type ();
 }
-      
+
 static int
-root_func (char *arg, int flags)
+real_root_func (char *arg, int attempt_mount)
 {
   int hdbias = 0;
   char *biasptr;
@@ -3120,8 +3120,11 @@ root_func (char *arg, int flags)
     return 1;
 
   /* Ignore ERR_FSYS_MOUNT.  */
-  if (! open_device () && errnum != ERR_FSYS_MOUNT)
-    return 1;
+  if (attempt_mount)
+    {
+      if (! open_device () && errnum != ERR_FSYS_MOUNT)
+	return 1;
+    }
 
   /* Clear ERRNUM.  */
   errnum = 0;
@@ -3135,9 +3138,16 @@ root_func (char *arg, int flags)
   bootdev = set_bootdev (hdbias);
 
   /* Print the type of the filesystem.  */
-  print_fsys_type ();
+  if (attempt_mount)
+    print_fsys_type ();
 
   return 0;
+}
+
+static int
+root_func (char *arg, int flags)
+{
+  return real_root_func (arg, 1);
 }
 
 static struct builtin builtin_root =
@@ -3163,20 +3173,7 @@ static struct builtin builtin_root =
 static int
 rootnoverify_func (char *arg, int flags)
 {
-  /* If ARG is empty, just print the current root device.  */
-  if (! *arg)
-    {
-      print_root_device ();
-      return 0;
-    }
-  
-  if (! set_device (arg))
-    return 1;
-
-  saved_partition = current_partition;
-  saved_drive = current_drive;
-  current_drive = -1;
-  return 0;
+  return real_root_func (arg, 0);
 }
 
 static struct builtin builtin_rootnoverify =

@@ -1,3 +1,9 @@
+2002-05-24  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (real_root_func): New function.
+	(root_func): Just call real_root_func.
+	(rootnoverify_func): Likewise.
+	
 2002-05-23  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.in (AM_INIT_AUTOMAKE): Changed the version number to
