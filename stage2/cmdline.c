@@ -40,18 +40,27 @@ int debug = 0;
 int normal_color;
 int highlight_color;
 
+/* Find the next word from CMDLINE and return the pointer. If
+   AFTER_EQUAL is non-zero, assume that the character `=' is treated as
+   a space. Caution: this assumption is for backward compatibility.  */
 char *
 skip_to (int after_equal, char *cmdline)
 {
-  while (*cmdline && (*cmdline != (after_equal ? '=' : ' ')))
-    cmdline++;
-
-  if (after_equal && *cmdline)
-    cmdline++;
-
-  while (*cmdline == ' ')
-    cmdline++;
-
+  if (after_equal)
+    {
+      while (*cmdline && *cmdline != ' ' && *cmdline != '=')
+	cmdline++;
+      while (*cmdline == ' ' || *cmdline == '=')
+	cmdline++;
+    }
+  else
+    {
+      while (*cmdline && *cmdline != ' ')
+	cmdline++;
+      while (*cmdline == ' ')
+	cmdline++;
+    }
+  
   return cmdline;
 }
 
@@ -65,13 +74,13 @@ init_cmdline (void)
 }
 
 char commands[] =
-" Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
-  \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
-  \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
-  \"geometry= <drive>\", \"hide= <device>\", \"unhide= <device>\",
-  \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
-  \"color= <normal> [<highlight>]\", \"makeactive\", \"boot\", \"quit\" and
-  \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
+" Possible commands are: \"pause ...\", \"uppermem <kbytes>\", \"root <device>\",
+  \"rootnoverify <device>\", \"chainloader <file>\", \"kernel <file> ...\",
+  \"testload <file>\", \"read <addr>\", \"displaymem\", \"impsprobe\",
+  \"geometry <drive>\", \"hide <device>\", \"unhide <device>\",
+  \"fstest\", \"debug\", \"module <file> ...\", \"modulenounzip <file> ...\",
+  \"color <normal> [<highlight>]\", \"makeactive\", \"boot\", \"quit\" and
+  \"install <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
 
 static void
 debug_fs_print_func (int sector)

@@ -1,3 +1,16 @@
+1999-09-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	The character `=' after a command is now optional.
+	
+	* stage2/char_io.c (get_cmdline): Search for a space or a equal
+	character after the first word in CMDLINE when TAB lists
+	completions, instead of just searching for a eqaul character.
+	* stage2/cmdline.c (skip_to): Treat the character `=' as a space
+	if AFTER_EQUAL is non-zero.
+	(commands): Delete all the equal characters.
+	* docs/menu.lst: Likewise.
+	* docs/grub.texi: Likewise.
+	
 1999-09-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (env_for_exit): New variable.

@@ -8,7 +8,9 @@ New in 0.5.93:
   ext2fs, FAT and FFS support in Stage 2 respectively.
 * FAT32 support is added.
 * Minix fs support is added.
-* The new commands "hide" and "unhide" are added.
+* New commands "hide" and "unhide".
+* The character `=' after a command is not necessary any longer, but it
+  is supported for backward compatibility.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

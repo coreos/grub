@@ -98,7 +98,7 @@ Introduction
 How to install GRUB on your computer
 
 * Boot floppy::                 Creating a GRUB boot floppy.
-* Automated install::           Installation via @code{install=}.
+* Automated install::           Installation via @code{install}.
 
 Booting your operating system
 
@@ -342,12 +342,12 @@ writing it.
 
 Due to the nature of a @dfn{bootloader}, you need to install GRUB on
 bootable media, such as a floppy disk. The installation can be performed
-by @code{dd} or @code{rawrite} for a boot floppy, or the @code{install=}
+by @code{dd} or @code{rawrite} for a boot floppy, or the @code{install}
 command at the GRUB command line (@pxref{Using}).
 
 @menu
 * Boot floppy::                 Creating a GRUB boot floppy.
-* Automated install::           Installation via @code{install=}.
+* Automated install::           Installation via @code{install}.
 @end menu
 
 
@@ -392,7 +392,7 @@ come with many GNU and GNU/Linux distributions.
 
 
 @node Automated install
-@section Installation via the @code{install=} command
+@section Installation via the @code{install} command
 
 @quotation
 @strong{Caution:} Installing GRUB's stage1 in this manner will erase the
@@ -404,7 +404,7 @@ important if you are installing GRUB on the first sector of a hard disk,
 since it's easy to reinitialize it (by running @code{FDISK /MBR} from DOS).
 @end quotation
 
-GRUB has a command called @code{install=} which is described in
+GRUB has a command called @code{install} which is described in
 @xref{Using}. The purpose of this section is to give examples and
 describe how to use the command in different situations.
 
@@ -417,10 +417,10 @@ in the @dfn{install partition}.  Place the GRUB @file{stage2} file, any
 optional @file{stage1.5} files, and the configuration file
 (@file{menu.lst}) in that directory.
 
-Now figure out how to use the @code{install=} command appropriately, and
+Now figure out how to use the @code{install} command appropriately, and
 you're done!
 
-Examples of how to use the @code{install=} command:
+Examples of how to use the @code{install} command:
 
 @itemize @bullet
 @item
@@ -431,7 +431,7 @@ configuration file), then run the following command at GRUB's command
 line (after booting from the GRUB floppy):
 
 @example
-install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
+install (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
 @end example
 
 This tells GRUB to grab the first sector of the floppy and use it as the
@@ -448,7 +448,7 @@ telling GRUB's stage1 to read from the first hard disk no matter where
 the stage1 was loaded from:
 
 @example
-install= (fd0)+1 d (fd0) (hd0,1)/boot/grub/stage2 0x8000 p
+install (fd0)+1 d (fd0) (hd0,1)/boot/grub/stage2 0x8000 p
 @end example
 
 By default, GRUB loads the stage2 from the disk where the stage1 was
@@ -474,7 +474,7 @@ dd if=stage2/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
 Second, specify the stage1.5 argument in blocklist format:
 
 @example
-install= (fd0)+1 (hd0) (hd0)1+1 0x2000 p (hd0,1)/boot/grub/stage2
+install (fd0)+1 (hd0) (hd0)1+1 0x2000 p (hd0,1)/boot/grub/stage2
 @end example
 
 @item
@@ -485,7 +485,7 @@ hard disk, and setting the stage2's @dfn{configuration file} to
 @file{(hd1,a)/grubdir/configfile}:
 
 @example
-install= (hd0,1)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
+install (hd0,1)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
 @end example
 @end itemize
 
@@ -494,14 +494,14 @@ and a configuration file which contains entries such as:
 
 @example
 # Start of entry:
-title= GNU/Linux installation
+title GNU/Linux installation
 
 # Installation command:
-install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
+install (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
 
 # Actually boot here:
-root= (hd0,1)
-kernel= /zImage root=/dev/hda2
+root (hd0,1)
+kernel /zImage root=/dev/hda2
 @end example
 
 @dots{} then have the install script continue from there after boot of
@@ -547,14 +547,11 @@ subset of the functions available in the BASH shell (@kbd{C-f} forward,
 @kbd{C-k} delete to end, @kbd{C-u} delete to beginning; the PC left and
 right arrow keys, @key{HOME}, @key{DEL}, and @key{END} work as well).
 
-When typing commands interactively, if the cursor is before the @samp{=}
-character in a command being typed, pressing the @key{TAB} key will
+When typing commands interactively, if the cursor is within or before
+the first word in the command-line, pressing the @key{TAB} key will
 display a listing of the available commands, and if the cursor is after
-the @samp{=} character, the @key{TAB} will provide a completion listing
+the first word, the @key{TAB} will provide a completion listing
 of disks, partitions, and filenames depending on the context.
-@c FIXME: But I want to stop this stupid hack and provide more BASH-like
-@c interface. I don't think commands ending with @samp{=} are
-@c beautiful.
 
 
 @node Menu
@@ -642,28 +639,28 @@ start, where they are ignored.
 Commands usable in configuration files only.
 
 @table @code
-@item timeout= @var{sec}
+@item timeout @var{sec}
 Set a timeout, in @var{sec} seconds, before automatically booting the
 default entry (normally the first entry defined).
 
-@item default= @var{num}
+@item default @var{num}
 Set the default entry to entry number @var{num} (if not specified, it is
 0, the first entry).
 
-@item fallback= @var{num}
+@item fallback @var{num}
 Go into unattended boot mode: if the default boot entry has any errors,
 instead of waiting for the user to do anything, it immediately starts
-over using the @var{num} entry (same numbering as the @code{default=}
+over using the @var{num} entry (same numbering as the @code{default}
 command). This obviously doesn't help if the machine was in the middle
 of the boot process (after leaving GRUB's code) and rebooted.
 
-@item password= @var{passwd} @var{new-config-file}
+@item password @var{passwd} @var{new-config-file}
 Disable all interactive editing control (menu entry editor and
 command line). If the password @var{passwd} is entered, it loads the
 @var{new-config-file} as a new config file and restarts the GRUB Stage
 2.
 
-@item title= @var{name}@dots{}
+@item title @var{name}@dots{}
 Start a new boot entry, and set its name to the contents of the rest of
 the line, starting with the first non-space character.
 @end table
@@ -671,13 +668,13 @@ the line, starting with the first non-space character.
 Commands usable both interactively and in configuration files:
 
 @table @code
-@item pause= @var{message}@dots{}
+@item pause @var{message}@dots{}
 Print the @var{message}, then wait until a key is pressed. Note that
 placing @key{^G} (ASCII code 7) in the message will cause the speaker to
 emit the standard beep sound, which is useful when prompting the user to
 change floppies.
 
-@item uppermem= @var{kbytes}
+@item uppermem @var{kbytes}
 Force GRUB to ignore what it found during the autoprobe of the memory
 available to the system, and to use @var{kbytes} as the number of
 kilobytes of upper memory installed. Any address range maps of the
@@ -688,7 +685,7 @@ only be necessary on some old machines. GRUB's BIOS probe can pick up
 all @sc{ram} on all new machines the author has ever heard of. It can
 also be used for debugging purposes to lie to an OS.
 
-@item root= @var{device} [@var{hdbias}]
+@item root @var{device} [@var{hdbias}]
 Set the current @dfn{root partition} to the device @var{device}, then
 attempt to mount it to get the partition size (for passing the partition
 descriptor in @code{ES:ESI}, used by some chain-loaded bootloaders), the
@@ -701,19 +698,19 @@ one. An example is if there is an IDE disk and a SCSI disk, then set the
 root partition normally, except for a kernel using a BSD boot
 methodology (FreeBSD or NetBSD), then use a @samp{1} for @var{hdbias}.
 
-@item rootnoverify= @var{device} [@var{hdbias}]
-Similar to @command{root=}, but don't attempt to mount the
+@item rootnoverify @var{device} [@var{hdbias}]
+Similar to @command{root}, but don't attempt to mount the
 partition. This is useful for when an OS is outside of the area of the
 disk that GRUB can read, but setting the correct root partition is still
-desired. Note that the items mentioned in @command{root=} above which
+desired. Note that the items mentioned in @command{root} above which
 derived from attempting the mount will NOT work correctly.
 
-@item chainloader= @var{file}
+@item chainloader @var{file}
 Load @var{file} as a chain-loader. Like any other file loaded by the
 filesystem code, it can use the blocklist notation to grab the first
 sector of the current partition with @samp{+1}.
 
-@item kernel= @var{file} @dots{}
+@item kernel @var{file} @dots{}
 Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
 Linux zImage or bzImage, FreeBSD a.out, or NetBSD a.out) from
 @var{file}. This command ignores the rest of the contents of the line,
@@ -721,22 +718,22 @@ except that the entire line starting with the kernel filename is passed
 verbatim as the @dfn{kernel command line}. The module state is reset,
 and so you must reload any modules.
 
-@item module= @var{file} @dots{}
+@item module @var{file} @dots{}
 Load a boot module for a Multiboot format boot image (no interpretation
 of the file contents are made, so that user of this command must know
 what the kernel in question works with). The rest of the line is passed
-as the @dfn{module command line} much like with the @command{kernel=}
+as the @dfn{module command line} much like with the @command{kernel}
 command.
 
-@item modulenounzip= @var{file} @dots{}
-Exactly like @command{module=}, except that automatic decompression is
+@item modulenounzip @var{file} @dots{}
+Exactly like @command{module}, except that automatic decompression is
 disabled.
 
-@item initrd= @var{file} @dots{}
+@item initrd @var{file} @dots{}
 Load an initial ramdisk for a Linux format boot image and set the
 appropriate parameters in the Linux setup area in memory.
 
-@item install= @var{stage1-file} [d] @var{dest-device} @var{file} @var{addr} [p] [@var{config-file}]
+@item install @var{stage1-file} [d] @var{dest-device} @var{file} @var{addr} [p] [@var{config-file}]
 This command is fairly complex, and for detailed examples one should
 look at @ref{Automated install}. In short, it will perform a full
 install presuming the stage2 or stage1.5@footnote{They're loaded the
@@ -768,7 +765,7 @@ This boots the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command line (it is implicit at the end of
 a config-file entry).
 
-@item color= @var{normal} [@var{highlight}]
+@item color @var{normal} [@var{highlight}]
 Change the menu colors. The color @var{normal} is used for the normal
 line in the menu, and the color @var{highlight} is used to highlight the
 line where the cursor points to. If you omit @var{highlight}, then the
@@ -841,24 +838,23 @@ file:
 
 @example
 # Set default colors (light gray / blue, black / light gray).
-color= 0x17 0x70
+color 0x17 0x70
 
 # Change the colors.
-title= OS-BS like
-color= 0x16 0x60
+title OS-BS like
+color 0x16 0x60
 @end example
 
-@item testload= @var{file}
+@item testload @var{file}
 Read the entire contents of @var{file} in several different ways and
 compares them, to test the filesystem code. The output is somewhat
-cryptic (see the @samp{T} subcommand of @command{syscmd=} below), but if
-no errors are reported and the final @samp{i=@var{X}, filepos=@var{Y}}
-reading has @var{X} and @var{Y} equal, then it is definitely consistent,
-and very likely works correctly subject to a consistent offset error. If
-this test succeeds, then a good next step is to try loading a kernel
-with your code.
+cryptic , but if no errors are reported and the final @samp{i=@var{X},
+filepos=@var{Y}} reading has @var{X} and @var{Y} equal, then it is
+definitely consistent, and very likely works correctly subject to a
+consistent offset error. If this test succeeds, then a good next step is
+to try loading a kernel with your code.
 
-@item read= @var{addr}
+@item read @var{addr}
 Read a 32-bit unsigned value from memory at address @var{addr} and
 displays it in hex format.
 
@@ -886,8 +882,8 @@ routines. The format is @samp{<@var{partition-offset-sector},
 partition, and @samp{[@var{disk-offset-sector}]} for low-level sector
 requests from the disk.
 
-Filesystem test mode is turned off by any use of the @command{install=}
-or @command{testload=} commands.
+Filesystem test mode is turned off by any use of the @command{install}
+or @command{testload} commands.
 
 @item quit
 Exit from the grub shell @command{grub} (@pxref{The grub shell}). This
@@ -1284,8 +1280,8 @@ option in the command line. This is a simple example:
 #!/bin/sh
 
 /sbin/grub --batch <<EOT 1>/dev/null 2>/dev/null
-root= (hd0,0)
-install= /boot/grub/stage1 (hd0) /boot/grub/stage2 0x8000 p
+root (hd0,0)
+install /boot/grub/stage1 (hd0) /boot/grub/stage2 0x8000 p
 quit
 EOT
 @end example
@@ -2856,7 +2852,7 @@ Should be set to the value of @samp{debug_fs} @emph{only} during reading
 of data for the file, not any other fs data, inodes, FAT tables,
 whatever, then set to @code{NULL} at all other times (it will be
 @code{NULL} by default). If this isn't done corrently, then the
-@command{testload=} and @command{install=} commands won't work
+@command{testload} and @command{install} commands won't work
 correctly.
 @end vtable
 

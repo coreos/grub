@@ -262,7 +262,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 	  {
 	    int i, j = 0, llen_old = llen;
 
-	    while (cmdline[j] && cmdline[j] != '=')
+	    /* Find the first word.  */
+	    while (cmdline[j] == ' ')
+	      j++;
+	    while (cmdline[j] && cmdline[j] != '=' && cmdline[j] != ' ')
 	      j++;
 
 	    /* since the command line cannot have a '\n', we're OK to use c */
