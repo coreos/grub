@@ -252,7 +252,7 @@ ext2_rdfsb (int fsblock, int buffer) {
 #ifdef E2DEBUG
     printf("fsblock %d buffer %d\n", fsblock, buffer);
 #endif /* E2DEBUG */
-  return devread(fsblock * EXT2_BLOCK_SIZE(SUPERBLOCK) / DEV_BSIZE, 0,
+  return devread(fsblock * (EXT2_BLOCK_SIZE(SUPERBLOCK) / DEV_BSIZE), 0,
                  EXT2_BLOCK_SIZE(SUPERBLOCK), (int)buffer);
 }
 
@@ -388,7 +388,7 @@ ext2fs_read(int addr, int len)
     debug_fs_func = debug_fs;
 #endif  /* NO_FANCY_STUFF */
 
-    devread(map * EXT2_BLOCK_SIZE(SUPERBLOCK) / DEV_BSIZE,
+    devread(map * (EXT2_BLOCK_SIZE(SUPERBLOCK) / DEV_BSIZE),
 	    offset, size, addr);
  
 #ifndef NO_FANCY_STUFF
@@ -483,7 +483,9 @@ ext2fs_dir(char *dirname)
            EXT2_DESC_PER_BLOCK(SUPERBLOCK));
     printf("group_id=%d group_desc=%d desc=%d\n", group_id, group_desc, desc);
 #endif /* E2DEBUG */
-    if (!ext2_rdfsb((WHICH_SUPER + group_desc + 1), (int)GROUP_DESC)) {
+    if (!ext2_rdfsb(
+	    (WHICH_SUPER + group_desc + SUPERBLOCK->s_first_data_block),
+	    (int)GROUP_DESC)) {
       return 0;
     }
     gdp = GROUP_DESC;
