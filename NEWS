@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New:
+New in 0.95 - 2004-06-13:
 * Add support for ReiserFS 3.
 * Fix support for FreeBSD 5.
 * Support ATARAID for Linux in the grub shell and grub-install.
