@@ -1,3 +1,9 @@
+2000-10-25  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/builtins.c (md5crypt_func): Use all bits of currticks ()
+	to generate the salt.  The old code would often produce the same
+	one character salt.
+
 2000-10-25  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/apm.S (get_apm_info): Fix a serious typo: prot_to_real

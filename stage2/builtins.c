@@ -2378,7 +2378,7 @@ md5crypt_func (char *arg, int flags)
 {
   char crypted[36];
   char key[32];
-  int saltlen;
+  int seed;
   int i;
   const char *const seedchars =
     "./0123456789ABCDEFGHIJKLMNOPQRST"
@@ -2391,20 +2391,18 @@ md5crypt_func (char *arg, int flags)
   grub_memmove (crypted, "$1$", 3);
 
   /* Create the length of a salt.  */
-  saltlen = currticks ();
-  saltlen &= 7;
-  saltlen++;
+  seed = currticks ();
 
   /* Generate a salt.  */
-  for (i = 0; i < saltlen; i++)
+  for (i = 0; i < 8 && seed; i++)
     {
       /* FIXME: This should be more random.  */
-      crypted[3 + i] = seedchars[(currticks () >> i) & 0x3f];
+      crypted[3 + i] = seedchars[seed & 0x3f];
+      seed >>= 6;
     }
 
   /* A salt must be terminated with `$', if it is less than 8 chars.  */
-  if (saltlen != 8)
-    crypted[3 + i] = '$';
+  crypted[3 + i] = '$';
 
 #ifdef DEBUG_MD5CRYPT
   grub_printf ("salt = %s\n", crypted);
