@@ -1,3 +1,10 @@
+2002-05-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (boot_func): If DEBUG is true, print
+	BOOT_DRIVE and BOOT_PART_OFFSET.
+	Don't set ERRNUM after rawread failed, because rawread should
+	set ERRNUM itself.
+	
 2002-05-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* lib/device.c (read_device_map): Show an error message and exit

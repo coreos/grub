@@ -301,6 +301,10 @@ boot_func (char *arg, int flags)
 	{
 	  char *dst, *src;
 	  int i;
+
+	  if (debug)
+	    grub_printf ("reading the offset 0x%x in the drive 0x%x\n",
+			 boot_drive, boot_part_offset);
 	  
 	  /* Read the MBR here, because it might be modified
 	     after opening the partition.  */
@@ -308,7 +312,6 @@ boot_func (char *arg, int flags)
 			 0, SECTOR_SIZE, (char *) SCRATCHADDR))
 	    {
 	      /* This should never happen.  */
-	      errnum = ERR_READ;
 	      return 0;
 	    }
 
