@@ -109,8 +109,13 @@ print_entry (int y, int highlight, char *entry)
   grub_putchar (' ');
   for (x = 3; x < 75; x++)
     {
-      if (*entry && x < 71)
-	grub_putchar (*entry++);
+      if (*entry && x <= 72)
+	{
+	  if (x == 72)
+	    grub_putchar (DISP_RIGHT);
+	  else
+	    grub_putchar (*entry++);
+	}
       else
 	grub_putchar (' ');
     }
