@@ -1,3 +1,9 @@
+2001-11-29  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	From Jason Thomas:
+	* stage2/disk_io.c (set_partition_hidden_flag): Complete rewrite
+	of this function which now supports logical partitions.
+	
 2001-11-12  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* docs/grub.texi: The copyright of this file is only held by

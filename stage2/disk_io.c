@@ -460,30 +460,49 @@ make_saved_active (void)
 int
 set_partition_hidden_flag (int hidden)
 {
+  unsigned long part = 0xFFFFFF;
+  unsigned long start, len, offset, ext_offset;
+  int entry, type;
   char mbr[512];
   
-  if (current_drive & 0x80)
+  /* The drive must be a hard disk.  */
+  if (! (current_drive & 0x80))
     {
-      int part = current_partition >> 16;
-
-      if (part > 3)
-	{
-          errnum = ERR_NO_PART;
-          return 0;
-        }
-
-      if (! rawread (current_drive, 0, 0, SECTOR_SIZE, mbr))
-        return 0;
-
-      if (hidden)
-	PC_SLICE_TYPE (mbr, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
-      else
-	PC_SLICE_TYPE (mbr, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
-      
-      if (! rawwrite (current_drive, 0, mbr))
-	return 0;
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
     }
-
+  
+  /* The partition must be a PC slice.  */
+  if ((current_partition >> 16) == 0xFF
+      || (current_partition & 0xFFFF) != 0xFFFF)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+  
+  /* Look for the partition.  */
+  while (next_partition (current_drive, 0xFFFFFF, &part, &type,           
+			 &start, &len, &offset, &entry,
+			 &ext_offset, mbr))
+    {                                                                       
+      if (part == current_partition)
+	{
+	  /* Found.  */
+	  if (hidden)
+	    PC_SLICE_TYPE (mbr, entry) |= PC_SLICE_TYPE_HIDDEN_FLAG;
+	  else
+	    PC_SLICE_TYPE (mbr, entry) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;       
+	  
+	  /* Write back the MBR to the disk.  */
+	  buf_track = -1;
+	  if (! rawwrite (current_drive, offset, mbr))
+	    return 1;
+	  
+	  /* Succeed.  */
+	  return 0;
+	}
+    }
+  
   return 1;
 }
 
