@@ -35,7 +35,11 @@ int grub_stage2 (void);
 char *program_name = 0;
 int use_config_file = 1;
 int use_preset_menu = 0;
+#ifdef HAVE_LIBCURSES
 int use_curses = 1;
+#else
+int use_curses = 0;
+#endif
 int verbose = 0;
 int read_only = 0;
 int floppy_disks = 1;
@@ -241,6 +245,11 @@ main (int argc, char **argv)
       
       sleep (1);
     }
+
+  /* If we don't have curses (!HAVE_LIBCURSES or --no-curses or
+     --batch) put terminal to dumb for better handling of line i/o */
+  if (!use_curses)
+    terminal |= TERMINAL_DUMB;
 
   /* Transfer control to the stage2 simulator. */
   exit (grub_stage2 ());
