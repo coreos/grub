@@ -1,0 +1,44 @@
+#
+# Sample boot menu configuration file
+#
+
+# Timeout here...
+timeout = 30
+
+# For booting Mach (getting kernel from floppy)
+title=		Utah Mach4 multiboot
+root=	(hd0,2)
+pause=My test!!
+kernel=	(fd0)/boot/kernel root=hd0s3
+module=	(fd0)/boot/bootstrap
+
+# For booting FreeBSD (getting kernel from floppy)
+title=		FreeBSD 2.2-SNAP
+root=	(hd0,2)
+kernel=	(fd0)/kernel
+
+# For booting the GNU HURD (getting kernel from floppy)
+title=		GNU HURD
+root=	(hd0,a)
+kernel=	/boot/kernel root=hd0a
+module= /boot/serverboot
+
+# For booting OS/2  (test, I have no OS/2 to test for!)
+title=		OS/2
+root=		(hd0,1)
+makeactive
+chainloader=	/boot/chain.os2
+# This is similar to "chainload", but loads a specific file
+
+# For booting Windows NT 3.5 or DOS
+title=		Windows NT 3.5/DOS boot menu
+root=		(0x80,0)
+makeactive
+chainloader=	+1
+
+# For booting DOS from a Windows NT/DOS installation
+title=		DOS
+root=		(0x80,0)
+makeactive
+chainloader=	/bootsect.dos
+

@@ -1,0 +1,213 @@
+
+Version 0.5:
+
+  - Improved error messages in the stage1 to be strings (easier
+    to read than the previous case of single characters), and
+    removed any display in the case of no error (less confusing).
+
+  - New document describing error conditions and messages.
+
+  - Improved configure/build process.
+
+  - Made the early bootup interrupt-safe.  Wasn't doing cli/sti when
+    necessary sometimes.
+
+  - It now shuts off the floppy before transferring control to any other
+    programs/modules/loaders.  (chain-loading doesn't matter here,
+    just loading 32-bit modules/kernels)
+
+  - Fixed a few stupid bugs, including a several in the ext2fs code.
+
+  - Linux boot format support extended from just "zImage" to include
+    "bzImage" and initial ramdisk (also called "initrd") support for
+    both.  "initrd" support is untested, but the critical parts were
+    taken from a supplied patch and seem OK.
+
+  - Several new command features.  See the command-listing for details.
+
+Version 0.4:
+
+  - GRUB now correctly points ES:SI at a partition descriptor when
+    chain-loading.
+
+  - Many minor bugs fixed (some in the build scripts).
+
+  - Intel MPS 1.4 config/check code is totally new, and the "syscmd="
+    command is completely removed.  Check command-listing for details.
+
+Version 0.4-pre  --  (pre-release for public testing):
+
+  - Reorganized docs, moved most "NOTE" items to a FAQ (with new
+    entries as well).
+
+  - Now supports automatic decompression of any files loaded via the
+    GRUB stage2 filesystem code.  Simply compress the file using GNU
+    gzip normally, then when loading, the GRUB internals will see the
+    contents in the decompressed state...  i.e. all GRUB functions operate
+    normally as if it is the uncompressed file.  An extra version of the
+    "module" loading function has been added which disables this
+    functionality if desired (in all the other cases, not decompressing
+    doesn't make sense).
+
+  - Changed device strings used in filesystem code to more logical
+    format.  Added "relative" disk and partition capability, see
+    command-listing and filesystem syntax description for details.
+
+  - "install=" command vastly improved.  Also moved to non-debug area.
+    Check command-listing and install documentation for details.
+
+  - Added several new commands: "rootnoverify=", "uppermem=", and a
+    new debug command "displaymem".  Check command-listing for details.
+
+  - Added versioning numbers (and subsequently broke compatibility with
+    some of the previous code, so GRUB should be re-installed!).
+
+  - Added unattended booting support via new "fallback=" command.
+
+  - During debug probe of SMP configuration table compatible with Intel
+    MPS 1.4 standard, GRUB now checks for a pointer in the EBDA.
+
+  - Using a "default=" entry greater than 11 caused the UI to do funny
+    things (it didn't pre-scroll the list to the appropriate place).
+
+  - Reading files on FAT floppies had yet more problems related by many
+    users of version 0.3 6/17/96.  Again, all known problems fixed.
+
+  - "Extended" partitions now work (still cannot make an extended partition
+    active with "makeactive" command).
+
+  - The build environment is greatly simplified, now using an autoconf-like
+    "configure" script.
+
+Version 0.3 dated 6/17/96  --  public "beta" release:
+
+  - Yet more documentation improvements.
+
+  - Known bugs in floppy operation fixed (12-bit FAT didn't work for most
+    cases, and inserting other floppies didn't flush the filesystem cache).
+
+  - NASTY uninitialized pointer bug causing "raw" floppy operation to crash
+    on several PCs is now fixed.  This seems to have been the root cause of
+    all of the compatibility problems that have currently been observed.
+
+  - debug-mode command added to automate most difficult step of installation
+    for common cases (new install method #4).
+
+  - Testing "mini-debugger" now merged with command-line when "DEBUG"
+    defined in compile (no SYSDEBUG option anymore).  See description of
+    commands in the command-line for details.
+
+Version 0.3 dated 6/2/96  --  first public "alpha" release:
+
+  - Completed initial licenses.
+
+  - Initial filesystem documentation written.
+
+  - Block-list and FAT filesystems now work as documented (in particular,
+    for the blocklist filesystem, shortcuts like "+1" for "0+1,512" now
+    work correctly).
+
+  - Fixed several problems (old and new) in the various filesystems
+    (for example, the ext2fs filesystem code is now much faster, as it
+    caches some mapping blocks where it didn't at all before).  Filesystem
+    semantics are much more uniform as well (symbolic links and reading
+    a directory as a file now return errors where it would silently fail
+    before).
+
+  - "makeactive" now works for standard PC partitions on hard disks (not
+    extended partitions...  so any PC partition number above 3 will give
+    a "no such partition" error).  If a BSD sub-partition is is used, it
+    will ignore it, and only use the primary PC partition number.
+
+Version 0.3 dated 5/20/96:
+
+  - Updated instructions (though still very sparse).
+
+  - New floppy probe (works much like the Linux floppy boot probe) attempts
+    to find the size of a floppy in a drive.  Might still need work!  Please
+    try on various floppy drives with various media!
+
+  - New floppy handler will claim a non-existent drive if the floppy disk
+    isn't present in the drive.  (for example, it won't be on the list of
+    installed drives unless a floppy is present)
+
+  - Stage1 now compatible with both a hard disk MBR and the DOS BIOS
+    parameter block (see "install/README" for more details on how this can
+    be used).
+
+  - Block-list filesystem partially works, as described in the file "NOTES".
+    Loading an a.out or elf kernel won't work with it, but all other filetypes
+    pretty much should.  (certainly chain-loading works OK)   NOTE:
+     you must use the full format "0+1,512" for just he first block...  no
+     parameters can be implicit in this version.. THis is being fixed too.
+
+  - Linux ext2 filesystem works.  (it's very slow for big files, but this
+    is being fixed)
+
+  - Linux boot type now supported.  Use a standard piggybacked image as
+    with LILO.  Put in hack to support >64MB via GRUB placing the RAM size
+    as the first item on the command-line automatically.  Must pass root
+    partition on command-line using normal Linux syntax...  if not, it uses
+    it's builtin root partition.
+
+  - Supports chain-loading.  For details, see "COMMANDS" and the examples
+    directory.  (was able to boot DOS and Windows NT on my test box).  NOTE
+    that the "root partition" must be set to work right.  "makeactive"
+    is currently a no-op.
+
+  - Several weird bugs fixed.  One important note:  If you recompile,
+    it will warn about a clash with builtin "strcmp".  This is normal...
+    do NOT remove the strcmp definition, as then GCC will possibly put
+    inline code from it's own builtin function in some places. (my strcmp
+    has slightly different functionality, hence the problem)
+
+  - Mini-debugger is currently broken.
+
+Version 0.2 dated 4/12/96:
+
+  - Completely new menu-based UI.  See "COMMANDS" and the examples
+    directory for details.  NOTE that the argument to a command must
+    be preceded by a space between it and the '=', in both the config
+    file and the command-line.  This will be fixed.
+
+Version 0.1 dated 3/31/96 (lots of changes):
+
+  - Newer version of Multiboot Standard (version 0.6) supported.
+
+  - Autodetects kernel types.  Supports Multiboot, FreeBSD, NetBSD (Linux
+    isn't finished).
+
+  - Stage 1.5 works now.  Default setup is now for working with a BSD FFS
+    floppy loading "/grub/stage2" as the main bootloader.
+
+  - Filesystem support improved.  It didn't work on many floppies
+    before (problem with the partition-detection code).
+
+  - Memory probe now supports arbitrary amounts of RAM (some technical
+    limitations exist, see Multiboot standard version 0.6 for details).
+
+  - A mini-debugger is included by default, activated by hitting '~'
+    on the command-line (it might interfere with things, but it
+    seems OK for my alpha-testing).  The commands are in the function
+    "enter_sysdebug" defined in "common.c".  If you have an Intel MPS-
+    compatible machine, there are extra commands enabled for SMP cpu
+    testing.  'q' exits and goes back to what you were doing before.
+
+Version 0.0 dated 2/6/96:
+
+  - Newer version of Multiboot Standard (version 0.4) supported.
+
+Version 0.0 dated 12/10/95:
+
+  - You can now perform TAB-based completion listing of any valid
+    partially completed disk/partition/file-name combination.  Try it
+    out to see what you like, examples are in the NOTES file under
+    "Device completion".
+
+  - Fixed a bug causing the memory size routine to sometimes report
+    rediculous values.
+
+  - Fixed some documentation (what little there is :-/ and a few assembly
+    bugs in the BIOS access routines that nobody reported yet, so I won't
+    detail it here.
+

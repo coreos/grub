@@ -1,0 +1,379 @@
+#!/bin/sh
+
+#
+#  My mini-configure, used only for:
+#
+#	(1)  Setting compiler tool names
+#	(2)  Determining assembly-level munging of C symbols
+#	(3)  Setting defines for the makefiles in a simple manner
+#
+#  Tried to be somewhat compatible with the autoconf configure.
+#    I hope this doesn't confuse people.
+#
+#  In a subsequent release, I'll probably integrate these tests into
+#    autoconf and just use that.
+#
+
+#
+# Starting definitions for variables
+target=
+silent=no
+tool_vars="CC LD OBJCOPY"
+tool_names="gcc ld objcopy"
+tool_targeted="yes yes yes"
+link_addrs="8000 2000 7C00"
+path_parts=`echo ${PATH} | sed -e s/:/\ /g`
+
+#
+#  This part is very much taken from autoconf-2.10
+#
+#     Checking for options
+#
+
+ac_prev=
+for ac_option
+do
+
+  # If the previous option needs an argument, assign it.
+  if test -n "$ac_prev"; then
+    eval "$ac_prev=\$ac_option"
+    ac_prev=
+    continue
+  fi
+
+  case "$ac_option" in
+  -*=*) ac_optarg=`echo "$ac_option" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) ac_optarg= ;; 
+  esac
+
+  # Accept the important Cygnus configure options, so we can diagnose typos.
+
+  case "$ac_option" in
+
+  -help | --help | --hel | --he)
+    cat << EOF
+Usage: configure [options] [target]
+General Options:
+  --help                  print this message
+  --quiet, --silent       do not print \`checking...' messages
+  --version               print the fact that this isn't autoconf ;-)
+Target Options:
+  --target=TARGET         use \`TARGET' as a prefix to all of the tool names
+EOF
+    exit 0 ;;
+
+  -q | -quiet | --quiet | --quie | --qui | --qu | --q \
+  | -silent | --silent | --silen | --sile | --sil)
+    silent=yes ;;
+
+  -target | --target | --targe | --targ | --tar | --ta | --t)
+    ac_prev=target ;; 
+  -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+    target="$ac_optarg" ;;
+
+  -version | --version | --versio | --versi | --vers)
+    echo "mini-configure written by Erich Boleyn with parts from autoconf-2.10"
+    exit 0 ;;
+
+  *)
+    echo "Warning: unrecognized configure option: \"$ac_option\"" ;;
+
+  esac
+done
+
+#
+#  Utility functions
+#
+
+get_substr()
+{
+	local get_local
+	get_local=$(($2+2))
+	eval $1=\$$get_local
+}
+
+count_substrs()
+{
+	local count_local
+	eval $1=-1
+	for count_local in $@ ; do
+		eval $1=\$\(\(\$$1+1\)\)
+	done
+}
+
+tool_failed()
+{
+	cat << EOF >> ../config.log
+
+Tool \`$@' either failed tests or cannot be found.
+EOF
+	cat << EOF
+
+
+FATAL ERROR in configuration !!
+
+Tool \`$@' either failed tests or cannot be found.  Please make sure
+that some standard local compiler, \`grep', \`sed', GNU \`gcc', and
+the complete GNU binutils version 2.8.1 or beyond are installed.  The first
+2 are used for automatic configuration, and the rest are required for
+building GRUB.  The file \`config.log' contains the debugging output of
+this run, and the subdirectory \`.conf_test_dir' contains the files and
+programs produced.
+EOF
+	exit 0
+}
+
+check_exit_status()
+{
+	exit_status=$?
+	if [ $exit_status -ne 0 ]; then
+		echo "Command failed with exit status $exit_status" >> ../config.log
+		tool_failed $@
+	fi
+}
+
+findtool()
+{
+	local tool pathstr fail
+	echo -n "Looking for tool \`$1' ... " >> ../config.log
+	tool=
+	case "$1" in
+	/*)
+		if [ ! -e "$1" ]; then
+			tool_failed $1
+		fi
+		tool=$1
+		;;
+	*)
+		for pathstr in $path_parts ; do
+			if [ -e "$pathstr/$1" ]; then
+				tool="$pathstr/$1"
+			fi
+		done
+		if [ "$tool" = "" ]; then
+			tool_failed $1
+		fi
+		;;
+	esac
+	echo "found as \`$tool'" >> ../config.log
+}
+
+find_symbol_munge()
+{
+	local munge_local i tmpvar
+
+	munge_local=`grep \.globl $2 | grep $1`
+	count_substrs i $munge_local
+
+	if [ $i -ne 2 ]; then
+		tool_failed ${CC}
+	fi
+
+	munge_local=`echo $munge_local | sed -e s/\\.globl// | sed -e s/$1/\ x\ /`
+	count_substrs i $munge_local
+
+	get_substr tmpvar 1 $munge_local
+	eval munge_$1=$tmpvar
+
+	if [ $i -eq 2 ]; then
+		get_substr tmpvar 2 $munge_local
+		eval munge_$1="\"\$munge_$1 \\#\\# $tmpvar\""
+	fi
+
+	if [ $i -eq 3 ]; then
+		get_substr tmpvar 3 $munge_local
+		eval munge_$1="\"\$munge_$1 \\#\\# $tmpvar\""
+	fi
+}
+
+
+# Cleanup from previous incomplete tests
+if [ -d .conf_test_dir ]; then
+	rm -rf .conf_test_dir
+fi
+
+# Clear configuration log
+if [ -e config.log ]; then
+	rm -rf config.log
+fi
+
+mkdir .conf_test_dir
+cd .conf_test_dir
+
+#
+#  Find tools
+#
+
+if [ "$silent" != "yes" ]; then
+	echo -n "checking for build tools... "
+fi
+
+# Initialize numbering
+i=0
+
+for tool_var in $tool_vars ; do
+	i=$(($i+1))
+	get_substr tool_name $i ${tool_names}
+	eval tmpvar=\$\{$tool_var\}
+	if [ "$tmpvar" = "" ]; then
+		get_substr tmpvar $i ${tool_targeted}
+		if [ "$target" != "" -a "$tmpvar" = "yes" ]; then
+			tool_name=$target$tool_name
+		fi
+		eval export $tool_var=$tool_name
+	fi
+
+	eval findtool \$\{$tool_var\}
+
+	if [ "$silent" != "yes" ]; then
+		echo -n "$tool_var "
+	fi
+done
+
+if [ "$silent" != "yes" ]; then
+	echo
+fi
+
+#
+#  Create test C source file to determine how symbols are munged
+#
+
+if [ "$silent" != "yes" ]; then
+	echo -n "checking C symbol munging in output of ${CC} ... "
+fi
+
+cat << EOF > test_sym.c
+
+int
+func1(int *list)
+{
+	list[1] = 0;
+
+	return list[0];
+}
+
+double
+func2(double a, int *list)
+{
+	list[0] = ((int) a) + list[1];
+
+	return a;
+}
+
+EOF
+
+echo "Compiling test_sym.c to assembly with ${CC}" >> ../config.log
+${CC} -S test_sym.c >> ../config.log 2>&1
+check_exit_status ${CC}
+
+# Perform actual test(s) here
+
+find_symbol_munge func1 test_sym.s
+find_symbol_munge func2 test_sym.s
+
+# if they are not equal, this simple compiling scheme will fail!
+
+echo "C symbol amalgam macros (using \"x\" as base, and must match):" >> ../config.log
+echo "        \"$munge_func1\" and \"$munge_func2\"" >> ../config.log
+
+if [ "$munge_func1" != "$munge_func2" ]; then
+	tool_failed ${CC}
+fi
+
+if [ "$silent" != "yes" ]; then
+	echo done
+fi
+
+#
+#  Create test C source file to determine if our version of objcopy
+#  is buggy
+#
+
+if [ "$silent" != "yes" ]; then
+	echo -n "checking to see if ${OBJCOPY} is buggy... "
+fi
+
+cat << EOF > test_objcopy.c
+
+void
+blah(void)
+{
+	*((int *) 1000) = 2;
+}
+
+EOF
+
+echo "Compiling test_objcopy.c with ${CC}" >> ../config.log
+${CC} -nostdinc -c test_objcopy.c >> ../config.log 2>&1
+check_exit_status ${CC}
+
+# Perform actual test(s) here
+
+for link_addr in $link_addrs ; do
+	echo "Linking test_objcopy.o with ${LD} at $link_addr" >> ../config.log
+	${LD} -N -Ttext $link_addr test_objcopy.o -o test_objcopy >> ../config.log 2>&1
+	check_exit_status ${LD}
+	${OBJCOPY} -O binary test_objcopy testout >> ../config.log 2>&1
+	check_exit_status ${OBJCOPY}
+
+	if [ -r testout.old ]; then
+		cmp testout testout.old >> ../config.log 2>&1
+		check_exit_status ${OBJCOPY}
+	fi
+	mv testout testout.old
+done
+
+if [ "$silent" != "yes" ]; then
+	echo done
+fi
+
+#
+#  Write out results
+#
+
+cd ..
+
+if [ ! -d bin ]; then
+	mkdir bin
+fi
+
+#
+#  Write config file
+#
+
+if [ "$silent" != "yes" ]; then
+	echo -n "creating \`Makefile'... "
+fi
+
+cat << EOF > Makefile
+#
+#  This stub \`Makefile' was created automatically by configure.
+#  (BEGINNING OF AUTOMATICALLY GENERATED PORTION)
+
+EOF
+
+for tool_var in $tool_vars ; do
+	eval echo \"export $tool_var = \$\{$tool_var\}\" >> Makefile
+done
+
+cat << EOF >> Makefile
+export SHARED_FLAGS = -pipe -fno-builtin -nostdinc -O2 -DEXT_C\(x\)="$munge_func1"
+
+#  (END OF AUTOMATICALLY GENERATED PORTION)
+#
+
+EOF
+
+cat Makefile.end >> Makefile
+
+if [ "$silent" != "yes" ]; then
+	echo done
+fi
+
+#
+#  Delete test directory
+#
+
+rm -rf .conf_test_dir
+
+

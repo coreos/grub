@@ -1,0 +1,228 @@
+
+
+Listing of commands available in the configuration files, a subset of
+which is usable on the command-line.
+
+The interpretation of the config file represents a simple state-machine,
+where:
+
+  (1) Config-file specific commands have to be used before any others.
+  (2) A multiboot kernel must be loaded before modules can be.
+  (3) A kernel must be loaded before either the config-file entry ends,
+        or any "boot" command is issued in any case.
+
+Semantics are as follows:
+
+  -- The files *must* be in plain-text format!!
+
+  -- "#" at the beginning of a line means it is a comment line in a config
+     file only.
+
+  -- Options are separated by spaces.
+
+  -- All numbers can be either decimal or hexidecimal.  A hexidecimal number
+     must be preceeded by "0x", and is case insensitive.
+
+  -- Extra options/text at the end of the line is ignored unless otherwise
+     specified.
+
+  -- Bad commands generally get included in the current entry being added
+     to, except before entries start, where they are ignored.
+
+
+Notes for interpreting commands described in double-quotes below:
+
+  -- "literal_string" : means use the string "literal_string".
+  -- "<name>" : means the whole name "<name>" represents some variable
+		quantity that is interpreted at runtime (like a number
+		or device/file name).
+  -- "[option]" : means "option" is may be omitted.
+  -- "..." : means extra text included at the end of the line is used for
+		some purpose.
+
+
+Commands usable in config files only.
+
+  --  "timeout= <sec>"
+	Sets a timeout, in <sec> seconds, before automatically booting the
+	default entry (normally the first entry defined).
+
+  --  "default= <num>"
+	Sets the default entry to entry number <num> (otherwise it is 0,
+	the first entry).
+
+  --  "fallback= <num>"
+	Goes into unattended boot mode:  if the default boot entry has any
+	errors, instead of waiting for the user to do anything, it
+	immediately starts over using the <num> entry (same numbering
+	as the "default=" command).  This obviously doesn't help if the
+	machine was in the middle of the boot process (after leaving GRUBs
+	code) and rebooted.
+
+  --  "password= <passwd> <new_config_file>"
+	Disables all interactive editing control (menu entry editor
+	and command-line).  If the password <passwd> is entered, it
+	loads the <new_config_file> as a new config file and restarts
+	the GRUB Stage 2.
+
+  --  "title= ..."
+	Starts a new menu entry, and sets it's name to the contents of the
+	rest of the line, starting with the first non-space character.
+
+
+Commands usable in config files and interactively.
+
+  --  "pause= ..."
+	Prints the entirety of "pause= ..." to the end of it's line, then
+	waits until a key is pressed.
+
+	NOTE that placing a ^G in it will cause the speaker to emit the
+	standard beep sound, which is useful when asking the user to change
+	floppies, etc.
+
+  --  "uppermem= <kbytes>"
+	Forces GRUB to ignore what it found during the autoprobe of the
+	memory available to the system, and to use <kbytes> as the number
+	of kilobytes of upper memory installed.  Any address range maps
+	of the system are discarded.
+
+	NOTE:  This should be used with great caution, and should only
+	be necessary on some old machines.  GRUB's BIOS probe can pick up
+	all RAM on all new machines the author has ever heard of.  It can
+	also be used for debugging purposes to lie to an OS.
+
+  --  "root= <device> [<hdbias>]"
+	Sets the current "root partition" to the device <device>, then
+	attempts to mount it to get the partition size (for passing the
+	partition descriptor in ES:ESI, used by some chainloaded
+	bootloaders), the BSD drive-type (for booting BSD kernels using
+	their native boot format), and fixup automatic determination of
+	the PC partition where a BSD sub-partition is located.  The optional
+	<hdbias> parameter is a number to tell a kernel which is using
+	one of the BSD boot methodologies how many BIOS drive numbers
+	are on controllers before the current one.  An example is if there
+	is an IDE disk and a SCSI disk, then set the root partition
+	normally, except for a kernel using a BSD boot methodology
+	(FreeBSD or NetBSD), then use a "1" for <hdbias>.
+
+  --  "rootnoverify= <device> [<hdbias>]"
+	Similar to "root=", but doesn't attempt to mount the partition.
+	This is useful for when an OS is outside of the area of the disk
+	that GRUB can read, but setting the correct root partition is still
+	desired.
+
+	NOTE: the items mentioned in "root=" above which are derived from
+	attempting the mount will NOT work correctly.
+
+  --  "chainloader= <file>"
+	Loads <file> as a chainloader.
+
+	NOTE: like any other file loaded by the filesystem code, it can
+	use the blocklist notation to grab the first sector of the current
+	partition with "+1".
+
+  --  "kernel= <file> ..."
+	Attempts to load the primary boot image (Multiboot a.out or ELF,
+	Linux zImage or bzImage, FreeBSD-a.out, or NetBSD-a.out) from
+	<file>.  This command ignores the rest of the contents of the line,
+	except that the entire line starting with the kernel filename is
+	passed verbatim as the "kernel command-line".  The module state is
+	reset by this (i.e. reload any modules).
+
+  --  "module= <file> ..."
+	Loads a boot module for a Multiboot format boot image (no
+	interpretation of the file contents are made, so the user of this
+	command/writer of the config file must know what the kernel in
+	question works with).  The rest of the line is passed as the "module
+	command-line" much like with the "kernel=" command.
+
+  --  "modulenounzip= <file> ..."
+	Exactly like "module", except that automatic decompression is
+	disabled.
+
+  --  "initrd= <file> ..."
+	Loads an initial ramdisk for a Linux format boot image and sets
+	the appropriate parameters in the Linux setup area in memory.
+
+  --  "install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]"
+	This command is fairly complex, and for detailed examples one
+	should look at the install documentation.  In short, it will
+	perform a full install presuming the stage1.5 or stage2 (they're
+	loaded the same way, I'll just refer to it as a stage2 from now on)
+	is in it's final install location (pretty much all other edits are
+	performed by the "install=" command).
+
+	In slightly more detail, it will load <stage1_file>, validate
+	that it is a GRUB stage1 of the right version number, install
+	blocklists for loading <file> (if the option "d" is present,
+	the stage1 will always look for the actual disk <file> was
+	installed on, rather than using the booting drive) as a stage2
+	into memory at address <addr> (for a stage1.5, an address of
+	0x2000 should be used, and for a stage2, an address of 0x8000
+	should be used), then write the completed stage1 to the first
+	block of the device <dest_dev>.  If the options "p" or <config_file>
+	are present, then it reads the first block of stage2, modifies it
+	with the values of the partition <file> was found on (for "p") or
+	places the string <config_file> into the area telling the stage2
+	where to look for a configuration file at boot time.  Finally, it
+	preserves the DOS BPB (and for hard disks, the partition table) of
+	the sector the stage1 is to be installed into.
+
+  --  "makeactive"
+	Sets the active partition on the root disk to GRUB's root partition
+	(on a floppy this is a NO-OP).  This is limited to working with
+	"primary" PC partitions.
+
+  --  "boot"
+	This boots the OS/chainloader which has been loaded.  Only necessary
+	if running the fully interactive command-line (it is implicit at the
+	end of a config-file entry).
+
+
+Commands usable in config files and interactively which are only available
+in the debug version of the GRUB Stage 2.
+
+  --  "testload= <file>"
+	Reads the entire contents of <file> in several different ways and
+	compares them, to test the filesystem code.  The output is somewhat
+	cryptic (see the "T" subcommand of "syscmd=" below), but if no
+	errors are reported and the part right at the end which reads
+	"i=<X>, filepos=<Y>" has <X> and <Y> equal, then it is definitely
+	consistent, and very likely works correctly subject to a consistent
+	offset error.  A good idea if this works is then to try loading a
+	kernel with your code.
+
+  --  "read= <addr>"
+	Reads a 32-bit unsigned value at address <addr> and displays it
+	in hex format.
+
+  --  "displaymem"
+	Displays what GRUB thinks the system address space map of the
+	machine is, including all regions of physical RAM installed.
+	The "upper/lower memory" thing GRUB has uses the standard BIOS
+	interface for the available memory in the first megabyte, or
+	"lower memory", and a synthesized number from various BIOS
+	interfaces of the memory starting at 1MB and going up to the first
+	chipset hole for "upper memory" (the standard PC "upper memory"
+	interface is limited to reporting a maximum of 64MB).
+
+  --  "impsprobe"
+	Probes Intel MPS spec 1.1 or 1.4 configuration table and boots
+	the various other CPUs which are found into a tight loop.
+
+  --  "fstest"
+	Toggles filesystem test mode.
+
+	Filesytem test mode, when turned on, prints out data corresponding
+	to all the device reads and what values are being sent to the
+	low-level routines.  The format is:
+
+		"<sector, byte_offset, byte_len>"  for high-level reads
+			inside a partition (so "sector" is an offset from
+			the start of the partition).
+		"[sector]"  for low-level sector requests from the disk
+			(so "sector" is offset from the start of the disk).
+
+	Filesystem test mode is turned off by any uses of the "install=" or
+	"testload=" commands.
+

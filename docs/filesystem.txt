@@ -1,0 +1,299 @@
+
+The top of this file is the filesystem syntax and semantics.
+The rest of the file describes the interface used by the filesystem
+code.
+
+
+General FS semantics rules:
+
+  -- When listing completions, directories are not labeled any differently
+     from files (symbolic links, FIFOs, etc. are listed as well).
+
+  -- Only regular directories and files are interpreted (i.e. a symbolic
+     link or FIFO would generate a "Bad file type" error if an attempt
+     is made to read one...  an attempt to read a directory as a file
+     or vice-versa will also generate a "Bad file type" error).
+
+  -- All numbers can be either decimal or hexidecimal.  A hexidecimal number
+     must be preceeded by "0x", and is case insensitive.
+
+
+VERY IMPORTANT NOTE about devices:  The only disk devices accessible from a
+  bootloader are BIOS-controlled devices.  All any PC bootloader knows is
+  the "device number" (floppies are numbered consecutively starting with 0,
+  and hard drives are numbered consecutively starting with 0x80).  There
+  is no way to tell if a hard drive is IDE, ESDI, SCSI, etc.  GRUB punts
+  and simply uses the BIOS device number in all circumstances.  It is
+  presumed the OS has some mechanism to translate to the physical
+  controllers (examples are provided in the Multiboot document).  Some
+  OSes kludge it by requiring disklabels like the *BSDs use (which, might
+  it be noted, breaks under some circumstances, and may not always be
+  possible to use).
+
+
+Device syntax like this ("[]" means optional), but note, no spaces
+are allowed!!!
+
+disk/partition  ->  "(<bios_device>[,<part_num>[,<bsd_subpart_letter>]])"
+
+  A shortcut for bios devices are:
+    fd0  ->  0       (first floppy disk)
+    fd1  ->  1       (second floppy disk)
+
+    ...
+
+    hd0  ->  0x80    (first hard disk)
+    hd1  ->  0x81    (second hard disk)
+
+   whole disks:   "(fd0)" -- first floppy,  "(hd0)" -- first hard disk.
+   PC partitions:   "(hd0,0)" -- first hard disk PC partition 0,
+	"(hd1,3)" or "(0x81,3)" -- second hard disk PC partition 3.
+   BSD sub-partitions:   "(hd0,1,a)" -- first hard disk, first PC
+	partition contains BSD sub-partitions, BSD sub-partition "a".
+   "(0)" -- BIOS device 0 (first floppy disk) whole disk.
+   "(0x80,0)" -- first PC partition on BIOS device 0x80 (first hard disk).
+
+A shortcut for specifying BSD sub-partitions is:
+  "(<bios_device>,<bsd_subpart_letter>)"
+
+   "(hd0,a)" -- first hard disk, searches for first PC partition
+	containing BSD sub-partitions, then finds the "a" subpartition.
+   "(fd0,a)" -- first floppy disk, searches for BSD partition "a".
+
+Inheriting from the defaults can be done by the following variations:
+
+  -- omitting the drive number completely will use the current
+	device taken from the current root partition.
+
+	"(,0)" looks for the first PC partition on the current disk.
+
+  -- omitting the partition information (but using at least one comma
+	after the bios device number) changes the bios device but
+	leaves the partition the same.
+
+	"(hd1,)" looks for the same partition as the current root but
+		on hard disk 1.
+
+
+Interactive device completion (usable on the command-line after the "="
+in a command, like "kernel="):
+
+(nothing) -> lists all possible disks (hard and floppy)
+"(" -> same
+"(h" -> error (doesn't know what "h" means).
+"(hd" -> error (doesn't know what "hd" means).
+"(hd0" -> lists the first hard disk
+"(hd0," -> lists all partitions on the first hard disk
+"(hd0,a" -> finds and mounts BSD partition 'a', then reports FS type.
+"(hd0,a)" -> same
+"(hd0,a)/" -> lists all files in root directory...  (becomes file-completion
+               listing at this point).
+
+NOTE:  for any of the completion stuff, it searches back to the beginning
+  of the line or the most recent space, then uses that string for the
+  completion listing operation (file, device, partition).  It uses the
+  *cursor* position as the determiner, so, in the above example, one could
+  have "(hd0,a)/kernel" on the command-line, then move the cursor to the
+  beginning (with C-a or lots of C-b's), then hit TAB, move it one character
+  forward (with C-f), hit TAB again, etc.  with the same results as the
+  above example!!!
+
+
+Block-list syntax like this:
+
+Primitive-block-list -> "<p-b-l>" = "{,<start-num>}+<length>"
+example: "1+20"  or  "+5"
+
+The interpretation of a primitive-block-list is that the first number
+is the first block, then a "+", and a block-length (must be greater than
+zero).  These are all relative to the partition, and must be contained
+within the partition boundaries (a whole disk would be "(hd0)").  If
+the starting number is omitted, it is presumed to be zero (the first
+block).
+
+construction ->  "<block-list>" =
+                     "<p-b-l-1>,<p-b-l-2>,...,<p-b-l-N>{\,<length_in_bytes>}"
+example:  "1+100,200+1,300+300,<length_in_bytes>"
+
+This represents a conglomerate of blocks, all to be loaded as part of
+one block-list.  If the exact length is omitted, then it is calculated as
+the size of all of the blocks.
+
+
+Absolute-pathname syntax like this:
+
+Directory notation is via a forward slash, always in absolute form (like
+a UNIX absolute pathname), like:  "/kernel"  or  "/test/kernel".
+
+
+Overall filename syntax is:
+
+[<device>][<block-list>][<absolute-pathname>]
+
+<device> is optional (will use the root partition then), but never ignored.
+
+Either <block-list> or <absolute-pathname> must be used when providing
+the name for a generic file.  If <block-list> is used, all past it in the
+filename is ignored (i.e. if you use both, the blocklist takes precedence).
+
+Legal characters as parts of a directory/filename are any normally
+printable ascii character (not control-characters of any kind) except
+a space (since it is the delimiter of the end of the whole file/device
+name string) and "/" (since it is used as a directory delimiter).
+
+So, legal examples are:
+
+  "(hd0,a)/kernel"
+  "/kernel"
+  "1+20,25+10,15000"
+  "(hd0,a)1+20"
+  "(hd0,a)1+20,400+50,500+100"
+  "1+20,25+10,15000/kernel"
+  "(hd0,a)1+20,400+500/kernel"
+
+
+
+INTERFACE DESCRIPTION
+---------------------
+
+
+This file also describes the generic interface used by the filesystem code.
+
+  The "BLK_NOTES" heading below is for the blocklist filesystem.
+
+  The "FAT_NOTES" heading below is for the FAT filesystem.
+
+  The "FFS_NOTES" heading below is for the FFS filesystem.
+
+
+General function description:
+
+For any particular partition, it is presumed that only one of the "normal"
+filesystems such as FAT, FFS, or ext2fs can be used, so there is
+a switch table managed by the functions in "disk_io.c".  The notation is
+that you can only "mount" one at a time.
+
+The blocklist filesystem has a special place in the system.  In addition
+to the "normal" filesystem (or even without one mounted), you can access
+disk blocks directly (in the indicated partition) via the blocklist
+notation.  Using the blocklist filesystem doesn't effect any other
+filesystem mounts.
+
+
+Interface description (this was done somewhat hastily, so important
+parts might be missing):
+
+Errors generated:
+
+  --  look at "fsys_ffs.c" for examples...  (yeah, this is a cop-out for
+	now, I know).
+
+The variables which can be read by the filesystem backend are:
+
+  --  "current_drive", a global which contains the current BIOS drive
+	number (numbered from 0, if a floppy, and numbered from 0x80,
+	if a hard disk).
+
+  --  "current_slice", a global which contains the current partition
+	type, if a hard disk.
+
+  --  "part_length", a global which contains the current partition
+	length, in sectors.
+
+  --  "print_possibilities", a global which is true when the "dir"
+	function should print the possible completions of a file, and
+	false when it should try to actually open a file of that name.
+
+  --  the "#define FSYS_BUF", which points to a filesystem buffer which
+	is 32K in size, to use in any way which the filesystem backend
+	desires. 
+
+The variables which need to be written by a filesystem backend are:
+
+  --  "filepos", a global which should be the current position in
+	the file.
+
+    NOTE:  the value of "filepos" can be changed out from under the
+	filesystem code in the current implementation.  Don't depend on
+	it being the same for later calls into the back-end code!!!
+
+  --  "filemax", a global which should be the length of the file.
+
+  --  "debug_fs_func", a global which should be set to the value of
+	"debug_fs" ONLY during reading of data for the file, not any
+	other FS data, inodes, FAT tables, whatever, then set to NULL
+	at all other times (it will be NULL by default).  If this isn't
+	done correctly, then the "testload=" and "install=" commands
+	won't work correctly!!!  (look at "fsys_ffs.c" for details).
+
+The functions expected to be used by the filesystem backend are:
+
+  --  "devread", which only reads sectors from within a partition.  Sector
+	0 is the first sector in the partition.
+
+  --  If the backend uses the blocklist code (like the FAT filesystem
+	backend does), then "read" can be used, after setting "blocklist"
+	to 1.
+
+The functions expected to be defined by the filesystem backend are described
+at least moderately in the file "filesys.h".  Their usage is fairly evident
+from their use in the functions in "disk_io.c", look for the use of the
+"fsys_table" array.
+
+NOTE:  The semantics are such that then "mount"ing the filesystem, presume
+the filesystem buffer "FSYS_BUF" is corrupted, and (re-)load all important
+contents.  When opening and reading a file, presume that the data from
+the "mount" is available, and doesn't get corrupted by the open/read (i.e.
+multiple opens and/or reads will be done with only one mount if in the
+same filesystem).
+
+
+BLK_NOTES:
+
+block filesystem info goes like this:
+
+NOTE: a "block-list" is two 4-byte values, representing the start and length
+      of a set of 512 byte sectors.
+
+<buffer start>
+ [ cur_filepos, cur_block_list, cur_block_num,
+   block-list, block-list, block-list, etc.... ]
+<buffer end>
+
+The buffer is 32Kbytes long, so the maximum length of such a list is
+32Kbytes - 12 bytes.
+
+
+FAT_NOTES:
+
+The filenames are all mapped to lower-case.
+
+The FAT filesystem actually uses the "blocklist" filesystem as it's read
+routine, reading the appropriate FAT entries and placing them into the
+blocklist area.  (in this case, a portion of the end of the blocklist
+buffer area is used for FAT filesystem information)
+
+It concatenates adjacent blocks in the FAT table together when possible
+to consolodate the number of blocklists.
+
+NOTE:  The above is important, since there is a maximum number of
+  approx 1800 blocklists.  This is generally more than adequate, but
+  if it runs off the end and a read is attempted in this area, an
+  "ERR_FILELENGTH" error will be generated.
+
+
+FFS_NOTES:
+
+Notes on the FFS filesystem implementation and limitations.
+
+Limitations:
+
+  --  Only 1 level of indirect blocks is supported.  This implies a
+      limitation in file-length to approx 16MB.  If a read past this point
+      is attempted, an "ERR_FILELENGTH" error is generated.
+
+  --  If the "blocksize" is greater than 8Kbytes, various buffers will
+      overwrite themselves and the whole thing will come apart at the
+      seams.
+
+

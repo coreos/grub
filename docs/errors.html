@@ -1,0 +1,198 @@
+<HTML>
+
+<HEAD>
+<TITLE>GRUB Error Messages</TITLE>
+</HEAD>
+
+<BODY>
+
+<CENTER><H1>GRUB Error Messages</H1></CENTER>
+<CENTER><H3>by
+<A HREF=http://www.uruk.org/~erich/>Erich Boleyn</A></H3></CENTER>
+
+<HR>
+
+<H2>Contents</H2>
+
+<UL>
+<LI><A HREF="#stage1">Errors Reported by the Stage 1</A>
+<LI><A HREF="#stage1_5">Errors Reported by the Stage 1.5</A>
+<LI><A HREF="#stage2">Errors Reported by the Stage 2</A>
+</UL>
+
+<HR>
+
+<H2><A NAME="stage1">Errors Reported by the Stage 1</A></H2>
+
+The general way that the Stage 1 handles errors is to print an
+error string and then halt.  Pressing Ctrl-Alt-Del will reboot.<P>
+
+The following is a comprehensive list of error messages for the
+Stage 1:<P>
+
+<UL>
+<LI><B>"Hard Disk Error"</B><P>
+This error message will occur if the Stage 2 or Stage 1.5 is being read
+from a hard disk, and the attempt to determine the size and
+geometry of the hard disk fails.<P>
+<LI><B>"Floppy Error"</B><P>
+This error message will occur if the Stage 2 or Stage 1.5 is being read
+from a floppy disk, and the attempt to determine the size and
+geometry of the floppy disk fails.  It's listed as a different error
+since the probe sequence is different than for hard disks.<P>
+<LI><B>"Read Error"</B><P>
+This error message will occur if a disk read error happens while trying
+to read the Stage 2 or Stage 1.5.<P>
+<LI><B>"Geom Error"</B><P>
+This error message will occur if the location of the Stage 2 or Stage 1.5
+is not in the area supported by reading the disk with the BIOS directly.
+This could occur because the BIOS translated geometry has been changed
+by the user or the disk is moved to another machine or controller after
+installation, or GRUB was not installed using itself (if it was, the
+Stage 2 version of this error would have been seen during that process
+and it would not have completed the install).<P>
+</UL>
+
+<HR>
+
+<H2><A NAME="stage1_5">Errors Reported by the Stage 1.5</A></H2>
+
+The general way that the Stage 1.5 handles errors is to print an
+error number in the form "Error: <num>" and then halt.  Pressing
+Ctrl-Alt-Del will reboot.<P>
+
+The error numbers correspond to the
+<A HREF="#stage2">Errors Reported by the Stage 2</A> in the
+listed sequence.<P>
+
+<HR>
+
+<H2><A NAME="stage2">Errors Reported by the Stage 2</A></H2>
+
+The general way that the Stage 2 handles errors is to abort the
+operation in question, print an error string, then (if possible)
+either continue based on the fact that an error occurred or wait
+for the user to deal with the error.<P>
+
+The following is a comprehensive list of error messages for the
+Stage 2 (error numbers for the Stage 1.5 are listed before the
+colon in each description):<P>
+
+<UL>
+<LI><B>1</B> : <B>"Selected item won't fit into memory"</B><P>
+This error is returned if a kernel, module, or raw file load
+command is either trying to load it's data such that it won't fit into
+memory or it is simply too big.<P>
+<LI><B>2</B> : <B>"Selected disk doesn't exist"</B><P>
+This error is returned if the device part of a device- or full filename
+refers to a disk or BIOS device that is not present or not recognized
+by the BIOS in the system.<P>
+<LI><B>3</B> : <B>"Disk read error"</B><P>
+This error is returned if there is a disk read error when trying to probe or
+read data from a particular disk.<P>
+<LI><B>4</B> : <B>"Disk write error"</B><P>
+This error is returned if there is a disk write error when trying to write
+to a particular disk.  This would generally only occur during an
+install of set active partition command.<P>
+<LI><B>5</B> : <B>"Disk geometry error"</B><P>
+This error is returned when a read is attempted at a linear block address
+beyond the end of the BIOS translated area.  This generally happens
+if your disk is larger than the BIOS can handle (512MB for (E)IDE disks on
+older machines or larger than 8GB in general).<P>
+<LI><B>6</B> : <B>"Attempt to access block outside partition"</B><P>
+This error is returned if a linear block address
+is outside of the disk partition.  This generally happens
+because of a corrupt filesystem on the disk or a bug in the code handling
+it in GRUB (it's a great debugging tool).<P>
+<LI><B>7</B> : <B>"Partition table invalid or corrupt"</B><P>
+This error is returned if the sanity checks on the integrity of the partition
+table fail.  This is a bad sign.<P>
+<LI><B>8</B> : <B>"No such partition"</B><P>
+This error is returned if a partition is requested in the device part of a
+device- or full filename which isn't on the selected disk.<P>
+<LI><B>9</B> : <B>"Bad filename (must be absolute pathname or blocklist)"</B><P>
+This error is returned if a filename is requested which doesn't fit the
+syntax/rules listed in the <A HREF=filesystem.txt>Filesystem
+Description</A>.<P>
+<LI><B>10</B> : <B>"Bad file or directory type"</B><P>
+This error is returned if a file requested is not a regular file, but
+something like a symbolic link, directory, or FIFO.<P>
+<LI><B>11</B> : <B>"File not found"</B><P>
+This error is returned if the specified filename cannot be found, but
+everything else (like the disk/partition info) is OK.<P>
+<LI><B>12</B> : <B>"Cannot mount selected partition"</B><P>
+This error is returned if the partition requested exists, but the filesystem
+type cannot be recognized by GRUB.<P>
+<LI><B>13</B> : <B>"Inconsistent filesystem structure"</B><P>
+This error is returned by the filesystem code to denote an internal
+error caused by the sanity checks of the filesystem structure on disk
+not matching what it expects.  This is usually caused by a corrupt
+filesystem or bugs in the code handling it in GRUB.<P>
+<LI><B>14</B> : <B>"Filesystem compatibility error, can\'t read whole file"</B><P>
+Some of the filesystem reading code in GRUB has limits on the length of
+the files it can read.  This error is returned when the user runs into
+such a limit.<P>
+<LI><B>15</B> : <B>"Error while parsing number"</B><P>
+This error is returned if GRUB was expecting to read a numbur and encountered
+bad data.<P>
+<LI><B>16</B> : <B>"Device string unrecognizable"</B><P>
+This error is returned if a device string was expected, and the string
+encountered didn't fit the
+syntax/rules listed in the <A HREF=filesystem.txt>Filesystem
+Description</A>.<P>
+<LI><B>17</B> : <B>"Invalid device requested"</B><P>
+This error is returned if a device string is recognizable but does not
+fall under the other device errors.<P>
+<LI><B>18</B> : <B>"Invalid or unsupported executable format"</B><P>
+This error is returned if the kernel image boing loaded is not recognized
+as Multiboot or one of the supported native formats (Linux zImage or
+bzImage, FreeBSD, or NetBSD).<P>
+<LI><B>19</B> : <B>"Loading below 1MB is not supported"</B><P>
+This error is returned if the lowest address in a kernel is below the
+1MB boundary.  The Linux zImage format is a special case and can be
+handled since it has a fixed loading address and maximum size.<P>
+<LI><B>20</B> : <B>"Unsupported Multiboot features requested"</B><P>
+This error is returned when the Multiboot features word in the Multiboot
+header requires a feature that is not recognized.  The point of this is
+that the kernel requires special handling which GRUB is likely unable
+to provide.<P>
+<LI><B>21</B> : <B>"Unknown boot failure"</B><P>
+This error is returned if the boot attempt did not succeed for reasons
+which are unknown.<P>
+<LI><B>22</B> : <B>"Must load Multiboot kernel before modules"</B><P>
+This error is returned if the module load command is used before loading
+a Multiboot kernel.  It only makes sense in this case anyway, as GRUB
+has no idea how to communicate the presence of location of such modules
+to a non-Multiboot-aware kernel.<P>
+<LI><B>23</B> : <B>"Must load Linux kernel before initrd"</B><P>
+This error is returned if the initrd command is used before loading
+a Linux kernel.  Similar to the above error, it only makes sense in that
+case anyway.<P>
+<LI><B>24</B> : <B>"Cannot boot without kernel loaded"</B><P>
+This error is returned if GRUB is told to execute the boot sequence without
+having a kernel to start.<P>
+<LI><B>25</B> : <B>"Unrecognized command"</B><P>
+This error is returned if an unrecognized command is entered into the
+command-line or in a boot sequence section of a config file and that
+entry is selected.<P>
+<LI><B>26</B> : <B>"Bad or incompatible header on compressed file"</B><P>
+This error is returned if the file header for a supposedly compressed file
+is bad.<P>
+<LI><B>27</B> : <B>"Bad or corrupt data while decompressing file"</B><P>
+This error is returned the run-length decompression code gets an
+internal error.  This is usually from a corrupt file.<P>
+<LI><B>28</B> : <B>"Bad or corrupt version of stage1/stage2"</B><P>
+This error is returned if the install command is pointed to incompatible
+or corrupt versions of the stage1 or stage2.  It can't detect corruption
+in general, but this is a sanity check on the version numbers, which
+should be correct.<P>
+</UL>
+
+<HR>
+
+<A HREF=mailto:erich@uruk.org><I>erich@uruk.org</I></A><P>
+
+</BODY>
+</HTML>
+
+

@@ -1,0 +1,120 @@
+<HTML>
+
+<HEAD>
+<TITLE>GRUB -- GRand Unified Bootloader</TITLE>
+</HEAD>
+
+<BODY>
+
+<CENTER><H1>GRUB -- GRand Unified Bootloader</H1></CENTER>
+<CENTER><H3>version 0.5</H3></CENTER>
+<CENTER><H3>by
+<A HREF=http://www.uruk.org/~erich/>Erich Boleyn</A></H3></CENTER>
+
+<HR>
+
+<H2>Master Contents</H2>
+
+Some of these contents are included in other pages.<P>
+
+<UL>
+<LI> <A HREF="#intro">Introduction</A>
+<LI> <A HREF="#thanks">Thanks To</A>
+<LI> <A HREF="#status">Distribution and Status</A>
+<LI> <A HREF=using.html>Using GRUB</A>
+<LI> <A HREF=install.html>Installation</A>
+<LI> <A HREF=errors.html>GRUB Error Messages</A>
+<LI> <A HREF=technical.html>Technical Info</A>
+<LI> <A HREF=faq.html>GRUB FAQ</A>
+</UL>
+
+<B>NOTE</B>: Up-to-date versions of this documentation directory can
+be found at
+<A HREF=http://www.uruk.org/grub/>http://www.uruk.org/grub/</A>.  The
+specifics might be for a newer version of the program, so check the
+<A HREF=http://www.uruk.org/grub/NEWS>online NEWS file</A> for details
+about the differences.<P>
+
+<HR>
+
+<H2><A NAME="intro">Introduction</A></H2>
+
+GRUB is an attempt to produce a bootloader for IBM PC-compatible machines
+that has both the capability to be friendly to beginning or
+otherwise non-technically
+interested users and the flexibility to help experts in diverse
+environments.  It is currently most useful for users of at least
+one of the various free UNIX-like operating systems, though it can
+be used with most any PC operating system.<P>
+
+This project actually started because we wanted to boot the
+<A HREF=http://www.cs.pdx.edu/~trent/gnu/hurd/>GNU HURD</A>
+operating system on top of
+<A HREF=http://www.cs.utah.edu/projects/flux/mach4/html/Mach4-proj.html>
+Mach4</A> on an IBM PC-compatible system in a manner compliant
+with the <A HREF=boot-proposal.html>Multiboot Standard</A>, which
+was put together as a general solution to the problem of the different
+boot formats and the functionality they need.
+I then tried to add support for the extra functionality to the
+standard bootloader used for FreeBSD.  The number of things I had to do
+to get it all to work multiplied until it was obviously necessary to
+start from scratch with something different.<P>
+
+GRUB has evolved a long way from it's beginnings as a multi-module
+bootloader.  Several
+of the techniques used have no analogue in the rest of the free
+software world, and a few are apparently superior to most proprietary OSes
+as well.
+The documentation here and in the multiboot proposal should be very
+useful to prospective OS and bootloader writers for PCs.<P>
+
+The name comes from the acronym, but also from the realization that although
+a grub is one of the smaller (and less interesting) critters - barely worthy
+of notice - it is nearly ubiquitous and vital to the order of things.<P>
+
+<HR>
+
+<H2><A NAME="thanks">Thanks To</A></H2>
+
+<UL>
+<LI><B>Members of the Multiboot e-mail list and Bryan Ford
+(baford@cs.utah.edu)</B> -- for all the multiboot discussion
+and OS code to test with.<P>
+<LI><B>VaX#n8 (vax@linkdead.paranoia.com)</B> -- for testing feedback plus the
+initial implementation for the ext2fs filesystem.<P>
+<LI><B>Miles Bader (miles@gnu.ai.mit.edu)</B> -- for testing feedback.<P>
+<LI><B>Eric Hanchrow (erich@microsoft.com)</B> -- for interstate remote
+debugging by hand.<P>
+<LI><B>Gord Matzigkeit (gord@enci.ucalgary.ca)</B> -- for lots of
+testing feedback.<P>
+<LI><B>Heiko Schroeder (heiko@pool.informatik.rwth-aachen.de)</B> -- for
+a re-writing stage1 to be much more readable, plus several patches.<P>
+</UL>
+
+<HR>
+
+<H2><A NAME="status">Distribution and Status</A></H2>
+
+GRUB is currently available under the
+<A HREF=COPYING>GNU General Public License</A>.
+This should not be an issue for OS developers or users who dislike
+the terms of the GPL, as it is a separate package, and will not
+have any licensing impact upon their own work or installation.
+If it is still an issue,
+<A HREF=mailto:erich@uruk.org>send me e-mail</A> and maybe we can
+work something out.<P>
+
+The publically available releases are available on my
+<A HREF=ftp://ftp.uruk.org/public/grub/>FTP site</A>, and I
+believe they will get included in the GNU FTP sites as well.<P>
+
+Here are links to the <A HREF=NEWS>NEWS file</A>,
+<A HREF=TODO>TODO list</A>, and list of <A HREF=BUGS>known BUGS</A>.<P>
+
+<HR>
+
+<A HREF=mailto:erich@uruk.org><I>erich@uruk.org</I></A><P>
+
+</BODY>
+</HTML>
+

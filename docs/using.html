@@ -1,0 +1,99 @@
+<HTML>
+
+<HEAD>
+<TITLE>Using GRUB</TITLE>
+</HEAD>
+
+<BODY>
+
+<CENTER><H1>Using GRUB</H1></CENTER>
+<CENTER><H3>by
+<A HREF=http://www.uruk.org/~erich/>Erich Boleyn</A></H3></CENTER>
+
+<HR>
+
+<H2>Contents</H2>
+
+<UL>
+<LI> <A HREF="#cmdline">Command-Line Interface</A>
+<LI> <A HREF="#menu">Menu Interface</A>
+<LI> <A HREF="#editor">Menu Entry Editor</A>
+</UL>
+
+GRUB has both a simple menu interface for preset options from a
+configuration file, and a highly flexible command-line for performing
+any desired combination of boot commands.<P>
+
+The first action GRUB takes after it is loaded is
+to look for it's configuration file.
+If one is not found, then
+it drops into the command-line interface (and stays there).
+If one is found, the full menu interface is activated containing
+whatever entries were found in the file (the command-line is still
+available via a command from the menu interface).<P>
+
+<HR>
+
+<H2><A NAME="cmdline">Command-Line Interface</A></H2>
+
+The command-line interface provides a prompt and after it an editable
+text area much like a command-line in DOS or UNIX.  Each command is
+immediately executed after it is entered.  The
+<A HREF=commands.txt>list of commands</A> are a subset of those available
+in the configuration file, used with exactly the same syntax.<P>
+
+Cursor movement and editing of the text on the line can be done
+via a subset of the functions
+available in the BASH shell (C-f forward, C-b backward, C-a beginning
+of line, C-e end of line, C-k delete to end, C-u delete to beginning;
+the PC left and right arrow keys, HOME, DELETE, and END work as well).<P>
+
+When typing commands interactively, if the cursor is before the "="
+character in a command being typed, pressing the TAB key will display
+a listing of the available commands, and if the cursor is after the
+"=" character, the TAB will provide
+a completion listing of disks, partitions, and filenames depending on
+the context.<P>
+
+<HR>
+
+<H2><A NAME="menu">Menu Interface</A></H2>
+
+The menu interface is quite easy to use.  It's commands are both
+reasonably intuitive and described onscreen.<P>
+
+Basically, the menu interface provides a list of "boot configurations"
+to the user to choose from.  Use the arrow keys to select the entry
+of choice, then press ENTER to run it.  An optional timeout is available
+to boot the default entry (the first one if not set),
+which is aborted by pressing any key.<P>
+
+Commands are available to enter a bare command-line (operating
+exactly like the non-config-file version of GRUB, but allowing one to
+return to the menu if desired) or to edit any of the "boot
+configurations".
+
+<HR>
+
+<H2><A NAME="editor">Menu Entry Editor</A></H2>
+
+This looks much like the main menu interface, but with the lines in the
+menu being individual commands of the selected configuration instead of
+configuration names.<P>
+
+If an ESC is pressed in the editor, it aborts all the changes made to
+the configuration entry and goes back to the main menu interface.<P>
+
+When a particular line is selected, then it
+places the user in a special version of the command-line for editing
+that line.  When the user is finished, GRUB replaces the line in question
+in the "boot configuration" with the changes (unless it was aborted via
+ESC, and in that case the changes are thrown away).<P>
+
+<HR>
+
+<A HREF=mailto:erich@uruk.org><I>erich@uruk.org</I></A><P>
+
+</BODY>
+</HTML>
+

@@ -1,0 +1,69 @@
+
+
+		GRUB -- GRand Unified Boot-loader
+
+			version 0.5
+
+		by Erich Boleyn  <erich@uruk.org>
+
+
+Introduction
+
+  This is the public release of GRUB version 0.5, a bootloader for
+  PC-compatible machines.
+
+
+Installation
+
+  Precompiled versions are included in the "bin" directory:
+
+	bin/
+		stage1		This is the 512-byte stage1 which reads
+				in the rest of GRUB at boot-time.
+		ffs_stage1_5	This is an example for how to build a
+				"stage 1.5" to automatically load a stage2
+				from the filesystem.
+		stage2		This is the main part of GRUB.
+		stage2_debug	Same as "stage2", but compiled with the
+				debug features enabled.
+
+  Instructions for installing can be found in "docs/install.html".
+
+
+Building From Source
+
+  To build GRUB from source, first run the bourne-shell script "configure"
+  (options can be found by running "./configure --help").  It will complain
+  of missing or bad tools determined by it's tests.  If it completes
+  successfully, then just type "make".
+
+  Note that the binary names correspond to subdirectories in the top level
+  of the distribution.  See the makefiles in there for details on where
+  the source files are drawn from, but in general, the "stage1" only uses
+  the "stage1.S" file, and the others use source files from the "shared_src"
+  subdirectory.
+
+  IMPORTANT SIZE LIMITS:
+
+  - For the various stage2's, if they are being loaded from a block-list
+    in the stage1, then be sure your blocklist is big enough.  The
+    automated install will generally do this for you, it's just when
+    dropping it on a raw floppy, you get the default compiled in, which
+    is 512 * 80 disk sectors, or 40960 bytes.
+
+  - For the FFS stage1.5, if you want to fit into the "bootloader" area
+    of an FFS partition, it cannot be larger than 512 * 14 disk sectors,
+    or 7168 bytes.
+
+
+Other Documentation
+
+  Pretty much all of the documentation and other helpful information is
+  in the "docs" directory mostly as HTML files, the root of which is
+  "index.html".
+
+  The FAQ and Installation instructions really need to be updated and
+  improved!
+
+  The TODO and NEWS files are always up-to-date.
+
