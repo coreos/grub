@@ -1,5 +1,13 @@
 2002-06-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/disk_io.c [SUPPORT_NETBOOT] (GRUB): Defined.
+	[SUPPORT_NETBOOT]: Include etherboot.h.
+	[!STAGE1_5] (print_completions) [SUPPORT_NETBOOT]: When
+	completing a disk name, if NETWORK_READY is true, add "nd" as a
+	completion.
+	
+2002-06-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/fsys_xfs.c (le32): Don't use bswap, but use xchgb and
 	roll, because 386 doesn't have bswap. Reported by Frode Vatvedt
 	Fjeld <frodef@acm.org>.

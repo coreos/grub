@@ -19,9 +19,13 @@
  */
 
 
-#include "shared.h"
+#include <shared.h>
+#include <filesys.h>
 
-#include "filesys.h"
+#ifdef SUPPORT_NETBOOT
+# define GRUB	1
+# include <etherboot.h>
+#endif
 
 #ifdef GRUB_UTIL
 # include <device.h>
@@ -1309,6 +1313,11 @@ print_completions (int is_filename, int is_completion)
 			}
 		    }
 		}
+
+# ifdef SUPPORT_NETBOOT
+	      if (network_ready)
+		print_a_completion ("nd");
+# endif /* SUPPORT_NETBOOT */
 
 	      if (is_completion && *unique_string)
 		{
