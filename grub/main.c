@@ -37,8 +37,7 @@ int use_config_file = 1;
 int use_curses = 1;
 int verbose = 0;
 int read_only = 0;
-int no_floppy = 0;
-int probe_second_floppy = 0;
+int floppy_disks = 1;
 char *device_map_file = 0;
 static int default_boot_drive;
 static int default_install_partition;
@@ -203,11 +202,11 @@ main (int argc, char **argv)
 	  break;
 
 	case OPT_NO_FLOPPY:
-	  no_floppy = 1;
+	  floppy_disks = 0;
 	  break;
 
 	case OPT_PROBE_SECOND_FLOPPY:
-	  probe_second_floppy = 1;
+	  floppy_disks = 2;
 	  break;
 
 	case OPT_DEVICE_MAP:

@@ -440,19 +440,14 @@ extern int use_curses;
 extern int verbose;
 /* The flag for read-only.  */
 extern int read_only;
-/* If this flag is true, assume that there is no floppy.  */
-extern int no_floppy;
-/* If this flag is true, probe the second floppy drive.  */
-extern int probe_second_floppy;
+/* The number of floppies to be probed.  */
+extern int floppy_disks;
 /* The map between BIOS drives and UNIX device file names.  */
 extern char **device_map;
 /* The filename which stores the information about a device map.  */
 extern char *device_map_file;
 /* The array of geometries.  */
 extern struct geometry *disks;
-/* Check if DEVICE can be read. If an error occurs, return zero,
-   otherwise return non-zero.  */
-extern int check_device (const char *device);
 /* Assign DRIVE to a device name DEVICE.  */
 extern void assign_device_name (int drive, const char *device);
 #endif

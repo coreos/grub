@@ -1,3 +1,39 @@
+2000-07-12  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Segreate OS-specific helper functions from asmstub.c.
+	
+	* grub/asmstub.c [__linux__]: Don't include linux/hdreg.h,
+	linux/major.h, linux/kdev_t.h, or linux/cdrom.h.
+	[__FreeBSD__ || __NetBSD__ || __OpenBSD__]: Don't include
+	sys/ioctl.h, sys/disklabel.h, or sys/ioctl.h.
+	[HAVE_OPENDISK]: Don't include util.h.
+	Include device.h.
+	(DEFAULT_FD_CYLINDERS): Removed.
+	(DEFAULT_FD_HEADS): Likewise.
+	(DEFAULT_FD_SECTORS): Likewise.
+	(DEFAULT_HD_CYLINDERS): Likewise.
+	(DEFAULT_HD_HEADS): Likewise.
+	(DEFAULT_HD_SECTORS): Likewise.
+	(NUM_DISKS): Likewise.
+	(init_device_map): Likewise.
+	(get_floppy_disk_name): Likewise.
+	(get_ide_disk_name): Likewise.
+	(get_scsi_disk_name): Likewise.
+	(check_device): Likewise.
+	(get_drive_geometry): Likewise.
+	* grub/main.c (no_floppy): Removed.
+	(probe_second_floppy): Likewise.
+	(floppy_disks): New global variable.
+	(main): Set FLOPPY_DISKS to zero, if OPT_NO_FLOPPY. Set
+	FLOPPY_DISKS to two, if OPT_PROBE_SECOND_FLOPPY.
+	* lib/Makefile.am (AM_CFLAGS): New variable.
+	* lib/device.h: New file.
+	* lib/device.c: Likewise.
+	* stage2/shared.h (no_floppy): Removed.
+	(probe_second_floppy): Likewise.
+	(check_device): Likewise.
+	(floppy_disks): Declared.
+	
 2000-07-02  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* grub/main.c (usage): Enclose the mail address with parentheses

@@ -89,7 +89,11 @@ install_sh = @install_sh@
 
 noinst_LIBRARIES = libcommon.a
 
-libcommon_a_SOURCES = getopt.c getopt1.c getopt.h
+AM_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/stage2 \
+	-I$(top_srcdir)/stage1
+
+
+libcommon_a_SOURCES = getopt.c getopt1.c getopt.h device.c device.h
 subdir = lib
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -103,7 +107,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libcommon_a_AR = $(AR) cru
 libcommon_a_LIBADD = 
-am_libcommon_a_OBJECTS =  getopt.o getopt1.o
+am_libcommon_a_OBJECTS =  getopt.o getopt1.o device.o
 libcommon_a_OBJECTS =  $(am_libcommon_a_OBJECTS)
 AR = ar
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -112,7 +116,8 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES =  $(libcommon_a_SOURCES)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-DEP_FILES =  @AMDEP@ $(DEPDIR)/getopt.Po $(DEPDIR)/getopt1.Po
+DEP_FILES =  @AMDEP@ $(DEPDIR)/device.Po $(DEPDIR)/getopt.Po \
+$(DEPDIR)/getopt1.Po
 DIST_COMMON =  Makefile.am Makefile.in
 
 
@@ -190,6 +195,7 @@ distclean-tags:
 
 maintainer-clean-tags:
 
+@AMDEP@include $(DEPDIR)/device.Po
 @AMDEP@include $(DEPDIR)/getopt.Po
 @AMDEP@include $(DEPDIR)/getopt1.Po
 

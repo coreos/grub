@@ -42,10 +42,6 @@ int grub_stage2 (void);
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
-# include <linux/hdreg.h>	/* HDIO_GETGEO */
-# include <linux/major.h>	/* FLOPPY_MAJOR */
-# include <linux/kdev_t.h>	/* MAJOR */
-# include <linux/cdrom.h>	/* CDROM_GET_CAPABILITY */
 # if (__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */
@@ -56,32 +52,15 @@ int grub_stage2 (void);
 # endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-# include <sys/ioctl.h>		/* ioctl */
-# include <sys/disklabel.h>
-# include <sys/cdio.h>		/* CDIOCCLRDEBUG */
-#endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
-
-#ifdef HAVE_OPENDISK
-# include <util.h>
-#endif /* HAVE_OPENDISK */
-
 /* We want to prevent any circularararity in our stubs, as well as
    libc name clashes. */
 #define WITHOUT_LIBC_STUBS 1
-#include "shared.h"
+#include <shared.h>
+#include <device.h>
 
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (3 * 1024 * 1024)	/* 3MB */
 #define CONVENTIONAL_MEMSIZE (640 * 1024)	/* 640kB */
-
-/* Simulated disk sizes. */
-#define DEFAULT_FD_CYLINDERS	80
-#define DEFAULT_FD_HEADS	2
-#define DEFAULT_FD_SECTORS	18
-#define DEFAULT_HD_CYLINDERS	620
-#define DEFAULT_HD_HEADS	128
-#define DEFAULT_HD_SECTORS	63
 
 unsigned long install_partition = 0x20000;
 unsigned long boot_drive = 0;
@@ -91,7 +70,6 @@ char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 /* Emulation requirements. */
 char *grub_scratch_mem = 0;
 
-#define NUM_DISKS 256
 struct geometry *disks = 0;
 
 /* The map between BIOS drives and UNIX device file names.  */
@@ -99,12 +77,6 @@ char **device_map = 0;
 
 /* The jump buffer for exiting correctly.  */
 static jmp_buf env_for_exit;
-
-/* Forward declarations.  */
-static void get_floppy_disk_name (char *name, int unit);
-static void get_ide_disk_name (char *name, int unit);
-static void get_scsi_disk_name (char *name, int unit);
-static void init_device_map (void);
 
 /* The main entry point into this mess. */
 int
@@ -156,8 +128,9 @@ grub_stage2 (void)
   for (i = 0; i < NUM_DISKS; i++)
     disks[i].flags = -1;
 
-  init_device_map ();
-
+  if (! init_device_map (&device_map, device_map_file, floppy_disks))
+    return 1;
+  
   /* Check some invariants. */
   assert ((SCRATCHSEG << 4) == SCRATCHADDR);
   assert ((BUFFERSEG << 4) == BUFFERADDR);
@@ -209,9 +182,7 @@ grub_stage2 (void)
       }
 
   /* Release memory. */
-  for (i = 0; i < NUM_DISKS; i++)
-    free (device_map[i]);
-  free (device_map[i]);
+  restore_device_map (device_map);
   device_map = 0;
   free (disks);
   disks = 0;
@@ -220,350 +191,6 @@ grub_stage2 (void)
 
   /* Ahh... at last we're ready to return to caller. */
   return status;
-}
-
-static void
-init_device_map (void)
-{
-  int i;
-  int num_hd = 0;
-  FILE *fp = 0;
-
-  static void print_error (int no, const char *msg)
-    {
-      fprintf (stderr, "%s:%d: error: %s\n", device_map_file, no, msg);
-    }
-
-  assert (device_map == 0);
-  device_map = malloc (NUM_DISKS * sizeof (char *));
-  assert (device_map);
-
-  /* Probe devices for creating the device map.  */
-
-  /* Initialize DEVICE_MAP.  */
-  for (i = 0; i < NUM_DISKS; i++)
-    device_map[i] = 0;
-
-  if (device_map_file)
-    {
-      /* Open the device map file.  */
-      fp = fopen (device_map_file, "r");
-      if (fp)
-	{
-	  /* If there is the device map file, use the data in it instead of
-	     probing devices.  */
-	  char buf[1024];		/* XXX */
-	  int line_number = 0;
-
-	  while (fgets (buf, sizeof (buf), fp))
-	    {
-	      char *ptr, *eptr;
-	      int drive;
-	      int is_floppy = 0;
-
-	      /* Increase the number of lines.  */
-	      line_number++;
-
-	      /* If the first character is '#', skip it.  */
-	      if (buf[0] == '#')
-		continue;
-
-	      ptr = buf;
-	      /* Skip leading spaces.  */
-	      while (*ptr && isspace (*ptr))
-		ptr++;
-
-	      if (*ptr != '(')
-		{
-		  print_error (line_number, "No open parenthesis found");
-		  stop ();
-		}
-
-	      ptr++;
-	      if ((*ptr != 'f' && *ptr != 'h') || *(ptr + 1) != 'd')
-		{
-		  print_error (line_number, "Bad drive name");
-		  stop ();
-		}
-
-	      if (*ptr == 'f')
-		is_floppy = 1;
-
-	      ptr += 2;
-	      drive = strtoul (ptr, &ptr, 10);
-	      if (drive < 0 || drive > 8)
-		{
-		  print_error (line_number, "Bad device number");
-		  stop ();
-		}
-
-	      if (! is_floppy)
-		drive += 0x80;
-
-	      if (*ptr != ')')
-		{
-		  print_error (line_number, "No close parenthesis found");
-		  stop ();
-		}
-
-	      ptr++;
-	      /* Skip spaces.  */
-	      while (*ptr && isspace (*ptr))
-		ptr++;
-
-	      if (! *ptr)
-		{
-		  print_error (line_number, "No filename found");
-		  stop ();
-		}
-
-	      /* Terminate the filename.  */
-	      eptr = ptr;
-	      while (*eptr && ! isspace (*eptr))
-		eptr++;
-	      *eptr = 0;
-
-	      assign_device_name (drive, ptr);
-	    }
-
-	  fclose (fp);
-	  return;
-	}
-    }
-
-  /* Print something as the user does not think GRUB has been crashed.  */
-  fprintf (stderr,
-	   "Probing devices to guess BIOS drives. "
-	   "This may take a long time.\n");
-
-  if (device_map_file)
-    /* Try to open the device map file to write the probed data.  */
-    fp = fopen (device_map_file, "w");
-
-  /* Floppies.  */
-  if (! no_floppy)
-    for (i = 0; i < 2; i++)
-      {
-	char name[16];
-
-	if (i == 1 && ! probe_second_floppy)
-	  break;
-
-	get_floppy_disk_name (name, i);
-	/* In floppies, write the map, whether check_device succeeds
-	   or not, because the user just does not insert floppies.  */
-	if (fp)
-	  fprintf (fp, "(fd%d)\t%s\n", i, name);
-
-	if (check_device (name))
-	  assign_device_name (i, name);
-      }
-
-  /* IDE disks.  */
-  for (i = 0; i < 8; i++)
-    {
-      char name[16];
-
-      get_ide_disk_name (name, i);
-      if (check_device (name))
-	{
-	  assign_device_name (num_hd + 0x80, name);
-
-	  /* If the device map file is opened, write the map.  */
-	  if (fp)
-	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
-
-	  num_hd++;
-	}
-    }
-
-  /* The rest is SCSI disks.  */
-  for (i = 0; i < 16; i++)
-    {
-      char name[16];
-
-      get_scsi_disk_name (name, i);
-      if (check_device (name))
-	{
-	  assign_device_name (num_hd + 0x80, name);
-
-	  /* If the device map file is opened, write the map.  */
-	  if (fp)
-	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
-
-	  num_hd++;
-	}
-    }
-
-  /* OK, close the device map file if opened.  */
-  if (fp)
-    fclose (fp);
-}
-
-/* These three functions are quite different among OSes.  */
-static void
-get_floppy_disk_name (char *name, int unit)
-{
-#if defined(__linux__) || defined(__GNU__)
-  /* GNU/Linux and GNU/Hurd */
-  sprintf (name, "/dev/fd%d", unit);
-#elif defined(__FreeBSD__)
-  /* FreeBSD */
-  sprintf (name, "/dev/rfd%d", unit);
-#elif defined(__NetBSD__)
-  /* NetBSD */
-  /* opendisk() doesn't work for floppies.  */
-  sprintf (name, "/dev/rfd%da", unit);
-#elif defined(__OpenBSD__)
-  /* OpenBSD */
-  sprintf (name, "/dev/rfd%dc", unit);
-#else
-# warning "BIOS floppy drives cannot be guessed in your operating system."
-  /* Set NAME to a bogus string.  */
-  *name = 0;
-#endif
-}
-
-static void
-get_ide_disk_name (char *name, int unit)
-{
-#if defined(__linux__)
-  /* GNU/Linux */
-  sprintf (name, "/dev/hd%c", unit + 'a');
-#elif defined(__GNU__)
-  /* GNU/Hurd */
-  sprintf (name, "/dev/hd%d", unit);
-#elif defined(__FreeBSD__)
-  /* FreeBSD */
-  sprintf (name, "/dev/rwd%d", unit);
-#elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
-  /* NetBSD */
-  char shortname[16];
-  int fd;
-
-  sprintf (shortname, "wd%d", unit);
-  fd = opendisk (shortname, O_RDONLY, name,
-		 16,	/* length of NAME */
-		 0	/* char device */
-		 );
-  close (fd);
-#elif defined(__OpenBSD__)
-  /* OpenBSD */
-  sprintf (name, "/dev/rwd%dc", unit);
-#else
-# warning "BIOS IDE drives cannot be guessed in your operating system."
-  /* Set NAME to a bogus string.  */
-  *name = 0;
-#endif
-}
-
-static void
-get_scsi_disk_name (char *name, int unit)
-{
-#if defined(__linux__)
-  /* GNU/Linux */
-  sprintf (name, "/dev/sd%c", unit + 'a');
-#elif defined(__GNU__)
-  /* GNU/Hurd */
-  sprintf (name, "/dev/sd%d", unit);
-#elif defined(__FreeBSD__)
-  /* FreeBSD */
-  sprintf (name, "/dev/rda%d", unit);
-#elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
-  /* NetBSD */
-  char shortname[16];
-  int fd;
-
-  sprintf (shortname, "sd%d", unit);
-  fd = opendisk (shortname, O_RDONLY, name,
-		 16,	/* length of NAME */
-		 0	/* char device */
-		 );
-  close (fd);
-#elif defined(__OpenBSD__)
-  /* OpenBSD */
-  sprintf (name, "/dev/rsd%dc", unit);
-#else
-# warning "BIOS SCSI drives cannot be guessed in your operating system."
-  /* Set NAME to a bogus string.  */
-  *name = 0;
-#endif
-}
-
-/* Check if DEVICE can be read. If an error occurs, return zero,
-   otherwise return non-zero.  */
-int
-check_device (const char *device)
-{
-  char buf[512];
-  FILE *fp;
-
-  fp = fopen (device, "r");
-  if (! fp)
-    {
-      switch (errno)
-	{
-#ifdef ENOMEDIUM
-	case ENOMEDIUM:
-# if 0
-	  /* At the moment, this finds only CDROMs, which can't be
-	     read anyway, so leave it out. Code should be
-	     reactivated if `removable disks' and CDROMs are
-	     supported.  */
-	  /* Accept it, it may be inserted.  */
-	  return 1;
-# endif
-	  break;
-#endif /* ENOMEDIUM */
-	default:
-	  /* Break case and leave.  */
-	  break;
-	}
-      /* Error opening the device.  */
-      return 0;
-    }
-
-  /* Make sure CD-ROMs don't get assigned a BIOS disk number 
-     before SCSI disks!  */
-#ifdef __linux__
-# ifdef CDROM_GET_CAPABILITY
-  if (ioctl (fileno (fp), CDROM_GET_CAPABILITY, 0) >= 0)
-    return 0;
-# else /* ! CDROM_GET_CAPABILITY */
-  /* Check if DEVICE is a CD-ROM drive by the HDIO_GETGEO ioctl.  */
-  {
-    struct hd_geometry hdg;
-    struct stat st;
-
-    if (fstat (fileno (fp), &st))
-      return 0;
-
-    /* If it is a block device and isn't a floppy, check if HDIO_GETGEO
-       succeeds.  */
-    if (S_ISBLK (st.st_mode)
-	&& MAJOR (st.st_rdev) != FLOPPY_MAJOR
-	&& ioctl (fileno (fp), HDIO_GETGEO, &hdg))
-      return 0;
-  }
-# endif /* ! CDROM_GET_CAPABILITY */
-#endif /* __linux__ */
-
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-# ifdef CDIOCCLRDEBUG
-  if (ioctl (fileno (fp), CDIOCCLRDEBUG, 0) >= 0)
-    return 0;
-# endif /* CDIOCCLRDEBUG */
-#endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
-  
-  /* Attempt to read the first sector.  */
-  if (fread (buf, 1, 512, fp) != 512)
-    {
-      fclose (fp);
-      return 0;
-    }
-
-  fclose (fp);
-  return 1;
 }
 
 /* Assign DRIVE to a device name DEVICE.  */
@@ -929,48 +556,6 @@ set_attrib (int attr)
 #endif
 }
 
-
-/* Get the geometry of a drive DRIVE. If an error occurs, return zero,
-   otherwise non-zero.  */
-static int
-get_drive_geometry (int drive)
-{
-  struct geometry *geom = &disks[drive];
-
-#if defined(__linux__)
-  /* Linux */
-  struct hd_geometry hdg;
-  if (ioctl (geom->flags, HDIO_GETGEO, &hdg))
-    return 0;
-
-  /* Got the geometry, so save it. */
-  geom->cylinders = hdg.cylinders;
-  geom->heads = hdg.heads;
-  geom->sectors = hdg.sectors;
-  /* FIXME: Should get the real number of sectors.  */
-  geom->total_sectors = hdg.cylinders * hdg.heads * hdg.sectors;
-  return 1;
-
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-  /* FreeBSD */
-  struct disklabel hdg;
-  if (ioctl (disks[drive].flags, DIOCGDINFO, &hdg))
-    return 0;
-
-  disks[drive].cylinders = hdg.d_ncylinders;
-  disks[drive].heads = hdg.d_ntracks;
-  disks[drive].sectors = hdg.d_nsectors;
-  disks[drive].total_sectors = hdg.d_secperunit;
-  return 1;
-
-#else
-# warning "In your operating system, automatic detection of geometries \
-will not be performed."
-  return 0;
-#endif
-}
-
-
 /* Low-level disk I/O.  Our stubbed version just returns a file
    descriptor, not the actual geometry. */
 int
@@ -1027,32 +612,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 	}
 
       if (disks[drive].flags != -1)
-	{
-	  if (! get_drive_geometry (drive))
-	    {
-	      /* Set some arbitrary defaults. */
-	      if (drive & 0x80)
-		{
-		  /* Hard drive. */
-		  disks[drive].cylinders = DEFAULT_HD_CYLINDERS;
-		  disks[drive].heads = DEFAULT_HD_HEADS;
-		  disks[drive].sectors = DEFAULT_HD_SECTORS;
-		  disks[drive].total_sectors = (DEFAULT_HD_CYLINDERS
-						* DEFAULT_HD_HEADS
-						* DEFAULT_HD_SECTORS);
-		}
-	      else
-		{
-		  /* Floppy. */
-		  disks[drive].cylinders = DEFAULT_FD_CYLINDERS;
-		  disks[drive].heads = DEFAULT_FD_HEADS;
-		  disks[drive].sectors = DEFAULT_FD_SECTORS;
-		  disks[drive].total_sectors = (DEFAULT_FD_CYLINDERS
-						* DEFAULT_FD_HEADS
-						* DEFAULT_FD_SECTORS);
-		}
-	    }
-	}
+	get_drive_geometry (&disks[drive], device_map, drive);
     }
 
   if (disks[drive].flags == -1)
