@@ -1,4 +1,13 @@
-2002-06-30  Yoshinori K. Okuji  <okuji@alien>
+2002-06-30  Yoshinori K. Okuji <okuji@enbug.org>
+
+	* stage2/builtins.c [SUPPORT_SERIAL || SUPPORT_HERCULES]
+	(terminal_func): Set CURRENT_TERM to each of selected terminals
+	before calling grub_printf, and restore CURRENT_TERM after it.
+	Reported by Ilguiz Latypov.
+	Prepend a carriage return to the prompting message, because it
+	is ugly that the same messages fulfill the whole screen.
+
+2002-06-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/serial.c [!GRUB_UTIL] (serial_hw_fetch): Fixed the
 	conditional statement. Reported by Ilguiz Latypov.

@@ -4113,7 +4113,19 @@ terminal_func (char *arg, int flags)
 	  if ((time1 = getrtsecs ()) != time2 && time1 != 0xFF)
 	    {
 	      if (! no_message)
-		grub_printf ("Press any key to continue.\n");
+		{
+		  /* Need to set CURRENT_TERM to each of selected
+		     terminals.  */
+		  for (i = 0; term_table[i].name; i++)
+		    if (term_bitmap & (1 << i))
+		      {
+			current_term = term_table + i;
+			grub_printf ("\rPress any key to continue.\n");
+		      }
+		  
+		  /* Restore CURRENT_TERM.  */
+		  current_term = prev_term;
+		}
 	      
 	      time2 = time1;
 	      if (to > 0)
