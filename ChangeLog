@@ -1,6 +1,18 @@
+2000-08-12  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Add a serial device driver (but only the driver).
+	
+	* stage2/serial.c: New file.
+	* stage2/serial.h: Likewise.
+	* stage2/shared.h (serial_getkey): Moved to stage2/serial.h.
+	(serial_checkkey): Likewise.
+	(serial_putchar): Likewise.
+	* stage2/Makefile.am (noinst_HEADERS): Added serial.h.
+	(pre_stage2_exec_SOURCES): Added serial.c.
+
 2000-08-10  Pavel Roskin  <proski@gnu.org>
 
-	* docs/tutorial.texi: minor fixes
+	* docs/tutorial.texi: Minor fixes.
 
 2000-08-10  OKUJI Yoshinori  <okuji@gnu.org>
 

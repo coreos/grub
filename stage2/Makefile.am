@@ -5,7 +5,8 @@ noinst_SCRIPTS = $(TESTS)
 # For dist target.
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
-        mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h nbi.h
+        mb_header.h mb_info.h pc_slice.h serial.h shared.h smp-imps.h \
+	nbi.h
 EXTRA_DIST = $(noinst_SCRIPTS)
 
 # For <stage1.h>.
@@ -59,8 +60,8 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c smp-imps.c \
-	stage2.c
+	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c serial.c \
+	smp-imps.c stage2.c
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 

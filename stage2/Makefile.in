@@ -93,7 +93,8 @@ noinst_SCRIPTS = $(TESTS)
 # For dist target.
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
-        mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h nbi.h
+        mb_header.h mb_info.h pc_slice.h serial.h shared.h smp-imps.h \
+	nbi.h
 
 EXTRA_DIST = $(noinst_SCRIPTS)
 
@@ -143,8 +144,8 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c smp-imps.c \
-	stage2.c
+	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c serial.c \
+	smp-imps.c stage2.c
 
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
@@ -250,7 +251,7 @@ diskless_exec-char_io.o diskless_exec-cmdline.o diskless_exec-disk_io.o \
 diskless_exec-gunzip.o diskless_exec-fsys_ext2fs.o \
 diskless_exec-fsys_fat.o diskless_exec-fsys_ffs.o \
 diskless_exec-fsys_minix.o diskless_exec-fsys_reiserfs.o \
-diskless_exec-smp-imps.o diskless_exec-stage2.o
+diskless_exec-serial.o diskless_exec-smp-imps.o diskless_exec-stage2.o
 diskless_exec_OBJECTS =  $(am_diskless_exec_OBJECTS)
 diskless_exec_DEPENDENCIES =  ../netboot/libdrivers.a
 am_e2fs_stage1_5_exec_OBJECTS =  e2fs_stage1_5_exec-start.o \
@@ -296,8 +297,8 @@ pre_stage2_exec-char_io.o pre_stage2_exec-cmdline.o \
 pre_stage2_exec-disk_io.o pre_stage2_exec-gunzip.o \
 pre_stage2_exec-fsys_ext2fs.o pre_stage2_exec-fsys_fat.o \
 pre_stage2_exec-fsys_ffs.o pre_stage2_exec-fsys_minix.o \
-pre_stage2_exec-fsys_reiserfs.o pre_stage2_exec-smp-imps.o \
-pre_stage2_exec-stage2.o
+pre_stage2_exec-fsys_reiserfs.o pre_stage2_exec-serial.o \
+pre_stage2_exec-smp-imps.o pre_stage2_exec-stage2.o
 pre_stage2_exec_OBJECTS =  $(am_pre_stage2_exec_OBJECTS)
 @NETBOOT_SUPPORT_TRUE@pre_stage2_exec_DEPENDENCIES =  \
 @NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
@@ -343,8 +344,9 @@ $(DEPDIR)/diskless_exec-fsys_ext2fs.Po \
 $(DEPDIR)/diskless_exec-fsys_fat.Po $(DEPDIR)/diskless_exec-fsys_ffs.Po \
 $(DEPDIR)/diskless_exec-fsys_minix.Po \
 $(DEPDIR)/diskless_exec-fsys_reiserfs.Po \
-$(DEPDIR)/diskless_exec-gunzip.Po $(DEPDIR)/diskless_exec-smp-imps.Po \
-$(DEPDIR)/diskless_exec-stage2.Po $(DEPDIR)/e2fs_stage1_5_exec-asm.Po \
+$(DEPDIR)/diskless_exec-gunzip.Po $(DEPDIR)/diskless_exec-serial.Po \
+$(DEPDIR)/diskless_exec-smp-imps.Po $(DEPDIR)/diskless_exec-stage2.Po \
+$(DEPDIR)/e2fs_stage1_5_exec-asm.Po \
 $(DEPDIR)/e2fs_stage1_5_exec-bios.Po \
 $(DEPDIR)/e2fs_stage1_5_exec-char_io.Po \
 $(DEPDIR)/e2fs_stage1_5_exec-common.Po \
@@ -392,7 +394,7 @@ $(DEPDIR)/pre_stage2_exec-fsys_fat.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_ffs.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_minix.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po \
-$(DEPDIR)/pre_stage2_exec-gunzip.Po \
+$(DEPDIR)/pre_stage2_exec-gunzip.Po $(DEPDIR)/pre_stage2_exec-serial.Po \
 $(DEPDIR)/pre_stage2_exec-smp-imps.Po \
 $(DEPDIR)/pre_stage2_exec-stage2.Po \
 $(DEPDIR)/pxeloader_exec-pxeloader.Po \
@@ -484,6 +486,7 @@ diskless_exec-fsys_fat.o: fsys_fat.c
 diskless_exec-fsys_ffs.o: fsys_ffs.c
 diskless_exec-fsys_minix.o: fsys_minix.c
 diskless_exec-fsys_reiserfs.o: fsys_reiserfs.c
+diskless_exec-serial.o: serial.c
 diskless_exec-smp-imps.o: smp-imps.c
 diskless_exec-stage2.o: stage2.c
 
@@ -567,6 +570,7 @@ pre_stage2_exec-fsys_fat.o: fsys_fat.c
 pre_stage2_exec-fsys_ffs.o: fsys_ffs.c
 pre_stage2_exec-fsys_minix.o: fsys_minix.c
 pre_stage2_exec-fsys_reiserfs.o: fsys_reiserfs.c
+pre_stage2_exec-serial.o: serial.c
 pre_stage2_exec-smp-imps.o: smp-imps.c
 pre_stage2_exec-stage2.o: stage2.c
 
@@ -667,6 +671,7 @@ maintainer-clean-tags:
 @AMDEP@include $(DEPDIR)/diskless_exec-fsys_minix.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-fsys_reiserfs.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-gunzip.Po
+@AMDEP@include $(DEPDIR)/diskless_exec-serial.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-smp-imps.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-stage2.Po
 @AMDEP@include $(DEPDIR)/e2fs_stage1_5_exec-asm.Po
@@ -729,6 +734,7 @@ maintainer-clean-tags:
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_minix.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-gunzip.Po
+@AMDEP@include $(DEPDIR)/pre_stage2_exec-serial.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-smp-imps.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-stage2.Po
 @AMDEP@include $(DEPDIR)/pxeloader_exec-pxeloader.Po
@@ -967,6 +973,14 @@ diskless_exec-fsys_reiserfs.o: fsys_reiserfs.c
 @AMDEP@	depfile='$(DEPDIR)/diskless_exec-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+diskless_exec-serial.o: serial.c
+@AMDEP@	source='serial.c' object='diskless_exec-serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/diskless_exec-serial.Po' tmpdepfile='$(DEPDIR)/diskless_exec-serial.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-serial.o `test -f serial.c || echo '$(srcdir)/'`serial.c
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 
@@ -1279,6 +1293,14 @@ pre_stage2_exec-fsys_reiserfs.o: fsys_reiserfs.c
 @AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+pre_stage2_exec-serial.o: serial.c
+@AMDEP@	source='serial.c' object='pre_stage2_exec-serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-serial.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-serial.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-serial.o `test -f serial.c || echo '$(srcdir)/'`serial.c
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 

@@ -659,9 +659,6 @@ void grub_putchar (int c);
 /* The console part of grub_putchar.  */
 void console_putchar (int c);
 
-/* The serial part of grub_putchar.  */
-void serial_putchar (int c);
-
 /* Wait for a keypress, and return its packed BIOS/ASCII key code.
    Use ASCII_CHAR(ret) to extract the ASCII code. */
 int getkey (void);
@@ -669,18 +666,12 @@ int getkey (void);
 /* The console part of getkey.  */
 int console_getkey (void);
 
-/* The serial part of getkey.  */
-int serial_getkey (void);
-
 /* Like GETKEY, but doesn't block, and returns -1 if no keystroke is
    available. */
 int checkkey (void);
 
 /* The console part of checkkey.  */
 int console_checkkey (void);
-
-/* The serial part of checkkey.  */
-int serial_checkkey (void);
 
 /* Sets text mode character attribute at the cursor position.  See A_*
    constants defined above. */
