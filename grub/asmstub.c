@@ -117,7 +117,7 @@ grub_stage2 (void)
   
   /* We need a nested function so that we get a clean stack frame,
      regardless of how the code is optimized. */
-  volatile void doit (void)
+  void doit (void)
     {
       /* Make sure our stack lives in the simulated memory area. */
       asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"

@@ -1,3 +1,8 @@
+2005-02-16  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* grub/asmstub.c (grub_stage2): Remove the attribute `volatile'
+	from doit. I hope this change is safe for all compilers.
+
 2005-02-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (install_func): If DEST_DRIVE is a hard
