@@ -123,6 +123,8 @@ extern char *grub_scratch_mem;
 /* The size of the key map.  */
 #define KEY_MAP_SIZE		128
 
+/* The size of the io map.  */
+#define IO_MAP_SIZE		128
 
 /*
  *  Linux setup parameters
@@ -538,9 +540,13 @@ void set_int15_handler (void);
 /* Restore the original int15 handler.  */
 void unset_int15_handler (void);
 
+/* Track the int13 handler to probe I/O address space.  */
+void track_int13 (int drive);
+
 /* The key map.  */
 extern unsigned short bios_key_map[];
 extern unsigned short ascii_key_map[];
+extern unsigned short io_map[];
 
 /* calls for direct boot-loader chaining */
 void chain_stage1 (int segment, int offset, int part_table_addr)

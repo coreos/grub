@@ -1442,6 +1442,49 @@ static struct builtin builtin_install =
 };
 
 
+/* ioprobe */
+static int
+ioprobe_func (char *arg, int flags)
+{
+#ifdef GRUB_UTIL
+  
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+  
+#else /* ! GRUB_UTIL */
+  
+  unsigned short *port;
+  
+  /* Get the drive number.  */
+  set_device (arg);
+  if (errnum)
+    return 1;
+
+  /* Clean out IO_MAP.  */
+  grub_memset ((char *) io_map, 0, IO_MAP_SIZE * sizeof (unsigned short));
+
+  /* Track the int13 handler.  */
+  track_int13 (current_drive);
+  
+  /* Print out the result.  */
+  for (port = io_map; *port != 0; port++)
+    grub_printf (" 0x%x", (unsigned int) *port);
+
+  return 0;
+  
+#endif /* ! GRUB_UTIL */
+}
+
+static struct builtin builtin_ioprobe =
+{
+  "ioprobe",
+  ioprobe_func,
+  BUILTIN_CMDLINE,
+  "ioprobe DRIVE",
+  "Probe I/O ports used for the drive DRIVE."
+};
+
+
 /* kernel */
 static int
 kernel_func (char *arg, int flags)
@@ -2470,6 +2513,7 @@ struct builtin *builtin_table[] =
   &builtin_impsprobe,
   &builtin_initrd,
   &builtin_install,
+  &builtin_ioprobe,
   &builtin_kernel,
   &builtin_makeactive,
   &builtin_map,

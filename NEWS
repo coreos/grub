@@ -21,6 +21,8 @@ New in 0.5.94:
 * The command "setkey" maps a key to another.
 * The GRUB manual is rewritten, and now consists of three parts and
   appendices.
+* The command "ioprobe" detects what I/O ports are used for a BIOS
+  drive.
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.

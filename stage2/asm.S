@@ -186,8 +186,7 @@ ENTRY(stop_floppy)
 	outb	%al, %dx
 	ret
 
-	
-#ifdef DEFINE_TRACK_INT13
+
 /*
  * track_int13(int drive)
  *
@@ -201,40 +200,29 @@ ENTRY(track_int13)
 	pushl	%ebx
 	pushl	%edi
 
-	/* computer the linear address of int13 handler */
+	/* save the original int13 handler */
 	movl	$0x4c, %edi
-	xorl	%ebx, %ebx
-	xorl	%eax, %eax
+	movw	(%edi), %ax
+	movw	%ax, ABS(set_tf_int13_offset)
 	movw	2(%edi), %ax
-	shll	$4, %eax
-	movw	(%edi), %bx
-	addl	%eax, %ebx
+	movw	%ax, ABS(set_tf_int13_segment)
 
-	/* save the first intruction */
-	movb	(%ebx), %al
-	movb	%al, ABS(int13_first_instruction)
-
-	/* set the first instruction to int3 */
-	movb	$0xCC, (%ebx)
-
+	/* save the new int13 handler */
+	movl	$ABS(set_tf_int13_handler), %eax
+	movl	%eax, (%edi)
+		
 	/* replace the int1 handler */
-	movl	0x4, %edi
+	movl	$0x4, %edi
 	pushl	(%edi)
 	movl	$ABS(int1_handler), %eax
-	movl	%eax, (%edi)
-
-	/* replace the int3 handler */
-	movl	0xc, %edi
-	pushl	(%edi)
-	movl	$ABS(int3_handler), %eax
 	movl	%eax, (%edi)
 
 	/* read the MBR to call int13 successfully */
 	movb	8(%ebp), %dl
 	
-	DATA32	call	EXT_C(prot_to_real)
+	call	EXT_C(prot_to_real)
 	.code16
-	
+		
 	movw	$SCRATCHSEG, %ax
 	movw	%ax, %es
 	xorw	%bx, %bx
@@ -247,13 +235,16 @@ ENTRY(track_int13)
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
-	/* restore the int3 handler */
-	movl	0xc, %edi
+	/* restore the int1 handler */
+	movl	$0x4, %edi
 	popl	(%edi)
 
-	/* restore the int1 handler */
-	movl	0x4, %edi
-	popl	(%edi)
+	/* restore the int13 handler */
+	movl	$0x4c, %edi
+	movw	ABS(set_tf_int13_offset), %ax
+	movw	%ax, (%edi)
+	movw	ABS(set_tf_int13_segment), %ax
+	movw	%ax, 2(%edi)
 
 	popl	%edi
 	popl	%ebx
@@ -299,15 +290,13 @@ int1_handler:
 	je	1b
 	cmpb	$0x26, %al
 	je	1b
-	cmpb	$0x0F, %al
-	je	1b
 	cmpb	$0x64, %al
 	jl	2f
 	cmpb	$0x67, %al
 	jle	1b
-2:	cmpb	0xF0, %al
+2:	cmpb	$0xF0, %al
 	jl	3f
-	cmpb	0xF3, %al
+	cmpb	$0xF3, %al
 	jle	1b
 	
 3:	/* check if this code is out* or in* */
@@ -318,13 +307,13 @@ int1_handler:
 	cmpb	$0x6F, %al
 	jle	5f
 
-4:	/* in? or out? (immediate operand version) */
+4:	/* in? or out? (register operand version) */
 	cmpb	$0xEC, %al
 	jl	6f
 	cmpb	$0xEF, %al
-	jle	7f
+	jle	5f
 	
-6:	/* in? or out? (register operand version) */
+6:	/* in? or out? (immediate operand version) */
 	cmpb	$0xE4, %al
 	jl	8f
 	cmpb	$0xE7, %al
@@ -337,6 +326,10 @@ int1_handler:
 	
 5:	/* %dx has a port */
 
+	/* set %ds to zero */
+	xorw	%ax, %ax
+	movw	%ax, %ds
+		
 	/* set %si to the io map */
 	movw	$ABS(io_map), %si
 
@@ -352,7 +345,10 @@ int1_handler:
 	/* if so, leave from this handler */
 	jmp	8f
 	
-1:	/* add the port into the io map */
+1:	/* check for the buffer overrun */
+	cmpw	$(ABS(io_map) + (IO_MAP_SIZE + 1) * 2), %si
+	je	8f
+	/* add the port into the io map */
 	movw	%dx, -2(%si)
 
 8:	/* restore registers */	
@@ -370,51 +366,35 @@ int1_handler:
  * call clears the flag automatically.
  *
  * Note: we need not to clear this flag after the tracking explicitly,
- * because int13 restores the original FLAGS.
- *
- * Note2: In this implementation, ignore the first instruction, because
- * int1 is a trap but not a fault.
+ * because iret restores the original FLAGS.
  */
-int13_first_instruction:
-	.byte	0
-	
-int3_handler:
-	pushw	%bp
-	movw	%sp, %bp
+set_tf_int13_handler:
+	/* save %ax int the stack */
 	pushw	%ax
-	pushw	%bx
-	pushw	%ds
 	
-	/* set the TF flag in the stack */
-	movw	6(%bp), %ax
-	orw	$0x100, %ax
-	movw	%ax, 6(%bp)
-
-	/* restore the first instruction */
-	movb	ABS(int13_first_instruction), %al
-	movw	4(%bp), %bx
-	movw	%bx, %ds
-	movw	2(%bp), %bx
-	decw	%bx
-	movb	%al, (%bx)
-
-	/* re-execute the first instruction */
-	movw	%bx, 2(%bp)
-	
-	popw	%ds
-	popw	%bx	
+	/* set the TF flag */
+	pushf
 	popw	%ax
-	popw	%bp
-	
+	orw	$0x100, %ax
+	pushw	%ax
+	popf
+
+	/* restore %ax */
+	popw	%ax
+
+	/* simulate the interrupt call */
+	pushf
+	/* lcall */
+	.byte	0x9a
+set_tf_int13_offset:	.word	0
+set_tf_int13_segment:	.word	0
+
 	iret
 
 	.code32
 
 ENTRY(io_map)
-#define IO_MAP_SIZE 0
 	.space	(IO_MAP_SIZE + 1) * 2
-	
-#endif /* DEFINE_TRACK_INT13 */
 	
 	
 /*

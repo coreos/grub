@@ -1,5 +1,27 @@
 1999-10-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/asm.S (track_int13): Defined unconditionally. Do not
+	use int3 any more, but replace the int13 handler with
+	set_tf_int13_handler.
+	(int1_handler): Defined unconditionally. Do not check for 0x0F.
+	Add missing `$'s. If the code is 0xEC-0xEF, use %dx instead of
+	immediate. If the code is 0xE4-0xE7, use immediate instead of
+	%dx. Set %ds to zero before scanning IO_MAP. Check for the
+	buffer overrun of IO_MAP before adding a port.
+	[!DEFINE_TRACK_INT13] (int13_first_instruction): Removed.
+	[!DEFINE_TRACK_INT13] (int3_handler): Likewise.
+	(set_tf_int13_handler): New interrupt handler.
+	(set_tf_int13_offset): New variable.
+	(set_tf_int13_segment): Likewise.
+	* stage2/builtins.c (ioprobe_func): New function.
+	(builtin_ioprobe): New variable.
+	(builtin_table): Added a pointer to BUILTIN_IOPROBE.
+	* stage2/shared.h (IO_MAP_SIZE): New macro.
+	(track_int13): Declared.
+	(io_map): Likewise.
+	
+1999-10-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/char_io.c (print_error) [!STAGE1_5]: Print "Error:"
 	before print the error message.
 	(print_error): Do not clear ERRNUM.
