@@ -1,7 +1,7 @@
 /* multiboot.c - boot a multiboot OS image. */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -119,7 +119,7 @@ pupa_rescue_cmd_multiboot (int argc, char *argv[])
      be at least 12 bytes and aligned on a 4-byte boundary.  */
   for (header = (struct pupa_multiboot_header *) buffer; 
        ((char *) header <= buffer + len - 12) || (header = 0);
-       (char *)header += 4)
+       header = (struct pupa_multiboot_header *) ((char *)header + 4))
     {
       if (header->magic == PUPA_MB_MAGIC 
 	  && !(header->magic + header->flags + header->checksum))

@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -407,108 +407,108 @@ pupa_vga_putchar (pupa_uint32_t c)
 #endif
 }
 
- static pupa_uint16_t
- pupa_vga_getxy (void)
- {
-   return ((xpos << 8) | ypos);
- }
+static pupa_uint16_t
+pupa_vga_getxy (void)
+{
+  return ((xpos << 8) | ypos);
+}
 
- static void
- pupa_vga_gotoxy (pupa_uint8_t x, pupa_uint8_t y)
- {
-   if (x >= TEXT_WIDTH || y >= TEXT_HEIGHT)
-     {
-       pupa_error (PUPA_ERR_OUT_OF_RANGE, "invalid point (%u,%u)",
-		   (unsigned) x, (unsigned) y);
-       return;
-     }
+static void
+pupa_vga_gotoxy (pupa_uint8_t x, pupa_uint8_t y)
+{
+  if (x >= TEXT_WIDTH || y >= TEXT_HEIGHT)
+    {
+      pupa_error (PUPA_ERR_OUT_OF_RANGE, "invalid point (%u,%u)",
+		  (unsigned) x, (unsigned) y);
+      return;
+    }
 
-   if (cursor_state)
-     write_char ();
+  if (cursor_state)
+    write_char ();
 
-   xpos = x;
-   ypos = y;
+  xpos = x;
+  ypos = y;
 
-   if (cursor_state)
-     write_cursor ();
- }
+  if (cursor_state)
+    write_cursor ();
+}
 
- static void
- pupa_vga_cls (void)
- {
-   unsigned i;
+static void
+pupa_vga_cls (void)
+{
+  unsigned i;
 
-   for (i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++)
-     {
-       text_buf[i].code = ' ';
-       text_buf[i].fg_color = 0;
-       text_buf[i].bg_color = 0;
-       text_buf[i].width = 0;
-       text_buf[i].index = 0;
-     }
+  for (i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++)
+    {
+      text_buf[i].code = ' ';
+      text_buf[i].fg_color = 0;
+      text_buf[i].bg_color = 0;
+      text_buf[i].width = 0;
+      text_buf[i].index = 0;
+    }
 
-   pupa_memset (VGA_MEM, 0, VGA_WIDTH * VGA_HEIGHT / 8);
+  pupa_memset (VGA_MEM, 0, VGA_WIDTH * VGA_HEIGHT / 8);
 
-   xpos = ypos = 0;
- }
+  xpos = ypos = 0;
+}
 
- static void
- pupa_vga_setcolorstate (pupa_term_color_state state)
- {
-   switch (state)
-     {
-     case PUPA_TERM_COLOR_STANDARD:
-     case PUPA_TERM_COLOR_NORMAL:
-       fg_color = DEFAULT_FG_COLOR;
-       bg_color = DEFAULT_BG_COLOR;
-       break;
-     case PUPA_TERM_COLOR_HIGHLIGHT:
-       fg_color = DEFAULT_BG_COLOR;
-       bg_color = DEFAULT_FG_COLOR;
-       break;
-     default:
-       break;
-     }
- }
+static void
+pupa_vga_setcolorstate (pupa_term_color_state state)
+{
+  switch (state)
+    {
+    case PUPA_TERM_COLOR_STANDARD:
+    case PUPA_TERM_COLOR_NORMAL:
+      fg_color = DEFAULT_FG_COLOR;
+      bg_color = DEFAULT_BG_COLOR;
+      break;
+    case PUPA_TERM_COLOR_HIGHLIGHT:
+      fg_color = DEFAULT_BG_COLOR;
+      bg_color = DEFAULT_FG_COLOR;
+      break;
+    default:
+      break;
+    }
+}
 
- static void
- pupa_vga_setcolor (pupa_uint8_t normal_color __attribute__ ((unused)),
-		    pupa_uint8_t highlight_color __attribute__ ((unused)))
- {
-   /* FIXME */
- }
+static void
+pupa_vga_setcolor (pupa_uint8_t normal_color __attribute__ ((unused)),
+		   pupa_uint8_t highlight_color __attribute__ ((unused)))
+{
+  /* FIXME */
+}
 
- static void
- pupa_vga_setcursor (int on)
- {
-   if (cursor_state != on)
-     {
-       if (cursor_state)
-	 write_char ();
-       else
-	 write_cursor ();
+static void
+pupa_vga_setcursor (int on)
+{
+  if (cursor_state != on)
+    {
+      if (cursor_state)
+	write_char ();
+      else
+	write_cursor ();
 
-       cursor_state = on;
-     }
- }
+      cursor_state = on;
+    }
+}
 
- static struct pupa_term pupa_vga_term =
-   {
-     .name = "vga",
-     .init = pupa_vga_init,
-     .fini = pupa_vga_fini,
-     .putchar = pupa_vga_putchar,
-     .checkkey = pupa_console_checkkey,
-     .getkey = pupa_console_getkey,
-     .getxy = pupa_vga_getxy,
-     .gotoxy = pupa_vga_gotoxy,
-     .cls = pupa_vga_cls,
-     .setcolorstate = pupa_vga_setcolorstate,
-     .setcolor = pupa_vga_setcolor,
-     .setcursor = pupa_vga_setcursor,
-     .flags = 0,
-     .next = 0
-   };
+static struct pupa_term pupa_vga_term =
+  {
+    .name = "vga",
+    .init = pupa_vga_init,
+    .fini = pupa_vga_fini,
+    .putchar = pupa_vga_putchar,
+    .checkkey = pupa_console_checkkey,
+    .getkey = pupa_console_getkey,
+    .getxy = pupa_vga_getxy,
+    .gotoxy = pupa_vga_gotoxy,
+    .cls = pupa_vga_cls,
+    .setcolorstate = pupa_vga_setcolorstate,
+    .setcolor = pupa_vga_setcolor,
+    .setcursor = pupa_vga_setcursor,
+    .flags = 0,
+    .next = 0
+  };
 
 static pupa_err_t
 debug_command (struct pupa_arg_list *state __attribute__ ((unused)),

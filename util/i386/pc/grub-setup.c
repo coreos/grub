@@ -1,7 +1,7 @@
 /* pupa-setup.c - make PUPA usable */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -470,10 +470,10 @@ DEVICE must be a PUPA device (e.g. ``(hd0,0)'').\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
 \n\
-Report bugs to <okuji@enbug.org>.\n\
+Report bugs to <%s>.\n\
 ",
-	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE,
-	    DEFAULT_DIRECTORY, DEFAULT_DEVICE_MAP);
+	    DEFAULT_BOOT_FILE, DEFAULT_CORE_FILE, DEFAULT_DIRECTORY,
+	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -594,6 +594,7 @@ main (int argc, char *argv[])
 
   /* Initialize filesystems.  */
   pupa_fat_init ();
+  pupa_ext2_init ();
   
   if (root_dev)
     {
@@ -625,6 +626,7 @@ main (int argc, char *argv[])
 	 root_dev, dest_dev);
 
   /* Free resources.  */
+  pupa_ext2_fini ();
   pupa_fat_fini ();
   
   pupa_util_biosdisk_fini ();

@@ -1,7 +1,7 @@
 /* misc.c - definitions of misc functions */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,6 +45,9 @@ pupa_memmove (void *dest, const void *src, pupa_size_t n)
   
   return dest;
 }
+/* GCC emits references to memcpy() for struct copies etc.  */
+void *memcpy (void *dest, const void *src, pupa_size_t n)
+  __attribute__ ((alias ("pupa_memmove")));
 
 char *
 pupa_strcpy (char *dest, const char *src)

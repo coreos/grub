@@ -1,7 +1,7 @@
 /* fat.c - FAT filesystem */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ static pupa_dl_t my_mod;
 #endif
 
 static int
-log2 (unsigned x)
+fat_log2 (unsigned x)
 {
   int i;
   
@@ -165,12 +165,13 @@ pupa_fat_mount (pupa_disk_t disk)
     goto fail;
 
   /* Get the sizes of logical sectors and clusters.  */
-  data->logical_sector_bits = log2 (pupa_le_to_cpu16 (bpb.bytes_per_sector));
+  data->logical_sector_bits =
+    fat_log2 (pupa_le_to_cpu16 (bpb.bytes_per_sector));
   if (data->logical_sector_bits < PUPA_DISK_SECTOR_BITS)
     goto fail;
   data->logical_sector_bits -= PUPA_DISK_SECTOR_BITS;
   
-  data->cluster_bits = log2 (bpb.sectors_per_cluster);
+  data->cluster_bits = fat_log2 (bpb.sectors_per_cluster);
   if (data->cluster_bits < 0)
     goto fail;
   data->cluster_bits += data->logical_sector_bits;

@@ -1,7 +1,7 @@
 /* biosdisk.c - emulate biosdisk */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -190,11 +190,12 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
     
     return PUPA_ERR_NONE;
   }
-#else
-# warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
-#endif
 
  fail:
+  /* In GNU/Hurd, stat() will return the right size.  */
+#elif !defined (__GNU__)
+# warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
+#endif
   if (stat (map[drive], &st) < 0)
     return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive]);
 
@@ -325,7 +326,7 @@ open_device (const pupa_disk_t disk, unsigned long sector, int flags)
   }
 #else /* ! __linux__ */
   fd = open (map[disk->id], flags);
-  if (! fd)
+  if (fd < 0)
     {
       pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", map[disk->id]);
       return -1;
@@ -815,11 +816,11 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
     p = strrchr (os_dev, 's');
     if (p)
       {
-	unsigned long n;
+	long int n;
 	char *q;
 	
 	p++;
-	n = strtoul (p, &q, 10);
+	n = strtol (p, &q, 10);
 	if (p != q && n != LONG_MIN && n != LONG_MAX)
 	  {
 	    dos_part = (int) n;

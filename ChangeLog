@@ -1,3 +1,30 @@
+2004-03-14  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* Makefile.in: Update copyright.
+	* genmodsrc.sh: Likewise.
+	* gensymlist.sh: Likewise.
+	* term/i386/pc/vga.c: Indent correctly.
+
+	* util/i386/pc/pupa-mkimage.c (usage): Use PACKAGE_BUGREPORT as
+	bugreporting address.
+	* util/i386/pc/pupa-setup.c (usage): Likewise,
+	(main): Call pupa_ext2_init and pupa_ext2_fini.
+
+	* fs/fat.c (log2): Renamed to ... 
+	(fat_log2): ... this.
+	All callers changed.
+	* kern/misc.c (memcpy): Alias to pupa_memmove.
+	* loader/i386/pc/multiboot.c (pupa_rescue_cmd_multiboot): Fix
+	lvalue cast.
+	* util/console.c (pupa_ncurses_fini): Return 0.
+
+	* util/i386/pc/biosdisk.c (pupa_util_biosdisk_open)[__linux__]:
+	Move fail label here.
+	[__GNU__]: Don't warn when using stat.
+	(open_device)[!__linux__]: Check if FD < 0 instead of !FD.
+	(pupa_util_biosdisk_get_pupa_dev)[__GNU__]: Change type of N to
+	long int. Use strtol instead of strtoul.
+	
 2004-03-14  Marco Gerards  <metgerards@student.han.nl>
 
 	* commands/boot.c: New file.

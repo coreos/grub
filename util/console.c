@@ -177,6 +177,7 @@ static pupa_err_t
 pupa_ncurses_fini (void)
 {
   endwin ();
+  return 0;
 }
 
 
