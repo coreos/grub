@@ -82,6 +82,7 @@ edition documents version @value{VERSION}.
 * Using::                       Booting your operating systems.
 * Filesystems::                 Filesystem syntax and semantics.
 * Troubleshooting::             Error messages produced by GRUB.
+* Stage 2 Emulator::            The command @command{grub}.
 * Hacking::                     Implementation details.
 * Index::                       Index.
 
@@ -98,7 +99,6 @@ How to install GRUB on your computer
 
 * Boot floppy::                 Creating a GRUB boot floppy.
 * Automated install::           Installation via @code{install=}.
-* Installation under Unix::     Installation by @file{/sbin/grub}.
 
 Booting your operating systems
 
@@ -117,6 +117,12 @@ Error messages reported by GRUB
 * Stage1 errors::               Errors reported by the Stage 1.
 * Stage1.5 errors::             Errors reported by the Stage 1.5.
 * Stage2 errors::               Errors reported by the Stage 2.
+
+The command @command{grub}
+
+* Basic usage::                 Introduction into the Stage 2 emulator.
+* Command-line options::        The list of @command{grub} options.
+* Installation under UNIX::     How to install GRUB by @command{grub}.
 
 Implementation details
 
@@ -345,7 +351,6 @@ command at the GRUB command line (@pxref{Using}).
 @menu
 * Boot floppy::                 Creating a GRUB boot floppy.
 * Automated install::           Installation via @code{install=}.
-* Installation under Unix::     Installation by @file{/sbin/grub}.
 @end menu
 
 
@@ -476,12 +481,6 @@ kernel= /zImage root=/dev/hda2
 
 @dots{} then have the install script continue from there after boot of
 the OS.
-
-
-@node Installation under Unix
-@section Installation by @file{/sbin/grub}
-
-FIXME
 
 
 @node Using
@@ -1073,6 +1072,34 @@ or corrupt versions of the stage1 or stage2. It can't detect corruption
 in general, but this is a sanity check on the version numbers, which
 should be correct.
 @end table
+
+
+@node Stage 2 Emulator
+@chapter The command @command{grub}
+
+@menu
+* Basic usage::                 Introduction into the Stage 2 emulator.
+* Command-line options::        The list of @command{grub} options.
+* Installation under UNIX::     How to install GRUB by @command{grub}.
+@end menu
+
+
+@node Basic usage
+@section Introduction into the Stage 2 emulator
+
+FIXME
+
+
+@node Command-line options
+@section The list of @command{grub} options
+
+FIXME
+
+
+@node Installation under UNIX
+@section How to install GRUB by @command{grub}
+
+FIXME
 
 
 @node Hacking
@@ -2190,13 +2217,481 @@ hard disk.
 @node Partition table
 @section The format of partition table
 
-PC_partitioning.txt
+@menu
+* Partition basics::            Overview the partition table.
+* Partition types::             The list of the @dfn{type} code.
+* Partition entry format::      The format of the table entry.
+* Partition table rules::       Some basic rules for Partition table.
+@end menu
+
+
+@node Partition basics
+@subsection Overview the partition table
+
+FDISK creates all partition records (sectors). The primary purpose of a
+partition record is to hold a partition table. The rules for how FDISK
+works are unwritten but so far most FDISK programs seem to follow the
+same basic idea.
+
+First, all partition table records (sectors) have the same format. This
+includes the partition table record at cylinder 0, head 0, sector 1 --
+what is known as the Master Boot Record (MBR). The last 66 bytes of a
+partition table record contain a partition table and a 2 byte
+signature. The first 446 bytes of these sectors usually contain a
+program but only the program in the MBR is ever executed (so extended
+partition table records could contain something other than a program in
+the first 466 bytes). For more information, see @ref{MBR}.
+
+Second, extended partitions are @emph{nested} inside one another and
+extended partition table records form a @dfn{linked list}. I will
+attempt to show this in a diagram at @ref{Partition entry format}.
+
+Each partition table entry is 16 bytes and contains things like the
+start and end location of a partition in CHS, the start in LBA, the size
+in sectors, the partition @dfn{type} and the @dfn{active} flag. Older
+versions of FDISK may compute incorrect LBA or size values. And when
+your computer boots itself, only the CHS fields of the partition table
+entries are used (another reason LBA doesn't solve the >528MB
+problem). The CHS fields in the partition tables are in L-CHS format,
+see @ref{CHS Translation}.
+
+
+@node Partition types
+@subsection The list of the @dfn{type} code
+
+There is no central clearing house to assign the codes used in the one
+byte @dfn{type} field. But codes are assigned (or used) to define most
+every type of file system that anyone has ever implemented on the x86
+PC: 12-bit FAT, 16-bit FAT, HPFS, NTFS, etc. Plus, an extended partition
+also has a unique type code.
+
+In the FDISK program @samp{sfdisk}, the following list is assumed:
+
+@table @asis
+@item 00
+Empty
+
+@item 01
+DOS 12-bit FAT
+
+@item 02
+XENIX /
+
+@item 03
+XENIX /usr
+
+@item 04
+DOS 16-bit FAT <32M
+
+@item 05
+DOS Extended
+
+@item 06
+DOS 16-bit FAT >=32M
+
+@item 07
+HPFS / NTFS
+
+@item 08
+AIX boot or SplitDrive
+
+@item 09
+AIX data or Coherent
+
+@item 0A
+OS/2 Boot Manager
+
+@item 0B
+Windows95 FAT32
+
+@item 0C
+Windows95 FAT32 (LBA)
+
+@item 0E
+Windows95 FAT16 (LBA)
+
+@item 0F
+Windows95 Extended (LBA)
+
+@item 10
+OPUS
+
+@item 11
+Hidden DOS FAT12
+
+@item 12
+Compaq diagnostics
+
+@item 14
+Hidden DOS FAT16
+
+@item 16
+Hidden DOS FAT16 (big)
+
+@item 17
+Hidden HPFS/NTFS
+
+@item 18
+AST Windows swapfile
+
+@item 24
+NEC DOS
+
+@item 3C
+PartitionMagic recovery
+
+@item 40
+Venix 80286
+
+@item 41
+Linux/MINIX (sharing disk with DRDOS)
+
+@item 42
+SFS or Linux swap (sharing disk with DRDOS)
+
+@item 43
+Linux native (sharing disk with DRDOS)
+
+@item 50
+DM (disk manager)
+
+@item 51
+DM6 Aux1 (or Novell)
+
+@item 52
+CP/M or Microsoft SysV/AT
+
+@item 53
+DM6 Aux3
+
+@item 54
+DM6
+
+@item 55
+EZ-Drive (disk manager)
+
+@item 56
+Golden Bow (disk manager)
+
+@item 5C
+Priam Edisk (disk manager)
+
+@item 61
+SpeedStor
+
+@item 63
+GNU Hurd or Mach or Sys V/386 (such as ISC UNIX)@footnote{But the reason
+why they decided that 63 means GNU Hurd is not known. Do not use 63 for
+GNU Hurd.}
+
+@item 64
+Novell Netware 286
+
+@item 65
+Novell Netware 386
+
+@item 70
+DiskSecure Multi-Boot
+
+@item 75
+PC/IX
+
+@item 77
+QNX4.x
+
+@item 78
+QNX4.x 2nd part
+
+@item 79
+QNX4.x 3rd part
+
+@item 80
+MINIX until 1.4a
+
+@item 81
+MINIX / old Linux
+
+@item 82
+Linux swap
+
+@item 83
+Linux native@footnote{This is not true. Use 83 for ext2fs even if the
+owner OS is GNU/Hurd.}
+
+@item 84
+OS/2 hidden C: drive
+
+@item 85
+Linux extended
+
+@item 86
+NTFS volume set
+
+@item 87
+NTFS volume set
+
+@item 93
+Amoeba
+
+@item 94
+Amoeba BBT
+
+@item A0
+IBM Thinkpad hibernatoin
+
+@item A5
+BSD/386
+
+@item A7
+NeXTSTEP 486
+
+@item B7
+BSDI fs
+
+@item B8
+BSDI swap
+
+@item C1
+DRDOS/sec (FAT-12)
+
+@item C4
+DRDOS/sec (FAT-16, < 32M)
+
+@item C6
+DRDOS/sec (FAT-16, >= 32M)
+
+@item C7
+Syrinx
+
+@item DB
+CP/M or Concurrent CP/M or Concurrent DOS or CTOS
+
+@item E1
+DOS access or SpeedStor 12-bit FAT extended partition
+
+@item E3
+DOS R/O or SpeedStor
+
+@item E4
+SpeedStor 16-bit FAT extended partition < 1024 cyl.
+
+@item F1
+SpeedStor
+
+@item F2
+DOS 3.3+ secondary
+
+@item F4
+SpeedStor large partition
+
+@item FE
+SpeedStor >1024 cyl. or LANstep
+
+@item FF
+Xenix Bad Block Table
+@end table
+
+@node Partition entry format
+@subsection The format of the table entry
+
+The 16 bytes of a partition table entry are used as follows:
+
+@example
+@group
+    +--- Bit 7 is the active partition flag, bits 6-0 are zero.
+    |
+    |    +--- Starting CHS in INT 13 call format.
+    |    |
+    |    |      +--- Partition type byte.
+    |    |      |
+    |    |      |    +--- Ending CHS in INT 13 call format.
+    |    |      |    |
+    |    |      |    |        +-- Starting LBA.
+    |    |      |    |        |
+    |    |      |    |        |       +-- Size in sectors.
+    |    |      |    |        |       |
+    v <--+--->  v <--+-->     v       v
+
+   0  1  2  3  4  5  6  7  8 9 A B  C D E F
+   DH DL CH CL TB DL CH CL LBA..... SIZE....
+
+   80 01 01 00 06 0e be 94 3e000000 0c610900  1st entry
+
+   00 00 81 95 05 0e fe 7d 4a610900 724e0300  2nd entry
+
+   00 00 00 00 00 00 00 00 00000000 00000000  3rd entry
+
+   00 00 00 00 00 00 00 00 00000000 00000000  4th entry
+@end group
+@end example
+
+Bytes 0-3 are used by the small program in the Master Boot Record to
+read the first sector of an active partition into memory. The @dfn{DH},
+@dfn{DL}, @dfn{CH} and @dfn{CL} above show which x86 register is loaded
+when the MBR program calls INT 13H AH=02h to read the active partition's
+boot sector. For more information, see @ref{MBR}.
+
+These entries define the following partitions:
+
+@enumerate
+@item
+The first partition, a primary partition DOS FAT, starts at CHS 0H,1H,1H
+(LBA 3EH) and ends at CHS 294H,EH,3EH with a size of 9610CH sectors.
+
+@item
+The second partition, an extended partition, starts at CHS 295H,0H,1H
+(LBA 9614AH) and ends at CHS 37DH,EH,3EH with a size of 34E72H sectors.
+
+@item
+The third and fourth table entries are unused.
+@end enumerate
+
+
+@node Partition table rules
+@subsection Some basic rules for Partition table.
+
+Keep in mind that there are @emph{no} written rules and @emph{no}
+industry standards on how FDISK should work but here are some basic
+rules that seem to be followed by most versions of FDISK:
+
+@enumerate
+@item
+In the MBR there can be 0-4 @dfn{primary} partitions, OR, 0-3 primary
+partitions and 0-1 extended partition entry.
+
+@item
+In an extended partition there can be 0-1 @dfn{secondary} partition
+entries and 0-1 extended partition entries.
+
+@item
+Only 1 primary partition in the MBR can be marked @dfn{active} at any
+given time.
+
+@item
+In most versions of FDISK, the first sector of a partition will be
+aligned such that it is at head 0, sector 1 of a cylinder. This means
+that there may be unused sectors on the track(s) prior to the first
+sector of a partition and that there may be unused sectors following a
+partition table sector.
+
+For example, most new versions of FDISK start the first partition
+(primary or extended) at cylinder 0, head 1, sector 0. This leaves the
+sectors at cylinder 0, head 0, sectors 2...n as unused sectors. This
+same layout may be seen on the first track of an extended partition.
+See example 2 below.
+
+Also note that software drivers like Ontrack's Disk Manager depend on
+these unused sectors because these drivers will @dfn{hide} their code
+there (in cylinder 0, head 0, sectors 2...n). This is also a good place
+for boot sector virus programs to hang out.
+
+@item
+The partition table entries (slots) can be used in any order. Some
+versions of FDISK fill the table from the bottom up and some versions of
+FDISK fill the table from the top down. Deleting a partition can leave
+an unused entry (slot) in the middle of a table.
+
+@item
+And then there is the @dfn{hack} that some newer OS's (OS/2 and Linux)
+use in order to place a partition spanning or passed cylinder 1024 on a
+system that does not have a CHS translating BIOS. These systems create a
+partition table entry with the partition's starting and ending CHS
+information set to all FFH. The starting and ending LBA information is
+used to describe the location of the partition. The LBA can be converted
+back to a CHS --- most likely a CHS with more than 1024 cylinders. Since
+such a CHS can't be used by the system BIOS, these partitions can not be
+booted or accessed until the OS's kernel and hard disk device drivers
+are loaded.  It is not known if the systems using this @dfn{hack} follow
+the same rules for the creation of these type of partitions.
+@end enumerate
+
+There are @emph{no} written rules as to how an OS scans the partition
+table entries so each OS can have a different method. For DOS, this
+means that different versions could assign different drive letters to
+the same FAT file system partitions.
 
 
 @node Filesystem interface
 @section The generic interface for the fs code
 
-filesystem.txt
+For any particular partition, it is presumed that only one of the
+@dfn{normal} filesystems such as FAT, FFS, or ext2fs can be used, so
+there is a switch table managed by the functions in
+@file{disk_io.c}. The notation is that you can only @dfn{mount} one at a
+time.
+
+The blocklist filesystem has a special place in the system. In addition
+to the @dfn{normal} filesystem (or even without one mounted), you can
+access disk blocks directly (in the indicated partition) via the
+blocklist notation. Using the blocklist filesystem doesn't effect any
+other filesystem mounts.
+
+The variables which can be read by the filesystem backend are:
+
+@vtable @code
+@item current_drive
+Contain the current BIOS drive number (numbered from 0, if a floppy,
+and numbered from 0x80, if a hard disk).
+
+@item current_slice
+Contain the current partition length, in sectors.
+
+@item print_possibilities
+True when the @code{dir} function should print the possible completions
+of a file, and false when it should try to actually open a file of that
+name.
+
+@item FSYS_BUF
+Point to a filesystem buffer which is 32K in size, to use in any way
+which the filesystem backend desires.
+@end vtable
+
+The variables which need to be written by a filesystem backend are:
+
+@vtable @code
+@item filepos
+Should be the current position in the file.
+
+@strong{Caution:} the value of @var{filepos} can be changed out from
+under the filesystem code in the current implementation. Don't depend on
+it being the same for later calls into the back-end code!
+
+@item filemax
+Should be the length of the file.
+
+@item debug_fs_func
+Should be set to the value of @samp{debug_fs} @emph{only} during reading
+of data for the file, not any other fs data, inodes, FAT tables,
+whatever, then set to @code{NULL} at all other times (it will be
+@code{NULL} by default). If this isn't done corrently, then the
+@command{testload=} and @command{install=} commands won't work
+correctly.
+@end vtable
+
+The functions expected to be used by the filesystem backend are:
+
+@ftable @code
+@item devread
+Only read sectors from within a partition. Sector 0 is the first sector
+in the partition.
+
+@item grub_read
+If the backend uses the block-list code (like the FAT filesystem backend
+does), then @code{grub_read} can be used, after setting @var{block_file}
+to 1.
+@end ftable
+
+The functions expected to be defined by the filesystem backend are
+described at least moderately in the file @file{filesys.h}. Their usage
+is fairly evident from their use in the functions in @file{disk_io.c},
+look for the use of the @var{fsys_table} array.
+
+@strong{Caution:} The semantics are such that then @samp{mount}ing the
+filesystem, presume the filesystem buffer @var{FSYS_BUF} is corrupted,
+and (re-)load all important contents. When opening and reading a file,
+presume that the data from the @samp{mount} is available, and doesn't
+get corrupted by the open/read (i.e. multiple opens and/or reads will be
+done with only one mount if in the same filesystem).
 
 
 @node Index

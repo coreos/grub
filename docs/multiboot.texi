@@ -816,7 +816,7 @@ This distribution also contains code implementing a @dfn{Linux boot
 adaptor}, which collects a MultiBoot-compliant OS image and an optional
 set of boot modules, compresses them, and packages them into a single
 traditional Linux boot image that can be loaded from LILO or other Linux
-boot loaders.  There is also a corresponding "BSD boot adaptor" which
+boot loaders.  There is also a corresponding @dfn{BSD boot adaptor} which
 can be used to wrap a MultiBoot kernel and set of modules and produce an
 image that can be loaded from the FreeBSD and NetBSD boot loaders.  All
 of this code can be used as-is or as a basis for other boot loaders.
