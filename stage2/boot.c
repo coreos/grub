@@ -352,8 +352,18 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    else
 	      linux_mem_size = 0;
 	  }
-		
-	  memmove ((char *) LINUX_SETUP, buffer, data_len + SECTOR_SIZE);
+
+	  /* It is possible that DATA_LEN is greater than MULTIBOOT_SEARCH,
+	     so the data may have been read partially.  */
+	  if (data_len <= MULTIBOOT_SEARCH)
+	    grub_memmove ((char *) LINUX_SETUP, buffer,
+			  data_len + SECTOR_SIZE);
+	  else
+	    {
+	      grub_memmove ((char *) LINUX_SETUP, buffer, MULTIBOOT_SEARCH);
+	      grub_read ((char *) LINUX_SETUP + MULTIBOOT_SEARCH,
+			 data_len + SECTOR_SIZE - MULTIBOOT_SEARCH);
+	    }
 
 	  if (lh->header != LINUX_MAGIC_SIGNATURE ||
 	      lh->version < 0x0200)

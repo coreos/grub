@@ -1,5 +1,12 @@
 2002-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Jean-Jacques Michel <jjmichel@linbox.com>:
+	* stage2/boot.c (load_image): For Linux, check if DATA_LEN is
+	greater than MULTIBOOT_SEARCH. If that's true, read the rest
+	after copying data already read in BUFFER.
+	
+2002-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/boot.c (load_image): For Linux, don't check if the
 	length of protected mode code is greater than or equal to the
 	expected length minus 16. Instead, just check if no error
