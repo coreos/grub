@@ -1,5 +1,17 @@
 2005-03-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* gencmdlist.sh: New file.
+	
+	* genmk.rb (PModule::rule): Generate a rule for a command list.
+	Clean command.lst.
+	Generate command.lst from $(COMMANDFILES).
+
+	* Makefile.in (COMMON_DISTFILES): Added gencmdlist.sh.
+	(DATA): Added $(pkgdata_DATA).
+	(install-local): Install files in $(pkgdata_DATA).
+
+2005-03-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* term/i386/pc/vga.c (debug_command): Removed.
 	(GRUB_MOD_INIT): Do not register the command "debug".
 

@@ -140,6 +140,7 @@ UNDSYMFILES += #{undsym}
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
       fake_obj = File.basename(src).suffix('o')
+      command = 'cmd-' + fake_obj.suffix('lst')
       dep = deps[i]
       flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
       dir = File.dirname(src)
@@ -154,6 +155,14 @@ UNDSYMFILES += #{undsym}
 	  [ -s $@ ] || rm -f $@
 
 -include #{dep}
+
+CLEANFILES += #{command}
+COMMANDFILES += #{command}
+
+#{command}: #{src} gencmdlist.sh
+	set -e; \
+	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  | sh $(srcdir)/gencmdlist.sh #{@name} > $@ || (rm -f $@; exit 1)
 
 "
     end.join('')
@@ -315,8 +324,11 @@ while l = gets
   
 end
 
-puts "CLEANFILES += moddep.lst"
-puts "pkgdata_DATA += moddep.lst"
+puts "CLEANFILES += moddep.lst command.lst"
+puts "pkgdata_DATA += moddep.lst command.lst"
 puts "moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep"
 puts "	cat $(DEFSYMFILES) /dev/null | ./genmoddep $(UNDSYMFILES) > $@ \\"
 puts "	  || (rm -f $@; exit 1)"
+puts ""
+puts "command.lst: $(COMMANDFILES)"
+puts "	cat $^ /dev/null | sort > $@"

@@ -74,9 +74,9 @@ MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 COMMON_DISTFILES = AUTHORS COPYING ChangeLog INSTALL NEWS README \
 	THANKS TODO Makefile.in aclocal.m4 autogen.sh config.guess \
-	config.h.in config.sub configure configure.ac genkernsyms.sh \
-	genmk.rb genmodsrc.sh gensymlist.sh install-sh mkinstalldirs \
-	stamp-h.in
+	config.h.in config.sub configure configure.ac gencmdlist.sh \
+	genkernsyms.sh genmk.rb genmodsrc.sh gensymlist.sh install-sh \
+	mkinstalldirs stamp-h.in
 
 BOOT_DISTFILES = $(addprefix boot/i386/pc/,boot.S diskboot.S)
 
@@ -113,7 +113,8 @@ DISTFILES = $(COMMON_DISTFILES) $(BOOT_DISTFILES) $(CONF_DISTFILES) \
 	$(KERN_DISTFILES) $(LOADER_DISTFILES) $(TERM_DISTFILES) \
 	$(UTIL_DISTFILES)
 
-DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS)
+DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \
+	$(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = 
 
@@ -144,7 +145,8 @@ install: install-local
 
 install-local: all
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	@list='$(pkgdata_IMAGES) $(pkgdata_MODULES)'; for file in $$list; do \
+	@list='$(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_DATA)'; \
+	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
