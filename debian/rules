@@ -10,7 +10,7 @@ INSTALL_PROGRAM = $(INSTALL) -m 755
 
 build:
 	$(checkdir)
-	./configure --prefix=
+	./configure --prefix= --datadir='$$(prefix)/lib'
 	make
 	echo timestamp > build
 

@@ -2,6 +2,13 @@
 @setfilename grub.info
 @include version.texi
 
+@c Unify all our little indices for now.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
 @dircategory Kernel
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader.
@@ -38,6 +45,7 @@ into another language, under the above conditions for modified versions.
 @finalout
 @title The GRUB Manual
 @author Gordon Matzigkeit
+@author OKUJI Yoshinori
 @page
 
 @vskip 0pt plus 1filll
@@ -57,6 +65,9 @@ Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions.
 @end titlepage
 
+@c The Top node appears only in Info.
+@ifinfo
+
 @node Top
 @top GRUB
 
@@ -65,6 +76,13 @@ edition documents version @value{VERSION}.
 
 @menu
 * Introduction::                Capturing the spirit of GRUB.
+* Installing::                  How to install GRUB on your computer.
+* Using::                       Booting your operating systems.
+* Filesystems::                 Filesystem syntax and semantics.
+* Troubleshooting::             Error messages produced by GRUB.
+* Multiboot::                   Standard boot interface.
+* Hacking::                     Implementation details.
+* Index::                       Index.
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -75,8 +93,35 @@ Introduction
 * Features::                    How GRUB is different.
 * Role of a bootloader::        Judging a system by its bootloader.
 
+Installing
+
+* Boot floppy::                 Creating a GRUB boot floppy.
+* Automated install::           Installation via @code{install=}.
+* Installation under Unix::     Installation by @file{/sbin/grub}.
+
+Using
+
+* Command-line::                The flexible command-line interface.
+* Menu::                        The simple menu interface.
+* Menu entry editor::           Editing a menu entry.
+* Commands::                    The list of available commands.
+
+Filesystems
+
+* Device syntax::               How to specify devices.
+* Filename syntax::             How to specify files.
+
+Troubleshooting
+
+* Stage1 errors::               Errors reported by the Stage 1.
+* Stage1.5 errors::             Errors reported by the Stage 1.5.
+* Stage2 errors::               Errors reported by the Stage 2.
+
 @end detailmenu
 @end menu
+
+@end ifinfo
+
 
 @node Introduction
 @chapter Introduction
@@ -110,9 +155,9 @@ FreeBSD bootloader, and so GRUB was born.
 
 Erich added many features to GRUB, but other priorities prevented him
 from keeping up with the demands of its quickly-expanding user base.  In
-1999, Gordon Matzigkeit adopted GRUB as an official GNU package, and
-opened its development by making the latest sources available via
-anonymous CVS.@footnote{The repository is
+1999, Gordon Matzigkeit and OKUJI Yoshinori adopted GRUB as an official
+GNU package, and opened its development by making the latest sources
+available via anonymous CVS.@footnote{The repository is
 @code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot}, module
 @code{grub}.  Just hit return when prompted for a password.}
 
@@ -135,7 +180,7 @@ kernel is the most important part of the system, so they like to call
 their GNU operating systems ``Linux systems.''
 
 I, personally, believe that this is a grave injustice, because the
-@emph{bootloader} is the most important software of all.  So, I used to
+@emph{bootloader} is the most important software of all.  I used to
 refer to the above systems as either ``LILO''@footnote{The LInux LOader,
 a bootloader that everybody uses, but nobody likes.} or ``GRUB''
 systems.
@@ -154,32 +199,771 @@ design.  We hope at least that you enjoy using GNU GRUB as much as we
 did writing it.
 
 
-@chapter Using
-@section using.html
+@node Installing
+@chapter How to install GRUB on your computer
+
+For the nature of @dfn{bootloader}, you need to install GRUB on a
+bootable media, such as a floppy disk. The installation can be performed
+by @code{dd} or @code{rawrite} for a boot floppy, or the @code{install=}
+command in the GRUB command-line interface (@pxref{Using}).
+
+@menu
+* Boot floppy::                 Creating a GRUB boot floppy.
+* Automated install::           Installation by the @code{install=}
+                                command
+* Installation under Unix::     Installation by @file{/sbin/grub}.
+@end menu
 
 
-@chapter Boot scripts
-@section commands.txt
+@node Boot floppy
+@section Creating a GRUB boot floppy
+
+@quotation
+@strong{Caution:} This will destroy any data currently on the floppy.
+@end quotation
+
+This installation method can generally only access the command-line part
+of the interface, since there is no filesystem in which to find a
+configuration file (FIXME: ref). If you want to use the menu part, see
+@ref{Automated install}.
+
+Under an UNIX-like operating system, such as GNU, use @code{dd} like
+this:
+
+@example
+dd if=stage1/stage1 of=/dev/fd0 bs=512 count=1
+dd if=stage2/stage2 of=/dev/fd0 bs=512 seek=1
+@end example
+
+and, under DOS/Windows, use @code{copy} and @code{rawrite}, which is
+available in many places on the net and in some Linux distributions,
+like this:
+
+@example
+copy /b stage1 + stage2 grub.raw
+rawrite grub.new a:
+@end example
 
 
-@chapter Disk partitions
+@node Automated install
+@section Installation by the @code{install=} command
+
+@quotation
+@strong{Caution:} If the stage1 is installed on a specific partition,
+this can erase the normal boot-sector used by an OS. GRUB can boot
+Linux, FreeBSD, NetBSD, Mach, and the GNU Hurd directly, so this may be
+desired. Generally, it is a good idea to back up the first sector of a
+partition if installing GRUB's stage1 there. For the first sector of a
+hard disk, this is OK, since it's easy to reinitialize it via
+@code{FDISK /MBR} in DOS, or other methods in other OSes.
+@end quotation
+
+GRUB has a command called @code{install=} which is described in
+@xref{Using}. The purpose of this section is to give examples and
+describe how to use the command in different situations.
+
+First, you make a GRUB boot floppy (@pxref{Boot floppy}). Actually, any
+booting copy of GRUB of the right version number will work fine, this is
+simply a way to get the process started easily.
+
+On the partition that is the desired area for GRUB to be installed in
+(call it the @dfn{install partition}), make a @file{/boot/grub}
+directory and place the @file{stage2}, @file{menu.lst} (configuration
+file), and optionally @file{stage1.5} there.
+
+Now use the @code{install=} command appropriately, and you're done!
+
+Examples of how to use the @code{install=} command:
+
+@itemize @bullet
+@item
+@strong{Making a hard disk bootable with GRUB's stage2 on PC partition
+number 2:} Make a directory in the partition called @file{/boot/grub},
+place the @file{stage2} (and if desired, your configuration file called
+@file{menu.lst}), then run the following command after getting GRUB's
+command-line from booting the floppy:
+
+@example
+install= (fd0)+1 (hd0) (hd0,2)/boot/grub/stage2 0x8000 p
+@end example
+
+This tells GRUB to grab the first sector of the floppy and use it as the
+stage1, create a blocklist using the file @file{/boot/grub/stage2} on
+the first hard disk, partition number 2, merge them together, set the
+load address to 0x8000 (correct for a stage2), write the @dfn{install
+partition} number into the first sector of the stage2 (the @samp{p} at
+the end), then write the result to the first sector of the hard disk.
+
+@item
+@strong{Same as above, but placing the stage1 on the floppy, then having
+it start the stage2 on the hard disk:} The difference here is you're
+telling GRUB's stage1 to read from the first hard disk no matter where
+stage1 is being run from:
+
+@example
+install= (fd0)+1 d (fd0) (hd0,2)/boot/grub/stage2 0x8000 p
+@end example
+
+The @samp{d} option near the beginning is what sets the @emph{forced}
+loading from the disk where the stage2 was installed from. The rest of
+the options are the same except for the @dfn{destination device} to
+place the finished stage1 on is changed to the floppy disk.
+
+@item
+@strong{Installing from an @emph{install directory} to the second hard
+disk:} Here we're loading the stage1 from a file on the first hard disk,
+installing stage2 from the first BSD @samp{a} partition on the second
+hard disk, and setting the @dfn{config file} of the stage2 to a
+different value than usual:
+
+@example
+install= (hd0,2)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
+@end example
+@end itemize
+
+An easily imaginable way of using this as part of an automated
+installation process would be to note that the commands listed above can
+be part of any sequence of commands in an entry in a GRUB config file,
+so this could be automated even more by using a GRUB floppy with a
+filesystem and config file, with an entry such as:
+
+@example
+# Start of entries
+title= Linux HD install
+
+# install command
+install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
+
+# actually boot here
+root= (hd0,1)
+kernel= /zImage root=/dev/hda2
+@end example
+
+@dots{} then have the install script continue from there after boot of
+the OS.
 
 
-@chapter Filesystems
-@section filesystem.txt
+@node Installation under Unix
+@section Installation by @file{/sbin/grub}
+
+FIXME
 
 
-@chapter Troubleshooting
-@section errors.html
+@node Using
+@chapter Booting your operating systems
+
+GRUB has both a simple menu interface for preset options from a
+configuration file, and a highly flexible command-line for performing
+any desired combination of boot commands.
+
+The first action GRUB takes after it is loaded is to look for it's
+configuration file. If one is not found, then it drops into the
+command-line interface (and stays there). If one is found, the full menu
+interface is activated containing whatever entries were found in the
+file (the command-line is still available via a command from the menu
+interface).
+
+@menu
+* Command-line::                The flexible command-line interface.
+* Menu::                        The simple menu interface.
+* Menu entry editor::           Editing a menu entry.
+* Commands::                    The list of available commands.
+@end menu
 
 
-@chapter Multiboot
-@section boot-proposal.html
+@node Command-line
+@section The flexible command-line interface
+
+The command-line interface provides a prompt and after it an editable
+text area much like a command-line in Unix or DOS. Each command is
+immediately executed after it is entered @footnote{However, this
+behavaior will be changed in the future version, in an user-invisible
+way.}. The commands are a subset of those available in the configuration
+file, used with exactly the same syntax.
+
+@c The list of available keys should be listed in @table, and should be
+@c explained exactly. Current explanation is obscure.
+Cursor movement and editing of the text on the line can be done via a
+subset of the functions available in the BASH (FIXME: ref) shell
+(@kbd{C-f} forward, @kbd{C-b} backward, @kbd{C-a} beginning of line,
+@kbd{C-e} end of line, @kbd{C-k} delete to end, @kbd{C-u} delete to
+beginning; the PC left and right arrow keys, @key{HOME}, @key{DEL}, and
+@key{END} work as well).
+
+When typing commands interactively, if the cursor is before the @samp{=}
+character in a command being typed, pressing the @key{TAB} key will
+display a listing of the available commands, and if the cursor is after
+the @samp{=} character, the @key{TAB} will provide a completion listing
+of disks, partitions, and filenames depending on the context.
+@c But I want to stop this stupid hack and provide more BASH-like
+@c interface. I don't think commands ending with @samp{=} are
+@c beautiful.
 
 
-@chapter Implementation
-@section technical.html
-@section embedded_data.txt
-@section PC_patitioning.txt
+@node Menu
+@section The simple menu interface
 
+The menu interface is quite easy to use.  It's commands are both
+reasonably intuitive and described onscreen.
+
+Basically, the menu interface provides a list of @dfn{boot
+configurations} to the user to choose from.  Use the arrow keys to
+select the entry of choice, then press @key{RET} to run it.  An optional
+timeout is available to boot the default entry (the first one if not
+set), which is aborted by pressing any key.
+
+Commands are available to enter a bare command-line (operating exactly
+like the non-config-file version of GRUB, but allowing one to return to
+the menu if desired) or to edit any of the @dfn{boot configurations},
+respectively by pressing @key{c} or @key{e}.
+
+
+@node Menu entry editor
+@section Editing a menu entry
+
+This looks much like the main menu interface, but with the lines in the
+menu being individual commands of the selected configuration instead of
+configuration names.
+
+If an @key{ESC} is pressed in the editor, it aborts all the changes made
+to the configuration entry and goes back to the main menu interface.
+
+When a particular line is selected, then it places the user in a special
+version of the command-line for editing that line.  When the user is
+finished, GRUB replaces the line in question in the @dfn{boot
+configuration} with the changes (unless it was aborted via @key{ESC},
+and in that case the changes are thrown away).
+
+
+@node Commands
+@section The list of available commands
+
+In this section, we list the available commands, both in the
+configuration file and in the command-line.
+
+The configuration file should follow these rules:
+
+@enumerate
+@item
+The configuration file specific commands have to be used before any
+others.
+
+@item
+A multiboot kernel must be loaded before modules can be.
+
+@item
+A kernel must be loaded before either the configuration file entry ends,
+or any @samp{boot} command is issued in any case.
+@end enumerate
+
+The semantics are as follows:
+
+@itemize @bullet
+@item
+The files @emph{must} be in plain-text format.
+
+@item
+@samp{#} at the beginning of a line means it is a comment line in a
+configuration file only.
+
+@item
+Options are separated by spaces.
+
+@item
+All numbers can be either decimal or hexidecimal. A hexidecimal number
+must be preceeded by @samp{0x}, and is case insensitive.
+
+@item
+Extra options/text at the end of the line is ignored unless otherwise
+specified.
+
+@item
+Bad commands generally get included in the current entry being added to,
+except before entries start, where they are ignored.
+@end itemize
+
+Commands usable in configuration files only.
+
+@table @code
+@item timeout= @var{sec}
+Set a timeout, in @var{sec} seconds, before automatically booting the
+default entry (normally the first entry defined).
+
+@item default= @var{num}
+Set the default entry to entry number @var{num} (otherwise it is 0, the
+first entry).
+
+@item fallback= @var{num}
+Go into unattended boot mode: if the default boot entry has any errors,
+instead of waiting for the user to do anything, it immediately starts
+over using the @var{num} entry (same numbering as the @code{default=}
+command). This obviously doesn't help if the machine was in the middle
+of the boot process (after leaving GRUB's code) and rebooted.
+
+@item password= @var{passwd} @var{new_config_file}
+Disable all interactive editing control (menu entry editor and
+command-line). If the password @var{passwd} is entered, it loads the
+@var{new_config_file} as a new config file and restarts the GRUB Stage
+2.
+
+@item title= @dots{}
+Start a new menu entry, and set its name to the contents of the rest of
+the line, starting with the first non-space character.
+@end table
+
+Commands usable in configuration files and interactively.
+
+@table @code
+@item pause= @dots{}
+Print the entirety to the end of its line, then wait until a key is
+pressed. Note that placing a ^G in it will cause the speaker to emit the
+standard beep sound, which is useful when asking the user to change
+floppies, etc.
+
+@item uppermem= @var{kbytes}
+Force GRUB to ignore what it found during the autoprobe of the memory
+available to the system, and to use @var{kbytes} as the number of
+kilobytes of upper memory installed. Any address range maps of the
+system are discarded.
+
+@strong{Caution:} This should be used with great caution, and should
+only be necessary on some old machines. GRUB's BIOS probe can pick up
+all @sc{ram} on all new machines the author has ever heard of. It can
+also be used for debugging purposes to lie to an OS.
+
+@item root= @var{device} [@var{hdbias}]
+Set the current @dfn{root partition} to the device @var{device}, then
+attempt to mount it to get the partition size (for passing the partition
+descriptor in @code{ES:ESI}, used by some chainloaded bootloaders), the
+BSD drive-type (for booting BSD kernels using their native boot format),
+and fixup automatic determination of the PC partition where a BSD
+sub-partition is located. The optional @var{hdbias} parameter is a
+number to tell a kernel which is using one of the BSD boot methodologies
+how many BIOS drive numbers are on controllers before the current
+one. An example is if there is an IDE disk and a SCSI disk, then set the
+root partition normally, except for a kernel using a BSD boot
+methodology (FreeBSD or NetBSD), then use a @samp{1} for @var{hdbias}.
+
+@item rootnoverify= @var{device} [@var{hdbias}]
+Similar to @command{root=}, but don't attempt to mount the
+partition. This is useful for when an OS is outside of the area of the
+disk that GRUB can read, but setting the correct root partition is still
+desired. Note that the items mentioned in @command{root=} above which
+derived from attempting the mount will NOT work correctly.
+
+@item chainloader= @var{file}
+Load @var{file} as a chainloader. Like any other file loaded by the
+filesystem code, it can use the blocklist notation to grab the first
+sector of the current partition with @samp{+1}.
+
+@item kernel= @var{file} @dots{}
+Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
+Linux zImage or bzImage, FreeBSD-a.out, or NetBSD-a.out) from
+@var{file}. This command ignores the rest of the contents of the line,
+except that the entire line starting with the kernel filename is passed
+varbatim as the @dfn{kernel command-line}. The module state is reset by
+this (i.e. reload any modules).
+
+@item module= @var{file} @dots{}
+Load a boot module for a Multiboot format boot image (no interpretation
+of the file contents are made, so that user of this command/writer of
+the configurtion file must know what the kernel in question works
+with). The rest of the line is passed as the @dfn{module command-line}
+much like with the @command{kernel=} command.
+
+@item modulenounzip= @var{file} @dots{}
+Exactly like @command{module=}, except that automatic decompress is
+disabled.
+
+@item initrd= @var{file} @dots{}
+Load an initial ramdisk for a Linux format boot image and set the
+appropriate parameters in the Linux setup area in memory.
+
+@item install= @var{stage1_file} [d] @var{dest_dev} @var{file} @var{addr} [p] [@var{config_file}]
+This command is fairly complex, and for detailed examples one should
+look at @ref{Automated install}. In short, it will perform a full
+install presuming the stage1.5 or stage2 (they're loaded the same way,
+I'll just refer to it as a stage2 from now on) is in its final install
+location (pretty much all other edits are performed by the
+@command{install=} command).
+
+In slightly more detail, it will load @var{stage1_file}, validate that
+it is a GRUB stage1 of the right version number, install blocklist for
+loading @var{file} (if the option @samp{d} is present, the stage1 will
+always look for the actual disk @var{file} was installed on, rather than
+using the booting drive) as a stage2 into memory at address
+@var{addr} (for a stage1.5, an address of @samp{0x2000} should be
+used, and for a stage2, an address of @samp{0x8000} should be used),
+then write the completed stage1 to the first block of the device
+@var{dest_dev}. If the options @samp{p} or @var{config_file} are
+present, then it reads the first block of stage2, modifies it with the
+values of the partition @var{file} was found on (for @samp{p}) or places
+the string @var{config_file} into the area telling the stage2 where to
+look for a configuration file at boot time. Finally, it preserves the
+DOS BPB (and for hard disks, the partition table) of the sector the
+stage1 is to be installed into.
+
+@item makeactive
+Set the active partition on the root disk to GRUB's root partition (on a
+floppy this is a NO-OP). This is limited to working with @emph{primary}
+PC partitions.
+
+@item boot
+This boots the OS/chainloader which has been loaded. Only necessary if
+running the fully interactive command-line (it is implicit at the end of
+a config-file entry).
+@end table
+
+Commands usable in configuraton files and interactively which are only
+available in the debug version of the GRUB Stage 2.
+
+@table @code
+@item testload= @var{file}
+Read the entire contents of @var{file} in several different ways and
+compares them, to test the filesystem code. The output is somewhat
+cryptic (see the @samp{T} subcommand of @command{syscmd=} below), but if
+no errors are reported and the part right at the end which reads
+@samp{i=@var{X}, filepos=@var{Y}} has @var{X} and @var{Y} equal, then it
+is definitely consistent, and very likely works correctly subject to a
+consistent offset error. A good idea if this works is then to try
+loading a kernel with your code.
+
+@item read= @var{addr}
+Read a 32-bit unsigned value at address @var{addr} and displays it in
+hex format.
+
+@item displaymem
+Display what GRUB thinks the system address space map of the machine is,
+including all regions of physical @sc{ram} installed. The
+@dfn{upper/lower memory} thing GRUB has uses the standard BIOS
+interface for the available memory in the first megabyte, or @dfn{lower
+memory}, and a synthesized number from various BIOS interfaces of the
+memory starting at 1MB and going up to the first chipset hole for
+@dfn{upper memory} (the standard PC @dfn{upper memory} interface is
+limited to reporting a maximum of 64MB).
+
+@item impsprobe
+Probe Intel MPS spec 1.1 or 1.4 configuration table and boot the various
+other CPUs which are found into a tight loop.
+
+@item fstest
+Toggle filesystem test mode.
+
+Filesystem test mode, when turned on, prints out data corresponding to
+all the device reads and what values are being sent to the low-level
+routines. The format is @samp{<@var{sector}, @var{byte_offset},
+@var{byte_len}>} for high-level reads inside a partition (so
+@var{sector} is an offset from the start of the partition), and
+@samp{[@var{sector}]} for low-level sector requests from the disk (so
+@var{sector} is offset from the start of the disk).
+
+Filesystem test mode is turned off by any uses of the @command{install=}
+or @command{testload=} commands.
+@end table
+
+
+@node Filesystems
+@chapter Filesystem syntax and semantics
+
+GRUB uses special syntax for specifying disk drives, that can be
+accessed by BIOS. Because of BIOS limitations, GRUB cannot distinguish
+IDE, ESDI, SCSI, etc. So you must know which BIOS device is equivalent
+to which OS device.
+
+@menu
+* Device syntax::               How to specify devices.
+* Filename syntax::             How to specify files.
+@end menu
+
+
+@node Device syntax
+@section How to specify devices
+
+The device syntax is like this:
+
+@example
+@code{(@var{bios_device}[,@var{part_num}][,@var{bsd_subpart_letter}])}
+@end example
+
+@samp{[]} means the parameter is optional. @var{bios_device} should be
+either @samp{fd} or @samp{hd} followed by a digit, like @samp{fd0}.
+But you can also set @var{bios_device} to a hexidecimal or a decimal,
+which is a BIOS drive number, so these are equivalent:
+
+@example
+(hd0)
+(0x80)
+(128)
+@end example
+
+@var{part_num} represents the partition number of @var{bios_device},
+starting from zero, and @var{bsd_subpart_letter} represents the BSD
+sub-partition, like @samp{a} or @samp{e}.
+
+A shortcut for specifying BSD sub-partitions is
+@code{(@var{bios_device},@var{bsd_subpart_letter})}, in this case, GRUB
+searches for the first PC partition containing BSD sub-partitions, then
+finds the subparitition @var{bsd_subpart_letter}. Here is an example:
+
+@example
+(hd0,a)
+@end example
+
+
+@node Filename syntax
+@section How to specify files
+
+There are two ways to specify files, @dfn{absolute pathname} and
+@dfn{blocklist}.
+
+Absolute pathname resembles a Unix absolute pathname. Use @samp{/} for
+the directory separator but not @samp{\} like DOS. For example,
+@samp{/boot/grub/menu.lst}.
+
+Blocklist is used for specifying a file that doesn't appear in the
+filesystem, like a chainloader. The syntax is a bit complex, like this:
+
+@example
+@code{1+100,200+1,300+300}
+@end example
+
+This represents that GRUB should read 100 blocks from the offset 1, 1
+block from the offset 200, and 300 blocks from the offset 300. The
+offset is counted from the start of a partition, so the length must be
+within the partition size. If you omit a offset, then GRUB assumes the
+offset is zero.
+
+
+@node Troubleshooting
+@chapter Error messages reported by GRUB
+
+This chapter describes the meanings of the error messages reported by
+GRUB when you encounter some troubles.
+
+@menu
+* Stage1 errors::               Errors reported by the Stage 1.
+* Stage1.5 errors::             Errors reported by the Stage 1.5.
+* Stage2 errors::               Errors reported by the Stage 2.
+@end menu
+
+
+@node Stage1 errors
+@section Errors reported by the Stage 1
+
+The general way that the Stage 1 handles errors is to print an error
+string and then halt. Pressing @kbd{@key{CTRL}-@key{ALT}-@key{DEL}} will
+reboot.
+
+The following is a comprehensive list of error messages for the Stage 1:
+
+@table @asis
+@item Hard Disk Error
+This error message will occur if the Stage 2 or Stage 1.5 is being read
+from a hard disk, and the attempt to determine the size and geometry of
+the hard disk fails.
+
+@item Floppy Error
+This error message will occur if the Stage 2 or Stage 1.5 is being read
+from a floppy disk, and the attempt to determine the size and geometry
+of the floppy disk fails. It's listed as a different error since the
+probe sequence is different than for hard disks.
+
+@item Read Error
+This error message will occur if a disk read error happens while trying
+to read the Stage 2 or Stage 1.5.
+
+@item Geom Error
+This error message will occur if the location of the Stage 2 or Stage
+1.5 is not in the area supported by reading the disk with the BIOS
+directly. This could occur because the BIOS translated geometry has been
+changed by the user or the disk is moved to another machine or
+controller after installation, or GRUB was not installed using itself
+(if it was, the Stage 2 version of this error would have been seen
+during that process and it would not have completed the install).
+@end table
+
+
+@node Stage1.5 errors
+@section Errors reported by the Stage 1.5
+
+The general way that the Stage 1.5 handles errors is to print an error
+number in the form @code{Error: @var{num}} and then halt. Pressing
+@kbd{@key{CTRL}-@key{ALT}-@key{DEL}} will reboot.
+
+The error numbers correspond to the @ref{Stage2 errors} in the listed
+sequence.
+
+
+@node Stage2 errors
+@section Errors reported by the Stage 2
+
+The general way that the Stage 2 handles errors is to abort the
+operation in question, print an error strng, then (if possible) either
+continue based on the fact that an error occured or wait for the user to
+deal with the error.
+
+The followng is a comprehensive list of error messages for the Stage 2
+(error numbers for the Stage 1.5 are listed before the colon in each
+description):
+
+@table @asis
+@item 1 : Selected item won't fit into memory
+This error is returned if a kernel, module, or raw file load command is
+either trying to load its data such that it won't fit into memory or it
+is simply too big.
+
+@item 2 : Selected disk doesn't exist
+This error is returned if the device part of a device- or full filename
+refers to a disk or BIOS device that is not present or not recognized by
+the BIOS in the system.
+
+@item 3 : Disk read error
+This error is returned if there is a disk read error when trying to
+probe or read data from a particular disk.
+
+@item 4 : Disk write error
+This error is returned if there is a disk write error when trying to
+write to a particular disk. This would generally only occur during an
+install of set active partition command.
+
+@item 5 : Disk geometry error
+This error is returned when a read is attempted at a linear block
+address beyond the end of the BIOS translated area. This generally
+happens if your disk is larger than the BIOS can handle (512MB for
+(E)IDE disks on older machines or larger than 8GB in general).
+
+@item 6 : Attempt to access block outside partition
+This error is returned if a linear block address is outside of the disk
+partition. This generally happens because of a corrupt filesystem on the
+disk or a bug in the code handling it in GRUB (it's a great debugging
+tool).
+
+@item 7 : Partition table invalid or corrupt
+This error s returned if the sanity checks on the integrity of the
+partition table fail. This is a bad sign.
+
+@item 8 : No such partition
+This error is returned if a partition is requested in the device part of
+a device- or full filename which isn't on the selected disk.
+
+@item 9 : Bad filename (must be absolute pathname or blocklist)
+This error is returned if a filename is requested which doesn't fit the
+syntax/rules listed in the @ref{Filesystems}.
+
+@item 10 : Bad file or directory type
+This error is returned if a file requested is not a regular file, but
+something like a symbolic link, directory, or FIFO.
+
+@item 11 : File not found
+This error is returned if the specified filename cannot be found, but
+everything else (like the disk/partition info) is OK.
+
+@item 12 : Cannot mount selected partition
+This error is returned if the partition requested exists, but the
+filesystem type cannot be recognized by GRUB.
+
+@item 13 : Inconsistent filesystem structure
+This error is returned by the filesystem code to denote an internal
+error caused by the sanity checks of the filesystem structure on disk
+not matching what it expects. This is usually caused by a corrupt
+filesystem or bugs in the code handling it in GRUB.
+
+@item 14 : Filesystem compatibility error, can't read whole file
+Some of the filesystem reading code in GRUB has limits on the length of
+the files it can read. This error is returned when the user runs into
+such a limit.
+
+@item 15 : Error while parsing number
+This error is returned if GRUB was expecting to read a number and
+encountered bad data.
+
+@item 16 : Device string unrecoginizable
+This error is returned if a device string was expected, and the string
+encountered didn't fit the syntax/rules listed in the @ref{Filesystems}.
+
+@item 17 : Invald device requested
+This error is returned if a device string is recognizable but does not
+fall under the other device errors.
+
+@item 18 : Invalid or unsupported executable format
+This error is returned if the kernel image being loaded is not
+recognized as Multiboot or one of the supported native formats (Linux
+zImage or bzImage, FreeBSD, or NetBSD).
+
+@item 19 : Loading below 1MB is not supported
+This error is returned if the lowest address in a kernel is below the
+1MB boundary. The Linux zImage format is a special case and can be
+handled since it has a fixed loading address and maximum size.
+
+@item 20 : Unsupported Multiboot features requested
+This error is returned when the Multiboot features word in the Multiboot
+header requires a feature that is not recognized. The point of this is
+that the kernel requires special handling which GRUB is likely usable to
+provide.
+
+@item 21 : Unknow boot failure
+This error is returned if the boot attempt did not suceed for reasons
+which are unknown.
+
+@item 22 : Must load Multiboot kernel before modules
+This error is returned if the module load command is used before loading
+a Multiboot kernel. It only makes sense in this case anyway, as GRUB has
+no idea how to communicate the presense of location of such modules to a
+non-Multiboot-aware kernel.
+
+@item 23 : Must load Linux kernel before initrd
+This error is returned if the initrd command is used before loading a
+Linux kernel. Similar to the above error, it only makes sense in that
+case anyway.
+
+@item 24 : Cannot boot without kernel loaded
+This error is returned if GRUB is told to execute the boot sequence
+without having a kernel to start.
+
+@item 25 : Unrecognized command
+This error is returned if an unrecognized command is entered into the
+command-line or in a boot sequence section of a configuration file and
+that entry is selected.
+
+@item 26 : Bad or incompatible header on compressed file
+This error is returned if the file header for a supposedly compressed
+file is bad.
+
+@item 27 : Bad or corrupt data while decompressing file
+This error is returned the run-length decompression code gets an
+internal error. This is usually from a corrupt file.
+
+@item 28 : Bad or corrupt version of stage1/stage2
+This error is returned if the install command is pointed to incompatible
+or corrupt versions of the stage1 or stage2. It can't detect corruption
+in general, but this is a sanity check on the version numbers, which
+should be correct.
+@end table
+
+
+@c In my opinion, Multiboot Standard should be separated and should have
+@c its own manual, because Multiboot is not only for GRUB. Perhaps we
+@c should write the Multiboot manual "multiboot.texinfo", and then
+@c include it here.  - okuji
+@node Multiboot
+@chapter Standard booting interface
+
+boot-proposal.html
+
+
+@node Hacking
+@chapter Implementation details
+
+technical.html
+embedded_data.txt
+PC_partitioning.txt
+
+
+@node Index
+@unnumbered Index
+
+@c Currently, we use only the Concept Index.
+@printindex cp
+
+@contents
 @bye

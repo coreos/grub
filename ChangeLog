@@ -1,7 +1,11 @@
+1999-04-10  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* debian/rules (build): Install into /lib instead of /share.
+
 1999-05-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Preliminary non-interactive use support.
-	
+
 	* grub/main.c (use_config_file): New variable.
 	(use_curses): Likewise.
 	(OPT_DISABLE_CONFIG_FILE): New constant.
@@ -32,33 +36,22 @@
 	* shared_src/shared.h (getc): Removed.
 	(use_config_file) [GRUB_UTIL]: Add the declaration.
 	(use_curses) [GRUB_UTIL]: Likewise.
-	
-1999-05-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
-	* grub/asmstub.c (device_map): New variable.
-	(grub_stage2): Initialize DISKS.
-	Probe devices and fill the result in DEVICE_MAP.
-	Free DEVICE_MAP when exit.
-	(get_diskinfo): Use DEVICE_MAP for guessing the relation between
-	BIOS devices and OS devices.
-	Read the first sector of opened device to make sure that the device
-	really exists.
-	
 1999-05-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/asm.S (biosdisk_standard): Pop %ebp correctly, reported
 	by Pavel Roskin <pavel_roskin@geocities.com>.
-	
+
 1999-04-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/menu.lst: Rewritten, so that it contains up-to-date
 	information and FAQish configuration examples.
-	
+
 1999-04-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/asm.S (get_diskinfo_floppy): Correct the number of heads
 	and the one of cylinders.
-	
+
 1999-04-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (get_diskinfo): Compute the total number of sectors
@@ -71,34 +64,34 @@
 
 	* shared_src/bios.c (get_diskinfo): Always set the size of DRP to
 	the max size of DRP, regardless of the major version of extensions.
-	
+
 1999-04-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/shared.h (struct geometry): Declare total_sectors as
 	unsigned long instead of unsigned long long, because GRUB represents
 	a sector number by 4bytes integer, so it doesn't make sense.
-	
+
 	* shared_src/bios.c (biosdisk) [!NO_INT13_FALLBACK]: Recompute
 	TOTAL_SECTORS according to CHS information.
 	(get_diskinfo) [DEBUG]: Print the geometry of DRIVE.
-	
+
 	* shared_src/disk_io.c (real_open_partition): Set PART_LENGTH to
 	BUF_GEOM.TOTAL_SECTORS.
-	
+
 1999-04-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/texinfo.tex: Copied from automake-1.4a.
-	
+
 	* configure.in (SHARED_SRC_RULES): Add bios into shared sources.
-	
+
 	* e2fs_stage1_5/Makefile.am (e2fs_stage1_5_exec_LDADD): Added bios.o.
 	* fat_stage1_5/Makefile.am (fat_stage1_5_exec_LDADD): Likewise.
 	* ffs_stage1_5/Makefile.am (ffs_stage1_5_exec_LDADD): Likewise.
 	* stage2/Makefile.am (stage2_exec_LDADD): Likewise.
 	* stage2_debug/Makefile.am (stage2_debug_exec_LDADD): Likewise.
-	
+
 	* shared_src/Makefile.am (EXTRA_DIST): Added bios.c.
-	
+
 	* shared_src/asm.S (biosdisk): Deleted. Now defined in bios.c.
 	(get_diskinfo): Likewise.
 	(biosdisk_int13_extensions): New function.
@@ -107,9 +100,9 @@
 	(get_diskinfo_int13_extensions): Likewise.
 	(get_diskinfo_standard): Likewise.
 	(get_diskinfo_floppy): Likewise.
-	
+
 	* shared_src/bios.c: New file.
-	
+
 	* shared_src/shared.h (struct geometry): Added new member,
 	total_sectors.
 
@@ -117,7 +110,7 @@
 
 	* shared_src/stage2.c (print_entries): Correctly assign MENU_ENTRIES
 	the entries starting from FIRST.
-	
+
 1999-03-27  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* Change everything to use memset and memmove instead of bzero and
