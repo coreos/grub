@@ -111,15 +111,3 @@ grub_get_rtc (void)
 {
   return 0;
 }
-
-int
-grub_setjmp (grub_jmp_buf env __attribute ((unused)))
-{
-  return 0;
-}
-
-void
-grub_longjmp (grub_jmp_buf env __attribute ((unused)),
-	      int val __attribute ((unused)))
-{
-}

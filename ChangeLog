@@ -1,3 +1,16 @@
+2004-11-17  Hollis Blanchard  <hollis@penguinppc.org>
+	
+	* kern/powerpc/ieee1275/init.c (grub_setjmp): Remove function.
+	(grub_longjmp): Likewise.
+	* include/grub/powerpc/setjmp.h (grub_jmp_buf): Set array size to
+	20.
+	* normal/powerpc/setjmp.S: New file.
+	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Add
+	`normal/powerpc/setjmp.S'.
+	(grubof_CFLAGS): Add `-DGRUBOF'.
+	* include/grub/setjmp.h [GRUB_UTIL]: Changed condition to
+	[GRUB_UTIL && !GRUBOF].
+	
 2004-11-16  Marco Gerards  <metgerards@student.han.nl>
 
 	* kern/powerpc/ieee1275/openfw.c (grub_devalias_iterate): Skip any

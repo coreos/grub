@@ -20,6 +20,6 @@
 #ifndef GRUB_SETJMP_CPU_HEADER
 #define GRUB_SETJMP_CPU_HEADER	1
 
-typedef unsigned long grub_jmp_buf[6];
+typedef unsigned long grub_jmp_buf[20];
 
 #endif /* ! GRUB_SETJMP_CPU_HEADER */
