@@ -3976,6 +3976,7 @@ terminal_func (char *arg, int flags)
   int dumb = 0;
   int saved_terminal = terminal;
   int lines = 0;
+  int no_message = 0;
 
   /* Get GNU-style long options.  */
   while (1)
@@ -4003,6 +4004,8 @@ terminal_func (char *arg, int flags)
 	      return 1;
 	    }
 	}
+      else if (grub_memcmp (arg, "--silent", sizeof ("--silent") - 1) == 0)
+	no_message = 1;
       else
 	break;
 
@@ -4113,7 +4116,9 @@ terminal_func (char *arg, int flags)
 	  /* Prompt the user, once per sec.  */
 	  if ((time1 = getrtsecs ()) != time2 && time1 != 0xFF)
 	    {
-	      grub_printf ("Press any key to continue.\n");
+	      if (! no_message)
+		grub_printf ("Press any key to continue.\n");
+	      
 	      time2 = time1;
 	      if (to > 0)
 		to--;
@@ -4139,7 +4144,7 @@ static struct builtin builtin_terminal =
   "terminal",
   terminal_func,
   BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
-  "terminal [--dumb] [--timeout=SECS] [--lines=LINES] [console] [serial]",
+  "terminal [--dumb] [--timeout=SECS] [--lines=LINES] [--silent] [console] [serial]",
   "Select a terminal. When serial is specified, wait until you push any key"
   " to continue. If both console and serial are specified, the terminal"
   " to which you input a key first will be selected. If no argument is"
@@ -4147,6 +4152,7 @@ static struct builtin builtin_terminal =
   " your terminal is dumb, otherwise, vt100-compatibility is assumed."
   " If --timeout is present, this command will wait at most for SECS"
   " seconds. The option --lines specifies the maximum number of lines."
+  " The option --silent is used to suppress messages."
 };
 #endif /* SUPPORT_SERIAL || SUPPORT_HERCULES */
 

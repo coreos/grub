@@ -186,10 +186,10 @@ FreeBSD boot loader, and so GRUB was born.
 
 Erich added many features to GRUB, but other priorities prevented him
 from keeping up with the demands of its quickly-expanding user base. In
-1999, Gordon Matzigkeit and OKUJI Yoshinori adopted GRUB as an official
-GNU package, and opened its development by making the latest sources
-available via anonymous CVS. @xref{Obtaining and Building GRUB}, for
-more information.
+1999, Gordon Matzigkeit and Yoshinori K. Okuji adopted GRUB as an
+official GNU package, and opened its development by making the latest
+sources available via anonymous CVS. @xref{Obtaining and Building
+GRUB}, for more information.
 
 
 @node Features
@@ -2274,7 +2274,7 @@ character each of the symbols corresponds:
 @node terminal
 @subsection terminal
 
-@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{--lines=lines}] [@option{console}] [@option{serial}] [@option{hercules}]
+@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{--lines=lines}] [@option{--silent}] [@option{console}] [@option{serial}] [@option{hercules}]
 Select a terminal for user interaction. The terminal is assumed to be
 VT100-compatible unless @option{--dumb} is specified. If both
 @option{console} and @option{serial} are specified, then GRUB will use
@@ -2291,6 +2291,9 @@ and the usage is quite similar to that for serial terminals: specify
 The option @option{--lines} defines the number of lines in your
 terminal, and it is used for the internal pager function. If you don't
 specify this option, the number is assumed as 24.
+
+The option @option{--silent} suppresses the message to prompt you to
+hit any key. This might be useful if your system has no terminal device.
 @end deffn
 
 
@@ -3417,8 +3420,8 @@ Suppress all normal output.
 @item How does GNU GRUB differ from Erich's original GRUB?
 
 GNU GRUB is the successor of Erich's great GRUB. He couldn't work on
-GRUB because of some other tasks, so the current maintainers OKUJI
-Yoshinori and Gordon Matzigkeit took over the maintainership, and opened
+GRUB because of some other tasks, so the current maintainers Yoshinori
+K. Okuji and Gordon Matzigkeit took over the maintainership, and opened
 the development in order for everybody to participate it.
 
 Technically speaking, GNU GRUB has many features that are not seen in

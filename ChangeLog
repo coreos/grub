@@ -1,5 +1,10 @@
 2002-04-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/builtins.c [SUPPORT_SERIAL] (terminal_func): Added a
+	new option ``--silent''. This suppresses messages, if specified.
+	
+2002-04-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* config.guess: New upstream version.
 	* config.sub: Likewise.
 	
