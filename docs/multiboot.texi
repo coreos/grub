@@ -486,86 +486,97 @@ start running the operating system.
 @node Header graphics fields
 @subsection The graphics fields of Multiboot header
 
-Also, information about a preferred default mode can be specified in the
-@samp{mode_type}, @samp{width}, @samp{height} and @samp{depth}
-fields. This is only a @emph{recommended} mode by the kernel. If the
-mode exists, the boot loader should set it if the user hasn't specified
-a mode. If not, it should fall back to a similar mode, if available.
+All of the graphics fields are enabled by flag bit 2. They specify the
+preferred graphics mode. Note that that is only a @emph{recommended}
+mode by the OS image. If the mode exists, the boot loader should set
+it, when the user doesn't specify a mode explicitly. Otherwise, the
+boot loader should fall back to a similar mode, if available.
 
-Valid numbers for @samp{mode_type} is 0 for linear graphics mode and 1
-for EGA-standard text mode. Everything else is reserved for future
-expansion. Please note that even if you set this field to indicate that
-you want a graphics mode, you might get a text mode.
+The meaning of each is as follows:
 
-@samp{width} and @samp{height} is specified in pixels, if graphics mode,
-or characters in EGA text mode. @samp{depth} is given in bits per pixel
-for graphics, or zero for EGA text modes.
+@table @code
+@item mode_type
+Contains @samp{0} for linear graphics mode or @samp{1} for
+EGA-standard text mode. Everything else is reserved for future
+expansion. Note that the boot loader may set a text mode, even if this
+field contains @samp{0}.
 
-Any, some or all of those three fields may be set to zero, indicating to
-the boot loader that no preference is given. This makes it possible for
-a kernel to just say it wants a 32-bit resolution, for example.
+@item width
+Contains the number of the columns. This is specified in pixels in a
+graphics mode, and in characters in a text mode. The value zero
+indicates that the OS image has no preference.
+
+@item height
+Contains the number of the lines. This is specified in pixels in a
+graphics mode, and in characters in a text mode. The value zero
+indicates that the OS image has no preference.
+
+@item depth
+Contains the number of bits per pixel in a graphics mode, and zero in
+a text mode. The value zero indicates that the OS image has no
+preference.
+@end table
 
 
 @node Machine state
 @section Machine state
 
-FIXME: Use a table like the chapter ``Header layout''.
-
 When the boot loader invokes the 32-bit operating system, the machine
 must have the following state:
 
-@itemize @bullet
-@item
-@code{CS} must be a 32-bit read/execute code segment with an offset of 0
-and a limit of 0xFFFFFFFF.
-
-@item
-@code{DS}, @code{ES}, @code{FS}, @code{GS}, and @code{SS} must be a
-32-bit read/write data segment with an offset of 0 and a limit of
-0xFFFFFFFF.
-
-@item
-The address 20 line must be usable for standard linear 32-bit addressing
-of memory (in standard @sc{pc} hardware, it is wired to 0 at bootup,
-forcing addresses in the 1-2 MB range to be mapped to the 0-1 MB range,
-3-4 is mapped to 2-3, etc.).
-
-@item
-Paging must be turned off.
-
-@item
-The processor interrupt flag must be turned off.
-
-@item
-@code{EAX} must contain the magic value 0x2BADB002; the presence of this
+@table @samp
+@item EAX
+Must contain the magic value @samp{0x2BADB002}; the presence of this
 value indicates to the operating system that it was loaded by a
-Multiboot-compliant boot loader (e.g. as opposed to another type of boot
-loader that the operating system can also be loaded from).
+Multiboot-compliant boot loader (e.g. as opposed to another type of
+boot loader that the operating system can also be loaded from).
 
-@item
-@code{EBX} must contain the 32-bit physical address of the Multiboot
+@item EBX
+Must contain the 32-bit physical address of the Multiboot
 information structure provided by the boot loader (@pxref{Boot
 information format}).
-@end itemize
+
+@item CS
+Must be a 32-bit read/execute code segment with an offset of @samp{0}
+and a limit of @samp{0xFFFFFFFF}. The exact value is undefined.
+
+@item DS
+@itemx ES
+@itemx FS
+@itemx GS
+@itemx SS
+Must be a 32-bit read/write data segment with an offset of @samp{0}
+and a limit of @samp{0xFFFFFFFF}. The exact values are all undefined.
+
+@item A20 gate
+Must be enabled.
+
+@item CR0
+Bit 31 (PG) must be cleared. Bit 0 (PE) must be set. Other bits are
+all undefined.
+
+@item EFLAGS
+Bit 17 (VM) must be cleared. Bit 9 (IF) must be cleared. Other bits
+are all undefined.
+@end table
 
 All other processor registers and flag bits are undefined. This
 includes, in particular:
 
-@itemize @bullet
-@item
-@code{ESP}: the 32-bit operating system must create its own stack as
-soon as it needs one.
+@table @samp
+@item ESP
+The OS image must create its own stack as soon as it needs one.
 
-@item
-@code{GDTR}: Even though the segment registers are set up as described
-above, the @code{GDTR} may be invalid, so the operating system must not
-load any segment registers (even just reloading the same values!) until
-it sets up its own @code{GDT}.
+@item GDTR
+Even though the segment registers are set up as described above, the
+@samp{GDTR} may be invalid, so the OS image must not load any segment
+registers (even just reloading the same values!) until it sets up its
+own @samp{GDT}.
 
-@item
-@code{IDTR}: The operating system must leave interrupts disabled until
-it sets up its own @code{IDT}.
-@end itemize
+@item IDTR
+The OS image must leave interrupts disabled until it sets up its own
+@code{IDT}.
+@end table
 
 However, other machine state should be left by the boot loader in
 @dfn{normal working order}, i.e. as initialized by the @sc{bios} (or
@@ -1154,7 +1165,7 @@ is a full Multiboot-compliant boot loader, supporting all required and
 optional features present in this specification. A public release has
 not been made, but the test release is available from:
 
-@url{ftp://alpha.gnu.org/gnu/hurd/src/}
+@url{ftp://alpha.gnu.org/gnu/grub}
 
 See the webpage @url{http://www.gnu.org/software/grub/grub.html}, for
 more information.
