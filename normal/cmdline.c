@@ -52,33 +52,31 @@ grub_set_history (int newsize)
 	  int delsize = hist_used - newsize;
 	  hist_used = newsize;
 
-	  for (i = 0; i < delsize; i++)
+	  for (i = 1; i <= delsize; i++)
 	    {
 	      int pos = hist_end - i;
-	      if (pos > hist_size)
-		pos -= hist_size;
+	      if (pos < 0)
+		pos += hist_size;
 	      grub_free (old_hist_lines[pos]);
 	    }
 
 	  hist_end -= delsize;
 	  if (hist_end < 0)
-	    hist_end = hist_size - hist_end;
+	    hist_end += hist_size;
 	}
 
       if (hist_pos < hist_end)
 	grub_memmove (hist_lines, old_hist_lines + hist_pos,
 		      (hist_end - hist_pos) * sizeof (char *));
-      else
+      else if (hist_used)
 	{
-	  /* Copy the first part.  */
-	  grub_memmove (hist_lines, old_hist_lines,
-			hist_pos * sizeof (char *));
-
-
-	  /* Copy the last part.  */
-	  grub_memmove (hist_lines + hist_pos, old_hist_lines + hist_pos,
-			(hist_size - hist_pos) * sizeof (char *));
-
+	  /* Copy the older part.  */
+	  grub_memmove (hist_lines, old_hist_lines + hist_pos,
+ 			(hist_size - hist_pos) * sizeof (char *));
+	  
+	  /* Copy the newer part. */
+	  grub_memmove (hist_lines + hist_size - hist_pos, old_hist_lines,
+			hist_end * sizeof (char *));
 	}
     }
 
