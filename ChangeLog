@@ -1,5 +1,10 @@
 2000-06-15  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/asm.S (grub_halt): Use jmp instead of jc, if INT 15
+	AX=5307h fails.
+	
+2000-06-15  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* configure.in (AM_INIT_AUTOMAKE): Increase the version number.
 	I wish that 0.5.96 will not be released actually...
 	

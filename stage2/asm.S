@@ -246,7 +246,7 @@ ENTRY(grub_halt)
 	int	$0x15
 
 	/* shouldn't reach here */
-	jc	EXT_C(hard_stop)
+	jmp	EXT_C(hard_stop)
 	.code32
 	
 /*
