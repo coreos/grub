@@ -1,3 +1,8 @@
+2003-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Karsten Scheibler <karsten.scheibler@student.uni-halle.de>:
+	* stage2/terminfo.c (term): Don't use a C99-style initializer.
+
 2003-01-16  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From H.J. Lu <hjl@gnu.org>:
