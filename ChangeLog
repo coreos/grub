@@ -1,5 +1,23 @@
 2000-02-21  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/disk_io.c (check_BSD_parts) [!STAGE1_5]: Use the term
+	"BSD sub-partition" instead of "BSD slice" for consistency.
+
+	* stage2/builtins.c (boot_func): Copy the partition table to
+	BOOT_PART_TABLE instead of (BOOTSEC_LOCATION +
+	BOOTSEC_PART_OFFSET). Don't use grub_memmove, but copy it
+	directly, since memcheck is too strict.
+	* stage2/disk_io.c (real_open_partition) [!STAGE1_5]: Set
+	CUR_PART_ADDR to (BOOT_PART_TABLE + (i << 4)).
+	* stage2/shared.h (BOOT_PART_TABLE): New macro.
+	(chain_stage1): Change the types of all the arguments to
+	unsigned long.
+	(chain_stage2): Likewise.
+	* grub/asmstub.c (chain_stage1): Adjusted to the prototype.
+	(chain_stage2): Likewise.
+	
+2000-02-21  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/disk_io.c (check_BSD_parts) [!STAGE1_5]: If the BSD
 	label is invalid, print a message with the partition type in the
 	case where FLAGS is non-zero and DO_COMPLETION is zero.

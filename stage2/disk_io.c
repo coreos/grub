@@ -485,7 +485,7 @@ check_BSD_parts (int flags)
   if (flags)
     {
       if (! do_completion)
-	grub_printf (" No BSD slice found, partition type 0x%x\n",
+	grub_printf (" No BSD sub-partition found, partition type 0x%x\n",
 		     current_slice);
     }
 #endif
@@ -571,7 +571,7 @@ real_open_partition (int flags)
 	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
 #ifndef STAGE1_5
 	      cur_part_offset = part_offset;
-	      cur_part_addr = BOOTSEC_LOCATION + PC_SLICE_OFFSET + (i << 4);
+	      cur_part_addr = BOOT_PART_TABLE + (i << 4);
 #endif
 
 	      /*

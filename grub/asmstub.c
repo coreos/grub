@@ -580,14 +580,15 @@ stop (void)
 
 /* calls for direct boot-loader chaining */
 void
-chain_stage1 (int segment, int offset, int part_table_addr)
+chain_stage1 (unsigned long segment, unsigned long offset,
+	      unsigned long part_table_addr)
 {
   stop ();
 }
 
 
 void
-chain_stage2 (int segment, int offset)
+chain_stage2 (unsigned long segment, unsigned long offset)
 {
   stop ();
 }

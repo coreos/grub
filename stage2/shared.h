@@ -69,6 +69,8 @@ extern char *grub_scratch_mem;
 #define BUFFERADDR  RAW_ADDR (0x70000)
 #define BUFFERSEG   RAW_SEG (0x7000)
 
+#define BOOT_PART_TABLE	RAW_ADDR (0x07be)
+
 /*
  *  BIOS disk defines
  */
@@ -557,9 +559,11 @@ extern unsigned short ascii_key_map[];
 extern unsigned short io_map[];
 
 /* calls for direct boot-loader chaining */
-void chain_stage1 (int segment, int offset, int part_table_addr)
+void chain_stage1 (unsigned long segment, unsigned long offset,
+		   unsigned long part_table_addr)
      __attribute__ ((noreturn));
-void chain_stage2 (int segment, int offset) __attribute__ ((noreturn));
+void chain_stage2 (unsigned long segment, unsigned long offset)
+     __attribute__ ((noreturn));
 
 /* do some funky stuff, then boot linux */
 void linux_boot (void) __attribute__ ((noreturn));

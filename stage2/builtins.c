@@ -218,10 +218,12 @@ boot_func (char *arg, int flags)
       gateA20 (0);
       boot_drive = saved_drive;
       
-      /* Copy the boot partition information to the chain-loader, if
+      /* Copy the boot partition information to 0x7be-0x7fd, if
 	 BOOT_DRIVE is a hard disk drive.  */
       if (boot_drive & 0x80)
 	{
+	  char *dst, *src;
+	  
 	  /* Read the MBR here, because it might be modified
 	     after opening the partition.  */
 	  if (! rawread (boot_drive, boot_part_offset,
@@ -232,10 +234,13 @@ boot_func (char *arg, int flags)
 	      return 0;
 	    }
 
-	  /* Need only the partition table.  */
-	  grub_memmove ((char *) BOOTSEC_LOCATION + BOOTSEC_PART_OFFSET,
-			(char *) SCRATCHADDR + BOOTSEC_PART_OFFSET,
-			BOOTSEC_PART_LENGTH);
+	  /* Need only the partition table.
+	     XXX: We cannot use grub_memmove because BOOT_PART_TABLE
+	     (0x07be) is less than 0x1000.  */
+	  dst = (char *) BOOT_PART_TABLE;
+	  src = (char *) SCRATCHADDR + BOOTSEC_PART_OFFSET;
+	  while (dst < (char *) BOOT_PART_TABLE + BOOTSEC_PART_LENGTH)
+	    *dst++ = *src++;
 	}
       
       chain_stage1 (0, BOOTSEC_LOCATION, boot_part_addr);
