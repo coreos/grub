@@ -28,6 +28,7 @@
 #include <grub/fs.h>
 #include <grub/setjmp.h>
 #include <grub/env.h>
+#include <grub/misc.h>
 
 void grub_ofdisk_init (void);
 void grub_console_init (void);
@@ -49,11 +50,25 @@ abort (void)
 void
 grub_machine_init (void)
 {
-  if (grub_ieee1275_claim (0x300000, 0x150000, 0, 0) == -1)
-    abort (); /* Damn, we are in trouble!  */
-  
-  /* The memory allocations were copied from yaboot.  */
-  grub_mm_init_region ((void *) 0x300000, 0x150000);
+  extern char _start;
+  grub_addr_t heap_start;
+  grub_addr_t heap_len;
+
+  grub_console_init ();
+
+  /* Apple OF 1.0.5 reserves 0x4000 bytes for the exception handlers.  */
+  heap_start = 0x4000;
+  /* Apple OF 3.1.1 reserves an extra 0x1000 bytes below the load address
+     of an ELF file.  */
+  heap_len = (grub_addr_t) &_start - 0x1000 - heap_start;
+
+  if (grub_ieee1275_claim (heap_start, heap_len, 0, 0))
+    {
+      grub_printf ("Failed to claim heap at 0x%x, len 0x%x\n", heap_start,
+		   heap_len);
+      abort ();
+    }
+  grub_mm_init_region ((void *) heap_start, heap_len);
 
   /* XXX: Loadable modules are not supported.  */
   grub_env_set ("prefix", "");
@@ -64,7 +79,6 @@ grub_machine_init (void)
   grub_linux_init ();
   grub_linux_normal_init ();
   grub_ofdisk_init ();
-  grub_console_init ();
 }
 
 int

@@ -104,5 +104,7 @@ grub_err_t EXPORT_FUNC(grub_devalias_iterate)
 grub_err_t EXPORT_FUNC(grub_children_iterate) (char *devpath,
      int (*hook) (struct grub_ieee1275_devalias *alias));
 
+void EXPORT_FUNC(abort) (void);
+
 
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */

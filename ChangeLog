@@ -1,3 +1,14 @@
+2004-10-14  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* include/grub/powerpc/ieee1275/ieee1275.h (abort): Add function
+	prototype.
+	* kern/powerpc/ieee1275/init.c (grub_machine_init): Call
+	grub_console_init first.
+	Change the memory range used for grub_ieee1275_claim and
+	grub_mm_init_region.
+	Print an error message if the claim fails.
+	Include <grub/misc.h>.
+
 2004-10-13  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_iterate):
