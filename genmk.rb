@@ -1,6 +1,6 @@
 #! /usr/bin/ruby -w
 #
-# Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005  Free Software Foundation, Inc.
 #
 # This genmk.rb is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -109,6 +109,7 @@ class PModule
     defsym = 'def-' + @name.suffix('lst')
     undsym = 'und-' + @name.suffix('lst')
     mod_name = File.basename(@name, '.mod')
+    symbolic_name = mod_name.sub(/\.[^\.]*$/, '')
     
     "CLEANFILES += #{@name} #{mod_obj} #{mod_src} #{pre_obj} #{objs_str} #{defsym} #{undsym}
 MOSTLYCLEANFILES += #{deps_str}
@@ -162,7 +163,7 @@ COMMANDFILES += #{command}
 #{command}: #{src} gencmdlist.sh
 	set -e; \
 	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -E $< \
-	  | sh $(srcdir)/gencmdlist.sh #{@name} > $@ || (rm -f $@; exit 1)
+	  | sh $(srcdir)/gencmdlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 "
     end.join('')

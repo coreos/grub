@@ -1,7 +1,7 @@
 /* normal.h - prototypes for the normal mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,12 +41,14 @@
 #define GRUB_COMMAND_FLAG_NO_ECHO	0x8
 /* Don't print the command on booting.  */
 #define GRUB_COMMAND_FLAG_NO_ARG_PARSE	0x10
+/* Not loaded yet. Used for auto-loading.  */
+#define GRUB_COMMAND_FLAG_NOT_LOADED	0x20
 
 /* The command description.  */
 struct grub_command
 {
   /* The name.  */
-  const char *name;
+  char *name;
 
   /* The callback function.  */
   grub_err_t (*func) (struct grub_arg_list *state, int argc, char **args);
@@ -63,6 +65,9 @@ struct grub_command
   /* The argument parser optionlist.  */
   const struct grub_arg_option *options;
 
+  /* The name of a module. Used for auto-loading.  */
+  char *module_name;
+  
   /* The next element.  */
   struct grub_command *next;
 };
@@ -142,13 +147,14 @@ void grub_menu_entry_run (grub_menu_entry_t entry);
 void grub_cmdline_run (int nested);
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
-void grub_register_command (const char *name,
-			    grub_err_t (*func) (struct grub_arg_list *state,
-						int argc, char **args),
-			    unsigned flags,
-			    const char *summary,
-			    const char *description,
-			    const struct grub_arg_option *parser);
+grub_command_t grub_register_command (const char *name,
+				      grub_err_t (*func) (struct grub_arg_list *state,
+							  int argc,
+							  char **args),
+				      unsigned flags,
+				      const char *summary,
+				      const char *description,
+				      const struct grub_arg_option *parser);
 void grub_unregister_command (const char *name);
 grub_command_t grub_command_find (char *cmdline);
 grub_err_t grub_set_history (int newsize);

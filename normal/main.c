@@ -304,6 +304,69 @@ grub_normal_init_page (void)
 	       PACKAGE_VERSION);
 }
 
+/* Read the file command.lst for auto-loading.  */
+static void
+read_command_list (void)
+{
+  const char *prefix;
+  
+  prefix = grub_env_get ("prefix");
+  if (prefix)
+    {
+      char *filename;
+
+      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/command.lst"));
+      if (filename)
+	{
+	  grub_file_t file;
+	  
+	  grub_sprintf (filename, "%s/command.lst", prefix);
+	  file = grub_file_open (filename);
+	  if (file)
+	    {
+	      char buf[80]; /* XXX arbitrary */
+
+	      while (get_line (file, buf, sizeof (buf)))
+		{
+		  char *p;
+		  grub_command_t cmd;
+		  
+		  if (! grub_isgraph (buf[0]))
+		    continue;
+
+		  p = grub_strchr (buf, ':');
+		  if (! p)
+		    continue;
+
+		  *p = '\0';
+		  while (*++p == ' ')
+		    ;
+
+		  if (! grub_isgraph (*p))
+		    continue;
+
+		  cmd = grub_register_command (buf, 0,
+					       GRUB_COMMAND_FLAG_NOT_LOADED,
+					       0, 0, 0);
+		  if (! cmd)
+		    continue;
+
+		  cmd->module_name = grub_strdup (p);
+		  if (! cmd->module_name)
+		    grub_unregister_command (buf);
+		}
+
+	      grub_file_close (file);
+	    }
+
+	  grub_free (filename);
+	}
+    }
+
+  /* Ignore errors.  */
+  grub_errno = GRUB_ERR_NONE;
+}
+
 /* Read the config file CONFIG and execute the menu interface or
    the command-line interface.  */
 void
@@ -319,6 +382,8 @@ grub_normal_execute (const char *config, int nested)
       grub_errno = GRUB_ERR_NONE;
     }
 
+  read_command_list ();
+  
   if (menu)
     {
       grub_menu_run (menu, nested);

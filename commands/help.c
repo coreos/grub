@@ -40,33 +40,38 @@ grub_cmd_help (struct grub_arg_list *state __attribute__ ((unused)), int argc,
 
   int print_command_info (grub_command_t cmd)
     {
-      if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
+      if (grub_command_find (cmd->name))
 	{
-	  char description[TERM_WIDTH / 2];
-	  int desclen = grub_strlen (cmd->summary);
-	  
-	  /* Make a string with a length of TERM_WIDTH / 2 - 1 filled
-	     with the description followed by spaces.  */
-	  grub_memset (description, ' ', TERM_WIDTH / 2 - 1);
-	  description[TERM_WIDTH / 2 - 1] = '\0';
-	  grub_memcpy (description, cmd->summary,
-		       (desclen < TERM_WIDTH / 2 - 1 
-			? desclen : TERM_WIDTH / 2 - 1));
-	  
-	  grub_printf ("%s%s", description, (cnt++) % 2 ? "\n" : " ");
+	  if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
+	    {
+	      char description[TERM_WIDTH / 2];
+	      int desclen = grub_strlen (cmd->summary);
+	      
+	      /* Make a string with a length of TERM_WIDTH / 2 - 1 filled
+		 with the description followed by spaces.  */
+	      grub_memset (description, ' ', TERM_WIDTH / 2 - 1);
+	      description[TERM_WIDTH / 2 - 1] = '\0';
+	      grub_memcpy (description, cmd->summary,
+			   (desclen < TERM_WIDTH / 2 - 1 
+			    ? desclen : TERM_WIDTH / 2 - 1));
+	      
+	      grub_printf ("%s%s", description, (cnt++) % 2 ? "\n" : " ");
+	    }
 	}
-      
       return 0;
     }
 
   int print_command_help (grub_command_t cmd)
     {
-      if (! grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
+      if (grub_command_find (cmd->name))
 	{
-	  if (cnt++ > 0)
-	    grub_printf ("\n\n");
-	  
-	  grub_arg_show_help (cmd);
+	  if (! grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
+	    {
+	      if (cnt++ > 0)
+		grub_printf ("\n\n");
+	      
+	      grub_arg_show_help (cmd);
+	    }
 	}
       return 0;
     }

@@ -1,3 +1,35 @@
+2005-03-08  Yoshinori Okuji  <okuji@enbug.org>
+
+	Automatic loading of commands is supported.
+	
+	* normal/main.c (read_command_list): New function.
+	(grub_normal_execute): Call read_command_list.
+
+	* normal/command.c (grub_register_command): Return zero or CMD.
+	Allocate CMD->NAME from the heap.
+	Initialize CMD->MODULE_NAME to zero.
+	Find the same name as well. If the same command is found and it is
+	a dummy command, overwrite members. If it is not a dummy command,
+	return zero.
+	(grub_unregister_command): Free Q->NAME and Q->MODULE_NAME.
+	(grub_command_find): If a dummy command is found, load a module
+	and retry to find a command only once.
+
+	* normal/cmdline.c (grub_tab_complete): Call grub_command_find to
+	make sure that each command is loaded.
+
+	* include/grub/normal.h (GRUB_COMMAND_FLAG_NOT_LOADED): New
+	macro.
+	(struct grub_command): Remove const from the member `name'.
+	Add a new member `module_name'.
+	(grub_register_command): Return grub_command_t.
+
+	* commands/help.c (grub_cmd_help): Call grub_command_find to make
+	sure that each command is loaded.
+
+	* genmk.rb (PModule::rule): Specify a module name without the
+	suffix ".mod" to gencmdlist.sh.
+
 2005-03-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* gencmdlist.sh: New file.

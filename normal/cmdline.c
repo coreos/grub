@@ -273,8 +273,12 @@ grub_tab_complete (char *buf, int *restore)
 
   int iterate_commands (grub_command_t cmd)
     {
-      if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
-	add_completion (cmd->name, " ", "commands", print_simple_completion);
+      if (grub_command_find (cmd->name))
+	{
+	  if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
+	    add_completion (cmd->name, " ", "commands",
+			    print_simple_completion);
+	}
       return 0;
     }
   

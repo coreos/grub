@@ -27,7 +27,7 @@
 
 static grub_command_t grub_command_list;
 
-void
+grub_command_t
 grub_register_command (const char *name,
 		       grub_err_t (*func) (struct grub_arg_list *state,
 					   int argc, char **args),
@@ -40,27 +40,63 @@ grub_register_command (const char *name,
 
   cmd = (grub_command_t) grub_malloc (sizeof (*cmd));
   if (! cmd)
-    return;
+    return 0;
 
-  cmd->name = name;
+  cmd->name = grub_strdup (name);
+  if (! cmd->name)
+    {
+      grub_free (cmd);
+      return 0;
+    }
+  
   cmd->func = func;
   cmd->flags = flags;
   cmd->summary = summary;
   cmd->description = description;
   cmd->options = options;
+  cmd->module_name = 0;
 
   /* Keep the list sorted for simplicity.  */
   p = &grub_command_list;
   while (*p)
     {
-      if (grub_strcmp ((*p)->name, name) > 0)
+      if (grub_strcmp ((*p)->name, name) >= 0)
 	break;
 
       p = &((*p)->next);
     }
 
-  cmd->next = *p;
-  *p = cmd;
+  if (*p && grub_strcmp ((*p)->name, name) == 0)
+    {
+      grub_command_t q;
+
+      q = *p;
+      if (q->flags & GRUB_COMMAND_FLAG_NOT_LOADED)
+	{
+	  q->func = cmd->func;
+	  q->flags = cmd->flags;
+	  q->summary = cmd->summary;
+	  q->description = cmd->description;
+	  q->options = cmd->options;
+	  grub_free (cmd->name);
+	  grub_free (cmd->module_name);
+	  grub_free (cmd);
+	  cmd = q;
+	}
+      else
+	{
+	  grub_free (cmd->name);
+	  grub_free (cmd);
+	  cmd = 0;
+	}
+    }
+  else
+    {
+      cmd->next = *p;
+      *p = cmd;
+    }
+
+  return cmd;
 }
 
 void
@@ -72,6 +108,8 @@ grub_unregister_command (const char *name)
     if (grub_strcmp (name, q->name) == 0)
       {
         *p = q->next;
+	grub_free (q->name);
+	grub_free (q->module_name);
         grub_free (q);
         break;
       }
@@ -82,17 +120,48 @@ grub_command_find (char *cmdline)
 {
   char *first_space;
   grub_command_t cmd;
-
+  int count = 0;
+  
   first_space = grub_strchr (cmdline, ' ');
   if (first_space)
     *first_space = '\0';
 
+ again:
+  
   for (cmd = grub_command_list; cmd; cmd = cmd->next)
     if (grub_strcmp (cmdline, cmd->name) == 0)
       break;
 
   if (! cmd)
     grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%s'", cmdline);
+  else if (cmd->flags & GRUB_COMMAND_FLAG_NOT_LOADED)
+    {
+      /* Automatically load the command.  */
+      if (count == 0)
+	{
+	  grub_dl_t mod;
+	  char *module_name;
+
+	  module_name = grub_strdup (cmd->module_name);
+	  if (module_name)
+	    {
+	      mod = grub_dl_load (module_name);
+	      if (mod)
+		{
+		  grub_dl_ref (mod);
+		  count++;
+  		  goto again;
+		}
+
+	      grub_free (module_name);
+	    }
+	}
+
+      /* This module seems broken.  */
+      grub_unregister_command (cmdline);
+      grub_error (GRUB_ERR_UNKNOWN_COMMAND, "unknown command `%s'", cmdline);
+      cmd = 0;
+    }
   
   if (first_space)
     *first_space = ' ';

@@ -996,7 +996,7 @@ CLEANFILES += cmd-chainloader.lst
 COMMANDFILES += cmd-chainloader.lst
 
 cmd-chainloader.lst: loader/i386/pc/chainloader.c gencmdlist.sh
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _chain.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _chain > $@ || (rm -f $@; exit 1)
 
 _chain_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1041,7 +1041,7 @@ CLEANFILES += cmd-chainloader_normal.lst
 COMMANDFILES += cmd-chainloader_normal.lst
 
 cmd-chainloader_normal.lst: loader/i386/pc/chainloader_normal.c gencmdlist.sh
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh chain.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh chain > $@ || (rm -f $@; exit 1)
 
 chain_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1086,7 +1086,7 @@ CLEANFILES += cmd-fshelp.lst
 COMMANDFILES += cmd-fshelp.lst
 
 cmd-fshelp.lst: fs/fshelp.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fshelp.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fshelp > $@ || (rm -f $@; exit 1)
 
 fshelp_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1131,7 +1131,7 @@ CLEANFILES += cmd-fat.lst
 COMMANDFILES += cmd-fat.lst
 
 cmd-fat.lst: fs/fat.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fat.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fat > $@ || (rm -f $@; exit 1)
 
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1176,7 +1176,7 @@ CLEANFILES += cmd-ext2.lst
 COMMANDFILES += cmd-ext2.lst
 
 cmd-ext2.lst: fs/ext2.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ext2.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ext2 > $@ || (rm -f $@; exit 1)
 
 ext2_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1221,7 +1221,7 @@ CLEANFILES += cmd-ufs.lst
 COMMANDFILES += cmd-ufs.lst
 
 cmd-ufs.lst: fs/ufs.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ufs.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ufs > $@ || (rm -f $@; exit 1)
 
 ufs_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1266,7 +1266,7 @@ CLEANFILES += cmd-minix.lst
 COMMANDFILES += cmd-minix.lst
 
 cmd-minix.lst: fs/minix.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh minix.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh minix > $@ || (rm -f $@; exit 1)
 
 minix_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1311,7 +1311,7 @@ CLEANFILES += cmd-hfs.lst
 COMMANDFILES += cmd-hfs.lst
 
 cmd-hfs.lst: fs/hfs.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfs.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfs > $@ || (rm -f $@; exit 1)
 
 hfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1356,7 +1356,7 @@ CLEANFILES += cmd-jfs.lst
 COMMANDFILES += cmd-jfs.lst
 
 cmd-jfs.lst: fs/jfs.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh jfs.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh jfs > $@ || (rm -f $@; exit 1)
 
 jfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1405,7 +1405,7 @@ CLEANFILES += cmd-linux.lst
 COMMANDFILES += cmd-linux.lst
 
 cmd-linux.lst: loader/i386/pc/linux.c gencmdlist.sh
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _linux.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _linux > $@ || (rm -f $@; exit 1)
 
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
  
@@ -1450,7 +1450,7 @@ CLEANFILES += cmd-linux_normal.lst
 COMMANDFILES += cmd-linux_normal.lst
 
 cmd-linux_normal.lst: loader/i386/pc/linux_normal.c gencmdlist.sh
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
 
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1497,7 +1497,7 @@ CLEANFILES += cmd-arg.lst
 COMMANDFILES += cmd-arg.lst
 
 cmd-arg.lst: normal/arg.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_cmdline.o: normal/cmdline.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1511,7 +1511,7 @@ CLEANFILES += cmd-cmdline.lst
 COMMANDFILES += cmd-cmdline.lst
 
 cmd-cmdline.lst: normal/cmdline.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_command.o: normal/command.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1525,7 +1525,7 @@ CLEANFILES += cmd-command.lst
 COMMANDFILES += cmd-command.lst
 
 cmd-command.lst: normal/command.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_context.o: normal/context.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1539,7 +1539,7 @@ CLEANFILES += cmd-context.lst
 COMMANDFILES += cmd-context.lst
 
 cmd-context.lst: normal/context.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_main.o: normal/main.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1553,7 +1553,7 @@ CLEANFILES += cmd-main.lst
 COMMANDFILES += cmd-main.lst
 
 cmd-main.lst: normal/main.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_menu.o: normal/menu.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1567,7 +1567,7 @@ CLEANFILES += cmd-menu.lst
 COMMANDFILES += cmd-menu.lst
 
 cmd-menu.lst: normal/menu.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_menu_entry.o: normal/menu_entry.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1581,7 +1581,7 @@ CLEANFILES += cmd-menu_entry.lst
 COMMANDFILES += cmd-menu_entry.lst
 
 cmd-menu_entry.lst: normal/menu_entry.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod-normal_i386_setjmp.o: normal/i386/setjmp.S
 	$(CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -c -o $@ $<
@@ -1595,7 +1595,7 @@ CLEANFILES += cmd-setjmp.lst
 COMMANDFILES += cmd-setjmp.lst
 
 cmd-setjmp.lst: normal/i386/setjmp.S gencmdlist.sh
-	set -e; 	  $(CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
@@ -1641,7 +1641,7 @@ CLEANFILES += cmd-hello.lst
 COMMANDFILES += cmd-hello.lst
 
 cmd-hello.lst: hello/hello.c gencmdlist.sh
-	set -e; 	  $(CC) -Ihello -I$(srcdir)/hello $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hello.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ihello -I$(srcdir)/hello $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hello > $@ || (rm -f $@; exit 1)
 
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1686,7 +1686,7 @@ CLEANFILES += cmd-boot.lst
 COMMANDFILES += cmd-boot.lst
 
 cmd-boot.lst: commands/boot.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh boot.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh boot > $@ || (rm -f $@; exit 1)
 
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1731,7 +1731,7 @@ CLEANFILES += cmd-terminal.lst
 COMMANDFILES += cmd-terminal.lst
 
 cmd-terminal.lst: commands/terminal.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminal.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminal > $@ || (rm -f $@; exit 1)
 
 terminal_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1776,7 +1776,7 @@ CLEANFILES += cmd-ls.lst
 COMMANDFILES += cmd-ls.lst
 
 cmd-ls.lst: commands/ls.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ls.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ls > $@ || (rm -f $@; exit 1)
 
 ls_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1821,7 +1821,7 @@ CLEANFILES += cmd-cmp.lst
 COMMANDFILES += cmd-cmp.lst
 
 cmd-cmp.lst: commands/cmp.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cmp.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cmp > $@ || (rm -f $@; exit 1)
 
 cmp_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1866,7 +1866,7 @@ CLEANFILES += cmd-cat.lst
 COMMANDFILES += cmd-cat.lst
 
 cmd-cat.lst: commands/cat.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cat.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cat > $@ || (rm -f $@; exit 1)
 
 cat_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1911,7 +1911,7 @@ CLEANFILES += cmd-help.lst
 COMMANDFILES += cmd-help.lst
 
 cmd-help.lst: commands/help.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh help.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh help > $@ || (rm -f $@; exit 1)
 
 help_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -1956,7 +1956,7 @@ CLEANFILES += cmd-reboot.lst
 COMMANDFILES += cmd-reboot.lst
 
 cmd-reboot.lst: commands/i386/pc/reboot.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
 
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2001,7 +2001,7 @@ CLEANFILES += cmd-halt.lst
 COMMANDFILES += cmd-halt.lst
 
 cmd-halt.lst: commands/i386/pc/halt.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
 
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2046,7 +2046,7 @@ CLEANFILES += cmd-vga.lst
 COMMANDFILES += cmd-vga.lst
 
 cmd-vga.lst: term/i386/pc/vga.c gencmdlist.sh
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga > $@ || (rm -f $@; exit 1)
 
 vga_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2091,7 +2091,7 @@ CLEANFILES += cmd-manager.lst
 COMMANDFILES += cmd-manager.lst
 
 cmd-manager.lst: font/manager.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifont -I$(srcdir)/font $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifont -I$(srcdir)/font $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
 
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2136,7 +2136,7 @@ CLEANFILES += cmd-multiboot.lst
 COMMANDFILES += cmd-multiboot.lst
 
 cmd-multiboot.lst: loader/i386/pc/multiboot.c gencmdlist.sh
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
 _multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2181,7 +2181,7 @@ CLEANFILES += cmd-multiboot_normal.lst
 COMMANDFILES += cmd-multiboot_normal.lst
 
 cmd-multiboot_normal.lst: loader/i386/pc/multiboot_normal.c gencmdlist.sh
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh multiboot.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh multiboot > $@ || (rm -f $@; exit 1)
 
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2226,7 +2226,7 @@ CLEANFILES += cmd-amiga.lst
 COMMANDFILES += cmd-amiga.lst
 
 cmd-amiga.lst: partmap/amiga.c gencmdlist.sh
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh amiga.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh amiga > $@ || (rm -f $@; exit 1)
 
 amiga_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2271,7 +2271,7 @@ CLEANFILES += cmd-apple.lst
 COMMANDFILES += cmd-apple.lst
 
 cmd-apple.lst: partmap/apple.c gencmdlist.sh
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh apple.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh apple > $@ || (rm -f $@; exit 1)
 
 apple_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2316,7 +2316,7 @@ CLEANFILES += cmd-pc.lst
 COMMANDFILES += cmd-pc.lst
 
 cmd-pc.lst: partmap/pc.c gencmdlist.sh
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pc.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pc > $@ || (rm -f $@; exit 1)
 
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2361,7 +2361,7 @@ CLEANFILES += cmd-sun.lst
 COMMANDFILES += cmd-sun.lst
 
 cmd-sun.lst: partmap/sun.c gencmdlist.sh
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sun.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sun > $@ || (rm -f $@; exit 1)
 
 sun_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2406,7 +2406,7 @@ CLEANFILES += cmd-loopback.lst
 COMMANDFILES += cmd-loopback.lst
 
 cmd-loopback.lst: disk/loopback.c gencmdlist.sh
-	set -e; 	  $(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loopback.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loopback > $@ || (rm -f $@; exit 1)
 
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2451,7 +2451,7 @@ CLEANFILES += cmd-default.lst
 COMMANDFILES += cmd-default.lst
 
 cmd-default.lst: commands/default.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh default.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh default > $@ || (rm -f $@; exit 1)
 
 default_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2496,7 +2496,7 @@ CLEANFILES += cmd-timeout.lst
 COMMANDFILES += cmd-timeout.lst
 
 cmd-timeout.lst: commands/timeout.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh timeout.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh timeout > $@ || (rm -f $@; exit 1)
 
 timeout_mod_CFLAGS = $(COMMON_CFLAGS)
 
@@ -2541,7 +2541,7 @@ CLEANFILES += cmd-configfile.lst
 COMMANDFILES += cmd-configfile.lst
 
 cmd-configfile.lst: commands/configfile.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh configfile.mod > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh configfile > $@ || (rm -f $@; exit 1)
 
 configfile_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst command.lst
