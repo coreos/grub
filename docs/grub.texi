@@ -2859,9 +2859,9 @@ it being the same for later calls into the back-end code!
 @item filemax
 Should be the length of the file.
 
-@item debug_fs_func
-Should be set to the value of @samp{debug_fs} @emph{only} during reading
-of data for the file, not any other fs data, inodes, FAT tables,
+@item disk_read_func
+Should be set to the value of @samp{disk_read_hook} @emph{only} during
+reading of data for the file, not any other fs data, inodes, FAT tables,
 whatever, then set to @code{NULL} at all other times (it will be
 @code{NULL} by default). If this isn't done corrently, then the
 @command{testload} and @command{install} commands won't work

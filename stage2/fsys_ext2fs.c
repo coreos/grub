@@ -431,14 +431,14 @@ ext2fs_read (char *buf, int len)
 	size = len;
 
 #ifndef STAGE1_5
-      debug_fs_func = debug_fs;
+      disk_read_func = disk_read_hook;
 #endif /* STAGE1_5 */
 
       devread (map * (EXT2_BLOCK_SIZE (SUPERBLOCK) / DEV_BSIZE),
 	       offset, size, buf);
 
 #ifndef STAGE1_5
-      debug_fs_func = NULL;
+      disk_read_func = NULL;
 #endif /* STAGE1_5 */
 
       buf += size;

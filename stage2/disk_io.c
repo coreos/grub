@@ -26,8 +26,8 @@
 
 #ifndef STAGE1_5
 /* instrumentation variables */
-void (*debug_fs) (int) = NULL;
-void (*debug_fs_func) (int) = NULL;
+void (*disk_read_hook) (int) = NULL;
+void (*disk_read_func) (int) = NULL;
 
 int print_possibilities;
 
@@ -176,13 +176,13 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
       /*
        *  Instrumentation to tell which sectors were read and used.
        */
-      if (debug_fs && debug_fs_func)
+      if (disk_read_hook && disk_read_func)
 	{
 	  int sector_end = sector + ((num_sect < slen) ? num_sect : slen);
 	  int sector_num = sector;
 
 	  while (sector_num < sector_end)
-	    (*debug_fs_func) (sector_num++);
+	    (*disk_read_func) (sector_num++);
 	}
 #endif /* STAGE1_5 */
 
@@ -225,7 +225,7 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
     }
 
 #if !defined(STAGE1_5)
-  if (debug_fs && debug)
+  if (disk_read_hook && debug)
     printf ("<%d, %d, %d>", sector, byte_offset, byte_len);
 #endif /* !STAGE1_5 */
 
@@ -1360,7 +1360,7 @@ grub_read (char *buf, int len)
 	    size = len;
 
 #ifndef STAGE1_5
-	  debug_fs_func = debug_fs;
+	  disk_read_func = disk_read_hook;
 #endif /* STAGE1_5 */
 
 	  /* read current block and put it in the right place in memory */
@@ -1368,7 +1368,7 @@ grub_read (char *buf, int len)
 		   off, size, buf);
 
 #ifndef STAGE1_5
-	  debug_fs_func = NULL;
+	  disk_read_func = NULL;
 #endif /* STAGE1_5 */
 
 	  len -= size;

@@ -70,7 +70,7 @@ init_config (void)
 
 /* Print which sector is read when loading a file.  */
 static void
-debug_fs_print_func (int sector)
+disk_read_print_func (int sector)
 {
   grub_printf ("[%d]", sector);
 }
@@ -411,14 +411,14 @@ static struct builtin builtin_fallback =
 static int
 fstest_func (char *arg, int flags)
 {
-  if (debug_fs)
+  if (disk_read_hook)
     {
-      debug_fs = NULL;
+      disk_read_hook = NULL;
       printf (" Filesystem tracing is now off\n");
     }
   else
     {
-      debug_fs = debug_fs_print_func;
+      disk_read_hook = disk_read_print_func;
       printf (" Filesystem tracing is now on\n");
     }
 
@@ -727,11 +727,20 @@ install_func (char *arg, int flags)
   int write_stage2_sect = 0;
   int stage2_sect;
   char *ptr;
-  int installaddr, installlist, installsect;
+  int installaddr, installlist;
 
+  /* Save the first sector of Stage2 in STAGE2_SECT.  */
+  static void disk_read_savesect_func (int sector)
+    {
+      if (debug)
+	printf ("[%d]", sector);
+
+      stage2_sect = sector;
+    }
+  
   /* Write SECTOR to INSTALLLIST, and update INSTALLADDR and
      INSTALLSECT.  */
-  static void debug_fs_blocklist_func (int sector)
+  static void disk_read_blocklist_func (int sector)
     {
       if (debug)
 	printf("[%d]", sector);
@@ -752,7 +761,6 @@ install_func (char *arg, int flags)
 	}
 
       *((unsigned short *) installlist) += 1;
-      installsect = sector;
       installaddr += 512;
     }
 
@@ -895,8 +903,12 @@ install_func (char *arg, int flags)
   installlist = BOOTSEC_LOCATION + STAGE1_FIRSTLIST + 4;
 
   /* Read the first sector of Stage 2.  */
+  disk_read_hook = disk_read_savesect_func;
   if (! grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) == SECTOR_SIZE)
-    return 1;
+    {
+      disk_read_hook = 0;
+      return 1;
+    }
 
   /* Check for the version of Stage 2.  */
   if (*((short *) (SCRATCHADDR + STAGE2_VER_MAJ_OFFS)) != COMPAT_VERSION)
@@ -921,8 +933,6 @@ install_func (char *arg, int flags)
   *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
     = installaddr;
   
-  stage2_sect = installsect;
-
   if (*ptr == 'p')
     {
       write_stage2_sect = 1;
@@ -945,30 +955,35 @@ install_func (char *arg, int flags)
 
   /* Read the whole of Stage 2.  */
   filepos = 0;
-  debug_fs = debug_fs_blocklist_func;
+  disk_read_hook = disk_read_blocklist_func;
   if (! grub_read ((char *) RAW_ADDR (0x100000), -1))
     {
-      debug_fs = 0;
+      disk_read_hook = 0;
       return 1;
     }
 
   /* Clear the cache.  */
   buf_track = -1;
 
-  if (biosdisk (BIOSDISK_WRITE,
-		dest_drive, &dest_geom,
-		dest_sector, 1, (BOOTSEC_LOCATION >> 4))
-      || (write_stage2_sect
-	  && biosdisk (BIOSDISK_WRITE,
-		       current_drive, &buf_geom,
-		       stage2_sect, 1, SCRATCHSEG)))
+  /* Write the modified first sector of Stage2 to the disk.  */
+  if (write_stage2_sect
+      && biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+		   stage2_sect, 1, SCRATCHSEG))
     {
       errnum = ERR_WRITE;
-      debug_fs = 0;
+      disk_read_hook = 0;
+      return 1;
+    }
+  
+  if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
+		dest_sector, 1, (BOOTSEC_LOCATION >> 4)))
+    {
+      errnum = ERR_WRITE;
+      disk_read_hook = 0;
       return 1;
     }
 
-  debug_fs = 0;
+  disk_read_hook = 0;
 
 #ifndef NO_DECOMPRESSION
   no_decompression = 0;
@@ -1320,7 +1335,7 @@ testload_func (char *arg, int flags)
   if (! grub_open (arg))
     return 1;
 
-  debug_fs = debug_fs_print_func;
+  disk_read_hook = disk_read_print_func;
 
   /* Perform filesystem test on the specified file.  */
   /* Read whole file first. */
@@ -1376,7 +1391,7 @@ testload_func (char *arg, int flags)
       break;
 
   grub_printf ("Max is 0x10ac0: i=0x%x, filepos=0x%x\n", i, filepos);
-  debug_fs = 0;
+  disk_read_hook = 0;
   return 0;
 }
 

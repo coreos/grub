@@ -1,3 +1,40 @@
+1999-09-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (debug_fs_print_func): Renamed to ...
+	(disk_read_print_func): ... this.
+	(fstest_func): Use DISK_READ_HOOK instead of DEBUG_FS.
+	(install_func): Rename debug_fs_savesect_func to
+	disk_read_savesect_func.
+	Rename debug_fs_blocklist_func to disk_read_blocklist_func.
+	Use DISK_READ_HOOK instead of DEBUG_FS.
+	(testload_func): Use DISK_READ_HOOK instead of DEBUG_FS.
+	* stage2/disk_io.c [!STAGE1_5] (debug_fs): Renamed to ...
+	[!STAGE1_5] (disk_read_hook): ... this.
+	[!STAGE1_5] (debug_fs_func): Renamed to ...
+	[!STAGE1_5] (disk_read_func): ... this.
+	(rawread) [!STAGE1_5]: Use DISK_READ_HOOK and DISK_READ_FUNC
+	instead	of DEBUG_FS and DEBUG_FS_FUNC.
+	(grub_read) [!STAGE1_5]: Likewise.
+	(devread) [!STAGE1_5]: Use DISK_READ_HOOK instead of DEBUG_FS.
+	* stage2/fsys_ext2fs.c (ext2fs_read) [!STAGE1_5]: Use
+	DISK_READ_HOOK and DISK_READ_FUNC instead of DEBUG_FS and
+	DEBUG_FS_FUNC.
+	* stage2/fsys_ffs.c (ffs_read) [!STAGE1_5]: Likewise.
+	* stage2/fsys_minix.c (minix_read) [!STAGE1_5]: Likewise.
+	* stage2/shared.h [!STAGE1_5] (debug_fs): Renamed to ...
+	[!STAGE1_5] (disk_read_hook): ... this.
+	[!STAGE1_5] (debug_fs_func): Renamed to ...
+	[!STAGE1_5] (disk_read_func): ... this.
+	* docs/grub.texi: Likewise, replace debug_fs and debug_fs_func
+	with disk_read_hook and disk_read_func, respectively.
+	
+1999-09-23  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/builtins.c (install_func): New local function,
+	debug_fs_savesect_func. Use debug_fs_savesect_func to determine
+	the first sector of Stage2. Write Stage 1 after patching Stage
+	2.
+	
 1999-09-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_ASM_USCORE): Do not define HAVE_ASM_USCORE
@@ -25,7 +62,7 @@
 	
 1999-09-20  Edward Killips  <ekillips@triton.net>
 
-	* stage2/disk_io.c (set_partition_hidden_flag): Set/cleat the
+	* stage2/disk_io.c (set_partition_hidden_flag): Set/clear the
 	hidden flag, whether the hidden flag is set or not.
 	
 1999-09-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>

@@ -401,8 +401,8 @@ extern int compressed_file;
 
 #ifndef STAGE1_5
 /* instrumentation variables */
-extern void (*debug_fs) (int);
-extern void (*debug_fs_func) (int);
+extern void (*disk_read_hook) (int);
+extern void (*disk_read_func) (int);
 /* The flag for debug mode.  */
 extern int debug;
 /* Color settings */
