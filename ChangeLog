@@ -1,5 +1,25 @@
 1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	The function ungetch is simulated so that the user can use a
+	buggy curses.
+	
+	* grub/asmstub.c [HAVE_LIBCURSES] (save_char): New variable.
+	(getkey) [HAVE_LIBCURSES]: If SAVE_CHAR is not ERR, return
+	SAVE_CHAR and clear it.
+	(checkkey) [HAVE_LIBCURSES]: If SAVE_CHAR is not ERR, return
+	SAVE_CHAR. If C is not ERR, set SAVE_CHAR to C.
+	
+1999-07-14  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/char_io.c (get_cmdline) [GRUB_UTIL]: Recognize
+	backspace when ncurses fails to do this.
+
+	* grub/asmstub.c (grub_stage2) [HAVE_LIBCURSES]: Call wtimeout
+	instead of nodelay.
+	(getkey) [HAVE_LIBCURSES]: Likewise.
+	
+1999-07-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage1/stage1_lba.S (probe_values): New variable. This is not
 	used actually, but prevents `install' command from failing
 	bogusly.

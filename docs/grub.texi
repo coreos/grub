@@ -1081,7 +1081,7 @@ which are unknown.
 @item 10 : Unsupported Multiboot features requested
 This error is returned when the Multiboot features word in the Multiboot
 header requires a feature that is not recognized. The point of this is
-that the kernel requires special handling which GRUB is likely usable to
+that the kernel requires special handling which GRUB is likely unable to
 provide.
 
 @item 11 : Device string unrecognizable

@@ -220,7 +220,7 @@ grub_stage2 (void)
       nonl ();
       scrollok (stdscr, TRUE);
       keypad (stdscr, TRUE);
-      nodelay (stdscr, TRUE);
+      wtimeout (stdscr, 100);
     }
 #endif
 
@@ -443,6 +443,13 @@ grub_putchar (int c)
 }
 
 
+/* The store for ungetch simulation. This is necessary, because
+   ncurses-1.9.9g is still used in the world and its ungetch is
+   completely broken.  */
+#ifdef HAVE_LIBCURSES
+static int save_char = ERR;
+#endif
+
 /* returns packed BIOS/ASCII code */
 int
 getkey (void)
@@ -451,9 +458,18 @@ getkey (void)
   if (use_curses)
     {
       int c;
-      nodelay (stdscr, FALSE);
+
+      /* If checkkey has already got a character, then return it.  */
+      if (save_char != ERR)
+	{
+	  c = save_char;
+	  save_char = ERR;
+	  return c;
+	}
+      
+      wtimeout (stdscr, -1);
       c = getch ();
-      nodelay (stdscr, TRUE);
+      wtimeout (stdscr, 100);
       return c;
     }
 #endif
@@ -470,10 +486,16 @@ checkkey (void)
   if (use_curses)
     {
       int c;
+
+      /* Check for SAVE_CHAR. This should not be true, because this
+	 means checkkey is called twice continuously.  */
+      if (save_char != ERR)
+	return save_char;
+      
       c = getch ();
       /* If C is not ERR, then put it back in the input queue.  */
       if (c != ERR)
-	ungetch (c);	/* FIXME: ncurses-1.9.9g ungetch is buggy.  */
+	save_char = c;
       return c;
     }
 #endif

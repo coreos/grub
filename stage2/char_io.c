@@ -326,6 +326,9 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 	  lpos ++;
 	  /* fallthrough is on purpose! */
 	case 8:		/* C-h backspace */
+#ifdef GRUB_UTIL
+	case 127:	/* also backspace */
+#endif
 	  if (lpos > 0)
 	    {
 	      int i;

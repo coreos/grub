@@ -21,12 +21,6 @@ you use the following utilities:
 and 2.9.1.0.x, and we support only 2.9.1.0.x. It is available from
 ftp.XX.kernel.org (XX is the country code, such as `jp').
 
-* ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
-
-  Ncurses is used for /sbin/grub, so it may not be needed if you don't
-use /sbin/grub. Ncurses 4.0 is available from many ftp sites. (Should we
-use terminfo or termcap directly?)
-
 
 These below are required when you develop GRUB or when you get it from
 the CVS:
@@ -35,17 +29,17 @@ the CVS:
 
   Autoconf 2.13 has a bug that can't handle any macro with arguments,
 so you need to get the later version from the CVS. See
-http://sourceware.cygnus.com/autoconf for more information.
+http://sourceware.cygnus.com/autoconf/ for more information.
 
 * automake 19990620 and later
 
   The new feature, per-executable flags, is requred, so you need to get
 an unreleased version from the CVS. See
-http://sourceware.cygnus.com/automake for more information.
+http://sourceware.cygnus.com/automake/ for more information.
 
 * texinfo 3.12h and later
 
-  The latest snapshot of Texinfo is available from alpha.gnu.org.
+  The latest snapshot of Texinfo is available from ftp.texinfo.org.
 
 
 See the file INSTALL for instructions on how to build and install the
