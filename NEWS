@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 1.0 - XXXX-XX-XX:
+New in 0.90 - XXXX-XX-XX:
 * The command "setkey" resets key mappings, when no argument is
   specified.
 * Linux devfs support is added.
