@@ -173,7 +173,13 @@ get_diskinfo (int drive, struct geometry *geometry)
 	      /* FIXME: when the 2TB limit becomes critical, we must
 		 change the type of TOTAL_SECTORS to unsigned long
 		 long.  */
-	      total_sectors = drp.total_sectors & ~0L;
+	      if (drp.total_sectors)
+		total_sectors = drp.total_sectors & ~0L;
+	      else
+		/* Some buggy BIOSes doesn't return the total sectors
+		   correctly but returns zero. So if it is zero, compute
+		   it by C/H/S returned by the LBA BIOS call.  */
+		total_sectors = drp.cylinders * drp.heads * drp.sectors;
 	    }
 	}
 

@@ -1,3 +1,10 @@
+2000-11-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/bios.c (get_diskinfo): If BIOS supports LBA but doesn't
+	return the correct total number of sectors, compute this by
+	C/H/S returned by get_diskinfo_int13_extensions instead of
+	get_diskinfo_standard.
+	
 2000-11-09  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/disk_io.c (make_saved_active): Set ERRNUM to
