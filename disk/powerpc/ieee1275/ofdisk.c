@@ -22,10 +22,13 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/machine/ieee1275.h>
+#include <grub/machine/init.h>
 
 static int
 grub_ofdisk_iterate (int (*hook) (const char *name))
 {
+  auto int dev_iterate (struct grub_ieee1275_devalias *alias);
+  
   int dev_iterate (struct grub_ieee1275_devalias *alias)
     {
       if (! grub_strcmp (alias->type, "block"))

@@ -29,10 +29,8 @@
 #include <grub/setjmp.h>
 #include <grub/env.h>
 #include <grub/misc.h>
-
-void grub_ofdisk_init (void);
-void grub_console_init (void);
-
+#include <grub/machine/init.h>
+#include <grub/machine/time.h>
 
 /* XXX: Modules are not yet supported.  */
 grub_addr_t grub_end_addr = -1;
@@ -70,17 +68,8 @@ grub_machine_init (void)
     }
   grub_mm_init_region ((void *) heap_start, heap_len);
 
-  /* XXX: Loadable modules are not supported.  */
   grub_env_set ("prefix", "");
 
-  grub_ext2_init ();
-  grub_normal_init ();
-  grub_boot_init ();
-  grub_linux_init ();
-  grub_linux_normal_init ();
-  grub_pc_partition_map_init ();
-  grub_amiga_partition_map_init ();
-  grub_apple_partition_map_init ();
   grub_ofdisk_init ();
 }
 

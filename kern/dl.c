@@ -1,7 +1,7 @@
 /* dl.c - loadable module support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <grub/symbol.h>
 #include <grub/file.h>
 #include <grub/env.h>
+#include <grub/cache.h>
 
 #if GRUB_HOST_SIZEOF_VOID_P == 4
 
@@ -479,6 +480,15 @@ grub_dl_unref (grub_dl_t mod)
   return --mod->ref_count;
 }
 
+static void
+grub_dl_flush_cache (grub_dl_t mod)
+{
+  grub_dl_segment_t seg;
+  
+  for (seg = mod->segment; seg; seg = seg->next)
+    grub_arch_sync_caches (seg->addr, seg->size);
+}
+
 /* Load a module from core memory.  */
 grub_dl_t
 grub_dl_load_core (void *addr, grub_size_t size)
@@ -515,6 +525,8 @@ grub_dl_load_core (void *addr, grub_size_t size)
       return 0;
     }
 
+  grub_dl_flush_cache (mod);
+  
   grub_dl_call_init (mod);
   
   if (grub_dl_add (mod))

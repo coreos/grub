@@ -1,6 +1,6 @@
 #! /usr/bin/ruby -w
 #
-# Copyright (C) 2002,2003  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
 #
 # This genmk.rb is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -205,9 +205,55 @@ MOSTLYCLEANFILES += #{deps_str}
   end
 end
 
+class Program
+  def initialize(dir, name)
+    @dir = dir
+    @name = name
+  end
+  attr_reader :dir, :name
+
+  def rule(sources)
+    prefix = @name.to_var
+    objs = sources.collect do |src|
+      raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
+      prefix + '-' + src.to_obj
+    end
+    objs_str = objs.join(' ');
+    deps = objs.collect {|obj| obj.suffix('d')}
+    deps_str = deps.join(' ');
+
+    "CLEANFILES += #{@name} #{objs_str}
+MOSTLYCLEANFILES += #{deps_str}
+
+#{@name}: #{objs_str}
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(#{prefix}_LDFLAGS)
+
+" + objs.collect_with_index do |obj, i|
+      src = sources[i]
+      fake_obj = File.basename(src).suffix('o')
+      dep = deps[i]
+      dir = File.dirname(src)
+
+      "#{obj}: #{src}
+	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -c -o $@ $<
+
+#{dep}: #{src}
+	set -e; \
+	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -M $< \
+	  | sed 's,#{Regexp.quote(fake_obj)}[ :]*,#{obj} $@ : ,g' > $@; \
+	  [ -s $@ ] || rm -f $@
+
+-include #{dep}
+
+"
+    end.join('')
+  end
+end
+
 images = []
 utils = []
 pmodules = []
+programs = []
 
 cont = false
 s = nil
@@ -245,6 +291,11 @@ while l = gets
 	    Utility.new(prefix, util)
 	  end
 
+	when 'PROGRAMS'
+	  programs += args.split(/\s+/).collect do |util|
+	    Program.new(prefix, util)
+	  end
+
 	when 'SOURCES'
 	  if img = images.detect() {|i| i.name.to_var == prefix}
 	    print img.rule(args.split(/\s+/))
@@ -252,6 +303,8 @@ while l = gets
 	    print pmod.rule(args.split(/\s+/))
 	  elsif util = utils.detect() {|u| u.name.to_var == prefix}
 	    print util.rule(args.split(/\s+/))
+	  elsif program = programs.detect() {|u| u.name.to_var == prefix}
+	    print program.rule(args.split(/\s+/))
 	  end
 	end
       end

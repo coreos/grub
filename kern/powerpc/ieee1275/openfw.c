@@ -144,7 +144,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 }
 
 /* Call the "map" method of /chosen/mmu.  */
-int
+static int
 grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
 		   grub_uint8_t mode)
 {

@@ -1,7 +1,7 @@
-/* loader.h - OS loaders */
+/* cache.S - Flush the processor cache for a specific region.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,19 +18,28 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_LOADER_HEADER
-#define GRUB_LOADER_HEADER	1
+#define CACHE_LINE_BYTES 32
 
-#include <grub/file.h>
-#include <grub/symbol.h>
-#include <grub/err.h>
-#include <grub/types.h>
+	         .text
 
-int EXPORT_FUNC(grub_loader_is_loaded) (void);
-void EXPORT_FUNC(grub_loader_set) (grub_err_t (*boot) (void),
-				   grub_err_t (*unload) (void));
-void EXPORT_FUNC(grub_loader_unset) (void);
+	         .align 2
+	         .globl grub_arch_sync_caches
+grub_arch_sync_caches:
+	/* Force the dcache lines to memory.  */
+	li 5, 0
+1:	dcbst 5, 3
+	addi 5, 5, CACHE_LINE_BYTES
+	cmpw 5, 4
+	blt 1b
+	sync            /* Force all dcbsts to complete.  */
 
-grub_err_t EXPORT_FUNC(grub_loader_boot) (void);
-
-#endif /* ! GRUB_LOADER_HEADER */
+	/* Invalidate the icache lines.  */
+	li 5, 0
+1:	icbi 5, 3
+	addi 5, 5, CACHE_LINE_BYTES
+	cmpw 5, 4
+	blt 1b
+	sync            /* Force all icbis to complete.  */
+	isync           /* Discard partially executed instructions that were
+		           loaded from the invalid icache.  */
+	blr

@@ -1,3 +1,69 @@
+2004-12-27  Marco Gerards  <metgerards@student.han.nl>
+
+	* genmk.rb: Handle the `Program' class in the main loop.  Written
+	by Johan Rydberg <jrydberg@gnu.org>.
+	(Program): New class.
+	(programs): New variable.
+	* boot/powerpc/ieee1275/cmain.c: Include <grub/machine/ieee1275.h>
+	instead of "grub/machine/ieee1275.h".  Include <grub/kernel.h>
+	instead of "grub/kernel.h".  Include <grub/machine/init.h>.
+	(help_arch): Function removed.
+	* conf/powerpc-ieee1275.rmk (grubof_HEADERS): Add
+	`powerpc/libgcc.h' and `loader.h'.
+	(pkgdata_PROGRAMS): New variable.
+	(sbin_UTILITIES): Variable removed.
+	(grub_emu_SOURCES): Added kern/powerpc/cache.S.
+	(grubof_SOURCES): Variable re-defined so it only includes the
+	core functionality.
+	(grubof_CFLAGS): Remove `-DGRUBOF'.
+	(pkgdata_MODULES, fshelp_mod_SOURCES, fshelp_mod_CFLAGS,
+	(fat_mod_SOURCES, fat_mod_CFLAGS, ext2_mod_SOURCES)
+	(ext2_mod_CFLAGS, ufs_mod_SOURCES, ufs_mod_CFLAGS)
+	(minix_mod_SOURCES, minix_mod_CFLAGS, hfs_mod_SOURCES)
+	(hfs_mod_CFLAGS, jfs_mod_SOURCES, jfs_mod_CFLAGS)
+	(iso9660_mod_SOURCES, iso9660_mod_CFLAGS, _linux_mod_SOURCES)
+	(_linux_mod_CFLAGS, linux_mod_SOURCES, linux_mod_CFLAGS)
+	(normal_mod_SOURCES, normal_mod_CFLAGS, normal_mod_ASFLAGS)
+	(hello_mod_SOURCES, hello_mod_CFLAGS, boot_mod_SOURCES)
+	(boot_mod_CFLAGS, terminal_mod_SOURCES, terminal_mod_CFLAGS)
+	(ls_mod_SOURCES, ls_mod_CFLAGS, cmp_mod_SOURCES, cmp_mod_CFLAGS)
+	(cat_mod_SOURCES, cat_mod_CFLAGS, font_mod_SOURCES)
+	(font_mod_CFLAGS, amiga_mod_SOURCES, amiga_mod_CFLAGS)
+	(apple_mod_SOURCES, apple_mod_CFLAGS, pc_mod_SOURCES)
+	(pc_mod_CFLAGS): New variables.
+	* disk/powerpc/ieee1275/ofdisk.c: Include <grub/machine/init.h>.
+	(grub_ofdisk_iterate): Add a prototype for `dev_iterate'.
+	* include/grub/dl.h (grub_arch_dl_sync_caches): New prototype.
+	* include/grub/loader.h (grub_os_area_addr, grub_os_area_size):
+	Moved from here...
+	* include/grub/i386/pc/init.h (grub_os_area_addr)
+	(rub_os_area_size): ... to here.
+	* include/grub/powerpc/ieee1275/ieee1275.h
+	(grub_ieee1275_entry_fn): Export symbol.
+	* include/grub/powerpc/ieee1275/init.h: New file.
+	* include/grub/powerpc/libgcc.h: Likewise.
+	* include/grub/cache.h: Likewise.
+	* kern/powerpc/cache.S: Likewise.  Written by Hollis Blanchard
+	<hollis@penguinppc.org>.
+	* kern/dl.c: Include <grub/cache.h>.
+	(grub_dl_flush_cache): New function.
+	(grub_dl_load_core): Call `grub_dl_flush_cache' to flush the cache
+	for this module.
+	* kern/powerpc/ieee1275/init.c (grub_ofdisk_init)
+	(grub_console_init): Removed prototypes.
+	(grub_machine_init): Don't initialize the modules anymore.
+	* kern/powerpc/ieee1275/openfw.c (grub_map): Make the function
+	static.
+	* include/grub/powerpc/types.h (GRUB_HOST_WORDS_LITTLEENDIAN):
+	Macro undef removed.
+	(GRUB_HOST_WORDS_BIGENDIAN): New macro.
+	* kern/powerpc/dl.c (grub_arch_dl_relocate_symbols): Add
+	relocation `R_PPC_REL32'.  Return an error when the relocation is
+	unknown.
+	* Makefile.in (DATA): Add `$(pkgdata_PROGRAMS)'.
+	* kern/i386/pc/init.c (grub_arch_sync_caches): New function.
+	* util/misc.c (grub_arch_sync_caches): Likewise.
+
 2004-12-19  Marco Gerards  <metgerards@student.han.nl>
 
 	* conf/powerpc-ieee1275.rmk (MOSTLYCLEANFILES): Remove

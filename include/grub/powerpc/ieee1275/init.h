@@ -1,8 +1,9 @@
+/* ieee1275.h - Access the Open Firmware client interface.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004  Free Software Foundation, Inc.
  *
- *  GRUB is free software; you can redistribute it and/or modify
+ *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,21 +14,15 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with GRUB; if not, write to the Free Software
+ *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_TYPES_CPU_HEADER
-#define GRUB_TYPES_CPU_HEADER	1
+#ifndef GRUB_INIT_MACHINE_HEADER
+#define GRUB_INIT_MACHINE_HEADER	1
 
-/* The size of void *.  */
-#define GRUB_HOST_SIZEOF_VOID_P	4
+void cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5);
+void grub_ofdisk_init (void);
+void grub_console_init (void);
 
-/* The size of long.  */
-#define GRUB_HOST_SIZEOF_LONG	4
-
-/* powerpc is big-endian.  */
-#define GRUB_HOST_WORDS_BIGENDIAN	1
-
-
-#endif /* ! GRUB_TYPES_CPU_HEADER */
+#endif /* ! GRUB_INIT_MACHINE_HEADER */

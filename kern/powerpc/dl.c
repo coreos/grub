@@ -135,6 +135,15 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		  case R_PPC_ADDR32:
 		    *addr = value;
 		    break;
+		    
+		  case R_PPC_REL32:
+		    *addr = value - (Elf32_Word) addr;
+		    break;
+		    
+		  default:
+		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+				       "This relocation (%d) is not implemented yet",
+				       ELF32_R_TYPE (rel->r_info));
 		  }
 	      }
 	  }

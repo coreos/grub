@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,6 +45,12 @@ static int num_regions;
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
 grub_size_t grub_lower_mem, grub_upper_mem;
+
+void 
+grub_arch_sync_caches (void *address __attribute__ ((unused)),
+		       grub_size_t len __attribute__ ((unused)))
+{
+}
 
 static char *
 make_install_device (void)

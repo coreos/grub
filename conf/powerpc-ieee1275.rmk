@@ -11,7 +11,7 @@ DEFSYMFILES += kernel_syms.lst
 
 grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h misc.h mm.h net.h rescue.h symbol.h \
-	term.h types.h machine/biosdisk.h  \
+	term.h types.h machine/biosdisk.h powerpc/libgcc.h loader.h \
 	partition.h pc_partition.h machine/time.h machine/ieee1275.h
 
 grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
@@ -20,8 +20,10 @@ grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
 kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
+# Programs
+pkgdata_PROGRAMS = grubof
+
 # Utilities.
-sbin_UTILITIES = grubof
 bin_UTILITIES = grub-emu
 noinst_UTILITIES = genmoddep
 
@@ -36,23 +38,20 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	normal/arg.c kern/partition.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
 	kern/env.c commands/ls.c		\
-	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
+	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c \
+	kern/powerpc/cache.S
 grub_emu_LDFLAGS = -lncurses
 
 grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
 	boot/powerpc/ieee1275/ieee1275.c kern/main.c kern/device.c \
-	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c fs/fshelp.c \
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \
-	kern/powerpc/ieee1275/openfw.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c \
-	fs/jfs.c normal/cmdline.c normal/command.c normal/main.c normal/menu.c \
-	disk/powerpc/ieee1275/ofdisk.c partmap/amiga.c partmap/pc.c \
-	partmap/apple.c kern/partition.c \
-	kern/env.c normal/arg.c loader/powerpc/ieee1275/linux.c \
-	loader/powerpc/ieee1275/linux_normal.c commands/boot.c \
-	normal/powerpc/setjmp.S kern/powerpc/dl.c grubof_symlist.c
+	kern/powerpc/ieee1275/openfw.c disk/powerpc/ieee1275/ofdisk.c \
+	kern/partition.c kern/env.c kern/powerpc/dl.c grubof_symlist.c \
+	kern/powerpc/cache.S
 grubof_HEADERS = grub/powerpc/ieee1275/ieee1275.h
-grubof_CFLAGS = $(COMMON_CFLAGS) -DGRUBOF
+grubof_CFLAGS = $(COMMON_CFLAGS)
 grubof_ASFLAGS = $(COMMON_ASFLAGS)
 grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
@@ -60,3 +59,92 @@ grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-N,-S,-Ttext,0x200000,-Bstat
 genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
+pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
+	hfs.mod jfs.mod normal.mod hello.mod font.mod \
+	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod pc.mod
+
+# For fshelp.mod.
+fshelp_mod_SOURCES = fs/fshelp.c
+fshelp_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For fat.mod.
+fat_mod_SOURCES = fs/fat.c
+fat_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ext2.mod.
+ext2_mod_SOURCES = fs/ext2.c
+ext2_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ufs.mod.
+ufs_mod_SOURCES = fs/ufs.c
+ufs_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For minix.mod.
+minix_mod_SOURCES = fs/minix.c
+minix_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For hfs.mod.
+hfs_mod_SOURCES = fs/hfs.c
+hfs_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For jfs.mod.
+jfs_mod_SOURCES = fs/jfs.c
+jfs_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For iso9660.mod.
+iso9660_mod_SOURCES = fs/iso9660.c
+iso9660_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For _linux.mod.
+_linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
+_linux_mod_CFLAGS = $(COMMON_CFLAGS)
+ 
+# For linux.mod.
+linux_mod_SOURCES = loader/powerpc/ieee1275/linux_normal.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For normal.mod.
+normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
+	normal/menu.c normal/arg.c normal/powerpc/setjmp.S
+normal_mod_CFLAGS = $(COMMON_CFLAGS)
+normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+# For hello.mod.
+hello_mod_SOURCES = hello/hello.c
+hello_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For boot.mod.
+boot_mod_SOURCES = commands/boot.c
+boot_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For terminal.mod.
+terminal_mod_SOURCES = commands/terminal.c
+terminal_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ls.mod.
+ls_mod_SOURCES = commands/ls.c
+ls_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For cmp.mod.
+cmp_mod_SOURCES = commands/cmp.c
+cmp_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For cat.mod.
+cat_mod_SOURCES = commands/cat.c
+cat_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For font.mod.
+font_mod_SOURCES = font/manager.c
+font_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For amiga.mod
+amiga_mod_SOURCES = partmap/amiga.c
+amiga_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For apple.mod
+apple_mod_SOURCES = partmap/apple.c
+apple_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For pc.mod
+pc_mod_SOURCES = partmap/pc.c
+pc_mod_CFLAGS = $(COMMON_CFLAGS)

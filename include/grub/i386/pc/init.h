@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,9 @@
 /* FIXME: Should these be declared in memory.h?  */
 extern grub_size_t EXPORT_VAR(grub_lower_mem);
 extern grub_size_t EXPORT_VAR(grub_upper_mem);
+
+extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
+extern grub_size_t EXPORT_VAR(grub_os_area_size);
 
 /* Get the memory size in KB. If EXTENDED is zero, return conventional
    memory, otherwise return extended memory.  */

@@ -1,6 +1,7 @@
+/* cache.h - Flush the processor's cache.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,17 +18,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_TYPES_CPU_HEADER
-#define GRUB_TYPES_CPU_HEADER	1
+#ifndef GRUB_CACHE_H
+#define GRUB_CACHE_H	1
 
-/* The size of void *.  */
-#define GRUB_HOST_SIZEOF_VOID_P	4
+#include <grub/symbol.h>
+#include <grub/types.h>
 
-/* The size of long.  */
-#define GRUB_HOST_SIZEOF_LONG	4
+void EXPORT_FUNC(grub_arch_sync_caches) (void *address, grub_size_t len);
 
-/* powerpc is big-endian.  */
-#define GRUB_HOST_WORDS_BIGENDIAN	1
-
-
-#endif /* ! GRUB_TYPES_CPU_HEADER */
+#endif /* ! GRUB_CACHE_HEADER */

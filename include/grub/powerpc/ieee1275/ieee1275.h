@@ -39,7 +39,7 @@ struct grub_ieee1275_mem_region
   unsigned int size;
 };
 
-extern intptr_t (*grub_ieee1275_entry_fn) (void *);
+extern intptr_t(* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
 
 #ifndef IEEE1275_CALL_ENTRY_FN
 #define IEEE1275_CALL_ENTRY_FN(args) (*grub_ieee1275_entry_fn) (args)

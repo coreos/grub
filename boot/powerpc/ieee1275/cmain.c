@@ -21,8 +21,9 @@
 #include <alloca.h>
 #include <stdint.h>
 
-#include "grub/machine/ieee1275.h"
-#include "grub/kernel.h"
+#include <grub/machine/ieee1275.h>
+#include <grub/kernel.h>
+#include <grub/machine/init.h>
 
 struct module_info
 {
@@ -36,15 +37,6 @@ struct module_info
 intptr_t (*grub_ieee1275_entry_fn) (void *);
 
 grub_uint32_t grub_ieee1275_flags;
-
-
-/* Return a help text for this architecture.  */
-const char *
-help_arch (void)
-{
-  /* No special information.  */
-  return "";
-}
 
 
 /* Setup the argument vector and pass control over to the main
