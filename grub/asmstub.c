@@ -889,17 +889,17 @@ int
 serial_checkkey (void)
 {
   fd_set fds;
-  struct timeval timeout;
+  struct timeval to;
 
   /* Wait only for the serial device.  */
   FD_ZERO (&fds);
   FD_SET (serial_fd, &fds);
 
   /* Set the timeout to 100ms.  */
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 100000;
+  to.tv_sec = 0;
+  to.tv_usec = 100000;
   
-  return select (serial_fd + 1, &fds, 0, 0, &timeout) > 0 ? : -1;
+  return select (serial_fd + 1, &fds, 0, 0, &to) > 0 ? : -1;
 }
 
 /* The serial version of grub_putchar.  */

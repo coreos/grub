@@ -1,3 +1,10 @@
+2000-09-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Alessandro Rubini:
+	* stage2/builtins.c (terminal_func): Rename TIMEOUT to TO, to
+	suppress GCC warnings.
+	* grub/asmstub.c (serial_checkkey): Likewise.
+	
 2000-09-06  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/char_io.c [!STAGE1_5] (auto_fill): New variable.

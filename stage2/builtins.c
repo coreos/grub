@@ -3363,7 +3363,7 @@ static int
 terminal_func (char *arg, int flags)
 {
   int default_terminal = 0;
-  int timeout = -1;
+  int to = -1;
   int dumb = 0;
   int saved_terminal = terminal;
 
@@ -3376,7 +3376,7 @@ terminal_func (char *arg, int flags)
 	{
 	  char *val = arg + sizeof ("--timeout=") - 1;
 	  
-	  if (! safe_parse_maxint (&val, &timeout))
+	  if (! safe_parse_maxint (&val, &to))
 	    return 1;
 	}
       else
@@ -3439,7 +3439,7 @@ terminal_func (char *arg, int flags)
 	;
 
       /* Wait for a key input.  */
-      while (timeout)
+      while (to)
 	{
 	  if ((terminal & TERMINAL_CONSOLE) && console_checkkey () != -1)
 	    {
@@ -3465,8 +3465,8 @@ terminal_func (char *arg, int flags)
 	    {
 	      grub_printf ("Press any key to continue.\n");
 	      time2 = time1;
-	      if (timeout > 0)
-		timeout--;
+	      if (to > 0)
+		to--;
 	    }
 	}
 
