@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -872,6 +872,7 @@ cmain (void)
 	  
 	  /* Get a saved default entry if possible.  */
 	  saved_entryno = 0;
+	  *default_file = 0;
 	  grub_strncat (default_file, config_file, DEFAULT_FILE_BUFLEN);
 	  for (i = grub_strlen(default_file); i >= 0; i--)
 	    if (default_file[i] == '/')

@@ -1,3 +1,8 @@
+2005-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/stage2.c (cmain): Initialize DEFAULT_FILE to an empty
+	string. Reported by NATORI Shin <natori@adm.s.u-tokyo.ac.jp>.
+
 2005-03-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/fsys_fat.c (fat_mount): Ignore the 3rd bit of a media
