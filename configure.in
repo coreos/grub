@@ -495,13 +495,13 @@ AM_CONDITIONAL(DISKLESS_SUPPORT, test "x$enable_diskless" = xyes)
 
 dnl Serial terminal
 AC_ARG_ENABLE(serial,
-  [  --enable-serial         enable serial terminal support])
-AM_CONDITIONAL(SERIAL_SUPPORT, test "x$enable_serial" = xyes)
+  [  --disable-serial        diable serial terminal support])
+AM_CONDITIONAL(SERIAL_SUPPORT, test "x$enable_serial" != xno)
 
 dnl Simulation of the slowness of a serial device.
 AC_ARG_ENABLE(serial-speed-simulation,
   [  --enable-serial-speed-simulation
-                             simulate the slowness of a serial device])
+                          simulate the slowness of a serial device])
 AM_CONDITIONAL(SERIAL_SPEED_SIMULATION,
   test "x$enable_serial_speed_simulation" = xyes)
 

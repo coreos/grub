@@ -300,34 +300,27 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	cl_refresh (1, 0);
       else
 	{
-	  int i;
-	  
 	  xpos -= count;
 
-	  if (! (terminal & TERMINAL_DUMB))
+	  if (terminal & TERMINAL_CONSOLE)
 	    {
-	      if (terminal & TERMINAL_CONSOLE)
-		{
-		  int y = getxy () & 0xFF;
-		  
-		  gotoxy (xpos, y);
-		  return;
-		}
-# ifdef SUPPORT_SERIAL
-	      else if (terminal & TERMINAL_SERIAL)
-		{
-		  /* Ugly optimization.  */
-		  if (count > 4)
-		    {
-		      grub_printf ("\e[%dD", count);
-		      return;
-		    }
-		}
-# endif /* SUPPORT_SERIAL */
+	      int y = getxy () & 0xFF;
+	      
+	      gotoxy (xpos, y);
 	    }
-	  
-	  for (i = 0; i < count; i++)
-	    grub_putchar ('\b');
+# ifdef SUPPORT_SERIAL
+	  else if (! (terminal & TERMINAL_DUMB) && (count > 4))
+	    {
+	      grub_printf ("\e[%dD", count);
+	    }
+	  else
+	    {
+	      int i;
+	      
+	      for (i = 0; i < count; i++)
+		grub_putchar ('\b');
+	    }
+# endif /* SUPPORT_SERIAL */
 	}
     }
 
@@ -341,39 +334,32 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	cl_refresh (1, 0);
       else
 	{
-	  int i;
-	  
 	  xpos += count;
 
-	  if (! (terminal & TERMINAL_DUMB))
+	  if (terminal & TERMINAL_CONSOLE)
 	    {
-	      if (terminal & TERMINAL_CONSOLE)
-		{
-		  int y = getxy () & 0xFF;
-		  
-		  gotoxy (xpos, y);
-		  return;
-		}
+	      int y = getxy () & 0xFF;
+	      
+	      gotoxy (xpos, y);
+	    }
 # ifdef SUPPORT_SERIAL
-	      else if (terminal & TERMINAL_SERIAL)
-		{
-		  /* Ugly optimization.  */
-		  if (count > 4)
-		    {
-		      grub_printf ("\e[%dC", count);
-		      return;
-		    }
-		}
-# endif /* SUPPORT_SERIAL */
-	    }
-	  
-	  for (i = lpos - count; i < lpos; i++)
+	  else if (! (terminal & TERMINAL_DUMB) && (count > 4))
 	    {
-	      if (! echo_char)
-		grub_putchar (buf[i]);
-	      else
-		grub_putchar (echo_char);
+	      grub_printf ("\e[%dC", count);
 	    }
+	  else
+	    {
+	      int i;
+	      
+	      for (i = lpos - count; i < lpos; i++)
+		{
+		  if (! echo_char)
+		    grub_putchar (buf[i]);
+		  else
+		    grub_putchar (echo_char);
+		}
+	    }
+# endif /* SUPPORT_SERIAL */
 	}
     }
 
@@ -472,30 +458,23 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	}
 
       /* Back to XPOS.  */
-      if (! (terminal & TERMINAL_DUMB))
+      if (terminal & TERMINAL_CONSOLE)
 	{
-	  if (terminal & TERMINAL_CONSOLE)
-	    {
-	      int y = getxy () & 0xFF;
-	      
-	      gotoxy (xpos, y);
-	      return;
-	    }
-# ifdef SUPPORT_SERIAL
-	  else if (terminal & TERMINAL_SERIAL)
-	    {
-	      /* Ugly optimization.  */
-	      if (pos - xpos > 4)
-		{
-		  grub_printf ("\e[%dD", pos - xpos);
-		  return;
-		}
-	    }
-# endif /* SUPPORT_SERIAL */
+	  int y = getxy () & 0xFF;
+	  
+	  gotoxy (xpos, y);
 	}
-      
-      for (i = 0; i < pos - xpos; i++)
-	grub_putchar ('\b');
+# ifdef SUPPORT_SERIAL      
+      else if (! (terminal & TERMINAL_SERIAL) && (pos - xpos > 4))
+	{
+	  grub_printf ("\e[%dD", pos - xpos);
+	}
+      else
+	{
+	  for (i = 0; i < pos - xpos; i++)
+	    grub_putchar ('\b');
+	}
+# endif /* SUPPORT_SERIAL */
     }
 
   /* Initialize the command-line.  */

@@ -1,3 +1,38 @@
+2000-09-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (--enable-serial): Changed to ...
+	(--disable-serial): ... this. Now the serial support is enabled
+	by default.
+	
+2000-09-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline) [!SUPPORT_SERIAL]: 
+	Don't check if the terminal is dumb. If the terminal is console,
+	always use console functions.
+	* stage2/builtins.c [!SUPPORT_NETBOOT] (bootp_func): Undefined.
+	[!SUPPORT_NETBOOT] (builtin_bootp): Likewise.
+	[!GRUB_UTIL] (device_func): Likewise.
+	[!GRUB_UTIL] (builtin_device): Likewise.
+	[!SUPPORT_NETBOOT] (dhcp_func): Likewise.
+	[!SUPPORT_NETBOOT] (builtin_dhcp): Likewise.
+	[!GRUB_UTIL] (quit_func): Likewise.
+	[!GRUB_UTIL] (builtin_quit): Likewise.
+	[!SUPPORT_NETBOOT] (rarp_func): Likewise.
+	[!SUPPORT_NETBOOT] (builtin_rarp): Likewise.
+	[!SUPPORT_SERIAL] (serial_func): Likewise.
+	[!SUPPORT_SERIAL] (builtin_serial): Likewise.
+	[!SUPPORT_SERIAL] (terminal_func): Likewise.
+	[!SUPPORT_SERIAL] (builtin_terminal): Likewise.
+	[!SUPPORT_NETBOOT] (tftpserver_func): Likewise.
+	[!SUPPORT_NETBOOT] (builtin_tftpserver): Likewise.
+	(builtin_table) [!SUPPORT_NETBOOT]: Removed the pointers to
+	BUILTIN_BOOTP, BUILTIN_DHCP, BUILTIN_RARP, and
+	BUILTIN_TFTPSERVER.
+	(builtin_table) [!SUPPORT_SERIAL]: Removed the pointers to
+	BUILTIN_SERIAL and BUILTIN_TERMINAL.
+	(builtin_table) [!GRUB_UTIL]: Removed the pointers to
+	BUILTIN_DEVICE and BUILTIN_QUIT.
+	
 2000-09-26  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (bootdir_device): New variable. If

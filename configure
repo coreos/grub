@@ -115,10 +115,10 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-diskless       enable diskless support"
 ac_help="$ac_help
-  --enable-serial         enable serial terminal support"
+  --disable-serial        diable serial terminal support"
 ac_help="$ac_help
   --enable-serial-speed-simulation
-                             simulate the slowness of a serial device"
+                          simulate the slowness of a serial device"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -2847,7 +2847,7 @@ fi
 
 
 
-if test "x$enable_serial" = xyes; then
+if test "x$enable_serial" != xno; then
   SERIAL_SUPPORT_TRUE=
   SERIAL_SUPPORT_FALSE='#'
 else

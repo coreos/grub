@@ -43,11 +43,15 @@ configure script.
   Texinfo release. See the webpage
   <http://www.gnu.org/software/texinfo/texinfo.html>.
 
-* GNU Automake 20000319 or later
+* Our version of GNU Automake
 
-  The new feature "per-executable flags" is required, so you need to
-  get an unreleased version from the CVS. See the webpage
-  <http://sourceware.cygnus.com/automake/>.
+  We use the new feature "per-executable flags" in the CVS version, but
+  it is too buggy for us, so a locally patched version is required at
+  the moment. You can obtain this from
+  <ftp://duff.kuicr.kyoto-u.ac.jp/pub/grub/automake-1.4a-for-grub.tar.gz>.
+
+  NOTE: This is a temporary solution. We will use the official version
+  again, once they fix the critical bugs.
 
 
 Configuring the GRUB
@@ -215,6 +219,14 @@ operates.
 
 `--without-curses'
      Don't use the curses library.
+
+`--disable-serial'
+     Omit the serial terminal support in Stage 2.
+
+`--enable-serial-speed-simulation'
+     Simulate the slowness of a serial device in the grub shell. This
+     option is useful for GRUB developers, as you can test the
+     performance of a terminal emulation even on pseudo terminals.
 
 
 `configure' also accepts several options for the network support. See

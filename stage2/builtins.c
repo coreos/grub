@@ -49,7 +49,8 @@ int terminal = TERMINAL_CONSOLE;
 kernel_t kernel_type;
 /* The boot device.  */
 static int bootdev;
-/* True when the debug mode is turned on, and false when it is turned off.  */
+/* True when the debug mode is turned on, and false
+   when it is turned off.  */
 int debug = 0;
 /* The default entry.  */
 int default_entry = 0;
@@ -310,11 +311,11 @@ static struct builtin builtin_boot =
 };
 
 
+#ifdef SUPPORT_NETBOOT
 /* bootp */
 static int
 bootp_func (char *arg, int flags)
 {
-#ifdef SUPPORT_NETBOOT
   if (! bootp ())
     {
       if (errnum == ERR_NONE)
@@ -326,10 +327,6 @@ bootp_func (char *arg, int flags)
   /* Notify the configuration.  */
   print_network_configuration ();
   return 0;
-#else
-  errnum = ERR_UNRECOGNIZED;
-  return 1;
-#endif
 }
 
 static struct builtin builtin_bootp =
@@ -340,6 +337,7 @@ static struct builtin builtin_bootp =
   "bootp",
   "Initialize a network device via BOOTP."
 };
+#endif /* SUPPORT_NETBOOT */
 
 
 /* cat */
@@ -742,11 +740,11 @@ static struct builtin builtin_default =
 };
 
 
+#ifdef GRUB_UTIL
 /* device */
 static int
 device_func (char *arg, int flags)
 {
-#ifdef GRUB_UTIL
   char *drive = arg;
   char *device;
 
@@ -769,11 +767,6 @@ device_func (char *arg, int flags)
   assign_device_name (current_drive, device);
   
   return 0;
-#else /* ! GRUB_UTIL */
-  /* In Stage 2, this command cannot be used.  */
-  errnum = ERR_UNRECOGNIZED;
-  return 1;
-#endif /* GRUB_UTIL */
 }
 
 static struct builtin builtin_device =
@@ -785,8 +778,10 @@ static struct builtin builtin_device =
   "Specify DEVICE as the actual drive for a BIOS drive DRIVE. This command"
   " can be used only in the grub shell."
 };
+#endif /* GRUB_UTIL */
 
 
+#ifdef SUPPORT_NETBOOT
 /* dhcp */
 static int
 dhcp_func (char *arg, int flags)
@@ -803,6 +798,7 @@ static struct builtin builtin_dhcp =
   "dhcp",
   "Initialize a network device via DHCP."
 };
+#endif /* SUPPORT_NETBOOT */
 
 
 /* displaymem */
@@ -2428,19 +2424,15 @@ static struct builtin builtin_pause =
 };
 
 
+#ifdef GRUB_UTIL
 /* quit */
 static int
 quit_func (char *arg, int flags)
 {
-#ifdef GRUB_UTIL
   stop ();
   
   /* Never reach here.  */
   return 0;
-#else /* ! GRUB_UTIL */
-  errnum = ERR_UNRECOGNIZED;
-  return 1;
-#endif /* ! GRUB_UTIL */
 }
 
 static struct builtin builtin_quit =
@@ -2451,12 +2443,14 @@ static struct builtin builtin_quit =
   "quit",
   "Exit from the GRUB shell."
 };
+#endif /* GRUB_UTIL */
 
 
+#ifdef SUPPORT_NETBOOT
+/* rarp */
 static int
 rarp_func (char *arg, int flags)
 {
-#ifdef SUPPORT_NETBOOT
   if (! rarp ())
     {
       if (errnum == ERR_NONE)
@@ -2468,10 +2462,6 @@ rarp_func (char *arg, int flags)
   /* Notify the configuration.  */
   print_network_configuration ();
   return 0;
-#else
-  errnum = ERR_UNRECOGNIZED;
-  return 1;
-#endif
 }
 
 static struct builtin builtin_rarp =
@@ -2482,6 +2472,7 @@ static struct builtin builtin_rarp =
   "rarp",
   "Initialize a network device via RARP."
 };
+#endif /* SUPPORT_NETBOOT */
 
 
 static int
@@ -2724,11 +2715,11 @@ static struct builtin builtin_savedefault =
 };
 
 
+#ifdef SUPPORT_SERIAL
 /* serial */
 static int
 serial_func (char *arg, int flags)
 {
-#ifdef SUPPORT_SERIAL
   unsigned short port = serial_get_port (0);
   unsigned int speed = 9600;
   int word_len = UART_8BITS_WORD;
@@ -2858,11 +2849,6 @@ serial_func (char *arg, int flags)
     }
   
   return 0;
-  
-#else /* ! SUPPORT_SERIAL */
-  errnum = ERR_UNRECOGNIZED;
-  return 1;
-#endif /* ! SUPPORT_SERIAL */
 }
 
 static struct builtin builtin_serial =
@@ -2879,6 +2865,7 @@ static struct builtin builtin_serial =
   " in the grub shell, which specifies the file name of a tty device. The"
   " default values are COM1, 9600, 8N1."
 };
+#endif /* SUPPORT_SERIAL */
 
 
 /* setkey */
@@ -3405,6 +3392,7 @@ static struct builtin builtin_setup =
 };
 
 
+#ifdef SUPPORT_SERIAL
 /* terminal */
 static int
 terminal_func (char *arg, int flags)
@@ -3438,11 +3426,9 @@ terminal_func (char *arg, int flags)
       if (terminal & TERMINAL_CONSOLE)
 	grub_printf ("console%s\n",
 		     terminal & TERMINAL_DUMB ? " (dumb)" : "");
-#ifdef SUPPORT_SERIAL
       else if (terminal & TERMINAL_SERIAL)
 	grub_printf ("serial%s\n",
 		     terminal & TERMINAL_DUMB ? " (dumb)" : " (vt100)");
-#endif /* SUPPORT_SERIAL */
       return 0;
     }
 
@@ -3457,14 +3443,12 @@ terminal_func (char *arg, int flags)
 	  if (! default_terminal)
 	    default_terminal = TERMINAL_CONSOLE;
 	}
-#ifdef SUPPORT_SERIAL
       else if (grub_memcmp (arg, "serial", sizeof ("serial") - 1) == 0)
 	{
 	  terminal |= TERMINAL_SERIAL;
 	  if (! default_terminal)
 	    default_terminal = TERMINAL_SERIAL;
 	}
-#endif /* SUPPORT_SERIAL */
       else
 	{
 	  terminal = saved_terminal;
@@ -3475,7 +3459,6 @@ terminal_func (char *arg, int flags)
       arg = skip_to (0, arg);
     }
 
-#ifdef SUPPORT_SERIAL
   /* If a seial console is turned on, wait until the user pushes any key.  */
   if (terminal & TERMINAL_SERIAL)
     {
@@ -3520,7 +3503,6 @@ terminal_func (char *arg, int flags)
       /* Expired.  */
       terminal &= (default_terminal | TERMINAL_DUMB);
     }
-#endif /* SUPPORT_SERIAL */
 
   return 0;
 }
@@ -3539,6 +3521,7 @@ static struct builtin builtin_terminal =
   " If --timeout is present, this command will wait at most for SECS"
   " seconds."
 };
+#endif /* SUPPORT_SERIAL */
 
 
 /* testload */
@@ -3629,11 +3612,11 @@ static struct builtin builtin_testload =
 };
 
 
+#ifdef SUPPORT_NETBOOT
 /* tftpserver */
 static int
 tftpserver_func (char *arg, int flags)
 {
-#ifdef SUPPORT_NETBOOT
   if (! *arg || ! arp_server_override (arg))
     {
       errnum = ERR_BAD_ARGUMENT;
@@ -3642,10 +3625,6 @@ tftpserver_func (char *arg, int flags)
 
   print_network_configuration ();
   return 0;
-#else
-  errnum = ERR_UNRECOGNIZED;
-  return 1;
-#endif
 }
 
 static struct builtin builtin_tftpserver =
@@ -3656,6 +3635,7 @@ static struct builtin builtin_tftpserver =
   "tftpserver IPADDR",
   "Override the TFTP server address."
 };
+#endif /* SUPPORT_NETBOOT */
 
 
 /* timeout */
@@ -3753,7 +3733,9 @@ struct builtin *builtin_table[] =
 {
   &builtin_blocklist,
   &builtin_boot,
+#ifdef SUPPORT_NETBOOT
   &builtin_bootp,
+#endif /* SUPPORT_NETBOOT */
   &builtin_cat,
   &builtin_chainloader,
   &builtin_cmp,
@@ -3761,8 +3743,12 @@ struct builtin *builtin_table[] =
   &builtin_configfile,
   &builtin_debug,
   &builtin_default,
+#ifdef GRUB_UTIL
   &builtin_device,
+#endif /* GRUB_UTIL */
+#ifdef SUPPORT_NETBOOT
   &builtin_dhcp,
+#endif /* SUPPORT_NETBOOT */
   &builtin_displaymem,
   &builtin_embed,
   &builtin_fallback,
@@ -3785,19 +3771,29 @@ struct builtin *builtin_table[] =
   &builtin_modulenounzip,
   &builtin_password,
   &builtin_pause,
+#ifdef GRUB_UTIL
   &builtin_quit,
+#endif /* GRUB_UTIL */
+#ifdef SUPPORT_NETBOOT
   &builtin_rarp,
+#endif /* SUPPORT_NETBOOT */
   &builtin_read,
   &builtin_reboot,
   &builtin_root,
   &builtin_rootnoverify,
   &builtin_savedefault,
+#ifdef SUPPORT_SERIAL
   &builtin_serial,
+#endif /* SUPPORT_SERIAL */
   &builtin_setkey,
   &builtin_setup,
+#ifdef SUPPORT_SERIAL
   &builtin_terminal,
+#endif /* SUPPORT_SERIAL */
   &builtin_testload,
+#ifdef SUPPORT_NETBOOT
   &builtin_tftpserver,
+#endif /* SUPPORT_NETBOOT */
   &builtin_timeout,
   &builtin_title,
   &builtin_unhide,
