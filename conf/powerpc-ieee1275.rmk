@@ -39,7 +39,7 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c	\
 	fs/jfs.c fs/iso9660.c \
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
-	normal/arg.c kern/partition.c	\
+	normal/menu_entry.c normal/arg.c kern/partition.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
 	kern/env.c disk/loopback.c commands/ls.c commands/help.c	\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
@@ -108,8 +108,9 @@ linux_mod_SOURCES = loader/powerpc/ieee1275/linux_normal.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For normal.mod.
-normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
-	normal/menu.c normal/arg.c normal/powerpc/setjmp.S
+normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
+	normal/main.c normal/menu.c normal/menu_entry.c			\
+	normal/powerpc/setjmp.S
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 

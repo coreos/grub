@@ -140,6 +140,7 @@ int grub_iterate_commands (int (*iterate) (grub_command_t));
 int grub_command_execute (char *cmdline);
 void grub_command_init (void);
 void grub_normal_init_page (void);
+void grub_menu_init_page (int nested, int edit);
 int grub_arg_parse (grub_command_t parser, int argc, char **argv,
 		    struct grub_arg_list *usr, char ***args, int *argnum);
 void grub_arg_show_help (grub_command_t cmd);

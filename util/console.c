@@ -28,6 +28,44 @@ static int grub_console_attr = A_NORMAL;
 static void
 grub_ncurses_putchar (grub_uint32_t c)
 {
+  /* Better than nothing.  */
+  switch (c)
+    {
+    case GRUB_TERM_DISP_LEFT:
+      c = '<';
+      break;
+
+    case GRUB_TERM_DISP_UP:
+      c = '^';
+      break;
+
+    case GRUB_TERM_DISP_RIGHT:
+      c = '>';
+      break;
+
+    case GRUB_TERM_DISP_DOWN:
+      c = 'v';
+      break;
+
+    case GRUB_TERM_DISP_HLINE:
+      c = '-';
+      break;
+
+    case GRUB_TERM_DISP_VLINE:
+      c = '|';
+      break;
+
+    case GRUB_TERM_DISP_UL:
+    case GRUB_TERM_DISP_UR:
+    case GRUB_TERM_DISP_LL:
+    case GRUB_TERM_DISP_LR:
+      c = '+';
+      break;
+
+    default:
+      break;
+    }
+  
   addch (c | grub_console_attr);
 }
 
@@ -57,16 +95,46 @@ grub_ncurses_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
   color_set (normal_color << 8 | highlight_color, 0);
 }
 
+static int saved_char = ERR;
+
 static int
 grub_ncurses_checkkey (void)
 {
-  return 1;
+  int c;
+  
+  /* Check for SAVED_CHAR. This should not be true, because this
+     means checkkey is called twice continuously.  */
+  if (saved_char != ERR)
+    return 1;
+  
+  wtimeout (stdscr, 100);
+  c = getch ();
+  /* If C is not ERR, then put it back in the input queue.  */
+  if (c != ERR)
+    {
+      saved_char = c;
+      return 1;
+    }
+
+  return 0;
 }
 
 static int
 grub_ncurses_getkey (void)
 {
-  int c = getch ();
+  int c;
+  
+  /* If checkkey has already got a character, then return it.  */
+  if (saved_char != ERR)
+    {
+      c = saved_char;
+      saved_char = ERR;
+    }
+  else
+    {
+      wtimeout (stdscr, -1);
+      c = getch ();
+    }
 
   switch (c)
     {
@@ -161,7 +229,7 @@ static grub_err_t
 grub_ncurses_init (void)
 {
   initscr ();
-  cbreak (); 
+  raw ();
   noecho ();
   scrollok (stdscr, TRUE);
 

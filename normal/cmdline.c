@@ -431,6 +431,7 @@ void
 grub_cmdline_run (int nested)
 {
   grub_normal_init_page ();
+  grub_setcursor (1);
   
   grub_printf ("\
  [ Minimal BASH-like line editing is supported. For the first word, TAB\n\

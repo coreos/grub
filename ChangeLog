@@ -1,3 +1,84 @@
+2005-02-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	This implements an Emacs-like menu entry editor.
+	
+	* normal/menu_entry.c: New file.
+	
+	* util/console.c (grub_ncurses_putchar): Translate some Unicode
+	characters to ASCII.
+	(saved_char): New variable.
+	(grub_ncurses_checkkey): Rewritten completely.
+	(grub_ncurses_getkey): Likewise.
+	(grub_ncurses_init): Call raw instead of cbreak.
+
+	* normal/menu.c (print_entry): Do not put a space.
+	(init_page): Renamed to ...
+	(grub_menu_init_page): ... this. All callers changed.
+	(edit_menu_entry): Removed.
+	(run_menu): Call grub_menu_entry_run instead of edit_menu_entry.
+
+	* normal/cmdline.c (grub_cmdline_run): Call grub_setcursor.
+
+	* kern/misc.c (grub_vprintf): Call grub_refresh.
+
+	* normal/menu.c (DISP_LEFT): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_LEFT): ... this.
+	* normal/menu.c (DISP_UP): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_UP): ... this.
+	* normal/menu.c (DISP_RIGHT): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_RIGHT): ... this.
+	* normal/menu.c (DISP_DOWN): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_DOWN): ... this.
+	* normal/menu.c (DISP_HLINE): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_HLINE): ... this.
+	* normal/menu.c (DISP_VLINE): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_VLINE): ... this.
+	* normal/menu.c (DISP_UL): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_UL): ... this.
+	* normal/menu.c (DISP_UR): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_UR): ... this.
+	* normal/menu.c (DISP_LL): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_LL): ... this.
+	* normal/menu.c (DISP_LR): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_DISP_LR): ... this.
+	* normal/menu.c (TERM_WIDTH): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_WIDTH): ... this.
+	* normal/menu.c (TERM_HEIGHT): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_HEIGHT): ... this.
+	* normal/menu.c (TERM_INFO_HEIGHT): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_INFO_HEIGHT): ... this.
+	* normal/menu.c (TERM_MARGIN): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_MARGIN): ... this.
+	* normal/menu.c (TERM_SCROLL_WIDTH): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_SCROLL_WIDTH): ... this.
+	* normal/menu.c (TERM_TOP_BORDER_Y): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_TOP_BORDER_Y): ... this.
+	* normal/menu.c (TERM_LEFT_BORDER_X): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_LEFT_BORDER_X): ... this.
+	* normal/menu.c (TERM_BORDER_WIDTH): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_BORDER_WIDTH): ... this.
+	* normal/menu.c (TERM_MESSAGE_HEIGHT): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_MESSAGE_HEIGHT): ... this.
+	* normal/menu.c (TERM_BORDER_HEIGHT): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_BORDER_HEIGHT): ... this.
+	* normal/menu.c (TERM_NUM_ENTRIES): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_NUM_ENTRIES): ... this.
+	* normal/menu.c (TERM_FIRST_ENTRY_Y): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_FIRST_ENTRY_Y): ... this.
+	* normal/menu.c (TERM_ENTRY_WIDTH): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_ENTRY_WIDTH): ... this.
+	* normal/menu.c (TERM_CURSOR_X): Renamed to ...
+	* include/grub/term.h (GRUB_TERM_CURSOR_X): ... this.
+	All callers changed.
+
+	* include/grub/normal.h: New prototype.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added
+	normal/menu_entry.c.
+	(normal_mod_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
 2005-02-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* include/grub/normal.h (grub_halt_init): New prototype.

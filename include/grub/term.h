@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -54,6 +54,73 @@ grub_term_color_state;
 #define GRUB_TERM_DUMB		(1 << 2)
 /* Set when the terminal needs to be initialized.  */
 #define GRUB_TERM_NEED_INIT	(1 << 16)
+
+
+/* Unicode characters for fancy graphics.  */
+#define GRUB_TERM_DISP_LEFT	0x2190
+#define GRUB_TERM_DISP_UP	0x2191
+#define GRUB_TERM_DISP_RIGHT	0x2192
+#define GRUB_TERM_DISP_DOWN	0x2193
+#define GRUB_TERM_DISP_HLINE	0x2501
+#define GRUB_TERM_DISP_VLINE	0x2503
+#define GRUB_TERM_DISP_UL	0x250F
+#define GRUB_TERM_DISP_UR	0x2513
+#define GRUB_TERM_DISP_LL	0x2517
+#define GRUB_TERM_DISP_LR	0x251B
+
+
+/* Menu-related geometrical constants.  */
+
+/* FIXME: These should be dynamically obtained from a terminal.  */
+#define GRUB_TERM_WIDTH		80
+#define GRUB_TERM_HEIGHT	25
+
+/* The number of lines of "GRUB version..." at the top.  */
+#define GRUB_TERM_INFO_HEIGHT	1
+
+/* The number of columns/lines between messages/borders/etc.  */
+#define GRUB_TERM_MARGIN	1
+
+/* The number of columns of scroll information.  */
+#define GRUB_TERM_SCROLL_WIDTH	1
+
+/* The Y position of the top border.  */
+#define GRUB_TERM_TOP_BORDER_Y	(GRUB_TERM_MARGIN + GRUB_TERM_INFO_HEIGHT \
+                                 + GRUB_TERM_MARGIN)
+
+/* The X position of the left border.  */
+#define GRUB_TERM_LEFT_BORDER_X	GRUB_TERM_MARGIN
+
+/* The width of the border.  */
+#define GRUB_TERM_BORDER_WIDTH	(GRUB_TERM_WIDTH \
+                                 - GRUB_TERM_MARGIN * 3 \
+				 - GRUB_TERM_SCROLL_WIDTH)
+
+/* The number of lines of messages at the bottom.  */
+#define GRUB_TERM_MESSAGE_HEIGHT	8
+
+/* The height of the border.  */
+#define GRUB_TERM_BORDER_HEIGHT	(GRUB_TERM_HEIGHT \
+                                 - GRUB_TERM_TOP_BORDER_Y \
+                                 - GRUB_TERM_MESSAGE_HEIGHT)
+
+/* The number of entries shown at a time.  */
+#define GRUB_TERM_NUM_ENTRIES	(GRUB_TERM_BORDER_HEIGHT - 2)
+
+/* The Y position of the first entry.  */
+#define GRUB_TERM_FIRST_ENTRY_Y	(GRUB_TERM_TOP_BORDER_Y + 1)
+
+/* The max column number of an entry. The last "-1" is for a
+   continuation marker.  */
+#define GRUB_TERM_ENTRY_WIDTH	(GRUB_TERM_BORDER_WIDTH - 2 \
+                                 - GRUB_TERM_MARGIN * 2 - 1)
+
+/* The standard X position of the cursor.  */
+#define GRUB_TERM_CURSOR_X	(GRUB_TERM_LEFT_BORDER_X \
+                                 + GRUB_TERM_BORDER_WIDTH \
+                                 - GRUB_TERM_MARGIN \
+                                 - 1)
+
 
 struct grub_term
 {

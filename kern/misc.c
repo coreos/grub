@@ -131,7 +131,11 @@ grub_printf (const char *fmt, ...)
 int
 grub_vprintf (const char *fmt, va_list args)
 {
-  return grub_vsprintf (0, fmt, args);
+  int ret;
+
+  ret = grub_vsprintf (0, fmt, args);
+  grub_refresh ();
+  return ret;
 }
 
 int
