@@ -1,3 +1,19 @@
+2004-03-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Sergey Matveychuk <sem@ciam.ru>:
+	* lib/device.c (get_drive_geometry): Do not open the same device
+	more than once unnecessarily.
+	(get_drive_geometry) [__FreeBSD_version >= 500040]: Use new
+	ioctl methods.
+	(get_floppy_disk_name) [__FreeBSD__ >= 4]: Use /dev/fd%d rather
+	than /dev/rfd%d.
+	(get_ide_disk_name) [__FreeBSD__ >= 4]: Use /dev/ad%d rather
+	than /dev/rad%d.
+	(get_scsi_disk_name) [__FreeBSD__ >= 4]: Use /dev/da%d rather
+	than /dev/rda%d.
+	* grub/asmstub.c (get_diskinfo): Check if ERRNO is EPERM as
+	well.
+
 2004-02-28  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* docs/grub.texi (partnew): Change @var{to} to @var{len}.

@@ -1,7 +1,7 @@
 /* asmstub.c - a version of shared_src/asm.S that works under Unix */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -779,7 +779,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 
       if (disks[drive].flags == -1)
 	{
-	  if (read_only || errno == EACCES || errno == EROFS)
+	  if (read_only || errno == EACCES || errno == EROFS || errno == EPERM)
 	    {
 	      disks[drive].flags = open (devname, O_RDONLY);
 	      if (disks[drive].flags == -1)

@@ -78,6 +78,12 @@ struct hd_geometry
 # include <sys/ioctl.h>		/* ioctl */
 # include <sys/disklabel.h>
 # include <sys/cdio.h>		/* CDIOCCLRDEBUG */
+# if defined(__FreeBSD__)
+#  include <sys/param.h>
+#  if __FreeBSD_version >= 500040
+#   include <sys/disk.h>
+#  endif
+# endif /* __FreeBSD__ */
 #endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
 
 #ifdef HAVE_OPENDISK
@@ -94,8 +100,13 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
 {
   int fd;
 
-  fd = open (map[drive], O_RDONLY);
-  assert (fd >= 0);
+  if (geom->flags == -1)
+    {
+      fd = open (map[drive], O_RDONLY);
+      assert (fd >= 0);
+    }
+  else
+    fd = geom->flags;
 
 #if defined(__linux__)
   /* Linux */
@@ -115,10 +126,44 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
     geom->sectors = hdg.sectors;
     geom->total_sectors = nr;
     
-    close (fd);
-    return;
+    goto success;
   }
 
+#elif defined(__FreeBSD__) && __FreeBSD_version >= 500040
+  /* FreeBSD version 5 and later */
+  {
+    u_int sector_size;
+    off_t media_size;
+    uint_t tmp;
+    
+    if(ioctl (fd, DIOCGSECTORSIZE, &sector_size) != 0)
+      sector_size = 512;
+    
+    if (ioctl (fd, DIOCGMEDIASIZE, &media_size) != 0)
+      goto fail;
+
+    geometry->total_sectors = media_size / sector_size;
+    
+    if (ioctl (fd, DIOCGFWSECTORS, &tmp) == 0)
+      geometry->sectors = tmp;
+    else
+      geometry->sectors = 63;
+    if (ioctl (fd, DIOCGFWHEADS, &tmp) == 0)
+      geometry->heads = tmp;
+    else if (geometry->total_sectors <= 63 * 1 * 1024)
+      geometry->heads = 1;
+    else if (geometry->total_sectors <= 63 * 16 * 1024)
+      geometry->heads = 16;
+    else
+      geometry->heads = 255;
+
+    geometry->cylinders = (geometry->total_sectors
+			   / geometry->heads
+			   / geometry->sectors);
+    
+    goto success;
+  }
+  
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
   /* FreeBSD, NetBSD or OpenBSD */
   {
@@ -131,8 +176,7 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
     geom->sectors = hdg.d_nsectors;
     geom->total_sectors = hdg.d_secperunit;
 
-    close (fd);
-    return;
+    goto success;
   }
   
 #else
@@ -167,7 +211,9 @@ partially. This is not fatal."
       geom->total_sectors = geom->cylinders * geom->heads * geom->sectors;
   }
 
-  close (fd);
+ success:
+  if (geom->flags == -1)
+    close (fd);
 }
 
 #ifdef __linux__
@@ -203,7 +249,11 @@ get_floppy_disk_name (char *name, int unit)
   sprintf (name, "/dev/fd%d", unit);
 #elif defined(__FreeBSD__)
   /* FreeBSD */
+# if __FreeBSD__ >= 4
+  sprintf (name, "/dev/fd%d", unit);
+# else /* __FreeBSD__ < 4 */
   sprintf (name, "/dev/rfd%d", unit);
+# endif /* __FreeBSD__ < 4 */
 #elif defined(__NetBSD__)
   /* NetBSD */
   /* opendisk() doesn't work for floppies.  */
@@ -233,7 +283,7 @@ get_ide_disk_name (char *name, int unit)
 #elif defined(__FreeBSD__)
   /* FreeBSD */
 # if __FreeBSD__ >= 4
-  sprintf (name, "/dev/rad%d", unit);
+  sprintf (name, "/dev/ad%d", unit);
 # else /* __FreeBSD__ <= 3 */
   sprintf (name, "/dev/rwd%d", unit);
 # endif /* __FreeBSD__ <= 3 */
@@ -274,7 +324,11 @@ get_scsi_disk_name (char *name, int unit)
   sprintf (name, "/dev/sd%d", unit);
 #elif defined(__FreeBSD__)
   /* FreeBSD */
+# if __FreeBSD__ >= 4
+  sprintf (name, "/dev/da%d", unit);
+# else /* __FreeBSD__ < 4 */
   sprintf (name, "/dev/rda%d", unit);
+# endif /* __FreeBSD__ < 4 */
 #elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
   /* NetBSD */
   char shortname[16];
