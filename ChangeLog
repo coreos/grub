@@ -9,9 +9,9 @@
 
 2000-06-01  OKUJI Yoshinori  <okuji@gnu.org>
 
-	* stage2/builtins.c (setup_func): Try to install a Stage 1.5,
-	check if INSTALL_DRIVE is a hard disk as well as IMAGE_DRIVE.
-	Reported by Pavel Roskin.
+	* stage2/builtins.c (setup_func): Check if INSTALL_DRIVE is a
+	hard disk as well as IMAGE_DRIVE, before trying to install a
+	Stage 1.5. Reported by Pavel Roskin.
 	
 2000-05-31  OKUJI Yoshinori  <okuji@gnu.org>
 
