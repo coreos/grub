@@ -1,3 +1,12 @@
+2002-10-06  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* configure.in (falign_loop_flag): New variable. Set to if GCC
+	supports `-falign-*'. If true, use `-falign-jumps',
+	`-falign-loops' and `-falign-functions' instead of
+	`-malign-jumps', `-malign-loops' and `-malign-functions',
+	because `-malign-*' are obsolete in GCC 3.x. Reported by Jeremy
+	Katz.
+
 2002-09-13  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/serial.c (fill_input_buf): Take a new argument NOWAIT.

@@ -2992,7 +2992,7 @@ if test "${undef_flag+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
-  saved_CPPFLAGS=$CPPFLAGS
+  saved_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="-Wundef"
   cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
@@ -3031,14 +3031,71 @@ cat conftest.$ac_ext >&5
 undef_flag=no
 fi
 rm -f conftest.$ac_objext conftest.$ac_ext
-  CPPFLAGS=$saved_CPPFLAGS
+  CPPFLAGS="$saved_CPPFLAGS"
 
 fi
 echo "$as_me:$LINENO: result: $undef_flag" >&5
 echo "${ECHO_T}$undef_flag" >&6
 
+# The options `-falign-*' are supported by gcc 3.0 or later.
+# Probably it is sufficient to only check for -falign-loops.
+echo "$as_me:$LINENO: checking whether -falign-loops works" >&5
+echo $ECHO_N "checking whether -falign-loops works... $ECHO_C" >&6
+if test "${falign_loop_flag+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  saved_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="-falign-loops=1"
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#ifdef F77_DUMMY_MAIN
+#  ifdef __cplusplus
+     extern "C"
+#  endif
+   int F77_DUMMY_MAIN() { return 1; }
+#endif
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  falign_loop_flag=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+falign_loop_flag=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  CPPFLAGS="$saved_CPPFLAGS"
+
+fi
+echo "$as_me:$LINENO: result: $falign_loop_flag" >&5
+echo "${ECHO_T}$falign_loop_flag" >&6
+
 # Force no alignment to save space.
-CPPFLAGS="$CPPFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
+if test "x$falign_loop_flag" = xyes; then
+  CPPFLAGS="$CPPFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
+else
+  CPPFLAGS="$CPPFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
+fi
 
 if test "x$undef_flag" = xyes; then
   CPPFLAGS="$CPPFLAGS -Wundef"

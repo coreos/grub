@@ -102,14 +102,27 @@ CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused -Wshadow"
 CPPFLAGS="$CPPFLAGS -Wpointer-arith"
 
 AC_CACHE_CHECK([whether -Wundef works], undef_flag, [
-  saved_CPPFLAGS=$CPPFLAGS
+  saved_CPPFLAGS="$CPPFLAGS"
   CPPFLAGS="-Wundef"
   AC_TRY_COMPILE(, , undef_flag=yes, undef_flag=no)
-  CPPFLAGS=$saved_CPPFLAGS
+  CPPFLAGS="$saved_CPPFLAGS"
+])
+
+# The options `-falign-*' are supported by gcc 3.0 or later.
+# Probably it is sufficient to only check for -falign-loops.
+AC_CACHE_CHECK([whether -falign-loops works], [falign_loop_flag], [
+  saved_CPPFLAGS="$CPPFLAGS"
+  CPPFLAGS="-falign-loops=1"
+  AC_TRY_COMPILE(, , [falign_loop_flag=yes], [falign_loop_flag=no])
+  CPPFLAGS="$saved_CPPFLAGS"
 ])
 
 # Force no alignment to save space.
-CPPFLAGS="$CPPFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
+if test "x$falign_loop_flag" = xyes; then
+  CPPFLAGS="$CPPFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
+else
+  CPPFLAGS="$CPPFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
+fi
 
 if test "x$undef_flag" = xyes; then
   CPPFLAGS="$CPPFLAGS -Wundef"
