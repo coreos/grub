@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -389,7 +389,7 @@ tftp_read (char *addr, int size)
 	}
 
       /* Read the data.  */
-      if (! buf_fill (0))
+      if (size > 0 && ! buf_fill (0))
 	{
 	  errnum = ERR_READ;
 	  return 0;

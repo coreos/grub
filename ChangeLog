@@ -1,5 +1,10 @@
 2002-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* netboot/fsys_tftp.c (tftp_read): Don't call buf_fill unless
+	SIZE is positive.
+	
+2002-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* netboot/etherboot.h (ETH_MAX_MTU): Because some DHCP/BOOTP
 	servers don't treat the maximum length the same as Etherboot,
 	subtract the size of an IP header and that of an UDP header.
