@@ -1,5 +1,24 @@
 1999-06-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/shared.h (STAGE2_STAGE2_ID): New macro.
+	(STAGE2_VER_STR_OFFS): Set to 0xd.
+	(STAGE2_ID_STAGE2): New macro.
+	(STAGE2_ID_FFS_STAGE1_5): Likewise.
+	(STAGE2_ID_E2FS_STAGE1_5): Likewise.
+	(STAGE2_ID_FAT_STAGE1_5): Likewise.
+	(STAGE2_ID) [!STAGE1_5]: Defined as STAGE2_ID_STAGE2.
+	(STAGE2_ID) [STAGE1_5] [FSYS_FFS]: Defined as
+	STAGE2_ID_FFS_STAGE1_5.
+	(STAGE2_ID) [STAGE1_5] [FSYS_EXT2FS]: Defined as
+	STAGE2_ID_STAGE1_5.
+	(STAGE2_ID) [STAGE1_5] [FSYS_FAT]: Defined as
+	STAGE2_ID_FAT_STAGE1_5.
+	(COMPAT_VERSION_MINOR): Set to 1.
+	* stage2/asm.S (stage2_id): New variable.
+	* stage1/stage1.S: Change the minor version to 1.
+	
+1999-06-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* configure.in (CFLAGS): Set to "-g", since only this flag is
 	always sharable.
 	(STAGE1_CFLAGS): Set to "-O2", and AC_SUBST this.

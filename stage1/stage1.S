@@ -444,7 +444,7 @@ bootit:
 	 *
 	 *  DO NOT MOVE THIS!!!
 	 */
-	.byte	2, 0
+	.byte	2, 1
 
 	/*
 	 *  This is where an MBR would go if on a hard disk.  The code

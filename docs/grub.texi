@@ -1385,7 +1385,7 @@ entry is an offset number):
 This is the major version byte (should be 2).
 
 @item @dfn{minor version} (0x1bd)
-This is the minor version byte (should be 0).
+This is the minor version byte (should be 1).
 
 @item @dfn{stage2 start address} (0x1b8)
 This is the data for the @code{ljmp} command to the starting address of
@@ -1453,7 +1453,10 @@ If a @dfn{stage1.5} is being used, it will pass its own
 @dfn{install_partition} to any @dfn{stage2} it loads, therefore
 overwriting the one present in the @dfn{stage2}.
 
-@item @dfn{version_string} (0xc)
+@item @dfn{stage2_id} (0xc)
+This is the @dfn{stage1.5} or @dfn{stage2} identifier.
+
+@item @dfn{version_string} (0xd)
 This is the @dfn{stage1.5} or @dfn{stage2} version string. It isn't
 meant to be changed, simply easy to find.
 
