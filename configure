@@ -1183,16 +1183,13 @@ else
   test "${CFLAGS+set}" = set || CFLAGS="-g"
 fi
 
-if test "x$GCC" != xyes; then
-  { echo "configure: error: GNU C compiler not found" 1>&2; exit 1; }
-fi
 
-echo $ac_n "checking symbol names produced by ${CC}""... $ac_c" 1>&6
-echo "configure:1192: checking symbol names produced by ${CC}" >&5
+echo $ac_n "checking symbol names produced by ${CC-cc}""... $ac_c" 1>&6
+echo "configure:1189: checking symbol names produced by ${CC-cc}" >&5
 if eval "test \"`echo '$''{'grub_cv_asm_ext_c'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  cat << EOF > conftest.c
+  cat > conftest.c <<\EOF
 int
 func (int *list)
 {
@@ -1201,10 +1198,9 @@ func (int *list)
 }
 EOF
 
-if { ac_try='${CC} -S conftest.c'; { (eval echo configure:1205: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.s; then
-  true
+if { ac_try='${CC-cc} -S conftest.c'; { (eval echo configure:1202: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.s; then :
 else
-  { echo "configure: error: ${CC} failed to produce assembly code" 1>&2; exit 1; }
+  { echo "configure: error: ${CC-cc} failed to produce assembly code" 1>&2; exit 1; }
 fi
 
 set dummy `grep \.globl conftest.s | grep func | sed -e s/\\.globl// | sed -e s/func/\ sym\ /`
@@ -1229,8 +1225,70 @@ cat >> confdefs.h <<EOF
 EOF
 
 
-echo "FIXME: would test objcopy"
-echo "FIXME: would test addr32"
+echo $ac_n "checking whether ${OBJCOPY} works for absolute addresses""... $ac_c" 1>&6
+echo "configure:1230: checking whether ${OBJCOPY} works for absolute addresses" >&5
+if eval "test \"`echo '$''{'grub_cv_prog_objcopy_absolute'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.c <<\EOF
+void
+blah (void)
+{
+   *((int *) 0x1000) = 2;
+}
+EOF
+
+if { (eval echo configure:1242: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; } && test -s conftest.o; then :
+else
+  { echo "configure: error: ${CC-cc} cannot compile C source code" 1>&2; exit 1; }
+fi
+grub_cv_prog_objcopy_absolute=yes
+for link_addr in 2000 8000 7C00; do
+  if { ac_try='${LD-ld} -N -Ttext $link_addr conftest.o -o conftest.exec'; { (eval echo configure:1248: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  else
+    { echo "configure: error: ${LD-ld} cannot link at address $link_addr" 1>&2; exit 1; }
+  fi
+  if { ac_try='${OBJCOPY-objcopy} -O binary conftest.exec conftest'; { (eval echo configure:1252: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  else
+    { echo "configure: error: ${OBJCOPY-objcopy} cannot create binary files" 1>&2; exit 1; }
+  fi
+  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1256: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  else
+    grub_cv_prog_objcopy_absolute=no
+    break
+  fi
+done
+rm -f conftest*
+fi
+
+echo "$ac_t""$grub_cv_prog_objcopy_absolute" 1>&6
+if test "x$grub_cv_prog_objcopy_absolute" != xyes; then
+  { echo "configure: error: GRUB requires a working absolute objcopy; upgrade your binutils" 1>&2; exit 1; }
+fi
+
+
+echo $ac_n "checking for .code16 addr32 assembler support""... $ac_c" 1>&6
+echo "configure:1272: checking for .code16 addr32 assembler support" >&5
+if eval "test \"`echo '$''{'grub_cv_asm_addr32'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.s <<\EOF
+	.code16
+l1:	addr32
+	movb	%al, l1
+EOF
+
+if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1282: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
+  grub_cv_asm_addr32=yes
+else
+  grub_cv_asm_addr32=no
+fi
+fi
+
+echo "$ac_t""$grub_cv_asm_addr32" 1>&6
+if test "x$grub_cv_asm_addr32" != xyes; then
+  { echo "configure: error: GRUB requires GAS .code16 addr32 support; upgrade your binutils" 1>&2; exit 1; }
+fi
 
 # Create rules for our shared sources.
 SHARED_SRC_RULES=./ssrcrules.mk

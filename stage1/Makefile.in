@@ -73,8 +73,8 @@ pkglibdir = $(exec_prefix)/lib/$(PACKAGE)
 pkglib_DATA = stage1
 CLEANFILES = stage1
 
-# We can't use builtins.
-COMPILE = $(CC) -fno-builtin $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+# We can't use builtins or standard includes.
+COMPILE = $(CC) -fno-builtin -nostdinc $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 
 noinst_PROGRAMS = stage1.exec
 stage1_exec_SOURCES = stage1.S

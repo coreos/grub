@@ -7,8 +7,8 @@ pkglib_DATA = fat_stage1_5
 CLEANFILES = $(pkglib_DATA) $(pkglib_DATA)T
 noinst_PROGRAMS = fat_stage1_5.exec
 
-# We can't use builtins.
-COMPILE = $(CC) -fno-builtin -DFSYS_FAT=1 -DNO_DECOMPRESSION=1 \
+# We can't use builtins or standard includes.
+COMPILE = $(CC) -fno-builtin -nostdinc -DFSYS_FAT=1 -DNO_DECOMPRESSION=1 \
 	-DNO_FANCY_STUFF=1 -DCONFIG_FILE_ASM='.string "/boot/grub/stage2"' \
 	$(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/shared_src

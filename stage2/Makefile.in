@@ -74,8 +74,8 @@ pkglib_DATA = stage2
 CLEANFILES = stage2
 MOSTLYCLEANFILES = stage2.exec
 
-# We can't use builtins.
-COMPILE = $(CC) -fno-builtin $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+# We can't use builtins or standard includes.
+COMPILE = $(CC) -fno-builtin -nostdinc $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/shared_src
 
 # asm.o absolutely needs to come first!

@@ -1,5 +1,8 @@
 1999-03-01  Gordon Matzigkeit  <gord@trick.fig.org>
 
+	* shared_src/asm.S (version_string): Set the version string from
+	the VERSION specified in configure.in.
+
 	* Change all Makefiles into Makefile.ams.  Many major build
 	environment changes to get Automake/Autoconf working nicely.
 

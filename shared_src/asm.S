@@ -53,7 +53,7 @@ ENTRY(start)
 VARIABLE(install_partition)
 	.long	0x020000
 VARIABLE(version_string)
-	.string "0.5"
+	.string VERSION
 VARIABLE(config_file)
 #ifndef CONFIG_FILE_ASM
 	.string "/boot/grub/menu.lst"

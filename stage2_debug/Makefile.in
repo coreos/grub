@@ -75,8 +75,9 @@ EXTRA_DATA = stage2_debug
 CLEANFILES = stage2_debug
 MOSTLYCLEANFILES = stage2_debug.exec
 
-# We can't use builtins.
-COMPILE = $(CC) -fno-builtin -DDEBUG=1 $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+# We can't use builtins or standard includes.
+COMPILE = $(CC) -fno-builtin -nostdinc -DDEBUG=1 $(DEFS) $(INCLUDES) \
+	$(CPPFLAGS) $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/shared_src
 
 # asm.o absolutely needs to come first!
