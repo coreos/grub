@@ -4,8 +4,7 @@ New in 0.5.94:
 * Stage 1 supports both the LBA mode and the CHS mode.
 * The NetBSD and OpenBSD boot bug is fixed.
 * The more automatic installation command "setup" is added.
-* The command "embed" embeds a Stage 1.5 in the sectors after a MBR or
-  in the "bootloader" area in a FFS partition.
+* The command "embed" embeds a Stage 1.5 in the sectors after a MBR.
 * Support symbolic color name syntax in the command "color".
 * The grub shell loads the BIOS drive mapping information from a device
   map file (the default is "/boot/grub/device.map") if it already

@@ -13,7 +13,7 @@ Priorities:
   higher priority.
 
 * Support partition syntax to correspond with BSD ``slice'' syntax
-  (`(hd0,1a)' -> `/dev/hd0s2a'). !
+  (`(hd0,1a)' -> `/dev/hd0s2a'). !!
 ? Add a partition naming syntax that means ``the first partition of
   this type''.  We need this for clean Hurd install floppies.
 * Add a real scripting language, possibly retaining backward
@@ -28,8 +28,8 @@ Priorities:
 ? Add command for modifying partition types.
 * Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot
   parameters. !!
-* Add a new installation command, such as `setup', which should be
-  easier to use and more automatic than the command `install'. !!!
+* Support embedding a Stage 1.5 in the "bootloader" area of a FFS
+  partition. !!!
 * Add keyboard layout configuration support. !
 * Clean up and enhance the manuals, especially concept indexes. !!!
 * Add more filesystems support (XFS, NTFS, etc.)
