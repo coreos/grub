@@ -3,29 +3,30 @@
 
 Briefly, a @dfn{boot loader} is the first software program that runs when
 a computer starts.  It is responsible for loading and transferring
-control to the operating system @dfn{kernel} software (such as the Linux
+control to an operating system @dfn{kernel} software (such as the Linux
 or GNU Hurd kernel).  The kernel, in turn, initializes the rest of the
 operating system (e.g. a GNU system).
 
-GRUB can load a wide variety of free operating systems, as well as
+GNU GRUB is a very powerful boot loader, which can load a wide variety
+of free operating systems, as well as proprietary operating systems with
 chain-loading@footnote{@dfn{chain-load} is the mechanism for loading
 unsupported operating systems by loading another boot loader. It is
-typically used for loading DOS or Windows.} proprietary operating
-systems.
+typically used for loading DOS or Windows.}.
 
-The important feature in GRUB is flexibility; GRUB understands
+One of the important features in GRUB is flexibility; GRUB understands
 filesystems and kernel executable formats, so you can load an arbitrary
 operating system the way you like, without recording the physical
 position of your kernel on the disk.
 
-Therefore, you have to specify the drive (and the partition) where your
-kernel resides and the filename at hand. If you don't want to type in
-the drive and the filename every time, you can set it up in a simple
-configuration file (@pxref{Configuration}). GRUB will locate and load
-it, and provide a nice menu interface (@pxref{Menu interface}) through
-which you can easily select which OS it boots. Of course, you can enter
-the command-line interface (@pxref{Command line}) whenever you like, or
-you can edit specific menu entries prior to using them.
+Thus you can load the kernel just by specifying its filename and the
+drive (and the partition) where the kernel resides. To let GRUB know the
+drive and the filename, you can either type in them manually via the
+command-line interface (@pxref{Command line}), or use the nice menu
+interface (@pxref{Menu interface}) through which you can easily select
+which OS it boots. To allow you to customize the menu, GRUB will load a
+preexisting configuration file (@pxref{Configuration}). Note that you
+can not only enter the command-line interface whenever you like, but
+also you can edit specific menu entries prior to using them.
 
 In the following chapters, you will learn how to specify a drive or a
 partition, and a file name (@pxref{Naming convention}) to GRUB, how to
@@ -152,9 +153,9 @@ GRUB comes with boot images, which are normally installed in the
 @node Installing GRUB on a floppy
 @section Installing GRUB on a floppy
 
-To create a GRUB boot floppy, you need to take the @file{stage1} and
-@file{stage2} files from @file{/boot/grub} directory, and write them to
-the first and the second block of the floppy disk.
+To create a GRUB boot floppy, you need to take the files @file{stage1}
+and @file{stage2} from @file{/boot/grub} directory, and write them to
+the first and the second block of the floppy disk, respectively.
 
 @quotation
 @strong{Caution:} This procedure will destroy any data currently stored
@@ -197,10 +198,10 @@ the grub shell}) as the super-user (@samp{root}).
 
 Once started, GRUB will show the command-line interface (@pxref{Command
 line}). First, set the GRUB's @dfn{root device}@footnote{Note that
-GRUB's root device does not neccessarily have to be your OS's root
-partition; if you need to specify a root partition for your OS, add the
-argument into the command @command{kernel}.} to the partition which has
-your GRUB images, like this:
+GRUB's root device doesn't necessarily mean your OS's root partition; if
+you need to specify a root partition for your OS, add the argument into
+the command @command{kernel}.} to the partition which has your GRUB
+images, like this:
 
 @example
 grub> root (hd0,0)
@@ -232,15 +233,14 @@ install GRUB:
 grub> setup (hd0,0)
 @end example
 
-If you install GRUB into a partition or a drive except for the first
-one, you must chain-load GRUB from another boot loader. Refer the manual
-for the boot loader to know how to chain-load GRUB.
+If you install GRUB into a partition or a drive other than the first
+one, you must chain-load GRUB from another boot loader. Refer to the
+manual for the boot loader to know how to chain-load GRUB.
 
 @c FIXME: you should specify --force-lba when...
 
-That's all there is to it: now you can boot GRUB without a GRUB
-floppy. See the next chapter to find out how to boot your operating
-systems from GRUB.
+That's all: now you can boot GRUB without a GRUB floppy. See the next
+chapter to find out how to boot your operating systems from GRUB.
 
 
 @node Booting
@@ -259,13 +259,13 @@ magic.
 @node General boot methods
 @section How to boot operating systems
 
-GRUB has two distinct sets of boot methods, that is, loading an
-operating system directly and chain-loading another boot loader which
-then will load an operating system actually. Generally speaking, the
-former is preferable, because you don't need to install or maintain
-other boot loaders and GRUB is flexible enough to load an operating
-system from an arbitrary disk/partition. However, the latter is
-sometimes required, since GRUB doesn't support all the existing
+GRUB has two distinct boot methods. One of the two is to load an
+operating system directly, and the other is to chain-load another boot
+loader which then will load an operating system actually. Generally
+speaking, the former is desirable, because you don't need to install or
+maintain other boot loaders and GRUB is flexible enough to load an
+operating system from an arbitrary disk/partition. However, the latter
+is sometimes required, since GRUB doesn't support all the existing
 operating systems natively.
 
 @menu
@@ -277,11 +277,11 @@ operating systems natively.
 @node Loading an operating system directly
 @subsection How to boot an OS directly by GRUB
 
-The native format supported by GRUB is Multiboot (@pxref{Top, Multiboot
-Specification, Motivation, multiboot, The Multiboot Specification}), but
-Linux, FreeBSD, NetBSD and OpenBSD are also supported for
-convenience. If you want to boot other operating systems, you will have
-to chain-load them (@pxref{Chain-loading}).
+Multiboot (@pxref{Top, Multiboot Specification, Motivation, multiboot,
+The Multiboot Specification}) is the native format supported by GRUB.
+For the sake of convenience, there are also support for Linux, FreeBSD,
+NetBSD and OpenBSD. If you want to boot other operating systems, you
+will have to chain-load them (@pxref{Chain-loading}).
 
 Generally, GRUB can boot any Multiboot-compliant OS in the following
 steps:
@@ -314,7 +314,7 @@ for the information on your OS-specific issues.
 @subsection Load another boot loader to boot unsupported operating systems
 
 If you want to boot an unsupported operating system (e.g. Windows 95),
-chain-load the boot loader for the operating system. Normally, the boot
+chain-load a boot loader for the operating system. Normally, the boot
 loader is embedded in the @dfn{boot sector} of the partition on which
 the operating system is installed.
 
@@ -326,8 +326,8 @@ grub> rootnoverify (hd0,0)
 @end example
 
 Second, set the @dfn{active} flag in the partition by the command
-@command{makeactive}@footnote{This is not necessary for most modern
-operating systems.}:
+@command{makeactive}@footnote{This is not necessary for most of the
+modern operating systems.}:
 
 @example
 grub> makeactive
@@ -395,7 +395,7 @@ Run the command @command{boot}.
 @subsection GNU/Linux
 
 It is relatively easy to boot GNU/Linux from GRUB, because it somewhat
-resembles booting a Multiboot-compliant OS.
+resembles to boot a Multiboot-compliant OS.
 
 @enumerate
 @item
@@ -440,9 +440,10 @@ kernel. @xref{Command-line-specific commands}, for more information.
 @node FreeBSD
 @subsection FreeBSD
 
-GRUB can directly load both kernel formats, ELF and a.out, but this is
-deprecated, since FreeBSD's bootstrap interface sometimes changes
-heavily, so GRUB can't guarantee to pass kernel parameters correctly.
+GRUB can load the kernel directly, either in ELF or a.out format. But
+this is not recommended, since FreeBSD's bootstrap interface sometimes
+changes heavily, so GRUB can't guarantee to pass kernel parameters
+correctly.
 
 Thus, we'd recommend loading the very flexible loader
 @file{/boot/loader} instead. See this example:
@@ -485,21 +486,21 @@ see @ref{Chain-loading}.
 @node OpenBSD
 @subsection OpenBSD
 
-The booting instructions are exactly the same as for NetBSD
+The booting instruction is exactly the same as for NetBSD
 (@pxref{NetBSD}).
 
 
 @node DOS/Windows
 @subsection DOS/Windows
 
-GRUB doesn't support booting DOS or Windows directly, so you must
-chain-load them (@pxref{Chain-loading}). However, their boot loaders
-have some critical deficiencies, so the general methods may not be
-enough.
+GRUB cannot boot DOS or Windows directly, so you must chain-load them
+(@pxref{Chain-loading}). However, their boot loaders have some critical
+deficiencies, so it may not work to just chain-load them. To overcome
+the problems, GRUB provides you with two helper functions.
 
 If you have installed DOS (or Windows) on a non-first hard disk, you
 have to use the disk swapping technique, because that OS cannot boot
-from any disks but the first one. The solution used in GRUB is the
+from any disks but the first one. The workaround used in GRUB is the
 command @command{map} (@pxref{Commands}), like this:
 
 @example
@@ -513,20 +514,20 @@ This performs a @dfn{virtual} swap between your first and second hard
 drive.
 
 @strong{Caution:} This is effective only if DOS (or Windows) uses BIOS
-to access the swapped disks. If it uses a special driver for them,
-it probably won't work.
+to access the swapped disks. If that OS uses a special driver for the
+disks, this probably won't work.
 
-Another problem arises if you install more than one sets of DOS/Windows
+Another problem arises if you installed more than one set of DOS/Windows
 onto one disk, because they could be confused if there are more than one
 primary partitions for DOS/Windows. Certainly you should avoid doing
 this, but there is a solution if you do want to do so. Use the partition
 hiding/unhiding technique.
 
-If GRUB @dfn{hide}s a DOS (or Windows) partition, then it ignores the
+If GRUB @dfn{hide}s a DOS (or Windows) partition, it ignores the
 partition. If GRUB @dfn{unhide}s a DOS (or Windows) partition, it
 detects the partition. Thus, if you have installed DOS (or Windows) on
-the first partition and the second partition of the first hard disk,
-to boot the first copy, do the following:
+the first partition and the second of the first hard disk, and boot the
+first copy, do the following:
 
 @example
 @group
@@ -561,9 +562,9 @@ grub> boot
 @chapter Downloading OS images from a network
 
 Although GRUB is a disk-based boot loader, it does provide some network
-support. To using the network support, you need to enable at least one
-network driver in the build process. For more information please see
-@file{netboot/README.netboot} in the source distribution.
+support. To use the network support, you need to enable at least one
+network driver in the GRUB build process. For more information please
+see @file{netboot/README.netboot} in the source distribution.
 
 @menu
 * General usage of network support::
@@ -574,19 +575,19 @@ network driver in the build process. For more information please see
 @node General usage of network support
 @section How to set up your network
 
-First, you have to set up servers in your network. GRUB requires a
-server that will assign an IP address, and a file server. The former is
-either BOOTP, DHCP or a RARP server (RARP is deprecated, since it cannot
-serve much information). For the latter, only TFTP is supported at the
-moment. It is not necessary to run both the servers on one computer. How
-to configure the servers is beyond the scope of this document, so please
+GRUB requires a server that will assign an IP address to the machine on
+which GRUB is running, and a file server. The former is either BOOTP,
+DHCP or a RARP server (RARP is deprecated, since it cannot serve much
+information). For the latter, only TFTP is supported at the moment. It
+is not necessary to run both the servers on one computer. How to
+configure these servers is beyond the scope of this document, so please
 refer to the manuals specific to those protocols/servers.
 
-Second, run @command{bootp}, @command{dhcp} and @command{rarp} for
-BOOTP, DHCP and RARP, respectively. Each command will show an assigned
-IP address, a netmask, an IP address for your TFTP server and a
-gateway. If any of the addresses is wrong or it causes an error,
-probably the configuration of your servers isn't set up properly.
+Once you have set up the servers, run @command{bootp}, @command{dhcp}
+or @command{rarp} for BOOTP, DHCP or RARP, respectively. Each command
+will show an assigned IP address, a netmask, an IP address for your TFTP
+server and a gateway. If any of the addresses is wrong or it causes an
+error, probably the configuration of your servers isn't set up properly.
 
 Finally, download your OS images from your network. The network can be
 accessed using the network drive @samp{(nd)}. Everything else is very
@@ -662,7 +663,7 @@ exact syntax should differ from the example, more or less.
 You probably noticed that you need to type several commands to boot your
 OS. There's a solution to that - GRUB provides a menu interface
 (@pxref{Menu interface}) from which you can select an item (using arrow
-keys) which will do everything to boot an OS.
+keys) that will do everything to boot an OS.
 
 To enable the menu, you need a configuration file,
 @file{/boot/grub/menu.lst}. We'll analyze an example file.
@@ -801,7 +802,7 @@ chainloader +1
 @end group
 @end example
 
-The same as the above, just for Windows.
+The same as the above, but for Windows.
 
 @example
 @group
@@ -812,7 +813,7 @@ setup   (hd0)
 @end group
 @end example
 
-This will just (re)install GRUB on the hard disk.
+This will just (re)install GRUB onto the hard disk.
 
 @example
 # Change the colors.

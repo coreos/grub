@@ -1,4 +1,9 @@
-2000-07-14  Khimenko Victor <grub@khim.sch57.msk.ru>
+2000-07-23  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/tutorial.texi: Fix some syntax errors and ambiguous
+	sentences. Suggested by M. Meiarashi <mes@st.rim.or.jp>.
+	
+2000-07-14  Khimenko Victor  <grub@khim.sch57.msk.ru>
 
 	* stage2/boot.c (load_image): When getting the text length of a 
 	Linux kernel, use unsigned long instead of unsigned short.
