@@ -612,9 +612,9 @@ char *grub_strcpy (char *dest, const char *src);
 /* misc */
 void init_page (void);
 void print_error (void);
-char *convert_to_ascii (char *buf, int c,...);
+char *convert_to_ascii (char *buf, int c, ...);
 int get_cmdline (char *prompt, char *cmdline, int maxlen,
-		 int echo_char, int completion);
+		 int echo_char, int history);
 int substring (char *s1, char *s2);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);

@@ -1,5 +1,16 @@
 1999-09-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): The argument
+	COMPLETION is renamed to READLINE.
+	Do not initialize KILL here.
+	TAB, C-a, C-e, C-f, C-b, C-u, C-k, C-y, C-p and C-n are handled
+	only if READLINE is non-zero.
+	If ECHO_CHAR is not NUL, do not remove the leading spaces in BUF.
+	Add CMDLINE into the history list only if READLINE is non-zero.
+	* stage2/stage2.c (cmain): Initialize the kill buffer.
+	
+1999-09-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	Killing, yanking and manipulating the history are supported.
 	
 	* stage2/shared.h (cur_cmdline): Removed.

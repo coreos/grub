@@ -220,7 +220,7 @@ add_history (const char *cmdline, int no)
    If ECHO_CHAR is nonzero, echo it instead of the typed character. */
 int
 get_cmdline (char *prompt, char *cmdline, int maxlen,
-	     int echo_char, int completion)
+	     int echo_char, int readline)
 {
   int ystart, yend, xend, lpos, c;
   /* The length of PROMPT.  */
@@ -331,7 +331,6 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
     }
   lpos = llen;
   grub_strcpy (buf, cmdline);
-  *kill = 0;
   
   cl_init ();
   
@@ -366,90 +365,181 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	}
 
       c = ASCII_CHAR (c);
-      
+
+      /* If READLINE is non-zero, handle readline-like key bindings.  */
+      if (readline)
+	{
+	  switch (c)
+	    {
+	    case 9:		/* TAB lists completions */
+	      {
+		int i, j = 0, llen_old = llen;
+		
+		/* Find the first word.  */
+		while (buf[j] == ' ')
+		  j++;
+		while (buf[j] && buf[j] != '=' && buf[j] != ' ')
+		  j++;
+		
+		/* Since the command line cannot have a '\n', we're OK to
+		   use C.  */
+		c = buf[lpos];
+		
+		cl_kill_to_end ();
+		
+		/* goto part after line here */
+		yend = ((llen + plen) / 79) + ystart;
+		putchar ('\n');
+		gotoxy (0, getxy () & 0xff);
+		
+		
+		if (lpos > j)
+		  {
+		    for (i = lpos; i > 0 && buf[i - 1] != ' '; i--);
+		    if (i <= j)
+		      i = j + 1;
+		    /* print possible completions */
+		    print_completions (buf + i);
+		    /* if somebody in print_completions has added something, 
+		       account for that */
+		    while (buf[lpos])
+		      lpos++, llen_old++;
+		  }
+		else 
+		  {
+		    /* Print the command list.  */
+		    struct builtin **builtin;
+		    
+		    for (builtin = builtin_table; *builtin != 0; builtin++)
+		      {
+			/* Do not print the name if it cannot be run in
+			   the command-line interface.  */
+			if (! ((*builtin)->flags & BUILTIN_CMDLINE))
+			  continue;
+			
+			grub_printf ("%s ", (*builtin)->name);
+		      }
+		  }
+		
+		/* restore command-line */
+		buf[lpos] = c;
+		llen = llen_old;
+		cl_init ();
+	      }
+	      break;
+	    case 1:		/* C-a go to beginning of line */
+	      lpos = 0;
+	      cl_setcpos ();
+	      break;
+	    case 5:		/* C-e go to end of line */
+	      lpos = llen;
+	      cl_setcpos ();
+	      break;
+	    case 6:		/* C-f forward one character */
+	      if (lpos < llen)
+		{
+		  lpos++;
+		  cl_setcpos ();
+		}
+	      break;
+	    case 2:		/* C-b backward one character */
+	      if (lpos > 0)
+		{
+		  lpos--;
+		  cl_setcpos ();
+		}
+	      break;
+	    case 21:		/* C-u kill to beginning of line */
+	      if (lpos == 0)
+		break;
+	      /* Copy the string being deleted to KILL.  */
+	      grub_memmove (kill, buf, lpos);
+	      kill[lpos] = 0;
+	      grub_memmove (buf, buf + lpos, llen - lpos + 1);
+	      lpos = llen - lpos;
+	      cl_setcpos ();
+	      cl_kill_to_end ();
+	      lpos = 0;
+	      cl_setcpos ();
+	      cl_print (buf, echo_char);
+	      cl_setcpos ();
+	      break;
+	    case 11:		/* C-k kill to end of line */
+	      if (lpos == llen)
+		break;
+	      /* Copy the string being deleted to KILL.  */
+	      grub_memmove (kill, buf + lpos, llen - lpos + 1);
+	      cl_kill_to_end ();
+	      break;
+	    case 25:		/* C-y yank the kill buffer */
+	      cl_insert (kill);
+	      break;
+	    case 16:		/* C-p fetch the previous command */
+	      {
+		char *p;
+	      
+		if (history < 0)
+		  /* Save the working buffer.  */
+		  grub_strcpy (cmdline, buf);
+		else if (grub_strcmp (get_history (history), buf) != 0)
+		  /* If BUF is modified, add it into the history list.  */
+		  add_history (buf, history);
+	      
+		history++;
+		p = get_history (history);
+		if (! p)
+		  {
+		    history--;
+		    break;
+		  }
+	      
+		lpos = 0;
+		cl_setcpos ();
+		cl_kill_to_end ();
+		grub_strcpy (buf, p);
+		llen = grub_strlen (buf);
+		lpos = llen;
+		cl_print (buf, 0);
+		cl_setcpos ();
+	      }
+	      break;
+	    case 14:		/* C-n fetch the next command */
+	      {
+		char *p;
+	      
+		if (history < 0)
+		  {
+		    break;
+		  }
+		else if (grub_strcmp (get_history (history), buf) != 0)
+		  /* If BUF is modified, add it into the history list.  */
+		  add_history (buf, history);
+	      
+		history--;
+		p = get_history (history);
+		if (! p)
+		  p = cmdline;
+	      
+		lpos = 0;
+		cl_setcpos ();
+		cl_kill_to_end ();
+		grub_strcpy (buf, p);
+		llen = grub_strlen (buf);
+		lpos = llen;
+		cl_print (buf, 0);
+		cl_setcpos ();
+	      }
+	      break;
+	    }
+	}
+
+      /* ESC, C-d and C-h are always handled. Actually C-d is not
+	 functional if READLINE is zero, as the cursor cannot go
+	 backward, but that's ok.  */
       switch (c)
 	{
-	case 27:		/* ESC immediately return 1 */
+	case 27:	/* ESC immediately return 1 */
 	  return 1;
-	case 9:		/* TAB lists completions */
-	  if (completion)
-	    {
-	      int i, j = 0, llen_old = llen;
-	      
-	      /* Find the first word.  */
-	      while (buf[j] == ' ')
-		j++;
-	      while (buf[j] && buf[j] != '=' && buf[j] != ' ')
-		j++;
-	      
-	      /* Since the command line cannot have a '\n', we're OK to
-		 use C.  */
-	      c = buf[lpos];
-	      
-	      cl_kill_to_end ();
-	      
-	      /* goto part after line here */
-	      yend = ((llen + plen) / 79) + ystart;
-	      putchar ('\n');
-	      gotoxy (0, getxy () & 0xff);
-	      
-	      
-	      if (lpos > j)
-		{
-		  for (i = lpos; i > 0 && buf[i - 1] != ' '; i--);
-		  if (i <= j)
-		    i = j + 1;
-		  /* print possible completions */
-		  print_completions (buf + i);
-		  /* if somebody in print_completions has added something, 
-		     account for that */
-		  while (buf[lpos])
-		    lpos++, llen_old++;
-		}
-	      else 
-		{
-		  /* Print the command list.  */
-		  struct builtin **builtin;
-		  
-		  for (builtin = builtin_table; *builtin != 0; builtin++)
-		    {
-		      /* Do not print the name if it cannot be run in
-			 the command-line interface.  */
-		      if (! ((*builtin)->flags & BUILTIN_CMDLINE))
-			continue;
-
-		      grub_printf ("%s ", (*builtin)->name);
-		    }
-		}
-	      
-	      /* restore command-line */
-	      buf[lpos] = c;
-	      llen = llen_old;
-	      cl_init ();
-	    }
-	  break;
-	case 1:		/* C-a go to beginning of line */
-	  lpos = 0;
-	  cl_setcpos ();
-	  break;
-	case 5:		/* C-e go to end of line */
-	  lpos = llen;
-	  cl_setcpos ();
-	  break;
-	case 6:		/* C-f forward one character */
-	  if (lpos < llen)
-	    {
-	      lpos++;
-	      cl_setcpos ();
-	    }
-	  break;
-	case 2:		/* C-b backward one character */
-	  if (lpos > 0)
-	    {
-	      lpos--;
-	      cl_setcpos ();
-	    }
-	  break;
 	case 4:		/* C-d delete character under cursor */
 	  if (lpos == llen)
 	    break;
@@ -477,87 +567,6 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		}
 	    }
 	  break;
-	case 21:		/* C-u kill to beginning of line */
-	  if (lpos == 0)
-	    break;
-	  /* Copy the string being deleted to KILL.  */
-	  grub_memmove (kill, buf, lpos);
-	  kill[lpos] = 0;
-	  grub_memmove (buf, buf + lpos, llen - lpos + 1);
-	  lpos = llen - lpos;
-	  cl_setcpos ();
-	  cl_kill_to_end ();
-	  lpos = 0;
-	  cl_setcpos ();
-	  cl_print (buf, echo_char);
-	  cl_setcpos ();
-	  break;
-	case 11:		/* C-k kill to end of line */
-	  if (lpos == llen)
-	    break;
-	  /* Copy the string being deleted to KILL.  */
-	  grub_memmove (kill, buf + lpos, llen - lpos + 1);
-	  cl_kill_to_end ();
-	  break;
-	case 25:		/* C-y yank the kill buffer */
-	  cl_insert (kill);
-	  break;
-	case 16:		/* C-p fetch the previous command */
-	  {
-	    char *p;
-
-	    if (history < 0)
-	      /* Save the working buffer.  */
-	      grub_strcpy (cmdline, buf);
-	    else if (grub_strcmp (get_history (history), buf) != 0)
-	      /* If BUF is modified, add it into the history list.  */
-	      add_history (buf, history);
-	    
-	    history++;
-	    p = get_history (history);
-	    if (! p)
-	      {
-		history--;
-		break;
-	      }
-
-	    lpos = 0;
-	    cl_setcpos ();
-	    cl_kill_to_end ();
-	    grub_strcpy (buf, p);
-	    llen = grub_strlen (buf);
-	    lpos = llen;
-	    cl_print (buf, 0);
-	    cl_setcpos ();
-	  }
-	  break;
-	case 14:		/* C-n fetch the next command */
-	  {
-	    char *p;
-
-	    if (history < 0)
-	      {
-		break;
-	      }
-	    else if (grub_strcmp (get_history (history), buf) != 0)
-	      /* If BUF is modified, add it into the history list.  */
-	      add_history (buf, history);
-	    
-	    history--;
-	    p = get_history (history);
-	    if (! p)
-	      p = cmdline;
-	    
-	    lpos = 0;
-	    cl_setcpos ();
-	    cl_kill_to_end ();
-	    grub_strcpy (buf, p);
-	    llen = grub_strlen (buf);
-	    lpos = llen;
-	    cl_print (buf, 0);
-	    cl_setcpos ();
-	  }
-	  break;
 	default:		/* insert printable character into line */
 	  if (c >= ' ' && c <= '~')
 	    {
@@ -574,12 +583,19 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   yend = ((llen + plen) / 79) + ystart;
   putchar ('\n');
   gotoxy (0, getxy () & 0xff);
-  
-  /* remove leading spaces */
-  for (lpos = 0; buf[lpos] == ' '; lpos++);
-  
+
+  /* If ECHO_CHAR is NUL, remove the leading spaces.  */
+  lpos = 0;
+  if (! echo_char)
+    while (buf[lpos] == ' ')
+      lpos++;
+
+  /* Copy the working buffer to CMDLINE.  */
   grub_memmove (cmdline, buf + lpos, llen - lpos + 1);
-  if (lpos < llen)
+
+  /* If the readline-like feature is turned on and CMDLINE is not
+     empty, add it into the history list.  */
+  if (readline && lpos < llen)
     add_history (cmdline, 0);
   
   return 0;

@@ -572,7 +572,11 @@ cmain (void)
 {
   int config_len, menu_len, num_entries;
   char *config_entries, *menu_entries;
+  char *kill = (char *) KILL_BUF;
 
+  /* Initialize the kill buffer.  */
+  *kill = 0;
+  
   /* Never return.  */
   for (;;)
     {
