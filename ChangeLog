@@ -1,5 +1,12 @@
 2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* netboot/fsys_tftp.c (tftp_read): Move the unused data
+	forwards, only if AMT is more than zero. If AMT is not positive,
+	subtract BUF_READ from SAVED_FILEPOS and set BUF_READ to zero,
+	to skip the whole buffer. Reported by Frank Mehnert.
+	
+2001-10-13  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	Don't use get_diskinfo_floppy. Reported by Ben Liblit
 	<liblit@eecs.berkeley.edu>.
 	
