@@ -1092,8 +1092,13 @@ find_func (char *arg, int flags)
 		}
 	    }
 
+	  /* We want to ignore any error here.  */
 	  errnum = ERR_NONE;
 	}
+
+      /* next_partition always sets ERRNUM in the last call, so clear
+	 it.  */
+      errnum = ERR_NONE;
     }
 
   saved_drive = tmp_drive;

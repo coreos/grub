@@ -21,8 +21,8 @@ New in 0.5.96 - 2000-10-04:
   fixed. So now the image `nbgrub' can work fine even with a card such
   as rtl8139.
 * Serial terminal support is added. The configure script accepts
-  a new option `--enable-serial'. If it is specified, you can use two
-  new commands, "serial" and "terminal" in the command-line and the
+  a new option `--disable-serial'. Unless it is specified, you can use
+  two new commands, "serial" and "terminal" in the command-line and the
   menu. See the manual, for more details.
 * Preserve the possible magic number used by Windows NT in a MBR.
 * The command-line interface is switched to single-line editing mode.

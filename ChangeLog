@@ -1,3 +1,9 @@
+2000-10-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (find_func): Clear ERRNUM after the last
+	call of next_partition, because it always sets ERRNUM. Reported
+	by Thierry Laronde <thierry.laronde@polynum.com>.
+	
 2000-10-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* lib/device.c [__linux__] (write_to_partition): Open DEV with
