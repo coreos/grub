@@ -33,8 +33,8 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
 grub_emu_LDFLAGS = -lncurses
 
-grubof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c \
-	boot/powerpc/ieee1275/crt0.S kern/main.c kern/device.c \
+grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
+	boot/powerpc/ieee1275/ieee1275.c kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c fs/fshelp.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \

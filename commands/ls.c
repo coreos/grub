@@ -100,7 +100,7 @@ grub_ls_list_files (const char *dirname, int longlist, int all, int human)
 {
   char *device_name;
   grub_fs_t fs;
-  char *path;
+  const char *path;
   grub_device_t dev;
 
   static int print_files (const char *filename, int dir)
@@ -177,8 +177,12 @@ grub_ls_list_files (const char *dirname, int longlist, int all, int human)
     goto fail;
 
   fs = grub_fs_probe (dev);
-  path = grub_strchr (dirname, '/');
-
+  path = grub_strchr (dirname, ')');
+  if (! path)
+    path = dirname;
+  else
+    path++;
+  
   if (! path && ! device_name)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");

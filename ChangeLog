@@ -1,3 +1,11 @@
+2004-09-22  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* commands/ls.c (grub_ls_list_files): Use the string following the
+	initial ')', if present, as the filesystem path.
+	* kern/rescue.c (grub_rescue_cmd_ls): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): List crt0.S first.
+
 2004-09-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make the source code of the menu interface more readable.

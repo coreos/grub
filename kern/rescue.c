@@ -236,8 +236,12 @@ grub_rescue_cmd_ls (int argc, char *argv[])
 	goto fail;
 
       fs = grub_fs_probe (dev);
-      path = grub_strchr (argv[0], '/');
-
+      path = grub_strchr (argv[0], ')');
+      if (! path)
+	path = argv[0];
+      else
+	path++;
+      
       if (! path && ! device_name)
 	{
 	  grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
