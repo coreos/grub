@@ -13,15 +13,21 @@ dnl LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 dnl USE OF THIS SOFTWARE.
 
 AC_INIT(shared_src/fsys_ext2fs.c)
-AM_INIT_AUTOMAKE(grub,0.5.90)
+dnl Grab the package and version from the top debian/changelog entry.
+AM_INIT_AUTOMAKE(
+   esyscmd([sed 's/ .*$//; q' debian/changelog]),
+   esyscmd([sed 's/^.*(\(.*\)).*$/\1/; q' debian/changelog]))dnl
 AC_PREREQ(2.12)
 
 AC_CANONICAL_HOST
 
 case "$host_cpu" in
-i[[3456]]86) ;;
+i[[3456]]86) host_cpu=i386 ;;
 *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
+
+AC_SUBST(host_cpu)
+AC_SUBST(host_vendor)
 
 #
 # Options
@@ -68,7 +74,12 @@ cat > $SHARED_SRC_RULES <<EOF
 # $SHARED_SRC_RULES - Rules for building objects from files in shared_src.
 # Generated automatically by configure.
 asm.o: \$(top_srcdir)/shared_src/asm.S
-	\$(COMPILE) -c \$(top_srcdir)/shared_src/asm.S
+	@echo '\$(COMPILE) -c \$(top_srcdir)/shared_src/asm.S'; \\
+	if test -d .deps; then \\
+	  \$(COMPILE) -Wp,-MD,.deps/asm.P -c \$(top_srcdir)/shared_src/asm.S; \\
+	else \\
+	  \$(COMPILE) -c \$(top_srcdir)/shared_src/asm.S; \\
+	fi
 EOF
 for f in boot common char_io cmdline disk_io gunzip fsys_ffs \
          fsys_ext2fs fsys_fat stage1_5 stage2; do
@@ -76,7 +87,13 @@ for f in boot common char_io cmdline disk_io gunzip fsys_ffs \
   cat >> $SHARED_SRC_RULES <<EOF
 
 $f.o: \$(top_srcdir)/shared_src/$f.c
-	\$(COMPILE) -c \$(top_srcdir)/shared_src/$f.c
+	@echo '\$(COMPILE) -c \$(top_srcdir)/shared_src/$f.c'; \\
+	if test -d .deps; then \\
+	  \$(COMPILE) -Wp,-MD,.deps/$f.P -c \$(top_srcdir)/shared_src/$f.c; \\
+	else \\
+	  \$(COMPILE) -c \$(top_srcdir)/shared_src/$f.c; \\
+	fi
+
 EOF
 done
 

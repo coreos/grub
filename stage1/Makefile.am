@@ -1,8 +1,6 @@
-AUTOMAKE_OPTIONS = gnits
-
-pkglibdir = $(exec_prefix)/lib/$(PACKAGE)
-pkglib_DATA = stage1
-CLEANFILES = stage1
+pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
+pkgdata_DATA = stage1
+CLEANFILES = $(pkgdata_DATA)
 
 # We can't use builtins or standard includes.
 COMPILE = $(CC) -fno-builtin -nostdinc $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)

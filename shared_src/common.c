@@ -37,7 +37,7 @@ unsigned long saved_mem_upper;
 
 int errnum = 0;
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 
 char *err_list[] =
 {
@@ -61,7 +61,7 @@ char *err_list[] =
   [ERR_FILE_NOT_FOUND] = "File not found",
   [ERR_FSYS_CORRUPT] = "Inconsistent filesystem structure",
   [ERR_FSYS_MOUNT] = "Cannot mount selected partition",
-  [ERR_GEOM] = "Disk geometry error",
+  [ERR_GEOM] = "Selected cylinder exceeds maximum supported by BIOS",
   [ERR_NEED_LX_KERNEL] = "Must load Linux kernel before initrd",
   [ERR_NEED_MB_KERNEL] = "Must load Multiboot kernel before modules",
   [ERR_NO_DISK] = "Selected disk does not exist",
@@ -83,7 +83,7 @@ static struct AddrRangeDesc fakemap[3] =
   {20, 0x100000, 0, 0, 0, MB_ARD_MEMORY},
   {20, 0x1000000, 0, 0, 0, MB_ARD_MEMORY}
 };
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 
 /*
@@ -102,7 +102,7 @@ init_bios_info (void)
   mbi.mem_lower = get_memsize (0);
   mbi.mem_upper = get_memsize (1);
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
   /*
    *  We need to call this somewhere before trying to put data
    *  above 1 MB, since without calling it, address line 20 will be wired
@@ -199,7 +199,7 @@ init_bios_info (void)
 
   mbi.flags = MB_INFO_MEMORY | MB_INFO_CMDLINE | MB_INFO_BOOTDEV;
 
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
   /*
    *  Set boot drive and partition.

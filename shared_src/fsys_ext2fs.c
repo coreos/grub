@@ -431,16 +431,16 @@ ext2fs_read (int addr, int len)
       if (size > len)
 	size = len;
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
       debug_fs_func = debug_fs;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
       devread (map * (EXT2_BLOCK_SIZE (SUPERBLOCK) / DEV_BSIZE),
 	       offset, size, addr);
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
       debug_fs_func = NULL;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
       addr += size;
       len -= size;
@@ -753,6 +753,7 @@ ext2fs_dir (char *dirname)
 	      dp->name[dp->name_len] = 0;
 	      str_chk = substring (dirname, dp->name);
 
+# ifndef STAGE1_5
 	      if (print_possibilities && ch != '/'
 		  && (!*dirname || str_chk <= 0))
 		{
@@ -760,6 +761,7 @@ ext2fs_dir (char *dirname)
 		    print_possibilities = -print_possibilities;
 		  printf ("  %s", dp->name);
 		}
+# endif
 
 	      dp->name[dp->name_len] = saved_c;
 	    }

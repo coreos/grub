@@ -33,8 +33,7 @@ includedir = @includedir@
 oldincludedir = /usr/include
 
 DISTDIR =
-
-pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
 
 top_builddir = ..
@@ -64,14 +63,14 @@ MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+host_cpu = @host_cpu@
+host_vendor = @host_vendor@
 sbingrub = @sbingrub@
 stage2debug = @stage2debug@
 
-AUTOMAKE_OPTIONS = gnits
-
-pkglibdir = $(exec_prefix)/lib/$(PACKAGE)
-pkglib_DATA = stage2
-CLEANFILES = stage2
+pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
+pkgdata_DATA = stage2
+CLEANFILES = $(pkgdata_DATA)
 MOSTLYCLEANFILES = stage2.exec
 
 # We can't use builtins or standard includes.
@@ -83,6 +82,9 @@ stage2_exec_LDADD = asm.o boot.o common.o char_io.o cmdline.o disk_io.o \
 	gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
 
 noinst_PROGRAMS = stage2.exec
+
+# FIXME: Automake hackery.
+DEP_FILES = .deps/dummy.P $(wildcard .deps/*.P)
 stage2_exec_SOURCES = dummy.c # needed to drag in C Makefile variables
 DISTFILES = $(DIST_COMMON)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -100,14 +102,13 @@ disk_io.o gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
 stage2_exec_LDFLAGS = 
 CFLAGS = @CFLAGS@
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
-DATA =  $(pkglib_DATA)
+DATA =  $(pkgdata_DATA)
 
 DIST_COMMON =  Makefile.am Makefile.in
 
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/dummy.P
 SOURCES = $(stage2_exec_SOURCES)
 OBJECTS = $(stage2_exec_OBJECTS)
 
@@ -116,7 +117,7 @@ all: Makefile $(PROGRAMS) $(DATA)
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
-	cd $(top_srcdir) && $(AUTOMAKE) --gnits stage2/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu stage2/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -148,23 +149,23 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-install-pkglibDATA: $(pkglib_DATA)
+install-pkgdataDATA: $(pkgdata_DATA)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
-	@list='$(pkglib_DATA)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	@list='$(pkgdata_DATA)'; for p in $$list; do \
 	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkglibdir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkglibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgdatadir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgdatadir)/$$p; \
 	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkglibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir)/$$p; \
 	  fi; fi; \
 	done
 
-uninstall-pkglibDATA:
+uninstall-pkgdataDATA:
 	@$(NORMAL_UNINSTALL)
-	list='$(pkglib_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(pkglibdir)/$$p; \
+	list='$(pkgdata_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(pkgdatadir)/$$p; \
 	done
 
 tags: TAGS
@@ -201,7 +202,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnits stage2/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu stage2/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
@@ -237,21 +238,21 @@ dvi:
 check: all
 	$(MAKE)
 installcheck:
-install-exec: install-pkglibDATA
+install-exec: 
 	@$(NORMAL_INSTALL)
 
-install-data: 
+install-data: install-pkgdataDATA
 	@$(NORMAL_INSTALL)
 
 install: install-exec install-data all
 	@:
 
-uninstall: uninstall-pkglibDATA
+uninstall: uninstall-pkgdataDATA
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
-	$(mkinstalldirs)  $(DATADIR)$(pkglibdir)
+	$(mkinstalldirs)  $(DATADIR)$(pkgdatadir)
 
 
 mostlyclean-generic:
@@ -288,7 +289,7 @@ maintainer-clean:  maintainer-clean-noinstPROGRAMS \
 .PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
 clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile uninstall-pkglibDATA install-pkglibDATA tags \
+maintainer-clean-compile uninstall-pkgdataDATA install-pkgdataDATA tags \
 mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
 distdir mostlyclean-depend distclean-depend clean-depend \
 maintainer-clean-depend info dvi installcheck install-exec install-data \

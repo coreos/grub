@@ -30,6 +30,9 @@
 	.code16
 
 ENTRY(start)
+	/* Suppress ld warnings. */
+	.globl _start
+_start:
 	/*
 	 *  Guarantee that "start" is loaded at 0x0:0x8000.
 	 */
@@ -122,6 +125,7 @@ ENTRY(hard_stop)
 	hlt
 	jmp EXT_C(hard_stop)
 
+#ifndef STAGE1_5
 /*
  * stop_floppy()
  *
@@ -164,6 +168,7 @@ ENTRY(chain_stage1)
 	addr32
 	ljmp	(offset)
 	.code32
+#endif /* STAGE1_5 */
 
 
 /*
@@ -381,6 +386,12 @@ ENTRY(biosdisk)
 	movw	%bx, %ax
 	int	$0x13			/* do the operation */
 
+#ifdef NO_INT13_FALLBACK
+	/* Save return value. */
+	movb	%ah, %bl
+	data32
+	jmp	disk_exit_16
+#else
 	/* set success return value */
 	movb	$0, %bl
 
@@ -390,6 +401,7 @@ ENTRY(biosdisk)
 
 	data32
 	call	EXT_C(real_to_prot)	/* back to protected mode */
+#endif
 	.code32
 
 	/* either failed, or a floppy, so try standard BIOS calls */
@@ -423,7 +435,7 @@ disk_compute_args:
 	/* check cylinder offset, is there a geometry problem here? */
 	movl	0x10(%ebp), %ebx
 	shrl	$16, %ebx
-	andb	$0xf, %bh	/* mask out bios extension code */
+	andb	$0xf, %bh		/* mask out bios extension code */
 	cmpl	%ebx, %eax
 
 	/* if not, go on to standard read function */
@@ -432,8 +444,8 @@ disk_compute_args:
 	movl	$BIOSDISK_ERROR_GEOMETRY, %eax
 	jmp	disk_exit_32
 
-disk_address_packet:
 	.align	4
+disk_address_packet:
 	.byte	0x20			/* length of packet */
 	.byte	0			/* reserved */
 dap_blocks:
@@ -452,7 +464,9 @@ disk_use_standard_bios:
 
 	shll	$8, %edx		/* get head number to %dh */
 	xchgl	%eax, %ecx		/* cylinder to %cx, sector to %al */
+#ifdef AWARD_INT13_EXTENSIONS
 	/* FIXME: cylinder; bits 10,11 of cyl are in %dh */
+#endif
 	/* cylinder; bits 8,9 of cyl are in %cl */
 	xchgb	%ch, %cl
 	shlb	$6, %cl
@@ -633,18 +647,22 @@ probe_success:
 	 */
 	movb	%bh, %ah		/* restore BIOS extensions bits */
 
+#ifdef AWARD_INT13_EXTENSIONS
 	movb	%dh, %al		/* bits 10,11 of cylinder count */
-	andb	$0xc0, %eax
+	andb	$0xc0, %al
 	shlw	$2, %ax			/* << 2 */
+#endif
 	movb	%cl, %al		/* bits 8,9 of cylinder count */
 	andb	$0xc0, %al
 	shlw	$2, %ax			/* << 2 */
 	movb	%ch, %al		/* Lower 8 bits */
 	shll	$16, %eax		/* << 16 */
 
-	andb	$0x3f, %ah		/* mask of cylinder gunk */
+#ifdef AWARD_INT13_EXTENSIONS
+	andb	$0x3f, %dh		/* mask off cylinder gunk */
+#endif
 	movb	%dh, %ah		/* max head */
-	andb	$0x3f, %cl		/* mask of cylinder gunk */
+	andb	$0x3f, %cl		/* mask off cylinder gunk */
 	movb	%cl, %al		/* max sector (and # sectors) */
 
 	movl	%eax, %ebx		/* save return value */
@@ -770,7 +788,7 @@ xdone:
 	ret
 
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 
 /*
  *
@@ -1344,7 +1362,7 @@ pending:
 	pop	%ebp
 	ret
 
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 /*
  *  This is the area for all of the special variables.

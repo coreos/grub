@@ -1,4 +1,3 @@
-AUTOMAKE_OPTIONS = gnits
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
 	fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
 	mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h

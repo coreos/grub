@@ -33,8 +33,7 @@ includedir = @includedir@
 oldincludedir = /usr/include
 
 DISTDIR =
-
-pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
 
 top_builddir = ..
@@ -64,27 +63,30 @@ MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+host_cpu = @host_cpu@
+host_vendor = @host_vendor@
 sbingrub = @sbingrub@
 stage2debug = @stage2debug@
 
-AUTOMAKE_OPTIONS = gnits
-
 IMPORTANT_SIZE_LIMIT = 7168
 
-pkglibdir = $(exec_prefix)/lib/$(PACKAGE)
-pkglib_DATA = fat_stage1_5
-CLEANFILES = $(pkglib_DATA) $(pkglib_DATA)T
+pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
+pkgdata_DATA = fat_stage1_5
+CLEANFILES = $(pkgdata_DATA) $(pkgdata_DATA)T
 noinst_PROGRAMS = fat_stage1_5.exec
 
 # We can't use builtins or standard includes.
 COMPILE = $(CC) -fno-builtin -nostdinc -DFSYS_FAT=1 -DNO_DECOMPRESSION=1 \
-	-DNO_FANCY_STUFF=1 -DCONFIG_FILE_ASM='.string "/boot/grub/stage2"' \
+	-DSTAGE1_5=1 -DCONFIG_FILE_ASM='.string "/boot/grub/stage2"' \
 	$(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/shared_src
 
 # asm.o absolutely needs to come first!
 fat_stage1_5_exec_LDADD = asm.o common.o char_io.o disk_io.o \
 	stage1_5.o fsys_fat.o
+
+# FIXME: Automake hackery.
+DEP_FILES = .deps/dummy.P $(wildcard .deps/*.P)
 fat_stage1_5_exec_SOURCES = dummy.c # needed to drag in C Makefile variables
 DISTFILES = $(DIST_COMMON)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -102,14 +104,13 @@ stage1_5.o fsys_fat.o
 fat_stage1_5_exec_LDFLAGS = 
 CFLAGS = @CFLAGS@
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
-DATA =  $(pkglib_DATA)
+DATA =  $(pkgdata_DATA)
 
 DIST_COMMON =  Makefile.am Makefile.in
 
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/dummy.P
 SOURCES = $(fat_stage1_5_exec_SOURCES)
 OBJECTS = $(fat_stage1_5_exec_OBJECTS)
 
@@ -118,7 +119,7 @@ all: Makefile $(PROGRAMS) $(DATA)
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
-	cd $(top_srcdir) && $(AUTOMAKE) --gnits fat_stage1_5/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu fat_stage1_5/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -150,23 +151,23 @@ distclean-compile:
 
 maintainer-clean-compile:
 
-install-pkglibDATA: $(pkglib_DATA)
+install-pkgdataDATA: $(pkgdata_DATA)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
-	@list='$(pkglib_DATA)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	@list='$(pkgdata_DATA)'; for p in $$list; do \
 	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkglibdir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkglibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgdatadir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgdatadir)/$$p; \
 	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkglibdir)/$$p; \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir)/$$p; \
 	  fi; fi; \
 	done
 
-uninstall-pkglibDATA:
+uninstall-pkgdataDATA:
 	@$(NORMAL_UNINSTALL)
-	list='$(pkglib_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(pkglibdir)/$$p; \
+	list='$(pkgdata_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(pkgdatadir)/$$p; \
 	done
 
 tags: TAGS
@@ -203,7 +204,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnits fat_stage1_5/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu fat_stage1_5/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
@@ -239,21 +240,21 @@ dvi:
 check: all
 	$(MAKE)
 installcheck:
-install-exec: install-pkglibDATA
+install-exec: 
 	@$(NORMAL_INSTALL)
 
-install-data: 
+install-data: install-pkgdataDATA
 	@$(NORMAL_INSTALL)
 
 install: install-exec install-data all
 	@:
 
-uninstall: uninstall-pkglibDATA
+uninstall: uninstall-pkgdataDATA
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
-	$(mkinstalldirs)  $(DATADIR)$(pkglibdir)
+	$(mkinstalldirs)  $(DATADIR)$(pkgdatadir)
 
 
 mostlyclean-generic:
@@ -290,7 +291,7 @@ maintainer-clean:  maintainer-clean-noinstPROGRAMS \
 .PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
 clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
-maintainer-clean-compile uninstall-pkglibDATA install-pkglibDATA tags \
+maintainer-clean-compile uninstall-pkgdataDATA install-pkgdataDATA tags \
 mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
 distdir mostlyclean-depend distclean-depend clean-depend \
 maintainer-clean-depend info dvi installcheck install-exec install-data \

@@ -1,3 +1,74 @@
+1999-03-08  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/asm.S (_start): New explicit symbol to supress
+	warnings.
+
+	* e2fs_stage1_5/Makefile.am (NO_FANCY_STUFF): Renamed to STAGE1_5,
+	since that describes this conditional more accurately.
+	* fat_stage1_5/Makefile.am: Likewise.
+	* ffs_stage1_5/Makefile.am: Likewise.
+	* shared_src/asm.S: Likewise.
+	* shared_src/char_io.c: Likewise.
+	* shared_src/common.c: Likewise.
+	* shared_src/disk_io.c: Likewise.
+	* shared_src/fsys_ext2fs.c: Likewise.
+	* shared_src/fsys_ffs.c: Likewise.
+	* shared_src/shared.h: Likewise.
+
+1999-03-07  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* configure.in (SHARED_SRC_RULES): Automatically generate
+	Makefile dependencies for files in shared_src.
+	e2fs_stage1_5/Makefile.am: Use them.
+	fat_stage1_5/Makefile.am: Likewise.
+	ffs_stage1_5/Makefile.am: Likewise.
+	grub/Makefile.am: Likewise.
+	stage2/Makefile.am: Likewise.
+	stage2_debug/Makefile.am: Likewise.
+
+	* shared_src/disk_inode.h: Fix typo: i_ic shouldn't be defined.
+
+	* shared_src/fsys_ffs.c (block_map): Make static, since this
+	function isn't used outside of its defining file.
+
+	* shared_src/disk_io.c [NO_FANCY_STUFF]: Eliminate a whole bunch
+	more functions from the stage1.5.  From OKUJI Yoshinori.
+	* shared_src/fsys_ffs.c: Likewise.
+	* shared_src/char_io.c: Likewise.
+
+1999-03-05  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/char_io.c (getkey): Don't set BUF_DRIVE to -1.
+	BUF_DRIVE has nothing at all to do with getkey.
+
+	* shared_src/common.c (err_list): Change description of ERR_GEOM
+	to be more informative.
+
+	* Makefile.am (configure): Depend on debian/changelog.
+
+	* configure.in (host_cpu): Make all fully i386-compatible CPUs be
+	identified as i386.
+	(AM_INIT_AUTOMAKE): Fetch values for PACKAGE and VERSION from
+	debian/changelog, so that we only have one file to update.
+
+	* shared_src/asm.S (get_diskinfo): Fix a few bit-twiddling bugs in
+	the BIOS extension detection code.
+	(biosdisk) [AWARD_INT13_EXTENSIONS]: Preliminary implementation
+	of Award's encoding of cylinder bits 10 and 11.
+	(biosdisk) [NO_INT13_FALLBACK]: If defined, don't use the standard
+	disk interface if the extended interface fails.
+
+	* configure.in: Make sure $(host_cpu) and $(host_vendor) are
+	substituted into the Makefile.
+
+	* e2fs_stage1_5/Makefile.am (pkgdatadir): Install files in
+	$(datadir)/grub/$(host_cpu)-$(host_vendor).
+	* fat_stage1_5/Makefile.am: Likewise.
+	* ffs_stage1_5/Makefile.am: Likewise.
+	* stage1/Makefile.am: Likewise.
+	* stage2/Makefile.am: Likewise.
+	* stage2_debug/Makefile.am: Likewise.
+
 1999-03-03  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/asm.S (biosdisk): Use LBA mode if high nibble of

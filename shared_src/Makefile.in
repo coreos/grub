@@ -65,10 +65,11 @@ MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+host_cpu = @host_cpu@
+host_vendor = @host_vendor@
 sbingrub = @sbingrub@
 stage2debug = @stage2debug@
 
-AUTOMAKE_OPTIONS = gnits
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
 	fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
 	mb_header.h mb_info.h pc_slice.h shared.h smp-imps.h
@@ -91,7 +92,7 @@ all: Makefile $(HEADERS)
 
 .SUFFIXES:
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
-	cd $(top_srcdir) && $(AUTOMAKE) --gnits shared_src/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu shared_src/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -132,7 +133,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnits shared_src/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu shared_src/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \

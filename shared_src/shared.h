@@ -409,11 +409,11 @@ __attribute__ ((noreturn));
 
 #ifndef _DISK_IO_C
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 /* instrumentation variables */
      extern void (*debug_fs) (int);
      extern void (*debug_fs_func) (int);
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
      extern unsigned long current_drive;
      extern unsigned long current_partition;

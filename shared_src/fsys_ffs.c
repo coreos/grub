@@ -91,7 +91,7 @@ ffs_mount (void)
   return retval;
 }
 
-int
+static int
 block_map (int file_block)
 {
   int bnum;
@@ -134,15 +134,15 @@ ffs_read (int addr, int len)
       if (size > len)
 	size = len;
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
       debug_fs_func = debug_fs;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
       devread (fsbtodb (SUPERBLOCK, map), off, size, addr);
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
       debug_fs_func = NULL;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
       addr += size;
       len -= size;
@@ -243,6 +243,7 @@ loop:
       dp = (struct direct *) (FSYS_BUF + off);
       loc += dp->d_reclen;
 
+#ifndef STAGE1_5
       if (dp->d_ino && print_possibilities && ch != '/'
 	  && (!*dirname || substring (dirname, dp->d_name) <= 0))
 	{
@@ -251,6 +252,7 @@ loop:
 
 	  printf ("  %s", dp->d_name);
 	}
+#endif /* STAGE1_5 */
     }
   while (!dp->d_ino || (substring (dirname, dp->d_name) != 0
 			|| (print_possibilities && ch != '/')));

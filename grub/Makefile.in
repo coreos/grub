@@ -65,10 +65,10 @@ MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
+host_cpu = @host_cpu@
+host_vendor = @host_vendor@
 sbingrub = @sbingrub@
 stage2debug = @stage2debug@
-
-AUTOMAKE_OPTIONS = gnits
 
 EXTRA_PROGRAMS = grub
 sbin_PROGRAMS = $(sbingrub)
@@ -79,6 +79,9 @@ INCLUDES = -I$(top_srcdir)/shared_src
 grub_SOURCES = main.c asmstub.c
 grub_LDADD = boot.o common.o char_io.o cmdline.o disk_io.o gunzip.o \
 	fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
+
+# FIXME: Automake hackery.
+DEP_FILES = .deps/main.P .deps/asmstub.P $(wildcard .deps/*.P)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 PROGRAMS =  $(sbin_PROGRAMS)
@@ -102,7 +105,6 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/asmstub.P .deps/main.P
 SOURCES = $(grub_SOURCES)
 OBJECTS = $(grub_OBJECTS)
 
@@ -111,7 +113,7 @@ all: Makefile $(PROGRAMS)
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
-	cd $(top_srcdir) && $(AUTOMAKE) --gnits grub/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu grub/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
@@ -197,7 +199,7 @@ distdir: $(DISTFILES)
 	top_distdir=`cd $(top_distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
 	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnits grub/Makefile
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu grub/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \

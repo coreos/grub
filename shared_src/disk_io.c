@@ -27,11 +27,11 @@
 /* XXX for evil hack */
 #include "freebsd.h"
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 /* instrumentation variables */
 void (*debug_fs) (int) = NULL;
 void (*debug_fs_func) (int) = NULL;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 /* These have the same format as "boot_drive" and "install_partition", but
    are meant to be working values. */
@@ -86,6 +86,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
       if (buf_drive != drive)
 	{
 	  buf_geom = get_diskinfo (drive);
+	  printf ("buf_geom = 0x%x\n", buf_geom); /* FIXME */
 	  buf_drive = drive;
 	  buf_track = -1;
 	}
@@ -143,7 +144,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
 	    buf_track = track;
 	}
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
       /*
        *  Instrumentation to tell which sectors were read and used.
        */
@@ -155,7 +156,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
 	  while (sector_num < sector_end)
 	    (*debug_fs_func) (sector_num++);
 	}
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
       if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
 	size = (num_sect * SECTOR_SIZE) - byte_offset;
@@ -195,10 +196,10 @@ devread (int sector, int byte_offset, int byte_len, int addr)
       sector++;
     }
 
-#if !defined(NO_FANCY_STUFF) && defined(DEBUG)
+#if !defined(STAGE1_5) && defined(DEBUG)
   if (debug_fs)
     printf ("<%d, %d, %d>", sector, byte_offset, byte_len);
-#endif /* !NO_FANCY_STUFF && DEBUG */
+#endif /* !STAGE1_5 && DEBUG */
 
   /*
    *  Call "rawread", which is very similar, but:
@@ -242,7 +243,7 @@ attempt_mount (void)
 }
 
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 int
 make_saved_active (void)
 {
@@ -293,7 +294,7 @@ check_and_print_mount (void)
     print_fsys_type ();
   print_error ();
 }
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 
 static int
@@ -325,7 +326,7 @@ check_BSD_parts (int flags)
 	      part_start = BSD_PART_START (label_buf, part_no);
 	      part_length = BSD_PART_LENGTH (label_buf, part_no);
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 	      if (flags)
 		{
 		  if (!got_part)
@@ -337,7 +338,7 @@ check_BSD_parts (int flags)
 		  check_and_print_mount ();
 		}
 	      else
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 	      if (part_no == ((current_partition >> 8) & 0xFF))
 		break;
 	    }
@@ -361,6 +362,7 @@ check_BSD_parts (int flags)
 }
 
 
+#if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
 static char cur_part_desc[16];
 
 static int
@@ -442,7 +444,7 @@ real_open_partition (int flags)
 			  ext = i;
 			}
 		    }
-#ifndef NO_FANCY_STUFF
+# ifndef STAGE1_5
 		  /*
 		   *  Display partition information
 		   */
@@ -456,7 +458,7 @@ real_open_partition (int flags)
 			check_BSD_parts (1);
 		      errnum = ERR_NONE;
 		    }
-#endif /* NO_FANCY_STUFF */
+# endif /* STAGE1_5 */
 		  /*
 		   *  If we've found the right partition, we're done
 		   */
@@ -514,14 +516,14 @@ real_open_partition (int flags)
 		  ext = -2;
 		}
 	    }
-#ifndef NO_FANCY_STUFF
+# ifndef STAGE1_5
 	  else
 	    {
 	      current_partition = 0xFFFFFF;
 	      check_and_print_mount ();
 	      errnum = 0;
 	    }
-#endif /* NO_FANCY_STUFF */
+# endif /* STAGE1_5 */
 	}
     }
 
@@ -540,8 +542,10 @@ open_partition (void)
 {
   return real_open_partition (0);
 }
+#endif /* !defined(STAGE1_5) || !defined(NO_BLOCK_FILES) */
 
 
+#ifndef STAGE1_5
 /* XX used for device completion in 'set_device' and 'print_completions' */
 static int incomplete, disk_choice;
 static enum
@@ -650,8 +654,9 @@ set_device (char *device)
 
   return retval;
 }
+#endif /* STAGE1_5 */
 
-
+#ifndef STAGE1_5
 /*
  *  This performs a "mount" on the current device, both drive and partition
  *  number.
@@ -668,9 +673,10 @@ open_device (void)
 
   return 1;
 }
+#endif /* STAGE1_5 */
 
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 int
 set_bootdev (int hdbias)
 {
@@ -699,9 +705,10 @@ set_bootdev (int hdbias)
 		      ((saved_drive - hdbias) & 0x79),
 		      ((saved_partition >> 8) & 0xFF));
 }
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 
+#ifndef STAGE1_5
 static char *
 setup_part (char *filename)
 {
@@ -746,9 +753,10 @@ setup_part (char *filename)
 
   return filename;
 }
+#endif /* STAGE1_5 */
 
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 /*
  *  This prints the filesystem type or gives relevant information.
  */
@@ -768,7 +776,9 @@ print_fsys_type (void)
   else
     printf ("partition type 0x%x\n", current_slice);
 }
+#endif /* STAGE1_5 */
 
+#ifndef STAGE1_5
 /*
  *  This lists the possible completions of a device string, filename, or
  *  any sane combination of the two.
@@ -832,7 +842,7 @@ print_completions (char *filename)
 
   print_error ();
 }
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 
 /*
@@ -850,8 +860,10 @@ open (char *filename)
      set it to zero before returning if opening a file! */
   filepos = 0;
 
+#ifndef STAGE1_5
   if (!(filename = setup_part (filename)))
     return 0;
+#endif /* STAGE1_5 */
 
 #ifndef NO_BLOCK_FILES
   block_file = 0;
@@ -931,8 +943,10 @@ open (char *filename)
   if (!errnum && fsys_type == NUM_FSYS)
     errnum = ERR_FSYS_MOUNT;
 
+# ifndef STAGE1_5
   /* set "dir" function to open a file */
   print_possibilities = 0;
+# endif
 
   if (!errnum && (*(fsys_table[fsys_type].dir_func)) (filename))
     {
@@ -1012,17 +1026,17 @@ read (int addr, int len)
 	  if (size > len)
 	    size = len;
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 	  debug_fs_func = debug_fs;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 	  /* read current block and put it in the right place in memory */
 	  devread (BLK_BLKSTART (BLK_CUR_BLKLIST) + BLK_CUR_BLKNUM,
 		   off, size, addr);
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 	  debug_fs_func = NULL;
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 	  len -= size;
 	  filepos += size;
@@ -1047,6 +1061,7 @@ read (int addr, int len)
 }
 
 
+#ifndef STAGE1_5
 int
 dir (char *dirname)
 {
@@ -1071,3 +1086,4 @@ dir (char *dirname)
 
   return (*(fsys_table[fsys_type].dir_func)) (dirname);
 }
+#endif /* STAGE1_5 */

@@ -1,6 +1,7 @@
 grub (0.5.91) unstable; urgency=low
 
-  * Added support for LBA mode and BIOS extensions.
+  * Added support for LBA mode and AWARD/AMI hard disk BIOS extensions.
+  * GRUB data now installed in /share/grub/$(host_cpu)-$(host_vendor).
 
  --
 

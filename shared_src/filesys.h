@@ -90,30 +90,40 @@ struct fsys_entry
     int (*dir_func) (char *dirname);
   };
 
+#ifdef STAGE1_5
+# define print_possibilities 0
+#endif
+
 #ifndef _DISK_IO_C
 
-extern int fsmax;
+# ifndef STAGE1_5
 extern int print_possibilities;
+# endif
+
+extern int fsmax;
 extern struct fsys_entry fsys_table[NUM_FSYS + 1];
 
-#else
+#else /* _DISK_IO_C */
+
+# ifndef STAGE1_5
+int print_possibilities;
+# endif
 
 int fsmax;
-int print_possibilities;
 struct fsys_entry fsys_table[NUM_FSYS + 1] =
 {
-#ifdef FSYS_FAT
+# ifdef FSYS_FAT
   {"fat", fat_mount, 0, fat_dir},
-#endif
-#ifdef FSYS_EXT2FS
+# endif
+# ifdef FSYS_EXT2FS
   {"ext2fs", ext2fs_mount, ext2fs_read, ext2fs_dir},
-#endif
+# endif
   /* XX FFS should come last as it's superblock is commonly crossing tracks
      on floppies from track 1 to 2, while others only use 1.  */
-#ifdef FSYS_FFS
+# ifdef FSYS_FFS
   {"ffs", ffs_mount, ffs_read, ffs_dir},
-#endif
+# endif
   {0, 0, 0, 0}
 };
 
-#endif
+#endif /* _DISK_IO_C */

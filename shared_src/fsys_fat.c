@@ -234,6 +234,7 @@ loop:
 	filename[i + j] = 0;
       }
 
+# ifndef STAGE1_5
       if (print_possibilities && ch != '/'
 	  && (!*dirname || substring (dirname, filename) <= 0))
 	{
@@ -241,6 +242,7 @@ loop:
 	    print_possibilities = -print_possibilities;
 	  printf ("  %s", filename);
 	}
+# endif /* STAGE1_5 */
     }
   while (substring (dirname, filename) != 0 ||
 	 (print_possibilities && ch != '/'));

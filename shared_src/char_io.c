@@ -23,26 +23,25 @@
 
 #include "shared.h"
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 int
 getkey (void)
 {
-  buf_drive = -1;
   return asm_getkey ();
 }
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 
 void
 print_error (void)
 {
   if (errnum > ERR_NONE && errnum < MAX_ERR_NUM)
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
     /* printf("\7\n %s\n", err_list[errnum]); */
     printf ("\n %s\n", err_list[errnum]);
-#else /* NO_FANCY_STUFF */
+#else /* STAGE1_5 */
     printf ("Error: %d\n", errnum);
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
   errnum = ERR_NONE;
 }
@@ -130,7 +129,7 @@ printf (char *format,...)
 }
 
 
-#ifndef NO_FANCY_STUFF
+#ifndef STAGE1_5
 
 void
 init_page (void)
@@ -415,9 +414,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
   return 0;
 }
 
-#endif /* NO_FANCY_STUFF */
+#endif /* STAGE1_5 */
 
 
+#if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
 int
 get_based_digit (int c, int base)
 {
@@ -495,6 +495,7 @@ tolower (int c)
 
   return c;
 }
+#endif /* !defined(STAGE1_5) || !defined(NO_BLOCK_FILES) */
 
 
 int

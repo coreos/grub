@@ -1,7 +1,5 @@
-AUTOMAKE_OPTIONS = gnits
-
-pkglibdir = $(exec_prefix)/lib/$(PACKAGE)
-pkglib_DATA = $(stage2debug)
+pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
+pkgdata_DATA = $(stage2debug)
 EXTRA_DATA = stage2_debug
 CLEANFILES = stage2_debug
 MOSTLYCLEANFILES = stage2_debug.exec
@@ -16,6 +14,9 @@ stage2_debug_exec_LDADD = asm.o boot.o common.o char_io.o cmdline.o disk_io.o \
 	gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
 
 EXTRA_PROGRAMS = stage2_debug.exec
+
+# FIXME: Automake hackery.
+DEP_FILES = .deps/dummy.P $(wildcard .deps/*.P)
 stage2_debug_exec_SOURCES = dummy.c # needed to drag in C Makefile variables
 DISTFILES = $(DIST_COMMON)
 

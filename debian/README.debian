@@ -15,6 +15,6 @@ edit any configuration files or run a special installation program.
 NOTE: GRUB does not yet have an automatic installation program, but
 we're working on this, so please don't report it as a bug.  Until
 then, read the documentation (starting with docs/grub.html or
-docs/install.html), and use the binary files in /lib/grub.
+docs/install.html), and use the binary files in /share/grub.
 
 Gordon Matzigkeit <gord@debian.org>, Fri, 12 Feb 1999 00:41:23 -0600
