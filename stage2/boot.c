@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -207,7 +207,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 			     (buffer + LINUX_SETUP_LEN_OFFSET))) << 9))
 	       <= LINUX_SETUP_MAXLEN)
 	   && ((text_len
-		= (((long) *((unsigned short *)
+		= (((long) *((unsigned long *)
 			     (buffer + LINUX_KERNEL_LEN_OFFSET))) << 4)),
 	       (data_len + text_len + SECTOR_SIZE) <= ((filemax + 15) & 0xFFFFFFF0)))
     {

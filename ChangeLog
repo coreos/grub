@@ -1,3 +1,8 @@
+2000-07-14  Khimenko Victor <grub@khim.sch57.msk.ru>
+
+	* stage2/boot.c (load_image): When getting the text length of a 
+	Linux kernel, use unsigned long instead of unsigned short.
+	
 2000-07-13  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* lib/device.c: Include errno.h. Reported by Thierry DELHAISE
