@@ -611,7 +611,7 @@ void linux_boot (void) __attribute__ ((noreturn));
 void big_linux_boot (void) __attribute__ ((noreturn));
 
 /* booting a multiboot executable */
-void multi_boot (int start, int mbi) __attribute__ ((noreturn));
+void multi_boot (int start, int mb_info) __attribute__ ((noreturn));
 
 /* If LINEAR is nonzero, then set the Intel processor to linear mode.
    Otherwise, bit 20 of all memory accesses is always forced to zero,
@@ -688,7 +688,7 @@ void set_attrib (int attr);
 
 /* Low-level disk I/O */
 int get_diskinfo (int drive, struct geometry *geometry);
-int biosdisk (int read, int drive, struct geometry *geometry,
+int biosdisk (int subfunc, int drive, struct geometry *geometry,
 	      int sector, int nsec, int segment);
 void stop_floppy (void);
 

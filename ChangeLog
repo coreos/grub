@@ -1,3 +1,39 @@
+2000-07-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (CPPFLAGS): Added -Wshadow, -Wpointer-arith and
+	-Wundef, as GCC sometimes more clever than me. :)
+	* stage2/shared.h [!ASM_FILE] (multi_boot): Change the name of
+	the second argument from "mbi" to "mb_info".
+	[!ASM_FILE] (biosdisk): Rename the first argument "read" to
+	"subfunc".
+	* lib/device.h (init_device_map): Change the name of the third
+	argument from "floppy_disks" to "no_floppies".
+	* lib/device.c (read_device_map): Rename the internal function
+	"print_error" to "show_error".
+	* stage2/builtins.c (install_func): Rename CONFIG_FILE to
+	REAL_CONFIG.
+	(setup_func): Rename INSTALL_DRIVE, INSTALL_PARTITION and
+	CONFIG_FILE to INSTALLED_DRIVE, INSTALLED_PARTITION and
+	CONFIG_FILENAME, respectively.
+	* stage2/char_io.c (convert_to_ascii): Rename the internal
+	variable C to TMP.
+	(get_cmdline): Rename KILL to KILL_BUF.
+	Rename the second argument for cl_print to REAL_ECHO_CHAR from
+	ECHO_CHAR.
+	* stage2/stage2.c (run_menu): Rename the internal variable
+	NUM_ENTRIES to NEW_NUM_ENTRIES.
+	(cmain): Rename KILL to KILL_BUF.
+	* stage2/disk_inode_ffs.h: Check if BYTE_MSF is defined before
+	checking the value.
+	* stage2/fsys_ext2fs.c (ext2fs_dir): Check if E2DEBUG is
+	defined, instead of if the value is non-zero.
+	* grub/asmstub.c: Check if __GLIBC__ is defined before checking
+	the value.
+	(biosdisk) [__linux__]: Likewise.
+	Rename the first argument for _llseek to "seeked_fd" from "fd".
+	(multi_boot): Rename the second argument to "mb_info" from
+	"mbi".
+	
 2000-07-27  Gordon Matzigkeit  <gord@fig.org>
 
 	* util/grub-image.in: Initial cut at a script for creating GRUB

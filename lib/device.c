@@ -300,7 +300,7 @@ check_device (const char *device)
 static int
 read_device_map (FILE *fp, char **map, const char *map_file)
 {
-  static void print_error (int no, const char *msg)
+  static void show_error (int no, const char *msg)
     {
       fprintf (stderr, "%s:%d: error: %s\n", map_file, no, msg);
     }
@@ -330,14 +330,14 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       
       if (*ptr != '(')
 	{
-	  print_error (line_number, "No open parenthesis found");
+	  show_error (line_number, "No open parenthesis found");
 	  return 0;
 	}
       
       ptr++;
       if ((*ptr != 'f' && *ptr != 'h') || *(ptr + 1) != 'd')
 	{
-	  print_error (line_number, "Bad drive name");
+	  show_error (line_number, "Bad drive name");
 	  return 0;
 	}
       
@@ -348,7 +348,7 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       drive = strtoul (ptr, &ptr, 10);
       if (drive < 0 || drive > 8)
 	{
-	  print_error (line_number, "Bad device number");
+	  show_error (line_number, "Bad device number");
 	  return 0;
 	}
       
@@ -357,7 +357,7 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       
       if (*ptr != ')')
 	{
-	  print_error (line_number, "No close parenthesis found");
+	  show_error (line_number, "No close parenthesis found");
 	  return 0;
 	}
       
@@ -368,7 +368,7 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       
       if (! *ptr)
 	{
-	  print_error (line_number, "No filename found");
+	  show_error (line_number, "No filename found");
 	  return 0;
 	}
       

@@ -1,3 +1,4 @@
+/* fsys_reiserfs.c - an implementation for the ReiserFS filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2000  Free Software Foundation, Inc.

@@ -42,7 +42,8 @@ int grub_stage2 (void);
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
-# if (__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))
+# if !defined(__GLIBC__) || \
+	((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */
 #  include <linux/fs.h>		/* BLKFLSBUF */
@@ -274,7 +275,7 @@ big_linux_boot (void)
 
 /* booting a multiboot executable */
 void
-multi_boot (int start, int mbi)
+multi_boot (int start, int mb_info)
 {
   stop ();
 }
@@ -742,13 +743,14 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
     return BIOSDISK_ERROR_GEOMETRY;
 
   /* Seek to the specified location. */
-#if defined(__linux__) \
-  && ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
+#if defined(__linux__) && (!defined(__GLIBC__) || \
+	((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
   /* Maybe libc doesn't have large file support.  */
   {
     loff_t offset, result;
-    static int _llseek (uint fd, ulong hi, ulong lo, loff_t *res, uint wh);
-    _syscall5 (int, _llseek, uint, fd, ulong, hi, ulong, lo,
+    static int _llseek (uint seeked_fd, ulong hi, ulong lo,
+			loff_t *res, uint wh);
+    _syscall5 (int, _llseek, uint, seeked_fd, ulong, hi, ulong, lo,
 	       loff_t *, res, uint, wh);
 
     offset = (loff_t) sector * (loff_t) SECTOR_SIZE;

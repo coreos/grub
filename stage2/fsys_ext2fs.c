@@ -636,7 +636,7 @@ ext2fs_dir (char *dirname)
 	      memmove (linkbuf, (char *) INODE->i_block, len);
 	    }
 
-#if E2DEBUG
+#ifdef E2DEBUG
 	  printf ("symlink=%s\n", linkbuf);
 #endif
 

@@ -465,7 +465,7 @@ restart:
 	    {
 	      if (c == 'e')
 		{
-		  int num_entries = 0, i = 0;
+		  int new_num_entries = 0, i = 0;
 		  char *new_heap;
 
 		  if (config_entries)
@@ -487,7 +487,7 @@ restart:
 		  do
 		    {
 		      while ((*(new_heap++) = cur_entry[i++]) != 0);
-		      num_entries++;
+		      new_num_entries++;
 		    }
 		  while (config_entries && cur_entry[i]);
 
@@ -496,7 +496,7 @@ restart:
 		  *(new_heap++) = 0;
 
 		  if (config_entries)
-		    run_menu (heap, NULL, num_entries, new_heap, 0);
+		    run_menu (heap, NULL, new_num_entries, new_heap, 0);
 		  else
 		    {
 		      cls ();
@@ -646,13 +646,13 @@ cmain (void)
 {
   int config_len, menu_len, num_entries;
   char *config_entries, *menu_entries;
-  char *kill = (char *) KILL_BUF;
+  char *kill_buf = (char *) KILL_BUF;
 
   /* Initialize the environment for restarting Stage 2.  */
   grub_setjmp (restart_env);
   
   /* Initialize the kill buffer.  */
-  *kill = 0;
+  *kill_buf = 0;
 
   /* Never return.  */
   for (;;)

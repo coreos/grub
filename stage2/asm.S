@@ -1735,7 +1735,7 @@ ENTRY(big_linux_boot)
 
 
 /*
- * multi_boot(int start, int mbi)
+ * multi_boot(int start, int mb_info)
  *
  *  This starts a kernel in the manner expected of the multiboot standard.
  */

@@ -64,9 +64,9 @@ convert_to_ascii (char *buf, int c,...)
     char *ptr2 = buf;
     while (ptr1 > ptr2)
       {
-	int c = *ptr1;
+	int tmp = *ptr1;
 	*ptr1 = *ptr2;
-	*ptr2 = c;
+	*ptr2 = tmp;
 	ptr1--;
 	ptr2++;
       }
@@ -228,14 +228,14 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   /* The working buffer for the command-line.  */
   char *buf = (char *) CMDLINE_BUF;
   /* The kill buffer.  */
-  char *kill = (char *) KILL_BUF;
+  char *kill_buf = (char *) KILL_BUF;
 
   /* nested function definition for code simplicity */
-  static void cl_print (char *str, int echo_char)
+  static void cl_print (char *str, int real_echo_char)
     {
       while (*str != 0)
 	{
-	  putchar (echo_char ? echo_char : *str);
+	  putchar (real_echo_char ? real_echo_char : *str);
 	  str++;
 	  if (++xend > 78)
 	    {
@@ -465,9 +465,9 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    case 21:		/* C-u kill to beginning of line */
 	      if (lpos == 0)
 		break;
-	      /* Copy the string being deleted to KILL.  */
-	      grub_memmove (kill, buf, lpos);
-	      kill[lpos] = 0;
+	      /* Copy the string being deleted to KILL_BUF.  */
+	      grub_memmove (kill_buf, buf, lpos);
+	      kill_buf[lpos] = 0;
 	      grub_memmove (buf, buf + lpos, llen - lpos + 1);
 	      lpos = llen - lpos;
 	      cl_setcpos ();
@@ -480,12 +480,12 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 	    case 11:		/* C-k kill to end of line */
 	      if (lpos == llen)
 		break;
-	      /* Copy the string being deleted to KILL.  */
-	      grub_memmove (kill, buf + lpos, llen - lpos + 1);
+	      /* Copy the string being deleted to KILL_BUF.  */
+	      grub_memmove (kill_buf, buf + lpos, llen - lpos + 1);
 	      cl_kill_to_end ();
 	      break;
 	    case 25:		/* C-y yank the kill buffer */
-	      cl_insert (kill);
+	      cl_insert (kill_buf);
 	      break;
 	    case 16:		/* C-p fetch the previous command */
 	      {

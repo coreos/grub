@@ -93,7 +93,8 @@ AC_SUBST(STAGE2_CFLAGS)
 AC_SUBST(GRUB_CFLAGS)
 
 # Enforce coding standards.
-CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
+CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused -Wshadow"
+CPPFLAGS="$CPPFLAGS -Wpointer-arith -Wundef"
 
 if test "x$with_binutils" != x; then
 dnl  AC_PATH_TOOL(OBJCOPY, objcopy, , "$with_binutils:$PATH")

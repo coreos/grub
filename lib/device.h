@@ -36,7 +36,7 @@
 extern void get_drive_geometry (struct geometry *geom, char **map, int drive);
 extern int check_device (const char *device);
 extern int init_device_map (char ***map, const char *map_file,
-			    int floppy_disks);
+			    int no_floppies);
 extern void restore_device_map (char **map);
 
 #endif /* DEVICE_MAP_HEADER */

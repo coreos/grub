@@ -56,7 +56,7 @@
 #define	i_nlink		ic_nlink
 #define	i_uid		ic_uid
 #define	i_gid		ic_gid
-#if	BYTE_MSF
+#if	defined(BYTE_MSF) && BYTE_MSF
 #define	i_size		ic_size.val[1]
 #else /* BYTE_LSF */
 #define	i_size		ic_size.val[0]
