@@ -1,3 +1,32 @@
+1999-05-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Reported by Brian Brunswick <brian@skarpsey.demon.co.uk>:
+	* shared_src/asm.S (start) [STAGE1_5]: Jump to 0x0:0x2000.
+	* shared_src/cmdline.c (enter_cmdline): Doesn't check for the jump
+	address in stage2. We are not paranoid.
+	Add a missing RAW_ADDR macro.
+	* shared_src/diskio.c (grub_open): Call setup_part even in stage1.5.
+	And, include necessary functions that were eliminated incorrectly.
+	* shared_src/char_io.c [STAGE1_5]: Eliminate unnecessary functions
+	for stage1.5.
+
+	* grub/asmstub.c (nread): New function. Handle EINTR.
+	(nwrite): Likewise.
+	(biosdisk) [I_AM_VERY_BRAVE]: When SUBFUNC is BIOSDISK_WRITE, call
+	nwrite.
+
+	Reported by Pavel Roskin <pavel_roskin@geocities.com>:
+	* shared_src/fsys_ext2fs.c (off_t): Renamed to ...
+	(linux_off_t): ... this.
+	* shared_src/defs.h (off_t): Renamed to ...
+	(mach_off_t): ... this.
+	* shared_src/fs.h (BBOFF): Use mach_off_t instead of off_t.
+	(SBOFF): Likewise.
+
+	* e2fs_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Set to 81920.
+	* fat_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Likewise.
+	* ffs_stage1_5/Makefile.am (IMPORTANT_SIZE_LIMIT): Set to 7168.
+	
 1999-05-03  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	From Pavel Roskin:

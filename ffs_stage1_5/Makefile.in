@@ -43,9 +43,10 @@ AUTOMAKE = @AUTOMAKE@
 AUTOHEADER = @AUTOHEADER@
 
 INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_STRIP_FLAG =
 transform = @program_transform_name@
 
 NORMAL_INSTALL = :
@@ -69,11 +70,8 @@ host_vendor = @host_vendor@
 sbingrub = @sbingrub@
 stage2debug = @stage2debug@
 
-# On ext2fs, we can install into EXT2_BOOT_LOADER_INO, which gives us:
-#  MAX-STAGE1-BLOCK-LIST * MIN-EXT2-BLOCK-SIZE = 80 * 1024 = 81920
 
-
-IMPORTANT_SIZE_LIMIT = 81920
+IMPORTANT_SIZE_LIMIT = 7168
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = ffs_stage1_5
@@ -81,12 +79,16 @@ CLEANFILES = $(pkgdata_DATA) $(pkgdata_DATA)T
 noinst_PROGRAMS = ffs_stage1_5.exec
 
 # We can't use builtins or standard includes.
-COMPILE = $(CC) -fno-builtin -nostdinc -DFSYS_FFS=1 -DNO_DECOMPRESSION=1 	-DSTAGE1_5=1 -DNO_BLOCK_FILES=1 	-DCONFIG_FILE_ASM='.string "/boot/grub/stage2"' 	$(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+COMPILE = $(CC) -fno-builtin -nostdinc -DFSYS_FFS=1 -DNO_DECOMPRESSION=1 \
+	-DSTAGE1_5=1 -DNO_BLOCK_FILES=1 \
+	-DCONFIG_FILE_ASM='.string "/boot/grub/stage2"' \
+	$(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 
 INCLUDES = -I$(top_srcdir)/shared_src
 
 # asm.o absolutely needs to come first!
-ffs_stage1_5_exec_LDADD = asm.o common.o char_io.o disk_io.o 	stage1_5.o fsys_ffs.o bios.o
+ffs_stage1_5_exec_LDADD = asm.o common.o char_io.o disk_io.o \
+	stage1_5.o fsys_ffs.o bios.o
 
 
 # FIXME: Automake hackery.
@@ -158,19 +160,18 @@ install-pkgdataDATA: $(pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	@list='$(pkgdata_DATA)'; for p in $$list; do \
-	  if test -f $(srcdir)/$$p; then \
-	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgdatadir)/$$p"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgdatadir)/$$p; \
-	  else if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkgdatadir)/$$p; \
-	  fi; fi; \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgdatadir)/$$f"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(pkgdatadir)/$$f; \
 	done
 
 uninstall-pkgdataDATA:
 	@$(NORMAL_UNINSTALL)
-	list='$(pkgdata_DATA)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(pkgdatadir)/$$p; \
+	@list='$(pkgdata_DATA)'; for p in $$list; do \
+	  f="`echo $$p | sed -e 's|^.*/||'`"; \
+	  echo " rm -f $(DESTDIR)$(pkgdatadir)/$$f"; \
+	  rm -f $(DESTDIR)$(pkgdatadir)/$$f; \
 	done
 
 tags: TAGS

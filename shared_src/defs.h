@@ -1,4 +1,3 @@
-
 /* 
  * Mach Operating System
  * Copyright (c) 1991,1990 Carnegie Mellon University
@@ -59,7 +58,7 @@ quad;				/* an 8-byte item */
 
 typedef unsigned int time_t;	/* an unsigned int */
 typedef unsigned int daddr_t;	/* an unsigned int */
-typedef unsigned int off_t;	/* another unsigned int */
+typedef unsigned int mach_off_t;	/* another unsigned int */
 
 typedef unsigned short uid_t;
 typedef unsigned short gid_t;

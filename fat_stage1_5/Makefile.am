@@ -1,4 +1,4 @@
-IMPORTANT_SIZE_LIMIT = 7168
+IMPORTANT_SIZE_LIMIT = 81920
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = fat_stage1_5

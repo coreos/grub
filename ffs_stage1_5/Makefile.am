@@ -1,6 +1,4 @@
-# On ext2fs, we can install into EXT2_BOOT_LOADER_INO, which gives us:
-#  MAX-STAGE1-BLOCK-LIST * MIN-EXT2-BLOCK-SIZE = 80 * 1024 = 81920
-IMPORTANT_SIZE_LIMIT = 81920
+IMPORTANT_SIZE_LIMIT = 7168
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = ffs_stage1_5

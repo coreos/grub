@@ -11,6 +11,16 @@ personal computer BIOSes:
 
 See the file NEWS for a description of recent changes to GRUB.
 
+You need recent developmental environment to build GRUB. We recommend
+you use the following utilities:
+
+  - binutils 2.9.1.0.24 and later (Early 2.9.1.0.x is buggy, so don't use it.)
+  - autoconf 19990301 and later (See http://sourceware.cygnus.com/autoconf
+    for the information about how to get it from the CVS.)
+  - automake 1.3, or 19990327 and later (Do not use 1.4!)
+  - ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
+  - texinfo 3.12h and later
+
 See the file INSTALL for instructions on how to build and install the
 GRUB data and program files.  See `docs/install.html' for details
 about using GRUB as your bootloader.

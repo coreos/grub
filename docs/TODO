@@ -7,8 +7,6 @@ type''.  We need this for clean Hurd install floppies.
 Find out the size restrictions for FAT and ext2fs stage1.5 boot
 blocks.  Enforce all arbitrary limits using the Makefiles.
 
-Finish int13 extensions support.
-
 Add a real scripting language, possibly retaining backward
 compatibility so that old config files can be used.
 
@@ -34,3 +32,15 @@ larger than 16MB can be read.
 ???  Add command for modifying partition types.
 
 Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
+
+Support ELF format of FreeBSD kernel.
+
+Support new partition IDs for NetBSD and OpenBSD.
+
+Add ``configfile'' command, in a clean way.
+
+Add keyboard layout configuration support.
+
+Add ``quit'' command for /sbin/grub.
+
+Finish the GNU GRUB manual, grub.texi.

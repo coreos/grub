@@ -167,7 +167,7 @@ struct ext2_inode
 #define NAME_MAX         255	/* # chars in a file name */
 
 /* linux/posix_type.h */
-typedef long off_t;
+typedef long linux_off_t;
 
 /* linux/ext2fs.h */
 #define EXT2_NAME_LEN 255

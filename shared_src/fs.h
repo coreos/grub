@@ -1,4 +1,3 @@
-
 /* 
  * Mach Operating System
  * Copyright (c) 1991,1990 Carnegie Mellon University
@@ -69,8 +68,8 @@
  */
 #define BBSIZE		8192
 #define SBSIZE		8192
-#define	BBOFF		((off_t)(0))
-#define	SBOFF		((off_t)(BBOFF + BBSIZE))
+#define	BBOFF		((mach_off_t)(0))
+#define	SBOFF		((mach_off_t)(BBOFF + BBSIZE))
 #define	BBLOCK		((daddr_t)(0))
 #define	SBLOCK		((daddr_t)(BBLOCK + BBSIZE / DEV_BSIZE))
 

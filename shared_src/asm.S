@@ -35,9 +35,14 @@ ENTRY(start)
 	.globl _start
 _start:
 	/*
-	 *  Guarantee that "start" is loaded at 0x0:0x8000.
+	 *  Guarantee that "start" is loaded at 0x0:0x8000 in stage2 and
+	 *  at 0x0:0x2000 in stage1.5.
 	 */
+#ifndef STAGE1_5
 	ljmp $0, $(codestart - EXT_C(start) + 0x8000)
+#else
+	ljmp $0, $(codestart - EXT_C(start) + 0x2000)
+#endif
 
 	/*
 	 *  Compatibility version number

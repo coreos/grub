@@ -439,9 +439,8 @@ returnit:
 	      if (!errnum &&
 		  grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) == SECTOR_SIZE)
 		{
-		  if (*((long *)SCRATCHADDR) != 0x8070ea
-		      || (*((short *)(SCRATCHADDR+STAGE2_VER_MAJ_OFFS))
-			  != COMPAT_VERSION))
+		  if (*((short *)(SCRATCHADDR+STAGE2_VER_MAJ_OFFS))
+		      != COMPAT_VERSION)
 		    errnum = ERR_BAD_VERSION;
 		  else
 		    {
@@ -467,7 +466,7 @@ returnit:
 			  while ((*(str++) = *(ptr++)) != 0);    /* do copy */
 			}
 
-		      grub_read ((char *) 0x100000, -1);
+		      grub_read (RAW_ADDR (0x100000), -1);
 
 		      buf_track = -1;
 

@@ -540,6 +540,58 @@ get_diskinfo (int drive, struct geometry *geometry)
   return 0;
 }
 
+/* Read LEN bytes from FD in BUF. Return less than or equal to zero if an
+   error occurs, otherwise return LEN.  */
+static int
+nread (int fd, char *buf, size_t len)
+{
+  int size = len;
+  
+  while (len)
+    {
+      int ret = read (fd, buf, len);
+
+      if (ret <= 0)
+	{
+	  if (errno == EINTR)
+	    continue;
+	  else
+	    return ret;
+	}
+
+      len -= ret;
+      buf += ret;
+    }
+  
+  return size;
+}
+
+/* Write LEN bytes from BUF to FD. Return less than or equal to zero if an
+   error occurs, otherwise return LEN.  */
+static int
+nwrite (int fd, char *buf, size_t len)
+{
+  int size = len;
+  
+  while (len)
+    {
+      int ret = write (fd, buf, len);
+
+      if (ret <= 0)
+	{
+	  if (errno == EINTR)
+	    continue;
+	  else
+	    return ret;
+	}
+
+      len -= ret;
+      buf += ret;
+    }
+  
+  return size;
+}
+
 int
 biosdisk (int subfunc, int drive, struct geometry *geometry,
 	  int sector, int nsec, int segment)
@@ -569,9 +621,27 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
 #endif /* __linux__ */
 
   buf = (char *) (segment << 4);
-  /* FIXME: handle EINTR */
-  if (read (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
-    return -1;
+
+  switch (subfunc)
+    {
+    case BIOSDISK_READ:
+      if (nread (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
+	return -1;
+      break;
+      /* For now, I don't want to turn on this write code by default,
+	 because a bug that I haven't known yet may destroy all disks
+	 in the world.  */
+#ifdef I_AM_VERY_BRAVE
+    case BIOSDISK_WRITE:
+      if (nwrite (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
+	return -1;
+      break;
+#endif
+    default:
+      grub_printf ("unknown subfunc %d\n", subfunc);
+      break;
+    }
+  
   return 0;
 }
 

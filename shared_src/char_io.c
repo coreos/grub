@@ -105,6 +105,7 @@ grub_printf (char *format,...)
 	      putchar (*(ptr++));
 	    break;
 
+#ifndef STAGE1_5
 	  case 'c':
 	    putchar ((*(dataptr++)) & 0xff);
 	    break;
@@ -115,6 +116,7 @@ grub_printf (char *format,...)
 	    while ((c = *(ptr++)) != 0)
 	      putchar (c);
 	    break;
+#endif
 	  }
     }
 }
@@ -414,7 +416,6 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 #endif /* STAGE1_5 */
 
 
-#if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
 int
 get_based_digit (int c, int base)
 {
@@ -492,7 +493,6 @@ grub_tolower (int c)
 
   return c;
 }
-#endif /* !defined(STAGE1_5) || !defined(NO_BLOCK_FILES) */
 
 
 int
@@ -505,6 +505,7 @@ grub_isspace (int c)
 }
 
 
+#ifndef STAGE1_5
 int
 grub_strncat (char *s1, char *s2, int n)
 {
@@ -540,7 +541,7 @@ grub_strcmp (char *s1, char *s2)
 
   return 0;
 }
-
+#endif /* ! STAGE1_5 */
 
 int
 substring (char *s1, char *s2)
@@ -562,6 +563,7 @@ substring (char *s1, char *s2)
 }
 
 
+#ifndef STAGE1_5
 char *
 grub_strstr (char *s1, char *s2)
 {
@@ -580,6 +582,7 @@ grub_strstr (char *s1, char *s2)
 
   return 0;
 }
+#endif /* ! STAGE1_5 */
 
 
 int
@@ -635,6 +638,7 @@ grub_memmove (char *to, char *from, int len)
 }
 
 
+#ifndef STAGE1_5
 void *
 grub_memset (void *start, int c, int len)
 {
@@ -648,3 +652,4 @@ grub_memset (void *start, int c, int len)
 
   return errnum ? NULL : start;
 }
+#endif /* ! STAGE1_5 */

@@ -230,8 +230,7 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
 		  byte_len, buf);
 }
 
-
-#if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
+#ifndef STAGE1_5
 static int
 sane_partition (void)
 {
@@ -247,20 +246,22 @@ sane_partition (void)
   errnum = ERR_DEV_VALUES;
   return 0;
 }
-#endif /* !defined(STAGE1_5) || !defined(NO_BLOCK_FILES) */
+#endif /* ! STAGE1_5 */
 
-
-#ifndef STAGE1_5
 static void
 attempt_mount (void)
 {
+#ifndef STAGE1_5
   for (fsys_type = 0; fsys_type < NUM_FSYS
        && (*(fsys_table[fsys_type].mount_func)) () != 1; fsys_type++);
 
   if (fsys_type == NUM_FSYS && errnum == ERR_NONE)
     errnum = ERR_FSYS_MOUNT;
+#else
+  if ((*(fsys_table[0].mount_func)) () != 1)
+    errnum = ERR_FSYS_MOUNT;
+#endif
 }
-#endif /* STAGE1_5 */
 
 
 #ifndef STAGE1_5
@@ -317,7 +318,6 @@ check_and_print_mount (void)
 #endif /* STAGE1_5 */
 
 
-#if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
 static int
 check_BSD_parts (int flags)
 {
@@ -381,13 +381,13 @@ check_BSD_parts (int flags)
   errnum = ERR_BAD_PART_TABLE;
   return 0;
 }
-#endif /* !defined(STAGE1_5) || !defined(NO_BLOCK_FILES) */
 
 
-#if !defined(STAGE1_5) || !defined(NO_BLOCK_FILES)
 /* This isn't static, because the GRUB utility's char_io.c (memcheck)
    needs to know about it as a special case. */
+#ifndef STAGE1_5
 char cur_part_desc[16];
+#endif
 
 static int
 real_open_partition (int flags)
@@ -399,9 +399,11 @@ real_open_partition (int flags)
    *  The "rawread" is probably unnecessary here, but it is good to
    *  know it works.
    */
+#ifndef STAGE1_5
   if (!sane_partition ()
       || !rawread (current_drive, 0, 0, SECTOR_SIZE, mbr_buf))
     return 0;
+#endif
 
   bsd_evil_hack = 0;
   current_slice = 0;
@@ -451,7 +453,9 @@ real_open_partition (int flags)
 	      current_slice = PC_SLICE_TYPE (mbr_buf, i);
 	      part_start = part_offset + PC_SLICE_START (mbr_buf, i);
 	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
+#ifndef STAGE1_5
 	      memmove (cur_part_desc, mbr_buf + PC_SLICE_OFFSET + (i << 4), 16);
+#endif
 
 	      /*
 	       *  Is this PC partition entry valid?
@@ -566,10 +570,8 @@ open_partition (void)
 {
   return real_open_partition (0);
 }
-#endif /* !defined(STAGE1_5) || !defined(NO_BLOCK_FILES) */
 
 
-#ifndef STAGE1_5
 /* XX used for device completion in 'set_device' and 'print_completions' */
 static int incomplete, disk_choice;
 static enum
@@ -750,9 +752,7 @@ set_device (char *device)
 
   return retval;
 }
-#endif /* STAGE1_5 */
 
-#ifndef STAGE1_5
 /*
  *  This performs a "mount" on the current device, both drive and partition
  *  number.
@@ -769,7 +769,6 @@ open_device (void)
 
   return 1;
 }
-#endif /* STAGE1_5 */
 
 
 #ifndef STAGE1_5
@@ -804,7 +803,6 @@ set_bootdev (int hdbias)
 #endif /* STAGE1_5 */
 
 
-#ifndef STAGE1_5
 static char *
 setup_part (char *filename)
 {
@@ -849,12 +847,13 @@ setup_part (char *filename)
   else
     errnum = 0;
 
+#ifndef STAGE1_5
   if (!sane_partition ())
     return 0;
+#endif
 
   return filename;
 }
-#endif /* STAGE1_5 */
 
 
 #ifndef STAGE1_5
@@ -962,10 +961,8 @@ grub_open (char *filename)
      set it to zero before returning if opening a file! */
   filepos = 0;
 
-#ifndef STAGE1_5
   if (!(filename = setup_part (filename)))
     return 0;
-#endif /* STAGE1_5 */
 
 #ifndef NO_BLOCK_FILES
   block_file = 0;

@@ -118,9 +118,6 @@ get_diskinfo (int drive, struct geometry *geometry)
 {
   int err;
   
-  /* Clear GEOMETRY.  */
-  memset (geometry, 0, sizeof (struct geometry));
-  
   if (drive & 0x80)
     {
       /* hard disk */
