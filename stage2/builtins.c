@@ -448,12 +448,10 @@ chainloader_func (char *arg, int flags)
   grub_close ();
   kernel_type = KERNEL_TYPE_CHAINLOADER;
 
-  /* XXX: Windows evil hack. I don't know why, but Windows seems not to
-     set the start address of an extended partition in the BPB correctly.
-     So this is necessary to make Windows bootable even with an extended
-     partition. Maybe this should be made only for Windows, but how can
-     we determine if it is Windows or not precisely?!  */
-  if (open_partition () && fat_mount ())
+  /* XXX: Windows evil hack. For now, only the first five letters are
+     checked.  */
+  if (IS_PC_SLICE_TYPE_FAT (current_slice)
+      && ! grub_memcmp (BOOTSEC_LOCATION + BOOTSEC_BPB_SYSTEM_ID, "MSWIN", 5))
     *((unsigned long *) (BOOTSEC_LOCATION + BOOTSEC_BPB_HIDDEN_SECTORS))
       = part_start;
 

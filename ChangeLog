@@ -1,5 +1,11 @@
 2001-02-27  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/builtins.c (chainloader_func): Don't check if the
+	current partition is FAT, but check if it has a FAT partition
+	type and the BPB has a system id starting with "MSWIN".
+	
+2001-02-27  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Added hercules support based on a patch by Frank Mehnert
 	<fm3@os.inf.tu-dresden.de>. I translated his assembly code into
 	C, and separated hercules from the normal console.
