@@ -423,7 +423,7 @@ int read(int addr, int len);  /* if "length" is -1, read all the
 				 remaining data in the file */
 int dir(char *dirname);       /* list directory, printing all completions */
 
-int bsd_bootdev(void);
+int set_bootdev(void);
 void print_fsys_type(void);   /* this prints stats on the currently
 				 mounted filesystem */
 void print_completions(char *filename); /* this prints device and filename
@@ -467,7 +467,6 @@ extern struct multiboot_info mbi;
 extern unsigned long saved_drive;
 extern unsigned long saved_partition;
 extern unsigned long saved_mem_upper;
-extern int mem_map;
 
 /*
  *  Error variables.
