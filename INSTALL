@@ -43,15 +43,11 @@ configure script.
   Texinfo release. See the webpage
   <http://www.gnu.org/software/texinfo/texinfo.html>.
 
-* Our version of GNU Automake
+* GNU Automake 1.4h or later
 
-  We use the new feature "per-executable flags" in the CVS version, but
-  it is too buggy for us, so a locally patched version is required at
-  the moment. You can obtain this from
-  <ftp://duff.kuicr.kyoto-u.ac.jp/pub/grub/automake-1.4a-for-grub.tar.gz>.
-
-  NOTE: This is a temporary solution. We will use the official version
-  again, once they fix the critical bugs.
+  We use the new feature "per-executable flags" in the pretest releases
+  of automake. So you need to obtain a later version from:
+  <ftp://sources.redhat.com/pub/automake/>.
 
 
 Configuring the GRUB

@@ -80,6 +80,7 @@ pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c \
 	fsys_vstafs.c hercules.c serial.c smp-imps.c stage2.c md5.c
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
+pre_stage2_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 
 if NETBOOT_SUPPORT
@@ -100,14 +101,14 @@ stage2_size.h: pre_stage2
 	echo "#define STAGE2_SIZE $$6" > stage2_size.h
 
 start_exec_SOURCES = start.S
-start_exec_CFLAGS = $(STAGE2_COMPILE)
+start_exec_ASFLAGS = $(STAGE2_COMPILE)
 start_exec_LDFLAGS = $(START_LINK)
 
 # XXX: automake doesn't provide a way to specify dependencies for object
 # files explicitly, so we must write this by a general Makefile scheme.
 # If automake change the naming scheme for per-executable objects, this
 # will be broken.
-start_exec-start.o: stage2_size.h
+start_exec-start.$(OBJEXT): stage2_size.h
 
 stage2: pre_stage2 start
 	-rm -f stage2
@@ -118,6 +119,8 @@ e2fs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ext2fs.c bios.c
 e2fs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
 	-DNO_BLOCK_FILES=1
+e2fs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
+	-DNO_BLOCK_FILES=1
 e2fs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For fat_stage1_5 target.
@@ -125,13 +128,16 @@ fat_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_fat.c bios.c
 fat_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1 \
 	-DNO_BLOCK_FILES=1
+fat_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1 \
+	-DNO_BLOCK_FILES=1
 fat_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For ffs_stage1_5 target.
 ffs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ffs.c bios.c
-
 ffs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
+	-DNO_BLOCK_FILES=1
+ffs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
 	-DNO_BLOCK_FILES=1
 ffs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -140,12 +146,16 @@ minix_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_minix.c bios.c
 minix_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
 	-DNO_BLOCK_FILES=1
+minix_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
+	-DNO_BLOCK_FILES=1
 minix_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For reiserfs_stage1_5 target.
 reiserfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 	disk_io.c stage1_5.c fsys_reiserfs.c bios.c
 reiserfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
+	-DNO_BLOCK_FILES=1
+reiserfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
 	-DNO_BLOCK_FILES=1
 reiserfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -154,11 +164,15 @@ vstafs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 	disk_io.c stage1_5.c fsys_vstafs.c bios.c
 vstafs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
 	-DNO_BLOCK_FILES=1
+vstafs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
+	-DNO_BLOCK_FILES=1
 vstafs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
 # For diskless target.
 diskless_exec_SOURCES = $(pre_stage2_exec_SOURCES)
 diskless_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
+	-DSUPPORT_DISKLESS=1
+diskless_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
 	-DSUPPORT_DISKLESS=1
 diskless_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 diskless_exec_LDADD = ../netboot/libdrivers.a
@@ -170,11 +184,11 @@ diskless_size.h: diskless
 
 # For nbloader target.
 nbloader_exec_SOURCES = nbloader.S
-nbloader_exec_CFLAGS = $(STAGE2_COMPILE)
+nbloader_exec_ASFLAGS = $(STAGE2_COMPILE)
 nbloader_exec_LDFLAGS = $(NBLOADER_LINK)
 
 # XXX: See the comment for start_exec-start.o.
-nbloader_exec-nbloader.o: diskless_size.h
+nbloader_exec-nbloader.$(OBJEXT): diskless_size.h
 
 # For nbgrub target.
 nbgrub: nbloader diskless
@@ -183,8 +197,11 @@ nbgrub: nbloader diskless
 
 # For pxeloader target.
 pxeloader_exec_SOURCES = pxeloader.S
-pxeloader_exec_CFLAGS = $(STAGE2_COMPILE)
+pxeloader_exec_ASFLAGS = $(STAGE2_COMPILE)
 pxeloader_exec_LDFLAGS = $(PXELOADER_LINK)
+
+# XXX: See the comment for start_exec-start.o.
+pxeloader_exec-pxeloader.$(OBJEXT): diskless_size.h
 
 # For pxegrub target.
 pxegrub: pxeloader diskless

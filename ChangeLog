@@ -1,3 +1,36 @@
+2001-07-04  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* config.guess: Updated from automake-1.4h.
+	* config.sub: Likewise.
+	* depcomp: Likewise.
+	* install-sh: Likewise.
+	* missing: Likewise.
+	* mkinstalldirs: Likewise.
+	* configure.in (AS): New variable.
+	(ASFLAGS): Likewise.
+	(--disable-md5-password): Use FSYS_CFLAGS instead of CFLAGS.
+	* stage1/Makefile.am (AM_CFLAGS): Renamed to ...
+	(AM_ASFLAGS): ... this.
+	* stage2/Makefile.am (pre_stage2_exec_ASFLAGS): New variable.
+	(start_exec_CFLAGS): Renamed to ...
+	(start_exec_ASFLAGS): ... this.
+	(start_exec-start.o): Renamed to ...
+	(start_exec-start.$(OBJEXT)): ... this.
+	(e2fs_stage1_5_exec_ASFLAGS): New variable.
+	(fat_stage1_5_exec_ASFLAGS): Likewise.
+	(ffs_stage1_5_exec_ASFLAGS): Likewise.
+	(minix_stage1_5_exec_ASFLAGS): Likewise.
+	(reiserfs_stage1_5_exec_ASFLAGS): Likewise.
+	(vstafs_stage1_5_exec_ASFLAGS): Likewise.
+	(diskless_exec_ASFLAGS): Likewise.
+	(nbloader_exec_CFLAGS): Renamed to ...
+	(nbloader_exec_ASFLAGS): ... this.
+	(nbloader_exec-nbloader.o): Renamed to ...
+	(nbloader_exec-nbloader.$(OBJEXT)): ... this.
+	(pxeloader_exec_CFLAGS): Renamed to ...
+	(pxeloader_exec_ASFLAGS): ... this.
+	(pxeloader_exec-pxeloader.$(OBJEXT)): New target.
+
 2001-07-03  OKUJI Yoshinori  <okuji@gnu.org>
 	
 	From Julien Bordet <julien.bordet@int-evry.fr>:
