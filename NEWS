@@ -37,6 +37,10 @@ New in 0.5.95 - XXXX-XX-XX:
   the documentation, for more details.
 * The command "tftpserver" overrides a TFTP server address returned by a
   BOOTP server, a DHCP server or a RARP server.
+* Fix a serious bug about LBA support. It is possible that you don't
+  disable the LBA support bitmap check any longer. Please send a report,
+  if you must still disable it. We need to know if we should get rid of
+  the option.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.
