@@ -597,6 +597,23 @@ gateA20 (int linear)
   /* Nothing to do in the simulator. */
 }
 
+/* Set up the int15 handler.  */
+void
+set_int15_handler (void)
+{
+  /* Nothing to do in the simulator.  */
+}
+
+/* Restore the original int15 handler.  */
+void
+unset_int15_handler (void)
+{
+  /* Nothing to do in the simulator.  */
+}
+
+/* The key map.  */
+unsigned short key_map[KEY_MAP_SIZE + 1];
+
 /* Copy MAP to the drive map and set up the int13 handler.  */
 void
 set_int13_handler (unsigned short *map)

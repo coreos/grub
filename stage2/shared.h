@@ -120,6 +120,10 @@ extern char *grub_scratch_mem;
 /* The size of the drive map.  */
 #define DRIVE_MAP_SIZE		8
 
+/* The size of the key map.  */
+#define KEY_MAP_SIZE		8
+
+
 /*
  *  Linux setup parameters
  */
@@ -499,6 +503,15 @@ void stop (void) __attribute__ ((noreturn));
 
 /* Copy MAP to the drive map and set up int13_handler.  */
 void set_int13_handler (unsigned short *map);
+
+/* Set up int15_handler.  */
+void set_int15_handler (void);
+
+/* Restore the original int15 handler.  */
+void unset_int15_handler (void);
+
+/* The key map.  */
+extern unsigned short key_map[];
 
 /* calls for direct boot-loader chaining */
 void chain_stage1 (int segment, int offset, int part_table_addr)

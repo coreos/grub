@@ -83,6 +83,12 @@ disk_read_print_func (int sector)
 static int
 boot_func (char *arg, int flags)
 {
+  /* Clear the int15 handler if we can boot the kernel successfully.
+     This assumes that the boot code never fails only if KERNEL_TYPE is
+     not KERNEL_TYPE_NONE. Is this assumption is bad?  */
+  if (kernel_type != KERNEL_TYPE_NONE)
+    unset_int15_handler ();
+  
   switch (kernel_type)
     {
     case KERNEL_TYPE_FREEBSD:
@@ -110,7 +116,7 @@ boot_func (char *arg, int flags)
 	  int i;
 
 	  /* Search for SAVED_DRIVE.  */
-	  for (i = 0; i <= DRIVE_MAP_SIZE; i++)
+	  for (i = 0; i < DRIVE_MAP_SIZE; i++)
 	    {
 	      if (! bios_drive_map[i])
 		break;
@@ -1466,6 +1472,80 @@ static struct builtin builtin_kernel =
 };
 
 
+/* keycode */
+static int
+keycode_func (char *arg, int flags)
+{
+  char *to_code, *from_code;
+  int to, from;
+  int i;
+  
+  to_code = arg;
+  from_code = skip_to (0, to_code);
+
+  safe_parse_maxint (&to_code, &to);
+  if (errnum)
+    return 1;
+  if (to < 0 || to > 0xff)
+    {
+      /* FIXME: more appropriate error code!  */
+      errnum = ERR_NUMBER_PARSING;
+      return 1;
+    }
+
+  safe_parse_maxint (&from_code, &from);
+  if (errnum)
+    return 1;
+  if (from < 0 || to > 0xff)
+    {
+      /* FIXME: more appropriate error code!  */
+      errnum = ERR_NUMBER_PARSING;
+      return 1;
+    }
+
+  /* If TO is identical with FROM, do nothing.  */
+  if (to == from)
+    return 0;
+  
+  /* Find an empty slot.  */
+  for (i = 0; i < KEY_MAP_SIZE; i++)
+    {
+      if ((key_map[i] & 0xff) == from)
+	{
+	  /* Perhaps the user wants to overwrite the map.  */
+	  break;
+	}
+
+      if (! key_map[i])
+	break;
+    }
+
+  if (i == KEY_MAP_SIZE)
+    {
+      errnum = ERR_WONT_FIT;
+      return 1;
+    }
+
+  key_map[i] = (to << 8) | from;
+
+  /* Ugly but should work.  */
+  unset_int15_handler ();
+  set_int15_handler ();
+  
+  return 0;
+}
+
+static struct builtin builtin_keycode =
+{
+  "keycode",
+  keycode_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "keycode TO_CODE FROM_CODE",
+  "Change the keyboard map. The keycode FROM_CODE is mapped to the keycode"
+  " TO_CODE. They must be decimal or hexadecimal."
+};
+
+
 /* makeactive */
 static int
 makeactive_func (char *arg, int flags)
@@ -1517,11 +1597,11 @@ map_func (char *arg, int flags)
     return 0;
   
   /* Search for an empty slot in BIOS_DRIVE_MAP.  */
-  for (i = 0; i <= DRIVE_MAP_SIZE; i++)
+  for (i = 0; i < DRIVE_MAP_SIZE; i++)
     if (! bios_drive_map[i])
       break;
 
-  if (i > DRIVE_MAP_SIZE)
+  if (i == DRIVE_MAP_SIZE)
     {
       errnum = ERR_WONT_FIT;
       return 1;
@@ -2217,6 +2297,7 @@ struct builtin *builtin_table[] =
   &builtin_initrd,
   &builtin_install,
   &builtin_kernel,
+  &builtin_keycode,
   &builtin_makeactive,
   &builtin_map,
   &builtin_module,

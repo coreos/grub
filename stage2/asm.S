@@ -187,6 +187,107 @@ ENTRY(stop_floppy)
 	ret
 
 /*
+ * set_int15_handler(void)
+ *
+ * Set up int15_handler.
+ */
+ENTRY(set_int15_handler)
+	/* save the original int15 handler */
+	movw	0x15 * 4, %ax
+	movw	%ax, ABS(int15_offset)
+	movw	0x15 * 4 + 2, %ax
+	movw	%ax, ABS(int15_segment)
+
+	/* save the new int15 handler */
+	movl	$ABS(int15_handler), %eax
+	rorl	$4, %eax
+	movw	%ax, 0x15 * 4 + 2
+	shrl	$28, %eax
+	movw	%ax, 0x15 * 4
+
+	ret
+
+
+/*
+ * unset_int15_handler(void)
+ *
+ * Restore the original int15 handler
+ */
+ENTRY(unset_int15_handler)
+	/* check if int15_handler is set */
+	movl	$ABS(int15_handler), %eax
+	rorl	$4, %eax
+	cmpw	%ax, 0x15 * 4 + 2
+	jne	1f
+	shrl	$28, %eax
+	cmpw	%ax, 0x15 * 4
+	jne	1f
+
+	/* restore the original */
+	movw	ABS(int15_offset), %ax
+	movw	%ax, 0x15 * 4
+	movw	ABS(int15_segment), %ax
+	movw	%ax, 0x15 * 4 + 2
+
+1:
+	ret
+
+
+/*
+ * Translate a key code to another.
+ */
+	.code16
+int15_handler:
+	/* check if AH=4F */
+	cmpb	$0x4F, %ah
+	jmp	1f
+
+	pushw	%dx
+	pushw	%ds
+	pushw	%si
+
+	/* save %ax in %dx */
+	movw	%ax, %dx
+	/* set %ds to 0 */
+	xorw	%ax, %ax
+	movw	%ax, %ds
+	/* set %si to the key map */
+	movw	$ABS(key_map), %si
+	/* find the key code from the key map */
+2:
+	lodsw
+	/* check if this the end */
+	testw	%ax, %ax
+	jz	3f
+	/* check if this matches the key code */
+	cmpb	%al, %dl
+	jne	2b
+	/* if so, perform the mapping */
+	movb	%ah, %dl
+3:
+	/* restore %ax */
+	movw	%dx, %ax
+	/* restore other registers */
+	popw	%si
+	popw	%ds
+	popw	%dx
+	iret
+1:
+	/* simulate the interrupt call */
+	pushf
+	/* ljmp */
+	.byte	0x9a
+int15_offset:	.word	0
+int15_segment:	.word	0
+	iret
+
+	.code32
+	
+ENTRY(key_map)
+	.space	(KEY_MAP_SIZE + 1) * 2
+	
+	
+/*
  * set_int13_handler(map)
  *
  * Copy MAP to the drive map and set up int13_handler.
@@ -209,9 +310,9 @@ ENTRY(set_int13_handler)
 
 	/* save the original int13 handler */
 	movw	0x13 * 4, %ax
-	movw	%ax, int13_offset
+	movw	%ax, ABS(int13_offset)
 	movw	0x13 * 4 + 2, %ax
-	movw	%ax, int13_segment
+	movw	%ax, ABS(int13_segment)
 	
 	/* get the lower memory size */
 	movl	$EXT_C(mbi), %edi

@@ -1,5 +1,33 @@
 1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/asm.S [!STAGE1_5] (set_int15_handler): New function.
+	[!STAGE1_5] (unset_int15_handler): Likewise.
+	[!STAGE1_5] (int15_handler): New interrupt handler for the real
+	mode.
+	[!STAGE1_5] (int15_offset): New variable.
+	[!STAGE1_5] (int15_segment): Likewise.
+	[!STAGE1_5] (key_map): Likewise.
+	[!STAGE1_5] (set_int13_handler): Use the macro ABS for
+	INT13_OFFSET and INT13_SEGMENT.
+	* stage2/shared.h (KEY_MAP_SIZE): New macro.
+	(set_int15_handler): Declared.
+	(unset_int15_handler): Likewise.
+	* stage2/builtins.c (boot_func): Do not allow I to be equal to
+	DRIVE_MAP_SIZE.
+	Call unset_int15_handler unless KERNEL_TYPE is KERNEL_TYPE_NONE.
+	(map_func): Search for an empty slot till I is less than
+	DRIVE_MAP_SIZE.
+	Check if I is equal to DRIVE_MAP_SIZE instead of if I is greater
+	than DRIVE_MAP_SIZE.
+	(keycode_func): New function.
+	(builtin_keycode): New variable.
+	(builtin_table): Added a pointer to BUILTIN_KEYCODE.
+	* grub/asmstub.c (set_int15_handler): New function.
+	(unset_int15_handler): Likewise.
+	(key_map): New variable.
+	
+1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	From Michael Hohmuth <hohmuth@innocent.com>:
 	* acconfig.h (HAVE_USCORE_USCORE_BSS_START_SYMBOL): Added the
 	`undef' entry.
