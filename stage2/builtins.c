@@ -971,6 +971,10 @@ embed_func (char *arg, int flags)
       char mbr[SECTOR_SIZE];
       char ezbios_check[2*SECTOR_SIZE];
 
+      /* Open the partition.  */
+      if (! open_partition ())
+	return 1;
+
       /* No floppy has MBR.  */
       if (! (current_drive & 0x80))
 	{
