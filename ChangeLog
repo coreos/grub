@@ -1,3 +1,15 @@
+2000-10-19  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Segregate functions which are copyrighted differently.
+	
+	* stage2/setjmp.S: New file.
+	* stage2/Makefile.am (EXTRA_DIST): Added setjmp.S.
+	* stage2/asm.S: Include "setjmp.S".
+	(grub_setjmp): Moved to ...
+	* stage2/setjmp.S (grub_setjmp): ... here.
+	* stage2/asm.S (grub_longjmp): Moved to ...
+	* stage2/setjmp.S (grub_longjmp): ... here.
+	
 2000-10-18  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/Makefile.am (noinst_HEADERS): Added md5.h. Reported by
