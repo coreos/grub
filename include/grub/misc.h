@@ -58,6 +58,10 @@ int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
 int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
 void EXPORT_FUNC(grub_stop) (void) __attribute__ ((noreturn));
+grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
+					       grub_uint16_t *src,
+					       grub_size_t size);
+
 grub_err_t EXPORT_FUNC(grub_split_cmdline) (const char *str, 
 					    grub_err_t (* getline) (char **),
 					    int *argc, char ***argv);

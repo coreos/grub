@@ -1,3 +1,26 @@
+2004-08-28  Marco Gerards  <metgerards@student.han.nl>
+
+	Add support for the JFS filesystem.
+
+	* fs/jfs.c: New file.
+	* include/grub/fs.h (grub_jfs_init): New prototype.
+	(grub_jfs_fini): New prototype.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add fs/jfs.c.
+	(grub_emu_SOURCES): Likewise.
+	(pkgdata_MODULES): Add jfs.mod.
+	(jfs_mod_SOURCES): New variable.
+	(jfs_mod_CFLAGS): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add fs.jfs.c.
+	(grubof_SOURCES): Likewise.
+	* util/grub-emu.c (main): Initialize and deinitialize JFS support.
+
+	* fs/fat.c (grub_fat_find_dir): Convert the filename little
+	endian to the host endian.
+	(grub_fat_utf16_to_utf8): Move function from there...
+	* kern/misc.c (grub_utf16_to_utf8): ...to here.  Do not convert
+	the endianess of the source string anymore.
+	* include/grub/misc.h (grub_utf16_to_utf8): New prototype.
+
 2004-08-24  Marco Gerards  <metgerards@student.han.nl>
 
 	* commands/boot.c (grub_boot_init) [GRUB_UTIL]: Make conditional.

@@ -304,68 +304,6 @@ grub_fat_mount (grub_disk_t disk)
   return 0;
 }
 
-/* Convert UTF-16 (little endian) to UTF8.  */
-static grub_uint8_t *
-grub_fat_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
-			grub_size_t size)
-{
-  grub_uint32_t code_high = 0;
-
-  while (size--)
-    {
-      grub_uint32_t code = grub_le_to_cpu16 (*src++);
-
-      if (code_high)
-	{
-	  if (code >= 0xDC00 && code <= 0xDFFF)
-	    {
-	      /* Surrogate pair.  */
-	      code = ((code_high - 0xD800) << 12) + (code - 0xDC00) + 0x10000;
-	      
-	      *dest++ = (code >> 18) | 0xF0;
-	      *dest++ = ((code >> 12) & 0x3F) | 0x80;
-	      *dest++ = ((code >> 6) & 0x3F) | 0x80;
-	      *dest++ = (code & 0x3F) | 0x80;
-	    }
-	  else
-	    {
-	      /* Error...  */
-	      *dest++ = '?';
-	    }
-
-	  code_high = 0;
-	}
-      else
-	{
-	  if (code <= 0x007F)
-	    *dest++ = code;
-	  else if (code <= 0x07FF)
-	    {
-	      *dest++ = (code >> 6) | 0xC0;
-	      *dest++ = (code & 0x3F) | 0x80;
-	    }
-	  else if (code >= 0xD800 && code <= 0xDBFF)
-	    {
-	      code_high = code;
-	      continue;
-	    }
-	  else if (code >= 0xDC00 && code <= 0xDFFF)
-	    {
-	      /* Error... */
-	      *dest++ = '?';
-	    }
-	  else
-	    {
-	      *dest++ = (code >> 16) | 0xE0;
-	      *dest++ = ((code >> 12) & 0x3F) | 0x80;
-	      *dest++ = (code & 0x3F) | 0x80;
-	    }
-	}
-    }
-
-  return dest;
-}
-
 static grub_ssize_t
 grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
 		    void (*read_hook) (unsigned long sector,
@@ -610,7 +548,12 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
 	  if (sum == checksum)
 	    {
-	      *grub_fat_utf16_to_utf8 (filename, unibuf, slots * 13) = '\0';
+	      int u;
+
+	      for (u = 0; u < slots * 13; u++)
+		unibuf[u] = grub_le_to_cpu16 (unibuf[u]);
+	      
+	      *grub_utf16_to_utf8 (filename, unibuf, slots * 13) = '\0';
 	      
 	      if (*dirname == '\0' && call_hook)
 		{
