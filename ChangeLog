@@ -1,5 +1,11 @@
 2001-02-03  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Erik Schoenfelder <schoenfr@gaertner.de>:
+	* stage2/shared.h (LINUX_INITRD_MAX_ADDRESS): Changed from
+	0x3C000000 to 0x38000000.
+	
+2001-02-03  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/builtins.c (savedefault_func)
 	[!SUPPORT_DISKLESS && !GRUB_UTIL]: Check if the version
 	contained in the buffer matches to current one as well.
