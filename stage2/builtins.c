@@ -3513,6 +3513,7 @@ setup_func (char *arg, int flags)
   char stage1[64];
   char stage2[64];
   char config_filename[64];
+  char real_config_filename[64];
   char cmd_arg[256];
   char device[16];
   char *buffer = (char *) RAW_ADDR (0x100000);
@@ -3663,6 +3664,7 @@ setup_func (char *arg, int flags)
   /* The prefix was determined.  */
   grub_sprintf (stage2, "%s%s", prefix, "/stage2");
   grub_sprintf (config_filename, "%s%s", prefix, "/menu.lst");
+  *real_config_filename = 0;
 
   /* Check if stage2 exists.  */
   if (! check_file (stage2))
@@ -3690,6 +3692,7 @@ setup_func (char *arg, int flags)
 		int blocksize = (filemax + SECTOR_SIZE - 1) >> SECTOR_BITS;
 		
 		grub_close ();
+		grub_strcpy (real_config_filename, config_filename);
 		grub_strcpy (config_filename, stage2);
 		grub_strcpy (stage2, stage1_5);
 
@@ -3740,7 +3743,7 @@ setup_func (char *arg, int flags)
   
 #ifdef NO_BUGGY_BIOS_IN_THE_WORLD
   /* I prefer this, but...  */
-  grub_sprintf (cmd_arg, "%s%s%s%s %s%s %s p %s",
+  grub_sprintf (cmd_arg, "%s%s%s%s %s%s %s p %s %s",
 		is_force_lba? "--force-lba" : "",
 		stage2_arg? stage2_arg : "",
 		stage2_arg? " " : "",
@@ -3748,20 +3751,22 @@ setup_func (char *arg, int flags)
 		(installed_drive != image_drive) ? "d " : "",
 		device,
 		stage2,
-		config_filename);
+		config_filename,
+		real_config_filename);
 #else /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
   /* Actually, there are several buggy BIOSes in the world, so we
      may not expect that your BIOS will pass a booting drive to stage1
      correctly. Thus, always specify the option `d', whether
      INSTALLED_DRIVE is identical with IMAGE_DRIVE or not. *sigh*  */
-  grub_sprintf (cmd_arg, "%s%s%s%s d %s %s p %s",
+  grub_sprintf (cmd_arg, "%s%s%s%s d %s %s p %s %s",
 		is_force_lba? "--force-lba " : "",
 		stage2_arg? stage2_arg : "",
 		stage2_arg? " " : "",
 		stage1,
 		device,
 		stage2,
-		config_filename);
+		config_filename,
+		real_config_filename);
 #endif /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
   
   /* Notify what will be run.  */

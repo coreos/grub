@@ -1,3 +1,8 @@
+2000-10-24  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/builtins.c (setup_func): When invoking install with an
+ 	embedded stage1_5 give the path to menu.lst as real_config_file.
+
 2000-10-23  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/multiboot.texi: Upgraded to 0.6.92.
