@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ find_command (char *command)
   ptr = command;
   while (*ptr && *ptr != ' ' && *ptr != '\t' && *ptr != '=')
     ptr ++;
+
   c = *ptr;
   *ptr = 0;
 
@@ -130,6 +131,10 @@ enter_cmdline (char *heap, int forever)
       /* Get the command-line with the minimal BASH-like interface.  */
       if (get_cmdline (PACKAGE "> ", heap, 2048, 0, 1))
 	return;
+
+      /* If there was no command, grab a new one. */
+      if (! heap[0])
+	continue;
 
       /* Find a builtin.  */
       builtin = find_command (heap);

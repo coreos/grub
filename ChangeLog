@@ -1,3 +1,10 @@
+2000-04-19  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage2/cmdline.c (enter_cmdline): Don't give errors on empty
+	command lines.
+
+	* stage2/common.c (err_list): Clean up wordings slightly.
+
 2000-05-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Based on a patch by Neal H Walfield <neal@walfield.org>:
