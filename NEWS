@@ -1,13 +1,15 @@
 NEWS - list of user-visible changes between releases of GRUB
 
 New:
+* Bug fixes (i.e. Stage 1.5 can work fine again).
 * The /sbin/grub stage2 simulator now works at least on GNU/Linux, and
   uses the Linux HDIO_GETGEO ioctl to determine hard disk geometry.
 * TAB not only lists filenames, but also completes a filename when the
   filename is unique.
-* Many bug fixes (i.e. Stage 1.5 can work fine again).
 * Password is not echoed back, put an asterisk for each of input
   characters.
+* stage2_debug is removed, and the debugging features are added into
+  stage2.
 
 New in 0.5.91 - 1999-03-14, Gordon Matzigkeit:
 * LBA and preliminary AWARD BIOS disk extension support.

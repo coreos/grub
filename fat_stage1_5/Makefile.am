@@ -1,4 +1,6 @@
-IMPORTANT_SIZE_LIMIT = 81920
+# Stage 1.5 can be installed into the first cylinder after MBR, so the
+# limit is (63 - 1) * 512 = 31744.
+IMPORTANT_SIZE_LIMIT = 31744
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = fat_stage1_5

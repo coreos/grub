@@ -1,6 +1,6 @@
-# On ext2fs, we can install into EXT2_BOOT_LOADER_INO, which gives us:
-#  MAX-STAGE1-BLOCK-LIST * MIN-EXT2-BLOCK-SIZE = 80 * 1024 = 81920
-IMPORTANT_SIZE_LIMIT = 81920
+# Stage 1.5 can be installed into the first cylinder after MBR, so the
+# limit is (63 - 1) * 512 = 31744.
+IMPORTANT_SIZE_LIMIT = 31744
 
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 pkgdata_DATA = e2fs_stage1_5
