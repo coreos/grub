@@ -797,7 +797,10 @@ xnoteisa:
  */
 
 FUNCTION(pupa_get_mmap_entry)
-	pusha
+	pushl	%ebp
+	pushl	%ebx
+	pushl	%edi
+	pushl	%esi
 
 	/* push ADDR */
 	pushl	%eax
@@ -852,7 +855,10 @@ xsmap:
 	/* set return value to continuation */
 	movl	%ebx, %eax
 
-	popa
+	popl	%esi
+	popl	%edi
+	popl	%ebx
+	popl	%ebp
 	ret
 
 	

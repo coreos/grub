@@ -1,5 +1,11 @@
 2002-12-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* kern/i386/pc/startup.S (push_get_mmap_entry): Revert to a
+	bunch of pushl's from pusha, because this destroys the return
+	value.
+
+2002-12-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	Use -mrtd and -mregparm=3 to reduce the generated code sizes.
 	This means that any missing prototypes could be fatal. Also, you
 	must take care when writing assembly code. See the comments at
