@@ -1,5 +1,11 @@
 2003-03-10  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Andrew Walrond <andrew@walrond.org>:
+	* stage2/fsys_reiserfs.c (struct reiserfs_journal_header):
+	Remove an unnecessary ``long''.
+
+2003-03-10  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	From Tilmann Bubeck:
 	* stage2/builtins.c [SUPPORT_SERIAL] (terminfo_func): Unescape
 	arguments before copying them, and escape sequences before
