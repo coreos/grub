@@ -1,3 +1,11 @@
+1999-10-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/asm.S [DEFINE_TRACK_INT13] (int3_handler): Save the
+	modified FLAGS in 6(%bp) instead of 4(%bp).
+	Decrease %bx before restoring the first instruction.
+	[DEFINE_TRACK_INT13] (track_int13): Go to the real mode before
+	setting up the registers for the int13 call.
+	
 1999-10-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Add the prototype of a function to probe I/O ports used for a

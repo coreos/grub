@@ -226,16 +226,17 @@ ENTRY(track_int13)
 	movl	%eax, 0x3 * 4
 
 	/* read the MBR to call int13 successfully */
+	movb	4(%ebp), %dl
+	
+	call	prot_to_real
+	.code16
+	
 	movw	$SCRATCHSEG, %ax
 	movw	%ax, %es
 	xorw	%bx, %bx
 	movw	$1, %cx
-	xorb	%dl, %dl
-	movb	4(%ebp), %dl
+	xorb	%dh, %dh
 
-	call	prot_to_real
-
-	.code16
 	movw	$0x201, %ax
 	int	$0x13
 
@@ -380,17 +381,17 @@ int3_handler:
 	/* set the TF flag in the stack */
 	movw	6(%bp), %ax
 	orw	$0x100, %ax
-	movw	%ax, 4(%bp)
+	movw	%ax, 6(%bp)
 
 	/* restore the first instruction */
 	movb	ABS(int13_first_instruction), %al
 	movw	4(%bp), %bx
 	movw	%bx, %ds
 	movw	2(%bp), %bx
+	decw	%bx
 	movb	%al, (%bx)
 
 	/* re-execute the first instruction */
-	decw	%bx
 	movw	%bx, 2(%bp)
 	
 	popw	%ds
