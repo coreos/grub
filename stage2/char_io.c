@@ -833,9 +833,9 @@ memcheck (int addr, int len)
 
   if ((addr < RAW_ADDR (0x1000))
       || (addr < RAW_ADDR (0x100000)
-	  && RAW_ADDR (mbi.mem_lower * 1024) <= (addr + len))
+	  && RAW_ADDR (mbi.mem_lower * 1024) < (addr + len))
       || (addr >= RAW_ADDR (0x100000)
-	  && RAW_ADDR (mbi.mem_upper * 1024) <= ((addr - 0x100000) + len)))
+	  && RAW_ADDR (mbi.mem_upper * 1024) < ((addr - 0x100000) + len)))
     errnum = ERR_WONT_FIT;
 
   return ! errnum;

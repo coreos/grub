@@ -1,3 +1,8 @@
+1999-10-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/char_io.c (memcheck): Fix the checks: "<=" -> "<".
+	Reported by Mike Hicks <hick0088@umn.edu>.
+	
 1999-10-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (find_func): New function.

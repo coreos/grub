@@ -100,7 +100,6 @@ Part I: The Tutorial Manual
 * Installation::
 * Boot::
 * Configuration::
-* FAQ::
 
 Part II: The User Reference Manual
 
@@ -125,6 +124,7 @@ Part III: The Programmer Reference Manual
 
 Appendices and Indices
 
+* FAQ::
 * Obtaining and Building GRUB::
 * Reporting Bugs::
 * Index::
