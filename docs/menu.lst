@@ -8,11 +8,11 @@ timeout 30
 # By default, boot the first entry.
 default 0
 
-# For booting the GNU HURD
-title  GNU/HURD
+# For booting the GNU Hurd
+title  GNU/Hurd
 root   (hd0,0)
-kernel /boot/gnumach root=hd0s1
-module /boot/serverboot
+kernel /boot/gnumach.gz root=hd0s1
+module /boot/serverboot.gz
 
 # For booting Linux
 title  GNU/Linux

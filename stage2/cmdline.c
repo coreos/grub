@@ -27,21 +27,16 @@
 char *
 skip_to (int after_equal, char *cmdline)
 {
-  if (after_equal)
-    {
-      while (*cmdline && *cmdline != ' ' && *cmdline != '=')
-	cmdline++;
-      while (*cmdline == ' ' || *cmdline == '=')
-	cmdline++;
-    }
-  else
-    {
-      while (*cmdline && *cmdline != ' ')
-	cmdline++;
-      while (*cmdline == ' ')
-	cmdline++;
-    }
-  
+  /* Skip until we hit whitespace, or maybe an equal sign. */
+  while (*cmdline && *cmdline != ' ' && *cmdline != '\t' &&
+	 ! (after_equal && *cmdline == '='))
+    cmdline ++;
+
+  /* Skip whitespace, and maybe equal signs. */
+  while (*cmdline == ' ' || *cmdline == '\t' ||
+	 (after_equal && *cmdline == '='))
+    cmdline ++;
+
   return cmdline;
 }
 
@@ -62,11 +57,11 @@ find_command (char *command)
   char *ptr;
   char c;
   struct builtin **builtin;
-  
+
   /* Find the first space and terminate the command name.  */
   ptr = command;
-  while (*ptr && *ptr != ' ' && *ptr != '=')
-    ptr++;
+  while (*ptr && *ptr != ' ' && *ptr != '\t' && *ptr != '=')
+    ptr ++;
   c = *ptr;
   *ptr = 0;
 
@@ -74,7 +69,7 @@ find_command (char *command)
   for (builtin = builtin_table; *builtin != 0; builtin++)
     {
       int ret = grub_strcmp (command, (*builtin)->name);
-      
+
       if (ret == 0)
 	{
 	  /* Find the builtin for COMMAND.  */
@@ -84,7 +79,7 @@ find_command (char *command)
       else if (ret < 0)
 	break;
     }
-  
+
   /* Cannot find COMMAND.  */
   errnum = ERR_UNRECOGNIZED;
   *ptr = c;
@@ -100,7 +95,7 @@ init_cmdline (void)
   saved_partition = install_partition;
   current_drive = 0xFF;
   errnum = 0;
-  
+
   /* Restore memory probe state.  */
   mbi.mem_upper = saved_mem_upper;
   if (mbi.mmap_length)
@@ -124,7 +119,7 @@ enter_cmdline (char *heap)
     {
       struct builtin *builtin;
       char *arg;
-      
+
       *heap = 0;
       print_error ();
 
@@ -158,7 +153,7 @@ run_script (char *script, char *heap)
 {
   char *old_entry;
   char *cur_entry = script;
-  
+
   /* Initialize the data.  */
   init_cmdline ();
 
@@ -166,9 +161,9 @@ run_script (char *script, char *heap)
     {
       struct builtin *builtin;
       char *arg;
-      
+
       print_error ();
-      
+
       if (errnum)
 	{
 	  grub_printf ("Press any key to continue...");

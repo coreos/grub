@@ -1,7 +1,7 @@
 Source: grub
 Section: base
 Priority: extra
-Maintainer: Gordon Matzigkeit <gord@debian.org>
+Maintainer: GNU GRUB Maintainers <bug-grub@gnu.org>
 Standards-Version: 2.5.0.0
 
 Package: grub

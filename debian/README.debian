@@ -14,7 +14,7 @@ edit configuration files or rerun a special installation program.
 
 NOTE: GRUB does not yet have a simple installation mechanism, but
 we're working on this, so please don't report it as a bug.  Until
-then, read the Texinfo documentation, and copy the binary files in
+then, do `info grub', and copy the binary files in
 /usr/lib/grub/$(HWARCH) to /boot/grub.
 
 WARNING: Never use the binary files in /usr/lib/grub directly

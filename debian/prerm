@@ -1,0 +1,3 @@
+#! /bin/sh
+install-info --quiet --remove /usr/info/grub.info.gz
+install-info --quiet --remove /usr/info/multiboot.info.gz

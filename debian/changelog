@@ -1,5 +1,10 @@
 grub (0.5.93) unstable; urgency=low
 
+  * Updated example configurations. (fixes:bug#42136)
+  * Highlight color set correctly when editing. (fixes:bug#42549)
+  * dpkg-shlibdeps called on /usr/sbin/grub. (fixes:bug#42704)
+  * Properly install Texinfo documentation. (fixes:bug#42705,bug#42919)
+
 grub (0.5.92) unstable; urgency=low
 
   * Data files are now in /usr/lib/grub/$(HWARCH).

@@ -1,3 +1,14 @@
+1999-09-30  Gordon Matzigkeit  <gord@fig.org>
+
+	* debian/postinst: New file to call install-info.
+	* debian/prerm: Likewise.
+	* debian/rules (binary-arch): Add postinst and prerm, compress the
+	info files, and call dpkg-shlibdeps.
+
+	* stage2/cmdline.c (skip_to): Restructure, and count tabs as
+	whitespace.
+	(find_command): Likewise.
+
 1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/getopt.c: Moved to ...
@@ -12,7 +23,7 @@
 	* Makefile.am (SUBDIRS): Added lib.
 	* configure.in: lib/Makefile is added into the arguments for
 	AC_OUTPUT.
-	
+
 1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin:
@@ -39,7 +50,7 @@
 	(struct ocg): Likewise.
 	(cgbase): Use mach_daddr_t instead of daddr_t.
 	(itod): Likewise.
-	
+
 1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_CHECK_START_SYMBOL): Use AC_TRY_LINK
@@ -50,7 +61,7 @@
 
 	* stage2/disk_io.c (set_device) [!STAGE1_5]: Use RESULT instead
 	of RETVAL to check if the analysis succeeds.
-	
+
 1999-09-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (install_func): If the Stage 2 id in FILE is
@@ -74,7 +85,7 @@
 	* stage2/fsys_ffs.c (ffs_dir): Likewise.
 	* stage2/fsys_fat.c (fat_dir): Likewise.
 	* stage2/fsys_minix.c (minix_dir): Likewise.
-	
+
 1999-09-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1.S [!FFS_STAGE1_5] (blocklist_default_len): Do
@@ -85,7 +96,7 @@
 	* stage2/builtins.c (install_func): When installing Stage 1.5,
 	if set_device returns NULL, then set CURRENT_DRIVE to 0xFF and
 	CONFIG_FILE to PTR.
-	
+
 1999-09-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/char_io.c [!STAGE1_5] (get_cmdline): In cl_insert, call
@@ -102,7 +113,7 @@
 	(check_BSD_parts) [!STAGE1_5]: Likewise.
 	[!STAGE1_5] (print_a_completion): Ignore NAME if it is "." or
 	"..".
-	
+
 1999-09-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_CHECK_USCORE_END_SYMBOL): Do not call
@@ -128,13 +139,13 @@
 	SAVED_PARTITION, respectively. Otherwise set to DRIVE and
 	PARTITION, respectively.
 	(setup_part) [STAGE1_5]: Always call set_device.
-	
+
 1999-09-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* acinclude.m4 (grub_CHECK_END_SYMBOL): Add a missing
 	double-quote. Reported by Johannes Kroeger
 	<hanne@squirrel.owl.de>.
-	
+
 1999-09-14  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage1/stage1.S (blocklist_default_start): New label for default
