@@ -86,6 +86,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
       if (buf_drive != drive)
 	{
 	  buf_geom = get_diskinfo (drive);
+	  printf ("buf_geom = 0x%x\n", buf_geom); /* FIXME */
 	  buf_drive = drive;
 	  buf_track = -1;
 	}
@@ -118,7 +119,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
 	      bufaddr = BUFFERADDR + byte_offset;
 	    }
 
-	  if (bios_err = biosdisk (BIOSDISK_SUBFUNC_READ, drive, buf_geom,
+	  if (bios_err = biosdisk (BIOSDISK_READ, drive, buf_geom,
 				   read_start, read_len, BUFFERSEG))
 	    {
 	      buf_track = -1;
@@ -132,7 +133,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
 		   *  required sector(s) rather than failing completely.
 		   */
 		  if (slen > num_sect
-		      || biosdisk (BIOSDISK_SUBFUNC_READ, drive, buf_geom,
+		      || biosdisk (BIOSDISK_READ, drive, buf_geom,
 				   sector, slen, BUFFERSEG))
 		    errnum = ERR_READ;
 
@@ -270,7 +271,7 @@ make_saved_active (void)
 
 	  buf_track = -1;
 
-	  if (biosdisk (BIOSDISK_SUBFUNC_WRITE, saved_drive, buf_geom,
+	  if (biosdisk (BIOSDISK_WRITE, saved_drive, buf_geom,
 			0, 1, SCRATCHSEG))
 	    {
 	      errnum = ERR_WRITE;

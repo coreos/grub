@@ -1,3 +1,26 @@
+1999-03-03  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/asm.S (biosdisk): Use LBA mode if high nibble of
+	GEOMETRY is nonzero.
+	(get_diskinfo): Set high nibble of GEOMETRY (0xf0000000) to 1 if
+	LBA mode is detected.
+
+1999-03-02  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/disk_io.c (make_saved_active): Use BIOSDISK_READ and
+	BIOSDISK_WRITE.
+
+	* shared_src/cmdline.c (enter_cmdline): Use BIOSDISK_WRITE.
+
+	* shared_src/shared.h (BIOSDISK_SUBFUNC_READ,
+	BIOSDISK_SUBFUNC_WRITE): Delete constants.
+
+	* shared_src/asm.S (biosdisk): Change subfunc argument to be
+	read=0, write=1.
+
+	* configure.in: Drop redundant AC_PROG_INSTALL.  From OKUJI
+	Yoshinori.
+
 1999-03-01  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* debian/rules (binary-arch): Properly install README.debian.

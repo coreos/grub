@@ -43,7 +43,6 @@ AC_SUBST(stage2debug)
 # Programs
 #
 
-AC_PROG_INSTALL
 AC_CHECK_TOOL(CC, gcc)
 AC_CHECK_TOOL(LD, ld)
 AC_CHECK_TOOL(OBJCOPY, objcopy)

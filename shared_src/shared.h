@@ -48,8 +48,8 @@
 /*
  *  BIOS disk defines
  */
-#define BIOSDISK_SUBFUNC_READ       0x2
-#define BIOSDISK_SUBFUNC_WRITE      0x3
+#define BIOSDISK_READ		    0x0
+#define BIOSDISK_WRITE		    0x1
 #define BIOSDISK_ERROR_GEOMETRY     0x100
 
 /*
@@ -287,7 +287,7 @@ __attribute__ ((noreturn));
 
 /* low-level disk I/O */
      int get_diskinfo (int drive);
-     int biosdisk (int subfunc, int drive, int geometry,
+     int biosdisk (int read, int drive, int geometry,
 		   int sector, int nsec, int segment);
      void stop_floppy (void);
 

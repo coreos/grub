@@ -3,6 +3,7 @@ NEWS - list of user-visible changes between releases of GRUB
 New in 0.5.90 - 1999-03-01, Gordon Matzigkeit:
 * Bug fixes.
 * GRUB understands symlinks on ext2fs (but still not ffs).
+* The GRUB stage2 uses LBA mode and AWARD extensions if they are supported.
 * Many source code and build cleanups to comply with GNU standards.
 
 New in 0.5 - 1998-08-20, Erich Boleyn:

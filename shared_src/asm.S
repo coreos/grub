@@ -330,15 +330,13 @@ realcseg:
 
 
 /*
- * biosdisk(subfunc, drive, geometry, sector, nsec, segment)
+ * biosdisk(write, drive, geometry, sector, nsec, segment)
  *	Read/write "nsec" sectors from disk to real segment "segment"
  *		offset zero
  *
- *   If it will fit into the BIOS geometry, it tries the INT 0x13
- *   AH=<subfunction> interface, else if it is a hard disk, it will
- *   try the hard disk LBA calls (not yet implemented).  If these
- *   won't work, or otherwise it is out of the translated area, then
- *   it returns BIOS_GEOMETRY_ERROR.
+ *   Will try INT 0x13 LBA (AH=0x42/0x43) or standard (AH=0x2/0x3)
+ *   depending on probed geometry.  For addresses out of the translated
+ *   area, it returns BIOS_GEOMETRY_ERROR.
  */
 
 ENTRY(biosdisk)
@@ -350,10 +348,56 @@ ENTRY(biosdisk)
 	push	%edx
 	push	%esi
 
+	/* Check whether we have LBA. */
+	movb	0x13(%ebp), %al
+	shrb	$4, %al
+	jz	disk_compute_args	/* nope. */
+
+	/* set up disk address packet for extended calls (LBA mode) */
+	movl	0x14(%ebp), %eax	/* absolute block number */
+	movl	%eax, dap_block
+	xorl	%eax, %eax
+	movl	%eax, dap_block + 4
+
+	movb	0x18(%ebp), %al		/* number of sectors */
+	movw	%ax, dap_blocks
+
+	/* set up the buffer address */
+	xorl	%eax, %eax
+	movw	0x1c(%ebp), %ax		/* segment */
+	shll	$4, %eax
+	movl	%eax, dap_buffer
+	movl	$disk_address_packet, %esi
+
+	xorb	%bl, %bl
+	movb	0x8(%ebp), %bh		/* read=0, write=1 */
+	addb	$0x42, %bh		/* convert to extended subfunction */
+
+	movb	0xc(%ebp), %dl		/* drive */
+
+	call	EXT_C(prot_to_real)	/* enter real mode */
+	.code16
+
+	movw	%bx, %ax
+	int	$0x13			/* do the operation */
+
+	/* set success return value */
+	movb	$0, %bl
+
+	/* did we actually succeed? */
+	data32
+	jnc	disk_exit_16
+
+	data32
+	call	EXT_C(real_to_prot)	/* back to protected mode */
+	.code32
+
+	/* either failed, or a floppy, so try standard BIOS calls */
+disk_compute_args:
 	/*
-	 * "geometry" is a longword representing the BIOS geometry:
-	 *       6 bit zero
-	 *	10 bit cylinder   (bytes 2 & 3)
+	 * GEOMETRY is a longword representing the BIOS geometry:
+	 *       4 bit BIOS extension (0 = none, 1 = LBA)
+	 *	12 bit cylinder   (bytes 2 & 3)
 	 *	 8 bit head       (byte 1)
 	 *	 8 bit sector     (byte 0)
 	 */
@@ -379,14 +423,26 @@ ENTRY(biosdisk)
 	/* check cylinder offset, is there a geometry problem here? */
 	movl	0x10(%ebp), %ebx
 	shrl	$16, %ebx
+	andb	$0xf, %bh	/* mask out bios extension code */
 	cmpl	%ebx, %eax
 
-	/* if not, go onto standard read function */
+	/* if not, go on to standard read function */
 	jle	disk_use_standard_bios
 
-	/* XXX else we better use LBA or generate a geometry error */
 	movl	$BIOSDISK_ERROR_GEOMETRY, %eax
 	jmp	disk_exit_32
+
+disk_address_packet:
+	.align	4
+	.byte	0x20			/* length of packet */
+	.byte	0			/* reserved */
+dap_blocks:
+	.word	0			/* number of blocks */
+dap_buffer:
+	.long	0			/* buffer address */
+dap_block:
+	.long	0			/* absolute block number */
+	.long	0
 
 	/*
 	 *  This portion implements the BIOS standardized
@@ -396,9 +452,10 @@ disk_use_standard_bios:
 
 	shll	$8, %edx		/* get head number to %dh */
 	xchgl	%eax, %ecx		/* cylinder to %cx, sector to %al */
-	/* cylinder; the highest 2 bits of cyl is in %cl */
+	/* FIXME: cylinder; bits 10,11 of cyl are in %dh */
+	/* cylinder; bits 8,9 of cyl are in %cl */
 	xchgb	%ch, %cl
-	rorb	$2, %cl
+	shlb	$6, %cl
 	incb	%al			/* sector; sec starts from 1, not 0 */
 	orb	%al, %cl
 	movb	0xc(%ebp), %dl		/* drive */
@@ -406,7 +463,8 @@ disk_use_standard_bios:
 	/* prot_to_real will set %es to 0, so must set it ourselves
 	   after it is called */
 	movb	0x18(%ebp), %bl		/* number of sectors */
-	movb	0x8(%ebp), %bh		/* bios disk subfunction */
+	movb	0x8(%ebp), %bh		/* read=0, write=1 */
+	addb	$0x2, %bh		/* convert to subfunction */
 	shll	$16, %ebx		/* shift num sect. and subfunction */
 	movw	0x1c(%ebp), %bx		/* segment */
 
@@ -528,6 +586,7 @@ probe_loop:
 	movb	$1, %dh
 	movb	$79, %ch
 
+	xorb	%bh, %bh		/* no BIOS extensions */
 	data32
 	jmp	probe_success
 
@@ -535,7 +594,27 @@ probe_values:
 	.byte	36, 18, 15, 9, 0
 
 hard_drive:
-	movb	$0x8, %ah		/* ask for disk info */
+	/* Check for LBA. */
+	movb	$0x41, %ah
+	movw	$0x55aa, %bx
+	int	$0x13			/* int 13 extensions install check */
+
+	data32
+	jc	1f			/* invalid function */
+	cmpw	$0xaa55, %bx
+	data32
+	jnz	1f			/* failed magic */
+
+	andb	$1, %cx
+	data32
+	jnz	1f			/* LBA not supported */
+
+	/* Wahoo!  Got LBA! */
+	movb	$0x1, %bh
+	jmp	2f
+
+1:	xorb	%bh, %bh		/* Too bad, no LBA */
+2:	movb	$0x8, %ah		/* ask for disk info */
 	int	$0x13
 
 	data32
@@ -546,18 +625,24 @@ hard_drive:
 
 probe_success:
 	/*
-	 * form a longword representing all this gunk:
-	 *       6 bit zero
-	 *	10 bit cylinder
+	 * form a dword representing all this gunk:
+	 *       4 bit BIOS extension (0 = none, 1 = LBA)
+	 *	12 bit cylinder
 	 *	 8 bit head
 	 *	 8 bit sector
 	 */
-	movb	%cl, %al		/* Upper two bits of cylinder count */
-	andl	$192,%eax
-	addr32
-	leal	0(,%eax,4),%eax		/* << 2 */
+	movb	%bh, %ah		/* restore BIOS extensions bits */
+
+	movb	%dh, %al		/* bits 10,11 of cylinder count */
+	andb	$0xc0, %eax
+	shlw	$2, %ax			/* << 2 */
+	movb	%cl, %al		/* bits 8,9 of cylinder count */
+	andb	$0xc0, %al
+	shlw	$2, %ax			/* << 2 */
 	movb	%ch, %al		/* Lower 8 bits */
-	sall	$16,%eax		/* << 16 */
+	shll	$16, %eax		/* << 16 */
+
+	andb	$0x3f, %ah		/* mask of cylinder gunk */
 	movb	%dh, %ah		/* max head */
 	andb	$0x3f, %cl		/* mask of cylinder gunk */
 	movb	%cl, %al		/* max sector (and # sectors) */

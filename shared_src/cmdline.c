@@ -450,11 +450,11 @@ returnit:
 		      buf_track = -1;
 
 		      if (!errnum
-			  && (biosdisk(BIOSDISK_SUBFUNC_WRITE,
+			  && (biosdisk(BIOSDISK_WRITE,
 				       dest_drive, dest_geom,
 				       dest_sector, 1, (BOOTSEC_LOCATION>>4))
 			      || (write_stage2_sect
-				  && biosdisk(BIOSDISK_SUBFUNC_WRITE,
+				  && biosdisk(BIOSDISK_WRITE,
 					      current_drive, buf_geom,
 					      stage2_sect, 1, SCRATCHSEG))))
 			  errnum = ERR_WRITE;
