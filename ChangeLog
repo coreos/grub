@@ -1,3 +1,8 @@
+2002-12-21  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/asm.S (gateA20): First, try a BIOS call (INT 15H,
+	AX=2400/2401). Use the keyboard controller, only if that failed.
+
 2002-12-11  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Add a workaround for buggy BIOSes which don't pass boot drive

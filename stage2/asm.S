@@ -1660,6 +1660,36 @@ ENTRY(set_vbe_mode)
  */
 
 ENTRY(gateA20)
+	/* first, try a BIOS call */
+	pushl	%ebp
+	movl	8(%esp), %edx
+	
+	call	EXT_C(prot_to_real)
+	
+	.code16
+	movw	$0x2400, %ax
+	testw	%dx, %dx
+	jz	1f
+	incw	%ax
+1:	stc
+	int	$0x15
+	jnc	2f
+
+	/* set non-zero if failed */
+	movb	$1, %ah
+
+	/* save the status */
+2:	movb	%ah, %dl
+
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	popl	%ebp
+	testb	%dl, %dl
+	jnz	3f
+	ret
+
+3:	/* use keyboard controller */
 	pushl	%eax
 
 	call    gloop1
