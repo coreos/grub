@@ -32,11 +32,16 @@ AC_SUBST(host_vendor)
 #
 # Options
 #
-sbingrub=
-AC_ARG_ENABLE(sbin-grub,
-[  --enable-sbin-grub      build /sbin/grub command-line utility],
-[test "x$enableval" = xno || sbingrub=grub])
-AC_SUBST(sbingrub)
+
+AC_ARG_ENABLE(maintainer-mode,
+[  --enable-maintainer-mode
+                          enable the maintainer mode],
+[case "x${enableval}" in
+   xyes) maintainermode=yes ;;
+   xno) maintainermode=no ;;
+   *) AC_MSG_ERROR(invalid value ${enableval} for --enable-maintainer-mode) ;;
+esac],[maintainermode=no])
+AM_CONDITIONAL(GRUB_MAINT, test "x${maintainermode}" = xyes)
 
 #
 # Programs
@@ -63,13 +68,11 @@ if test "x$grub_cv_asm_addr32" != xyes; then
   AC_MSG_ERROR([GRUB requires GAS .code16 addr32 support; upgrade your binutils])
 fi
 
-# Check for curses libraries if we are building /sbin/grub.
-if test -n "$sbingrub"; then
-  AC_CHECK_LIB(ncurses, getch, [LIBS="$LIBS -lncurses"
+# Check for curses libraries.
+AC_CHECK_LIB(ncurses, getch, [LIBS="$LIBS -lncurses"
 AC_DEFINE(HAVE_LIBCURSES)],
 		[AC_CHECK_LIB(curses, getch, [LIBS="$LIBS -lcurses"
 AC_DEFINE(HAVE_LIBCURSES)])])
-fi
 
 # Create rules for our shared sources.
 AC_SUBST_FILE(SHARED_SRC_RULES)dnl

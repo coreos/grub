@@ -364,7 +364,7 @@ on the floppy.
 
 If you install GRUB using this method, it will only have access to the
 command-line interface, since there is no filesystem in which to find a
-configuration file (FIXME: ref). If you want to use the menu interface, see
+configuration file. If you want to use the menu interface, see
 @ref{Automated install}.
 
 Under an UNIX-like operating system, such as GNU, use @code{dd} as
@@ -427,7 +427,7 @@ place the @file{stage2} (and if desired, your configuration file called
 (after booting from the GRUB floppy):
 
 @example
-install= (fd0)+1 (hd0) (hd0,2)/boot/grub/stage2 0x8000 p
+install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
 @end example
 
 This tells GRUB to grab the first sector of the floppy and use it as the
@@ -444,13 +444,33 @@ telling GRUB's stage1 to read from the first hard disk no matter where
 the stage1 was loaded from:
 
 @example
-install= (fd0)+1 d (fd0) (hd0,2)/boot/grub/stage2 0x8000 p
+install= (fd0)+1 d (fd0) (hd0,1)/boot/grub/stage2 0x8000 p
 @end example
 
 The @samp{d} option near the beginning is what sets the @emph{forced}
 loading from the disk where the stage2 was installed from.  Also, the
 @dfn{destination device} is changed to place the finished stage1 on the
 floppy disk.
+
+@item
+@strong{Same as above, but place the stage1.5 in the first cylinder of
+the hard disk, and load the stage2 via the stage1.5:} Each of Stage 1.5s
+supports only one filesystem, so choose a stage1.5 that supports the
+filesystem where stage2 is located. Here it is assumed that the
+filesystem is ext2fs.
+
+First, copy @file{e2fs_stage1_5} to the first cylinder after MBR
+(@pxref{MBR}):
+
+@example
+dd if=e2fs_stage1_5/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
+@end example
+
+Second, specify the stage2 argument in the block-list format:
+
+@example
+install= (fd0)+1 (hd0) (hd0)1+1 0x2000 p (hd0,1)/boot/grub/stage2
+@end example
 
 @item
 @strong{Installing from an @emph{install directory} to the second hard
@@ -460,7 +480,7 @@ hard disk, and setting the stage2's @dfn{configuration file} to
 @file{(hd1,a)/grubdir/configfile}:
 
 @example
-install= (hd0,2)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
+install= (hd0,1)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
 @end example
 @end itemize
 
@@ -517,7 +537,7 @@ file, used with exactly the same syntax.
 @c The list of available keys should be listed in @table, and should be
 @c explained exactly. Current explanation is obscure.
 Cursor movement and editing of the text on the line can be done via a
-subset of the functions available in the BASH (FIXME: ref) shell
+subset of the functions available in the BASH shell
 (@kbd{C-f} forward, @kbd{C-b} backward, @kbd{C-a} beginning of line,
 @kbd{C-e} end of line, @kbd{C-k} delete to end, @kbd{C-u} delete to
 beginning; the PC left and right arrow keys, @key{HOME}, @key{DEL}, and

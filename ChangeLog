@@ -1,3 +1,29 @@
+1999-06-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c [__linux__]: Include linux/fs.h for BLKFLSBUF.
+	(grub_stage2): Call sync before and after calling doit.
+	(gurb_stage2) [__linux__]: Invalidate buffer caches by BLKFLSBUF
+	ioctl.
+	* grub/main.c (main): Call sync first. Suggested by Pavel Roskin
+	<pavel_roskin@geocities.com>.
+
+	* configure.in: Curses libraries are always checked.
+	(--enable-sbin-grub): Deleted. Now /sbin/grub is always built.
+	(--enable-maintainer-mode): New option.
+	* grub/Makefile.am (EXTRA_PROGRAMS): Deleted.
+	(sbin_PROGRAMS): Just set to grub.
+	* docs/Makefile.am (man_MANS): New variable.
+	(HELP2MAN): Likewise.
+	(noinst_SCRIPTS): Likewise.
+	(EXTRA_DIST): Add $(man_MANS) and $(noinst_SCRIPTS).
+	[GRUB_MAINT]: Define the rule for the /sbin/grub manual.
+	* docs/help2man: Copied from texinfo-3.12i.
+	(--sector): New option to specify which section a manual belongs
+	to.
+	(opt_sector): New variable.
+	(sector): Likewise.
+	* docs/grub.8: Produced by help2man automatically.
+	
 1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/char_io.c (get_cmdline): Add two missing `break's.

@@ -107,6 +107,12 @@ main (int argc, char **argv)
 {
   int c;
   int hold = 0;
+
+  /* First of all, call sync so that all in-core data is scheduled to be
+     actually written to disks. This is very important because GRUB does
+     not use ordinary stdio interface but raw devices.  */
+  sync ();
+  
   program_name = argv[0];
   default_boot_drive = boot_drive;
   default_install_partition = install_partition;

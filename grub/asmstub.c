@@ -39,13 +39,14 @@ int grub_stage2 (void);
 #include <time.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
 /* FIXME: only include if libc doesn't have large file support. */
-# include <unistd.h>
 # include <linux/unistd.h>	/* _llseek */
+# include <linux/fs.h>		/* BLKFLSBUF */
 #endif /* __linux__ */
 
 /* Simulated memory sizes. */
@@ -223,10 +224,16 @@ grub_stage2 (void)
     }
 #endif
 
+  /* Make sure that actual writing is done.  */
+  sync ();
+  
   /* Set our stack, and go for it. */
   simstack = (char *) PROTSTACKINIT;
   doit ();
 
+  /* I don't know if this is necessary really.  */
+  sync ();
+  
 #ifdef HAVE_LIBCURSES
   if (use_curses)
     endwin ();
@@ -235,7 +242,14 @@ grub_stage2 (void)
   /* Close off the file descriptors we used. */
   for (i = 0; i < NUM_DISKS; i ++)
     if (disks[i].flags != -1)
-      close (disks[i].flags);
+      {
+#ifdef __linux__
+	/* In Linux, invalidate the buffer cache. In other OSes, reboot
+	   is one of the solutions...  */
+	ioctl (disks[i].flags, BLKFLSBUF, 0);
+#endif
+	close (disks[i].flags);
+      }
 
   /* Release memory. */
   for (i = 0; i < NUM_DISKS; i++)

@@ -1,5 +1,4 @@
-EXTRA_PROGRAMS = grub
-sbin_PROGRAMS = $(sbingrub)
+sbin_PROGRAMS = grub
 CLEANFILES = $(EXTRA_PROGRAMS)
 
 COMPILE = $(CC) -DGRUB_UTIL=1 -fwritable-strings $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
