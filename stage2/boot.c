@@ -347,10 +347,13 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 		  errnum = ERR_EXEC_FORMAT;
 		  return KERNEL_TYPE_NONE;
 		}
+
+	      /* Ugly hack.  */
+	      linux_text_len = text_len;
 	      
 	      return big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX;
 	    }
-	  else if (!errnum)
+	  else if (! errnum)
 	    errnum = ERR_EXEC_FORMAT;
 	}
       else

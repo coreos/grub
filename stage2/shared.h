@@ -154,7 +154,6 @@ extern char *grub_scratch_mem;
 #define LINUX_FLAG_BIG_KERNEL     0x1
 
 /* Linux's video mode selection support. Actually I hate it!  */
-#define LINUX_VID_MODE_OFFSET	0x1FA
 #define LINUX_VID_MODE_NORMAL	0xFFFF
 #define LINUX_VID_MODE_EXTENDED	0xFFFE
 #define LINUX_VID_MODE_ASK	0xFFFD
@@ -396,7 +395,7 @@ struct linux_kernel_header
   unsigned long ramdisk_image;		/* initrd load address */
   unsigned long ramdisk_size;		/* initrd size */
   unsigned long bootsect_kludge;	/* obsolete */
-  unsigned long heap_end_ptr;		/* Free memory after setup end */
+  unsigned short heap_end_ptr;		/* Free memory after setup end */
   unsigned short pad1;			/* Unused */
   unsigned long cmd_line_ptr;		/* Points to the kernel command line */
 } __attribute__ ((packed));
@@ -460,6 +459,7 @@ extern unsigned long boot_part_offset;
 extern unsigned char force_lba;
 extern char version_string[];
 extern char config_file[];
+extern unsigned long linux_text_len;
 
 #ifdef GRUB_UTIL
 /* If not using config file, this variable is set to zero,

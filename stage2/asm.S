@@ -1689,14 +1689,15 @@ ENTRY(patch_code_end)
  * entry point of the Linux setup code.
  */
 
+VARIABLE(linux_text_len)
+	.long	0
+	
 ENTRY(linux_boot)
 	/* don't worry about saving anything, we're committed at this point */
 	cld	/* forward copying */
 
 	/* copy kernel */
-	movl	$LINUX_SETUP, %eax
-	/* XXX:	Too many bytes, but there is no bad effect */
-	movl	$LINUX_KERNEL_MAXLEN, %ecx
+	movl	EXT_C(linux_text_len), %ecx
 	shll	$2, %ecx
 	movl	$LINUX_STAGING_AREA, %esi
 	movl	$LINUX_KERNEL, %edi
@@ -1715,10 +1716,11 @@ ENTRY(big_linux_boot)
 	.code16
 
 	/* final setup for linux boot */
-	movw	$LINUX_SETUP_STACK, %sp
-
+	cli
 	movw	$LINUX_INIT_SEG, %ax
 	movw	%ax, %ss
+	movw	$LINUX_SETUP_STACK, %sp
+	
 	movw	%ax, %ds
 	movw	%ax, %es
 	movw	%ax, %fs
@@ -1727,8 +1729,8 @@ ENTRY(big_linux_boot)
 	/* jump to start */
 	/* ljmp */
 	.byte	0xea
-	.word	LINUX_SETUP_SEG
 	.word	0
+	.word	LINUX_SETUP_SEG
 	.code32
 
 

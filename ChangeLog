@@ -1,3 +1,21 @@
+2000-07-25  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S [!STAGE1_5] (linux_text_len): New variable.
+	[!STAGE1_5] (linux_boot): Don't set %eax to LINUX_SETUP
+	meaninglessly.
+	Set %ecx to LINUX_TEXT_LEN instead of LINUX_KERNEL_MAXLEN.
+	[!STAGE1_5] (big_linux_boot): Disable interrupts before changing
+	the stack pointer.
+	Change %ss right before %sp.
+	Reverse the arguments for ljmp. A segment must be after an
+	offset. *sigh*
+	* stage2/boot.c (load_image): Set LINUX_TEXT_LEN to TEXT_LEN,
+	if a Linux kernel is loaded successfully.
+	* stage2/shared.h (LINUX_VID_MODE_OFFSET): Removed.
+	[!ASM_FILE] (linux_kernel_header): Change the type of the member
+	`heap_end_ptr' to unsigned short.
+	[!ASM_FILE] (linux_text_len): Declared.
+	
 2000-07-24  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Comply with the Linux/i386 boot protocol version 2.02.
