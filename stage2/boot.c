@@ -420,9 +420,9 @@ load_image (char *kernel, char *arg)
 	      filesiz = phdr->p_filesz;
 	      
 	      if (type == 'f')
-		memaddr = RAW_ADDR (phdr->p_vaddr & 0xFFFFFF);
+		memaddr = RAW_ADDR (phdr->p_paddr & 0xFFFFFF);
 	      else
-		memaddr = RAW_ADDR (phdr->p_vaddr);
+		memaddr = RAW_ADDR (phdr->p_paddr);
 	      
 	      memsiz = phdr->p_memsz;
 	      if (memaddr < RAW_ADDR (0x100000))

@@ -1,5 +1,10 @@
 1999-09-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/boot.c (load_image): Use PHDR->P_PADDR instead of
+	PHDR->P_VADDR. Reported by Ramon van Handel <vhandel@chem.vu.nl>.
+	
+1999-09-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* docs/help2man: Upgraded to 1.013.
 	* docs/grub.8: Regenerated.
 	
