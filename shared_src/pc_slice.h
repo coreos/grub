@@ -97,12 +97,13 @@
  *  Known PC partition types are defined here.
  */
 
-#define PC_SLICE_TYPE_NONE         0
-#define PC_SLICE_TYPE_FAT12        1
-#define PC_SLICE_TYPE_FAT16_LT32M  4
-#define PC_SLICE_TYPE_EXTENDED     5
-#define PC_SLICE_TYPE_FAT16_GT32M  6
-#define PC_SLICE_TYPE_EXT2FS       0x83
+#define PC_SLICE_TYPE_NONE         	0
+#define PC_SLICE_TYPE_FAT12        	1
+#define PC_SLICE_TYPE_FAT16_LT32M  	4
+#define PC_SLICE_TYPE_EXTENDED     	5
+#define PC_SLICE_TYPE_FAT16_GT32M  	6
+#define PC_SLICE_TYPE_WIN95_EXTENDED	0xf
+#define PC_SLICE_TYPE_EXT2FS       	0x83
 
  /* this next one is special, as it uses it's own partitioning scheme
     to subdivide the PC partition from there */

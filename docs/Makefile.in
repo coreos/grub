@@ -72,14 +72,8 @@ host_vendor = @host_vendor@
 sbingrub = @sbingrub@
 
 
-html = boot-proposal.html errors.html faq.html grub.html install.html \
-	mem64mb.html technical.html using.html
-
-txt = PC_partitioning.txt bios_mapping.txt commands.txt embedded_data.txt \
-	filesystem.txt
-
 info_TEXINFOS = grub.texi multiboot.texi
-EXTRA_DIST = $(txt) $(html) menu.lst
+EXTRA_DIST = menu.lst
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 TEXI2DVI = texi2dvi

@@ -69,6 +69,7 @@ biosdisk (int read, int drive, struct geometry *geometry,
       dap.length = sizeof (dap);
       dap.block = sector;
       dap.blocks = nsec;
+      dap.reserved = 0;
       /* This is undocumented part. The address is formated in
 	 SEGMENT:ADDRESS.  */
       dap.buffer = segment << 16;

@@ -1,3 +1,31 @@
+1999-06-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/Makefile.am (html): Deleted.
+	(txt): Likewise.
+	(EXTRA_DIST): $(txt) and $(html) are removed.
+	* docs/boot-proposal.html: Removed.
+	* docs/errors.html: Likewise.
+	* docs/faq.html: Likewise.
+	* docs/grub.html: Likewise.
+	* docs/install.html: Likewise.
+	* docs/mem64mb.html: Likewise.
+	* docs/technical.html: Likewise.
+	* docs/using.html: Likewise.
+	* docs/PC_partitioning.txt: Likewise.
+	* docs/bios_mapping.txt: Likewise.
+	* docs/commands.txt: Likewise.
+	* docs/embedded_data.txt: Likewise.
+	* docs/filesystem.txt: Likewise.
+	
+1999-06-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Alexander K. Hudek <alexhudek@home.com>:
+	* shared_src/disk_io.c (real_open_partition): Check if
+	CURRENT_SLICE is equal to PC_SLICE_TYPE_WIN95_EXTENDED as well.
+	* shared_src/pc_slice.c (PC_SLICE_TYPE_WIN95_EXTENDED): New
+	macro.
+	* shared_src/bios.c (biosdisk): Clear the reserved member of DAP.
+	
 1999-06-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Color-menu support based on Peter Astrand
