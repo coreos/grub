@@ -1,3 +1,9 @@
+2004-04-26  Christian Jones  <chjones@aleph0.com>
+
+	* docs/grub.texi (Making a GRUB bootable CD-ROM): minor edits,
+	including a few compatibility notes and a change to
+	-boot-load-size 4 for the mkisofs command.
+
 2004-04-22  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Add "gnu".

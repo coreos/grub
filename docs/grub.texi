@@ -672,11 +672,12 @@ boot loader on a running OS may be extremely dangerous.
 GRUB supports the @dfn{no emulation mode} in the El Torito
 specification@footnote{El Torito is a specification for bootable CD
 using BIOS functions.}. This means that you can use the whole CD-ROM
-from GRUB and you don't have to make a floppy or hard disk image file.
+from GRUB and you don't have to make a floppy or hard disk image file,
+which can cause compatibility problems.
 
 For booting from a CD-ROM, GRUB uses a special Stage 2 called
-@file{stage2_eltoriro}. All you need to have in your bootable CD-ROM
-are this @file{stage2_eltorito} and optionally a config file
+@file{stage2_eltoriro}. The only GRUB files you need to have in your 
+bootable CD-ROM are this @file{stage2_eltorito} and optionally a config file
 @file{menu.lst}. You don't need to use @file{stage1} or @file{stage2},
 because El Torito is quite different from the standard boot process.
 
@@ -700,25 +701,27 @@ Copy the file @file{stage2_eltorito}:
 $ @kbd{cp /usr/share/grub/i386-pc/stage2_eltorito iso/boot/grub}
 @end example
 
-Then, make the config file @file{menu.lst} under @file{iso/boot/grub}
-(@pxref{Configuration}), and copy files and directories to the
-directory @file{iso} as you wish.
+If desired, make the config file @file{menu.lst} under @file{iso/boot/grub}
+(@pxref{Configuration}), and copy any files and directories for the disc to the
+directory @file{iso/}.
 
 Finally, make a ISO9660 image file like this:
 
 @example
 $ @kbd{mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot \
-    -boot-load-size 1 -boot-info-table -o grub.iso iso}
+    -boot-load-size 4 -boot-info-table -o grub.iso iso}
 @end example
 
 This produces a file named @file{grub.iso}, which then can be burned
-into a CD (or a DVD).
+into a CD (or a DVD).  @kbd{mkisofs} has already set up the disc to boot
+from the @kbd{boot/grub/stage2_eltorito} file, so there is no need to 
+setup GRUB on the disc.  (Note that the @kbd{-boot-load-size 4} bit is
+required for compatibility with the BIOS on many older machines.)
 
-Note that you can use the device @samp{(cd)} to access a CD-ROM in your
-config file. But you won't have to use this feature, because GRUB
-automatically sets the root device to @samp{(cd)} when booted from a
-CD-ROM. So it is not necessary to specify the device name explicitly,
-unless you want to access other drives as well.
+You can use the device @samp{(cd)} to access a CD-ROM in your
+config file. This is not required; GRUB automatically sets the root device 
+to @samp{(cd)} when booted from a CD-ROM. It is only necessary to refer to 
+@samp{(cd)} if you want to access other drives as well.
 
 
 @node Booting
