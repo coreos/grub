@@ -1,3 +1,9 @@
+2004-10-15  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_open): Do not
+	append ":0" to devpath if the GRUB_IEEE1275_NO_PARTITION_0 flag is
+	set in grub_ieee1275_flags.
+
 2004-10-14  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* include/grub/powerpc/ieee1275/ieee1275.h (abort): Add function

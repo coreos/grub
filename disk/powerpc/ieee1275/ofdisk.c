@@ -57,7 +57,9 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
     return grub_errno;
 
   /* To access the complete disk add `:0'.  */
-  grub_strcat (devpath, ":0");
+  if (! (grub_ieee1275_flags & GRUB_IEEE1275_NO_PARTITION_0))
+    grub_strcat (devpath, ":0");
+
   grub_ieee1275_open (devpath, &dev_ihandle);
   if (! dev_ihandle)
     {
