@@ -212,6 +212,9 @@ operates.
 `--disable-gunzip'
      Omit the decompression support in Stage 2.
 
+`--disable-md5-password'
+     Omit the MD5 password support in Stage2.
+
 `--with-binutils=PATH'
      Search the path PATH to find binutils. If you have installed your
      binutils executables into an unusual location where GCC doesn't
