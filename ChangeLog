@@ -1,3 +1,10 @@
+2003-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/boot.c (load_image): Check if DATA_LEN plus SECTOR_SIZE
+	is less than or equal to MULTIBOOT_SEARCH, instead of if
+	DATA_LEN is less than or equal to MULTIBOOT_SEARCH.
+	Reported by Neelkanth Natu <neelnatu@yahoo.com>.
+
 2003-03-10  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Andrew Walrond <andrew@walrond.org>:

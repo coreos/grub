@@ -1,7 +1,7 @@
 /* boot.c - load and bootstrap a kernel */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -373,9 +373,9 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	      linux_mem_size = 0;
 	  }
       
-	  /* It is possible that DATA_LEN is greater than MULTIBOOT_SEARCH,
-	     so the data may have been read partially.  */
-	  if (data_len <= MULTIBOOT_SEARCH)
+	  /* It is possible that DATA_LEN + SECTOR_SIZE is greater than
+	     MULTIBOOT_SEARCH, so the data may have been read partially.  */
+	  if (data_len + SECTOR_SIZE <= MULTIBOOT_SEARCH)
 	    grub_memmove (linux_data_tmp_addr, buffer,
 			  data_len + SECTOR_SIZE);
 	  else
