@@ -460,7 +460,7 @@ grub_longjmp (grub_jmp_buf env, int val)
 /* displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones */
 void
-grub_putchar (int c)
+console_putchar (int c)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)
@@ -480,7 +480,7 @@ static int save_char = ERR;
 
 /* returns packed BIOS/ASCII code */
 int
-getkey (void)
+console_getkey (void)
 {
   int c;
 
@@ -512,7 +512,7 @@ getkey (void)
 
 /* like 'getkey', but doesn't wait, returns -1 if nothing available */
 int
-checkkey (void)
+console_checkkey (void)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)

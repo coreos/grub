@@ -33,6 +33,8 @@
 # include <smp-imps.h>
 #endif /* ! GRUB_UTIL */
 
+/* Terminal types.  */
+int terminal = TERMINAL_CONSOLE;
 /* The type of kernel loaded.  */
 kernel_t kernel_type;
 /* The boot device.  */

@@ -1,5 +1,36 @@
 2000-07-12  OKUJI Yoshinori  <okuji@gnu.org>
 
+	Just to start implementing serial console support...
+	
+	* stage2/asm.S (grub_putchar): Renamed to ...
+	(console_putchar): ... this.
+	[!STAGE1_5] (getkey): Renamed to ...
+	[!STAGE1_5] (console_getkey): ... this.
+	[!STAGE1_5] (checkkey): Renamed to ...
+	[!STAGE1_5] (console_checkkey): ... this.
+	* stage2/char_io.c [!STAGE1_5] (getkey): New function.
+	[!STAGE1_5] (checkkey): Likewise.
+	(grub_putchar): Likewise.
+	* stage2/shared.h [!STAGE1_5] (terminal): Declared.
+	[!STAGE1_5] (TERMINAL_CONSOLE): New macro.
+	[!STAGE1_5] (TERMINAL_SERIAL): Likewise.
+	(console_putchar): Declared.
+	(serial_putchar): Likewise.
+	(console_getkey): Likewise.
+	(serial_getkey): Likewise.
+	(console_checkkey): Likewise.
+	(serial_checkkey): Likewise.
+	* stage2/builtins.c (terminal): New global variable. The default
+	is TERMINAL_CONSOLE.
+	* grub/asmstub.c (grub_putchar): Renamed to ...
+	(console_putchar): ... this.
+	(getkey): Renamed to ...
+	(console_getkey): ... this.
+	(checkkey): Renamed to ...
+	(console_checkkey): ... this.
+	
+2000-07-12  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/Makefile.am (libgrub_a_CFLAGS): Added
 	-I$(top_srcdir)/lib.
 	* stage2/builtins.c [GRUB_UTIL]: Include device.h.

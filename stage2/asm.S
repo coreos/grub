@@ -1386,8 +1386,9 @@ ENTRY(grub_longjmp)
 
 	
 /*
- * putchar(c)   : Puts character on the screen, interpreting '\n' as in the
- *                UNIX fashion.
+ * console_putchar(c)
+ *
+ * Puts character on the screen, interpreting '\n' as in the UNIX fashion.
  *
  * BIOS call "INT 10H Function 0Eh" to write character to console
  *      Call with       %ah = 0x0e
@@ -1397,7 +1398,7 @@ ENTRY(grub_longjmp)
  */
 
 
-ENTRY(grub_putchar)
+ENTRY(console_putchar)
 	push	%ebp
 	push	%eax
 	push	%ebx
@@ -1410,7 +1411,7 @@ ENTRY(grub_putchar)
 
 	/* if newline, print CR as well */
 	pushl	$0xd
-	call	EXT_C(grub_putchar)
+	call	EXT_C(console_putchar)
 	popl	%eax
 
 pc_notnewline:
@@ -2063,14 +2064,14 @@ ENTRY(ascii_key_map)
 	
 
 /*
- * getkey()
+ * console_getkey()
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
  *			%al = ASCII character
  */
 
-ENTRY(getkey)
+ENTRY(console_getkey)
 	push	%ebp
 	push	%ebx			/* save %ebx */
 
@@ -2093,7 +2094,7 @@ ENTRY(getkey)
 
 
 /*
- * checkkey()
+ * console_checkkey()
  *	if there is a character pending, return it; otherwise return -1
  * BIOS call "INT 16H Function 01H" to check whether a character is pending
  *	Call with	%ah = 0x1
@@ -2105,7 +2106,7 @@ ENTRY(getkey)
  *		else
  *			Zero flag = set
  */
-ENTRY(checkkey)
+ENTRY(console_checkkey)
 	push	%ebp
 	push	%ebx
 

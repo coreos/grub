@@ -625,13 +625,31 @@ void gotoxy (int x, int y);
    characters to special graphical ones (see the DISP_* constants). */
 void grub_putchar (int c);
 
+/* The console part of grub_putchar.  */
+void console_putchar (int c);
+
+/* The serial part of grub_putchar.  */
+void serial_putchar (int c);
+
 /* Wait for a keypress, and return its packed BIOS/ASCII key code.
    Use ASCII_CHAR(ret) to extract the ASCII code. */
 int getkey (void);
 
+/* The console part of getkey.  */
+int console_getkey (void);
+
+/* The serial part of getkey.  */
+int serial_getkey (void);
+
 /* Like GETKEY, but doesn't block, and returns -1 if no keystroke is
    available. */
 int checkkey (void);
+
+/* The console part of checkkey.  */
+int console_checkkey (void);
+
+/* The serial part of checkkey.  */
+int serial_checkkey (void);
 
 /* Sets text mode character attribute at the cursor position.  See A_*
    constants defined above. */
@@ -685,6 +703,12 @@ kernel_t;
 extern kernel_t kernel_type;
 extern int show_menu;
 extern int grub_timeout;
+
+/* This variable specifies which console should be used.  */
+extern int terminal;
+
+#define TERMINAL_CONSOLE	(1 << 0)	/* keyboard and screen */
+#define TERMINAL_SERIAL		(1 << 1)	/* serial console */
 
 void init_builtins (void);
 void init_config (void);

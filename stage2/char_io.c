@@ -170,6 +170,7 @@ grub_sprintf (char *buffer, const char *format, ...)
   return bp - buffer;
 }
 
+
 void
 init_page (void)
 {
@@ -739,7 +740,82 @@ grub_strcmp (const char *s1, const char *s2)
 
   return 0;
 }
+
+/* Wait for a keypress and return its code.  */
+int
+getkey (void)
+{
+  int c = -1;
+  
+  if (terminal == TERMINAL_CONSOLE)
+    c = console_getkey ();
+#ifdef serial_console_is_not_implemented_yet
+  else if (terminal == TERMINAL_SERIAL)
+    c = serial_getkey ();
+  else
+    {
+      while (1)
+	{
+	  c = console_checkkey ();
+	  if (c != -1)
+	    {
+	      c = console_getkey ();
+	      break;
+	    }
+
+	  c = serial_checkkey ();
+	  if (c != -1)
+	    {
+	      c = serial_getkey ();
+	      break;
+	    }
+	}
+    }
+#endif
+
+  return c;
+}
+
+/* Check if a key code is available.  */
+int
+checkkey (void)
+{
+  int c = -1;
+
+  if (terminal & TERMINAL_CONSOLE)
+    c = console_checkkey ();
+
+#ifdef serial_console_is_not_implemented_yet
+  if (c == -1 && (terminal & TERMINAL_SERIAL))
+    c = serial_checkkey ();
+#endif
+
+  return c;
+}
+
 #endif /* ! STAGE1_5 */
+
+/* Display an ASCII character.  */
+void
+grub_putchar (int c)
+{
+#ifdef STAGE1_5
+  
+  /* In Stage 1.5, only the normal console is supported.  */
+  console_putchar (c);
+  
+#else /* ! STAGE1_5 */
+  
+  if (terminal & TERMINAL_CONSOLE)
+    console_putchar (c);
+
+#ifdef serial_console_is_not_implemented_yet
+  if (terminal & TERMINAL_SERIAL)
+    serial_putchar (c);
+#endif
+  
+#endif /* ! STAGE1_5 */
+}
 
 int
 substring (char *s1, char *s2)
