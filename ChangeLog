@@ -1,3 +1,7 @@
+2003-09-01  Robert Millan  <robertmh@gnu.org>
+
+	* docs/menu.lst: Add NetBSD, OpenBSD, GNU/KFreeBSD and GNU/KNetBSD.
+
 2003-08-13  Jason Thomas  <jason@intology.com.au>
 
 	* util/grub-install.in (resolve_symlink): New function to resolve symlinks
