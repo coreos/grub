@@ -107,7 +107,7 @@ codestart:
 
 	sti		/* we're safe again */
 
-#ifndef DISKLESS_SUPPORT
+#ifndef SUPPORT_DISKLESS
 	/* save boot drive reference */
 	ADDR32	movb	%dl, EXT_C(boot_drive)
 #endif

@@ -41,8 +41,8 @@
 
 	.long	0x04000004
 	.long	NBI_DEST_ADDR + 0x0200
-	.long	DISKLESS_SIZE + 0x200
-	.long	DISKLESS_SIZE + 0x200
+	.long	DISKLESS_SIZE
+	.long	DISKLESS_SIZE
 
 	/* This ensures that the length of this image will be 1 sector */
 	. = _start + 0x200 - 1

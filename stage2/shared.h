@@ -234,8 +234,8 @@ extern char *grub_scratch_mem;
 #define PROT_MODE_DSEG  0x10
 #define PSEUDO_RM_CSEG	0x18
 #define PSEUDO_RM_DSEG	0x20
-#define STACKOFF	0x2000 - 0x10
-#define PROTSTACKINIT   FSYS_BUF - 0x10
+#define STACKOFF	(0x2000 - 0x10)
+#define PROTSTACKINIT   (FSYS_BUF - 0x10)
 
 
 /*

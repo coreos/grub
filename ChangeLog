@@ -1,3 +1,14 @@
+2000-05-28  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S (codestart): Fix a typo: DISKLESS_SUPPORT ->
+	SUPPORT_DISKLESS.
+	* stage2/nbloader.S: Fix the image length and the memory length
+	fields. They shouldn't contain the first sector for a tag.
+	Mmh..., that is unclear as far as I see the Net Boot Image
+	Proposal...
+	* stage2/shared.h (STACKOFF): Enclosed with parentheses.
+	(PROTSTACKINIT): Likewise.
+	
 2000-05-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Add diskless support, mostly based on patches by Christoph

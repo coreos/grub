@@ -268,7 +268,7 @@ init_bios_info (void)
   if (! setup_diskless_environment ())
     return;
 #endif
-  
+
   /* Set boot drive and partition.  */
   saved_drive = boot_drive;
   saved_partition = install_partition;
