@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,13 +23,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/times.h>
+#include <sys/time.h>
 #include <malloc.h>
 #include <unistd.h>
 
 #include <grub/util/misc.h>
 #include <grub/mm.h>
 #include <grub/term.h>
+#include <grub/machine/time.h>
 
 char *progname = 0;
 int verbosity = 0;
@@ -256,9 +257,13 @@ grub_stop (void)
 grub_uint32_t
 grub_get_rtc (void)
 {
-  struct tms currtime;
+  struct timeval tv;
 
-  return times (&currtime);
+  gettimeofday (&tv, 0);
+  
+  return (tv.tv_sec * GRUB_TICKS_PER_SECOND
+	  + (((tv.tv_sec % GRUB_TICKS_PER_SECOND) * 1000000 + tv.tv_usec)
+	     * GRUB_TICKS_PER_SECOND / 1000000));
 }
 
 void 

@@ -105,7 +105,7 @@ grub_ncurses_checkkey (void)
   /* Check for SAVED_CHAR. This should not be true, because this
      means checkkey is called twice continuously.  */
   if (saved_char != ERR)
-    return 1;
+    return saved_char;
   
   wtimeout (stdscr, 100);
   c = getch ();
@@ -113,10 +113,10 @@ grub_ncurses_checkkey (void)
   if (c != ERR)
     {
       saved_char = c;
-      return 1;
+      return c;
     }
 
-  return 0;
+  return -1;
 }
 
 static int

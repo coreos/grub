@@ -1,3 +1,75 @@
+2005-02-27  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* commands/default.h: New file.
+	* commands/timeout.h: Likewise.
+	* normal/context.c: Likewise.
+	
+	* util/misc.c: Do not include sys/times.h.
+	Include sys/time.h and grub/machine/time.h.
+	(grub_get_rtc): Rewritten with gettimeofday.
+
+	* util/grub-emu.c (main): Call grub_default_init and
+	grub_timeout_init before grub_normal_init, and call
+	grub_timeout_fini and grub_default_fini after grub_main.
+
+	* util/console.c (grub_ncurses_checkkey): Return the read
+	character or -1.
+
+	* normal/menu.c (run_menu): Set MENU->TIMEOUT to -1 once it
+	timeouts.
+
+	* normal/main.c (read_config_file): Push MENU. If this fails,
+	print an error and wait for a user input.
+	Print an error only if GRUB_ERRNO is not GRUB_ERR_NONE.
+	If a menu is empty or an error occurs, pop MENU.
+	(grub_normal_execute): Pop and free MENU after grub_menu_run
+	returns.
+
+	* kern/loader.c (grub_loader_boot): Call grub_machine_fini.
+
+	* include/grub/powerpc/ieee1275/time.h [GRUB_UTIL]: Do not
+	include	time.h.
+	[GRUB_UTIL] (GRUB_TICKS_PER_SECOND): Use the same definition as
+	without GRUB_UTIL.
+	* include/grub/i386/pc/time.h [GRUB_UTIL]: Do not include
+	time.h.
+	[GRUB_UTIL] (GRUB_TICKS_PER_SECOND): Use the same definition as
+	without GRUB_UTIL.
+
+	* include/grub/normal.h (struct grub_menu_list): New struct.
+	(grub_menu_list_t): New type.
+	(struct grub_context): New struct.
+	(grub_context_t): New type.
+	(grub_register_command): Got rid of EXPORT_FUNC.
+	(grub_unregister_command): Likewise.
+	(grub_context_get): New prototype.
+	(grub_context_get_current_menu): Likewise.
+	(grub_context_push_menu): Likewise.
+	(grub_context_pop_menu): Likewise.
+	[GRUB_UTIL] (grub_default_init): Likewise.
+	[GRUB_UTIL] (grub_default_fini): Likewise.
+	[GRUB_UTIL] (grub_timeout_init): Likewise.
+	[GRUB_UTIL] (grub_timeout_fini): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added commands/default.c,
+	commands/timeout.c and normal/context.c.
+	(pkgdata_MODULES): Added default.mod and timeout.mod.
+	(normal_mod_SOURCES): Added normal/context.c.
+	(default_mod_SOURCES): New variable.
+	(default_mod_CFLAGS): Likewise.
+	(timeout_mod_SOURCES): Likewise.
+	(timeout_mod_CFLAGS): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Copied from
+	conf/i386-pc.rmk.
+	(pkgdata_MODULES): Added default.mod and timeout.mod.
+	(normal_mod_SOURCES): Added normal/context.c.
+	(default_mod_SOURCES): New variable.
+	(default_mod_CFLAGS): Likewise.
+	(timeout_mod_SOURCES): Likewise.
+	(timeout_mod_CFLAGS): Likewise.
+
+	* Makefile.in (all-local): Added $(MKFILES).
+
 2005-02-21  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `partmap/sun.c'.

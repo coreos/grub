@@ -116,6 +116,22 @@ struct grub_menu
 };
 typedef struct grub_menu *grub_menu_t;
 
+/* A list of menus.  */
+struct grub_menu_list
+{
+  grub_menu_t menu;
+  struct grub_menu_list *next;
+};
+typedef struct grub_menu_list *grub_menu_list_t;
+
+/* The context.  A context holds some global information.  */
+struct grub_context
+{
+  /* The menu list.  */
+  grub_menu_list_t menu_list;
+};
+typedef struct grub_context *grub_context_t;
+
 /* To exit from the normal mode.  */
 extern grub_jmp_buf grub_exit_env;
 
@@ -126,14 +142,14 @@ void grub_menu_entry_run (grub_menu_entry_t entry);
 void grub_cmdline_run (int nested);
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
-void EXPORT_FUNC(grub_register_command) (const char *name,
+void grub_register_command (const char *name,
 			    grub_err_t (*func) (struct grub_arg_list *state,
 						int argc, char **args),
 			    unsigned flags,
 			    const char *summary,
 			    const char *description,
 			    const struct grub_arg_option *parser);
-void EXPORT_FUNC(grub_unregister_command) (const char *name);
+void grub_unregister_command (const char *name);
 grub_command_t grub_command_find (char *cmdline);
 grub_err_t grub_set_history (int newsize);
 int grub_iterate_commands (int (*iterate) (grub_command_t));
@@ -144,7 +160,10 @@ void grub_menu_init_page (int nested, int edit);
 int grub_arg_parse (grub_command_t parser, int argc, char **argv,
 		    struct grub_arg_list *usr, char ***args, int *argnum);
 void grub_arg_show_help (grub_command_t cmd);
-
+grub_context_t grub_context_get (void);
+grub_menu_t grub_context_get_current_menu (void);
+grub_menu_t grub_context_push_menu (grub_menu_t menu);
+void grub_context_pop_menu (void);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);
@@ -169,6 +188,10 @@ void grub_halt_init (void);
 void grub_halt_fini (void);
 void grub_reboot_init (void);
 void grub_reboot_fini (void);
+void grub_default_init (void);
+void grub_default_fini (void);
+void grub_timeout_init (void);
+void grub_timeout_fini (void);
 #endif
 
 #endif /* ! GRUB_NORMAL_HEADER */

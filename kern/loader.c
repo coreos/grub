@@ -21,6 +21,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/err.h>
+#include <grub/kernel.h>
 
 static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
@@ -64,6 +65,8 @@ grub_loader_boot (void)
   if (! grub_loader_loaded)
     return grub_error (GRUB_ERR_NO_KERNEL, "no loaded kernel");
 
+  grub_machine_fini ();
+  
   return (grub_loader_boot_func) ();
 }
 

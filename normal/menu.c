@@ -219,7 +219,10 @@ run_menu (grub_menu_t menu, int nested)
 	}
 
       if (menu->timeout == 0)
-	return menu->default_entry;
+	{
+	  menu->timeout = -1;
+	  return menu->default_entry;
+	}
       
       if (grub_checkkey () >= 0 || menu->timeout < 0)
 	{

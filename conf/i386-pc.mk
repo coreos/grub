@@ -504,9 +504,10 @@ grub_setup-fs_fshelp.d: fs/fshelp.c
 -include grub_setup-fs_fshelp.d
 
 
-# For grub
+# For grub_emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
-	commands/help.c commands/terminal.c commands/ls.c		\
+	commands/default.c commands/help.c commands/terminal.c		\
+	commands/ls.c commands/timeout.c				\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
@@ -514,16 +515,16 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
 	kern/partition.c kern/rescue.c kern/term.c			\
-	normal/arg.c normal/cmdline.c normal/command.c normal/main.c	\
-	normal/menu.c normal/menu_entry.c				\
+	normal/arg.c normal/cmdline.c normal/command.c normal/context.c	\
+	normal/main.c normal/menu.c normal/menu_entry.c			\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 	util/i386/pc/misc.c
-CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
-MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_i386_pc_reboot.d grub_emu-disk_loopback.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_i386_pc_misc.d
+CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_timeout.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
+MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_default.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_timeout.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_i386_pc_reboot.d grub_emu-disk_loopback.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_context.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_i386_pc_misc.d
 
-grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
+grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_timeout.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-commands_boot.o: commands/boot.c
@@ -550,6 +551,14 @@ grub_emu-commands_cmp.d: commands/cmp.c
 
 -include grub_emu-commands_cmp.d
 
+grub_emu-commands_default.o: commands/default.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_default.d: commands/default.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,default\.o[ :]*,grub_emu-commands_default.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_default.d
+
 grub_emu-commands_help.o: commands/help.c
 	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -573,6 +582,14 @@ grub_emu-commands_ls.d: commands/ls.c
 	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,grub_emu-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_emu-commands_ls.d
+
+grub_emu-commands_timeout.o: commands/timeout.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_timeout.d: commands/timeout.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,timeout\.o[ :]*,grub_emu-commands_timeout.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_timeout.d
 
 grub_emu-commands_i386_pc_halt.o: commands/i386/pc/halt.c
 	$(BUILD_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -790,6 +807,14 @@ grub_emu-normal_command.d: normal/command.c
 
 -include grub_emu-normal_command.d
 
+grub_emu-normal_context.o: normal/context.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-normal_context.d: normal/context.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,context\.o[ :]*,grub_emu-normal_context.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-normal_context.d
+
 grub_emu-normal_main.o: normal/main.c
 	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -915,10 +940,12 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
-	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod multiboot.mod \
-	amiga.mod apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod help.mod
+pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
+	ext2.mod minix.mod hfs.mod jfs.mod normal.mod hello.mod vga.mod	\
+	font.mod _multiboot.mod ls.mod boot.mod cmp.mod cat.mod		\
+	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
+	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
+	help.mod default.mod timeout.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -1355,10 +1382,10 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
-	normal/main.c normal/menu.c normal/menu_entry.c			\
-	normal/i386/setjmp.S
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_i386_setjmp.o def-normal.lst und-normal.lst
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_i386_setjmp.d
+	normal/context.c normal/main.c normal/menu.c 			\
+	normal/menu_entry.c normal/i386/setjmp.S
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_context.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_i386_setjmp.o def-normal.lst und-normal.lst
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_context.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_i386_setjmp.d
 DEFSYMFILES += def-normal.lst
 UNDSYMFILES += und-normal.lst
 
@@ -1367,7 +1394,7 @@ normal.mod: pre-normal.o mod-normal.o
 	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_i386_setjmp.o
+pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_context.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
 	$(LD) -r -d -o $@ $^
 
@@ -1407,6 +1434,14 @@ normal_mod-normal_command.d: normal/command.c
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,normal_mod-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include normal_mod-normal_command.d
+
+normal_mod-normal_context.o: normal/context.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_context.d: normal/context.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,context\.o[ :]*,normal_mod-normal_context.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_context.d
 
 normal_mod-normal_main.o: normal/main.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -2144,6 +2179,84 @@ loopback_mod-disk_loopback.d: disk/loopback.c
 -include loopback_mod-disk_loopback.d
 
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For default.mod
+default_mod_SOURCES = commands/default.c
+CLEANFILES += default.mod mod-default.o mod-default.c pre-default.o default_mod-commands_default.o def-default.lst und-default.lst
+MOSTLYCLEANFILES += default_mod-commands_default.d
+DEFSYMFILES += def-default.lst
+UNDSYMFILES += und-default.lst
+
+default.mod: pre-default.o mod-default.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-default.o: default_mod-commands_default.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-default.o: mod-default.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
+
+mod-default.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'default' $< > $@ || (rm -f $@; exit 1)
+
+def-default.lst: pre-default.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 default/' > $@
+
+und-default.lst: pre-default.o
+	echo 'default' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+default_mod-commands_default.o: commands/default.c
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
+
+default_mod-commands_default.d: commands/default.c
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -M $< 	  | sed 's,default\.o[ :]*,default_mod-commands_default.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include default_mod-commands_default.d
+
+default_mod_CFLAGS =  $(COMMON_CFLAGS)
+
+# For timeout.mod
+timeout_mod_SOURCES = commands/timeout.c
+CLEANFILES += timeout.mod mod-timeout.o mod-timeout.c pre-timeout.o timeout_mod-commands_timeout.o def-timeout.lst und-timeout.lst
+MOSTLYCLEANFILES += timeout_mod-commands_timeout.d
+DEFSYMFILES += def-timeout.lst
+UNDSYMFILES += und-timeout.lst
+
+timeout.mod: pre-timeout.o mod-timeout.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-timeout.o: timeout_mod-commands_timeout.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-timeout.o: mod-timeout.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
+
+mod-timeout.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'timeout' $< > $@ || (rm -f $@; exit 1)
+
+def-timeout.lst: pre-timeout.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 timeout/' > $@
+
+und-timeout.lst: pre-timeout.o
+	echo 'timeout' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+timeout_mod-commands_timeout.o: commands/timeout.c
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
+
+timeout_mod-commands_timeout.d: commands/timeout.c
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -M $< 	  | sed 's,timeout\.o[ :]*,timeout_mod-commands_timeout.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include timeout_mod-commands_timeout.d
+
+timeout_mod_CFLAGS =  $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

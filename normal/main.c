@@ -1,7 +1,7 @@
 /* main.c - the normal mode main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -154,6 +154,21 @@ read_config_file (const char *config)
   menu->size = 0;
   menu->entry_list = 0;
 
+  if (! grub_context_push_menu (menu))
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+
+      free_menu (menu);
+      grub_file_close (file);
+      
+      /* Wait until the user pushes any key so that the user
+	 can see what happened.  */
+      grub_printf ("\nPress any key to continue...");
+      (void) grub_getkey ();
+      return 0;
+    }
+  
   next_entry = &(menu->entry_list);
   next_cmd = 0;
   
@@ -207,8 +222,11 @@ read_config_file (const char *config)
 	  if (cmd->flags & GRUB_COMMAND_FLAG_MENU)
 	    {
 	      grub_command_execute (cmdline);
-	      grub_print_error ();
-	      grub_errno = GRUB_ERR_NONE;
+	      if (grub_errno != GRUB_ERR_NONE)
+		{
+		  grub_print_error ();
+		  grub_errno = GRUB_ERR_NONE;
+		}
 	    }
 	  else
 	    {
@@ -245,6 +263,7 @@ read_config_file (const char *config)
   /* If no entry was found or any error occurred, return NULL.  */
   if (menu->size == 0 || grub_errno != GRUB_ERR_NONE)
     {
+      grub_context_pop_menu ();
       free_menu (menu);
       return 0;
     }
@@ -301,7 +320,11 @@ grub_normal_execute (const char *config, int nested)
     }
 
   if (menu)
-    grub_menu_run (menu, nested);
+    {
+      grub_menu_run (menu, nested);
+      grub_context_pop_menu ();
+      free_menu (menu);
+    }
   else
     grub_cmdline_run (nested);
 }
