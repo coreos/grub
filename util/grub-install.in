@@ -63,8 +63,10 @@ EOF
 # This part is OS-specific.
 convert () {
     # First, check if the device file exists.
-    if test ! -e "$1"; then
-	echo "$1: Not found." 1>&2
+    if test -b "$1"; then
+	:
+    else
+	echo "$1: Not found or not a block device." 1>&2
 	exit 1
     fi
 
@@ -116,7 +118,7 @@ convert () {
 }
 
 # Check the arguments.
-for option; do
+for option in "$@"; do
     case "$option" in
     -h | --help)
 	usage
@@ -135,12 +137,19 @@ for option; do
 	debug=yes ;;
     *)
 	if test "x$install_device" != x; then
+	    echo "More than one install_devices?" 1>&2
 	    usage
 	    exit 1
 	fi
 	install_device="${option}" ;;
     esac
 done
+
+if test "x$install_device" = x; then
+    echo "install_device not specified." 1>&2
+    usage
+    exit 1
+fi
 
 # If the debugging feature is enabled, print commands.
 if test $debug = yes; then
@@ -153,17 +162,23 @@ grubdir=${bootdir}/grub
 device_map=${grubdir}/device.map
 
 # Check if GRUB is installed
-if test ! -f "$grub_shell"; then
+if test -f "$grub_shell"; then
+    :
+else
     echo "${grub_shell}: Not found." 1>&2
     exit 1
 fi
 
-if test ! -f "$pkgdatadir/stage1"; then
+if test -f "$pkgdatadir/stage1"; then
+    :
+else
     echo "${pkgdatadir}/stage1: Not found." 1>&2
     exit 1
 fi
 
-if test ! -f "$pkgdatadir/stage2"; then
+if test -f "$pkgdatadir/stage2"; then
+    :
+else
     echo "${pkgdatadir}/stage2: Not found." 1>&2
     exit 1
 fi
@@ -172,11 +187,13 @@ fi
 # Stage 1.5 does not exist.
 
 # Create the GRUB directory if it is not present.
-test -d "$bootdir" || mkdir "$bootdir"
-test -d "$grubdir" || mkdir "$grubdir"
+test -d "$bootdir" || mkdir "$bootdir" || exit 1
+test -d "$grubdir" || mkdir "$grubdir" || exit 1
 
 # Create the device map file if it is not present.
-if test ! -f "$device_map"; then
+if test -f "$device_map"; then
+    :
+else
     # Create a safe temporary file.
     test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 
@@ -192,25 +209,21 @@ EOF
 fi
 
 # Check for INSTALL_DEVICE.
-if test "x$install_device" = x; then
+case "$install_device" in
+/dev/*)
+    install_drive=`convert "$install_device"`
+    # I don't know why, but some shells wouldn't die if exit is
+    # called in a function.
+    if test "x$install_drive" = x; then
+	exit 1
+    fi ;;
+\([hf]d[0-9]*\))
+    install_drive="$install_device" ;;
+*)
+    echo "Format of install_device not recognized." 1>&2
     usage
-    exit 1
-else
-    case "$install_device" in
-    /dev/*)
-	install_drive=`convert "$install_device"`
-	# I don't know why, but some shells wouldn't die if exit is
-	# called in a function.
-	if test "x$install_drive" = x; then
-	    exit 1
-	fi ;;
-    \([hf]d[0-9]*\))
-	install_drive="$install_device" ;;
-    *)
-	usage
-	exit 1 ;;
-    esac
-fi
+    exit 1 ;;
+esac
 
 # Get the root drive.
 # For now, this uses the program `df' to get the device name, but is
@@ -256,9 +269,10 @@ fi
 rm -f $log_file
 
 # Prompt the user to check if the device map is correct.
+echo "Installation finished. No error reported."
 echo "This is the contents of the device map $device_map."
 echo "Check if this is correct or not. If any of the lines is incorrect,"
-echo "fix it and re-run the script \`grub-install\'."
+echo "fix it and re-run the script \`grub-install'."
 echo
 
 cat $device_map

@@ -16,6 +16,11 @@ New in 0.5.95 - XXXX-XX-XX:
   LBA mode, you should specify it. It is necessary if your BIOS is too
   buggy. In the previous version, it was a compile-time option, but you
   don't have to recompile GRUB any longer.
+* Likewise, now the command "setup" and the script "grub-install" also
+  accept `--force-lba' option. Specifying this option to "setup" or
+  "grub-install" has the same effect as to the command "install".
+* The configure script doesn't accept the option
+  `--disable-lba-support-bitmap-check' any longer. Use the option above.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

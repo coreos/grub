@@ -1,3 +1,16 @@
+2000-04-18  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* util/grub-install.in: Don't use `!' in `test' for more
+	portability.
+	Don't use `for' without `in' for compatability with ash.
+	Check install_device before running grub if possible. Added
+	error messages if install_device is not set or not unique.
+	Exit if mkdir fails.
+	Add a message about successful installation.
+	Remove unneeded backslash in the final message.
+	(convert): use `test -b' instead of `test -e' because ash
+	doesn't	understand the later. Correct error message accordingly.
+	
 2000-04-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	The user doesn't have to recompile GRUB for his/her buggy BIOS

@@ -2,7 +2,7 @@ You can use the netboot support to download OS images from a network.
 Nearly all the device drivers are coming from the network-based boot
 loader, Etherboot. Please visit its web page. They have rich
 documentations so you will be able to get useful information from there.
-The URL is <http://www.slug.org.au/etherboot/>.
+The URL is <http://etherboot.sourceforge.net/>.
 
 These below are common options for configure. Perhaps you may not need
 to specify them.
