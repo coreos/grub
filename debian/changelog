@@ -1,8 +1,14 @@
 grub (0.5.95) unstable; urgency=low
 
   * ReiserFS support from Jochen Hoenicke.
+  * `--disable-lba-support-bitmap-check' is now a runtime option,
+    `--force-lba', which works with `install', `setup', and
+    `grub-install.' (closes:bug#61513)
+  * Fixed a bug in LBA support checking.  Please let us know if you
+    need to use `--force-lba' for Grub to work.
+  * NetBSD ELF kernel support is added.
 
- --
+ -- Gordon Matzigkeit <gord@debian.org>  Tue, 27 Jun 2000 09:44:41 -0600
 
 grub (0.5.94) unstable; urgency=low
 
