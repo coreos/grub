@@ -397,7 +397,7 @@ general_error:
 /* go here when you need to stop the machine hard after an error condition */
 stop:	jmp	stop
 
-notification_string:	.string "stage1 "
+notification_string:	.string "GRUB "
 geometry_error_string:	.string "Geom"
 hd_probe_error_string:	.string "Hard Disk"
 read_error_string:	.string "Read"

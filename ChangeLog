@@ -1,3 +1,16 @@
+2000-09-09  Alessandro Rubini  <rubini@morgana.systemy.it>
+
+	* stage1/stage1.S (notification_string): Print "GRUB " instead
+	of "stage1 ".
+	* stage2/start.S [STAGE1_5] (notification_string): Print
+	"Loading stage1.5" instead of "stage1.5 ".
+	[!STAGE1_5] (notification_string): Print "Loading stage2"
+	instead of "stage2 ".
+	(notification_step): New label, followed by a string ".".
+	(notification_done): New label, followed by a string "\r\n".
+	(copy_buffer): Print NOTIFICATION_STEP after copying the buffer.
+	(bootit): Print NOTIFICATION_DONE before restoring %dx.
+	
 2000-09-09  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Alessandro Rubini:

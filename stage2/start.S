@@ -284,9 +284,9 @@ copy_buffer:
 	movw	%ax, %cx
 
 	/* save addressing regs */
-	pushw	%ds
 	pushw	%si
 	pushw	%di
+	pushw	%ds
 
 	xorw	%di, %di	/* zero offset of destination addresses */
 	xorw	%si, %si	/* zero offset of source addresses */
@@ -298,10 +298,12 @@ copy_buffer:
 	rep		/* sets a repeat */
 	movsb		/* this runs the actual copy */
 
-	/* restore addressing regs */
+	/* restore addressing regs and print a dot with correct DS 
+	   (MSG modifies SI, which is saved, and unused AX and BX) */
+	popw	%ds
+	MSG(notification_step)
 	popw	%di
 	popw	%si
-	popw	%ds
 
 	/* check if finished with this dataset */
 	cmpw	$0, 4(%di)
@@ -316,6 +318,8 @@ copy_buffer:
 /* END OF MAIN LOOP */
 
 bootit:
+	/* print a newline */
+	MSG(notification_done)
 	popw	%dx	/* this makes sure %dl is our "boot" drive */
 #ifdef STAGE1_5
 	ljmp	$0, $0x2200
@@ -344,10 +348,13 @@ general_error:
 stop:	jmp	stop
 
 #ifdef STAGE1_5
-notification_string:	.string "stage1.5 "
+notification_string:	.string "Loading stage1.5"
 #else
-notification_string:	.string "stage2 "
+notification_string:	.string "Loading stage2"
 #endif
+
+notification_step:	.string "."
+notification_done:	.string "\r\n"
 	
 geometry_error_string:	.string "Geom"
 read_error_string:	.string "Read"
