@@ -1,8 +1,8 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -fno-builtin -D__ASSEMBLY__
-COMMON_CFLAGS = -fno-builtin -D__ASSEMBLY__
+COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
+COMMON_CFLAGS = -fno-builtin -msoft-float
 
 # Images.
 
@@ -319,8 +319,8 @@ grub_emu-commands_cat.d: commands/cat.c
 
 grub_emu_LDFLAGS = -lncurses
 
-grubof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c \
-	boot/powerpc/ieee1275/crt0.S kern/main.c kern/device.c \
+grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
+	boot/powerpc/ieee1275/ieee1275.c kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c fs/fshelp.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \
@@ -329,11 +329,19 @@ grubof_SOURCES = boot/powerpc/ieee1275/cmain.c boot/powerpc/ieee1275/ieee1275.c 
 	disk/powerpc/ieee1275/ofdisk.c disk/powerpc/ieee1275/partition.c \
 	kern/env.c normal/arg.c loader/powerpc/ieee1275/linux.c \
 	loader/powerpc/ieee1275/linux_normal.c commands/boot.c
-CLEANFILES += grubof grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-boot_powerpc_ieee1275_crt0.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
-MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-boot_powerpc_ieee1275_crt0.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-fs_fshelp.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-fs_ext2.d grubof-fs_ufs.d grubof-fs_minix.d grubof-fs_hfs.d grubof-fs_jfs.d grubof-normal_cmdline.d grubof-normal_command.d grubof-normal_main.d grubof-normal_menu.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-disk_powerpc_ieee1275_partition.d grubof-kern_env.d grubof-normal_arg.d grubof-loader_powerpc_ieee1275_linux.d grubof-loader_powerpc_ieee1275_linux_normal.d grubof-commands_boot.d
+CLEANFILES += grubof grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
+MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_crt0.d grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-fs_fshelp.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-fs_ext2.d grubof-fs_ufs.d grubof-fs_minix.d grubof-fs_hfs.d grubof-fs_jfs.d grubof-normal_cmdline.d grubof-normal_command.d grubof-normal_main.d grubof-normal_menu.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-disk_powerpc_ieee1275_partition.d grubof-kern_env.d grubof-normal_arg.d grubof-loader_powerpc_ieee1275_linux.d grubof-loader_powerpc_ieee1275_linux_normal.d grubof-commands_boot.d
 
-grubof: grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-boot_powerpc_ieee1275_crt0.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
+grubof: grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grubof_LDFLAGS)
+
+grubof-boot_powerpc_ieee1275_crt0.o: boot/powerpc/ieee1275/crt0.S
+	$(BUILD_CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+
+grubof-boot_powerpc_ieee1275_crt0.d: boot/powerpc/ieee1275/crt0.S
+	set -e; 	  $(BUILD_CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,crt0\.o[ :]*,grubof-boot_powerpc_ieee1275_crt0.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grubof-boot_powerpc_ieee1275_crt0.d
 
 grubof-boot_powerpc_ieee1275_cmain.o: boot/powerpc/ieee1275/cmain.c
 	$(BUILD_CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
@@ -350,14 +358,6 @@ grubof-boot_powerpc_ieee1275_ieee1275.d: boot/powerpc/ieee1275/ieee1275.c
 	set -e; 	  $(BUILD_CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,ieee1275\.o[ :]*,grubof-boot_powerpc_ieee1275_ieee1275.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-boot_powerpc_ieee1275_ieee1275.d
-
-grubof-boot_powerpc_ieee1275_crt0.o: boot/powerpc/ieee1275/crt0.S
-	$(BUILD_CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
-
-grubof-boot_powerpc_ieee1275_crt0.d: boot/powerpc/ieee1275/crt0.S
-	set -e; 	  $(BUILD_CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,crt0\.o[ :]*,grubof-boot_powerpc_ieee1275_crt0.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grubof-boot_powerpc_ieee1275_crt0.d
 
 grubof-kern_main.o: kern/main.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<

@@ -1,8 +1,8 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -fno-builtin -D__ASSEMBLY__
-COMMON_CFLAGS = -fno-builtin -D__ASSEMBLY__
+COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
+COMMON_CFLAGS = -ffreestanding -msoft-float
 
 # Images.
 

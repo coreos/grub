@@ -1,3 +1,9 @@
+2004-10-19  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* conf/powerpc-ieee1275.rmk (COMMON_ASFLAGS): Remove -fno-builtin.
+	(COMMON_CFLAGS): Remove -fno-builtin and -D__ASSEMBLY__. Add
+	-ffreestanding and -msoft-float.
+
 2004-10-15  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_open): Do not
