@@ -8,7 +8,9 @@ pre_stage2
 pxegrub
 pxeloader
 stage2
+stage2_eltorito
 stage2_size.h
 start
+start_eltorito
 *.exec
 *_stage1_5
