@@ -3642,7 +3642,7 @@ setup_func (char *arg, int flags)
 
       return ret;
     }
-
+  
   /* Construct a device name in DEVICE.  */
   void sprint_device (int drive, int partition)
     {
@@ -3836,8 +3836,8 @@ setup_func (char *arg, int flags)
      arguments.  */
   sprint_device (installed_drive, installed_partition);
   
-#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
-  /* I prefer this, but...  */
+#if 1
+  /* Don't embed a drive number unnecessarily.  */
   grub_sprintf (cmd_arg, "%s%s%s%s %s%s %s p %s %s",
 		is_force_lba? "--force-lba" : "",
 		stage2_arg? stage2_arg : "",
@@ -3848,11 +3848,14 @@ setup_func (char *arg, int flags)
 		stage2,
 		config_filename,
 		real_config_filename);
-#else /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
-  /* Actually, there are several buggy BIOSes in the world, so we
-     may not expect that your BIOS will pass a booting drive to stage1
-     correctly. Thus, always specify the option `d', whether
-     INSTALLED_DRIVE is identical with IMAGE_DRIVE or not. *sigh*  */
+#else /* NOT USED */
+  /* This code was used, because we belived some BIOSes had a problem
+     that they didn't pass a booting drive correctly. It turned out,
+     however, stage1 could trash a booting drive when checking LBA support,
+     because some BIOSes modified the register %dx in INT 13H, AH=48H.
+     So it becamed unclear whether GRUB should use a pre-defined booting
+     drive or not. If the problem still exists, it would be necessary to
+     switch back to this code.  */
   grub_sprintf (cmd_arg, "%s%s%s%s d %s %s p %s %s",
 		is_force_lba? "--force-lba " : "",
 		stage2_arg? stage2_arg : "",
@@ -3862,7 +3865,7 @@ setup_func (char *arg, int flags)
 		stage2,
 		config_filename,
 		real_config_filename);
-#endif /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
+#endif /* NOT USED */
   
   /* Notify what will be run.  */
   grub_printf (" Running \"install %s\"... ", cmd_arg);

@@ -1,3 +1,8 @@
+2002-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (setup_func): Don't embed a drive number, if
+	unnecessary.
+	
 2002-03-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (General commands): Added ``pager'' into the
