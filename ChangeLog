@@ -1,5 +1,18 @@
 2000-09-05  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage1/stage1.S (lba_mode) [!NO_BUGGY_BIOS_IN_THE_WORLD]:
+	Don't check for the geometry, since some BIOSes don't return the
+	number of total sectors correctly, even if they have working LBA
+	support.
+	* stage2/start.S (lba_mode) [!NO_BUGGY_BIOS_IN_THE_WORLD]:
+	Likewise.
+	* stage2/bios.c (biosdisk) [!NO_BUGGY_BIOS_IN_THE_WORLD]:
+	Likewise.
+	Reported by Jan Fricke <fricke@uni-greifswald.de> and Pixel
+	<pixel@mandrakesoft.com>.
+	
+2000-09-05  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Alessandro Rubini <rubini@gnu.org>:
 	* stage2/char_io.c (print_error) [!STAGE1_5]: Print ERRNUM like
 	"Error 9: Unknown boot failure".

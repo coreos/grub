@@ -60,9 +60,14 @@ biosdisk (int read, int drive, struct geometry *geometry,
 	unsigned long buffer;
 	unsigned long long block;
       } dap;
-      
+
+      /* XXX: Don't check the geometry by default, because some buggy
+	 BIOSes don't return the number of total sectors correctly,
+	 even if they have working LBA support. Hell.  */
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
       if (sector >= geometry->total_sectors)
 	return BIOSDISK_ERROR_GEOMETRY;
+#endif /* NO_BUGGY_BIOS_IN_THE_WORLD */
 
       /* FIXME: sizeof (DAP) must be 0x10. Should assert that the compiler
 	 can't add any padding.  */

@@ -184,8 +184,11 @@ lba_mode:
 	
 	movl	ABS(stage2_sector), %ebx
 
+	/* check for the geometry */
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
 	cmpl	%ecx, %ebx
 	jge	geometry_error
+#endif /* NO_BUGGY_BIOS_IN_THE_WORLD */
 	
 	/* the size and the reserved byte */
 	movw	$0x0010, (%si)

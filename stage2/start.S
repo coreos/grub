@@ -1,7 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -96,8 +96,10 @@ lba_mode:
 	movl	(%di), %ebx
 
 	/* check for the geometry */
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
 	cmpl	%ecx, %ebx
 	jge	geometry_error
+#endif /* NO_BUGGY_BIOS_IN_THE_WORLD */
 
 	/* the maximum is limited to 0x7f because of Phoenix EDD */
 	xorl	%eax, %eax
