@@ -1,5 +1,20 @@
 2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* stage1/stage1.S: Don't call INT 13, AH=48H, because it is
+	difficult to call this function with the workaround implemented
+	in the previous change due to the size limit of Stage 1.
+	
+	(lba_mode) [NO_BUGGY_BIOS_IN_THE_WORLD]: Don't check the
+	geometry explicitly. This shouldn't be harmful, as INT 13,
+	AH=42H should take care of it, and if you cannot read Stage 2
+	even with LBA because of a geometry problem, you can never read
+	it.
+
+	* stage2/start.S (lba_mode) [NO_BUGGY_BIOS_IN_THE_WORLD]:
+	Likewise.
+	
+2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* stage2/bios.c (get_diskinfo): Clear out the structure DRP
 	before calling get_diskinfo_int13_extensions, because the Ralf
 	Brown's Interrupt List says that Dell machines using PhoenixBIOS
