@@ -1,5 +1,13 @@
 1999-12-30  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/builtins.c (blocklist_func): New function.
+	(builtin_blocklist): New variable.
+	(builtin_table): Added a pointer to BUILTIN_BLOCKLIST.
+	* docs/user-ref.texi (Command-line-specific commands): Added a
+	description about the command "blocklist".
+	
+1999-12-30  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/disk_io.c (grub_seek): New function.
 	* stage2/shared.h (grub_seek): Declared.
 	* stage2/boot.c (load_image): Use grub_seek instead of setting

@@ -738,6 +738,11 @@ partitions exist in one disk.
 These commands are usable only in the command line and in menu entries.
 If you forget some command, run the command @command{help}.
 
+@deffn Command blocklist file
+Print the blocklist notation of the file @var{file} (@pxref{Blocklist
+syntax}).
+@end deffn
+
 @deffn Command boot
 This boots the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command line (it is implicit at the end of

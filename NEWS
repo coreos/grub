@@ -26,6 +26,7 @@ New in 0.5.94:
 * The command "install" can now patch a Stage 2 with a different
   filename from "/boot/grub/menu.lst" even if a Stage 1.5 is used.
 * New program, ``grub-install''.
+* The command "blocklist" prints the blocklist notation of a file.
 
 New in 0.5.93 - 1999-10-30:
 * ELF format of FreeBSD kernel is supported.

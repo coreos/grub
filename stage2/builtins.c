@@ -79,6 +79,85 @@ disk_read_print_func (int sector)
 }
 
 
+/* blocklist */
+static int
+blocklist_func (char *arg, int flags)
+{
+  char *dummy = (char *) RAW_ADDR (0x100000);
+  int start_sector;
+  int num_sectors = 0;
+  int num_entries = 0;
+
+  /* Collect contiguous blocks into one entry as many as possible,
+     and print the blocklist notation on the screen.  */
+  static void disk_read_blocklist_func (int sector)
+    {
+      if (debug)
+	grub_printf ("[%d]", sector);
+
+      if (num_sectors > 0)
+	{
+	  if (start_sector + num_sectors == sector)
+	    num_sectors++;
+	  else
+	    {
+	      grub_printf ("%s%d+%d", num_entries ? "," : "",
+			   start_sector - part_start, num_sectors);
+	      num_entries++;
+	      num_sectors = 0;
+	    }
+	}
+      else
+	{
+	  start_sector = sector;
+	  num_sectors = 1;
+	}
+    }
+
+  /* Open the file.  */
+  if (! grub_open (arg))
+    return 1;
+
+  /* Print the device name.  */
+  grub_printf ("(%cd%d",
+	       (current_drive & 0x80) ? 'h' : 'f',
+	       current_drive & ~0x80);
+  
+  if ((current_partition & 0xFF0000) != 0xFF0000)
+    grub_printf (",%d", (current_partition >> 16) & 0xFF);
+  
+  if ((current_partition & 0x00FF00) != 0x00FF00)
+    grub_printf (",%c", 'a' + ((current_partition >> 8) & 0xFF));
+  
+  grub_printf (")");
+
+  /* Read in the whole file to DUMMY.  */
+  disk_read_hook = disk_read_blocklist_func;
+  if (! grub_read (dummy, -1))
+    goto fail;
+
+  /* The last entry may not be printed yet.  */
+  if (num_sectors > 0)
+    grub_printf ("%s%d+%d", num_entries ? "," : "",
+		 start_sector - part_start, num_sectors);
+
+  grub_printf ("\n");
+  
+ fail:
+  disk_read_hook = 0;
+  grub_close ();
+  return errnum;
+}
+
+static struct builtin builtin_blocklist =
+{
+  "blocklist",
+  blocklist_func,
+  BUILTIN_CMDLINE,
+  "blocklist FILE",
+  "Print the blocklist notation of the file FILE."
+};
+
 /* boot */
 static int
 boot_func (char *arg, int flags)
@@ -2603,6 +2682,7 @@ static struct builtin builtin_uppermem =
 /* The table of builtin commands. Sorted in dictionary order.  */
 struct builtin *builtin_table[] =
 {
+  &builtin_blocklist,
   &builtin_boot,
   &builtin_cat,
   &builtin_chainloader,
