@@ -271,12 +271,17 @@ load_image (char *kernel, char *arg, kernel_t suggested_type)
 	    *((unsigned short *) CL_OFFSET) = CL_MY_LOCATION - CL_BASE_ADDR;
 	    *((unsigned short *) CL_MAGIC_ADDR) = CL_MAGIC;
 
-	    grub_memmove (dest, "mem=", 4);
-	    dest += 4;
-	    
-	    dest = convert_to_ascii (dest, 'u', (extended_memory + 0x400));
-	    *(dest++) = 'K';
-	    *(dest++) = ' ';
+	    /* Add a mem option automatically only if the user doesn't
+	       specify it explicitly.  */
+	    if (! grub_strstr (src, "mem="))
+	      {
+		grub_memmove (dest, "mem=", 4);
+		dest += 4;
+		
+		dest = convert_to_ascii (dest, 'u', (extended_memory + 0x400));
+		*(dest++) = 'K';
+		*(dest++) = ' ';
+	      }
 
 	    while (*src && *src != ' ')
 	      src++;

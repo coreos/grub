@@ -1,5 +1,10 @@
 2000-06-17  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/boot.c (load_image): Pass a mem option to Linux, only
+	if SRC has no substring "mem=".
+	
+2000-06-17  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/compile: Removed.
 	* netboot/compile: Likewise.
 	* compile: New file. Copied from Automake.
