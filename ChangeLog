@@ -1,3 +1,18 @@
+2003-02-17  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* lib/device.c (check_device): If DEVICE is empty, just return
+	1.
+	(get_scsi_disk_name) [__QNXNTO__]: Make NAME empty, because SCSI
+	disks are detected as IDE disks on QNX RTP.
+
+	From Taketo Kabe <kabe@sra-tohoku.co.jp>:
+	* lib/device.c (get_ide_disk_name) [__QNXNTO__]: Set NAME to
+	"/dev/hdX".
+	(get_floppy_disk_name) [__QNXNTO__]: Set NAME to "/dev/fdX".
+	* stage2/mb_info.h (struct AddrRangeDesc): Specified with the
+	attribute packed.
+	* stage2/shared.h (struct mmar_desc): Likewise.
+
 2003-01-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Ilguiz Latypov:

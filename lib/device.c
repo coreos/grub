@@ -1,7 +1,7 @@
 /* device.c - Some helper functions for OS devices and BIOS drives */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -208,6 +208,9 @@ get_floppy_disk_name (char *name, int unit)
 #elif defined(__OpenBSD__)
   /* OpenBSD */
   sprintf (name, "/dev/rfd%dc", unit);
+#elif defined(__QNXNTO__)
+  /* QNX RTP */
+  sprintf (name, "/dev/fd%d", unit);
 #else
 # warning "BIOS floppy drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -245,6 +248,11 @@ get_ide_disk_name (char *name, int unit)
 #elif defined(__OpenBSD__)
   /* OpenBSD */
   sprintf (name, "/dev/rwd%dc", unit);
+#elif defined(__QNXNTO__)
+  /* QNX RTP */
+  /* Actually, QNX RTP doesn't distinguish IDE from SCSI, so this could
+     contain SCSI disks.  */
+  sprintf (name, "/dev/hd%d", unit);
 #else
 # warning "BIOS IDE drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -278,6 +286,11 @@ get_scsi_disk_name (char *name, int unit)
 #elif defined(__OpenBSD__)
   /* OpenBSD */
   sprintf (name, "/dev/rsd%dc", unit);
+#elif defined(__QNXNTO__)
+  /* QNX RTP */
+  /* QNX RTP doesn't distinguish SCSI from IDE, so it is better to
+     disable the detection of SCSI disks here.  */
+  *name = 0;
 #else
 # warning "BIOS SCSI drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -301,6 +314,10 @@ check_device (const char *device)
   char buf[512];
   FILE *fp;
 
+  /* If DEVICE is empty, just return 1.  */
+  if (*device == 0)
+    return 1;
+  
   fp = fopen (device, "r");
   if (! fp)
     {

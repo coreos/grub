@@ -1,7 +1,7 @@
 /* shared.h - definitions used in all GRUB-specific code */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -412,7 +412,7 @@ struct mmar_desc
   unsigned long long addr;	/* Base address. */
   unsigned long long length;	/* Length in bytes. */
   unsigned long type;		/* Type of address range. */
-};
+} __attribute__ ((packed));
 
 /* VBE controller information.  */
 struct vbe_controller
