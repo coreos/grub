@@ -144,10 +144,10 @@ target_alias = @target_alias@
 
 # For <shared.h> and <stage1.h>.
 INCLUDES = -I$(top_srcdir)/stage2 -I$(top_srcdir)/stage1
+@NETBOOT_SUPPORT_FALSE@LIBDRIVERS = 
 
 # Don't build the netboot support by default.
 @NETBOOT_SUPPORT_TRUE@LIBDRIVERS = libdrivers.a
-@NETBOOT_SUPPORT_FALSE@LIBDRIVERS = 
 
 noinst_LIBRARIES = $(LIBDRIVERS)
 

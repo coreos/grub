@@ -1,3 +1,10 @@
+2004-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* configure.ac (STAGE2_CFLAGS): Check if -fno-stack-protector is
+	supported by GCC. If yes, added the option. This is necessary
+	for OpenBSD, because the stack protector defines additional
+	symbols. Reported by uc.sheda <uc.sheda@laposte.net>.
+
 2004-03-28  Pavel Roskin  <proski@gnu.org>
 
 	* stage2/boot.c: Imply --no-mem-option for Linux kernels with

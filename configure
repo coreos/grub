@@ -3289,6 +3289,60 @@ echo "${ECHO_T}$size_flag" >&6
     else
       STAGE2_CFLAGS="-O2 -fno-strength-reduce -fno-unroll-loops"
     fi
+    # OpenBSD has a GCC extension for protecting applications from
+    # stack smashing attacks, but GRUB doesn't want this feature.
+    echo "$as_me:$LINENO: checking whether gcc has -fno-stack-protector" >&5
+echo $ECHO_N "checking whether gcc has -fno-stack-protector... $ECHO_C" >&6
+if test "${no_stack_protector_flag+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+      saved_CFLAGS=$CFLAGS
+      CFLAGS="-fno-stack-protector"
+      cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  no_stack_protector_flag=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+no_stack_protector_flag=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+      CFLAGS=$saved_CFLAGS
+
+fi
+echo "$as_me:$LINENO: result: $no_stack_protector_flag" >&5
+echo "${ECHO_T}$no_stack_protector_flag" >&6
+    if test "x$no_stack_protector_flag" = xyes; then
+      STAGE2_CFLAGS="$STAGE2_CFLAGS -fno-stack-protector"
+    fi
   fi
 fi
 

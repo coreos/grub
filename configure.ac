@@ -97,6 +97,21 @@ if test "x$ac_cv_prog_gcc" = xyes; then
     else
       STAGE2_CFLAGS="-O2 -fno-strength-reduce -fno-unroll-loops"
     fi
+    # OpenBSD has a GCC extension for protecting applications from
+    # stack smashing attacks, but GRUB doesn't want this feature.
+    AC_CACHE_CHECK([whether gcc has -fno-stack-protector],
+		   no_stack_protector_flag, [
+      saved_CFLAGS=$CFLAGS
+      CFLAGS="-fno-stack-protector"
+      AC_TRY_COMPILE(,
+		     ,
+		     no_stack_protector_flag=yes,
+		     no_stack_protector_flag=no)
+      CFLAGS=$saved_CFLAGS
+    ])
+    if test "x$no_stack_protector_flag" = xyes; then
+      STAGE2_CFLAGS="$STAGE2_CFLAGS -fno-stack-protector"
+    fi
   fi
 fi
 
