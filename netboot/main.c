@@ -129,8 +129,8 @@ print_network_configuration (void)
   static void sprint_ip_addr (char *buf, unsigned long addr)
     {
       grub_sprintf (buf, "%d.%d.%d.%d",
-		    addr >> 24, (addr >> 16) & 0xFF,
-		    (addr >> 8) & 0xFF, addr & 0xFF);
+		    addr & 0xFF, (addr >> 8) & 0xFF,
+		    (addr >> 16) & 0xFF, addr >> 24);
     }
   
   if (! eth_probe ())

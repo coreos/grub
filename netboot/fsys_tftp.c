@@ -26,6 +26,8 @@ Author: Martin Renters
 
 **************************************************************************/
 
+/* #define TFTP_DEBUG	1 */
+
 #include <filesys.h>
 
 #include <etherboot.h>
@@ -47,6 +49,10 @@ static char *buf;
 static int
 buf_fill (int abort)
 {
+#ifdef TFTP_DEBUG
+  grub_printf ("buf_fill (%d)\n", abort);
+#endif
+  
   while (! buf_eof && (buf_read + packetsize <= FSYS_BUFLEN))
     {
       struct tftp_t *tr;
@@ -63,6 +69,9 @@ buf_fill (int abort)
 	  if (! block && retry++ < MAX_TFTP_RETRIES)
 	    {
 	      /* Maybe initial request was lost.  */
+#ifdef TFTP_DEBUG
+	      grub_printf ("Maybe initial request was lost.\n");
+#endif
 	      rfc951_sleep (retry);
 	      if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
 				  ++isocket, TFTP, len, (char *) &tp))
@@ -75,7 +84,7 @@ buf_fill (int abort)
 	  if (block && ((retry += TFTP_REXMT) < TFTP_TIMEOUT))
 	    {
 	      /* We resend our last ack.  */
-# ifdef MDEBUG
+# ifdef TFTP_DEBUG
 	      grub_printf ("<REXMT>\n");
 # endif
 	      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
@@ -87,7 +96,7 @@ buf_fill (int abort)
 	  /* Timeout.  */
 	  return 0;
 	}
-      
+
       tr = (struct tftp_t *) &nic.packet[ETHER_HDR_SIZE];
       if (tr->opcode == ntohs (TFTP_ERROR))
 	{
@@ -100,7 +109,10 @@ buf_fill (int abort)
       if (tr->opcode == ntohs (TFTP_OACK))
 	{
 	  char *p = tr->u.oack.data, *e;
-	  
+
+#ifdef TFTP_DEBUG
+	  grub_printf ("OACK ");
+#endif
 	  /* Shouldn't happen.  */
 	  if (prevblock)
 	    /* Ignore it.  */
@@ -118,6 +130,9 @@ buf_fill (int abort)
 		  p += 8;
 		  if ((packetsize = getdec (&p)) < TFTP_DEFAULTSIZE_PACKET)
 		    goto noak;
+#ifdef TFTP_DEBUG
+		  grub_printf ("blksize = %d\n", packetsize);
+#endif
 		}
 	      else if (! grub_strcmp ("tsize", p))
 		{
@@ -127,10 +142,16 @@ buf_fill (int abort)
 		      filemax = -1;
 		      goto noak;
 		    }
+#ifdef TFTP_DEBUG
+		  grub_printf ("tsize = %d\n", filemax);
+#endif
 		}
 	      else
 		{
 		noak:
+#ifdef TFTP_DEBUG
+		  grub_printf ("NOAK\n");
+#endif
 		  tp.opcode = htons (TFTP_ERROR);
 		  tp.u.err.errcode = 8;
 		  len = (grub_sprintf ((char *) tp.u.err.errmsg,
@@ -158,6 +179,9 @@ buf_fill (int abort)
 	}
       else if (tr->opcode == ntohs (TFTP_DATA))
 	{
+#ifdef TFTP_DEBUG
+	  grub_printf ("DATA ");
+#endif
 	  len = ntohs (tr->udp.len) - sizeof (struct udphdr) - 4;
 	  
 	  /* Shouldn't happen.  */
@@ -178,7 +202,10 @@ buf_fill (int abort)
       /* Should be continuous.  */
       tp.opcode = abort ? htons (TFTP_ERROR) : htons (TFTP_ACK);
       osocket = ntohs (tr->udp.src);
-      
+
+#ifdef TFTP_DEBUG
+      grub_printf ("ACK\n");
+#endif
       /* Ack.  */
       udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, isocket,
 		    osocket, TFTP_MIN_PACKET, (char *) &tp);
@@ -224,7 +251,10 @@ send_rrq (void)
   buf_eof = 0;
   buf_read = 0;
   saved_filepos = 0;
-  
+
+#ifdef TFTP_DEBUG
+  grub_printf ("send_rrq ()\n");
+#endif
   /* Send the packet.  */
   return udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++isocket, TFTP,
 		       len, (char *) &tp);
@@ -252,15 +282,35 @@ tftp_read (char *addr, int size)
 {
   /* How many bytes is read?  */
   int ret = 0;
+
+#ifdef TFTP_DEBUG
+  grub_printf ("tftp_read (0x%x, %d)\n", (int) addr, size);
+#endif
   
   if (filepos < saved_filepos)
     {
       /* Uggh.. FILEPOS has been moved backwards. So reopen the file.  */
-      tp = saved_tp;
+      buf_fill (1);
+      grub_memmove ((char *) &tp, (char *) &saved_tp, saved_len);
       len = saved_len;
+#ifdef TFTP_DEBUG
+      {
+	int i;
+	grub_printf ("opcode = 0x%x, rrq = ", (unsigned long) tp.opcode);
+	for (i = 0; i < TFTP_DEFAULTSIZE_PACKET; i++)
+	  {
+	    if (tp.u.rrq[i] >= ' ' && tp.u.rrq[i] <= '~')
+	      grub_putchar (tp.u.rrq[i]);
+	    else
+	      grub_putchar ('*');
+	  }
+	grub_putchar ('\n');
+      }
+#endif
+      
       if (! send_rrq ())
 	{
-	  errnum = ERR_READ;
+	  errnum = ERR_WRITE;
 	  return 0;
 	}
     }
@@ -302,7 +352,8 @@ tftp_read (char *addr, int size)
 	  return 0;
 	}
 
-      if (size > 0 && buf_eof)
+      /* Sanity check.  */
+      if (size > 0 && buf_read == 0)
 	{
 	  errnum = ERR_READ;
 	  return 0;
@@ -319,6 +370,10 @@ tftp_dir (char *dirname)
 {
   int ch;
 
+#ifdef TFTP_DEBUG
+  grub_printf ("tftp_dir (%s)\n", dirname);
+#endif
+  
   /* In TFTP, there is no way to know what files exis.  */
   if (print_possibilities)
     return 1;
@@ -338,9 +393,12 @@ tftp_dir (char *dirname)
 	 + TFTP_MIN_PACKET + 1);
   /* Restore the original DIRNAME.  */
   dirname[grub_strlen (dirname)] = ch;
+  /* Save the TFTP packet so that we can reopen the file later.  */
+  grub_memmove ((char *) &saved_tp, (char *) &tp, len);
+  saved_len = len;
   if (! send_rrq ())
     {
-      errnum = ERR_READ;
+      errnum = ERR_WRITE;
       return 0;
     }
   
@@ -377,10 +435,6 @@ tftp_dir (char *dirname)
       goto reopen;
     }
 
-  /* Save the TFTP packet so that we can reopen the file later.  */
-  saved_tp = tp;
-  saved_len = len;
-  
   return 1;
 }
 
@@ -388,6 +442,10 @@ tftp_dir (char *dirname)
 void
 tftp_close (void)
 {
+#ifdef TFTP_DEBUG
+  grub_printf ("tftp_close ()\n");
+#endif
+  
   buf_read = 0;
   buf_fill (1);
 }

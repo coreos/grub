@@ -979,13 +979,24 @@ geometry_func (char *arg, int flags)
   char *ptr;
 #endif
 
+  /* Get the device number.  */
   set_device (device);
   if (errnum)
     return 1;
 
+  /* Check for the geometry.  */
   if (get_diskinfo (current_drive, &geom))
     {
       errnum = ERR_NO_DISK;
+      return 1;
+    }
+
+  /* Attempt to read the first sector, because some BIOSes turns out not
+     to support LBA even though they set the bit 0 in the support
+     bitmap, only after reading something actually.  */
+  if (biosdisk (BIOSDISK_READ, current_drive, &geom, 0, 1, SCRATCHSEG))
+    {
+      errnum = ERR_READ;
       return 1;
     }
 

@@ -217,9 +217,9 @@ fi
 dnl The netboot support.
 dnl General options.
 AC_ARG_ENABLE(packet-retransmission,
-  [  --enable-packet-retransmission
-                          turn on packet retransmission])
-if test "x$enable_packet_retransmission" = xyes; then
+  [  --disable-packet-retransmission
+                          turn off packet retransmission])
+if test "x$enable_packet_retransmission" != xno; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONGESTED=1"
 fi
 

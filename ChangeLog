@@ -1,3 +1,33 @@
+2000-02-12  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (geometry_func): Attempt to read the first
+	sector to examine if LBA mode is really supported.
+
+	* netboot/fsys_tftp.c (buf_fill) [TFTP_DEBUG]: Added some debug
+	messages.
+	(send_rrq) [TFTP_DEBUG]: Likewise.
+	(tftp_read) [TFTP_DEBUG]: Likewise.
+	(tftp_dir) [TFTP_DEBUG]: Likewise.
+	(tftp_close) [TFTP_DEBUG]: Likewise.
+	(tftp_read): Call buf_fill with the argument 1 first, if FILEPOS
+	has been moved backwards, and use grub_memmove for copying
+	SAVED_TP to TP instead of a direct assignment.
+	If send_rrq fails, set ERRNUM to ERR_WRITE instead of ERR_READ.
+	Check if BUF_READ is zero instead of if BUF_EOF is non-zero at
+	the end of the loop.
+	(tftp_dir): Set ERRNUM to ERR_WRITE instead of ERR_READ, if
+	send_rrq fails.
+	Save TP and LEN in SAVED_TP and SAVED_LEN respectively before
+	buf_fill instead of after it, because it destroys the contents
+	of TP.
+	* netboot/main.c (print_network_configuration): The order of the
+	arguments for grub_sprintf in the local function sprint_ip_addr
+	is reversed.
+
+	* configure.in (--enable-packet_retransmission): Renamed to ...
+	(--disable-packet-retransmission): ... this. Assume that a
+	network	is congested by default.
+	
 2000-02-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Pavel Roskin:

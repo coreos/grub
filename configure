@@ -35,8 +35,8 @@ ac_arg_enable_help="$ac_arg_enable_help
 ac_arg_enable_help="$ac_arg_enable_help
   --disable-gunzip        disable decompression in Stage 2"
 ac_arg_enable_help="$ac_arg_enable_help
-  --enable-packet-retransmission
-                          turn on packet retransmission"
+  --disable-packet-retransmission
+                          turn off packet retransmission"
 ac_arg_enable_help="$ac_arg_enable_help
   --enable-pci-direct     access PCI directly instead of using BIOS"
 ac_arg_enable_help="$ac_arg_enable_help
@@ -2425,7 +2425,7 @@ if test "${enable_packet_retransmission+set}" = set; then
   :
 fi
 
-if test "x$enable_packet_retransmission" = xyes; then
+if test "x$enable_packet_retransmission" != xno; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONGESTED=1"
 fi
 

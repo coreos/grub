@@ -7,9 +7,9 @@ The URL is <http://www.slug.org.au/etherboot/>.
 These below are common options for configure. Perhaps you may not need
 to specify them.
 
---enable-packet-retransmission
-  Turns on packet retransmission. Use it on a congested network, where
-  the normal operation can't boot the image.
+--disable-packet-retransmission
+  Turns off packet retransmission. Use it on an empty network, where
+  no packet collision can happen.
 
 --enable-pci-direct
   Define this for PCI BIOSes that do not implement BIOS32 or not
