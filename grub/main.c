@@ -36,6 +36,8 @@ int use_config_file = 1;
 int use_curses = 1;
 int verbose = 0;
 int read_only = 0;
+int no_floppy = 0;
+int probe_second_floppy = 0;
 static int default_boot_drive;
 static int default_install_partition;
 static char *default_config_file;
@@ -51,21 +53,25 @@ static char *default_config_file;
 #define OPT_BATCH -10
 #define OPT_VERBOSE -11
 #define OPT_READ_ONLY -12
+#define OPT_PROBE_SECOND_FLOPPY -13
+#define OPT_NO_FLOPPY -14
 #define OPTSTRING ""
 
 static struct option longopts[] =
 {
-  {"help", no_argument, 0, OPT_HELP},
-  {"version", no_argument, 0, OPT_VERSION},
-  {"hold", no_argument, 0, OPT_HOLD},
-  {"config-file", required_argument, 0, OPT_CONFIG_FILE},
-  {"install-partition", required_argument, 0, OPT_INSTALL_PARTITION},
+  {"batch", no_argument, 0, OPT_BATCH},
   {"boot-drive", required_argument, 0, OPT_BOOT_DRIVE},
+  {"config-file", required_argument, 0, OPT_CONFIG_FILE},
+  {"help", no_argument, 0, OPT_HELP},
+  {"hold", no_argument, 0, OPT_HOLD},
+  {"install-partition", required_argument, 0, OPT_INSTALL_PARTITION},
   {"no-config-file", no_argument, 0, OPT_NO_CONFIG_FILE},
   {"no-curses", no_argument, 0, OPT_NO_CURSES},
-  {"batch", no_argument, 0, OPT_BATCH},
-  {"verbose", no_argument, 0, OPT_VERBOSE},
+  {"no-floppy", no_argument, 0, OPT_NO_FLOPPY},
+  {"probe-second-floppy", no_argument, 0, OPT_PROBE_SECOND_FLOPPY},
   {"read-only", no_argument, 0, OPT_READ_ONLY},
+  {"verbose", no_argument, 0, OPT_VERBOSE},
+  {"version", no_argument, 0, OPT_VERSION},
   {0},
 };
 
@@ -89,6 +95,8 @@ Enter the GRand Unified Bootloader command shell.\n\
     --install-partition=PAR  specify stage2 install_partition [default=0x%x]\n\
     --no-config-file         do not use the config file\n\
     --no-curses              do not use curses\n\
+    --no-floppy              do not probe any floppy drive\n\
+    --probe-second-floppy    probe the second floppy drive\n\
     --read-only              do not write anything to devices\n\
     --verbose                print verbose messages\n\
     --version                print version information and exit\n\
@@ -187,6 +195,14 @@ main (int argc, char **argv)
 
 	case OPT_VERBOSE:
 	  verbose = 1;
+	  break;
+
+	case OPT_NO_FLOPPY:
+	  no_floppy = 1;
+	  break;
+
+	case OPT_PROBE_SECOND_FLOPPY:
+	  probe_second_floppy = 1;
 	  break;
 	  
 	default:

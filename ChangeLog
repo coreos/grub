@@ -1,3 +1,31 @@
+1999-09-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage2/builtins.c (device_func) [GRUB_UTIL]: Use check_device
+	in order to make sure that DEVICE exists.
+	* grub/asmstub.c (check_device): New function.
+	(grub_stage2): Use check_device to probe a device.
+	
+	* stage2/builtins.c (geometry_func) [GRUB_UTIL]: Copy the
+	modified geometry to GEOM and reset BUF_DRIVE. Reported by Pavel
+	Roskin.
+
+	* grub/main.c (no_floppy): New variable.
+	(probe_second_floppy): Likewise.
+	(OPT_NO_FLOPPY): New macro.
+	(OPT_PROBE_SECOND_FLOPPY): Likewise.
+	(longopts): Added no-floppy and probe-second-floppy.
+	(usage): Added the descriptions about --no-floppy and
+	--probe-second-floppy.
+	(main): Handle OPT_PROBE_SECOND_FLOPPY and OPT_NO_FLOPPY.
+	* grub/asmstub.c (grub_stage2): Print a message before the probe
+	routine. If NO_FLOPPY is non-zero, do not probe any floppy drive.
+	If PROBE_SECOND_FLOPPY is zero, skip the probe of the second
+	floppy drive.
+	(get_floppy_disk_name): New function.
+	(get_ide_disk_name): Likewise.
+	(get_scsi_disk_name): Likewise.
+	
 1999-09-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (device_func): New function.

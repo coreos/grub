@@ -81,6 +81,11 @@ char **device_map = 0;
 /* The jump buffer for exiting correctly.  */
 static jmp_buf env_for_exit;
 
+/* Forward declarations.  */
+static void get_floppy_disk_name (char *name, int unit);
+static void get_ide_disk_name (char *name, int unit);
+static void get_scsi_disk_name (char *name, int unit);
+
 /* The main entry point into this mess. */
 int
 grub_stage2 (void)
@@ -141,77 +146,48 @@ grub_stage2 (void)
   for (i = 0; i < NUM_DISKS; i++)
     device_map[i] = 0;
 
+  /* Print something as the user does not think GRUB has been crashed.  */
+  fprintf (stderr,
+	   "Probe devices to guess BIOS drives. This may take a long time.\n");
+    
   /* Floppies.  */
-  assign_device_name (0, "/dev/fd0");
-#ifndef __linux__
-  /* FIXME: leave linux out for now /dev/fd1 blocks for long time
-     if there is no second floppy ?  */
-  assign_device_name (1, "/dev/fd1");
-#endif
+  if (! no_floppy)
+    for (i = 0; i < 2; i++)
+      {
+	char name[16];
 
+	if (i == 1 && ! probe_second_floppy)
+	  break;
+	
+	get_floppy_disk_name (name, i);
+	if (check_device (name))
+	  assign_device_name (i, name);
+      }
+  
   /* IDE disks.  */
   for (i = 0; i < 4; i++)
     {
-      char name[10];
-      FILE *fp;
-      char buf[512];
-#ifdef __linux__
-      char unit = 'a' + i;
-#elif defined(__GNU__)
-      char unit = '0' + i;
-#else
-#warning "BIOS drives cannot be guessed in your operating system."
-#endif
+      char name[16];
 
-      sprintf (name, "/dev/hd%c", unit);
-      fp = fopen (name, "r");
-      if (! fp)
+      get_ide_disk_name (name, i);
+      if (check_device (name))
 	{
-	  switch (errno)
-	    {
-#ifdef ENOMEDIUM
-	    case ENOMEDIUM:
-#if 0
-	      /* At the moment, this finds only CDROMs, which can't be
-		 read anyway, so leave it out. Code should be
-		 reactivated if `removable disks' and CDROMs are
-		 supported.  */
-	      /* register it, it may be inserted.  */
-	      assign_device_name (num_hd++ + 0x80, name);
-#endif
-	      break;
-#endif /* ENOMEDIUM */
-	    default:
-	      /* break case and leave */
-	      break;
-	    }
-	  /* continue: there may be more disks sitting sparse on the
-	     controllers */
-	  continue;
+	  assign_device_name (num_hd + 0x80, name);
+	  num_hd++;
 	}
-
-      /* Attempt to read the first sector.  */
-      if (fread (buf, 1, 512, fp) != 512)
-	{
-	  fclose (fp);
-	  break;
-	}
-
-      fclose (fp);
-      assign_device_name (num_hd++ + 0x80, name);
     }
-
+  
   /* The rest is SCSI disks.  */
   for (i = 0; i < 8; i++)
     {
-      char name[10];
+      char name[16];
 
-#ifdef __linux__
-      sprintf (name, "/dev/sd%c", i + 'a');
-#elif defined(__GNU__)
-      sprintf (name, "/dev/sd%d", i);
-#endif
-      assign_device_name (num_hd++ + 0x80, name);
+      get_scsi_disk_name (name, i);
+      if (check_device (name))
+	{
+	  assign_device_name (num_hd + 0x80, name);
+	  num_hd++;
+	}
     }
 
   /* Check some invariants. */
@@ -258,6 +234,8 @@ grub_stage2 (void)
 	/* In Linux, invalidate the buffer cache. In other OSes, reboot
 	   is one of the solutions...  */
 	ioctl (disks[i].flags, BLKFLSBUF, 0);
+#else
+# warning "In your operating system, the buffer cache will not be flushed."
 #endif
 	close (disks[i].flags);
       }
@@ -274,6 +252,96 @@ grub_stage2 (void)
 
   /* Ahh... at last we're ready to return to caller. */
   return status;
+}
+
+/* These three functions are quite different among OSes.  */
+static void
+get_floppy_disk_name (char *name, int unit)
+{
+#if defined(__linux__) || defined(__GNU__)
+  /* GNU/Linux and GNU/Hurd */
+  sprintf (name, "/dev/fd%d", unit);
+#else
+# warning "BIOS drives cannot be guessed in your operating system."
+  /* Set NAME to a bogus string.  */
+  *name = 0;
+#endif
+}
+
+static void
+get_ide_disk_name (char *name, int unit)
+{
+#if defined(__linux__)
+  /* GNU/Linux */
+  sprintf (name, "/dev/hd%c", unit + 'a');
+#elif defined(__GNU__)
+  /* GNU/Hurd */
+  sprintf (name, "/dev/hd%d", unit);
+#else
+# warning "BIOS drives cannot be guessed in your operating system."
+  /* Set NAME to a bogus string.  */
+  *name = 0;
+#endif
+}
+
+static void
+get_scsi_disk_name (char *name, int unit)
+{
+#if defined(__linux__)
+  /* GNU/Linux */
+  sprintf (name, "/dev/sd%c", unit + 'a');
+#elif defined(__GNU__)
+  /* GNU/Hurd */
+  sprintf (name, "/dev/sd%d", unit);
+#else
+# warning "BIOS drives cannot be guessed in your operating system."
+  /* Set NAME to a bogus string.  */
+  *name = 0;
+#endif
+}
+  
+/* Check if DEVICE can be read. If an error occurs, return zero,
+   otherwise return non-zero.  */
+int
+check_device (const char *device)
+{
+  char buf[512];
+  FILE *fp;
+
+  fp = fopen (device, "r");
+  if (! fp)
+    {
+      switch (errno)
+	{
+#ifdef ENOMEDIUM
+	case ENOMEDIUM:
+# if 0
+	  /* At the moment, this finds only CDROMs, which can't be
+	     read anyway, so leave it out. Code should be
+	     reactivated if `removable disks' and CDROMs are
+	     supported.  */
+	  /* Accept it, it may be inserted.  */
+	  return 1;
+# endif
+	  break;
+#endif /* ENOMEDIUM */
+	default:
+	  /* Break case and leave.  */
+	  break;
+	}
+      /* Error opening the device.  */
+      return 0;
+    }
+  
+  /* Attempt to read the first sector.  */
+  if (fread (buf, 1, 512, fp) != 512)
+    {
+      fclose (fp);
+      return 0;
+    }
+  
+  fclose (fp);
+  return 1;
 }
 
 /* Assign DRIVE to a device name DEVICE.  */
@@ -619,6 +687,9 @@ get_diskinfo (int drive, struct geometry *geometry)
 	  else
 	    /* FIXME: should have some other alternatives before using
 	       arbitrary defaults. */
+#else
+# warning "In your operating system, automatic detection of geometries \
+will not be performed."
 #endif
 	  /* Set some arbitrary defaults. */
 	  if (drive & 0x80)

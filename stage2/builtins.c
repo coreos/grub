@@ -300,7 +300,7 @@ device_func (char *arg, int flags)
 
   /* Get the device argument.  */
   device = skip_to (0, drive);
-  if (! *device)
+  if (! *device || ! check_device (device))
     {
       errnum = ERR_FILE_NOT_FOUND;
       return 1;
@@ -482,6 +482,9 @@ geometry_func (char *arg, int flags)
 	disks[current_drive].total_sectors
 	  = num_cylinder * num_head * num_sector;
       errnum = 0;
+
+      geom = disks[current_drive];
+      buf_drive = -1;
     }
 #endif /* GRUB_UTIL */
   

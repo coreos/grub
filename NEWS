@@ -4,7 +4,8 @@ New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.
 * Support the partition ids for NetBSD and OpenBSD.
 * Exit from the grub shell just by pushing the key `q' in the menu.
-* New options for configure can disable some functions in Stage 2.
+* New options for configure can disable some functions in Stage 2. See
+  the output from `configure --help' for more information.
 * FAT32 support is added.
 * Minix fs support is added.
 * New commands "hide" and "unhide".
@@ -18,6 +19,9 @@ New in 0.5.93:
 * The command "configfile" loads a configuration file interactively.
 * The command "device" assigns a BIOS drive to an arbitrary filename in
   the grub shell.
+* The option `--no-floppy' force the grub shell to assume that there is
+  no floppy, and the option `--probe-second-floppy' enables the probe of
+  the second floppy drive.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).
