@@ -1,5 +1,7 @@
 Known problems/bugs:
 
+  - GRUB cannot boot newer versions of NetBSD or OpenBSD directly.
+
   - The command "map" seems not to work in some environments.
 
   - GRUB cannot boot any uncommon format of floppies, such as 1.68MB.
