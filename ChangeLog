@@ -1,3 +1,12 @@
+2000-04-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage1/stage1.S (message): Use lodsb instead of incw and movb.
+	From Andrew Clausen <clausen@gnu.org>.
+
+	* stage1/stage1.S (copy_buffer): Set %cx to 0x100 and use movsw
+	instead of movsb, since it is guaranteed that the region is
+	properly aligned.
+	
 2000-04-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (setup_func): Use SECTOR_BITS instead of

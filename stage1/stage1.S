@@ -348,7 +348,7 @@ copy_buffer:
 	pushw	%ds
 	pushw	%si
 	
-	movw	$0x200, %cx
+	movw	$0x100, %cx
 	movw	%bx, %ds
 	xorw	%si, %si
 	xorw	%di, %di
@@ -356,7 +356,7 @@ copy_buffer:
 	cld
 	
 	rep
-	movsb
+	movsw
 
 	popw	%si
 	popw	%ds
@@ -414,10 +414,8 @@ general_error_string:	.string " Error"
 	movw	$0x0001, %bx
 	movb	$0xe, %ah
 	int	$0x10		/* display a byte */
-
-	incw	%si
 message:
-	movb	(%si), %al
+	lodsb
 	cmpb	$0, %al
 	jne	1b	/* if not end of string, jmp to display */
 	ret
