@@ -1,3 +1,7 @@
+2004-02-28  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* docs/grub.texi (partnew): Change @var{to} to @var{len}.
+
 2004-02-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Yury V. Umanets <umka@namesys.com>:

@@ -33,7 +33,7 @@
 @setchapternewpage off
 
 @ifinfo
-Copyright @copyright{} 1999,2000,2001,2002 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2004 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -65,7 +65,7 @@ into another language, under the above conditions for modified versions.
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1999,2000,2001,2002 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2004 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -2124,7 +2124,7 @@ it is disabled. If no argument is given, the state is toggled.
 Create a new primary partition. @var{part} is a partition specification
 in GRUB syntax (@pxref{Naming convention}); @var{type} is the partition
 type and must be a number in the range @code{0-0xff}; @var{from} is
-the starting address and @var{to} is the length, both in sector units.
+the starting address and @var{len} is the length, both in sector units.
 @end deffn
 
 
