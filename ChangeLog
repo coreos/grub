@@ -1,3 +1,8 @@
+2004-06-29  Robert Millan  <robertmh@gnu.org>
+
+	* util/grub-set-default.in: Fix minor syntax error (non-escaped
+	characters).
+
 2004-06-24  Robert Millan  <robertmh@gnu.org>
 
 	Fixes for FHS compliance. (/usr/share is for arch-independant data)

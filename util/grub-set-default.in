@@ -35,7 +35,7 @@ Set the default boot entry for GRUB.
   -v, --version           print the version information and exit
   --root-directory=DIR    Use the directory DIR instead of the root directory
 
-ENTRY is a number or the special keyword \`default'.
+ENTRY is a number or the special keyword \`default\'.
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -106,7 +106,7 @@ $entry
 #
 #
 # WARNING: If you want to edit this file directly, do not remove any line
-# from this file, including this warning. Using `grub-set-default' is
+# from this file, including this warning. Using \`grub-set-default\' is
 # strongly recommended.
 EOF
 
