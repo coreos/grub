@@ -233,7 +233,6 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
 		  byte_len, buf);
 }
 
-#ifndef STAGE1_5
 static int
 sane_partition (void)
 {
@@ -249,7 +248,6 @@ sane_partition (void)
   errnum = ERR_DEV_VALUES;
   return 0;
 }
-#endif /* ! STAGE1_5 */
 
 static void
 attempt_mount (void)
@@ -818,6 +816,9 @@ set_device (char *device)
 	}
     }
 
+  if (! sane_partition ())
+    return 0;
+  
   if (retval)
     retval = device + 1;
   else

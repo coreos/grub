@@ -1,3 +1,9 @@
+1999-09-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/disk_io.c (sane_partition) [STAGE1_5]: Defined.
+	(set_device): Use sane_partition to make sure that CURRENT_DRIVE
+	has a valid value. Reported by Pavel Roskin.
+	
 1999-09-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin:
