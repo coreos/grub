@@ -263,7 +263,11 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	 But do you know there are >640KB conventional memory machines?  */
       if (mbi.mem_lower >= 608 && setup_sects < 60)
 	{
-	  /* Video mode selection support. What a shit!  */
+	  /* Video mode selection support. What a mess!  */
+	  /* NOTE: Even the word "mess" is not still enough to
+	     represent how wrong and bad the Linux video support is,
+	     but I don't want to hear complaints from Linux fanatics
+	     any more. -okuji  */
 	  {
 	    char *vga;
 
