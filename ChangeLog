@@ -1,3 +1,15 @@
+1999-08-31  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/boot.c [GRUB_UTIL] (bsd_boot_entry): New function.
+	(bsd_boot) [GRUB_UTIL]: Set ENTRY_ADDR to BSD_BOOT_ENTRY to fake
+	the *BSD boot.
+	
+1999-08-31  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/fsys_fat.c (fat_create_blocklist): Cast FAT_BUF to
+	unsigned short * instead of unsigned long *. Suggested by Pavel
+	Roskin.
+	
 1999-08-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Edward Killips <ekillips@triton.net>:

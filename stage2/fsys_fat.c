@@ -124,7 +124,7 @@ fat_create_blocklist (int first_fat_entry)
 		}
 
 	      first_fat_entry
-		= *((unsigned long *) (FAT_BUF + (new_mapblock - mapblock)));
+		= *((unsigned short *) (FAT_BUF + (new_mapblock - mapblock)));
 
 	      if (fat_size == 3)
 		{

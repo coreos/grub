@@ -523,6 +523,17 @@ load_initrd (char *initrd)
 }
 
 
+#ifdef GRUB_UTIL
+/* Dummy function to fake the *BSD boot.  */
+static void
+bsd_boot_entry (int flags, int bootdev, int sym_start, int sym_end,
+		int mem_upper, int mem_lower)
+{
+  stop ();
+}
+#endif
+
+
 /*
  *  All "*_boot" commands depend on the images being loaded into memory
  *  correctly, the variables in this file being set up correctly, and
@@ -538,7 +549,11 @@ bsd_boot (int type, int bootdev, char *arg)
   int clval = 0, i;
   struct bootinfo bi;
 
+#ifdef GRUB_UTIL
+  entry_addr = (entry_func) bsd_boot_entry;
+#else
   stop_floppy ();
+#endif
 
   while (*(++arg) && *arg != ' ');
   str = arg;
