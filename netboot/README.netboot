@@ -1,0 +1,128 @@
+You can use the netboot support to download OS images from a network.
+Nearly all the device drivers are coming from the network-based boot
+loader, Etherboot. Please visit its web page. They have rich
+documentations so you will be able to get useful information from there.
+The URL is <http://www.slug.org.au/etherboot/>.
+
+These below are common options for configure. Perhaps you may not need
+to specify them.
+
+--enable-packet-retransmission
+  Turns on packet retransmission. Use it on a congested network, where
+  the normal operation can't boot the image.
+
+--enable-pci-direct
+  Define this for PCI BIOSes that do not implement BIOS32 or not
+  correctly.
+
+Here is the information about the device drivers. They are all disabled
+by default, so you must specify configure options to enable drivers you
+want to use. Some drivers have extra per-driver options, so the extra
+options are also described below.
+
+Caution: You should enable them as you need. Don't enable any
+unnecessary driver, because GRUB might crash if you include too many
+drivers at the same time.
+
+3Com503, aka Etherlink II, also /16 model
+  --enable-3c503
+  --enable-3c503-shmem
+    Use 3c503 shared memory mode.
+  --enable-3c503-aui
+    Use AUI by default on 3c503 cards.
+
+3Com507
+  --enable-3c507
+
+3Com509, ISA/EISA
+  --enable-3c509
+  --enable-3c509-hack
+    Send two bootp packets before waiting for a reply to the first.
+    Makes a 3c509 do bootp quicker.
+
+3Com529 == MCA 3c509
+  --enable-3c529
+
+3Com90x
+  --enable-3c90x
+
+Crystal Semiconductor CS89x0
+  --enable-cs89x0
+  --enable-cs-scan=LIST
+    Probe for CS89x0 base address using LIST of comma separated hex
+    addresses; increasing the address by one (0x300 -> 0x301) will force
+    a more aggressive probing algorithm. This might be neccessary after
+    a soft-reset of the NIC.
+
+Intel Etherexpress Pro/100
+  --enable-eepro100
+
+SMC 83c170 EPIC/100
+  --enable-epic100
+
+EXOS205
+  --enable-exos205
+
+Lance PCI PCNet/32
+  --enable-lancepci
+
+Linksys LNE100TX and other NICs using this Tulip clone chip
+Netgear FA310TX and other NICs using this Tulip clone chip
+Tulip clones based on the Macronix 987x5
+  --enable-ntulip
+
+NE1000/2000 and clones (ISA)
+  --enable-ne
+  --enable-ne-scan=LIST (0x280,0x300,0x320,0x340)
+    Probe for NE base address using LIST of comma separated hex
+    addresses.
+
+Novell NE2100 (Lance based, also works on NE1500)
+  --enable-ne2100
+
+NE2000 PCI clone (RTL8029)
+Winbond 86C940
+Compex RL2000
+KTI ET32P2
+NetVin 5000SC
+  --enable-nepci
+  --enable-compex-rl2000-fix
+    If you have a Compex RL2000 PCI 32-bit (11F6:1401), and the probe
+    hangs in "Probing...[NE*000/PCI]", try enabling this fix... it
+    worked for me :).
+
+Racal-Interlan NI5210
+  --enable-ni5210
+
+Racal-Interlan NI6510
+  --enable-ni6510
+
+Realtek 8139
+  --enable-rtl8139
+
+Schneider and Koch G16
+  --enable-sk-g16
+
+SMC9000
+  --enable-smc9000
+  --enable-smc9000-scan=LIST
+    List of I/O addresses to probe.
+
+Tiara, Fujitsu Lancard
+  --enable-tiara
+
+Old base driver for Tulip clones
+  --enable-tulip
+
+Rhine-I, e.g. D-Link DFE-530TX
+Rhine-II
+  --enable-via-rhine
+
+WD8003/8013, SMC8216/8416
+  --enable-wd
+  --enable-wd-default-mem=MEM (0xCC000)
+    Default memory location for WD/SMC cards.
+
+
+The description about how to use the support can be found in the GRUB
+manual. Run "info grub" in the shell prompt.
