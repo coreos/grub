@@ -872,6 +872,19 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
   switch (subfunc)
     {
     case BIOSDISK_READ:
+#ifdef __linux__
+      if (sector == 0 && nsec > 1)
+	{
+	  /* Work around a bug in linux's ez remapping.  Linux remaps all
+	     sectors that are read together with the MBR in one read.  It
+	     should only remap the MBR, so we split the read in two 
+	     parts. -jochen  */
+	  if (nread (fd, buf, SECTOR_SIZE) != SECTOR_SIZE)
+	    return -1;
+	  buf += SECTOR_SIZE;
+	  nsec--;
+	}
+#endif
       if (nread (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
 	return -1;
       break;

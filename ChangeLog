@@ -1,3 +1,8 @@
+2001-05-03  Jochen Hoenicke  <jochen@gnu.org>
+
+	* grub/asmstub.c (biosdisk): Work around a bug in linux's ez
+	remapping.  Problem reported by Ben Byer <bbyer@rice.edu>.
+	
 2001-03-28  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage2/boot.c (load_image): Don't cast entry_addr to an int, or
