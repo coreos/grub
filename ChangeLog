@@ -1,3 +1,9 @@
+1999-07-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin <pavel_roskin@geocities.com>:
+	* stage2/asm.S (get_diskinfo_standard): If the number of sectors
+	returned is zero, then return an error code, even if non-carrier.
+	
 1999-07-15  Gordon Matzigkeit  <gord@zen.fig.org>
 
 	* docs/Makefile.am (grub.info): Use an ugly hack to downgrade

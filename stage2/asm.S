@@ -596,6 +596,15 @@ ENTRY(get_diskinfo_standard)
 	.code16
 	movb	$0x8, %ah
 	int	$0x13		/* do the operation */
+	/* check if successful */
+	testb	%ah, %ah
+	jnz	1f
+	/* bogus BIOSes may not return an error number */
+	testb	$0x3f, %cl	/* 0 sectors means no disk */
+	jnz	1f		/* if non-zero, then succeed */
+	/* XXX 0x60 is one of the unused error numbers */
+	movb	$0x60, %ah
+1:
 	movb	%ah, %bl	/* save return value in %bl */
 	/* back to protected mode */
 	data32
