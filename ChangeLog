@@ -4,6 +4,8 @@
 	(find_device): moved symlink code to new function
 	Before we convert the install_device we attempt to resolve it if its a
 	symlink using the new function
+	* util/mbchk.c (check_multiboot): The sense of an error message was
+	inverted.
 
 2003-06-17  Jochen Hoenicke  <jochen@gnu.org>
 

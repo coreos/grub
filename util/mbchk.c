@@ -158,7 +158,7 @@ check_multiboot (const char *filename, FILE *fp)
       if (mbh->load_end_addr && mbh->load_end_addr <= mbh->entry_addr)
 	{
 	  fprintf (stderr,
-		   "%s: load_end_addr is not less than entry_addr"
+		   "%s: load_end_addr is not greater than entry_addr"
 		   " (0x%lx <= 0x%lx).\n",
 		   filename, mbh->load_end_addr, mbh->entry_addr);
 	  return 0;
