@@ -1,5 +1,10 @@
 2002-05-23  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* configure.in (AM_INIT_AUTOMAKE): Changed the version number to
+	0.93.
+	
+2002-05-23  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	Define the behavior of the boot loader when the load end address
 	and the bss end address are zero in the Multiboot Specification,
 	and add the support into GRUB. I've modified a patch from Yuri
