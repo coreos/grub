@@ -163,7 +163,7 @@ the first and the second block of the floppy disk, respectively.
 on the floppy.
 @end quotation
 
-On a UNIX like operating system, that is done with the following
+On a UNIX-like operating system, that is done with the following
 commands:
 
 @example
@@ -305,8 +305,8 @@ Note that @command{grub-install} is actually just a shell script and the
 real task is done by the grub shell @command{grub} (@pxref{Invoking the
 grub shell}). Therefore, you may run @command{grub} directly to install
 GRUB, without using @command{grub-install}. Don't do that, however,
-unless you are very familiar with the internal of GRUB. Installing a
-boot loader under UNIX is so dangerous.
+unless you are very familiar with the internals of GRUB. Installing a
+boot loader on a running OS may be dangerous.
 
 
 @node Booting
