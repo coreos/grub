@@ -33,6 +33,9 @@
 	/* Print message string */
 #define MSG(x)	movw $ABS(x), %si; call message
 
+	/* XXX:	binutils-2.9.1.0.x doesn't produce a short opcode for this. */
+#define	MOV_MEM_TO_AL(x)	.byte 0xa0;  .word x
+	
 	.file	"stage1.S"
 
 	.text
@@ -126,7 +129,7 @@ real_start:
 	/*
 	 *  Check if we have a forced disk reference here
 	 */
-	movb	ABS(boot_drive), %al
+	MOV_MEM_TO_AL(ABS(boot_drive))	/* movb	ABS(boot_drive), %al */
 	cmpb	$0xff, %al
 	je	1f
 	movb	%al, %dl
@@ -152,7 +155,7 @@ real_start:
 	jne	chs_mode
 
 	/* check if AH=0x42 is supported if FORCE_LBA is zero */
-	movb	ABS(force_lba), %al
+	MOV_MEM_TO_AL(ABS(force_lba))	/* movb	ABS(force_lba), %al */
 	testb	%al, %al
 	jnz	skip_lba_bitmap_check
 	andw	$1, %cx

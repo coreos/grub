@@ -1,3 +1,11 @@
+2000-08-31  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage1/stage1.S (MOV_MEM_TO_AL): New macro.
+	(real_start): Use the macro MOV_MEM_TO_AL instead of using movb
+	directly, because binutils-2.9.1.0.x doesn't produce a short
+	opcode for it automatically. Reported by Alessandro Rubini
+	<rubini@gnu.org>.
+
 2000-08-30  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (CPPFLAGS): Remove -Wundef by default. Add the
