@@ -59,7 +59,7 @@ pupa_linux_unload (void)
   return PUPA_ERR_NONE;
 }
 
-static void
+void
 pupa_rescue_cmd_linux (int argc, char *argv[])
 {
   pupa_file_t file = 0;
@@ -282,7 +282,7 @@ pupa_rescue_cmd_linux (int argc, char *argv[])
     }
 }
 
-static void
+void
 pupa_rescue_cmd_initrd (int argc, char *argv[])
 {
   pupa_error (PUPA_ERR_NOT_IMPLEMENTED_YET, "not implemented yet");

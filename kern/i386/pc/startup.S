@@ -1080,6 +1080,50 @@ FUNCTION(pupa_console_putchar)
  *			%al = ASCII character
  */
 
+/* this table is used in translate_keycode below */
+translation_table:
+	.word	PUPA_CONSOLE_KEY_LEFT, 2
+	.word	PUPA_CONSOLE_KEY_RIGHT, 6
+	.word	PUPA_CONSOLE_KEY_UP, 16
+	.word	PUPA_CONSOLE_KEY_DOWN, 14
+	.word	PUPA_CONSOLE_KEY_HOME, 1
+	.word	PUPA_CONSOLE_KEY_END, 5
+	.word	PUPA_CONSOLE_KEY_DC, 4
+	.word	PUPA_CONSOLE_KEY_BACKSPACE, 8
+	.word	PUPA_CONSOLE_KEY_PPAGE, 7
+	.word	PUPA_CONSOLE_KEY_NPAGE, 3
+	.word	0
+	
+/*
+ * translate_keycode translates the key code %dx to an ascii code.
+ */
+	.code16
+
+translate_keycode:
+	pushw	%bx
+	pushw	%si
+	
+	movw	$ABS(translation_table), %si
+	
+1:	lodsw
+	/* check if this is the end */
+	testw	%ax, %ax
+	jz	2f
+	/* load the ascii code into %ax */
+	movw	%ax, %bx
+	lodsw
+	/* check if this matches the key code */
+	cmpw	%bx, %dx
+	jne	1b
+	/* translate %dx, if successful */
+	movw	%ax, %dx
+
+2:	popw	%si
+	popw	%bx
+	ret
+
+	.code32
+	
 FUNCTION(pupa_console_getkey)
 	pushl	%ebp
 
@@ -1089,7 +1133,8 @@ FUNCTION(pupa_console_getkey)
 	int	$0x16
 
 	movw	%ax, %dx		/* real_to_prot uses %eax */
-	
+	call	translate_keycode
+		
 	DATA32	call	real_to_prot
 	.code32
 

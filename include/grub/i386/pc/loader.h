@@ -33,4 +33,10 @@ void EXPORT_FUNC(pupa_linux_boot_bzimage) (void) __attribute__ ((noreturn));
 /* This is an asm part of the chainloader.  */
 void EXPORT_FUNC(pupa_chainloader_real_boot) (int drive, void *part_addr) __attribute__ ((noreturn));
 
+/* It is necessary to export these functions, because normal mode commands
+   reuse rescue mode commands.  */
+void pupa_rescue_cmd_chainloader (int argc, char *argv[]);
+void pupa_rescue_cmd_linux (int argc, char *argv[]);
+void pupa_rescue_cmd_initrd (int argc, char *argv[]);
+
 #endif /* ! PUPA_LOADER_MACHINE_HEADER */

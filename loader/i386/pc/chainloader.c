@@ -81,7 +81,7 @@ pupa_chainloader_unload (void)
   return PUPA_ERR_NONE;
 }
 
-static void
+void
 pupa_rescue_cmd_chainloader (int argc, char *argv[])
 {
   pupa_file_t file = 0;

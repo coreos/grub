@@ -459,19 +459,23 @@ pupa_dl_resolve_dependencies (pupa_dl_t mod, Elf_Ehdr *e)
 int
 pupa_dl_ref (pupa_dl_t mod)
 {
+  pupa_dl_dep_t dep;
+
+  for (dep = mod->dep; dep; dep = dep->next)
+    pupa_dl_ref (dep->mod);
+  
   return ++mod->ref_count;
 }
 
 int
 pupa_dl_unref (pupa_dl_t mod)
 {
-  int ret;
+  pupa_dl_dep_t dep;
 
-  ret = --mod->ref_count;
-  if (ret <= 0)
-    pupa_dl_unload (mod);
-
-  return ret;
+  for (dep = mod->dep; dep; dep = dep->next)
+    pupa_dl_unref (dep->mod);
+  
+  return --mod->ref_count;
 }
 
 /* Load a module from core memory.  */
@@ -605,7 +609,10 @@ pupa_dl_unload (pupa_dl_t mod)
   for (dep = mod->dep; dep; dep = depn)
     {
       depn = dep->next;
-      pupa_dl_unref (dep->mod);
+      
+      if (! pupa_dl_unref (dep->mod))
+	pupa_dl_unload (dep->mod);
+      
       pupa_free (dep);
     }
 

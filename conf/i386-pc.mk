@@ -393,46 +393,46 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = chain.mod fat.mod linux.mod
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod
 
-# For chain.mod.
-chain_mod_SOURCES = loader/i386/pc/chainloader.c
-CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_i386_pc_chainloader.o def-chain.lst und-chain.lst
-MOSTLYCLEANFILES += chain_mod-loader_i386_pc_chainloader.d
-DEFSYMFILES += def-chain.lst
-UNDSYMFILES += und-chain.lst
+# For _chain.mod.
+_chain_mod_SOURCES = loader/i386/pc/chainloader.c
+CLEANFILES += _chain.mod mod-_chain.o mod-_chain.c pre-_chain.o _chain_mod-loader_i386_pc_chainloader.o def-_chain.lst und-_chain.lst
+MOSTLYCLEANFILES += _chain_mod-loader_i386_pc_chainloader.d
+DEFSYMFILES += def-_chain.lst
+UNDSYMFILES += und-_chain.lst
 
-chain.mod: pre-chain.o mod-chain.o
+_chain.mod: pre-_chain.o mod-_chain.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
 	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
 
-pre-chain.o: chain_mod-loader_i386_pc_chainloader.o
+pre-_chain.o: _chain_mod-loader_i386_pc_chainloader.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
 
-mod-chain.o: mod-chain.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
+mod-_chain.o: mod-_chain.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
 
-mod-chain.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'chain' $< > $@ || (rm -f $@; exit 1)
+mod-_chain.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_chain' $< > $@ || (rm -f $@; exit 1)
 
-def-chain.lst: pre-chain.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 chain/' > $@
+def-_chain.lst: pre-_chain.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _chain/' > $@
 
-und-chain.lst: pre-chain.o
-	echo 'chain' > $@
+und-_chain.lst: pre-_chain.o
+	echo '_chain' > $@
 	$(NM) -u -P -p $< >> $@
 
-chain_mod-loader_i386_pc_chainloader.o: loader/i386/pc/chainloader.c
-	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
+_chain_mod-loader_i386_pc_chainloader.o: loader/i386/pc/chainloader.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
 
-chain_mod-loader_i386_pc_chainloader.d: loader/i386/pc/chainloader.c
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader\.o[ :]*,chain_mod-loader_i386_pc_chainloader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+_chain_mod-loader_i386_pc_chainloader.d: loader/i386/pc/chainloader.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader\.o[ :]*,_chain_mod-loader_i386_pc_chainloader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include chain_mod-loader_i386_pc_chainloader.d
+-include _chain_mod-loader_i386_pc_chainloader.d
 
-chain_mod_CFLAGS = $(COMMON_CFLAGS)
+_chain_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For fat.mod.
 fat_mod_SOURCES = fs/fat.c
@@ -473,44 +473,117 @@ fat_mod-fs_fat.d: fs/fat.c
 
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
 
-# For linux.mod.
-linux_mod_SOURCES = loader/i386/pc/linux.c
-CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux.o def-linux.lst und-linux.lst
-MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux.d
-DEFSYMFILES += def-linux.lst
-UNDSYMFILES += und-linux.lst
+# For _linux.mod.
+_linux_mod_SOURCES = loader/i386/pc/linux.c
+CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_i386_pc_linux.o def-_linux.lst und-_linux.lst
+MOSTLYCLEANFILES += _linux_mod-loader_i386_pc_linux.d
+DEFSYMFILES += def-_linux.lst
+UNDSYMFILES += und-_linux.lst
 
-linux.mod: pre-linux.o mod-linux.o
+_linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
 	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
 
-pre-linux.o: linux_mod-loader_i386_pc_linux.o
+pre-_linux.o: _linux_mod-loader_i386_pc_linux.o
 	-rm -f $@
 	$(LD) -r -o $@ $^
 
-mod-linux.o: mod-linux.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+mod-_linux.o: mod-_linux.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
 
-mod-linux.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
+mod-_linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
 
-def-linux.lst: pre-linux.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+def-_linux.lst: pre-_linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _linux/' > $@
 
-und-linux.lst: pre-linux.o
-	echo 'linux' > $@
+und-_linux.lst: pre-_linux.o
+	echo '_linux' > $@
 	$(NM) -u -P -p $< >> $@
 
-linux_mod-loader_i386_pc_linux.o: loader/i386/pc/linux.c
-	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+_linux_mod-loader_i386_pc_linux.o: loader/i386/pc/linux.c
+	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
 
-linux_mod-loader_i386_pc_linux.d: loader/i386/pc/linux.c
-	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -M $< 	  | sed 's,linux\.o[ :]*,linux_mod-loader_i386_pc_linux.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+_linux_mod-loader_i386_pc_linux.d: loader/i386/pc/linux.c
+	set -e; 	  $(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -M $< 	  | sed 's,linux\.o[ :]*,_linux_mod-loader_i386_pc_linux.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include linux_mod-loader_i386_pc_linux.d
+-include _linux_mod-loader_i386_pc_linux.d
 
-linux_mod_CFLAGS = $(COMMON_CFLAGS)
+_linux_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For normal.mod.
+normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
+	normal/menu.c normal/i386/setjmp.S
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_i386_setjmp.o def-normal.lst und-normal.lst
+MOSTLYCLEANFILES += normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_i386_setjmp.d
+DEFSYMFILES += def-normal.lst
+UNDSYMFILES += und-normal.lst
+
+normal.mod: pre-normal.o mod-normal.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-normal.o: normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_i386_setjmp.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-normal.o: mod-normal.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+mod-normal.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'normal' $< > $@ || (rm -f $@; exit 1)
+
+def-normal.lst: pre-normal.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 normal/' > $@
+
+und-normal.lst: pre-normal.o
+	echo 'normal' > $@
+	$(NM) -u -P -p $< >> $@
+
+normal_mod-normal_cmdline.o: normal/cmdline.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_cmdline.d: normal/cmdline.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,normal_mod-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_cmdline.d
+
+normal_mod-normal_command.o: normal/command.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_command.d: normal/command.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,normal_mod-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_command.d
+
+normal_mod-normal_main.o: normal/main.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_main.d: normal/main.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,normal_mod-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_main.d
+
+normal_mod-normal_menu.o: normal/menu.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_menu.d: normal/menu.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,normal_mod-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_menu.d
+
+normal_mod-normal_i386_setjmp.o: normal/i386/setjmp.S
+	$(CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -c -o $@ $<
+
+normal_mod-normal_i386_setjmp.d: normal/i386/setjmp.S
+	set -e; 	  $(CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -M $< 	  | sed 's,setjmp\.o[ :]*,normal_mod-normal_i386_setjmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_i386_setjmp.d
+
+normal_mod_CFLAGS = $(COMMON_CFLAGS)
+normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

@@ -1,3 +1,81 @@
+2003-01-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/pupa/normal.h: New file.
+	* include/pupa/setjmp.h: Likewise.
+	* include/pupa/i386/setjmp.h: Likewise.
+	* normal/cmdline.c: Likewise.
+	* normal/command.c: Likewise.
+	* normal/main.c: Likewise.
+	* normal/menu.c: Likewise.
+	* normal/i386/setjmp.S: Likewise.
+	
+	* loader/i386/pc/linux.c (pupa_rescue_cmd_linux): Made global.
+	(pupa_rescue_cmd_initrd): Likewise.
+
+	* loader/i386/pc/chainloader.c (pupa_rescue_cmd_chainloader):
+	Likewise.
+
+	* kern/i386/pc/startup.S (translation_table): New variable.
+	(translate_keycode): New function.
+	(pupa_console_getkey): Call translate_keycode.
+
+	* kern/rescue.c (attempt_normal_mode): New function.
+	(pupa_enter_rescue_mode): Attempt to execute the normal mode. If
+	it failed, print a message.
+
+	* kern/mm.c (pupa_real_malloc): Print more information when a
+	free magic is broken.
+	(pupa_free): If the first free header is not free actually, set
+	it to P.
+
+	* kern/main.c (pupa_load_normal_mode): Just load the module
+	"normal".
+	(pupa_main): Don't print the message
+	"Entering into rescue mode..." here.
+
+	* include/pupa/i386/pc/loader.h (pupa_rescue_cmd_initrd):
+	Declared.
+	(pupa_rescue_cmd_initrd): Likewise.
+	(pupa_rescue_cmd_initrd): Likewise.
+
+	* include/pupa/symbol.h (FUNCTION): Specify the type.
+	(VARIABLE): Likewise.
+
+	* include/pupa/err.h (pupa_err_t): Added
+	PUPA_ERR_UNKNOWN_COMMAND.
+
+	* include/pupa/dl.h (pupa_dl_set_prefix): Exported.
+	(pupa_dl_get_prefix): Likewise.
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added normal.mod.
+	Added _chain.mod and _linux.mod instead of chain.mod and
+	linux.mod.
+	(chain_mod_SOURCES): Renamed to ...
+	(_chain_mod_SOURCES): ... this.
+	(chain_mod_CFLAGS): Renamed to ...
+	(_chain_mod_CFLAGS): ... this.
+	(linux_mod_SOURCES): Renamed to ...
+	(_linux_mod_SOURCES): ... this.
+	(linux_mod_CFLAGS): Renamed to ...
+	(_linux_mod_CFLAGS): ... this.
+	(normal_mod_SOURCES): New variable.
+	(normal_mod_CFLAGS): Likewise.
+	(normal_mod_ASFLAGS): Likewise.
+
+2003-01-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/rescue.c (pupa_rescue_cmd_rmmod): Call pupa_dl_unload, if
+	possible.
+
+	* kern/dl.c (pupa_dl_ref): Refer dependending modules
+	recursively.
+	(pupa_dl_unref): Unrefer depending modules recursively.
+	Don't call pupa_dl_unload implicitly, because PUPA can crash if
+	a module is unloaded before one depending on that module is
+	unloaded.
+	(pupa_dl_unload): Unload depending modules explicitly,
+	if possible.
+
 2003-01-17  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* include/pupa/i386/pc/linux.h: New file.

@@ -84,34 +84,8 @@ pupa_set_root_dev (void)
 static void
 pupa_load_normal_mode (void)
 {
-  if (pupa_dl_load ("normal"))
-    {
-      void (*normal_func) (const char *config);
-      
-      /* If the function pupa_enter_normal_mode is present, call it.  */
-      normal_func = pupa_dl_resolve_symbol ("pupa_enter_normal_mode");
-      if (normal_func)
-	{
-	  char *config;
-	  char *prefix;
-
-	  prefix = pupa_dl_get_prefix ();
-	  if (! prefix)
-	    pupa_fatal ("The dl prefix is not set!");
-	  
-	  config = pupa_malloc (pupa_strlen (prefix) + sizeof ("/pupa.cfg"));
-	  if (! config)
-	    pupa_fatal ("out of memory");
-
-	  pupa_sprintf (config, "%s/pupa.cfg", prefix);
-	  (*normal_func) (config);
-	  pupa_free (config);
-	}
-      else
-	pupa_printf ("No entrance routine in the normal mode!\n");
-    }
-  else
-    pupa_printf ("Failed to load the normal mode.\n");
+  /* Load the module.  */
+  pupa_dl_load ("normal");
   
   /* Ignore any error, because we have the rescue mode anyway.  */
   pupa_errno = PUPA_ERR_NONE;
@@ -138,10 +112,9 @@ pupa_main (void)
   pupa_load_modules ();
   pupa_add_unused_region ();
 
-  /* Go to the real world.  */
+  /* Load the normal mode module.  */
   pupa_load_normal_mode ();
   
-  /* If pupa_enter_normal_mode fails or doesn't exist, enter rescue mode.  */
-  pupa_printf ("Entering into rescue mode...\n");
+  /* Enter the rescue mode.  */
   pupa_enter_rescue_mode ();
 }

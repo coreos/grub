@@ -560,7 +560,8 @@ pupa_rescue_cmd_rmmod (int argc, char *argv[])
       return;
     }
 
-  pupa_dl_unref (mod);
+  if (! pupa_dl_unref (mod))
+    pupa_dl_unload (mod);
 }
 
 /* lsmod */
@@ -590,10 +591,30 @@ pupa_rescue_cmd_lsmod (int argc __attribute__ ((unused)),
   pupa_dl_iterate (print_module);
 }
 
+static void
+attempt_normal_mode (void)
+{
+  pupa_rescue_command_t cmd;
+
+  for (cmd = pupa_rescue_command_list; cmd; cmd = cmd->next)
+    {
+      if (pupa_strcmp ("normal", cmd->name) == 0)
+	{
+	  (cmd->func) (0, 0);
+	  break;
+	}
+    }
+}
+
 /* Enter the rescue mode.  */
 void
 pupa_enter_rescue_mode (void)
 {
+  /* First of all, attempt to execute the normal mode.  */
+  attempt_normal_mode ();
+
+  pupa_printf ("Entering into rescue mode...\n");
+  
   pupa_rescue_register_command ("boot", pupa_rescue_cmd_boot,
 				"boot an operating system");
   pupa_rescue_register_command ("cat", pupa_rescue_cmd_cat,

@@ -151,7 +151,7 @@ pupa_real_malloc (pupa_mm_header_t *first, pupa_size_t n, pupa_size_t align)
 	pupa_fatal ("null in the ring");
 
       if (p->magic != PUPA_MM_FREE_MAGIC)
-	pupa_fatal ("free magic is broken at %p", p);
+	pupa_fatal ("free magic is broken at %p: 0x%x", p, p->magic);
 
       if (p->size >= n + extra)
 	{
@@ -184,6 +184,7 @@ pupa_real_malloc (pupa_mm_header_t *first, pupa_size_t n, pupa_size_t align)
 	    }
 
 	  *first = q;
+	  
 	  return p + 1;
 	}
 
@@ -259,19 +260,30 @@ pupa_free (void *ptr)
 
   get_header_from_pointer (ptr, &p, &r);
 
-  if (p == r->first)
+  if (r->first->magic == PUPA_MM_ALLOC_MAGIC)
     {
       p->magic = PUPA_MM_FREE_MAGIC;
-      p->next = p;
+      r->first = p->next = p;
     }
   else
     {
       pupa_mm_header_t q;
+
+#if 0
+      q = r->first;
+      do
+	{
+	  pupa_printf ("%s:%d: q=%p, q->size=0x%x, q->magic=0x%x\n",
+		       __FILE__, __LINE__, q, q->size, q->magic);
+	  q = q->next;
+	}
+      while (q != r->first);
+#endif
       
       for (q = r->first; q >= p || q->next <= p; q = q->next)
 	{
 	  if (q->magic != PUPA_MM_FREE_MAGIC)
-	    pupa_fatal ("free magic is broken at %p", q);
+	    pupa_fatal ("free magic is broken at %p: 0x%x", q, q->magic);
 	  
 	  if (q >= q->next && (q < p || q->next > p))
 	    break;
