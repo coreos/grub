@@ -21,13 +21,13 @@ kernel (hd1,0)/vmlinuz root=/dev/hdb1
 # For booting Mach (getting kernel from floppy)
 title  Utah Mach4 multiboot
 root   (hd0,2)
-pause  My test!!
+pause  Insert the diskette now!!
 kernel (fd0)/boot/kernel root=hd0s3
 module (fd0)/boot/bootstrap
 
 # For booting FreeBSD (getting kernel from floppy)
-title  FreeBSD 2.2-SNAP
-root   (hd0,2)
+title  FreeBSD
+root   (hd0,2,a)
 kernel (fd0)/kernel
 
 # For booting OS/2
@@ -39,9 +39,9 @@ chainloader +1
 # This is similar to "chainload", but loads a specific file
 #chainloader /boot/chain.os2
 
-# For booting Windows NT 3.5 or Windows95
-title Windows NT 3.5/Windows 95 boot menu
-root        (0x80,0)
+# For booting Windows NT or Windows95
+title Windows NT / Windows 95 boot menu
+root        (hd0,0)
 makeactive
 chainloader +1
 
@@ -49,3 +49,5 @@ chainloader +1
 title Install GRUB into the hard disk
 root    (hd0,0)
 install /boot/grub/stage1 d (hd0) /boot/grub/stage2 0x8000 p
+# For loading DOS if Windows NT is installed
+# chainload /bootsect.dos

@@ -362,7 +362,10 @@ restart:
 		  char *pptr = password;
 
 		  gotoxy(1, 21);
-		  get_cmdline (" Password: ", commands, entered, 31, '*');
+		  
+		  /* Wipe out the previously entered password */
+		  memset (entered, 0, sizeof (entered));
+		  get_cmdline (" Password: ", NULL, entered, 31, '*');
 
 		  while (! isspace (*pptr) && *pptr)
 		    pptr ++;
@@ -373,7 +376,6 @@ restart:
 		  if (! strcmp (password, entered))
 		    {
 		      char *new_file = config_file;
-		      memset (entered, 0, sizeof (entered));
 		      while (isspace (*pptr))
 			pptr ++;
 		      while ((*(new_file ++) = *(pptr ++)) != 0);
@@ -381,7 +383,6 @@ restart:
 		    }
 		  else
 		    {
-		      memset (entered, 0, sizeof (entered));
 		      printf("Failed!\n      Press any key to continue...");
 		      getkey ();
 		      goto restart;

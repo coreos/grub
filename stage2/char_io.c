@@ -292,8 +292,6 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 	      }
 	    else if (commands)
 	      printf (commands);
-	    else
-	      break;
 
 	    /* restore command-line */
 	    cmdline[lpos] = c;

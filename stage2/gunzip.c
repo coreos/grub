@@ -124,6 +124,7 @@
       the two sets of lengths.
  */
 
+#ifndef NO_DECOMPRESSION
 
 #include "shared.h"
 
@@ -1219,3 +1220,5 @@ gunzip_read (char *buf, int len)
 
   return ret;
 }
+
+#endif /* ! NO_DECOMPRESSION */
