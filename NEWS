@@ -35,6 +35,8 @@ New in 0.5.95 - XXXX-XX-XX:
   and "make" will produce two additional images, ``nbgrub'' for Net Boot
   Image Proposal and ``pxegrub'' for Preboot Execution Environment. See
   the documentation, for more details.
+* The command "tftpserver" overrides a TFTP server address returned by a
+  BOOTP server, a DHCP server or a RARP server.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

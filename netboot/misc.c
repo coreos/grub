@@ -159,8 +159,9 @@ void printf(const char *fmt, ...)
 	do_printf(buf, fmt, ((const int *)&fmt)+1);
 	while (*p) putchar(*p++);
 }
+#endif /* ! GRUB */
 
-#ifdef	IMAGE_MENU
+#if	defined(IMAGE_MENU) || defined(GRUB)
 /**************************************************************************
 INET_ATON - Convert an ascii x.x.x.x to binary form
 **************************************************************************/
@@ -184,9 +185,7 @@ int inet_aton(char *p, in_addr *i)
 	i->s_addr = htonl((ip << 8) | val);
 	return(1);
 }
-
-#endif	/* IMAGE_MENU */
-#endif /* ! GRUB */
+#endif	/* IMAGE_MENU || GRUB */
 
 int getdec(char **ptr)
 {

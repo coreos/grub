@@ -457,6 +457,7 @@ External prototypes
 /* main.c */
 #ifdef GRUB
 extern void print_network_configuration P((void));
+extern int arp_server_override P((const char *buf));
 #endif /* GRUB */
 
 #ifndef GRUB
@@ -517,7 +518,9 @@ extern int getdec P((char **));
 #ifndef GRUB
 extern void printf P((const char *, ...));
 extern char *sprintf P((char *, const char *, ...));
+#endif /* ! GRUB */
 extern int inet_aton P((char *p, in_addr *i));
+#ifndef GRUB
 extern void gateA20_set P((void));
 extern void gateA20_unset P((void));
 extern void putchar P((int));

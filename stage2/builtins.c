@@ -2944,6 +2944,35 @@ static struct builtin builtin_testload =
 };
 
 
+/* tftpserver */
+static int
+tftpserver_func (char *arg, int flags)
+{
+#ifdef SUPPORT_NETBOOT
+  if (! *arg || ! arp_server_override (arg))
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  print_network_configuration ();
+  return 0;
+#else
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#endif
+}
+
+static struct builtin builtin_tftpserver =
+{
+  "tftpserver",
+  tftpserver_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "tftpserver IPADDR",
+  "Override the TFTP server address."
+};
+
+
 /* timeout */
 static int
 timeout_func (char *arg, int flags)
@@ -3077,6 +3106,7 @@ struct builtin *builtin_table[] =
   &builtin_setkey,
   &builtin_setup,
   &builtin_testload,
+  &builtin_tftpserver,
   &builtin_timeout,
   &builtin_title,
   &builtin_unhide,

@@ -167,6 +167,19 @@ print_network_configuration (void)
     }
 }
 
+/* Override the server IP address.  */
+int
+arp_server_override (const char *buffer)
+{
+  in_addr in;
+
+  if (! inet_aton ((char *) buffer, &in))
+    return 0;
+
+  arptable[ARP_SERVER].ipaddr.s_addr = in.s_addr;
+  return 1;
+}
+
 /**************************************************************************
 DEFAULT_NETMASK - Return default netmask for IP address
 **************************************************************************/
