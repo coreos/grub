@@ -753,6 +753,15 @@ pc_notnewline:
 	pop	%ebp
 	ret
 
+/* get_code_end() :  return the address of the end of the code
+ * This is here so that it can be replaced by asmstub.c.
+ */
+ENTRY(get_code_end)
+	movl	$EXT_C(end), %eax	/* will be the end of the bss */
+	shrl	$2, %eax		/* Round up to the next word. */
+	incl	%eax
+	shll	$2, %eax
+	ret
 
 /*
  *
@@ -843,7 +852,6 @@ xnoteisa:
 	pop	%ebp
 	ret
 
-
 /*
  *
  * get_mem_map(addr, cont) :  address and old continuation value (zero to
@@ -886,7 +894,7 @@ ENTRY(get_mem_map)
 	.code16
 
 	movw	%si, %es
-	movw	$0xe820, %ax
+	movl	$0xe820, %eax
 	int	$0x15
 
 	data32
@@ -1298,14 +1306,14 @@ gottime:
 
 
 /*
- * asm_getkey()
+ * getkey()
  * BIOS call "INT 16H Function 00H" to read character from keyboard
  *	Call with	%ah = 0x0
  *	Return:		%ah = keyboard scan code
  *			%al = ASCII character
  */
 
-ENTRY(asm_getkey)
+ENTRY(getkey)
 	push	%ebp
 	push	%ebx			/* save %ebx */
 

@@ -22,6 +22,16 @@
  *  Generic defines to use anywhere
  */
 
+/* Maybe redirect memory requests through grub_scratch_mem. */
+#ifdef GRUB_UTIL
+extern char *grub_scratch_mem;
+# define RAW_ADDR(x) ((x) + (int) grub_scratch_mem)
+# define RAW_SEG(x) (RAW_ADDR ((x) << 4) >> 4)
+#else
+# define RAW_ADDR(x) x
+# define RAW_SEG(x) x
+#endif
+
 /*
  *  Integer sizes
  */
@@ -29,8 +39,8 @@
 #define MAXINT     0x7FFFFFFF
 
 /* 512-byte scratch area */
-#define SCRATCHADDR  0x77e00
-#define SCRATCHSEG   0x77e0
+#define SCRATCHADDR  RAW_ADDR (0x77e00)
+#define SCRATCHSEG   RAW_SEG (0x77e0)
 
 /*
  *  This is the location of the raw device buffer.  It is 31.5K
@@ -38,12 +48,8 @@
  */
 
 #define BUFFERLEN   0x7e00
-#define BUFFERADDR  0x70000
-#define BUFFERSEG   0x7000
-
-#if (BUFFERADDR + BUFFERLEN) != SCRATCHADDR
-# error "scratch area isn't at the end of the device buffer"
-#endif
+#define BUFFERADDR  RAW_ADDR (0x70000)
+#define BUFFERSEG   RAW_SEG (0x7000)
 
 /*
  *  BIOS disk defines
@@ -58,24 +64,16 @@
  */
 
 #define FSYS_BUFLEN  0x8000
-#define FSYS_BUF 0x68000
-
-#if (FSYS_BUF % 16) != 0
-# error "FSYS_BUF is not segment-aligned"
-#endif
-
-#if (FSYS_BUF + FSYS_BUFLEN) != BUFFERADDR
-# error "device buffer buffer isn't at the end of the filesystem buffer"
-#endif
+#define FSYS_BUF RAW_ADDR (0x68000)
 
 /*
  *  Linux setup parameters
  */
 
-#define LINUX_STAGING_AREA        0x100000
-#define LINUX_SETUP               0x90000
+#define LINUX_STAGING_AREA        RAW_ADDR (0x100000)
+#define LINUX_SETUP               RAW_ADDR (0x90000)
 #define LINUX_SETUP_MAXLEN        0x1E00
-#define LINUX_KERNEL              0x10000
+#define LINUX_KERNEL              RAW_ADDR (0x10000)
 #define LINUX_KERNEL_MAXLEN       0x7F000
 #define LINUX_SETUP_SEG           0x9020
 #define LINUX_INIT_SEG            0x9000
@@ -89,12 +87,12 @@
 #define LINUX_SETUP_CODE_START    0x214
 #define LINUX_SETUP_INITRD        0x218
 
-#define CL_MY_LOCATION  0x92000
-#define CL_MY_END_ADDR  0x920FF
-#define CL_MAGIC_ADDR   0x90020
+#define CL_MY_LOCATION  RAW_ADDR (0x92000)
+#define CL_MY_END_ADDR  RAW_ADDR (0x920FF)
+#define CL_MAGIC_ADDR   RAW_ADDR (0x90020)
 #define CL_MAGIC        0xA33F
-#define CL_BASE_ADDR    0x90000
-#define CL_OFFSET       0x90022
+#define CL_BASE_ADDR    RAW_ADDR (0x90000)
+#define CL_OFFSET       RAW_ADDR (0x90022)
 
 /*
  *  General disk stuff
@@ -103,7 +101,7 @@
 #define SECTOR_SIZE          0x200
 #define BIOS_FLAG_FIXED_DISK 0x80
 
-#define BOOTSEC_LOCATION     0x7C00
+#define BOOTSEC_LOCATION     RAW_ADDR (0x7C00)
 #define BOOTSEC_SIGNATURE    0xAA55
 #define BOOTSEC_BPB_OFFSET   0x3
 #define BOOTSEC_BPB_LENGTH   0x3B
@@ -169,6 +167,36 @@
 				   enable clock line */
 #define KB_A20_ENABLE   0x02
 
+/* Codes for getchar. */
+#define ASCII_CHAR(x)   ((x) & 0xFF)
+#if !defined(GRUB_UTIL) || !defined(HAVE_LIBCURSES)
+# define KEY_LEFT        0x4B00
+# define KEY_RIGHT       0x4D00
+# define KEY_UP          0x4800
+# define KEY_DOWN        0x5000
+# define KEY_IC          0x5200	/* insert char */
+# define KEY_DC          0x5300	/* delete char */
+# define KEY_HOME        0x4700
+# define KEY_END         0x4F00
+# define KEY_NPAGE       0x4900
+# define KEY_PPAGE       0x5100
+#else
+# include <curses.h>
+#endif
+
+/* Remap some names so that we don't conflict with libc. */
+#define bcopy grub_bcopy
+#define bzero grub_bzero
+#define isspace grub_isspace
+#define open grub_open
+#define printf grub_printf
+#undef putchar
+#define putchar grub_putchar
+#define read grub_read
+#define strncat grub_strncat
+#define strstr grub_strstr
+#define tolower grub_tolower
+
 
 #ifndef ASM_FILE
 
@@ -199,13 +227,12 @@ outb (unsigned short port, unsigned char val)
 #include "mb_header.h"
 #include "mb_info.h"
 
-extern char end[];		/* will be the end of the bss */
-
 /* this function must be called somewhere... */
 void
 cmain (void)
 __attribute__ ((noreturn));
 
+#undef NULL
 #define NULL         ((void *) 0)
 
 
@@ -218,6 +245,8 @@ __attribute__ ((noreturn));
      extern char version_string[];
      extern char config_file[];
 
+void stop (void) __attribute__ ((noreturn));
+
 /* calls for direct boot-loader chaining */
      void chain_stage1 (int segment, int offset, int part_table_addr)
 __attribute__ ((noreturn));
@@ -225,6 +254,9 @@ __attribute__ ((noreturn));
 
 /* do some funky stuff, then boot linux */
      void linux_boot (void) __attribute__ ((noreturn));
+
+/* do some funky stuff, then boot bzImage linux */
+     void big_linux_boot (void) __attribute__ ((noreturn));
 
 /* booting a multiboot executable */
      void multi_boot (int start, int mbi) __attribute__ ((noreturn));
@@ -258,23 +290,11 @@ __attribute__ ((noreturn));
 #define DISP_UP         0x18
 #define DISP_DOWN       0x19
      void putchar (int c);
-
 /* returns packed BIOS/ASCII code */
-#define BIOS_CODE(x)    ((x) >> 8)
-#define ASCII_CHAR(x)   ((x) & 0xFF)
-#define KEY_LEFT        0x4B00
-#define KEY_RIGHT       0x4D00
-#define KEY_UP          0x4800
-#define KEY_DOWN        0x5000
-#define KEY_INSERT      0x5200
-#define KEY_DELETE      0x5300
-#define KEY_HOME        0x4700
-#define KEY_END         0x4F00
-#define KEY_PGUP        0x4900
-#define KEY_PGDN        0x5100
-     int asm_getkey (void);
+     int getkey (void);
 
 /* returns 0 if non-ASCII character */
+#undef getc
 #define getc()  ASCII_CHAR(getkey())
 
 /* like 'getkey', but doesn't wait, returns -1 if nothing available */
@@ -355,32 +375,16 @@ __attribute__ ((noreturn));
 	 MAX_ERR_NUM
        };
 
-/* returns packed BIOS/ASCII code */
-#define BIOS_CODE(x)    ((x) >> 8)
-#define ASCII_CHAR(x)   ((x) & 0xFF)
-#define KEY_LEFT        0x4B00
-#define KEY_RIGHT       0x4D00
-#define KEY_UP          0x4800
-#define KEY_DOWN        0x5000
-#define KEY_INSERT      0x5200
-#define KEY_DELETE      0x5300
-#define KEY_HOME        0x4700
-#define KEY_END         0x4F00
-#define KEY_PGUP        0x4900
-#define KEY_PGDN        0x5100
-     int getkey (void);		/* actually just calls asm_getkey and invalidates the
-				   disk buffer */
-
      void init_page (void);
      void print_error (void);
      char *convert_to_ascii (char *buf, int c,...);
-     void printf (char *format,...);
+     void grub_printf (char *format,...);
      int get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen);
-     int tolower (int c);
-     int isspace (int c);
-     int strncat (char *s1, char *s2, int n);
+     int grub_tolower (int c);
+     int grub_isspace (int c);
+     int grub_strncat (char *s1, char *s2, int n);
      int substring (char *s1, char *s2);
-     char *strstr (char *s1, char *s2);
+     char *grub_strstr (char *s1, char *s2);
      int bcopy (char *from, char *to, int len);
      int bzero (char *start, int len);
      int get_based_digit (int c, int base);
@@ -448,8 +452,8 @@ __attribute__ ((noreturn));
      int make_saved_active (void);	/* sets the active partition to the that
 					   represented by the "saved_" parameters */
 
-     int open (char *filename);
-     int read (int addr, int len);	/* if "length" is -1, read all the
+     int grub_open (char *filename);
+     int grub_read (int addr, int len);	/* if "length" is -1, read all the
 					   remaining data in the file */
      int dir (char *dirname);	/* list directory, printing all completions */
 

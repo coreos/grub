@@ -74,6 +74,7 @@ EXTRA_PROGRAMS = grub
 sbin_PROGRAMS = $(sbingrub)
 CLEANFILES = $(EXTRA_PROGRAMS)
 
+COMPILE = $(CC) -DGRUB_UTIL=1 $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/shared_src
 
 grub_SOURCES = main.c asmstub.c
@@ -96,7 +97,6 @@ grub_DEPENDENCIES =  boot.o common.o char_io.o cmdline.o disk_io.o \
 gunzip.o fsys_ffs.o fsys_ext2fs.o fsys_fat.o stage2.o
 grub_LDFLAGS = 
 CFLAGS = @CFLAGS@
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 LINK = $(CC) $(CFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  Makefile.am Makefile.in
 

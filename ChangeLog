@@ -1,5 +1,43 @@
 1999-03-13  Gordon Matzigkeit  <gord@trick.fig.org>
 
+	* shared_src/gunzip.c (border): Rename to bitorder, to resolve
+	clash with curses.
+	* shared_src/stage2.c (timeout): Rename to grub_timeout.
+
+	* configure.in: Check for curses libraries for use with
+	/sbin/grub.
+
+	* shared_src/shared.h (KEY_DELETE): Rename to KEY_DC, for
+	compatibility with curses.
+	(KEY_INSERT): Rename to KEY_IC.
+	(KEY_PGDN): Rename to KEY_NPAGE.
+	(KEY_PGUP): Rename to KEY_PPAGE.
+
+	* shared_src/asm.S (asm_getkey): Renamed to getkey.
+
+	* shared_src/char_io.c (getkey): Delete, because it's useless.
+
+	* shared_src/shared.h: Resolve name clashes with libc by renaming
+	overlapping functions to have grub_ prefixes, then defining
+	macros.
+
+	* grub/asmstub.c (start_stage2): Make some assertions about our
+	scratch memory area.
+
+	* shared_src/shared.h (end): Delete declaration.
+	(RAW_ADDR, RAW_SEG): Macros to redirect /sbin/grub memory requests
+	through grub_scratch_mem.
+
+	* grub/asmstub.c (get_mem_map): Implement, simulating 4MB
+	contiguous memory.
+	(get_code_end): Implement, simulating with a malloced area.
+	grub/asmstub.c (start_stage2): Initialize grub_scratch_mem.
+
+	* shared_src/asm.S (get_mem_map): Some BIOSes expect the high word
+	of %eax to be zero.
+	(get_code_end): Move this from common.c so that we can stub it out
+	in the simulator.
+
 	* debian/rules: Make sure info files end up in /usr/info, not
 	/info.
 

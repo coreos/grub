@@ -131,7 +131,7 @@ set_line(int y, int attr)
 }
 
 
-int timeout;
+static int grub_timeout;
 
 
 void
@@ -189,31 +189,31 @@ restart:
       /* initilize to NULL just in case... */
       cur_entry = NULL;
 
-      if (timeout >= 0 && (time1 = getrtsecs()) != time2 && time1 != 0xFF)
+      if (grub_timeout >= 0 && (time1 = getrtsecs()) != time2 && time1 != 0xFF)
 	{
-	  if (timeout <= 0)
+	  if (grub_timeout <= 0)
 	    {
-	      timeout = -1;
+	      grub_timeout = -1;
 	      break;
 	    }
 
 	  /* else not booting yet! */
 	  time2  = time1;
 	  gotoxy(3, 22);
-	  printf("The highlighted entry will be booted automatically in %d seconds.    ", timeout);
+	  printf("The highlighted entry will be booted automatically in %d seconds.    ", grub_timeout);
 	  gotoxy(74, 4+entryno);
-	  timeout--;
+	  grub_timeout --;
 	}
 
       if (checkkey() != -1)
 	{
 	  c = getkey();
 
-	  if (timeout >= 0)
+	  if (grub_timeout >= 0)
 	    {
 	      gotoxy(3, 22);
 	      printf("                                                                    ");
-	      timeout = -1;
+	      grub_timeout = -1;
 	      fallback = -1;
 	      gotoxy(74, 4+entryno);
 	    }
@@ -514,7 +514,7 @@ cmain(void)
       config_len = 0; menu_len = 0; num_entries = 0; default_entry = 0;
       config_entries = (char *)(mbi.mmap_addr + mbi.mmap_length);
       menu_entries = (char *)(BUFFERADDR + (32 * 1024));
-      password = NULL; fallback = -1; timeout = -1;
+      password = NULL; fallback = -1; grub_timeout = -1;
 
       /*
        *  Here load the configuration file.
@@ -552,7 +552,7 @@ cmain(void)
 	      else if (!state)
 		{
 		  if (substring("timeout", cmdline) < 1)
-		    safe_parse_maxint(&ptr, &timeout);
+		    safe_parse_maxint(&ptr, &grub_timeout);
 		  if (substring("fallback", cmdline) < 1)
 		    safe_parse_maxint(&ptr, &fallback);
 		  if (substring("default", cmdline) < 1)

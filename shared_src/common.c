@@ -118,7 +118,8 @@ init_bios_info (void)
    *  unused by GRUB.
    */
 
-  mbi.mmap_addr = (addr = (((int) end) & ~3) + 4);
+  addr = get_code_end ();
+  mbi.mmap_addr = addr;
   mbi.mmap_length = 0;
   cont = 0;
 
@@ -126,6 +127,7 @@ init_bios_info (void)
     {
       cont = get_mem_map (addr, cont);
 
+      /* If the returned buffer's base is zero, quit. */
       if (!*((int *) addr))
 	break;
 

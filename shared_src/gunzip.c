@@ -71,7 +71,7 @@
    chunks), otherwise the dynamic method is used.  In the latter case, the
    codes are customized to the probabilities in the current block, and so
    can code it much better than the pre-determined fixed codes.
- 
+
    The Huffman codes themselves are decoded using a mutli-level table
    lookup, in order to maximize the speed of decoding plus the speed of
    building the decoding tables.  See the comments below that precede the
@@ -358,7 +358,7 @@ static unsigned wp;
 
 
 /* Tables for deflate from PKZIP's appnote.txt. */
-static unsigned border[] =
+static unsigned bitorder[] =
 {				/* Order of the bit length code lengths */
   16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 static ush cplens[] =
@@ -429,7 +429,7 @@ static unsigned hufts;		/* track memory usage */
 
 /* Macros for inflate() bit peeking and grabbing.
    The usage is:
-   
+
         NEEDBITS(j)
         x = b & mask_bits[j];
         DUMPBITS(j)
@@ -942,11 +942,11 @@ init_dynamic_block (void)
   for (j = 0; j < nb; j++)
     {
       NEEDBITS (3);
-      ll[border[j]] = (unsigned) b & 7;
+      ll[bitorder[j]] = (unsigned) b & 7;
       DUMPBITS (3);
     }
   for (; j < 19; j++)
-    ll[border[j]] = 0;
+    ll[bitorder[j]] = 0;
 
   /* build decoding table for trees--single level, 7 bit lookup */
   bl = 7;

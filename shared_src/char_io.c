@@ -23,14 +23,6 @@
 
 #include "shared.h"
 
-#ifndef STAGE1_5
-int
-getkey (void)
-{
-  return asm_getkey ();
-}
-#endif /* STAGE1_5 */
-
 
 void
 print_error (void)
@@ -244,7 +236,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	case KEY_END:
 	  c = 5;
 	  break;
-	case KEY_DELETE:
+	case KEY_DC:
 	  c = 8;
 	default:
 	}

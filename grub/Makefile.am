@@ -2,6 +2,7 @@ EXTRA_PROGRAMS = grub
 sbin_PROGRAMS = $(sbingrub)
 CLEANFILES = $(EXTRA_PROGRAMS)
 
+COMPILE = $(CC) -DGRUB_UTIL=1 $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/shared_src
 
 grub_SOURCES = main.c asmstub.c
