@@ -1,3 +1,10 @@
+2003-01-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Jeremy Katz:
+	* stage2/fsys_ext2fs.c (ext2fs_dir): Initialize STR_CHK to shut
+	up GCC.
+	* stage2/fsys_minix.c (minix_dir): Likewise.
+
 2002-12-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/asm.S (gateA20): First, try a BIOS call (INT 15H,

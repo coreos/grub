@@ -491,7 +491,7 @@ ext2fs_dir (char *dirname)
   int group_desc;		/* fs pointer to that group */
   int desc;			/* index within that group */
   int ino_blk;			/* fs pointer of the inode's information */
-  int str_chk;			/* used to hold the results of a string compare */
+  int str_chk = 0;		/* used to hold the results of a string compare */
   struct ext2_group_desc *gdp;
   struct ext2_inode *raw_inode;	/* inode info corresponding to current_ino */
 
