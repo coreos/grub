@@ -249,7 +249,8 @@ fi
 
 # Copy the GRUB images to the GRUB directory.
 rm -f ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5
-cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 ${grubdir}
+cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 \
+    ${grubdir} || exit 1
 
 # Create a safe temporary file.
 test -x /bin/tempfile && log_file=`tempfile --prefix=grub`

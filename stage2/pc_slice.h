@@ -111,6 +111,7 @@
 #define PC_SLICE_TYPE_WIN95_EXTENDED	0xf
 #define PC_SLICE_TYPE_MINIX		0x80
 #define PC_SLICE_TYPE_EXT2FS       	0x83
+#define PC_SLICE_TYPE_LINUX_EXTENDED	0x85
 
 /* For convinience.  */
 /* Check if TYPE is a FAT partition type. Clear the hidden flag before
@@ -126,7 +127,8 @@
 
 #define IS_PC_SLICE_TYPE_EXTENDED(type)	\
   (((type) == PC_SLICE_TYPE_EXTENDED)	\
-   || ((type) == PC_SLICE_TYPE_WIN95_EXTENDED))
+   || ((type) == PC_SLICE_TYPE_WIN95_EXTENDED)	\
+   || ((type) == PC_SLICE_TYPE_LINUX_EXTENDED))
 
 /* these ones are special, as they use their own partitioning scheme
    to subdivide the PC partitions from there.  */

@@ -1,3 +1,15 @@
+2000-05-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in: If the program `cp' fails, exit with the
+	status code 1. Suggested by Pavel Roskin.
+	
+2000-05-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Pixel <pixel@mandrakesoft.com>:
+	* stage2/pc_slice.h (PC_SLICE_TYPE_LINUX_EXTENDED): New macro.
+	(IS_PC_SLICE_TYPE_EXTENDED): Added a check for
+	PC_SLICE_TYPE_LINUX_EXTENDED.
+	
 2000-05-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/common.c (init_bios_info) [!STAGE1_5]: When the memory
