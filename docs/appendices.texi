@@ -56,11 +56,13 @@ Copy the GRUB images to @file{/mnt/boot/grub}. Only @file{stage1},
 Run the following command:
 
 @example
+@group
 $ /sbin/grub --batch <<EOT
 root (fd0)
 setup (fd0)
 quit
 EOT
+@end group
 @end example
 @end enumerate
 
@@ -141,6 +143,43 @@ grub> kernel /vmlinuz mem=128M
 
 You may pass other options in the same way. See @xref{GNU/Linux}, for
 more details.
+
+@item I have a separate boot partition and GRUB doesn't recognize it.
+
+This is often reported as a @dfn{bug}, but this is not a bug
+really. This is a feature.
+
+Because GRUB is a boot loader and it normally runs under no operating
+system, it doesn't know where a partition is mounted under your
+operating systems. So, if you have the partition @file{/boot} and you
+install GRUB images into the directory @file{/boot/grub}, GRUB
+recognizes that the images lies under the directory @file{/grub} but not
+@file{/boot/grub}. That's fine, since there is no guarantee that all of
+your operating systems mount the same partition as @file{/boot}.
+
+There are several solutions for this situation.
+
+@enumerate
+@item
+Install GRUB into the directory @file{/boot/boot/grub} instead of
+@file{/boot/grub}. This may sound ugly but should work fine.
+
+@item
+Create a symbolic link before installing GRUB, like @samp{cd /boot && ln
+-s . boot}. This works only if the filesystem of the boot partition
+supports symbolic links and GRUB supports the feature as well.
+
+@item
+Install GRUB with the command @command{install}, to specify the paths of
+GRUB images explicitly. Here is an example:
+
+@example
+@group
+grub> root (hd0,1)
+grub> install /grub/stage1 d (hd0) /grub/stage2 p /grub/menu.lst
+@end group
+@end example
+@end enumerate
 
 @item Why don't Linux, FreeBSD, NetBSD, etc. become Multiboot-compliant?
 

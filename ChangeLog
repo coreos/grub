@@ -1,5 +1,10 @@
 2000-07-30  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/appendices.texi (FAQ): Added the answer for the separate
+	boot partition problem.
+	
+2000-07-30  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Update the network support to Etherboot-4.6.4.
 	
 	From Daniel Wagner <wagi@gmx.ch>:
