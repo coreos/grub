@@ -13,13 +13,13 @@ Priorities:
   higher priority.
 
 
-* Add more filesystems (such as jfs, ffs, and reiserfs). !
+* Add more filesystems (such as jfs, xfs and reiserfs). !
 
 * Add journal playback support to ext2fs (so it will become ext3fs).
 
 * Add support for internationalization. !!!
 
-* Add more loaders (such as Multiboot and FreeBSD). !!
+* Add more loaders (such as NetBSD and FreeBSD). !!
 
 * Implement a more friendly installer.
 
