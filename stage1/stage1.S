@@ -102,6 +102,14 @@ after_BPB:
 /* general setup */
 	cli		/* we're not safe here! */
 
+	/*
+	 * ljmp to the next instruction because some bogus BIOSes
+	 * jump to 07C0:0000 instead of 0000:7C00.
+	 */
+	ljmp	$0, $ABS(real_start)
+
+real_start:	
+
 	/* set up %ds and %ss as offset from 0 */
 	xorw	%ax, %ax
 	movw	%ax, %ds

@@ -15,7 +15,7 @@ See the file NEWS for a description of recent changes to GRUB.
 You need recent developmental environment to build GRUB. We recommend
 you use the following utilities:
 
-* binutils 2.9.1.0.23 and later (Do not use early 2.9.1.0.x!)
+* binutils 2.9.1.0.23 or later (Do not use early 2.9.1.0.x!)
 
   Binutils has changed the behavior of 16bit assembler between 2.9.1
 and 2.9.1.0.x, and we support only 2.9.1.0.x and higher. It is available
@@ -34,15 +34,21 @@ The latter is what you should see. If you have installed a recent
 version of binutils but this version number is not identical with it,
 you need to specify the option ``--with-binutils=DIR'' for configure.
 
+* texinfo 4.0 or later
+
+  We use some new macros in the manuals, so you need a recent TeXinfo
+release. See http://www.gnu.org/software/texinfo/texinfo.html, for more
+information.
+
 
 These below are required when you develop GRUB or when you get it from
 the CVS:
 
-* automake 19990620 and later
+* automake 19990620 or later
 
   The new feature, per-executable flags, is requred, so you need to get
 an unreleased version from the CVS. See
-http://sourceware.cygnus.com/automake/ for more information.
+http://sourceware.cygnus.com/automake/, for more information.
 
 
 See the file INSTALL for instructions on how to build and install the

@@ -9,6 +9,15 @@
 /* Defined if _start is defined.  */
 #undef HAVE_USCORE_START_SYMBOL
 
+/* Defined if __bss_start is defined.  */
+#undef HAVE_USCORE_USCORE_BSS_START_SYMBOL
+
+/* Defined if edata is defined.  */
+#undef HAVE_EDATA_SYMBOL
+
+/* Defined if _edata is defined.  */
+#undef HAVE_USCORE_EDATA_SYMBOL
+
 /* Defined if end is defined.  */
 #undef HAVE_END_SYMBOL
 

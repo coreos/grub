@@ -1,5 +1,13 @@
 1999-10-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage1/stage1.S: Long jump to real_start, because some bogus
+	BIOSes jump to 07C0:0000 instead of 0000:7C00.
+	(real_start): New label.
+	* docs/Makefile.am (grub.info): Removed. Use the default rule
+	instead.
+	
+1999-10-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/asm.S [DEFINE_TRACK_INT13] (int3_handler): Save the
 	modified FLAGS in 6(%bp) instead of 4(%bp).
 	Decrease %bx before restoring the first instruction.
