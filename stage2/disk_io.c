@@ -949,9 +949,9 @@ set_device (char *device)
 	{
 	  char ch = *device;
 
-	  if (*device == 'f' || *device == 'h')
+	  if (*device == 'f' || *device == 'h' || *device == 'n')
 	    {
-	      /* user has given '([fh]', check for resp. add 'd' and
+	      /* user has given '([fhn]', check for resp. add 'd' and
 		 let disk_choice handle what disks we have */
 	      if (!*(device + 1))
 		{

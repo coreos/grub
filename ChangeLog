@@ -1,3 +1,8 @@
+2002-12-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/disk_io.c (set_device): If '(n' is given, add 'd' into
+	DEVICE. Reported by Pavel Roskin.
+
 2002-12-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Change the terminal structure a bit, to turn the cursor state
