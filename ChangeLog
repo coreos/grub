@@ -1,3 +1,9 @@
+2005-01-05  Marco Gerards  <metgerards@student.han.nl>
+
+	* util/misc.c (grub_util_read_image): Revert last change.  It
+	called `grub_util_read_at', which seeks from the beginning of the
+	file.
+
 2005-01-04  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* TODO: Add note about endianness in grub-mkimage.

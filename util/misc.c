@@ -200,7 +200,9 @@ grub_util_write_image_at (const void *img, size_t size, off_t offset, FILE *out)
 void
 grub_util_write_image (const char *img, size_t size, FILE *out)
 {
-  grub_util_write_image_at (img, size, 0, out);
+  grub_util_info ("writing 0x%x bytes", size);
+  if (fwrite (img, 1, size, out) != size)
+    grub_util_error ("write failed");
 }
 
 void *
