@@ -1,3 +1,9 @@
+2000-10-17  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setkey_func): Clear the all elements of
+	BIOS_KEY_MAP and ASCII_KEY_MAP instead of only the first
+	elements, when TO_KEY is NULL.
+	
 2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/boot.c (load_image): When handling Linux cmdline, don't

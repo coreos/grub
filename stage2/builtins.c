@@ -3216,8 +3216,8 @@ setkey_func (char *arg, int flags)
   if (! to_key)
     {
       /* If the user specifies no argument, reset the key mappings.  */
-      bios_key_map[0] = 0;
-      ascii_key_map[0] = 0;
+      grub_memset (bios_key_map, 0, KEY_MAP_SIZE * sizeof (unsigned short));
+      grub_memset (ascii_key_map, 0, KEY_MAP_SIZE * sizeof (unsigned short));
 
       return 0;
     }
