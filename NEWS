@@ -30,6 +30,9 @@ New in 0.5.94:
 * The command "chainloader" now accepts an option "--force", which is
   required if you want to chain-load a boot loader defective in the
   signature, such as SCO Unixware 7.1.
+* The netboot support is heavily rewritten, based on Etherboot-4.4.2.
+  Most of the device drivers are stolen from it, so we now have many
+  network drivers. See netboot/README.netboot for more details.
 
 New in 0.5.93 - 1999-10-30:
 * ELF format of FreeBSD kernel is supported.
