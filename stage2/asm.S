@@ -1728,6 +1728,12 @@ ENTRY(patch_code_end)
 VARIABLE(linux_text_len)
 	.long	0
 	
+VARIABLE(linux_data_tmp_addr)
+	.long	0
+	
+VARIABLE(linux_data_real_addr)
+	.long	0
+	
 ENTRY(linux_boot)
 	/* don't worry about saving anything, we're committed at this point */
 	cld	/* forward copying */
@@ -1736,13 +1742,29 @@ ENTRY(linux_boot)
 	movl	EXT_C(linux_text_len), %ecx
 	addl	$3, %ecx
 	shrl	$2, %ecx
-	movl	$LINUX_STAGING_AREA, %esi
-	movl	$LINUX_KERNEL, %edi
+	movl	$LINUX_BZIMAGE_ADDR, %esi
+	movl	$LINUX_ZIMAGE_ADDR, %edi
 
 	rep
 	movsl
 
 ENTRY(big_linux_boot)
+	movl	EXT_C(linux_data_real_addr), %ebx
+	
+	/* copy the real mode part */
+	movl	EXT_C(linux_data_tmp_addr), %esi
+	movl	%ebx, %edi
+	movl	$LINUX_SETUP_MOVE_SIZE, %ecx
+	cld
+	rep
+	movsb
+
+	/* change %ebx to the segment address */
+	shrl	$4, %ebx
+	movl	%ebx, %eax
+	addl	$0x20, %eax
+	movl	%eax, linux_setup_seg
+			
 	/* XXX new stack pointer in safe area for calling functions */
 	movl	$0x4000, %esp
 	call	EXT_C(stop_floppy)
@@ -1754,20 +1776,20 @@ ENTRY(big_linux_boot)
 
 	/* final setup for linux boot */
 	cli
-	movw	$LINUX_INIT_SEG, %ax
-	movw	%ax, %ss
+	movw	%bx, %ss
 	movw	$LINUX_SETUP_STACK, %sp
 	
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
+	movw	%bx, %ds
+	movw	%bx, %es
+	movw	%bx, %fs
+	movw	%bx, %gs
 
 	/* jump to start */
 	/* ljmp */
 	.byte	0xea
 	.word	0
-	.word	LINUX_SETUP_SEG
+linux_setup_seg:	
+	.word	0
 	.code32
 
 

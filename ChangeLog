@@ -1,3 +1,42 @@
+2002-07-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/boot.c (load_image): Rewrite the Linux booting support
+	radically. Now it should work even on a machine having, say,
+	only 128KB, theoretically. Of course, GRUB itself doesn't work
+	on such a system, though.
+	(load_initrd): Initialize LH based on CUR_ADDR, because the
+	location becomes dynamic.
+	* stage2/shared.h (LINUX_MAX_SETUP_SECTS): Set to 64.
+	(LINUX_HEAP_END_OFFSET): Set to (0x9000 - 0x200).
+	(LINUX_STAGING_AREA): Removed.
+	(LINUX_SETUP): Likewise.
+	(LINUX_KERNEL): Likewise.
+	(LINUX_KERNEL_MAXLEN): Likewise.
+	(LINUX_SETUP_SEG): Likewise.
+	(LINUX_INIT_SEG): Likewise.
+	(LINUX_SETUP_STACK): Set to 0x9000.
+	(LINUX_BZIMAGE_ADDR): New macro.
+	(LINUX_ZIMAGE_ADDR): Likewise.
+	(LINUX_OLD_REAL_MODE_ADDR): Likewise.
+	(CL_MY_LOCATION): Removed.
+	(CL_MY_END_ADDR): Likewise.
+	(CL_BASE_ADDR): Likewise.
+	(CL_MAGIC): Renamed to ...
+	(LINUX_CL_MAGIC): ... this.
+	(LINUX_CL_OFFSET): New macro.
+	(LINUX_CL_END_OFFSET): Likewise.
+	(LINUX_SETUP_MOVE_SIZE): Likewise.
+	(struct linux_kernel_header): Change the type of the member
+	"cmd_line_ptr" to char *.
+	(linux_data_tmp_addr): Declared.
+	(linux_data_real_addr): Likewise.
+	* stage2/asm.S [!STAGE1_5] (linux_data_tmp_addr): New variable.
+	[!STAGE1_5] (linux_data_real_addr): Likewise.
+	[!STAGE1_5] (big_linux_boot): Copy the real mode part from
+	LINUX_DATA_TMP_ADDR to LINUX_DATA_REAL_ADDR.
+	* grub/asmstub.c (linux_data_tmp_addr): New variable.
+	(linux_data_real_addr): Likewise.
+
 2002-07-09  Yoshinori K. Okuji  <okuji@enbug.org>
 	
 	From Mark Kettenis <kettenis@chello.nl>:

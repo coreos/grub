@@ -20,6 +20,8 @@ New in 0.93:
   intelligent terminal (such as the comint mode in GNU Emacs).
 * The utility ``grub-md5-crypt'' prompts to retype a password and checks
   if the passwords match.
+* Support for booting Linux is rewritten, so GRUB now supports
+  large-EBDA systems.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.

@@ -138,29 +138,26 @@ extern char *grub_scratch_mem;
 #define LINUX_DEFAULT_SETUP_SECTS	4
 #define LINUX_FLAG_CAN_USE_HEAP		0x80
 #define LINUX_INITRD_MAX_ADDRESS	0x38000000
-#define LINUX_MAX_SETUP_SECTS		63
+#define LINUX_MAX_SETUP_SECTS		64
 #define LINUX_BOOT_LOADER_TYPE		0x71
-#define LINUX_HEAP_END_OFFSET		(0x7F00 - 0x200)
+#define LINUX_HEAP_END_OFFSET		(0x9000 - 0x200)
 
-#define LINUX_STAGING_AREA        RAW_ADDR (0x100000)
-#define LINUX_SETUP               RAW_ADDR (0x90000)
-#define LINUX_KERNEL              RAW_ADDR (0x10000)
-#define LINUX_KERNEL_MAXLEN       0x7F000
-#define LINUX_SETUP_SEG           0x9020
-#define LINUX_INIT_SEG            0x9000
-#define LINUX_SETUP_STACK         0x7F00
+#define LINUX_BZIMAGE_ADDR		RAW_ADDR (0x100000)
+#define LINUX_ZIMAGE_ADDR		RAW_ADDR (0x10000)
+#define LINUX_OLD_REAL_MODE_ADDR	RAW_ADDR (0x90000)
+#define LINUX_SETUP_STACK		0x9000
 
-#define LINUX_FLAG_BIG_KERNEL     0x1
+#define LINUX_FLAG_BIG_KERNEL		0x1
 
 /* Linux's video mode selection support. Actually I hate it!  */
-#define LINUX_VID_MODE_NORMAL	0xFFFF
-#define LINUX_VID_MODE_EXTENDED	0xFFFE
-#define LINUX_VID_MODE_ASK	0xFFFD
+#define LINUX_VID_MODE_NORMAL		0xFFFF
+#define LINUX_VID_MODE_EXTENDED		0xFFFE
+#define LINUX_VID_MODE_ASK		0xFFFD
 
-#define CL_MY_LOCATION  RAW_ADDR (0x97F00)
-#define CL_MY_END_ADDR  RAW_ADDR (0x97FFF)
-#define CL_MAGIC        0xA33F
-#define CL_BASE_ADDR    RAW_ADDR (0x90000)
+#define LINUX_CL_OFFSET			0x9000
+#define LINUX_CL_END_OFFSET		0x90FF
+#define LINUX_SETUP_MOVE_SIZE		0x9100
+#define LINUX_CL_MAGIC			0xA33F
 
 /*
  *  General disk stuff
@@ -376,7 +373,7 @@ extern char *grub_scratch_mem;
 #include "mb_header.h"
 #include "mb_info.h"
 
-/* For the Linux/i386 boot protocol version 2.02.  */
+/* For the Linux/i386 boot protocol version 2.03.  */
 struct linux_kernel_header
 {
   char code1[0x0020];
@@ -405,7 +402,7 @@ struct linux_kernel_header
   unsigned long bootsect_kludge;	/* obsolete */
   unsigned short heap_end_ptr;		/* Free memory after setup end */
   unsigned short pad1;			/* Unused */
-  unsigned long cmd_line_ptr;		/* Points to the kernel command line */
+  char *cmd_line_ptr;			/* Points to the kernel command line */
 } __attribute__ ((packed));
 
 /* Memory map address range descriptor used by GET_MMAP_ENTRY. */
@@ -550,6 +547,8 @@ extern unsigned char force_lba;
 extern char version_string[];
 extern char config_file[];
 extern unsigned long linux_text_len;
+extern char *linux_data_tmp_addr;
+extern char *linux_data_real_addr;
 
 #ifdef GRUB_UTIL
 /* If not using config file, this variable is set to zero,

@@ -227,6 +227,13 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	  big_linux = (lh->loadflags & LINUX_FLAG_BIG_KERNEL);
 	  lh->type_of_loader = LINUX_BOOT_LOADER_TYPE;
 
+	  /* Put the real mode part at as a high location as possible.  */
+	  linux_data_real_addr
+	    = (char *) ((mbi.mem_lower << 10) - LINUX_SETUP_MOVE_SIZE);
+	  /* But it must not exceed the traditional area.  */
+	  if (linux_data_real_addr > (char *) LINUX_OLD_REAL_MODE_ADDR)
+	    linux_data_real_addr = (char *) LINUX_OLD_REAL_MODE_ADDR;
+
 	  if (lh->version >= 0x0201)
 	    {
 	      lh->heap_end_ptr = LINUX_HEAP_END_OFFSET;
@@ -234,22 +241,23 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    }
 
 	  if (lh->version >= 0x0202)
-	    lh->cmd_line_ptr = CL_MY_LOCATION;
+	    lh->cmd_line_ptr = linux_data_real_addr + LINUX_CL_OFFSET;
 	  else
 	    {
-	      lh->cl_magic = CL_MAGIC;
-	      lh->cl_offset = CL_MY_LOCATION - CL_BASE_ADDR;
-	      lh->setup_move_size
-		= (unsigned short) (CL_MY_END_ADDR - CL_BASE_ADDR + 1);
+	      lh->cl_magic = LINUX_CL_MAGIC;
+	      lh->cl_offset = LINUX_CL_OFFSET;
+	      lh->setup_move_size = LINUX_SETUP_MOVE_SIZE;
 	    }
 	}
       else
 	{
 	  /* Your kernel is quite old...  */
-	  lh->cl_magic = CL_MAGIC;
-	  lh->cl_offset = CL_MY_LOCATION - CL_BASE_ADDR;
+	  lh->cl_magic = LINUX_CL_MAGIC;
+	  lh->cl_offset = LINUX_CL_OFFSET;
 	  
 	  setup_sects = LINUX_DEFAULT_SETUP_SECTS;
+
+	  linux_data_real_addr = (char *) LINUX_OLD_REAL_MODE_ADDR;
 	}
       
       /* If SETUP_SECTS is not set, set it to the default (4).  */
@@ -258,22 +266,23 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 
       data_len = setup_sects << 9;
       text_len = filemax - data_len - SECTOR_SIZE;
+
+      linux_data_tmp_addr = (char *) LINUX_BZIMAGE_ADDR + text_len;
       
-      if (! big_linux && text_len > LINUX_KERNEL_MAXLEN)
+      if (! big_linux
+	  && text_len > linux_data_real_addr - (char *) LINUX_ZIMAGE_ADDR)
 	{
 	  grub_printf (" linux 'zImage' kernel too big, try 'make bzImage'\n");
-	  grub_close ();
 	  errnum = ERR_WONT_FIT;
-	  return KERNEL_TYPE_NONE;
 	}
-
-      grub_printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
-		   (big_linux ? "bzImage" : "zImage"), data_len, text_len);
-
-      /* FIXME: SETUP_SECTS should be supported up to 63.
-	 But do you know there are >640KB conventional memory machines?  */
-      if (mbi.mem_lower >= 608 && setup_sects < 60)
+      else if (linux_data_real_addr + LINUX_SETUP_MOVE_SIZE
+	       > RAW_ADDR ((char *) (mbi.mem_lower << 10)))
+	errnum = ERR_WONT_FIT;
+      else
 	{
+	  grub_printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
+		       (big_linux ? "bzImage" : "zImage"), data_len, text_len);
+
 	  /* Video mode selection support. What a mess!  */
 	  /* NOTE: Even the word "mess" is not still enough to
 	     represent how wrong and bad the Linux video support is,
@@ -281,14 +290,14 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	     any more. -okuji  */
 	  {
 	    char *vga;
-
+	
 	    /* Find the substring "vga=".  */
 	    vga = grub_strstr (arg, "vga=");
 	    if (vga)
 	      {
 		char *value = vga + 4;
 		int vid_mode;
-
+	    
 		/* Handle special strings.  */
 		if (substring ("normal", value) < 1)
 		  vid_mode = LINUX_VID_MODE_NORMAL;
@@ -305,7 +314,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 		    grub_close ();
 		    return KERNEL_TYPE_NONE;
 		  }
-
+	    
 		lh->vid_mode = vid_mode;
 	      }
 	  }
@@ -313,12 +322,12 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	  /* Check the mem= option to limit memory used for initrd.  */
 	  {
 	    char *mem;
-	    
+	
 	    mem = grub_strstr (arg, "mem=");
 	    if (mem)
 	      {
 		char *value = mem + 4;
-
+	    
 		safe_parse_maxint (&value, &linux_mem_size);
 		switch (errnum)
 		  {
@@ -329,11 +338,11 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 		    linux_mem_size = LINUX_INITRD_MAX_ADDRESS;
 		    errnum = ERR_NONE;
 		    break;
-		    
+		
 		  case ERR_NONE:
 		    {
 		      int shift = 0;
-		      
+		  
 		      switch (grub_tolower (*value))
 			{
 			case 'g':
@@ -345,7 +354,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 			default:
 			  break;
 			}
-
+		  
 		      /* Check an overflow.  */
 		      if (linux_mem_size > (MAXINT >> shift))
 			linux_mem_size = LINUX_INITRD_MAX_ADDRESS;
@@ -353,7 +362,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 			linux_mem_size <<= shift;
 		    }
 		    break;
-		    
+		
 		  default:
 		    linux_mem_size = 0;
 		    errnum = ERR_NONE;
@@ -363,26 +372,26 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    else
 	      linux_mem_size = 0;
 	  }
-
+      
 	  /* It is possible that DATA_LEN is greater than MULTIBOOT_SEARCH,
 	     so the data may have been read partially.  */
 	  if (data_len <= MULTIBOOT_SEARCH)
-	    grub_memmove ((char *) LINUX_SETUP, buffer,
+	    grub_memmove (linux_data_tmp_addr, buffer,
 			  data_len + SECTOR_SIZE);
 	  else
 	    {
-	      grub_memmove ((char *) LINUX_SETUP, buffer, MULTIBOOT_SEARCH);
-	      grub_read ((char *) LINUX_SETUP + MULTIBOOT_SEARCH,
+	      grub_memmove (linux_data_tmp_addr, buffer, MULTIBOOT_SEARCH);
+	      grub_read (linux_data_tmp_addr + MULTIBOOT_SEARCH,
 			 data_len + SECTOR_SIZE - MULTIBOOT_SEARCH);
 	    }
-
+	  
 	  if (lh->header != LINUX_MAGIC_SIGNATURE ||
 	      lh->version < 0x0200)
 	    /* Clear the heap space.  */
-	    grub_memset ((char *) LINUX_SETUP + ((setup_sects - 1) << 9),
+	    grub_memset (linux_data_tmp_addr + ((setup_sects + 1) << 9),
 			 0,
 			 (64 - setup_sects - 1) << 9);
-
+      
 	  /* Copy command-line plus memory hack to staging area.
 	     NOTE: Linux has a bug that it doesn't handle multiple spaces
 	     between two options and a space after a "mem=" option isn't
@@ -393,39 +402,40 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	     avoid to copy spaces unnecessarily. Hell.  */
 	  {
 	    char *src = skip_to (0, arg);
-	    char *dest = (char *) CL_MY_LOCATION;
-
-	    while (((int) dest) < CL_MY_END_ADDR && *src)
+	    char *dest = linux_data_tmp_addr + LINUX_CL_OFFSET;
+	
+	    while (dest < linux_data_tmp_addr + LINUX_CL_END_OFFSET && *src)
 	      *(dest++) = *(src++);
-	    
+	
 	    /* Add a mem option automatically only if the user doesn't
 	       specify it explicitly.  */
 	    if (! grub_strstr (arg, "mem=")
-		&& ! (load_flags & KERNEL_LOAD_NO_MEM_OPTION))
+		&& ! (load_flags & KERNEL_LOAD_NO_MEM_OPTION)
+		&& dest + 15 < linux_data_tmp_addr + LINUX_CL_END_OFFSET)
 	      {
-		if (dest != (char *) CL_MY_LOCATION)
-		  *(dest++) = ' ';
-		
-		grub_memmove (dest, "mem=", 4);
-		dest += 4;
-		
+		*dest++ = ' ';
+		*dest++ = 'm';
+		*dest++ = 'e';
+		*dest++ = 'm';
+		*dest++ = '=';
+	    
 		dest = convert_to_ascii (dest, 'u', (extended_memory + 0x400));
-		*(dest++) = 'K';
+		*dest++ = 'K';
 	      }
-
+	
 	    *dest = 0;
 	  }
-
+      
 	  /* offset into file */
 	  grub_seek (data_len + SECTOR_SIZE);
-
-	  cur_addr = LINUX_STAGING_AREA + text_len;
-	  grub_read ((char *) LINUX_STAGING_AREA, text_len);
-	  
+      
+	  cur_addr = (int) linux_data_tmp_addr + LINUX_SETUP_MOVE_SIZE;
+	  grub_read ((char *) LINUX_BZIMAGE_ADDR, text_len);
+      
 	  if (errnum == ERR_NONE)
 	    {
 	      grub_close ();
-
+	  
 	      /* Sanity check.  */
 	      if (suggested_type != KERNEL_TYPE_NONE
 		  && ((big_linux && suggested_type != KERNEL_TYPE_BIG_LINUX)
@@ -434,17 +444,13 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 		  errnum = ERR_EXEC_FORMAT;
 		  return KERNEL_TYPE_NONE;
 		}
-
+	  
 	      /* Ugly hack.  */
 	      linux_text_len = text_len;
-	      
+	  
 	      return big_linux ? KERNEL_TYPE_BIG_LINUX : KERNEL_TYPE_LINUX;
 	    }
-	  
-	  grub_close ();
 	}
-      else
-	errnum = ERR_WONT_FIT;
     }
   else				/* no recognizable format */
     errnum = ERR_EXEC_FORMAT;
@@ -780,7 +786,8 @@ load_initrd (char *initrd)
 {
   int len;
   unsigned long moveto;
-  struct linux_kernel_header *lh;
+  struct linux_kernel_header *lh
+    = (struct linux_kernel_header *) (cur_addr - LINUX_SETUP_MOVE_SIZE);
   
 #ifndef NO_DECOMPRESSION
   no_decompression = 1;
@@ -815,7 +822,6 @@ load_initrd (char *initrd)
   printf ("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
 
   /* FIXME: Should check if the kernel supports INITRD.  */
-  lh = (struct linux_kernel_header *) LINUX_SETUP;
   lh->ramdisk_image = RAW_ADDR (moveto);
   lh->ramdisk_size = len;
 

@@ -73,6 +73,8 @@ int saved_entryno = 0;
 char version_string[] = VERSION;
 char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 unsigned long linux_text_len = 0;
+char *linux_data_tmp_addr = 0;
+char *linux_data_real_addr = 0;
 unsigned short io_map[IO_MAP_SIZE];
 struct apm_info apm_bios_info;
 
