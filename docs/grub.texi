@@ -2131,7 +2131,60 @@ current media.
 @node MBR
 @section The structure of Master Boot Record
 
-PC_partitioning.txt
+A Master Boot Record (@dfn{MBR}) is the sector at cylinder 0, head 0,
+sector 1 of a hard disk. A MBR-like structure must be created in each of
+partitions by the FDISK program.
+
+At the completion of your system's Power On Self Test (@dfn{POST}), INT
+19H is called. Usually INT 19 tries to read a boot sector from the first
+floppy drive@footnote{Which drive is read first depends on your BIOS
+settings.}. If a boot sector is found on the floppy disk, that boot
+sector is read into memory at location 0000:7C00 and INT 19H jumps to
+memory location 0000:7C00. However, if no boot sector is found on the
+first floppy drive, INT 19H tries to read the MBR from the first hard
+drive. If an MBR is found it is read into memory at location 0000:7C00
+and INT 19H jumps to memory location 0000:7C00. The small program in the
+MBR will atempt to locate an active (bootable) partition in its
+partition table@footnote{This behavior is DOS MBR's, and GRUB ignores
+the active flag.}. The small program in the boot sector must locate the
+first part of the operating system's kernel loader program (or perhaps
+the kernel itself or perhaps a @dfn{boot manager program}) and read that
+into memory.
+
+INT 19H is also called when the @key{CTRL}-@key{ALT}-@key{DEL} keys are
+used. On most systems, @key{CTRL}-@key{ALT}-@key{DEL} causes an short
+version of the POST to be executed before INT 19H is called.
+
+The stuff is:
+
+@table @asis
+@item Offset 0000
+The address where the MBR code starts.
+
+@item Offset 01BE
+The address where the partition table starts (@pxref{Partition table}).
+
+@item Offset 01FE
+The signature, AA55.
+@end table
+
+However, the first 62 bytes of a boot sector are known as the BIOS
+Parameter Block (@dfn{BPB}), so GRUB cannot use these bytes for its own
+purpose.
+
+If an active partition is found, that partition's boot record is read
+into 0000:7C00 and the MBR code jumps to 0000:7C00 with @code{SI}
+pointing to the partition table entry that describes the partition being
+booted. The boot record program uses this data to determine the drive
+being booted from and the location of the partition on the disk.
+
+The first byte of an active partition table entry is 80. This byte is
+loaded into the @code{DL} register before INT 13H is called to read the
+boot sector. When INT 13H is called, @code{DL} is the BIOS device
+number. Because of this, the boot sector read by this MBR program can
+only be read from BIOS device number 80 (the first hard disk). This is
+one of the reasons why it is usually not possible to boot from any other
+hard disk.
 
 
 @node Partition table
