@@ -85,7 +85,7 @@ boot_func (char *arg, int flags)
     case KERNEL_TYPE_FREEBSD:
     case KERNEL_TYPE_NETBSD:
       /* *BSD */
-      bsd_boot (kernel_type, bootdev, arg);
+      bsd_boot (kernel_type, bootdev, (char *) mbi.cmdline);
       break;
 
     case KERNEL_TYPE_LINUX:

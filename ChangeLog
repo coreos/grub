@@ -1,5 +1,10 @@
 1999-10-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (boot_func): Pass MBI.CMDLINE instead of ARG
+	to bsd_boot.
+	
+1999-10-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/gunzip.c (gunzip_test_header): Check if CURRENT_DRIVE
 	is 0x20 instead of if the fs type is TFTP, because GRUB does not
 	mount CURRENT_DRIVE when using a block file. Reported by Pavel
