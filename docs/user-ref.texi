@@ -598,6 +598,133 @@ type code. This is useful only for DOS or Windows when multiple primary
 partitions exist in one disk.
 @end deffn
 
+@deffn Command setkey to_key from_key
+Change the keyboard map. The key @var{from_key} is mapped to the key
+@var{to_key}. Note that this command @emph{does not} exchange the
+keys. If you want to exchange the keys, run this command again with the
+arguments exchanged, like this:
+
+@example
+grub> setkey capslock control
+grub> setkey control capslock
+@end example
+
+A key must be an alphabet, a digit, or one of these symbols:
+@samp{escape}, @samp{exclam}, @samp{at}, @samp{numbersign},
+@samp{dollar}, @samp{percent}, @samp{caret}, @samp{ampersand},
+@samp{asterisk}, @samp{parenleft}, @samp{parenright}, @samp{minus},
+@samp{underscore}, @samp{equal}, @samp{plus}, @samp{backspace},
+@samp{tab}, @samp{bracketleft}, @samp{braceleft}, @samp{bracketright},
+@samp{braceright}, @samp{enter}, @samp{control}, @samp{semicolon},
+@samp{colon}, @samp{quote}, @samp{doublequote}, @samp{backquote},
+@samp{tilde}, @samp{shift}, @samp{backslash}, @samp{bar}, @samp{comma},
+@samp{less}, @samp{period}, @samp{greater}, @samp{slash},
+@samp{question}, @samp{alt}, @samp{space}, @samp{capslock}, @samp{FX}
+(@samp{X} is a digit), and @samp{delete}. This table describes which
+character each of the symbols corresponds to:
+
+@table @samp
+@item exclam
+@samp{!}
+
+@item at
+@samp{@@}
+
+@item numbersign
+@samp{#}
+
+@item dollar
+@samp{$}
+
+@item percent
+@samp{%}
+
+@item caret
+@samp{^}
+
+@item ampersand
+@samp{&}
+
+@item asterisk
+@samp{*}
+
+@item parenleft
+@samp{(}
+
+@item parenright
+@samp{)}
+
+@item minus
+@samp{-}
+
+@item underscore
+@samp{_}
+
+@item equal
+@samp{=}
+
+@item plus
+@samp{+}
+
+@item bracketleft
+@samp{[}
+
+@item braceleft
+@samp{@{}
+
+@item bracketright
+@samp{]}
+
+@item braceright
+@samp{@}}
+
+@item semicolon
+@samp{;}
+
+@item colon
+@samp{:}
+
+@item quote
+@samp{'}
+
+@item doublequote
+@samp{"}
+
+@item backquote
+@samp{`}
+
+@item tilde
+@samp{~}
+
+@item backslash
+@samp{\}
+
+@item bar
+@samp{|}
+
+@item comma
+@samp{,}
+
+@item less
+@samp{<}
+
+@item period
+@samp{.}
+
+@item greater
+@samp{>}
+
+@item slash
+@samp{/}
+
+@item question
+@samp{?}
+
+@item space
+@samp{ }
+@end table
+@end deffn
+
 @deffn Command unhide partition
 Unhide @var{partition} by clearing the @dfn{hidden} bit in its partition
 type code. This is useful only for DOS or Windows when multiple primary
@@ -1043,6 +1170,9 @@ is simply too big.
 This error is returned if there is a disk write error when trying to
 write to a particular disk. This would generally only occur during an
 install of set active partition command.
+
+@item 30 : Invalid argument specified
+This error is returned if an argument specified to a command is invalid.
 @end table
 
 

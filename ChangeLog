@@ -1,3 +1,64 @@
+1999-10-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/char_io.c (print_error) [!STAGE1_5]: Print "Error:"
+	before print the error message.
+	(print_error): Do not clear ERRNUM.
+	* stage2/cmdline.c (run_script): If ERRNUM is non-zero, set
+	ERRNUM to ERR_NONE.
+	(enter_cmdline): Clear ERRNUM after print_error.
+	
+1999-10-28  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage2/stage2.c (run_menu) [GRUB_UTIL]: Do not use IBM special
+	characters in the message, but use ascii names instead.
+	(run_menu) [!GRUB_UTIL]: Use DISP_UP and DISP_DOWN instead of
+	the ascii codes.
+	* stage2/shared.h [!ACS_ULCORNER] (ACS_ULCORNER): New macro.
+	[!ACS_ULCORNER] (ACS_URCORNER): Likewise.
+	[!ACS_ULCORNER] (ACS_LLCORNER): Likewise.
+	[!ACS_ULCORNER] (ACS_LRCORNER): Likewise.
+	[!ACS_ULCORNER] (ACS_HLINE): Likewise.
+	[!ACS_ULCORNER] (ACS_VLINE): Likewise.
+	[!ACS_ULCORNER] (ACS_LARROW): Likewise.
+	[!ACS_ULCORNER] (ACS_RARROW): Likewise.
+	[!ACS_ULCORNER] (ACS_UARROW): Likewise.
+	[!ACS_ULCORNER] (ACS_DARROW): Likewise.
+	[GRUB_UTIL] (DISP_UL): Set to ACS_ULCORNER.
+	[GRUB_UTIL] (DISP_UR): Set to ACS_URCORNER.
+	[GRUB_UTIL] (DISP_LL): Set to ACS_LLCORNER.
+	[GRUB_UTIL] (DISP_LR): Set to ACS_LRCORNER.
+	[GRUB_UTIL] (DISP_HORIZ): Set to ACS_HLINE.
+	[GRUB_UTIL] (DISP_VERT): Set to ACS_VLINE.
+	[GRUB_UTIL] (DISP_LEFT): Set to ACS_LARROW.
+	[GRUB_UTIL] (DISP_RIGHT): Set to ACS_RARROW.
+	[GRUB_UTIL] (DISP_UP): Set to ACS_UARROW.
+	[GRUB_UTIL] (DISP_DOWN): Set to ACS_DARROW.
+	
+1999-10-28  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (keycode_func): Removed.
+	(builtin_keycode): Likewise.
+	(struct keysym): New structure.
+	(keysym_table): New variable.
+	(setkey_func): New function.
+	(builtin_setkey): New variable.
+	(builtin_table): Removed the pointer to BUILTIN_KEYCODE, and
+	added a pointer to BUILTIN_SETKEY.
+	* stage2/common.c [!STAGE1_5] (err_list): Added
+	ERR_BAD_ARGUMENT.
+	* stage2/shared.h (grub_error_t): Added ERR_BAD_ARGUMENT.
+	(KEY_MAP_SIZE): Set to 128.
+	(ascii_key_map): Declared.
+	* stage2/asm.S [!STAGE1_5] (remap_ascii_char): New function.
+	[!STAGE1_5] (ascii_key_map): New variable.
+	[!STAGE1_5] (getkey): Call remap_ascii_char after int16.
+	[!STAGE1_5] (checkkey): Likewise.
+	* grub/asmstub.c (ascii_key_map): New variable.
+	* docs/user-ref.texi (General commands): Added a description
+	about the command "setkey".
+	(Stage2 errors): Added a description about ERR_BAD_ARGUMENT.
+	
 1999-10-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/disk_io.c (set_device) [!STAGE1_5]: Remove the

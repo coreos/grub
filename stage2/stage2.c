@@ -190,8 +190,14 @@ restart:
 
   print_border (3, 12);
 
-  printf ("\n
-      Use the \x18 and \x19 keys for selecting which entry is highlighted.\n");
+#ifdef GRUB_UTIL
+  grub_printf ("\n
+      Use the up and down arrows for selecting which entry is highlighted.\n");
+#else  
+  grub_printf ("\n
+      Use the %c and %c keys for selecting which entry is highlighted.\n",
+	  DISP_UP, DISP_DOWN);
+#endif
 
   if (password)
     {

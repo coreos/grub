@@ -1479,81 +1479,6 @@ static struct builtin builtin_kernel =
 };
 
 
-/* keycode */
-static int
-keycode_func (char *arg, int flags)
-{
-  char *to_code, *from_code;
-  int to, from;
-  int i;
-  
-  to_code = arg;
-  from_code = skip_to (0, to_code);
-
-  safe_parse_maxint (&to_code, &to);
-  if (errnum)
-    return 1;
-  if (to < 0 || to > 0xff)
-    {
-      /* FIXME: more appropriate error code!  */
-      errnum = ERR_NUMBER_PARSING;
-      return 1;
-    }
-
-  safe_parse_maxint (&from_code, &from);
-  if (errnum)
-    return 1;
-  if (from < 0 || from > 0xff)
-    {
-      /* FIXME: more appropriate error code!  */
-      errnum = ERR_NUMBER_PARSING;
-      return 1;
-    }
-
-  /* Find an empty slot.  */
-  for (i = 0; i < KEY_MAP_SIZE; i++)
-    {
-      if ((bios_key_map[i] & 0xff) == from)
-	{
-	  /* Perhaps the user wants to overwrite the map.  */
-	  break;
-	}
-
-      if (! bios_key_map[i])
-	break;
-    }
-
-  if (i == KEY_MAP_SIZE)
-    {
-      errnum = ERR_WONT_FIT;
-      return 1;
-    }
-
-  if (to == from)
-    /* If TO is equal to FROM, delete the entry.  */
-    grub_memmove ((char *) &bios_key_map[i], (char *) &bios_key_map[i + 1],
-		  sizeof (unsigned short) * (KEY_MAP_SIZE - i));
-  else
-    bios_key_map[i] = (to << 8) | from;
-
-  /* Ugly but should work.  */
-  unset_int15_handler ();
-  set_int15_handler ();
-  
-  return 0;
-}
-
-static struct builtin builtin_keycode =
-{
-  "keycode",
-  keycode_func,
-  BUILTIN_CMDLINE | BUILTIN_MENU,
-  "keycode TO_CODE FROM_CODE",
-  "Change the keyboard map. The keycode FROM_CODE is mapped to the keycode"
-  " TO_CODE. They must be decimal or hexadecimal."
-};
-
-
 /* makeactive */
 static int
 makeactive_func (char *arg, int flags)
@@ -1894,6 +1819,236 @@ static struct builtin builtin_rootnoverify =
   " GRUB can read, but setting the correct root device is still"
   " desired. Note that the items mentioned in `root' which"
   " derived from attempting the mount will NOT work correctly."
+};
+
+
+/* setkey */
+struct keysym
+{
+  char *unshifted_name;			/* the name in unshifted state */
+  char *shifted_name;			/* the name in shifted state */
+  unsigned char unshifted_ascii;	/* the ascii code in unshifted state */
+  unsigned char shifted_ascii;		/* the ascii code in shifted state */
+  unsigned char keycode;		/* keyboard scancode */
+};
+
+/* The table for key symbols. If the "unshifted" member of an entry is
+   NULL, the entry does not have shifted state.  */
+static struct keysym keysym_table[] =
+{
+  {"escape",		0,		0x1b,	0,	0x01},
+  {"1",			"exclam",	'1',	'!',	0x02},
+  {"2",			"at",		'2',	'@',	0x03},
+  {"3",			"numbersign",	'3',	'#',	0x04},
+  {"4",			"dollar",	'4',	'$',	0x05},
+  {"5",			"percent",	'5',	'%',	0x06},
+  {"6",			"caret",	'6',	'^',	0x07},
+  {"7",			"ampersand",	'7',	'&',	0x08},
+  {"8",			"asterisk",	'8',	'*',	0x09},
+  {"9",			"parenleft",	'9',	'(',	0x0a},
+  {"0",			"parenright",	'0',	')',	0x0b},
+  {"minus",		"underscore",	'-',	'_',	0x0c},
+  {"equal",		"plus",		'=',	'+',	0x0d},
+  {"backspace",		0,		'\b',	0,	0x0e},
+  {"tab",		0,		'\t',	0,	0x0f},
+  {"q",			"Q",		'q',	'Q',	0x10},
+  {"w",			"W",		'w',	'W',	0x11},
+  {"e",			"E",		'e',	'E',	0x12},
+  {"r",			"R",		'r',	'R',	0x13},
+  {"t",			"T",		't',	'T',	0x14},
+  {"y",			"Y",		'y',	'Y',	0x15},
+  {"u",			"U",		'u',	'U',	0x16},
+  {"i",			"I",		'i',	'I',	0x17},
+  {"o",			"O",		'o',	'O',	0x18},
+  {"p",			"P",		'p',	'P',	0x19},
+  {"bracketleft",	"braceleft",	'[',	'{',	0x1a},
+  {"bracketright",	"braceright",	']',	'}',	0x1b},
+  {"enter",		0,		'\n',	0,	0x1c},
+  {"control",		0,		0,	0,	0x1d},
+  {"a",			"A",		'a',	'A',	0x1e},
+  {"s",			"S",		's',	'S',	0x1f},
+  {"d",			"D",		'd',	'D',	0x20},
+  {"f",			"F",		'f',	'F',	0x21},
+  {"g",			"G",		'g',	'G',	0x22},
+  {"h",			"H",		'h',	'H',	0x23},
+  {"j",			"J",		'j',	'J',	0x24},
+  {"k",			"K",		'k',	'K',	0x25},
+  {"l",			"L",		'l',	'L',	0x26},
+  {"semicolon",		"colon",	';',	':',	0x27},
+  {"quote",		"doublequote",	'\'',	'"',	0x28},
+  {"backquote",		"tilde",	'`',	'~',	0x29},
+  {"shift",		0,		0,	0,	0x2a},
+  {"backslash",		"bar",		'\\',	'|',	0x2b},
+  {"z",			"Z",		'z',	'Z',	0x2c},
+  {"x",			"X",		'x',	'X',	0x2d},
+  {"c",			"C",		'c',	'C',	0x2e},
+  {"v",			"V",		'v',	'V',	0x2f},
+  {"b",			"B",		'b',	'B',	0x30},
+  {"n",			"N",		'n',	'N',	0x31},
+  {"m",			"M",		'm',	'M',	0x32},
+  {"comma",		"less",		',',	'<',	0x33},
+  {"period",		"greater",	'.',	'>',	0x34},
+  {"slash",		"question",	'/',	'?',	0x35},
+  {"alt",		0,		0,	0,	0x38},
+  {"space",		0,		' ',	0,	0x39},
+  {"capslock",		0,		0,	0,	0x3a},
+  {"F1",		0,		0,	0,	0x3b},
+  {"F2",		0,		0,	0,	0x3c},
+  {"F3",		0,		0,	0,	0x3d},
+  {"F4",		0,		0,	0,	0x3e},
+  {"F5",		0,		0,	0,	0x3f},
+  {"F6",		0,		0,	0,	0x40},
+  {"F7",		0,		0,	0,	0x41},
+  {"F8",		0,		0,	0,	0x42},
+  {"F9",		0,		0,	0,	0x43},
+  {"F10",		0,		0,	0,	0x44},
+  /* Caution: do not add NumLock here! we cannot deal with it properly.  */
+  {"delete",		0,		0x7f,	0,	0x53}
+};
+
+static int
+setkey_func (char *arg, int flags)
+{
+  char *to_key, *from_key;
+  int to_code, from_code;
+  int map_in_interrupt = 0;
+  
+  static void null_terminate (char *str)
+    {
+      while (*str && ! grub_isspace (*str))
+	str++;
+      *str = 0;
+    }
+  
+  static int find_key_code (char *key)
+    {
+      int i;
+
+      for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
+	{
+	  if (grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
+	    return keysym_table[i].keycode;
+	  else if (grub_strcmp (key, keysym_table[i].shifted_name) == 0)
+	    return keysym_table[i].keycode;
+	}
+
+      return 0;
+    }
+
+  static int find_ascii_code (char *key)
+    {
+      int i;
+
+      for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
+	{
+	  if (grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
+	    return keysym_table[i].unshifted_ascii;
+	  else if (grub_strcmp (key, keysym_table[i].shifted_name) == 0)
+	    return keysym_table[i].shifted_ascii;
+	}
+      
+      return 0;
+    }
+  
+  to_key = arg;
+  from_key = skip_to (0, to_key);
+
+  null_terminate (to_key);
+  null_terminate (from_key);
+
+  to_code = find_ascii_code (to_key);
+  from_code = find_ascii_code (from_key);
+  if (! to_code || ! from_code)
+    {
+      map_in_interrupt = 1;
+      to_code = find_key_code (to_key);
+      from_code = find_key_code (from_key);
+      if (! to_code || ! from_code)
+	{
+	  errnum = ERR_BAD_ARGUMENT;
+	  return 1;
+	}
+    }
+
+  if (map_in_interrupt)
+    {
+      int i;
+      
+      /* Find an empty slot.  */
+      for (i = 0; i < KEY_MAP_SIZE; i++)
+	{
+	  if ((bios_key_map[i] & 0xff) == from_code)
+	    /* Perhaps the user wants to overwrite the map.  */
+	    break;
+	  
+	  if (! bios_key_map[i])
+	    break;
+	}
+      
+      if (i == KEY_MAP_SIZE)
+	{
+	  errnum = ERR_WONT_FIT;
+	  return 1;
+	}
+      
+      if (to_code == from_code)
+	/* If TO is equal to FROM, delete the entry.  */
+	grub_memmove ((char *) &bios_key_map[i], (char *) &bios_key_map[i + 1],
+		      sizeof (unsigned short) * (KEY_MAP_SIZE - i));
+      else
+	bios_key_map[i] = (to_code << 8) | from_code;
+      
+      /* Ugly but should work.  */
+      unset_int15_handler ();
+      set_int15_handler ();
+    }
+  else
+    {
+      int i;
+      
+      /* Find an empty slot.  */
+      for (i = 0; i < KEY_MAP_SIZE; i++)
+	{
+	  if ((ascii_key_map[i] & 0xff) == from_code)
+	    /* Perhaps the user wants to overwrite the map.  */
+	    break;
+	  
+	  if (! ascii_key_map[i])
+	    break;
+	}
+      
+      if (i == KEY_MAP_SIZE)
+	{
+	  errnum = ERR_WONT_FIT;
+	  return 1;
+	}
+      
+      if (to_code == from_code)
+	/* If TO is equal to FROM, delete the entry.  */
+	grub_memmove ((char *) &ascii_key_map[i],
+		      (char *) &ascii_key_map[i + 1],
+		      sizeof (unsigned short) * (KEY_MAP_SIZE - i));
+      else
+	ascii_key_map[i] = (to_code << 8) | from_code;
+    }
+      
+  return 0;
+}
+
+static struct builtin builtin_setkey =
+{
+  "setkey",
+  setkey_func,
+  BUILTIN_CMDLINE | BUILTIN_MENU,
+  "setkey TO_KEY FROM_KEY",
+  "Change the keyboard map. The key FROM_KEY is mapped to the key TO_KEY."
+  " A key must be an alphabet, a digit, or one of these: escape, exclam,"
+  " at, numbersign, dollar, percent, caret, ampersand, asterisk, parenleft,"
+  " parenright, minus, underscore, equal, plus, backspace, tab, bracketleft,"
+  " braceleft, bracketright, braceright, enter, control, semicolon, colon,"
+  " quote, doublequote, backquote, tilde, shift, backslash, bar, comma,"
+  " less, period, greater, slash, question, alt, space, capslock, FX (X"
+  " is a digit), and delete."
 };
 
 
@@ -2316,7 +2471,6 @@ struct builtin *builtin_table[] =
   &builtin_initrd,
   &builtin_install,
   &builtin_kernel,
-  &builtin_keycode,
   &builtin_makeactive,
   &builtin_map,
   &builtin_module,
@@ -2327,6 +2481,7 @@ struct builtin *builtin_table[] =
   &builtin_read,
   &builtin_root,
   &builtin_rootnoverify,
+  &builtin_setkey,
   &builtin_setup,
   &builtin_testload,
   &builtin_timeout,

@@ -12,28 +12,52 @@ Priorities:
   Things in this file are ranked with one to three !; the more, the
   higher priority.
 
-? Add a partition naming syntax that means ``the first partition of
-  this type''.  We need this for clean Hurd install floppies.
-* Add a real scripting language, possibly retaining backward
-  compatibility so that old config files can be used.
-* Add internationalization support, emulating gettext as much as is
-  feasible.
+
+* Add configuration inclusion support by adding a command "include". !
+
 * Make symbolic links work for BSD FFS. !
-* Fix keyboard/gateA20 bug (????  at least look at the code). The
-  keyboard status bits may be checked wrong.
+
 * Add indirect block support to the BSD FFS filesystem code, so files
   larger than 16MB can be read. !
-? Add command for modifying partition types.
+
 * Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot
   parameters. !!
+
 * Support embedding a Stage 1.5 in the "bootloader" area of a FFS
   partition. !!!
+
 * Clean up and enhance the manuals, especially indices. !!!
-* Add more filesystems support (XFS, NTFS, etc.)
-* Add remote console support (serial, parallel and net).
-* Add RAID support.
+
 * Complete the netboot support. !
+
 * Add automatic configuration support.
+
 * Add bunzip2 support.
+
 * Define the module system. !
+
 * Add ISA PnP support.
+
+* Accept any extended partition when using it for chain-loading. !!!
+
+* Fix the completion so that it works for BSD partitions as well. !!
+
+* Add more filesystems support (XFS, NTFS, etc.)
+
+* Add remote console support (serial, parallel and net).
+
+* Add RAID support.
+
+? Add a partition naming syntax that means ``the first partition of
+  this type''.  We need this for clean Hurd install floppies.
+
+* Add a real scripting language, possibly retaining backward
+  compatibility so that old config files can be used.
+
+* Add internationalization support, emulating gettext as much as is
+  feasible.
+
+* Fix keyboard/gateA20 bug (????  at least look at the code). The
+  keyboard status bits may be checked wrong.
+
+? Add command for modifying partition types.

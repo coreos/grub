@@ -515,7 +515,7 @@ int15_skip_flag:
 	/* find the key code from the key map */
 2:
 	lodsw
-	/* check if this the end */
+	/* check if this is the end */
 	testw	%ax, %ax
 	jz	3f
 	/* check if this matches the key code */
@@ -1878,7 +1878,6 @@ gottime:
 	ret
 
 	
-#ifndef STAGE1_5
 /*
  * currticks()
  *	return the real time in ticks, of which there are about
@@ -1906,8 +1905,40 @@ ENTRY(currticks)
 	popl	%ecx
 	popl	%ebp
 	ret
-#endif /* ! STAGE1_5 */
 
+	
+/*
+ * remap_ascii_char remaps the ascii code %bl to another if the code is
+ * contained in ASCII_KEY_MAP.
+ */
+	.code16
+	
+remap_ascii_char:
+	pushw	%si
+	
+	movw	$ABS(EXT_C(ascii_key_map)), %si
+1:
+	lodsw
+	/* check if this is the end */
+	testw	%ax, %ax
+	jz	2f
+	/* check if this matches the ascii code */
+	cmpb	%al, %bl
+	jne	1b
+	/* if so, perform the mapping */
+	movb	%ah, %bl
+2:
+	/* restore %si */
+	popw	%si
+
+	ret
+
+	.code32
+
+	.align	4
+ENTRY(ascii_key_map)
+	.space	(KEY_MAP_SIZE + 1) * 2
+	
 
 /*
  * getkey()
@@ -1927,7 +1958,8 @@ ENTRY(getkey)
 	int	$0x16
 
 	movw	%ax, %bx		/* real_to_prot uses %eax */
-
+	call	remap_ascii_char
+	
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
@@ -1964,7 +1996,9 @@ ENTRY(checkkey)
 	int	$0x16
 
 	DATA32	jz	notpending
+	
 	movw	%ax, %bx
+	call	remap_ascii_char
 	DATA32	jmp	pending
 
 notpending:

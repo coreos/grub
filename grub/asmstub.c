@@ -613,6 +613,7 @@ unset_int15_handler (void)
 
 /* The key map.  */
 unsigned short bios_key_map[KEY_MAP_SIZE + 1];
+unsigned short ascii_key_map[KEY_MAP_SIZE + 1];
 
 /* Copy MAP to the drive map and set up the int13 handler.  */
 void

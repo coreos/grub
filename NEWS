@@ -18,7 +18,7 @@ New in 0.5.94:
 * The command "map" maps a drive to another drive so that we can
   chain-load some foolish operating systems (such as DOS) even if such
   an operating system resides at a non-first drive.
-* The command "keycode" maps a key code to another.
+* The command "setkey" maps a key to another.
 * The GRUB manual is rewritten, and now consists of three parts and
   appendices.
 

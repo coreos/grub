@@ -121,7 +121,7 @@ extern char *grub_scratch_mem;
 #define DRIVE_MAP_SIZE		8
 
 /* The size of the key map.  */
-#define KEY_MAP_SIZE		32
+#define KEY_MAP_SIZE		128
 
 
 /*
@@ -285,17 +285,44 @@ extern char *grub_scratch_mem;
 # endif /* ! A_STANDOUT */
 #endif /* ! A_REVERSE */
 
+/* Make sure that ACS_* are defined.  */
+#ifndef ACS_ULCORNER
+# define ACS_ULCORNER	'+'
+# define ACS_URCORNER	'+'
+# define ACS_LLCORNER	'+'
+# define ACS_LRCORNER	'+'
+# define ACS_HLINE	'-'
+# define ACS_VLINE	'|'
+# define ACS_LARROW	'<'
+# define ACS_RARROW	'>'
+# define ACS_UARROW	'^'
+# define ACS_DARROW	'v'
+#endif /* ! ACS_ULCORNER */
+
 /* Special graphics characters for IBM displays. */
-#define DISP_UL         218
-#define DISP_UR         191
-#define DISP_LL         192
-#define DISP_LR         217
-#define DISP_HORIZ      196
-#define DISP_VERT       179
-#define DISP_LEFT       0x1b
-#define DISP_RIGHT      0x1a
-#define DISP_UP         0x18
-#define DISP_DOWN       0x19
+#ifdef GRUB_UTIL
+# define DISP_UL	ACS_ULCORNER
+# define DISP_UR	ACS_URCORNER
+# define DISP_LL	ACS_LLCORNER
+# define DISP_LR	ACS_LRCORNER
+# define DISP_HORIZ	ACS_HLINE
+# define DISP_VERT	ACS_VLINE
+# define DISP_LEFT	ACS_LARROW
+# define DISP_RIGHT	ACS_RARROW
+# define DISP_UP	ACS_UARROW
+# define DISP_DOWN	ACS_DARROW
+#else /* ! GRUB_UTIL */
+# define DISP_UL	218
+# define DISP_UR	191
+# define DISP_LL	192
+# define DISP_LR	217
+# define DISP_HORIZ	196
+# define DISP_VERT	179
+# define DISP_LEFT	0x1b
+# define DISP_RIGHT	0x1a
+# define DISP_UP	0x18
+# define DISP_DOWN	0x19
+#endif /* ! GRUB_UTIL */
 
 /* Remap some libc-API-compatible function names so that we prevent
    circularararity. */
@@ -373,6 +400,7 @@ typedef enum
   ERR_UNRECOGNIZED,
   ERR_WONT_FIT,
   ERR_WRITE,
+  ERR_BAD_ARGUMENT,
 
   MAX_ERR_NUM
 } grub_error_t;
@@ -512,6 +540,7 @@ void unset_int15_handler (void);
 
 /* The key map.  */
 extern unsigned short bios_key_map[];
+extern unsigned short ascii_key_map[];
 
 /* calls for direct boot-loader chaining */
 void chain_stage1 (int segment, int offset, int part_table_addr)

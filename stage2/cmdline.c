@@ -122,7 +122,8 @@ enter_cmdline (char *heap)
 
       *heap = 0;
       print_error ();
-
+      errnum = ERR_NONE;
+      
       /* Get the command-line with the minimal BASH-like interface.  */
       if (get_cmdline (PACKAGE "> ", heap, 2048, 0, 1))
 	return;
@@ -166,7 +167,8 @@ run_script (char *script, char *heap)
 
       if (errnum)
 	{
-	  grub_printf ("Press any key to continue...");
+	  errnum = ERR_NONE;
+	  grub_printf ("\nPress any key to continue...");
 	  (void) getkey ();
 	  return 1;
 	}

@@ -29,12 +29,10 @@ print_error (void)
   if (errnum > ERR_NONE && errnum < MAX_ERR_NUM)
 #ifndef STAGE1_5
     /* printf("\7\n %s\n", err_list[errnum]); */
-    printf ("\n %s\n", err_list[errnum]);
+    printf ("\nError: %s\n", err_list[errnum]);
 #else /* STAGE1_5 */
     printf ("Error: %u\n", errnum);
 #endif /* STAGE1_5 */
-
-  errnum = ERR_NONE;
 }
 
 
