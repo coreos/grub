@@ -35,13 +35,16 @@ fi
 
 if grep _func conftest.s >/dev/null 2>&1; then
   grub_cv_asm_uscore=yes
-  AC_DEFINE_UNQUOTED([HAVE_ASM_USCORE], $grub_cv_asm_uscore,
-    [Define if C symbols get an underscore after compilation])
 else
   grub_cv_asm_uscore=no
 fi
 
 rm -f conftest*])
+
+if test "x$grub_cv_asm_uscore" = xyes; then
+  AC_DEFINE_UNQUOTED([HAVE_ASM_USCORE], $grub_cv_asm_uscore,
+    [Define if C symbols get an underscore after compilation])
+fi
 
 AC_MSG_RESULT([$grub_cv_asm_uscore])
 ])

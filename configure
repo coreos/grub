@@ -1505,10 +1505,6 @@ fi
 
 if grep _func conftest.s >/dev/null 2>&1; then
   grub_cv_asm_uscore=yes
-  cat >> confdefs.h <<EOF
-#define HAVE_ASM_USCORE $grub_cv_asm_uscore
-EOF
-
 else
   grub_cv_asm_uscore=no
 fi
@@ -1517,10 +1513,17 @@ rm -f conftest*
 fi
 
 
+if test "x$grub_cv_asm_uscore" = xyes; then
+  cat >> confdefs.h <<EOF
+#define HAVE_ASM_USCORE $grub_cv_asm_uscore
+EOF
+
+fi
+
 echo "$ac_t""$grub_cv_asm_uscore" 1>&6
 
 echo $ac_n "checking whether ${OBJCOPY} works for absolute addresses""... $ac_c" 1>&6
-echo "configure:1524: checking whether ${OBJCOPY} works for absolute addresses" >&5
+echo "configure:1527: checking whether ${OBJCOPY} works for absolute addresses" >&5
 if eval "test \"\${grub_cv_prog_objcopy_absolute+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1532,21 +1535,21 @@ blah (void)
 }
 EOF
 
-if { (eval echo configure:1536: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; } && test -s conftest.o; then :
+if { (eval echo configure:1539: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; } && test -s conftest.o; then :
 else
   { echo "configure: error: ${CC-cc} cannot compile C source code" 1>&2; exit 1; }
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 2000 8000 7C00; do
-  if { ac_try='${LD-ld} -N -Ttext $link_addr conftest.o -o conftest.exec'; { (eval echo configure:1542: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  if { ac_try='${LD-ld} -N -Ttext $link_addr conftest.o -o conftest.exec'; { (eval echo configure:1545: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
   else
     { echo "configure: error: ${LD-ld} cannot link at address $link_addr" 1>&2; exit 1; }
   fi
-  if { ac_try='${OBJCOPY-objcopy} -O binary conftest.exec conftest'; { (eval echo configure:1546: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  if { ac_try='${OBJCOPY-objcopy} -O binary conftest.exec conftest'; { (eval echo configure:1549: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
   else
     { echo "configure: error: ${OBJCOPY-objcopy} cannot create binary files" 1>&2; exit 1; }
   fi
-  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1550: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then
+  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1553: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then
     mv -f conftest conftest.old
   else
     grub_cv_prog_objcopy_absolute=no
@@ -1563,7 +1566,7 @@ fi
 
 
 echo $ac_n "checking whether addr32 must be in the same line as the instruction""... $ac_c" 1>&6
-echo "configure:1567: checking whether addr32 must be in the same line as the instruction" >&5
+echo "configure:1570: checking whether addr32 must be in the same line as the instruction" >&5
 if eval "test \"\${grub_cv_asm_prefix_requirement+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1572,7 +1575,7 @@ else
 l1:	addr32	movb	%al, l1
 EOF
 
-if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1576: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
+if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1579: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
   grub_cv_asm_prefix_requirement=yes
 else
   grub_cv_asm_prefix_requirement=no
@@ -1604,7 +1607,7 @@ echo "$ac_t""$grub_cv_asm_prefix_requirement" 1>&6
 
 
 echo $ac_n "checking for .code16 addr32 assembler support""... $ac_c" 1>&6
-echo "configure:1608: checking for .code16 addr32 assembler support" >&5
+echo "configure:1611: checking for .code16 addr32 assembler support" >&5
 if eval "test \"\${grub_cv_asm_addr32+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1613,7 +1616,7 @@ else
 l1:	ADDR32	movb	%al, l1
 EOF
 
-if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1617: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
+if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1620: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
   grub_cv_asm_addr32=yes
 else
   grub_cv_asm_addr32=no
@@ -1628,7 +1631,7 @@ fi
 
 
 echo $ac_n "checking if start is defined by the compiler""... $ac_c" 1>&6
-echo "configure:1632: checking if start is defined by the compiler" >&5
+echo "configure:1635: checking if start is defined by the compiler" >&5
 if eval "test \"\${grub_cv_check_start_symbol+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1641,7 +1644,7 @@ main (void)
 }
 EOF
 
-if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1645: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
+if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1648: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
   grub_cv_check_start_symbol=yes
 else
   grub_cv_check_start_symbol=no
@@ -1662,7 +1665,7 @@ echo "$ac_t""$grub_cv_check_start_symbol" 1>&6
 
 
 echo $ac_n "checking if _start is defined by the compiler""... $ac_c" 1>&6
-echo "configure:1666: checking if _start is defined by the compiler" >&5
+echo "configure:1669: checking if _start is defined by the compiler" >&5
 if eval "test \"\${grub_cv_check_uscore_start_symbol+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1675,7 +1678,7 @@ main (void)
 }
 EOF
 
-if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1679: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
+if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1682: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
   grub_cv_check_uscore_start_symbol=yes
 else
   grub_cv_check_uscore_start_symbol=no
@@ -1701,7 +1704,7 @@ fi
 
 
 echo $ac_n "checking if end is defined by the compiler""... $ac_c" 1>&6
-echo "configure:1705: checking if end is defined by the compiler" >&5
+echo "configure:1708: checking if end is defined by the compiler" >&5
 if eval "test \"\${grub_cv_check_end_symbol+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1714,7 +1717,7 @@ main (void)
 }
 EOF
 
-if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1718: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
+if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1721: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
   grub_cv_check_end_symbol=yes
 else
   grub_cv_check_end_symbol=no
@@ -1735,7 +1738,7 @@ echo "$ac_t""$grub_cv_check_end_symbol" 1>&6
 
 
 echo $ac_n "checking if _end is defined by the compiler""... $ac_c" 1>&6
-echo "configure:1739: checking if _end is defined by the compiler" >&5
+echo "configure:1742: checking if _end is defined by the compiler" >&5
 if eval "test \"\${grub_cv_check_uscore_end_symbol+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1748,7 +1751,7 @@ main (void)
 }
 EOF
 
-if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1752: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
+if { ac_try='${CC-cc} conftest.c -o conftest'; { (eval echo configure:1755: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
   grub_cv_check_uscore_end_symbol=yes
 else
   grub_cv_check_uscore_end_symbol=no
@@ -1774,7 +1777,7 @@ fi
 
 # Check for curses libraries.
 echo $ac_n "checking for wgetch in -lncurses""... $ac_c" 1>&6
-echo "configure:1778: checking for wgetch in -lncurses" >&5
+echo "configure:1781: checking for wgetch in -lncurses" >&5
 ac_lib_var=`echo ncurses'_'wgetch | sed 'y%./+-:%__p__%'`
 if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1782,7 +1785,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lncurses  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1786 "configure"
+#line 1789 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1793,7 +1796,7 @@ int main() {
 wgetch()
 ; return 0; }
 EOF
-if { (eval echo configure:1797: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1800: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1816,7 +1819,7 @@ EOF
 else
   echo "$ac_t""no" 1>&6
 echo $ac_n "checking for wgetch in -lcurses""... $ac_c" 1>&6
-echo "configure:1820: checking for wgetch in -lcurses" >&5
+echo "configure:1823: checking for wgetch in -lcurses" >&5
 ac_lib_var=`echo curses'_'wgetch | sed 'y%./+-:%__p__%'`
 if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1824,7 +1827,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lcurses  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1828 "configure"
+#line 1831 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1835,7 +1838,7 @@ int main() {
 wgetch()
 ; return 0; }
 EOF
-if { (eval echo configure:1839: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1842: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1865,7 +1868,7 @@ fi
 
 # Check for headers.
 echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:1869: checking how to run the C preprocessor" >&5
+echo "configure:1872: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -1880,13 +1883,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1884 "configure"
+#line 1887 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1890: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1893: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1897,13 +1900,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1901 "configure"
+#line 1904 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1907: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1910: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1914,13 +1917,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 1918 "configure"
+#line 1921 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1924: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1927: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1948,17 +1951,17 @@ for ac_hdr in string.h strings.h ncurses/curses.h ncurses.h curses.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1952: checking for $ac_hdr" >&5
+echo "configure:1955: checking for $ac_hdr" >&5
 if eval "test \"\${ac_cv_header_$ac_safe+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1957 "configure"
+#line 1960 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1962: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1965: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*

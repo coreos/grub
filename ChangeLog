@@ -1,3 +1,9 @@
+1999-09-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_ASM_USCORE): Do not define HAVE_ASM_USCORE
+	within AC_CACHE_VAL. Define it after AC_CACHE_VAL if
+	GRUB_CV_ASM_USCORE is yes.
+	
 1999-09-20  Edmund GRIMLEY EVANS  <edmundo@rano.demon.co.uk>
 
 	* netboot/3c59x.c: INCLUDE_3c59x is replaced by INCLUDE_3C59X
