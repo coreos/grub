@@ -448,8 +448,8 @@ restart:
   while (!c);
 
   /* Both the entry and the fallback failed, so wait for input. */
-  printf("Failed!\n      Press any key to continue...");
-  getkey();
+  printf ("      Press any key to continue...");
+  getkey ();
   goto restart;
 }
 

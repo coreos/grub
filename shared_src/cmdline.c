@@ -468,6 +468,8 @@ returnit:
 	  no_decompression = 0;
 #endif
 	}
+      fallback = -1;
+      return 1;
     }
 #ifdef DEBUG
   else if (substring("testload", cur_heap) < 1)

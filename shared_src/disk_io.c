@@ -86,7 +86,6 @@ rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
       if (buf_drive != drive)
 	{
 	  buf_geom = get_diskinfo (drive);
-	  printf ("buf_geom = 0x%x\n", buf_geom); /* FIXME */
 	  buf_drive = drive;
 	  buf_track = -1;
 	}
