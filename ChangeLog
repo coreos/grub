@@ -1,3 +1,7 @@
+2000-04-26  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/depca.c: Copied from Etherboot-4.6.0.
+	
 2000-04-23  OKUJI Yoshinori  <okuji@gnu.org>
 
 	More security-related features.

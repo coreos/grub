@@ -1,3 +1,4 @@
+/* Etherboot: depca.h merged, comments from Linux driver retained */
 /*  depca.c: A DIGITAL DEPCA  & EtherWORKS ethernet driver for linux.
 
     Written 1994, 1995 by David C. Davies.
@@ -407,7 +408,6 @@ static int depca_debug = 1;
 ** Ethernet PROM defines
 */
 #define PROBE_LENGTH    32
-#define ETH_PROM_SIG    0xAA5500FFUL
 
 /*
 ** Set the number of Tx and Rx buffers. Ensure that the memory requested
@@ -425,43 +425,34 @@ static int depca_debug = 1;
 #define CRC_POLYNOMIAL_LE 0xedb88320UL  /* Ethernet CRC, little endian */
 
 /*
-** EISA bus defines
-*/
-#define DEPCA_EISA_IO_PORTS 0x0c00       /* I/O port base address, slot 0 */
-#define MAX_EISA_SLOTS 16
-#define EISA_SLOT_INC 0x1000
-
-/*
 ** ISA Bus defines
 */
-#define DEPCA_RAM_BASE_ADDRESSES {0xc0000,0xd0000,0xe0000,0x00000}
-#define DEPCA_IO_PORTS {0x300, 0x200, 0}
-#define DEPCA_TOTAL_SIZE 0x10
-static short mem_chkd = 0;
+#define DEPCA_IO_PORTS	{0x300, 0x200, 0}
 
-/*
-** Adapter ID for the MCA EtherWORKS DE210/212 adapter
-*/
-#define DE212_ID 0x6def
+#ifndef	DEPCA_MODEL
+#define	DEPCA_MODEL	DEPCA
+#endif
+
+static enum {
+	DEPCA, DE100, DE101, DE200, DE201, DE202, DE210, DE212, DE422, unknown
+} adapter = DEPCA_MODEL;
 
 /*
 ** Name <-> Adapter mapping
 */
-#define DEPCA_SIGNATURE {"DEPCA",\
-			 "DE100","DE101",\
-                         "DE200","DE201","DE202",\
-			 "DE210","DE212",\
-                         "DE422",\
-                         ""}
-static enum {
-  DEPCA, de100, de101, de200, de201, de202, de210, de212, de422, unknown
-} adapter;
 
-/*
-** Miscellaneous info...
-*/
-#define DEPCA_STRLEN 16
-#define MAX_NUM_DEPCAS 2
+static char *adapter_name[] = {
+	"DEPCA",
+	"DE100","DE101",
+	"DE200","DE201","DE202",
+	"DE210","DE212",
+	"DE422",
+	""
+};
+
+#ifndef	DEPCA_RAM_BASE
+#define DEPCA_RAM_BASE	0xd0000
+#endif
 
 /*
 ** Memory Alignment. Each descriptor is 4 longwords long. To force a
@@ -469,17 +460,16 @@ static enum {
 ** DESC_ALIGN. ALIGN aligns the start address of the private memory area
 ** and hence the RX descriptor ring's first entry. 
 */
-#define ALIGN4      ((u_long)4 - 1)       /* 1 longword align */
-#define ALIGN8      ((u_long)8 - 1)       /* 2 longword (quadword) align */
+#define ALIGN4      ((u32)4 - 1)       /* 1 longword align */
+#define ALIGN8      ((u32)8 - 1)       /* 2 longword (quadword) align */
 #define ALIGN         ALIGN8              /* Keep the LANCE happy... */
 
 typedef	long		s32;
 typedef	unsigned long	u32;
-typedef	unsigned long	u_long;
 typedef	short		s16;
 typedef	unsigned short	u16;
-typedef	unsigned char	u8;
 typedef	char		s8;
+typedef	unsigned char	u8;
 
 /*
 ** The DEPCA Rx and Tx ring descriptors. 
@@ -510,38 +500,6 @@ struct depca_init {
     u32 tx_ring;	        /* Tx ring base pointer & ring length */
 };
 
-#define DEPCA_PKT_STAT_SZ 16
-#define DEPCA_PKT_BIN_SZ  128                /* Should be >=100 unless you
-                                                increase DEPCA_PKT_STAT_SZ */
-struct depca_private {
-    char devname[DEPCA_STRLEN];    /* Device Product String                  */
-    char adapter_name[DEPCA_STRLEN];/* /proc/ioports string                  */
-    char adapter;                  /* Adapter type                           */
-    char mca_slot;                 /* MCA slot, if MCA else -1               */    struct depca_rx_desc *rx_ring; /* Pointer to start of RX descriptor ring */
-    struct depca_tx_desc *tx_ring; /* Pointer to start of TX descriptor ring */
-    struct depca_init	init_block;/* Shadow Initialization block            */
-    char *rx_memcpy[NUM_RX_DESC];  /* CPU virt address of sh'd memory buffs  */
-    char *tx_memcpy[NUM_TX_DESC];  /* CPU virt address of sh'd memory buffs  */
-    u_long bus_offset;             /* (E)ISA bus address offset vs LANCE     */
-    u_long sh_mem;  		   /* Physical start addr of shared mem area */
-    u_long dma_buffs;		   /* LANCE Rx and Tx buffers start address. */
-    int	rx_new, tx_new;		   /* The next free ring entry               */
-    int rx_old, tx_old;	           /* The ring entries to be free()ed.       */
-    struct {                       /* Private stats counters                 */
-	u32 bins[DEPCA_PKT_STAT_SZ];
-	u32 unicast;
-	u32 multicast;
-	u32 broadcast;
-	u32 excessive_collisions;
-	u32 tx_underruns;
-	u32 excessive_underruns;
-    } pktStats;
-    int txRingMask;                /* TX ring mask                           */
-    int rxRingMask;                /* RX ring mask                           */
-    s32 rx_rlen;                   /* log2(rxRingMask+1) for the descriptors */
-    s32 tx_rlen;                   /* log2(txRingMask+1) for the descriptors */
-};
-
 /*
 ** The transmit ring full condition is described by the tx_old and tx_new
 ** pointers by:
@@ -553,13 +511,7 @@ struct depca_private {
 			 lp->tx_old+lp->txRingMask-lp->tx_new:\
                          lp->tx_old               -lp->tx_new-1)
 
-static char   name[DEPCA_STRLEN];
-static int    num_depcas = 0, num_eth = 0;
-static int    mem=0;                       /* For loadable module assignment
-                                              use insmod mem=0x????? .... */
-static char   *adapter_name = '\0';        /* If no PROM when loadable module
-					      use insmod adapter_name=DE??? ...
-					   */
+static Address		mem_start = DEPCA_RAM_BASE;
 static unsigned short	ioaddr = 0;
 
 /*
@@ -576,26 +528,16 @@ RESET - Reset adapter
 ***************************************************************************/
 static void depca_reset(struct nic *nic)
 {
-#if	0
-	int		i, j, offset, netRAM, mem_len, status = 0;
-	s16		nicsr;
-	Address		mem_start = 0, mem_base[] = DEPCA_RAM_BASE_ADDRESSES;
+	s16	nicsr;
+	int	status = 0;
 
-	/* put the card in its initial state */
 	STOP_DEPCA;
 	nicsr = inb(DEPCA_NICSR);
-	nicsr = ((nicsr & ~SHE & ~RBE & ~IEN( | IM);
-	outb(nicsr, DEPCA_NICSR);
-	if (inw(DEPCA_DATA) == STOP) {
-		do {
-			strcpu(name, (adapter_name ? adapter_name : ""));
-			mem_start = (mem ? mem & 0xf0000 : mem_base[mem_chkd++]);
-			DepcaSignature(name, mem_start);
-		} while (!mem && mem_base[mem_chkd] && (adapter == unknown));
-		if ((adapter != unknown) && mem_start) {
-			;
-		}
-#endif
+
+	/* non-DEPCA need this */
+	if (adapter != DEPCA)
+		outb(nicsr | SHE, DEPCA_NICSR);
+
 }
 
 /**************************************************************************
@@ -629,20 +571,30 @@ static void depca_disable(struct nic *nic)
 {
 }
 
-/* Return 1 if device present at ioaddr */
-static int DevicePresent(void)
+/*
+** Look for a special sequence in the Ethernet station address PROM that
+** is common across all DEPCA products. Note that the original DEPCA needs
+** its ROM address counter to be initialized and enabled. Only enable
+** if the first address octet is a 0x08 - this minimises the chances of
+** messing around with some other hardware, but it assumes that this DEPCA
+** card initialized itself correctly.
+**
+** Search the Ethernet address ROM for the signature. Since the ROM address
+** counter can start at an arbitrary point, the search must include the entire
+** probe sequence length plus the (length_of_the_signature - 1).
+** Stop the search IMMEDIATELY after the signature is found so that the
+** PROM address counter is correctly positioned at the start of the
+** ethernet address for later read out.
+*/
+static int depca_probe1(struct nic *nic)
 {
-	union {
-		struct {
-			u32	a;
-			u32	b;
-		} llsig;
-		char	Sig[sizeof(u32) << 1];
-	} dev;
-	short	siglength = 0;
-	s8	data;
-	s16	nicsr;
+	u8	data, nicsr;
+	/* This is only correct for little endian machines, but then
+	   Etherboot doesn't work on anything but a PC */
+	u8	sig[] = { 0xFF, 0x00, 0x55, 0xAA, 0xFF, 0x00, 0x55, 0xAA };
 	int	i, j;
+	long	sum, chksum;
+	Address	mem_len, offset;
 
 	data = inb(DEPCA_PROM);		/* clear counter on DEPCA */
 	data = inb(DEPCA_PROM);		/* read data */
@@ -651,22 +603,57 @@ static int DevicePresent(void)
 		nicsr |= AAC;
 		outb(nicsr, DEPCA_NICSR);
 	}
-	dev.llsig.a = ETH_PROM_SIG;
-	dev.llsig.b = ETH_PROM_SIG;
-	siglength = sizeof(u32) << 1;
-	for (i = 0, j = 0; j < siglength && i < PROBE_LENGTH+siglength-1; ++i) {
+	for (i = 0, j = 0; j < (int)sizeof(sig) && i < PROBE_LENGTH+((int)sizeof(sig))-1; ++i) {
 		data = inb(DEPCA_PROM);
-		if (dev.Sig[j] == data) {	/* track signature */
+		if (data == sig[j])		/* track signature */
 			++j;
-		} else {
-			if (data == dev.Sig[0]) {	/* rare case... */
-				j = 1;
-			} else {
-				j = 0;
-			}
-		}
+		else
+			j = (data == sig[0]) ? 1 : 0;
 	}
-	return (j == siglength);
+	if (j != sizeof(sig))
+		return (0);
+	/* put the card in its initial state */
+	STOP_DEPCA;
+	nicsr = ((inb(DEPCA_NICSR) & ~SHE & ~RBE & ~IEN) | IM);
+	outb(nicsr, DEPCA_NICSR);
+	if (inw(DEPCA_DATA) != STOP)
+		return (0);
+	memcpy((char *)mem_start, sig, sizeof(sig));
+	if (memcmp((char *)mem_start, sig, sizeof(sig)) != 0)
+		return (0);
+	for (i = 0, j = 0, sum = 0; j < 3; j++) {
+		sum <<= 1;
+		if (sum > 0xFFFF)
+			sum -= 0xFFFF;
+		sum += (u8)(nic->node_addr[i++] = inb(DEPCA_PROM));
+		sum += (u16)((nic->node_addr[i++] = inb(DEPCA_PROM)) << 8);
+		if (sum > 0xFFFF)
+			sum -= 0xFFFF;
+	}
+	if (sum == 0xFFFF)
+		sum = 0;
+	chksum = (u8)inb(DEPCA_PROM);
+	chksum |= (u16)(inb(DEPCA_PROM) << 8);
+	mem_len = (adapter == DEPCA) ? (48 << 10) : (64 << 10);
+	offset = 0;
+	if (nicsr & BUF) {
+		offset = 0x8000;
+		nicsr &= ~BS;
+		mem_len -= (32 << 10);
+	}
+	if (adapter != DEPCA)
+		outb(nicsr |= SHE, DEPCA_NICSR);
+	printf("%s base 0x%x, memory [0x%X-0x%X], addr ", adapter_name[adapter],
+		ioaddr, mem_start, mem_start + mem_len);
+	for (i = 0; i < ETHER_ADDR_SIZE; i++) {
+		if (i != 0)
+			putchar(':');
+		printf("%b", nic->node_addr[i]);
+	}
+	if (sum != chksum)
+		printf(" (bad checksum)");
+	printf("\n");
+	return (1);
 }
 
 /**************************************************************************
@@ -674,16 +661,15 @@ PROBE - Look for an adapter, this routine's visible to the outside
 ***************************************************************************/
 struct nic *depca_probe(struct nic *nic, unsigned short *probe_addrs)
 {
-	static unsigned short	base[] = { 0x200, 0x300, 0 };
+	static unsigned short	base[] = DEPCA_IO_PORTS;
 	int			i;
 
 	printf("DEPCA driver not fully functional, only probe working...\n");
 	if (probe_addrs == 0 || probe_addrs[0] == 0)
 		probe_addrs = base;	/* Use defaults */
 	for (i = 0; (ioaddr = base[i]) != 0; ++i) {
-		if (DevicePresent()) {
+		if (depca_probe1(nic))
 			break;
-		}
 	}
 	if (ioaddr != 0) {
 		depca_reset(nic);
