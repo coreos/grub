@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -167,9 +167,15 @@ ifconfig (char *ip, char *sm, char *gw, char *svr)
   
   if (gw && ! inet_aton (gw, &arptable[ARP_GATEWAY].ipaddr)) 
     return 0;
+
+  /* Clear out the ARP entry.  */
+  grub_memset (arptable[ARP_GATEWAY].node, 0, ETH_ALEN);
   
   if (svr && ! inet_aton (svr, &arptable[ARP_SERVER].ipaddr)) 
     return 0;
+
+  /* Likewise.  */
+  grub_memset (arptable[ARP_SERVER].node, 0, ETH_ALEN);
   
   if (ip || sm)
     {

@@ -18,6 +18,8 @@ New in 0.93:
   input characters. If you specify ``--no-edit'', GRUB will disable the
   BASH-like editing feature. These options are useful when using an
   intelligent terminal (such as the comint mode in GNU Emacs).
+* The utility ``grub-md5-crypt'' prompts to retype a password and checks
+  if the passwords match.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.

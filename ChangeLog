@@ -1,5 +1,12 @@
 2002-06-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* netboot/main.c (ifconfig): If GW is specified, clear out the
+	ARP entry for the gateway. If SVR is specified, clear out the
+	ARP entry for the server. Reported by Uwe Dannowski
+	<ud3@ira.uka.de>.
+	
+2002-06-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* util/grub-md5-crypt.in: Prompt to retype a password, and check
 	if the passwords matches. Suggested by Matt Perry
 	<matt@primefactor.com>.
