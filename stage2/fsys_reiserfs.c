@@ -57,12 +57,12 @@ struct reiserfs_super_block
   __u32 s_root_block;           	/* root block number    */
   __u32 s_journal_block;           	/* journal block number    */
   __u32 s_journal_dev;           	/* journal device number  */
-  __u32 s_orig_journal_size; 		/* size of the journal on FS creation.  used to make sure they don't overflow it */
-  __u32 s_journal_trans_max ;           /* max number of blocks in a transaction.  */
-  __u32 s_journal_block_count ;         /* total size of the journal. can change over time  */
-  __u32 s_journal_max_batch ;           /* max number of blocks to batch into a trans */
-  __u32 s_journal_max_commit_age ;      /* in seconds, how old can an async commit be */
-  __u32 s_journal_max_trans_age ;       /* in seconds, how old can a transaction be */
+  __u32 s_journal_size; 		/* size of the journal on FS creation.  used to make sure they don't overflow it */
+  __u32 s_journal_trans_max;            /* max number of blocks in a transaction.  */
+  __u32 s_journal_magic;                /* random value made on fs creation */
+  __u32 s_journal_max_batch;            /* max number of blocks to batch into a trans */
+  __u32 s_journal_max_commit_age;       /* in seconds, how old can an async commit be */
+  __u32 s_journal_max_trans_age;        /* in seconds, how old can a transaction be */
   __u16 s_blocksize;                   	/* block size           */
   __u16 s_oid_maxsize;			/* max size of object id array  */
   __u16 s_oid_cursize;			/* current size of object id array */
@@ -296,19 +296,21 @@ struct reiserfs_de_head
 #define FSYSREISER_MIN_BLOCKSIZE SECTOR_SIZE
 #define FSYSREISER_MAX_BLOCKSIZE FSYSREISER_CACHE_SIZE / 3
 
+/* Info about currently opened file */
 struct fsys_reiser_fileinfo
 {
   __u32 k_dir_id;
   __u32 k_objectid;
 };
 
+/* In memory info about the currently mounted filesystem */
 struct fsys_reiser_info
 {
   /* The last read item head */
   struct item_head *current_ih;
   /* The last read item */
   char *current_item;
-  /* The information for the currently open file */
+  /* The information for the currently opened file */
   struct fsys_reiser_fileinfo fileinfo;
   /* The start of the journal */
   __u32 journal_block;
@@ -485,7 +487,6 @@ journal_init (void)
   if (desc_block >= block_count)
     return 0;
 
-  INFO->journal_transactions = 0;
   INFO->journal_first_desc = desc_block;
   next_trans_id = header.j_last_flush_trans_id + 1;
 
@@ -617,17 +618,17 @@ reiserfs_mount (void)
       || (SECTOR_SIZE << INFO->blocksize_shift) != super.s_blocksize)
     return 0;
 
-  if (super.s_journal_block != 0)
+  /* Initialize journal code.  If something fails we end with zero
+   * journal_transactions, so we don't access the journal at all.  
+   */
+  INFO->journal_transactions = 0;
+  if (super.s_journal_block != 0 && super.s_journal_dev == 0)
     {
       INFO->journal_block = super.s_journal_block;
-      /* I am not using s_journal_block_count here, because
-       * that field doesn't contain any sane value.
-       */
-      INFO->journal_block_count = super.s_orig_journal_size;
-      if (! is_power_of_two (INFO->journal_block_count))
-	return 0;
+      INFO->journal_block_count = super.s_journal_size;
+      if (is_power_of_two (INFO->journal_block_count))
+	journal_init ();
 
-      journal_init ();
       /* Read in super block again, maybe it is in the journal */
       block_read (superblock >> INFO->blocksize_shift, 
 		  0, sizeof (struct reiserfs_super_block), (char *) &super);
@@ -657,7 +658,7 @@ reiserfs_mount (void)
 /***************** TREE ACCESSING METHODS *****************************/
 
 /* I assume you are familiar with the ReiserFS tree, if not go to
- * http://devlinux.com/projects/reiserfs/
+ * http://www.namesys.com/content_table.html
  *
  * My tree node cache is organized as following
  *   0   ROOT node

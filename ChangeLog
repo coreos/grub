@@ -1,3 +1,11 @@
+2001-10-11  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c (reiserfs_super_block): Updated
+	to better match recent reiserfs versions.
+	(reiserfs_mount): Handle cases where journal can't be found,
+	e.g. journal on another disk or unexpected journal parameters.
+	In that case the journal isn't used.
+	
 2001-10-10  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c (reiserfs_mount):  Don't look at
