@@ -572,7 +572,11 @@ console_putchar (int c)
     }
   else
 #endif
-  putchar (c);
+    {
+      /* CR is not used in Unix.  */
+      if (c != '\r')
+	putchar (c);
+    }
 }
 
 
