@@ -1,3 +1,14 @@
+2002-03-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (General commands): Added ``pager'' into the
+	menu.
+	(pager): New subsection.
+	(terminal): Added a description about the option
+	``--lines=LINES''.
+
+	* configure.in (AC_INIT_AUTOMAKE): Set the version number to
+	0.92.
+	
 2002-03-26  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* netboot/eepro100.c (eepro100_probe): Increase the delay at the

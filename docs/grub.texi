@@ -1885,6 +1885,7 @@ Commands usable both in the menu and in the command-line.
 * dhcp::                        Initialize a network device via DHCP
 * hide::                        Hide a partition
 * ifconfig::                    Configure a network device manually
+* pager::                       Change the state of the internal pager
 * partnew::                     Make a primary partition
 * parttype::                    Change the type of a partition
 * password::                    Set a password for the menu interface
@@ -2052,6 +2053,16 @@ address of a network device manually. The values must be in dotted
 decimal format, like @samp{192.168.11.178}. The order of the options is
 not important. This command shows current network configuration, if no
 option is specified. See also @ref{Network}.
+@end deffn
+
+
+@node pager
+@subsection pager
+
+@deffn Command pager [flag]
+Toggle or set the state of the internal pager. If @var{flag} is
+@samp{on}, the internal pager is enabled. If @var{flag} is @samp{off},
+it is disabled. If no argument is given, the state is toggled.
 @end deffn
 
 
@@ -2263,7 +2274,7 @@ character each of the symbols corresponds:
 @node terminal
 @subsection terminal
 
-@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{console}] [@option{serial}] [@option{hercules}]
+@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{--lines=lines}] [@option{console}] [@option{serial}] [@option{hercules}]
 Select a terminal for user interaction. The terminal is assumed to be
 VT100-compatible unless @option{--dumb} is specified. If both
 @option{console} and @option{serial} are specified, then GRUB will use
@@ -2276,6 +2287,10 @@ This may not make sense for most users, but GRUB supports Hercules
 console as well. Hercules console is usable like the ordinary console,
 and the usage is quite similar to that for serial terminals: specify
 @option{hercules} as the argument.
+
+The option @option{--lines} defines the number of lines in your
+terminal, and it is used for the internal pager function. If you don't
+specify this option, the number is assumed as 24.
 @end deffn
 
 
@@ -2528,12 +2543,15 @@ is shut down using APM.
 @node help
 @subsection help
 
-@deffn Command help [pattern @dots{}]
+@deffn Command help @option{--all} [pattern @dots{}]
 Display helpful information about builtin commands. If you do not
-specify @var{pattern}, this command shows short descriptions of all
-available commands.  If you specify any @var{patterns}, it displays
-longer information about each of the commands which match those
-@var{patterns}.
+specify @var{pattern}, this command shows short descriptions of most of
+available commands. If you specify the option @option{--all} to this
+command, short descriptions of rarely used commands (such as
+@ref{testload}) are displayed as well.
+
+If you specify any @var{patterns}, it displays longer information
+about each of the commands which match those @var{patterns}.
 @end deffn
 
 
