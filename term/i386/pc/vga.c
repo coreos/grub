@@ -30,12 +30,13 @@
 #define DEBUG_VGA	0
 
 #define VGA_WIDTH	640
-#define VGA_HEIGHT	480
+#define VGA_HEIGHT	350
 #define CHAR_WIDTH	8
 #define CHAR_HEIGHT	16
 #define TEXT_WIDTH	(VGA_WIDTH / CHAR_WIDTH)
 #define TEXT_HEIGHT	(VGA_HEIGHT / CHAR_HEIGHT)
 #define VGA_MEM		((unsigned char *) 0xA0000)
+#define PAGE_OFFSET(x)	((x) * (VGA_WIDTH * VGA_HEIGHT / 8))
 
 #define DEFAULT_FG_COLOR	0xa
 #define DEFAULT_BG_COLOR	0x0
@@ -64,6 +65,7 @@ static unsigned char fg_color, bg_color;
 static struct colored_char text_buf[TEXT_WIDTH * TEXT_HEIGHT];
 static unsigned char *vga_font;
 static unsigned char saved_map_mask;
+static int page = 0;
 
 /* Read a byte from a port.  */
 static inline unsigned char
@@ -88,6 +90,25 @@ outb (unsigned short port, unsigned char value)
 #define SEQUENCER_ADDR_PORT	0x3C4
 #define SEQUENCER_DATA_PORT	0x3C5
 #define MAP_MASK_REGISTER	0x02
+
+#define CRTC_ADDR_PORT		0x3D4
+#define CRTC_DATA_PORT		0x3D5
+#define START_ADDR_HIGH_REGISTER 0x0C
+#define START_ADDR_LOW_REGISTER	0x0D
+
+#define GRAPHICS_ADDR_PORT	0x3CE
+#define GRAPHICS_DATA_PORT	0x3CF
+#define READ_MAP_REGISTER	0x04
+
+#define INPUT_STATUS1_REGISTER	0x3DA
+#define INPUT_STATUS1_VERTR_BIT 0x08
+
+static inline void
+wait_vretrace (void)
+{
+  /* Wait until there is a vertical retrace.  */
+  while (! (inb (INPUT_STATUS1_REGISTER) & INPUT_STATUS1_VERTR_BIT));
+}
 
 /* Get Map Mask Register.  */
 static unsigned char
@@ -120,16 +141,48 @@ set_map_mask (unsigned char mask)
   outb (SEQUENCER_ADDR_PORT, old_addr);
 }
 
+/* Set Read Map Register.  */
+static void
+set_read_map (unsigned char map)
+{
+  unsigned char old_addr;
+  
+  old_addr = inb (GRAPHICS_ADDR_PORT);
+
+  outb (GRAPHICS_ADDR_PORT, READ_MAP_REGISTER);
+  outb (GRAPHICS_DATA_PORT, map);
+
+  outb (GRAPHICS_ADDR_PORT, old_addr);
+}
+
+/* Set start address.  */
+static void
+set_start_address (unsigned int start)
+{
+  unsigned char old_addr;
+  
+  old_addr = inb (CRTC_ADDR_PORT);
+  
+  outb (CRTC_ADDR_PORT, START_ADDR_LOW_REGISTER);
+  outb (CRTC_DATA_PORT, start & 0xFF);
+  
+  outb (CRTC_ADDR_PORT, START_ADDR_HIGH_REGISTER);
+  outb (CRTC_DATA_PORT, start >> 8);
+
+  outb (CRTC_ADDR_PORT, old_addr);
+}
+
 static grub_err_t
 grub_vga_init (void)
 {
   vga_font = grub_vga_get_font ();
-  text_mode = grub_vga_set_mode (0x12);
+  text_mode = grub_vga_set_mode (0x10);
   cursor_state = 1;
   fg_color = DEFAULT_FG_COLOR;
   bg_color = DEFAULT_BG_COLOR;
   saved_map_mask = get_map_mask ();
   set_map_mask (0x0f);
+  set_start_address (PAGE_OFFSET (page));
   
   return GRUB_ERR_NONE;
 }
@@ -216,7 +269,9 @@ invalidate_char (struct colored_char *p)
 static int
 check_vga_mem (void *p)
 {
-  return p >= (void *) VGA_MEM && p <= (void *) (VGA_MEM + VGA_WIDTH * VGA_HEIGHT / 8);
+  return (p >= (void *) (VGA_MEM + PAGE_OFFSET (page))
+	  && p <= (void *) (VGA_MEM + PAGE_OFFSET (page)
+			    + VGA_WIDTH * VGA_HEIGHT / 8));
 }
 
 static void
@@ -225,10 +280,11 @@ write_char (void)
   struct colored_char *p = text_buf + xpos + ypos * TEXT_WIDTH;
   unsigned char bitmap[32];
   unsigned width;
-  unsigned char *mem_base = VGA_MEM + xpos + ypos * CHAR_HEIGHT * TEXT_WIDTH;
+  unsigned char *mem_base;
   unsigned plane;
 
-  mem_base -= p->index;
+  mem_base = (VGA_MEM + xpos + 
+	      ypos * CHAR_HEIGHT * TEXT_WIDTH + PAGE_OFFSET (page)) - p->index;
   p -= p->index;
 
   if (! get_vga_glyph (p->code, bitmap, &width))
@@ -268,7 +324,7 @@ write_char (void)
 static void
 write_cursor (void)
 {
-  unsigned char *mem = (VGA_MEM + xpos
+  unsigned char *mem = (VGA_MEM + PAGE_OFFSET (page) + xpos
 			+ (ypos * CHAR_HEIGHT + CHAR_HEIGHT - 3) * TEXT_WIDTH);
   if (check_vga_mem (mem))
     *mem = 0xff;
@@ -284,6 +340,7 @@ scroll_up (void)
   unsigned i;
   unsigned plane;
   
+  /* Do all the work in the other page.  */
   grub_memmove (text_buf, text_buf + TEXT_WIDTH,
 		sizeof (struct colored_char) * TEXT_WIDTH * (TEXT_HEIGHT - 1));
       
@@ -296,16 +353,24 @@ scroll_up (void)
       text_buf[i].index = 0;
     }
 
-  for (plane = 0x1; plane <= 0x8; plane <<= 1)
+  for (plane = 1; plane <= 4; plane++)
     {
-      set_map_mask (plane);
-      grub_memmove (VGA_MEM, VGA_MEM + VGA_WIDTH * CHAR_HEIGHT / 8,
+      set_read_map (plane);
+      set_map_mask (1 << plane);
+      grub_memmove (VGA_MEM + PAGE_OFFSET (1 - page), VGA_MEM
+		    + PAGE_OFFSET (page) + VGA_WIDTH * CHAR_HEIGHT / 8,
 		    VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8);
     }
 
   set_map_mask (0x0f);
-  grub_memset (VGA_MEM + VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8, 0,
+  grub_memset (VGA_MEM + PAGE_OFFSET (1 - page)
+	       + VGA_WIDTH * (VGA_HEIGHT - CHAR_HEIGHT) / 8, 0,
 	       VGA_WIDTH * CHAR_HEIGHT / 8);
+  
+  /* Activate the other page.  */
+  page = 1 - page;
+  wait_vretrace ();
+  set_start_address (PAGE_OFFSET (page));
 }
 
 static void
@@ -333,7 +398,7 @@ grub_vga_putchar (grub_uint32_t c)
 	  break;
 	  
 	case '\n':
-	  if (ypos >= TEXT_HEIGHT)
+	  if (ypos >= TEXT_HEIGHT - 1)
 	    scroll_up ();
 	  else
 	    ypos++;
@@ -383,7 +448,7 @@ grub_vga_putchar (grub_uint32_t c)
 	{
 	  xpos = 0;
 	  
-	  if (ypos >= TEXT_HEIGHT)
+	  if (ypos >= TEXT_HEIGHT - 1)
 	    scroll_up ();
 	  else
 	    ypos++;
@@ -438,6 +503,7 @@ grub_vga_cls (void)
 {
   unsigned i;
 
+  wait_vretrace ();
   for (i = 0; i < TEXT_WIDTH * TEXT_HEIGHT; i++)
     {
       text_buf[i].code = ' ';
@@ -447,7 +513,7 @@ grub_vga_cls (void)
       text_buf[i].index = 0;
     }
 
-  grub_memset (VGA_MEM, 0, VGA_WIDTH * VGA_HEIGHT / 8);
+  grub_memset (VGA_MEM + PAGE_OFFSET (page), 0, VGA_WIDTH * VGA_HEIGHT / 8);
 
   xpos = ypos = 0;
 }

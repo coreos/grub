@@ -1,5 +1,33 @@
 2004-11-01  Marco Gerards  <metgerards@student.han.nl>
 
+	* term/i386/pc/vga.c (VGA_HEIGHT): Changed to 350.
+	(PAGE_OFFSET): New macro.
+	(CRTC_ADDR_PORT): Likewise.
+	(CRTC_DATA_PORT): Likewise.
+	(START_ADDR_HIGH_REGISTER): Likewise.
+	(START_ADDR_LOW_REGISTER): Likewise.
+	(GRAPHICS_ADDR_PORT): Likewise.
+	(GRAPHICS_DATA_PORT): Likewise.
+	(READ_MAP_REGISTER): Likewise.
+	(INPUT_STATUS1_REGISTER): Likewise.
+	(INPUT_STATUS1_VERTR_BIT): Likewise.
+	(page): New variable.
+	(wait_vretrace): New function.
+	(set_read_map): Likewise.
+	(set_start_address): Likewise.
+	(grub_vga_init): Use mode 0x10 instead of mode 0x12.  Switch to
+	the right page.
+	(check_vga_mem): Take the page into account.
+	(write_char): Likewise.
+	(write_cursor): Likewise.
+	(scroll_up): Likewise.  Copy the page to the page that is not
+	shown and switch between both pages.
+	(grub_vga_putchar): Fix off by one error.
+	(grub_vga_cls): Wait for the vertical retrace.  Take the page into
+	account.
+
+2004-11-01  Marco Gerards  <metgerards@student.han.nl>
+
 	Add support for iso9660 (including rockridge).
 	
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add fs/iso9660.c.
