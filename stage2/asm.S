@@ -22,6 +22,12 @@
 
 #include "shared.h"
 
+#ifdef STAGE1_5
+#define	ABS(x)	((x) - EXT_C(main) + 0x2200)
+#else
+#define	ABS(x)	((x) - EXT_C(main) + 0x8200)
+#endif
+	
 	.file	"asm.S"
 
 	.text
@@ -46,11 +52,7 @@ ENTRY(main)
 	 *  Guarantee that "main" is loaded at 0x0:0x8200 in stage2 and
 	 *  at 0x0:0x2200 in stage1.5.
 	 */
-#ifndef STAGE1_5
-	ljmp $0, $(codestart - EXT_C(main) + 0x8200)
-#else
-	ljmp $0, $(codestart - EXT_C(main) + 0x2200)
-#endif
+	ljmp $0, $ABS(codestart)
 
 	/*
 	 *  Compatibility version number
@@ -153,6 +155,135 @@ ENTRY(stop_floppy)
 	outb	%al, %dx
 	ret
 
+/*
+ * set_int13_handler(map)
+ *
+ * Copy MAP to the drive map and set up int13_handler.
+ */
+ENTRY(set_int13_handler)
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	pushl	%ecx
+	pushl	%edi
+	pushl	%esi
+
+	/* copy MAP to the drive map */
+	movl	$DRIVE_MAP_SIZE, %ecx
+	movl	$ABS(drive_map), %edi
+	movl	4(%ebp), %esi
+	cld
+	rep
+	movsb
+
+	/* save the original int13 handler */
+	movw	0x13 * 4, %ax
+	movw	%ax, int13_offset
+	movw	0x13 * 4 + 2, %ax
+	movw	%ax, int13_segment
+	
+	/* get the lower memory size */
+	movl	$EXT_C(mbi), %edi
+	movl	4(%edi), %eax
+	/* decrease the lower memory size and set it to the BIOS memory */
+	decl	%eax
+	movw	%ax, 0x413
+	/* compute the segment */
+	shll	$6, %eax
+
+	/* save the new int13 handler */
+	movw	%ax, 0x13 * 4 + 2
+	xorw	%ax, %ax
+	movw	%ax, 0x13 * 4
+
+	/* copy int13_handler to the reserved area */
+	shll	$4, %eax
+	movl	%eax, %edi
+	movl	$ABS(int13_handler), %esi
+	movl	$(int13_handler_end - int13_handler), %ecx
+	rep
+	movsb
+
+	popl	%esi
+	popl	%edi
+	popl	%ecx
+	popl	%ebp
+	ret
+	
+	
+/* 
+ * Map a drive to another drive.
+ */
+	
+	.code16
+	
+int13_handler:
+	pushw	%ax
+	pushw	%bp
+	movw	%sp, %bp
+	
+	pushw	%ds
+	pushw	%si
+
+	/* set %ds to %cs */	
+	movw	%cs, %ax
+	movw	%ax, %ds
+	/* set %si to the drive map */
+	movw	$(drive_map - int13_handler), %si
+	/* find the drive number from the drive map */
+1:	
+	lodsw
+	/* check if this is the end */
+	testw	%ax, %ax
+	jz	2f
+	/* check if this matches the drive number */
+	cmpb	%al, %dl
+	jne	1b
+	/* if so, perform the mapping */
+	movb	%ah, %dl
+2:
+	/* restore %si and %ds */
+	popw	%si
+	popw	%ds
+	/* save %ax in the stack */
+	pushw	%ax
+	/* set %ax and %bp to the original values */
+	movw	2(%bp), %ax
+	movw	(%bp), %bp
+	/* simulate the interrupt call */
+	pushf
+	/* ljmp */
+	.byte	0x9a
+int13_offset:	.word	0
+int13_segment:	.word	0
+	/* restore %bp */
+	movw	%sp, %bp
+	/* save %ax */
+	pushw	%ax
+	/* check if should map the drive number */
+	movw	4(%bp), %ax
+	cmpw	$0x8, %ax
+	jne	3f
+	cmpw	$0x15, %ax
+	jne	3f
+	/* check if the mapping was performed */
+	movw	(%bp), %ax
+	testw	%ax, %ax
+	jz	3f
+	/* perform the mapping */
+	movb	%al, %dl
+3:
+	popw	%ax
+	movw	2(%bp), %bp
+	addw	$6, %sp
+	iret
+
+drive_map:	.space	(DRIVE_MAP_SIZE + 1) * 2
+int13_handler_end:
+	
+	.code32
+	
+	
 /*
  * chain_stage1(segment, offset, part_table_addr)
  *

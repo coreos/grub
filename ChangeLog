@@ -1,3 +1,27 @@
+1999-10-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Add BIOS drive remapping support for chain-loading some foolish
+	operating systems.
+	
+	* stage2/builtins.c (bios_drive_map): New variable.
+	(boot_func): If KERNEL_TYPE is KERNEL_TYPE_CHAINLOADER, check
+	if BIOS_DRIVE_MAP contains meaningful values. If so, search for
+	SAVED_DRIVE in BIOS_DRIVE_MAP and exchange SAVED_DRIVE with the
+	mapped drive if found. And then call set_int13_handler.
+	(map_func): New function.
+	(builtin_map): New variable.
+	(builtin_table): Added a pointer to BUILTIN_MAP.
+	* stage2/asm.S (ABS): New macro.
+	[!STAGE1_5] (set_int13_handler): New function.
+	[!STAGE1_5] (int13_handler): New interrupt handler for the real
+	mode.
+	[!STAGE1_5] (drive_map): New variable.
+	[!STAGE1_5] (int13_handler_end): New label used for just
+	computing the end address of int13_handler.
+	* stage2/shared.h (DRIVE_MAP_SIZE): New macro.
+	(set_int13_handler): Declared.
+	* grub/asmstub.c (set_int13_handler): New function. Do nothing.
+	
 1999-10-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (find_func): Print only the device names.

@@ -46,6 +46,8 @@ int normal_color;
 int highlight_color;
 /* The timeout.  */
 int grub_timeout = -1;
+/* The BIOS drive map.  */
+static unsigned short bios_drive_map[DRIVE_MAP_SIZE + 1];
 
 /* Initialize the data for builtins.  */
 void
@@ -101,6 +103,29 @@ boot_func (char *arg, int flags)
 
     case KERNEL_TYPE_CHAINLOADER:
       /* Chainloader */
+
+      /* Check if we should set the int13 handler.  */
+      if (bios_drive_map[0] != 0)
+	{
+	  int i;
+
+	  /* Search for SAVED_DRIVE.  */
+	  for (i = 0; i <= DRIVE_MAP_SIZE; i++)
+	    {
+	      if (! bios_drive_map[i])
+		break;
+	      else if ((bios_drive_map[i] & 0xFF) == saved_drive)
+		{
+		  /* Exchage SAVED_DRIVE with the mapped drive.  */
+		  saved_drive = (bios_drive_map[i] >> 8) & 0xFF;
+		  break;
+		}
+	    }
+
+	  /* Set the handler. This is somewhat dangerous.  */
+	  set_int13_handler (bios_drive_map);
+	}
+      
       gateA20 (0);
       boot_drive = saved_drive;
       chain_stage1 (0, BOOTSEC_LOCATION, BOOTSEC_LOCATION - 16);
@@ -1433,6 +1458,62 @@ static struct builtin builtin_makeactive =
 };
 
 
+/* map */
+/* Map FROM_DRIVE to TO_DRIVE.  */
+static int
+map_func (char *arg, int flags)
+{
+  char *to_drive;
+  char *from_drive;
+  unsigned long to, from;
+  int i;
+  
+  to_drive = arg;
+  from_drive = skip_to (0, arg);
+
+  /* Get the drive number for TO_DRIVE.  */
+  set_device (to_drive);
+  if (errnum)
+    return 1;
+  to = current_drive;
+
+  /* Get the drive number for FROM_DRIVE.  */
+  set_device (from_drive);
+  if (errnum)
+    return 1;
+  from = current_drive;
+
+  /* If TO and FROM is the same, do nothing.  */
+  if (to == from)
+    return 0;
+  
+  /* Search for an empty slot in BIOS_DRIVE_MAP.  */
+  for (i = 0; i <= DRIVE_MAP_SIZE; i++)
+    if (! bios_drive_map[i])
+      break;
+
+  if (i > DRIVE_MAP_SIZE)
+    {
+      errnum = ERR_WONT_FIT;
+      return 1;
+    }
+
+  bios_drive_map[i] = from | (to << 8);
+  return 0;
+}
+
+static struct builtin builtin_map =
+{
+  "map",
+  map_func,
+  BUILTIN_CMDLINE,
+  "map TO_DRIVE FROM_DRIVE",
+  "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
+  " when you chain-load some operating systems, such as DOS, if such a"
+  " OS resides at a non-first drive."
+};
+  
+
 /* module */
 static int
 module_func (char *arg, int flags)
@@ -2101,6 +2182,7 @@ struct builtin *builtin_table[] =
   &builtin_install,
   &builtin_kernel,
   &builtin_makeactive,
+  &builtin_map,
   &builtin_module,
   &builtin_modulenounzip,
   &builtin_password,

@@ -597,6 +597,12 @@ gateA20 (int linear)
   /* Nothing to do in the simulator. */
 }
 
+/* Copy MAP to the drive map and set up the int13 handler.  */
+void
+set_int13_handler (unsigned short *map)
+{
+  /* Nothing to do in the simulator.  */
+}
 
 int
 get_code_end (void)

@@ -117,6 +117,9 @@ extern char *grub_scratch_mem;
 #define MENU_BUF		(UNIQUE_BUF + UNIQUE_BUFLEN)
 #define MENU_BUFLEN		(0x8000 + PASSWORD_BUF - UNIQUE_BUF)
 
+/* The size of the drive map.  */
+#define DRIVE_MAP_SIZE		8
+
 /*
  *  Linux setup parameters
  */
@@ -493,6 +496,9 @@ void cmain (void);
 
 /* Halt the processor (called after an unrecoverable error). */
 void stop (void) __attribute__ ((noreturn));
+
+/* Copy MAP to the drive map and set up int13_handler.  */
+void set_int13_handler (unsigned short *map);
 
 /* calls for direct boot-loader chaining */
 void chain_stage1 (int segment, int offset, int part_table_addr)
