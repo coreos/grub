@@ -24,12 +24,24 @@ int grub_stage2 (void);
 #include <stdio.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define WITHOUT_LIBC_STUBS 1
+#include "shared.h"
 
 char *program_name = 0;
+static int default_boot_drive;
+static int default_install_partition;
+static char *default_config_file;
 
 #define OPT_HELP -2
 #define OPT_VERSION -3
 #define OPT_HOLD -4
+#define OPT_CONFIG_FILE -5
+#define OPT_INSTALL_PARTITION -6
+#define OPT_BOOT_DRIVE -7
 #define OPTSTRING ""
 
 static struct option longopts[] =
@@ -37,6 +49,9 @@ static struct option longopts[] =
   {"help", no_argument, 0, OPT_HELP},
   {"version", no_argument, 0, OPT_VERSION},
   {"hold", no_argument, 0, OPT_HOLD},
+  {"config-file", required_argument, 0, OPT_CONFIG_FILE},
+  {"install-partition", required_argument, 0, OPT_INSTALL_PARTITION},
+  {"boot-drive", required_argument, 0, OPT_BOOT_DRIVE},
   {0},
 };
 
@@ -53,11 +68,15 @@ Usage: %s [OPTION]...\n\
 \n\
 Enter the GRand Unified Bootloader command shell.\n\
 \n\
-    --help                display this message and exit\n\
-    --hold                wait forever so that a debugger may be attached\n\
-    --version             print version information and exit\n\
+    --boot-drive=DRIVE       specify stage2 boot_drive [default=0x%x]\n\
+    --config-file=FILE       specify stage2 config_file [default=%s]\n\
+    --help                   display this message and exit\n\
+    --hold                   wait until a debugger will attach\n\
+    --install-partition=PAR  specify stage2 install_partition [default=0x%x]\n\
+    --version                print version information and exit\n\
 ",
-	    program_name);
+	    program_name, default_boot_drive, default_config_file,
+	    default_install_partition);
 
   exit (status);
 }
@@ -69,6 +88,12 @@ main (int argc, char **argv)
   int c;
   int hold = 0;
   program_name = argv[0];
+  default_boot_drive = boot_drive;
+  default_install_partition = install_partition;
+  if (config_file)
+    default_config_file = config_file;
+  else
+    default_config_file = "NONE";
 
   /* Parse command-line options. */
   do
@@ -80,10 +105,6 @@ main (int argc, char **argv)
 	  /* Fall through the bottom of the loop. */
 	  break;
 
-	case OPT_HOLD:
-	  hold = 1;
-	  break;
-
 	case OPT_HELP:
 	  usage (0);
 	  break;
@@ -91,6 +112,32 @@ main (int argc, char **argv)
 	case OPT_VERSION:
 	  printf ("GNU GRUB " VERSION "\n");
 	  exit (0);
+	  break;
+
+	case OPT_HOLD:
+	  hold = 1;
+	  break;
+
+	case OPT_CONFIG_FILE:
+	  config_file = strdup (optarg);
+	  break;
+
+	case OPT_INSTALL_PARTITION:
+	  install_partition = strtoul (optarg, 0, 16);
+	  if (install_partition == ULONG_MAX)
+	    {
+	      perror ("strtoul");
+	      exit (1);
+	    }
+	  break;
+
+	case OPT_BOOT_DRIVE:
+	  boot_drive = strtoul (optarg, 0, 0);
+	  if (boot_drive == ULONG_MAX)
+	    {
+	      perror ("strtoul");
+	      exit (1);
+	    }
 	  break;
 
 	default:

@@ -201,8 +201,9 @@ extern char *grub_scratch_mem;
 #define DISP_UP         0x18
 #define DISP_DOWN       0x19
 
-/* Remap some libc-API-compatible function names so that we can use
-   them alongside their libc counterparts. */
+/* Remap some libc-API-compatible function names so that we prevent
+   circularararity. */
+#ifndef WITHOUT_LIBC_STUBS
 #define bcopy grub_bcopy
 #define bzero grub_bzero
 #define isspace grub_isspace
@@ -212,6 +213,7 @@ extern char *grub_scratch_mem;
 #define strncat grub_strncat
 #define strstr grub_strstr
 #define tolower grub_tolower
+#endif /* WITHOUT_LIBC_STUBS */
 
 
 #ifndef ASM_FILE
@@ -276,7 +278,7 @@ typedef enum
 extern unsigned long install_partition;
 extern unsigned long boot_drive;
 extern char version_string[];
-extern char config_file[];
+extern char *config_file;
 
 #ifndef STAGE1_5
 /* GUI interface variables. */
@@ -413,7 +415,7 @@ void gotoxy (int x, int y);
 
 /* Displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones (see the DISP_* constants). */
-void putchar (int c);
+void grub_putchar (int c);
 
 /* Wait for a keypress, and return its packed BIOS/ASCII key code.
    Use ASCII_CHAR(ret) to extract the ASCII code. */

@@ -1,3 +1,57 @@
+1999-03-27  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* grub/main.c (usage): Display defaults for stage2 options.
+
+	* grub/asmstub.c [NO_REMAPPING_LIBC_FUNCTIONS]: Rename to
+	WITHOUT_LIBC_STUBS.
+	* grub/main.c: Likewise.
+	* shared_src/shared.h: Likewise.
+
+1999-03-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (set_attrib): Use inch and addch, instead of
+	chgat, because chgat doesn't work as expected.
+
+1999-03-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (grub_stage2) [HAVE_LIBCURSES]: Call nodelay.
+	(checkkey) [HAVE_LIBCURSES]: If getting an input character, then
+	ungetch it, because checkkey shouldn't modify the input queue.
+
+	Use file descriptors instead of file pointers to support
+	>4GB disks in Linux.
+
+	* grub/asmstub.c (grub_stage2): Call close instead of fclose.
+	(get_diskinfo): Call open instead of fopen.
+	(biosdisk) [__linux__]: Use _llseek instead of lseek.
+	(biosdisk): Call read instead of fread.
+
+	Add options so that the user can specify the config file.
+
+	* grub/Makefile.am (CPPFLAGS): Use -fwritable-strings, because
+	grub assumes that all strings resides at the data section.
+
+	* grub/main.c: Define NO_REMAPPING_LIBC_FUNCTIONS before including
+	shared.h.
+	(OPT_CONFIG_FILE): New macro.
+	(OPT_INSTALL_PARTITION): Likewise.
+	(OPT_BOOT_DRIVE): Likewise.
+	(longopts): Add new options, config-file, install-partition and
+	boot-drive.
+	(usage): Add the documentation for them.
+	(main): Add handling code for OPT_CONFIG_FILE, OPT_INSTALL_PARTITION
+	and OPT_BOOT_DRIVE.
+
+	* grub/asmstub.c: Define NO_REMAPPING_LIBC_FUNCTIONS before including
+	shared.h.
+	(config_file): Make it char * instead of char [].
+	(getrtsecs): Return current time instead of 0xff.
+
+	* shared_src/shared.h [NO_REMAPPING_LIBC_FUNCTIONS]: Don't define
+	libc-API-compatible function names.
+	(config_file): Change the prototype from char [] to char *.
+	(grub_putchar): Renamed from putchar.
+
 1999-03-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* char_io.c (get_cmdline): Call cl_setcpos even if lpos == llen,

@@ -18,30 +18,31 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* Try to use glibc's transparant LFS support. */
+#define _LARGEFILE_SOURCE 1
+
 /* Simulator entry point. */
 int grub_stage2 (void);
 
-#include "shared.h"
 /* We want to prevent any circularararity in our stubs, as well as
    libc name clashes. */
-#undef NULL
-#undef bcopy
-#undef bzero
-#undef getc
-#undef isspace
-#undef printf
-#undef putchar
-#undef strncat
-#undef strstr
-#undef tolower
+#define WITHOUT_LIBC_STUBS 1
+#include "shared.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <time.h>
 
 #ifdef __linux__
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
+/* FIXME: only include if libc doesn't have large file support. */
+# include <unistd.h>
+# include <linux/unistd.h>	/* _llseek */
 #endif /* __linux__ */
 
 /* Simulated memory sizes. */
@@ -59,7 +60,7 @@ int grub_stage2 (void);
 unsigned long install_partition = 0x20000;
 unsigned long boot_drive = 0;
 char version_string[] = "0.5";
-char config_file[] = "/boot/grub/menu.lst";
+char *config_file = "/boot/grub/menu.lst";
 
 /* Emulation requirements. */
 char *grub_scratch_mem = 0;
@@ -128,6 +129,7 @@ grub_stage2 (void)
   nonl ();
   scrollok (stdscr, TRUE);
   keypad (stdscr, TRUE);
+  nodelay (stdscr, TRUE);
 #endif
 
   /* Set our stack, and go for it. */
@@ -138,10 +140,10 @@ grub_stage2 (void)
   endwin ();
 #endif
 
-  /* Close off the file pointers we used. */
+  /* Close off the file descriptors we used. */
   for (i = 0; i < NUM_DISKS; i ++)
     if (disks[i].flags)
-      fclose ((FILE *) disks[i].flags);
+      close ((FILE *) disks[i].flags);
 
   /* Release memory. */
   free (disks);
@@ -275,7 +277,8 @@ get_mmap_entry (struct mmar_desc *desc, int cont)
 int
 getrtsecs (void)
 {
-  return 0xff;
+  /* FIXME: exact value is not important, so just return time_t for now. */
+  return time (0);
 }
 
 
@@ -346,9 +349,15 @@ int
 checkkey (void)
 {
 #ifdef HAVE_LIBCURSES
-  return getch ();
+  int c;
+  c = getch ();
+  /* If C is not ERR, then put it back in the input queue.  */
+  if (c != ERR)
+    ungetch (c);	/* FIXME: ncurses-1.9.9g ungetch is buggy.  */
+  return c;
 #else
-  return getchar ();
+  /* Just pretend they hit the space bar.
+  return ' ';
 #endif
 }
 
@@ -358,7 +367,13 @@ void
 set_attrib (int attr)
 {
 #ifdef HAVE_LIBCURSES
+  /* FIXME: I don't know why, but chgat doesn't work as expected, so
+     use this dirty way... - okuji  */
+  chtype ch = inch ();
+  addch ((ch & A_CHARTEXT) | attr);
+# if 0
   chgat (1, attr, 0, NULL);
+# endif
 #endif
 }
 
@@ -370,7 +385,7 @@ get_diskinfo (int drive, struct geometry *geometry)
 {
   /* FIXME: this function is truly horrid.  We try opening the device,
      then severely abuse the GEOMETRY->flags field to pass a file
-     pointer to biosdisk.  Thank God nobody's looking at this comment,
+     descriptor to biosdisk.  Thank God nobody's looking at this comment,
      or my reputation would be ruined. --Gord */
 
   /* See if we have a cached device. */
@@ -412,16 +427,15 @@ get_diskinfo (int drive, struct geometry *geometry)
       devname[8] = '\0';
 
       /* Open read/write, or read-only if that failed. */
-      disks[drive].flags = (int) fopen (devname, "r+");
+      disks[drive].flags = open (devname, O_RDWR);
       if (! disks[drive].flags)
-	disks[drive].flags = (int) fopen (devname, "r");
+	disks[drive].flags = open (devname, O_RDONLY);
 
       if (disks[drive].flags)
 	{
 #ifdef __linux__
 	  struct hd_geometry hdg;
-	  if (! ioctl (fileno ((FILE *) disks[drive].flags),
-		       HDIO_GETGEO, &hdg))
+	  if (! ioctl (disks[drive].flags, HDIO_GETGEO, &hdg))
 	    {
 	      /* Got the geometry, so save it. */
 	      disks[drive].cylinders = hdg.cylinders;
@@ -462,19 +476,32 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
 	  int sector, int nsec, int segment)
 {
   char *buf;
-  FILE *fp;
+  int fd = geometry->flags;
 
   /* Get the file pointer from the geometry, and make sure it matches. */
-  fp = (FILE *) geometry->flags;
-  if (! fp || fp != (FILE *) disks[drive].flags)
+  if (fd == -1 || fd != disks[drive].flags)
     return BIOSDISK_ERROR_GEOMETRY;
 
   /* Seek to the specified location. */
-  if (fseek (fp, sector * SECTOR_SIZE, SEEK_SET))
-    return -1;
+#ifdef __linux__
+  /* FIXME: only use this section if libc doesn't have large file support */
+  {
+    loff_t offset, result;
+    _syscall5 (int, _llseek, uint, fd, ulong, hi, ulong, lo,
+	       loff_t *, res, uint, wh);
+
+    offset = (loff_t) sector * (loff_t) SECTOR_SIZE;
+    if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
+      return -1;
+  }
+#else
+  if (lseek (fd, sector * SECTOR_SIZE, SEEK_SET))
+     return -1;
+#endif /* __linux__ */
 
   buf = (char *) (segment << 4);
-  if (fread (buf, nsec * SECTOR_SIZE, 1, fp) != 1)
+  /* FIXME: handle EINTR */
+  if (read (fd, buf, nsec * SECTOR_SIZE, fp) != nsec * SECTOR_SIZE)
     return -1;
   return 0;
 }
