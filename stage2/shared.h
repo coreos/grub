@@ -750,6 +750,9 @@ extern kernel_t kernel_type;
 extern int show_menu;
 extern int grub_timeout;
 
+/* Control the auto fill mode.  */
+extern int auto_fill;
+
 /* This variable specifies which console should be used.  */
 extern int terminal;
 

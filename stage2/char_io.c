@@ -25,6 +25,10 @@
 # include <serial.h>
 #endif
 
+#ifndef STAGE1_5
+int auto_fill = 1;
+#endif
+
 void
 print_error (void)
 {
@@ -269,7 +273,9 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   char *buf = (char *) CMDLINE_BUF;
   /* The kill buffer.  */
   char *kill_buf = (char *) KILL_BUF;
-
+  /* The original state of AUTO_FILL.  */
+  int saved_auto_fill = auto_fill;
+  
   /* Nested function definitions for code simplicity.  */
 
   /* The forward declarations of nested functions are prefixed
@@ -555,6 +561,9 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   lpos = llen;
   grub_strcpy (buf, cmdline);
 
+  /* Disable the auto fill mode.  */
+  auto_fill = 0;
+  
   cl_init ();
 
   while (ASCII_CHAR (c = getkey ()) != '\n' && ASCII_CHAR (c) != '\r')
@@ -607,7 +616,11 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 		   completion.  */
 		grub_memmove (completion_buffer, buf + i, lpos - i);
 		completion_buffer[lpos - i] = 0;
+		/* Enable the auto fill mode temporarily.  */
+		auto_fill = 1;
 		ret = print_completions (is_filename, 1);
+		/* Disable the auto fill mode again.  */
+		auto_fill = 0;
 		errnum = ERR_NONE;
 
 		if (ret >= 0)
@@ -621,7 +634,11 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 			   the list.  */
 
 			grub_putchar ('\n');
+			/* Enable the auto fill mode temporarily.  */
+			auto_fill = 1;
 			print_completions (is_filename, 0);
+			/* Disable the auto fill mode again.  */
+			auto_fill = 0;
 			errnum = ERR_NONE;
 		      }
 		  }
@@ -774,6 +791,9 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
   if (readline && lpos < llen)
     add_history (cmdline, 0);
 
+  /* Restore the auto fill mode.  */
+  auto_fill = saved_auto_fill;
+  
   return 0;
 }
 
@@ -1056,6 +1076,10 @@ checkkey (void)
 void
 grub_putchar (int c)
 {
+#ifndef STAGE1_5
+  static int col = 0;
+#endif
+  
   if (c == '\n')
     grub_putchar ('\r');
   
@@ -1065,7 +1089,25 @@ grub_putchar (int c)
   console_putchar (c);
   
 #else /* ! STAGE1_5 */
-  
+
+  /* Track the cursor by software here.  */
+  /* XXX: This doesn't handle horizontal or vertical tabs.  */
+  if (c == '\r')
+    col = 0;
+  else if (c == '\b')
+    {
+      if (col > 0)
+	col--;
+    }
+  else if (c >= ' ' && c <= '~')
+    {
+      /* Fold a line only if AUTO_FILL is true.  */
+      if (auto_fill && col >= 79)
+	grub_putchar ('\n');
+
+      col++;
+    }
+
   if (terminal & TERMINAL_CONSOLE)
     console_putchar (c);
 

@@ -1,5 +1,25 @@
 2000-09-06  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/char_io.c [!STAGE1_5] (auto_fill): New variable.
+	[!STAGE1_5] (get_cmdline): Save AUTO_FILL in SAVED_AUTO_FILL in
+	the beginning and restore AUTO_FILL before return.
+	Set AUTO_FILL to one and zero before and after calling
+	print_completions, respectively.
+	(grub_putchar) [!STAGE1_5]: Use a static variable COL to track
+	the position of the cursor. If C is a carriage return, clear
+	COL. If C is a backspace and COL is positive, decrease COL. If C
+	is a printable character, increase COL. In this case, if
+	AUTO_FILL is non-zero and COL is greater than or equal to 79,
+	put a newline automatically.
+	* stage2/shared.h (auto_fill): Declared.
+	* stage2/stage2.c (run_menu): In the menu interface, disable the
+	auto fill mode (i.e. set AUTO_FILL to zero), and enable it again
+	when booting an entry.
+	(cmain): Initialize AUTO_FILL (i.e. set it to one) in the
+	beginning of the loop.
+	
+2000-09-06  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Add support for "boot previously booted entry by default", based
 	on the patch by Mike Meyer <mwm@mired.org>, but I've modified
 	his patch thoroughly.

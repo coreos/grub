@@ -327,6 +327,9 @@ restart:
   /* Only display the menu if the user wants to see it. */
   if (show_menu)
     {
+      /* Disable the auto fill mode.  */
+      auto_fill = 0;
+      
       init_page ();
 #ifndef GRUB_UTIL
 # ifdef SUPPORT_SERIAL
@@ -682,7 +685,11 @@ restart:
     }
 
   /* Attempt to boot an entry.  */
+  
  boot_entry:
+  /* Enable the auto fill mode.  */
+  auto_fill = 1;
+  
   while (1)
     {
       cls ();
@@ -786,6 +793,7 @@ cmain (void)
   /* Never return.  */
   for (;;)
     {
+      auto_fill = 1;
       config_len = 0;
       menu_len = 0;
       num_entries = 0;
