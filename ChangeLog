@@ -1,3 +1,9 @@
+2004-10-08  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* term/powerpc/ieee1275/ieee1275.c (grub_ofconsole_cls): Use an ANSI
+	escape sequence instead of a literal ^L. Also call
+	grub_ofconsole_gotoxy.
+
 2004-10-03  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_claim): change

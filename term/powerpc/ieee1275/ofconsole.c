@@ -222,7 +222,8 @@ static void
 grub_ofconsole_cls (void)
 {
   /* Clear the screen.  */
-  grub_ofconsole_writeesc ("");
+  grub_ofconsole_writeesc ("\e[2J");
+  grub_gotoxy (0, 0);
 }
 
 static void
