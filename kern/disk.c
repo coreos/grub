@@ -24,6 +24,13 @@
 #include <pupa/types.h>
 #include <pupa/machine/partition.h>
 #include <pupa/misc.h>
+#include <pupa/machine/time.h>
+
+#define	PUPA_CACHE_TIMEOUT	2
+
+/* The last time the disk was used.  */
+static unsigned long pupa_last_time = 0;
+
 
 /* Disk cache.  */
 struct pupa_disk_cache
@@ -194,6 +201,7 @@ pupa_disk_open (const char *name)
   pupa_disk_t disk;
   pupa_disk_dev_t dev;
   char *raw = (char *) name;
+  unsigned long current_time;
   
   disk = (pupa_disk_t) pupa_malloc (sizeof (*disk));
   if (! disk)
@@ -247,6 +255,15 @@ pupa_disk_open (const char *name)
   if (p)
     disk->partition = pupa_partition_probe (disk, p + 1);
 
+  /* The cache will be invalidated about 2 seconds after a device was
+     closed.  */
+  current_time = pupa_get_rtc ();
+
+  if (current_time > pupa_last_time + PUPA_CACHE_TIMEOUT * PUPA_TICKS_PER_SECOND)
+    pupa_disk_cache_invalidate_all ();
+  
+  pupa_last_time = current_time;
+  
  fail:
   
   if (raw && raw != name)
@@ -266,6 +283,9 @@ pupa_disk_close (pupa_disk_t disk)
 {
   if (disk->dev && disk->dev->close)
     (disk->dev->close) (disk);
+
+  /* Reset the timer.  */
+  pupa_last_time = pupa_get_rtc ();
 
   pupa_free (disk->partition);
   pupa_free ((void *) disk->name);

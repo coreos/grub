@@ -1,6 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002,2003 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/times.h>
 
 #include <pupa/util/misc.h>
 #include <pupa/mm.h>
@@ -197,4 +199,12 @@ void
 pupa_putchar (int c)
 {
   putchar (c);
+}
+
+pupa_uint32_t
+pupa_get_rtc (void)
+{
+  struct tms currtime;
+
+  return times (&currtime);
 }

@@ -1,3 +1,19 @@
+2003-11-12  Marco Gerards  <metgerards@student.han.nl>
+
+	* disk/i386/pc/biosdisk.c (pupa_biosdisk_open): Correctly check
+	for available extensions.
+
+	* include/pupa/i386/pc/time.h: New file.
+	* kern/disk.c: Include <pupa/machine/time.h>.
+	(PUPA_CACHE_TIMEOUT): New macro.
+	(pupa_last_time): New variable.
+	(pupa_disk_open): Flush the cache when there was a timeout.
+	(pupa_disk_close): Reset the timer.
+	* kern/i386/pc/startup.S (pupa_get_rtc): Renamed from
+	pupa_currticks.
+	* util/misc.c: Include <sys/times.h>
+	(pupa_get_rtc): New function.
+
 2003-11-09  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* fs/ext2.c (struct pupa_ext2_inode): Declare struct datablocks

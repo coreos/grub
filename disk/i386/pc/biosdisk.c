@@ -2,6 +2,7 @@
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -159,7 +160,7 @@ pupa_biosdisk_open (const char *name, pupa_disk_t disk)
 	  /* Clear out the DRP.  */
 	  pupa_memset (drp, 0, sizeof (*drp));
 	  drp->size = sizeof (*drp);
-	  if (pupa_biosdisk_get_diskinfo_int13_extensions (drive, drp))
+	  if (!pupa_biosdisk_get_diskinfo_int13_extensions (drive, drp))
 	    {
 	      data->flags = PUPA_BIOSDISK_FLAG_LBA;
 
