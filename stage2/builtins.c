@@ -1952,11 +1952,13 @@ install_func (char *arg, int flags)
   /* Set the "force LBA" flag.  */
   *((unsigned char *) (stage1_buffer + STAGE1_FORCE_LBA)) = is_force_lba;
 
-  /* Set the boot drive mask. This is a workaround for buggy BIOSes which
-     don't pass boot drive correctly. Instead, they pass 0x00 even when
-     booted from 0x80.  */
-  *((unsigned char *) (stage1_buffer + STAGE1_BOOT_DRIVE_MASK))
-    = (dest_drive & BIOS_FLAG_FIXED_DISK);
+  /* If DEST_DRIVE is a hard disk, enable the workaround, which is
+     for buggy BIOSes which don't pass boot drive correctly. Instead,
+     they pass 0x00 or 0x01 even when booted from 0x80.  */
+  if (dest_drive & BIOS_FLAG_FIXED_DISK)
+    /* Replace the jmp (2 bytes) with double nop's.  */
+    *((unsigned short *) (stage1_buffer + STAGE1_BOOT_DRIVE_CHECK))
+      = 0x9090;
   
   /* Read the first sector of Stage 2.  */
   disk_read_hook = disk_read_savesect_func;

@@ -1,3 +1,18 @@
+2005-02-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (install_func): If DEST_DRIVE is a hard
+	disk, enable the workaround in Stage 1 by replacing the jmp
+	with double nop's.
+
+	* stage1/stage1.h (STAGE1_BOOT_DRIVE_CHECK): New macro.
+	(STAGE1_BOOT_DRIVE_MASK): Removed.
+
+	* stage1/stage1.S (boot_drive_check): New label. This implements
+	a different workaround for buggy BIOSes which don't pass boot
+	drive correctly. This is effective for BIOSes which pass a value
+	without the seventh bit (0x80).
+	(boot_drive_mask): Removed.
+
 2005-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* grub/asmstub.c (console_current_color): Make it global as

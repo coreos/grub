@@ -108,12 +108,18 @@ after_BPB:
 
 	/*
 	 * This is a workaround for buggy BIOSes which don't pass boot
-	 * drive correctly. If GRUB is installed into a HDD, do
-	 * "orb $0x80, %dl", otherwise "orb $0x00, %dl" (i.e. nop).
+	 * drive correctly. If GRUB is installed into a HDD, check if
+	 * DL is masked correctly. If not, assume that the BIOS passed
+	 * a bogus value and set DL to 0x80, since this is the only
+	 * possible boot drive. If GRUB is installed into a floppy,
+	 * this does nothing (only jump).
 	 */
-	.byte	0x80, 0xca
-boot_drive_mask:
-	.byte	0x00
+boot_drive_check:	
+	jmp	1f
+	testb	$0x80, %dl
+	jnz	1f
+	movb	$0x80, %dl
+1:	
 
 	/*
 	 * ljmp to the next instruction because some bogus BIOSes

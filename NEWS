@@ -1,5 +1,11 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New:
+* Fix the prototypes and the definitions of nested functions. This was
+  required for gcc-4.
+* Implement a more robust workaround for buggy BIOSes which don't pass
+  boot drive correctly (notably for HP Vectra).
+
 New in 0.96 - 2005-01-30:
 * The command "fallback" supports mutiple fallback entries.
 * The command "savedefault" supports an optional argument which

@@ -51,8 +51,8 @@
 /* The offset of STAGE2_SEGMENT.  */
 #define STAGE1_STAGE2_SEGMENT	0x48
 
-/* The offset of BOOT_DRIVE_MASK.  */
-#define STAGE1_BOOT_DRIVE_MASK	0x4d
+/* The offset of BOOT_DRIVE_CHECK.  */
+#define STAGE1_BOOT_DRIVE_CHECK	0x4b
 
 /* The offset of a magic number used by Windows NT.  */
 #define STAGE1_WINDOWS_NT_MAGIC	0x1b8
