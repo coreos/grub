@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2004 Free Software Foundation, Inc.
  * Copyright (c) 2002 Networks Associates Technology, Inc.
  * All rights reserved.
  *
@@ -47,22 +48,22 @@
 #ifndef _GRUB_UFS2_H_
 #define _GRUB_UFS2_H_
 
-typedef signed char            int8_t;
-typedef signed short           int16_t;
-typedef signed int             int32_t;
-typedef signed long long int   int64_t;
-typedef unsigned char          uint8_t;
-typedef unsigned short         uint16_t;
-typedef unsigned int           uint32_t;
-typedef unsigned long long int uint64_t;
+typedef signed char            grub_int8_t;
+typedef signed short           grub_int16_t;
+typedef signed int             grub_int32_t;
+typedef signed long long int   grub_int64_t;
+typedef unsigned char          grub_uint8_t;
+typedef unsigned short         grub_uint16_t;
+typedef unsigned int           grub_uint32_t;
+typedef unsigned long long int grub_uint64_t;
 
-typedef uint8_t                u_char;
-typedef uint32_t               u_int;
+typedef grub_uint8_t                grub_u_char;
+typedef grub_uint32_t               grub_u_int;
 
-typedef uint8_t                u_int8_t;
-typedef uint16_t               u_int16_t;
-typedef uint32_t               u_int32_t;
-typedef uint64_t               u_int64_t;
+typedef grub_uint8_t                grub_u_int8_t;
+typedef grub_uint16_t               grub_u_int16_t;
+typedef grub_uint32_t               grub_u_int32_t;
+typedef grub_uint64_t               grub_u_int64_t;
 
 #define i_size di_size
 
@@ -75,18 +76,18 @@ typedef uint64_t               u_int64_t;
  * the root inode is 2.  (Inode 1 is no longer used for this purpose, however
  * numerous dump tapes make this assumption, so we are stuck with it).
  */
-#define	ROOTINO	((ino_t)2)
+#define	ROOTINO	((grub_ino_t)2)
 
 /*
  * The size of physical and logical block numbers and time fields in UFS.
  */
-typedef int32_t ufs1_daddr_t;
-typedef	int64_t	ufs2_daddr_t;
-typedef int64_t ufs_lbn_t;
-typedef int64_t ufs_time_t;
+typedef grub_int32_t ufs1_daddr_t;
+typedef	grub_int64_t	ufs2_daddr_t;
+typedef grub_int64_t ufs_lbn_t;
+typedef grub_int64_t ufs_time_t;
 
 /* inode number */
-typedef uint32_t      ino_t;
+typedef grub_uint32_t      grub_ino_t;
 
 /* File permissions. */
 #define	IEXEC		0000100		/* Executable. */
@@ -119,61 +120,61 @@ typedef uint32_t      ino_t;
 #define	NIADDR	3			/* Indirect addresses in inode. */
 
 struct ufs1_dinode {
-	u_int16_t       di_mode;        /*   0: IFMT, permissions; see below. */
-	int16_t         di_nlink;       /*   2: File link count. */
+	grub_u_int16_t       di_mode;        /*   0: IFMT, permissions; see below. */
+	grub_int16_t         di_nlink;       /*   2: File link count. */
 	union {
-		u_int16_t oldids[2];    /*   4: Ffs: old user and group ids. */
+		grub_u_int16_t oldids[2];    /*   4: Ffs: old user and group ids. */
 	} di_u;
-	u_int64_t       di_size;        /*   8: File byte count. */
-	int32_t         di_atime;       /*  16: Last access time. */
-	int32_t         di_atimensec;   /*  20: Last access time. */
-	int32_t         di_mtime;       /*  24: Last modified time. */
-	int32_t         di_mtimensec;   /*  28: Last modified time. */
-	int32_t         di_ctime;       /*  32: Last inode change time. */
-	int32_t         di_ctimensec;   /*  36: Last inode change time. */
+	grub_u_int64_t       di_size;        /*   8: File byte count. */
+	grub_int32_t         di_atime;       /*  16: Last access time. */
+	grub_int32_t         di_atimensec;   /*  20: Last access time. */
+	grub_int32_t         di_mtime;       /*  24: Last modified time. */
+	grub_int32_t         di_mtimensec;   /*  28: Last modified time. */
+	grub_int32_t         di_ctime;       /*  32: Last inode change time. */
+	grub_int32_t         di_ctimensec;   /*  36: Last inode change time. */
 	ufs1_daddr_t    di_db[NDADDR];  /*  40: Direct disk blocks. */
 	ufs1_daddr_t    di_ib[NIADDR];  /*  88: Indirect disk blocks. */
-	u_int32_t       di_flags;       /* 100: Status flags (chflags). */
-	int32_t         di_blocks;      /* 104: Blocks actually held. */
-	int32_t         di_gen;         /* 108: Generation number. */
-	u_int32_t       di_uid;         /* 112: File owner. */
-	u_int32_t       di_gid;         /* 116: File group. */
-	int32_t         di_spare[2];    /* 120: Reserved; currently unused */
+	grub_u_int32_t       di_flags;       /* 100: Status flags (chflags). */
+	grub_int32_t         di_blocks;      /* 104: Blocks actually held. */
+	grub_int32_t         di_gen;         /* 108: Generation number. */
+	grub_u_int32_t       di_uid;         /* 112: File owner. */
+	grub_u_int32_t       di_gid;         /* 116: File group. */
+	grub_int32_t         di_spare[2];    /* 120: Reserved; currently unused */
 };
 
 struct ufs2_dinode {
-	u_int16_t	di_mode;	/*   0: IFMT, permissions; see below. */
-	int16_t		di_nlink;	/*   2: File link count. */
-	u_int32_t	di_uid;		/*   4: File owner. */
-	u_int32_t	di_gid;		/*   8: File group. */
-	u_int32_t	di_blksize;	/*  12: Inode blocksize. */
-	u_int64_t	di_size;	/*  16: File byte count. */
-	u_int64_t	di_blocks;	/*  24: Bytes actually held. */
+	grub_u_int16_t	di_mode;	/*   0: IFMT, permissions; see below. */
+	grub_int16_t		di_nlink;	/*   2: File link count. */
+	grub_u_int32_t	di_uid;		/*   4: File owner. */
+	grub_u_int32_t	di_gid;		/*   8: File group. */
+	grub_u_int32_t	di_blksize;	/*  12: Inode blocksize. */
+	grub_u_int64_t	di_size;	/*  16: File byte count. */
+	grub_u_int64_t	di_blocks;	/*  24: Bytes actually held. */
 	ufs_time_t	di_atime;	/*  32: Last access time. */
 	ufs_time_t	di_mtime;	/*  40: Last modified time. */
 	ufs_time_t	di_ctime;	/*  48: Last inode change time. */
 	ufs_time_t	di_birthtime;	/*  56: Inode creation time. */
-	int32_t		di_mtimensec;	/*  64: Last modified time. */
-	int32_t		di_atimensec;	/*  68: Last access time. */
-	int32_t		di_ctimensec;	/*  72: Last inode change time. */
-	int32_t		di_birthnsec;	/*  76: Inode creation time. */
-	int32_t		di_gen;		/*  80: Generation number. */
-	u_int32_t	di_kernflags;	/*  84: Kernel flags. */
-	u_int32_t	di_flags;	/*  88: Status flags (chflags). */
-	int32_t		di_extsize;	/*  92: External attributes block. */
+	grub_int32_t		di_mtimensec;	/*  64: Last modified time. */
+	grub_int32_t		di_atimensec;	/*  68: Last access time. */
+	grub_int32_t		di_ctimensec;	/*  72: Last inode change time. */
+	grub_int32_t		di_birthnsec;	/*  76: Inode creation time. */
+	grub_int32_t		di_gen;		/*  80: Generation number. */
+	grub_u_int32_t	di_kernflags;	/*  84: Kernel flags. */
+	grub_u_int32_t	di_flags;	/*  88: Status flags (chflags). */
+	grub_int32_t		di_extsize;	/*  92: External attributes block. */
 	ufs2_daddr_t	di_extb[NXADDR];/*  96: External attributes block. */
 	ufs2_daddr_t	di_db[NDADDR];	/* 112: Direct disk blocks. */
 	ufs2_daddr_t	di_ib[NIADDR];	/* 208: Indirect disk blocks. */
-	int64_t		di_spare[3];	/* 232: Reserved; currently unused */
+	grub_int64_t		di_spare[3];	/* 232: Reserved; currently unused */
 };
 
 #define	MAXNAMLEN	255
 
 struct	direct {
-	u_int32_t d_ino;		/* inode number of entry */
-	u_int16_t d_reclen;		/* length of this record */
-	u_int8_t  d_type; 		/* file type, see below */
-	u_int8_t  d_namlen;		/* length of string in d_name */
+	grub_u_int32_t d_ino;		/* inode number of entry */
+	grub_u_int16_t d_reclen;		/* length of this record */
+	grub_u_int8_t  d_type; 		/* file type, see below */
+	grub_u_int8_t  d_namlen;		/* length of string in d_name */
 	char	  d_name[MAXNAMLEN + 1];/* name with length <= MAXNAMLEN */
 };
 
@@ -222,122 +223,122 @@ struct	direct {
  * super block.
  */
 struct csum {
-	int32_t	cs_ndir;		/* number of directories */
-	int32_t	cs_nbfree;		/* number of free blocks */
-	int32_t	cs_nifree;		/* number of free inodes */
-	int32_t	cs_nffree;		/* number of free frags */
+	grub_int32_t	cs_ndir;		/* number of directories */
+	grub_int32_t	cs_nbfree;		/* number of free blocks */
+	grub_int32_t	cs_nifree;		/* number of free inodes */
+	grub_int32_t	cs_nffree;		/* number of free frags */
 };
 
 struct csum_total {
-	int64_t	cs_ndir;		/* number of directories */
-	int64_t	cs_nbfree;		/* number of free blocks */
-	int64_t	cs_nifree;		/* number of free inodes */
-	int64_t	cs_nffree;		/* number of free frags */
-	int64_t	cs_numclusters;		/* number of free clusters */
-	int64_t	cs_spare[3];		/* future expansion */
+	grub_int64_t	cs_ndir;		/* number of directories */
+	grub_int64_t	cs_nbfree;		/* number of free blocks */
+	grub_int64_t	cs_nifree;		/* number of free inodes */
+	grub_int64_t	cs_nffree;		/* number of free frags */
+	grub_int64_t	cs_numclusters;		/* number of free clusters */
+	grub_int64_t	cs_spare[3];		/* future expansion */
 };
 
 /*
  * Super block for an FFS filesystem.
  */
 struct fs {
-	int32_t	 fs_firstfield;		/* historic filesystem linked list, */
-	int32_t	 fs_unused_1;		/*     used for incore super blocks */
-	int32_t	 fs_sblkno;		/* offset of super-block in filesys */
-	int32_t	 fs_cblkno;		/* offset of cyl-block in filesys */
-	int32_t	 fs_iblkno;		/* offset of inode-blocks in filesys */
-	int32_t	 fs_dblkno;		/* offset of first data after cg */
-	int32_t	 fs_old_cgoffset;	/* cylinder group offset in cylinder */
-	int32_t	 fs_old_cgmask;		/* used to calc mod fs_ntrak */
-	int32_t  fs_old_time;		/* last time written */
-	int32_t	 fs_old_size;		/* number of blocks in fs */
-	int32_t	 fs_old_dsize;		/* number of data blocks in fs */
-	int32_t	 fs_ncg;		/* number of cylinder groups */
-	int32_t	 fs_bsize;		/* size of basic blocks in fs */
-	int32_t	 fs_fsize;		/* size of frag blocks in fs */
-	int32_t	 fs_frag;		/* number of frags in a block in fs */
+	grub_int32_t	 fs_firstfield;		/* historic filesystem linked list, */
+	grub_int32_t	 fs_unused_1;		/*     used for incore super blocks */
+	grub_int32_t	 fs_sblkno;		/* offset of super-block in filesys */
+	grub_int32_t	 fs_cblkno;		/* offset of cyl-block in filesys */
+	grub_int32_t	 fs_iblkno;		/* offset of inode-blocks in filesys */
+	grub_int32_t	 fs_dblkno;		/* offset of first data after cg */
+	grub_int32_t	 fs_old_cgoffset;	/* cylinder group offset in cylinder */
+	grub_int32_t	 fs_old_cgmask;		/* used to calc mod fs_ntrak */
+	grub_int32_t  fs_old_time;		/* last time written */
+	grub_int32_t	 fs_old_size;		/* number of blocks in fs */
+	grub_int32_t	 fs_old_dsize;		/* number of data blocks in fs */
+	grub_int32_t	 fs_ncg;		/* number of cylinder groups */
+	grub_int32_t	 fs_bsize;		/* size of basic blocks in fs */
+	grub_int32_t	 fs_fsize;		/* size of frag blocks in fs */
+	grub_int32_t	 fs_frag;		/* number of frags in a block in fs */
 /* these are configuration parameters */
-	int32_t	 fs_minfree;		/* minimum percentage of free blocks */
-	int32_t	 fs_old_rotdelay;	/* num of ms for optimal next block */
-	int32_t	 fs_old_rps;		/* disk revolutions per second */
+	grub_int32_t	 fs_minfree;		/* minimum percentage of free blocks */
+	grub_int32_t	 fs_old_rotdelay;	/* num of ms for optimal next block */
+	grub_int32_t	 fs_old_rps;		/* disk revolutions per second */
 /* these fields can be computed from the others */
-	int32_t	 fs_bmask;		/* ``blkoff'' calc of blk offsets */
-	int32_t	 fs_fmask;		/* ``fragoff'' calc of frag offsets */
-	int32_t	 fs_bshift;		/* ``lblkno'' calc of logical blkno */
-	int32_t	 fs_fshift;		/* ``numfrags'' calc number of frags */
+	grub_int32_t	 fs_bmask;		/* ``blkoff'' calc of blk offsets */
+	grub_int32_t	 fs_fmask;		/* ``fragoff'' calc of frag offsets */
+	grub_int32_t	 fs_bshift;		/* ``lblkno'' calc of logical blkno */
+	grub_int32_t	 fs_fshift;		/* ``numfrags'' calc number of frags */
 /* these are configuration parameters */
-	int32_t	 fs_maxcontig;		/* max number of contiguous blks */
-	int32_t	 fs_maxbpg;		/* max number of blks per cyl group */
+	grub_int32_t	 fs_maxcontig;		/* max number of contiguous blks */
+	grub_int32_t	 fs_maxbpg;		/* max number of blks per cyl group */
 /* these fields can be computed from the others */
-	int32_t	 fs_fragshift;		/* block to frag shift */
-	int32_t	 fs_fsbtodb;		/* fsbtodb and dbtofsb shift constant */
-	int32_t	 fs_sbsize;		/* actual size of super block */
-	int32_t	 fs_spare1[2];		/* old fs_csmask */
+	grub_int32_t	 fs_fragshift;		/* block to frag shift */
+	grub_int32_t	 fs_fsbtodb;		/* fsbtodb and dbtofsb shift constant */
+	grub_int32_t	 fs_sbsize;		/* actual size of super block */
+	grub_int32_t	 fs_spare1[2];		/* old fs_csmask */
 					/* old fs_csshift */
-	int32_t	 fs_nindir;		/* value of NINDIR */
-	int32_t	 fs_inopb;		/* value of INOPB */
-	int32_t	 fs_old_nspf;		/* value of NSPF */
+	grub_int32_t	 fs_nindir;		/* value of NINDIR */
+	grub_int32_t	 fs_inopb;		/* value of INOPB */
+	grub_int32_t	 fs_old_nspf;		/* value of NSPF */
 /* yet another configuration parameter */
-	int32_t	 fs_optim;		/* optimization preference, see below */
-	int32_t	 fs_old_npsect;		/* # sectors/track including spares */
-	int32_t	 fs_old_interleave;	/* hardware sector interleave */
-	int32_t	 fs_old_trackskew;	/* sector 0 skew, per track */
-	int32_t	 fs_id[2];		/* unique filesystem id */
+	grub_int32_t	 fs_optim;		/* optimization preference, see below */
+	grub_int32_t	 fs_old_npsect;		/* # sectors/track including spares */
+	grub_int32_t	 fs_old_interleave;	/* hardware sector interleave */
+	grub_int32_t	 fs_old_trackskew;	/* sector 0 skew, per track */
+	grub_int32_t	 fs_id[2];		/* unique filesystem id */
 /* sizes determined by number of cylinder groups and their sizes */
-	int32_t	 fs_old_csaddr;		/* blk addr of cyl grp summary area */
-	int32_t	 fs_cssize;		/* size of cyl grp summary area */
-	int32_t	 fs_cgsize;		/* cylinder group size */
-	int32_t	 fs_spare2;		/* old fs_ntrak */
-	int32_t	 fs_old_nsect;		/* sectors per track */
-	int32_t  fs_old_spc;		/* sectors per cylinder */
-	int32_t	 fs_old_ncyl;		/* cylinders in filesystem */
-	int32_t	 fs_old_cpg;		/* cylinders per group */
-	int32_t	 fs_ipg;		/* inodes per group */
-	int32_t	 fs_fpg;		/* blocks per group * fs_frag */
+	grub_int32_t	 fs_old_csaddr;		/* blk addr of cyl grp summary area */
+	grub_int32_t	 fs_cssize;		/* size of cyl grp summary area */
+	grub_int32_t	 fs_cgsize;		/* cylinder group size */
+	grub_int32_t	 fs_spare2;		/* old fs_ntrak */
+	grub_int32_t	 fs_old_nsect;		/* sectors per track */
+	grub_int32_t  fs_old_spc;		/* sectors per cylinder */
+	grub_int32_t	 fs_old_ncyl;		/* cylinders in filesystem */
+	grub_int32_t	 fs_old_cpg;		/* cylinders per group */
+	grub_int32_t	 fs_ipg;		/* inodes per group */
+	grub_int32_t	 fs_fpg;		/* blocks per group * fs_frag */
 /* this data must be re-computed after crashes */
 	struct	csum fs_old_cstotal;	/* cylinder summary information */
 /* these fields are cleared at mount time */
-	int8_t   fs_fmod;		/* super block modified flag */
-	int8_t   fs_clean;		/* filesystem is clean flag */
-	int8_t 	 fs_ronly;		/* mounted read-only flag */
-	int8_t   fs_old_flags;		/* old FS_ flags */
-	u_char	 fs_fsmnt[MAXMNTLEN];	/* name mounted on */
+	grub_int8_t   fs_fmod;		/* super block modified flag */
+	grub_int8_t   fs_clean;		/* filesystem is clean flag */
+	grub_int8_t 	 fs_ronly;		/* mounted read-only flag */
+	grub_int8_t   fs_old_flags;		/* old FS_ flags */
+	grub_u_char	 fs_fsmnt[MAXMNTLEN];	/* name mounted on */
 /* these fields retain the current block allocation info */
-	int32_t	 fs_cgrotor;		/* last cg searched */
+	grub_int32_t	 fs_cgrotor;		/* last cg searched */
 	void 	*fs_ocsp[NOCSPTRS];	/* padding; was list of fs_cs buffers */
-	u_int8_t *fs_contigdirs;	/* # of contiguously allocated dirs */
+	grub_u_int8_t *fs_contigdirs;	/* # of contiguously allocated dirs */
 	struct	csum *fs_csp;		/* cg summary info buffer for fs_cs */
-	int32_t	*fs_maxcluster;		/* max cluster in each cyl group */
-	u_int	*fs_active;		/* used by snapshots to track fs */
-	int32_t	 fs_old_cpc;		/* cyl per cycle in postbl */
-	int32_t	 fs_maxbsize;		/* maximum blocking factor permitted */
-	int64_t	 fs_sparecon64[17];	/* old rotation block list head */
-	int64_t	 fs_sblockloc;		/* byte offset of standard superblock */
+	grub_int32_t	*fs_maxcluster;		/* max cluster in each cyl group */
+	grub_u_int	*fs_active;		/* used by snapshots to track fs */
+	grub_int32_t	 fs_old_cpc;		/* cyl per cycle in postbl */
+	grub_int32_t	 fs_maxbsize;		/* maximum blocking factor permitted */
+	grub_int64_t	 fs_sparecon64[17];	/* old rotation block list head */
+	grub_int64_t	 fs_sblockloc;		/* byte offset of standard superblock */
 	struct	csum_total fs_cstotal;	/* cylinder summary information */
 	ufs_time_t fs_time;		/* last time written */
-	int64_t	 fs_size;		/* number of blocks in fs */
-	int64_t	 fs_dsize;		/* number of data blocks in fs */
+	grub_int64_t	 fs_size;		/* number of blocks in fs */
+	grub_int64_t	 fs_dsize;		/* number of data blocks in fs */
 	ufs2_daddr_t fs_csaddr;		/* blk addr of cyl grp summary area */
-	int64_t	 fs_pendingblocks;	/* blocks in process of being freed */
-	int32_t	 fs_pendinginodes;	/* inodes in process of being freed */
-	int32_t	 fs_snapinum[FSMAXSNAP];/* list of snapshot inode numbers */
-	int32_t	 fs_avgfilesize;	/* expected average file size */
-	int32_t	 fs_avgfpdir;		/* expected # of files per directory */
-	int32_t	 fs_save_cgsize;	/* save real cg size to use fs_bsize */
-	int32_t	 fs_sparecon32[26];	/* reserved for future constants */
-	int32_t  fs_flags;		/* see FS_ flags below */
-	int32_t	 fs_contigsumsize;	/* size of cluster summary array */ 
-	int32_t	 fs_maxsymlinklen;	/* max length of an internal symlink */
-	int32_t	 fs_old_inodefmt;	/* format of on-disk inodes */
-	u_int64_t fs_maxfilesize;	/* maximum representable file size */
-	int64_t	 fs_qbmask;		/* ~fs_bmask for use with 64-bit size */
-	int64_t	 fs_qfmask;		/* ~fs_fmask for use with 64-bit size */
-	int32_t	 fs_state;		/* validate fs_clean field */
-	int32_t	 fs_old_postblformat;	/* format of positional layout tables */
-	int32_t	 fs_old_nrpos;		/* number of rotational positions */
-	int32_t	 fs_spare5[2];		/* old fs_postbloff */
+	grub_int64_t	 fs_pendingblocks;	/* blocks in process of being freed */
+	grub_int32_t	 fs_pendinginodes;	/* inodes in process of being freed */
+	grub_int32_t	 fs_snapinum[FSMAXSNAP];/* list of snapshot inode numbers */
+	grub_int32_t	 fs_avgfilesize;	/* expected average file size */
+	grub_int32_t	 fs_avgfpdir;		/* expected # of files per directory */
+	grub_int32_t	 fs_save_cgsize;	/* save real cg size to use fs_bsize */
+	grub_int32_t	 fs_sparecon32[26];	/* reserved for future constants */
+	grub_int32_t  fs_flags;		/* see FS_ flags below */
+	grub_int32_t	 fs_contigsumsize;	/* size of cluster summary array */ 
+	grub_int32_t	 fs_maxsymlinklen;	/* max length of an internal symlink */
+	grub_int32_t	 fs_old_inodefmt;	/* format of on-disk inodes */
+	grub_u_int64_t fs_maxfilesize;	/* maximum representable file size */
+	grub_int64_t	 fs_qbmask;		/* ~fs_bmask for use with 64-bit size */
+	grub_int64_t	 fs_qfmask;		/* ~fs_fmask for use with 64-bit size */
+	grub_int32_t	 fs_state;		/* validate fs_clean field */
+	grub_int32_t	 fs_old_postblformat;	/* format of positional layout tables */
+	grub_int32_t	 fs_old_nrpos;		/* number of rotational positions */
+	grub_int32_t	 fs_spare5[2];		/* old fs_postbloff */
 					/* old fs_rotbloff */
-	int32_t	 fs_magic;		/* magic number */
+	grub_int32_t	 fs_magic;		/* magic number */
 };
 
 /*
