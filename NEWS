@@ -13,6 +13,7 @@ New in 0.5.93:
 * The command "help" displays helpful information about builtin
   commands.
 * The command "geometry" displays the information of a drive specified.
+* The command "configfile" loads a configuration file interactively.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

@@ -175,6 +175,7 @@ ENTRY(chain_stage1)
 #endif /* STAGE1_5 */
 
 
+#ifdef STAGE1_5
 /*
  * chain_stage2(segment, offset)
  *
@@ -212,7 +213,8 @@ ENTRY(chain_stage2)
 	DATA32	ADDR32	ljmp	(offset)
 
 	.code32
-
+#endif /* STAGE1_5 */
+	
 /*
  *  These next two routines, "real_to_prot" and "prot_to_real" are structured
  *  in a very specific way.  Be very careful when changing them.
@@ -766,6 +768,7 @@ pc_notnewline:
 	pop	%ebp
 	ret
 
+#ifndef STAGE1_5
 /* get_code_end() :  return the address of the end of the code
  * This is here so that it can be replaced by asmstub.c.
  */
@@ -775,6 +778,7 @@ ENTRY(get_code_end)
 	incl	%eax
 	shll	$2, %eax
 	ret
+#endif /* ! STAGE1_5 */
 
 /*
  *

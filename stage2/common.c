@@ -28,7 +28,9 @@
 struct multiboot_info mbi;
 unsigned long saved_drive;
 unsigned long saved_partition;
+#ifndef STAGE1_5
 unsigned long saved_mem_upper;
+#endif
 
 /*
  *  Error code stuff.
@@ -194,7 +196,9 @@ init_bios_info (void)
       mbi.mem_upper = memtmp;
     }
 
+#ifndef STAGE1_5
   saved_mem_upper = mbi.mem_upper;
+#endif
 
   /*
    *  Initialize other Multiboot Info flags.

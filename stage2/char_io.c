@@ -521,7 +521,7 @@ grub_isspace (int c)
 }
 
 
-#ifndef STAGE1_5
+#if 0
 int
 grub_strncat (char *s1, const char *s2, int n)
 {
@@ -540,8 +540,9 @@ grub_strncat (char *s1, const char *s2, int n)
 
   return 1;
 }
+#endif
 
-
+#ifndef STAGE1_5
 int
 grub_strcmp (const char *s1, const char *s2)
 {

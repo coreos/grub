@@ -198,6 +198,42 @@ static struct builtin builtin_color =
 };
 
 
+/* configfile */
+static int
+configfile_func (char *arg, int flags)
+{
+  char *new_config = config_file;
+
+  /* Check if the file ARG is present.  */
+  if (! grub_open (arg))
+    return 1;
+  
+  /* Copy ARG to CONFIG_FILE.  */
+  while ((*new_config++ = *arg++) != 0)
+    ;
+
+#ifdef GRUB_UTIL
+  /* Force to load the configuration file.  */
+  use_config_file = 1;
+#endif
+
+  /* Restart cmain.  */
+  cmain ();
+
+  /* Never reach here.  */
+  return 0;
+}
+
+static struct builtin builtin_configfile =
+{
+  "configfile",
+  configfile_func,
+  BUILTIN_CMDLINE,
+  "configfile FILE",
+  "Load the file FILE as the configuration file."
+};
+
+
 /* debug */
 static int
 debug_func (char *arg, int flags)
@@ -1173,7 +1209,7 @@ static struct builtin builtin_rootnoverify =
   "rootnoverify",
   rootnoverify_func,
   BUILTIN_CMDLINE,
-  "rootnoverify device [hdbias]",
+  "rootnoverify DEVICE [HDBIAS]",
   "Similar to `root=', but don't attempt to mount the partition. This"
   " is useful for when an OS is outside of the area of the disk that"
   " GRUB can read, but setting the correct root partition is still"
@@ -1333,7 +1369,7 @@ static struct builtin builtin_unhide =
   "unhide",
   unhide_func,
   BUILTIN_CMDLINE | BUILTIN_MENU,
-  "unhide drive",
+  "unhide DRIVE",
   "Unhide the drive DRIVE by subtracting 0x10 from the partition type."
 };
 
@@ -1354,7 +1390,7 @@ static struct builtin builtin_uppermem =
   "uppermem",
   uppermem_func,
   BUILTIN_CMDLINE,
-  "uppermem kbytes",
+  "uppermem KBYTES",
   "Force GRUB to ignore what it found during the autoprobe of the"
   " memory available to the system, and to use KBYTES as the number of"
   " kilobytes of upper memory installed. Any address range maps of the"
@@ -1368,6 +1404,7 @@ struct builtin *builtin_table[] =
   &builtin_boot,
   &builtin_chainloader,
   &builtin_color,
+  &builtin_configfile,
   &builtin_debug,
   &builtin_default,
   &builtin_displaymem,

@@ -1,5 +1,26 @@
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (configfile_func): New function.
+	(builtin_configfile): New variable.
+	(builtin_table): Added the pointer to BUILTIN_CONFIGFILE.
+	
+1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage2/asm.S [!STAGE1_5] (chain_stage2): Deleted.
+	[STAGE1_5] (get_code_end): Likewise.
+	* stage2/char_io.c (grub_strncat): Likewise.
+	* stage2/common.c [STAGE1_5] (saved_mem_upper): Likewise.
+	* stage2/smp-imps.c (imps_release_cpus): Likewise.
+	(imps_any_new_apics): Made static.
+	(imps_enabled): Likewise.
+	(imps_num_cpus): Likewise.
+	(imps_lapic_addr): Likewise.
+	(imps_cpu_apic_map): Likewise.
+	(imps_apic_cpu_map): Likewise.
+	
+1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/builtins.c (testload_func): Fix the typos: 0x2000000 ->
 	0x200000 and 0x3000000 -> 0x300000.
 	

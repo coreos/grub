@@ -27,8 +27,6 @@ larger than 16MB can be read.
 
 Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
 
-Add ``configfile'' command, in a clean way.
-
 Add keyboard layout configuration support.
 
 Clean up and enhance the manuals, especially concept indexes.

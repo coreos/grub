@@ -249,13 +249,15 @@ defconfig =
  *  Exported globals here.
  */
 
-int imps_any_new_apics = 0;
+static int imps_any_new_apics = 0;
+#if 0
 volatile int imps_release_cpus = 0;
-int imps_enabled = 0;
-int imps_num_cpus = 1;
-unsigned imps_lapic_addr = ((unsigned) (&lapic_dummy)) - LAPIC_ID;
-unsigned char imps_cpu_apic_map[IMPS_MAX_CPUS];
-unsigned char imps_apic_cpu_map[IMPS_MAX_CPUS];
+#endif
+static int imps_enabled = 0;
+static int imps_num_cpus = 1;
+static unsigned imps_lapic_addr = ((unsigned) (&lapic_dummy)) - LAPIC_ID;
+static unsigned char imps_cpu_apic_map[IMPS_MAX_CPUS];
+static unsigned char imps_apic_cpu_map[IMPS_MAX_CPUS];
 
 
 /*
