@@ -17,6 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#ifdef FSYS_FAT
 
 #include "shared.h"
 
@@ -256,3 +257,5 @@ loop:
   /* go back to main loop at top of function */
   goto loop;
 }
+
+#endif /* FSYS_FAT */

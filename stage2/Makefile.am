@@ -15,7 +15,8 @@ INCLUDES = -I$(top_srcdir)/stage1
 noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c common.c char_io.c cmdline.c disk_io.c \
 	gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c stage2.c
-libgrub_a_CFLAGS = @GRUB_CFLAGS@ -DGRUB_UTIL=1 -fwritable-strings
+libgrub_a_CFLAGS = @GRUB_CFLAGS@ -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
+	-DFSYS_FAT=1 -DFSYS_FFS=1 -fwritable-strings
 
 # Stage 2 and Stage 1.5's.
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
@@ -35,9 +36,9 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1 \
 # asm.S absolutely needs to come first!
 # For stage2 target.
 stage2_exec_SOURCES = asm.S boot.c common.c char_io.c cmdline.c \
-	disk_io.c gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c stage2.c \
-	bios.c smp-imps.c
-stage2_exec_CFLAGS = $(STAGE2_COMPILE)
+	disk_io.c gunzip.c stage2.c bios.c smp-imps.c fsys_ext2fs.c \
+	fsys_fat.c fsys_ffs.c
+stage2_exec_CFLAGS = $(STAGE2_COMPILE) @FSYS_CFLAGS@
 stage2_exec_LDFLAGS = $(STAGE2_LINK)
 
 # For e2fs_stage1_5 target.

@@ -44,7 +44,8 @@ using GRUB as your bootloader.
 
 GNU GRUB has a page on the web. See:
 
-	http://www.gnu.org/software/grub/grub.html
+	http://www.gnu.org/software/grub/grub.en.html (English)
+	http://www.gnu.org/software/grub/grub.ja.html (Japanese)
 
 If you have any suggestions or bug reports, please send electronic
 mail to the GRUB mailing list <bug-grub@gnu.org>.

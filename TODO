@@ -36,3 +36,5 @@ Clean up and enhance the manuals, especially concept indexes.
 Add more filesystems support (minix, FAT32, etc.)
 
 ??? Add hide and unhide facilities.
+
+Add remote console support (serial, parallel and net).

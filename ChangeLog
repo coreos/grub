@@ -1,3 +1,24 @@
+1999-08-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Pavel Roskin's patch that adds new options to disable arbitrary
+	filesystems is heavily modified and applied.
+	
+	* configure.in (--disable-ext2fs): New option.
+	(--disable-fat): Likewise.
+	(--disable-ffs): Likewise.
+	(FSYS_CFLAGS): New variable. Set to filesystems the user choose.
+	* grub/Makefile.am (AM_CFLAGS): Added -DFSYS_EXT2FS=1,
+	-DFSYS_FAT=1 and -DFSYS_FFS=1.
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Likewise.
+	(stage2_exec_CFLAGS): Added @FSYS_CFLAGS@.
+	* stage2/filesys.h 
+	[!(FSYS_FFS || FSYS_FAT || FSYS_EXT2FS)] (FSYS_FFS): Deleted.
+	[!(FSYS_FFS || FSYS_FAT || FSYS_EXT2FS)] (FSYS_FAT): Likewise.
+	[!(FSYS_FFS || FSYS_FAT || FSYS_EXT2FS)] (FSYS_EXT2FS): Likewise.
+	* stage2/fsys_ext2fs.c [!FSYS_EXT2FS]: Do not define anything.
+	* stage2/fsys_fat.c [!FSYS_FAT]: Likewise.
+	* stage2/fsys_ffs.c [!FSYS_FFS]: Likewise.
+	
 1999-08-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1_lba.S: Use STAGE1_DRP_ADDR for the address of

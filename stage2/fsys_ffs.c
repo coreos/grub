@@ -53,7 +53,7 @@
  *	$Id$
  */
 
-
+#ifdef FSYS_FFS
 
 #include "shared.h"
 
@@ -267,3 +267,5 @@ loop:
   /* go back to main loop at top of function */
   goto loop;
 }
+
+#endif /* FSYS_FFS */

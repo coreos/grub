@@ -21,16 +21,6 @@
 
 #include "pc_slice.h"
 
-/*
- *  Default to all functioning filesystems enabled
- */
-
-#if !( defined(FSYS_FFS) || defined(FSYS_FAT) || defined(FSYS_EXT2FS) )
-#define FSYS_FFS
-#define FSYS_FAT
-#define FSYS_EXT2FS
-#endif
-
 #ifdef FSYS_FFS
 #define FSYS_FFS_NUM 1
 int ffs_mount (void);
