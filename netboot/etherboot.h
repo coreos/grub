@@ -98,7 +98,12 @@ Author: Martin Renters
 /*#define ETH_MIN_PACKET		64*/
 #define	ETH_FRAME_LEN		1514	/* Maximum packet */
 /*#define ETH_MAX_PACKET		1518*/
-#define	ETH_MAX_MTU		(ETH_FRAME_LEN - ETH_HLEN)
+/* Because some DHCP/BOOTP servers don't treat the maximum length the same
+   as Etherboot, subtract the size of an IP header and that of an UDP
+   header.  */
+#define	ETH_MAX_MTU		(ETH_FRAME_LEN - ETH_HLEN \
+				- sizeof (struct iphdr) \
+				- sizeof (struct udphdr))
 
 #define ARP_CLIENT	0
 #define ARP_SERVER	1

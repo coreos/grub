@@ -1,3 +1,9 @@
+2002-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* netboot/etherboot.h (ETH_MAX_MTU): Because some DHCP/BOOTP
+	servers don't treat the maximum length the same as Etherboot,
+	subtract the size of an IP header and that of an UDP header.
+	
 2002-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Jean-Jacques Michel <jjmichel@linbox.com>:
