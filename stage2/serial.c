@@ -80,7 +80,7 @@ outb (unsigned short port, unsigned char value)
 int
 serial_hw_fetch (void)
 {
-  if (inb ((serial_hw_port + UART_LSR) & UART_DATA_READY))
+  if (inb (serial_hw_port + UART_LSR) & UART_DATA_READY)
     return inb (serial_hw_port + UART_RX);
 
   return -1;
