@@ -64,8 +64,10 @@ static inline unsigned char
 inb (unsigned short port)
 {
   unsigned char value;
-  
+
   asm volatile ("inb	%w1, %0" : "=a" (value) : "Nd" (port));
+  asm volatile ("outb	%%al, $0x80" : : );
+  
   return value;
 }
 
@@ -74,6 +76,7 @@ static inline void
 outb (unsigned short port, unsigned char value)
 {
   asm volatile ("outb	%b0, %w1" : : "a" (value), "Nd" (port));
+  asm volatile ("outb	%%al, $0x80" : : );
 }
 
 /* Fetch a key.  */
@@ -90,7 +93,7 @@ serial_hw_fetch (void)
 void
 serial_hw_put (int c)
 {
-  int timeout = 10000;
+  int timeout = 100000;
 
   /* Wait until the transmitter holding register is empty.  */
   while ((inb (serial_hw_port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
@@ -98,11 +101,8 @@ serial_hw_put (int c)
       if (--timeout == 0)
 	/* There is something wrong. But what can I do?  */
 	return;
-      
-      /* Insert a delay.  */
-      serial_hw_delay ();
     }
-  
+
   outb (serial_hw_port + UART_TX, c);
 }
 
@@ -263,17 +263,19 @@ static
 int fill_input_buf (void)
 {
   int i;
-  
-  for (i = 0; i < 1000 && npending < sizeof (input_buf); i++)
+
+  for (i = 0; i < 10000 && npending < sizeof (input_buf); i++)
     {
       int c;
 
       c = serial_hw_fetch ();
       if (c >= 0)
-	input_buf[npending++] = c;
+	{
+	  input_buf[npending++] = c;
 
-      /* Insert a delay.  */
-      serial_hw_delay ();
+	  /* Reset the counter to zero, to wait for the same interval.  */
+	  i = 0;
+	}
     }
 
   /* Translate some key sequences.  */

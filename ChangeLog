@@ -1,5 +1,16 @@
 2002-07-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/serial.c [!GRUB_UTIL] (inb): Added a delay into this
+	function itself.
+	[!GRUB_UTIL] (outb): Likewise.
+	[!GRUB_UTIL] (serial_hw_put): Increase the timeout value, and
+	don't call serial_hw_delay explicitly any longer.
+	(fill_input_buf): Increase the maximum number of retries, reset
+	the counter to zero after getting a valid character, and don't
+	call serial_hw_delay explicitly any longer.
+
+2002-07-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/serial.c [!GRUB_UTIL] (serial_hw_fetch): Fixed a typo.
 	Reported by Ilguiz Latypov.
 
