@@ -1,3 +1,36 @@
+2000-04-23  OKUJI Yoshinori  <okuji@gnu.org>
+
+	More security-related features.
+	
+	* stage2/builtins.c (auth): New global variable.
+	(configfile_func): Clear AUTH before jumping to cmain.
+	(lock_func): New function.
+	(builtin_lock): New variable.
+	(password_func): Make sure that LEN + 2 is less than or equal to
+	PASSWORD_BUFLEN, because now the password must be terminated
+	with double NULs, in order to permit an empty configuration file
+	name.
+	Copy LEN bytes from ARG to PASSWORD, instead of LEN + 1 bytes.
+	Clear the rest of the buffer PASSWORD.
+	(builtin_table): Added a pointer to BUILTIN_LOCK.
+	* stage2/common.c (err_list): Added an entry for ERR_PRIVILEGED.
+	* stage2/stage2.c (run_menu): If AUTH is true, show the messages
+	for a non-password configuration, even if PASSWORD is not NULL.
+	Likewise, if AUTH is true, allow the user to use privileged
+	instructions (such as `c').
+	If a correct password is entered, check if *PPTR is NUL or not.
+	If it is NUL, set AUTH to 1 and go to the label restart,
+	otherwise, copy PPTR to NEW_FILE, clear AUTH, and return.
+	* stage2/shared.h (grub_error_t): Added a new constant
+	ERR_PRIVILEGED.
+	(auth): Declared.
+	
+2000-04-23  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/user-ref.texi (Command-line-specific commands): Don't use
+	the command @var for the argument "file" to the command
+	"configfile" on the definition.
+	
 2000-04-22  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Update the network support to Etherboot 4.5.8.

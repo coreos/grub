@@ -417,6 +417,7 @@ typedef enum
   ERR_WRITE,
   ERR_BAD_ARGUMENT,
   ERR_UNALIGNED,
+  ERR_PRIVILEGED,
 
   MAX_ERR_NUM
 } grub_error_t;
@@ -461,6 +462,7 @@ extern void assign_device_name (int drive, const char *device);
 extern int fallback_entry;
 extern int default_entry;
 extern char *password;
+extern int auth;
 extern char commands[];
 #endif
 

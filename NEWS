@@ -23,6 +23,12 @@ New in 0.5.95 - XXXX-XX-XX:
   `--disable-lba-support-bitmap-check' any longer. Use the option above.
 * The network support is updated to Etherboot-4.5.8. So now we have
   3Com59x and DEPCA drivers.
+* Now you can omit the configuration file argument to the command
+  "password". If you omit it, then GRUB will just unlock privileged
+  instructions (such as `c') when you enter a correct password.
+* The new command "lock" can be used to prevent end-users from executing
+  arbitrary menu entries. This command will emit an error until the user
+  enters a correct password.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

@@ -810,7 +810,7 @@ Differ at the offset 777: 0xbe [foo], 0xef [bar]
 If they are complete identical, nothing will be printed.
 @end deffn
 
-@deffn Command configfile @var{file}
+@deffn Command configfile file
 Load @var{file} as the configuration file.
 @end deffn
 

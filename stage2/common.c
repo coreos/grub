@@ -76,6 +76,7 @@ char *err_list[] =
   [ERR_WRITE] = "Disk write error",
   [ERR_BAD_ARGUMENT] = "Invaild argument specified",
   [ERR_UNALIGNED] = "File is not sector aligned",
+  [ERR_PRIVILEGED] = "Must be authenticated",
 };
 
 

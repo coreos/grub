@@ -202,7 +202,7 @@ restart:
 	  DISP_UP, DISP_DOWN);
 #endif
 
-  if (password)
+  if (! auth && password)
     {
       printf ("       Press enter to boot the selected OS or \'p\' to enter a
         password to unlock the next set of features.");
@@ -364,7 +364,7 @@ restart:
 		break;
 	    }
 
-	  if (password)
+	  if (! auth && password)
 	    {
 	      if (c == 'p')
 		{
@@ -389,9 +389,26 @@ restart:
 		      char *new_file = config_file;
 		      while (isspace (*pptr))
 			pptr++;
-		      while ((*(new_file++) = *(pptr++)) != 0)
-			;
-		      return;
+
+		      /* If *PPTR is NUL, then allow the user to use
+			 privileged instructions, otherwise, load
+			 another configuration file.  */
+		      if (*pptr != 0)
+			{
+			  while ((*(new_file++) = *(pptr++)) != 0)
+			    ;
+
+			  /* Make sure that the user will not have
+			     authority in the next configuration.  */
+			  auth = 0;
+			  return;
+			}
+		      else
+			{
+			  /* Now the user is superhuman.  */
+			  auth = 1;
+			  goto restart;
+			}
 		    }
 		  else
 		    {

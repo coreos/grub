@@ -45,6 +45,8 @@ int fallback_entry = -1;
 static char *mb_cmdline;
 /* The password.  */
 char *password;
+/* The flag for indicating that the user is authoritative.  */
+int auth = 0;
 /* Color settings.  */
 int normal_color;
 int highlight_color;
@@ -643,6 +645,9 @@ configfile_func (char *arg, int flags)
   use_config_file = 1;
 #endif
 
+  /* Make sure that the user will not be authoritative.  */
+  auth = 0;
+  
   /* Restart cmain.  */
   grub_longjmp (restart_env, 0);
 
@@ -1945,6 +1950,29 @@ static struct builtin builtin_kernel =
 };
 
 
+/* lock */
+static int
+lock_func (char *arg, int flags)
+{
+  if (! auth && password)
+    {
+      errnum = ERR_PRIVILEGED;
+      return 1;
+    }
+
+  return 0;
+}
+
+static struct builtin builtin_lock =
+{
+  "lock",
+  lock_func,
+  BUILTIN_CMDLINE,
+  "lock",
+  "Break a command execution unless the user is authenticated."
+};
+  
+
 /* makeactive */
 static int
 makeactive_func (char *arg, int flags)
@@ -2114,14 +2142,17 @@ password_func (char *arg, int flags)
 {
   int len = grub_strlen (arg);
 
-  if (len > PASSWORD_BUFLEN)
+  /* PASSWORD NUL NUL ... */
+  if (len + 2 > PASSWORD_BUFLEN)
     {
       errnum = ERR_WONT_FIT;
       return 1;
     }
 
+  /* Copy the password and clear the rest of the buffer.  */
   password = (char *) PASSWORD_BUF;
-  grub_memmove (password, arg, len + 1);
+  grub_memmove (password, arg, len);
+  grub_memset (password + len, 0, PASSWORD_BUFLEN - len);
   return 0;
 }
 
@@ -2131,10 +2162,12 @@ static struct builtin builtin_password =
   password_func,
   BUILTIN_MENU,
 #if 0
-  "password PASSWD FILE",
+  "password PASSWD [FILE]",
   "Disable all interactive editing control (menu entry editor and"
   " command line). If the password PASSWD is entered, it loads the"
-  " FILE as a new config file and restarts the GRUB Stage 2."
+  " FILE as a new config file and restarts the GRUB Stage 2. If you"
+  " omit the argument FILE, then GRUB just unlocks privileged"
+  " instructions."
 #endif
 };
 
@@ -3029,6 +3062,7 @@ struct builtin *builtin_table[] =
   &builtin_install,
   &builtin_ioprobe,
   &builtin_kernel,
+  &builtin_lock,
   &builtin_makeactive,
   &builtin_map,
   &builtin_module,
