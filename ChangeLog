@@ -1,3 +1,8 @@
+2004-03-28  Pavel Roskin  <proski@gnu.org>
+
+	* stage2/boot.c: Imply --no-mem-option for Linux kernels with
+	protocol version 2.03 and above (Linux 2.4.18 and newer).
+
 2004-03-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/char_io.c [!GRUB_UTIL] (memcpy): New function. It is

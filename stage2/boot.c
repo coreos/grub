@@ -407,10 +407,24 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    while (dest < linux_data_tmp_addr + LINUX_CL_END_OFFSET && *src)
 	      *(dest++) = *(src++);
 	
-	    /* Add a mem option automatically only if the user doesn't
-	       specify it explicitly.  */
+	    /* Old Linux kernels have problems determining the amount of
+	       the available memory.  To work around this problem, we add
+	       the "mem" option to the kernel command line.  This has its
+	       own drawbacks because newer kernels can determine the
+	       memory map more accurately.  Boot protocol 2.03, which
+	       appeared in Linux 2.4.18, provides a pointer to the kernel
+	       version string, so we could check it.  But since kernel
+	       2.4.18 and newer are known to detect memory reliably, boot
+	       protocol 2.03 already implies that the kernel is new
+	       enough.  The "mem" option is added if neither of the
+	       following conditions is met:
+	       1) The "mem" option is already present.
+	       2) The "kernel" command is used with "--no-mem-option".
+	       3) GNU GRUB is configured not to pass the "mem" option.
+	       4) The kernel supports boot protocol 2.03 or newer.  */
 	    if (! grub_strstr (arg, "mem=")
 		&& ! (load_flags & KERNEL_LOAD_NO_MEM_OPTION)
+		&& lh->version < 0x0203		/* kernel version < 2.4.18 */
 		&& dest + 15 < linux_data_tmp_addr + LINUX_CL_END_OFFSET)
 	      {
 		*dest++ = ' ';

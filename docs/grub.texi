@@ -2735,7 +2735,7 @@ a kernel type in the other cases, quite safely.
 
 The option @option{--no-mem-option} is effective only for Linux. If the
 option is specified, GRUB doesn't pass the option @option{mem=} to the
-kernel.
+kernel.  This option is implied for Linux kernels 2.4.18 and newer.
 @end deffn
 
 
