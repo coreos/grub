@@ -1,3 +1,9 @@
+2001-01-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (boot_func): In the chain-loading mode,
+	clear the active flag of each of the loaded partition entries,
+	and then set the active flag of the booted partition image.
+	
 2001-01-04  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/builtins.c (embed_func): Call open_partition() even for

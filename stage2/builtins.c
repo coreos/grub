@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -291,6 +291,7 @@ boot_func (char *arg, int flags)
       if (boot_drive & 0x80)
 	{
 	  char *dst, *src;
+	  int i;
 	  
 	  /* Read the MBR here, because it might be modified
 	     after opening the partition.  */
@@ -309,6 +310,12 @@ boot_func (char *arg, int flags)
 	  src = (char *) SCRATCHADDR + BOOTSEC_PART_OFFSET;
 	  while (dst < (char *) BOOT_PART_TABLE + BOOTSEC_PART_LENGTH)
 	    *dst++ = *src++;
+	  
+	  /* Set the active flag of the booted partition.  */
+	  for (i = 0; i < 4; i++)
+	    PC_SLICE_FLAG (BOOT_PART_TABLE, i) = 0;
+
+	  *((unsigned char *) boot_part_addr) = PC_SLICE_FLAG_BOOTABLE;
 	}
       
       chain_stage1 (0, BOOTSEC_LOCATION, boot_part_addr);
