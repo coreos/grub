@@ -24,7 +24,8 @@ GNU GRUB has a page on the web. See:
 	http://www.gnu.org/software/grub/grub.ja.html (Japanese)
 
 If you have any suggestions or ideas, please send electronic mail to the
-GRUB mailing list <bug-grub@gnu.org>.
+GRUB mailing list <bug-grub@gnu.org>. The archive of the list is
+available at <http://www.mail-archive.com/bug-grub%40gnu.org/>.
 
 When you encounter any problem or bug, please submit it to
 <bug-grub@gnu.org> with information about your computer and what you did
