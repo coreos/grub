@@ -1,7 +1,7 @@
-
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -122,7 +122,7 @@
   (((type) == PC_SLICE_TYPE_EXTENDED)	\
    || ((type) == PC_SLICE_TYPE_WIN95_EXTENDED))
 
-/* these ones are special, as they use thier own partitioning scheme
+/* these ones are special, as they use their own partitioning scheme
    to subdivide the PC partitions from there.  */
 #define PC_SLICE_TYPE_FREEBSD		0xa5
 #define PC_SLICE_TYPE_OPENBSD		0xa6

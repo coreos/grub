@@ -574,6 +574,8 @@ real_open_partition (int flags)
 		   *  If we've found the right partition, we're done
 		   */
 		  if (! flags
+		      && (slice_no < PC_SLICE_MAX
+			  || ! IS_PC_SLICE_TYPE_EXTENDED (current_slice))
 		      && (part_no == slice_no
 			  || (part_no == 0xFF
 			      && IS_PC_SLICE_TYPE_BSD (current_slice))))

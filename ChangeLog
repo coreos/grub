@@ -1,3 +1,10 @@
+1999-11-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/disk_io.c (real_open_partition): If SLICE_NO is greater
+	than or equal to PC_SLICE_MAX, skip any extended partition, when
+	searching for the right partition. Reported by Weil, Stefan 3732
+	EPE-24 <Stefan.Weil@de.heidelberg.com>.
+	
 1999-11-19  Gordon Matzigkeit  <gord@fig.org>
 
 	* grub/asmstub.c (getkey): Stop immediately if we get an EOF.
