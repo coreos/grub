@@ -68,6 +68,12 @@
 #define LINUX_SETUP_LEN_OFFSET    0x1F1
 #define LINUX_SETUP_STACK         0x3FF4
 
+#define LINUX_SETUP_LOADER        0x210
+#define LINUX_SETUP_LOAD_FLAGS    0x211
+#define LINUX_FLAG_BIG_KERNEL     0x1
+#define LINUX_SETUP_CODE_START    0x214
+#define LINUX_SETUP_INITRD        0x218
+
 #define CL_MY_LOCATION  0x92000
 #define CL_MY_END_ADDR  0x920FF
 #define CL_MAGIC_ADDR   0x90020
@@ -278,7 +284,7 @@ void stop_floppy(void);
 #ifndef _CMDLINE_C
 
 extern int fallback;
-extern int protected;
+extern char *password;
 extern char commands[];
 
 #endif  /* _CMDLINE_C */
@@ -320,8 +326,9 @@ int special_attribute;
 #define ERR_BELOW_1MB       (ERR_EXEC_FORMAT + 1)
 #define ERR_BOOT_FEATURES   (ERR_BELOW_1MB + 1)
 #define ERR_BOOT_FAILURE    (ERR_BOOT_FEATURES + 1)
-#define ERR_NEED_KERNEL     (ERR_BOOT_FAILURE + 1)
-#define ERR_BOOT_COMMAND    (ERR_NEED_KERNEL + 1)
+#define ERR_NEED_MB_KERNEL  (ERR_BOOT_FAILURE + 1)
+#define ERR_NEED_LX_KERNEL  (ERR_NEED_MB_KERNEL + 1)
+#define ERR_BOOT_COMMAND    (ERR_NEED_LX_KERNEL + 1)
 #define ERR_UNRECOGNIZED    (ERR_BOOT_COMMAND + 1)
 #define ERR_BAD_GZIP_HEADER (ERR_UNRECOGNIZED + 1)
 #define ERR_BAD_GZIP_DATA   (ERR_BAD_GZIP_HEADER + 1)
