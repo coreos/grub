@@ -698,8 +698,7 @@ set_device (char *device)
   
 #else /* ! STAGE1_5 */
   
-  /* The use of retval in this function is not really clean, but it works */
-  char *retval = 0;
+  int result = 0;
 
   incomplete = 0;
   disk_choice = 1;
@@ -754,7 +753,7 @@ set_device (char *device)
       if (*device == ')')
 	{
 	  part_choice = PART_CHOSEN;
-	  retval++;
+	  result = 1;
 	}
       else if (*device == ',')
 	{
@@ -800,7 +799,7 @@ set_device (char *device)
 		  part_choice ++;
 		}
 
-	      retval++;
+	      result = 1;
 	    }
 	}
     }
@@ -826,7 +825,7 @@ set_device (char *device)
       if (*device == '/')
 	{
 	  part_choice = PART_CHOSEN;
-	  retval ++;
+	  result = 1;
 	}
       else if (*device == 's')
 	{
@@ -873,15 +872,15 @@ set_device (char *device)
 	      part_choice ++;
 	    }
 
-	  retval ++;
+	  result = 1;
 	}
     }
 
   if (! sane_partition ())
     return 0;
   
-  if (retval)
-    retval = device + 1;
+  if (result)
+    return device + 1;
   else
     {
       if (!*device)
@@ -889,7 +888,7 @@ set_device (char *device)
       errnum = ERR_DEV_FORMAT;
     }
 
-  return retval;
+  return 0;
   
 #endif /* ! STAGE1_5 */
 }

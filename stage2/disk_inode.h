@@ -56,27 +56,28 @@
 #define	FFS_NDADDR	12	/* direct addresses in inode */
 #define	FFS_NIADDR	3	/* indirect addresses in inode */
 
-#define	FFS_MAX_FASTLINK_SIZE	((FFS_NDADDR + FFS_NIADDR) * sizeof(daddr_t))
+#define	FFS_MAX_FASTLINK_SIZE	((FFS_NDADDR + FFS_NIADDR) \
+				 * sizeof (mach_daddr_t))
 
 struct icommon
   {
     u_short ic_mode;		/*  0: mode and type of file */
     short ic_nlink;		/*  2: number of links to file */
-    uid_t ic_uid;		/*  4: owner's user id */
-    gid_t ic_gid;		/*  6: owner's group id */
+    mach_uid_t ic_uid;		/*  4: owner's user id */
+    mach_gid_t ic_gid;		/*  6: owner's group id */
     quad ic_size;		/*  8: number of bytes in file */
-    time_t ic_atime;		/* 16: time last accessed */
+    mach_time_t ic_atime;	/* 16: time last accessed */
     int ic_atspare;
-    time_t ic_mtime;		/* 24: time last modified */
+    mach_time_t ic_mtime;	/* 24: time last modified */
     int ic_mtspare;
-    time_t ic_ctime;		/* 32: last time inode changed */
+    mach_time_t ic_ctime;	/* 32: last time inode changed */
     int ic_ctspare;
     union
       {
 	struct
 	  {
-	    daddr_t Mb_db[FFS_NDADDR];	/* 40: disk block addresses */
-	    daddr_t Mb_ib[FFS_NIADDR];	/* 88: indirect blocks */
+	    mach_daddr_t Mb_db[FFS_NDADDR];	/* 40: disk block addresses */
+	    mach_daddr_t Mb_ib[FFS_NIADDR];	/* 88: indirect blocks */
 	  }
 	ic_Mb;
 	char ic_Msymlink[FFS_MAX_FASTLINK_SIZE];

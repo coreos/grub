@@ -171,22 +171,9 @@ AC_DEFUN(grub_CHECK_START_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if start is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_start_symbol,
-[cat > conftest.c <<\EOF
-int
-main (void)
-{
-  asm ("incl start");
-  return 0;
-}
-EOF
-
-if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
-  grub_cv_check_start_symbol=yes
-else
-  grub_cv_check_start_symbol=no
-fi
-
-rm -f conftest*])
+[AC_TRY_LINK([], [asm ("incl start")],
+   grub_cv_check_start_symbol=yes,
+   grub_cv_check_start_symbol=no)])
 
 if test "x$grub_cv_check_start_symbol" = xyes; then
   AC_DEFINE([HAVE_START_SYMBOL])
@@ -203,22 +190,9 @@ AC_DEFUN(grub_CHECK_USCORE_START_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if _start is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_start_symbol,
-[cat > conftest.c <<\EOF
-int
-main (void)
-{
-  asm ("incl _start");
-  return 0;
-}
-EOF
-
-if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
-  grub_cv_check_uscore_start_symbol=yes
-else
-  grub_cv_check_uscore_start_symbol=no
-fi
-
-rm -f conftest*])
+[AC_TRY_LINK([], [asm ("incl _start")],
+   grub_cv_check_uscore_start_symbol=yes,
+   grub_cv_check_uscore_start_symbol=no)])
 
 if test "x$grub_cv_check_uscore_start_symbol" = xyes; then
   AC_DEFINE([HAVE_USCORE_START_SYMBOL])
@@ -235,22 +209,9 @@ AC_DEFUN(grub_CHECK_END_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if end is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_end_symbol,
-[cat > conftest.c <<\EOF
-int
-main (void)
-{
-  asm ("incl end");
-  return 0;
-}
-EOF
-
-if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
-  grub_cv_check_end_symbol=yes
-else
-  grub_cv_check_end_symbol=no
-fi
-
-rm -f conftest*])
+[AC_TRY_LINK([], [asm ("incl end")],
+   grub_cv_check_end_symbol=yes,
+   grub_cv_check_end_symbol=no)])
 
 if test "x$grub_cv_check_end_symbol" = xyes; then
   AC_DEFINE([HAVE_END_SYMBOL])
@@ -267,22 +228,9 @@ AC_DEFUN(grub_CHECK_USCORE_END_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if _end is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_end_symbol,
-[cat > conftest.c <<\EOF
-int
-main (void)
-{
-  asm ("incl _end");
-  return 0;
-}
-EOF
-
-if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
-  grub_cv_check_uscore_end_symbol=yes
-else
-  grub_cv_check_uscore_end_symbol=no
-fi
-
-rm -f conftest*])
+[AC_TRY_LINK([], [asm ("incl _end")],
+   grub_cv_check_uscore_end_symbol=yes,
+   grub_cv_check_uscore_end_symbol=no)])
 
 if test "x$grub_cv_check_uscore_end_symbol" = xyes; then
   AC_DEFINE([HAVE_USCORE_END_SYMBOL])

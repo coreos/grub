@@ -1,3 +1,41 @@
+1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage2/defs.h (time_t): Renamed to ...
+	(mach_time_t): ... this.
+	(daddr_t): Renamed to ...
+	(mach_daddr_t): ... this.
+	(uid_t): Renamed to ...
+	(mach_uid_t): ... this.
+	(gid_t): Renamed to ...
+	(mach_gid_t): ... this.
+	(ino_t): Renamed to ...
+	(mach_ino_t): ... this.
+	* stage2/disk_inode.h (FFS_MAX_FASTLINK_SIZE): Use mach_daddr_t
+	instead of daddr_t.
+	(struct icommon): Use mach_uid_t, mach_gid_t, mach_time_t and
+	mach_daddr_t, instead of uid_t, gid_t, time_t and daddr_t.
+	* stage2/fs.h (BBLOCK): Use mach_daddr_t instead of addr_t.
+	(SBLOCK): Likewise.
+	(ROOTINO): Use mach_ino_t instead of ino_t.
+	(struct fs): Use mach_daddr_t and mach_time_t instead of daddr_t
+	and time_t.
+	(struct cg): Use mach_time_t instead of time_t.
+	(struct ocg): Likewise.
+	(cgbase): Use mach_daddr_t instead of daddr_t.
+	(itod): Likewise.
+	
+1999-09-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_CHECK_START_SYMBOL): Use AC_TRY_LINK
+	instead of AC_TRY_COMMAND.
+	(grub_CHECK_USCORE_START_SYMBOL): Likewise.
+	(grub_CHECK_END_SYMBOL): Likewise.
+	(grub_CHECK_USCORE_END_SYMBOL): Likewise.
+
+	* stage2/disk_io.c (set_device) [!STAGE1_5]: Use RESULT instead
+	of RETVAL to check if the analysis succeeds.
+	
 1999-09-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (install_func): If the Stage 2 id in FILE is

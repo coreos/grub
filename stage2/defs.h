@@ -56,13 +56,13 @@ typedef struct _quad_
   }
 quad;				/* an 8-byte item */
 
-typedef unsigned int time_t;	/* an unsigned int */
-typedef unsigned int daddr_t;	/* an unsigned int */
+typedef unsigned int mach_time_t;	/* an unsigned int */
+typedef unsigned int mach_daddr_t;	/* an unsigned int */
 typedef unsigned int mach_off_t;	/* another unsigned int */
 
-typedef unsigned short uid_t;
-typedef unsigned short gid_t;
-typedef unsigned int ino_t;
+typedef unsigned short mach_uid_t;
+typedef unsigned short mach_gid_t;
+typedef unsigned int mach_ino_t;
 
 #define	NBBY	8
 

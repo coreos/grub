@@ -70,8 +70,8 @@
 #define SBSIZE		8192
 #define	BBOFF		((mach_off_t)(0))
 #define	SBOFF		((mach_off_t)(BBOFF + BBSIZE))
-#define	BBLOCK		((daddr_t)(0))
-#define	SBLOCK		((daddr_t)(BBLOCK + BBSIZE / DEV_BSIZE))
+#define	BBLOCK		((mach_daddr_t)(0))
+#define	SBLOCK		((mach_daddr_t)(BBLOCK + BBSIZE / DEV_BSIZE))
 
 /*
  * Addresses stored in inodes are capable of addressing fragments
@@ -98,7 +98,7 @@
  * this purpose, however numerous dump tapes make this
  * assumption, so we are stuck with it)
  */
-#define	ROOTINO		((ino_t)2)	/* i number of all roots */
+#define	ROOTINO		((mach_ino_t)2)	/* i number of all roots */
 
 /*
  * MINBSIZE is the smallest allowable block size.
@@ -147,13 +147,13 @@ struct fs
   {
     int xxx1;			/* struct       fs *fs_link; */
     int xxx2;			/* struct       fs *fs_rlink; */
-    daddr_t fs_sblkno;		/* addr of super-block in filesys */
-    daddr_t fs_cblkno;		/* offset of cyl-block in filesys */
-    daddr_t fs_iblkno;		/* offset of inode-blocks in filesys */
-    daddr_t fs_dblkno;		/* offset of first data after cg */
+    mach_daddr_t fs_sblkno;	/* addr of super-block in filesys */
+    mach_daddr_t fs_cblkno;	/* offset of cyl-block in filesys */
+    mach_daddr_t fs_iblkno;	/* offset of inode-blocks in filesys */
+    mach_daddr_t fs_dblkno;	/* offset of first data after cg */
     int fs_cgoffset;		/* cylinder group offset in cylinder */
     int fs_cgmask;		/* used to calc mod fs_ntrak */
-    time_t fs_time;		/* last time written */
+    mach_time_t fs_time;	/* last time written */
     int fs_size;		/* number of blocks in fs */
     int fs_dsize;		/* number of data blocks in fs */
     int fs_ncg;			/* number of cylinder groups */
@@ -190,7 +190,7 @@ struct fs
     int fs_headswitch;		/* head switch time, usec */
     int fs_trkseek;		/* track-to-track seek, usec */
 /* sizes determined by number of cylinder groups and their sizes */
-    daddr_t fs_csaddr;		/* blk addr of cyl grp summary area */
+    mach_daddr_t fs_csaddr;	/* blk addr of cyl grp summary area */
     int fs_cssize;		/* size of cyl grp summary area */
     int fs_cgsize;		/* cylinder group size */
 /* these fields are derived from the hardware */
@@ -275,7 +275,7 @@ struct cg
   {
     int xxx1;			/* struct       cg *cg_link; */
     int cg_magic;		/* magic number */
-    time_t cg_time;		/* time last written */
+    mach_time_t cg_time;		/* time last written */
     int cg_cgx;			/* we are the cgx'th cylinder group */
     short cg_ncyl;		/* number of cyl's this cg */
     short cg_niblk;		/* number of inode blocks this cg */
@@ -324,7 +324,7 @@ struct ocg
   {
     int xxx1;			/* struct       ocg *cg_link; */
     int xxx2;			/* struct       ocg *cg_rlink; */
-    time_t cg_time;		/* time last written */
+    mach_time_t cg_time;	/* time last written */
     int cg_cgx;			/* we are the cgx'th cylinder group */
     short cg_ncyl;		/* number of cyl's this cg */
     short cg_niblk;		/* number of inode blocks this cg */
@@ -353,7 +353,7 @@ struct ocg
  * Cylinder group macros to locate things in cylinder groups.
  * They calc file system addresses of cylinder group data structures.
  */
-#define	cgbase(fs, c)	((daddr_t)((fs)->fs_fpg * (c)))
+#define	cgbase(fs, c)	((mach_daddr_t)((fs)->fs_fpg * (c)))
 #define cgstart(fs, c) \
 	(cgbase(fs, c) + (fs)->fs_cgoffset * ((c) & ~((fs)->fs_cgmask)))
 #define	cgsblock(fs, c)	(cgstart(fs, c) + (fs)->fs_sblkno)	/* super blk */
@@ -370,7 +370,7 @@ struct ocg
 #define	itoo(fs, x)	((x) % INOPB(fs))
 #define	itog(fs, x)	((x) / (fs)->fs_ipg)
 #define	itod(fs, x) \
-	((daddr_t)(cgimin(fs, itog(fs, x)) + \
+	((mach_daddr_t)(cgimin(fs, itog(fs, x)) + \
 	(blkstofrags((fs), (((x) % (fs)->fs_ipg) / INOPB(fs))))))
 
 /*
