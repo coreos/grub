@@ -810,8 +810,11 @@ displaymem_func (char *arg, int flags)
 	    str = "Reserved";
 	  grub_printf ("   %s:  Base Address:  0x%x X 4GB + 0x%x,\n"
 		       "      Length:   %u X 4GB + %u bytes\n",
-		       str, map->BaseAddrHigh, map->BaseAddrLow,
-		       map->LengthHigh, map->LengthLow);
+		       str,
+		       (unsigned long) (map->BaseAddr >> 32),
+		       (unsigned long) (map->BaseAddr & 0xFFFFFFFF),
+		       (unsigned long) (map->Length >> 32),
+		       (unsigned long) (map->Length & 0xFFFFFFFF));
 
 	  map = ((struct AddrRangeDesc *) (((int) map) + 4 + map->size));
 	}

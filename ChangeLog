@@ -1,3 +1,23 @@
+2000-06-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/mb_info.h (AddrRangeDesc): Use one 64bits field instead
+	of two 32bits fields for BaseAddr and Length, respectively.
+	BaseAddrLow + BaseAddrHigh -> BaseAddr, LengthLow + LengthHigh
+	-> Length.
+	* stage2/builtins.c (displaymem_func): Print BaseAddr >> 32,
+	BaseAddr & 0xFFFFFFFF, Length >> 32 and Length & 0xFFFFFFFF,
+	instead of BaseAddrLow, BaseAddrHigh, LengthLow and LengthHigh,
+	for MAP.
+	* stage2/common.c (fakemap): Adjusted to the new definition of
+	AddrRangeDesc.
+	(mmap_avail_at): Change the type of TOP to unsigned long long.
+	If TOP is greater than 0xFFFFFFFF, set it to 0xFFFFFFFF, since
+	GRUB itself cannot deal with 64bits addresses at the moment.
+	(init_bios_info): When getting a maximum available address from
+	the memory map, use a new unsigned long long variable MAX_ADDR
+	as the temporary variable instead of MEMTMP. This should allow
+	GRUB to detect at most 4TB.
+	
 2000-06-18  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/appendices.texi (FAQ): Added an question about Linux's
@@ -62,6 +82,7 @@
 	quite inconsistent with hard disks? Why not /dev/fd[a-z]?)
 	Report by Pavel Roskin.
 	
+>>>>>>> 1.258
 2000-06-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/tutorial.texi (Network): The body is moved to ...

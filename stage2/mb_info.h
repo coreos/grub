@@ -1,7 +1,7 @@
-
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,10 +46,8 @@ struct mod_list
 struct AddrRangeDesc
   {
     unsigned long size;
-    unsigned long BaseAddrLow;
-    unsigned long BaseAddrHigh;
-    unsigned long LengthLow;
-    unsigned long LengthHigh;
+    unsigned long long BaseAddr;
+    unsigned long long Length;
     unsigned long Type;
 
     /* unspecified optional padding... */

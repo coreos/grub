@@ -90,9 +90,9 @@ char *err_list[] =
 /* static for BIOS memory map fakery */
 static struct AddrRangeDesc fakemap[3] =
 {
-  {20, 0, 0, 0, 0, MB_ARD_MEMORY},
-  {20, 0x100000, 0, 0, 0, MB_ARD_MEMORY},
-  {20, 0x1000000, 0, 0, 0, MB_ARD_MEMORY}
+  {20, 0, 0, MB_ARD_MEMORY},
+  {20, 0x100000, 0, MB_ARD_MEMORY},
+  {20, 0x1000000, 0, MB_ARD_MEMORY}
 };
 
 /* A big problem is that the memory areas aren't guaranteed to be:
@@ -101,7 +101,8 @@ static struct AddrRangeDesc fakemap[3] =
 static unsigned long
 mmap_avail_at (unsigned long bottom)
 {
-  unsigned long top, addr;
+  unsigned long long top;
+  unsigned long addr;
   int cont;
   
   top = bottom;
@@ -113,19 +114,22 @@ mmap_avail_at (unsigned long bottom)
 	{
 	  struct AddrRangeDesc *desc = (struct AddrRangeDesc *) addr;
 	  
-	  if (desc->BaseAddrHigh == 0
-	      && desc->Type == MB_ARD_MEMORY
-	      && desc->BaseAddrLow <= top
-	      && desc->BaseAddrLow + desc->LengthLow > top)
+	  if (desc->Type == MB_ARD_MEMORY
+	      && desc->BaseAddr <= top
+	      && desc->BaseAddr + desc->Length > top)
 	    {
-	      top = desc->BaseAddrLow + desc->LengthLow;
+	      top = desc->BaseAddr + desc->Length;
 	      cont++;
 	    }
 	}
     }
   while (cont);
+
+  /* For now, GRUB assumes 32bits addresses, so...  */
+  if (top > 0xFFFFFFFF)
+    top = 0xFFFFFFFF;
   
-  return top - bottom;
+  return (unsigned long) top - bottom;
 }
 #endif /* ! STAGE1_5 */
 
@@ -203,6 +207,8 @@ init_bios_info (void)
 
   if (mbi.mmap_length)
     {
+      unsigned long long max_addr;
+      
       /*
        *  This is to get the lower memory, and upper memory (up to the
        *  first memory hole), into the "mbi.mem_{lower,upper}"
@@ -213,19 +219,18 @@ init_bios_info (void)
       mbi.mem_upper = mmap_avail_at (0x100000) >> 10;
 
       /* Find the maximum available address. Ignore any memory holes.  */
-      for (memtmp = 0, addr = mbi.mmap_addr;
+      for (max_addr = 0, addr = mbi.mmap_addr;
 	   addr < mbi.mmap_addr + mbi.mmap_length;
 	   addr += *((unsigned long *) addr) + 4)
 	{
 	  struct AddrRangeDesc *desc = (struct AddrRangeDesc *) addr;
 	  
-	  if (desc->BaseAddrHigh == 0
-	      && desc->Type == MB_ARD_MEMORY
-	      && desc->BaseAddrLow + desc->LengthLow > memtmp)
-	    memtmp = desc->BaseAddrLow + desc->LengthLow;
+	  if (desc->Type == MB_ARD_MEMORY
+	      && desc->BaseAddr + desc->Length > max_addr)
+	    max_addr = desc->BaseAddr + desc->Length;
 	}
 
-      extended_memory = (memtmp - 0x100000) >> 10;
+      extended_memory = (max_addr - 0x100000) >> 10;
     }
   else if ((memtmp = get_eisamemsize ()) != -1)
     {
@@ -245,9 +250,9 @@ init_bios_info (void)
 
 	  mbi.mmap_addr = (unsigned long) fakemap;
 	  mbi.mmap_length = sizeof (fakemap);
-	  fakemap[0].LengthLow = (mbi.mem_lower << 10);
-	  fakemap[1].LengthLow = (memtmp << 10);
-	  fakemap[2].LengthLow = cont;
+	  fakemap[0].Length = (mbi.mem_lower << 10);
+	  fakemap[1].Length = (memtmp << 10);
+	  fakemap[2].Length = cont;
 	}
 
       mbi.mem_upper = memtmp;
