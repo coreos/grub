@@ -1,5 +1,9 @@
 1999-03-01  Gordon Matzigkeit  <gord@trick.fig.org>
 
+	* acinclude.m4 (grub_OBJCOPY_ABSOLUTE): Don't forget to move the
+	old binary out of the way before reentering the loop.
+	(grub_ASM_ADDR32): Delete conftest files after running the test.
+
 	* debian/rules (binary-arch): Remove empty /sbin directory until
 	/sbin/grub is installed.  Use $(DESTDIR) instead of $(prefix) to
 	install files.

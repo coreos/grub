@@ -77,7 +77,8 @@ for link_addr in 2000 8000 7C00; do
   else
     AC_MSG_ERROR([${OBJCOPY-objcopy} cannot create binary files])
   fi
-  if test ! -f conftest.old || AC_TRY_COMMAND([cmp -s conftest.old conftest]); then :
+  if test ! -f conftest.old || AC_TRY_COMMAND([cmp -s conftest.old conftest]); then
+    mv -f conftest conftest.old
   else
     grub_cv_prog_objcopy_absolute=no
     break
@@ -113,7 +114,8 @@ if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
   grub_cv_asm_addr32=yes
 else
   grub_cv_asm_addr32=no
-fi])
+fi
+rm -f conftest*])
 AC_MSG_RESULT([$grub_cv_asm_addr32])])
 
 # Do all the work for Automake.  This macro actually does too much --

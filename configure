@@ -1252,7 +1252,8 @@ for link_addr in 2000 8000 7C00; do
   else
     { echo "configure: error: ${OBJCOPY-objcopy} cannot create binary files" 1>&2; exit 1; }
   fi
-  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1256: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1256: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then
+    mv -f conftest conftest.old
   else
     grub_cv_prog_objcopy_absolute=no
     break
@@ -1268,7 +1269,7 @@ fi
 
 
 echo $ac_n "checking for .code16 addr32 assembler support""... $ac_c" 1>&6
-echo "configure:1272: checking for .code16 addr32 assembler support" >&5
+echo "configure:1273: checking for .code16 addr32 assembler support" >&5
 if eval "test \"`echo '$''{'grub_cv_asm_addr32'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1278,11 +1279,12 @@ l1:	addr32
 	movb	%al, l1
 EOF
 
-if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1282: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
+if { ac_try='${CC-cc} -c conftest.s'; { (eval echo configure:1283: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
   grub_cv_asm_addr32=yes
 else
   grub_cv_asm_addr32=no
 fi
+rm -f conftest*
 fi
 
 echo "$ac_t""$grub_cv_asm_addr32" 1>&6
