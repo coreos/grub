@@ -1,3 +1,8 @@
+2004-04-29  Robert Millan  <robertmh@gnu.org>
+
+	From Yann Dirson  <dirson@debian.org>:
+	* util/mkbimage: Misc syntax fixes.
+
 2004-04-29  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* stage2/char_io.c (grub_memcmp): Define for stage1.5 too.
