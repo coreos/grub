@@ -21,6 +21,7 @@
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/loader.h>
+#include <grub/mm.h>
 #include <grub/machine/time.h>
 
 /* FIXME: These below are all runaround.  */
@@ -36,6 +37,54 @@
 #define DISP_LL		0x2517
 #define DISP_LR		0x251B
 
+/* FIXME: These should be dynamically obtained from a terminal.  */
+#define TERM_WIDTH	(80 - 1)
+#define TERM_HEIGHT	25
+
+/* The number of lines of "GRUB version..." at the top.  */
+#define TERM_INFO_HEIGHT	1
+
+/* The number of columns/lines between messages/borders/etc.  */
+#define TERM_MARGIN	1
+
+/* The number of columns of scroll information.  */
+#define TERM_SCROLL_WIDTH	1
+
+/* The Y position of the top border.  */
+#define TERM_TOP_BORDER_Y	(TERM_MARGIN + TERM_HEIGHT + TERM_MARGIN)
+
+/* The X position of the left border.  */
+#define TERM_LEFT_BORDER_X	TERM_MARGIN
+
+/* The width of the border.  */
+#define TERM_BORDER_WIDTH	(TERM_WIDTH \
+                                 - TERM_MARGIN * 3 \
+				 - TERM_SCROLL_WIDTH)
+
+/* The number of lines of messages at the bottom.  */
+#define TERM_MESSAGE_HEIGHT	8
+
+/* The height of the border.  */
+#define TERM_BORDER_HEIGHT	(TERM_HEIGHT \
+                                 - TERM_TOP_BORDER_Y \
+                                 - TERM_MESSAGE_HEIGHT)
+
+/* The number of entries shown at a time.  */
+#define TERM_NUM_ENTRIES	(TERM_BORDER_HEIGHT - 2)
+
+/* The Y position of the first entry.  */
+#define TERM_FIRST_ENTRY_Y	(TERM_TOP_BORDER_Y + 1)
+
+/* The max column number of an entry. The last "-1" is for a
+   continuation marker.  */
+#define TERM_ENTRY_WIDTH	(TERM_BORDER_WIDTH - 2 - TERM_MARGIN * 2 - 1)
+
+/* The standard X position of the cursor.  */
+#define TERM_CURSOR_X		(TERM_LEFT_BORDER_X \
+                                 + TERM_BORDER_WIDTH \
+                                 - TERM_MARGIN \
+                                 - 1)
+
 static void
 draw_border (void)
 {
@@ -43,29 +92,29 @@ draw_border (void)
   
   grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
   
-  grub_gotoxy (1, 3);
+  grub_gotoxy (TERM_MARGIN, TERM_TOP_BORDER_Y);
   grub_putcode (DISP_UL);
-  for (i = 0; i < 73; i++)
+  for (i = 0; i < TERM_BORDER_WIDTH - 2; i++)
     grub_putcode (DISP_HLINE);
   grub_putcode (DISP_UR);
 
   i = 1;
   while (1)
     {
-      grub_gotoxy (1, 3 + i);
+      grub_gotoxy (TERM_MARGIN, TERM_TOP_BORDER_Y + i);
 
-      if (i > 12)
+      if (i > (unsigned) TERM_NUM_ENTRIES)
 	break;
 
       grub_putcode (DISP_VLINE);
-      grub_gotoxy (75, 3 + i);
+      grub_gotoxy (TERM_MARGIN + TERM_BORDER_WIDTH - 1, TERM_TOP_BORDER_Y + i);
       grub_putcode (DISP_VLINE);
 
       i++;
     }
 
   grub_putcode (DISP_LL);
-  for (i = 0; i < 73; i++)
+  for (i = 0; i < TERM_BORDER_WIDTH - 2; i++)
     grub_putcode (DISP_HLINE);
   grub_putcode (DISP_LR);
 
@@ -73,17 +122,28 @@ draw_border (void)
 }
 
 static void
-print_message (int nested)
+print_message (int nested, int edit)
 {
-  grub_printf ("\n\
+  if (edit)
+    {
+      grub_printf ("\n\
+      Minimum Emacs-like screen editing is supported. TAB lists\n\
+      available completions. Press C-x (\'x\' with Ctrl) to boot,\n\
+      C-c (\'c\' with Ctrl) for a command-line or ESC to return menu.");
+    }
+  else
+    {
+      grub_printf ("\n\
       Use the %C and %C keys to select which entry is highlighted.\n",
-	       (grub_uint32_t) DISP_UP, (grub_uint32_t) DISP_DOWN);
-  grub_printf ("\
+		   (grub_uint32_t) DISP_UP, (grub_uint32_t) DISP_DOWN);
+      grub_printf ("\
       Press enter to boot the selected OS, \'e\' to edit the\n\
-      commands before booting, or \'c\' for a command-line.");
-  if (nested)
-    grub_printf ("\n\
+      commands before booting or \'c\' for a command-line.");
+      if (nested)
+	grub_printf ("\n\
       ESC to return previous menu.");
+    }
+  
 }
 
 static grub_menu_entry_t
@@ -109,13 +169,15 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 		      ? GRUB_TERM_COLOR_HIGHLIGHT
 		      : GRUB_TERM_COLOR_NORMAL);
 
-  grub_gotoxy (2, y);
+  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_MARGIN, y);
   grub_putchar (' ');
-  for (x = 3; x < 75; x++)
+  for (x = TERM_LEFT_BORDER_X + TERM_MARGIN + 1;
+       x < TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH - 1;
+       x++)
     {
-      if (*title && x <= 72)
+      if (*title && x <= TERM_LEFT_BORDER_X + TERM_ENTRY_WIDTH + 1)
 	{
-	  if (x == 72)
+	  if (x == TERM_LEFT_BORDER_X + TERM_ENTRY_WIDTH + 1)
 	    grub_putcode (DISP_RIGHT);
 	  else
 	    grub_putchar (*title++);
@@ -123,7 +185,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
       else
 	grub_putchar (' ');
     }
-  grub_gotoxy (74, y);
+  grub_gotoxy (TERM_CURSOR_X, y);
 
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 }
@@ -134,7 +196,8 @@ print_entries (grub_menu_t menu, int first, int offset)
   grub_menu_entry_t e;
   int i;
   
-  grub_gotoxy (77, 4);
+  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH + TERM_MARGIN,
+	       TERM_FIRST_ENTRY_Y);
 
   if (first)
     grub_putcode (DISP_UP);
@@ -143,29 +206,37 @@ print_entries (grub_menu_t menu, int first, int offset)
 
   e = get_entry (menu, first);
 
-  for (i = 0; i < 12; i++)
+  for (i = 0; i < TERM_NUM_ENTRIES; i++)
     {
-      print_entry (4 + i, offset == i, e);
+      print_entry (TERM_FIRST_ENTRY_Y + i, offset == i, e);
       if (e)
 	e = e->next;
     }
 
-  grub_gotoxy (77, 4 + 12);
+  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH + TERM_MARGIN,
+	       TERM_TOP_BORDER_Y + TERM_NUM_ENTRIES);
 
   if (e)
     grub_putcode (DISP_DOWN);
   else
     grub_putchar (' ');
 
-  grub_gotoxy (74, 4 + offset);
+  grub_gotoxy (TERM_CURSOR_X, TERM_FIRST_ENTRY_Y + offset);
 }
 
 static void
-init_page (int nested)
+init_page (int nested, int edit)
 {
   grub_normal_init_page ();
   draw_border ();
-  print_message (nested);
+  print_message (nested, edit);
+}
+
+/* Edit a menu entry with an Emacs-like interface.  */
+static void
+edit_menu_entry (grub_menu_entry_t entry)
+{
+  /* Not yet implemented.  */
 }
 
 static int
@@ -174,23 +245,23 @@ run_menu (grub_menu_t menu, int nested)
   int first, offset;
   unsigned long saved_time;
   
-  grub_setcursor (0);
-  
   first = 0;
   offset = menu->default_entry;
-  if (offset > 11)
+  if (offset > TERM_NUM_ENTRIES - 1)
     {
-      first = offset - 11;
-      offset = 11;
+      first = offset - (TERM_NUM_ENTRIES - 1);
+      offset = TERM_NUM_ENTRIES - 1;
     }
-
-  init_page (nested);
-  print_entries (menu, first, offset);
-  grub_refresh ();
 
   /* Initialize the time.  */
   saved_time = grub_get_rtc ();
-  
+
+ refresh:
+  grub_setcursor (0);
+  init_page (nested, 0);
+  print_entries (menu, first, offset);
+  grub_refresh ();
+
   while (1)
     {
       int c;
@@ -206,10 +277,13 @@ run_menu (grub_menu_t menu, int nested)
 	      saved_time = current_time;
 	    }
 	  
-	  grub_gotoxy (3, 22);
-	  grub_printf ("The highlighted entry will be booted automatically in %d seconds.    ",
+	  grub_gotoxy (0, TERM_HEIGHT - 3);
+	  /* NOTE: Do not remove the trailing space characters.
+	     They are required to clear the line.  */
+	  grub_printf ("\
+   The highlighted entry will be booted automatically in %d seconds.    ",
 		       menu->timeout);
-	  grub_gotoxy (74, 4 + offset);
+	  grub_gotoxy (TERM_CURSOR_X, TERM_FIRST_ENTRY_Y + offset);
 	  grub_refresh ();
 	}
 
@@ -222,11 +296,12 @@ run_menu (grub_menu_t menu, int nested)
 	  
 	  if (menu->timeout >= 0)
 	    {
-	      grub_gotoxy (3, 22);
-              grub_printf ("                                                                 ");
+	      grub_gotoxy (0, TERM_HEIGHT - 3);
+              grub_printf ("\
+                                                                        ");
               menu->timeout = -1;
               menu->fallback_entry = -1;
-	      grub_gotoxy (74, 4 + offset);
+	      grub_gotoxy (TERM_CURSOR_X, TERM_FIRST_ENTRY_Y + offset);
 	    }
 	  
 	  switch (c)
@@ -235,10 +310,10 @@ run_menu (grub_menu_t menu, int nested)
 	    case '^':
 	      if (offset > 0)
 		{
-		  print_entry (4 + offset, 0,
+		  print_entry (TERM_FIRST_ENTRY_Y + offset, 0,
 			       get_entry (menu, first + offset));
 		  offset--;
-		  print_entry (4 + offset, 1,
+		  print_entry (TERM_FIRST_ENTRY_Y + offset, 1,
 			       get_entry (menu, first + offset));
 		}
 	      else if (first > 0)
@@ -252,12 +327,12 @@ run_menu (grub_menu_t menu, int nested)
 	    case 'v':
 	      if (menu->size > first + offset + 1)
 		{
-		  if (offset < 11)
+		  if (offset < TERM_NUM_ENTRIES - 1)
 		    {
-		      print_entry (4 + offset, 0,
+		      print_entry (TERM_FIRST_ENTRY_Y + offset, 0,
 				   get_entry (menu, first + offset));
 		      offset++;
-		      print_entry (4 + offset, 1,
+		      print_entry (TERM_FIRST_ENTRY_Y + offset, 1,
 				   get_entry (menu, first + offset));
 		    }
 		  else
@@ -285,10 +360,11 @@ run_menu (grub_menu_t menu, int nested)
 	    case 'c':
 	      grub_setcursor (1);
 	      grub_cmdline_run (1);
-	      grub_setcursor (0);
-	      init_page (nested);
-	      print_entries (menu, first, offset);
-	      break;
+	      goto refresh;
+
+	    case 'e':
+	      edit_menu_entry (get_entry (menu, first + offset));
+	      goto refresh;
 	      
 	    default:
 	      break;
@@ -311,6 +387,10 @@ run_menu_entry (grub_menu_entry_t entry)
   for (cl = entry->command_list; cl != 0; cl = cl->next)
     {
       grub_command_t c;
+
+      if (cl->command[0] == '\0')
+	/* Ignore an empty command line.  */
+	continue;
       
       c = grub_command_find (cl->command);
       if (! c)

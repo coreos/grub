@@ -1,3 +1,32 @@
+2004-09-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Make the source code of the menu interface more readable.
+	
+	* normal/menu.c: Include grub/mm.h.
+	(TERM_WIDTH): New macro.
+	(TERM_HEIGHT): Likewise.
+	(TERM_INFO_HEIGHT): Likewise.
+	(TERM_MARGIN): Likewise.
+	(TERM_SCROLL_WIDTH): Likewise.
+	(TERM_TOP_BORDER_Y): Likewise.
+	(TERM_LEFT_BORDER_X): Likewise.
+	(TERM_BORDER_WIDTH): Likewise.
+	(TERM_MESSAGE_HEIGHT): Likewise.
+	(TERM_BORDER_HEIGHT): Likewise.
+	(TERM_NUM_ENTRIES): Likewise.
+	(TERM_FIRST_ENTRY_Y): Likewise.
+	(TERM_ENTRY_WIDTH): Likewise.
+	(TERM_CURSOR_X): Likewise.
+	(draw_border): Use macros instead of magic numbers.
+	(print_entry): Likewise.
+	(print_entries): Likewise.
+	(run_menu): Likewise. Also, handle the key 'e'.
+	(run_menu_entry): Ignore empty command lines.
+	(print_message): Added a new argument EDIT. If EDIT is true,
+	print a different message.
+	(init_page): Likewise.
+	(edit_menu_entry): New function. Not implemented yet.
+
 2004-09-17  Marco Gerards  <metgerards@student.han.nl>
 
 	Add `linux.mod' and `multiboot.mod' so linux and multiboot kernels
