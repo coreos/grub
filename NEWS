@@ -13,6 +13,7 @@ New:
 * Color menu support.
 * New command "quit".
 * The man page for /sbin/grub.
+* All documents become Texinfo.
 
 New in 0.5.91 - 1999-03-14, Gordon Matzigkeit:
 * LBA and preliminary AWARD BIOS disk extension support.

@@ -150,7 +150,7 @@ main (int argc, char **argv)
 	  break;
 
 	case OPT_INSTALL_PARTITION:
-	  install_partition = strtoul (optarg, 0, 16);
+	  install_partition = strtoul (optarg, 0, 0);
 	  if (install_partition == ULONG_MAX)
 	    {
 	      perror ("strtoul");

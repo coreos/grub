@@ -49,8 +49,8 @@ http://sourceware.cygnus.com/automake for more information.
 
 
 See the file INSTALL for instructions on how to build and install the
-GRUB data and program files.  See `docs/install.html' for details
-about using GRUB as your bootloader.
+GRUB data and program files.  See the GRUB manual for details about
+using GRUB as your bootloader.
 
 If you have any suggestions or bug reports, please send electronic
 mail to the GRUB mailing list <bug-grub@gnu.org>.

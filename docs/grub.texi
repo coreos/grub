@@ -1226,7 +1226,7 @@ an integer (decimal, octal or hexadecimal).
 
 @item --install-partition=@var{par}
 Set the stage2 @var{install_partition} to @var{par}. This argument
-should be an hexadecimal number.
+should be an integer (decimal, octal or hexadecimal).
 
 @item --no-config-file
 Do not use the configuration file even if it can be read.

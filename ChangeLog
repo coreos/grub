@@ -1,3 +1,9 @@
+1999-06-28  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/main.c (main): The third argument for strtoul is changed
+	to 0 in the case where an option is OPT_INSTALL_PARTIION.
+	Reported by Pavel Roskin <pavel_roskin@geocities.com>.
+	
 1999-06-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/shared.h (STAGE2_STAGE2_ID): New macro.
