@@ -361,6 +361,8 @@ check_BSD_parts(int flags)
 }
 
 
+static char cur_part_desc[16];
+
 static int
 real_open_partition(int flags)
 {
@@ -423,6 +425,7 @@ real_open_partition(int flags)
 	      current_slice = PC_SLICE_TYPE(mbr_buf, i);
 	      part_start = part_offset + PC_SLICE_START(mbr_buf, i);
 	      part_length = PC_SLICE_LENGTH(mbr_buf, i);
+	      bcopy(mbr_buf+PC_SLICE_OFFSET+(i<<4), cur_part_desc, 16);
 
 	      /*
 	       *  Is this PC partition entry valid?
@@ -660,22 +663,28 @@ open_device(void)
 
 #ifndef NO_FANCY_STUFF
 int
-bsd_bootdev(void)
+set_bootdev(void)
 {
   int i, j;
 
+  /*
+   *  Set chainloader boot device.
+   */
+  bcopy(cur_part_desc, (char *)(BOOTSEC_LOCATION-16), 16);
+
+  /*
+   *  Set BSD boot device.
+   */
+  i = (saved_partition >> 16) + 2;
   if (saved_partition == 0xFFFFFF)
     i = 1;
   else if ((saved_partition >> 16) == 0xFF)
     i = 0;
-  else
-    i = (saved_partition >> 16) + 2;
 
   /* XXX extremely evil hack!!! */
+  j = 2;
   if (saved_drive & 0x80)
     j = bsd_evil_hack;
-  else
-    j = 2;
 
   return MAKEBOOTDEV( j, (i >> 4), (i & 0xF), (saved_drive & 0x79),
 		      ((saved_partition >> 8) & 0xFF) );
