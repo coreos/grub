@@ -422,21 +422,20 @@ you're done!
 
 Examples of how to use the @code{install=} command:
 
-@c FIXME: Gord stopped here
 @itemize @bullet
 @item
 @strong{Make a hard disk bootable with GRUB's stage2 on PC partition
 number 2:} Make a directory in the partition called @file{/boot/grub},
-place the @file{stage2} (and if desired, your configuration file called
-@file{menu.lst}), then run the following command at GRUB's command line
-(after booting from the GRUB floppy):
+place the @file{stage2} (and if desired, the @file{menu.lst}
+configuration file), then run the following command at GRUB's command
+line (after booting from the GRUB floppy):
 
 @example
 install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
 @end example
 
 This tells GRUB to grab the first sector of the floppy and use it as the
-stage1, create a block-list using the file @file{/boot/grub/stage2} on
+stage1, create a blocklist using the file @file{/boot/grub/stage2} on
 the first hard disk (partition number 2), merge them together, set the
 load address correctly for a stage2 (0x8000), save the @dfn{install
 partition} in the first sector of the stage2 (the @samp{p} at the end),
@@ -452,10 +451,11 @@ the stage1 was loaded from:
 install= (fd0)+1 d (fd0) (hd0,1)/boot/grub/stage2 0x8000 p
 @end example
 
-The @samp{d} option near the beginning is what sets the @emph{forced}
-loading from the disk where the stage2 was installed from.  Also, the
-@dfn{destination device} is changed to place the finished stage1 on the
-floppy disk.
+By default, GRUB loads the stage2 from the disk where the stage1 was
+installed.  The @samp{d} option near the beginning of this command line
+forces GRUB to load the stage2 from the disk where it was installed.
+Also, the @dfn{destination device} is changed to place the finished
+stage1 on the floppy disk.
 
 @item
 @strong{Same as above, but place the stage1.5 in the first cylinder of
@@ -464,14 +464,14 @@ supports only one filesystem, so choose a stage1.5 that supports the
 filesystem where stage2 is located. Here it is assumed that the
 filesystem is ext2fs.
 
-First, copy @file{e2fs_stage1_5} to the first cylinder after MBR
+First, copy @file{e2fs_stage1_5} to the first sector after the MBR
 (@pxref{MBR}):
 
 @example
 dd if=stage2/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
 @end example
 
-Second, specify the stage2 argument in the block-list format:
+Second, specify the stage1.5 argument in blocklist format:
 
 @example
 install= (fd0)+1 (hd0) (hd0)1+1 0x2000 p (hd0,1)/boot/grub/stage2
@@ -493,13 +493,13 @@ You can automate these steps by using a GRUB floppy with a filesystem
 and a configuration file which contains entries such as:
 
 @example
-# Start of entries
+# Start of entry:
 title= GNU/Linux installation
 
-# install command
+# Installation command:
 install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
 
-# actually boot here
+# Actually boot here:
 root= (hd0,1)
 kernel= /zImage root=/dev/hda2
 @end example
@@ -518,7 +518,7 @@ any desired combination of boot commands.
 GRUB looks for its configuration file as soon as it is loaded.  If one
 is found, then the full menu interface is activated using whatever
 entries were found in the file.  If you choose the `command line' menu
-option, or if the configuration file was not found, then GRUB drops into
+option, or if the configuration file was not found, then GRUB drops to
 the command line interface.
 
 @menu
@@ -535,25 +535,24 @@ the command line interface.
 The command line interface provides a prompt and after it an editable
 text area much like a command line in Unix or DOS. Each command is
 immediately executed after it is entered @footnote{However, this
-behavior will be changed in the future version, in an user-invisible
+behavior will be changed in the future version, in a user-invisible
 way.}. The commands are a subset of those available in the configuration
 file, used with exactly the same syntax.
 
-@c The list of available keys should be listed in @table, and should be
+@c FIXME: The list of available keys should be listed in @table, and should be
 @c explained exactly. Current explanation is obscure.
 Cursor movement and editing of the text on the line can be done via a
-subset of the functions available in the BASH shell
-(@kbd{C-f} forward, @kbd{C-b} backward, @kbd{C-a} beginning of line,
-@kbd{C-e} end of line, @kbd{C-k} delete to end, @kbd{C-u} delete to
-beginning; the PC left and right arrow keys, @key{HOME}, @key{DEL}, and
-@key{END} work as well).
+subset of the functions available in the BASH shell (@kbd{C-f} forward,
+@kbd{C-b} backward, @kbd{C-a} beginning of line, @kbd{C-e} end of line,
+@kbd{C-k} delete to end, @kbd{C-u} delete to beginning; the PC left and
+right arrow keys, @key{HOME}, @key{DEL}, and @key{END} work as well).
 
 When typing commands interactively, if the cursor is before the @samp{=}
 character in a command being typed, pressing the @key{TAB} key will
 display a listing of the available commands, and if the cursor is after
 the @samp{=} character, the @key{TAB} will provide a completion listing
 of disks, partitions, and filenames depending on the context.
-@c But I want to stop this stupid hack and provide more BASH-like
+@c FIXME: But I want to stop this stupid hack and provide more BASH-like
 @c interface. I don't think commands ending with @samp{=} are
 @c beautiful.
 
@@ -561,36 +560,36 @@ of disks, partitions, and filenames depending on the context.
 @node Menu
 @section The simple menu interface
 
-The menu interface is quite easy to use.  It's commands are both
+The menu interface is quite easy to use.  Its commands are both
 reasonably intuitive and described on screen.
 
-Basically, the menu interface provides a list of @dfn{boot
-configurations} to the user to choose from.  Use the arrow keys to
-select the entry of choice, then press @key{RET} to run it.  An optional
-timeout is available to boot the default entry (the first one if not
-set), which is aborted by pressing any key.
+Basically, the menu interface provides a list of @dfn{boot entries} to
+the user to choose from.  Use the arrow keys to select the entry of
+choice, then press @key{RET} to run it.  An optional timeout is
+available to boot the default entry (the first one if not set), which is
+aborted by pressing any key.
 
-Commands are available to enter a bare command line (operating exactly
-like the non-config-file version of GRUB, but allowing one to return to
-the menu if desired) or to edit any of the @dfn{boot configurations},
-respectively by pressing @key{c} or @key{e}.
+Commands are available to enter a bare command line by pressing @key{c}
+(which operates exactly like the non-config-file version of GRUB, but
+allows one to return to the menu if desired by pressing @key{ESC}) or to
+edit any of the @dfn{boot entries} by pressing @key{e}.
 
 
 @node Menu entry editor
 @section Editing a menu entry
 
-This looks much like the main menu interface, but with the lines in the
-menu being individual commands of the selected configuration instead of
-configuration names.
+The menu entry editor looks much like the main menu interface, but the
+lines in the menu are individual commands in the selected entry instead
+of entry names.
 
 If an @key{ESC} is pressed in the editor, it aborts all the changes made
-to the configuration entry and goes back to the main menu interface.
+to the configuration entry and returns to the main menu interface.
 
-When a particular line is selected, then it places the user in a special
-version of the command line for editing that line.  When the user is
-finished, GRUB replaces the line in question in the @dfn{boot
-configuration} with the changes (unless it was aborted via @key{ESC},
-and in that case the changes are thrown away).
+When a particular line is selected, the editor places the user at a
+special version of the GRUB command line to edit that line.  When the
+user hits @key{RET}, GRUB replaces the line in question in the boot
+entry with the changes (unless it was aborted via @key{ESC},
+in which case the changes are thrown away).
 
 
 @node Commands
@@ -603,15 +602,15 @@ The configuration file should follow these rules:
 
 @enumerate
 @item
-The configuration file specific commands have to be used before any
+The configuration-file-specific commands have to be used before any
 others.
 
 @item
-A multiboot kernel must be loaded before modules can be.
+A multiboot kernel must be loaded before any modules.
 
 @item
 A kernel must be loaded before either the configuration file entry ends,
-or any @samp{boot} command is issued in any case.
+or any @samp{boot} command is issued.
 @end enumerate
 
 The semantics are as follows:
@@ -621,23 +620,23 @@ The semantics are as follows:
 The files @emph{must} be in plain-text format.
 
 @item
-@samp{#} at the beginning of a line means it is a comment line in a
-configuration file only.
+@samp{#} at the beginning of a line in a configuration file means it is
+only a comment.
 
 @item
 Options are separated by spaces.
 
 @item
 All numbers can be either decimal or hexadecimal. A hexadecimal number
-must be preceded by @samp{0x}, and is case insensitive.
+must be preceded by @samp{0x}, and is case-insensitive.
 
 @item
-Extra options/text at the end of the line is ignored unless otherwise
+Extra options or text at the end of the line is ignored unless otherwise
 specified.
 
 @item
-Bad commands generally get included in the current entry being added to,
-except before entries start, where they are ignored.
+Bad commands are added to the current entry, except before entries
+start, where they are ignored.
 @end itemize
 
 Commands usable in configuration files only.
@@ -648,8 +647,8 @@ Set a timeout, in @var{sec} seconds, before automatically booting the
 default entry (normally the first entry defined).
 
 @item default= @var{num}
-Set the default entry to entry number @var{num} (otherwise it is 0, the
-first entry).
+Set the default entry to entry number @var{num} (if not specified, it is
+0, the first entry).
 
 @item fallback= @var{num}
 Go into unattended boot mode: if the default boot entry has any errors,
@@ -658,25 +657,25 @@ over using the @var{num} entry (same numbering as the @code{default=}
 command). This obviously doesn't help if the machine was in the middle
 of the boot process (after leaving GRUB's code) and rebooted.
 
-@item password= @var{passwd} @var{new_config_file}
+@item password= @var{passwd} @var{new-config-file}
 Disable all interactive editing control (menu entry editor and
 command line). If the password @var{passwd} is entered, it loads the
-@var{new_config_file} as a new config file and restarts the GRUB Stage
+@var{new-config-file} as a new config file and restarts the GRUB Stage
 2.
 
-@item title= @dots{}
-Start a new menu entry, and set its name to the contents of the rest of
+@item title= @var{name}@dots{}
+Start a new boot entry, and set its name to the contents of the rest of
 the line, starting with the first non-space character.
 @end table
 
-Commands usable in configuration files and interactively.
+Commands usable both interactively and in configuration files:
 
 @table @code
-@item pause= @dots{}
-Print the entirety to the end of its line, then wait until a key is
-pressed. Note that placing a ^G in it will cause the speaker to emit the
-standard beep sound, which is useful when asking the user to change
-floppies, etc.
+@item pause= @var{message}@dots{}
+Print the @var{message}, then wait until a key is pressed. Note that
+placing @key{^G} (ASCII code 7) in the message will cause the speaker to
+emit the standard beep sound, which is useful when prompting the user to
+change floppies.
 
 @item uppermem= @var{kbytes}
 Force GRUB to ignore what it found during the autoprobe of the memory
@@ -711,59 +710,57 @@ derived from attempting the mount will NOT work correctly.
 
 @item chainloader= @var{file}
 Load @var{file} as a chain-loader. Like any other file loaded by the
-filesystem code, it can use the block-list notation to grab the first
+filesystem code, it can use the blocklist notation to grab the first
 sector of the current partition with @samp{+1}.
 
 @item kernel= @var{file} @dots{}
 Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
-Linux zImage or bzImage, FreeBSD-a.out, or NetBSD-a.out) from
+Linux zImage or bzImage, FreeBSD a.out, or NetBSD a.out) from
 @var{file}. This command ignores the rest of the contents of the line,
 except that the entire line starting with the kernel filename is passed
-verbatim as the @dfn{kernel command line}. The module state is reset by
-this (i.e. reload any modules).
+verbatim as the @dfn{kernel command line}. The module state is reset,
+and so you must reload any modules.
 
 @item module= @var{file} @dots{}
 Load a boot module for a Multiboot format boot image (no interpretation
-of the file contents are made, so that user of this command/writer of
-the configuration file must know what the kernel in question works
-with). The rest of the line is passed as the @dfn{module command line}
-much like with the @command{kernel=} command.
+of the file contents are made, so that user of this command must know
+what the kernel in question works with). The rest of the line is passed
+as the @dfn{module command line} much like with the @command{kernel=}
+command.
 
 @item modulenounzip= @var{file} @dots{}
-Exactly like @command{module=}, except that automatic decompress is
+Exactly like @command{module=}, except that automatic decompression is
 disabled.
 
 @item initrd= @var{file} @dots{}
 Load an initial ramdisk for a Linux format boot image and set the
 appropriate parameters in the Linux setup area in memory.
 
-@item install= @var{stage1_file} [d] @var{dest_dev} @var{file} @var{addr} [p] [@var{config_file}]
+@item install= @var{stage1-file} [d] @var{dest-device} @var{file} @var{addr} [p] [@var{config-file}]
 This command is fairly complex, and for detailed examples one should
 look at @ref{Automated install}. In short, it will perform a full
-install presuming the stage1.5 or stage2 (they're loaded the same way,
-I'll just refer to it as a stage2 from now on) is in its final install
-location (pretty much all other edits are performed by the
-@command{install=} command).
+install presuming the stage2 or stage1.5@footnote{They're loaded the
+same way, so we will refer to the stage1.5 as a stage2 from now on.}
+is in its final install location.
 
-In slightly more detail, it will load @var{stage1_file}, validate that
-it is a GRUB stage1 of the right version number, install block-list for
-loading @var{file} (if the option @samp{d} is present, the stage1 will
-always look for the actual disk @var{file} was installed on, rather than
-using the booting drive) as a stage2 into memory at address
-@var{addr} (for a stage1.5, an address of @samp{0x2000} should be
-used, and for a stage2, an address of @samp{0x8000} should be used),
-then write the completed stage1 to the first block of the device
-@var{dest_dev}. If the options @samp{p} or @var{config_file} are
-present, then it reads the first block of stage2, modifies it with the
-values of the partition @var{file} was found on (for @samp{p}) or places
-the string @var{config_file} into the area telling the stage2 where to
-look for a configuration file at boot time. Finally, it preserves the
-DOS BPB (and for hard disks, the partition table) of the sector the
-stage1 is to be installed into.
+In slightly more detail, it will load @var{stage1-file}, validate that
+it is a GRUB stage1 of the right version number, install a blocklist for
+loading @var{file} as a stage2.  If the option @samp{d} is present, the
+stage1 will always look for the actual disk @var{file} was installed on,
+rather than using the booting drive.  The stage2 will be loaded at
+address @var{addr}, which must be @samp{0x8000} for a true stage2, and
+@samp{0x2000} for a stage1.5.  It then writes the completed stage1 to
+the first block of the device @var{dest-dev}. If the options @samp{p} or
+@var{config-file} are present, then it reads the first block of stage2,
+modifies it with the values of the partition @var{file} was found on
+(for @samp{p}) or places the string @var{config-file} into the area
+telling the stage2 where to look for a configuration file at boot time.
+This command preserves the DOS BPB (and for hard disks, the partition
+table) of the sector the stage1 is to be installed into.
 
 @item makeactive
 Set the active partition on the root disk to GRUB's root partition (on a
-floppy this is a NO-OP). This is limited to working with @emph{primary}
+floppy this has no effect). This is limited to working with @emph{primary}
 PC partitions.
 
 @item boot
@@ -843,10 +840,10 @@ command line, so you may write something like this in your configuration
 file:
 
 @example
-# the default colors (light gray / blue, black / light gray)
+# Set default colors (light gray / blue, black / light gray).
 color= 0x17 0x70
 
-# change the colors
+# Change the colors.
 title= OS-BS like
 color= 0x16 0x60
 @end example
@@ -855,46 +852,45 @@ color= 0x16 0x60
 Read the entire contents of @var{file} in several different ways and
 compares them, to test the filesystem code. The output is somewhat
 cryptic (see the @samp{T} subcommand of @command{syscmd=} below), but if
-no errors are reported and the part right at the end which reads
-@samp{i=@var{X}, filepos=@var{Y}} has @var{X} and @var{Y} equal, then it
-is definitely consistent, and very likely works correctly subject to a
-consistent offset error. A good idea if this works is then to try
-loading a kernel with your code.
+no errors are reported and the final @samp{i=@var{X}, filepos=@var{Y}}
+reading has @var{X} and @var{Y} equal, then it is definitely consistent,
+and very likely works correctly subject to a consistent offset error. If
+this test succeeds, then a good next step is to try loading a kernel
+with your code.
 
 @item read= @var{addr}
-Read a 32-bit unsigned value at address @var{addr} and displays it in
-hex format.
+Read a 32-bit unsigned value from memory at address @var{addr} and
+displays it in hex format.
 
 @item displaymem
 Display what GRUB thinks the system address space map of the machine is,
-including all regions of physical @sc{ram} installed. The
-@dfn{upper/lower memory} thing GRUB has uses the standard BIOS
-interface for the available memory in the first megabyte, or @dfn{lower
-memory}, and a synthesized number from various BIOS interfaces of the
-memory starting at 1MB and going up to the first chipset hole for
-@dfn{upper memory} (the standard PC @dfn{upper memory} interface is
-limited to reporting a maximum of 64MB).
+including all regions of physical @sc{ram} installed. GRUB's
+@dfn{upper/lower memory} display uses the standard BIOS interface for
+the available memory in the first megabyte, or @dfn{lower memory}, and a
+synthesized number from various BIOS interfaces of the memory starting
+at 1MB and going up to the first chipset hole for @dfn{upper memory}
+(the standard PC @dfn{upper memory} interface is limited to reporting a
+maximum of 64MB).
 
 @item impsprobe
-Probe Intel MPS spec 1.1 or 1.4 configuration table and boot the various
-other CPUs which are found into a tight loop.
+Probe the Intel Multiprocessor Specification 1.1 or 1.4 configuration
+table and boot the various CPUs which are found into a tight loop.
 
 @item fstest
 Toggle filesystem test mode.
 
 Filesystem test mode, when turned on, prints out data corresponding to
 all the device reads and what values are being sent to the low-level
-routines. The format is @samp{<@var{sector}, @var{byte_offset},
-@var{byte_len}>} for high-level reads inside a partition (so
-@var{sector} is an offset from the start of the partition), and
-@samp{[@var{sector}]} for low-level sector requests from the disk (so
-@var{sector} is offset from the start of the disk).
+routines. The format is @samp{<@var{partition-offset-sector},
+@var{byte-offset}, @var{byte-length}>} for high-level reads inside a
+partition, and @samp{[@var{disk-offset-sector}]} for low-level sector
+requests from the disk.
 
-Filesystem test mode is turned off by any uses of the @command{install=}
+Filesystem test mode is turned off by any use of the @command{install=}
 or @command{testload=} commands.
 
 @item quit
-Finish GRUB in the Stage 2 emulator @command{grub} (@pxref{Stage 2
+Exit from the GRUB stage2 emulator @command{grub} (@pxref{Stage 2
 emulator}). This is just ignored in the native Stage 2.
 @end table
 
@@ -902,10 +898,10 @@ emulator}). This is just ignored in the native Stage 2.
 @node Filesystems
 @chapter Filesystem syntax and semantics
 
-GRUB uses special syntax for specifying disk drives, that can be
-accessed by BIOS. Because of BIOS limitations, GRUB cannot distinguish
-IDE, ESDI, SCSI, etc. So you must know which BIOS device is equivalent
-to which OS device.
+GRUB uses a special syntax for specifying disk drives which can be
+accessed by BIOS.  Because of BIOS limitations, GRUB cannot distinguish
+between IDE, ESDI, SCSI, or others.   You must know yourself which BIOS
+device is equivalent to which OS device.
 
 @menu
 * Device syntax::               How to specify devices.
@@ -919,13 +915,13 @@ to which OS device.
 The device syntax is like this:
 
 @example
-@code{(@var{bios_device}[,@var{part_num}][,@var{bsd_subpart_letter}])}
+@code{(@var{bios-device}[,@var{part-num}][,@var{bsd-subpart-letter}])}
 @end example
 
-@samp{[]} means the parameter is optional. @var{bios_device} should be
+@samp{[]} means the parameter is optional. @var{bios-device} should be
 either @samp{fd} or @samp{hd} followed by a digit, like @samp{fd0}.
-But you can also set @var{bios_device} to a hexadecimal or a decimal,
-which is a BIOS drive number, so these are equivalent:
+But you can also set @var{bios-device} to a hexadecimal or a decimal,
+which is a BIOS drive number, so the following are equivalent:
 
 @example
 (hd0)
@@ -933,14 +929,14 @@ which is a BIOS drive number, so these are equivalent:
 (128)
 @end example
 
-@var{part_num} represents the partition number of @var{bios_device},
-starting from zero, and @var{bsd_subpart_letter} represents the BSD
-sub-partition, like @samp{a} or @samp{e}.
+@var{part-num} represents the partition number of @var{bios-device},
+starting from zero, and @var{bsd-subpart-letter} represents the BSD
+disklabel subpartition, such as @samp{a} or @samp{e}.
 
-A shortcut for specifying BSD sub-partitions is
-@code{(@var{bios_device},@var{bsd_subpart_letter})}, in this case, GRUB
-searches for the first PC partition containing BSD sub-partitions, then
-finds the sub-partition @var{bsd_subpart_letter}. Here is an example:
+A shortcut for specifying BSD subpartitions is
+@code{(@var{bios-device},@var{bsd-subpart-letter})}, in this case, GRUB
+searches for the first PC partition containing a BSD disklabel, then
+finds the subpartition @var{bsd-subpart-letter}. Here is an example:
 
 @example
 (hd0,a)
@@ -950,32 +946,32 @@ finds the sub-partition @var{bsd_subpart_letter}. Here is an example:
 @node Filename syntax
 @section How to specify files
 
-There are two ways to specify files, @dfn{absolute pathname} and
-@dfn{block-list}.
+There are two ways to specify files, by @dfn{absolute filename} and by
+@dfn{blocklist}.
 
-Absolute pathname resembles a Unix absolute pathname. Use @samp{/} for
-the directory separator but not @samp{\} like DOS. For example,
-@samp{/boot/grub/menu.lst}.
+An absolute filename resembles a Unix absolute filename, using @samp{/}
+for the directory separator (not @samp{\} as in DOS).  One example of an
+absolute filename is @samp{/boot/grub/menu.lst}.
 
-Block-list is used for specifying a file that doesn't appear in the
-filesystem, like a chain-loader. The syntax is a bit complex, like this:
+A blocklist is used for specifying a file that doesn't appear in the
+filesystem, like a chainloader. The syntax is
+@code{[@var{offset}]+@var{length}[,[@var{offset}]+@var{length}]@dots{}}.
+Here is an example:
 
 @example
-@code{1+100,200+1,300+300}
+@code{0+100,200+1,300+300}
 @end example
 
-This represents that GRUB should read 100 blocks from the offset 1, 1
-block from the offset 200, and 300 blocks from the offset 300. The
-offset is counted from the start of a partition, so the length must be
-within the partition size. If you omit a offset, then GRUB assumes the
-offset is zero.
+This represents that GRUB should read blocks 0 through 99, block 200,
+and blocks 300 through 600.  If you omit an offset, then GRUB assumes
+the offset is zero.
 
 
 @node Troubleshooting
 @chapter Error messages reported by GRUB
 
-This chapter describes the meanings of the error messages reported by
-GRUB when you encounter some troubles.
+This chapter describes error messages reported by GRUB when you
+encounter trouble.
 
 @menu
 * Stage1 errors::               Errors reported by the Stage 1.
@@ -995,30 +991,29 @@ The following is a comprehensive list of error messages for the Stage 1:
 
 @table @asis
 @item Hard Disk Error
-This error message will occur if the Stage 2 or Stage 1.5 is being read
-from a hard disk, and the attempt to determine the size and geometry of
-the hard disk fails.
+The stage2 or stage1.5 is being read from a hard disk, and the attempt
+to determine the size and geometry of the hard disk failed.
 
 @item Floppy Error
-This error message will occur if the Stage 2 or Stage 1.5 is being read
-from a floppy disk, and the attempt to determine the size and geometry
-of the floppy disk fails. It's listed as a different error since the
-probe sequence is different than for hard disks.
+The stage2 or stage1.5 is being read from a floppy disk, and the attempt
+to determine the size and geometry of the floppy disk failed. It's listed
+as a separate error since the probe sequence is different than for hard
+disks.
 
 @item Read Error
-This error message will occur if a disk read error happens while trying
-to read the Stage 2 or Stage 1.5.
+A disk read error happened while trying to read the stage2 or stage1.5.
 
 @item Geom Error
-This error message will occur if the location of the Stage 2 or Stage
-1.5 is not in the area supported by reading the disk with the BIOS
-directly. This could occur because the BIOS translated geometry has been
-changed by the user or the disk is moved to another machine or
-controller after installation, or GRUB was not installed using itself
-(if it was, the Stage 2 version of this error would have been seen
-during that process and it would not have completed the install).
+The location of the stage2 or stage1.5 is not in the portion of the disk
+supported directly by the BIOS read calls.  This could occur because the
+BIOS translated geometry has been changed by the user or the disk is
+moved to another machine or controller after installation, or GRUB was
+not installed using itself (if it was, the Stage 2 version of this error
+would have been seen during that process and it would not have completed
+the install).
 @end table
 
+@c FIXME: Gord stopped here
 
 @node Stage1.5 errors
 @section Errors reported by the Stage 1.5
@@ -1044,7 +1039,7 @@ The following is a comprehensive list of error messages for the Stage 2
 description):
 
 @table @asis
-@item 1 : Bad filename (must be absolute pathname or blocklist)
+@item 1 : Bad filename (must be absolute filename or blocklist)
 This error is returned if a filename is requested which doesn't fit the
 syntax/rules listed in the @ref{Filesystems}.
 
@@ -1398,21 +1393,21 @@ A @dfn{stage1.5} should be loaded at address 0x2000, and a @dfn{stage2}
 should be loaded at address 0x8000. Both use a CS of 0.
 
 @item @dfn{firstlist} (0x1b05)
-This is the @emph{ending} address of the block-list data area.
+This is the @emph{ending} address of the blocklist data area.
 
 The trick here is that it is actually read backward, and the first
-8-byte block-list is not read here, but after the pointer is decremented
+8-byte blocklist is not read here, but after the pointer is decremented
 8 bytes, then after reading it, it decrements again, reads, decrements,
 reads, etc. until it is finished.  The terminating condition is when the
-number of sectors to be read in the next block-list is 0.
+number of sectors to be read in the next blocklist is 0.
 
-The format of a block-list can be seen from the example in the code just
+The format of a blocklist can be seen from the example in the code just
 before the @code{firstlist} label.  (note that it is always from the
 beginning of the disk, and @emph{not} relative to the partition
 boundaries)
 
 @item @dfn{loading drive} (0x1b05)
-This is the BIOS drive number to load the block-lists from. If the number
+This is the BIOS drive number to load the blocklists from. If the number
 is 0xff, then load from the booting drive.
 @end table
 
@@ -2873,7 +2868,7 @@ Only read sectors from within a partition. Sector 0 is the first sector
 in the partition.
 
 @item grub_read
-If the backend uses the block-list code (like the FAT filesystem backend
+If the backend uses the blocklist code (like the FAT filesystem backend
 does), then @code{grub_read} can be used, after setting @var{block_file}
 to 1.
 @end ftable
