@@ -1,5 +1,16 @@
 2000-09-29  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/builtins.c (find_func): New variable GOT_FILE is set to
+	one if FILENAME is found. Otherwise, it is set to zero.
+	Clear ERRNUM at the end in the loop for floppies, to ensure that
+	ERRNUM is cleared before examining hard disks.
+	Rewrite the loop for hard disks using next_partitions, so this
+	function now checks all partitions you have certainly.
+	If GOT_FILE is non-zero, set ERRNUM to ERR_FILE_NOT_FOUND and
+	return one.
+	
+2000-09-29  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/disk_io.c (check_BSD_parts): Removed.
 	(next_partition): New function.
 	(real_open_partition): Rewritten using next_partition.

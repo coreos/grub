@@ -16,9 +16,19 @@ Priorities:
 * Port the script ``grub-install'' to FreeBSD, NetBSD and OpenBSD. At
   least you will have to modify the function `convert' so that it can
   translate a native device name into the corresponding GRUB drive
-  representation.
+  representation. !
 
-* Add configuration inclusion support by adding a command "include".
+* Add configuration inclusion support by adding a command "include". !
+
+* Add a command to run a GRUB script file. !!
+
+* Finish the Multiboot Speicification 0.7. !!!
+
+* Add commands to manipulate the menu from the command-line interface. !
+
+* Add more --disable-FOO options to configure, so that you can create a
+  minimum GRUB image. This is useful for boot floppies because of the size
+  restriction. !
 
 * Make symbolic links work for BSD FFS.
 
@@ -44,15 +54,13 @@ Priorities:
 
 * Add ISA PnP support.
 
-* Fix the completion so that it works for BSD partitions as well. !
-
 * Add BSD syntax support, using results of ioprobe to map drives. !
   (0x1f0-0x1f7 = primary IDE, 0x170-0x176 = secondary,
    0x1e8-0x1ef = tertiary, 0x168-0x16f = quaternary).
 
 * Add more filesystems support (XFS, NTFS, etc.)
 
-* Add remote console support (parallel and net). !
+* Add more remote console support (parallel and net).
 
 * Add RAID support.
 
@@ -72,3 +80,11 @@ Priorities:
   BIOSes which have bootable-CDROM support (so you may use the "Bootable
   CDROM" BIOS calls). It is not trivial to support BIOSes without the
   capability to boot CDROM.
+
+? Divide pxegrub into two parts, so the initial image doesn't exceed
+  the 32KB limit. I'm not sure if this is really necessary, because the
+  PXE standard just says that it is _recommended_ to improve the
+  modularity of a boot image. Obviously, this reason doesn't apply to
+  GRUB, as pxegrub is merely a secondary boot loader. So whether this
+  task should be done depends on if existing PXE ROMs support >32KB
+  images or not, after all.

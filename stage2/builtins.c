@@ -1028,76 +1028,85 @@ find_func (char *arg, int flags)
   unsigned long drive;
   unsigned long tmp_drive = saved_drive;
   unsigned long tmp_partition = saved_partition;
+  int got_file = 0;
   
   /* Floppies.  */
   for (drive = 0; drive < 8; drive++)
     {
-      errnum = ERR_NONE;
       current_drive = drive;
       current_partition = 0xFFFFFF;
       
-      if (! open_device ())
-	continue;
-
-      saved_drive = current_drive;
-      saved_partition = current_partition;
-      if (grub_open (filename))
+      if (open_device ())
 	{
-	  grub_close ();
-	  grub_printf (" (fd%d)\n", drive);
+	  saved_drive = current_drive;
+	  saved_partition = current_partition;
+	  if (grub_open (filename))
+	    {
+	      grub_close ();
+	      grub_printf (" (fd%d)\n", drive);
+	      got_file = 1;
+	    }
 	}
+
+      errnum = ERR_NONE;
     }
 
   /* Hard disks.  */
   for (drive = 0x80; drive < 0x88; drive++)
     {
-      unsigned long slice;
+      unsigned long part = 0xFFFFFF;
+      unsigned long start, len, offset, ext_offset;
+      int type, entry;
+      char buf[SECTOR_SIZE];
 
       current_drive = drive;
-      /* FIXME: is what maximum number right?  */
-      for (slice = 0; slice < 12; slice++)
+      while (next_partition (drive, 0xFFFFFF, &part, &type,
+			     &start, &len, &offset, &entry,
+			     &ext_offset, buf))
 	{
-	  errnum = ERR_NONE;
-	  current_partition = (slice << 16) | 0xFFFF;
-	  if (open_device ())
+	  if (type != PC_SLICE_TYPE_NONE
+	      && ! IS_PC_SLICE_TYPE_BSD (type)
+	      && ! IS_PC_SLICE_TYPE_EXTENDED (type))
 	    {
-	      errnum = ERR_NONE;
-	      saved_drive = current_drive;
-	      saved_partition = current_partition;
-	      if (grub_open (filename))
+	      current_partition = part;
+	      if (open_device ())
 		{
-		  grub_close ();
-		  grub_printf (" (hd%d,%d)", drive - 0x80, slice);
-		}
-	    }
-	  else if (IS_PC_SLICE_TYPE_BSD (current_slice))
-	    {
-	      unsigned long part;
-
-	      for (part = 0; part < 8; part++)
-		{
-		  errnum = ERR_NONE;
-		  current_partition = (slice << 16) | (part << 8) | 0xFF;
-		  if (! open_device ())
-		    continue;
-
 		  saved_drive = current_drive;
 		  saved_partition = current_partition;
 		  if (grub_open (filename))
 		    {
+		      int bsd_part = (part >> 8) & 0xFF;
+		      int pc_slice = part >> 16;
+		      
 		      grub_close ();
-		      grub_printf (" (hd%d,%d,%c)",
-				   drive - 0x80, slice, part + 'a');
+		      
+		      if (bsd_part == 0xFF)
+			grub_printf (" (hd%d,%d)\n",
+				     drive - 0x80, pc_slice);
+		      else
+			grub_printf (" (hd%d,%d,%c)\n",
+				     drive - 0x80, pc_slice, bsd_part + 'a');
+
+		      got_file = 1;
 		    }
 		}
 	    }
+
+	  errnum = ERR_NONE;
 	}
     }
 
-  errnum = ERR_NONE;
   saved_drive = tmp_drive;
   saved_partition = tmp_partition;
-  return 0;
+
+  if (got_file)
+    {
+      errnum = ERR_NONE;
+      return 0;
+    }
+
+  errnum = ERR_FILE_NOT_FOUND;
+  return 1;
 }
 
 static struct builtin builtin_find =
