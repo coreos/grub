@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Based on "src/main.c" in etherboot-4.5.8.  */
+/* Based on "src/main.c" in etherboot-4.6.4.  */
 
 /**************************************************************************
 ETHERBOOT -  BOOTP/TFTP Bootstrap Program
@@ -77,8 +77,9 @@ static char rfc1533_end[] = {RFC1533_END};
 
 static const char dhcpdiscover[] =
 {
-  RFC2132_MSG_TYPE, 1, DHCPDISCOVER,
-  RFC2132_MAX_SIZE, 2, 2, 64,
+  RFC2132_MSG_TYPE, 1, DHCPDISCOVER,	
+  RFC2132_MAX_SIZE,2,	/* request as much as we can */
+  sizeof(struct bootpd_t) / 256, sizeof(struct bootpd_t) % 256,
   RFC2132_PARAM_LIST, 4, RFC1533_NETMASK, RFC1533_GATEWAY,
   RFC1533_HOSTNAME, RFC1533_EXTENSIONPATH
 };
@@ -88,7 +89,8 @@ static const char dhcprequest[] =
   RFC2132_MSG_TYPE, 1, DHCPREQUEST,
   RFC2132_SRV_ID, 4, 0, 0, 0, 0,
   RFC2132_REQ_ADDR, 4, 0, 0, 0, 0,
-  RFC2132_MAX_SIZE, 2, 2, 64,
+  RFC2132_MAX_SIZE,2,	/* request as much as we can */
+  sizeof(struct bootpd_t) / 256, sizeof(struct bootpd_t) % 256,
   /* request parameters */
   RFC2132_PARAM_LIST,
 #ifdef GRUB
@@ -585,7 +587,7 @@ bootp (void)
        * lost immediately.  Not very clever.  */
       await_reply (AWAIT_QDRAIN, 0, NULL, 0);
 
-      udp_transmit (IP_BROADCAST, 0, BOOTP_SERVER,
+      udp_transmit (IP_BROADCAST, BOOTP_CLIENT, BOOTP_SERVER,
 		    sizeof (struct bootp_t), &bp);
 #ifdef T509HACK
       if (flag)

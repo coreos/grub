@@ -40,6 +40,14 @@
 /*********************************************************************/
 
 /*
+  16 Jul 2000  mdc     0.75b11
+     Added support for ADMtek 0985 Centaur-P, a "Comet" tulip clone
+     which is used on the LinkSYS LNE100TX v4.x cards.  We already
+     support LNE100TX v2.0 cards, which use a different controller.
+  04 Jul 2000	jam     ?
+     Added test of status after receiving a packet from the card.
+     Also uncommented the tulip_disable routine.  Stray packets
+     seemed to be causing problems.
   27 Apr 2000	njl	?
   29 Feb 2000   mdc     0.75b7
      Increased reset delay to 3 seconds because Macronix cards seem to
@@ -409,6 +417,7 @@ static void tulip_init_ring(struct nic *nic)
 static void tulip_reset(struct nic *nic)
 {
   unsigned long to, csr6;
+  u32 addr_low, addr_high;
 
   whereami("tulip_reset\n");
 
@@ -443,6 +452,10 @@ static void tulip_reset(struct nic *nic)
 
   } else if (vendor == PCI_VENDOR_ID_DEC && dev_id == PCI_DEVICE_ID_DEC_21142) {
     /* nothing */
+
+  } else if (vendor == PCI_VENDOR_ID_ADMTEK && dev_id == PCI_DEVICE_ID_ADMTEK_0985) {
+    /* nothing */
+
   } else {
     /* If we don't know what to do with the card, set to 10Mbps half-duplex */
 
@@ -467,6 +480,18 @@ static void tulip_reset(struct nic *nic)
 
   /* set up transmit and receive descriptors */
   tulip_init_ring(nic);
+
+  /* set up multicast hash address for Comet (ADKTEK 0985) */
+  /* possibly not needed for Etherboot, but seems to do no harm  -mdc */
+  if (vendor == PCI_VENDOR_ID_ADMTEK && dev_id == PCI_DEVICE_ID_ADMTEK_0985) {
+    addr_low  = nic->node_addr[0] + (nic->node_addr[1] << 8)
+      + (nic->node_addr[2] << 16) + (nic->node_addr[3] << 24);
+    addr_high = nic->node_addr[4] + (nic->node_addr[5] << 8);
+    outl(addr_low,  ioaddr + 0xA4);
+    outl(addr_high, ioaddr + 0xA8);
+    outl(0, ioaddr + 0xAC);
+    outl(0, ioaddr + 0xB0);
+  }
 
   /* Point to receive descriptor */
   outl((unsigned long)&rxd[0], ioaddr + CSR3);
@@ -513,6 +538,10 @@ static void tulip_reset(struct nic *nic)
       outl(0x180, ioaddr + CSR12);    /* Let bit 7 output port */
       outl(0x80, ioaddr + CSR12);     /* RESET DM9102 phyxcer */
       outl(0x0, ioaddr + CSR12);      /* Clear RESET signal */
+
+  } else if (vendor == PCI_VENDOR_ID_ADMTEK && dev_id == PCI_DEVICE_ID_ADMTEK_0985) {
+    /* nothing */
+
   }
 
   /* set the chip's operating mode */
@@ -604,6 +633,13 @@ static int tulip_poll(struct nic *nic)
 
   nic->packetlen = (rxd[rxd_tail].status & 0x3FFF0000) >> 16;
 
+  if( rxd[rxd_tail].status & 0x00008000){
+      rxd[rxd_tail].status = 0x80000000;
+      rxd_tail++;
+      if (rxd_tail == NRXD) rxd_tail = 0;
+      return 0;
+  }
+
   /* copy packet to working buffer */
   /* XXX - this copy could be avoided with a little more work
      but for now we are content with it because the optimised
@@ -626,9 +662,6 @@ static void tulip_disable(struct nic *nic)
 {
   whereami("tulip_disable\n");
 
-  /* The other Etherboot drivers don't seem to do anything here,
-     so for now, we will not either */
-#if	0
   /* disable interrupts */
   outl(0x00000000, ioaddr + CSR7);
 
@@ -637,7 +670,6 @@ static void tulip_disable(struct nic *nic)
 
   /* Clear the missed-packet counter. */
   (volatile unsigned long)inl(ioaddr + CSR8);
-#endif
 }
 
 /*********************************************************************/
@@ -647,6 +679,7 @@ struct nic *tulip_probe(struct nic *nic, unsigned short *io_addrs,
                           struct pci_device *pci)
 {
   unsigned int i;
+  u32 l1, l2;
 
   whereami("tulip_probe\n");
 
@@ -679,6 +712,16 @@ struct nic *tulip_probe(struct nic *nic, unsigned short *io_addrs,
       nic->node_addr[i*2]     = (u8)((value >> 8) & 0xFF);
       nic->node_addr[i*2 + 1] = (u8)( value       & 0xFF);
     }
+  } else if (vendor == PCI_VENDOR_ID_ADMTEK &&
+            dev_id == PCI_DEVICE_ID_ADMTEK_0985) {
+    l1 = inl(ioaddr + 0xA4);
+    l2 = inl(ioaddr + 0xA8);
+    nic->node_addr[0] = (l1      ) & 0xFF;
+    nic->node_addr[1] = (l1 >>  8) & 0xFF;
+    nic->node_addr[2] = (l1 >> 16) & 0xFF;
+    nic->node_addr[3] = (l1 >> 24) & 0xFF;
+    nic->node_addr[4] = (l2      ) & 0xFF;
+    nic->node_addr[5] = (l2 >>  8) & 0xFF;
   } else {
     /* read EEPROM data */
     for (i = 0; i < sizeof(ee_data)/2; i++)

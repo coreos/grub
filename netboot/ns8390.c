@@ -879,7 +879,7 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 			outb(D8390_DCR_FT1 | D8390_DCR_LS, eth_nic_base + D8390_P0_DCR);
 			outb(MEM_8192, eth_nic_base + D8390_P0_PSTART);
 			outb(MEM_16384, eth_nic_base + D8390_P0_PSTOP);
-#ifdef	INCLUDE_NS8390
+#ifdef	NS8390_FORCE_16BIT
 			eth_flags |= FLAG_16BIT;	/* force 16-bit mode */
 #endif
 

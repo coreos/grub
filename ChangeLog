@@ -1,3 +1,25 @@
+2000-07-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Update the network support to Etherboot-4.6.4.
+	
+	From Daniel Wagner <wagi@gmx.ch>:
+	* netboot/3c509.c: Copied from Etherboot-4.6.4.
+	* netboot/3c509.h: Likewise.
+	* netboot/cards.h: Likewise.
+	* netboot/ns8390.c: Likewise.
+	* netboot/sk_g16.c: Likewise.
+	* netboot/sk_g16.h: Likewise.
+	* netboot/tulip.c: Likewise.
+	* netboot/pci.h: Likewise.
+	* netboot/main.c (dhcpdiscover): Updated.
+	(dhcprequest): Likewise.
+	(bootp): Likewise.
+	* netboot/README.netboot: Added the information about the new
+	option --enable-ns8390-force-16bit.
+	* configure.in (--enable-ns8390-force-16bit): New option.
+
+	* netboot/config.c: Updated.
+
 2000-07-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	The Linux zImage support is working now.

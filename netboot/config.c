@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Based on "src/config.c" in etherboot-4.5.8.  */
+/* Based on "src/config.c" in etherboot-4.6.4.  */
 
 /*
  * This program is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@
 #include	"nic.h"
 
 #undef	INCLUDE_PCI
-#if	defined(INCLUDE_NS8390) || defined(INCLUDE_EEPRO100) || defined(INCLUDE_LANCE) || defined(INCLUDE_EPIC100) || defined(INCLUDE_TULIP) || defined(INCLUDE_OTULIP) || defined(INCLUDE_3C90X) || defined(INCLUDE_RTL8139) || defined(INCLUDE_VIA_RHINE)
+#if	defined(INCLUDE_NS8390) || defined(INCLUDE_EEPRO100) || defined(INCLUDE_LANCE) || defined(INCLUDE_EPIC100) || defined(INCLUDE_TULIP) || defined(INCLUDE_OTULIP) || defined(INCLUDE_3C90X) ||  defined(INCLUDE_3C595) || defined(INCLUDE_RTL8139) || defined(INCLUDE_VIA_RHINE)
 	/* || others later */
 #if	defined(ETHERBOOT32)		/* only for 32 bit machines */
 #define	INCLUDE_PCI
@@ -78,6 +78,16 @@ static struct pci_device	pci_nic_list[] = {
 		"3Com905C-TXM", 0, 0, 0},
 
 #endif
+#ifdef	INCLUDE_3C595
+	{ PCI_VENDOR_ID_3COM,		PCI_DEVICE_ID_3COM_3C590,
+		"3Com590", 0, 0, 0},
+	{ PCI_VENDOR_ID_3COM,		PCI_DEVICE_ID_3COM_3C595,
+		"3Com595", 0, 0, 0},
+	{ PCI_VENDOR_ID_3COM,		PCI_DEVICE_ID_3COM_3C595_1,
+		"3Com595", 0, 0, 0},
+	{ PCI_VENDOR_ID_3COM,		PCI_DEVICE_ID_3COM_3C595_2,
+		"3Com595", 0, 0, 0},
+#endif
 #ifdef	INCLUDE_EEPRO100
 	{ PCI_VENDOR_ID_INTEL,		PCI_DEVICE_ID_INTEL_82557,
 		"Intel EtherExpressPro100", 0, 0, 0},
@@ -123,6 +133,8 @@ static struct pci_device	pci_nic_list[] = {
 		"Netgear FA310TX", 0, 0, 0},
 	{ PCI_VENDOR_ID_DAVICOM, PCI_DEVICE_ID_DM9102,
 		"Davicom 9102", 0, 0, 0},
+	{ PCI_VENDOR_ID_ADMTEK, PCI_DEVICE_ID_ADMTEK_0985,
+		"ADMtek Centaur-P", 0, 0, 0},
 #endif
 #ifdef	INCLUDE_VIA_RHINE
 	{ PCI_VENDOR_ID_VIATEC,	PCI_DEVICE_ID_VIA_RHINE_I,
@@ -175,6 +187,9 @@ static struct dispatch_table	NIC[] =
 #endif
 #ifdef	INCLUDE_3C529
 	{ "3C5x9", t529_probe, 0 },
+#endif
+#ifdef	INCLUDE_3C595
+	{ "3C595", t595_probe, pci_ioaddrs },
 #endif
 #ifdef	INCLUDE_3C90X
 	{ "3C90X", a3c90x_probe, pci_ioaddrs },

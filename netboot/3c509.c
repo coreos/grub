@@ -26,13 +26,14 @@ $Id$
 
 #include "etherboot.h"
 #include "nic.h"
+#include "cards.h"
 #include "3c509.h"
 
 static unsigned char	eth_vendor, eth_flags, eth_laar;
 static unsigned short	eth_nic_base, eth_asic_base;
 static char		bnc=0, utp=0; /* for 3C509 */
 
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
 /*
  * This table and several other pieces of the MCA support
  * code were shamelessly borrowed from the Linux kernel source.
@@ -41,10 +42,10 @@ static char		bnc=0, utp=0; /* for 3C509 */
  *
  */
 struct el3_mca_adapters_struct {
-        char* name;
+        const char *name;
         int id;
 };
-struct el3_mca_adapters_struct el3_mca_adapters[] = {
+static struct el3_mca_adapters_struct el3_mca_adapters[] = {
         { "3Com 3c529 EtherLink III (10base2)", 0x627c },
         { "3Com 3c529 EtherLink III (10baseT)", 0x627d },
         { "3Com 3c529 EtherLink III (test mode)", 0x62db },
@@ -54,15 +55,6 @@ struct el3_mca_adapters_struct el3_mca_adapters[] = {
 };
 #endif
 
-static void safetwiddle()
-{
-	static int count=0;
-	static int count2=0;
-	static char tiddles[]="-\\|/";
-	putchar(tiddles[(count2++)&0xfff?count&3:(count++)&3]);
-	putchar('\b');
-}
-
 /* a surrogate */
 
 static void DELAY(int val)
@@ -71,15 +63,6 @@ static void DELAY(int val)
 
 	for(c=0; c<val; c+=20) {
 		twiddle();
-	}
-}
-
-static void SAFEDELAY(int val) 
-{
-	int c;
-	
-	for (c=0; c<val; c+=20) {
-		safetwiddle();
 	}
 }
 
@@ -147,13 +130,12 @@ static void t509_reset(struct nic *nic)
 
 	outw(SET_INTR_MASK, BASE + EP_COMMAND);
 
-	outw(SET_RX_FILTER | FIL_INDIVIDUAL |
-	    FIL_BRDCST, BASE + EP_COMMAND);
+	outw(SET_RX_FILTER | FIL_INDIVIDUAL | FIL_BRDCST, BASE + EP_COMMAND);
 
 	/* configure BNC */
 	if (bnc) {
 		outw(START_TRANSCEIVER, BASE + EP_COMMAND);
-		SAFEDELAY(10000);
+		DELAY(10000);
 		}
 	/* configure UTP */
 	if (utp) {
@@ -180,10 +162,10 @@ static char padmap[] = {
 
 static void t509_transmit(
 struct nic *nic,
-char *d,			/* Destination */
+const char *d,			/* Destination */
 unsigned int t,			/* Type */
 unsigned int s,			/* size */
-char *p)			/* Packet */
+const char *p)			/* Packet */
 {
 	register unsigned int len;
 	int pad;
@@ -192,7 +174,7 @@ char *p)			/* Packet */
 	if(eth_vendor != VENDOR_3C509)
 		return;
 
-#ifdef EDEBUG
+#ifdef	EDEBUG
 	printf("{l=%d,t=%x}",s+ETHER_HDR_SIZE,t);
 #endif
 
@@ -221,7 +203,7 @@ char *p)			/* Packet */
 		outb(0x0, BASE + EP_W1_TX_STATUS);
 	}
 
-	while (inw(BASE + EP_W1_FREE_TX) < len + pad + 4) {
+	while (inw(BASE + EP_W1_FREE_TX) < (unsigned short)len + pad + 4) {
 		/* no room in FIFO */
 	}
 
@@ -259,7 +241,7 @@ static int t509_poll(struct nic *nic)
 
 	cst=inw(BASE + EP_STATUS);
 
-#ifdef EDEBUG
+#ifdef	EDEBUG
 	if(cst & 0x1FFF)
 		printf("-%x-",cst);
 #endif
@@ -273,7 +255,7 @@ static int t509_poll(struct nic *nic)
 	}
 
 	status = inw(BASE + EP_W1_RX_STATUS);
-#ifdef EDEBUG
+#ifdef	EDEBUG
 	printf("*%x*",status);
 #endif
 
@@ -287,7 +269,7 @@ static int t509_poll(struct nic *nic)
 		return 0;
 
 		/* read packet */
-#ifdef EDEBUG
+#ifdef	EDEBUG
 	printf("[l=%d",rx_fifo);
 #endif
 	insw(BASE + EP_W1_RX_PIO_RD_1, nic->packet, rx_fifo / 2);
@@ -297,7 +279,7 @@ static int t509_poll(struct nic *nic)
 
 	while(1) {
 		status = inw(BASE + EP_W1_RX_STATUS);
-#ifdef EDEBUG
+#ifdef	EDEBUG
 		printf("*%x*",status);
 #endif
 		rx_fifo = status & RX_BYTES_MASK;
@@ -307,13 +289,13 @@ static int t509_poll(struct nic *nic)
 			if(rx_fifo & 1)
 				nic->packet[nic->packetlen+rx_fifo-1]=inb(BASE + EP_W1_RX_PIO_RD_1);
 			nic->packetlen+=rx_fifo;
-#ifdef EDEBUG
+#ifdef	EDEBUG
 			printf("+%d",rx_fifo);
 #endif
 		}
 
 		if(( status & RX_INCOMPLETE )==0) {
-#ifdef EDEBUG
+#ifdef	EDEBUG
 			printf("=%d",nic->packetlen);
 #endif
 			break;
@@ -325,7 +307,7 @@ static int t509_poll(struct nic *nic)
 	/* acknowledge reception of packet */
 	outw(RX_DISCARD_TOP_PACK, BASE + EP_COMMAND);
 	while (inw(BASE + EP_STATUS) & S_COMMAND_IN_PROGRESS);
-#ifdef EDEBUG
+#ifdef	EDEBUG
 	type = (nic->packet[12]<<8) | nic->packet[13];
 	if(nic->packet[0]+nic->packet[1]+nic->packet[2]+nic->packet[3]+nic->packet[4]+
 	    nic->packet[5] == 0xFF*ETHER_ADDR_SIZE)
@@ -342,14 +324,14 @@ static int t509_poll(struct nic *nic)
 **************************************************************************/
 
 static int
-eeprom_rdy()
+eeprom_rdy(void)
 {
 	int i;
 
 	for (i = 0; is_eeprom_busy(IS_BASE) && i < MAX_EEPROMBUSY; i++);
 	if (i >= MAX_EEPROMBUSY) {
-	        /* printf("3c509: eeprom failed to come ready.\n"); */
-		printf("3c509: eeprom is busy.\n"); /* memory in EPROM is tight */
+		/* printf("3c509: eeprom failed to come ready.\n"); */
+		printf("3c509: eeprom busy.\n"); /* memory in EPROM is tight */
 		return (0);
 	}
 	return (1);
@@ -360,8 +342,7 @@ eeprom_rdy()
  * before
  */
 static int
-get_e(offset)
-int offset;
+get_e(int offset)
 {
 	if (!eeprom_rdy())
 		return (0xffff);
@@ -372,8 +353,7 @@ int offset;
 }
 
 static int
-send_ID_sequence(port)
-int port;
+send_ID_sequence(int port)
 {
 	int cx, al;
 
@@ -400,9 +380,7 @@ int port;
  * read 16 times getting one bit of data with each read.
  */
 static int
-get_eeprom_data(id_port, offset)
-int id_port;
-int offset;
+get_eeprom_data(int id_port, int offset)
 {
 	int i, data = 0;
 	outb(0x80 + offset, id_port);
@@ -430,7 +408,7 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 	int i;
 	int failcount;
 
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
 	struct el3_mca_adapters_struct *mcafound = NULL;
 	int mca_pos4 = 0, mca_pos5 = 0, mca_irq = 0;
 #endif
@@ -443,7 +421,7 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 		unsigned short k;
 		int ep_current_tag = EP_LAST_TAG + 1;
 		short *p;
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
 		int curboard;
 #endif
 
@@ -454,9 +432,9 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 	/*********************************************************
 			Search for 3Com 509 card
 	***********************************************************/
-#ifdef INCLUDE_3C529
-		/* 
-		 * XXX: We should really check to make sure we have an MCA 
+#ifdef	INCLUDE_3C529
+		/*
+		 * XXX: We should really check to make sure we have an MCA
 		 * bus controller before going ahead with this...
 		 *
 		 * For now, we avoid any hassle by making it a compile
@@ -496,7 +474,7 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 	donewithdetect:
 		/* Kill all setup modes */
 		outb_p(0, MCA_ADAPTER_SETUP_REG);
-		
+
 		if (mcafound) {
 			eth_vendor = VENDOR_3C509;
 
@@ -520,13 +498,13 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 
 		/* Reset and Enable the card */
 		outb(W0_P4_CMD_RESET_ADAPTER, io_base + EP_W0_CONFIG_CTRL);
-		SAFEDELAY(10000); /* we must wait at least 10 ms */
+		DELAY(10000); /* we must wait at least 10 ms */
 		outb(W0_P4_CMD_ENABLE_ADAPTER, io_base + EP_W0_CONFIG_CTRL);
 
 		/*
-			 * Once activated, all the registers are mapped in the range
-			 * x000 - x00F, where x is the slot number.
-			 */
+		 * Once activated, all the registers are mapped in the range
+		 * x000 - x00F, where x is the slot number.
+		 */
 		eth_nic_base = j * EP_EISA_START;
 		eth_vendor = VENDOR_3C509;
 	}
@@ -535,7 +513,7 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 	/* Look for the ISA boards. Init and leave them actived */
 	/* search for the first card, ignore all others */
 	outb(0xc0, id_port);	/* Global reset */
-	SAFEDELAY(10000);
+	DELAY(10000);
 	for (i = 0; i < EP_MAX_BOARDS && eth_vendor==VENDOR_NONE; i++) {
 		outb(0, id_port);
 		outb(0, id_port);
@@ -566,7 +544,7 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 	*/
 	GO_WINDOW(0);
 	k = get_e(EEPROM_PROD_ID);
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
 	/*
 	 * On MCA, the PROD_ID matches the MCA card ID (POS0+POS1)
 	 */
@@ -577,16 +555,16 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 		}
 	} else { /* for ISA/EISA */
 		if ((k & 0xf0ff) != (PROD_ID & 0xf0ff))
-			goto no3c509;	
+			goto no3c509;
 	}
 #else
 	if ((k & 0xf0ff) != (PROD_ID & 0xf0ff))
 		goto no3c509;
 #endif
 
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
 	if (mcafound) {
-		printf("%s board found on MCA at 0x%x IRQ %d -", 
+		printf("%s board found on MCA at 0x%x IRQ %d -",
 		       mcafound->name, eth_nic_base, mca_irq);
 	} else {
 #endif
@@ -595,7 +573,7 @@ struct nic *t509_probe(struct nic *nic, unsigned short *probe_addrs)
 		} else {
 			printf("3C5x9 board on ISA at 0x%x - ",eth_nic_base);
 		}
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
 	}
 #endif
 

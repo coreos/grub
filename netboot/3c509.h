@@ -38,33 +38,33 @@
  * Some global constants
  */
 
-#define TX_INIT_RATE         16
-#define TX_INIT_MAX_RATE     64
-#define RX_INIT_LATENCY      64
-#define RX_INIT_EARLY_THRESH 64
-#define MIN_RX_EARLY_THRESHF   16 /* not less than ether_header */
-#define MIN_RX_EARLY_THRESHL   4
+#define TX_INIT_RATE		16
+#define TX_INIT_MAX_RATE	64
+#define RX_INIT_LATENCY		64
+#define RX_INIT_EARLY_THRESH	64
+#define MIN_RX_EARLY_THRESHF	16	/* not less than ether_header */
+#define MIN_RX_EARLY_THRESHL	4
 
-#define EEPROMSIZE      0x40
-#define MAX_EEPROMBUSY  1000
-#define EP_LAST_TAG     0xd7
-#define EP_MAX_BOARDS   16
-#define EP_ID_PORT      0x100
+#define EEPROMSIZE	0x40
+#define MAX_EEPROMBUSY	1000
+#define EP_LAST_TAG	0xd7
+#define EP_MAX_BOARDS	16
+#define EP_ID_PORT	0x100
 
 /*
  * some macros to acces long named fields
  */
 #define IS_BASE (eth_nic_base)
-#define BASE 	(eth_nic_base)
+#define BASE	(eth_nic_base)
 
 /*
  * Commands to read/write EEPROM trough EEPROM command register (Window 0,
  * Offset 0xa)
  */
-#define EEPROM_CMD_RD    0x0080	/* Read:  Address required (5 bits) */
-#define EEPROM_CMD_WR    0x0040	/* Write: Address required (5 bits) */
+#define EEPROM_CMD_RD	0x0080	/* Read:  Address required (5 bits) */
+#define EEPROM_CMD_WR	0x0040	/* Write: Address required (5 bits) */
 #define EEPROM_CMD_ERASE 0x00c0	/* Erase: Address required (5 bits) */
-#define EEPROM_CMD_EWEN  0x0030	/* Erase/Write Enable: No data required */
+#define EEPROM_CMD_EWEN	0x0030	/* Erase/Write Enable: No data required */
 
 #define EEPROM_BUSY		(1<<15)
 #define EEPROM_TST_MODE		(1<<14)
@@ -73,10 +73,10 @@
  * Some short functions, worth to let them be a macro
  */
 #define is_eeprom_busy(b) (inw((b)+EP_W0_EEPROM_COMMAND)&EEPROM_BUSY)
-#define GO_WINDOW(x)      outw(WINDOW_SELECT|(x), BASE+EP_COMMAND)
+#define GO_WINDOW(x)	outw(WINDOW_SELECT|(x), BASE+EP_COMMAND)
 
 /**************************************************************************
- *									  *
+ *
  * These define the EEPROM data structure.  They are used in the probe
  * function to verify the existance of the adapter after having sent
  * the ID_Sequence.
@@ -94,12 +94,12 @@
 #define EEPROM_RESOURCE_CFG	0x9	/* IRQ. Bits 12-15 */
 
 /**************************************************************************
- *										  *
- * These are the registers for the 3Com 3c509 and their bit patterns when *
- * applicable.  They have been taken out the the "EtherLink III Parallel  *
- * Tasking EISA and ISA Technical Reference" "Beta Draft 10/30/92" manual *
- * from 3com.								  *
- *										  *
+ *
+ * These are the registers for the 3Com 3c509 and their bit patterns when
+ * applicable.  They have been taken out the the "EtherLink III Parallel
+ * Tasking EISA and ISA Technical Reference" "Beta Draft 10/30/92" manual
+ * from 3com.
+ *
  **************************************************************************/
 
 #define EP_COMMAND		0x0e	/* Write. BASE+0x0e is always a
@@ -276,7 +276,7 @@
 #define S_RX_EARLY		(unsigned short) (0x20)
 #define S_INT_RQD		(unsigned short) (0x40)
 #define S_UPD_STATS		(unsigned short) (0x80)
-#define S_5_INTS                (S_CARD_FAILURE|S_TX_COMPLETE|\
+#define S_5_INTS		(S_CARD_FAILURE|S_TX_COMPLETE|\
 				 S_TX_AVAIL|S_RX_COMPLETE|S_RX_EARLY)
 #define S_COMMAND_IN_PROGRESS	(unsigned short) (0x1000)
 
@@ -297,14 +297,14 @@
  *
  *     10-0:   RX Bytes (0-1514)
  */
-#define ERR_RX_INCOMPLETE  (unsigned short) (0x1<<15)
-#define ERR_RX		   (unsigned short) (0x1<<14)
-#define ERR_RX_OVERRUN 	   (unsigned short) (0x8<<11)
-#define ERR_RX_RUN_PKT	   (unsigned short) (0xb<<11)
-#define ERR_RX_ALIGN	   (unsigned short) (0xc<<11)
-#define ERR_RX_CRC	   (unsigned short) (0xd<<11)
-#define ERR_RX_OVERSIZE	   (unsigned short) (0x9<<11)
-#define ERR_RX_DRIBBLE	   (unsigned short) (0x2<<11)
+#define ERR_RX_INCOMPLETE	(unsigned short) (0x1<<15)
+#define ERR_RX			(unsigned short) (0x1<<14)
+#define ERR_RX_OVERRUN		(unsigned short) (0x8<<11)
+#define ERR_RX_RUN_PKT		(unsigned short) (0xb<<11)
+#define ERR_RX_ALIGN		(unsigned short) (0xc<<11)
+#define ERR_RX_CRC		(unsigned short) (0xd<<11)
+#define ERR_RX_OVERSIZE		(unsigned short) (0x9<<11)
+#define ERR_RX_DRIBBLE		(unsigned short) (0x2<<11)
 
 /*
  * FIFO Registers.
@@ -336,13 +336,13 @@
  * Window 0/Port 04
  */
 /* Read */
-#define IS_AUI 				(1<<13)
-#define IS_BNC 				(1<<12)
-#define IS_UTP 				(1<<9)
+#define IS_AUI				(1<<13)
+#define IS_BNC				(1<<12)
+#define IS_UTP				(1<<9)
 /* Write */
 #define ENABLE_DRQ_IRQ			0x0001
-#define W0_P4_CMD_RESET_ADAPTER       0x4
-#define W0_P4_CMD_ENABLE_ADAPTER      0x1
+#define W0_P4_CMD_RESET_ADAPTER		0x4
+#define W0_P4_CMD_ENABLE_ADAPTER	0x1
 /*
  * Media type and status.
  * Window 4/Port 0A
@@ -368,26 +368,26 @@
 /*
  * Misc defines for various things.
  */
-#define ACTIVATE_ADAPTER_TO_CONFIG 	0xff /* to the id_port */
-#define MFG_ID 				0x6d50 /* in EEPROM and W0 ADDR_CONFIG */
-#define PROD_ID 			0x9150
+#define ACTIVATE_ADAPTER_TO_CONFIG	0xff /* to the id_port */
+#define MFG_ID				0x6d50 /* in EEPROM and W0 ADDR_CONFIG */
+#define PROD_ID				0x9150
 
-#define AUI 				0x1
-#define BNC 				0x2
-#define UTP 				0x4
+#define AUI				0x1
+#define BNC				0x2
+#define UTP				0x4
 
 #define RX_BYTES_MASK			(unsigned short) (0x07ff)
 
  /* EISA support */
-#define EP_EISA_START                    0x1000
-#define EP_EISA_W0                       0x0c80
+#define EP_EISA_START			0x1000
+#define EP_EISA_W0			0x0c80
 
-#ifdef INCLUDE_3C529
+#ifdef	INCLUDE_3C529
  /* MCA support */
-#define MCA_MOTHERBOARD_SETUP_REG       0x94
-#define MCA_ADAPTER_SETUP_REG           0x96
-#define MCA_MAX_SLOT_NR  8
-#define MCA_POS_REG(n)                  (0x100+(n))
+#define MCA_MOTHERBOARD_SETUP_REG	0x94
+#define MCA_ADAPTER_SETUP_REG		0x96
+#define MCA_MAX_SLOT_NR			8
+#define MCA_POS_REG(n)			(0x100+(n))
 #endif
 
 /*

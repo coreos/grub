@@ -94,6 +94,8 @@ __asm__ __volatile__("pushfl ; popl %0":"=g" (x): /* no input */ :"memory")
 #define restore_flags(x) \
 __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 
+#define PCI_VENDOR_ID_ADMTEK            0x1317
+#define PCI_DEVICE_ID_ADMTEK_0985       0x0985
 #define PCI_VENDOR_ID_REALTEK           0x10ec
 #define PCI_DEVICE_ID_REALTEK_8029      0x8029
 #define PCI_DEVICE_ID_REALTEK_8139      0x8139
@@ -106,6 +108,10 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 #define PCI_VENDOR_ID_NETVIN            0x4a14
 #define PCI_DEVICE_ID_NETVIN_NV5000SC   0x5000
 #define PCI_VENDOR_ID_3COM		0x10b7
+#define PCI_DEVICE_ID_3COM_3C590	0x5900
+#define PCI_DEVICE_ID_3COM_3C595	0x5950
+#define PCI_DEVICE_ID_3COM_3C595_1	0x5951
+#define PCI_DEVICE_ID_3COM_3C595_2	0x5952
 #define PCI_DEVICE_ID_3COM_3C900TPO	0x9000
 #define PCI_DEVICE_ID_3COM_3C900COMBO	0x9001
 #define PCI_DEVICE_ID_3COM_3C905TX	0x9050
@@ -134,8 +140,8 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 #define PCI_VENDOR_ID_VIATEC		0x1106
 #define PCI_DEVICE_ID_VIA_RHINE_I	0x3043
 #define PCI_DEVICE_ID_VIA_86C100A	0x6100
-#define PCI_VENDOR_ID_DAVICOM          0x1282
-#define PCI_DEVICE_ID_DM9102           0x9102
+#define PCI_VENDOR_ID_DAVICOM		0x1282
+#define PCI_DEVICE_ID_DM9102		0x9102
 
 struct pci_device {
 	unsigned short	vendor, dev_id;

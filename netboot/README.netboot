@@ -84,6 +84,7 @@ Lance PCI PCNet/32
 
 Linksys LNE100TX and other NICs using this Tulip clone chip
 Netgear FA310TX and other NICs using this Tulip clone chip
+Tulip clones based on the ADMtek Centaur-P
 Tulip clones based on the Macronix 987x5
 Tulip-Fast
 Tulip+
@@ -109,6 +110,11 @@ NetVin 5000SC
     If you have a Compex RL2000 PCI 32-bit (11F6:1401), and the probe
     hangs in "Probing...[NE*000/PCI]", try enabling this fix... it
     worked for me :).
+  --enable-ns8390-force-16bit
+    It seems that forcing 16 bit bus width for NEPCI causes
+    Etherboot/GRUB to fail on the RTL8029. Therefore
+    --enable-ns8390-force-16bit should only be turned on for those NEPCI
+    NICs that falsely detect 8 bit bus width when it should be 16.
 
 Racal-Interlan NI5210
   --enable-ni5210

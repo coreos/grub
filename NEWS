@@ -7,6 +7,7 @@ New in 0.5.96 - XXXX-XX-XX:
 * You can specify `--no-mem-option' to the command "kernel", if you want
   GRUB not to pass a Linux's mem option automatically.
 * Now GRUB is compliant with the Linux/i386 boot protocol version 2.02.
+* The network support is updated to Etherboot-4.6.4.
 
 New in 0.5.95 - 2000-06-27:
 * NetBSD ELF kernel support is added. You have to specify the new option
