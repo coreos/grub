@@ -147,7 +147,11 @@ real_start:
 	jc	chs_mode
 	cmpw	$0xaa55, %bx
 	jne	chs_mode
-	
+
+	/* check if AH=0x42 is supported */
+	andw	$1, %cx
+	jz	chs_mode
+		
 	/* get the geometry (limited to 2TB!) */
 	movb	$0x48, %ah
 	movw	$STAGE1_DRP_ADDR, %si

@@ -1,3 +1,10 @@
+1999-11-16  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage1/stage1.S: Check for the API subset support bitmap
+	returned by INT 13 AH=48h, and jump to chs_mode if AH=42h is not
+	supported.
+	
 1999-11-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (install_func): When using a Stage 1.5, set
