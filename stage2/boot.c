@@ -97,6 +97,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
   
   /* ELF loading supported if multiboot, FreeBSD and NetBSD.  */
   if ((type == KERNEL_TYPE_MULTIBOOT
+       || pu.elf->e_ident[EI_OSABI] == ELFOSABI_FREEBSD
        || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD") == 0
        || suggested_type == KERNEL_TYPE_NETBSD)
       && len > sizeof (Elf32_Ehdr)

@@ -1,3 +1,12 @@
+2002-07-09  Yoshinori K. Okuji  <okuji@enbug.org>
+	
+	From Mark Kettenis <kettenis@chello.nl>:
+	* stage2/boot.c (load_image): Recognize newer FreeBSD kernels.
+	* stage2/i386-elf.h (EI_OSABI): New macro.
+	(EI_ABIVERSION): Likewise.
+	(ELFOSABI_FREEBSD): Likewise.
+	(EI_PAD): Set to 9.
+
 2002-07-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/shared.h (boot_part_offset): Removed.
