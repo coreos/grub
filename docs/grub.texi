@@ -241,8 +241,8 @@ commands, devices, partitions, and files in a directory depending on
 context. If no config file is present, it goes into the command-line.
 
 @item Multiple Filesystem Types
-Supports multiple fliesystem types transparently, plus an explicitly
-usable block-lst notation. The currently supported filesystem types are
+Supports multiple filesystem types transparently, plus an explicitly
+usable block-list notation. The currently supported filesystem types are
 @dfn{BSD FFS}, @dfn{DOS FAT}, and @dfn{Linux
 ext2fs}. @xref{Filesystems}, for more information.
 
@@ -259,14 +259,14 @@ loaded in a compressed state, so a variant of the modules loading
 command which doesn't uncompress them can be used.
 
 @item Access Data on Any Installed Device
-Supports reading data from any or all floppy or hard disk(s) recoginized
+Supports reading data from any or all floppy or hard disk(s) recognized
 by the BIOS, independent of the setting for the root partition.
 
-@item Geometry Translaton-Independent
+@item Geometry Translation-Independent
 Subject to the constraint that it cannot go past the end of the
 geometry-translated area of a drive, the particular translation used is
 generally irrelevant. This implies a drive installed and running on a
-controller with one translatoin in use may in general be moved to
+controller with one translation in use may in general be moved to
 another controller with a different translation (or the translation
 settings on the first controller, if configurable, may be changed) with
 no adverse effects and no other changes necessary.
@@ -282,7 +282,7 @@ information on all of installed memory. On most machines, upper memory
 is contiguous, so the problem does not arise.
 
 @item Supports Logical Block Address Mode
-In tranditional disk calls (called @dfn{CHS mode}), there is a geometry
+In traditional disk calls (called @dfn{CHS mode}), there is a geometry
 translation problem, that is, the BIOS cannot access over 1024
 cylinders, so the accessible space is limited to at least 508 MB and to
 at most 8GB. GRUB can't universally solve this problem, as there is no
@@ -307,7 +307,7 @@ for more information.}.
 The following is a quotation from Gordon Matzigkeit, a GRUB fanatic:
 
 @quotation
-Some people like to acknowlege both the operating system and kernel when
+Some people like to acknowledge both the operating system and kernel when
 they talk about their computers, so they might say they use
 ``GNU/Linux'' or ``GNU/Hurd''.  Other people seem to think that the
 kernel is the most important part of the system, so they like to call
@@ -425,7 +425,7 @@ install= (fd0)+1 (hd0) (hd0,2)/boot/grub/stage2 0x8000 p
 @end example
 
 This tells GRUB to grab the first sector of the floppy and use it as the
-stage1, create a blocklist using the file @file{/boot/grub/stage2} on
+stage1, create a block-list using the file @file{/boot/grub/stage2} on
 the first hard disk (partition number 2), merge them together, set the
 load address correctly for a stage2 (0x8000), save the @dfn{install
 partition} in the first sector of the stage2 (the @samp{p} at the end),
@@ -510,7 +510,7 @@ the command-line interface.
 The command-line interface provides a prompt and after it an editable
 text area much like a command-line in Unix or DOS. Each command is
 immediately executed after it is entered @footnote{However, this
-behavaior will be changed in the future version, in an user-invisible
+behavior will be changed in the future version, in an user-invisible
 way.}. The commands are a subset of those available in the configuration
 file, used with exactly the same syntax.
 
@@ -537,7 +537,7 @@ of disks, partitions, and filenames depending on the context.
 @section The simple menu interface
 
 The menu interface is quite easy to use.  It's commands are both
-reasonably intuitive and described onscreen.
+reasonably intuitive and described on screen.
 
 Basically, the menu interface provides a list of @dfn{boot
 configurations} to the user to choose from.  Use the arrow keys to
@@ -603,8 +603,8 @@ configuration file only.
 Options are separated by spaces.
 
 @item
-All numbers can be either decimal or hexidecimal. A hexidecimal number
-must be preceeded by @samp{0x}, and is case insensitive.
+All numbers can be either decimal or hexadecimal. A hexadecimal number
+must be preceded by @samp{0x}, and is case insensitive.
 
 @item
 Extra options/text at the end of the line is ignored unless otherwise
@@ -667,9 +667,9 @@ also be used for debugging purposes to lie to an OS.
 @item root= @var{device} [@var{hdbias}]
 Set the current @dfn{root partition} to the device @var{device}, then
 attempt to mount it to get the partition size (for passing the partition
-descriptor in @code{ES:ESI}, used by some chainloaded bootloaders), the
+descriptor in @code{ES:ESI}, used by some chain-loaded bootloaders), the
 BSD drive-type (for booting BSD kernels using their native boot format),
-and fixup automatic determination of the PC partition where a BSD
+and fix up automatic determination of the PC partition where a BSD
 sub-partition is located. The optional @var{hdbias} parameter is a
 number to tell a kernel which is using one of the BSD boot methodologies
 how many BIOS drive numbers are on controllers before the current
@@ -685,8 +685,8 @@ desired. Note that the items mentioned in @command{root=} above which
 derived from attempting the mount will NOT work correctly.
 
 @item chainloader= @var{file}
-Load @var{file} as a chainloader. Like any other file loaded by the
-filesystem code, it can use the blocklist notation to grab the first
+Load @var{file} as a chain-loader. Like any other file loaded by the
+filesystem code, it can use the block-list notation to grab the first
 sector of the current partition with @samp{+1}.
 
 @item kernel= @var{file} @dots{}
@@ -694,13 +694,13 @@ Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
 Linux zImage or bzImage, FreeBSD-a.out, or NetBSD-a.out) from
 @var{file}. This command ignores the rest of the contents of the line,
 except that the entire line starting with the kernel filename is passed
-varbatim as the @dfn{kernel command-line}. The module state is reset by
+verbatim as the @dfn{kernel command-line}. The module state is reset by
 this (i.e. reload any modules).
 
 @item module= @var{file} @dots{}
 Load a boot module for a Multiboot format boot image (no interpretation
 of the file contents are made, so that user of this command/writer of
-the configurtion file must know what the kernel in question works
+the configuration file must know what the kernel in question works
 with). The rest of the line is passed as the @dfn{module command-line}
 much like with the @command{kernel=} command.
 
@@ -721,7 +721,7 @@ location (pretty much all other edits are performed by the
 @command{install=} command).
 
 In slightly more detail, it will load @var{stage1_file}, validate that
-it is a GRUB stage1 of the right version number, install blocklist for
+it is a GRUB stage1 of the right version number, install block-list for
 loading @var{file} (if the option @samp{d} is present, the stage1 will
 always look for the actual disk @var{file} was installed on, rather than
 using the booting drive) as a stage2 into memory at address
@@ -742,12 +742,12 @@ floppy this is a NO-OP). This is limited to working with @emph{primary}
 PC partitions.
 
 @item boot
-This boots the OS/chainloader which has been loaded. Only necessary if
+This boots the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command-line (it is implicit at the end of
 a config-file entry).
 @end table
 
-Commands usable in configuraton files and interactively which are only
+Commands usable in configuration files and interactively which are only
 available in the debug version of the GRUB Stage 2.
 
 @table @code
@@ -820,7 +820,7 @@ The device syntax is like this:
 
 @samp{[]} means the parameter is optional. @var{bios_device} should be
 either @samp{fd} or @samp{hd} followed by a digit, like @samp{fd0}.
-But you can also set @var{bios_device} to a hexidecimal or a decimal,
+But you can also set @var{bios_device} to a hexadecimal or a decimal,
 which is a BIOS drive number, so these are equivalent:
 
 @example
@@ -836,7 +836,7 @@ sub-partition, like @samp{a} or @samp{e}.
 A shortcut for specifying BSD sub-partitions is
 @code{(@var{bios_device},@var{bsd_subpart_letter})}, in this case, GRUB
 searches for the first PC partition containing BSD sub-partitions, then
-finds the subparitition @var{bsd_subpart_letter}. Here is an example:
+finds the sub-partition @var{bsd_subpart_letter}. Here is an example:
 
 @example
 (hd0,a)
@@ -847,14 +847,14 @@ finds the subparitition @var{bsd_subpart_letter}. Here is an example:
 @section How to specify files
 
 There are two ways to specify files, @dfn{absolute pathname} and
-@dfn{blocklist}.
+@dfn{block-list}.
 
 Absolute pathname resembles a Unix absolute pathname. Use @samp{/} for
 the directory separator but not @samp{\} like DOS. For example,
 @samp{/boot/grub/menu.lst}.
 
-Blocklist is used for specifying a file that doesn't appear in the
-filesystem, like a chainloader. The syntax is a bit complex, like this:
+Block-list is used for specifying a file that doesn't appear in the
+filesystem, like a chain-loader. The syntax is a bit complex, like this:
 
 @example
 @code{1+100,200+1,300+300}
@@ -931,11 +931,11 @@ sequence.
 @section Errors reported by the Stage 2
 
 The general way that the Stage 2 handles errors is to abort the
-operation in question, print an error strng, then (if possible) either
-continue based on the fact that an error occured or wait for the user to
+operation in question, print an error string, then (if possible) either
+continue based on the fact that an error occurred or wait for the user to
 deal with the error.
 
-The followng is a comprehensive list of error messages for the Stage 2
+The following is a comprehensive list of error messages for the Stage 2
 (error numbers for the Stage 1.5 are listed before the colon in each
 description):
 
@@ -1010,11 +1010,11 @@ such a limit.
 This error is returned if GRUB was expecting to read a number and
 encountered bad data.
 
-@item 16 : Device string unrecoginizable
+@item 16 : Device string unrecognizable
 This error is returned if a device string was expected, and the string
 encountered didn't fit the syntax/rules listed in the @ref{Filesystems}.
 
-@item 17 : Invald device requested
+@item 17 : Invalid device requested
 This error is returned if a device string is recognizable but does not
 fall under the other device errors.
 
@@ -1034,14 +1034,14 @@ header requires a feature that is not recognized. The point of this is
 that the kernel requires special handling which GRUB is likely usable to
 provide.
 
-@item 21 : Unknow boot failure
-This error is returned if the boot attempt did not suceed for reasons
+@item 21 : Unknown boot failure
+This error is returned if the boot attempt did not succeed for reasons
 which are unknown.
 
 @item 22 : Must load Multiboot kernel before modules
 This error is returned if the module load command is used before loading
 a Multiboot kernel. It only makes sense in this case anyway, as GRUB has
-no idea how to communicate the presense of location of such modules to a
+no idea how to communicate the presence of location of such modules to a
 non-Multiboot-aware kernel.
 
 @item 23 : Must load Linux kernel before initrd
@@ -1175,21 +1175,21 @@ A @dfn{stage1.5} should be loaded at address 0x2000, and a @dfn{stage2}
 should be loaded at address 0x8000. Both use a CS of 0.
 
 @item @dfn{firstlist} (0x1b05)
-This is the @emph{ending} address of the blocklst data area.
+This is the @emph{ending} address of the block-list data area.
 
 The trick here is that it is actually read backward, and the first
-8-byte blocklist is not read here, but after the pointer is decremented
+8-byte block-list is not read here, but after the pointer is decremented
 8 bytes, then after reading it, it decrements again, reads, decrements,
 reads, etc. until it is finished.  The terminating condition is when the
-number of sectors to be read in the next blocklist is 0.
+number of sectors to be read in the next block-list is 0.
 
-The format of a blocklist can be seen from the example in the code just
+The format of a block-list can be seen from the example in the code just
 before the @code{firstlist} label.  (note that it is always from the
 beginning of the disk, and @emph{not} relative to the partition
 boundaries)
 
 @item @dfn{loading drive} (0x1b05)
-This is the BIOS drive number to load the blocklists from. If the number
+This is the BIOS drive number to load the block-lists from. If the number
 is 0xff, then load from the booting drive.
 @end table
 
@@ -1331,7 +1331,7 @@ pass the continuation value unchanged as input to the next iteration of
 the E820h call in order to get the next Address Range Descriptor. A
 return value of zero means that this is the last descriptor. Note that
 the BIOS indicate that the last valid descriptor has been returned by
-either returning a zero as the continuaition value, or by returning
+either returning a zero as the continuation value, or by returning
 carry.
 @end multitable
 
@@ -1425,7 +1425,7 @@ address space (4 GB).
 
 @item
 Standard PC address ranges will not be reported. Example video memory at
-A0000 to BFFFF physical will not be described by this function. THe
+A0000 to BFFFF physical will not be described by this function. The
 range from E0000 to EFFFF is base board specific and will be reported as
 suits the bas board.
 
