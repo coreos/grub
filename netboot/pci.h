@@ -80,6 +80,8 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 #define PCI_DEVICE_ID_VIA_82C926	0x0926
 #define PCI_VENDOR_ID_SURECOM		0x10bd
 #define PCI_DEVICE_ID_SURECOM_NE34	0x0e34
+#define PCI_VENDOR_ID_VORTEX		0x1119
+#define PCI_DEVICE_ID_VORTEX_3c595	0x1234 /* Correct value unknown */
 
 struct pci_device {
 	unsigned short	vendor, dev_id;

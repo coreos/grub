@@ -1,3 +1,34 @@
+1999-09-20  Edmund GRIMLEY EVANS  <edmundo@rano.demon.co.uk>
+
+	* netboot/3c59x.c: INCLUDE_3c59x is replaced by INCLUDE_3C59X
+ 	throughout.
+	* netboot/config.c: Likewise.
+	* netboot/io.h (__INS): New macro.
+	(__OUTS): Likewise.
+	(outl): Likewise.
+	(inl): Likewise.
+	(outl_p): Likewise.
+	(inl_p): Likewise.
+	Call __INS with the argument `b', with `w' and with `l' to
+	define insb, insw and insl, respectively. Likewise, Call __OUTS
+	with `b', with `w' and with `l' to define outsb, outw and outl,
+	respectively.
+	* netboot/pci.h (PCI_VENDOR_ID_VORTEX): New macro.
+ 	(PCI_DEVICE_ID_VORTEX_3c595): Likewise. Defined as a random
+	value.
+	
+1999-09-20  Edward Killips  <ekillips@triton.net>
+
+	* stage2/disk_io.c (set_partition_hidden_flag): Set/cleat the
+	hidden flag, whether the hidden flag is set or not.
+	
+1999-09-21  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (install_func): Do not set DEBUG_FS at the
+	first read. Set it to DEBUG_FS_BLOCKLIST_FUNC when reading the
+	whole of Stage 2. Set FILEPOS to zero at the same time to read
+	from the beginning of Stage 2. Reported by Pavel Roskin.
+	
 1999-09-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The argument ADDR for the command install is now optional.

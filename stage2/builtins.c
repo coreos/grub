@@ -893,20 +893,15 @@ install_func (char *arg, int flags)
     }
 
   installlist = BOOTSEC_LOCATION + STAGE1_FIRSTLIST + 4;
-  debug_fs = debug_fs_blocklist_func;
 
   /* Read the first sector of Stage 2.  */
   if (! grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) == SECTOR_SIZE)
-    {
-      debug_fs = 0;
-      return 1;
-    }
+    return 1;
 
   /* Check for the version of Stage 2.  */
   if (*((short *) (SCRATCHADDR + STAGE2_VER_MAJ_OFFS)) != COMPAT_VERSION)
     {
       errnum = ERR_BAD_VERSION;
-      debug_fs = 0;
       return 1;
     }
 
@@ -949,6 +944,8 @@ install_func (char *arg, int flags)
     }
 
   /* Read the whole of Stage 2.  */
+  filepos = 0;
+  debug_fs = debug_fs_blocklist_func;
   if (! grub_read ((char *) RAW_ADDR (0x100000), -1))
     {
       debug_fs = 0;

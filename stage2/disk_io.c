@@ -340,20 +340,17 @@ set_partition_hidden_flag (int hidden)
       if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
         return 0;
 
-      if (PC_SLICE_TYPE (SCRATCHADDR, part) & PC_SLICE_TYPE_HIDDEN_FLAG)
-        {
-	  if (hidden)
-	    PC_SLICE_TYPE (SCRATCHADDR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
-	  else
-	    PC_SLICE_TYPE (SCRATCHADDR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
-
- 	  buf_track = -1;
-          if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
-			0, 1, SCRATCHSEG))
-	    {
-	      errnum = ERR_WRITE;
-	      return 0;
-	    }
+      if (hidden)
+	PC_SLICE_TYPE (SCRATCHADDR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
+      else
+	PC_SLICE_TYPE (SCRATCHADDR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
+      
+      buf_track = -1;
+      if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
+		    0, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  return 0;
 	}
     }
 

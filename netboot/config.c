@@ -4,7 +4,7 @@
 #include	"netboot_config.h"
 
 #undef	INCLUDE_PCI
-#if	defined(INCLUDE_NEPCI) || defined(INCLUDE_EEPRO100) || defined (INCLUDE_3c59x)
+#if	defined(INCLUDE_NEPCI) || defined(INCLUDE_EEPRO100) || defined (INCLUDE_3C59X)
 	/* || others later */
 #if	defined(NETBOOT32)		/* only for 32 bit machines */
 #define	INCLUDE_PCI
@@ -33,7 +33,7 @@ struct pci_device	pci_nic_list[] = {
 	{ PCI_VENDOR_ID_INTEL,		PCI_DEVICE_ID_INTEL_82557,
 		"Intel EtherExpressPro100"},
 #endif
-#ifdef INCLUDE_3c59x
+#ifdef INCLUDE_3C59X
 	{PCI_VENDOR_ID_VORTEX,	PCI_DEVICE_ID_VORTEX_3c595,	"3c595"},
 
 #endif       
@@ -83,7 +83,7 @@ extern struct nic	*cs89x0_probe(struct nic *, unsigned short *);
 extern struct nic	*ne2100_probe(struct nic *, unsigned short *);
 #endif
 
-#ifdef	INCLUDE_3c59x
+#ifdef	INCLUDE_3C59X
 extern struct nic	*VX_probe(struct nic *, unsigned short *);
 #endif
 
@@ -120,7 +120,7 @@ static struct dispatch_table	NIC[] =
 	{ "NE*000/PCI", nepci_probe, pci_addrs },
 #endif
 
-#ifdef INCLUDE_3c59x
+#ifdef INCLUDE_3C59X
 	{"VorTex/PCI", VX_probe, pci_addrs},
 #endif
 

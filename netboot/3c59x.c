@@ -14,7 +14,7 @@
 	   Code 930.5, Goddard Space Flight Center, Greenbelt MD 20771
 */
 
-#ifdef INCLUDE_3c59x
+#ifdef INCLUDE_3C59X
 
 
 #define lx_outb(a,b) outb(b,a)
@@ -1169,4 +1169,4 @@ struct nic *VX_probe(struct nic *nic, unsigned short *probe_addrs)
   return 0;
 }
 
-#endif /* INCLUDE_3c59x */
+#endif /* INCLUDE_3C59X */
