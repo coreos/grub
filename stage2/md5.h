@@ -18,17 +18,13 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-/* Initialize the buffers to compute a new md5 checksum.  This will
-   destroy any previously calculated md5 sum. */
-extern void md5_init(void);
+/* If CHECK is true, check a password for correctness. Returns 0
+   if password was correct, and a value != 0 for error, similarly
+   to strcmp.
+   If CHECK is false, crypt KEY and save the result in CRYPTED.
+   CRYPTED must have a salt.  */
+extern int md5_password (const char *key, char *crypted, int check);
 
-/* Digestify the given input.  This may be called multiple times. */
-extern void md5_update(const char *input, int inputlen);
-
-/* Calculate the 16 byte md5 check sum.  The result will be valid until
-   the next md5_init(). */
-extern unsigned char* md5_final(void);
-
-/* Check a md5 password for validity.  Returns 0 if password was
-   correct, and a value != 0 for error, similarly to strcmp. */
-extern int check_md5_password (const char* key, const char* crypted);
+/* For convenience.  */
+#define check_md5_password(key,crypted)	md5_password((key), (crypted), 1)
+#define make_md5_password(key,crypted)	md5_password((key), (crypted), 0)

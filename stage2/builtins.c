@@ -2369,7 +2369,68 @@ static struct builtin builtin_map =
   " when you chain-load some operating systems, such as DOS, if such an"
   " OS resides at a non-first drive."
 };
+
+
+#ifdef USE_MD5_PASSWORDS
+/* md5crypt */
+static int
+md5crypt_func (char *arg, int flags)
+{
+  char crypted[36];
+  char key[32];
+  int saltlen;
+  int i;
+  const char *const seedchars =
+    "./0123456789ABCDEFGHIJKLMNOPQRST"
+    "UVWXYZabcdefghijklmnopqrstuvwxyz";
   
+  /* First create a salt.  */
+
+  /* The magical prefix.  */
+  grub_memset (crypted, 0, sizeof (crypted));
+  grub_memmove (crypted, "$1$", 3);
+
+  /* Create the length of a salt.  */
+  saltlen = currticks ();
+  saltlen &= 7;
+  saltlen++;
+
+  /* Generate a salt.  */
+  for (i = 0; i < saltlen; i++)
+    {
+      /* FIXME: This should be more random.  */
+      crypted[3 + i] = seedchars[(currticks () >> i) & 0x3f];
+    }
+
+  /* A salt must be terminated with `$', if it is less than 8 chars.  */
+  if (saltlen != 8)
+    crypted[3 + i] = '$';
+
+#ifdef DEBUG_MD5CRYPT
+  grub_printf ("salt = %s\n", crypted);
+#endif
+  
+  /* Get a password.  */
+  grub_memset (key, 0, sizeof (key));
+  get_cmdline ("Password: ", key, sizeof (key) - 1, '*', 0);
+
+  /* Crypt the key.  */
+  make_md5_password (key, crypted);
+
+  grub_printf ("Encrypted: %s\n", crypted);
+  return 0;
+}
+
+static struct builtin builtin_md5crypt =
+{
+  "md5crypt",
+  md5crypt_func,
+  BUILTIN_CMDLINE,
+  "md5crypt",
+  "Generate a password in MD5 format."
+};
+#endif /* USE_MD5_PASSWORDS */
+
 
 /* module */
 static int
@@ -4118,6 +4179,9 @@ struct builtin *builtin_table[] =
   &builtin_lock,
   &builtin_makeactive,
   &builtin_map,
+#ifdef USE_MD5_PASSWORDS
+  &builtin_md5crypt,
+#endif /* USE_MD5_PASSWORDS */
   &builtin_module,
   &builtin_modulenounzip,
   &builtin_partnew,

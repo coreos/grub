@@ -1,5 +1,26 @@
 2000-10-21  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/md5.c (check_md5_password): Removed.
+	(md5_password): New function. Mostly copied from
+	check_md5_password.
+	(md5_init): Made static.
+	(md5_update): Likewise.
+	(md5_final): Likewise.
+	* stage2/md5.h (check_md5_password): Changed to just a macro.
+	(md5_password): Declared.
+	(make_md5_password): New macro.
+	* stage2/char_io.c [!STAGE1_5] (grub_strstr): Rewriten, because
+	it was too buggy.
+	* stage2/builtins.c [USE_MD5_PASSWORDS] (md5crypt_func): New
+	function.
+	[USE_MD5_PASSWORDS] (builtin_md5crypt): New variable.
+	(builtin_table) [USE_MD5_PASSWORDS]: Added a pointer to
+	BUILTIN_MD5CRYPT.
+	* docs/tutorial.texi (Security): Added a paragraph about
+	md5crypt.
+	
+2000-10-21  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* docs/user-ref.texi: Fixed several typos and some inappropriate
 	texinfo commands, and update the descriptions about some
 	commands.

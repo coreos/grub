@@ -984,8 +984,22 @@ password --md5 PASSWORD
 
 If this is specified, GRUB disallows any interactive control, until you
 press the key @key{p} and enter @samp{PASSWORD}.  The option
-@option{--md5} tells GRUB that @samp{PASSWORD} is in md5 format.  If it
-is omitted grub assumes the @samp{PASSWORD} is in clear text.
+@option{--md5} tells GRUB that @samp{PASSWORD} is in MD5 format.  If it
+is omitted, GRUB assumes the @samp{PASSWORD} is in clear text.
+
+You can encrypt your password with the command @command{md5crypt}. For
+example, run the grub shell (@pxref{Invoking the grub shell}), and enter
+your password:
+
+@example
+@group
+grub> md5crypt
+Password: **********
+Encrypted: $1$U$JK7xFegdxWH6VuppCUSIb.
+@end group
+@end example
+
+Then, cut and paste the encrypted password to your configuration file.
 
 Also, you can specify an optional argument to @command{password}. See
 this example:

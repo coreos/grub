@@ -23,17 +23,17 @@
 
 #include <md5.h>
 #ifndef TEST
-#include <shared.h>
+# include <shared.h>
 #endif
 
 #ifdef TEST
-#include <string.h>
-#define USE_MD5_PASSWORDS
-#define USE_MD5
+# include <string.h>
+# define USE_MD5_PASSWORDS
+# define USE_MD5
 #endif
 
 #ifdef USE_MD5_PASSWORDS
-#define USE_MD5
+# define USE_MD5
 #endif
 
 #ifdef USE_MD5
@@ -53,7 +53,8 @@ typedef unsigned int UINT4;
  */
 #define ROTATE_LEFT(x, n) (((x) << (n)) | ((x >> (32 - (n)))))
 
-static UINT4 initstate[4] = {
+static UINT4 initstate[4] =
+{
   0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476 
 };
 
@@ -62,7 +63,8 @@ static char s2[4] = {  5,  9, 14, 20 };
 static char s3[4] = {  4, 11, 16, 23 };
 static char s4[4] = {  6, 10, 15, 21 };
 
-static UINT4 T[64] = {
+static UINT4 T[64] =
+{
   0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
   0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
   0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
@@ -88,11 +90,12 @@ static UINT4 state[4];
 static unsigned int length;
 static unsigned char buffer[64];
 
-static void md5_transform (const unsigned char block[64])
+static void
+md5_transform (const unsigned char block[64])
 {
   int i, j;
   UINT4 a,b,c,d,tmp;
-  const UINT4 *x = (UINT4*) block;
+  const UINT4 *x = (UINT4 *) block;
 
   a = state[0];
   b = state[1];
@@ -102,7 +105,7 @@ static void md5_transform (const unsigned char block[64])
   /* Round 1 */
   for (i = 0; i < 16; i++)
     {
-      tmp = a + F(b, c, d) + le32_to_cpu(x[i]) + T[i];
+      tmp = a + F (b, c, d) + le32_to_cpu (x[i]) + T[i];
       tmp = ROTATE_LEFT (tmp, s1[i & 3]);
       tmp += b;
       a = d; d = c; c = b; b = tmp;
@@ -110,7 +113,7 @@ static void md5_transform (const unsigned char block[64])
   /* Round 2 */
   for (i = 0, j = 1; i < 16; i++, j += 5)
     {
-      tmp = a + G(b, c, d) + le32_to_cpu(x[j & 15]) + T[i+16];
+      tmp = a + G (b, c, d) + le32_to_cpu (x[j & 15]) + T[i+16];
       tmp = ROTATE_LEFT (tmp, s2[i & 3]);
       tmp += b;
       a = d; d = c; c = b; b = tmp;
@@ -118,7 +121,7 @@ static void md5_transform (const unsigned char block[64])
   /* Round 3 */
   for (i = 0, j = 5; i < 16; i++, j += 3)
     {
-      tmp = a + H(b, c, d) + le32_to_cpu(x[j & 15]) + T[i+32];
+      tmp = a + H (b, c, d) + le32_to_cpu (x[j & 15]) + T[i+32];
       tmp = ROTATE_LEFT (tmp, s3[i & 3]);
       tmp += b;
       a = d; d = c; c = b; b = tmp;
@@ -126,7 +129,7 @@ static void md5_transform (const unsigned char block[64])
   /* Round 4 */
   for (i = 0, j = 0; i < 16; i++, j += 7)
     {
-      tmp = a + I(b, c, d) + le32_to_cpu(x[j & 15]) + T[i+48];
+      tmp = a + I (b, c, d) + le32_to_cpu (x[j & 15]) + T[i+48];
       tmp = ROTATE_LEFT (tmp, s4[i & 3]);
       tmp += b;
       a = d; d = c; c = b; b = tmp;
@@ -138,22 +141,26 @@ static void md5_transform (const unsigned char block[64])
   state[3] += d;
 }
 
-void md5_init() {
-  memcpy ((char *)state, (char *)initstate, sizeof (initstate));
+static void
+md5_init(void)
+{
+  memcpy ((char *) state, (char *) initstate, sizeof (initstate));
   length = 0;
 }
 
-void md5_update(const char *input, int inputlen) {
+static void
+md5_update (const char *input, int inputlen)
+{
   int buflen = length & 63;
   length += inputlen;
   if (buflen + inputlen < 64) 
     {
-      memcpy(buffer + buflen, input, inputlen);
+      memcpy (buffer + buflen, input, inputlen);
       buflen += inputlen;
       return;
     }
-
-  memcpy(buffer + buflen, input, 64 - buflen);
+  
+  memcpy (buffer + buflen, input, 64 - buflen);
   md5_transform (buffer);
   input += 64 - buflen;
   inputlen -= 64 - buflen;
@@ -163,11 +170,12 @@ void md5_update(const char *input, int inputlen) {
       input += 64;
       inputlen -= 64;
     }
-  memcpy(buffer, input, inputlen);
+  memcpy (buffer, input, inputlen);
   buflen = inputlen;
 }
 
-unsigned char* md5_final()
+static unsigned char *
+md5_final()
 {
   int i, buflen = length & 63;
 
@@ -180,68 +188,86 @@ unsigned char* md5_final()
       buflen = 0;
     }
   
-  *(UINT4 *) (buffer + 56) = cpu_to_le32(8*length);
+  *(UINT4 *) (buffer + 56) = cpu_to_le32 (8 * length);
   *(UINT4 *) (buffer + 60) = 0;
   md5_transform (buffer);
 
-  for (i=0; i < 4; i++)
+  for (i = 0; i < 4; i++)
     state[i] = cpu_to_le32 (state[i]);
-  return (unsigned char*) state;
+  return (unsigned char *) state;
 }
 
 #ifdef USE_MD5_PASSWORDS
-/* Check a password for correctness.  Returns 0 if password was
-   correct, and a value != 0 for error, similarly to strcmp. */
-int check_md5_password (const char* key, const char* crypted) {
-  int keylen = strlen(key);
+/* If CHECK is true, check a password for correctness. Returns 0
+   if password was correct, and a value != 0 for error, similarly
+   to strcmp.
+   If CHECK is false, crypt KEY and save the result in CRYPTED.
+   CRYPTED must have a salt.  */
+int
+md5_password (const char *key, char *crypted, int check)
+{
+  int keylen = strlen (key);
   char *salt = crypted + 3; /* skip $1$ header */
   char *p; 
-  int saltlen = strstr(salt, "$") - salt;
-  int i,n;
+  int saltlen;
+  int i, n;
   unsigned char alt_result[16];
   unsigned char *digest;
 
-  md5_init();
-  md5_update(key, keylen);
-  md5_update(salt, saltlen);
-  md5_update(key, keylen);
-  digest = md5_final();
-  memcpy(alt_result, digest, 16);
+  if (check)
+    saltlen = strstr (salt, "$") - salt;
+  else
+    {
+      char *end = strstr (salt, "$");
+      if (end && end - salt < 8)
+	saltlen = end - salt;
+      else
+	saltlen = 8;
+
+      salt[saltlen] = '$';
+    }
   
-  memcpy ((char *)state, (char *)initstate, sizeof (initstate));
+  md5_init ();
+  md5_update (key, keylen);
+  md5_update (salt, saltlen);
+  md5_update (key, keylen);
+  digest = md5_final ();
+  memcpy (alt_result, digest, 16);
+  
+  memcpy ((char *) state, (char *) initstate, sizeof (initstate));
   length = 0;
-  md5_update(key, keylen);
-  md5_update(crypted, 3 + saltlen); /* include the $1$ header */
+  md5_update (key, keylen);
+  md5_update (crypted, 3 + saltlen); /* include the $1$ header */
   for (i = keylen; i > 16; i -= 16)
-    md5_update(alt_result, 16);
-  md5_update(alt_result, i);
+    md5_update (alt_result, 16);
+  md5_update (alt_result, i);
 
   for (i = keylen; i > 0; i >>= 1)
-    md5_update(key + ((i & 1) ? keylen : 0), 1);
-  digest = md5_final();
+    md5_update (key + ((i & 1) ? keylen : 0), 1);
+  digest = md5_final ();
 
   for (i = 0; i < 1000; i++)
     {
-      memcpy(alt_result, digest, 16);
+      memcpy (alt_result, digest, 16);
 
-      memcpy ((char *)state, (char *)initstate, sizeof (initstate));
+      memcpy ((char *) state, (char *) initstate, sizeof (initstate));
       length = 0;
       if ((i & 1) != 0)
-	md5_update(key, keylen);
+	md5_update (key, keylen);
       else
-	md5_update(alt_result, 16);
+	md5_update (alt_result, 16);
       
       if (i % 3 != 0)
-	md5_update(salt, saltlen);
+	md5_update (salt, saltlen);
 
       if (i % 7 != 0)
-	md5_update(key, keylen);
+	md5_update (key, keylen);
 
       if ((i & 1) != 0)
-	md5_update(alt_result, 16);
+	md5_update (alt_result, 16);
       else
-	md5_update(key, keylen);
-      digest = md5_final();
+	md5_update (key, keylen);
+      digest = md5_final ();
     }
 
   p = salt + saltlen + 1;
@@ -251,8 +277,16 @@ int check_md5_password (const char* key, const char* crypted) {
 	digest[i == 4 ? 5 : 12+i] | (digest[6+i] << 8) | (digest[i] << 16);
       for (n = 4; n-- > 0;)
 	{
-	  if (*p++ != b64t[w & 0x3f])
-	    return 1;
+	  if (check)
+	    {
+	      if (*p++ != b64t[w & 0x3f])
+		return 1;
+	    }
+	  else
+	    {
+	      *p++ = b64t[w & 0x3f];
+	    }
+	  
 	  w >>= 6;
 	}
     }
@@ -260,25 +294,39 @@ int check_md5_password (const char* key, const char* crypted) {
     unsigned int w = digest[11];
     for (n = 2; n-- > 0;)
       {
-	if (*p++ != b64t[w & 0x3f])
-	  return 1;
+	if (check)
+	  {
+	    if (*p++ != b64t[w & 0x3f])
+	      return 1;
+	  }
+	else
+	  {
+	    *p++ = b64t[w & 0x3f];
+	  }
+	
 	w >>= 6;
       }
   }
+
+  if (! check)
+    *p = '\0';
+  
   return *p;
 }
 #endif
 
 #ifdef TEST
-static char* md5 (const char* input) 
+static char *
+md5 (const char *input) 
 {
-  memcpy ((char *)state, (char *)initstate, sizeof (initstate));
+  memcpy ((char *) state, (char *) initstate, sizeof (initstate));
   length = 0;
-  md5_update(input, strlen (input));
-  return md5_final();
+  md5_update (input, strlen (input));
+  return md5_final ();
 }
 
-static void test (char *buffer, char *expected) 
+static void
+test (char *buffer, char *expected) 
 {
   char result[16 * 3 +1];
   unsigned char* digest = md5 (buffer);
@@ -293,7 +341,8 @@ static void test (char *buffer, char *expected)
     printf ("MD5(%s) OK\n", buffer);
 }
 
-int main ()
+int
+main (void)
 {
   test ("", "d41d8cd98f00b204e9800998ecf8427e");
   test ("a", "0cc175b9c0f1b6a831c399e269772661");
@@ -315,11 +364,11 @@ int main ()
   test ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz34567890123",
 	"80063db1e6b70a2e91eac903f0e46b85");
 
-  if (check_md5_password("Hello world!",
-			 "$1$saltstri$YMyguxXMBpd2TEZ.vS/3q1"))
-    printf("Password differs\n");
+  if (check_md5_password ("Hello world!",
+			  "$1$saltstri$YMyguxXMBpd2TEZ.vS/3q1"))
+    printf ("Password differs\n");
   else
-    printf("Password OK\n");
+    printf ("Password OK\n");
   return 0;
 }
 #endif

@@ -1282,17 +1282,20 @@ nul_terminate (char *str)
 char *
 grub_strstr (const char *s1, const char *s2)
 {
-  const char *ptr, *tmp;
-
   while (*s1)
     {
+      const char *ptr, *tmp;
+
       ptr = s1;
       tmp = s2;
 
-      while (*s1 && *s1++ == *tmp++);
+      while (*tmp && *ptr == *tmp)
+	ptr++, tmp++;
+      
+      if (tmp > s2 && ! *tmp)
+	return (char *) s1;
 
-      if (tmp > s2 && !*(tmp - 1))
-	return (char *) ptr;
+      s1++;
     }
 
   return 0;
