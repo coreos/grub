@@ -1,3 +1,8 @@
+2001-03-28  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage2/boot.c (load_image): Don't cast entry_addr to an int, or
+	the top bit will be interpreted as the sign.
+
 2001-03-16  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Bodo Rueskamp <br@itchigo.com>:
@@ -635,7 +640,7 @@
 	(check_password): New function.
 	* stage2/cmdline.c (run_script): Don't show commands that have
 	the hidden attribute.
-	* stage2/buildins.c (password_type): New variable.
+	* stage2/builtins.c (password_type): New variable.
 	(check_password): New function.
 	(password_func): Handle the --md5 option and set password_type.
 	Check if in CMDLINE or SCRIPT mode and ask password immediately.

@@ -107,7 +107,7 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
       else
 	entry_addr = (entry_func) (pu.elf->e_entry & 0xFFFFFF);
 
-      if (((int) entry_addr) < 0x100000)
+      if (entry_addr < (entry_func) 0x100000)
 	errnum = ERR_BELOW_1MB;
 
       /* don't want to deal with ELF program header at some random
