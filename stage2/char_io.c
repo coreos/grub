@@ -1023,19 +1023,11 @@ getkey (void)
 {
   int c = -1;
   
-  if (terminal == TERMINAL_CONSOLE)
+  if (terminal & TERMINAL_CONSOLE)
     c = console_getkey ();
 #ifdef SUPPORT_SERIAL
-  else if (terminal == TERMINAL_SERIAL)
+  else if (terminal & TERMINAL_SERIAL)
     c = serial_getkey ();
-  else
-    {
-      grub_printf ("\
-Warning: Both the console and serial terminals are enabled in getkey!
-The serial terminal will be disabled.\n");
-      terminal = TERMINAL_CONSOLE;
-      c = console_getkey ();
-    }
 #endif /* SUPPORT_SERIAL */
 
   return c;

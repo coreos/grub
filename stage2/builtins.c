@@ -3283,31 +3283,68 @@ static struct builtin builtin_setup =
 static int
 terminal_func (char *arg, int flags)
 {
+  int default_terminal = 0;
+  int timeout = -1;
+  int dumb = 0;
+  int saved_terminal = terminal;
+
+  /* Get GNU-style long options.  */
+  while (1)
+    {
+      if (grub_memcmp (arg, "--dumb", sizeof ("--dumb") - 1) == 0)
+	dumb = 1;
+      else if (grub_memcmp (arg, "--timeout=", sizeof ("--timeout=") - 1) == 0)
+	{
+	  char *val = arg + sizeof ("--timeout=") - 1;
+	  
+	  if (! safe_parse_maxint (&val, &timeout))
+	    return 1;
+	}
+      else
+	break;
+
+      arg = skip_to (0, arg);
+    }
+  
   /* If no argument is specified, show current setting.  */
   if (! *arg)
     {
       if (terminal & TERMINAL_CONSOLE)
-	grub_printf ("console\n");
+	grub_printf ("console%s\n",
+		     terminal & TERMINAL_DUMB ? " (dumb)" : "");
 #ifdef SUPPORT_SERIAL
       else if (terminal & TERMINAL_SERIAL)
-	grub_printf ("serial\n");
+	grub_printf ("serial%s\n",
+		     terminal & TERMINAL_DUMB ? " (dumb)" : " (vt100)");
 #endif /* SUPPORT_SERIAL */
       return 0;
     }
 
   /* Clear current setting.  */
-  terminal = 0;
+  terminal = dumb ? TERMINAL_DUMB : 0;
   
-  while (1)
+  while (*arg)
     {
       if (grub_memcmp (arg, "console", sizeof ("console") - 1) == 0)
-	terminal |= TERMINAL_CONSOLE;
+	{
+	  terminal |= TERMINAL_CONSOLE;
+	  if (! default_terminal)
+	    default_terminal = TERMINAL_CONSOLE;
+	}
 #ifdef SUPPORT_SERIAL
       else if (grub_memcmp (arg, "serial", sizeof ("serial") - 1) == 0)
-	terminal |= TERMINAL_SERIAL;
+	{
+	  terminal |= TERMINAL_SERIAL;
+	  if (! default_terminal)
+	    default_terminal = TERMINAL_SERIAL;
+	}
 #endif /* SUPPORT_SERIAL */
       else
-	break;
+	{
+	  terminal = saved_terminal;
+	  errnum = ERR_BAD_ARGUMENT;
+	  return 1;
+	}
 
       arg = skip_to (0, arg);
     }
@@ -3323,13 +3360,13 @@ terminal_func (char *arg, int flags)
 	;
 
       /* Wait for a key input.  */
-      while (1)
+      while (timeout)
 	{
 	  if ((terminal & TERMINAL_CONSOLE) && console_checkkey () != -1)
 	    {
 	      terminal = TERMINAL_CONSOLE;
 	      (void) getkey ();
-	      break;
+	      return 0;
 	    }
 	  else if ((terminal & TERMINAL_SERIAL) && serial_checkkey () != -1)
 	    {
@@ -3340,7 +3377,8 @@ terminal_func (char *arg, int flags)
 		 it to repaint the screen.  */
 	      if (flags & BUILTIN_CMDLINE)
 		grub_longjmp (restart_cmdline_env, 0);
-	      break;
+	      
+	      return 0;
 	    }
 
 	  /* Prompt the user, once per sec.  */
@@ -3348,8 +3386,14 @@ terminal_func (char *arg, int flags)
 	    {
 	      grub_printf ("Press any key to continue.\n");
 	      time2 = time1;
+	      if (timeout > 0)
+		timeout--;
 	    }
 	}
+
+      /* Expired.  */
+      terminal &= TERMINAL_DUMB;
+      terminal |= default_terminal;
     }
 #endif /* SUPPORT_SERIAL */
 
@@ -3361,11 +3405,14 @@ static struct builtin builtin_terminal =
   "terminal",
   terminal_func,
   BUILTIN_MENU | BUILTIN_CMDLINE,
-  "terminal [console] [serial]",
+  "terminal [--dumb] [--timeout=SECS] [console] [serial]",
   "Select a terminal. When serial is specified, wait until you push any key"
   " to continue. If both console and serial are specified, the terminal"
   " to which you input a key first will be selected. If no argument is"
-  " specified, print current setting."
+  " specified, print current setting. The option --dumb speicifies that"
+  " your terminal is dumb, otherwise, vt100-compatibility is assumed."
+  " If --timeout is present, this command will wait at most for SECS"
+  " seconds."
 };
 
 

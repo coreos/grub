@@ -1,5 +1,15 @@
 2000-08-31  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/builtins.c (terminal_func): Added two new options,
+	--dumb and --timeout=SECS.
+	* stage2/char_io.c [!STAGE1_5] (getkey): Use logical AND
+	operations, when checking if the terminal is a console or a
+	serial terminal.
+	[!STAGE1_5] (getkey) [SUPPORT_SERIAL]: Don't check if both
+	TERMINAL_CONSOLE and TERMINAL_SERIAL are set in TERMINAL.
+	
+2000-08-31  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage1/stage1.S (MOV_MEM_TO_AL): New macro.
 	(real_start): Use the macro MOV_MEM_TO_AL instead of using movb
 	directly, because binutils-2.9.1.0.x doesn't produce a short
