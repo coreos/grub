@@ -510,30 +510,39 @@ void stop_floppy (void);
 /* Command-line interface functions. */
 #ifndef STAGE1_5
 
-#define BUILTIN_CMDLINE		0x1
-#define BUILTIN_MENU		0x2
-#define BUILTIN_TITLE		0x4
+/* The flags for the builtins.  */
+#define BUILTIN_CMDLINE		0x1	/* Run in the command-line.  */
+#define BUILTIN_MENU		0x2	/* Run in the menu.  */
+#define BUILTIN_TITLE		0x4	/* Only for the command title.  */
 
+/* The table for a builtin.  */
 struct builtin
 {
+  /* The command name.  */
   char *name;
+  /* The callback function.  */
   int (*func) (char *, int);
+  /* The combination of the flags defined above.  */
   int flags;
+  /* The short version of the documentation.  */
   char *short_doc;
+  /* The long version of the documentation.  */
   char *long_doc;
 };
 
+/* All the builtins are registered in this.  */
 extern struct builtin *builtin_table[];
 
+/* The constants for kernel types.  */
 typedef enum
 {
-  KERNEL_TYPE_NONE,
-  KERNEL_TYPE_MULTIBOOT,
-  KERNEL_TYPE_LINUX,
-  KERNEL_TYPE_BIG_LINUX,
-  KERNEL_TYPE_FREEBSD,
-  KERNEL_TYPE_NETBSD,
-  KERNEL_TYPE_CHAINLOADER
+  KERNEL_TYPE_NONE,		/* None is loaded.  */
+  KERNEL_TYPE_MULTIBOOT,	/* Multiboot.  */
+  KERNEL_TYPE_LINUX,		/* Linux.  */
+  KERNEL_TYPE_BIG_LINUX,	/* Big Linux.  */
+  KERNEL_TYPE_FREEBSD,		/* FreeBSD.  */
+  KERNEL_TYPE_NETBSD,		/* NetBSD.  */
+  KERNEL_TYPE_CHAINLOADER	/* Chainloader.  */
 } kernel_t;
 
 extern kernel_t kernel_type;
