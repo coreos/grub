@@ -1,0 +1,35 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Defined it to "addr32" or "addr32;" to make GAS happy. */
+#undef ADDR32
+
+/* Defined it to "data32" or "data32;" to make GAS happy. */
+#undef DATA32
+
+/* Defined if you have a curses library (ncurses preferred). */
+#undef HAVE_LIBCURSES
+
+/* Define if you have the <curses.h> header file.  */
+#undef HAVE_CURSES_H
+
+/* Define if you have the <ncurses.h> header file.  */
+#undef HAVE_NCURSES_H
+
+/* Define if you have the <ncurses/curses.h> header file.  */
+#undef HAVE_NCURSES_CURSES_H
+
+/* Define if you have the <string.h> header file.  */
+#undef HAVE_STRING_H
+
+/* Define if you have the <strings.h> header file.  */
+#undef HAVE_STRINGS_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+/* Define if C symbols get an underscore after compilation */
+#undef HAVE_ASM_USCORE
+
