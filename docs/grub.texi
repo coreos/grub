@@ -3469,13 +3469,11 @@ EOT
 @item GRUB does not recognize my GNU/Hurd partition.
 
 I don't know why, but the authors of FDISK programs have assigned the
-partition type @samp{0x63} to GNU Hurd incorrectly. A partition type
-should mean what format is used in the partition, such as filesystem and
-BSD slices, and should not be used to represent what operating system
-owns the partition. So use @samp{0x83} if the partition contains ext2fs
-filesystem, and use @samp{0xA5} if the partition contains ffs
-filesystem, whether the partition owner is Hurd or not. We will use
-@samp{0x63} for GNU Hurd filesystem that has not been implemented yet.
+partition type @samp{0x63} to GNU Hurd incorrectly. So use @samp{0x83}
+if the partition contains ext2fs filesystem, and use @samp{0xA5} if the
+partition contains ffs filesystem, whether the partition owner is Hurd
+or not. We will use @samp{0x63} for GNU Hurd filesystem that has not
+been implemented yet.
 
 @item I've installed a recent version of binutils, but GRUB still crashes.
 
