@@ -1,6 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -309,7 +310,13 @@ restart:
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
-		      entryno++;
+		      /* But `o' differs from `O', since it may causes
+			 the menu screen to scroll up.  */
+		      if (entryno < 11)
+			entryno++;
+		      else
+			first_entry++;
+		      
 		      c = 'O';
 		    }
 

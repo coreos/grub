@@ -1,3 +1,18 @@
+2000-04-10  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/stage2.c (run_menu): In the case where C is `o', check
+	if ENTRYNO is less than 11. If not, increase FIRST_ENTRY instead
+	of ENTRYNO. Reported by Pixel <pixel@mandrakesoft.com>.
+	
+2000-04-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage1/depcomp: Removed, because it makes `make dist'
+	unworkable.
+
+	For developers: Don't run automake with --add-missing. Instead,
+	you should specify --force-missing. If you really want to add a
+	script from automake, copy it at hand. *sigh*
+	
 2000-04-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (kernel_func): Added missing ``size''
