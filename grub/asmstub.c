@@ -30,6 +30,7 @@ int grub_stage2 (void);
 #include "shared.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -67,6 +68,7 @@ char *grub_scratch_mem = 0;
 
 #define NUM_DISKS 256
 static struct geometry *disks = 0;
+static char **device_map = 0;
 
 /* The main entry point into this mess. */
 int
@@ -76,6 +78,7 @@ grub_stage2 (void)
   static int status = 0;
   static char *realstack;
   int i;
+  int first_scsi_disk;
   char *scratch, *simstack;
 
   /* We need a nested function so that we get a clean stack frame,
@@ -113,7 +116,61 @@ grub_stage2 (void)
   assert (disks == 0);
   disks = malloc (NUM_DISKS * sizeof (*disks));
   assert (disks);
+  /* Initialize DISKS.  */
+  for (i = 0; i < NUM_DISKS; i++)
+    disks[i].flags = 0;
 
+  assert (device_map == 0);
+  device_map = malloc (NUM_DISKS * sizeof (char *));
+  assert (device_map);
+  
+  /* Probe devices for creating the device map.  */
+
+  /* Iniitialize DEVICE_MAP.  */
+  memset (device_map, 0, NUM_DISKS * sizeof (char *));
+  
+  /* Floppies.  */
+  device_map[0] = strdup ("/dev/fd0");
+  device_map[1] = strdup ("/dev/fd1");
+  
+  /* IDE disks.  */
+  for (i = 0; i < 2; i++)
+    {
+      char name[10];
+      FILE *fp;
+      char buf[512];
+#ifdef __linux__
+      char unit = 'a' + i;
+#else
+      char unit = '0' + i;
+#endif
+
+      sprintf (name, "/dev/hd%c", unit);
+      fp = fopen (name, "r");
+      if (! fp)
+	break;
+      /* Attempt to read the first sector.  */
+      if (fread (buf, 1, 512, fp) != 512)
+	break;
+
+      device_map[i + 0x80] = strdup (name);
+    }
+  first_scsi_disk = i + 0x80;
+  
+  /* The rest is SCSI disks.  */
+  for (i = 0; i < 8; i++)
+    {
+      char *name = malloc (10);
+
+      assert (name);
+#ifdef __linux__
+      sprintf (name, "/dev/sd%c", i + 'a');
+#else
+      sprintf (name, "/dev/sd%d", i);
+#endif
+      device_map[i + first_scsi_disk] = name;
+    }
+  
   /* Check some invariants. */
   assert ((SCRATCHSEG << 4) == SCRATCHADDR);
   assert ((BUFFERSEG << 4) == BUFFERADDR);
@@ -146,6 +203,10 @@ grub_stage2 (void)
       close (disks[i].flags);
 
   /* Release memory. */
+  for (i = 0; i < NUM_DISKS; i++)
+    free (device_map[i]);
+  free (device_map[i]);
+  device_map = 0;
   free (disks);
   disks = 0;
   free (scratch);
@@ -392,45 +453,25 @@ get_diskinfo (int drive, struct geometry *geometry)
   if (! disks[drive].flags)
     {
       /* The unpartitioned device name: /dev/XdX */
-      char devname[9];
-
-      /* Try opening the drive device. */
-      strcpy (devname, "/dev/");
-
-#ifdef __linux__
-      /* Linux uses /dev/hda, and /dev/sda, but /dev/fd0.  Go figure. */
-      if (drive & 0x80)
-	{
-	  /* Check to make sure we don't exceed /dev/hdz. */
-	  devname[5] = 'h';
-	  devname[7] = 'a' + (drive & 0x7f);
-	  if (devname[7] > 'z')
-	    return -1;
-	}
-      else
-	{
-	  devname[5] = 'f';
-	  devname[7] = '0' + drive;
-	  if (devname[7] > '9')
-	    return -1;
-	}
-#else /* ! __linux__ */
-      if (drive & 0x80)
-	devname[5] = 'h';
-
-      devname[7] = '0' + drive;
-      if (devname[7] > '9')
+      char *devname = device_map[drive];
+      char buf[512];
+      
+      if (! devname)
 	return -1;
-#endif /* __linux__ */
-
-      devname[6] = 'd';
-      devname[8] = '\0';
-
+      
       /* Open read/write, or read-only if that failed. */
       disks[drive].flags = open (devname, O_RDWR);
       if (! disks[drive].flags)
 	disks[drive].flags = open (devname, O_RDONLY);
 
+      /* Attempt to read the first sector.  */
+      if (read (disks[drive].flags, buf, 512) != 512)
+	{
+	  close (disks[drive].flags);
+	  disks[drive].flags = 0;
+	  return -1;
+	}
+      
       if (disks[drive].flags)
 	{
 #ifdef __linux__

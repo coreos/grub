@@ -1,3 +1,14 @@
+1999-05-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (device_map): New variable.
+	(grub_stage2): Initialize DISKS.
+	Probe devices and fill the result in DEVICE_MAP.
+	Free DEVICE_MAP when exit.
+	(get_diskinfo): Use DEVICE_MAP for guessing the relation between
+	BIOS devices and OS devices.
+	Read the first sector of opened device to make sure that the device
+	really exists.
+	
 1999-05-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* shared_src/asm.S (biosdisk_standard): Pop %ebp correctly, reported
