@@ -35,6 +35,4 @@ Clean up and enhance the manuals, especially concept indexes.
 
 Add more filesystems support (XFS, NTFS, etc.)
 
-??? Add hide and unhide facilities.
-
 Add remote console support (serial, parallel and net).

@@ -87,6 +87,7 @@ fat_create_blocklist (int first_fat_entry)
       BLK_BLKSTART (BLK_BLKLIST_START) = FAT_BPB_ROOT_DIR_START (BPB);
       fsmax = filemax = SECTOR_SIZE * (BLK_BLKLENGTH (BLK_BLKLIST_START)
 				       = FAT_BPB_ROOT_DIR_LENGTH (BPB));
+      return 1;
     }
   else
     /* any real directory/file */

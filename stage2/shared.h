@@ -68,6 +68,12 @@ extern char *grub_scratch_mem;
 #define FSYS_BUFLEN  0x8000
 #define FSYS_BUF RAW_ADDR (0x68000)
 
+/* Command-line buffer for Multiboot kernels and modules. This area
+   includes the area into which Stage 1.5 and Stage 1 are loaded, but
+   that's no problem.  */
+#define MB_CMDLINE_BUF		RAW_ADDR (0x2000)
+#define MB_CMDLINE_BUFLEN	0x6000
+
 /*
  *  Linux setup parameters
  */
@@ -546,6 +552,12 @@ int open_partition (void);
 /* Sets device to the one represented by the SAVED_* parameters. */
 int make_saved_active (void);
 
+/* Hide a partition.  */
+int hide_partition (void);
+
+/* Unhide a partition. */
+int unhide_partition (void);
+
 /* Open a file or directory on the active device, using GRUB's
    internal filesystem support. */
 int grub_open (char *filename);
@@ -570,10 +582,10 @@ void print_completions (char *filename);
 /* Copies the current partition data to the desired address. */
 void copy_current_part_entry (char *buf);
 
-void bsd_boot (int type, int bootdev) __attribute__ ((noreturn));
-int load_image (void);
-int load_module (void);
-int load_initrd (void);
+void bsd_boot (int type, int bootdev, char *arg) __attribute__ ((noreturn));
+int load_image (char *kernel, char *arg);
+int load_module (char *module, char *arg);
+int load_initrd (char *initrd);
 
 void init_bios_info (void);
 

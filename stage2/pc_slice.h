@@ -133,6 +133,8 @@
 
 #define IS_PC_SLICE_TYPE_BSD(type)	IS_PC_SLICE_TYPE_BSD_WITH_FS(type,0)
 
+/* This is not a flag actually, but used as if it were a flag.  */
+#define PC_SLICE_TYPE_HIDDEN_FLAG	0x10
 
 /*
  *  *BSD-style disklabel & partition definitions.

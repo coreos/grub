@@ -39,7 +39,7 @@ static struct mod_list mll[99];
  */
 
 int
-load_image (void)
+load_image (char *kernel, char *arg)
 {
   int len, i, exec_type = 0, align_4k = 1, type = 0;
   unsigned long flags = 0, text_len = 0, data_len = 0, bss_len = 0;
@@ -59,7 +59,7 @@ load_image (void)
      buffer by default */
   pu.aout = (struct exec *) buffer;
 
-  if (!grub_open (cur_cmdline))
+  if (!grub_open (kernel))
     return 0;
 
   if (!(len = grub_read (buffer, MULTIBOOT_SEARCH)) || len < 32)
@@ -213,7 +213,7 @@ load_image (void)
 	    char *vga;
 
 	    /* Find the substring "vga=".  */
-	    vga = grub_strstr (cur_cmdline, "vga=");
+	    vga = grub_strstr (arg, "vga=");
 	    if (vga)
 	      {
 		char *value = vga + 4;
@@ -250,7 +250,7 @@ load_image (void)
 
 	  /* copy command-line plus memory hack to staging area */
 	  {
-	    char *src = cur_cmdline;
+	    char *src = arg;
 	    char *dest = (char *) (CL_MY_LOCATION + 4);
 
 	    memmove ((char *) CL_MY_LOCATION, "mem=", 4);
@@ -290,7 +290,7 @@ load_image (void)
     return 0;
 
   /* fill the multiboot info structure */
-  mbi.cmdline = (int) cur_cmdline;
+  mbi.cmdline = (int) arg;
   mbi.mods_count = 0;
   mbi.mods_addr = 0;
   mbi.boot_device = (saved_drive << 24) | saved_partition;
@@ -473,14 +473,14 @@ load_image (void)
 }
 
 int
-load_module (void)
+load_module (char *module, char *arg)
 {
   int len;
 
   /* if we are supposed to load on 4K boundaries */
   cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
 
-  if (!grub_open (cur_cmdline) || !(len = grub_read ((char *) cur_addr, -1)))
+  if (!grub_open (module) || !(len = grub_read ((char *) cur_addr, -1)))
     return 0;
 
   printf ("   [Multiboot-module @ 0x%x, 0x%x bytes]\n", cur_addr, len);
@@ -489,7 +489,7 @@ load_module (void)
   mbi.flags |= MB_INFO_MODS;
   mbi.mods_addr = (int) mll;
 
-  mll[mbi.mods_count].cmdline = (int) cur_cmdline;
+  mll[mbi.mods_count].cmdline = (int) arg;
   mll[mbi.mods_count].mod_start = cur_addr;
   cur_addr += len;
   mll[mbi.mods_count].mod_end = cur_addr;
@@ -502,12 +502,12 @@ load_module (void)
 }
 
 int
-load_initrd (void)
+load_initrd (char *initrd)
 {
   int len;
   long *ramdisk, moveto;
 
-  if (!grub_open (cur_cmdline) || !(len = grub_read ((char *) cur_addr, -1)))
+  if (! grub_open (initrd) || ! (len = grub_read ((char *) cur_addr, -1)))
     return 0;
 
   moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
@@ -532,7 +532,7 @@ load_initrd (void)
 
 
 void
-bsd_boot (int type, int bootdev)
+bsd_boot (int type, int bootdev, char *arg)
 {
   char *str;
   int clval = 0, i;
@@ -540,8 +540,8 @@ bsd_boot (int type, int bootdev)
 
   stop_floppy ();
 
-  while (*(++cur_cmdline) && *cur_cmdline != ' ');
-  str = cur_cmdline;
+  while (*(++arg) && *arg != ' ');
+  str = arg;
   while (*str)
     {
       if (*str == '-')
@@ -579,10 +579,10 @@ bsd_boot (int type, int bootdev)
 
       bi.bi_version = BOOTINFO_VERSION;
 
-      *cur_cmdline = 0;
-      while ((--cur_cmdline) > (char *) (mbi.cmdline) && *cur_cmdline != '/');
-      if (*cur_cmdline == '/')
-	bi.bi_kernelname = cur_cmdline + 1;
+      *arg = 0;
+      while ((--arg) > (char *) MB_CMDLINE_BUF && *arg != '/');
+      if (*arg == '/')
+	bi.bi_kernelname = arg + 1;
       else
 	bi.bi_kernelname = 0;
 

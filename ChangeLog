@@ -1,3 +1,48 @@
+1999-08-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Edward Killips <ekillips@triton.net>:
+	* stage2/cmdline.c (commands): Added hide and unhide.
+	(enter_cmdline): Likewise.
+	* stage2/disk_io.c (unhide_partition): New function.
+	(hide_partition): Likewise.
+	* stage2/pc_slice.h (PC_SLICE_TYPE_HIDDEN_FLAG): New macro.
+	
+1999-08-29  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin <pavel_roskin@geocities.com>:
+	* stage2/fsys_minix.c (namelen): New variable.
+	(MINIX_NAME_LEN): Deleted.
+	(minix_mount): Set NAMELEN to 14 if SUPRTBLOCK->S_MAGIC is
+	MINIX_SUPER_MAGIC, and set NAMELEN to 30 if it is
+	MINIX_SUPER_MAGIC2.
+	(minix_dir): Use NAMELEN instead of MINIX_NAME_LEN.
+	
+1999-08-29  Pavel Roskin  <pavel_roslin@geocities.com>
+
+	* grub/Makefile.am, stage1/Makefile.am, stage2/Makefile.am:
+	Avoid using variables inclosed in '@' because they cannot be
+	overridden at the make time.
+
+1999-08-29  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/fsys_fat.c (fat_create_blocklist): Return 1 for the
+	root directory on FAT12 and FAT16.
+	
+1999-08-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/boot.c (load_image): Accept two arguments, KERNEL and
+	ARG. And use them instead of CUR_CMDLINE.
+	(load_module): Accept two arguments, MODULE and ARG. And use
+	them instead of CUR_CMDLINE.
+	(load_initrd): Accept one argument, INITRD. And use it instead
+	of CUR_CMDLINE.
+	(bsd_boot): Accept one additional argument, ARG. And use it
+	instead of CUR_CMDLINE.
+	* stage2/cmdline.c (enter_cmdline): Use MB_CMDLINE instead of
+	HEAP for the Multiboot command-line buffer.
+	* stage2/shared.h (MB_CMDLINE_BUF): New macro.
+	(MB_CMDLINE_BUFLEN): Likewise.
+	
 1999-08-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/Makefile.am [GRUB_MAINT] (grub.8): The argument for the

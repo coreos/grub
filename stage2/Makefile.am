@@ -16,7 +16,7 @@ noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c common.c char_io.c cmdline.c disk_io.c \
 	gunzip.c fsys_ffs.c fsys_ext2fs.c fsys_fat.c fsys_minix.c \
 	stage2.c
-libgrub_a_CFLAGS = @GRUB_CFLAGS@ -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
+libgrub_a_CFLAGS = $(GRUB_CFLAGS) -DGRUB_UTIL=1 -DFSYS_EXT2FS=1 \
 	-DFSYS_FAT=1 -DFSYS_FFS=1 -DFSYS_MINIX=1 -fwritable-strings
 
 # Stage 2 and Stage 1.5's.
@@ -29,7 +29,7 @@ noinst_PROGRAMS = stage2.exec e2fs_stage1_5.exec fat_stage1_5.exec \
 MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
 STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
-STAGE2_COMPILE = @STAGE2_CFLAGS@ -fno-builtin -nostdinc
+STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc
 
 STAGE1_5_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,2000
 STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1 \
@@ -40,7 +40,7 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1 \
 stage2_exec_SOURCES = asm.S boot.c common.c char_io.c cmdline.c \
 	disk_io.c gunzip.c stage2.c bios.c smp-imps.c fsys_ext2fs.c \
 	fsys_fat.c fsys_ffs.c fsys_minix.c
-stage2_exec_CFLAGS = $(STAGE2_COMPILE) @FSYS_CFLAGS@
+stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 stage2_exec_LDFLAGS = $(STAGE2_LINK)
 
 # For e2fs_stage1_5 target.

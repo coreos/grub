@@ -20,7 +20,7 @@
 /* Restrictions:
    This is MINIX V1 only (yet)
    Disk creation is like:
-   mkfs.minix  -c -n14 DEVICE 
+   mkfs.minix -c DEVICE 
 */
 
 #ifdef FSYS_MINIX
@@ -31,7 +31,7 @@
 /* #define DEBUG_MINIX */
 
 /* indirect blocks */
-static int mapblock1, mapblock2;
+static int mapblock1, mapblock2, namelen;
 
 /* sizes are always in bytes, BLOCK values are always in DEV_BSIZE (sectors) */
 #define DEV_BSIZE 512
@@ -79,8 +79,6 @@ typedef unsigned int __u32;
 #define INODE_VERSION(inode)    inode->i_sb->u.minix_sb.s_version
    here we have */
 #define INODE_VERSION(inode)	(SUPERBLOCK->s_version)
-
-#define MINIX_NAME_LEN		14 /* XXX depend on version */
 
 /*
  * This is the original minix inode layout on disk.
@@ -162,19 +160,32 @@ struct minix_dir_entry {
 int
 minix_mount (void)
 {
-  int retval = 1;
+  if (((current_drive & 0x80 || current_slice != 0))
+      && (current_slice != PC_SLICE_TYPE_MINIX)
+      && ! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_OTHER))
+    return 0;			/* The partition is not of MINIX type */
+  
+  if (part_length < (SBLOCK +
+		     (sizeof (struct minix_super_block) / DEV_BSIZE)))
+    return 0;			/* The partition is too short */
+  
+  if (!devread (SBLOCK, 0, sizeof (struct minix_super_block),
+		(char *) SUPERBLOCK))
+    return 0;			/* Cannot read superblock */
+  
+  switch (SUPERBLOCK->s_magic)
+    {
+    case MINIX_SUPER_MAGIC:
+      namelen = 14;
+      break;
+    case MINIX_SUPER_MAGIC2:
+      namelen = 30;
+      break;
+    default:
+      return 0;			/* Unsupported type */
+    }
 
-  if ((((current_drive & 0x80 || current_slice != 0))
-       && (current_slice != PC_SLICE_TYPE_MINIX)
-       && ! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_OTHER))
-      || part_length < (SBLOCK + 
-			(sizeof (struct minix_super_block) / DEV_BSIZE))
-      || ! devread (SBLOCK, 0, sizeof (struct minix_super_block),
-		    (char *) SUPERBLOCK)
-      || SUPERBLOCK->s_magic != MINIX_SUPER_MAGIC)
-    retval = 0;
-
-  return retval;
+  return 1;
 }
 
 /* Takes a file system block number and reads it into BUFFER. */
@@ -482,9 +493,10 @@ minix_dir (char *dirname)
 	  off = loc & (BLOCK_SIZE - 1);
 	  dp = (struct minix_dir_entry *) (DATABLOCK2 + off);
 	  /* advance loc prematurely to next on-disk directory entry  */
-	  loc += sizeof (dp->inode) + 14; /* XXX */
+	  loc += sizeof (dp->inode) + namelen;
 
-	  /* NOTE: minix filenames are NULL terminated if < 14 else exact */
+	  /* NOTE: minix filenames are NULL terminated if < NAMELEN
+	     else exact */
 
 #ifdef DEBUG_MINIX
 	  printf ("directory entry ino=%d\n", dp->inode);
@@ -494,9 +506,9 @@ minix_dir (char *dirname)
 
 	  if (dp->inode)
 	    {
-	      int saved_c = dp->name[MINIX_NAME_LEN+1];
+	      int saved_c = dp->name[namelen + 1];
 
-	      dp->name[MINIX_NAME_LEN+1] = 0;
+	      dp->name[namelen+1] = 0;
 	      str_chk = substring (dirname, dp->name);
 
 # ifndef STAGE1_5
@@ -509,7 +521,7 @@ minix_dir (char *dirname)
 		}
 # endif
 
-	      dp->name[MINIX_NAME_LEN+1] = saved_c;
+	      dp->name[namelen + 1] = saved_c;
 	    }
 
 	}

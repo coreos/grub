@@ -311,6 +311,69 @@ make_saved_active (void)
   return 1;
 }
 
+int
+unhide_partition (void)
+{
+  if (saved_drive)
+    {
+      int part = saved_partition >> 16;
+      
+      if (part > 3)
+	{
+          errnum = ERR_NO_PART;
+          return 0;
+        }
+      
+      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+        return 0;
+      
+      if (PC_SLICE_TYPE (SCRATCHADDR, part) & PC_SLICE_TYPE_HIDDEN_FLAG)
+        {
+          PC_SLICE_TYPE (SCRATCHADDR, part) ^= PC_SLICE_TYPE_HIDDEN_FLAG;
+ 	  buf_track = -1;
+          if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
+			0, 1, SCRATCHSEG))
+	    {
+	      errnum = ERR_WRITE;
+	      return 0;
+	    }
+	}
+    }
+  
+  return 1;
+}
+
+int
+hide_partition (void)
+{
+  if (saved_drive)
+    {
+      int part = saved_partition >> 16;
+      
+      if (part > 3)
+        {
+          errnum = ERR_NO_PART;
+          return 0;
+        }
+      
+      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+        return 0;
+      
+      if (! (PC_SLICE_TYPE (SCRATCHADDR, part) & PC_SLICE_TYPE_HIDDEN_FLAG))
+        {
+          PC_SLICE_TYPE (SCRATCHADDR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
+ 	  buf_track = -1;
+          if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
+			0, 1, SCRATCHSEG))
+	    {
+	      errnum = ERR_WRITE;
+	      return 0;
+	    }
+	}
+    }
+  
+  return 1;
+}
 
 static void
 check_and_print_mount (void)

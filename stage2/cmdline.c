@@ -68,7 +68,7 @@ char commands[] =
 " Possible commands are: \"pause= ...\", \"uppermem= <kbytes>\", \"root= <device>\",
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
   \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
-  \"geometry= <drive>\",
+  \"geometry= <drive>\", \"hide= <device>\", \"unhide= <device>\",
   \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
   \"color= <normal> [<highlight>]\", \"makeactive\", \"boot\", \"quit\" and
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
@@ -117,7 +117,8 @@ enter_cmdline (char *script, char *heap)
 {
   int bootdev, cmd_len, type = 0, run_cmdline = 1, have_run_cmdline = 0;
   char *cur_heap = heap, *cur_entry = script, *old_entry;
-
+  char *mb_cmdline = (char *) MB_CMDLINE_BUF;
+  
   /* initialization */
   saved_drive = boot_drive;
   saved_partition = install_partition;
@@ -185,20 +186,20 @@ returnit:
   if (run_cmdline && get_cmdline (PACKAGE "> ", commands, cur_heap, 2048, 0))
     return CMDLINE_ERROR;
 
-  if (substring("boot", cur_heap) == 0 || (script && !*cur_heap))
+  if (substring ("boot", cur_heap) == 0 || (script && !*cur_heap))
     {
       if ((type == 'f') | (type == 'n'))
-	bsd_boot(type, bootdev);
+	bsd_boot (type, bootdev, (char *) MB_CMDLINE_BUF);
       if (type == 'l')
-	linux_boot();
+	linux_boot ();
       if (type == 'L')
-	big_linux_boot();
+	big_linux_boot ();
 
       if (type == 'c')
 	{
-	  gateA20(0);
+	  gateA20 (0);
 	  boot_drive = saved_drive;
-	  chain_stage1(0, BOOTSEC_LOCATION, BOOTSEC_LOCATION-16);
+	  chain_stage1 (0, BOOTSEC_LOCATION, BOOTSEC_LOCATION-16);
 	}
 
       if (!type)
@@ -271,17 +272,21 @@ returnit:
 	    }
 	}
     }
-  else if (substring("kernel", cur_heap) < 1)
+  else if (substring ("kernel", cur_heap) < 1)
     {
-      /* make sure it's at the beginning of the boot heap area */
-      memmove (heap, cur_heap,
-	       cmd_len + (((int)cur_cmdline) - ((int)cur_heap)));
-      cur_cmdline = heap + (((int)cur_cmdline) - ((int)cur_heap));
-      cur_heap = heap;
-      if ((type = load_image()) != 0)
-	cur_heap = cur_cmdline + cmd_len;
+      /* Reset MB_CMDLINE.  */
+      mb_cmdline = (char *) MB_CMDLINE_BUF;
+      if (cmd_len + 1 > MB_CMDLINE_BUFLEN)
+	errnum = ERR_WONT_FIT;
+      else
+	{
+	  /* Copy the command-line to MB_CMDLINE.  */
+	  grub_memmove (mb_cmdline, cur_cmdline, cmd_len + 1);
+	  if ((type = load_image (cur_cmdline, mb_cmdline)) != 0)
+	    mb_cmdline += cmd_len + 1;
+	}
     }
-  else if (substring("module", cur_heap) < 1)
+  else if (substring ("module", cur_heap) < 1)
     {
       if (type == 'm')
 	{
@@ -291,17 +296,25 @@ returnit:
 	  if (cur_heap[6] == 'n')
 	    no_decompression = 1;
 #endif  /* NO_DECOMPRESSION */
-
-	  if (load_module())
-	    cur_heap = cur_cmdline + cmd_len;
-
+	  
+	  if (mb_cmdline + cmd_len + 1
+	      > (char *) MB_CMDLINE_BUF + MB_CMDLINE_BUFLEN)
+	    errnum = ERR_WONT_FIT;
+	  else
+	    {
+	      /* Copy the command-line to MB_CMDLINE.  */
+	      grub_memmove (mb_cmdline, cur_cmdline, cmd_len + 1);
+	      if (load_module (cur_cmdline, mb_cmdline))
+		mb_cmdline += cmd_len + 1;
+	    }
+	  
 #ifndef NO_DECOMPRESSION
 	  no_decompression = 0;
 #endif  /* NO_DECOMPRESSION */
 	}
       else if (type == 'L' || type == 'l')
 	{
-	  load_initrd ();
+	  load_initrd (cur_cmdline);
 	}
       else
 	errnum = ERR_NEED_MB_KERNEL;
@@ -310,7 +323,7 @@ returnit:
     {
       if (type == 'L' || type == 'l')
 	{
-	  load_initrd ();
+	  load_initrd (cur_cmdline);
 	}
       else
 	errnum = ERR_NEED_LX_KERNEL;
@@ -692,6 +705,28 @@ returnit:
 			   geom.total_sectors, msg);
 	    }
 	}
+    }
+  else if (substring ("hide", cur_heap) < 1)
+    {
+      set_device (cur_cmdline);
+      
+      if (! errnum)
+	{
+	  saved_partition = current_partition;
+	  saved_drive = current_drive;
+	  hide_partition ();
+        }
+    }
+  else if (substring ("unhide", cur_heap) < 1)
+    {
+      set_device (cur_cmdline);
+      
+      if (! errnum)
+	{
+	  saved_partition = current_partition;
+	  saved_drive = current_drive;
+	  unhide_partition ();
+        }
     }
   else if (*cur_heap && *cur_heap != ' ')
     errnum = ERR_UNRECOGNIZED;
