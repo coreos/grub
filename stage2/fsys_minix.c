@@ -160,8 +160,8 @@ struct minix_dir_entry {
 int
 minix_mount (void)
 {
-  if (((current_drive & 0x80 || current_slice != 0))
-      && IS_PC_SLICE_TYPE_MINIX (current_slice)
+  if (((current_drive & 0x80) || current_slice != 0)
+      && ! IS_PC_SLICE_TYPE_MINIX (current_slice)
       && ! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_OTHER))
     return 0;			/* The partition is not of MINIX type */
   

@@ -1,3 +1,9 @@
+2000-12-05  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_minix.c (minix_mount): Corrected the check for
+	IS_PC_SLICE_TYPE_MINIX; minix was only working if slice type was
+	wrong! Reported by Ralf Medow <ralf.medow@t-online.de>.
+	
 2000-11-27  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c: Handle items with old version key on
