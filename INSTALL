@@ -208,6 +208,9 @@ operates.
 `--disable-minix'
      Omit the Minix fs support in Stage 2.
 
+`--disable-reiserfs'
+     Omit the ReiserFS support in Stage 2.
+
 `--disable-gunzip'
      Omit the decompression support in Stage 2.
 
