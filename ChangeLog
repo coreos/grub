@@ -1,3 +1,9 @@
+2000-01-03  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/multiboot.texi (Boot information format): Added the
+	descriptions about the fields "config_table" and
+	"boot_loader_name".
+	
 1999-12-31  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (setup_func) [!NO_BUGGY_BIOS_IN_THE_WORLD]:

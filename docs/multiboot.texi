@@ -15,7 +15,7 @@
 @ifinfo
 Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
 Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -51,7 +51,7 @@ into another language, under the above conditions for modified versions.
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
 Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -788,8 +788,17 @@ ports).
 The last field @samp{reserved} is reserved for future use, and must be
 zero. The size is four bytes.
 
-@c I'll write the descriptions about config_table, boot_loader_name and
-@c apm_tabel. Just wait for a while. - okuji
+If bit 8 in the @samp{flags} is set, then the @samp{config_table} field
+is valid, and indicates the address of the @sc{rom} configuration table
+returned by the @dfn{GET CONFIGURATION} @sc{bios} call. If the @sc{bios}
+call fails, then the size of the table must be @emph{zero}.
+
+If bit 9 in the @samp{flags} is set, the @samp{boot_loader_name} field
+is valid, and contains the physical address of the name of the boot
+loader booting the kernel. The name is a normal C-style zero-terminated
+string.
+
+@c I haven't defined the apm_table field yet. - okuji
 
 
 @node Examples
