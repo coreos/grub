@@ -10,6 +10,14 @@ New in 0.93:
   details.
 * The appendix "FAQ" in the manual is removed. See the GNU GRUB FAQ on
   the web <http://www.gnu.org/software/grub/grub-faq.html> instead.
+* The terminal handling code is rewritten radically, and many bugfixes
+  are made at the same time.
+* The command "color" is effective even in the command-line.
+* The command "terminal" takes two new options, ``--no-echo'' and
+  ``--no-edit''. If you specify ``--no-echo'', GRUB won't echo back
+  input characters. If you specify ``--no-edit'', GRUB will disable the
+  BASH-like editing feature. These options are useful when using an
+  intelligent terminal (such as the comint mode in GNU Emacs).
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.

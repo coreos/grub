@@ -103,7 +103,8 @@ init_cmdline (void)
   saved_partition = install_partition;
   current_drive = 0xFF;
   errnum = 0;
-
+  count_lines = -1;
+  
   /* Restore memory probe state.  */
   mbi.mem_upper = saved_mem_upper;
   if (mbi.mmap_length)

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -1313,41 +1313,7 @@ probe_values:
 # include "apm.S"
 #endif /* ! STAGE1_5 */
 		
-/*
- * console_putchar(c)
- *
- * Puts character on the screen, interpreting '\n' as in the UNIX fashion.
- *
- * BIOS call "INT 10H Function 0Eh" to write character to console
- *      Call with       %ah = 0x0e
- *                      %al = character
- *                      %bh = page
- *                      %bl = foreground color ( graphics modes)
- */
-
-
-ENTRY(console_putchar)
-	push	%ebp
-	push	%eax
-	push	%ebx
-
-	movb	0x10(%esp), %bl
 	
-	call	EXT_C(prot_to_real)
-	.code16
-
-	movb	%bl, %al
-	movb	$0xe, %ah
-	movw	$1, %bx
-	int	$0x10
-
-	DATA32	call	EXT_C(real_to_prot)
-	.code32
-
-	pop	%ebx
-	pop	%eax
-	pop	%ebp
-	ret
 
 #ifndef STAGE1_5
 /* get_code_end() :  return the address of the end of the code
@@ -1824,68 +1790,249 @@ ENTRY(multi_boot)
 	/* error */
 	call	EXT_C(stop)
 
+#endif /* ! STAGE1_5 */
+	
+/*
+ * void console_putchar (int c)
+ *
+ * Put the character C on the console. Because GRUB wants to write a
+ * character with an attribute, this implementation is a bit tricky.
+ * If C is a control character (CR, LF, BEL, BS), use INT 10, AH = 0Eh
+ * (TELETYPE OUTPUT). Otherwise, save the original position, put a space,
+ * save the current position, restore the original position, write the
+ * character and the attribute, and restore the current position.
+ *
+ * The reason why this is so complicated is that there is no easy way to
+ * get the height of the screen, and the TELETYPE OUPUT BIOS call doesn't
+ * support setting a background attribute.
+ */
+ENTRY(console_putchar)
+	movl	0x4(%esp), %edx
+	pusha
+#ifdef STAGE1_5
+	movb	$0x07, %bl
+#else
+	movl	EXT_C(console_current_color), %ebx
+#endif
+	
+	call	EXT_C(prot_to_real)
+	.code16
+	movb	%dl, %al
+	xorb	%bh, %bh
+
+#ifndef STAGE1_5
+	/* use teletype output if control character */
+	cmpb	$0x7, %al
+	je	1f
+	cmpb	$0x8, %al
+	je	1f
+	cmpb	$0xa, %al
+	je	1f
+	cmpb	$0xd, %al
+	je	1f
+
+	/* save the character and the attribute on the stack */
+	pushw	%ax
+	pushw	%bx
+	
+	/* get the current position */
+	movb	$0x3, %ah
+	int	$0x10
+
+	/* check the column with the width */
+	cmpb	$79, %dl
+	jl	2f
+	
+	/* print CR and LF, if next write will exceed the width */	
+	movw	$0x0e0d, %ax
+	int	$0x10
+	movb	$0x0a, %al
+	int	$0x10
+	
+	/* get the current position */
+	movb	$0x3, %ah
+	int	$0x10
+
+2:	
+	/* restore the character and the attribute */
+	popw	%bx
+	popw	%ax
+	
+	/* write the character with the attribute */
+	movb	$0x9, %ah
+	movw	$1, %cx
+	int	$0x10
+
+	/* move the cursor forward */
+	incb	%dl
+	movb	$0x2, %ah
+	int	$0x10
+
+	jmp	3f
+#endif /* ! STAGE1_5 */
+	
+1:	movb	$0xe, %ah
+	int	$0x10
+	
+3:	DATA32	call	EXT_C(real_to_prot)
+	.code32
+	
+	popa
+	ret
+
+
+#ifndef STAGE1_5
+
+/* this table is used in translate_keycode below */
+translation_table:
+	.word	KEY_LEFT, 2
+	.word	KEY_RIGHT, 6
+	.word	KEY_UP, 16
+	.word	KEY_DOWN, 14
+	.word	KEY_HOME, 1
+	.word	KEY_END, 5
+	.word	KEY_DC, 4
+	.word	KEY_BACKSPACE, 8
+	.word	0
+	
+/*
+ * translate_keycode translates the key code %dx to an ascii code.
+ */
+	.code16
+
+translate_keycode:
+	pushw	%bx
+	pushw	%si
+	
+	movw	$ABS(translation_table), %si
+	
+1:	lodsw
+	/* check if this is the end */
+	testw	%ax, %ax
+	jz	2f
+	/* load the ascii code into %ax */
+	movw	%ax, %bx
+	lodsw
+	/* check if this matches the key code */
+	cmpw	%bx, %dx
+	jne	1b
+	/* translate %dx, if successful */
+	movw	%ax, %dx
+
+2:	popw	%si
+	popw	%bx
+	ret
+
+	.code32
+	
 
 /*
- * console_cls()
- * BIOS call "INT 10H Function 0Fh" to get current video mode
- *	Call with	%ah = 0x0f
- *      Returns         %al = (video mode)
- *                      %bh = (page number)
- * BIOS call "INT 10H Function 00h" to set the video mode (clears screen)
- *	Call with	%ah = 0x00
- *                      %al = (video mode)
+ * remap_ascii_char remaps the ascii code %dl to another if the code is
+ * contained in ASCII_KEY_MAP.
+ */
+	.code16
+	
+remap_ascii_char:
+	pushw	%si
+	
+	movw	$ABS(EXT_C(ascii_key_map)), %si
+1:
+	lodsw
+	/* check if this is the end */
+	testw	%ax, %ax
+	jz	2f
+	/* check if this matches the ascii code */
+	cmpb	%al, %dl
+	jne	1b
+	/* if so, perform the mapping */
+	movb	%ah, %dl
+2:
+	/* restore %si */
+	popw	%si
+
+	ret
+
+	.code32
+
+	.align	4
+ENTRY(ascii_key_map)
+	.space	(KEY_MAP_SIZE + 1) * 2
+	
+
+/*
+ * int console_getkey (void)
+ * BIOS call "INT 16H Function 00H" to read character from keyboard
+ *	Call with	%ah = 0x0
+ *	Return:		%ah = keyboard scan code
+ *			%al = ASCII character
  */
 
-
-ENTRY(console_cls)
+ENTRY(console_getkey)
 	push	%ebp
-	push	%ebx                    /* save EBX */
 
 	call	EXT_C(prot_to_real)
 	.code16
 
-	movb	$0xf, %ah
-	int	$0x10			/* Get Current Video mode */
-        xorb	%ah, %ah
-        int	$0x10                   /* Set Video mode (clears screen) */
+	int	$0x16
 
+	movw	%ax, %dx		/* real_to_prot uses %eax */
+	call	translate_keycode
+	call	remap_ascii_char
+	
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
-	pop	%ebx
+	movw	%dx, %ax
+
+	pop	%ebp
+	ret
+
+
+/*
+ * int console_checkkey (void)
+ *	if there is a character pending, return it; otherwise return -1
+ * BIOS call "INT 16H Function 01H" to check whether a character is pending
+ *	Call with	%ah = 0x1
+ *	Return:
+ *		If key waiting to be input:
+ *			%ah = keyboard scan code
+ *			%al = ASCII character
+ *			Zero flag = clear
+ *		else
+ *			Zero flag = set
+ */
+ENTRY(console_checkkey)
+	push	%ebp
+	xorl	%edx, %edx
+	
+	call	EXT_C(prot_to_real)	/* enter real mode */
+	.code16
+
+	movb	$0x1, %ah
+	int	$0x16
+
+	DATA32	jz	notpending
+	
+	movw	%ax, %dx
+	call	translate_keycode
+	call	remap_ascii_char
+	DATA32	jmp	pending
+
+notpending:
+	movl	$0xFFFFFFFF, %edx
+
+pending:
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	mov	%edx, %eax
+
 	pop	%ebp
 	ret
 
 	
 /*
- * nocursor()
- * BIOS call "INT 10H Function 01h" to set cursor type
- *      Call with       %ah = 0x01
- *                      %ch = cursor starting scanline
- *                      %cl = cursor ending scanline
- */
-
-ENTRY(nocursor)
-	push	%ebp
-	push	%ebx                    /* save EBX */
-
-	call	EXT_C(prot_to_real)
-	.code16
-
-	movw    $0x2000, %cx
-	movb    $0x1, %ah
-	int     $0x10 
-
-	DATA32	call	EXT_C(real_to_prot)
-	.code32
-
-	pop	%ebx
-	pop	%ebp
-	ret
-		
-
-/*
- * console_getxy()
+ * int console_getxy (void)
  * BIOS call "INT 10H Function 03h" to get cursor position
  *	Call with	%ah = 0x03
  *			%bh = page
@@ -1919,7 +2066,7 @@ ENTRY(console_getxy)
 
 
 /*
- * console_gotoxy(x,y)
+ * void console_gotoxy(int x, int y)
  * BIOS call "INT 10H Function 02h" to set cursor position
  *	Call with	%ah = 0x02
  *			%bh = page
@@ -1949,58 +2096,30 @@ ENTRY(console_gotoxy)
 	pop	%ebp
 	ret
 
-
+	
 /*
- * console_set_attrib(attr) :  Sets the character attributes for character at
- *		current cursor position.
- *
- *  Bitfields for character's display attribute:
- *  Bit(s)	Description
- *   7		foreground blink
- *   6-4	background color
- *   3		foreground bright
- *   2-0	foreground color
- *
- *  Values for character color:
- *		Normal		Bright
- *   000b	black		dark gray
- *   001b	blue		light blue
- *   010b	green		light green
- *   011b	cyan		light cyan
- *   100b	red		light red
- *   101b	magenta		light magenta
- *   110b	brown		yellow
- *   111b	light gray	white
- *
- * BIOS call "INT 10H Function 08h" to read character and attribute data
- *	Call with	%ah = 0x08
- *			%bh = page
- *	Returns		%ah = character attribute
- *			%al = character value
- * BIOS call "INT 10H Function 09h" to write character and attribute data
- *	Call with	%ah = 0x09
- *			%al = character value
- *			%bh = page
- *			%bl = character attribute
- *			%cx = count to display (???, possible side-effects!!)
+ * void console_cls (void)
+ * BIOS call "INT 10H Function 0Fh" to get current video mode
+ *	Call with	%ah = 0x0f
+ *      Returns         %al = (video mode)
+ *                      %bh = (page number)
+ * BIOS call "INT 10H Function 00h" to set the video mode (clears screen)
+ *	Call with	%ah = 0x00
+ *                      %al = (video mode)
  */
 
-ENTRY(console_set_attrib)
-	push	%ebp
-	push	%ebx
 
-	movl	0xc(%esp), %ecx
-	xorl	%ebx, %ebx
+ENTRY(console_cls)
+	push	%ebp
+	push	%ebx                    /* save EBX */
 
 	call	EXT_C(prot_to_real)
 	.code16
 
-	movb	$0x8, %ah
-	int	$0x10
-	movb	$0x9, %ah
-	movb	%cl, %bl
-	movw	$1, %cx
-	int	$0x10
+	movb	$0xf, %ah
+	int	$0x10			/* Get Current Video mode */
+        xorb	%ah, %ah
+        int	$0x10                   /* Set Video mode (clears screen) */
 
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
@@ -2009,7 +2128,31 @@ ENTRY(console_set_attrib)
 	pop	%ebp
 	ret
 
+	
+/*
+ * void console_nocursor (void)
+ * BIOS call "INT 10H Function 01h" to set cursor type
+ *      Call with       %ah = 0x01
+ *                      %ch = cursor starting scanline
+ *                      %cl = cursor ending scanline
+ */
 
+ENTRY(console_nocursor)
+	push	%ebp
+
+	call	EXT_C(prot_to_real)
+	.code16
+
+	movw    $0x2000, %cx
+	movb    $0x1, %ah
+	int     $0x10 
+
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	pop	%ebp
+	ret
+		
 /*
  * getrtsecs()
  *	if a seconds value can be read, read it and return it (BCD),
@@ -2072,114 +2215,6 @@ ENTRY(currticks)
 	movw	%dx, %ax
 
 	popl	%ebp
-	ret
-
-	
-/*
- * remap_ascii_char remaps the ascii code %bl to another if the code is
- * contained in ASCII_KEY_MAP.
- */
-	.code16
-	
-remap_ascii_char:
-	pushw	%si
-	
-	movw	$ABS(EXT_C(ascii_key_map)), %si
-1:
-	lodsw
-	/* check if this is the end */
-	testw	%ax, %ax
-	jz	2f
-	/* check if this matches the ascii code */
-	cmpb	%al, %bl
-	jne	1b
-	/* if so, perform the mapping */
-	movb	%ah, %bl
-2:
-	/* restore %si */
-	popw	%si
-
-	ret
-
-	.code32
-
-	.align	4
-ENTRY(ascii_key_map)
-	.space	(KEY_MAP_SIZE + 1) * 2
-	
-
-/*
- * console_getkey()
- * BIOS call "INT 16H Function 00H" to read character from keyboard
- *	Call with	%ah = 0x0
- *	Return:		%ah = keyboard scan code
- *			%al = ASCII character
- */
-
-ENTRY(console_getkey)
-	push	%ebp
-	push	%ebx			/* save %ebx */
-
-	call	EXT_C(prot_to_real)
-	.code16
-
-	int	$0x16
-
-	movw	%ax, %bx		/* real_to_prot uses %eax */
-	call	remap_ascii_char
-	
-	DATA32	call	EXT_C(real_to_prot)
-	.code32
-
-	movw	%bx, %ax
-
-	pop	%ebx
-	pop	%ebp
-	ret
-
-
-/*
- * console_checkkey()
- *	if there is a character pending, return it; otherwise return -1
- * BIOS call "INT 16H Function 01H" to check whether a character is pending
- *	Call with	%ah = 0x1
- *	Return:
- *		If key waiting to be input:
- *			%ah = keyboard scan code
- *			%al = ASCII character
- *			Zero flag = clear
- *		else
- *			Zero flag = set
- */
-ENTRY(console_checkkey)
-	push	%ebp
-	push	%ebx
-
-	xorl	%ebx, %ebx
-
-	call	EXT_C(prot_to_real)	/* enter real mode */
-	.code16
-
-	movb	$0x1, %ah
-	int	$0x16
-
-	DATA32	jz	notpending
-	
-	movw	%ax, %bx
-	call	remap_ascii_char
-	DATA32	jmp	pending
-
-notpending:
-	movl	$0xFFFFFFFF, %ebx
-
-pending:
-	DATA32	call	EXT_C(real_to_prot)
-	.code32
-
-	mov	%ebx, %eax
-
-	pop	%ebx
-	pop	%ebp
 	ret
 
 #endif /* STAGE1_5 */

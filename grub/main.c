@@ -30,7 +30,8 @@ int grub_stage2 (void);
 #include <setjmp.h>
 
 #define WITHOUT_LIBC_STUBS 1
-#include "shared.h"
+#include <shared.h>
+#include <term.h>
 
 char *program_name = 0;
 int use_config_file = 1;
@@ -256,8 +257,8 @@ main (int argc, char **argv)
 
   /* If we don't have curses (!HAVE_LIBCURSES or --no-curses or
      --batch) put terminal to dumb for better handling of line i/o */
-  if (!use_curses)
-    terminal |= TERMINAL_DUMB;
+  if (! use_curses)
+    current_term->flags = TERM_NO_EDIT | TERM_DUMB;
 
   /* Transfer control to the stage2 simulator. */
   exit (grub_stage2 ());

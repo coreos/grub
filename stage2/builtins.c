@@ -26,6 +26,7 @@
 
 #include <shared.h>
 #include <filesys.h>
+#include <term.h>
 
 #ifdef SUPPORT_NETBOOT
 # define GRUB	1
@@ -47,8 +48,6 @@
 # include <md5.h>
 #endif
 
-/* Terminal types.  */
-int terminal = TERMINAL_CONSOLE;
 /* The type of kernel loaded.  */
 kernel_t kernel_type;
 /* The boot device.  */
@@ -70,9 +69,6 @@ char *password;
 password_t password_type;
 /* The flag for indicating that the user is authoritative.  */
 int auth = 0;
-/* Color settings.  */
-int normal_color;
-int highlight_color;
 /* The timeout.  */
 int grub_timeout = -1;
 /* Whether to show the menu or not.  */
@@ -99,8 +95,6 @@ void
 init_config (void)
 {
   default_entry = 0;
-  normal_color = A_NORMAL;
-  highlight_color = A_REVERSE;
   password = 0;
   fallback_entry = -1;
   grub_timeout = -1;
@@ -413,8 +407,15 @@ cat_func (char *arg, int flags)
     return 1;
 
   while (grub_read (&c, 1))
-    grub_putchar (c);
-
+    {
+      /* Because running "cat" with a binary file can confuse the terminal,
+	 print only some characters as they are.  */
+      if (grub_isspace (c) || (c >= ' ' && c <= '~'))
+	grub_putchar (c);
+      else
+	grub_putchar ('?');
+    }
+  
   grub_close ();
   return 0;
 }
@@ -696,8 +697,9 @@ color_func (char *arg, int flags)
 	return 1;
     }
 
-  normal_color = new_normal_color;
-  highlight_color = new_highlight_color;
+  if (current_term->setcolor)
+    current_term->setcolor (new_normal_color, new_highlight_color);
+  
   return 0;
 }
 
@@ -3276,7 +3278,7 @@ static struct builtin builtin_savedefault =
 static int
 serial_func (char *arg, int flags)
 {
-  unsigned short port = serial_get_port (0);
+  unsigned short port = serial_hw_get_port (0);
   unsigned int speed = 9600;
   int word_len = UART_8BITS_WORD;
   int parity = UART_NO_PARITY;
@@ -3301,7 +3303,7 @@ serial_func (char *arg, int flags)
 	      return 1;
 	    }
 
-	  port = serial_get_port (unit);
+	  port = serial_hw_get_port (unit);
 	}
       else if (grub_memcmp (arg, "--speed=", sizeof ("--speed=") - 1) == 0)
 	{
@@ -3388,7 +3390,7 @@ serial_func (char *arg, int flags)
 	    *q++ = *p++;
 	  
 	  *q = 0;
-	  set_serial_device (dev);
+	  serial_set_device (dev);
 	}
 # endif /* GRUB_UTIL */
       else
@@ -3398,7 +3400,7 @@ serial_func (char *arg, int flags)
     }
 
   /* Initialize the serial unit.  */
-  if (! serial_init (port, speed, word_len, parity, stop_bit_len))
+  if (! serial_hw_init (port, speed, word_len, parity, stop_bit_len))
     {
       errnum = ERR_BAD_ARGUMENT;
       return 1;
@@ -3981,18 +3983,26 @@ static struct builtin builtin_setup =
 static int
 terminal_func (char *arg, int flags)
 {
-  int default_terminal = 0;
+  /* The index of the default terminal in TERM_TABLE.  */
+  int default_term = -1;
+  struct term_entry *prev_term = current_term;
   int to = -1;
-  int dumb = 0;
-  int saved_terminal = terminal;
   int lines = 0;
   int no_message = 0;
+  unsigned long term_flags = 0;
+  /* XXX: Assume less than 32 terminals.  */
+  unsigned long term_bitmap = 0;
 
   /* Get GNU-style long options.  */
   while (1)
     {
       if (grub_memcmp (arg, "--dumb", sizeof ("--dumb") - 1) == 0)
-	dumb = 1;
+	term_flags |= TERM_DUMB;
+      else if (grub_memcmp (arg, "--no-echo", sizeof ("--no-echo") - 1) == 0)
+	/* ``--no-echo'' implies ``--no-edit''.  */
+	term_flags |= (TERM_NO_ECHO | TERM_NO_EDIT);
+      else if (grub_memcmp (arg, "--no-edit", sizeof ("--no-edit") - 1) == 0)
+	term_flags |= TERM_NO_EDIT;
       else if (grub_memcmp (arg, "--timeout=", sizeof ("--timeout=") - 1) == 0)
 	{
 	  char *val = arg + sizeof ("--timeout=") - 1;
@@ -4025,72 +4035,51 @@ terminal_func (char *arg, int flags)
   /* If no argument is specified, show current setting.  */
   if (! *arg)
     {
-      if (terminal & TERMINAL_CONSOLE)
-	grub_printf ("console%s\n",
-		     terminal & TERMINAL_DUMB ? " (dumb)" : "");
-#ifdef SUPPORT_HERCULES
-      else if (terminal & TERMINAL_HERCULES)
-	grub_printf ("hercules%s\n",
-		     terminal & TERMINAL_DUMB ? " (dumb)" : "");
-#endif /* SUPPORT_HERCULES */
-#ifdef SUPPORT_SERIAL
-      else if (terminal & TERMINAL_SERIAL)
-	grub_printf ("serial%s\n",
-		     terminal & TERMINAL_DUMB ? " (dumb)" : " (vt100)");
-#endif /* SUPPORT_SERIAL */
-      
+      grub_printf ("%s%s%s%s\n",
+		   current_term->name,
+		   current_term->flags & TERM_DUMB ? " (dumb)" : "",
+		   current_term->flags & TERM_NO_EDIT ? " (no edit)" : "",
+		   current_term->flags & TERM_NO_ECHO ? " (no echo)" : "");
       return 0;
     }
 
-  /* Clear current setting.  */
-  terminal = dumb ? TERMINAL_DUMB : 0;
-  
   while (*arg)
     {
-      if (grub_memcmp (arg, "console", sizeof ("console") - 1) == 0)
+      int i;
+      char *next = skip_to (0, arg);
+      
+      nul_terminate (arg);
+
+      for (i = 0; term_table[i].name; i++)
 	{
-	  terminal |= TERMINAL_CONSOLE;
-	  if (! default_terminal)
-	    default_terminal = TERMINAL_CONSOLE;
-	}
-#ifdef SUPPORT_HERCULES
-      else if (grub_memcmp (arg, "hercules", sizeof ("hercules") - 1) == 0)
-	{
-	  terminal |= TERMINAL_HERCULES;
-	  if (! default_terminal)
-	    default_terminal = TERMINAL_HERCULES;
-	}
-#endif /* SUPPORT_HERCULES */
-#ifdef SUPPORT_SERIAL
-      else if (grub_memcmp (arg, "serial", sizeof ("serial") - 1) == 0)
-	{
-	  if (serial_exists ())
+	  if (grub_strcmp (arg, term_table[i].name) == 0)
 	    {
-	      terminal |= TERMINAL_SERIAL;
-	      if (! default_terminal)
-		default_terminal = TERMINAL_SERIAL;
-	    }
-	  else
-	    {
-	      terminal = saved_terminal;
-	      errnum = ERR_NEED_SERIAL;
-	      return 1;
+	      if (term_table[i].flags & TERM_NEED_INIT)
+		{
+		  errnum = ERR_DEV_NEED_INIT;
+		  return 1;
+		}
+	      
+	      if (default_term < 0)
+		default_term = i;
+
+	      term_bitmap |= (1 << i);
+	      break;
 	    }
 	}
-#endif /* SUPPORT_SERIAL */
-      else
+
+      if (! term_table[i].name)
 	{
-	  terminal = saved_terminal;
 	  errnum = ERR_BAD_ARGUMENT;
 	  return 1;
 	}
 
-      arg = skip_to (0, arg);
+      arg = next;
     }
 
-#ifdef SUPPORT_SERIAL
-  /* If a seial console is turned on, wait until the user pushes any key.  */
-  if (terminal & TERMINAL_SERIAL)
+  /* If multiple terminals are specified, wait until the user pushes any
+     key on one of the terminals.  */
+  if (term_bitmap & ~(1 << default_term))
     {
       int time1, time2 = -1;
 
@@ -4104,25 +4093,22 @@ terminal_func (char *arg, int flags)
       /* Wait for a key input.  */
       while (to)
 	{
-	  if ((terminal & TERMINAL_CONSOLE) && console_checkkey () != -1)
-	    {
-	      terminal &= (TERMINAL_CONSOLE | TERMINAL_DUMB);
-	      (void) getkey ();
-	      return 0;
-	    }
-	  else if ((terminal & TERMINAL_SERIAL) && serial_checkkey () != -1)
-	    {
-	      terminal &= (TERMINAL_SERIAL | TERMINAL_DUMB);
-	      (void) getkey ();
+	  int i;
 
-	      /* If the interface is currently the command-line, restart
-		 it to repaint the screen.  */
-	      if (flags & BUILTIN_CMDLINE)
-		grub_longjmp (restart_cmdline_env, 0);
-	      
-	      return 0;
+	  for (i = 0; term_table[i].name; i++)
+	    {
+	      if (term_bitmap & (1 << i))
+		{
+		  if (term_table[i].checkkey () >= 0)
+		    {
+		      (void) term_table[i].getkey ();
+		      default_term = i;
+		      
+		      goto end;
+		    }
+		}
 	    }
-
+	  
 	  /* Prompt the user, once per sec.  */
 	  if ((time1 = getrtsecs ()) != time2 && time1 != 0xFF)
 	    {
@@ -4134,17 +4120,22 @@ terminal_func (char *arg, int flags)
 		to--;
 	    }
 	}
-
-      /* Expired.  */
-      terminal &= (default_terminal | TERMINAL_DUMB);
     }
-#endif /* SUPPORT_SERIAL */
 
+ end:
+  current_term = term_table + default_term;
+  current_term->flags = term_flags;
+  
   if (lines)
     max_lines = lines;
   else
     /* 24 would be a good default value.  */
     max_lines = 24;
+  
+  /* If the interface is currently the command-line,
+     restart it to repaint the screen.  */
+  if (current_term != prev_term && (flags & BUILTIN_CMDLINE))
+    grub_longjmp (restart_cmdline_env, 0);
   
   return 0;
 }
@@ -4154,12 +4145,14 @@ static struct builtin builtin_terminal =
   "terminal",
   terminal_func,
   BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
-  "terminal [--dumb] [--timeout=SECS] [--lines=LINES] [--silent] [console] [serial]",
-  "Select a terminal. When serial is specified, wait until you push any key"
-  " to continue. If both console and serial are specified, the terminal"
-  " to which you input a key first will be selected. If no argument is"
-  " specified, print current setting. The option --dumb specifies that"
-  " your terminal is dumb, otherwise, vt100-compatibility is assumed."
+  "terminal [--dumb] [--no-echo] [--no-edit] [--timeout=SECS] [--lines=LINES] [--silent] [console] [serial] [hercules]",
+  "Select a terminal. When multiple terminals are specified, wait until"
+  " you push any key to continue. If both console and serial are specified,"
+  " the terminal to which you input a key first will be selected. If no"
+  " argument is specified, print current setting. The option --dumb"
+  " specifies that your terminal is dumb, otherwise, vt100-compatibility"
+  " is assumed. If you specify --no-echo, input characters won't be echoed."
+  " If you specify --no-edit, the BASH-like editing feature will be disabled."
   " If --timeout is present, this command will wait at most for SECS"
   " seconds. The option --lines specifies the maximum number of lines."
   " The option --silent is used to suppress messages."

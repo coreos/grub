@@ -334,29 +334,16 @@ extern char *grub_scratch_mem;
 #define ACS_DARROW	'v'
 
 /* Special graphics characters for IBM displays. */
-#ifdef GRUB_UTIL
-# define DISP_UL	ACS_ULCORNER
-# define DISP_UR	ACS_URCORNER
-# define DISP_LL	ACS_LLCORNER
-# define DISP_LR	ACS_LRCORNER
-# define DISP_HORIZ	ACS_HLINE
-# define DISP_VERT	ACS_VLINE
-# define DISP_LEFT	ACS_LARROW
-# define DISP_RIGHT	ACS_RARROW
-# define DISP_UP	ACS_UARROW
-# define DISP_DOWN	ACS_DARROW
-#else /* ! GRUB_UTIL */
-# define DISP_UL	218
-# define DISP_UR	191
-# define DISP_LL	192
-# define DISP_LR	217
-# define DISP_HORIZ	196
-# define DISP_VERT	179
-# define DISP_LEFT	0x1b
-# define DISP_RIGHT	0x1a
-# define DISP_UP	0x18
-# define DISP_DOWN	0x19
-#endif /* ! GRUB_UTIL */
+#define DISP_UL		218
+#define DISP_UR		191
+#define DISP_LL		192
+#define DISP_LR		217
+#define DISP_HORIZ	196
+#define DISP_VERT	179
+#define DISP_LEFT	0x1b
+#define DISP_RIGHT	0x1a
+#define DISP_UP		0x18
+#define DISP_DOWN	0x19
 
 /* Remap some libc-API-compatible function names so that we prevent
    circularararity. */
@@ -546,7 +533,7 @@ typedef enum
   ERR_BAD_ARGUMENT,
   ERR_UNALIGNED,
   ERR_PRIVILEGED,
-  ERR_NEED_SERIAL,
+  ERR_DEV_NEED_INIT,
   ERR_NO_DISK_SPACE,
   ERR_NUMBER_OVERFLOW,
 
@@ -628,8 +615,6 @@ extern void (*disk_read_func) (int, int, int);
 #ifndef STAGE1_5
 /* The flag for debug mode.  */
 extern int debug;
-/* Color settings */
-extern int normal_color, highlight_color;
 #endif /* STAGE1_5 */
 
 extern unsigned long current_drive;
@@ -781,55 +766,28 @@ int currticks (void);
 /* Clear the screen. */
 void cls (void);
 
-/* The console part of cls.  */
-void console_cls (void);
-
-#ifndef GRUB_UTIL
 /* Turn off cursor. */
 void nocursor (void);
-#endif
 
 /* Get the current cursor position (where 0,0 is the top left hand
    corner of the screen).  Returns packed values, (RET >> 8) is x,
    (RET & 0xff) is y. */
 int getxy (void);
 
-/* The console part of getxy.  */
-int console_getxy (void);
-
 /* Set the cursor position. */
 void gotoxy (int x, int y);
-
-/* The console part of gotoxy.  */
-void console_gotoxy (int x, int y);
 
 /* Displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones (see the DISP_* constants). */
 void grub_putchar (int c);
 
-/* The console part of grub_putchar.  */
-void console_putchar (int c);
-
 /* Wait for a keypress, and return its packed BIOS/ASCII key code.
    Use ASCII_CHAR(ret) to extract the ASCII code. */
 int getkey (void);
 
-/* The console part of getkey.  */
-int console_getkey (void);
-
 /* Like GETKEY, but doesn't block, and returns -1 if no keystroke is
    available. */
 int checkkey (void);
-
-/* The console part of checkkey.  */
-int console_checkkey (void);
-
-/* Sets text mode character attribute at the cursor position.  See A_*
-   constants defined above. */
-void set_attrib (int attr);
-
-/* The console part of set_attrib.  */
-void console_set_attrib (int attr);
 
 /* Low-level disk I/O */
 int get_diskinfo (int drive, struct geometry *geometry);
@@ -882,18 +840,6 @@ kernel_t;
 extern kernel_t kernel_type;
 extern int show_menu;
 extern int grub_timeout;
-
-/* Control the auto fill mode.  */
-extern int auto_fill;
-
-/* This variable specifies which console should be used.  */
-extern int terminal;
-
-#define TERMINAL_CONSOLE	(1 << 0)	/* keyboard and screen */
-#define TERMINAL_SERIAL		(1 << 1)	/* serial console */
-#define TERMINAL_HERCULES	(1 << 2)	/* hercules */
-
-#define TERMINAL_DUMB		(1 << 16)	/* dumb terminal */
 
 void init_builtins (void);
 void init_config (void);
@@ -951,7 +897,6 @@ int nul_terminate (char *str);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);
 int memcheck (int start, int len);
-int translate_keycode (int c);
 
 #ifndef NO_DECOMPRESSION
 /* Compression support. */

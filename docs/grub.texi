@@ -2273,7 +2273,7 @@ character each of the symbols corresponds:
 @node terminal
 @subsection terminal
 
-@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{--lines=lines}] [@option{--silent}] [@option{console}] [@option{serial}] [@option{hercules}]
+@deffn Command terminal [@option{--dumb}] [@option{--no-echo}] [@option{--no-edit}] [@option{--timeout=secs}] [@option{--lines=lines}] [@option{--silent}] [@option{console}] [@option{serial}] [@option{hercules}]
 Select a terminal for user interaction. The terminal is assumed to be
 VT100-compatible unless @option{--dumb} is specified. If both
 @option{console} and @option{serial} are specified, then GRUB will use
@@ -2292,7 +2292,13 @@ terminal, and it is used for the internal pager function. If you don't
 specify this option, the number is assumed as 24.
 
 The option @option{--silent} suppresses the message to prompt you to
-hit any key. This might be useful if your system has no terminal device.
+hit any key. This might be useful if your system has no terminal
+device.
+
+The option @option{--no-echo} has GRUB not to echo back input
+characters. This implies the option @option{--no-edit}.
+
+The option @option{--no-edit} disables the BASH-like editing feature.
 @end deffn
 
 

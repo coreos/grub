@@ -1,3 +1,149 @@
+2002-06-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	The terminal handling code is rewritten radically.
+	
+	* stage2/console.c: New file.
+	* stage2/term.h: Likewise.
+	
+	* stage2/Makefile.am (noinst_HEADERS): Added term.h.
+	(libgrub_a_SOURCES): Added serial.c.
+	(pre_stage2_exec_SOURCES): Added console.c.
+
+	* stage2/asm.S (console_putchar): Rewritten from scratch.
+	[!STAGE1_5] (translation_table): New variable.
+	[!STAGE1_5] (translate_keycode): New function.
+	[!STAGE1_5] (console_getkey): Call translate_keycode.
+	[!STAGE1_5] (console_checkkey): Likewise.
+	[!STAGE1_5] (nocursor): Renamed to ...
+	[!STAGE1_5] (console_nocursor): ... this.
+	[!STAGE1_5] (console_set_attrib): Removed.
+
+	* stage2/builtins.c: Include term.h.
+	(terminal): Removed.
+	(normal_color): Likewise.
+	(highlight_color): Likewise.
+	(cat_func): Display a question mark when a non-printable
+	character was read.
+	(terminal_func): Rewritten almost from scratch.
+
+	* stage2/char_io.c: Include term.h.
+	[!STAGE1_5] (auto_fill): Removed.
+	[!STAGE1_5] (term_table): New variable.
+	[!STAGE1_5] (current_term): Likewise.
+	[!STAGE1_5] (real_get_cmdline): New function. The code was
+	stolen from the previous version of get_cmdline.
+	[!STAGE1_5] (get_cmdline): Rewritten from scratch.
+	[!STAGE1_5] (translate_keycode): Removed.
+	[!STAGE1_5] (getkey): Rewritten from scratch.
+	[!STAGE1_5] (checkkey): Likewise.
+	(grub_putchar): Likewise.
+	[!STAGE1_5] (gotoxy): Likewise.
+	[!STAGE1_5] (getxy): Likewise.
+	[!STAGE1_5] (cls): Likewise.
+	[!STAGE1_5] (nocursor): New function.
+	[SUPPORT_SERIAL] (serial_getxy): Removed.
+	[SUPPORT_SERIAL] (serial_gotoxy): Likewise.
+	[SUPPORT_SERIAL] (serial_cls): Likewise.
+	[SUPPORT_SERIAL] (serial_getxy): Likewise.
+	[!STAGE1_5] (set_attrib): Likewise.
+
+	* stage2/cmdline.c (init_cmdline): Set COUNT_LINES to -1.
+
+	* stage2/common.c [!STAGE1_5] (err_list): Removed
+	ERR_NEED_SERIAL and added ERR_DEV_NEED_INIT.
+
+	* stage2/hercules.c: Rewritten almost from scratch.
+	* stage2/hercules.h (herc_putchar): Removed.
+	(herc_cls): Likewise.
+	(herc_getxy): Likewise.
+	(herc_gotoxy): Likewise.
+	(herc_set_attrib): Likewise.
+
+	* stage2/serial.c: Rewritten almost from scratch.
+	* stage2/serial.h: Likewise.
+
+	* stage2/shared.h [GRUB_UTIL] (DISP_UL): Set to the same value
+	as VGA's.
+	[GRUB_UTIL] (DISP_UR): Likewise.
+	[GRUB_UTIL] (DISP_LL): Likewise.
+	[GRUB_UTIL] (DISP_LR): Likewise.
+	[GRUB_UTIL] (DISP_HORIZ): Likewise.
+	[GRUB_UTIL] (DISP_VERT): Likewise.
+	[GRUB_UTIL] (DISP_LEFT): Likewise.
+	[GRUB_UTIL] (DISP_RIGHT): Likewise.
+	[GRUB_UTIL] (DISP_UP): Likewise.
+	[GRUB_UTIL] (DISP_DOWN): Likewise.
+	(grub_error_t): Removed ERR_NEED_SERIAL.
+	Added ERR_DEV_NEED_INIT.
+	(normal_color): Removed.
+	(highlight_color): Likewise.
+	(console_cls): Removed, because this is declared in term.h.
+	(console_getxy): Likewise.
+	(console_gotoxy): Likewise.
+	(console_putchar): Likewise.
+	(console_getkey): Likewise.
+	(console_checkkey): Likewise.
+	(console_set_attrib): Removed.
+	(set_attrib): Likewise.
+	[GRUB_UTIL] (nocursor): Declared.
+	(auto_fill): Removed.
+	(terminal): Likewise.
+	(TERMINAL_CONSOLE): Likewise.
+	(TERMINAL_SERIAL): Likewise.
+	(TERMINAL_HERCULES): Likewise.
+	(TERMINAL_DUMB): Likewise.
+	(translate_keycode): Likewise.
+
+	* stage2/stage2.c: Include term.h.
+	(print_entry): Rewritten from scratch.
+	(print_entries): Likewise.
+	(print_border): Likewise.
+	(set_line): Removed.
+	(set_line_normal): Likewise.
+	(set_line_highlight): Likewise.
+	
+	* grub/Makefile.am (AM_CFLAGS): Added -DSUPPORT_HERCULES=1.
+	
+	* grub/asmstub.c: Don't include hercules.h. Include term.h.
+	(console_current_color): New variable.
+	(console_translate_key): New function.
+	(console_checkkey): Rewritten from scratch.
+	(console_getkey): Likewise.
+	(console_putchar): Likewise.
+	(console_set_attrib): Removed.
+	(console_highlight): New function.
+	(console_setcolor): Likewise.
+	(console_nocursor): Likewise.
+	(serial_getkey): Removed.
+	(serial_checkkey): Likewise.
+	(serial_putchar): Likewise.
+	(serial_exists): Likewise.
+	(serial_get_port): Likewise.
+	(serial_init): Likewise.
+	(serial_hw_fetch): New function.
+	(serial_hw_put): Likewise.
+	(serial_hw_delay): Likewise.
+	(serial_hw_get_port): Likewise.
+	(serial_hw_init): Likewise.
+	(set_serial_device): Renamed to ...
+	(serial_set_device): ... this.
+	(herc_putchar): Renamed to ...
+	(hercules_putchar): ... this.
+	(herc_cls): Renamed to ...
+	(hercules_cls): ... this.
+	(herc_getxy): Renamed to ...
+	(hercules_getxy): ... this.
+	(herc_gotoxy): Renamed to ...
+	(hercules_gotoxy): ... this.
+	(hercules_highlight): New function.
+	(hercules_setcolor): Likewise.
+	(hercules_nocursor): Likewise.
+	(herc_set_attrib): Removed.
+
+	* grub/main.c: Include term.h.
+	(main): If USE_CURSES is false, set CURRENT_TERM->FLAGS to
+	TERM_NO_EDIT | TERM_DUMB. TERMINAL is not used any longer.
+	
 2002-06-01  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (FAQ): Removed. See the GNU GRUB FAQ on the web

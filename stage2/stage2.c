@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "shared.h"
+#include <shared.h>
+#include <term.h>
 
 grub_jmp_buf restart_env;
 
@@ -75,7 +76,6 @@ close_preset_menu (void)
 
 #endif /* ! PRESET_MENU_STRING && ! SUPPORT_DISKLESS */
 
-
 static char *
 get_entry (char *list, int num, int nested)
 {
@@ -93,63 +93,67 @@ get_entry (char *list, int num, int nested)
   return list;
 }
 
-
+/* Print an entry in a line of the menu box.  */
 static void
-print_entries (int y, int size, int first, char *menu_entries)
+print_entry (int y, int highlight, char *entry)
+{
+  int x;
+  
+  highlight = (highlight && current_term->highlight);
+  
+  if (highlight)
+    current_term->highlight (1);
+
+  gotoxy (2, y);
+  grub_putchar (' ');
+  for (x = 3; x < 75; x++)
+    {
+      if (*entry && x < 71)
+	grub_putchar (*entry++);
+      else
+	grub_putchar (' ');
+    }
+  gotoxy (74, y);
+
+  if (highlight)
+    current_term->highlight (0);
+}
+
+/* Print entries in the menu box.  */
+static void
+print_entries (int y, int size, int first, int entryno, char *menu_entries)
 {
   int i;
-  int disp_up = DISP_UP;
-  int disp_down = DISP_DOWN;
-
-#ifdef SUPPORT_SERIAL
-  if (terminal & TERMINAL_SERIAL)
-    {
-      disp_up = ACS_UARROW;
-      disp_down = ACS_DARROW;
-    }
-#endif /* SUPPORT_SERIAL */
   
   gotoxy (77, y + 1);
 
   if (first)
-    grub_putchar (disp_up);
+    grub_putchar (DISP_UP);
   else
     grub_putchar (' ');
 
   menu_entries = get_entry (menu_entries, first, 0);
 
-  for (i = 1; i <= size; i++)
+  for (i = 0; i < size; i++)
     {
-      int j = 0;
-
-      gotoxy (3, y + i);
+      print_entry (y + i + 1, entryno == i, menu_entries);
 
       while (*menu_entries)
-	{
-	  if (j < 71)
-	    {
-	      grub_putchar (*menu_entries);
-	      j++;
-	    }
-
-	  menu_entries++;
-	}
+	menu_entries++;
 
       if (*(menu_entries - 1))
 	menu_entries++;
-
-      for (; j < 71; j++)
-	grub_putchar (' ');
     }
 
   gotoxy (77, y + size);
 
   if (*menu_entries)
-    grub_putchar (disp_down);
+    grub_putchar (DISP_DOWN);
   else
     grub_putchar (' ');
-}
 
+  gotoxy (74, y + entryno + 1);
+}
 
 static void
 print_entries_raw (int size, int first, char *menu_entries)
@@ -182,138 +186,33 @@ static void
 print_border (int y, int size)
 {
   int i;
-  int disp_ul = DISP_UL;
-  int disp_ur = DISP_UR;
-  int disp_ll = DISP_LL;
-  int disp_lr = DISP_LR;
-  int disp_horiz = DISP_HORIZ;
-  int disp_vert = DISP_VERT;
-
-#ifdef SUPPORT_SERIAL
-  if (terminal & TERMINAL_SERIAL)
-    {
-      disp_ul = ACS_ULCORNER;
-      disp_ur = ACS_URCORNER;
-      disp_ll = ACS_LLCORNER;
-      disp_lr = ACS_LRCORNER;
-      disp_horiz = ACS_HLINE;
-      disp_vert = ACS_VLINE;
-    }
-#endif /* SUPPORT_SERIAL */
   
-#ifndef GRUB_UTIL
-  /* Color the menu. The menu is 75 * 14 characters.  */
-# ifdef SUPPORT_SERIAL
-  if ((terminal & TERMINAL_CONSOLE)
-#  ifdef SUPPORT_HERCULES
-      || (terminal & TERMINAL_HERCULES)
-#  endif
-      )
-# endif
-    {
-      for (i = 0; i < 14; i++)
-	{
-	  int j;
-	  for (j = 0; j < 75; j++)
-	    {
-	      gotoxy (j + 1, i + y);
-	      set_attrib (normal_color);
-	    }
-	}
-    }
-#endif
-
   gotoxy (1, y);
 
-  grub_putchar (disp_ul);
+  grub_putchar (DISP_UL);
   for (i = 0; i < 73; i++)
-    grub_putchar (disp_horiz);
-  grub_putchar (disp_ur);
+    grub_putchar (DISP_HORIZ);
+  grub_putchar (DISP_UR);
 
   i = 1;
-
   while (1)
     {
       gotoxy (1, y + i);
 
       if (i > size)
 	break;
-
-      grub_putchar (disp_vert);
+      
+      grub_putchar (DISP_VERT);
       gotoxy (75, y + i);
-      grub_putchar (disp_vert);
+      grub_putchar (DISP_VERT);
 
       i++;
     }
 
-  grub_putchar (disp_ll);
+  grub_putchar (DISP_LL);
   for (i = 0; i < 73; i++)
-    grub_putchar (disp_horiz);
-  grub_putchar (disp_lr);
-}
-
-static void
-set_line (int y, int entryno, int attr, char *menu_entries)
-{
-  int x;
-
-#ifdef SUPPORT_SERIAL
-  if (terminal & TERMINAL_SERIAL)
-    {
-      menu_entries = get_entry (menu_entries, entryno, 0);
-      gotoxy (2, y);
-      grub_putchar (' ');
-      for (x = 3; x < 75; x++)
-	{
-	  if (*menu_entries && x < 71)
-	    grub_putchar (*menu_entries++);
-	  else
-	    grub_putchar (' ');
-	}
-    }
-  else
-#endif /* SUPPORT_SERIAL */
-    {
-      for (x = 2; x < 75; x++)
-	{
-	  gotoxy (x, y);
-	  set_attrib (attr);
-	}
-    }
-
-  gotoxy (74, y);
-}
-
-/* Set the attribute of the line Y to normal state.  */
-static void
-set_line_normal (int y, int entryno, char *menu_entries)
-{
-#ifdef GRUB_UTIL
-  set_line (y, entryno, A_NORMAL, menu_entries);
-#else
-  set_line (y, entryno, normal_color, menu_entries);
-#endif
-}
-
-/* Set the attribute of the line Y to highlight state.  */
-static void
-set_line_highlight (int y, int entryno, char *menu_entries)
-{
-#ifdef SUPPORT_SERIAL
-  if (terminal & TERMINAL_SERIAL)
-    grub_printf ("\e[7m");
-#endif /* SUPPORT_SERIAL */
-  
-#ifdef GRUB_UTIL
-  set_line (y, entryno, A_REVERSE, menu_entries);
-#else
-  set_line (y, entryno, highlight_color, menu_entries);
-#endif
-  
-#ifdef SUPPORT_SERIAL
-  if (terminal & TERMINAL_SERIAL)
-    grub_printf ("\e[0m");
-#endif /* SUPPORT_SERIAL */
+    grub_putchar (DISP_HORIZ);
+  grub_putchar (DISP_LR);
 }
 
 static void
@@ -322,8 +221,6 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
 {
   int c, time1, time2 = -1, first_entry = 0;
   char *cur_entry = 0;
-  int disp_up = DISP_UP;
-  int disp_down = DISP_DOWN;
 
   /*
    *  Main loop for menu UI.
@@ -331,8 +228,8 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
 
 restart:
   /* Dumb terminal always use all entries for display 
-     invariant for TERMINAL_DUMB: first_entry == 0  */
-  if (! (terminal & TERMINAL_DUMB))
+     invariant for TERM_DUMB: first_entry == 0  */
+  if (! (current_term->flags & TERM_DUMB))
     {
       while (entryno > 11)
 	{
@@ -387,49 +284,17 @@ restart:
   /* Only display the menu if the user wants to see it. */
   if (show_menu)
     {
-      /* Disable the auto fill mode.  */
-      auto_fill = 0;
-      
       init_page ();
-#ifndef GRUB_UTIL
-# ifdef SUPPORT_SERIAL
-      if (terminal & TERMINAL_CONSOLE)
-# endif /* SUPPORT_SERIAL */
-	nocursor ();
-#endif /* ! GRUB_UTIL */
+      nocursor ();
 
-      if (! (terminal & TERMINAL_DUMB))      
-	  print_border (3, 12);
-
-#ifdef GRUB_UTIL
-      /* In the grub shell, always use ACS_*.  */
-      disp_up = ACS_UARROW;
-      disp_down = ACS_DARROW;
-#else /* ! GRUB_UTIL */
-# ifdef SUPPORT_SERIAL
-      if ((terminal & TERMINAL_CONSOLE)
-#  ifdef SUPPORT_HERCULES
-	  || (terminal & TERMINAL_HERCULES)
-#  endif /* SUPPORT_HERCULES */
-	  )
-	{
-	  disp_up = DISP_UP;
-	  disp_down = DISP_DOWN;
-	}
+      if (! (current_term->flags & TERM_DUMB))
+	print_border (3, 12);
       else
-	{
-	  disp_up = ACS_UARROW;
-	  disp_down = ACS_DARROW;
-	}
-# endif /* SUPPORT_SERIAL */
-#endif /* ! GRUB_UTIL */
-      
-      if (terminal & TERMINAL_DUMB)
-	  print_entries_raw (num_entries, first_entry, menu_entries);
+	print_entries_raw (num_entries, first_entry, menu_entries);
 
       grub_printf ("\n\
       Use the %c and %c keys to select which entry is highlighted.\n",
-		   disp_up, disp_down);
+		   DISP_UP, DISP_DOWN);
       
       if (! auth && password)
 	{
@@ -451,16 +316,10 @@ restart:
       selected line, or escape to go back to the main menu.");
 	}
 
-      if (terminal & TERMINAL_DUMB)      
+      if (current_term->flags & TERM_DUMB)
 	grub_printf ("\n\nThe selected entry is %d ", entryno);
       else
-      {
-	  print_entries (3, 12, first_entry, menu_entries);
-	  
-	  /* highlight initial line */
-	  set_line_highlight (4 + entryno, first_entry + entryno, 
-			      menu_entries);
-      }
+	print_entries (3, 12, first_entry, entryno, menu_entries);
     }
 
   /* XX using RT clock now, need to initialize value */
@@ -480,15 +339,16 @@ restart:
 	    }
 
 	  /* else not booting yet! */
-	  time2  = time1;
+	  time2 = time1;
 
-	  if (terminal & TERMINAL_DUMB)
+	  if (current_term->flags & TERM_DUMB)
 	      grub_printf ("\r    Entry %d will be booted automatically in %d seconds.   ", 
 			   entryno, grub_timeout);
 	  else
-	  {
+	    {
 	      gotoxy (3, 22);
-	      printf ("The highlighted entry will be booted automatically in %d seconds.    ", grub_timeout);
+	      grub_printf ("The highlighted entry will be booted automatically in %d seconds.    ",
+			   grub_timeout);
 	      gotoxy (74, 4 + entryno);
 	  }
 	  
@@ -500,26 +360,26 @@ restart:
 	 pressed.  
 	 This avoids polling (relevant in the grub-shell and later on
 	 in grub if interrupt driven I/O is done).  */
-      if ((checkkey () != -1) || (grub_timeout == -1)) 
+      if (checkkey () >= 0 || grub_timeout < 0)
 	{
 	  /* Key was pressed, show which entry is selected before GETKEY,
 	     since we're comming in here also on GRUB_TIMEOUT == -1 and
 	     hang in GETKEY */
-	  if (terminal & TERMINAL_DUMB)
+	  if (current_term->flags & TERM_DUMB)
 	    grub_printf ("\r    Highlighted entry is %d: ", entryno);
 
-	  c = translate_keycode (getkey ());
+	  c = ASCII_CHAR (getkey ());
 
 	  if (grub_timeout >= 0)
 	    {
-	      if (terminal & TERMINAL_DUMB)
+	      if (current_term->flags & TERM_DUMB)
 		grub_putchar ('\r');
 	      else
 		gotoxy (3, 22);
 	      printf ("                                                                    ");
 	      grub_timeout = -1;
 	      fallback_entry = -1;
-	      if (! (terminal & TERMINAL_DUMB))
+	      if (! (current_term->flags & TERM_DUMB))
 		gotoxy (74, 4 + entryno);
 	    }
 
@@ -527,7 +387,7 @@ restart:
 	     '^' or 'v' so accept these keys.  */
 	  if (c == 16 || c == '^')
 	    {
-	      if (terminal & TERMINAL_DUMB)
+	      if (current_term->flags & TERM_DUMB)
 		{
 		  if (entryno > 0)
 		    entryno--;
@@ -536,40 +396,49 @@ restart:
 		{
 		  if (entryno > 0)
 		    {
-		      set_line_normal (4 + entryno, first_entry + entryno,
-				       menu_entries);
+		      print_entry (4 + entryno, 0,
+				   get_entry (menu_entries,
+					      first_entry + entryno,
+					      0));
 		      entryno--;
-		      set_line_highlight (4 + entryno, first_entry + entryno,
-					  menu_entries);
+		      print_entry (4 + entryno, 1,
+				   get_entry (menu_entries,
+					      first_entry + entryno,
+					      0));
 		    }
 		  else if (first_entry > 0)
 		    {
 		      first_entry--;
-		      print_entries (3, 12, first_entry, menu_entries);
-		      set_line_highlight (4, first_entry + entryno, 
-					  menu_entries);
+		      print_entries (3, 12, first_entry, entryno,
+				     menu_entries);
 		    }
 		}
 	    }
-	  if ((c == 14 || c == 'v') && first_entry + entryno + 1 < num_entries)
+	  else if ((c == 14 || c == 'v')
+		   && first_entry + entryno + 1 < num_entries)
 	    {
-	      if (terminal & TERMINAL_DUMB)
+	      if (current_term->flags & TERM_DUMB)
 		entryno++;
 	      else
-		if (entryno < 11)
-		  {
-		    set_line_normal (4 + entryno, first_entry + entryno,
-				     menu_entries);
-		    entryno++;
-		    set_line_highlight (4 + entryno, first_entry + entryno,
-					menu_entries);
+		{
+		  if (entryno < 11)
+		    {
+		      print_entry (4 + entryno, 0,
+				   get_entry (menu_entries,
+					      first_entry + entryno,
+					      0));
+		      entryno++;
+		      print_entry (4 + entryno, 1,
+				   get_entry (menu_entries,
+					      first_entry + entryno,
+					      0));
 		  }
 		else if (num_entries > 12 + first_entry)
 		  {
 		    first_entry++;
-		    print_entries (3, 12, first_entry, menu_entries);
-		    set_line_highlight (15, first_entry + entryno, menu_entries);
+		    print_entries (3, 12, first_entry, entryno, menu_entries);
 		  }
+		}
 	    }
 
 	  if (config_entries)
@@ -581,16 +450,18 @@ restart:
 	    {
 	      if ((c == 'd') || (c == 'o') || (c == 'O'))
 		{
-		  if (! (terminal & TERMINAL_DUMB))
-		    set_line_normal (4 + entryno, first_entry + entryno,
-				     menu_entries);
+		  if (! (current_term->flags & TERM_DUMB))
+		    print_entry (4 + entryno, 0,
+				 get_entry (menu_entries,
+					    first_entry + entryno,
+					    0));
 
 		  /* insert after is almost exactly like insert before */
 		  if (c == 'o')
 		    {
 		      /* But `o' differs from `O', since it may causes
 			 the menu screen to scroll up.  */
-		      if (entryno < 11 || (terminal & TERMINAL_DUMB))
+		      if (entryno < 11 || (current_term->flags & TERM_DUMB))
 			entryno++;
 		      else
 			first_entry++;
@@ -604,8 +475,8 @@ restart:
 
 		  if (c == 'O')
 		    {
-		      memmove (cur_entry + 2, cur_entry,
-			       ((int) heap) - ((int) cur_entry));
+		      grub_memmove (cur_entry + 2, cur_entry,
+				    ((int) heap) - ((int) cur_entry));
 
 		      cur_entry[0] = ' ';
 		      cur_entry[1] = 0;
@@ -620,7 +491,8 @@ restart:
 					    first_entry + entryno + 1,
 					    0);
 
-		      memmove (cur_entry, ptr, ((int) heap) - ((int) ptr));
+		      grub_memmove (cur_entry, ptr,
+				    ((int) heap) - ((int) ptr));
 		      heap -= (((int) ptr) - ((int) cur_entry));
 
 		      num_entries--;
@@ -631,7 +503,7 @@ restart:
 			first_entry--;
 		    }
 
-		  if (terminal & TERMINAL_DUMB)
+		  if (current_term->flags & TERM_DUMB)
 		    {
 		      grub_printf ("\n\n");
 		      print_entries_raw (num_entries, first_entry,
@@ -639,11 +511,7 @@ restart:
 		      grub_printf ("\n");
 		    }
 		  else
-		    {
-		      print_entries (3, 12, first_entry, menu_entries);
-		      set_line_highlight (4 + entryno, first_entry + entryno,
-					  menu_entries);
-		    }
+		    print_entries (3, 12, first_entry, entryno, menu_entries);
 		}
 
 	      cur_entry = menu_entries;
@@ -661,13 +529,13 @@ restart:
 		  char entered[32];
 		  char *pptr = password;
 
-		  if (terminal & TERMINAL_DUMB)
+		  if (current_term->flags & TERM_DUMB)
 		    grub_printf ("\r                                    ");
 		  else
 		    gotoxy (1, 21);
 
 		  /* Wipe out the previously entered password */
-		  memset (entered, 0, sizeof (entered));
+		  grub_memset (entered, 0, sizeof (entered));
 		  get_cmdline (" Password: ", entered, 31, '*', 0);
 
 		  while (! isspace (*pptr) && *pptr)
@@ -704,7 +572,7 @@ restart:
 		    }
 		  else
 		    {
-		      printf ("Failed!\n      Press any key to continue...");
+		      grub_printf ("Failed!\n      Press any key to continue...");
 		      getkey ();
 		      goto restart;
 		    }
@@ -774,11 +642,11 @@ restart:
 			    }
 
 			  /* align rest of commands properly */
-			  memmove (cur_entry + j, cur_entry + i,
-				   ((int) heap) - (((int) cur_entry) + i));
+			  grub_memmove (cur_entry + j, cur_entry + i,
+					(int) heap - ((int) cur_entry + i));
 
 			  /* copy command to correct area */
-			  memmove (cur_entry, new_heap, j);
+			  grub_memmove (cur_entry, new_heap, j);
 
 			  heap += (j - i);
 			}
@@ -801,15 +669,13 @@ restart:
 	    }
 	}
     }
-
+  
   /* Attempt to boot an entry.  */
   
  boot_entry:
-  /* Enable the auto fill mode.  */
-  auto_fill = 1;
   
   cls ();
-
+  
   while (1)
     {
       if (config_entries)
@@ -916,7 +782,7 @@ cmain (void)
   auto void reset (void);
   void reset (void)
     {
-      auto_fill = 1;
+      count_lines = -1;
       config_len = 0;
       menu_len = 0;
       num_entries = 0;
