@@ -48,6 +48,13 @@ binary-arch:	checkroot build
 ## install files
 
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
+
+	top=`pwd` && cd debian/tmp/usr/share/doc/grub && \
+	  ln -s $$top/docs/{grub,multiboot}.texi . && \
+	  texi2html -split_chapter -I$$top/docs grub.texi && \
+	  texi2html -split_chapter -I$$top/docs multiboot.texi && \
+	  rm -f grub.texi multiboot.texi
+
 	gzip -f9 debian/tmp/usr/share/info/* debian/tmp/usr/share/man/*/*
 	strip -s debian/tmp/usr/sbin/grub debian/tmp/usr/bin/mbchk
 

@@ -430,20 +430,24 @@ returning to the main menu.
 @node Commands
 @chapter The list of available commands
 
-In this chapter, we list the available commands, both in the
-configuration file and in the command line.
+In this chapter, we list all commands that are available in GRUB.
+
+Commands belong to different groups. A few can only be used in
+the global section of the configuration file (or ``menu''); most
+of them can be entered on the command line and can be either used
+in the menu or in the menu entries.
 
 @menu
 * Menu-specific commands::
-* General commands::
-* Command-line-specific commands::
+* Command-line and menu commands::
+* Command-line and menu entry commands::
 @end menu
 
 
 @node Menu-specific commands
 @section The list of commands for the menu only
 
-The semantics are as follows:
+The semantics used in parsing the configuration file are the following:
 
 @itemize @bullet
 @item
@@ -468,23 +472,31 @@ Extra options or text at the end of the line is ignored unless otherwise
 specified.
 
 @item
-Bad commands are added to the current entry, except before entries
+Unrecognized commands are added to the current entry, except before entries
 start, where they are ignored.
 @end itemize
 
-Commands usable in the menu only.
+These commands can only be used in the menu:
 
 @deffn Command default num
-Set the default entry to the entry number @var{num} (if not specified,
-it is 0, the first entry).
+Set the default entry to the entry number @var{num}. Numbering starts
+from 0, and entry number 0 is the default if the command is not used.
 @end deffn
 
 @deffn Command fallback num
 Go into unattended boot mode: if the default boot entry has any errors,
-instead of waiting for the user to do anything, it immediately starts
+instead of waiting for the user to do anything, immediately start
 over using the @var{num} entry (same numbering as the @code{default}
 command). This obviously won't help if the machine was rebooted by a
 kernel that GRUB loaded.
+@end deffn
+
+@deffn Command hiddenmenu
+Don't display the menu. If the command is used, no menu will be
+displayed on the control terminal, and the default entry will be
+booted after the timeout expired. The user can still request the
+menu to be displayed by pressing @key{ESC} before the timeout
+expires.
 @end deffn
 
 @deffn Command password passwd [new-config-file]
@@ -507,13 +519,14 @@ the line, starting with the first non-space character.
 @end deffn
 
 
-@node General commands
-@section The list of general commands
+@node Command-line and menu commands
+@section The list of command-line and menu commands
 
 Commands usable both in the menu and in the command line.
 
 @deffn Command bootp
-Initialize a network device via the @dfn{BOOTP} protocol.
+Initialize a network device via the @dfn{BOOTP} protocol. This command
+is only available if GRUB is compiled with netboot support.
 @end deffn
 
 @deffn Command color normal [highlight]
@@ -602,8 +615,8 @@ image, and/or to fix the drives guessed by GRUB when GRUB fails to
 determine them correctly, like this:
 
 @example
-grub> device (fd0) /floppy-image
-grub> device (hd0) /dev/sd0
+grub> @kbd{device (fd0) /floppy-image}
+grub> @kbd{device (hd0) /dev/sd0}
 @end example
 
 This command can be used only in the grub shell (@pxref{Invoking the
@@ -611,18 +624,54 @@ grub shell}).
 @end deffn
 
 @deffn Command dhcp
-Initialize a network device via the @dfn{DHCP} protocol. At the moment,
-this command is just an alias for @command{bootp}.
+Initialize a network device via the @dfn{DHCP} protocol. Currently,
+this command is just an alias for @command{bootp},  since the two
+protocols are very similar. This command
+is only available if GRUB is compiled with netboot support.
 @end deffn
 
 @deffn Command hide partition
 Hide @var{partition} by setting the @dfn{hidden} bit in its partition
-type code. This is useful only for DOS or Windows when multiple primary
-partitions exist in one disk.
+type code. This is useful only when booting DOS or Windows
+and multiple primary FAT partitions exist in one disk.
+@end deffn
+
+@deffn Command part_new part type from to
+Create a new primary partition. @var{part} is a partition specification
+in GRUB syntax (@pxref{Naming convention}); @var{type} is the partition
+type and must be a number in the range @code{0-0xff}; @var{from} and
+@var{to} are the starting and ending sectors, expressed as an absolute
+sector number.
+@end deffn
+
+@deffn Command part_type part type
+Change the type of an existing partition.  @var{part} is a partition
+specification in GRUB syntax (@pxref{Naming convention}); @var{type}
+is the new partition type and must be a number in the range 0-0xff.
 @end deffn
 
 @deffn Command rarp
-Initialize a network device via the @dfn{RARP} protocol.
+Initialize a network device via the @dfn{RARP} protocol.  This command
+is only available if GRUB is compiled with netboot support.
+@end deffn
+
+@deffn Command serial [@option{--unit=}unit] [@option{--port=}port] [@option{--speed=}speed] [@option{--word=}word] [@option{--parity=}parity] [@option{--stop=}stop] [@option{--device=}dev]
+Initialize a serial device. @var{unit} is a number in the range 0-3
+specifying which serial port to use; default is 0, that corresponds
+the port often called COM1. @var{port} is the I/O port where the UART
+is to be found; if specified it takes precedence over @var{unit}.
+@var{speed} is the transmission speed; default is 9600. @var{word} and
+@var{stop} are the number of data bits and stop bits. Data bits must
+be in the range 5-8 and stop bits are 1 or 2. Default is 8 data bits
+and one stop bit. @var{parity} is one of @option{no}, @option{odd},
+@option{even} and defaults to @option{no}. The option @option{--device}
+can only be used in the GRUB shell and is used to specify the 
+tty device to be used in the host Operating System.
+
+The serial port is not used as a communication channel unless the
+@var{terminal} command is used.
+
+This command is only available if GRUB is compiled with serial support.
 @end deffn
 
 @deffn Command setkey to_key from_key
@@ -632,8 +681,8 @@ keys. If you want to exchange the keys, run this command again with the
 arguments exchanged, like this:
 
 @example
-grub> setkey capslock control
-grub> setkey control capslock
+grub> @kbd{setkey capslock control}
+grub> @kbd{setkey control capslock}
 @end example
 
 A key must be an alphabet, a digit, or one of these symbols:
@@ -752,24 +801,35 @@ character each of the symbols corresponds:
 @end table
 @end deffn
 
+@deffn Command terminal [@option{--dumb}] [@option{--timeout=}secs] [console] [serial]"
+Select a terminal for user interaction. The terminal is assumed to be
+vt100 compatible unless @option{--dumb} is specified. If both
+@option{console} and @option{serial} are specified, then GRUB will use
+the one where a key is entered first. If neither are specified, the
+current setting is reported. Default is @option{console}.
+This command is only available if GRUB is compiled with serial support.
+@end deffn
+
+
 @deffn Command tftpserver ipaddr
 Override a TFTP server address returned by a BOOTP/DHCP/RARP server. The
 argument @var{ipaddr} must be in dotted decimal format, like
-@samp{192.168.0.15}.
+@samp{192.168.0.15}.  This command is only available if GRUB is compiled
+with netboot support.
 @end deffn
 
 @deffn Command unhide partition
 Unhide @var{partition} by clearing the @dfn{hidden} bit in its partition
-type code. This is useful only for DOS or Windows when multiple primary
-partitions exist in one disk.
+type code. This is useful only when booting DOS or Windows and multiple
+primary partitions exist in one disk.
 @end deffn
 
 
-@node Command-line-specific commands
-@section The list of commands in the command line
+@node Command-line and menu entry commands
+@section The list of command-line and menu entry commands
 
-These commands are usable only in the command line and in menu entries.
-If you forget some command, run the command @command{help}.
+These commands are usable in the command line and in menu entries.  If
+you forget a command, you can run the command @command{help}.
 
 @deffn Command blocklist file
 Print the blocklist notation of the file @var{file} (@pxref{Blocklist
@@ -777,9 +837,9 @@ syntax}).
 @end deffn
 
 @deffn Command boot
-This boots the OS/chain-loader which has been loaded. Only necessary if
+Boot the OS/chain-loader which has been loaded. Only necessary if
 running the fully interactive command line (it is implicit at the end of
-a config-file entry).
+a menu entry).
 @end deffn
 
 @deffn Command cat file
@@ -787,7 +847,7 @@ Display the contents of the file @var{file}. This command may be useful
 to remind you of your OS's root partition:
 
 @example
-grub> cat /etc/fstab
+grub> @kbd{cat /etc/fstab}
 @end example
 @end deffn
 
@@ -822,12 +882,10 @@ If they are completely identical, nothing will be printed.
 Load @var{file} as a configuration file.
 @end deffn
 
-@deffn Command embed stage1_5 device
-Embed the Stage 1.5 @var{stage1_5} in the sectors after the MBR if
-@var{device} is a drive, or in the @dfn{boot loader} area if @var{device}
-is a FFS partition or a ReiserFS partition.@footnote{The latter feature
-has not been implemented yet.} Print the number of sectors which
-@var{stage1_5} occupies, if successful.
+@deffn Command debug
+Toggle debug mode (by default it is off). When debug mode is on, some
+extra messages are printed to show disk activity. This global debug flag
+is mainly useful for GRUB developers when testing new code.
 @end deffn
 
 @deffn Command displaymem
@@ -839,6 +897,14 @@ synthesized number from various BIOS interfaces of the memory starting
 at 1MB and going up to the first chipset hole for @dfn{upper memory}
 (the standard PC @dfn{upper memory} interface is limited to reporting a
 maximum of 64MB).
+@end deffn
+
+@deffn Command embed stage1_5 device
+Embed the Stage 1.5 @var{stage1_5} in the sectors after the MBR if
+@var{device} is a drive, or in the @dfn{boot loader} area if @var{device}
+is a FFS partition or a ReiserFS partition.@footnote{The latter feature
+has not been implemented yet.} Print the number of sectors which
+@var{stage1_5} occupies, if successful.
 @end deffn
 
 @deffn Command find filename
@@ -861,7 +927,7 @@ or @command{testload} commands.
 @end deffn
 
 @deffn Command geometry drive [cylinder head sector [total_sector]]
-Print the information for the drive @var{drive}. In the grub shell, you
+Print the information for the drive @var{drive}. In the GRUB shell, you
 can set the geometry of the drive arbitrarily. The number of the
 cylinders, the one of the heads, the one of the sectors and the one of
 the total sectors are set to CYLINDER, HEAD, SECTOR and TOTAL_SECTOR,
@@ -869,11 +935,18 @@ respectively. If you omit TOTAL_SECTOR, then it will be calculated
 based on the C/H/S values automatically.
 @end deffn
 
+@deffn Command halt @option{--no-apm}
+The commands halts the computer. If the @option{--no-apm} option
+is specified, no APM BIOS call is performed. Otherwise, the computer
+is shut down using APM.
+@end deffn
+
 @deffn Command help [pattern @dots{}]
 Display helpful information about builtin commands. If you do not
-specify @var{pattern}, this command lists the short documents of all
-available commands, and, if you specify one or more @var{pattern}s, it
-displays long documents of the commands which match @var{pattern}(s).
+specify @var{pattern}, this command shows short descriptions of all
+available commands.  If you specify any @var{patterns}, it displays
+longer information about each of the commands which match those
+@var{patterns}.
 @end deffn
 
 @deffn Command impsprobe
@@ -960,10 +1033,10 @@ Prevent normal users from executing arbitrary menu entries. You must use
 the command @command{password} if you really want this command to be
 useful.
 
-This command will be used like this example:
+This command is used in a menu, as shown in this this example:
 
 @example
-title This is a too dangerous entry to be executed by normal users
+title This entry is too dangerous to be executed by normal users
 lock
 root (hd0,a)
 kernel /no-security-os
@@ -981,8 +1054,8 @@ necessary when you chain-load some operating systems, such as DOS, if
 such an OS resides at a non-first drive. Here is an example:
 
 @example
-grub> map (hd0) (hd1)
-grub> map (hd1) (hd0)
+grub> @kbd{map (hd0) (hd1)}
+grub> @kbd{map (hd1) (hd0)}
 @end example
 
 The example exchanges the order between the first hard disk and the
@@ -1012,7 +1085,11 @@ change floppies.
 
 @deffn Command quit
 Exit from the GRUB shell @command{grub} (@pxref{Invoking the grub
-shell}). This command can be used only in the grub shell.
+shell}). This command can be used only in the GRUB shell.
+@end deffn
+
+@deffn Command reboot
+Reboot the computer.
 @end deffn
 
 @deffn Command read addr
@@ -1039,6 +1116,10 @@ partition. This is useful for when an OS is outside of the area of the
 disk that GRUB can read, but setting the correct root device is still
 desired. Note that the items mentioned in @command{root} above which
 derived from attempting the mount will @emph{not} work correctly.
+@end deffn
+
+@deffn Command savedefault
+Save the current menu entry as default entry.
 @end deffn
 
 @deffn Command setup [@option{--force-lba}] install_device [image_device]
@@ -1424,6 +1505,7 @@ option in the command line. This is a simple example:
 @example
 #!/bin/sh
 
+# Use /usr/sbin/grub if you are on an older system.
 /sbin/grub --batch <<EOT 1>/dev/null 2>/dev/null
 root (hd0,0)
 setup (hd0)

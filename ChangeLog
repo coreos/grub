@@ -1,3 +1,56 @@
+2000-10-06  Alessandro Rubini  <rubini@gnu.org>
+
+	* docs/user-ref.texi (Commands): Added missing commands and
+	reworded part of the text.
+
+	* stage2/builtins.c (serial_func): Unswap the setting of "speed"
+	and "port".
+
+2000-10-06  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (setup_func): Append "... " to the
+	messages when calling embed_func and install_func, and print
+	the result.
+	Don't jump to the label "fail", even when embed_func failed.
+	
+2000-10-05  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage2/disk_io.c (real_open_partition): Make sure that buf_geom
+	corresponds to the current drive before using it.
+
+	* lib/device.c (get_drive_geometry): Use fstat if the native
+	geometry methods fail, such as when the drive is mapped to a
+	regular file.
+
+	* docs/tutorial.texi: Add `@kbd{...}' to examples in order to
+	differentiate between command output and characters the user
+	should type.
+	* docs/user-ref.texi: Likewise.
+
+2000-10-05  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/grub.texi: Added an entry for the chapter "Serial
+	terminal".
+	* docs/tutorial.texi (Serial terminal): New chapter.
+	
+2000-10-04  Gordon Matzigkeit  <gord@fig.org>
+
+	* util/grub-image (VERSION): Fix version calculation to tolerate
+	`(GNU GRUB 0.5.96)'-style versions.
+
+	* docs/grub.texi: Remove braces from `@unnumbered' sections so
+	that texi2html doesn't complain.
+
+	* debian/rules: Build HTML documentation to appease the Debian
+	masses.
+
+2000-10-04  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/fsys_reiserfs.c (reiserfs_mount): Compare PART_LENGTH
+	with SUPERBLOCK + (sizeof(super) >> SECTOR_BITS) instead of
+	sizeof(struct reiserfs_super_block). Reported by Jochen
+	Hoenicke.
+	
 2000-10-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (AM_INIT_AUTOMAKE): The version number is set to

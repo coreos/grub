@@ -171,9 +171,14 @@ commands:
 
 @example
 @group
-# cd /boot/grub
-# dd if=stage1 of=/dev/fd0 bs=512 count=1
-# dd if=stage2 of=/dev/fd0 bs=512 seek=1
+# @kbd{cd /boot/grub}
+# @kbd{dd if=stage1 of=/dev/fd0 bs=512 count=1}
+1+0 records in
+1+0 records out
+# @kbd{dd if=stage2 of=/dev/fd0 bs=512 seek=1}
+153+1 records in
+153+1 records out
+#
 @end group
 @end example
 
@@ -208,14 +213,14 @@ the command @command{kernel}.} to the partition which has your GRUB
 images, like this:
 
 @example
-grub> root (hd0,0)
+grub> @kbd{root (hd0,0)}
 @end example
 
 If you are not sure which partition actually holds these files, use the
 @command{find} command, like this:
 
 @example
-grub> find /boot/grub/stage1
+grub> @kbd{find /boot/grub/stage1}
 @end example
 
 This will search for the filename @file{/boot/grub/stage1} and show the
@@ -225,7 +230,7 @@ Once you've set the root device correctly, run the command
 @command{setup}:
 
 @example
-grub> setup (hd0)
+grub> @kbd{setup (hd0)}
 @end example
 
 This command will install GRUB on the MBR (@pxref{MBR}) in the first
@@ -234,7 +239,7 @@ partition instead of the MBR, specify a partition into which you want to
 install GRUB:
 
 @example
-grub> setup (hd0,0)
+grub> @kbd{setup (hd0,0)}
 @end example
 
 If you install GRUB into a partition or a drive other than the first
@@ -258,19 +263,19 @@ either of a device file or a GRUB's drive/partition. So, this will
 install GRUB into the MBR of the first IDE disk under Linux:
 
 @example
-# grub-install /dev/hda
+# @kbd{grub-install /dev/hda}
 @end example
 
 Likewise, under Hurd, this has the same effect:
 
 @example
-# grub-install /dev/hd0
+# @kbd{grub-install /dev/hd0}
 @end example
 
 If it is the first BIOS drive, this is the same as well:
 
 @example
-# grub-install '(hd0)'
+# @kbd{grub-install '(hd0)'}
 @end example
 
 But all the above examples assume that you use GRUB images under
@@ -281,10 +286,10 @@ boot floppy with a filesystem. Here is an example:
 
 @example
 @group
-# mke2fs /dev/fd0
-# mount -t ext2 /dev/fd0 /mnt
-# grub-install --root-directory=/mnt '(fd0)'
-# umount /mnt
+# @kbd{mke2fs /dev/fd0}
+# @kbd{mount -t ext2 /dev/fd0 /mnt}
+# @kbd{grub-install --root-directory=/mnt '(fd0)'}
+# @kbd{umount /mnt}
 @end group
 @end example
 
@@ -294,7 +299,7 @@ doesn't know anything about mountpoints at all. Thus, you need to run
 @command{grub-install} like this:
 
 @example
-# grub-install --root-directory=/boot /dev/hda
+# @kbd{grub-install --root-directory=/boot /dev/hda}
 @end example
 
 By the way, as you may already know, it is quite difficult to guess BIOS
@@ -391,7 +396,7 @@ First, set GRUB's root device to the partition by the command
 @command{rootnoverify}:
 
 @example
-grub> rootnoverify (hd0,0)
+grub> @kbd{rootnoverify (hd0,0)}
 @end example
 
 Second, set the @dfn{active} flag in the partition by the command
@@ -399,13 +404,13 @@ Second, set the @dfn{active} flag in the partition by the command
 modern operating systems.}:
 
 @example
-grub> makeactive
+grub> @kbd{makeactive}
 @end example
 
 Third, load the boot loader by the command @command{chainloader}:
 
 @example
-grub> chainloader +1
+grub> @kbd{chainloader +1}
 @end example
 
 @samp{+1} indicates that GRUB should read one sector from the start of
@@ -450,8 +455,8 @@ Load the kernel and the module, like this:
 
 @example
 @group
-grub> kernel /boot/gnumach root=hd0s1
-grub> module /boot/serverboot
+grub> @kbd{kernel /boot/gnumach root=hd0s1}
+grub> @kbd{module /boot/serverboot}
 @end group
 @end example
 
@@ -475,14 +480,14 @@ command @code{find /vmlinuz} or similar can help you.
 Load the kernel:
 
 @example
-grub> kernel /vmlinuz root=/dev/hda1
+grub> @kbd{kernel /vmlinuz root=/dev/hda1}
 @end example
 
 If you need to specify some kernel parameters, just append them to the
 command. For example, to set @option{vga} to @samp{ext}, do this:
 
 @example
-grub> kernel /vmlinuz root=/dev/hda1 vga=ext
+grub> @kbd{kernel /vmlinuz root=/dev/hda1 vga=ext}
 @end example
 
 See the documentation in the Linux source tree for the complete
@@ -493,7 +498,7 @@ If you use an initrd, execute the command @command{initrd} after
 @command{kernel}:
 
 @example
-grub> initrd /initrd
+grub> @kbd{initrd /initrd}
 @end example
 
 @item
@@ -504,7 +509,7 @@ Finally, run the command @command{boot}.
 option to the kernel, to let it use less than actual memory size, you
 will also have to specify the same memory size to GRUB. To let GRUB know
 the size, run the command @command{uppermem} @emph{before} loading the
-kernel. @xref{Command-line-specific commands}, for more information.
+kernel. @xref{Command-line and menu entry commands}, for more information.
 
 @node FreeBSD
 @subsection FreeBSD
@@ -519,9 +524,9 @@ Thus, we'd recommend loading the very flexible loader
 
 @example
 @group
-grub> root (hd0,a)
-grub> kernel /boot/loader
-grub> boot
+grub> @kbd{root (hd0,a)}
+grub> @kbd{kernel /boot/loader}
+grub> @kbd{boot}
 @end group
 @end example
 
@@ -540,7 +545,7 @@ Load the kernel with @command{kernel}. You should append the ugly option
 @option{--type=netbsd}, if you want to load an ELF kernel, like this:
 
 @example
-grub> kernel --type=netbsd /netbsd-elf
+grub> @kbd{kernel --type=netbsd /netbsd-elf}
 @end example
 
 @item
@@ -574,8 +579,8 @@ command @command{map} (@pxref{Commands}), like this:
 
 @example
 @group
-grub> map (hd0) (hd1)
-grub> map (hd1) (hd0)
+grub> @kbd{map (hd0) (hd1)}
+grub> @kbd{map (hd1) (hd0)}
 @end group
 @end example
 
@@ -600,12 +605,12 @@ first copy, do the following:
 
 @example
 @group
-grub> unhide (hd0,0)
-grub> hide (hd0,1)
-grub> rootnoverify (hd0,0)
-grub> chainloader +1
-grub> makeactive
-grub> boot
+grub> @kbd{unhide (hd0,0)}
+grub> @kbd{hide (hd0,1)}
+grub> @kbd{rootnoverify (hd0,0)}
+grub> @kbd{chainloader +1}
+grub> @kbd{makeactive}
+grub> @kbd{boot}
 @end group
 @end example
 
@@ -619,10 +624,10 @@ wrong, so you will have to specify the option @option{--force} to
 
 @example
 @group
-grub> rootnoverify (hd1,0)
-grub> chainloader --force +1
-grub> makeactive
-grub> boot
+grub> @kbd{rootnoverify (hd1,0)}
+grub> @kbd{chainloader --force +1}
+grub> @kbd{makeactive}
+grub> @kbd{boot}
 @end group
 @end example
 
@@ -666,16 +671,16 @@ Here is an example:
 
 @example
 @group
-grub> bootp
+grub> @kbd{bootp}
 Probing... [NE*000]
 NE2000 base ...
 Address: 192.168.110.23    Netmask: 255.255.255.0
 Server: 192.168.110.14     Gateway: 192.168.110.1
 
-grub> root (nd)
-grub> kernel /tftproot/gnumach.gz root=sd0s1
-grub> module /tftproot/serverboot.gz
-grub> boot
+grub> @kbd{root (nd)}
+grub> @kbd{kernel /tftproot/gnumach.gz root=sd0s1}
+grub> @kbd{module /tftproot/serverboot.gz}
+grub> @kbd{boot}
 @end group
 @end example
 
@@ -724,6 +729,58 @@ foo:ht=1:ha=63655d0334a7:ip=145.71.35.127:\
 
 See the manual about your BOOTP/DHCP server, for more information. The
 exact syntax should differ from the example, more or less.
+
+
+@node Serial terminal
+@chapter Using GRUB via a serial line
+
+This chapter describes how to use the serial terminal support in GRUB.
+
+If you have many computers or computers with no display/keyboard, it
+would be very useful to control the computers with serial
+communications. To connect a computer with another via a serial line,
+you need to prepare a null-modem (cross) serial cable, and you may need
+to have multiport serial boards, if your computer doesn't have extra
+serial ports. In addition, a terminal emulator is also required, such as
+minicom. Refer to a manual of your operating system, for more
+information.
+
+As for GRUB, the instruction to set up a serial terminal is quite
+simple. First of all, make sure that you haven't specified the option
+@option{--disable-serial} to the configure script when you built your
+GRUB images. If you get them in binary form, probably they have serial
+terminal support already.
+
+Then, initialize your serial terminal after GRUB starts up. Here is an
+example:
+
+@example
+@group
+grub> @kbd{serial --unit=0 --speed=9600}
+grub> @kbd{terminal serial}
+@end group
+@end example
+
+The command @command{serial} initializes the serial unit 0 with the
+speed 9600bps. The serial unit 0 is usually called @samp{COM1}, so, if
+you want to use COM2, you must specify @samp{--unit=1} instead. This
+command accepts many other options, so please refer to @ref{Commands},
+for more details.
+
+The command @command{terminal} chooses which type of terminal you want
+to use. In that case above, the terminal will be a serial terminal, but
+you can also pass @code{console} to the command, like @samp{terminal
+serial console}. In this case, a terminal in which you press any key
+will be selected as a GRUB terminal.
+
+However, note that GRUB assumes that your terminal emulator is
+compatible with VT100 by default. This is true for most terminal
+emulators nowadays, but you should pass the option @option{--dumb} to
+the command, if your terminal emulator is not VT100-compatible or
+implement few VT100 escape sequences. If you specify the option, then
+GRUB doesn't provide you with the menu interface, because the menu
+requires several fancy features for your terminal. Instead, GRUB only
+gives you the hidden menu interface and the command-line interface.
 
 
 @node Configuration
@@ -892,8 +949,9 @@ color light-green/brown blink-red/blue
 
 In the last entry, the command @command{color} is used, to change the
 menu colors (try it!). This command is somewhat special, because it can
-be used both in the command-line and in the menu (@pxref{General
-commands}). GRUB has several such commands, see the user reference.
+be used both in the command-line and in the menu (@pxref{Command-line
+and menu commands}). GRUB has several such commands, see the user
+reference.
 
 We hope that you now understand how to use the basic features of
 GRUB. To learn more about GRUB, see the User Reference Manual

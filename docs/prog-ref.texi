@@ -368,7 +368,7 @@ map}.
 If the INT 13 handler returns, the TF flag is cleared automatically by
 the instruction @code{iret}, and then output the I/O map on the screen.
 See the source code for the command @command{ioprobe}
-(@pxref{Command-line-specific commands}), for more information.
+(@pxref{Command-line and menu entry commands}), for more information.
 
 
 @node Memory detection

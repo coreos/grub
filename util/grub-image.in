@@ -52,7 +52,7 @@ set -e
 
 # Get GRUB's version from the Grub shell, since we use the
 # installed files.
-VERSION=`$grub_shell --version | sed 's/^.* //'`
+VERSION=`$grub_shell --version | sed -e 's/^.* \([0-9.]*\).*$/\1/'`
 test "X$VERSION" != X
 
 bootdir=${PACKAGE}-${VERSION}-${context}

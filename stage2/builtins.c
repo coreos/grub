@@ -2967,7 +2967,7 @@ serial_func (char *arg, int flags)
 	  if (! safe_parse_maxint (&p, &num))
 	    return 1;
 
-	  port = (unsigned int) num;
+	  speed = (unsigned int) num;
 	}
       else if (grub_memcmp (arg, "--port=", sizeof ("--port=") - 1) == 0)
 	{
@@ -2977,7 +2977,7 @@ serial_func (char *arg, int flags)
 	  if (! safe_parse_maxint (&p, &num))
 	    return 1;
 
-	  speed = (unsigned short) num;
+	  port = (unsigned short) num;
 	}
       else if (grub_memcmp (arg, "--word=", sizeof ("--word=") - 1) == 0)
 	{
@@ -3506,7 +3506,7 @@ setup_func (char *arg, int flags)
 		    grub_sprintf (cmd_arg, "%s %s", stage2, device);
 
 		    /* Notify what will be run.  */
-		    grub_printf (" Running \"embed %s\"\n", cmd_arg);
+		    grub_printf (" Running \"embed %s\"... ", cmd_arg);
 		    
 		    embed_func (cmd_arg, flags);
 		    if (! errnum)
@@ -3519,9 +3519,11 @@ setup_func (char *arg, int flags)
 			sprint_device (image_drive, image_partition);
 			grub_sprintf (buffer, "%s%s", device, config_filename);
 			grub_strcpy (config_filename, buffer);
+
+			grub_printf ("succeeded\n");
 		      }
 		    else
-		      goto fail;
+		      grub_printf ("failed (this is not fatal)\n");
 		  }
 		else if (fsys_table[fsys_type].embed_func != 0)
 		  {
@@ -3568,7 +3570,7 @@ setup_func (char *arg, int flags)
 #endif /* ! NO_BUGGY_BIOS_IN_THE_WORLD */
   
   /* Notify what will be run.  */
-  grub_printf (" Running \"install %s\"\n", cmd_arg);
+  grub_printf (" Running \"install %s\"... ", cmd_arg);
 
   /* Make sure that SAVED_DRIVE and SAVED_PARTITION are identical
      with IMAGE_DRIVE and IMAGE_PARTITION, respectively.  */
@@ -3577,7 +3579,9 @@ setup_func (char *arg, int flags)
   
   /* Run the command.  */
   if (! install_func (cmd_arg, flags))
-    grub_printf ("Done.\n");
+    grub_printf ("succeeded\nDone.\n");
+  else
+    grub_printf ("failed\n");
 
  fail:
   saved_drive = tmp_drive;

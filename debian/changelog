@@ -1,3 +1,15 @@
+grub (0.5.96) unstable; urgency=low
+
+  * Many, many new features and bugfixes.  This is the final test release;
+    the next release will be version 1.0.
+  * Install HTML documentation in addition to Info pages.
+    (closes:bug#42242,bug#42273)
+  * Fix documentation to refer to /usr/sbin/grub as well as
+    /sbin/grub. (closes:bug#67132)
+  * Be more verbose about missing setup files. (closes:bug#71661)
+
+ -- Gordon Matzigkeit <gord@debian.org>  Wed,  4 Oct 2000 10:44:42 -0600
+
 grub (0.5.95) unstable; urgency=low
 
   * ReiserFS support from Jochen Hoenicke.

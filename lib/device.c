@@ -97,38 +97,6 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
     return;
   }
 
-#elif defined(__GNU__)
-# warning "Automatic detection of geometries will be performed only \
-partially. This is not fatal."
-  /* Hurd */
-  {
-    /* For now, Hurd doesn't support the system call to get a geometry
-       from Mach, so get only the number of total sectors.  */
-    struct stat st;
-
-    if (fstat (fd, &st) || ! st.st_blocks)
-      goto fail;
-
-    geom->total_sectors = st.st_blocks;
-
-    /* Set the rest arbitrarily.  */
-    if (drive & 0x80)
-      {
-	geom->cylinders = DEFAULT_HD_CYLINDERS;
-	geom->heads = DEFAULT_HD_HEADS;
-	geom->sectors = DEFAULT_HD_SECTORS;
-      }
-    else
-      {
-	geom->cylinders = DEFAULT_FD_CYLINDERS;
-	geom->heads = DEFAULT_FD_HEADS;
-	geom->sectors = DEFAULT_FD_SECTORS;
-      }
-    
-    close (fd);
-    return;
-  }
-    
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
   /* FreeBSD, NetBSD or OpenBSD */
   {
@@ -146,32 +114,36 @@ partially. This is not fatal."
   }
   
 #else
-# warning "In your operating system, automatic detection of geometries \
-will not be performed."
+  /* Notably, defined(__GNU__) */
+# warning "Automatic detection of geometries will be performed only \
+partially. This is not fatal."
 #endif
 
  fail:
-  /* Set some arbitrary defaults. */
-  if (drive & 0x80)
-    {
-      /* Hard drive. */
-      geom->cylinders = DEFAULT_HD_CYLINDERS;
-      geom->heads = DEFAULT_HD_HEADS;
-      geom->sectors = DEFAULT_HD_SECTORS;
-      geom->total_sectors = (DEFAULT_HD_CYLINDERS
-			     * DEFAULT_HD_HEADS
-			     * DEFAULT_HD_SECTORS);
-    }
-  else
-    {
-      /* Floppy. */
-      geom->cylinders = DEFAULT_FD_CYLINDERS;
-      geom->heads = DEFAULT_FD_HEADS;
-      geom->sectors = DEFAULT_FD_SECTORS;
-      geom->total_sectors = (DEFAULT_FD_CYLINDERS
-			     * DEFAULT_FD_HEADS
-			     * DEFAULT_FD_SECTORS);
-    }
+  {
+    struct stat st;
+
+    /* FIXME: It would be nice to somehow compute fake C/H/S settings,
+       given a proper st_blocks size. */
+    if (drive & 0x80)
+      {
+	geom->cylinders = DEFAULT_HD_CYLINDERS;
+	geom->heads = DEFAULT_HD_HEADS;
+	geom->sectors = DEFAULT_HD_SECTORS;
+      }
+    else
+      {
+	geom->cylinders = DEFAULT_FD_CYLINDERS;
+	geom->heads = DEFAULT_FD_HEADS;
+	geom->sectors = DEFAULT_FD_SECTORS;
+      }
+
+    /* Set the total sectors properly, if we can. */
+    if (! fstat (fd, &st) && st.st_blocks)
+      geom->total_sectors = st.st_blocks;
+    else
+      geom->total_sectors = geom->cylinders * geom->heads * geom->sectors;
+  }
 
   close (fd);
 }

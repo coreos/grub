@@ -99,6 +99,7 @@ Part I: The Tutorial Manual
 * Installation::                Installing GRUB on your drive
 * Booting::                     How to boot different operating systems
 * Network::                     Downloading OS images from a network
+* Serial terminal::             Using GRUB via a serial line
 * Configuration::               Writing your own configuration file
 
 Part II: The User Reference Manual
@@ -135,28 +136,28 @@ Appendices and Indices
 
 @iftex
 @page
-@unnumbered{Part I: The Tutorial Manual}
+@unnumbered Part I: The Tutorial Manual
 @end iftex
 
 @include tutorial.texi
 
 @iftex
 @page
-@unnumbered{Part II: The User Reference Manual}
+@unnumbered Part II: The User Reference Manual
 @end iftex
 
 @include user-ref.texi
 
 @iftex
 @page
-@unnumbered{Part III: The Programmer Reference Manual}
+@unnumbered Part III: The Programmer Reference Manual
 @end iftex
 
 @include prog-ref.texi
 
 @iftex
 @page
-@unnumbered{Appendices and Indices}
+@unnumbered Appendices and Indices
 @end iftex
 
 @include appendices.texi

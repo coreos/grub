@@ -5,17 +5,18 @@
 @item How does GNU GRUB differ from Erich's original GRUB?
 
 GNU GRUB is the successor of Erich's great GRUB. He couldn't work on
-GRUB because of some other tasks, so the current maintainer Gordon
-Matzigkeit took over the maintainership, and opened the development in
-order for everybody to participate it.
+GRUB because of some other tasks, so the current maintainers OKUJI
+Yoshinori and Gordon Matzigkeit took over the maintainership, and opened
+the development in order for everybody to participate it.
 
-Technically speaking, GNU GRUB has many features that are not
-seen in the original GRUB. For example, GNU GRUB can be installed on
-UNIX-like operating system (such as GNU/Linux) via the grub shell
-@file{/sbin/grub}, it supports Logical Block Address (LBA) mode that
-solves the 1024 cylinders problem, and @kbd{@key{TAB}} completes a
-filename when it's unique. Of course, many bug fixes are done as well,
-so it is recommended to use GNU GRUB.
+Technically speaking, GNU GRUB has many features that are not seen in
+the original GRUB. For example, GNU GRUB can be installed on UNIX-like
+operating system (such as GNU/Hurd) via the grub shell
+@file{/sbin/grub} (or @file{/usr/sbin/grub} on older systems), it
+supports Logical Block Address (LBA) mode that solves the 1024 cylinders
+problem, and @kbd{@key{TAB}} completes a filename when it's unique. Of
+course, many bug fixes are done as well, so it is recommended to use GNU
+GRUB.
 
 @item Can GRUB boot my operating system from over 8GB hard disks?
 
@@ -53,7 +54,8 @@ Copy the GRUB images to @file{/mnt/boot/grub}. Only @file{stage1},
 @dfn{stage1.5}s.
 
 @item
-Run the following command:
+Run the following command (substitute @file{/usr/sbin/grub} for
+@file{/sbin/grub} if you are using an older system):
 
 @example
 @group
