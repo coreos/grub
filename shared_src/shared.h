@@ -95,14 +95,14 @@
  *    (in LSB order)
  */
 
-#define COMPAT_VERSION_MAJOR 1
+#define COMPAT_VERSION_MAJOR 2
 #define COMPAT_VERSION_MINOR 0
 #define COMPAT_VERSION       ((COMPAT_VERSION_MINOR<<8)|COMPAT_VERSION_MAJOR)
 
 #define STAGE1_VER_MAJ_OFFS  0x1bc
 #define STAGE1_INSTALLSEG    0x1ba
 #define STAGE1_INSTALLADDR   0x1b8
-#define STAGE1_FIRSTLIST     0x1b0
+#define STAGE1_FIRSTLIST     0x1b5
 
 #define STAGE2_VER_MAJ_OFFS  0x6
 #define STAGE2_INSTALLPART   0x8
@@ -268,6 +268,7 @@ void set_attrib(int attr);
 int get_diskinfo(int drive);
 int biosdisk(int subfunc, int drive, int geometry,
 	     int sector, int nsec, int segment);
+void stop_floppy(void);
 
 
 /*
@@ -277,6 +278,7 @@ int biosdisk(int subfunc, int drive, int geometry,
 #ifndef _CMDLINE_C
 
 extern int fallback;
+extern int protected;
 extern char commands[];
 
 #endif  /* _CMDLINE_C */
@@ -319,7 +321,8 @@ int special_attribute;
 #define ERR_BOOT_FEATURES   (ERR_BELOW_1MB + 1)
 #define ERR_BOOT_FAILURE    (ERR_BOOT_FEATURES + 1)
 #define ERR_NEED_KERNEL     (ERR_BOOT_FAILURE + 1)
-#define ERR_UNRECOGNIZED    (ERR_NEED_KERNEL + 1)
+#define ERR_BOOT_COMMAND    (ERR_NEED_KERNEL + 1)
+#define ERR_UNRECOGNIZED    (ERR_BOOT_COMMAND + 1)
 #define ERR_BAD_GZIP_HEADER (ERR_UNRECOGNIZED + 1)
 #define ERR_BAD_GZIP_DATA   (ERR_BAD_GZIP_HEADER + 1)
 #define ERR_BAD_VERSION     (ERR_BAD_GZIP_DATA + 1)
@@ -412,8 +415,8 @@ extern int filemax;
 int rawread(int drive, int sector, int byte_offset, int byte_len, int addr);
 int devread(int sector, int byte_offset, int byte_len, int addr);
 
-int set_device(char *device);  /* this gets a device from the string and
-				  places it into the global parameters */
+char *set_device(char *device);  /* this gets a device from the string and
+				    places it into the global parameters */
 int open_device(void);
 int make_saved_active(void);   /* sets the active partition to the that
 				  represented by the "saved_" parameters */
@@ -423,7 +426,7 @@ int read(int addr, int len);  /* if "length" is -1, read all the
 				 remaining data in the file */
 int dir(char *dirname);       /* list directory, printing all completions */
 
-int set_bootdev(void);
+int set_bootdev(int hdbias);
 void print_fsys_type(void);   /* this prints stats on the currently
 				 mounted filesystem */
 void print_completions(char *filename); /* this prints device and filename
