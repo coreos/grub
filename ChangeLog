@@ -1,5 +1,24 @@
 2002-01-06  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	The preset menu has a priority over the configuration file.
+	Suggested by Christoph Plattner.
+	
+	* stage2/stage2.c [PRESET_MENU_STRING] (open_preset_menu):
+	Check if PRESET_MENU is not NULL.
+	[PRESET_MENU_STRING] (close_preset_menu): Set PRESET_MENU to
+	NULL.
+	(cmain): New internal function, reset. This function resets
+	AUTO_FILL, CONFIG_LEN, MENU_LEN, NUM_ENTRIES, CONFIG_ENTRIES,
+	MENU_ENTRIES and call init_config.
+	Try to open the preset menu first, and try to open the
+	configuration file, only if that failed.
+	Even if the preset menu was read, try to open the configuration
+	file. This time, opening the preset menu never succeed, because
+	close_preset_menu ensures that the preset menu is available at
+	most once.
+	
+2002-01-06  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* netboot/misc.c (inet_aton): Don't check if *P is an asterisk,
 	if I is 3. Reported by Rick (his real name and address are
 	unknown).

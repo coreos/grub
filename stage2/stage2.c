@@ -30,7 +30,7 @@ static int
 open_preset_menu (void)
 {
   preset_menu_offset = 0;
-  return 1;
+  return preset_menu != 0;
 }
 
 static int
@@ -50,7 +50,8 @@ read_from_preset_menu (char *buf, int maxlen)
 static void
 close_preset_menu (void)
 {
-  /* Do nothing.  */
+  /* Disable the preset menu.  */
+  preset_menu = 0;
 }
 
 #else /* ! PRESET_MENU_STRING */
@@ -899,6 +900,18 @@ cmain (void)
   char *config_entries, *menu_entries;
   char *kill_buf = (char *) KILL_BUF;
 
+  auto void reset (void);
+  void reset (void)
+    {
+      auto_fill = 1;
+      config_len = 0;
+      menu_len = 0;
+      num_entries = 0;
+      config_entries = (char *) mbi.drives_addr + mbi.drives_length;
+      menu_entries = (char *) MENU_BUF;
+      init_config ();
+    }
+      
   /* Initialize the environment for restarting Stage 2.  */
   grub_setjmp (restart_env);
   
@@ -908,133 +921,139 @@ cmain (void)
   /* Never return.  */
   for (;;)
     {
-      int is_opened = 0;
-      int is_preset = 0;
+      int is_opened, is_preset;
+
+      reset ();
       
-      auto_fill = 1;
-      config_len = 0;
-      menu_len = 0;
-      num_entries = 0;
-      config_entries = (char *) mbi.drives_addr + mbi.drives_length;
-      menu_entries = (char *) MENU_BUF;
-      init_config ();
-
       /* Here load the configuration file.  */
-
+      
 #ifdef GRUB_UTIL
       if (use_config_file)
 #endif /* GRUB_UTIL */
 	{
-	  is_opened = grub_open (config_file);
-	  errnum = ERR_NONE;
-	  if (! is_opened)
-	    is_opened = is_preset = open_preset_menu ();
-	}
-      
-      if (is_opened)
-	{
-	  /* STATE 0:  Before any title command.
-	     STATE 1:  In a title command.
-	     STATE >1: In a entry after a title command.  */
-	  int state = 0, prev_config_len = 0, prev_menu_len = 0;
-	  char *cmdline;
-
-	  cmdline = (char *) CMDLINE_BUF;
-	  while (get_line_from_config (cmdline, NEW_HEAPSIZE, ! is_preset))
+	  do
 	    {
-	      struct builtin *builtin;
+	      /* STATE 0:  Before any title command.
+		 STATE 1:  In a title command.
+		 STATE >1: In a entry after a title command.  */
+	      int state = 0, prev_config_len = 0, prev_menu_len = 0;
+	      char *cmdline;
 
-	      /* Get the pointer to the builtin structure.  */
-	      builtin = find_command (cmdline);
-	      errnum = 0;
-	      if (! builtin)
-		/* Unknown command. Just skip now.  */
-		continue;
-
-	      if (builtin->flags & BUILTIN_TITLE)
+	      /* Try the preset menu first. This will succeed at most once,
+		 because close_preset_menu disables the preset menu.  */
+	      is_opened = is_preset = open_preset_menu ();
+	      if (! is_opened)
 		{
-		  char *ptr;
-
-		  /* the command "title" is specially treated.  */
-		  if (state > 1)
-		    {
-		      /* The next title is found.  */
-		      num_entries++;
-		      config_entries[config_len++] = 0;
-		      prev_menu_len = menu_len;
-		      prev_config_len = config_len;
-		    }
-		  else
-		    {
-		      /* The first title is found.  */
-		      menu_len = prev_menu_len;
-		      config_len = prev_config_len;
-		    }
-
-		  /* Reset the state.  */
-		  state = 1;
-
-		  /* Copy title into menu area.  */
-		  ptr = skip_to (1, cmdline);
-		  while ((menu_entries[menu_len++] = *(ptr++)) != 0)
-		    ;
+		  is_opened = grub_open (config_file);
+		  errnum = ERR_NONE;
 		}
-	      else if (! state)
+
+	      if (! is_opened)
+		break;
+
+	      /* This is necessary, because the menu must be overrided.  */
+	      reset ();
+	      
+	      cmdline = (char *) CMDLINE_BUF;
+	      while (get_line_from_config (cmdline, NEW_HEAPSIZE,
+					   ! is_preset))
 		{
-		  /* Run a command found is possible.  */
-		  if (builtin->flags & BUILTIN_MENU)
-		    {
-		      char *arg = skip_to (1, cmdline);
-		      (builtin->func) (arg, BUILTIN_MENU);
-		      errnum = 0;
-		    }
-		  else
-		    /* Ignored.  */
+		  struct builtin *builtin;
+		  
+		  /* Get the pointer to the builtin structure.  */
+		  builtin = find_command (cmdline);
+		  errnum = 0;
+		  if (! builtin)
+		    /* Unknown command. Just skip now.  */
 		    continue;
+		  
+		  if (builtin->flags & BUILTIN_TITLE)
+		    {
+		      char *ptr;
+		      
+		      /* the command "title" is specially treated.  */
+		      if (state > 1)
+			{
+			  /* The next title is found.  */
+			  num_entries++;
+			  config_entries[config_len++] = 0;
+			  prev_menu_len = menu_len;
+			  prev_config_len = config_len;
+			}
+		      else
+			{
+			  /* The first title is found.  */
+			  menu_len = prev_menu_len;
+			  config_len = prev_config_len;
+			}
+		      
+		      /* Reset the state.  */
+		      state = 1;
+		      
+		      /* Copy title into menu area.  */
+		      ptr = skip_to (1, cmdline);
+		      while ((menu_entries[menu_len++] = *(ptr++)) != 0)
+			;
+		    }
+		  else if (! state)
+		    {
+		      /* Run a command found is possible.  */
+		      if (builtin->flags & BUILTIN_MENU)
+			{
+			  char *arg = skip_to (1, cmdline);
+			  (builtin->func) (arg, BUILTIN_MENU);
+			  errnum = 0;
+			}
+		      else
+			/* Ignored.  */
+			continue;
+		    }
+		  else
+		    {
+		      char *ptr = cmdline;
+		      
+		      state++;
+		      /* Copy config file data to config area.  */
+		      while ((config_entries[config_len++] = *ptr++) != 0)
+			;
+		    }
+		}
+	      
+	      if (state > 1)
+		{
+		  /* Finish the last entry.  */
+		  num_entries++;
+		  config_entries[config_len++] = 0;
 		}
 	      else
 		{
-		  char *ptr = cmdline;
-
-		  state++;
-		  /* Copy config file data to config area.  */
-		  while ((config_entries[config_len++] = *ptr++) != 0)
-		    ;
+		  menu_len = prev_menu_len;
+		  config_len = prev_config_len;
 		}
-	    }
-
-	  if (state > 1)
-	    {
-	      /* Finish the last entry.  */
-	      num_entries++;
+	      
+	      menu_entries[menu_len++] = 0;
 	      config_entries[config_len++] = 0;
-	    }
-	  else
-	    {
-	      menu_len = prev_menu_len;
-	      config_len = prev_config_len;
-	    }
-
-	  menu_entries[menu_len++] = 0;
-	  config_entries[config_len++] = 0;
-	  grub_memmove (config_entries + config_len, menu_entries, menu_len);
-	  menu_entries = config_entries + config_len;
-
-	  /* Check if the default entry is present. Otherwise reset
-	     it to fallback if fallback is valid, or to DEFAULT_ENTRY 
-	     if not.  */
-	  if (default_entry >= num_entries)
-	    {
-	      if (fallback_entry < 0 || fallback_entry >= num_entries)
-		default_entry = 0;
+	      grub_memmove (config_entries + config_len, menu_entries,
+			    menu_len);
+	      menu_entries = config_entries + config_len;
+	      
+	      /* Check if the default entry is present. Otherwise reset
+		 it to fallback if fallback is valid, or to DEFAULT_ENTRY 
+		 if not.  */
+	      if (default_entry >= num_entries)
+		{
+		  if (fallback_entry < 0 || fallback_entry >= num_entries)
+		    default_entry = 0;
+		  else
+		    default_entry = fallback_entry;
+		}
+	      
+	      if (is_preset)
+		close_preset_menu ();
 	      else
-		default_entry = fallback_entry;
+		grub_close ();
 	    }
-
-	  if (is_preset)
-	    close_preset_menu ();
-	  else
-	    grub_close ();
+	  while (is_preset);
 	}
 
       if (! num_entries)
