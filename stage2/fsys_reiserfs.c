@@ -173,8 +173,6 @@ struct key
 };
 
 #define KEY_SIZE (sizeof (struct key))
-#define K_OFFSET(key) (INFO->version < 2 ? \
-		       key.u.v1.k_offset : key.u.v2.k_offset)
 
 /* Header of a disk block.  More precisely, header of a formatted leaf
    or internal node, and not the header of an unformatted node. */
@@ -205,12 +203,25 @@ struct item_head
   u;
   __u16 ih_item_len;           /* total size of the item body                  */
   __u16 ih_item_location;      /* an offset to the item body within the block  */
-  __u16 ih_version;	       /* 0 for all old items, 2 for new
-                                  ones. Highest bit is set by fsck
+  __u16 ih_version;	       /* ITEM_VERSION_1 for all old items, 
+				  ITEM_VERSION_2 for new ones. 
+				  Highest bit is set by fsck
                                   temporary, cleaned after all done */
 };
 /* size of item header     */
 #define IH_SIZE (sizeof (struct item_head))
+
+#define ITEM_VERSION_1 0
+#define ITEM_VERSION_2 1
+#define IH_KEY_OFFSET(ih) (INFO->version < 2 \
+			   || (ih)->ih_version == ITEM_VERSION_1 \
+			   ? (ih)->ih_key.u.v1.k_offset \
+			   : (ih)->ih_key.u.v2.k_offset)
+
+#define IH_KEY_ISTYPE(ih, type) (INFO->version < 2 \
+				 || (ih)->ih_version == ITEM_VERSION_1 \
+				 ? (ih)->ih_key.u.v1.k_uniqueness == V1_##type \
+				 : (ih)->ih_key.u.v2.k_type == V2_##type)
 
 struct disk_child
 {
@@ -710,11 +721,12 @@ next_key (void)
   char *cache;
   
 #ifdef REISERDEBUG
-  printf ("next_key:\n  old key %d:%d:%d:%d\n", 
+  printf ("next_key:\n  old ih: key %d:%d:%d:%d version:%d\n", 
 	  INFO->current_ih->ih_key.k_dir_id, 
 	  INFO->current_ih->ih_key.k_objectid, 
 	  INFO->current_ih->ih_key.u.v1.k_offset,
-	  INFO->current_ih->ih_key.u.v1.k_uniqueness);
+	  INFO->current_ih->ih_key.u.v1.k_uniqueness,
+	  INFO->current_ih->ih_version);
 #endif /* REISERDEBUG */
   
   if (ih == &ITEMHEAD[BLOCKHEAD (LEAF)->blk_nr_item])
@@ -772,11 +784,12 @@ next_key (void)
   INFO->current_ih   = ih;
   INFO->current_item = &LEAF[ih->ih_item_location];
 #ifdef REISERDEBUG
-  printf ("  new key %d:%d:%d:%d\n", 
+  printf ("  new ih: key %d:%d:%d:%d version:%d\n", 
 	  INFO->current_ih->ih_key.k_dir_id, 
 	  INFO->current_ih->ih_key.k_objectid, 
 	  INFO->current_ih->ih_key.u.v1.k_offset,
-	  INFO->current_ih->ih_key.u.v1.k_uniqueness);
+	  INFO->current_ih->ih_key.u.v1.k_uniqueness,
+	  INFO->current_ih->ih_version);
 #endif /* REISERDEBUG */
   return 1;
 }
@@ -866,12 +879,12 @@ reiserfs_read (char *buf, int len)
   char *prev_buf = buf;
   
 #ifdef REISERDEBUG
-  printf ("reiserfs_read: filepos=%d len=%d, offset=%d\n",
-	  filepos, len, K_OFFSET (INFO->current_ih->ih_key) - 1);
+  printf ("reiserfs_read: filepos=%d len=%d, offset=%x:%x\n",
+	  filepos, len, (__u64) IH_KEY_OFFSET (INFO->current_ih) - 1);
 #endif /* REISERDEBUG */
   
   if (INFO->current_ih->ih_key.k_objectid != INFO->fileinfo.k_objectid
-      || K_OFFSET (INFO->current_ih->ih_key) > filepos + 1)
+      || IH_KEY_OFFSET (INFO->current_ih) > filepos + 1)
     {
       search_stat (INFO->fileinfo.k_dir_id, INFO->fileinfo.k_objectid);
       goto get_next_key;
@@ -882,7 +895,7 @@ reiserfs_read (char *buf, int len)
       if (INFO->current_ih->ih_key.k_objectid != INFO->fileinfo.k_objectid)
 	break;
       
-      offset = filepos - K_OFFSET (INFO->current_ih->ih_key) + 1;
+      offset = filepos - IH_KEY_OFFSET (INFO->current_ih) + 1;
       blocksize = INFO->current_ih->ih_item_len;
       
 #ifdef REISERDEBUG
@@ -890,9 +903,7 @@ reiserfs_read (char *buf, int len)
 	      filepos, len, offset, blocksize);
 #endif /* REISERDEBUG */
       
-      if ((INFO->version < 2 
-	   ? INFO->current_ih->ih_key.u.v1.k_uniqueness == V1_TYPE_DIRECT
-	   : INFO->current_ih->ih_key.u.v2.k_type == V2_TYPE_DIRECT)
+      if (IH_KEY_ISTYPE(INFO->current_ih, TYPE_DIRECT)
 	  && offset < blocksize)
 	{
 	  to_read = blocksize - offset;
@@ -914,9 +925,7 @@ reiserfs_read (char *buf, int len)
 	    memcpy (buf, INFO->current_item + offset, to_read);
 	  goto update_buf_len;
 	}
-      else if (INFO->version < 2 
-	       ? INFO->current_ih->ih_key.u.v1.k_uniqueness == V1_TYPE_INDIRECT
-	       : INFO->current_ih->ih_key.u.v2.k_type == V2_TYPE_INDIRECT)
+      else if (IH_KEY_ISTYPE(INFO->current_ih, TYPE_INDIRECT))
 	{
 	  blocksize = (blocksize >> 2) << INFO->fullblocksize_shift;
 	  
@@ -1075,7 +1084,8 @@ reiserfs_dir (char *dirname)
 	  /* If this is a new stat data and size is > 4GB set filemax to 
 	   * maximum
 	   */
-	  if (INFO->current_ih->ih_version == 2
+	  if (INFO->version >= 2
+	      && INFO->current_ih->ih_version == ITEM_VERSION_2
 	      && ((struct stat_data *) INFO->current_item)->sd_size_hi > 0)
 	    filemax = 0xffffffff;
 	  
@@ -1108,10 +1118,12 @@ reiserfs_dir (char *dirname)
 	  if (! next_key ())
 	    return 0;
 #ifdef REISERDEBUG
-	  printf ("key %d:%d:%d:%d\n", INFO->current_ih->ih_key.k_dir_id, 
+	  printf ("ih: key %d:%d:%d:%d version:%d\n", 
+		  INFO->current_ih->ih_key.k_dir_id, 
 		  INFO->current_ih->ih_key.k_objectid, 
 		  INFO->current_ih->ih_key.u.v1.k_offset,
-		  INFO->current_ih->ih_key.u.v1.k_uniqueness);
+		  INFO->current_ih->ih_key.u.v1.k_uniqueness,
+		  INFO->current_ih->ih_version);
 #endif /* REISERDEBUG */
 	  
 	  if (INFO->current_ih->ih_key.k_objectid != objectid)

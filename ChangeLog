@@ -1,3 +1,13 @@
+2000-11-27  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c: Handle items with old version key on
+	new version reiserfs partition.
+	(K_OFFSET): Removed.
+	(IH_KEY_OFFSET): New Macro, which checks item head version.
+	(IH_KEY_ISOFFSET): Likewise.
+	(reiserfs_read): Use new macros.
+	(reiserfs_dir): Fixed version check for >4GB stat entries.
+	
 2000-11-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/common.c (init_bios_info) [!STAGE1_5]: Don't call
