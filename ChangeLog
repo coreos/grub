@@ -1,5 +1,29 @@
 2005-01-31  Marco Gerards  <metgerards@student.han.nl>
 
+	* include/grub/powerpc/ieee1275/loader.h (grub_load_linux):
+	Removed prototype.
+	(grub_rescue_cmd_linux): New prototype.
+	(grub_rescue_cmd_initrd): Likewise.
+	* powerpc/ieee1275/linux.c (grub_linux_boot): Remove struct
+	`bi_rec'.
+	(grub_linux_release_mem): Release the memory for the initrd.
+	(grub_load_linux): Renamed from this...
+	(grub_rescue_cmd_linux): ...To this.  Changed all callers.
+	Changed `entry' not to be static.  Loop over memory regions to
+	find another one when the default fails.
+	(grub_rescue_cmd_initrd): New function.
+	(grub_linux_init): Remove function.
+	(grub_linux_fini): Likewise.
+	(GRUB_MOD_INIT): Register `initrd'.
+	(GRUB_MOD_FINI): Unregister `initrd'.
+	* powerpc/ieee1275/linux_normal.c (grub_linux_normal_init):
+	Function removed.
+	(grub_linux_normal_fini): Likewise.
+	(GRUB_MOD_INIT): Register `initrd'.
+	(GRUB_MOD_FINI): Unregister `initrd'.
+
+2005-01-31  Marco Gerards  <metgerards@student.han.nl>
+
 	* commands/help.c: New file.
 	* normal/arg.c (show_help): Renamed to...
 	(grub_arg_show_help): ... this.

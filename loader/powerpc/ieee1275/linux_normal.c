@@ -31,7 +31,15 @@ static grub_err_t
 grub_cmd_linux (struct grub_arg_list *state  __attribute__ ((unused)),
 		int argc, char **args)
 {
-  grub_load_linux (argc, args);
+  grub_rescue_cmd_linux (argc, args);
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_cmd_initrd (struct grub_arg_list *state  __attribute__ ((unused)),
+		 int argc, char **args)
+{
+  grub_rescue_cmd_initrd (argc, args);
   return GRUB_ERR_NONE;
 }
 
@@ -41,23 +49,13 @@ GRUB_MOD_INIT
   grub_register_command ("linux", grub_cmd_linux, GRUB_COMMAND_FLAG_BOTH,
 			 "linux [KERNELARGS...]",
 			 "Loads linux", options);
+  grub_register_command ("initrd", grub_cmd_initrd, GRUB_COMMAND_FLAG_BOTH,
+			 "initrd FILE",
+			 "Loads initrd", options);
 }
 
 GRUB_MOD_FINI
 {
   grub_unregister_command ("linux");
-}
-
-void
-grub_linux_normal_init (void)
-{
-  grub_register_command ("linux", grub_cmd_linux, GRUB_COMMAND_FLAG_BOTH,
-			 "linux [KERNELARGS...]",
-			 "Loads linux", options);
-}
-
-void
-grub_linux_normal_fini (void)
-{
-  grub_unregister_command ("linux");
+  grub_unregister_command ("initrd");
 }

@@ -50,13 +50,6 @@ grub_linux_boot (void)
   grub_ieee1275_phandle_t chosen;
   grub_size_t actual;
   
-  struct bi_rec
-  {
-    unsigned long tag;
-    unsigned long size;
-    unsigned long data[0];
-  };
-  
   grub_ieee1275_finddevice ("/chosen", &chosen);
   
   /* Set the command line arguments.  */
@@ -79,7 +72,12 @@ grub_linux_release_mem (void)
   if (linux_addr && grub_ieee1275_release (linux_addr, linux_size))
     return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
   
+  if (initrd_addr && grub_ieee1275_release (initrd_addr, initrd_size))
+    return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not release memory");
+  
   linux_addr = 0;
+  initrd_addr = 0;
+  
   return GRUB_ERR_NONE;
 }
 
@@ -97,14 +95,15 @@ grub_linux_unload (void)
 }
 
 void
-grub_load_linux (int argc, char *argv[])
+grub_rescue_cmd_linux (int argc, char *argv[])
 {
   grub_file_t file = 0;
   Elf32_Ehdr ehdr;
   Elf32_Phdr *phdrs = 0;
   int i;  
   int offset = 0;
-  static grub_addr_t entry;
+  grub_addr_t entry;
+  int found_addr = 0;
   int size;
   
   grub_dl_ref (my_mod);
@@ -188,13 +187,22 @@ grub_load_linux (int argc, char *argv[])
   /* Reserve memory for the kernel.  */
   linux_size += 0x100000;
   
-  if (grub_claimmap (entry, linux_size) == -1)
+  /* For some vmlinux kernels the address set above won't work.  Just
+     try some other addresses just like yaboot does.  */
+  for (linux_addr = entry; linux_addr < entry + 200 * 0x100000; linux_addr += 0x100000)
+    {
+      found_addr = grub_claimmap (linux_addr, linux_size);
+      if (found_addr != -1)
+	break;
+    }
+
+  if (found_addr == -1)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
       goto fail;
     }
-  linux_addr = entry;
-
+  entry = linux_addr;
+  
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr.e_phnum; i++)
     {
@@ -257,28 +265,66 @@ grub_load_linux (int argc, char *argv[])
   return;
 }
 
+void
+grub_rescue_cmd_initrd (int argc, char *argv[])
+{
+  grub_file_t file = 0;
+  grub_ssize_t size;
+  grub_addr_t addr;
+  
+  if (argc == 0)
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "no initrd specified");
+      goto fail;
+    }
+  
+  if (!loaded)
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      goto fail;
+    }
+
+  file = grub_file_open (argv[0]);
+  if (! file)
+    goto fail;
+  
+  addr = linux_addr + linux_size;
+  size = grub_file_size (file);
+  
+  if (grub_claimmap (addr, size) == -1)
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
+      goto fail;
+    }
+  
+  if (grub_file_read (file, (void *) addr, size) != size)
+    {
+      grub_ieee1275_release (addr, size);
+      grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
+      goto fail;
+    }
+  
+  initrd_addr = addr;
+  initrd_size = size;
+  
+ fail:
+  if (file)
+    grub_file_close (file);
+}
+
+
 
 GRUB_MOD_INIT
 {
-  grub_rescue_register_command ("linux", grub_load_linux,
+  grub_rescue_register_command ("linux", grub_rescue_cmd_linux,
 				"load a linux kernel");
+  grub_rescue_register_command ("initrd", grub_rescue_cmd_initrd,
+				"load an initrd");
   my_mod = mod;
 }
 
 GRUB_MOD_FINI
 {
   grub_rescue_unregister_command ("linux");
-}
-
-void
-grub_linux_init (void)
-{
-  grub_rescue_register_command ("linux", grub_load_linux,
-				"load a linux kernel");
-}
-
-void
-grub_linux_fini (void)
-{
-  grub_rescue_unregister_command ("linux");
+  grub_rescue_unregister_command ("initrd");
 }

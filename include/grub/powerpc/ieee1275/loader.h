@@ -22,7 +22,8 @@
 
 /* The symbol shared between the normal mode and rescue mode
    loader.  */
-void grub_load_linux (int argc, char *argv[]);
+void grub_rescue_cmd_linux (int argc, char *argv[]);
+void grub_rescue_cmd_initrd (int argc, char *argv[]);
 
 void grub_linux_init (void);
 void grub_linux_fini (void);
