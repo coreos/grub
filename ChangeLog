@@ -1,3 +1,61 @@
+2004-12-04  Marco Gerards  <metgerards@student.han.nl>
+
+	Modulize the partition map support and add support for the amiga
+	partition map.
+	
+	* commands/ls.c: Include <grub/partition.h> instead of
+	<grub/machine/partition.h>.
+	* kern/disk.c: Likewise.
+	* kern/rescue.c: Likewise.
+	* loader/i386/pc/chainloader.c: Likewise.
+	* normal/cmdline.c: Likewise.
+	* kern/powerpc/ieee1275/init.c: Likewise.
+	(grub_machine_init): Call `grub_pc_partition_map_init',
+	`grub_amiga_partition_map_init' and
+	`grub_apple_partition_map_init'.
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Remove
+	`disk/i386/pc/partition.c'.  Add `kern/partition.c'.
+	(kernel_img_HEADERS): Remove `machine/partition.h'.  Add
+	`partition.h' and `pc_partition.h'.
+	(grub_setup_SOURCES): Remove
+	`disk/i386/pc/partition.c'.  Add `kern/partition.c',
+	`partmap/amiga.c', `partmap/apple.c' and `partmap/pc.c'.
+	(grub_emu_SOURCES): Likewise.
+	(pkgdata_MODULES): Add `amiga.mod', `apple.mod' and `pc.mod'.
+	(amiga_mod_SOURCES, amiga_mod_CFLAGS, apple_mod_SOURCES)
+	(apple_mod_CFLAGS, pc_mod_SOURCES, pc_mod_CFLAGS): New variables.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Remove
+	`disk/powerpc/ieee1275/partition.c'.  Add `kern/partition.c',
+	`partmap/amiga.c', `partmap/apple.c' and `partmap/pc.c'.
+	(grubof_SOURCES): Likewise.
+	* disk/i386/pc/partition.c: File removed.
+	* disk/powerpc/ieee1275/partition.c: Likewise.
+	* include/grub/powerpc/ieee1275/partition.h: Likewise.
+	* include/grub/i386/pc/partition.h: Likewise.
+	* kern/partition.c: New file.
+	* partmap/amiga.c: Likewise.
+	* partmap/apple.c: Likewise.
+	* partmap/pc.c: Likewise.
+	* include/grub/partition.h: Likewise..
+	* include/grub/pc_partition.h: Likewise.
+	* util/grub-emu.c: Include <grub/partition.h> instead of
+	<grub/machine/partition.h>.
+	(main): Call `grub_pc_partition_map_init',
+	`grub_amiga_partition_map_init' and
+	`grub_apple_partition_map_init' and deinitialize afterwards.
+	* util/i386/pc/biosdisk.c: Include `#include
+	<grub/partition.h>' and `include <grub/pc_partition.h>' instead of
+	`<grub/machine/partition.h>'.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/i386/pc/biosdisk.c: Likewise.
+	(grub_util_biosdisk_get_grub_dev): Only access the PC specific
+	partition information in case of a PC partition.
+	* util/i386/pc/grub-setup.c: Include `#include
+	<grub/partition.h>' and `include <grub/pc_partition.h>' instead of
+	`<grub/machine/partition.h>'.
+	(setup): Only access the PC specific partition information in case
+	of a PC partition.
+
 2004-11-17  Hollis Blanchard  <hollis@penguinppc.org>
 	
 	* kern/powerpc/ieee1275/init.c (grub_setjmp): Remove function.

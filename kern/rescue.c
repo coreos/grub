@@ -28,7 +28,7 @@
 #include <grub/err.h>
 #include <grub/loader.h>
 #include <grub/dl.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
 #include <grub/env.h>
 
 #define GRUB_RESCUE_BUF_SIZE	256

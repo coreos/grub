@@ -28,7 +28,7 @@
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/term.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
 #include <grub/file.h>
 
 static const struct grub_arg_option options[] =

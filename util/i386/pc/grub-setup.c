@@ -25,7 +25,8 @@
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/fs.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
+#include <grub/pc_partition.h>
 #include <grub/machine/util/biosdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
@@ -107,8 +108,10 @@ setup (const char *prefix, const char *dir,
   
   int find_first_partition_start (const grub_partition_t p)
     {
-      if (! grub_partition_is_empty (p->dos_type)
-	  && ! grub_partition_is_bsd (p->dos_type)
+      struct grub_pc_partition *pcdata = p->data;
+
+      if (! grub_pc_partition_is_empty (pcdata->dos_type)
+	  && ! grub_pc_partition_is_bsd (pcdata->dos_type)
 	  && first_start > p->start)
 	first_start = p->start;
       
@@ -252,10 +255,16 @@ setup (const char *prefix, const char *dir,
 	  /* Embed information about the installed location.  */
 	  if (root_dev->disk->partition)
 	    {
+	      struct grub_pc_partition *pcdata =
+		root_dev->disk->partition->data;
+	      
+	      if (strcmp (root_dev->disk->partition->partmap->name, "pc"))
+		grub_util_error ("No PC style partitions found");
+	      
 	      *install_dos_part
-		= grub_cpu_to_le32 (root_dev->disk->partition->dos_part);
+		= grub_cpu_to_le32 (pcdata->dos_part);
 	      *install_bsd_part
-		= grub_cpu_to_le32 (root_dev->disk->partition->bsd_part);
+		= grub_cpu_to_le32 (pcdata->bsd_part);
 	    }
 	  else
 	    *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);
@@ -400,10 +409,16 @@ setup (const char *prefix, const char *dir,
   /* Embed information about the installed location.  */
   if (root_dev->disk->partition)
     {
+      struct grub_pc_partition *pcdata =
+	root_dev->disk->partition->data;
+
+      if (strcmp (root_dev->disk->partition->partmap->name, "pc"))
+	grub_util_error ("No PC style partitions found");
+      
       *install_dos_part
-	= grub_cpu_to_le32 (root_dev->disk->partition->dos_part);
+	= grub_cpu_to_le32 (pcdata->dos_part);
       *install_bsd_part
-	= grub_cpu_to_le32 (root_dev->disk->partition->bsd_part);
+	= grub_cpu_to_le32 (pcdata->bsd_part);
     }
   else
     *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);

@@ -23,7 +23,7 @@
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/mm.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/env.h>

@@ -22,7 +22,7 @@
 #include <grub/dl.h>
 #include <grub/disk.h>
 #include <grub/mm.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
 #include <grub/machine/ieee1275.h>
 #include <grub/normal.h>
 #include <grub/fs.h>
@@ -78,6 +78,9 @@ grub_machine_init (void)
   grub_boot_init ();
   grub_linux_init ();
   grub_linux_normal_init ();
+  grub_pc_partition_map_init ();
+  grub_amiga_partition_map_init ();
+  grub_apple_partition_map_init ();
   grub_ofdisk_init ();
 }
 

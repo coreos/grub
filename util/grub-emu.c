@@ -34,6 +34,7 @@
 #include <grub/normal.h>
 #include <grub/util/getroot.h>
 #include <grub/env.h>
+#include <grub/partition.h>
 
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
@@ -154,6 +155,9 @@ main (int argc, char *argv[])
   
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (args.dev_map);
+  grub_pc_partition_map_init ();
+  grub_amiga_partition_map_init ();
+  grub_apple_partition_map_init ();
 
   /* Initialize the default modules.  */
   grub_iso9660_init ();
@@ -187,6 +191,9 @@ main (int argc, char *argv[])
   grub_cmp_fini ();
   grub_cat_fini ();
   grub_terminal_fini ();
-
+  grub_amiga_partition_map_fini ();
+  grub_pc_partition_map_fini ();
+  grub_apple_partition_map_fini ();
+  
   return 0;
 }

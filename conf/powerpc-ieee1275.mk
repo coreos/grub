@@ -24,18 +24,18 @@ noinst_UTILITIES = genmoddep
 grub_emu_SOURCES = kern/main.c kern/device.c				\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
-	disk/powerpc/ieee1275/partition.c fs/fshelp.c			\
+	partmap/amiga.c partmap/pc.c partmap/apple.c fs/fshelp.c	\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c	\
 	fs/jfs.c fs/iso9660.c \
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
-	normal/arg.c	\
+	normal/arg.c kern/partition.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
 	kern/env.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
-CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_powerpc_ieee1275_partition.o grub_emu-fs_fshelp.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
-MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-disk_powerpc_ieee1275_partition.d grub_emu-fs_fshelp.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-fs_hfs.d grub_emu-fs_jfs.d grub_emu-fs_iso9660.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d
+CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-fs_fshelp.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-kern_partition.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
+MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-partmap_amiga.d grub_emu-partmap_pc.d grub_emu-partmap_apple.d grub_emu-fs_fshelp.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-fs_hfs.d grub_emu-fs_jfs.d grub_emu-fs_iso9660.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-kern_partition.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d
 
-grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-disk_powerpc_ieee1275_partition.o grub_emu-fs_fshelp.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
+grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-fs_fshelp.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-kern_partition.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-kern_main.o: kern/main.c
@@ -126,13 +126,29 @@ grub_emu-kern_term.d: kern/term.c
 
 -include grub_emu-kern_term.d
 
-grub_emu-disk_powerpc_ieee1275_partition.o: disk/powerpc/ieee1275/partition.c
-	$(BUILD_CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+grub_emu-partmap_amiga.o: partmap/amiga.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-disk_powerpc_ieee1275_partition.d: disk/powerpc/ieee1275/partition.c
-	set -e; 	  $(BUILD_CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_emu-disk_powerpc_ieee1275_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-partmap_amiga.d: partmap/amiga.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,grub_emu-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-disk_powerpc_ieee1275_partition.d
+-include grub_emu-partmap_amiga.d
+
+grub_emu-partmap_pc.o: partmap/pc.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-partmap_pc.d: partmap/pc.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_emu-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-partmap_pc.d
+
+grub_emu-partmap_apple.o: partmap/apple.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-partmap_apple.d: partmap/apple.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,grub_emu-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-partmap_apple.d
 
 grub_emu-fs_fshelp.o: fs/fshelp.c
 	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -246,6 +262,14 @@ grub_emu-normal_arg.d: normal/arg.c
 
 -include grub_emu-normal_arg.d
 
+grub_emu-kern_partition.o: kern/partition.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-kern_partition.d: kern/partition.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_emu-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-kern_partition.d
+
 grub_emu-util_console.o: util/console.c
 	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -335,14 +359,15 @@ grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
 	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \
 	kern/powerpc/ieee1275/openfw.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c \
 	fs/jfs.c normal/cmdline.c normal/command.c normal/main.c normal/menu.c \
-	disk/powerpc/ieee1275/ofdisk.c disk/powerpc/ieee1275/partition.c \
+	disk/powerpc/ieee1275/ofdisk.c partmap/amiga.c partmap/pc.c \
+	partmap/apple.c kern/partition.c \
 	kern/env.c normal/arg.c loader/powerpc/ieee1275/linux.c \
 	loader/powerpc/ieee1275/linux_normal.c commands/boot.c \
 	normal/powerpc/setjmp.S
-CLEANFILES += grubof grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o grubof-normal_powerpc_setjmp.o
-MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_crt0.d grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-fs_fshelp.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-fs_ext2.d grubof-fs_ufs.d grubof-fs_minix.d grubof-fs_hfs.d grubof-fs_jfs.d grubof-normal_cmdline.d grubof-normal_command.d grubof-normal_main.d grubof-normal_menu.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-disk_powerpc_ieee1275_partition.d grubof-kern_env.d grubof-normal_arg.d grubof-loader_powerpc_ieee1275_linux.d grubof-loader_powerpc_ieee1275_linux_normal.d grubof-commands_boot.d grubof-normal_powerpc_setjmp.d
+CLEANFILES += grubof grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-partmap_amiga.o grubof-partmap_pc.o grubof-partmap_apple.o grubof-kern_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o grubof-normal_powerpc_setjmp.o
+MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_crt0.d grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-fs_fshelp.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-fs_ext2.d grubof-fs_ufs.d grubof-fs_minix.d grubof-fs_hfs.d grubof-fs_jfs.d grubof-normal_cmdline.d grubof-normal_command.d grubof-normal_main.d grubof-normal_menu.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-partmap_amiga.d grubof-partmap_pc.d grubof-partmap_apple.d grubof-kern_partition.d grubof-kern_env.d grubof-normal_arg.d grubof-loader_powerpc_ieee1275_linux.d grubof-loader_powerpc_ieee1275_linux_normal.d grubof-commands_boot.d grubof-normal_powerpc_setjmp.d
 
-grubof: grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-disk_powerpc_ieee1275_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o grubof-normal_powerpc_setjmp.o
+grubof: grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-fs_fshelp.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-fs_ext2.o grubof-fs_ufs.o grubof-fs_minix.o grubof-fs_hfs.o grubof-fs_jfs.o grubof-normal_cmdline.o grubof-normal_command.o grubof-normal_main.o grubof-normal_menu.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-partmap_amiga.o grubof-partmap_pc.o grubof-partmap_apple.o grubof-kern_partition.o grubof-kern_env.o grubof-normal_arg.o grubof-loader_powerpc_ieee1275_linux.o grubof-loader_powerpc_ieee1275_linux_normal.o grubof-commands_boot.o grubof-normal_powerpc_setjmp.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grubof_LDFLAGS)
 
 grubof-boot_powerpc_ieee1275_crt0.o: boot/powerpc/ieee1275/crt0.S
@@ -577,13 +602,37 @@ grubof-disk_powerpc_ieee1275_ofdisk.d: disk/powerpc/ieee1275/ofdisk.c
 
 -include grubof-disk_powerpc_ieee1275_ofdisk.d
 
-grubof-disk_powerpc_ieee1275_partition.o: disk/powerpc/ieee1275/partition.c
-	$(BUILD_CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+grubof-partmap_amiga.o: partmap/amiga.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
 
-grubof-disk_powerpc_ieee1275_partition.d: disk/powerpc/ieee1275/partition.c
-	set -e; 	  $(BUILD_CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grubof-disk_powerpc_ieee1275_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grubof-partmap_amiga.d: partmap/amiga.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,grubof-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grubof-disk_powerpc_ieee1275_partition.d
+-include grubof-partmap_amiga.d
+
+grubof-partmap_pc.o: partmap/pc.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+
+grubof-partmap_pc.d: partmap/pc.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grubof-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grubof-partmap_pc.d
+
+grubof-partmap_apple.o: partmap/apple.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+
+grubof-partmap_apple.d: partmap/apple.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,grubof-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grubof-partmap_apple.d
+
+grubof-kern_partition.o: kern/partition.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+
+grubof-kern_partition.d: kern/partition.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grubof-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grubof-kern_partition.d
 
 grubof-kern_env.o: kern/env.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<

@@ -20,7 +20,8 @@
 
 #include <grub/machine/biosdisk.h>
 #include <grub/disk.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
+#include <grub/pc_partition.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/util/misc.h>
@@ -736,18 +737,34 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     
     int find_partition (const grub_partition_t partition)
       {
-	if (partition->bsd_part < 0)
-	  grub_util_info ("DOS partition %d starts from %lu",
-			  partition->dos_part, partition->start);
-	else
-	  grub_util_info ("BSD partition %d,%c starts from %lu",
-			  partition->dos_part, partition->bsd_part + 'a',
-			  partition->start);
+ 	struct grub_pc_partition *pcdata = 0;
+	
+	if (!strcmp (partition->partmap->name, "pc"))
+	  pcdata = partition->data;
+	  
+	if (pcdata)
+	  {
+	    if (pcdata->bsd_part < 0)
+	      grub_util_info ("DOS partition %d starts from %lu",
+			      pcdata->dos_part, partition->start);
+	    else
+	      grub_util_info ("BSD partition %d,%c starts from %lu",
+			      pcdata->dos_part, pcdata->bsd_part + 'a',
+			      partition->start);
+	  }
 	
 	if (hdg.start == partition->start)
 	  {
-	    dos_part = partition->dos_part;
-	    bsd_part = partition->bsd_part;
+	    if (pcdata)
+	      {
+		dos_part = pcdata->dos_part;
+		bsd_part = pcdata->bsd_part;
+	      }
+	    else
+	      {
+		dos_part = 0;
+		bsd_part = 0;
+	      }
 	    return 1;
 	  }
 	

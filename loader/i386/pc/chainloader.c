@@ -28,7 +28,7 @@
 #include <grub/misc.h>
 #include <grub/types.h>
 #include <grub/machine/init.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
 #include <grub/machine/memory.h>
 #include <grub/rescue.h>
 #include <grub/dl.h>

@@ -21,7 +21,7 @@
 #include <grub/err.h>
 #include <grub/mm.h>
 #include <grub/types.h>
-#include <grub/machine/partition.h>
+#include <grub/partition.h>
 #include <grub/misc.h>
 #include <grub/machine/time.h>
 #include <grub/file.h>
