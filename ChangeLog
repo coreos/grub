@@ -1,3 +1,43 @@
+2000-07-24  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Comply with the Linux/i386 boot protocol version 2.02.
+	
+	* stage2/asm.S [!STAGE1_5] (linux_boot): Set the length of moved
+	bytes to LINUX_KERNEL_MAXLEN instead of
+	LINUX_KERNEL_LEN_OFFSET(%eax), since the field is obsolete.
+	[!STAGE1_5] (big_linux_boot): Don't use SEGMENT or OFFSET.
+	Instead, embed the segment and the offset in the code itself.
+	Set %ds, %es, %fs and %gs to %ax (LINUX_INIT_SEG).
+	* stage2/boot.c (load_image): Rewrite the Linux support code
+	heavily. Use a structure instead of a batch of macros, to access
+	a Linux kernel header.
+	(load_initrd): If MOVETO plus LEN is greater than or equal to
+	LINUX_INITRD_MAX_ADDRESS, set MOVETO to LINUX_INITRD_MAX_ADDRESS
+	minus LEN with page aligned.
+	* stage2/shared.h (LINUX_MAGIC_SIGNATURE): New macro.
+	(LINUX_DEFAULT_SETUP_SECTS): Likewise.
+	(LINUX_FLAG_CAN_USE_HEAP): Likewise.
+	(LINUX_INITRD_MAX_ADDRESS): Likewise.
+	(LINUX_MAX_SETUP_SECTS): Likewise.
+	(LINUX_BOOT_LOADER_TYPE): Likewise.
+	(LINUX_HEAP_END_OFFSET): Likewise.
+	(LINUX_SETUP_MAXLEN): Removed.
+	(LINUX_KERNEL_LEN_OFFSET): Likewise.
+	(LINUX_SETUP_LEN_OFFSET): Likewise.
+	(LINUX_SETUP_STACK): Set to 0x7F00 instead of 0x3FF4 (why was it
+	this value?).
+	(LINUX_SETUP_LOADER): Removed.
+	(LINUX_SETUP_LOAD_FLAGS): Likewise.
+	(LINUX_SETUP_CODE_START): Likewise.
+	(LINUX_SETUP_INITRD): Likewise.
+	(CL_MY_LOCATION): Set to RAW_ADDR(0x97F00) instead of
+	RAW_ADDR(0x92000).
+	(CL_MY_END_ADDR): Set to RAW_addr(0x97FFF) instead of
+	RAW_ADDR(0x920FF).
+	(CL_MAGIC_ADDR): Removed.
+	(CL_OFFSET): Likewise.
+	[!ASM_FILE] (struct linux_kernel_header): New structure tag.
+	
 2000-07-23  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/tutorial.texi: Fix some syntax errors and ambiguous

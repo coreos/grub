@@ -135,22 +135,23 @@ extern char *grub_scratch_mem;
  *  Linux setup parameters
  */
 
+#define LINUX_MAGIC_SIGNATURE		0x53726448	/* "HdrS" */
+#define LINUX_DEFAULT_SETUP_SECTS	4
+#define LINUX_FLAG_CAN_USE_HEAP		0x80
+#define LINUX_INITRD_MAX_ADDRESS	0x3C000000
+#define LINUX_MAX_SETUP_SECTS		63
+#define LINUX_BOOT_LOADER_TYPE		0x71
+#define LINUX_HEAP_END_OFFSET		(0x7F00 - 0x200)
+
 #define LINUX_STAGING_AREA        RAW_ADDR (0x100000)
 #define LINUX_SETUP               RAW_ADDR (0x90000)
-#define LINUX_SETUP_MAXLEN        0x1E00
 #define LINUX_KERNEL              RAW_ADDR (0x10000)
 #define LINUX_KERNEL_MAXLEN       0x7F000
 #define LINUX_SETUP_SEG           0x9020
 #define LINUX_INIT_SEG            0x9000
-#define LINUX_KERNEL_LEN_OFFSET   0x1F4
-#define LINUX_SETUP_LEN_OFFSET    0x1F1
-#define LINUX_SETUP_STACK         0x3FF4
+#define LINUX_SETUP_STACK         0x7F00
 
-#define LINUX_SETUP_LOADER        0x210
-#define LINUX_SETUP_LOAD_FLAGS    0x211
 #define LINUX_FLAG_BIG_KERNEL     0x1
-#define LINUX_SETUP_CODE_START    0x214
-#define LINUX_SETUP_INITRD        0x218
 
 /* Linux's video mode selection support. Actually I hate it!  */
 #define LINUX_VID_MODE_OFFSET	0x1FA
@@ -158,12 +159,10 @@ extern char *grub_scratch_mem;
 #define LINUX_VID_MODE_EXTENDED	0xFFFE
 #define LINUX_VID_MODE_ASK	0xFFFD
 
-#define CL_MY_LOCATION  RAW_ADDR (0x92000)
-#define CL_MY_END_ADDR  RAW_ADDR (0x920FF)
-#define CL_MAGIC_ADDR   RAW_ADDR (0x90020)
+#define CL_MY_LOCATION  RAW_ADDR (0x97F00)
+#define CL_MY_END_ADDR  RAW_ADDR (0x97FFF)
 #define CL_MAGIC        0xA33F
 #define CL_BASE_ADDR    RAW_ADDR (0x90000)
-#define CL_OFFSET       RAW_ADDR (0x90022)
 
 /*
  *  General disk stuff
@@ -369,6 +368,38 @@ extern char *grub_scratch_mem;
 
 #include "mb_header.h"
 #include "mb_info.h"
+
+/* For the Linux/i386 boot protocol version 2.02.  */
+struct linux_kernel_header
+{
+  char code1[0x0020];
+  unsigned short cl_magic;		/* Magic number 0xA33F */
+  unsigned short cl_offset;		/* The offset of command line */
+  char code2[0x01F1 - 0x0020 - 2 - 2];
+  unsigned char setup_sects;		/* The size of the setup in sectors */
+  unsigned short root_flags;		/* If the root is mounted readonly */
+  unsigned short syssize;		/* obsolete */
+  unsigned short swap_dev;		/* obsolete */
+  unsigned short ram_size;		/* obsolete */
+  unsigned short vid_mode;		/* Video mode control */
+  unsigned short root_dev;		/* Default root device number */
+  unsigned short boot_flag;		/* 0xAA55 magic number */
+  unsigned short jump;			/* Jump instruction */
+  unsigned long header;			/* Magic signature "HdrS" */
+  unsigned short version;		/* Boot protocol version supported */
+  unsigned long realmode_swtch;		/* Boot loader hook */
+  unsigned long start_sys;		/* Points to kernel version string */
+  unsigned char type_of_loader;		/* Boot loader identifier */
+  unsigned char loadflags;		/* Boot protocol option flags */
+  unsigned short setup_move_size;	/* Move to high memory size */
+  unsigned long code32_start;		/* Boot loader hook */
+  unsigned long ramdisk_image;		/* initrd load address */
+  unsigned long ramdisk_size;		/* initrd size */
+  unsigned long bootsect_kludge;	/* obsolete */
+  unsigned long heap_end_ptr;		/* Free memory after setup end */
+  unsigned short pad1;			/* Unused */
+  unsigned long cmd_line_ptr;		/* Points to the kernel command line */
+} __attribute__ ((packed));
 
 /* Memory map address range descriptor used by GET_MMAP_ENTRY. */
 struct mmar_desc

@@ -1695,7 +1695,8 @@ ENTRY(linux_boot)
 
 	/* copy kernel */
 	movl	$LINUX_SETUP, %eax
-	movl	LINUX_KERNEL_LEN_OFFSET(%eax), %ecx
+	/* XXX:	Too many bytes, but there is no bad effect */
+	movl	$LINUX_KERNEL_MAXLEN, %ecx
 	shll	$2, %ecx
 	movl	$LINUX_STAGING_AREA, %esi
 	movl	$LINUX_KERNEL, %edi
@@ -1710,12 +1711,6 @@ ENTRY(big_linux_boot)
 
 	/* final setup for linux boot */
 
-	movw	$LINUX_SETUP_SEG, %ax
-	movw	%ax, segment
-
-	xorl	%eax, %eax
-	movl	%eax, offset
-
 	call	EXT_C(prot_to_real)
 	.code16
 
@@ -1724,13 +1719,16 @@ ENTRY(big_linux_boot)
 
 	movw	$LINUX_INIT_SEG, %ax
 	movw	%ax, %ss
+	movw	%ax, %ds
+	movw	%ax, %es
+	movw	%ax, %fs
+	movw	%ax, %gs
 
 	/* jump to start */
-#ifdef ABSOLUTE_WITHOUT_ASTERISK
-	DATA32	ADDR32	ljmp	(offset)
-#else
-	DATA32	ADDR32	ljmp	*(offset)
-#endif
+	/* ljmp */
+	.byte	0xea
+	.word	LINUX_SETUP_SEG
+	.word	0
 	.code32
 
 
