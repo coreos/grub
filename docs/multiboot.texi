@@ -25,7 +25,7 @@
 @ifinfo
 Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
 Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -51,13 +51,13 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @sp 10
 @title The Multiboot Specification
-@author OKUJI Yoshinori, Bryan Ford, Erich Stefan Boleyn, Kunihiro Ishiguro
+@author Yoshinori K. Okuji, Bryan Ford, Erich Stefan Boleyn, Kunihiro Ishiguro
 @page
 
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
 Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -76,7 +76,7 @@ into another language, under the above conditions for modified versions.
 @headings double
 
 @ifnottex
-@node Top, Overview, (dir), (dir)
+@node Top
 @top Multiboot Specification
 
 This file documents Multiboot Specification, the proposal for the boot
@@ -93,7 +93,7 @@ sequence standard. This edition documents version 0.6.93.
 @end menu
 
 
-@node Overview, Terminology, Top, Top
+@node Overview
 @chapter Introduction to Multiboot Specification
 
 This chapter describes some rough information on the Multiboot
@@ -110,7 +110,7 @@ Specification. Note that this is not a part of the specification itself.
 @end menu
 
 
-@node Motivation, Architecture, Overview, Overview
+@node Motivation
 @section The background of Multiboot Specification
 
 Every operating system ever created tends to have its own boot loader.
@@ -134,7 +134,7 @@ specification does @emph{not} specify how boot loaders should work ---
 only how they must interface with the operating system being loaded.
 
 
-@node Architecture, Operating systems, Motivation, Overview
+@node Architecture
 @section The target architecture
 
 This specification is primarily targeted at @sc{pc}, since they are the
@@ -145,7 +145,7 @@ this specification, stripped of the x86-specific details, could be
 adopted for them as well.
 
 
-@node Operating systems, Boot sources, Architecture, Overview
+@node Operating systems
 @section The target operating systems
 
 This specification is targeted toward free 32-bit operating systems
@@ -159,7 +159,7 @@ be nice if commercial operating system vendors eventually adopted this
 specification as well, but that's probably a pipe dream.
 
 
-@node Boot sources, Boot-time configuration, Operating systems, Overview
+@node Boot sources
 @section Boot sources
 
 It should be possible to write compliant boot loaders that load the OS
@@ -180,7 +180,7 @@ loading mechanisms, increasing their portability, robustness, and
 user-friendliness.
 
 
-@node Boot-time configuration, Convenience to operating systems, Boot sources, Overview
+@node Boot-time configuration
 @section Configure an operating system at boot-time
 
 It is often necessary for one reason or another for the user to be able
@@ -191,7 +191,7 @@ should provide a standard means for the boot loader to pass such
 information to the operating system.
 
 
-@node Convenience to operating systems, Boot modules, Boot-time configuration, Overview
+@node Convenience to operating systems
 @section How to make OS development easier
 
 OS images should be easy to generate. Ideally, an OS image should simply
@@ -229,7 +229,7 @@ still conform to the local a.out format variant in addition to being
 Multiboot-compliant.
 
 
-@node Boot modules,  , Convenience to operating systems, Overview
+@node Boot modules
 @section Boot modules
 
 Many modern operating system kernels, such as those of VSTa and Mach, do
@@ -250,7 +250,7 @@ support multiple boot modules, but they are strongly encouraged to,
 because some operating systems will be unable to boot without them.
 
 
-@node Terminology, Specification, Overview, Top
+@node Terminology
 @chapter The definitions of terms used through the specification
 
 @table @dfn
@@ -298,19 +298,19 @@ The type of unsigned 8-bit data.
 
 @item u16
 The type of unsigned 16-bit data. Because the target architecture is
-little-endian, WORD is coded in little-endian.
+little-endian, u16 is coded in little-endian.
 
 @item u32
 The type of unsigned 32-bit data. Because the target architecture is
-little-endian, DWORD is coded in little-endian.
+little-endian, u32 is coded in little-endian.
 
 @item u64
 The type of unsigned 64-bit data. Because the target architecture is
-little-endian, QWORD is coded in little-endian.
+little-endian, u64 is coded in little-endian.
 @end table
 
 
-@node Specification, Examples, Terminology, Top
+@node Specification
 @chapter The exact definitions of Multiboot Specification
 
 There are three main aspects of a boot loader/OS image interface:
@@ -335,7 +335,7 @@ system.
 @end menu
 
 
-@node OS image format, Machine state, Specification, Specification
+@node OS image format
 @section OS image format
 
 An OS image may be an ordinary 32-bit executable file in the standard
@@ -360,7 +360,7 @@ executable header.
 @end menu
 
 
-@node Header layout, Header magic fields, OS image format, OS image format
+@node Header layout
 @subsection The layout of Multiboot header
 
 The layout of the Multiboot header must be as follows:
@@ -389,7 +389,7 @@ fields @samp{mode_type}, @samp{width}, @samp{height} and @samp{depth} are
 defind in @ref{Header graphics fields}.
 
 
-@node Header magic fields, Header address fields, Header layout, OS image format
+@node Header magic fields
 @subsection The magic fields of Multiboot header
 
 @table @samp
@@ -443,7 +443,7 @@ have a 32-bit unsigned sum of zero.
 @end table
 
 
-@node Header address fields, Header graphics fields, Header magic fields, OS image format
+@node Header address fields
 @subsection The address fields of Multiboot header
 
 All of the address fields enabled by flag bit 16 are physical addresses.
@@ -483,7 +483,7 @@ start running the operating system.
 @end table
 
 
-@node Header graphics fields,  , Header address fields, OS image format
+@node Header graphics fields
 @subsection The graphics fields of Multiboot header
 
 Also, information about a preferred default mode can be specified in the
@@ -506,7 +506,7 @@ the boot loader that no preference is given. This makes it possible for
 a kernel to just say it wants a 32-bit resolution, for example.
 
 
-@node Machine state, Boot information format, OS image format, Specification
+@node Machine state
 @section Machine state
 
 FIXME: Use a table like the chapter ``Header layout''.
@@ -577,7 +577,7 @@ structures before doing so. Also, the boot loader must leave the
 changed them during the switch to 32-bit mode.
 
 
-@node Boot information format,  , Machine state, Specification
+@node Boot information format
 @section Boot information format
 
 FIXME: Split this chapter like the chapter ``OS image format''.
@@ -941,7 +941,7 @@ Multiboot boot loaders may simulate @sc{vbe} on non-@sc{vbe} modes, as
 if they were @sc{vbe} modes.
 
 
-@node Examples, History, Specification, Top
+@node Examples
 @chapter Examples
 
 @strong{Caution:} The following items are not part of the specification
@@ -956,7 +956,7 @@ loader writers.
 @end menu
 
 
-@node Notes on PC, BIOS device mapping techniques, Examples, Examples
+@node Notes on PC
 @section Notes on PC
 
 In reference to bit 0 of the @samp{flags} parameter in the Multiboot
@@ -986,7 +986,7 @@ boot loader to work unmodified with any reasonable extensions of the
 the operating system as desired.
 
 
-@node BIOS device mapping techniques, Example OS code, Notes on PC, Examples
+@node BIOS device mapping techniques
 @section BIOS device mapping techniques
 
 Both of these techniques should be usable from any PC operating system,
@@ -1009,7 +1009,7 @@ drivers.
 @end menu
 
 
-@node Data comparison technique, I/O restriction technique, BIOS device mapping techniques, BIOS device mapping techniques
+@node Data comparison technique
 @subsection Data comparison technique
 
 Before activating @emph{any} of the device drivers, gather enough data
@@ -1035,7 +1035,7 @@ of giving up there as well).
 @end enumerate
 
 
-@node I/O restriction technique,  , Data comparison technique, BIOS device mapping techniques
+@node I/O restriction technique
 @subsection I/O restriction technique
 
 This first step may be unnecessary, but first create copy-on-write
@@ -1072,7 +1072,7 @@ In general, you have at most 2 disks from each controller given
 logically numbered devices on the controller.
 
 
-@node Example OS code, Example boot loader code, BIOS device mapping techniques, Examples
+@node Example OS code
 @section Example OS code
 
 In this distribution, the example Multiboot kernel @file{kernel} is
@@ -1106,7 +1106,7 @@ information structure.
 @end menu
 
 
-@node multiboot.h, boot.S, Example OS code, Example OS code
+@node multiboot.h
 @subsection multiboot.h
 
 This is the source code in the file @file{multiboot.h}:
@@ -1116,7 +1116,7 @@ This is the source code in the file @file{multiboot.h}:
 @end example
 
 
-@node boot.S, kernel.c, multiboot.h, Example OS code
+@node boot.S
 @subsection boot.S
 
 In the file @file{boot.S}:
@@ -1126,7 +1126,7 @@ In the file @file{boot.S}:
 @end example
 
 
-@node kernel.c, Other Multiboot kernels, boot.S, Example OS code
+@node kernel.c
 @subsection kernel.c
 
 And, in the file @file{kernel.c}:
@@ -1136,7 +1136,7 @@ And, in the file @file{kernel.c}:
 @end example
 
 
-@node Other Multiboot kernels,  , kernel.c, Example OS code
+@node Other Multiboot kernels
 @subsection Other Multiboot kernels
 
 Other useful information should be available in Multiboot kernels, such
@@ -1146,7 +1146,7 @@ it is worth mentioning the OSKit
 library supporting the specification.
 
 
-@node Example boot loader code,  , Example OS code, Examples
+@node Example boot loader code
 @section Example boot loader code
 
 The GNU GRUB (@pxref{Top, , GRUB, grub.info, The GRUB manual}) project
@@ -1160,7 +1160,7 @@ See the webpage @url{http://www.gnu.org/software/grub/grub.html}, for
 more information.
 
 
-@node History, Index, Examples, Top
+@node History
 @chapter The change log of this specification
 
 @table @asis
@@ -1214,7 +1214,7 @@ Major changes plus HTMLification.
 @end table
 
 
-@node Index,  , History, Top
+@node Index
 @unnumbered Index
 
 @printindex cp
