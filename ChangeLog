@@ -6,6 +6,7 @@
 	symlink using the new function
 	* util/mbchk.c (check_multiboot): The sense of an error message was
 	inverted.
+	Reported by Timothy Baldwin <T.E.Baldwin99@members.leeds.ac.uk>
 
 2003-06-17  Jochen Hoenicke  <jochen@gnu.org>
 
