@@ -2259,7 +2259,7 @@ ENTRY(console_setcursor)
  * getrtsecs()
  *	if a seconds value can be read, read it and return it (BCD),
  *      otherwise return 0xFF
- * BIOS call "INT 1AH Function 02H" to obtain the current time from the RTC
+ * BIOS call "INT 1AH Function 02H" to check whether a character is pending
  *	Call with	%ah = 0x2
  *	Return:
  *		If RT Clock can give correct values
@@ -2294,86 +2294,7 @@ gottime:
 	pop	%ebp
 	ret
 
-
-/*
- * get_rtc_now()
- *	obtain bytes rtc_now[6] holding YYYYMMDDHHMM from the realtime clock under the BIOS
- *      be sure to correct for any glitches
- * BIOS call "INT 1AH Function 02H" to obtain the current time from the RTC
- *	Call with	%ah = 0x2
- *	Return:
- *		If RT Clock can give correct values
- *			%ch = hour (BCD)
- *			%cl = minutes (BCD)
- *                      %dh = seconds (BCD)
- *                      %dl = daylight savings time (00h std, 01h daylight)
- *			Carry flag = clear
- *		else
- *			Carry flag = set
- *                         (this indicates that the clock is updating, or
- * BIOS call "INT 1AH Function 04H" to obtain the current date from the RTC
- *	Call with	%ah = 0x4
- *	Return:
- *		If RT Clock can give correct values
- *			%ch = century (BCD)
- *			%cl = year (BCD)
- *                      %dh = month (BCD)
- *                      %dl = day of month (BCD)
- *			Carry flag = clear
- *		else
- *			Carry flag = set
- *                         (this indicates that the clock is updating, or
- *                          that it isn't running)
- */
-ENTRY(get_rtc_now)
-	pushl	%ebp
-
-	call	EXT_C(prot_to_real)	/* enter real mode */
-	.code16
-
-rtcredo:
-	movb	$0x4, %ah
-	int	$0x1a
-	DATA32	jc	rtcredo
-
-	pushw	%dx
-	pushw	%cx
-
-rtcretry:
-	movb	$0x2, %ah
-	int	$0x1a
-	DATA32	jc	rtcretry
-
-	pushw	%cx
-
-	/* Now ensure that the date hasn't advanced in the meantime */
-	movb	$0x4, %ah
-	int	$0x1a
-	movb	%dl, %al
-
-	popw	%bx
-	popw	%cx
-	popw	%dx
-
-	DATA32	jc	rtcdone
-
-	cmpb	%al, %dl
-	DATA32	jne	rtcredo
-
-rtcdone:
-	DATA32	call	EXT_C(real_to_prot)
-	.code32
-
-	movb	%ch, EXT_C(rtc_now+0)
-	movb	%cl, EXT_C(rtc_now+1)
-	movb	%dh, EXT_C(rtc_now+2)
-	movb	%dl, EXT_C(rtc_now+3)
-	movb	%bh, EXT_C(rtc_now+4)
-	movb	%bl, EXT_C(rtc_now+5)
-
-	popl	%ebp
-	ret
-
+	
 /*
  * currticks()
  *	return the real time in ticks, of which there are about

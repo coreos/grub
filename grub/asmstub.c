@@ -486,30 +486,6 @@ getrtsecs (void)
   return time (0);
 }
 
-unsigned char makebcd (int plainval)
-{
-  return ((plainval / 10) << 4) + (plainval % 10);
-}
-
-/* obtain current timestamp and store it in bytes rtc_now [6] */
-void
-get_rtc_now ()
-{
-  extern unsigned char rtc_now [6];
-  time_t ticks;
-  struct tm *now;
- 
-  time (&ticks);
-  now = localtime (&ticks);
-
-  rtc_now [0] = makebcd ( ( now->tm_year + 1900 ) / 100 );
-  rtc_now [1] = makebcd (   now->tm_year          % 100 );
-  rtc_now [2] = makebcd (   now->tm_mon           +   1 );
-  rtc_now [3] = makebcd (   now->tm_mday                );
-  rtc_now [4] = makebcd (   now->tm_hour                );
-  rtc_now [5] = makebcd (   now->tm_min                 );
-}
-
 int
 currticks (void)
 {

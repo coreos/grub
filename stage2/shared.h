@@ -533,8 +533,6 @@ typedef enum
   ERR_DEV_NEED_INIT,
   ERR_NO_DISK_SPACE,
   ERR_NUMBER_OVERFLOW,
-  ERR_EXPIRED,
-  ERR_DATESTAMP,
 
   MAX_ERR_NUM
 } grub_error_t;
@@ -762,7 +760,6 @@ int get_code_end (void);
 /* low-level timing info */
 int getrtsecs (void);
 int currticks (void);
-void get_rtc_now (void);
 
 /* Clear the screen. */
 void cls (void);

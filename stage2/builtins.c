@@ -1139,64 +1139,6 @@ static struct builtin builtin_embed =
 };
 
 
-/* expires */
-
-static unsigned char parsebcdbyte (char *str)
-{
-  if ((str [0] >= '0') && (str [0] <= '9') && (str [1] >= '0') && (str [1] <= '9'))
-    {
-      return ( str [0] << 4 ) + str [1] - ( 17 * '0' );
-    }
-  return 0xff;
-};
-
-unsigned char rtc_now [6];
-unsigned char expires [6];
-
-static int
-expires_func (char *arg, int flags)
-{
-		/* Store YYYYMMDDHHMM in expires[] */
-  if (	((expires [0] = parsebcdbyte (arg+ 0)) == 0xff) ||
-	((expires [1] = parsebcdbyte (arg+ 2)) == 0xff) ||
-	(arg [ 4] != '-') ||
-	((expires [2] = parsebcdbyte (arg+ 5)) == 0xff) ||
-	(arg [ 7] != '-') ||
-	((expires [3] = parsebcdbyte (arg+ 8)) == 0xff) ||
-	(arg [10] != ' ') ||
-	((expires [4] = parsebcdbyte (arg+11)) == 0xff) ||
-	(arg [13] != ':') ||
-	((expires [5] = parsebcdbyte (arg+14)) == 0xff) ||
-	(arg [16] != 0) )
-    {
-      errnum = ERR_DATESTAMP;
-      return 1;
-    }
-
-  get_rtc_now ();	/* Call BIOS to fill rtc_now[6] with YYYYMMDDHHMM */
-
-  if (grub_memcmp (rtc_now, expires, 6) >= 0)
-    {
-      errnum = ERR_EXPIRED;
-      return 1;	/* Failure: this boot entry has expired, try fallback */
-    }
-
-  return 0;	/* Success: this boot entry has not expired yet */
-};
-
-static struct builtin builtin_expires =
-{
-  "expires",
-  expires_func,
-  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
-  "expires YYYY-MM-DD HH:MM",
-  "The current boot entry fails after the realtime clock reaches"
-  " the date and time provided.  This may be useful to test new kernels"
-  " on distant systems -- rebooting those after a testing period can"
-  " fallback to the old kernel when the boot entry under test expires."
-};
-
-
 /* fallback */
 static int
 fallback_func (char *arg, int flags)
@@ -1211,13 +1153,15 @@ static struct builtin builtin_fallback =
 {
   "fallback",
   fallback_func,
-  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
+  BUILTIN_MENU,
+#if 0
   "fallback NUM",
   "Go into unattended boot mode: if the default boot entry has any"
   " errors, instead of waiting for the user to do anything, it"
   " immediately starts over using the NUM entry (same numbering as the"
   " `default' command). This obviously won't help if the machine"
-  " was rebooted by a kernel that GRUB loaded, unless combined with expires."
+  " was rebooted by a kernel that GRUB loaded."
+#endif
 };
 
 
@@ -4746,7 +4690,6 @@ struct builtin *builtin_table[] =
   &builtin_dump,
 #endif /* GRUB_UTIL */
   &builtin_embed,
-  &builtin_expires,
   &builtin_fallback,
   &builtin_find,
   &builtin_fstest,

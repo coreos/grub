@@ -62,12 +62,10 @@ char *err_list[] =
   [ERR_BOOT_COMMAND] = "Kernel must be loaded before booting",
   [ERR_BOOT_FAILURE] = "Unknown boot failure",
   [ERR_BOOT_FEATURES] = "Unsupported Multiboot features requested",
-  [ERR_DATESTAMP] = "Datestamp not formatted as YYYY-MM-DD HH:MM",
   [ERR_DEV_FORMAT] = "Unrecognized device string",
   [ERR_DEV_NEED_INIT] = "Device not initialized yet",
   [ERR_DEV_VALUES] = "Invalid device requested",
   [ERR_EXEC_FORMAT] = "Invalid or unsupported executable format",
-  [ERR_EXPIRED] = "This boot option has expired",
   [ERR_FILELENGTH] =
   "Filesystem compatibility error, cannot read whole file",
   [ERR_FILE_NOT_FOUND] = "File not found",

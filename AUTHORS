@@ -48,6 +48,3 @@ Tilmann Bubeck added support for vt100-incompatible terminals.
 
 KB Sriram added a better detection of FAT filesystem and fixed a
 network device completion.
-
-Rick van Rein added the expires command to smoothen remote kernel upgrades.
-

@@ -1829,6 +1829,7 @@ These commands can only be used in the menu:
 
 @menu
 * default::                     Set the default entry
+* fallback::                    Set the fallback entry
 * hiddenmenu::                  Hide the menu interface
 * timeout::                     Set the timeout
 * title::                       Start a menu entry
@@ -1846,6 +1847,18 @@ used.
 You can specify @samp{saved} instead of a number. In this case, the
 default entry is the entry saved with the command
 @command{savedefault}. @xref{savedefault}, for more information.
+@end deffn
+
+
+@node fallback
+@subsection fallback
+
+@deffn Command fallback num
+Go into unattended boot mode: if the default boot entry has any errors,
+instead of waiting for the user to do anything, immediately start
+over using the @var{num} entry (same numbering as the @code{default}
+command (@pxref{default})). This obviously won't help if the machine was
+rebooted by a kernel that GRUB loaded.
 @end deffn
 
 
@@ -1889,8 +1902,6 @@ Commands usable both in the menu and in the command-line.
 * color::                       Color the menu interface
 * device::                      Specify a file as a drive
 * dhcp::                        Initialize a network device via DHCP
-* expires::			Invalidate a menu entry after some time
-* fallback::                    Set the fallback entry
 * hide::                        Hide a partition
 * ifconfig::                    Configure a network device manually
 * pager::                       Change the state of the internal pager
@@ -2039,66 +2050,6 @@ compiled with netboot support. See also @ref{Network}.
 If you specify @option{--with-configfile} to this command, GRUB will
 fetch and load a configuration file specified by your DHCP server
 with the vendor tag @samp{150}.
-@end deffn
-
-
-@node expires
-@subsection expires
-
-@deffn Command expires YYYY-MM-DD HH:MM
-Make the current boot entry, as introduced by @command{title} (@pxref{title})
-expire after the given date and time.  This is usually combined with
-the @command{fallback} command (@pxref{fallback}),
-which introduces the boot entry to be used after expiry.
-
-When adminstering systems remotely, it is troublesome and dangerous
-to switch to new kernel versions.  This option enables a GRUB setup
-to test new kernels, with a fallback to the old kernel after some
-time.  All that is needed to fall back is a reset after the expiration,
-either manually imposed by a local operator or initiated by the loaded
-operating system.
-
-The date is written in numbers, with the year in four digits.  The time
-is written in 24-hour format, and reflects the time of the realtime clock.
-If the realtime clock holds the GMT time and the computer operates in
-another zone, then the argument to @command{expires} should still be
-GMT-time, because GRUB accesses the realtime clock.
-
-@example
-@group
-default 0
-
-title Test kernel with IPsec in place
-fallback 1
-expires 2004-01-04 18:15
-root (hd0,0)
-kernel /boot/vmlinuz-ipsec root=/dev/hda1
-initrd /boot/initrd.img
-boot
-
-title Known-to-work kernel without IPsec
-root (hd0,0)
-kernel /boot/vmlinuz root=/dev/hda1
-initrd /boot/initrd.img
-boot
-@end group
-@end example
-@end deffn
-
-@node fallback
-@subsection fallback
-
-@deffn Command fallback num
-Go into unattended boot mode: if the default boot entry has any errors,
-instead of waiting for the user to do anything, immediately start
-over using the @var{num} entry (same numbering as the @code{default}
-command (@pxref{default})). This obviously won't help if the machine was
-rebooted by a kernel that GRUB loaded, unless combined with @command{expires}
-(@pxref{expires}).
-
-The fallback command can be chained by specifying it in a boot entry
-which serves as a fallback option. The only point of caution is that
-it must be executed before the error triggering it occurs.
 @end deffn
 
 
@@ -3239,19 +3190,6 @@ This error is returned if a disk doesn't have enough spare space. This
 happens when you try to embed Stage 1.5 into the unused sectors after
 the MBR, but the first partition starts right after the MBR or they are
 used by EZ-BIOS.
-
-@item 35 : Overflow while parsing number
-Overflow while parsing number.
-
-@item 36 : This boot option has expired
-This error is returned if an expiration date/time setup for this boot
-option falls before the date/time currently in the realtime clock.
-
-@item 37 : Datestamp not formatted as YYYY-MM-DD HH:MM
-The expires command requires strict adherence to the given argument
-format.  This failure is the safe one, as it avoids that a badly
-interpreted argument leads to never-expiring boot options.
-
 @end table
 
 
