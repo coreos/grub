@@ -505,11 +505,11 @@ grub_emu_SOURCES = kern/main.c kern/device.c fs/fshelp.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/iso9660.c \
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
-	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c
-CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-fs_fshelp.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-kern_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
-MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-fs_fshelp.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-kern_partition.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-partmap_amiga.d grub_emu-partmap_pc.d grub_emu-partmap_apple.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-fs_hfs.d grub_emu-fs_jfs.d grub_emu-fs_iso9660.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d
+	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c disk/loopback.c
+CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-fs_fshelp.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-kern_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-disk_loopback.o
+MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-fs_fshelp.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-kern_partition.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-partmap_amiga.d grub_emu-partmap_pc.d grub_emu-partmap_apple.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-fs_hfs.d grub_emu-fs_jfs.d grub_emu-fs_iso9660.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d grub_emu-disk_loopback.d
 
-grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-fs_fshelp.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-kern_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o
+grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-fs_fshelp.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-kern_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-disk_loopback.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-kern_main.o: kern/main.c
@@ -824,6 +824,14 @@ grub_emu-util_i386_pc_getroot.d: util/i386/pc/getroot.c
 
 -include grub_emu-util_i386_pc_getroot.d
 
+grub_emu-disk_loopback.o: disk/loopback.c
+	$(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-disk_loopback.d: disk/loopback.c
+	set -e; 	  $(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,grub_emu-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-disk_loopback.d
+
 grub_emu_LDFLAGS = -lncurses
 
 # For genmoddep.
@@ -847,7 +855,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod vga.mod font.mod _multiboot.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod chain.mod multiboot.mod \
-	amiga.mod apple.mod pc.mod
+	amiga.mod apple.mod pc.mod loopback.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -858,12 +866,12 @@ UNDSYMFILES += und-_chain.lst
 
 _chain.mod: pre-_chain.o mod-_chain.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_chain.o: _chain_mod-loader_i386_pc_chainloader.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-_chain.o: mod-_chain.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
@@ -897,12 +905,12 @@ UNDSYMFILES += und-chain.lst
 
 chain.mod: pre-chain.o mod-chain.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-chain.o: chain_mod-loader_i386_pc_chainloader_normal.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-chain.o: mod-chain.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
@@ -936,12 +944,12 @@ UNDSYMFILES += und-fshelp.lst
 
 fshelp.mod: pre-fshelp.o mod-fshelp.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fshelp.o: fshelp_mod-fs_fshelp.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-fshelp.o: mod-fshelp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
@@ -975,12 +983,12 @@ UNDSYMFILES += und-fat.lst
 
 fat.mod: pre-fat.o mod-fat.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fat.o: fat_mod-fs_fat.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-fat.o: mod-fat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
@@ -1014,12 +1022,12 @@ UNDSYMFILES += und-ext2.lst
 
 ext2.mod: pre-ext2.o mod-ext2.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ext2.o: ext2_mod-fs_ext2.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-ext2.o: mod-ext2.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
@@ -1053,12 +1061,12 @@ UNDSYMFILES += und-ufs.lst
 
 ufs.mod: pre-ufs.o mod-ufs.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ufs.o: ufs_mod-fs_ufs.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-ufs.o: mod-ufs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
@@ -1092,12 +1100,12 @@ UNDSYMFILES += und-minix.lst
 
 minix.mod: pre-minix.o mod-minix.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-minix.o: minix_mod-fs_minix.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-minix.o: mod-minix.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
@@ -1131,12 +1139,12 @@ UNDSYMFILES += und-hfs.lst
 
 hfs.mod: pre-hfs.o mod-hfs.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hfs.o: hfs_mod-fs_hfs.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-hfs.o: mod-hfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
@@ -1170,12 +1178,12 @@ UNDSYMFILES += und-jfs.lst
 
 jfs.mod: pre-jfs.o mod-jfs.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-jfs.o: jfs_mod-fs_jfs.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-jfs.o: mod-jfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
@@ -1213,12 +1221,12 @@ UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: _linux_mod-loader_i386_pc_linux.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-_linux.o: mod-_linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
@@ -1252,12 +1260,12 @@ UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: linux_mod-loader_i386_pc_linux_normal.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-linux.o: mod-linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -1292,12 +1300,12 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_arg.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-normal.o: mod-normal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1372,12 +1380,12 @@ UNDSYMFILES += und-hello.lst
 
 hello.mod: pre-hello.o mod-hello.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hello.o: hello_mod-hello_hello.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-hello.o: mod-hello.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
@@ -1411,12 +1419,12 @@ UNDSYMFILES += und-boot.lst
 
 boot.mod: pre-boot.o mod-boot.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-boot.o: boot_mod-commands_boot.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-boot.o: mod-boot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
@@ -1450,12 +1458,12 @@ UNDSYMFILES += und-terminal.lst
 
 terminal.mod: pre-terminal.o mod-terminal.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminal.o: terminal_mod-commands_terminal.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-terminal.o: mod-terminal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
@@ -1489,12 +1497,12 @@ UNDSYMFILES += und-ls.lst
 
 ls.mod: pre-ls.o mod-ls.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ls.o: ls_mod-commands_ls.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-ls.o: mod-ls.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
@@ -1528,12 +1536,12 @@ UNDSYMFILES += und-cmp.lst
 
 cmp.mod: pre-cmp.o mod-cmp.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cmp.o: cmp_mod-commands_cmp.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-cmp.o: mod-cmp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
@@ -1567,12 +1575,12 @@ UNDSYMFILES += und-cat.lst
 
 cat.mod: pre-cat.o mod-cat.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cat.o: cat_mod-commands_cat.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-cat.o: mod-cat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
@@ -1606,12 +1614,12 @@ UNDSYMFILES += und-vga.lst
 
 vga.mod: pre-vga.o mod-vga.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vga.o: vga_mod-term_i386_pc_vga.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-vga.o: mod-vga.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
@@ -1645,12 +1653,12 @@ UNDSYMFILES += und-font.lst
 
 font.mod: pre-font.o mod-font.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-font.o: font_mod-font_manager.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-font.o: mod-font.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
@@ -1684,12 +1692,12 @@ UNDSYMFILES += und-_multiboot.lst
 
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_multiboot.o: _multiboot_mod-loader_i386_pc_multiboot.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-_multiboot.o: mod-_multiboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
@@ -1723,12 +1731,12 @@ UNDSYMFILES += und-multiboot.lst
 
 multiboot.mod: pre-multiboot.o mod-multiboot.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-multiboot.o: multiboot_mod-loader_i386_pc_multiboot_normal.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-multiboot.o: mod-multiboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
@@ -1762,12 +1770,12 @@ UNDSYMFILES += und-amiga.lst
 
 amiga.mod: pre-amiga.o mod-amiga.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-amiga.o: amiga_mod-partmap_amiga.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-amiga.o: mod-amiga.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
@@ -1801,12 +1809,12 @@ UNDSYMFILES += und-apple.lst
 
 apple.mod: pre-apple.o mod-apple.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-apple.o: apple_mod-partmap_apple.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-apple.o: mod-apple.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
@@ -1840,12 +1848,12 @@ UNDSYMFILES += und-pc.lst
 
 pc.mod: pre-pc.o mod-pc.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-pc.o: pc_mod-partmap_pc.o
 	-rm -f $@
-	$(LD) -r -o $@ $^
+	$(LD) -r -d -o $@ $^
 
 mod-pc.o: mod-pc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
@@ -1869,6 +1877,45 @@ pc_mod-partmap_pc.d: partmap/pc.c
 -include pc_mod-partmap_pc.d
 
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For loopback.mod
+loopback_mod_SOURCES = disk/loopback.c
+CLEANFILES += loopback.mod mod-loopback.o mod-loopback.c pre-loopback.o loopback_mod-disk_loopback.o def-loopback.lst und-loopback.lst
+MOSTLYCLEANFILES += loopback_mod-disk_loopback.d
+DEFSYMFILES += def-loopback.lst
+UNDSYMFILES += und-loopback.lst
+
+loopback.mod: pre-loopback.o mod-loopback.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-loopback.o: loopback_mod-disk_loopback.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-loopback.o: mod-loopback.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
+
+mod-loopback.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'loopback' $< > $@ || (rm -f $@; exit 1)
+
+def-loopback.lst: pre-loopback.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 loopback/' > $@
+
+und-loopback.lst: pre-loopback.o
+	echo 'loopback' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+loopback_mod-disk_loopback.o: disk/loopback.c
+	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
+
+loopback_mod-disk_loopback.d: disk/loopback.c
+	set -e; 	  $(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,loopback_mod-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include loopback_mod-disk_loopback.d
+
+loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst
 pkgdata_DATA += moddep.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

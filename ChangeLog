@@ -1,3 +1,25 @@
+2005-01-21  Marco Gerards  <metgerards@student.han.nl>
+
+	Add the loopback device, a device via which files can be accessed
+	as devices.
+	
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `disk/loopback.c'.
+	(pkgdata_MODULES): Add loopback.mod.
+	(loopback_mod_SOURCES): New variable.
+	(loopback_mod_CFLAGS): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
+	`disk/loopback.c'.
+	(pkgdata_MODULES): Add loopback.mod.
+	(loopback_mod_SOURCES): New variable.
+	(loopback_mod_CFLAGS): Likewise.
+	* disk/loopback.c: new file.
+	* include/grub/normal.h (grub_loop_init): New prototype.
+	(grub_loop_fini): New prototype.
+	* util/grub-emu.c (main): Initialize and de-initialize loopback
+	support.
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	`GRUB_DISK_DEVICE_LOOPBACK_ID'.
+
 2005-01-20  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_enter): New

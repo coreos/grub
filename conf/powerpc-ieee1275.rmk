@@ -41,7 +41,7 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
 	normal/arg.c kern/partition.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
-	kern/env.c commands/ls.c		\
+	kern/env.c disk/loopback.c commands/ls.c		\
 	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
 grub_emu_LDFLAGS = -lncurses
 
@@ -65,7 +65,7 @@ genmoddep_SOURCES = util/genmoddep.c
 pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
-	pc.mod suspend.mod
+	pc.mod suspend.mod loopback.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -152,6 +152,10 @@ apple_mod_CFLAGS = $(COMMON_CFLAGS)
 # For pc.mod
 pc_mod_SOURCES = partmap/pc.c
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For loopback.mod
+loopback_mod_SOURCES = disk/loopback.c
+loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
