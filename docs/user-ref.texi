@@ -681,7 +681,7 @@ type code. This is useful only when booting DOS or Windows
 and multiple primary FAT partitions exist in one disk.
 @end deffn
 
-@deffn Command part_new part type from to
+@deffn Command partnew part type from to
 Create a new primary partition. @var{part} is a partition specification
 in GRUB syntax (@pxref{Naming convention}); @var{type} is the partition
 type and must be a number in the range @code{0-0xff}; @var{from} and
@@ -689,7 +689,7 @@ type and must be a number in the range @code{0-0xff}; @var{from} and
 sector number.
 @end deffn
 
-@deffn Command part_type part type
+@deffn Command parttype part type
 Change the type of an existing partition.  @var{part} is a partition
 specification in GRUB syntax (@pxref{Naming convention}); @var{type}
 is the new partition type and must be a number in the range 0-0xff.
@@ -712,7 +712,7 @@ Initialize a network device via the @dfn{RARP} protocol.  This command
 is only available if GRUB is compiled with netboot support.
 @end deffn
 
-@deffn Command serial [@option{--unit=}unit] [@option{--port=}port] [@option{--speed=}speed] [@option{--word=}word] [@option{--parity=}parity] [@option{--stop=}stop] [@option{--device=}dev]
+@deffn Command serial [@option{--unit=unit}] [@option{--port=port}] [@option{--speed=speed}] [@option{--word=word}] [@option{--parity=parity}] [@option{--stop=stop}] [@option{--device=dev}]
 Initialize a serial device. @var{unit} is a number in the range 0-3
 specifying which serial port to use; default is 0, that corresponds
 the port often called COM1. @var{port} is the I/O port where the UART
@@ -720,13 +720,13 @@ is to be found; if specified it takes precedence over @var{unit}.
 @var{speed} is the transmission speed; default is 9600. @var{word} and
 @var{stop} are the number of data bits and stop bits. Data bits must
 be in the range 5-8 and stop bits are 1 or 2. Default is 8 data bits
-and one stop bit. @var{parity} is one of @option{no}, @option{odd},
-@option{even} and defaults to @option{no}. The option @option{--device}
+and one stop bit. @var{parity} is one of @samp{no}, @samp{odd},
+@samp{even} and defaults to @samp{no}. The option @option{--device}
 can only be used in the GRUB shell and is used to specify the 
 tty device to be used in the host Operating System.
 
 The serial port is not used as a communication channel unless the
-@var{terminal} command is used.
+@command{terminal} command is used.
 
 This command is only available if GRUB is compiled with serial support.
 @end deffn
@@ -858,15 +858,15 @@ character each of the symbols corresponds:
 @end table
 @end deffn
 
-@deffn Command terminal [@option{--dumb}] [@option{--timeout=}secs] [console] [serial]"
+@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{console}] [@option{serial}]
 Select a terminal for user interaction. The terminal is assumed to be
 vt100 compatible unless @option{--dumb} is specified. If both
 @option{console} and @option{serial} are specified, then GRUB will use
-the one where a key is entered first. If neither are specified, the
-current setting is reported. Default is @option{console}.
-This command is only available if GRUB is compiled with serial support.
+the one where a key is entered first or the first when the timeout
+expires. If neither are specified, the current setting is
+reported. Default is @option{console}. This command is only available if
+GRUB is compiled with serial support.
 @end deffn
-
 
 @deffn Command tftpserver ipaddr
 Override a TFTP server address returned by a BOOTP/DHCP/RARP server. The
@@ -993,7 +993,7 @@ based on the C/H/S values automatically.
 @end deffn
 
 @deffn Command halt @option{--no-apm}
-The commands halts the computer. If the @option{--no-apm} option
+The command halts the computer. If the @option{--no-apm} option
 is specified, no APM BIOS call is performed. Otherwise, the computer
 is shut down using APM.
 @end deffn
@@ -1017,7 +1017,7 @@ Load an initial ramdisk for a Linux format boot image and set the
 appropriate parameters in the Linux setup area in memory.
 @end deffn
 
-@deffn Command install [@option{--force-lba}] stage1_file [@option{d}] dest_dev stage2_file [addr] [@option{p}] [config_file] [real_config_file]
+@deffn Command install [@option{--force-lba}] [@option{--stage2=os_stage2_file}] stage1_file [@option{d}] dest_dev stage2_file [addr] [@option{p}] [config_file] [real_config_file]
 This command is fairly complex, and you should not use this command
 unless you are familiar with GRUB. In short, it will perform a full
 install presuming the Stage 2 or Stage 1.5@footnote{They're loaded the
@@ -1062,6 +1062,10 @@ HP Vectra XU 6/200 BIOS version GG.06.11
 bitmap even if they do have the support. So GRUB provides a solution to
 ignore the wrong bitmap, that is, the option @option{--force-lba}. Don't
 use this option if you know that your BIOS doesn't have LBA support.
+
+@strong{Caution3:} You must specify the option @option{--stage2} in the
+grub shell, if you cannot unmount the filesystem where your stage2 file
+resides. The argument should be the file name in your operating system.
 @end deffn
 
 @deffn Command ioprobe drive
@@ -1176,10 +1180,10 @@ derived from attempting the mount will @emph{not} work correctly.
 @end deffn
 
 @deffn Command savedefault
-Save the current menu entry as default entry.
+Save the current menu entry as a default entry.
 @end deffn
 
-@deffn Command setup [@option{--force-lba}] install_device [image_device]
+@deffn Command setup [@option{--force-lba}] [@option{--stage2=os_stage2_file}] [@option{--prefix=dir}] install_device [image_device]
 Set up the installation of GRUB automatically. This command uses the
 more flexible command @command{install} in the backend and installs GRUB
 into the device @var{install_device}. If @var{image_device} is
@@ -1188,9 +1192,13 @@ otherwise use the current @dfn{root device}, which can be set by the
 command @command{root}. If @var{install_device} is a hard disk, then
 embed a Stage 1.5 in the disk if possible.
 
-The option @option{--force-lba} is just passed to @command{install} if
-specified. See the description on @command{install}, for more
-information.
+The option @option{--prefix} specifies the directory under which GRUB
+images are put. If it is not specified, GRUB automatically searches them
+in @file{/boot/grub} and @file{/grub}.
+
+The options @option{--force-lba} and @option{--stage2} are just passed
+to @command{install} if specified. See the description on
+@command{install}, for more information.
 @end deffn
 
 @deffn Command testload file

@@ -1,3 +1,9 @@
+2000-10-21  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/user-ref.texi: Fixed several typos and some inappropriate
+	texinfo commands, and update the descriptions about some
+	commands.
+	
 2000-10-20  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (displayapm_func): New function.
