@@ -67,22 +67,27 @@ fat_mount (void)
     return 0;
   
   /* Read bpb */
-  if (!devread (0, 0, sizeof(bpb), (char *) &bpb))
+  if (! devread (0, 0, sizeof (bpb), (char *) &bpb))
+    return 0;
+
+  /* Check if the number of sectors per cluster is zero here, to avoid
+     zero division.  */
+  if (bpb.sects_per_clust == 0)
     return 0;
   
-  for (i = 0; (1 << i) < FAT_CVT_U16(bpb.bytes_per_sect); i++)
-    {}
+  for (i = 0; (1 << i) < FAT_CVT_U16 (bpb.bytes_per_sect); i++)
+    ;
   FAT_SUPER->sectsize_bits = i;
   for (i = 0; (1 << i) < bpb.sects_per_clust; i++)
-    {}
+    ;
   FAT_SUPER->clustsize_bits = FAT_SUPER->sectsize_bits + i;
   
   /* Fill in info about super block */
-  FAT_SUPER->num_sectors = FAT_CVT_U16(bpb.short_sectors) 
-    ? FAT_CVT_U16(bpb.short_sectors) : bpb.long_sectors;
+  FAT_SUPER->num_sectors = FAT_CVT_U16 (bpb.short_sectors) 
+    ? FAT_CVT_U16 (bpb.short_sectors) : bpb.long_sectors;
   
   /* FAT offset and length */
-  FAT_SUPER->fat_offset = FAT_CVT_U16(bpb.reserved_sects);
+  FAT_SUPER->fat_offset = FAT_CVT_U16 (bpb.reserved_sects);
   FAT_SUPER->fat_length = 
     bpb.fat_length ? bpb.fat_length : bpb.fat32_length;
   

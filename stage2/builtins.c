@@ -378,6 +378,95 @@ static struct builtin builtin_chainloader =
 };
 
 
+/* This function could be used to debug new filesystem code. Put a file
+   in the new filesystem and the same file in a well-tested filesystem.
+   Then, run "cmp" with the files. If no output is obtained, probably
+   the code is good, otherwise investigate what's wrong...  */
+/* cmp FILE1 FILE2 */
+static int
+cmp_func (char *arg, int flags)
+{
+  /* The filenames.  */
+  char *file1, *file2;
+  /* The addresses.  */
+  char *addr1, *addr2;
+  int i;
+  /* The size of the file.  */
+  int size;
+
+  /* Get the filenames from ARG.  */
+  file1 = arg;
+  file2 = skip_to (0, arg);
+  if (! *file1 || ! *file2)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  /* Terminate the filenames for convenience.  */
+  nul_terminate (file1);
+  nul_terminate (file2);
+
+  /* Read the whole data from FILE1.  */
+  addr1 = (char *) RAW_ADDR (0x100000);
+  if (! grub_open (file1))
+    return 1;
+  
+  /* Get the size.  */
+  size = filemax;
+  if (grub_read (addr1, -1) != size)
+    {
+      grub_close ();
+      return 1;
+    }
+  
+  grub_close ();
+
+  /* Read the whole data from FILE2.  */
+  addr2 = addr1 + size;
+  if (! grub_open (file2))
+    return 1;
+
+  /* Check if the size of FILE2 is equal to the one of FILE2.  */
+  if (size != filemax)
+    {
+      grub_printf ("Differ in size: 0x%x [%s], 0x%x [%s]\n",
+		   size, file1, filemax, file2);
+      grub_close ();
+      return 0;
+    }
+  
+  if (! grub_read (addr2, -1))
+    {
+      grub_close ();
+      return 1;
+    }
+  
+  grub_close ();
+
+  /* Now compare ADDR1 with ADDR2.  */
+  for (i = 0; i < size; i++)
+    {
+      if (addr1[i] != addr2[i])
+	grub_printf ("Differ at the offset %d: 0x%x [%s], 0x%x [%s]\n",
+		     i, (unsigned) addr1[i], file1,
+		     (unsigned) addr2[i], file2);
+    }
+  
+  return 0;
+}
+
+static struct builtin builtin_cmp =
+{
+  "cmp",
+  cmp_func,
+  BUILTIN_CMDLINE,
+  "cmp FILE1 FILE2",
+  "Compare the file FILE1 with the FILE2 and inform the different values"
+  " if any."
+};
+
+
 /* color */
 /* Set new colors used for the menu interface. Support two methods to
    specify a color name: a direct integer representation and a symbolic
@@ -2839,6 +2928,7 @@ struct builtin *builtin_table[] =
   &builtin_bootp,
   &builtin_cat,
   &builtin_chainloader,
+  &builtin_cmp,
   &builtin_color,
   &builtin_configfile,
   &builtin_debug,

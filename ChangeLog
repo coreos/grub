@@ -1,3 +1,12 @@
+2000-02-19  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (cmp_func): New function.
+	(builtin_cmp): New variable.
+	(builtin_table): Added a pointer to BUILTIN_CMP.
+
+	* stage2/fsys_fat.c (fat_mount): Check if BPB.SECTS_PER_CLUST is
+	zero after reading the BPB to avoid zero division.
+	
 2000-02-18  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/disk_io.c [!STAGE1_5] (make_saved_active): Make sure

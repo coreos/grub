@@ -41,6 +41,7 @@ New in 0.5.94:
 * New commands "bootp", "dhcp" and "rarp" can be used to initialize a
   network device and get IP addresses from a network.
 * Long filename support in the FAT filesystem is added.
+* The command "cmp" compares each bytes in two files.
 
 New in 0.5.93 - 1999-10-30:
 * ELF format of FreeBSD kernel is supported.
