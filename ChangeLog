@@ -1,5 +1,11 @@
 2005-01-21  Marco Gerards  <metgerards@student.han.nl>
 
+	* fs/minix.c (grub_minix_find_file): Reserve more space for
+	`fpath' so the \0 can be stored.  Use `grub_strcpy' instead of
+	`grub_strncpy' to copy `path' into it.
+
+2005-01-21  Marco Gerards  <metgerards@student.han.nl>
+
 	Add the loopback device, a device via which files can be accessed
 	as devices.
 	

@@ -1,7 +1,7 @@
 /* minix.c - The minix filesystem, version 1 and 2.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -325,13 +325,13 @@ grub_minix_lookup_symlink (struct grub_minix_data *data, int ino)
 static grub_err_t
 grub_minix_find_file (struct grub_minix_data *data, const char *path)
 {
-  char fpath[grub_strlen (path)];
+  char fpath[grub_strlen (path) + 1];
   char *name = fpath;
   char *next;
   unsigned int pos = 0;
   int dirino;
   
-  grub_strncpy (fpath, path, grub_strlen (path));
+  grub_strcpy (fpath, path);
   
   /* Skip the first slash.  */
   if (name[0] == '/')
