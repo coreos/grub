@@ -74,6 +74,7 @@ char *err_list[] =
   [ERR_NEED_MB_KERNEL] = "Multiboot kernel must be loaded before modules",
   [ERR_NEED_SERIAL] = "Serial device not configured",
   [ERR_NO_DISK] = "Selected disk does not exist",
+  [ERR_NO_DISK_SPACE] = "No spare sectors on the disk",
   [ERR_NO_PART] = "No such partition",
   [ERR_NUMBER_PARSING] = "Error while parsing number",
   [ERR_OUTSIDE_PART] = "Attempt to access block outside partition",

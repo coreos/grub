@@ -3056,6 +3056,12 @@ enter a correct password before running such an entry.
 @item 33 : Serial device not configured
 This error is returned if you try to change your terminal to a serial
 one before initializing any serial device.
+
+@item 34 : No spare sectors on the disk
+This error is returned if a disk doesn't have enough spare space. This
+happens when you try to embed Stage 1.5 into the unused sectors after
+the MBR, but the first partition starts right after the MBR or they are
+used by EZ-BIOS.
 @end table
 
 

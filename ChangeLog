@@ -1,5 +1,15 @@
 2001-12-10  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* stage2/shared.h (ERR_NO_DISK_SPACE): New constant.
+	* stage2/common.c (err_list): Added an entry for
+	ERR_NO_DISK_SPACE.
+	* docs/grub.texi (Stage2 errors): Added the description.
+	* stage2/builtins.c (embed_func): Use ERR_NO_DISK_SPACE instead
+	of ERR_DEV_VALUES when the spare space is too small. Suggested
+	by Eric Mumpower <nocturne@permabit.com>.
+	
+2001-12-10  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* grub/asmstub.c: Include <signal.h>.
 	(grub_stage2) [HAVE_LIBCURSES]: If USE_CURSES is true, ignore
 	the signal SIGWINCH. Reported by Christian Hudon

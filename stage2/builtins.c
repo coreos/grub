@@ -1034,7 +1034,7 @@ embed_func (char *arg, int flags)
       /* Check if the disk can store the Stage 1.5.  */
       if (PC_SLICE_START (mbr, 0) - 1 < size)
 	{
-	  errnum = ERR_DEV_VALUES;
+	  errnum = ERR_NO_DISK_SPACE;
 	  return 1;
 	}
 
@@ -1051,7 +1051,7 @@ embed_func (char *arg, int flags)
 	  /* The space after the MBR is used by EZ-BIOS which we must 
 	   * not overwrite.
 	   */
-	  errnum = ERR_DEV_VALUES;
+	  errnum = ERR_NO_DISK_SPACE;
 	  return 1;
 	}
 

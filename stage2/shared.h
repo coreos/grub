@@ -547,6 +547,7 @@ typedef enum
   ERR_UNALIGNED,
   ERR_PRIVILEGED,
   ERR_NEED_SERIAL,
+  ERR_NO_DISK_SPACE,
 
   MAX_ERR_NUM
 } grub_error_t;
