@@ -7,9 +7,8 @@ New in 0.5.94:
 * The command "embed" embeds a Stage 1.5 in the sectors after a MBR.
 * Support symbolic color name syntax in the command "color".
 * The grub shell loads the BIOS drive mapping information from a device
-  map file (the default is "/boot/grub/device.map") if it already
-  exists. If not found, try to create it based on the guessed
-  information.
+  map file if it is specified and can be opened. If not found, try to
+  create it based on the guessed information.
 * NetBSD support in the grub shell is improved.
 * A simple checker for the format of a Multiboot kernel, ``mbchk'', is
   added.

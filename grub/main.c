@@ -38,11 +38,10 @@ int verbose = 0;
 int read_only = 0;
 int no_floppy = 0;
 int probe_second_floppy = 0;
-char *device_map_file = "/boot/grub/device.map";
+char *device_map_file = 0;
 static int default_boot_drive;
 static int default_install_partition;
 static char *default_config_file;
-static char *default_device_map_file;
 
 #define OPT_HELP -2
 #define OPT_VERSION -3
@@ -94,7 +93,7 @@ Enter the GRand Unified Bootloader command shell.\n\
     --batch                  turn on batch mode for non-interactive use\n\
     --boot-drive=DRIVE       specify stage2 boot_drive [default=0x%x]\n\
     --config-file=FILE       specify stage2 config_file [default=%s]\n\
-    --device-map=FILE        specify the device map file [default=%s]\n\
+    --device-map=FILE        Use the device map file FILE\n\
     --help                   display this message and exit\n\
     --hold                   wait until a debugger will attach\n\
     --install-partition=PAR  specify stage2 install_partition [default=0x%x]\n\
@@ -109,7 +108,7 @@ Enter the GRand Unified Bootloader command shell.\n\
 Report bugs to bug-grub@gnu.org\n\
 ",
 	    default_boot_drive, default_config_file,
-	    default_device_map_file, default_install_partition);
+	    default_install_partition);
 
   exit (status);
 }
@@ -133,7 +132,6 @@ main (int argc, char **argv)
     default_config_file = config_file;
   else
     default_config_file = "NONE";
-  default_device_map_file = device_map_file;
   
   /* Parse command-line options. */
   do

@@ -1221,18 +1221,18 @@ Print the version number of GRUB and exit.
 Print some verbose messages for debugging purpose.
 
 @item --device-map=@var{file}
-Read the device map file instead of @file{/boot/grub/device.map}. The
-format is described in @ref{Device map}.
+Use the device map file @var{file}. The format is described in
+@ref{Device map}.
 
 @item --no-floppy
-Do not probe any floppy drive. This option has no effect if there is the
-device map file (@pxref{Device map}).
+Do not probe any floppy drive. This option has no effect if the option
+@option{--device-map} is specified (@pxref{Device map}).
 
 @item --probe-second-floppy
 Probe the second floppy drive. If this option is not specified, the grub
-shell does not probe it, as that sometimes takes a long time. If there
-is the device map file (@pxref{Device map}), the grub shell just ignores
-this option.
+shell does not probe it, as that sometimes takes a long time. If you
+specify the device map file (@pxref{Device map}), the grub shell just
+ignores this option.
 
 @item --config-file=@var{file}
 Read the configuration file @var{file} instead of
@@ -1318,10 +1318,9 @@ EOT
 @node Device map
 @section The map between BIOS drives and OS devices
 
-The grub shell creates the @dfn{device map file} automatically unless it
-already exists. The default location is
-@file{/boot/grub/device.map}. @xref{Basic usage}, if you want to change
-the filename.
+When you specify the option @option{--device-map} (@pxref{Basic usage}),
+the grub shell creates the @dfn{device map file} automatically unless it
+already exists. The filename @file{/boot/grub/device.map} is preferred.
 
 If the device map file exists, the grub shell reads it to map BIOS
 drives to OS devices. This file consists of lines like this:

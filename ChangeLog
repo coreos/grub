@@ -1,3 +1,15 @@
+1999-11-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Do not use the device map file unless --device-map is specified.
+	
+	* grub/main.c (device_map_file): Set to 0.
+	(default_device_map_file): Removed.
+	(usage): Do not print DEFAULT_DEVICE_MAP_FILE.
+	* grub/asmstub.c (init_device_map): If DEVICE_MAP_FILE is NULL,
+	do not try to open the device map file.
+	Set FP to NULL by default.
+	* docs/grub.8: Regenerated.
+	
 1999-11-11  Michael Hohmuth  <hohmuth@innocent.com>
 
 	* stage2/boot.c (load_image): grub_close was called after

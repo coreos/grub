@@ -223,7 +223,7 @@ init_device_map (void)
 {
   int i;
   int num_hd = 0;
-  FILE *fp;
+  FILE *fp = 0;
 
   static void print_error (int no, const char *msg)
     {
@@ -240,96 +240,100 @@ init_device_map (void)
   for (i = 0; i < NUM_DISKS; i++)
     device_map[i] = 0;
 
-  /* Open the device map file.  */
-  fp = fopen (device_map_file, "r");
-  if (fp)
+  if (device_map_file)
     {
-      /* If there is the device map file, use the data in it instead of
-	 probing devices.  */
-      char buf[1024];		/* XXX */
-      int line_number = 0;
-
-      while (fgets (buf, sizeof (buf), fp))
+      /* Open the device map file.  */
+      fp = fopen (device_map_file, "r");
+      if (fp)
 	{
-	  char *ptr, *eptr;
-	  int drive;
-	  int is_floppy = 0;
+	  /* If there is the device map file, use the data in it instead of
+	     probing devices.  */
+	  char buf[1024];		/* XXX */
+	  int line_number = 0;
 	  
-	  /* Increase the number of lines.  */
-	  line_number++;
-
-	  /* If the first character is '#', skip it.  */
-	  if (buf[0] == '#')
-	    continue;
-
-	  ptr = buf;
-	  /* Skip leading spaces.  */
-	  while (*ptr && isspace (*ptr))
-	    ptr++;
-
-	  if (*ptr != '(')
+	  while (fgets (buf, sizeof (buf), fp))
 	    {
-	      print_error (line_number, "No open parenthesis found");
-	      stop ();
+	      char *ptr, *eptr;
+	      int drive;
+	      int is_floppy = 0;
+	      
+	      /* Increase the number of lines.  */
+	      line_number++;
+	      
+	      /* If the first character is '#', skip it.  */
+	      if (buf[0] == '#')
+		continue;
+	      
+	      ptr = buf;
+	      /* Skip leading spaces.  */
+	      while (*ptr && isspace (*ptr))
+		ptr++;
+	      
+	      if (*ptr != '(')
+		{
+		  print_error (line_number, "No open parenthesis found");
+		  stop ();
+		}
+	      
+	      ptr++;
+	      if ((*ptr != 'f' && *ptr != 'h') || *(ptr + 1) != 'd')
+		{
+		  print_error (line_number, "Bad drive name");
+		  stop ();
+		}
+	      
+	      if (*ptr == 'f')
+		is_floppy = 1;
+	      
+	      ptr += 2;
+	      drive = strtoul (ptr, &ptr, 10);
+	      if (drive < 0 || drive > 8)
+		{
+		  print_error (line_number, "Bad device number");
+		  stop ();
+		}
+	      
+	      if (! is_floppy)
+		drive += 0x80;
+	      
+	      if (*ptr != ')')
+		{
+		  print_error (line_number, "No close parenthesis found");
+		  stop ();
+		}
+	      
+	      ptr++;
+	      /* Skip spaces.  */
+	      while (*ptr && isspace (*ptr))
+		ptr++;
+	      
+	      if (! *ptr)
+		{
+		  print_error (line_number, "No filename found");
+		  stop ();
+		}
+	      
+	      /* Terminate the filename.  */
+	      eptr = ptr;
+	      while (*eptr && ! isspace (*eptr))
+		eptr++;
+	      *eptr = 0;
+	      
+	      assign_device_name (drive, ptr);
 	    }
-
-	  ptr++;
-	  if ((*ptr != 'f' && *ptr != 'h') || *(ptr + 1) != 'd')
-	    {
-	      print_error (line_number, "Bad drive name");
-	      stop ();
-	    }
-
-	  if (*ptr == 'f')
-	    is_floppy = 1;
 	  
-	  ptr += 2;
-	  drive = strtoul (ptr, &ptr, 10);
-	  if (drive < 0 || drive > 8)
-	    {
-	      print_error (line_number, "Bad device number");
-	      stop ();
-	    }
-
-	  if (! is_floppy)
-	    drive += 0x80;
-	  
-	  if (*ptr != ')')
-	    {
-	      print_error (line_number, "No close parenthesis found");
-	      stop ();
-	    }
-
-	  ptr++;
-	  /* Skip spaces.  */
-	  while (*ptr && isspace (*ptr))
-	    ptr++;
-
-	  if (! *ptr)
-	    {
-	      print_error (line_number, "No filename found");
-	      stop ();
-	    }
-
-	  /* Terminate the filename.  */
-	  eptr = ptr;
-	  while (*eptr && ! isspace (*eptr))
-	    eptr++;
-	  *eptr = 0;
-
-	  assign_device_name (drive, ptr);
+	  fclose (fp);
+	  return;
 	}
-      
-      fclose (fp);
-      return;
-    } 
+    }
   
   /* Print something as the user does not think GRUB has been crashed.  */
   fprintf (stderr,
 	   "Probe devices to guess BIOS drives. This may take a long time.\n");
 
-  /* Try to open the device map file to write the probed data.  */
-  fp = fopen (device_map_file, "w");
+  if (device_map_file)
+    /* Try to open the device map file to write the probed data.  */
+    fp = fopen (device_map_file, "w");
   
   /* Floppies.  */
   if (! no_floppy)
