@@ -155,23 +155,24 @@ load_image (char *kernel, char *arg)
 	   *  one...  plus of course we need to know which booting
 	   *  method to use.
 	   */
+	  entry_addr = (entry_func) ((int) entry_addr & 0xFFFFFF);
+	  
 	  if (buffer[0] == 0xb && buffer[1] == 1)
 	    {
 	      type = KERNEL_TYPE_FREEBSD;
-	      entry_addr = (entry_func) (((int) entry_addr) & 0xFFFFFF);
+	      cur_addr = (int) entry_addr;
 	      str2 = "FreeBSD";
 	    }
 	  else
 	    {
 	      type = KERNEL_TYPE_NETBSD;
-	      entry_addr = (entry_func) (((int) entry_addr) & 0xF00000);
+	      cur_addr = (int) entry_addr & 0xF00000;
 	      if (N_GETMAGIC ((*(pu.aout))) != NMAGIC)
 		align_4k = 0;
 	      str2 = "NetBSD";
 	    }
 	}
 
-      cur_addr = (int) entry_addr;
       /* first offset into file */
       filepos = N_TXTOFF ((*(pu.aout)));
       text_len = pu.aout->a_text;
@@ -351,7 +352,8 @@ load_image (char *kernel, char *arg)
 	  int symtab_err, orig_addr = cur_addr;
 
 	  /* we should align to a 4K boundary here for good measure */
-	  cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
+	  if (align_4k)
+	    cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
 
 	  mbi.syms.a.addr = cur_addr;
 

@@ -1,3 +1,11 @@
+1999-10-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* acinclude.m4 (grub_PROG_OBJCOPY_ABSOLUTE): main -> cmain.
+	* stage2/boot.c (load_image): Only CUR_ADDR, not ENTRY_ADDR
+	should be 1M-aligned for NetBSD. Don't align symbol table on 4k
+	boundaries if the kernel doesn't require it.
+
 1999-10-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/asm.S [!STAGE1_5] (start): New label to force ld quiet.

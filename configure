@@ -1590,7 +1590,7 @@ if eval "test \"\${grub_cv_prog_objcopy_absolute+set}\" = set"; then
 else
   cat > conftest.c <<\EOF
 void
-main (void)
+cmain (void)
 {
    *((int *) 0x1000) = 2;
 }

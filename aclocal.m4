@@ -57,7 +57,7 @@ AC_DEFUN(grub_PROG_OBJCOPY_ABSOLUTE,
 AC_CACHE_VAL(grub_cv_prog_objcopy_absolute,
 [cat > conftest.c <<\EOF
 void
-main (void)
+cmain (void)
 {
    *((int *) 0x1000) = 2;
 }

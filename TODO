@@ -26,7 +26,6 @@ Priorities:
 * Add indirect block support to the BSD FFS filesystem code, so files
   larger than 16MB can be read. !
 ? Add command for modifying partition types.
-* Add OpenBSD support. The recent versions cannot be loaded. !!!
 * Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot
   parameters. !!
 * Add a new installation command, such as `setup', which should be
