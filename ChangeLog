@@ -1,3 +1,8 @@
+1999-09-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/help2man: Upgraded to 1.013.
+	* docs/grub.8: Regenerated.
+	
 1999-09-02  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* stage2/cmdline.c (enter_cmdline) [GRUB_UTIL]: Add a space in
