@@ -1,8 +1,10 @@
 grub (0.5.92) unstable; urgency=low
 
-  *
+  * Data files are now in /usr/lib/grub/$(HWARCH).
+  * Unix boot utility available as /usr/sbin/grub.
+  * Full Texinfo documentation.
 
- --
+ -- GRUB Maintainers <bug-grub@gnu.org>  Mon, 26 Jul 1999 12:46:37 -0600
 
 grub (0.5.91) unstable; urgency=low
 
@@ -72,5 +74,5 @@ grub (0.4-1) unstable; urgency=low
 
 Local variables:
 mode: debian-changelog
-add-log-mailing-address: "gord@debian.org"
+add-log-mailing-address: "bug-grub@gnu.org"
 End:

@@ -5,6 +5,12 @@ noinst_SCRIPTS = $(HELP2MAN)
 
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS)
 
+# FIXME: Use this rule until Debian has the new Texinfo.
+grub.info: grub.texi
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && sed 's/@command/@file/g; s/ifnottex/ifinfo/' grub.texi | $(MAKEINFO)
+
 if GRUB_MAINT
 $(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
 	$(srcdir)/$(HELP2MAN) --name="the stage2 emulator shell" \

@@ -1,3 +1,8 @@
+1999-07-15  Gordon Matzigkeit  <gord@zen.fig.org>
+
+	* docs/Makefile.am (grub.info): Use an ugly hack to downgrade
+ 	grub.texi so that it works with Debian's version of texinfo.
+
 1999-07-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/bios.c (get_diskinfo): When DRIVE is a floppy drive,

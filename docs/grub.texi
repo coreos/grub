@@ -187,7 +187,7 @@ Standard, Motivation, multiboot, The Multiboot Standard}.
 
 The other goals, listed in approximate order of importance, are:
 
-@itemize
+@itemize @bullet{}
 @item
 Basic functions must be straightforward for end-users.
 

@@ -10,7 +10,7 @@ INSTALL_PROGRAM = $(INSTALL) -m 755
 
 build:
 	$(checkdir)
-	./configure --prefix= --datadir='$$(prefix)/lib'
+	./configure --prefix=/usr
 	make
 	echo timestamp > build
 
@@ -31,18 +31,14 @@ binary-arch:	checkroot build
 	$(checkdir)
 	-rm -rf debian/tmp
 ## make dirs
-	install -d debian/tmp debian/tmp/usr/doc/grub/docs debian/tmp/DEBIAN
+	install -d debian/tmp debian/tmp/usr/doc/grub debian/tmp/DEBIAN
 ## install files
 
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
-	-rmdir debian/tmp/sbin
 
-	mv debian/tmp/info debian/tmp/usr/info
-
-	cp docs/*.txt docs/*.html debian/tmp/usr/doc/grub/docs/
-	$(INSTALL_DATA)	docs/TODO debian/tmp/usr/doc/grub/docs/
-	$(INSTALL_DATA)	docs/BUGS debian/tmp/usr/doc/grub/docs/
-	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/docs/
+	$(INSTALL_DATA)	TODO debian/tmp/usr/doc/grub/
+	$(INSTALL_DATA)	BUGS debian/tmp/usr/doc/grub/
+	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/
 
 	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/changelog
 	gzip -f9 debian/tmp/usr/doc/grub/changelog

@@ -395,6 +395,11 @@ all-redirect all-am all install-strip installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
+# FIXME: Use this rule until Debian has the new Texinfo.
+grub.info: grub.texi
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && sed 's/@command/@file/g; s/ifnottex/ifinfo/' grub.texi | $(MAKEINFO)
 
 @GRUB_MAINT_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
 @GRUB_MAINT_TRUE@	$(srcdir)/$(HELP2MAN) --name="the stage2 emulator shell" \

@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New:
+New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).
 * The /sbin/grub stage2 simulator now works at least on GNU/Linux, and
   uses the Linux HDIO_GETGEO ioctl to determine hard disk geometry.
