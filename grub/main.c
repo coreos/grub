@@ -23,17 +23,20 @@ int grub_stage2 (void);
 
 #include <stdio.h>
 #include <getopt.h>
+#include <unistd.h>
 
 char *program_name = 0;
 
 #define OPT_HELP -2
 #define OPT_VERSION -3
+#define OPT_HOLD -4
 #define OPTSTRING ""
 
 static struct option longopts[] =
 {
   {"help", no_argument, 0, OPT_HELP},
   {"version", no_argument, 0, OPT_VERSION},
+  {"hold", no_argument, 0, OPT_HOLD},
   {0},
 };
 
@@ -51,6 +54,7 @@ Usage: %s [OPTION]...\n\
 Enter the GRand Unified Bootloader command shell.\n\
 \n\
     --help                display this message and exit\n\
+    --hold                wait forever so that a debugger may be attached\n\
     --version             print version information and exit\n\
 ",
 	    program_name);
@@ -63,6 +67,7 @@ int
 main (int argc, char **argv)
 {
   int c;
+  int hold = 0;
   program_name = argv[0];
 
   /* Parse command-line options. */
@@ -73,6 +78,10 @@ main (int argc, char **argv)
 	{
 	case EOF:
 	  /* Fall through the bottom of the loop. */
+	  break;
+
+	case OPT_HOLD:
+	  hold = 1;
 	  break;
 
 	case OPT_HELP:
@@ -89,6 +98,10 @@ main (int argc, char **argv)
 	}
     }
   while (c != EOF);
+
+  /* Wait until the HOLD variable is cleared by an attached debugger. */
+  while (hold)
+    sleep (1);
 
   /* Transfer control to the stage2 simulator. */
   exit (grub_stage2 ());

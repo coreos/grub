@@ -293,7 +293,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	case 6:		/* C-f forward one character */
 	  if (lpos < llen)
 	    {
-	      lpos++;
+	      lpos ++;
 	      cl_setcpos ();
 	    }
 	  break;
@@ -307,7 +307,7 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 	case 4:		/* C-d delete character under cursor */
 	  if (lpos == llen)
 	    break;
-	  lpos++;
+	  lpos ++;
 	  /* fallthrough is on purpose! */
 	case 8:		/* C-h backspace */
 	  if (lpos > 0)
@@ -361,7 +361,8 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen)
 		  cmdline[lpos] = c;
 		  cmdline[lpos + 1] = 0;
 		  cl_print (cmdline + lpos);
-		  lpos++;
+		  lpos ++;
+		  cl_setcpos ();
 		}
 	      else
 		{

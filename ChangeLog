@@ -1,3 +1,13 @@
+1999-03-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* char_io.c (get_cmdline): Call cl_setcpos even if lpos == llen,
+	because ncurses won't update the cursor position.
+
+	* grub/main.c (OPT_HOLD): New macro.
+	(longopts): New option --hold.
+	(usage): Add the documentation about --hold.
+	(main): Set hold if --hold is specified. Wait until cleared.
+
 1999-03-22  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/cmdline.c (enter_cmdline): Check the return value of
