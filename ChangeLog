@@ -1,3 +1,14 @@
+2003-02-08  NIIBE Yutaka  <gniibe@m17n.org>
+
+	* util/resolve.c (pupa_util_resolve_dependencies): BUG
+	FIX. Reverse the path_list.
+
+	* include/pupa/normal.h: Export pupa_register_command and
+	pupa_unregister_command.
+
+	* hello/hello.c (pupa_cmd_hello): New module.
+	* conf/i386-pc.rmk: Added hello.mod.
+
 2003-01-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/i386/pc/lzo1x.S: New file.

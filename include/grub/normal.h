@@ -22,6 +22,7 @@
 #define PUPA_NORMAL_HEADER	1
 
 #include <pupa/setjmp.h>
+#include <pupa/symbol.h>
 
 /* The maximum size of a command-line.  */
 #define PUPA_MAX_CMDLINE	1600
@@ -117,12 +118,12 @@ void pupa_menu_run (pupa_menu_t menu, int nested);
 void pupa_cmdline_run (int nested);
 int pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
-void pupa_register_command (const char *name,
+void EXPORT_FUNC(pupa_register_command) (const char *name,
 			    int (*func) (int argc, char *argv[]),
 			    unsigned flags,
 			    const char *summary,
 			    const char *description);
-void pupa_unregister_command (const char *name);
+void EXPORT_FUNC(pupa_unregister_command) (const char *name);
 pupa_command_t pupa_command_find (char *cmdline);
 int pupa_command_execute (char *cmdline);
 void pupa_command_init (void);

@@ -61,7 +61,7 @@ pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
 genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod hello.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -80,3 +80,7 @@ normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/main.c \
 	normal/menu.c normal/i386/setjmp.S
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
+
+# For hello.mod.
+hello_mod_SOURCES = hello/hello.c
+hello_mod_CFLAGS = $(COMMON_CFLAGS)

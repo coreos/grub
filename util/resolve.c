@@ -234,7 +234,7 @@ pupa_util_resolve_dependencies (const char *prefix,
   struct dep_list *dep_list;
   struct mod_list *mod_list = 0;
   struct pupa_util_path_list *path_list = 0;
-  
+
   path = pupa_util_get_path (prefix, dep_list_file);
   fp = fopen (path, "r");
   if (! fp)
@@ -253,5 +253,16 @@ pupa_util_resolve_dependencies (const char *prefix,
   free_dep_list (dep_list);
   free_mod_list (mod_list);
 
-  return path_list;
+  { /* Reverse the path_list */
+    struct pupa_util_path_list *p, *prev, *next;
+
+    for (p = path_list, prev = NULL; p; p = next)
+      {
+	next = p->next;
+	p->next = prev;
+	prev = p;
+      }
+
+    return prev;
+  }
 }
