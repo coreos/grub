@@ -1,5 +1,11 @@
 2000-12-14  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Erik Schoenfelder <schoenfr@gaertner.de>:
+	* util/grub-install.in (convert): Revised the fix for floppy
+	device handling.
+	
+2000-12-14  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From HORIKAWA Kazunori <kaz-hori@tkd.att.ne.jp>:
 	* stage2/bios.c (get_diskinfo): Append 16 bytes dummy data to
 	DRP, because the BIOS of Thinkpad X20 write a garbage beyond the
