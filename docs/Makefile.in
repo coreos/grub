@@ -85,7 +85,7 @@ install_sh = @install_sh@
 info_TEXINFOS = grub.texi multiboot.texi
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
-man_MANS = grub.8
+man_MANS = grub.8 mbchk.1
 HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
@@ -104,6 +104,7 @@ TEXI2DVI = texi2dvi
 INFO_DEPS = grub.info multiboot.info
 DVIS = grub.dvi multiboot.dvi
 TEXINFOS = grub.texi multiboot.texi
+man1dir = $(mandir)/man1
 man8dir = $(mandir)/man8
 MANS = $(man_MANS)
 
@@ -273,6 +274,41 @@ maintainer-clean-aminfo:
 	  fi; \
 	done
 
+install-man1:
+	$(mkinstalldirs) $(DESTDIR)$(man1dir)
+	@list='$(man1_MANS)'; \
+	l2='$(man_MANS)'; for i in $$l2; do \
+	  case "$$i" in \
+	    *.1*) list="$$list $$i" ;; \
+	  esac; \
+	done; \
+	for i in $$list; do \
+	  if test -f $(srcdir)/$$i; then file=$(srcdir)/$$i; \
+	  else file=$$i; fi; \
+	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
+	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
+	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
+	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
+	  echo " $(INSTALL_DATA) $$file $(DESTDIR)$(man1dir)/$$inst"; \
+	  $(INSTALL_DATA) $$file $(DESTDIR)$(man1dir)/$$inst; \
+	done
+
+uninstall-man1:
+	@list='$(man1_MANS)'; \
+	l2='$(man_MANS)'; for i in $$l2; do \
+	  case "$$i" in \
+	    *.1*) list="$$list $$i" ;; \
+	  esac; \
+	done; \
+	for i in $$list; do \
+	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
+	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
+	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
+	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
+	  echo " rm -f $(DESTDIR)$(man1dir)/$$inst"; \
+	  rm -f $(DESTDIR)$(man1dir)/$$inst; \
+	done
+
 install-man8:
 	$(mkinstalldirs) $(DESTDIR)$(man8dir)
 	@list='$(man8_MANS)'; \
@@ -309,10 +345,10 @@ uninstall-man8:
 	done
 install-man: $(MANS)
 	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-man8
+	$(MAKE) $(AM_MAKEFLAGS) install-man1 install-man8
 uninstall-man:
 	@$(NORMAL_UNINSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-man8
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-man1 uninstall-man8
 tags: TAGS
 TAGS:
 
@@ -360,7 +396,8 @@ all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(infodir) $(DESTDIR)$(mandir)/man8
+	$(mkinstalldirs)  $(DESTDIR)$(infodir) $(DESTDIR)$(mandir)/man1 \
+		$(DESTDIR)$(mandir)/man8
 
 
 mostlyclean-generic:
@@ -393,13 +430,13 @@ maintainer-clean: maintainer-clean-am
 
 .PHONY: mostlyclean-vti distclean-vti clean-vti maintainer-clean-vti \
 install-info-am uninstall-info mostlyclean-aminfo distclean-aminfo \
-clean-aminfo maintainer-clean-aminfo install-man8 uninstall-man8 \
-install-man uninstall-man tags distdir info-am info dvi-am dvi check \
-check-am installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all install-strip installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+clean-aminfo maintainer-clean-aminfo install-man1 uninstall-man1 \
+install-man8 uninstall-man8 install-man uninstall-man tags distdir \
+info-am info dvi-am dvi check check-am installcheck-am installcheck \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all install-strip \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # Cancel the rule %.texi -> %. This rule may confuse make to determine
@@ -424,6 +461,10 @@ grub.info: grub.texi
 @MAINTAINER_MODE_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
 @MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) --name="the grub shell" \
 @MAINTAINER_MODE_TRUE@		--section=8 --output=$@ $<
+
+@MAINTAINER_MODE_TRUE@$(srcdir)/mbchk.1: ../util/mbchk $(srcdir)/$(HELP2MAN)
+@MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) --name="Multiboot format checker" \
+@MAINTAINER_MODE_TRUE@		--section=1 --output=$@ $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,7 +1,7 @@
 info_TEXINFOS = grub.texi multiboot.texi
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
-man_MANS = grub.8
+man_MANS = grub.8 mbchk.1
 HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
@@ -32,4 +32,9 @@ if MAINTAINER_MODE
 $(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
 	$(PERL) $(srcdir)/$(HELP2MAN) --name="the grub shell" \
 		--section=8 --output=$@ $<
+
+$(srcdir)/mbchk.1: ../util/mbchk $(srcdir)/$(HELP2MAN)
+	$(PERL) $(srcdir)/$(HELP2MAN) \
+		--name="check the format of a Multiboot kernel" \
+		--section=1 --output=$@ $<
 endif
