@@ -66,6 +66,9 @@ struct hd_geometry
   unsigned long start;
 };
 # endif /* ! HDIO_GETGEO */
+# ifndef BLKGETSIZE
+#  define BLKGETSIZE    _IO(0x12,96)    /* return device size */
+# endif /* ! BLKGETSIZE */
 # ifndef MAJOR
 #  ifndef MINORBITS
 #   define MINORBITS	8
@@ -165,7 +168,34 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
   disk->id = drive;
 
   /* Get the size.  */
-  if (lstat (map[drive], &st) < 0)
+#ifdef __linux__
+  {
+    unsigned long nr;
+    int fd;
+
+    fd = open (map[drive], O_RDONLY);
+    if (! fd)
+      return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", map[drive]);
+
+    if (ioctl (fd, BLKGETSIZE, &nr))
+      {
+	close (fd);
+	goto fail;
+      }
+
+    close (fd);
+    disk->total_sectors = nr;
+    
+    pupa_util_info ("the size of %s is %lu", name, disk->total_sectors);
+    
+    return PUPA_ERR_NONE;
+  }
+#else
+# warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
+#endif
+
+ fail:
+  if (stat (map[drive], &st) < 0)
     return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive]);
 
   if (st.st_blocks)
@@ -173,6 +203,8 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
   else
     /* Hmm... Use st_size instead.  */
     disk->total_sectors = st.st_size >> PUPA_DISK_SECTOR_BITS;
+  
+  pupa_util_info ("the size of %s is %lu", name, disk->total_sectors);
   
   return PUPA_ERR_NONE;
 }
@@ -185,22 +217,25 @@ linux_find_partition (char *dev, unsigned long sector)
   const char *format;
   char *p;
   int i;
+  char *real_dev;
+
+  real_dev = xstrdup (dev);
   
-  if (have_devfs () && strcmp (dev + len - 5, "/disc") == 0)
+  if (have_devfs () && strcmp (real_dev + len - 5, "/disc") == 0)
     {
-      p = dev + len - 4;
+      p = real_dev + len - 4;
       format = "part%d";
     }
-  else if ((strncmp (dev + 5, "hd", 2) == 0
-	    || strncmp (dev + 5, "sd", 2) == 0)
-	   && dev[7] >= 'a' && dev[7] <= 'z')
+  else if ((strncmp (real_dev + 5, "hd", 2) == 0
+	    || strncmp (real_dev + 5, "sd", 2) == 0)
+	   && real_dev[7] >= 'a' && real_dev[7] <= 'z')
     {
-      p = dev + 8;
+      p = real_dev + 8;
       format = "%d";
     }
-  else if (strncmp (dev + 5, "rd/c", 4) == 0)
+  else if (strncmp (real_dev + 5, "rd/c", 4) == 0)
     {
-      p = strchr (dev + 9, 'd');
+      p = strchr (real_dev + 9, 'd');
       if (! p)
 	return 0;
 
@@ -211,30 +246,42 @@ linux_find_partition (char *dev, unsigned long sector)
       format = "p%d";
     }
   else
-    return 0;
+    {
+      free (real_dev);
+      return 0;
+    }
 
-  for (i = 0; i < 10000; i++)
+  for (i = 1; i < 10000; i++)
     {
       int fd;
       struct hd_geometry hdg;
       
       sprintf (p, format, i);
-      fd = open (dev, O_RDONLY);
+      fd = open (real_dev, O_RDONLY);
       if (! fd)
-	return 0;
+	{
+	  free (real_dev);
+	  return 0;
+	}
 
       if (ioctl (fd, HDIO_GETGEO, &hdg))
 	{
 	  close (fd);
+	  free (real_dev);
 	  return 0;
 	}
 
       close (fd);
       
       if (hdg.start == sector)
-	return 1;
+	{
+	  strcpy (dev, real_dev);
+	  free (real_dev);
+	  return 1;
+	}
     }
 
+  free (real_dev);
   return 0;
 }
 #endif /* __linux__ */
@@ -266,12 +313,16 @@ open_device (const pupa_disk_t disk, unsigned long sector, int flags)
       is_partition = linux_find_partition (dev, disk->partition->start);
     
     /* Open the partition.  */
+    pupa_util_info ("opening the device `%s'", dev);
     fd = open (dev, flags);
     if (fd < 0)
       {
 	pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", dev);
 	return -1;
       }
+
+    /* Make the buffer cache consistent with the physical disk.  */
+    ioctl (fd, BLKFLSBUF, 0);
     
     if (is_partition)
       sector -= disk->partition->start;
@@ -560,9 +611,9 @@ get_os_disk (const char *os_dev)
   if (! realpath (os_dev, path))
     return 0;
   
-  if (strncmp ("/dev/", path, 4) == 0)
+  if (strncmp ("/dev/", path, 5) == 0)
     {
-      p = path + 4;
+      p = path + 5;
 
       if (have_devfs ())
 	{
@@ -653,8 +704,8 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
 {
   struct stat st;
   int drive;
-  
-  if (lstat (os_dev, &st) < 0)
+
+  if (stat (os_dev, &st) < 0)
     {
       pupa_error (PUPA_ERR_BAD_DEVICE, "cannot stat `%s'", os_dev);
       return 0;
@@ -687,6 +738,14 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
     
     int find_partition (const pupa_partition_t partition)
       {
+	if (partition->bsd_part < 0)
+	  pupa_util_info ("DOS partition %d starts from %lu",
+			  partition->dos_part, partition->start);
+	else
+	  pupa_util_info ("BSD partition %d,%c starts from %lu",
+			  partition->dos_part, partition->bsd_part + 'a',
+			  partition->start);
+	
 	if (hdg.start == partition->start)
 	  {
 	    dos_part = partition->dos_part;
@@ -720,17 +779,25 @@ pupa_util_biosdisk_get_pupa_dev (const char *os_dev)
       }
     
     close (fd);
+
+    pupa_util_info ("%s starts from %lu", os_dev, hdg.start);
     
     if (hdg.start == 0)
       return name;
-    
+
+    pupa_util_info ("opening the device %s", name);
     disk = pupa_disk_open (name);
     free (name);
     
     if (! disk)
       return 0;
     
-    pupa_partition_iterate (disk, find_partition);
+    if (pupa_partition_iterate (disk, find_partition) != PUPA_ERR_NONE)
+      {
+	pupa_disk_close (disk);
+	return 0;
+      }
+    
     if (dos_part < 0)
       {
 	pupa_disk_close (disk);

@@ -1,5 +1,37 @@
 2003-01-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* util/i386/pc/pupa-setup.c (setup): Define the internal
+	function find_first_partition_start at the top level, because GCC
+	3.0.x cannot compile internal functions in deeper scopes
+	correctly.
+	(find_root_device): Use lstat instead of stat.
+	Don't follow symbolic links.
+	Fix the path-constructing code.
+
+	* util/i386/pc/biosdisk.c [__linux__] (BLKFLSBUF): New macro.
+	(pupa_util_biosdisk_open) [__linux__]: Get the size of a device
+	by a BLKGETSIZE ioctl first, because block devices don't fill
+	the member st_mode of the structure stat on Linux.
+	[__linux__] (linux_find_partition): Use a temporary buffer
+	REAL_DEV for the working space. Copy it to DEV before returning.
+	(open_device) [__linux__]: Call ioctl with BLKFLSBUF to make the
+	buffer cache consistent.
+	(get_os_disk) [__linux__]: Use the length 5 instead of 4 for
+	strncmp. The previous value was merely wrong.
+	(pupa_util_biosdisk_get_pupa_dev): Use stat instead of lstat.
+
+	* fs/fat.c (pupa_fat_read_data): Shift 4 instead of 12 when the
+	FAT size is 12. The previous value was merely wrong.
+
+	* kern/main.c (pupa_main): Don't split the starting message from
+	newlines.
+
+	* kern/term.c (pupa_putchar): Put CR after LF instead of before
+	LF, because BIOS goes crazy about character attributes in this
+	case.
+
+2003-01-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* include/i386/pc/util/biosdisk.h: New file.
 	* util/i386/pc/biosdisk.c: Likewise.
 	* util/i386/pc/pupa-setup.c: Likewise.

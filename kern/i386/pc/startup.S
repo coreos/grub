@@ -991,8 +991,8 @@ FUNCTION(pupa_console_putchar)
 	int	$0x10
 
 	jmp	3f
-	
-1:	movb	$0x7, %bl
+
+1:	movw	$1, %bx
 	movb	$0xe, %ah
 	int	$0x10
 	
@@ -1001,7 +1001,7 @@ FUNCTION(pupa_console_putchar)
 	
 	popa
 	ret
-
+	
 
 /*
  * int pupa_console_getkey (void)

@@ -73,9 +73,7 @@ pupa_term_get_current (void)
 void
 pupa_putchar (int c)
 {
-  if (c == '\n')
-    pupa_putchar ('\r');
-  else if (c == '\t' && pupa_cur_term->getxy)
+  if (c == '\t' && pupa_cur_term->getxy)
     {
       int n;
 
@@ -87,6 +85,9 @@ pupa_putchar (int c)
     }
   
   (pupa_cur_term->putchar) (c);
+  
+  if (c == '\n')
+    pupa_putchar ('\r');
 }
 
 int

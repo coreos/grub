@@ -7,6 +7,9 @@ New in 0.7:
   care when writing assembly code. See the comments at the beginning of
   startup.S, for more details.
 
+* New utility, ``pupa-setup''. This sets up PUPA to make it bootable
+  from a real disk.
+
 New in 0.6 - 2002-12-27, Yoshinori K. Okuji:
 
 * The chainloader and the FAT filesystem are modularized.

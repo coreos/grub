@@ -156,7 +156,7 @@ pupa_fat_mount (pupa_disk_t disk)
   data = (struct pupa_fat_data *) pupa_malloc (sizeof (*data));
   if (! data)
     goto fail;
-  
+
   /* Read the BPB.  */
   if (pupa_disk_read (disk, 0, 0, sizeof (bpb), (char *) &bpb))
     goto fail;
@@ -437,19 +437,25 @@ pupa_fat_read_data (pupa_disk_t disk, struct pupa_fat_data *data,
 	      break;
 	    case 12:
 	      if (data->cur_cluster & 1)
-		next_cluster >>= 12;
+		next_cluster >>= 4;
 	      
 	      next_cluster &= 0x0FFF;
 	      break;
 	    }
 
+#if 0
+	  pupa_printf ("%s:%d: fat_size=%d, next_cluster=%u\n",
+		       __FILE__, __LINE__, data->fat_size, next_cluster);
+#endif
+	  
 	  /* Check the end.  */
 	  if (next_cluster >= data->cluster_eof_mark)
 	    return ret;
 
 	  if (next_cluster < 2 || next_cluster >= data->num_clusters)
 	    {
-	      pupa_error (PUPA_ERR_BAD_FS, "invalid cluster");
+	      pupa_error (PUPA_ERR_BAD_FS, "invalid cluster %u",
+			  next_cluster);
 	      return -1;
 	    }
 

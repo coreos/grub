@@ -67,9 +67,8 @@ pupa_main (void)
 
   /* Hello.  */
   pupa_setcolorstate (PUPA_TERM_COLOR_HIGHLIGHT);
-  pupa_printf ("Welcome to PUPA!");
+  pupa_printf ("Welcome to PUPA!\n\n");
   pupa_setcolorstate (PUPA_TERM_COLOR_STANDARD);
-  pupa_printf ("\n\n");
 
   pupa_register_exported_symbols ();
   pupa_load_modules ();

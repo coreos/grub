@@ -82,12 +82,25 @@ setup (const char *prefix, const char *dir,
   pupa_uint16_t last_length = PUPA_DISK_SECTOR_SIZE;
   pupa_file_t file;
   FILE *fp;
+  unsigned long first_start = ~0UL;
   
   auto void save_first_sector (unsigned long sector, unsigned offset,
 			       unsigned length);
   auto void save_blocklists (unsigned long sector, unsigned offset,
 			     unsigned length);
 
+  auto int find_first_partition_start (const pupa_partition_t p);
+  
+  int find_first_partition_start (const pupa_partition_t p)
+    {
+      if (! pupa_partition_is_empty (p->dos_type)
+	  && ! pupa_partition_is_bsd (p->dos_type)
+	  && first_start > p->start)
+	first_start = p->start;
+      
+      return 0;
+    }
+  
   void save_first_sector (unsigned long sector, unsigned offset,
 			  unsigned length)
     {
@@ -195,23 +208,10 @@ setup (const char *prefix, const char *dir,
      try to embed the core image into after the MBR.  */
   if (dest_dev->disk->has_partitions && ! dest_dev->disk->partition)
     {
-      auto int find_first_partition_start (const pupa_partition_t p);
-      unsigned long first_sector = ~0UL;
-      
-      int find_first_partition_start (const pupa_partition_t p)
-	{
-	  if (! pupa_partition_is_empty (p->dos_type)
-	      && ! pupa_partition_is_bsd (p->dos_type)
-	      && first_sector > p->start)
-	    first_sector = p->start;
-
-	  return 0;
-	}
-
       pupa_partition_iterate (dest_dev->disk, find_first_partition_start);
 
       /* If there is enough space...  */
-      if ((unsigned long) core_sectors + 1 <= first_sector)
+      if ((unsigned long) core_sectors + 1 <= first_start)
 	{
 	  pupa_util_info ("will embed the core image into after the MBR");
 	  
@@ -277,7 +277,28 @@ setup (const char *prefix, const char *dir,
 	    pupa_util_info ("succeeded in opening the core image but cannot read %d bytes",
 			    (int) core_size);
 	  else if (memcmp (core_img, tmp_img, core_size) != 0)
-	    pupa_util_info ("succeeded in opening the core image but the data is different");
+	    {
+#if 0
+	      FILE *dump;
+	      FILE *dump2;
+	      
+	      dump = fopen ("dump.img", "wb");
+	      if (dump)
+		{
+		  fwrite (tmp_img, 1, core_size, dump);
+		  fclose (dump);
+		}
+
+	      dump2 = fopen ("dump2.img", "wb");
+	      if (dump2)
+		{
+		  fwrite (core_img, 1, core_size, dump2);
+		  fclose (dump2);
+		}
+	      
+#endif      
+	      pupa_util_info ("succeeded in opening the core image but the data is different");
+	    }
 	  else
 	    {
 	      pupa_file_close (file);
@@ -288,6 +309,9 @@ setup (const char *prefix, const char *dir,
 	}
       else
 	pupa_util_info ("couldn't open the core image");
+
+      if (pupa_errno)
+	pupa_util_info ("error message = %s", pupa_errmsg);
       
       pupa_errno = PUPA_ERR_NONE;
       sync ();
@@ -530,6 +554,7 @@ find_root_device (const char *dir, dev_t dev)
 
   saved_cwd = xgetcwd ();
 
+  pupa_util_info ("changing current directory to %s", dir);
   if (chdir (dir) < 0)
     {
       free (saved_cwd);
@@ -544,10 +569,14 @@ find_root_device (const char *dir, dev_t dev)
       if (strcmp (ent->d_name, ".") == 0 || strcmp (ent->d_name, "..") == 0)
 	continue;
 
-      if (stat (ent->d_name, &st) < 0)
+      if (lstat (ent->d_name, &st) < 0)
 	/* Ignore any error.  */
 	continue;
 
+      if (S_ISLNK (st.st_mode))
+	/* Don't follow symbolic links.  */
+	continue;
+      
       if (S_ISDIR (st.st_mode))
 	{
 	  /* Find it recursively.  */
@@ -570,11 +599,13 @@ find_root_device (const char *dir, dev_t dev)
 	{
 	  /* Found!  */
 	  char *res;
+	  char *cwd;
 
-	  res = xmalloc (strlen (saved_cwd) + strlen (dir)
-			 + strlen (ent->d_name) + 3);
-	  sprintf (res, "%s/%s/%s", saved_cwd, dir, ent->d_name);
+	  cwd = xgetcwd ();
+	  res = xmalloc (strlen (cwd) + strlen (ent->d_name) + 2);
+	  sprintf (res, "%s/%s", cwd, ent->d_name);
 	  strip_extra_slashes (res);
+	  free (cwd);
 
 	  if (chdir (saved_cwd) < 0)
 	    pupa_util_error ("Cannot restore the original directory");
@@ -731,6 +762,8 @@ main (int argc, char *argv[])
       root_dev = guess_root_device (dir ? : DEFAULT_DIRECTORY);
       if (! root_dev)
 	{
+	  pupa_util_info ("guessing the root device failed, because of `%s'",
+			  pupa_errmsg);
 	  pupa_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
 	}
     }
