@@ -522,7 +522,7 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct p
 	printf("eepro100: Invalid EEPROM checksum %#hX, "
 	       "check settings before activating this device!\n", sum);
   outl(0, ioaddr + SCBPort);
-  udelay (10);
+  udelay (10000);
 
   whereami ("Got eeprom.");
 

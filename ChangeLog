@@ -1,5 +1,10 @@
 2002-03-26  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* netboot/eepro100.c (eepro100_probe): Increase the delay at the
+	initialization.
+	
+2002-03-26  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/boot.c (linux_mem_size): New variable.
 	(load_image): Check a mem= option and set LINUX_MEM_SIZE to the
 	specified memory size, if any. Otherwise, to zero. When an
