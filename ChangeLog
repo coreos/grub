@@ -1,3 +1,7 @@
+2000-11-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/help2man: Copied from help2man-1.23.
+	
 2000-10-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/asm.S [STAGE1_5]: Don't include setjmp.S or apm.S.
