@@ -268,7 +268,8 @@ devices, partitions, and files in a directory depending on context.
 Support multiple filesystem types transparently, plus a useful explicit
 blocklist notation. The currently supported filesystem types are
 @dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, @dfn{Linux
-ext2fs}, and @dfn{ReiserFS}. @xref{Filesystem}, for more information.
+ext2fs}, @dfn{ReiserFS}, and @dfn{VSTa fs}. @xref{Filesystem}, for more
+information.
 
 @item Support automatic decompression
 Can decompress files which were compressed by @command{gzip}. This
@@ -1414,6 +1415,7 @@ itself. Usually, this is put in a filesystem, but that is not required.
 @itemx reiserfs_stage1_5
 @itemx fat_stage1_5
 @itemx minix_stage1_5
+@itemx vstafs_stage1_5
 
 These are called @dfn{Stage 1.5}, because the purpose is a bridge
 between @file{stage1} and @file{stage2}, that is to say, Stage 1.5 is
@@ -1833,10 +1835,14 @@ Commands usable both in the menu and in the command-line.
 @node bootp
 @subsection bootp
 
-@deffn Command bootp
+@deffn Command bootp [@option{--with-configfile}]
 Initialize a network device via the @dfn{BOOTP} protocol. This command
 is only available if GRUB is compiled with netboot support. See also
 @ref{Network}.
+
+If you specify @option{--with-configfile} to this command, GRUB will
+fetch and load a configuration file specified by your BOOTP server
+with the vendor tag @samp{150}.
 @end deffn
 
 
@@ -1949,11 +1955,15 @@ grub shell}).
 @node dhcp
 @subsection dhcp
 
-@deffn Command dhcp
+@deffn Command dhcp [--with-configfile]
 Initialize a network device via the @dfn{DHCP} protocol. Currently,
 this command is just an alias for @command{bootp}, since the two
 protocols are very similar. This command is only available if GRUB is
 compiled with netboot support. See also @ref{Network}.
+
+If you specify @option{--with-configfile} to this command, GRUB will
+fetch and load a configuration file specified by your DHCP server
+with the vendor tag @samp{150}.
 @end deffn
 
 
@@ -2188,7 +2198,7 @@ character each of the symbols corresponds:
 @node terminal
 @subsection terminal
 
-@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{console}] [@option{serial}]
+@deffn Command terminal [@option{--dumb}] [@option{--timeout=secs}] [@option{console}] [@option{serial}] [@option{hercules}]
 Select a terminal for user interaction. The terminal is assumed to be
 VT100-compatible unless @option{--dumb} is specified. If both
 @option{console} and @option{serial} are specified, then GRUB will use
@@ -2196,6 +2206,11 @@ the one where a key is entered first or the first when the timeout
 expires. If neither are specified, the current setting is
 reported. This command is only available if GRUB is compiled with serial
 support. See also @ref{Serial terminal}.
+
+This may not make sense for most users, but GRUB supports Hercules
+console as well. Hercules console is usable like the ordinary console,
+and the usage is quite similar to that for serial terminals: specify
+@option{hercules} as the argument.
 @end deffn
 
 

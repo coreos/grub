@@ -1,5 +1,9 @@
 2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/grub.texi: Updated.
+	
+2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/boot.c (load_initrd) [!NO_DECOMPRESSION]: Set
 	NO_DECOMPRESSION to one before opening INITRD, so that GRUB
 	doesn't decompress an initrd automatically. Reported by
