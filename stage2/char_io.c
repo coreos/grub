@@ -385,7 +385,8 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
       if (full)
 	{
 	  /* Recompute the section number.  */
-	  if (lpos + plen < CMDLINE_WIDTH)
+	  if ((terminal & TERMINAL_DUMB)
+	      || (lpos + plen < CMDLINE_WIDTH))
 	    section = 0;
 	  else
 	    section = ((lpos + plen - CMDLINE_WIDTH)
@@ -448,48 +449,51 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 
 	  pos++;
 	}
-
-      /* Fill up the rest of the line with spaces.  */
-      for (; i < start + len; i++)
+      
+      if (! (terminal & TERMINAL_DUMB))
 	{
-	  grub_putchar (' ');
-	  pos++;
-	}
-
-      /* If the cursor is at the last position, put `>' or a space,
-	 depending on if there are more characters in BUF.  */
-      if (pos == CMDLINE_WIDTH)
-	{
-	  if (start + len < llen)
-	    grub_putchar ('>');
-	  else
-	    grub_putchar (' ');
+         /* Fill up the rest of the line with spaces.  */
+         for (; i < start + len; i++)
+           {
+             grub_putchar (' ');
+             pos++;
+           }
 	  
-	  pos++;
-	}
-
-      /* Back to XPOS.  */
-      if ((terminal & TERMINAL_CONSOLE)
+         /* If the cursor is at the last position, put `>' or a space,
+            depending on if there are more characters in BUF.  */
+         if (pos == CMDLINE_WIDTH)
+           {
+             if (start + len < llen)
+               grub_putchar ('>');
+             else
+               grub_putchar (' ');
+             
+             pos++;
+           }
+         
+         /* Back to XPOS.  */
+         if ((terminal & TERMINAL_CONSOLE)
 # ifdef SUPPORT_HERCULES
-	  || (terminal & TERMINAL_HERCULES)
+             || (terminal & TERMINAL_HERCULES)
 # endif /* SUPPORT_HERCULES */
-	  )
-	{
-	  int y = getxy () & 0xFF;
-	  
-	  gotoxy (xpos, y);
-	}
+             )
+           {
+             int y = getxy () & 0xFF;
+             
+             gotoxy (xpos, y);
+           }
 # ifdef SUPPORT_SERIAL      
-      else if (! (terminal & TERMINAL_SERIAL) && (pos - xpos > 4))
-	{
-	  grub_printf ("\e[%dD", pos - xpos);
-	}
-      else
-	{
-	  for (i = 0; i < pos - xpos; i++)
-	    grub_putchar ('\b');
-	}
+         else if (! (terminal & TERMINAL_SERIAL) && (pos - xpos > 4))
+           {
+             grub_printf ("\e[%dD", pos - xpos);
+           }
+         else
+           {
+             for (i = 0; i < pos - xpos; i++)
+               grub_putchar ('\b');
+           }
 # endif /* SUPPORT_SERIAL */
+       }
     }
 
   /* Initialize the command-line.  */
