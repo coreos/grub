@@ -1,3 +1,17 @@
+2005-01-09  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* util/powerpc/ieee1275/grub-mkimage.c: Include <string.h>.
+	(note_path): Remove variable.
+	(GRUB_IEEE1275_NOTE_NAME): New macro.
+	(GRUB_IEEE1275_NOTE_TYPE): Likewise.
+	(grub_ieee1275_note_hdr): New structure.
+	(grub_ieee1275_note_desc): Likewise.
+	(grub_ieee1275_note): Likewise.
+	(load_note): Remove `dir' argument.  All callers updated.  Remove
+	`note_img' and `path'.  Do not load a file from `note_path'.
+	Initialize a struct grub_ieee1275_note and write that to `out'.
+	Use GRUB_IEEE1275_MODULE_BASE instead of MODULE_BASE.
+
 2005-01-05  Marco Gerards  <metgerards@student.han.nl>
 
 	* util/misc.c (grub_util_read_image): Revert last change.  It

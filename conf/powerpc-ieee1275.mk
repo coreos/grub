@@ -24,8 +24,42 @@ kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 pkgdata_PROGRAMS = grubof
 
 # Utilities.
-bin_UTILITIES = grub-emu
+bin_UTILITIES = grub-emu grub-mkimage
 noinst_UTILITIES = genmoddep
+
+# For grub-mkimage.
+grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
+        util/resolve.c 
+CLEANFILES += grub-mkimage grub_mkimage-util_powerpc_ieee1275_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
+MOSTLYCLEANFILES += grub_mkimage-util_powerpc_ieee1275_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d
+
+grub-mkimage: grub_mkimage-util_powerpc_ieee1275_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_mkimage_LDFLAGS)
+
+grub_mkimage-util_powerpc_ieee1275_grub_mkimage.o: util/powerpc/ieee1275/grub-mkimage.c
+	$(BUILD_CC) -Iutil/powerpc/ieee1275 -I$(srcdir)/util/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
+
+grub_mkimage-util_powerpc_ieee1275_grub_mkimage.d: util/powerpc/ieee1275/grub-mkimage.c
+	set -e; 	  $(BUILD_CC) -Iutil/powerpc/ieee1275 -I$(srcdir)/util/powerpc/ieee1275 $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,grub\-mkimage\.o[ :]*,grub_mkimage-util_powerpc_ieee1275_grub_mkimage.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_mkimage-util_powerpc_ieee1275_grub_mkimage.d
+
+grub_mkimage-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
+
+grub_mkimage-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_mkimage-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_mkimage-util_misc.d
+
+grub_mkimage-util_resolve.o: util/resolve.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
+
+grub_mkimage-util_resolve.d: util/resolve.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,resolve\.o[ :]*,grub_mkimage-util_resolve.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_mkimage-util_resolve.d
+
 
 # For grub-emu
 grub_emu_SOURCES = kern/main.c kern/device.c				\

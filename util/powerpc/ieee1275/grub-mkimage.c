@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdlib.h>
+#include <string.h>
 #include <grub/elf.h>
 #include <grub/util/misc.h>
 #include <grub/util/resolve.h>
@@ -32,26 +33,58 @@
 #define ALIGN_UP(addr, align) ((long)((char *)addr + align - 1) & ~(align - 1))
 
 static char *kernel_path = "grubof";
-static char *note_path = "note";
 
+#define GRUB_IEEE1275_NOTE_NAME "PowerPC"
+#define GRUB_IEEE1275_NOTE_TYPE 0x1275
+
+/* These structures are defined according to the CHRP binding to IEEE1275,
+   "Client Program Format" section.  */
+
+struct grub_ieee1275_note_hdr
+{
+  grub_uint32_t namesz;
+  grub_uint32_t descsz;
+  grub_uint32_t type;
+  char name[sizeof (GRUB_IEEE1275_NOTE_NAME)];
+};
+
+struct grub_ieee1275_note_desc
+{
+  grub_uint32_t real_mode;
+  grub_uint32_t real_base;
+  grub_uint32_t real_size;
+  grub_uint32_t virt_base;
+  grub_uint32_t virt_size;
+  grub_uint32_t load_base;
+};
+
+struct grub_ieee1275_note
+{
+  struct grub_ieee1275_note_hdr header;
+  struct grub_ieee1275_note_desc descriptor;
+};
 
 void
-load_note (Elf32_Phdr *phdr, const char *dir, FILE *out)
+load_note (Elf32_Phdr *phdr, FILE *out)
 {
-  char *note_img;
-  char *path;
-  int note_size;
+  struct grub_ieee1275_note note;
+  int note_size = sizeof (struct grub_ieee1275_note);
 
   grub_util_info ("adding CHRP NOTE segment");
 
-  path = grub_util_get_path (dir, note_path);
-  note_size = grub_util_get_image_size (path);
-  note_img = xmalloc (note_size);
-  grub_util_load_image (path, note_img);
-  free (path);
+  note.header.namesz = grub_cpu_to_be32 (sizeof (GRUB_IEEE1275_NOTE_NAME));
+  note.header.descsz = grub_cpu_to_be32 (note_size);
+  note.header.type = grub_cpu_to_be32 (GRUB_IEEE1275_NOTE_TYPE);
+  strcpy (note.header.name, GRUB_IEEE1275_NOTE_NAME);
+  note.descriptor.real_mode = grub_cpu_to_be32 (0xffffffff);
+  note.descriptor.real_base = grub_cpu_to_be32 (0x00c00000);
+  note.descriptor.real_size = grub_cpu_to_be32 (0xffffffff);
+  note.descriptor.virt_base = grub_cpu_to_be32 (0xffffffff);
+  note.descriptor.virt_size = grub_cpu_to_be32 (0xffffffff);
+  note.descriptor.load_base = grub_cpu_to_be32 (0x00004000);
 
   /* Write the note data to the new segment.  */
-  grub_util_write_image_at (note_img, note_size, phdr->p_offset, out);
+  grub_util_write_image_at (&note, note_size, phdr->p_offset, out);
 
   /* Fill in the rest of the segment header.  */
   phdr->p_type = PT_NOTE;
@@ -117,8 +150,8 @@ load_modules (Elf32_Phdr *phdr, const char *dir, char *mods[], FILE *out)
   phdr->p_type = PT_LOAD;
   phdr->p_flags = PF_R | PF_W | PF_X;
   phdr->p_align = sizeof (long);
-  phdr->p_vaddr = MODULE_BASE;
-  phdr->p_paddr = MODULE_BASE;
+  phdr->p_vaddr = GRUB_IEEE1275_MODULE_BASE;
+  phdr->p_paddr = GRUB_IEEE1275_MODULE_BASE;
   phdr->p_filesz = total_module_size;
   phdr->p_memsz = total_module_size;
 }
@@ -183,7 +216,7 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
       /* Fill in p_offset so the callees know where to write.  */
       phdr->p_offset = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
 
-      load_note (phdr, dir, out);
+      load_note (phdr, out);
     }
 
   /* Don't bother preserving the section headers.  */
