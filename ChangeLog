@@ -1,3 +1,32 @@
+2001-01-12  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/multiboot.h [__ELF__] (MULTIBOOT_HEADER_FLAGS): Defined
+	as 0x00000003 instead of 0x00010003.
+	* docs/boot.S (multiboot_header) [__ELF__]: Don't define a.out
+	kludge information.
+	
+	* docs/Makefile.am (EXTRA_PROGRAMS): New variable.
+	[BUILD_EXAMPLE_KERNEL] (noinst_DATA): Removed.
+	[BUILD_EXAMPLE_KERNEL] (noinst_PROGRAMS): Changed to kernel.
+	[BUILD_EXAMPLE_KERNEL] (kernel_exec_SOURCES): Renamed to ...
+	[BUILD_EXAMPLE_KERNEL] (kernel_SOURCES): ... this.
+	[BUILD_EXAMPLE_KERNEL] (kernel_exec_CFLAGS): Renamed to ...
+	[BUILD_EXAMPLE_KERNEL] (kernel_CFLAGS): ... this.
+	[BUILD_EXAMPLE_KERNEL] (kernel_exec_LDFLAGS): Renamed to ...
+	[BUILD_EXAMPLE_KERNEL] (kernel_LDFLAGS): ... this.
+	[BUILD_EXAMPLE_KERNEL] (kernel): Removed.
+	[BUILD_EXAMPLE_KERNEL] (boot.o): New dependency.
+	(CLEANFILES): New variable.
+	
+2001-01-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c [SUPPORT_NETBOOT] (ifconfig_func): Always
+	print current network configuration.
+	[SUPPORT_NETBOOT] (tftpserver_func): Use ifconfig instead of
+	arp_server_override.
+	* netboot/main.c (arp_server_override): Removed.
+	* netboot/etherboot.h (arp_server_override): Likewise.
+
 2001-01-11  Eugene Doudine  <dudin@np.nk.nornik.ru>
 	
 	* stage2/builtins.c [SUPPORT_NETBOOT] (ifconfig_func): New

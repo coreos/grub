@@ -1531,12 +1531,6 @@ ifconfig_func (char *arg, int flags)
       return 1;
     }
   
-  if (! *arg)
-    {
-      print_network_configuration ();
-      return 0;
-    }
-  
   while (*arg) 
     {
       if (! grub_memcmp ("--server=", arg, sizeof ("--server=") - 1))
@@ -1562,6 +1556,7 @@ ifconfig_func (char *arg, int flags)
       return 1;
     }
   
+  print_network_configuration ();
   return 0;
 }
 
@@ -4147,7 +4142,7 @@ static struct builtin builtin_testvbe =
 static int
 tftpserver_func (char *arg, int flags)
 {
-  if (! *arg || ! arp_server_override (arg))
+  if (! *arg || ! ifconfig (0, 0, 0, arg))
     {
       errnum = ERR_BAD_ARGUMENT;
       return 1;

@@ -97,18 +97,19 @@ man_MANS = grub.8 mbchk.1 grub-install.8 grub-md5-crypt.8
 HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
+EXTRA_PROGRAMS = kernel
 
 # The example kernel is built if you specify --enable-example-kernel.
-@BUILD_EXAMPLE_KERNEL_TRUE@noinst_DATA = @BUILD_EXAMPLE_KERNEL_TRUE@kernel
-@BUILD_EXAMPLE_KERNEL_TRUE@noinst_PROGRAMS = @BUILD_EXAMPLE_KERNEL_TRUE@kernel.exec
-@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec_SOURCES = @BUILD_EXAMPLE_KERNEL_TRUE@$(EXAMPLES)
-@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec_CFLAGS = @BUILD_EXAMPLE_KERNEL_TRUE@-fno-builtin -nostdinc -O -g -Wall \
+@BUILD_EXAMPLE_KERNEL_TRUE@noinst_PROGRAMS = @BUILD_EXAMPLE_KERNEL_TRUE@kernel
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_SOURCES = @BUILD_EXAMPLE_KERNEL_TRUE@$(EXAMPLES)
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_CFLAGS = @BUILD_EXAMPLE_KERNEL_TRUE@-fno-builtin -nostdinc -O -g -Wall \
 @BUILD_EXAMPLE_KERNEL_TRUE@	-imacros $(top_builddir)/config.h
-@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec_LDFLAGS = @BUILD_EXAMPLE_KERNEL_TRUE@-nostdlib -Wl,-N -Wl,-Ttext -Wl,100000
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel_LDFLAGS = @BUILD_EXAMPLE_KERNEL_TRUE@-nostdlib -Wl,-N -Wl,-Ttext -Wl,100000
 
 EXTRA_DIST = menu.lst $(man_MANS) $(noinst_SCRIPTS) \
 	$(EXAMPLES) $(multiboot_TEXINFOS)
 
+CLEANFILES = $(noinst_PROGRAMS)
 subdir = docs
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -120,18 +121,18 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-@BUILD_EXAMPLE_KERNEL_TRUE@am_kernel_exec_OBJECTS =  kernel_exec-boot.o \
-@BUILD_EXAMPLE_KERNEL_TRUE@kernel_exec-kernel.o
-kernel_exec_OBJECTS =  $(am_kernel_exec_OBJECTS)
-kernel_exec_LDADD = $(LDADD)
-kernel_exec_DEPENDENCIES = 
+@BUILD_EXAMPLE_KERNEL_TRUE@am_kernel_OBJECTS =  kernel-boot.o \
+@BUILD_EXAMPLE_KERNEL_TRUE@kernel-kernel.o
+kernel_OBJECTS =  $(am_kernel_OBJECTS)
+kernel_LDADD = $(LDADD)
+kernel_DEPENDENCIES = 
 SCRIPTS =  $(noinst_SCRIPTS)
 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =  $(kernel_exec_SOURCES)
+DIST_SOURCES =  $(kernel_SOURCES)
 TEXI2DVI = texi2dvi
 INFO_DEPS = grub.info multiboot.info
 DVIS = grub.dvi multiboot.dvi
@@ -141,11 +142,8 @@ man8dir = $(mandir)/man8
 MANS = $(man_MANS)
 
 NROFF = nroff
-DATA =  $(noinst_DATA)
-
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-DEP_FILES =  @AMDEP@ $(DEPDIR)/kernel_exec-boot.Po \
-$(DEPDIR)/kernel_exec-kernel.Po
+DEP_FILES =  @AMDEP@ $(DEPDIR)/kernel-boot.Po $(DEPDIR)/kernel-kernel.Po
 DIST_COMMON =  $(grub_TEXINFOS) $(multiboot_TEXINFOS) Makefile.am \
 Makefile.in stamp-vti version.texi
 
@@ -153,8 +151,8 @@ Makefile.in stamp-vti version.texi
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-SOURCES = $(kernel_exec_SOURCES)
-OBJECTS = $(am_kernel_exec_OBJECTS)
+SOURCES = $(kernel_SOURCES)
+OBJECTS = $(am_kernel_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -185,13 +183,13 @@ distclean-compile:
 	-rm -f *.tab.c
 
 maintainer-clean-compile:
-kernel_exec-boot.o: boot.S
-	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(kernel_exec_CFLAGS) $(CFLAGS) -c -o kernel_exec-boot.o `test -f boot.S || echo '$(srcdir)/'`boot.S
-kernel_exec-kernel.o: kernel.c
+kernel-boot.o: boot.S
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(kernel_CFLAGS) $(CFLAGS) -c -o kernel-boot.o `test -f boot.S || echo '$(srcdir)/'`boot.S
+kernel-kernel.o: kernel.c
 
-kernel.exec: $(kernel_exec_OBJECTS) $(kernel_exec_DEPENDENCIES)
-	@rm -f kernel.exec
-	$(LINK) $(kernel_exec_LDFLAGS) $(kernel_exec_OBJECTS) $(kernel_exec_LDADD) $(LIBS)
+kernel: $(kernel_OBJECTS) $(kernel_DEPENDENCIES)
+	@rm -f kernel
+	$(LINK) $(kernel_LDFLAGS) $(kernel_OBJECTS) $(kernel_LDADD) $(LIBS)
 .S.o:
 	$(COMPILE) -c $<
 
@@ -449,8 +447,8 @@ distclean-tags:
 
 maintainer-clean-tags:
 
-@AMDEP@include $(DEPDIR)/kernel_exec-boot.Po
-@AMDEP@include $(DEPDIR)/kernel_exec-kernel.Po
+@AMDEP@include $(DEPDIR)/kernel-boot.Po
+@AMDEP@include $(DEPDIR)/kernel-kernel.Po
 
 mostlyclean-depend:
 
@@ -472,11 +470,11 @@ maintainer-clean-depend:
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 
-kernel_exec-kernel.o: kernel.c
-@AMDEP@	source='kernel.c' object='kernel_exec-kernel.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP@	depfile='$(DEPDIR)/kernel_exec-kernel.Po' tmpdepfile='$(DEPDIR)/kernel_exec-kernel.TPo' @AMDEPBACKSLASH@
+kernel-kernel.o: kernel.c
+@AMDEP@	source='kernel.c' object='kernel-kernel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/kernel-kernel.Po' tmpdepfile='$(DEPDIR)/kernel-kernel.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(kernel_exec_CFLAGS) $(CFLAGS) -c -o kernel_exec-kernel.o `test -f kernel.c || echo '$(srcdir)/'`kernel.c
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(kernel_CFLAGS) $(CFLAGS) -c -o kernel-kernel.o `test -f kernel.c || echo '$(srcdir)/'`kernel.c
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
@@ -512,7 +510,7 @@ install-am: all-am
 install: install-am
 uninstall-am: uninstall-info uninstall-man
 uninstall: uninstall-am
-all-am: Makefile $(INFO_DEPS) $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
+all-am: Makefile $(INFO_DEPS) $(PROGRAMS) $(SCRIPTS) $(MANS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
@@ -524,6 +522,7 @@ installdirs:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
@@ -575,8 +574,7 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-@BUILD_EXAMPLE_KERNEL_TRUE@kernel: kernel.exec
-@BUILD_EXAMPLE_KERNEL_TRUE@	$(OBJCOPY) -O binary $< $@
+@BUILD_EXAMPLE_KERNEL_TRUE@boot.o: multiboot.h
 
 # Cancel the rule %.texi -> %. This rule may confuse make to determine
 # the dependecies.
