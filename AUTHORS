@@ -35,3 +35,5 @@ stage2/fsys_reiserfs.c and stage2/md5.c.
 Christoph Plattner added support for Net Boot Image Proposal.
 
 Frank Mehnert added support for hercules console.
+
+Kristoffer Branemyr added VSTa filesystem support.

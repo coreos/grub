@@ -1,7 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000   Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -114,6 +114,7 @@
 #define PC_SLICE_TYPE_LINUX_MINIX	0x81
 #define PC_SLICE_TYPE_EXT2FS       	0x83
 #define PC_SLICE_TYPE_LINUX_EXTENDED	0x85
+#define PC_SLICE_TYPE_VSTAFS		0x9e
 #define PC_SLICE_TYPE_LINUX_RAID	0xfd
 
 

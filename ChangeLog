@@ -1,5 +1,49 @@
 2001-06-22  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/char_io.c [STAGE1_5] (grub_strcmp): Defined, even
+	for Stage 1.5. See thecomment, for a possible future strategy.
+	* stage2/fsys_vstafs.c [!FSYS_VSTAFS]: Don't define anything.
+	[STAGE1_5] (grub_strcmp): Removed.
+	(get_file_info): Made static.
+	(vstafs_readdir): Likewise.
+	(vstafs_nextdir): Likewise.
+	(curr_ext): Likewise.
+	(current_direntry): Likewise.
+	(current_blockpos): Likewise.
+	(a): Likewise.
+	
+2001-06-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	VSTa filesystem support is added.
+	
+	From Kristoffer Brånemyr <ztion@swipnet.se>:
+	* stage2/configure.in (--disable-vstafs): New option.
+	* stage2/Makefile.am (noinst_HEADERS): Added vstafs.h.
+	(libgrub_a_SOURCES): Added fsys_vstafs.c.
+	(libgrub_a_CFLAGS): Added -DFSYS_VSTAFS=1.
+	(pkgdata_DATA): Added vstafs_stage1_5.
+	(noinst_PROGRAMS): Added vstafs_stage1_5.exec.
+	(pre_stage2_exec_SOURCES): Added fsys_vstafs.c.
+	(vstafs_stage1_5_exec_SOURCES): New variable.
+	(vstafs_stage1_5_exec_CFLAGS): Likewise.
+	(vstafs_stage1_5_exec_LDFLAGS): Likewise.
+	* stage2/disk_io.c (fsys_table): Added an entry for vstafs.
+	* stage2/filesys.h [FSYS_VSTAFS] (FSYS_VSTAFS_NUM): Defined as
+	1.
+	[FSYS_VSTAFS] (vstafs_mount): New prototype.
+	[FSYS_VSTAFS] (vstafs_read): Likewise.
+	[FSYS_VSTAFS] (vstafs_dir): Likewise.
+	[!FSYS_VSTAFS] (FSYS_VSTAFS_NUM): Defined as 0.
+	(NUM_FSYS): Added FSYS_VSTAFS_NUM.
+	* stage2/pc_slice.h (PC_SLICE_TYPE_VSTAFS): New macro.
+	* stage2/shared.h (STAGE2_ID_VSTAFS_STAGE1_5): Likewise.
+	[STAGE1_5 && FSYS_VSTAFS] (STAGE2_ID): Defined as
+	STAGE2_ID_VSTAFS_STAGE1_5.
+	* stage2/vstafs.h: New file.
+	* stage2/fsys_vstafs.c: Likewise.
+	
+2001-06-22  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Thierry Laronde <thierry@cri74.org>:
 	* stage2/builtins.c (configfile_func): Added a prototype.
 	(bootp_func): If `--with-configfile' is given, set

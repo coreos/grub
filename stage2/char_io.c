@@ -1015,7 +1015,15 @@ grub_strncat (char *s1, const char *s2, int n)
 
   return 1;
 }
+#endif /* ! STAGE1_5 */
 
+/* XXX: This below is an evil hack. Certainly, we should change the
+   strategy to determine what should be defined and what shouldn't be
+   defined for each image. For example, it would be better to create
+   a static library supporting minimal standard C functions and link
+   each image with the library. Complicated things should be left to
+   computer, definitely. -okuji  */
+#if ! defined(STAGE1_5) || defined(FSYS_VSTAFS)
 int
 grub_strcmp (const char *s1, const char *s2)
 {
@@ -1031,7 +1039,9 @@ grub_strcmp (const char *s1, const char *s2)
 
   return 0;
 }
+#endif /* ! STAGE1_5 || FSYS_VSTAFS */
 
+#ifndef STAGE1_5
 /* Wait for a keypress and return its code.  */
 int
 getkey (void)
