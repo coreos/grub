@@ -3364,13 +3364,13 @@ terminal_func (char *arg, int flags)
 	{
 	  if ((terminal & TERMINAL_CONSOLE) && console_checkkey () != -1)
 	    {
-	      terminal = TERMINAL_CONSOLE;
+	      terminal &= (TERMINAL_CONSOLE | TERMINAL_DUMB);
 	      (void) getkey ();
 	      return 0;
 	    }
 	  else if ((terminal & TERMINAL_SERIAL) && serial_checkkey () != -1)
 	    {
-	      terminal = TERMINAL_SERIAL;
+	      terminal &= (TERMINAL_SERIAL | TERMINAL_DUMB);
 	      (void) getkey ();
 
 	      /* If the interface is currently the command-line, restart
@@ -3392,8 +3392,7 @@ terminal_func (char *arg, int flags)
 	}
 
       /* Expired.  */
-      terminal &= TERMINAL_DUMB;
-      terminal |= default_terminal;
+      terminal &= (default_terminal | TERMINAL_DUMB);
     }
 #endif /* SUPPORT_SERIAL */
 

@@ -1215,7 +1215,11 @@ cls (void)
 void
 serial_cls (void)
 {
-  grub_printf ("\e[H\e[J");
+  /* If the terminal is dumb, there is no way to clean the terminal.  */
+  if (terminal & TERMINAL_DUMB)
+    grub_putchar ('\n');
+  else
+    grub_printf ("\e[H\e[J");
 }
 #endif /* SUPPORT_SERIAL */
 #endif /* ! STAGE1_5 */

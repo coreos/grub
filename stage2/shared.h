@@ -298,19 +298,29 @@ extern char *grub_scratch_mem;
 # endif /* ! A_STANDOUT */
 #endif /* ! A_REVERSE */
 
-/* Make sure that ACS_* are defined.  */
-#ifndef ACS_ULCORNER
-# define ACS_ULCORNER	'+'
-# define ACS_URCORNER	'+'
-# define ACS_LLCORNER	'+'
-# define ACS_LRCORNER	'+'
-# define ACS_HLINE	'-'
-# define ACS_VLINE	'|'
-# define ACS_LARROW	'<'
-# define ACS_RARROW	'>'
-# define ACS_UARROW	'^'
-# define ACS_DARROW	'v'
-#endif /* ! ACS_ULCORNER */
+/* Define ACS_* ourselves, since the definitions are not consistent among
+   various curses implementations.  */
+#undef ACS_ULCORNER
+#undef ACS_URCORNER
+#undef ACS_LLCORNER
+#undef ACS_LRCORNER
+#undef ACS_HLINE
+#undef ACS_VLINE
+#undef ACS_LARROW
+#undef ACS_RARROW
+#undef ACS_UARROW
+#undef ACS_DARROW
+
+#define ACS_ULCORNER	'+'
+#define ACS_URCORNER	'+'
+#define ACS_LLCORNER	'+'
+#define ACS_LRCORNER	'+'
+#define ACS_HLINE	'-'
+#define ACS_VLINE	'|'
+#define ACS_LARROW	'<'
+#define ACS_RARROW	'>'
+#define ACS_UARROW	'^'
+#define ACS_DARROW	'v'
 
 /* Special graphics characters for IBM displays. */
 #ifdef GRUB_UTIL

@@ -1,3 +1,44 @@
+2000-09-04  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/stage2.c (run_menu) [GRUB_UTIL]: Set DISP_UP and
+	DISP_DOWN to ACS_UARROW and ACS_DARROW, respectively. Don't call
+	grub_printf here.
+	(run_menu) [!GRUB_UTIL]: Don't call grub_printf here. Instead,
+	call it...
+	(run_menu): ... here.
+	* stage2/shared.h (ACS_ULCORNER): Always define this ourselves,
+	whether your curses library has the definition.
+	(ACS_URCORNER): Likewise.
+	(ACS_LLCORNER): Likewise.
+	(ACS_LRCORNER): Likewise.
+	(ACS_HLINE): Likewise.
+	(ACS_VLINE): Likewise.
+	(ACS_LARROW): Likewise.
+	(ACS_RARROW): Likewise.
+	(ACS_UARROW): Likewise.
+	(ACS_DARROW): Likewise.
+
+	* stage2/char_io.c [SUPPORT_SERIAL] (serial_cls): If the
+	terminal is dumb, just put a newline.
+	* stage2/builtins.c (terminal_func) [SUPPORT_SERIAL]: When
+	choosing a terminal, don't set TERMINAL to the type of the
+	terminal. Instead, apply a logical AND operation with
+	TERMINAL_DUMB, since previous code brushed off the dumb
+	attribute.
+	
+2000-09-04  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/stage2.c (run_menu): If SHOW_MENU is zero, print a
+	message with the timeout per second.
+	If GRUB_TIMEOUT is negative, set SHOW_MENU to one, since the
+	condition "no timeout and no interface" is nonsense.
+	If GRUB_TIMEOUT is equal to or greater than zero and the
+	terminal is dumb, set SHOW_MENU to zero.
+	If SHOW_MENU is non-zero and the terminal is dumb, enter the
+	command-line interface instead. If AUTH is false and PASSWORD is
+	non-NULL, prompt the user to enter a password until the entered
+	password is identical to PASSWORD.
+	
 2000-09-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in: Fix a typo: grub_dir -> grubdir.

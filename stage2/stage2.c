@@ -239,7 +239,7 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
   char *cur_entry = 0;
   int disp_up = DISP_UP;
   int disp_down = DISP_DOWN;
-  
+
   /*
    *  Main loop for menu UI.
    */
@@ -251,12 +251,18 @@ restart:
       entryno--;
     }
 
+  /* If the timeout was expired or wasn't set, force to show the menu
+     interface. If the terminal is dumb and the timeout is set, hide
+     the menu to boot the default entry automatically when the timeout
+     is expired.  */
+  if (grub_timeout < 0)
+    show_menu = 1;
+  else if (terminal & TERMINAL_DUMB)
+    show_menu = 0;
+  
   /* If SHOW_MENU is false, don't display the menu until ESC is pressed.  */
   if (! show_menu)
     {
-      /* Print a message.  */
-      grub_printf ("Press `ESC' to enter the menu...\n");
-
       /* Get current time.  */
       while ((time1 = getrtsecs ()) == 0xFF)
 	;
@@ -284,10 +290,40 @@ restart:
 	      
 	      time2 = time1;
 	      grub_timeout--;
+	      
+	      /* Print a message.  */
+	      if (terminal & TERMINAL_DUMB)
+		grub_printf ("\rPress `ESC' to enter the command-line... %d   ",
+			     grub_timeout);
+	      else
+		grub_printf ("\rPress `ESC' to enter the menu... %d   ",
+			     grub_timeout);
 	    }
 	}
     }
-      
+
+  /* If the terminal is dumb, enter the command-line interface instead.  */
+  if (show_menu && (terminal & TERMINAL_DUMB))
+    {
+      if (! auth && password)
+	{
+	  /* The user must enter a correct password.  */
+	  char entered[32];
+
+	  /* Make sure that PASSWORD is NUL-terminated.  */
+	  nul_terminate (password);
+	  
+	  do
+	    {
+	      grub_memset (entered, 0, sizeof (entered));
+	      get_cmdline ("Password: ", entered, 31, '*', 0);
+	    }
+	  while (grub_strcmp (password, entered) != 0);
+	}
+	  
+      enter_cmdline (heap, 1);
+    }
+  
   /* Only display the menu if the user wants to see it. */
   if (show_menu)
     {
@@ -302,8 +338,9 @@ restart:
       print_border (3, 12);
 
 #ifdef GRUB_UTIL
-      grub_printf ("\n\
-      Use the up and down arrows to select which entry is highlighted.\n");
+      /* In the grub shell, always use ACS_*.  */
+      disp_up = ACS_UARROW;
+      disp_down = ACS_DARROW;
 #else /* ! GRUB_UTIL */
 # ifdef SUPPORT_SERIAL
       if (terminal & TERMINAL_CONSOLE)
@@ -317,10 +354,11 @@ restart:
 	  disp_down = ACS_DARROW;
 	}
 # endif /* SUPPORT_SERIAL */
+#endif /* ! GRUB_UTIL */
+      
       grub_printf ("\n\
       Use the %c and %c keys to select which entry is highlighted.\n",
 		   disp_up, disp_down);
-#endif /* ! GRUB_UTIL */
       
       if (! auth && password)
 	{
