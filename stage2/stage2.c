@@ -500,13 +500,7 @@ restart:
       if (run_script (cur_entry, heap))
 	{
 	  if (fallback_entry < 0)
-	    {
-	      /* Both the entry and the fallback failed, so wait for
-		 input.  */
-	      grub_printf ("      Press any key to continue...");
-	      (void) getkey ();
-	      break;
-	    }
+	    break;
 	  else
 	    {
 	      cur_entry = NULL;
@@ -515,6 +509,8 @@ restart:
 	      fallback_entry = -1;
 	    }
 	}
+      else
+	break;
     }
   
   goto restart;

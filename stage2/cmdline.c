@@ -171,11 +171,6 @@ run_script (char *script, char *heap)
       
       if (errnum)
 	{
-	  /* If FALLBACK_ENTRY does not have any meaningful value, do
-	     not wait for the input.  */
-	  if (fallback_entry < 0)
-	    return 1;
-	  
 	  grub_printf ("Press any key to continue...");
 	  (void) getkey ();
 	  return 1;

@@ -1,3 +1,12 @@
+1999-09-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/stage2.c (run_menu): If run_script is successfully
+	finished, break the loop. Reported by Pavel Roskin.
+	Do not wait an input character when FALLBACK_ENTRY is less than
+	zero.
+	* stage2/cmdline.c (run_script): If ERRNUM is non-zero, wait an
+	input character, whether FALLBACK is less than zero or not.
+	
 1999-09-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/builtins.c (configfile_func): New function.
