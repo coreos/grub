@@ -234,7 +234,6 @@ load_image (char *kernel, char *arg, kernel_t suggested_type)
 	    if (vga)
 	      {
 		char *value = vga + 4;
-		char *vga_end;
 		int vid_mode;
 
 		/* Handle special strings.  */
@@ -259,10 +258,6 @@ load_image (char *kernel, char *arg, kernel_t suggested_type)
 		grub_memmove (buffer + LINUX_VID_MODE_OFFSET,
 			      (char *) &vid_mode,
 			      sizeof (unsigned short));
-		
-		/* Remove the "vga=...".  */
-		vga_end = skip_to (0, vga);
-		grub_memmove (vga, vga_end, grub_strlen (vga_end) + 1);
 	      }
 	  }
 		

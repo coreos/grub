@@ -198,7 +198,7 @@ $(DEPDIR)/libdrivers_a-pci.Po $(DEPDIR)/libdrivers_a-rtl8139.Po \
 $(DEPDIR)/libdrivers_a-sk_g16.Po $(DEPDIR)/libdrivers_a-smc9000.Po \
 $(DEPDIR)/libdrivers_a-tiara.Po $(DEPDIR)/libdrivers_a-tulip.Po \
 $(DEPDIR)/libdrivers_a-via-rhine.Po
-DIST_COMMON =  Makefile.am Makefile.in compile
+DIST_COMMON =  Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)

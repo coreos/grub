@@ -99,8 +99,8 @@ CONFIG_CLEAN_FILES =
 DIST_SOURCES = 
 DIST_COMMON =  README ./stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
 Makefile.am Makefile.in NEWS THANKS TODO acconfig.h acinclude.m4 \
-aclocal.m4 config.guess config.h.in config.sub configure configure.in \
-depcomp install-sh missing mkinstalldirs
+aclocal.m4 compile config.guess config.h.in config.sub configure \
+configure.in depcomp install-sh missing mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)

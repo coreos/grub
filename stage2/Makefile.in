@@ -404,7 +404,7 @@ $(DEPDIR)/reiserfs_stage1_5_exec-disk_io.Po \
 $(DEPDIR)/reiserfs_stage1_5_exec-fsys_reiserfs.Po \
 $(DEPDIR)/reiserfs_stage1_5_exec-stage1_5.Po \
 $(DEPDIR)/reiserfs_stage1_5_exec-start.Po $(DEPDIR)/start_exec-start.Po
-DIST_COMMON =  $(noinst_HEADERS) Makefile.am Makefile.in compile
+DIST_COMMON =  $(noinst_HEADERS) Makefile.am Makefile.in
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
