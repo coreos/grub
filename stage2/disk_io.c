@@ -26,8 +26,8 @@
 
 #ifndef STAGE1_5
 /* instrumentation variables */
-void (*disk_read_hook) (int) = NULL;
-void (*disk_read_func) (int) = NULL;
+void (*disk_read_hook) (int, int, int) = NULL;
+void (*disk_read_func) (int, int, int) = NULL;
 
 int print_possibilities;
 
@@ -182,23 +182,32 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	    buf_track = track;
 	}
 
+      if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
+	size = (num_sect * SECTOR_SIZE) - byte_offset;
+
 #ifndef STAGE1_5
       /*
        *  Instrumentation to tell which sectors were read and used.
        */
-      if (disk_read_hook && disk_read_func)
+      if (disk_read_func)
 	{
-	  int sector_end = sector + ((num_sect < slen) ? num_sect : slen);
 	  int sector_num = sector;
-
-	  while (sector_num < sector_end)
-	    (*disk_read_func) (sector_num++);
+	  int length = SECTOR_SIZE - byte_offset;
+	  if (length > size)
+	    length = size;
+	  (*disk_read_func) (sector_num++, byte_offset, length);
+	  length = size - length;
+	  if (length > 0)
+	    {
+	      while (length > SECTOR_SIZE)
+		{
+		  (*disk_read_func) (sector_num++, 0, SECTOR_SIZE);
+		  length -= SECTOR_SIZE;
+		}
+	      (*disk_read_func) (sector_num, 0, length);
+	    }
 	}
 #endif /* STAGE1_5 */
-
-      if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
-	size = (num_sect * SECTOR_SIZE) - byte_offset;
-
       memmove (buf, (char *) bufaddr, size);
 
       buf += size;

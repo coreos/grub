@@ -77,9 +77,9 @@ init_config (void)
 
 /* Print which sector is read when loading a file.  */
 static void
-disk_read_print_func (int sector)
+disk_read_print_func (int sector, int offset, int length)
 {
-  grub_printf ("[%d]", sector);
+  grub_printf ("[%d,%d,%d]", sector, offset, length);
 }
 
 
@@ -91,30 +91,50 @@ blocklist_func (char *arg, int flags)
   int start_sector;
   int num_sectors = 0;
   int num_entries = 0;
+  int last_length = 0;
 
   /* Collect contiguous blocks into one entry as many as possible,
      and print the blocklist notation on the screen.  */
-  static void disk_read_blocklist_func (int sector)
+  static void disk_read_blocklist_func (int sector, int offset, int length)
     {
-      if (debug)
-	grub_printf ("[%d]", sector);
-
       if (num_sectors > 0)
 	{
-	  if (start_sector + num_sectors == sector)
-	    num_sectors++;
+	  if (start_sector + num_sectors == sector
+	      && offset == 0 && last_length == SECTOR_SIZE)
+	    {
+	      num_sectors++;
+	      last_length = length;
+	      return;
+	    }
 	  else
 	    {
-	      grub_printf ("%s%d+%d", num_entries ? "," : "",
-			   start_sector - part_start, num_sectors);
+	      if (last_length == SECTOR_SIZE)
+		grub_printf ("%s%d+%d", num_entries ? "," : "",
+			     start_sector - part_start, num_sectors);
+	      else if (num_sectors > 1)
+		grub_printf ("%s%d+%d,%d[0-%d]", num_entries ? "," : "",
+			     start_sector - part_start, num_sectors-1,
+			     start_sector + num_sectors-1 - part_start, 
+			     last_length);
+	      else
+		grub_printf ("%s%d[0-%d]", num_entries ? "," : "",
+			     start_sector - part_start, last_length);
 	      num_entries++;
 	      num_sectors = 0;
 	    }
+	}
+
+      if (offset > 0)
+	{
+	  grub_printf("%s%d[%d-%d]", num_entries ? "," : "",
+		      sector-part_start, offset, offset+length);
+	  num_entries++;
 	}
       else
 	{
 	  start_sector = sector;
 	  num_sectors = 1;
+	  last_length = length;
 	}
     }
 
@@ -140,7 +160,8 @@ blocklist_func (char *arg, int flags)
   if (! grub_read (dummy, -1))
     goto fail;
 
-  /* The last entry may not be printed yet.  */
+  /* The last entry may not be printed yet.  Don't check if it is a
+   * full sector, since it doesn't matter if we read too much. */
   if (num_sectors > 0)
     grub_printf ("%s%d+%d", num_entries ? "," : "",
 		 start_sector - part_start, num_sectors);
@@ -1389,22 +1410,39 @@ install_func (char *arg, int flags)
   int is_open = 0;
   /* If LBA is forced?  */
   int is_force_lba = 0;
+  /* Was the last sector full? */
+  int last_length = SECTOR_SIZE;
   
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
-  static void disk_read_savesect_func (int sector)
+  static void disk_read_savesect_func (int sector, int offset, int length)
     {
       if (debug)
 	printf ("[%d]", sector);
+
+      /* ReiserFS has files which sometimes contain data not aligned
+         on sector boundaries.  Returning an error is better than
+         silently failing. */
+      if (offset != 0 || length != SECTOR_SIZE)
+	errnum = ERR_UNALIGNED;
 
       saved_sector = sector;
     }
 
   /* Write SECTOR to INSTALLLIST, and update INSTALLADDR and
      INSTALLSECT.  */
-  static void disk_read_blocklist_func (int sector)
+  static void disk_read_blocklist_func (int sector, int offset, int length)
     {
       if (debug)
 	printf("[%d]", sector);
+
+      if (offset != 0 || last_length != SECTOR_SIZE)
+	{
+	  /* We found a non-sector-aligned data block. */
+	  errnum = ERR_UNALIGNED;
+	  return;
+	}
+
+      last_length = length;
 
       if (*((unsigned long *) (installlist - 4))
 	  + *((unsigned short *) installlist) != sector

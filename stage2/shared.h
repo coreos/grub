@@ -416,6 +416,7 @@ typedef enum
   ERR_WONT_FIT,
   ERR_WRITE,
   ERR_BAD_ARGUMENT,
+  ERR_UNALIGNED,
 
   MAX_ERR_NUM
 } grub_error_t;
@@ -470,8 +471,8 @@ extern int compressed_file;
 
 #ifndef STAGE1_5
 /* instrumentation variables */
-extern void (*disk_read_hook) (int);
-extern void (*disk_read_func) (int);
+extern void (*disk_read_hook) (int, int, int);
+extern void (*disk_read_func) (int, int, int);
 /* The flag for debug mode.  */
 extern int debug;
 /* Color settings */

@@ -1,3 +1,15 @@
+2000-02-29  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/common.c (err_list): Added message for ERR_UNALIGNED.
+	* stage2/shared.h [!STAGE1_5] (disk_read_hook,disk_read_func): New
+ 	parameters offset and length.
+	(ERR_UNALIGNED): New error code.
+	* stage2/disk_io.c (rawread) [!STAGE1_5]: Call disk_read_func with
+	offset and length.
+	* stage2/builtin.c (disk_read_print_func): Print offset and length.
+	(blocklist_func): Print detailed byte ranges for partial sectors.
+	(install_func): Detect partial sectors and print error message.
+
 2000-04-18  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* util/grub-install.in: Don't use `!' in `test' for more
