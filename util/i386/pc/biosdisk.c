@@ -177,6 +177,12 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
     if (! fd)
       return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot open `%s'", map[drive]);
 
+    if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
+      {
+	close (fd);
+	goto fail;
+      }
+    
     if (ioctl (fd, BLKGETSIZE, &nr))
       {
 	close (fd);
@@ -198,11 +204,7 @@ pupa_util_biosdisk_open (const char *name, pupa_disk_t disk)
   if (stat (map[drive], &st) < 0)
     return pupa_error (PUPA_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive]);
 
-  if (st.st_blocks)
-    disk->total_sectors = st.st_blocks;
-  else
-    /* Hmm... Use st_size instead.  */
-    disk->total_sectors = st.st_size >> PUPA_DISK_SECTOR_BITS;
+  disk->total_sectors = st.st_size >> PUPA_DISK_SECTOR_BITS;
   
   pupa_util_info ("the size of %s is %lu", name, disk->total_sectors);
   

@@ -1,3 +1,22 @@
+2003-01-07  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/pupa-setup.c (setup): Convert the endianness of
+	the length of a blocklist correctly.
+
+	* util/i386/pc/biosdisk.c (pupa_util_biosdisk_open) [__linux__]:
+	Use ioctl only if the OS file is a block device.
+	(pupa_util_biosdisk_open): Don't use ST.ST_BLOCKS, because it is
+	not very useful for normal files.
+
+	* kern/main.c (pupa_set_root_dev): New function.
+	(pupa_load_normal_mode): Likewise.
+	(pupa_main): Call those above.
+
+	* include/pupa/types.h (pupa_swap_bytes16): Cast the result to
+	pupa_uint16_t.
+
+	* include/pupa/kernel.h (pupa_enter_normal_mode): Removed.
+
 2003-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/pupa-setup.c: Include pupa/machine/kernel.h.

@@ -129,7 +129,7 @@ setup (const char *prefix, const char *dir,
       if (block != first_block
 	  && (pupa_le_to_cpu32 (prev->start)
 	      + pupa_le_to_cpu16 (prev->len)) == sector)
-	prev->len = pupa_le_to_cpu16 (prev->len) + 1;
+	prev->len = pupa_cpu_to_le16 (pupa_le_to_cpu16 (prev->len) + 1);
       else
 	{
 	  block->start = pupa_cpu_to_le32 (sector);

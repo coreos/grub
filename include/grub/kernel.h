@@ -55,7 +55,4 @@ pupa_addr_t pupa_get_end_addr (void);
 /* Register all the exported symbols. This is automatically generated.  */
 void pupa_register_exported_symbols (void);
 
-/* Enter normal mode.  */
-void pupa_enter_normal_mode (void);
-
 #endif /* ! PUPA_KERNEL_HEADER */

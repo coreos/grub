@@ -85,7 +85,7 @@ typedef pupa_int32_t	pupa_ssize_t;
 #define pupa_swap_bytes16(x)	\
 ({ \
    pupa_uint16_t _x = (x); \
-   (_x << 8) | (_x >> 8); \
+   (pupa_uint16_t) ((_x << 8) | (_x >> 8)); \
 })
 
 #define pupa_swap_bytes32(x)	\
