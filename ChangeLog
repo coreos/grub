@@ -1,3 +1,11 @@
+2001-02-02  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/config.c [GRUB && INCLUDE_PCI] (pci_dispatch_table):
+	New structure.
+	[GRUB && INCLUDE_PCI] (PCI_NIC): New variable.
+	(eth_probe) [GRUB && INCLUDE_PCI]: If a PCI NIC candidate is
+	present, probe it first.
+	
 2001-01-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Danilo Godec <danci@agenda.si>:
