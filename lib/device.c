@@ -550,7 +550,7 @@ write_to_partition (char **map, int drive, int partition,
   sprintf (dev, "%s%d", map[drive], ((partition >> 16) & 0xFF) + 1);
   
   /* Open the partition.  */
-  fd = open (dev, O_RDONLY);
+  fd = open (dev, O_RDWR);
   if (fd < 0)
     {
       errnum = ERR_NO_PART;

@@ -2018,7 +2018,7 @@ install_func (char *arg, int flags)
 #endif /* GRUB_UTIL && __linux__ */
     {
       grub_memmove ((char *) SCRATCHADDR, stage1_buffer, SECTOR_SIZE);
-      if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
+      if (biosdisk (BIOSDISK_WRITE, dest_drive, &dest_geom,
 		    dest_sector, 1, SCRATCHSEG))
 	{
 	  errnum = ERR_WRITE;

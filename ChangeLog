@@ -1,3 +1,8 @@
+2000-10-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* lib/device.c [__linux__] (write_to_partition): Open DEV with
+	O_RDWR instead of O_ORONLY.
+	
 2000-10-06  Alessandro Rubini  <rubini@gnu.org>
 
 	* docs/user-ref.texi (Commands): Added missing commands and
