@@ -1,3 +1,9 @@
+1999-10-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/boot.c (load_initrd): Change types of *RAMDISK and
+	MOVETO to unsigned long.
+	Apply the macro RAW_ADDR to MOVETO.
+	
 1999-10-16  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/multiboot.texi: Include the example source files of a

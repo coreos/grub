@@ -508,18 +508,18 @@ int
 load_initrd (char *initrd)
 {
   int len;
-  long *ramdisk, moveto;
+  unsigned long *ramdisk, moveto;
 
   if (! grub_open (initrd) || ! (len = grub_read ((char *) cur_addr, -1)))
     return 0;
 
   moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
-  memmove ((void *) moveto, (void *) cur_addr, len);
+  memmove ((void *) RAW_ADDR (moveto), (void *) cur_addr, len);
 
   printf ("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
 
-  ramdisk = (long *) (LINUX_SETUP + LINUX_SETUP_INITRD);
-  ramdisk[0] = moveto;
+  ramdisk = (unsigned long *) (LINUX_SETUP + LINUX_SETUP_INITRD);
+  ramdisk[0] = RAW_ADDR (moveto);
   ramdisk[1] = len;
 
   return 1;
