@@ -1,3 +1,13 @@
+2004-01-05  Rick van Rein  <rick@vanrein.org>
+
+	* stage2/builtins.c: New menu command "expires".  The change also
+	influences the files stage2/shared.h, stage2/common.c, stage2/asm.S,
+	grub/asmstub.c and docs/grub.texi.  The "fallback" command is now a
+	general command, in support of chained fallbacks.
+
+	* docs/grub.texi: Added missing documentation for ERR_NUMBER_OVERFLOW.
+
+
 2003-12-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/fsys_ext2fs.c (ext2_is_fast_symlink): New function.
