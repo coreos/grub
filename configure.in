@@ -283,4 +283,5 @@ AC_SUBST(NET_EXTRAFLAGS)
 
 # Output.
 AC_OUTPUT([Makefile stage1/Makefile stage2/Makefile docs/Makefile \
-	debian/Makefile lib/Makefile grub/Makefile netboot/Makefile])
+	debian/Makefile lib/Makefile util/Makefile grub/Makefile \
+	netboot/Makefile])

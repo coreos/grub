@@ -402,6 +402,8 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
+# Cancel the rule %.texi -> %. This rule may confuse make to determine
+# the dependecies.
 .texi:
 
 %.c.texi: %.c $(srcdir)/$(SRC2TEXI)
