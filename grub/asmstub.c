@@ -355,7 +355,7 @@ init_device_map (void)
       }
 
   /* IDE disks.  */
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 8; i++)
     {
       char name[16];
 
@@ -373,7 +373,7 @@ init_device_map (void)
     }
 
   /* The rest is SCSI disks.  */
-  for (i = 0; i < 8; i++)
+  for (i = 0; i < 16; i++)
     {
       char name[16];
 
@@ -518,6 +518,20 @@ check_device (const char *device)
       return 0;
     }
 
+#ifdef __linux__
+  /* Check if DEVICE is a CD-ROM drive by the HDIO_GETGEO ioctl.  */
+  {
+    struct hd_geometry hdg;
+    struct stat st;
+
+    if (fstat (fileno (fp), &st))
+      return 0;
+    
+    if (S_ISBLK (st.st_mode) && ioctl (fileno (fp), HDIO_GETGEO, &hdg))
+      return 0;
+  }
+#endif /* __linux__ */
+  
   /* Attempt to read the first sector.  */
   if (fread (buf, 1, 512, fp) != 512)
     {

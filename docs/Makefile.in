@@ -229,8 +229,9 @@ uninstall-info:
 	@if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	  list='$(INFO_DEPS)'; \
 	  for file in $$list; do \
-	    echo " install-info --info-dir=$(DESTDIR)$(infodir) --remove $(DESTDIR)$(infodir)/$$file"; \
-	    install-info --info-dir=$(DESTDIR)$(infodir) --remove $(DESTDIR)$(infodir)/$$file; \
+	    d=$(srcdir); \
+	    echo " install-info --info-dir=$(DESTDIR)$(infodir) --remove $$d/$$file"; \
+	    install-info --info-dir=$(DESTDIR)$(infodir) --remove $$d/$$file; \
 	  done; \
 	else :; fi
 	@$(NORMAL_UNINSTALL)
@@ -257,12 +258,12 @@ mostlyclean-aminfo:
 	-rm -f grub.aux grub.cp grub.cps grub.dvi grub.fn grub.fns grub.pgs \
 	  grub.ky grub.kys grub.ps grub.log grub.pg grub.toc grub.tp \
 	  grub.tps grub.vr grub.vrs grub.op grub.tr grub.cv grub.cn \
-	  grub.cm grub.ov multiboot.aux multiboot.cp multiboot.cps \
-	  multiboot.dvi multiboot.fn multiboot.fns multiboot.pgs \
-	  multiboot.ky multiboot.kys multiboot.ps multiboot.log \
-	  multiboot.pg multiboot.toc multiboot.tp multiboot.tps \
-	  multiboot.vr multiboot.vrs multiboot.op multiboot.tr \
-	  multiboot.cv multiboot.cn multiboot.cm multiboot.ov
+	  multiboot.aux multiboot.cp multiboot.cps multiboot.dvi \
+	  multiboot.fn multiboot.fns multiboot.pgs multiboot.ky \
+	  multiboot.kys multiboot.ps multiboot.log multiboot.pg \
+	  multiboot.toc multiboot.tp multiboot.tps multiboot.vr \
+	  multiboot.vrs multiboot.op multiboot.tr multiboot.cv \
+	  multiboot.cn
 
 clean-aminfo:
 
@@ -366,7 +367,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pR $$d/$$file $(distdir); \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -411,7 +412,6 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-	-rm -f Makefile.in
 mostlyclean-am:  mostlyclean-vti mostlyclean-aminfo mostlyclean-generic
 
 mostlyclean: mostlyclean-am

@@ -1,3 +1,22 @@
+1999-12-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* grub/asmstub.c (check_device) [__linux__]: Check if DEVICE is
+	a CD-ROM drive by the HDIO_GETGEO ioctl. If so, then return
+	zero. Reported by Pavel Roskin.
+
+	* stage2/Makefile.am (nodist_noinst_DATA): Renamed to ...
+	(noinst_DATA): ... this. The primary DATA is `nodist' by
+	default, at least theoretically. Reported by Klaus Reichl.
+
+	* stage2/bios.c (get_diskinfo): Set the LBA flag in GEOMETRY
+	only if bit 0 in DRP.FLAGS is set. Reported by Zack Weinberg
+	<zack@rabi.columbia.edu>.
+
+	From Pavel Roskin:
+	* grub/asmstub.c (init_device_map): Increase the number of
+	devices to be probed to 8 for IDE disks and 16 for SCSI
+	disks. Reported by Anton Anisimov <aa@bestlinux.net>.
+	
 1999-12-06  Gordon Matzigkeit  <gord@fig.org>
 
 	* README (DEVELOPERS): Change CVS location to subversions.

@@ -158,12 +158,16 @@ get_diskinfo (int drive, struct geometry *geometry)
 	  err = get_diskinfo_int13_extensions (drive, &drp);
 	  if (! err)
 	    {
-	      geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
-
-	      /* FIXME: when the 2TB limit becomes critical, we must
-		 change the type of TOTAL_SECTORS to unsigned long
-		 long.  */
-	      total_sectors = drp.total_sectors & ~0L;
+	      /* Make sure that LBA read/write functions are supported.  */
+	      if (drp.flags & 1)
+		{
+		  geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
+		  
+		  /* FIXME: when the 2TB limit becomes critical, we must
+		     change the type of TOTAL_SECTORS to unsigned long
+		     long.  */
+		  total_sectors = drp.total_sectors & ~0L;
+		}
 	    }
 	}
 

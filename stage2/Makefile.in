@@ -111,7 +111,7 @@ nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5
 
 CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
-nodist_noinst_DATA = pre_stage2 start
+noinst_DATA = pre_stage2 start
 noinst_PROGRAMS = pre_stage2.exec start.exec \
 	e2fs_stage1_5.exec fat_stage1_5.exec \
 	ffs_stage1_5.exec minix_stage1_5.exec
@@ -254,11 +254,12 @@ DIST_SOURCES =  $(libgrub_a_SOURCES) $(e2fs_stage1_5_exec_SOURCES) \
 $(fat_stage1_5_exec_SOURCES) $(ffs_stage1_5_exec_SOURCES) \
 $(minix_stage1_5_exec_SOURCES) $(pre_stage2_exec_SOURCES) \
 $(start_exec_SOURCES)
-DATA =  $(nodist_noinst_DATA) $(nodist_pkgdata_DATA)
+DATA =  $(nodist_pkgdata_DATA) $(noinst_DATA)
 
 HEADERS =  $(noinst_HEADERS)
 
-DIST_COMMON =  $(noinst_HEADERS) Makefile.am Makefile.in compile
+DIST_COMMON =  $(noinst_DATA) $(noinst_HEADERS) Makefile.am Makefile.in \
+compile
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -414,24 +415,6 @@ start.exec: $(start_exec_OBJECTS) $(start_exec_DEPENDENCIES)
 .c.o:
 	$(COMPILE) -c $<
 
-install-nodist_noinstDATA: $(nodist_noinst_DATA)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(noinstdir)
-	@list='$(nodist_noinst_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(noinstdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(noinstdir)/$$f; \
-	done
-
-uninstall-nodist_noinstDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(nodist_noinst_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(noinstdir)/$$f"; \
-	  rm -f $(DESTDIR)$(noinstdir)/$$f; \
-	done
-
 install-nodist_pkgdataDATA: $(nodist_pkgdata_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
@@ -494,7 +477,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pR $$d/$$file $(distdir); \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1546,21 +1529,20 @@ installcheck: installcheck-am
 install-exec-am:
 install-exec: install-exec-am
 
-install-data-am: install-nodist_noinstDATA install-nodist_pkgdataDATA
+install-data-am: install-nodist_pkgdataDATA
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-nodist_noinstDATA uninstall-nodist_pkgdataDATA
+uninstall-am: uninstall-nodist_pkgdataDATA
 uninstall: uninstall-am
 all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) $(HEADERS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(nodist_noinstdir) \
-		$(DESTDIR)$(nodist_pkgdatadir)
+	$(mkinstalldirs)  $(DESTDIR)$(nodist_pkgdatadir)
 
 
 mostlyclean-generic:
@@ -1574,7 +1556,6 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-	-rm -f Makefile.in
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
 		mostlyclean-noinstPROGRAMS mostlyclean-tags \
@@ -1608,8 +1589,7 @@ clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-noinstPROGRAMS \
 distclean-noinstPROGRAMS clean-noinstPROGRAMS \
-maintainer-clean-noinstPROGRAMS uninstall-nodist_noinstDATA \
-install-nodist_noinstDATA uninstall-nodist_pkgdataDATA \
+maintainer-clean-noinstPROGRAMS uninstall-nodist_pkgdataDATA \
 install-nodist_pkgdataDATA tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir mostlyclean-depend \
 distclean-depend clean-depend maintainer-clean-depend check-TESTS \
