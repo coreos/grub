@@ -1343,6 +1343,31 @@ comments in the file if needed, as the grub shell assumes that a line is
 just a comment if the first character is @samp{#}.
 
 
+@node Invoking grub-install
+@chapter Invoking grub-install
+
+The program @command{grub-install} installs GRUB on your drive by the
+grub shell (@pxref{Invoking the grub shell}). You must specify the
+device name on which you want to install GRUB, like this:
+
+@example
+grub-install @var{install_device}
+@end example
+
+The device name @var{install_device} is an OS device name or a GRUB
+device name.
+
+@command{grub-install} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command line options and exit.
+
+@item --version
+Print the version number of GRUB and exit.
+@end table
+
+
 @node Invoking mbchk
 @chapter Invoking mbchk
 

@@ -1,4 +1,5 @@
 bin_PROGRAMS = mbchk
+sbin_SCRIPS = grub-install
 
 # XXX: Need to search for a header file in docs, because of multiboot.h.
 AM_CFLAGS = -I$(top_srcdir)/lib -I$(top_srcdir)/docs

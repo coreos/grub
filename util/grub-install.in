@@ -1,0 +1,190 @@
+#! /bin/sh
+
+# Install GRUB on your drive.
+#   Copyright (C) 1999 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# Initialize some variables.
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sbindir=@sbindir@
+datadir=@datadir@
+PACKAGE=@PACKAGE@
+VERSION=@VERSION@
+host_cpu=@host_cpu@
+host_os=@host_os@
+host_vendor=@host_vendor@
+pkgdatadir=${datadir}/${PACKAGE}/${host_cpu}-${host_vendor}
+
+grub_shell=${sbindir}/grub
+bootdir=/boot
+grubdir=${bootdir}/grub
+device_map=${grub_dir}/device.map
+log_file=/tmp/grub-install.log.$$
+
+install_device=
+
+# Usage: usage
+# Print the usage.
+usage () {
+    cat <<EOF
+Usage: grub-install [OPTION] install_device
+Install GRUB on your drive.
+
+  -h, --help              print this message and exit
+  -v, --version           print the version information and exit
+
+Reports bugs to <bug-grub@gnu.org>.
+EOF
+}
+
+# Usage: convert os_device
+# Convert an OS device to the corresponding GRUB drive.
+# This part is OS-specific.
+convert () {
+    # Break the device name into the disk part and the partition part.
+    case $host_os in
+    linux*) 
+	tmp_disk=`echo $1 | sed 's%[0-9]*$%%'`
+	tmp_part=`echo $1 | sed "s%$tmp_disk%%"` ;;
+    gnu*)
+	tmp_disk=`echo $1 | sed 's%s[0-9]*[a-g]?%%'`
+	tmp_part=`echo $1 | sed "s%$tmp_disk%%"` ;;
+    *)
+	echo "grub-install does not support your OS yet."
+	exit 1 ;;
+    esac
+
+    # Get the drive name.
+    tmp_drive=`grep -v '^#' $device_map | grep $tmp_disk \
+	| sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+
+    # If not found, print an error message and exit.
+    if "x$tmp_drive" = x; then
+	echo "$1 does not have any corresponding BIOS drive."
+	exit 1
+    fi
+
+    if test "x$tmp_part" != x; then
+	# If a partition is specified, we need to translate it into the
+	# GRUB's syntax.
+	case $host_os in
+	linux*)
+	    echo $tmp_drive | sed "s%)$%,`expr $tmp_part - 1`)%" ;;
+	gnu*)
+	    tmp_pc_slice=`echo $tmp_part | sed "s%s\([0-9]*\)[a-g]?%\1%"`
+	    tmp_bsd_partition=`echo $tmp | sed "s%s[0-9]*\([a-g]?\)%\1%"`
+	    tmp_drive=`echo $tmp_drive \
+		| sed "s%)%,\`expr $tmp_pc_slice - 1\`)%"`
+	    if test "x$tmp_bsd_partition" != x; then
+		tmp_drive=`echo $tmp_drive \
+		    | sed "s%)%,\`sed y%abcdefg%0123456%\`)%"`
+	    fi
+	    echo $tmp_drive ;;
+	esac
+    else
+	# If no partition is specified, just print the drive name.
+	echo $tmp_drive
+    fi
+}
+
+# Check the arguments.
+for option; do
+    case "$option" in
+    -h | --help)
+	usage
+	exit 0 ;;
+    -v | --version)
+	echo "grub-install (GNU GRUB ${VERSION})"
+	exit 0 ;;
+    *)
+	if test "x$install_device" != x; then
+	    usage
+	    exit 1
+	fi
+	install_device=${option} ;;
+    esac
+done
+
+# Create the GRUB directory if it is not present.
+if test ! -d $bootdir; then
+    mkdir $bootdir
+fi
+
+if test ! -d $grubdir; then
+    mkdir $grubdir
+fi
+
+# Create the device map file if it is not present.
+if test ! -f $device_map; then
+    $grub_shell --batch --device-map=$device_map <<EOF >$log_file
+quit
+EOF
+    if grep "Error: " $log_file >/dev/null; then
+	cat $log_file
+	exit 1
+    fi
+
+    rm -f $log_file
+fi
+
+# Copy the GRUB images to the GRUB directory.
+rm -f ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5
+cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 ${grubdir}
+
+# Check for INSTALL_DEVICE.
+if test "x$install_device" = x; then
+    usage
+    exit 1
+elif echo $install_device | sed 's%^/dev/%%' >/dev/null; then
+    install_drive=`convert $install_device`
+elif echo $install_device | sed 's%^([hf][0-9,]*)$%%' >/dev/null; then
+    install_drive=$install_device
+else
+    usage
+    exit 1
+fi
+
+# Get the root drive.
+# For now, this uses the program `df' to get the device name, but is
+# this really portable?
+root_device=`df ${grubdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+root_drive=`convert $root_device`
+
+# Now perform the installation.
+$grub_shell --batch --device-map=$device_map <<EOF >$log_file
+root $root_drive
+setup $install_drive
+quit
+EOF
+
+if grep "Error: " $log_file >/dev/null; then
+    cat $log_file
+    exit 1
+fi
+
+rm -f $log_file
+
+# Prompt the user to check if the device map is correct.
+echo "This is the contents of the device map $device_map."
+echo "Check if this is correct or not. If any of the lines is incorrect,"
+echo "fix it and re-run the script \`grub-install\'."
+echo
+
+cat $device_map
+
+# Bye.
+exit 0

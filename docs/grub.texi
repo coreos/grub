@@ -21,6 +21,11 @@
 
 @dircategory Kernel
 @direntry
+* grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
+@end direntry
+
+@dircategory Kernel
+@direntry
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
 @end direntry
 
@@ -105,6 +110,7 @@ Part II: The User Reference Manual
 * Command::                     The list of available builtin commands
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking the grub shell::     How to use the grub shell
+* Invoking grub-install::       How to use the GRUB installer
 * Invoking mbchk::              How to use the Multiboot checker
 
 Part III: The Programmer Reference Manual

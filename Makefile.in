@@ -251,10 +251,12 @@ top_distdir = $(distdir)
 # it guarantees that the distribution is self-contained by making another
 # tarfile.
 distcheck: dist
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 	GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(AMTAR) xf -
+	chmod -R a-w $(distdir); chmod a+w $(distdir)
 	mkdir $(distdir)/=build
 	mkdir $(distdir)/=inst
+	chmod a-w $(distdir)
 	dc_install_base=`cd $(distdir)/=inst && pwd` \
 	  && cd $(distdir)/=build \
 	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
@@ -267,8 +269,9 @@ distcheck: dist
 	  && test `find $$dc_install_base -type f -print | wc -l` -le 1 \
 	  && $(MAKE) $(AM_MAKEFLAGS) dist \
 	  && $(MAKE) $(AM_MAKEFLAGS) distclean \
+	  && rm -f $(distdir).tar.gz \
 	  && test `find . -type f -print | wc -l` -eq 0
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 	@banner="$(distdir).tar.gz is ready for distribution"; \
 	dashes=`echo "$$banner" | sed s/./=/g`; \
 	echo "$$dashes"; \
@@ -280,16 +283,16 @@ dist: distdir
 	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
 	|| chmod -R a+r $(distdir)
 	$(AMTAR) ch$(AMTARFLAGS)f - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 dist-all: distdir
 	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
 	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
 	|| chmod -R a+r $(distdir)
 	$(AMTAR) ch$(AMTARFLAGS)f - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 distdir: $(DISTFILES)
-	-rm -rf $(distdir)
+	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
 	here=`cd $(top_builddir) && pwd`; \
 	top_distdir=`cd $(distdir) && pwd`; \
@@ -299,7 +302,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pR $$d/$$file $(distdir); \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

@@ -88,7 +88,7 @@ grub_TEXINFOS = tutorial.texi user-ref.texi prog-ref.texi \
 
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
-man_MANS = grub.8 mbchk.1
+man_MANS = grub.8 mbchk.1 grub-install.8
 HELP2MAN = help2man
 SRC2TEXI = src2texi
 noinst_SCRIPTS = $(HELP2MAN) $(SRC2TEXI)
@@ -257,12 +257,12 @@ mostlyclean-aminfo:
 	-rm -f grub.aux grub.cp grub.cps grub.dvi grub.fn grub.fns grub.pgs \
 	  grub.ky grub.kys grub.ps grub.log grub.pg grub.toc grub.tp \
 	  grub.tps grub.vr grub.vrs grub.op grub.tr grub.cv grub.cn \
-	  multiboot.aux multiboot.cp multiboot.cps multiboot.dvi \
-	  multiboot.fn multiboot.fns multiboot.pgs multiboot.ky \
-	  multiboot.kys multiboot.ps multiboot.log multiboot.pg \
-	  multiboot.toc multiboot.tp multiboot.tps multiboot.vr \
-	  multiboot.vrs multiboot.op multiboot.tr multiboot.cv \
-	  multiboot.cn
+	  grub.cm grub.ov multiboot.aux multiboot.cp multiboot.cps \
+	  multiboot.dvi multiboot.fn multiboot.fns multiboot.pgs \
+	  multiboot.ky multiboot.kys multiboot.ps multiboot.log \
+	  multiboot.pg multiboot.toc multiboot.tp multiboot.tps \
+	  multiboot.vr multiboot.vrs multiboot.op multiboot.tr \
+	  multiboot.cv multiboot.cn multiboot.cm multiboot.ov
 
 clean-aminfo:
 
@@ -366,7 +366,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pR $$d/$$file $(distdir); \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -457,6 +457,11 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 @MAINTAINER_MODE_TRUE@$(srcdir)/grub.8: ../grub/grub $(srcdir)/$(HELP2MAN)
 @MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) --name="the grub shell" \
+@MAINTAINER_MODE_TRUE@		--section=8 --output=$@ $<
+
+@MAINTAINER_MODE_TRUE@$(srcdir)/grub-install.8: ../util/grub-install $(srcdir)/$(HELP2MAN)
+@MAINTAINER_MODE_TRUE@	chmod 755 $<
+@MAINTAINER_MODE_TRUE@	$(PERL) $(srcdir)/$(HELP2MAN) --name="install GRUB on your drive" \
 @MAINTAINER_MODE_TRUE@		--section=8 --output=$@ $<
 
 @MAINTAINER_MODE_TRUE@$(srcdir)/mbchk.1: ../util/mbchk $(srcdir)/$(HELP2MAN)
