@@ -4,9 +4,10 @@ New in 0.93:
 * Define the behavior of the boot loader when the load end address is
   zero and the bss end address is zero in the Multiboot Specification.
   Also, add the support into GRUB.
-* Finally, we have a Bug Tracking System on Savannah! Now the preferable
-  way to report bugs is to use the BTS rather than sending e-mail to
-  bug-grub. See <http://bugcomm.enbug.org>, for more details.
+* Finally, we have a Bug Tracking System! Now the preferable way to
+  report bugs is to use the BTS rather than sending e-mail to bug-grub.
+  See <http://bugcomm.enbug.org/?project=grub&mode=project>, for more
+  details.
 * The appendix "FAQ" in the manual is removed. See the GNU GRUB FAQ on
   the web <http://www.gnu.org/software/grub/grub-faq.html> instead.
 * The terminal handling code is rewritten radically, and many bugfixes

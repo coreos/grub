@@ -1,3 +1,8 @@
+2002-12-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (Reporting bugs): Specify the project page of
+	the BTS instead of the BTS itself.
+
 2002-11-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/Makefile.am (man_MANS): Added grub-terminfo.8.

@@ -3598,7 +3598,7 @@ thing.
 @end enumerate
 
 If you realize the guideline above, submit a report to the
-@uref{http://bugcomm.enbug.org, Bug Tracking System}.
+@uref{http://bugcomm.enbug.org/?project=grub&mode=project, Bug Tracking System}.
 Alternatively, you can submit a report via electronic mail to
 @email{bug-grub@@gnu.org}, but we strongly recommend that you use the
 Bug Tracking System, because e-mail can be passed over easily.
