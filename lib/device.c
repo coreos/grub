@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 
 #ifdef __linux__
 # if !defined(__GLIBC__) || \
@@ -395,6 +396,16 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       fprintf (stderr, "%s:%d: error: %s\n", map_file, no, msg);
     }
   
+  static void show_warning (int no, const char *msg, ...)
+    {
+      va_list ap;
+      
+      va_start (ap, msg);
+      fprintf (stderr, "%s:%d: warning: ", map_file, no);
+      vfprintf (stderr, msg, ap);
+      va_end (ap);
+    }
+  
   /* If there is the device map file, use the data in it instead of
      probing devices.  */
   char buf[1024];		/* XXX */
@@ -440,10 +451,17 @@ read_device_map (FILE *fp, char **map, const char *map_file)
       
       ptr += 2;
       drive = strtoul (ptr, &ptr, 10);
-      if (drive < 0 || drive > 8)
+      if (drive < 0)
 	{
 	  show_error (line_number, "Bad device number");
 	  return 0;
+	}
+      else if (drive > 8)
+	{
+	  show_warning (line_number,
+			"Ignoring %cd%d due to a BIOS limitation",
+			is_floppy ? 'f' : 'h', drive);
+	  continue;
 	}
       
       if (! is_floppy)

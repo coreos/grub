@@ -1,3 +1,11 @@
+2003-11-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* lib/device.c (read_device_map) (sho_warning): New internal
+	function.
+	(read_device_map): If DRIVE is greater than 8, emit a warning
+	and ignore the drive, rather than exiting abnormally.
+	Reported by Greg Newby <newby@arsc.edu>.
+
 2003-10-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Migrated to newer autotools. Also, don't install mkbimage
