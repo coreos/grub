@@ -5,7 +5,7 @@ grub (0.5.91) unstable; urgency=low
   * GRUB data now installed in /share/grub/$(host_cpu)-$(host_vendor).
   * Preliminary Texinfo documentation.
 
- --
+ -- Gordon Matzigkeit <gord@debian.org>  Sun, 14 Mar 1999 20:23:04 -0600
 
 grub (0.5.90) unstable; urgency=low
 

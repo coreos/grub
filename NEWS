@@ -1,9 +1,11 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in XXX:
-* LBA and AWARD BIOS disk extension support.  Please
-  contact bug-grub@gnu.org if you know you have a machine for which
-  this support would be useful, and would like to help in debugging.
+New in 0.5.91 - 1999-03-14, Gordon Matzigkeit:
+* LBA and preliminary AWARD BIOS disk extension support.
+* Started docs/grub.texi.
+* /sbin/grub GUI now works (but it doesn't yet access disks properly).
+  Run `configure --enable-sbin-grub' to build this program in the grub
+  subdirectory.
 
 New in 0.5.90 - 1999-03-01, Gordon Matzigkeit:
 * Bug fixes.
