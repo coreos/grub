@@ -1,3 +1,4 @@
+
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
@@ -170,33 +171,32 @@
 
 /* possible values for the "DISKTYPE"... all essentially irrelevant
    except for DTYPE_SCSI */
-#define DTYPE_SMD               1               /* SMD, XSMD; VAX hp/up */
-#define DTYPE_MSCP              2               /* MSCP */
-#define DTYPE_DEC               3               /* other DEC (rk, rl) */
-#define DTYPE_SCSI              4               /* SCSI */
-#define DTYPE_ESDI              5               /* ESDI interface */
-#define DTYPE_ST506             6               /* ST506 etc. */
-#define DTYPE_HPIB              7               /* CS/80 on HP-IB */
-#define DTYPE_HPFL              8               /* HP Fiber-link */
-#define DTYPE_FLOPPY            10              /* floppy */
+#define DTYPE_SMD               1	/* SMD, XSMD; VAX hp/up */
+#define DTYPE_MSCP              2	/* MSCP */
+#define DTYPE_DEC               3	/* other DEC (rk, rl) */
+#define DTYPE_SCSI              4	/* SCSI */
+#define DTYPE_ESDI              5	/* ESDI interface */
+#define DTYPE_ST506             6	/* ST506 etc. */
+#define DTYPE_HPIB              7	/* CS/80 on HP-IB */
+#define DTYPE_HPFL              8	/* HP Fiber-link */
+#define DTYPE_FLOPPY            10	/* floppy */
 
 
 /* possible values for the *BSD-style partition type */
-#define	FS_UNUSED	0		/* unused */
-#define	FS_SWAP		1		/* swap */
-#define	FS_V6		2		/* Sixth Edition */
-#define	FS_V7		3		/* Seventh Edition */
-#define	FS_SYSV		4		/* System V */
-#define	FS_V71K		5		/* V7 with 1K blocks (4.1, 2.9) */
-#define	FS_V8		6		/* Eighth Edition, 4K blocks */
-#define	FS_BSDFFS	7		/* 4.2BSD fast file system */
-#define	FS_MSDOS	8		/* MSDOS file system */
-#define	FS_BSDLFS	9		/* 4.4BSD log-structured file system */
-#define	FS_OTHER	10		/* in use, but unknown/unsupported */
-#define	FS_HPFS		11		/* OS/2 high-performance file system */
-#define	FS_ISO9660	12		/* ISO 9660, normally CD-ROM */
-#define	FS_BOOT		13		/* partition contains bootstrap */
+#define	FS_UNUSED	0	/* unused */
+#define	FS_SWAP		1	/* swap */
+#define	FS_V6		2	/* Sixth Edition */
+#define	FS_V7		3	/* Seventh Edition */
+#define	FS_SYSV		4	/* System V */
+#define	FS_V71K		5	/* V7 with 1K blocks (4.1, 2.9) */
+#define	FS_V8		6	/* Eighth Edition, 4K blocks */
+#define	FS_BSDFFS	7	/* 4.2BSD fast file system */
+#define	FS_MSDOS	8	/* MSDOS file system */
+#define	FS_BSDLFS	9	/* 4.4BSD log-structured file system */
+#define	FS_OTHER	10	/* in use, but unknown/unsupported */
+#define	FS_HPFS		11	/* OS/2 high-performance file system */
+#define	FS_ISO9660	12	/* ISO 9660, normally CD-ROM */
+#define	FS_BOOT		13	/* partition contains bootstrap */
 
 
-#endif  /* _PC_SLICE_H */
-
+#endif /* _PC_SLICE_H */

@@ -1,3 +1,4 @@
+
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
@@ -19,19 +20,20 @@
 
 /* 32-bit data types */
 
-typedef unsigned long	Elf32_Addr;
-typedef unsigned short	Elf32_Half;
-typedef unsigned long	Elf32_Off;
-typedef signed long	Elf32_Sword;
-typedef unsigned long	Elf32_Word;
+typedef unsigned long Elf32_Addr;
+typedef unsigned short Elf32_Half;
+typedef unsigned long Elf32_Off;
+typedef signed long Elf32_Sword;
+typedef unsigned long Elf32_Word;
 /* "unsigned char" already exists */
 
 /* ELF header */
-typedef struct {
+typedef struct
+  {
 
 #define EI_NIDENT 16
 
-  /* first four characters are defined below */
+    /* first four characters are defined below */
 #define EI_MAG0		0
 #define ELFMAG0		0x7f
 #define EI_MAG1		1
@@ -41,34 +43,34 @@ typedef struct {
 #define EI_MAG3		3
 #define ELFMAG3		'F'
 
-#define EI_CLASS	4  /* data sizes */
-#define ELFCLASS32	1  /* i386 -- up to 32-bit data sizes present */
+#define EI_CLASS	4	/* data sizes */
+#define ELFCLASS32	1	/* i386 -- up to 32-bit data sizes present */
 
-#define EI_DATA		5  /* data type and ordering */
-#define ELFDATA2LSB	1  /* i386 -- LSB 2's complement */
+#define EI_DATA		5	/* data type and ordering */
+#define ELFDATA2LSB	1	/* i386 -- LSB 2's complement */
 
-#define EI_VERSION	6  /* version number.  "e_version" must be the same */
-#define EV_CURRENT      1  /* current version number */
+#define EI_VERSION	6	/* version number.  "e_version" must be the same */
+#define EV_CURRENT      1	/* current version number */
 
-#define EI_PAD		7  /* from here in is just padding */
+#define EI_PAD		7	/* from here in is just padding */
 
-  unsigned char		e_ident[EI_NIDENT];  /* basic identification block */
+    unsigned char e_ident[EI_NIDENT];	/* basic identification block */
 
-#define ET_EXEC		2  /* we only care about executable types */
-  Elf32_Half		e_type;     /* file types */
+#define ET_EXEC		2	/* we only care about executable types */
+    Elf32_Half e_type;		/* file types */
 
-#define EM_386		3  /* i386 -- obviously use this one */
-  Elf32_Half		e_machine;  /* machine types */
-  Elf32_Word		e_version;  /* use same as "EI_VERSION" above */
-  Elf32_Addr		e_entry;    /* entry point of the program */
-  Elf32_Off		e_phoff;    /* program header table file offset */
-  Elf32_Off		e_shoff;    /* section header table file offset */
-  Elf32_Word		e_flags;    /* flags */
-  Elf32_Half		e_ehsize;   /* elf header size in bytes */
-  Elf32_Half		e_phentsize; /* program header entry size */
-  Elf32_Half		e_phnum;    /* number of entries in program header */
-  Elf32_Half		e_shentsize; /* section header entry size */
-  Elf32_Half		e_shnum;    /* number of entries in section header */
+#define EM_386		3	/* i386 -- obviously use this one */
+    Elf32_Half e_machine;	/* machine types */
+    Elf32_Word e_version;	/* use same as "EI_VERSION" above */
+    Elf32_Addr e_entry;		/* entry point of the program */
+    Elf32_Off e_phoff;		/* program header table file offset */
+    Elf32_Off e_shoff;		/* section header table file offset */
+    Elf32_Word e_flags;		/* flags */
+    Elf32_Half e_ehsize;	/* elf header size in bytes */
+    Elf32_Half e_phentsize;	/* program header entry size */
+    Elf32_Half e_phnum;		/* number of entries in program header */
+    Elf32_Half e_shentsize;	/* section header entry size */
+    Elf32_Half e_shnum;		/* number of entries in section header */
 
 #define SHN_UNDEF       0
 #define SHN_LORESERVE   0xff00
@@ -77,8 +79,9 @@ typedef struct {
 #define SHN_ABS         0xfff1
 #define SHN_COMMON      0xfff2
 #define SHN_HIRESERVE   0xffff
-  Elf32_Half		e_shstrndx; /* section header table index */
-} Elf32_Ehdr;
+    Elf32_Half e_shstrndx;	/* section header table index */
+  }
+Elf32_Ehdr;
 
 
 #define BOOTABLE_I386_ELF(h) \
@@ -91,14 +94,15 @@ typedef struct {
 
 /* symbol table - page 4-25, figure 4-15 */
 typedef struct
-{
-    Elf32_Word    st_name;
-    Elf32_Addr    st_value;
-    Elf32_Word    st_size;
+  {
+    Elf32_Word st_name;
+    Elf32_Addr st_value;
+    Elf32_Word st_size;
     unsigned char st_info;
     unsigned char st_other;
-    Elf32_Half    st_shndx;
-} Elf32_Sym;
+    Elf32_Half st_shndx;
+  }
+Elf32_Sym;
 
 /* symbol type and binding attributes - page 4-26 */
 
@@ -134,16 +138,18 @@ typedef struct
 
 /* program header - page 5-2, figure 5-1 */
 
-typedef struct {
-  Elf32_Word		p_type;
-  Elf32_Off		p_offset;
-  Elf32_Addr		p_vaddr;
-  Elf32_Addr		p_paddr;
-  Elf32_Word		p_filesz;
-  Elf32_Word		p_memsz;
-  Elf32_Word		p_flags;
-  Elf32_Word		p_align;
-} Elf32_Phdr;
+typedef struct
+  {
+    Elf32_Word p_type;
+    Elf32_Off p_offset;
+    Elf32_Addr p_vaddr;
+    Elf32_Addr p_paddr;
+    Elf32_Word p_filesz;
+    Elf32_Word p_memsz;
+    Elf32_Word p_flags;
+    Elf32_Word p_align;
+  }
+Elf32_Phdr;
 
 /* segment types - page 5-3, figure 5-2 */
 
@@ -168,13 +174,17 @@ typedef struct {
 
 /* dynamic structure - page 5-15, figure 5-9 */
 
-typedef struct {
-	Elf32_Sword	d_tag;
-	union {
-	    Elf32_Word	d_val;
-	    Elf32_Addr	d_ptr;
-	} d_un;
-} Elf32_Dyn;
+typedef struct
+  {
+    Elf32_Sword d_tag;
+    union
+      {
+	Elf32_Word d_val;
+	Elf32_Addr d_ptr;
+      }
+    d_un;
+  }
+Elf32_Dyn;
 
 /* Dynamic array tags - page 5-16, figure 5-10.  */
 
@@ -202,4 +212,3 @@ typedef struct {
 #define DT_DEBUG	21
 #define DT_TEXTREL	22
 #define DT_JMPREL	23
-

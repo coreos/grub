@@ -1,3 +1,4 @@
+
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
@@ -20,23 +21,22 @@
 #include "shared.h"
 
 void
-cmain(void)
+cmain (void)
 {
-  printf("\n\nGRUB loading, please wait...\n");
+  printf ("\n\nGRUB loading, please wait...\n");
 
   /*
    *  Here load the true second-stage boot-loader.
    */
 
-  if (open(config_file) && read(0x8000, -1))
-    chain_stage2(0, 0x8000);
+  if (open (config_file) && read (0x8000, -1))
+    chain_stage2 (0, 0x8000);
 
   /*
    *  If not, then print error message and die.
    */
 
-  print_error();
+  print_error ();
 
-  stop();
+  stop ();
 }
-

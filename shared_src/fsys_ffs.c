@@ -75,15 +75,15 @@ static int mapblock;
 
 
 int
-ffs_mount(void)
+ffs_mount (void)
 {
   int retval = 1;
 
-  if ( (((current_drive & 0x80) || (current_slice != 0))
-	&& current_slice != (PC_SLICE_TYPE_BSD | (FS_BSDFFS<<8)))
-       || part_length < (SBLOCK + (SBSIZE/DEV_BSIZE))
-       || !devread(SBLOCK, 0, SBSIZE, (int) SUPERBLOCK)
-       || SUPERBLOCK->fs_magic != FS_MAGIC )
+  if ((((current_drive & 0x80) || (current_slice != 0))
+       && current_slice != (PC_SLICE_TYPE_BSD | (FS_BSDFFS << 8)))
+      || part_length < (SBLOCK + (SBSIZE / DEV_BSIZE))
+      || !devread (SBLOCK, 0, SBSIZE, (int) SUPERBLOCK)
+      || SUPERBLOCK->fs_magic != FS_MAGIC)
     retval = 0;
 
   mapblock = -1;
@@ -92,16 +92,16 @@ ffs_mount(void)
 }
 
 int
-block_map(int file_block)
+block_map (int file_block)
 {
   int bnum;
 
   if (file_block < NDADDR)
-    return(INODE->i_db[file_block]);
+    return (INODE->i_db[file_block]);
 
-  if ( (bnum = fsbtodb(SUPERBLOCK, INODE->i_ib[0])) != mapblock )
+  if ((bnum = fsbtodb (SUPERBLOCK, INODE->i_ib[0])) != mapblock)
     {
-      if (!devread(bnum, 0, SUPERBLOCK->fs_bsize, MAPBUF))
+      if (!devread (bnum, 0, SUPERBLOCK->fs_bsize, MAPBUF))
 	{
 	  mapblock = -1;
 	  errnum = ERR_FSYS_CORRUPT;
@@ -111,22 +111,22 @@ block_map(int file_block)
       mapblock = bnum;
     }
 
-  return (((int *)MAPBUF)[(file_block - NDADDR) % NINDIR(SUPERBLOCK)]);
+  return (((int *) MAPBUF)[(file_block - NDADDR) % NINDIR (SUPERBLOCK)]);
 }
 
 
 int
-ffs_read(int addr, int len)
+ffs_read (int addr, int len)
 {
   int logno, off, size, map, ret = 0;
 
   while (len && !errnum)
     {
-      off = blkoff(SUPERBLOCK, filepos);
-      logno = lblkno(SUPERBLOCK, filepos);
-      size = blksize(SUPERBLOCK, INODE, logno);
+      off = blkoff (SUPERBLOCK, filepos);
+      logno = lblkno (SUPERBLOCK, filepos);
+      size = blksize (SUPERBLOCK, INODE, logno);
 
-      if ((map = block_map(logno)) < 0)
+      if ((map = block_map (logno)) < 0)
 	break;
 
       size -= off;
@@ -136,13 +136,13 @@ ffs_read(int addr, int len)
 
 #ifndef NO_FANCY_STUFF
       debug_fs_func = debug_fs;
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
-      devread(fsbtodb(SUPERBLOCK, map), off, size, addr);
+      devread (fsbtodb (SUPERBLOCK, map), off, size, addr);
 
 #ifndef NO_FANCY_STUFF
       debug_fs_func = NULL;
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
       addr += size;
       len -= size;
@@ -158,7 +158,7 @@ ffs_read(int addr, int len)
 
 
 int
-ffs_dir(char *dirname)
+ffs_dir (char *dirname)
 {
   char *rest, ch;
   int block, off, loc, map, ino = ROOTINO;
@@ -169,17 +169,17 @@ loop:
 
   /* load current inode (defaults to the root inode) */
 
-  if (!devread(fsbtodb(SUPERBLOCK,itod(SUPERBLOCK,ino)),
-	       0, SUPERBLOCK->fs_bsize, FSYS_BUF))
-    return 0;  /* XXX what return value? */
+  if (!devread (fsbtodb (SUPERBLOCK, itod (SUPERBLOCK, ino)),
+		0, SUPERBLOCK->fs_bsize, FSYS_BUF))
+    return 0;			/* XXX what return value? */
 
-  bcopy((void *)&(((struct dinode *)FSYS_BUF)[ino % (SUPERBLOCK->fs_inopb)]),
-	(void *)INODE, sizeof (struct dinode));
+  bcopy ((void *) &(((struct dinode *) FSYS_BUF)[ino % (SUPERBLOCK->fs_inopb)]),
+	 (void *) INODE, sizeof (struct dinode));
 
   /* if we have a real file (and we're not just printing possibilities),
      then this is where we want to exit */
 
-  if (!*dirname || isspace(*dirname))
+  if (!*dirname || isspace (*dirname))
     {
       if ((INODE->i_mode & IFMT) != IFREG)
 	{
@@ -190,7 +190,7 @@ loop:
       filemax = INODE->i_size;
 
       /* incomplete implementation requires this! */
-      fsmax = (NDADDR + NINDIR(SUPERBLOCK)) * SUPERBLOCK->fs_bsize;
+      fsmax = (NDADDR + NINDIR (SUPERBLOCK)) * SUPERBLOCK->fs_bsize;
       return 1;
     }
 
@@ -205,7 +205,7 @@ loop:
       return 0;
     }
 
-  for (rest = dirname; (ch = *rest) && !isspace(ch) && ch != '/'; rest++) ;
+  for (rest = dirname; (ch = *rest) && !isspace (ch) && ch != '/'; rest++);
 
   *rest = 0;
   loc = 0;
@@ -216,7 +216,7 @@ loop:
     {
       if (loc >= INODE->i_size)
 	{
-	  putchar('\n');
+	  putchar ('\n');
 
 	  if (print_possibilities < 0)
 	    return 1;
@@ -226,13 +226,13 @@ loop:
 	  return 0;
 	}
 
-      if (!(off = blkoff(SUPERBLOCK, loc)))
+      if (!(off = blkoff (SUPERBLOCK, loc)))
 	{
-	  block = lblkno(SUPERBLOCK, loc);
+	  block = lblkno (SUPERBLOCK, loc);
 
-	  if ( (map = block_map(block)) < 0
-		|| !devread(fsbtodb(SUPERBLOCK, map), 0,
-			    blksize(SUPERBLOCK, INODE, block), FSYS_BUF) )
+	  if ((map = block_map (block)) < 0
+	      || !devread (fsbtodb (SUPERBLOCK, map), 0,
+			   blksize (SUPERBLOCK, INODE, block), FSYS_BUF))
 	    {
 	      errnum = ERR_FSYS_CORRUPT;
 	      *rest = ch;
@@ -240,20 +240,20 @@ loop:
 	    }
 	}
 
-      dp = (struct direct *)(FSYS_BUF + off);
+      dp = (struct direct *) (FSYS_BUF + off);
       loc += dp->d_reclen;
 
       if (dp->d_ino && print_possibilities && ch != '/'
-	  && (!*dirname || substring(dirname, dp->d_name) <= 0))
+	  && (!*dirname || substring (dirname, dp->d_name) <= 0))
 	{
 	  if (print_possibilities > 0)
 	    print_possibilities = -print_possibilities;
 
-	  printf("  %s", dp->d_name);
+	  printf ("  %s", dp->d_name);
 	}
     }
-  while (!dp->d_ino || (substring(dirname, dp->d_name) != 0
-			|| (print_possibilities && ch != '/')) );
+  while (!dp->d_ino || (substring (dirname, dp->d_name) != 0
+			|| (print_possibilities && ch != '/')));
 
   /* only get here if we have a matching directory entry */
 

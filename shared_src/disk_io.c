@@ -29,9 +29,9 @@
 
 #ifndef NO_FANCY_STUFF
 /* instrumentation variables */
-void (*debug_fs)(int) = NULL;
-void (*debug_fs_func)(int) = NULL;
-#endif  /* NO_FANCY_STUFF */
+void (*debug_fs) (int) = NULL;
+void (*debug_fs_func) (int) = NULL;
+#endif /* NO_FANCY_STUFF */
 
 /* These have the same format as "boot_drive" and "install_partition", but
    are meant to be working values. */
@@ -49,7 +49,7 @@ int bsd_evil_hack;
 int fsys_type = NUM_FSYS;
 #ifndef NO_BLOCK_FILES
 int block_file = 0;
-#endif  /* NO_BLOCK_FILES */
+#endif /* NO_BLOCK_FILES */
 
 /* these are the translated numbers for the open partition */
 long part_start;
@@ -68,9 +68,9 @@ int filemax;
 
 
 int
-rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
+rawread (int drive, int sector, int byte_offset, int byte_len, int addr)
 {
-  int slen = (byte_offset+byte_len+511)/SECTOR_SIZE;
+  int slen = (byte_offset + byte_len + 511) / SECTOR_SIZE;
 
   if (byte_len <= 0)
     return 1;
@@ -85,7 +85,7 @@ rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
        */
       if (buf_drive != drive)
 	{
-	  buf_geom = get_diskinfo(drive);
+	  buf_geom = get_diskinfo (drive);
 	  buf_drive = drive;
 	  buf_track = -1;
 	}
@@ -97,14 +97,14 @@ rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
 	}
 
       /*  Get first sector of track  */
-      soff = sector % SECTORS(buf_geom);
+      soff = sector % SECTORS (buf_geom);
       track = sector - soff;
-      num_sect = SECTORS(buf_geom) - soff;
+      num_sect = SECTORS (buf_geom) - soff;
       bufaddr = BUFFERADDR + (soff * SECTOR_SIZE) + byte_offset;
 
       if (track != buf_track)
 	{
-	  int bios_err, read_start = track, read_len = SECTORS(buf_geom);
+	  int bios_err, read_start = track, read_len = SECTORS (buf_geom);
 
 	  /*
 	   *  If there's more than one read in this entire loop, then
@@ -118,8 +118,8 @@ rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
 	      bufaddr = BUFFERADDR + byte_offset;
 	    }
 
-	  if (bios_err = biosdisk(BIOSDISK_SUBFUNC_READ, drive, buf_geom,
-				  read_start, read_len, BUFFERSEG))
+	  if (bios_err = biosdisk (BIOSDISK_SUBFUNC_READ, drive, buf_geom,
+				   read_start, read_len, BUFFERSEG))
 	    {
 	      buf_track = -1;
 
@@ -132,8 +132,8 @@ rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
 		   *  required sector(s) rather than failing completely.
 		   */
 		  if (slen > num_sect
-		      || biosdisk(BIOSDISK_SUBFUNC_READ, drive, buf_geom,
-				  sector, slen, BUFFERSEG))
+		      || biosdisk (BIOSDISK_SUBFUNC_READ, drive, buf_geom,
+				   sector, slen, BUFFERSEG))
 		    errnum = ERR_READ;
 
 		  bufaddr = BUFFERSEG + byte_offset;
@@ -153,14 +153,14 @@ rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
 	  int sector_num = sector;
 
 	  while (sector_num < sector_end)
-	    (*debug_fs_func)(sector_num++);
+	    (*debug_fs_func) (sector_num++);
 	}
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
       if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
 	size = (num_sect * SECTOR_SIZE) - byte_offset;
 
-      bcopy((char *)bufaddr, (char *)addr, size);
+      bcopy ((char *) bufaddr, (char *) addr, size);
 
       addr += size;
       byte_len -= size;
@@ -174,13 +174,13 @@ rawread(int drive, int sector, int byte_offset, int byte_len, int addr)
 
 
 int
-devread(int sector, int byte_offset, int byte_len, int addr)
+devread (int sector, int byte_offset, int byte_len, int addr)
 {
   /*
    *  Check partition boundaries
    */
   if (sector < 0
-      || (sector + ((byte_offset+byte_len-1)/SECTOR_SIZE)) >= part_length)
+      || (sector + ((byte_offset + byte_len - 1) / SECTOR_SIZE)) >= part_length)
     {
       errnum = ERR_OUTSIDE_PART;
       return 0;
@@ -197,8 +197,8 @@ devread(int sector, int byte_offset, int byte_len, int addr)
 
 #if !defined(NO_FANCY_STUFF) && defined(DEBUG)
   if (debug_fs)
-    printf("<%d, %d, %d>", sector, byte_offset, byte_len);
-#endif  /* !NO_FANCY_STUFF && DEBUG */
+    printf ("<%d, %d, %d>", sector, byte_offset, byte_len);
+#endif /* !NO_FANCY_STUFF && DEBUG */
 
   /*
    *  Call "rawread", which is very similar, but:
@@ -209,21 +209,21 @@ devread(int sector, int byte_offset, int byte_len, int addr)
    *    --  It doesn't handle offsets of more than 511 bytes into the
    *            sector.
    */
-  return rawread(current_drive, part_start+sector, byte_offset,
-		 byte_len, addr);
+  return rawread (current_drive, part_start + sector, byte_offset,
+		  byte_len, addr);
 }
 
 
 int
-sane_partition(void)
+sane_partition (void)
 {
-  if ( !(current_partition & 0xFF000000uL)
-       && (current_drive & 0xFFFFFF7F) < 8
-       && (current_partition & 0xFF) == 0xFF
-       && ( (current_partition & 0xFF00) == 0xFF00
-	    || (current_partition & 0xFF00) < 0x800 )
-       && ( (current_partition >> 16) == 0xFF
-	    || (current_drive & 0x80) ) )
+  if (!(current_partition & 0xFF000000uL)
+      && (current_drive & 0xFFFFFF7F) < 8
+      && (current_partition & 0xFF) == 0xFF
+      && ((current_partition & 0xFF00) == 0xFF00
+	  || (current_partition & 0xFF00) < 0x800)
+      && ((current_partition >> 16) == 0xFF
+	  || (current_drive & 0x80)))
     return 1;
 
   errnum = ERR_DEV_VALUES;
@@ -232,10 +232,10 @@ sane_partition(void)
 
 
 static void
-attempt_mount(void)
+attempt_mount (void)
 {
-  for ( fsys_type = 0; fsys_type < NUM_FSYS
-	  && (*(fsys_table[fsys_type].mount_func))() != 1; fsys_type++);
+  for (fsys_type = 0; fsys_type < NUM_FSYS
+       && (*(fsys_table[fsys_type].mount_func)) () != 1; fsys_type++);
 
   if (fsys_type == NUM_FSYS && errnum == ERR_NONE)
     errnum = ERR_FSYS_MOUNT;
@@ -244,7 +244,7 @@ attempt_mount(void)
 
 #ifndef NO_FANCY_STUFF
 int
-make_saved_active(void)
+make_saved_active (void)
 {
   if (saved_drive & 0x80)
     {
@@ -256,22 +256,22 @@ make_saved_active(void)
 	  return 0;
 	}
 
-      if (!rawread(saved_drive, 0, 0, SECTOR_SIZE, SCRATCHADDR))
+      if (!rawread (saved_drive, 0, 0, SECTOR_SIZE, SCRATCHADDR))
 	return 0;
 
-      if (PC_SLICE_FLAG(SCRATCHADDR, part) != PC_SLICE_FLAG_BOOTABLE)
+      if (PC_SLICE_FLAG (SCRATCHADDR, part) != PC_SLICE_FLAG_BOOTABLE)
 	{
 	  int i;
 
 	  for (i = 0; i < 4; i++)
-	    PC_SLICE_FLAG(SCRATCHADDR, i) = 0;
+	    PC_SLICE_FLAG (SCRATCHADDR, i) = 0;
 
-	  PC_SLICE_FLAG(SCRATCHADDR, part) = PC_SLICE_FLAG_BOOTABLE;
+	  PC_SLICE_FLAG (SCRATCHADDR, part) = PC_SLICE_FLAG_BOOTABLE;
 
 	  buf_track = -1;
 
-	  if (biosdisk(BIOSDISK_SUBFUNC_WRITE, saved_drive, buf_geom,
-		       0, 1, SCRATCHSEG))
+	  if (biosdisk (BIOSDISK_SUBFUNC_WRITE, saved_drive, buf_geom,
+			0, 1, SCRATCHSEG))
 	    {
 	      errnum = ERR_WRITE;
 	      return 0;
@@ -284,73 +284,73 @@ make_saved_active(void)
 
 
 static void
-check_and_print_mount(void)
+check_and_print_mount (void)
 {
-  attempt_mount();
+  attempt_mount ();
   if (errnum == ERR_FSYS_MOUNT)
     errnum = ERR_NONE;
   if (!errnum)
-    print_fsys_type();
-  print_error();
+    print_fsys_type ();
+  print_error ();
 }
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
 
 static int
-check_BSD_parts(int flags)
+check_BSD_parts (int flags)
 {
   char label_buf[SECTOR_SIZE];
   int part_no, got_part = 0;
 
-  if ( part_length < (BSD_LABEL_SECTOR+1) )
+  if (part_length < (BSD_LABEL_SECTOR + 1))
     {
       errnum = ERR_BAD_PART_TABLE;
       return 0;
     }
 
-  if (!rawread(current_drive, part_start + BSD_LABEL_SECTOR,
-	       0, SECTOR_SIZE, (int) label_buf))
+  if (!rawread (current_drive, part_start + BSD_LABEL_SECTOR,
+		0, SECTOR_SIZE, (int) label_buf))
     return 0;
 
-  if ( BSD_LABEL_CHECK_MAG(label_buf) )
+  if (BSD_LABEL_CHECK_MAG (label_buf))
     {
-      for (part_no = 0; part_no < BSD_LABEL_NPARTS(label_buf); part_no++)
+      for (part_no = 0; part_no < BSD_LABEL_NPARTS (label_buf); part_no++)
 	{
-	  if (BSD_PART_TYPE(label_buf, part_no))
+	  if (BSD_PART_TYPE (label_buf, part_no))
 	    {
 	      /* XXX should do BAD144 sector remapping setup here */
 
-	      current_slice = ((BSD_PART_TYPE(label_buf, part_no) << 8)
+	      current_slice = ((BSD_PART_TYPE (label_buf, part_no) << 8)
 			       | PC_SLICE_TYPE_BSD);
-	      part_start = BSD_PART_START(label_buf, part_no);
-	      part_length = BSD_PART_LENGTH(label_buf, part_no);
+	      part_start = BSD_PART_START (label_buf, part_no);
+	      part_length = BSD_PART_LENGTH (label_buf, part_no);
 
 #ifndef NO_FANCY_STUFF
 	      if (flags)
 		{
 		  if (!got_part)
 		    {
-		      printf("[BSD sub-partitions immediately follow]\n");
+		      printf ("[BSD sub-partitions immediately follow]\n");
 		      got_part = 1;
 		    }
-		  printf("     BSD Partition num: \'%c\', ", part_no + 'a');
-		  check_and_print_mount();
+		  printf ("     BSD Partition num: \'%c\', ", part_no + 'a');
+		  check_and_print_mount ();
 		}
 	      else
-#endif  /* NO_FANCY_STUFF */
-		if (part_no == ((current_partition >> 8) & 0xFF))
-		  break;
+#endif /* NO_FANCY_STUFF */
+	      if (part_no == ((current_partition >> 8) & 0xFF))
+		break;
 	    }
 	}
 
-      if (part_no >= BSD_LABEL_NPARTS(label_buf) && !got_part)
+      if (part_no >= BSD_LABEL_NPARTS (label_buf) && !got_part)
 	{
 	  errnum = ERR_NO_PART;
 	  return 0;
 	}
 
       if ((current_drive & 0x80)
-	  && BSD_LABEL_DTYPE(label_buf) == DTYPE_SCSI)
+	  && BSD_LABEL_DTYPE (label_buf) == DTYPE_SCSI)
 	bsd_evil_hack = 4;
 
       return 1;
@@ -364,7 +364,7 @@ check_BSD_parts(int flags)
 static char cur_part_desc[16];
 
 static int
-real_open_partition(int flags)
+real_open_partition (int flags)
 {
   char mbr_buf[SECTOR_SIZE];
   int i, part_no, slice_no, ext = 0, part_offset = 0;
@@ -373,14 +373,14 @@ real_open_partition(int flags)
    *  The "rawread" is probably unnecessary here, but it is good to
    *  know it works.
    */
-  if ( !sane_partition()
-       || !rawread(current_drive, 0, 0, SECTOR_SIZE, (int) mbr_buf) )
+  if (!sane_partition ()
+      || !rawread (current_drive, 0, 0, SECTOR_SIZE, (int) mbr_buf))
     return 0;
 
   bsd_evil_hack = 0;
   current_slice = 0;
   part_start = 0;
-  part_length = SECTORS(buf_geom) * HEADS(buf_geom) * CYLINDERS(buf_geom);
+  part_length = SECTORS (buf_geom) * HEADS (buf_geom) * CYLINDERS (buf_geom);
 
   if (current_drive & 0x80)
     {
@@ -399,15 +399,15 @@ real_open_partition(int flags)
       /*
        *  Load the current MBR-style PC partition table (4 entries)
        */
-      while ( slice_no < 255 && ext >= 0
-	      && (part_no == 0xFF || slice_no <= part_no)
-	      && rawread(current_drive, part_offset,
-			 0, SECTOR_SIZE, (int) mbr_buf) )
+      while (slice_no < 255 && ext >= 0
+	     && (part_no == 0xFF || slice_no <= part_no)
+	     && rawread (current_drive, part_offset,
+			 0, SECTOR_SIZE, (int) mbr_buf))
 	{
 	  /*
 	   *  If the table isn't valid, we can't continue
 	   */
-	  if ( !PC_MBR_CHECK_SIG(mbr_buf) )
+	  if (!PC_MBR_CHECK_SIG (mbr_buf))
 	    {
 	      errnum = ERR_BAD_PART_TABLE;
 	      return 0;
@@ -421,11 +421,11 @@ real_open_partition(int flags)
 	  for (i = 0; i < PC_SLICE_MAX; i++)
 	    {
 	      current_partition = ((slice_no << 16)
-		                   | (current_partition & 0xFFFF));
-	      current_slice = PC_SLICE_TYPE(mbr_buf, i);
-	      part_start = part_offset + PC_SLICE_START(mbr_buf, i);
-	      part_length = PC_SLICE_LENGTH(mbr_buf, i);
-	      bcopy(mbr_buf+PC_SLICE_OFFSET+(i<<4), cur_part_desc, 16);
+				   | (current_partition & 0xFFFF));
+	      current_slice = PC_SLICE_TYPE (mbr_buf, i);
+	      part_start = part_offset + PC_SLICE_START (mbr_buf, i);
+	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
+	      bcopy (mbr_buf + PC_SLICE_OFFSET + (i << 4), cur_part_desc, 16);
 
 	      /*
 	       *  Is this PC partition entry valid?
@@ -449,14 +449,14 @@ real_open_partition(int flags)
 		  else if (flags)
 		    {
 		      current_partition |= 0xFFFF;
-		      printf("   Partition num: %d, ", slice_no);
+		      printf ("   Partition num: %d, ", slice_no);
 		      if (current_slice != PC_SLICE_TYPE_BSD)
-			check_and_print_mount();
+			check_and_print_mount ();
 		      else
-			check_BSD_parts(1);
+			check_BSD_parts (1);
 		      errnum = ERR_NONE;
 		    }
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 		  /*
 		   *  If we've found the right partition, we're done
 		   */
@@ -467,7 +467,7 @@ real_open_partition(int flags)
 		      if ((current_partition & 0xFF00) != 0xFF00)
 			{
 			  if (current_slice == PC_SLICE_TYPE_BSD)
-			    check_BSD_parts(0);
+			    check_BSD_parts (0);
 			  else
 			    errnum = ERR_NO_PART;
 			}
@@ -488,7 +488,7 @@ real_open_partition(int flags)
 		slice_no++;
 	    }
 
-	  part_offset = ext_offset + PC_SLICE_START(mbr_buf, ext);
+	  part_offset = ext_offset + PC_SLICE_START (mbr_buf, ext);
 	  if (!ext_offset)
 	    ext_offset = part_offset;
 	}
@@ -500,7 +500,7 @@ real_open_partition(int flags)
        */
       ext = -1;
       if ((flags || (current_partition & 0xFF00) != 0xFF00)
-	  && check_BSD_parts(flags))
+	  && check_BSD_parts (flags))
 	ext = -2;
       else
 	{
@@ -518,10 +518,10 @@ real_open_partition(int flags)
 	  else
 	    {
 	      current_partition = 0xFFFFFF;
-	      check_and_print_mount();
+	      check_and_print_mount ();
 	      errnum = 0;
 	    }
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 	}
     }
 
@@ -536,24 +536,25 @@ real_open_partition(int flags)
 
 
 int
-open_partition(void)
+open_partition (void)
 {
-  return real_open_partition(0);
+  return real_open_partition (0);
 }
 
 
 /* XX used for device completion in 'set_device' and 'print_completions' */
 static int incomplete, disk_choice;
 static enum
-{
-  PART_UNSPECIFIED = 0,
-  PART_DISK,
-  PART_CHOSEN,
-} part_choice;
+  {
+    PART_UNSPECIFIED = 0,
+    PART_DISK,
+    PART_CHOSEN,
+  }
+part_choice;
 
 
 char *
-set_device(char *device)
+set_device (char *device)
 {
   /* The use of retval in this function is not really clean, but it works */
   char *retval = 0;
@@ -571,10 +572,10 @@ set_device(char *device)
 	  char ch = *device;
 
 	  if ((*device == 'f' || *device == 'h')
-	      && (device += 2, (*(device-1) != 'd')))
+	      && (device += 2, (*(device - 1) != 'd')))
 	    errnum = ERR_NUMBER_PARSING;
 
-	  safe_parse_maxint(&device, (int*)&current_drive);
+	  safe_parse_maxint (&device, (int *) &current_drive);
 
 	  disk_choice = 0;
 	  if (ch == 'h')
@@ -602,7 +603,7 @@ set_device(char *device)
 	      current_partition = 0;
 
 	      if (!(current_drive & 0x80)
-		  || !safe_parse_maxint(&device, (int*)&current_partition)
+		  || !safe_parse_maxint (&device, (int *) &current_partition)
 		  || current_partition > 254)
 		{
 		  errnum = ERR_DEV_FORMAT;
@@ -612,7 +613,7 @@ set_device(char *device)
 	      current_partition = (current_partition << 16) + 0xFFFF;
 
 	      if (*device == ','
-		  && *(device+1) >= 'a' && *(device+1) <= 'h')
+		  && *(device + 1) >= 'a' && *(device + 1) <= 'h')
 		{
 		  device++;
 		  current_partition = (((*(device++) - 'a') << 8)
@@ -657,10 +658,10 @@ set_device(char *device)
  */
 
 int
-open_device(void)
+open_device (void)
 {
-  if (open_partition())
-    attempt_mount();
+  if (open_partition ())
+    attempt_mount ();
 
   if (errnum != ERR_NONE)
     return 0;
@@ -671,14 +672,14 @@ open_device(void)
 
 #ifndef NO_FANCY_STUFF
 int
-set_bootdev(int hdbias)
+set_bootdev (int hdbias)
 {
   int i, j;
 
   /*
    *  Set chainloader boot device.
    */
-  bcopy(cur_part_desc, (char *)(BOOTSEC_LOCATION-16), 16);
+  bcopy (cur_part_desc, (char *) (BOOTSEC_LOCATION - 16), 16);
 
   /*
    *  Set BSD boot device.
@@ -694,32 +695,32 @@ set_bootdev(int hdbias)
   if (saved_drive & 0x80)
     j = bsd_evil_hack;
 
-  return MAKEBOOTDEV( j, (i >> 4), (i & 0xF),
+  return MAKEBOOTDEV (j, (i >> 4), (i & 0xF),
 		      ((saved_drive - hdbias) & 0x79),
-		      ((saved_partition >> 8) & 0xFF) );
+		      ((saved_partition >> 8) & 0xFF));
 }
 #endif /* NO_FANCY_STUFF */
 
 
 static char *
-setup_part(char *filename)
+setup_part (char *filename)
 {
   if (*filename == '(')
     {
-      if ( (filename = set_device(filename)) == 0 )
-        {
-          current_drive = 0xFF;
-          return 0;
-        }
+      if ((filename = set_device (filename)) == 0)
+	{
+	  current_drive = 0xFF;
+	  return 0;
+	}
 #ifndef NO_BLOCK_FILES
       if (*filename != '/')
-        open_partition();
+	open_partition ();
       else
 #endif /* NO_BLOCK_FILES */
-        open_device();
+	open_device ();
     }
   else if (saved_drive != current_drive
-           || saved_partition != current_partition
+	   || saved_partition != current_partition
 	   || (*filename == '/' && fsys_type == NUM_FSYS)
 	   || buf_drive == -1)
     {
@@ -729,10 +730,10 @@ setup_part(char *filename)
          is found.  This makes block files work fine on no filesystem */
 #ifndef NO_BLOCK_FILES
       if (*filename != '/')
-        open_partition();
+	open_partition ();
       else
 #endif /* NO_BLOCK_FILES */
-        open_device();
+	open_device ();
     }
 
   if (errnum && (*filename == '/' || errnum != ERR_FSYS_MOUNT))
@@ -740,7 +741,7 @@ setup_part(char *filename)
   else
     errnum = 0;
 
-  if (!sane_partition())
+  if (!sane_partition ())
     return 0;
 
   return filename;
@@ -753,19 +754,19 @@ setup_part(char *filename)
  */
 
 void
-print_fsys_type(void)
+print_fsys_type (void)
 {
-  printf(" Filesystem type ");
+  printf (" Filesystem type ");
 
   if (fsys_type != NUM_FSYS)
-    printf("is %s, ", fsys_table[fsys_type].name);
+    printf ("is %s, ", fsys_table[fsys_type].name);
   else
-    printf("unknown, ");
+    printf ("unknown, ");
 
   if (current_partition == 0xFFFFFF)
-    printf("using whole disk\n");
+    printf ("using whole disk\n");
   else
-    printf("partition type 0x%x\n", current_slice);
+    printf ("partition type 0x%x\n", current_slice);
 }
 
 /*
@@ -774,11 +775,11 @@ print_fsys_type(void)
  */
 
 void
-print_completions(char *filename)
+print_completions (char *filename)
 {
   char *ptr = filename;
 
-  if (*filename == '/' || (ptr = set_device(filename)) || incomplete)
+  if (*filename == '/' || (ptr = set_device (filename)) || incomplete)
     {
       errnum = 0;
 
@@ -789,7 +790,7 @@ print_completions(char *filename)
 	      /* disk completions */
 	      int disk_no, i, j;
 
-	      printf(" Possible disks are: ");
+	      printf (" Possible disks are: ");
 
 	      for (i = 0; i < 2; i++)
 		{
@@ -797,39 +798,39 @@ print_completions(char *filename)
 		    {
 		      disk_no = (i * 0x80) + j;
 		      if ((disk_choice || disk_no == current_drive)
-			  && get_diskinfo(disk_no))
-			printf(" %cd%d", (i ? 'h' : 'f'), j);
+			  && get_diskinfo (disk_no))
+			printf (" %cd%d", (i ? 'h' : 'f'), j);
 		    }
 		}
 
-	      putchar('\n');
+	      putchar ('\n');
 	    }
 	  else
 	    {
 	      /* partition completions */
 	      if (part_choice == PART_DISK)
 		{
-		  printf(" Possible partitions are:\n");
-		  real_open_partition(1);
+		  printf (" Possible partitions are:\n");
+		  real_open_partition (1);
 		}
 	      else
 		{
-		  if (open_partition())
-		    check_and_print_mount();
+		  if (open_partition ())
+		    check_and_print_mount ();
 		}
 	    }
 	}
       else if (*ptr == '/')
 	{
 	  /* filename completions */
-	  printf(" Possible files are:");
-	  dir(filename);
+	  printf (" Possible files are:");
+	  dir (filename);
 	}
       else
 	errnum = ERR_BAD_FILENAME;
     }
 
-  print_error();
+  print_error ();
 }
 #endif /* NO_FANCY_STUFF */
 
@@ -839,17 +840,17 @@ print_completions(char *filename)
  */
 
 int
-open(char *filename)
+open (char *filename)
 {
 #ifndef NO_DECOMPRESSION
   compressed_file = 0;
-#endif  /* NO_DECOMPRESSION */
+#endif /* NO_DECOMPRESSION */
 
   /* if any "dir" function uses/sets filepos, it must
      set it to zero before returning if opening a file! */
   filepos = 0;
 
-  if (!(filename = setup_part(filename)))
+  if (!(filename = setup_part (filename)))
     return 0;
 
 #ifndef NO_BLOCK_FILES
@@ -869,12 +870,12 @@ open(char *filename)
       while (list_addr < BLK_MAX_ADDR)
 	{
 	  tmp = 0;
-	  safe_parse_maxint(&ptr, &tmp);
+	  safe_parse_maxint (&ptr, &tmp);
 	  errnum = 0;
 
 	  if (*ptr != '+')
 	    {
-	      if ((*ptr && *ptr != '/' && !isspace(*ptr))
+	      if ((*ptr && *ptr != '/' && !isspace (*ptr))
 		  || tmp == 0 || tmp > filemax)
 		errnum = ERR_BAD_FILENAME;
 	      else
@@ -887,18 +888,18 @@ open(char *filename)
 	     be remounted */
 	  fsys_type = NUM_FSYS;
 
-	  BLK_BLKSTART(list_addr) = tmp;
+	  BLK_BLKSTART (list_addr) = tmp;
 	  ptr++;
 
-	  if (!safe_parse_maxint(&ptr, &tmp)
+	  if (!safe_parse_maxint (&ptr, &tmp)
 	      || tmp == 0
-	      || (*ptr && *ptr != ',' && *ptr != '/' && !isspace(*ptr)))
+	      || (*ptr && *ptr != ',' && *ptr != '/' && !isspace (*ptr)))
 	    {
 	      errnum = ERR_BAD_FILENAME;
 	      break;
 	    }
 
-	  BLK_BLKLENGTH(list_addr) = tmp;
+	  BLK_BLKLENGTH (list_addr) = tmp;
 
 	  filemax += (tmp * SECTOR_SIZE);
 	  list_addr += BLK_BLKLIST_INC_VAL;
@@ -917,14 +918,14 @@ open(char *filename)
 	  BLK_CUR_BLKNUM = 0;
 
 #ifndef NO_DECOMPRESSION
-	  return gunzip_test_header();
-#else   /* NO_DECOMPRESSION */
+	  return gunzip_test_header ();
+#else /* NO_DECOMPRESSION */
 	  return 1;
-#endif  /* NO_DECOMPRESSION */
+#endif /* NO_DECOMPRESSION */
 	}
-#else   /* NO_BLOCK_FILES */
+#else /* NO_BLOCK_FILES */
       errnum = ERR_BAD_FILENAME;
-#endif  /* NO_BLOCK_FILES */
+#endif /* NO_BLOCK_FILES */
     }
 
   if (!errnum && fsys_type == NUM_FSYS)
@@ -933,13 +934,13 @@ open(char *filename)
   /* set "dir" function to open a file */
   print_possibilities = 0;
 
-  if (!errnum && (*(fsys_table[fsys_type].dir_func))(filename))
+  if (!errnum && (*(fsys_table[fsys_type].dir_func)) (filename))
     {
 #ifndef NO_DECOMPRESSION
-      return gunzip_test_header();
-#else   /* NO_DECOMPRESSION */
+      return gunzip_test_header ();
+#else /* NO_DECOMPRESSION */
       return 1;
-#endif  /* NO_DECOMPRESSION */
+#endif /* NO_DECOMPRESSION */
     }
 
   return 0;
@@ -947,7 +948,7 @@ open(char *filename)
 
 
 int
-read(int addr, int len)
+read (int addr, int len)
 {
   /* Make sure "filepos" is a sane value */
   if ((filepos < 0) | (filepos > filemax))
@@ -960,7 +961,7 @@ read(int addr, int len)
   /* if target file position is past the end of
      the supported/configured filesize, then
      there is an error */
-  if (filepos+len > fsmax)
+  if (filepos + len > fsmax)
     {
       errnum = ERR_FILELENGTH;
       return 0;
@@ -968,8 +969,8 @@ read(int addr, int len)
 
 #ifndef NO_DECOMPRESSION
   if (compressed_file)
-    return gunzip_read(addr, len);
-#endif  /* NO_DECOMPRESSION */
+    return gunzip_read (addr, len);
+#endif /* NO_DECOMPRESSION */
 
 #ifndef NO_BLOCK_FILES
   if (block_file)
@@ -987,15 +988,15 @@ read(int addr, int len)
 	    }
 
 	  /* run BLK_CUR_FILEPOS up to filepos */
-	  while ( filepos > BLK_CUR_FILEPOS )
+	  while (filepos > BLK_CUR_FILEPOS)
 	    {
-	      if ( (filepos - (BLK_CUR_FILEPOS & ~(SECTOR_SIZE - 1)))
-		   >= SECTOR_SIZE )
+	      if ((filepos - (BLK_CUR_FILEPOS & ~(SECTOR_SIZE - 1)))
+		  >= SECTOR_SIZE)
 		{
 		  BLK_CUR_FILEPOS += SECTOR_SIZE;
 		  BLK_CUR_BLKNUM++;
 
-		  if ( BLK_CUR_BLKNUM >= BLK_BLKLENGTH(BLK_CUR_BLKLIST) )
+		  if (BLK_CUR_BLKNUM >= BLK_BLKLENGTH (BLK_CUR_BLKLIST))
 		    {
 		      BLK_CUR_BLKLIST += BLK_BLKLIST_INC_VAL;
 		      BLK_CUR_BLKNUM = 0;
@@ -1006,22 +1007,22 @@ read(int addr, int len)
 	    }
 
 	  off = filepos & (SECTOR_SIZE - 1);
-	  size = ( ( BLK_BLKLENGTH(BLK_CUR_BLKLIST) - BLK_CUR_BLKNUM )
-		   * SECTOR_SIZE ) - off;
+	  size = ((BLK_BLKLENGTH (BLK_CUR_BLKLIST) - BLK_CUR_BLKNUM)
+		  * SECTOR_SIZE) - off;
 	  if (size > len)
 	    size = len;
 
 #ifndef NO_FANCY_STUFF
 	  debug_fs_func = debug_fs;
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
 	  /* read current block and put it in the right place in memory */
-	  devread(BLK_BLKSTART(BLK_CUR_BLKLIST) + BLK_CUR_BLKNUM,
-		  off, size, addr);
+	  devread (BLK_BLKSTART (BLK_CUR_BLKLIST) + BLK_CUR_BLKNUM,
+		   off, size, addr);
 
 #ifndef NO_FANCY_STUFF
 	  debug_fs_func = NULL;
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
 	  len -= size;
 	  filepos += size;
@@ -1034,7 +1035,7 @@ read(int addr, int len)
 
       return ret;
     }
-#endif  /* NO_BLOCK_FILES */
+#endif /* NO_BLOCK_FILES */
 
   if (fsys_type == NUM_FSYS)
     {
@@ -1042,18 +1043,18 @@ read(int addr, int len)
       return 0;
     }
 
-  return (*(fsys_table[fsys_type].read_func))(addr, len);
+  return (*(fsys_table[fsys_type].read_func)) (addr, len);
 }
 
 
 int
-dir(char *dirname)
+dir (char *dirname)
 {
 #ifndef NO_DECOMPRESSION
   compressed_file = 0;
-#endif  /* NO_DECOMPRESSION */
+#endif /* NO_DECOMPRESSION */
 
-  if (!(dirname = setup_part(dirname)))
+  if (!(dirname = setup_part (dirname)))
     return 0;
 
   if (*dirname != '/')
@@ -1068,5 +1069,5 @@ dir(char *dirname)
   /* set "dir" function to list completions */
   print_possibilities = 1;
 
-  return (*(fsys_table[fsys_type].dir_func))(dirname);
+  return (*(fsys_table[fsys_type].dir_func)) (dirname);
 }

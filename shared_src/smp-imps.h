@@ -18,7 +18,7 @@
 /* make sure "apic.h" is included */
 #ifndef _APIC_H
 #error		Must include "apic.h" before "smp-imps.h"
-#endif  /* !_APIC_H */
+#endif /* !_APIC_H */
 
 /*
  *  Defines used.
@@ -26,7 +26,7 @@
 
 #ifdef IMPS_DEBUG
 #define IMPS_DEBUG_PRINT(x)  KERNEL_PRINT(x)
-#else  /* !IMPS_DEBUG */
+#else /* !IMPS_DEBUG */
 #define IMPS_DEBUG_PRINT(x)
 #endif /* !IMPS_DEBUG */
 
@@ -101,14 +101,14 @@ typedef struct imps_interrupt imps_interrupt;
  *  this structure.
  */
 struct imps_fps
-{
-	unsigned sig;
-	imps_cth *cth_ptr;
-	unsigned char length;
-	unsigned char spec_rev;
-	unsigned char checksum;
-	unsigned char feature_info[5];
-};
+  {
+    unsigned sig;
+    imps_cth *cth_ptr;
+    unsigned char length;
+    unsigned char spec_rev;
+    unsigned char checksum;
+    unsigned char feature_info[5];
+  };
 
 /*
  *  MP Configuration Table Header  (cth)
@@ -117,21 +117,21 @@ struct imps_fps
  *  this structure.
  */
 struct imps_cth
-{
-	unsigned sig;
-	unsigned short base_length;
-	unsigned char spec_rev;
-	unsigned char checksum;
-	char oem_id[8];
-	char prod_id[12];
-	unsigned oem_table_ptr;
-	unsigned short oem_table_size;
-	unsigned short entry_count;
-	unsigned lapic_addr;
-	unsigned short extended_length;
-	unsigned char extended_checksum;
-	char reserved[1];
-};
+  {
+    unsigned sig;
+    unsigned short base_length;
+    unsigned char spec_rev;
+    unsigned char checksum;
+    char oem_id[8];
+    char prod_id[12];
+    unsigned oem_table_ptr;
+    unsigned short oem_table_size;
+    unsigned short entry_count;
+    unsigned lapic_addr;
+    unsigned short extended_length;
+    unsigned char extended_checksum;
+    char reserved[1];
+  };
 
 /*
  *  Base MP Configuration Table Types.  They are sorted according to
@@ -140,42 +140,42 @@ struct imps_cth
  */
 
 struct imps_processor
-{
-	unsigned char type;			/* must be 0 */
-	unsigned char apic_id;
-	unsigned char apic_ver;
-	unsigned char flags;
-	unsigned signature;
-	unsigned features;
-	char reserved[8];
-};
+  {
+    unsigned char type;		/* must be 0 */
+    unsigned char apic_id;
+    unsigned char apic_ver;
+    unsigned char flags;
+    unsigned signature;
+    unsigned features;
+    char reserved[8];
+  };
 
 struct imps_bus
-{
-	unsigned char type;			/* must be 1 */
-	unsigned char id;
-	char bus_type[6];
-};
+  {
+    unsigned char type;		/* must be 1 */
+    unsigned char id;
+    char bus_type[6];
+  };
 
 struct imps_ioapic
-{
-	unsigned char type;			/* must be 2 */
-	unsigned char id;
-	unsigned char ver;
-	unsigned char flags;
-	unsigned addr;
-};
+  {
+    unsigned char type;		/* must be 2 */
+    unsigned char id;
+    unsigned char ver;
+    unsigned char flags;
+    unsigned addr;
+  };
 
 struct imps_interrupt
-{
-	unsigned char type;			/* must be 3 or 4 */
-	unsigned char int_type;
-	unsigned short flags;
-	unsigned char source_bus_id;
-	unsigned char source_bus_irq;
-	unsigned char dest_apic_id;
-	unsigned char dest_apic_intin;
-};
+  {
+    unsigned char type;		/* must be 3 or 4 */
+    unsigned char int_type;
+    unsigned short flags;
+    unsigned char source_bus_id;
+    unsigned char source_bus_irq;
+    unsigned char dest_apic_id;
+    unsigned char dest_apic_intin;
+  };
 
 
 /*
@@ -224,7 +224,7 @@ extern unsigned char imps_apic_cpu_map[IMPS_MAX_CPUS];
  *  Returns 1 if IMPS information was found and is valid, else 0.
  */
 
-int imps_probe(void);
+int imps_probe (void);
 
 
 /*
@@ -235,5 +235,4 @@ int imps_probe(void);
 #define IMPS_LAPIC_WRITE(x, y)   \
    (*((volatile unsigned *) (imps_lapic_addr+(x))) = (y))
 
-#endif  /* !_SMP_IMPS_H */
-
+#endif /* !_SMP_IMPS_H */

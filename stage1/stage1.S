@@ -113,20 +113,21 @@ after_BPB:
 	pushw	%dx
 
 	/*
-	 *  Jump to floppy probe instead of the hard disk probe ?
-	 */
-	movb	%dl, %al
-	andb	$BIOS_HD_FLAG, %al
-	jz	floppy_probe
-
-	/*
 	 *  Determine the hard disk geometry from the BIOS!
+	 *  We do this first, so that LS-120 IDE floppies work correctly.
 	 */
 	movb	$8, %ah
 	int	$0x13
+	jnc	final_init
 
-	/* if BIOS geometry call fails, display error and die! */
-	jc	hd_probe_error
+	/*
+	 *  The call failed, so maybe use the floppy probe instead.
+	 */
+	andb	$BIOS_HD_FLAG, %dl
+	jz	floppy_probe
+
+	/* Nope, we definitely have a hard disk, and we're screwed. */
+	jmp	hd_probe_error
 
 final_init:
 	/* save number of heads */

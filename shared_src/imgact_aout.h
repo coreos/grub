@@ -1,3 +1,4 @@
+
 /*-
  * Copyright (c) 1992, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -94,7 +95,7 @@
 /* Text segment offset. */
 #define	N_TXTOFF(ex) \
 	(N_GETMAGIC(ex) == ZMAGIC ? __LDPGSZ : (N_GETMAGIC(ex) == QMAGIC || \
-	N_GETMAGIC_NET(ex) == ZMAGIC) ? 0 : sizeof(struct exec)) 
+	N_GETMAGIC_NET(ex) == ZMAGIC) ? 0 : sizeof(struct exec))
 
 /* Data segment offset. */
 #define	N_DATOFF(ex) \
@@ -117,23 +118,24 @@
  * N_SETMAGIC/N_GET{MAGIC,MID,FLAG} macros in a.out.h
  */
 
-struct exec {
-     unsigned long  a_midmag;   /* htonl(flags<<26 | mid<<16 | magic) */
-     unsigned long	a_text;		/* text segment size */
-     unsigned long	a_data;		/* initialized data size */
-     unsigned long	a_bss;		/* uninitialized data size */
-     unsigned long	a_syms;		/* symbol table size */
-     unsigned long	a_entry;	/* entry point */
-     unsigned long	a_trsize;	/* text relocation size */
-     unsigned long	a_drsize;	/* data relocation size */
-};
-#define a_magic a_midmag /* XXX Hack to work with current kern_execve.c */
+struct exec
+  {
+    unsigned long a_midmag;	/* htonl(flags<<26 | mid<<16 | magic) */
+    unsigned long a_text;	/* text segment size */
+    unsigned long a_data;	/* initialized data size */
+    unsigned long a_bss;	/* uninitialized data size */
+    unsigned long a_syms;	/* symbol table size */
+    unsigned long a_entry;	/* entry point */
+    unsigned long a_trsize;	/* text relocation size */
+    unsigned long a_drsize;	/* data relocation size */
+  };
+#define a_magic a_midmag	/* XXX Hack to work with current kern_execve.c */
 
 /* a_magic */
-#define	OMAGIC          0x107   /* 0407 old impure format */
-#define	NMAGIC          0x108   /* 0410 read-only text */
-#define	ZMAGIC          0x10b   /* 0413 demand load format */
-#define QMAGIC          0xcc    /* 0314 "compact" demand load format */
+#define	OMAGIC          0x107	/* 0407 old impure format */
+#define	NMAGIC          0x108	/* 0410 read-only text */
+#define	ZMAGIC          0x10b	/* 0413 demand load format */
+#define QMAGIC          0xcc	/* 0314 "compact" demand load format */
 
 /* a_mid */
 #define	MID_ZERO	0	/* unknown - implementation dependent */
@@ -144,7 +146,7 @@ struct exec {
 #define	MID_HP200	200	/* hp200 (68010) BSD binary */
 #define	MID_HP300	300	/* hp300 (68020+68881) BSD binary */
 #define	MID_HPUX	0x20C	/* hp200/300 HP-UX binary */
-#define	MID_HPUX800     0x20B   /* hp800 HP-UX binary */
+#define	MID_HPUX800     0x20B	/* hp800 HP-UX binary */
 
 /*
  * a_flags

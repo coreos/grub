@@ -1,3 +1,4 @@
+
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
@@ -22,17 +23,17 @@
  */
 
 struct mod_list
-{
-  /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
-  unsigned long mod_start;
-  unsigned long mod_end;
+  {
+    /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
+    unsigned long mod_start;
+    unsigned long mod_end;
 
-  /* Module command line */
-  unsigned long cmdline;
+    /* Module command line */
+    unsigned long cmdline;
 
-  /* padding to take it to 16 bytes (must be zero) */
-  unsigned long pad;
-};
+    /* padding to take it to 16 bytes (must be zero) */
+    unsigned long pad;
+  };
 
 
 /*
@@ -43,16 +44,16 @@ struct mod_list
  */
 
 struct AddrRangeDesc
-{
-  unsigned long size;
-  unsigned long BaseAddrLow;
-  unsigned long BaseAddrHigh;
-  unsigned long LengthLow;
-  unsigned long LengthHigh;
-  unsigned long Type;
+  {
+    unsigned long size;
+    unsigned long BaseAddrLow;
+    unsigned long BaseAddrHigh;
+    unsigned long LengthLow;
+    unsigned long LengthHigh;
+    unsigned long Type;
 
-  /* unspecified optional padding... */
-};
+    /* unspecified optional padding... */
+  };
 
 /* usable memory "Type", all others are reserved.  */
 #define MB_ARD_MEMORY       1
@@ -66,49 +67,52 @@ struct AddrRangeDesc
  */
 
 struct multiboot_info
-{
-  /* MultiBoot info version number */
-  unsigned long flags;
-
-  /* Available memory from BIOS */
-  unsigned long mem_lower;
-  unsigned long mem_upper;
-
-  /* "root" partition */
-  unsigned long boot_device;
-
-  /* Kernel command line */
-  unsigned long cmdline;
-
-  /* Boot-Module list */
-  unsigned long mods_count;
-  unsigned long mods_addr;
-
-  union
   {
-    struct
-    {
-      /* (a.out) Kernel symbol table info */
-      unsigned long tabsize;
-      unsigned long strsize;
-      unsigned long addr;
-      unsigned long pad;
-    } a;
+    /* MultiBoot info version number */
+    unsigned long flags;
 
-    struct
-    {
-      /* (ELF) Kernel section header table */
-      unsigned long num;
-      unsigned long size;
-      unsigned long addr;
-      unsigned long shndx;
-    } e;
-  } syms;
+    /* Available memory from BIOS */
+    unsigned long mem_lower;
+    unsigned long mem_upper;
 
-  /* Memory Mapping buffer */
-  unsigned long mmap_length;
-  unsigned long mmap_addr;
-};
+    /* "root" partition */
+    unsigned long boot_device;
+
+    /* Kernel command line */
+    unsigned long cmdline;
+
+    /* Boot-Module list */
+    unsigned long mods_count;
+    unsigned long mods_addr;
+
+    union
+      {
+	struct
+	  {
+	    /* (a.out) Kernel symbol table info */
+	    unsigned long tabsize;
+	    unsigned long strsize;
+	    unsigned long addr;
+	    unsigned long pad;
+	  }
+	a;
+
+	struct
+	  {
+	    /* (ELF) Kernel section header table */
+	    unsigned long num;
+	    unsigned long size;
+	    unsigned long addr;
+	    unsigned long shndx;
+	  }
+	e;
+      }
+    syms;
+
+    /* Memory Mapping buffer */
+    unsigned long mmap_length;
+    unsigned long mmap_addr;
+  };
 
 /*
  *  Flags to be set in the 'flags' parameter above
@@ -138,4 +142,3 @@ struct multiboot_info
  */
 
 #define MULTIBOOT_VALID         0x2BADB002
-

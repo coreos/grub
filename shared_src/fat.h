@@ -71,13 +71,13 @@
  *  Defines minimum disk size to be considered a FAT partition
  */
 
-#define FAT_MIN_NUM_SECTORS       720  /* 360 K disk */
+#define FAT_MIN_NUM_SECTORS       720	/* 360 K disk */
 
 /*
  *  Defines how to differentiate a 12-bit and 16-bit FAT.
  */
 
-#define FAT_MAX_12BIT_CLUST       4087   /* 4085 + 2 */
+#define FAT_MAX_12BIT_CLUST       4087	/* 4085 + 2 */
 
 #define FAT_BPB_FLOPPY_NUM_SECTORS(bpb) \
   ( *((unsigned short *) (((int)bpb) + 19)) \
@@ -111,4 +111,3 @@
   (*((unsigned short *) (entry+26)))
 #define FAT_DIRENTRY_FILELENGTH(entry) \
   (*((unsigned long *) (entry+28)))
-

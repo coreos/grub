@@ -1,8 +1,9 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 0.5.2 - 1999-01-31, Gordon Matzigkeit:
+New in 0.6 - FIXME, Gordon Matzigkeit:
 * Bug fixes.
-*
+* GRUB understands symlinks on ext2fs (but not ffs).
+* Many source code and build cleanups to comply with GNU standards.
 
 Version 0.5:
 

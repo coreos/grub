@@ -42,7 +42,8 @@ int errnum = 0;
 char *err_list[] =
 {
   [ERR_NONE] = 0,
-  [ERR_BAD_FILENAME] = "Bad filename (must be absolute pathname or blocklist)",
+  [ERR_BAD_FILENAME] =
+  "Bad filename (must be absolute pathname or blocklist)",
   [ERR_BAD_FILETYPE] = "Bad file or directory type",
   [ERR_BAD_GZIP_DATA] = "Bad or corrupt data while decompressing file",
   [ERR_BAD_GZIP_HEADER] = "Bad or incompatible header on compressed file",
@@ -55,7 +56,8 @@ char *err_list[] =
   [ERR_DEV_FORMAT] = "Device string unrecognizable",
   [ERR_DEV_VALUES] = "Invalid device requested",
   [ERR_EXEC_FORMAT] = "Invalid or unsupported executable format",
-  [ERR_FILELENGTH] = "Filesystem compatibility error, cannot read whole file",
+  [ERR_FILELENGTH] =
+  "Filesystem compatibility error, cannot read whole file",
   [ERR_FILE_NOT_FOUND] = "File not found",
   [ERR_FSYS_CORRUPT] = "Inconsistent filesystem structure",
   [ERR_FSYS_MOUNT] = "Cannot mount selected partition",
@@ -77,11 +79,11 @@ char *err_list[] =
 /* static for BIOS memory map fakery */
 static struct AddrRangeDesc fakemap[3] =
 {
-  { 20, 0, 0, 0, 0, MB_ARD_MEMORY },
-  { 20, 0x100000, 0, 0, 0, MB_ARD_MEMORY },
-  { 20, 0x1000000, 0, 0, 0, MB_ARD_MEMORY }
+  {20, 0, 0, 0, 0, MB_ARD_MEMORY},
+  {20, 0x100000, 0, 0, 0, MB_ARD_MEMORY},
+  {20, 0x1000000, 0, 0, 0, MB_ARD_MEMORY}
 };
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
 
 /*
@@ -89,7 +91,7 @@ static struct AddrRangeDesc fakemap[3] =
  */
 
 void
-init_bios_info(void)
+init_bios_info (void)
 {
   int cont, memtmp, addr;
 
@@ -97,8 +99,8 @@ init_bios_info(void)
    *  Get information from BIOS on installed RAM.
    */
 
-  mbi.mem_lower = get_memsize(0);
-  mbi.mem_upper = get_memsize(1);
+  mbi.mem_lower = get_memsize (0);
+  mbi.mem_upper = get_memsize (1);
 
 #ifndef NO_FANCY_STUFF
   /*
@@ -107,7 +109,7 @@ init_bios_info(void)
    *  to 0.  Not too desirable.
    */
 
-  gateA20(1);
+  gateA20 (1);
 
   /*
    *  The "mbi.mem_upper" variable only recognizes upper memory in the
@@ -122,13 +124,13 @@ init_bios_info(void)
 
   do
     {
-      cont = get_mem_map(addr, cont);
+      cont = get_mem_map (addr, cont);
 
-      if ( ! *((int *)addr) )
+      if (!*((int *) addr))
 	break;
 
-      mbi.mmap_length += *((int *)addr) + 4;
-      addr += *((int *)addr) + 4;
+      mbi.mmap_length += *((int *) addr) + 4;
+      addr += *((int *) addr) + 4;
     }
   while (cont);
 
@@ -152,14 +154,14 @@ init_bios_info(void)
 	       addr < mbi.mmap_addr + mbi.mmap_length;
 	       addr += *((int *) addr) + 4)
 	    {
-	      if (((struct AddrRangeDesc *)addr)->BaseAddrHigh == 0
-		  && ((struct AddrRangeDesc *)addr)->Type == MB_ARD_MEMORY
-		  && ((struct AddrRangeDesc *)addr)->BaseAddrLow <= memtmp
-		  && (((struct AddrRangeDesc *)addr)->BaseAddrLow
-		      + ((struct AddrRangeDesc *)addr)->LengthLow) > memtmp)
+	      if (((struct AddrRangeDesc *) addr)->BaseAddrHigh == 0
+		  && ((struct AddrRangeDesc *) addr)->Type == MB_ARD_MEMORY
+		  && ((struct AddrRangeDesc *) addr)->BaseAddrLow <= memtmp
+		  && (((struct AddrRangeDesc *) addr)->BaseAddrLow
+		      + ((struct AddrRangeDesc *) addr)->LengthLow) > memtmp)
 		{
-		  memtmp = (((struct AddrRangeDesc *)addr)->BaseAddrLow
-			    + ((struct AddrRangeDesc *)addr)->LengthLow);
+		  memtmp = (((struct AddrRangeDesc *) addr)->BaseAddrLow
+			    + ((struct AddrRangeDesc *) addr)->LengthLow);
 		  cont++;
 		}
 	    }
@@ -168,7 +170,7 @@ init_bios_info(void)
 
       mbi.mem_upper = (memtmp - 0x100000) >> 10;
     }
-  else if ((memtmp = get_eisamemsize()) != -1)
+  else if ((memtmp = get_eisamemsize ()) != -1)
     {
       cont = memtmp & ~0xFFFF;
       memtmp = memtmp & 0xFFFF;
@@ -179,8 +181,8 @@ init_bios_info(void)
 	{
 	  /* XXX should I do this at all ??? */
 
-	  mbi.mmap_addr = (int)fakemap;
-	  mbi.mmap_length = sizeof(fakemap);
+	  mbi.mmap_addr = (int) fakemap;
+	  mbi.mmap_length = sizeof (fakemap);
 	  fakemap[0].LengthLow = (mbi.mem_lower << 10);
 	  fakemap[1].LengthLow = (memtmp << 10);
 	  fakemap[2].LengthLow = cont;
@@ -197,7 +199,7 @@ init_bios_info(void)
 
   mbi.flags = MB_INFO_MEMORY | MB_INFO_CMDLINE | MB_INFO_BOOTDEV;
 
-#endif  /* NO_FANCY_STUFF */
+#endif /* NO_FANCY_STUFF */
 
   /*
    *  Set boot drive and partition.
@@ -210,5 +212,5 @@ init_bios_info(void)
    *  Start main routine here.
    */
 
-  cmain();
+  cmain ();
 }

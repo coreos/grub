@@ -69,5 +69,4 @@
 #define LAPIC_TCCR				0x390
 #define LAPIC_TDCR				0x3E0
 
-#endif  /* _APIC_H */
-
+#endif /* _APIC_H */

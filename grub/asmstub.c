@@ -39,14 +39,14 @@ start_stage2 (void)
 
 /* calls for direct boot-loader chaining */
 void
-chain_stage1(int segment, int offset, int part_table_addr)
+chain_stage1 (int segment, int offset, int part_table_addr)
 {
 
 }
 
 
 void
-chain_stage2(int segment, int offset)
+chain_stage2 (int segment, int offset)
 {
 
 }
@@ -54,7 +54,7 @@ chain_stage2(int segment, int offset)
 
 /* do some funky stuff, then boot linux */
 void
-linux_boot(void)
+linux_boot (void)
 {
 
 }
@@ -62,7 +62,7 @@ linux_boot(void)
 
 /* For bzImage kernels. */
 void
-big_linux_boot(void)
+big_linux_boot (void)
 {
 
 }
@@ -70,7 +70,7 @@ big_linux_boot(void)
 
 /* booting a multiboot executable */
 void
-multi_boot(int start, int mbi)
+multi_boot (int start, int mbi)
 {
 
 }
@@ -87,7 +87,7 @@ gateA20 (int linear)
 int
 get_memsize (int type)
 {
-  if (! type)
+  if (!type)
     return 640 * 1024;		/* 640kB conventional */
   else
     return 4 * 1024 * 1024;	/* 4MB extended */
@@ -125,20 +125,20 @@ getrtsecs (void)
 
 /* low-level character I/O */
 void
-cls(void)
+cls (void)
 {
 }
 
 
 /* returns packed values, LSB+1 is x, LSB is y */
 int
-getxy(void)
+getxy (void)
 {
 }
 
 
 void
-gotoxy(int x, int y)
+gotoxy (int x, int y)
 {
 }
 
@@ -146,47 +146,47 @@ gotoxy(int x, int y)
 /* displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones */
 void
-putchar(int c)
+putchar (int c)
 {
 }
 
 
 /* returns packed BIOS/ASCII code */
 int
-asm_getkey(void)
+asm_getkey (void)
 {
 }
 
 
 /* like 'getkey', but doesn't wait, returns -1 if nothing available */
 int
-checkkey(void)
+checkkey (void)
 {
 }
 
 
 /* sets text mode character attribute at the cursor position */
 void
-set_attrib(int attr)
+set_attrib (int attr)
 {
 }
 
 
 /* low-level disk I/O */
 int
-get_diskinfo(int drive)
+get_diskinfo (int drive)
 {
 }
 
 
 int
-biosdisk(int subfunc, int drive, int geometry,
-	 int sector, int nsec, int segment)
+biosdisk (int subfunc, int drive, int geometry,
+	  int sector, int nsec, int segment)
 {
 }
 
 
 void
-stop_floppy(void)
+stop_floppy (void)
 {
 }

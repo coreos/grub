@@ -1,9 +1,6 @@
 
 Known problems/bugs:
 
-  - Try `d' to delete the selected line while editing a menu entry
-    (maybe only when deleting the last line).  Everything goes to hell.
-
   - FreeBSD boot command-line options are slightly problematic, and
     OpenBSD options are probably quite wrong.  This is because they
     use options that are bits in a data word passed at boot time, and

@@ -1,17 +1,25 @@
-Treat `(hd)/boot/grub/menu.lst' as searching through the hard drives
-for a partition that contains /boot/grub/menu.lst.  Either this, or
-`(hd:0x82)' means the first partition of type 0x82.  We need one of
-these dynamic search mechanisms for clean Hurd install floppies.
+Get /sbin/grub to work.
 
-Syntax:
+Change partition syntax to correspond with BSD ``slice'' syntax
+(`(hd0,1a)' -> `/dev/hd0s2a').
 
- (hd0,0)   -> hd0s1
- (hd0,1,b) -> hd0s1b
- (hd0)     -> hd0
+Add a partition naming syntax that means ``the first partition of this
+type''.  We need this for clean Hurd install floppies.
 
-Find out the size restrictions for FAT and ext2fs stage1.5 boot blocks.
+Find out the size restrictions for FAT and ext2fs stage1.5 boot
+blocks.  Enforce all arbitrary limits using the Makefiles.
 
-	Check for other patches sent in e-mail!!!  There are several...
+Look at network booting.
+
+Add stripped-down Guile support, and rewrite current behaviour in
+Scheme.  Make sure not to break backward compatibilty, or else we'll
+be roasted by anti-Guile people.
+
+Add internationalization support, emulating gettext as much as is
+feasible.
+
+Maybe add BIOS password support.  In any event, improve the existing
+password support.
 
 	Add support/delays so that a floppy can be installed from
 	another floppy.
@@ -25,7 +33,7 @@ Find out the size restrictions for FAT and ext2fs stage1.5 boot blocks.
 
 	Add indirect block support to the BSD FFS filesystem code, so files
 	larger than 16MB can be read.
-	???  Make symbolic links work for BSD FFS and Linux ext2fs filesystems.
+	???  Make symbolic links work for BSD FFS.
 
 	???  Add command for modifying partition types.
 

@@ -39,16 +39,18 @@ static struct mod_list mll[99];
  */
 
 int
-load_image(void)
+load_image (void)
 {
   int len, i, exec_type, align_4k = 1, type = 0;
   unsigned long flags = 0, text_len, data_len, bss_len;
   char *str, *str2;
-  union {
-    struct multiboot_header *mb;
-    struct exec *aout;
-    Elf32_Ehdr *elf;
-  } pu;
+  union
+    {
+      struct multiboot_header *mb;
+      struct exec *aout;
+      Elf32_Ehdr *elf;
+    }
+  pu;
   /* presuming that MULTIBOOT_SEARCH is large enough to encompass an
      executable header */
   unsigned char buffer[MULTIBOOT_SEARCH];
@@ -57,10 +59,10 @@ load_image(void)
      buffer by default */
   pu.aout = (struct exec *) buffer;
 
-  if (!open(cur_cmdline))
+  if (!open (cur_cmdline))
     return 0;
 
-  if (!(len = read((int)buffer, MULTIBOOT_SEARCH)) || len < 32)
+  if (!(len = read ((int) buffer, MULTIBOOT_SEARCH)) || len < 32)
     {
       if (!errnum)
 	errnum = ERR_EXEC_FORMAT;
@@ -70,9 +72,9 @@ load_image(void)
 
   for (i = 0; i < len; i++)
     {
-      if (MULTIBOOT_FOUND((int)(buffer+i), len-i))
+      if (MULTIBOOT_FOUND ((int) (buffer + i), len - i))
 	{
-	  flags = ((struct multiboot_header *) (buffer+i))->flags;
+	  flags = ((struct multiboot_header *) (buffer + i))->flags;
 	  if (flags & MULTIBOOT_UNSUPPORTED)
 	    {
 	      errnum = ERR_BOOT_FEATURES;
@@ -85,12 +87,12 @@ load_image(void)
     }
 
   /* ELF loading only supported if kernel using multiboot */
-  if (type == 'm' && len > sizeof(Elf32_Ehdr)
-      && BOOTABLE_I386_ELF((*((Elf32_Ehdr *)buffer))))
+  if (type == 'm' && len > sizeof (Elf32_Ehdr)
+      && BOOTABLE_I386_ELF ((*((Elf32_Ehdr *) buffer))))
     {
       entry_addr = (entry_func) pu.elf->e_entry;
 
-      if (((int)entry_addr) < 0x100000)
+      if (((int) entry_addr) < 0x100000)
 	errnum = ERR_BELOW_1MB;
 
       /* don't want to deal with ELF program header at some random
@@ -105,7 +107,7 @@ load_image(void)
     }
   else if (flags & MULTIBOOT_AOUT_KLUDGE)
     {
-      pu.mb = (struct multiboot_header *) (buffer+i);
+      pu.mb = (struct multiboot_header *) (buffer + i);
       entry_addr = (entry_func) pu.mb->entry_addr;
       cur_addr = pu.mb->load_addr;
       /* first offset into file */
@@ -127,7 +129,7 @@ load_image(void)
       exec_type = 2;
       str = "kludge";
     }
-  else if (len > sizeof(struct exec) && !N_BADMAG((*(pu.aout))))
+  else if (len > sizeof (struct exec) && !N_BADMAG ((*(pu.aout))))
     {
       entry_addr = (entry_func) pu.aout->a_entry;
 
@@ -147,14 +149,14 @@ load_image(void)
 	  if (buffer[0] == 0xb && buffer[1] == 1)
 	    {
 	      type = 'f';
-	      entry_addr = (entry_func) (((int)entry_addr) & 0xFFFFFF);
+	      entry_addr = (entry_func) (((int) entry_addr) & 0xFFFFFF);
 	      str2 = "FreeBSD";
 	    }
 	  else
 	    {
 	      type = 'n';
-	      entry_addr = (entry_func) (((int)entry_addr) & 0xF00000);
-	      if (N_GETMAGIC((*(pu.aout))) != NMAGIC)
+	      entry_addr = (entry_func) (((int) entry_addr) & 0xF00000);
+	      if (N_GETMAGIC ((*(pu.aout))) != NMAGIC)
 		align_4k = 0;
 	      str2 = "NetBSD";
 	    }
@@ -162,7 +164,7 @@ load_image(void)
 
       cur_addr = (int) entry_addr;
       /* first offset into file */
-      filepos = N_TXTOFF((*(pu.aout)));
+      filepos = N_TXTOFF ((*(pu.aout)));
       text_len = pu.aout->a_text;
       data_len = pu.aout->a_data;
       bss_len = pu.aout->a_bss;
@@ -173,60 +175,60 @@ load_image(void)
       exec_type = 1;
       str = "a.out";
     }
-  else if ((*((unsigned short *) (buffer+BOOTSEC_SIG_OFFSET))
+  else if ((*((unsigned short *) (buffer + BOOTSEC_SIG_OFFSET))
 	    == BOOTSEC_SIGNATURE)
 	   && ((data_len
-		= (((long)*((unsigned char *)
-			    (buffer+LINUX_SETUP_LEN_OFFSET))) << 9))
+		= (((long) *((unsigned char *)
+			     (buffer + LINUX_SETUP_LEN_OFFSET))) << 9))
 	       <= LINUX_SETUP_MAXLEN)
 	   && ((text_len
-		= (((long)*((unsigned short *)
-			    (buffer+LINUX_KERNEL_LEN_OFFSET))) << 4)),
-	       (data_len+text_len+SECTOR_SIZE) <= ((filemax+15)&0xFFFFFFF0)))
+		= (((long) *((unsigned short *)
+			     (buffer + LINUX_KERNEL_LEN_OFFSET))) << 4)),
+	       (data_len + text_len + SECTOR_SIZE) <= ((filemax + 15) & 0xFFFFFFF0)))
     {
       int big_linux = buffer[LINUX_SETUP_LOAD_FLAGS] & LINUX_FLAG_BIG_KERNEL;
       buffer[LINUX_SETUP_LOADER] = 0x70;
       if (!big_linux && text_len > LINUX_KERNEL_MAXLEN)
 	{
-	  printf(" linux 'zImage' kernel too big, try 'make bzImage'\n");
+	  printf (" linux 'zImage' kernel too big, try 'make bzImage'\n");
 	  errnum = ERR_WONT_FIT;
 	  return 0;
 	}
 
-      printf("   [Linux-%s, setup=0x%x, size=0x%x]\n",
-	     (big_linux ? "bzImage" : "zImage"), data_len, text_len);
+      printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
+	      (big_linux ? "bzImage" : "zImage"), data_len, text_len);
 
       if (mbi.mem_lower >= 608)
 	{
-	  bcopy(buffer, (char *)LINUX_SETUP, data_len+SECTOR_SIZE);
+	  bcopy (buffer, (char *) LINUX_SETUP, data_len + SECTOR_SIZE);
 
 	  /* copy command-line plus memory hack to staging area */
 	  {
 	    char *src = cur_cmdline;
-	    char *dest = (char *) (CL_MY_LOCATION+4);
+	    char *dest = (char *) (CL_MY_LOCATION + 4);
 
-	    bcopy("mem=", (char *)CL_MY_LOCATION, 4);
+	    bcopy ("mem=", (char *) CL_MY_LOCATION, 4);
 
-	    *((unsigned short *) CL_OFFSET) = CL_MY_LOCATION-CL_BASE_ADDR;
+	    *((unsigned short *) CL_OFFSET) = CL_MY_LOCATION - CL_BASE_ADDR;
 	    *((unsigned short *) CL_MAGIC_ADDR) = CL_MAGIC;
 
-	    dest = convert_to_ascii(dest, 'u', (mbi.mem_upper+0x400));
+	    dest = convert_to_ascii (dest, 'u', (mbi.mem_upper + 0x400));
 	    *(dest++) = 'K';
 	    *(dest++) = ' ';
 
 	    while (*src && *src != ' ')
 	      src++;
 
-	    while (((int)dest) < CL_MY_END_ADDR && (*(dest++) = *(src++)));
+	    while (((int) dest) < CL_MY_END_ADDR && (*(dest++) = *(src++)));
 
 	    *dest = 0;
 	  }
 
 	  /* offset into file */
-	  filepos = data_len+SECTOR_SIZE;
+	  filepos = data_len + SECTOR_SIZE;
 
 	  cur_addr = LINUX_STAGING_AREA + text_len;
-	  if (read(LINUX_STAGING_AREA, text_len) >= (text_len-16))
+	  if (read (LINUX_STAGING_AREA, text_len) >= (text_len - 16))
 	    return (big_linux ? 'L' : 'l');
 	  else if (!errnum)
 	    errnum = ERR_EXEC_FORMAT;
@@ -234,7 +236,7 @@ load_image(void)
       else
 	errnum = ERR_WONT_FIT;
     }
-  else  /* no recognizable format */
+  else				/* no recognizable format */
     errnum = ERR_EXEC_FORMAT;
 
   /* return if error */
@@ -242,7 +244,7 @@ load_image(void)
     return 0;
 
   /* fill the multiboot info structure */
-  mbi.cmdline = (int)cur_cmdline;
+  mbi.cmdline = (int) cur_cmdline;
   mbi.mods_count = 0;
   mbi.mods_addr = 0;
   mbi.boot_device = (saved_drive << 24) | saved_partition;
@@ -252,19 +254,19 @@ load_image(void)
   mbi.syms.a.addr = 0;
   mbi.syms.a.pad = 0;
 
-  printf("   [%s-%s", str2, str);
+  printf ("   [%s-%s", str2, str);
 
   str = "";
 
-  if (exec_type)  /* can be loaded like a.out */
+  if (exec_type)		/* can be loaded like a.out */
     {
       if (flags & MULTIBOOT_AOUT_KLUDGE)
 	str = "-and-data";
 
-      printf(", loadaddr=0x%x, text%s=0x%x", cur_addr, str, text_len);
+      printf (", loadaddr=0x%x, text%s=0x%x", cur_addr, str, text_len);
 
       /* read text, then read data */
-      if (read(cur_addr, text_len) == text_len)
+      if (read (cur_addr, text_len) == text_len)
 	{
 	  cur_addr += text_len;
 
@@ -274,21 +276,21 @@ load_image(void)
 	      if (align_4k)
 		cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
 	      else
-		printf(", C");
+		printf (", C");
 
-	      printf(", data=0x%x", data_len);
+	      printf (", data=0x%x", data_len);
 
-	      if (read(cur_addr, data_len) != data_len && !errnum)
+	      if (read (cur_addr, data_len) != data_len && !errnum)
 		errnum = ERR_EXEC_FORMAT;
 	      cur_addr += data_len;
 	    }
 
 	  if (!errnum)
 	    {
-	      bzero((char*)cur_addr, bss_len);
+	      bzero ((char *) cur_addr, bss_len);
 	      cur_addr += bss_len;
 
-	      printf(", bss=0x%x", bss_len);
+	      printf (", bss=0x%x", bss_len);
 	    }
 	}
       else if (!errnum)
@@ -304,26 +306,26 @@ load_image(void)
 
 	  mbi.syms.a.addr = cur_addr;
 
-	  *(((int *)cur_addr)++) = pu.aout->a_syms;
+	  *(((int *) cur_addr)++) = pu.aout->a_syms;
 
-	  printf(", symtab=0x%x", pu.aout->a_syms);
+	  printf (", symtab=0x%x", pu.aout->a_syms);
 
-	  if (read(cur_addr, pu.aout->a_syms) == pu.aout->a_syms)
+	  if (read (cur_addr, pu.aout->a_syms) == pu.aout->a_syms)
 	    {
 	      cur_addr += pu.aout->a_syms;
 	      mbi.syms.a.tabsize = pu.aout->a_syms;
 
-	      if (read((int)(&i), sizeof(int)) == sizeof(int))
+	      if (read ((int) (&i), sizeof (int)) == sizeof (int))
 		{
-		  *(((int *)cur_addr)++) = i;
+		  *(((int *) cur_addr)++) = i;
 
 		  mbi.syms.a.strsize = i;
 
-		  i -= sizeof(int);
+		  i -= sizeof (int);
 
-		  printf(", strtab=0x%x", i);
+		  printf (", strtab=0x%x", i);
 
-		  symtab_err = (read(cur_addr, i) != i);
+		  symtab_err = (read (cur_addr, i) != i);
 		  cur_addr += i;
 		}
 	      else
@@ -334,7 +336,7 @@ load_image(void)
 
 	  if (symtab_err)
 	    {
-	      printf("(bad)");
+	      printf ("(bad)");
 	      cur_addr = orig_addr;
 	      mbi.syms.a.tabsize = 0;
 	      mbi.syms.a.strsize = 0;
@@ -344,7 +346,8 @@ load_image(void)
 	    mbi.flags |= MB_INFO_AOUT_SYMS;
 	}
     }
-  else      /* ELF executable */
+  else
+    /* ELF executable */
     {
       int loaded = 0, memaddr, memsiz, filesiz;
       Elf32_Phdr *phdr;
@@ -356,8 +359,8 @@ load_image(void)
       for (i = 0; i < pu.elf->e_phnum; i++)
 	{
 	  phdr = (Elf32_Phdr *)
-	           (pu.elf->e_phoff + ((int)buffer)
-		    + (pu.elf->e_phentsize * i));
+	    (pu.elf->e_phoff + ((int) buffer)
+	     + (pu.elf->e_phentsize * i));
 	  if (phdr->p_type == PT_LOAD)
 	    {
 	      /* offset into file */
@@ -371,19 +374,19 @@ load_image(void)
 	      if (filesiz > memsiz)
 		filesiz = memsiz;
 	      /* mark memory as used */
-	      if (cur_addr < memaddr+memsiz)
-		cur_addr = memaddr+memsiz;
-	      printf(", <0x%x:0x%x:0x%x>", memaddr, filesiz,
-		     memsiz-filesiz);
+	      if (cur_addr < memaddr + memsiz)
+		cur_addr = memaddr + memsiz;
+	      printf (", <0x%x:0x%x:0x%x>", memaddr, filesiz,
+		      memsiz - filesiz);
 	      /* increment number of segments */
 	      loaded++;
 
 	      /* load the segment */
-	      if (memcheck(memaddr, memsiz)
-		  && read(memaddr, filesiz) == filesiz)
+	      if (memcheck (memaddr, memsiz)
+		  && read (memaddr, filesiz) == filesiz)
 		{
 		  if (memsiz > filesiz)
-		    bzero((char *)(memaddr+filesiz), memsiz-filesiz);
+		    bzero ((char *) (memaddr + filesiz), memsiz - filesiz);
 		}
 	      else
 		break;
@@ -402,10 +405,10 @@ load_image(void)
     }
 
   if (!errnum)
-    printf(", entry=0x%x]\n", (int)entry_addr);
+    printf (", entry=0x%x]\n", (int) entry_addr);
   else
     {
-      putchar('\n');
+      putchar ('\n');
       type = 0;
     }
 
@@ -413,23 +416,23 @@ load_image(void)
 }
 
 int
-load_module(void)
+load_module (void)
 {
   int len;
 
   /* if we are supposed to load on 4K boundaries */
   cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
 
-  if (!open(cur_cmdline) || !(len = read(cur_addr, -1)))
+  if (!open (cur_cmdline) || !(len = read (cur_addr, -1)))
     return 0;
 
-  printf("   [Multiboot-module @ 0x%x, 0x%x bytes]\n", cur_addr, len);
+  printf ("   [Multiboot-module @ 0x%x, 0x%x bytes]\n", cur_addr, len);
 
   /* these two simply need to be set if any modules are loaded at all */
   mbi.flags |= MB_INFO_MODS;
-  mbi.mods_addr = (int)mll;
+  mbi.mods_addr = (int) mll;
 
-  mll[mbi.mods_count].cmdline = (int)cur_cmdline;
+  mll[mbi.mods_count].cmdline = (int) cur_cmdline;
   mll[mbi.mods_count].mod_start = cur_addr;
   cur_addr += len;
   mll[mbi.mods_count].mod_end = cur_addr;
@@ -442,20 +445,20 @@ load_module(void)
 }
 
 int
-load_initrd(void)
+load_initrd (void)
 {
   int len;
   long *ramdisk, moveto;
 
-  if (!open(cur_cmdline) || !(len = read(cur_addr, -1)))
+  if (!open (cur_cmdline) || !(len = read (cur_addr, -1)))
     return 0;
 
-  moveto = ((mbi.mem_upper+0x400)*0x400 - len) & 0xfffff000;
-  bcopy((void*)cur_addr, (void*)moveto, len);
+  moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
+  bcopy ((void *) cur_addr, (void *) moveto, len);
 
-  printf("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
+  printf ("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
 
-  ramdisk = (long*)(LINUX_SETUP+LINUX_SETUP_INITRD);
+  ramdisk = (long *) (LINUX_SETUP + LINUX_SETUP_INITRD);
   ramdisk[0] = moveto;
   ramdisk[1] = len;
 
@@ -472,13 +475,13 @@ load_initrd(void)
 
 
 void
-bsd_boot(int type, int bootdev)
+bsd_boot (int type, int bootdev)
 {
   char *str;
   int clval = 0, i;
   struct bootinfo bi;
 
-  stop_floppy();
+  stop_floppy ();
 
   while (*(++cur_cmdline) && *cur_cmdline != ' ');
   str = cur_cmdline;
@@ -486,7 +489,7 @@ bsd_boot(int type, int bootdev)
     {
       if (*str == '-')
 	{
-	  while(*str && *str != ' ')
+	  while (*str && *str != ' ')
 	    {
 	      if (*str == 'C')
 		clval |= RB_CDROM;
@@ -520,19 +523,19 @@ bsd_boot(int type, int bootdev)
       bi.bi_version = BOOTINFO_VERSION;
 
       *cur_cmdline = 0;
-      while ((--cur_cmdline) > (char *)(mbi.cmdline) && *cur_cmdline != '/');
+      while ((--cur_cmdline) > (char *) (mbi.cmdline) && *cur_cmdline != '/');
       if (*cur_cmdline == '/')
-	bi.bi_kernelname = cur_cmdline+1;
+	bi.bi_kernelname = cur_cmdline + 1;
       else
 	bi.bi_kernelname = 0;
 
       bi.bi_nfs_diskless = 0;
-      bi.bi_n_bios_used = 0;  /* this field is apparently unused */
+      bi.bi_n_bios_used = 0;	/* this field is apparently unused */
 
-      for(i = 0; i < N_BIOS_GEOM; i++)
-	bi.bi_bios_geom[i] = get_diskinfo(i + 0x80);
+      for (i = 0; i < N_BIOS_GEOM; i++)
+	bi.bi_bios_geom[i] = get_diskinfo (i + 0x80);
 
-      bi.bi_size = sizeof(struct bootinfo);
+      bi.bi_size = sizeof (struct bootinfo);
       bi.bi_memsizes_valid = 1;
       bi.bi_basemem = mbi.mem_lower;
       bi.bi_extmem = mbi.mem_upper;
@@ -541,7 +544,7 @@ bsd_boot(int type, int bootdev)
 	+ mbi.syms.a.tabsize + mbi.syms.a.strsize;
 
       /* call entry point */
-      (*entry_addr)(clval, bootdev, 0, 0, 0, ((int)(&bi)));
+      (*entry_addr) (clval, bootdev, 0, 0, 0, ((int) (&bi)));
     }
   else
     {
@@ -565,10 +568,9 @@ bsd_boot(int type, int bootdev)
        */
 
       /* call entry point */
-      (*entry_addr)(clval, bootdev, 0,
-		    (mbi.syms.a.addr + 4
-		     + mbi.syms.a.tabsize + mbi.syms.a.strsize),
-		    mbi.mem_upper, mbi.mem_lower);
+      (*entry_addr) (clval, bootdev, 0,
+		     (mbi.syms.a.addr + 4
+		      + mbi.syms.a.tabsize + mbi.syms.a.strsize),
+		     mbi.mem_upper, mbi.mem_lower);
     }
 }
-

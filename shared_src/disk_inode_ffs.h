@@ -50,7 +50,7 @@
 
 #define	MAX_FASTLINK_SIZE	FFS_MAX_FASTLINK_SIZE
 
-#define	IC_FASTLINK	0x0001		/* Symbolic link in inode */
+#define	IC_FASTLINK	0x0001	/* Symbolic link in inode */
 
 #define	i_mode		ic_mode
 #define	i_nlink		ic_nlink
@@ -58,7 +58,7 @@
 #define	i_gid		ic_gid
 #if	BYTE_MSF
 #define	i_size		ic_size.val[1]
-#else	/* BYTE_LSF */
+#else /* BYTE_LSF */
 #define	i_size		ic_size.val[0]
 #endif
 #define	i_db		ic_db
@@ -73,19 +73,19 @@
 #define i_gen		ic_gen
 
 /* modes */
-#define	IFMT	0xf000			/* type of file */
-#define	IFCHR	0x2000			/* character special */
-#define	IFDIR	0x4000			/* directory */
-#define	IFBLK	0x6000			/* block special */
-#define	IFREG	0x8000			/* regular */
-#define	IFLNK	0xa000			/* symbolic link */
-#define	IFSOCK	0xc000			/* socket */
+#define	IFMT	0xf000		/* type of file */
+#define	IFCHR	0x2000		/* character special */
+#define	IFDIR	0x4000		/* directory */
+#define	IFBLK	0x6000		/* block special */
+#define	IFREG	0x8000		/* regular */
+#define	IFLNK	0xa000		/* symbolic link */
+#define	IFSOCK	0xc000		/* socket */
 
 
-#define	ISUID		0x0800		/* set user id on execution */
-#define	ISGID		0x0400		/* set group id on execution */
-#define	ISVTX		0x0200		/* save swapped text even after use */
-#define	IREAD		0x0100		/* read, write, execute permissions */
+#define	ISUID		0x0800	/* set user id on execution */
+#define	ISGID		0x0400	/* set group id on execution */
+#define	ISVTX		0x0200	/* save swapped text even after use */
+#define	IREAD		0x0100	/* read, write, execute permissions */
 #define	IWRITE		0x0080
 #define	IEXEC		0x0040
 
@@ -96,6 +96,6 @@
 #define f_blk		u.ffs.ffs_blk
 #define f_blksize	u.ffs.ffs_blksize
 #define f_blkno		u.ffs.ffs_blkno
-#endif  /* EEK */
+#endif /* EEK */
 
-#endif	_BOOT_UFS_DISK_INODE_FFS_H_
+#endif	/* _BOOT_UFS_DISK_INODE_FFS_H_ */

@@ -1,3 +1,4 @@
+
 /* 
  * Mach Operating System
  * Copyright (c) 1991,1990 Carnegie Mellon University
@@ -46,21 +47,23 @@
  * Compatibility definitions for old type names.
  */
 
-typedef	unsigned char	u_char;		/* unsigned char */
-typedef	unsigned short	u_short;	/* unsigned short */
-typedef	unsigned int	u_int;		/* unsigned int */
+typedef unsigned char u_char;	/* unsigned char */
+typedef unsigned short u_short;	/* unsigned short */
+typedef unsigned int u_int;	/* unsigned int */
 
-typedef struct _quad_ {
-	unsigned int	val[2];		/* 2 int values make... */
-} quad;					/* an 8-byte item */
+typedef struct _quad_
+  {
+    unsigned int val[2];	/* 2 int values make... */
+  }
+quad;				/* an 8-byte item */
 
-typedef	unsigned int	time_t;		/* an unsigned int */
-typedef unsigned int	daddr_t;	/* an unsigned int */
-typedef	unsigned int	off_t;		/* another unsigned int */
+typedef unsigned int time_t;	/* an unsigned int */
+typedef unsigned int daddr_t;	/* an unsigned int */
+typedef unsigned int off_t;	/* another unsigned int */
 
-typedef	unsigned short	uid_t;
-typedef	unsigned short	gid_t;
-typedef	unsigned int	ino_t;
+typedef unsigned short uid_t;
+typedef unsigned short gid_t;
+typedef unsigned int ino_t;
 
 #define	NBBY	8
 
@@ -90,4 +93,3 @@ typedef	unsigned int	ino_t;
 
 #define	MAXPATHLEN	1024
 #define	MAXSYMLINKS	8
-

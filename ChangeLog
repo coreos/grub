@@ -1,3 +1,14 @@
+1999-02-28  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* AUTHORS, INSTALL: New files.
+
+1999-02-24  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* stage1/stage1.S (after_BPB): Do a hard disk probe first, so that
+	we can work with IDE floppies (like the LS-120).
+
+	* Run GNU Indent on */*.[ch].
+
 1999-02-21  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* debian: Add to the distribution, since we maintain the GRUB

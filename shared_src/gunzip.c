@@ -151,7 +151,7 @@ static int code_state;
 
 
 /* Function prototypes */
-static void initialize_tables(void);
+static void initialize_tables (void);
 
 /*
  *  Linear allocator.
@@ -160,14 +160,14 @@ static void initialize_tables(void);
 static unsigned long linalloc_topaddr;
 
 static void *
-linalloc(int size)
+linalloc (int size)
 {
   linalloc_topaddr = (linalloc_topaddr - size) & ~3;
-  return (void *)linalloc_topaddr;
+  return (void *) linalloc_topaddr;
 }
 
 static void
-reset_linalloc(void)
+reset_linalloc (void)
 {
   linalloc_topaddr = (mbi.mem_upper << 10) + 0x100000;
 }
@@ -175,7 +175,7 @@ reset_linalloc(void)
 
 /* internal variable swap function */
 static void
-gunzip_swap_values(void)
+gunzip_swap_values (void)
 {
   register int itmp;
 
@@ -198,7 +198,7 @@ gunzip_swap_values(void)
 
 /* internal function for eating variable-length header fields */
 static int
-bad_field(int len)
+bad_field (int len)
 {
   char ch = 1;
   int not_retval = 1;
@@ -216,7 +216,7 @@ bad_field(int len)
 	    break;
 	}
     }
-  while ((not_retval = read((int)&ch, 1)) == 1);
+  while ((not_retval = read ((int) &ch, 1)) == 1);
 
   return (!not_retval);
 }
@@ -236,13 +236,13 @@ bad_field(int len)
 #define MAX_METHODS 9
 
 /* gzip flag byte */
-#define ASCII_FLAG   0x01 /* bit 0 set: file probably ascii text */
-#define CONTINUATION 0x02 /* bit 1 set: continuation of multi-part gzip file */
-#define EXTRA_FIELD  0x04 /* bit 2 set: extra field present */
-#define ORIG_NAME    0x08 /* bit 3 set: original file name present */
-#define COMMENT      0x10 /* bit 4 set: file comment present */
-#define ENCRYPTED    0x20 /* bit 5 set: file is encrypted */
-#define RESERVED     0xC0 /* bit 6,7:   reserved */
+#define ASCII_FLAG   0x01	/* bit 0 set: file probably ascii text */
+#define CONTINUATION 0x02	/* bit 1 set: continuation of multi-part gzip file */
+#define EXTRA_FIELD  0x04	/* bit 2 set: extra field present */
+#define ORIG_NAME    0x08	/* bit 3 set: original file name present */
+#define COMMENT      0x10	/* bit 4 set: file comment present */
+#define ENCRYPTED    0x20	/* bit 5 set: file is encrypted */
+#define RESERVED     0xC0	/* bit 6,7:   reserved */
 
 #define UNSUPP_FLAGS (CONTINUATION|ENCRYPTED|RESERVED)
 
@@ -251,9 +251,9 @@ bad_field(int len)
 #define INFLATE_FIXED     1
 #define INFLATE_DYNAMIC   2
 
-typedef unsigned char  uch;
+typedef unsigned char uch;
 typedef unsigned short ush;
-typedef unsigned long  ulg;
+typedef unsigned long ulg;
 
 /*
  *  Window Size
@@ -265,7 +265,7 @@ typedef unsigned long  ulg;
 
 
 int
-gunzip_test_header(void)
+gunzip_test_header (void)
 {
   unsigned char buf[10];
 
@@ -276,7 +276,7 @@ gunzip_test_header(void)
    *  (other than a real error with the disk) then we don't think it
    *  is a compressed file, and simply mark it as such.
    */
-  if (no_decompression || read((int)buf, 10) != 10
+  if (no_decompression || read ((int) buf, 10) != 10
       || ((*((unsigned short *) buf) != GZIP_HDR_LE)
 	  & (*((unsigned short *) buf) != OLD_GZIP_HDR_LE)))
     {
@@ -291,11 +291,11 @@ gunzip_test_header(void)
    */
   if (buf[2] != DEFLATED || (buf[3] & UNSUPP_FLAGS)
       || ((buf[3] & EXTRA_FIELD)
-	  && (read((int)buf, 2) != 2 || bad_field(*((unsigned short *) buf))))
-      || ((buf[3] & ORIG_NAME) && bad_field(-1))
-      || ((buf[3] & COMMENT) && bad_field(-1))
+	  && (read ((int) buf, 2) != 2 || bad_field (*((unsigned short *) buf))))
+      || ((buf[3] & ORIG_NAME) && bad_field (-1))
+      || ((buf[3] & COMMENT) && bad_field (-1))
       || ((gzip_data_offset = filepos), (filepos = filemax - 8),
-	  (read((int)buf, 8) != 8)))
+	  (read ((int) buf, 8) != 8)))
     {
       if (!errnum)
 	errnum = ERR_BAD_GZIP_HEADER;
@@ -304,12 +304,12 @@ gunzip_test_header(void)
     }
 
   gzip_crc = *((unsigned long *) buf);
-  gzip_fsmax = gzip_filemax = *((unsigned long *) (buf+4));
+  gzip_fsmax = gzip_filemax = *((unsigned long *) (buf + 4));
 
-  initialize_tables();
+  initialize_tables ();
 
   compressed_file = 1;
-  gunzip_swap_values();
+  gunzip_swap_values ();
   /*
    *  Now "gzip_*" values refer to the compressed data.
    */
@@ -327,13 +327,16 @@ gunzip_test_header(void)
    the next table, which codes e - 16 bits, and lastly e == 99 indicates
    an unused code.  If a code with e == 99 is looked up, this implies an
    error in the data. */
-struct huft {
-  uch e;                /* number of extra bits or operation */
-  uch b;                /* number of bits in this code or subcode */
-  union {
-    ush n;              /* literal, length base, or distance base */
-    struct huft *t;     /* pointer to next level of table */
-  } v;
+struct huft
+{
+  uch e;			/* number of extra bits or operation */
+  uch b;			/* number of bits in this code or subcode */
+  union
+    {
+      ush n;			/* literal, length base, or distance base */
+      struct huft *t;		/* pointer to next level of table */
+    }
+  v;
 };
 
 
@@ -355,23 +358,28 @@ static unsigned wp;
 
 
 /* Tables for deflate from PKZIP's appnote.txt. */
-static unsigned border[] = {    /* Order of the bit length code lengths */
-        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
-static ush cplens[] = {         /* Copy lengths for literal codes 257..285 */
-        3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-        35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
-        /* note: see note #13 above about the 258 in this list. */
-static ush cplext[] = {         /* Extra bits for literal codes 257..285 */
-        0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
-        3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99}; /* 99==invalid */
-static ush cpdist[] = {         /* Copy offsets for distance codes 0..29 */
-        1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
-        257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-        8193, 12289, 16385, 24577};
-static ush cpdext[] = {         /* Extra bits for distance codes */
-        0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
-        7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
-        12, 12, 13, 13};
+static unsigned border[] =
+{				/* Order of the bit length code lengths */
+  16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+static ush cplens[] =
+{				/* Copy lengths for literal codes 257..285 */
+  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+  35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
+	/* note: see note #13 above about the 258 in this list. */
+static ush cplext[] =
+{				/* Extra bits for literal codes 257..285 */
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+  3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99};	/* 99==invalid */
+static ush cpdist[] =
+{				/* Copy offsets for distance codes 0..29 */
+  1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+  257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+  8193, 12289, 16385, 24577};
+static ush cpdext[] =
+{				/* Extra bits for distance codes */
+  0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+  7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
+  12, 12, 13, 13};
 
 
 /*
@@ -407,16 +415,16 @@ static ush cpdext[] = {         /* Extra bits for distance codes */
  */
 
 
-static int lbits = 9;          /* bits in base literal/length lookup table */
-static int dbits = 6;          /* bits in base distance lookup table */
+static int lbits = 9;		/* bits in base literal/length lookup table */
+static int dbits = 6;		/* bits in base distance lookup table */
 
 
 /* If BMAX needs to be larger than 16, then h and x[] should be ulg. */
-#define BMAX 16         /* maximum bit length of any code (16 for explode) */
-#define N_MAX 288       /* maximum number of codes in any set */
+#define BMAX 16			/* maximum bit length of any code (16 for explode) */
+#define N_MAX 288		/* maximum number of codes in any set */
 
 
-static unsigned hufts;         /* track memory usage */
+static unsigned hufts;		/* track memory usage */
 
 
 /* Macros for inflate() bit peeking and grabbing.
@@ -449,13 +457,14 @@ static unsigned hufts;         /* track memory usage */
    the stream.
  */
 
-static ulg bb;                         /* bit buffer */
-static unsigned bk;                    /* bits in bit buffer */
+static ulg bb;			/* bit buffer */
+static unsigned bk;		/* bits in bit buffer */
 
-static ush mask_bits[] = {
-    0x0000,
-    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
-    0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
+static ush mask_bits[] =
+{
+  0x0000,
+  0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
+  0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
 };
 
 #define NEEDBITS(n) do {while(k<(n)){b|=((ulg)get_byte())<<k;k+=8;}} while (0)
@@ -467,28 +476,28 @@ static uch inbuf[INBUFSIZ];
 static int bufloc;
 
 static int
-get_byte(void)
+get_byte (void)
 {
   if (filepos == gzip_data_offset || bufloc == INBUFSIZ)
     {
       bufloc = 0;
-      read((int)inbuf, INBUFSIZ);
+      read ((int) inbuf, INBUFSIZ);
     }
 
   return inbuf[bufloc++];
 }
 
 /* decompression global pointers */
-static struct huft *tl;      /* literal/length code table */
-static struct huft *td;      /* distance code table */
-static int bl;               /* lookup bits for tl */
-static int bd;               /* lookup bits for td */
+static struct huft *tl;		/* literal/length code table */
+static struct huft *td;		/* distance code table */
+static int bl;			/* lookup bits for tl */
+static int bd;			/* lookup bits for td */
 
 
 /* more function prototypes */
-static int huft_build(unsigned *, unsigned, unsigned, ush *, ush *,
-		      struct huft **, int *);
-static int inflate_codes_in_window(void);
+static int huft_build (unsigned *, unsigned, unsigned, ush *, ush *,
+		       struct huft **, int *);
+static int inflate_codes_in_window (void);
 
 
 /* Given a list of code lengths and a maximum table size, make a set of
@@ -498,44 +507,47 @@ static int inflate_codes_in_window(void);
    oversubscribed set of lengths), and three if not enough memory. */
 
 static int
-huft_build(unsigned *b,      /* code lengths in bits (all assumed <= BMAX) */
-	   unsigned n,       /* number of codes (assumed <= N_MAX) */
-	   unsigned s,       /* number of simple-valued codes (0..s-1) */
-	   ush *d,           /* list of base values for non-simple codes */
-	   ush *e,           /* list of extra bits for non-simple codes */
-	   struct huft **t,  /* result: starting table */
-	   int *m)           /* maximum lookup bits, returns actual */
+huft_build (unsigned *b,	/* code lengths in bits (all assumed <= BMAX) */
+	    unsigned n,		/* number of codes (assumed <= N_MAX) */
+	    unsigned s,		/* number of simple-valued codes (0..s-1) */
+	    ush * d,		/* list of base values for non-simple codes */
+	    ush * e,		/* list of extra bits for non-simple codes */
+	    struct huft **t,	/* result: starting table */
+	    int *m)		/* maximum lookup bits, returns actual */
 {
-  unsigned a;                   /* counter for codes of length k */
-  unsigned c[BMAX+1];           /* bit length count table */
-  unsigned f;                   /* i repeats in table every f entries */
-  int g;                        /* maximum code length */
-  int h;                        /* table level */
-  register unsigned i;          /* counter, current code */
-  register unsigned j;          /* counter */
-  register int k;               /* number of bits in current code */
-  int l;                        /* bits per table (returned in m) */
-  register unsigned *p;         /* pointer into c[], b[], or v[] */
-  register struct huft *q;      /* points to current table */
-  struct huft r;                /* table entry for structure assignment */
-  struct huft *u[BMAX];         /* table stack */
-  unsigned v[N_MAX];            /* values in order of bit length */
-  register int w;               /* bits before this table == (l * h) */
-  unsigned x[BMAX+1];           /* bit offsets, then code stack */
-  unsigned *xp;                 /* pointer into x */
-  int y;                        /* number of dummy codes added */
-  unsigned z;                   /* number of entries in current table */
+  unsigned a;			/* counter for codes of length k */
+  unsigned c[BMAX + 1];		/* bit length count table */
+  unsigned f;			/* i repeats in table every f entries */
+  int g;			/* maximum code length */
+  int h;			/* table level */
+  register unsigned i;		/* counter, current code */
+  register unsigned j;		/* counter */
+  register int k;		/* number of bits in current code */
+  int l;			/* bits per table (returned in m) */
+  register unsigned *p;		/* pointer into c[], b[], or v[] */
+  register struct huft *q;	/* points to current table */
+  struct huft r;		/* table entry for structure assignment */
+  struct huft *u[BMAX];		/* table stack */
+  unsigned v[N_MAX];		/* values in order of bit length */
+  register int w;		/* bits before this table == (l * h) */
+  unsigned x[BMAX + 1];		/* bit offsets, then code stack */
+  unsigned *xp;			/* pointer into x */
+  int y;			/* number of dummy codes added */
+  unsigned z;			/* number of entries in current table */
 
   /* Generate counts for each bit length */
-  bzero((char *)c, sizeof(c));
-  p = b;  i = n;
-  do {
-    c[*p]++;                    /* assume all entries <= BMAX */
-    p++;                      /* Can't combine with above line (Solaris bug) */
-  } while (--i);
-  if (c[0] == n)                /* null input--all zero length codes */
+  bzero ((char *) c, sizeof (c));
+  p = b;
+  i = n;
+  do
     {
-      *t = (struct huft *)NULL;
+      c[*p]++;			/* assume all entries <= BMAX */
+      p++;			/* Can't combine with above line (Solaris bug) */
+    }
+  while (--i);
+  if (c[0] == n)		/* null input--all zero length codes */
+    {
+      *t = (struct huft *) NULL;
       *m = 0;
       return 0;
     }
@@ -545,130 +557,135 @@ huft_build(unsigned *b,      /* code lengths in bits (all assumed <= BMAX) */
   for (j = 1; j <= BMAX; j++)
     if (c[j])
       break;
-  k = j;                        /* minimum code length */
-  if ((unsigned)l < j)
+  k = j;			/* minimum code length */
+  if ((unsigned) l < j)
     l = j;
   for (i = BMAX; i; i--)
     if (c[i])
       break;
-  g = i;                        /* maximum code length */
-  if ((unsigned)l > i)
+  g = i;			/* maximum code length */
+  if ((unsigned) l > i)
     l = i;
   *m = l;
 
   /* Adjust last length count to fill out codes, if needed */
   for (y = 1 << j; j < i; j++, y <<= 1)
     if ((y -= c[j]) < 0)
-      return 2;                 /* bad input: more codes than bits */
+      return 2;			/* bad input: more codes than bits */
   if ((y -= c[i]) < 0)
     return 2;
   c[i] += y;
 
   /* Generate starting offsets into the value table for each length */
   x[1] = j = 0;
-  p = c + 1;  xp = x + 2;
-  while (--i) {                 /* note that i == g from above */
-    *xp++ = (j += *p++);
-  }
+  p = c + 1;
+  xp = x + 2;
+  while (--i)
+    {				/* note that i == g from above */
+      *xp++ = (j += *p++);
+    }
 
   /* Make a table of values in order of bit lengths */
-  p = b;  i = 0;
-  do {
-    if ((j = *p++) != 0)
-      v[x[j]++] = i;
-  } while (++i < n);
+  p = b;
+  i = 0;
+  do
+    {
+      if ((j = *p++) != 0)
+	v[x[j]++] = i;
+    }
+  while (++i < n);
 
   /* Generate the Huffman codes and for each, make the table entries */
-  x[0] = i = 0;                 /* first Huffman code is zero */
-  p = v;                        /* grab values in bit order */
-  h = -1;                       /* no tables yet--level -1 */
-  w = -l;                       /* bits decoded == (l * h) */
-  u[0] = (struct huft *)NULL;   /* just to keep compilers happy */
-  q = (struct huft *)NULL;      /* ditto */
-  z = 0;                        /* ditto */
+  x[0] = i = 0;			/* first Huffman code is zero */
+  p = v;			/* grab values in bit order */
+  h = -1;			/* no tables yet--level -1 */
+  w = -l;			/* bits decoded == (l * h) */
+  u[0] = (struct huft *) NULL;	/* just to keep compilers happy */
+  q = (struct huft *) NULL;	/* ditto */
+  z = 0;			/* ditto */
 
   /* go through the bit lengths (k already is bits in shortest code) */
   for (; k <= g; k++)
-  {
-    a = c[k];
-    while (a--)
     {
-      /* here i is the Huffman code of length k bits for value *p */
-      /* make tables up to required level */
-      while (k > w + l)
-      {
-        h++;
-        w += l;                 /* previous table always l bits */
+      a = c[k];
+      while (a--)
+	{
+	  /* here i is the Huffman code of length k bits for value *p */
+	  /* make tables up to required level */
+	  while (k > w + l)
+	    {
+	      h++;
+	      w += l;		/* previous table always l bits */
 
-        /* compute minimum size table less than or equal to l bits */
-        z = (z = g - w) > (unsigned)l ? l : z;  /* upper limit on table size */
-        if ((f = 1 << (j = k - w)) > a + 1)     /* try a k-w bit table */
-        {                       /* too few codes for k-w bit table */
-          f -= a + 1;           /* deduct codes from patterns left */
-          xp = c + k;
-          while (++j < z)       /* try smaller tables up to z bits */
-          {
-            if ((f <<= 1) <= *++xp)
-              break;            /* enough codes to use up j bits */
-            f -= *xp;           /* else deduct codes from patterns */
-          }
-        }
-        z = 1 << j;             /* table entries for j-bit table */
+	      /* compute minimum size table less than or equal to l bits */
+	      z = (z = g - w) > (unsigned) l ? l : z;	/* upper limit on table size */
+	      if ((f = 1 << (j = k - w)) > a + 1)	/* try a k-w bit table */
+		{		/* too few codes for k-w bit table */
+		  f -= a + 1;	/* deduct codes from patterns left */
+		  xp = c + k;
+		  while (++j < z)	/* try smaller tables up to z bits */
+		    {
+		      if ((f <<= 1) <= *++xp)
+			break;	/* enough codes to use up j bits */
+		      f -= *xp;	/* else deduct codes from patterns */
+		    }
+		}
+	      z = 1 << j;	/* table entries for j-bit table */
 
-        /* allocate and link in new table */
-        q = (struct huft *)linalloc((z + 1)*sizeof(struct huft));
+	      /* allocate and link in new table */
+	      q = (struct huft *) linalloc ((z + 1) * sizeof (struct huft));
 
-        hufts += z + 1;         /* track memory usage */
-        *t = q + 1;             /* link to list for huft_free() */
-        *(t = &(q->v.t)) = (struct huft *)NULL;
-        u[h] = ++q;             /* table starts after link */
+	      hufts += z + 1;	/* track memory usage */
+	      *t = q + 1;	/* link to list for huft_free() */
+	      *(t = &(q->v.t)) = (struct huft *) NULL;
+	      u[h] = ++q;	/* table starts after link */
 
-        /* connect to last table, if there is one */
-        if (h)
-        {
-          x[h] = i;             /* save pattern for backing up */
-          r.b = (uch)l;         /* bits to dump before this table */
-          r.e = (uch)(16 + j);  /* bits in this table */
-          r.v.t = q;            /* pointer to this table */
-          j = i >> (w - l);     /* (get around Turbo C bug) */
-          u[h-1][j] = r;        /* connect to last table */
-        }
-      }
+	      /* connect to last table, if there is one */
+	      if (h)
+		{
+		  x[h] = i;	/* save pattern for backing up */
+		  r.b = (uch) l;	/* bits to dump before this table */
+		  r.e = (uch) (16 + j);		/* bits in this table */
+		  r.v.t = q;	/* pointer to this table */
+		  j = i >> (w - l);	/* (get around Turbo C bug) */
+		  u[h - 1][j] = r;	/* connect to last table */
+		}
+	    }
 
-      /* set up table entry in r */
-      r.b = (uch)(k - w);
-      if (p >= v + n)
-        r.e = 99;               /* out of values--invalid code */
-      else if (*p < s)
-      {
-        r.e = (uch)(*p < 256 ? 16 : 15);    /* 256 is end-of-block code */
-        r.v.n = (ush)(*p);             /* simple code is just the value */
-	p++;                           /* one compiler does not like *p++ */
-      }
-      else
-      {
-        r.e = (uch)e[*p - s];   /* non-simple--look up in lists */
-        r.v.n = d[*p++ - s];
-      }
+	  /* set up table entry in r */
+	  r.b = (uch) (k - w);
+	  if (p >= v + n)
+	    r.e = 99;		/* out of values--invalid code */
+	  else if (*p < s)
+	    {
+	      r.e = (uch) (*p < 256 ? 16 : 15);		/* 256 is end-of-block code */
+	      r.v.n = (ush) (*p);	/* simple code is just the value */
+	      p++;		/* one compiler does not like *p++ */
+	    }
+	  else
+	    {
+	      r.e = (uch) e[*p - s];	/* non-simple--look up in lists */
+	      r.v.n = d[*p++ - s];
+	    }
 
-      /* fill code-like entries with r */
-      f = 1 << (k - w);
-      for (j = i >> w; j < z; j += f)
-        q[j] = r;
+	  /* fill code-like entries with r */
+	  f = 1 << (k - w);
+	  for (j = i >> w; j < z; j += f)
+	    q[j] = r;
 
-      /* backwards increment the k-bit code i */
-      for (j = 1 << (k - 1); i & j; j >>= 1)
-        i ^= j;
-      i ^= j;
+	  /* backwards increment the k-bit code i */
+	  for (j = 1 << (k - 1); i & j; j >>= 1)
+	    i ^= j;
+	  i ^= j;
 
-      /* backup over finished tables */
-      while ((i & ((1 << w) - 1)) != x[h])
-      {
-        h--;                    /* don't need to update q */
-        w -= l;
-      }
+	  /* backup over finished tables */
+	  while ((i & ((1 << w) - 1)) != x[h])
+	    {
+	      h--;		/* don't need to update q */
+	      w -= l;
+	    }
+	}
     }
-  }
 
   /* Return true (1) if we were given an incomplete table */
   return y != 0 && g != 1;
@@ -683,51 +700,54 @@ huft_build(unsigned *b,      /* code lengths in bits (all assumed <= BMAX) */
 static unsigned inflate_n, inflate_d;
 
 static int
-inflate_codes_in_window(void)
+inflate_codes_in_window (void)
 {
-  register unsigned e;  /* table entry flag/number of extra bits */
-  unsigned n, d;        /* length and index for copy */
-  unsigned w;           /* current window position */
-  struct huft *t;       /* pointer to table entry */
-  unsigned ml, md;      /* masks for bl and bd bits */
-  register ulg b;       /* bit buffer */
-  register unsigned k;  /* number of bits in bit buffer */
+  register unsigned e;		/* table entry flag/number of extra bits */
+  unsigned n, d;		/* length and index for copy */
+  unsigned w;			/* current window position */
+  struct huft *t;		/* pointer to table entry */
+  unsigned ml, md;		/* masks for bl and bd bits */
+  register ulg b;		/* bit buffer */
+  register unsigned k;		/* number of bits in bit buffer */
 
   /* make local copies of globals */
   d = inflate_d;
   n = inflate_n;
-  b = bb;                       /* initialize bit buffer */
+  b = bb;			/* initialize bit buffer */
   k = bk;
-  w = wp;                       /* initialize window position */
+  w = wp;			/* initialize window position */
 
   /* inflate the coded data */
-  ml = mask_bits[bl];           /* precompute masks for speed */
+  ml = mask_bits[bl];		/* precompute masks for speed */
   md = mask_bits[bd];
-  for (;;)                      /* do until end of block */
+  for (;;)			/* do until end of block */
     {
       if (!code_state)
 	{
-	  NEEDBITS((unsigned)bl);
-	  if ((e = (t = tl + ((unsigned)b & ml))->e) > 16)
-	    do {
-	      if (e == 99)
-		{
-		  errnum = ERR_BAD_GZIP_DATA;
-		  return 0;
-		}
-	      DUMPBITS(t->b);
-	      e -= 16;
-	      NEEDBITS(e);
-	    } while ((e = (t = t->v.t + ((unsigned)b & mask_bits[e]))->e) > 16);
-	  DUMPBITS(t->b);
+	  NEEDBITS ((unsigned) bl);
+	  if ((e = (t = tl + ((unsigned) b & ml))->e) > 16)
+	    do
+	      {
+		if (e == 99)
+		  {
+		    errnum = ERR_BAD_GZIP_DATA;
+		    return 0;
+		  }
+		DUMPBITS (t->b);
+		e -= 16;
+		NEEDBITS (e);
+	      }
+	    while ((e = (t = t->v.t + ((unsigned) b & mask_bits[e]))->e) > 16);
+	  DUMPBITS (t->b);
 
-	  if (e == 16)        /* then it's a literal */
+	  if (e == 16)		/* then it's a literal */
 	    {
-	      slide[w++] = (uch)t->v.n;
+	      slide[w++] = (uch) t->v.n;
 	      if (w == WSIZE)
 		break;
 	    }
-	  else                /* it's an EOB or a length */
+	  else
+	    /* it's an EOB or a length */
 	    {
 	      /* exit if end of block */
 	      if (e == 15)
@@ -737,27 +757,30 @@ inflate_codes_in_window(void)
 		}
 
 	      /* get length of block to copy */
-	      NEEDBITS(e);
-	      n = t->v.n + ((unsigned)b & mask_bits[e]);
-	      DUMPBITS(e);
+	      NEEDBITS (e);
+	      n = t->v.n + ((unsigned) b & mask_bits[e]);
+	      DUMPBITS (e);
 
 	      /* decode distance of block to copy */
-	      NEEDBITS((unsigned)bd);
-	      if ((e = (t = td + ((unsigned)b & md))->e) > 16)
-		do {
-		  if (e == 99)
-		    {
-		      errnum = ERR_BAD_GZIP_DATA;
-		      return 0;
-		    }
-		  DUMPBITS(t->b);
-		  e -= 16;
-		  NEEDBITS(e);
-		} while ((e = (t = t->v.t + ((unsigned)b & mask_bits[e]))->e) > 16);
-	      DUMPBITS(t->b);
-	      NEEDBITS(e);
-	      d = w - t->v.n - ((unsigned)b & mask_bits[e]);
-	      DUMPBITS(e);
+	      NEEDBITS ((unsigned) bd);
+	      if ((e = (t = td + ((unsigned) b & md))->e) > 16)
+		do
+		  {
+		    if (e == 99)
+		      {
+			errnum = ERR_BAD_GZIP_DATA;
+			return 0;
+		      }
+		    DUMPBITS (t->b);
+		    e -= 16;
+		    NEEDBITS (e);
+		  }
+		while ((e = (t = t->v.t + ((unsigned) b & mask_bits[e]))->e)
+		       > 16);
+	      DUMPBITS (t->b);
+	      NEEDBITS (e);
+	      d = w - t->v.n - ((unsigned) b & mask_bits[e]);
+	      DUMPBITS (e);
 	      code_state++;
 	    }
 	}
@@ -765,22 +788,26 @@ inflate_codes_in_window(void)
       if (code_state)
 	{
 	  /* do the copy */
-	  do {
-	    n -= (e = (e = WSIZE - ((d &= WSIZE-1) > w ? d : w)) > n ? n : e);
-	    if (w - d >= e)
-	      {
-		bcopy(slide + d, slide + w, e);
-		w += e;
-		d += e;
-	      }
-	    else  /* purposefully use the overlap for extra copies here!! */
-	      {
-		while (e--)
-		  slide[w++] = slide[d++];
-	      }
-	    if (w == WSIZE)
-	      break;
-	  } while (n);
+	  do
+	    {
+	      n -= (e = (e = WSIZE - ((d &= WSIZE - 1) > w ? d : w)) > n ? n
+		    : e);
+	      if (w - d >= e)
+		{
+		  bcopy (slide + d, slide + w, e);
+		  w += e;
+		  d += e;
+		}
+	      else
+		/* purposefully use the overlap for extra copies here!! */
+		{
+		  while (e--)
+		    slide[w++] = slide[d++];
+		}
+	      if (w == WSIZE)
+		break;
+	    }
+	  while (n);
 
 	  if (!n)
 	    code_state--;
@@ -794,8 +821,8 @@ inflate_codes_in_window(void)
   /* restore the globals from the locals */
   inflate_d = d;
   inflate_n = n;
-  wp = w;                       /* restore global window pointer */
-  bb = b;                       /* restore global bit buffer */
+  wp = w;			/* restore global window pointer */
+  bb = b;			/* restore global bit buffer */
   bk = k;
 
   return !block_len;
@@ -805,26 +832,26 @@ inflate_codes_in_window(void)
 /* get header for an inflated type 0 (stored) block. */
 
 static void
-init_stored_block(void)
+init_stored_block (void)
 {
-  register ulg b;       /* bit buffer */
-  register unsigned k;  /* number of bits in bit buffer */
+  register ulg b;		/* bit buffer */
+  register unsigned k;		/* number of bits in bit buffer */
 
   /* make local copies of globals */
-  b = bb;                       /* initialize bit buffer */
+  b = bb;			/* initialize bit buffer */
   k = bk;
 
   /* go to byte boundary */
-  DUMPBITS(k & 7);
+  DUMPBITS (k & 7);
 
   /* get the length and its complement */
-  NEEDBITS(16);
-  block_len = ((unsigned)b & 0xffff);
-  DUMPBITS(16);
-  NEEDBITS(16);
-  if (block_len != (unsigned)((~b) & 0xffff))
+  NEEDBITS (16);
+  block_len = ((unsigned) b & 0xffff);
+  DUMPBITS (16);
+  NEEDBITS (16);
+  if (block_len != (unsigned) ((~b) & 0xffff))
     errnum = ERR_BAD_GZIP_DATA;
-  DUMPBITS(16);
+  DUMPBITS (16);
 
   /* restore global variables */
   bb = b;
@@ -837,10 +864,10 @@ init_stored_block(void)
    Huffman tables. */
 
 static void
-init_fixed_block()
+init_fixed_block ()
 {
-  int i;                /* temporary variable */
-  unsigned l[288];      /* length list for huft_build */
+  int i;			/* temporary variable */
+  unsigned l[288];		/* length list for huft_build */
 
   /* set up literal table */
   for (i = 0; i < 144; i++)
@@ -849,20 +876,20 @@ init_fixed_block()
     l[i] = 9;
   for (; i < 280; i++)
     l[i] = 7;
-  for (; i < 288; i++)          /* make a complete, but wrong code set */
+  for (; i < 288; i++)		/* make a complete, but wrong code set */
     l[i] = 8;
   bl = 7;
-  if ((i = huft_build(l, 288, 257, cplens, cplext, &tl, &bl)) != 0)
+  if ((i = huft_build (l, 288, 257, cplens, cplext, &tl, &bl)) != 0)
     {
       errnum = ERR_BAD_GZIP_DATA;
       return;
     }
 
   /* set up distance table */
-  for (i = 0; i < 30; i++)      /* make an incomplete code set */
+  for (i = 0; i < 30; i++)	/* make an incomplete code set */
     l[i] = 5;
   bd = 5;
-  if ((i = huft_build(l, 30, 0, cpdist, cpdext, &td, &bd)) > 1)
+  if ((i = huft_build (l, 30, 0, cpdist, cpdext, &td, &bd)) > 1)
     {
       errnum = ERR_BAD_GZIP_DATA;
       return;
@@ -877,34 +904,34 @@ init_fixed_block()
 /* get header for an inflated type 2 (dynamic Huffman codes) block. */
 
 static void
-init_dynamic_block(void)
+init_dynamic_block (void)
 {
-  int i;                /* temporary variables */
+  int i;			/* temporary variables */
   unsigned j;
-  unsigned l;           /* last length */
-  unsigned m;           /* mask for bit lengths table */
-  unsigned n;           /* number of lengths to get */
-  unsigned nb;          /* number of bit length codes */
-  unsigned nl;          /* number of literal/length codes */
-  unsigned nd;          /* number of distance codes */
-  unsigned ll[286+30];  /* literal/length and distance code lengths */
-  register ulg b;       /* bit buffer */
-  register unsigned k;  /* number of bits in bit buffer */
+  unsigned l;			/* last length */
+  unsigned m;			/* mask for bit lengths table */
+  unsigned n;			/* number of lengths to get */
+  unsigned nb;			/* number of bit length codes */
+  unsigned nl;			/* number of literal/length codes */
+  unsigned nd;			/* number of distance codes */
+  unsigned ll[286 + 30];	/* literal/length and distance code lengths */
+  register ulg b;		/* bit buffer */
+  register unsigned k;		/* number of bits in bit buffer */
 
   /* make local bit buffer */
   b = bb;
   k = bk;
 
   /* read in table lengths */
-  NEEDBITS(5);
-  nl = 257 + ((unsigned)b & 0x1f);      /* number of literal/length codes */
-  DUMPBITS(5);
-  NEEDBITS(5);
-  nd = 1 + ((unsigned)b & 0x1f);        /* number of distance codes */
-  DUMPBITS(5);
-  NEEDBITS(4);
-  nb = 4 + ((unsigned)b & 0xf);         /* number of bit length codes */
-  DUMPBITS(4);
+  NEEDBITS (5);
+  nl = 257 + ((unsigned) b & 0x1f);	/* number of literal/length codes */
+  DUMPBITS (5);
+  NEEDBITS (5);
+  nd = 1 + ((unsigned) b & 0x1f);	/* number of distance codes */
+  DUMPBITS (5);
+  NEEDBITS (4);
+  nb = 4 + ((unsigned) b & 0xf);	/* number of bit length codes */
+  DUMPBITS (4);
   if (nl > 286 || nd > 30)
     {
       errnum = ERR_BAD_GZIP_DATA;
@@ -914,16 +941,16 @@ init_dynamic_block(void)
   /* read in bit-length-code lengths */
   for (j = 0; j < nb; j++)
     {
-      NEEDBITS(3);
-      ll[border[j]] = (unsigned)b & 7;
-      DUMPBITS(3);
+      NEEDBITS (3);
+      ll[border[j]] = (unsigned) b & 7;
+      DUMPBITS (3);
     }
   for (; j < 19; j++)
     ll[border[j]] = 0;
 
   /* build decoding table for trees--single level, 7 bit lookup */
   bl = 7;
-  if ((i = huft_build(ll, 19, 19, NULL, NULL, &tl, &bl)) != 0)
+  if ((i = huft_build (ll, 19, 19, NULL, NULL, &tl, &bl)) != 0)
     {
       errnum = ERR_BAD_GZIP_DATA;
       return;
@@ -933,20 +960,20 @@ init_dynamic_block(void)
   n = nl + nd;
   m = mask_bits[bl];
   i = l = 0;
-  while ((unsigned)i < n)
+  while ((unsigned) i < n)
     {
-      NEEDBITS((unsigned)bl);
-      j = (td = tl + ((unsigned)b & m))->b;
-      DUMPBITS(j);
+      NEEDBITS ((unsigned) bl);
+      j = (td = tl + ((unsigned) b & m))->b;
+      DUMPBITS (j);
       j = td->v.n;
-      if (j < 16)                 /* length of code in bits (0..15) */
-	ll[i++] = l = j;          /* save last length in l */
-      else if (j == 16)           /* repeat last length 3 to 6 times */
+      if (j < 16)		/* length of code in bits (0..15) */
+	ll[i++] = l = j;	/* save last length in l */
+      else if (j == 16)		/* repeat last length 3 to 6 times */
 	{
-	  NEEDBITS(2);
-	  j = 3 + ((unsigned)b & 3);
-	  DUMPBITS(2);
-	  if ((unsigned)i + j > n)
+	  NEEDBITS (2);
+	  j = 3 + ((unsigned) b & 3);
+	  DUMPBITS (2);
+	  if ((unsigned) i + j > n)
 	    {
 	      errnum = ERR_BAD_GZIP_DATA;
 	      return;
@@ -954,12 +981,12 @@ init_dynamic_block(void)
 	  while (j--)
 	    ll[i++] = l;
 	}
-      else if (j == 17)           /* 3 to 10 zero length codes */
+      else if (j == 17)		/* 3 to 10 zero length codes */
 	{
-	  NEEDBITS(3);
-	  j = 3 + ((unsigned)b & 7);
-	  DUMPBITS(3);
-	  if ((unsigned)i + j > n)
+	  NEEDBITS (3);
+	  j = 3 + ((unsigned) b & 7);
+	  DUMPBITS (3);
+	  if ((unsigned) i + j > n)
 	    {
 	      errnum = ERR_BAD_GZIP_DATA;
 	      return;
@@ -968,12 +995,13 @@ init_dynamic_block(void)
 	    ll[i++] = 0;
 	  l = 0;
 	}
-      else                        /* j == 18: 11 to 138 zero length codes */
+      else
+	/* j == 18: 11 to 138 zero length codes */
 	{
-	  NEEDBITS(7);
-	  j = 11 + ((unsigned)b & 0x7f);
-	  DUMPBITS(7);
-	  if ((unsigned)i + j > n)
+	  NEEDBITS (7);
+	  j = 11 + ((unsigned) b & 0x7f);
+	  DUMPBITS (7);
+	  if ((unsigned) i + j > n)
 	    {
 	      errnum = ERR_BAD_GZIP_DATA;
 	      return;
@@ -985,7 +1013,7 @@ init_dynamic_block(void)
     }
 
   /* free decoding table for trees */
-  reset_linalloc();
+  reset_linalloc ();
 
   /* restore the global bit buffer */
   bb = b;
@@ -993,22 +1021,22 @@ init_dynamic_block(void)
 
   /* build the decoding tables for literal/length and distance codes */
   bl = lbits;
-  if ((i = huft_build(ll, nl, 257, cplens, cplext, &tl, &bl)) != 0)
+  if ((i = huft_build (ll, nl, 257, cplens, cplext, &tl, &bl)) != 0)
     {
 #if 0
       if (i == 1)
-	printf("gunzip: incomplete literal tree\n");
+	printf ("gunzip: incomplete literal tree\n");
 #endif
 
       errnum = ERR_BAD_GZIP_DATA;
       return;
     }
   bd = dbits;
-  if ((i = huft_build(ll + nl, nd, 0, cpdist, cpdext, &td, &bd)) != 0)
+  if ((i = huft_build (ll + nl, nd, 0, cpdist, cpdext, &td, &bd)) != 0)
     {
 #if 0
       if (i == 1)
-	printf("gunzip: incomplete distance tree\n");
+	printf ("gunzip: incomplete distance tree\n");
 #endif
 
       errnum = ERR_BAD_GZIP_DATA;
@@ -1022,10 +1050,10 @@ init_dynamic_block(void)
 
 
 static void
-get_new_block(void)
+get_new_block (void)
 {
-  register ulg b;       /* bit buffer */
-  register unsigned k;  /* number of bits in bit buffer */
+  register ulg b;		/* bit buffer */
+  register unsigned k;		/* number of bits in bit buffer */
 
   hufts = 0;
 
@@ -1034,30 +1062,30 @@ get_new_block(void)
   k = bk;
 
   /* read in last block bit */
-  NEEDBITS(1);
-  last_block = (int)b & 1;
-  DUMPBITS(1);
+  NEEDBITS (1);
+  last_block = (int) b & 1;
+  DUMPBITS (1);
 
   /* read in block type */
-  NEEDBITS(2);
-  block_type = (unsigned)b & 3;
-  DUMPBITS(2);
+  NEEDBITS (2);
+  block_type = (unsigned) b & 3;
+  DUMPBITS (2);
 
   /* restore the global bit buffer */
   bb = b;
   bk = k;
 
   if (block_type == INFLATE_STORED)
-    init_stored_block();
+    init_stored_block ();
   if (block_type == INFLATE_FIXED)
-    init_fixed_block();
+    init_fixed_block ();
   if (block_type == INFLATE_DYNAMIC)
-    init_dynamic_block();
+    init_dynamic_block ();
 }
 
 
 static void
-inflate_window(void)
+inflate_window (void)
 {
   /* initialize window */
   wp = 0;
@@ -1073,7 +1101,7 @@ inflate_window(void)
 	  if (last_block)
 	    break;
 
-	  get_new_block();
+	  get_new_block ();
 	}
 
       if (block_type > INFLATE_DYNAMIC)
@@ -1095,7 +1123,7 @@ inflate_window(void)
 
 	  while (block_len && w < WSIZE && !errnum)
 	    {
-	      slide[w++] = get_byte();
+	      slide[w++] = get_byte ();
 	      block_len--;
 	    }
 
@@ -1108,8 +1136,8 @@ inflate_window(void)
        *  Expand other kind of block.
        */
 
-      if (inflate_codes_in_window())
-	reset_linalloc();
+      if (inflate_codes_in_window ())
+	reset_linalloc ();
     }
 
   saved_filepos += WSIZE;
@@ -1119,7 +1147,7 @@ inflate_window(void)
 
 
 static void
-initialize_tables(void)
+initialize_tables (void)
 {
   saved_filepos = 0;
   filepos = gzip_data_offset;
@@ -1133,25 +1161,25 @@ initialize_tables(void)
   block_len = 0;
 
   /* reset memory allocation stuff */
-  reset_linalloc();
+  reset_linalloc ();
 }
 
 
 int
-gunzip_read(int addr, int len)
+gunzip_read (int addr, int len)
 {
-  int size;                /* last block flag */
+  int size;			/* last block flag */
   int ret = 0;
 
   compressed_file = 0;
-  gunzip_swap_values();
+  gunzip_swap_values ();
   /*
    *  Now "gzip_*" values refer to the uncompressed data.
    */
 
   /* do we reset decompression to the beginning of the file? */
-  if (saved_filepos > gzip_filepos+WSIZE)
-    initialize_tables();
+  if (saved_filepos > gzip_filepos + WSIZE)
+    initialize_tables ();
 
   /*
    *  This loop operates upon uncompressed data only.  The only
@@ -1165,14 +1193,14 @@ gunzip_read(int addr, int len)
       register char *srcaddr;
 
       while (gzip_filepos >= saved_filepos)
-	inflate_window();
+	inflate_window ();
 
-      srcaddr = (char *)((gzip_filepos & (WSIZE - 1)) + slide);
+      srcaddr = (char *) ((gzip_filepos & (WSIZE - 1)) + slide);
       size = saved_filepos - gzip_filepos;
       if (size > len)
 	size = len;
 
-      bcopy(srcaddr, (char *)addr, size);
+      bcopy (srcaddr, (char *) addr, size);
 
       addr += size;
       len -= size;
@@ -1181,7 +1209,7 @@ gunzip_read(int addr, int len)
     }
 
   compressed_file = 1;
-  gunzip_swap_values();
+  gunzip_swap_values ();
   /*
    *  Now "gzip_*" values refer to the compressed data.
    */
@@ -1191,4 +1219,3 @@ gunzip_read(int addr, int len)
 
   return ret;
 }
-

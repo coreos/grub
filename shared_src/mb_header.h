@@ -22,27 +22,27 @@
  */
 
 struct multiboot_header
-{
-  /* Must be MULTIBOOT_MAGIC - see below.  */
-  unsigned magic;
+  {
+    /* Must be MULTIBOOT_MAGIC - see below.  */
+    unsigned magic;
 
-  /* Feature flags - see below.  */
-  unsigned flags;
+    /* Feature flags - see below.  */
+    unsigned flags;
 
-  /*
-   * Checksum
-   *
-   * The above fields plus this one must equal 0 mod 2^32.
-   */
-  unsigned checksum;
+    /*
+     * Checksum
+     *
+     * The above fields plus this one must equal 0 mod 2^32.
+     */
+    unsigned checksum;
 
-  /* These are only valid if MULTIBOOT_AOUT_KLUDGE is set.  */
-  unsigned header_addr;
-  unsigned load_addr;
-  unsigned load_end_addr;
-  unsigned bss_end_addr;
-  unsigned entry_addr;
-};
+    /* These are only valid if MULTIBOOT_AOUT_KLUDGE is set.  */
+    unsigned header_addr;
+    unsigned load_addr;
+    unsigned load_end_addr;
+    unsigned bss_end_addr;
+    unsigned entry_addr;
+  };
 
 /*
  * The entire multiboot_header must be contained
@@ -76,4 +76,3 @@ struct multiboot_header
 
 /* This flag indicates the use of the other fields in the header.  */
 #define MULTIBOOT_AOUT_KLUDGE       0x00010000
-
