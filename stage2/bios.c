@@ -1,7 +1,7 @@
 /* bios.c - implement C part of low-level BIOS disk input and output */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ biosdisk (int read, int drive, struct geometry *geometry,
       
       err = biosdisk_int13_extensions (read + 0x42, drive, &dap);
 
-#define NO_INT13_FALLBACK	1
+/* #undef NO_INT13_FALLBACK */
 #ifndef NO_INT13_FALLBACK
       if (err)
 	{
@@ -158,16 +158,25 @@ get_diskinfo (int drive, struct geometry *geometry)
 	  err = get_diskinfo_int13_extensions (drive, &drp);
 	  if (! err)
 	    {
+	      /* How many buggy BIOSes are there in the world...
+		 Some BIOSes don't set the flag correctly, even if LBA
+		 read/write is supported, so we cannot help assuming
+		 that the functions are supported by default and
+		 clearing the flag when either of them fails. *sigh*  */
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
 	      /* Make sure that LBA read/write functions are supported.  */
 	      if (drp.flags & 1)
 		{
+#endif
 		  geometry->flags = BIOSDISK_FLAG_LBA_EXTENSION;
 		  
 		  /* FIXME: when the 2TB limit becomes critical, we must
 		     change the type of TOTAL_SECTORS to unsigned long
 		     long.  */
 		  total_sectors = drp.total_sectors & ~0L;
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
 		}
+#endif
 	    }
 	}
 

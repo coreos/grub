@@ -1,3 +1,25 @@
+2000-01-10  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/bios.c (NO_INT13_FALLBACK): Undefined.
+	(get_diskinfo) [!NO_BUGGY_BIOS_IN_THE_WORLD]: Do not check if
+	bit 0 in DRP.FLAGS is set, because at least one BIOS does not
+	set it correctly. Reported by "Forever shall I be."
+	<zinx@linuxfreak.com>.
+
+	* util/grub-install.in: Handle the new options `--root' and
+	`--grub-shell'.
+	(rootdir): New variable.
+	(usage): Print the help messages about the options --root and
+	--grub-shell.
+	(bootdir): Initialized after the option analysis.
+	(grubdir): Likewise.
+	(device_map): Likewise.
+	(root_device): Set to the result for the directory ROOTDIR
+	instead of "/".
+	* docs/user-ref.texi (Invoking grub-install): Added the
+	descriptions about --root and --grub-shell.
+	* docs/grub-install.8: Regenerated.
+	
 2000-01-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (grubdir_device): New variable.

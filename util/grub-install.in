@@ -30,10 +30,8 @@ host_vendor=@host_vendor@
 pkgdatadir=${datadir}/${PACKAGE}/${host_cpu}-${host_vendor}
 
 grub_shell=${sbindir}/grub
-bootdir=/boot
-grubdir=${bootdir}/grub
-device_map=${grubdir}/device.map
 log_file=/tmp/grub-install.log.$$
+rootdir=
 
 install_device=
 debug=no
@@ -47,6 +45,9 @@ Install GRUB on your drive.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
+  --root=DIR              install GRUB images under the directory DIR
+                          instead of the root directory.
+  --grub-shell=FILE       use FILE as the grub shell.
 
 Reports bugs to <bug-grub@gnu.org>.
 EOF
@@ -117,6 +118,10 @@ for option; do
     -v | --version)
 	echo "grub-install (GNU GRUB ${VERSION})"
 	exit 0 ;;
+    --root=*)
+	rootdir=`echo $option | sed 's/--root=//'` ;;
+    --grub-shell=*)
+	grub_shell=`echo $option | sed 's/--grub-shell=//'` ;;
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
@@ -133,6 +138,11 @@ done
 if test $debug = yes; then
     set -x
 fi
+
+# Initialize these directories here, since ROOTDIR was initialized.
+bootdir=${rootdir}/boot
+grubdir=${bootdir}/grub
+device_map=${grubdir}/device.map
 
 # Check if GRUB is installed
 if test ! -f $grub_shell; then
@@ -197,7 +207,7 @@ fi
 # Get the root drive.
 # For now, this uses the program `df' to get the device name, but is
 # this really portable?
-root_device=`df / | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+root_device=`df ${rootdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
 root_drive=`convert $root_device`
 if test "x$root_drive" = x; then
     exit 1
