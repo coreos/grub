@@ -125,6 +125,7 @@ Implementation details
 * Low-level disk I/O::          INT 13H disk I/O interrupts.
 * MBR::                         The structure of Master Boot Record.
 * Partition table::             The format of partition table.
+* Filesystem interface::        The generic interface for the fs code.
 
 @end detailmenu
 @end menu
@@ -1090,6 +1091,7 @@ not satisfied with this documentation.
 * Low-level disk I/O::          INT 13H disk I/O interrupts.
 * MBR::                         The structure of Master Boot Record.
 * Partition table::             The format of partition table.
+* Filesystem interface::        The generic interface for the fs code.
 @end menu
 
 
@@ -1551,7 +1553,7 @@ E820h, it is present in many more systems.
 Input:
 
 @multitable @columnfractions 0.15 0.25 0.6
-@item @code{AX} @tab Function Code @tab E801h
+@item @code{AX} @tab Function Code @tab E801h.
 @end multitable
 
 Output:
@@ -1613,7 +1615,517 @@ MB.
 @node Low-level disk I/O
 @section INT 13H disk I/O interrupts
 
-PC_partitioning.txt
+In the PC world, living with the BIOS disk interface is definitely a
+nightmare. This section documents how awful the chaos is and how GRUB
+deals with the BIOS disks.
+
+@menu
+* CHS Translation::             CHS addressing and LBA addressing.
+* CHS mode disk I/O::           INT 13H, AH=0xh interrupt call.
+* LBA mode disk I/O::           INT 13H, AH=4xh interrupt call.
+@end menu
+
+
+@node CHS Translation
+@subsection CHS addressing and LBA addressing
+
+CHS --- Cylinder/Head/Sector --- is the traditional way to address
+sectors on a disk. There are at least two types of CHS addressing; the
+CHS that is used at the INT 13H interface and the CHS that is used at
+the ATA device interface. In the MFM/RLL/ESDI and early ATA days the CHS
+used at the INT 13H interface was the same as the CHS used at the device
+interface.
+
+Today we have CHS translating BIOS types that can use one CHS at the INT
+13H interface and a different CHS at the device interface. These two
+types of CHS will be called the logical CHS or @dfn{L-CHS} and the
+physical CHS or @dfn{P-CHS} in this section. L-CHS is the CHS used at
+the INT 13H interface and P-CHS is the CHS used at the device interface.
+
+The L-CHS used at the INT 13 interface allows up to 256 heads, up to
+1024 cylinders and up to 63 sectors. This allows support of up to 8GB
+drives. This scheme started with either ESDI or SCSI adapters many years
+ago.
+
+The P-CHS used at the device interface allows up to 16 heads up to 65535
+cylinders, and up to 63 sectors. This allows access to 2^28 sectors
+(136GB) on an ATA device.  When a P-CHS is used at the INT 13H interface
+it is limited to 1024 cylinders, 16 heads and 63 sectors. This is where
+the old 528MB limit originated.
+
+LBA --- Logical Block Address --- is another way of addressing sectors
+that uses a simple numbering scheme starting with zero as the address of
+the first sector on a device. The ATA standard requires that cylinder 0,
+head 0, sector 1 address the same sector as addressed by LBA 0. LBA
+addressing can be used at the ATA interface if the ATA device supports
+it. LBA addressing is also used at the INT 13H interface by the AH=4xH
+read/write calls.
+
+ATA devices may also support LBA at the device interface. LBA allows
+access to approximately 2^28 sectors (137GB) on an ATA device.
+
+A SCSI host adapter can convert a L-CHS directly to an LBA used in the
+SCSI read/write commands. On a PC today, SCSI is also limited to 8GB
+when CHS addressing is used at the INT 13H interface.
+
+First, all OS's that want to be co-resident with another OS (and that is
+all of the PC based OS's that I know of) @emph{must} use INT 13H to
+determine the capacity of a hard disk. And that capacity information
+@emph{must} be determined in L-CHS mode. Why is this?  Because:
+
+@enumerate
+@item
+FDISK and the partition tables are really L-CHS based.
+
+@item
+MS/PC DOS uses INT 13H AH=02H and AH=03H to read and write the disk and
+these BIOS calls are L-CHS based.
+
+@item
+The boot processing done by the BIOS is all L-CHS based.
+@end enumerate
+
+During the boot processing, all of the disk read accesses are done in
+L-CHS mode via INT 13H and this includes loading the first of the OS's
+kernel code or boot manager's code.
+
+Second, because there can be multiple BIOS types in any one system, each
+drive may be under the control of a different type of BIOS. For example,
+drive 80H (the first hard drive) could be controlled by the original
+system BIOS, drive 81H (the second drive) could be controlled by a
+option @sc{rom} BIOS and drive 82H (the third drive) could be controlled
+by a software driver. Also, be aware that each drive could be a
+different type, for example, drive 80H could be an MFM drive, drive 81H
+could be an ATA drive, drive 82H could be a SCSI drive.
+
+Third, not all OS's understand or use BIOS drive numbers greater than
+81H. Even if there is INT 13H support for drives 82H or greater, the OS
+may not use that support.
+
+Fourth, the BIOS INT 13H configuration calls are:
+
+@table @asis
+@item AH=08H, Get Drive Parameters
+This call is restricted to drives up to 528MB without CHS translation
+and to drives up to 8GB with CHS translation. For older BIOS with no
+support for >1024 cylinders or >528MB, this call returns the same CHS as
+is used at the ATA interface (the P-CHS). For newer BIOS's that do
+support >1024 cylinders or >528MB, this call returns a translated CHS
+(the L-CHS). The CHS returned by this call is used by FDISK to build
+partition records.
+
+@item AH=41H, Get BIOS Extensions Support
+This call is used to determine if the IBM/Microsoft Extensions or if the
+Phoenix Enhanced INT 13H calls are supported for the BIOS drive number.
+
+@item AH=48H, Extended Get Drive Parameters
+This call is used to determine the CHS geometries, LBA information and
+other data about the BIOS drive number.
+@end table
+
+An ATA disk must implement both CHS and LBA addressing and must at any
+given time support only one P-CHS at the device interface. And, the
+drive must maintain a strick relationship between the sector addressing
+in CHS mode and LBA mode. Quoting @cite{the ATA-2 document}:
+
+@example
+@group
+LBA = ( (cylinder * heads_per_cylinder + heads )
+        * sectors_per_track ) + sector - 1
+
+where heads_per_cylinder and sectors_per_track are the current
+translation mode values.
+@end group
+@end example
+
+This algorithm can also be used by a BIOS or an OS to convert a L-CHS to
+an LBA.
+
+This algorithm can be reversed such that an LBA can be converted to a
+CHS:
+
+@example
+@group
+cylinder = LBA / (heads_per_cylinder * sectors_per_track)
+    temp = LBA % (heads_per_cylinder * sectors_per_track)
+    head = temp / sectors_per_track
+  sector = temp % sectors_per_track + 1
+@end group
+@end example
+
+While most OS's compute disk addresses in an LBA scheme, an OS like DOS
+must convert that LBA to a CHS in order to call INT 13H.
+
+The basic problem is that there is no requirement that a CHS translating
+BIOS followed these rules. There are many other algorithms that can be
+implemented to perform a similar function. Today, there are at least two
+popular implementions: the Phoenix implementation (described above) and
+the non-Phoenix implementations. Because a protected mode OS that does
+not want to use INT 13H must implement the same CHS translation
+algorithm. If it doesn't, your data gets scrambled.
+
+In the perfect world of tomorrow, maybe only LBA will be used. But today
+we are faced with the following problems:
+
+@itemize @bullet
+@item
+Some drives >528MB don't implement LBA.
+
+@item
+Some drives are optimized for CHS and may have lower performance when
+given commands in LBA mode. Don't forget that LBA is something new for
+the ATA disk designers who have worked very hard for many years to
+optimize CHS address handling. And not all drive designs require the use
+of LBA internally.
+
+@item
+The L-CHS to LBA conversion is more complex and slower than the bit
+shifting L-CHS to P-CHS conversion.
+
+@item
+DOS, FDISK and the MBR are still CHS based --- they use the CHS returned
+by INT 13H AH=08H.  Any OS that can be installed on the same disk with
+DOS must understand CHS addressing.
+
+@item
+The BIOS boot processing and loading of the first OS kernel code is done
+in CHS mode --- the CHS returned by INT 13H AH=08H is used.
+
+@item
+Microsoft has said that their OS's will not use any disk capacity that
+can not also be accessed by INT 13H AH=0xH.
+@end itemize
+
+These are difficult problems to overcome in today's industry
+environment. The result: chaos.
+
+
+@node CHS mode disk I/O
+@subsection INT 13H, AH=0xh interrupt call
+
+Real mode only. These functions are the traditional CHS mode disk
+interface. GRUB calls them only if LBA mode is not available.
+
+INT 13H, AH=02h reads sectors into memory.
+
+Input:
+
+@multitable @columnfractions .15 .85
+@item @code{AH} @tab 02h
+
+@item @code{AL} @tab The number of sectors to read (must be non-zero).
+
+@item @code{CH} @tab Low 8 bits of cylinder number.
+
+@item @code{CL} @tab Sector number in bits 0-5, and high 2 bits of
+cylinder number in bits 6-7.
+
+@item @code{DH} @tab Head number.
+
+@item @code{DL} @tab Drive number (bit 7 set for hard disk).
+
+@item @code{ES:BX} @tab Data buffer.
+@end multitable
+
+Output:
+
+@multitable @columnfractions .15 .85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab Status.
+
+@item @code{AL} @tab The number of sectors transferred (only valid if CF
+set for some BIOSes).
+@end multitable
+
+INT 13H, AH=03h writes disk sectors.
+
+Input:
+
+@multitable @columnfractions .15 .85
+@item @code{AH} @tab 03h
+
+@item @code{AL} @tab The number of sectors to write (must be non-zero).
+
+@item @code{CH} @tab Low 8 bits of cylinder number.
+
+@item @code{CL} @tab Sector number in bits 0-5, and high 2 bits of
+cylinder number in bits 6-7.
+
+@item @code{DH} @tab Head number.
+
+@item @code{DL} @tab Drive number (bit 7 set for hard disk).
+
+@item @code{ES:BX} @tab Data buffer.
+@end multitable
+
+Output:
+
+@multitable @columnfractions .15 .85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab Status.
+
+@item @code{AL} @tab The number of sectors transferred (only valid if CF
+set for some BIOSes).
+@end multitable
+
+INT 13H, AH=08h returns drive parameters. For systems predating the IBM
+PC/AT, this call is only valid for hard disks.
+
+Input:
+
+@multitable @columnfractions .15 .85
+@item @code{AH} @tab 08h
+
+@item @code{DL} @tab Drive number (bit 7 set for hard disk).
+@end multitable
+
+Output:
+
+@multitable @columnfractions .15 .85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab 0.
+
+@item @code{AL} @tab 0 on at least some BIOSes.
+
+@item @code{BL} @tab Drive type (AT/PS2 floppies only).
+
+@item @code{CH} @tab Low 8 bits of maximum cylinder number.
+
+@item @code{CL} @tab Maximum sector number in bits 0-5, and high 2 bits
+of maximum cylinder number in bits 6-7.
+
+@item @code{DH} @tab Maxiumum head number.
+
+@item @code{DL} @tab The number of drives.
+
+@item @code{ES:DI} @tab Drive parameter table (floppies only).
+@end multitable
+
+GRUB does not use this call for floppies, but attempts to read the first
+sector from the last head of the last cylinder to determine the maximum
+head number and the maximum cylinder number.
+
+
+@node LBA mode disk I/O
+@subsection INT 13H, AH=4xh interrupt call
+
+Real mode only. These functions are IBM/MS INT 13 Extensions to support
+LBA mode. GRUB uses them if available so that it can read/write over 8GB
+area.
+
+INT 13, AH=41h checks if LBA is supported.
+
+Input:
+
+@multitable @columnfractions 0.15 0.85
+@item @code{AH} @tab 41h.
+
+@item @code{BX} @tab 55AAh.
+
+@item @code{DL} @tab Drive number.
+@end multitable
+
+Output:
+
+@multitable @columnfractions 0.15 0.85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab Major version of extensions (01h for 1.x, 20h for
+2.0 / EDD-1.0, 21h for 2.1 / EDD-1.1 and 30h for EDD-3.0) if successful,
+otherwise 01h (the error code of @dfn{invalid function}).
+
+@item @code{BX} @tab AA55h if installed.
+
+@item @code{AL} @tab Internal use.
+
+@item @code{CX} @tab API subset support bitmap (see below).
+
+@item @code{DH} @tab Extension version.
+@end multitable
+
+The bitfields for the API subset support bitmap are:
+
+@multitable @columnfractions 0.15 0.85
+@item Bit(s) @tab Description
+
+@item 0 @tab Extended disk access functions (AH=42h-44h, 47h, 48h)
+supported.
+
+@item 1 @tab Removable drive controller functions (AH=45h, 46h, 48h,
+49h, INT 15H, AH=52h) supported.
+
+@item 2 @tab Enhanced disk drive (EDD) functions (AH=48h, 4Eh)
+supported.
+
+@item 3-15 @tab Reserved (0).
+@end multitable
+
+INT 13, AH=42h reads sectors into memory.
+
+Input:
+
+@multitable @columnfractions .15 .85
+@item @code{AH} @tab 42h.
+
+@item @code{DL} @tab Drive number.
+
+@item @code{DS:SI} @tab Disk Address Packet (see below).
+@end multitable
+
+Output:
+
+@multitable @columnfractions .15 .85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab 0 if successful, otherwise error code.
+@end multitable
+
+The format of @dfn{Disk Address Packet} is:
+
+@multitable @columnfractions 0.15 0.15 0.7
+@item Offset (hex) @tab Size (byte) @tab Description
+
+@item 00 @tab 1 @tab 10h (The size of packet).
+
+@item 01 @tab 1 @tab Reserved (0).
+
+@item 02 @tab 2 @tab The number of blocks to transfer (max 007F for
+Phoenix EDD).
+
+@item 04 @tab 4 @tab Transfer buffer (SEGMENT:OFFSET).
+
+@item 08 @tab 8 @tab Starting absolute block number.
+@end multitable
+
+INT 13, AH=43h writes disk sectors.
+
+Input:
+
+@multitable @columnfractions 0.15 0.85
+@item @code{AH} @tab 43h.
+
+@item @code{AL} @tab Write flags (In version 1.0 and 2.0, bit 0 is the
+flag for @dfn{verify write} and other bits are reserved (0). In version
+2.1, 00h and 01h indicates @dfn{write without verify}, and 02h indicates
+@dfn{write with verify}.
+
+@item @code{DL} @tab Drive number.
+
+@item @code{DS:SI} @tab Disk Address Packet (see above).
+@end multitable
+
+Output:
+
+@multitable @columnfractions 0.15 0.85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab 0 if successful, otherwise error code.
+@end multitable
+
+INT 13, AH=48h returns drive parameters. GRUB only makes use of the
+total number of sectors, and ignore the CHS information, because only
+L-CHS makes sense. @xref{CHS Translation}, for more information.
+
+Input:
+
+@multitable @columnfractions 0.15 0.85
+@item @code{AH} @tab 48h.
+
+@item @code{DL} @tab Drive number.
+
+@item @code{DS:SI} @tab Buffer for drive parameters (see below).
+@end multitable
+
+Output:
+
+@multitable @columnfractions 0.15 0.85
+@item @code{CF} @tab Set on error.
+
+@item @code{AH} @tab 0 if successful, otherwise error code.
+@end multitable
+
+The format of drive parameters is:
+
+@multitable @columnfractions 0.25 0.15 0.6
+@item Offset (hex) @tab Size (byte) @tab Description
+
+@item 00 @tab 2 @tab The size of buffer. Before calling this function,
+set to the maximum buffer size, at least 1Ah. The size actually filled
+is returned (1Ah for version 1.0, 1Eh for 2.x and 42h for 3.0).
+
+@item 02 @tab 2 @tab Information flags (see below).
+
+@item 04 @tab 4 @tab The number of physical cylinders.
+
+@item 08 @tab 4 @tab The number of physical heads.
+
+@item 0C @tab 4 @tab The number of physical sectors per track.
+
+@item 10 @tab 8 @tab The total number of sectors.
+
+@item 18 @tab 2 @tab The bytes per sector.
+
+@comment Add an empty row for readability...
+@item @tab @tab
+
+@item @strong{v2.0 and later} @tab @tab
+
+@item 1A @tab 4 @tab EDD configuration parameters.
+
+@comment Add an empty row for readability...
+@item @tab @tab 
+
+@item @strong{v3.0} @tab @tab
+
+@item 1E @tab 2 @tab Signature BEDD to indicate presence of Device Path
+information.
+
+@item 20 @tab 1 @tab The length of Device Path information, including
+signature and this byte (24h for version 3.0).
+
+@item 21 @tab 3 @tab Reserved (0).
+
+@item 24 @tab 4 @tab ASCIZ name of host bus (@samp{ISA} or @samp{PCI}).
+
+@item 28 @tab 8 @tab ASCIZ name of interface type (@samp{ATA},
+@samp{ATAPI}, @samp{SCSI}, @samp{USB}, @samp{1394} or @samp{FIBRE}).
+
+@item 30 @tab 8 @tab Interface Path.
+
+@item 38 @tab 8 @tab Device Path.
+
+@item 40 @tab 1 @tab Reserved (0).
+
+@item 41 @tab 1 @tab Checksum of bytes 1Eh-40h (2's complement of sum,
+which makes the 8 bit sum of bytes 1Eh-41h equal to 00h).
+@end multitable
+
+The information flags are:
+
+@multitable @columnfractions 0.15 0.85
+@item Bit(s) @tab Description
+
+@item 0 @tab DMA boundary errors handles transparently.
+
+@item 1 @tab CHS information is valid.
+
+@item 2 @tab Removable drive.
+
+@item 3 @tab Write with verify supported.
+
+@item 4 @tab Drive has change-line support (required if drive is
+removable).
+
+@item 5 @tab Drive can be locked (required if drive is removable).
+
+@item 6 @tab CHS information set to maximum supported values, not
+current media.
+
+@item 7-15 @tab Reserved (0).
+@end multitable
 
 
 @node MBR
@@ -1626,6 +2138,12 @@ PC_partitioning.txt
 @section The format of partition table
 
 PC_partitioning.txt
+
+
+@node Filesystem interface
+@section The generic interface for the fs code
+
+filesystem.txt
 
 
 @node Index
