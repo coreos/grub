@@ -645,7 +645,7 @@ embed_func (char *arg, int flags)
       grub_memmove ((char *) SCRATCHADDR, stage1_5_buffer + i * SECTOR_SIZE,
 		    SECTOR_SIZE);
       if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
-		    sector + i * SECTOR_SIZE, 1, SCRATCHSEG))
+		    sector + i, 1, SCRATCHSEG))
 	{
 	  errnum = ERR_WRITE;
 	  return 1;
@@ -707,6 +707,7 @@ find_func (char *arg, int flags)
   /* Floppies.  */
   for (drive = 0; drive < 8; drive++)
     {
+      errnum = ERR_NONE;
       current_drive = drive;
       current_partition = 0xFFFFFF;
       
@@ -726,11 +727,12 @@ find_func (char *arg, int flags)
   for (drive = 0x80; drive < 0x88; drive++)
     {
       unsigned long slice;
-      
+
       current_drive = drive;
       /* FIXME: is what maximum number right?  */
       for (slice = 0; slice < 12; slice++)
 	{
+	  errnum = ERR_NONE;
 	  current_partition = (slice << 16) | 0xFFFF;
 	  if (! open_device () && IS_PC_SLICE_TYPE_BSD (current_slice))
 	    {
@@ -738,6 +740,7 @@ find_func (char *arg, int flags)
 
 	      for (part = 0; part < 8; part++)
 		{
+		  errnum = ERR_NONE;
 		  current_partition = (slice << 16) | (part << 8) | 0xFF;
 		  if (! open_device ())
 		    continue;
@@ -754,6 +757,7 @@ find_func (char *arg, int flags)
 	    }
 	  else
 	    {
+	      errnum = ERR_NONE;
 	      saved_drive = current_drive;
 	      saved_partition = current_partition;
 	      if (grub_open (filename))
@@ -765,7 +769,7 @@ find_func (char *arg, int flags)
 	}
     }
 
-  errnum = 0;
+  errnum = ERR_NONE;
   saved_drive = tmp_drive;
   saved_partition = tmp_partition;
   return 0;

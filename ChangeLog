@@ -1,3 +1,14 @@
+1999-11-06  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c (grub_putchar) [HAVE_LIBCURSES]: Do not call
+	wrefresh. This was just an accident. Sorry.
+
+	Reported by Alan McLean <amcl@flash.net>:
+	* stage2/builtins.c (embed_func): The sector argument for the
+	function biosdisk is changed from SECTOR + I * SECTOR_SIZE to
+	SECTOR + I.
+	(find_func): Clear ERRNUM before each of the attempts.
+	
 1999-11-05  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* docs/multiboot.texi (Boot information format): Add the members
