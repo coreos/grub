@@ -756,14 +756,17 @@ substring (char *s1, char *s2)
 
 #ifndef STAGE1_5
 /* Terminate the string STR with NUL.  */
-char *
+int
 nul_terminate (char *str)
 {
+  int ch;
+  
   while (*str && ! grub_isspace (*str))
     str++;
 
-  *str++ = 0;
-  return str;
+  ch = *str;
+  *str = 0;
+  return ch;
 }
 
 char *

@@ -5,19 +5,28 @@ Large portions borrowed from the Linux LANCE driver by Donald Becker
 Ken Yap, July 1997
 ***************************************************************************/
 
-#ifdef INCLUDE_NE2100
-
 /* to get some global routines like printf */
-#include "netboot.h"
+#include "etherboot.h"
 /* to get the interface to the body of the program */
 #include "nic.h"
 
 /* Offsets from base I/O address */
+#if	defined(INCLUDE_NE2100) || defined(INCLUDE_LANCEPCI)
+#define	LANCE_ETH_ADDR	0x0
 #define	LANCE_DATA	0x10
 #define	LANCE_ADDR	0x12
 #define	LANCE_RESET	0x14
 #define	LANCE_BUS_IF	0x16
 #define	LANCE_TOTAL_SIZE	0x18
+#endif
+#ifdef	INCLUDE_NI6510
+#define	LANCE_ETH_ADDR	0x8
+#define	LANCE_DATA	0x0
+#define	LANCE_ADDR	0x2
+#define	LANCE_RESET	0x4
+#define	LANCE_BUS_IF	0x6
+#define	LANCE_TOTAL_SIZE	0x10
+#endif
 
 struct lance_init_block
 {
@@ -97,10 +106,13 @@ static struct lance_chip_type
 };
 
 /* Define a macro for converting program addresses to real addresses */
-/* Linux already defines it in asm/io.h */
-#ifdef	NETBOOT16
+#ifdef	ETHERBOOT32
+#undef	virt_to_bus
+#define	virt_to_bus(x)		((unsigned long)x)
+#endif
+#ifdef	ETHERBOOT16
 #define	virt_to_bus(x)		(((Address)x)+RELOC)
-#endif	/* NETBOOT16 */
+#endif	/* ETHERBOOT16 */
 
 static int			chip_version;
 static unsigned short		ioaddr;
@@ -108,10 +120,6 @@ static int			dma;
 static struct lance_interface	*lp;
 /* additional 8 bytes for 8-byte alignment space */
 static char			lance[sizeof(struct lance_interface)+8];
-
-#if	defined(INCLUDE_NE2100)
-#define	lance_probe		ne2100_probe
-#endif
 
 /* DMA defines and helper routines */
 
@@ -147,26 +155,26 @@ static char			lance[sizeof(struct lance_interface)+8];
 static void enable_dma(unsigned int dmanr)
 {
 	if (dmanr <= 3)
-		outb_p(DMA1_MASK_REG, dmanr);
+		outb_p(dmanr, DMA1_MASK_REG);
 	else
-		outb_p(DMA2_MASK_REG, dmanr & 3);
+		outb_p(dmanr & 3, DMA2_MASK_REG);
 }
 
 static void disable_dma(unsigned int dmanr)
 {
 	if (dmanr <= 3)
-		outb_p(DMA1_MASK_REG, dmanr | 4);
+		outb_p(dmanr | 4, DMA1_MASK_REG);
 	else
-		outb_p(DMA2_MASK_REG, (dmanr & 3) | 4);
+		outb_p((dmanr & 3) | 4, DMA2_MASK_REG);
 }
 
 /* set mode (above) for a specific DMA channel */
 static void set_dma_mode(unsigned int dmanr, char mode)
 {
 	if (dmanr <= 3)
-		outb_p(DMA1_MODE_REG, mode | dmanr);
+		outb_p(mode | dmanr, DMA1_MODE_REG);
 	else
-		outb_p(DMA2_MODE_REG, mode | (dmanr&3));
+		outb_p(mode | (dmanr&3), DMA2_MODE_REG);
 }
 
 /**************************************************************************
@@ -181,13 +189,13 @@ static void lance_reset(struct nic *nic)
 	(void)inw(ioaddr+LANCE_RESET);
 	/* Un-Reset the LANCE, needed only for the NE2100 */
 	if (chip_table[chip_version].flags & LANCE_MUST_UNRESET)
-		outw(ioaddr+LANCE_RESET, 0);
+		outw(0, ioaddr+LANCE_RESET);
 	if (chip_table[chip_version].flags & LANCE_ENABLE_AUTOSELECT)
 	{
 		/* This is 79C960 specific; Turn on auto-select of media
 		   (AUI, BNC). */
-		outw(ioaddr+LANCE_ADDR, 0x2);
-		outw(ioaddr+LANCE_BUS_IF, 0x2);
+		outw(0x2, ioaddr+LANCE_ADDR);
+		outw(0x2, ioaddr+LANCE_BUS_IF);
 	}
 	/* Re-initialise the LANCE, and start it when done. */
 	/* Set station address */
@@ -201,25 +209,25 @@ static void lance_reset(struct nic *nic)
 	lp->rx_ring.u.addr[3] = 0x80;
 	lp->init_block.mode = 0x0;	/* enable Rx and Tx */
 	l = (Address)virt_to_bus(&lp->init_block);
-	outw(ioaddr+LANCE_ADDR, 0x1);
+	outw(0x1, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, (short)l);
-	outw(ioaddr+LANCE_ADDR, 0x2);
+	outw((short)l, ioaddr+LANCE_DATA);
+	outw(0x2, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, (short)(l >> 16));
-	outw(ioaddr+LANCE_ADDR, 0x4);
+	outw((short)(l >> 16), ioaddr+LANCE_DATA);
+	outw(0x4, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, 0x915);
-	outw(ioaddr+LANCE_ADDR, 0x0);
+	outw(0x915, ioaddr+LANCE_DATA);
+	outw(0x0, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, 0x4);		/* stop */
-	outw(ioaddr+LANCE_DATA, 0x1);		/* init */
+	outw(0x4, ioaddr+LANCE_DATA);		/* stop */
+	outw(0x1, ioaddr+LANCE_DATA);		/* init */
 	for (i = 100; i > 0; --i)
 		if (inw(ioaddr+LANCE_DATA) & 0x100)
 			break;
 	/* Apparently clearing the InitDone bit here triggers a bug
 	   in the '974. (Mark Stockton) */
-	outw(ioaddr+LANCE_DATA, 0x2);		/* start */
+	outw(0x2, ioaddr+LANCE_DATA);		/* start */
 }
 
 /**************************************************************************
@@ -233,19 +241,19 @@ static int lance_poll(struct nic *nic)
 	if (status & 0x80)
 		return (0);
 #ifdef	DEBUG
-	printf("LANCE packet received rx_ring.u.base %X mcnt %x csr0 %x\r\n",
+	printf("LANCE packet received rx_ring.u.base %X mcnt %x csr0 %x\n",
 		lp->rx_ring.u.base, lp->rx_ring.msg_length,
 		inw(ioaddr+LANCE_DATA));
 #endif
 	if (status == 0x3)
-		bcopy(lp->rbuf, nic->packet, nic->packetlen = lp->rx_ring.msg_length);
+		memcpy(nic->packet, lp->rbuf, nic->packetlen = lp->rx_ring.msg_length);
 	/* Andrew Boyd of QNX reports that some revs of the 79C765
 	   clear the buffer length */
 	lp->rx_ring.buf_length = -ETH_MAX_PACKET;
 	lp->rx_ring.u.addr[3] |= 0x80;	/* prime for next receive */
-	outw(ioaddr+LANCE_ADDR, 0x0);
+	outw(0x0, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, 0x500);		/* clear receive + InitDone */
+	outw(0x500, ioaddr+LANCE_DATA);		/* clear receive + InitDone */
 	return (status == 0x3);
 }
 
@@ -262,11 +270,11 @@ static void lance_transmit(
 	unsigned long		time;
 
 	/* copy the packet to ring buffer */
-	bcopy(d, lp->tbuf, ETHER_ADDR_SIZE);	/* dst */
-	bcopy(nic->node_addr, &lp->tbuf[ETHER_ADDR_SIZE], ETHER_ADDR_SIZE); /* src */
+	memcpy(lp->tbuf, d, ETHER_ADDR_SIZE);	/* dst */
+	memcpy(&lp->tbuf[ETHER_ADDR_SIZE], nic->node_addr, ETHER_ADDR_SIZE); /* src */
 	lp->tbuf[ETHER_ADDR_SIZE+ETHER_ADDR_SIZE] = t >> 8;	/* type */
 	lp->tbuf[ETHER_ADDR_SIZE+ETHER_ADDR_SIZE+1] = t;	/* type */
-	bcopy(p, &lp->tbuf[ETHER_HDR_SIZE], s);
+	memcpy(&lp->tbuf[ETHER_HDR_SIZE], p, s);
 	s += ETHER_HDR_SIZE;
 	if (chip_table[chip_version].flags & LANCE_MUST_PAD)
 		while (s < ETH_MIN_PACKET)	/* pad to min length */
@@ -278,18 +286,18 @@ static void lance_transmit(
 	/* we set the top byte as the very last thing */
 	lp->tx_ring.u.addr[3] = 0x83;
 	/* Trigger an immediate send poll */
-	outw(ioaddr+LANCE_ADDR, 0x0);
-	outw(ioaddr+LANCE_DATA, 0x48);
+	outw(0x0, ioaddr+LANCE_ADDR);
+	outw(0x48, ioaddr+LANCE_DATA);
 	/* wait for transmit complete */
-	time = currticks() + 18;			/* wait one second */
+	time = currticks() + TICKS_PER_SEC;		/* wait one second */
 	while (currticks() < time && (lp->tx_ring.u.base & 0x80000000) != 0)
 		;
 	if ((lp->tx_ring.u.base & 0x80000000) != 0)
-		printf("LANCE timed out on transmit\r\n");
+		printf("LANCE timed out on transmit\n");
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, 0x200);		/* clear transmit + InitDone */
+	outw(0x200, ioaddr+LANCE_DATA);		/* clear transmit + InitDone */
 #ifdef	DEBUG
-	printf("tx_ring.u.base %X tx_ring.buf_length %x tx_ring.misc %x csr0 %x\r\n",
+	printf("tx_ring.u.base %X tx_ring.buf_length %x tx_ring.misc %x csr0 %x\n",
 		lp->tx_ring.u.base, lp->tx_ring.buf_length, lp->tx_ring.misc,
 		inw(ioaddr+LANCE_DATA));
 #endif
@@ -308,16 +316,18 @@ static int lance_probe1(struct nic *nic)
 	static char		dmas[] = { 5, 6, 7, 3 };
 
 	reset_val = inw(ioaddr+LANCE_RESET);
-	outw(ioaddr+LANCE_ADDR, 0x0);	/* Switch to window 0 */
+#ifdef	INCLUDE_NE2100
+	outw(0x0, ioaddr+LANCE_ADDR);	/* Switch to window 0 */
 	if (inw(ioaddr+LANCE_DATA) != 0x4)
 		return (-1);
-	outw(ioaddr+LANCE_ADDR, 88);	/* Get the version of the chip */
+#endif
+	outw(88, ioaddr+LANCE_ADDR);	/* Get the version of the chip */
 	if (inw(ioaddr+LANCE_ADDR) != 88)
 		lance_version = 0;
 	else
 	{
 		chip_version = inw(ioaddr+LANCE_DATA);
-		outw(ioaddr+LANCE_ADDR, 89);
+		outw(89, ioaddr+LANCE_ADDR);
 		chip_version |= inw(ioaddr+LANCE_DATA) << 16;
 		if ((chip_version & 0xfff) != 0x3)
 			return (-1);
@@ -335,16 +345,16 @@ static int lance_probe1(struct nic *nic)
 	lp->init_block.rx_ring = virt_to_bus(&lp->rx_ring) & 0xffffff;
 	lp->init_block.tx_ring = virt_to_bus(&lp->tx_ring) & 0xffffff;
 	l = virt_to_bus(&lp->init_block);
-	outw(ioaddr+LANCE_ADDR, 0x1);
+	outw(0x1, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, (unsigned short)l);
-	outw(ioaddr+LANCE_ADDR, 0x2);
+	outw((unsigned short)l, ioaddr+LANCE_DATA);
+	outw(0x2, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, (unsigned short)(l >> 16));
-	outw(ioaddr+LANCE_ADDR, 0x4);
+	outw((unsigned short)(l >> 16), ioaddr+LANCE_DATA);
+	outw(0x4, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
-	outw(ioaddr+LANCE_DATA, 0x915);
-	outw(ioaddr+LANCE_ADDR, 0x0);
+	outw(0x915, ioaddr+LANCE_DATA);
+	outw(0x0, ioaddr+LANCE_ADDR);
 	(void)inw(ioaddr+LANCE_ADDR);
 	/* now probe for DMA channel */
 	dma_channels = ((inb(DMA1_STAT_REG) >> 4) & 0xf) |
@@ -359,10 +369,10 @@ static int lance_probe1(struct nic *nic)
 		   or the machine will hang */
 		if (dma_channels & (1 << dma))
 			continue;
-		outw(ioaddr+LANCE_DATA, 0x7f04);	/* clear memory error bits */
+		outw(0x7f04, ioaddr+LANCE_DATA);	/* clear memory error bits */
 		set_dma_mode(dma, DMA_MODE_CASCADE);
 		enable_dma(dma);
-		outw(ioaddr+LANCE_DATA, 0x1);		/* init */
+		outw(0x1, ioaddr+LANCE_DATA);		/* init */
 		for (j = 100; j > 0; --j)
 			if (inw(ioaddr+LANCE_DATA) & 0x900)
 				break;
@@ -373,23 +383,32 @@ static int lance_probe1(struct nic *nic)
 	}
 	if (i >= (sizeof(dmas)/sizeof(dmas[0])))
 		dma = 0;
-	printf("\r\n%s base 0x%x, DMA %d, addr ",
+	printf("\n%s base 0x%x, DMA %d, addr ",
 		chip_table[lance_version].name, ioaddr, dma);
 	/* Get station address */
 	for (i = 0; i < ETHER_ADDR_SIZE; ++i)
 	{
-		printf("%b", nic->node_addr[i] = inb(ioaddr+i));
+		printf("%b", nic->node_addr[i] = inb(ioaddr+LANCE_ETH_ADDR+i));
 		if (i < ETHER_ADDR_SIZE -1)
 			printf(":");
 	}
-	printf("\r\n");
+	putchar('\n');
 	return (lance_version);
 }
 
 /**************************************************************************
 PROBE - Look for an adapter, this routine's visible to the outside
 ***************************************************************************/
-struct nic *lance_probe(struct nic *nic, unsigned short *probe_addrs)
+
+#ifdef	INCLUDE_LANCEPCI
+struct nic *lancepci_probe(struct nic *nic, unsigned short *probe_addrs)
+#endif
+#ifdef	INCLUDE_NE2100
+struct nic *ne2100_probe(struct nic *nic, unsigned short *probe_addrs)
+#endif
+#ifdef	INCLUDE_NI6510
+struct nic *ni6510_probe(struct nic *nic, unsigned short *probe_addrs)
+#endif
 {
 	unsigned short		*p;
 	static unsigned short	io_addrs[] = { 0x300, 0x320, 0x340, 0x360, 0 };
@@ -401,8 +420,14 @@ struct nic *lance_probe(struct nic *nic, unsigned short *probe_addrs)
 	{
 		char		offset15, offset14 = inb(ioaddr + 14);
 
+#ifdef	INCLUDE_NE2100
 		if ((offset14 == 0x52 || offset14 == 0x57) &&
 		 ((offset15 = inb(ioaddr + 15)) == 0x57 || offset15 == 0x44))
+#endif
+#ifdef	INCLUDE_NI6510
+		if ((offset14 == 0x00 || offset14 == 0x52) &&
+		 ((offset15 = inb(ioaddr + 15)) == 0x55 || offset15 == 0x44))
+#endif
 			if (lance_probe1(nic) >= 0)
 				break;
 	}
@@ -422,5 +447,3 @@ struct nic *lance_probe(struct nic *nic, unsigned short *probe_addrs)
 		return 0;
 	}
 }
-
-#endif /* INCLUDE_NE2100 */

@@ -176,6 +176,9 @@ extern char *grub_scratch_mem;
 #define BOOTSEC_SIG_OFFSET   0x1FE
 #define BOOTSEC_LISTSIZE     8
 
+/* Not bad, perhaps.  */
+#define NETWORK_DRIVE	0x20
+
 /*
  *  GRUB specific information
  *    (in LSB order)
@@ -710,7 +713,7 @@ char *convert_to_ascii (char *buf, int c, ...);
 int get_cmdline (char *prompt, char *cmdline, int maxlen,
 		 int echo_char, int history);
 int substring (char *s1, char *s2);
-char *nul_terminate (char *str);
+int nul_terminate (char *str);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);
 int memcheck (int start, int len);

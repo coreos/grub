@@ -1,5 +1,5 @@
 /**************************************************************************
-NETBOOT -  BOOTP/TFTP Bootstrap Program
+ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
 Author: Martin Renters
   Date: Jun/94
@@ -63,31 +63,6 @@ Western Digital/SMC Board Types
 #define TYPE_SMC8416C	0x00	/* the same codes as the 8216. */
 #define TYPE_SMC8013EBP	0x2c
 
-#ifdef INCLUDE_WD
-struct wd_board {
-	char *name;
-	char id;
-	char flags;
-	char memsize;
-} wd_boards[] = {
-	{"WD8003S",	TYPE_WD8003S,	0,			MEM_8192},
-	{"WD8003E",	TYPE_WD8003E,	0,			MEM_8192},
-	{"WD8013EBT",	TYPE_WD8013EBT,	FLAG_16BIT,		MEM_16384},
-	{"WD8003W",	TYPE_WD8003W,	0,			MEM_8192},
-	{"WD8003EB",	TYPE_WD8003EB,	0,			MEM_8192},
-	{"WD8013W",	TYPE_WD8013W,	FLAG_16BIT,		MEM_16384},
-	{"WD8003EP/WD8013EP",
-			TYPE_WD8013EP,	0,			MEM_8192},
-	{"WD8013WC",	TYPE_WD8013WC,	FLAG_16BIT,		MEM_16384},
-	{"WD8013EPC",	TYPE_WD8013EPC,	FLAG_16BIT,		MEM_16384},
-	{"SMC8216T",	TYPE_SMC8216T,	FLAG_16BIT | FLAG_790,	MEM_16384},
-	{"SMC8216C",	TYPE_SMC8216C,	FLAG_16BIT | FLAG_790,	MEM_16384},
-	{"SMC8416T",	TYPE_SMC8416T,	FLAG_16BIT | FLAG_790,	MEM_8192},
-	{"SMC8416C/BT",	TYPE_SMC8416C,	FLAG_16BIT | FLAG_790,	MEM_8192},
-	{"SMC8013EBP",	TYPE_SMC8013EBP,FLAG_16BIT,		MEM_16384},
-	{NULL,		0,		0}
-};
-#endif
 /**************************************************************************
 3com 3c503 definitions
 **************************************************************************/
@@ -116,6 +91,7 @@ struct wd_board {
 #define _3COM_BCFR_310        0x40
 #define _3COM_BCFR_300        0x80
 #define _3COM_PCFR            4
+#define _3COM_PCFR_PIO        0
 #define _3COM_PCFR_C8000      0x10
 #define _3COM_PCFR_CC000      0x20
 #define _3COM_PCFR_D8000      0x40
@@ -172,6 +148,8 @@ NE1000/2000 definitions
 #define NE_ASIC_OFFSET	0x10
 #define NE_RESET	0x0F		/* Used to reset card */
 #define NE_DATA		0x00		/* Used to read/write NIC mem */
+
+#define COMPEX_RL2000_TRIES	200
 
 /**************************************************************************
 8390 Register Definitions
@@ -232,7 +210,7 @@ NE1000/2000 definitions
 #define D8390_RSTAT_PRX		0x01		/* successful recv */
 #define D8390_RSTAT_CRC		0x02		/* CRC error */
 #define D8390_RSTAT_FAE		0x04		/* Frame alignment error */
-#define D8390_RSTAT_OVER	0x08		/* overflow */
+#define D8390_RSTAT_OVER	0x08		/* FIFO overrun */
 
 #define D8390_TXBUF_SIZE	6
 #define D8390_RXBUF_END		32

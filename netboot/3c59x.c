@@ -51,7 +51,7 @@ static char *version = "3c59x.c:v0.30-all 12/23/96 becker@cesdis.gsfc.nasa.gov\n
 #define NO_VORTEX_BUS_MASTER 
 
 
-#include "netboot.h"
+#include "etherboot.h"
 #include "nic.h"
 #include "3c509.h"
 #include "pci.h"

@@ -95,18 +95,18 @@
  * the packet buffers)
  * */
 
-#ifdef INCLUDE_EEPRO100
-
 
 /* The etherboot authors seem to dislike the argument ordering in
  * outb macros that Linux uses. I disklike the confusion that this
  * has caused even more.... This file uses the Linux argument ordering.  */
-#define LINUX_OUT_MACROS
+/* Sorry not us. It's inherted code from FreeBSD. [The authors] */
 
-#include "netboot.h"
+#include "etherboot.h"
 #include "nic.h"
-#include <linux/bios32.h>
-#include <linux/pci.h>
+#include "pci.h"
+
+#undef	virt_to_bus
+#define	virt_to_bus(x)	((unsigned long)x)
 
 static int ioaddr;
 
@@ -398,7 +398,7 @@ static int read_eeprom(int ioaddr, int location)
 static void inline whereami (char *str)
 {
 #if 0
-  printf ("%s\r\n", str);
+  printf ("%s\n", str);
   sleep (2);
 #endif
 }
@@ -451,13 +451,13 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
   outw(status & 0xfc00, ioaddr + SCBStatus);
   
 #ifdef DEBUG
-  printf ("transmitting type %x packet (%d bytes). status = %x, cmd=%x\r\n", 
+  printf ("transmitting type %x packet (%d bytes). status = %x, cmd=%x\n", 
 	  t, s, status, inw (ioaddr + SCBCmd));
 #endif
 
 
   memcpy (&hdr.dst_addr, d, 6);
-  memcpy (&hdr.src_addr, &arptable[ARP_CLIENT].node, 6);
+  memcpy (&hdr.src_addr, nic->node_addr, 6);
 
   hdr.type = htons (t);
 
@@ -474,7 +474,7 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
   txfd.tx_buf_size1 = s;
 
 #ifdef DEBUG
-  printf ("txfd: \r\n");
+  printf ("txfd: \n");
   hd (&txfd, sizeof (txfd));
 #endif
 
@@ -489,8 +489,8 @@ static void eepro100_transmit(struct nic *nic, char *d, unsigned int t, unsigned
   s2 = inw (ioaddr + SCBStatus);
 
 #ifdef DEBUG 
-  printf ("Tx: Loop executed %d times.\r\n", TIME_OUT-to);
-  printf ("s1 = %x, s2 = %x.\r\n", s1, s2);
+  printf ("Tx: Loop executed %d times.\n", TIME_OUT-to);
+  printf ("s1 = %x, s2 = %x.\n", s1, s2);
 #endif
 }
 
@@ -524,10 +524,10 @@ static int eepro100_poll(struct nic *nic)
 
   if (to) {
 #ifdef DEBUG
-    printf ("Got a packet: Len = %d.\r\n", rxfd.count & 0x3fff);
+    printf ("Got a packet: Len = %d.\n", rxfd.count & 0x3fff);
 #endif
     nic->packetlen =  rxfd.count & 0x3fff;
-    bcopy (rxfd.packet, nic->packet, sizeof (rxfd.packet));
+    memcpy (nic->packet, rxfd.packet, sizeof (rxfd.packet));
 #ifdef DEBUG
     hd (nic->packet, 0x30);
 #endif
@@ -548,7 +548,7 @@ static void eepro100_disable(struct nic *nic)
  *            leaves the 82557 initialized, and ready to recieve packets.
  */
 
-struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs)
+struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs, struct pci_device *p)
 {
   int pci_index;
   u16 sum = 0;
@@ -556,6 +556,11 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs)
   unsigned short value;
   int options;
   int promisc;
+
+  unsigned char pci_bus = 0;
+  unsigned short pci_command;
+  unsigned short new_command;
+  unsigned char pci_latency;
 
   if (probeaddrs == 0 || probeaddrs[0] == 0)
           return 0;
@@ -568,17 +573,42 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs)
 	eeprom[i] = value;
 	sum += value;
   }
-  
+
+	/* From Matt Hortman <mbhortman@acpthinclient.com> */
+	if (p->dev_id == PCI_DEVICE_ID_INTEL_82557 ){		
+		/*
+		* check to make sure the bios properly set the
+		* 82557 (or 82558) to be bus master
+		*
+		* from eepro100.c in 2.2.9 kernel source 
+		*/			
+
+		pcibios_read_config_word(pci_bus, p->devfn, PCI_COMMAND, &pci_command);
+		new_command = pci_command | PCI_COMMAND_MASTER|PCI_COMMAND_IO;
+
+		if (pci_command != new_command) {
+			printf("\nThe PCI BIOS has not enabled this device!\nUpdating PCI command %x->%x. pci_bus %x pci_device_fn %x\n",
+				   pci_command, new_command, pci_bus, p->devfn);
+			pcibios_write_config_word(pci_bus, p->devfn, PCI_COMMAND, new_command);
+			}
+
+		pcibios_read_config_byte(pci_bus, p->devfn, PCI_LATENCY_TIMER, &pci_latency);
+		if (pci_latency < 32) {
+			printf("\nPCI latency timer (CFLT) is unreasonably low at %d. Setting to 32 clocks.\n", pci_latency);
+			pcibios_write_config_byte(pci_bus, p->devfn, PCI_LATENCY_TIMER, 32);
+			}
+		}	
+
   printf ("Ethernet addr: ");
   for (i=0;i<6;i++) {
-	arptable[ARP_CLIENT].node[i] =  (eeprom[i/2] >> (8*(i&1))) & 0xff;
-	printf ("%b%c", arptable[ARP_CLIENT].node[i] , i < 5?':':' '); 
+	nic->node_addr[i] =  (eeprom[i/2] >> (8*(i&1))) & 0xff;
+	printf ("%b%c", nic->node_addr[i] , i < 5?':':' '); 
   }
-  printf ("\r\n");
+  printf ("\n");
 
   if (sum != 0xBABA)
 	printf("eepro100: Invalid EEPROM checksum %#4.4x, "
-	       "check settings before activating this device!\r\n", sum);
+	       "check settings before activating this device!\n", sum);
   outl(0, ioaddr + SCBPort);
   udelay (10);
 
@@ -635,11 +665,11 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs)
 	char *p = (char *)&txfd.tx_desc_addr;
 
 	for (i=0;i<6;i++)
-	p[i] = arptable[ARP_CLIENT].node[i];
+	p[i] = nic->node_addr[i];
   }
   
 #ifdef DEBUG
-  printf ("Setup_eaddr:\r\n");
+  printf ("Setup_eaddr:\n");
   hd (&txfd, 0x20);
 #endif
   /*      options = 0x40; */ /* 10mbps half duplex... */
@@ -647,13 +677,13 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs)
 
   promisc = 0;
   
-  printf ("eeprom[6] = %x \r\n", eeprom[6]);
+  printf ("eeprom[6] = %x \n", eeprom[6]);
   if (   ((eeprom[6]>>8) & 0x3f) == DP83840
 	  || ((eeprom[6]>>8) & 0x3f) == DP83840A) {
 	int mdi_reg23 = mdio_read(ioaddr, eeprom[6] & 0x1f, 23) | 0x0422;
 	if (congenb)
 	  mdi_reg23 |= 0x0100;
-	printf("  DP83840 specific setup, setting register 23 to %x.\r\n",
+	printf("  DP83840 specific setup, setting register 23 to %x.\n",
 	       mdi_reg23);
 	mdio_write(ioaddr, eeprom[6] & 0x1f, 23, mdi_reg23);
   }
@@ -686,7 +716,7 @@ struct nic *eepro100_probe(struct nic *nic, unsigned short *probeaddrs)
 	/* Wait */;
 
 #ifdef DEBUG 
-  printf ("\r\nLoop executed %d times.\r\n", TIME_OUT-to);
+  printf ("\nLoop executed %d times.\n", TIME_OUT-to);
 #endif
   nic->reset = eepro100_reset;
   nic->poll = eepro100_poll;
@@ -790,11 +820,10 @@ void hd (void *where, int n)
     printf ("%X ", where);
     for (i=0;i < ( (n>16)?16:n);i++)
       printf (" %b", ((char *)where)[i]);
-    printf ("\n\r");
+    printf ("\n");
     n -= 16;
     where += 16;
   }
 }
 #endif
 
-#endif /* INCLUDE_EEPRO100 */

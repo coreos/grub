@@ -73,7 +73,7 @@
  * Some short functions, worth to let them be a macro
  */
 #define is_eeprom_busy(b) (inw((b)+EP_W0_EEPROM_COMMAND)&EEPROM_BUSY)
-#define GO_WINDOW(x)      outw(BASE+EP_COMMAND, WINDOW_SELECT|(x))
+#define GO_WINDOW(x)      outw(WINDOW_SELECT|(x), BASE+EP_COMMAND)
 
 /**************************************************************************
  *									  *
@@ -205,50 +205,50 @@
  *     10-0:   11-bit arg if any. For commands with no args;
  *	      this can be set to anything.
  */
-#define GLOBAL_RESET		(u_short) 0x0000	/* Wait at least 1ms
+#define GLOBAL_RESET		(unsigned short) 0x0000	/* Wait at least 1ms
 							 * after issuing */
-#define WINDOW_SELECT		(u_short) (0x1<<11)
-#define START_TRANSCEIVER	(u_short) (0x2<<11)	/* Read ADDR_CFG reg to
+#define WINDOW_SELECT		(unsigned short) (0x1<<11)
+#define START_TRANSCEIVER	(unsigned short) (0x2<<11)	/* Read ADDR_CFG reg to
 							 * determine whether
 							 * this is needed. If
 							 * so; wait 800 uSec
 							 * before using trans-
 							 * ceiver. */
-#define RX_DISABLE		(u_short) (0x3<<11)	/* state disabled on
+#define RX_DISABLE		(unsigned short) (0x3<<11)	/* state disabled on
 							 * power-up */
-#define RX_ENABLE		(u_short) (0x4<<11)
-#define RX_RESET		(u_short) (0x5<<11)
-#define RX_DISCARD_TOP_PACK	(u_short) (0x8<<11)
-#define TX_ENABLE		(u_short) (0x9<<11)
-#define TX_DISABLE		(u_short) (0xa<<11)
-#define TX_RESET		(u_short) (0xb<<11)
-#define REQ_INTR		(u_short) (0xc<<11)
-#define SET_INTR_MASK		(u_short) (0xe<<11)
-#define SET_RD_0_MASK		(u_short) (0xf<<11)
-#define SET_RX_FILTER		(u_short) (0x10<<11)
-#define FIL_INDIVIDUAL	(u_short) (0x1)
-#define FIL_GROUP		(u_short) (0x2)
-#define FIL_BRDCST	(u_short) (0x4)
-#define FIL_ALL		(u_short) (0x8)
-#define SET_RX_EARLY_THRESH	(u_short) (0x11<<11)
-#define SET_TX_AVAIL_THRESH	(u_short) (0x12<<11)
-#define SET_TX_START_THRESH	(u_short) (0x13<<11)
-#define STATS_ENABLE		(u_short) (0x15<<11)
-#define STATS_DISABLE		(u_short) (0x16<<11)
-#define STOP_TRANSCEIVER	(u_short) (0x17<<11)
+#define RX_ENABLE		(unsigned short) (0x4<<11)
+#define RX_RESET		(unsigned short) (0x5<<11)
+#define RX_DISCARD_TOP_PACK	(unsigned short) (0x8<<11)
+#define TX_ENABLE		(unsigned short) (0x9<<11)
+#define TX_DISABLE		(unsigned short) (0xa<<11)
+#define TX_RESET		(unsigned short) (0xb<<11)
+#define REQ_INTR		(unsigned short) (0xc<<11)
+#define SET_INTR_MASK		(unsigned short) (0xe<<11)
+#define SET_RD_0_MASK		(unsigned short) (0xf<<11)
+#define SET_RX_FILTER		(unsigned short) (0x10<<11)
+#define FIL_INDIVIDUAL	(unsigned short) (0x1)
+#define FIL_GROUP		(unsigned short) (0x2)
+#define FIL_BRDCST	(unsigned short) (0x4)
+#define FIL_ALL		(unsigned short) (0x8)
+#define SET_RX_EARLY_THRESH	(unsigned short) (0x11<<11)
+#define SET_TX_AVAIL_THRESH	(unsigned short) (0x12<<11)
+#define SET_TX_START_THRESH	(unsigned short) (0x13<<11)
+#define STATS_ENABLE		(unsigned short) (0x15<<11)
+#define STATS_DISABLE		(unsigned short) (0x16<<11)
+#define STOP_TRANSCEIVER	(unsigned short) (0x17<<11)
 /*
  * The following C_* acknowledge the various interrupts. Some of them don't
  * do anything.  See the manual.
  */
-#define ACK_INTR		(u_short) (0x6800)
-#define C_INTR_LATCH	(u_short) (ACK_INTR|0x1)
-#define C_CARD_FAILURE	(u_short) (ACK_INTR|0x2)
-#define C_TX_COMPLETE	(u_short) (ACK_INTR|0x4)
-#define C_TX_AVAIL	(u_short) (ACK_INTR|0x8)
-#define C_RX_COMPLETE	(u_short) (ACK_INTR|0x10)
-#define C_RX_EARLY	(u_short) (ACK_INTR|0x20)
-#define C_INT_RQD		(u_short) (ACK_INTR|0x40)
-#define C_UPD_STATS	(u_short) (ACK_INTR|0x80)
+#define ACK_INTR		(unsigned short) (0x6800)
+#define C_INTR_LATCH	(unsigned short) (ACK_INTR|0x1)
+#define C_CARD_FAILURE	(unsigned short) (ACK_INTR|0x2)
+#define C_TX_COMPLETE	(unsigned short) (ACK_INTR|0x4)
+#define C_TX_AVAIL	(unsigned short) (ACK_INTR|0x8)
+#define C_RX_COMPLETE	(unsigned short) (ACK_INTR|0x10)
+#define C_RX_EARLY	(unsigned short) (ACK_INTR|0x20)
+#define C_INT_RQD		(unsigned short) (ACK_INTR|0x40)
+#define C_UPD_STATS	(unsigned short) (ACK_INTR|0x80)
 
 /*
  * Status register. All windows.
@@ -268,17 +268,17 @@
  *     1:      Adapter Failure.
  *     0:      Interrupt Latch.
  */
-#define S_INTR_LATCH		(u_short) (0x1)
-#define S_CARD_FAILURE		(u_short) (0x2)
-#define S_TX_COMPLETE		(u_short) (0x4)
-#define S_TX_AVAIL		(u_short) (0x8)
-#define S_RX_COMPLETE		(u_short) (0x10)
-#define S_RX_EARLY		(u_short) (0x20)
-#define S_INT_RQD		(u_short) (0x40)
-#define S_UPD_STATS		(u_short) (0x80)
+#define S_INTR_LATCH		(unsigned short) (0x1)
+#define S_CARD_FAILURE		(unsigned short) (0x2)
+#define S_TX_COMPLETE		(unsigned short) (0x4)
+#define S_TX_AVAIL		(unsigned short) (0x8)
+#define S_RX_COMPLETE		(unsigned short) (0x10)
+#define S_RX_EARLY		(unsigned short) (0x20)
+#define S_INT_RQD		(unsigned short) (0x40)
+#define S_UPD_STATS		(unsigned short) (0x80)
 #define S_5_INTS                (S_CARD_FAILURE|S_TX_COMPLETE|\
 				 S_TX_AVAIL|S_RX_COMPLETE|S_RX_EARLY)
-#define S_COMMAND_IN_PROGRESS	(u_short) (0x1000)
+#define S_COMMAND_IN_PROGRESS	(unsigned short) (0x1000)
 
 /*
  * FIFO Registers.
@@ -297,14 +297,14 @@
  *
  *     10-0:   RX Bytes (0-1514)
  */
-#define ERR_RX_INCOMPLETE  (u_short) (0x1<<15)
-#define ERR_RX		   (u_short) (0x1<<14)
-#define ERR_RX_OVERRUN 	   (u_short) (0x8<<11)
-#define ERR_RX_RUN_PKT	   (u_short) (0xb<<11)
-#define ERR_RX_ALIGN	   (u_short) (0xc<<11)
-#define ERR_RX_CRC	   (u_short) (0xd<<11)
-#define ERR_RX_OVERSIZE	   (u_short) (0x9<<11)
-#define ERR_RX_DRIBBLE	   (u_short) (0x2<<11)
+#define ERR_RX_INCOMPLETE  (unsigned short) (0x1<<15)
+#define ERR_RX		   (unsigned short) (0x1<<14)
+#define ERR_RX_OVERRUN 	   (unsigned short) (0x8<<11)
+#define ERR_RX_RUN_PKT	   (unsigned short) (0xb<<11)
+#define ERR_RX_ALIGN	   (unsigned short) (0xc<<11)
+#define ERR_RX_CRC	   (unsigned short) (0xd<<11)
+#define ERR_RX_OVERSIZE	   (unsigned short) (0x9<<11)
+#define ERR_RX_DRIBBLE	   (unsigned short) (0x2<<11)
 
 /*
  * FIFO Registers.
@@ -360,7 +360,7 @@
  * Receive status register
  */
 
-#define RX_BYTES_MASK			(u_short) (0x07ff)
+#define RX_BYTES_MASK			(unsigned short) (0x07ff)
 #define RX_ERROR	0x4000
 #define RX_INCOMPLETE	0x8000
 
@@ -376,11 +376,20 @@
 #define BNC 				0x2
 #define UTP 				0x4
 
-#define RX_BYTES_MASK			(u_short) (0x07ff)
+#define RX_BYTES_MASK			(unsigned short) (0x07ff)
 
  /* EISA support */
 #define EP_EISA_START                    0x1000
 #define EP_EISA_W0                       0x0c80
+
+#ifdef INCLUDE_3C529
+ /* MCA support */
+#define MCA_MOTHERBOARD_SETUP_REG       0x94
+#define MCA_ADAPTER_SETUP_REG           0x96
+#define MCA_MAX_SLOT_NR  8
+#define MCA_POS_REG(n)                  (0x100+(n))
+#endif
+
 /*
  * Local variables:
  *  c-basic-offset: 8

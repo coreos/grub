@@ -1,6 +1,6 @@
 
 /**************************************************************************
-NETBOOT -  BOOTP/TFTP Bootstrap Program
+ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
 Author: Martin Renters
   Date: May/94
@@ -16,12 +16,13 @@ Author: Martin Renters
 
 3c503 support added by Bill Paul (wpaul@ctr.columbia.edu) on 11/15/94
 SMC8416 support added by Bill Paul (wpaul@ctr.columbia.edu) on 12/25/94
+3c503 PIO support added by Jim Hague (jim.hague@acm.org) on 2/17/98
+RX overrun by Klaus Espenlaub (espenlaub@informatik.uni-ulm.de) on 3/10/99
+  parts taken from the Linux 8390 driver (by Donald Becker and Paul Gortmaker)
 
 **************************************************************************/
 
-#if defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || defined(INCLUDE_WD) || defined(INCLUDE_T503)
-
-#include "netboot.h"
+#include "etherboot.h"
 #include "nic.h"
 #include "ns8390.h"
 
@@ -29,35 +30,75 @@ static unsigned char	eth_vendor, eth_flags, eth_laar;
 static unsigned short	eth_nic_base, eth_asic_base;
 static unsigned char	eth_memsize, eth_rx_start, eth_tx_start;
 static Address		eth_bmem, eth_rmem;
+static unsigned char	eth_drain_receiver;
+
+#ifdef INCLUDE_WD
+static struct wd_board {
+	char *name;
+	char id;
+	char flags;
+	char memsize;
+} wd_boards[] = {
+	{"WD8003S",	TYPE_WD8003S,	0,			MEM_8192},
+	{"WD8003E",	TYPE_WD8003E,	0,			MEM_8192},
+	{"WD8013EBT",	TYPE_WD8013EBT,	FLAG_16BIT,		MEM_16384},
+	{"WD8003W",	TYPE_WD8003W,	0,			MEM_8192},
+	{"WD8003EB",	TYPE_WD8003EB,	0,			MEM_8192},
+	{"WD8013W",	TYPE_WD8013W,	FLAG_16BIT,		MEM_16384},
+	{"WD8003EP/WD8013EP",
+			TYPE_WD8013EP,	0,			MEM_8192},
+	{"WD8013WC",	TYPE_WD8013WC,	FLAG_16BIT,		MEM_16384},
+	{"WD8013EPC",	TYPE_WD8013EPC,	FLAG_16BIT,		MEM_16384},
+	{"SMC8216T",	TYPE_SMC8216T,	FLAG_16BIT | FLAG_790,	MEM_16384},
+	{"SMC8216C",	TYPE_SMC8216C,	FLAG_16BIT | FLAG_790,	MEM_16384},
+	{"SMC8416T",	TYPE_SMC8416T,	FLAG_16BIT | FLAG_790,	MEM_8192},
+	{"SMC8416C/BT",	TYPE_SMC8416C,	FLAG_16BIT | FLAG_790,	MEM_8192},
+	{"SMC8013EBP",	TYPE_SMC8013EBP,FLAG_16BIT,		MEM_16384},
+	{NULL,		0,		0}
+};
+#endif
+
+#ifdef	INCLUDE_3C503
+static unsigned char	t503_output;	/* AUI or internal xcvr (Thinnet) */
+#endif
 
 #if	defined(INCLUDE_WD)
 #define	eth_probe	wd_probe
-#else
-#if	defined(INCLUDE_T503)
+#if	defined(INCLUDE_3C503) || defined(INCLUDE_NE) || defined(INCLUDE_NEPCI)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#endif
+#endif
+
+#if	defined(INCLUDE_3C503)
 #define	eth_probe	t503_probe
-#else
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || defined(INCLUDE_WD)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#endif
+#endif
+
 #if	defined(INCLUDE_NE)
 #define	eth_probe	ne_probe
-#else
+#if	defined(INCLUDE_NEPCI) || defined(INCLUDE_3C503) || defined(INCLUDE_WD)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#endif
+#endif
+
 #if	defined(INCLUDE_NEPCI)
 #define	eth_probe	nepci_probe
+#if	defined(INCLUDE_NE) || defined(INCLUDE_3C503) || defined(INCLUDE_WD)
+Error you must only define one of INCLUDE_WD, INCLUDE_3C503, INCLUDE_NE[PCI]
+#endif
+#endif
+
+#if	defined(INCLUDE_3C503)
+#define	ASIC_PIO	_3COM_RFMSB
 #else
-Error you must define one of the above
-#endif
-#endif
-#endif
-#endif
-
-
-
-static void net_bcopy (char *s, char *d, int l)
-{
-	while (l--)
-		*d++ = *s++;
-}
-
-
 #if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI)
+#define	ASIC_PIO	NE_DATA
+#endif
+#endif
+
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || (defined(INCLUDE_3C503) && !defined(T503_SHMEM))
 /**************************************************************************
 ETH_PIO_READ - Read a frame via Programmed I/O
 **************************************************************************/
@@ -67,25 +108,41 @@ static void eth_pio_read(src, dst, cnt)
 	unsigned int cnt;
 {
 	if (eth_flags & FLAG_16BIT) { ++cnt; cnt &= ~1; }
-	outb(eth_nic_base + D8390_P0_COMMAND, D8390_COMMAND_RD2 |
-		D8390_COMMAND_STA);
-	outb(eth_nic_base + D8390_P0_RBCR0, cnt);
-	outb(eth_nic_base + D8390_P0_RBCR1, cnt>>8);
-	outb(eth_nic_base + D8390_P0_RSAR0, src);
-	outb(eth_nic_base + D8390_P0_RSAR1, src>>8);
-	outb(eth_nic_base + D8390_P0_COMMAND, D8390_COMMAND_RD0 |
-		D8390_COMMAND_STA);
-	if (eth_flags & FLAG_16BIT) {
-		cnt >>= 1;	/* number of words */
-		while (cnt--) {
-			*((unsigned short *)dst) = inw(eth_asic_base + NE_DATA);
+	outb(D8390_COMMAND_RD2 |
+		D8390_COMMAND_STA, eth_nic_base + D8390_P0_COMMAND);
+	outb(cnt, eth_nic_base + D8390_P0_RBCR0);
+	outb(cnt>>8, eth_nic_base + D8390_P0_RBCR1);
+	outb(src, eth_nic_base + D8390_P0_RSAR0);
+	outb(src>>8, eth_nic_base + D8390_P0_RSAR1);
+	outb(D8390_COMMAND_RD0 |
+		D8390_COMMAND_STA, eth_nic_base + D8390_P0_COMMAND);
+
+#ifdef	INCLUDE_3C503
+	outb(src & 0xff, eth_asic_base + _3COM_DALSB);
+	outb(src >> 8, eth_asic_base + _3COM_DAMSB);
+	outb(t503_output | _3COM_CR_START, eth_asic_base + _3COM_CR);
+#endif
+    
+	if (eth_flags & FLAG_16BIT)
+    		cnt >>= 1;
+
+	while(cnt--) {
+#ifdef	INCLUDE_3C503
+    		while((inb(eth_asic_base + _3COM_STREG) & _3COM_STREG_DPRDY) == 0)
+    			;
+#endif
+
+    		if (eth_flags & FLAG_16BIT) {
+			*((unsigned short *)dst) = inw(eth_asic_base + ASIC_PIO);
 			dst += 2;
 		}
+		else
+			*(dst++) = inb(eth_asic_base + ASIC_PIO);
 	}
-	else {
-		while (cnt--)
-			*(dst++) = inb(eth_asic_base + NE_DATA);
-	}
+
+#ifdef	INCLUDE_3C503
+	outb(t503_output, eth_asic_base + _3COM_CR);
+#endif
 }
 
 /**************************************************************************
@@ -96,29 +153,60 @@ static void eth_pio_write(src, dst, cnt)
 	unsigned int dst;
 	unsigned int cnt;
 {
+#ifdef	COMPEX_RL2000_FIX
+	unsigned int x;
+#endif	/* COMPEX_RL2000_FIX */
 	if (eth_flags & FLAG_16BIT) { ++cnt; cnt &= ~1; }
-	outb(eth_nic_base + D8390_P0_COMMAND, D8390_COMMAND_RD2 |
-		D8390_COMMAND_STA);
-	outb(eth_nic_base + D8390_P0_ISR, D8390_ISR_RDC);
-	outb(eth_nic_base + D8390_P0_RBCR0, cnt);
-	outb(eth_nic_base + D8390_P0_RBCR1, cnt>>8);
-	outb(eth_nic_base + D8390_P0_RSAR0, dst);
-	outb(eth_nic_base + D8390_P0_RSAR1, dst>>8);
-	outb(eth_nic_base + D8390_P0_COMMAND, D8390_COMMAND_RD1 |
-		D8390_COMMAND_STA);
-	if (eth_flags & FLAG_16BIT) {
-		cnt >>= 1;	/* number of words */
-		while (cnt--) {
-			outw_p(eth_asic_base + NE_DATA, *((unsigned short *)src));
+	outb(D8390_COMMAND_RD2 |
+		D8390_COMMAND_STA, eth_nic_base + D8390_P0_COMMAND);
+	outb(D8390_ISR_RDC, eth_nic_base + D8390_P0_ISR);
+	outb(cnt, eth_nic_base + D8390_P0_RBCR0);
+	outb(cnt>>8, eth_nic_base + D8390_P0_RBCR1);
+	outb(dst, eth_nic_base + D8390_P0_RSAR0);
+	outb(dst>>8, eth_nic_base + D8390_P0_RSAR1);
+	outb(D8390_COMMAND_RD1 |
+		D8390_COMMAND_STA, eth_nic_base + D8390_P0_COMMAND);
+		
+#ifdef	INCLUDE_3C503
+	outb(dst & 0xff, eth_asic_base + _3COM_DALSB);
+	outb(dst >> 8, eth_asic_base + _3COM_DAMSB);
+
+	outb(t503_output | _3COM_CR_DDIR | _3COM_CR_START, eth_asic_base + _3COM_CR);
+#endif
+
+	if (eth_flags & FLAG_16BIT)
+    		cnt >>= 1;
+
+	while(cnt--)
+	{
+#ifdef	INCLUDE_3C503
+    		while((inb(eth_asic_base + _3COM_STREG) & _3COM_STREG_DPRDY) == 0)
+    	    		;
+#endif
+
+    		if (eth_flags & FLAG_16BIT) {
+			outw(*((unsigned short *)src), eth_asic_base + ASIC_PIO);
 			src += 2;
 		}
+		else
+	    		outb(*(src++), eth_asic_base + ASIC_PIO);
 	}
-	else {
-		while (cnt--)
-			outb_p(eth_asic_base + NE_DATA, *(src++));
-	}
-	while((inb_p(eth_nic_base + D8390_P0_ISR) & D8390_ISR_RDC)
+
+#ifdef	INCLUDE_3C503
+	outb(t503_output, eth_asic_base + _3COM_CR);
+#else
+#ifdef	COMPEX_RL2000_FIX
+	for (x = 0;
+		x < COMPEX_RL2000_TRIES &&
+		(inb(eth_nic_base + D8390_P0_ISR) & D8390_ISR_RDC)
+		!= D8390_ISR_RDC;
+		++x);
+	if (x >= COMPEX_RL2000_TRIES)
+		printf("Warning: Compex RL2000 aborted wait!\n");
+#endif	/* COMPEX_RL2000_FIX */
+	while((inb(eth_nic_base + D8390_P0_ISR) & D8390_ISR_RDC)
 		!= D8390_ISR_RDC);
+#endif
 }
 #else
 /**************************************************************************
@@ -133,63 +221,121 @@ ETH_RESET - Reset adapter
 static void eth_reset(struct nic *nic)
 {
 	int i;
+
+	eth_drain_receiver = 0;
+#ifdef	INCLUDE_WD
 	if (eth_flags & FLAG_790)
-		outb(eth_nic_base+D8390_P0_COMMAND,
-			D8390_COMMAND_PS0 | D8390_COMMAND_STP);
+		outb(D8390_COMMAND_PS0 | D8390_COMMAND_STP, eth_nic_base+D8390_P0_COMMAND);
 	else
-		outb(eth_nic_base+D8390_P0_COMMAND,
-			D8390_COMMAND_PS0 | D8390_COMMAND_RD2 |
-			D8390_COMMAND_STP);
+#endif
+		outb(D8390_COMMAND_PS0 | D8390_COMMAND_RD2 |
+			D8390_COMMAND_STP, eth_nic_base+D8390_P0_COMMAND);
 	if (eth_flags & FLAG_16BIT)
-		outb(eth_nic_base+D8390_P0_DCR, 0x49);
+		outb(0x49, eth_nic_base+D8390_P0_DCR);
 	else
-		outb(eth_nic_base+D8390_P0_DCR, 0x48);
-	outb(eth_nic_base+D8390_P0_RBCR0, 0);
-	outb(eth_nic_base+D8390_P0_RBCR1, 0);
-	outb(eth_nic_base+D8390_P0_RCR, 0x20);	/* monitor mode */
-	outb(eth_nic_base+D8390_P0_TCR, 2);
-	outb(eth_nic_base+D8390_P0_TPSR, eth_tx_start);
-	outb(eth_nic_base+D8390_P0_PSTART, eth_rx_start);
-	if (eth_flags & FLAG_790) outb(eth_nic_base + 0x09, 0);
-	outb(eth_nic_base+D8390_P0_PSTOP, eth_memsize);
-	outb(eth_nic_base+D8390_P0_BOUND, eth_memsize - 1);
-	outb(eth_nic_base+D8390_P0_ISR, 0xFF);
-	outb(eth_nic_base+D8390_P0_IMR, 0);
+		outb(0x48, eth_nic_base+D8390_P0_DCR);
+	outb(0, eth_nic_base+D8390_P0_RBCR0);
+	outb(0, eth_nic_base+D8390_P0_RBCR1);
+	outb(0x20, eth_nic_base+D8390_P0_RCR);	/* monitor mode */
+	outb(2, eth_nic_base+D8390_P0_TCR);
+	outb(eth_tx_start, eth_nic_base+D8390_P0_TPSR);
+	outb(eth_rx_start, eth_nic_base+D8390_P0_PSTART);
+#ifdef	INCLUDE_WD
+	if (eth_flags & FLAG_790) outb(0, eth_nic_base + 0x09);
+#endif
+	outb(eth_memsize, eth_nic_base+D8390_P0_PSTOP);
+	outb(eth_memsize - 1, eth_nic_base+D8390_P0_BOUND);
+	outb(0xFF, eth_nic_base+D8390_P0_ISR);
+	outb(0, eth_nic_base+D8390_P0_IMR);
+#ifdef	INCLUDE_WD
 	if (eth_flags & FLAG_790)
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS1 |
-			D8390_COMMAND_STP);
+		outb(D8390_COMMAND_PS1 |
+			D8390_COMMAND_STP, eth_nic_base+D8390_P0_COMMAND);
 	else
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS1 |
-			D8390_COMMAND_RD2 | D8390_COMMAND_STP);
+#endif
+		outb(D8390_COMMAND_PS1 |
+			D8390_COMMAND_RD2 | D8390_COMMAND_STP, eth_nic_base+D8390_P0_COMMAND);
 	for (i=0; i<ETHER_ADDR_SIZE; i++)
-		outb(eth_nic_base+D8390_P1_PAR0+i, nic->node_addr[i]);
+		outb(nic->node_addr[i], eth_nic_base+D8390_P1_PAR0+i);
 	for (i=0; i<ETHER_ADDR_SIZE; i++)
-		outb(eth_nic_base+D8390_P1_MAR0+i, 0xFF);
-	outb(eth_nic_base+D8390_P1_CURR, eth_rx_start);
+		outb(0xFF, eth_nic_base+D8390_P1_MAR0+i);
+	outb(eth_rx_start, eth_nic_base+D8390_P1_CURR);
+#ifdef	INCLUDE_WD
 	if (eth_flags & FLAG_790)
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0 |
-			D8390_COMMAND_STA);
+		outb(D8390_COMMAND_PS0 |
+			D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
 	else
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0 |
-			D8390_COMMAND_RD2 | D8390_COMMAND_STA);
-	outb(eth_nic_base+D8390_P0_ISR, 0xFF);
-	outb(eth_nic_base+D8390_P0_TCR, 0);
-	outb(eth_nic_base+D8390_P0_RCR, 4);	/* allow broadcast frames */
-#ifdef INCLUDE_T503
-        if (eth_vendor == VENDOR_3COM) {
+#endif
+		outb(D8390_COMMAND_PS0 |
+			D8390_COMMAND_RD2 | D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
+	outb(0xFF, eth_nic_base+D8390_P0_ISR);
+	outb(0, eth_nic_base+D8390_P0_TCR);
+	outb(4, eth_nic_base+D8390_P0_RCR);	/* allow broadcast frames */
+
+#ifdef INCLUDE_3C503
         /*
          * No way to tell whether or not we're supposed to use
          * the 3Com's transceiver unless the user tells us.
          * 'aui' should have some compile time default value
          * which can be changed from the command menu.
          */
-                if (nic->aui)
-                        outb(eth_asic_base + _3COM_CR, 0);
-                else
-                        outb(eth_asic_base + _3COM_CR, _3COM_CR_XSEL);
-        }
+       	t503_output = (nic->aui) ? 0 : _3COM_CR_XSEL;
+       	outb(t503_output, eth_asic_base + _3COM_CR);
 #endif
 }
+
+static int eth_poll(struct nic *nic);
+
+#ifndef	INCLUDE_3C503
+/**************************************************************************
+ETH_RX_OVERRUN - Bring adapter back to work after an RX overrun
+**************************************************************************/
+static void eth_rx_overrun(struct nic *nic)
+{
+	int start_time;
+
+#ifdef	INCLUDE_WD
+	if (eth_flags & FLAG_790)
+		outb(D8390_COMMAND_PS0 | D8390_COMMAND_STP, eth_nic_base+D8390_P0_COMMAND);
+	else
+#endif
+		outb(D8390_COMMAND_PS0 | D8390_COMMAND_RD2 |
+			D8390_COMMAND_STP, eth_nic_base+D8390_P0_COMMAND);
+
+	/* wait for at least 1.6ms - we wait one timer tick */
+	start_time = currticks();
+	while (currticks() - start_time <= 1)
+		/* Nothing */;
+
+	outb(0, eth_nic_base+D8390_P0_RBCR0);	/* reset byte counter */
+	outb(0, eth_nic_base+D8390_P0_RBCR1);
+
+	/*
+	 * Linux driver checks for interrupted TX here. This is not necessary,
+	 * because the transmit routine waits until the frame is sent.
+	 */
+
+	/* enter loopback mode and restart NIC */
+	outb(2, eth_nic_base+D8390_P0_TCR);
+#ifdef	INCLUDE_WD
+	if (eth_flags & FLAG_790)
+		outb(D8390_COMMAND_PS0 | D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
+	else
+#endif
+		outb(D8390_COMMAND_PS0 | D8390_COMMAND_RD2 |
+			D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
+
+	/* clear the RX ring, acknowledge overrun interrupt */
+	eth_drain_receiver = 1;
+	while (eth_poll(nic))
+		/* Nothing */;
+	eth_drain_receiver = 0;
+	outb(D8390_ISR_OVW, eth_nic_base+D8390_P0_ISR);
+
+	/* leave loopback mode - no packets to be resent (see Linux driver) */
+	outb(0, eth_nic_base+D8390_P0_TCR);
+}
+#endif	/* INCLUDE_3C503 */
 
 /**************************************************************************
 ETH_TRANSMIT - Transmit a frame
@@ -201,80 +347,82 @@ static void eth_transmit(
 	unsigned int s,			/* size */
 	char *p)			/* Packet */
 {
-	int c;				/* used in NETBOOT16 */
+	int c;				/* used in ETHERBOOT16 */
 
-
-#ifdef INCLUDE_T503
-        if (eth_vendor == VENDOR_3COM) {
-#ifdef	NETBOOT32
-                net_bcopy(d, (void *)eth_bmem, ETHER_ADDR_SIZE);	/* dst */
-                net_bcopy(nic->node_addr, (void *)eth_bmem+ETHER_ADDR_SIZE, ETHER_ADDR_SIZE); /* src */
+#ifdef INCLUDE_3C503
+        if (!(eth_flags & FLAG_PIO)) {
+#ifdef	ETHERBOOT32
+                memcpy((void *)eth_bmem, d, ETHER_ADDR_SIZE);	/* dst */
+                memcpy((void *)eth_bmem+ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE); /* src */
                 *((char *)eth_bmem+12) = t>>8;		/* type */
                 *((char *)eth_bmem+13) = t;
-                net_bcopy(p, (void *)eth_bmem+ETHER_HDR_SIZE, s);
+                memcpy((void *)eth_bmem+ETHER_HDR_SIZE, p, s);
                 s += ETHER_HDR_SIZE;
                 while (s < ETH_MIN_PACKET) *((char *)eth_bmem+(s++)) = 0;
 #endif
-#ifdef	NETBOOT16
-		bcopyf(d, eth_bmem, ETHER_ADDR_SIZE);
-		bcopyf(nic->node_addr, eth_bmem+ETHER_ADDR_SIZE, ETHER_ADDR_SIZE);
+#ifdef	ETHERBOOT16
+		memcpyf(eth_bmem, d, ETHER_ADDR_SIZE);
+		memcpyf(eth_bmem+ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE);
 		c = t >> 8;
-		bcopyf(&c, eth_bmem+12, 1);
+		memcpyf(eth_bmem+12, &c, 1);
 		c = t;
-		bcopyf(&c, eth_bmem+13, 1);
-		bcopyf(p, (Address)(eth_bmem+ETHER_HDR_SIZE), s);
+		memcpyf(eth_bmem+13, &c, 1);
+		memcpyf((Address)(eth_bmem+ETHER_HDR_SIZE), p, s);
 		s += ETHER_HDR_SIZE;
 		if (s < ETH_MIN_PACKET)
 			bzerof(eth_bmem+s, ETH_MIN_PACKET-s), s = ETH_MIN_PACKET;
 #endif
         }
 #endif
+        
 #ifdef INCLUDE_WD
-	if (eth_vendor == VENDOR_WD) {		/* Memory interface */
-		if (eth_flags & FLAG_16BIT) {
-			outb(eth_asic_base + WD_LAAR, eth_laar | WD_LAAR_M16EN);
-			inb(0x84);
-		}
-		if (eth_flags & FLAG_790) {
-			outb(eth_asic_base + WD_MSR, WD_MSR_MENB);
-			inb(0x84);
-		}
+	/* Memory interface */
+	if (eth_flags & FLAG_16BIT) {
+		outb(eth_laar | WD_LAAR_M16EN, eth_asic_base + WD_LAAR);
 		inb(0x84);
-#ifdef	NETBOOT32
-		net_bcopy(d, (void *)eth_bmem, ETHER_ADDR_SIZE);	/* dst */
-
-		net_bcopy(nic->node_addr, (void *)eth_bmem+ETHER_ADDR_SIZE, ETHER_ADDR_SIZE); /* src */
-		*((char *)eth_bmem+12) = t>>8;		/* type */
-		*((char *)eth_bmem+13) = t;
-		net_bcopy(p, (void *)eth_bmem+ETHER_HDR_SIZE, s);
-		s += ETHER_HDR_SIZE;
-		while (s < ETH_MIN_PACKET) *((char *)eth_bmem+(s++)) = 0;
+	}
+	if (eth_flags & FLAG_790) {
+		outb(WD_MSR_MENB, eth_asic_base + WD_MSR);
+		inb(0x84);
+	}
+	inb(0x84);
+#ifdef	ETHERBOOT32
+	memcpy((void *)eth_bmem, d, ETHER_ADDR_SIZE);	/* dst */
+	memcpy((void *)eth_bmem+ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE); /* src */
+	*((char *)eth_bmem+12) = t>>8;		/* type */
+	*((char *)eth_bmem+13) = t;
+	memcpy((void *)eth_bmem+ETHER_HDR_SIZE, p, s);
+	s += ETHER_HDR_SIZE;
+	while (s < ETH_MIN_PACKET) *((char *)eth_bmem+(s++)) = 0;
 #endif
-#ifdef	NETBOOT16
-		bcopyf(d, eth_bmem, ETHER_ADDR_SIZE);
-		bcopyf(nic->node_addr, eth_bmem+ETHER_ADDR_SIZE, ETHER_ADDR_SIZE);
-		c = t >> 8;
-		/* bcc generates worse code without (const+const) below */
-		bcopyf(&c, eth_bmem+(ETHER_ADDR_SIZE+ETHER_ADDR_SIZE), 1);
-		c = t;
-		bcopyf(&c, eth_bmem+(ETHER_ADDR_SIZE+ETHER_ADDR_SIZE+1), 1);
-		bcopyf(p, (Address)(eth_bmem+ETHER_HDR_SIZE), s);
-		s += ETHER_HDR_SIZE;
-		if (s < ETH_MIN_PACKET)
-			bzerof(eth_bmem+s, ETH_MIN_PACKET-s), s = ETH_MIN_PACKET;
+#ifdef	ETHERBOOT16
+	memcpyf(eth_bmem, d, ETHER_ADDR_SIZE);
+	memcpyf(eth_bmem+ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE);
+	c = t >> 8;
+	/* bcc generates worse code without (const+const) below */
+	memcpyf(eth_bmem+(ETHER_ADDR_SIZE+ETHER_ADDR_SIZE), &c, 1);
+	c = t;
+	memcpyf(eth_bmem+(ETHER_ADDR_SIZE+ETHER_ADDR_SIZE+1), &c, 1);
+	memcpyf((Address)(eth_bmem+ETHER_HDR_SIZE), p, s);
+	s += ETHER_HDR_SIZE;
+	if (s < ETH_MIN_PACKET)
+		bzerof(eth_bmem+s, ETH_MIN_PACKET-s), s = ETH_MIN_PACKET;
 #endif
-		if (eth_flags & FLAG_790) {
-			outb(eth_asic_base + WD_MSR, 0);
-			inb(0x84);
-		}
-		if (eth_flags & FLAG_16BIT) {
-			outb(eth_asic_base + WD_LAAR, eth_laar & ~WD_LAAR_M16EN);
-			inb(0x84);
-		}
+	if (eth_flags & FLAG_790) {
+		outb(0, eth_asic_base + WD_MSR);
+		inb(0x84);
+	}
+	if (eth_flags & FLAG_16BIT) {
+		outb(eth_laar & ~WD_LAAR_M16EN, eth_asic_base + WD_LAAR);
+		inb(0x84);
 	}
 #endif
-#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI)
-	if (eth_vendor == VENDOR_NOVELL) {	/* Programmed I/O */
+
+#if	defined(INCLUDE_3C503)
+	if (eth_flags & FLAG_PIO) {
+#endif
+#if	defined(INCLUDE_NE) || defined(INCLUDE_NEPCI) || (defined(INCLUDE_3C503) && !defined(T503_SHMEM))
+	    	/* Programmed I/O */
 		unsigned short type;
 		type = (t >> 8) | (t << 8);
 		eth_pio_write(d, eth_tx_start<<8, ETHER_ADDR_SIZE);
@@ -284,24 +432,31 @@ static void eth_transmit(
 		eth_pio_write(p, (eth_tx_start<<8)+ETHER_HDR_SIZE, s);
 		s += ETHER_HDR_SIZE;
 		if (s < ETH_MIN_PACKET) s = ETH_MIN_PACKET;
+#endif
+#if	defined(INCLUDE_3C503)
 	}
 #endif
+
+#ifdef	INCLUDE_WD
 	if (eth_flags & FLAG_790)
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0 |
-			D8390_COMMAND_STA);
+		outb(D8390_COMMAND_PS0 |
+			D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
 	else
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0 |
-			D8390_COMMAND_RD2 | D8390_COMMAND_STA);
-	outb(eth_nic_base+D8390_P0_TPSR, eth_tx_start);
-	outb(eth_nic_base+D8390_P0_TBCR0, s);
-	outb(eth_nic_base+D8390_P0_TBCR1, s>>8);
+#endif
+		outb(D8390_COMMAND_PS0 |
+			D8390_COMMAND_RD2 | D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
+	outb(eth_tx_start, eth_nic_base+D8390_P0_TPSR);
+	outb(s, eth_nic_base+D8390_P0_TBCR0);
+	outb(s>>8, eth_nic_base+D8390_P0_TBCR1);
+#ifdef	INCLUDE_WD
 	if (eth_flags & FLAG_790)
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0 |
-			D8390_COMMAND_TXP | D8390_COMMAND_STA);
+		outb(D8390_COMMAND_PS0 |
+			D8390_COMMAND_TXP | D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
 	else
-		outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0 |
+#endif
+		outb(D8390_COMMAND_PS0 |
 			D8390_COMMAND_TXP | D8390_COMMAND_RD2 |
-			D8390_COMMAND_STA);
+			D8390_COMMAND_STA, eth_nic_base+D8390_P0_COMMAND);
 }
 
 /**************************************************************************
@@ -315,44 +470,48 @@ static int eth_poll(struct nic *nic)
 	unsigned short pktoff;
 	unsigned char *p;
 	struct ringbuffer pkthdr;
-	rstat = inb(eth_nic_base+D8390_P0_RSR);
-	if (rstat & D8390_RSTAT_OVER) {
-		eth_reset(nic);
+
+#ifndef	INCLUDE_3C503
+	/* avoid infinite recursion: see eth_rx_overrun() */
+	if (!eth_drain_receiver && (inb(eth_nic_base+D8390_P0_ISR) & D8390_ISR_OVW)) {
+		eth_rx_overrun(nic);
 		return(0);
 	}
+#endif	/* INCLUDE_3C503 */
+	rstat = inb(eth_nic_base+D8390_P0_RSR);
 	if (!(rstat & D8390_RSTAT_PRX)) return(0);
 	next = inb(eth_nic_base+D8390_P0_BOUND)+1;
 	if (next >= eth_memsize) next = eth_rx_start;
-	outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS1);
+	outb(D8390_COMMAND_PS1, eth_nic_base+D8390_P0_COMMAND);
 	curr = inb(eth_nic_base+D8390_P1_CURR);
-	outb(eth_nic_base+D8390_P0_COMMAND, D8390_COMMAND_PS0);
+	outb(D8390_COMMAND_PS0, eth_nic_base+D8390_P0_COMMAND);
 	if (curr >= eth_memsize) curr=eth_rx_start;
 	if (curr == next) return(0);
-	if (eth_vendor == VENDOR_WD) {
-		if (eth_flags & FLAG_16BIT) {
-			outb(eth_asic_base + WD_LAAR, eth_laar | WD_LAAR_M16EN);
-			inb(0x84);
-		}
-		if (eth_flags & FLAG_790) {
-			outb(eth_asic_base + WD_MSR, WD_MSR_MENB);
-			inb(0x84);
-		}
+#ifdef	INCLUDE_WD
+	if (eth_flags & FLAG_16BIT) {
+		outb(eth_laar | WD_LAAR_M16EN, eth_asic_base + WD_LAAR);
 		inb(0x84);
 	}
+	if (eth_flags & FLAG_790) {
+		outb(WD_MSR_MENB, eth_asic_base + WD_MSR);
+		inb(0x84);
+	}
+	inb(0x84);
+#endif
 	pktoff = next << 8;
 	if (eth_flags & FLAG_PIO)
 		eth_pio_read(pktoff, (char *)&pkthdr, 4);
 	else
-#ifdef	NETBOOT32
-		net_bcopy((void *)eth_rmem + pktoff, &pkthdr, 4);
+#ifdef	ETHERBOOT32
+		memcpy(&pkthdr, (void *)eth_rmem + pktoff, 4);
 #endif
-#ifdef	NETBOOT16
-		fnet_bcopy(eth_rmem + pktoff, &pkthdr, 4);
+#ifdef	ETHERBOOT16
+		fmemcpy(&pkthdr, eth_rmem + pktoff, 4);
 #endif
 	pktoff += sizeof(pkthdr);
 	len = pkthdr.len - 4; /* sub CRC */
-	if ((pkthdr.status & D8390_RSTAT_PRX) == 0 || pkthdr.len < ETH_MIN_PACKET || pkthdr.len > ETH_MAX_PACKET) {
-		printf("B");
+	if ((pkthdr.status & D8390_RSTAT_PRX) == 0 || pkthdr.len < ETH_MIN_PACKET) {
+		printf("Bogus packet, ignoring\n");
 		return (0);
 	}
 	else {
@@ -364,11 +523,11 @@ static int eth_poll(struct nic *nic)
 			if (eth_flags & FLAG_PIO)
 				eth_pio_read(pktoff, p, frag);
 			else
-#ifdef	NETBOOT32
-				net_bcopy((void *)eth_rmem + pktoff, p, frag);
+#ifdef	ETHERBOOT32
+				memcpy(p, (void *)eth_rmem + pktoff, frag);
 #endif
-#ifdef	NETBOOT16
-				fnet_bcopy(eth_rmem + pktoff, p, frag);
+#ifdef	ETHERBOOT16
+				fmemcpy(p, eth_rmem + pktoff, frag);
 #endif
 			pktoff = eth_rx_start << 8;
 			p += frag;
@@ -378,30 +537,29 @@ static int eth_poll(struct nic *nic)
 		if (eth_flags & FLAG_PIO)
 			eth_pio_read(pktoff, p, len);
 		else
-#ifdef	NETBOOT32
-			net_bcopy((void *)eth_rmem + pktoff, p, len);
+#ifdef	ETHERBOOT32
+			memcpy(p, (void *)eth_rmem + pktoff, len);
 #endif
-#ifdef	NETBOOT16
-			fnet_bcopy(eth_rmem + pktoff, p, len);
+#ifdef	ETHERBOOT16
+			fmemcpy(p, eth_rmem + pktoff, len);
 #endif
 		ret = 1;
 	}
-	if (eth_vendor == VENDOR_WD) {
-		if (eth_flags & FLAG_790) {
-			outb(eth_asic_base + WD_MSR, 0);
-			inb(0x84);
-		}
-		if (eth_flags & FLAG_16BIT) {
-			outb(eth_asic_base + WD_LAAR, eth_laar &
-				~WD_LAAR_M16EN);
-			inb(0x84);
-		}
+#ifdef	INCLUDE_WD
+	if (eth_flags & FLAG_790) {
+		outb(0, eth_asic_base + WD_MSR);
 		inb(0x84);
 	}
+	if (eth_flags & FLAG_16BIT) {
+		outb(eth_laar & ~WD_LAAR_M16EN, eth_asic_base + WD_LAAR);
+		inb(0x84);
+	}
+	inb(0x84);
+#endif
 	next = pkthdr.next;		/* frame number of next packet */
 	if (next == eth_rx_start)
 		next = eth_memsize;
-	outb(eth_nic_base+D8390_P0_BOUND, next-1);
+	outb(next-1, eth_nic_base+D8390_P0_BOUND);
 	return(ret);
 }
 
@@ -421,11 +579,11 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 	struct wd_board *brd;
 	unsigned short chksum;
 	unsigned char c;
-#if	defined(INCLUDE_WD) && defined(NETBOOT16)
+#if	defined(INCLUDE_WD) && defined(ETHERBOOT16)
 	unsigned char	bmem13, bmem11;
 #endif
-
 	eth_vendor = VENDOR_NONE;
+	eth_drain_receiver = 0;
 
 #ifdef INCLUDE_WD
 	/******************************************************************
@@ -435,130 +593,132 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 		eth_asic_base += 0x20) {
 		chksum = 0;
 		for (i=8; i<16; i++)
-			chksum += inb(i+eth_asic_base);
-		if ((chksum & 0x00FF) == 0x00FF)
+			chksum += inb(eth_asic_base+i);
+		/* Extra checks to avoid soundcard */
+		if ((chksum & 0xFF) == 0xFF &&
+			inb(eth_asic_base+8) != 0xFF &&
+			inb(eth_asic_base+9) != 0xFF)
 			break;
 	}
-	if (eth_asic_base <= WD_HIGH_BASE) { /* We've found a board */
-		eth_vendor = VENDOR_WD;
-		eth_nic_base = eth_asic_base + WD_NIC_ADDR;
-		c = inb(eth_asic_base+WD_BID);	/* Get board id */
-		for (brd = wd_boards; brd->name; brd++)
-			if (brd->id == c) break;
-		if (!brd->name) {
-			printf("\r\nUnknown Ethernet type %x\r\n", c);
-			return(0);	/* Unknown type */
+	if (eth_asic_base > WD_HIGH_BASE)
+		return (0);
+	/* We've found a board */
+	eth_vendor = VENDOR_WD;
+	eth_nic_base = eth_asic_base + WD_NIC_ADDR;
+	c = inb(eth_asic_base+WD_BID);	/* Get board id */
+	for (brd = wd_boards; brd->name; brd++)
+		if (brd->id == c) break;
+	if (!brd->name) {
+		printf("Unknown WD/SMC NIC type %x\n", c);
+		return (0);	/* Unknown type */
+	}
+	eth_flags = brd->flags;
+	eth_memsize = brd->memsize;
+	eth_tx_start = 0;
+	eth_rx_start = D8390_TXBUF_SIZE;
+	if ((c == TYPE_WD8013EP) &&
+		(inb(eth_asic_base + WD_ICR) & WD_ICR_16BIT)) {
+			eth_flags = FLAG_16BIT;
+			eth_memsize = MEM_16384;
+	}
+	if ((c & WD_SOFTCONFIG) && (!(eth_flags & FLAG_790))) {
+#ifdef	ETHERBOOT32
+		eth_bmem = (0x80000 |
+		 ((inb(eth_asic_base + WD_MSR) & 0x3F) << 13));
+#endif
+#ifdef	ETHERBOOT16
+		eth_bmem = inb(eth_asic_base + WD_MSR) & 0x3F;
+		eth_bmem <<= 13;
+		eth_bmem |= 0x80000;
+#endif
+	} else
+		eth_bmem = WD_DEFAULT_MEM;
+#ifdef	ETHERBOOT16
+	/* cast is to force evaluation in long precision */
+	bmem13 = (Address)eth_bmem >> 13;
+	bmem11 = (Address)eth_bmem >> 11;
+#endif
+#ifdef	ETHERBOOT32
+	if (brd->id == TYPE_SMC8216T || brd->id == TYPE_SMC8216C) {
+		*((unsigned int *)(eth_bmem + 8192)) = (unsigned int)0;
+		if (*((unsigned int *)(eth_bmem + 8192))) {
+			brd += 2;
+			eth_memsize = brd->memsize;
 		}
-		eth_flags = brd->flags;
-		eth_memsize = brd->memsize;
-		eth_tx_start = 0;
-		eth_rx_start = D8390_TXBUF_SIZE;
-		if ((c == TYPE_WD8013EP) &&
-			(inb(eth_asic_base + WD_ICR) & WD_ICR_16BIT)) {
-				eth_flags = FLAG_16BIT;
-				eth_memsize = MEM_16384;
-		}
-		if ((c & WD_SOFTCONFIG) && (!(eth_flags & FLAG_790))) {
-#ifdef	NETBOOT32
-			eth_bmem = (0x80000 |
-			 ((inb(eth_asic_base + WD_MSR) & 0x3F) << 13));
-#endif
-#ifdef	NETBOOT16
-			eth_bmem = inb(eth_asic_base + WD_MSR) & 0x3F;
-			eth_bmem <<= 13;
-			eth_bmem |= 0x80000;
-#endif
-		} else
-			eth_bmem = WD_DEFAULT_MEM;
-#ifdef	NETBOOT16
-		/* cast is to force evaluation in long precision */
-		bmem13 = (Address)eth_bmem >> 13;
-		bmem11 = (Address)eth_bmem >> 11;
-#endif
-#ifdef	NETBOOT32
-		if (brd->id == TYPE_SMC8216T || brd->id == TYPE_SMC8216C) {
-			*((unsigned int *)(eth_bmem + 8192)) = (unsigned int)0;
-			if (*((unsigned int *)(eth_bmem + 8192))) {
-				brd += 2;
-				eth_memsize = brd->memsize;
-			}
-		}
-#endif
-#ifdef	NETBOOT16
-		if (brd->id == TYPE_SMC8216T || brd->id == TYPE_SMC8216C) {
-			i = 0;
-			bcopyf(&i, eth_bmem + 8192, sizeof(i));
-			if (!fbsame(eth_bmem + 8192, 0, sizeof(i))) {
-				brd += 2;
-				eth_memsize = brd->memsize;
-			}
-		}
-#endif
-		outb(eth_asic_base + WD_MSR, 0x80);	/* Reset */
-		printf("\r\n%s base 0x%x, memory 0x%x, addr ",
-			brd->name, eth_asic_base, eth_bmem);
-		for (i=0; i<ETHER_ADDR_SIZE; i++) {
-			printf("%x",((int)(nic->node_addr[i] =
-				inb(i+eth_asic_base+WD_LAR)) & 0xff));
-				if (i < ETHER_ADDR_SIZE-1) printf (":");
-		}
-		if (eth_flags & FLAG_790) {
-			outb(eth_asic_base+WD_MSR, WD_MSR_MENB);
-			outb(eth_asic_base+0x04, (inb(eth_asic_base+0x04) |
-				0x80));
-#ifdef	NETBOOT32
-			outb(eth_asic_base+0x0B,
-				(((unsigned)eth_bmem >> 13) & 0x0F) |
-				(((unsigned)eth_bmem >> 11) & 0x40) |
-				(inb(eth_asic_base+0x0B) & 0xB0));
-#endif
-#ifdef	NETBOOT16
-			outb(eth_asic_base+0x0B,
-				(bmem13 & 0x0F) |
-				(bmem11 & 0x40) |
-				(inb(eth_asic_base+0x0B) & 0xB0));
-#endif
-			outb(eth_asic_base+0x04, (inb(eth_asic_base+0x04) &
-				~0x80));
-		} else {
-#ifdef	NETBOOT32
-			outb(eth_asic_base+WD_MSR,
-				(((unsigned)eth_bmem >> 13) & 0x3F) | 0x40);
-#endif
-#ifdef	NETBOOT16
-			outb(eth_asic_base+WD_MSR,
-				(bmem13 & 0x3F) | 0x40);
-#endif
-		}
-		if (eth_flags & FLAG_16BIT) {
-			if (eth_flags & FLAG_790) {
-				eth_laar = inb(eth_asic_base + WD_LAAR);
-				outb(eth_asic_base + WD_LAAR, WD_LAAR_M16EN);
-				inb(0x84);
-			} else {
-				outb(eth_asic_base + WD_LAAR, (eth_laar =
-					WD_LAAR_M16EN | WD_LAAR_L16EN | 1));
-			}
-		}
-		printf("\r\n");
-
 	}
 #endif
-#ifdef INCLUDE_T503
+#ifdef	ETHERBOOT16
+	if (brd->id == TYPE_SMC8216T || brd->id == TYPE_SMC8216C) {
+		i = 0;
+		memcpyf(eth_bmem + 8192, &i, sizeof(i));
+		if (!fbsame(eth_bmem + 8192, 0, sizeof(i))) {
+			brd += 2;
+			eth_memsize = brd->memsize;
+		}
+	}
+#endif
+	outb(0x80, eth_asic_base + WD_MSR);	/* Reset */
+	printf("\n%s base 0x%x, memory 0x%X, addr ",
+		brd->name, eth_asic_base, eth_bmem);
+	for (i=0; i<ETHER_ADDR_SIZE; i++) {
+		printf("%b",(int)(nic->node_addr[i] =
+			inb(i+eth_asic_base+WD_LAR)));
+			if (i < ETHER_ADDR_SIZE-1) printf (":");
+	}
+	if (eth_flags & FLAG_790) {
+		outb(WD_MSR_MENB, eth_asic_base+WD_MSR);
+		outb((inb(eth_asic_base+0x04) |
+			0x80), eth_asic_base+0x04);
+#ifdef	ETHERBOOT32
+		outb((((unsigned)eth_bmem >> 13) & 0x0F) |
+			(((unsigned)eth_bmem >> 11) & 0x40) |
+			(inb(eth_asic_base+0x0B) & 0xB0), eth_asic_base+0x0B);
+#endif
+#ifdef	ETHERBOOT16
+		outb((bmem13 & 0x0F) |
+			(bmem11 & 0x40) |
+			(inb(eth_asic_base+0x0B) & 0xB0), eth_asic_base+0x0B);
+#endif
+		outb((inb(eth_asic_base+0x04) &
+			~0x80), eth_asic_base+0x04);
+	} else {
+#ifdef	ETHERBOOT32
+		outb((((unsigned)eth_bmem >> 13) & 0x3F) | 0x40, eth_asic_base+WD_MSR);
+#endif
+#ifdef	ETHERBOOT16
+		outb((bmem13 & 0x3F) | 0x40, eth_asic_base+WD_MSR);
+#endif
+	}
+	if (eth_flags & FLAG_16BIT) {
+		if (eth_flags & FLAG_790) {
+			eth_laar = inb(eth_asic_base + WD_LAAR);
+			outb(WD_LAAR_M16EN, eth_asic_base + WD_LAAR);
+		} else {
+			outb((eth_laar =
+				WD_LAAR_L16EN | 1), eth_asic_base + WD_LAAR);
+/*
+	The previous line used to be
+				WD_LAAR_M16EN | WD_LAAR_L16EN | 1));
+	jluke@deakin.edu.au reported that removing WD_LAAR_M16EN made
+	it work for WD8013s.  This seems to work for my 8013 boards. I
+	don't know what is really happening.  I wish I had data sheets
+	or more time to decode the Linux driver. - Ken
+*/
+		}
+		inb(0x84);
+	}
+	putchar('\n');
+#endif
+#ifdef INCLUDE_3C503
         /******************************************************************
         Search for 3Com 3c503 if no WD/SMC cards
         ******************************************************************/
 	if (eth_vendor == VENDOR_NONE) {
 		int	idx;
+		int	iobase_reg, membase_reg;
 		static unsigned short	base[] = {
 			0x300, 0x310, 0x330, 0x350,
 			0x250, 0x280, 0x2A0, 0x2E0, 0 };
-		/* this must parallel the table above */
-		static unsigned char	bcfr[] = {
-                        _3COM_BCFR_300, _3COM_BCFR_310,
-                        _3COM_BCFR_330, _3COM_BCFR_350,
-                        _3COM_BCFR_250, _3COM_BCFR_280,
-                        _3COM_BCFR_2A0, _3COM_BCFR_2E0, 0 };
 
 		/* Loop through possible addresses checking each one */
 
@@ -574,14 +734,21 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 			eth_tx_start = 32;
 			eth_rx_start = 32 + D8390_TXBUF_SIZE;
 
-		/* Check our base address */
+		/* Check our base address. iobase and membase should */
+		/* both have a maximum of 1 bit set or be 0. */
 
-			if (inb(eth_asic_base + _3COM_BCFR) != bcfr[idx])
+			iobase_reg = inb(eth_asic_base + _3COM_BCFR);
+			membase_reg = inb(eth_asic_base + _3COM_PCFR);
+
+			if ((iobase_reg & (iobase_reg - 1)) ||
+				(membase_reg & (membase_reg - 1)))
 				continue;		/* nope */
 
 		/* Now get the shared memory address */
 
-			switch (inb(eth_asic_base + _3COM_PCFR)) {
+			eth_flags = 0;
+
+			switch (membase_reg) {
 				case _3COM_PCFR_DC000:
 					eth_bmem = 0xdc000;
 					break;
@@ -594,6 +761,10 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 				case _3COM_PCFR_C8000:
 					eth_bmem = 0xc8000;
 					break;
+				case _3COM_PCFR_PIO:
+					eth_flags |= FLAG_PIO;
+					eth_bmem = 0;
+					break;
 				default:
 					continue;	/* nope */
 				}
@@ -602,6 +773,10 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 
 		if (base[idx] == 0)		/* not found */
 			return (0);
+#ifndef	T503_SHMEM
+		eth_flags |= FLAG_PIO;		/* force PIO mode */
+		eth_bmem = 0;
+#endif
 		eth_vendor = VENDOR_3COM;
 
 
@@ -611,55 +786,62 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 
         /* Reset NIC and ASIC */
 
-                outb (eth_asic_base + _3COM_CR , _3COM_CR_RST | _3COM_CR_XSEL);
-                outb (eth_asic_base + _3COM_CR , _3COM_CR_XSEL);
+                outb(_3COM_CR_RST | _3COM_CR_XSEL, eth_asic_base + _3COM_CR );
+                outb(_3COM_CR_XSEL, eth_asic_base + _3COM_CR );
 
         /* Get our ethernet address */
 
-                outb(eth_asic_base + _3COM_CR, _3COM_CR_EALO | _3COM_CR_XSEL);
-                printf("\r\n3Com 3c503 base 0x%x, memory 0x%X addr ",
-                                 eth_nic_base, eth_bmem);
+                outb(_3COM_CR_EALO | _3COM_CR_XSEL, eth_asic_base + _3COM_CR);
+                printf("\n3Com 3c503 base 0x%x, ", eth_nic_base);
+                if (eth_flags & FLAG_PIO)
+                	printf("PIO mode");
+                else
+                	printf("memory 0x%X", eth_bmem);
+                printf(", %s, addr ", nic->aui ? "AUI" : "internal xcvr");
                 for (i=0; i<ETHER_ADDR_SIZE; i++) {
                         printf("%b",(int)(nic->node_addr[i] =
 			inb(eth_nic_base+i)));
                         if (i < ETHER_ADDR_SIZE-1) printf (":");
                 }
-                outb(eth_asic_base + _3COM_CR, _3COM_CR_XSEL);
+                outb(_3COM_CR_XSEL, eth_asic_base + _3COM_CR);
         /*
          * Initialize GA configuration register. Set bank and enable shared
-         * mem. We always use bank 1.
+         * mem. We always use bank 1. Disable interrupts.
          */
-                outb(eth_asic_base + _3COM_GACFR, _3COM_GACFR_RSEL |
-                                _3COM_GACFR_MBS0);
+                outb(_3COM_GACFR_RSEL |
+			_3COM_GACFR_MBS0 | _3COM_GACFR_TCM | _3COM_GACFR_NIM, eth_asic_base + _3COM_GACFR);
 
-                outb(eth_asic_base + _3COM_VPTR2, 0xff);
-                outb(eth_asic_base + _3COM_VPTR1, 0xff);
-                outb(eth_asic_base + _3COM_VPTR0, 0x00);
+                outb(0xff, eth_asic_base + _3COM_VPTR2);
+                outb(0xff, eth_asic_base + _3COM_VPTR1);
+                outb(0x00, eth_asic_base + _3COM_VPTR0);
         /*
          * Clear memory and verify that it worked (we use only 8K)
          */
-#ifdef	NETBOOT32
-                bzero((char *)eth_bmem, 0x2000);
-                for(i = 0; i < 0x2000; ++i)
-                        if (*(((char *)eth_bmem)+i)) {
-                                printf ("Failed to clear 3c503 shared mem.\r\n");
-                                return (0);
-                        }
+
+        	if (!(eth_flags & FLAG_PIO)) {
+#ifdef	ETHERBOOT32
+                	memset((char *)eth_bmem, 0, 0x2000);
+                	for(i = 0; i < 0x2000; ++i)
+                        	if (*(((char *)eth_bmem)+i)) {
+                                	printf ("Failed to clear 3c503 shared mem.\n");
+                                	return (0);
+                        	}
 #endif
-#ifdef	NETBOOT16
-                bzerof(eth_bmem, 0x2000);
-		if (!fbsame(eth_bmem, 0, 0x2000)) {
-			printf ("Failed to clear 3c503 shared mem.\r\n");
-			return (0);
-		}
+#ifdef	ETHERBOOT16
+                	bzerof(eth_bmem, 0x2000);
+			if (!fbsame(eth_bmem, 0, 0x2000)) {
+				printf ("Failed to clear 3c503 shared mem.\n");
+				return (0);
+			}
 #endif
+        	}
         /*
          * Initialize GA page/start/stop registers.
          */
-                outb(eth_asic_base + _3COM_PSTR, eth_tx_start);
-                outb(eth_asic_base + _3COM_PSPR, eth_memsize);
+                outb(eth_tx_start, eth_asic_base + _3COM_PSTR);
+                outb(eth_memsize, eth_asic_base + _3COM_PSPR);
 
-                printf ("\r\n");
+                printf ("\n");
 
         }
 #endif
@@ -671,10 +853,11 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 		char romdata[16], testbuf[32];
 		int idx;
 		static char test[] = "NE1000/2000 memory";
-#ifndef	NE_SCAN
-#define	NE_SCAN	0
+		static unsigned short base[] = {
+#ifdef	NE_SCAN
+			NE_SCAN,
 #endif
-		static unsigned short base[] = {NE_SCAN, 0};
+			0 };
 		/* if no addresses supplied, fall back on defaults */
 		if (probe_addrs == 0 || probe_addrs[0] == 0)
 			probe_addrs = base;
@@ -686,29 +869,29 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 			eth_tx_start = 32;
 			eth_rx_start = 32 + D8390_TXBUF_SIZE;
 			c = inb(eth_asic_base + NE_RESET);
-			outb(eth_asic_base + NE_RESET, c);
+			outb(c, eth_asic_base + NE_RESET);
 			inb(0x84);
-			outb(eth_nic_base + D8390_P0_COMMAND, D8390_COMMAND_STP |
-				D8390_COMMAND_RD2);
-			outb(eth_nic_base + D8390_P0_RCR, D8390_RCR_MON);
-			outb(eth_nic_base + D8390_P0_DCR, D8390_DCR_FT1 | D8390_DCR_LS);
-			outb(eth_nic_base + D8390_P0_PSTART, MEM_8192);
-			outb(eth_nic_base + D8390_P0_PSTOP, MEM_16384);
+			outb(D8390_COMMAND_STP |
+				D8390_COMMAND_RD2, eth_nic_base + D8390_P0_COMMAND);
+			outb(D8390_RCR_MON, eth_nic_base + D8390_P0_RCR);
+			outb(D8390_DCR_FT1 | D8390_DCR_LS, eth_nic_base + D8390_P0_DCR);
+			outb(MEM_8192, eth_nic_base + D8390_P0_PSTART);
+			outb(MEM_16384, eth_nic_base + D8390_P0_PSTOP);
 			eth_pio_write(test, 8192, sizeof(test));
 			eth_pio_read(8192, testbuf, sizeof(test));
-			if (!bcmp(test, testbuf, sizeof(test)))
+			if (!memcmp(test, testbuf, sizeof(test)))
 				break;
 			eth_flags |= FLAG_16BIT;
 			eth_memsize = MEM_32768;
 			eth_tx_start = 64;
 			eth_rx_start = 64 + D8390_TXBUF_SIZE;
-			outb(eth_nic_base + D8390_P0_DCR, D8390_DCR_WTS |
-				D8390_DCR_FT1 | D8390_DCR_LS);
-			outb(eth_nic_base + D8390_P0_PSTART, MEM_16384);
-			outb(eth_nic_base + D8390_P0_PSTOP, MEM_32768);
+			outb(D8390_DCR_WTS |
+				D8390_DCR_FT1 | D8390_DCR_LS, eth_nic_base + D8390_P0_DCR);
+			outb(MEM_16384, eth_nic_base + D8390_P0_PSTART);
+			outb(MEM_32768, eth_nic_base + D8390_P0_PSTOP);
 			eth_pio_write(test, 16384, sizeof(test));
 			eth_pio_read(16384, testbuf, sizeof(test));
-			if (!bcmp(testbuf, test, sizeof(test)))
+			if (!memcmp(testbuf, test, sizeof(test)))
 				break;
 		}
 		if (eth_nic_base == 0)
@@ -716,19 +899,21 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 		if (eth_nic_base > ISA_MAX_ADDR)	/* PCI probably */
 			eth_flags |= FLAG_16BIT;
 		eth_vendor = VENDOR_NOVELL;
-		eth_pio_read(0, romdata, 16);
-		printf("\r\nNE*000 base 0x%x, addr ", eth_nic_base);
+		eth_pio_read(0, romdata, sizeof(romdata));
+		printf("\nNE%c000 base 0x%x, addr ",
+			(eth_flags & FLAG_16BIT) ? '2' : '1', eth_nic_base);
 		for (i=0; i<ETHER_ADDR_SIZE; i++) {
-			printf("%x",(int)(nic->node_addr[i] = romdata[i
+			printf("%b",(int)(nic->node_addr[i] = romdata[i
 				+ ((eth_flags & FLAG_16BIT) ? i : 0)]));
 			if (i < ETHER_ADDR_SIZE-1) printf (":");
 		}
-		printf("\r\n");
+		putchar('\n');
 	}
 #endif
-	if (eth_vendor == VENDOR_NONE) return(0);
-
-        if (eth_vendor != VENDOR_3COM) eth_rmem = eth_bmem;
+	if (eth_vendor == VENDOR_NONE)
+		return(0);
+        if (eth_vendor != VENDOR_3COM)
+		eth_rmem = eth_bmem;
 	eth_reset(nic);
 	nic->reset = eth_reset;
 	nic->poll = eth_poll;
@@ -737,10 +922,9 @@ struct nic *eth_probe(struct nic *nic, unsigned short *probe_addrs)
 	return(nic);
 }
 
-#endif
-
 /*
  * Local variables:
  *  c-basic-offset: 8
  * End:
  */
+

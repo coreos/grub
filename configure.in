@@ -190,12 +190,12 @@ if test x"$enable_minix" != xno; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_MINIX=1"
 fi
 
-AC_ARG_ENABLE(tftp,
-  [  --enable-tftp           enable TFTP support in Stage 2])
-
-if test x"$enable_tftp" = xyes; then
-  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_TFTP=1"
-fi
+dnl AC_ARG_ENABLE(tftp,
+dnl [  --enable-tftp           enable TFTP support in Stage 2])
+dnl 
+dnl #if test x"$enable_tftp" = xyes; then
+dnl FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_TFTP=1"
+dnl fi
 
 AC_ARG_ENABLE(gunzip,
   [  --disable-gunzip        disable decompression in Stage 2])
@@ -204,93 +204,251 @@ if test x"$enable_gunzip" = xno; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DNO_DECOMPRESSION=1"
 fi
 
-AC_SUBST(FSYS_CFLAGS)
 
-AC_ARG_ENABLE(ne,
-  [  --enable-ne             enable NE1000/2000 network driver in Stage 2])
-
-if test x"$enable_ne" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE=1"
+dnl The netboot support.
+dnl General options.
+AC_ARG_ENABLE(packet-retransmission,
+  [  --enable-packet-retransmission
+                          turn on packet retransmission])
+if test "x$enable_packet_retransmission" = xyes; then
+  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONGESTED=1"
 fi
 
-AC_ARG_ENABLE(nepci,
-  [  --enable-nepci          enable PCI NE2000 network driver in Stage 2])
-
-if test x"$enable_nepci" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NEPCI=1"
+AC_ARG_ENABLE(pci-direct,
+  [  --enable-pci-direct     access PCI directly instead of using BIOS])
+if test "x$enable_pci_direct" = xyes; then
+  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONFIG_PCI_DIRECT=1"
 fi
 
-AC_ARG_ENABLE(wd,
-  [  --enable-wd             enable WD/SMC network driver in Stage 2])
-
-if test x"$enable_wd" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_WD=1"
+dnl Device drivers.
+AC_ARG_ENABLE(3c509,
+  [  --enable-3c509          enable 3Com509 driver])
+if test "x$enable_3c509" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C509"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c509.o"
 fi
 
-AC_ARG_ENABLE(t503,
-  [  --enable-t503           enable 3C503 network driver in Stage 2])
-
-if test x"$enable_t503" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_T503=1"
-fi
-
-AC_ARG_ENABLE(t509,
-  [  --enable-t509           enable 3C509 network driver in Stage 2])
-
-if test x"$enable_t509" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_T509=1"
+AC_ARG_ENABLE(3c529,
+  [  --enable-3c529          enable 3Com529 driver])
+if test "x$enable_3c529" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C529=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c529.o"
 fi
 
 AC_ARG_ENABLE(3c59x,
-  [  --enable-3c59x          enable 3C59x network driver in Stage 2])
-
-if test x"$enable_3c59x" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C59X=1"
+  [  --enable-3c59x          enable 3Com59x driver])
+if test "x$enable_3c59x" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C59x=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c59x.o"
 fi
 
-AC_ARG_ENABLE(lance,
-  [  --enable-lance          enable LANCE network driver in Stage 2])
-
-if test x"$enable_lance" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_LANCE=1"
+AC_ARG_ENABLE(3c90x,
+  [  --enable-3c90x          enable 3Com90x driver])
+if test "x$enable_3c90x" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90x=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c90x.o"
 fi
 
-AC_ARG_ENABLE(cs,
-  [  --enable-cs             enable CS89*0 network driver in Stage 2])
-
-if test x"$enable_cs" = xyes; then
-  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_CS=1"
+AC_ARG_ENABLE(cs89x0,
+  [  --enable-cs89x0         enable CS89x0 driver])
+if test "x$enable_cs89x0" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_CS89X0=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS cs89x0.o"
 fi
 
 AC_ARG_ENABLE(eepro100,
-  [  --enable-eepro100       enable EtherExpress100 network driver in Stage 2])
-
-if test x"$enable_eepro100" = xyes; then
+  [  --enable-eepro100       enable Etherexpress Pro/100 driver])
+if test "x$enable_eepro100" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EEPRO100=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS eepro100.o"
 fi
 
-AC_SUBST(NET_CFLAGS)
-AM_CONDITIONAL(NETBOOT_SUPPORT, test ! -z "$NET_CFLAGS")
+AC_ARG_ENABLE(epic100,
+  [  --enable-epic100        enable SMC 83c170 EPIC/100 driver])
+if test "x$enable_epic100" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EPIC100=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS epic100.o"
+fi
 
+AC_ARG_ENABLE(3c507,
+  [  --enable-3c507          enable 3Com507 driver])
+if test "x$enable_3c507" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C507=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c507.o"
+fi
+
+AC_ARG_ENABLE(exos205,
+  [  --enable-exos205        enable EXOS205 driver])
+if test "x$enable_exos205" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EXOS205=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS exos205.o"
+fi
+
+AC_ARG_ENABLE(ni5210,
+  [  --enable-ni5210         enable Racal-Interlan NI5210 driver])
+if test "x$enable_ni5210" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI5210=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni5210.o"
+fi
+
+AC_ARG_ENABLE(lancepci,
+  [  --enable-lancepci       enable Lance PCI PCNet/32 driver])
+if test "x$enable_lancepci" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_LANCEPCI=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS lancepci.o"
+fi
+
+AC_ARG_ENABLE(ne2100,
+  [  --enable-ne2100         enable Novell NE2100 driver])
+if test "x$enable_ne2100" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE2100=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne2100.o"
+fi
+
+AC_ARG_ENABLE(ni6510,
+  [  --enable-ni6510         enable Racal-Interlan NI6510 driver])
+if test "x$enable_ni6510" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI6510=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni6510.o"
+fi
+
+AC_ARG_ENABLE(3c503,
+  [  --enable-3c503          enable 3Com503 driver])
+if test "x$enable_3c503" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C503=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c503.o"
+fi
+
+AC_ARG_ENABLE(ne,
+  [  --enable-ne             enable NE1000/2000 ISA driver])
+if test "x$enable_ne" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne.o"
+fi
+
+AC_ARG_ENABLE(nepci,
+  [  --enable-nepci          enable NE2000 PCI driver])
+if test "x$enable_nepci" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NEPCI=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS nepci.o"
+fi
+
+AC_ARG_ENABLE(wd,
+  [  --enable-wd             enable WD8003/8013, SMC8216/8416 driver])
+if test "x$enable_wd" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_WD=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS wd.o"
+fi
+
+AC_ARG_ENABLE(ntulip,
+  [  --enable-ntulip         enable Tulip driver])
+if test "x$enable_ntulip" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NTULIP=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS ntulip.o"
+fi
+
+AC_ARG_ENABLE(rtl8139,
+  [  --enable-rtl8139        enable Realtek 8139 driver])
+if test "x$enable_rtl8139" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_RTL8139=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS rtl8139.o"
+fi
+
+AC_ARG_ENABLE(sk-g16,
+  [  --enable-sk-g16         enable Schneider and Koch G16 driver])
+if test "x$enable_sk_g16" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SK_G16=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS sk_g16.o"
+fi
+
+AC_ARG_ENABLE(smc9000,
+  [  --enable-smc9000        enable SMC9000 driver])
+if test "x$enable_smc9000" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SMC9000=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS smc9000.o"
+fi
+
+AC_ARG_ENABLE(tiara,
+  [  --enable-tiara          enable Tiara driver])
+if test "x$enable_tiara" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TIARA=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS tiara.o"
+fi
+
+AC_ARG_ENABLE(tulip,
+  [  --enable-tulip          enable old Tulip driver])
+if test "x$enable_tulip" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TULIP=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS tulip.o"
+fi
+
+AC_ARG_ENABLE(via-rhine,
+  [  --enable-via-rhine      enable Rhine-I/II driver])
+if test "x$enable_via_rhine" = xyes; then
+  NET_CFLAGS="$NET_CFLAGS -DINCLUDE_VIA_RHINE=1"
+  NETBOOT_DRIVERS="$NETBOOT_DRIVERS via_rhine.o"
+fi
+
+AM_CONDITIONAL(NETBOOT_SUPPORT, test "x$NET_CFLAGS" != x)
+if test "x$NET_CFLAGS" != x; then
+  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_TFTP=1"
+fi
+
+dnl Extra options.
+AC_ARG_ENABLE(3c503-shmem,
+  [  --enable-3c503-shmem    use 3c503 shared memory mode])
+if test "x$enable_3c503_shmem" = xyes; then
+  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT503_SHMEM=1"
+fi
+
+AC_ARG_ENABLE(3c503-aui,
+  [  --enable-3c503-aui      use AUI by default on 3c503 cards])
+if test "x$enable_3c503_aui" = xyes; then
+  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT503_AUI=1"
+fi
+
+AC_ARG_ENABLE(3c509-hack,
+  [  --enable-3c509-hack     make a 3c509 do bootp quicker])
+if test "x$enable_3c509_hack" = xyes; then
+  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT509HACK=1"
+fi
+
+AC_ARG_ENABLE(compex-rl2000-fix,
+  [  --enable-compex-rl2000-fix
+                          specify this if you have a Compex RL2000 PCI])
+if test "x$enable_compex_rl2000_fix" = xyes; then
+  NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCOMPEX_RL2000_FIX=1"
+fi
+
+AC_ARG_ENABLE(smc9000,
+  [  --enable-smc9000-scan=LIST
+                          probe for SMC9000 I/O addresses using LIST],
+  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DSMC9000_SCAN=$enable_smc9000_scan"])
 
 AC_ARG_ENABLE(ne-scan,
-  [  --enable-ne-scan        set the parameter for NE network driver],
-[NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DNE_SCAN=$enable_ne_scan"],
-[NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DNE_SCAN=0x280,0x300,0x320,0x340"])
+  [  --enable-ne-scan=LIST   probe for NE base address using LIST],
+  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DNE_SCAN=$enable_ne_scan"],
+  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DNE_SCAN=0x280,0x300,0x320,0x340"])
 
 AC_ARG_ENABLE(wd-default-mem,
-  [  --enable-wd-default-mem set the parameter for WD network driver],
-[NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DWD_DEFAULT_MEM=$enable_wd_default_mem"],
-[NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DWD_DEFAULT_MEM=0xCC000"])
+  [  --enable-wd-default-mem=MEM
+                          set the default memory location for WD/SMC],
+  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DWD_DEFAULT_MEM=$enable_wd_default_mem"],
+  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DWD_DEFAULT_MEM=0xCC000"])
 
 AC_ARG_ENABLE(cs-scan,
-  [  --enable-cs-scan        set the parameter for CS network driver],
-[NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCS_SCAN=$enable_cs_scan"])
+  [  --enable-cs-scan=LIST   probe for CS89x0 base address using LIST],
+  [NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCS_SCAN=$enable_cs_scan"])
 
+
+dnl Now substitute the variables.
+AC_SUBST(FSYS_CFLAGS)
+AC_SUBST(NET_CFLAGS)
 AC_SUBST(NET_EXTRAFLAGS)
+AC_SUBST(NETBOOT_DRIVERS)
 
 
-# Output.
+dnl Output.
 AC_OUTPUT([Makefile stage1/Makefile stage2/Makefile docs/Makefile \
 	debian/Makefile lib/Makefile util/Makefile grub/Makefile \
 	netboot/Makefile util/grub-install])

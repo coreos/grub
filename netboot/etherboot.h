@@ -1,59 +1,38 @@
 /**************************************************************************
-NETBOOT -  BOOTP/TFTP Bootstrap Program
+ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
 Author: Martin Renters
   Date: Dec/93
 
 **************************************************************************/
 
-#define NETBOOT32
+/* Include GRUB-specific macros and prototypes here.  */
+#include <shared.h>
 
-#include "../stage2/shared.h"
+/* FIXME: For now, disable the DHCP support. Perhaps I should segregate
+   the DHCP support from the BOOTP support, and permit both to
+   co-exist.  */
+#define NO_DHCP_SUPPORT	1
 
-#include "byteorder.h"
-#include "io.h"
+#include "osdep.h"
 
-typedef      unsigned long Address;
-
-extern int _pending_key;
-extern inline int getchar(void);
-extern inline int getchar(void) {
-	int foo;
-
-	if (_pending_key == -1)
-		return getkey();
-	foo = _pending_key;
-	_pending_key = -1;
-	return foo;
-}
-extern inline int iskey(void);
-extern inline int iskey(void) {
-	return _pending_key != -1 ? 1 : ((_pending_key = checkkey()) != -1);
-}
-
-#if 0 /*Edmund*/
-#define bcmp __builtin_memcmp
-#define memcpy(d,s,sz) bcopy((s),(d),(sz))
-#else
-#define bcopy(src, dest, n) memcpy(dest, src, n)
-#define bzero(s, n) memset(s, 0, n)
-#define bcmp(s1, s2, n) memcmp(s1, s2, n)
+/* These could be customised for different languages perhaps */
+#define	ASK_PROMPT	"Boot from (N)etwork or from (L)ocal? "
+#define	ANS_NETWORK	'N'
+#define	ANS_LOCAL	'L'
+#ifndef	ANS_DEFAULT	/* in case left out in Makefile */
+#define	ANS_DEFAULT	ANS_NETWORK
 #endif
 
-/* ANSI prototyping macro */
-#ifdef  __STDC__
-#define P(x)    x
-#else
-#define P(x)    ()
-
-
-
+#define	TAGGED_IMAGE		/* eventually optional */
+#if	!defined(TAGGED_IMAGE) && !defined(AOUT_IMAGE) && !defined(ELF_IMAGE)
+#define	TAGGED_IMAGE		/* choose at least one */
 #endif
 
 #define ESC		0x1B
 
 #ifndef DEFAULT_BOOTFILE
-#define DEFAULT_BOOTFILE	"/kernel"
+#define DEFAULT_BOOTFILE	"/tftpboot/kernel"
 #endif
 
 #ifndef MAX_TFTP_RETRIES
@@ -65,7 +44,11 @@ extern inline int iskey(void) {
 #endif
 
 #ifndef MAX_BOOTP_EXTLEN
+#if	defined(INTERNAL_BOOTP_DATA) || (RELOC >= 0x94200)
 #define MAX_BOOTP_EXTLEN	1024
+#else
+#define MAX_BOOTP_EXTLEN	(1024-sizeof(struct bootp_t))
+#endif	/* INTERNAL_BOOTP_DATA || RELOC > 0x94200 */
 #endif
 
 #ifndef MAX_ARP_RETRIES
@@ -76,9 +59,16 @@ extern inline int iskey(void) {
 #define MAX_RPC_RETRIES		20
 #endif
 
-#ifndef TIMEOUT			/* Inter-packet retry in ticks 18/sec */
-#define TIMEOUT			180
-#endif
+#define	TICKS_PER_SEC		18
+
+/* Inter-packet retry in ticks */
+#define TIMEOUT			(10*TICKS_PER_SEC)
+
+/* These settings have sense only if compiled with -DCONGESTED */
+/* total retransmission timeout in ticks */
+#define TFTP_TIMEOUT		(30*TICKS_PER_SEC)
+/* packet retransmission timeout in ticks */
+#define TFTP_REXMT		(3*TICKS_PER_SEC)
 
 #ifndef NULL
 #define NULL	((void *)0)
@@ -110,17 +100,19 @@ extern inline int iskey(void) {
 #define ARP_SWAPSERVER	4
 #define MAX_ARP		ARP_SWAPSERVER+1
 
+#define	RARP_REQUEST	3
+#define	RARP_REPLY	4
+
 #define IP		0x0800
 #define ARP		0x0806
+#define	RARP		0x8035
 
 #define BOOTP_SERVER	67
 #define BOOTP_CLIENT	68
 #define TFTP		69
-#define SUNRPC		111
-
-#define RPC_SOCKET	620			/* Arbitrary */
 
 #define IP_UDP		17
+/* Same after going through htonl */
 #define IP_BROADCAST	0xFFFFFFFF
 
 #define ARP_REQUEST	1
@@ -181,12 +173,25 @@ extern inline int iskey(void) {
 #define RFC1533_NBSCOPE		47
 #define RFC1533_XFS		48
 #define RFC1533_XDM		49
+#ifndef	NO_DHCP_SUPPORT
+#define RFC2132_REQ_ADDR	50
+#define RFC2132_MSG_TYPE	53
+#define RFC2132_SRV_ID		54
+#define RFC2132_PARAM_LIST	55
+#define RFC2132_MAX_SIZE	57
+
+#define DHCPDISCOVER		1
+#define DHCPOFFER		2
+#define DHCPREQUEST		3
+#define DHCPACK			5
+#endif	/* NO_DHCP_SUPPORT */
 
 #define RFC1533_VENDOR_MAJOR	0
 #define RFC1533_VENDOR_MINOR	0
 
 #define RFC1533_VENDOR_MAGIC	128
 #define RFC1533_VENDOR_ADDPARM	129
+#define RFC1533_VENDOR_HOWTO    132		/* used by FreeBSD */
 #define RFC1533_VENDOR_MNUOPTS	160
 #define RFC1533_VENDOR_SELECTION 176
 #define RFC1533_VENDOR_MOTD	184
@@ -196,6 +201,9 @@ extern inline int iskey(void) {
 
 #define RFC1533_END		255
 #define BOOTP_VENDOR_LEN	64
+#ifndef	NO_DHCP_SUPPORT
+#define DHCP_OPT_LEN		312
+#endif	/* NO_DHCP_SUPPORT */
 
 #define	TFTP_DEFAULTSIZE_PACKET	512
 #define	TFTP_MAX_PACKET		1432 /* 512 */
@@ -213,33 +221,24 @@ extern inline int iskey(void) {
 #define TFTP_CODE_BOOT	4
 #define TFTP_CODE_CFG	5
 
-#define PROG_PORTMAP	100000
-#define PROG_NFS	100003
-#define PROG_MOUNT	100005
-
-#define MSG_CALL	0
-#define MSG_REPLY	1
-
-#define PORTMAP_LOOKUP	3
-
-#define MOUNT_ADDENTRY	1
-#define MOUNT_UMNTALL   4
-#define NFS_LOOKUP	4
-#define NFS_READ	6
-
-#define NFS_READ_SIZE	1024
-
-
 #define AWAIT_ARP	0
 #define AWAIT_BOOTP	1
 #define AWAIT_TFTP	2
-#define AWAIT_RPC	3
+#define AWAIT_RARP   3
+
+typedef struct {
+	unsigned long	s_addr;
+} in_addr;
 
 struct arptable_t {
-	unsigned long ipaddr;
+	in_addr ipaddr;
 	unsigned char node[6];
 };
 
+/*
+ * A pity sipaddr and tipaddr are not longword aligned or we could use
+ * in_addr. No, I don't want to use #pragma packed.
+ */
 struct arprequest {
 	unsigned short hwtype;
 	unsigned short protocol;
@@ -261,8 +260,8 @@ struct iphdr {
 	char ttl;
 	char protocol;
 	unsigned short chksum;
-	char src[4];
-	char dest[4];
+	in_addr src;
+	in_addr dest;
 };
 
 struct udphdr {
@@ -282,21 +281,24 @@ struct bootp_t {
 	unsigned long bp_xid;
 	unsigned short bp_secs;
 	unsigned short unused;
-	char bp_ciaddr[4];
-	char bp_yiaddr[4];
-	char bp_siaddr[4];
-	char bp_giaddr[4];
+	in_addr bp_ciaddr;
+	in_addr bp_yiaddr;
+	in_addr bp_siaddr;
+	in_addr bp_giaddr;
 	char bp_hwaddr[16];
 	char bp_sname[64];
 	char bp_file[128];
+#ifdef	NO_DHCP_SUPPORT
 	char bp_vend[BOOTP_VENDOR_LEN];
+#else
+	char bp_vend[DHCP_OPT_LEN];
+#endif /* NO_DHCP_SUPPORT */
 };
 
 struct bootpd_t {
 	struct bootp_t bootp_reply;
 	unsigned char  bootp_extension[MAX_BOOTP_EXTLEN];
 };
-
 
 struct tftp_t {
 	struct iphdr ip;
@@ -321,107 +323,90 @@ struct tftp_t {
 	} u;
 };
 
-struct rpc_t {
-	struct iphdr	ip;
-	struct udphdr	udp;
-	union {
-		char data[1400];
-		struct {
-			long id;
-			long type;
-			long rstatus;
-			long verifier;
-			long v2;
-			long astatus;
-			long data[1];
-		} reply;
-	} u;
-};
-
 #define TFTP_MIN_PACKET	(sizeof(struct iphdr) + sizeof(struct udphdr) + 4)
 
-/***************************************************************************
-RPC Functions
-***************************************************************************/
-#define PUTLONG(val) {\
-	register int lval = val; \
-	*(rpcptr++) = ((lval) >> 24); \
-	*(rpcptr++) = ((lval) >> 16); \
-	*(rpcptr++) = ((lval) >> 8); \
-	*(rpcptr++) = (lval); \
-	rpclen+=4; }
+#define	ROM_INFO_LOCATION	0x7dfa
+/* at end of floppy boot block */
 
-#if 0				/* XXX */
+struct rom_info {
+	unsigned short	rom_segment;
+	unsigned short	rom_length;
+};
 
 /***************************************************************************
+extern int rarp P((void));
 External prototypes
 ***************************************************************************/
 /* main.c */
+#if 0
+extern void print_bytes P((unsigned char *bytes, int len));
 extern void load P((void));
 extern int load_linux P((int root_mount_port,int swap_mount_port,
 	int root_nfs_port,char *kernel_handle));
-extern int linux_tftp P((unsigned int block,unsigned char *data,int len));
 extern int tftpkernel P((unsigned char *, int, int, int));
 extern int tftp P((char *name, int (*)(unsigned char *, int, int, int)));
+#endif
 extern int bootp P((void));
+extern int rarp P((void));
 extern int udp_transmit P((unsigned long destip, unsigned int srcsock,
 	unsigned int destsock, int len, char *buf));
-extern int await_reply P((int type, int ival, char *ptr));
-extern void default_netmask P((void));
+extern int await_reply P((int type, int ival, char *ptr, int timeout));
 extern int decode_rfc1533 P((unsigned char *, int, int, int));
 extern unsigned short ipchksum P((unsigned short *, int len));
-extern void convert_ipaddr P((char *, char *));
 extern void rfc951_sleep P((int));
 
+#if 0
 /* bootmenu.c */
 extern int execute P((char *string));
-extern void bootmenu P((void));
+extern void bootmenu P((int));
 extern void show_motd P((void));
 extern void parse_menuopts P((char *,int));
 extern int  getoptvalue P((char **, int *, int *));
-extern void selectImage P((char **, char *, struct arptable_t *));
+extern void selectImage P((char **));
 
-/* linuxloader.c */
-extern char *linux_add_cmdline P((char *string));
-
-/* rpc.c */
-extern int rpclookup P((int addr, int prog, int ver));
-extern int nfs_mount P((int server, int port, char *path, char *fh));
-extern int nfs_umountall P((int server, int port));
-extern int nfs_lookup P((int server, int port, char *fh, char *path, char *file_fh));
-extern int nfs_read P((int server, int port, char *fh, int offset, int len, char *buffer));
-extern void rpc_err P((struct rpc_t *rpc));
-extern void nfs_err P((int err));
+/* osloader.c */
+#if	defined(AOUT_IMAGE) || defined(ELF_IMAGE)
+extern int howto;
+#endif
+extern int os_tftp P((unsigned int block,unsigned char *data,int len));
+#endif
 
 /* misc.c */
-#if 0 /*Edmund*/
-extern void bcopy P((void *src, void *dst, int cnt));
-extern void bzero P((void *dst, int cnt));
-extern int bcmp P((void *src, void *dst, int cnt));
-#endif
+extern void twiddle P((void));
+extern void sleep P((int secs));
+#if 0
 extern int strcasecmp P((char *a, char *b));
 extern char *substr P((char *a, char *b));
+#endif
 extern int getdec P((char **));
-extern void twiddle P((void));
+#if 0
 extern void printf();		/* old style to avoid varargs */
 extern char *sprintf();
-extern int setip P((char *p, unsigned long *i));
+extern int inet_ntoa P((char *p, in_addr *i));
 extern void gateA20 P((void));
+extern void putchar P((int));
+extern int getchar ();  
+extern int iskey P((void));     
 
 /* start*.S */
-extern int getchar P((void));
-extern void putchar P((int));
-extern int iskey P((void));
+extern int getc P((void));
+extern void putc P((int));      
+extern int ischar P((void));
 extern int getshift P((void));
 extern unsigned short memsize P((void));
 extern void disk_init P((void));
-extern short disk_read P((int drv,int c,int h,int s,char *buf));
-extern void start_linux P((void));
-extern void xstart P((unsigned long, unsigned long, unsigned long));
+extern unsigned int disk_read P((int drv,int c,int h,int s,char *buf));
+extern void xstart P((unsigned long, unsigned long, char *));
 extern long currticks P((void));
 extern int setjmp P((void *jmpbuf));
 extern void longjmp P((void *jmpbuf, int where));
 extern void exit P((int status));
+
+/* serial.S */
+extern int serial_getc P((void));
+extern void serial_putc P((int));
+extern int serial_ischar P((void));
+extern void serial_init P((void));
 
 /* ansiesc.c */
 extern void ansi_reset P((void));
@@ -433,36 +418,53 @@ extern void md5_done P((unsigned char *buf));
 
 /* floppy.c */
 extern int bootdisk P((int dev,int part));
-
 #endif
 
 /***************************************************************************
 External variables
 ***************************************************************************/
 /* main.c */
+extern int ip_abort;
+extern int network_ready;
+#if 0
 extern char *kernel;
 extern char kernel_buf[];
-extern struct nfs_diskless nfsdiskless;
+#endif
+extern struct rom_info rom;
+#if 0
 extern int hostnamelen;
 extern unsigned long netmask;
 extern int    jmp_bootmenu[10];
 extern char   kernel_buf[128];
-extern struct bootpd_t bootp_data;
+#endif
 extern struct arptable_t arptable[MAX_ARP];
+#if 0
 extern char   *imagelist[RFC1533_VENDOR_NUMOFIMG];
 extern char   *motd[RFC1533_VENDOR_NUMOFMOTD];
 extern int    menutmo,menudefault;
+extern struct bootpd_t bootp_data;
+#endif
+#ifdef	ETHERBOOT32
+#define INTERNAL_BOOTP_DATA	1
+#ifdef	INTERNAL_BOOTP_DATA
+#define	BOOTP_DATA_ADDR	(&bootp_data)
+#else
+#define	BOOTP_DATA_ADDR	((struct bootpd_t *)0x93C00)
+#endif	/* INTERNAL_BOOTP_DATA */
+#endif
+#ifdef	ETHERBOOT16
+#define	BOOTP_DATA_ADDR	(&bootp_data)
+#endif
 extern unsigned char *end_of_rfc1533;
 
 /* bootmenu.c */
 
-/* linuxloader.c */
+/* osloader.c */
 
-/* rpc.c */
-extern int rpc_id;
-
+#if 0
 /* created by linker */
 extern char _edata[], _end[];
+#endif
 
 /*
  * Local variables:

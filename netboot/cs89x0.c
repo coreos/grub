@@ -72,15 +72,13 @@
   have no way of testing whether it actually works.
 
   * I did not (yet) bother to make the code 16bit aware, so for
-  the time being, it will only work for netboot-32.
+  the time being, it will only work for Etherboot/32.
 
   * 12
   
   */
 
-#ifdef INCLUDE_CS
-
-#include "netboot.h"
+#include "etherboot.h"
 #include "nic.h"
 #include "cs89x0.h"
 
@@ -100,7 +98,7 @@ static unsigned char	eth_vendor;
 static int inline readreg(portno)
 	int portno;
 {
-	outw(eth_nic_base + ADD_PORT, portno);
+	outw(portno, eth_nic_base + ADD_PORT);
 	return inw(eth_nic_base + DATA_PORT);
 }
 
@@ -108,8 +106,8 @@ static void inline writereg(portno,value)
 	int portno;
 	int value;
 {
-	outw(eth_nic_base + ADD_PORT, portno);
-	outw(eth_nic_base + DATA_PORT, value);
+	outw(portno, eth_nic_base + ADD_PORT);
+	outw(value, eth_nic_base + DATA_PORT);
 	return;
 }
 
@@ -119,7 +117,7 @@ EEPROM access
 
 static int wait_eeprom_ready()
 {
-	long tmo = currticks() + 4*18L;
+	long tmo = currticks() + 4*TICKS_PER_SEC;
 	
 	/* check to see if the EEPROM is ready, a timeout is used -
 	   just in case EEPROM is ready when SI_BUSY in the
@@ -138,7 +136,7 @@ static int get_eeprom_data(off,len,buffer)
 	int i;
 
 #if defined(EDEBUG)
-	printf("\r\ncs: EEPROM data from %x for %x:",off,len);
+	printf("\ncs: EEPROM data from %x for %x:",off,len);
 #endif
 	for (i = 0; i < len; i++) {
 		if (wait_eeprom_ready() < 0)
@@ -151,12 +149,12 @@ static int get_eeprom_data(off,len,buffer)
 		buffer[i] = readreg(PP_EEData);
 #if defined(EDEBUG)
 		if (!(i%10))
-			printf("\r\ncs: ");
+			printf("\ncs: ");
 		printf("%x ", buffer[i]);
 #endif
 	}
 #if defined(EDEBUG)
-	printf("\r\n");
+	putchar('\n');
 #endif
 
 	return(0);
@@ -196,7 +194,7 @@ static void control_dc_dc(on_not_off)
 	int on_not_off;
 {
 	unsigned int selfcontrol;
-	long tmo = currticks() + 18;
+	long tmo = currticks() + TICKS_PER_SEC;
 
 	/* control the DC to DC convertor in the SelfControl register.  */
 	selfcontrol = HCB1_ENBL; /* Enable the HCB1 bit as an output */
@@ -243,7 +241,7 @@ static int detect_tp()
 		if ((eth_auto_neg_cnf & AUTO_NEG_BITS) == AUTO_NEG_ENABLE) {
 			printf(" negotiating duplex... ");
 			while (readreg(PP_AutoNegST) & AUTO_NEG_BUSY) {
-				if (currticks() - tmo > 40*18) {
+				if (currticks() - tmo > 40*TICKS_PER_SEC) {
 					printf("time out ");
 					break;
 				}
@@ -269,12 +267,11 @@ static int send_test_pkt(struct nic *nic)
 
 	writereg(PP_LineCTL, readreg(PP_LineCTL) | SERIAL_TX_ON);
 
-	bcopy(nic->node_addr,testpacket,ETHER_ADDR_SIZE);
-	bcopy(nic->node_addr,testpacket+ETHER_ADDR_SIZE,
-	      ETHER_ADDR_SIZE);
+	memcpy(testpacket, nic->node_addr, ETHER_ADDR_SIZE);
+	memcpy(testpacket+ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE);
 
-	outw(eth_nic_base + TX_CMD_PORT, TX_AFTER_ALL);
-	outw(eth_nic_base + TX_LEN_PORT, ETH_MIN_PACKET);
+	outw(TX_AFTER_ALL, eth_nic_base + TX_CMD_PORT);
+	outw(ETH_MIN_PACKET, eth_nic_base + TX_LEN_PORT);
 
 	/* Test to see if the chip has allocated memory for the packet */
 	for (tmo = currticks() + 2;
@@ -347,14 +344,14 @@ void cs89x0_reset(struct nic *nic)
 		/* Hardware problem requires PNP registers to be reconfigured
 		   after a reset */
 		if (eth_irq != 0xFFFF) {
-			outw(eth_nic_base + ADD_PORT, PP_CS8920_ISAINT);
-			outb(eth_nic_base + DATA_PORT, eth_irq);
-			outb(eth_nic_base + DATA_PORT + 1, 0); }
+			outw(PP_CS8920_ISAINT, eth_nic_base + ADD_PORT);
+			outb(eth_irq, eth_nic_base + DATA_PORT);
+			outb(0, eth_nic_base + DATA_PORT + 1); }
 
 		if (eth_mem_start) {
-			outw(eth_nic_base + ADD_PORT, PP_CS8920_ISAMemB);
-			outb(eth_nic_base + DATA_PORT, (eth_mem_start >> 8) & 0xff);
-			outb(eth_nic_base + DATA_PORT + 1, (eth_mem_start >> 24) & 0xff); } }
+			outw(PP_CS8920_ISAMemB, eth_nic_base + ADD_PORT);
+			outb((eth_mem_start >> 8) & 0xff, eth_nic_base + DATA_PORT);
+			outb((eth_mem_start >> 24) & 0xff, eth_nic_base + DATA_PORT + 1); } }
   
 	/* Wait until the chip is reset */
 	for (reset_tmo = currticks() + 2;
@@ -383,7 +380,7 @@ void cs89x0_reset(struct nic *nic)
 	writereg(PP_BufCFG, 0);
 
 	/* reset address port, so that autoprobing will keep working */
-	outw(eth_nic_base + ADD_PORT, PP_ChipID);
+	outw(PP_ChipID, eth_nic_base + ADD_PORT);
 
 	return;
 }
@@ -412,14 +409,14 @@ static void cs89x0_transmit(
 
 retry:
 	/* initiate a transmit sequence */
-	outw(eth_nic_base + TX_CMD_PORT, TX_AFTER_ALL);
-	outw(eth_nic_base + TX_LEN_PORT, sr);
+	outw(TX_AFTER_ALL, eth_nic_base + TX_CMD_PORT);
+	outw(sr, eth_nic_base + TX_LEN_PORT);
 
 	/* Test to see if the chip has allocated memory for the packet */
 	if ((readreg(PP_BusST) & READY_FOR_TX_NOW) == 0) {
 		/* Oops... this should not happen! */
-		printf("cs: unable to send packet; retrying...\r\n");
-		for (tmo = currticks() + 5*18; currticks() - tmo < 0; );
+		printf("cs: unable to send packet; retrying...\n");
+		for (tmo = currticks() + 5*TICKS_PER_SEC; currticks() - tmo < 0; );
 		cs89x0_reset(nic);
 		goto retry; }
 
@@ -427,17 +424,17 @@ retry:
 	outsw(eth_nic_base + TX_FRAME_PORT, d, ETHER_ADDR_SIZE/2);
 	outsw(eth_nic_base + TX_FRAME_PORT, nic->node_addr,
 	      ETHER_ADDR_SIZE/2);
-	outw(eth_nic_base + TX_FRAME_PORT, ((t >> 8)&0xFF)|(t << 8));
+	outw(((t >> 8)&0xFF)|(t << 8), eth_nic_base + TX_FRAME_PORT);
 	outsw(eth_nic_base + TX_FRAME_PORT, p, (s+1)/2);
 	for (sr = sr/2 - (s+1)/2 - ETHER_ADDR_SIZE - 1; sr-- > 0;
-	     outw(eth_nic_base + TX_FRAME_PORT, 0));
+	     outw(0, eth_nic_base + TX_FRAME_PORT));
 
 	/* wait for transfer to succeed */
-	for (tmo = currticks()+5*18;
+	for (tmo = currticks()+5*TICKS_PER_SEC;
 	     (s = readreg(PP_TxEvent)&~0x1F) == 0 && currticks() - tmo < 0;
 	     twiddle());
 	if ((s & TX_SEND_OK_BITS) != TX_OK) {
-		printf("\r\ntransmission error 0x%x\r\n", s);
+		printf("\ntransmission error 0x%x\n", s);
 	}
 
 	return;
@@ -504,7 +501,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			ioaddr &= ~1;
 			if ((inw(ioaddr + ADD_PORT) & ADD_MASK) != ADD_SIG)
 				continue;
-			outw(ioaddr + ADD_PORT, PP_ChipID);
+			outw(PP_ChipID, ioaddr + ADD_PORT);
 		}
 
 		if (inw(ioaddr + DATA_PORT) != CHIP_EISA_ID_SIG)
@@ -516,7 +513,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 		eth_cs_type = rev_type &~ REVISON_BITS;
 		cs_revision = ((rev_type & REVISON_BITS) >> 8) + 'A';
 
-		printf("\r\ncs: cs89%c0%s rev %c, base 0x%x",
+		printf("\ncs: cs89%c0%s rev %c, base 0x%x",
 		       eth_cs_type==CS8900?'0':'2',
 		       eth_cs_type==CS8920M?"M":"",
 		       cs_revision,
@@ -524,18 +521,18 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
     
 		/* First check to see if an EEPROM is attached*/
 		if ((readreg(PP_SelfST) & EEPROM_PRESENT) == 0) {
-			printf("\r\ncs: no EEPROM...\r\n");
-			outw(eth_nic_base + ADD_PORT, PP_ChipID);
+			printf("\ncs: no EEPROM...\n");
+			outw(PP_ChipID, eth_nic_base + ADD_PORT);
 			continue; }
 		else if (get_eeprom_data(START_EEPROM_DATA,CHKSUM_LEN,
 					 eeprom_buff) < 0) {
-			printf("\r\ncs: EEPROM read failed...\r\n");
-			outw(eth_nic_base + ADD_PORT, PP_ChipID);
+			printf("\ncs: EEPROM read failed...\n");
+			outw(PP_ChipID, eth_nic_base + ADD_PORT);
 			continue; }
 		else if (get_eeprom_chksum(START_EEPROM_DATA,CHKSUM_LEN,
 					   eeprom_buff) < 0) {
-			printf("\r\ncs: EEPROM checksum bad...\r\n");
-			outw(eth_nic_base + ADD_PORT, PP_ChipID);
+			printf("\ncs: EEPROM checksum bad...\n");
+			outw(PP_ChipID, eth_nic_base + ADD_PORT);
 			continue; }
 
 		/* get transmission control word but keep the
@@ -572,14 +569,14 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 				   write_irq, which is the reverse
 				   mapping of the table below. */
 				if (i < 4) i = "\012\013\014\005"[i];
-				else printf("\r\ncs: BUG: isa_config is %d\r\n", i); }
+				else printf("\ncs: BUG: isa_config is %d\n", i); }
 			eth_irq = i; }
 
 		/* Retrieve and print the ethernet address. */
     		for (i=0; i<ETHER_ADDR_SIZE; i++) {
 			printf("%b%s",(int)(nic->node_addr[i] =
 					  ((unsigned char *)eeprom_buff)[i]),
-			       i < ETHER_ADDR_SIZE-1 ? ":" : "\r\n"); }
+			       i < ETHER_ADDR_SIZE-1 ? ":" : "\n"); }
 
 		/* Set the LineCTL quintuplet based on adapter
 		   configuration read from EEPROM */
@@ -602,11 +599,11 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 						     A_CNF_10B_2);
 		}
 		if (!result) {
-			printf("cs: EEPROM is configured for unavailable media\r\n");
+			printf("cs: EEPROM is configured for unavailable media\n");
 		error:
 			writereg(PP_LineCTL, readreg(PP_LineCTL) & 
 				 ~(SERIAL_TX_ON | SERIAL_RX_ON));
-			outw(eth_nic_base + ADD_PORT, PP_ChipID);
+			outw(PP_ChipID, eth_nic_base + ADD_PORT);
 			continue;
 		}
 
@@ -622,7 +619,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			if (!result) {
 				clrline();
 				printf("10Base-T (RJ-45%s",
-				       ") has no cable\r\n"); }
+				       ") has no cable\n"); }
 			/* check "ignore missing media" bit */
 			if (eth_auto_neg_cnf & IMM_BIT)
 				/* Yes! I don't care if I see a link pulse */
@@ -633,7 +630,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			if (!result) {
 				clrline();
 				printf("10Base-5 (AUI%s",
-				       ") has no cable\r\n"); }
+				       ") has no cable\n"); }
 			/* check "ignore missing media" bit */
 			if (eth_auto_neg_cnf & IMM_BIT)
 				/* Yes! I don't care if I see a carrrier */
@@ -644,7 +641,7 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			if (!result) {
 				clrline();
 				printf("10Base-2 (BNC%s",
-				       ") has no cable\r\n"); }
+				       ") has no cable\n"); }
 			/* check "ignore missing media" bit */
 			if (eth_auto_neg_cnf & IMM_BIT)
 				/* Yes! I don't care if I can xmit a packet */
@@ -661,18 +658,18 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 			if (eth_adapter_cnf & A_CNF_10B_2)
 				if ((result = detect_bnc(nic)) != 0)
 					break;
-			clrline(); printf("no media detected\r\n");
+			clrline(); printf("no media detected\n");
 			goto error;
 		}
 		clrline();
 		switch(result) {
-		case 0:                 printf("no network cable attached to configured media\r\n");
+		case 0:                 printf("no network cable attached to configured media\n");
 			goto error;
-		case A_CNF_MEDIA_10B_T: printf("using 10Base-T (RJ-45)\r\n");
+		case A_CNF_MEDIA_10B_T: printf("using 10Base-T (RJ-45)\n");
 			break;
-		case A_CNF_MEDIA_AUI:   printf("using 10Base-5 (AUI)\r\n");
+		case A_CNF_MEDIA_AUI:   printf("using 10Base-5 (AUI)\n");
 			break;
-		case A_CNF_MEDIA_10B_2: printf("using 10Base-2 (BNC)\r\n");
+		case A_CNF_MEDIA_10B_2: printf("using 10Base-2 (BNC)\n");
 			break;
 		}
 
@@ -690,10 +687,9 @@ struct nic *cs89x0_probe(struct nic *nic, unsigned short *probe_addrs)
 	return nic;
 }
 
-#endif /* INCLUDE_CS */
-
 /*
  * Local variables:
  *  c-basic-offset: 8
  * End:
  */
+

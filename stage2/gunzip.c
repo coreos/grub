@@ -269,12 +269,6 @@ int
 gunzip_test_header (void)
 {
   unsigned char buf[10];
-  int is_tftp = 0;
-
-  /* XXX: currently, if CURRENT_DRIVE is a network device, we use only
-     tftp.  */
-  if (current_drive == 0x20)
-    is_tftp = 1;
   
   /* "compressed_file" is already reset to zero by this point */
 
@@ -313,8 +307,7 @@ gunzip_test_header (void)
 
   gzip_data_offset = filepos;
   
-  if (! is_tftp)
-    filepos = filemax - 8;
+  filepos = filemax - 8;
   
   if (grub_read (buf, 8) != 8)
     {
@@ -324,17 +317,8 @@ gunzip_test_header (void)
       return 0;
     }
 
-  if (! is_tftp)
-    {
-      gzip_crc = *((unsigned long *) buf);
-      gzip_fsmax = gzip_filemax = *((unsigned long *) (buf + 4));
-    }
-  else
-    {
-      /* We don't have gzip_crc.  */
-      gzip_fsmax = gzip_filemax = 16 * 1024 * 1024;
-      filepos = filemax;
-    }
+  gzip_crc = *((unsigned long *) buf);
+  gzip_fsmax = gzip_filemax = *((unsigned long *) (buf + 4));
 
   initialize_tables ();
 

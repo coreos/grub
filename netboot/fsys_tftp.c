@@ -1,94 +1,308 @@
-#include "../stage2/filesys.h"
+/*
+ *  GRUB  --  GRand Unified Bootloader
+ *  Copyright (C) 2000  Free Software Foundation, Inc.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
-#include "netboot.h"
-#include "netboot_config.h"
-#include "nic.h"
+/* Based on "src/main.c" in etherboot-4.4.2.  */
+/**************************************************************************
+ETHERBOOT -  BOOTP/TFTP Bootstrap Program
 
-#include "ip.h"
+Author: Martin Renters
+  Date: Dec/93
 
-#if 0
+**************************************************************************/
 
-#define BUFSIZE (20*TFTP_DEFAULTSIZE_PACKET)
-static char buf[BUFSIZE];
+#include <filesys.h>
 
-#else 
+#include <etherboot.h>
+#include <nic.h>
+#include <netboot_config.h>
 
-/* use GRUB's file system buffer */
-#define BUFSIZE (32*1024)
-#define buf ((char *)(FSYS_BUF))
+static int retry;
+static unsigned short isocket = 2000;
+static unsigned short osocket;
+static unsigned short block, prevblock;
+static struct tftp_t tp, saved_tp;
+static int packetsize;
+static int buf_eof, buf_read;
+static int saved_filepos;
+static unsigned short len, saved_len;
+static char *buf;
 
-#endif
-
-static int buf_read = 0, buf_eof = 0;
-static unsigned long buf_fileoff;
-
-static int             retry;
-static unsigned short  isocket = 2000;
-static unsigned short  osocket;
-static unsigned short  len, block, prevblock;
-static struct tftp_t  *tr;
-static struct tftp_t   tp;
-static int	       packetsize = TFTP_DEFAULTSIZE_PACKET;
-
-static int buf_fill(int abort);
-
-int tftp_mount(void)
+/* Fill the buffer by receiving the data via the TFTP protocol.  */
+static int
+buf_fill (int abort)
 {
-  if (current_drive != 0x20)	/* only mount network drives */
+  while (! buf_eof && (buf_read + packetsize <= FSYS_BUFLEN))
+    {
+      struct tftp_t *tr;
+  
+#ifdef CONGESTED
+      if (! await_reply (AWAIT_TFTP, isocket, NULL, block ? TFTP_REXMT : 0))
+#else
+      if (! await_reply (AWAIT_TFTP, isocket, NULL, 0))
+#endif
+	{
+	  if (ip_abort)
+	    return 0;
+
+	  if (! block && retry++ < MAX_TFTP_RETRIES)
+	    {
+	      /* Maybe initial request was lost.  */
+	      rfc951_sleep(retry);
+	      if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
+				  ++isocket, TFTP, len, (char *) &tp))
+		return 0;
+	      
+	      continue;
+	    }
+	  
+#ifdef CONGESTED
+	  if (block && ((retry += TFTP_REXMT) < TFTP_TIMEOUT))
+	    {
+	      /* We resend our last ack.  */
+# ifdef MDEBUG
+	      grub_printf ("<REXMT>\n");
+# endif
+	      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
+			    isocket, osocket,
+			    TFTP_MIN_PACKET, (char *) &tp);
+	      continue;
+	    }
+#endif
+	  /* Timeout.  */
+	  return 0;
+	}
+      
+      tr = (struct tftp_t *) &nic.packet[ETHER_HDR_SIZE];
+      if (tr->opcode == ntohs (TFTP_ERROR))
+	{
+	  grub_printf ("TFTP error %d (%s)\n",
+		       ntohs (tr->u.err.errcode),
+		       tr->u.err.errmsg);
+	  return 0;
+	}
+      
+      if (tr->opcode == ntohs (TFTP_OACK))
+	{
+	  char *p = tr->u.oack.data, *e;
+	  
+	  /* Shouldn't happen.  */
+	  if (prevblock)
+	    /* Ignore it.  */
+	    continue;
+	  
+	  len = ntohs (tr->udp.len) - sizeof (struct udphdr) - 2;
+	  if (len > TFTP_MAX_PACKET)
+	    goto noak;
+	  
+	  e = p + len;
+	  while (*p != '\000' && p < e)
+	    {
+	      if (! grub_strcmp ("blksize", p))
+		{
+		  p += 8;
+		  if ((packetsize = getdec (&p)) < TFTP_DEFAULTSIZE_PACKET)
+		    goto noak;
+		}
+	      else if (! grub_strcmp ("tsize", p))
+		{
+		  p += 6;
+		  if ((filemax = getdec (&p)) < 0)
+		    {
+		      filemax = -1;
+		      goto noak;
+		    }
+		}
+	      else
+		{
+		noak:
+		  tp.opcode = htons (TFTP_ERROR);
+		  tp.u.err.errcode = 8;
+		  len = (grub_sprintf ((char *) tp.u.err.errmsg,
+				       "RFC1782 error")
+			 + TFTP_MIN_PACKET + 1);
+		  udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
+				isocket, ntohs (tr->udp.src),
+				len, (char *) &tp);
+		  return 0;
+		}
+	      
+	      while (p < e && *p)
+		p++;
+	      
+	      if (p < e)
+		p++;
+	    }
+	  
+	  if (p > e)
+	    goto noak;
+	  
+	  /* This ensures that the packet does not get processed as
+	     data!  */
+	  block = tp.u.ack.block = 0;
+	}
+      else if (tr->opcode == ntohs (TFTP_DATA))
+	{
+	  len = ntohs (tr->udp.len) - sizeof (struct udphdr) - 4;
+	  
+	  /* Shouldn't happen.  */
+	  if (len > packetsize)
+	    /* Ignore it.  */
+	    continue;
+	  
+	  block = ntohs (tp.u.ack.block = tr->u.data.block);
+	}
+      else
+	/* Neither TFTP_OACK nor TFTP_DATA.  */
+	break;
+
+      /* Block order.  */
+      if (block && (block != prevblock + 1))
+	tp.u.ack.block = htons (block = prevblock);
+      
+      /* Should be continuous.  */
+      tp.opcode = abort ? htons (TFTP_ERROR) : htons (TFTP_ACK);
+      osocket = ntohs (tr->udp.src);
+      
+      /* Ack.  */
+      udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, isocket,
+		    osocket, TFTP_MIN_PACKET, (char *) &tp);
+      
+      if (abort)
+	{
+	  buf_eof = 1;
+	  break;
+	}
+
+      /* Retransmission or OACK.  */
+      if (block <= prevblock)
+	/* Don't process.  */
+	continue;
+      
+      prevblock = block;
+      /* Is it the right place to zero the timer?  */
+      retry = 0;
+
+      /* Copy the downloaded data to the buffer.  */
+      grub_memmove (buf + buf_read, tr->u.data.download, len);
+      buf_read += len;
+
+      /* End of data.  */
+      if (len < packetsize)		
+	buf_eof = 1;
+    }
+  
+  return 1;
+}
+
+/* Send the RRQ whose length is LEN.  */
+static int
+send_rrq (void)
+{
+  /* Initialize some variables.  */
+  retry = 0;
+  block = 0;
+  prevblock = 0;
+  packetsize = TFTP_DEFAULTSIZE_PACKET;
+
+  buf = (char *) FSYS_BUF;
+  buf_eof = 0;
+  buf_read = 0;
+  saved_filepos = 0;
+  
+  /* Send the packet.  */
+  return udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++isocket, TFTP,
+		       len, (char *) &tp);
+}
+
+/* Mount the network drive. If the drive is ready, return one, otherwise
+   return zero.  */
+int
+tftp_mount (void)
+{
+  /* Check if the current drive is the network drive.  */
+  if (current_drive != NETWORK_DRIVE)
     return 0;
 
-  if (!ip_init())
-    return 0;  
+  /* If the drive is not initialized yet, abort.  */
+  if (! network_ready)
+    return 0;
 
   return 1;
 }
 
-/* read "size" bytes from file position "filepos" to "addr" */
-int tftp_read(char *addr, int size)
+/* Read up to SIZE bytes, returned in ADDR.  */
+int
+tftp_read (char *addr, int size)
 {
+  /* How many bytes is read?  */
   int ret = 0;
-
-  if (filepos < buf_fileoff)
+  
+  if (filepos < saved_filepos)
     {
-      printf("tftp_read: can't read from filepos=%d, buf_fileoff=%d\n",
-	     filepos, buf_fileoff);
-      errnum = ERR_BOOT_FAILURE;
-      return 0;
+      /* Uggh.. FILEPOS has been moved backwards. So reopen the file.  */
+      tp = saved_tp;
+      len = saved_len;
+      if (! send_rrq ())
+	{
+	  errnum = ERR_READ;
+	  return 0;
+	}
     }
-
+  
   while (size > 0)
     {
-      if (filepos < buf_fileoff + buf_read)
+      int amt = buf_read + saved_filepos - filepos;
+
+      /* If the length that can be copied from the buffer is over the
+	 requested size, cut it down.  */
+      if (amt > size)
+	amt = size;
+
+      if (amt > 0)
 	{
-	  /* can copy stuff from buffer */
-	  int tocopy = buf_fileoff + buf_read - filepos;
-	  if (tocopy > size) tocopy = size;
-	  bcopy(buf + (filepos - buf_fileoff), (void*) addr, tocopy);
-	  size -= tocopy;
-	  addr += tocopy;
-	  filepos += tocopy;
-	  ret += tocopy;
-	  
-	  if (buf_eof && (filepos + size >= buf_fileoff + buf_read))
-	    break;		/* end of file */
-	      
-	  continue;
+	  /* Copy the buffer to the supplied memory space.  */
+	  grub_memmove (addr, buf + filepos - saved_filepos, amt);
+	  size -= amt;
+	  addr += amt;
+	  filepos += amt;
+	  saved_filepos = filepos;
+	  ret += amt;
+
+	  /* Move the unused data forwards.  */
+	  grub_memmove (buf, buf + amt, buf_read - amt);
+	  buf_read -= amt;
 	}
-      else if ((filepos == buf_fileoff + buf_read) && buf_eof)
-	break;			/* end of file */
-	
-      if (buf_eof)		/* filepos beyond end of file */
+      else
+	{
+	  /* Reset the reading offset.  */
+	  saved_filepos += buf_read;
+	  buf_read = 0;
+	}
+
+      /* Read the data.  */
+      if (! buf_fill (0))
 	{
 	  errnum = ERR_READ;
 	  return 0;
 	}
 
-      /* move buffer contents forward by 1/2 buffer size */
-      bcopy(buf + BUFSIZE/2, buf, BUFSIZE/2);
-      buf_fileoff += BUFSIZE/2;
-      buf_read -= BUFSIZE/2;
-
-      if (! buf_fill(0))		/* read more data */
+      if (size > 0 && buf_eof)
 	{
 	  errnum = ERR_READ;
 	  return 0;
@@ -98,128 +312,82 @@ int tftp_read(char *addr, int size)
   return ret;
 }
 
-int tftp_dir(char *dirname)
+/* Check if the file DIRNAME really exists. Get the size and save it in
+   FILEMAX.  */
+int
+tftp_dir (char *dirname)
 {
-  char name[100], *np;
+  int ch;
 
+  /* In TFTP, there is no way to know what files exis.  */
   if (print_possibilities)
+    return 1;
+
+  /* Don't know the size yet.  */
+  filemax = -1;
+  
+ reopen:
+  /* Construct the TFTP request packet.  */
+  tp.opcode = htons (TFTP_RRQ);
+  /* Terminate the filename.  */
+  ch = nul_terminate (dirname);
+  /* Make the request string (octet, blksize and tsize).  */
+  len = (grub_sprintf ((char *) tp.u.rrq,
+		       "%s%coctet%cblksize%c%d%ctsize%c0",
+		       dirname, 0, 0, 0, TFTP_MAX_PACKET, 0, 0)
+	 + TFTP_MIN_PACKET + 1);
+  /* Restore the original DIRNAME.  */
+  dirname[grub_strlen (dirname)] = ch;
+  if (! send_rrq ())
     {
-      printf(" TFTP doesn't support listing the directory; Sorry!\n");
-      return 1;
+      errnum = ERR_READ;
+      return 0;
     }
-
-  /* open the file */
-  np = name;
-  while (dirname && *dirname && !isspace(*dirname))
-    *np++ = *dirname++;
-  *np = 0;
-
-  buf_eof = buf_read = buf_fileoff = 0;
-
-  retry = 0;
-  block = 0;
-  prevblock = 0;
-  packetsize = TFTP_DEFAULTSIZE_PACKET;
-
-  /* send tftp read request */
-  tp.opcode = htons(TFTP_RRQ);
-  len = 30 + sprintf((char *)tp.u.rrq, "%s%coctet%cblksize%c%d",
-		     name, 0, 0, 0, TFTP_MAX_PACKET) + 1;
-
-  if (!udp_transmit(arptable[ARP_SERVER].ipaddr, ++isocket, TFTP,
-		    len, (char *)&tp))
+  
+  /* Read the data.  */
+  if (! buf_fill (0))
     {
-      printf("tftp_dir: can't transmit TFTP read request\n");
-      errnum = ERR_BOOT_FAILURE;
-      return (0);
-    }
-  if (! buf_fill(0))
-    {
-      printf("tftp_dir: can't read from file\n");
       errnum = ERR_FILE_NOT_FOUND;
       return 0;
     }
 
-/*   filemax = 234620; */
-  filemax = 16L*1024*1024;	/* XXX 16MB is max filesize */
-
-  return 1;
-}
-
-void tftp_close(void)
-{
-  buf_read = 0;
-  buf_fill (1);			/* abort. */
-}
-
-static int buf_fill(int abort)
-{
-  while (!buf_eof && (buf_read + packetsize <= BUFSIZE))
+  if (filemax == -1)
     {
-      /* read a packet from the network */
-      if (!await_reply(AWAIT_TFTP, isocket, NULL))
-	{
-	  if (ip_abort)
-	    return 0;
+      /* The server doesn't support the "tsize" option, so we must read
+	 the file twice...  */
 
-	  if (prevblock == 0 && retry++ < MAX_TFTP_RETRIES)
-	    {			/* maybe initial request was lost */
-	      rfc951_sleep(retry);
-	      if (!udp_transmit(arptable[ARP_SERVER].ipaddr,
-				++isocket, TFTP, len, (char *)&tp))
-		return (0);
-	      continue;
+      /* Zero the size of the file.  */
+      filemax = 0;
+      do
+	{
+	  /* Add the length of the downloaded data.  */
+	  filemax += buf_read;
+	  /* Reset the offset. Just discard the contents of the buffer.  */
+	  buf_read = 0;
+	  /* Read the data.  */
+	  if (! buf_fill (0))
+	    {
+	      errnum = ERR_READ;
+	      return 0;
 	    }
-	  return 0;			/* timeout on other blocks */
 	}
-      
-      /* we got a packet */
-      
-      tr = (struct tftp_t *)&nic.packet[ETHER_HDR_SIZE];
-      
-      if (tr->opcode == ntohs(TFTP_ERROR)) /* error? */
-	{
-	  printf("TFTP error %d (%s)\r\n",
-		 ntohs(tr->u.err.errcode),
-		 tr->u.err.errmsg);
-	  return 0;
-	}  
-      else if (tr->opcode == ntohs(TFTP_OACK)) 
-	{
-	  continue;		/* ignore */
-	}
-      else if (tr->opcode == ntohs(TFTP_DATA)) 
-	{
-	  retry = MAX_TFTP_RETRIES;	/*no more retries! */
-	  len = ntohs(tr->udp.len) - sizeof(struct udphdr) - 4;
-	  if (len > packetsize)	/* shouldn't happen */
-	    continue;		/* ignore it */
-	  block = ntohs(tp.u.ack.block = tr->u.data.block); 
-	}
-      else /* neither TFTP_OACK nor TFTP_DATA */
-	return 0;
-		
-      tp.opcode = abort ? htons(TFTP_ERROR) : htons(TFTP_ACK);
-      osocket = ntohs(tr->udp.src);
-      udp_transmit(arptable[ARP_SERVER].ipaddr, isocket,
-		   osocket, TFTP_MIN_PACKET, (char *)&tp);	/* ack */
+      while (! buf_eof);
 
-      if (abort)
-	{
-	  buf_eof = 1;
-	  break;
-	}
-
-      if (block <= prevblock)	/* retransmission or OACK */
-	continue;		/* don't process */
-      prevblock = block;
-
-      bcopy(tr->u.data.download, buf + buf_read, len);
-      buf_read += len;
-
-      if (len < packetsize)		/* End of data */
-	buf_eof = 1;
+      /* Retry the open instruction.  */
+      goto reopen;
     }
 
+  /* Save the TFTP packet so that we can reopen the file later.  */
+  saved_tp = tp;
+  saved_len = len;
+  
   return 1;
+}
+
+/* Close the file.  */
+void
+tftp_close (void)
+{
+  buf_read = 0;
+  buf_fill (1);
 }

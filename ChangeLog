@@ -1,5 +1,152 @@
 2000-02-07  OKUJI Yoshinori  <okuji@gnu.org>
 
+	The netboot support is heavily rewritten, based on
+	Etherboot-4.4.2. The current one doesn't work yet, so check out
+	GRUB with the tag "dresden_netboot_code" if you need working
+	one.
+	
+	* configure.in (--enable-tftp): Deleted.
+	(FSYS_CFLAGS): `AC_SUBST'ed right before AC_OUTPUT.
+	(NETBOOT_DRIVERS): New variable. AC_SUBST this after examining
+	the driver options.
+	(--enable-packet-retransmission): New option.
+	(--enable-pci-direct): Likewise.
+	(--enable-3c509): Likewise.
+	(--enable-3c529): Likewise.
+	(--enable-3c90x): Likewise.
+	(--enable-cs89x0): Likewise.
+	(--enable-epic100): Likewise.
+	(--enable-3c507): Likewise.
+	(--enable-exos205): Likewise.
+	(--enable-ni5210): Likewise.
+	(--enable-lancepci): Likewise.
+	(--enable-ne2100): Likewise.
+	(--enable-ni6510): Likewise.
+	(--enable-3c503): Likewise.
+	(--enable-ntulip): Likewise.
+	(--enable-rtl8139): Likewise.
+	(--enable-sk-g16): Likewise.
+	(--enable-smc9000): Likewise.
+	(--enable-tiara): Likewise.
+	(--enable-tulip): Likewise.
+	(--enable-via-rhine): Likewise.
+	(--enable-3c503-shmem): Likewise.
+	(--enable-3c503-aui): Likewise.
+	(--enable-3c509-hack): Likewise.
+	(--enable-compex-rl2000-fix): Likewise.
+	(--enable-smc9000-scan): Likewise.
+	(--enable-t503): Deleted.
+	(--enable-lance): Likewise.
+	(--enable-cs): Likewise.
+
+	* netboot/main.c: New file. Copied and modified.
+	* netboot/linux-asm-io.h: Likewise.
+	* netboot/etherboot.h: Likewise.
+	* netboot/misc.c: Likewise.
+	* netboot/via-rhine.c: Likewise.
+	* netboot/3c90x.c: Likewise.
+	* netboot/3c90x.txt: Likewise.
+	* netboot/epic100.c: Likewise.
+	* netboot/epic100.h: Likewise.
+	* netboot/i82586.c: Likewise.
+	* netboot/linux-asm-string.h: Likewise.
+	* netboot/ntulip.c: Likewise.
+	* netboot/ntulip.txt: Likewise.
+	* netboot/osdep.h: Likewise.
+	* netboot/rtl8139.c: Likewise.
+	* netboot/sk_g16.c: Likewise.
+	* netboot/sk_g16.h: Likewise.
+	* netboot/smc9000.c: Likewise.
+	* netboot/smc9000.h: Likewise.
+	* netboot/tiara.c: Likewise.
+	* netboot/tulip.c: Likewise.
+	* netboot/tulip.h: Likewise.
+	* netboot/README.netboot: New file. Most information is stolen
+	from Makefile and Config.32 in Etherboot.
+	* netboot/3c509.c: Copied from Etherboot. The original is
+	removed.
+	* netboot/3c509.h: Likewise.
+	* netboot/cs89x0.c: Likewise.
+	* netboot/eepro100.c: Likewise.
+	* netboot/lance.c: Likewise.
+	* netboot/ns8390.c: Likewise.
+	* netboot/ns8390.h: Likewise.
+	* netboot/pci.c: Likewise.
+	
+	* netboot/3c59x.c: Include etherboot.h instead netboot.h.
+	* netboot/config.c: Copied from Etherboot and added the 3c59x
+	entries.
+	* netboot/pci.h: Likewise.
+	* netboot/fsys_tftp.c: Entirely rewritten based on main.c in
+	Etherboot.
+
+	* netboot/io.h: Removed.
+	* netboot/ip.h: Likewise.
+	* netboot/ip.c: Likewise.
+	* netboot/netboot.h: Likewise.
+	
+	* netboot/Makefile.am (INCLUDES): Added -I$(top_srcdir)/stage2.
+	(DRIVERS): Removed.
+	(libdrivers_a_SOURCES): Added etherboot.h, linux-asm-io.h,
+	linux-asm-string.h, main.c, misc.c and osdep.h. Deleted io.h,
+	ip.h, ip.c, netboot.h and $(DRIVERS).
+	(EXTRA_libdrivers_a_SOURCES): New variable.
+	(libdrivers_a_LIBADD): Set to @NETBOOT_DRIVERS@.
+	(libdrivers_a_DEPENDENCIES): New variable.
+	(EXTRA_DIST): Likewise.
+	(3c509_drivers): New variable. Define a new rule for the value.
+	(3c59x_drivers): Likewise.
+	(3c90x_drivers): Likewise.
+	(cs89x0_drivers): Likewise.
+	(eepro100_drivers): Likewise.
+	(epic100_drivers): Likewise.
+	(i82586_drivers): Likewise.
+	(lance_drivers): Likewise.
+	(ns8390_drivers): Likewise.
+	(ntulip_drivers): Likewise.
+	(rtl8139_drivers): Likewise.
+	(sk_g16_drivers): Likewise.
+	(smc9000_drivers): Likewise.
+	(tiara_drivers): Likewise.
+	(tulip_drivers): Likewise.
+	(via_rhine_drivers): Likewise.
+	(t503_o_CFLAGS): Removed.
+	(nepci_o_CFLAGS): Set to -DINCLUDE_NEPCI=1.
+	(ne_o_CFLAGS): Set to -DINCLUDE_NE=1.
+	(wd_o_CFLAGS): Set to -DINCLUDE_WD=1.
+	(3c509_o_CFLAGS): Likewise.
+	(3c529_o_CFLAGS): Likewise.
+	(3c59x_o_CFLAGS): Likewise.
+	(3c90x_o_CFLAGS): Likewise.
+	(cs89x0_o_CFLAGS): Likewise.
+	(eepro100_o_CFLAGS): Likewise.
+	(epic100_o_CFLAGS): Likewise.
+	(3c507_o_CFLAGS): Likewise.
+	(exos205_o_CFLAGS): Likewise.
+	(ni5210_o_CFLAGS): Likewise.
+	(lancepci_o_CFLAGS): Likewise.
+	(ne2100_o_CFLAGS): Likewise.
+	(ni6510_o_CFLAGS): Likewise.
+	(3c503_o_CFLAGS): Likewise.
+	(ntulip_o_CFLAGS): Likewise.
+	(rtl8139_o_CFLAGS): Likewise.
+	(sk_g16_o_CFLAGS): Likewise.
+	(smc9000_o_CFLAGS): Likewise.
+	(tiara_o_CFLAGS): Likewise.
+	(tulip_o_CFLAGS): Likewise.
+	(via_rhine_o_CFLAGS): Likewise.
+
+	* stage2/char_io.c (nul_terminate): Changed the type of the
+	return value to int. Return the original character changed to
+	NUL.
+	* stage2/shared.h (NETWORK_DRIVE): New macro.
+	(nul_terminate): Adjusted to the definition.
+	* stage2/gunzip.c (gunzip_test_header): Removed the TFTP check
+	entirely. It is no longer necessary because we now can obtain
+	the correct size of a file even for TFTP.
+	
+2000-02-07  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/asm.S: Undo the previous changes. Is
 	binutils-2.9.5.0.25 too strict to break the compatibility?
 	Reported by Kalle Olavi Niemitalo <tosi@ees2.oulu.fi>.

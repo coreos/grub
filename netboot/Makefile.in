@@ -68,6 +68,7 @@ GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+NETBOOT_DRIVERS = @NETBOOT_DRIVERS@
 NET_CFLAGS = @NET_CFLAGS@
 NET_EXTRAFLAGS = @NET_EXTRAFLAGS@
 OBJCOPY = @OBJCOPY@
@@ -81,41 +82,80 @@ host_cpu = @host_cpu@
 host_vendor = @host_vendor@
 install_sh = @install_sh@
 
-# For <stage1.h>.
+# For <shared.h> and <stage1.h>.
 
 
-INCLUDES = -I$(top_srcdir)/stage1
+INCLUDES = -I$(top_srcdir)/stage2 -I$(top_srcdir)/stage1
 @NETBOOT_SUPPORT_TRUE@LIBDRIVERS = @NETBOOT_SUPPORT_TRUE@libdrivers.a
 @NETBOOT_SUPPORT_FALSE@LIBDRIVERS = 
 
 noinst_LIBRARIES = $(LIBDRIVERS)
 
-DRIVERS = 3c509.c 3c509.h 3c59x.c cs89x0.c cs89x0.h eepro100.c \
-	lance.c
+libdrivers_a_SOURCES = byteorder.h config.c etherboot.h \
+	fsys_tftp.c if.h linux-asm-io.h linux-asm-string.h \
+	main.c misc.c netboot_config.h netdevice.h nic.h osdep.h \
+	pci.c pci.h
 
-
-libdrivers_a_SOURCES = byteorder.h config.c netboot_config.h \
-	fsys_tftp.c if.h io.h ip.c ip.h netboot.h netdevice.h nic.h \
-	pci.c pci.h $(DRIVERS)
+EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c59x.c 3c90x.c cs89x0.c \
+	3c89x0.h eepro100.c epic100.c epic100.h i82586.c lance.c \
+	ns8390.c ns8390.h ntulip.c rtl8139.c sk_g16.c sk_g16.h \
+	smc9000.c smc9000.h tiara.c tulip.c tulip.h via-rhine.c
 
 libdrivers_a_CFLAGS = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 	-DFSYS_TFTP $(NET_CFLAGS) $(NET_EXTRAFLAGS)
 
+# Filled by configure.
+libdrivers_a_LIBADD = @NETBOOT_DRIVERS@
+libdrivers_a_DEPENDENCIES = $(libdrivers_a_LIBADD)
 
-libdrivers_a_LIBADD = nepci.o ne.o wd.o t503.o
+EXTRA_DIST = README.netboot 3c90x.txt ntulip.txt
 
-nepci_o_CFLAGS = $(filter-out -DINCLUDE_T503=1 -DINCLUDE_NE=1 \
-	-DINCLUDE_WD=1, $(libdrivers_a_CFLAGS))
+# These below are several special rules for the device drivers.
+# We cannot use a simple rule for them...
 
-ne_o_CFLAGS = $(filter-out -DINCLUDE_T503=1 -DINCLUDE_NEPCI=1 \
-	-DINCLUDE_WD=1, $(libdrivers_a_CFLAGS))
+# What objects are derived from a driver?
+3c509_drivers = 3c509.o 3c529.o
+3c59x_drivers = 3c59x.o
+3c90x_drivers = 3c90x.o
+cs89x0_drivers = cs89x0.o
+eepro100_drivers = eepro100.o
+epic100_drivers = epic100.o
+i82586_drivers = 3c507.o exos205.o ni5210.o
+lance_drivers = lancepci.o ne2100.o ni6510.o
+ns8390_drivers = 3c503.o ne.o nepci.o wd.o
+ntulip_drivers = ntulip.o
+rtl8139_drivers = rtl8139.o
+sk_g16_drivers = sk_g16.o
+smc9000_drivers = smc9000.o
+tiara_drivers = tiara.o
+tulip_drivers = tulip.o
+via_rhine_drivers = via_rhine.o
 
-wd_o_CFLAGS = $(filter-out -DINCLUDE_T503=1 -DINCLUDE_NE=1 \
-	-DINCLUDE_NEPCI=1, $(libdrivers_a_CFLAGS))
-
-t503_o_CFLAGS = $(filter-out -DINCLUDE_NE=1 -DINCLUDE_NEPCI=1 \
-	-DINCLUDE_WD=1, $(libdrivers_a_CFLAGS))
-
+# Per-object flags.
+3c509_o_CFLAGS = -DINCLUDE_3C509=1
+3c529_o_CFLAGS = -DINCLUDE_3C529=1
+3c59x_o_CFLAGS = -DINCLUDE_3C59X=1
+3c90x_o_CFLAGS = -DINCLUDE_3C90X=1
+cs89x0_o_CFLAGS = -DINCLUDE_CS89X0=1
+eepro100_o_CFLAGS = -DINCLUDE_EEPRO100=1
+epic100_o_CFLAGS = -DINCLUDE_EPIC100=1
+3c507_o_CFLAGS = -DINCLUDE_3C507=1
+exos205_o_CFLAGS = -DINCLUDE_EXOS205=1
+ni5210_o_CFLAGS = -DINCLUDE_NI5210=1
+lancepci_o_CFLAGS = -DINCLUDE_LANCEPCI=1
+ne2100_o_CFLAGS = -DINCLUDE_NE2100=1
+ni6510_o_CFLAGS = -DINCLUDE_NI6510=1
+3c503_o_CFLAGS = -DINCLUDE_3C503=1
+ne_o_CFLAGS = -DINCLUDE_NE=1
+nepci_o_CFLAGS = -DINCLUDE_NEPCI=1
+wd_o_CFLAGS = -DINCLUDE_WD=1
+ntulip_o_CFLAGS = -DINCLUDE_NTULIP=1
+rtl8139_o_CFLAGS = -DINCLUDE_RTL8139=1
+sk_g16_o_CFLAGS = -DINCLUDE_SK_G16=1
+smc9000_o_CFLAGS = -DINCLUDE_SMC9000=1
+tiara_o_CFLAGS = -DINCLUDE_TIARA=1
+tulip_o_CFLAGS = -DINCLUDE_TULIP=1
+via_rhine_o_CFLAGS = -DINCLUDE_VIA_RHINE=1
 subdir = netboot
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -128,27 +168,28 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libdrivers_a_AR = $(AR) cru
-libdrivers_a_DEPENDENCIES =  nepci.o ne.o wd.o t503.o
 am_libdrivers_a_OBJECTS =  libdrivers_a-config.o \
-libdrivers_a-fsys_tftp.o libdrivers_a-ip.o libdrivers_a-pci.o \
-libdrivers_a-3c509.o libdrivers_a-3c59x.o libdrivers_a-cs89x0.o \
-libdrivers_a-eepro100.o libdrivers_a-lance.o
+libdrivers_a-fsys_tftp.o libdrivers_a-main.o libdrivers_a-misc.o \
+libdrivers_a-pci.o
 libdrivers_a_OBJECTS =  $(am_libdrivers_a_OBJECTS)
 AR = ar
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =  $(libdrivers_a_SOURCES)
+DIST_SOURCES =  $(libdrivers_a_SOURCES) $(EXTRA_libdrivers_a_SOURCES)
 DIST_COMMON =  Makefile.am Makefile.in compile
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-DEP_FILES =  .deps/3c509.P .deps/3c59x.P .deps/config.P .deps/cs89x0.P \
-.deps/eepro100.P .deps/fsys_tftp.P .deps/ip.P .deps/lance.P .deps/pci.P
-SOURCES = $(libdrivers_a_SOURCES)
+DEP_FILES =  .deps/3c509.P .deps/3c59x.P .deps/3c90x.P .deps/config.P \
+.deps/cs89x0.P .deps/eepro100.P .deps/epic100.P .deps/fsys_tftp.P \
+.deps/i82586.P .deps/lance.P .deps/main.P .deps/misc.P .deps/ns8390.P \
+.deps/ntulip.P .deps/pci.P .deps/rtl8139.P .deps/sk_g16.P \
+.deps/smc9000.P .deps/tiara.P .deps/tulip.P .deps/via-rhine.P
+SOURCES = $(libdrivers_a_SOURCES) $(EXTRA_libdrivers_a_SOURCES)
 OBJECTS = $(am_libdrivers_a_OBJECTS)
 
 all: all-redirect
@@ -182,13 +223,25 @@ distclean-compile:
 maintainer-clean-compile:
 libdrivers_a-config.o: config.c
 libdrivers_a-fsys_tftp.o: fsys_tftp.c
-libdrivers_a-ip.o: ip.c
+libdrivers_a-main.o: main.c
+libdrivers_a-misc.o: misc.c
 libdrivers_a-pci.o: pci.c
 libdrivers_a-3c509.o: 3c509.c
 libdrivers_a-3c59x.o: 3c59x.c
+libdrivers_a-3c90x.o: 3c90x.c
 libdrivers_a-cs89x0.o: cs89x0.c
 libdrivers_a-eepro100.o: eepro100.c
+libdrivers_a-epic100.o: epic100.c
+libdrivers_a-i82586.o: i82586.c
 libdrivers_a-lance.o: lance.c
+libdrivers_a-ns8390.o: ns8390.c
+libdrivers_a-ntulip.o: ntulip.c
+libdrivers_a-rtl8139.o: rtl8139.c
+libdrivers_a-sk_g16.o: sk_g16.c
+libdrivers_a-smc9000.o: smc9000.c
+libdrivers_a-tiara.o: tiara.c
+libdrivers_a-tulip.o: tulip.c
+libdrivers_a-via-rhine.o: via-rhine.c
 
 libdrivers.a: $(libdrivers_a_OBJECTS) $(libdrivers_a_DEPENDENCIES)
 	-rm -f libdrivers.a
@@ -319,7 +372,7 @@ libdrivers_a-fsys_tftp.lo: fsys_tftp.c
 	    >> .deps/$(*D)/$(*F).P; \
 	rm -f .deps/$(*D)/$(*F).pp
 
-libdrivers_a-ip.o: ip.c
+libdrivers_a-main.o: main.c
 	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
 	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
@@ -328,7 +381,26 @@ libdrivers_a-ip.o: ip.c
 	    >> .deps/$(*D)/$(*F).P; \
 	rm .deps/$(*D)/$(*F).pp
 
-libdrivers_a-ip.lo: ip.c
+libdrivers_a-main.lo: main.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-misc.o: misc.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-misc.lo: misc.c
 	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
@@ -395,6 +467,25 @@ libdrivers_a-3c59x.lo: 3c59x.c
 	    >> .deps/$(*D)/$(*F).P; \
 	rm -f .deps/$(*D)/$(*F).pp
 
+libdrivers_a-3c90x.o: 3c90x.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-3c90x.lo: 3c90x.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
 libdrivers_a-cs89x0.o: cs89x0.c
 	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
@@ -433,6 +524,44 @@ libdrivers_a-eepro100.lo: eepro100.c
 	    >> .deps/$(*D)/$(*F).P; \
 	rm -f .deps/$(*D)/$(*F).pp
 
+libdrivers_a-epic100.o: epic100.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-epic100.lo: epic100.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-i82586.o: i82586.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-i82586.lo: i82586.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
 libdrivers_a-lance.o: lance.c
 	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
@@ -443,6 +572,158 @@ libdrivers_a-lance.o: lance.c
 	rm .deps/$(*D)/$(*F).pp
 
 libdrivers_a-lance.lo: lance.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ns8390.o: ns8390.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ns8390.lo: ns8390.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ntulip.o: ntulip.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ntulip.lo: ntulip.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-rtl8139.o: rtl8139.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-rtl8139.lo: rtl8139.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-sk_g16.o: sk_g16.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-sk_g16.lo: sk_g16.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-smc9000.o: smc9000.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-smc9000.lo: smc9000.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-tiara.o: tiara.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-tiara.lo: tiara.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-tulip.o: tulip.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-tulip.lo: tulip.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-via-rhine.o: via-rhine.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-via-rhine.lo: via-rhine.c
 	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
@@ -524,9 +805,86 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-$(libdrivers_a_LIBADD): ns8390.c ns8390.h
-$(libdrivers_a_LIBADD): %.o: ns8390.c
-	$(COMPILE) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+# Is it really necessary to specify dependecies explicitly?
+$(ns8390_drivers): ns8390.c ns8390.h
+$(ns8390_drivers): %.o: ns8390.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(i82586_drivers): i82586.c
+$(i82586_drivers): %.o: i82586.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(3c509_drivers): 3c509.c 3c509.h
+$(3c509_drivers): %.o: 3c509.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(3c59x_drivers): 3c59x.c 3c509.h
+$(3c59x_drivers): %.o: 3c59x.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(3c90x_drivers): 3c90x.c
+$(3c90x_drivers): %.o: 3c90x.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(cs89x0_drivers): cs89x0.c cs89x0.h
+$(cs89x0_drivers): %.o: cs89x0.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(eepro100_drivers): eepro100.c
+$(eepro100_drivers): %.o: eepro100.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(epic100_drivers): epic100.c epic100.h
+$(epic100_drivers): %.o: epic100.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(lance_drivers): lance.c
+$(lance_drivers): %.o: lance.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(ntulip_drivers): ntulip.c
+$(ntulip_drivers): %.o: ntulip.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(rtl8139_drivers): rtl8139.c
+$(rtl8139_drivers): %.o: rtl8139.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(sk_g16_drivers): sk_g16.c sk_g16.h
+$(sk_g16_drivers): %.o: sk_g16.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(smc9000_drivers): smc9000.c smc9000.h
+$(smc9000_drivers): %.o: smc9000.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(tiara_drivers): tiara.c
+$(tiara_drivers): %.o: tiara.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(tulip_drivers): tulip.c tulip.h
+$(tulip_drivers): %.o: tulip.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
+
+$(via_rhine_drivers): via-rhine.c
+$(via_rhine_drivers): %.o: via-rhine.c
+	$(COMPILE) $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	  $(NET_EXTRAFLAGS) $($(basename $@)_o_CFLAGS) -o $@ -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
