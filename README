@@ -51,9 +51,9 @@ NOTE: you should stick to the GNU Coding Standards. Look at the URL
 
 DEVELOPERS: to subscribe to the mailing list, see
 <http://mail.gnu.org/mailman/listinfo/bug-grub>. You can get the latest
-GRUB CVS tree from `:pserver:anoncvs@subversions.gnu.org:/home/cvs',
+GRUB CVS tree from `:pserver:anoncvs@subversions.gnu.org:/cvsroot/grub',
 module `grub'. Just hit enter when CVS prompts you for a password.
-See <http://www.gnu.org/software/devel.html#CVS> for more details.
+See <http://savannah.gnu.org/projects/grub/>, for more details.
 
 If you are really interested in the rapid development, you can subscribe
 to the list <commit-grub@gnu.org>. See
