@@ -1,3 +1,33 @@
+2000-08-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	The image `nbgrub' now relocates itself from 0x10000 to 0x8000,
+	since the Network Boot Image Proposal doesn't permit a second
+	loader to be loaded below 0x10000. Reported by Matthias
+	Kretschmer <McCratch@gmx.net>.
+	
+	* Makefile.am (NBLOADER_LINK): New variable.
+	(nbloader_exec_LDFLAGS): Set to $(NBLOADER_LINK) instead of
+	$(START_LINK).
+	* stage2/nbi.h (NBI_DEST_ADDR): Changed to 0x10000.
+	(NBI_DEST_SEG): New macro.
+	(NBI_DEST_OFF): Likewise.
+	(RELOCATED_ADDR): Likewise.
+	(RELOCATED_SEG): Likewise.
+	(RELOCATED_OFF): Likewise.
+	(STAGE2_START_ADDR): Likewise.
+	* stage2/nbloader.S: Added .code16 directive at the start of the
+	code.
+	Set the segment and the offset of the load address to
+	NBI_DEST_SEG and NBI_DEST_OFF, respectively.
+	Set the segment and the offset of the start address to
+	NBI_DEST_SEG and NBI_DEST_OFF + relocate - _start, respectively.
+	Added a routine for relocating itself.
+	(relocate): New label.
+	(copy_rest): Likewise.
+	(copy_loop): Likewise.
+	(copy): Likewise.
+	(boot_stage2): Likewise.
+	
 2000-08-13  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* grub/main.c (main): Move the version number inside the

@@ -133,6 +133,7 @@ MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
 PRE_STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8200
 START_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
+NBLOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,0
 PXELOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 @NETBOOT_SUPPORT_TRUE@STAGE2_COMPILE = @NETBOOT_SUPPORT_TRUE@$(STAGE2_CFLAGS) -fno-builtin -nostdinc \
 @NETBOOT_SUPPORT_TRUE@	-I$(top_srcdir)/netboot -DSUPPORT_NETBOOT=1
@@ -217,7 +218,7 @@ diskless_exec_LDADD = ../netboot/libdrivers.a
 # For nbloader target.
 nbloader_exec_SOURCES = nbloader.S
 nbloader_exec_CFLAGS = $(STAGE2_COMPILE)
-nbloader_exec_LDFLAGS = $(START_LINK)
+nbloader_exec_LDFLAGS = $(NBLOADER_LINK)
 
 # For pxeloader target.
 pxeloader_exec_SOURCES = pxeloader.S

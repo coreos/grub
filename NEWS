@@ -17,6 +17,9 @@ New in 0.5.96 - XXXX-XX-XX:
   unmount the partition where GRUB images reside. We'd recommend _not_
   using those commands directly, but using the utility "grub-install"
   instead, because this is safer.
+* One violation against the Network Boot Image Proposal was found and
+  fixed. So now the image `nbgrub' can work fine even with a card such
+  as rtl8139.
 
 New in 0.5.95 - 2000-06-27:
 * NetBSD ELF kernel support is added. You have to specify the new option

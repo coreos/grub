@@ -46,6 +46,7 @@ MOSTLYCLEANFILES = $(noinst_PROGRAMS)
 
 PRE_STAGE2_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8200
 START_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,8000
+NBLOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,0
 PXELOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 if NETBOOT_SUPPORT
 STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
@@ -147,7 +148,7 @@ diskless_size.h: diskless
 # For nbloader target.
 nbloader_exec_SOURCES = nbloader.S
 nbloader_exec_CFLAGS = $(STAGE2_COMPILE)
-nbloader_exec_LDFLAGS = $(START_LINK)
+nbloader_exec_LDFLAGS = $(NBLOADER_LINK)
 
 # XXX: See the comment for start_exec-start.o.
 nbloader_exec-nbloader.o: diskless_size.h

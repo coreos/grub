@@ -144,7 +144,7 @@ codestart:
 	
 	/* zero %al */
 	xorb	%al, %al
-	
+
 	/* set the direction */
 	cld
 	
