@@ -32,10 +32,11 @@ pkgdatadir=${datadir}/${PACKAGE}/${host_cpu}-${host_vendor}
 grub_shell=${sbindir}/grub
 bootdir=/boot
 grubdir=${bootdir}/grub
-device_map=${grub_dir}/device.map
+device_map=${grubdir}/device.map
 log_file=/tmp/grub-install.log.$$
 
 install_device=
+debug=no
 
 # Usage: usage
 # Print the usage.
@@ -55,6 +56,12 @@ EOF
 # Convert an OS device to the corresponding GRUB drive.
 # This part is OS-specific.
 convert () {
+    # First, check if the device file exists.
+    if test ! -e $1; then
+	echo "$1: Not found." 1>&2
+	exit 1
+    fi
+
     # Break the device name into the disk part and the partition part.
     case $host_os in
     linux*) 
@@ -64,17 +71,17 @@ convert () {
 	tmp_disk=`echo $1 | sed 's%s[0-9]*[a-g]?%%'`
 	tmp_part=`echo $1 | sed "s%$tmp_disk%%"` ;;
     *)
-	echo "grub-install does not support your OS yet."
+	echo "grub-install does not support your OS yet." 1>&2
 	exit 1 ;;
     esac
 
     # Get the drive name.
     tmp_drive=`grep -v '^#' $device_map | grep $tmp_disk \
-	| sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+	| sed 's%.*\(([hf]d[0-9][a-g0-9,]*)\).*%\1%'`
 
     # If not found, print an error message and exit.
-    if "x$tmp_drive" = x; then
-	echo "$1 does not have any corresponding BIOS drive."
+    if test "x$tmp_drive" = x; then
+	echo "$1 does not have any corresponding BIOS drive." 1>&2
 	exit 1
     fi
 
@@ -110,14 +117,41 @@ for option; do
     -v | --version)
 	echo "grub-install (GNU GRUB ${VERSION})"
 	exit 0 ;;
+    # This is an undocumented feature...
+    --debug)
+	debug=yes ;;
     *)
 	if test "x$install_device" != x; then
 	    usage
 	    exit 1
 	fi
-	install_device=${option} ;;
+	install_device="${option}" ;;
     esac
 done
+
+# If the debugging feature is enabled, print commands.
+if test $debug = yes; then
+    set -x
+fi
+
+# Check if GRUB is installed
+if test ! -f $grub_shell; then
+    echo "${grub_shell}: Not found." 1>&2
+    exit 1
+fi
+
+if test ! -f $pkgdatadir/stage1; then
+    echo "${pkgdatadir}/stage1: Not found." 1>&2
+    exit 1
+fi
+
+if test ! -f $pkgdatadir/stage2; then
+    echo "${pkgdatadir}/stage2: Not found." 1>&2
+    exit 1
+fi
+
+# Don't check for *stage1_5, because it is not fatal even if any
+# Stage 1.5 does not exist.
 
 # Create the GRUB directory if it is not present.
 if test ! -d $bootdir; then
@@ -134,28 +168,32 @@ if test ! -f $device_map; then
 quit
 EOF
     if grep "Error: " $log_file >/dev/null; then
-	cat $log_file
+	cat $log_file 1>&2
 	exit 1
     fi
 
     rm -f $log_file
 fi
 
-# Copy the GRUB images to the GRUB directory.
-rm -f ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5
-cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 ${grubdir}
-
 # Check for INSTALL_DEVICE.
 if test "x$install_device" = x; then
     usage
     exit 1
-elif echo $install_device | sed 's%^/dev/%%' >/dev/null; then
-    install_drive=`convert $install_device`
-elif echo $install_device | sed 's%^([hf][0-9,]*)$%%' >/dev/null; then
-    install_drive=$install_device
 else
-    usage
-    exit 1
+    case "$install_device" in
+    /dev/*)
+	install_drive=`convert $install_device`
+	# I don't know why, but some shells wouldn't die if exit is
+	# called in a function.
+	if test "x$install_drive" = x; then
+	    exit 1
+	fi ;;
+    \([hf]d[0-9]*\))
+	install_drive="$install_device" ;;
+    *)
+	usage
+	exit 1 ;;
+    esac
 fi
 
 # Get the root drive.
@@ -163,6 +201,13 @@ fi
 # this really portable?
 root_device=`df ${grubdir} | grep /dev/ | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
 root_drive=`convert $root_device`
+if test "x$root_drive" = x; then
+    exit 1
+fi
+
+# Copy the GRUB images to the GRUB directory.
+rm -f ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5
+cp ${pkgdatadir}/stage1 ${pkgdatadir}/stage2 ${pkgdatadir}/*stage1_5 ${grubdir}
 
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file
@@ -172,7 +217,7 @@ quit
 EOF
 
 if grep "Error: " $log_file >/dev/null; then
-    cat $log_file
+    cat $log_file 1>&2
     exit 1
 fi
 

@@ -1,3 +1,25 @@
+1999-11-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+	
+	* util/grub-install.in (debug): New variable.
+	(convert): If the device file does not exist, then emit an
+	error. Get the GRUB drive instead of the OS device.
+	If --debug is specified, then set $debug to yes.
+	If $debug is yes, run "set -x".
+	Make sure that stage1 and stage2 exist.
+	When checking for INSTALL_DEVICE, use "case" instead of "elif"s.
+	Make sure that $install_drive is not empty.
+	Likewise, make sure that $root_drive is not empty.
+	Any error message is redirected to the standard error.
+	
+1999-11-19  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/Makefile.am (noinst_DATA): Renamed to ...
+	(nodist_noinst_DATA): ... this.
+	* util/Makefile.am: sbin_SCRIPS -> sbin_SCRIPTS.
+	* util/grub-install.in: grub_dir -> grubdir.
+	Check if $grub_shell exists before running it.
+	(convert): Added a missing "test" after "if".
+
 1999-11-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in: Output grub-install.
