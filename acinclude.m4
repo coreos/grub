@@ -93,17 +93,25 @@ AC_DEFUN(grub_ASM_ADDR32,
 AC_REQUIRE([grub_ASM_PREFIX_REQUIREMENT])
 AC_MSG_CHECKING([for .code16 addr32 assembler support])
 AC_CACHE_VAL(grub_cv_asm_addr32,
-[cat > conftest.s <<\EOF
+[cat > conftest.s.in <<\EOF
 	.code16
-l1:	ADDR32	movb	%al, l1
+l1:	@ADDR32@	movb	%al, l1
 EOF
+
+if test "x$grub_cv_asm_prefix_requirement" = xyes; then
+  sed -e s/@ADDR32@/addr32/ < conftest.s.in > conftest.s
+else
+  sed -e s/@ADDR32@/addr32\;/ < conftest.s.in > conftest.s
+fi
 
 if AC_TRY_COMMAND([${CC-cc} -c conftest.s]) && test -s conftest.o; then
   grub_cv_asm_addr32=yes
 else
   grub_cv_asm_addr32=no
 fi
+
 rm -f conftest*])
+
 AC_MSG_RESULT([$grub_cv_asm_addr32])])
 
 dnl

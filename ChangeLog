@@ -1,5 +1,13 @@
 1999-09-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* acinclude.m4 (grub_ASM_ADDR32): First, create a template
+	source file "conftest.s.in", and then, replace @ADDR32@ with
+	"addr32" if GRUB_CV_ASM_PREFIX_REQUIREMENT is yes, otherwise,
+	replace it with "addr32;". Reported by John Tobey
+	<spam@john-edwin-tobey.org>.
+	
+1999-09-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/builtins.c (debug_fs_print_func): Renamed to ...
 	(disk_read_print_func): ... this.
 	(fstest_func): Use DISK_READ_HOOK instead of DEBUG_FS.
