@@ -74,7 +74,7 @@ host_vendor = @host_vendor@
 install_sh = @install_sh@
 
 
-SUBDIRS = stage1 stage2 docs debian grub
+SUBDIRS = stage1 stage2 grub docs debian
 EXTRA_DIST = BUGS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
