@@ -1,3 +1,9 @@
+2002-12-09  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/char_io.c (init_page): Change the software name from
+	"GRUB" to "GNU GRUB". This was inaccurate. Reported by Ciaran
+	O'Riordan <coriordan@compsoc.com>.
+
 2002-12-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (embed_func): When checking if the disk can
