@@ -117,7 +117,7 @@ no_32_apm_bios:
 	andw     $0xfffd, ABS(EXT_C(apm_bios_info)) + 12
 
 done_apm_bios:
-	DATA32	call	EXT_C(prot_to_real)
+	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
 	popl	%esi

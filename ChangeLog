@@ -1,3 +1,8 @@
+2000-10-25  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/apm.S (get_apm_info): Fix a serious typo: prot_to_real
+	-> real_to_prot. Umm, I can't understand why it worked for me!
+	
 2000-10-24  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/builtins.c (setup_func): When invoking install with an
