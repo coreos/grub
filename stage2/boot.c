@@ -621,6 +621,7 @@ bsd_boot (kernel_t type, int bootdev, char *arg)
 
       bi.bi_size = sizeof (struct bootinfo);
       bi.bi_memsizes_valid = 1;
+      bi.bi_bios_dev = saved_drive;
       bi.bi_basemem = mbi.mem_lower;
       bi.bi_extmem = mbi.mem_upper;
 

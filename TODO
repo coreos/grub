@@ -1,39 +1,41 @@
-Change partition syntax to correspond with BSD ``slice'' syntax
-(`(hd0,1a)' -> `/dev/hd0s2a').
+-*- Mode: Outline -*-
 
-Add a partition naming syntax that means ``the first partition of this
-type''.  We need this for clean Hurd install floppies.
+Before working on anything in this file, it's very important that you
+make contact with the core GRUB developers. Things herein might be
+slightly out of date or otherwise not easy to understand at first
+glance. So write to <bug-grub@gnu.org> first.
 
-Add a real scripting language, possibly retaining backward
-compatibility so that old config files can be used.
+Priorities:
+  Reported bugs generally have top priority.
+  Non-reported and non-encountered bugs (things we know don't work,
+    but don't really impede things) have lower priority.
+  Things in this file are ranked with one to three !; the more, the
+  higher priority.
 
-Add internationalization support, emulating gettext as much as is
-feasible.
-
-Add bootable CDROM support (this probably means we have to support
-ISO-9660 plus maybe even the Rock Ridge extensions...  ugh).
-
-Make symbolic links work for BSD FFS.
-
-Fix keyboard/gateA20 bug (????  at least look at the code).  The
-keyboard status bits may be checked wrong.
-
-Add indirect block support to the BSD FFS filesystem code, so files
-larger than 16MB can be read.
-
-???  Add command for modifying partition types.
-
-Add OpenBSD support. The recent versions cannot be loaded.
-
-Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
-
-Add a new installation command, such as `setup', which should be easier
-to use and more automatic than the command `install'.
-
-Add keyboard layout configuration support.
-
-Clean up and enhance the manuals, especially concept indexes.
-
-Add more filesystems support (XFS, NTFS, etc.)
-
-Add remote console support (serial, parallel and net).
+* Support partition syntax to correspond with BSD ``slice'' syntax
+  (`(hd0,1a)' -> `/dev/hd0s2a'). !
+? Add a partition naming syntax that means ``the first partition of
+  this type''.  We need this for clean Hurd install floppies.
+* Add a real scripting language, possibly retaining backward
+  compatibility so that old config files can be used.
+* Add internationalization support, emulating gettext as much as is
+  feasible.
+* Make symbolic links work for BSD FFS. !
+* Fix keyboard/gateA20 bug (????  at least look at the code). The
+  keyboard status bits may be checked wrong.
+* Add indirect block support to the BSD FFS filesystem code, so files
+  larger than 16MB can be read. !
+? Add command for modifying partition types.
+* Add OpenBSD support. The recent versions cannot be loaded. !!!
+* Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot
+  parameters. !!
+* Add a new installation command, such as `setup', which should be
+  easier to use and more automatic than the command `install'. !!!
+* Add keyboard layout configuration support. !
+* Clean up and enhance the manuals, especially concept indexes. !!!
+* Add more filesystems support (XFS, NTFS, etc.)
+* Add remote console support (serial, parallel and net).
+* Add RAID support.
+* Complete the netboot support. !
+* Support CHS and LBA in a single Stage 1. !!
+* Add automatic configuration support.

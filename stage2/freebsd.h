@@ -83,7 +83,8 @@ struct bootinfo
     unsigned long bi_bios_geom[N_BIOS_GEOM];
     unsigned int bi_size;
     unsigned char bi_memsizes_valid;
-    unsigned char bi_pad[3];
+    unsigned char bi_bios_dev;
+    unsigned char bi_pad[2];
     unsigned long bi_basemem;
     unsigned long bi_extmem;
     unsigned long bi_symtab;

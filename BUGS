@@ -10,7 +10,7 @@ Known problems/bugs:
   - Password feature in the config file is a bit primitive, and needs
     fleshing out/design work to make more intuitive.
 
-  - If an "uppermem=" command was used to tell GRUB it had a different
+  - If an "uppermem" command was used to tell GRUB it had a different
     amount of upper memory available, then the user escapes to the menu
     interface, the upper memory displayed there still says the amount
     set by the user instead of being reset to the default by the escape.

@@ -1,3 +1,8 @@
+1999-10-04  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/freebsd.h (struct bootinfo): New member, bi_bios_dev.
+	* stage2/boot.c (bsd_boot): Set BI.BI_BIOS_DEV to SAVED_DRIVE.
+	
 1999-10-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin:
