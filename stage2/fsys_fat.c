@@ -224,6 +224,9 @@ fat_read (char *buf, int len)
 	  else if (FAT_SUPER->fat_size == 4)
 	    next_cluster &= 0xFFFF;
 	  
+	  grub_printf ("%s:%d: next_cluster=%d\n",
+		       __FILE__, __LINE__, next_cluster);
+	  
 	  if (next_cluster >= FAT_SUPER->clust_eof_marker)
 	    return ret;
 	  if (next_cluster < 2 || next_cluster >= FAT_SUPER->num_clust)
