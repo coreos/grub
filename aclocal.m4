@@ -356,6 +356,9 @@ main (void)
 	case '\\':
 	  fputs ("\\\\", stdout);
 	  break;
+	case '"':
+	  fputs ("\\\"", stdout);
+	  break;
 	default:
 	  putchar (c);
 	}

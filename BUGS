@@ -1,5 +1,9 @@
 Known problems/bugs:
 
+  - The command "geometry" doesn't work with a floppy very well. This
+    bug was incorporated after the rewrite of the partition scanning
+    code by okuji.
+
   - GRUB cannot boot newer versions of NetBSD or OpenBSD directly.
 
   - The command "map" seems not to work in some environments.

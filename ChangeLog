@@ -1,3 +1,14 @@
+2001-07-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/compile: New file. This was also missing... How many
+	``compile''s does automake want?
+	
+2001-07-07  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Jan Zerebecki <jan.list@elite-pferde.de>:
+	* acinclude.m4 (grub_DEFINE_FILE): Escape double-quotations as
+	well.
+	
 2001-07-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (AM_INIT_AUTOMAKE): Set the version number to

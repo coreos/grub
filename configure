@@ -3027,6 +3027,9 @@ main (void)
 	case '\\':
 	  fputs ("\\\\", stdout);
 	  break;
+	case '"':
+	  fputs ("\\\"", stdout);
+	  break;
 	default:
 	  putchar (c);
 	}
@@ -3036,7 +3039,7 @@ main (void)
 }
 EOF
 
-if { ac_try='${CC-cc} ${CFLAGS} conftest.c -o conftest'; { (eval echo configure:3040: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
+if { ac_try='${CC-cc} ${CFLAGS} conftest.c -o conftest'; { (eval echo configure:3043: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest; then
   grub_tmp_value=`./conftest < "$enable_preset_menu"`
 else
   { echo "configure: error: ${CC-cc} failed to produce an executable file" 1>&2; exit 1; }
