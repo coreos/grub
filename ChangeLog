@@ -1,5 +1,11 @@
 2000-11-11  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Jan Fricke <fricke@uni-greifswald.de>:
+	* stage2/asm.S [!STAGE1_5] (set_vbe_mode): Add a missing `$'
+	prefix.
+	
+2000-11-11  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/bios.c (get_diskinfo): If BIOS supports LBA but doesn't
 	return the correct total number of sectors, compute this by
 	C/H/S returned by get_diskinfo_int13_extensions instead of

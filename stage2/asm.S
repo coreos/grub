@@ -1679,7 +1679,7 @@ ENTRY(set_vbe_mode)
 	/* Save the mode number in %bx */
 	movl	0x8(%ebp), %ebx
 	/* Clear bit D11 */
-	andl	0xF7FF, %ebx
+	andl	$0xF7FF, %ebx
 	
 	call	EXT_C(prot_to_real)
 	.code16
