@@ -1,3 +1,13 @@
+2001-05-28  Gordon Matzigkeit  <gord@fig.org>
+
+	* Makefile.am (SUBDIRS): Remove reference to debian directory.
+	Packaging is no longer done by the GRUB team.
+
+2001-05-03  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage1/stage1.S (nt_magic): Explicitly reserve space for the NT
+	magic number.
+
 2001-05-25  Klaus Reichl  <Klaus.Reichl@alcatel.at>
 
 	* stage2/stage2.c (print_entries_raw): New function.
