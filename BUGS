@@ -1,5 +1,12 @@
 Known problems/bugs:
 
+  - The dumb terminal doesn't work properly. It doesn't work well with
+    a long command-line, and when a non-empty command-line string is
+    set, it doesn't work with Emacs expectedly.
+
+  - The auto-filling mechanism doesn't work correctly with the serial
+    terminal.
+
   - In the netboot code, tlan and fa311 are not used, even though they
     are distributed. That's because the entry for tlan is commented out
     in the file "NIC" of Etherboot, and fa311 isn't used actually in
