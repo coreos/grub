@@ -71,7 +71,7 @@ into another language, under the above conditions for modified versions.
 @top Multiboot Specification
 
 This file documents Multiboot Specification, the proposal for the boot
-sequence standard. This edition documents version 0.7.
+sequence standard. This edition documents version 0.6.90.
 @end ifnottex
 
 

@@ -1,5 +1,10 @@
 2000-02-10  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/multiboot.texi (Top): Downgrade the version to 0.6.90,
+	since we need more work to release it as 0.7.
+	
+2000-02-10  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/Makefile.am [NETBOOT_SUPPORT] (STAGE2_COMPILE): Added
 	-I$(top_srcdir)/netboot and -DSUPPORT_NETBOOT=1.
 	* stage2/builtins.c (bootp_func): New function.
