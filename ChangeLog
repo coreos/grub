@@ -1,3 +1,10 @@
+2003-10-19  Yoshinori OKUJI  <okuji@enbug.org>
+
+	From KB Sriram <mail_kb@yahoo.com>:
+	* stage2/disk_io.c (set_device) [SUPPORT_NETBOOT]: Added support
+	for a completion of a network device.
+	(print_completions): Likewise.
+
 2003-10-10  Robert Millan  <robertmh@gnu.org>
 
 	* config.{guess,sub}: Update from official source (CVS).
