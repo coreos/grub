@@ -1,5 +1,10 @@
 2002-12-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/builtins.c (embed_func): When checking if the disk can
+	store Stage 1.5, check every partition, if it isn't empty.
+
+2002-12-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/stage2.c (print_entry): Put a right arrow, if the entry
 	is longer than 71 characters. Reported by Pavel Roskin.
 

@@ -1044,7 +1044,8 @@ embed_func (char *arg, int flags)
       
       char mbr[SECTOR_SIZE];
       char ezbios_check[2*SECTOR_SIZE];
-
+      int i;
+      
       /* Open the partition.  */
       if (! open_partition ())
 	return 1;
@@ -1068,12 +1069,13 @@ embed_func (char *arg, int flags)
 	}
 
       /* Check if the disk can store the Stage 1.5.  */
-      if (PC_SLICE_START (mbr, 0) - 1 < size)
-	{
-	  errnum = ERR_NO_DISK_SPACE;
-	  return 1;
-	}
-
+      for (i = 0; i < 4; i++)
+	if (PC_SLICE_TYPE (mbr, i) && PC_SLICE_START (mbr, i) - 1 < size)
+	  {
+	    errnum = ERR_NO_DISK_SPACE;
+	    return 1;
+	  }
+      
       /* Check for EZ-BIOS signature. It should be in the third
        * sector, but due to remapping it can appear in the second, so
        * load and check both.  
