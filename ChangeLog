@@ -1,5 +1,12 @@
 2003-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Steven Dick <ssd.gnu@mmae.ucf.edu>:
+	* stage2/pc_slice.h (PC_SLICE_TYPE_DELL_UTIL): New macro.
+	(IS_PC_SLICE_TYPE_FAT): Recognize PC_SLIDE_TYPE_DELL_UTIL as
+	well.
+
+2003-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	From Karsten Scheibler <karsten.scheibler@student.uni-halle.de>:
 	* stage2/terminfo.c (term): Don't use a C99-style initializer.
 
