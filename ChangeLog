@@ -1,5 +1,12 @@
 2001-01-27  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Danilo Godec <danci@agenda.si>:
+	* stage2/pc_slice.h (PC_SLICE_TYPE_LINUX_RAID): New macro.
+	* stage2/fsys_ext2fs.c (ext2fs_mount): Add a check for
+	PC_SLICE_LINUX_RAID.
+	
+2001-01-27  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Bernhard Treutwein
 	<Bernhard.Treutwein@Verwaltung.Uni-Muenchen.DE>:
 	* docs/grub-new.texi (DOS/Windows): Made more readable.

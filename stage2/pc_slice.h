@@ -114,6 +114,8 @@
 #define PC_SLICE_TYPE_LINUX_MINIX	0x81
 #define PC_SLICE_TYPE_EXT2FS       	0x83
 #define PC_SLICE_TYPE_LINUX_EXTENDED	0x85
+#define PC_SLICE_TYPE_LINUX_RAID	0xfd
+
 
 /* For convinience.  */
 /* Check if TYPE is a FAT partition type. Clear the hidden flag before
