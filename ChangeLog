@@ -1,3 +1,8 @@
+2002-06-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (FAQ): Removed. See the GNU GRUB FAQ on the web
+	instead.
+	
 2002-05-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (Reporting bugs): Recommend using the BTS on

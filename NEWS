@@ -8,6 +8,8 @@ New in 0.93:
   way to report bugs is to use the BTS rather than sending e-mail to
   bug-grub. See <http://savannah.gnu.org/bugs/?group_id=68>, for more
   details.
+* The appendix "FAQ" in the manual is removed. See the GNU GRUB FAQ on
+  the web <http://www.gnu.org/software/grub/grub-faq.html> instead.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.
