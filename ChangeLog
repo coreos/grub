@@ -1,3 +1,9 @@
+2000-12-09  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/disk_io.c (next_partition):  Mask out bsd partition sub
+	type when checking if last partition was a bsd partition.
+	Reported by Heikki Vatiainen <hessu@cs.tut.fi>.
+	
 2000-12-09  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Leendert Meyer <leen.meyer@home.nl>:

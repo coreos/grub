@@ -574,7 +574,7 @@ next_partition (unsigned long drive, unsigned long dest,
 
   /* If previous partition is a BSD partition or a PC slice which
      contains BSD partitions...  */
-  if ((*partition != 0xFFFFFF && IS_PC_SLICE_TYPE_BSD (*type))
+  if ((*partition != 0xFFFFFF && IS_PC_SLICE_TYPE_BSD (*type & 0xff))
       || ! (drive & 0x80))
     {
       if (*type == PC_SLICE_TYPE_NONE)
