@@ -12,8 +12,12 @@ New in 0.5.93:
   is supported for backward compatibility.
 * The command "help" displays helpful information about builtin
   commands.
-* The command "geometry" displays the information of a drive specified.
+* The command "geometry" displays the information of a drive specified
+  and set the geometry to arbitrary C/H/S values if the optional
+  arguments are used.
 * The command "configfile" loads a configuration file interactively.
+* The command "device" assigns a BIOS drive to an arbitrary filename in
+  the grub shell.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

@@ -73,7 +73,7 @@ char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 char *grub_scratch_mem = 0;
 
 #define NUM_DISKS 256
-static struct geometry *disks = 0;
+struct geometry *disks = 0;
 
 /* The map between BIOS drives and UNIX device file names.  */
 char **device_map = 0;
@@ -137,15 +137,16 @@ grub_stage2 (void)
 
   /* Probe devices for creating the device map.  */
 
-  /* Iniitialize DEVICE_MAP.  */
-  memset (device_map, 0, NUM_DISKS * sizeof (char *));
+  /* Initialize DEVICE_MAP.  */
+  for (i = 0; i < NUM_DISKS; i++)
+    device_map[i] = 0;
 
   /* Floppies.  */
-  device_map[0] = strdup ("/dev/fd0");
+  assign_device_name (0, "/dev/fd0");
 #ifndef __linux__
   /* FIXME: leave linux out for now /dev/fd1 blocks for long time
      if there is no second floppy ?  */
-  device_map[1] = strdup ("/dev/fd1");
+  assign_device_name (1, "/dev/fd1");
 #endif
 
   /* IDE disks.  */
@@ -176,7 +177,7 @@ grub_stage2 (void)
 		 reactivated if `removable disks' and CDROMs are
 		 supported.  */
 	      /* register it, it may be inserted.  */
-	      device_map[num_hd++ + 0x80] = strdup (name);
+	      assign_device_name (num_hd++ + 0x80, name);
 #endif
 	      break;
 #endif /* ENOMEDIUM */
@@ -197,21 +198,20 @@ grub_stage2 (void)
 	}
 
       fclose (fp);
-      device_map[num_hd++ + 0x80] = strdup (name);
+      assign_device_name (num_hd++ + 0x80, name);
     }
 
   /* The rest is SCSI disks.  */
   for (i = 0; i < 8; i++)
     {
-      char *name = malloc (10);
+      char name[10];
 
-      assert (name);
 #ifdef __linux__
       sprintf (name, "/dev/sd%c", i + 'a');
 #elif defined(__GNU__)
       sprintf (name, "/dev/sd%d", i);
 #endif
-      device_map[num_hd++ + 0x80] = name;
+      assign_device_name (num_hd++ + 0x80, name);
     }
 
   /* Check some invariants. */
@@ -276,6 +276,24 @@ grub_stage2 (void)
   return status;
 }
 
+/* Assign DRIVE to a device name DEVICE.  */
+void
+assign_device_name (int drive, const char *device)
+{
+  /* If DRIVE is already assigned, free it.  */
+  if (device_map[drive])
+    free (device_map[drive]);
+  
+  /* If the old one is already opened, close it.  */
+  if (disks[drive].flags != -1)
+    {
+      close (disks[drive].flags);
+      disks[drive].flags = -1;
+    }
+  
+  /* Assign DRIVE to DEVICE.  */
+  device_map[drive] = strdup (device);
+}
 
 void
 stop (void)

@@ -1,3 +1,14 @@
+1999-09-10  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (device_func): New function.
+	(builtin_device): New variable.
+	(builtin_table): Added the pointer to BUILTIN_DEVICE.
+	(builtin_geometry) [GRUB_UTIL]: Accept extra arguments,
+	CYLINDER, HEAD, SECTOR and TOTAL_SECTOR, and, if they are found,
+	set the geometry of a drive specified to them.
+	* grub/asmstub.c (disks): Made global.
+	(assign_device_name): New function.
+	
 1999-09-09  Gordon Matzigkeit  <gord@fig.org>
 
 	* docs/grub.texi (Commands): Synchronize descriptions with

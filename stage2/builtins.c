@@ -153,7 +153,7 @@ static struct builtin builtin_chainloader =
   chainloader_func,
   BUILTIN_CMDLINE,
   "chainloader FILE",
-  "Load FILE as a chain-loader."
+  "Load the chain-loader FILE."
 };
 
 
@@ -285,6 +285,50 @@ static struct builtin builtin_default =
 };
 
 
+/* device */
+static int
+device_func (char *arg, int flags)
+{
+#ifdef GRUB_UTIL
+  char *drive = arg;
+  char *device;
+  char *ptr;
+
+  /* Get the drive number from DRIVE.  */
+  if (! set_device (drive))
+    return 1;
+
+  /* Get the device argument.  */
+  device = skip_to (0, drive);
+  if (! *device)
+    {
+      errnum = ERR_FILE_NOT_FOUND;
+      return 1;
+    }
+
+  /* Terminate DEVICE.  */
+  ptr = device;
+  while (*ptr && *ptr != ' ')
+    ptr++;
+  *ptr = 0;
+
+  assign_device_name (current_drive, device);
+#endif /* GRUB_UTIL */
+
+  return 0;
+}
+
+static struct builtin builtin_device =
+{
+  "device",
+  device_func,
+  BUILTIN_MENU | BUILTIN_CMDLINE,
+  "device DRIVE DEVICE",
+  "Specify DEVICE as the actual drive for a BIOS drive DRIVE. This command"
+  " is just ignored in the native Stage 2."
+};
+
+
 /* displaymem */
 static int
 displaymem_func (char *arg, int flags)
@@ -357,7 +401,7 @@ static struct builtin builtin_fallback =
   "Go into unattended boot mode: if the default boot entry has any"
   " errors, instead of waiting for the user to do anything, it"
   " immediately starts over using the NUM entry (same numbering as the"
-  " `default=' command). This obviously won't help if the machine"
+  " `default' command). This obviously won't help if the machine"
   " was rebooted by a kernel that GRUB loaded."
 #endif
 };
@@ -396,8 +440,13 @@ static int
 geometry_func (char *arg, int flags)
 {
   struct geometry geom;
-
-  set_device (arg);
+  char *msg;
+  char *device = arg;
+#ifdef GRUB_UTIL
+  char *ptr;
+#endif
+  
+  set_device (device);
   if (errnum)
     return 1;
 
@@ -406,26 +455,51 @@ geometry_func (char *arg, int flags)
       errnum = ERR_NO_DISK;
       return 1;
     }
-  else
-    {
-      char *msg;
 
 #ifdef GRUB_UTIL
-      msg = device_map[current_drive];
-#else
-      if (geom.flags & BIOSDISK_FLAG_LBA_EXTENSION)
-	msg = "LBA";
+  ptr = skip_to (0, device);
+  if (*ptr)
+    {
+      char *cylinder, *head, *sector, *total_sector;
+      int num_cylinder, num_head, num_sector, num_total_sector;
+
+      cylinder = ptr;
+      head = skip_to (0, cylinder);
+      sector = skip_to (0, head);
+      total_sector = skip_to (0, sector);
+      if (! safe_parse_maxint (&cylinder, &num_cylinder)
+	  || ! safe_parse_maxint (&head, &num_head)
+	  || ! safe_parse_maxint (&sector, &num_sector))
+	return 1;
+
+      disks[current_drive].cylinders = num_cylinder;
+      disks[current_drive].heads = num_head;
+      disks[current_drive].sectors = num_sector;
+
+      if (safe_parse_maxint (&total_sector, &num_total_sector))
+	disks[current_drive].total_sectors = num_total_sector;
       else
-	msg = "CHS";
-#endif
-
-      grub_printf ("drive 0x%x: C/H/S = %d/%d/%d, "
-		   "The number of sectors = %d, %s\n",
-		   current_drive,
-		   geom.cylinders, geom.heads, geom.sectors,
-		   geom.total_sectors, msg);
+	disks[current_drive].total_sectors
+	  = num_cylinder * num_head * num_sector;
+      errnum = 0;
     }
-
+#endif /* GRUB_UTIL */
+  
+#ifdef GRUB_UTIL
+  msg = device_map[current_drive];
+#else
+  if (geom.flags & BIOSDISK_FLAG_LBA_EXTENSION)
+    msg = "LBA";
+  else
+    msg = "CHS";
+#endif
+  
+  grub_printf ("drive 0x%x: C/H/S = %d/%d/%d, "
+	       "The number of sectors = %d, %s\n",
+	       current_drive,
+	       geom.cylinders, geom.heads, geom.sectors,
+	       geom.total_sectors, msg);
+  
   return 0;
 }
 
@@ -434,8 +508,13 @@ static struct builtin builtin_geometry =
   "geometry",
   geometry_func,
   BUILTIN_CMDLINE,
-  "geometry DRIVE",
-  "Print the information for the drive DRIVE."
+  "geometry DRIVE [CYLINDER HEAD SECTOR [TOTAL_SECTOR]]",
+  "Print the information for a drive DRIVE. In the grub shell, you can"
+  "set the geometry of the drive arbitrarily. The number of the cylinders,"
+  " the one of the heads, the one of the sectors and the one of the total"
+  " sectors are set to CYLINDER, HEAD, SECTOR and TOTAL_SECTOR,"
+  "respectively. If you omit TOTAL_SECTOR, then it will be calculated based"
+  " on the C/H/S values automatically."
 };
 
 
@@ -999,7 +1078,7 @@ static struct builtin builtin_module =
   " interpretation of the file contents is made, so users of this"
   " command must know what the kernel in question expects). The"
   " rest of the line is passed as the \"module command line\", like"
-  " the `kernel=' command."
+  " the `kernel' command."
 };
 
 
@@ -1028,7 +1107,7 @@ static struct builtin builtin_modulenounzip =
   modulenounzip_func,
   BUILTIN_CMDLINE,
   "modulenounzip FILE [ARG ...]",
-  "The same as `module=', except that automatic decompression is"
+  "The same as `module', except that automatic decompression is"
   " disabled."
 };
 
@@ -1081,10 +1160,7 @@ static struct builtin builtin_pause =
   pause_func,
   BUILTIN_CMDLINE,
   "pause [MESSAGE ...]",
-  "Print the MESSAGE, then wait until a key is pressed. Note that"
-  " placing <^G> (ASCII code 7) in the message will cause the speaker"
-  " to emit the standard beep sound, which is useful when prompting"
-  " the user to change floppies."
+  "Print MESSAGE, then wait until a key is pressed."
 };
 
 
@@ -1205,10 +1281,10 @@ static struct builtin builtin_rootnoverify =
   rootnoverify_func,
   BUILTIN_CMDLINE,
   "rootnoverify DEVICE [HDBIAS]",
-  "Similar to `root=', but don't attempt to mount the partition. This"
+  "Similar to `root', but don't attempt to mount the partition. This"
   " is useful for when an OS is outside of the area of the disk that"
   " GRUB can read, but setting the correct root partition is still"
-  " desired. Note that the items mentioned in `root=' which"
+  " desired. Note that the items mentioned in `root' which"
   " derived from attempting the mount will NOT work correctly."
 };
 
@@ -1401,6 +1477,7 @@ struct builtin *builtin_table[] =
   &builtin_configfile,
   &builtin_debug,
   &builtin_default,
+  &builtin_device,
   &builtin_displaymem,
   &builtin_fallback,
   &builtin_fstest,

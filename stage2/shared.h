@@ -336,6 +336,10 @@ extern int verbose;
 extern int read_only;
 /* The map between BIOS drives and UNIX device file names.  */
 extern char **device_map;
+/* The array of geometries.  */
+extern struct geometry *disks;
+/* Assign DRIVE to a device name DEVICE.  */
+extern void assign_device_name (int drive, const char *device);
 #endif
 
 #ifndef STAGE1_5
