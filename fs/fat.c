@@ -1,7 +1,7 @@
 /* fat.c - FAT filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -288,7 +288,11 @@ grub_fat_mount (grub_disk_t disk)
       magic = 0x0f00;
     }
   
-  if (first_fat != (magic | bpb.media))
+  /* Ignore the 3rd bit, because some BIOSes assigns 0xF0 to the media
+     descriptor, even if it is a so-called superfloppy (e.g. an USB key).
+     The check may be too strict for this kind of stupid BIOSes, as
+     they overwrite the media descriptor.  */
+  if ((first_fat | 0x8) != (magic | bpb.media | 0x8))
     goto fail;
 
   /* Start from the root directory.  */

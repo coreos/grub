@@ -1,3 +1,12 @@
+2005-03-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* fs/fat.c (grub_fat_mount): Ignore the 3rd bit of a media
+	descriptor. This is ported from GRUB Legacy.
+
+	* gencmdlist.sh: Added an extra semicolon to make it work with
+	old sed versions. Reported by Robert Bihlmeyer
+	<robbe@orcus.priv.at>.
+
 2005-03-08  Yoshinori Okuji  <okuji@enbug.org>
 
 	Automatic loading of commands is supported.
