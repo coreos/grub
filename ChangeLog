@@ -1,3 +1,8 @@
+1999-05-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/Makefile.am (info_TEXINFOS): Added multiboot.texi.
+	* docs/multiboot.texi: New file. From Kunihiro Ishiguro.
+	
 1999-05-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c: Include <errno.h>. Reported by Kunihiro

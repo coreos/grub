@@ -80,7 +80,6 @@ edition documents version @value{VERSION}.
 * Using::                       Booting your operating systems.
 * Filesystems::                 Filesystem syntax and semantics.
 * Troubleshooting::             Error messages produced by GRUB.
-* Multiboot::                   Standard boot interface.
 * Hacking::                     Implementation details.
 * Index::                       Index.
 
@@ -117,6 +116,16 @@ Error messages reported by GRUB
 * Stage1.5 errors::             Errors reported by the Stage 1.5.
 * Stage2 errors::               Errors reported by the Stage 2.
 
+Implementation details
+
+* Memory map::                  The memory map of the various
+                                components.
+* Embedded data::               Embedded variables in GRUB.
+* Memory detection::            How to detect all installed @sc{ram}.
+* Low-level disk I/O::          INT 13H disk I/O interrupts.
+* MBR::                         The structure of Master Boot Record.
+* Partition table::             The format of partition table.
+
 @end detailmenu
 @end menu
 
@@ -144,9 +153,10 @@ operating system (usually GNU).
 
 GRUB originated in 1995 when Erich Boleyn was trying to boot the GNU
 Hurd with the University of Utah's Mach 4 microkernel (now known as GNU
-Mach).  Erich and Brian Ford designed the Multiboot Standard (FIXME
-xref), because they were determined not to add to the large number of
-mutually-incompatible PC boot methods.
+Mach).  Erich and Brian Ford designed the Multiboot Standard
+(@pxref{Top, Multiboot Standard, Motivation, multiboot, The Multiboot
+Standard}), because they were determined not to add to the large number
+of mutually-incompatible PC boot methods.
 
 Erich then began modifying the FreeBSD bootloader so that it would
 understand Multiboot.  He quickly realized that it would be a lot easier
@@ -164,6 +174,7 @@ available via anonymous CVS.@footnote{The repository is
 
 @node Features
 @section GRUB features
+
 technical.html: why another bootloader?
 
 
@@ -940,21 +951,226 @@ should be correct.
 @end table
 
 
-@c In my opinion, Multiboot Standard should be separated and should have
-@c its own manual, because Multiboot is not only for GRUB. Perhaps we
-@c should write the Multiboot manual "multiboot.texinfo", and then
-@c include it here.  - okuji
-@node Multiboot
-@chapter Standard booting interface
-
-boot-proposal.html
-
-
 @node Hacking
 @chapter Implementation details
 
-technical.html
-embedded_data.txt
+This chapter describes the GRUB internals so that developers can
+understand the implementation and start to hack GRUB. Of course, the
+source code has the complete information, so refer to it when you are
+not satisfied with this documentation.
+
+@menu
+* Memory map::                  The memory map of the various
+                                components.
+* Embedded data::               Embedded variables in GRUB.
+* Memory detection::            How to detect all installed @sc{ram}.
+* Low-level disk I/O::          INT 13H disk I/O interrupts.
+* MBR::                         The structure of Master Boot Record.
+* Partition table::             The format of partition table.
+@end menu
+
+
+@node Memory map
+@section The memory map of various components
+
+GRUB is broken into 2 distinct components, or @dfn{stages}, which are
+loaded at different times in the boot process. The Stage 1 has to know
+where to find Stage 2, and the Stage 2 has to know where to find its
+configuration file (if Stage 2 doesn't have a configuration file, it
+drops into the command-line interface and waits for a user command).
+
+Here is the memory map of the various components:
+
+@table @asis
+@item 0 to 4K-1
+Interrupt & BIOS area
+
+@item down from 8K-1
+16-bit stack area
+
+@item 8K to (ebss1.5)
+Stage 1.5 (optionally) loaded here by Stage 1
+
+@item 0x7c00 to 0x7dff
+Stage 1 loaded here by the BIOS
+
+@item 0x7e00 to 0x7e08
+Scratch space used by Stage 1
+
+@item 32K to (ebss2)
+Stage 2 loaded here by Stage 1.5 or Stage 1
+
+@item (middle area)
+Heap used for random memory allocation
+
+@item down from 416K-1
+32-bit stack area
+
+@item 416K to 448K-1
+Filesystem info buffer (when reading a filesystem)
+
+@item 448K to 479.5K-1
+BIOS track read buffer
+
+@item 479.5K to 480K-1
+512 byte fixed SCRATCH area
+
+@item 480K to 511K-1
+General storage heap
+@end table
+
+
+@node Embedded data
+@section Embedded variables in GRUB
+
+GRUB's stage1 and stage2 have embedded variables whose locations are
+well-defined, so that the installation can patch the binary file
+directly without recompilation of the modules.
+
+In stage1, these are defined (The number in the parenthesis of each
+entry is an offset number):
+
+@table @asis
+@item @dfn{major version} (0x1bc)
+This is the major version byte (should be 2).
+
+@item @dfn{minor version} (0x1bd)
+This is the minor version byte (should be 0).
+
+@item @dfn{stage2 start address} (0x1b8)
+This is the data for the @code{ljmp} command to the starting address of
+the component loaded by the stage1. The format is two 2-byte words: the
+first is the IP, and the second is the CS segment register (remember,
+we're in x86 real-mode@dots{} 16-bit instruction pointer and segment
+registers shifted left by 4bits).
+
+A @dfn{stage1.5} should be loaded at address 0x2000, and a @dfn{stage2}
+should be loaded at address 0x8000. Both use a CS of 0.
+
+@item @dfn{firstlist} (0x1b05)
+This is the @emph{ending} address of the blocklst data area.
+
+The trick here is that it is actually read backward, and the first
+8-byte blocklist is not read here, but after the pointer is decremented
+8 bytes, then after reading it, it decrements again, reads, decrements,
+reads, etc. until it is finished.  The terminating condition is when the
+number of sectors to be read in the next blocklist is 0.
+
+The format of a blocklist can be seen from the example in the code just
+before the @code{firstlist} label.  (note that it is always from the
+beginning of the disk, and @emph{not} relative to the partition
+boundaries)
+
+@item @dfn{loading drive} (0x1b05)
+This is the BIOS drive number to load the blocklists from. If the number
+is 0xff, then load from the booting drive.
+@end table
+
+In stage1.5 and stage2 (these are all defined at the beginning of
+@file{shared_src/asm.S}):
+
+@table @asis
+@item @dfn{major version} (0x6)
+This is the major version byte (should be 2).
+
+@item @dfn{minor version} (0x7)
+This is the minor version byte (should be 0).
+
+@item @dfn{install_partition} (0x8)
+This is an unsigned long representing the partition on the currently
+booted disk which GRUB should expect to find it's data files and treat
+as the default root partition.
+
+The format of is exactly the same as the @dfn{partition} part (the
+@dfn{disk} part is ignored) of the data passed to an OS by a
+Multiboot-compliant bootloader in the @dfn{boot_device} data element,
+with one exception.
+
+The exception is that if the first level of disk partitioning is left as
+0xFF (decimal 255, which is marked as no partitioning being used), but
+the second level does have a partition number, it looks for the first
+BSD-style PC partition, and finds the numbered BSD sub-partition in it.
+The default @dfn{install_partition} 0xFF00FF, would then find the first
+BSD-style PC partition, and use the @samp{a} partition in it, and
+0xFF01FF would use the @samp{b} partition, etc.
+
+If an explicit first-level partition is given, then no search is
+performed, and it will expect that the BSD-style PC partition is in the
+appropriate location, else a @samp{no such partition} error will be
+returned.
+
+If a @dfn{stage1.5} is being used, it will pass its own
+@dfn{install_partition} to any @dfn{stage2} it loads, therefore
+overwriting the one present in the @dfn{stage2}.
+
+@item @dfn{version_string} (0xc)
+This is the @dfn{stage1.5} or @dfn{stage2} version string. It isn't
+meant to be changed, simply easy to find.
+
+@item @dfn{config_file} (after the terminating zero of @dfn{version_string})
+This is the location, using the GRUB filesystem syntax, of the config
+file.  It will, by default, look in the @dfn{install_partition} of the
+disk GRUB was loaded from, though one can use any valid GRUB filesystem
+string, up to and including making it look on other disks.
+
+The bootloader itself doesn't search for the end of
+@dfn{version_string}, it simply knows where @dfn{config_file} is, so the
+beginning of the string cannot be moved after compile-time.  This should
+be OK, since the @dfn{version_string} is meant to be static.
+
+The code of stage2 starts again at offset 0x70,	so @dfn{config_file}
+string obviously can't go past there.  Also, remember to terminate the
+string with a 0.
+@end table
+
+
+@node Memory detection
+@section How to detect all installed @sc{ram}
+
+There are three BIOS calls which return the information of installed
+@sc{ram}. GRUB uses these calls to detect all installed @sc{ram} and
+which address range should be treated by operating systems.
+
+@menu
+* Query System Address Map::    INT 15H, AX=E820h interrupt call.
+* Get Large Memory Size::       INT 15H, AX=E801h interrupt call.
+* Get Extended Memory Size::    INT 15H, AX=88h interrupt call.
+@end menu
+
+
+@node Query System Address Map
+@subsection INT 15H, AX=E820h interrupt call
+
+mem64mb.html
+
+
+@node Get Large Memory Size
+@subsection INT 15H, AX=E801h interrupt call
+
+mem64mb.html
+
+
+@node Get Extended Memory Size
+@subsection INT 15H, AX=88h interrupt call
+
+mem64mb.html
+
+
+@node Low-level disk I/O
+@section INT 13H disk I/O interrupts
+
+PC_partitioning.txt
+
+
+@node MBR
+@section The structure of Master Boot Record
+
+PC_partitioning.txt
+
+
+@node Partition table
+@section The format of partition table
+
 PC_partitioning.txt
 
 
