@@ -560,6 +560,6 @@ AC_SUBST(NETBOOT_DRIVERS)
 
 dnl Output.
 AC_OUTPUT([Makefile stage1/Makefile stage2/Makefile docs/Makefile \
-	debian/Makefile lib/Makefile util/Makefile grub/Makefile \
+	lib/Makefile util/Makefile grub/Makefile \
 	netboot/Makefile util/grub-image util/grub-install \
 	util/grub-md5-crypt])
