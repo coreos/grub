@@ -1,5 +1,11 @@
 2000-12-09  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Leendert Meyer <leen.meyer@home.nl>:
+	* util/grub-install.in (convert): If a floppy device is
+	specified, remove everything from $tmp_part.
+	
+2000-12-09  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* lib/device.c [__linux__] (write_to_partition): Use strcpy
 	instead of strcat, to overwrite "/disc". Reported by Thiago
 	Macieira <thiagom@mail.com>.
