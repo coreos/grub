@@ -1,5 +1,10 @@
 2004-06-27  Tomas Ebenlendr  <ebik@ucw.cz>
 
+	* kern/rescue.c (grub_enter_rescue_mode): Don't continue when
+	there was no input.
+
+2004-06-27  Tomas Ebenlendr  <ebik@ucw.cz>
+
 	* normal/cmdline.c (grub_set_history): Fix off by one bug.  Fixed
 	the history buffer logic.
 
