@@ -989,7 +989,9 @@ OS. There's a solution to that - GRUB provides a menu interface
 keys) that will do everything to boot an OS.
 
 To enable the menu, you need a configuration file,
-@file{menu.lst} under the boot directory. We'll analyze an example
+@file{menu.lst} under the @file{/boot/grub} directory or possibly the
+@file{/boot/boot/grub} directory (if your boot directory is a seperate
+partition). We'll analyze an example
 file.
 
 The file first contains some general settings, the menu interface
