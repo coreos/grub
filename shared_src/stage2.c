@@ -131,7 +131,7 @@ set_line(int y, int attr)
 }
 
 
-int timeout = -1;
+int timeout;
 
 
 void
@@ -158,15 +158,23 @@ restart:
   printf("\n
       Use the \x18 and \x19 keys for selecting which entry is highlighted.\n");
 
-  if (config_entries)
-    printf("       Press enter to boot the selected OS, \'e\' to edit the
-        commands before booting, or \'c\' for a command-line.");
+  if (password)
+    {
+      printf("       Press enter to boot the selected OS or \'p\' to enter a
+        password to unlock the next set of features.");
+    }
   else
-    printf(
+    {
+      if (config_entries)
+	printf("       Press enter to boot the selected OS, \'e\' to edit the
+        commands before booting, or \'c\' for a command-line.");
+      else
+	printf(
 "      Press \'b\' to boot, enter to edit the selected command in the
       boot sequence, \'c\' for a command-line, \'o\' to open a new line
       after (\'O\' for before) the selected line, \'d\' to remove the
       selected line, or escape to go back to the main menu.");
+    }
 
   print_entries(3, 12, first_entry, menu_entries);
 
@@ -301,80 +309,109 @@ restart:
 		break;
 	    }
 
-	  if ((config_entries && (c == 'e'))
-	      || (!config_entries && ((c == '\n') || (c == '\r'))))
+	  if (password)
 	    {
-	      int num_entries = 0, i = 0;
-	      char *new_heap;
-
-	      if (config_entries)
+	      if (c == 'p')
 		{
-		  new_heap = heap;
-		  cur_entry = get_entry(config_entries,
-					first_entry+entryno, 1);
-		}
-	      else
-		{
-		  /* safe area! */
-		  new_heap = heap+1501;
-		  cur_entry = get_entry(menu_entries, first_entry+entryno, 0);
-		}
-
-	      do
-		{
-		  while (*(new_heap++) = cur_entry[i++]);
-		  num_entries++;
-		}
-	      while (config_entries && cur_entry[i]);
-
-	      /* this only needs to be done if config_entries is non-NULL,
-		 but it doesn't hurt to do it always */
-	      *(new_heap++) = 0;
-
-	      if (config_entries)
-		run_menu(heap, NULL, num_entries, new_heap, 0);
-	      else
-		{
-		  cls();
-		  init_cmdline();
-
-		  new_heap = heap+1501;
-
-		  saved_drive = boot_drive;
-		  saved_partition = install_partition;
-		  current_drive = 0xFF;
-
-		  if (!get_cmdline("editing> ", commands, new_heap, 1501))
+		  /* Do password check here! */
+		  char *ptr = password;
+		  gotoxy(2, 22);
+		  printf("Entering password...  ");
+		  do
 		    {
-		      int j = 0;
-
-		      /* get length of new command */
-		      while (new_heap[j++]);
-
-		      if (j < 2)
+		      if (isspace(*ptr))
 			{
-			  j = 2;
-			  new_heap[0] = ' ';
-			  new_heap[1] = 0;
+			  char *new_file = config_file;
+			  while (isspace(*ptr)) ptr++;
+			  while (*(new_file++) = *(ptr++));
+			  return;
 			}
-
-		      /* align rest of commands properly */
-		      bcopy(cur_entry+i, cur_entry+j,
-			    ((int)heap) - (((int)cur_entry) + i));
-
-		      /* copy command to correct area */
-		      bcopy(new_heap, cur_entry, j);
-
-		      heap += (j - i);
+		      c = ASCII_CHAR(getkey());
 		    }
+		  while (*(ptr++) == c);
+		  printf("Failed!\n      Press any key to continue...");
+		  getkey();
+		  goto restart;
 		}
-
-	      goto restart;
 	    }
-	  if (c == 'c')
+	  else
 	    {
-	      enter_cmdline(NULL, heap);
-	      goto restart;
+	      if ((config_entries && (c == 'e'))
+		  || (!config_entries && ((c == '\n') || (c == '\r'))))
+		{
+		  int num_entries = 0, i = 0;
+		  char *new_heap;
+
+		  if (config_entries)
+		    {
+		      new_heap = heap;
+		      cur_entry = get_entry(config_entries,
+					    first_entry+entryno, 1);
+		    }
+		  else
+		    {
+		      /* safe area! */
+		      new_heap = heap+1501;
+		      cur_entry = get_entry(menu_entries,
+					    first_entry+entryno, 0);
+		    }
+
+		  do
+		    {
+		      while (*(new_heap++) = cur_entry[i++]);
+		      num_entries++;
+		    }
+		  while (config_entries && cur_entry[i]);
+
+		  /* this only needs to be done if config_entries is non-NULL,
+		     but it doesn't hurt to do it always */
+		  *(new_heap++) = 0;
+
+		  if (config_entries)
+		    run_menu(heap, NULL, num_entries, new_heap, 0);
+		  else
+		    {
+		      cls();
+		      init_cmdline();
+
+		      new_heap = heap+1501;
+
+		      saved_drive = boot_drive;
+		      saved_partition = install_partition;
+		      current_drive = 0xFF;
+
+		      if (!get_cmdline("editing> ", commands, new_heap, 1501))
+			{
+			  int j = 0;
+
+			  /* get length of new command */
+			  while (new_heap[j++]);
+
+			  if (j < 2)
+			    {
+			      j = 2;
+			      new_heap[0] = ' ';
+			      new_heap[1] = 0;
+			    }
+
+			  /* align rest of commands properly */
+			  bcopy(cur_entry+i, cur_entry+j,
+				((int)heap) - (((int)cur_entry) + i));
+
+			  /* copy command to correct area */
+			  bcopy(new_heap, cur_entry, j);
+
+			  heap += (j - i);
+			}
+		    }
+
+		  goto restart;
+		}
+	      if (c == 'c')
+		{
+		  enter_cmdline(NULL, heap);
+		  goto restart;
+		}
 	    }
 	}
     }
@@ -462,100 +499,108 @@ get_line_from_config(char *cmdline, int maxlen)
 void
 cmain(void)
 {
-  int config_len = 0, menu_len = 0;
-  int num_entries = 0, default_entry = 0;
-  char *config_entries = (char *)(mbi.mmap_addr + mbi.mmap_length);
-  char *menu_entries = (char *)(BUFFERADDR + (32 * 1024));
+  int config_len, menu_len, num_entries, default_entry;
+  char *config_entries, *menu_entries;
 
-  /*
-   *  Here load the configuration file.
-   */
-
-  if (open(config_file))
+  for (;;)
     {
-      int state = 0, prev_config_len = 0, prev_menu_len = 0;
-      char cmdline[1502], *ptr;
+      config_len = 0; menu_len = 0; num_entries = 0; default_entry = 0;
+      config_entries = (char *)(mbi.mmap_addr + mbi.mmap_length);
+      menu_entries = (char *)(BUFFERADDR + (32 * 1024));
+      password = NULL; fallback = -1; timeout = -1;
 
-      while (get_line_from_config(cmdline, 1500))
+      /*
+       *  Here load the configuration file.
+       */
+
+      if (open(config_file))
 	{
-	  ptr = skip_to(1, cmdline);
+	  int state = 0, prev_config_len = 0, prev_menu_len = 0;
+	  char cmdline[1502], *ptr;
 
-	  if (strcmp("title", cmdline) < 1)
+	  while (get_line_from_config(cmdline, 1500))
 	    {
-	      if (state > 1)
+	      ptr = skip_to(1, cmdline);
+
+	      if (strcmp("title", cmdline) < 1)
 		{
-		  num_entries++;
-		  config_entries[config_len++] = 0;
-		  prev_menu_len = menu_len;
-		  prev_config_len = config_len;
+		  if (state > 1)
+		    {
+		      num_entries++;
+		      config_entries[config_len++] = 0;
+		      prev_menu_len = menu_len;
+		      prev_config_len = config_len;
+		    }
+		  else
+		    {
+		      menu_len = prev_menu_len;
+		      config_len = prev_config_len;
+		    }
+
+		  state = 1;
+
+		  /* copy title into menu area */
+		  while (menu_entries[menu_len++] = *(ptr++));
+		}
+	      else if (!state)
+		{
+		  if (strcmp("timeout", cmdline) < 1)
+		    safe_parse_maxint(&ptr, &timeout);
+		  if (strcmp("fallback", cmdline) < 1)
+		    safe_parse_maxint(&ptr, &fallback);
+		  if (strcmp("default", cmdline) < 1)
+		    safe_parse_maxint(&ptr, &default_entry);
+		  if (strcmp("password", cmdline) < 1)
+		    {
+		      char *ptrend = ptr;
+		      password = config_entries;
+		      while (*(config_entries++) = *(ptr++));
+		    }
+
+		  errnum = 0;
 		}
 	      else
 		{
-		  menu_len = prev_menu_len;
-		  config_len = prev_config_len;
+		  int i = 0;
+
+		  state++;
+
+		  /* copy config file data to config area */
+		  while (config_entries[config_len++] = cmdline[i++]);
 		}
-
-	      state = 1;
-
-	      /* copy title into menu area */
-	      while (menu_entries[menu_len++] = *(ptr++));
 	    }
-	  else if (!state)
-	    {
-	      if (strcmp("timeout", cmdline) < 1)
-		safe_parse_maxint(&ptr, &timeout);
-	      if (strcmp("fallback", cmdline) < 1)
-		safe_parse_maxint(&ptr, &fallback);
-	      if (strcmp("default", cmdline) < 1)
-		safe_parse_maxint(&ptr, &default_entry);
 
-	      errnum = 0;
+	  if (state > 1)
+	    {
+	      num_entries++;
+	      config_entries[config_len++] = 0;
 	    }
 	  else
 	    {
-	      int i = 0;
-
-	      state++;
-
-	      /* copy config file data to config area */
-	      while (config_entries[config_len++] = cmdline[i++]);
+	      menu_len = prev_menu_len;
+	      config_len = prev_config_len;
 	    }
-	}
 
-      if (state > 1)
-	{
-	  num_entries++;
+	  menu_entries[menu_len++] = 0;
 	  config_entries[config_len++] = 0;
-	}
-      else
-	{
-	  menu_len = prev_menu_len;
-	  config_len = prev_config_len;
+	  bcopy(menu_entries, config_entries+config_len, menu_len);
+	  menu_entries = config_entries+config_len;
 	}
 
-      menu_entries[menu_len++] = 0;
-      config_entries[config_len++] = 0;
+      /*
+       *  If no acceptable config file, goto command-line, starting heap from
+       *  where the config entries would have been stored if there were any.
+       */
 
-      bcopy(menu_entries, config_entries+config_len, menu_len);
+      if (!num_entries)
+	while (1)
+	  enter_cmdline(NULL, config_entries);
 
-      menu_entries = config_entries+config_len;
+      /*
+       *  Run menu interface (this shouldn't return!).
+       */
+
+      run_menu(menu_entries, config_entries, num_entries,
+	       menu_entries+menu_len, default_entry);
     }
-
-  /*
-   *  If no acceptable config file, goto command-line, starting heap from
-   *  where the config entries would have been stored if there were any.
-   */
-
-  if (!num_entries)
-    while (1)
-      enter_cmdline(NULL, config_entries);
-
-  /*
-   *  Run menu interface (this shouldn't return!).
-   */
-
-  run_menu(menu_entries, config_entries, num_entries,
-	   menu_entries+menu_len, default_entry);
 }
-
-
