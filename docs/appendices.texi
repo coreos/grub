@@ -215,9 +215,35 @@ for more information.
 
 When you encounter any problem or bug, please submit it to
 @email{bug-grub@@gnu.org} with information about your computer and what
-you did @emph{as much as possible}. For example, your operating system,
-the geometries of your drives and the version of GRUB are very
-important.
+you did @emph{as much as possible}. Take a look at this list before you
+send e-mail to the address:
+
+@itemize @bullet
+@item
+Write what you did and what messages were printed on the screen in
+detail. Don't paraphrase them. Please describe them as they were.
+
+@item
+Explain what you wanted to do. It is very useful to know your purpose
+and your wish, and how GRUB didn't satisfy you.
+
+@item
+Inform us of the information about your GRUB. What version were you
+using? Which were you using the grub shell or the boot images? If using
+the grub shell, tell us what operating system was used to run it. And,
+if you ran @command{configure} with some options when building GRUB, it
+would be a good thing to let us know how to build it.
+
+@item
+The information on your hardware is also essential. These are especially
+important: the geometries and the partition tables of your hard disk
+drives and your BIOS.
+
+@item
+Write down anything that you think might be related. If you are not sure
+whether to state a fact or leave it out, state it! Reporting too many
+things is quite better than omitting an important thing.
+@end itemize
 
 
 @node Index

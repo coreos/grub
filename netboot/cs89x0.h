@@ -1,7 +1,3 @@
-/* This file has been copied from Russel Nelson's device driver for
-   Linux. Please look into the header of cs89x0.c for details on the
-   legal implications! */
-
 /*  Copyright, 1988-1992, Russell Nelson, Crynwr Software
 
    This program is free software; you can redistribute it and/or modify

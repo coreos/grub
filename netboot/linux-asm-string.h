@@ -19,7 +19,9 @@
  *		consider these trivial functions to be PD.
  */
 
+#ifndef	__FreeBSD__
 typedef int	size_t;
+#endif
 
 extern inline void * __memcpy(void * to, const void * from, size_t n)
 {

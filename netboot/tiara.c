@@ -10,6 +10,13 @@ TIARA.ASM Packet driver by Brian Fisher, Queens U, Kingston, Ontario
 Fujitsu MB86960 spec sheet (different chip but same family)
 ***************************************************************************/
 
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2, or (at
+ * your option) any later version.
+ */
+
 /* to get some global routines like printf */
 #include "etherboot.h"
 /* to get the interface to the body of the program */

@@ -1,25 +1,10 @@
 /* cs89x0.c: A Crystal Semiconductor CS89[02]0 driver for etherboot. */
 /*
-  This code is heavily based on the linux driver as written by
-  Russell Nelson <nelson@crynwr.com> and Donald Becker
-  <becker@cesdis.gsfc.nasa.gov> and modified by Mike Cruse
-  <mcruse@cti-ltd.com>. That driver has been released under the
-  conditions of the GNU Public License, thus this one is probably to
-  be considered "derived work". Therefore, there are some legal
-  obstacles in combining this file with etherboot's code, which is
-  released under a BSD style license.
-
-  So, if you want to actually use this code, you should make sure that
-  you are aware of the legal implications. I release *my* work into
-  the PUBLIC DOMAIN which implies that you can use it either under a
-  BSD style license, or under the conditions of the GPL, or under any
-  other conditions that you like. N.B. this does not apply to the
-  parts that originate from other authors. So, you should probably
-  contact them first and verify if they agree with your intended use.
-
-  If you contacted all of the above authors and they agreed to give
-  special permission for using this code under the conditions of a BSD
-  style license, then please do let me know.
+  Permission is granted to distribute the enclosed cs89x0.[ch] driver
+  only in conjunction with the Etherboot package.  The code is
+  ordinarily distributed under the GPL.
+  
+  Russ Nelson, January 2000
 
   ChangeLog:
 

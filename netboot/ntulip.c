@@ -77,6 +77,10 @@ enum ntulip_offsets {
   CSR12=0x60, CSR13=0x68, CSR14=0x70, CSR15=0x78, CSR16=0x80, CSR20=0xA0 
 };
 
+#define DEC_21142_CSR6_TTM     0x00400000      /* Transmit Threshold Mode */
+#define DEC_21142_CSR6_HBD     0x00080000      /* Heartbeat Disable */
+#define DEC_21142_CSR6_PS      0x00040000      /* Port Select */
+
 /* EEPROM Address width definitions */
 #define EEPROM_ADDRLEN 6
 #define EEPROM_SIZE    128              /* 2 << EEPROM_ADDRLEN */
@@ -423,6 +427,18 @@ static void ntulip_reset(struct nic *nic)
     csr6 = 0x814C0000;
     outl(0x00000001, ioaddr + CSR15);
 
+  } else if (vendor == PCI_VENDOR_ID_DEC && dev_id == PCI_DEVICE_ID_DEC_21142) {
+     /* check SROM for evidence of an MII interface */
+     /* get Controller_0 Info Leaf Offset from SROM - assume already in ee_data */
+     int offset = ee_data [27] + (ee_data [28] << 8);
+
+     /* check offset range and if we have an extended type 3 Info Block */
+     if ((offset >= 30) && (offset < 120) && (ee_data [offset + 3] > 128) &&
+	(ee_data [offset + 4] == 3)) {
+	/* must have an MII interface - disable heartbeat, select port etc. */
+	csr6 |= (DEC_21142_CSR6_HBD | DEC_21142_CSR6_PS);
+	csr6 &= ~(DEC_21142_CSR6_TTM);
+     }
   }
 
   /* Start the chip's Tx to process setup frame. */
@@ -558,12 +574,7 @@ struct nic *ntulip_probe(struct nic *nic, unsigned short *io_addrs,
       nic->node_addr[i*2]     = (u8)((value >> 8) & 0xff);
       nic->node_addr[i*2 + 1] = (u8)( value       & 0xff);
     }
-    printf("NTulip %b:%b:%b:%b:%b:%b at ioaddr 0x%x\n",
-           nic->node_addr[0],nic->node_addr[1],nic->node_addr[2],nic->node_addr[3],
-           nic->node_addr[4],nic->node_addr[5],ioaddr);
-
   } else {
-
     /* read EEPROM data */
     for (i = 0; i < sizeof(ee_data)/2; i++)
       ((unsigned short *)ee_data)[i] =
@@ -572,11 +583,11 @@ struct nic *ntulip_probe(struct nic *nic, unsigned short *io_addrs,
     /* extract MAC address from EEPROM buffer */
     for (i=0; i<6; i++)
       nic->node_addr[i] = ee_data[20+i];
-
-    printf("NTulip %b:%b:%b:%b:%b:%b at ioaddr 0x%x\n",
-           nic->node_addr[0],nic->node_addr[1],nic->node_addr[2],nic->node_addr[3],
-           nic->node_addr[4],nic->node_addr[5],ioaddr);
   }
+
+  printf("NTulip %b:%b:%b:%b:%b:%b at ioaddr 0x%x\n",
+    nic->node_addr[0],nic->node_addr[1],nic->node_addr[2],nic->node_addr[3],
+    nic->node_addr[4],nic->node_addr[5],ioaddr);
 
   /* initialize device */
   ntulip_reset(nic);

@@ -1,3 +1,33 @@
+2000-02-21  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c (check_BSD_parts) [!STAGE1_5]: If the BSD
+	label is invalid, print a message with the partition type in the
+	case where FLAGS is non-zero and DO_COMPLETION is zero.
+	
+2000-02-20  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/user-ref.texi (Command-line-specific commands): Added a
+	description about "cmp".
+	* docs/appendices.texi (Reporting bugs): Rewritten.
+	
+2000-02-20  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Update the netboot code to Etherboot 4.4.3.
+	
+	* netboot/netboot_config.h: Copied from etherboot-4.4.3.
+	* netboot/cs89x0.h: Likewise.
+	* netboot/cs89x0.c: Likewise.
+	* netboot/i82586.c: Likewise.
+	* netboot/lance.c: Likewise.
+	* netboot/linux-asm-string.h: Likewise.
+	* netboot/nic.h: Likewise.
+	* netboot/ntulip.c: Likewise.
+	* netboot/osdep.h: Likewise.
+	* netboot/pci.h: Likewise.
+	* netboot/pci.c: Likewise.
+	* netboot/rtl8139.c: Likewise.
+	* netboot/tiara.c: Likewise.
+	
 2000-02-19  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (cmp_func): New function.

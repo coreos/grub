@@ -11,6 +11,13 @@
 ** /usr/src/linux/drivers/net/ne.c
 */
 
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2, or (at
+ * your option) any later version.
+ */
+
 #define PCI_COMMAND_IO			0x1	/* Enable response in I/O space */
 #define PCI_COMMAND_MASTER		0x4	/* Enable bus mastering */
 #define PCI_LATENCY_TIMER		0x0d	/* 8 bits */
@@ -96,17 +103,11 @@ __asm__ __volatile__("pushl %0 ; popfl": /* no output */ :"g" (x):"memory")
 #define PCI_VENDOR_ID_NETVIN            0x4a14
 #define PCI_DEVICE_ID_NETVIN_NV5000SC   0x5000
 #define PCI_VENDOR_ID_3COM		0x10b7
-#define PCI_DEVICE_ID_3COM_3C985        0x0001
-#define PCI_DEVICE_ID_3COM_3C339        0x3390
-#define PCI_DEVICE_ID_3COM_3C590        0x5900
-#define PCI_DEVICE_ID_3COM_3C595TX      0x5950
-#define PCI_DEVICE_ID_3COM_3C595T4      0x5951
-#define PCI_DEVICE_ID_3COM_3C595MII     0x5952
-#define PCI_DEVICE_ID_3COM_3C900TPO     0x9000
-#define PCI_DEVICE_ID_3COM_3C900COMBO   0x9001
-#define PCI_DEVICE_ID_3COM_3C905TX      0x9050
-#define PCI_DEVICE_ID_3COM_3C905T4      0x9051
-#define PCI_DEVICE_ID_3COM_3C905B_TX    0x9055
+#define PCI_DEVICE_ID_3COM_3C900TPO	0x9000
+#define PCI_DEVICE_ID_3COM_3C900COMBO	0x9001
+#define PCI_DEVICE_ID_3COM_3C905TX	0x9050
+#define PCI_DEVICE_ID_3COM_3C905T4	0x9051
+#define PCI_DEVICE_ID_3COM_3C905B_TX	0x9055
 #define PCI_DEVICE_ID_3COM_3C905C_TXM	0x9200
 #define PCI_VENDOR_ID_INTEL		0x8086
 #define PCI_DEVICE_ID_INTEL_82557	0x1229

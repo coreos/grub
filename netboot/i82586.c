@@ -4,6 +4,13 @@ i82586 NIC driver for Etherboot
 Ken Yap, January 1998
 ***************************************************************************/
 
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2, or (at
+ * your option) any later version.
+ */
+
 /* to get some global routines like printf */
 #include "etherboot.h"
 /* to get the interface to the body of the program */
@@ -236,7 +243,6 @@ static unsigned short init_words[] = {
 
 static unsigned short		ioaddr, irq, scb_base;
 static Address			mem_start, mem_end;
-static char			if_port;
 static unsigned short		rx_head, rx_tail;
 
 #define	read_mem(m,s)	fmemcpy((char *)s, m, sizeof(s))
@@ -330,7 +336,7 @@ RESET - Reset adapter
 
 static void i82586_reset(struct nic *nic)
 {
-	int		boguscnt;
+	long		time;
 #ifdef	ETHERBOOT32
 	unsigned short	*shmem = (short *)mem_start;
 #endif
@@ -373,14 +379,14 @@ static void i82586_reset(struct nic *nic)
 	/* This was time consuming to track down; you need to give two channel
 	   attention signals to reliably start up the i82586. */
 	outb(0, ioaddr + I82586_ATTN);
-	boguscnt = 10000;
+	time = currticks() + TICKS_PER_SEC;	/* allow 1 second to init */
 	while (
 #ifdef	ETHERBOOT16
 		read_mem(mem_start, shmem),
 #endif
 		shmem[iSCB_STATUS>>1] == 0)
 	{
-		if (--boguscnt == 0)
+		if (currticks() > time)
 		{
 			printf("i82586 initialisation timed out with status %x, cmd %x\n",
 				shmem[iSCB_STATUS>>1], shmem[iSCB_CMD>>1]);
@@ -592,6 +598,7 @@ static int t507_probe1(struct nic *nic, unsigned short ioaddr)
 	int			i;
 	Address			size;
 	char			mem_config;
+	char			if_port;
 
 	if (inb(ioaddr) != '*' || inb(ioaddr+1) != '3'
 		|| inb(ioaddr+2) != 'C' || inb(ioaddr+3) != 'O')
@@ -606,7 +613,7 @@ static int t507_probe1(struct nic *nic, unsigned short ioaddr)
 	}
 	else
 	{
-		size = ((((Address)mem_config & 0x3) + 1) << 14) & 0xffffL;
+		size = ((((Address)mem_config & 0x3) + 1) << 14);
 		mem_start = 0x0c0000L + (((Address)mem_config & 0x18) << 12);
 	}
 	mem_end = mem_start + size;

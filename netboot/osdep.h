@@ -1,6 +1,13 @@
 #ifndef __OSDEP_H__
 #define __OSDEP_H__
 
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2, or (at
+ * your option) any later version.
+ */
+
 #if 1
 # define ETHERBOOT32
 # include <byteorder.h>

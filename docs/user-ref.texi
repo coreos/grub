@@ -780,6 +780,24 @@ correct signature or not. This is required when you want to load a
 defective boot loader, such as SCO Unixware 7.1.
 @end deffn
 
+@deffn Command cmp file1 file2
+Compare the file @var{file1} with the file @var{file2}. If they differ
+in size, print the sizes like this:
+
+@example
+Differ in size: 0x1234 [foo], 0x4321 [bar]
+@end example
+
+If the sizes are equal but the bytes at an offset differ, then print the
+bytes like this:
+
+@example
+Differ at the offset 777: 0xbe [foo], 0xef [bar]
+@end example
+
+If they are complete identical, nothing will be printed.
+@end deffn
+
 @deffn Command configfile @var{file}
 Load @var{file} as the configuration file.
 @end deffn

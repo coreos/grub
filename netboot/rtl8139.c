@@ -7,9 +7,8 @@
   of the GNU Public License, incorporated herein by reference.
 
   changes to the original driver:
-  - removed support for interrupts, switchung to polling mode (yuck!)
+  - removed support for interrupts, switching to polling mode (yuck!)
   - removed support for the 8129 chip (external MII)
-    and the 8139 with ids 0x1113/0x1211 (should be easy to add)
 
 */
 
@@ -18,6 +17,30 @@
 /*********************************************************************/
 
 /*
+
+  4 Feb 2000	espenlaub@informatik.uni-ulm.de (Klaus Espenlaub)
+     Shuffled things around, removed the leftovers from the 8129 support
+     that was in the Linux driver and added a bit more 8139 definitions.
+     Moved the 8K receive buffer to a fixed, available address outside the
+     0x98000-0x9ffff range.  This is a bit of a hack, but currently the only
+     way to make room for the Etherboot features that need substantial amounts
+     of code like the ANSI console support.  Currently the buffer is just below
+     0x10000, so this even conforms to the tagged boot image specification,
+     which reserves the ranges 0x00000-0x10000 and 0x98000-0xA0000.  My
+     interpretation of this "reserved" is that Etherboot may do whatever it
+     likes, as long as its environment is kept intact (like the BIOS
+     variables).  Hopefully fixed rtl_poll() once and for all.  The symptoms
+     were that if Etherboot was left at the boot menu for several minutes, the
+     first eth_poll failed.  Seems like I am the only person who does this.
+     First of all I fixed the debugging code and then set out for a long bug
+     hunting session.  It took me about a week full time work - poking around
+     various places in the driver, reading Don Becker's and Jeff Garzik's Linux
+     driver and even the FreeBSD driver (what a piece of crap!) - and
+     eventually spotted the nasty thing: the transmit routine was acknowledging
+     each and every interrupt pending, including the RxOverrun and RxFIFIOver
+     interrupts.  This confused the RTL8139 thoroughly.  It destroyed the
+     Rx ring contents by dumping the 2K FIFO contents right where we wanted to
+     get the next packet.  Oh well, what fun.
 
   18 Jan 2000   mdc@thinguin.org (Marty Connor)
      Drastically simplified error handling.  Basically, if any error
@@ -40,10 +63,7 @@
 /* we have a PIC card */
 #include "pci.h"
 
-/* make things easier: the "linux kernel types" */
-#define u16 unsigned short
-#define u32 unsigned long
-#define u8 unsigned char
+#define RTL_TIMEOUT (1*TICKS_PER_SEC) 
 
 /* PCI Tuning Parameters
    Threshold is bytes transferred to chip before transmission starts. */
@@ -52,35 +72,41 @@
 #define RX_DMA_BURST    4       /* Maximum PCI burst, '4' is 256 bytes */
 #define TX_DMA_BURST    4       /* Calculate as 16<<val. */
 #define NUM_TX_DESC     4       /* Number of Tx descriptor registers. */
-#define TX_BUF_SIZE 1536
-#define RX_BUF_LEN_IDX 0
+#define TX_BUF_SIZE (ETH_MAX_PACKET-4)	/* FCS is added by the chip */
+#define RX_BUF_LEN_IDX 0	/* 0, 1, 2 is allowed - 8,16,32K rx buffer */
 #define RX_BUF_LEN (8192 << RX_BUF_LEN_IDX)
-#define TIME_OUT 4000000
 
 #undef DEBUG_TX
 #undef DEBUG_RX
 
 /* Symbolic offsets to registers. */
-enum RTL8129_registers {
+enum RTL8139_registers {
 	MAC0=0,			/* Ethernet hardware address. */
 	MAR0=8,			/* Multicast filter. */
-	TxStatus0=0x10,		/* Transmit status (Four 32bit registers). */
+	TxStatus0=0x10,		/* Transmit status (four 32bit registers). */
 	TxAddr0=0x20,		/* Tx descriptors (also four 32bit). */
 	RxBuf=0x30, RxEarlyCnt=0x34, RxEarlyStatus=0x36,
 	ChipCmd=0x37, RxBufPtr=0x38, RxBufAddr=0x3A,
 	IntrMask=0x3C, IntrStatus=0x3E,
 	TxConfig=0x40, RxConfig=0x44,
-	Timer=0x48,		/* A general-purpose counter. */
+	Timer=0x48,		/* general-purpose counter. */
 	RxMissed=0x4C,		/* 24 bits valid, write clears. */
 	Cfg9346=0x50, Config0=0x51, Config1=0x52,
-	FlashReg=0x54, GPPinData=0x58, GPPinDir=0x59, MII_SMI=0x5A, HltClk=0x5B,
-	MultiIntr=0x5C, TxSummary=0x60,
+	TimerIntrReg=0x54,	/* intr if gp counter reaches this value */
+	MediaStatus=0x58,
+	Config3=0x59,
+	MultiIntr=0x5C,
+	RevisionID=0x5E,	/* revision of the RTL8139 chip */
+	TxSummary=0x60,
 	MII_BMCR=0x62, MII_BMSR=0x64, NWayAdvert=0x66, NWayLPAR=0x68,
 	NWayExpansion=0x6A,
-	/* Undocumented registers, but required for proper operation. */
-	FIFOTMS=0x70, /* FIFO Test Mode Select */
-	CSCR=0x74,    /* Chip Status and Configuration Register. */
-	PARA78=0x78, PARA7c=0x7c,     /* Magic transceiver parameter register. */
+	DisconnectCnt=0x6C, FalseCarrierCnt=0x6E,
+	NWayTestReg=0x70,
+	RxCnt=0x72,		/* packet received counter */
+	CSCR=0x74,		/* chip status and configuration register */
+	PhyParm1=0x78,TwisterParm=0x7c,PhyParm2=0x80,	/* undocumented */
+	/* from 0x84 onwards are a number of power management/wakeup frame
+	 * definitions we will probably never need to know about.  */
 };
 
 enum ChipCmdBits {
@@ -88,18 +114,29 @@ enum ChipCmdBits {
 
 /* Interrupt register bits, using my own meaningful names. */
 enum IntrStatusBits {
-	PCIErr=0x8000, PCSTimeout=0x4000,
+	PCIErr=0x8000, PCSTimeout=0x4000, CableLenChange= 0x2000,
 	RxFIFOOver=0x40, RxUnderrun=0x20, RxOverflow=0x10,
 	TxErr=0x08, TxOK=0x04, RxErr=0x02, RxOK=0x01,
 };
 enum TxStatusBits {
 	TxHostOwns=0x2000, TxUnderrun=0x4000, TxStatOK=0x8000,
-	TxOutOfWindow=0x20000000, TxAborted=0x40000000, TxCarrierLost=0x80000000,
+	TxOutOfWindow=0x20000000, TxAborted=0x40000000,
+	TxCarrierLost=0x80000000,
 };
 enum RxStatusBits {
 	RxMulticast=0x8000, RxPhysical=0x4000, RxBroadcast=0x2000,
 	RxBadSymbol=0x0020, RxRunt=0x0010, RxTooLong=0x0008, RxCRCErr=0x0004,
 	RxBadAlign=0x0002, RxStatusOK=0x0001,
+};
+
+enum MediaStatusBits {
+	MSRTxFlowEnable=0x80, MSRRxFlowEnable=0x40, MSRSpeed10=0x08,
+	MSRLinkFail=0x04, MSRRxPauseFlag=0x02, MSRTxPauseFlag=0x01,
+};
+
+enum MIIBMCRBits {
+	BMCRReset=0x8000, BMCRSpeed100=0x2000, BMCRNWayEnable=0x1000,
+	BMCRRestartNWay=0x0200, BMCRDuplex=0x0100,
 };
 
 enum CSCRBits {
@@ -115,52 +152,45 @@ enum rx_mode_bits {
 	AcceptMulticast=0x04, AcceptMyPhys=0x02, AcceptAllPhys=0x01,
 };
 
-/* Twister tuning parameters from RealTek.  Completely undocumented. */
-/* and completly unused (RB) */
-unsigned long param[4][4]={
-	{0x0cb39de43,0x0cb39ce43,0x0fb38de03,0x0cb38de43},
-	{0x0cb39de43,0x0cb39ce43,0x0cb39ce83,0x0cb39ce83},
-	{0x0cb39de43,0x0cb39ce43,0x0cb39ce83,0x0cb39ce83},
-	{0x0bb39de43,0x0bb39ce43,0x0bb39ce83,0x0bb39ce83}
-};
-
-/* I'm a bit unsure how to align correctly with gcc. this worked: */
 static int ioaddr;
-unsigned int cur_rx=0,cur_tx=0,tx_flag=0;
-static unsigned char *tx_buf[NUM_TX_DESC]
-__attribute__ ((aligned(4)));
-static struct my {
-	long dummy; /* align */
-	unsigned char tx_bufs[TX_BUF_SIZE + 4];
-	unsigned char rx_ring[RX_BUF_LEN + 16];
-} my __attribute__ ((aligned(4)));
-unsigned int full_duplex=0;
+unsigned int cur_rx,cur_tx;
 
-static void rtl_reset(struct nic *nic);
+/* The RTL8139 can only transmit from a contiguous, aligned memory block.  */
+static unsigned char tx_buffer[TX_BUF_SIZE] __attribute__((aligned(4)));
+
+/* I know that this is a MEGA HACK, but the tagged boot image specification
+ * states that we can do whatever we want below 0x10000 - so we do!  */
+/* But we still give the user the choice of using an internal buffer
+   just in case - Ken */
+#ifdef	USE_INTERNAL_BUFFER
+static unsigned char rx_ring[RX_BUF_LEN+16] __attribute__ ((aligned(4)));
+#else
+static unsigned char *rx_ring = (unsigned char *)(0x10000 - (RX_BUF_LEN + 16));
+#endif
+
+
 struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 	struct pci_device *pci);
 static int read_eeprom(long ioaddr, int location);
-static void rtl_open(struct nic* nic);
-static void rtl8129_init_ring();
+static void rtl_reset(struct nic *nic);
 static void rtl_transmit(struct nic *nic, char *destaddr,
 	unsigned int type, unsigned int len, char *data);
 static int rtl_poll(struct nic *nic);
 static void rtl_disable(struct nic*);
 
-static void rtl_reset(struct nic *nic)
-{
-	rtl_open(nic);
-}
 
 struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 	struct pci_device *pci)
 {
 	int i;
 	struct pci_device *p;
+	int speed10, fullduplex;
 
-	printf("RTL8139 driver for Etherboot-4.2 ");
+	/* There are enough "RTL8139" strings on the console already, so
+	 * be brief and concentrate on the interesting pieces of info... */
+	printf(" - ");
 	if (probeaddrs == 0 || probeaddrs[0] == 0) {
-		printf("ERROR: no probeaddrs given, using pci_device\n");
+		printf("\nERROR: no probeaddrs given, using pci_device\n");
 		for (p = pci; p; p++) {
 			if ( ( (p->vendor == PCI_VENDOR_ID_REALTEK)
 			    && (p->dev_id == PCI_DEVICE_ID_REALTEK_8139) )
@@ -186,14 +216,20 @@ struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 			*ap++ = read_eeprom(ioaddr, i + 7);
 	} else {
 		unsigned char *ap = (unsigned char*)nic->node_addr;
-		for (i = 0; i < 6; i++)
+		for (i = 0; i < ETHER_ADDR_SIZE; i++)
 			*ap++ = inb(ioaddr + MAC0 + i);
 	}
 
-	printf(" I/O %x ", ioaddr);
+	printf("ioaddr 0x%x, addr ", ioaddr);
 
-	for (i = 0; i < 6; i++)
-		printf ("%b%c", nic->node_addr[i] , i < 5 ?':':' ');
+	for (i = 0; i < ETHER_ADDR_SIZE; i++) {
+		printf("%b", nic->node_addr[i]);
+		if (i < ETHER_ADDR_SIZE-1) putchar(':');
+	}
+	speed10 = inb(ioaddr + MediaStatus) & MSRSpeed10;
+	fullduplex = inw(ioaddr + MII_BMCR) & BMCRDuplex;
+	printf(" %sMbps %s-duplex\n", speed10 ? "10" : "100",
+		fullduplex ? "full" : "half");
 
 	rtl_reset(nic);
 
@@ -231,7 +267,7 @@ struct nic *rtl8139_probe(struct nic *nic, unsigned short *probeaddrs,
 static int read_eeprom(long ioaddr, int location)
 {
 	int i;
-	unsigned retval = 0;
+	unsigned int retval = 0;
 	long ee_addr = ioaddr + Cfg9346;
 	int read_cmd = location | EE_READ_CMD;
 
@@ -262,13 +298,14 @@ static int read_eeprom(long ioaddr, int location)
 	return retval;
 }
 
-static void rtl_open(struct nic* nic)
+static void rtl_reset(struct nic* nic)
 {
 	int i;
 
 	outb(CmdReset, ioaddr + ChipCmd);
 
-	rtl8129_init_ring();
+	cur_rx = 0;
+	cur_tx = 0;
 
 	/* Check that the chip has finished the reset. */
 	for (i = 1000; i > 0; i--)
@@ -280,148 +317,149 @@ static void rtl_open(struct nic* nic)
 
 	/* Must enable Tx/Rx before setting transfer thresholds! */
 	outb(CmdRxEnb | CmdTxEnb, ioaddr + ChipCmd);
-	outl((RX_FIFO_THRESH << 13) | (RX_BUF_LEN_IDX << 11) | (RX_DMA_BURST<<8),
-		ioaddr + RxConfig);
+	outl((RX_FIFO_THRESH<<13) | (RX_BUF_LEN_IDX<<11) | (RX_DMA_BURST<<8),
+		ioaddr + RxConfig);		/* accept no frames yet!  */
 	outl((TX_DMA_BURST<<8)|0x03000000, ioaddr + TxConfig);
-	tx_flag = (TX_FIFO_THRESH<<11) & 0x003f0000;
 
-	outb(0xC0, ioaddr + Cfg9346);
-	outb(0x20, ioaddr + Config1); /* half-duplex */
-	outb(0x00, ioaddr + Cfg9346);
+	/* The Linux driver changes Config1 here to use a different LED pattern
+	 * for half duplex or full/autodetect duplex (for full/autodetect, the
+	 * outputs are TX/RX, Link10/100, FULL, while for half duplex it uses
+	 * TX/RX, Link100, Link10).  This is messy, because it doesn't match
+	 * the inscription on the mounting bracket.  It should not be changed
+	 * from the configuration EEPROM default, because the card manufacturer
+	 * should have set that to match the card.  */
 
 #ifdef DEBUG_RX
-	printf("rx start address is %X\n",(unsigned long) my.rx_ring);
+	printf("rx ring address is %X\n",(unsigned long)rx_ring);
 #endif
-	outl((unsigned long)my.rx_ring, ioaddr + RxBuf);
+	outl((unsigned long)rx_ring, ioaddr + RxBuf);
 
 	/* Start the chip's Tx and Rx process. */
 	outl(0, ioaddr + RxMissed);
 	/* set_rx_mode */
-	outb(AcceptBroadcast|AcceptMulticast|AcceptMyPhys, ioaddr + RxConfig);
-	outl(0xFFFFFFFF, ioaddr + MAR0 + 0);
-	outl(0xFFFFFFFF, ioaddr + MAR0 + 4);
+	outb(AcceptBroadcast|AcceptMyPhys, ioaddr + RxConfig);
+	/* If we add multicast support, the MAR0 register would have to be
+	 * initialized to 0xffffffffffffffff (two 32 bit accesses).  Etherboot
+	 * only needs broadcast (for ARP/RARP/BOOTP/DHCP) and unicast.  */
 	outb(CmdRxEnb | CmdTxEnb, ioaddr + ChipCmd);
 
 	/* Disable all known interrupts by setting the interrupt mask. */
 	outw(0, ioaddr + IntrMask);
 }
 
-/* Initialize the Rx and Tx rings, along with various 'dev' bits. */
-static void rtl8129_init_ring()
-{
-	int i;
-
-	cur_rx = 0;
-	cur_tx = 0;
-
-	for (i = 0; i < NUM_TX_DESC; i++) {
-		tx_buf[i] = my.tx_bufs;
-	}
-}
-
 static void rtl_transmit(struct nic *nic, char *destaddr,
 	unsigned int type, unsigned int len, char *data)
 {
-	unsigned int i, status=0, to, nstype;
+	unsigned int i, status, to, nstype;
 	unsigned long txstatus;
-	unsigned char *txp = tx_buf[cur_tx];
 
-	memcpy(txp, destaddr, ETHER_ADDR_SIZE);
-	memcpy(txp + ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE);
+	memcpy(tx_buffer, destaddr, ETHER_ADDR_SIZE);
+	memcpy(tx_buffer + ETHER_ADDR_SIZE, nic->node_addr, ETHER_ADDR_SIZE);
 	nstype = htons(type);
-	memcpy(txp + 2 * ETHER_ADDR_SIZE, (char*)&nstype, 2);
-	memcpy(txp + ETHER_HDR_SIZE, data, len);
+	memcpy(tx_buffer + 2 * ETHER_ADDR_SIZE, (char*)&nstype, 2);
+	memcpy(tx_buffer + ETHER_HDR_SIZE, data, len);
 
 	len += ETHER_HDR_SIZE;
 #ifdef DEBUG_TX
 	printf("sending %d bytes ethtype %x\n", len, type);
 #endif
-	outl((unsigned long) txp, ioaddr + TxAddr0 + cur_tx*4);
-	/* Note: the chip doesn't have auto-pad! */
-	/* 60 = ETH_ZLEN */
-	outl(tx_flag | (len >= 60 ? len : 60),
+
+	/* Note: RTL8139 doesn't auto-pad, send minimum payload (another 4
+	 * bytes are sent automatically for the FCS, totalling to 64 bytes). */
+	while (len < ETH_MIN_PACKET - 4) {
+		tx_buffer[len++] = '\0';
+	}
+
+	outl((unsigned long)tx_buffer, ioaddr + TxAddr0 + cur_tx*4);
+	outl(((TX_FIFO_THRESH<<11) & 0x003f0000) | len,
 		ioaddr + TxStatus0 + cur_tx*4);
 
-	to = TIME_OUT;
+	to = currticks() + RTL_TIMEOUT;
 
 	do {
 		status = inw(ioaddr + IntrStatus);
-		outw(status, ioaddr + IntrStatus);
+		/* Only acknlowledge interrupt sources we can properly handle
+		 * here - the RxOverflow/RxFIFOOver MUST be handled in the
+		 * rtl_poll() function.  */
+		outw(status & (TxOK | TxErr | PCIErr), ioaddr + IntrStatus);
 		if ((status & (TxOK | TxErr | PCIErr)) != 0) break;
-	} while (--to);
+	} while (currticks() < to);
 
 	txstatus = inl(ioaddr+ TxStatus0 + cur_tx*4);
 
 	if (status & TxOK) {
 		cur_tx = ++cur_tx % NUM_TX_DESC;
 #ifdef DEBUG_TX
-		printf("tx done (%d loops), status %x txstatus %X\n",
-			TIME_OUT-to, status, txstatus);
+		printf("tx done (%d ticks), status %x txstatus %X\n",
+			to-currticks(), status, txstatus);
 #endif
-		return;
-
 	} else {
 #ifdef DEBUG_TX
-		printf("tx ERROR (%d loops), status %x txstatus %X\n",
-			TIME_OUT-to, status, txstatus);
-		printf("tx TIME-OUT, status %x\n", status);
+		printf("tx timeout/error (%d ticks), status %x txstatus %X\n",
+			currticks()-to, status, txstatus);
 #endif
-
 		rtl_reset(nic);
-		return;
-
 	}
 }
 
 static int rtl_poll(struct nic *nic)
 {
-	unsigned int status=0;
-	unsigned int ring_offset, rx_size, rx_status;
+	unsigned int status;
+	unsigned int ring_offs;
+	unsigned int rx_size, rx_status;
+
+	if (inb(ioaddr + ChipCmd) & RxBufEmpty) {
+		return 0;
+	}
 
 	status = inw(ioaddr + IntrStatus);
-	outw(status, ioaddr + IntrStatus);
+	/* See below for the rest of the interrupt acknowledges.  */
+	outw(status & ~(RxFIFOOver | RxOverflow | RxOK), ioaddr + IntrStatus);
 
-	if((inb(ioaddr + ChipCmd) & RxBufEmpty) && !(status & RxErr))
-		return 0;
+#ifdef DEBUG_RX
+	printf("rtl_poll: int %x ", status);
+#endif
 
-	if( status & RxErr ) {
-		rtl_reset(nic);
-		return 0;
-	}
-
-	ring_offset = cur_rx % RX_BUF_LEN;
-	rx_status = *(unsigned int*)(my.rx_ring + ring_offset);
+	ring_offs = cur_rx % RX_BUF_LEN;
+	rx_status = *(unsigned int*)(rx_ring + ring_offs);
 	rx_size = rx_status >> 16;
+	rx_status &= 0xffff;
 
-	if (rx_status & RxStatusOK) {
-		nic->packetlen = rx_size;
-		if (ring_offset+rx_size+4 > RX_BUF_LEN) {
-			int semi_count = RX_BUF_LEN - ring_offset - 4;
-			memcpy(nic->packet, (char*)&my.rx_ring[ring_offset+4], semi_count);
-			memcpy(nic->packet+semi_count, my.rx_ring, rx_size-semi_count);
-#ifdef DEBUG_RX
-			printf("rtl_poll: rx packet %d + %d bytes\n", semi_count,rx_size-semi_count);
-#endif
-		} else {
-			memcpy(nic->packet, (char*) &my.rx_ring[ring_offset+4], nic->packetlen);
-#ifdef DEBUG_RX
-			printf("rtl_poll: rx packet %d bytes at %X type %b%b status %x rxstatus %X\n",
-				rx_size, (unsigned long) (my.rx_ring+ring_offset+4),
-				my.rx_ring[ring_offset+4+12], my.rx_ring[ring_offset+4+13],
-				status, rx_status);
-#endif
-		}
-		cur_rx = (cur_rx + rx_size + 4 + 3) & ~3;
-		outw(cur_rx - 16, ioaddr + RxBufPtr);
-		return 1;
-
-	} else {
-
-		printf("rtl_poll: rx error status %x\n",status);
-		rtl_reset(nic);
+	if ((rx_status & (RxBadSymbol|RxRunt|RxTooLong|RxCRCErr|RxBadAlign)) ||
+	    (rx_size < ETH_MIN_PACKET) || (rx_size > ETH_MAX_PACKET)) {
+		printf("rx error %x\n", rx_status);
+		rtl_reset(nic);	/* this clears all interrupts still pending */
 		return 0;
-
 	}
+
+	/* Received a good packet */
+	nic->packetlen = rx_size - 4;	/* no one cares about the FCS */
+	if (ring_offs+4+rx_size-4 > RX_BUF_LEN) {
+		int semi_count = RX_BUF_LEN - ring_offs - 4;
+
+		memcpy(nic->packet, rx_ring + ring_offs + 4, semi_count);
+		memcpy(nic->packet+semi_count, rx_ring, rx_size-4-semi_count);
+#ifdef DEBUG_RX
+		printf("rx packet %d+%d bytes", semi_count,rx_size-4-semi_count);
+#endif
+	} else {
+		memcpy(nic->packet, rx_ring + ring_offs + 4, nic->packetlen);
+#ifdef DEBUG_RX
+		printf("rx packet %d bytes", rx_size-4);
+#endif
+	}
+#ifdef DEBUG_RX
+	printf(" at %X type %b%b rxstatus %x\n",
+		(unsigned long)(rx_ring+ring_offs+4),
+		nic->packet[12], nic->packet[13], rx_status);
+#endif
+	cur_rx = (cur_rx + rx_size + 4 + 3) & ~3;
+	outw(cur_rx - 16, ioaddr + RxBufPtr);
+	/* See RTL8139 Programming Guide V0.1 for the official handling of
+	 * Rx overflow situations.  The document itself contains basically no
+	 * usable information, except for a few exception handling rules.  */
+	outw(status & (RxFIFOOver | RxOverflow | RxOK), ioaddr + IntrStatus);
+	return 1;
 }
 
 static void rtl_disable(struct nic *nic)

@@ -481,6 +481,15 @@ check_BSD_parts (int flags)
       return 1;
     }
 
+#ifndef STAGE1_5
+  if (flags)
+    {
+      if (! do_completion)
+	grub_printf (" No BSD slice found, partition type 0x%x\n",
+		     current_slice);
+    }
+#endif
+  
   errnum = ERR_BAD_PART_TABLE;
   return 0;
 }
