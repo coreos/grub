@@ -1,3 +1,8 @@
+2002-04-16  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (Obtaining and Building GRUB): Update the link
+	to the binutils site.
+
 2002-04-06  Pavel Roskin  <proski@gnu.org>
 
 	* util/grub-install.in: Fix hardcoded /dev/hda1.

@@ -3630,7 +3630,7 @@ utopia@dots{}
 @strong{Caution:} GRUB requires binutils-2.9.1.0.23 or later because the
 GNU assembler has been changed so that it can produce real 16bits
 machine code between 2.9.1 and 2.9.1.0.x. See
-@uref{http://sourceware.cygnus.com/binutils/}, to obtain information on
+@uref{http://sources.redhat.com/binutils/}, to obtain information on
 how to get the latest version.
 @end quotation
 
