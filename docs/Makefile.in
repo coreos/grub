@@ -118,7 +118,7 @@ MANS = $(man_MANS)
 
 NROFF = nroff
 DIST_COMMON =  $(grub_TEXINFOS) $(multiboot_TEXINFOS) Makefile.am \
-Makefile.in mdate-sh stamp-vti texinfo.tex version.texi
+Makefile.in stamp-vti version.texi
 
 
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -139,7 +139,7 @@ $(srcdir)/version.texi: @MAINTAINER_MODE_TRUE@stamp-vti
 	@:
 
 $(srcdir)/stamp-vti: grub.texi $(top_srcdir)/configure.in
-	@echo "@set UPDATED `$(SHELL) $(srcdir)/mdate-sh $(srcdir)/grub.texi`" > vti.tmp
+	@echo "@set UPDATED `$(SHELL) $(top_srcdir)/mdate-sh $(srcdir)/grub.texi`" > vti.tmp
 	@echo "@set EDITION $(VERSION)" >> vti.tmp
 	@echo "@set VERSION $(VERSION)" >> vti.tmp
 	@cmp -s vti.tmp $(srcdir)/version.texi \
@@ -174,7 +174,7 @@ DVIPS = dvips
 	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .texi.dvi:
-	TEXINPUTS=$(srcdir):$$TEXINPUTS \
+	TEXINPUTS=$(top_srcdir):$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
 
 .texinfo.info:
@@ -188,7 +188,7 @@ DVIPS = dvips
 	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .texinfo.dvi:
-	TEXINPUTS=$(srcdir):$$TEXINPUTS \
+	TEXINPUTS=$(top_srcdir):$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
 
 .txi.info:
@@ -197,7 +197,7 @@ DVIPS = dvips
 	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .txi.dvi:
-	TEXINPUTS=$(srcdir):$$TEXINPUTS \
+	TEXINPUTS=$(top_srcdir):$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
 
 .txi:

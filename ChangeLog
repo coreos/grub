@@ -1,3 +1,10 @@
+2000-06-19  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/mdate-sh: Moved to ...
+	* mdate-sh: ... here.
+	* docs/texinfo.tex: Moved to ...
+	* texinfo.tex: ... here.
+	
 2000-06-09  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/mb_info.h (AddrRangeDesc): Use one 64bits field instead
