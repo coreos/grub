@@ -1,3 +1,21 @@
+1999-06-27  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* configure.in (CFLAGS): Set to "-g", since only this flag is
+	always sharable.
+	(STAGE1_CFLAGS): Set to "-O2", and AC_SUBST this.
+	(GRUB_CFLAGS): Likewise.
+	(saved_CFLAGS): New variable for temporarily saving CFLAGS.
+	(STAGE2_CFLAGS): Set to "-Os" if this option is available,
+	otherwise set to "-fno-strength-reduce -fno-unroll-loops",
+	and then AC_SUBST this.
+	* grub/Makefile.am (AM_CFLAGS): Prepended @GRUB_CFLAGS@.
+	* stage1/Makefile.am (AM_CFLAGS): Prepended @STAGE1_CFLAGS@.
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Prepened @GRUB_CFLAGS@.
+	(STAGE2_COMPILE): Prepended @STAGE2_CFLAGS@.
+
+	* stage2/asm.S (chain_stage2): Pass CURRENT_PARTITION and
+	CURRENT_DRIVE, instead of INSTALL_PARTITION and BOOT_DRIVE.
+	
 1999-06-27  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* configure.in: set CFLAGS to "-Os -g" for compilers which

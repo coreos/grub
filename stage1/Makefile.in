@@ -60,12 +60,15 @@ host_triplet = @host@
 AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 CC = @CC@
+GRUB_CFLAGS = @GRUB_CFLAGS@
 GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAKEINFO = @MAKEINFO@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STAGE1_CFLAGS = @STAGE1_CFLAGS@
+STAGE2_CFLAGS = @STAGE2_CFLAGS@
 VERSION = @VERSION@
 host_cpu = @host_cpu@
 host_vendor = @host_vendor@
@@ -77,7 +80,7 @@ nodist_pkgdata_DATA = stage1
 CLEANFILES = $(pkgdata_DATA)
 
 # We can't use builtins or standard includes.
-AM_CFLAGS = -fno-builtin -nostdinc
+AM_CFLAGS = @STAGE1_CFLAGS@ -fno-builtin -nostdinc
 
 noinst_PROGRAMS = stage1.exec
 stage1_exec_SOURCES = stage1.S

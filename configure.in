@@ -56,19 +56,29 @@ AC_CHECK_TOOL(CC, gcc)
 AC_PROG_CC
 AC_PROG_RANLIB
 
+# optimization flags
 if test "x$ac_cv_prog_gcc" = xyes; then
   if test "x$default_CFLAGS" = xyes; then
+    CFLAGS="-g"
+    STAGE1_CFLAGS="-O2"
+    GRUB_CFLAGS="-O2"
     AC_CACHE_CHECK([whether optimization for size works], size_flag, [
+      saved_CFLAGS=$CFLAGS
       CFLAGS="-Os -g"
       AC_TRY_COMPILE(, , size_flag=yes, size_flag=no)
+      CFLAGS=$saved_CFLAGS
     ])
     if test "x$size_flag" = xyes; then
-      CFLAGS="-Os -g"
+      STAGE2_CFLAGS="-Os"
     else
-      CFLAGS="-O2 -fno-strength-reduce -fno-unroll-loops -g"
+      STAGE2_CFLAGS="-O2 -fno-strength-reduce -fno-unroll-loops"
     fi
   fi
 fi
+
+AC_SUBST(STAGE1_CFLAGS)
+AC_SUBST(STAGE2_CFLAGS)
+AC_SUBST(GRUB_CFLAGS)
 
 # Enforce coding standards.
 CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"

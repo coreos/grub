@@ -3,7 +3,7 @@ nodist_pkgdata_DATA = stage1
 CLEANFILES = $(pkgdata_DATA)
 
 # We can't use builtins or standard includes.
-AM_CFLAGS = -fno-builtin -nostdinc
+AM_CFLAGS = @STAGE1_CFLAGS@ -fno-builtin -nostdinc
 
 noinst_PROGRAMS = stage1.exec
 stage1_exec_SOURCES = stage1.S

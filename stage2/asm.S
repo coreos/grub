@@ -201,12 +201,12 @@ ENTRY(chain_stage2)
 	/* generate linear address */
 	addl	%eax, %ebx
 
-	/* store install info */
-	movl	EXT_C(install_partition), %eax
+	/* set up to pass the partition where stage2 is located in */
+	movl	EXT_C(current_partition), %eax
 	movl	%eax, EXT_C(install_partition)-EXT_C(start)(%ebx)
 
-	/* set up to pass boot drive */
-	movb	EXT_C(boot_drive), %dl
+	/* set up to pass the drive where stage2 is located in */
+	movb	EXT_C(current_drive), %dl
 
 	call	EXT_C(prot_to_real)
 	.code16
