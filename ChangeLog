@@ -1,11 +1,3 @@
-2003-05-23  Jason Thomas  <jason@intology.com.au>
-
-	* docs/grub.texi (Configuration): The documentation had the wrong
-	directory for the menu.lst file, so I corrected this to /boot/grub or
-	/boot/boot/grub with a comment in parenthesises about /boot being a
-	serperate partition.
-	Reported by <bigtoe416@yahoo.co>
-
 2003-05-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (partnew): Fixed the inconsistency between the
