@@ -25,12 +25,6 @@ ftp.XX.kernel.org (XX is the country code, such as `jp').
 These below are required when you develop GRUB or when you get it from
 the CVS:
 
-* autoconf 19990301 and later
-
-  Autoconf 2.13 has a bug that can't handle any macro with arguments,
-so you need to get the later version from the CVS. See
-http://sourceware.cygnus.com/autoconf/ for more information.
-
 * automake 19990620 and later
 
   The new feature, per-executable flags, is requred, so you need to get
@@ -69,12 +63,6 @@ DEVELOPERS: to subscribe to the mailing list, send e-mail to
 Just hit enter when CVS prompts you for a password.
 
   IMPORTANT SIZE LIMITS:
-
-  - For the various stage2's, if they are being loaded from a block-list
-    in the stage1, then be sure your blocklist is big enough.  The
-    automated install will generally do this for you, it's just when
-    dropping it on a raw floppy, you get the default compiled in, which
-    is 512 * 130 disk sectors, or 66560 bytes.
 
   - For the FFS stage1.5, if you want to fit into the "bootloader" area
     of an FFS partition, it cannot be larger than 512 * 14 disk sectors,

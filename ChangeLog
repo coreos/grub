@@ -1,5 +1,26 @@
 1999-09-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/size_test: Do not check for the size of Stage 2.
+	* stage1/Makefile.am (stage2_size.h): Use `set' and `echo'
+	instead of awk, since we cannot expect awk is present. Remove
+	stage2_size.h before creating it.
+	
+1999-09-15  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* Makefile.am (SUBDIRS): Put stage1 after stage2 so that stage2
+	is built before stage1.
+	* stage1/Makefile.am (BUILT_SOURCES): New varilable.
+	(CLEANFILES): Added BUILT_SOURCES.
+	(stage1_exec_SOURCES): Added stage2_size.h.
+	(stage1_lba_exec_SOURCES): Likewise.
+	(stage2_size.h): New rule.
+	* stage1/stage1.S: Include <stage2_size.h> and use STAGE2_SIZE
+	to determine how much number of sectors to be read when loading
+	Stage 2.
+	* stage1/stage1_lba.S: Likewise.
+	
+1999-09-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* netboot/config.h: Moved to ...
 	* netboot/netboot_config.h: ... here.
 	* netboot/config.c: Include netboot_config.h instead of config.h.
