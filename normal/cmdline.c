@@ -556,7 +556,8 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
   
   cl_insert (cmdline);
 
-  grub_history_add (buf);
+  if (hist_used == 0)
+    grub_history_add (buf);
 
   while ((key = GRUB_TERM_ASCII_CHAR (grub_getkey ())) != '\n' && key != '\r')
     {
@@ -641,7 +642,10 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		lpos = 0;
 
 		if (histpos > 0)
-		  histpos--;
+		  {
+		    grub_history_replace (histpos, buf);
+		    histpos--;
+		  }
 
 		cl_delete (llen);
 		hist = grub_history_get (histpos);
@@ -656,7 +660,10 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		lpos = 0;
 
 		if (histpos < hist_used - 1)
-		  histpos++;
+		  {
+		    grub_history_replace (histpos, buf);
+		    histpos++;
+		  }
 
 		cl_delete (llen);
 		hist = grub_history_get (histpos);
@@ -723,8 +730,6 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	    }
 	  break;
 	}
-
-      grub_history_replace (histpos, buf);
     }
 
   grub_putchar ('\n');
@@ -736,6 +741,13 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
     while (buf[lpos] == ' ')
       lpos++;
 
+  histpos = 0;
+  if (grub_strlen (buf) > 0)
+    {
+      grub_history_replace (histpos, buf);
+      grub_history_add ("");
+    }
+  
   grub_memcpy (cmdline, buf + lpos, llen - lpos + 1);
 
   return 1;
