@@ -51,11 +51,10 @@ grub_arch_modules_addr (void)
   return 0;
 }
 
-int
-grub_arch_dl_check_header (void *ehdr, grub_size_t size)
+grub_err_t
+grub_arch_dl_check_header (void *ehdr)
 {
   (void) ehdr;
-  (void) size;
 
   return GRUB_ERR_BAD_MODULE;
 }

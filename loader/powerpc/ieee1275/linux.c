@@ -1,7 +1,7 @@
 /* linux.c - boot Linux */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -124,15 +124,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
       goto fail;
     }
   
-  if (!((ehdr.e_ident[EI_MAG0] == ELFMAG0) 
-	&& (ehdr.e_ident[EI_MAG1] == ELFMAG1)
-	&& (ehdr.e_ident[EI_MAG2] == ELFMAG2) 
-	&& (ehdr.e_ident[EI_MAG3] == ELFMAG3)
-	&& (ehdr.e_ident[EI_CLASS] == ELFCLASS32) 
-	&& (ehdr.e_ident[EI_DATA] == ELFDATA2MSB)
-	&& (ehdr.e_ident[EI_VERSION] == EV_CURRENT) 
-	&& (ehdr.e_type == ET_EXEC) && (ehdr.e_machine == EM_PPC) 
-	&& (ehdr.e_version == EV_CURRENT)))
+  if (grub_dl_check_header (&ehdr, sizeof(ehdr)))
     {
       grub_error (GRUB_ERR_UNKNOWN_OS, "No valid ELF header found");
       goto fail;
@@ -142,20 +134,6 @@ grub_rescue_cmd_linux (int argc, char *argv[])
     {
       grub_error (GRUB_ERR_UNKNOWN_OS,
 		  "This ELF file is not of the right type\n");
-      goto fail;
-    }
-
-  if (ehdr.e_machine != EM_PPC)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "This ELF file is not for the PPC32\n");
-      goto fail;
-    }
-  
-  if (ehdr.e_version != EV_CURRENT)
-    {
-      grub_error (GRUB_ERR_UNKNOWN_OS,
-		  "Invalid ELF version\n");
       goto fail;
     }
 

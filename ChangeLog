@@ -1,3 +1,22 @@
+2005-02-14  Guillem Jover  <guillem@hadrons.org>
+
+	* include/grub/dl.h (grub_dl_check_header): New prototype.
+	(grub_arch_dl_check_header): Change return type to grub_err_t,
+	remove size parameter and export function.  Update all callers.
+	* kern/dl.c (grub_dl_check_header): New function.
+	(grub_dl_load_core): Use `grub_dl_check_header' instead of
+	`grub_arch_dl_check_header'.  Check ELF type.  Check if sections
+	are inside the core.
+	* kern/i386/dl.c (grub_arch_dl_check_header): Remove arch
+	independent ELF header checks.
+	* kern/powerpc/dl.c (grub_arch_dl_check_header): Likewise.
+	* loader/i386/pc/multiboot.c (grub_rescue_cmd_multiboot): Use
+	`grub_dl_check_header' instead of explicit checks.  Check for the
+	ELF type.
+	* loader/powerpc/ieee1275/linux.c (grub_rescue_cmd_linux): Use
+	`grub_dl_check_header' instead of explicit checks.  Remove arch
+	specific ELF header checks.
+
 2005-02-13  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* conf/powerpc-ieee1275.rmk (pkgdata_MODULES): Add ls.mod.

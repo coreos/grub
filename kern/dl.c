@@ -1,7 +1,7 @@
 /* dl.c - loadable module support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -236,6 +236,29 @@ grub_dl_get_section_addr (grub_dl_t mod, unsigned n)
       return seg->addr;
 
   return 0;
+}
+
+/* Check if EHDR is a valid ELF header.  */
+grub_err_t
+grub_dl_check_header (void *ehdr, grub_size_t size)
+{
+  Elf_Ehdr *e = ehdr;
+
+  /* Check the header size.  */
+  if (size < sizeof (Elf_Ehdr))
+    return grub_error (GRUB_ERR_BAD_OS, "ELF header smaller than expected");
+
+  /* Check the magic numbers.  */
+  if (grub_arch_dl_check_header (ehdr)
+      || e->e_ident[EI_MAG0] != ELFMAG0
+      || e->e_ident[EI_MAG1] != ELFMAG1
+      || e->e_ident[EI_MAG2] != ELFMAG2
+      || e->e_ident[EI_MAG3] != ELFMAG3
+      || e->e_ident[EI_VERSION] != EV_CURRENT
+      || e->e_version != EV_CURRENT)
+    return grub_error (GRUB_ERR_BAD_OS, "invalid arch independent ELF magic");
+
+  return GRUB_ERR_NONE;
 }
 
 /* Load all segments from memory specified by E.  */
@@ -497,12 +520,22 @@ grub_dl_load_core (void *addr, grub_size_t size)
   grub_dl_t mod;
   
   e = addr;
-  if (! grub_arch_dl_check_header (e, size))
+  if (grub_dl_check_header (e, size))
+    return 0;
+  
+  if (e->e_type != ET_REL)
     {
-      grub_error (GRUB_ERR_BAD_MODULE, "invalid ELF header");
+      grub_error (GRUB_ERR_BAD_MODULE, "invalid ELF file type");
       return 0;
     }
-  
+
+  /* Make sure that every section is within the core.  */
+  if (size < e->e_shoff + e->e_shentsize * e->e_shnum)
+    {
+      grub_error (GRUB_ERR_BAD_OS, "ELF sections outside core");
+      return 0;
+    }
+
   mod = (grub_dl_t) grub_malloc (sizeof (*mod));
   if (! mod)
     return 0;

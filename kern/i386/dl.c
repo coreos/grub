@@ -1,7 +1,7 @@
 /* dl-386.c - arch-dependent part of loadable module support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,32 +24,18 @@
 #include <grub/err.h>
 
 /* Check if EHDR is a valid ELF header.  */
-int
-grub_arch_dl_check_header (void *ehdr, grub_size_t size)
+grub_err_t
+grub_arch_dl_check_header (void *ehdr)
 {
   Elf32_Ehdr *e = ehdr;
 
-  /* Check the header size.  */
-  if (size < sizeof (Elf32_Ehdr))
-    return 0;
-
   /* Check the magic numbers.  */
-  if (e->e_ident[EI_MAG0] != ELFMAG0
-      || e->e_ident[EI_MAG1] != ELFMAG1
-      || e->e_ident[EI_MAG2] != ELFMAG2
-      || e->e_ident[EI_MAG3] != ELFMAG3
-      || e->e_version != EV_CURRENT
-      || e->e_ident[EI_CLASS] != ELFCLASS32
+  if (e->e_ident[EI_CLASS] != ELFCLASS32
       || e->e_ident[EI_DATA] != ELFDATA2LSB
-      || e->e_machine != EM_386
-      || e->e_type != ET_REL)
-    return 0;
+      || e->e_machine != EM_386)
+    return grub_error (GRUB_ERR_BAD_OS, "invalid arch specific ELF magic");
 
-  /* Make sure that every section is within the core.  */
-  if (size < e->e_shoff + e->e_shentsize * e->e_shnum)
-    return 0;
-
-  return 1;
+  return GRUB_ERR_NONE;
 }
 
 /* Relocate symbols.  */
