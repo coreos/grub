@@ -39,6 +39,15 @@ force_lba=
 recheck=no
 debug=no
 
+# look for secure tempfile creation wrappers on this platform
+if test -x /bin/tempfile; then
+    mkstemp="/bin/tempfile --prefix=grub"
+elif test -x /bin/mktemp; then
+    mkstemp="/bin/mktemp /tmp/grub-install.log.XXXXXX"
+else
+    mkstemp=""
+fi
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -268,7 +277,7 @@ if test -f "$device_map"; then
     :
 else
     # Create a safe temporary file.
-    test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
+    test -n "$mkstemp" && log_file=`$mkstemp`
 
     $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 quit
@@ -342,7 +351,7 @@ for file in \
 done
 
 # Create a safe temporary file.
-test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
+test -n "$mkstemp" && log_file=`$mkstemp`
 
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file

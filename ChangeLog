@@ -1,5 +1,10 @@
 2002-01-02  Jeremy Katz  <katzj@redhat.com>
 	
+	* util/grub-install.in: Support using mktemp as well as tempfile
+	for secure temporary file creation.
+
+2002-01-02  Jeremy Katz  <katzj@redhat.com>
+	
 	* stage2/md5.c (md5_password): Ensure the password exists before
 	trying to check against the md5 crypted version.
 
