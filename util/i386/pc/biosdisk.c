@@ -3,6 +3,7 @@
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,11 +26,6 @@
 #include <pupa/types.h>
 #include <pupa/err.h>
 #include <pupa/util/misc.h>
-
-/* Try to use glibc's transparant LFS support. */
-#define _LARGEFILE_SOURCE       1
-/* lseek becomes synonymous with lseek64.  */
-#define _FILE_OFFSET_BITS       64
 
 #include <stdio.h>
 #include <stdlib.h>

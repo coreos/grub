@@ -2,6 +2,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,8 +31,13 @@
 
 void *EXPORT_FUNC(pupa_memmove) (void *dest, const void *src, pupa_size_t n);
 char *EXPORT_FUNC(pupa_strcpy) (char *dest, const char *src);
+char *EXPORT_FUNC(pupa_strncpy) (char *dest, const char *src, int c);
+char *EXPORT_FUNC(pupa_strcat) (char *dest, const char *src);
+
+
 int EXPORT_FUNC(pupa_memcmp) (const void *s1, const void *s2, pupa_size_t n);
 int EXPORT_FUNC(pupa_strcmp) (const char *s1, const char *s2);
+int EXPORT_FUNC(pupa_strncmp) (const char *s1, const char *s2, int c);
 char *EXPORT_FUNC(pupa_strchr) (const char *s, int c);
 char *EXPORT_FUNC(pupa_strrchr) (const char *s, int c);
 int EXPORT_FUNC(pupa_isspace) (int c);

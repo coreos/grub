@@ -1,6 +1,7 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -349,6 +350,8 @@ pupa_disk_read (pupa_disk_t disk, unsigned long sector,
 	    {
 	      /* Uggh... Failed. Instead, just read necessary data.  */
 	      unsigned num;
+
+	      pupa_errno = PUPA_ERR_NONE;
 
 	      /* If more data is required, no way.  */
 	      if (pos + size

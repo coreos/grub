@@ -55,13 +55,13 @@ pupa_mkimage_LDFLAGS = -llzo
 # For pupa-setup.
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c kern/device.c kern/disk.c kern/file.c kern/fs.c \
-	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c
+	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod hello.mod \
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
 	vga.mod font.mod
 
 # For _chain.mod.
@@ -71,6 +71,10 @@ _chain_mod_CFLAGS = $(COMMON_CFLAGS)
 # For fat.mod.
 fat_mod_SOURCES = fs/fat.c
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ext2.mod.
+ext2_mod_SOURCES = fs/ext2.c
+ext2_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c

@@ -13,7 +13,9 @@ Priorities:
   higher priority.
 
 
-* Add more filesystems (such as ext2fs, ffs, and reiserfs). !
+* Add more filesystems (such as jfs, ffs, and reiserfs). !
+
+* Add journal playback support to ext2fs (so it will become ext3fs).
 
 * Add support for internationalization. !!!
 

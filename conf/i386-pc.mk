@@ -280,11 +280,11 @@ pupa_mkimage_LDFLAGS = -llzo
 # For pupa-setup.
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c kern/device.c kern/disk.c kern/file.c kern/fs.c \
-	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c
-CLEANFILES += pupa-setup pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o
-MOSTLYCLEANFILES += pupa_setup-util_i386_pc_pupa_setup.d pupa_setup-util_i386_pc_biosdisk.d pupa_setup-util_misc.d pupa_setup-kern_device.d pupa_setup-kern_disk.d pupa_setup-kern_file.d pupa_setup-kern_fs.d pupa_setup-kern_err.d pupa_setup-kern_misc.d pupa_setup-disk_i386_pc_partition.d pupa_setup-fs_fat.d
+	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c
+CLEANFILES += pupa-setup pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o
+MOSTLYCLEANFILES += pupa_setup-util_i386_pc_pupa_setup.d pupa_setup-util_i386_pc_biosdisk.d pupa_setup-util_misc.d pupa_setup-kern_device.d pupa_setup-kern_disk.d pupa_setup-kern_file.d pupa_setup-kern_fs.d pupa_setup-kern_err.d pupa_setup-kern_misc.d pupa_setup-disk_i386_pc_partition.d pupa_setup-fs_fat.d pupa_setup-fs_ext2.d
 
-pupa-setup: pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o
+pupa-setup: pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_setup_LDFLAGS)
 
 pupa_setup-util_i386_pc_pupa_setup.o: util/i386/pc/pupa-setup.c
@@ -375,6 +375,14 @@ pupa_setup-fs_fat.d: fs/fat.c
 
 -include pupa_setup-fs_fat.d
 
+pupa_setup-fs_ext2.o: fs/ext2.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+
+pupa_setup-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,pupa_setup-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_setup-fs_ext2.d
+
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
@@ -394,7 +402,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod fat.mod normal.mod hello.mod \
+pkgdata_MODULES = _chain.mod _linux.mod fat.mod ext2.mod normal.mod hello.mod \
 	vga.mod font.mod
 
 # For _chain.mod.
@@ -474,6 +482,45 @@ fat_mod-fs_fat.d: fs/fat.c
 -include fat_mod-fs_fat.d
 
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For ext2.mod.
+ext2_mod_SOURCES = fs/ext2.c
+CLEANFILES += ext2.mod mod-ext2.o mod-ext2.c pre-ext2.o ext2_mod-fs_ext2.o def-ext2.lst und-ext2.lst
+MOSTLYCLEANFILES += ext2_mod-fs_ext2.d
+DEFSYMFILES += def-ext2.lst
+UNDSYMFILES += und-ext2.lst
+
+ext2.mod: pre-ext2.o mod-ext2.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+	$(STRIP) --strip-unneeded -K pupa_mod_init -K pupa_mod_fini -R .note -R .comment $@
+
+pre-ext2.o: ext2_mod-fs_ext2.o
+	-rm -f $@
+	$(LD) -r -o $@ $^
+
+mod-ext2.o: mod-ext2.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
+
+mod-ext2.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ext2' $< > $@ || (rm -f $@; exit 1)
+
+def-ext2.lst: pre-ext2.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ext2/' > $@
+
+und-ext2.lst: pre-ext2.o
+	echo 'ext2' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ext2_mod-fs_ext2.o: fs/ext2.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
+
+ext2_mod-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,ext2_mod-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include ext2_mod-fs_ext2.d
+
+ext2_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c

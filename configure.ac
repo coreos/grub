@@ -39,6 +39,7 @@ if test "x$CFLAGS" = x; then
 fi
 
 AC_PROG_CC
+AC_SYS_LARGEFILE
 
 # Must be GCC.
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])

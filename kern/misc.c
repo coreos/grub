@@ -3,6 +3,7 @@
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
  *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *  Copyright (C) 2002 Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
  *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -57,7 +58,18 @@ pupa_strcpy (char *dest, const char *src)
   return dest;
 }
 
-#if 0
+char *
+pupa_strncpy (char *dest, const char *src, int c)
+{
+  char *p = dest;
+  int pos = 0;
+
+  while ((*p++ = *src++) != '\0' && c > pos)
+    pos++;
+
+  return dest;
+}
+
 char *
 pupa_strcat (char *dest, const char *src)
 {
@@ -71,7 +83,6 @@ pupa_strcat (char *dest, const char *src)
 
   return dest;
 }
-#endif
 
 int
 pupa_printf (const char *fmt, ...)
@@ -120,6 +131,24 @@ pupa_strcmp (const char *s1, const char *s2)
       
       s1++;
       s2++;
+    }
+
+  return (int) *s1 - (int) *s2;
+}
+
+int
+pupa_strncmp (const char *s1, const char *s2, int c)
+{
+  int p = 1;
+
+  while (*s1 && *s2 && p < c)
+    {
+      if (*s1 != *s2)
+	return (int) *s1 - (int) *s2;
+      
+      s1++;
+      s2++;
+      p++;
     }
 
   return (int) *s1 - (int) *s2;
