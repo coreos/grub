@@ -1,3 +1,14 @@
+2004-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/pupa: Renamed to ...
+	* include/grub: ... this.
+	* util/i386/pc/pupa-mkimage.c: Renamed to ...
+	* util/i386/pc/grub-mkimage.c: ... this.
+	* util/i386/pc/pupa-setup.c: Renamed to ...
+	* util/i386/pc/grub-setup.c: ... this.
+	* util/pupa-emu.c: Renamed to ...
+	* util/grub-emu.c: ... this.
+
 2004-03-29  Marco Gerards  <metgerards@student.han.nl>
 
 	Add support for the newworld apple macintosh (PPC).  This has been
