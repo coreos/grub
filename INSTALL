@@ -31,14 +31,15 @@ configuring the GRUB.
   to install it into a system directory. See the section "Operation
   Controls".
 
+If you'd like to develop GRUB, these below are also required. Don't
+forget to specify the option `--enable-maintainer-mode' when running the
+configure script.
+
 * Texinfo 4.0 or later
 
   We use some new macros in the documents, so you need a recent
   Texinfo release. See the webpage
   <http://www.gnu.org/software/texinfo/texinfo.html>.
-
-If you obtain this source package from the CVS, these below are also
-required.
 
 * GNU Autoconf 20000116 or later
 
@@ -187,6 +188,11 @@ operates.
 `--version'
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
+
+`--enable-maintainer-mode'
+     Enable make rules and dependencies not useful (and sometimes
+     confusing) to the casual installer. If you are a GRUB developer,
+     it is a good idea to specify this option.
 
 `--disable-lba-support-bitmap-check'
      Disable the check for LBA support bitmap. Specify this option
