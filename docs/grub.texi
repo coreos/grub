@@ -65,14 +65,16 @@ Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions.
 @end titlepage
 
-@c The Top node appears only in Info.
-@ifinfo
+@c The Top node should not appears in TeX.
+@ifnottex
 
 @node Top
 @top GRUB
 
 This file documents GNU GRUB, the Grand Unified Bootloader.  This
 edition documents version @value{VERSION}.
+@end ifnottex
+
 
 @menu
 * Introduction::                Capturing the spirit of GRUB.
@@ -129,8 +131,6 @@ Implementation details
 
 @end detailmenu
 @end menu
-
-@end ifinfo
 
 
 @node Introduction
