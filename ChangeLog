@@ -1,3 +1,28 @@
+2003-10-27  Marco Gerards  <metgerards@student.han.nl>
+
+	* README: In the pupa-mkimage example use _chain instead of chain
+	and ext2 instead of fat.
+	* TODO: Replace ext2fs with jfs as an example.  Add an item for
+	adding journal playback for ext2fs.
+	* conf/i386-pc.rmk (pupa_setup_SOURCES): Added fs/ext2.c.
+	(pkgdata_MODULES): Added ext2.mod.
+	(ext2_mod_SOURCES): New variable.
+	(ext2_mod_CFLAGS): Likewise.
+	* include/pupa/err.h (pupa_err_t): Added PUPA_ERR_SYMLINK_LOOP.
+	* include/pupa/misc.h (pupa_strncpy): New prototype.
+	(pupa_strcat): Likewise.
+	(pupa_strncmp): Likewise.
+	* kern/misc.c (pupa_strcat): Enable function.
+	(pupa_strncpy): New function.
+	(pupa_strncmp): Likewise.
+	* fs/ext2.c: New file.
+	
+	* kern/disk.c (pupa_disk_read): Set pupa_errno to PUPA_ERR_NONE
+	when the read failed before retrying.
+	* util/i386/pc/biosdisk.c (_LARGEFILE_SOURCE): Removed.
+	(_FILE_OFFSET_BITS): Likewise.
+	* configure.ac: Added AC_SYS_LARGEFILE.
+
 2003-09-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* genmk.rb (PModule#rule): Make sure to get only symbol names
