@@ -38,7 +38,7 @@
 #define DISP_LR		0x251B
 
 /* FIXME: These should be dynamically obtained from a terminal.  */
-#define TERM_WIDTH	(80 - 1)
+#define TERM_WIDTH	80
 #define TERM_HEIGHT	25
 
 /* The number of lines of "GRUB version..." at the top.  */
@@ -51,7 +51,7 @@
 #define TERM_SCROLL_WIDTH	1
 
 /* The Y position of the top border.  */
-#define TERM_TOP_BORDER_Y	(TERM_MARGIN + TERM_HEIGHT + TERM_MARGIN)
+#define TERM_TOP_BORDER_Y	(TERM_MARGIN + TERM_INFO_HEIGHT + TERM_MARGIN)
 
 /* The X position of the left border.  */
 #define TERM_LEFT_BORDER_X	TERM_MARGIN
@@ -98,27 +98,23 @@ draw_border (void)
     grub_putcode (DISP_HLINE);
   grub_putcode (DISP_UR);
 
-  i = 1;
-  while (1)
+  for (i = 0; i < (unsigned) TERM_NUM_ENTRIES; i++)
     {
-      grub_gotoxy (TERM_MARGIN, TERM_TOP_BORDER_Y + i);
-
-      if (i > (unsigned) TERM_NUM_ENTRIES)
-	break;
-
+      grub_gotoxy (TERM_MARGIN, TERM_TOP_BORDER_Y + i + 1);
       grub_putcode (DISP_VLINE);
-      grub_gotoxy (TERM_MARGIN + TERM_BORDER_WIDTH - 1, TERM_TOP_BORDER_Y + i);
+      grub_gotoxy (TERM_MARGIN + TERM_BORDER_WIDTH - 1, TERM_TOP_BORDER_Y + i + 1);
       grub_putcode (DISP_VLINE);
-
-      i++;
     }
 
+  grub_gotoxy (TERM_MARGIN, TERM_TOP_BORDER_Y + TERM_NUM_ENTRIES + 1);
   grub_putcode (DISP_LL);
   for (i = 0; i < TERM_BORDER_WIDTH - 2; i++)
     grub_putcode (DISP_HLINE);
   grub_putcode (DISP_LR);
 
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+
+  grub_gotoxy (TERM_MARGIN, TERM_TOP_BORDER_Y + TERM_NUM_ENTRIES + TERM_MARGIN + 1);
 }
 
 static void
@@ -172,12 +168,12 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
   grub_gotoxy (TERM_LEFT_BORDER_X + TERM_MARGIN, y);
   grub_putchar (' ');
   for (x = TERM_LEFT_BORDER_X + TERM_MARGIN + 1;
-       x < TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH - 1;
+       x < TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH - TERM_MARGIN;
        x++)
     {
-      if (*title && x <= TERM_LEFT_BORDER_X + TERM_ENTRY_WIDTH + 1)
+      if (*title && x <= TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH - TERM_MARGIN - 1)
 	{
-	  if (x == TERM_LEFT_BORDER_X + TERM_ENTRY_WIDTH + 1)
+	  if (x == TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH - TERM_MARGIN - 1)
 	    grub_putcode (DISP_RIGHT);
 	  else
 	    grub_putchar (*title++);
@@ -196,7 +192,7 @@ print_entries (grub_menu_t menu, int first, int offset)
   grub_menu_entry_t e;
   int i;
   
-  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH + TERM_MARGIN,
+  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH,
 	       TERM_FIRST_ENTRY_Y);
 
   if (first)
@@ -213,7 +209,7 @@ print_entries (grub_menu_t menu, int first, int offset)
 	e = e->next;
     }
 
-  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH + TERM_MARGIN,
+  grub_gotoxy (TERM_LEFT_BORDER_X + TERM_BORDER_WIDTH,
 	       TERM_TOP_BORDER_Y + TERM_NUM_ENTRIES);
 
   if (e)

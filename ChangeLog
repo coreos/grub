@@ -1,3 +1,14 @@
+2005-01-22  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* normal/menu.c (TERM_WIDTH): Macro redefined.
+	(TERM_TOP_BORDER_Y): Likewise.
+	(draw_border): Replaced while-loop by a for-loop.  Make the number
+	of lines consistent with the number of lines displayed in
+	print_entries.  Added a margin below the rectangle.
+	(print_entry): Make the entry fit in the rectangle.
+	(print_entries): Display the scroll arrows next to the right
+	border.
+
 2005-01-21  Marco Gerards  <metgerards@student.han.nl>
 
 	* fs/minix.c (grub_minix_find_file): Reserve more space for
