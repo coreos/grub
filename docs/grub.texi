@@ -719,80 +719,75 @@ Display the contents of the file @var{file}.
 Change the menu colors. The color @var{normal} is used for most
 lines in the menu, and the color @var{highlight} is used to highlight the
 line where the cursor points. If you omit @var{highlight}, then the
-inverted color of @var{normal} is used for the highlighted line. You
-must specify an integer for a color value, where bits 0-3 represent
-the foreground color, bits 4-6 represent the background color, and
-bit 7 indicates that the foreground blinks.
+inverted color of @var{normal} is used for the highlighted line. 
+The format of a color is @code{@var{fg}/@var{bg}}. @var{fg} and @var{bg}
+are symbolic color names. A symbolic color name must be one of these:
 
-These are the possible values and the meanings:
-
-@table @asis
-@item 0
+@itemize @bullet
+@item
 black
 
-@item 1
+@item
 blue
 
-@item 2
+@item
 green
 
-@item 3
+@item
 cyan
 
-@item 4
+@item
 red
 
-@item 5
+@item
 magenta
 
-@item 6
+@item
 brown
 
-@item 7
-light gray
-
 @item
+light-gray
+
 @strong{These below can be specified only for the foreground.}
 
-@item 8
-dark gray
+@item
+dark-gray
 
-@item 9
-light blue
+@item
+light-blue
 
-@item A
-light green
+@item
+light-green
 
-@item B
-light cyan
+@item
+light-cyan
 
-@item C
-light red
+@item
+light-red
 
-@item D
-light magenta
+@item
+light-magenta
 
-@item E
+@item
 yellow
 
-@item F
+@item
 white
-@end table
+@end itemize
 
-The background is represented by 3 bits, so you cannot specify more than
-7 for it.
+But only the first eight names can be used for @var{bg}. You can prefix
+@code{blink-} to @var{fg} if you want a blinking foreground color.
 
-This command can be used in the configuration file and on the
-command line, so you may write something like this in your configuration
-file:
+This command can be used in the configuration file and on the command
+line, so you may write something like this in your configuration file:
 
 @example
-# Set default colors (light gray / blue, black / light gray).
-color 0x17 0x70
+# Set default colors.
+color light-gray/blue black/light-gray
 
 # Change the colors.
 title OS-BS like
-color 0x16 0x60
+color magenta/blue black/magenta
 @end example
 
 @item chainloader @var{file}

@@ -8,6 +8,9 @@ timeout 30
 # By default, boot the first entry.
 default 0
 
+# Fallback to the second entry.
+fallback 1
+
 # For booting the GNU Hurd
 title  GNU/Hurd
 root   (hd0,0)
@@ -51,3 +54,7 @@ chainloader +1
 title Install GRUB into the hard disk
 root    (hd0,0)
 install /boot/grub/stage1 d (hd0) /boot/grub/stage2 p
+
+# Change the colors.
+title Change the colors
+color light-green/brown blink-red/blue

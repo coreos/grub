@@ -6,6 +6,7 @@ New in 0.5.94:
 * The more automatic installation command "setup" is added.
 * The command "embed" embeds a Stage 1.5 in the sectors after a MBR or
   in the "bootloader" area in a FFS partition.
+* Support symbolic color name syntax in the command "color".
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.

@@ -183,26 +183,117 @@ static struct builtin builtin_chainloader =
 
 
 /* color */
+/* Set new colors used for the menu interface. Support two methods to
+   specify a color name: a direct integer representation and a symbolic
+   color name. An example of the latter is "blink-light-gray/blue".  */
 static int
 color_func (char *arg, int flags)
 {
   char *normal;
   char *highlight;
+  int new_normal_color;
+  int new_highlight_color;
+  static char *color_list[16] =
+  {
+    "black",
+    "blue",
+    "green",
+    "cyan",
+    "red",
+    "magenta",
+    "brown",
+    "light-gray",
+    "dark-gray",
+    "light-blue",
+    "light-green",
+    "light-cyan",
+    "light-red",
+    "light-magenta",
+    "yellow",
+    "white"
+  };
 
+  /* Convert the color name STR into the magical number.  */
+  static int color_number (char *str)
+    {
+      char *ptr;
+      int i;
+      int color = 0;
+      
+      /* Find the separator.  */
+      for (ptr = str; *ptr && *ptr != '/'; ptr++)
+	;
+
+      /* If not found, return -1.  */
+      if (! *ptr)
+	return -1;
+
+      /* Terminate the string STR.  */
+      *ptr++ = 0;
+
+      /* If STR contains the prefix "blink-", then set the `blink' bit
+	 in COLOR.  */
+      if (substring ("blink-", str) <= 0)
+	{
+	  color = 0x80;
+	  str += 6;
+	}
+      
+      /* Search for the color name.  */
+      for (i = 0; i < 16; i++)
+	if (grub_strcmp (color_list[i], str) == 0)
+	  {
+	    color |= i;
+	    break;
+	  }
+
+      if (i == 16)
+	return -1;
+
+      str = ptr;
+      /* Find a space.  */
+      for (; *ptr && ! grub_isspace (*ptr); ptr++)
+	;
+
+      /* Terminate the string STR.  */
+      *ptr = 0;
+
+      /* Search for the color name.  */      
+      for (i = 0; i < 8; i++)
+	if (grub_strcmp (color_list[i], str) == 0)
+	  {
+	    color |= i << 4;
+	    break;
+	  }
+
+      if (i == 8)
+	return -1;
+
+      return color;
+    }
+      
   normal = arg;
   highlight = skip_to (0, arg);
 
-  if (safe_parse_maxint (&normal, &normal_color))
-    {
-      /* The second argument is optional, so set highlight_color
-	 to inverted NORMAL_COLOR.  */
-      if (*highlight == 0
-	  || ! safe_parse_maxint (&highlight, &highlight_color))
-	highlight_color = ((normal_color >> 4) | ((normal_color & 0xf) << 4));
-    }
-  else
+  new_normal_color = color_number (normal);
+  if (new_normal_color < 0 && safe_parse_maxint (&normal, &new_normal_color))
     return 1;
+  
+  /* The second argument is optional, so set highlight_color
+     to inverted NORMAL_COLOR.  */
+  if (! *highlight)
+    new_highlight_color = ((new_normal_color >> 4)
+			   | ((new_normal_color & 0xf) << 4));
+  else
+    {
+      new_highlight_color = color_number (highlight);
+      if (new_highlight_color < 0
+	  && safe_parse_maxint (&highlight, &new_highlight_color))
+	return 1;
+    }
 
+  normal_color = new_normal_color;
+  highlight_color = new_highlight_color;
   return 0;
 }
 
@@ -215,11 +306,13 @@ static struct builtin builtin_color =
   "Change the menu colors. The color NORMAL is used for most"
   " lines in the menu, and the color HIGHLIGHT is used to highlight the"
   " line where the cursor points. If you omit HIGHLIGHT, then the"
-  " inverted color of NORMAL is used for the highlighted line. You"
-  " must specify an integer for a color value, where bits 0-3"
-  " represent the foreground color, bits 4-6 represents the"
-  " background color, and bit 7 indicates that the foreground"
-  " blinks."
+  " inverted color of NORMAL is used for the highlighted line."
+  " The format of a color is \"FG/BG\". FG and BG are symbolic color names."
+  " A symbolic color name must be one of these: black, blue, green,"
+  " cyan, red, magenta, brown, light-gray, dark-gray, light-blue,"
+  " light-green, light-cyan, light-red, light-magenta, yellow and white."
+  " But only the first eight names can be used for BG. You can prefix"
+  " \"blink-\" to FG if you want a blinking foreground color."
 };
 
 

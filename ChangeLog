@@ -1,5 +1,20 @@
 1999-10-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (color_func): Do not set NORMAL_COLOR or
+	HIGHLIGHT_COLOR directly, but use NEW_NORMAL_COLOR and
+	NEW_HIGHLIGHT_COLOR as temporary storages instead.
+	New internal function `color_number' is used to convert a
+	symbolic color representation into a color number.
+	Try color_number at first, and if fails, then try
+	safe_parse_maxint for each of NORMAL and HIGHLIGHT.
+	(builtin_color): The long doc does not describe the raw number
+	syntax but the symbolic color name syntax.
+	* docs/grub.texi (Commands): Adjusted to the long doc of
+	BUILTIN_COLOR.
+	* docs/menu.lst: Add examples of "fallback" and "color".
+	
+1999-10-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/char_io.c [!STAGE1_5] (get_cmdline): If C is a newline
 	or a return, then set LPOS to LLEN and call the function
 	cl_setcpos.
