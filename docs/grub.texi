@@ -93,25 +93,25 @@ Introduction
 * Features::                    How GRUB is different.
 * Role of a bootloader::        Judging a system by its bootloader.
 
-Installing
+How to install GRUB on your computer
 
 * Boot floppy::                 Creating a GRUB boot floppy.
 * Automated install::           Installation via @code{install=}.
 * Installation under Unix::     Installation by @file{/sbin/grub}.
 
-Using
+Booting your operating systems
 
 * Command-line::                The flexible command-line interface.
 * Menu::                        The simple menu interface.
 * Menu entry editor::           Editing a menu entry.
 * Commands::                    The list of available commands.
 
-Filesystems
+Filesystem syntax and semantics
 
 * Device syntax::               How to specify devices.
 * Filename syntax::             How to specify files.
 
-Troubleshooting
+Error messages reported by GRUB
 
 * Stage1 errors::               Errors reported by the Stage 1.
 * Stage1.5 errors::             Errors reported by the Stage 1.5.
@@ -202,15 +202,14 @@ did writing it.
 @node Installing
 @chapter How to install GRUB on your computer
 
-For the nature of @dfn{bootloader}, you need to install GRUB on a
+Due to the nature of a @dfn{bootloader}, you need to install GRUB on
 bootable media, such as a floppy disk. The installation can be performed
 by @code{dd} or @code{rawrite} for a boot floppy, or the @code{install=}
-command in the GRUB command-line interface (@pxref{Using}).
+command at the GRUB command line (@pxref{Using}).
 
 @menu
 * Boot floppy::                 Creating a GRUB boot floppy.
-* Automated install::           Installation by the @code{install=}
-                                command
+* Automated install::           Installation via @code{install=}.
 * Installation under Unix::     Installation by @file{/sbin/grub}.
 @end menu
 
@@ -219,69 +218,73 @@ command in the GRUB command-line interface (@pxref{Using}).
 @section Creating a GRUB boot floppy
 
 @quotation
-@strong{Caution:} This will destroy any data currently on the floppy.
+@strong{Caution:} This procedure will destroy any data currently stored
+on the floppy.
 @end quotation
 
-This installation method can generally only access the command-line part
-of the interface, since there is no filesystem in which to find a
-configuration file (FIXME: ref). If you want to use the menu part, see
+If you install GRUB using this method, it will only have access to the
+command-line interface, since there is no filesystem in which to find a
+configuration file (FIXME: ref). If you want to use the menu interface, see
 @ref{Automated install}.
 
-Under an UNIX-like operating system, such as GNU, use @code{dd} like
-this:
+Under an UNIX-like operating system, such as GNU, use @code{dd} as
+follows, where @file{/dev/fd0} is the floppy device:
 
 @example
 dd if=stage1/stage1 of=/dev/fd0 bs=512 count=1
 dd if=stage2/stage2 of=/dev/fd0 bs=512 seek=1
 @end example
 
-and, under DOS/Windows, use @code{copy} and @code{rawrite}, which is
-available in many places on the net and in some Linux distributions,
-like this:
+Under DOS-based systems, such as Windows, use @code{copy} and
+@code{rawrite}:
 
 @example
 copy /b stage1 + stage2 grub.raw
 rawrite grub.new a:
 @end example
 
+@code{rawrite} is available as a part of the installation tools that
+come with many GNU and GNU/Linux distributions.
+
 
 @node Automated install
-@section Installation by the @code{install=} command
+@section Installation via the @code{install=} command
 
 @quotation
-@strong{Caution:} If the stage1 is installed on a specific partition,
-this can erase the normal boot-sector used by an OS. GRUB can boot
-Linux, FreeBSD, NetBSD, Mach, and the GNU Hurd directly, so this may be
-desired. Generally, it is a good idea to back up the first sector of a
-partition if installing GRUB's stage1 there. For the first sector of a
-hard disk, this is OK, since it's easy to reinitialize it via
-@code{FDISK /MBR} in DOS, or other methods in other OSes.
+@strong{Caution:} Installing GRUB's stage1 in this manner will erase the
+normal boot-sector used by an OS.  GRUB can boot GNU Mach, Linux,
+FreeBSD, NetBSD, and OpenBSD directly, so this may be
+desired.  Generally, it is a good idea to back up the first sector of the
+partition on which you are installing GRUB's stage1.  This isn't as
+important if you are installing GRUB on the first sector of a hard disk,
+since it's easy to reinitialize it (by running @code{FDISK /MBR} from DOS).
 @end quotation
 
 GRUB has a command called @code{install=} which is described in
 @xref{Using}. The purpose of this section is to give examples and
 describe how to use the command in different situations.
 
-First, you make a GRUB boot floppy (@pxref{Boot floppy}). Actually, any
-booting copy of GRUB of the right version number will work fine, this is
-simply a way to get the process started easily.
+First, make a GRUB boot floppy (@pxref{Boot floppy}).  This is simply a
+way to get the process started easily; any bootable copy of the same
+version GRUB will work fine.
 
-On the partition that is the desired area for GRUB to be installed in
-(call it the @dfn{install partition}), make a @file{/boot/grub}
-directory and place the @file{stage2}, @file{menu.lst} (configuration
-file), and optionally @file{stage1.5} there.
+Then, make a @file{/boot/grub} directory (@file{\boot\grub} under DOS)
+in the @dfn{install partition}.  Place the GRUB @file{stage2} file, any
+optional @file{stage1.5} files, and the configuration file
+(@file{menu.lst}) in that directory.
 
-Now use the @code{install=} command appropriately, and you're done!
+Now figure out how to use the @code{install=} command appropriately, and
+you're done!
 
 Examples of how to use the @code{install=} command:
 
 @itemize @bullet
 @item
-@strong{Making a hard disk bootable with GRUB's stage2 on PC partition
+@strong{Make a hard disk bootable with GRUB's stage2 on PC partition
 number 2:} Make a directory in the partition called @file{/boot/grub},
 place the @file{stage2} (and if desired, your configuration file called
-@file{menu.lst}), then run the following command after getting GRUB's
-command-line from booting the floppy:
+@file{menu.lst}), then run the following command at GRUB's command line
+(after booting from the GRUB floppy):
 
 @example
 install= (fd0)+1 (hd0) (hd0,2)/boot/grub/stage2 0x8000 p
@@ -289,47 +292,44 @@ install= (fd0)+1 (hd0) (hd0,2)/boot/grub/stage2 0x8000 p
 
 This tells GRUB to grab the first sector of the floppy and use it as the
 stage1, create a blocklist using the file @file{/boot/grub/stage2} on
-the first hard disk, partition number 2, merge them together, set the
-load address to 0x8000 (correct for a stage2), write the @dfn{install
-partition} number into the first sector of the stage2 (the @samp{p} at
-the end), then write the result to the first sector of the hard disk.
+the first hard disk (partition number 2), merge them together, set the
+load address correctly for a stage2 (0x8000), save the @dfn{install
+partition} in the first sector of the stage2 (the @samp{p} at the end),
+then write the result to the first sector of the hard disk.
 
 @item
-@strong{Same as above, but placing the stage1 on the floppy, then having
+@strong{Same as above, but place the stage1 on the floppy, then have
 it start the stage2 on the hard disk:} The difference here is you're
 telling GRUB's stage1 to read from the first hard disk no matter where
-stage1 is being run from:
+the stage1 was loaded from:
 
 @example
 install= (fd0)+1 d (fd0) (hd0,2)/boot/grub/stage2 0x8000 p
 @end example
 
 The @samp{d} option near the beginning is what sets the @emph{forced}
-loading from the disk where the stage2 was installed from. The rest of
-the options are the same except for the @dfn{destination device} to
-place the finished stage1 on is changed to the floppy disk.
+loading from the disk where the stage2 was installed from.  Also, the
+@dfn{destination device} is changed to place the finished stage1 on the
+floppy disk.
 
 @item
 @strong{Installing from an @emph{install directory} to the second hard
 disk:} Here we're loading the stage1 from a file on the first hard disk,
 installing stage2 from the first BSD @samp{a} partition on the second
-hard disk, and setting the @dfn{config file} of the stage2 to a
-different value than usual:
+hard disk, and setting the stage2's @dfn{configuration file} to
+@file{(hd1,a)/grubdir/configfile}:
 
 @example
 install= (hd0,2)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
 @end example
 @end itemize
 
-An easily imaginable way of using this as part of an automated
-installation process would be to note that the commands listed above can
-be part of any sequence of commands in an entry in a GRUB config file,
-so this could be automated even more by using a GRUB floppy with a
-filesystem and config file, with an entry such as:
+You can automate these steps by using a GRUB floppy with a filesystem
+and a configuration file which contains entries such as:
 
 @example
 # Start of entries
-title= Linux HD install
+title= GNU/Linux installation
 
 # install command
 install= (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
@@ -350,18 +350,17 @@ FIXME
 
 
 @node Using
-@chapter Booting your operating systems
+@chapter Booting your operating system
 
-GRUB has both a simple menu interface for preset options from a
+GRUB has both a simple menu interface for choosing preset entries from a
 configuration file, and a highly flexible command-line for performing
 any desired combination of boot commands.
 
-The first action GRUB takes after it is loaded is to look for it's
-configuration file. If one is not found, then it drops into the
-command-line interface (and stays there). If one is found, the full menu
-interface is activated containing whatever entries were found in the
-file (the command-line is still available via a command from the menu
-interface).
+GRUB looks for its configuration file as soon as it is loaded.  If one
+is found, then the full menu interface is activated using whatever
+entries were found in the file.  If you choose the `command line' menu
+option, or if the configuration file was not found, then GRUB drops into
+the command-line interface.
 
 @menu
 * Command-line::                The flexible command-line interface.
