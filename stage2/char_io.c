@@ -107,7 +107,7 @@ convert_to_ascii (char *buf, int c,...)
   char *ptr = buf;
 
 #ifndef STAGE1_5
-  if (c == 'x' || c == 'X' || c == 'b')
+  if (c == 'x' || c == 'X')
     mult = 16;
 
   if ((num & 0x80000000uL) && c == 'd')
@@ -154,7 +154,6 @@ grub_printf (const char *format,...)
 {
   int *dataptr = (int *) &format;
   char c, str[16];
-  unsigned long mask = 0xFFFFFFFF;
   
   dataptr++;
 
@@ -166,16 +165,12 @@ grub_printf (const char *format,...)
 	switch (c = *(format++))
 	  {
 #ifndef STAGE1_5
-	  case 'b':
-	    mask = 0xFF;
-	    /* Fall down intentionally!  */
 	  case 'd':
 	  case 'x':
 	  case 'X':
 #endif
 	  case 'u':
-	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++) & mask)
-	      = 0;
+	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++)) = 0;
 	    grub_putstr (str);
 	    break;
 

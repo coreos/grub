@@ -1,3 +1,9 @@
+2004-05-03  Pavel Roskin  <proski@gnu.org>
+
+	* stage2/char_io.c (convert_to_ascii): Remove "%b" support.
+	It's non-standard and is not used anymore.
+	(grub_printf): Likewise.
+
 2004-04-29  Robert Millan  <robertmh@gnu.org>
 
 	From Yann Dirson  <dirson@debian.org>:
