@@ -424,7 +424,7 @@ def-_chain.lst: pre-_chain.o
 
 und-_chain.lst: pre-_chain.o
 	echo '_chain' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 _chain_mod-loader_i386_pc_chainloader.o: loader/i386/pc/chainloader.c
 	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
@@ -463,7 +463,7 @@ def-fat.lst: pre-fat.o
 
 und-fat.lst: pre-fat.o
 	echo 'fat' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 fat_mod-fs_fat.o: fs/fat.c
 	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
@@ -502,7 +502,7 @@ def-_linux.lst: pre-_linux.o
 
 und-_linux.lst: pre-_linux.o
 	echo '_linux' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 _linux_mod-loader_i386_pc_linux.o: loader/i386/pc/linux.c
 	$(CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
@@ -542,7 +542,7 @@ def-normal.lst: pre-normal.o
 
 und-normal.lst: pre-normal.o
 	echo 'normal' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 normal_mod-normal_cmdline.o: normal/cmdline.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -614,7 +614,7 @@ def-hello.lst: pre-hello.o
 
 und-hello.lst: pre-hello.o
 	echo 'hello' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 hello_mod-hello_hello.o: hello/hello.c
 	$(CC) -Ihello -I$(srcdir)/hello $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
@@ -653,7 +653,7 @@ def-vga.lst: pre-vga.o
 
 und-vga.lst: pre-vga.o
 	echo 'vga' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 vga_mod-term_i386_pc_vga.o: term/i386/pc/vga.c
 	$(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
@@ -692,7 +692,7 @@ def-font.lst: pre-font.o
 
 und-font.lst: pre-font.o
 	echo 'font' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 font_mod-font_manager.o: font/manager.c
 	$(CC) -Ifont -I$(srcdir)/font $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<

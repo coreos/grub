@@ -135,7 +135,7 @@ UNDSYMFILES += #{undsym}
 
 #{undsym}: #{pre_obj}
 	echo '#{mod_name}' > $@
-	$(NM) -u -P -p $< >> $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]

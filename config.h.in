@@ -4,13 +4,13 @@
    prefixed with an asterisk */
 #undef ABSOLUTE_WITHOUT_ASTERISK
 
-/* Define it to "addr32" or "addr32;" to make GAS happy */
+/* Define it to \"addr32\" or \"addr32;\" to make GAS happy */
 #undef ADDR32
 
 /* Define it to one of __bss_start, edata and _edata */
 #undef BSS_START_SYMBOL
 
-/* Define it to "data32" or "data32;" to make GAS happy */
+/* Define it to \"data32\" or \"data32;\" to make GAS happy */
 #undef DATA32
 
 /* Define it to either end or _end */

@@ -1,5 +1,11 @@
 2003-09-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* genmk.rb (PModule#rule): Make sure to get only symbol names
+	from the output of nm.
+	Reported by Robert Millan <zeratul2@wanadoo.es>.
+
+2003-09-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	I forgot to check in these changes for a long time. This adds
 	incomplete support for VGA console, and this is still very
 	buggy. Also, a lot of consideration is required for I18N,
