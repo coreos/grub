@@ -1,3 +1,38 @@
+2000-08-21  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* configure.in (--enable-serial-speed-emulation): New option.
+	(SERIAL_SPEED_SIMULATION): New conditional.
+	* grub/Makefile.am (SERIAL_FLAGS): New variable. Set
+	-DSUPPORT_SERIAL=1 and -DSIMULATE_SLOWNESS_OF_SERIAL=1, if
+	SERIAL_SPEED_SIMULATION is defined, otherwise, set it to
+	only -DSUPPORT_SERIAL=1.
+	(AM_CFLAGS): Removed -DSUPPORT_SERIAL=1 and added
+	$(SERIAL_FLAGS).
+	* grub/asmstub.c [SIMULATE_SLOWNESS_OF_SERIAL] (serial_speed):
+	New variable.
+	(grub_setjmp): Removed.
+	(grub_longjmp): Likewise.
+	(serial_getkey) [SIMULATE_SLOWNESS_OF_SERIAL]: Wait for
+	1000000 / (SERIAL_SPEED >> 3) microseconds using gettimeofday.
+	(serial_putchar) [SIMULATE_SLOWNESS_OF_SERIAL]: Likewise.
+	(serial_init) [SIMULATE_SLOWNESS_OF_SERIAL]: Set SERIAL_SPEED to
+	SPEED.
+	* stage2/builtins.c (serial_func) [SUPPORT_SERIAL]: Added
+	a new option, `--speed'.
+	(builtin_serial): Added a description about --speed.
+	(terminal_func): When get a key from a serial device, if GRUB is
+	in the command-line interface, call grub_longjmp with
+	RESTART_CMDLINE_ENV, instead of init_page.
+	* stage2/cmdline.c (restart_cmdline_env): New variable.
+	(enter_cmdline): Call grub_setjmp with RESTART_CMDLINE_ENV after
+	calling init_cmdline.
+	(run_script): Run BUILTIN->FUNC with BUILTIN_SCRIPT instead of
+	BUILTIN_CMDLINE.
+	* stage2/shared.h (BUILTIN_SCRIPT): New macro.
+	[GRUB_UTIL] (grub_setjmp): Defined as setjmp.
+	[GRUB_UTIL] (grub_longjmp): Defined as longjmp.
+	(restart_cmdline_env): Declared.
+	
 2000-08-20  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (--enable-serial): New option. Serial terminal

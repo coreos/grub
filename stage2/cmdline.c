@@ -25,6 +25,8 @@
 # include <etherboot.h>
 #endif
 
+grub_jmp_buf restart_cmdline_env;
+
 /* Find the next word from CMDLINE and return the pointer. If
    AFTER_EQUAL is non-zero, assume that the character `=' is treated as
    a space. Caution: this assumption is for backward compatibility.  */
@@ -120,6 +122,7 @@ enter_cmdline (char *heap, int forever)
 {
   /* Initialize the data and print a message.  */
   init_cmdline ();
+  grub_setjmp (restart_cmdline_env);
   init_page ();
 #ifdef SUPPORT_DISKLESS
   print_network_configuration ();
@@ -231,6 +234,6 @@ run_script (char *script, char *heap)
 
       /* Run BUILTIN->FUNC.  */
       arg = skip_to (1, heap);
-      (builtin->func) (arg, BUILTIN_CMDLINE);
+      (builtin->func) (arg, BUILTIN_SCRIPT);
     }
 }

@@ -89,6 +89,11 @@ static int serial_fd = -1;
 /* The file name of a serial device.  */
 static char *serial_device = 0;
 
+#ifdef SIMULATE_SLOWNESS_OF_SERIAL
+/* The speed of a serial device.  */
+static unsigned int serial_speed;
+#endif /* SIMULATE_SLOWNESS_OF_SERIAL */
+
 /* The main entry point into this mess. */
 int
 grub_stage2 (void)
@@ -463,18 +468,6 @@ console_gotoxy (int x, int y)
 #endif
 }
 
-int
-grub_setjmp (grub_jmp_buf env)
-{
-  return setjmp (env);
-}
-
-void
-grub_longjmp (grub_jmp_buf env, int val)
-{
-  longjmp (env, val);
-}
-
 /* displays an ASCII character.  IBM displays will translate some
    characters to special graphical ones */
 void
@@ -824,10 +817,30 @@ int
 serial_getkey (void)
 {
   char c;
+#ifdef SIMULATE_SLOWNESS_OF_SERIAL
+  struct timeval otv, tv;
 
+  gettimeofday (&otv, 0);
+#endif /* SIMULATE_SLOWNESS_OF_SERIAL */
+  
   if (nread (serial_fd, &c, 1) != 1)
     stop ();
 
+#ifdef SIMULATE_SLOWNESS_OF_SERIAL
+  while (1)
+    {
+      long delta;
+      
+      gettimeofday (&tv, 0);
+      delta = tv.tv_usec - otv.tv_usec;
+      if (delta < 0)
+	delta += 1000000;
+      
+      if (delta >= 1000000 / (serial_speed >> 3))
+	break;
+    }
+#endif /* SIMULATE_SLOWNESS_OF_SERIAL */
+  
   return c;
 }
 
@@ -854,9 +867,29 @@ void
 serial_putchar (int c)
 {
   char ch = (char) c;
+#ifdef SIMULATE_SLOWNESS_OF_SERIAL
+  struct timeval otv, tv;
+  
+  gettimeofday (&otv, 0);
+#endif /* SIMULATE_SLOWNESS_OF_SERIAL */
   
   if (nwrite (serial_fd, &ch, 1) != 1)
     stop ();
+  
+#ifdef SIMULATE_SLOWNESS_OF_SERIAL
+  while (1)
+    {
+      long delta;
+      
+      gettimeofday (&tv, 0);
+      delta = tv.tv_usec - otv.tv_usec;
+      if (delta < 0)
+	delta += 1000000;
+      
+      if (delta >= 1000000 / (serial_speed >> 3))
+	break;
+    }
+#endif /* SIMULATE_SLOWNESS_OF_SERIAL */
 }
 
 static speed_t
@@ -978,6 +1011,10 @@ serial_init (unsigned short port, unsigned int speed,
   /* Set the parameters.  */
   if (tcsetattr (serial_fd, TCSANOW, &termios))
     goto fail;
+
+#ifdef SIMULATE_SLOWNESS_OF_SERIAL
+  serial_speed = speed;
+#endif /* SIMUATE_SLOWNESS_OF_SERIAL */
   
   return 1;
 

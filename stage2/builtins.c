@@ -2672,6 +2672,16 @@ serial_func (char *arg, int flags)
 
 	  port = serial_get_port (unit);
 	}
+      else if (grub_memcmp (arg, "--speed=", sizeof ("--speed=") - 1) == 0)
+	{
+	  char *p = arg + sizeof ("--speed=") - 1;
+	  int num;
+	  
+	  if (! safe_parse_maxint (&p, &num))
+	    return 1;
+
+	  port = (unsigned int) num;
+	}
       else if (grub_memcmp (arg, "--port=", sizeof ("--port=") - 1) == 0)
 	{
 	  char *p = arg + sizeof ("--port=") - 1;
@@ -2776,13 +2786,14 @@ static struct builtin builtin_serial =
   "serial",
   serial_func,
   BUILTIN_MENU | BUILTIN_CMDLINE,
-  "serial [--unit=UNIT] [--port=PORT] [--word=WORD] [--parity=PARITY] [--stop=STOP] [--device=DEV]",
+  "serial [--unit=UNIT] [--port=PORT] [--speed=SPEED] [--word=WORD] [--parity=PARITY] [--stop=STOP] [--device=DEV]",
   "Initialize a serial device. UNIT is a digit that specifies which serial"
   " device is used (e.g. 0 == COM1). If you need to specify the port number,"
-  " set it by --port. WORD is the word length, PARITY is the type of parity,"
-  " which is one of `no', `odd' and `even'. STOP is the length of stop bit(s)."
-  " The option --device can be used only in the grub shell, which specifies"
-  " the file name of a tty device. The default values are COM1, 8N1."
+  " set it by --port. SPEED is the DTE-DTE speed. WORD is the word length,"
+  " PARITY is the type of parity, which is one of `no', `odd' and `even'."
+  " STOP is the length of stop bit(s). The option --device can be used only"
+  " in the grub shell, which specifies the file name of a tty device. The"
+  " default values are COM1, 9600, 8N1."
 };
 
 
@@ -3319,12 +3330,11 @@ terminal_func (char *arg, int flags)
 	    {
 	      terminal = TERMINAL_SERIAL;
 	      (void) getkey ();
+
+	      /* If the interface is currently the command-line, restart
+		 it to repaint the screen.  */
 	      if (flags & BUILTIN_CMDLINE)
-		{
-		  /* FIXME: It is better to restart enter_cmdline except
-		     for init_cmdline.  */
-		  init_page ();
-		}
+		grub_longjmp (restart_cmdline_env, 0);
 	      break;
 	    }
 

@@ -699,6 +699,7 @@ void stop_floppy (void);
 #define BUILTIN_CMDLINE		0x1	/* Run in the command-line.  */
 #define BUILTIN_MENU		0x2	/* Run in the menu.  */
 #define BUILTIN_TITLE		0x4	/* Only for the command title.  */
+#define BUILTIN_SCRIPT		0x8	/* Run in the script.  */
 
 /* The table for a builtin.  */
 struct builtin
@@ -773,11 +774,18 @@ typedef unsigned long grub_jmp_buf[6];
 # define grub_jmp_buf jmp_buf
 #endif
 
+#ifdef GRUB_UTIL
+# define grub_setjmp	setjmp
+# define grub_longjmp	longjmp
+#else /* ! GRUB_UTIL */
 int grub_setjmp (grub_jmp_buf env);
 void grub_longjmp (grub_jmp_buf env, int val);
+#endif /* ! GRUB_UTIL */
 
 /* The environment for restarting Stage 2.  */
 extern grub_jmp_buf restart_env;
+/* The environment for restarting the command-line interface.  */
+extern grub_jmp_buf restart_cmdline_env;
 
 /* misc */
 void init_page (void);
