@@ -1871,7 +1871,7 @@ install_func (char *arg, int flags)
 	    {
 	      FILE *fp;
 
-	      fp = fopen (stage2_os_file, "r");
+	      fp = fopen (stage2_os_file, "r+");
 	      if (! fp)
 		{
 		  errnum = ERR_FILE_NOT_FOUND;
@@ -1931,7 +1931,7 @@ install_func (char *arg, int flags)
     {
       FILE *fp;
 
-      fp = fopen (stage2_os_file, "r");
+      fp = fopen (stage2_os_file, "r+");
       if (! fp)
 	{
 	  errnum = ERR_FILE_NOT_FOUND;

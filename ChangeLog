@@ -1,3 +1,9 @@
+2000-09-03  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* util/grub-install.in: Fix a typo: grub_dir -> grubdir.
+	* stage2/builtins.c (install_func) [GRUB_UTIL]: Open a Stage 2
+	with "r+" instead of "r", as GRUB needs to overwrite it.
+	
 2000-09-02  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/stage2.c (run_menu): Don't use either `p' or `n' to
