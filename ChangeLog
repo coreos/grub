@@ -1,3 +1,27 @@
+1999-10-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/builtins.c (setup_func): Save CURRENT_DRIVE and
+	CURRENT_PARTITION into IMAGE_DRIVE and IMAGE_PARTITION
+	respectively, and restore them before running install_func.
+	Use DEVICE instead of BUFFER to store the device name.
+	Change each type of STAGE1, STAGE2 and CONFIG_FILE to an array
+	of char.
+	If installing the Stage 1 into a MBR, embed the Stage 1.5 in the
+	sectors right after it.
+	Return the result of install_func instead of zero.
+	
+1999-10-14  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* configure.in: Check for opendisk in libutil.
+	* grub/asmstub.c [__FreeBSD__ || __NetBSD__]: Include
+	<sys/ioctl.h>.
+	[HAVE_OPENDISK]: Include <util.h>.
+	[__NetBSD__] (get_floppy_disk_name): Added support for NetBSD.
+	[__NetBSD__ && HAVE_OPENDISK] (get_ide_disk_name): Likewise.
+	[__NetBSD__ && HAVE_OPENDISK] (get_scsi_disk_name): Likewise.
+	(get_drive_geometry) [__NetBSD__]: Use for NetBSD the same ioctl
+	as for FreeBSD.
+
 1999-10-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (assign_device_name): If DEVICE is NULL, set

@@ -11,6 +11,7 @@ New in 0.5.94:
   map file (the default is "/boot/grub/device.map") if it already
   exists. If not found, try to create it based on the guessed
   information.
+* NetBSD support in the grub shell is improved.
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.

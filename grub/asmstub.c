@@ -58,9 +58,14 @@ int grub_stage2 (void);
 # endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
+# include <sys/ioctl.h>		/* ioctl */
 # include <sys/disklabel.h>
-#endif /* __FreeBSD__ */
+#endif /* __FreeBSD__ || __NetBSD__ */
+
+#ifdef HAVE_OPENDISK
+# include <util.h>
+#endif /* HAVE_OPENDISK */
 
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (4 * 1024 * 1024)	/* 4MB */
@@ -397,8 +402,12 @@ get_floppy_disk_name (char *name, int unit)
 #elif defined(__FreeBSD__)
   /* FreeBSD */
   sprintf (name, "/dev/rfd%d", unit);
+#elif defined(__NetBSD__)
+  /* NetBSD */
+  /* opendisk() doesn't work for floppies.  */
+  sprintf (name, "/dev/rfd%da", unit);
 #else
-# warning "BIOS drives cannot be guessed in your operating system."
+# warning "BIOS floppy drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
   *name = 0;
 #endif
@@ -416,8 +425,19 @@ get_ide_disk_name (char *name, int unit)
 #elif defined(__FreeBSD__)
   /* FreeBSD */
   sprintf (name, "/dev/rwd%d", unit);
+#elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
+  /* NetBSD */
+  char shortname[16];
+  int fd;
+
+  sprintf (shortname, "wd%d", unit);
+  fd = opendisk (shortname, O_RDONLY, name,
+		 16,	/* length of NAME */
+		 0	/* char device */
+		 );
+  close (fd);
 #else
-# warning "BIOS drives cannot be guessed in your operating system."
+# warning "BIOS IDE drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
   *name = 0;
 #endif
@@ -435,8 +455,19 @@ get_scsi_disk_name (char *name, int unit)
 #elif defined(__FreeBSD__)
   /* FreeBSD */
   sprintf (name, "/dev/rda%d", unit);
+#elif defined(__NetBSD__) && defined(HAVE_OPENDISK)
+  /* NetBSD */
+  char shortname[16];
+  int fd;
+
+  sprintf (shortname, "sd%d", unit);
+  fd = opendisk (shortname, O_RDONLY, name,
+		 16,	/* length of NAME */
+		 0	/* char device */
+		 );
+  close (fd);
 #else
-# warning "BIOS drives cannot be guessed in your operating system."
+# warning "BIOS SCSI drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
   *name = 0;
 #endif
@@ -787,7 +818,7 @@ get_drive_geometry (int drive)
   geom->total_sectors = hdg.cylinders * hdg.heads * hdg.sectors;
   return 1;
   
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
   /* FreeBSD */
   struct disklabel hdg;
   if (ioctl (disks[drive].flags, DIOCGDINFO, &hdg))

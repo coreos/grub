@@ -132,6 +132,11 @@ fi
 AC_ARG_WITH(curses,
   [  --without-curses        do not use curses])
 
+# Get the filename or the whole disk and open it.
+# Known to work on NetBSD.
+AC_CHECK_LIB(util, opendisk, [GRUB_LIBS="$GRUB_LIBS -lutil"
+  AC_DEFINE(HAVE_OPENDISK, 1, [Define if opendisk() in -lutil can be used])])
+
 # Unless the user specify --without-curses, check for curses.
 if test "x$with_curses" != "xno"; then
   AC_CHECK_LIB(ncurses, wgetch, [GRUB_LIBS="$GRUB_LIBS -lncurses"

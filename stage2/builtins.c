@@ -1607,36 +1607,37 @@ setup_func (char *arg, int flags)
      reside.  */
   char *image_ptr;
   int install_drive, install_partition;
-  char *stage1 = "/boot/grub/stage1";
-  char *stage2 = "/boot/grub/stage2";
-  char *config_file = "/boot/grub/menu.lst";
-  char install_arg[256];
-  char buffer[32];
+  int image_drive, image_partition;
+  char stage1[64];
+  char stage2[64];
+  char config_file[64];
+  char cmd_arg[256];
+  char device[16];
+  char *buffer = (char *) RAW_ADDR (0x100000);
   static void sprint_device (int drive, int partition)
     {
-      grub_sprintf (buffer, "(%cd%d",
+      grub_sprintf (device, "(%cd%d",
 		    (drive & 0x80) ? 'h' : 'f',
 		    drive & ~0x80);
       if ((partition & 0xFF0000) != 0xFF0000)
 	{
 	  char tmp[16];
 	  grub_sprintf (tmp, ",%d", (partition >> 16) & 0xFF);
-	  grub_strncat (buffer, tmp, sizeof (buffer));
+	  grub_strncat (device, tmp, 256);
 	}
       if ((partition & 0x00FF00) != 0x00FF00)
 	{
 	  char tmp[16];
 	  grub_sprintf (tmp, ",%c", 'a' + ((partition >> 8) & 0xFF));
-	  grub_strncat (buffer, tmp, sizeof (buffer));
+	  grub_strncat (device, tmp, 256);
 	}
-      grub_strncat (buffer, ")", sizeof (buffer));
+      grub_strncat (device, ")", 256);
     }
 	  
   struct stage1_5_map {
     char *fsys;
     char *name;
   };
-  
   struct stage1_5_map stage1_5_map[] =
   {
     {"ext2fs", "/boot/grub/e2fs_stage1_5"},
@@ -1644,7 +1645,12 @@ setup_func (char *arg, int flags)
     {"fat", "/boot/grub/fat_stage1_5"},
     {"minix", "/boot/grub/minix_stage1_5"}
   };
-    
+
+  /* Initialize some strings.  */
+  grub_strcpy (stage1, "/boot/grub/stage1");
+  grub_strcpy (stage2, "/boot/grub/stage2");
+  grub_strcpy (config_file, "/boot/grub/menu.lst");
+  
   install_ptr = arg;
   image_ptr = skip_to (0, install_ptr);
 
@@ -1668,10 +1674,13 @@ setup_func (char *arg, int flags)
   else
     {
       /* If omitted, use SAVED_PARTITION and SAVED_DRIVE.  */
-      current_partition = saved_partition;
       current_drive = saved_drive;
+      current_partition = saved_partition;
     }
 
+  image_drive = current_drive;
+  image_partition = current_partition;
+  
   /* Open it.  */
   if (! open_device ())
     return 1;
@@ -1684,7 +1693,7 @@ setup_func (char *arg, int flags)
 
   /* If the drive where stage2 resides is a hard disk, try to use a
      Stage 1.5.  */
-  if (current_drive & 0x80)
+  if (image_drive & 0x80)
     {
       char *fsys = fsys_table[fsys_type].name;
       int i;
@@ -1692,38 +1701,77 @@ setup_func (char *arg, int flags)
 
       /* Iterate finding the same filesystem name as FSYS.  */
       for (i = 0; i < size; i++)
-	{
-	  if (grub_strcmp (fsys, stage1_5_map[i].fsys) == 0)
-	    {
-	      /* OK, check if the Stage 1.5 exists.  */
-	      if (grub_open (stage1_5_map[i].name))
-		{
-		  stage2 = stage1_5_map[i].name;
-		  config_file = stage2;
-		}
-	      break;
-	    }
-	}
+	if (grub_strcmp (fsys, stage1_5_map[i].fsys) == 0)
+	  {
+	    /* OK, check if the Stage 1.5 exists.  */
+	    if (grub_open (stage1_5_map[i].name))
+	      {
+		grub_strcpy (config_file, stage2);
+		grub_strcpy (stage2, stage1_5_map[i].name);
+
+		if (install_partition == 0xFFFFFF)
+		  {
+		    /* We install GRUB into the MBR, so try to embed the
+		       Stage 1.5 in the sectors right after the MBR.  */
+		    sprint_device (install_drive, install_partition);
+		    grub_sprintf (cmd_arg, "%s %s", stage2, device);
+
+		    /* Notify what will be run.  */
+		    grub_printf (" Run \"embed %s\"\n", cmd_arg);
+		    
+		    embed_func (cmd_arg, flags);
+		    if (! errnum)
+		      {
+			int len;
+
+			/* Need to know the size of the Stage 1.5.  */
+			filepos = 0;
+			len = grub_read (buffer, -1);
+			/* Construct the blocklist representation.  */
+			grub_sprintf (stage2, "%s1+%d",
+				      device,
+				      (len + SECTOR_SIZE - 1) / SECTOR_SIZE);
+			/* Need to prepend the device name to the
+			   configuration filename.  */
+			sprint_device (image_drive, image_partition);
+			grub_sprintf (buffer, "%s%s", device, config_file);
+			grub_strcpy (config_file, buffer);
+		      }
+		  }
+		else if (grub_strcmp (fsys, "ffs") == 0)
+		  {
+		    /* We can embed the Stage 1.5 into the "bootloader"
+		       area in the FFS partition.  */
+
+		    /* FIXME */
+		  }
+	      }
+	    
+	    errnum = 0;
+	    break;
+	  }
     }
 
   /* Construct a string that is used by the command "install" as its
      arguments.  */
   sprint_device (install_drive, install_partition);
-  grub_sprintf (install_arg, "%s %s%s %s p",
+  grub_sprintf (cmd_arg, "%s %s%s %s p %s",
 		stage1,
-		(install_drive != current_drive) ? "d " : "",
-		buffer,
-		stage2);
+		(install_drive != image_drive) ? "d " : "",
+		device,
+		stage2,
+		config_file);
   
   /* Notify what will be run.  */
-  grub_printf (" Run \"install %s\"\n", install_arg);
+  grub_printf (" Run \"install %s\"\n", cmd_arg);
 
+  /* Make sure that CURRENT_DRIVE and CURRENT_PARTITION are identical
+     with IMAGE_DRIVE and IMAGE_PARTITION, respectively.  */
+  current_drive = image_drive;
+  current_partition = image_partition;
+  
   /* Run the command.  */
-#if 0
-  return install_func (install_arg, flags);
-#else
-  return 0;
-#endif
+  return install_func (cmd_arg, flags);
 }
 
 static struct builtin builtin_setup =

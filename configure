@@ -1860,10 +1860,57 @@ if test "${with_curses+set}" = set; then
 fi
 
 
+# Get the filename or the whole disk and open it.
+# Known to work on NetBSD.
+echo $ac_n "checking for opendisk in -lutil""... $ac_c" 1>&6
+echo "configure:1867: checking for opendisk in -lutil" >&5
+ac_lib_var=`echo util'_'opendisk | sed 'y%./+-:%__p__%'`
+if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  ac_save_LIBS="$LIBS"
+LIBS="-lutil  $LIBS"
+cat > conftest.$ac_ext <<EOF
+#line 1875 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char opendisk();
+
+int main() {
+opendisk()
+; return 0; }
+EOF
+if { (eval echo configure:1886: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_lib_$ac_lib_var=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_lib_$ac_lib_var=no"
+fi
+rm -f conftest*
+LIBS="$ac_save_LIBS"
+
+fi
+if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  GRUB_LIBS="$GRUB_LIBS -lutil"
+  cat >> confdefs.h <<\EOF
+#define HAVE_OPENDISK 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+
 # Unless the user specify --without-curses, check for curses.
 if test "x$with_curses" != "xno"; then
   echo $ac_n "checking for wgetch in -lncurses""... $ac_c" 1>&6
-echo "configure:1867: checking for wgetch in -lncurses" >&5
+echo "configure:1914: checking for wgetch in -lncurses" >&5
 ac_lib_var=`echo ncurses'_'wgetch | sed 'y%./+-:%__p__%'`
 if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1871,7 +1918,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lncurses  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1875 "configure"
+#line 1922 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1882,7 +1929,7 @@ int main() {
 wgetch()
 ; return 0; }
 EOF
-if { (eval echo configure:1886: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1933: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1905,7 +1952,7 @@ EOF
 else
   echo "$ac_t""no" 1>&6
 echo $ac_n "checking for wgetch in -lcurses""... $ac_c" 1>&6
-echo "configure:1909: checking for wgetch in -lcurses" >&5
+echo "configure:1956: checking for wgetch in -lcurses" >&5
 ac_lib_var=`echo curses'_'wgetch | sed 'y%./+-:%__p__%'`
 if eval "test \"\${ac_cv_lib_$ac_lib_var+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1913,7 +1960,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lcurses  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1917 "configure"
+#line 1964 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1924,7 +1971,7 @@ int main() {
 wgetch()
 ; return 0; }
 EOF
-if { (eval echo configure:1928: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1975: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1956,7 +2003,7 @@ fi
 
 # Check for headers.
 echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:1960: checking how to run the C preprocessor" >&5
+echo "configure:2007: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -1971,13 +2018,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1975 "configure"
+#line 2022 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1981: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2028: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1988,13 +2035,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1992 "configure"
+#line 2039 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1998: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2045: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2005,13 +2052,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 2009 "configure"
+#line 2056 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2015: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2062: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2039,17 +2086,17 @@ for ac_hdr in string.h strings.h ncurses/curses.h ncurses.h curses.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:2043: checking for $ac_hdr" >&5
+echo "configure:2090: checking for $ac_hdr" >&5
 if eval "test \"\${ac_cv_header_$ac_safe+set}\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2048 "configure"
+#line 2095 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2053: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2100: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
