@@ -40,10 +40,6 @@
 	.align	2
 	.globl	_start
 _start:	
-	lis	1, init_stack@ha
-	la	1, init_stack@l(1)
-	addi	1, 1, -32
-
 	li      2, 0
 	li      13, 0
 

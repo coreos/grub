@@ -38,8 +38,7 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
 	normal/arg.c kern/partition.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
 	kern/env.c commands/ls.c		\
-	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c \
-	kern/powerpc/cache.S
+	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c
 grub_emu_LDFLAGS = -lncurses
 
 grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \

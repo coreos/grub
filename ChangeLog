@@ -1,3 +1,10 @@
+2004-12-28  Marco Gerards  <metgerards@student.han.nl>
+
+	* boot/powerpc/ieee1275/crt0.S (_start): Don't set up the stack.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCE): Remove
+	`kern/powerpc/cache.S'.
+
 2004-12-27  Marco Gerards  <metgerards@student.han.nl>
 
 	* genmk.rb: Handle the `Program' class in the main loop.  Written
