@@ -1,3 +1,9 @@
+2005-03-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* lib/device.c (get_drive_geometry): Use ST.ST_SIZE instead of
+	ST.ST_BLOCKS to get the total number of sectors, because st_blocks
+	is not the same if it is a sparse file.
+
 2005-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/stage2.c (cmain): Initialize DEFAULT_FILE to an empty

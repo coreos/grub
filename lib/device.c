@@ -1,7 +1,7 @@
 /* device.c - Some helper functions for OS devices and BIOS drives */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -248,8 +248,8 @@ partially. This is not fatal."
       }
 
     /* Set the total sectors properly, if we can. */
-    if (! fstat (fd, &st) && st.st_blocks)
-      geom->total_sectors = st.st_blocks;
+    if (! fstat (fd, &st) && st.st_size)
+      geom->total_sectors = st.st_size >> SECTOR_BITS;
     else
       geom->total_sectors = geom->cylinders * geom->heads * geom->sectors;
   }
