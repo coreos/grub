@@ -1,3 +1,32 @@
+2004-09-11  Marco Gerards  <metgerards@student.han.nl>
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Added kern/fshelp.c.
+	(grub_mkimage_LDFLAGS): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	(kernel_img_HEADERS): Added fshelp.h.
+	* fs/ext2.c: Include <grub/fshelp.h>.
+	(FILETYPE_REG): New macro.
+	(FILETYPE_INO_REG): Likewise.
+	(grub_ext_sblock): Renamed to `grub_ext2_sblock'.
+	Changed all users.
+	(ext2_block_group): Renamed to `grub_ext2_block_group'.  Changed
+	all users.
+	(grub_fshelp_node): New struct.
+	(grub_ext2_data): Added member `diropen'.  Changed member `inode'
+	to a pointer.
+	(grub_ext2_get_file_block): Removed function.
+	(grub_ext2_read_block): New function.
+	(grub_ext2_read_file): Replaced parameter `data' by `node'.
+	This function was written.
+	(grub_ext2_mount): Read the root inode.  Create a diropen struct.
+	(grub_ext2_find_file): Removed function.
+	(grub_ext2_read_symlink): New function.
+	(grub_ext2_iterate_dir): Likewise.
+	(grub_ext2_open): Rewritten.
+	(grub_ext2_dir): Rewritten.
+	* include/grub/fshelp.h: New file.
+	* fs/fshelp.c: Likewise.
+
 2004-09-10  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* normal/menu.c: Include grub/loader.h and grub/machine/time.h.
