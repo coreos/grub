@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New:
+New in 0.94 - 2004-01-25:
 * Support building on x86-64 with gcc -m32.
 * Use a BIOS call to turn on/off Gate A20. This should solve various
   problems related to Gate A20 in modern BIOSes.
