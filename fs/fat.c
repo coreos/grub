@@ -126,6 +126,10 @@ struct pupa_fat_data
   pupa_uint32_t cur_cluster;
 };
 
+#ifndef PUPA_UTIL
+static pupa_dl_t my_mod;
+#endif
+
 static int
 log2 (unsigned x)
 {
@@ -675,13 +679,17 @@ static pupa_err_t
 pupa_fat_dir (pupa_device_t device, const char *path,
 	      int (*hook) (const char *filename, int dir))
 {
-  struct pupa_fat_data *data;
+  struct pupa_fat_data *data = 0;
   pupa_disk_t disk = device->disk;
   char *p = (char *) path;
+
+#ifndef PUPA_UTIL
+  pupa_dl_ref (my_mod);
+#endif
   
   data = pupa_fat_mount (disk);
   if (! data)
-    return pupa_errno;
+    goto fail;
 
   do
     {
@@ -689,19 +697,30 @@ pupa_fat_dir (pupa_device_t device, const char *path,
     }
   while (p && pupa_errno == PUPA_ERR_NONE);
 
+ fail:
+  
   pupa_free (data);
+  
+#ifndef PUPA_UTIL
+  pupa_dl_unref (my_mod);
+#endif
+  
   return pupa_errno;
 }
 
 static pupa_err_t
 pupa_fat_open (pupa_file_t file, const char *name)
 {
-  struct pupa_fat_data *data;
+  struct pupa_fat_data *data = 0;
   char *p = (char *) name;
+
+#ifndef PUPA_UTIL
+  pupa_dl_ref (my_mod);
+#endif
   
   data = pupa_fat_mount (file->device->disk);
   if (! data)
-    return pupa_errno;
+    goto fail;
 
   do
     {
@@ -723,7 +742,13 @@ pupa_fat_open (pupa_file_t file, const char *name)
   return PUPA_ERR_NONE;
 
  fail:
+  
   pupa_free (data);
+  
+#ifndef PUPA_UTIL
+  pupa_dl_unref (my_mod);
+#endif
+  
   return pupa_errno;
 }
 
@@ -738,6 +763,11 @@ static pupa_err_t
 pupa_fat_close (pupa_file_t file)
 {
   pupa_free (file->data);
+  
+#ifndef PUPA_UTIL
+  pupa_dl_unref (my_mod);
+#endif
+  
   return pupa_errno;
 }
 
@@ -752,19 +782,26 @@ static struct pupa_fs pupa_fat_fs =
   };
 
 #ifdef PUPA_UTIL
-void pupa_fat_init (void)
-#else
-PUPA_MOD_INIT
-#endif
+void
+pupa_fat_init (void)
 {
   pupa_fs_register (&pupa_fat_fs);
 }
 
-#ifdef PUPA_UTIL
-void pupa_fat_fini (void)
-#else
-PUPA_MOD_FINI
-#endif
+void
+pupa_fat_fini (void)
 {
   pupa_fs_unregister (&pupa_fat_fs);
 }
+#else /* ! PUPA_UTIL */
+PUPA_MOD_INIT
+{
+  pupa_fs_register (&pupa_fat_fs);
+  my_mod = mod;
+}
+
+PUPA_MOD_FINI
+{
+  pupa_fs_unregister (&pupa_fat_fs);
+}
+#endif /* ! PUPA_UTIL */

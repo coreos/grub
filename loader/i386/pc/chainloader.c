@@ -35,6 +35,8 @@
 /* Allocate space statically, because this is very small anyway.  */
 static char pupa_chainloader_boot_sector[PUPA_DISK_SECTOR_SIZE];
 
+static pupa_dl_t my_mod;
+
 static pupa_err_t
 pupa_chainloader_boot (void)
 {
@@ -75,13 +77,21 @@ pupa_chainloader_boot (void)
   return PUPA_ERR_NONE;
 }
 
+static pupa_err_t
+pupa_chainloader_unload (void)
+{
+  pupa_dl_unref (my_mod);
+}
+
 static void
 pupa_rescue_cmd_chainloader (int argc, char *argv[])
 {
-  pupa_file_t file;
+  pupa_file_t file = 0;
   pupa_uint16_t signature;
   int force = 0;
 
+  pupa_dl_ref (my_mod);
+  
   if (argc > 0 && pupa_strcmp (argv[0], "--force") == 0)
     {
       force = 1;
@@ -92,12 +102,12 @@ pupa_rescue_cmd_chainloader (int argc, char *argv[])
   if (argc == 0)
     {
       pupa_error (PUPA_ERR_BAD_ARGUMENT, "no file specified");
-      return;
+      goto fail;
     }
 
   file = pupa_file_open (argv[0]);
   if (! file)
-    return;
+    goto fail;
 
   /* Read the first block.  */
   if (pupa_file_read (file, pupa_chainloader_boot_sector,
@@ -106,20 +116,28 @@ pupa_rescue_cmd_chainloader (int argc, char *argv[])
       if (pupa_errno == PUPA_ERR_NONE)
 	pupa_error (PUPA_ERR_BAD_OS, "too small");
 
-      pupa_file_close (file);
-      return;
+      goto fail;
     }
 
   /* Check the signature.  */
   signature = *((pupa_uint16_t *) (pupa_chainloader_boot_sector
 				   + PUPA_DISK_SECTOR_SIZE - 2));
   if (signature != pupa_le_to_cpu16 (0xaa55) && ! force)
-    pupa_error (PUPA_ERR_BAD_OS, "invalid signature");
+    {
+      pupa_error (PUPA_ERR_BAD_OS, "invalid signature");
+      goto fail;
+    }
 
   pupa_file_close (file);
+  pupa_loader_set (0, pupa_chainloader_boot, pupa_chainloader_unload);
+  return;
+  
+ fail:
 
-  if (pupa_errno == PUPA_ERR_NONE)
-    pupa_loader_set (0, pupa_chainloader_boot, 0);
+  if (file)
+    pupa_file_close (file);
+  
+  pupa_dl_unref (my_mod);
 }
 
 static const char loader_name[] = "chainloader";
@@ -129,6 +147,7 @@ PUPA_MOD_INIT
   pupa_rescue_register_command (loader_name,
 				pupa_rescue_cmd_chainloader,
 				"load another boot loader");
+  my_mod = mod;
 }
 
 PUPA_MOD_FINI

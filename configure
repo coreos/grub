@@ -2069,7 +2069,8 @@ echo "$as_me: error: GCC is required" >&2;}
 
 if test "x$default_CFLAGS" = xyes; then
   # debug flags.
-  tmp_CFLAGS="-Wall -W -g"
+  tmp_CFLAGS="-Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
+		-Wundef -Wstrict-prototypes -g"
 
   # optimization flags.
   echo "$as_me:$LINENO: checking whether optimization for size works" >&5

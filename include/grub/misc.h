@@ -25,7 +25,11 @@
 #include <pupa/types.h>
 #include <pupa/symbol.h>
 
-void *EXPORT_FUNC(pupa_memcpy) (void *dest, const void *src, pupa_size_t n);
+/* XXX: If pupa_memmove is too slow, we must implement pupa_memcpy.  */
+#define pupa_memcpy(d,s,n)	pupa_memmove ((d), (s), (n))
+
+void *EXPORT_FUNC(pupa_memmove) (void *dest, const void *src, pupa_size_t n);
+char *EXPORT_FUNC(pupa_strcpy) (char *dest, const char *src);
 int EXPORT_FUNC(pupa_memcmp) (const void *s1, const void *s2, pupa_size_t n);
 int EXPORT_FUNC(pupa_strcmp) (const char *s1, const char *s2);
 char *EXPORT_FUNC(pupa_strchr) (const char *s, int c);

@@ -23,8 +23,33 @@
 #include <pupa/machine/memory.h>
 #include <pupa/machine/console.h>
 #include <pupa/machine/biosdisk.h>
+#include <pupa/machine/kernel.h>
 #include <pupa/types.h>
 #include <pupa/err.h>
+#include <pupa/dl.h>
+#include <pupa/misc.h>
+
+static char *
+make_install_device (void)
+{
+  /* XXX: This should be enough.  */
+  char dev[100];
+
+  pupa_sprintf (dev, "(%cd%u",
+		(pupa_boot_drive & 0x80) ? 'h' : 'f',
+		pupa_boot_drive & 0x7f);
+  
+  if (pupa_install_dos_part >= 0)
+    pupa_sprintf (dev + pupa_strlen (dev), ",%u", pupa_install_dos_part);
+
+  if (pupa_install_bsd_part >= 0)
+    pupa_sprintf (dev + pupa_strlen (dev), ",%c", pupa_install_bsd_part + 'a');
+
+  pupa_sprintf (dev + pupa_strlen (dev), ")%s", pupa_prefix);
+  pupa_strcpy (pupa_prefix, dev);
+  
+  return pupa_prefix;
+}
 
 void
 pupa_machine_init (void)
@@ -112,4 +137,7 @@ pupa_machine_init (void)
 
   /* The memory system was initialized, thus register built-in devices.  */
   pupa_biosdisk_init ();
+
+  /* Initialize the prefix.  */
+  pupa_dl_set_prefix (make_install_device ());
 }

@@ -26,16 +26,52 @@
 #include <pupa/term.h>
 
 void *
-pupa_memcpy (void *dest, const void *src, pupa_size_t n)
+pupa_memmove (void *dest, const void *src, pupa_size_t n)
 {
   char *d = (char *) dest;
-  char *s = (char *) src;
-  
-  while (n--)
-    *d++ = *s++;
+  const char *s = (const char *) src;
+
+  if (d < s)
+    while (n--)
+      *d++ = *s++;
+  else
+    {
+      d += n;
+      s += n;
+      
+      while (n--)
+	*--d = *--s;
+    }
   
   return dest;
 }
+
+char *
+pupa_strcpy (char *dest, const char *src)
+{
+  char *p = dest;
+
+  while ((*p++ = *src++) != '\0')
+    ;
+
+  return dest;
+}
+
+#if 0
+char *
+pupa_strcat (char *dest, const char *src)
+{
+  char *p = dest;
+
+  while (*p)
+    p++;
+
+  while ((*p++ = *src++) != '\0')
+    ;
+
+  return dest;
+}
+#endif
 
 int
 pupa_printf (const char *fmt, ...)
@@ -237,7 +273,7 @@ pupa_memset (void *s, int c, pupa_size_t n)
 pupa_size_t
 pupa_strlen (const char *s)
 {
-  char *p = (char *) s;
+  const char *p = s;
 
   while (*p)
     p++;
@@ -262,7 +298,7 @@ pupa_reverse (char *str)
     }
 }
 
-char *
+static char *
 pupa_itoa (char *str, int c, unsigned n)
 {
   unsigned base = (c == 'x') ? 16 : 10;
@@ -292,15 +328,15 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 {
   char c;
   int count = 0;
-  auto void write_char (char c);
+  auto void write_char (char ch);
   auto void write_str (const char *s);
   
-  void write_char (char c)
+  void write_char (char ch)
     {
       if (str)
-	*str++ = c;
+	*str++ = ch;
       else
-	pupa_putchar (c);
+	pupa_putchar (ch);
 
       count++;
     }

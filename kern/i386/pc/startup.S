@@ -87,18 +87,18 @@ VARIABLE(pupa_total_module_size)
 	.long	0
 VARIABLE(pupa_kernel_image_size)
 	.long	0
-VARIABLE(install_partition)
-	.long	0xFFFFFF
-VARIABLE(version_string)
-	.string PACKAGE_VERSION
-VARIABLE(config_file)
-	.string "/boot/pupa/puparc"
+VARIABLE(pupa_install_dos_part)
+	.long	0xFFFFFFFF
+VARIABLE(pupa_install_bsd_part)
+	.long	0xFFFFFFFF
+VARIABLE(pupa_prefix)
+	.string "/boot/pupa"
 
 	/*
-	 *  Leave some breathing room for the config file name.
+	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(start) + 0x70
+	. = EXT_C(start) + 0x50
 
 /* the real mode code continues... */
 codestart:
@@ -261,13 +261,16 @@ FUNCTION(pupa_halt)
  */
 
 FUNCTION(pupa_chainloader_real_boot)
-	/* no need to save anything */
+	pushl	%edx
+	pushl	%eax
 
-	/* ESI must point to a partition table entry */
-	movl	%edx, %esi
+	call	EXT_C(pupa_dl_unload_all)
 
 	/* set up to pass boot drive */
-	movl	%eax, %edx
+	popl	%edx
+
+	/* ESI must point to a partition table entry */
+	popl	%esi
 
 	/* Turn off Gate A20 */
 	xorl	%eax, %eax

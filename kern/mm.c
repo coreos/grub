@@ -195,7 +195,7 @@ pupa_memalign (pupa_size_t align, pupa_size_t size)
 {
   pupa_mm_region_t r;
   pupa_size_t n = ((size + PUPA_MM_ALIGN - 1) >> PUPA_MM_ALIGN_LOG2) + 1;
-  int first = 1;
+  int count = 0;
   
   align = (align >> PUPA_MM_ALIGN_LOG2);
   if (align == 0)
@@ -212,14 +212,25 @@ pupa_memalign (pupa_size_t align, pupa_size_t size)
 	return p;
     }
 
-  /* If failed, invalidate disk caches to increase free memory.  */
-  if (first)
+  /* If failed, increase free memory somehow.  */
+  switch (count)
     {
+    case 0:
+      /* Invalidate disk caches.  */
       pupa_disk_cache_invalidate_all ();
-      first = 0;
+      count++;
       goto again;
-    }
+      
+    case 1:
+      /* Unload unneeded modules.  */
+      pupa_dl_unload_unneeded ();
+      count++;
+      goto again;
 
+    default:
+      break;
+    }
+  
   pupa_error (PUPA_ERR_OUT_OF_MEMORY, "out of memory");
   return 0;
 }

@@ -45,7 +45,8 @@ test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
 if test "x$default_CFLAGS" = xyes; then
   # debug flags.
-  tmp_CFLAGS="-Wall -W -g"
+  tmp_CFLAGS="-Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
+		-Wundef -Wstrict-prototypes -g"
 
   # optimization flags.
   AC_CACHE_CHECK([whether optimization for size works], size_flag, [

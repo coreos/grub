@@ -1,3 +1,91 @@
+2003-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/pupa-setup.c: Include pupa/machine/kernel.h.
+	(setup): Configure the installed partition information and the
+	dl prefix.
+
+	* loader/i386/pc/chainloader.c (my_mod): New variable.
+	(pupa_chainloader_unload): New function.
+	(pupa_rescue_cmd_chainloader): Refer itself.
+	(PUPA_MOD_INIT): Save its own module in MY_MOD.
+
+	* kern/i386/pc/startup.S (install_partition): Removed.
+	(version_string): Likewise.
+	(config_file): Likewise.
+	(pupa_install_dos_part): New variable.
+	(pupa_install_bsd_part): Likewise.
+	(pupa_prefix): Likewise.
+	(pupa_chainloader_real_boot): Call pupa_dl_unload_all.
+
+	* kern/i386/pc/init.c: Include pupa/machine/kernel.h, pupa/dl.h
+	and pupa/misc.h.
+	(make_install_device): New function.
+	(pupa_machine_init): Set the dl prefix.
+
+	* kern/rescue.c: Include pupa/rescue.h and pupa/dl.h.
+	(buf): Renamed to ...
+	(linebuf): ... this.
+	(pupa_rescue_cmd_prefix): New function.
+	(pupa_rescue_cmd_insmod): Likewise.
+	(pupa_rescue_cmd_rmmod): Likewise.
+	(pupa_rescue_cmd_lsmod): Likewise.
+	(pupa_enter_rescue_mode): Register new commands: prefix, insmod,
+	rmmod and lsmod.
+
+	* kern/mm.c (pupa_memalign): If failed even after invalidating
+	disk caches, unload unneeded modules and retry.
+
+	* kern/misc.c (pupa_memmove): New function.
+	(pupa_memcpy): Removed.
+	(pupa_strcpy): New function.
+	(pupa_itoa): Made static.
+
+	* kern/dl.c (pupa_dl_iterate): New function.
+	(pupa_dl_ref): Likewise.
+	(pupa_dl_unref): Likewise.
+	(pupa_dl_unload): Return if succeeded or not.
+	(pupa_dl_unload_unneeded): New function.
+	(pupa_dl_unload_all): Likewise.
+	(pupa_dl_init): Renamed to ...
+	(pupa_dl_set_prefix): ... this.
+	(pupa_dl_get_prefix): New function.
+
+	* include/pupa/i386/pc/kernel.h: Include pupa/types.h.
+	(PUPA_KERNEL_MACHINE_INSTALL_DOS_PART): New macro.
+	(PUPA_KERNEL_MACHINE_INSTALL_BSD_PART): Likewise.
+	(PUPA_KERNEL_MACHINE_PREFIX): Likewise.
+	(pupa_install_dos_part): Declared.
+	(pupa_install_bsd_part): Likewise.
+	(pupa_prefix): Likewise.
+	(pupa_boot_drive): Likewise.
+
+	* include/pupa/types.h: Fix a typo.
+
+	* include/pupa/misc.h (pupa_memcpy): New macro. Just an alias to
+	pupa_memmove.
+	(pupa_memmove): Declared.
+	(pupa_strcpy): Likewise.
+
+	* include/pupa/dl.h (PUPA_MOD_INIT): Change the prototype. Now
+	pupa_mod_init takes one argument, its own module.
+	(pupa_dl_unload_unneeded): Declared.
+	(pupa_dl_unload_all): Likewise.
+	(pupa_dl_ref): Likewise.
+	(pupa_dl_unref): Likewise.
+	(pupa_dl_iterate): Likewise.
+	(pupa_dl_init): Renamed to ...
+	(pupa_dl_set_prefix): ... this.
+	(pupa_dl_get_prefix): Declared.
+
+	* fs/fat.c [!PUPA_UTIL] (my_mod): New variable.
+	(pupa_fat_dir) [!PUPA_UTIL]: Prevent the fat module from being 
+	unloaded.
+	(pupa_fat_open) [!PUPA_UTIL]: Refer itself if succeeded.
+	(pupa_fat_close) [!PUPA_UTIL]: Unrefer itself.
+
+	* configure.ac (tmp_CFLAGS): Added -Wshadow, -Wpointer-arith,
+	-Wmissing-prototypes, -Wundef and -Wstrict-prototypes.
+
 2003-01-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/pupa-setup.c (setup): Define the internal

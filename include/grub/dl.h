@@ -26,9 +26,9 @@
 #include <pupa/types.h>
 
 #define PUPA_MOD_INIT	\
-static void pupa_mod_init (void) __attribute__ ((unused)); \
+static void pupa_mod_init (pupa_dl_t mod) __attribute__ ((unused)); \
 static void \
-pupa_mod_init (void)
+pupa_mod_init (pupa_dl_t mod)
 
 #define PUPA_MOD_FINI	\
 static void pupa_mod_fini (void) __attribute__ ((unused)); \
@@ -65,7 +65,7 @@ struct pupa_dl
   int ref_count;
   pupa_dl_dep_t dep;
   pupa_dl_segment_t segment;
-  void (*init) (void);
+  void (*init) (struct pupa_dl *mod);
   void (*fini) (void);
 };
 typedef struct pupa_dl *pupa_dl_t;
@@ -73,12 +73,18 @@ typedef struct pupa_dl *pupa_dl_t;
 pupa_dl_t EXPORT_FUNC(pupa_dl_load_file) (const char *filename);
 pupa_dl_t EXPORT_FUNC(pupa_dl_load) (const char *name);
 pupa_dl_t pupa_dl_load_core (void *addr, pupa_size_t size);
-void EXPORT_FUNC(pupa_dl_unload) (pupa_dl_t mod);
+int EXPORT_FUNC(pupa_dl_unload) (pupa_dl_t mod);
+void pupa_dl_unload_unneeded (void);
+void pupa_dl_unload_all (void);
+int EXPORT_FUNC(pupa_dl_ref) (pupa_dl_t mod);
+int EXPORT_FUNC(pupa_dl_unref) (pupa_dl_t mod);
+void EXPORT_FUNC(pupa_dl_iterate) (int (*hook) (pupa_dl_t mod));
 pupa_dl_t EXPORT_FUNC(pupa_dl_get) (const char *name);
 pupa_err_t EXPORT_FUNC(pupa_dl_register_symbol) (const char *name, void *addr,
 					    pupa_dl_t mod);
 void *EXPORT_FUNC(pupa_dl_resolve_symbol) (const char *name);
-void pupa_dl_init (const char *dir);
+void pupa_dl_set_prefix (const char *dir);
+const char *pupa_dl_get_prefix (void);
 
 int pupa_arch_dl_check_header (void *ehdr, pupa_size_t size);
 pupa_err_t pupa_arch_dl_relocate_symbols (pupa_dl_t mod, void *ehdr);

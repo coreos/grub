@@ -19,6 +19,7 @@
  */
 
 #include <pupa/kernel.h>
+#include <pupa/rescue.h>
 #include <pupa/term.h>
 #include <pupa/misc.h>
 #include <pupa/disk.h>
@@ -26,6 +27,7 @@
 #include <pupa/mm.h>
 #include <pupa/err.h>
 #include <pupa/loader.h>
+#include <pupa/dl.h>
 #include <pupa/machine/partition.h>
 
 #define PUPA_RESCUE_BUF_SIZE	256
@@ -40,7 +42,7 @@ struct pupa_rescue_command
 };
 typedef struct pupa_rescue_command *pupa_rescue_command_t;
 
-static char buf[PUPA_RESCUE_BUF_SIZE];
+static char linebuf[PUPA_RESCUE_BUF_SIZE];
 
 static pupa_rescue_command_t pupa_rescue_command_list;
 
@@ -85,7 +87,7 @@ pupa_rescue_get_command_line (const char *prompt)
   int pos = 0;
   
   pupa_printf (prompt);
-  pupa_memset (buf, 0, PUPA_RESCUE_BUF_SIZE);
+  pupa_memset (linebuf, 0, PUPA_RESCUE_BUF_SIZE);
   
   while ((c = PUPA_TERM_ASCII_CHAR (pupa_getkey ())) != '\n' && c != '\r')
     {
@@ -93,7 +95,7 @@ pupa_rescue_get_command_line (const char *prompt)
 	{
 	  if (pos < PUPA_RESCUE_BUF_SIZE - 1)
 	    {
-	      buf[pos++] = c;
+	      linebuf[pos++] = c;
 	      pupa_putchar (c);
 	    }
 	}
@@ -101,7 +103,7 @@ pupa_rescue_get_command_line (const char *prompt)
 	{
 	  if (pos > 0)
 	    {
-	      buf[--pos] = 0;
+	      linebuf[--pos] = 0;
 	      pupa_putchar (c);
 	      pupa_putchar (' ');
 	      pupa_putchar (c);
@@ -475,6 +477,7 @@ pupa_rescue_cmd_testload (int argc, char *argv[])
 }
 #endif
 
+/* dump ADDRESS [SIZE] */
 static void
 pupa_rescue_cmd_dump (int argc, char *argv[])
 {
@@ -501,6 +504,99 @@ pupa_rescue_cmd_dump (int argc, char *argv[])
     }
 }
 
+/* prefix [DIR] */
+static void
+pupa_rescue_cmd_prefix (int argc, char *argv[])
+{
+  static char prefix[100];
+  
+  if (argc == 0)
+    pupa_printf ("%s\n", pupa_dl_get_prefix ());
+  else
+    {
+      if (pupa_strlen (argv[0]) >= sizeof (prefix))
+	{
+	  pupa_error (PUPA_ERR_BAD_ARGUMENT, "too long prefix");
+	  return;
+	}
+      
+      pupa_strcpy (prefix, argv[0]);
+      pupa_dl_set_prefix (prefix);
+    }
+}
+
+/* insmod MODULE */
+static void
+pupa_rescue_cmd_insmod (int argc, char *argv[])
+{
+  char *p;
+  pupa_dl_t mod;
+  
+  if (argc == 0)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no module specified");
+      return;
+    }
+
+  p = pupa_strchr (argv[0], '/');
+  if (! p)
+    mod = pupa_dl_load (argv[0]);
+  else
+    mod = pupa_dl_load_file (argv[0]);
+
+  if (mod)
+    pupa_dl_ref (mod);
+}
+
+/* rmmod MODULE */
+static void
+pupa_rescue_cmd_rmmod (int argc, char *argv[])
+{
+  pupa_dl_t mod;
+  
+  if (argc == 0)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no module specified");
+      return;
+    }
+
+  mod = pupa_dl_get (argv[0]);
+  if (! mod)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "no such module");
+      return;
+    }
+
+  pupa_dl_unref (mod);
+}
+
+/* lsmod */
+static void
+pupa_rescue_cmd_lsmod (int argc __attribute__ ((unused)),
+		       char *argv[] __attribute__ ((unused)))
+{
+  auto int print_module (pupa_dl_t mod);
+
+  int print_module (pupa_dl_t mod)
+    {
+      pupa_dl_dep_t dep;
+      
+      pupa_printf ("%s\t%d\t\t", mod->name, mod->ref_count);
+      for (dep = mod->dep; dep; dep = dep->next)
+	{
+	  if (dep != mod->dep)
+	    pupa_putchar (',');
+
+	  pupa_printf ("%s", dep->mod->name);
+	}
+      pupa_putchar ('\n');
+      return 0;
+    }
+
+  pupa_printf ("Name\tRef Count\tDependencies\n");
+  pupa_dl_iterate (print_module);
+}
+
 /* Enter the rescue mode.  */
 void
 pupa_enter_rescue_mode (void)
@@ -518,13 +614,21 @@ pupa_enter_rescue_mode (void)
   pupa_rescue_register_command ("module", pupa_rescue_cmd_module,
 				"load an OS module");
   pupa_rescue_register_command ("root", pupa_rescue_cmd_root,
-				"set a root device");
+				"set the root device");
   pupa_rescue_register_command ("dump", pupa_rescue_cmd_dump,
 				"dump memory");
+  pupa_rescue_register_command ("prefix", pupa_rescue_cmd_prefix,
+				"set the prefix");
+  pupa_rescue_register_command ("insmod", pupa_rescue_cmd_insmod,
+				"insert a module");
+  pupa_rescue_register_command ("rmmod", pupa_rescue_cmd_rmmod,
+				"remove a module");
+  pupa_rescue_register_command ("lsmod", pupa_rescue_cmd_lsmod,
+				"show loaded modules");
   
   while (1)
     {
-      char *line = buf;
+      char *line = linebuf;
       char *name;
       int n;
       pupa_rescue_command_t cmd;

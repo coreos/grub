@@ -69,7 +69,7 @@ typedef unsigned long long	pupa_uint64_t;
 #endif
 
 /* Misc types.  */
-#if PUPA_HOST_SIZE_OF_VOID_P == 8
+#if PUPA_HOST_SIZEOF_VOID_P == 8
 typedef pupa_uint64_t	pupa_addr_t;
 typedef pupa_uint64_t	pupa_off_t;
 typedef pupa_uint64_t	pupa_size_t;

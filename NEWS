@@ -10,6 +10,10 @@ New in 0.7:
 * New utility, ``pupa-setup''. This sets up PUPA to make it bootable
   from a real disk.
 
+* New commands, "prefix", "insmod", "rmmod" and "lsmod" are added into
+  the rescue mode to manipulate PUPA modules.
+
+
 New in 0.6 - 2002-12-27, Yoshinori K. Okuji:
 
 * The chainloader and the FAT filesystem are modularized.

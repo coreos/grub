@@ -109,6 +109,16 @@ pupa_dl_get (const char *name)
   return 0;
 }
 
+void
+pupa_dl_iterate (int (*hook) (pupa_dl_t mod))
+{
+  pupa_dl_list_t l;
+
+  for (l = pupa_dl_head; l; l = l->next)
+    if (hook (l->mod))
+      break;
+}
+
 
 
 struct pupa_symbol
@@ -345,9 +355,9 @@ pupa_dl_resolve_symbols (pupa_dl_t mod, Elf_Ehdr *e)
 	      return pupa_errno;
 	  
 	  if (pupa_strcmp (name, "pupa_mod_init") == 0)
-	    mod->init = (void (*) ()) sym->st_value;
+	    mod->init = (void (*) (pupa_dl_t)) sym->st_value;
 	  else if (pupa_strcmp (name, "pupa_mod_fini") == 0)
-	    mod->fini = (void (*) ()) sym->st_value;
+	    mod->fini = (void (*) (void)) sym->st_value;
 	  break;
 
 	case STT_SECTION:
@@ -372,7 +382,7 @@ static void
 pupa_dl_call_init (pupa_dl_t mod)
 {
   if (mod->init)
-    (mod->init) ();
+    (mod->init) (mod);
 }
 
 static pupa_err_t
@@ -428,6 +438,8 @@ pupa_dl_resolve_dependencies (pupa_dl_t mod, Elf_Ehdr *e)
 	    m = pupa_dl_load (name);
 	    if (! m)
 	      return pupa_errno;
+
+	    pupa_dl_ref (m);
 	    
 	    dep = (pupa_dl_dep_t) pupa_malloc (sizeof (*dep));
 	    if (! dep)
@@ -442,6 +454,24 @@ pupa_dl_resolve_dependencies (pupa_dl_t mod, Elf_Ehdr *e)
       }
 
   return PUPA_ERR_NONE;
+}
+
+int
+pupa_dl_ref (pupa_dl_t mod)
+{
+  return ++mod->ref_count;
+}
+
+int
+pupa_dl_unref (pupa_dl_t mod)
+{
+  int ret;
+
+  ret = --mod->ref_count;
+  if (ret <= 0)
+    pupa_dl_unload (mod);
+
+  return ret;
 }
 
 /* Load a module from core memory.  */
@@ -513,6 +543,7 @@ pupa_dl_load_file (const char *filename)
     goto failed;
 
   mod = pupa_dl_load_core (core, size);
+  mod->ref_count = 0;
 
  failed:
   pupa_file_close (file);
@@ -532,10 +563,7 @@ pupa_dl_load (const char *name)
 
   mod = pupa_dl_get (name);
   if (mod)
-    {
-      mod->ref_count++;
-      return mod;
-    }
+    return mod;
   
   if (! pupa_dl_dir)
     pupa_fatal ("module dir is not initialized yet");
@@ -559,14 +587,14 @@ pupa_dl_load (const char *name)
 }
 
 /* Unload the module MOD.  */
-void
+int
 pupa_dl_unload (pupa_dl_t mod)
 {
   pupa_dl_dep_t dep, depn;
   pupa_dl_segment_t seg, segn;
 
-  if (--mod->ref_count > 0)
-    return;
+  if (mod->ref_count > 0)
+    return 0;
 
   if (mod->fini)
     (mod->fini) ();
@@ -577,7 +605,7 @@ pupa_dl_unload (pupa_dl_t mod)
   for (dep = mod->dep; dep; dep = depn)
     {
       depn = dep->next;
-      pupa_dl_unload (dep->mod);
+      pupa_dl_unref (dep->mod);
       pupa_free (dep);
     }
 
@@ -590,10 +618,54 @@ pupa_dl_unload (pupa_dl_t mod)
   
   pupa_free (mod->name);
   pupa_free (mod);
+  return 1;
+}
+
+/* Unload unneeded modules.  */
+void
+pupa_dl_unload_unneeded (void)
+{
+  /* Because pupa_dl_remove modifies the list of modules, this
+     implementation is tricky.  */
+  pupa_dl_list_t p = pupa_dl_head;
+  
+  while (p)
+    {
+      if (pupa_dl_unload (p->mod))
+	{
+	  p = pupa_dl_head;
+	  continue;
+	}
+
+      p = p->next;
+    }
+}
+
+/* Unload all modules.  */
+void
+pupa_dl_unload_all (void)
+{
+  while (pupa_dl_head)
+    {
+      pupa_dl_list_t p;
+      
+      pupa_dl_unload_unneeded ();
+
+      /* Force to decrement the ref count. This will purge pre-loaded
+	 modules and manually inserted modules.  */
+      for (p = pupa_dl_head; p; p = p->next)
+	p->mod->ref_count--;
+    }
 }
 
 void
-pupa_dl_init (const char *dir)
+pupa_dl_set_prefix (const char *dir)
 {
   pupa_dl_dir = (char *) dir;
+}
+
+const char *
+pupa_dl_get_prefix (void)
+{
+  return pupa_dl_dir;
 }

@@ -29,6 +29,7 @@
 #include <pupa/machine/partition.h>
 #include <pupa/machine/util/biosdisk.h>
 #include <pupa/machine/boot.h>
+#include <pupa/machine/kernel.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -74,6 +75,8 @@ setup (const char *prefix, const char *dir,
   pupa_uint8_t *boot_drive;
   pupa_uint32_t *kernel_sector;
   struct boot_blocklist *first_block, *block;
+  pupa_int32_t *install_dos_part, *install_bsd_part;
+  char *install_prefix;
   char *tmp_img;
   int i;
   unsigned long first_sector;
@@ -172,7 +175,14 @@ setup (const char *prefix, const char *dir,
   first_block = (struct boot_blocklist *) (core_img
 					   + PUPA_DISK_SECTOR_SIZE
 					   - sizeof (*block));
-  
+
+  install_dos_part = (pupa_int32_t *) (core_img + PUPA_DISK_SECTOR_SIZE
+				       + PUPA_KERNEL_MACHINE_INSTALL_DOS_PART);
+  install_bsd_part = (pupa_int32_t *) (core_img + PUPA_DISK_SECTOR_SIZE
+				       + PUPA_KERNEL_MACHINE_INSTALL_BSD_PART);
+  install_prefix = (core_img + PUPA_DISK_SECTOR_SIZE
+		    + PUPA_KERNEL_MACHINE_PREFIX);
+
   /* Open the root device and the destination device.  */
   root_dev = pupa_device_open (root);
   if (! root_dev)
@@ -227,6 +237,19 @@ setup (const char *prefix, const char *dir,
 	  block->start = 0;
 	  block->len = 0;
 	  block->segment = 0;
+
+	  /* Embed information about the installed location.  */
+	  if (root_dev->disk->partition)
+	    {
+	      *install_dos_part
+		= pupa_cpu_to_le32 (root_dev->disk->partition->dos_part);
+	      *install_bsd_part
+		= pupa_cpu_to_le32 (root_dev->disk->partition->bsd_part);
+	    }
+	  else
+	    *install_dos_part = *install_bsd_part = pupa_cpu_to_le32 (-1);
+
+	  strcpy (install_prefix, prefix);
 	  
 	  /* Write the core image onto the disk.  */
 	  if (pupa_disk_write (dest_dev->disk, 1, 0, core_size, core_img))
@@ -363,14 +386,27 @@ setup (const char *prefix, const char *dir,
   else
     *boot_drive = 0xFF;
 
-  /* Write the first sector of the core image onto the disk.  */
+  /* Embed information about the installed location.  */
+  if (root_dev->disk->partition)
+    {
+      *install_dos_part
+	= pupa_cpu_to_le32 (root_dev->disk->partition->dos_part);
+      *install_bsd_part
+	= pupa_cpu_to_le32 (root_dev->disk->partition->bsd_part);
+    }
+  else
+    *install_dos_part = *install_bsd_part = pupa_cpu_to_le32 (-1);
+  
+  strcpy (install_prefix, prefix);
+  
+  /* Write the first two sectors of the core image onto the disk.  */
   core_path = pupa_util_get_path (dir, core_file);
   pupa_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
     pupa_util_error ("Cannot open `%s'", core_path);
 
-  pupa_util_write_image (core_img, PUPA_DISK_SECTOR_SIZE, fp);
+  pupa_util_write_image (core_img, PUPA_DISK_SECTOR_SIZE * 2, fp);
   fclose (fp);
   free (core_path);
 
