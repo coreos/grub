@@ -4,6 +4,10 @@ New in 0.93:
 * Define the behavior of the boot loader when the load end address is
   zero and the bss end address is zero in the Multiboot Specification.
   Also, add the support into GRUB.
+* Finally, we have a Bug Tracking System on Savannah! Now the preferable
+  way to report bugs is to use the BTS rather than sending e-mail to
+  bug-grub. See <http://savannah.gnu.org/bugs/?group_id=68>, for more
+  details.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.
