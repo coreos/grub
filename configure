@@ -1,136 +1,18 @@
 #! /bin/sh
 # Guess values for system-dependent variables and create Makefiles.
-# Generated automatically using Autoconf version 2.14a
-# Copyright (C) 1992, 93, 94, 95, 96, 98, 1999 Free Software Foundation, Inc.
+# Generated automatically using Autoconf version 2.14a.
+# Copyright (C) 1992, 93, 94, 95, 96, 98, 99, 2000
+# Free Software Foundation, Inc.
 #
 # This configure script is free software; the Free Software Foundation
 # gives unlimited permission to copy, distribute and modify it.
-
 # Defaults:
-ac_arg_with_help=
-ac_arg_enable_help=
-ac_arg_var_help=
 ac_default_prefix=/usr/local
-# Factorizing default headers for most tests.
-ac_includes_default="\
-#include <stdio.h>
-#include <sys/types.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-#if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-# include <string.h>
-#else
-# if HAVE_STRINGS_H
-#  include <strings.h>
-# endif
-#endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif"
 # Any additions from configure.in:
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-maintainer-mode enable make rules and dependencies not useful
-                          (and sometimes confusing) to the casual installer"
-ac_arg_var_help="$ac_arg_var_help
-  CFLAGS      Extra flags for the C compiler"
-ac_arg_with_help="$ac_arg_with_help
-  --with-binutils=DIR     search the directory DIR to find binutils"
-ac_arg_with_help="$ac_arg_with_help
-  --without-curses        do not use curses"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-lba-support-bitmap-check
-                          disable a check for LBA support bitmap"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-ext2fs        disable ext2fs support in Stage 2"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-fat           disable FAT support in Stage 2"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-ffs           disable FFS support in Stage 2"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-minix         disable Minix fs support in Stage 2"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-gunzip        disable decompression in Stage 2"
-ac_arg_enable_help="$ac_arg_enable_help
-  --disable-packet-retransmission
-                          turn off packet retransmission"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-pci-direct     access PCI directly instead of using BIOS"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c509          enable 3Com509 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c529          enable 3Com529 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c90x          enable 3Com90x driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-cs89x0         enable CS89x0 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-eepro100       enable Etherexpress Pro/100 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-epic100        enable SMC 83c170 EPIC/100 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c507          enable 3Com507 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-exos205        enable EXOS205 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-ni5210         enable Racal-Interlan NI5210 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-lancepci       enable Lance PCI PCNet/32 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-ne2100         enable Novell NE2100 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-ni6510         enable Racal-Interlan NI6510 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c503          enable 3Com503 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-ne             enable NE1000/2000 ISA driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-nepci          enable NE2000 PCI driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-wd             enable WD8003/8013, SMC8216/8416 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-ntulip         enable Tulip driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-rtl8139        enable Realtek 8139 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-sk-g16         enable Schneider and Koch G16 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-smc9000        enable SMC9000 driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-tiara          enable Tiara driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-tulip          enable old Tulip driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-via-rhine      enable Rhine-I/II driver"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c503-shmem    use 3c503 shared memory mode"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c503-aui      use AUI by default on 3c503 cards"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-3c509-hack     make a 3c509 do bootp quicker"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-compex-rl2000-fix
-                          specify this if you have a Compex RL2000 PCI"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-smc9000-scan=LIST
-                          probe for SMC9000 I/O addresses using LIST"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-ne-scan=LIST   probe for NE base address using LIST"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-wd-default-mem=MEM
-                          set the default memory location for WD/SMC"
-ac_arg_enable_help="$ac_arg_enable_help
-  --enable-cs-scan=LIST   probe for CS89x0 base address using LIST"
 
 # Initialize some variables set by options.
+ac_init_help=false
+ac_init_version=false
 # The variables have the same names as the options, with
 # dashes changed to underlines.
 build=NONE
@@ -249,78 +131,7 @@ do
     with_gas=yes ;;
 
   -help | --help | --hel | --he | -h)
-    # Omit some internal or obsolete options to make the list less imposing.
-    # This message is too long to be a string in the A/UX 3.1 sh.
-    cat <<\EOF
-`configure' configures software source code packages to adapt to many kinds
-of systems.
-
-Usage: configure [OPTION]... [VAR=VALUE]... [HOST]
-
-To safely assign special values to environment variables (e.g., CC,
-CFLAGS...), give to `configure' the definition as VAR=VALUE.
-
-Defaults for the options are specified in brackets.
-
-Configuration:
-  -h, --help              print this message
-      --version           print the version of autoconf that created configure
-  -q, --quiet, --silent   do not print \`checking...' messages
-      --cache-file=FILE   cache test results in FILE
-  -n, --no-create         do not create output files
-
-Directories:
-  --prefix=PREFIX         install architecture-independent files in PREFIX
-                          [$ac_default_prefix]
-  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
-                          [same as prefix]
-  --bindir=DIR            user executables in DIR [EPREFIX/bin]
-  --sbindir=DIR           system admin executables in DIR [EPREFIX/sbin]
-  --libexecdir=DIR        program executables in DIR [EPREFIX/libexec]
-  --datadir=DIR           read-only architecture-independent data in DIR
-                          [PREFIX/share]
-  --sysconfdir=DIR        read-only single-machine data in DIR [PREFIX/etc]
-  --sharedstatedir=DIR    modifiable architecture-independent data in DIR
-                          [PREFIX/com]
-  --localstatedir=DIR     modifiable single-machine data in DIR [PREFIX/var]
-  --libdir=DIR            object code libraries in DIR [EPREFIX/lib]
-  --includedir=DIR        C header files in DIR [PREFIX/include]
-  --oldincludedir=DIR     C header files for non-gcc in DIR [/usr/include]
-  --infodir=DIR           info documentation in DIR [PREFIX/info]
-  --mandir=DIR            man documentation in DIR [PREFIX/man]
-  --srcdir=DIR            find the sources in DIR [configure dir or ..]
-
-Program names:
-  --program-prefix=PREFIX prepend PREFIX to installed program names
-  --program-suffix=SUFFIX append SUFFIX to installed program names
-  --program-transform-name=PROGRAM
-                          run sed PROGRAM on installed program names
-
-EOF
-    cat <<\EOF
-Host type:
-  --build=BUILD      configure for building on BUILD [BUILD=HOST]
-  --host=HOST        configure for HOST [guessed]
-  --target=TARGET    configure for TARGET [TARGET=HOST]
-
-X features:
-  --x-includes=DIR    X include files are in DIR
-  --x-libraries=DIR   X library files are in DIR
-EOF
-    test -n "$ac_arg_enable_help" && echo "
-Optional features:
-  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
-  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]\
-$ac_arg_enable_help"
-    test -n "$ac_arg_with_help" && echo "
-Optional packages:
-  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
-  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)\
-$ac_arg_with_help"
-    test -n "$ac_arg_var_help" && echo "
-Some influent environment variables:$ac_arg_var_help"
-    exit 0 ;;
-
+    ac_init_help=: ;;
   -host | --host | --hos | --ho)
     ac_prev=host ;;
   -host=* | --host=* | --hos=* | --ho=*)
@@ -467,14 +278,13 @@ Some influent environment variables:$ac_arg_var_help"
   -v | -verbose | --verbose | --verbos | --verbo | --verb)
     verbose=yes ;;
 
-  -version | --version | --versio | --versi | --vers)
-    echo "configure generated by autoconf version 2.14a"
-    exit 0 ;;
+  -version | --version | --versio | --versi | --vers | -V)
+    ac_init_version=: ;;
 
   -with-* | --with-*)
     ac_package=`echo "$ac_option"|sed -e 's/-*with-//' -e 's/=.*//'`
     # Reject names that are not valid shell variable names.
-    if echo "$ac_feature" | grep '[^-a-zA-Z0-9_]' >/dev/null 2>&1; then
+    if echo "$ac_package" | grep '[^-a-zA-Z0-9_]' >/dev/null 2>&1; then
       { echo "configure: error: invalid package: $ac_package" 1>&2; exit 1; }
     fi
     ac_package=`echo $ac_package| sed 's/-/_/g'`
@@ -487,7 +297,7 @@ Some influent environment variables:$ac_arg_var_help"
   -without-* | --without-*)
     ac_package=`echo "$ac_option"|sed -e 's/-*without-//'`
     # Reject names that are not valid shell variable names.
-    if echo "$ac_feature" | grep '[^-a-zA-Z0-9_]' >/dev/null 2>&1; then
+    if echo "$ac_package" | grep '[^-a-zA-Z0-9_]' >/dev/null 2>&1; then
       { echo "configure: error: invalid package: $ac_package" 1>&2; exit 1; }
     fi
     ac_package=`echo $ac_package| sed 's/-/_/g'`
@@ -526,7 +336,7 @@ Try \`configure --help' for more information." 1>&2; exit 1; }
     export $ac_envvar ;;
 
   *)
-    if echo "$ac_feature" | grep '[^-a-zA-Z0-9.]' >/dev/null 2>&1; then
+    if echo "$ac_option" | grep '[^-a-zA-Z0-9.]' >/dev/null 2>&1; then
       echo "configure: warning: invalid host type: $ac_option" 1>&2
     fi
     if test "x$nonopt" != xNONE; then
@@ -541,7 +351,140 @@ done
 if test -n "$ac_prev"; then
   { echo "configure: error: missing argument to --\`echo $ac_prev | sed 's/_/-/g'\`" 1>&2; exit 1; }
 fi
+if $ac_init_help; then
+  # Omit some internal or obsolete options to make the list less imposing.
+  # This message is too long to be a string in the A/UX 3.1 sh.
+  cat <<\EOF
+`configure' configures software source code packages to adapt to many kinds
+of systems.
 
+Usage: configure [OPTION]... [VAR=VALUE]... [HOST]
+
+To safely assign special values to environment variables (e.g., CC,
+CFLAGS...), give to `configure' the definition as VAR=VALUE.
+
+Defaults for the options are specified in brackets.
+
+Configuration:
+  -h, --help              print this message
+  -V, --version           print the version of autoconf that created configure
+  -q, --quiet, --silent   do not print `checking...' messages
+      --cache-file=FILE   cache test results in FILE
+  -n, --no-create         do not create output files
+
+EOF
+
+  cat <<EOF
+Directories:
+  --prefix=PREFIX         install architecture-independent files in PREFIX
+                          [$ac_default_prefix]
+  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
+                          [same as prefix]
+  --bindir=DIR            user executables in DIR [EPREFIX/bin]
+  --sbindir=DIR           system admin executables in DIR [EPREFIX/sbin]
+  --libexecdir=DIR        program executables in DIR [EPREFIX/libexec]
+  --datadir=DIR           read-only architecture-independent data in DIR
+                          [PREFIX/share]
+  --sysconfdir=DIR        read-only single-machine data in DIR [PREFIX/etc]
+  --sharedstatedir=DIR    modifiable architecture-independent data in DIR
+                          [PREFIX/com]
+  --localstatedir=DIR     modifiable single-machine data in DIR [PREFIX/var]
+  --libdir=DIR            object code libraries in DIR [EPREFIX/lib]
+  --includedir=DIR        C header files in DIR [PREFIX/include]
+  --oldincludedir=DIR     C header files for non-gcc in DIR [/usr/include]
+  --infodir=DIR           info documentation in DIR [PREFIX/info]
+  --mandir=DIR            man documentation in DIR [PREFIX/man]
+  --srcdir=DIR            find the sources in DIR [configure dir or ..]
+EOF
+
+  cat <<\EOF
+
+Host type:
+  --build=BUILD      configure for building on BUILD [BUILD=HOST]
+  --host=HOST        configure for HOST [guessed]
+  --target=TARGET    configure for TARGET [TARGET=HOST]
+EOF
+
+  cat <<\EOF
+
+Program names:
+  --program-prefix=PREFIX prepend PREFIX to installed program names
+  --program-suffix=SUFFIX append SUFFIX to installed program names
+  --program-transform-name=PROGRAM
+                          run sed PROGRAM on installed program names
+
+Optional Features:
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE=ARG  include FEATURE ARG=yes
+  --enable-maintainer-mode enable make rules and dependencies not useful
+                          (and sometimes confusing) to the casual installer
+  --disable-lba-support-bitmap-check
+                          disable a check for LBA support bitmap
+  --disable-ext2fs        disable ext2fs support in Stage 2
+  --disable-fat           disable FAT support in Stage 2
+  --disable-ffs           disable FFS support in Stage 2
+  --disable-minix         disable Minix fs support in Stage 2
+  --disable-gunzip        disable decompression in Stage 2
+  --disable-packet-retransmission
+                          turn off packet retransmission
+  --enable-pci-direct     access PCI directly instead of using BIOS
+  --enable-3c509          enable 3Com509 driver
+  --enable-3c529          enable 3Com529 driver
+  --enable-3c90x          enable 3Com90x driver
+  --enable-cs89x0         enable CS89x0 driver
+  --enable-eepro100       enable Etherexpress Pro/100 driver
+  --enable-epic100        enable SMC 83c170 EPIC/100 driver
+  --enable-3c507          enable 3Com507 driver
+  --enable-exos205        enable EXOS205 driver
+  --enable-ni5210         enable Racal-Interlan NI5210 driver
+  --enable-lancepci       enable Lance PCI PCNet/32 driver
+  --enable-ne2100         enable Novell NE2100 driver
+  --enable-ni6510         enable Racal-Interlan NI6510 driver
+  --enable-3c503          enable 3Com503 driver
+  --enable-ne             enable NE1000/2000 ISA driver
+  --enable-nepci          enable NE2000 PCI driver
+  --enable-wd             enable WD8003/8013, SMC8216/8416 driver
+  --enable-ntulip         enable Tulip driver
+  --enable-rtl8139        enable Realtek 8139 driver
+  --enable-sk-g16         enable Schneider and Koch G16 driver
+  --enable-smc9000        enable SMC9000 driver
+  --enable-tiara          enable Tiara driver
+  --enable-tulip          enable old Tulip driver
+  --enable-via-rhine      enable Rhine-I/II driver
+  --enable-3c503-shmem    use 3c503 shared memory mode
+  --enable-3c503-aui      use AUI by default on 3c503 cards
+  --enable-3c509-hack     make a 3c509 do bootp quicker
+  --enable-compex-rl2000-fix
+                          specify this if you have a Compex RL2000 PCI
+  --enable-smc9000-scan=LIST
+                          probe for SMC9000 I/O addresses using LIST
+  --enable-ne-scan=LIST   probe for NE base address using LIST
+  --enable-wd-default-mem=MEM
+                          set the default memory location for WD/SMC
+  --enable-cs-scan=LIST   probe for CS89x0 base address using LIST
+
+Optional Packages:
+  --with-PACKAGE=ARG    use PACKAGE ARG=yes
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-binutils=DIR     search the directory DIR to find binutils
+  --without-curses        do not use curses
+
+Some influent environment variables:
+  CFLAGS      Extra flags for the C compiler
+EOF
+  exit 0
+fi
+if $ac_init_version; then
+  cat <<\EOF
+Generated automatically using Autoconf version 2.14a.
+Copyright (C) 1992, 93, 94, 95, 96, 98, 99, 2000
+Free Software Foundation, Inc.
+
+This configure script is free software; the Free Software Foundation
+gives unlimited permission to copy, distribute and modify it.
+EOF
+  exit 0
+fi
 trap 'rm -fr conftest* confdefs* core core.* *.core $ac_clean_files; exit 1' 1 2 15
 
 # File descriptor usage:
@@ -655,16 +598,45 @@ cross_compiling=$ac_cv_prog_cc_cross
 
 ac_exeext=
 ac_objext=o
+# Factoring default headers for most tests.
+ac_includes_default="\
+#include <stdio.h>
+#include <sys/types.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#else
+# if HAVE_STDLIB_H
+#  include <stdlib.h>
+# endif
+#endif
+#if HAVE_STRING_H
+# if !STDC_HEADERS && HAVE_MEMORY_H
+#  include <memory.h>
+# endif
+# include <string.h>
+#else
+# if HAVE_STRINGS_H
+#  include <strings.h>
+# endif
+#endif
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif"
+
 if (echo "testing\c"; echo 1,2,3) | grep c >/dev/null; then
-  # Stardent Vistra SVR4 grep lacks -e, says Kaveh Ghazi
+  # Stardent Vistra SVR4 grep lacks -e, says Kaveh R. Ghazi.
   if (echo -n testing; echo 1,2,3) | sed s/-n/xn/ | grep xn >/dev/null; then
-    ac_n= ac_c='
-' ac_t='	'
+    ECHO_N= ECHO_C='
+' ECHO_T='	'
   else
-    ac_n=-n ac_c= ac_t=
+    ECHO_N=-n ECHO_C= ECHO_T=
   fi
 else
-  ac_n= ac_c='\c' ac_t=
+  ECHO_N= ECHO_C='\c' ECHO_T=
 fi
 
 ac_aux_dir=
@@ -701,11 +673,11 @@ ac_configure="$SHELL $ac_aux_dir/configure" # This should be Cygnus configure.
 # AFS /usr/afsws/bin/install, which mishandles nonexistent args
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
-echo $ac_n "checking for a BSD compatible install... $ac_c" 1>&6
-echo "configure:706: checking for a BSD compatible install" 1>&5
+echo $ECHO_N "checking for a BSD compatible install... $ECHO_C" 1>&6
+echo "configure:678: checking for a BSD compatible install" 1>&5
 if test -z "$INSTALL"; then
 if test "${ac_cv_path_install+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
     IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS=":"
   for ac_dir in $PATH; do
@@ -748,7 +720,7 @@ fi
     INSTALL="$ac_install_sh"
   fi
 fi
-echo "$ac_t""$INSTALL" 1>&6
+echo "$ECHO_T""$INSTALL" 1>&6
 
 # Use test -z because SunOS4 sh mishandles braces in ${var-val}.
 # It thinks the first close brace ends the variable substitution.
@@ -758,8 +730,8 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
-echo $ac_n "checking whether build environment is sane... $ac_c" 1>&6
-echo "configure:763: checking whether build environment is sane" 1>&5
+echo $ECHO_N "checking whether build environment is sane... $ECHO_C" 1>&6
+echo "configure:735: checking whether build environment is sane" 1>&5
 # Just in case
 sleep 1
 echo timestamp > conftestfile
@@ -795,7 +767,7 @@ else
 Check your system clock" 1>&2; exit 1; }
 fi
 rm -f conftest*
-echo "$ac_t""yes" 1>&6
+echo "$ECHO_T""yes" 1>&6
 if test "$program_transform_name" = s,x,x,; then
   program_transform_name=
 else
@@ -819,41 +791,44 @@ for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:824: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:796: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_AWK+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$AWK"; then
   ac_cv_prog_AWK="$AWK" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_AWK="$ac_prog"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_AWK="$ac_prog"
+    break
   done
-  IFS="$ac_save_ifs"
 fi
 fi
 AWK="$ac_cv_prog_AWK"
 if test -n "$AWK"; then
-  echo "$ac_t""$AWK" 1>&6
+  echo "$ECHO_T""$AWK" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 test -n "$AWK" && break
 done
 
-echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}... $ac_c" 1>&6
-echo "configure:854: checking whether ${MAKE-make} sets \${MAKE}" 1>&5
+echo $ECHO_N "checking whether ${MAKE-make} sets \${MAKE}... $ECHO_C" 1>&6
+echo "configure:829: checking whether ${MAKE-make} sets \${MAKE}" 1>&5
 set dummy ${MAKE-make}; ac_make=`echo "$2" | sed 'y%./+-%__p_%'`
 if eval "test \"\${ac_cv_prog_make_${ac_make}_set+set}\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftestmake <<\EOF
 all:
@@ -869,10 +844,10 @@ fi
 rm -f conftestmake
 fi
 if eval "test \"`echo '$ac_cv_prog_make_'${ac_make}_set`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
+  echo "$ECHO_T""yes" 1>&6
   SET_MAKE=
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
@@ -892,69 +867,69 @@ cat >>confdefs.h <<EOF
 EOF
 
 missing_dir=`cd $ac_aux_dir && pwd`
-echo $ac_n "checking for working aclocal... $ac_c" 1>&6
-echo "configure:897: checking for working aclocal" 1>&5
+echo $ECHO_N "checking for working aclocal... $ECHO_C" 1>&6
+echo "configure:872: checking for working aclocal" 1>&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
 if (aclocal --version) < /dev/null > /dev/null 2>&1; then
    ACLOCAL=aclocal
-   echo "$ac_t""found" 1>&6
+   echo "$ECHO_T""found" 1>&6
 else
    ACLOCAL="$missing_dir/missing aclocal"
-   echo "$ac_t""missing" 1>&6
+   echo "$ECHO_T""missing" 1>&6
 fi
 
-echo $ac_n "checking for working autoconf... $ac_c" 1>&6
-echo "configure:910: checking for working autoconf" 1>&5
+echo $ECHO_N "checking for working autoconf... $ECHO_C" 1>&6
+echo "configure:885: checking for working autoconf" 1>&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
 if (autoconf --version) < /dev/null > /dev/null 2>&1; then
    AUTOCONF=autoconf
-   echo "$ac_t""found" 1>&6
+   echo "$ECHO_T""found" 1>&6
 else
    AUTOCONF="$missing_dir/missing autoconf"
-   echo "$ac_t""missing" 1>&6
+   echo "$ECHO_T""missing" 1>&6
 fi
 
-echo $ac_n "checking for working automake... $ac_c" 1>&6
-echo "configure:923: checking for working automake" 1>&5
+echo $ECHO_N "checking for working automake... $ECHO_C" 1>&6
+echo "configure:898: checking for working automake" 1>&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
 if (automake --version) < /dev/null > /dev/null 2>&1; then
    AUTOMAKE=automake
-   echo "$ac_t""found" 1>&6
+   echo "$ECHO_T""found" 1>&6
 else
    AUTOMAKE="$missing_dir/missing automake"
-   echo "$ac_t""missing" 1>&6
+   echo "$ECHO_T""missing" 1>&6
 fi
 
-echo $ac_n "checking for working autoheader... $ac_c" 1>&6
-echo "configure:936: checking for working autoheader" 1>&5
+echo $ECHO_N "checking for working autoheader... $ECHO_C" 1>&6
+echo "configure:911: checking for working autoheader" 1>&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
 if (autoheader --version) < /dev/null > /dev/null 2>&1; then
    AUTOHEADER=autoheader
-   echo "$ac_t""found" 1>&6
+   echo "$ECHO_T""found" 1>&6
 else
    AUTOHEADER="$missing_dir/missing autoheader"
-   echo "$ac_t""missing" 1>&6
+   echo "$ECHO_T""missing" 1>&6
 fi
 
-echo $ac_n "checking for working makeinfo... $ac_c" 1>&6
-echo "configure:949: checking for working makeinfo" 1>&5
+echo $ECHO_N "checking for working makeinfo... $ECHO_C" 1>&6
+echo "configure:924: checking for working makeinfo" 1>&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
 if (makeinfo --version) < /dev/null > /dev/null 2>&1; then
    MAKEINFO=makeinfo
-   echo "$ac_t""found" 1>&6
+   echo "$ECHO_T""found" 1>&6
 else
    MAKEINFO="$missing_dir/missing makeinfo"
-   echo "$ac_t""missing" 1>&6
+   echo "$ECHO_T""missing" 1>&6
 fi
 
 install_sh="$missing_dir/install-sh"
@@ -964,31 +939,34 @@ for ac_prog in gnutar gtar tar
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:969: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:944: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_AMTAR+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$AMTAR"; then
   ac_cv_prog_AMTAR="$AMTAR" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_AMTAR="$ac_prog"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_AMTAR="$ac_prog"
+    break
   done
-  IFS="$ac_save_ifs"
 fi
 fi
 AMTAR="$ac_cv_prog_AMTAR"
 if test -n "$AMTAR"; then
-  echo "$ac_t""$AMTAR" 1>&6
+  echo "$ECHO_T""$AMTAR" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 test -n "$AMTAR" && break
@@ -1001,8 +979,8 @@ if test -n "$AMTAR"; then
   fi
 fi
 
-echo $ac_n "checking host system type... $ac_c" 1>&6
-echo "configure:1006: checking host system type" 1>&5
+echo $ECHO_N "checking host system type... $ECHO_C" 1>&6
+echo "configure:984: checking host system type" 1>&5
 if test "x$ac_cv_host" = "x" || (test "x$host" != "xNONE" && test "x$host" != "x$ac_cv_host_alias"); then
 
   # Make sure we can run config.sub.
@@ -1026,10 +1004,10 @@ if test "x$ac_cv_host" = "x" || (test "x$host" != "xNONE" && test "x$host" != "x
   ac_cv_host_vendor=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
   ac_cv_host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 else
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 fi
 
-echo "$ac_t""$ac_cv_host" 1>&6
+echo "$ECHO_T""$ac_cv_host" 1>&6
 
 host=$ac_cv_host
 host_alias=$ac_cv_host_alias
@@ -1046,8 +1024,8 @@ esac
 # Options
 #
 
-echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles... $ac_c" 1>&6
-echo "configure:1051: checking whether to enable maintainer-specific portions of Makefiles" 1>&5
+echo $ECHO_N "checking whether to enable maintainer-specific portions of Makefiles... $ECHO_C" 1>&6
+echo "configure:1029: checking whether to enable maintainer-specific portions of Makefiles" 1>&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -1055,8 +1033,7 @@ if test "${enable_maintainer_mode+set}" = set; then
 else
   USE_MAINTAINER_MODE=no
 fi
-
-  echo "$ac_t""$USE_MAINTAINER_MODE" 1>&6
+  echo "$ECHO_T""$USE_MAINTAINER_MODE" 1>&6
 
 if test $USE_MAINTAINER_MODE = yes; then
   MAINTAINER_MODE_TRUE=
@@ -1070,13 +1047,13 @@ fi
 if test "x$enable_maintainer_mode" = xyes; then
   # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1075: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1052: checking for $ac_word" 1>&5
 if test "${ac_cv_path_PERL+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   case "$PERL" in
-  /* | ?:/*)
+  [/\\]* | ?:[/\\]*)
   ac_cv_path_PERL="$PERL" # Let the user override the test with a path.
   ;;
   *)
@@ -1095,9 +1072,9 @@ esac
 fi
 PERL="$ac_cv_path_PERL"
 if test -n "$PERL"; then
-  echo "$ac_t""$PERL" 1>&6
+  echo "$ECHO_T""$PERL" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
   if test -z "$PERL"; then
@@ -1114,8 +1091,8 @@ fi
 # Programs
 #
 
-echo $ac_n "checking build system type... $ac_c" 1>&6
-echo "configure:1119: checking build system type" 1>&5
+echo $ECHO_N "checking build system type... $ECHO_C" 1>&6
+echo "configure:1096: checking build system type" 1>&5
 if test "x$ac_cv_build" = "x" || (test "x$build" != "xNONE" && test "x$build" != "x$ac_cv_build_alias"); then
 
   # Make sure we can run config.sub.
@@ -1138,10 +1115,10 @@ if test "x$ac_cv_build" = "x" || (test "x$build" != "xNONE" && test "x$build" !=
   ac_cv_build_vendor=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
   ac_cv_build_os=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 else
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 fi
 
-echo "$ac_t""$ac_cv_build" 1>&6
+echo "$ECHO_T""$ac_cv_build" 1>&6
 
 build=$ac_cv_build
 build_alias=$ac_cv_build_alias
@@ -1157,32 +1134,35 @@ fi
 
 # Extract the first word of "${ac_tool_prefix}gcc", so it can be a program name with args.
 set dummy ${ac_tool_prefix}gcc; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1162: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1139: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_CC+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$CC"; then
   ac_cv_prog_CC="$CC" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_CC="${ac_tool_prefix}gcc"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_CC="${ac_tool_prefix}gcc"
+    break
   done
-  IFS="$ac_save_ifs"
   test -z "$ac_cv_prog_CC" && ac_cv_prog_CC="gcc"
 fi
 fi
 CC="$ac_cv_prog_CC"
 if test -n "$CC"; then
-  echo "$ac_t""$CC" 1>&6
+  echo "$ECHO_T""$CC" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 case "${CFLAGS+set} $ac_configure_args" in
@@ -1192,59 +1172,65 @@ esac
 
   # Extract the first word of "gcc", so it can be a program name with args.
 set dummy gcc; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1197: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1177: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_CC+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$CC"; then
   ac_cv_prog_CC="$CC" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_CC="gcc"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_CC="gcc"
+    break
   done
-  IFS="$ac_save_ifs"
 fi
 fi
 CC="$ac_cv_prog_CC"
 if test -n "$CC"; then
-  echo "$ac_t""$CC" 1>&6
+  echo "$ECHO_T""$CC" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
   if test -z "$CC"; then
     # Extract the first word of "cc", so it can be a program name with args.
 set dummy cc; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1227: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1210: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_CC+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$CC"; then
   ac_cv_prog_CC="$CC" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_prog_rejected=no
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      if test "$ac_dir/$ac_word" = "/usr/ucb/cc"; then
-        ac_prog_rejected=yes
-	continue
-      fi
-      ac_cv_prog_CC="cc"
-      break
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    if test "$ac_path" = "/usr/ucb/cc"; then
+      ac_prog_rejected=yes
+      continue
     fi
+    ac_cv_prog_CC="cc"
+    break
   done
-  IFS="$ac_save_ifs"
 if test $ac_prog_rejected = yes; then
   # We found a bogon in the path, so make sure we never use it.
   set dummy $ac_cv_prog_CC
@@ -1254,7 +1240,7 @@ if test $ac_prog_rejected = yes; then
     # However, it has the same basename, so the bogon will be chosen
     # first if we set CC to just the basename; use the full file name.
     shift
-    set dummy "$ac_dir/$ac_word" "$@"
+    set dummy "$ac_path" "$@"
     shift
     ac_cv_prog_CC="$@"
   fi
@@ -1263,9 +1249,9 @@ fi
 fi
 CC="$ac_cv_prog_CC"
 if test -n "$CC"; then
-  echo "$ac_t""$CC" 1>&6
+  echo "$ECHO_T""$CC" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
     if test -z "$CC"; then
@@ -1273,31 +1259,34 @@ fi
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1278: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1264: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_CC+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$CC"; then
   ac_cv_prog_CC="$CC" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_CC="$ac_prog"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_CC="$ac_prog"
+    break
   done
-  IFS="$ac_save_ifs"
 fi
 fi
 CC="$ac_cv_prog_CC"
 if test -n "$CC"; then
-  echo "$ac_t""$CC" 1>&6
+  echo "$ECHO_T""$CC" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 test -n "$CC" && break
@@ -1308,8 +1297,8 @@ done
 
 test -z "$CC" && { echo "configure: error: no acceptable cc found in \$PATH" 1>&2; exit 1; }
 
-echo $ac_n "checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) works... $ac_c" 1>&6
-echo "configure:1313: checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) works" 1>&5
+echo $ECHO_N "checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) works... $ECHO_C" 1>&6
+echo "configure:1302: checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) works" 1>&5
 
 ac_ext=c
 # CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -1320,12 +1309,12 @@ cross_compiling=$ac_cv_prog_cc_cross
 
 cat >conftest.$ac_ext <<EOF
 
-#line 1324 "configure"
+#line 1313 "configure"
 #include "confdefs.h"
 
 int main(){return(0);}
 EOF
-if { (eval echo configure:1329: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1318: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   ac_cv_prog_cc_works=yes
   # If we can't run a trivial program, we are probably using a cross compiler.
   if (./conftest; exit) 2>/dev/null; then
@@ -1346,32 +1335,32 @@ ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
 ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
 cross_compiling=$ac_cv_prog_cc_cross
 
-echo "$ac_t""$ac_cv_prog_cc_works" 1>&6
+echo "$ECHO_T""$ac_cv_prog_cc_works" 1>&6
 if test $ac_cv_prog_cc_works = no; then
   { echo "configure: error: installation or configuration problem: C compiler cannot create executables." 1>&2; exit 77; }
 fi
-echo $ac_n "checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) is a cross-compiler... $ac_c" 1>&6
-echo "configure:1355: checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) is a cross-compiler" 1>&5
-echo "$ac_t""$ac_cv_prog_cc_cross" 1>&6
+echo $ECHO_N "checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) is a cross-compiler... $ECHO_C" 1>&6
+echo "configure:1344: checking whether the C compiler ($CC $CFLAGS $CPPFLAGS $LDFLAGS) is a cross-compiler" 1>&5
+echo "$ECHO_T""$ac_cv_prog_cc_cross" 1>&6
 cross_compiling=$ac_cv_prog_cc_cross
 
-echo $ac_n "checking whether we are using GNU C... $ac_c" 1>&6
-echo "configure:1360: checking whether we are using GNU C" 1>&5
+echo $ECHO_N "checking whether we are using GNU C... $ECHO_C" 1>&6
+echo "configure:1349: checking whether we are using GNU C" 1>&5
 if test "${ac_cv_prog_gcc+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.c <<EOF
 #ifdef __GNUC__
   yes;
 #endif
 EOF
-if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:1369: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:1358: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
   ac_cv_prog_gcc=yes
 else
   ac_cv_prog_gcc=no
 fi
 fi
-echo "$ac_t""$ac_cv_prog_gcc" 1>&6
+echo "$ECHO_T""$ac_cv_prog_gcc" 1>&6
 
 if test $ac_cv_prog_gcc = yes; then
   GCC=yes
@@ -1382,10 +1371,10 @@ fi
 ac_test_CFLAGS="${CFLAGS+set}"
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS=
-echo $ac_n "checking whether ${CC-cc} accepts -g... $ac_c" 1>&6
-echo "configure:1387: checking whether ${CC-cc} accepts -g" 1>&5
+echo $ECHO_N "checking whether ${CC-cc} accepts -g... $ECHO_C" 1>&6
+echo "configure:1376: checking whether ${CC-cc} accepts -g" 1>&5
 if test "${ac_cv_prog_cc_g+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   echo 'void f(){}' >conftest.c
 if test -z "`${CC-cc} -g -c conftest.c 2>&1`"; then
@@ -1396,7 +1385,7 @@ fi
 rm -f conftest*
 
 fi
-echo "$ac_t""$ac_cv_prog_cc_g" 1>&6
+echo "$ECHO_T""$ac_cv_prog_cc_g" 1>&6
 if test "$ac_test_CFLAGS" = set; then
   CFLAGS="$ac_save_CFLAGS"
 elif test $ac_cv_prog_cc_g = yes; then
@@ -1422,13 +1411,13 @@ fi
 if test "x$with_binutils" != x; then
   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
 set dummy ${ac_tool_prefix}ranlib; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1427: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1416: checking for $ac_word" 1>&5
 if test "${ac_cv_path_RANLIB+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   case "$RANLIB" in
-  /* | ?:/*)
+  [/\\]* | ?:[/\\]*)
   ac_cv_path_RANLIB="$RANLIB" # Let the user override the test with a path.
   ;;
   *)
@@ -1448,22 +1437,22 @@ esac
 fi
 RANLIB="$ac_cv_path_RANLIB"
 if test -n "$RANLIB"; then
-  echo "$ac_t""$RANLIB" 1>&6
+  echo "$ECHO_T""$RANLIB" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 if test -z "$ac_cv_prog_RANLIB"; then
   if test -n "$ac_tool_prefix"; then
     # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1462: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1451: checking for $ac_word" 1>&5
 if test "${ac_cv_path_RANLIB+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   case "$RANLIB" in
-  /* | ?:/*)
+  [/\\]* | ?:[/\\]*)
   ac_cv_path_RANLIB="$RANLIB" # Let the user override the test with a path.
   ;;
   *)
@@ -1483,9 +1472,9 @@ esac
 fi
 RANLIB="$ac_cv_path_RANLIB"
 if test -n "$RANLIB"; then
-  echo "$ac_t""$RANLIB" 1>&6
+  echo "$ECHO_T""$RANLIB" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
   else
@@ -1496,32 +1485,35 @@ fi
 else
   # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1501: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1490: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_RANLIB+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$RANLIB"; then
   ac_cv_prog_RANLIB="$RANLIB" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_RANLIB="ranlib"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_RANLIB="ranlib"
+    break
   done
-  IFS="$ac_save_ifs"
   test -z "$ac_cv_prog_RANLIB" && ac_cv_prog_RANLIB=":"
 fi
 fi
 RANLIB="$ac_cv_prog_RANLIB"
 if test -n "$RANLIB"; then
-  echo "$ac_t""$RANLIB" 1>&6
+  echo "$ECHO_T""$RANLIB" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 fi
@@ -1536,16 +1528,16 @@ if test "x$ac_cv_prog_gcc" = xyes; then
     fi
     STAGE1_CFLAGS="-O2"
     GRUB_CFLAGS="-O2"
-    echo $ac_n "checking whether optimization for size works... $ac_c" 1>&6
-echo "configure:1541: checking whether optimization for size works" 1>&5
+    echo $ECHO_N "checking whether optimization for size works... $ECHO_C" 1>&6
+echo "configure:1533: checking whether optimization for size works" 1>&5
 if test "${size_flag+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
 
       saved_CFLAGS=$CFLAGS
       CFLAGS="-Os -g"
       cat >conftest.$ac_ext <<EOF
-#line 1549 "configure"
+#line 1541 "configure"
 #include "confdefs.h"
 
 int
@@ -1556,7 +1548,7 @@ main ()
   return 0;
 }
 EOF
-if { (eval echo configure:1560: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1552: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   size_flag=yes
 else
@@ -1569,7 +1561,7 @@ rm -f conftest*
       CFLAGS=$saved_CFLAGS
 
 fi
-echo "$ac_t""$size_flag" 1>&6
+echo "$ECHO_T""$size_flag" 1>&6
     if test "x$size_flag" = xyes; then
       STAGE2_CFLAGS="-Os"
     else
@@ -1584,13 +1576,13 @@ CPPFLAGS="$CPPFLAGS -Wall -Wmissing-prototypes -Wunused"
 if test "x$with_binutils" != x; then
   # Extract the first word of "${ac_tool_prefix}objcopy", so it can be a program name with args.
 set dummy ${ac_tool_prefix}objcopy; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1589: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1581: checking for $ac_word" 1>&5
 if test "${ac_cv_path_OBJCOPY+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   case "$OBJCOPY" in
-  /* | ?:/*)
+  [/\\]* | ?:[/\\]*)
   ac_cv_path_OBJCOPY="$OBJCOPY" # Let the user override the test with a path.
   ;;
   *)
@@ -1610,50 +1602,53 @@ esac
 fi
 OBJCOPY="$ac_cv_path_OBJCOPY"
 if test -n "$OBJCOPY"; then
-  echo "$ac_t""$OBJCOPY" 1>&6
+  echo "$ECHO_T""$OBJCOPY" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 else
   # Extract the first word of "${ac_tool_prefix}objcopy", so it can be a program name with args.
 set dummy ${ac_tool_prefix}objcopy; ac_word=$2
-echo $ac_n "checking for $ac_word... $ac_c" 1>&6
-echo "configure:1623: checking for $ac_word" 1>&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" 1>&6
+echo "configure:1615: checking for $ac_word" 1>&5
 if test "${ac_cv_prog_OBJCOPY+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   if test -n "$OBJCOPY"; then
   ac_cv_prog_OBJCOPY="$OBJCOPY" # Let the user override the test.
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH"
-  for ac_dir in $ac_dummy; do
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_OBJCOPY="${ac_tool_prefix}objcopy"
-      break
-    fi
+  for ac_path in `IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+ac_dummy="$PATH"
+for ac_dir in $ac_dummy; do
+  test -z "$ac_dir" && ac_dir=.
+  if test -f $ac_dir/$ac_word; then
+    echo "$ac_dir/$ac_word"
+  fi
+done
+IFS="$ac_save_ifs"
+`; do
+    ac_cv_prog_OBJCOPY="${ac_tool_prefix}objcopy"
+    break
   done
-  IFS="$ac_save_ifs"
   test -z "$ac_cv_prog_OBJCOPY" && ac_cv_prog_OBJCOPY="objcopy"
 fi
 fi
 OBJCOPY="$ac_cv_prog_OBJCOPY"
 if test -n "$OBJCOPY"; then
-  echo "$ac_t""$OBJCOPY" 1>&6
+  echo "$ECHO_T""$OBJCOPY" 1>&6
 else
-  echo "$ac_t""no" 1>&6
+  echo "$ECHO_T""no" 1>&6
 fi
 
 fi
 
 # Defined in acinclude.m4.
 
-echo $ac_n "checking if C symbols get an underscore after compilation... $ac_c" 1>&6
-echo "configure:1655: checking if C symbols get an underscore after compilation" 1>&5
+echo $ECHO_N "checking if C symbols get an underscore after compilation... $ECHO_C" 1>&6
+echo "configure:1650: checking if C symbols get an underscore after compilation" 1>&5
 if test "${grub_cv_asm_uscore+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat > conftest.c <<\EOF
 int
@@ -1664,7 +1659,7 @@ func (int *list)
 }
 EOF
 
-if { ac_try='${CC-cc} ${CFLAGS} -S conftest.c'; { (eval echo configure:1668: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.s; then
+if { ac_try='${CC-cc} ${CFLAGS} -S conftest.c'; { (eval echo configure:1663: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.s; then
   true
 else
   { echo "configure: error: ${CC-cc} failed to produce assembly code" 1>&2; exit 1; }
@@ -1686,12 +1681,12 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_asm_uscore" 1>&6
+echo "$ECHO_T""$grub_cv_asm_uscore" 1>&6
 
-echo $ac_n "checking whether ${OBJCOPY} works for absolute addresses... $ac_c" 1>&6
-echo "configure:1693: checking whether ${OBJCOPY} works for absolute addresses" 1>&5
+echo $ECHO_N "checking whether ${OBJCOPY} works for absolute addresses... $ECHO_C" 1>&6
+echo "configure:1688: checking whether ${OBJCOPY} works for absolute addresses" 1>&5
 if test "${grub_cv_prog_objcopy_absolute+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat > conftest.c <<\EOF
 void
@@ -1701,21 +1696,21 @@ cmain (void)
 }
 EOF
 
-if { (eval echo configure:1705: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; } && test -s conftest.o; then :
+if { (eval echo configure:1700: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; } && test -s conftest.o; then :
 else
   { echo "configure: error: ${CC-cc} cannot compile C source code" 1>&2; exit 1; }
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 2000 8000 7C00; do
-  if { ac_try='${CC-cc} ${CFLAGS} -nostdlib -Wl,-N -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec'; { (eval echo configure:1711: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  if { ac_try='${CC-cc} ${CFLAGS} -nostdlib -Wl,-N -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec'; { (eval echo configure:1706: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
   else
     { echo "configure: error: ${CC-cc} cannot link at address $link_addr" 1>&2; exit 1; }
   fi
-  if { ac_try='${OBJCOPY-objcopy} -O binary conftest.exec conftest'; { (eval echo configure:1715: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
+  if { ac_try='${OBJCOPY-objcopy} -O binary conftest.exec conftest'; { (eval echo configure:1710: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then :
   else
     { echo "configure: error: ${OBJCOPY-objcopy} cannot create binary files" 1>&2; exit 1; }
   fi
-  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1719: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then
+  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'; { (eval echo configure:1714: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then
     mv -f conftest conftest.old
   else
     grub_cv_prog_objcopy_absolute=no
@@ -1725,22 +1720,22 @@ done
 rm -f conftest*
 fi
 
-echo "$ac_t""$grub_cv_prog_objcopy_absolute" 1>&6
+echo "$ECHO_T""$grub_cv_prog_objcopy_absolute" 1>&6
 if test "x$grub_cv_prog_objcopy_absolute" != xyes; then
   { echo "configure: error: GRUB requires a working absolute objcopy; upgrade your binutils" 1>&2; exit 1; }
 fi
 
-echo $ac_n "checking whether addr32 must be in the same line as the instruction... $ac_c" 1>&6
-echo "configure:1735: checking whether addr32 must be in the same line as the instruction" 1>&5
+echo $ECHO_N "checking whether addr32 must be in the same line as the instruction... $ECHO_C" 1>&6
+echo "configure:1730: checking whether addr32 must be in the same line as the instruction" 1>&5
 if test "${grub_cv_asm_prefix_requirement+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat > conftest.s <<\EOF
 	.code16
 l1:	addr32	movb	%al, l1
 EOF
 
-if { ac_try='${CC-cc} ${CFLAGS} -c conftest.s'; { (eval echo configure:1744: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
+if { ac_try='${CC-cc} ${CFLAGS} -c conftest.s'; { (eval echo configure:1739: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
   grub_cv_asm_prefix_requirement=yes
 else
   grub_cv_asm_prefix_requirement=no
@@ -1765,12 +1760,12 @@ cat >>confdefs.h <<EOF
 #define DATA32 $grub_tmp_data32
 EOF
 
-echo "$ac_t""$grub_cv_asm_prefix_requirement" 1>&6
+echo "$ECHO_T""$grub_cv_asm_prefix_requirement" 1>&6
 
-echo $ac_n "checking for .code16 addr32 assembler support... $ac_c" 1>&6
-echo "configure:1772: checking for .code16 addr32 assembler support" 1>&5
+echo $ECHO_N "checking for .code16 addr32 assembler support... $ECHO_C" 1>&6
+echo "configure:1767: checking for .code16 addr32 assembler support" 1>&5
 if test "${grub_cv_asm_addr32+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat > conftest.s.in <<\EOF
 	.code16
@@ -1783,7 +1778,7 @@ else
   sed -e s/@ADDR32@/addr32\;/ < conftest.s.in > conftest.s
 fi
 
-if { ac_try='${CC-cc} ${CFLAGS} -c conftest.s'; { (eval echo configure:1787: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
+if { ac_try='${CC-cc} ${CFLAGS} -c conftest.s'; { (eval echo configure:1782: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } && test -s conftest.o; then
   grub_cv_asm_addr32=yes
 else
   grub_cv_asm_addr32=no
@@ -1792,18 +1787,18 @@ fi
 rm -f conftest*
 fi
 
-echo "$ac_t""$grub_cv_asm_addr32" 1>&6
+echo "$ECHO_T""$grub_cv_asm_addr32" 1>&6
 if test "x$grub_cv_asm_addr32" != xyes; then
   { echo "configure: error: GRUB requires GAS .code16 addr32 support; upgrade your binutils" 1>&2; exit 1; }
 fi
 
-echo $ac_n "checking if start is defined by the compiler... $ac_c" 1>&6
-echo "configure:1802: checking if start is defined by the compiler" 1>&5
+echo $ECHO_N "checking if start is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:1797: checking if start is defined by the compiler" 1>&5
 if test "${grub_cv_check_start_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 1807 "configure"
+#line 1802 "configure"
 #include "confdefs.h"
 
 int
@@ -1814,7 +1809,7 @@ asm ("incl start")
   return 0;
 }
 EOF
-if { (eval echo configure:1818: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1813: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_start_symbol=yes
 else
@@ -1834,15 +1829,15 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_start_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_start_symbol" 1>&6
 
-echo $ac_n "checking if _start is defined by the compiler... $ac_c" 1>&6
-echo "configure:1841: checking if _start is defined by the compiler" 1>&5
+echo $ECHO_N "checking if _start is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:1836: checking if _start is defined by the compiler" 1>&5
 if test "${grub_cv_check_uscore_start_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 1846 "configure"
+#line 1841 "configure"
 #include "confdefs.h"
 
 int
@@ -1853,7 +1848,7 @@ asm ("incl _start")
   return 0;
 }
 EOF
-if { (eval echo configure:1857: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1852: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_uscore_start_symbol=yes
 else
@@ -1873,20 +1868,20 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_uscore_start_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_uscore_start_symbol" 1>&6
 
 if test "x$grub_cv_check_start_symbol" != "xyes" \
 	-a "x$grub_cv_check_uscore_start_symbol" != "xyes"; then
   { echo "configure: error: Neither start nor _start is defined" 1>&2; exit 1; }
 fi
 
-echo $ac_n "checking if __bss_start is defined by the compiler... $ac_c" 1>&6
-echo "configure:1885: checking if __bss_start is defined by the compiler" 1>&5
+echo $ECHO_N "checking if __bss_start is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:1880: checking if __bss_start is defined by the compiler" 1>&5
 if test "${grub_cv_check_uscore_uscore_bss_start_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 1890 "configure"
+#line 1885 "configure"
 #include "confdefs.h"
 
 int
@@ -1897,7 +1892,7 @@ asm ("incl __bss_start")
   return 0;
 }
 EOF
-if { (eval echo configure:1901: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1896: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_uscore_uscore_bss_start_symbol=yes
 else
@@ -1917,15 +1912,15 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_uscore_uscore_bss_start_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_uscore_uscore_bss_start_symbol" 1>&6
 
-echo $ac_n "checking if _edata is defined by the compiler... $ac_c" 1>&6
-echo "configure:1924: checking if _edata is defined by the compiler" 1>&5
+echo $ECHO_N "checking if _edata is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:1919: checking if _edata is defined by the compiler" 1>&5
 if test "${grub_cv_check_uscore_edata_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 1929 "configure"
+#line 1924 "configure"
 #include "confdefs.h"
 
 int
@@ -1936,7 +1931,7 @@ asm ("incl _edata")
   return 0;
 }
 EOF
-if { (eval echo configure:1940: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1935: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_uscore_edata_symbol=yes
 else
@@ -1956,15 +1951,15 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_uscore_edata_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_uscore_edata_symbol" 1>&6
 
-echo $ac_n "checking if edata is defined by the compiler... $ac_c" 1>&6
-echo "configure:1963: checking if edata is defined by the compiler" 1>&5
+echo $ECHO_N "checking if edata is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:1958: checking if edata is defined by the compiler" 1>&5
 if test "${grub_cv_check_edata_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 1968 "configure"
+#line 1963 "configure"
 #include "confdefs.h"
 
 int
@@ -1975,7 +1970,7 @@ asm ("incl edata")
   return 0;
 }
 EOF
-if { (eval echo configure:1979: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1974: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_edata_symbol=yes
 else
@@ -1995,7 +1990,7 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_edata_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_edata_symbol" 1>&6
 
 if test "x$grub_cv_check_uscore_uscore_bss_start_symbol" != "xyes" \
 	-a "x$grub_cv_check_uscore_edata_symbol" != "xyes" \
@@ -2003,13 +1998,13 @@ if test "x$grub_cv_check_uscore_uscore_bss_start_symbol" != "xyes" \
   { echo "configure: error: None of __bss_start, _edata, edata defined" 1>&2; exit 1; }
 fi
 
-echo $ac_n "checking if end is defined by the compiler... $ac_c" 1>&6
-echo "configure:2008: checking if end is defined by the compiler" 1>&5
+echo $ECHO_N "checking if end is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:2003: checking if end is defined by the compiler" 1>&5
 if test "${grub_cv_check_end_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 2013 "configure"
+#line 2008 "configure"
 #include "confdefs.h"
 
 int
@@ -2020,7 +2015,7 @@ asm ("incl end")
   return 0;
 }
 EOF
-if { (eval echo configure:2024: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2019: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_end_symbol=yes
 else
@@ -2040,15 +2035,15 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_end_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_end_symbol" 1>&6
 
-echo $ac_n "checking if _end is defined by the compiler... $ac_c" 1>&6
-echo "configure:2047: checking if _end is defined by the compiler" 1>&5
+echo $ECHO_N "checking if _end is defined by the compiler... $ECHO_C" 1>&6
+echo "configure:2042: checking if _end is defined by the compiler" 1>&5
 if test "${grub_cv_check_uscore_end_symbol+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 2052 "configure"
+#line 2047 "configure"
 #include "confdefs.h"
 
 int
@@ -2059,7 +2054,7 @@ asm ("incl _end")
   return 0;
 }
 EOF
-if { (eval echo configure:2063: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2058: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   grub_cv_check_uscore_end_symbol=yes
 else
@@ -2079,7 +2074,7 @@ EOF
 
 fi
 
-echo "$ac_t""$grub_cv_check_uscore_end_symbol" 1>&6
+echo "$ECHO_T""$grub_cv_check_uscore_end_symbol" 1>&6
 
 if test "x$grub_cv_check_end_symbol" != "xyes" \
 	-a "x$grub_cv_check_uscore_end_symbol" != "xyes"; then
@@ -2095,15 +2090,15 @@ fi
 
 # Get the filename or the whole disk and open it.
 # Known to work on NetBSD.
-echo $ac_n "checking for opendisk in -lutil... $ac_c" 1>&6
-echo "configure:2100: checking for opendisk in -lutil" 1>&5
+echo $ECHO_N "checking for opendisk in -lutil... $ECHO_C" 1>&6
+echo "configure:2095: checking for opendisk in -lutil" 1>&5
 if test "${ac_cv_lib_util_opendisk+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   ac_save_LIBS="$LIBS"
 LIBS="-lutil  $LIBS"
 cat >conftest.$ac_ext <<EOF
-#line 2107 "configure"
+#line 2102 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2118,7 +2113,7 @@ opendisk()
   return 0;
 }
 EOF
-if { (eval echo configure:2122: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2117: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_lib_util_opendisk=yes
 else
@@ -2131,7 +2126,7 @@ rm -f conftest*
 
 LIBS="$ac_save_LIBS"
 fi
-echo "$ac_t""$ac_cv_lib_util_opendisk" 1>&6
+echo "$ECHO_T""$ac_cv_lib_util_opendisk" 1>&6
 if test $ac_cv_lib_util_opendisk = yes; then
   GRUB_LIBS="$GRUB_LIBS -lutil"
   cat >>confdefs.h <<\EOF
@@ -2142,15 +2137,15 @@ fi
 
 # Unless the user specify --without-curses, check for curses.
 if test "x$with_curses" != "xno"; then
-  echo $ac_n "checking for wgetch in -lncurses... $ac_c" 1>&6
-echo "configure:2147: checking for wgetch in -lncurses" 1>&5
+  echo $ECHO_N "checking for wgetch in -lncurses... $ECHO_C" 1>&6
+echo "configure:2142: checking for wgetch in -lncurses" 1>&5
 if test "${ac_cv_lib_ncurses_wgetch+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   ac_save_LIBS="$LIBS"
 LIBS="-lncurses  $LIBS"
 cat >conftest.$ac_ext <<EOF
-#line 2154 "configure"
+#line 2149 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2165,7 +2160,7 @@ wgetch()
   return 0;
 }
 EOF
-if { (eval echo configure:2169: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2164: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_lib_ncurses_wgetch=yes
 else
@@ -2178,7 +2173,7 @@ rm -f conftest*
 
 LIBS="$ac_save_LIBS"
 fi
-echo "$ac_t""$ac_cv_lib_ncurses_wgetch" 1>&6
+echo "$ECHO_T""$ac_cv_lib_ncurses_wgetch" 1>&6
 if test $ac_cv_lib_ncurses_wgetch = yes; then
   GRUB_LIBS="$GRUB_LIBS -lncurses"
   cat >>confdefs.h <<\EOF
@@ -2186,15 +2181,15 @@ if test $ac_cv_lib_ncurses_wgetch = yes; then
 EOF
 
 else
-  echo $ac_n "checking for wgetch in -lcurses... $ac_c" 1>&6
-echo "configure:2191: checking for wgetch in -lcurses" 1>&5
+  echo $ECHO_N "checking for wgetch in -lcurses... $ECHO_C" 1>&6
+echo "configure:2186: checking for wgetch in -lcurses" 1>&5
 if test "${ac_cv_lib_curses_wgetch+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   ac_save_LIBS="$LIBS"
 LIBS="-lcurses  $LIBS"
 cat >conftest.$ac_ext <<EOF
-#line 2198 "configure"
+#line 2193 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2209,7 +2204,7 @@ wgetch()
   return 0;
 }
 EOF
-if { (eval echo configure:2213: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2208: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_lib_curses_wgetch=yes
 else
@@ -2222,7 +2217,7 @@ rm -f conftest*
 
 LIBS="$ac_save_LIBS"
 fi
-echo "$ac_t""$ac_cv_lib_curses_wgetch" 1>&6
+echo "$ECHO_T""$ac_cv_lib_curses_wgetch" 1>&6
 if test $ac_cv_lib_curses_wgetch = yes; then
   GRUB_LIBS="$GRUB_LIBS -lcurses"
        cat >>confdefs.h <<\EOF
@@ -2236,15 +2231,15 @@ fi
 fi
 
 # Check for headers.
-echo $ac_n "checking how to run the C preprocessor... $ac_c" 1>&6
-echo "configure:2241: checking how to run the C preprocessor" 1>&5
+echo $ECHO_N "checking how to run the C preprocessor... $ECHO_C" 1>&6
+echo "configure:2236: checking how to run the C preprocessor" 1>&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
 fi
 if test -z "$CPP"; then
 if test "${ac_cv_prog_CPP+set}" = set; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
     # This must be in double quotes, not single quotes, because CPP may get
   # substituted into the Makefile and "${CC-cc}" will confuse make.
@@ -2252,13 +2247,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat >conftest.$ac_ext <<EOF
-#line 2256 "configure"
+#line 2251 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2262: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2257: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2269,13 +2264,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat >conftest.$ac_ext <<EOF
-#line 2273 "configure"
+#line 2268 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2279: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2274: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2286,13 +2281,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat >conftest.$ac_ext <<EOF
-#line 2290 "configure"
+#line 2285 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2296: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2291: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2314,24 +2309,24 @@ fi
 else
   ac_cv_prog_CPP="$CPP"
 fi
-echo "$ac_t""$CPP" 1>&6
+echo "$ECHO_T""$CPP" 1>&6
 
 for ac_header in string.h strings.h ncurses/curses.h ncurses.h curses.h
 do
 ac_ac_Header=`echo "ac_cv_header_$ac_header" | $ac_tr_sh`
-echo $ac_n "checking for $ac_header... $ac_c" 1>&6
-echo "configure:2324: checking for $ac_header" 1>&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" 1>&6
+echo "configure:2319: checking for $ac_header" 1>&5
 if eval "test \"\${$ac_ac_Header+set}\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
+  echo $ECHO_N "(cached) $ECHO_C" 1>&6
 else
   cat >conftest.$ac_ext <<EOF
-#line 2329 "configure"
+#line 2324 "configure"
 #include "confdefs.h"
 #include <$ac_header>
 
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2335: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2330: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2345,7 +2340,7 @@ else
 fi
 rm -f conftest*
 fi
-echo "$ac_t""`eval echo '${'$ac_ac_Header'}'`" 1>&6
+echo "$ECHO_T""`eval echo '${'$ac_ac_Header'}'`" 1>&6
 if test `eval echo '${'$ac_ac_Header'}'` = yes; then
   cat >>confdefs.h <<EOF
 #define `echo "HAVE_$ac_header" | $ac_tr_cpp` 1
@@ -2426,7 +2421,6 @@ if test "${enable_packet_retransmission+set}" = set; then
   enableval="$enable_packet_retransmission"
   :
 fi
-
 if test "x$enable_packet_retransmission" != xno; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONGESTED=1"
 fi
@@ -2436,7 +2430,6 @@ if test "${enable_pci_direct+set}" = set; then
   enableval="$enable_pci_direct"
   :
 fi
-
 if test "x$enable_pci_direct" = xyes; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCONFIG_PCI_DIRECT=1"
 fi
@@ -2446,7 +2439,6 @@ if test "${enable_3c509+set}" = set; then
   enableval="$enable_3c509"
   :
 fi
-
 if test "x$enable_3c509" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C509"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c509.o"
@@ -2457,7 +2449,6 @@ if test "${enable_3c529+set}" = set; then
   enableval="$enable_3c529"
   :
 fi
-
 if test "x$enable_3c529" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C529=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c529.o"
@@ -2468,7 +2459,6 @@ if test "${enable_3c90x+set}" = set; then
   enableval="$enable_3c90x"
   :
 fi
-
 if test "x$enable_3c90x" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C90X=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c90x.o"
@@ -2479,7 +2469,6 @@ if test "${enable_cs89x0+set}" = set; then
   enableval="$enable_cs89x0"
   :
 fi
-
 if test "x$enable_cs89x0" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_CS89X0=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS cs89x0.o"
@@ -2490,7 +2479,6 @@ if test "${enable_eepro100+set}" = set; then
   enableval="$enable_eepro100"
   :
 fi
-
 if test "x$enable_eepro100" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EEPRO100=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS eepro100.o"
@@ -2501,7 +2489,6 @@ if test "${enable_epic100+set}" = set; then
   enableval="$enable_epic100"
   :
 fi
-
 if test "x$enable_epic100" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EPIC100=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS epic100.o"
@@ -2512,7 +2499,6 @@ if test "${enable_3c507+set}" = set; then
   enableval="$enable_3c507"
   :
 fi
-
 if test "x$enable_3c507" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C507=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c507.o"
@@ -2523,7 +2509,6 @@ if test "${enable_exos205+set}" = set; then
   enableval="$enable_exos205"
   :
 fi
-
 if test "x$enable_exos205" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_EXOS205=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS exos205.o"
@@ -2534,7 +2519,6 @@ if test "${enable_ni5210+set}" = set; then
   enableval="$enable_ni5210"
   :
 fi
-
 if test "x$enable_ni5210" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI5210=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni5210.o"
@@ -2545,7 +2529,6 @@ if test "${enable_lancepci+set}" = set; then
   enableval="$enable_lancepci"
   :
 fi
-
 if test "x$enable_lancepci" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_LANCEPCI=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS lancepci.o"
@@ -2556,7 +2539,6 @@ if test "${enable_ne2100+set}" = set; then
   enableval="$enable_ne2100"
   :
 fi
-
 if test "x$enable_ne2100" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE2100=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne2100.o"
@@ -2567,7 +2549,6 @@ if test "${enable_ni6510+set}" = set; then
   enableval="$enable_ni6510"
   :
 fi
-
 if test "x$enable_ni6510" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NI6510=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ni6510.o"
@@ -2578,7 +2559,6 @@ if test "${enable_3c503+set}" = set; then
   enableval="$enable_3c503"
   :
 fi
-
 if test "x$enable_3c503" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_3C503=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS 3c503.o"
@@ -2589,7 +2569,6 @@ if test "${enable_ne+set}" = set; then
   enableval="$enable_ne"
   :
 fi
-
 if test "x$enable_ne" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NE=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ne.o"
@@ -2600,7 +2579,6 @@ if test "${enable_nepci+set}" = set; then
   enableval="$enable_nepci"
   :
 fi
-
 if test "x$enable_nepci" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NEPCI=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS nepci.o"
@@ -2611,7 +2589,6 @@ if test "${enable_wd+set}" = set; then
   enableval="$enable_wd"
   :
 fi
-
 if test "x$enable_wd" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_WD=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS wd.o"
@@ -2622,7 +2599,6 @@ if test "${enable_ntulip+set}" = set; then
   enableval="$enable_ntulip"
   :
 fi
-
 if test "x$enable_ntulip" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_NTULIP=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS ntulip.o"
@@ -2633,7 +2609,6 @@ if test "${enable_rtl8139+set}" = set; then
   enableval="$enable_rtl8139"
   :
 fi
-
 if test "x$enable_rtl8139" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_RTL8139=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS rtl8139.o"
@@ -2644,7 +2619,6 @@ if test "${enable_sk_g16+set}" = set; then
   enableval="$enable_sk_g16"
   :
 fi
-
 if test "x$enable_sk_g16" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SK_G16=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS sk_g16.o"
@@ -2655,7 +2629,6 @@ if test "${enable_smc9000+set}" = set; then
   enableval="$enable_smc9000"
   :
 fi
-
 if test "x$enable_smc9000" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_SMC9000=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS smc9000.o"
@@ -2666,7 +2639,6 @@ if test "${enable_tiara+set}" = set; then
   enableval="$enable_tiara"
   :
 fi
-
 if test "x$enable_tiara" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TIARA=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS tiara.o"
@@ -2677,7 +2649,6 @@ if test "${enable_tulip+set}" = set; then
   enableval="$enable_tulip"
   :
 fi
-
 if test "x$enable_tulip" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_TULIP=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS tulip.o"
@@ -2688,7 +2659,6 @@ if test "${enable_via_rhine+set}" = set; then
   enableval="$enable_via_rhine"
   :
 fi
-
 if test "x$enable_via_rhine" = xyes; then
   NET_CFLAGS="$NET_CFLAGS -DINCLUDE_VIA_RHINE=1"
   NETBOOT_DRIVERS="$NETBOOT_DRIVERS via_rhine.o"
@@ -2710,7 +2680,6 @@ if test "${enable_3c503_shmem+set}" = set; then
   enableval="$enable_3c503_shmem"
   :
 fi
-
 if test "x$enable_3c503_shmem" = xyes; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT503_SHMEM=1"
 fi
@@ -2720,7 +2689,6 @@ if test "${enable_3c503_aui+set}" = set; then
   enableval="$enable_3c503_aui"
   :
 fi
-
 if test "x$enable_3c503_aui" = xyes; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT503_AUI=1"
 fi
@@ -2730,7 +2698,6 @@ if test "${enable_3c509_hack+set}" = set; then
   enableval="$enable_3c509_hack"
   :
 fi
-
 if test "x$enable_3c509_hack" = xyes; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DT509HACK=1"
 fi
@@ -2740,7 +2707,6 @@ if test "${enable_compex_rl2000_fix+set}" = set; then
   enableval="$enable_compex_rl2000_fix"
   :
 fi
-
 if test "x$enable_compex_rl2000_fix" = xyes; then
   NET_EXTRAFLAGS="$NET_EXTRAFLAGS -DCOMPEX_RL2000_FIX=1"
 fi
@@ -2992,6 +2958,9 @@ if test -n "\$CONFIG_FILES"; then
   # Protect against being on the right side of a sed subst in config.status.
   sed 's/%@/@@/; s/@%/@@/; s/%;t t\$/@;t t/; /@;t t\$/s/[\\\\&%]/\\\\&/g;
    s/@@/%@/; s/@@/@%/; s/@;t t\$/%;t t/' >\$ac_cs_root.subs <<\\CEOF
+s%@ECHO_C@%$ECHO_C%;t t
+s%@ECHO_N@%$ECHO_N%;t t
+s%@ECHO_T@%$ECHO_T%;t t
 s%@SHELL@%$SHELL%;t t
 s%@CFLAGS@%$CFLAGS%;t t
 s%@CPPFLAGS@%$CPPFLAGS%;t t
@@ -3129,15 +3098,17 @@ for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
   case "$ac_given_srcdir" in
   .)  srcdir=.
       if test -z "$ac_dots"; then top_srcdir=.
-      else top_srcdir=`echo $ac_dots|sed 's%/$%%'`; fi ;;
-  /*) srcdir="$ac_given_srcdir$ac_dir_suffix"; top_srcdir="$ac_given_srcdir" ;;
+      else top_srcdir=`echo $ac_dots | sed 's%/$%%'`; fi ;;
+  [/\\]* | ?:[/\\]* )
+      srcdir="$ac_given_srcdir$ac_dir_suffix";
+      top_srcdir=$ac_given_srcdir ;;
   *) # Relative path.
     srcdir="$ac_dots$ac_given_srcdir$ac_dir_suffix"
     top_srcdir="$ac_dots$ac_given_srcdir" ;;
   esac
 
   case "$ac_given_INSTALL" in
-  [/$]*) INSTALL="$ac_given_INSTALL" ;;
+  [/\\$]* | ?:[/\\]* ) INSTALL="$ac_given_INSTALL" ;;
   *) INSTALL="$ac_dots$ac_given_INSTALL" ;;
   esac
 
@@ -3338,10 +3309,6 @@ EOF
 
 cat >>$CONFIG_STATUS <<\EOF
 
-#
-# CONFIG_COMMANDS section.
-#
-
 exit 0
 EOF
 chmod +x $CONFIG_STATUS
@@ -3349,3 +3316,4 @@ rm -fr confdefs* $ac_clean_files
 trap 'exit 1' 1 2 15
 
 test "$no_create" = yes || $SHELL $CONFIG_STATUS || exit 1
+

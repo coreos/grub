@@ -4,10 +4,10 @@ set -e
 # Provide a backward-compatibility symlink to the doc directory.
 package=grub
 case "$1" in
-install | upgrade)
+configure)
   if [ -d /usr/doc ]; then
     if [ ! -e /usr/doc/$package -a -d /usr/share/doc/$package ]; then
-      ln -s /usr/share/doc/$package /usr/doc/$package
+      ln -sf ../share/doc/$package /usr/doc/$package
     fi
   fi
   ;;

@@ -561,7 +561,7 @@ color_func (char *arg, int flags)
   highlight = skip_to (0, arg);
 
   new_normal_color = color_number (normal);
-  if (new_normal_color < 0 && safe_parse_maxint (&normal, &new_normal_color))
+  if (new_normal_color < 0 && ! safe_parse_maxint (&normal, &new_normal_color))
     return 1;
   
   /* The second argument is optional, so set highlight_color
@@ -573,7 +573,7 @@ color_func (char *arg, int flags)
     {
       new_highlight_color = color_number (highlight);
       if (new_highlight_color < 0
-	  && safe_parse_maxint (&highlight, &new_highlight_color))
+	  && ! safe_parse_maxint (&highlight, &new_highlight_color))
 	return 1;
     }
 

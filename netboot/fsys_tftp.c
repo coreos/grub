@@ -430,6 +430,9 @@ tftp_dir (char *dirname)
 	}
       while (! buf_eof);
 
+      /* Maybe a few amounts of data remains.  */
+      filemax += buf_read;
+      
       /* Retry the open instruction.  */
       goto reopen;
     }

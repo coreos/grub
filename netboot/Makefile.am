@@ -15,7 +15,7 @@ libdrivers_a_SOURCES = byteorder.h config.c etherboot.h \
 	main.c misc.c netboot_config.h netdevice.h nic.h osdep.h \
 	pci.c pci.h
 EXTRA_libdrivers_a_SOURCES = 3c509.c 3c509.h 3c90x.c cs89x0.c \
-	3c89x0.h eepro100.c epic100.c epic100.h i82586.c lance.c \
+	cs89x0.h eepro100.c epic100.c epic100.h i82586.c lance.c \
 	ns8390.c ns8390.h ntulip.c rtl8139.c sk_g16.c sk_g16.h \
 	smc9000.c smc9000.h tiara.c tulip.c tulip.h via-rhine.c
 libdrivers_a_CFLAGS = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \

@@ -11,65 +11,12 @@ personal computer BIOSes:
 
 See the file NEWS for a description of recent changes to GRUB.
 
-
-You need recent developmental environment to build GRUB. We recommend
-you use the following utilities:
-
-* binutils 2.9.1.0.23 or later (Do not use early 2.9.1.0.x!)
-
-  Binutils has changed the behavior of 16bit assembler between 2.9.1
-and 2.9.1.0.x, and we support only 2.9.1.0.x and higher. It is available
-from ftp.varesearch.com:/pub/support/hjl/binutils.
-
-NOTE: you should check for the version of your binutils by the following
-command:
-
-$ gcc -Wl,-v 2>&1 | grep "GNU ld"
-
-This will show two versions, like this:
-
-GNU ld version 2.9.5 (with BFD 2.9.5.0.13)
-
-The latter is what you should see. If you have installed a recent
-version of binutils but this version number is not identical with it,
-you need to specify the option ``--with-binutils=DIR'' for configure.
-
-* texinfo 4.0 or later
-
-  We use some new macros in the manuals, so you need a recent TeXinfo
-release. See http://www.gnu.org/software/texinfo/texinfo.html, for more
-information.
-
-
-These below are required when you develop GRUB or when you get it from
-the CVS:
-
-* automake 19990620 or later
-
-  The new feature, per-executable flags, is required, so you need to get
-an unreleased version from the CVS. See
-<http://sourceware.cygnus.com/automake/>, for more information.
-
-Caution: The recent versions are quite unstable, so check out a rather
-old version from the CVS (1999-10-01 works fine, though it has some
-non-critical bugs).
-
-* autoconf 20000116 or later
-
-  Some new macros are required, so you need to get an unreleased version
-from the CVS. See <http://sourceware.cygnus.com/autoconf/>, for more
-information.
-
-Note: Perhaps a somewhat older CVS version should work well, but I'm not
-sure. Using the latest version would be better.
-
-
-If you are interested in netboot, see the file README.netboot under the
-directory netboot.
+If you are interested in the network support, see the file
+README.netboot under the directory netboot.
 
 See the file INSTALL for instructions on how to build and install the
 GRUB data and program files. See the GRUB manual for details about
-using GRUB as your bootloader.
+using GRUB as your bootloader. Type "info grub" in the shell prompt.
 
 GNU GRUB has a page on the web. See:
 

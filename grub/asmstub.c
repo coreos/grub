@@ -44,6 +44,7 @@ int grub_stage2 (void);
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
 # include <linux/major.h>	/* FLOPPY_MAJOR */
+# include <linux/kdev_t.h>	/* MAJOR */
 # if (__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */

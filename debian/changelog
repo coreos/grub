@@ -1,6 +1,10 @@
 grub (0.5.94) unstable; urgency=low
 
- --
+  * Fix /usr/doc symlink. (closes:bug#50932)
+  * Better testing for BIOS LBA support. (closes:bug#53507)
+  * New installation script. (closes:bug#48755)
+  
+ -- Gordon Matzigkeit <gord@debian.org>  Fri, 10 Mar 2000 14:55:02 -0600
 
 grub (0.5.93.1) unstable; urgency=low
 

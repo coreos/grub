@@ -1,6 +1,6 @@
 NEWS - list of user-visible changes between releases of GRUB
 
-New in 0.5.94:
+New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.
 * The NetBSD and OpenBSD boot bug is fixed.
 * The more automatic installation command "setup" is added.

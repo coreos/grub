@@ -1,3 +1,30 @@
+2000-03-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/Makefile.am (EXTRA_libdrivers_a_SOURCES): 3c89x0.h ->
+	cs89x0.h. Just a typo.
+	
+2000-03-10  Gordon Matzigkeit  <gord@fig.org>
+
+	* debian/rules: Strip mbchk.
+
+	* debian/postinst: Fix up /usr/doc symlink creation.
+
+2000-03-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/fsys_tftp.c (tftp_dir): Add BUF_READ into FILEMAX
+	after BUF_EOF becomes non-zero. Reported by Per Lundberg.
+	
+2000-03-01  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c (color_func): Return 1 if safe_parse_maxint
+	returns zero instead of non-zero. Reported by Magnus Holmberg
+	<pucko@lysator.liu.se>.
+	
+2000-02-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* grub/asmstub.c [__linux__]: Include <linux/kdev_t.h> for the
+	macro MAJOR. From Kalle Olavi Niemitalo <tosi@ees2.oulu.fi>.
+	
 2000-02-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/tutorial.texi (Network): New chapter.
