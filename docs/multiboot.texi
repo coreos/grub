@@ -71,7 +71,7 @@ into another language, under the above conditions for modified versions.
 @top Multiboot Specification
 
 This file documents Multiboot Specification, the proposal for the boot
-sequence standard. This edition documents version 0.6.91.
+sequence standard. This edition documents version 0.6.92.
 @end ifnottex
 
 
@@ -576,7 +576,12 @@ follows:
         +-------------------+
 68      | apm_table         |    (present if flags[10] is set)
         +-------------------+
-?? - ?? | graphics_table    |    (present if flags[11] is set)
+72      | vbe_control_info  |    (present if flags[11] is set)
+76      | vbe_mode_info     |
+80      | vbe_mode          |
+82      | vbe_interface_seg |
+84      | vbe_interface_off |
+86      | vbe_interface_len |
         +-------------------+
 @end group
 @end example
@@ -859,36 +864,30 @@ bytes, and the others are 2 bytes. See
 @uref{http://www.microsoft.com/hwdev/busbios/amp_12.htm, Advanced Power
 Management (APM) BIOS Interface Specification}, for more information.
 
-If bit 11 in the @samp{flags} is set, video mode information is
-available in the mode table. This should only be done if the kernel has
-indicated in the @samp{Multiboot Header} that it accepts graphics modes.
+If bit 11 in the @samp{flags} is set, the graphics table is available.
+This must only be done if the kernel has indicated in the
+@samp{Multiboot Header} that it accepts a graphics mode.
 
-The mode table looks like this:
+The fields @samp{vbe_control_info} and @samp{vbe_mode_info} contain
+the physical addresses of @sc{vbe} control information returned by the
+@sc{vbe} Function 00h and @sc{vbe} mode information returned by the
+@sc{vbe} Function 01h, respectively.
 
-@example
-@group
+The field @samp{vbe_mode} indicates current video mode in the format
+specified in @sc{vbe} 3.0.
 
-        +----------------------+
-0       | mode_type            |
-4       | width                |
-8       | height               |
-12      | depth                |
-16      | frame_buffer_address |
-        +----------------------+
+The rest fields @samp{vbe_interface_seg}, @samp{vbe_interface_off}, and
+@samp{vbe_interface_len} contain the table of a protected mode interface
+defined in @sc{vbe} 2.0+. If this information is not available, those
+fields contain zero. Note that @sc{vbe} 3.0 defines another protected
+mode interface which is incompatible with the old one. If you want to
+use the new protected mode interface, you will have to find the table
+yourself.
 
-@end group
-@end example
+The fields for the graphics table are designed for @sc{vbe}, but
+Multiboot boot loaders may simulate @sc{vbe} on non-@sc{vbe} modes, as
+if they were @sc{vbe} modes.
 
-Valid numbers for @samp{mode_type} is 0 for linear graphics mode and 1
-for EGA-standard text mode. Everything else is reserved for future
-expansion.
-
-@samp{width} and @samp{height} is specified in pixels, if graphics mode,
-or characters in EGA text mode. @samp{depth} is given in bits per pixel
-for graphics, or unused for EGA text mode.
-
-@samp{frame_buffer_address} specifies the physical start address of the
-linear frame buffer. This is valid for both graphics and text modes.
 
 @node Examples
 @chapter Examples
