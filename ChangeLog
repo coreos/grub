@@ -1,3 +1,8 @@
+1999-09-02  Pavel Roskin  <pavel_roskin@geocities.com>
+
+	* stage2/cmdline.c (enter_cmdline) [GRUB_UTIL]: Add a space in
+	the LBA warning	message.
+	
 1999-09-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The character `=' after a command is now optional.

@@ -409,7 +409,7 @@ returnit:
 #ifdef GRUB_UTIL
 		  /* XXX Can we determine if LBA is supported in
 		     /sbin/grub as well?  */
-		  grub_printf ("Warning: make sure that the access mode for"
+		  grub_printf ("Warning: make sure that the access mode for "
 			       "(hd%d) is LBA.\n", current_drive - 0x80);
 #else
 		  /* Check if LBA is supported.  */
