@@ -1,3 +1,10 @@
+2001-01-13  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Thierry Laronde <thierry.laronde@polynum.com>:
+	* util/grub-md5-crypt.in (prefix): New variable.
+	(exec_prefix): Likewise.
+	(sbindir): Likewise.
+	
 2001-01-12  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/multiboot.h [__ELF__] (MULTIBOOT_HEADER_FLAGS): Defined
