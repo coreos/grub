@@ -86,11 +86,15 @@ load_image (void)
 	}
     }
 
-  /* ELF loading only supported if kernel using multiboot */
-  if (type == 'm' && len > sizeof (Elf32_Ehdr)
+  /* ELF loading supported if multiboot and FreeBSD.  */
+  if ((type == 'm' || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD"))
+      && len > sizeof (Elf32_Ehdr)
       && BOOTABLE_I386_ELF ((*((Elf32_Ehdr *) buffer))))
     {
-      entry_addr = (entry_func) pu.elf->e_entry;
+      if (type == 'm')
+	entry_addr = (entry_func) pu.elf->e_entry;
+      else
+	entry_addr = (entry_func) (pu.elf->e_entry & 0xFFFFFF);
 
       if (((int) entry_addr) < 0x100000)
 	errnum = ERR_BELOW_1MB;
@@ -102,6 +106,12 @@ load_image (void)
 	      >= len))
 	errnum = ERR_EXEC_FORMAT;
       str = "elf";
+
+      if (! type)
+	{
+	  str2 = "FreeBSD";
+	  type = 'f';
+	}
     }
   else if (flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -403,7 +413,12 @@ load_image (void)
 	      /* offset into file */
 	      filepos = phdr->p_offset;
 	      filesiz = phdr->p_filesz;
-	      memaddr = RAW_ADDR (phdr->p_vaddr);
+	      
+	      if (type == 'f')
+		memaddr = RAW_ADDR (phdr->p_vaddr & 0xFFFFFF);
+	      else
+		memaddr = RAW_ADDR (phdr->p_vaddr);
+	      
 	      memsiz = phdr->p_memsz;
 	      if (memaddr < RAW_ADDR (0x100000))
 		errnum = ERR_BELOW_1MB;
@@ -419,7 +434,6 @@ load_image (void)
 	      loaded++;
 
 	      /* load the segment */
-	      memaddr = RAW_ADDR (memaddr);
 	      if (memcheck (memaddr, memsiz)
 		  && grub_read ((char *) memaddr, filesiz) == filesiz)
 		{
@@ -588,9 +602,25 @@ bsd_boot (int type, int bootdev)
       bi.bi_memsizes_valid = 1;
       bi.bi_basemem = mbi.mem_lower;
       bi.bi_extmem = mbi.mem_upper;
-      bi.bi_symtab = mbi.syms.a.addr;
-      bi.bi_esymtab = mbi.syms.a.addr + 4
-	+ mbi.syms.a.tabsize + mbi.syms.a.strsize;
+
+      if (mbi.flags & MB_INFO_AOUT_SYMS)
+	{
+	  bi.bi_symtab = mbi.syms.a.addr;
+	  bi.bi_esymtab = mbi.syms.a.addr + 4
+	    + mbi.syms.a.tabsize + mbi.syms.a.strsize;
+	}
+#if 0
+      else if (mbi.flags & MB_INFO_ELF_SHDR)
+	{
+	  /* FIXME: Should check if a symbol table exists and, if exists,
+	     pass the table to BI.  */
+	}
+#endif
+      else
+	{
+	  bi.bi_symtab = 0;
+	  bi.bi_esymtab = 0;
+	}
 
       /* call entry point */
       (*entry_addr) (clval, bootdev, 0, 0, 0, ((int) (&bi)));

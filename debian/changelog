@@ -1,3 +1,5 @@
+grub (0.5.93) unstable; urgency=low
+
 grub (0.5.92) unstable; urgency=low
 
   * Data files are now in /usr/lib/grub/$(HWARCH).

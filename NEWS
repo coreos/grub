@@ -1,5 +1,8 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 0.5.93:
+* ELF format of FreeBSD kernel is supported.
+
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).
 * The /sbin/grub stage2 simulator now works at least on GNU/Linux, and

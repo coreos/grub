@@ -1,3 +1,15 @@
+1999-08-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From "Dan J. Walters" <djw@cs.utexas.edu>:
+	* stage2/i386-elf.h (EI_BRAND): New macro.
+	* stage2/boot.c (load_image): If the kernel is ELF, check if it
+	is a FreeBSD kernel as well as a Multiboot kernel, and if it is 
+	a FreeBSD kernel, then mask ENTRY_ADDR since FreeBSD requires
+	that. Likewise, mask MEMADDR.
+	(bsd_boot): Set the bi_symtab and the bi_esymtab members of BI
+	only if MBI.FLAGS has the flag MB_INFO_AOUT_SYMS. Otherwise,
+	clear them.
+	
 1999-07-30  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From Pavel Roskin <pavel_roskin@geocities.com>:

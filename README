@@ -37,10 +37,6 @@ http://sourceware.cygnus.com/autoconf/ for more information.
 an unreleased version from the CVS. See
 http://sourceware.cygnus.com/automake/ for more information.
 
-* texinfo 3.12h and later
-
-  The latest snapshot of Texinfo is available from ftp.texinfo.org.
-
 
 See the file INSTALL for instructions on how to build and install the
 GRUB data and program files.  See the GRUB manual for details about

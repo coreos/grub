@@ -30,8 +30,6 @@ larger than 16MB can be read.
 
 Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
 
-Support ELF format of FreeBSD kernel.
-
 Support new partition IDs for NetBSD and OpenBSD.
 
 Add ``configfile'' command, in a clean way.

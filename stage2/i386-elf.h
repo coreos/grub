@@ -54,6 +54,10 @@ typedef struct
 
 #define EI_PAD		7	/* from here in is just padding */
 
+#define EI_BRAND	8	/* start of OS branding (This is
+				   obviously illegal against the ELF
+				   standard.) */
+    
     unsigned char e_ident[EI_NIDENT];	/* basic identification block */
 
 #define ET_EXEC		2	/* we only care about executable types */
