@@ -36,6 +36,7 @@ rootdir=
 grub_prefix=/boot/grub
 
 install_device=
+no_floppy=
 force_lba=
 recheck=no
 debug=no
@@ -64,6 +65,7 @@ Install GRUB on your drive.
   --root-directory=DIR    install GRUB images under the directory DIR
                           instead of the root directory
   --grub-shell=FILE       use FILE as the grub shell
+  --no-floppy             do not probe any floppy drive
   --force-lba             force GRUB to use LBA mode even for a buggy
                           BIOS
   --recheck               probe a device map even if it already exists
@@ -221,6 +223,8 @@ for option in "$@"; do
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
     --grub-shell=*)
 	grub_shell=`echo "$option" | sed 's/--grub-shell=//'` ;;
+    --no-floppy)
+	no_floppy="--no-floppy" ;;
     --force-lba)
 	force_lba="--force-lba" ;;
     --recheck)
@@ -312,7 +316,7 @@ else
     # Create a safe temporary file.
     test -n "$mklog" && log_file=`$mklog`
 
-    $grub_shell --batch --device-map=$device_map <<EOF >$log_file
+    $grub_shell --batch $no_floppy --device-map=$device_map <<EOF >$log_file
 quit
 EOF
     if grep "Error [0-9]*: " $log_file >/dev/null; then
@@ -395,7 +399,7 @@ for file in ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5; do
     count=5
     tmp=`echo $file | sed "s|^${grubdir}|${grub_prefix}|"`
     while test $count -gt 0; do
-	$grub_shell --batch --device-map=$device_map <<EOF >$log_file
+	$grub_shell --batch $no_floppy --device-map=$device_map <<EOF >$log_file
 dump ${root_drive}${tmp} ${img_file}
 quit
 EOF
@@ -420,7 +424,7 @@ rm -f $log_file
 test -n "$mklog" && log_file=`$mklog`
 
 # Now perform the installation.
-$grub_shell --batch --device-map=$device_map <<EOF >$log_file
+$grub_shell --batch $no_floppy --device-map=$device_map <<EOF >$log_file
 root $root_drive
 setup $force_lba --stage2=$grubdir/stage2 --prefix=$grub_prefix $install_drive
 quit

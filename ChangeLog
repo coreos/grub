@@ -1,3 +1,11 @@
+2003-08-01  Jason Thomas  <jason@intology.com.au>
+
+	* util/grub-install.in: support --no-floppy
+	This allow users to specify the --no-floppy option which
+	is passed onto the grub shell, so it does not probe the floppy
+	drive. 
+	Patch from kesha@diedas.soften.ktu.lt
+
 2003-06-17  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c (reiserfs_mount): Clear the node cache.
