@@ -1,3 +1,28 @@
+2000-05-21  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S (set_int13_handler): Don't use MBI to get the
+	lower memory size. Instead, decrease it in the BIOS memory
+	directly and set %eax to it, since MBI.MEM_LOWER may not be the
+	same as [0x413] any longer due to the previous change.
+
+	* grub/asmstub.c (CONVENTIONAL_MEMSIZE): Changed to 640 * 1024
+	from 640. You didn't like the inconsistency between
+	EXTENDED_MEMSIZE and CONVENTIONAL_MEMSIZE, did you?
+	(get_memsize): Return CONVENTIONAL_MEMSIZE >> 10 instead of
+	CONVENTIONAL_MEMSIZE, if TYPE is zero.
+	(get_eisamemsize): Return EXTENDED_MEMSIZE >> 10 instead of
+	EXTENDED_MEMSIZE / 1024. Just a cosmetic change.
+	(MMAR_DESC_LENGTH): New macro. Defined as 20.
+	(get_mmap_entry): Define a new variable DESC_TABLE statically, 
+	and copy the CONTth entry to *DESC if CONT is a correct index.
+	
+2000-05-21  Chip Salzenberg  <chip@valinux.com>
+
+	* stage2/common.c (mmap_avail_at): New function, abstracted out
+	of init_bios_info, to scan E820 memory map.
+	(init_bios_info): Use mmap_avail_at for _both_ MBI.MEM_UPPER and
+	MBI.MEM_LOWER.
+
 2000-05-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Update the network support to Etherboot-4.6.1.

@@ -564,13 +564,12 @@ ENTRY(set_int13_handler)
 	movw	2(%edi), %ax
 	movw	%ax, ABS(int13_segment)
 	
-	/* get the lower memory size */
-	movl	$EXT_C(mbi), %edi
-	movl	4(%edi), %eax
 	/* decrease the lower memory size and set it to the BIOS memory */
-	decl	%eax
 	movl	$0x413, %edi
-	movw	%ax, (%edi)
+	decw	(%edi)
+	xorl	%eax, %eax
+	movw	(%edi), %ax
+	
 	/* compute the segment */
 	shll	$6, %eax
 

@@ -90,13 +90,42 @@ static struct AddrRangeDesc fakemap[3] =
   {20, 0x100000, 0, 0, 0, MB_ARD_MEMORY},
   {20, 0x1000000, 0, 0, 0, MB_ARD_MEMORY}
 };
-#endif /* STAGE1_5 */
 
+/* A big problem is that the memory areas aren't guaranteed to be:
+   (1) contiguous, (2) sorted in ascending order, or (3) non-overlapping.
+   Thus this kludge.  */
+static unsigned long
+mmap_avail_at (unsigned long bottom)
+{
+  unsigned long top, addr;
+  int cont;
+  
+  top = bottom;
+  do
+    {
+      for (cont = 0, addr = mbi.mmap_addr;
+	   addr < mbi.mmap_addr + mbi.mmap_length;
+	   addr += *((unsigned long *) addr) + 4)
+	{
+	  struct AddrRangeDesc *desc = (struct AddrRangeDesc *) addr;
+	  
+	  if (desc->BaseAddrHigh == 0
+	      && desc->Type == MB_ARD_MEMORY
+	      && desc->BaseAddrLow <= top
+	      && desc->BaseAddrLow + desc->LengthLow > top)
+	    {
+	      top = desc->BaseAddrLow + desc->LengthLow;
+	      cont++;
+	    }
+	}
+    }
+  while (cont);
+  
+  return top - bottom;
+}
+#endif /* ! STAGE1_5 */
 
-/*
- *  This queries for BIOS information.
- */
-
+/* This queries for BIOS information.  */
 void
 init_bios_info (void)
 {
@@ -140,7 +169,7 @@ init_bios_info (void)
     {
       cont = get_mmap_entry ((void *) addr, cont);
 
-      /* If the returned buffer's base is zero, quit. */
+      /* If the returned buffer's length is zero, quit. */
       if (! *((unsigned long *) addr))
 	break;
 
@@ -152,41 +181,16 @@ init_bios_info (void)
   if (mbi.mmap_length)
     {
       /*
-       *  This is to get the upper memory up to the first memory
-       *  hole into the "mbi.mem_upper" element, for OS's that
-       *  don't care about the memory map, but might care about
-       *  RAM above 64MB.
-       *
-       *  A big problem is that the memory areas aren't guaranteed
-       *  to be:  (1) contiguous, (2) sorted in ascending order, or
-       *  (3) non-overlapping.
+       *  This is to get the lower memory, and upper memory (up to the
+       *  first memory hole), into the "mbi.mem_{lower,upper}"
+       *  elements.  This is for OS's that don't care about the memory
+       *  map, but might care about total RAM available.
        */
-      memtmp = 0x100000;
+      mbi.mem_lower = mmap_avail_at (0) >> 10;
+      mbi.mem_upper = mmap_avail_at (0x100000) >> 10;
 
-      do
-	{
-	  for (cont = 0, addr = mbi.mmap_addr;
-	       addr < mbi.mmap_addr + mbi.mmap_length;
-	       addr += *((unsigned long *) addr) + 4)
-	    {
-	      if (((struct AddrRangeDesc *) addr)->BaseAddrHigh == 0
-		  && ((struct AddrRangeDesc *) addr)->Type == MB_ARD_MEMORY
-		  && ((struct AddrRangeDesc *) addr)->BaseAddrLow <= memtmp
-		  && (((struct AddrRangeDesc *) addr)->BaseAddrLow
-		      + ((struct AddrRangeDesc *) addr)->LengthLow) > memtmp)
-		{
-		  memtmp = (((struct AddrRangeDesc *) addr)->BaseAddrLow
-			    + ((struct AddrRangeDesc *) addr)->LengthLow);
-		  cont++;
-		}
-	    }
-	}
-      while (cont);
-
-      mbi.mem_upper = (memtmp - 0x100000) >> 10;
-      
       /* Find the maximum available address. Ignore any memory holes.  */
-      for (addr = mbi.mmap_addr;
+      for (memtmp = 0, addr = mbi.mmap_addr;
 	   addr < mbi.mmap_addr + mbi.mmap_length;
 	   addr += *((unsigned long *) addr) + 4)
 	{

@@ -73,7 +73,7 @@ int grub_stage2 (void);
 
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (3 * 1024 * 1024)	/* 3MB */
-#define CONVENTIONAL_MEMSIZE (640) /* 640kB */
+#define CONVENTIONAL_MEMSIZE (640 * 1024)	/* 640kB */
 
 /* Simulated disk sizes. */
 #define DEFAULT_FD_CYLINDERS	80
@@ -684,10 +684,10 @@ get_code_end (void)
 int
 get_memsize (int type)
 {
-  if (!type)
-    return CONVENTIONAL_MEMSIZE;
+  if (! type)
+    return CONVENTIONAL_MEMSIZE >> 10;
   else
-    return EXTENDED_MEMSIZE;
+    return EXTENDED_MEMSIZE >> 10;
 }
 
 
@@ -698,7 +698,7 @@ get_memsize (int type)
 int
 get_eisamemsize (void)
 {
-  return (EXTENDED_MEMSIZE / 1024);
+  return (EXTENDED_MEMSIZE >> 10);
 }
 
 
@@ -707,26 +707,58 @@ get_eisamemsize (void)
 #define MMAR_DESC_TYPE_ACPI_RECLAIM 3 /* usable by OS after reading ACPI */
 #define MMAR_DESC_TYPE_ACPI_NVS 4 /* required to save between NVS sessions */
 
+#define MMAR_DESC_LENGTH	20
+
 /* Fetch the next entry in the memory map and return the continuation
    value.  DESC is a pointer to the descriptor buffer, and CONT is the
    previous continuation value (0 to get the first entry in the
-   map). */
+   map).  */
 int
 get_mmap_entry (struct mmar_desc *desc, int cont)
 {
-  if (! cont)
+  /* Record the memory map statically.  */
+  static struct mmar_desc desc_table[] =
+  {
+    /* The conventional memory.  */
     {
-      /* First entry, located at 1MB. */
-      desc->desc_len = sizeof (*desc) - sizeof (desc->desc_len);
-      desc->addr = 1024 * 1024;
-      desc->length = EXTENDED_MEMSIZE;
-      desc->type = MMAR_DESC_TYPE_AVAILABLE;
+      MMAR_DESC_LENGTH,
+      0,
+      CONVENTIONAL_MEMSIZE,
+      MMAR_DESC_TYPE_AVAILABLE
+    },
+    /* BIOS RAM and ROM (such as video memory).  */
+    {
+      MMAR_DESC_LENGTH,
+      CONVENTIONAL_MEMSIZE,
+      0x100000 - CONVENTIONAL_MEMSIZE,
+      MMAR_DESC_TYPE_RESERVED
+    },
+    /* The extended memory.  */
+    {
+      MMAR_DESC_LENGTH,
+      0x100000,
+      EXTENDED_MEMSIZE,
+      MMAR_DESC_TYPE_AVAILABLE
+    }
+  };
+  
+  int num = sizeof (desc_table) / sizeof (*desc_table);
+
+  if (cont < 0 || cont >= num)
+    {
+      /* Should not happen.  */
+      desc->desc_len = 0;
     }
   else
     {
-      /* No more entries, so give an error. */
-      desc->desc_len = 0;
+      /* Copy the entry.  */
+      *desc = desc_table[cont++];
+
+      /* If the next entry exists, return the index.  */
+      if (cont < num)
+	return cont;
     }
+  
   return 0;
 }
 
