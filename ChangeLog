@@ -16,7 +16,8 @@
 	The state is now defined using an enum called color_state.
 
 	* stage2/term.h (color_state): New enum.
-	(COLOR_STATE_STANDARD): Standard color to use when not using user defined.
+	(COLOR_STATE_STANDARD): Standard color to use when not using
+	user defined.
 	(COLOR_STATE_NORMAL): User defined normal color.
 	(COLOR_STATE_HIGHLIGHT): User defined highlight color.
 	(console_highlight): Renamed to console_setcolorstate.
@@ -32,13 +33,17 @@
 	(console_color_state): Likewise.
 	(console_highlight): Renamed to console_setcolorstate.
 	(console_setcolorstate): Added switch to handle new states.
-	* stage2/serial.c (serial_highlight): Renamed to serial_setcolorstate.
+	* stage2/serial.c (serial_highlight): Renamed to
+	serial_setcolorstate.
 	(serial_setcolorstate): Adjusted 'if' to suit new states.
-	* grub/asmstub.c (console_highlight): Renamed to console_setcolorstate.
+	* grub/asmstub.c (console_highlight): Renamed to
+	console_setcolorstate.
 	(console_setcolorstate): Adjusted 'if' to suit new states.
-	* stage2/stage2.c (print_entry): Set color states using new states.
+	* stage2/stage2.c (print_entry): Set color states using new
+	states.
 	(print_border): Likewise.
-	* stage2/stage2.c (run_menu): Reverse if (!) to if () for uniformitty.
+	* stage2/stage2.c (run_menu): Reverse if (!) to if () for
+	uniformitty.
 
 2002-07-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
