@@ -1,7 +1,8 @@
+/* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -148,9 +149,11 @@ real_start:
 	cmpw	$0xaa55, %bx
 	jne	chs_mode
 
+#ifdef NO_BUGGY_BIOS_IN_THE_WORLD
 	/* check if AH=0x42 is supported */
 	andw	$1, %cx
 	jz	chs_mode
+#endif
 		
 	/* get the geometry (limited to 2TB!) */
 	movb	$0x48, %ah

@@ -1,3 +1,9 @@
+2000-01-11  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage1/stage1.S [!NO_BUGGY_BIOS_IN_THE_WORLD]: Don't check if
+	LBA read is supported. Anyway, fallback to the CHS mode if
+	fails.
+	
 2000-01-10  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/bios.c (NO_INT13_FALLBACK): Undefined.
