@@ -205,7 +205,7 @@ grub_tab_complete (char *buf, int *restore)
 	  /* Multiple matches found, print the first instead of completing.  */
 	  else if (numfound == 2)
 	    {
-	      grub_printf ("\nPossible %s are: ", what);
+	      grub_printf ("\nPossible %s are:\n", what);
 	      print_completion (found);
 	    }
 	    

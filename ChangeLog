@@ -1,3 +1,17 @@
+2004-12-13  Marco Gerards  <metgerards@student.han.nl>
+
+	* fs/ext2.c (grub_ext2_open): Don't use data after freeing it.
+	(grub_ext2_dir): Likewise.  Don't return in case of an error, jump
+	to fail instead.  Reported by Vincent Pelletier
+	<subdino2004@yahoo.fr>.
+
+	* fs/fshelp.c (grub_fshelp_find_file): Don't free `oldnode' when
+	it is not allocated.  Reported by Vincent Pelletier
+	<subdino2004@yahoo.fr>.
+
+	* normal/cmdline.c (grub_tab_complete): Add a blank line to the
+	output so the output looks better.
+	
 2004-12-04  Marco Gerards  <metgerards@student.han.nl>
 
 	Modulize the partition map support and add support for the amiga

@@ -509,9 +509,9 @@ grub_ext2_open (struct grub_file *file, const char *name)
   return 0;
 
  fail:
-  grub_free (data);
   if (fdiro != &data->diropen)
     grub_free (fdiro);
+  grub_free (data);
   
 #ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
@@ -580,14 +580,14 @@ grub_ext2_dir (grub_device_t device, const char *path,
   grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_ext2_iterate_dir,
 			 grub_ext2_read_symlink, GRUB_FSHELP_DIR);
   if (grub_errno)
-    return grub_errno;
+    goto fail;
   
   grub_ext2_iterate_dir (fdiro, iterate);
   
  fail:
-  grub_free (data);
   if (fdiro != &data->diropen)
     grub_free (fdiro);
+  grub_free (data);
 
 #ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
