@@ -1,3 +1,26 @@
+2002-05-23  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Define the behavior of the boot loader when the load end address
+	and the bss end address are zero in the Multiboot Specification,
+	and add the support into GRUB. I've modified a patch from Yuri
+	Zaporogets <yuriz@ukr.net>.
+	
+	* stage2/boot.c (load_image): In the case of Multiboot a.out
+	kludge, set the load end address to the load address plus the
+	size of the OS image file, if it is zero. Similarly, set the bss
+	end address to the load end address, if it is zero.
+	
+	* util/mbchk.c (check_multiboot): Don't check if the load
+	address is greater than or equal to the load end address, if the
+	load end address is zero. Don't check if the load end address is
+	greater than the bss end address, if the bss end address is
+	zero. And, don't check if the load end address is less than or
+	equal to the entry address, if the load end address is zero.
+	
+	* docs/multiboot.texi (The address fields of Multiboot header):
+	Added descriptions about the behavior of the boot loader when
+	LOAD_END_ADDR is zero and BSS_END_ADDR is zero.
+	
 2002-05-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (boot_func): If DEBUG is true, print

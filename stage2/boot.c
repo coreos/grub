@@ -141,8 +141,18 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
       cur_addr = pu.mb->load_addr;
       /* first offset into file */
       grub_seek (i - (pu.mb->header_addr - cur_addr));
+
+      /* If the load end address is zero, load the whole contents.  */
+      if (! pu.mb->load_end_addr)
+	pu.mb->load_end_addr = cur_addr + filemax;
+      
       text_len = pu.mb->load_end_addr - cur_addr;
       data_len = 0;
+
+      /* If the bss end address is zero, assume that there is no bss area.  */
+      if (! pu.mb->bss_end_addr)
+	pu.mb->bss_end_addr = pu.mb->load_end_addr;
+      
       bss_len = pu.mb->bss_end_addr - pu.mb->load_end_addr;
 
       if (pu.mb->header_addr < pu.mb->load_addr

@@ -1,6 +1,6 @@
 /* mbchk - a simple checker for the format of a Multiboot kernel */
 /*
- *  Copyright (C) 1999, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ check_multiboot (const char *filename, FILE *fp)
 	  return 0;
 	}
 
-      if (mbh->load_addr >= mbh->load_end_addr)
+      if (mbh->load_end_addr && mbh->load_addr >= mbh->load_end_addr)
 	{
 	  fprintf (stderr,
 		   "%s: load_addr is not less than load_end_addr"
@@ -135,7 +135,7 @@ check_multiboot (const char *filename, FILE *fp)
 	  return 0;
 	}
 
-      if (mbh->load_end_addr > mbh->bss_end_addr)
+      if (mbh->bss_end_addr && mbh->load_end_addr > mbh->bss_end_addr)
 	{
 	  fprintf (stderr,
 		   "%s: load_end_addr is greater than bss_end_addr"
@@ -153,7 +153,9 @@ check_multiboot (const char *filename, FILE *fp)
 	  return 0;
 	}
 
-      if (mbh->load_end_addr <= mbh->entry_addr)
+      /* FIXME: It is better to check if the entry address is within the
+	 file, especially when the load end address is zero.  */
+      if (mbh->load_end_addr && mbh->load_end_addr <= mbh->entry_addr)
 	{
 	  fprintf (stderr,
 		   "%s: load_end_addr is not less than entry_addr"

@@ -467,12 +467,15 @@ Contains the physical address of the end of the data
 segment. (load_end_addr - load_addr) specifies how much data to load.
 This implies that the text and data segments must be consecutive in the
 OS image; this is true for existing a.out executable formats.
+If this field is zero, the boot loader assumes that the text and data
+segments occupy the whole OS image file.
 
 @item bss_end_addr
 Contains the physical address of the end of the bss segment. The boot
 loader initializes this area to zero, and reserves the memory it
 occupies to avoid placing boot modules and other data relevant to the
-operating system in that area.
+operating system in that area. If this field is zero, the boot loader
+assumes that no bss segment is present.
 
 @item entry_addr
 The physical address to which the boot loader should jump in order to

@@ -1,5 +1,10 @@
 NEWS - list of user-visible changes between releases of GRUB
 
+New in 0.93:
+* Define the behavior of the boot loader when the load end address is
+  zero and the bss end address is zero in the Multiboot Specification.
+  Also, add the support into GRUB.
+
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.
 * The netboot code goes back to the progress bars instead of dots, for
