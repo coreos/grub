@@ -27,11 +27,10 @@ ftp.XX.kernel.org (XX is the country code, such as `jp').
 so you need to get the later version from the CVS. See
 http://sourceware.cygnus.com/autoconf for more information.
 
-* automake 1.3, or 19990327 and later (Do not use 1.4!)
+* automake 19990620 and later
 
-  Automake 1.3 works just fine, but 1.4 doesn't work because it complains
-about EXTRA_DATA. This inconsistency has been fixed in the later version
-in the CVS. If you need 1.4 or later, see
+  The new feature, per-executable flags, is requred, so you need to get
+an unreleased version from the CVS. See
 http://sourceware.cygnus.com/automake for more information.
 
 * ncurses 4.0 and later (1.9.9 is too buggy, so don't use it.)
