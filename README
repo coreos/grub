@@ -4,10 +4,10 @@ personal computer BIOSes:
 
   - provides fully-featured command line and graphical interfaces
   - recognizes fdisk partitions and BSD disklabels
-  - can dynamically read Linux ext2fs, BSD ufs, MS-DOS FAT16 and FAT32,
-    and Minix fs filesystems, plus hardcoded blocklists
+  - can dynamically read Linux ext2fs and ReiserFS, BSD ufs, MS-DOS
+    FAT16 and FAT32, and Minix fs filesystems, plus hardcoded blocklists
   - can boot Multiboot-compliant kernels (such as GNU Mach), as well
-    as standard Linux and BSD kernels
+    as standard Linux and *BSD kernels
 
 See the file NEWS for a description of recent changes to GRUB.
 
@@ -44,6 +44,12 @@ DEVELOPERS: to subscribe to the mailing list, send e-mail to
 `:pserver:anoncvs@subversions.gnu.org:/home/cvs', module `grub'.
 Just hit enter when CVS prompts you for a password.
 See <http://www.gnu.org/software/devel.html#CVS> for more details.
+
+If you are really interested in the rapid development, you can subscribe
+to the list <commit-grub@gnu.org>, by sending e-mail with the subject
+"subscribe" to <commit-grub-request@gnu.org>. This list is not for a
+general purpose but will notify you of CVS logs whenever any developer
+checks in patches.
 
   IMPORTANT SIZE LIMITS:
 

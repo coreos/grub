@@ -21,7 +21,7 @@ New in 0.5.95 - XXXX-XX-XX:
   "grub-install" has the same effect as to the command "install".
 * The configure script doesn't accept the option
   `--disable-lba-support-bitmap-check' any longer. Use the option above.
-* The network support is updated to Etherboot-4.5.8. So now we have
+* The network support is updated to Etherboot-4.6.0. So now we have
   3Com59x and DEPCA drivers.
 * Now you can omit the configuration file argument to the command
   "password". If you omit it, then GRUB will just unlock privileged
@@ -29,6 +29,8 @@ New in 0.5.95 - XXXX-XX-XX:
 * The new command "lock" can be used to prevent end-users from executing
   arbitrary menu entries. This command will emit an error until the user
   enters a correct password.
+* Recognize the Linux extended partition type.
+* Pass a correct memory size to Linux and *BSD.
 
 New in 0.5.94 - 2000-03-06:
 * Stage 1 supports both the LBA mode and the CHS mode.

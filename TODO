@@ -29,7 +29,8 @@ Priorities:
   parameters.
 
 * Support embedding a Stage 1.5 in the "bootloader" area of a FFS
-  partition.
+  partition. (We already have the code, but need an approval by an
+  expert before turning on the support. Any volunteers?)
 
 * Support embedding a Stage 1.5 in the EXT2_BOOT_LOADER_INO of an ext2fs
   partition, so that it won't be accidentally erased or modified by
