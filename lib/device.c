@@ -18,6 +18,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* Try to use glibc's transparant LFS support. */
+#define _LARGEFILE_SOURCE       1
+/* lseek becomes synonymous with lseek64.  */
+#define _FILE_OFFSET_BITS       64
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,6 +35,11 @@
 #include <errno.h>
 
 #ifdef __linux__
+# if !defined(__GLIBC__) || \
+        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
+/* Maybe libc doesn't have large file support.  */
+#  include <linux/unistd.h>     /* _llseek */
+# endif /* (GLIBC < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR < 1)) */
 # include <sys/ioctl.h>		/* ioctl */
 # include <linux/hdreg.h>	/* HDIO_GETGEO */
 # include <linux/major.h>	/* FLOPPY_MAJOR */
@@ -508,3 +518,76 @@ restore_device_map (char **map)
 
   free (map);
 }
+
+#ifdef __linux__
+/* Linux-only function, because Linux has a bug that the disk cache for
+   a whole disk is not consistent with the one for a partition of the
+   disk.  */
+int
+write_to_partition (char **map, int drive, int partition,
+		    int sector, int size, const char *buf)
+{
+  char dev[64];	/* XXX */
+  int fd;
+  
+  if ((partition & 0x00FF00) != 0x00FF00)
+    {
+      /* If the partition is a BSD partition, it is difficult to
+	 obtain the representation in Linux. So don't support that.  */
+      errnum = ERR_DEV_VALUES;
+      return 1;
+    }
+  
+  assert (map[drive] != 0);
+  sprintf (dev, "%s%d", map[drive], ((partition >> 16) & 0xFF) + 1);
+  
+  /* Open the partition.  */
+  fd = open (dev, O_RDONLY);
+  if (fd < 0)
+    {
+      errnum = ERR_NO_PART;
+      return 0;
+    }
+  
+#if defined(__linux__) && (!defined(__GLIBC__) || \
+        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
+  /* Maybe libc doesn't have large file support.  */
+  {
+    loff_t offset, result;
+    static int _llseek (uint filedes, ulong hi, ulong lo,
+                        loff_t *res, uint wh);
+    _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
+               loff_t *, res, uint, wh);
+
+    offset = (loff_t) sector * (loff_t) SECTOR_SIZE;
+    if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
+      {
+	errnum = ERR_DEV_VALUES;
+	return 0;
+      }
+  }
+#else
+  {
+    off_t offset = (off_t) sector * (off_t) SECTOR_SIZE;
+
+    if (lseek (fd, offset, SEEK_SET) != offset)
+      {
+	errnum = ERR_DEV_VALUES;
+	return 0;
+      }
+  }
+#endif
+  
+  if (write (fd, buf, size * SECTOR_SIZE) != (size * SECTOR_SIZE))
+    {
+      close (fd);
+      errnum = ERR_WRITE;
+      return 0;
+    }
+  
+  sync ();	/* Paranoia.  */
+  close (fd);
+  
+  return 1;
+}
+#endif /* __linux__ */

@@ -9,6 +9,14 @@ New in 0.5.96 - XXXX-XX-XX:
 * Now GRUB is compliant with the Linux/i386 boot protocol version 2.02.
 * The network support is updated to Etherboot-4.6.4.
 * Symlinks in ReiserFS are supported.
+* Add a workaround into the grub shell, so that it works fine even under
+  Linux 2.4.
+* Add a new option `--stage2' into the commands "install" and "setup",
+  to let the grub shell know what the file name of Stage 2 is under your
+  operating system. You must specify the option correctly, if you cannot
+  unmount the partition where GRUB images reside. We'd recommend _not_
+  using those commands directly, but using the utility "grub-install"
+  instead, because this is safer.
 
 New in 0.5.95 - 2000-06-27:
 * NetBSD ELF kernel support is added. You have to specify the new option

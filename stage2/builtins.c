@@ -27,6 +27,7 @@
 #endif
 
 #ifdef GRUB_UTIL
+# include <stdio.h>
 # include <device.h>
 #else /* ! GRUB_UTIL */
 # include <apic.h>
@@ -851,7 +852,6 @@ embed_func (char *arg, int flags)
   char *stage1_5_buffer = (char *) RAW_ADDR (0x100000);
   int len, size;
   int sector;
-  int i;
   
   stage1_5 = arg;
   device = skip_to (0, stage1_5);
@@ -929,20 +929,39 @@ embed_func (char *arg, int flags)
 
   /* Clear the cache.  */
   buf_track = -1;
-  
+
   /* Now perform the embedding.  */
-  for (i = 0; i < size; i++)
+#if defined(GRUB_UTIL) && defined(__linux__)
+  if (current_partition != 0xFFFFFF)
     {
-      grub_memmove ((char *) SCRATCHADDR, stage1_5_buffer + i * SECTOR_SIZE,
-		    SECTOR_SIZE);
-      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
-		    sector + i, 1, SCRATCHSEG))
+      /* If the grub shell is running under Linux and the user wants to
+	 embed a Stage 1.5 into a partition instead of a MBR, use system
+	 calls directly instead of biosdisk, because of the bug in
+	 Linux. *sigh*  */
+
+      if (! write_to_partition (device_map, current_drive, current_partition,
+				sector - part_start, size, stage1_5_buffer))
+	return 1;
+    }
+  else
+#endif /* GRUB_UTIL && __linux__ */
+    {
+      int i;
+      
+      for (i = 0; i < size; i++)
 	{
-	  errnum = ERR_WRITE;
-	  return 1;
+	  grub_memmove ((char *) SCRATCHADDR,
+			stage1_5_buffer + i * SECTOR_SIZE,
+			SECTOR_SIZE);
+	  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+			sector + i, 1, SCRATCHSEG))
+	    {
+	      errnum = ERR_WRITE;
+	      return 1;
+	    }
 	}
     }
-
+  
   grub_printf (" %d sectors are embedded.\n", size);
   return 0;
 }
@@ -1452,8 +1471,8 @@ install_func (char *arg, int flags)
   char *config_filename = stage2_second_buffer + SECTOR_SIZE;
   char *dummy = config_filename + SECTOR_SIZE;
   int new_drive = 0xFF;
-  int dest_drive, dest_sector;
-  int src_drive, src_partition;
+  int dest_drive, dest_partition, dest_sector;
+  int src_drive, src_partition, src_part_start;
   int i;
   struct geometry dest_geom, src_geom;
   int saved_sector;
@@ -1470,6 +1489,12 @@ install_func (char *arg, int flags)
   int is_force_lba = 0;
   /* Was the last sector full? */
   int last_length = SECTOR_SIZE;
+  
+#ifdef GRUB_UTIL
+  /* If the Stage 2 is in a partition mounted by an OS, this will store
+     the filename under the OS.  */
+  char *stage2_os_file = 0;
+#endif /* GRUB_UTIL */
   
   /* Save the first sector of Stage2 in STAGE2_SECT.  */
   static void disk_read_savesect_func (int sector, int offset, int length)
@@ -1522,10 +1547,23 @@ install_func (char *arg, int flags)
     }
 
   /* First, check the GNU-style long option.  */
-  if (grub_memcmp ("--force-lba", arg, 11) == 0)
+  while (1)
     {
-      is_force_lba = 1;
-      arg = skip_to (0, arg);
+      if (grub_memcmp ("--force-lba", arg, sizeof ("--force-lba") - 1) == 0)
+	{
+	  is_force_lba = 1;
+	  arg = skip_to (0, arg);
+	}
+#ifdef GRUB_UTIL
+      else if (grub_memcmp ("--stage2=", arg, sizeof ("--stage2=") - 1) == 0)
+	{
+	  stage2_os_file = arg + sizeof ("--stage2=") - 1;
+	  arg = skip_to (0, arg);
+	  nul_terminate (stage2_os_file);
+	}
+#endif /* GRUB_UTIL */
+      else
+	break;
     }
   
   stage1_file = arg;
@@ -1568,6 +1606,7 @@ install_func (char *arg, int flags)
 
   /* Store the information for the destination device.  */
   dest_drive = current_drive;
+  dest_partition = current_partition;
   dest_geom = buf_geom;
   dest_sector = part_start;
 
@@ -1612,6 +1651,7 @@ install_func (char *arg, int flags)
 
   src_drive = current_drive;
   src_partition = current_partition;
+  src_part_start = part_start;
   src_geom = buf_geom;
   
   if (! new_drive)
@@ -1810,16 +1850,65 @@ install_func (char *arg, int flags)
 	      
 	      /* Copy the name.  */
 	      grub_strcpy (location, real_config_filename);
-
 	    }
 	  
 	  /* Write it to the disk.  */
 	  buf_track = -1;
-	  if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
-			saved_sector, 1, SCRATCHSEG))
+
+#ifdef GRUB_UTIL
+	  /* In the grub shell, access the Stage 2 via the OS filesystem
+	     service, if possible.  */
+	  if (stage2_os_file)
 	    {
-	      errnum = ERR_WRITE;
-	      goto fail;
+	      FILE *fp;
+
+	      fp = fopen (stage2_os_file, "r");
+	      if (! fp)
+		{
+		  errnum = ERR_FILE_NOT_FOUND;
+		  goto fail;
+		}
+
+	      if (fseek (fp, SECTOR_SIZE, SEEK_SET) != 0)
+		{
+		  fclose (fp);
+		  errnum = ERR_BAD_VERSION;
+		  goto fail;
+		}
+
+	      if (fwrite ((const void *) SCRATCHADDR, 1, SECTOR_SIZE, fp)
+		  != SECTOR_SIZE)
+		{
+		  fclose (fp);
+		  errnum = ERR_WRITE;
+		  goto fail;
+		}
+
+	      fclose (fp);
+	    }
+	  else
+# ifdef __linux__
+	    /* Avoid the bug in Linux, which makes the disk cache for
+	       the whole disk inconsistent with the one for the partition.  */
+	    if (current_partition != 0xFFFFFF)
+	      {
+		if (! write_to_partition (device_map, current_drive,
+					  current_partition,
+					  saved_sector - part_start,
+					  1,
+					  (const char *) SCRATCHADDR))
+		  goto fail;
+	      }
+	  else
+# endif /* __linux__ */
+#endif /* GRUB_UTIL */
+	    {
+	      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
+			    saved_sector, 1, SCRATCHSEG))
+		{
+		  errnum = ERR_WRITE;
+		  goto fail;
+		}
 	    }
 	}
     }
@@ -1827,31 +1916,90 @@ install_func (char *arg, int flags)
   /* Clear the cache.  */
   buf_track = -1;
 
-  /* Write the modified first sector of Stage2 to the disk.  */
-  grub_memmove ((char *) SCRATCHADDR, stage2_first_buffer, SECTOR_SIZE);
-  if (biosdisk (BIOSDISK_WRITE, src_drive, &src_geom,
-		stage2_first_sector, 1, SCRATCHSEG))
+  /* Write the modified sectors of Stage2 to the disk.  */
+#ifdef GRUB_UTIL
+  if (! is_stage1_5 && stage2_os_file)
     {
-      errnum = ERR_WRITE;
-      goto fail;
+      FILE *fp;
+
+      fp = fopen (stage2_os_file, "r");
+      if (! fp)
+	{
+	  errnum = ERR_FILE_NOT_FOUND;
+	  goto fail;
+	}
+
+      if (fwrite (stage2_first_buffer, 1, SECTOR_SIZE, fp) != SECTOR_SIZE)
+	{
+	  fclose (fp);
+	  errnum = ERR_WRITE;
+	  goto fail;
+	}
+
+      if (fwrite (stage2_second_buffer, 1, SECTOR_SIZE, fp) != SECTOR_SIZE)
+	{
+	  fclose (fp);
+	  errnum = ERR_WRITE;
+	  goto fail;
+	}
+
+      fclose (fp);
     }
-  
-  /* Write the modified second sector of Stage2 to the disk.  */
-  grub_memmove ((char *) SCRATCHADDR, stage2_second_buffer, SECTOR_SIZE);
-  if (biosdisk (BIOSDISK_WRITE, src_drive, &src_geom,
-		stage2_second_sector, 1, SCRATCHSEG))
+  else
+# ifdef __linux__
+    if (src_partition != 0xFFFFFF)
+      {
+	if (! write_to_partition (device_map, src_drive, src_partition,
+				  stage2_first_sector - src_part_start,
+				  1, stage2_first_buffer))
+	  goto fail;
+
+	if (! write_to_partition (device_map, src_drive, src_partition,
+				  stage2_second_sector - src_part_start,
+				  1, stage2_second_buffer))
+	  goto fail;
+      }
+  else
+# endif /* __linux__ */
+#endif /* GRUB_UTIL */
     {
-      errnum = ERR_WRITE;
-      goto fail;
+      /* The first.  */
+      grub_memmove ((char *) SCRATCHADDR, stage2_first_buffer, SECTOR_SIZE);
+      if (biosdisk (BIOSDISK_WRITE, src_drive, &src_geom,
+		    stage2_first_sector, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  goto fail;
+	}
+      
+      /* The second.  */
+      grub_memmove ((char *) SCRATCHADDR, stage2_second_buffer, SECTOR_SIZE);
+      if (biosdisk (BIOSDISK_WRITE, src_drive, &src_geom,
+		    stage2_second_sector, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  goto fail;
+	}
     }
   
   /* Write the modified sector of Stage 1 to the disk.  */
-  grub_memmove ((char *) SCRATCHADDR, stage1_buffer, SECTOR_SIZE);
-  if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
-		dest_sector, 1, SCRATCHSEG))
+#if defined(GRUB_UTIL) && defined(__linux__)
+  if (dest_partition != 0xFFFFFF)
     {
-      errnum = ERR_WRITE;
-      goto fail;
+      if (! write_to_partition (device_map, dest_drive, dest_partition,
+				0, 1, stage1_buffer))
+	goto fail;
+    }
+  else
+#endif /* GRUB_UTIL && __linux__ */
+    {
+      grub_memmove ((char *) SCRATCHADDR, stage1_buffer, SECTOR_SIZE);
+      if (biosdisk (BIOSDISK_WRITE,	dest_drive, &dest_geom,
+		    dest_sector, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  goto fail;
+	}
     }
 
  fail:
@@ -1872,7 +2020,7 @@ static struct builtin builtin_install =
   "install",
   install_func,
   BUILTIN_CMDLINE,
-  "install [--force-lba] STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE] [REAL_CONFIG_FILE]",
+  "install [--stage2=STAGE2_FILE] [--force-lba] STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE] [REAL_CONFIG_FILE]",
   "Install STAGE1 on DEVICE, and install a blocklist for loading STAGE2"
   " as a Stage 2. If the option `d' is present, the Stage 1 will always"
   " look for the disk where STAGE2 was installed, rather than using"
@@ -1885,7 +2033,8 @@ static struct builtin builtin_install =
   " 1.5 and REAL_CONFIG_FILE is present, then the Stage 2 CONFIG_FILE is"
   " patched with the configuration filename REAL_CONFIG_FILE."
   " If the option `--force-lba' is specified, disable some sanity checks"
-  " for LBA mode."
+  " for LBA mode. If the option `--stage2' is specified, rewrite the Stage"
+  " 2 via your OS's filesystem instead of the raw device."
 };
 
 
@@ -2729,6 +2878,7 @@ setup_func (char *arg, int flags)
   char device[16];
   char *buffer = (char *) RAW_ADDR (0x100000);
   int is_force_lba = 0;
+  char *stage2_arg = 0;
   
   static void sprint_device (int drive, int partition)
     {
@@ -2772,10 +2922,23 @@ setup_func (char *arg, int flags)
   tmp_partition = saved_partition;
 
   /* Check if the user specifies --force-lba.  */
-  if (grub_memcmp ("--force-lba", arg, 11) == 0)
+  while (1)
     {
-      is_force_lba = 1;
-      arg = skip_to (0, arg);
+      if (grub_memcmp ("--force-lba", arg, sizeof ("--force-lba") - 1) == 0)
+	{
+	  is_force_lba = 1;
+	  arg = skip_to (0, arg);
+	}
+#ifdef GRUB_UTIL
+      else if (grub_memcmp ("--stage2=", arg, sizeof ("--stage2=") - 1) == 0)
+	{
+	  stage2_arg = arg;
+	  arg = skip_to (0, arg);
+	  nul_terminate (stage2_arg);
+	}
+#endif /* GRUB_UTIL */
+      else
+	break;
     }
   
   install_ptr = arg;
@@ -2889,8 +3052,10 @@ setup_func (char *arg, int flags)
   
 #ifdef NO_BUGGY_BIOS_IN_THE_WORLD
   /* I prefer this, but...  */
-  grub_sprintf (cmd_arg, "%s%s %s%s %s p %s",
-		is_force_lba? "--force-lba " : "",
+  grub_sprintf (cmd_arg, "%s%s%s%s %s%s %s p %s",
+		is_force_lba? "--force-lba" : "",
+		stage2_arg? stage2_arg : "",
+		stage2_arg? " " : "",
 		stage1,
 		(installed_drive != image_drive) ? "d " : "",
 		device,
@@ -2901,8 +3066,10 @@ setup_func (char *arg, int flags)
      may not expect that your BIOS will pass a booting drive to stage1
      correctly. Thus, always specify the option `d', whether
      INSTALLED_DRIVE is identical with IMAGE_DRIVE or not. *sigh*  */
-  grub_sprintf (cmd_arg, "%s%s d %s %s p %s",
+  grub_sprintf (cmd_arg, "%s%s%s%s d %s %s p %s",
 		is_force_lba? "--force-lba " : "",
+		stage2_arg? stage2_arg : "",
+		stage2_arg? " " : "",
 		stage1,
 		device,
 		stage2,
@@ -2932,7 +3099,7 @@ static struct builtin builtin_setup =
   "setup",
   setup_func,
   BUILTIN_CMDLINE,
-  "setup [--force-lba] INSTALL_DEVICE [IMAGE_DEVICE]",
+  "setup [--stage2=STAGE2_FILE] [--force-lba] INSTALL_DEVICE [IMAGE_DEVICE]",
   "Set up the installation of GRUB automatically. This command uses"
   " the more flexible command \"install\" in the backend and installs"
   " GRUB into the device INSTALL_DEVICE. If IMAGE_DEVICE is specified,"
@@ -2940,6 +3107,9 @@ static struct builtin builtin_setup =
   " use the current \"root device\", which can be set by the command"
   " \"root\". If you know that your BIOS should support LBA but GRUB"
   " doesn't work in LBA mode, specify the option `--force-lba'."
+  " If you install GRUB under the grub shell and you cannot unmount the"
+  " partition where GRUB images reside, specify the option `--stage2'"
+  " to tell GRUB the file name under your OS."
 };
 
 

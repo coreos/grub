@@ -262,7 +262,7 @@ test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 root $root_drive
-setup $force_lba $install_drive
+setup $force_lba --stage2=$grub_dir/stage2 $install_drive
 quit
 EOF
 

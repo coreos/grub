@@ -39,4 +39,9 @@ extern int init_device_map (char ***map, const char *map_file,
 			    int no_floppies);
 extern void restore_device_map (char **map);
 
+#ifdef __linux__
+extern int write_to_partition (char **map, int drive, int partition,
+			       int offset, int size, const char *buf);
+#endif /* __linux__ */
+			       
 #endif /* DEVICE_MAP_HEADER */

@@ -1,3 +1,36 @@
+2000-08-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/builtins.c [GRUB_UTIL]: Include stdio.h.
+	(embed_func) [GRUB_UTIL && __linux__]: When embedding a Stage
+	1.5 into a partition, call write_to_partition instead of
+	biosdisk.
+	(install_func): Set DEST_PARTITION to the partition where Stage
+	1 resides.
+	Set SRC_PART_START to the starting address of the partition
+	where Stage 2 resides.
+	(install_func) [GRUB_UTIL]: Set STAGE2_OS_FILE to the file name
+	of Stage 2 under an OS, if the new option "--stage2" is
+	specified. Otherwise, set it to null.
+	If STAGE2_OS_FILE is not null, modify the Stage 2 via the
+	filesystem serviced by the OS.
+	(install_func) [GRUB_UTIL && __linux__]: If STAGE2_OS_FILE is
+	null but the Stage2 resides in a partition, use
+	write_to_partition.
+	If DEST_PARTITION is not 0xFFFFFF, use write_to_partition, to
+	embed Stage 1.
+	(setup_func) [GRUB_UTIL]: If --stage2 is specified, set
+	STAGE2_ARG to the string pointing to the option. Otherwise, set
+	it to null.
+	(setup_func) [!GRUB_UTIL]: Set STAGE2_ARG to null.
+	(setup_func): If STAGE2_ARG is not null, add STAGE2_ARG and a
+	space character into CMD_ARG.
+	* lib/device.c (_LARGEFILE_SOURCE): Defined.
+	(_FILE_OFFSET_BITS): Likewise.
+	[__linux__] (write_to_partition): New function.
+	* lib/device.h [__linux__] (write_to_partition): Declared.
+	* util/grub-install.in: Specify the option "--stage2" for the
+	command "setup".
+	
 2000-08-04  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_fat.c (fat_superblock): clust_eof_marker added.
