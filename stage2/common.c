@@ -1,7 +1,7 @@
 /* common.c - miscellaneous shared variables and routines */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -77,6 +77,7 @@ char *err_list[] =
   [ERR_NO_DISK] = "Selected disk does not exist",
   [ERR_NO_DISK_SPACE] = "No spare sectors on the disk",
   [ERR_NO_PART] = "No such partition",
+  [ERR_NUMBER_OVERFLOW] = "Overflow while parsing number",
   [ERR_NUMBER_PARSING] = "Error while parsing number",
   [ERR_OUTSIDE_PART] = "Attempt to access block outside partition",
   [ERR_PRIVILEGED] = "Must be authenticated",

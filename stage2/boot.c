@@ -1,7 +1,7 @@
 /* boot.c - load and bootstrap a kernel */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 static int cur_addr;
 entry_func entry_addr;
 static struct mod_list mll[99];
-
+static int linux_mem_size;
 
 /*
  *  The next two functions, 'load_image' and 'load_module', are the building
@@ -297,6 +297,60 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 
 		lh->vid_mode = vid_mode;
 	      }
+	  }
+
+	  /* Check the mem= option to limit memory used for initrd.  */
+	  {
+	    char *mem;
+	    
+	    mem = grub_strstr (arg, "mem=");
+	    if (mem)
+	      {
+		char *value = mem + 4;
+
+		safe_parse_maxint (&value, &linux_mem_size);
+		switch (errnum)
+		  {
+		  case ERR_NUMBER_OVERFLOW:
+		    /* If an overflow occurs, use the maximum address for
+		       initrd instead. This is good, because MAXINT is
+		       greater than LINUX_INITRD_MAX_ADDRESS.  */
+		    linux_mem_size = LINUX_INITRD_MAX_ADDRESS;
+		    errnum = ERR_NONE;
+		    break;
+		    
+		  case ERR_NONE:
+		    {
+		      int shift = 0;
+		      
+		      switch (grub_tolower (*value))
+			{
+			case 'g':
+			  shift += 10;
+			case 'm':
+			  shift += 10;
+			case 'k':
+			  shift += 10;
+			default:
+			  break;
+			}
+
+		      /* Check an overflow.  */
+		      if (linux_mem_size > (MAXINT >> shift))
+			linux_mem_size = LINUX_INITRD_MAX_ADDRESS;
+		      else
+			linux_mem_size <<= shift;
+		    }
+		    break;
+		    
+		  default:
+		    linux_mem_size = 0;
+		    errnum = ERR_NONE;
+		    break;
+		  }
+	      }
+	    else
+	      linux_mem_size = 0;
 	  }
 		
 	  memmove ((char *) LINUX_SETUP, buffer, data_len + SECTOR_SIZE);
@@ -720,7 +774,12 @@ load_initrd (char *initrd)
       goto fail;
     }
 
-  moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
+  if (linux_mem_size)
+    moveto = linux_mem_size;
+  else
+    moveto = (mbi.mem_upper + 0x400) << 10;
+  
+  moveto = (moveto - len) & 0xfffff000;
   if (moveto + len >= LINUX_INITRD_MAX_ADDRESS)
     moveto = (LINUX_INITRD_MAX_ADDRESS - len) & 0xfffff000;
   

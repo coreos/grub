@@ -1,3 +1,17 @@
+2002-03-26  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/boot.c (linux_mem_size): New variable.
+	(load_image): Check a mem= option and set LINUX_MEM_SIZE to the
+	specified memory size, if any. Otherwise, to zero. When an
+	overflow is detected, use LINUX_INITRD_MAX_ADDRESS instead.
+	(load_initrd): If LINUX_MEM_SIZE is non-zero, use it instead of
+	the actual memory size.
+	* stage2/char_io.c (safe_parse_maxint): Use ERR_NUMBER_OVERFLOW
+	instead of ERR_NUMBER_PARSING, when an overflow occurs.
+	* stage2/common.c [!STAGE1_5] (err_list): Added
+	ERR_NUMBER_OVERFLOW.
+	* stage2/shared.h (ERR_NUMBER_OVERFLOW): New constant.
+	
 2002-03-24  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/stage2.c (run_menu): Call cls outside the loop to run

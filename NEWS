@@ -17,6 +17,11 @@ New in 0.92:
 * The command "terminal" accepts a new option, "--lines=LINES". You can
   set the maximum number of lines arbitrarily with this option. If you
   don't specify it, the maximum number will be 24.
+* The mem= option for Linux is recognized and used to limit the maximum
+  address of initrd.
+* A fallback entry is executed immediately after a default entry,
+  without prompting a user's intervention, as the manual has ever been
+  saying.
 
 New in 0.91 - 2002-01-21:
 * Support for Linux DAC960 is added.

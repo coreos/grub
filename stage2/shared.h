@@ -548,6 +548,7 @@ typedef enum
   ERR_PRIVILEGED,
   ERR_NEED_SERIAL,
   ERR_NO_DISK_SPACE,
+  ERR_NUMBER_OVERFLOW,
 
   MAX_ERR_NUM
 } grub_error_t;

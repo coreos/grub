@@ -948,7 +948,7 @@ safe_parse_maxint (char **str_ptr, int *myint_ptr)
       found = 1;
       if (myint > ((MAXINT - digit) / mult))
 	{
-	  errnum = ERR_NUMBER_PARSING;
+	  errnum = ERR_NUMBER_OVERFLOW;
 	  return 0;
 	}
       myint = (myint * mult) + digit;
