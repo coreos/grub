@@ -31,7 +31,7 @@ binary-arch:	checkroot build
 	$(checkdir)
 	-rm -rf debian/tmp
 ## make dirs
-	install -d debian/tmp debian/tmp/usr/doc/grub debian/tmp/DEBIAN
+	install -d debian/tmp debian/tmp/usr/doc/grub/docs debian/tmp/DEBIAN
 ## install files
 
 	dir=`cd debian/tmp && pwd` && make install DESTDIR=$$dir
@@ -39,9 +39,10 @@ binary-arch:	checkroot build
 
 	mv debian/tmp/info debian/tmp/usr/info
 
-	cp -r docs debian/tmp/usr/doc/grub/
+	cp docs/*.{txt,html} debian/tmp/usr/doc/grub/docs/
+	$(INSTALL_DATA)	docs/TODO debian/tmp/usr/doc/grub/docs/
+	$(INSTALL_DATA)	docs/BUGS debian/tmp/usr/doc/grub/docs/
 	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/docs/
-	rm -f debian/tmp/usr/doc/grub/docs/COPYING
 
 	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/changelog
 	gzip -f9 debian/tmp/usr/doc/grub/changelog
