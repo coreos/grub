@@ -1,3 +1,10 @@
+2005-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* grub/asmstub.c (console_current_color): Make it global as
+	declared.
+	(grub_stage2): Tweak the declaration and the definition of the
+	nested function doit.
+
 2005-02-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/smp-imps.h (imps_any_new_apics): Removed.

@@ -90,7 +90,7 @@ char **device_map = 0;
 static jmp_buf env_for_exit;
 
 /* The current color for console.  */
-static int console_current_color = A_NORMAL;
+int console_current_color = A_NORMAL;
 
 /* The file descriptor for a serial device.  */
 static int serial_fd = -1;
@@ -113,11 +113,11 @@ grub_stage2 (void)
   char *scratch, *simstack;
   int i;
 
-  auto volatile void doit (void);
+  auto void doit (void);
   
   /* We need a nested function so that we get a clean stack frame,
      regardless of how the code is optimized. */
-  auto volatile void doit (void)
+  volatile void doit (void)
     {
       /* Make sure our stack lives in the simulated memory area. */
       asm volatile ("movl %%esp, %0\n\tmovl %1, %%esp\n"
