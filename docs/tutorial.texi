@@ -431,6 +431,11 @@ grub> initrd /initrd
 Finally, run the command @command{boot}.
 @end enumerate
 
+@strong{Caution:} If you use an initrd and specify the @samp{mem=}
+option to the kernel, to let it use less than actual memory size, you
+will also have to specify the same memory size to GRUB. To let GRUB know
+the size, run the command @command{uppermem} @emph{before} loading the
+kernel. See @xref{Command-line-specific commands}, for more information.
 
 @node FreeBSD
 @subsection FreeBSD
