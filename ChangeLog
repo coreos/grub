@@ -18,10 +18,10 @@
 	(EXTRA_DIST): Add $(man_MANS) and $(noinst_SCRIPTS).
 	[GRUB_MAINT]: Define the rule for the /sbin/grub manual.
 	* docs/help2man: Copied from texinfo-3.12i.
-	(--sector): New option to specify which section a manual belongs
-	to.
-	(opt_sector): New variable.
-	(sector): Likewise.
+	(--section): New option to specify which section a manual
+	belongs	to.
+	(opt_section): New variable.
+	(section): Likewise.
 	* docs/grub.8: Produced by help2man automatically.
 	
 1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
