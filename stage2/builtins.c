@@ -3080,7 +3080,14 @@ savedefault_func (char *arg, int flags)
       return 1;
     }
 
-  entryno_ptr = (int *) ((char *) buffer + STAGE2_SAVED_ENTRYNO);
+  /* Sanity check.  */
+  if (buffer[STAGE2_STAGE2_ID] != STAGE2_ID_STAGE2)
+    {
+      errnum = ERR_BAD_VERSION;
+      return 1;
+    }
+  
+  entryno_ptr = (int *) (buffer + STAGE2_SAVED_ENTRYNO);
 
   /* Check if the saved entry number differs from current entry number.  */
   if (*entryno_ptr != current_entryno)

@@ -957,6 +957,11 @@ cmain (void)
 	  grub_memmove (config_entries + config_len, menu_entries, menu_len);
 	  menu_entries = config_entries + config_len;
 
+	  /* Check if the default entry is present. Otherwise reset
+	     DEFAULT_ENTRY.  */
+	  if (default_entry >= num_entries)
+	    default_entry = 0;
+
 	  if (is_preset)
 	    close_preset_menu ();
 	  else

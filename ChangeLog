@@ -1,5 +1,14 @@
 2001-02-02  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/builtins.c (savedefault_func)
+	[!SUPPORT_DISKLESS && !GRUB_UTIL]: Check if the stage2 is
+	STAGE2_ID_STAGE2. Suggested by Jochen Hoenicke.
+	
+	* stage2/stage2.c (cmain): If DEFAULT_ENTRY is out of entries,
+	reset DEFAULT_ENTRY to zero.
+	
+2001-02-02  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Make savedefault workable even with Stage 1.5. Reported by
 	Thierry Laronde <thierry@cri74.org>.
 	
