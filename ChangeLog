@@ -1,3 +1,10 @@
+2004-11-02  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* term/powerpc/ieee1275/ofconsole.c (grub_ofconsole_readkey): Test
+	`actual' for negativity.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Remove
+	kern/fshelp.c.
+
 2004-11-01  Marco Gerards  <metgerards@student.han.nl>
 
 	* term/i386/pc/vga.c (VGA_HEIGHT): Changed to 350.

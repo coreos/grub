@@ -124,10 +124,10 @@ grub_ofconsole_readkey (int *key)
 
   grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 
-  if (actual && c == '\e')
+  if (actual > 0 && c == '\e')
     {
       grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-      if (! actual)
+      if (actual <= 0)
 	{
 	  *key = '\e';
 	  return 1;
@@ -137,7 +137,7 @@ grub_ofconsole_readkey (int *key)
 	return 0;
       
       grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
-      if (! actual)
+      if (actual <= 0)
 	return 0;
       
       switch (c)
@@ -162,7 +162,7 @@ grub_ofconsole_readkey (int *key)
     }
   
   *key = c;
-  return actual;
+  return actual > 0;
 }
 
 static int

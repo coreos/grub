@@ -26,7 +26,7 @@ grub_emu_SOURCES = kern/main.c kern/device.c				\
         kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
 	disk/powerpc/ieee1275/partition.c fs/fshelp.c			\
 	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c	\
-	fs/jfs.c fs/iso9660.c kern/fshelp.c \
+	fs/jfs.c fs/iso9660.c \
 	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
 	normal/arg.c	\
 	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c \
