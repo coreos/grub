@@ -288,6 +288,10 @@ extern char config_file[];
 extern int use_config_file;
 /* If not using curses, this variable is set to zero, otherwise non-zero.  */
 extern int use_curses;
+/* The flag for verbose messages.  */
+extern int verbose;
+/* The flag for read-only.  */
+extern int read_only;
 #endif
 
 #ifndef STAGE1_5

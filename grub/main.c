@@ -34,6 +34,8 @@ int grub_stage2 (void);
 char *program_name = 0;
 int use_config_file = 1;
 int use_curses = 1;
+int verbose = 0;
+int read_only = 0;
 static int default_boot_drive;
 static int default_install_partition;
 static char *default_config_file;
@@ -47,6 +49,8 @@ static char *default_config_file;
 #define OPT_NO_CONFIG_FILE -8
 #define OPT_NO_CURSES -9
 #define OPT_BATCH -10
+#define OPT_VERBOSE -11
+#define OPT_READ_ONLY -12
 #define OPTSTRING ""
 
 static struct option longopts[] =
@@ -60,6 +64,8 @@ static struct option longopts[] =
   {"no-config-file", no_argument, 0, OPT_NO_CONFIG_FILE},
   {"no-curses", no_argument, 0, OPT_NO_CURSES},
   {"batch", no_argument, 0, OPT_BATCH},
+  {"verbose", no_argument, 0, OPT_VERBOSE},
+  {"read-only", no_argument, 0, OPT_READ_ONLY},
   {0},
 };
 
@@ -83,6 +89,8 @@ Enter the GRand Unified Bootloader command shell.\n\
     --install-partition=PAR  specify stage2 install_partition [default=0x%x]\n\
     --no-config-file         do not use the config file\n\
     --no-curses              do not use curses\n\
+    --read-only              do not write anything to devices\n\
+    --verbose                print verbose messages\n\
     --version                print version information and exit\n\
 \n\
 Report bugs to bug-grub@gnu.org\n\
@@ -167,6 +175,14 @@ main (int argc, char **argv)
 	  use_curses = 0;
 	  break;
 
+	case OPT_READ_ONLY:
+	  read_only = 1;
+	  break;
+
+	case OPT_VERBOSE:
+	  verbose = 1;
+	  break;
+	  
 	default:
 	  usage (1);
 	}
@@ -174,6 +190,9 @@ main (int argc, char **argv)
   while (c != EOF);
 
   /* Wait until the HOLD variable is cleared by an attached debugger. */
+  if (hold && verbose)
+    grub_printf ("Run \"gdb %s %d\", and set HOLD to zero.\n",
+		 program_name, (int) getpid ());
   while (hold)
     sleep (1);
 

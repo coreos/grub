@@ -508,11 +508,17 @@ get_diskinfo (int drive, struct geometry *geometry)
       if (! devname)
 	return -1;
 
+      if (verbose)
+	grub_printf ("Attempt to open drive 0x%x (%s)\n",
+		     drive, devname);
+	  
       /* Open read/write, or read-only if that failed. */
-      disks[drive].flags = open (devname, O_RDWR);
+      if (! read_only)
+	disks[drive].flags = open (devname, O_RDWR);
+      
       if (disks[drive].flags == -1)
 	{
-	  if (errno == EACCES || errno == EROFS)
+	  if (read_only || errno == EACCES || errno == EROFS)
 	    {
 	      disks[drive].flags = open (devname, O_RDONLY);
 	      if (disks[drive].flags == -1)
@@ -632,6 +638,55 @@ nwrite (int fd, char *buf, size_t len)
   return size;
 }
 
+/* Dump BUF in the format of hexadecimal numbers.  */
+static void
+hex_dump (void *buf, size_t size)
+{
+  /* FIXME: How to determine which length is readable?  */
+#define MAX_COLUMN	70
+
+  /* use unsigned char for numerical computations */
+  unsigned char *ptr = buf;
+  /* count the width of the line */
+  int column = 0;
+  /* how many bytes written */
+  int count = 0;
+  
+  while (size > 0)
+    {
+      /* high 4 bits */
+      int hi = *ptr >> 4;
+      /* low 4 bits */
+      int low = *ptr & 0xf;
+
+      /* grub_printf does not handle prefix number, such as %2x, so
+	 format the number by hand...  */
+      grub_printf ("%x%x", hi, low);
+      column += 2;
+      count++;
+      ptr++;
+      size--;
+
+      /* Insert space or newline with the interval 4 bytes.  */
+      if (size != 0 && (count % 4) == 0)
+	{
+	  if (column < MAX_COLUMN)
+	    {
+	      grub_printf (" ");
+	      column++;
+	    }
+	  else
+	    {
+	      grub_printf ("\n");
+	      column = 0;
+	    }
+	}
+    }
+
+  /* Add a newline at the end for readability.  */
+  grub_printf ("\n");
+}
+
 int
 biosdisk (int subfunc, int drive, struct geometry *geometry,
 	  int sector, int nsec, int segment)
@@ -669,10 +724,20 @@ biosdisk (int subfunc, int drive, struct geometry *geometry,
       if (nread (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
 	return -1;
       break;
+      
     case BIOSDISK_WRITE:
-      if (nwrite (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
-	return -1;
+      if (verbose)
+	{
+	  grub_printf ("Write %d sectors starting from %d sector"
+		       " to drive 0x%x (%s)\n",
+		       nsec, sector, drive, device_map[drive]);
+	  hex_dump (buf, nsec * SECTOR_SIZE);
+	}
+      if (! read_only)
+	if (nwrite (fd, buf, nsec * SECTOR_SIZE) != nsec * SECTOR_SIZE)
+	  return -1;
       break;
+      
     default:
       grub_printf ("unknown subfunc %d\n", subfunc);
       break;

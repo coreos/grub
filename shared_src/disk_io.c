@@ -599,9 +599,11 @@ set_device (char *device)
   current_drive = saved_drive;
   current_partition = 0xFFFFFF;
 
+#ifndef STAGE1_5
   if (*device == '(' && !*(device + 1))
     /* user has given '(' only, let disk_choice handle what disks we have */
     return device + 1;
+#endif
   
   if (*device == '(' && *(++device))
     {
@@ -609,6 +611,7 @@ set_device (char *device)
 	{
 	  char ch = *device;
 
+#ifndef STAGE1_5
 	  if (*device == 'f' || *device == 'h')
 	    {
 	      /* user has given '([fh]', check for resp. add 'd' and 
@@ -623,6 +626,7 @@ set_device (char *device)
 	      else if (*(device + 1) == 'd' && !*(device + 2))
 		return device + 2;
 	    }
+#endif
  
 	  if ((*device == 'f' || *device == 'h')
 	      && (device += 2, (*(device - 1) != 'd')))

@@ -4,9 +4,6 @@ Change partition syntax to correspond with BSD ``slice'' syntax
 Add a partition naming syntax that means ``the first partition of this
 type''.  We need this for clean Hurd install floppies.
 
-Find out the size restrictions for FAT and ext2fs stage1.5 boot
-blocks.  Enforce all arbitrary limits using the Makefiles.
-
 Add a real scripting language, possibly retaining backward
 compatibility so that old config files can be used.
 

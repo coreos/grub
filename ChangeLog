@@ -1,3 +1,31 @@
+1999-06-02  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/main.c (verbose): New variable.
+	(read_only): Likewise.
+	(OPT_VERBOSE): New macro.
+	(OPT_READ_ONLY): Likewise.
+	(longopts): Add --read-only and --verbose options.
+	(usage): Add the descriptions about --read-only and --verbose.
+	(main): Handle OPT_VERBOSE and OPT_READ_ONLY.
+	If HOLD and VERBOSE are non-zero, then display the message
+	about how to restart /sbin/grub.
+	
+	* shared_src/shared.h (verbose) [GRUB_UTIL]: Declared.
+	(read_only) [GRUB_UTIL]: Likewise.
+
+	* grub/asmstub.c (hex_dump): New function.
+	(biosdisk): In the case where SUBFUNC is
+	BIOSDISK_WRITE, check for READ_ONLY and call nwrite if
+	READ_ONLY is zero. If VERBOSE is non-zero, display what GRUB
+	will try to do.
+	(get_diskinfo): Open DEVNAME with the mode O_RDWR if READ_ONLY
+	is zero, and attempt to open DEVNAME with the mode O_RDONLY
+	regardless of ERRNO if READ_ONLY is non-zero. If VERBOSE is
+	non-zero, then display the drive DRIVE and the file DEVNAME.
+
+	* shared_src/disk_io.c (set_device) [STAGE1_5]: Eliminate
+	completion code.
+	
 1999-06-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c: Do not use I_AM_VERY_BRAVE any more.
