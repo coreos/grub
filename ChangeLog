@@ -1,3 +1,9 @@
+2001-09-24  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/fsys_reiserfs.c (reiserfs_dir):  Set errnum to 
+	ERR_FSYS_CORRUPT if a symlink can't be read for some reason,
+	but no error is set by read.
+	
 2001-08-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Derrik Pates <dpates@dsdk12.net>:

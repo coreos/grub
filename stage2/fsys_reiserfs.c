@@ -1037,7 +1037,11 @@ reiserfs_dir (char *dirname)
   	  filepos = 0;
 	  if (! next_key ()
 	      || reiserfs_read (linkbuf, filemax) != filemax)
-	    return 0;
+	    {
+	      if (! errnum)
+		errnum = ERR_FSYS_CORRUPT;
+	      return 0;
+	    }
 
 #ifdef REISERDEBUG
 	  printf ("symlink=%s\n", linkbuf);
