@@ -58,6 +58,7 @@ Priorities:
 
 ? Add a partition naming syntax that means ``the first partition of
   this type''.  We need this for clean Hurd install floppies.
+  Nope.  Improving the `find' command would solve this problem.
 
 * Add a real scripting language, possibly retaining backward
   compatibility so that old config files can be used.

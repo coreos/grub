@@ -1,3 +1,9 @@
+2000-06-12  Gordon Matzigkeit  <gord@fig.org>
+
+	* stage2/stage2.c (run_menu): Don't display the menu if the
+	timeout is zero.  This makes for cleaner use as a noninteractive
+	bootloader.
+
 2000-06-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/tutorial.texi (GNU/Linux): Added a caution about the

@@ -182,48 +182,54 @@ run_menu (char *menu_entries, char *config_entries, int num_entries,
 restart:
   while (entryno > 11)
     {
-      first_entry++;
-      entryno--;
+      first_entry ++;
+      entryno --;
     }
 
-  init_page ();
+  /* Only display the menu if we're not out of time. */
+  if (grub_timeout != 0)
+    {
+      init_page ();
 #ifndef GRUB_UTIL
-  nocursor ();
+      nocursor ();
 #endif
 
-  print_border (3, 12);
+      print_border (3, 12);
 
 #ifdef GRUB_UTIL
-  grub_printf ("\n
-      Use the up and down arrows for selecting which entry is highlighted.\n");
+      grub_printf ("\n\
+      Use the up and down arrows to select which entry is highlighted.\n");
 #else
-  grub_printf ("\n
-      Use the %c and %c keys for selecting which entry is highlighted.\n",
-	  DISP_UP, DISP_DOWN);
+      grub_printf ("\n\
+      Use the %c and %c keys to select which entry is highlighted.\n",
+		   DISP_UP, DISP_DOWN);
 #endif
 
-  if (! auth && password)
-    {
-      printf ("       Press enter to boot the selected OS or \'p\' to enter a
-        password to unlock the next set of features.");
-    }
-  else
-    {
-      if (config_entries)
-	printf ("       Press enter to boot the selected OS, \'e\' to edit the
-        commands before booting, or \'c\' for a command-line.");
+      if (! auth && password)
+	{
+	  printf ("\
+      Press enter to boot the selected OS or \'p\' to enter a\n\
+      password to unlock the next set of features.");
+	}
       else
-	printf (
-"      Press \'b\' to boot, \'e\' to edit the selected command in the
-      boot sequence, \'c\' for a command-line, \'o\' to open a new line
-      after (\'O\' for before) the selected line, \'d\' to remove the
+	{
+	  if (config_entries)
+	    printf ("\
+      Press enter to boot the selected OS, \'e\' to edit the\n\
+      commands before booting, or \'c\' for a command-line.");
+	  else
+	    printf ("\
+      Press \'b\' to boot, \'e\' to edit the selected command in the\n\
+      boot sequence, \'c\' for a command-line, \'o\' to open a new line\n\
+      after (\'O\' for before) the selected line, \'d\' to remove the\n\
       selected line, or escape to go back to the main menu.");
+	}
+
+      print_entries (3, 12, first_entry, menu_entries);
+
+      /* highlight initial line */
+      set_line_highlight (4 + entryno);
     }
-
-  print_entries (3, 12, first_entry, menu_entries);
-
-  /* highlight initial line */
-  set_line_highlight (4 + entryno);
 
   /* XX using RT clock now, need to initialize value */
   while ((time1 = getrtsecs()) == 0xFF);
