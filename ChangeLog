@@ -1,5 +1,15 @@
 2000-10-08  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* util/grub-install.in (grub_prefix): New variable. The default
+	is "/boot/grub".
+	If the user has a separate boot partition, set grub_prefix
+	instead of grubdir to "/grub".
+	When running the command "setup", specify $grub_prefix instead
+	of $grubdir to the option "--prefix".
+	Report by Thierry Laronde.
+	
+2000-10-08  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/builtins.c (find_func): Clear ERRNUM after the last
 	call of next_partition, because it always sets ERRNUM. Reported
 	by Thierry Laronde <thierry.laronde@polynum.com>.

@@ -32,6 +32,7 @@ pkgdatadir=${datadir}/${PACKAGE}/${host_cpu}-${host_vendor}
 grub_shell=${sbindir}/grub
 log_file=/tmp/grub-install.log.$$
 rootdir=
+grub_prefix=/boot/grub
 
 install_device=
 force_lba=
@@ -240,7 +241,7 @@ bootdir_device=`df ${bootdir} | grep /dev/ \
 if test "x$root_device" != "x$bootdir_device"; then
     # Perhaps the user has a separate boot partition.
     root_device=$bootdir_device
-    grubdir="/grub"
+    grub_prefix="/grub"
 fi
 
 # Convert the root device to a GRUB drive.
@@ -277,7 +278,7 @@ test -x /bin/tempfile && log_file=`tempfile --prefix=grub`
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 root $root_drive
-setup $force_lba --stage2=$grubdir/stage2 --prefix=$grubdir $install_drive
+setup $force_lba --stage2=$grubdir/stage2 --prefix=$grub_prefix $install_drive
 quit
 EOF
 
