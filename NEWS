@@ -5,6 +5,7 @@ New in 0.91:
 * JFS and XFS support is added.
 * The commands "hide" and "unhide" support logical partitions.
 * The utility ``grub-install'' supports NetBSD.
+* The network support is updated to Etherboot-5.0.5.
 * Important bugfixes are made for ReiserFS, APM, TFTP, etc.
 
 New in 0.90 - 2001-07-11:

@@ -70,7 +70,7 @@
 	* netboot/tulip.c: Likewise.
 	* netboot/via-rhine.c: Likewise.
 	
-	* netboot/config.c: Applied a diff between Etherboot-4.6.18 and
+	* netboot/config.c: Applied a diff between Etherboot-4.6.4 and
 	Etherboot-5.0.5 manually.
 	* netboot/main.c: Likewise.
 	* netboot/pci.c: Likewise.
