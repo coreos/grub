@@ -8,7 +8,7 @@
 	inverted.
 	Reported by Timothy Baldwin <T.E.Baldwin99@members.leeds.ac.uk>
 
-2003-06-17  Jochen Hoenicke  <jochen@gnu.org>
+2003-08-12  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c (read_tree_node): Fixed a typo; only
 	matters for very large fs when tree doesn't fit in cache.
