@@ -241,8 +241,10 @@ get_cmdline (char *prompt, char *commands, char *cmdline, int maxlen,
 	  break;
 	case KEY_DC:
 	  c = 4;
+	  break;
 	case KEY_BACKSPACE:
 	  c = 8;
+	  break;
 	default:
 	}
 

@@ -147,7 +147,13 @@ set_line(int y, int attr)
 static int grub_timeout;
 
 
-static void
+typedef enum
+{
+  MENU_OK = 0,
+  MENU_ABORT
+} menu_t;
+
+static menu_t
 run_menu(char *menu_entries, char *config_entries, int num_entries,
 	 char *heap, int entryno)
 {
@@ -353,7 +359,7 @@ restart:
 
 	      cur_entry = menu_entries;
 	      if (c == 27)
-		return;
+		return MENU_OK;
 	      if (c == 'b')
 		break;
 	    }
@@ -378,7 +384,7 @@ restart:
 		      while (isspace (*pptr))
 			pptr ++;
 		      while ((*(new_file ++) = *(pptr ++)) != 0);
-		      return;
+		      return MENU_OK;
 		    }
 		  else
 		    {
@@ -464,7 +470,11 @@ restart:
 		}
 	      if (c == 'c')
 		{
-		  enter_cmdline (NULL, heap);
+		  /* Call the command-line interface, and if it aborts
+		     (by ``quit'' command), then return.  */
+		  if (enter_cmdline (NULL, heap) == CMDLINE_ABORT)
+		    return MENU_ABORT;
+		  
 		  goto restart;
 		}
 	    }
@@ -488,7 +498,7 @@ restart:
       if (!cur_entry)
 	cur_entry = get_entry(config_entries, first_entry+entryno, 1);
 
-      if (!(c = enter_cmdline (cur_entry, heap)))
+      if ((c = enter_cmdline (cur_entry, heap)) == CMDLINE_OK)
 	{
 	  if (fallback < 0)
 	    break;
@@ -501,8 +511,12 @@ restart:
 	    }
 	}
     }
-  while (!c);
+  while (c == CMDLINE_OK);
 
+  /* If aborted, then return.  */
+  if (c == CMDLINE_ABORT)
+    return MENU_ABORT;
+  
   /* Both the entry and the fallback failed, so wait for input. */
   printf ("      Press any key to continue...");
   getkey ();
@@ -675,20 +689,22 @@ cmain(void)
 	  menu_entries = config_entries + config_len;
 	}
 
-      /*
-       *  If no acceptable config file, goto command-line, starting heap from
-       *  where the config entries would have been stored if there were any.
-       */
+      if (! num_entries)
+	{
+	  /* If no acceptable config file, goto command-line, starting
+	     heap from where the config entries would have been stored
+	     if there were any.  */
+	  while (enter_cmdline (NULL, config_entries) != CMDLINE_ABORT)
+	    ;
 
-      if (!num_entries)
-	while (1)
-	  enter_cmdline (NULL, config_entries);
-
-      /*
-       *  Run menu interface (this shouldn't return!).
-       */
-
-      run_menu(menu_entries, config_entries, num_entries,
-	       menu_entries+menu_len, default_entry);
+	  return;
+	}
+      else
+	{
+	  /* Run menu interface.  */
+	  if (run_menu(menu_entries, config_entries, num_entries,
+		       menu_entries+menu_len, default_entry) == MENU_ABORT)
+	    return;
+	}
     }
 }

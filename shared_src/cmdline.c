@@ -111,7 +111,7 @@ char commands[] =
   \"rootnoverify= <device>\", \"chainloader= <file>\", \"kernel= <file> ...\",
   \"testload= <file>\", \"read= <addr>\", \"displaymem\", \"impsprobe\",
   \"fstest\", \"debug\", \"module= <file> ...\", \"modulenounzip= <file> ...\",
-  \"color= <normal> [<highlight>]\", \"makeactive\", \"boot\", and
+  \"color= <normal> [<highlight>]\", \"makeactive\", \"boot\", \"quit\" and
   \"install= <stage1_file> [d] <dest_dev> <file> <addr> [p] [<config_file>]\"\n";
 
 static void
@@ -149,7 +149,11 @@ debug_fs_blocklist_func(int sector)
 }
 
 
-int
+/* Run the command-line interface or execute a command from SCRIPT if
+   SCRIPT is not NULL. Return CMDLINE_OK if successful, CMDLINE_ABORT
+   if ``quit'' command is executed, and CMDLINE_ERROR if an error
+   occures or ESC is pushed.  */
+cmdline_t
 enter_cmdline (char *script, char *heap)
 {
   int bootdev, cmd_len, type = 0, run_cmdline = 1, have_run_cmdline = 0;
@@ -188,7 +192,7 @@ restart:
 	      printf("Press any key to continue...");
 	      (void) getkey ();
 returnit:
-	      return 0;
+	      return CMDLINE_OK;
 	    }
 
 	  run_cmdline = 1;
@@ -220,7 +224,7 @@ returnit:
     }
 
   if (run_cmdline && get_cmdline (PACKAGE "> ", commands, cur_heap, 2048, 0))
-    return 1;
+    return CMDLINE_ERROR;
 
   if (substring("boot", cur_heap) == 0 || (script && !*cur_heap))
     {
@@ -269,7 +273,7 @@ returnit:
   else if (substring("pause", cur_heap) < 1)
     {
       if (ASCII_CHAR (getkey ()) == 27)
-	return 1;
+	return CMDLINE_ERROR;
     }
   else if (substring("uppermem", cur_heap) < 1)
     {
@@ -489,7 +493,7 @@ returnit:
       if (script)
 	{
 	  fallback = -1;
-	  return 1;
+	  return CMDLINE_ERROR;
 	}
     }
   else if (substring("testload", cur_heap) < 1)
@@ -653,6 +657,14 @@ returnit:
 	    highlight_color = ((normal_color >> 4)
 			       | ((normal_color & 0xf) << 4));
 	}
+    }
+  else if (substring ("quit", cur_heap) < 1)
+    {
+#ifdef GRUB_UTIL
+      return CMDLINE_ABORT;
+#else
+      grub_printf (" The quit command is ignored in Stage2\n");
+#endif
     }
   else if (*cur_heap && *cur_heap != ' ')
     errnum = ERR_UNRECOGNIZED;

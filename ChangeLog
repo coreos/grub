@@ -1,5 +1,25 @@
 1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* shared_src/char_io.c (get_cmdline): Add two missing `break's.
+	
+	* shared_src/cmdline.c (commands): Add quit.
+	(enter_cmdline): Change the return type	to cmdline_t, and return
+	CMDLINE_OK if successful, otherwise CMDLINE_ERROR if fail.
+	(enter_cmdline) [GRUB_UTIL]: Return CMDLINE_ABORT if CUR_HEAP
+	contains "quit".
+	[!GRUB_UTIL]: Just print an annotation message.
+	* shared_src/shared.h (cmdline_t): New enum type.
+	(enter_cmdline): Change the return type to cmdline_t.
+	(cmain): Remove ``noreturn'' attribute.
+	* shared_src/stage2.c (menu_t): New enum type.
+	(run_menu): Change the return type to menu_t.
+	If enter_cmdline returns CMDLINE_ABORT, then return MENU_ABORT,
+	otherwise return MENU_OK.
+	(cmain): If enter_cmdline aborts, then break the command-line
+	loop and return. If run_menu aborts, then return.
+	
+1999-06-22  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* shared_src/Makefile.am (EXTRA_DIST): Add bios.c. Reported by
 	Pavel Roskin <pavel_roskin@geocities.com>.
 	

@@ -38,6 +38,4 @@ Add ``configfile'' command, in a clean way.
 
 Add keyboard layout configuration support.
 
-Add ``quit'' command for /sbin/grub.
-
 Finish the GNU GRUB manual, grub.texi.

@@ -383,7 +383,7 @@ extern char *cur_cmdline;
 extern entry_func entry_addr;
 
 /* Enter the stage1.5/stage2 C code after the stack is set up. */
-void cmain (void) __attribute__ ((noreturn));
+void cmain (void);
 
 /* Halt the processor (called after an unrecoverable error). */
 void stop (void) __attribute__ ((noreturn));
@@ -466,7 +466,20 @@ void stop_floppy (void);
 #ifndef STAGE1_5
 char *skip_to (int after_equal, char *cmdline);
 void init_cmdline (void);
-int enter_cmdline (char *script, char *heap);
+
+/* The constants for the return value of enter_cmdline.  */
+typedef enum
+{
+  CMDLINE_OK = 0,
+  CMDLINE_ABORT,
+  CMDLINE_ERROR
+} cmdline_t;
+
+/* Run the command-line interface or execute a command from SCRIPT if
+   SCRIPT is not NULL. Return CMDLINE_OK if successful, CMDLINE_ABORT
+   if ``quit'' command is executed, and CMDLINE_ERROR if an error
+   occures or ESC is pushed.  */
+cmdline_t enter_cmdline (char *script, char *heap);
 #endif
 
 /* C library replacement functions with identical semantics. */
