@@ -12,10 +12,11 @@ dnl "AS IS" CONDITION.  THE FREE SOFTWARE FOUNDATION DISCLAIMS ANY
 dnl LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 dnl USE OF THIS SOFTWARE.
 
-AC_INIT(stage2/stage2.c)
-AM_INIT_AUTOMAKE(grub, 0.93)
-AM_CONFIG_HEADER(config.h)
-AC_PREREQ(2.13)
+AC_PREREQ(2.57)
+AC_INIT([GRUB], [0.94], [bug-grub@gnu.org])
+AC_CONFIG_SRCDIR([stage2/stage2.c])
+AC_CONFIG_HEADER([config.h])
+AM_INIT_AUTOMAKE
 
 AC_CANONICAL_HOST
 
@@ -59,8 +60,8 @@ AC_PROG_CC
 _AM_DEPENDENCIES(CC)
 
 dnl Because recent automake complains about AS, set it here.
-AS="$CC"
-AC_SUBST(AS)
+CCAS="$CC"
+AC_SUBST(CCAS)
 
 AC_ARG_WITH(binutils,
   [  --with-binutils=DIR     search the directory DIR to find binutils])
@@ -625,13 +626,15 @@ AC_SUBST(NET_CFLAGS)
 AC_SUBST(NET_EXTRAFLAGS)
 AC_SUBST(NETBOOT_DRIVERS)
 
-dnl Because recent automake complains about ASFLAGS, set it here.
-ASFLAGS='$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)'
-AC_SUBST(ASFLAGS)
+dnl Because recent automake complains about CCASFLAGS, set it here.
+CCASFLAGS='$(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)'
+AC_SUBST(CCASFLAGS)
 
 
 dnl Output.
-AC_OUTPUT([Makefile stage1/Makefile stage2/Makefile docs/Makefile \
-	lib/Makefile util/Makefile grub/Makefile \
-	netboot/Makefile util/grub-image util/grub-install \
-	util/grub-md5-crypt util/grub-terminfo])
+AC_CONFIG_FILES([Makefile stage1/Makefile stage2/Makefile \
+		 docs/Makefile lib/Makefile util/Makefile \
+		 grub/Makefile netboot/Makefile util/grub-image \
+		 util/grub-install util/grub-md5-crypt \
+		 util/grub-terminfo])
+AC_OUTPUT
