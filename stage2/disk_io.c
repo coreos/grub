@@ -317,7 +317,7 @@ make_saved_active (void)
 	 meaningless. (XXX: Really?)  */
       if (part > 3)
 	{
-	  errnum = ERR_NO_PART;
+	  errnum = ERR_DEV_VALUES;
 	  return 0;
 	}
 

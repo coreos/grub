@@ -1,3 +1,9 @@
+2000-11-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c (make_saved_active): Set ERRNUM to
+	ERR_DEV_VALUES instead of ERR_NO_PART, when the save partition
+	is not a primary partition.
+	
 2000-11-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* docs/user-ref.texi (Features): Update the URL of grub/98.
