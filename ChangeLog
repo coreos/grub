@@ -1,5 +1,11 @@
 2002-01-20  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* util/grub-image.in: Check stage2 instead of stage2.c to
+	determine where the script is invoked, because srcdir may not
+	be used for the compilation.
+	
+2002-01-20  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* grub/asmstub.c (console_putchar): When not using curses,
 	ignore a carriage return, because a newline in Unix is only a
 	line feed.
