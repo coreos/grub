@@ -1,5 +1,11 @@
 2003-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Adam Lackorzynski <adam@os.inf.tu-dresden.de>:
+	* stage2/shared.h (KEY_NPAGE): Changed to 0x5100.
+	(KEY_PPAGE): Changed to 0x4900.
+
+2003-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/boot.c (load_image): Check if DATA_LEN plus SECTOR_SIZE
 	is less than or equal to MULTIBOOT_SEARCH, instead of if
 	DATA_LEN is less than or equal to MULTIBOOT_SEARCH.

@@ -281,8 +281,8 @@ extern char *grub_scratch_mem;
 # define KEY_BACKSPACE   0x0008
 # define KEY_HOME        0x4700
 # define KEY_END         0x4F00
-# define KEY_NPAGE       0x4900
-# define KEY_PPAGE       0x5100
+# define KEY_NPAGE       0x5100
+# define KEY_PPAGE       0x4900
 # define A_NORMAL        0x7
 # define A_REVERSE       0x70
 #elif defined(HAVE_NCURSES_CURSES_H)
