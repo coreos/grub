@@ -1,3 +1,8 @@
+1999-08-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* boot.c (load_image): Fix a strcmp test. Reported by Pavel
+	Roskin <pavel_roskin@geocities.com>.
+	
 1999-08-03  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	From "Dan J. Walters" <djw@cs.utexas.edu>:

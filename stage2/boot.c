@@ -87,7 +87,7 @@ load_image (void)
     }
 
   /* ELF loading supported if multiboot and FreeBSD.  */
-  if ((type == 'm' || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD"))
+  if ((type == 'm' || grub_strcmp (pu.elf->e_ident + EI_BRAND, "FreeBSD") == 0)
       && len > sizeof (Elf32_Ehdr)
       && BOOTABLE_I386_ELF ((*((Elf32_Ehdr *) buffer))))
     {
