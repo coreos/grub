@@ -1,6 +1,6 @@
 2000-07-02  OKUJI Yoshinori  <okuji@gnu.org>
 
-	* grub/main.c (usage): Close the mail address with parentheses
+	* grub/main.c (usage): Enclose the mail address with parentheses
 	and add a period into the end of the line. That's just a
 	cosmetic change.
 	
