@@ -29,6 +29,7 @@ static int num_clust;
 static int mapblock;
 static int data_offset;
 static int fat_size;
+static int root_dir;
 
 /* pointer(s) into filesystem info buffer for DOS stuff */
 #define BPB     ( FSYS_BUF + 32256 )	/* 512 bytes long */
@@ -40,13 +41,11 @@ fat_mount (void)
   int retval = 1;
 
   if ((((current_drive & 0x80) || (current_slice != 0))
-       && (current_slice != PC_SLICE_TYPE_FAT12)
-       && (current_slice != PC_SLICE_TYPE_FAT16_LT32M)
-       && (current_slice != PC_SLICE_TYPE_FAT16_GT32M)
-       && (! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_MSDOS << 8)))
+       && ! IS_PC_SLICE_TYPE_FAT (current_slice)
+       && (! IS_PC_SLICE_TYPE_BSD_WITH_FS (current_slice, FS_MSDOS)))
       || !devread (0, 0, SECTOR_SIZE, (char *) BPB)
       || FAT_BPB_BYTES_PER_SECTOR (BPB) != SECTOR_SIZE
-      || FAT_BPB_SECT_PER_CLUST (BPB) < 1 || FAT_BPB_SECT_PER_CLUST (BPB) > 64
+      || FAT_BPB_SECT_PER_CLUST (BPB) < 1
       || (FAT_BPB_SECT_PER_CLUST (BPB) & (FAT_BPB_SECT_PER_CLUST (BPB) - 1))
       || !((current_drive & 0x80)
 	   || FAT_BPB_FLOPPY_NUM_SECTORS (BPB)))
@@ -56,7 +55,13 @@ fat_mount (void)
       mapblock = -4096;
       data_offset = FAT_BPB_DATA_OFFSET (BPB);
       num_clust = FAT_BPB_NUM_CLUST (BPB) + 2;
-      if (num_clust > FAT_MAX_12BIT_CLUST)
+      root_dir = -1;
+      if (FAT_BPB_IS_FAT32 (BPB))
+	{
+	  fat_size = 8;
+	  root_dir = FAT_BPB_ROOT_DIR_CLUSTER (BPB);
+	} 
+      else if (num_clust > FAT_MAX_12BIT_CLUST)
 	fat_size = 4;
       else
 	fat_size = 3;
@@ -107,7 +112,7 @@ fat_create_blocklist (int first_fat_entry)
 	       */
 
 	      new_mapblock = (last_fat_entry * fat_size) >> 1;
-	      if (new_mapblock > (mapblock + 2045)
+	      if (new_mapblock > (mapblock + SECTOR_SIZE * 4 - 3)
 		  || new_mapblock < (mapblock + 3))
 		{
 		  mapblock = ((new_mapblock < 6) ? 0 :
@@ -118,15 +123,17 @@ fat_create_blocklist (int first_fat_entry)
 		}
 
 	      first_fat_entry
-		= *((unsigned short *) (FAT_BUF + (new_mapblock - mapblock)));
+		= *((unsigned long *) (FAT_BUF + (new_mapblock - mapblock)));
 
-	      if (num_clust <= FAT_MAX_12BIT_CLUST)
+	      if (fat_size == 3)
 		{
 		  if (last_fat_entry & 1)
 		    first_fat_entry >>= 4;
 		  else
 		    first_fat_entry &= 0xFFF;
 		}
+	      else if (fat_size == 4)
+		first_fat_entry &= 0xFFFF;
 
 	      if (first_fat_entry < 2)
 		{
@@ -144,7 +151,7 @@ fat_create_blocklist (int first_fat_entry)
       while (first_fat_entry < num_clust && blk_cur_blklist < (FAT_BUF - 7));
     }
 
-  return 1;
+  return first_fat_entry >= num_clust;
 }
 
 
@@ -156,7 +163,7 @@ int
 fat_dir (char *dirname)
 {
   char *rest, ch, filename[13], dir_buf[FAT_DIRENTRY_LENGTH];
-  int attrib = FAT_ATTRIB_DIR, map = -1;
+  int attrib = FAT_ATTRIB_DIR, map = root_dir;
 
 /* main loop to find desired directory entry */
 loop:

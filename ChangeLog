@@ -1,3 +1,36 @@
+1999-08-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Jochen Hoenicke <jochen@gnu.org>:
+	* stage2/fat.h (FAT_BPB_FAT_SECTORS_16): New macro.
+	(FAT_BPB_FAT_SECTORS_32): Likewise.
+	(FAT_BPB_IS_FAT32): Likewise.
+	(FAT_BPB_ROOT_DIR_CLUSTER): Likewise.
+	(FAT_BPB_FAT_SECTORS): If FAT_BPB_FAT_SECTORS_16 returns
+	a non-zero value, return it. Otherwise return
+	FAT_BPB_FAT_SECTORS_32.
+	(FAT_DIRENTRY_FIRST_CLUSTER): Corrected.
+	* stage2/fsys_fat.c (root_dir): New variable.
+	(fat_mount): Use the macro IS_PC_SLICE_TYPE_FAT instead of
+	checking for each fs types directly.
+	Omit the >64 sectors check.
+	If the current fs type is FAT32, then set FAT_SIZE to 8 and
+	get the root from BPB.
+	(fat_create_blocklist): Use the macro SECTOR_SIZE instead of a
+	magic number.
+	(fat_dir): Set MAP to ROOT_DIR instead of -1.
+	* stage2/pc_slice.h (PC_SLICE_TYPE_FAT32): New macro.
+	(PC_SLICE_TYPE_FAT32_LBA): Likewise.
+	(PC_SLICE_TYPE_FAT16_LBA): Likewise.
+	(IS_PC_SLICE_TYPE_FAT): Likewise.
+	
+1999-08-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/fsys_ffs.c (ffs_mount): Do not shift the fs type
+	FS_BSDFFS. Reported by Takehiro Suzuki
+	<takehiro@coral.ocn.ne.jp>.
+	* stage2/fsys_fat.c (fat_mount): Do not shift the fs type
+	FS_MSDOS.
+	
 1999-08-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Pavel Roskin's patch that adds new options to disable arbitrary

@@ -102,8 +102,21 @@
 #define PC_SLICE_TYPE_FAT16_LT32M  	4
 #define PC_SLICE_TYPE_EXTENDED     	5
 #define PC_SLICE_TYPE_FAT16_GT32M  	6
+#define PC_SLICE_TYPE_FAT32		0xb
+#define PC_SLICE_TYPE_FAT32_LBA		0xc
+#define PC_SLICE_TYPE_FAT16_LBA		0xe
 #define PC_SLICE_TYPE_WIN95_EXTENDED	0xf
 #define PC_SLICE_TYPE_EXT2FS       	0x83
+
+/* For convinience.  */
+#define IS_PC_SLICE_TYPE_FAT(type)	\
+  (((type) == PC_SLICE_TYPE_FAT12) \
+   || ((type) == PC_SLICE_TYPE_FAT16_LT32M) \
+   || ((type) == PC_SLICE_TYPE_FAT16_GT32M) \
+   || ((type) == PC_SLICE_TYPE_FAT16_LBA) \
+   || ((type) == PC_SLICE_TYPE_FAT32) \
+   || ((type) == PC_SLICE_TYPE_FAT32_LBA))
+   
 
 /* these ones are special, as they use thier own partitioning scheme
    to subdivide the PC partitions from there.  */

@@ -6,6 +6,7 @@ New in 0.5.93:
 * Exit from the grub emulator just by pushing the key `q' in the menu.
 * The options --disable-ext2fs, --disable-fat and --disable-ffs disable
   ext2fs, FAT and FFS support in Stage 2 respectively.
+* FAT32 support is added.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

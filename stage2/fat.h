@@ -43,9 +43,19 @@
 
 #define FAT_BPB_RESERVED_SECTORS(bpb) \
   (*((unsigned short *) (((int)bpb) + 14)))
-#define FAT_BPB_FAT_SECTORS(bpb) \
+#define FAT_BPB_FAT_SECTORS_16(bpb) \
   (*((unsigned short *) (((int)bpb) + 22)))
+#define FAT_BPB_FAT_SECTORS_32(bpb) \
+  (*((unsigned long *) (((int)bpb) + 36)))
+#define FAT_BPB_IS_FAT32(bpb) \
+  (FAT_BPB_FAT_SECTORS_16(bpb) == 0)
+#define FAT_BPB_FAT_SECTORS(bpb) \
+  (FAT_BPB_FAT_SECTORS_16(bpb) \
+   ? FAT_BPB_FAT_SECTORS_16(bpb) : FAT_BPB_FAT_SECTORS_32(bpb))
 #define FAT_BPB_FAT_START(bpb) FAT_BPB_RESERVED_SECTORS(bpb)
+
+#define FAT_BPB_ROOT_DIR_CLUSTER(bpb) \
+  (*((unsigned long *) (((int)bpb) + 44)))
 
 /*
  *  This appears to be a MAJOR kludge!!  Don't use it if possible...
@@ -108,6 +118,6 @@
     & ((*((unsigned char *) entry)) != 0xE5) \
     & !(FAT_DIRENTRY_ATTRIB(entry) & FAT_ATTRIB_NOT_OK_MASK) )
 #define FAT_DIRENTRY_FIRST_CLUSTER(entry) \
-  (*((unsigned short *) (entry+26)))
+  ((*((unsigned short *) (entry+26)))+(*((unsigned short *) (entry+20)) << 16))
 #define FAT_DIRENTRY_FILELENGTH(entry) \
   (*((unsigned long *) (entry+28)))
