@@ -1297,7 +1297,12 @@ enter a correct password before running such an entry.
 @node Invoking the grub shell
 @chapter Invoking the grub shell
 
-This chapter documents the grub shell @command{grub}.
+This chapter documents the grub shell @command{grub}. Note that the grub
+shell is an emulator; it doesn't run under the native environment, so it
+sometimes does something wrong. Therefore, you shouldn't trust it too
+much. If there is anything wrong with it, don't hesitate to try the
+native GRUB environment, especially when it guesses a wrong map between
+BIOS drives and OS devices.
 
 @menu
 * Basic usage::                 How to use the grub shell
