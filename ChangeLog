@@ -1,3 +1,9 @@
+2002-11-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/disk_io.c (rawread): Make sure that SECTOR is valid.
+	If not, set ERRNUM to ERR_GEOM and return zero. This check is
+	critical when a partition table is corrupted.
+
 2002-11-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/asm.S (console_cls): Write spaces to the entire screen

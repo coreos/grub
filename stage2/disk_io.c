@@ -148,6 +148,13 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	  buf_track = -1;
 	}
 
+      /* Make sure that SECTOR is valid.  */
+      if (sector < 0 || sector >= buf_geom.total_sectors)
+	{
+	  errnum = ERR_GEOM;
+	  return 0;
+	}
+      
       /*  Get first sector of track  */
       soff = sector % buf_geom.sectors;
       track = sector - soff;
@@ -381,8 +388,9 @@ static void
 attempt_mount (void)
 {
 #ifndef STAGE1_5
-  for (fsys_type = 0; fsys_type < NUM_FSYS
-       && (*(fsys_table[fsys_type].mount_func)) () != 1; fsys_type++);
+  for (fsys_type = 0; fsys_type < NUM_FSYS; fsys_type++)
+    if ((fsys_table[fsys_type].mount_func) ())
+      break;
 
   if (fsys_type == NUM_FSYS && errnum == ERR_NONE)
     errnum = ERR_FSYS_MOUNT;
