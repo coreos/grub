@@ -1,3 +1,12 @@
+2001-01-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Thierry Laronde <thierry.laronde@polynum.com>:
+	* docs/user-ref.texi (Command-line and menu commands): Update
+	the description about setkey.
+	* stage2/builtins.c (setkey_func): When checking if TO_KEY and
+	FROM_KEY are specified, see *TO_KEY and *FROM_KEY instead of
+	TO_KEY and FROM_KEY, respectively.
+	
 2001-01-13  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Thierry Laronde <thierry.laronde@polynum.com>:

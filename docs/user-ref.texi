@@ -736,11 +736,11 @@ The serial port is not used as a communication channel unless the
 This command is only available if GRUB is compiled with serial support.
 @end deffn
 
-@deffn Command setkey to_key from_key
+@deffn Command setkey [to_key from_key]
 Change the keyboard map. The key @var{from_key} is mapped to the key
-@var{to_key}. Note that this command @emph{does not} exchange the
-keys. If you want to exchange the keys, run this command again with the
-arguments exchanged, like this:
+@var{to_key}. If no argument is specified, reset key mappings. Note that 
+this command @emph{does not} exchange the keys. If you want to exchange 
+the keys, run this command again with the arguments exchanged, like this:
 
 @example
 grub> @kbd{setkey capslock control}

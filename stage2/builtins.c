@@ -3394,7 +3394,7 @@ setkey_func (char *arg, int flags)
   to_key = arg;
   from_key = skip_to (0, to_key);
 
-  if (! to_key)
+  if (! *to_key)
     {
       /* If the user specifies no argument, reset the key mappings.  */
       grub_memset (bios_key_map, 0, KEY_MAP_SIZE * sizeof (unsigned short));
@@ -3402,7 +3402,7 @@ setkey_func (char *arg, int flags)
 
       return 0;
     }
-  else if (! from_key)
+  else if (! *from_key)
     {
       /* The user must specify two arguments or zero argument.  */
       errnum = ERR_BAD_ARGUMENT;
