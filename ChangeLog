@@ -1,5 +1,12 @@
 2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/boot.c (load_image): When handling Linux cmdline, don't
+	copy a null character from SRC to DEST, because this inserted an
+	extra null character into the cmdline. Reported by Robert
+	Bihlmeyer <robbe@orcus.priv.at>.
+	
+2000-10-16  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Some of the new Multiboot features are supported. APM support
 	and VESA support are not strictly defined or implemented yet.
 	

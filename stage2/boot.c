@@ -320,8 +320,9 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    char *src = skip_to (0, arg);
 	    char *dest = (char *) CL_MY_LOCATION;
 
-	    while (((int) dest) < CL_MY_END_ADDR && (*(dest++) = *(src++)));
-
+	    while (((int) dest) < CL_MY_END_ADDR && *src)
+	      *(dest++) = *(src++);
+	    
 	    /* Add a mem option automatically only if the user doesn't
 	       specify it explicitly.  */
 	    if (! grub_strstr (arg, "mem=")
