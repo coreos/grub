@@ -99,6 +99,7 @@ This edition documents version @value{VERSION}.
 * Configuration::               Writing your own configuration file
 * Network::                     Downloading OS images from a network
 * Serial terminal::             Using GRUB via a serial line
+* Preset Menu::                 Embedding a configuration file into GRUB
 * Security::                    Improving the security
 * Images::                      GRUB image files
 * Filesystem::                  Filesystem syntax and semantics
@@ -1242,9 +1243,14 @@ example about a BOOTP configuration:
 foo:ht=1:ha=63655d0334a7:ip=145.71.35.127:\
         :bf=/nbgrub:\
         :tc=.allhost:\
-        :T150="/tftpboot/menu.lst.foo":
+        :T150="(nd)/tftpboot/menu.lst.foo":
 @end group
 @end example
+
+Note that you should specify the drive name @code{(nd)} in the name of
+the configuration file. That is because you can change the root drive
+before downloading the configuration from the TFTP server, when the
+preset menu feature is used (@pxref{Preset Menu}).
 
 See the manual about your BOOTP/DHCP server, for more information. The
 exact syntax should differ from the example, more or less.
@@ -1297,10 +1303,69 @@ compatible with VT100 by default. This is true for most terminal
 emulators nowadays, but you should pass the option @option{--dumb} to
 the command, if your terminal emulator is not VT100-compatible or
 implements few VT100 escape sequences. If you specify the option, then
-GRUB doesn't provide you with the menu interface, because the menu
-requires several fancy features for your terminal. Instead, GRUB only
-gives you the hidden menu interface and the command-line interface
-(@pxref{Interface}).
+GRUB provides you with an alternative menu interface, because the normal
+menu requires several fancy features for your terminal.
+
+
+@node Preset Menu
+@chapter Embedding a configuration file into GRUB
+
+GRUB supports @dfn{preset menu} which is always loaded before starting.
+The preset menu feature is useful, for example, when your computer has
+no console but a serial cable. In this case, it is critical to set up
+the serial terminal as soon as possible, since you cannot see any
+message until the serial terminal begins to work. So it is nice to run
+the commands @command{serial} (@pxref{serial}) and @command{terminal}
+(@pxref{terminal}) sooner than anything else at the start-up time.
+
+It is slightly complicated how the preset menu works:
+
+@enumerate
+@item
+GRUB checks if the preset menu feature is used, and loads the preset
+menu, if available. This includes running commands and reading boot
+entries, like an ordinary configuration file.
+
+@item
+GRUB checks if the configuration file is available. Note that this check
+is performed @strong{regardless of the existence of the preset
+menu}. The configuration file is loaded, even after the preset menu was
+loaded.
+
+@item
+When the preset menu includes any boot entries, they are cleared when
+the configuration file is loaded. It doesn't matter whether the
+configuration file has any entries or no entry. The boot entries in the
+preset menu are used only when GRUB fails in loading the configuration
+file.
+@end enumerate
+
+To enable the preset menu feature, you must specify a file to the
+configure script with the option @option{--enable-preset-menu}. The file
+has the same semantics as normal configuration files
+(@pxref{Configuration}).
+
+Another point you should take care is that the diskless support
+(@pxref{Diskless}) diverts the preset menu. Diskless images embed a
+preset menu to execute the command @command{bootp} (@pxref{bootp})
+automatically, unless you specify your own preset menu to the configure
+script. This means that you must put commands to initialize a network in
+the preset menu yourself, because diskless images don't set it up
+implicitly, when you use the preset menu explicitly.
+
+Therefore, a typical preset menu used with diskless support would be
+like this:
+
+@example
+@group
+# Set up the serial terminal, first of all.
+serial --unit=0 --speed=19200
+terminal --timeout=0 serial
+
+# Initialize the network.
+dhcp
+@end group
+@end example
 
 
 @node Security

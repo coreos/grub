@@ -1,5 +1,9 @@
 2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
 
+	* docs/grub.texi (Preset Menu): New chapter.
+	
+2002-01-15  Yoshinori K. Okuji  <okuji@gnu.org>
+
 	* docs/grub.texi: Added some text about JFS and XFS.
 	
 2002-01-08  Yoshinori K. Okuji  <okuji@gnu.org>
