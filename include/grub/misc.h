@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,6 +36,9 @@ char *EXPORT_FUNC(grub_stpcpy) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strcat) (char *dest, const char *src);
 char *EXPORT_FUNC(grub_strncat) (char *dest, const char *src, int c);
 
+/* Prototypes for aliases.  */
+void *EXPORT_FUNC(memmove) (void *dest, const void *src, grub_size_t n);
+void *EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
 int EXPORT_FUNC(grub_strcmp) (const char *s1, const char *s2);

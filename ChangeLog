@@ -1,3 +1,8 @@
+2005-01-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/grub/misc.h (memmove): New prototype.
+	(memcpy): Likewise.
+
 2005-01-22  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_open): Don't initialize
