@@ -354,18 +354,19 @@ grub_strdup (const char *s)
 char *
 grub_strndup (const char *s, grub_size_t n)
 {
-  grub_size_t len = 0;
-  char *p = (char *) s;
+  grub_size_t len;
+  char *p;
   
-  while (*(p++) && len < n)
-    len++;
-
-  len = grub_strlen (s) + 1;
-  p = (char *) grub_malloc (len);
+  len = grub_strlen (s);
+  if (len > n)
+    len = n;
+  p = (char *) grub_malloc (len + 1);
   if (! p)
     return 0;
-
-  return grub_memcpy (p, s, len);
+  
+  grub_memcpy (p, s, len);
+  p[len] = '\0';
+  return p;
 }
 
 void *
