@@ -1,6 +1,6 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *  Copyright (C) 2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #define PUPA_LINUX_MAGIC_SIGNATURE	0x53726448      /* "HdrS" */
 #define PUPA_LINUX_DEFAULT_SETUP_SECTS	4
 #define PUPA_LINUX_FLAG_CAN_USE_HEAP	0x80
-#define PUPA_LINUX_INITRD_MAX_ADDRESS	0x38000000
+#define PUPA_LINUX_INITRD_MAX_ADDRESS	0x37FFFFFF
 #define PUPA_LINUX_MAX_SETUP_SECTS	64
 #define PUPA_LINUX_BOOT_LOADER_TYPE	0x72
 #define PUPA_LINUX_HEAP_END_OFFSET	(0x9000 - 0x200)
@@ -67,7 +67,8 @@ struct linux_kernel_header
   pupa_uint32_t header;			/* Magic signature "HdrS" */
   pupa_uint16_t version;		/* Boot protocol version supported */
   pupa_uint32_t realmode_swtch;		/* Boot loader hook */
-  pupa_uint32_t start_sys;		/* Points to kernel version string */
+  pupa_uint16_t start_sys;		/* The load-low segment (obsolete) */
+  pupa_uint16_t kernel_version;		/* Points to kernel version string */
   pupa_uint8_t type_of_loader;		/* Boot loader identifier */
   pupa_uint8_t loadflags;		/* Boot protocol option flags */
   pupa_uint16_t setup_move_size;	/* Move to high memory size */
@@ -78,6 +79,7 @@ struct linux_kernel_header
   pupa_uint16_t heap_end_ptr;		/* Free memory after setup end */
   pupa_uint16_t pad1;			/* Unused */
   char *cmd_line_ptr;			/* Points to the kernel command line */
+  pupa_uint32_t initrd_addr_max;        /* Highest address for initrd */
 } __attribute__ ((packed));
 
 #endif /* ! ASM_FILE */

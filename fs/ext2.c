@@ -1,6 +1,7 @@
 /* ext2.c - Second Extended filesystem */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
+ *  Copyright (C) 2004  Free Software Foundation, Inc.
  *  Copyright (C) 2003  Marco Gerards <metgerards@student.han.nl>.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -235,8 +236,10 @@ pupa_ext2_get_file_block (struct pupa_ext2_data *data,
 /* Read LEN bytes from the file described by DATA starting with byte
    POS.  Return the amount of read bytes in READ.  */
 static pupa_ssize_t
-pupa_ext2_read_file (struct pupa_ext2_data *data, int pos,
-		     unsigned int len, char *buf)
+pupa_ext2_read_file (struct pupa_ext2_data *data,
+		     void (*read_hook) (unsigned long sector,
+					unsigned offset, unsigned length),
+		     int pos, unsigned int len, char *buf)
 {
   int i;
   int blockcnt;
@@ -264,7 +267,13 @@ pupa_ext2_read_file (struct pupa_ext2_data *data, int pos,
 
       /* Last block.  */
       if (i == blockcnt - 1)
-	blockend = (len + pos) % EXT2_BLOCK_SIZE (data);
+	{
+	  blockend = (len + pos) % EXT2_BLOCK_SIZE (data);
+	  
+	  /* The last portion is exactly EXT2_BLOCK_SIZE (data).  */
+	  if (!blockend)
+	    blockend = EXT2_BLOCK_SIZE (data);
+	}
 
       /* First block.  */
       if (i == pos / EXT2_BLOCK_SIZE (data))
@@ -277,8 +286,10 @@ pupa_ext2_read_file (struct pupa_ext2_data *data, int pos,
 	 is zero filled instead.  */
       if (blknr)
 	{
+	  data->disk->read_hook = read_hook;	  
 	  pupa_disk_read (data->disk, blknr, skipfirst,
-				blockend, buf);
+			  blockend, buf);
+	  data->disk->read_hook = 0;
 	  if (pupa_errno)
 	    return -1;
 	}
@@ -418,7 +429,7 @@ pupa_ext2_find_file (struct pupa_ext2_data *data, const char *path, int *ino)
 	  struct ext2_dirent dirent;
 
 	  /* Read the directory entry.  */
-	  pupa_ext2_read_file (data, fpos, sizeof (struct ext2_dirent),
+	  pupa_ext2_read_file (data, 0, fpos, sizeof (struct ext2_dirent),
 			       (char *) &dirent);
 	  if (pupa_errno)
 	    goto fail;
@@ -428,7 +439,7 @@ pupa_ext2_find_file (struct pupa_ext2_data *data, const char *path, int *ino)
 	      char filename[dirent.namelen + 1];
 
 	      /* Read the filename part of this directory entry.  */
-	      pupa_ext2_read_file (data, fpos 
+	      pupa_ext2_read_file (data, 0, fpos 
 				   + sizeof (struct ext2_dirent),
 				   dirent.namelen, filename);
 	      if (pupa_errno)
@@ -468,7 +479,7 @@ pupa_ext2_find_file (struct pupa_ext2_data *data, const char *path, int *ino)
 				      pupa_le_to_cpu32 (inode->size));
 		      else
 			{
-			  pupa_ext2_read_file (data, 0, 
+			  pupa_ext2_read_file (data, 0, 0,
 					       pupa_le_to_cpu32 (inode->size),
 					       symlink);
 			  if (pupa_errno)
@@ -604,7 +615,7 @@ pupa_ext2_close (pupa_file_t file)
   pupa_dl_unref (my_mod);
 #endif
 
-  return pupa_errno;
+  return PUPA_ERR_NONE;
 }
 
 /* Read LEN bytes data from FILE into BUF.  */
@@ -614,7 +625,7 @@ pupa_ext2_read (pupa_file_t file, char *buf, pupa_ssize_t len)
   struct pupa_ext2_data *data = 
     (struct pupa_ext2_data *) file->data;
   
-  return pupa_ext2_read_file (data, file->offset, len, buf);
+  return pupa_ext2_read_file (data, file->read_hook, file->offset, len, buf);
 }
 
 
@@ -654,7 +665,7 @@ pupa_ext2_dir (pupa_device_t device, const char *path,
     {
       struct ext2_dirent dirent;
 	
-      pupa_ext2_read_file (data, fpos, sizeof (struct ext2_dirent),
+      pupa_ext2_read_file (data, 0, fpos, sizeof (struct ext2_dirent),
 			   (char *) &dirent);
       if (pupa_errno)
 	goto fail;
@@ -663,7 +674,7 @@ pupa_ext2_dir (pupa_device_t device, const char *path,
 	{
 	  char filename[dirent.namelen + 1];
 
-	  pupa_ext2_read_file (data, fpos + sizeof (struct ext2_dirent),
+	  pupa_ext2_read_file (data, 0, fpos + sizeof (struct ext2_dirent),
 			       dirent.namelen, filename);
 	  if (pupa_errno)
 	    goto fail;

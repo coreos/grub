@@ -1,7 +1,7 @@
 /* linux.c - boot Linux zImage or bzImage */
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *  Copyright (C) 2003  Yoshinori K. Okuji <okuji@enbug.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -66,6 +66,7 @@ pupa_rescue_cmd_linux (int argc, char *argv[])
   struct linux_kernel_header lh;
   pupa_uint8_t setup_sects;
   pupa_size_t real_size, prot_size;
+  pupa_ssize_t len;
   int i;
   char *dest;
 
@@ -233,8 +234,13 @@ pupa_rescue_cmd_linux (int argc, char *argv[])
 
   /* Put the real mode code at the temporary address.  */
   pupa_memmove (pupa_linux_tmp_addr, &lh, sizeof (lh));
-  pupa_file_read (file, pupa_linux_tmp_addr + sizeof (lh),
-		  real_size + PUPA_DISK_SECTOR_SIZE - sizeof (lh));
+
+  len = real_size + PUPA_DISK_SECTOR_SIZE - sizeof (lh);
+  if (pupa_file_read (file, pupa_linux_tmp_addr + sizeof (lh), len) != len)
+    {
+      pupa_error (PUPA_ERR_FILE_READ_ERROR, "Couldn't read file");
+      goto fail;
+    }
 
   if (lh.header != pupa_cpu_to_le32 (PUPA_LINUX_MAGIC_SIGNATURE)
       || pupa_le_to_cpu16 (lh.version) < 0x0200)
@@ -261,8 +267,10 @@ pupa_rescue_cmd_linux (int argc, char *argv[])
 
   *dest = '\0';
 
-  pupa_file_read (file, (char *) PUPA_LINUX_BZIMAGE_ADDR, prot_size);
-  
+  len = prot_size;
+  if (pupa_file_read (file, (char *) PUPA_LINUX_BZIMAGE_ADDR, len) != len)
+    pupa_error (PUPA_ERR_FILE_READ_ERROR, "Couldn't read file");
+ 
   if (pupa_errno == PUPA_ERR_NONE)
     {
       pupa_linux_prot_size = prot_size;
@@ -285,8 +293,81 @@ pupa_rescue_cmd_linux (int argc, char *argv[])
 void
 pupa_rescue_cmd_initrd (int argc, char *argv[])
 {
-  pupa_error (PUPA_ERR_NOT_IMPLEMENTED_YET, "not implemented yet");
+  pupa_file_t file = 0;
+  pupa_ssize_t size;
+  pupa_addr_t addr_max, addr_min, addr;
+  struct linux_kernel_header *lh;
+
+  if (argc == 0)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "No module specified");
+      goto fail;
+    }
+  
+  if (!loaded)
+    {
+      pupa_error (PUPA_ERR_BAD_ARGUMENT, "You need to load the kernel first.");
+      goto fail;
+    }
+
+  lh = (struct linux_kernel_header *) pupa_linux_tmp_addr;
+
+  if (!(lh->header == pupa_cpu_to_le32 (PUPA_LINUX_MAGIC_SIGNATURE)
+	&& pupa_le_to_cpu16 (lh->version) >= 0x0200))
+    {
+      pupa_error (PUPA_ERR_BAD_OS, "The kernel is too old for initrd.");
+      goto fail;
+    }
+
+  /* Get the highest address available for the initrd.  */
+  if (pupa_le_to_cpu16 (lh->version) >= 0x0203)
+    addr_max = pupa_cpu_to_le32 (lh->initrd_addr_max);
+  else
+    addr_max = PUPA_LINUX_INITRD_MAX_ADDRESS;
+
+  if (!linux_mem_size && linux_mem_size < addr_max)
+    addr_max = linux_mem_size;
+
+  /* Linux 2.3.xx has a bug in the memory range check, so avoid
+     the last page.
+     Linux 2.2.xx has a bug in the memory range check, which is
+     worse than that of Linux 2.3.xx, so avoid the last 64kb.  */
+  addr_max -= 0x10000;
+
+  if (addr_max > pupa_os_area_addr + pupa_os_area_size)
+    addr_max = pupa_os_area_addr + pupa_os_area_size;
+
+  addr_min = (pupa_addr_t) pupa_linux_tmp_addr + PUPA_LINUX_CL_END_OFFSET;
+
+  file = pupa_file_open (argv[0]);
+  if (!file)
+    goto fail;
+
+  size = pupa_file_size (file);
+
+  /* Put the initrd as high as possible, 4Ki aligned.  */
+  addr = (addr_max - size) & ~0xFFF;
+
+  if (addr < addr_min)
+    {
+      pupa_error (PUPA_ERR_OUT_OF_RANGE, "The initrd is too big");
+      goto fail;
+    }
+
+  if (pupa_file_read (file, (void *)addr, size) != size)
+    {
+      pupa_error (PUPA_ERR_FILE_READ_ERROR, "Couldn't read file");
+      goto fail;
+    }
+
+  lh->ramdisk_image = addr;
+  lh->ramdisk_size = size;
+  
+ fail:
+  if (file)
+    pupa_file_close (file);
 }
+
 
 PUPA_MOD_INIT
 {
