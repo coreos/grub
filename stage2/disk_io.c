@@ -437,10 +437,8 @@ check_BSD_parts (int flags)
 }
 
 
-/* This isn't static, because the GRUB utility's char_io.c (memcheck)
-   needs to know about it as a special case. */
 #ifndef STAGE1_5
-char cur_part_desc[16];
+static char cur_part_desc[16];
 #endif
 
 static int

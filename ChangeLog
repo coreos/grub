@@ -1,3 +1,39 @@
+1999-09-18  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_CHECK_START_SYMBOL): New function.
+	(grub_CHECK_USCORE_START_SYMBOL): Likewise.
+	(grub_CHECK_END_SYMBOL): Likewise.
+	(grub_CHECK_USCORE_SYMBOL): Likewise.
+	* configure.in: Call grub_CHECK_START_SYMBOL and
+	grub_CHECK_USCORE_START_SYMBOL, and if neither start nor _start
+	is defined, print an error message and exit.
+	Likewise, call grub_CHECK_END_SYMBOL and
+	grub_CHECK_USCORE_END_SYMBOL, and if neither end nor _end is
+	defined, print an error message and exit.
+	* acconfig.h (HAVE_START_SYMBOL): Added the "undef" entry.
+	(HAVE_USCORE_START_SYMBOL): Likewise.
+	(HAVE_END_SYMBOL): Likewise.
+	(HAVE_USCORE_END_SYMBOL): Likewise.
+	* stage2/char_io.c (memcheck): Rename the argument START to
+	ADDR. Added two missing equal characters.
+	[GRUB_UTIL]: Define new local functions start_addr and end_addr.
+	[GRUB_UTIL && HAVE_START_SYMBOL]: The function start_addr
+	returns START.
+	[GRUB_UTIL && HAVE_USCORE_START_SYMBOL]: The function start_addr
+	returns _START.
+	[GRUB_UTIL && HAVE_END_SYMBOL]: The function end_addr returns
+	END.
+	[GRUB_UTIL && HAVE_USCORE_END_SYMBOL]: The function end_addr
+	returns _END.
+	[GRUB_UTIL]: If ADDR is equal to or greater than the address
+	returned by start_addr, and ADDR plus LEN is less than the
+	address returned by end_addr, return ! ERRNUM.
+	* stage2/asm.S (get_code_end) [HAVE_END_SYMBOL]: Use $end as the
+	end of the bss.
+	[HAVE_USCORE_END_SYMBOL]: Use $_end as the end of the bss.
+	* stage2/disk_io.c [!STAGE1_5] (cur_part_desc): Made static.
+	Need not to be global any longer.
+	
 1999-09-17  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/char_io.c [!STAGE1_5] (get_cmdline): The argument

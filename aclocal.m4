@@ -136,6 +136,122 @@ fi
 rm -f conftest*])
 AC_MSG_RESULT([$grub_cv_asm_prefix_requirement])])
 
+dnl
+dnl grub_CHECK_START_SYMBOL checks if start is automatically defined by
+dnl the compiler.
+dnl Written by OKUJI Yoshinori
+AC_DEFUN(grub_CHECK_START_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if start is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_start_symbol,
+[cat > conftest.c <<\EOF
+int
+main (void)
+{
+  asm ("incl start");
+  return 0;
+}
+EOF
+
+if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
+  grub_cv_check_start_symbol=yes
+  AC_DEFINE([HAVE_START_SYMBOL])
+else
+  grub_cv_check_start_symbol=no
+fi
+
+rm -f conftest*])
+
+AC_MSG_RESULT([$grub_cv_check_start_symbol])
+])
+
+dnl
+dnl grub_CHECK_USCORE_START_SYMBOL checks if _start is automatically
+dnl defined by the compiler.
+dnl Written by OKUJI Yoshinori
+AC_DEFUN(grub_CHECK_USCORE_START_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if _start is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_uscore_start_symbol,
+[cat > conftest.c <<\EOF
+int
+main (void)
+{
+  asm ("incl _start");
+  return 0;
+}
+EOF
+
+if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
+  grub_cv_check_uscore_start_symbol=yes
+  AC_DEFINE([HAVE_USCORE_START_SYMBOL])
+else
+  grub_cv_check_uscore_start_symbol=no
+fi
+
+rm -f conftest*])
+
+AC_MSG_RESULT([$grub_cv_check_uscore_start_symbol])
+])
+
+dnl
+dnl grub_CHECK_END_SYMBOL checks if end is automatically defined by the
+dnl compiler.
+dnl Written by OKUJI Yoshinori
+AC_DEFUN(grub_CHECK_END_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if end is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_end_symbol,
+[cat > conftest.c <<\EOF
+int
+main (void)
+{
+  asm ("incl end);
+  return 0;
+}
+EOF
+
+if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
+  grub_cv_check_end_symbol=yes
+  AC_DEFINE([HAVE_END_SYMBOL])
+else
+  grub_cv_check_end_symbol=no
+fi
+
+rm -f conftest*])
+
+AC_MSG_RESULT([$grub_cv_check_end_symbol])
+])
+
+dnl
+dnl grub_CHECK_USCORE_END_SYMBOL checks if _end is automatically defined
+dnl by the compiler.
+dnl Written by OKUJI Yoshinori
+AC_DEFUN(grub_CHECK_USCORE_END_SYMBOL,
+[AC_REQUIRE([AC_PROG_CC])
+AC_MSG_CHECKING([if _end is defined by the compiler])
+AC_CACHE_VAL(grub_cv_check_uscore_end_symbol,
+[cat > conftest.c <<\EOF
+int
+main (void)
+{
+  asm ("incl _end");
+  return 0;
+}
+EOF
+
+if AC_TRY_COMMAND([${CC-cc} conftest.c -o conftest]) && test -s conftest; then
+  grub_cv_check_uscore_end_symbol=yes
+  AC_DEFINE([HAVE_USCORE_END_SYMBOL])
+else
+  grub_cv_check_uscore_end_symbol=no
+fi
+
+rm -f conftest*])
+
+AC_MSG_RESULT([$grub_cv_check_uscore_end_symbol])
+])
+
 # Do all the work for Automake.  This macro actually does too much --
 # some checks are only needed if your package does certain things.
 # But this isn't really a big deal.

@@ -106,6 +106,20 @@ else
   AC_DEFINE_UNQUOTED([DATA32], [data32])
 fi
 
+grub_CHECK_START_SYMBOL
+grub_CHECK_USCORE_START_SYMBOL
+if test "x$grub_cv_check_start_symbol" != "xyes" \
+	-a "x$grub_cv_check_uscore_start_symbol" != "xyes"; then
+  AC_MSG_ERROR([Neither start nor _start is defined])
+fi
+
+grub_CHECK_END_SYMBOL
+grub_CHECK_USCORE_END_SYMBOL
+if test "x$grub_cv_check_end_symbol" != "xyes" \
+	-a "x$grub_cv_check_uscore_end_symbol" != "xyes"; then
+  AC_MSG_ERROR([Neither end nor _end is defined])
+fi
+
 # Check for curses libraries.
 AC_CHECK_LIB(ncurses, wgetch, [GRUB_LIBS="$GRUB_LIBS -lncurses"
 AC_DEFINE(HAVE_LIBCURSES)],

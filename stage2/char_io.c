@@ -790,23 +790,40 @@ grub_strlen (const char *str)
 
 
 int
-memcheck (int start, int len)
+memcheck (int addr, int len)
 {
 #ifdef GRUB_UTIL
-  /* FIXME: cur_part_desc is the only global variable that we memmove
-     to.  We should fix this so that we don't need a special case
-     (i.e. so that it lives on the stack, or somewhere inside
-     grub_scratch_mem). */
-  extern char cur_part_desc[];
-  if (start >= (int) cur_part_desc && start + len <= (int) cur_part_desc + 16)
+  static int start_addr (void)
+    {
+      int ret;
+# if defined(HAVE_START_SYMBOL)
+      asm volatile ("movl	$start, %0" : "=a" (ret));
+# elif defined(HAVE_USCORE_START_SYMBOL)
+      asm volatile ("movl	$_start, %0" : "=a" (ret));
+# endif
+      return ret;
+    }
+
+  static int end_addr (void)
+    {
+      int ret;
+# if defined(HAVE_END_SYMBOL)
+      asm volatile ("movl	$end, %0" : "=a" (ret));
+# elif defined(HAVE_USCORE_END_SYMBOL)
+      asm volatile ("movl	$_end, %0" : "=a" (ret));
+# endif
+      return ret;
+    }
+      
+  if (start_addr () <= addr && end_addr () > addr + len)
     return ! errnum;
 #endif /* GRUB_UTIL */
 
-  if ((start < RAW_ADDR (0x1000)) ||
-      (start < RAW_ADDR (0x100000) &&
-       RAW_ADDR (mbi.mem_lower * 1024) < (start + len)) ||
-      (start >= RAW_ADDR (0x100000) &&
-       RAW_ADDR (mbi.mem_upper * 1024) < ((start - 0x100000) + len)))
+  if ((addr < RAW_ADDR (0x1000))
+      || (addr < RAW_ADDR (0x100000)
+	  && RAW_ADDR (mbi.mem_lower * 1024) <= (addr + len))
+      || (addr >= RAW_ADDR (0x100000)
+	  && RAW_ADDR (mbi.mem_upper * 1024) <= ((addr - 0x100000) + len)))
     errnum = ERR_WONT_FIT;
 
   return ! errnum;

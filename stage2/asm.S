@@ -773,7 +773,12 @@ pc_notnewline:
  * This is here so that it can be replaced by asmstub.c.
  */
 ENTRY(get_code_end)
-	movl	$EXT_C(end), %eax	/* will be the end of the bss */
+	/* will be the end of the bss */
+# if defined(HAVE_END_SYMBOL)
+	movl	$end, %eax
+# elif defined(HAVE_USCORE_END_SYMBOL)
+	movl	$_end, %eax
+# endif
 	shrl	$2, %eax		/* Round up to the next word. */
 	incl	%eax
 	shll	$2, %eax
