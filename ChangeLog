@@ -1,3 +1,12 @@
+2002-04-06  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c [GRUB_UTIL] (dump_func): New function.
+	[GRUB_UTIL] (builtin_dump): New variable.
+	(builtin_table) [GRUB_UTIL]: Added a pointer to BUILTIN_DUMP.
+	* util/grub-install.in: Make sure that GRUB reads the same
+	images as the host operating system by comparing the result of
+	running the command "dump" with the contents of the OS file.
+	
 2002-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (setup_func): Don't embed a drive number, if

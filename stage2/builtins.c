@@ -974,6 +974,66 @@ static struct builtin builtin_displaymem =
 };
 
 
+/* dump FROM TO */
+#ifdef GRUB_UTIL
+static int
+dump_func (char *arg, int flags)
+{
+  char *from, *to;
+  FILE *fp;
+  char c;
+  
+  from = arg;
+  to = skip_to (0, arg);
+  if (! *from || ! *to)
+    {
+      errnum = ERR_BAD_ARGUMENT;
+      return 1;
+    }
+
+  nul_terminate (from);
+  nul_terminate (to);
+  
+  if (! grub_open (from))
+    return 1;
+
+  fp = fopen (to, "w");
+  if (! fp)
+    {
+      errnum = ERR_WRITE;
+      return 1;
+    }
+
+  while (grub_read (&c, 1))
+    if (fputc (c, fp) == EOF)
+      {
+	errnum = ERR_WRITE;
+	fclose (fp);
+	return 1;
+      }
+
+  if (fclose (fp) == EOF)
+    {
+      errnum = ERR_WRITE;
+      return 1;
+    }
+
+  grub_close ();
+  return 0;
+}
+
+static struct builtin builtin_dump =
+  {
+    "dump",
+    dump_func,
+    BUILTIN_CMDLINE,
+    "dump FROM TO",
+    "Dump the contents of the file FROM to the file TO. FROM must be"
+    " a GRUB file and TO must be an OS file."
+  };
+#endif /* GRUB_UTIL */
+
+
 static char embed_info[32];
 /* embed */
 /* Embed a Stage 1.5 in the first cylinder after MBR or in the
@@ -4528,6 +4588,9 @@ struct builtin *builtin_table[] =
 #endif /* SUPPORT_NETBOOT */
   &builtin_displayapm,
   &builtin_displaymem,
+#ifdef GRUB_UTIL
+  &builtin_dump,
+#endif /* GRUB_UTIL */
   &builtin_embed,
   &builtin_fallback,
   &builtin_find,

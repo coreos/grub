@@ -22,6 +22,9 @@ New in 0.92:
 * A fallback entry is executed immediately after a default entry,
   without prompting a user's intervention, as the manual has ever been
   saying.
+* The utility ``grub-install'' makes sure that GRUB images have been
+  written to a physical disk completely. To assist this feature, a new
+  command "dump" is added.
 
 New in 0.91 - 2002-01-21:
 * Support for Linux DAC960 is added.

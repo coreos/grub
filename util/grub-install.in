@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Install GRUB on your drive.
-#   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+#   Copyright (C) 1999,2000,2001,2002 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ pkgdatadir=${datadir}/${PACKAGE}/${host_cpu}-${host_vendor}
 
 grub_shell=${sbindir}/grub
 log_file=/tmp/grub-install.log.$$
+img_file=/tmp/grub-install.img.$$
 rootdir=
 grub_prefix=/boot/grub
 
@@ -41,11 +42,14 @@ debug=no
 
 # look for secure tempfile creation wrappers on this platform
 if test -x /bin/tempfile; then
-    mkstemp="/bin/tempfile --prefix=grub"
+    mklog="/bin/tempfile --prefix=grub"
+    mkimg="/bin/tempfile --prefix=grub"
 elif test -x /bin/mktemp; then
-    mkstemp="/bin/mktemp /tmp/grub-install.log.XXXXXX"
+    mklog="/bin/mktemp /tmp/grub-install.log.XXXXXX"
+    mkimg="/bin/mktemp /tmp/grub-install.img.XXXXXX"
 else
-    mkstemp=""
+    mklog=""
+    mkimg=""
 fi
 
 # Usage: usage
@@ -306,7 +310,7 @@ if test -f "$device_map"; then
     :
 else
     # Create a safe temporary file.
-    test -n "$mkstemp" && log_file=`$mkstemp`
+    test -n "$mklog" && log_file=`$mklog`
 
     $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 quit
@@ -375,8 +379,37 @@ for file in \
     cp -f $file ${grubdir} || exit 1
 done
 
+# Make sure that GRUB reads the same images as the host OS.
+test -n "$mkimg" && img_file=`$mkimg`
+test -n "$mklog" && log_file=`$mklog`
+
+for file in ${grubdir}/stage1 ${grubdir}/stage2 ${grubdir}/*stage1_5; do
+    count=5
+    tmp=`echo $file | sed "s|^${grubdir}|${grub_prefix}|"`
+    while test $count -gt 0; do
+	$grub_shell --batch --device-map=$device_map <<EOF >$log_file
+dump ${root_drive}${tmp} ${img_file}
+quit
+EOF
+	if grep "Error [0-9]*: " $log_file >/dev/null; then
+	    :
+	elif cmp $file $img_file >/dev/null; then
+	    break
+	fi
+	sleep 1
+	count=`expr $count - 1`    
+    done
+    if test $count -eq 0; then
+	echo "The file $file not read correctly." 1>&2
+	exit 1
+    fi
+done
+
+rm -f $img_file
+rm -f $log_file
+
 # Create a safe temporary file.
-test -n "$mkstemp" && log_file=`$mkstemp`
+test -n "$mklog" && log_file=`$mklog`
 
 # Now perform the installation.
 $grub_shell --batch --device-map=$device_map <<EOF >$log_file
