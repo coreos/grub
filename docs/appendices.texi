@@ -157,10 +157,9 @@ utopia@dots{}
 @quotation
 @strong{Caution:} GRUB requires binutils-2.9.1.0.23 or later because the
 GNU assembler has been changed so that it can produce real 16bits
-machine code between 2.9.1 and 2.9.1.0.x. The latest version can be
-obtained from:
-
-@url{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}
+machine code between 2.9.1 and 2.9.1.0.x. See
+@url{http://sourceware.cygnus.com/binutils/}, to obtain information on
+how to get the latest version.
 @end quotation
 
 @c Do not change alpha.gnu.org:/gnu/grub to the URI, since TeX does
@@ -178,7 +177,7 @@ To unbundle GRUB use the instruction:
 zcat grub-@value{VERSION}.tar.gz | tar xvf -
 @end example
 
-which will create a directory called @file{guile-@value{VERSION}} with
+which will create a directory called @file{grub-@value{VERSION}} with
 all the sources. You can look at the file @file{INSTALL} for detailed
 instructions on how to build and install GRUB, but you should be able to
 just do:

@@ -25,11 +25,13 @@ configuring the GRUB.
 * GNU binutils 2.9.1.0.23 or later
 
   Binutils has changed the behavior of 16bit assembler between 2.9.1
-  and 2.9.1.0.x, and we support only 2.9.1.0.x and higher. It is
-  available from
-  <ftp://ftp.varesearch.com/pub/support/hjl/binutils/>. You don't have
-  to install it into a system directory. See the section "Operation
-  Controls".
+  and 2.9.1.0.x, and we support only 2.9.1.0.x and higher. In
+  particular, we recommend using binutils 2.10, since it is the only
+  public release that supports real 16bit mode. Please taka a look at
+  the webpage <http://sourceware.cygnus.com/binutils/>, for more
+  information. Note that you don't have to install it into any system
+  directory. See the section "Operation Controls", if you want to
+  install binutils into your own directory.
 
 If you'd like to develop GRUB, these below are also required. Don't
 forget to specify the option `--enable-maintainer-mode' when running the

@@ -1,3 +1,9 @@
+2000-07-02  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* docs/appendices.texi (Obtaining and Building GRUB): Indicate
+	the Cygnus's binutils webpage instead of the hjl's site, since
+	you can now use a public release (i.e. 2.10).
+	
 2000-06-23  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/boot.c (load_image): Take an additional argument

@@ -27,10 +27,19 @@ If you have any suggestions or ideas, please send electronic mail to the
 GRUB mailing list <bug-grub@gnu.org>. The archive of the list is
 available at <http://www.mail-archive.com/bug-grub%40gnu.org/>.
 
-When you encounter any problem or bug, please submit it to
+When you encounter a problem or a bug, first of all, read the chapter
+"Reporting bugs" in the document. Very often, people ask us their
+questions with little (or no) information about their systems. That's
+quite useless, because we have to *guess* what you did, what was
+displayed and what really happened. Please notice that we may not see
+your computer directly. So, whenever you report a bug, you must include
+enough information so that we can understand what happened and even
+reproduce your problem in our machines.
+
+Once you have realized how to write a bug report, please submit it to
 <bug-grub@gnu.org> with information about your computer and what you did
-as much as possible. For example, your operating system and the
-geometries of your drives are very important.
+_as much as possible_. Excessive information is always better than no
+information.
 
 When you enhance/fix GRUB, please send the patch to <bug-grub@gnu.org>.
 Do not forget to write your changes to ChangeLog; That helps us to
