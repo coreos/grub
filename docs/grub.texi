@@ -82,7 +82,7 @@ edition documents version @value{VERSION}.
 * Using::                       Booting your operating systems.
 * Filesystems::                 Filesystem syntax and semantics.
 * Troubleshooting::             Error messages produced by GRUB.
-* Stage 2 Emulator::            The command @command{grub}.
+* Stage 2 emulator::            The command @command{grub}.
 * Hacking::                     Implementation details.
 * Index::                       Index.
 
@@ -120,9 +120,8 @@ Error messages reported by GRUB
 
 The command @command{grub}
 
-* Basic usage::                 Introduction into the Stage 2 emulator.
-* Command-line options::        The list of @command{grub} options.
-* Installation under UNIX::     How to install GRUB by @command{grub}.
+* Basic usage::                 How to use the Stage 2 emulator.
+* Installation under UNIX::     How to install GRUB via @command{grub}.
 
 Implementation details
 
@@ -1173,32 +1172,118 @@ install of set active partition command.
 @end table
 
 
-@node Stage 2 Emulator
+@node Stage 2 emulator
 @chapter The command @command{grub}
 
+This chapter documents the Stage 2 emulator @command{grub}.
+
 @menu
-* Basic usage::                 Introduction into the Stage 2 emulator.
-* Command-line options::        The list of @command{grub} options.
-* Installation under UNIX::     How to install GRUB by @command{grub}.
+* Basic usage::                 How to use the Stage 2 emulator.
+* Installation under UNIX::     How to install GRUB via @command{grub}.
 @end menu
 
 
 @node Basic usage
 @section Introduction into the Stage 2 emulator
 
-FIXME
+You can use the command @command{grub} for installing GRUB under your
+operating systems and for a testbed when you add a new feature into GRUB
+or when fix a bug. @command{grub} is almost the same as Stage 2, and, in
+fact, it shares the source code with Stage 2 and you can use the same
+commands in @command{grub}. It is emulated by replacing BIOS calls with
+UNIX system calls and libc functions.
 
+The command @command{grub} accepts the following options:
 
-@node Command-line options
-@section The list of @command{grub} options
+@table @code
+@item --help
+Print a summary of the command line options and exit.
 
-FIXME
+@item --version
+Print the version number of GRUB and exit.
+
+@item --verbose
+Print some verbose messages for debugging purpose.
+
+@item --config-file=@var{file}
+Read the configuration file @var{file} instead of
+@file{/boot/grub/menu.lst}. The format is the same as the normal GRUB
+syntax. See @ref{Filesystems}, for more information.
+
+@item --boot-drive=@var{drive}
+Set the stage2 @var{boot_drive} to @var{drive}. This argument should be
+an integer (decimal, octal or hexadecimal).
+
+@item --install-partition=@var{par}
+Set the stage2 @var{install_partition} to @var{par}. This argument
+should be an hexadecimal number.
+
+@item --no-config-file
+Do not use the configuration file even if it can be read.
+
+@item --no-curses
+Do not use the curses interface even if it is available.
+
+@item --batch
+This option has the same meaning as @samp{--no-config-file --no-curses}.
+
+@item --read-only
+Disable writing to any disk.
+
+@item --hold
+Wait until a debegger will attach. This option is useful when you want
+to debug the startup code.
+@end table
 
 
 @node Installation under UNIX
-@section How to install GRUB by @command{grub}
+@section How to install GRUB via @command{grub}
 
-FIXME
+The installation procedure is the same as under the @dfn{native} Stage
+2. See @ref{Automated install} for more information. The command
+@command{grub}-specific information is described here.
+
+What you should be careful about is @dfn{buffer cache}. @command{grub}
+makes use of raw devices instead of filesystems that your operating
+systems serve, so there exists a potential problem that some cache
+inconsistency may corrupt your filesystems. What we recommend is:
+
+@itemize @bullet
+@item
+If you can unmount drives to which GRUB may write any amount of data,
+unmount them before running @command{grub}.
+
+@item
+If a drive cannot be unmounted but can be mounted with the read-only
+flag, mount it in read-only mode. That should be secure.
+
+@item
+If a drive must be mounted with the read-write flag, make sure that any
+activity is not being done on it during running the command
+@command{grub}.
+
+@item
+Reboot your operating system as soon as possible. Probably that is not
+required if you follow these rules above, but reboot is the most secure
+way.
+@end itemize
+
+In addition, enter the command @command{quit} when you finish the
+installation. That is @emph{very important} because @command{quit} makes
+the buffer cache consistent. Do not push @key{C-c}.
+
+If you want to install GRUB non-interactively, specify @samp{--batch}
+option in the command line. This is a simple example:
+
+@example
+#!/bin/sh
+
+/sbin/grub --batch <<EOT 1>/dev/null 2>/dev/null
+root= (hd0,0)
+install= /boot/grub/stage1 (hd0) /boot/grub/stage2 0x8000 p
+quit
+EOT
+@end example
 
 
 @node Hacking
