@@ -1,3 +1,11 @@
+2001-07-26  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/Makefile.am (libgrub_a_CFLAGS): Enable USE_MD5_PASSWORDS
+	for libgrub.  Previously that was implicitly done by configure.in
+	until the patch from 2001-07-04, which moved that flag from CFLAGS
+	to FSYS_CFLAGS.  Reported by YAMAGUCHI Shingo
+	<shingo@kip.iis.toyama-u.ac.jp>
+
 2001-07-13  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* util/grub-install.in (convert): Recognize the naming scheme
