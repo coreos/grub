@@ -364,8 +364,12 @@ restart:
 		  gotoxy(1, 21);
 		  get_cmdline (" Password: ", commands, entered, 31, '*');
 
-		  while (! isspace (*pptr))
+		  while (! isspace (*pptr) && *pptr)
 		    pptr ++;
+
+		  /* Make sure that PASSWORD is NUL-terminated.  */
+		  *pptr++ = 0;
+		  
 		  if (! strcmp (password, entered))
 		    {
 		      char *new_file = config_file;

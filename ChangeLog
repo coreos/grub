@@ -1,3 +1,9 @@
+1999-08-09  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* stage2/stage2.c (run_menu): Terminate the string PASSWORD
+	before checking if ENTERED is identical to PASSWORD. Reported
+	by Mark Lundeberg <aa026@pgfn.bc.ca>.
+	
 1999-08-08  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage2/stage2.c (set_line_normal): New function.
