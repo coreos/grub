@@ -1130,11 +1130,11 @@ the install).
 @section Errors reported by the Stage 1.5
 
 The general way that the Stage 1.5 handles errors is to print an error
-number in the form @code{Error: @var{num}} and then halt. Pressing
+number in the form @code{Error @var{num}} and then halt. Pressing
 @kbd{@key{CTRL}-@key{ALT}-@key{DEL}} will reboot.
 
-The error numbers correspond to the @ref{Stage2 errors} in the listed
-sequence.
+The error numbers correspond to the errors reported by Stage
+2. @xref{Stage2 errors}.
 
 
 @node Stage2 errors

@@ -200,7 +200,7 @@ else
     $grub_shell --batch --device-map=$device_map <<EOF >$log_file
 quit
 EOF
-    if grep "Error: " $log_file >/dev/null; then
+    if grep "Error [0-9]*: " $log_file >/dev/null; then
 	cat $log_file 1>&2
 	exit 1
     fi
@@ -266,7 +266,7 @@ setup $force_lba --stage2=$grubdir/stage2 $install_drive
 quit
 EOF
 
-if grep "Error: " $log_file >/dev/null || test $debug = yes; then
+if grep "Error [0-9]*: " $log_file >/dev/null || test $debug = yes; then
     cat $log_file 1>&2
     exit 1
 fi
