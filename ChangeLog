@@ -1,5 +1,17 @@
 2004-03-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Boji Tony Kannanthanam <boji.t.kannanthanam@intel.com>:
+	* util/grub-install.in (convert): Add support for ATARAID
+	device names.
+	* lib/device.c (get_ataraid_disk_name) [__linux__]: New
+	function.
+	(init_device_map) [__linux__]: Probe ATARAID disks.
+
+	* stage2/size_test (check): Don't use the local statement any
+	longer. It was unneeded actually. Reported by Paul Jarc.
+
+2004-03-12  Yoshinori K. Okuji  <okuji@enbug.org>
+	
 	From Sergey Matveychuk <sem@ciam.ru>:
 	* lib/device.c (get_drive_geometry): Do not open the same device
 	more than once unnecessarily.

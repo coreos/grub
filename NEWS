@@ -3,6 +3,7 @@ NEWS - list of user-visible changes between releases of GRUB
 New:
 * Add support for ReiserFS 3.
 * Fix support for FreeBSD 5.
+* Support ATARAID for Linux in the grub shell and grub-install.
 
 New in 0.94 - 2004-01-25:
 * Support building on x86-64 with gcc -m32.

@@ -1,7 +1,7 @@
 /* device.c - Some helper functions for OS devices and BIOS drives */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -361,6 +361,12 @@ get_dac960_disk_name (char *name, int controller, int drive)
 {
   sprintf (name, "/dev/rd/c%dd%d", controller, drive);
 }
+
+static void
+get_ataraid_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/ataraid/d%c", unit + '0');
+}
 #endif
 
 /* Check if DEVICE can be read. If an error occurs, return zero,
@@ -682,6 +688,27 @@ init_device_map (char ***map, const char *map_file, int floppy_disks)
 	}
     }
   
+#ifdef __linux__
+  /* ATARAID disks.  */
+  for (i = 0; i < 8; i++)
+    {
+      char name[20];
+
+      get_ataraid_disk_name (name, i);
+      if (check_device (name))
+        {
+          (*map)[num_hd + 0x80] = strdup (name);
+          assert ((*map)[num_hd + 0x80]);
+
+          /* If the device map file is opened, write the map.  */
+          if (fp)
+            fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
+
+          num_hd++;
+        }
+    }
+#endif /* __linux__ */
+
   /* The rest is SCSI disks.  */
   for (i = 0; i < 16; i++)
     {
