@@ -60,6 +60,7 @@ int grub_stage2 (void);
 #include <shared.h>
 #include <device.h>
 #include <serial.h>
+#include <hercules.h>
 
 /* Simulated memory sizes. */
 #define EXTENDED_MEMSIZE (3 * 1024 * 1024)	/* 3MB */
@@ -642,7 +643,7 @@ console_checkkey (void)
 
 /* sets text mode character attribute at the cursor position */
 void
-set_attrib (int attr)
+console_set_attrib (int attr)
 {
 #ifdef HAVE_LIBCURSES
   if (use_curses)
@@ -1133,4 +1134,35 @@ set_serial_device (const char *device)
     free (serial_device);
   
   serial_device = strdup (device);
+}
+
+/* There is no difference between console and hercules in the grub shell.  */
+void
+herc_cls (void)
+{
+  console_cls ();
+}
+
+int
+herc_getxy (void)
+{
+  return console_getxy ();
+}
+
+void
+herc_gotoxy (int x, int y)
+{
+  console_gotoxy (x, y);
+}
+
+void
+herc_putchar (int c)
+{
+  console_putchar (c);
+}
+
+void
+herc_set_attrib (int attr)
+{
+  console_set_attrib (attr);
 }

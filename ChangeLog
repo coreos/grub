@@ -1,3 +1,48 @@
+2001-02-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Added hercules support based on a patch by Frank Mehnert
+	<fm3@os.inf.tu-dresden.de>. I translated his assembly code into
+	C, and separated hercules from the normal console.
+	
+	* configure.in (--disable-hercules): New option.
+	
+	* grub/asmstub.c: Include <hercules.h>.
+	(set_attrib): Renamed to ...
+	(console_set_attrib): ... this.
+	(herc_cls): New function.
+	(herc_getxy): Likewise.
+	(herc_gotoxy): Likewise.
+	(herc_putchar): Likewise.
+	(herc_set_attrib): Likewise.
+	
+	* stage2/Makefile.am (noinst_HEADERS): Added hercules.h.
+	(libgrub_a_CFLAGS): Added -DSUPPORT_HERCULES=1.
+	(HERCULES_FLAGS): New variable.
+	(STAGE2_COMPILE): Added $(HERCULES_FLAGS).
+	(pre_stage2_exec_SOURCES): Added hercules.c.
+	* stage2/asm.S [!STAGE1_5] (set_attrib) Renamed to ...
+	[!STAGE1_5] (console_set_attrib): ... this.
+	* stage2/builtins.c [SUPPORT_HERCULES] (terminal_func): Added
+	hercules support.
+	(builtin_table) [SUPPORT_HERCULES]: Added a pointer to
+	BUILTIN_TERMINAL.
+	* stage2/char_io.c [SUPPORT_HERCULES]: Include <hercules.h>.
+	[!STAGE1_5] (get_cmdline) [SUPPORT_HERCULES]: Added hercules
+	support.
+	[!STAGE1_5] (getkey) [SUPPORT_HERCULES]: Likewise.
+	[!STAGE1_5] (checkkey) [SUPPORT_HERCULES]: Likewise.
+	(grub_putchar) [SUPPORT_HERCULES]: Likewise.
+	[!STAGE1_5] (gotoxy) [SUPPORT_HERCULES]: Likewise.
+	[!STAGE1_5] (getxy) [SUPPORT_HERCULES]: Likewise.
+	[!STAGE1_5] (cls) [SUPPORT_HERCULES]: Likewise.
+	(set_attrib): New function.
+	* stage2/shared.h (console_set_attrib): Declared.
+	(TERMINAL_HERCULES): New macro.
+	* stage2/stage2.c (run_menu) [SUPPORT_HERCULES]: Added hercules
+	support.
+	* stage2/hercules.h: New file.
+	* stage2/hercules.c: Likewise.
+	
 2001-02-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From "Treutwein; Bernhard"

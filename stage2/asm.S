@@ -1943,7 +1943,7 @@ ENTRY(console_gotoxy)
 
 
 /*
- * set_attrib(attr) :  Sets the character attributes for character at
+ * console_set_attrib(attr) :  Sets the character attributes for character at
  *		current cursor position.
  *
  *  Bitfields for character's display attribute:
@@ -1977,7 +1977,7 @@ ENTRY(console_gotoxy)
  *			%cx = count to display (???, possible side-effects!!)
  */
 
-ENTRY(set_attrib)
+ENTRY(console_set_attrib)
 	push	%ebp
 	push	%ebx
 

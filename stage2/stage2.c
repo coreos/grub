@@ -1,7 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -164,7 +164,11 @@ print_border (int y, int size)
 #ifndef GRUB_UTIL
   /* Color the menu. The menu is 75 * 14 characters.  */
 # ifdef SUPPORT_SERIAL
-  if (terminal & TERMINAL_CONSOLE)
+  if ((terminal & TERMINAL_CONSOLE)
+#  ifdef SUPPORT_HERCULES
+      || (terminal & TERMINAL_HERCULES)
+#  endif
+      )
 # endif
     {
       for (i = 0; i < 14; i++)
@@ -387,7 +391,11 @@ restart:
       disp_down = ACS_DARROW;
 #else /* ! GRUB_UTIL */
 # ifdef SUPPORT_SERIAL
-      if (terminal & TERMINAL_CONSOLE)
+      if ((terminal & TERMINAL_CONSOLE)
+#  ifdef SUPPORT_HERCULES
+	  || (terminal & TERMINAL_HERCULES)
+#  endif /* SUPPORT_HERCULES */
+	  )
 	{
 	  disp_up = DISP_UP;
 	  disp_down = DISP_DOWN;

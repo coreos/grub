@@ -808,6 +808,9 @@ int console_checkkey (void);
    constants defined above. */
 void set_attrib (int attr);
 
+/* The console part of set_attrib.  */
+void console_set_attrib (int attr);
+
 /* Low-level disk I/O */
 int get_diskinfo (int drive, struct geometry *geometry);
 int biosdisk (int subfunc, int drive, struct geometry *geometry,
@@ -867,6 +870,7 @@ extern int terminal;
 
 #define TERMINAL_CONSOLE	(1 << 0)	/* keyboard and screen */
 #define TERMINAL_SERIAL		(1 << 1)	/* serial console */
+#define TERMINAL_HERCULES	(1 << 2)	/* hercules */
 
 #define TERMINAL_DUMB		(1 << 16)	/* dumb terminal */
 

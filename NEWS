@@ -25,6 +25,7 @@ New in 1.0 - XXXX-XX-XX:
   specify the option `--enable-example-kernel' to the configure script.
 * New command, "ifconfig".
 * Linux software RAID support is added (only for RAID-1).
+* Hercules support is added.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".

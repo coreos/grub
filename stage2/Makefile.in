@@ -92,9 +92,9 @@ noinst_SCRIPTS = $(TESTS)
 
 # For dist target.
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
-        fat.h filesys.h freebsd.h fs.h i386-elf.h imgact_aout.h \
-        mb_header.h mb_info.h md5.h pc_slice.h serial.h shared.h \
-	smp-imps.h nbi.h
+        fat.h filesys.h freebsd.h fs.h hercules.h i386-elf.h \
+	imgact_aout.h mb_header.h mb_info.h md5.h pc_slice.h serial.h \
+	shared.h smp-imps.h nbi.h
 
 EXTRA_DIST = setjmp.S apm.S $(noinst_SCRIPTS)
 
@@ -109,8 +109,8 @@ libgrub_a_SOURCES = boot.c builtins.c common.c char_io.c cmdline.c \
 
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/lib \
 	-DGRUB_UTIL=1 -DFSYS_EXT2FS=1 -DFSYS_FAT=1 -DFSYS_FFS=1 \
-	-DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DSUPPORT_SERIAL \
-	-fwritable-strings
+	-DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DSUPPORT_SERIAL=1 \
+	-DSUPPORT_HERCULES=1 -fwritable-strings
 
 
 # Stage 2 and Stage 1.5's.
@@ -140,9 +140,11 @@ PXELOADER_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,7C00
 @NETBOOT_SUPPORT_FALSE@NETBOOT_FLAGS = 
 @SERIAL_SUPPORT_TRUE@SERIAL_FLAGS = @SERIAL_SUPPORT_TRUE@-DSUPPORT_SERIAL=1
 @SERIAL_SUPPORT_FALSE@SERIAL_FLAGS = 
+@HERCULES_SUPPORT_TRUE@HERCULES_FLAGS = @HERCULES_SUPPORT_TRUE@-DSUPPORT_HERCULES=1
+@HERCULES_SUPPORT_FALSE@HERCULES_FLAGS = 
 
 STAGE2_COMPILE = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
-	$(NETBOOT_FLAGS) $(SERIAL_FLAGS)
+	$(NETBOOT_FLAGS) $(SERIAL_FLAGS) $(HERCULES_FLAGS)
 
 
 STAGE1_5_LINK = -nostdlib -Wl,-N -Wl,-Ttext -Wl,2000
@@ -151,8 +153,8 @@ STAGE1_5_COMPILE = $(STAGE2_COMPILE) -DNO_DECOMPRESSION=1 -DSTAGE1_5=1
 # For stage2 target.
 pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 	char_io.c cmdline.c disk_io.c gunzip.c fsys_ext2fs.c \
-	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c serial.c \
-	smp-imps.c stage2.c md5.c
+	fsys_fat.c fsys_ffs.c fsys_minix.c fsys_reiserfs.c hercules.c \
+	serial.c smp-imps.c stage2.c md5.c
 
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
@@ -258,8 +260,8 @@ diskless_exec-char_io.o diskless_exec-cmdline.o diskless_exec-disk_io.o \
 diskless_exec-gunzip.o diskless_exec-fsys_ext2fs.o \
 diskless_exec-fsys_fat.o diskless_exec-fsys_ffs.o \
 diskless_exec-fsys_minix.o diskless_exec-fsys_reiserfs.o \
-diskless_exec-serial.o diskless_exec-smp-imps.o diskless_exec-stage2.o \
-diskless_exec-md5.o
+diskless_exec-hercules.o diskless_exec-serial.o \
+diskless_exec-smp-imps.o diskless_exec-stage2.o diskless_exec-md5.o
 diskless_exec_OBJECTS =  $(am_diskless_exec_OBJECTS)
 diskless_exec_DEPENDENCIES =  ../netboot/libdrivers.a
 am_e2fs_stage1_5_exec_OBJECTS =  e2fs_stage1_5_exec-start.o \
@@ -305,9 +307,9 @@ pre_stage2_exec-char_io.o pre_stage2_exec-cmdline.o \
 pre_stage2_exec-disk_io.o pre_stage2_exec-gunzip.o \
 pre_stage2_exec-fsys_ext2fs.o pre_stage2_exec-fsys_fat.o \
 pre_stage2_exec-fsys_ffs.o pre_stage2_exec-fsys_minix.o \
-pre_stage2_exec-fsys_reiserfs.o pre_stage2_exec-serial.o \
-pre_stage2_exec-smp-imps.o pre_stage2_exec-stage2.o \
-pre_stage2_exec-md5.o
+pre_stage2_exec-fsys_reiserfs.o pre_stage2_exec-hercules.o \
+pre_stage2_exec-serial.o pre_stage2_exec-smp-imps.o \
+pre_stage2_exec-stage2.o pre_stage2_exec-md5.o
 pre_stage2_exec_OBJECTS =  $(am_pre_stage2_exec_OBJECTS)
 @NETBOOT_SUPPORT_TRUE@pre_stage2_exec_DEPENDENCIES =  \
 @NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
@@ -353,9 +355,10 @@ $(DEPDIR)/diskless_exec-fsys_ext2fs.Po \
 $(DEPDIR)/diskless_exec-fsys_fat.Po $(DEPDIR)/diskless_exec-fsys_ffs.Po \
 $(DEPDIR)/diskless_exec-fsys_minix.Po \
 $(DEPDIR)/diskless_exec-fsys_reiserfs.Po \
-$(DEPDIR)/diskless_exec-gunzip.Po $(DEPDIR)/diskless_exec-md5.Po \
-$(DEPDIR)/diskless_exec-serial.Po $(DEPDIR)/diskless_exec-smp-imps.Po \
-$(DEPDIR)/diskless_exec-stage2.Po $(DEPDIR)/e2fs_stage1_5_exec-asm.Po \
+$(DEPDIR)/diskless_exec-gunzip.Po $(DEPDIR)/diskless_exec-hercules.Po \
+$(DEPDIR)/diskless_exec-md5.Po $(DEPDIR)/diskless_exec-serial.Po \
+$(DEPDIR)/diskless_exec-smp-imps.Po $(DEPDIR)/diskless_exec-stage2.Po \
+$(DEPDIR)/e2fs_stage1_5_exec-asm.Po \
 $(DEPDIR)/e2fs_stage1_5_exec-bios.Po \
 $(DEPDIR)/e2fs_stage1_5_exec-char_io.Po \
 $(DEPDIR)/e2fs_stage1_5_exec-common.Po \
@@ -403,7 +406,8 @@ $(DEPDIR)/pre_stage2_exec-fsys_fat.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_ffs.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_minix.Po \
 $(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po \
-$(DEPDIR)/pre_stage2_exec-gunzip.Po $(DEPDIR)/pre_stage2_exec-md5.Po \
+$(DEPDIR)/pre_stage2_exec-gunzip.Po \
+$(DEPDIR)/pre_stage2_exec-hercules.Po $(DEPDIR)/pre_stage2_exec-md5.Po \
 $(DEPDIR)/pre_stage2_exec-serial.Po \
 $(DEPDIR)/pre_stage2_exec-smp-imps.Po \
 $(DEPDIR)/pre_stage2_exec-stage2.Po \
@@ -497,6 +501,7 @@ diskless_exec-fsys_fat.o: fsys_fat.c
 diskless_exec-fsys_ffs.o: fsys_ffs.c
 diskless_exec-fsys_minix.o: fsys_minix.c
 diskless_exec-fsys_reiserfs.o: fsys_reiserfs.c
+diskless_exec-hercules.o: hercules.c
 diskless_exec-serial.o: serial.c
 diskless_exec-smp-imps.o: smp-imps.c
 diskless_exec-stage2.o: stage2.c
@@ -582,6 +587,7 @@ pre_stage2_exec-fsys_fat.o: fsys_fat.c
 pre_stage2_exec-fsys_ffs.o: fsys_ffs.c
 pre_stage2_exec-fsys_minix.o: fsys_minix.c
 pre_stage2_exec-fsys_reiserfs.o: fsys_reiserfs.c
+pre_stage2_exec-hercules.o: hercules.c
 pre_stage2_exec-serial.o: serial.c
 pre_stage2_exec-smp-imps.o: smp-imps.c
 pre_stage2_exec-stage2.o: stage2.c
@@ -684,6 +690,7 @@ maintainer-clean-tags:
 @AMDEP@include $(DEPDIR)/diskless_exec-fsys_minix.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-fsys_reiserfs.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-gunzip.Po
+@AMDEP@include $(DEPDIR)/diskless_exec-hercules.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-md5.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-serial.Po
 @AMDEP@include $(DEPDIR)/diskless_exec-smp-imps.Po
@@ -749,6 +756,7 @@ maintainer-clean-tags:
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_minix.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-gunzip.Po
+@AMDEP@include $(DEPDIR)/pre_stage2_exec-hercules.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-md5.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-serial.Po
 @AMDEP@include $(DEPDIR)/pre_stage2_exec-smp-imps.Po
@@ -997,6 +1005,14 @@ diskless_exec-fsys_reiserfs.o: fsys_reiserfs.c
 @AMDEP@	depfile='$(DEPDIR)/diskless_exec-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/diskless_exec-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+diskless_exec-hercules.o: hercules.c
+@AMDEP@	source='hercules.c' object='diskless_exec-hercules.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/diskless_exec-hercules.Po' tmpdepfile='$(DEPDIR)/diskless_exec-hercules.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(diskless_exec_CFLAGS) $(CFLAGS) -c -o diskless_exec-hercules.o `test -f hercules.c || echo '$(srcdir)/'`hercules.c
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 
@@ -1325,6 +1341,14 @@ pre_stage2_exec-fsys_reiserfs.o: fsys_reiserfs.c
 @AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-fsys_reiserfs.TPo' @AMDEPBACKSLASH@
 @AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-fsys_reiserfs.o `test -f fsys_reiserfs.c || echo '$(srcdir)/'`fsys_reiserfs.c
+
+@AMDEP@CCDEPMODE = @CCDEPMODE@
+
+pre_stage2_exec-hercules.o: hercules.c
+@AMDEP@	source='hercules.c' object='pre_stage2_exec-hercules.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP@	depfile='$(DEPDIR)/pre_stage2_exec-hercules.Po' tmpdepfile='$(DEPDIR)/pre_stage2_exec-hercules.TPo' @AMDEPBACKSLASH@
+@AMDEP@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(pre_stage2_exec_CFLAGS) $(CFLAGS) -c -o pre_stage2_exec-hercules.o `test -f hercules.c || echo '$(srcdir)/'`hercules.c
 
 @AMDEP@CCDEPMODE = @CCDEPMODE@
 

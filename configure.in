@@ -1,5 +1,5 @@
 dnl Configure script for GRUB.
-dnl Copyright 1999,2000 Free Software Foundation, Inc.
+dnl Copyright 1999,2000,2001 Free Software Foundation, Inc.
 
 dnl Permission to use, copy, modify and distribute this software and its
 dnl documentation is hereby granted, provided that both the copyright
@@ -497,6 +497,11 @@ dnl Diskless
 AC_ARG_ENABLE(diskless,
   [  --enable-diskless       enable diskless support])
 AM_CONDITIONAL(DISKLESS_SUPPORT, test "x$enable_diskless" = xyes)
+
+dnl Hercules terminal
+AC_ARG_ENABLE(hercules,
+  [  --disable-hercules      disable hercules terminal support])
+AM_CONDITIONAL(HERCULES_SUPPORT, test "x$enable_hercules" != xno)
 
 dnl Serial terminal
 AC_ARG_ENABLE(serial,

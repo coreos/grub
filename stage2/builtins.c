@@ -3820,7 +3820,7 @@ static struct builtin builtin_setup =
 };
 
 
-#ifdef SUPPORT_SERIAL
+#if defined(SUPPORT_SERIAL) || defined(SUPPORT_HERCULES)
 /* terminal */
 static int
 terminal_func (char *arg, int flags)
@@ -3854,9 +3854,17 @@ terminal_func (char *arg, int flags)
       if (terminal & TERMINAL_CONSOLE)
 	grub_printf ("console%s\n",
 		     terminal & TERMINAL_DUMB ? " (dumb)" : "");
+#ifdef SUPPORT_HERCULES
+      else if (terminal & TERMINAL_HERCULES)
+	grub_printf ("hercules%s\n",
+		     terminal & TERMINAL_DUMB ? " (dumb)" : "");
+#endif /* SUPPORT_HERCULES */
+#ifdef SUPPORT_SERIAL
       else if (terminal & TERMINAL_SERIAL)
 	grub_printf ("serial%s\n",
 		     terminal & TERMINAL_DUMB ? " (dumb)" : " (vt100)");
+#endif /* SUPPORT_SERIAL */
+      
       return 0;
     }
 
@@ -3871,12 +3879,22 @@ terminal_func (char *arg, int flags)
 	  if (! default_terminal)
 	    default_terminal = TERMINAL_CONSOLE;
 	}
+#ifdef SUPPORT_HERCULES
+      else if (grub_memcmp (arg, "hercules", sizeof ("hercules") - 1) == 0)
+	{
+	  terminal |= TERMINAL_HERCULES;
+	  if (! default_terminal)
+	    default_terminal = TERMINAL_HERCULES;
+	}
+#endif /* SUPPORT_HERCULES */
+#ifdef SUPPORT_SERIAL
       else if (grub_memcmp (arg, "serial", sizeof ("serial") - 1) == 0)
 	{
 	  terminal |= TERMINAL_SERIAL;
 	  if (! default_terminal)
 	    default_terminal = TERMINAL_SERIAL;
 	}
+#endif /* SUPPORT_SERIAL */
       else
 	{
 	  terminal = saved_terminal;
@@ -3949,7 +3967,7 @@ static struct builtin builtin_terminal =
   " If --timeout is present, this command will wait at most for SECS"
   " seconds."
 };
-#endif /* SUPPORT_SERIAL */
+#endif /* SUPPORT_SERIAL || SUPPORT_HERCULES */
 
 
 /* testload */
@@ -4448,9 +4466,9 @@ struct builtin *builtin_table[] =
 #endif /* SUPPORT_SERIAL */
   &builtin_setkey,
   &builtin_setup,
-#ifdef SUPPORT_SERIAL
+#if defined(SUPPORT_SERIAL) || defined(SUPPORT_HERCULES)
   &builtin_terminal,
-#endif /* SUPPORT_SERIAL */
+#endif /* SUPPORT_SERIAL || SUPPORT_HERCULES */
   &builtin_testload,
   &builtin_testvbe,
 #ifdef SUPPORT_NETBOOT
