@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Install GRUB on your drive.
-#   Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+#   Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -286,11 +286,13 @@ esac
 grubdir=${bootdir}/grub
 device_map=${grubdir}/device.map
 
-# Check if GRUB is installed
-if test -f "$grub_shell"; then
+# Check if GRUB is installed.
+# This is necessary, because the user can specify "grub --read-only".
+set $grub_shell dummy
+if test -f "$1"; then
     :
 else
-    echo "${grub_shell}: Not found." 1>&2
+    echo "$1: Not found." 1>&2
     exit 1
 fi
 
