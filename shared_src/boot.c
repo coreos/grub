@@ -181,12 +181,20 @@ load_image(void)
 	       <= LINUX_SETUP_MAXLEN)
 	   && ((text_len
 		= (((long)*((unsigned short *)
-			    (buffer+LINUX_KERNEL_LEN_OFFSET))) << 4))
-	       <= LINUX_KERNEL_MAXLEN)
-	   && (data_len+text_len+SECTOR_SIZE) <= ((filemax+15)&0xFFFFFFF0))
+			    (buffer+LINUX_KERNEL_LEN_OFFSET))) << 4)),
+	       (data_len+text_len+SECTOR_SIZE) <= ((filemax+15)&0xFFFFFFF0)))
     {
-      printf(" Loading: [format=Linux-piggyback, setup=0x%x, size=0x%x]\n",
-	     data_len, text_len);
+      int big_linux = buffer[LINUX_SETUP_LOAD_FLAGS] & LINUX_FLAG_BIG_KERNEL;
+      buffer[LINUX_SETUP_LOADER] = 0x70;
+      if (!big_linux && text_len > LINUX_KERNEL_MAXLEN)
+	{
+	  printf(" linux 'zImage' kernel too big, try 'make bzImage'\n");
+	  errnum = ERR_WONT_FIT;
+	  return 0;
+	}
+
+      printf("   [Linux-%s, setup=0x%x, size=0x%x]\n",
+	     (big_linux ? "bzImage" : "zImage"), data_len, text_len);
 
       if (mbi.mem_lower >= 608)
 	{
@@ -217,8 +225,9 @@ load_image(void)
 	  /* offset into file */
 	  filepos = data_len+SECTOR_SIZE;
 
+	  cur_addr = LINUX_STAGING_AREA + text_len;
 	  if (read(LINUX_STAGING_AREA, text_len) >= (text_len-16))
-	    return 'l';
+	    return (big_linux ? 'L' : 'l');
 	  else if (!errnum)
 	    errnum = ERR_EXEC_FORMAT;
 	}
@@ -243,7 +252,7 @@ load_image(void)
   mbi.syms.a.addr = 0;
   mbi.syms.a.pad = 0;
 
-  printf(" Loading: [format=%s-%s", str2, str);
+  printf("   [%s-%s", str2, str);
 
   str = "";
 
@@ -387,7 +396,7 @@ load_image(void)
 	    errnum = ERR_EXEC_FORMAT;
 	  else
 	    {
-	      /* XXX load symbols */
+	      /* XXX load ELF symbols */
 	    }
 	}
     }
@@ -414,6 +423,8 @@ load_module(void)
   if (!open(cur_cmdline) || !(len = read(cur_addr, -1)))
     return 0;
 
+  printf("   [Multiboot-module @ 0x%x, 0x%x bytes]\n", cur_addr, len);
+
   /* these two simply need to be set if any modules are loaded at all */
   mbi.flags |= MB_INFO_MODS;
   mbi.mods_addr = (int)mll;
@@ -426,6 +437,27 @@ load_module(void)
 
   /* increment number of modules included */
   mbi.mods_count++;
+
+  return 1;
+}
+
+int
+load_initrd(void)
+{
+  int len;
+  long *ramdisk, moveto;
+
+  if (!open(cur_cmdline) || !(len = read(cur_addr, -1)))
+    return 0;
+
+  moveto = ((mbi.mem_upper+0x400)*0x400 - len) & 0xfffff000;
+  bcopy((void*)cur_addr, (void*)moveto, len);
+
+  printf("   [Linux-initrd @ 0x%x, 0x%x bytes]\n", moveto, len);
+
+  ramdisk = (long*)(LINUX_SETUP+LINUX_SETUP_INITRD);
+  ramdisk[0] = moveto;
+  ramdisk[1] = len;
 
   return 1;
 }
