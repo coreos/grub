@@ -420,6 +420,9 @@ grub_ieee1275_claim (grub_addr_t addr, grub_size_t size, unsigned int align,
   if (result)
     *result = args.base;
 
+  if (args.base == (grub_addr_t)-1)
+    return -1;
+
   return 0;
 }
 

@@ -1,3 +1,8 @@
+2004-10-11  Hollis Blanchard  <hollis@penguinppc.org>
+
+    * boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_claim):
+    Return -1 if args.base was -1.
+
 2004-10-08  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* term/powerpc/ieee1275/ieee1275.c (grub_ofconsole_cls): Use an ANSI
