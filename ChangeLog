@@ -1,3 +1,10 @@
+2003-05-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (partnew): Fixed the inconsistency between the
+	implementation and the documentation. The last argument is the
+	length instead of the ending address.
+	Reported by Daniel Farrell <s2108287@student.rmit.edu.au>.
+
 2003-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Adam Lackorzynski <adam@os.inf.tu-dresden.de>:
