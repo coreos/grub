@@ -175,7 +175,130 @@ available via anonymous CVS.@footnote{The repository is
 @node Features
 @section GRUB features
 
-technical.html: why another bootloader?
+The primary requirement for GRUB is that it be compliant with the
+@dfn{Multiboot Standard}, which is described in @ref{Top, Multiboot
+Standard, Motivation, multiboot, The Multiboot Standard}.
+
+The other goals, listed in approximate order of importance, are:
+
+@itemize
+@item
+Basic functions must be easy for an end-user to use.
+
+@item
+Rich functionality for OS experts/designers.
+
+@item
+Compatibility for booting FreeBSD, NetBSD, OpenBSD, and
+Linux. Proprietary OS's such as DOS, Windows NT, and OS/2 are supported
+via a chain-loading function.
+@end itemize
+
+Except for specific compatibility modes (chain-loading and the Linux
+@dfn{piggyback} format), all kernels will be started in much the same
+state as in the Multiboot Standard listed above. Only kernels being
+loaded at 1 megabyte or above are presently supported. Any attempt to
+load below that boundary will simply result in immediate failure and an
+error message reporting the problem.
+
+In addition to the requirements above, GRUB has the following features
+(note that the Multiboot Standard doesn't explicitly require everything
+listed in it, but GRUB will support all options):
+
+@table @asis
+@item Multiple Executable Formats
+Supports many of the @dfn{a.out} variants plus @dfn{ELF}. Any symbol
+table present is also loaded.
+
+@item Supports Non-Multiboot OS's
+Supports many of the various free 32-bit OS's prior to any Multiboot
+compliance. Chiefly FreeBSD, NetBSD, OpenBSD, and Linux. Chain-loading
+is also supported.
+
+@item Loads Multiples Modules
+Multiboot feature of loading multiple modules is fully supported.
+
+@item Configuration File
+Supports a human-readable text configuration file with preset boot
+commands. The list of commands (@pxref{Commands}) are a superset of
+those supported on the command-line. An example command-file is provided
+under the directory @file{docs/} in the source tree.
+
+@item Menu Interface
+A menu-interface listing the preset boot commands, with a programmable
+timeout, is available. There is no fixed limit on the number of boot
+command-set entries, and should have space for several hundred.
+
+@item Flexible Command-Line Interface
+A fairly flexible command-line interface, accessible from the menu, is
+available to edit any preset commands, or simply start a new command-set
+from scratch. The list of commands (@pxref{Commands}) are a subset of
+those supported for command-files. Editing commands closely resemble the
+BASH shell command-line (@pxref{Command Line Editing, BASH, Command Line
+Editing, features, Bash Features}), with @key{TAB}-completion-listing
+(it doesn't perform the completion, just lists the possibilities) of
+commands, devices, partitions, and files in a directory depending on
+context. If no config file is present, it goes into the command-line.
+
+@item Multiple Filesystem Types
+Supports multiple fliesystem types transparently, plus an explicitly
+usable block-lst notation. The currently supported filesystem types are
+@dfn{BSD FFS}, @dfn{DOS FAT}, and @dfn{Linux
+ext2fs}. @xref{Filesystems}, for more information.
+
+@item Decompression Support
+Can decompress files which were compressed with using
+@command{gzip}. This function is both automatic and transparent to the
+user (i.e. all functions operate normally upon the uncompressed contents
+of the files in question). This is a win on 2 fronts, as it both greatly
+reduces file size and loading time (there are a few pathological cases
+where loading a very badly organized ELF kernel might make it take
+longer, but IMO you'll never see this in practice), a particularly major
+win for floppies. It is conceivable that some kernel modules should be
+loaded in a compressed state, so a variant of the modules loading
+command which doesn't uncompress them can be used.
+
+@item Access Data on Any Installed Device
+Supports reading data from any or all floppy or hard disk(s) recoginized
+by the BIOS, independent of the setting for the root partition.
+
+@item Geometry Translaton-Independent
+Subject to the constraint that it cannot go past the end of the
+geometry-translated area of a drive, the particular translation used is
+generally irrelevant. This implies a drive installed and running on a
+controller with one translatoin in use may in general be moved to
+another controller with a different translation (or the translation
+settings on the first controller, if configurable, may be changed) with
+no adverse effects and no other changes necessary.
+
+@item Detects All Installed @sc{ram}
+GRUB can generally find all the installed @sc{ram} on a PC-compatible
+machine. It uses the BIOS query technique (@pxref{Memory detection}). As
+described on the Multiboot Standard (@pxref{Top, Multiboot Standard,
+Motivation, multiboot, The Multiboot Standard}), OS's which only use the
+lower and upper memory values (whose presence is determined by bit 0 of
+the flags word passed to the OS) may not be capable of receiving
+information on all of installed memory. On most machines, upper memory
+is contiguous, so the problem does not arise.
+
+@item Supports Logical Block Address Mode
+In tranditional disk calls (called @dfn{CHS mode}), there is a geometry
+translation problem, that is, the BIOS cannot access over 1024
+cylinders, so the accessible space is limited to at least 508 MB and to
+at most 8GB. GRUB can't universally solve this problem, as there is no
+new interface which is used in all machines. However, some newer
+machines have the new interface, Logical Block Address (LBA) mode. So
+GRUB will automatically detect if LBA mode is available and use it if
+available. In LBA mode, GRUB can access the whole of your disk space.
+@end table
+
+Future directions might include an internal programming language for
+supporting richer sets of boot options with control statements (it
+becomes a boot-script at that point), and possibly support for non-IBM
+PC-compatible machines@footnote{There is a port to NEC PC-98xx
+series. See
+@url{http://www.kuis.kyoto-u.ac.jp/~kmc/proj/linux98/arch/i386/boot/grub98/},
+for more information.}.
 
 
 @node Role of a bootloader
