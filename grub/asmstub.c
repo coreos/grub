@@ -48,10 +48,9 @@ int grub_stage2 (void);
 	((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
 /* Maybe libc doesn't have large file support.  */
 #  include <linux/unistd.h>	/* _llseek */
-#  include <linux/fs.h>		/* BLKFLSBUF */
 # endif /* (GLIBC < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR < 1)) */
 # ifndef BLKFLSBUF
-#  define BLKFLSBUF	_IO (0x12,97)
+#  define BLKFLSBUF	_IO (0x12,97)	/* flush buffer cache */
 # endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
 

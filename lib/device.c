@@ -45,7 +45,9 @@
 # include <linux/major.h>	/* FLOPPY_MAJOR */
 # include <linux/kdev_t.h>	/* MAJOR */
 # include <linux/cdrom.h>	/* CDROM_GET_CAPABILITY */
-# include <linux/fs.h>		/* BLKGETSIZE */
+# ifndef BLKGETSIZE
+#  define BLKGETSIZE	_IO(0x12,96)	/* return device size */
+# endif /* ! BLKGETSIZE */
 #endif /* __linux__ */
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)

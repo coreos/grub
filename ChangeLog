@@ -1,5 +1,11 @@
 2000-08-27  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* lib/device.c [__linux__]: Don't include linux/fs.h.
+	[!BLKGETSIZE] (BLKGETSIZE): Defined as _IO(0x12,96).
+	* grub/asmstub.c [__linux__]: Don't include linux/fs.h.
+	
+2000-08-27  OKUJI Yoshinori  <okuji@gnu.org>
+
 	Preserve a magic number used by Windows NT in a MBR. Shit!
 	Reported by Khimenko Victor.
 	
