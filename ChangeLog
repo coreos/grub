@@ -1,3 +1,8 @@
+2002-11-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/grub.texi (QNX): New subsection. Reported by
+	Marian-Nicolae V. ION <marian_ion@noos.fr>.
+
 2002-10-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* grub/asmstub.c (console_translate_key): Deal with KEY_PPAGE

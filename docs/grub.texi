@@ -759,6 +759,7 @@ Here, we describe some caveats on several operating systems.
 * OpenBSD::
 * DOS/Windows::
 * SCO UnixWare::
+* QNX::
 @end menu
 
 
@@ -955,6 +956,21 @@ wrong, so you will have to specify the option @option{--force} to
 grub> @kbd{rootnoverify (hd1,0)}
 grub> @kbd{chainloader --force +1}
 grub> @kbd{makeactive}
+grub> @kbd{boot}
+@end group
+@end example
+
+
+@node QNX
+@subsection QNX
+
+QNX seems to use a bigger boot loader, so you need to boot it up, like
+this:
+
+@example
+@group
+grub> @kbd{rootnoverify (hd1,1)}
+grub> @kbd{chainloader +4}
 grub> @kbd{boot}
 @end group
 @end example
