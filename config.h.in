@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 /* This file is still needed because the defines below are
    AC_DEFINEd in more than one place. */
 
@@ -35,10 +35,10 @@
 /* Defined if the user specified --enable-auto-linux-mem-opt.  */
 #undef AUTO_LINUX_MEM_OPT
 
-/* Define it to "addr32" or "addr32;" to make GAS happy */
+/* Define it to \"addr32\" or \"addr32;\" to make GAS happy */
 #undef ADDR32
 
-/* Define it to "data32" or "data32;" to make GAS happy */
+/* Define it to \"data32\" or \"data32;\" to make GAS happy */
 #undef DATA32
 
 /* Define if C symbols get an underscore after compilation */

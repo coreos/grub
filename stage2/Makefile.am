@@ -88,7 +88,7 @@ pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c char_io.c \
 	fsys_vstafs.c fsys_xfs.c gunzip.c hercules.c md5.c serial.c \
 	smp-imps.c stage2.c terminfo.c tparm.c
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
-pre_stage2_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
+pre_stage2_exec_CCASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 
 if NETBOOT_SUPPORT
@@ -109,7 +109,7 @@ stage2_size.h: pre_stage2
 	echo "#define STAGE2_SIZE $$6" > stage2_size.h
 
 start_exec_SOURCES = start.S
-start_exec_ASFLAGS = $(STAGE2_COMPILE)
+start_exec_CCASFLAGS = $(STAGE2_COMPILE)
 start_exec_LDFLAGS = $(START_LINK)
 
 # XXX: automake doesn't provide a way to specify dependencies for object
@@ -127,7 +127,7 @@ e2fs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ext2fs.c bios.c
 e2fs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
 	-DNO_BLOCK_FILES=1
-e2fs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
+e2fs_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_EXT2FS=1 \
 	-DNO_BLOCK_FILES=1
 e2fs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -136,7 +136,7 @@ fat_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_fat.c bios.c
 fat_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1 \
 	-DNO_BLOCK_FILES=1
-fat_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1 \
+fat_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FAT=1 \
 	-DNO_BLOCK_FILES=1
 fat_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -145,7 +145,7 @@ ffs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ffs.c bios.c
 ffs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
 	-DNO_BLOCK_FILES=1
-ffs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
+ffs_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_FFS=1 \
 	-DNO_BLOCK_FILES=1
 ffs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -154,7 +154,7 @@ minix_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_minix.c bios.c
 minix_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
 	-DNO_BLOCK_FILES=1
-minix_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
+minix_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_MINIX=1 \
 	-DNO_BLOCK_FILES=1
 minix_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -163,7 +163,7 @@ reiserfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 	disk_io.c stage1_5.c fsys_reiserfs.c bios.c
 reiserfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
 	-DNO_BLOCK_FILES=1
-reiserfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
+reiserfs_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_REISERFS=1 \
 	-DNO_BLOCK_FILES=1
 reiserfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -172,7 +172,7 @@ vstafs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 	disk_io.c stage1_5.c fsys_vstafs.c bios.c
 vstafs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
 	-DNO_BLOCK_FILES=1
-vstafs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
+vstafs_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_VSTAFS=1 \
 	-DNO_BLOCK_FILES=1
 vstafs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -181,7 +181,7 @@ jfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 	disk_io.c stage1_5.c fsys_jfs.c bios.c
 jfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
 	-DNO_BLOCK_FILES=1
-jfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
+jfs_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_JFS=1 \
 	-DNO_BLOCK_FILES=1
 jfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -190,7 +190,7 @@ xfs_stage1_5_exec_SOURCES = start.S asm.S common.c char_io.c \
 	disk_io.c stage1_5.c fsys_xfs.c bios.c
 xfs_stage1_5_exec_CFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
 	-DNO_BLOCK_FILES=1
-xfs_stage1_5_exec_ASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
+xfs_stage1_5_exec_CCASFLAGS = $(STAGE1_5_COMPILE) -DFSYS_XFS=1 \
 	-DNO_BLOCK_FILES=1
 xfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 
@@ -198,7 +198,7 @@ xfs_stage1_5_exec_LDFLAGS = $(STAGE1_5_LINK)
 diskless_exec_SOURCES = $(pre_stage2_exec_SOURCES)
 diskless_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
 	-DSUPPORT_DISKLESS=1
-diskless_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
+diskless_exec_CCASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS) \
 	-DSUPPORT_DISKLESS=1
 diskless_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 diskless_exec_LDADD = ../netboot/libdrivers.a
@@ -210,7 +210,7 @@ diskless_size.h: diskless
 
 # For nbloader target.
 nbloader_exec_SOURCES = nbloader.S
-nbloader_exec_ASFLAGS = $(STAGE2_COMPILE)
+nbloader_exec_CCASFLAGS = $(STAGE2_COMPILE)
 nbloader_exec_LDFLAGS = $(NBLOADER_LINK)
 
 # XXX: See the comment for start_exec-start.o.
@@ -223,7 +223,7 @@ nbgrub: nbloader diskless
 
 # For pxeloader target.
 pxeloader_exec_SOURCES = pxeloader.S
-pxeloader_exec_ASFLAGS = $(STAGE2_COMPILE)
+pxeloader_exec_CCASFLAGS = $(STAGE2_COMPILE)
 pxeloader_exec_LDFLAGS = $(PXELOADER_LINK)
 
 # XXX: See the comment for start_exec-start.o.

@@ -1,3 +1,46 @@
+2003-10-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Migrated to newer autotools. Also, don't install mkbimage
+	because its name is too general and it does not conform to the
+	GNU Coding Standards in some points.
+	
+	* util/Makefile.am (EXTRA_DIST): New variable.
+	(sbin_SCRIPTS): Removed mkbimage.
+	(noinst_SCRIPTS): Added mkbimage.
+
+	* stage1/Makefile.am (AM_ASFLAGS): Renamed to ...
+	(AM_CCASFLAGS): ... this.
+
+	* stage2/Makefile.am (pre_stage2_exec_ASFLAGS): Renamed to ...
+	(pre_stage2_exec_CCASFLAGS): ... this.
+	(start_exec_ASFLAGS): Renamed to ...
+	(start_exec_CCASFLAGS): ... this.
+	(e2fs_stage1_5_exec_ASFLAGS): Renamed to ...
+	(e2fs_stage1_5_exec_CCASFLAGS): ... this.
+	(fat_stage1_5_exec_ASFLAGS): Renamed to ...
+	(fat_stage1_5_exec_CCASFLAGS): ... this.
+	(ffs_stage1_5_exec_ASFLAGS): Renamed to ...
+	(ffs_stage1_5_exec_CCASFLAGS): ... this.
+	(minix_stage1_5_exec_ASFLAGS): Renamed to ...
+	(minix_stage1_5_exec_CCASFLAGS): ... this.
+	(reiserfs_stage1_5_exec_ASFLAGS): Renamed to ...
+	(reiserfs_stage1_5_exec_CCASFLAGS): ... this.
+	(vstafs_stage1_5_exec_ASFLAGS): Renamed to ...
+	(vstafs_stage1_5_exec_CCASFLAGS): ... this.
+	(jfs_stage1_5_exec_ASFLAGS): Renamed to ...
+	(jfs_stage1_5_exec_CCASFLAGS): ... this.
+	(xfs_stage1_5_exec_ASFLAGS): Renamed to ...
+	(xfs_stage1_5_exec_CCASFLAGS): ... this.
+	(diskless_exec_ASFLAGS): Renamed to ...
+	(diskless_exec_CCASFLAGS): ... this.
+	(nbloader_exec_ASFLAGS): Renamed to ...
+	(nbloader_exec_CCASFLAGS): ... this.
+	(pxeloader_exec_ASFLAGS): Renamed to ...
+	(pxeloader_exec_CCASFLAGS): ... this.
+
+	* configure.in: Removed.
+	* configure.ac: New file. Mostly derived from configure.in.
+	
 2003-10-19  Yoshinori OKUJI  <okuji@enbug.org>
 
 	From KB Sriram <mail_kb@yahoo.com>:
@@ -7,7 +50,8 @@
 
 2003-10-10  Robert Millan  <robertmh@gnu.org>
 
-	* config.{guess,sub}: Update from official source (CVS).
+	* config.guess: Update from official source (CVS).
+	* config.sub: Likewise.
 
 2003-09-18  Robert Millan  <robertmh@gnu.org>
 
@@ -19,22 +63,24 @@
 
 2003-09-05  Robert Millan  <robertmh@gnu.org>
 
-	* docs/menu.lst (GNU/Linux): Add commented initrd command, which is
-	consistent with documentation.
+	* docs/menu.lst (GNU/Linux): Add commented initrd command, which
+	is consistent with documentation.
 
 2003-09-01  Robert Millan  <robertmh@gnu.org>
 
-	* docs/menu.lst: Add NetBSD, OpenBSD, GNU/KFreeBSD and GNU/KNetBSD.
+	* docs/menu.lst: Add NetBSD, OpenBSD, GNU/KFreeBSD and
+	GNU/KNetBSD.
 
 2003-08-13  Jason Thomas  <jason@intology.com.au>
 
-	* util/grub-install.in (resolve_symlink): New function to resolve symlinks
-	(find_device): moved symlink code to new function
-	Before we convert the install_device we attempt to resolve it if its a
-	symlink using the new function
-	* util/mbchk.c (check_multiboot): The sense of an error message was
-	inverted.
-	Reported by Timothy Baldwin <T.E.Baldwin99@members.leeds.ac.uk>
+	* util/grub-install.in (resolve_symlink): New function to
+	resolve symlinks.
+	(find_device): Moved symlink code to new function.
+	Before we convert the install_device we attempt to resolve it if
+	its a symlink using the new function.
+	* util/mbchk.c (check_multiboot): The sense of an error message
+	was inverted.
+	Reported by Timothy Baldwin <T.E.Baldwin99@members.leeds.ac.uk>.
 
 2003-08-12  Jochen Hoenicke  <jochen@gnu.org>
 
@@ -47,9 +93,10 @@
 
 2003-08-09  Thierry Laronde  <tlaronde@polynum.org>
 
-	* util/mkbimage: NEW File. `mkbimage' depends on GRUB and existed
-	elsewhere. It is now part of GRUB so that people can fix/contribute.
-	* util/Makefile.am: added script `mkbimage'
+	* util/mkbimage: New File. `mkbimage' depends on GRUB and
+	existed	elsewhere. It is now part of GRUB so that people can
+	fix/contribute.
+	* util/Makefile.am (sbin_SCRIPTS): Added script `mkbimage'
 
 2003-08-01  Jason Thomas  <jason@intology.com.au>
 
