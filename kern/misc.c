@@ -487,6 +487,9 @@ pupa_vsprintf (char *str, const char *fmt, va_list args)
 
   if (str)
     *str = '\0';
+
+  if (count && !str)
+    pupa_refresh ();
   
   return count;
 }

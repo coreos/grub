@@ -109,9 +109,11 @@ pupa_rescue_get_command_line (const char *prompt)
 	      pupa_putchar (c);
 	    }
 	}
+      pupa_refresh ();
     }
 
   pupa_putchar ('\n');
+  pupa_refresh ();
 }
 
 /* Get the next word in STR and return a next pointer.  */
@@ -183,6 +185,7 @@ pupa_rescue_cmd_cat (int argc, char *argv[])
     }
 
   pupa_putchar ('\n');
+  pupa_refresh ();
   pupa_file_close (file);
 }
 
@@ -240,6 +243,7 @@ pupa_rescue_cmd_ls (int argc, char *argv[])
     {
       pupa_disk_dev_iterate (pupa_rescue_print_disks);
       pupa_putchar ('\n');
+      pupa_refresh ();
     }
   else
     {
@@ -274,6 +278,7 @@ pupa_rescue_cmd_ls (int argc, char *argv[])
 	{
 	  (fs->dir) (dev, path, pupa_rescue_print_files);
 	  pupa_putchar ('\n');
+	  pupa_refresh ();
 	}
 
     fail:
@@ -383,6 +388,7 @@ pupa_rescue_cmd_testload (int argc, char *argv[])
 		  unsigned len __attribute__ ((unused)))
     {
       pupa_putchar ('.');
+      pupa_refresh ();
     }
 
   if (argc < 1)
@@ -457,7 +463,10 @@ pupa_rescue_cmd_testload (int argc, char *argv[])
 	  
 	  for (i = 0; i < PUPA_DISK_SECTOR_SIZE; i++)
 	    pupa_putchar (buf[pos + i]);
-	  
+
+	  if (i)
+	    pupa_refresh ();
+
 	  goto fail;
 	}
     }
@@ -584,6 +593,8 @@ pupa_rescue_cmd_lsmod (int argc __attribute__ ((unused)),
 	  pupa_printf ("%s", dep->mod->name);
 	}
       pupa_putchar ('\n');
+      pupa_refresh ();
+
       return 0;
     }
 

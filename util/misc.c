@@ -189,16 +189,27 @@ pupa_realloc (void *ptr, unsigned size)
   return realloc (ptr, size);
 }
 
+void *
+pupa_memalign (pupa_size_t align, pupa_size_t size)
+{
+  return memalign (align, size);
+}
+
+/* Some functions that we don't use.  */
+void
+pupa_mm_init_region (void *addr, pupa_size_t size)
+{
+}
+
+void
+pupa_register_exported_symbols (void)
+{
+}
+
 void
 pupa_stop (void)
 {
   exit (1);
-}
-
-void
-pupa_putchar (int c)
-{
-  putchar (c);
 }
 
 pupa_uint32_t

@@ -239,7 +239,7 @@ kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
 
 # Utilities.
 bin_UTILITIES = pupa-mkimage
-sbin_UTILITIES = pupa-setup
+sbin_UTILITIES = pupa-setup pupa-emu
 noinst_UTILITIES = genmoddep
 
 # For pupa-mkimage.
@@ -279,12 +279,13 @@ pupa_mkimage_LDFLAGS = -llzo
 
 # For pupa-setup.
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
-	util/misc.c kern/device.c kern/disk.c kern/file.c kern/fs.c \
-	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c
-CLEANFILES += pupa-setup pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o
-MOSTLYCLEANFILES += pupa_setup-util_i386_pc_pupa_setup.d pupa_setup-util_i386_pc_biosdisk.d pupa_setup-util_misc.d pupa_setup-kern_device.d pupa_setup-kern_disk.d pupa_setup-kern_file.d pupa_setup-kern_fs.d pupa_setup-kern_err.d pupa_setup-kern_misc.d pupa_setup-disk_i386_pc_partition.d pupa_setup-fs_fat.d pupa_setup-fs_ext2.d
+	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
+	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
+	kern/file.c kern/fs.c
+CLEANFILES += pupa-setup pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-util_i386_pc_getroot.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o pupa_setup-kern_file.o pupa_setup-kern_fs.o
+MOSTLYCLEANFILES += pupa_setup-util_i386_pc_pupa_setup.d pupa_setup-util_i386_pc_biosdisk.d pupa_setup-util_misc.d pupa_setup-util_i386_pc_getroot.d pupa_setup-kern_device.d pupa_setup-kern_disk.d pupa_setup-kern_err.d pupa_setup-kern_misc.d pupa_setup-disk_i386_pc_partition.d pupa_setup-fs_fat.d pupa_setup-fs_ext2.d pupa_setup-kern_file.d pupa_setup-kern_fs.d
 
-pupa-setup: pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_file.o pupa_setup-kern_fs.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o
+pupa-setup: pupa_setup-util_i386_pc_pupa_setup.o pupa_setup-util_i386_pc_biosdisk.o pupa_setup-util_misc.o pupa_setup-util_i386_pc_getroot.o pupa_setup-kern_device.o pupa_setup-kern_disk.o pupa_setup-kern_err.o pupa_setup-kern_misc.o pupa_setup-disk_i386_pc_partition.o pupa_setup-fs_fat.o pupa_setup-fs_ext2.o pupa_setup-kern_file.o pupa_setup-kern_fs.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_setup_LDFLAGS)
 
 pupa_setup-util_i386_pc_pupa_setup.o: util/i386/pc/pupa-setup.c
@@ -311,6 +312,14 @@ pupa_setup-util_misc.d: util/misc.c
 
 -include pupa_setup-util_misc.d
 
+pupa_setup-util_i386_pc_getroot.o: util/i386/pc/getroot.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+
+pupa_setup-util_i386_pc_getroot.d: util/i386/pc/getroot.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,pupa_setup-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_setup-util_i386_pc_getroot.d
+
 pupa_setup-kern_device.o: kern/device.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
 
@@ -326,22 +335,6 @@ pupa_setup-kern_disk.d: kern/disk.c
 	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,pupa_setup-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include pupa_setup-kern_disk.d
-
-pupa_setup-kern_file.o: kern/file.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
-
-pupa_setup-kern_file.d: kern/file.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,pupa_setup-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include pupa_setup-kern_file.d
-
-pupa_setup-kern_fs.o: kern/fs.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
-
-pupa_setup-kern_fs.d: kern/fs.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,pupa_setup-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include pupa_setup-kern_fs.d
 
 pupa_setup-kern_err.o: kern/err.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
@@ -383,6 +376,222 @@ pupa_setup-fs_ext2.d: fs/ext2.c
 
 -include pupa_setup-fs_ext2.d
 
+pupa_setup-kern_file.o: kern/file.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+
+pupa_setup-kern_file.d: kern/file.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,pupa_setup-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_setup-kern_file.d
+
+pupa_setup-kern_fs.o: kern/fs.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -c -o $@ $<
+
+pupa_setup-kern_fs.d: kern/fs.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_setup_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,pupa_setup-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_setup-kern_fs.d
+
+
+# For pupa
+pupa_emu_SOURCES = kern/main.c kern/device.c				\
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
+        kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
+	disk/i386/pc/partition.c 					\
+	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
+	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
+	util/console.c util/pupa-emu.c util/misc.c util/i386/pc/getroot.c
+CLEANFILES += pupa-emu pupa_emu-kern_main.o pupa_emu-kern_device.o pupa_emu-kern_disk.o pupa_emu-kern_dl.o pupa_emu-kern_file.o pupa_emu-kern_fs.o pupa_emu-kern_err.o pupa_emu-kern_misc.o pupa_emu-kern_loader.o pupa_emu-kern_rescue.o pupa_emu-kern_term.o pupa_emu-disk_i386_pc_partition.o pupa_emu-util_i386_pc_biosdisk.o pupa_emu-fs_fat.o pupa_emu-fs_ext2.o pupa_emu-normal_cmdline.o pupa_emu-normal_command.o pupa_emu-normal_main.o pupa_emu-normal_menu.o pupa_emu-util_console.o pupa_emu-util_pupa_emu.o pupa_emu-util_misc.o pupa_emu-util_i386_pc_getroot.o
+MOSTLYCLEANFILES += pupa_emu-kern_main.d pupa_emu-kern_device.d pupa_emu-kern_disk.d pupa_emu-kern_dl.d pupa_emu-kern_file.d pupa_emu-kern_fs.d pupa_emu-kern_err.d pupa_emu-kern_misc.d pupa_emu-kern_loader.d pupa_emu-kern_rescue.d pupa_emu-kern_term.d pupa_emu-disk_i386_pc_partition.d pupa_emu-util_i386_pc_biosdisk.d pupa_emu-fs_fat.d pupa_emu-fs_ext2.d pupa_emu-normal_cmdline.d pupa_emu-normal_command.d pupa_emu-normal_main.d pupa_emu-normal_menu.d pupa_emu-util_console.d pupa_emu-util_pupa_emu.d pupa_emu-util_misc.d pupa_emu-util_i386_pc_getroot.d
+
+pupa-emu: pupa_emu-kern_main.o pupa_emu-kern_device.o pupa_emu-kern_disk.o pupa_emu-kern_dl.o pupa_emu-kern_file.o pupa_emu-kern_fs.o pupa_emu-kern_err.o pupa_emu-kern_misc.o pupa_emu-kern_loader.o pupa_emu-kern_rescue.o pupa_emu-kern_term.o pupa_emu-disk_i386_pc_partition.o pupa_emu-util_i386_pc_biosdisk.o pupa_emu-fs_fat.o pupa_emu-fs_ext2.o pupa_emu-normal_cmdline.o pupa_emu-normal_command.o pupa_emu-normal_main.o pupa_emu-normal_menu.o pupa_emu-util_console.o pupa_emu-util_pupa_emu.o pupa_emu-util_misc.o pupa_emu-util_i386_pc_getroot.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(pupa_emu_LDFLAGS)
+
+pupa_emu-kern_main.o: kern/main.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_main.d: kern/main.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,pupa_emu-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_main.d
+
+pupa_emu-kern_device.o: kern/device.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_device.d: kern/device.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,pupa_emu-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_device.d
+
+pupa_emu-kern_disk.o: kern/disk.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_disk.d: kern/disk.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,pupa_emu-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_disk.d
+
+pupa_emu-kern_dl.o: kern/dl.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_dl.d: kern/dl.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,pupa_emu-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_dl.d
+
+pupa_emu-kern_file.o: kern/file.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_file.d: kern/file.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,pupa_emu-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_file.d
+
+pupa_emu-kern_fs.o: kern/fs.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_fs.d: kern/fs.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,pupa_emu-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_fs.d
+
+pupa_emu-kern_err.o: kern/err.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_err.d: kern/err.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,pupa_emu-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_err.d
+
+pupa_emu-kern_misc.o: kern/misc.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_misc.d: kern/misc.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_emu-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_misc.d
+
+pupa_emu-kern_loader.o: kern/loader.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_loader.d: kern/loader.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,pupa_emu-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_loader.d
+
+pupa_emu-kern_rescue.o: kern/rescue.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_rescue.d: kern/rescue.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,pupa_emu-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_rescue.d
+
+pupa_emu-kern_term.o: kern/term.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-kern_term.d: kern/term.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,pupa_emu-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-kern_term.d
+
+pupa_emu-disk_i386_pc_partition.o: disk/i386/pc/partition.c
+	$(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-disk_i386_pc_partition.d: disk/i386/pc/partition.c
+	set -e; 	  $(BUILD_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,pupa_emu-disk_i386_pc_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-disk_i386_pc_partition.d
+
+pupa_emu-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,pupa_emu-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-util_i386_pc_biosdisk.d
+
+pupa_emu-fs_fat.o: fs/fat.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-fs_fat.d: fs/fat.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,pupa_emu-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-fs_fat.d
+
+pupa_emu-fs_ext2.o: fs/ext2.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,pupa_emu-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-fs_ext2.d
+
+pupa_emu-normal_cmdline.o: normal/cmdline.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-normal_cmdline.d: normal/cmdline.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,pupa_emu-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-normal_cmdline.d
+
+pupa_emu-normal_command.o: normal/command.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-normal_command.d: normal/command.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,pupa_emu-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-normal_command.d
+
+pupa_emu-normal_main.o: normal/main.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-normal_main.d: normal/main.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,pupa_emu-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-normal_main.d
+
+pupa_emu-normal_menu.o: normal/menu.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-normal_menu.d: normal/menu.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,pupa_emu-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-normal_menu.d
+
+pupa_emu-util_console.o: util/console.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-util_console.d: util/console.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,console\.o[ :]*,pupa_emu-util_console.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-util_console.d
+
+pupa_emu-util_pupa_emu.o: util/pupa-emu.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-util_pupa_emu.d: util/pupa-emu.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,pupa\-emu\.o[ :]*,pupa_emu-util_pupa_emu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-util_pupa_emu.d
+
+pupa_emu-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,pupa_emu-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-util_misc.d
+
+pupa_emu-util_i386_pc_getroot.o: util/i386/pc/getroot.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -c -o $@ $<
+
+pupa_emu-util_i386_pc_getroot.d: util/i386/pc/getroot.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DPUPA_UTIL=1 $(pupa_emu_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,pupa_emu-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include pupa_emu-util_i386_pc_getroot.d
+
+pupa_emu_LDFLAGS = -lncurses
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

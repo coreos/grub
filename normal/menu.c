@@ -183,6 +183,7 @@ run_menu (pupa_menu_t menu, int nested)
 
   init_page (nested);
   print_entries (menu, first, offset);
+  pupa_refresh ();
   
   while (1)
     {
@@ -251,6 +252,8 @@ run_menu (pupa_menu_t menu, int nested)
 	default:
 	  break;
 	}
+      
+      pupa_refresh ();
     }
 
   /* Never reach here.  */

@@ -285,6 +285,7 @@ pupa_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
     }
 
   pupa_putchar ('\n');
+  pupa_refresh ();
 
   /* If ECHO_CHAR is NUL, remove leading spaces.  */
   lpos = 0;

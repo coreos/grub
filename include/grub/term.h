@@ -95,6 +95,9 @@ struct pupa_term
   /* Turn on/off the cursor.  */
   void (*setcursor) (int on);
 
+  /* Update the screen.  */
+  void (*refresh) (void);
+
   /* The feature flags defined above.  */
   pupa_uint32_t flags;
   
@@ -121,6 +124,7 @@ void EXPORT_FUNC(pupa_setcolorstate) (pupa_term_color_state state);
 void EXPORT_FUNC(pupa_setcolor) (pupa_uint8_t normal_color,
 				 pupa_uint8_t highlight_color);
 int EXPORT_FUNC(pupa_setcursor) (int on);
+void EXPORT_FUNC(pupa_refresh) (void);
 
 /* For convenience.  */
 #define PUPA_TERM_ASCII_CHAR(c)	((c) & 0xff)

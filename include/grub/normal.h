@@ -129,4 +129,9 @@ int pupa_command_execute (char *cmdline);
 void pupa_command_init (void);
 void pupa_normal_init_page (void);
 
+#ifdef PUPA_UTIL
+void pupa_normal_init (void);
+void pupa_normal_fini (void);
+#endif
+
 #endif /* ! PUPA_NORMAL_HEADER */

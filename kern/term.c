@@ -193,7 +193,10 @@ void
 pupa_cls (void)
 {
   if (pupa_cur_term->flags & PUPA_TERM_DUMB)
-    pupa_putchar ('\n');
+    {
+      pupa_putchar ('\n');
+      pupa_refresh ();
+    }
   else
     (pupa_cur_term->cls) ();
 }
@@ -227,3 +230,9 @@ pupa_setcursor (int on)
   return ret;
 }
 
+void
+pupa_refresh (void)
+{
+  if (pupa_cur_term->refresh)
+    (pupa_cur_term->refresh) ();
+}

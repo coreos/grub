@@ -44,7 +44,7 @@ kernel_syms.lst: $(addprefix include/pupa/,$(kernel_img_HEADERS)) genkernsyms.sh
 
 # Utilities.
 bin_UTILITIES = pupa-mkimage
-sbin_UTILITIES = pupa-setup
+sbin_UTILITIES = pupa-setup pupa-emu
 noinst_UTILITIES = genmoddep
 
 # For pupa-mkimage.
@@ -54,8 +54,19 @@ pupa_mkimage_LDFLAGS = -llzo
 
 # For pupa-setup.
 pupa_setup_SOURCES = util/i386/pc/pupa-setup.c util/i386/pc/biosdisk.c \
-	util/misc.c kern/device.c kern/disk.c kern/file.c kern/fs.c \
-	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c
+	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
+	kern/err.c kern/misc.c disk/i386/pc/partition.c fs/fat.c fs/ext2.c \
+	kern/file.c kern/fs.c
+
+# For pupa
+pupa_emu_SOURCES = kern/main.c kern/device.c				\
+	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
+        kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
+	disk/i386/pc/partition.c 					\
+	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c			\
+	normal/cmdline.c normal/command.c normal/main.c normal/menu.c	\
+	util/console.c util/pupa-emu.c util/misc.c util/i386/pc/getroot.c
+pupa_emu_LDFLAGS = -lncurses
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

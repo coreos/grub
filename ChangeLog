@@ -1,3 +1,56 @@
+2003-11-17  Marco Gerards  <metgerards@student.han.nl>
+
+	* conf/i386-pc.rmk (sbin_UTILITIES): Added pupa-emu.
+	(pupa_setup_SOURCES): Added util/i386/pc/getroot.c.
+	(pupa_emu_SOURCES): New variable.
+	(pupa_emu_LDFLAGS): Likewise.
+	* include/pupa/fs.h (pupa_ext2_init) [PUPA_UTIL]: New prototype.
+	(pupa_ext2_fini) [PUPA_UTIL]: Likewise.
+	* include/pupa/normal.h (pupa_normal_init) [PUPA_UTIL]: Likewise.
+	(pupa_normal_fini) [PUPA_UTIL]: Likewise.
+	* include/pupa/setjmp.h [PUPA_UTIL]: Include <setjmp.h>.
+	(pupa_jmp_buf): New typedef.
+	(pupa_setjmp) [PUPA_UTIL]: New macro.
+	(pupa_longjmp) [PUPA_UTIL]: Likewise.
+	* include/pupa/term.h (struct pupa_term): New member `refresh'.
+	(pupa_refresh): New prototype.
+	* include/pupa/util/getroot.h: New file.
+	* kern/misc.c (pupa_vsprintf): Refresh the screen after updating
+	it.
+	* kern/rescue.c (pupa_rescue_get_command_line): Likewise.
+	(pupa_rescue_cmd_cat): Likewise.
+	(pupa_rescue_cmd_ls): Likewise.
+	(pupa_rescue_cmd_testload): Likewise.
+	(pupa_rescue_cmd_lsmod): Likewise.
+	* normal/cmdline.c (pupa_cmdline_get): Likewise.
+	* normal/menu.c (run_menu): Likewise.
+	* kern/term.c (pupa_cls): Likewise.
+	(pupa_refresh): New function.
+	* normal/normal.c (pupa_normal_init) [PUPA_UTIL]: New function.
+	(pupa_normal_fini) [PUPA_UTIL]: Likewise.
+	* util/console.c: New file.
+	
+	* util/i386/pc/getroot.c: New file.
+	* util/i386/pc/pupa-setup.c: Include <pupa/util/getroot.h>.
+	(pupa_putchar): New function.
+	(pupa_refresh): Likewise.
+	(xgetcwd): Function moved to ...
+	(strip_extra_slashes): Likewise.
+	(get_prefix): Likewise.
+	* util/i386/pc/getroot.c: ... here.	
+	(find_root_device): Function moved and renamed to...
+	* util/i386/pc/getroot.c (pupa_find_root_device): ... here.
+	Changed all callers.
+	* util/i386/pc/pupa-setup.c (guess_root_device): Function moved
+	and renamed to...
+	* util/i386/pc/getroot.c (pupa_guess_root_device): ... here.
+	Changed all callers.
+	* util/misc.c (pupa_memalign): New function.
+	(pupa_mm_init_region): Likewise.
+	(pupa_register_exported_symbols): Likewise.
+	(pupa_putchar): Function removed.
+	* util/pupa-emu.c: New file.
+
 2003-11-16  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* conf/i386-pc.rmk (pkgdata_MODULES): Add _multiboot.mod.

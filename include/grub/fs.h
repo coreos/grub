@@ -63,6 +63,8 @@ pupa_fs_t EXPORT_FUNC(pupa_fs_probe) (pupa_device_t device);
 #ifdef PUPA_UTIL
 void pupa_fat_init (void);
 void pupa_fat_fini (void);
+void pupa_ext2_init (void);
+void pupa_ext2_fini (void);
 #endif /* PUPA_UTIL */
 
 #endif /* ! PUPA_FS_HEADER */

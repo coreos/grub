@@ -332,6 +332,27 @@ pupa_rescue_cmd_normal (int argc, char *argv[])
     pupa_enter_normal_mode (argv[0]);
 }
 
+
+#ifdef PUPA_UTIL
+void
+pupa_normal_init (void)
+{
+  /* Register a command "normal" for the rescue mode.  */
+  pupa_rescue_register_command ("normal", pupa_rescue_cmd_normal,
+				"enter normal mode");
+
+  /* This registers some built-in commands.  */
+  pupa_command_init ();
+  
+}
+
+void
+pupa_normal_fini (void)
+{
+  pupa_rescue_unregister_command ("normal");
+
+}
+#else /* ! PUPA_UTIL */
 PUPA_MOD_INIT
 {
   /* Normal mode shouldn't be unloaded.  */
@@ -349,3 +370,4 @@ PUPA_MOD_FINI
 {
   pupa_rescue_unregister_command ("normal");
 }
+#endif /* ! PUPA_UTIL */

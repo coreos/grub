@@ -1,8 +1,8 @@
 /*
  *  PUPA  --  Preliminary Universal Programming Architecture for GRUB
- *  Copyright (C) 2003  Yoshinori K. Okuji <okuji@enbug.org>
+ *  Copyright (C) 2003 Marco Gerards <metgerards@student.han.nl>
  *
- *  This program is free software; you can redistribute it and/or modify
+ *  PUPA is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,24 +13,14 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
+ *  along with PUPA; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef PUPA_SETJMP_HEADER
-#define PUPA_SETJMP_HEADER	1
+#ifndef PUPA_UTIL_GETROOT_HEADER
+#define PUPA_UTIL_GETROOT_HEADER	1
 
-#ifdef PUPA_UTIL
-#include <setjmp.h>
-typedef jmp_buf pupa_jmp_buf;
-#define pupa_setjmp setjmp
-#define pupa_longjmp longjmp
-#else
-/* This must define pupa_jmp_buf.  */
-#include <pupa/cpu/setjmp.h>
+char *pupa_guess_root_device (const char *dir);
+char *pupa_get_prefix (const char *dir);
 
-int pupa_setjmp (pupa_jmp_buf env);
-void pupa_longjmp (pupa_jmp_buf env, int val) __attribute__ ((noreturn));
-#endif
-
-#endif /* ! PUPA_SETJMP_HEADER */
+#endif /* ! PUPA_UTIL_GETROOT_HEADER */
