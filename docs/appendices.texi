@@ -131,6 +131,17 @@ developers haven't seen it by their own eyes. This is why it is
 desirable that you investigate the cause seriously if you have the
 skill.
 
+@item How can I specify an arbitrary memory size to Linux?
+
+Pass a @samp{mem=} option to your Linux kernel, like this:
+
+@example
+grub> kernel /vmlinuz mem=128M
+@end example
+
+You may pass other options in the same way. See @xref{GNU/Linux}, for
+more details.
+
 @item Why don't Linux, FreeBSD, NetBSD, etc. become Multiboot-compliant?
 
 Please ask the relevant maintainers. If all free kernels were
