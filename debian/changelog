@@ -1,0 +1,46 @@
+grub (0.5-2) unstable; urgency=low
+
+  * Assembly source cleanups.
+
+ -- Gordon Matzigkeit <gord@debian.org>  Sun, 14 Feb 1999 20:33:39 -0600
+
+grub (0.5-1) unstable; urgency=low
+
+  * Put everything in /lib/grub (not /boot/grub) and don't install during
+    postinst so that we can't accidentally wreck a working system.  This
+    means the package needn't be experimental anymore.
+  * Get rid of grubinst because it doesn't work with 0.5, and I'd rather
+    improve GRUB's builtin installation process.
+  * Use `e' rather than enter to edit.
+  * Minor bug fixes.
+
+ -- Gordon Matzigkeit <gord@debian.org>  Sun, 31 Jan 1998 14:11:32 -0600
+
+grub (0.4-2) experimental; urgency=low
+
+  * Make postinstall script
+  * Create manpage for grubinst
+  * Make grubinst more flexible
+  * Address bugs 15227 and 15163 (packaging and clue endowment)
+
+ -- Steve Dunham <dunham@debian.org>  Thu,  1 Jan 1998 00:38:22 -0500
+
+grub (0.4-2) experimental; urgency=low
+
+  * Make postinstall script
+  * Create manpage for grubinst
+  * Make grubinst more flexible
+  * Address bugs 15227 and 15163 (packaging and clue endowment)
+
+ -- Steve Dunham <dunham@debian.org>  Thu,  1 Jan 1998 00:38:22 -0500
+
+grub (0.4-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Steve Dunham <dunham@debian.org>  Wed, 19 Nov 1997 23:42:47 -0500
+
+Local variables:
+mode: debian-changelog
+add-log-mailing-address: "gord@debian.org"
+End:

@@ -1,3 +1,8 @@
+NEWS - list of user-visible changes between releases of GRUB
+
+New in 0.5.2 - 1999-01-31, Gordon Matzigkeit:
+* Bug fixes.
+*
 
 Version 0.5:
 
@@ -210,4 +215,3 @@ Version 0.0 dated 12/10/95:
   - Fixed some documentation (what little there is :-/ and a few assembly
     bugs in the BIOS access routines that nobody reported yet, so I won't
     detail it here.
-

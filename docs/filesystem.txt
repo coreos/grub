@@ -206,7 +206,7 @@ The variables which can be read by the filesystem backend are:
 
   --  the "#define FSYS_BUF", which points to a filesystem buffer which
 	is 32K in size, to use in any way which the filesystem backend
-	desires. 
+	desires.
 
 The variables which need to be written by a filesystem backend are:
 
@@ -295,5 +295,3 @@ Limitations:
   --  If the "blocksize" is greater than 8Kbytes, various buffers will
       overwrite themselves and the whole thing will come apart at the
       seams.
-
-

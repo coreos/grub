@@ -404,7 +404,7 @@ the "top-level" partition number, 'part2' specifies a "sub-partition" in
 the top-level partition, etc.  Partition numbers always start from zero.
 Unused partition bytes must be set to 0xFF.  For example, if the disk is
 partitioned using a simple one-level DOS partitioning scheme, then 'part1'
-contains the DOS partition number, and 'part2' and 'part3' are both zero.
+contains the DOS partition number, and 'part2' and 'part3' are both 0xFF.
 As another example, if a disk is partitioned first into DOS partitions, and
 then one of those DOS partitions is subdivided into several BSD partitions
 using BSD's "disklabel" strategy, then 'part1' contains the DOS partition
@@ -412,13 +412,13 @@ number, 'part2' contains the BSD sub-partition within that DOS partition,
 and 'part3' is 0xFF.<P>
 
 DOS extended partitions are indicated as partition numbers starting from 4
-and increasing, rather than as nested sub-partitions, even though the 
+and increasing, rather than as nested sub-partitions, even though the
 underlying disk layout of extended partitions is hierarchical in nature.
 For example, if the boot loader boots from the second extended partition
 on a disk partitioned in conventional DOS style, then 'part1' will be 5,
 and 'part2' and 'part3' will both be 0xFF.<P>
 
-If bit 2 of the flags longword is set, the 'cmdline' field is valid, and 
+If bit 2 of the flags longword is set, the 'cmdline' field is valid, and
 contains the physical address of the the command line to be passed to the
 kernel.  The command line is a normal C-style null-terminated string.<P>
 
@@ -661,4 +661,3 @@ area.<P>
 
 </BODY>
 </HTML>
-

@@ -1,0 +1,54 @@
+1999-02-14  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/shared.h: (addr32, data32): Delete definitions.
+
+	* stage1/stage1.S: Modify to use GAS's new .code16 semantics.
+	shared_src/asm.S: Likewise.
+
+	* configure: Test to see if the `addr32' instruction is supported.
+	Ian Lance Taylor says that GAS's interpretation of `.code16' has
+	changed.  Older versions always generated 32-bit code, but
+	implicitly inserted addr32 and data32 when .code16 was given.
+	Newer versions generate 16-bit code, and require manual addr32 and
+	data32 overrides.
+
+	* shared_src/shared.h: Add some assertions to check that buffer
+	addresses are properly defined.
+
+1999-02-12  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/stage2.c (run_menu): Pause if we failed to boot both
+	the default and fallback entries.
+
+	* configure: Check to make sure that GAS actually honors .code16
+	directives.
+
+1999-02-02  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/asm.S: Fix typo that called interrupt 0xd (decimal
+	13) instead of 0x13.
+
+1999-01-31  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* e2fs_stage1_5/Makefile: Avoid gratuitous dependencies on
+	Makefile.
+	* fat_stage1_5/Makefile: Likewise.
+	* ffs_stage1_5/Makefile: Likewise.
+
+	* Makefile.end (PROGS): Add e2fs_stage1_5, fat_stage1_5, and
+	grubinst.
+	(distclean): New GNU standard rule.
+
+1998-10-23  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* configure: Accept `--host' as a synonym for `--target', and
+	accept a non-optional argument as the target name.  Join the
+	prefix to the tool name with a hyphen.
+
+	* shared_src/disk_io.c (print_fsys_type): Always print the
+	partition type.
+
+	* shared_src/stage2.c (run_menu): Check to make sure that the
+	fallback entry is nonnegative.
+	(run_menu): For consistency, use `e' rather than enter to edit the
+	command entry.

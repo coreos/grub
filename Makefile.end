@@ -3,12 +3,15 @@
 #  part created by configure.
 #
 
-PROGS=	stage1 ffs_stage1_5 stage2 stage2_debug
+PROGS=	stage1 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
+	stage2 stage2_debug
 
 all:
-	@for X in $(PROGS) ; do (cd $$X ; $(MAKE)) ; done
+	l="$(PROGS)"; for X in $$l; do (cd $$X && $(MAKE)) || exit 1; done
 
 clean:
-	@for X in $(PROGS) ; do (cd $$X ; $(MAKE) clean) ; done
-	rm -f config.log
+	l="$(PROGS)"; for X in $$l; do (cd $$X && $(MAKE) clean); done
+	rm -f bin/*
 
+distclean: clean
+	rm -f Makefile config.log

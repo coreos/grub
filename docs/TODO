@@ -1,3 +1,15 @@
+Treat `(hd)/boot/grub/menu.lst' as searching through the hard drives
+for a partition that contains /boot/grub/menu.lst.  Either this, or
+`(hd:0x82)' means the first partition of type 0x82.  We need one of
+these dynamic search mechanisms for clean Hurd install floppies.
+
+Syntax:
+
+ (hd0,0)   -> hd0s1
+ (hd0,1,b) -> hd0s1b
+ (hd0)     -> hd0
+
+Find out the size restrictions for FAT and ext2fs stage1.5 boot blocks.
 
 	Check for other patches sent in e-mail!!!  There are several...
 
@@ -18,4 +30,3 @@
 	???  Add command for modifying partition types.
 
 	Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
-

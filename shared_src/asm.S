@@ -25,33 +25,23 @@
 
 	.text
 
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
+	/* Tell GAS to generate 16-bit instructions so that this code works
+	   in real mode. */
 	.code16
 
 ENTRY(start)
 	/*
-	 *  "start" should be loaded at 0x0:$STARTADDR.  This next
-	 *  is to guarantee that.
+	 *  Guarantee that "start" is loaded at 0x0:0x8000.
 	 */
-
-	/* ljmp $0, $codestart */
-	.byte	0xea
-	.word	0x8070, 0
-
-	/* padding */
-	.byte	0
+	ljmp $0, $(codestart - EXT_C(start) + 0x8000)
 
 	/*
 	 *  Compatibility version number
 	 *
 	 *  These MUST be at byte offset 6 and 7 of the executable
-	 *
 	 *  DO NOT MOVE !!!
 	 */
+	. = EXT_C(start) + 0x6
 	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
 
 	/*
@@ -77,7 +67,7 @@ VARIABLE(config_file)
 
 	. = EXT_C(start) + 0x70
 
-/* the code continues... */
+/* the real mode code continues... */
 codestart:
 	cli		/* we're not safe here! */
 
@@ -88,24 +78,23 @@ codestart:
 	movw	%ax, %es
 
 	/* set up the real mode/BIOS stack */
-	movl	$STACKOFF, %esp
 	movl	$STACKOFF, %ebp
+	movl	%ebp, %esp
 
 	sti		/* we're safe again */
 
 	/* save boot drive reference */
+	addr32
 	movb	%dl, EXT_C(boot_drive)
 
 	/* reset disk system (%ah = 0) */
-	int	$13
+	int	$0x13
 
 	/* transition to protected mode */
+	data32
 	call EXT_C(real_to_prot)
 
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
+	/* The ".code32" directive takes GAS out of 16-bit mode. */
 	.code32
 
 	/*
@@ -169,20 +158,11 @@ ENTRY(chain_stage1)
 	movb	EXT_C(boot_drive), %dl
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
+	data32
+	addr32
 	ljmp	(offset)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 
@@ -218,22 +198,13 @@ ENTRY(chain_stage2)
 	movb	EXT_C(boot_drive), %dl
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
+	data32
+	addr32
 	ljmp	(offset)
 
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
-
 
 /*
  *  These next two routines, "real_to_prot" and "prot_to_real" are structured
@@ -243,22 +214,28 @@ ENTRY(chain_stage2)
  */
 
 ENTRY(real_to_prot)
+	.code16
 	cli
 
 	/* load the GDT register */
-	addr32
 	data32
+	addr32
 	lgdt	gdtdesc
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
-	data32
 	orl	$CR0_PE_ON, %eax
 	movl	%eax, %cr0
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
 	data32
 	ljmp	$PROT_MODE_CSEG, $protcseg
+
+	/*
+	 *  The ".code32" directive only works in GAS, the GNU assembler!
+	 *  This gets out of "16-bit" mode.
+	 */
+	.code32
 
 protcseg:
 	/* reload other segment registers */
@@ -318,22 +295,16 @@ ENTRY(prot_to_real)
 	ljmp	$PSEUDO_RM_CSEG, $tmpcseg	/* jump to a 16 bit segment */
 
 tmpcseg:
+	.code16
+
 	/* clear the PE bit of CR0 */
 	movl	%cr0, %eax
-	data32
 	andl 	$CR0_PE_OFF, %eax
 	movl	%eax, %cr0
 
 	/* flush prefetch queue, reload %cs */
 	data32
 	ljmp	$0, $realcseg
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
-	.code16
 
 realcseg:
 	/* we are in real mode now
@@ -352,12 +323,9 @@ realcseg:
 	sti
 
 	/* return on new stack! */
+	data32
 	ret
 
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 
@@ -443,18 +411,13 @@ disk_use_standard_bios:
 	movw	0x1c(%ebp), %bx		/* segment */
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movw	%bx, %es		/* load segment */
 	/*
 	 *  Shift num sectors and subfunction back
 	 */
+	data32
 	shrl	$16, %ebx
 	pushw	%bx			/* save num sectors */
 	xorw	%bx, %bx
@@ -472,6 +435,7 @@ disk_loop:
 	movb	$0, %bl
 
 	/* did we actually succeed? */
+	data32
 	jnc	disk_exit_16
 
 	/* do we try again? */
@@ -479,18 +443,15 @@ disk_loop:
 	cmpw	$0, %si
 
 	/* if this isn't the third try, go again */
+	data32
 	jne	disk_loop
 
 	/* save return value */
 	movb	%ah, %bl
 
 disk_exit_16:
+	data32
 	call	EXT_C(real_to_prot)	/* back to protected mode */
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	movb	%bl, %al		/* return value in %eax */
@@ -524,16 +485,11 @@ ENTRY(get_diskinfo)
 	movw	0x8(%ebp), %dx		/* diskinfo(drive #) */
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movb	%dl, %al
 	andb	$0x80, %al
+	data32
 	jnz	hard_drive
 
 /*
@@ -548,13 +504,12 @@ probe_loop:
 	int	$0x13
 
 	incw	%si
-
-	/* movb	  (%si), %cl */
-	.byte	0x8A, 0x0C
+	movb	(%si), %cl
 
 	/* if number of sectors is 0, display error and die */
 	cmpb	$0, %cl
 
+	data32
 	je	probe_failed
 
 	/* perform read */
@@ -566,12 +521,14 @@ probe_loop:
 	movb	$0, %dh
 	int	$0x13
 
+	data32
 	jc	probe_loop
 
 	/* %cl is already the correct value! */
 	movb	$1, %dh
 	movb	$79, %ch
 
+	data32
 	jmp	probe_success
 
 probe_values:
@@ -581,6 +538,7 @@ hard_drive:
 	movb	$0x8, %ah		/* ask for disk info */
 	int	$0x13
 
+	data32
 	jc	probe_failed
 
 	/* es:di = parameter table */
@@ -595,7 +553,8 @@ probe_success:
 	 *	 8 bit sector
 	 */
 	movb	%cl, %al		/* Upper two bits of cylinder count */
-	andl	$192,%eax	
+	andl	$192,%eax
+	addr32
 	leal	0(,%eax,4),%eax		/* << 2 */
 	movb	%ch, %al		/* Lower 8 bits */
 	sall	$16,%eax		/* << 16 */
@@ -604,6 +563,7 @@ probe_success:
 	movb	%cl, %al		/* max sector (and # sectors) */
 
 	movl	%eax, %ebx		/* save return value */
+	data32
 	jmp	got_drive
 
 probe_failed:
@@ -617,12 +577,8 @@ probe_failed:
 	movl	$0, %ebx		/* not present value */
 
 got_drive:
+	data32
 	call	EXT_C(real_to_prot)	/* back to protected mode */
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	/* set up return in correct register */
@@ -668,12 +624,6 @@ ENTRY(putchar)
 
 pc_notnewline:
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movb	%bl, %al
@@ -681,12 +631,8 @@ pc_notnewline:
 	movw	$1, %bx
 	int	$0x10
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	pop	%ebx
@@ -712,18 +658,14 @@ ENTRY(get_memsize)
 	mov	0xc(%esp), %ebx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	cmpb	$0x1, %bl
+	data32
 	je	xext
-	
+
 	int	$0x12
+	data32
 	jmp	xdone
 
 xext:
@@ -733,12 +675,8 @@ xext:
 xdone:
 	movw	%ax, %bx
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	movw	%bx, %ax
@@ -767,12 +705,6 @@ ENTRY(get_eisamemsize)
 	push	%edx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movw	$0xe801, %ax
@@ -781,12 +713,8 @@ ENTRY(get_eisamemsize)
 	shll	$16, %ebx
 	movw	%ax, %bx
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	movl	$0xFFFFFFFF, %eax
@@ -842,41 +770,36 @@ ENTRY(get_mem_map)
 	movl	$0x534d4150, %edx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movw	%si, %es
 	movw	$0xe820, %ax
 	int	$0x15
 
+	data32
 	jc	xnosmap
 
 	cmpl	$0x534d4150, %eax
+	data32
 	jne	xnosmap
 
 	cmpl	$0x14, %ecx
+	data32
 	jl	xnosmap
 
 	cmpl	$0x400, %ecx
+	data32
 	jg	xnosmap
 
+	data32
 	jmp	xsmap
 
 xnosmap:
 	movl	$0, %ecx
 
 xsmap:
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	/* write length of buffer (zero if error) into "addr" */
@@ -948,17 +871,19 @@ gloop2ret:
 
 #ifdef DEBUG
 
+ENTRY(patch_code)	/* labels start with "pc_" */
 	.code16
 
-ENTRY(patch_code)	/* labels start with "pc_" */
 	mov	%cs, %ax
 	mov	%ax, %ds
 	mov	%ax, %es
 	mov	%ax, %fs
 	mov	%ax, %gs
+	addr32
 	movl	$0, 0
 pc_stop:
 	hlt
+	data32
 	jmp	pc_stop
 ENTRY(patch_code_end)
 
@@ -1002,12 +927,6 @@ ENTRY(big_linux_boot)
 	movl	%eax, offset
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	/* final setup for linux boot */
@@ -1017,12 +936,9 @@ ENTRY(big_linux_boot)
 	movw	%ax, %ss
 
 	/* jump to start */
+	data32
+	addr32
 	ljmp	(offset)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 
@@ -1064,12 +980,6 @@ ENTRY(cls)
 	push	%ebx                    /* save EBX */
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movb	$0xf, %ah
@@ -1077,12 +987,8 @@ ENTRY(cls)
         xorb	%ah, %ah
         int	$0x10                   /* Set Video mode (clears screen) */
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	pop	%ebx
@@ -1110,24 +1016,14 @@ ENTRY(getxy)
 	push	%edx
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
         xorb	%bh, %bh                /* set page to 0 */
 	movb	$0x3, %ah
 	int	$0x10			/* get cursor position */
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	movb	%dl, %ah
@@ -1160,24 +1056,14 @@ ENTRY(gotoxy)
 	movb	0x18(%esp), %dh          /* %dh = y */
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
         xorb	%bh, %bh                /* set page to 0 */
 	movb	$0x2, %ah
 	int	$0x10			/* set cursor position */
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	pop	%edx
@@ -1232,12 +1118,6 @@ ENTRY(set_attrib)
 	xorl	%ebx, %ebx
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movb	$0x8, %ah
@@ -1247,12 +1127,8 @@ ENTRY(set_attrib)
 	movw	$1, %cx
 	int	$0x10
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	pop	%ecx
@@ -1286,27 +1162,18 @@ ENTRY(getrtsecs)
 	push	%edx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movb	$0x2, %ah
 	int	$0x1a
 
+	data32
 	jnc	gottime
 	movb	$0xff, %dh
 
 gottime:
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	movb	%dh, %al
@@ -1330,24 +1197,14 @@ ENTRY(asm_getkey)
 	push	%ebx			/* save %ebx */
 
 	call	EXT_C(prot_to_real)
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	int	$0x16
 
 	movw	%ax, %bx		/* real_to_prot uses %eax */
 
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	movw	%bx, %ax
@@ -1377,31 +1234,23 @@ ENTRY(checkkey)
 	xorl	%ebx, %ebx
 
 	call	EXT_C(prot_to_real)	/* enter real mode */
-
-	/*
-	 *  The ".code16" directive only works in GAS, the GNU assembler!
-	 *  This adds 32-bit data or addressing directives so that this
-	 *  code will work in real mode!
-	 */
 	.code16
 
 	movb	$0x1, %ah
 	int	$0x16
 
+	data32
 	jz	notpending
 	movw	%ax, %bx
+	data32
 	jmp	pending
 
 notpending:
 	movl	$0xFFFFFFFF, %ebx
 
 pending:
+	data32
 	call	EXT_C(real_to_prot)
-
-	/*
-	 *  The ".code32" directive only works in GAS, the GNU assembler!
-	 *  This gets out of "16-bit" mode.
-	 */
 	.code32
 
 	mov	%ebx, %eax
@@ -1477,5 +1326,3 @@ gdt:
 gdtdesc:
 	.word	0x27			/* limit */
 	.long	gdt			/* addr */
-
-

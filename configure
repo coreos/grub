@@ -43,7 +43,7 @@ do
 
   case "$ac_option" in
   -*=*) ac_optarg=`echo "$ac_option" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
-  *) ac_optarg= ;; 
+  *) ac_optarg= ;;
   esac
 
   # Accept the important Cygnus configure options, so we can diagnose typos.
@@ -58,6 +58,7 @@ General Options:
   --quiet, --silent       do not print \`checking...' messages
   --version               print the fact that this isn't autoconf ;-)
 Target Options:
+  --host=TARGET           synonym for \`--target'
   --target=TARGET         use \`TARGET' as a prefix to all of the tool names
 EOF
     exit 0 ;;
@@ -66,18 +67,23 @@ EOF
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -target | --target | --targe | --targ | --tar | --ta | --t)
-    ac_prev=target ;; 
-  -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
+  -host | --host | --hos | --ho | --h \
+  | -target | --target | --targe | --targ | --tar | --ta | --t)
+    ac_prev=target ;;
+  -host=* | --host=* | --hos=* | --ho=* | --h=* \
+  | -target=* | --target=* | --targe=* | --targ=* | --tar=* | --ta=* | --t=*)
     target="$ac_optarg" ;;
 
   -version | --version | --versio | --versi | --vers)
     echo "mini-configure written by Erich Boleyn with parts from autoconf-2.10"
     exit 0 ;;
 
-  *)
+  -*)
     echo "Warning: unrecognized configure option: \"$ac_option\"" ;;
 
+  *)
+    target="$ac_option"
+    ;;
   esac
 done
 
@@ -117,7 +123,7 @@ that some standard local compiler, \`grep', \`sed', GNU \`gcc', and
 the complete GNU binutils version 2.8.1 or beyond are installed.  The first
 2 are used for automatic configuration, and the rest are required for
 building GRUB.  The file \`config.log' contains the debugging output of
-this run, and the subdirectory \`.conf_test_dir' contains the files and
+this run, and the subdirectory \`conftestdir' contains the files and
 programs produced.
 EOF
 	exit 0
@@ -188,8 +194,8 @@ find_symbol_munge()
 
 
 # Cleanup from previous incomplete tests
-if [ -d .conf_test_dir ]; then
-	rm -rf .conf_test_dir
+if [ -d conftestdir ]; then
+	rm -rf conftestdir
 fi
 
 # Clear configuration log
@@ -197,8 +203,8 @@ if [ -e config.log ]; then
 	rm -rf config.log
 fi
 
-mkdir .conf_test_dir
-cd .conf_test_dir
+mkdir conftestdir
+cd conftestdir
 
 #
 #  Find tools
@@ -218,7 +224,7 @@ for tool_var in $tool_vars ; do
 	if [ "$tmpvar" = "" ]; then
 		get_substr tmpvar $i ${tool_targeted}
 		if [ "$target" != "" -a "$tmpvar" = "yes" ]; then
-			tool_name=$target$tool_name
+			tool_name=$target-$tool_name
 		fi
 		eval export $tool_var=$tool_name
 	fi
@@ -278,10 +284,9 @@ echo "        \"$munge_func1\" and \"$munge_func2\"" >> ../config.log
 
 if [ "$munge_func1" != "$munge_func2" ]; then
 	tool_failed ${CC}
-fi
-
-if [ "$silent" != "yes" ]; then
-	echo done
+	test $silent = yes || echo yes
+else
+	test $silent = yes || echo no
 fi
 
 #
@@ -290,7 +295,7 @@ fi
 #
 
 if [ "$silent" != "yes" ]; then
-	echo -n "checking to see if ${OBJCOPY} is buggy... "
+	echo -n "checking whether ${OBJCOPY} works... "
 fi
 
 cat << EOF > test_objcopy.c
@@ -324,8 +329,37 @@ for link_addr in $link_addrs ; do
 done
 
 if [ "$silent" != "yes" ]; then
-	echo done
+	echo yes
 fi
+
+# Mass confusion!
+# Older versions of GAS interpret `.code16' to mean ``generate 32-bit
+# instructions, but implicitly insert addr32 and data32 bytes so
+# that the code works in real mode''.
+#
+# Newer versions of GAS interpret `.code16' to mean ``generate 16-bit
+# instructions,'' which seems right.  This requires the programmer
+# to explicitly insert addr32 and data32 instructions when they want
+# them.
+#
+# We only support the newer versions, because the old versions cause
+# major pain, by requiring manual assembly to get 16-bit instructions into
+# stage1/stage1.S.
+if [ "$silent" != "yes" ]; then
+	echo -n "checking whether GAS understands addr32... "
+fi
+
+cat > test_addr32.S <<EOF
+	.code16
+l1:	addr32
+	movb	%al, l1
+EOF
+
+echo "Compiling test_addr32.S with ${CC}" >> ../config.log
+${CC} -nostdinc -c test_addr32.S >> ../config.log 2>&1
+check_exit_status GAS
+
+test $silent != yes && echo yes
 
 #
 #  Write out results
@@ -374,6 +408,4 @@ fi
 #  Delete test directory
 #
 
-rm -rf .conf_test_dir
-
-
+rm -rf conftestdir

@@ -1,3 +1,11 @@
+This is GRUB, the GRand Unified Boot-loader.  Note that this version
+is maintained by Gordon Matzigkeit <gord@debian.org>, until Erich
+Boleyn has a chance to catch up with all the patches needed for
+Debian.  Please do not bother Erich about this release, because he
+hasn't approved of it.
+
+Here is the original README:
+
 
 
 		GRUB -- GRand Unified Boot-loader
@@ -66,4 +74,3 @@ Other Documentation
   improved!
 
   The TODO and NEWS files are always up-to-date.
-
