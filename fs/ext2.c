@@ -125,7 +125,7 @@ struct pupa_ext2_inode
       pupa_uint32_t indir_block;
       pupa_uint32_t double_indir_block;
       pupa_uint32_t tripple_indir_block;
-    };
+    } blocks;
     char symlink[60];
   };
   pupa_uint32_t version;
@@ -181,13 +181,14 @@ pupa_ext2_get_file_block (struct pupa_ext2_data *data,
 
   /* Direct blocks.  */
   if (fileblock < INDIRECT_BLOCKS)
-    blknr = pupa_le_to_cpu32 (inode->dir_blocks[fileblock]);
+    blknr = pupa_le_to_cpu32 (inode->blocks.dir_blocks[fileblock]);
   /* Indirect.  */
   else if (fileblock < INDIRECT_BLOCKS + EXT2_BLOCK_SIZE (data) / 4)
     {
       pupa_uint32_t indir[EXT2_BLOCK_SIZE (data) / 4];
 
-      if (pupa_disk_read (data->disk, pupa_le_to_cpu32 (inode->indir_block)
+      if (pupa_disk_read (data->disk, 
+			  pupa_le_to_cpu32 (inode->blocks.indir_block)
 			  << LOG2_EXT2_BLOCK_SIZE (data),
 			  0, EXT2_BLOCK_SIZE (data), (char *) indir))
 	return pupa_errno;
@@ -204,7 +205,7 @@ pupa_ext2_get_file_block (struct pupa_ext2_data *data,
       pupa_uint32_t indir[EXT2_BLOCK_SIZE (data) / 4];
 
       if (pupa_disk_read (data->disk, 
-			  pupa_le_to_cpu32 (inode->double_indir_block) 
+			  pupa_le_to_cpu32 (inode->blocks.double_indir_block) 
 			  << LOG2_EXT2_BLOCK_SIZE (data),
 			  0, EXT2_BLOCK_SIZE (data), (char *) indir))
 	return pupa_errno;
@@ -233,7 +234,7 @@ pupa_ext2_get_file_block (struct pupa_ext2_data *data,
 
 /* Read LEN bytes from the file described by DATA starting with byte
    POS.  Return the amount of read bytes in READ.  */
-static pupa_err_t
+static pupa_ssize_t
 pupa_ext2_read_file (struct pupa_ext2_data *data, int pos,
 		     unsigned int len, char *buf)
 {
@@ -251,24 +252,26 @@ pupa_ext2_read_file (struct pupa_ext2_data *data, int pos,
     {
       int blknr;
       int blockoff = pos % EXT2_BLOCK_SIZE (data);
-      int blockend = (len + pos) % EXT2_BLOCK_SIZE (data);
+      int blockend = EXT2_BLOCK_SIZE (data);
 
       int skipfirst = 0;
 
       pupa_ext2_get_file_block (data, i, &blknr);
       if (pupa_errno)
-	return pupa_errno;
+	return -1;
       
       blknr = blknr << LOG2_EXT2_BLOCK_SIZE (data);
 
+      /* Last block.  */
+      if (i == blockcnt - 1)
+	blockend = (len + pos) % EXT2_BLOCK_SIZE (data);
+
       /* First block.  */
       if (i == pos / EXT2_BLOCK_SIZE (data))
-	skipfirst = blockoff;
-      
-      if (!blockend)
-	blockend = EXT2_BLOCK_SIZE (data);
-      
-      blockend -= skipfirst;
+	{
+	  skipfirst = blockoff;
+	  blockend -= skipfirst;
+	}
 
       /* If the block number is 0 this block is not stored on disk but
 	 is zero filled instead.  */
@@ -277,7 +280,7 @@ pupa_ext2_read_file (struct pupa_ext2_data *data, int pos,
 	  pupa_disk_read (data->disk, blknr, skipfirst,
 				blockend, buf);
 	  if (pupa_errno)
-	    return pupa_errno;
+	    return -1;
 	}
       else
 	pupa_memset (buf, EXT2_BLOCK_SIZE (data) - skipfirst, 0);

@@ -1,3 +1,12 @@
+2003-11-09  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* fs/ext2.c (struct pupa_ext2_inode): Declare struct datablocks
+	as blocks.
+	(pupa_ext2_get_file_block): Use blocks member.
+
+	* fs/ext2.c (pupa_ext2_read_file): Only set skipfirst for the
+	first block. Return -1 instead of pupa_errno on error.
+
 2003-10-27  Marco Gerards  <metgerards@student.han.nl>
 
 	* README: In the pupa-mkimage example use _chain instead of chain
