@@ -1351,10 +1351,10 @@ static struct builtin builtin_geometry =
   BUILTIN_CMDLINE,
   "geometry DRIVE [CYLINDER HEAD SECTOR [TOTAL_SECTOR]]",
   "Print the information for a drive DRIVE. In the grub shell, you can"
-  "set the geometry of the drive arbitrarily. The number of the cylinders,"
+  " set the geometry of the drive arbitrarily. The number of the cylinders,"
   " the one of the heads, the one of the sectors and the one of the total"
   " sectors are set to CYLINDER, HEAD, SECTOR and TOTAL_SECTOR,"
-  "respectively. If you omit TOTAL_SECTOR, then it will be calculated based"
+  " respectively. If you omit TOTAL_SECTOR, then it will be calculated based"
   " on the C/H/S values automatically."
 };
 
@@ -2304,7 +2304,7 @@ static struct builtin builtin_kernel =
   BUILTIN_CMDLINE,
   "kernel [--no-mem-option] [--type=TYPE] FILE [ARG ...]",
   "Attempt to load the primary boot image from FILE. The rest of the"
-  "line is passed verbatim as the \"kernel command line\".  Any modules"
+  " line is passed verbatim as the \"kernel command line\".  Any modules"
   " must be reloaded after using this command. The option --type is used"
   " to suggest what type of kernel to be loaded. TYPE must be either of"
   " \"netbsd\", \"freebsd\", \"openbsd\", \"linux\", \"biglinux\" and"
@@ -4430,7 +4430,7 @@ static struct builtin builtin_vbeprobe =
   BUILTIN_CMDLINE,
   "vbeprobe [MODE]",
   "Probe VBE information. If the mode number MODE is specified, show only"
-  "the information about only the mode."
+  " the information about only the mode."
 };
   
 

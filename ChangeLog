@@ -1,3 +1,10 @@
+2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
+
+	* stage2/builtins.c (builtin_geometry): Add extra space
+	characters into the long description.
+	(builtin_kernel): Likewise.
+	(builtin_vbeprobe): Likewise.
+	
 2001-12-19  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	From Michael Sullivan <mike@trdlnk.com>:
