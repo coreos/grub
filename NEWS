@@ -24,6 +24,7 @@ New in 0.5.96 - XXXX-XX-XX:
   a new option `--enable-serial'. If it is specified, you can use two
   new commands, "serial" and "terminal" in the command-line and the
   menu. See the manual, for more details.
+* Preserve the possible magic number used by Windows NT in a MBR.
 
 New in 0.5.95 - 2000-06-27:
 * NetBSD ELF kernel support is added. You have to specify the new option

@@ -45,6 +45,10 @@ static struct divisor divisor_tab[] =
   { 115200, 0x0001 }
 };
 
+/* The position of the cursor.  */
+int serial_x;
+int serial_y;
+
 
 /* Read a byte from a port.  */
 static inline unsigned char

@@ -344,9 +344,8 @@ copy_buffer:
 	 * We need to save %cx and %si because the startup code in
 	 * stage2 uses them without initializing them.
 	 */
-	pushw	%cx
+	pusha
 	pushw	%ds
-	pushw	%si
 	
 	movw	$0x100, %cx
 	movw	%bx, %ds
@@ -358,9 +357,8 @@ copy_buffer:
 	rep
 	movsw
 
-	popw	%si
 	popw	%ds
-	popw	%cx
+	popa
 
 	/* boot stage2 */
 	jmp	*(stage2_address)
@@ -421,11 +419,20 @@ message:
 	ret
 
 	/*
+	 *  Windows NT breaks the compatibility by embedding a magic
+	 *  number here.
+	 */
+
+nt_magic:	
+	. = _start + STAGE1_WINDOWS_NT_MAGIC
+	
+	/*
 	 *  This is where an MBR would go if on a hard disk.  The code
 	 *  here isn't even referenced unless we're on a floppy.  Kinda
 	 *  sneaky, huh?
 	 */
 
+part_start:	
 	. = _start + STAGE1_PARTSTART
 
 probe_values:

@@ -122,9 +122,9 @@ print_border (int y, int size)
   
 #ifndef GRUB_UTIL
   /* Color the menu. The menu is 75 * 14 characters.  */
-#ifdef SUPPORT_SERIAL
+# ifdef SUPPORT_SERIAL
   if (terminal & TERMINAL_CONSOLE)
-#endif
+# endif
     {
       for (i = 0; i < 14; i++)
 	{

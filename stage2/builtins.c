@@ -1625,10 +1625,10 @@ install_func (char *arg, int flags)
 		BOOTSEC_BPB_LENGTH);
 
   /* If for a hard disk, copy the possible MBR/extended part table.  */
-  if ((dest_drive & 0x80) && current_partition == 0xFFFFFF)
-    grub_memmove (stage1_buffer + BOOTSEC_PART_OFFSET,
-		  old_sect + BOOTSEC_PART_OFFSET,
-		  BOOTSEC_PART_LENGTH);
+  if (dest_drive & 0x80)
+    grub_memmove (stage1_buffer + STAGE1_WINDOWS_NT_MAGIC,
+		  old_sect + STAGE1_WINDOWS_NT_MAGIC,
+		  STAGE1_PARTEND - STAGE1_WINDOWS_NT_MAGIC);
 
   /* Check for the version and the signature of Stage 1.  */
   if (*((short *)(stage1_buffer + STAGE1_VER_MAJ_OFFS)) != COMPAT_VERSION

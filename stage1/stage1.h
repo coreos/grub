@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999   Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,6 +50,9 @@
 
 /* The offset of STAGE2_SEGMENT.  */
 #define STAGE1_STAGE2_SEGMENT	0x48
+
+/* The offset of a magic number used by Windows NT.  */
+#define STAGE1_WINDOWS_NT_MAGIC	0x1b8
 
 /* The offset of the start of the partition table.  */
 #define STAGE1_PARTSTART	0x1be

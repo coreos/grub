@@ -66,6 +66,13 @@
 #define UART_ENABLE_MODEM	0x0B
 
 
+/* Variable prototypes.  */
+
+/* In the serial terminal, trace the cursor in GRUB itself.  */
+extern int serial_x;
+extern int serial_y;
+
+
 /* Function prototypes.  */
 
 /* The serial part of grub_putchar.  */

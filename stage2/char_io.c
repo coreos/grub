@@ -668,12 +668,6 @@ translate_keycode (int c)
 		  break;
 		}
 	    }
-
-	  /* Drain the input buffer, because so-called VT100-compatible
-	     terminals could send key codes which aren't handled in the
-	     code above.  */
-	  while (checkkey () != -1)
-	    (void) getkey ();
 	}
     }
   else

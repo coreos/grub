@@ -1,3 +1,23 @@
+2000-08-27  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Preserve a magic number used by Windows NT in a MBR. Shit!
+	Reported by Khimenko Victor.
+	
+	* stage1/stage1.h (STAGE1_WINDOWS_NT_MAGIC): New macro.
+	* stage1/stage1.S (copy_buffer): Use pusha and popa, instead of
+	pushing/poping %cx and %si separately, to reduce the code size.
+	(nt_magic): New label. Set the offset to _start plus
+	STAGE1_WINDOWS_NT_MAGIC
+	(part_start): New label.
+	* stage2/builtins.c (install_func): If DEST_DRIVE is a hard
+	disk, copy the possible partition table and Windows NT magic to
+	STAGE1_BUFFER from OLD_SECT.
+	
+2000-08-26  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/char_io.c (translate_keycode) [SUPPORT_SERIAL]: Don't
+	drain the input buffer, since that was irritating.
+	
 2000-08-26  OKUJI Yoshinori  <okuji@gnu.org>
 
 	Don't save/restore fragile registers unnecessarily.
