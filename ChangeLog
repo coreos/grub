@@ -1,3 +1,23 @@
+2004-08-24  Marco Gerards  <metgerards@student.han.nl>
+
+	* commands/boot.c (grub_boot_init) [GRUB_UTIL]: Make conditional.
+	(grub_boot_fini) [GRUB_UTIL]: Likewise.
+	(GRUB_MOD_INIT) [!GRUB_UTIL]: Likewise.
+	(GRUB_MOD_FINI) [!GRUB_UTIL]: Likewise.
+	
+	* fs/hfs.c (grub_hfs_find_node): Add a prototype for `node_found'.
+	(grub_hfs_iterate_dir): Make the function static.  Add prototypes
+	for `node_found' and `it_dir'.
+	(grub_hfs_dir): Add prototype for `dir_hook'.
+
+	* fs/minix.c (grub_minix_get_file_block): Add prototype for
+	`grub_get_indir'.  Rename `indir' in two blocks to `indir16'
+	and `indir32' to silence a gcc warning.
+
+	* include/grub/fs.h (grub_hfs_init): New prototype.
+	(grub_hfs_fini): Likewise.
+	
+	
 2004-08-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Each disk device has its own id now. This is useful to make use

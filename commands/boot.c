@@ -38,6 +38,7 @@ grub_cmd_boot (struct grub_arg_list *state __attribute__ ((unused)),
 
 
 
+#ifdef GRUB_UTIL
 void
 grub_boot_init (void)
 {
@@ -50,7 +51,7 @@ grub_boot_fini (void)
 {
   grub_unregister_command ("boot");
 }
-
+#else /* ! GRUB_UTIL */
 GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
@@ -62,4 +63,4 @@ GRUB_MOD_FINI
 {
   grub_unregister_command ("boot");
 }
-
+#endif /* ! GRUB_UTIL */

@@ -523,6 +523,8 @@ grub_hfs_find_node (struct grub_hfs_data *data, char *key,
   int found = -1;
   int isleaf = 0;
   
+  auto int node_found (struct grub_hfs_node *, struct grub_hfs_record *);
+    
   int node_found (struct grub_hfs_node *hnd, struct grub_hfs_record *rec)
     {
       int cmp = 1;
@@ -576,7 +578,7 @@ grub_hfs_find_node (struct grub_hfs_data *data, char *key,
 /* Iterate over the directory with the id DIR.  The tree is searched
    starting with the node ROOT_IDX.  For every entry in this directory
    call HOOK.  */
-grub_err_t
+static grub_err_t
 grub_hfs_iterate_dir (struct grub_hfs_data *data, grub_uint32_t root_idx,
 		      unsigned int dir, int (*hook) (struct grub_hfs_record *))
 {
@@ -586,9 +588,13 @@ grub_hfs_iterate_dir (struct grub_hfs_data *data, grub_uint32_t root_idx,
   
   /* The lowest key possible with DIR as root directory.  */
   struct grub_hfs_catalog_key key = {0, grub_cpu_to_be32 (dir), 0, ""};
+
+  auto int node_found (struct grub_hfs_node *, struct grub_hfs_record *);
+  auto int it_dir (struct grub_hfs_node * __attribute ((unused)),
+		   struct grub_hfs_record *);
+
   
   int node_found (struct grub_hfs_node *hnd, struct grub_hfs_record *rec)
-  
     {
       struct grub_hfs_catalog_key *ckey = rec->key;
       
@@ -722,6 +728,8 @@ grub_hfs_dir (grub_device_t device, const char *path,
 		  int (*hook) (const char *filename, int dir))
 {
   int inode;
+
+  auto int dir_hook (struct grub_hfs_record *rec);
 
   int dir_hook (struct grub_hfs_record *rec)
     {

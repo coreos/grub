@@ -126,26 +126,28 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
   struct grub_minix_sblock *sblock = &data->sblock;
   int indir;
 
+  auto int grub_get_indir (int, int);
+
   /* Read the block pointer in ZONE, on the offset NUM.  */
   int grub_get_indir (int zone, int num)
     {
       if (data->version == 1)
 	{
-	  grub_uint16_t indir;
+	  grub_uint16_t indir16;
 	  grub_disk_read (data->disk,
 			  zone << GRUB_MINIX_LOG2_ZONESZ,
 			  sizeof (grub_uint16_t) * num,
-			  sizeof (grub_uint16_t), (char *) &indir);
-	  return grub_le_to_cpu16 (indir);
+			  sizeof (grub_uint16_t), (char *) &indir16);
+	  return grub_le_to_cpu16 (indir16);
 	}
       else
 	{
-	  grub_uint32_t indir;
+	  grub_uint32_t indir32;
 	  grub_disk_read (data->disk,
 			  zone << GRUB_MINIX_LOG2_ZONESZ,
 			  sizeof (grub_uint32_t) * num,
-			  sizeof (grub_uint32_t), (char *) &indir);
-	  return grub_le_to_cpu32 (indir);
+			  sizeof (grub_uint32_t), (char *) &indir32);
+	  return grub_le_to_cpu32 (indir32);
 	}
     }
   
