@@ -1,5 +1,13 @@
 2001-02-08  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* stage2/asm.S [STAGE1_5] (chain_stage2): Save the second sector
+	of stage2 in %ecx temporarily, and set %ebp to %ecx after
+	switching to protected mode. I forgot that %ebp is broken by
+	rot_to_real. Reported by Torvald Riegel
+	<tr16@inf.tu-dresden.de>.
+	
+2001-02-08  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* docs/grub-new.texi: Moved to ...
 	* docs/grub.texi: ... here. And, include internals.texi.
 	* docs/internals.texi: New file.

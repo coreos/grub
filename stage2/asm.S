@@ -792,10 +792,12 @@ ENTRY(chain_stage2)
 	movb	EXT_C(current_drive), %dl
 
 	/* set up to pass the second sector of stage2 */
-	movl	0xc(%esp), %ebp
+	movl	0xc(%esp), %ecx
 
 	call	EXT_C(prot_to_real)
 	.code16
+
+	movl	%ecx, %ebp
 
 #ifdef ABSOLUTE_WITHOUT_ASTERISK
 	DATA32	ADDR32	ljmp	(offset)
