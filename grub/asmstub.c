@@ -1,7 +1,7 @@
 /* asmstub.c - a version of shared_src/asm.S that works under Unix */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -274,7 +274,7 @@ chain_stage1 (unsigned long segment, unsigned long offset,
 
 
 void
-chain_stage2 (unsigned long segment, unsigned long offset)
+chain_stage2 (unsigned long segment, unsigned long offset, int second_sector)
 {
   stop ();
 }

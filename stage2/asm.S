@@ -1,7 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -761,7 +761,7 @@ ENTRY(chain_stage1)
 
 #ifdef STAGE1_5
 /*
- * chain_stage2(segment, offset)
+ * chain_stage2(segment, offset, second_sector)
  *
  *  This starts another stage2 loader, at segment:offset.  It presumes
  *  that the other one starts with this same "asm.S" file, and passes
@@ -790,6 +790,9 @@ ENTRY(chain_stage2)
 
 	/* set up to pass the drive where stage2 is located in */
 	movb	EXT_C(current_drive), %dl
+
+	/* set up to pass the second sector of stage2 */
+	movl	0xc(%esp), %ebp
 
 	call	EXT_C(prot_to_real)
 	.code16

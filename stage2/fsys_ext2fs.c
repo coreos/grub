@@ -1,7 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -433,16 +433,12 @@ ext2fs_read (char *buf, int len)
       if (size > len)
 	size = len;
 
-#ifndef STAGE1_5
       disk_read_func = disk_read_hook;
-#endif /* STAGE1_5 */
 
       devread (map * (EXT2_BLOCK_SIZE (SUPERBLOCK) / DEV_BSIZE),
 	       offset, size, buf);
 
-#ifndef STAGE1_5
       disk_read_func = NULL;
-#endif /* STAGE1_5 */
 
       buf += size;
       len -= size;

@@ -1,5 +1,24 @@
 2001-02-02  OKUJI Yoshinori  <okuji@gnu.org>
 
+	Make savedefault workable even with Stage 1.5. Reported by
+	Thierry Laronde <thierry@cri74.org>.
+	
+	* grub/asmstub.c (chain_stage2): Added an additional argument,
+	SECOND_SECTOR.
+	* stage2/asm.S [STAGE1_5] (chain_stage2): Set %ebp to
+	SECOND_SECTOR.
+	* stage2/disk_io.c [STAGE1_5] (disk_read_hook): Defined.
+	[STAGE1_5] (disk_read_func): Likewise.
+	(rawread) [STAGE1_5]: Handle DISK_READ_FUNC.
+	(grub_read) [STAGE1_5]: Likewise.
+	* stage2/fsys_ext2fs.c (ext2fs_read) [STAGE1_5]: Likewise.
+	* stage2/fsys_fat.c (fat_read) [STAGE1_5]: Likewise.
+	* stage2/fsys_ffs.c (ffs_read) [STAGE1_5]: Likewise.
+	* stage2/fsys_minix.c (minix_read) [STAGE1_5]: Likewise.
+	* stage2/fsys_reiserfs.c (reiserfs_read) [STAGE1_5]: Likewise.
+	
+2001-02-02  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* netboot/config.c [GRUB && INCLUDE_PCI] (pci_dispatch_table):
 	New structure.
 	[GRUB && INCLUDE_PCI] (PCI_NIC): New variable.

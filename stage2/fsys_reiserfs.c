@@ -1,7 +1,7 @@
 /* fsys_reiserfs.c - an implementation for the ReiserFS filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -910,7 +910,6 @@ reiserfs_read (char *buf, int len)
 	  if (to_read > len)
 	    to_read = len;
 	  
-#ifndef STAGE1_5
 	  if (disk_read_hook != NULL)
 	    {
 	      disk_read_func = disk_read_hook;
@@ -921,7 +920,6 @@ reiserfs_read (char *buf, int len)
 	      disk_read_func = NULL;
 	    }
 	  else
-#endif /* ! STAGE1_5 */
 	    memcpy (buf, INFO->current_item + offset, to_read);
 	  goto update_buf_len;
 	}
@@ -939,9 +937,7 @@ reiserfs_read (char *buf, int len)
 	      if (to_read > len)
 		to_read = len;
 	      
-#ifndef STAGE1_5
 	      disk_read_func = disk_read_hook;
-#endif /* ! STAGE1_5 */
 	      
 	      /* Journal is only for meta data.  Data blocks can be read
 	       * directly without using block_read
@@ -949,9 +945,7 @@ reiserfs_read (char *buf, int len)
 	      devread (blocknr << INFO->blocksize_shift,
 		       blk_offset, to_read, buf);
 	      
-#ifndef STAGE1_5
 	      disk_read_func = NULL;
-#endif /* ! STAGE1_5 */
 	    update_buf_len:
 	      len -= to_read;
 	      buf += to_read;

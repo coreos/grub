@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -601,10 +601,11 @@ extern int no_decompression;
 extern int compressed_file;
 #endif
 
-#ifndef STAGE1_5
 /* instrumentation variables */
 extern void (*disk_read_hook) (int, int, int);
 extern void (*disk_read_func) (int, int, int);
+
+#ifndef STAGE1_5
 /* The flag for debug mode.  */
 extern int debug;
 /* Color settings */
@@ -705,7 +706,8 @@ extern unsigned short io_map[];
 void chain_stage1 (unsigned long segment, unsigned long offset,
 		   unsigned long part_table_addr)
      __attribute__ ((noreturn));
-void chain_stage2 (unsigned long segment, unsigned long offset)
+void chain_stage2 (unsigned long segment, unsigned long offset,
+		   int second_sector)
      __attribute__ ((noreturn));
 
 /* do some funky stuff, then boot linux */

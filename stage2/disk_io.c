@@ -2,7 +2,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
- *  Copyright (C) 1999, 2000  Free Software Foundation, Inc.
+ *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@
 # include <device.h>
 #endif
 
-#ifndef STAGE1_5
 /* instrumentation variables */
 void (*disk_read_hook) (int, int, int) = NULL;
 void (*disk_read_func) (int, int, int) = NULL;
 
+#ifndef STAGE1_5
 int print_possibilities;
 
 static int do_completion;
@@ -209,7 +209,6 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
       if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
 	size = (num_sect * SECTOR_SIZE) - byte_offset;
 
-#ifndef STAGE1_5
       /*
        *  Instrumentation to tell which sectors were read and used.
        */
@@ -231,7 +230,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	      (*disk_read_func) (sector_num, 0, length);
 	    }
 	}
-#endif /* STAGE1_5 */
+
       memmove (buf, (char *) bufaddr, size);
 
       buf += size;
@@ -1577,17 +1576,13 @@ grub_read (char *buf, int len)
 	  if (size > len)
 	    size = len;
 
-#ifndef STAGE1_5
 	  disk_read_func = disk_read_hook;
-#endif /* STAGE1_5 */
 
 	  /* read current block and put it in the right place in memory */
 	  devread (BLK_BLKSTART (BLK_CUR_BLKLIST) + BLK_CUR_BLKNUM,
 		   off, size, buf);
 
-#ifndef STAGE1_5
 	  disk_read_func = NULL;
-#endif /* STAGE1_5 */
 
 	  len -= size;
 	  filepos += size;
