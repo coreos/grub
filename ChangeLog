@@ -1,3 +1,10 @@
+2002-03-24  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/stage2.c (run_menu): Call cls outside the loop to run
+	scripts.
+	* stage2/cmdline.c (run_script): Prompt a user's intervention,
+	only when FALLBACK_ENTRY is negative.
+	
 2002-02-11  Pavel Roskin  <proski@gnu.org>
 
 	* util/grub-install.in (find_device): New function - find block

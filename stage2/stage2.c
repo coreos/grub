@@ -808,10 +808,10 @@ restart:
   /* Enable the auto fill mode.  */
   auto_fill = 1;
   
+  cls ();
+
   while (1)
     {
-      cls ();
-
       if (config_entries)
 	printf ("  Booting \'%s\'\n\n",
 		get_entry (menu_entries, first_entry + entryno, 0));

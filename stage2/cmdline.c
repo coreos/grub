@@ -197,8 +197,15 @@ run_script (char *script, char *heap)
       if (errnum)
 	{
 	  errnum = ERR_NONE;
-	  grub_printf ("\nPress any key to continue...");
-	  (void) getkey ();
+
+	  /* If a fallback entry is defined, don't prompt a user's
+	     intervention.  */
+	  if (fallback_entry < 0)
+	    {
+	      grub_printf ("\nPress any key to continue...");
+	      (void) getkey ();
+	    }
+	  
 	  return 1;
 	}
 
