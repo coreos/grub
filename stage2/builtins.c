@@ -55,6 +55,8 @@ int debug = 0;
 int default_entry = 0;
 /* The fallback entry.  */
 int fallback_entry = -1;
+/* The number of current entry.  */
+int current_entryno;
 /* The address for Multiboot command-line buffer.  */
 static char *mb_cmdline;
 /* The password.  */
@@ -713,6 +715,14 @@ static struct builtin builtin_debug =
 static int
 default_func (char *arg, int flags)
 {
+#ifndef SUPPORT_DISKLESS
+  if (grub_strcmp (arg, "saved") == 0)
+    {
+      default_entry = saved_entryno;
+      return 0;
+    }
+#endif /* SUPPORT_DISKLESS */
+  
   if (! safe_parse_maxint (&arg, &default_entry))
     return 1;
 
@@ -725,9 +735,9 @@ static struct builtin builtin_default =
   default_func,
   BUILTIN_MENU,
 #if 0
-  "default NUM",
+  "default [NUM | `saved']",
   "Set the default entry to entry number NUM (if not specified, it is"
-  " 0, the first entry)."
+  " 0, the first entry) or the entry number saved by savedefault."
 #endif
 };
 
@@ -2645,6 +2655,75 @@ static struct builtin builtin_rootnoverify =
 };
 
 
+/* savedefault */
+static int
+savedefault_func (char *arg, int flags)
+{
+#if !defined(SUPPORT_DISKLESS) && !defined(GRUB_UTIL)
+  struct geometry geom;
+  int *entryno_ptr;
+  
+  /* This command is only useful when you boot an entry from the menu
+     interface.  */
+  if (! (flags & BUILTIN_SCRIPT))
+    {
+      errnum = ERR_UNRECOGNIZED;
+      return 1;
+    }
+  
+  /* Get the geometry of the boot drive (i.e. the disk which contains
+     this stage2).  */
+  if (get_diskinfo (boot_drive, &geom))
+    {
+      errnum = ERR_NO_DISK;
+      return 1;
+    }
+
+  /* Load the second sector of this stage2.  */
+  if (biosdisk (BIOSDISK_READ, boot_drive, &geom,
+		install_second_sector, 1, SCRATCHSEG))
+    {
+      errnum = ERR_READ;
+      return 1;
+    }
+
+  entryno_ptr = (int *) ((char *) SCRATCHADDR + STAGE2_SAVED_ENTRYNO);
+
+  /* Check if the saved entry number differs from current entry number.  */
+  if (*entryno_ptr != current_entryno)
+    {
+      /* Overwrite the saved entry number.  */
+      *entryno_ptr = current_entryno;
+      
+      /* Save the image in the disk.  */
+      if (biosdisk (BIOSDISK_WRITE, boot_drive, &geom,
+		    install_second_sector, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  return 1;
+	}
+      
+      /* Clear the cache.  */
+      buf_track = -1;
+    }
+
+  return 0;
+#else /* ! SUPPORT_DISKLESS && ! GRUB_UTIL */
+  errnum = ERR_UNRECOGNIZED;
+  return 1;
+#endif /* ! SUPPORT_DISKLESS && ! GRUB_UTIL */
+}
+
+static struct builtin builtin_savedefault =
+{
+  "savedefault",
+  savedefault_func,
+  BUILTIN_CMDLINE,
+  "savedefault",
+  "Save the current entry as the default boot entry."
+};
+
+
 /* serial */
 static int
 serial_func (char *arg, int flags)
@@ -3665,6 +3744,7 @@ struct builtin *builtin_table[] =
   &builtin_reboot,
   &builtin_root,
   &builtin_rootnoverify,
+  &builtin_savedefault,
   &builtin_serial,
   &builtin_setkey,
   &builtin_setup,

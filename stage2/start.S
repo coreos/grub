@@ -74,6 +74,8 @@ _start:
 	/* this sets up for the first run through "bootloop" */
 	movw	$ABS(firstlist - BOOTSEC_LISTSIZE), %di
 
+	/* save the sector number of the second sector in %ebp */
+	movl	(%di), %ebp
 
         /* this is the loop for reading the secondary boot-loader in */
 bootloop:

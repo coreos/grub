@@ -192,9 +192,10 @@ extern char *grub_scratch_mem;
 
 #define STAGE2_VER_MAJ_OFFS	0x6
 #define STAGE2_INSTALLPART	0x8
-#define STAGE2_STAGE2_ID	0xc
-#define STAGE2_FORCE_LBA	0xd
-#define STAGE2_VER_STR_OFFS	0xe
+#define STAGE2_SAVED_ENTRYNO	0xc
+#define STAGE2_STAGE2_ID	0x10
+#define STAGE2_FORCE_LBA	0x11
+#define STAGE2_VER_STR_OFFS	0x12
 
 /* Stage 2 identifiers */
 #define STAGE2_ID_STAGE2		0
@@ -464,8 +465,10 @@ typedef enum
 
 extern unsigned long install_partition;
 extern unsigned long boot_drive;
+extern unsigned long install_second_sector;
 extern unsigned long boot_part_addr;
 extern unsigned long boot_part_offset;
+extern int saved_entryno;
 extern unsigned char force_lba;
 extern char version_string[];
 extern char config_file[];
@@ -497,6 +500,7 @@ extern void assign_device_name (int drive, const char *device);
 /* GUI interface variables. */
 extern int fallback_entry;
 extern int default_entry;
+extern int current_entryno;
 extern char *password;
 extern int auth;
 extern char commands[];

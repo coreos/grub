@@ -23,7 +23,7 @@
 
 /* Define the version numbers here, so that Stage 1 can know them.  */
 #define COMPAT_VERSION_MAJOR	3
-#define COMPAT_VERSION_MINOR	1
+#define COMPAT_VERSION_MINOR	2
 #define COMPAT_VERSION		((COMPAT_VERSION_MINOR << 8) \
 					| COMPAT_VERSION_MAJOR)
 

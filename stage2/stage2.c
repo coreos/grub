@@ -681,9 +681,7 @@ restart:
 	}
     }
 
-  /*
-   *  Attempt to boot an entry.
-   */
+  /* Attempt to boot an entry.  */
  boot_entry:
   while (1)
     {
@@ -698,6 +696,9 @@ restart:
       if (! cur_entry)
 	cur_entry = get_entry (config_entries, first_entry + entryno, 1);
 
+      /* Set CURRENT_ENTRYNO for the command "savedefault".  */
+      current_entryno = first_entry + entryno;
+      
       if (run_script (cur_entry, heap))
 	{
 	  if (fallback_entry < 0)

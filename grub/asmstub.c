@@ -67,6 +67,7 @@ int grub_stage2 (void);
 
 unsigned long install_partition = 0x20000;
 unsigned long boot_drive = 0;
+int saved_entryno = 0;
 char version_string[] = VERSION;
 char config_file[128] = "/boot/grub/menu.lst"; /* FIXME: arbitrary */
 unsigned long linux_text_len = 0;

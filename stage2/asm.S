@@ -40,9 +40,9 @@
 #include "shared.h"
 
 #ifdef STAGE1_5
-#define	ABS(x)	((x) - EXT_C(main) + 0x2200)
+# define	ABS(x)	((x) - EXT_C(main) + 0x2200)
 #else
-#define	ABS(x)	((x) - EXT_C(main) + 0x8200)
+# define	ABS(x)	((x) - EXT_C(main) + 0x8200)
 #endif
 	
 	.file	"asm.S"
@@ -88,6 +88,8 @@ ENTRY(main)
 
 VARIABLE(install_partition)
 	.long	0xFFFFFF
+VARIABLE(saved_entryno)
+	.long	0
 VARIABLE(stage2_id)
 	.byte	STAGE2_ID
 VARIABLE(force_lba)
@@ -118,6 +120,14 @@ codestart:
 	movw	%ax, %ss
 	movw	%ax, %es
 
+#ifndef SUPPORT_DISKLESS
+	/*
+	 * Save the sector number of the second sector (i.e. this sector)
+	 * in INSTALL_SECOND_SECTOR. See also "stage2/start.S".
+	 */
+	ADDR32	movl	%ebp, EXT_C(install_second_sector)
+#endif
+	
 	/* set up the real mode/BIOS stack */
 	movl	$STACKOFF, %ebp
 	movl	%ebp, %esp
@@ -2103,6 +2113,9 @@ VARIABLE(boot_drive)
 	.long	0
 #endif
 
+VARIABLE(install_second_sector)
+	.long	0
+	
 	/* an address can only be long-jumped to if it is in memory, this
 	   is used by multiple routines */
 offset:

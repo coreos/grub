@@ -1,3 +1,33 @@
+2000-09-06  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Add support for "boot previously booted entry by default", based
+	on the patch by Mike Meyer <mwm@mired.org>, but I've modified
+	his patch thoroughly.
+	
+	* grub/asmstub.c (saved_entryno): New variable. This is a dummy.
+	* stage1/stage1.h (COMPAT_VERSION_MINOR): Incremented.
+	* stage2/asm.S (saved_entryno): New variable.
+	(codestart) [!SUPPORT_DISKLESS]: Set INSTALL_SECOND_SECTOR to
+	%ebp. %ebp is set in start.S.
+	(install_second_sector): New variable.
+	* stage2/builtins.c (current_entryno): New variable.
+	(default_func) [!SUPPORT_DISKLESS]: If ARG is "saved", set
+	DEFAULT_ENTRY to SAVED_ENTRYNO.
+	(savedefault_func): New function.
+	(builtin_savedefault): New variable.
+	(builtin_table): Added a pointer to BUILTIN_SAVEDEFAULT.
+	* stage2/shared.h (STAGE2_SAVED_ENTRYNO): New macro.
+	(STAGE2_STAGE2_ID): Changed to 0x10.
+	(STAGE2_FORCE_LBA): Chaged to 0x11.
+	(STAGE2_VER_STR_OFFS): Changed to 0x12.
+	(install_second_sector): Declared.
+	(saved_entryno): Likewise.
+	(current_entryno): Likewise.
+	* stage2/stage2.c (run_menu): Set CURRENT_ENTRYNO to FIRST_ENTRY
+	+ ENTRYNO, right before calling run_script.
+	* stage2/start.S (start): Save the sector number of the second
+	sector in %ebp.
+	
 2000-09-05  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage1/stage1.S (lba_mode) [!NO_BUGGY_BIOS_IN_THE_WORLD]:
