@@ -639,7 +639,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 
 # Modules.
 pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
-	hfs.mod jfs.mod normal.mod hello.mod font.mod \
+	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod
 
@@ -1198,6 +1198,41 @@ terminal_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For ls.mod.
 ls_mod_SOURCES = commands/ls.c
+CLEANFILES += ls.mod mod-ls.o mod-ls.c pre-ls.o ls_mod-commands_ls.o def-ls.lst und-ls.lst
+MOSTLYCLEANFILES += ls_mod-commands_ls.d
+DEFSYMFILES += def-ls.lst
+UNDSYMFILES += und-ls.lst
+
+ls.mod: pre-ls.o mod-ls.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-ls.o: ls_mod-commands_ls.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-ls.o: mod-ls.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
+
+mod-ls.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ls' $< > $@ || (rm -f $@; exit 1)
+
+def-ls.lst: pre-ls.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ls/' > $@
+
+und-ls.lst: pre-ls.o
+	echo 'ls' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ls_mod-commands_ls.o: commands/ls.c
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
+
+ls_mod-commands_ls.d: commands/ls.c
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,ls_mod-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include ls_mod-commands_ls.d
+
 ls_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For cmp.mod.

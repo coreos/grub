@@ -1,3 +1,8 @@
+2005-02-13  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* conf/powerpc-ieee1275.rmk (pkgdata_MODULES): Add ls.mod.
+	* include/grub/powerpc/libgcc.h (__mulsf3): New prototype.
+
 2005-02-12  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/partition.c (grub_partition_probe): Clear `grub_errno' and

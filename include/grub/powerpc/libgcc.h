@@ -30,6 +30,7 @@ void EXPORT_FUNC (__lshrdi3) (void);
 void EXPORT_FUNC (__make_dp) (void);
 void EXPORT_FUNC (__make_fp) (void);
 void EXPORT_FUNC (__muldf3) (void);
+void EXPORT_FUNC (__mulsf3) (void);
 void EXPORT_FUNC (__pack_d) (void);
 void EXPORT_FUNC (__pack_f) (void);
 void EXPORT_FUNC (__subdf3) (void);
