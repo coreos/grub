@@ -290,16 +290,17 @@ However, GRUB is a very large program, so we break GRUB into 2 (or 3)
 distinct components, @dfn{stage1} and @dfn{stage2} (and optionally
 @dfn{stage1.5}). @xref{Memory map}, for more information.
 
-We embed @dfn{stage1} in a MBR or in a partition table, and place
-@dfn{stage2} in a filesystem. The optional @dfn{stage1.5} can be
-installed in a filesystem, in the @dfn{bootloader} area in a FFS, and in
-the sectors right after a MBR, because @dfn{stage1.5} is enough small
-and the sectors right after a MBR is normally an unused region. The size
-of this region is the number of sectors per head minus 1.
+We embed @dfn{stage1} in a MBR or in the boot sector of a partition
+table, and place @dfn{stage2} in a filesystem. The optional
+@dfn{stage1.5} can be installed in a filesystem, in the @dfn{bootloader}
+area in a FFS, and in the sectors right after a MBR, because
+@dfn{stage1.5} is enough small and the sectors right after a MBR is
+normally an unused region. The size of this region is the number of
+sectors per head minus 1.
 
 Thus, all the @dfn{stage1} must do is just load a @dfn{stage2} or
 @dfn{stage1.5}. But even if @dfn{stage1} needs not to support the user
-interface or the filesystem interfave, it is impossible to make
+interface or the filesystem interface, it is impossible to make
 @dfn{stage1} less than 400 bytes, because GRUB should support both the
 CHS mode and the LBA mode (@pxref{Low-level disk I/O}).
 
@@ -325,9 +326,9 @@ The flow of @dfn{stage2} (and @dfn{stage1.5}) is:
 
 @enumerate
 @item
-Load the rest of itself to the real starting address, the starting
-address plus 512 bytes. The blocklists is stored in the last part of the
-first sector.
+Load the rest of itself to the real starting address, that is, the
+starting address plus 512 bytes. The blocklists are stored in the last
+part of the first sector.
 
 @item
 Long jump to the real starting address.
@@ -988,10 +989,6 @@ of maximum cylinder number in bits 6-7.
 
 @item @code{ES:DI} @tab Drive parameter table (floppies only).
 @end multitable
-
-GRUB does not use this call for floppies, but attempts to read the first
-sector from the last head of the last cylinder to determine the maximum
-head number and the maximum cylinder number.
 
 
 @node LBA mode disk I/O

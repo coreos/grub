@@ -1464,8 +1464,7 @@ static struct builtin builtin_kernel =
   kernel_func,
   BUILTIN_CMDLINE,
   "kernel FILE [ARG ...]",
-  "Attempt to load the primary boot image (Multiboot a.out or ELF,"
-  " Linux zImage or bzImage, FreeBSD a.out, or NetBSD a.out) from"
+  "Attempt to load the primary boot image from"
   " FILE. The rest of the line is passed verbatim as the"
   " \"kernel command line\".  Any modules must be reloaded after"
   " using this command."
@@ -1503,10 +1502,6 @@ keycode_func (char *arg, int flags)
       return 1;
     }
 
-  /* If TO is identical with FROM, do nothing.  */
-  if (to == from)
-    return 0;
-  
   /* Find an empty slot.  */
   for (i = 0; i < KEY_MAP_SIZE; i++)
     {
@@ -1526,7 +1521,12 @@ keycode_func (char *arg, int flags)
       return 1;
     }
 
-  key_map[i] = (to << 8) | from;
+  if (to == from)
+    /* If TO is equal to FROM, delete the entry.  */
+    grub_memmove ((char *) &key_map[i], (char *) &key_map[i + 1],
+		  sizeof (unsigned short) * (KEY_MAP_SIZE - i));
+  else
+    key_map[i] = (to << 8) | from;
 
   /* Ugly but should work.  */
   unset_int15_handler ();
@@ -1562,7 +1562,7 @@ static struct builtin builtin_makeactive =
   makeactive_func,
   BUILTIN_CMDLINE,
   "makeactive",
-  "Set the active partition on the root disk to GRUB's root partition."
+  "Set the active partition on the root disk to GRUB's root device."
   " This command is limited to _primary_ PC partitions on a hard disk."
 };
 
@@ -1592,14 +1592,16 @@ map_func (char *arg, int flags)
     return 1;
   from = current_drive;
 
-  /* If TO and FROM is the same, do nothing.  */
-  if (to == from)
-    return 0;
-  
   /* Search for an empty slot in BIOS_DRIVE_MAP.  */
   for (i = 0; i < DRIVE_MAP_SIZE; i++)
-    if (! bios_drive_map[i])
-      break;
+    {
+      /* Perhaps the user wants to override the map.  */
+      if ((bios_drive_map[i] & 0xff) == from)
+	break;
+      
+      if (! bios_drive_map[i])
+	break;
+    }
 
   if (i == DRIVE_MAP_SIZE)
     {
@@ -1607,7 +1609,13 @@ map_func (char *arg, int flags)
       return 1;
     }
 
-  bios_drive_map[i] = from | (to << 8);
+  if (to == from)
+    /* If TO is equal to FROM, delete the entry.  */
+    grub_memmove ((char *) &bios_drive_map[i], (char *) &bios_drive_map[i + 1],
+		  sizeof (unsigned short) * (DRIVE_MAP_SIZE - i));
+  else
+    bios_drive_map[i] = from | (to << 8);
+  
   return 0;
 }
 
@@ -1618,7 +1626,7 @@ static struct builtin builtin_map =
   BUILTIN_CMDLINE,
   "map TO_DRIVE FROM_DRIVE",
   "Map the drive FROM_DRIVE to the drive TO_DRIVE. This is necessary"
-  " when you chain-load some operating systems, such as DOS, if such a"
+  " when you chain-load some operating systems, such as DOS, if such an"
   " OS resides at a non-first drive."
 };
   
@@ -1838,7 +1846,7 @@ static struct builtin builtin_root =
   root_func,
   BUILTIN_CMDLINE,
   "root DEVICE [HDBIAS]",
-  "Set the current \"root partition\" to the device DEVICE, then"
+  "Set the current \"root device\" to the device DEVICE, then"
   " attempt to mount it to get the partition size (for passing the"
   " partition descriptor in `ES:ESI', used by some chain-loaded"
   " bootloaders), the BSD drive-type (for booting BSD kernels using"
@@ -1872,7 +1880,7 @@ static struct builtin builtin_rootnoverify =
   "rootnoverify DEVICE [HDBIAS]",
   "Similar to `root', but don't attempt to mount the partition. This"
   " is useful for when an OS is outside of the area of the disk that"
-  " GRUB can read, but setting the correct root partition is still"
+  " GRUB can read, but setting the correct root device is still"
   " desired. Note that the items mentioned in `root' which"
   " derived from attempting the mount will NOT work correctly."
 };
@@ -2080,7 +2088,7 @@ static struct builtin builtin_setup =
   " the more flexible command \"install\" in the backend and installs"
   " GRUB into the device INSTALL_DEVICE. If IMAGE_DEVICE is specified,"
   " then find the GRUB images in the device IMAGE_DEVICE, otherwise"
-  " use the current \"root partition\", which can be set by the command"
+  " use the current \"root device\", which can be set by the command"
   " \"root\"."
 };
 

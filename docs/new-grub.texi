@@ -131,7 +131,6 @@ Appendices and Indices
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
 * Index::
-
 @end menu
 
 @iftex

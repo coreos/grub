@@ -1,5 +1,16 @@
 1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/builtins.c (map_func): If BIOS_DRIVE_MAP already
+	contains FROM, override the existsing entry.
+	If TO is equal to FROM, delete the existing entry if any.
+	(keycode_func): Likewise.
+	* docs/user-ref.texi (Command): Use the list of `@deffn's
+	instead of @table.
+	(Basic usage): Use @option instead of @code.
+	(Invoking mbchk): Likewise.
+	
+1999-10-23  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* stage2/asm.S [!STAGE1_5] (set_int15_handler): New function.
 	[!STAGE1_5] (unset_int15_handler): Likewise.
 	[!STAGE1_5] (int15_handler): New interrupt handler for the real
