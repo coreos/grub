@@ -1,3 +1,9 @@
+grub (0.5.95) unstable; urgency=low
+
+  * ReiserFS support from Jochen Hoenicke.
+
+ --
+
 grub (0.5.94) unstable; urgency=low
 
   * Fix /usr/doc symlink. (closes:bug#50932)
