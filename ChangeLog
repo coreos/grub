@@ -1,3 +1,8 @@
+2002-01-02  Jeremy Katz  <katzj@redhat.com>
+	
+	* stage2/md5.c (md5_password): Ensure the password exists before
+	trying to check against the md5 crypted version.
+
 2001-12-30  Yoshinori K. Okuji  <okuji@gnu.org>
 
 	* stage1/stage1.S: Don't call INT 13, AH=48H, because it is
