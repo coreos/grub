@@ -28,7 +28,7 @@
 struct pci_device;			/* for the probe prototype */
 
 #undef	INCLUDE_PCI
-#if	defined(INCLUDE_NEPCI) || defined(INCLUDE_EEPRO100) || defined(INCLUDE_LANCEPCI) || defined(INCLUDE_EPIC100) || defined(INCLUDE_TULIP) || defined(INCLUDE_NTULIP) || defined(INCLUDE_3C90X) || defined(INCLUDE_RTL8139) || defined(INCLUDE_VIA_RHINE)
+#if	defined(INCLUDE_NEPCI) || defined(INCLUDE_EEPRO100) || defined(INCLUDE_LANCEPCI) || defined(INCLUDE_EPIC100) || defined(INCLUDE_TULIP) || defined(INCLUDE_NTULIP) || defined(INCLUDE_3C90X) || defined(INCLUDE_RTL8139) || defined(INCLUDE_VIA_RHINE) || defined(INCLUDE_3C59X)
 	/* || others later */
 #if	defined(ETHERBOOT32)		/* only for 32 bit machines */
 #define	INCLUDE_PCI
@@ -425,7 +425,15 @@ int eth_probe(void)
 {
 	struct pci_device	*p;
 	struct dispatch_table	*t;
+	static int probed = 0;
 
+	/* If already probed, don't try to probe it any longer.  */
+	if (probed)
+	  return 1;
+
+	/* Clear the ready flag.  */
+	network_ready = 0;
+	
 	p = 0;
 #ifdef	INCLUDE_PCI
 	/* In GRUB, the ROM info is initialized here.  */
@@ -448,7 +456,10 @@ int eth_probe(void)
 	{
 		printf("[%s]", t->nic_name);
 		if ((*t->eth_probe)(&nic, t->probe_ioaddrs, p))
-			return (1);
+		  {
+		    probed = 1;
+		    return (1);
+		  }
 	}
 	return (0);
 }

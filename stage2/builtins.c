@@ -1957,7 +1957,7 @@ static struct builtin builtin_read =
 static void
 print_root_device (void)
 {
-  if (saved_drive == 0x20)
+  if (saved_drive == NETWORK_DRIVE)
     {
       /* Network drive.  */
       grub_printf (" (nd):");

@@ -63,7 +63,7 @@ buf_fill (int abort)
 	  if (! block && retry++ < MAX_TFTP_RETRIES)
 	    {
 	      /* Maybe initial request was lost.  */
-	      rfc951_sleep(retry);
+	      rfc951_sleep (retry);
 	      if (! udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr,
 				  ++isocket, TFTP, len, (char *) &tp))
 		return 0;

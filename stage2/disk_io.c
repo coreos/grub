@@ -247,7 +247,7 @@ static int
 sane_partition (void)
 {
   /* network drive */
-  if (current_drive == 0x20)
+  if (current_drive == NETWORK_DRIVE)
     return 1;
   
   if (!(current_partition & 0xFF000000uL)
@@ -464,7 +464,7 @@ real_open_partition (int flags)
 
 #ifndef STAGE1_5
   /* network drive */
-  if (current_drive == 0x20)
+  if (current_drive == NETWORK_DRIVE)
     return 1;
   
   if (! sane_partition ())
@@ -739,7 +739,7 @@ set_device (char *device)
 	    errnum = ERR_NUMBER_PARSING;
 
 	  if (ch == 'n')
-	    current_drive = 0x20;
+	    current_drive = NETWORK_DRIVE;
 	  else
 	    {
 	      safe_parse_maxint (&device, (int *) &current_drive);

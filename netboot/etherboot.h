@@ -9,10 +9,10 @@ Author: Martin Renters
 /* Include GRUB-specific macros and prototypes here.  */
 #include <shared.h>
 
-/* FIXME: For now, disable the DHCP support. Perhaps I should segregate
+/* FIXME: For now, enable the DHCP support. Perhaps I should segregate
    the DHCP support from the BOOTP support, and permit both to
    co-exist.  */
-#define NO_DHCP_SUPPORT	1
+#undef NO_DHCP_SUPPORT
 
 #include "osdep.h"
 

@@ -35,8 +35,12 @@ Author: Martin Renters
 #include <netboot_config.h>
 
 struct arptable_t arptable[MAX_ARP];
+
+/* Set if the user pushes the ESC key.  */
 int ip_abort = 0;
+/* Set if an ethernet card is probed and IP addresses are set.  */
 int network_ready = 0;
+
 struct rom_info rom;
 
 static int vendorext_isvalid;
@@ -398,6 +402,13 @@ rarp (void)
   /* arp and rarp requests share the same packet structure.  */
   struct arprequest rarpreq;
 
+  /* Make sure that an ethernet is probed.  */
+  if (! eth_probe ())
+    return 0;
+
+  /* Clear the ready flag.  */
+  network_ready = 0;
+  
   memset (&rarpreq, 0, sizeof (rarpreq));
 
   rarpreq.hwtype = htons (1);
@@ -420,11 +431,14 @@ rarp (void)
 	break;
 
       if (ip_abort)
-	return 1;
+	return 0;
     }
 
   if (retry < MAX_ARP_RETRIES)
-    return 1;
+    {
+      network_ready = 1;
+      return 1;
+    }
 
   return 0;
 }
@@ -446,6 +460,14 @@ bootp (void)
 
   flag = 1;
 #endif
+
+  /* Make sure that an ethernet is probed.  */
+  if (! eth_probe ())
+    return 0;
+
+  /* Clear the ready flag.  */
+  network_ready = 0;
+  
   grub_memset (&bp, 0, sizeof (struct bootp_t));
   bp.bp_op = BOOTP_REQUEST;
   bp.bp_htype = 1;
@@ -487,27 +509,19 @@ bootp (void)
       if (flag)
 	{
 	  flag--;
+	  continue;
 	}
-      else
-	{
-	  if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
-	    return 1;
-
-	  if (ip_abort)
-	    return 0;
-	  
-	  rfc951_sleep (++retry);
-	}
-#else /* ! T509HACK */
+#endif /* T509HACK */
       
-# ifdef	NO_DHCP_SUPPORT
-      if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
-# else
+#ifdef NO_DHCP_SUPPORT
       if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
 	{
-	  if (ip_abort)
-	    return 0;
-	  
+	  network_ready = 1;
+	  return 1;
+	}
+#else /* ! NO_DHCP_SUPPORT */
+      if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
+	{
 	  if (dhcp_reply == DHCPOFFER)
 	    {
 	      dhcp_reply = 0;
@@ -526,27 +540,36 @@ bootp (void)
 		  dhcp_reply = 0;
 		  if (await_reply (AWAIT_BOOTP, 0, NULL, 0))
 		    if (dhcp_reply == DHCPACK)
-		      return 1;
+		      {
+			network_ready = 1;
+			return 1;
+		      }
 
 		  if (ip_abort)
 		    return 0;
 		  
 		  rfc951_sleep (++retry1);
 		}
+
+	      /* Timeout.  */
+	      return 0;
 	    }
 	  else
-# endif /* ! NO_DHCP_SUPPORT */
-	    return 1;
-# ifndef NO_DHCP_SUPPORT
+	    {
+	      network_ready = 1;
+	      return 1;
+	    }
 	}
-      rfc951_sleep (++retry);
-
-# endif /* ! NO_DHCP_SUPPORT */
-#endif /* ! T509HACK */
+#endif /* ! NO_DHCP_SUPPORT */
       
+      if (ip_abort)
+	return 0;
+	  
+      rfc951_sleep (++retry);
       bp.bp_secs = htons ((currticks () - starttime) / 20);
     }
-  
+
+  /* Timeout.  */
   return 0;
 }
 
@@ -892,7 +915,9 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	}
       
       extdata = extend = end;
-      
+
+      /* Perhaps we can eliminate this because we doesn't require so
+	 much information, but I leave this alone.  */
       if (block == 0 && extpath != NULL)
 	{
 	  char fname[64];

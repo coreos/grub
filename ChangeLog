@@ -1,3 +1,35 @@
+2000-02-09  OKUJI Yoshinori  <okuji@gnu.org>
+
+	From Jochen Hoenicke:
+	* stage2/fsys_fat.c (fat_create_blocklist): The previous change
+	is reversed. Set FIRST_FAT_ENTRY to a unsigned long value in
+	FAT_BUF + (NEW_MAPBLOCK - MAPBLOCK) instead of a unsigned short
+	value. Mask FIRST_FAT_ENTRY with 0xFFF if FAT_SIZE is equal to
+	3, whether the bit 0 of LAST_FAT_ENTRY is set or not.
+
+	* netboot/config.c (eth_probe): If PROBED is set to non-zero,
+	return 1 without probing ethernet cards. Clear NETWORK_READY. If
+	*T->ETH_PROBE return sucessfully, set PROBED to 1.
+	* netboot/main.c (rarp): Call eth_probe and return zero if
+	fails. Clear NETWORK_READY at first, and set NETWORK_READY to 1
+	if RETRY is less than MAX_ARP_RETRIES. If IP_ABORT is non-zero,
+	return zero instead of one.
+	(bootp): Call eth_probe and return zero if fails. Clear
+	NETWORK_READY at first, and set NETWORK_READY to 1 if
+	await_reply returns successfully.
+	(bootp) [T509HACK]: If FLAG is non-zero, skip calling
+	await_reply. Don't call await_reply here any more.
+	(bootp) [!NO_DHCP_SUPPORT]: If any ack packet is not reached
+	within MAX_BOOTP_RETRIES times, return zero. If DHCP_REPLY isn't
+	DHCPOFFER, set NETWORK_READY to one and return one.
+	* netboot/etherboot.h (NO_DHCP_SUPPORT): Undefined.
+
+	* stage2/builtins.c (print_root_device): Use the macro
+	NETWORK_DRIVE instead of 0x20.
+	* stage2/disk_io.c [!STAGE1_5] (sane_partition): Likewise.
+	(real_open_partition) [!STAGE1_5]: Likewise.
+	(set_device) [!STAGE1_5]: Likewise.
+	
 2000-02-08  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* grub/asmstub.c (biosdisk) [__linux__]: Use _llseek when
@@ -163,7 +195,7 @@
 2000-02-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/asm.S: Undo the previous changes. Is
-	binutils-2.9.5.0.25 too strict to break the compatibility?
+	binutils-2.9.5.0.25 too strict to retain the compatibility?
 	Reported by Kalle Olavi Niemitalo <tosi@ees2.oulu.fi>.
 	
 2000-02-03  OKUJI Yoshinori  <okuji@gnu.org>
