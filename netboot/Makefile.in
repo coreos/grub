@@ -1,0 +1,536 @@
+# Makefile.in generated automatically by automake 1.4a from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_STRIP_FLAG =
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+AMTAR = @AMTAR@
+AMTARFLAGS = @AMTARFLAGS@
+AWK = @AWK@
+CC = @CC@
+FSYS_CFLAGS = @FSYS_CFLAGS@
+GRUB_CFLAGS = @GRUB_CFLAGS@
+GRUB_LIBS = @GRUB_LIBS@
+LD = @LD@
+MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
+NET_CFLAGS = @NET_CFLAGS@
+NET_EXTRAFLAGS = @NET_EXTRAFLAGS@
+OBJCOPY = @OBJCOPY@
+PACKAGE = @PACKAGE@
+PERL = @PERL@
+RANLIB = @RANLIB@
+STAGE1_CFLAGS = @STAGE1_CFLAGS@
+STAGE2_CFLAGS = @STAGE2_CFLAGS@
+VERSION = @VERSION@
+host_cpu = @host_cpu@
+host_vendor = @host_vendor@
+install_sh = @install_sh@
+
+# For <stage1.h>.
+
+
+INCLUDES = -I$(top_srcdir)/stage1
+@NETBOOT_SUPPORT_TRUE@LIBDRIVERS = @NETBOOT_SUPPORT_TRUE@libdrivers.a
+@NETBOOT_SUPPORT_FALSE@LIBDRIVERS = 
+
+noinst_LIBRARIES = $(LIBDRIVERS)
+
+DRIVERS = 3c509.c 3c509.h 3c59x.c cs89x0.c cs89x0.h eepro100.c \
+	lance.c ns8390.c ns8390.h
+
+
+libdrivers_a_SOURCES = byteorder.h config.c config.h fsys_tftp.c \
+	if.h io.h ip.c ip.h netboot.h netdevice.h nic.h pci.c pci.h \
+	$(DRIVERS)
+
+libdrivers_a_CFLAGS = $(STAGE2_CFLAGS) -fno-builtin -nostdinc \
+	-DFSYS_TFTP $(NET_CFLAGS) $(NET_EXTRAFLAGS)
+
+subdir = netboot
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LIBRARIES =  $(noinst_LIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+libdrivers_a_AR = $(AR) cru
+libdrivers_a_LIBADD = 
+am_libdrivers_a_OBJECTS =  libdrivers_a-config.o \
+libdrivers_a-fsys_tftp.o libdrivers_a-ip.o libdrivers_a-pci.o \
+libdrivers_a-3c509.o libdrivers_a-3c59x.o libdrivers_a-cs89x0.o \
+libdrivers_a-eepro100.o libdrivers_a-lance.o libdrivers_a-ns8390.o
+libdrivers_a_OBJECTS =  $(am_libdrivers_a_OBJECTS)
+AR = ar
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CFLAGS = @CFLAGS@
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+DIST_SOURCES =  $(libdrivers_a_SOURCES)
+DIST_COMMON =  Makefile.am Makefile.in compile
+
+
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+
+GZIP_ENV = --best
+DEP_FILES =  .deps/3c509.P .deps/3c59x.P .deps/config.P .deps/cs89x0.P \
+.deps/eepro100.P .deps/fsys_tftp.P .deps/ip.P .deps/lance.P \
+.deps/ns8390.P .deps/pci.P
+SOURCES = $(libdrivers_a_SOURCES)
+OBJECTS = $(am_libdrivers_a_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .c .h .o
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu netboot/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-noinstLIBRARIES:
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+
+distclean-noinstLIBRARIES:
+
+maintainer-clean-noinstLIBRARIES:
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+libdrivers_a-config.o: config.c
+libdrivers_a-fsys_tftp.o: fsys_tftp.c
+libdrivers_a-ip.o: ip.c
+libdrivers_a-pci.o: pci.c
+libdrivers_a-3c509.o: 3c509.c
+libdrivers_a-3c59x.o: 3c59x.c
+libdrivers_a-cs89x0.o: cs89x0.c
+libdrivers_a-eepro100.o: eepro100.c
+libdrivers_a-lance.o: lance.c
+libdrivers_a-ns8390.o: ns8390.c
+
+libdrivers.a: $(libdrivers_a_OBJECTS) $(libdrivers_a_DEPENDENCIES)
+	-rm -f libdrivers.a
+	$(libdrivers_a_AR) libdrivers.a $(libdrivers_a_OBJECTS) $(libdrivers_a_LIBADD)
+	$(RANLIB) libdrivers.a
+.c.o:
+	$(COMPILE) -c $<
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu netboot/Makefile
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c -o $@ $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c -o $@ $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-config.o: config.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-config.lo: config.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-fsys_tftp.o: fsys_tftp.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-fsys_tftp.lo: fsys_tftp.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ip.o: ip.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ip.lo: ip.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-pci.o: pci.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-pci.lo: pci.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-3c509.o: 3c509.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-3c509.lo: 3c509.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-3c59x.o: 3c59x.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-3c59x.lo: 3c59x.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-cs89x0.o: cs89x0.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-cs89x0.lo: cs89x0.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-eepro100.o: eepro100.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-eepro100.lo: eepro100.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-lance.o: lance.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-lance.lo: lance.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ns8390.o: ns8390.c
+	@echo '$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm .deps/$(*D)/$(*F).pp
+
+libdrivers_a-ns8390.lo: ns8390.c
+	@echo '$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -c -o $@ $<'; \
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdrivers_a_CFLAGS) $(CFLAGS) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*D)/$(*F).P; \
+	rm -f .deps/$(*D)/$(*F).pp
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am:
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am:
+uninstall: uninstall-am
+all-am: Makefile $(LIBRARIES)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+installdirs:
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-noinstLIBRARIES distclean-compile \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all install-strip \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

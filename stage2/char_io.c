@@ -127,6 +127,53 @@ grub_printf (const char *format,...)
 
 
 #ifndef STAGE1_5
+int
+grub_sprintf (char *buffer, const char *format, ...)
+{
+  /* XXX hohmuth
+     ugly hack -- should unify with printf() */
+  int *dataptr = (int *) &format;
+  char c, *ptr, str[16];
+  char *bp = buffer;
+  
+  dataptr++;
+  
+  while ((c = *format++) != 0)
+    {
+      if (c != '%')
+	*bp++ = c; /* putchar(c); */
+      else
+	switch (c = *(format++))
+	  {
+	  case 'd': case 'u': case 'x':
+	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++)) = 0;
+	    
+	    ptr = str;
+	    
+	    while (*ptr)
+	      *bp++ = *(ptr++); /* putchar(*(ptr++)); */
+	    break;
+	    
+	  case 'c': *bp++ = (*(dataptr++))&0xff;
+	    /* putchar((*(dataptr++))&0xff); */ 
+	    break;
+	    
+	  case 's':
+	    ptr = (char *) (*(dataptr++));
+	    
+	    while ((c = *ptr++) != 0)
+	      *bp++ = c; /* putchar(c); */
+	    break;
+	  }
+    }
+  
+  *bp = 0;
+  return bp - buffer;
+}
+#endif /* ! STAGE1_5 */
+
+
+#ifndef STAGE1_5
 
 void
 init_page (void)
@@ -520,6 +567,24 @@ grub_isspace (int c)
   return 0;
 }
 
+#ifndef STAGE1_5
+int
+grub_memcmp (const char *s1, const char *s2, int n)
+{
+  while (n)
+    {
+      if (*s1 < *s2)
+	return -1;
+      else if (*s1 > *s2)
+	return 1;
+      s1++;
+      s2++;
+      n--;
+    }
+  
+  return 0;
+}
+#endif /* ! STAGE1_5 */
 
 #if 0
 int

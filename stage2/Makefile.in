@@ -67,6 +67,8 @@ GRUB_LIBS = @GRUB_LIBS@
 LD = @LD@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+NET_CFLAGS = @NET_CFLAGS@
+NET_EXTRAFLAGS = @NET_EXTRAFLAGS@
 OBJCOPY = @OBJCOPY@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
@@ -131,6 +133,8 @@ stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 
 stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 stage2_exec_LDFLAGS = $(STAGE2_LINK)
+
+@NETBOOT_SUPPORT_TRUE@stage2_exec_LDADD = @NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
 
 # For e2fs_stage1_5 target.
 e2fs_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
@@ -223,8 +227,8 @@ stage2_exec-gunzip.o stage2_exec-fsys_ext2fs.o stage2_exec-fsys_fat.o \
 stage2_exec-fsys_ffs.o stage2_exec-fsys_minix.o stage2_exec-smp-imps.o \
 stage2_exec-stage2.o
 stage2_exec_OBJECTS =  $(am_stage2_exec_OBJECTS)
-stage2_exec_LDADD = $(LDADD)
-stage2_exec_DEPENDENCIES = 
+@NETBOOT_SUPPORT_TRUE@stage2_exec_DEPENDENCIES =  \
+@NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
 SCRIPTS =  $(noinst_SCRIPTS)
 
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)

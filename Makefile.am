@@ -1,4 +1,4 @@
-SUBDIRS = stage1 stage2 grub docs debian
+SUBDIRS = stage1 netboot stage2 grub docs debian
 EXTRA_DIST = BUGS
 
 # We get $(PACKAGE) and $(VERSION) from debian/changelog.

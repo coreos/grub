@@ -52,7 +52,7 @@ check minix_stage1_5 31744
 
 # This limitation is arbitrary; If you want to make this larger, just
 # modify Stage 1.
-check stage2 56320
+check stage2 66560
 
 # Success.
 exit 0

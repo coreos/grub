@@ -60,9 +60,19 @@ int minix_dir (char *dirname);
 #define FSYS_MINIX_NUM 0
 #endif
 
+#ifdef FSYS_TFTP
+#define FSYS_TFTP_NUM 1
+int tftp_mount (void);
+int tftp_read (char *buf, int len);
+int tftp_dir (char *dirname);
+#else
+#define FSYS_TFTP_NUM 0
+#endif
+
 #ifndef NUM_FSYS
 #define NUM_FSYS	\
-  (FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM + FSYS_MINIX_NUM)
+  (FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM + FSYS_MINIX_NUM	\
+   + FSYS_TFTP_NUM)
 #endif
 
 /* defines for the block filesystem info area */

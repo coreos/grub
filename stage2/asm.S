@@ -1328,6 +1328,37 @@ gottime:
 	pop	%ebp
 	ret
 
+	
+#ifndef STAGE1_5
+/*
+ * currticks()
+ *	return the real time in ticks, of which there are about
+ *	18-20 per second
+ */
+ENTRY(currticks)
+	pushl	%ebp
+	pushl	%ecx
+	pushl	%edx
+
+	call	EXT_C(prot_to_real)	/* enter real mode */
+	.code16
+
+        xorl	%eax, %eax
+        int	$0x1a
+
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+        shll	$16, %ecx
+        movl	%edx, %eax
+        orl	%ecx, %eax
+
+	popl	%edx
+	popl	%ecx
+	popl	%ebp
+	ret
+#endif /* ! STAGE1_5 */
+
 
 /*
  * getkey()

@@ -43,6 +43,10 @@ stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c common.c \
 stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 stage2_exec_LDFLAGS = $(STAGE2_LINK)
 
+if NETBOOT_SUPPORT
+stage2_exec_LDADD = ../netboot/libdrivers.a
+endif
+
 # For e2fs_stage1_5 target.
 e2fs_stage1_5_exec_SOURCES = asm.S common.c char_io.c disk_io.c \
 	stage1_5.c fsys_ext2fs.c bios.c

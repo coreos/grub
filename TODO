@@ -7,8 +7,6 @@ type''.  We need this for clean Hurd install floppies.
 Add a real scripting language, possibly retaining backward
 compatibility so that old config files can be used.
 
-Look at the network booting patches from L4.
-
 Add internationalization support, emulating gettext as much as is
 feasible.
 
@@ -25,7 +23,12 @@ larger than 16MB can be read.
 
 ???  Add command for modifying partition types.
 
+Add OpenBSD support. The recent versions cannot be loaded.
+
 Fix-up FreeBSD, NetBSD (and OpenBSD ?) command-line boot parameters
+
+Add a new installation command, such as `setup', which should be easier
+to use and more automatic than the command `install'.
 
 Add keyboard layout configuration support.
 

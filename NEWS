@@ -22,6 +22,7 @@ New in 0.5.93:
 * The option `--no-floppy' force the grub shell to assume that there is
   no floppy, and the option `--probe-second-floppy' enables the probe of
   the second floppy drive.
+* Integrated the netboot support in the Dresden version of GRUB.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

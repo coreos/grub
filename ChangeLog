@@ -1,3 +1,109 @@
+1999-09-14  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* configure.in (--enable-ne): Made the description more clear.
+	(--enable-nepci): Likewise.
+	(--enable-wd): Likewise.
+	(--enable-t503): Likewise.
+	(--enable-t509): Likewise.
+	(--enable-3c59x): Likewise.
+	(--enable-lance): Likewise.
+	(--enable-cs): Likewise.
+	(--enable-eepro100): Likewise.
+	(--enable-wd-default_mem): Renamed to ...
+	(--enable-wd-default-mem): ... this.
+	(--enable-cs-scan): Corrected the description.
+	(NETBOOT_SUPPORT): Defined if NET_CFLAGS is not empty.
+	* stage2/Makefile.am (stage2_exec_LDADD): Defined only if
+	NETBOOT_SUPPORT is true.
+	* netboot/Makefile.am (LIBDRIVERS): New variable. If
+	NETBOOT_SUPPORT is true, set to libdriver.a, otherwise set to an
+	empty string.
+	(noinst_LIBRARIES): Set to LIBDRIVERS.
+	(DRIVERS): Added 3c509.h, cs89x0.h and ns8390.h.
+	(libdrivers_a_SOURCES): Added byteorder.h, config.h, if.h, io.h,
+	ip.h, netboot.h, netdevice.h, nic.h and pic.h.
+	(libdrivers_a_CFLAGS): Added -fno-builtin and -nostdinc and
+	removed -O2.
+	* stage2/char_io.c (grub_sprintf): Added parenthesises to avoid
+	gcc warnings.
+	* stage2/gunzip.c (gunzip_test_header): Check if FSYS_TYPE is
+	TFTP. If so, set IS_TFTP to non-zero, otherwise to zero. And,
+	use IS_TFTP to check if we have GZIP_CRC instead of the equation
+	"FILEMAX == 16 * 1024 * 1024".
+	
+1999-09-13  Edmund GRIMLEY EVANS  <edmundo@rano.demon.co.uk>
+	
+	The netboot support in the Dresden version of GRUB is integrated.
+	
+	* Makefile.am (SUBDIRS): Added netboot.
+	* configure.in (--enable-tftp): New option.
+	(--enable-ne): Likewise.
+	(--enable-nepci): Likewise.
+	(--enable-wd): Likewise.
+	(--enable-t503): Likewise.
+	(--enable-t509): Likewise.
+	(--enable-3c59x): Likewise.
+	(--enable-lance): Likewise.
+	(--enable-cs): Likewise.
+	(--enable-eepro100): Likewise.
+	(--enable-ne-scan): Likewise.
+	(--enable-wd-default_mem): Likewise.
+	(--enable-cs-scan): Likewise.
+	(NET_CFLAGS): New variable.
+	(NET_EXTRAFLAGS): Likewise.
+	Do AC_OUTPUT for netboot/Makefile as well.
+	* stage1/stage1.S: Set the number of sectors for Stage 2 to 130.
+	* stage1/stage1_lba.S: Likewise.
+	* stage2/Makefile.am (stage2_exec_LDADD): Added 
+	../netboot/libdrivers.a.
+	* stage2/asm.S [!STAGE1_5] (currticks): New function.
+	* stage2/char_io.c [!STAGE1_5] (grub_sprintf): Likewise.
+	[!STAGE1_5] (grub_memcmp): Likewise.
+	* stage2/disk_io.c (fsys_table) [FSYS_TFTP]: Added an entry for
+	tftp.
+	(sane_partition) [!STAGE1_5]: If CURRENT_DRIVE is a network
+	drive, return 1.
+	(real_open_partition) [!STAGE1_5]: Likewise.
+	(set_device): If DEVICE contains a network drive, set
+	CURRENT_DRIVE to 0x20.
+	* stage2/filesys.h [FSYS_TFTP] (FSYS_TFTP_NUM): Defined as 1.
+	[!FSYS_TFTP] (FSYS_TFTP_NUM): Defined as 0.
+	(NUM_FSYS): Added FSYS_TFTP_NUM.
+	* stage2/gunzip.c (gunzip_test_header): If FILEMAX >= 16MB, do
+	not try to examine the last 8 bytes of the file. This is
+	required for compressed files by TFTP.
+	* stage2/shared.h (sprintf): New macro.
+	(memcmp): Likewise.
+	(currticks): Declared.
+	(grub_sprintf): Likewise.
+	(grub_memcmp): Likewise.
+	* stage2/size_test: Set the maximum size of Stage 2 to 66560.
+	* netboot/3c509.c: New file.
+	* netboot/3c509.h: Likewise.
+	* netboot/3c59x.c: Likewise.
+	* netboot/Makefile.am: Likewise.
+	* netboot/Makefile.in: Likewise.
+	* netboot/byteorder.h: Likewise.
+	* netboot/compile: Likewise.
+	* netboot/config.c: Likewise.
+	* netboot/config.h: Likewise.
+	* netboot/cs89x0.c: Likewise.
+	* netboot/cs89x0.h: Likewise.
+	* netboot/eepro100.c: Likewise.
+	* netboot/fsys_tftp.c: Likewise.
+	* netboot/if.h: Likewise.
+	* netboot/io.h: Likewise.
+	* netboot/ip.c: Likewise.
+	* netboot/ip.h: Likewise.
+	* netboot/lance.c: Likewise.
+	* netboot/netboot.h: Likewise.
+	* netboot/netdevice.h: Likewise.
+	* netboot/nic.h: Likewise.
+	* netboot/ns8390.c: Likewise.
+	* netboot/ns8390.h: Likewise.
+	* netboot/pci.c: Likewise.
+	* netboot/pci.h: Likewise.
+
 1999-09-13  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* configure.in (--enable-maintainer-mode): Do not use our own

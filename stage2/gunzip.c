@@ -269,7 +269,11 @@ int
 gunzip_test_header (void)
 {
   unsigned char buf[10];
+  int is_tftp = 0;
 
+  if (grub_strcmp (fsys_table[fsys_type].name, "tftp") == 0)
+    is_tftp = 1;
+  
   /* "compressed_file" is already reset to zero by this point */
 
   /*
@@ -277,12 +281,13 @@ gunzip_test_header (void)
    *  (other than a real error with the disk) then we don't think it
    *  is a compressed file, and simply mark it as such.
    */
-  if (no_decompression || grub_read (buf, 10) != 10
+  if (no_decompression
+      || grub_read (buf, 10) != 10
       || ((*((unsigned short *) buf) != GZIP_HDR_LE)
-	  & (*((unsigned short *) buf) != OLD_GZIP_HDR_LE)))
+	  && (*((unsigned short *) buf) != OLD_GZIP_HDR_LE)))
     {
       filepos = 0;
-      return (!errnum);
+      return ! errnum;
     }
 
   /*
@@ -290,23 +295,44 @@ gunzip_test_header (void)
    *  problem occurs from here on, then we have corrupt or otherwise
    *  bad data, and the error should be reported to the user.
    */
-  if (buf[2] != DEFLATED || (buf[3] & UNSUPP_FLAGS)
+  if (buf[2] != DEFLATED
+      || (buf[3] & UNSUPP_FLAGS)
       || ((buf[3] & EXTRA_FIELD)
-	  && (grub_read (buf, 2) != 2 ||
-	      bad_field (*((unsigned short *) buf))))
+	  && (grub_read (buf, 2) != 2
+	      || bad_field (*((unsigned short *) buf))))
       || ((buf[3] & ORIG_NAME) && bad_field (-1))
-      || ((buf[3] & COMMENT) && bad_field (-1))
-      || ((gzip_data_offset = filepos), (filepos = filemax - 8),
-	  (grub_read (buf, 8) != 8)))
+      || ((buf[3] & COMMENT) && bad_field (-1)))
     {
-      if (!errnum)
+      if (! errnum)
 	errnum = ERR_BAD_GZIP_HEADER;
-
+      
       return 0;
     }
 
-  gzip_crc = *((unsigned long *) buf);
-  gzip_fsmax = gzip_filemax = *((unsigned long *) (buf + 4));
+  gzip_data_offset = filepos;
+  
+  if (! is_tftp)
+    filepos = filemax - 8;
+  
+  if (grub_read (buf, 8) != 8)
+    {
+      if (! errnum)
+	errnum = ERR_BAD_GZIP_HEADER;
+      
+      return 0;
+    }
+
+  if (! is_tftp)
+    {
+      gzip_crc = *((unsigned long *) buf);
+      gzip_fsmax = gzip_filemax = *((unsigned long *) (buf + 4));
+    }
+  else
+    {
+      /* We don't have gzip_crc.  */
+      gzip_fsmax = gzip_filemax = 16 * 1024 * 1024;
+      filepos = filemax;
+    }
 
   initialize_tables ();
 

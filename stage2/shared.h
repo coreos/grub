@@ -263,10 +263,12 @@ extern char *grub_scratch_mem;
 #define memset grub_memset
 #define isspace grub_isspace
 #define printf grub_printf
+#define sprintf grub_sprintf
 #undef putchar
 #define putchar grub_putchar
 #define strncat grub_strncat
 #define strstr grub_strstr
+#define memcmp grub_memcmp
 #define strcmp grub_strcmp
 #define tolower grub_tolower
 #define strlen grub_strlen
@@ -494,6 +496,7 @@ int get_code_end (void);
 
 /* low-level timing info */
 int getrtsecs (void);
+int currticks (void);
 
 /* Clear the screen. */
 void cls (void);
@@ -585,12 +588,14 @@ int run_script (char *script, char *heap);
 
 /* C library replacement functions with identical semantics. */
 void grub_printf (const char *format,...);
+int grub_sprintf (char *buffer, const char *format, ...);
 int grub_tolower (int c);
 int grub_isspace (int c);
 int grub_strncat (char *s1, const char *s2, int n);
 char *grub_memmove (char *to, const char *from, int len);
 void *grub_memset (void *start, int c, int len);
 char *grub_strstr (const char *s1, const char *s2);
+int grub_memcmp (const char *s1, const char *s2, int n);
 int grub_strcmp (const char *s1, const char *s2);
 int grub_strlen (const char *str);
 

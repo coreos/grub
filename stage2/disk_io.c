@@ -35,6 +35,10 @@ int print_possibilities;
 int fsmax;
 struct fsys_entry fsys_table[NUM_FSYS + 1] =
 {
+  /* TFTP should come first because others don't handle net device.  */
+# ifdef FSYS_TFTP
+  {"tftp", tftp_mount, tftp_read, tftp_dir},
+# endif
 # ifdef FSYS_FAT
   {"fat", fat_mount, 0, fat_dir},
 # endif
@@ -236,6 +240,12 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
 static int
 sane_partition (void)
 {
+#ifndef STAGE1_5
+  /* network drive */
+  if (current_drive == 0x20)
+    return 1;
+#endif
+  
   if (!(current_partition & 0xFF000000uL)
       && (current_drive & 0xFFFFFF7F) < 8
       && (current_partition & 0xFF) == 0xFF
@@ -440,6 +450,10 @@ real_open_partition (int flags)
   int i, part_no, slice_no, ext = 0;
 
 #ifndef STAGE1_5
+  /* network drive */
+  if (current_drive == 0x20)
+    return 1;
+  
   if (! sane_partition ())
     return 0;
 #endif
@@ -674,15 +688,20 @@ set_device (char *device)
 	    }
 #endif
 
-	  if ((*device == 'f' || *device == 'h')
+	  if ((*device == 'f' || *device == 'h' || *device == 'n')
 	      && (device += 2, (*(device - 1) != 'd')))
 	    errnum = ERR_NUMBER_PARSING;
 
-	  safe_parse_maxint (&device, (int *) &current_drive);
-
-	  disk_choice = 0;
-	  if (ch == 'h')
-	    current_drive += 0x80;
+	  if (ch == 'n')
+	    current_drive = 0x20;
+	  else
+	    {
+	      safe_parse_maxint (&device, (int *) &current_drive);
+	      
+	      disk_choice = 0;
+	      if (ch == 'h')
+		current_drive += 0x80;
+	    }
 	}
 
       if (errnum)
