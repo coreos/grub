@@ -1,3 +1,10 @@
+2000-07-27  Gordon Matzigkeit  <gord@fig.org>
+
+	* util/grub-image.in: Initial cut at a script for creating GRUB
+	boot images.
+	* util/Makefile.am (noinst_SCRIPTS): Added grub-image.
+	* configure.in (AC_OUTPUT): Added util/grub-image.
+
 2000-07-27  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/asm.S (check_int13_extensions): Fixed the effect of
