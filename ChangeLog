@@ -1,5 +1,12 @@
 2001-02-28  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Thierry Laronde <thierry@cri74.org>:
+	* stage2/stage2.c (cmain): If the default entry is wrong, set it
+	to FALLBACK_ENTRY if FALLBACK_ENTRY is valid, otherwise set it
+	to zero. Suggested by Nicolas Boos <nicolas.boos@wanadoo.fr>.
+	
+2001-02-28  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* acconfig.h (AUTO_LINUX_MEM_OPT): New entry.
 	* configure.in (--disable-auto-linux-mem-opt): New option.
 	* stage2/builtins.c (kernel_func) [!AUTO_LINUX_MEM_OPT]: Add

@@ -966,9 +966,15 @@ cmain (void)
 	  menu_entries = config_entries + config_len;
 
 	  /* Check if the default entry is present. Otherwise reset
-	     DEFAULT_ENTRY.  */
+	     it to fallback if fallback is valid, or to DEFAULT_ENTRY 
+	     if not.  */
 	  if (default_entry >= num_entries)
-	    default_entry = 0;
+	    {
+	      if (fallback_entry < 0 || fallback_entry >= num_entries)
+		default_entry = 0;
+	      else
+		default_entry = fallback_entry;
+	    }
 
 	  if (is_preset)
 	    close_preset_menu ();
