@@ -38,7 +38,7 @@ enum grub_arg_type
 typedef enum grub_arg_type grub_arg_type_t;
 
 /* Flags for the option field op grub_arg_option.  */
-#define GRUB_ARG_OPTION_OPTIONAL	1 << 1
+#define GRUB_ARG_OPTION_OPTIONAL	(1 << 1)
 
 enum grub_key_type
   {

@@ -28,6 +28,7 @@
 #define	EXT2_MAX_SYMLINKCNT	8
 
 /* Filetype used in directory entry.  */
+#define	FILETYPE_UNKNOWN	0
 #define	FILETYPE_DIRECTORY	2
 #define	FILETYPE_SYMLINK	7
 
@@ -688,7 +689,16 @@ grub_ext2_dir (grub_device_t device, const char *path,
 	  
 	  filename[dirent.namelen] = '\0';
 	  
-	  hook (filename, dirent.filetype == FILETYPE_DIRECTORY);
+	  if (dirent.filetype != FILETYPE_UNKNOWN)
+	    hook (filename, dirent.filetype == FILETYPE_DIRECTORY);
+	  else
+	    {
+	      struct grub_ext2_inode inode;
+	      grub_ext2_read_inode (data, grub_le_to_cpu32 (dirent.inode), &inode);
+	      
+	      hook (filename, (grub_le_to_cpu16 (inode.mode)
+			       & FILETYPE_INO_MASK) == FILETYPE_INO_DIRECTORY);
+	    }
 	}
 
       fpos += grub_le_to_cpu16 (dirent.direntlen);

@@ -1,3 +1,12 @@
+2004-08-14  Marco Gerards  <metgerards@student.han.nl>
+
+	* include/grub/arg.h (GRUB_ARG_OPTION_OPTIONAL): Surround macro
+	with parentheses.
+
+	* fs/ext2.c (FILETYPE_UNKNOWN): New macro.
+	(grub_ext2_dir): In case the directory entry type is unknown, read
+	it from the inode.
+
 2004-08-02  Peter Bruin  <pjbruin@dds.nl>
 
 	* loader/powerpc/ieee1275/linux.c (grub_linux_init): Pass
