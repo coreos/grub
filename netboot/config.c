@@ -1,7 +1,7 @@
 #include	"netboot.h"
 #include	"nic.h"
 
-#include	"config.h"
+#include	"netboot_config.h"
 
 #undef	INCLUDE_PCI
 #if	defined(INCLUDE_NEPCI) || defined(INCLUDE_EEPRO100) || defined (INCLUDE_3c59x)

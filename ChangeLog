@@ -1,3 +1,13 @@
+1999-09-15  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* netboot/config.h: Moved to ...
+	* netboot/netboot_config.h: ... here.
+	* netboot/config.c: Include netboot_config.h instead of config.h.
+	* netboot/fsys_tftp.c: Likewise.
+	* netboot/ip.c: Likewise.
+	* netboot/Makefile.am (libdrivers_a_SOURCES): Removed config.h
+	and added netboot_config.h.
+	
 1999-09-14  Pavel Roskin  <pavel_roskin@geocities.com>
 
 	* grub/asmstub.c [__linux__]: On GLibc 2.0 and newer use lseek,

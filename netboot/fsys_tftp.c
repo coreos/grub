@@ -1,7 +1,7 @@
 #include "../stage2/filesys.h"
 
 #include "netboot.h"
-#include "config.h"
+#include "netboot_config.h"
 #include "nic.h"
 
 #include "ip.h"
