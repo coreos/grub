@@ -1,3 +1,23 @@
+2000-05-05  OKUJI Yoshinori  <okuji@gnu.org>
+
+	Ignore any memory holes when passing the maximum memory address
+	to non-Multiboot kernels (i.e. Linux and *BSD).
+	
+	* stage2/common.c [!STAGE1_5] (extended_memory): New global
+	variable.
+	(init_bios_info) [!STAGE1_5]: Change the type of CONT, MEMTMP
+	and ADDR to unsigned long from int.
+	Set EXTENDED_MEMORY to MBI.MEM_UPPER by default.
+	If MBI.MMAP_LENGTH is not zero, set EXTENDED_MEMORY to the
+	maximum available address, ignoring any memory holes.
+	If MBI.MMAP_LENGTH is zero but get_eisamemsize returns other
+	than -1, set EXTENDED_MEMORY to (CONT >> 10) + 0x3c00 if CONT is
+	non-zero, otherwise, set it to MEMTMP.
+	* stage2/shared.h [!STAGE1_5] (extended_memory): Declared.
+	* stage2/boot.c (load_image): Always pass the "mem=" option to a
+	Linux kernel, using EXTENDED_MEMORY instead of MBI.MEM_UPPER.
+	(bsd_boot): Use EXTENDED_MEMORY instead of MBI.MEM_UPPER.
+	
 2000-04-30  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage1/stage1.S (message): Use lodsb instead of incw and movb.

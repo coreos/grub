@@ -525,6 +525,7 @@ extern unsigned long saved_drive;
 extern unsigned long saved_partition;
 #ifndef STAGE1_5
 extern unsigned long saved_mem_upper;
+extern unsigned long extended_memory;
 #endif
 
 /*

@@ -30,6 +30,9 @@ unsigned long saved_drive;
 unsigned long saved_partition;
 #ifndef STAGE1_5
 unsigned long saved_mem_upper;
+
+/* This saves the maximum size of extended memory (in KB).  */
+unsigned long extended_memory;
 #endif
 
 /*
@@ -98,7 +101,7 @@ void
 init_bios_info (void)
 {
 #ifndef STAGE1_5
-  int cont, memtmp, addr;
+  unsigned long cont, memtmp, addr;
 #endif
 
   /*
@@ -117,6 +120,10 @@ init_bios_info (void)
 
   gateA20 (1);
 
+  /* Store the size of extended memory in EXTENDED_MEMORY, in order to
+     tell it to non-Multiboot OSes.  */
+  extended_memory = mbi.mem_upper;
+  
   /*
    *  The "mbi.mem_upper" variable only recognizes upper memory in the
    *  first memory region.  If there are multiple memory regions,
@@ -134,11 +141,11 @@ init_bios_info (void)
       cont = get_mmap_entry ((void *) addr, cont);
 
       /* If the returned buffer's base is zero, quit. */
-      if (!*((int *) addr))
+      if (! *((unsigned long *) addr))
 	break;
 
-      mbi.mmap_length += *((int *) addr) + 4;
-      addr += *((int *) addr) + 4;
+      mbi.mmap_length += *((unsigned long *) addr) + 4;
+      addr += *((unsigned long *) addr) + 4;
     }
   while (cont);
 
@@ -160,7 +167,7 @@ init_bios_info (void)
 	{
 	  for (cont = 0, addr = mbi.mmap_addr;
 	       addr < mbi.mmap_addr + mbi.mmap_length;
-	       addr += *((int *) addr) + 4)
+	       addr += *((unsigned long *) addr) + 4)
 	    {
 	      if (((struct AddrRangeDesc *) addr)->BaseAddrHigh == 0
 		  && ((struct AddrRangeDesc *) addr)->Type == MB_ARD_MEMORY
@@ -177,19 +184,37 @@ init_bios_info (void)
       while (cont);
 
       mbi.mem_upper = (memtmp - 0x100000) >> 10;
+      
+      /* Find the maximum available address. Ignore any memory holes.  */
+      for (addr = mbi.mmap_addr;
+	   addr < mbi.mmap_addr + mbi.mmap_length;
+	   addr += *((unsigned long *) addr) + 4)
+	{
+	  struct AddrRangeDesc *desc = (struct AddrRangeDesc *) addr;
+	  
+	  if (desc->BaseAddrHigh == 0
+	      && desc->Type == MB_ARD_MEMORY
+	      && desc->BaseAddrLow + desc->LengthLow > extended_memory)
+	    extended_memory = desc->BaseAddrLow + desc->LengthLow;
+	}
     }
   else if ((memtmp = get_eisamemsize ()) != -1)
     {
       cont = memtmp & ~0xFFFF;
       memtmp = memtmp & 0xFFFF;
 
+      if (cont != 0)
+	extended_memory = (cont >> 10) + 0x3c00;
+      else
+	extended_memory = memtmp;
+      
       if (!cont || (memtmp == 0x3c00))
 	memtmp += (cont >> 10);
       else
 	{
 	  /* XXX should I do this at all ??? */
 
-	  mbi.mmap_addr = (int) fakemap;
+	  mbi.mmap_addr = (unsigned long) fakemap;
 	  mbi.mmap_length = sizeof (fakemap);
 	  fakemap[0].LengthLow = (mbi.mem_lower << 10);
 	  fakemap[1].LengthLow = (memtmp << 10);

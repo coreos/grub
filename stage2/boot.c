@@ -276,19 +276,12 @@ load_image (char *kernel, char *arg, kernel_t suggested_type)
 	    *((unsigned short *) CL_OFFSET) = CL_MY_LOCATION - CL_BASE_ADDR;
 	    *((unsigned short *) CL_MAGIC_ADDR) = CL_MAGIC;
 
-	    /* Help Linux to find memory only if more than 64MB are present.
-	       Up to that amount it is fairly capable to find by itself, 
-	       and at least newer Phoenix BIOSes are known to put a
-	       10k hole just before 64MB, but report a proper total.  */
-	    if (mbi.mem_upper + 0x400 > 0x10000)
-	      {
-		grub_memmove ((char *) CL_MY_LOCATION, "mem=", 4);
-		dest = (char *) (CL_MY_LOCATION + 4);
-		
-		dest = convert_to_ascii (dest, 'u', (mbi.mem_upper + 0x400));
-		*(dest++) = 'K';
-		*(dest++) = ' ';
-	      }
+	    grub_memmove (dest, "mem=", 4);
+	    dest += 4;
+	    
+	    dest = convert_to_ascii (dest, 'u', (extended_memory + 0x400));
+	    *(dest++) = 'K';
+	    *(dest++) = ' ';
 
 	    while (*src && *src != ' ')
 	      src++;
@@ -696,7 +689,7 @@ bsd_boot (kernel_t type, int bootdev, char *arg)
       bi.bi_memsizes_valid = 1;
       bi.bi_bios_dev = saved_drive;
       bi.bi_basemem = mbi.mem_lower;
-      bi.bi_extmem = mbi.mem_upper;
+      bi.bi_extmem = extended_memory;
 
       if (mbi.flags & MB_INFO_AOUT_SYMS)
 	{
@@ -752,6 +745,6 @@ bsd_boot (kernel_t type, int bootdev, char *arg)
 	end_mark = 0;
       
       (*entry_addr) (clval, bootdev, 0, end_mark,
-		     mbi.mem_upper, mbi.mem_lower);
+		     extended_memory, mbi.mem_lower);
     }
 }
