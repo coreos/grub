@@ -1395,17 +1395,7 @@ ENTRY(console_putchar)
 	push	%ebx
 
 	movb	0x10(%esp), %bl
-
-	/* if not '\n', just print the character */
-	cmpb	$0xa, %bl
-	jne	pc_notnewline
-
-	/* if newline, print CR as well */
-	pushl	$0xd
-	call	EXT_C(console_putchar)
-	popl	%eax
-
-pc_notnewline:
+	
 	call	EXT_C(prot_to_real)
 	.code16
 

@@ -1,3 +1,12 @@
+2000-08-28  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/asm.S (console_putchar): Don't print a carriage return
+	when C is a newline.
+	* stage2/char_io.c (grub_putchar): Call grub_putchar with the
+	arugment set to a carriage return, if C is a newline.
+	[!STAGE1_5 && SUPPORT_SERIAL]: Don't print a carriage return
+	when C is a newline.
+	
 2000-08-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* lib/device.c [__linux__]: Don't include linux/fs.h.

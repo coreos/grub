@@ -878,6 +878,9 @@ checkkey (void)
 void
 grub_putchar (int c)
 {
+  if (c == '\n')
+    grub_putchar ('\r');
+  
 #ifdef STAGE1_5
   
   /* In Stage 1.5, only the normal console is supported.  */
@@ -890,12 +893,7 @@ grub_putchar (int c)
 
 # ifdef SUPPORT_SERIAL
   if (terminal & TERMINAL_SERIAL)
-    {
-      if (c == '\n')
-	serial_putchar ('\r');
-      
-      serial_putchar (c);
-    }
+    serial_putchar (c);
 # endif /* SUPPORT_SERIAL */
   
 #endif /* ! STAGE1_5 */
