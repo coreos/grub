@@ -707,14 +707,18 @@ load_initrd (char *initrd)
   unsigned long moveto;
   struct linux_kernel_header *lh;
   
+#ifndef NO_DECOMPRESSION
+  no_decompression = 1;
+#endif
+  
   if (! grub_open (initrd))
-    return 0;
+    goto fail;
 
   len = grub_read ((char *) cur_addr, -1);
   if (! len)
     {
       grub_close ();
-      return 0;
+      goto fail;
     }
 
   moveto = ((mbi.mem_upper + 0x400) * 0x400 - len) & 0xfffff000;
@@ -736,7 +740,14 @@ load_initrd (char *initrd)
   lh->ramdisk_size = len;
 
   grub_close ();
-  return 1;
+
+ fail:
+  
+#ifndef NO_DECOMPRESSION
+  no_decompression = 0;
+#endif
+
+  return ! errnum;
 }
 
 
