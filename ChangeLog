@@ -1,3 +1,22 @@
+2000-11-15  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* acconfig.h (PRESET_MENU_STRING): New entry.
+	* acinclude.m4 (grub_DEFINE_FILE): New M4 macro.
+	* configure.in (--enable-preset-menu): New option.
+	* stage2/stage2.c [PRESET_MENU_STRING] (preset_menu): New
+	variable.
+	[PRESET_MENU_STRING] (preset_menu_offset): Likewise.
+	[PRESET_MENU_STRING] (open_preset_menu): New function.
+	[PRESET_MENU_STRING] (read_from_preset_menu): Likewise.
+	[PRESET_MENU_STRING] (close_preset_menu): Likewise.
+	[!PRESET_MENU_STRING] (open_preset_menu): New macro.
+	[!PRESET_MENU_STRING] (read_from_preset_menu): Likewise.
+	[!PRESET_MENU_STRING] (close_preset_menu): Likewise.
+	(get_line_from_config): Accept a new argument READ_FROM_FILE.
+	If it is false, read data from the preset menu instead.
+	(cmain): If grub_open fails in opening the configuration file,
+	then try to open the preset menu.
+	
 2000-11-11  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Jan Fricke <fricke@uni-greifswald.de>:

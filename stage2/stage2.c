@@ -22,6 +22,47 @@
 
 grub_jmp_buf restart_env;
 
+#ifdef PRESET_MENU_STRING
+
+static const char *preset_menu = PRESET_MENU_STRING;
+static int preset_menu_offset;
+
+static int
+open_preset_menu (void)
+{
+  preset_menu_offset = 0;
+  return 1;
+}
+
+static int
+read_from_preset_menu (char *buf, int maxlen)
+{
+  int len = grub_strlen (preset_menu + preset_menu_offset);
+
+  if (len > maxlen)
+    len = maxlen;
+
+  grub_memmove (buf, preset_menu + preset_menu_offset, len);
+  preset_menu_offset += len;
+
+  return len;
+}
+
+static void
+close_preset_menu (void)
+{
+  /* Do nothing.  */
+}
+
+#else /* ! PRESET_MENU_STRING */
+
+#define open_preset_menu()	0
+#define read_from_preset_menu(buf, maxlen)	0
+#define close_preset_menu()
+
+#endif /* ! PRESET_MENU_STRING */
+
+
 static char *
 get_entry (char *list, int num, int nested)
 {
@@ -728,13 +769,24 @@ restart:
 
 
 static int
-get_line_from_config (char *cmdline, int maxlen)
+get_line_from_config (char *cmdline, int maxlen, int read_from_file)
 {
   int pos = 0, literal = 0, comment = 0;
   char c;  /* since we're loading it a byte at a time! */
-
-  while (grub_read (&c, 1))
+  
+  while (1)
     {
+      if (read_from_file)
+	{
+	  if (! grub_read (&c, 1))
+	    break;
+	}
+      else
+	{
+	  if (! read_from_preset_menu (&c, 1))
+	    break;
+	}
+      
       /* translate characters first! */
       if (c == '\\' && ! literal)
 	{
@@ -793,6 +845,9 @@ cmain (void)
   /* Never return.  */
   for (;;)
     {
+      int is_opened = 0;
+      int is_preset = 0;
+      
       auto_fill = 1;
       config_len = 0;
       menu_len = 0;
@@ -804,10 +859,16 @@ cmain (void)
       /* Here load the configuration file.  */
 
 #ifdef GRUB_UTIL
-      if (use_config_file && grub_open (config_file))
-#else
-      if (grub_open (config_file))
-#endif
+      if (use_config_file)
+#endif /* GRUB_UTIL */
+	{
+	  is_opened = grub_open (config_file);
+	  errnum = ERR_NONE;
+	  if (! is_opened)
+	    is_opened = is_preset = open_preset_menu ();
+	}
+      
+      if (is_opened)
 	{
 	  /* STATE 0:  Before any title command.
 	     STATE 1:  In a title command.
@@ -816,7 +877,7 @@ cmain (void)
 	  char *cmdline;
 
 	  cmdline = (char *) CMDLINE_BUF;
-	  while (get_line_from_config (cmdline, NEW_HEAPSIZE))
+	  while (get_line_from_config (cmdline, NEW_HEAPSIZE, ! is_preset))
 	    {
 	      struct builtin *builtin;
 
@@ -896,7 +957,10 @@ cmain (void)
 	  grub_memmove (config_entries + config_len, menu_entries, menu_len);
 	  menu_entries = config_entries + config_len;
 
-	  grub_close ();
+	  if (is_preset)
+	    close_preset_menu ();
+	  else
+	    grub_close ();
 	}
 
       if (! num_entries)

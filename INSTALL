@@ -231,6 +231,12 @@ operates.
      option is useful for GRUB developers, as you can test the
      performance of a terminal emulation even on pseudo terminals.
 
+`--enable-preset-menu=FILE'
+     Preset a menu file FILE in Stage 2. This is useful, if you cannot
+     put a configuration file on a filesystem for some reason (e.g. when
+     you need to set the default terminal to a serial terminal in an
+     embedded system).
+
 
 `configure' also accepts several options for the network support. See
 the file `netboot/README.netboot', for more information.

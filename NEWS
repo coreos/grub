@@ -15,6 +15,10 @@ New in 1.0 - XXXX-XX-XX:
 * The new utility ``grub-md5-crypt'' is a fontend of the grub shell. It
   encrypts a password in MD5 format.
 * New commands, "testvbe" and "vbeprobe".
+* The configure script accepts a new option, `--enable-preset-menu'. You
+  can embed a arbitrary configuration which will be used when Stage 2
+  cannot open a real configuration file, with this option. The argument
+  must be an existing file.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".

@@ -27,3 +27,6 @@
 
 /* Defined if an absolute indirect call/jump must NOT be prefixed with `*'.  */
 #undef ABSOLUTE_WITHOUT_ASTERISK
+
+/* Defined if the user specifies --enable-preset-menu=FILE.  */
+#undef PRESET_MENU_STRING
