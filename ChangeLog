@@ -1,12 +1,13 @@
 2004-06-24  Robert Millan  <robertmh@gnu.org>
 
 	Fixes for FHS compliance. (/usr/share is for arch-independant data)
-
 	* stage1/Makefile.am: Move stage files to pkglibdir.
 	* stage2/Makefile.am: Likewise.
 	* docs/grub.texi: s,/usr/share,/usr/lib,g.
 	* util/grub-image.in: Look for stage files in pkglibdir.
 	* util/grub-install.in: Likewise.
+
+	* util/grub-install.in: Improve usage message.
 
 2004-06-20  Yoshinori K. Okuji  <okuji@enbug.org>
 

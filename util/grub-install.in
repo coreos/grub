@@ -73,6 +73,10 @@ Install GRUB on your drive.
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
+grub-install copies GRUB images into the DIR/boot directory specfied by
+--root-directory, and uses the grub shell to install grub into the boot
+sector.
+
 Report bugs to <bug-grub@gnu.org>.
 EOF
 }
