@@ -1,3 +1,15 @@
+2000-09-29  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c (check_BSD_parts): Removed.
+	(next_partition): New function.
+	(real_open_partition): Rewritten using next_partition.
+	(set_device) [!STAGE1_5]: Skip a comma in DEVICE, even when the
+	BSD partition is not specified.
+	[!STAGE1_5] (print_completions): Don't append ')' if the
+	partition is a PC slice which may have BSD partitions. Instead,
+	try to complete the command-line with possible partitions.
+	* stage2/shared.h (next_partition): Declared.
+	
 2000-09-27  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* configure.in (--enable-serial): Changed to ...

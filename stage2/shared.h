@@ -833,6 +833,11 @@ char *set_device (char *device);
 int open_device (void);
 int real_open_partition (int flags);
 int open_partition (void);
+int next_partition (unsigned long drive, unsigned long dest,
+		    unsigned long *partition, int *type,
+		    unsigned long *start, unsigned long *len,
+		    unsigned long *offset, int *entry,
+		    unsigned long *ext_offset, char *buf);
 
 /* Sets device to the one represented by the SAVED_* parameters. */
 int make_saved_active (void);

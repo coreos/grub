@@ -416,93 +416,186 @@ check_and_print_mount (void)
 #endif /* STAGE1_5 */
 
 
-static int
-check_BSD_parts (int flags)
+/* Get the information on next partition on the drive DRIVE.
+   The caller must not modify the contents of the arguments when
+   iterating this function. The partition representation in GRUB will
+   be stored in *PARTITION. Likewise, the partition type in *TYPE, the
+   start sector in *START, the length in *LEN, the offset of the
+   partition table in *OFFSET, the entry number in the table in *ENTRY,
+   the offset of the extended partition in *EXT_OFFSET.
+   BUF is used to store a MBR, the boot sector of a partition, or
+   a BSD label sector, and it must be at least 512 bytes length.
+   When calling this function first, *PARTITION must be initialized to
+   0xFFFFFF. The return value is zero if fails, otherwise non-zero.  */
+int
+next_partition (unsigned long drive, unsigned long dest,
+		unsigned long *partition, int *type,
+		unsigned long *start, unsigned long *len,
+		unsigned long *offset, int *entry,
+		unsigned long *ext_offset, char *buf)
 {
-  char label_buf[SECTOR_SIZE];
-  int part_no, got_part = 0;
+  /* Forward declarations.  */
+  auto int next_bsd_partition (void);
+  auto int next_pc_slice (void);
 
-  if (part_length < (BSD_LABEL_SECTOR + 1))
+  /* Get next BSD partition in current PC slice.  */
+  int next_bsd_partition (void)
     {
-      errnum = ERR_BAD_PART_TABLE;
-      return 0;
-    }
+      int i;
+      int bsd_part_no = (*partition & 0xFF00) >> 8;
 
-  if (!rawread (current_drive, part_start + BSD_LABEL_SECTOR,
-		0, SECTOR_SIZE, label_buf))
-    return 0;
-
-  if (BSD_LABEL_CHECK_MAG (label_buf))
-    {
-      for (part_no = 0; part_no < BSD_LABEL_NPARTS (label_buf); part_no++)
+      /* If this is the first time...  */
+      if (bsd_part_no == 0xFF)
 	{
-	  if (BSD_PART_TYPE (label_buf, part_no))
+	  /* Check if the BSD label is within current PC slice.  */
+	  if (*len < BSD_LABEL_SECTOR + 1)
 	    {
-	      /* FIXME: should do BAD144 sector remapping setup here */
+	      errnum = ERR_BAD_PART_TABLE;
+	      return 0;
+	    }
 
-	      /* XXX We cannot determine which variant of BSD owns
-		 this slice, so set it to FreeBSD paritition type.
-		 That should work fine for now.  */
-	      current_slice = ((BSD_PART_TYPE (label_buf, part_no) << 8)
-			       | PC_SLICE_TYPE_FREEBSD);
-	      part_start = BSD_PART_START (label_buf, part_no);
-	      part_length = BSD_PART_LENGTH (label_buf, part_no);
+	  /* Read the BSD label.  */
+	  if (! rawread (drive, *start + BSD_LABEL_SECTOR,
+			 0, SECTOR_SIZE, buf))
+	    return 0;
+
+	  /* Check if it is valid.  */
+	  if (! BSD_LABEL_CHECK_MAG (buf))
+	    {
+	      errnum = ERR_BAD_PART_TABLE;
+	      return 0;
+	    }
+	  
+	  bsd_part_no = -1;
+	}
+
+      /* Search next valid BSD partition.  */
+      for (i = bsd_part_no + 1; i < BSD_LABEL_NPARTS (buf); i++)
+	{
+	  if (BSD_PART_TYPE (buf, i))
+	    {
+	      /* Note that *TYPE and *PARTITION were set
+		 for current PC slice.  */
+	      *type = (BSD_PART_TYPE (buf, i) << 8) | (*type & 0xFF);
+	      *start = BSD_PART_START (buf, i);
+	      *len = BSD_PART_LENGTH (buf, i);
+	      *partition = (*partition & 0xFF00FF) | (i << 8);
 
 #ifndef STAGE1_5
-	      if (flags)
-		{
-		  if (!got_part)
-		    {
-		      if (! do_completion)
-			printf ("[BSD sub-partitions immediately follow]\n");
-		      got_part = 1;
-		    }
-
-		  if (! do_completion)
-		    printf ("     BSD Partition num: \'%c\', ", part_no + 'a');
-		  else
-		    {
-		      char str[16];
-
-		      grub_sprintf (str, "%d,%c)",
-				    (current_partition >> 16) & 0xFF,
-				    part_no + 'a');
-		      print_a_completion (str);
-		    }
-		  
-		  check_and_print_mount ();
-		}
-	      else
-#endif /* STAGE1_5 */
-	      if (part_no == ((current_partition >> 8) & 0xFF))
-		break;
+	      /* XXX */
+	      if ((drive & 0x80) && BSD_LABEL_DTYPE (buf) == DTYPE_SCSI)
+		bsd_evil_hack = 4;
+#endif /* ! STAGE1_5 */
+	      
+	      return 1;
 	    }
 	}
 
-      if (part_no >= BSD_LABEL_NPARTS (label_buf) && !got_part)
+      errnum = ERR_NO_PART;
+      return 0;
+    }
+
+  /* Get next PC slice. Be careful of that this function may return
+     an empty PC slice (i.e. a partition whose type is zero) as well.  */
+  int next_pc_slice (void)
+    {
+      int pc_slice_no = (*partition & 0xFF0000) >> 16;
+
+      /* If this is the first time...  */
+      if (pc_slice_no == 0xFF)
 	{
-	  errnum = ERR_NO_PART;
+	  *offset = 0;
+	  *ext_offset = 0;
+	  *entry = -1;
+	  pc_slice_no = -1;
+	}
+
+      /* Read the MBR or the boot sector of the extended partition.  */
+      if (! rawread (drive, *offset, 0, SECTOR_SIZE, buf))
+	return 0;
+
+      /* Check if it is valid.  */
+      if (! PC_MBR_CHECK_SIG (buf))
+	{
+	  errnum = ERR_BAD_PART_TABLE;
 	  return 0;
 	}
 
-      if ((current_drive & 0x80)
-	  && BSD_LABEL_DTYPE (label_buf) == DTYPE_SCSI)
-	bsd_evil_hack = 4;
+      /* Increase the entry number.  */
+      (*entry)++;
 
+      /* If this is out of current partition table...  */
+      if (*entry == PC_SLICE_MAX)
+	{
+	  int i;
+
+	  /* Search the first extended partition in current table.  */
+	  for (i = 0; i < PC_SLICE_MAX; i++)
+	    {
+	      if (IS_PC_SLICE_TYPE_EXTENDED (PC_SLICE_TYPE (buf, i)))
+		{
+		  /* Found. Set the new offset and the entry number,
+		     and restart this function.  */
+		  *offset = *ext_offset + PC_SLICE_START (buf, i);
+		  if (! *ext_offset)
+		    *ext_offset = *offset;
+		  *entry = -1;
+		  return next_pc_slice ();
+		}
+	    }
+
+	  errnum = ERR_NO_PART;
+	  return 0;
+	}
+      
+      *type = PC_SLICE_TYPE (buf, *entry);
+      *start = *offset + PC_SLICE_START (buf, *entry);
+      *len = PC_SLICE_LENGTH (buf, *entry);
+
+      /* The calculation of a PC slice number is complicated, because of
+	 the rather odd definition of extended partitions. Even worse,
+	 there is no guarantee that this is consistent with every
+	 operating systems. Uggh.  */
+      if (pc_slice_no < PC_SLICE_MAX
+	  || (! IS_PC_SLICE_TYPE_EXTENDED (*type)
+	      && *type != PC_SLICE_TYPE_NONE))
+	pc_slice_no++;
+      
+      *partition = (pc_slice_no << 16) | 0xFFFF;
       return 1;
     }
 
-#ifndef STAGE1_5
-  if (flags)
-    {
-      if (! do_completion)
-	grub_printf (" No BSD sub-partition found, partition type 0x%x\n",
-		     current_slice);
-    }
-#endif
+  /* Start the body of this function.  */
   
-  errnum = ERR_BAD_PART_TABLE;
-  return 0;
+#ifndef STAGE1_5
+  if (current_drive == NETWORK_DRIVE)
+    return 0;
+#endif
+
+  /* If previous partition is a BSD partition or a PC slice which
+     contains BSD partitions...  */
+  if ((*partition != 0xFFFFFF && IS_PC_SLICE_TYPE_BSD (*type))
+      || ! (drive & 0x80))
+    {
+      if (*type == PC_SLICE_TYPE_NONE)
+	*type = PC_SLICE_TYPE_FREEBSD;
+      
+      /* Get next BSD partition, if any.  */
+      if (next_bsd_partition ())
+	return 1;
+
+      /* If the destination partition is a BSD partition and current
+	 BSD partition has any error, abort the operation.  */
+      if ((dest & 0xFF00) != 0xFF00
+	  && ((dest & 0xFF0000) == 0xFF0000
+	      || (dest & 0xFF0000) == (*partition & 0xFF0000)))
+	return 0;
+
+      /* Ignore the error.  */
+      errnum = ERR_NONE;
+    }
+	  
+  return next_pc_slice ();
 }
 
 #ifndef STAGE1_5
@@ -510,11 +603,29 @@ static unsigned long cur_part_offset;
 static unsigned long cur_part_addr;
 #endif
 
+/* Open a partition.  */
 int
 real_open_partition (int flags)
 {
-  int i, part_no, slice_no, ext = 0;
-  char mbr_buf[SECTOR_SIZE];
+  unsigned long dest_partition = current_partition;
+  unsigned long part_offset;
+  unsigned long ext_offset;
+  int entry;
+  char buf[SECTOR_SIZE];
+  int bsd_part, pc_slice;
+
+  /* For simplicity.  */
+  auto int next (void);
+  int next (void)
+    {
+      int ret = next_partition (current_drive, dest_partition,
+				&current_partition, &current_slice,
+				&part_start, &part_length,
+				&part_offset, &entry, &ext_offset, buf);
+      bsd_part = (current_partition >> 8) & 0xFF;
+      pc_slice = current_partition >> 16;
+      return ret;
+    }
   
 #ifndef STAGE1_5
   /* network drive */
@@ -525,191 +636,130 @@ real_open_partition (int flags)
     return 0;
 #endif
 
-  /*
-   *  The "rawread" is probably unnecessary here, but it is good to
-   *  know it works.
-   */
-  if (! rawread (current_drive, 0, 0, SECTOR_SIZE, mbr_buf))
-    return 0;
-
   bsd_evil_hack = 0;
   current_slice = 0;
   part_start = 0;
   part_length = buf_geom.total_sectors;
 
-  if (current_drive & 0x80)
+  /* If this is the whole disk, return here.  */
+  if (! flags && current_partition == 0xFFFFFF)
+    return 1;
+
+  if (flags)
+    dest_partition = 0xFFFFFF;
+
+  /* Initialize CURRENT_PARTITION for next_partition.  */
+  current_partition = 0xFFFFFF;
+  
+  while (next ())
     {
-      /*
-       *  We're looking at a hard disk
-       */
-
-      int ext_offset = 0, part_offset = 0;
-      part_no = (current_partition >> 16);
-      slice_no = 0;
-
-      /* if this is the whole disk, return here */
-      if (! flags && current_partition == 0xFFFFFFuL)
-	return 1;
-
-      /*
-       *  Load the current MBR-style PC partition table (4 entries)
-       */
-      while (slice_no < 255 && ext >= 0
-	     && (part_no == 0xFF || slice_no <= part_no)
-	     && rawread (current_drive, part_offset,
-			 0, SECTOR_SIZE, mbr_buf))
-	{
-	  /*
-	   *  If the table isn't valid, we can't continue
-	   */
-	  if (! PC_MBR_CHECK_SIG (mbr_buf))
-	    {
-	      errnum = ERR_BAD_PART_TABLE;
-	      return 0;
-	    }
-
-	  ext = -1;
-
-	  /*
-	   *  Scan table for partitions
-	   */
-	  for (i = 0; i < PC_SLICE_MAX; i++)
-	    {
-	      current_partition = ((slice_no << 16)
-				   | (current_partition & 0xFFFF));
-	      current_slice = PC_SLICE_TYPE (mbr_buf, i);
-	      part_start = part_offset + PC_SLICE_START (mbr_buf, i);
-	      part_length = PC_SLICE_LENGTH (mbr_buf, i);
 #ifndef STAGE1_5
-	      cur_part_offset = part_offset;
-	      cur_part_addr = BOOT_PART_TABLE + (i << 4);
-#endif
-
-	      /*
-	       *  Is this PC partition entry valid?
-	       */
-	      if (current_slice)
-		{
-#ifndef STAGE1_5
-		  /*
-		   *  Display partition information
-		   */
-		  if (flags && ! IS_PC_SLICE_TYPE_EXTENDED (current_slice))
-		    {
-		      current_partition |= 0xFFFF;
-		      if (! do_completion)
-			{
-			  printf ("   Partition num: %d, ", slice_no);
-		      
-			  if (! IS_PC_SLICE_TYPE_BSD (current_slice))
-			    check_and_print_mount ();
-			  else
-			    check_BSD_parts (1);
-			}
-		      else
-			{
-			  if (! IS_PC_SLICE_TYPE_BSD (current_slice))
-			    {
-			      char str[8];
-
-			      grub_sprintf (str, "%d)", slice_no);
-			      print_a_completion (str);
-			    }
-			  else
-			    check_BSD_parts (1);
-			}
-		      
-		      errnum = ERR_NONE;
-		    }
+    loop_start:
+      
+      cur_part_offset = part_offset;
+      cur_part_addr = BOOT_PART_TABLE + (entry << 4);
 #endif /* ! STAGE1_5 */
-		  
-		  /*
-		   *  If we've found the right partition, we're done
-		   */
-		  if (! flags
-		      && (slice_no < PC_SLICE_MAX
-			  || ! IS_PC_SLICE_TYPE_EXTENDED (current_slice))
-		      && (part_no == slice_no
-			  || (part_no == 0xFF
-			      && IS_PC_SLICE_TYPE_BSD (current_slice))))
+
+      /* If this is a valid partition...  */
+      if (current_slice)
+	{
+#ifndef STAGE1_5
+	  /* Display partition information.  */
+	  if (flags && ! IS_PC_SLICE_TYPE_EXTENDED (current_slice))
+	    {
+	      if (! do_completion)
+		{
+		  if (current_drive & 0x80)
+		    grub_printf ("   Partition num: %d, ",
+				 current_partition >> 16);
+
+		  if (! IS_PC_SLICE_TYPE_BSD (current_slice))
+		    check_and_print_mount ();
+		  else
 		    {
-		      if ((current_partition & 0xFF00) != 0xFF00)
+		      int got_part = 0;
+		      int saved_slice = current_slice;
+		      
+		      while (next ())
 			{
-			  if (IS_PC_SLICE_TYPE_BSD (current_slice))
-			    check_BSD_parts (0);
-			  else
-			    errnum = ERR_NO_PART;
+			  if (bsd_part == 0xFF)
+			    break;
+			  
+			  if (! got_part)
+			    {
+			      grub_printf ("[BSD sub-partitions immediately follow]\n");
+			      got_part = 1;
+			    }
+			  
+			  grub_printf ("     BSD Partition num: \'%c\', ",
+				       bsd_part + 'a');
+			  check_and_print_mount ();
 			}
 
-		      ext = -2;
-		      break;
-		    }
-
-		  /*
-		   *  Is this an extended partition?
-		   */
-		  if (IS_PC_SLICE_TYPE_EXTENDED (current_slice))
-		    {
-		      if (ext == -1)
-			ext = i;
+		      if (! got_part)
+			grub_printf (" No BSD sub-partition found, partition type 0x%x\n",
+				     saved_slice);
+		      
+		      if (errnum)
+			{
+			  errnum = ERR_NONE;
+			  break;
+			}
+		      
+		      goto loop_start;
 		    }
 		}
-
-	      /*
-	       *  If we're beyond the end of the standard PC partition
-	       *  range, change the numbering from one per table entry
-	       *  to one per valid entry.
-	       */
-	      if (slice_no < PC_SLICE_MAX
-		  || (! IS_PC_SLICE_TYPE_EXTENDED (current_slice)
-		      && current_slice != PC_SLICE_TYPE_NONE))
-		slice_no++;
-	    }
-
-	  part_offset = ext_offset + PC_SLICE_START (mbr_buf, ext);
-	  if (! ext_offset)
-	    ext_offset = part_offset;
-	}
-    }
-  else
-    {
-      /*
-       *  We're looking at a floppy disk
-       */
-      ext = -1;
-      if ((flags || (current_partition & 0xFF00) != 0xFF00)
-	  && check_BSD_parts (flags))
-	ext = -2;
-      else
-	{
-	  errnum = 0;
-	  if (!flags)
-	    {
-	      if (current_partition == 0xFFFFFF
-		  || current_partition == 0xFF00FF)
+	      else
 		{
-		  current_partition = 0xFFFFFF;
-		  ext = -2;
+		  if (bsd_part != 0xFF)
+		    {
+		      char str[16];
+		      
+		      if (! (current_drive & 0x80)
+			  || (dest_partition >> 16) == pc_slice)
+			grub_sprintf (str, "%c)", bsd_part + 'a');
+		      else
+			grub_sprintf (str, "%d,%c)",
+				      pc_slice, bsd_part + 'a');
+		      print_a_completion (str);
+		    }
+		  else if (! IS_PC_SLICE_TYPE_BSD (current_slice))
+		    {
+		      char str[8];
+		      
+		      grub_sprintf (str, "%d)", pc_slice);
+		      print_a_completion (str);
+		    }
 		}
 	    }
-#ifndef STAGE1_5
-	  else
-	    {
-	      current_partition = 0xFFFFFF;
-	      check_and_print_mount ();
-	      errnum = 0;
-	    }
-#endif /* STAGE1_5 */
+	  
+	  errnum = ERR_NONE;
+#endif /* ! STAGE1_5 */
+	  
+	  /* Check if this is the destination partition.  */
+	  if (! flags
+	      && (dest_partition == current_partition
+		  || ((dest_partition >> 16) == 0xFF
+		      && ((dest_partition >> 8) & 0xFF) == bsd_part)))
+	    return 1;
 	}
     }
 
-  if (!flags && (ext != -2) && (errnum == ERR_NONE))
-    errnum = ERR_NO_PART;
-
-  if (errnum != ERR_NONE)
-    return 0;
-
-  return 1;
+#ifndef STAGE1_5
+  if (flags)
+    {
+      if (! (current_drive & 0x80))
+	{
+	  current_partition = 0xFFFFFF;
+	  check_and_print_mount ();
+	}
+      
+      errnum = ERR_NONE;
+      return 1;
+    }
+#endif /* ! STAGE1_5 */
+  
+  return 0;
 }
 
 
@@ -833,10 +883,11 @@ set_device (char *device)
 
 	      current_partition = (current_partition << 16) + 0xFFFF;
 
-	      if (*device == ','
-		  && *(device + 1) >= 'a' && *(device + 1) <= 'h')
+	      if (*device == ',')
+		device++;
+	      
+	      if (*device >= 'a' && *device <= 'h')
 		{
-		  device++;
 		  current_partition = (((*(device++) - 'a') << 8)
 				       | (current_partition & 0xFF00FF));
 		}
@@ -1172,7 +1223,19 @@ print_completions (int is_filename, int is_completion)
 	  else
 	    {
 	      /* partition completions */
-	      if (part_choice == PART_DISK)
+	      if (part_choice == PART_CHOSEN
+		  && open_partition ()
+		  && ! IS_PC_SLICE_TYPE_BSD (current_slice))
+		{
+		  unique = 1;
+		  ptr = buf + grub_strlen (buf);
+		  if (*(ptr - 1) != ')')
+		    {
+		      *ptr++ = ')';
+		      *ptr = 0;
+		    }
+		}
+	      else
 		{
 		  if (! is_completion)
 		    grub_printf (" Possible partitions are:\n");
@@ -1184,19 +1247,6 @@ print_completions (int is_filename, int is_completion)
 		      while (*ptr++ != ',')
 			;
 		      grub_strcpy (ptr, unique_string);
-		    }
-		}
-	      else
-		{
-		  if (open_partition ())
-		    {
-		      unique = 1;
-		      ptr = buf + grub_strlen (buf);
-		      if (*(ptr - 1) != ')')
-			{
-			  *ptr++ = ')';
-			  *ptr = 0;
-			}
 		    }
 		}
 	    }
