@@ -26,6 +26,7 @@ New in 0.5.93:
 * FreeBSD support in the grub shell is improved.
 * Killing (C-u and C-k), yanking (C-y) and manipulating the history
   (C-p and C-n) are supported.
+* The address argument for the command "install" is now optional.
 
 New in 0.5.92 - 1999-07-26:
 * Bug fixes (i.e. Stage 1.5 can work fine again).

@@ -1,3 +1,22 @@
+1999-09-20  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	The argument ADDR for the command install is now optional.
+	
+	* stage2/builtins.c (install_func): If parsing ADDR fails, set
+	INSTALLADDR to zero and set PTR to ADDR.
+	If INSTALLADDR is zero after parsing the command-line, check if
+	the Stage 2 id is STAGE2_ID_STAGE2. If so, set INSTALLADDR to
+	0x8000, otherwise set it to 0x2000.
+	Set the install address in the Stage 1 after the automatic
+	determination is completed.
+	(builtin_install): Say that ADDR is optional in the help
+	message.
+	* docs/grub.texi: Synchronize the description about install to
+	builtins.c. Remove explicit address arguments from all the
+	examples. Add a description about help.
+	* docs/menu.lst: Do not specify the address argument for
+	install.
+	
 1999-09-19  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	The completion code is heavily modified.

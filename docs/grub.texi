@@ -431,7 +431,7 @@ configuration file), then run the following command at GRUB's command
 line (after booting from the GRUB floppy):
 
 @example
-install (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
+install (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 p
 @end example
 
 This tells GRUB to grab the first sector of the floppy and use it as the
@@ -448,7 +448,7 @@ telling GRUB's stage1 to read from the first hard disk no matter where
 the stage1 was loaded from:
 
 @example
-install (fd0)+1 d (fd0) (hd0,1)/boot/grub/stage2 0x8000 p
+install (fd0)+1 d (fd0) (hd0,1)/boot/grub/stage2 p
 @end example
 
 By default, GRUB loads the stage2 from the disk where the stage1 was
@@ -474,7 +474,7 @@ dd if=stage2/e2fs_stage1_5 of=/dev/hda bs=512 seek=1
 Second, specify the stage1.5 argument in blocklist format:
 
 @example
-install (fd0)+1 (hd0) (hd0)1+1 0x2000 p (hd0,1)/boot/grub/stage2
+install (fd0)+1 (hd0) (hd0)1+1 p (hd0,1)/boot/grub/stage2
 @end example
 
 @item
@@ -485,7 +485,7 @@ hard disk, and setting the stage2's @dfn{configuration file} to
 @file{(hd1,a)/grubdir/configfile}:
 
 @example
-install (hd0,1)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 0x8000 p /grubdir/configfile
+install (hd0,1)/boot/grub/stage1 (hd1) (hd1,a)/boot/grub/stage2 p /grubdir/configfile
 @end example
 @end itemize
 
@@ -497,7 +497,7 @@ and a configuration file which contains entries such as:
 title GNU/Linux installation
 
 # Installation command:
-install (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 0x8000 p
+install (fd0)+1 (hd0) (hd0,1)/boot/grub/stage2 p
 
 # Actually boot here:
 root (hd0,1)
@@ -784,6 +784,12 @@ requests from the disk.
 Filesystem test mode is turned off by any use of the @command{install}
 or @command{testload} commands.
 
+@item help [@var{pattern} @dots{}]
+Display helpful information about builtin commands. If you do not
+specify @var{pattern}, this command lists the short documents of all
+available commands, and, if you specify one or more @var{pattern}s, it
+displays long documents of the commands which match @var{pattern}.
+
 @item hide @var{partition}
 Hide @var{partition} by setting the @dfn{hidden} bit in its partition
 type code.
@@ -796,7 +802,7 @@ table and boot the various CPUs which are found into a tight loop.
 Load an initial ramdisk for a Linux format boot image and set the
 appropriate parameters in the Linux setup area in memory.
 
-@item install @var{stage1-file} [d] @var{dest-device} @var{file} @var{addr} [p] [@var{config-file}]
+@item install @var{stage1-file} [d] @var{dest-device} @var{file} [@var{addr}] [p] [@var{config-file}]
 This command is fairly complex, and for detailed examples one should
 look at @ref{Automated install}. In short, it will perform a full
 install presuming the stage2 or stage1.5@footnote{They're loaded the
@@ -809,14 +815,15 @@ loading @var{file} as a stage2.  If the option @samp{d} is present, the
 stage1 will always look for the actual disk @var{file} was installed on,
 rather than using the booting drive.  The stage2 will be loaded at
 address @var{addr}, which must be @samp{0x8000} for a true stage2, and
-@samp{0x2000} for a stage1.5.  It then writes the completed stage1 to
-the first block of the device @var{dest-dev}. If the options @samp{p} or
-@var{config-file} are present, then it reads the first block of stage2,
-modifies it with the values of the partition @var{file} was found on
-(for @samp{p}) or places the string @var{config-file} into the area
-telling the stage2 where to look for a configuration file at boot time.
-This command preserves the DOS BPB (and for hard disks, the partition
-table) of the sector the stage1 is to be installed into.
+@samp{0x2000} for a stage1.5. If @var{addr} is not present, GRUB will
+determine the address automatically. It then writes the completed stage1
+to the first block of the device @var{dest-dev}. If the options @samp{p}
+or @var{config-file} are present, then it reads the first block of
+stage2, modifies it with the values of the partition @var{file} was
+found on (for @samp{p}) or places the string @var{config-file} into the
+area telling the stage2 where to look for a configuration file at boot
+time. This command preserves the DOS BPB (and for hard disks, the
+partition table) of the sector the stage1 is to be installed into.
 
 @item kernel @var{file} @dots{}
 Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
@@ -1286,7 +1293,7 @@ option in the command line. This is a simple example:
 
 /sbin/grub --batch <<EOT 1>/dev/null 2>/dev/null
 root (hd0,0)
-install /boot/grub/stage1 (hd0) /boot/grub/stage2 0x8000 p
+install /boot/grub/stage1 (hd0) /boot/grub/stage2 p
 quit
 EOT
 @end example

@@ -44,10 +44,10 @@ title Windows NT / Windows 95 boot menu
 root        (hd0,0)
 makeactive
 chainloader +1
+# For loading DOS if Windows NT is installed
+# chainload /bootsect.dos
 
 # For installing GRUB into the hard disk
 title Install GRUB into the hard disk
 root    (hd0,0)
-install /boot/grub/stage1 d (hd0) /boot/grub/stage2 0x8000 p
-# For loading DOS if Windows NT is installed
-# chainload /bootsect.dos
+install /boot/grub/stage1 d (hd0) /boot/grub/stage2 p

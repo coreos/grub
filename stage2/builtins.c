@@ -768,7 +768,14 @@ install_func (char *arg, int flags)
 
   /* Get the installation address.  */
   if (! safe_parse_maxint (&addr, &installaddr))
-    return 1;
+    {
+      /* ADDR is not specified.  */
+      installaddr = 0;
+      ptr = addr;
+      errnum = 0;
+    }
+  else
+    ptr = skip_to (0, addr);
 
   /* Read Stage 1.  */
   if (! grub_open (stage1_file)
@@ -867,8 +874,6 @@ install_func (char *arg, int flags)
 
   *((unsigned char *) (BOOTSEC_LOCATION + STAGE1_FIRSTLIST))
     = new_drive;
-  *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
-    = installaddr;
 
   i = BOOTSEC_LOCATION+STAGE1_FIRSTLIST - 4;
   while (*((unsigned long *) i))
@@ -905,8 +910,23 @@ install_func (char *arg, int flags)
       return 1;
     }
 
+  /* If INSTALLADDR is not specified explicitly in the command-line,
+     determine it by the Stage 2 id.  */
+  if (! installaddr)
+    {
+      if (*((unsigned char *) (SCRATCHADDR + STAGE2_STAGE2_ID))
+	  == STAGE2_ID_STAGE2)
+	/* Stage 2.  */
+	installaddr = 0x8000;
+      else
+	/* Stage 1.5.  */
+	installaddr = 0x2000;
+    }
+  
+  *((unsigned short *) (BOOTSEC_LOCATION + STAGE1_INSTALLADDR))
+    = installaddr;
+  
   stage2_sect = installsect;
-  ptr = skip_to (0, addr);
 
   if (*ptr == 'p')
     {
@@ -965,12 +985,12 @@ static struct builtin builtin_install =
   "install",
   install_func,
   BUILTIN_CMDLINE,
-  "install STAGE1 [d] DEVICE STAGE2 ADDR [p] [CONFIG_FILE]",
+  "install STAGE1 [d] DEVICE STAGE2 [ADDR] [p] [CONFIG_FILE]",
   "Install STAGE1 on DEVICE, and install a blocklist for loading STAGE2"
   " as a Stage 2. If the option `d' is present, the Stage 1 will always"
   " look for the disk where STAGE2 was installed, rather than using"
   " the booting drive. The Stage 2 will be loaded at address ADDR, which"
-  " must be 0x8000 for a true Stage 2, and 0x2000 for a Stage 1.5. If"
+  " will be determined automatically if you don't specify it. If"
   " the option `p' or CONFIG_FILE is present, then the first block"
   " of Stage 2 is patched with new values of the partition and name"
   " of the configuration file used by the true Stage 2 (for a Stage 1.5,"
