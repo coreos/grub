@@ -131,7 +131,7 @@ boot_func (char *arg, int flags)
 	  /* Set the handler. This is somewhat dangerous.  */
 	  set_int13_handler (bios_drive_map);
 	}
-      
+
       gateA20 (0);
       boot_drive = saved_drive;
       chain_stage1 (0, BOOTSEC_LOCATION, BOOTSEC_LOCATION - 16);

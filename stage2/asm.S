@@ -199,13 +199,15 @@ ENTRY(track_int13)
 
 	pushl	%edx
 	pushl	%ebx
+	pushl	%edi
 
 	/* computer the linear address of int13 handler */
+	movl	$0x4c, %edi
 	xorl	%ebx, %ebx
 	xorl	%eax, %eax
-	movw	0x13 * 4 + 2, %ax
+	movw	2(%edi), %ax
 	shll	$4, %eax
-	movw	0x13 * 4, %bx
+	movw	(%edi), %bx
 	addl	%eax, %ebx
 
 	/* save the first intruction */
@@ -216,19 +218,21 @@ ENTRY(track_int13)
 	movb	$0xCC, (%ebx)
 
 	/* replace the int1 handler */
-	pushl	0x1 * 4
+	movl	0x4, %edi
+	pushl	(%edi)
 	movl	$ABS(int1_handler), %eax
-	movl	%eax, 0x1 * 4
+	movl	%eax, (%edi)
 
 	/* replace the int3 handler */
-	pushl	0x3 * 4
+	movl	0xc, %edi
+	pushl	(%edi)
 	movl	$ABS(int3_handler), %eax
-	movl	%eax, 0x3 * 4
+	movl	%eax, (%edi)
 
 	/* read the MBR to call int13 successfully */
-	movb	4(%ebp), %dl
+	movb	8(%ebp), %dl
 	
-	call	prot_to_real
+	DATA32	call	EXT_C(prot_to_real)
 	.code16
 	
 	movw	$SCRATCHSEG, %ax
@@ -240,15 +244,18 @@ ENTRY(track_int13)
 	movw	$0x201, %ax
 	int	$0x13
 
-	call	real_to_prot
+	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
 	/* restore the int3 handler */
-	popl	0x3 * 4
+	movl	0xc, %edi
+	popl	(%edi)
 
 	/* restore the int1 handler */
-	popl	0x1 * 4
+	movl	0x4, %edi
+	popl	(%edi)
 
+	popl	%edi
 	popl	%ebx
 	popl	%edx
 	popl	%ebp
@@ -416,19 +423,23 @@ ENTRY(io_map)
  * Set up int15_handler.
  */
 ENTRY(set_int15_handler)
+	pushl	%edi
+	
 	/* save the original int15 handler */
-	movw	0x15 * 4, %ax
+	movl	$0x54, %edi
+	movw	(%edi), %ax
 	movw	%ax, ABS(int15_offset)
-	movw	0x15 * 4 + 2, %ax
+	movw	2(%edi), %ax
 	movw	%ax, ABS(int15_segment)
 
 	/* save the new int15 handler */
 	movl	$ABS(int15_handler), %eax
 	rorl	$4, %eax
-	movw	%ax, 0x15 * 4 + 2
+	movw	%ax, 2(%edi)
 	shrl	$28, %eax
-	movw	%ax, 0x15 * 4
+	movw	%ax, (%edi)
 
+	popl	%edi
 	ret
 
 
@@ -438,22 +449,26 @@ ENTRY(set_int15_handler)
  * Restore the original int15 handler
  */
 ENTRY(unset_int15_handler)
+	pushl	%edi
+	
 	/* check if int15_handler is set */
+	movl	$0x54, %edi
 	movl	$ABS(int15_handler), %eax
 	rorl	$4, %eax
-	cmpw	%ax, 0x15 * 4 + 2
+	cmpw	%ax, 2(%edi)
 	jne	1f
 	shrl	$28, %eax
-	cmpw	%ax, 0x15 * 4
+	cmpw	%ax, (%edi)
 	jne	1f
 
 	/* restore the original */
 	movw	ABS(int15_offset), %ax
-	movw	%ax, 0x15 * 4
+	movw	%ax, (%edi)
 	movw	ABS(int15_segment), %ax
-	movw	%ax, 0x15 * 4 + 2
+	movw	%ax, 2(%edi)
 
 1:
+	popl	%edi
 	ret
 
 
@@ -525,17 +540,18 @@ ENTRY(set_int13_handler)
 	pushl	%esi
 
 	/* copy MAP to the drive map */
-	movl	$DRIVE_MAP_SIZE, %ecx
+	movl	$(DRIVE_MAP_SIZE * 2), %ecx
 	movl	$ABS(drive_map), %edi
-	movl	4(%ebp), %esi
+	movl	8(%ebp), %esi
 	cld
 	rep
 	movsb
 
 	/* save the original int13 handler */
-	movw	0x13 * 4, %ax
+	movl	$0x4c, %edi
+	movw	(%edi), %ax
 	movw	%ax, ABS(int13_offset)
-	movw	0x13 * 4 + 2, %ax
+	movw	2(%edi), %ax
 	movw	%ax, ABS(int13_segment)
 	
 	/* get the lower memory size */
@@ -543,14 +559,16 @@ ENTRY(set_int13_handler)
 	movl	4(%edi), %eax
 	/* decrease the lower memory size and set it to the BIOS memory */
 	decl	%eax
-	movw	%ax, 0x413
+	movl	$0x413, %edi
+	movw	%ax, (%edi)
 	/* compute the segment */
 	shll	$6, %eax
 
 	/* save the new int13 handler */
-	movw	%ax, 0x13 * 4 + 2
-	xorw	%ax, %ax
-	movw	%ax, 0x13 * 4
+	movl	$0x4c, %edi
+	movw	%ax, 2(%edi)
+	xorw	%cx, %cx
+	movw	%cx, (%edi)
 
 	/* copy int13_handler to the reserved area */
 	shll	$4, %eax
@@ -565,7 +583,7 @@ ENTRY(set_int13_handler)
 	popl	%ecx
 	popl	%ebp
 	ret
-	
+
 	
 /* 
  * Map a drive to another drive.
@@ -578,17 +596,14 @@ int13_handler:
 	pushw	%bp
 	movw	%sp, %bp
 	
-	pushw	%ds
 	pushw	%si
 
-	/* set %ds to %cs */	
-	movw	%cs, %ax
-	movw	%ax, %ds
 	/* set %si to the drive map */
 	movw	$(drive_map - int13_handler), %si
 	/* find the drive number from the drive map */
+	cld
 1:	
-	lodsw
+	lodsw	%cs:(%si), %ax
 	/* check if this is the end */
 	testw	%ax, %ax
 	jz	2f
@@ -598,42 +613,47 @@ int13_handler:
 	/* if so, perform the mapping */
 	movb	%ah, %dl
 2:
-	/* restore %si and %ds */
+	/* restore %si */
 	popw	%si
-	popw	%ds
 	/* save %ax in the stack */
 	pushw	%ax
+	/* simulate the interrupt call */
+	pushw	8(%bp)
 	/* set %ax and %bp to the original values */
 	movw	2(%bp), %ax
 	movw	(%bp), %bp
-	/* simulate the interrupt call */
-	pushf
 	/* ljmp */
 	.byte	0x9a
 int13_offset:	.word	0
 int13_segment:	.word	0
+	/* save flags */
+	pushf
 	/* restore %bp */
 	movw	%sp, %bp
 	/* save %ax */
 	pushw	%ax
+	/* set the flags in the stack to the value returned by int13 */
+	movw	(%bp), %ax
+	movw	%ax, 0xc(%bp)
 	/* check if should map the drive number */
-	movw	4(%bp), %ax
+	movw	6(%bp), %ax
 	cmpw	$0x8, %ax
 	jne	3f
 	cmpw	$0x15, %ax
 	jne	3f
 	/* check if the mapping was performed */
-	movw	(%bp), %ax
+	movw	2(%bp), %ax
 	testw	%ax, %ax
 	jz	3f
 	/* perform the mapping */
 	movb	%al, %dl
 3:
 	popw	%ax
-	movw	2(%bp), %bp
-	addw	$6, %sp
+	movw	4(%bp), %bp
+	addw	$8, %sp
 	iret
 
+	.align	4
 drive_map:	.space	(DRIVE_MAP_SIZE + 1) * 2
 int13_handler_end:
 	

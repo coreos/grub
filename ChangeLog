@@ -1,3 +1,26 @@
+1999-10-26  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Now the BIOS drive remapping is functional.
+	
+	* stage2/asm.S [DEFINE_TRACK_INT13] (track_int13): Use %edi
+	instead of direct addresses.
+	Prefix DATA32 to the calls for real_to_prot and prot_to_real.
+	Fix the address of DRIVE: 4(%ebp) -> 8(%ebp).
+	(set_int15_handler): Use %edi instead of direct addresses.
+	(unset_int15_handler): Likewise.
+	(set_int13_handler): Copy DRIVE_MAP_SIZE * 2 bytes instead of
+	DRIVE_MAP_SIZE bytes of MAP.
+	Fix the address of MAP: 4(%ebp) -> 8(%ebp).
+	Use %edi instead of direct addresses.
+	(int13_handler): Do not set %ds to %cs. Use the segment override
+	prefix of %cs instead.
+	Push the flags pushed by the callee instead of the current.
+	Set the flags in the stack to the flags returned by the original
+	int13 call.
+	(drive_map): 4bytes-aligned.
+	* stage2/disk_io.c (grub_close): Do not set ERRNUM even if
+	FSYS_TYPE is NUM_FSYS.
+	
 1999-10-25  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* stage1/stage1.S: Long jump to real_start, because some bogus

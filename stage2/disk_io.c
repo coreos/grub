@@ -1518,10 +1518,7 @@ void
 grub_close (void)
 {
   if (fsys_type == NUM_FSYS)
-    {
-      errnum = ERR_FSYS_MOUNT;
-      return;
-    }
+    return;
   
   if (fsys_table[fsys_type].close_func == 0)
     return;
