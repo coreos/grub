@@ -1,0 +1,185 @@
+\input texinfo  @c -*-texinfo-*-
+@setfilename grub.info
+@include version.texi
+
+@dircategory Kernel
+@direntry
+* GRUB: (grub).                 The GRand Unified Bootloader.
+@end direntry
+
+@ifinfo
+Copyright @copyright{} 1996 Erich Boleyn
+Copyright @copyright{} 1999 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries a copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions.
+@end ifinfo
+
+@c @setchapternewpage odd
+@settitle GRUB Manual
+@titlepage
+@finalout
+@title The GRUB Manual
+@author Gordon Matzigkeit
+@page
+
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1996 Erich Boleyn
+Copyright @copyright{} 1999 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions.
+@end titlepage
+
+@node Top
+@top GRUB
+
+This file documents GNU GRUB, the Grand Unified Bootloader.  This
+edition documents version @value{VERSION}.
+
+@menu
+* Introduction::                Capturing the spirit of GRUB.
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Introduction
+
+* History::                     From maggot to house fly.
+* Features::                    How GRUB is different.
+* Role of a bootloader::        Judging a system by its bootloader.
+
+@end detailmenu
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+Briefly, a @dfn{bootloader} is the first software program that runs when
+a computer starts.  It is responsible for loading and transferring
+control to the operating system @dfn{kernel} software (such as the Linux
+or Hurd kernels).  The kernel, in turn, initializes the rest of the
+operating system (usually GNU).
+
+@menu
+* History::                     From maggot to house fly.
+* Features::                    How GRUB is different.
+* Role of a bootloader::        Judging a system by its bootloader.
+@end menu
+
+
+@node History
+@section History of GRUB
+
+GRUB originated in 1995 when Erich Boleyn was trying to boot the GNU
+Hurd with the University of Utah's Mach 4 microkernel (now known as GNU
+Mach).  Erich and Brian Ford designed the Multiboot Standard (FIXME
+xref), because they were determined not to add to the large number of
+mutually-incompatible PC boot methods.
+
+Erich then began modifying the FreeBSD bootloader so that it would
+understand Multiboot.  He quickly realized that it would be a lot easier
+to write his own bootloader from scratch than to keep working on the
+FreeBSD bootloader, and so GRUB was born.
+
+Erich added many features to GRUB, but other priorities prevented him
+from keeping up with the demands of its quickly-expanding user base.  In
+1999, Gordon Matzigkeit adopted GRUB as an official GNU package, and
+opened its development by making the latest sources available via
+anonymous CVS.@footnote{The repository is
+@code{:pserver:anoncvs@@anoncvs.gnu.org:/gd/gnu/anoncvsroot}, module
+@code{grub}.  Just hit return when prompted for a password.}
+
+
+@node Features
+@section GRUB features
+technical.html: why another bootloader?
+
+
+@node Role of a bootloader
+@section The role of a bootloader
+
+The following is a quotation from Gordon Matzigkeit, a GRUB fanatic:
+
+@quotation
+Some people like to acknowlege both the operating system and kernel when
+they talk about their computers, so they might say they use
+``GNU/Linux'' or ``GNU/Hurd''.  Other people seem to think that the
+kernel is the most important part of the system, so they like to call
+their GNU operating systems ``Linux systems.''
+
+I, personally, believe that this is a grave injustice, because the
+@emph{bootloader} is the most important software of all.  So, I used to
+refer to the above systems as either ``LILO''@footnote{The LInux LOader,
+a bootloader that everybody uses, but nobody likes.} or ``GRUB''
+systems.
+
+Unfortunately, nobody ever understood what I was talking about; now I
+just use the word ``GNU'' as a pseudonym for GRUB.
+
+So, if you ever hear people talking about their alleged ``GNU'' systems,
+remember that they are actually paying homage to the best bootloader
+around@dots{} GRUB!
+@end quotation
+
+We, the GRUB maintainers, do not (usually) encourage Gordon's level of
+fanaticism, but it helps to remember that bootloaders deserve careful
+design.  We hope at least that you enjoy using GNU GRUB as much as we
+did writing it.
+
+
+@chapter Using
+@section using.html
+
+
+@chapter Boot scripts
+@section commands.txt
+
+
+@chapter Disk partitions
+
+
+@chapter Filesystems
+@section filesystem.txt
+
+
+@chapter Troubleshooting
+@section errors.html
+
+
+@chapter Multiboot
+@section boot-proposal.html
+
+
+@chapter Implementation
+@section technical.html
+@section embedded_data.txt
+@section PC_patitioning.txt
+
+@bye

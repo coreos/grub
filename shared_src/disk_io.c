@@ -1,6 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -593,16 +594,16 @@ set_device (char *device)
 	  part_choice = PART_CHOSEN;
 	  retval++;
 	}
-      if (*device == ',')
+      else if (*device == ',')
 	{
 	  /* Either an absolute PC or BSD partition. */
 	  disk_choice = 0;
-	  part_choice++;
+	  part_choice ++;
 	  device++;
 
 	  if (*device >= '0' && *device <= '9')
 	    {
-	      part_choice++;
+	      part_choice ++;
 	      current_partition = 0;
 
 	      if (!(current_drive & 0x80)
@@ -625,7 +626,7 @@ set_device (char *device)
 	    }
 	  else if (*device >= 'a' && *device <= 'h')
 	    {
-	      part_choice++;
+	      part_choice ++;
 	      current_partition = ((*(device++) - 'a') << 8) | 0xFF00FF;
 	    }
 
@@ -634,11 +635,83 @@ set_device (char *device)
 	      if (part_choice == PART_DISK)
 		{
 		  current_partition = saved_partition;
-		  part_choice++;
+		  part_choice ++;
 		}
 
 	      retval++;
 	    }
+	}
+    }
+  else
+    {
+      char ch;
+
+      /* A Mach-style absolute partition name. */
+      ch = *device;
+      if (*device != 'f' && *device != 'h' ||
+	  (device += 2, (*(device - 1) != 'd')))
+	errnum = ERR_DEV_FORMAT;
+      else
+	safe_parse_maxint (&device, (int *) &current_drive);
+
+      disk_choice = 0;
+      if (ch != 'f')
+	current_drive += 0x80;
+
+      if (errnum)
+	return 0;
+
+      if (*device == '/')
+	{
+	  part_choice = PART_CHOSEN;
+	  retval ++;
+	}
+      else if (*device == 's')
+	{
+	  /* An absolute PC partition. */
+	  disk_choice = 0;
+	  part_choice ++;
+	  device ++;
+
+	  if (*device >= '0' && *device <= '9')
+	    {
+	      part_choice ++;
+	      current_partition = 0;
+
+	      if (!(current_drive & 0x80) ||
+		  !safe_parse_maxint (&device, (int *) &current_partition) ||
+		  (--current_partition) > 254)
+		{
+		  errnum = ERR_DEV_FORMAT;
+		  return 0;
+		}
+
+	      current_partition = (current_partition << 16) + 0xFFFF;
+
+	      if (*device >= 'a' && *device <= 'h')
+		{
+		  /* A BSD partition within the slice. */
+		  current_partition = (((*(device ++) - 'a') << 8)
+				       | (current_partition & 0xFF00FF));
+		}
+	    }
+	}
+      else if (*device >= 'a' && *device <= 'h')
+	{
+	  /* An absolute BSD partition. */
+	  part_choice ++;
+	  current_partition = ((*(device ++) - 'a') << 8) | 0xFF00FF;
+	}
+
+      if (*device == '/')
+	{
+	  if (part_choice == PART_DISK)
+	    {
+	      current_partition = saved_partition;
+	      part_choice ++;
+	    }
+
+	  retval ++;
 	}
     }
 
@@ -711,6 +784,11 @@ set_bootdev (int hdbias)
 static char *
 setup_part (char *filename)
 {
+  /* FIXME: decide on syntax for blocklist vs. old-style vs. /dev/hd0s1 */
+  /* Strip any leading /dev. */
+  if (substring ("/dev/", filename) < 1)
+    filename += 5;
+
   if (*filename == '(')
     {
       if ((filename = set_device (filename)) == 0)

@@ -533,17 +533,17 @@ substring (char *s1, char *s2)
 {
   while (*s1 == *s2)
     {
-      /* The strings match, so return 0. */
-      if (!*(s1++))
+      /* The strings match exactly. */
+      if (! *(s1++))
 	return 0;
-      s2++;
+      s2 ++;
     }
 
-  /* S1 is shorter than S2. */
+  /* S1 is a substring of S2. */
   if (*s1 == 0)
     return -1;
 
-  /* S1 is a substring of S2. */
+  /* S1 isn't a substring. */
   return 1;
 }
 

@@ -372,7 +372,12 @@ ENTRY(biosdisk)
 	movw	0x1c(%ebp), %ax		/* segment */
 	shll	$4, %eax
 	movl	%eax, dap_buffer
-	movl	$disk_address_packet, %esi
+	
+	/* compute the address of disk_address_packet */
+	movl	$disk_address_packet, %eax
+	movw	%ax, %si
+	shrl	$4, %eax
+	movw	%ax, %cx		/* save the segment to cx */
 
 	xorb	%bl, %bl
 	movb	0x8(%ebp), %bh		/* read=0, write=1 */
@@ -383,6 +388,7 @@ ENTRY(biosdisk)
 	call	EXT_C(prot_to_real)	/* enter real mode */
 	.code16
 
+	movw	%cx, %ds
 	movw	%bx, %ax
 	int	$0x13			/* do the operation */
 
@@ -446,7 +452,7 @@ disk_compute_args:
 
 	.align	4
 disk_address_packet:
-	.byte	0x20			/* length of packet */
+	.byte	0x10			/* length of packet */
 	.byte	0			/* reserved */
 dap_blocks:
 	.word	0			/* number of blocks */
@@ -625,6 +631,7 @@ hard_drive:
 
 	/* Wahoo!  Got LBA! */
 	movb	$0x1, %bh
+	data32
 	jmp	2f
 
 1:	xorb	%bh, %bh		/* Too bad, no LBA */

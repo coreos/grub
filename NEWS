@@ -1,7 +1,9 @@
 NEWS - list of user-visible changes between releases of GRUB
 
 New in XXX:
-* The GRUB stage2 uses LBA mode and AWARD extensions if they are supported.
+* Preliminary LBA and AWARD BIOS disk extension support.  Please
+  contact bug-grub@gnu.org if you know you have a machine for which
+  this support would be useful, and would like to help in debugging.
 
 New in 0.5.90 - 1999-03-01, Gordon Matzigkeit:
 * Bug fixes.

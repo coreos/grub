@@ -1,4 +1,20 @@
+1999-03-09  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* shared_src/asm.S (biosdisk): Compute location of
+	disk_address_packet correctly.  From OKUJI Yoshinori.
+
 1999-03-08  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* docs/grub.texi: New Texinfo documentation.
+
+	* shared_src/disk_io.c (set_device): First stab at interpreting
+	Mach-style partition naming.
+
+	* shared_src/stage2.c (run_menu): Don't say it was a failure if
+	enter_cmdline returns nonzero... just wait for a key.
+
+	* shared_src/cmdline.c (enter_cmdline): Return nonzero, and avoid
+	the fallback command if we did an install.
 
 	* shared_src/asm.S (_start): New explicit symbol to supress
 	warnings.
