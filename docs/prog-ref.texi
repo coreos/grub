@@ -339,6 +339,38 @@ or the accessing mode of the @dfn{loading drive}, since @dfn{stage1} has
 already probed them.
 
 
+@node I/O ports detection
+@chapter How to detect I/O ports used for a BIOS drive
+
+In the @sc{pc} world, BIOS cannot detect if a hard disk drive is SCSI or
+IDE, generally speaking. Thus, it is not trivial to know which BIOS
+drive corresponds to an OS device. So the Multiboot Specification
+describes some techniques on how to guess mappings (@pxref{BIOS device
+mapping techniques, Multiboot Specification, BIOS device mapping
+techniques, multiboot, The Multiboot Specification}).
+
+However, the techniques decribed are unreliable or difficult to be
+implemented, so we use a different technique from them in GRUB. Our
+technique is @dfn{INT 13H tracking technique}. More precisely, it runs
+the INT 13 call (@pxref{Low-level disk I/O}) in single-step mode just
+like a debugger and parses the instructions.
+
+To execute the call one instruction at a time, set the TF (trap flag)
+flag in the register @dfn{FLAGS}. By this, your CPU generates @dfn{Break
+Point Trap} after each instruction is executed and call INT 1. In the
+stack in the interrupt handler, callee's FLAGS and the far pointer which
+points to the next instruction to be executed are pushed, so we can know
+what instruction will be executed in the next time and the current
+contents of all the registers. If the next instruction is an I/O
+operation, the interrupt handler adds the I/O port into the @dfn{I/O
+map}.
+
+If the INT 13 handler returns, the TF flag is cleared automatically by
+the instruction @code{iret}, and then output the I/O map on the screen.
+See the source code for the command @command{ioprobe}
+(@pxref{Command-line-specific commands}), for more information.
+
+
 @node Memory detection
 @chapter How to detect all installed @sc{ram}
 

@@ -23,6 +23,7 @@ New in 0.5.94:
   appendices.
 * The command "ioprobe" detects what I/O ports are used for a BIOS
   drive.
+* OpenBSD support in the grub shell is improved.
 
 New in 0.5.93:
 * ELF format of FreeBSD kernel is supported.

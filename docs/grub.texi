@@ -114,6 +114,7 @@ Part III: The Programmer Reference Manual
 * Embedded data::               Embedded variables in GRUB
 * Filesystem interface::        The generic interface for the fs code
 * Bootstrap tricks::            The bootstrap mechanism used in GRUB
+* I/O ports detection::         INT 13H tracking technique
 * Memory detection::            How to detect all installed @sc{ram}
 * Low-level disk I/O::          INT 13H disk I/O interrupts
 * MBR::                         The structure of Master Boot Record

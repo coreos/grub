@@ -1,3 +1,24 @@
+1999-11-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* docs/grub.texi: Add "I/O ports detection" into the menu.
+	* docs/user-ref.texi: Added a description about the command
+	"ioprobe".
+	* docs/prog-ref.texi (I/O ports detection): New chapter.
+	
+1999-11-01  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	From Pavel Roskin:
+	* stage2/asm.S (int1_handler): Use EXT_C(io_map) instead of
+	io_map.
+	(int1_handler): Use EXT_C(bios_key_map) instead of bios_key_map.
+	* grub/asmstub.c [__OpenBSD__]: Include <sys/ioctl.h> and
+	<sys/disklabel.h>.
+	[__OpenBSD__] (get_floppy_disk_name): Added support for OpenBSD.
+	[__OpenBSD__] (get_ide_disk_name): Likewise.
+	[__OpenBSD__] (get_scsi_disk_name): Likewise.
+	(get_drive_geometry) [__OpenBSD__]: Use for OpenBSD the same
+	ioctl as for NetBSD and FreeBSD.
+
 1999-10-31  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	* grub/asmstub.c (init_device_map): Add a floppy device name

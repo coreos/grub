@@ -331,7 +331,7 @@ int1_handler:
 	movw	%ax, %ds
 		
 	/* set %si to the io map */
-	movw	$ABS(io_map), %si
+	movw	$ABS(EXT_C(io_map)), %si
 
 		
 9:	/* check if the io map already has the port */
@@ -346,7 +346,7 @@ int1_handler:
 	jmp	8f
 	
 1:	/* check for the buffer overrun */
-	cmpw	$(ABS(io_map) + (IO_MAP_SIZE + 1) * 2), %si
+	cmpw	$(ABS(EXT_C(io_map)) + (IO_MAP_SIZE + 1) * 2), %si
 	je	8f
 	/* add the port into the io map */
 	movw	%dx, -2(%si)
@@ -490,7 +490,7 @@ int15_skip_flag:
 	xorw	%ax, %ax
 	movw	%ax, %ds
 	/* set %si to the key map */
-	movw	$ABS(bios_key_map), %si
+	movw	$ABS(EXT_C(bios_key_map)), %si
 
 	/* find the key code from the key map */
 2:

@@ -58,10 +58,10 @@ int grub_stage2 (void);
 # endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
 
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # include <sys/ioctl.h>		/* ioctl */
 # include <sys/disklabel.h>
-#endif /* __FreeBSD__ || __NetBSD__ */
+#endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
 
 #ifdef HAVE_OPENDISK
 # include <util.h>
@@ -405,6 +405,9 @@ get_floppy_disk_name (char *name, int unit)
   /* NetBSD */
   /* opendisk() doesn't work for floppies.  */
   sprintf (name, "/dev/rfd%da", unit);
+#elif defined(__OpenBSD__)
+  /* OpenBSD */
+  sprintf (name, "/dev/rfd%dc", unit);
 #else
 # warning "BIOS floppy drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -435,6 +438,9 @@ get_ide_disk_name (char *name, int unit)
 		 0	/* char device */
 		 );
   close (fd);
+#elif defined(__OpenBSD__)
+  /* OpenBSD */
+  sprintf (name, "/dev/rwd%dc", unit);
 #else
 # warning "BIOS IDE drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -465,6 +471,9 @@ get_scsi_disk_name (char *name, int unit)
 		 0	/* char device */
 		 );
   close (fd);
+#elif defined(__OpenBSD__)
+  /* OpenBSD */
+  sprintf (name, "/dev/rsd%dc", unit);
 #else
 # warning "BIOS SCSI drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -841,7 +850,7 @@ get_drive_geometry (int drive)
   geom->total_sectors = hdg.cylinders * hdg.heads * hdg.sectors;
   return 1;
   
-#elif defined(__FreeBSD__) || defined(__NetBSD__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
   /* FreeBSD */
   struct disklabel hdg;
   if (ioctl (disks[drive].flags, DIOCGDINFO, &hdg))

@@ -854,6 +854,12 @@ time. This command preserves the DOS BPB (and for hard disks, the
 partition table) of the sector the Stage 1 is to be installed into.
 @end deffn
 
+@deffn Command ioprobe drive
+Probe I/O ports used for the drive @var{drive}. This command will list
+the I/O ports on the screen. For technical information, @xref{I/O ports
+detection}.
+@end deffn
+
 @deffn Command kernel file @dots{}
 Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
 Linux zImage or bzImage, FreeBSD a.out, NetBSD a.out, etc.) from
