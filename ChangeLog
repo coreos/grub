@@ -1,3 +1,18 @@
+2000-06-06  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/main.c (dhcprequest) [GRUB]: Set the length of the
+	Parameter Request List to (4 + 2).
+	Set the list to RFC1533_VENDOR_MAGIC and
+	RFC1533_VENDOR_CONFIGFILE in addition to the standard
+	parameters.
+	(decode_rfc1533) [GRUB]: If C is equal to
+	RFC1533_VENDOR_CONFIGFILE, copy the contents of the tag to
+	CONFIG_FILE.
+	If C is equal to RFC1533_VENDOR_MAGIC, increment
+	VENDOREXT_ISVALID.
+	* netboot/etherboot.h [GRUB] (RFC1533_VENDOR_CONFIGFILE): New
+	macro. Defined as 150.
+	
 2000-06-03  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/asm.S (check_int13_extensions): Check the bitmap only

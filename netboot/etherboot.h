@@ -261,6 +261,10 @@ Author: Martin Renters
 #define RFC1533_VENDOR_IMG	192
 #define RFC1533_VENDOR_NUMOFIMG	16
 
+#ifdef GRUB
+# define RFC1533_VENDOR_CONFIGFILE	150
+#endif /* GRUB */
+
 #define RFC1533_END		255
 #define BOOTP_VENDOR_LEN	64
 #ifndef	NO_DHCP_SUPPORT

@@ -91,21 +91,29 @@ static const char dhcprequest[] =
   RFC2132_MAX_SIZE, 2, 2, 64,
   /* request parameters */
   RFC2132_PARAM_LIST,
-#ifdef  IMAGE_FREEBSD
+#ifdef GRUB
+  /* 4 standard + 2 vendortags */
+  4 + 2,
+#else
+# ifdef  IMAGE_FREEBSD
   /* 4 standard + 4 vendortags + 8 motd + 16 menu items */
   4 + 4 + 8 + 16,
-#else
+# else
   /* 4 standard + 3 vendortags + 8 motd + 16 menu items */
   4 + 3 + 8 + 16,
+# endif
 #endif
   /* Standard parameters */
   RFC1533_NETMASK, RFC1533_GATEWAY,
   RFC1533_HOSTNAME, RFC1533_EXTENSIONPATH,
   /* Etherboot vendortags */
   RFC1533_VENDOR_MAGIC,
-#ifdef IMAGE_FREEBSD
+#ifdef GRUB
+  RFC1533_VENDOR_CONFIGFILE,
+#else /* ! GRUB */
+# ifdef IMAGE_FREEBSD
   RFC1533_VENDOR_HOWTO,
-#endif
+# endif
   RFC1533_VENDOR_MNUOPTS, RFC1533_VENDOR_SELECTION,
   /* 8 MOTD entries */
   RFC1533_VENDOR_MOTD,
@@ -133,6 +141,7 @@ static const char dhcprequest[] =
   RFC1533_VENDOR_IMG + 13,
   RFC1533_VENDOR_IMG + 14,
   RFC1533_VENDOR_IMG + 15,
+#endif /* ! GRUB */
 };
 
 #endif /* ! NO_DHCP_SUPPORT */
@@ -953,8 +962,6 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	    }
 #endif /* ! NO_DHCP_SUPPORT */
 	  
-	  /* GRUB needs not to use any vendor-specific extension.  */
-#ifndef GRUB
 	  else if (c == RFC1533_VENDOR_MAGIC
 # ifndef IMAGE_FREEBSD   /* since FreeBSD uses tag 128 for swap definition */
 		   && TAG_LEN(p) >= 6 &&
@@ -963,6 +970,19 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 # endif
 		   )
 	    vendorext_isvalid++;
+	  
+	  /* GRUB now handles its own tag. Get the name of a configuration
+	     file from the network. Cool...  */
+#ifdef GRUB
+	  else if (c == RFC1533_VENDOR_CONFIGFILE)
+	    {
+	      grub_memmove (config_file, p + 2, TAG_LEN (p));
+	      
+	      /* FIXME: Is this below really necessary???  */
+	      config_file[TAG_LEN (p)] = 0;
+	    }
+#else /* ! GRUB */
+
 # ifdef  IMAGE_FREEBSD
 	  else if (c == RFC1533_VENDOR_HOWTO) {
 	    freebsd_howto = ((p[2]*256+p[3])*256+p[4])*256+p[5];
