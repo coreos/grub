@@ -23,6 +23,7 @@
 #include <shared.h>
 #include <serial.h>
 #include <term.h>
+#include <terminfo.h>
 
 /* An input buffer.  */
 static char input_buf[8];
@@ -401,7 +402,7 @@ void
 serial_gotoxy (int x, int y)
 {
   keep_track = 0;
-  grub_printf ("\e[%d;%dH", y + 1, x + 1);
+  ti_cursor_address (x, y);
   keep_track = 1;
   
   serial_x = x;
@@ -412,7 +413,7 @@ void
 serial_cls (void)
 {
   keep_track = 0;
-  grub_printf ("\e[H\e[J");
+  ti_clear_screen ();
   keep_track = 1;
   
   serial_x = serial_y = 0;
@@ -422,7 +423,10 @@ void
 serial_setcolorstate (color_state state)
 {
   keep_track = 0;
-  grub_printf ("\e[%cm", (state == COLOR_STATE_HIGHLIGHT) ? '7' : '0');
+  if (state == COLOR_STATE_HIGHLIGHT)
+    ti_enter_standout_mode ();
+  else
+    ti_exit_standout_mode ();
   keep_track = 1;
 }
 

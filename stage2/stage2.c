@@ -762,19 +762,34 @@ get_line_from_config (char *cmdline, int maxlen, int read_from_file)
 	  if (! read_from_preset_menu (&c, 1))
 	    break;
 	}
-      
-      /* translate characters first! */
-      if (c == '\\' && ! literal)
-	{
-	  literal = 1;
-	  continue;
-	}
+
+      /* Skip all carriage returns.  */
       if (c == '\r')
 	continue;
-      if ((c == '\t') || (literal && (c == '\n')))
+
+      /* Replace tabs with spaces.  */
+      if (c == '\t')
 	c = ' ';
 
-      literal = 0;
+      /* The previous is a backslash, then...  */
+      if (literal)
+	{
+	  /* If it is a newline, replace it with a space and continue.  */
+	  if (c == '\n')
+	    {
+	      c = ' ';
+	      
+	      /* Go back to overwrite a backslash.  */
+	      if (pos > 0)
+		pos--;
+	    }
+	    
+	  literal = 0;
+	}
+	  
+      /* translate characters first! */
+      if (c == '\\' && ! literal)
+	literal = 1;
 
       if (comment)
 	{

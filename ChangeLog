@@ -1,5 +1,40 @@
 2002-11-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* docs/Makefile.am (man_MANS): Added grub-terminfo.8.
+	($(srcdir)/grub_terminfo.8): New target.
+	* utils/grub-terminfo.in: New file.
+	* util/Makefile.am (sbin_SCRIPTS): Added grub-terminfo.
+	* configure.in (AC_OUTPUT): Added util/grub-terminfo.
+
+	* docs/grub.texi (terminfo): New subsection.
+	(Invoking grub-terminfo): New chapter.
+
+	From Tilmann Bubeck <t.bubeck@reinform.de>:
+	* stage2/Makefile.am (noinst_HEADERS): Added terminfo.h and
+	tparm.h.
+	(libgrub_a_SOURCES): Added terminfo.c and tparm.c.
+	(pre_stage2_exe_SOURCES): Likewise.
+	* stage2/terminfo.c: New file.
+	* stage2/terminfo.h: Likewise.
+	* stage2/tparm.c: Likewise.
+	* stage2/tparm.h: Likewise.
+	* stage2/stage2.c (get_line_from_config): Fix handling of
+	backslashes.
+	* stage2/char_io.c (grub_putstr): New function.
+	(grub_printf): Use grub_putstr.
+	(substring): Add const into both arguments.
+	* stage2/builtins.c [SUPPORT_SERIAL]: Include terminfo.h.
+	[SUPPORT_SERIAL] (terminfo_func): New function.
+	[SUPPORT_SERIAL] (builtin_terminfo): New variable.
+	 (builtin_table) [SUPPORT_SERIAL]: Added a pointer to
+	BUILTIN_TERMINFO.
+	* stage2/serial.c (serial_gotoxy): Use ti_cursor_address.
+	(serial_cls): Use ti_clear_screen.
+	(serial_highlight): use ti_enter_standout_mode and
+	ti_exit_standout_mode.
+
+2002-11-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/disk_io.c (rawread): Make sure that SECTOR is valid.
 	If not, set ERRNUM to ERR_GEOM and return zero. This check is
 	critical when a partition table is corrupted.

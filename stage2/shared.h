@@ -890,11 +890,12 @@ void print_error (void);
 char *convert_to_ascii (char *buf, int c, ...);
 int get_cmdline (char *prompt, char *cmdline, int maxlen,
 		 int echo_char, int history);
-int substring (char *s1, char *s2);
+int substring (const char *s1, const char *s2);
 int nul_terminate (char *str);
 int get_based_digit (int c, int base);
 int safe_parse_maxint (char **str_ptr, int *myint_ptr);
 int memcheck (int start, int len);
+void grub_putstr (const char *str);
 
 #ifndef NO_DECOMPRESSION
 /* Compression support. */

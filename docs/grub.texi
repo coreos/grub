@@ -24,6 +24,9 @@
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
 * grub-md5-crypt: (grub)Invoking grub-md5-crypt.        Encrypt a password
                                                         in MD5 format
+* grub-terminfo: (grub)Invoking grub-terminfo.  Generate a terminfo
+                                                command from a
+                                                terminfo name
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
 @end direntry
 
@@ -109,6 +112,7 @@ This edition documents version @value{VERSION}.
 * Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
 * Invoking grub-md5-crypt::     How to generate a cryptic password
+* Invoking grub-terminfo::      How to generate a terminfo command
 * Invoking mbchk::              How to use the Multiboot checker
 * Obtaining and Building GRUB:: How to obtain and build GRUB
 * Reporting bugs::              Where you should send a bug report
@@ -1908,6 +1912,7 @@ Commands usable both in the menu and in the command-line.
 * serial::                      Set up a serial device
 * setkey::                      Configure the key map
 * terminal::                    Choose a terminal
+* terminfo::                    Define escape sequences for a terminal
 * tftpserver::                  Specify a TFTP server
 * unhide::                      Unhide a partition
 @end menu
@@ -2315,6 +2320,21 @@ The option @option{--no-echo} has GRUB not to echo back input
 characters. This implies the option @option{--no-edit}.
 
 The option @option{--no-edit} disables the BASH-like editing feature.
+@end deffn
+
+
+@node terminfo
+@subsection terminfo
+
+@deffn Command terminfo @option{--name=name} @option{--cursor-address=seq} [@option{--clear-screen=seq}] [@option{--enter-standout-mode=seq}] [@option{--exit-standout-mode=seq}]
+Define the capabilities of your terminal. Use this command to define
+escape sequences, unless it is vt100-compatible. You may use @samp{\e}
+for @key{ESC} and @samp{^X} for a control character.
+
+You can use the utility @command{grub-terminfo} to generate
+appropriate arguments to this command. @xref{Invoking grub-terminfo}.
+
+If no option is specified, the current settings are printed.
 @end deffn
 
 
@@ -3413,6 +3433,32 @@ Use @var{file} as the grub shell.
 @end table
 
 
+@node Invoking grub-terminfo
+@chapter Invoking grub-md5-crypt
+
+The program @command{grub-terminfo} generates a terminfo command from
+a terminfo name (@pxref{terminfo}). The result can be used in the
+configuration file, to define escape sequences. Because GRUB assumes
+that your terminal is vt100-compatible by default, this would be
+useful only if your terminal is uncommon (such as vt52).
+
+@command{grub-terminfo} accepts the following options:
+
+@table @option
+@item --help
+Print a summary of the command-line options and exit.
+
+@item --version
+Print the version information and exit.
+@end table
+
+You must specify one argument to this command. For example:
+
+@example
+@kbd{grub-terminfo vt52}
+@end example
+
+
 @node Invoking mbchk
 @chapter Invoking mbchk
 
@@ -3552,7 +3598,7 @@ thing.
 @end enumerate
 
 If you realize the guideline above, submit a report to the
-@uref{http://savannah.gnu.org/bugs/?group=grub, Bug Tracking System}.
+@uref{http://bugcomm.enbug.org, Bug Tracking System}.
 Alternatively, you can submit a report via electronic mail to
 @email{bug-grub@@gnu.org}, but we strongly recommend that you use the
 Bug Tracking System, because e-mail can be passed over easily.

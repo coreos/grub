@@ -6,8 +6,7 @@ New in 0.93:
   Also, add the support into GRUB.
 * Finally, we have a Bug Tracking System on Savannah! Now the preferable
   way to report bugs is to use the BTS rather than sending e-mail to
-  bug-grub. See <http://savannah.gnu.org/bugs/?group_id=68>, for more
-  details.
+  bug-grub. See <http://bugcomm.enbug.org>, for more details.
 * The appendix "FAQ" in the manual is removed. See the GNU GRUB FAQ on
   the web <http://www.gnu.org/software/grub/grub-faq.html> instead.
 * The terminal handling code is rewritten radically, and many bugfixes
@@ -23,6 +22,7 @@ New in 0.93:
 * Support for booting Linux is rewritten, so GRUB now supports
   large-EBDA systems.
 * The menu interfaces supports Page Up, Page Down, and Right Key.
+* New command "terminfo", for vt100-incompatible terminals.
 
 New in 0.92 - 2002-04-30:
 * The command "displaymem" uses only hex digits for consistency.

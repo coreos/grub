@@ -35,6 +35,7 @@
 
 #ifdef SUPPORT_SERIAL
 # include <serial.h>
+# include <terminfo.h>
 #endif
 
 #ifdef GRUB_UTIL
@@ -4141,6 +4142,97 @@ static struct builtin builtin_terminal =
 #endif /* SUPPORT_SERIAL || SUPPORT_HERCULES */
 
 
+#ifdef SUPPORT_SERIAL
+static int
+terminfo_func (char *arg, int flags)
+{
+  struct terminfo term;
+
+  if (*arg)
+    {
+      struct
+      {
+	const char *name;
+	char *var;
+      }
+      options[] =
+	{
+	  {"--name=", term.name},
+	  {"--cursor-address=", term.cursor_address},
+	  {"--clear-screen=", term.clear_screen},
+	  {"--enter-standout-mode=", term.enter_standout_mode},
+	  {"--exit-standout-mode=", term.exit_standout_mode}
+	};
+
+      grub_memset (&term, 0, sizeof (term));
+      
+      while (*arg)
+	{
+	  int i;
+	  char *next = skip_to (0, arg);
+	      
+	  nul_terminate (arg);
+	  
+	  for (i = 0; i < sizeof (options) / sizeof (options[0]); i++)
+	    {
+	      const char *name = options[i].name;
+	      int len = grub_strlen (name);
+	      
+	      if (! grub_memcmp (arg, name, len))
+		{
+		  grub_strcpy (options[i].var, arg + len);
+		  break;
+		}
+	    }
+
+	  if (i == sizeof (options) / sizeof (options[0]))
+	    {
+	      errnum = ERR_BAD_ARGUMENT;
+	      return errnum;
+	    }
+
+	  arg = next;
+	}
+
+      if (term.name[0] == 0 || term.cursor_address[0] == 0)
+	{
+	  errnum = ERR_BAD_ARGUMENT;
+	  return errnum;
+	}
+
+      ti_set_term (term);
+    }
+  else
+    {
+      /* No option specifies printing out current settings.  */
+      term = ti_get_term ();
+
+      grub_printf ("name=%s\n", term.name);
+      grub_printf ("cursor_address=%s\n", term.cursor_address);
+      grub_printf ("clear_screen=%s\n", term.clear_screen);
+      grub_printf ("enter_standout_mode=%s\n", term.enter_standout_mode);
+      grub_printf ("exit_standout_mode=%s\n", term.exit_standout_mode);
+    }
+
+  return 0;
+}
+
+static struct builtin builtin_terminfo =
+{
+  "terminfo",
+  terminfo_func,
+  BUILTIN_MENU | BUILTIN_CMDLINE | BUILTIN_HELP_LIST,
+  "terminfo [--name=NAME --cursor-address=SEQ [--clear-screen=SEQ]"
+  " [--enter-standout-mode=SEQ] [--exit-standout-mode=SEQ]]",
+  
+  "Define the capabilities of your terminal. Use this command to"
+  " define escape sequences, unless it is vt100-compatible."
+  " You may use \\e for ESC and ^X for a control character."
+  " If no option is specified, the current settings are printed."
+};
+#endif /* SUPPORT_SERIAL */
+	  
+
 /* testload */
 static int
 testload_func (char *arg, int flags)
@@ -4633,6 +4725,9 @@ struct builtin *builtin_table[] =
 #if defined(SUPPORT_SERIAL) || defined(SUPPORT_HERCULES)
   &builtin_terminal,
 #endif /* SUPPORT_SERIAL || SUPPORT_HERCULES */
+#ifdef SUPPORT_SERIAL
+  &builtin_terminfo,
+#endif /* SUPPORT_SERIAL */
   &builtin_testload,
   &builtin_testvbe,
 #ifdef SUPPORT_NETBOOT

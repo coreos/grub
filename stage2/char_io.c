@@ -143,10 +143,17 @@ convert_to_ascii (char *buf, int c,...)
 }
 
 void
+grub_putstr (const char *str)
+{
+  while (*str)
+    grub_putchar (*str++);
+}
+
+void
 grub_printf (const char *format,...)
 {
   int *dataptr = (int *) &format;
-  char c, *ptr, str[16];
+  char c, str[16];
   unsigned long mask = 0xFFFFFFFF;
   
   dataptr++;
@@ -169,11 +176,7 @@ grub_printf (const char *format,...)
 	  case 'u':
 	    *convert_to_ascii (str, c, *((unsigned long *) dataptr++) & mask)
 	      = 0;
-
-	    ptr = str;
-
-	    while (*ptr)
-	      grub_putchar (*(ptr++));
+	    grub_putstr (str);
 	    break;
 
 #ifndef STAGE1_5
@@ -182,10 +185,7 @@ grub_printf (const char *format,...)
 	    break;
 
 	  case 's':
-	    ptr = (char *) (*(dataptr++));
-
-	    while ((c = *(ptr++)) != 0)
-	      grub_putchar (c);
+	    grub_putstr ((char *) *(dataptr++));
 	    break;
 #endif
 	  }
@@ -1087,7 +1087,7 @@ nocursor (void)
 #endif /* ! STAGE1_5 */
 
 int
-substring (char *s1, char *s2)
+substring (const char *s1, const char *s2)
 {
   while (*s1 == *s2)
     {

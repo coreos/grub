@@ -6,8 +6,8 @@ noinst_SCRIPTS = $(TESTS)
 noinst_HEADERS = apic.h defs.h dir.h disk_inode.h disk_inode_ffs.h \
         fat.h filesys.h freebsd.h fs.h hercules.h i386-elf.h \
 	imgact_aout.h jfs.h mb_header.h mb_info.h md5.h nbi.h \
-	pc_slice.h serial.h shared.h smp-imps.h term.h nbi.h vstafs.h \
-	xfs.h
+	pc_slice.h serial.h shared.h smp-imps.h term.h terminfo.h \
+	tparm.h nbi.h vstafs.h xfs.h
 EXTRA_DIST = setjmp.S apm.S $(noinst_SCRIPTS)
 
 # For <stage1.h>.
@@ -18,7 +18,7 @@ noinst_LIBRARIES = libgrub.a
 libgrub_a_SOURCES = boot.c builtins.c char_io.c cmdline.c common.c \
 	disk_io.c fsys_ext2fs.c fsys_fat.c fsys_ffs.c fsys_jfs.c \
 	fsys_minix.c fsys_reiserfs.c fsys_vstafs.c fsys_xfs.c gunzip.c \
-	md5.c serial.c stage2.c
+	md5.c serial.c stage2.c terminfo.c tparm.c
 libgrub_a_CFLAGS = $(GRUB_CFLAGS) -I$(top_srcdir)/lib \
 	-DGRUB_UTIL=1 -DFSYS_EXT2FS=1 -DFSYS_FAT=1 -DFSYS_FFS=1 \
 	-DFSYS_JFS=1 -DFSYS_MINIX=1 -DFSYS_REISERFS=1 -DFSYS_VSTAFS=1 \
@@ -86,7 +86,7 @@ pre_stage2_exec_SOURCES = asm.S bios.c boot.c builtins.c char_io.c \
 	cmdline.c common.c console.c disk_io.c fsys_ext2fs.c \
 	fsys_fat.c fsys_ffs.c fsys_jfs.c fsys_minix.c fsys_reiserfs.c \
 	fsys_vstafs.c fsys_xfs.c gunzip.c hercules.c md5.c serial.c \
-	smp-imps.c stage2.c
+	smp-imps.c stage2.c terminfo.c tparm.c
 pre_stage2_exec_CFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_ASFLAGS = $(STAGE2_COMPILE) $(FSYS_CFLAGS)
 pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
