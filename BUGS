@@ -28,5 +28,3 @@ Known problems/bugs:
 
   - Hitting Ctrl-Alt-Delete when in GRUB locks some machines.  Use Reset
     for now.  (This apparently hasn't been observed for a while)
-
-  - Stage 1.5 does not work in some environments. Why?
