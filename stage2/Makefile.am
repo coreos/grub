@@ -255,5 +255,6 @@ pxegrub: pxeloader diskless
 	cat $^ > $@
 
 # General rule for making a raw binary.
-%: %.exec
+SUFFIXES = .exec
+.exec:
 	$(OBJCOPY) -O binary $< $@

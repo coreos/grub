@@ -208,9 +208,9 @@ AC_CHECK_LIB(util, opendisk, [GRUB_LIBS="$GRUB_LIBS -lutil"
 # Unless the user specify --without-curses, check for curses.
 if test "x$with_curses" != "xno"; then
   AC_CHECK_LIB(ncurses, wgetch, [GRUB_LIBS="$GRUB_LIBS -lncurses"
-  AC_DEFINE(HAVE_LIBCURSES)],
+  AC_DEFINE(HAVE_LIBCURSES, 1, [Define if you have a curses library])],
     [AC_CHECK_LIB(curses, wgetch, [GRUB_LIBS="$GRUB_LIBS -lcurses"
-       AC_DEFINE(HAVE_LIBCURSES)])])
+       AC_DEFINE(HAVE_LIBCURSES, 1, [Define if you have a curses library])])])
 fi
 
 AC_SUBST(GRUB_LIBS)
@@ -620,7 +620,8 @@ if test "x$enable_preset_menu" = x; then
   :
 else
   if test -r $enable_preset_menu; then
-    grub_DEFINE_FILE(PRESET_MENU_STRING, [$enable_preset_menu])
+    grub_DEFINE_FILE(PRESET_MENU_STRING, [$enable_preset_menu],
+    		     [Define if there is user specified preset menu string])
   else
     AC_MSG_ERROR([Cannot read the preset menu file $enable_preset_menu])
   fi
@@ -639,7 +640,7 @@ AC_ARG_ENABLE(auto-linux-mem-opt,
 if test "x$enable_auto_linux_mem_opt" = xno; then
   :
 else
-  AC_DEFINE(AUTO_LINUX_MEM_OPT)
+  AC_DEFINE(AUTO_LINUX_MEM_OPT, 1, [Define if you don't want to pass the mem= option to Linux])
 fi
 
 dnl Now substitute the variables.

@@ -1,3 +1,15 @@
+2004-04-22  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Add "gnu".
+	* configure.ac: Update to work with automake 1.8, quote all
+	AC_DEFUN's correctly and provide descriptions for AC_DEFINE's.
+	* acinclude.m4: Likewise.
+	* acconfig.h: Removed.
+	
+	* stage1/Makefile.am (.exec): Use suffix rules instead of pattern
+	rules.
+	* stage2/Makefile.am (.exec): Likewise.
+
 2004-04-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi (Making a GRUB bootable CD-ROM): New section.
