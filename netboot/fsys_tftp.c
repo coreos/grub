@@ -116,8 +116,12 @@ buf_fill (int abort)
 #endif
 	  /* Shouldn't happen.  */
 	  if (prevblock)
-	    /* Ignore it.  */
-	    continue;
+	    {
+	      /* Ignore it.  */
+	      grub_printf ("%s:%d: warning: PREVBLOCK != 0 (0x%x)\n",
+			   __FILE__, __LINE__, prevblock);
+	      continue;
+	    }
 	  
 	  len = ntohs (tr->udp.len) - sizeof (struct udphdr) - 2;
 	  if (len > TFTP_MAX_PACKET)
@@ -187,8 +191,12 @@ buf_fill (int abort)
 	  
 	  /* Shouldn't happen.  */
 	  if (len > packetsize)
-	    /* Ignore it.  */
-	    continue;
+	    {
+	      /* Ignore it.  */
+	      grub_printf ("%s:%d: warning: LEN > PACKETSIZE (0x%x > 0x%x)\n",
+			   __FILE__, __LINE__, len, packetsize);
+	      continue;
+	    }
 	  
 	  block = ntohs (tp.u.ack.block = tr->u.data.block);
 	}
@@ -268,6 +276,18 @@ send_rrq (void)
   
 #ifdef TFTP_DEBUG
   grub_printf ("send_rrq ()\n");
+  {
+    int i;
+    char *p;
+
+    for (i = 0, p = (char *) &tp; i < len; i++)
+      if (p[i] >= ' ' && p[i] <= '~')
+	grub_putchar (p[i]);
+      else
+	grub_printf ("\\%x", (unsigned) p[i]);
+
+    grub_putchar ('\n');
+  }
 #endif
   /* Send the packet.  */
   return udp_transmit (arptable[ARP_SERVER].ipaddr.s_addr, ++iport,
@@ -401,9 +421,9 @@ tftp_dir (char *dirname)
   ch = nul_terminate (dirname);
   /* Make the request string (octet, blksize and tsize).  */
   len = (grub_sprintf ((char *) tp.u.rrq,
-		       "%s%coctet%cblksize%c%d%ctsize%c0%c0",
-		       dirname, 0, 0, 0, TFTP_MAX_PACKET, 0, 0, 0)
-	 + TFTP_MIN_PACKET + 1);
+		       "%s%coctet%cblksize%c%d%ctsize%c0",
+		       dirname, 0, 0, 0, TFTP_MAX_PACKET, 0, 0)
+	 + sizeof (struct iphdr) + sizeof (struct udphdr) + 2 + 1);
   /* Restore the original DIRNAME.  */
   dirname[grub_strlen (dirname)] = ch;
   /* Save the TFTP packet so that we can reopen the file later.  */

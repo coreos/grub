@@ -1,3 +1,10 @@
+2000-05-25  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/fsys_tftp.c (buf_fill): Warn when amazing things
+	happen.
+	(tftp_dir): Revert previous change. Don't use TFTP_MIN_PACKET
+	but calculate the appropriate length.
+	
 2000-05-23  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* netboot/fsys_tftp.c (tftp_dir): Append "0\0" to the request
