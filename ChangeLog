@@ -1,3 +1,8 @@
+1999-05-12  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* grub/asmstub.c: Include <errno.h>. Reported by Kunihiro
+	Ishiguro <kunihiro@zebra.org>.
+	
 1999-05-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
 	Reported by Brian Brunswick <brian@skarpsey.demon.co.uk>:
