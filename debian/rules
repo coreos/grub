@@ -2,7 +2,7 @@
 # -*-makefile-*-
 # based on the sample debian/rules file for GNU hello by Ian Jackson.
 
-package=grub
+package:=grub
 
 INSTALL = install -c
 INSTALL_DATA = $(INSTALL) -m 644
@@ -39,7 +39,7 @@ binary-arch:	checkroot build
 
 	mv debian/tmp/info debian/tmp/usr/info
 
-	cp docs/*.{txt,html} debian/tmp/usr/doc/grub/docs/
+	cp docs/*.txt docs/*.html debian/tmp/usr/doc/grub/docs/
 	$(INSTALL_DATA)	docs/TODO debian/tmp/usr/doc/grub/docs/
 	$(INSTALL_DATA)	docs/BUGS debian/tmp/usr/doc/grub/docs/
 	$(INSTALL_DATA) NEWS debian/tmp/usr/doc/grub/docs/
@@ -57,7 +57,7 @@ binary-arch:	checkroot build
 	dpkg --build debian/tmp ..
 
 define checkdir
-	test -f debian/rules -a -f shared_src/fsys_ext2fs.c
+	test -f debian/rules -a -f stage2/fsys_ext2fs.c
 endef
 
 # Below here is fairly generic really

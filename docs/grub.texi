@@ -65,7 +65,7 @@ Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions.
 @end titlepage
 
-@c The Top node should not appears in TeX.
+@c The Top node should not appear in TeX.
 @ifnottex
 
 @node Top
@@ -79,10 +79,10 @@ edition documents version @value{VERSION}.
 @menu
 * Introduction::                Capturing the spirit of GRUB.
 * Installing::                  How to install GRUB on your computer.
-* Using::                       Booting your operating systems.
+* Using::                       Booting your operating system.
 * Filesystems::                 Filesystem syntax and semantics.
 * Troubleshooting::             Error messages produced by GRUB.
-* Stage 2 emulator::            The command @command{grub}.
+* Stage 2 Emulator::            The @command{grub} command.
 * Hacking::                     Implementation details.
 * Index::                       Index.
 
@@ -100,9 +100,9 @@ How to install GRUB on your computer
 * Boot floppy::                 Creating a GRUB boot floppy.
 * Automated install::           Installation via @code{install=}.
 
-Booting your operating systems
+Booting your operating system
 
-* Command-line::                The flexible command-line interface.
+* Command line::                The flexible command-line interface.
 * Menu::                        The simple menu interface.
 * Menu entry editor::           Editing a menu entry.
 * Commands::                    The list of available commands.
@@ -118,7 +118,7 @@ Error messages reported by GRUB
 * Stage1.5 errors::             Errors reported by the Stage 1.5.
 * Stage2 errors::               Errors reported by the Stage 2.
 
-The command @command{grub}
+The @command{grub} command
 
 * Basic usage::                 How to use the Stage 2 emulator.
 * Installation under UNIX::     How to install GRUB via @command{grub}.
@@ -144,7 +144,7 @@ Implementation details
 Briefly, a @dfn{bootloader} is the first software program that runs when
 a computer starts.  It is responsible for loading and transferring
 control to the operating system @dfn{kernel} software (such as the Linux
-or Hurd kernels).  The kernel, in turn, initializes the rest of the
+or GNU Hurd kernel).  The kernel, in turn, initializes the rest of the
 operating system (usually GNU).
 
 @menu
@@ -165,7 +165,7 @@ Standard}), because they were determined not to add to the large number
 of mutually-incompatible PC boot methods.
 
 Erich then began modifying the FreeBSD bootloader so that it would
-understand Multiboot.  He quickly realized that it would be a lot easier
+understand Multiboot.  He soon realized that it would be a lot easier
 to write his own bootloader from scratch than to keep working on the
 FreeBSD bootloader, and so GRUB was born.
 
@@ -189,122 +189,120 @@ The other goals, listed in approximate order of importance, are:
 
 @itemize
 @item
-Basic functions must be easy for an end-user to use.
+Basic functions must be straightforward for end-users.
 
 @item
-Rich functionality for OS experts/designers.
+Rich functionality to support kernel experts and designers.
 
 @item
-Compatibility for booting FreeBSD, NetBSD, OpenBSD, and
-GNU/Linux. Proprietary OS's such as DOS, Windows NT, and OS/2 are
+Backward compatibility for booting FreeBSD, NetBSD, OpenBSD, and
+Linux. Proprietary kernels (such as DOS, Windows NT, and OS/2) are
 supported via a chain-loading function.
 @end itemize
 
 Except for specific compatibility modes (chain-loading and the Linux
 @dfn{piggyback} format), all kernels will be started in much the same
-state as in the Multiboot Standard listed above. Only kernels being
-loaded at 1 megabyte or above are presently supported. Any attempt to
-load below that boundary will simply result in immediate failure and an
-error message reporting the problem.
+state as in the Multiboot Standard.  Only kernels loaded at 1 megabyte
+or above are presently supported. Any attempt to load below that
+boundary will simply result in immediate failure and an error message
+reporting the problem.
 
 In addition to the requirements above, GRUB has the following features
-(note that the Multiboot Standard doesn't explicitly require everything
-listed in it, but GRUB will support all options):
+(note that the Multiboot Standard doesn't require all the features that
+GRUB supports):
 
 @table @asis
 @item Multiple Executable Formats
-Supports many of the @dfn{a.out} variants plus @dfn{ELF}. Any symbol
-table present is also loaded.
+Supports many of the @dfn{a.out} variants plus @dfn{ELF}.  Symbol
+tables are also loaded.
 
-@item Supports Non-Multiboot OS's
-Supports many of the various free 32-bit OS's prior to any Multiboot
-compliance. Chiefly FreeBSD, NetBSD, OpenBSD, and Linux. Chain-loading
-is also supported.
+@item Supports Non-Multiboot Kernels
+Supports many of the various free 32-bit kernels that lack Multiboot
+compliance (primarily FreeBSD, NetBSD, OpenBSD, and
+Linux).  Chain-loading of other bootloaders is also supported.
 
 @item Loads Multiples Modules
-Multiboot feature of loading multiple modules is fully supported.
+GRUB fully supports the Multiboot feature of loading multiple modules.
 
 @item Configuration File
 Supports a human-readable text configuration file with preset boot
-commands. The list of commands (@pxref{Commands}) are a superset of
-those supported on the command-line. An example command-file is provided
-under the directory @file{docs/} in the source tree.
+commands.  The list of commands (@pxref{Commands}) are a superset of
+those supported on the command line.  An example command file is provided
+in @file{docs/menu.lst} in the source tree.
 
 @item Menu Interface
-A menu-interface listing the preset boot commands, with a programmable
+A menu interface listing the preset boot commands, with a programmable
 timeout, is available. There is no fixed limit on the number of boot
-command-set entries, and should have space for several hundred.
+entries, and the current implementation has space for several hundred.
 
-@item Flexible Command-Line Interface
-A fairly flexible command-line interface, accessible from the menu, is
-available to edit any preset commands, or simply start a new command-set
-from scratch. The list of commands (@pxref{Commands}) are a subset of
-those supported for command-files. Editing commands closely resemble the
-BASH shell command-line (@pxref{Command Line Editing, BASH, Command Line
-Editing, features, Bash Features}), with @key{TAB}-completion-listing
-(it doesn't perform the completion, just lists the possibilities) of
-commands, devices, partitions, and files in a directory depending on
-context. If no config file is present, it goes into the command-line.
+@item Flexible Command Line Interface
+A fairly flexible command line interface, accessible from the menu,
+is available to edit any preset commands, or write a new boot command
+set from scratch.  If no command file is present, GRUB drops to
+the command line.
+
+The list of commands (@pxref{Commands}) are a subset of those supported
+for command files. Editing commands closely resemble the Bash command
+line (@pxref{Command Line Editing, Bash, Command Line Editing, features,
+Bash Features}), with @key{TAB}-completion of commands, devices,
+partitions, and files in a directory depending on context.
 
 @item Multiple Filesystem Types
-Supports multiple filesystem types transparently, plus an explicitly
-usable block-list notation. The currently supported filesystem types are
-@dfn{BSD FFS}, @dfn{DOS FAT}, and @dfn{Linux
-ext2fs}. @xref{Filesystems}, for more information.
+Supports multiple filesystem types transparently, plus a useful explicit
+blocklist notation. The currently supported filesystem types are
+@dfn{BSD FFS}, @dfn{DOS FAT}, and @dfn{Linux ext2fs}.
+@xref{Filesystems}, for more information.
 
 @item Decompression Support
-Can decompress files which were compressed with using
+Can decompress files which were compressed by
 @command{gzip}. This function is both automatic and transparent to the
-user (i.e. all functions operate normally upon the uncompressed contents
-of the files in question). This is a win on 2 fronts, as it both greatly
-reduces file size and loading time (there are a few pathological cases
-where loading a very badly organized ELF kernel might make it take
-longer, but IMO you'll never see this in practice), a particularly major
-win for floppies. It is conceivable that some kernel modules should be
-loaded in a compressed state, so a variant of the modules loading
-command which doesn't uncompress them can be used.
+user (i.e. all functions operate upon the uncompressed contents
+of the specified files).  This greatly
+reduces file size and loading time, a particularly major
+benefit for floppies.@footnote{There are a few pathological cases
+where loading a very badly organized ELF kernel might take
+longer, but in practice this never happens.}
+
+It is conceivable that some kernel modules should be loaded in a
+compressed state, so a different module-loading command can be specified
+to avoid uncompressing the modules.
 
 @item Access Data on Any Installed Device
 Supports reading data from any or all floppy or hard disk(s) recognized
-by the BIOS, independent of the setting for the root partition.
+by the BIOS, independent of the setting of the root partition.
 
-@item Geometry Translation-Independent
-Subject to the constraint that it cannot go past the end of the
-geometry-translated area of a drive, the particular translation used is
-generally irrelevant. This implies a drive installed and running on a
-controller with one translation in use may in general be moved to
-another controller with a different translation (or the translation
-settings on the first controller, if configurable, may be changed) with
-no adverse effects and no other changes necessary.
+@item Independent of Drive Geometry Translation
+Unlike many other bootloaders, GRUB makes the particular drive
+translation irrelevant.  A drive installed and running
+with one translation may be converted to another translation without any
+adverse effects or changes in GRUB's configuration.
 
 @item Detects All Installed @sc{ram}
 GRUB can generally find all the installed @sc{ram} on a PC-compatible
-machine. It uses the BIOS query technique (@pxref{Memory detection}). As
-described on the Multiboot Standard (@pxref{Top, Multiboot Standard,
-Motivation, multiboot, The Multiboot Standard}), OS's which only use the
-lower and upper memory values (whose presence is determined by bit 0 of
-the flags word passed to the OS) may not be capable of receiving
-information on all of installed memory. On most machines, upper memory
-is contiguous, so the problem does not arise.
+machine. It uses an advanced BIOS query technique for finding all
+memory regions (@pxref{Memory detection}). As described on the Multiboot
+Standard (@pxref{Top, Multiboot Standard, Motivation, multiboot, The
+Multiboot Standard}), not all kernels make use of this information, but
+GRUB provides it for those who do.
 
 @item Supports Logical Block Address Mode
 In traditional disk calls (called @dfn{CHS mode}), there is a geometry
 translation problem, that is, the BIOS cannot access over 1024
 cylinders, so the accessible space is limited to at least 508 MB and to
 at most 8GB. GRUB can't universally solve this problem, as there is no
-new interface which is used in all machines. However, some newer
-machines have the new interface, Logical Block Address (LBA) mode. So
-GRUB will automatically detect if LBA mode is available and use it if
-available. In LBA mode, GRUB can access the whole of your disk space.
+standard interface used in all machines. However, some newer machines
+have the a new interface, Logical Block Address (@dfn{LBA}) mode.  GRUB
+automatically detects if LBA mode is available and uses it if
+available. In LBA mode, GRUB can access the entire disk.
 @end table
 
 Future directions might include an internal programming language for
-supporting richer sets of boot options with control statements (it
-becomes a boot-script at that point), and possibly support for non-IBM
-PC-compatible machines@footnote{There is a port to NEC PC-98xx
-series. See
+supporting richer sets of boot options with control statements (which
+would make GRUB its own kind of kernel).  Support for non-PC hardware
+architectures is also planned.@footnote{There is already a port to the
+NEC PC-98xx series. See
 @url{http://www.kuis.kyoto-u.ac.jp/~kmc/proj/linux98/arch/i386/boot/grub98/},
-for more information.}.
+for more information.}
 
 
 @node Role of a bootloader
@@ -334,9 +332,9 @@ around@dots{} GRUB!
 @end quotation
 
 We, the GRUB maintainers, do not (usually) encourage Gordon's level of
-fanaticism, but it helps to remember that bootloaders deserve careful
-design.  We hope at least that you enjoy using GNU GRUB as much as we
-did writing it.
+fanaticism, but it helps to remember that bootloaders deserve
+recognition.  We hope that you enjoy using GNU GRUB as much as we did
+writing it.
 
 
 @node Installing
@@ -362,16 +360,23 @@ on the floppy.
 @end quotation
 
 If you install GRUB using this method, it will only have access to the
-command-line interface, since there is no filesystem in which to find a
+command line interface, since there is no filesystem in which to find a
 configuration file. If you want to use the menu interface, see
 @ref{Automated install}.
 
 Under an UNIX-like operating system, such as GNU, use @code{dd} as
-follows, where @file{/dev/fd0} is the floppy device:
+follows, where @file{/lib/grub/i386-pc} is the GRUB install directory
+and @file{/dev/fd0} is the floppy device:
 
 @example
-dd if=stage1/stage1 of=/dev/fd0 bs=512 count=1
-dd if=stage2/stage2 of=/dev/fd0 bs=512 seek=1
+$ cd /lib/grub/i386-pc
+$ dd if=stage1 of=/dev/fd0 bs=512 count=1
+1+0 records in
+1+0 records out
+$ dd if=stage2 of=/dev/fd0 bs=512 seek=1
+67+1 records in
+67+1 records out
+$
 @end example
 
 Under DOS-based systems, such as Windows, use @code{copy} and
@@ -379,7 +384,7 @@ Under DOS-based systems, such as Windows, use @code{copy} and
 
 @example
 copy /b stage1 + stage2 grub.raw
-rawrite grub.new a:
+rawrite grub.raw a:
 @end example
 
 @code{rawrite} is available as a part of the installation tools that
@@ -417,6 +422,7 @@ you're done!
 
 Examples of how to use the @code{install=} command:
 
+@c FIXME: Gord stopped here
 @itemize @bullet
 @item
 @strong{Make a hard disk bootable with GRUB's stage2 on PC partition
@@ -506,28 +512,28 @@ the OS.
 @chapter Booting your operating system
 
 GRUB has both a simple menu interface for choosing preset entries from a
-configuration file, and a highly flexible command-line for performing
+configuration file, and a highly flexible command line for performing
 any desired combination of boot commands.
 
 GRUB looks for its configuration file as soon as it is loaded.  If one
 is found, then the full menu interface is activated using whatever
 entries were found in the file.  If you choose the `command line' menu
 option, or if the configuration file was not found, then GRUB drops into
-the command-line interface.
+the command line interface.
 
 @menu
-* Command-line::                The flexible command-line interface.
+* Command line::                The flexible command line interface.
 * Menu::                        The simple menu interface.
 * Menu entry editor::           Editing a menu entry.
 * Commands::                    The list of available commands.
 @end menu
 
 
-@node Command-line
-@section The flexible command-line interface
+@node Command line
+@section The flexible command line interface
 
-The command-line interface provides a prompt and after it an editable
-text area much like a command-line in Unix or DOS. Each command is
+The command line interface provides a prompt and after it an editable
+text area much like a command line in Unix or DOS. Each command is
 immediately executed after it is entered @footnote{However, this
 behavior will be changed in the future version, in an user-invisible
 way.}. The commands are a subset of those available in the configuration
@@ -564,7 +570,7 @@ select the entry of choice, then press @key{RET} to run it.  An optional
 timeout is available to boot the default entry (the first one if not
 set), which is aborted by pressing any key.
 
-Commands are available to enter a bare command-line (operating exactly
+Commands are available to enter a bare command line (operating exactly
 like the non-config-file version of GRUB, but allowing one to return to
 the menu if desired) or to edit any of the @dfn{boot configurations},
 respectively by pressing @key{c} or @key{e}.
@@ -581,7 +587,7 @@ If an @key{ESC} is pressed in the editor, it aborts all the changes made
 to the configuration entry and goes back to the main menu interface.
 
 When a particular line is selected, then it places the user in a special
-version of the command-line for editing that line.  When the user is
+version of the command line for editing that line.  When the user is
 finished, GRUB replaces the line in question in the @dfn{boot
 configuration} with the changes (unless it was aborted via @key{ESC},
 and in that case the changes are thrown away).
@@ -591,7 +597,7 @@ and in that case the changes are thrown away).
 @section The list of available commands
 
 In this section, we list the available commands, both in the
-configuration file and in the command-line.
+configuration file and in the command line.
 
 The configuration file should follow these rules:
 
@@ -654,7 +660,7 @@ of the boot process (after leaving GRUB's code) and rebooted.
 
 @item password= @var{passwd} @var{new_config_file}
 Disable all interactive editing control (menu entry editor and
-command-line). If the password @var{passwd} is entered, it loads the
+command line). If the password @var{passwd} is entered, it loads the
 @var{new_config_file} as a new config file and restarts the GRUB Stage
 2.
 
@@ -713,14 +719,14 @@ Attempt to load the primary boot image (Multiboot a.out or @sc{elf},
 Linux zImage or bzImage, FreeBSD-a.out, or NetBSD-a.out) from
 @var{file}. This command ignores the rest of the contents of the line,
 except that the entire line starting with the kernel filename is passed
-verbatim as the @dfn{kernel command-line}. The module state is reset by
+verbatim as the @dfn{kernel command line}. The module state is reset by
 this (i.e. reload any modules).
 
 @item module= @var{file} @dots{}
 Load a boot module for a Multiboot format boot image (no interpretation
 of the file contents are made, so that user of this command/writer of
 the configuration file must know what the kernel in question works
-with). The rest of the line is passed as the @dfn{module command-line}
+with). The rest of the line is passed as the @dfn{module command line}
 much like with the @command{kernel=} command.
 
 @item modulenounzip= @var{file} @dots{}
@@ -762,7 +768,7 @@ PC partitions.
 
 @item boot
 This boots the OS/chain-loader which has been loaded. Only necessary if
-running the fully interactive command-line (it is implicit at the end of
+running the fully interactive command line (it is implicit at the end of
 a config-file entry).
 
 @item color= @var{normal} [@var{highlight}]
@@ -833,7 +839,7 @@ The background is represented by 3 bits, so you cannot specify more than
 7 for it.
 
 This command can be used in the configuration file and on the
-command-line, so you may write something like this in your configuration
+command line, so you may write something like this in your configuration
 file:
 
 @example
@@ -1161,7 +1167,7 @@ This error is returned if the link count is beyond the maximum
 
 @item 27 : Unrecognized command
 This error is returned if an unrecognized command is entered into the
-command-line or in a boot sequence section of a configuration file and
+command line or in a boot sequence section of a configuration file and
 that entry is selected.
 
 @item 28 : Selected item won't fit into memory
@@ -1317,7 +1323,7 @@ GRUB is broken into 2 distinct components, or @dfn{stages}, which are
 loaded at different times in the boot process. The Stage 1 has to know
 where to find Stage 2, and the Stage 2 has to know where to find its
 configuration file (if Stage 2 doesn't have a configuration file, it
-drops into the command-line interface and waits for a user command).
+drops into the command line interface and waits for a user command).
 
 Here is the memory map of the various components
 @footnote{Currently GRUB does not use the extended memory for itself,
@@ -1713,14 +1719,14 @@ do
     Regs.di = OFFSET (&Descriptor);
     Regs.ecx = sizeof (Descriptor);
     Regs.edx = 'SMAP';
-    
+
     _int (0x15, Regs);
-    
+
     if ((Regs.eflags & EFLAGS_CARRY) || Regs.eax != 'SMAP')
       @{
         break;
       @}
-    
+
     if (Regs.ecx < 20 || Regs.ecx > sizeof (Descriptor))
       @{
         /* bug in bios - all returned descriptors must be at
@@ -1728,7 +1734,7 @@ do
            the input buffer.  */
         break;
       @}
-    
+
     E820Present = TRUE;
     .
     .
@@ -2291,7 +2297,7 @@ is returned (1Ah for version 1.0, 1Eh for 2.x and 42h for 3.0).
 @item 1A @tab 4 @tab EDD configuration parameters.
 
 @comment Add an empty row for readability...
-@item @tab @tab 
+@item @tab @tab
 
 @item @strong{v3.0} @tab @tab
 
