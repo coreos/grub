@@ -1,5 +1,18 @@
 1999-10-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	Add the prototype of a function to probe I/O ports used for a
+	BIOS drive.
+	
+	* stage2/asm.S [DEFINE_TRACK_INT13] (track_int13): New function.
+	[DEFINE_TRACK_INT13] (int1_handler): New interrupt handler for
+	the real mode.
+	[DEFINE_TRACK_INT13] (int3_handler): Likewise.
+	[DEFINE_TRACK_INT13] (io_map): New variable.
+	
+	* stage2/builtins.c (quit_func) [!GRUB_UTIL]: Fix a typo.
+	
+1999-10-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	The new GRUB manual becomes official.
 	
 	* docs/grub.texi: Replaced with new-grub.texi.

@@ -1779,7 +1779,7 @@ quit_func (char *arg, int flags)
   /* Never reach here.  */
   return 0;
 #else /* ! GRUB_UTIL */
-  errnum = ERR_UNRECOGINIZED;
+  errnum = ERR_UNRECOGNIZED;
   return 1;
 #endif /* ! GRUB_UTIL */
 }

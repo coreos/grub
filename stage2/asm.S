@@ -186,6 +186,229 @@ ENTRY(stop_floppy)
 	outb	%al, %dx
 	ret
 
+	
+#ifdef DEFINE_TRACK_INT13
+/*
+ * track_int13(int drive)
+ *
+ * Track the int13 handler to probe I/O address space.
+ */
+ENTRY(track_int13)
+	pushl	%ebp
+	movl	%esp, %ebp
+
+	pushl	%edx
+	pushl	%ebx
+
+	/* computer the linear address of int13 handler */
+	xorl	%ebx, %ebx
+	xorl	%eax, %eax
+	movw	0x13 * 4 + 2, %ax
+	shll	$4, %eax
+	movw	0x13 * 4, %bx
+	addl	%eax, %ebx
+
+	/* save the first intruction */
+	movb	(%ebx), %al
+	movb	%al, ABS(int13_first_instruction)
+
+	/* set the first instruction to int3 */
+	movb	$0xCC, (%ebx)
+
+	/* replace the int1 handler */
+	pushl	0x1 * 4
+	movl	$ABS(int1_handler), %eax
+	movl	%eax, 0x1 * 4
+
+	/* replace the int3 handler */
+	pushl	0x3 * 4
+	movl	$ABS(int3_handler), %eax
+	movl	%eax, 0x3 * 4
+
+	/* read the MBR to call int13 successfully */
+	movw	$SCRATCHSEG, %ax
+	movw	%ax, %es
+	xorw	%bx, %bx
+	movw	$1, %cx
+	xorb	%dl, %dl
+	movb	4(%ebp), %dl
+
+	call	prot_to_real
+
+	.code16
+	movw	$0x201, %ax
+	int	$0x13
+
+	call	real_to_prot
+	.code32
+
+	/* restore the int3 handler */
+	popl	0x3 * 4
+
+	/* restore the int1 handler */
+	popl	0x1 * 4
+
+	popl	%ebx
+	popl	%edx
+	popl	%ebp
+	
+	ret
+
+
+/*
+ * Check if the next instruction is I/O, and if this is true, add the
+ * port into the io map.
+ *
+ * Note: Probably this will make the execution of int13 very slow.
+ *
+ * Note2: In this implementation, all we can know is I/O-mapped I/O. It
+ * is impossible to detect memory-mapped I/O.
+ */
+int1_handler:
+	.code16
+	
+	pushw	%bp
+	movw	%sp, %bp
+	pushw	%ds
+	pushw	%ax
+	pushw	%si
+	pushw	%dx
+	
+	/* IP */
+	movw	2(%bp), %si
+	/* CS */
+	movw	4(%bp), %ax
+	movw	%ax, %ds
+
+	/* examine the next instruction */
+1:	lodsb	(%si), %al
+	/* skip this code if it is a prefix */
+	cmpb	$0x2E, %al
+	je	1b
+	cmpb	$0x36, %al
+	je	1b
+	cmpb	$0x3E, %al
+	je	1b
+	cmpb	$0x26, %al
+	je	1b
+	cmpb	$0x0F, %al
+	je	1b
+	cmpb	$0x64, %al
+	jl	2f
+	cmpb	$0x67, %al
+	jle	1b
+2:	cmpb	0xF0, %al
+	jl	3f
+	cmpb	0xF3, %al
+	jle	1b
+	
+3:	/* check if this code is out* or in* */
+
+	/* ins? or outs? */
+	cmpb	$0x6C, %al
+	jl	4f
+	cmpb	$0x6F, %al
+	jle	5f
+
+4:	/* in? or out? (immediate operand version) */
+	cmpb	$0xEC, %al
+	jl	6f
+	cmpb	$0xEF, %al
+	jle	7f
+	
+6:	/* in? or out? (register operand version) */
+	cmpb	$0xE4, %al
+	jl	8f
+	cmpb	$0xE7, %al
+	jg	8f
+
+7:	/* immediate has a port */
+	xorb	%ah, %ah
+	lodsb	(%si), %al
+	movw	%ax, %dx
+	
+5:	/* %dx has a port */
+
+	/* set %si to the io map */
+	movw	$ABS(io_map), %si
+
+		
+9:	/* check if the io map already has the port */
+	lodsw	(%si), %ax
+	/* check if this is the end */
+	testw	%ax, %ax
+	jz	1f
+	/* check if this matches the port */
+	cmpw	%ax, %dx
+	jne	9b
+	/* if so, leave from this handler */
+	jmp	8f
+	
+1:	/* add the port into the io map */
+	movw	%dx, -2(%si)
+
+8:	/* restore registers */	
+	popw	%dx
+	popw	%si
+	popw	%ax
+	popw	%ds
+	popw	%bp
+
+	iret
+	
+
+/*
+ * Just set the TF flag. This handler is necessary because any interrupt
+ * call clears the flag automatically.
+ *
+ * Note: we need not to clear this flag after the tracking explicitly,
+ * because int13 restores the original FLAGS.
+ *
+ * Note2: In this implementation, ignore the first instruction, because
+ * int1 is a trap but not a fault.
+ */
+int13_first_instruction:
+	.byte	0
+	
+int3_handler:
+	pushw	%bp
+	movw	%sp, %bp
+	pushw	%ax
+	pushw	%bx
+	pushw	%ds
+	
+	/* set the TF flag in the stack */
+	movw	6(%bp), %ax
+	orw	$0x100, %ax
+	movw	%ax, 4(%bp)
+
+	/* restore the first instruction */
+	movb	ABS(int13_first_instruction), %al
+	movw	4(%bp), %bx
+	movw	%bx, %ds
+	movw	2(%bp), %bx
+	movb	%al, (%bx)
+
+	/* re-execute the first instruction */
+	decw	%bx
+	movw	%bx, 2(%bp)
+	
+	popw	%ds
+	popw	%bx	
+	popw	%ax
+	popw	%bp
+	
+	iret
+
+	.code32
+
+ENTRY(io_map)
+#define IO_MAP_SIZE 0
+	.space	(IO_MAP_SIZE + 1) * 2
+	
+#endif /* DEFINE_TRACK_INT13 */
+	
+	
 /*
  * set_int15_handler(void)
  *
