@@ -254,7 +254,7 @@ represents using the partition of the disk (or the boot sector of the
 partition when installing GRUB).
 
 If you enabled the network support, the special drive, @samp{(nd)}, is
-also available. Before using the network drive, you must initiailze the
+also available. Before using the network drive, you must initialize the
 network. @xref{Network}, for more information.
 
 
@@ -287,7 +287,7 @@ Here is an example:
 @end example
 
 This represents that GRUB should read blocks 0 through 99, block 200,
-and blocks 300 through 600. If you omit an offset, then GRUB assumes
+and blocks 300 through 599. If you omit an offset, then GRUB assumes
 the offset is zero.
 
 Like the filename syntax (@pxref{Filename syntax}), if a blocklist does
@@ -754,7 +754,7 @@ character each of the symbols corresponds:
 
 @deffn Command tftpserver ipaddr
 Override a TFTP server address returned by a BOOTP/DHCP/RARP server. The
-argument @var{ipaddr} must be in the standard format, like
+argument @var{ipaddr} must be in dotted decimal format, like
 @samp{192.168.0.15}.
 @end deffn
 
@@ -850,14 +850,12 @@ the list of the devices which contain the file. The filename
 
 @deffn Command fstest
 Toggle filesystem test mode.
-
 Filesystem test mode, when turned on, prints out data corresponding to
 all the device reads and what values are being sent to the low-level
 routines. The format is @samp{<@var{partition-offset-sector},
 @var{byte-offset}, @var{byte-length}>} for high-level reads inside a
 partition, and @samp{[@var{disk-offset-sector}]} for low-level sector
 requests from the disk.
-
 Filesystem test mode is turned off by any use of the @command{install}
 or @command{testload} commands.
 @end deffn

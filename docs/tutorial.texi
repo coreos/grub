@@ -11,7 +11,10 @@ GNU GRUB is a very powerful boot loader, which can load a wide variety
 of free operating systems, as well as proprietary operating systems with
 chain-loading@footnote{@dfn{chain-load} is the mechanism for loading
 unsupported operating systems by loading another boot loader. It is
-typically used for loading DOS or Windows.}.
+typically used for loading DOS or Windows.}. GRUB is designed to
+address the complexity of booting a personal computer; both the
+program and this manual are tightly bound to that computer platform,
+although porting to other platforms may be addressed in the future.
 
 One of the important features in GRUB is flexibility; GRUB understands
 filesystems and kernel executable formats, so you can load an arbitrary

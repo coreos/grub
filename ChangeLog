@@ -1,3 +1,9 @@
+2000-09-07  Alessandro Rubini  <rubini@gnu.org>
+
+	* docs/tutorial.texi: Fixed a few typos and minor imprecisions.
+	* docs/prog-ref.texi: Likewise.
+	* docs/user-ref.texi: Likewise.
+
 2000-09-07  OKUJI Yoshinori  <okuji@gnu.org>
 
 	From Alessandro Rubini:

@@ -450,7 +450,7 @@ continuation value is up to the discretion of the BIOS. The caller must
 pass the continuation value unchanged as input to the next iteration of
 the E820h call in order to get the next Address Range Descriptor. A
 return value of zero means that this is the last descriptor. Note that
-the BIOS indicate that the last valid descriptor has been returned by
+the BIOS indicates that the last valid descriptor has been returned by
 either returning a zero as the continuation value, or by returning
 carry.
 @end multitable
@@ -522,8 +522,8 @@ Here is the list of assumptions and limitations:
 
 @enumerate
 @item
-The BIOS will return address ranges describing base board memory and ISA
-or PCI memory that is contiguous with that base board memory.
+The BIOS will return address ranges describing system memory and ISA
+or PCI memory that is contiguous with that system memory.
 
 @item
 The BIOS @emph{will not} return a range description for the memory
@@ -535,7 +535,7 @@ The BIOS will return chipset defined address holes that are not being
 used by devices as reserved.
 
 @item
-Address ranges defined for base board memory mapped I/O devices (for
+Address ranges defined for memory mapped I/O devices (for
 example APICs) will be returned as reserved.
 
 @item
@@ -544,10 +544,10 @@ includes the area below 1 MB, at 16 MB (if present) and at end of the
 address space (4 GB).
 
 @item
-Standard PC address ranges will not be reported. Example video memory at
+Standard I/O address ranges will not be reported. Example video memory at
 A0000 to BFFFF physical will not be described by this function. The
-range from E0000 to EFFFF is base board specific and will be reported as
-suits the bas board.
+range from E0000 to EFFFF is motherboard-specific and will be reported 
+differently on different computers.
 
 @item
 All of lower memory is reported as normal memory. It is OS's
@@ -591,9 +591,9 @@ support the LFB mapping at 12 MB.
 @item 0100 0000 @tab 120M @tab ARM @tab Base board @sc{ram} relocated
 above a chipset memory hole.
 
-@item FE00 0000 @tab 4K @tab ARR @tab IO APIC memory mapped I/O at
+@item FEC0 0000 @tab 4K @tab ARR @tab IO APIC memory mapped I/O at
 FEC00000. Note the range of addresses required for an APIC device may
-vary from base OEM to OEM.
+vary from one motherboard manufacturer to another
 
 @item FEE0 0000 @tab 4K @tab ARR @tab Local APIC memory mapped I/O at
 FEE00000.
@@ -787,7 +787,7 @@ SCSI read/write commands. On a PC today, SCSI is also limited to 8GB
 when CHS addressing is used at the INT 13H interface.
 
 First, all OS's that want to be co-resident with another OS (and that is
-all of the PC based OS's that I know of) @emph{must} use INT 13H to
+all of the PC based OS's that we know of) @emph{must} use INT 13H to
 determine the capacity of a hard disk. And that capacity information
 @emph{must} be determined in L-CHS mode. Why is this?  Because:
 
@@ -1047,7 +1047,7 @@ Output:
 @multitable @columnfractions 0.15 0.85
 @item @code{CF} @tab Set on error.
 
-@item @code{AH} @tab Major version of extensions (01h for 1.x, 20h for
+@item @code{AH} @tab Major version of extensions (10h for 1.x, 20h for
 2.0 / EDD-1.0, 21h for 2.1 / EDD-1.1 and 30h for EDD-3.0) if successful,
 otherwise 01h (the error code of @dfn{invalid function}).
 
@@ -1332,7 +1332,7 @@ partition table records could contain something other than a program in
 the first 466 bytes). For more information, see @ref{MBR}.
 
 Second, extended partitions are @emph{nested} inside one another and
-extended partition table records form a @dfn{linked list}. I will
+extended partition table records form a @dfn{linked list}. We will
 attempt to show this in a diagram at @ref{Partition entry format}.
 
 Each partition table entry is 16 bytes and contains things like the
