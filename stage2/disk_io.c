@@ -1,7 +1,7 @@
 /* disk_io.c - implement abstract BIOS disk input and output */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ unsigned long current_partition;
 #ifndef STAGE1_5
 /* The register ESI should contain the address of the partition to be
    used for loading a chain-loader when chain-loading the loader.  */
-unsigned long boot_part_addr;
+unsigned long boot_part_addr = 0;
 unsigned long boot_part_offset;
 #endif
 

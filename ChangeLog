@@ -1,3 +1,16 @@
+2002-05-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (boot_func): Load the boot partition
+	information, only if the address of the boot partition entry is
+	set appropriately.
+	(real_root_func): If ATTEMPT_MOUNT is false, call open_partition
+	and if successful, call set_bootdev, to set the offset of the
+	boot partition and the address of the boot paetition entry.
+	IF ATTEMPT_MOUNT is false, don't set BOOTDEV. The BSD evil hack
+	is useless with the command "rootnoverify" anyway.
+	* stage2/disk_io.c (boot_part_addr): Initialized with zero
+	explicitly, to emphasize that it is invalid.
+	
 2002-05-24  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (real_root_func): New function.

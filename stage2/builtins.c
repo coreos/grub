@@ -296,8 +296,9 @@ boot_func (char *arg, int flags)
       boot_drive = saved_drive;
       
       /* Copy the boot partition information to 0x7be-0x7fd, if
-	 BOOT_DRIVE is a hard disk drive.  */
-      if (boot_drive & 0x80)
+	 BOOT_DRIVE is a hard disk drive and the address of the boot
+	 partition entry is set.  */
+      if ((boot_drive & 0x80) && boot_part_addr)
 	{
 	  char *dst, *src;
 	  int i;
@@ -3125,22 +3126,31 @@ real_root_func (char *arg, int attempt_mount)
       if (! open_device () && errnum != ERR_FSYS_MOUNT)
 	return 1;
     }
-
+  else
+    {
+      /* This is necessary, because the location of a partition table
+	 must be set appropriately.  */
+      if (open_partition ())
+	  set_bootdev (0);
+    }
+  
   /* Clear ERRNUM.  */
   errnum = 0;
   saved_partition = current_partition;
   saved_drive = current_drive;
 
-  /* BSD and chainloading evil hacks !!  */
-  biasptr = skip_to (0, next);
-  safe_parse_maxint (&biasptr, &hdbias);
-  errnum = 0;
-  bootdev = set_bootdev (hdbias);
-
-  /* Print the type of the filesystem.  */
   if (attempt_mount)
-    print_fsys_type ();
-
+    {
+      /* BSD and chainloading evil hacks !!  */
+      biasptr = skip_to (0, next);
+      safe_parse_maxint (&biasptr, &hdbias);
+      errnum = 0;
+      bootdev = set_bootdev (hdbias);
+  
+      /* Print the type of the filesystem.  */
+      print_fsys_type ();
+    }
+  
   return 0;
 }
 
