@@ -1,3 +1,12 @@
+2000-06-08  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* netboot/main.c (decode_rfc1533) [GRUB]: Eliminate trailing
+	NULs in the NVT string for a configuration file name, if any.
+	(decode_rfc1533): Likewise, if Extensions Path is present,
+	eliminate the trailing NULs, if any.
+	Also, check the length carefully to ensure that EXTPATH can fit
+	in FNAME.
+	
 2000-06-06  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_reiserfs.c: Added journaling to reiser.

@@ -976,10 +976,17 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 #ifdef GRUB
 	  else if (c == RFC1533_VENDOR_CONFIGFILE)
 	    {
-	      grub_memmove (config_file, p + 2, TAG_LEN (p));
-	      
-	      /* FIXME: Is this below really necessary???  */
-	      config_file[TAG_LEN (p)] = 0;
+	      int len = TAG_LEN (p);
+
+	      /* Eliminate the trailing NULs according to RFC 2132.  */
+	      while (*(p + 2 + len - 1) == '\000' && len > 0)
+		len--;
+
+	      /* XXX: Should check if LEN is less than the maximum length
+		 of CONFIG_FILE. This kind of robustness will be a goal
+		 in GRUB 1.0.  */
+	      grub_memmove (config_file, p + 2, len);
+	      config_file[len] = 0;
 	    }
 #else /* ! GRUB */
 
@@ -1027,8 +1034,24 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
       if (block == 0 && extpath != NULL)
 	{
 	  char fname[64];
-	  grub_memmove (fname, extpath + 2, TAG_LEN (extpath));
-	  fname[(int) TAG_LEN (extpath)] = '\000';
+	  int fnamelen = TAG_LEN (extpath);
+
+	  while (*(extpath + 2 + fnamelen - 1) == '\000' && fnamelen > 0)
+	    fnamelen--;
+
+	  if (fnamelen + 1 > sizeof (fname))
+	    {
+	      grub_printf ("Too long file name for Extensions Path\n");
+	      return 0;
+	    }
+	  else if (! fnamelen)
+	    {
+	      grub_printf ("Empty file name for Extensions Path\n");
+	      return 0;
+	    }
+	  
+	  grub_memmove (fname, extpath + 2, fnamelen);
+	  fname[fnamelen] = '\000';
 	  grub_printf ("Loading BOOTP-extension file: %s\n", fname);
 	  tftp (fname, decode_rfc1533);
 	}
