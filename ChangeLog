@@ -1,3 +1,9 @@
+2001-07-03  OKUJI Yoshinori  <okuji@gnu.org>
+	
+	From Julien Bordet <julien.bordet@int-evry.fr>:
+	* stage2/i386-elf.h (Elf32_Shdr): New type.
+	* stage2/boot.c (load_image): Added ELF symbol loading support.
+	
 2001-06-22  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/char_io.c [STAGE1_5] (grub_strcmp): Defined, even

@@ -552,13 +552,86 @@ load_image (char *kernel, char *arg, kernel_t suggested_type,
 	    }
 	}
 
-      if (!errnum)
+      if (! errnum)
 	{
-	  if (!loaded)
+	  if (! loaded)
 	    errnum = ERR_EXEC_FORMAT;
 	  else
 	    {
-	      /* FIXME: load ELF symbols */
+	      /* Load ELF symbols.  */
+	      Elf32_Shdr *shdr = NULL;
+	      int tab_size, sec_size;
+	      int symtab_err = 0;
+
+	      mbi.syms.e.num = pu.elf->e_shnum;
+	      mbi.syms.e.size = pu.elf->e_shentsize;
+	      mbi.syms.e.shndx = pu.elf->e_shstrndx;
+	      
+	      /* We should align to a 4K boundary here for good measure.  */
+	      if (align_4k)
+		cur_addr = (cur_addr + 0xFFF) & 0xFFFFF000;
+	      
+	      tab_size = pu.elf->e_shentsize * pu.elf->e_shnum;
+	      
+	      grub_seek (pu.elf->e_shoff);
+	      if (grub_read ((char *) RAW_ADDR (cur_addr), tab_size)
+		  == tab_size)
+		{
+		  mbi.syms.e.addr = cur_addr;
+		  shdr = (Elf32_Shdr *) mbi.syms.e.addr;
+		  cur_addr += tab_size;
+		  
+		  printf (", shtab=0x%x", cur_addr);
+  		  
+		  for (i = 0; i < mbi.syms.e.num; i++)
+		    {
+		      /* This section is a loaded section,
+			 so we don't care.  */
+		      if (shdr[i].sh_addr != 0)
+			continue;
+		      
+		      /* This section is empty, so we don't care.  */
+		      if (shdr[i].sh_size == 0)
+			continue;
+		      
+		      /* Align the section to a sh_addralign bits boundary.  */
+		      cur_addr = ((cur_addr + shdr[i].sh_addralign) & 
+				  - (int) shdr[i].sh_addralign);
+		      
+		      grub_seek (shdr[i].sh_offset);
+		      
+		      sec_size = shdr[i].sh_size;
+
+		      if (! (memcheck (cur_addr, sec_size)
+			     && (grub_read ((char *) RAW_ADDR (cur_addr),
+					    sec_size)
+				 == sec_size)))
+			{
+			  symtab_err = 1;
+			  break;
+			}
+		      
+		      shdr[i].sh_addr = cur_addr;
+		      cur_addr += sec_size;
+		    }
+		}
+	      else 
+		symtab_err = 1;
+	      
+	      if (mbi.syms.e.addr < RAW_ADDR(0x10000))
+		symtab_err = 1;
+	      
+	      if (symtab_err) 
+		{
+		  printf ("(bad)");
+		  mbi.syms.e.num = 0;
+		  mbi.syms.e.size = 0;
+		  mbi.syms.e.addr = 0;
+		  mbi.syms.e.shndx = 0;
+		  cur_addr = 0;
+		}
+	      else
+		mbi.flags |= MB_INFO_ELF_SHDR;
 	    }
 	}
     }

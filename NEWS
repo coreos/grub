@@ -36,6 +36,7 @@ New in 1.0 - XXXX-XX-XX:
   `--with-configfile', so that you can load a remotely specified
   configuration file automatically, like the network boot images.
 * VSTa filesystem support is added.
+* ELF symbol loading support is added.
 
 New in 0.5.96 - 2000-10-04:
 * New commands, "reboot" and "halt".
