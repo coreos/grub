@@ -232,6 +232,13 @@ grub_machine_init (void)
   grub_env_set ("prefix", make_install_device ());
 }
 
+void
+grub_machine_fini (void)
+{
+  grub_biosdisk_fini ();
+  grub_console_fini ();
+}
+
 /* Return the end of the core image.  */
 grub_addr_t
 grub_arch_modules_addr (void)

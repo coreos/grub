@@ -497,37 +497,114 @@ grub_setup-fs_fshelp.d: fs/fshelp.c
 
 
 # For grub
-grub_emu_SOURCES = kern/main.c kern/device.c fs/fshelp.c		\
-	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
-        kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
-	kern/partition.c kern/env.c commands/ls.c partmap/amiga.c	\
-	partmap/pc.c partmap/apple.c					\
-	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
-	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/iso9660.c \
-	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
-	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c commands/help.c \
-	disk/loopback.c
-CLEANFILES += grub-emu grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-fs_fshelp.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-kern_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-commands_help.o grub_emu-disk_loopback.o
-MOSTLYCLEANFILES += grub_emu-kern_main.d grub_emu-kern_device.d grub_emu-fs_fshelp.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_err.d grub_emu-kern_misc.d grub_emu-kern_loader.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-kern_partition.d grub_emu-kern_env.d grub_emu-commands_ls.d grub_emu-partmap_amiga.d grub_emu-partmap_pc.d grub_emu-partmap_apple.d grub_emu-commands_terminal.d grub_emu-commands_boot.d grub_emu-commands_cmp.d grub_emu-commands_cat.d grub_emu-util_i386_pc_biosdisk.d grub_emu-fs_fat.d grub_emu-fs_ext2.d grub_emu-fs_ufs.d grub_emu-fs_minix.d grub_emu-fs_hfs.d grub_emu-fs_jfs.d grub_emu-fs_iso9660.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_arg.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_getroot.d grub_emu-commands_help.d grub_emu-disk_loopback.d
+grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
+	commands/help.c commands/terminal.c commands/ls.c		\
+	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	disk/loopback.c							\
+	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
+	fs/minix.c fs/ufs.c						\
+	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
+	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
+	kern/partition.c kern/rescue.c kern/term.c			\
+	normal/arg.c normal/cmdline.c normal/command.c normal/main.c	\
+	normal/menu.c							\
+	partmap/amiga.c	partmap/apple.c partmap/pc.c			\
+	util/console.c util/grub-emu.c util/misc.c			\
+	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
+	util/i386/pc/misc.c
+CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
+MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_i386_pc_reboot.d grub_emu-disk_loopback.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_i386_pc_misc.d
 
-grub-emu: grub_emu-kern_main.o grub_emu-kern_device.o grub_emu-fs_fshelp.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_err.o grub_emu-kern_misc.o grub_emu-kern_loader.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-kern_partition.o grub_emu-kern_env.o grub_emu-commands_ls.o grub_emu-partmap_amiga.o grub_emu-partmap_pc.o grub_emu-partmap_apple.o grub_emu-commands_terminal.o grub_emu-commands_boot.o grub_emu-commands_cmp.o grub_emu-commands_cat.o grub_emu-util_i386_pc_biosdisk.o grub_emu-fs_fat.o grub_emu-fs_ext2.o grub_emu-fs_ufs.o grub_emu-fs_minix.o grub_emu-fs_hfs.o grub_emu-fs_jfs.o grub_emu-fs_iso9660.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_arg.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_getroot.o grub_emu-commands_help.o grub_emu-disk_loopback.o
+grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
-grub_emu-kern_main.o: kern/main.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_boot.o: commands/boot.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-kern_main.d: kern/main.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grub_emu-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_boot.d: commands/boot.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,grub_emu-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-kern_main.d
+-include grub_emu-commands_boot.d
 
-grub_emu-kern_device.o: kern/device.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+grub_emu-commands_cat.o: commands/cat.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-kern_device.d: kern/device.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_emu-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-commands_cat.d: commands/cat.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,grub_emu-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-kern_device.d
+-include grub_emu-commands_cat.d
+
+grub_emu-commands_cmp.o: commands/cmp.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_cmp.d: commands/cmp.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,grub_emu-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_cmp.d
+
+grub_emu-commands_help.o: commands/help.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_help.d: commands/help.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,help\.o[ :]*,grub_emu-commands_help.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_help.d
+
+grub_emu-commands_terminal.o: commands/terminal.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_terminal.d: commands/terminal.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,grub_emu-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_terminal.d
+
+grub_emu-commands_ls.o: commands/ls.c
+	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_ls.d: commands/ls.c
+	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,grub_emu-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_ls.d
+
+grub_emu-commands_i386_pc_halt.o: commands/i386/pc/halt.c
+	$(BUILD_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_i386_pc_halt.d: commands/i386/pc/halt.c
+	set -e; 	  $(BUILD_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,halt\.o[ :]*,grub_emu-commands_i386_pc_halt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_i386_pc_halt.d
+
+grub_emu-commands_i386_pc_reboot.o: commands/i386/pc/reboot.c
+	$(BUILD_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-commands_i386_pc_reboot.d: commands/i386/pc/reboot.c
+	set -e; 	  $(BUILD_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,reboot\.o[ :]*,grub_emu-commands_i386_pc_reboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-commands_i386_pc_reboot.d
+
+grub_emu-disk_loopback.o: disk/loopback.c
+	$(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-disk_loopback.d: disk/loopback.c
+	set -e; 	  $(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,grub_emu-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-disk_loopback.d
+
+grub_emu-fs_ext2.o: fs/ext2.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_emu-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_ext2.d
+
+grub_emu-fs_fat.o: fs/fat.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_fat.d: fs/fat.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_emu-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_fat.d
 
 grub_emu-fs_fshelp.o: fs/fshelp.c
 	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -536,6 +613,54 @@ grub_emu-fs_fshelp.d: fs/fshelp.c
 	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,grub_emu-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_emu-fs_fshelp.d
+
+grub_emu-fs_hfs.o: fs/hfs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_hfs.d: fs/hfs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_emu-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_hfs.d
+
+grub_emu-fs_iso9660.o: fs/iso9660.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_iso9660.d: fs/iso9660.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,iso9660\.o[ :]*,grub_emu-fs_iso9660.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_iso9660.d
+
+grub_emu-fs_jfs.o: fs/jfs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_jfs.d: fs/jfs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,grub_emu-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_jfs.d
+
+grub_emu-fs_minix.o: fs/minix.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_minix.d: fs/minix.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_emu-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_minix.d
+
+grub_emu-fs_ufs.o: fs/ufs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_ufs.d: fs/ufs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_emu-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_ufs.d
+
+grub_emu-kern_device.o: kern/device.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-kern_device.d: kern/device.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_emu-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-kern_device.d
 
 grub_emu-kern_disk.o: kern/disk.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -553,6 +678,22 @@ grub_emu-kern_dl.d: kern/dl.c
 
 -include grub_emu-kern_dl.d
 
+grub_emu-kern_env.o: kern/env.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-kern_env.d: kern/env.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_emu-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-kern_env.d
+
+grub_emu-kern_err.o: kern/err.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-kern_err.d: kern/err.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_emu-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-kern_err.d
+
 grub_emu-kern_file.o: kern/file.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -569,13 +710,21 @@ grub_emu-kern_fs.d: kern/fs.c
 
 -include grub_emu-kern_fs.d
 
-grub_emu-kern_err.o: kern/err.c
+grub_emu-kern_loader.o: kern/loader.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-kern_err.d: kern/err.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_emu-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_loader.d: kern/loader.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,grub_emu-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-kern_err.d
+-include grub_emu-kern_loader.d
+
+grub_emu-kern_main.o: kern/main.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-kern_main.d: kern/main.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grub_emu-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-kern_main.d
 
 grub_emu-kern_misc.o: kern/misc.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -585,13 +734,13 @@ grub_emu-kern_misc.d: kern/misc.c
 
 -include grub_emu-kern_misc.d
 
-grub_emu-kern_loader.o: kern/loader.c
+grub_emu-kern_partition.o: kern/partition.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-kern_loader.d: kern/loader.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,grub_emu-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-kern_partition.d: kern/partition.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_emu-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-kern_loader.d
+-include grub_emu-kern_partition.d
 
 grub_emu-kern_rescue.o: kern/rescue.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -609,149 +758,13 @@ grub_emu-kern_term.d: kern/term.c
 
 -include grub_emu-kern_term.d
 
-grub_emu-kern_partition.o: kern/partition.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+grub_emu-normal_arg.o: normal/arg.c
+	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-kern_partition.d: kern/partition.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_emu-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-normal_arg.d: normal/arg.c
+	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,grub_emu-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-kern_partition.d
-
-grub_emu-kern_env.o: kern/env.c
-	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_env.d: kern/env.c
-	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_emu-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-kern_env.d
-
-grub_emu-commands_ls.o: commands/ls.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_ls.d: commands/ls.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,grub_emu-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-commands_ls.d
-
-grub_emu-partmap_amiga.o: partmap/amiga.c
-	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_amiga.d: partmap/amiga.c
-	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,grub_emu-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-partmap_amiga.d
-
-grub_emu-partmap_pc.o: partmap/pc.c
-	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_pc.d: partmap/pc.c
-	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_emu-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-partmap_pc.d
-
-grub_emu-partmap_apple.o: partmap/apple.c
-	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_apple.d: partmap/apple.c
-	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,grub_emu-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-partmap_apple.d
-
-grub_emu-commands_terminal.o: commands/terminal.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_terminal.d: commands/terminal.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,grub_emu-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-commands_terminal.d
-
-grub_emu-commands_boot.o: commands/boot.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_boot.d: commands/boot.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,grub_emu-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-commands_boot.d
-
-grub_emu-commands_cmp.o: commands/cmp.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_cmp.d: commands/cmp.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,grub_emu-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-commands_cmp.d
-
-grub_emu-commands_cat.o: commands/cat.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_cat.d: commands/cat.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,grub_emu-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-commands_cat.d
-
-grub_emu-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
-	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_emu-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-util_i386_pc_biosdisk.d
-
-grub_emu-fs_fat.o: fs/fat.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_fat.d: fs/fat.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_emu-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_fat.d
-
-grub_emu-fs_ext2.o: fs/ext2.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_emu-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_ext2.d
-
-grub_emu-fs_ufs.o: fs/ufs.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_ufs.d: fs/ufs.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_emu-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_ufs.d
-
-grub_emu-fs_minix.o: fs/minix.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_minix.d: fs/minix.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_emu-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_minix.d
-
-grub_emu-fs_hfs.o: fs/hfs.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_hfs.d: fs/hfs.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_emu-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_hfs.d
-
-grub_emu-fs_jfs.o: fs/jfs.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_jfs.d: fs/jfs.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,grub_emu-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_jfs.d
-
-grub_emu-fs_iso9660.o: fs/iso9660.c
-	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_iso9660.d: fs/iso9660.c
-	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,iso9660\.o[ :]*,grub_emu-fs_iso9660.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-fs_iso9660.d
+-include grub_emu-normal_arg.d
 
 grub_emu-normal_cmdline.o: normal/cmdline.c
 	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -785,13 +798,29 @@ grub_emu-normal_menu.d: normal/menu.c
 
 -include grub_emu-normal_menu.d
 
-grub_emu-normal_arg.o: normal/arg.c
-	$(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+grub_emu-partmap_amiga.o: partmap/amiga.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-normal_arg.d: normal/arg.c
-	set -e; 	  $(BUILD_CC) -Inormal -I$(srcdir)/normal $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,grub_emu-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-partmap_amiga.d: partmap/amiga.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,grub_emu-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-normal_arg.d
+-include grub_emu-partmap_amiga.d
+
+grub_emu-partmap_apple.o: partmap/apple.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-partmap_apple.d: partmap/apple.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,grub_emu-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-partmap_apple.d
+
+grub_emu-partmap_pc.o: partmap/pc.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-partmap_pc.d: partmap/pc.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_emu-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-partmap_pc.d
 
 grub_emu-util_console.o: util/console.c
 	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -817,6 +846,14 @@ grub_emu-util_misc.d: util/misc.c
 
 -include grub_emu-util_misc.d
 
+grub_emu-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_emu-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-util_i386_pc_biosdisk.d
+
 grub_emu-util_i386_pc_getroot.o: util/i386/pc/getroot.c
 	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
@@ -825,21 +862,14 @@ grub_emu-util_i386_pc_getroot.d: util/i386/pc/getroot.c
 
 -include grub_emu-util_i386_pc_getroot.d
 
-grub_emu-commands_help.o: commands/help.c
-	$(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+grub_emu-util_i386_pc_misc.o: util/i386/pc/misc.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
 
-grub_emu-commands_help.d: commands/help.c
-	set -e; 	  $(BUILD_CC) -Icommands -I$(srcdir)/commands $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,help\.o[ :]*,grub_emu-commands_help.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grub_emu-util_i386_pc_misc.d: util/i386/pc/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-util_i386_pc_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grub_emu-commands_help.d
+-include grub_emu-util_i386_pc_misc.d
 
-grub_emu-disk_loopback.o: disk/loopback.c
-	$(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-disk_loopback.d: disk/loopback.c
-	set -e; 	  $(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,grub_emu-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_emu-disk_loopback.d
 
 grub_emu_LDFLAGS = -lncurses
 

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -332,4 +332,10 @@ void
 grub_biosdisk_init (void)
 {
   grub_disk_dev_register (&grub_biosdisk_dev);
+}
+
+void
+grub_biosdisk_fini (void)
+{
+  grub_disk_dev_unregister (&grub_biosdisk_dev);
 }

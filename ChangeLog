@@ -1,3 +1,37 @@
+2005-02-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/grub/normal.h (grub_halt_init): New prototype.
+	(grub_halt_fini): Likewise.
+	(grub_reboot_init): Likewise.
+	(grub_reboot_fini): Likewise.
+
+	* util/grub-emu.c: Include signal.h.
+	(main_env): New global variable.
+	(grub_machine_init): Ignore SIGINT. Otherwise grub-emu cannot
+	catch C-c.
+	(grub_machine_fini): New function.
+	(main): Call grub_halt_init and grub_reboot_init before
+	grub_main, and grub_reboot_fini and grub_halt_fini after it.
+	Call setjmp with MAIN_ENV to go back afterwards.
+	Call grub_machine_fini right before return.
+
+	* include/grub/util/misc.h: Include setjmp.h.
+	(main_env): New prototype.
+
+	* include/grub/kernel.h (grub_machine_fini): New prototype.
+	* include/grub/i386/pc/biosdisk.h (grub_biosdisk_fini): Likewise.
+	* include/grub/i386/pc/console.h (grub_console_fini): Likewise.
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_fini): New function.
+	* kern/i386/pc/init.c (grub_machine_fini): Likewise.
+	* term/i386/pc/console.c (grub_console_fini): Likewise.
+	
+	* util/i386/pc/misc.c: New file.
+	
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added
+	util/i386/pc/misc.c, commands/i386/pc/halt.c and
+	commands/i386/pc/reboot.c.
+
 2005-02-14  Guillem Jover  <guillem@hadrons.org>
 
 	* include/grub/dl.h (grub_dl_check_header): New prototype.
@@ -16,6 +50,9 @@
 	* loader/powerpc/ieee1275/linux.c (grub_rescue_cmd_linux): Use
 	`grub_dl_check_header' instead of explicit checks.  Remove arch
 	specific ELF header checks.
+
+	* util/grub-emu.c (grub_arch_dl_check_header): Remove the
+	argument SIZE.
 
 2005-02-13  Hollis Blanchard  <hollis@penguinppc.org>
 

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -122,4 +122,10 @@ grub_console_init (void)
 {
   grub_term_register (&grub_console_term);
   grub_term_set_current (&grub_console_term);
+}
+
+void
+grub_console_fini (void)
+{
+  grub_term_unregister (&grub_console_term);
 }

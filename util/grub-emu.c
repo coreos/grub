@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <argp.h>
 #include <string.h>
+#include <signal.h>
 
 #include <grub/mm.h>
 #include <grub/setjmp.h>
@@ -44,6 +45,9 @@
 #endif
 
 #define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
+
+/* Used for going back to the main function.  */
+jmp_buf main_env;
 
 grub_addr_t
 grub_arch_modules_addr (void)
@@ -71,7 +75,14 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 void
 grub_machine_init (void)
 {
+  signal (SIGINT, SIG_IGN);
   grub_console_init ();
+}
+
+void
+grub_machine_fini (void)
+{
+  grub_console_fini ();
 }
 
 
@@ -139,7 +150,7 @@ main (int argc, char *argv[])
   
   argp_parse (&argp, argc, argv, 0, 0, &args);
 
-  /* More sure there is a root device.  */
+  /* Make sure that there is a root device.  */
   if (! args.root_dev)
     {
       args.root_dev = grub_guess_root_device (args.dir ? : DEFAULT_DIRECTORY);
@@ -177,13 +188,18 @@ main (int argc, char *argv[])
   grub_terminal_init ();
   grub_loop_init ();
   grub_help_init ();
+  grub_halt_init ();
+  grub_reboot_init ();
   
   /* XXX: Should normal mode be started by default?  */
   grub_normal_init ();
 
   /* Start GRUB!  */
-  grub_main ();
+  if (setjmp (main_env) == 0)
+    grub_main ();
 
+  grub_reboot_fini ();
+  grub_halt_fini ();
   grub_help_fini ();
   grub_loop_fini ();
   grub_util_biosdisk_fini ();
@@ -201,6 +217,8 @@ main (int argc, char *argv[])
   grub_amiga_partition_map_fini ();
   grub_pc_partition_map_fini ();
   grub_apple_partition_map_fini ();
+
+  grub_machine_fini ();
   
   return 0;
 }

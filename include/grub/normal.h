@@ -122,6 +122,7 @@ extern grub_jmp_buf grub_exit_env;
 void grub_enter_normal_mode (const char *config);
 void grub_normal_execute (const char *config, int nested);
 void grub_menu_run (grub_menu_t menu, int nested);
+void grub_menu_entry_run (grub_menu_entry_t entry);
 void grub_cmdline_run (int nested);
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
@@ -163,6 +164,10 @@ void grub_loop_init (void);
 void grub_loop_fini (void);
 void grub_help_init (void);
 void grub_help_fini (void);
+void grub_halt_init (void);
+void grub_halt_fini (void);
+void grub_reboot_init (void);
+void grub_reboot_fini (void);
 #endif
 
 #endif /* ! GRUB_NORMAL_HEADER */

@@ -52,6 +52,9 @@ void grub_main (void);
 /* The machine-specific initialization. This must initialize memory.  */
 void grub_machine_init (void);
 
+/* The machine-specific finalization.  */
+void grub_machine_fini (void);
+
 /* Register all the exported symbols. This is automatically generated.  */
 void grub_register_exported_symbols (void);
 

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,5 +43,6 @@ int grub_biosdisk_get_diskinfo_standard (int drive,
 int grub_biosdisk_get_num_floppies (void);
 
 void grub_biosdisk_init (void);
+void grub_biosdisk_fini (void);
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_HEADER */

@@ -65,16 +65,22 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub
-grub_emu_SOURCES = kern/main.c kern/device.c fs/fshelp.c		\
-	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c		\
-        kern/misc.c kern/loader.c kern/rescue.c kern/term.c		\
-	kern/partition.c kern/env.c commands/ls.c partmap/amiga.c	\
-	partmap/pc.c partmap/apple.c					\
-	commands/terminal.c commands/boot.c commands/cmp.c commands/cat.c		\
-	util/i386/pc/biosdisk.c fs/fat.c fs/ext2.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/iso9660.c \
-	normal/cmdline.c normal/command.c normal/main.c normal/menu.c normal/arg.c	\
-	util/console.c util/grub-emu.c util/misc.c util/i386/pc/getroot.c commands/help.c \
-	disk/loopback.c
+grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
+	commands/help.c commands/terminal.c commands/ls.c		\
+	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	disk/loopback.c							\
+	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
+	fs/minix.c fs/ufs.c						\
+	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
+	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
+	kern/partition.c kern/rescue.c kern/term.c			\
+	normal/arg.c normal/cmdline.c normal/command.c normal/main.c	\
+	normal/menu.c							\
+	partmap/amiga.c	partmap/apple.c partmap/pc.c			\
+	util/console.c util/grub-emu.c util/misc.c			\
+	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
+	util/i386/pc/misc.c
+
 grub_emu_LDFLAGS = -lncurses
 
 # For genmoddep.
