@@ -214,7 +214,7 @@ returnit:
   if (run_cmdline && get_cmdline("command> ", commands, cur_heap, 2048))
     return 1;
 
-  if (strcmp("boot", cur_heap) == 0 || (script && !*cur_heap))
+  if (substring("boot", cur_heap) == 0 || (script && !*cur_heap))
     {
       if ((type == 'f') | (type == 'n'))
 	bsd_boot(type, bootdev);
@@ -245,9 +245,9 @@ returnit:
   cmd_len = 0;
   while (cur_cmdline[cmd_len++]);
 
-  if (strcmp("chainloader", cur_heap) < 1)
+  if (substring("chainloader", cur_heap) < 1)
     {
-      if (open(cur_cmdline) && (read(BOOTSEC_LOCATION, SECTOR_SIZE) 
+      if (open(cur_cmdline) && (read(BOOTSEC_LOCATION, SECTOR_SIZE)
 				== SECTOR_SIZE)
 	  && (*((unsigned short *) (BOOTSEC_LOCATION+BOOTSEC_SIG_OFFSET))
 	      == BOOTSEC_SIGNATURE))
@@ -258,17 +258,17 @@ returnit:
 	  type = 0;
 	}
     }
-  else if (strcmp("pause", cur_heap) < 1)
+  else if (substring("pause", cur_heap) < 1)
     {
       if (getc() == 27)
 	return 1;
     }
-  else if (strcmp("uppermem", cur_heap) < 1)
+  else if (substring("uppermem", cur_heap) < 1)
     {
       if (safe_parse_maxint(&cur_cmdline, (int *)&(mbi.mem_upper)))
 	mbi.flags &= ~MB_INFO_MEM_MAP;
     }
-  else if (strcmp("root", cur_heap) < 1)
+  else if (substring("root", cur_heap) < 1)
     {
       int hdbias = 0;
       char *biasptr = skip_to(0, set_device(cur_cmdline));
@@ -295,7 +295,7 @@ returnit:
 	    current_drive = -1;
 	}
     }
-  else if (strcmp("kernel", cur_heap) < 1)
+  else if (substring("kernel", cur_heap) < 1)
     {
       /* make sure it's at the beginning of the boot heap area */
       bcopy(cur_heap, heap, cmd_len + (((int)cur_cmdline) - ((int)cur_heap)));
@@ -304,7 +304,7 @@ returnit:
       if (type = load_image())
 	cur_heap = cur_cmdline + cmd_len;
     }
-  else if (strcmp("module", cur_heap) < 1)
+  else if (substring("module", cur_heap) < 1)
     {
       if (type == 'm')
 	{
@@ -329,7 +329,7 @@ returnit:
       else
 	errnum = ERR_NEED_MB_KERNEL;
     }
-  else if (strcmp("initrd", cur_heap) < 1)
+  else if (substring("initrd", cur_heap) < 1)
     {
       if (type == 'L' || type == 'l')
 	{
@@ -338,7 +338,7 @@ returnit:
       else
 	errnum = ERR_NEED_LX_KERNEL;
     }
-  else if (strcmp("install", cur_heap) < 1)
+  else if (substring("install", cur_heap) < 1)
     {
       char *stage1_file = cur_cmdline, *dest_dev, *file, *addr, *config_file;
       char buffer[SECTOR_SIZE], old_sect[SECTOR_SIZE];
@@ -470,7 +470,7 @@ returnit:
 	}
     }
 #ifdef DEBUG
-  else if (strcmp("testload", cur_heap) < 1)
+  else if (substring("testload", cur_heap) < 1)
     {
       type = 0;
       if (open(cur_cmdline))
@@ -534,13 +534,13 @@ returnit:
 	  debug_fs = NULL;
 	}
     }
-  else if (strcmp("read", cur_heap) < 1)
+  else if (substring("read", cur_heap) < 1)
     {
       int myaddr;
       if (safe_parse_maxint(&cur_cmdline, &myaddr))
 	printf("Address 0x%x: Value 0x%x", myaddr, *((unsigned *)myaddr));
     }
-  else if (strcmp("fstest", cur_heap) == 0)
+  else if (substring("fstest", cur_heap) == 0)
     {
       if (debug_fs)
 	{
@@ -553,12 +553,12 @@ returnit:
 	  printf(" Filesystem tracing is now on\n");
 	}
     }
-  else if (strcmp("impsprobe", cur_heap) == 0)
+  else if (substring("impsprobe", cur_heap) == 0)
     {
       if (!imps_probe())
 	printf(" No MPS information found or probe failed\n");
     }
-  else if (strcmp("displaymem", cur_heap) == 0)
+  else if (substring("displaymem", cur_heap) == 0)
     {
       if (get_eisamemsize() != -1)
 	printf(" EISA Memory BIOS Interface is present\n");
@@ -592,11 +592,10 @@ returnit:
 	}
     }
 #endif /* DEBUG */
-  else if (strcmp("makeactive", cur_heap) == 0)
+  else if (substring("makeactive", cur_heap) == 0)
     make_saved_active();
   else if (*cur_heap && *cur_heap != ' ')
     errnum = ERR_UNRECOGNIZED;
 
   goto restart;
 }
-

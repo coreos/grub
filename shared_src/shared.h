@@ -316,36 +316,40 @@ int special_attribute;
 
 #endif  /* _CHAR_IO_C */
 
-#define ERR_NONE            0
-#define ERR_WONT_FIT        (ERR_NONE + 1)
-#define ERR_NO_DISK         (ERR_WONT_FIT + 1)
-#define ERR_READ            (ERR_NO_DISK + 1)
-#define ERR_WRITE           (ERR_READ + 1)
-#define ERR_GEOM            (ERR_WRITE + 1)
-#define ERR_OUTSIDE_PART    (ERR_GEOM + 1)
-#define ERR_BAD_PART_TABLE  (ERR_OUTSIDE_PART + 1)
-#define ERR_NO_PART         (ERR_BAD_PART_TABLE + 1)
-#define ERR_BAD_FILENAME    (ERR_NO_PART + 1)
-#define ERR_BAD_FILETYPE    (ERR_BAD_FILENAME + 1)
-#define ERR_FILE_NOT_FOUND  (ERR_BAD_FILETYPE + 1)
-#define ERR_FSYS_MOUNT      (ERR_FILE_NOT_FOUND + 1)
-#define ERR_FSYS_CORRUPT    (ERR_FSYS_MOUNT + 1)
-#define ERR_FILELENGTH      (ERR_FSYS_CORRUPT + 1)
-#define ERR_NUMBER_PARSING  (ERR_FILELENGTH + 1)
-#define ERR_DEV_FORMAT      (ERR_NUMBER_PARSING + 1)
-#define ERR_DEV_VALUES      (ERR_DEV_FORMAT + 1)
-#define ERR_EXEC_FORMAT     (ERR_DEV_VALUES + 1)
-#define ERR_BELOW_1MB       (ERR_EXEC_FORMAT + 1)
-#define ERR_BOOT_FEATURES   (ERR_BELOW_1MB + 1)
-#define ERR_BOOT_FAILURE    (ERR_BOOT_FEATURES + 1)
-#define ERR_NEED_MB_KERNEL  (ERR_BOOT_FAILURE + 1)
-#define ERR_NEED_LX_KERNEL  (ERR_NEED_MB_KERNEL + 1)
-#define ERR_BOOT_COMMAND    (ERR_NEED_LX_KERNEL + 1)
-#define ERR_UNRECOGNIZED    (ERR_BOOT_COMMAND + 1)
-#define ERR_BAD_GZIP_HEADER (ERR_UNRECOGNIZED + 1)
-#define ERR_BAD_GZIP_DATA   (ERR_BAD_GZIP_HEADER + 1)
-#define ERR_BAD_VERSION     (ERR_BAD_GZIP_DATA + 1)
-#define MAX_ERR_NUM         (ERR_BAD_VERSION + 1)
+enum grub_error_t {
+  ERR_NONE = 0,
+  ERR_BAD_FILENAME,
+  ERR_BAD_FILETYPE,
+  ERR_BAD_GZIP_DATA,
+  ERR_BAD_GZIP_HEADER,
+  ERR_BAD_PART_TABLE,
+  ERR_BAD_VERSION,
+  ERR_BELOW_1MB,
+  ERR_BOOT_COMMAND,
+  ERR_BOOT_FAILURE,
+  ERR_BOOT_FEATURES,
+  ERR_DEV_FORMAT,
+  ERR_DEV_VALUES,
+  ERR_EXEC_FORMAT,
+  ERR_FILELENGTH,
+  ERR_FILE_NOT_FOUND,
+  ERR_FSYS_CORRUPT,
+  ERR_FSYS_MOUNT,
+  ERR_GEOM,
+  ERR_NEED_LX_KERNEL,
+  ERR_NEED_MB_KERNEL,
+  ERR_NO_DISK,
+  ERR_NO_PART,
+  ERR_NUMBER_PARSING,
+  ERR_OUTSIDE_PART,
+  ERR_READ,
+  ERR_SYMLINK_LOOP,
+  ERR_UNRECOGNIZED,
+  ERR_WONT_FIT,
+  ERR_WRITE,
+
+  MAX_ERR_NUM
+};
 
 /* returns packed BIOS/ASCII code */
 #define BIOS_CODE(x)    ((x) >> 8)
@@ -371,7 +375,7 @@ int get_cmdline(char *prompt, char *commands, char *cmdline, int maxlen);
 int tolower(int c);
 int isspace(int c);
 int strncat(char *s1, char *s2, int n);
-int strcmp(char *s1, char *s2);
+int substring(char *s1, char *s2);
 char *strstr(char *s1, char *s2);
 int bcopy(char *from, char *to, int len);
 int bzero(char *start, int len);

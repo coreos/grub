@@ -1,3 +1,9 @@
+grub (0.5-3) unstable; urgency=low
+
+  * GRUB now understands symbolic links (fixes: #17306).
+
+ -- Gordon Matzigkeit <gord@debian.org>  Sun, 21 Feb 1999 05:13:25 -0600
+
 grub (0.5-2) unstable; urgency=low
 
   * Assembly source cleanups.

@@ -529,7 +529,7 @@ cmain(void)
 	    {
 	      ptr = skip_to(1, cmdline);
 
-	      if (strcmp("title", cmdline) < 1)
+	      if (substring("title", cmdline) < 1)
 		{
 		  if (state > 1)
 		    {
@@ -551,13 +551,13 @@ cmain(void)
 		}
 	      else if (!state)
 		{
-		  if (strcmp("timeout", cmdline) < 1)
+		  if (substring("timeout", cmdline) < 1)
 		    safe_parse_maxint(&ptr, &timeout);
-		  if (strcmp("fallback", cmdline) < 1)
+		  if (substring("fallback", cmdline) < 1)
 		    safe_parse_maxint(&ptr, &fallback);
-		  if (strcmp("default", cmdline) < 1)
+		  if (substring("default", cmdline) < 1)
 		    safe_parse_maxint(&ptr, &default_entry);
-		  if (strcmp("password", cmdline) < 1)
+		  if (substring("password", cmdline) < 1)
 		    {
 		      char *ptrend = ptr;
 		      password = config_entries;

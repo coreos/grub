@@ -3,7 +3,7 @@
 #  part created by configure.
 #
 
-PROGS=	stage1 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
+PROGS=	grub stage1 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	stage2 stage2_debug
 
 all:

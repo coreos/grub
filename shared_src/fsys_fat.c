@@ -234,14 +234,15 @@ loop:
       }
 
       if (print_possibilities && ch != '/'
-	  && (!*dirname || strcmp(dirname, filename) <= 0))
+	  && (!*dirname || substring(dirname, filename) <= 0))
 	{
 	  if (print_possibilities > 0)
 	    print_possibilities = -print_possibilities;
 	  printf("  %s", filename);
 	}
     }
-  while (strcmp(dirname, filename) != 0 || (print_possibilities && ch != '/'));
+  while (substring(dirname, filename) != 0 ||
+	 (print_possibilities && ch != '/'));
 
   *(dirname = rest) = ch;
 
@@ -252,5 +253,3 @@ loop:
   /* go back to main loop at top of function */
   goto loop;
 }
-
-

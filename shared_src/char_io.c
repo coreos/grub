@@ -521,18 +521,21 @@ strncat(char *s1, char *s2, int n)
 
 
 int
-strcmp(char *s1, char *s2)
+substring(char *s1, char *s2)
 {
   while (*s1 == *s2)
     {
+      /* The strings match, so return 0. */
       if (!*(s1++))
 	return 0;
       s2++;
     }
 
+  /* S1 is shorter than S2. */
   if (*s1 == 0)
     return -1;
 
+  /* S1 is a substring of S2. */
   return 1;
 }
 
@@ -577,9 +580,9 @@ bcopy(char *from, char *to, int len)
     {
       if ((to >= from+len) || (to <= from))
 	{
-	  while (len > 3)
+	  while (len >= sizeof (unsigned long))
 	    {
-	      len -= 4;
+	      len -= sizeof (unsigned long);
 	      *(((unsigned long *)to)++) = *(((unsigned long *)from)++);
 	    }
 	  while (len-- > 0)
@@ -587,6 +590,8 @@ bcopy(char *from, char *to, int len)
 	}
       else
 	{
+	  /* We have a region that overlaps, but would be overwritten
+	     if we copied it forward. */
 	  while (len-- > 0)
 	    to[len] = from[len];
 	}
@@ -607,5 +612,3 @@ bzero(char *start, int len)
 
   return (!errnum);
 }
-
-

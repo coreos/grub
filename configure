@@ -391,7 +391,8 @@ for tool_var in $tool_vars ; do
 done
 
 cat << EOF >> Makefile
-export SHARED_FLAGS = -pipe -fno-builtin -nostdinc -O2 -DEXT_C\(x\)="$munge_func1"
+export CFLAGS = -O2
+export SHARED_FLAGS = -pipe -fno-builtin -nostdinc -DEXT_C\(x\)="$munge_func1"
 
 #  (END OF AUTOMATICALLY GENERATED PORTION)
 #

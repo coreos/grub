@@ -1,3 +1,60 @@
+1999-02-21  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* debian: Add to the distribution, since we maintain the GRUB
+	Debian package ourselves.
+
+	* grub/asmstub.c: New file to implement stubbed assembly functions
+	under Unix.
+
+	* stage1/Makefile: Delete spurious dependencies on Makefile.
+	* stage2/Makefile: Likewise.
+	* stage2_debug/Makefile: Likewise.
+	* grub/Makefile: Likewise.
+
+	* shared_src/fsys_ext2fs.c (ext2fs_dir): Follow symbolic links
+	rather than giving an error.
+
+	* shared_src/common.c (err_list): Use labeled elements to
+	associate messages with error codes.
+	* shared_src/shared.h: Make error codes into an enumerated type.
+
+	* shared_src/common.c (err_list): Add ERR_SYMLINK_LOOP.
+	* shared_src/shared.h: Likewise.
+
+	* shared_src/char_io.c (bcopy): Don't make any assumptions about
+	the length of an unsigned long.
+
+	* grub/Makefile: Treat CFLAGS, CPPFLAGS, LDFLAGS according to
+	GNU standards.
+	* stage2/Makefile: Likewise.
+	* e2fs_stage1_5/Makefile: Likewise.
+	* fat_stage1_5/Makefile: Likewise.
+	* ffs_stage1_5/Makefile: Likewise.
+
+1999-02-20  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* docs/index.html: Rename to grub.html, so that we don't hide
+	files in this directory from a web browser.
+
+1999-02-15  Gordon Matzigkeit  <gord@trick.fig.org>
+
+	* Makefile.end (PROGS): Add grub.
+
+	* grub/main.c: New file.
+
+	* grub/Makefile: New directory to contain the stage2 Unix program.
+
+	* shared_src/cmdline.c: Use substring.
+	* shared_src/fsys_ext2fs.c: Likewise.
+	* shared_src/fsys_fat.c: Likewise.
+	* shared_src/fsys_ffs.c: Likewise.
+	* shared_src/stage2.c: Likewise.
+
+	* shared_src/shared.h: Delete strcmp, declare substring.
+
+	* shared_src/char_io.c (strcmp): Rename to `substring', because
+	this function doesn't behave the same as libc's strcmp.
+
 1999-02-14  Gordon Matzigkeit  <gord@trick.fig.org>
 
 	* shared_src/shared.h: (addr32, data32): Delete definitions.

@@ -41,8 +41,8 @@ binary-arch:	checkroot build
 	cp -r docs debian/tmp/usr/doc/grub
 	rm -f debian/tmp/usr/doc/grub/docs/COPYING
 
-	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/
-	gzip -f9 debian/tmp/usr/doc/grub/ChangeLog
+	$(INSTALL_DATA) ChangeLog debian/tmp/usr/doc/grub/changelog
+	gzip -f9 debian/tmp/usr/doc/grub/changelog
 	$(INSTALL_DATA) debian/changelog debian/tmp/usr/doc/grub/changelog.Debian
 	gzip -f9 debian/tmp/usr/doc/grub/changelog.Debian
 	$(INSTALL_DATA) debian/copyright debian/tmp/usr/doc/grub/

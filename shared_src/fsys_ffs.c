@@ -28,24 +28,24 @@
  * Mach Operating System
  * Copyright (c) 1992, 1991 Carnegie Mellon University
  * All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify and distribute this software and its
  * documentation is hereby granted, provided that both the copyright
  * notice and this permission notice appear in all copies of the
  * software, derivative works or modified versions, and any portions
  * thereof, and that both notices appear in supporting documentation.
- * 
+ *
  * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
  * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
  * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- * 
+ *
  * Carnegie Mellon requests users of this software to return to
- * 
+ *
  *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
  *  School of Computer Science
  *  Carnegie Mellon University
  *  Pittsburgh PA 15213-3890
- * 
+ *
  * any improvements or extensions that they make and grant Carnegie Mellon
  * the rights to redistribute these changes.
  *
@@ -244,7 +244,7 @@ loop:
       loc += dp->d_reclen;
 
       if (dp->d_ino && print_possibilities && ch != '/'
-	  && (!*dirname || strcmp(dirname, dp->d_name) <= 0))
+	  && (!*dirname || substring(dirname, dp->d_name) <= 0))
 	{
 	  if (print_possibilities > 0)
 	    print_possibilities = -print_possibilities;
@@ -252,7 +252,7 @@ loop:
 	  printf("  %s", dp->d_name);
 	}
     }
-  while (!dp->d_ino || (strcmp(dirname, dp->d_name) != 0
+  while (!dp->d_ino || (substring(dirname, dp->d_name) != 0
 			|| (print_possibilities && ch != '/')) );
 
   /* only get here if we have a matching directory entry */
@@ -263,5 +263,3 @@ loop:
   /* go back to main loop at top of function */
   goto loop;
 }
-
-

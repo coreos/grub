@@ -1,6 +1,7 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1996   Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1996  Erich Boleyn  <erich@uruk.org>
+ *  Copyright (C) 1999  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,12 +20,7 @@
 
 
 #include "shared.h"
-
-#ifdef E2DEBUG
-#include "pc_slice.h"
-#else
 #include "filesys.h"
-#endif
 
 static int mapblock1, mapblock2;
 
@@ -180,7 +176,9 @@ struct ext2_dir_entry {
 #define log2(n) ffz(~(n))
 
 #define EXT2_SUPER_MAGIC      0xEF53 /* include/linux/ext2_fs.h */
-#define EXT2_ROOT_INO            2 /* include/linux/ext2_fs.h */
+#define EXT2_ROOT_INO              2 /* include/linux/ext2_fs.h */
+#define PATH_MAX                1024 /* include/linux/limits.h */
+#define MAX_LINK_COUNT             5 /* number of symbolic links to follow */
 
 /* made up, these are pointers into FSYS_BUF */
 /* read once, always stays there: */
@@ -209,8 +207,10 @@ struct ext2_dir_entry {
      (EXT2_BLOCK_SIZE(s) / sizeof (struct ext2_group_desc))
 /* linux/stat.h */
 #define S_IFMT  00170000
+#define S_IFLNK  0120000
 #define S_IFREG  0100000
 #define S_IFDIR  0040000
+#define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
 #define S_ISREG(m)      (((m) & S_IFMT) == S_IFREG)
 #define S_ISDIR(m)      (((m) & S_IFMT) == S_IFDIR)
 
@@ -358,12 +358,13 @@ ext2fs_read(int addr, int len)
   int size = 0;
 
 #ifdef E2DEBUG
+  static char hexdigit[] = "0123456789abcdef";
   unsigned char * i;
   for (i = (unsigned char *)INODE;
        i < ((unsigned char *)INODE + sizeof(struct ext2_inode));
        i++) {
-    printf("%c", "0123456789abcdef"[*i >> 4]);
-    printf("%c", "0123456789abcdef"[*i % 16]);
+    printf("%c", hexdigit[*i >> 4]);
+    printf("%c", hexdigit[*i % 16]);
     if (!((i + 1 - (unsigned char *)INODE) % 16)) { printf("\n"); }
     else { printf(" "); }
   }
@@ -390,7 +391,7 @@ ext2fs_read(int addr, int len)
 
     devread(map * (EXT2_BLOCK_SIZE(SUPERBLOCK) / DEV_BSIZE),
 	    offset, size, addr);
- 
+
 #ifndef NO_FANCY_STUFF
     debug_fs_func = NULL;
 #endif  /* NO_FANCY_STUFF */
@@ -442,6 +443,7 @@ int
 ext2fs_dir(char *dirname)
 {
   int current_ino = EXT2_ROOT_INO; /* start at the root */
+  int updir_ino = current_ino;	/* the parent of the current directory */
   int group_id; /* which group the inode is in */
   int group_desc;  /* fs pointer to that group */
   int desc; /* index within that group */
@@ -449,6 +451,9 @@ ext2fs_dir(char *dirname)
   int str_chk; /* used to hold the results of a string compare */
   struct ext2_group_desc * gdp;
   struct ext2_inode * raw_inode; /* inode info corresponding to current_ino */
+
+  char linkbuf[PATH_MAX]; /* buffer for following symbolic links */
+  int link_count = 0;
 
   char *rest;
   char ch; /* temp char holder */
@@ -527,6 +532,74 @@ ext2fs_dir(char *dirname)
     printf("first word=%x\n", *((int *)INODE));
 #endif /* E2DEBUG */
 
+    /* If we've got a symbolic link, then chase it. */
+    if (S_ISLNK(INODE->i_mode))
+      {
+	int len, remaining;
+	if (++ link_count > MAX_LINK_COUNT)
+	  {
+	    errnum = ERR_SYMLINK_LOOP;
+	    return 0;
+	  }
+
+	/* Find out how long our remaining name is. */
+	len = 0;
+	while (dirname[len] && !isspace (dirname[len]))
+	  len ++;
+
+	/* Get the symlink size. */
+	filemax = (INODE->i_size);
+	if (filemax + len > sizeof (linkbuf) - 2)
+	  {
+	    errnum = ERR_FILELENGTH;
+	    return 0;
+	  }
+
+	if (len)
+	  {
+	    /* Copy the remaining name to the end of the symlink data.
+	       Note that DIRNAME and LINKBUF may overlap! */
+	    bcopy (dirname, linkbuf + filemax, len);
+	  }
+	linkbuf[filemax + len] = '\0';
+
+	/* Read the symlink data. */
+	if (INODE->i_blocks)
+	  {
+	    /* Read the necessary blocks, and reset the file pointer. */
+	    len = read ((int) linkbuf, filemax);
+	    filepos = 0;
+	    if (!len)
+	      return 0;
+	  }
+	else
+	  {
+	    /* Copy the data directly from the inode. */
+	    len = filemax;
+	    bcopy ((char *) INODE->i_block, linkbuf, len);
+	  }
+
+#if E2DEBUG
+	printf ("symlink=%s\n", linkbuf);
+#endif
+
+	dirname = linkbuf;
+	if (*dirname == '/')
+	  {
+	    /* It's an absolute link, so look it up in root. */
+	    current_ino = EXT2_ROOT_INO;
+	    updir_ino = current_ino;
+	  }
+	else
+	  {
+	    /* Relative, so look it up in our parent directory. */
+	    current_ino = updir_ino;
+	  }
+
+	/* Try again using the new name. */
+	continue;
+      }
+
     /* if end of filename, INODE points to the file's inode */
     if (!*dirname || isspace(*dirname))
       {
@@ -541,6 +614,7 @@ ext2fs_dir(char *dirname)
       }
 
     /* else we have to traverse a directory */
+    updir_ino = current_ino;
 
     /* skip over slashes */
     while (*dirname == '/')
@@ -573,7 +647,7 @@ ext2fs_dir(char *dirname)
 	if (print_possibilities < 0) {
 	  putchar('\n');
 	}
-	else {    
+	else {
 	  errnum = ERR_FILE_NOT_FOUND;
 	  *rest = ch;
 	}
@@ -583,7 +657,7 @@ ext2fs_dir(char *dirname)
       /* else, find the (logical) block component of our location */
       blk = loc >> EXT2_BLOCK_SIZE_BITS(SUPERBLOCK);
 
-      /* now we know which logical block of the directory entry we are looking
+      /* we know which logical block of the directory entry we are looking
          for, now we have to translate that to the physical (fs) block on
          the disk */
       map = ext2fs_block_map(blk);
@@ -605,7 +679,7 @@ ext2fs_dir(char *dirname)
 
 #ifdef E2DEBUG
     printf("directory entry ino=%d\n", dp->inode);
-    if (dp->inode) 
+    if (dp->inode)
       printf("entry=%s\n", dp->name);
 #endif /* E2DEBUG */
 
@@ -614,7 +688,7 @@ ext2fs_dir(char *dirname)
 	  int saved_c = dp->name[dp->name_len];
 
 	  dp->name[dp->name_len] = 0;
-	  str_chk = strcmp(dirname, dp->name);
+	  str_chk = substring(dirname, dp->name);
 
 	  if (print_possibilities && ch != '/'
 	      && (!*dirname || str_chk <= 0))
