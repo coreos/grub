@@ -1471,7 +1471,7 @@ SpeedStor
 @item 63
 GNU Hurd or Mach or Sys V/386 (such as ISC UNIX)@footnote{But the reason
 why they decided that 63 means GNU Hurd is not known. Do not use 63 for
-GNU Hurd.}
+GNU Hurd, but use 83 for ext2fs, and A5 for FFS.}
 
 @item 64
 Novell Netware 286
@@ -1504,8 +1504,8 @@ MINIX / old Linux
 Linux swap
 
 @item 83
-Linux native@footnote{This is not true. Use 83 for ext2fs even if the
-owner OS is GNU/Hurd.}
+Linux native@footnote{This is not necessarily true. GNU Hurd uses 83 for
+ext2fs partitions.}
 
 @item 84
 OS/2 hidden C: drive

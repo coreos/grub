@@ -1,5 +1,10 @@
 2000-12-14  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* docs/prog-ref.texi (Partition types): Rewrite the footnotes.
+	Suggested by Ralf.Medow@t-online.de (Ralf Medow).
+	
+2000-12-14  OKUJI Yoshinori  <okuji@gnu.org>
+
 	From Erik Schoenfelder <schoenfr@gaertner.de>:
 	* util/grub-install.in (convert): Revised the fix for floppy
 	device handling.
