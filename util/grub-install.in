@@ -233,9 +233,9 @@ esac
 # For now, this uses the program `df' to get the device name, but is
 # this really portable?
 root_device=`df ${rootdir}/ | grep /dev/ \
-    | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+    | sed 's%.*\(/dev/[^ 	]*\).*%\1%'`
 bootdir_device=`df ${bootdir} | grep /dev/ \
-    | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+    | sed 's%.*\(/dev/[^ 	]*\).*%\1%'`
 
 # Check if the boot directory is in the same device as the root directory.
 if test "x$root_device" != "x$bootdir_device"; then
@@ -253,7 +253,7 @@ fi
 # Check if the root directory exists in the same device as the grub
 # directory.
 grubdir_device=`df ${grubdir} | grep /dev/ \
-    | sed 's%.*\(/dev/[a-z0-9]*\).*%\1%'`
+    | sed 's%.*\(/dev/[^ 	]*\).*%\1%'`
 if test "x$grubdir_device" != "x$root_device"; then
     # For now, cannot deal with this situation.
     cat <<EOF 1>&2

@@ -1,5 +1,14 @@
 2000-10-10  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Alessandro Rubini:
+	* util/grub-install.in (root_device): Use the regular expression
+	's%.*\(/dev/[^ 	]*\).*%\1%' instead of
+	's%.*\(/dev/[a-z0-9]*\).*%\1%'.
+	(bootdir_device): Likewise.
+	(grubdir_device): Likewise.
+	
+2000-10-10  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* stage2/start.S (copy_buffer): Use pusha and popa instead of
 	pushing and poping %di and %si individually, to reduce the code
 	size and save %cx as well. Reported by Herbert Nachtnebel
