@@ -1,3 +1,31 @@
+2000-12-17  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/disk_io.c (rawread): Check if there is a EZD partition
+	and remap sector 0 to sector 1 like EZ-BIOS does.
+	(rawwrite): New function to write to disk.  Also does EZD
+	remapping.
+	(devwrite): New function.  Does the special remapping to
+	partitions needed for linux.  This contains the code that was
+	previously duplicated in embed_func and install_func at several
+	places.
+	(make_saved_active): Use rawwrite. Don't use SCRATCHSEG, as it is
+	needed by devwrite.
+	(set_partition_hidden_flag): Likewise.	
+	* stage2/disk_io.h (rawwrite): New function.
+	(devwrite): Likewise.
+	* stage2/pc_slice.h (PC_SLICE_TYPE_EZD): New macro.
+	* stage2/builtins.c (embed_info): New variable to store the
+	position of the embedded stage1_5 for setup_func.
+	(embed_func): Don't embed after the MBR if an EZ-BIOS is detected
+	there.  Use the new devwrite method.  If embedding is successful
+	store position in embed_info.
+	(install_func): Use devwrite.  Don't use SCRATCHSEG.
+	(partnew_func): Use rawwrite.  Don't use SCRATCHSEG.
+	(parttype_func): Likewise.
+	(savedefault_func): Likewise.
+	(setup_func): New nested function embed_stage1_5.  Stage1_5 is now
+	also be embedded into filesystems which supports that.
+	
 2000-12-17  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* stage2/builtins.c (chainloader_func): Set ERRNUM to

@@ -1,10 +1,5 @@
 Known problems/bugs:
 
-  - GRUB doesn't work with EZ-BIOS. GRUB shouldn't embed Stage 1.5 and
-    GRUB should use the MBR emulated by EZ-BIOS, if EZ-BIOS has been
-    installed. This is complicated, because Linux and EZ-BIOS hide a
-    real MBR from GRUB automatically.
-
   - GRUB cannot boot newer versions of NetBSD or OpenBSD directly.
 
   - The command "map" seems not to work in some environments.

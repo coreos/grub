@@ -933,6 +933,8 @@ int gunzip_read (char *buf, int len);
 
 int rawread (int drive, int sector, int byte_offset, int byte_len, char *buf);
 int devread (int sector, int byte_offset, int byte_len, char *buf);
+int rawwrite (int drive, int sector, char *buf);
+int devwrite (int sector, int sector_len, char *buf);
 
 /* Parse a device string and initialize the global parameters. */
 char *set_device (char *device);

@@ -24,6 +24,10 @@
 
 #include "filesys.h"
 
+#ifdef GRUB_UTIL
+# include <device.h>
+#endif
+
 #ifndef STAGE1_5
 /* instrumentation variables */
 void (*disk_read_hook) (int, int, int) = NULL;
@@ -106,7 +110,6 @@ struct geometry buf_geom;
 int filepos;
 int filemax;
 
-
 int
 rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 {
@@ -180,8 +183,29 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	    }
 	  else
 	    buf_track = track;
-	}
 
+	  if ((buf_track == 0 || sector == 0)
+	      && (PC_SLICE_TYPE (BUFFERADDR, 0) == PC_SLICE_TYPE_EZD
+		  || PC_SLICE_TYPE (BUFFERADDR, 1) == PC_SLICE_TYPE_EZD
+		  || PC_SLICE_TYPE (BUFFERADDR, 2) == PC_SLICE_TYPE_EZD
+		  || PC_SLICE_TYPE (BUFFERADDR, 3) == PC_SLICE_TYPE_EZD))
+	    {
+	      /* This is a EZD disk map sector 0 to sector 1 */
+	      if (buf_track == 0 || slen >= 2)
+		{
+		  /* We already read the sector 1, copy it to sector 0 */
+		  memmove ((char *) BUFFERADDR, 
+			   (char *) BUFFERADDR + SECTOR_SIZE, SECTOR_SIZE);
+		}
+	      else
+		{
+		  if (biosdisk (BIOSDISK_READ, drive, &buf_geom,
+				1, 1, BUFFERSEG))
+		    errnum = ERR_READ;
+		}
+	    }
+	}
+	  
       if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
 	size = (num_sect * SECTOR_SIZE) - byte_offset;
 
@@ -260,6 +284,68 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
 }
 
 #ifndef STAGE1_5
+int
+rawwrite (int drive, int sector, char *buf)
+{
+  if (sector == 0)
+    {
+      if (biosdisk (BIOSDISK_READ, drive, &buf_geom, 0, 1, SCRATCHSEG))
+	{
+	  errnum = ERR_WRITE;
+	  return 0;
+	}
+
+      if (PC_SLICE_TYPE (SCRATCHADDR, 0) == PC_SLICE_TYPE_EZD
+	  || PC_SLICE_TYPE (SCRATCHADDR, 1) == PC_SLICE_TYPE_EZD
+	  || PC_SLICE_TYPE (SCRATCHADDR, 2) == PC_SLICE_TYPE_EZD
+	  || PC_SLICE_TYPE (SCRATCHADDR, 3) == PC_SLICE_TYPE_EZD)
+	sector = 1;
+    }
+  
+  memmove ((char *) SCRATCHADDR, buf, SECTOR_SIZE);
+  if (biosdisk (BIOSDISK_WRITE, drive, &buf_geom,
+		sector, 1, SCRATCHSEG))
+    {
+      errnum = ERR_WRITE;
+      return 0;
+    }
+
+  if (sector - sector % buf_geom.sectors == buf_track)
+    /* Clear the cache.  */
+    buf_track = -1;
+
+  return 1;
+}
+
+int
+devwrite (int sector, int sector_count, char *buf)
+{
+#if defined(GRUB_UTIL) && defined(__linux__)
+  if (current_partition != 0xFFFFFF)
+    {
+      /* If the grub shell is running under Linux and the user wants to
+	 embed a Stage 1.5 into a partition instead of a MBR, use system
+	 calls directly instead of biosdisk, because of the bug in
+	 Linux. *sigh*  */
+      return write_to_partition (device_map, current_drive, current_partition,
+				 sector, sector_count, buf);
+    }
+  else
+#endif /* GRUB_UTIL && __linux__ */
+    {
+      int i;
+      
+      for (i = 0; i < sector_count; i++)
+	{
+	  if (! rawwrite(current_drive, part_start + sector + i, 
+			 buf + (i << SECTOR_BITS)))
+	      return 0;
+
+	}
+      return 1;
+    }
+}
+
 static int
 sane_partition (void)
 {
@@ -302,12 +388,14 @@ attempt_mount (void)
 
 
 #ifndef STAGE1_5
-/* Turn on the active flag for the partition SAVED_PARATITION in the
+/* Turn on the active flag for the partition SAVED_PARTITION in the
    drive SAVED_DRIVE. If an error occurs, return zero, otherwise return
    non-zero.  */
 int
 make_saved_active (void)
 {
+  char MBR[512];
+
   if (saved_drive & 0x80)
     {
       /* Hard disk */
@@ -322,39 +410,32 @@ make_saved_active (void)
 	}
 
       /* Read the MBR in the scratch space.  */
-      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) MBR))
 	return 0;
 
       /* If the partition is an extended partition, setting the active
 	 flag violates the specification by IBM.  */
-      if (IS_PC_SLICE_TYPE_EXTENDED (PC_SLICE_TYPE (SCRATCHADDR, part)))
+      if (IS_PC_SLICE_TYPE_EXTENDED (PC_SLICE_TYPE (MBR, part)))
 	{
 	  errnum = ERR_DEV_VALUES;
 	  return 0;
 	}
 
       /* Check if the active flag is disabled.  */
-      if (PC_SLICE_FLAG (SCRATCHADDR, part) != PC_SLICE_FLAG_BOOTABLE)
+      if (PC_SLICE_FLAG (MBR, part) != PC_SLICE_FLAG_BOOTABLE)
 	{
 	  int i;
 
 	  /* Clear all the active flags in this table.  */
 	  for (i = 0; i < 4; i++)
-	    PC_SLICE_FLAG (SCRATCHADDR, i) = 0;
+	    PC_SLICE_FLAG (MBR, i) = 0;
 
 	  /* Set the flag.  */
-	  PC_SLICE_FLAG (SCRATCHADDR, part) = PC_SLICE_FLAG_BOOTABLE;
-
-	  /* Clear the cache.  */
-	  buf_track = -1;
+	  PC_SLICE_FLAG (MBR, part) = PC_SLICE_FLAG_BOOTABLE;
 
 	  /* Write back the MBR.  */
-	  if (biosdisk (BIOSDISK_WRITE, saved_drive, &buf_geom,
-			0, 1, SCRATCHSEG))
-	    {
-	      errnum = ERR_WRITE;
-	      return 0;
-	    }
+	  if (! rawwrite (saved_drive, 0, MBR))
+	    return 0;
 	}
     }
   else
@@ -372,6 +453,7 @@ make_saved_active (void)
 int
 set_partition_hidden_flag (int hidden)
 {
+  char MBR[512];
   if (current_drive & 0x80)
     {
       int part = current_partition >> 16;
@@ -382,21 +464,16 @@ set_partition_hidden_flag (int hidden)
           return 0;
         }
 
-      if (! rawread (current_drive, 0, 0, SECTOR_SIZE, (char *) SCRATCHADDR))
+      if (! rawread (current_drive, 0, 0, SECTOR_SIZE, (char *) MBR))
         return 0;
 
       if (hidden)
-	PC_SLICE_TYPE (SCRATCHADDR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
+	PC_SLICE_TYPE (MBR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
       else
-	PC_SLICE_TYPE (SCRATCHADDR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
+	PC_SLICE_TYPE (MBR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
       
-      buf_track = -1;
-      if (biosdisk (BIOSDISK_WRITE, current_drive, &buf_geom,
-		    0, 1, SCRATCHSEG))
-	{
-	  errnum = ERR_WRITE;
-	  return 0;
-	}
+      if (! rawwrite (current_drive, 0, MBR))
+	return 0;
     }
 
   return 1;
