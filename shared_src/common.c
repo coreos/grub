@@ -30,7 +30,6 @@ struct multiboot_info mbi;
 unsigned long saved_drive;
 unsigned long saved_partition;
 unsigned long saved_mem_upper;
-int mem_map = 0;
 
 /*
  *  Error code stuff.
@@ -90,6 +89,8 @@ static struct AddrRangeDesc fakemap[3] =
 void
 init_bios_info(void)
 {
+  int cont, memtmp, addr;
+
   /*
    *  Get information from BIOS on installed RAM.
    */
@@ -107,71 +108,84 @@ init_bios_info(void)
   gateA20(1);
 
   /*
-   *  The "mem_upper" variable only recognizes upper memory in the
+   *  The "mbi.mem_upper" variable only recognizes upper memory in the
    *  first memory region.  If there are multiple memory regions,
    *  the rest are reported to a Multiboot-compliant OS, but otherwise
    *  unused by GRUB.
    */
 
-  {
-    int cont = 0, mem1, mem2, addr;
+  mbi.mmap_addr = (addr = (((int) end) & ~3) + 4);
+  mbi.mmap_length = 0;
+  cont = 0;
 
-    mbi.mmap_addr = (addr = (((int) end) & ~3) + 4);
-    mbi.mmap_length = 0;
+  do
+    {
+      cont = get_mem_map(addr, cont);
 
-    do
-      {
-	cont = get_mem_map(addr, cont);
+      if ( ! *((int *)addr) )
+	break;
 
-	if ( ! *((int *)addr) )
-	  break;
+      mbi.mmap_length += *((int *)addr) + 4;
+      addr += *((int *)addr) + 4;
+    }
+  while (cont);
 
-	/*
-	 *  This is to get the upper memory up to the first memory
-	 *  hole into the "mbi.mem_upper" element, for OS's that
-	 *  don't care about the memory map, but might care about
-	 *  RAM above 64MB.
-	 */
-	if (((struct AddrRangeDesc *)addr)->BaseAddrLow == 0x100000
-	    && ((struct AddrRangeDesc *)addr)->BaseAddrHigh == 0
-	    && ((struct AddrRangeDesc *)addr)->Type == MB_ARD_MEMORY)
-	  {
-	    /* limit to 4G, as most OS's would probably break with more */
+  if (mbi.mmap_length)
+    {
+      /*
+       *  This is to get the upper memory up to the first memory
+       *  hole into the "mbi.mem_upper" element, for OS's that
+       *  don't care about the memory map, but might care about
+       *  RAM above 64MB.
+       *
+       *  A big problem is that the memory areas aren't guaranteed
+       *  to be:  (1) contiguous, (2) sorted in ascending order, or
+       *  (3) non-overlapping.
+       */
+      memtmp = 0x100000;
 
-	    if (!((struct AddrRangeDesc *)addr)->LengthHigh)
-	      mbi.mem_upper = ((struct AddrRangeDesc *)addr)->LengthLow >> 10;
-	    else
-	      mbi.mem_upper = 0x3FBFC0;  /* 4G - 1M - 64K */
-	  }
+      do
+	{
+	  for (cont = 0, addr = mbi.mmap_addr;
+	       addr < mbi.mmap_addr + mbi.mmap_length;
+	       addr += *((int *) addr) + 4)
+	    {
+	      if (((struct AddrRangeDesc *)addr)->BaseAddrHigh == 0
+		  && ((struct AddrRangeDesc *)addr)->Type == MB_ARD_MEMORY
+		  && ((struct AddrRangeDesc *)addr)->BaseAddrLow <= memtmp
+		  && (((struct AddrRangeDesc *)addr)->BaseAddrLow
+		      + ((struct AddrRangeDesc *)addr)->LengthLow) > memtmp)
+		{
+		  memtmp = (((struct AddrRangeDesc *)addr)->BaseAddrLow
+			    + ((struct AddrRangeDesc *)addr)->LengthLow);
+		  cont++;
+		}
+	    }
+	}
+      while (cont);
 
-	mbi.mmap_length += *((int *)addr) + 4;
-	addr += *((int *)addr) + 4;
+      mbi.mem_upper = (memtmp - 0x100000) >> 10;
+    }
+  else if ((memtmp = get_eisamemsize()) != -1)
+    {
+      cont = memtmp & ~0xFFFF;
+      memtmp = memtmp & 0xFFFF;
 
-	mem_map++;
-      }
-    while (cont);
+      if (!cont || (memtmp == 0x3c00))
+	memtmp += (cont >> 10);
+      else
+	{
+	  /* XXX should I do this at all ??? */
 
-    if (!mem_map && (mem1 = get_eisamemsize()) != -1)
-      {
-	mem2 = mem1 >> 16;
-	mem1 &= 0xFFFF;
-	mbi.mem_upper = mem1;
+	  mbi.mmap_addr = (int)fakemap;
+	  mbi.mmap_length = sizeof(fakemap);
+	  fakemap[0].LengthLow = (mbi.mem_lower << 10);
+	  fakemap[1].LengthLow = (memtmp << 10);
+	  fakemap[2].LengthLow = cont;
+	}
 
-	if (!mem2 || (mem1 == 0x3c00))
-	  mbi.mem_upper += (mem2 << 6);
-	else
-	  {
-	    /* XXX should I do this at all ??? */
-
-	    mbi.mmap_addr = (int)fakemap;
-	    mbi.mmap_length = sizeof(fakemap);
-	    fakemap[0].LengthLow = (mbi.mem_lower << 10);
-	    fakemap[1].LengthLow = (mem1 << 10);
-	    fakemap[2].LengthLow = (mem2 << 16);
-	    mem_map++;
-	  }
-      }
-  }
+      mbi.mem_upper = memtmp;
+    }
 
   saved_mem_upper = mbi.mem_upper;
 
