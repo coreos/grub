@@ -1,3 +1,15 @@
+1999-12-30  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c (grub_seek): New function.
+	* stage2/shared.h (grub_seek): Declared.
+	* stage2/boot.c (load_image): Use grub_seek instead of setting
+	FILEPOS to a new value directly.
+	* stage2/builtins.c (install_func): Likewise.
+	(testload_func): Likewise.
+
+	* docs/grub.texi: Use a single direntry command for all the
+	entries instead of one per entry.
+	
 1999-12-29  OKUJI Yoshinori  <okuji@gnu.org>
 
 	* grub/asmstub.c (check_device) [__linux__]: Check if DEVICE is

@@ -659,7 +659,8 @@ typedef enum
   KERNEL_TYPE_FREEBSD,		/* FreeBSD.  */
   KERNEL_TYPE_NETBSD,		/* NetBSD.  */
   KERNEL_TYPE_CHAINLOADER	/* Chainloader.  */
-} kernel_t;
+}
+kernel_t;
 
 extern kernel_t kernel_type;
 extern int grub_timeout;
@@ -726,8 +727,11 @@ int set_partition_hidden_flag (int hidden);
 int grub_open (char *filename);
 
 /* Read LEN bytes into BUF from the file that was opened with
-   GRUB_OPEN.  If LEN is -1, read all the remaining data in the file */
+   GRUB_OPEN.  If LEN is -1, read all the remaining data in the file.  */
 int grub_read (char *buf, int len);
+
+/* Reposition a file offset.  */
+int grub_seek (int offset);
 
 /* Close a file.  */
 void grub_close (void);

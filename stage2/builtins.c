@@ -1325,7 +1325,8 @@ install_func (char *arg, int flags)
   installaddr += SECTOR_SIZE;
   
   /* Read the whole of Stage2 except for the first sector.  */
-  filepos = SECTOR_SIZE;
+  grub_seek (SECTOR_SIZE);
+
   disk_read_hook = disk_read_blocklist_func;
   if (! grub_read (dummy, -1))
     goto fail;
@@ -1408,7 +1409,7 @@ install_func (char *arg, int flags)
 		goto fail;
 
 	      /* Skip the first sector.  */
-	      filepos = SECTOR_SIZE;
+	      grub_seek (SECTOR_SIZE);
 	      
 	      disk_read_hook = disk_read_savesect_func;
 	      if (grub_read ((char *) SCRATCHADDR, SECTOR_SIZE) != SECTOR_SIZE)
@@ -2341,7 +2342,7 @@ setup_func (char *arg, int flags)
 			int len;
 
 			/* Need to know the size of the Stage 1.5.  */
-			filepos = 0;
+			grub_seek (0);
 			len = grub_read (buffer, -1);
 			/* Construct the blocklist representation.  */
 			grub_sprintf (stage2, "%s1+%d",
@@ -2440,7 +2441,7 @@ testload_func (char *arg, int flags)
   /* First partial read.  */
   grub_printf ("\nPartial read 1: ");
 
-  filepos = 0;
+  grub_seek (0);
   grub_read ((char *) RAW_ADDR (0x200000), 0x7);
   grub_read ((char *) RAW_ADDR (0x200007), 0x100);
   grub_read ((char *) RAW_ADDR (0x200107), 0x10);
@@ -2451,7 +2452,7 @@ testload_func (char *arg, int flags)
   /* Second partial read.  */
   grub_printf ("\nPartial read 2: ");
 
-  filepos = 0;
+  grub_seek (0);
   grub_read ((char *) RAW_ADDR (0x300000), 0x10000);
   grub_read ((char *) RAW_ADDR (0x310000), 0x10);
   grub_read ((char *) RAW_ADDR (0x310010), 0x7);

@@ -123,7 +123,7 @@ load_image (char *kernel, char *arg)
       entry_addr = (entry_func) pu.mb->entry_addr;
       cur_addr = pu.mb->load_addr;
       /* first offset into file */
-      filepos = i - (pu.mb->header_addr - cur_addr);
+      grub_seek (i - (pu.mb->header_addr - cur_addr));
       text_len = pu.mb->load_end_addr - cur_addr;
       data_len = 0;
       bss_len = pu.mb->bss_end_addr - pu.mb->load_end_addr;
@@ -177,7 +177,7 @@ load_image (char *kernel, char *arg)
 	}
 
       /* first offset into file */
-      filepos = N_TXTOFF ((*(pu.aout)));
+      grub_seek (N_TXTOFF (*(pu.aout)));
       text_len = pu.aout->a_text;
       data_len = pu.aout->a_data;
       bss_len = pu.aout->a_bss;
@@ -280,7 +280,7 @@ load_image (char *kernel, char *arg)
 	  }
 
 	  /* offset into file */
-	  filepos = data_len + SECTOR_SIZE;
+	  grub_seek (data_len + SECTOR_SIZE);
 
 	  cur_addr = LINUX_STAGING_AREA + text_len;
 	  if (grub_read ((char *) LINUX_STAGING_AREA, text_len)
@@ -433,7 +433,7 @@ load_image (char *kernel, char *arg)
 	  if (phdr->p_type == PT_LOAD)
 	    {
 	      /* offset into file */
-	      filepos = phdr->p_offset;
+	      grub_seek (phdr->p_offset);
 	      filesiz = phdr->p_filesz;
 	      
 	      if (type == KERNEL_TYPE_FREEBSD)

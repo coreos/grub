@@ -17,15 +17,7 @@
 @dircategory Kernel
 @direntry
 * GRUB: (grub).                 The GRand Unified Bootloader
-@end direntry
-
-@dircategory Kernel
-@direntry
 * grub-install: (grub)Invoking grub-install.    Install GRUB on your drive
-@end direntry
-
-@dircategory Kernel
-@direntry
 * mbchk: (grub)Invoking mbchk.  Check for the format of a Multiboot kernel
 @end direntry
 

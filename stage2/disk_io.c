@@ -1419,8 +1419,18 @@ grub_read (char *buf, int len)
   return (*(fsys_table[fsys_type].read_func)) (buf, len);
 }
 
-
 #ifndef STAGE1_5
+/* Reposition a file offset.  */
+int
+grub_seek (int offset)
+{
+  if (offset > filemax || offset < 0)
+    return -1;
+
+  filepos = offset;
+  return offset;
+}
+
 int
 dir (char *dirname)
 {
