@@ -73,10 +73,11 @@ extern char *grub_scratch_mem;
 /*
  *  BIOS disk defines
  */
-#define BIOSDISK_READ		    0x0
-#define BIOSDISK_WRITE		    0x1
-#define BIOSDISK_ERROR_GEOMETRY     0x100
-#define BIOSDISK_FLAG_LBA_EXTENSION 0x1
+#define BIOSDISK_READ			0x0
+#define BIOSDISK_WRITE			0x1
+#define BIOSDISK_ERROR_GEOMETRY		0x100
+#define BIOSDISK_FLAG_LBA_EXTENSION	0x1
+#define BIOSDISK_FLAG_CDROM		0x2
 
 /*
  *  This is the filesystem (not raw device) buffer.
@@ -205,6 +206,7 @@ extern char *grub_scratch_mem;
 #define STAGE2_ID_VSTAFS_STAGE1_5	6
 #define STAGE2_ID_JFS_STAGE1_5		7
 #define STAGE2_ID_XFS_STAGE1_5		8
+#define STAGE2_ID_ISO9660_STAGE1_5	9
 
 #ifndef STAGE1_5
 # define STAGE2_ID	STAGE2_ID_STAGE2
@@ -225,6 +227,8 @@ extern char *grub_scratch_mem;
 #  define STAGE2_ID	STAGE2_ID_JFS_STAGE1_5
 # elif defined(FSYS_XFS)
 #  define STAGE2_ID	STAGE2_ID_XFS_STAGE1_5
+# elif defined(FSYS_ISO9660)
+#  define STAGE2_ID	STAGE2_ID_ISO9660_STAGE1_5
 # else
 #  error "unknown Stage 2"
 # endif
@@ -634,6 +638,8 @@ struct geometry
   unsigned long sectors;
   /* The total number of sectors */
   unsigned long total_sectors;
+  /* Device sector size */
+  unsigned long sector_size;
   /* Flags */
   unsigned long flags;
 };
@@ -658,6 +664,7 @@ extern int filemax;
 extern struct multiboot_info mbi;
 extern unsigned long saved_drive;
 extern unsigned long saved_partition;
+extern unsigned long cdrom_drive;
 #ifndef STAGE1_5
 extern unsigned long saved_mem_upper;
 extern unsigned long extended_memory;

@@ -1,7 +1,7 @@
 /* cmdline.c - the device-independent GRUB text command line */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ init_cmdline (void)
   /* Initialization.  */
   saved_drive = boot_drive;
   saved_partition = install_partition;
-  current_drive = 0xFF;
+  current_drive = GRUB_INVALID_DRIVE;
   errnum = 0;
   count_lines = -1;
   

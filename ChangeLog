@@ -1,5 +1,98 @@
-2004-03-13  Yoshinori K. Okuji  <okuji@enbug.org>
+2004-03-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* stage2/char_io.c [!GRUB_UTIL] (memcpy): New function. It is
+	defined as an alias of grub_memmove. This is copied from GRUB 2.
+
+	* stage2/disk_io.c (print_completions): Simplified conditionals
+	to make it easier to edit the file with Emacs.
+	Added support for (cd).
+	(set_device): Likewise.
+
+	* stage2/common.c (init_bios_info): Check if BOOT_DRIVE is a
+	CDROM drive. If it is true, set CDROM_DRIVE to BOOT_DRIVE.
+	(cdrom_drive): New variable.
+
+	From Leonid Lisovskiy <lly@pisem.net>:
+	* stage2/start_eltorito.S: New file.
+
+	* stage2/stage2.c (run_menu): Use GRUB_INVALID_DRIVE instead of
+	0xFF.
+
+	* stage2/shared.h (STAGE2_ID_ISO9660_STAGE1_5): New macro.
+	[FSYS_ISO9660] (STAGE2_ID): Set to STAGE2_ID_ISO9660_STAGE1_5.
+	(struct geometry): Added a new member ``sector_size''.
+	(BIOSDISK_FLAG_CDROM): New macro.
+	(cdrom_drive): Declared.
+
+	* stage2/fsys_iso9660.c: New file.
+	* stage2/iso9660.h: Likewise.
+
+	* stage2/filesys.h (FSYS_ISO9660_NUM): New macro.
+	[FSYS_ISO9660] (iso9660_mount): Declared.
+	[FSYS_ISO9660] (iso9660_read): Likewise.
+	[FSYS_ISO9660] (iso9660_dir): Likewise.
+	(NUM_FSYS): Added FSYS_ISO9660_NUM.
+
+	* stage2/disk_io.c (fsys_table) [FSYS_ISO9660]: Added iso9660.
+	(current_drive): Use GRUB_INVALID_DRIVE.
+	(log2): New function.
+	(rawread): Use BUF_GEOM.SECTOR_SIZE instead of SECTOR_SIZE.
+	Change the type of BUFADDR from int to char *.
+	Use a virtual track to make sure that one track fits in the
+	buffer.
+	(sane_partition): Allow CURRENT_DRIVE to be CDROM_DRIVE, because
+	a bios drive for a CD-ROM is often assigned to greater than
+	0x88.
+	(set_device): Use GRUB_INVALID_DRIVE instead of 0xFF.
+	(setup_part): Likewise.
+
+	* stage2/cmdline.c (init_cmdline): Use GRUB_INVALID_DRIVE.
+
+	* stage2/builtins.c (install_func): Use GRUB_INVALID_DRIVE.
+	(setup_func): Added iso9660_stage1_5.
+
+	* stage2/bios.c (biosdisk): Don't fall back to the CHS mode
+	if the drive is a CDROM.
+	(get_cdinfo): New function.
+	(get_diskinfo): Call get_cdinfo if the drive is greater than or
+	equal to 0x88 or the drive supports LBA.
+	Set the sector size to SECTOR_SIZE if it is not a CD-ROM.
+
+	* stage2/asm.S (biosdisk_int13_extensions): Take a word
+	argument AX instead of a byte argument AH.
+	(get_diskinfo_int13_extensions): Removed.
+
+	* stage2/Makefile.am (noinst_HEADERS): Added iso9660.h.
+	(libgrub_a_SOURCES): Added fsys_iso9660.c.
+	(libgrub_a_CFLAGS): Added -DFSYS_ISO9660=1.
+	(pkgdata_DATA): Added iso9660_stage1_5 and stage2_eltorito.
+	(noinst_PROGRAMS): Added iso9660_stage1_5.exec and
+	start_eltorito.exec.
+	(noinst_DATA): Added start_eltorito.
+	(pre_stage2_exec_SOURCES): Added fsys_iso9660.c.
+	(START_ELTORITO_LINK): New variable.
+	(start_eltorito_exec_SOURCES): Likewise.
+	(start_eltorito_exec_CCASFLAGS): Likewise.
+	(start_eltorito_exec_LDFLAGS): Likewise.
+	(start_eltorito_exec-start.$(OBJEXT)): New dependency.
+	(stage2_eltorito): New target.
+	(iso9660_stage1_5_exec_SOURCES): New variable.
+	(iso9660_stage1_5_exec_CFLAGS): Likewise.
+	(iso9660_stage1_5_exec_CCASFLAGS): Likewise.
+	(iso9660_stage1_5_exec_LDFLAGS): Likewise.
+
+	* stage1/stage1.h (GRUB_INVALID_DRIVE): New macro.
+
+	* stage1/stage1.S (boot_drive): Use the macro GRUB_INVALID_DRIVE.
+	(real_start): Likewise.
+
+	* lib/device.c (get_drive_geometry): Set GEOM->SECTOR_SIZE to
+	SECTOR_SIZE by default.
+
+	* configure.ac (--disable-iso9660): New option.
+
+2004-03-13  Yoshinori K. Okuji  <okuji@enbug.org>
+	
 	From Daniele Zelante <zeldan@email.it>:
 	* stage2/asm.S (stop_floppy): Use INT 13, AH=00h to stop the
 	floppy controller instead of a direct I/O.

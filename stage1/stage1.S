@@ -1,7 +1,7 @@
 /* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -91,8 +91,7 @@ cylinder_start:
 stage1_version:	
 	.byte	COMPAT_VERSION_MAJOR, COMPAT_VERSION_MINOR
 boot_drive:	
-	.byte 0xff	/* the disk to load stage2 from */
-			/* 0xff means use the boot drive */
+	.byte	GRUB_INVALID_DRIVE	/* the disk to load stage2 from */
 force_lba:
 	.byte	0
 stage2_address:
@@ -138,7 +137,7 @@ real_start:
 	 *  Check if we have a forced disk reference here
 	 */
 	MOV_MEM_TO_AL(ABS(boot_drive))	/* movb	ABS(boot_drive), %al */
-	cmpb	$0xff, %al
+	cmpb	$GRUB_INVALID_DRIVE, %al
 	je	1f
 	movb	%al, %dl
 1:

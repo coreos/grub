@@ -938,9 +938,9 @@ realcseg:
 
 
 /*
- *   int biosdisk_int13_extensions (int ah, int drive, void *dap)
+ *   int biosdisk_int13_extensions (int ax, int drive, void *dap)
  *
- *   Call IBM/MS INT13 Extensions (int 13 %ah=AH) for DRIVE. DAP
+ *   Call IBM/MS INT13 Extensions (int 13 %ax=AX) for DRIVE. DAP
  *   is passed for disk address packet. If an error occurs, return
  *   non-zero, otherwise zero.
  */
@@ -950,6 +950,7 @@ ENTRY(biosdisk_int13_extensions)
 	movl	%esp, %ebp
 
 	pushl	%esi
+	pushl	%ebx
 
 	/* compute the address of disk_address_packet */
 	movl	0x10(%ebp), %eax
@@ -960,13 +961,13 @@ ENTRY(biosdisk_int13_extensions)
 
 	/* drive */
 	movb	0xc(%ebp), %dl
-	/* ah */
-	movb	0x8(%ebp), %dh
+	/* ax */
+	movw	0x8(%ebp), %bx
 	/* enter real mode */
 	call	EXT_C(prot_to_real)
 	
 	.code16
-	movb	%dh, %ah
+	movw	%bx, %ax
 	movw	%cx, %ds
 	int	$0x13		/* do the operation */
 	movb	%ah, %dl	/* save return value */
@@ -979,6 +980,7 @@ ENTRY(biosdisk_int13_extensions)
 
 	movb	%dl, %al	/* return value in %eax */
 
+	popl	%ebx
 	popl	%esi
 	popl	%ebp
 
@@ -1104,52 +1106,6 @@ ENTRY(check_int13_extensions)
 	popl	%ebx
 	popl	%ebp
 
-	ret
-
-
-/*
- *   int get_diskinfo_int13_extensions (int drive, void *drp)
- *
- *   Return the geometry of DRIVE in a drive parameters, DRP. If an error
- *   occurs, then return non-zero, otherwise zero.
- */
-
-ENTRY(get_diskinfo_int13_extensions)
-	pushl	%ebp
-	movl	%esp, %ebp
-
-	pushl	%ebx
-	pushl	%esi
-
-	/* compute the address of drive parameters */
-	movl	0xc(%ebp), %eax
-	movw	%ax, %si
-	xorw	%ax, %ax
-	shrl	$4, %eax
-	movw	%ax, %bx	/* save the segment into %bx */
-	/* drive */
-	movb	0x8(%ebp), %dl
-	/* enter real mode */
-	call	EXT_C(prot_to_real)
-
-	.code16
-	movb	$0x48, %ah
-	movw	%bx, %ds
-	int	$0x13		/* do the operation */
-	movb	%ah, %bl	/* save return value in %bl */
-	/* clear the data segment */
-	xorw	%ax, %ax
-	movw	%ax, %ds
-	/* back to protected mode */
-	DATA32	call	EXT_C(real_to_prot)
-	.code32
-
-	movb	%bl, %al	/* return value in %eax */
-
-	popl	%esi
-	popl	%ebx
-	popl	%ebp
-	
 	ret
 
 

@@ -1,7 +1,7 @@
 /* filesys.h - abstract filesystem interface */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999, 2000, 2001  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -105,11 +105,20 @@ void tftp_close (void);
 #define FSYS_TFTP_NUM 0
 #endif
 
+#ifdef FSYS_ISO9660
+#define FSYS_ISO9660_NUM 1
+int iso9660_mount (void);
+int iso9660_read (char *buf, int len);
+int iso9660_dir (char *dirname);
+#else
+#define FSYS_ISO9660_NUM 0
+#endif
+
 #ifndef NUM_FSYS
 #define NUM_FSYS	\
   (FSYS_FFS_NUM + FSYS_FAT_NUM + FSYS_EXT2FS_NUM + FSYS_MINIX_NUM	\
    + FSYS_REISERFS_NUM + FSYS_VSTAFS_NUM + FSYS_JFS_NUM + FSYS_XFS_NUM	\
-   + FSYS_TFTP_NUM)
+   + FSYS_TFTP_NUM + FSYS_ISO9660_NUM)
 #endif
 
 /* defines for the block filesystem info area */

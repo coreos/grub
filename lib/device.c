@@ -108,6 +108,9 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
   else
     fd = geom->flags;
 
+  /* XXX This is the default size.  */
+  geom->sector_size = SECTOR_SIZE;
+  
 #if defined(__linux__)
   /* Linux */
   {

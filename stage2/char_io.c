@@ -1265,3 +1265,9 @@ grub_strcpy (char *dest, const char *src)
   return dest;
 }
 #endif /* ! STAGE1_5 */
+
+#ifndef GRUB_UTIL
+# undef memcpy
+/* GCC emits references to memcpy() for struct copies etc.  */
+void *memcpy (void *dest, const void *src, int n)  __attribute__ ((alias ("grub_memmove")));
+#endif

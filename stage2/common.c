@@ -1,7 +1,7 @@
 /* common.c - miscellaneous shared variables and routines */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 struct multiboot_info mbi;
 unsigned long saved_drive;
 unsigned long saved_partition;
+unsigned long cdrom_drive;
 #ifndef STAGE1_5
 unsigned long saved_mem_upper;
 
@@ -319,6 +320,18 @@ init_bios_info (void)
   saved_drive = boot_drive;
   saved_partition = install_partition;
 
+  /* Set cdrom drive.  */
+  {
+    struct geometry geom;
+    
+    /* Get the geometry.  */
+    if (get_diskinfo (boot_drive, &geom)
+	|| ! (geom.flags & BIOSDISK_FLAG_CDROM))
+      cdrom_drive = GRUB_INVALID_DRIVE;
+    else
+      cdrom_drive = boot_drive;
+  }
+  
   /* Start main routine here.  */
   cmain ();
 }

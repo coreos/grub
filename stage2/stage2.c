@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -661,7 +661,7 @@ restart:
 
 		      saved_drive = boot_drive;
 		      saved_partition = install_partition;
-		      current_drive = 0xFF;
+		      current_drive = GRUB_INVALID_DRIVE;
 
 		      if (! get_cmdline (PACKAGE " edit> ", new_heap,
 					 NEW_HEAPSIZE + 1, 0, 1))

@@ -1,5 +1,5 @@
 dnl Configure script for GRUB.
-dnl Copyright 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+dnl Copyright 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
 dnl Permission to use, copy, modify and distribute this software and its
 dnl documentation is hereby granted, provided that both the copyright
@@ -260,6 +260,13 @@ AC_ARG_ENABLE(xfs,
 
 if test x"$enable_xfs" != xno; then
   FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_XFS=1"
+fi
+
+AC_ARG_ENABLE(iso9660,
+  [  --disable-iso9660       disable ISO9660 support in Stage 2])
+
+if test x"$enable_iso9660" != xno; then
+  FSYS_CFLAGS="$FSYS_CFLAGS -DFSYS_ISO9660=1"
 fi
 
 dnl AC_ARG_ENABLE(tftp,

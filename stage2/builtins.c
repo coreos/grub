@@ -1720,7 +1720,7 @@ install_func (char *arg, int flags)
   /* XXX: Probably SECTOR_SIZE is reasonable.  */
   char *config_filename = stage2_second_buffer + SECTOR_SIZE;
   char *dummy = config_filename + SECTOR_SIZE;
-  int new_drive = 0xFF;
+  int new_drive = GRUB_INVALID_DRIVE;
   int dest_drive, dest_partition, dest_sector;
   int src_drive, src_partition, src_part_start;
   int i;
@@ -2051,7 +2051,7 @@ install_func (char *arg, int flags)
 	      /* If the drive where the Stage 2 resides is the same as
 		 the one where the Stage 1.5 resides, do not embed the
 		 drive number.  */
-	      current_drive = 0xFF;
+	      current_drive = GRUB_INVALID_DRIVE;
 	    }
 
 	  device = (current_drive << 24) | current_partition;
@@ -3748,6 +3748,7 @@ setup_func (char *arg, int flags)
     {"ext2fs",   "/e2fs_stage1_5"},
     {"fat",      "/fat_stage1_5"},
     {"ffs",      "/ffs_stage1_5"},
+    {"iso9660",  "/iso9660_stage1_5"},
     {"jfs",      "/jfs_stage1_5"},
     {"minix",    "/minix_stage1_5"},
     {"reiserfs", "/reiserfs_stage1_5"},

@@ -1,7 +1,7 @@
 /* disk_io.c - implement abstract BIOS disk input and output */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -72,6 +72,9 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 # ifdef FSYS_XFS
   {"xfs", xfs_mount, xfs_read, xfs_dir, 0, 0},
 # endif
+#ifdef FSYS_ISO9660
+  { "iso9660", iso9660_mount, iso9660_read, iso9660_dir, 0, 0},
+#endif
   /* XX FFS should come last as it's superblock is commonly crossing tracks
      on floppies from track 1 to 2, while others only use 1.  */
 # ifdef FSYS_FFS
@@ -83,7 +86,7 @@ struct fsys_entry fsys_table[NUM_FSYS + 1] =
 
 /* These have the same format as "boot_drive" and "install_partition", but
    are meant to be working values. */
-unsigned long current_drive = 0xFF;
+unsigned long current_drive = GRUB_INVALID_DRIVE;
 unsigned long current_partition;
 
 #ifndef STAGE1_5
@@ -121,17 +124,28 @@ struct geometry buf_geom;
 int filepos;
 int filemax;
 
+static inline unsigned long
+log2 (unsigned long word)
+{
+  asm volatile ("bsfl %1,%0"
+		: "=r" (word)
+		: "r" (word));
+  return word;
+}
+
 int
 rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 {
-  int slen = (byte_offset + byte_len + SECTOR_SIZE - 1) >> SECTOR_BITS;
+  int slen, sectors_per_vtrack;
+  int sector_size_bits = log2 (buf_geom.sector_size);
 
   if (byte_len <= 0)
     return 1;
 
   while (byte_len > 0 && !errnum)
     {
-      int soff, num_sect, bufaddr, track, size = byte_len;
+      int soff, num_sect, track, size = byte_len;
+      char *bufaddr;
 
       /*
        *  Check track buffer.  If it isn't valid or it is from the
@@ -146,6 +160,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	    }
 	  buf_drive = drive;
 	  buf_track = -1;
+	  sector_size_bits = log2 (buf_geom.sector_size);
 	}
 
       /* Make sure that SECTOR is valid.  */
@@ -155,15 +170,25 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	  return 0;
 	}
       
-      /*  Get first sector of track  */
-      soff = sector % buf_geom.sectors;
+      slen = ((byte_offset + byte_len + buf_geom.sector_size - 1)
+	      >> sector_size_bits);
+      
+      /* Eliminate a buffer overflow.  */
+      if ((buf_geom.sectors << sector_size_bits) > BUFFERLEN)
+	sectors_per_vtrack = (BUFFERLEN >> sector_size_bits);
+      else
+	sectors_per_vtrack = buf_geom.sectors;
+      
+      /* Get the first sector of track.  */
+      soff = sector % sectors_per_vtrack;
       track = sector - soff;
-      num_sect = buf_geom.sectors - soff;
-      bufaddr = BUFFERADDR + (soff * SECTOR_SIZE) + byte_offset;
+      num_sect = sectors_per_vtrack - soff;
+      bufaddr = ((char *) BUFFERADDR
+		 + (soff << sector_size_bits) + byte_offset);
 
       if (track != buf_track)
 	{
-	  int bios_err, read_start = track, read_len = buf_geom.sectors;
+	  int bios_err, read_start = track, read_len = sectors_per_vtrack;
 
 	  /*
 	   *  If there's more than one read in this entire loop, then
@@ -174,7 +199,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	    {
 	      read_start = sector;
 	      read_len = num_sect;
-	      bufaddr = BUFFERADDR + byte_offset;
+	      bufaddr = (char *) BUFFERADDR + byte_offset;
 	    }
 
 	  bios_err = biosdisk (BIOSDISK_READ, drive, &buf_geom,
@@ -196,7 +221,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 				   sector, slen, BUFFERSEG))
 		    errnum = ERR_READ;
 
-		  bufaddr = BUFFERADDR + byte_offset;
+		  bufaddr = (char *) BUFFERADDR + byte_offset;
 		}
 	    }
 	  else
@@ -213,7 +238,8 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 		{
 		  /* We already read the sector 1, copy it to sector 0 */
 		  memmove ((char *) BUFFERADDR, 
-			   (char *) BUFFERADDR + SECTOR_SIZE, SECTOR_SIZE);
+			   (char *) BUFFERADDR + buf_geom.sector_size,
+			   buf_geom.sector_size);
 		}
 	      else
 		{
@@ -224,8 +250,8 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 	    }
 	}
 	  
-      if (size > ((num_sect * SECTOR_SIZE) - byte_offset))
-	size = (num_sect * SECTOR_SIZE) - byte_offset;
+      if (size > ((num_sect << sector_size_bits) - byte_offset))
+	size = (num_sect << sector_size_bits) - byte_offset;
 
       /*
        *  Instrumentation to tell which sectors were read and used.
@@ -233,28 +259,27 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
       if (disk_read_func)
 	{
 	  int sector_num = sector;
-	  int length = SECTOR_SIZE - byte_offset;
+	  int length = buf_geom.sector_size - byte_offset;
 	  if (length > size)
 	    length = size;
 	  (*disk_read_func) (sector_num++, byte_offset, length);
 	  length = size - length;
 	  if (length > 0)
 	    {
-	      while (length > SECTOR_SIZE)
+	      while (length > buf_geom.sector_size)
 		{
-		  (*disk_read_func) (sector_num++, 0, SECTOR_SIZE);
-		  length -= SECTOR_SIZE;
+		  (*disk_read_func) (sector_num++, 0, buf_geom.sector_size);
+		  length -= buf_geom.sector_size;
 		}
 	      (*disk_read_func) (sector_num, 0, length);
 	    }
 	}
 
-      memmove (buf, (char *) bufaddr, size);
+      grub_memmove (buf, bufaddr, size);
 
       buf += size;
       byte_len -= size;
       sector += num_sect;
-      slen -= num_sect;
       byte_offset = 0;
     }
 
@@ -371,7 +396,8 @@ sane_partition (void)
     return 1;
   
   if (!(current_partition & 0xFF000000uL)
-      && (current_drive & 0xFFFFFF7F) < 8
+      && ((current_drive & 0xFFFFFF7F) < 8
+	  || current_drive == cdrom_drive)
       && (current_partition & 0xFF) == 0xFF
       && ((current_partition & 0xFF00) == 0xFF00
 	  || (current_partition & 0xFF00) < 0x800)
@@ -918,8 +944,8 @@ set_device (char *device)
   int drive = (dev >> 24) & 0xFF;
   int partition = dev & 0xFFFFFF;
 
-  /* If DRIVE is disabled (0xFF), use SAVED_DRIVE instead.  */
-  if (drive == 0xFF)
+  /* If DRIVE is disabled, use SAVED_DRIVE instead.  */
+  if (drive == GRUB_INVALID_DRIVE)
     current_drive = saved_drive;
   else
     current_drive = drive;
@@ -949,10 +975,12 @@ set_device (char *device)
 	{
 	  char ch = *device;
 #ifdef SUPPORT_NETBOOT
-	  if (*device == 'f' || *device == 'h' ||
-	      (*device == 'n' && network_ready))
+	  if (*device == 'f' || *device == 'h'
+	      || (*device == 'n' && network_ready)
+	      || (*device == 'c' && cdrom_drive != GRUB_INVALID_DRIVE))
 #else
-	  if (*device == 'f' || *device == 'h')
+	  if (*device == 'f' || *device == 'h'
+	      || (*device == 'c' && cdrom_drive != GRUB_INVALID_DRIVE))
 #endif /* SUPPORT_NETBOOT */
 	    {
 	      /* user has given '([fhn]', check for resp. add 'd' and
@@ -968,26 +996,31 @@ set_device (char *device)
 		return device + 2;
 	    }
 
+	  if ((*device == 'f'
+	       || *device == 'h'
 #ifdef SUPPORT_NETBOOT
-	  if ((*device == 'f' || *device == 'h' ||
-	       (*device == 'n' && network_ready))
-#else
-	  if ((*device == 'f' || *device == 'h')
-#endif /* SUPPORT_NETBOOT */
+	       || (*device == 'n' && network_ready)
+#endif
+	       || (*device == 'c' && cdrom_drive != GRUB_INVALID_DRIVE))
 	      && (device += 2, (*(device - 1) != 'd')))
 	    errnum = ERR_NUMBER_PARSING;
-
+	  
 #ifdef SUPPORT_NETBOOT
 	  if (ch == 'n' && network_ready)
 	    current_drive = NETWORK_DRIVE;
 	  else
 #endif /* SUPPORT_NETBOOT */
 	    {
-	      safe_parse_maxint (&device, (int *) &current_drive);
-	      
-	      disk_choice = 0;
-	      if (ch == 'h')
-		current_drive += 0x80;
+	      if (*device == 'c' && cdrom_drive != GRUB_INVALID_DRIVE)
+		current_drive = cdrom_drive;
+	      else
+		{
+		  safe_parse_maxint (&device, (int *) &current_drive);
+		  
+		  disk_choice = 0;
+		  if (ch == 'h')
+		    current_drive += 0x80;
+		}
 	    }
 	}
 
@@ -1145,7 +1178,7 @@ setup_part (char *filename)
 
   if (! (filename = set_device (filename)))
     {
-      current_drive = 0xFF;
+      current_drive = GRUB_INVALID_DRIVE;
       return 0;
     }
   
@@ -1162,7 +1195,7 @@ setup_part (char *filename)
     {
       if ((filename = set_device (filename)) == 0)
 	{
-	  current_drive = 0xFF;
+	  current_drive = GRUB_INVALID_DRIVE;
 	  return 0;
 	}
 # ifndef NO_BLOCK_FILES
@@ -1337,9 +1370,12 @@ print_completions (int is_filename, int is_completion)
 	      if (! is_completion)
 		grub_printf (" Possible disks are: ");
 
+	      if (!ptr
+		  || *(ptr-1) != 'd'
 #ifdef SUPPORT_NETBOOT
-	      if (!ptr || *(ptr-1) != 'd' || *(ptr-2) != 'n')
+		  || *(ptr-2) != 'n'
 #endif /* SUPPORT_NETBOOT */
+		  || *(ptr-2) != 'c')
 		{
 		  for (i = (ptr && (*(ptr-1) == 'd' && *(ptr-2) == 'h') ? 1:0);
 		       i < (ptr && (*(ptr-1) == 'd' && *(ptr-2) == 'f') ? 1:2);
@@ -1359,11 +1395,20 @@ print_completions (int is_filename, int is_completion)
 			}
 		    }
 		}
+
+	      if (cdrom_drive != GRUB_INVALID_DRIVE
+		  && (disk_choice || cdrom_drive == current_drive)
+		  && (!ptr
+		      || *(ptr-1) == '('
+		      || (*(ptr-1) == 'd' && *(ptr-2) == 'c')))
+		print_a_completion ("cd");
+
 # ifdef SUPPORT_NETBOOT
-	      if (network_ready &&
-		  (disk_choice || NETWORK_DRIVE == current_drive) &&
-		  (!ptr || *(ptr-1) == '(' ||
-		   (*(ptr-1) == 'd' && *(ptr-2) == 'n')))
+	      if (network_ready
+		  && (disk_choice || NETWORK_DRIVE == current_drive)
+		  && (!ptr
+		      || *(ptr-1) == '('
+		      || (*(ptr-1) == 'd' && *(ptr-2) == 'n')))
 		print_a_completion ("nd");
 # endif /* SUPPORT_NETBOOT */
 
