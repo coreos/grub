@@ -1,5 +1,11 @@
 1999-08-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
 
+	* stage2/asm.S: Make each of the addr32 and data32 prefixes
+	appear in the same line as it modifies, as the gas manual in
+	binutils-2.9.5.0.4 says "it must be in the same line".
+	
+1999-08-04  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
 	* boot.c (load_image): Fix a strcmp test. Reported by Pavel
 	Roskin <pavel_roskin@geocities.com>.
 	

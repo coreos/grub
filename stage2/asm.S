@@ -95,15 +95,13 @@ codestart:
 	sti		/* we're safe again */
 
 	/* save boot drive reference */
-	addr32
-	movb	%dl, EXT_C(boot_drive)
+	addr32	movb	%dl, EXT_C(boot_drive)
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
 
 	/* transition to protected mode */
-	data32
-	call EXT_C(real_to_prot)
+	data32	call EXT_C(real_to_prot)
 
 	/* The ".code32" directive takes GAS out of 16-bit mode. */
 	.code32
@@ -172,9 +170,7 @@ ENTRY(chain_stage1)
 	call	EXT_C(prot_to_real)
 	.code16
 
-	data32
-	addr32
-	ljmp	(offset)
+	data32	addr32	ljmp	(offset)
 	.code32
 #endif /* STAGE1_5 */
 
@@ -213,9 +209,7 @@ ENTRY(chain_stage2)
 	call	EXT_C(prot_to_real)
 	.code16
 
-	data32
-	addr32
-	ljmp	(offset)
+	data32	addr32	ljmp	(offset)
 
 	.code32
 
@@ -231,9 +225,7 @@ ENTRY(real_to_prot)
 	cli
 
 	/* load the GDT register */
-	data32
-	addr32
-	lgdt	gdtdesc
+	data32	addr32	lgdt	gdtdesc
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
@@ -241,8 +233,7 @@ ENTRY(real_to_prot)
 	movl	%eax, %cr0
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
-	data32
-	ljmp	$PROT_MODE_CSEG, $protcseg
+	data32	ljmp	$PROT_MODE_CSEG, $protcseg
 
 	/*
 	 *  The ".code32" directive only works in GAS, the GNU assembler!
@@ -316,8 +307,7 @@ tmpcseg:
 	movl	%eax, %cr0
 
 	/* flush prefetch queue, reload %cs */
-	data32
-	ljmp	$0, $realcseg
+	data32	ljmp	$0, $realcseg
 
 realcseg:
 	/* we are in real mode now
@@ -336,8 +326,7 @@ realcseg:
 	sti
 
 	/* return on new stack! */
-	data32
-	ret
+	data32	ret
 
 	.code32
 
@@ -381,8 +370,7 @@ ENTRY(biosdisk_int13_extensions)
 	xorw	%ax, %ax
 	movw	%ax, %ds
 	/* back to protected mode */
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movb	%dl, %al	/* return value in %eax */
@@ -454,8 +442,7 @@ ENTRY(biosdisk_standard)
 	jmp	1b		/* retry */
 2:	
 	/* back to protected mode */
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movb	%bl, %al	/* return value in %eax */
@@ -508,8 +495,7 @@ ENTRY(check_int13_extensions)
 	xorb	%bl, %bl
 2:
 	/* back to protected mode */
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movb	%bl, %al	/* return value in %eax */
@@ -557,8 +543,7 @@ ENTRY(get_diskinfo_int13_extensions)
 	xorw	%ax, %ax
 	movw	%ax, %ds
 	/* back to protected mode */
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movb	%bl, %al	/* return value in %eax */
@@ -607,8 +592,7 @@ ENTRY(get_diskinfo_standard)
 1:
 	movb	%ah, %bl	/* save return value in %bl */
 	/* back to protected mode */
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	/* restore %ebp */
@@ -703,8 +687,7 @@ probe_values:
 	
 2:
 	/* back to protected mode */
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	/* restore %ebp */
@@ -775,8 +758,7 @@ pc_notnewline:
 	movw	$1, %bx
 	int	$0x10
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	pop	%ebx
@@ -814,12 +796,10 @@ ENTRY(get_memsize)
 	.code16
 
 	cmpb	$0x1, %bl
-	data32
-	je	xext
+	data32	je	xext
 
 	int	$0x12
-	data32
-	jmp	xdone
+	data32	jmp	xdone
 
 xext:
 	movb	$0x88, %ah
@@ -828,8 +808,7 @@ xext:
 xdone:
 	movw	%ax, %bx
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movw	%bx, %ax
@@ -866,8 +845,7 @@ ENTRY(get_eisamemsize)
 	shll	$16, %ebx
 	movw	%ax, %bx
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movl	$0xFFFFFFFF, %eax
@@ -928,30 +906,24 @@ ENTRY(get_mmap_entry)
 	movl	$0xe820, %eax
 	int	$0x15
 
-	data32
-	jc	xnosmap
+	data32	jc	xnosmap
 
 	cmpl	$0x534d4150, %eax
-	data32
-	jne	xnosmap
+	data32	jne	xnosmap
 
 	cmpl	$0x14, %ecx
-	data32
-	jl	xnosmap
+	data32	jl	xnosmap
 
 	cmpl	$0x400, %ecx
-	data32
-	jg	xnosmap
+	data32	jg	xnosmap
 
-	data32
-	jmp	xsmap
+	data32	jmp	xsmap
 
 xnosmap:
 	movl	$0, %ecx
 
 xsmap:
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	/* write length of buffer (zero if error) into "addr" */
@@ -1029,12 +1001,10 @@ ENTRY(patch_code)	/* labels start with "pc_" */
 	mov	%ax, %es
 	mov	%ax, %fs
 	mov	%ax, %gs
-	addr32
-	movl	$0, 0
+	addr32	movl	$0, 0
 pc_stop:
 	hlt
-	data32
-	jmp	pc_stop
+	data32	jmp	pc_stop
 ENTRY(patch_code_end)
 
 	.code32
@@ -1084,9 +1054,7 @@ ENTRY(big_linux_boot)
 	movw	%ax, %ss
 
 	/* jump to start */
-	data32
-	addr32
-	ljmp	(offset)
+	data32	addr32	ljmp	(offset)
 	.code32
 
 
@@ -1135,8 +1103,7 @@ ENTRY(cls)
         xorb	%ah, %ah
         int	$0x10                   /* Set Video mode (clears screen) */
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	pop	%ebx
@@ -1166,8 +1133,7 @@ ENTRY(nocursor)
 	movb    $0x1, %ah
 	int     $0x10 
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	pop	%edx
@@ -1202,8 +1168,7 @@ ENTRY(getxy)
 	movb	$0x3, %ah
 	int	$0x10			/* get cursor position */
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movb	%dl, %ah
@@ -1242,8 +1207,7 @@ ENTRY(gotoxy)
 	movb	$0x2, %ah
 	int	$0x10			/* set cursor position */
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	pop	%edx
@@ -1307,8 +1271,7 @@ ENTRY(set_attrib)
 	movw	$1, %cx
 	int	$0x10
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	pop	%ecx
@@ -1347,13 +1310,11 @@ ENTRY(getrtsecs)
 	movb	$0x2, %ah
 	int	$0x1a
 
-	data32
-	jnc	gottime
+	data32	jnc	gottime
 	movb	$0xff, %dh
 
 gottime:
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movb	%dh, %al
@@ -1383,8 +1344,7 @@ ENTRY(getkey)
 
 	movw	%ax, %bx		/* real_to_prot uses %eax */
 
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	movw	%bx, %ax
@@ -1419,18 +1379,15 @@ ENTRY(checkkey)
 	movb	$0x1, %ah
 	int	$0x16
 
-	data32
-	jz	notpending
+	data32	jz	notpending
 	movw	%ax, %bx
-	data32
-	jmp	pending
+	data32	jmp	pending
 
 notpending:
 	movl	$0xFFFFFFFF, %ebx
 
 pending:
-	data32
-	call	EXT_C(real_to_prot)
+	data32	call	EXT_C(real_to_prot)
 	.code32
 
 	mov	%ebx, %eax
