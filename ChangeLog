@@ -1,3 +1,9 @@
+1999-09-24  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	* acinclude.m4 (grub_CHECK_END_SYMBOL): Add a missing
+	double-quote. Reported by Johannes Kroeger
+	<hanne@squirrel.owl.de>.
+	
 1999-09-14  Gordon Matzigkeit  <gord@fig.org>
 
 	* stage1/stage1.S (blocklist_default_start): New label for default

@@ -227,7 +227,7 @@ AC_CACHE_VAL(grub_cv_check_end_symbol,
 int
 main (void)
 {
-  asm ("incl end);
+  asm ("incl end");
   return 0;
 }
 EOF
