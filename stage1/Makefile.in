@@ -83,8 +83,7 @@ install_sh = @install_sh@
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 nodist_pkgdata_DATA = stage1
 
-BUILT_SOURCES = stage2_size.h
-CLEANFILES = $(nodist_pkgdata_DATA) $(BUILT_SOURCES)
+CLEANFILES = $(nodist_pkgdata_DATA)
 
 # We can't use builtins or standard includes.
 AM_CFLAGS = $(STAGE1_CFLAGS) -fno-builtin -nostdinc
@@ -272,12 +271,14 @@ installdirs:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
+	-rm -f Makefile.in
 mostlyclean-am:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 

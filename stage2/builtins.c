@@ -1842,6 +1842,40 @@ static struct builtin builtin_read =
 };
 
 
+/* Print the root device information.  */
+static void
+print_root_device (void)
+{
+  if (saved_drive == 0x20)
+    {
+      /* Network drive.  */
+      grub_printf (" (nd):");
+    }
+  else if (saved_drive & 0x80)
+    {
+      /* Hard disk drive.  */
+      grub_printf (" (hd%d", saved_drive - 0x80);
+      
+      if ((saved_partition & 0xFF0000) != 0xFF0000)
+	grub_printf (",%d", saved_partition >> 16);
+
+      if ((saved_partition & 0x00FF00) != 0x00FF00)
+	grub_printf (",%c", ((saved_partition >> 8) & 0xFF) + 'a');
+
+      grub_printf ("):");
+    }
+  else
+    {
+      /* Floppy disk drive.  */
+      grub_printf (" (fd%d):", saved_drive);
+    }
+
+  /* Print the filesystem information.  */
+  current_partition = saved_partition;
+  current_drive = saved_drive;
+  print_fsys_type ();
+}
+      
 static int
 root_func (char *arg, int flags)
 {
@@ -1849,6 +1883,13 @@ root_func (char *arg, int flags)
   char *biasptr;
   char *next;
 
+  /* If ARG is empty, just print the current root device.  */
+  if (! *arg)
+    {
+      print_root_device ();
+      return 0;
+    }
+  
   /* Call set_device to get the drive and the partition in ARG.  */
   next = set_device (arg);
   if (! next)
@@ -1880,7 +1921,7 @@ static struct builtin builtin_root =
   "root",
   root_func,
   BUILTIN_CMDLINE,
-  "root DEVICE [HDBIAS]",
+  "root [DEVICE [HDBIAS]]",
   "Set the current \"root device\" to the device DEVICE, then"
   " attempt to mount it to get the partition size (for passing the"
   " partition descriptor in `ES:ESI', used by some chain-loaded"
@@ -1898,6 +1939,13 @@ static struct builtin builtin_root =
 static int
 rootnoverify_func (char *arg, int flags)
 {
+  /* If ARG is empty, just print the current root device.  */
+  if (! *arg)
+    {
+      print_root_device ();
+      return 0;
+    }
+  
   if (! set_device (arg))
     return 1;
 
@@ -1912,7 +1960,7 @@ static struct builtin builtin_rootnoverify =
   "rootnoverify",
   rootnoverify_func,
   BUILTIN_CMDLINE,
-  "rootnoverify DEVICE [HDBIAS]",
+  "rootnoverify [DEVICE [HDBIAS]]",
   "Similar to `root', but don't attempt to mount the partition. This"
   " is useful for when an OS is outside of the area of the disk that"
   " GRUB can read, but setting the correct root device is still"

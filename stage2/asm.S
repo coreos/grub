@@ -1877,9 +1877,9 @@ ENTRY(currticks)
 	DATA32	call	EXT_C(real_to_prot)
 	.code32
 
-        shll	$16, %ecx
-        movl	%edx, %eax
-        orl	%ecx, %eax
+	movl	%ecx, %eax
+	shll	$16, %eax
+	movw	%dx, %ax
 
 	popl	%edx
 	popl	%ecx

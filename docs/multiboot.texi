@@ -543,6 +543,12 @@ follows:
 52      | drives_count      |    (present if flags[7] is set)
 56      | drives_addr       |    (present if flags[7] is set)
         +-------------------+
+60      | config_table      |    (present if flags[8] is set)
+        +-------------------+
+64      | boot_loader_name  |    (present if flags[9] is set)
+        +-------------------+
+68 - ?? | apm_table         |    (present if flags[10] is set)
+        +-------------------+
 @end group
 @end example
 
@@ -781,6 +787,9 @@ ports).
 
 The last field @samp{reserved} is reserved for future use, and must be
 zero. The size is four bytes.
+
+@c I'll write the descriptions about config_table, boot_loader_name and
+@c apm_tabel. Just wait for a while. - okuji
 
 
 @node Examples

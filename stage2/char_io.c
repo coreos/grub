@@ -417,6 +417,7 @@ get_cmdline (char *prompt, char *cmdline, int maxlen,
 			gotoxy (0, getxy () & 0xff);
 
 			print_completions (is_filename, 0);
+			errnum = ERR_NONE;
 		      }
 		  }
 

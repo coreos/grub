@@ -110,7 +110,7 @@ pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 nodist_pkgdata_DATA = stage2 e2fs_stage1_5 fat_stage1_5 ffs_stage1_5 \
 	minix_stage1_5
 
-CLEANFILES = $(nodist_pkgdata_DATA)
+CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
 noinst_DATA = pre_stage2 start
 noinst_PROGRAMS = pre_stage2.exec start.exec \
 	e2fs_stage1_5.exec fat_stage1_5.exec \
@@ -136,7 +136,6 @@ pre_stage2_exec_LDFLAGS = $(PRE_STAGE2_LINK)
 @NETBOOT_SUPPORT_TRUE@pre_stage2_exec_LDADD = @NETBOOT_SUPPORT_TRUE@../netboot/libdrivers.a
 
 BUILT_SOURCES = stage2_size.h
-CLEANFILES = $(nodist_pkgdata_DATA) $(noinst_DATA) $(BUILT_SOURCES)
 
 start_exec_SOURCES = start.S
 start_exec_CFLAGS = $(STAGE2_COMPILE)
@@ -1557,6 +1556,7 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
+	-rm -f Makefile.in
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
 		mostlyclean-noinstPROGRAMS mostlyclean-tags \

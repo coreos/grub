@@ -513,7 +513,7 @@ check_device (const char *device)
       /* Error opening the device.  */
       return 0;
     }
-  
+
   /* Attempt to read the first sector.  */
   if (fread (buf, 1, 512, fp) != 512)
     {
@@ -957,6 +957,12 @@ get_diskinfo (int drive, struct geometry *geometry)
   if (disks[drive].flags == -1)
     return -1;
 
+#ifdef __linux__
+  /* In Linux, invalidate the buffer cache, so that left overs 
+     from other program in the cache are flushed and seen by us */
+  ioctl (disks[drive].flags, BLKFLSBUF, 0);
+#endif
+  
   *geometry = disks[drive];
   return 0;
 }

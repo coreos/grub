@@ -1050,8 +1050,12 @@ print_completions (int is_filename, int is_completion)
       if (! is_completion)
 	grub_putchar ('\n');
       
+      print_error ();
       do_completion = 0;
-      return unique - 1;
+      if (errnum)
+	return -1;
+      else
+	return unique - 1;
     }
 
   if (*buf == '/' || (ptr = set_device (buf)) || incomplete)
@@ -1194,7 +1198,10 @@ print_completions (int is_filename, int is_completion)
 
   print_error ();
   do_completion = 0;
-  return unique - 1;
+  if (errnum)
+    return -1;
+  else
+    return unique - 1;
 }
 #endif /* STAGE1_5 */
 

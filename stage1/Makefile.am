@@ -1,8 +1,7 @@
 pkgdatadir = $(datadir)/$(PACKAGE)/$(host_cpu)-$(host_vendor)
 nodist_pkgdata_DATA = stage1
 
-BUILT_SOURCES = stage2_size.h
-CLEANFILES = $(nodist_pkgdata_DATA) $(BUILT_SOURCES)
+CLEANFILES = $(nodist_pkgdata_DATA)
 
 # We can't use builtins or standard includes.
 AM_CFLAGS = $(STAGE1_CFLAGS) -fno-builtin -nostdinc

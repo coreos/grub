@@ -1,3 +1,35 @@
+1999-11-11  Michael Hohmuth  <hohmuth@innocent.com>
+
+	* stage2/boot.c (load_image): grub_close was called after
+	return, so exchange the order.
+	* stage2/stage1_5.c (cmain): Call grub_close after grub_read.
+	Set RET to the value returned by grub_read, and if RET is
+	non-zero, call chain_stage2.
+	* stage1/Makefile.am (BUILT_SOURCES): Removed.
+	(CLEANFILES): Set to $(nodist_pkgdata_DATA).
+	
+1999-11-11  OKUJI Yoshinori  <okuji@kuicr.kyoto-u.ac.jp>
+
+	Suggested by Klaus Reichl:
+	* stage2/builtins.c (print_root_device): New function.
+	(root_func): If no argument is specified, call the function
+	print_root_device and return.
+	(rootnoverify_func): Likewise.
+	* stage2/disk_io.c [!STAGE1_5] (print_completions): Call
+	print_error even if IS_FILENAME is zero.
+	If ERRNUM is non-zero, then return -1.
+	* stage2/char_io.c [!STAGE1_5] (get_cmdline): Clear ERRNUM after
+	calling print_completions to print the list as well.
+	
+	* stage2/asm.S [!STAGE1_5] (currticks): Set %eax to %cx:%dx
+	correctly. Reported by Michael Hohmuth.
+	
+1999-11-06  Klaus Reichl  <Klaus.Reichl@alcatel.at>
+
+	* grub/asmstub.c (get_diskinfo) [__linux__]: After opening the
+	drive, flush the cache, other progs may have left over something
+	in the cache.
+
 1999-11-03  Gordon Matzigkeit  <gord@fig.org>
 
 	* debian/rules: Add variables for cross-compilation.

@@ -239,8 +239,8 @@ load_image (char *kernel, char *arg)
 		  {
 		    /* ERRNUM is already set inside the function
 		       safe_parse_maxint.  */
-		    return KERNEL_TYPE_NONE;
 		    grub_close ();
+		    return KERNEL_TYPE_NONE;
 		  }
 
 		/* Set the vid mode to VID_MODE. Note that this can work

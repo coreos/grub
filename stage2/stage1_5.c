@@ -30,9 +30,11 @@ cmain (void)
 
   if (grub_open (config_file))
     {
-      grub_close ();
+      int ret = grub_read ((char *) 0x8000, -1);
       
-      if (grub_read ((char *) 0x8000, -1))
+      grub_close ();
+
+      if (ret)
 	chain_stage2 (0, 0x8200);
     }
 
