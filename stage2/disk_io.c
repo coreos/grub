@@ -394,7 +394,7 @@ attempt_mount (void)
 int
 make_saved_active (void)
 {
-  char MBR[512];
+  char mbr[512];
 
   if (saved_drive & 0x80)
     {
@@ -410,31 +410,31 @@ make_saved_active (void)
 	}
 
       /* Read the MBR in the scratch space.  */
-      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, (char *) MBR))
+      if (! rawread (saved_drive, 0, 0, SECTOR_SIZE, mbr))
 	return 0;
 
       /* If the partition is an extended partition, setting the active
 	 flag violates the specification by IBM.  */
-      if (IS_PC_SLICE_TYPE_EXTENDED (PC_SLICE_TYPE (MBR, part)))
+      if (IS_PC_SLICE_TYPE_EXTENDED (PC_SLICE_TYPE (mbr, part)))
 	{
 	  errnum = ERR_DEV_VALUES;
 	  return 0;
 	}
 
       /* Check if the active flag is disabled.  */
-      if (PC_SLICE_FLAG (MBR, part) != PC_SLICE_FLAG_BOOTABLE)
+      if (PC_SLICE_FLAG (mbr, part) != PC_SLICE_FLAG_BOOTABLE)
 	{
 	  int i;
 
 	  /* Clear all the active flags in this table.  */
 	  for (i = 0; i < 4; i++)
-	    PC_SLICE_FLAG (MBR, i) = 0;
+	    PC_SLICE_FLAG (mbr, i) = 0;
 
 	  /* Set the flag.  */
-	  PC_SLICE_FLAG (MBR, part) = PC_SLICE_FLAG_BOOTABLE;
+	  PC_SLICE_FLAG (mbr, part) = PC_SLICE_FLAG_BOOTABLE;
 
 	  /* Write back the MBR.  */
-	  if (! rawwrite (saved_drive, 0, MBR))
+	  if (! rawwrite (saved_drive, 0, mbr))
 	    return 0;
 	}
     }
@@ -453,7 +453,8 @@ make_saved_active (void)
 int
 set_partition_hidden_flag (int hidden)
 {
-  char MBR[512];
+  char mbr[512];
+  
   if (current_drive & 0x80)
     {
       int part = current_partition >> 16;
@@ -464,15 +465,15 @@ set_partition_hidden_flag (int hidden)
           return 0;
         }
 
-      if (! rawread (current_drive, 0, 0, SECTOR_SIZE, (char *) MBR))
+      if (! rawread (current_drive, 0, 0, SECTOR_SIZE, mbr))
         return 0;
 
       if (hidden)
-	PC_SLICE_TYPE (MBR, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
+	PC_SLICE_TYPE (mbr, part) |= PC_SLICE_TYPE_HIDDEN_FLAG;
       else
-	PC_SLICE_TYPE (MBR, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
+	PC_SLICE_TYPE (mbr, part) &= ~PC_SLICE_TYPE_HIDDEN_FLAG;
       
-      if (! rawwrite (current_drive, 0, MBR))
+      if (! rawwrite (current_drive, 0, mbr))
 	return 0;
     }
 

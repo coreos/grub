@@ -1,3 +1,9 @@
+2000-12-22  OKUJI Yoshinori  <okuji@gnu.org>
+
+	* stage2/disk_io.c (make_saved_active): Change the variable name
+	``MBR'' to lower case.
+	(set_partition_hidden_flag): Likewise.
+	
 2000-12-20  Jochen Hoenicke  <jochen@gnu.org>
 
 	From Cedric Ware <ware@com.enst.fr>:
