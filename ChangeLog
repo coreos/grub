@@ -1,3 +1,8 @@
+2000-07-27  Jochen Hoenicke  <jochen@gnu.org>
+
+	* stage2/asm.S (check_int13_extensions): Fixed the effect of
+	the --force-lba switch in stage2/stage1_5.
+	
 2000-07-25  Jochen Hoenicke  <jochen@gnu.org>
 
 	* stage2/fsys_fat.c (fat_mount): Fixed calculation of num_clust.

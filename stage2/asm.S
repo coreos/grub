@@ -1082,15 +1082,15 @@ ENTRY(check_int13_extensions)
 	cmpw	$0xaa55, %bx
 	jne	1f
 
+	movb	%ah, %bl	/* save the major version into %bl */
+
 	/* check if AH=0x42 is supported if FORCE_LBA is zero */
 	movb	EXT_C(force_lba), %al
 	testb	%al, %al
-	jnz	1f
+	jnz	2f
 	andw	$1, %cx
-	jz	1f
-
-	movb	%ah, %bl	/* save the major version into %bl */
-	jmp	2f
+	jnz	2f
+	
 1:
 	xorb	%bl, %bl
 2:
