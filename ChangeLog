@@ -1,5 +1,11 @@
 2000-07-02  OKUJI Yoshinori  <okuji@gnu.org>
 
+	* grub/main.c (usage): Close the mail address with parentheses
+	and add a period into the end of the line. That's just a
+	cosmetic change.
+	
+2000-07-02  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* docs/appendices.texi (Obtaining and Building GRUB): Indicate
 	the Cygnus's binutils webpage instead of the hjl's site, since
 	you can now use a public release (i.e. 2.10).

@@ -106,7 +106,7 @@ Enter the GRand Unified Bootloader command shell.\n\
     --verbose                print verbose messages\n\
     --version                print version information and exit\n\
 \n\
-Report bugs to bug-grub@gnu.org\n\
+Report bugs to <bug-grub@gnu.org>.\n\
 ",
 	    default_boot_drive, default_config_file,
 	    default_install_partition);
