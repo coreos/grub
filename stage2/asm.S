@@ -260,12 +260,19 @@ ENTRY(grub_halt)
 	xorw	%bx, %bx
 	int	$0x15
 
-	/* connect APM (Is this really necessary?) */
+	/* connect APM */
 	movw	$0x5301, %ax
 	xorw	%bx, %bx
 	int	$0x15
 	jc	EXT_C(hard_stop)
 
+	/* set APM protocol level - 1.1 or bust. (this covers APM 1.2 also) */
+	movw	$0x530E, %ax
+	xorw	%bx, %bx
+	movw	$0x0101, %cx
+	int	$0x15
+	jc	EXT_C(hard_stop)
+	
 	/* set the power state to off */
 	movw	$0x5307, %ax
 	movw	$1, %bx

@@ -1,5 +1,11 @@
 2001-08-08  OKUJI Yoshinori  <okuji@gnu.org>
 
+	From Derrik Pates <dpates@dsdk12.net>:
+	* stage2/asm.S [!STAGE1_5] (grub_halt): Set the level of APM
+	support to 1.1, before turning off the power state.
+	
+2001-08-08  OKUJI Yoshinori  <okuji@gnu.org>
+
 	* util/grub-md5-crypt.in: Prefix backquotes with backslashes in
 	strings.  From Fernando Silveira.
 	
