@@ -17,9 +17,9 @@ Priorities:
 
 * Add support for internationalization. !!!
 
-* Add more loaders (such as Multiboot, Linux and FreeBSD). !!
+* Add more loaders (such as Multiboot and FreeBSD). !!
 
-* Implement an installer. !!!
+* Implement a more friendly installer.
 
 * Add more terminals (such as serial). !
 
@@ -27,11 +27,9 @@ Priorities:
 
 * Write a manual.
 
-* Shrink the kernel code.
-
 * Add support for compressed files.
 
 * Add support for network devices.
 
 * Compress the core image and decompress it at loading time, to make it
-  smaller. ?
+  smaller. !
