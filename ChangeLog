@@ -1,3 +1,20 @@
+2005-04-21  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* include/grub/powerpc/ieee1275/ieee1275.h
+	(grub_ieee1275_encode_devname): New prototype.
+	(grub_ieee1275_get_filename): Likewise.
+	* kern/powerpc/ieee1275/init.c (grub_translate_ieee175_path): New
+	function.
+	(grub_set_prefix): Likewise.
+	(grub_machine_init): Call grub_set_prefix.
+	* kern/powerpc/ieee1275/openfw.c: Fix typos.
+	(grub_parse_type): New enum.
+	(grub_ieee1275_get_devargs): New function.
+	(grub_ieee1275_get_devname): Likewise.
+	(grub_ieee1275_parse_args): Likewise.
+	(grub_ieee1275_get_filename): Likewise.
+	(grub_ieee1275_encode_devname): Likewise.
+
 2005-03-30  Marco Gerards  <metgerards@student.han.nl>
 
 	* kern/powerpc/ieee1275/init.c (grub_machine_fini): Don't call

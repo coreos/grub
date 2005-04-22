@@ -134,5 +134,7 @@ void EXPORT_FUNC(abort) (void);
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
 
+char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);
+char *EXPORT_FUNC(grub_ieee1275_get_filename) (const char *path);
 
 #endif /* ! GRUB_IEEE1275_MACHINE_HEADER */

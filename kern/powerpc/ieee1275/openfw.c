@@ -23,6 +23,12 @@
 #include <grub/mm.h>
 #include <grub/machine/ieee1275.h>
 
+enum grub_ieee1275_parse_type
+{
+  GRUB_PARSE_FILENAME,
+  GRUB_PARSE_PARTITION,
+};
+
 /* Walk children of 'devpath', calling hook for each.  */
 grub_err_t
 grub_children_iterate (char *devpath,
@@ -64,7 +70,7 @@ grub_children_iterate (char *devpath,
       if (actual == -1)
 	continue;
 
-      grub_sprintf(fullname, "%s/%s", devpath, childname);
+      grub_sprintf (fullname, "%s/%s", devpath, childname);
 
       alias.type = childtype;
       alias.path = childpath;
@@ -76,7 +82,7 @@ grub_children_iterate (char *devpath,
   return 0;
 }
 
-/* Iterate through all device aliasses.  Thisfunction can be used to
+/* Iterate through all device aliases.  This function can be used to
    find a device of a specific type.  */
 grub_err_t
 grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
@@ -198,6 +204,156 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
     }
 
   return 0;
+}
+
+/* Get the device arguments of the Open Firmware node name `path'.  */
+static char *
+grub_ieee1275_get_devargs (const char *path)
+{
+  char *colon = grub_strchr (path, ':');
+
+  if (! colon)
+    return 0;
+
+  return grub_strdup (colon + 1);
+}
+
+/* Get the device path of the Open Firmware node name `path'.  */
+static char *
+grub_ieee1275_get_devname (const char *path)
+{
+  char *colon = grub_strchr (path, ':');
+  char *newpath = 0;
+  int pathlen = grub_strlen (path);
+  auto int match_alias (struct grub_ieee1275_devalias *alias);
+
+  int match_alias (struct grub_ieee1275_devalias *curalias)
+    {
+      /* briQ firmware can change capitalization in /chosen/bootpath.  */
+      if (! grub_strncasecmp (curalias->path, path, pathlen))
+        {
+	  newpath = grub_strndup (curalias->name, grub_strlen (curalias->name));
+	  return 1;
+	}
+
+      return 0;
+    }
+
+  if (colon)
+    pathlen = (int)(colon - path);
+
+  /* Try to find an alias for this device.  */
+  grub_devalias_iterate (match_alias);
+
+  if (! newpath)
+    newpath = grub_strdup (path);
+
+  return newpath;
+}
+
+static char *
+grub_ieee1275_parse_args (const char *path, enum grub_ieee1275_parse_type ptype)
+{
+  char type[64]; /* XXX check size.  */
+  char *device = grub_ieee1275_get_devname (path);
+  char *args = grub_ieee1275_get_devargs (path);
+  char *ret = 0;
+  grub_ieee1275_phandle_t dev;
+
+  if (!args)
+    /* Shouldn't happen.  */
+    return 0;
+
+  /* We need to know what type of device it is in order to parse the full
+     file path properly.  */
+  if (grub_ieee1275_finddevice (device, &dev))
+    {
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Device %s not found\n", device);
+      goto fail;
+    }
+  if (grub_ieee1275_get_property (dev, "device_type", &type, sizeof type, 0))
+    {
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+		  "Device %s lacks a device_type property\n", device);
+      goto fail;
+    }
+
+  if (!grub_strcmp ("block", type))
+    {
+      /* The syntax of the device arguments is defined in the CHRP and PReP
+         IEEE1275 bindings: "[partition][,[filename]]".  */
+      char *comma = grub_strchr (args, ',');
+
+      if (ptype == GRUB_PARSE_FILENAME)
+	{
+	  if (comma)
+	    {
+	      char *filepath = comma + 1;
+
+	      ret = grub_malloc (grub_strlen (filepath) + 1);
+	      /* Make sure filepath has leading backslash.  */
+	      if (filepath[0] != '\\')
+		grub_sprintf (ret, "\\%s", filepath);
+	      else
+		grub_strcpy (ret, filepath);
+	    }
+	}
+      else if (ptype == GRUB_PARSE_PARTITION)
+        {
+	  if (!comma)
+	    ret = grub_strdup (args);
+	  else
+	    ret = grub_strndup (args, (grub_size_t)(comma - args));
+	}
+    }
+  else
+    {
+      /* XXX Handle net devices by configuring & registering a grub_net_dev
+	 here, then return its name?
+	 Example path: "net:<server ip>,<file name>,<client ip>,<gateway
+	 ip>,<bootp retries>,<tftp retries>".  */
+      grub_printf ("Unsupported type %s for device %s\n", type, device);
+    }
+
+fail:
+  grub_free (device);
+  grub_free (args);
+  return ret;
+}
+
+char *
+grub_ieee1275_get_filename (const char *path)
+{
+  return grub_ieee1275_parse_args (path, GRUB_PARSE_FILENAME);
+}
+
+/* Convert a device name from IEEE1275 syntax to GRUB syntax.  */
+char *
+grub_ieee1275_encode_devname (const char *path)
+{
+  char *device = grub_ieee1275_get_devname (path);
+  char *partition = grub_ieee1275_parse_args (path, GRUB_PARSE_PARTITION);
+  char *encoding;
+
+  if (partition)
+    {
+      unsigned int partno = grub_strtoul (partition, 0, 0);
+      partno--; /* GRUB partition numbering is 0-based.  */
+
+      /* Assume partno will require less than five bytes to encode.  */
+      encoding = grub_malloc (grub_strlen (device) + 3 + 5);
+      grub_sprintf (encoding, "(%s,%d)", device, partno);
+    }
+  else
+    {
+      encoding = grub_malloc (grub_strlen (device) + 2);
+      grub_sprintf (encoding, "(%s)", device);
+    }
+
+  grub_free (partition);
+  grub_free (device);
+
+  return encoding;
 }
 
 void

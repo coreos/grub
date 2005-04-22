@@ -46,6 +46,69 @@ abort (void)
   for (;;);
 }
 
+/* Translate an OF filesystem path (separated by backslashes), into a GRUB
+   path (separated by forward slashes).  */
+static void
+grub_translate_ieee1275_path (char *filepath)
+{
+  char *backslash;
+
+  backslash = grub_strchr (filepath, '\\');
+  while (backslash != 0)
+    {
+      *backslash = '/';
+      backslash = grub_strchr (filepath, '\\');
+    }
+}
+
+static void
+grub_set_prefix (void)
+{
+  char bootpath[64]; /* XXX check length */
+  char *filename;
+  char *prefix;
+  grub_ieee1275_phandle_t chosen;
+
+  grub_ieee1275_finddevice ("/chosen", &chosen);
+  if (grub_ieee1275_get_property (chosen, "bootpath", &bootpath,
+				  sizeof (bootpath), 0))
+    { 
+      /* Should never happen.  */
+      grub_printf ("/chosen/bootpath property missing!\n");
+      grub_env_set ("prefix", "");
+      return;
+    }
+
+  /* Transform an OF device path to a GRUB path.  */
+
+  prefix = grub_ieee1275_encode_devname (bootpath);
+
+  filename = grub_ieee1275_get_filename (bootpath);
+  if (filename)
+    {
+      char *newprefix;
+      char *lastslash = grub_strrchr (filename, '\\');
+
+      /* Truncate at last directory.  */
+      if (lastslash)
+        {
+	  *lastslash = '\0';
+	  grub_translate_ieee1275_path (filename);
+
+	  newprefix = grub_malloc (grub_strlen (prefix)
+				   + grub_strlen (filename));
+	  grub_sprintf (newprefix, "%s%s", prefix, filename);
+	  grub_free (prefix);
+	  prefix = newprefix;
+	}
+    }
+
+  grub_env_set ("prefix", prefix);
+
+  grub_free (filename);
+  grub_free (prefix);
+}
+
 void
 grub_machine_init (void)
 {
@@ -65,7 +128,7 @@ grub_machine_init (void)
     }
   grub_mm_init_region ((void *) grub_heap_start, grub_heap_len);
 
-  grub_env_set ("prefix", "");
+  grub_set_prefix ();
 
   grub_ofdisk_init ();
 }
