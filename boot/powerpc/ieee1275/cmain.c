@@ -23,7 +23,6 @@
 
 #include <grub/machine/ieee1275.h>
 #include <grub/kernel.h>
-#include <grub/machine/init.h>
 
 struct module_info
 {
@@ -31,26 +30,47 @@ struct module_info
   uint32_t end;
 };
 
-#define roundup(a, s) (((a) + ((s) - 1)) & ~((s) - 1))
-
 /* OpenFirmware entry point passed to us from the real bootloader.  */
 intptr_t (*grub_ieee1275_entry_fn) (void *);
 
-grub_uint32_t grub_ieee1275_flags;
-int grub_ieee1275_realmode;
+static grub_uint32_t grub_ieee1275_flags;
 
 
 
-static void
-find_options (void)
+int
+grub_ieee1275_test_flag (enum grub_ieee1275_flag flag)
 {
-  grub_ieee1275_phandle_t options;
-
-  grub_ieee1275_finddevice ("/options", &options);
-  grub_ieee1275_get_property (options, "real-mode?", &grub_ieee1275_realmode,
-			      sizeof (grub_ieee1275_realmode), 0);
+  return (grub_ieee1275_flags & (1 << flag));
 }
 
+void
+grub_ieee1275_set_flag (enum grub_ieee1275_flag flag)
+{
+  grub_ieee1275_flags |= (1 << flag);
+}
+
+static void
+grub_ieee1275_find_options (void)
+{
+  grub_ieee1275_phandle_t options;
+  grub_ieee1275_phandle_t openprom;
+  int realmode;
+  int smartfw;
+
+  grub_ieee1275_finddevice ("/options", &options);
+  grub_ieee1275_get_property (options, "real-mode?", &realmode,
+			      sizeof (realmode), 0);
+  if (realmode)
+    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_REAL_MODE);
+
+  grub_ieee1275_finddevice ("/openprom", &openprom);
+  smartfw = grub_ieee1275_get_property (openprom, "SmartFirmware-version",
+					0, 0, 0);
+  if (smartfw != -1)
+    grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS);
+}
+
+void cmain (uint32_t r3, uint32_t r4, uint32_t r5);
 /* Setup the argument vector and pass control over to the main
    function.  */
 void
@@ -68,7 +88,7 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
 
       grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r3;
 
-      grub_ieee1275_flags = GRUB_IEEE1275_NO_PARTITION_0;
+      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
 
       /* Old World Open Firmware may use 4M-5M without claiming it.  */
       grub_ieee1275_claim (0x00400000, 0x00100000, 0, 0);
@@ -84,7 +104,7 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
       grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r5;
     }
 
-  find_options ();
+  grub_ieee1275_find_options ();
 
   /* If any argument was passed to the kernel (us), they are
      put in the bootargs property of /chosen.  The string can

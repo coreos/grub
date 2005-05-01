@@ -11,7 +11,7 @@ DEFSYMFILES += kernel_syms.lst
 
 grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h misc.h mm.h net.h rescue.h symbol.h \
-	term.h types.h machine/biosdisk.h powerpc/libgcc.h loader.h \
+	term.h types.h powerpc/libgcc.h loader.h \
 	partition.h pc_partition.h machine/time.h machine/ieee1275.h
 
 grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh

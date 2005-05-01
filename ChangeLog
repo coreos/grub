@@ -1,3 +1,38 @@
+2005-04-30  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/cmain.c: Don't include grub/machine/init.h.
+	(roundup): Remove macro.
+	(grub_ieee1275_flags): Make static.
+	(grub_ieee1275_realmode): Remove.
+	(grub_ieee1275_test_flag): New function.
+	(grub_ieee1275_set_flag): Likewise.
+	(find_options): Rename to `grub_ieee1275_find_options'; update
+	callers. Set GRUB_IEEE1275_FLAG_REAL_MODE and
+	GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS.
+	(cmain): New prototype.
+	(cmain): Use `grub_ieee1275_set_flag' instead of accessing
+	`grub_ieee1275_flags' directly.
+	* conf/powerpc-ieee1275.rmk (grubof_HEADERS): Remove
+	machine/biosdisk.h.
+	* disk/powerpc/ieee1275/ofdisk.c: Include grub/machine/ofdisk.h.
+	Don't include grub/machine/init.h.
+	(grub_ofdisk_open): Call `grub_ieee1275_test_flag'.
+	* include/grub/powerpc/ieee1275/ieee1275.h (grub_ieee1275_flags):
+	Remove prototype.
+	(grub_ieee1275_realmode): Likewise.
+	(grub_ieee1275_flag): New enum.
+	(grub_ieee1275_test_flag): New prototype.
+	(grub_ieee1275_set_flag): New prototype.
+	* include/grub/powerpc/ieee1275/init.h: Remove file.
+	* include/grub/powerpc/ieee1275/ofdisk.h: New file.
+	* kern/powerpc/ieee1275/init.c: Don't include grub/machine/init.h.
+	Include grub/machine/console.h.  Include grub/machine/ofdisk.h.
+	(grub_machine_fini): Don't call `grub_ieee1275_release'.  Remove
+	comment.
+	* kern/powerpc/ieee1275/openfw.c (grub_claimmap): Call
+	`grub_ieee1275_test_flag'.
+	(grub_ieee1275_encode_devname): Likewise.
+
 2005-04-21  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* include/grub/powerpc/ieee1275/ieee1275.h

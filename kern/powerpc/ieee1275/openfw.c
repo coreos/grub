@@ -196,7 +196,8 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
   if (grub_ieee1275_claim (addr, size, 0, 0))
     return -1;
 
-  if ((! grub_ieee1275_realmode) && grub_map (addr, addr, size, 0x00))
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_REAL_MODE)
+      && grub_map (addr, addr, size, 0x00))
     {
       grub_printf ("map failed: address 0x%x, size 0x%x\n", addr, size);
       grub_ieee1275_release (addr, size);
@@ -338,7 +339,10 @@ grub_ieee1275_encode_devname (const char *path)
   if (partition)
     {
       unsigned int partno = grub_strtoul (partition, 0, 0);
-      partno--; /* GRUB partition numbering is 0-based.  */
+
+      /* GRUB partition numbering is 0-based.  */
+      if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS))
+	partno--;
 
       /* Assume partno will require less than five bytes to encode.  */
       encoding = grub_malloc (grub_strlen (device) + 3 + 5);

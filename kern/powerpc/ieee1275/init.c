@@ -29,9 +29,10 @@
 #include <grub/setjmp.h>
 #include <grub/env.h>
 #include <grub/misc.h>
-#include <grub/machine/init.h>
 #include <grub/machine/time.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/console.h>
+#include <grub/machine/ofdisk.h>
 
 /* Apple OF 1.0.5 reserves 0x0 to 0x4000 for the exception handlers.  */
 static const grub_addr_t grub_heap_start = 0x4000;
@@ -42,7 +43,7 @@ abort (void)
 {
   /* Trap to Open Firmware.  */
   asm ("trap");
-  
+
   for (;;);
 }
 
@@ -72,7 +73,7 @@ grub_set_prefix (void)
   grub_ieee1275_finddevice ("/chosen", &chosen);
   if (grub_ieee1275_get_property (chosen, "bootpath", &bootpath,
 				  sizeof (bootpath), 0))
-    { 
+    {
       /* Should never happen.  */
       grub_printf ("/chosen/bootpath property missing!\n");
       grub_env_set ("prefix", "");
@@ -138,9 +139,6 @@ grub_machine_fini (void)
 {
   grub_ofdisk_fini ();
   grub_console_fini ();
-
-  grub_ieee1275_release (grub_heap_start, grub_heap_len);
-  /* XXX Release memory claimed for Old World firmware.  */
 }
 
 void

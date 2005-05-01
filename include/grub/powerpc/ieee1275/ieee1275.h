@@ -65,11 +65,24 @@ typedef intptr_t grub_ieee1275_ihandle_t;
 typedef intptr_t grub_ieee1275_phandle_t;
 
 extern intptr_t (*grub_ieee1275_entry_fn) (void *);
-extern grub_uint32_t grub_ieee1275_flags;
-extern int grub_ieee1275_realmode;
 
-/* Old World firmware fails seek when "dev:0" is opened.  */
-#define GRUB_IEEE1275_NO_PARTITION_0 0x1
+enum grub_ieee1275_flag
+{
+  /* Old World firmware fails seek when "dev:0" is opened.  */
+  GRUB_IEEE1275_FLAG_NO_PARTITION_0,
+
+  /* Apple firmware runs in translated mode and requires use of the "map"
+     method.  Other firmware runs in untranslated mode and doesn't like "map"
+     calls.  */
+  GRUB_IEEE1275_FLAG_REAL_MODE,
+
+  /* CHRP specifies partitions are numbered from 1 (partition 0 refers to the
+     whole disk). However, CodeGen firmware numbers partitions from 0.  */
+  GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS,
+};
+
+extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);
+extern void EXPORT_FUNC(grub_ieee1275_set_flag) (enum grub_ieee1275_flag flag);
 
 
 
