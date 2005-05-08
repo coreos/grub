@@ -1,3 +1,9 @@
+2005-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/fsys_xfs.c (next_dentry): Use arrays of arrays instead of
+	arrays of pointers for USUAL, to avoid read-only strings. Reported
+	by Sven Wegener <swegener@gentoo.org>.
+
 2005-03-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* lib/device.c (get_drive_geometry): Use ST.ST_SIZE instead of
