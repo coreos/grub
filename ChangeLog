@@ -1,5 +1,19 @@
 2005-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* configure.ac (AC_INIT): Upgraded to 0.97.
+
+	* compile: Copied from Automake 1.9.4.
+	* config.guess: Likewise.
+	* config.sub: Likewise.
+	* depcomp: Likewise.
+	* install-sh: Likewise.
+	* missing: Likewise.
+	* mkinstalldirs: Likewise.
+	* mdate-sh: Likewise.
+	* docs/texinfo.tex: Likewise.
+
+2005-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* stage2/fsys_xfs.c (next_dentry): Use arrays of arrays instead of
 	arrays of pointers for USUAL, to avoid read-only strings. Reported
 	by Sven Wegener <swegener@gentoo.org>.
