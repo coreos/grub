@@ -128,6 +128,23 @@ grub_printf (const char *fmt, ...)
   return ret;
 }  
 
+void
+grub_real_dprintf(const char *file, const int line, const char *condition,
+                  const char *fmt, ...)
+{
+  va_list args;
+  const char *debug = grub_env_get ("debug");
+  if (! debug)
+    return;
+  if (grub_strword (debug, "all") || grub_strword (debug, condition))
+    {
+      grub_printf ("%s,%d : ", file, line);
+      va_start (args, fmt);
+      grub_vprintf (fmt, args);
+      va_end (args);
+    }
+}
+
 int
 grub_vprintf (const char *fmt, va_list args)
 {
@@ -235,6 +252,49 @@ grub_strrchr (const char *s, int c)
     }
 
   return p;
+}
+
+int
+grub_strword (const char *haystack, const char *needle)
+{
+  const char *n_pos = needle;
+
+  while (grub_iswordseparator (*haystack))
+    haystack++;
+
+  while (*haystack)
+    {
+      /* Crawl both the needle and the haystack word we're on.  */
+      while(*haystack && !grub_iswordseparator (*haystack)
+            && *haystack == *n_pos)
+        {
+          haystack++;
+          n_pos++;
+        }
+
+      /* If we reached the end of both words at the same time, the word
+      is found. If not, eat everything in the haystack that isn't the
+      next word (or the end of string) and "reset" the needle.  */
+      if ( (!*haystack || grub_iswordseparator (*haystack))
+         && (!*n_pos || grub_iswordseparator (*n_pos)))
+        return 1;
+      else
+        {
+          n_pos = needle;
+          while (*haystack && !grub_iswordseparator (*haystack))
+            haystack++;
+          while (grub_iswordseparator (*haystack))
+            haystack++;
+        }
+    }
+
+  return 0;
+}
+
+int
+grub_iswordseparator (int c)
+{
+  return (grub_isspace (c) || c == ',' || c == ';' || c == '|' || c == '&');
 }
 
 int

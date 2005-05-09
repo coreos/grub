@@ -1,3 +1,13 @@
+2005-05-08  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* include/grub/misc.h (grub_dprintf): New macro.
+	(grub_real_dprintf): New prototype.
+	(grub_strword): Likewise.
+	(grub_iswordseparator): Likewise.
+	* kern/misc.c (grub_real_dprintf): New function.
+	(grub_strword): Likewise.
+	(grub_iswordseparator): Likewise.
+
 2005-04-30  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/cmain.c: Don't include grub/machine/init.h.

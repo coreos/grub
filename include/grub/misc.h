@@ -26,6 +26,7 @@
 #include <grub/symbol.h>
 #include <grub/err.h>
 
+#define grub_dprintf(condition, fmt, args...) grub_real_dprintf(__FILE__, __LINE__, condition, fmt, ## args);
 /* XXX: If grub_memmove is too slow, we must implement grub_memcpy.  */
 #define grub_memcpy(d,s,n)	grub_memmove ((d), (s), (n))
 
@@ -46,6 +47,8 @@ int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, int c);
 int EXPORT_FUNC(grub_strncasecmp) (const char *s1, const char *s2, int c);
 char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
 char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
+int EXPORT_FUNC(grub_strword) (const char *s, const char *w);
+int EXPORT_FUNC(grub_iswordseparator) (int c);
 int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);
 int EXPORT_FUNC(grub_isalpha) (int c);
@@ -58,6 +61,10 @@ char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
 grub_size_t EXPORT_FUNC(grub_strlen) (const char *s);
 int EXPORT_FUNC(grub_printf) (const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void EXPORT_FUNC(grub_real_dprintf) (const char *file,
+                                     const int line,
+                                     const char *condition,
+                                     const char *fmt, ...) __attribute__ ((format (printf, 4, 5)));
 int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
 int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
