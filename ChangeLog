@@ -1,3 +1,10 @@
+2005-05-10  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/cmain.c (cmain): Remove code to parse
+	/chosen/bootargs.
+	* kern/powerpc/ieee1275/init.c (grub_machine_init): Parse
+	/chosen/bootargs as "variable=value" pairs.
+
 2005-05-08  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* include/grub/misc.h (grub_dprintf): New macro.

@@ -71,15 +71,9 @@ grub_ieee1275_find_options (void)
 }
 
 void cmain (uint32_t r3, uint32_t r4, uint32_t r5);
-/* Setup the argument vector and pass control over to the main
-   function.  */
 void
 cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
 {
-  char **argv, args[256];
-  grub_ieee1275_phandle_t chosen;
-  int argc = 0, actual;
-
   if (r5 == 0xdeadbeef)
     {
       /* Entered from Old World stage1.  */
@@ -106,70 +100,7 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
 
   grub_ieee1275_find_options ();
 
-  /* If any argument was passed to the kernel (us), they are
-     put in the bootargs property of /chosen.  The string can
-     be null (just the nul-character), so check that the size
-     is actually greater than one.  */
-
-  grub_ieee1275_finddevice ("/chosen", &chosen);
-  if (grub_ieee1275_get_property (chosen, "bootargs", args,
-				  sizeof args, &actual) == 0
-      && actual > 1)
-    {
-      /* A command line was passed.  */
-      char *str = args;
-      int nr = 1;
-
-      /* First time around we count the number of arguments.  */
-      argc = 2;
-      while (*str && *str == ' ')
-	str++;
-
-      while (*str)
-	if (*(str++) == ' ')
-	  {
-	    while (*str && *str == ' ')
-	      str++;
-	    if (*str)
-	      argc++;
-	  }
-      argv = alloca (sizeof (char *) * (argc + 2));
-
-      /* The bootargs property does not contain the program
-	 name, just the arguments.  */
-      argv[0] = "grub";
-
-      /* Second time around we fill in the argv.  */
-      str = args;
-
-      while (*str && *str == ' ')
-	str++;
-      argv[nr++] = str;
-
-      while (*str)
-	{
-	  if (*str == ' ')
-	    {
-	      *(str++) = '\0';
-	      while (*str && *str == ' ')
-		str++;
-	      if (*str)
-		argv[nr++] = str;
-	    }
-	  else
-	    str++;
-	}
-      argv[nr] = 0;
-    }
-  else
-    {
-      argv = alloca (sizeof (char *) * 2);
-      argv[0] = "grub";
-      argv[1] = 0;
-      argc = 1;
-    }
   /* Now invoke the main function.  */
-  /* XXX: grub_main does not parse arguments yet.  */
   grub_main ();
 
   /* Never reached.  */

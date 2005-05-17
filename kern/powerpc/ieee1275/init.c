@@ -113,6 +113,9 @@ grub_set_prefix (void)
 void
 grub_machine_init (void)
 {
+  char args[256];
+  grub_ieee1275_phandle_t chosen;
+  int actual;
   extern char _start;
 
   grub_console_init ();
@@ -132,6 +135,41 @@ grub_machine_init (void)
   grub_set_prefix ();
 
   grub_ofdisk_init ();
+
+  /* Process commandline.  */
+  grub_ieee1275_finddevice ("/chosen", &chosen);
+  if (grub_ieee1275_get_property (chosen, "bootargs", &args,
+				  sizeof args, &actual) == 0
+      && actual > 1)
+    {
+      int i = 0;
+
+      while (i < actual)
+	{
+	  char *command = &args[i];
+	  char *end;
+	  char *val;
+
+	  end = grub_strchr (command, ';');
+	  if (end == 0)
+	    i = actual; /* No more commands after this one.  */
+	  else
+	    {
+	      *end = '\0';
+	      i += end - command + 1;
+	      while (grub_isspace(args[i]))
+		i++;
+	    }
+
+	  /* Process command.  */
+	  val = grub_strchr (command, '=');
+	  if (val)
+	    {
+	      *val = '\0';
+	      grub_env_set (command, val + 1);
+	    }
+	}
+    }
 }
 
 void
