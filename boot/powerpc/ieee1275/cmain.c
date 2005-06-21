@@ -94,6 +94,8 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
       grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r5;
     }
 
+  grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);
+
   grub_ieee1275_find_options ();
 
   /* Now invoke the main function.  */

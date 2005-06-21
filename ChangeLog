@@ -1,5 +1,10 @@
 2005-05-08  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* boot/powerpc/ieee1275/cmain.c (cmain): Initialize
+	`grub_ieee1275_chosen'.
+
+2005-05-08  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* boot/powerpc/ieee1275/cmain.c	(module_info): Remove definition.
 	(grub_ieee1275_chosen): New variable.
 	(cmain): Initialize and use `grub_ieee1275_chosen' instead of
