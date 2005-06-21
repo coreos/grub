@@ -1,3 +1,28 @@
+2005-05-08  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* boot/powerpc/ieee1275/cmain.c	(module_info): Remove definition.
+	(grub_ieee1275_chosen): New variable.
+	(cmain): Initialize and use `grub_ieee1275_chosen' instead of
+	`chosen'.
+	* boot/powerpc/ieee1275/crt0.S (init_stack): Remove stack space.
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_get_property):
+	Rename first argument to `phandle' for consistency.
+	(grub_ieee1275_get_property_length): Likewise.
+	(grub_ieee1275_next_property): Likewise.  Change type of first argument
+	to grub_ieee1275_phandle_t.
+	* include/grub/powerpc/ieee1275/ieee1275.h (grub_ieee1275_entry_fn):
+	Move export next to declaration.
+	(grub_ieee1275_chosen): New variable.
+	* include/grub/powerpc/ieee1275/kernel.h (GRUB_IEEE1275_MODULE_BASE):
+	Correct cosmetic typo.
+	* kern/powerpc/ieee1275/init.c (grub_set_prefix): Use
+	`grub_ieee1275_chosen'.
+	* kern/powerpc/ieee1275/openfw.c (grub_map): Likewise.
+	* loader/powerpc/ieee1275/linux.c (grub_linux_boot): Likewise.
+	(grub_rescue_cmd_linux): Set `initrd_addr' to 0.
+	* term/powerpc/ieee1275/ofconsole.c (grub_ofconsole_refresh): Use
+	`grub_ieee1275_chosen'.
+
 2005-05-10  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/cmain.c (cmain): Remove code to parse

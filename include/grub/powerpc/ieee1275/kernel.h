@@ -21,6 +21,6 @@
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
 /* Where grub-mkimage places the core modules in memory.  */
-#define GRUB_IEEE1275_MODULE_BASE 0x0300000
+#define GRUB_IEEE1275_MODULE_BASE 0x00300000
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

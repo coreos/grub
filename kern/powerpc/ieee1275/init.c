@@ -68,10 +68,8 @@ grub_set_prefix (void)
   char bootpath[64]; /* XXX check length */
   char *filename;
   char *prefix;
-  grub_ieee1275_phandle_t chosen;
 
-  grub_ieee1275_finddevice ("/chosen", &chosen);
-  if (grub_ieee1275_get_property (chosen, "bootpath", &bootpath,
+  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", &bootpath,
 				  sizeof (bootpath), 0))
     {
       /* Should never happen.  */

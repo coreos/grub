@@ -241,23 +241,19 @@ grub_ofconsole_refresh (void)
 static grub_err_t
 grub_ofconsole_init (void)
 {
-  grub_ieee1275_phandle_t chosen;
   char data[4];
   grub_size_t actual;
   int col;
 
-  if (grub_ieee1275_finddevice ("/chosen", &chosen))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find /chosen");
-
-  if (grub_ieee1275_get_property (chosen, "stdout", data, sizeof data,
-			     &actual)
+  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdout", data,
+				  sizeof data, &actual)
       || actual != sizeof data)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdout");
 
   stdout_ihandle = grub_ieee1275_decode_int_4 (data);
   
-   if (grub_ieee1275_get_property (chosen, "stdin", data, sizeof data,
-			     &actual)
+  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdin", data,
+				  sizeof data, &actual)
       || actual != sizeof data)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdin");
 

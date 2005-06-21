@@ -39,8 +39,6 @@ struct grub_ieee1275_mem_region
   unsigned int size;
 };
 
-extern intptr_t(* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
-
 #ifndef IEEE1275_CALL_ENTRY_FN
 #define IEEE1275_CALL_ENTRY_FN(args) (*grub_ieee1275_entry_fn) (args)
 #endif
@@ -64,7 +62,10 @@ struct grub_ieee1275_common_hdr
 typedef intptr_t grub_ieee1275_ihandle_t;
 typedef intptr_t grub_ieee1275_phandle_t;
 
+extern grub_ieee1275_phandle_t grub_ieee1275_chosen;
+extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
 extern intptr_t (*grub_ieee1275_entry_fn) (void *);
+extern intptr_t (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
 
 enum grub_ieee1275_flag
 {

@@ -165,14 +165,10 @@ grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
     int catch_result;
   } args;
   grub_ieee1275_ihandle_t mmu;
-  grub_ieee1275_ihandle_t chosen;
   int len;
 
-  grub_ieee1275_finddevice ("/chosen", &chosen);
-  if (chosen == 0)
-    return -1;
-
-  grub_ieee1275_get_property (chosen, "mmu", &mmu, sizeof mmu, &len);
+  grub_ieee1275_get_property (grub_ieee1275_chosen, "mmu", &mmu, sizeof mmu,
+			      &len);
   if (len != sizeof mmu)
     return -1;
 

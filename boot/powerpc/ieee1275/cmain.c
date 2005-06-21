@@ -24,14 +24,10 @@
 #include <grub/machine/ieee1275.h>
 #include <grub/kernel.h>
 
-struct module_info
-{
-  uint32_t start;
-  uint32_t end;
-};
-
 /* OpenFirmware entry point passed to us from the real bootloader.  */
 intptr_t (*grub_ieee1275_entry_fn) (void *);
+
+grub_ieee1275_phandle_t grub_ieee1275_chosen;
 
 static grub_uint32_t grub_ieee1275_flags;
 

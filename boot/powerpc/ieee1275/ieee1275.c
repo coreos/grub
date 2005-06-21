@@ -56,7 +56,7 @@ grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
 }
 
 int
-grub_ieee1275_get_property (grub_ieee1275_phandle_t handle,
+grub_ieee1275_get_property (grub_ieee1275_phandle_t phandle,
 			    const char *property, void *buf,
 			    grub_size_t size, grub_size_t *actual)
 {
@@ -70,7 +70,7 @@ grub_ieee1275_get_property (grub_ieee1275_phandle_t handle,
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "getprop", 4, 1);
-  args.phandle = handle;
+  args.phandle = phandle;
   args.prop = property;
   args.buf = buf;
   args.buflen = size;
@@ -85,8 +85,8 @@ grub_ieee1275_get_property (grub_ieee1275_phandle_t handle,
 }
 
 int
-grub_ieee1275_next_property (int handle, char *prev_prop, char *prop,
-			     int *flags)
+grub_ieee1275_next_property (grub_ieee1275_phandle_t phandle, char *prev_prop,
+			     char *prop, int *flags)
 {
   struct get_property_args {
     struct grub_ieee1275_common_hdr common;
@@ -97,7 +97,7 @@ grub_ieee1275_next_property (int handle, char *prev_prop, char *prop,
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "nextprop", 3, 1);
-  args.phandle = handle;
+  args.phandle = phandle;
   args.prev_prop = prev_prop;
   args.next_prop = prop;
   args.flags = -1;
@@ -110,7 +110,7 @@ grub_ieee1275_next_property (int handle, char *prev_prop, char *prop,
 }
 
 int
-grub_ieee1275_get_property_length (grub_ieee1275_phandle_t handle, 
+grub_ieee1275_get_property_length (grub_ieee1275_phandle_t phandle, 
 				   const char *prop, grub_size_t *length)
 {
   struct get_property_args {
@@ -121,7 +121,7 @@ grub_ieee1275_get_property_length (grub_ieee1275_phandle_t handle,
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "getproplen", 2, 1);
-  args.phandle = handle;
+  args.phandle = phandle;
   args.prop = prop;
   args.length = -1;
 

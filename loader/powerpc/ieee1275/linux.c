@@ -47,13 +47,10 @@ static grub_err_t
 grub_linux_boot (void)
 {
   kernel_entry_t linuxmain;
-  grub_ieee1275_phandle_t chosen;
   grub_size_t actual;
   
-  grub_ieee1275_finddevice ("/chosen", &chosen);
-  
   /* Set the command line arguments.  */
-  grub_ieee1275_set_property (chosen, "bootargs", linux_args,
+  grub_ieee1275_set_property (grub_ieee1275_chosen, "bootargs", linux_args,
 			      grub_strlen (linux_args) + 1, &actual);
   
   /* Boot the kernel.  */
@@ -236,7 +233,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   else
     {
       grub_loader_set (grub_linux_boot, grub_linux_unload);
-      initrd_addr = 0xc0000000;
+      initrd_addr = 0;
       loaded = 1;
     }
   

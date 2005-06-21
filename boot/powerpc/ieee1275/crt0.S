@@ -41,8 +41,3 @@ _start:
 
 	bl	cmain
 1:	b	1b
-
-	.section ".bss"
-	.lcomm	_ppc_init_stack, 4096*2, 16
-init_stack:
-
