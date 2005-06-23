@@ -1,3 +1,10 @@
+2005-06-23  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/mm.c (grub_free): If the next free block which is being
+	merged is the first free block, set the first block to the block
+	being freed.
+	Reported by Vincent Guffens <guffens@inma.ucl.ac.be>.
+
 2005-05-08  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* boot/powerpc/ieee1275/cmain.c (cmain): Initialize

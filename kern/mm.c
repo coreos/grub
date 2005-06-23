@@ -295,6 +295,9 @@ grub_free (void *ptr)
       
       if (p + p->size == p->next)
 	{
+	  if (p->next == q)
+	    q = p;
+
 	  p->next->magic = 0;
 	  p->size += p->next->size;
 	  p->next = p->next->next;
