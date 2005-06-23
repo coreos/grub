@@ -1,3 +1,8 @@
+2005-06-23  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/misc.c (grub_vsprintf): Add `longfmt'.  If format string
+	contains `l' modifier, get a long from va_arg().
+
 2005-06-23  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/mm.c (grub_free): If the next free block which is being

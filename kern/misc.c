@@ -562,13 +562,14 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	  char zerofill = ' ';
 	  int rightfill = 0;
 	  int n;
-	  
+	  int longfmt = 0;
+
 	  if (*fmt && *fmt =='-')
 	    {
 	      rightfill = 1;
 	      fmt++;
 	    }
-	  
+
 	  p = (char *) fmt;
 	  /* Read formatting parameters.  */
 	  while (*p && grub_isdigit (*p))
@@ -600,6 +601,11 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	    }
 
 	  c = *fmt++;
+	  if (c == 'l')
+	    {
+	      longfmt = 1;
+	      c = *fmt++;
+	    }
 
 	  switch (c)
 	    {
@@ -610,7 +616,10 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	    case 'x':
 	    case 'u':
 	    case 'd':
-	      n = va_arg (args, int);
+	      if (longfmt)
+		n = va_arg (args, long);
+	      else
+		n = va_arg (args, int);
 	      grub_itoa (tmp, c, n);
 	      if (!rightfill && grub_strlen (tmp) < format1)
 		write_fill (zerofill, format1 - grub_strlen (tmp));
