@@ -236,7 +236,7 @@ class Program
 MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: #{objs_str}
-	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(#{prefix}_LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(#{prefix}_LDFLAGS)
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -245,11 +245,11 @@ MOSTLYCLEANFILES += #{deps_str}
       dir = File.dirname(src)
 
       "#{obj}: #{src}
-	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -c -o $@ $<
+	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<
 
 #{dep}: #{src}
 	set -e; \
-	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -M $< \
+	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) $(#{prefix}_CFLAGS) -M $< \
 	  | sed 's,#{Regexp.quote(fake_obj)}[ :]*,#{obj} $@ : ,g' > $@; \
 	  [ -s $@ ] || rm -f $@
 

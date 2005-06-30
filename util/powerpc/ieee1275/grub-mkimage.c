@@ -84,15 +84,16 @@ load_note (Elf32_Phdr *phdr, FILE *out)
   note.descriptor.load_base = grub_cpu_to_be32 (0x00004000);
 
   /* Write the note data to the new segment.  */
-  grub_util_write_image_at (&note, note_size, phdr->p_offset, out);
+  grub_util_write_image_at (&note, note_size,
+			    grub_be_to_cpu32 (phdr->p_offset), out);
 
   /* Fill in the rest of the segment header.  */
-  phdr->p_type = PT_NOTE;
-  phdr->p_flags = PF_R;
-  phdr->p_align = sizeof (long);
+  phdr->p_type = grub_cpu_to_be32 (PT_NOTE);
+  phdr->p_flags = grub_cpu_to_be32 (PF_R);
+  phdr->p_align = grub_cpu_to_be32 (sizeof (long));
   phdr->p_vaddr = 0;
   phdr->p_paddr = 0;
-  phdr->p_filesz = note_size;
+  phdr->p_filesz = grub_cpu_to_be32 (note_size);
   phdr->p_memsz = 0;
 }
 
@@ -120,9 +121,9 @@ load_modules (Elf32_Phdr *phdr, const char *dir, char *mods[], FILE *out)
 
   module_img = xmalloc (total_module_size);
   modinfo = (struct grub_module_info *) module_img;
-  modinfo->magic = GRUB_MODULE_MAGIC;
-  modinfo->offset = sizeof (struct grub_module_info);
-  modinfo->size = total_module_size;
+  modinfo->magic = grub_cpu_to_be32 (GRUB_MODULE_MAGIC);
+  modinfo->offset = grub_cpu_to_be32 (sizeof (struct grub_module_info));
+  modinfo->size = grub_cpu_to_be32 (total_module_size);
 
   /* Load all the modules, with headers, into module_img.  */
   for (p = path_list; p; p = p->next)
@@ -144,16 +145,17 @@ load_modules (Elf32_Phdr *phdr, const char *dir, char *mods[], FILE *out)
     }
 
   /* Write the module data to the new segment.  */
-  grub_util_write_image_at (module_img, total_module_size, phdr->p_offset, out);
+  grub_util_write_image_at (module_img, total_module_size,
+			    grub_cpu_to_be32 (phdr->p_offset), out);
 
   /* Fill in the rest of the segment header.  */
-  phdr->p_type = PT_LOAD;
-  phdr->p_flags = PF_R | PF_W | PF_X;
-  phdr->p_align = sizeof (long);
-  phdr->p_vaddr = GRUB_IEEE1275_MODULE_BASE;
-  phdr->p_paddr = GRUB_IEEE1275_MODULE_BASE;
-  phdr->p_filesz = total_module_size;
-  phdr->p_memsz = total_module_size;
+  phdr->p_type = grub_cpu_to_be32 (PT_LOAD);
+  phdr->p_flags = grub_cpu_to_be32 (PF_R | PF_W | PF_X);
+  phdr->p_align = grub_cpu_to_be32 (sizeof (long));
+  phdr->p_vaddr = grub_cpu_to_be32 (GRUB_IEEE1275_MODULE_BASE);
+  phdr->p_paddr = grub_cpu_to_be32 (GRUB_IEEE1275_MODULE_BASE);
+  phdr->p_filesz = grub_cpu_to_be32 (total_module_size);
+  phdr->p_memsz = grub_cpu_to_be32 (total_module_size);
 }
 
 void
@@ -170,27 +172,33 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   in = fopen (kernel_path, "rb");
   if (! in)
     grub_util_error ("cannot open %s", kernel_path);
+
   grub_util_read_at (&ehdr, sizeof (ehdr), 0, in);
-
-  phdrs = xmalloc (ehdr.e_phentsize * (ehdr.e_phnum + 2));
-
+  
+  phdrs = xmalloc (grub_be_to_cpu16 (ehdr.e_phentsize)
+		   * (grub_be_to_cpu16 (ehdr.e_phnum) + 2));
   /* Copy all existing segments.  */
-  for (i = 0; i < ehdr.e_phnum; i++)
+  for (i = 0; i < grub_be_to_cpu16 (ehdr.e_phnum); i++)
     {
       char *segment_img;
 
       phdr = phdrs + i;
 
       /* Read segment header.  */
-      grub_util_read_at (phdr, sizeof (Elf32_Phdr), (ehdr.e_phoff
-						     + (i * ehdr.e_phentsize)),
+      grub_util_read_at (phdr, sizeof (Elf32_Phdr),
+			 (grub_be_to_cpu32 (ehdr.e_phoff)
+			  + (i * grub_be_to_cpu16 (ehdr.e_phentsize))),
 			 in);
-      grub_util_info ("copying segment %d, type %d", i, phdr->p_type);
+      grub_util_info ("copying segment %d, type %d", i,
+		      grub_be_to_cpu32 (phdr->p_type));
 
       /* Read segment data and write it to new file.  */
-      segment_img = xmalloc (phdr->p_filesz);
-      grub_util_read_at (segment_img, phdr->p_filesz, phdr->p_offset, in);
-      grub_util_write_image_at (segment_img, phdr->p_filesz, phdr->p_offset, out);
+      segment_img = xmalloc (grub_be_to_cpu32 (phdr->p_filesz));
+  
+      grub_util_read_at (segment_img, grub_be_to_cpu32 (phdr->p_filesz),
+			 grub_be_to_cpu32 (phdr->p_offset), in);
+      grub_util_write_image_at (segment_img, grub_be_to_cpu32 (phdr->p_filesz),
+				grub_be_to_cpu32 (phdr->p_offset), out);
 
       free (segment_img);
     }
@@ -198,11 +206,12 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   if (mods[0] != NULL)
     {
       /* Construct new segment header for modules.  */
-      phdr = phdrs + ehdr.e_phnum;
-      ehdr.e_phnum++;
+      phdr = phdrs + grub_be_to_cpu16 (ehdr.e_phnum);
+      ehdr.e_phnum = grub_cpu_to_be16 (grub_be_to_cpu16 (ehdr.e_phnum) + 1);
 
       /* Fill in p_offset so the callees know where to write.  */
-      phdr->p_offset = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
+      phdr->p_offset = grub_cpu_to_be32 (ALIGN_UP (grub_util_get_fp_size (out),
+						   sizeof (long)));
 
       load_modules (phdr, dir, mods, out);
     }
@@ -210,11 +219,12 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   if (chrp)
     {
       /* Construct new segment header for the CHRP note.  */
-      phdr = phdrs + ehdr.e_phnum;
-      ehdr.e_phnum++;
+      phdr = phdrs + grub_be_to_cpu16 (ehdr.e_phnum);
+      ehdr.e_phnum = grub_cpu_to_be16 (grub_be_to_cpu16 (ehdr.e_phnum) + 1);
 
       /* Fill in p_offset so the callees know where to write.  */
-      phdr->p_offset = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
+      phdr->p_offset = grub_cpu_to_be32 (ALIGN_UP (grub_util_get_fp_size (out),
+						   sizeof (long)));
 
       load_note (phdr, out);
     }
@@ -226,11 +236,12 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
 
   /* Append entire segment table to the file.  */
   phdroff = ALIGN_UP (grub_util_get_fp_size (out), sizeof (long));
-  grub_util_write_image_at (phdrs, ehdr.e_phentsize * ehdr.e_phnum, phdroff,
+  grub_util_write_image_at (phdrs, grub_be_to_cpu16 (ehdr.e_phentsize)
+			    * grub_be_to_cpu16 (ehdr.e_phnum), phdroff,
 			    out);
 
   /* Write ELF header.  */
-  ehdr.e_phoff = phdroff;
+  ehdr.e_phoff = grub_cpu_to_be32 (phdroff);
   grub_util_write_image_at (&ehdr, sizeof (ehdr), 0, out);
 
   free (phdrs);

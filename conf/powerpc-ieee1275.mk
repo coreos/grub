@@ -499,197 +499,197 @@ CLEANFILES += grubof grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_iee
 MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_crt0.d grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-kern_partition.d grubof-kern_env.d grubof-kern_powerpc_dl.d grubof-grubof_symlist.d grubof-kern_powerpc_cache.d
 
 grubof: grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_powerpc_dl.o grubof-grubof_symlist.o grubof-kern_powerpc_cache.o
-	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grubof_LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(grubof_LDFLAGS)
 
 grubof-boot_powerpc_ieee1275_crt0.o: boot/powerpc/ieee1275/crt0.S
-	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-boot_powerpc_ieee1275_crt0.d: boot/powerpc/ieee1275/crt0.S
-	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,crt0\.o[ :]*,grubof-boot_powerpc_ieee1275_crt0.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,crt0\.o[ :]*,grubof-boot_powerpc_ieee1275_crt0.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-boot_powerpc_ieee1275_crt0.d
 
 grubof-boot_powerpc_ieee1275_cmain.o: boot/powerpc/ieee1275/cmain.c
-	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-boot_powerpc_ieee1275_cmain.d: boot/powerpc/ieee1275/cmain.c
-	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,cmain\.o[ :]*,grubof-boot_powerpc_ieee1275_cmain.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,cmain\.o[ :]*,grubof-boot_powerpc_ieee1275_cmain.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-boot_powerpc_ieee1275_cmain.d
 
 grubof-boot_powerpc_ieee1275_ieee1275.o: boot/powerpc/ieee1275/ieee1275.c
-	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-boot_powerpc_ieee1275_ieee1275.d: boot/powerpc/ieee1275/ieee1275.c
-	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,ieee1275\.o[ :]*,grubof-boot_powerpc_ieee1275_ieee1275.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ieee1275\.o[ :]*,grubof-boot_powerpc_ieee1275_ieee1275.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-boot_powerpc_ieee1275_ieee1275.d
 
 grubof-kern_main.o: kern/main.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_main.d: kern/main.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grubof-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grubof-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_main.d
 
 grubof-kern_device.o: kern/device.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_device.d: kern/device.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grubof-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grubof-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_device.d
 
 grubof-kern_disk.o: kern/disk.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_disk.d: kern/disk.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grubof-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grubof-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_disk.d
 
 grubof-kern_dl.o: kern/dl.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_dl.d: kern/dl.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,grubof-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,grubof-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_dl.d
 
 grubof-kern_file.o: kern/file.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_file.d: kern/file.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,grubof-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,grubof-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_file.d
 
 grubof-kern_fs.o: kern/fs.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_fs.d: kern/fs.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grubof-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grubof-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_fs.d
 
 grubof-kern_err.o: kern/err.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_err.d: kern/err.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grubof-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grubof-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_err.d
 
 grubof-kern_misc.o: kern/misc.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_misc.d: kern/misc.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grubof-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grubof-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_misc.d
 
 grubof-kern_mm.o: kern/mm.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_mm.d: kern/mm.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,mm\.o[ :]*,grubof-kern_mm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,mm\.o[ :]*,grubof-kern_mm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_mm.d
 
 grubof-kern_loader.o: kern/loader.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_loader.d: kern/loader.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,grubof-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,grubof-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_loader.d
 
 grubof-kern_rescue.o: kern/rescue.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_rescue.d: kern/rescue.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,grubof-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,grubof-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_rescue.d
 
 grubof-kern_term.o: kern/term.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_term.d: kern/term.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,grubof-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,grubof-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_term.d
 
 grubof-kern_powerpc_ieee1275_init.o: kern/powerpc/ieee1275/init.c
-	$(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_powerpc_ieee1275_init.d: kern/powerpc/ieee1275/init.c
-	set -e; 	  $(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,init\.o[ :]*,grubof-kern_powerpc_ieee1275_init.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,init\.o[ :]*,grubof-kern_powerpc_ieee1275_init.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_powerpc_ieee1275_init.d
 
 grubof-term_powerpc_ieee1275_ofconsole.o: term/powerpc/ieee1275/ofconsole.c
-	$(CC) -Iterm/powerpc/ieee1275 -I$(srcdir)/term/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Iterm/powerpc/ieee1275 -I$(srcdir)/term/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-term_powerpc_ieee1275_ofconsole.d: term/powerpc/ieee1275/ofconsole.c
-	set -e; 	  $(CC) -Iterm/powerpc/ieee1275 -I$(srcdir)/term/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,ofconsole\.o[ :]*,grubof-term_powerpc_ieee1275_ofconsole.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Iterm/powerpc/ieee1275 -I$(srcdir)/term/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ofconsole\.o[ :]*,grubof-term_powerpc_ieee1275_ofconsole.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-term_powerpc_ieee1275_ofconsole.d
 
 grubof-kern_powerpc_ieee1275_openfw.o: kern/powerpc/ieee1275/openfw.c
-	$(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_powerpc_ieee1275_openfw.d: kern/powerpc/ieee1275/openfw.c
-	set -e; 	  $(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,openfw\.o[ :]*,grubof-kern_powerpc_ieee1275_openfw.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,openfw\.o[ :]*,grubof-kern_powerpc_ieee1275_openfw.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_powerpc_ieee1275_openfw.d
 
 grubof-disk_powerpc_ieee1275_ofdisk.o: disk/powerpc/ieee1275/ofdisk.c
-	$(CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-disk_powerpc_ieee1275_ofdisk.d: disk/powerpc/ieee1275/ofdisk.c
-	set -e; 	  $(CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,ofdisk\.o[ :]*,grubof-disk_powerpc_ieee1275_ofdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ofdisk\.o[ :]*,grubof-disk_powerpc_ieee1275_ofdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-disk_powerpc_ieee1275_ofdisk.d
 
 grubof-kern_partition.o: kern/partition.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_partition.d: kern/partition.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grubof-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grubof-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_partition.d
 
 grubof-kern_env.o: kern/env.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_env.d: kern/env.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grubof-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grubof-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_env.d
 
 grubof-kern_powerpc_dl.o: kern/powerpc/dl.c
-	$(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_powerpc_dl.d: kern/powerpc/dl.c
-	set -e; 	  $(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,grubof-kern_powerpc_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,grubof-kern_powerpc_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_powerpc_dl.d
 
 grubof-grubof_symlist.o: grubof_symlist.c
-	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-grubof_symlist.d: grubof_symlist.c
-	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,grubof_symlist\.o[ :]*,grubof-grubof_symlist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,grubof_symlist\.o[ :]*,grubof-grubof_symlist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-grubof_symlist.d
 
 grubof-kern_powerpc_cache.o: kern/powerpc/cache.S
-	$(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -c -o $@ $<
+	$(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
 grubof-kern_powerpc_cache.d: kern/powerpc/cache.S
-	set -e; 	  $(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grubof_CFLAGS) -M $< 	  | sed 's,cache\.o[ :]*,grubof-kern_powerpc_cache.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,cache\.o[ :]*,grubof-kern_powerpc_cache.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_powerpc_cache.d
 

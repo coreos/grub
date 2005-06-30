@@ -1,3 +1,15 @@
+2005-06-30  Marco Gerards  <metgerards@student.han.nl>
+
+	* configure.ac: Fix the test for cross-compiling.
+
+	* genmk.rb (Program): Use `$(CC)' instead of `$(BUILD_CC)'.  Don't
+	define GRUB_UTIL anymore.
+
+	* util/powerpc/ieee1275/grub-mkimage.c (load_note): Endian fixes
+	so this function works on other systems than just big endian.
+	(load_modules): Likewise.
+	(add_segments): Likewise.
+
 2005-06-23  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/misc.c (grub_vsprintf): Add `longfmt'.  If format string

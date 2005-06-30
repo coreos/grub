@@ -109,7 +109,7 @@ AC_CHECK_TOOL(LD, ld)
 AC_PATH_PROG(RUBY, ruby)
 
 # For cross-compiling.
-if test "x$build" = "x$host"; then
+if test "x$build" != "x$host"; then
   AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc],
 		 [AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])])
 else
