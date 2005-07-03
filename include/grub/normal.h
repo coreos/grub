@@ -137,6 +137,14 @@ struct grub_context
 };
 typedef struct grub_context *grub_context_t;
 
+/* This is used to store the names of filesystem modules for auto-loading.  */
+struct grub_fs_module_list
+{
+  char *name;
+  struct grub_fs_module_list *next;
+};
+typedef struct grub_fs_module_list *grub_fs_module_list_t;
+
 /* To exit from the normal mode.  */
 extern grub_jmp_buf grub_exit_env;
 

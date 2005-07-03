@@ -1,3 +1,25 @@
+2005-07-03  Yoshinori Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added genfslist.sh.
+
+	* normal/main.c (fs_module_list): New variable.
+	(autoload_fs_module): New function.
+	(read_fs_list): Likewise.
+	(grub_normal_execute): Call read_fs_list.
+
+	* kern/fs.c (grub_fs_autoload_hook): New variable.
+	(grub_fs_probe): Added support for auto-loading.
+
+	* include/grub/normal.h (struct grub_fs_module_list): New struct.
+	(grub_fs_module_list_t): New type.
+
+	* include/grub/fs.h (grub_fs_autoload_hook_t): New type.
+	(grub_fs_autoload_hook): New prototype.
+
+	* genfslist.sh: New file.
+	
+	* genmk.rb: Added a rule to generate a filesystem list.
+
 2005-06-30  Marco Gerards  <metgerards@student.han.nl>
 
 	* configure.ac: Fix the test for cross-compiling.

@@ -142,6 +142,7 @@ UNDSYMFILES += #{undsym}
       src = sources[i]
       fake_obj = File.basename(src).suffix('o')
       command = 'cmd-' + fake_obj.suffix('lst')
+      fs = 'fs-' + fake_obj.suffix('lst')
       dep = deps[i]
       flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
       dir = File.dirname(src)
@@ -157,13 +158,20 @@ UNDSYMFILES += #{undsym}
 
 -include #{dep}
 
-CLEANFILES += #{command}
+CLEANFILES += #{command} #{fs}
 COMMANDFILES += #{command}
+FSFILES += #{fs}
 
 #{command}: #{src} gencmdlist.sh
 	set -e; \
 	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/gencmdlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
+
+#{fs}: #{src} genfslist.sh
+	set -e; \
+	  $(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  | sh $(srcdir)/genfslist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
+
 
 "
     end.join('')
@@ -325,11 +333,14 @@ while l = gets
   
 end
 
-puts "CLEANFILES += moddep.lst command.lst"
-puts "pkgdata_DATA += moddep.lst command.lst"
+puts "CLEANFILES += moddep.lst command.lst fs.lst"
+puts "pkgdata_DATA += moddep.lst command.lst fs.lst"
 puts "moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep"
 puts "	cat $(DEFSYMFILES) /dev/null | ./genmoddep $(UNDSYMFILES) > $@ \\"
 puts "	  || (rm -f $@; exit 1)"
 puts ""
 puts "command.lst: $(COMMANDFILES)"
+puts "	cat $^ /dev/null | sort > $@"
+puts ""
+puts "fs.lst: $(FSFILES)"
 puts "	cat $^ /dev/null | sort > $@"

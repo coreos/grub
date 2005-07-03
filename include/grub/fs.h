@@ -60,6 +60,13 @@ typedef struct grub_fs *grub_fs_t;
 /* This is special, because block lists are not files in usual sense.  */
 extern struct grub_fs grub_fs_blocklist;
 
+/* This hook is used to automatically load filesystem modules.
+   If this hook loads a module, return non-zero. Otherwise return zero.
+   The newly loaded filesystem is assumed to be inserted into the head of
+   the linked list GRUB_FS_LIST through the function grub_fs_register.  */
+typedef int (*grub_fs_autoload_hook_t) (void);
+extern grub_fs_autoload_hook_t EXPORT_VAR(grub_fs_autoload_hook);
+
 void EXPORT_FUNC(grub_fs_register) (grub_fs_t fs);
 void EXPORT_FUNC(grub_fs_unregister) (grub_fs_t fs);
 void EXPORT_FUNC(grub_fs_iterate) (int (*hook) (const grub_fs_t fs));

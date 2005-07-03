@@ -30,6 +30,8 @@
 
 grub_jmp_buf grub_exit_env;
 
+static grub_fs_module_list_t fs_module_list = 0;
+
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 /* Read a line from the file FILE.  */
@@ -367,6 +369,93 @@ read_command_list (void)
   grub_errno = GRUB_ERR_NONE;
 }
 
+/* The auto-loading hook for filesystems.  */
+static int
+autoload_fs_module (void)
+{
+  grub_fs_module_list_t p;
+
+  while ((p = fs_module_list) != 0)
+    {
+      if (! grub_dl_get (p->name) && grub_dl_load (p->name))
+	return 1;
+
+      fs_module_list = p->next;
+      grub_free (p->name);
+      grub_free (p);
+    }
+
+  return 0;
+}
+
+/* Read the file fs.lst for auto-loading.  */
+static void
+read_fs_list (void)
+{
+  const char *prefix;
+  
+  prefix = grub_env_get ("prefix");
+  if (prefix)
+    {
+      char *filename;
+
+      filename = grub_malloc (grub_strlen (prefix) + sizeof ("/fs.lst"));
+      if (filename)
+	{
+	  grub_file_t file;
+	  
+	  grub_sprintf (filename, "%s/fs.lst", prefix);
+	  file = grub_file_open (filename);
+	  if (file)
+	    {
+	      char buf[80]; /* XXX arbitrary */
+
+	      while (get_line (file, buf, sizeof (buf)))
+		{
+		  char *p = buf;
+		  char *q = buf + grub_strlen (buf) - 1;
+		  grub_fs_module_list_t fs_mod;
+		  
+		  /* Ignore space.  */
+		  while (grub_isspace (*p))
+		    p++;
+
+		  while (p < q && grub_isspace (*q))
+		    *q-- = '\0';
+
+		  /* If the line is empty, skip it.  */
+		  if (p >= q)
+		    continue;
+
+		  fs_mod = grub_malloc (sizeof (*fs_mod));
+		  if (! fs_mod)
+		    continue;
+
+		  fs_mod->name = grub_strdup (p);
+		  if (! fs_mod->name)
+		    {
+		      grub_free (fs_mod);
+		      continue;
+		    }
+
+		  fs_mod->next = fs_module_list;
+		  fs_module_list = fs_mod;
+		}
+
+	      grub_file_close (file);
+	    }
+
+	  grub_free (filename);
+	}
+    }
+
+  /* Ignore errors.  */
+  grub_errno = GRUB_ERR_NONE;
+
+  /* Set the hook.  */
+  grub_fs_autoload_hook = autoload_fs_module;
+}
+
 /* Read the config file CONFIG and execute the menu interface or
    the command-line interface.  */
 void
@@ -383,6 +472,7 @@ grub_normal_execute (const char *config, int nested)
     }
 
   read_command_list ();
+  read_fs_list ();
   
   if (menu)
     {

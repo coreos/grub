@@ -17,6 +17,7 @@ configure
 configure.ac
 gencmdlist.sh
 gendistlist.sh
+genfslist.sh
 genkernsyms.sh
 genmk.rb
 genmodsrc.sh

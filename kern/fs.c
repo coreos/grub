@@ -1,7 +1,7 @@
 /* fs.c - filesystem manager */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@
 #include <grub/term.h>
 
 static grub_fs_t grub_fs_list;
+
+grub_fs_autoload_hook_t grub_fs_autoload_hook = 0;
 
 void
 grub_fs_register (grub_fs_t fs)
@@ -74,6 +76,9 @@ grub_fs_probe (grub_device_t device)
 
   if (device->disk)
     {
+      /* Make it sure not to have an infinite recursive calls.  */
+      static int count = 0;
+      
       for (p = grub_fs_list; p; p = p->next)
 	{
 	  (p->dir) (device, "/", dummy_func);
@@ -84,6 +89,34 @@ grub_fs_probe (grub_device_t device)
 	    return 0;
 	  
 	  grub_errno = GRUB_ERR_NONE;
+	}
+
+      /* Let's load modules automatically.  */
+      if (grub_fs_autoload_hook && count == 0)
+	{
+	  count++;
+	  
+	  while (grub_fs_autoload_hook ())
+	    {
+	      p = grub_fs_list;
+	      
+	      (p->dir) (device, "/", dummy_func);
+	      if (grub_errno == GRUB_ERR_NONE)
+		{
+		  count--;
+		  return p;
+		}
+	      
+	      if (grub_errno != GRUB_ERR_BAD_FS)
+		{
+		  count--;
+		  return 0;
+		}
+	      
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+
+	  count--;
 	}
     }
   else if (device->net->fs)
