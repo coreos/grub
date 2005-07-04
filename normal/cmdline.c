@@ -717,6 +717,8 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 	      lpos--;
 	      cl_set_pos ();
 	    }
+          else
+            break;
 	  /* fall through */
 	  
 	case 4:	/* Ctrl-d */
