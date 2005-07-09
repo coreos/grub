@@ -1,3 +1,8 @@
+2005-07-09  Yoshinori Okuji  <okuji@enbug.org>
+
+	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): The return value was
+	reverse.
+
 2004-07-04  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* normal/cmdline.c (grub_cmdline_get): Don't fallback on ctrl-d

@@ -313,7 +313,7 @@ main ()
     }
   
   p = &test;
-  return nestedfunc (0, 0, 0);
+  return ! nestedfunc (0, 0, 0);
 }
 ]])],
 	[grub_cv_i386_check_nested_functions=yes],
