@@ -23,13 +23,21 @@
 #include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/file.h>
+#include <grub/mm.h>
+
+#define BUFFER_SIZE 512
 
 static grub_err_t
 grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
 	      int argc, char **args)
 {
-  grub_file_t file1;
-  grub_file_t file2;
+  grub_err_t err;
+  grub_ssize_t rd1, rd2;
+  grub_uint32_t pos;
+  grub_file_t file1 = 0;
+  grub_file_t file2 = 0;
+  char *buf1 = 0;
+  char *buf2 = 0;
 
   if (argc != 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments required");
@@ -37,16 +45,9 @@ grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
   grub_printf ("Compare `%s' and `%s':\n", args[0],
 	       args[1]);
 
-  file1 = grub_file_open (args[0]);
-  if (! file1)
-    return grub_errno;
-
-  file2 = grub_file_open (args[1]);
-  if (! file2)
-    {
-      grub_file_close (file2);
-      return grub_errno;
-    }
+  if (! (file1 = grub_file_open (args[0]) ) ||
+      ! (file2 = grub_file_open (args[1]) ) )
+    goto cleanup;
 
   if (grub_file_size (file1) != grub_file_size (file2))
     grub_printf ("Differ in size: %d [%s], %d [%s]\n", 
@@ -55,44 +56,48 @@ grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
   
   else
     {
-      char buf1[512];
-      char buf2[512];
-      grub_ssize_t rd1, rd2;
-      grub_uint32_t pos = 0;
-     
+      pos = 0;
+
+      if (! (buf1 = (char *) grub_malloc (BUFFER_SIZE) ) ||
+          ! (buf2 = (char *) grub_malloc (BUFFER_SIZE) ) )
+        goto cleanup;
       do
 	{
 	  int i;
-	  rd1 = grub_file_read (file1, buf1, 512);
-	  rd2 = grub_file_read (file2, buf2, 512);
+	  rd1 = grub_file_read (file1, buf1, BUFFER_SIZE);
+	  rd2 = grub_file_read (file2, buf2, BUFFER_SIZE);
 
 	  if (rd1 != rd2)
-	    return 0;
+	    goto cleanup;
 
-	  for (i = 0; i < 512; i++)
+	  for (i = 0; i < rd2; i++)
 	    {
 	      if (buf1[i] != buf2[i])
 		{
 		  grub_printf ("Differ at the offset %d: 0x%x [%s], 0x%x [%s]\n",
 			       i + pos, buf1[i], args[0],
 			       buf2[i], args[1]);
-
-		  grub_file_close (file1);
-		  grub_file_close (file2);
-		  return 0;
+		  goto cleanup;
 		}
 	    }
-	  pos += 512;
+	  pos += BUFFER_SIZE;
 	  
 	} while (rd2);
+      grub_printf ("The files are identical.\n");
     }
 
-  grub_file_close (file1);
-  grub_file_close (file2);
+cleanup:
+  err=grub_errno;
+  if (buf1)
+    grub_free (buf1);
+  if (buf2)
+    grub_free (buf2);
+  if (file1)
+    grub_file_close (file1);
+  if (file2)
+    grub_file_close (file2);
 
-  grub_printf ("The files are identical.\n");
-
-  return 0;
+  return err;
 }
 
 

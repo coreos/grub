@@ -1,3 +1,11 @@
+2005-07-09  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* commands/cmp.c (BUFFER_SIZE): New macro.
+	(grub_cmd_cmp): Close the right file at the right time.  Compare
+	only data just read.  Don't report files of different  size as
+	identical.  Dynamically allocate buffers.  Move variable
+	declarations at the beginning of function.
+
 2005-07-09  Yoshinori Okuji  <okuji@enbug.org>
 
 	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): The return value was
