@@ -1,7 +1,7 @@
 /* ls.c - command to list files and devices */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -189,7 +189,7 @@ grub_ls_list_files (const char *dirname, int longlist, int all, int human)
       goto fail;
     }
       
-  if (! path)
+  if (! *path)
     {
       if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	grub_errno = GRUB_ERR_NONE;
@@ -228,7 +228,7 @@ grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
     }
 
   if (argc == 0)
-  grub_ls_list_disks (state[0].set);
+    grub_ls_list_disks (state[0].set);
   else
     grub_ls_list_files (args[0], state[0].set, state[2].set,
 			state[1].set);

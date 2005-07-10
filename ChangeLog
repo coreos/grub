@@ -1,3 +1,8 @@
+2005-07-10  Yoshinori Okuji  <okuji@enbug.org>
+
+	* commands/ls.c (grub_ls_list_files): Check if *PATH is NUL
+	instead of PATH is NULL.
+
 2005-07-09  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* commands/cmp.c (BUFFER_SIZE): New macro.
