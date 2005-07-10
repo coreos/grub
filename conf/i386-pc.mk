@@ -269,7 +269,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) genkernsyms.sh
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-setup grub-emu
+sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap
 noinst_UTILITIES = genmoddep
 
 # For grub-mkimage.
@@ -504,7 +504,32 @@ grub_setup-fs_fshelp.d: fs/fshelp.c
 -include grub_setup-fs_fshelp.d
 
 
-# For grub_emu.
+# For grub-mkdevicemap.
+grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
+CLEANFILES += grub-mkdevicemap grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o
+MOSTLYCLEANFILES += grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.d grub_mkdevicemap-util_misc.d
+
+grub-mkdevicemap: grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_mkdevicemap_LDFLAGS)
+
+grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o: util/i386/pc/grub-mkdevicemap.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -c -o $@ $<
+
+grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.d: util/i386/pc/grub-mkdevicemap.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -M $< 	  | sed 's,grub\-mkdevicemap\.o[ :]*,grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.d
+
+grub_mkdevicemap-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -c -o $@ $<
+
+grub_mkdevicemap-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_mkdevicemap-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_mkdevicemap-util_misc.d
+
+
+# For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/default.c commands/help.c	\
 	commands/terminal.c commands/ls.c commands/timeout.c		\

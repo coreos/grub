@@ -1,5 +1,15 @@
 2005-07-10  Yoshinori Okuji  <okuji@enbug.org>
 
+	* DISTLIST: Added util/i386/pc/grub-mkimage.c.
+
+	* conf/i386-pc.rmk (sbin_UTILITIES): Added grub-mkdevicemap.
+	(grub_mkdevicemap_SOURCES): New variable.
+
+	* util/i386/pc/grub-mkdevicemap.c: New file. Mostly copied from
+	lib/device.c of GRUB Legacy.
+
+2005-07-10  Yoshinori Okuji  <okuji@enbug.org>
+
 	* commands/ls.c (grub_ls_list_files): Check if *PATH is NUL
 	instead of PATH is NULL.
 
