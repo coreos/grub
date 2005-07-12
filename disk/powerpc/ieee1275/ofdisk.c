@@ -63,13 +63,17 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
     grub_strcat (devpath, ":0");
 
+  grub_dprintf ("disk", "Opening `%s'.\n", devpath);
+
   grub_ieee1275_open (devpath, &dev_ihandle);
   if (! dev_ihandle)
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
       goto fail;
     }
-  
+
+  grub_dprintf ("disk", "Opened `%s' as handle 0x%x.\n", devpath, dev_ihandle);
+
   if (grub_ieee1275_finddevice (devpath, &dev))
     {
       grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't read device properties");
@@ -112,6 +116,8 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 static void
 grub_ofdisk_close (grub_disk_t disk)
 {
+  grub_dprintf ("disk", "Closing handle 0x%x.\n",
+		(grub_ieee1275_ihandle_t) disk->data);
   grub_ieee1275_close ((grub_ieee1275_ihandle_t) disk->data);
 }
 
@@ -122,6 +128,10 @@ grub_ofdisk_read (grub_disk_t disk, unsigned long sector,
   int status;
   int actual;
   unsigned long long pos;
+
+  grub_dprintf ("disk",
+		"Reading handle 0x%x: sector 0x%lx, size 0x%lx, buf %p.\n",
+		(grub_ieee1275_ihandle_t) disk->data, sector, size, buf);
 
   pos = (unsigned long long) sector * 512UL;
 

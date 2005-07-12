@@ -1,3 +1,18 @@
+2005-07-12  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_open): dprintf the
+	device path and resulting ihandle.
+	(grub_ofdisk_close): dprintf the ihandle being closed.
+	(grub_ofdisk_read): dprintf function parameters.
+	* kern/mm.c (grub_mm_init_region): Likewise.
+	* loader/powerpc/ieee1275/linux.c: Remove extra whitespace.
+	(grub_linux_boot): dprintf the Linux entry point, initrd address and
+	size, and boot arguments.
+	(grub_rescue_cmd_linux): dprintf each ELF segment's address and size
+	before loading into memory.
+	(grub_rescue_cmd_initrd): dprintf the initrd's address and size
+	before loading into memory.
+
 2005-07-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/mm.c: Added much documentation.

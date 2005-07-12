@@ -137,10 +137,8 @@ grub_mm_init_region (void *addr, grub_size_t size)
   grub_mm_header_t h;
   grub_mm_region_t r, *p, q;
 
-#if 0
-  grub_printf ("%s:%d: addr=%p, size=%u\n", __FILE__, __LINE__, addr, size);
-#endif
-  
+  grub_dprintf ("mem", "Using memory for heap: addr=%p, size=%u\n", addr, size);
+
   /* If this region is too small, ignore it.  */
   if (size < GRUB_MM_ALIGN * 2)
     return;

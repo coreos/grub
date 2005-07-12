@@ -135,6 +135,10 @@ pc_partition_map_iterate (grub_disk_t disk,
 	  pcdata.dos_type = e->type;
 	  pcdata.bsd_type = -1;
 
+	  grub_dprintf ("partition",
+			"partition %d: flag 0x%x, type 0x%x, start 0x%lx, len 0x%lx\n",
+			p.index, e->flag, pcdata.dos_type, p.start, p.len);
+
 	  /* If this partition is a normal one, call the hook.  */
 	  if (! grub_pc_partition_is_empty (e->type)
 	      && ! grub_pc_partition_is_extended (e->type))
