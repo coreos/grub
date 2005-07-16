@@ -1,3 +1,12 @@
+2005-07-16  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/i386/pc/startup.S (grub_gate_a20): Rewritten for
+	robustness. This routine now supports a BIOS call and System
+	Control Port A to modify the gate A20.
+
+	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_RAW_SIZE):
+	Increased to 0x440.
+
 2005-07-12  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* disk/powerpc/ieee1275/ofdisk.c (grub_ofdisk_open): dprintf the

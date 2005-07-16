@@ -125,7 +125,7 @@ codestart:
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
-
+	
 	/* transition to protected mode */
 	DATA32	call real_to_prot
 
@@ -134,7 +134,7 @@ codestart:
 
 	incl	%eax
 	call	EXT_C(grub_gate_a20)
-
+	
 	/* decompress the compressed part and put the result at 1MB */
 	movl	$0x100000, %esi
 	movl	$(START_SYMBOL + GRUB_KERNEL_MACHINE_RAW_SIZE), %edi
@@ -384,51 +384,132 @@ realcseg:
  */
 
 FUNCTION(grub_gate_a20)
-	movl	%eax, %ecx
+	movl	%eax, %edx
 
-	call    gloop1
+gate_a20_test_current_state:	
+	/* first of all, test if already in a good state */
+	call	gate_a20_check_state
+	cmpb	%al, %dl
+	jnz	gate_a20_try_bios
+	ret
+
+gate_a20_try_bios:
+	/* second, try a BIOS call */
+	pushl	%ebp
+	call	EXT_C(prot_to_real)
+
+	.code16
+	movw	$0x2400, %ax
+	testb	%dl, %dl
+	jz	1f
+	incw	%ax
+1:	int	$0x15
+
+	DATA32	call	EXT_C(real_to_prot)
+	.code32
+
+	popl	%ebp
+	call	gate_a20_check_state
+	cmpb	%al, %dl
+	jnz	gate_a20_try_keyboard_controller
+	ret
+
+gate_a20_flush_keyboard_buffer:
+	inb	$0x64
+	andb	$0x02, %al
+	jnz	gate_a20_flush_keyboard_buffer
+2:	
+	inb	$0x64
+	andb	$0x01, %al
+	jz	3f
+	inb	$0x60
+	jmp	2b
+3:
+	ret
+	
+gate_a20_try_keyboard_controller:	
+	/* third, try the keyboard controller */
+	call    gate_a20_flush_keyboard_buffer
 
 	movb	$0xd1, %al
 	outb	$0x64
-
-gloopint1:
+4:	
 	inb	$0x64
 	andb	$0x02, %al
-	jnz	gloopint1
+	jnz	4b
 
 	movb	$0xdd, %al
-	testl	%ecx, %ecx
-	jz	gdoit
-
+	testb	%dl, %dl
+	jz	5f
 	orb	$0x02, %al
-gdoit:
-	outb	$0x60
-
-	call	gloop1
+5:	outb	$0x60
+	call    gate_a20_flush_keyboard_buffer
 
 	/* output a dummy command (USB keyboard hack) */
 	movb	$0xff, %al
 	outb	$0x64
-	call	gloop1
+	call    gate_a20_flush_keyboard_buffer
 	
+	call	gate_a20_check_state
+	cmpb	%al, %dl
+	jnz	gate_a20_try_system_control_port_a
 	ret
 
-gloop1:
-	inb	$0x64
-	andb	$0x02, %al
-	jnz	gloop1
-
-gloop2:
-	inb	$0x64
-	andb	$0x01, %al
-	jz	gloop2ret
-	inb	$0x60
-	jmp	gloop2
-
-gloop2ret:
+gate_a20_try_system_control_port_a:
+	/* fourth, try the system control port A */
+	inb	$0x92
+	andb	$(~0x03), %al
+	testb	%dl, %dl
+	jz	6f
+	orb	$0x02, %al
+6:	outb	$0x92
+	
+	call	gate_a20_check_state
+	cmpb	%al, %dl
+	/* everything failed, so restart from the beginning */
+	jnz	gate_a20_try_bios
 	ret
-
-
+	
+gate_a20_check_state:
+	/* iterate the checking for a while */
+	movl	$100, %ecx
+1:	
+	call	3f
+	cmpb	%al, %dl
+	jz	2f
+	loop	1b
+2:
+	ret
+3:	
+	pushl	%ebx
+	pushl	%ecx
+	xorl	%eax, %eax
+	/* compare the byte at 0x2000 with that at 0x102000 */
+	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %ebx
+	pushl	%ebx
+	/* save the original byte in CL */
+	movb	(%ebx), %cl
+	/* store the value at 0x102000 in AL */
+	addl	$0x100000, %ebx
+	movb	(%ebx), %al
+	/* try to set one less value at 0x2000 */
+	popl	%ebx
+	movb	%al, %ch
+	decb	%ch
+	movb	%ch, (%ebx)
+	/* serialize */
+	outb	$0x80
+	outb	$0x80
+	/* store the value at 0x2000 in CH */
+	movb	(%ebx), %ch
+	/* this result is 1 if A20 is on or 0 if it is off */
+	subb	%ch, %al
+	/* restore the original */
+	movb	%cl, (%ebx)
+	popl	%ecx
+	popl	%ebx
+	ret
+	
 #include "lzo1x.S"
 
 

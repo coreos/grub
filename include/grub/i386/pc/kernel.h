@@ -39,7 +39,7 @@
 #define GRUB_KERNEL_MACHINE_PREFIX		0x1c
 
 /* The size of the first region which won't be compressed.  */
-#define GRUB_KERNEL_MACHINE_RAW_SIZE		0x400
+#define GRUB_KERNEL_MACHINE_RAW_SIZE		0x440
 
 #ifndef ASM_FILE
 
