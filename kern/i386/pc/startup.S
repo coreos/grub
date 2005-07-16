@@ -396,7 +396,7 @@ gate_a20_test_current_state:
 gate_a20_try_bios:
 	/* second, try a BIOS call */
 	pushl	%ebp
-	call	EXT_C(prot_to_real)
+	call	prot_to_real
 
 	.code16
 	movw	$0x2400, %ax
@@ -405,7 +405,7 @@ gate_a20_try_bios:
 	incw	%ax
 1:	int	$0x15
 
-	DATA32	call	EXT_C(real_to_prot)
+	DATA32	call	real_to_prot
 	.code32
 
 	popl	%ebp
@@ -413,7 +413,7 @@ gate_a20_try_bios:
 	cmpb	%al, %dl
 	jnz	gate_a20_try_keyboard_controller
 	ret
-
+	
 gate_a20_flush_keyboard_buffer:
 	inb	$0x64
 	andb	$0x02, %al
@@ -449,7 +449,7 @@ gate_a20_try_keyboard_controller:
 	movb	$0xff, %al
 	outb	$0x64
 	call    gate_a20_flush_keyboard_buffer
-	
+
 	call	gate_a20_check_state
 	cmpb	%al, %dl
 	jnz	gate_a20_try_system_control_port_a
@@ -484,32 +484,36 @@ gate_a20_check_state:
 	pushl	%ebx
 	pushl	%ecx
 	xorl	%eax, %eax
-	/* compare the byte at 0x2000 with that at 0x102000 */
+	/* compare the byte at 0x8000 with that at 0x108000 */
 	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %ebx
 	pushl	%ebx
 	/* save the original byte in CL */
 	movb	(%ebx), %cl
-	/* store the value at 0x102000 in AL */
+	/* store the value at 0x108000 in AL */
 	addl	$0x100000, %ebx
 	movb	(%ebx), %al
-	/* try to set one less value at 0x2000 */
+	/* try to set one less value at 0x8000 */
 	popl	%ebx
 	movb	%al, %ch
 	decb	%ch
 	movb	%ch, (%ebx)
 	/* serialize */
-	outb	$0x80
-	outb	$0x80
-	/* store the value at 0x2000 in CH */
+	outb	%al, $0x80
+	outb	%al, $0x80
+	/* obtain the value at 0x108000 in CH */
+	pushl	%ebx
+	addl	$0x100000, %ebx
 	movb	(%ebx), %ch
 	/* this result is 1 if A20 is on or 0 if it is off */
 	subb	%ch, %al
+	xorb	$1, %al
 	/* restore the original */
+	popl	%ebx
 	movb	%cl, (%ebx)
 	popl	%ecx
 	popl	%ebx
 	ret
-	
+
 #include "lzo1x.S"
 
 

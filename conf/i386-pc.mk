@@ -48,7 +48,7 @@ pxeboot_img-boot_i386_pc_pxeboot.d: boot/i386/pc/pxeboot.S
 -include pxeboot_img-boot_i386_pc_pxeboot.d
 
 pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-pxeboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8000
+pxeboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
 
 # For diskboot.img.
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S

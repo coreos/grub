@@ -1,7 +1,6 @@
-/* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2004   Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2005   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,26 +17,20 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/boot.h>
-#include <grub/machine/boot.h>
+	.file	"pxeboot.S"
+	.text
 
-/*
-*  defines for the code go here
-*/
-
-       .file   "pxeboot.S"
-
-       .text
-
-       /* Tell GAS to generate 16-bit instructions so that this code works
-          in real mode. */
-       .code16
-
+	/* Start with the prehistoric environment... */
+	.code16
+	
+	/* Let's go */
 .globl _start; _start:
-       /*
-        * _start is loaded at 0x7c00 and is jumped to with CS:IP 0:0x7c00
-        */
-       ljmp    $0, $0x8200
 
-       . = 0x8000 - 0x7C00 -1
-       .byte 0
+	/* Jump to the real world */
+	ljmp	$0, $0x8200
+
+	/* This region is a junk. Do you say that this is wasteful?
+	   But I like that the memory layout of the body is consistent
+	   among different kernels rather than scamping just for 1.5KB. */
+	. = _start + 0x8200 - 0x7C00 - 0x200 - 1
+	.byte	0

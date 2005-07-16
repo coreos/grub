@@ -1,3 +1,15 @@
+2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
+
+	* conf/i386-pc.rmk (pxeboot_img_LDFLAGS): The text address should
+	be 0x7C00 instead of 0x8000.
+
+	* boot/i386/pc/pxeboot.S: Rewritten.
+
+	* kern/i386/pc/startup.S (gate_a20_try_bios): No need to specify
+	EXT_C.
+	(gate_a20_check_state): Read a byte from 0x108000. Invert the
+	result.
+
 2005-07-16  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/i386/pc/startup.S (grub_gate_a20): Rewritten for
