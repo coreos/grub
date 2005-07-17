@@ -1,5 +1,11 @@
 2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
 
+	* kern/i386/pc/startup.S (gate_a20_try_system_control_port_a):
+	When turning off Gate A20, skip the check and return immediately,
+	because this is not fatal usually.
+
+2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
+
 	* conf/i386-pc.rmk (pxeboot_img_LDFLAGS): The text address should
 	be 0x7C00 instead of 0x8000.
 

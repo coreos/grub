@@ -463,12 +463,17 @@ gate_a20_try_system_control_port_a:
 	jz	6f
 	orb	$0x02, %al
 6:	outb	$0x92
-	
+
+	/* When turning off Gate A20, do not check the state strictly,
+	   because a failure is not fatal usually, and Gate A20 is always
+	   on some modern machines.  */
+	testb	%dl, %dl
+	jz	7f	
 	call	gate_a20_check_state
 	cmpb	%al, %dl
 	/* everything failed, so restart from the beginning */
 	jnz	gate_a20_try_bios
-	ret
+7:	ret
 	
 gate_a20_check_state:
 	/* iterate the checking for a while */
