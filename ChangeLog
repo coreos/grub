@@ -1,5 +1,15 @@
 2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
 
+	* boot/i386/pc/boot.S (boot_drive_check): New label.
+
+	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_DRIVE_CHECK): New
+	macro.
+
+	* util/i386/pc/grub-setup.c (setup): Added a workaround for BIOSes
+	which do not pass a boot drive correctly. Copied from GRUB Legacy.
+
+2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
+
 	* kern/i386/pc/startup.S (gate_a20_try_system_control_port_a):
 	When turning off Gate A20, skip the check and return immediately,
 	because this is not fatal usually.

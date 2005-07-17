@@ -1,7 +1,7 @@
 /* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2005   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -108,6 +108,21 @@ after_BPB:
 /* general setup */
 	cli		/* we're not safe here! */
 
+        /*
+         * This is a workaround for buggy BIOSes which don't pass boot
+         * drive correctly. If GRUB is installed into a HDD, check if
+         * DL is masked correctly. If not, assume that the BIOS passed
+         * a bogus value and set DL to 0x80, since this is the only
+         * possible boot drive. If GRUB is installed into a floppy,
+         * this does nothing (only jump).
+         */
+boot_drive_check:
+        jmp     1f
+        testb   $0x80, %dl
+        jnz     1f
+        movb    $0x80, %dl
+1:
+	
 	/*
 	 * ljmp to the next instruction because some bogus BIOSes
 	 * jump to 07C0:0000 instead of 0000:7C00.

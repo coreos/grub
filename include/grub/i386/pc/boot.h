@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2002   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2002,2005   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,6 +46,9 @@
 
 /* The offset of KERNEL_SEGMENT.  */
 #define GRUB_BOOT_MACHINE_KERNEL_SEGMENT	0x48
+
+/* The offset of BOOT_DRIVE_CHECK.  */
+#define GRUB_BOOT_MACHINE_DRIVE_CHECK	0x4b
 
 /* The offset of a magic number used by Windows NT.  */
 #define GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC	0x1b8

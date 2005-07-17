@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -86,6 +86,7 @@ setup (const char *prefix, const char *dir,
   grub_device_t root_dev, dest_dev;
   grub_uint8_t *boot_drive;
   grub_uint32_t *kernel_sector;
+  grub_uint16_t *boot_drive_check;
   struct boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   char *install_prefix;
@@ -168,10 +169,12 @@ setup (const char *prefix, const char *dir,
   boot_img = grub_util_read_image (boot_path);
   free (boot_path);
 
-  /* Set the addresses of BOOT_DRIVE and KERNEL_SECTOR.  */
+  /* Set the addresses of BOOT_DRIVE, KERNEL_SECTOR and BOOT_DRIVE_CHECK.  */
   boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
   kernel_sector = (grub_uint32_t *) (boot_img
 				     + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
+  boot_drive_check = (grub_uint16_t *) (boot_img
+					+ GRUB_BOOT_MACHINE_DRIVE_CHECK);
   
   core_path = grub_util_get_path (dir, core_file);
   core_size = grub_util_get_image_size (core_path);
@@ -227,6 +230,13 @@ setup (const char *prefix, const char *dir,
 	    GRUB_BOOT_MACHINE_PART_END - GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC);
 
   free (tmp_img);
+  
+  /* If DEST_DRIVE is a hard disk, enable the workaround, which is
+     for buggy BIOSes which don't pass boot drive correctly. Instead,
+     they pass 0x00 or 0x01 even when booted from 0x80.  */
+  if (dest_dev->disk->id & 0x80)
+    /* Replace the jmp (2 bytes) with double nop's.  */
+    *boot_drive_check = 0x9090;
   
   /* If the destination device can have partitions and it is the MBR,
      try to embed the core image into after the MBR.  */
