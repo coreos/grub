@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -236,7 +236,8 @@ GRUB_MOD_INIT
 {
   (void) mod; /* Stop warning.  */
   grub_register_command ("font", font_command, GRUB_COMMAND_FLAG_BOTH,
-			 "font FILE...", "Specify a font file to display.", 0);
+			 "font FILE...",
+			 "Specify one or more font files to display.", 0);
 }
 
 GRUB_MOD_FINI

@@ -25,7 +25,7 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"force", 'f', 0, "Skip bootsector magic number test.", 0, 0},
+    {"force", 'f', 0, "skip bootsector magic number test", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -47,8 +47,8 @@ GRUB_MOD_INIT
   (void) mod; /* To stop warning.  */
   grub_register_command ("chainloader", chainloader_command,
 			 GRUB_COMMAND_FLAG_BOTH,
-			 "chainloader [options] FILE",
-			 "Prepare to boot another boot loader", options);
+			 "chainloader [-f] FILE",
+			 "Prepare to boot another boot loader.", options);
 }
 
 GRUB_MOD_FINI

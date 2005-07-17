@@ -38,8 +38,8 @@ static struct grub_loopback *loopback_list;
 
 static const struct grub_arg_option options[] =
   {
-    {"delete", 'd', 0, "Delete the loopback device entry", 0, 0},
-    {"partitions", 'p', 0, "Set that the drive has partitions to"
+    {"delete", 'd', 0, "delete the loopback device entry", 0, 0},
+    {"partitions", 'p', 0, "set that the drive has partitions to"
      " simulate a harddrive", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
@@ -245,7 +245,8 @@ void
 grub_loop_init (void)
 {
   grub_register_command ("loopback", grub_cmd_loopback, GRUB_COMMAND_FLAG_BOTH,
-			 "loopback [OPTIONS] DEVICENAME FILE", "Makes a device of a file", options);
+			 "loopback [-d|-p] DEVICENAME FILE",
+			 "Make a device of a file.", options);
   grub_disk_dev_register (&grub_loopback_dev);
 }
 
@@ -260,7 +261,8 @@ GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("loopback", grub_cmd_loopback, GRUB_COMMAND_FLAG_BOTH,
-			 "loopback [OPTIONS] DEVICENAME FILE", "Makes a device of a file", options);
+			 "loopback [-d|-p] DEVICENAME FILE",
+			 "Make a device of a file.", options);
   grub_disk_dev_register (&grub_loopback_dev);
 }
 

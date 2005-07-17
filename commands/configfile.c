@@ -45,7 +45,7 @@ grub_configfile_init (void)
 {
   grub_register_command ("configfile", grub_cmd_configfile,
                         GRUB_COMMAND_FLAG_BOTH, "configfile FILE",
-                        "Load config file", 0);
+                        "Load another config file.", 0);
 }
 
 void
@@ -56,10 +56,10 @@ grub_configfile_fini (void)
 #else /* ! GRUB_UTIL */
 GRUB_MOD_INIT
 {
-  (void)mod;                   /* To stop warning. */
+  (void) mod;                   /* To stop warning. */
   grub_register_command ("configfile", grub_cmd_configfile,
                         GRUB_COMMAND_FLAG_BOTH, "configfile FILE",
-                        "Load config file", 0);
+                        "Load another config file.", 0);
 }
 
 GRUB_MOD_FINI

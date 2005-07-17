@@ -1,5 +1,48 @@
 2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
 
+	* commands/cat.c (GRUB_MOD_INIT): Use better documentation.
+	(grub_cat_init): Likewise.
+	* loader/i386/pc/chainloader_normal.c (GRUB_MOD_INIT): Likewise.
+	(options): Likewise.
+	* commands/configfile.c (GRUB_MOD_INIT): Likewise.
+	(grub_configfile_init): Likewise.
+	* font/manager.c (GRUB_MOD_INIT): Likewise.
+	* commands/help.c (GRUB_MOD_INIT): Likewise.
+	(grub_help_init): Likewise.
+	* normal/command.c (grub_command_init): Likewise.
+	* loader/i386/pc/linux_normal.c (GRUB_MOD_INIT): Likewise.
+	* disk/loopback.c (grub_loop_init): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/ls.c (grub_ls_init): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	(options): Likewise.
+	* commands/boot.c (grub_boot_init): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* loader/i386/pc/multiboot_normal.c (GRUB_MOD_INIT): Likewise.
+	* commands/i386/pc/reboot.c (grub_reboot_init): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+	* commands/cmp.c (grub_cmp_init): Likewise.
+	(GRUB_MOD_INIT): Likewise.
+
+	* normal/arg.c: Use <> instead of "" to include header files.
+	(SHORT_ARG_HELP): New macro.
+	(SHORT_ARG_USAGE): Likewise.
+	(help_options): Specify SHORT_ARG_HELP and SHORT_ARG_USAGE instead
+	of 'h' and 'u' for help and usage, respectively. Use more GNU-like
+	descriptions.
+	(find_short): Check if C is 'h' or 'u' explicitly.
+	(grub_arg_show_help): Use space characters instead of tabs. Treat
+	SHORT_ARG_HELP and SHORT_ARG_USAGE exceptionally so that -h and -u
+	are shown with --help and --usage only if they are not used for
+	the command itself.
+	(parse_option): Use SHORT_ARG_HELP and SHORT_ARG_USAGE instead of
+	'h' and 'u'.
+
+	* include/grub/arg.h (struct grub_arg_option): Add the qualifier
+	const into "longarg". Change the type of "shortarg" to int.
+
+2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
+
 	* boot/i386/pc/boot.S (boot_drive_check): New label.
 
 	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_DRIVE_CHECK): New

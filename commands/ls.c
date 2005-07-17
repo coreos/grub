@@ -33,9 +33,9 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"long", 'l', 0, "Show a long list with more detailed information", 0, 0},
-    {"human-readable", 'h', 0, "Print sizes in a human readable format", 0, 0},
-    {"all", 'a', 0, "List all files", 0, 0},
+    {"long", 'l', 0, "show a long list with more detailed information", 0, 0},
+    {"human-readable", 'h', 0, "print sizes in a human readable format", 0, 0},
+    {"all", 'a', 0, "list all files", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -241,8 +241,8 @@ void
 grub_ls_init (void)
 {
   grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			 "ls [OPTIONS...] [DIR]",
-			 "List devices and files", options);
+			 "ls [-l|-h|-a] [FILE]",
+			 "List devices and files.", options);
 }
 
 void
@@ -255,8 +255,8 @@ GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			 "ls [OPTIONS...] [DIR]",
-			 "List devices and files", options);
+			 "ls [-l|-h|-a] [FILE]",
+			 "List devices and files.", options);
 }
 
 GRUB_MOD_FINI

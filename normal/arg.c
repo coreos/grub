@@ -1,7 +1,7 @@
 /* arg.c - argument parser */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,17 +18,23 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "grub/arg.h"
-#include "grub/misc.h"
-#include "grub/mm.h"
-#include "grub/err.h"
-#include "grub/normal.h"
+#include <grub/arg.h>
+#include <grub/misc.h>
+#include <grub/mm.h>
+#include <grub/err.h>
+#include <grub/normal.h>
+#include <grub/term.h>
 
-/* Build in parser for default options.  */
+/* Built-in parser for default options.  */
+#define SHORT_ARG_HELP	-100
+#define SHORT_ARG_USAGE	-101
+
 static const struct grub_arg_option help_options[] =
   {
-    {"help", 'h', 0, "Display help", 0, ARG_TYPE_NONE},
-    {"usage", 'u', 0, "Show how to use this command", 0, ARG_TYPE_NONE},
+    {"help", SHORT_ARG_HELP, 0,
+     "display this help and exit", 0, ARG_TYPE_NONE},
+    {"usage", SHORT_ARG_USAGE, 0,
+     "display the usage of this command and exit", 0, ARG_TYPE_NONE},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -51,8 +57,23 @@ find_short (const struct grub_arg_option *options, char c)
 
   if (options)
     found = fnd_short (options);
+  
   if (! found)
-    found = fnd_short (help_options);
+    {
+      switch (c)
+	{
+	case 'h':
+	  found = (struct grub_arg_option *) help_options;
+	  break;
+
+	case 'u':
+	  found = (struct grub_arg_option *) (help_options + 1);
+	  break;
+
+	default:
+	  break;
+	}
+    }
     
   return found;
 }
@@ -80,7 +101,7 @@ find_long (const struct grub_arg_option *options, char *s)
     {
       while (opt->doc)
 	{
-	  if (opt->longarg && !grub_strcmp (opt->longarg, s))
+	  if (opt->longarg && ! grub_strcmp (opt->longarg, s))
 	    return (struct grub_arg_option *) opt;
 	  opt++;
 	}
@@ -89,7 +110,8 @@ find_long (const struct grub_arg_option *options, char *s)
 
   if (options)
     found = fnd_long (options);
-  if (!found)
+  
+  if (! found)
     found = fnd_long (help_options);
     
   return found;
@@ -104,24 +126,55 @@ show_usage (grub_command_t cmd)
 void
 grub_arg_show_help (grub_command_t cmd)
 {
-  static void showargs (const struct grub_arg_option *opt)
+  auto void showargs (const struct grub_arg_option *opt);
+  int h_is_used = 0;
+  int u_is_used = 0;
+  
+  auto void showargs (const struct grub_arg_option *opt)
     {
       for (; opt->doc; opt++)
 	{
+	  int spacing = 20;
+	  
 	  if (opt->shortarg && grub_isgraph (opt->shortarg))
 	    grub_printf ("-%c%c ", opt->shortarg, opt->longarg ? ',':' ');
+	  else if (opt->shortarg == SHORT_ARG_HELP && ! h_is_used)
+	    grub_printf ("-h, ");
+	  else if (opt->shortarg == SHORT_ARG_USAGE && ! u_is_used)
+	    grub_printf ("-u, ");
 	  else
 	    grub_printf ("    ");
+	  
 	  if (opt->longarg)
 	    {
 	      grub_printf ("--%s", opt->longarg);
+	      spacing -= grub_strlen (opt->longarg);
+	      
 	      if (opt->arg)
-		grub_printf ("=%s", opt->arg);
+		{
+		  grub_printf ("=%s", opt->arg);
+		  spacing -= grub_strlen (opt->arg) + 1;
+		}
 	    }
-	  else
-	    grub_printf ("\t");
 
-	  grub_printf ("\t\t%s\n", opt->doc);
+	  while (spacing-- > 0)
+	    grub_putchar (' ');
+
+	  grub_printf ("%s\n", opt->doc);
+
+	  switch (opt->shortarg)
+	    {
+	    case 'h':
+	      h_is_used = 1;
+	      break;
+
+	    case 'u':
+	      u_is_used = 1;
+	      break;
+
+	    default:
+	      break;
+	    }
 	}
     }  
 
@@ -141,11 +194,11 @@ parse_option (grub_command_t cmd, int key, char *arg, struct grub_arg_list *usr)
 {
   switch (key)
     {
-    case 'h':
+    case SHORT_ARG_HELP:
       grub_arg_show_help (cmd);
       return -1;
       
-    case 'u':
+    case SHORT_ARG_USAGE:
       show_usage (cmd);
       return -1;
 
@@ -221,7 +274,7 @@ grub_arg_parse (grub_command_t cmd, int argc, char **argv,
 	  while (1)
 	    {
 	      opt = find_short (cmd->options, *curshort);
-	      if (!opt)
+	      if (! opt)
 		{
 		  grub_error (GRUB_ERR_BAD_ARGUMENT,
 			      "Unknown argument `-%c'\n", *curshort);
@@ -274,7 +327,7 @@ grub_arg_parse (grub_command_t cmd, int argc, char **argv,
 	  arg = longarg;
 
 	  opt = find_long (cmd->options, arg + 2);
-	  if (!opt)
+	  if (! opt)
 	    {
 	      grub_error (GRUB_ERR_BAD_ARGUMENT, "Unknown argument `%s'\n", arg);
 	      goto fail;
@@ -282,9 +335,9 @@ grub_arg_parse (grub_command_t cmd, int argc, char **argv,
 	}
 
       if (! (opt->type == ARG_TYPE_NONE 
-	     || (!option && (opt->flags & GRUB_ARG_OPTION_OPTIONAL))))
+	     || (! option && (opt->flags & GRUB_ARG_OPTION_OPTIONAL))))
 	{
-	  if (!option)
+	  if (! option)
 	    {
 	      grub_error (GRUB_ERR_BAD_ARGUMENT, 
 			  "Missing mandatory option for `%s'\n", opt->longarg);

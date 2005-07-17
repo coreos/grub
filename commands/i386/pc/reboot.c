@@ -40,7 +40,7 @@ void
 grub_reboot_init (void)
 {
   grub_register_command ("reboot", grub_cmd_reboot, GRUB_COMMAND_FLAG_BOTH,
-			 "reboot", "Reboot the computer", 0);
+			 "reboot", "Reboot the computer.", 0);
 }
 
 void

@@ -1,7 +1,7 @@
 /* linux_normal.c - boot another boot loader */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,12 +46,12 @@ GRUB_MOD_INIT
   grub_register_command ("linux", grub_normal_linux_command,
 			 GRUB_COMMAND_FLAG_BOTH,
 			 "linux FILE [ARGS...]",
-			 "Load linux", 0);
+			 "Load a linux kernel.", 0);
   
   grub_register_command ("initrd", grub_normal_initrd_command,
 			 GRUB_COMMAND_FLAG_BOTH,
 			 "initrd FILE",
-			 "Load initrd", 0);
+			 "Load an initrd.", 0);
 }
 
 GRUB_MOD_FINI

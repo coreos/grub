@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -49,8 +49,8 @@ typedef enum grub_key_type grub_arg_key_type_t;
 
 struct grub_arg_option
 {
-  char *longarg;
-  char shortarg;
+  const char *longarg;
+  int shortarg;
   int flags;
   char *doc;
   char *arg;

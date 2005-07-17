@@ -99,7 +99,7 @@ void
 grub_help_init (void)
 {
   grub_register_command ("help", grub_cmd_help, GRUB_COMMAND_FLAG_CMDLINE,
-			 "help [PATTERN ...]", "Shows a help message", 0);
+			 "help [PATTERN ...]", "Show a help message.", 0);
 }
 
 void
@@ -112,7 +112,7 @@ GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("help", grub_cmd_help, GRUB_COMMAND_FLAG_CMDLINE,
-			 "help [PATTERN ...]", "Shows a help message", 0);
+			 "help [PATTERN ...]", "Show a help message.", 0);
 }
 
 GRUB_MOD_FINI

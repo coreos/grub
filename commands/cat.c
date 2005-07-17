@@ -1,7 +1,7 @@
 /* cat.c - command to show the contents of a file  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ void
 grub_cat_init (void)
 {
   grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
-			 "cat FILE", "Show the contents of a file", 0);
+			 "cat FILE", "Show the contents of a file.", 0);
 }
 
 void
@@ -85,9 +85,9 @@ grub_cat_fini (void)
 #else /* ! GRUB_UTIL */
 GRUB_MOD_INIT
 {
-  (void)mod;			/* To stop warning. */
+  (void) mod;			/* To stop warning. */
   grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
-			 "cat FILE", "Show the contents of a file", 0);
+			 "cat FILE", "Show the contents of a file.", 0);
 }
 
 GRUB_MOD_FINI

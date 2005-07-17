@@ -1,7 +1,7 @@
 /* cmd.c - command to cmp an operating system */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -106,7 +106,7 @@ void
 grub_cmp_init (void)
 {
   grub_register_command ("cmp", grub_cmd_cmp, GRUB_COMMAND_FLAG_BOTH,
-			 "cmp FILE1 FILE2", "Compare two files", 0);
+			 "cmp FILE1 FILE2", "Compare two files.", 0);
 }
 
 void
@@ -117,9 +117,9 @@ grub_cmp_fini (void)
 #else /* ! GRUB_UTIL */
 GRUB_MOD_INIT
 {
-  (void)mod;			/* To stop warning. */
+  (void) mod;			/* To stop warning. */
   grub_register_command ("cmp", grub_cmd_cmp, GRUB_COMMAND_FLAG_BOTH,
-			 "cmp FILE1 FILE2", "Compare two files", 0);
+			 "cmp FILE1 FILE2", "Compare two files.", 0);
 }
 
 GRUB_MOD_FINI

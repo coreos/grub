@@ -1,7 +1,7 @@
 /* multiboot_normal.c - boot another boot loader */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,12 +46,12 @@ GRUB_MOD_INIT
   grub_register_command ("multiboot", grub_normal_cmd_multiboot,
 			 GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
 			 "multiboot FILE [ARGS...]",
-			 "Load a multiboot kernel", 0);
+			 "Load a Multiboot kernel.", 0);
   
   grub_register_command ("module", grub_normal_cmd_module,
 			 GRUB_COMMAND_FLAG_BOTH | GRUB_COMMAND_FLAG_NO_ARG_PARSE,
 			 "module FILE [ARGS...]",
-			 "Load a multiboot module", 0);
+			 "Load a Multiboot module.", 0);
 }
 
 GRUB_MOD_FINI
