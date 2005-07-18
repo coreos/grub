@@ -1,3 +1,14 @@
+2005-07-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* commands/ls.c (grub_ls_list_disks): Print the filesystem
+	information on each device, if it does not have partitions. Print
+	"Device" instead of "Disk", because this function is not specific
+	to disk devices.
+
+	* normal/main.c (grub_rescue_cmd_normal): Make the variable CONFIG
+	static to ensure that it is put on the memory rather than a
+	register.
+
 2005-07-17  Yoshinori Okuji  <okuji@enbug.org>
 
 	* commands/cat.c (GRUB_MOD_INIT): Use better documentation.

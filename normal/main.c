@@ -490,8 +490,9 @@ grub_rescue_cmd_normal (int argc, char *argv[])
 {
   if (argc == 0)
     {
-      /* Guess the config filename.  */
-      char *config;
+      /* Guess the config filename. It is necessary to make CONFIG static,
+	 so that it won't get broken by longjmp.  */
+      static char *config;
       const char *prefix;
       
       prefix = grub_env_get ("prefix");

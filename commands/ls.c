@@ -71,7 +71,33 @@ grub_ls_list_disks (int longlist)
       if (dev)
 	{
 	  if (longlist)
-	    grub_printf ("Disk: %s\n", name);
+	    {
+	      grub_printf ("Device: %s", name);
+
+	      if (! dev->disk || ! dev->disk->has_partitions)
+		{
+		  grub_fs_t fs;
+		  char *label;
+
+		  fs = grub_fs_probe (dev);
+		  grub_errno = GRUB_ERR_NONE;
+
+		  grub_printf (", Filesystem type %s",
+			       fs ? fs->name : "Unknown");
+		  
+		  (fs->label) (dev, &label);
+		  if (grub_errno == GRUB_ERR_NONE)
+		    {
+		      if (label && grub_strlen (label))
+			grub_printf (", Label: %s", label);
+		      grub_free (label);
+		    }
+		  else
+		    grub_errno = GRUB_ERR_NONE;
+		}
+
+	      grub_putchar ('\n');
+	    }
 	  else
 	    grub_printf ("(%s) ", name);
 
@@ -91,7 +117,6 @@ grub_ls_list_disks (int longlist)
   grub_putchar ('\n');
   grub_refresh ();
 
- 
   return 0;
 }
 
