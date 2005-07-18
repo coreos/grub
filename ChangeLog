@@ -1,3 +1,9 @@
+2005-07-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* partmap/apple.c (apple_partition_map_iterate): Check if POS
+	equals GRUB_DISK_SECTOR_SIZE to see if the partition table is
+	valid.
+
 2005-07-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* commands/ls.c (grub_ls_list_disks): Print the filesystem

@@ -144,7 +144,7 @@ apple_partition_map_iterate (grub_disk_t disk,
       partno++;
     }
 
-  if ((pos / GRUB_DISK_SECTOR_SIZE) == 0)
+  if (pos == GRUB_DISK_SECTOR_SIZE)
     return grub_error (GRUB_ERR_BAD_PART_TABLE,
 		       "Apple partition map not found.");
 
