@@ -1,3 +1,9 @@
+2005-07-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/partition.c (grub_partition_probe): Initialize PART to
+	NULL. Otherwise, when no partition map is registered, this returns
+	a garbage.
+
 2005-07-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* partmap/apple.c (apple_partition_map_iterate): Check if POS

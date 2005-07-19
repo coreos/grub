@@ -55,7 +55,7 @@ grub_partition_map_iterate (int (*hook) (const grub_partition_map_t partmap))
 grub_partition_t
 grub_partition_probe (struct grub_disk *disk, const char *str)
 {
-  grub_partition_t part;
+  grub_partition_t part = 0;
 
   auto int part_map_probe (const grub_partition_map_t partmap);
 
