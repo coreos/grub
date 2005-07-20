@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,12 +24,19 @@
 #include <grub/err.h>
 #include <grub/types.h>
 
+struct grub_env_var;
+
+typedef char *(*grub_env_read_hook_t) (struct grub_env_var *var,
+				       const char *val);
+typedef char *(*grub_env_write_hook_t) (struct grub_env_var *var,
+					const char *val);
+
 struct grub_env_var
 {
   char *name;
   char *value;
-  grub_err_t (*read_hook) (struct grub_env_var *var, char **val);
-  grub_err_t (*write_hook) (struct grub_env_var *var);
+  grub_env_read_hook_t read_hook;
+  grub_env_write_hook_t write_hook;
   struct grub_env_var *next;
   struct grub_env_var **prevp;
   struct grub_env_var *sort_next;
@@ -41,9 +48,7 @@ char *EXPORT_FUNC(grub_env_get) (const char *name);
 void EXPORT_FUNC(grub_env_unset) (const char *name);
 void EXPORT_FUNC(grub_env_iterate) (int (* func) (struct grub_env_var *var));
 grub_err_t EXPORT_FUNC(grub_register_variable_hook) (const char *var,
-						     grub_err_t (*read_hook) 
-						     (struct grub_env_var *var, char **val),
-						     grub_err_t (*write_hook)
-						     (struct grub_env_var *var));
+						     grub_env_read_hook_t read_hook,
+						     grub_env_write_hook_t write_hook);
 
 #endif /* ! GRUB_ENV_HEADER */

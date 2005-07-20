@@ -1,5 +1,61 @@
 2005-07-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	Change the semantics of variable hooks. They now return	strings
+	instead of error values.
+	
+	* util/i386/pc/grub-setup.c: Include grub/env.h.
+	(setup): Use grub_device_set_root instead of grub_env_set.
+
+	* kern/rescue.c (grub_rescue_cmd_root): Use grub_env_set and
+	grub_env_get instead of grub_device_set_root and
+	grub_device_get_root, respectively.
+
+	* kern/main.c (grub_env_write_root): New function.
+	(grub_set_root_dev): Register grub_env_write_hook for "root". Use
+	grub_env_set instead of grub_device_set_root.
+
+	* kern/env.c (HASHSZ): Reduced to 13, because GRUB does not need
+	many variables.
+	(grub_env_set): Set ENV->VALUE to the result of ENV->WRITE_HOOK
+	rather than calling ENV->WRITE_HOOK afterwards.
+	(grub_env_get): Return the result of ENV->READ_HOOK rather than
+	passing a pointer of a pointer.
+	(grub_register_variable_hook): Change the types of "read_hook" and
+	"write_hook" to grub_env_read_hook_t and grub_env_write_hook_t,
+	respectively.
+	Allocate the default empty string on the heap, because this string
+	may be freed later.
+
+	* kern/device.c: Include grub/env.h.
+	(grub_device_set_root): Removed.
+	(grub_device_get_root): Likewise.
+	(grub_device_open): Use grub_env_get instead of
+	grub_device_get_root.
+
+	* include/grub/env.h (grub_env_read_hook_t): New type.
+	(grub_env_write_hook_t): Likewise.
+	(grub_env_var): Change the types of "read_hook" and "write_hook"
+	to grub_env_read_hook_t and grub_env_write_hook_t, respectively.
+	(grub_register_variable_hook): Likewise.
+
+	* include/grub/device.h (grub_device_set_root): Removed.
+	(grub_device_set_root): Likewise.
+
+	* fs/fat.c (grub_fat_dir): Make a copy of PATH in DIRNAME, and
+	make sure that DIRNAME terminates with '/', so that
+	grub_fat_find_dir will fail if PATH is not a directory.
+
+	* commands/ls.c (grub_ls_list_files): Remove the qualifier const
+	from DIRNAME.
+	Use the qualifier auto for print_files and print_files_long.
+	If FS->DIR sets GRUB_ERRNO to GRUB_ERR_BAD_FILE_TYPE, try DIRNAME
+	as a regular file.
+	Put a newline only if there is no error.
+	(grub_cmd_ls): Remove grub_ls_print_files, because this is not
+	used.
+
+2005-07-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* kern/partition.c (grub_partition_probe): Initialize PART to
 	NULL. Otherwise, when no partition map is registered, this returns
 	a garbage.

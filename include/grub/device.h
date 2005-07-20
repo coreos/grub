@@ -1,7 +1,7 @@
 /* device.h - device manager */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,8 +37,5 @@ typedef struct grub_device *grub_device_t;
 
 grub_device_t EXPORT_FUNC(grub_device_open) (const char *name);
 grub_err_t EXPORT_FUNC(grub_device_close) (grub_device_t device);
-
-grub_err_t EXPORT_FUNC(grub_device_set_root) (const char *name);
-const char *EXPORT_FUNC(grub_device_get_root) (void);
 
 #endif /* ! GRUB_DEVICE_HEADER */

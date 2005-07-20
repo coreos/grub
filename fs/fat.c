@@ -628,7 +628,9 @@ grub_fat_dir (grub_device_t device, const char *path,
 {
   struct grub_fat_data *data = 0;
   grub_disk_t disk = device->disk;
-  char *p = (char *) path;
+  grub_size_t len;
+  char *dirname;
+  char *p;
 
 #ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
@@ -638,6 +640,18 @@ grub_fat_dir (grub_device_t device, const char *path,
   if (! data)
     goto fail;
 
+  /* Make sure that DIRNAME terminates with '/'.  */
+  len = grub_strlen (path);
+  dirname = grub_malloc (len + 1 + 1);
+  if (! dirname)
+    goto fail;
+  grub_memcpy (dirname, path, len);
+  p = dirname + len;
+  if (path[len - 1] != '/')
+    *p++ = '/';
+  *p = '\0';
+  p = dirname;
+  
   do
     {
       p = grub_fat_find_dir (disk, data, p, hook);
@@ -645,7 +659,8 @@ grub_fat_dir (grub_device_t device, const char *path,
   while (p && grub_errno == GRUB_ERR_NONE);
 
  fail:
-  
+
+  grub_free (dirname);
   grub_free (data);
   
 #ifndef GRUB_UTIL

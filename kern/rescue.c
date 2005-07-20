@@ -336,8 +336,8 @@ grub_rescue_cmd_root (int argc, char *argv[])
       char *device_name = grub_file_get_device_name (argv[0]);
       if (! device_name)
 	return;
-      
-      grub_device_set_root (device_name);
+
+      grub_env_set ("root", device_name);
       grub_free (device_name);
     }
   
@@ -350,7 +350,7 @@ grub_rescue_cmd_root (int argc, char *argv[])
     grub_errno = GRUB_ERR_NONE;
   
   grub_printf ("(%s): Filesystem is %s.\n",
-	       grub_device_get_root (), fs ? fs->name : "unknown");
+	       grub_env_get ("root"), fs ? fs->name : "unknown");
   
   grub_device_close (dev);
 }

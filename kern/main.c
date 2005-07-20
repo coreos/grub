@@ -57,12 +57,28 @@ grub_load_modules (void)
   grub_mm_init_region ((void *) modinfo, modinfo->size);
 }
 
+/* Write hook for the environment variables of root. Remove surrounding
+   parentheses, if any.  */
+static char *
+grub_env_write_root (struct grub_env_var *var, const char *val)
+{
+  /* XXX Is it better to check the existence of the device?  */
+  grub_size_t len = grub_strlen (val);
+  
+  if (val[0] == '(' && val[len - 1] == ')')
+    return grub_strndup (val + 1, len - 2);
+
+  return grub_strdup (val);
+}
+
 /* Set the root device according to the dl prefix.  */
 static void
 grub_set_root_dev (void)
 {
   const char *prefix;
 
+  grub_register_variable_hook ("root", 0, grub_env_write_root);
+  
   prefix = grub_env_get ("prefix");
   
   if (prefix)
@@ -72,7 +88,7 @@ grub_set_root_dev (void)
       dev = grub_file_get_device_name (prefix);
       if (dev)
 	{
-	  grub_device_set_root (dev);
+	  grub_env_set ("root", dev);
 	  grub_free (dev);
 	}
     }

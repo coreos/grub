@@ -121,14 +121,16 @@ grub_ls_list_disks (int longlist)
 }
 
 static grub_err_t
-grub_ls_list_files (const char *dirname, int longlist, int all, int human)
+grub_ls_list_files (char *dirname, int longlist, int all, int human)
 {
   char *device_name;
   grub_fs_t fs;
   const char *path;
   grub_device_t dev;
-
-  static int print_files (const char *filename, int dir)
+  auto int print_files (const char *filename, int dir);
+  auto int print_files_long (const char *filename, int dir);
+  
+  int print_files (const char *filename, int dir)
     {
       if (all || filename[0] != '.')
 	grub_printf ("%s%s ", filename, dir ? "/" : "");
@@ -136,7 +138,7 @@ grub_ls_list_files (const char *dirname, int longlist, int all, int human)
       return 0;
     }
      
-  static int print_files_long (const char *filename, int dir)
+  int print_files_long (const char *filename, int dir)
     {
       char pathname[grub_strlen (dirname) + grub_strlen (filename) + 1];
 
@@ -228,7 +230,39 @@ grub_ls_list_files (const char *dirname, int longlist, int all, int human)
 	(fs->dir) (dev, path, print_files_long);
       else
 	(fs->dir) (dev, path, print_files);
-      grub_putchar ('\n');
+
+      if (grub_errno == GRUB_ERR_BAD_FILE_TYPE
+	  && path[grub_strlen (path) - 1] != '/')
+	{
+	  /* PATH might be a regular file.  */
+	  char *p;
+	  grub_file_t file;
+
+	  grub_errno = 0;
+	  
+	  file = grub_file_open (dirname);
+	  if (! file)
+	    goto fail;
+	  
+	  grub_file_close (file);
+	  
+	  p = grub_strrchr (dirname, '/') + 1;
+	  dirname = grub_strndup (dirname, p - dirname);
+	  if (! dirname)
+	    goto fail;
+
+	  all = 1;
+	  if (longlist)
+	    print_files_long (p, 0);
+	  else
+	    print_files (p, 0);
+
+	  grub_free (dirname);
+	}
+
+      if (grub_errno == GRUB_ERR_NONE)
+	grub_putchar ('\n');
+      
       grub_refresh ();
     }
 
@@ -244,14 +278,6 @@ grub_ls_list_files (const char *dirname, int longlist, int all, int human)
 static grub_err_t
 grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
 {
-  static int grub_ls_print_files (const char *filename, int dir)
-    {
-      if (state[2].set/*all*/ || filename[0] != '.')
-	grub_printf ("%s%s ", filename, dir ? "/" : "");
-      
-      return 0;
-    }
-
   if (argc == 0)
     grub_ls_list_disks (state[0].set);
   else

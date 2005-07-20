@@ -1,7 +1,7 @@
 /* env.c - Environment variables */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 
-/* XXX: What would be a good size for the hashtable?  */
-#define	HASHSZ	123
+/* The size of the hash table.  */
+#define	HASHSZ	13
 
 /* A hashtable for quick lookup of variables.  */
 static struct grub_env_var *grub_env[HASHSZ];
@@ -68,15 +68,17 @@ grub_env_set (const char *var, const char *val)
   if (env)
     {
       char *old = env->value;
-      env->value = grub_strdup (val);
-      if (! env->name)
+
+      if (env->write_hook)
+	env->value = env->write_hook (env, val);
+      else
+	env->value = grub_strdup (val);
+      
+      if (! env->value)
 	{
 	  env->value = old;
 	  return grub_errno;
 	}
-
-      if (env->write_hook)
-	(env->write_hook) (env);
 
       grub_free (old);
       return 0;
@@ -141,12 +143,7 @@ grub_env_get (const char *name)
     return 0;
 
   if (env->read_hook)
-    {
-      char *val;
-      env->read_hook (env, &val);
-
-      return val;
-    }
+    return env->read_hook (env, env->value);
 
   return env->value;
 }
@@ -190,14 +187,21 @@ grub_env_iterate (int (* func) (struct grub_env_var *var))
 
 grub_err_t
 grub_register_variable_hook (const char *var,
-			     grub_err_t (*read_hook) (struct grub_env_var *var, char **),
-			     grub_err_t (*write_hook) (struct grub_env_var *var))
+			     grub_env_read_hook_t read_hook,
+			     grub_env_write_hook_t write_hook)
 {
   struct grub_env_var *env = grub_env_find (var);
 
   if (! env)
-    if (grub_env_set (var, "") != GRUB_ERR_NONE)
-      return grub_errno;
+    {
+      char *val = grub_strdup ("");
+
+      if (! val)
+	return grub_errno;
+      
+      if (grub_env_set (var, val) != GRUB_ERR_NONE)
+	return grub_errno;
+    }
   
   env = grub_env_find (var);
   /* XXX Insert an assertion?  */

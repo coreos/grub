@@ -1,7 +1,7 @@
 /* device.c - device manager */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,25 +24,7 @@
 #include <grub/fs.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-
-static char *grub_device_root;
-
-grub_err_t
-grub_device_set_root (const char *name)
-{
-  grub_free (grub_device_root);
-  grub_device_root = grub_strdup (name);
-  return grub_errno;
-}
-
-const char *
-grub_device_get_root (void)
-{
-  if (! grub_device_root)
-    grub_error (GRUB_ERR_BAD_DEVICE, "no root device");
-  
-  return grub_device_root;
-}
+#include <grub/env.h>
 
 grub_device_t
 grub_device_open (const char *name)
@@ -52,13 +34,12 @@ grub_device_open (const char *name)
 
   if (! name)
     {
-      if (! grub_device_root)
+      name = grub_env_get ("root");
+      if (*name == '\0')
 	{
 	  grub_error (GRUB_ERR_BAD_DEVICE, "no device is set");
 	  goto fail;
 	}
-
-      name = grub_device_root;
     }
     
   dev = grub_malloc (sizeof (*dev));

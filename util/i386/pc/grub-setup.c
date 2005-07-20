@@ -27,6 +27,7 @@
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/pc_partition.h>
+#include <grub/env.h>
 #include <grub/machine/util/biosdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
@@ -210,7 +211,7 @@ setup (const char *prefix, const char *dir,
     grub_util_error ("%s", grub_errmsg);
 
   grub_util_info ("setting the root device to `%s'", root);
-  if (grub_device_set_root (root) != GRUB_ERR_NONE)
+  if (grub_env_set ("root", root) != GRUB_ERR_NONE)
     grub_util_error ("%s", grub_errmsg);
 
   /* Read the original sector from the disk.  */
