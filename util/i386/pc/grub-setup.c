@@ -605,19 +605,26 @@ main (int argc, char *argv[])
       usage (1);
     }
 
-  dest_dev = get_device_name (argv[optind]);
-
-  if (! dest_dev)
-    {
-      fprintf (stderr, "Invalid device `%s'.\n", argv[optind]);
-      usage (1);
-    }
-
-  prefix = grub_get_prefix (dir ? : DEFAULT_DIRECTORY);
-  
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
 
+  dest_dev = get_device_name (argv[optind]);
+  if (! dest_dev)
+    {
+      /* Possibly, the user specified an OS device file.  */
+      dest_dev = grub_util_biosdisk_get_grub_dev (argv[optind]);
+      if (! dest_dev)
+	{
+	  fprintf (stderr, "Invalid device `%s'.\n", argv[optind]);
+	  usage (1);
+	}
+    }
+  else
+    /* For simplicity.  */
+    dest_dev = xstrdup (dest_dev);
+
+  prefix = grub_get_prefix (dir ? : DEFAULT_DIRECTORY);
+  
   /* Initialize filesystems.  */
   grub_fat_init ();
   grub_ext2_init ();
@@ -664,6 +671,7 @@ main (int argc, char *argv[])
   free (dev_map);
   free (root_dev);
   free (prefix);
+  free (dest_dev);
   
   return 0;
 }

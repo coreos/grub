@@ -972,6 +972,17 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 -include genmoddep-util_genmoddep.d
 
 
+# Scripts.
+sbin_SCRIPTS = grub-install
+
+# For grub-install.
+grub_install_SOURCES = util/i386/pc/grub-install.in
+CLEANFILES += grub-install
+
+grub-install: util/i386/pc/grub-install.in config.status
+	./config.status --file=grub-install:util/i386/pc/grub-install.in
+
+
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	ext2.mod minix.mod hfs.mod jfs.mod normal.mod hello.mod vga.mod	\

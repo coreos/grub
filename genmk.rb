@@ -268,10 +268,36 @@ MOSTLYCLEANFILES += #{deps_str}
   end
 end
 
+class Script
+  def initialize(dir, name)
+    @dir = dir
+    @name = name
+  end
+  attr_reader :dir, :name
+
+  def rule(sources)
+    if sources.length != 1
+      raise "only a single source file must be specified for a script"
+    end
+    src = sources[0]
+    if /\.in$/ !~ src
+      raise "unknown source file `#{src}'" 
+    end
+
+    "CLEANFILES += #{@name}
+
+#{@name}: #{src} config.status
+	./config.status --file=#{name}:#{src}
+
+"
+  end
+end
+
 images = []
 utils = []
 pmodules = []
 programs = []
+scripts = []
 
 cont = false
 s = nil
@@ -310,8 +336,13 @@ while l = gets
 	  end
 
 	when 'PROGRAMS'
-	  programs += args.split(/\s+/).collect do |util|
-	    Program.new(prefix, util)
+	  programs += args.split(/\s+/).collect do |prog|
+	    Program.new(prefix, prog)
+	  end
+
+	when 'SCRIPTS'
+	  scripts += args.split(/\s+/).collect do |script|
+	    Script.new(prefix, script)
 	  end
 
 	when 'SOURCES'
@@ -323,6 +354,8 @@ while l = gets
 	    print util.rule(args.split(/\s+/))
 	  elsif program = programs.detect() {|u| u.name.to_var == prefix}
 	    print program.rule(args.split(/\s+/))
+	  elsif script = scripts.detect() {|s| s.name.to_var == prefix}
+	    print script.rule(args.split(/\s+/))
 	  end
 	end
       end

@@ -509,7 +509,6 @@ Usage: grub-mkdevicemap [OPTION]...\n\
 \n\
 Generate a device map file automatically.\n\
 \n\
-  -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
   -n, --no-floppy           do not probe any floppy drive\n\
   -s, --probe-second-floppy probe the second floppy drive\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
@@ -519,7 +518,7 @@ Generate a device map file automatically.\n\
 \n\
 Report bugs to <%s>.\n\
 ",
-	    DEFAULT_DIRECTORY, DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
+	    DEFAULT_DEVICE_MAP, PACKAGE_BUGREPORT);
   
   exit (status);
 }

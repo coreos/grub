@@ -75,7 +75,7 @@ MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \
 	$(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
-SCRIPTS = 
+SCRIPTS = $(sbin_SCRIPTS)
 
 CLEANFILES =
 MOSTLYCLEANFILES = 
@@ -122,6 +122,11 @@ install-local: all
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
 	done
+	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
+	done
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" install
@@ -136,7 +141,7 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
 	done
-	@list='$(sbin_UTILITIES)'; for file in $$list; do \
+	@list='$(sbin_UTILITIES) $(sbin_SCRIPTS)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(sbindir)/$$dest; \
 	done
