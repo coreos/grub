@@ -21,14 +21,14 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
-libdir=@libdir@
+datadir=@datadir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_cpu=@host_cpu@
 host_os=@host_os@
 host_vendor=@host_vendor@
-pkgdatadir=${libdir}/${PACKAGE_TARNAME}/${host_cpu}-${host_vendor}
+pkgdatadir=${datadir}/${PACKAGE_TARNAME}/${host_cpu}-${host_vendor}
 
 grub_setup=${sbindir}/grub-setup
 grub_mkimage=${sbindir}/grub-mkimage

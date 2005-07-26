@@ -1,3 +1,10 @@
+2005-07-26  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/grub-install.in (datadir): New variable.
+	(libdir): Removed.
+	(pkgdatadir): New variable.
+	(pkglibdir): Removed.
+
 2005-07-24  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added util/i386/pc/grub-install.in.
