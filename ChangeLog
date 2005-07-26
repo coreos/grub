@@ -1,3 +1,28 @@
+2005-07-24  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added util/i386/pc/grub-install.in.
+
+	* util/i386/pc/grub-install.in: New file.
+
+	* conf/i386-pc.rmk (sbin_SCRIPTS): New variable.
+	(grub_install_SOURCES): Likewise.
+
+	* genmk.rb: Added support for scripts.
+	(Script): New class.
+	(scripts): New variable.
+
+	* Makefile.in (install-local): Install sbin_SCRIPTS by
+	INSTALL_SCRIPT.
+	(uninstall): Remove sbin_SCRIPTS.
+
+	* util/i386/pc/grub-setup.c (main): If the argument is not a GRUB
+	device, try to get a GRUB device by
+	grub_util_biosdisk_get_grub_dev.
+	Free DEST_DEV.
+
+	* util/i386/pc/grub-mkdevicemap.c (usage): Remove a duplicated
+	description for --device-map.
+
 2005-07-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Change the semantics of variable hooks. They now return	strings
