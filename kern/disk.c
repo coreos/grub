@@ -535,7 +535,7 @@ grub_print_partinfo (grub_device_t disk, char *partname)
       grub_printf ("\tPartition num:%s, Filesystem type %s",
 		   partname, fs ? fs->name : "Unknown");
 	  
-      if (fs)
+      if (fs && fs->label)
 	{
 	  (fs->label) (part, &label);
 	  if (grub_errno == GRUB_ERR_NONE)

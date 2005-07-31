@@ -629,7 +629,7 @@ grub_fat_dir (grub_device_t device, const char *path,
   struct grub_fat_data *data = 0;
   grub_disk_t disk = device->disk;
   grub_size_t len;
-  char *dirname;
+  char *dirname = 0;
   char *p;
 
 #ifndef GRUB_UTIL

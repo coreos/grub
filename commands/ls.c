@@ -83,17 +83,20 @@ grub_ls_list_disks (int longlist)
 		  grub_errno = GRUB_ERR_NONE;
 
 		  grub_printf (", Filesystem type %s",
-			       fs ? fs->name : "Unknown");
-		  
-		  (fs->label) (dev, &label);
-		  if (grub_errno == GRUB_ERR_NONE)
+			       fs ? fs->name : "unknown");
+
+		  if (fs && fs->label)
 		    {
-		      if (label && grub_strlen (label))
-			grub_printf (", Label: %s", label);
-		      grub_free (label);
+		      (fs->label) (dev, &label);
+		      if (grub_errno == GRUB_ERR_NONE)
+			{
+			  if (label && grub_strlen (label))
+			    grub_printf (", Label: %s", label);
+			  grub_free (label);
+			}
+		      else
+			grub_errno = GRUB_ERR_NONE;
 		    }
-		  else
-		    grub_errno = GRUB_ERR_NONE;
 		}
 
 	      grub_putchar ('\n');
@@ -221,8 +224,25 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
       if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	grub_errno = GRUB_ERR_NONE;
 	  
-      grub_printf ("(%s): Filesystem is %s.\n",
+      grub_printf ("(%s): Filesystem is %s",
 		   device_name, fs ? fs->name : "unknown");
+      
+      if (fs && fs->label)
+	{
+	  char *label;
+	  
+	  (fs->label) (dev, &label);
+	  if (grub_errno == GRUB_ERR_NONE)
+	    {
+	      if (label && grub_strlen (label))
+		grub_printf (", Label: %s", label);
+	      grub_free (label);
+	    }
+	  else
+	    grub_errno = GRUB_ERR_NONE;
+	}
+      
+      grub_putchar ('\n');
     }
   else if (fs)
     {

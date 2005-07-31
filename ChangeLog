@@ -1,3 +1,23 @@
+2005-07-31  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_is_elf32): New
+	function.
+	(grub_multiboot_load_elf32): Likewise.
+	(grub_multiboot_is_elf64): Likewise.
+	(grub_multiboot_load_elf64): Likewise.
+	(grub_multiboot_load_elf): Likewise.
+	(grub_rescue_cmd_multiboot): Call grub_multiboot_load_elf to load
+	an ELF32 or ELF64 file.
+	This is based on a patch from Ruslan Nikolaev <nruslan@mail.com>.
+
+	From Serbinenko Vladimir <serbinenko.vova@list.ru>:
+	* kern/disk.c (grub_print_partinfo): Check if FS->LABEL is not
+	NULL before calling FS->LABEL.
+	* fs/fat.c (grub_fat_dir): Initialize DIRNAME to NULL.
+	* commands/ls.c (grub_ls_list_files): Show labels, if possible.
+	(grub_ls_list_disks): Check if FS and FS->LABEL are not NULL
+	before calling FS->LABEL.
+
 2005-07-26  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/grub-install.in (datadir): New variable.
