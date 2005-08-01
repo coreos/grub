@@ -1,3 +1,20 @@
+2005-08-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added util/i386/pc/grub-probefs.c.
+
+	* conf/i386-pc.rmk (sbin_UTILITIES): Added grub-probefs.
+	(grub_setup_SOURCES): Removed partmap/amiga.c, partmap/apple.c and
+	partmap/sun.c.
+	(grub_probefs_SOURCES): New variable.
+
+	* util/i386/pc/grub-probefs.c: New file.
+
+	* util/i386/pc/grub-setup.c (main): Call
+	grub_pc_partition_map_init, grub_ufs_init, grub_minix_init,
+	grub_hfs_init and grub_jfs_init to initialize the system. Call
+	grub_ufs_fini, grub_minix_fini, grub_hfs_fini, grub_jfs_init and
+	grub_pc_partition_map_fini to finish the system.
+
 2005-07-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_is_elf32): New

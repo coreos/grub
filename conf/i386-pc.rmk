@@ -49,7 +49,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) genkernsyms.sh
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap
+sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probefs
 noinst_UTILITIES = genmoddep
 
 # For grub-mkimage.
@@ -61,11 +61,18 @@ grub_mkimage_LDFLAGS = -llzo
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c \
-	kern/partition.c partmap/amiga.c partmap/apple.c partmap/pc.c partmap/sun.c \
+	kern/partition.c partmap/pc.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
+
+# For grub-probefs.
+grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
+	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
+	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
+	fs/ext2.c kern/partition.c partmap/pc.c fs/ufs.c fs/minix.c	\
+	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\

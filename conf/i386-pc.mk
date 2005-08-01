@@ -269,7 +269,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) genkernsyms.sh
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap
+sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probefs
 noinst_UTILITIES = genmoddep
 
 # For grub-mkimage.
@@ -311,12 +311,12 @@ grub_mkimage_LDFLAGS = -llzo
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c \
-	kern/partition.c partmap/amiga.c partmap/apple.c partmap/pc.c partmap/sun.c \
+	kern/partition.c partmap/pc.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
-CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_partition.o grub_setup-partmap_amiga.o grub_setup-partmap_apple.o grub_setup-partmap_pc.o grub_setup-partmap_sun.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
-MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-kern_partition.d grub_setup-partmap_amiga.d grub_setup-partmap_apple.d grub_setup-partmap_pc.d grub_setup-partmap_sun.d grub_setup-fs_ufs.d grub_setup-fs_minix.d grub_setup-fs_hfs.d grub_setup-fs_jfs.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d grub_setup-fs_fshelp.d
+CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_partition.o grub_setup-partmap_pc.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
+MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-kern_partition.d grub_setup-partmap_pc.d grub_setup-fs_ufs.d grub_setup-fs_minix.d grub_setup-fs_hfs.d grub_setup-fs_jfs.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d grub_setup-fs_fshelp.d
 
-grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_partition.o grub_setup-partmap_amiga.o grub_setup-partmap_apple.o grub_setup-partmap_pc.o grub_setup-partmap_sun.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
+grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-kern_partition.o grub_setup-partmap_pc.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_setup_LDFLAGS)
 
 grub_setup-util_i386_pc_grub_setup.o: util/i386/pc/grub-setup.c
@@ -407,22 +407,6 @@ grub_setup-kern_partition.d: kern/partition.c
 
 -include grub_setup-kern_partition.d
 
-grub_setup-partmap_amiga.o: partmap/amiga.c
-	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-partmap_amiga.d: partmap/amiga.c
-	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,grub_setup-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_setup-partmap_amiga.d
-
-grub_setup-partmap_apple.o: partmap/apple.c
-	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-partmap_apple.d: partmap/apple.c
-	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,grub_setup-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_setup-partmap_apple.d
-
 grub_setup-partmap_pc.o: partmap/pc.c
 	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
 
@@ -430,14 +414,6 @@ grub_setup-partmap_pc.d: partmap/pc.c
 	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_setup-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_setup-partmap_pc.d
-
-grub_setup-partmap_sun.o: partmap/sun.c
-	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-partmap_sun.d: partmap/sun.c
-	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,sun\.o[ :]*,grub_setup-partmap_sun.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include grub_setup-partmap_sun.d
 
 grub_setup-fs_ufs.o: fs/ufs.c
 	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
@@ -527,6 +503,171 @@ grub_mkdevicemap-util_misc.d: util/misc.c
 	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_mkdevicemap-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_mkdevicemap-util_misc.d
+
+
+# For grub-probefs.
+grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
+	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
+	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
+	fs/ext2.c kern/partition.c partmap/pc.c fs/ufs.c fs/minix.c	\
+	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c
+CLEANFILES += grub-probefs grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o
+MOSTLYCLEANFILES += grub_probefs-util_i386_pc_grub_probefs.d grub_probefs-util_i386_pc_biosdisk.d grub_probefs-util_misc.d grub_probefs-util_i386_pc_getroot.d grub_probefs-kern_device.d grub_probefs-kern_disk.d grub_probefs-kern_err.d grub_probefs-kern_misc.d grub_probefs-fs_fat.d grub_probefs-fs_ext2.d grub_probefs-kern_partition.d grub_probefs-partmap_pc.d grub_probefs-fs_ufs.d grub_probefs-fs_minix.d grub_probefs-fs_hfs.d grub_probefs-fs_jfs.d grub_probefs-kern_fs.d grub_probefs-kern_env.d grub_probefs-fs_fshelp.d
+
+grub-probefs: grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o
+	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_probefs_LDFLAGS)
+
+grub_probefs-util_i386_pc_grub_probefs.o: util/i386/pc/grub-probefs.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-util_i386_pc_grub_probefs.d: util/i386/pc/grub-probefs.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,grub\-probefs\.o[ :]*,grub_probefs-util_i386_pc_grub_probefs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-util_i386_pc_grub_probefs.d
+
+grub_probefs-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_probefs-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-util_i386_pc_biosdisk.d
+
+grub_probefs-util_misc.o: util/misc.c
+	$(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-util_misc.d: util/misc.c
+	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_probefs-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-util_misc.d
+
+grub_probefs-util_i386_pc_getroot.o: util/i386/pc/getroot.c
+	$(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-util_i386_pc_getroot.d: util/i386/pc/getroot.c
+	set -e; 	  $(BUILD_CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,grub_probefs-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-util_i386_pc_getroot.d
+
+grub_probefs-kern_device.o: kern/device.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_device.d: kern/device.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_probefs-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_device.d
+
+grub_probefs-kern_disk.o: kern/disk.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_disk.d: kern/disk.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grub_probefs-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_disk.d
+
+grub_probefs-kern_err.o: kern/err.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_err.d: kern/err.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_probefs-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_err.d
+
+grub_probefs-kern_misc.o: kern/misc.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_misc.d: kern/misc.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_probefs-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_misc.d
+
+grub_probefs-fs_fat.o: fs/fat.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_fat.d: fs/fat.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_probefs-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_fat.d
+
+grub_probefs-fs_ext2.o: fs/ext2.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_ext2.d: fs/ext2.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_probefs-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_ext2.d
+
+grub_probefs-kern_partition.o: kern/partition.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_partition.d: kern/partition.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_probefs-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_partition.d
+
+grub_probefs-partmap_pc.o: partmap/pc.c
+	$(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-partmap_pc.d: partmap/pc.c
+	set -e; 	  $(BUILD_CC) -Ipartmap -I$(srcdir)/partmap $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_probefs-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-partmap_pc.d
+
+grub_probefs-fs_ufs.o: fs/ufs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_ufs.d: fs/ufs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_probefs-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_ufs.d
+
+grub_probefs-fs_minix.o: fs/minix.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_minix.d: fs/minix.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_probefs-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_minix.d
+
+grub_probefs-fs_hfs.o: fs/hfs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_hfs.d: fs/hfs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_probefs-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_hfs.d
+
+grub_probefs-fs_jfs.o: fs/jfs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_jfs.d: fs/jfs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,grub_probefs-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_jfs.d
+
+grub_probefs-kern_fs.o: kern/fs.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_fs.d: kern/fs.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grub_probefs-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_fs.d
+
+grub_probefs-kern_env.o: kern/env.c
+	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-kern_env.d: kern/env.c
+	set -e; 	  $(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_probefs-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-kern_env.d
+
+grub_probefs-fs_fshelp.o: fs/fshelp.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_fshelp.d: fs/fshelp.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,grub_probefs-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_fshelp.d
 
 
 # For grub-emu.

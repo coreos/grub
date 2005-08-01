@@ -169,6 +169,7 @@ util/i386/pc/getroot.c
 util/i386/pc/grub-install.in
 util/i386/pc/grub-mkdevicemap.c
 util/i386/pc/grub-mkimage.c
+util/i386/pc/grub-probefs.c
 util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
 util/powerpc/ieee1275/grub-mkimage.c
