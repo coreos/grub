@@ -19,7 +19,7 @@
  */
 
 #include <curses.h>
-#include <grub/machine/console.h>
+#include <grub/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 

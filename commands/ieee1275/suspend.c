@@ -21,7 +21,7 @@
 #include <grub/normal.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/machine/ieee1275.h>
+#include <grub/ieee1275/ieee1275.h>
 
 static grub_err_t
 grub_cmd_suspend (struct grub_arg_list *state  __attribute__ ((unused)),

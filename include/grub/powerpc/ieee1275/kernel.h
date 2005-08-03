@@ -20,6 +20,12 @@
 #ifndef GRUB_KERNEL_MACHINE_HEADER
 #define GRUB_KERNEL_MACHINE_HEADER	1
 
+#include <grub/symbol.h>
+
+void EXPORT_FUNC (abort) (void);
+void EXPORT_FUNC (grub_reboot) (void);
+void EXPORT_FUNC (grub_halt) (void);
+
 /* Where grub-mkimage places the core modules in memory.  */
 #define GRUB_IEEE1275_MODULE_BASE 0x00300000
 

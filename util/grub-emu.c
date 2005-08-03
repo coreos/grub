@@ -29,7 +29,7 @@
 #include <grub/fs.h>
 #include <grub/i386/pc/util/biosdisk.h>
 #include <grub/dl.h>
-#include <grub/machine/console.h>
+#include <grub/console.h>
 #include <grub/util/misc.h>
 #include <grub/kernel.h>
 #include <grub/normal.h>

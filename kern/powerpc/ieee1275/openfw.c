@@ -21,7 +21,8 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
-#include <grub/machine/ieee1275.h>
+#include <grub/machine/kernel.h>
+#include <grub/ieee1275/ieee1275.h>
 
 enum grub_ieee1275_parse_type
 {
@@ -38,11 +39,11 @@ grub_children_iterate (char *devpath,
   grub_ieee1275_phandle_t child;
 
   grub_ieee1275_finddevice (devpath, &dev);
-  if (dev == -1)
+  if (dev == (grub_ieee1275_phandle_t) -1)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
 
   grub_ieee1275_child (dev, &child);
-  if (child == -1)
+  if (child == (grub_ieee1275_phandle_t) -1)
     return grub_error (GRUB_ERR_BAD_DEVICE, "Device has no children");
 
   do
@@ -125,7 +126,8 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	  continue;
 	}
       
-      if (grub_ieee1275_finddevice (devpath, &dev) || dev == -1)
+      if (grub_ieee1275_finddevice (devpath, &dev)
+	  || dev == (grub_ieee1275_phandle_t) -1)
 	{
 	  grub_free (devpath);
 	  continue;

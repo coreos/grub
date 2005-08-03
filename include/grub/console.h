@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,10 +17,23 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_OFDISK_MACHINE_HEADER
-#define GRUB_OFDISK_MACHINE_HEADER	1
+#ifndef GRUB_CONSOLE_HEADER
+#define GRUB_CONSOLE_HEADER	1
 
-extern void grub_ofdisk_init (void);
-extern void grub_ofdisk_fini (void);
+/* Define scan codes.  */
+#define GRUB_CONSOLE_KEY_LEFT		0x4B00
+#define GRUB_CONSOLE_KEY_RIGHT		0x4D00
+#define GRUB_CONSOLE_KEY_UP		0x4800
+#define GRUB_CONSOLE_KEY_DOWN		0x5000
+#define GRUB_CONSOLE_KEY_IC		0x5200
+#define GRUB_CONSOLE_KEY_DC		0x5300
+#define GRUB_CONSOLE_KEY_BACKSPACE	0x0008
+#define GRUB_CONSOLE_KEY_HOME		0x4700
+#define GRUB_CONSOLE_KEY_END		0x4F00
+#define GRUB_CONSOLE_KEY_NPAGE		0x4900
+#define GRUB_CONSOLE_KEY_PPAGE		0x5100
 
-#endif /* ! GRUB_INIT_MACHINE_HEADER */
+void grub_console_init (void);
+void grub_console_fini (void);
+
+#endif /* ! GRUB_CONSOLE_HEADER */

@@ -18,11 +18,11 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/machine/console.h>
-#include <grub/machine/ieee1275.h>
+#include <grub/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 #include <grub/misc.h>
+#include <grub/ieee1275/ieee1275.h>
 
 static grub_ieee1275_ihandle_t stdout_ihandle;
 static grub_ieee1275_ihandle_t stdin_ihandle;

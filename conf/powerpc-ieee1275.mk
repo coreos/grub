@@ -12,7 +12,8 @@ DEFSYMFILES += kernel_syms.lst
 grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h misc.h mm.h net.h rescue.h symbol.h \
 	term.h types.h powerpc/libgcc.h loader.h \
-	partition.h pc_partition.h machine/time.h machine/ieee1275.h
+	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
+	machine/kernel.h
 
 grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
 	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
@@ -488,17 +489,17 @@ grub_emu-util_powerpc_ieee1275_misc.d: util/powerpc/ieee1275/misc.c
 grub_emu_LDFLAGS = -lncurses
 
 grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
-	boot/powerpc/ieee1275/ieee1275.c kern/main.c kern/device.c \
+	kern/ieee1275.c kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
-	kern/powerpc/ieee1275/init.c term/powerpc/ieee1275/ofconsole.c \
-	kern/powerpc/ieee1275/openfw.c disk/powerpc/ieee1275/ofdisk.c \
+	kern/powerpc/ieee1275/init.c term/ieee1275/ofconsole.c \
+	kern/powerpc/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
 	kern/partition.c kern/env.c kern/powerpc/dl.c grubof_symlist.c \
 	kern/powerpc/cache.S
-CLEANFILES += grubof grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_powerpc_dl.o grubof-grubof_symlist.o grubof-kern_powerpc_cache.o
-MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_crt0.d grubof-boot_powerpc_ieee1275_cmain.d grubof-boot_powerpc_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_powerpc_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-disk_powerpc_ieee1275_ofdisk.d grubof-kern_partition.d grubof-kern_env.d grubof-kern_powerpc_dl.d grubof-grubof_symlist.d grubof-kern_powerpc_cache.d
+CLEANFILES += grubof grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-kern_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-disk_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_powerpc_dl.o grubof-grubof_symlist.o grubof-kern_powerpc_cache.o
+MOSTLYCLEANFILES += grubof-boot_powerpc_ieee1275_crt0.d grubof-boot_powerpc_ieee1275_cmain.d grubof-kern_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-kern_powerpc_ieee1275_init.d grubof-term_ieee1275_ofconsole.d grubof-kern_powerpc_ieee1275_openfw.d grubof-disk_ieee1275_ofdisk.d grubof-kern_partition.d grubof-kern_env.d grubof-kern_powerpc_dl.d grubof-grubof_symlist.d grubof-kern_powerpc_cache.d
 
-grubof: grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-boot_powerpc_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_powerpc_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-disk_powerpc_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_powerpc_dl.o grubof-grubof_symlist.o grubof-kern_powerpc_cache.o
+grubof: grubof-boot_powerpc_ieee1275_crt0.o grubof-boot_powerpc_ieee1275_cmain.o grubof-kern_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-kern_powerpc_ieee1275_init.o grubof-term_ieee1275_ofconsole.o grubof-kern_powerpc_ieee1275_openfw.o grubof-disk_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_powerpc_dl.o grubof-grubof_symlist.o grubof-kern_powerpc_cache.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(grubof_LDFLAGS)
 
 grubof-boot_powerpc_ieee1275_crt0.o: boot/powerpc/ieee1275/crt0.S
@@ -517,13 +518,13 @@ grubof-boot_powerpc_ieee1275_cmain.d: boot/powerpc/ieee1275/cmain.c
 
 -include grubof-boot_powerpc_ieee1275_cmain.d
 
-grubof-boot_powerpc_ieee1275_ieee1275.o: boot/powerpc/ieee1275/ieee1275.c
-	$(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
+grubof-kern_ieee1275.o: kern/ieee1275.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
-grubof-boot_powerpc_ieee1275_ieee1275.d: boot/powerpc/ieee1275/ieee1275.c
-	set -e; 	  $(CC) -Iboot/powerpc/ieee1275 -I$(srcdir)/boot/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ieee1275\.o[ :]*,grubof-boot_powerpc_ieee1275_ieee1275.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grubof-kern_ieee1275.d: kern/ieee1275.c
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ieee1275\.o[ :]*,grubof-kern_ieee1275.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grubof-boot_powerpc_ieee1275_ieee1275.d
+-include grubof-kern_ieee1275.d
 
 grubof-kern_main.o: kern/main.c
 	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
@@ -629,13 +630,13 @@ grubof-kern_powerpc_ieee1275_init.d: kern/powerpc/ieee1275/init.c
 
 -include grubof-kern_powerpc_ieee1275_init.d
 
-grubof-term_powerpc_ieee1275_ofconsole.o: term/powerpc/ieee1275/ofconsole.c
-	$(CC) -Iterm/powerpc/ieee1275 -I$(srcdir)/term/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
+grubof-term_ieee1275_ofconsole.o: term/ieee1275/ofconsole.c
+	$(CC) -Iterm/ieee1275 -I$(srcdir)/term/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
-grubof-term_powerpc_ieee1275_ofconsole.d: term/powerpc/ieee1275/ofconsole.c
-	set -e; 	  $(CC) -Iterm/powerpc/ieee1275 -I$(srcdir)/term/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ofconsole\.o[ :]*,grubof-term_powerpc_ieee1275_ofconsole.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grubof-term_ieee1275_ofconsole.d: term/ieee1275/ofconsole.c
+	set -e; 	  $(CC) -Iterm/ieee1275 -I$(srcdir)/term/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ofconsole\.o[ :]*,grubof-term_ieee1275_ofconsole.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grubof-term_powerpc_ieee1275_ofconsole.d
+-include grubof-term_ieee1275_ofconsole.d
 
 grubof-kern_powerpc_ieee1275_openfw.o: kern/powerpc/ieee1275/openfw.c
 	$(CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
@@ -645,13 +646,13 @@ grubof-kern_powerpc_ieee1275_openfw.d: kern/powerpc/ieee1275/openfw.c
 
 -include grubof-kern_powerpc_ieee1275_openfw.d
 
-grubof-disk_powerpc_ieee1275_ofdisk.o: disk/powerpc/ieee1275/ofdisk.c
-	$(CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
+grubof-disk_ieee1275_ofdisk.o: disk/ieee1275/ofdisk.c
+	$(CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
 
-grubof-disk_powerpc_ieee1275_ofdisk.d: disk/powerpc/ieee1275/ofdisk.c
-	set -e; 	  $(CC) -Idisk/powerpc/ieee1275 -I$(srcdir)/disk/powerpc/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ofdisk\.o[ :]*,grubof-disk_powerpc_ieee1275_ofdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+grubof-disk_ieee1275_ofdisk.d: disk/ieee1275/ofdisk.c
+	set -e; 	  $(CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,ofdisk\.o[ :]*,grubof-disk_ieee1275_ofdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include grubof-disk_powerpc_ieee1275_ofdisk.d
+-include grubof-disk_ieee1275_ofdisk.d
 
 grubof-kern_partition.o: kern/partition.c
 	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<

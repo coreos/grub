@@ -23,16 +23,16 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/partition.h>
-#include <grub/machine/ieee1275.h>
 #include <grub/normal.h>
 #include <grub/fs.h>
 #include <grub/setjmp.h>
 #include <grub/env.h>
 #include <grub/misc.h>
+#include <grub/console.h>
 #include <grub/machine/time.h>
 #include <grub/machine/kernel.h>
-#include <grub/machine/console.h>
-#include <grub/machine/ofdisk.h>
+#include <grub/ieee1275/ofdisk.h>
+#include <grub/ieee1275/ieee1275.h>
 
 /* Apple OF 1.0.5 reserves 0x0 to 0x4000 for the exception handlers.  */
 static const grub_addr_t grub_heap_start = 0x4000;

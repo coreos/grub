@@ -21,8 +21,8 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/mm.h>
-#include <grub/machine/ieee1275.h>
-#include <grub/machine/ofdisk.h>
+#include <grub/ieee1275/ieee1275.h>
+#include <grub/ieee1275/ofdisk.h>
 
 static int
 grub_ofdisk_iterate (int (*hook) (const char *name))

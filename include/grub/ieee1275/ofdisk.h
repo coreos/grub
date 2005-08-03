@@ -1,7 +1,6 @@
-/* ieee1275.h - Access the Open Firmware client interface.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,11 +17,10 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_IEEE1275_MACHINE_HEADER
-#define GRUB_IEEE1275_MACHINE_HEADER	1
+#ifndef GRUB_OFDISK_HEADER
+#define GRUB_OFDISK_HEADER	1
 
-#include <grub/types.h>
+extern void grub_ofdisk_init (void);
+extern void grub_ofdisk_fini (void);
 
-typedef grub_uint32_t grub_ieee1275_cell_t;
-
-#endif /* ! GRUB_IEEE1275_MACHINE_HEADER */
+#endif /* ! GRUB_INIT_HEADER */

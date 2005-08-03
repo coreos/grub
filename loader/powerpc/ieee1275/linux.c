@@ -18,14 +18,14 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/machine/loader.h>
-#include <grub/machine/ieee1275.h>
 #include <grub/elf.h>
 #include <grub/loader.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/rescue.h>
 #include <grub/misc.h>
+#include <grub/ieee1275/ieee1275.h>
+#include <grub/machine/loader.h>
 
 static grub_dl_t my_mod;
 
@@ -40,7 +40,7 @@ static grub_size_t linux_size;
 
 static char *linux_args;
 
-typedef void (*kernel_entry_t) (void *, unsigned long, intptr_t (void *),
+typedef void (*kernel_entry_t) (void *, unsigned long, int (void *),
 				unsigned long, unsigned long);
 
 static grub_err_t

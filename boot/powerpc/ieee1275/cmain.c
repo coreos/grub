@@ -20,12 +20,12 @@
 
 #include <alloca.h>
 #include <stdint.h>
-
-#include <grub/machine/ieee1275.h>
 #include <grub/kernel.h>
+#include <grub/machine/kernel.h>
+#include <grub/ieee1275/ieee1275.h>
 
 /* OpenFirmware entry point passed to us from the real bootloader.  */
-intptr_t (*grub_ieee1275_entry_fn) (void *);
+int (*grub_ieee1275_entry_fn) (void *);
 
 grub_ieee1275_phandle_t grub_ieee1275_chosen;
 
@@ -76,7 +76,7 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
       extern char _start;
       extern char _end;
 
-      grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r3;
+      grub_ieee1275_entry_fn = (int (*)(void *)) r3;
 
       grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
 
@@ -91,7 +91,7 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
   else
     {
       /* Assume we were entered from Open Firmware.  */
-      grub_ieee1275_entry_fn = (intptr_t (*)(void *)) r5;
+      grub_ieee1275_entry_fn = (int (*)(void *)) r5;
     }
 
   grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);

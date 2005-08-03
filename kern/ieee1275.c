@@ -18,13 +18,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/machine/ieee1275.h>
-
+#include <grub/ieee1275/ieee1275.h>
 
 #define IEEE1275_PHANDLE_ROOT		((grub_ieee1275_phandle_t) 0)
 #define IEEE1275_PHANDLE_INVALID	((grub_ieee1275_phandle_t) -1)
 
-intptr_t (*grub_ieee1275_entry_fn) (void *);
+
 
 /* FIXME is this function needed? */
 grub_uint32_t
@@ -36,18 +35,17 @@ grub_ieee1275_decode_int_4 (unsigned char *p)
   return (val + *p);
 }
 
-
 int
 grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
 {
   struct find_device_args {
     struct grub_ieee1275_common_hdr common;
-    char *device;
+    grub_ieee1275_cell_t device;
     grub_ieee1275_phandle_t phandle;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "finddevice", 1, 1);
-  args.device = name;
+  args.device = (grub_ieee1275_cell_t) name;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -58,49 +56,49 @@ grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
 int
 grub_ieee1275_get_property (grub_ieee1275_phandle_t phandle,
 			    const char *property, void *buf,
-			    grub_size_t size, grub_size_t *actual)
+			    grub_size_t size, grub_ssize_t *actual)
 {
   struct get_property_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_phandle_t phandle;
-    const char *prop;
-    void *buf;
-    int buflen;
-    int size;
+    grub_ieee1275_cell_t prop;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t buflen;
+    grub_ieee1275_cell_t size;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "getprop", 4, 1);
   args.phandle = phandle;
-  args.prop = property;
-  args.buf = buf;
-  args.buflen = size;
+  args.prop = (grub_ieee1275_cell_t) property;
+  args.buf = (grub_ieee1275_cell_t) buf;
+  args.buflen = (grub_ieee1275_cell_t) size;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
   if (actual)
-    *actual = args.size;
-  if (args.size == -1)
+    *actual = (grub_ssize_t) args.size;
+  if (args.size == (grub_ieee1275_cell_t) -1)
     return -1;
   return 0;
 }
 
 int
 grub_ieee1275_next_property (grub_ieee1275_phandle_t phandle, char *prev_prop,
-			     char *prop, int *flags)
+			     char *prop, grub_ieee1275_cell_t *flags)
 {
   struct get_property_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_phandle_t phandle;
-    char *prev_prop;
-    char *next_prop;
-    int flags;
+    grub_ieee1275_cell_t prev_prop;
+    grub_ieee1275_cell_t next_prop;
+    grub_ieee1275_cell_t flags;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "nextprop", 3, 1);
   args.phandle = phandle;
-  args.prev_prop = prev_prop;
-  args.next_prop = prop;
-  args.flags = -1;
+  args.prev_prop = (grub_ieee1275_cell_t) prev_prop;
+  args.next_prop = (grub_ieee1275_cell_t) prop;
+  args.flags = (grub_ieee1275_cell_t) -1;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -111,19 +109,19 @@ grub_ieee1275_next_property (grub_ieee1275_phandle_t phandle, char *prev_prop,
 
 int
 grub_ieee1275_get_property_length (grub_ieee1275_phandle_t phandle, 
-				   const char *prop, grub_size_t *length)
+				   const char *prop, grub_ssize_t *length)
 {
   struct get_property_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_phandle_t phandle;
-    const char *prop;
-    grub_size_t length;
+    grub_ieee1275_cell_t prop;
+    grub_ieee1275_cell_t length;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "getproplen", 2, 1);
   args.phandle = phandle;
-  args.prop = prop;
-  args.length = -1;
+  args.prop = (grub_ieee1275_cell_t) prop;
+  args.length = (grub_ieee1275_cell_t) -1;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -152,20 +150,20 @@ grub_ieee1275_instance_to_package (grub_ieee1275_ihandle_t ihandle,
 
 int
 grub_ieee1275_package_to_path (grub_ieee1275_phandle_t phandle,
-			       char *path, grub_size_t len, grub_size_t *actual)
+			       char *path, grub_size_t len, grub_ssize_t *actual)
 {
   struct instance_to_package_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_phandle_t phandle;
-    char *buf;
-    int buflen;
-    int actual;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t buflen;
+    grub_ieee1275_cell_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "package-to-path", 3, 1);
   args.phandle = phandle;
-  args.buf = path;
-  args.buflen = len;
+  args.buf = (grub_ieee1275_cell_t) path;
+  args.buflen = (grub_ieee1275_cell_t) len;
   
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -177,20 +175,20 @@ grub_ieee1275_package_to_path (grub_ieee1275_phandle_t phandle,
 int
 grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
 				char *path, grub_size_t len,
-				grub_size_t *actual)
+				grub_ssize_t *actual)
 {
   struct instance_to_package_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_ihandle_t ihandle;
-    char *buf;
-    int buflen;
-    int actual;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t buflen;
+    grub_ieee1275_cell_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "instance-to-path", 3, 1);
   args.ihandle = ihandle;
-  args.buf = path;
-  args.buflen = len;
+  args.buf = (grub_ieee1275_cell_t) path;
+  args.buflen = (grub_ieee1275_cell_t) len;
   
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -201,20 +199,20 @@ grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
 
 int
 grub_ieee1275_write (grub_ieee1275_ihandle_t ihandle, void *buffer, 
-		     grub_size_t len, grub_size_t *actualp)
+		     grub_size_t len, grub_ssize_t *actualp)
 {
   struct write_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_ihandle_t ihandle;
-    void *buf;
-    grub_size_t len;
-    grub_size_t actual;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t len;
+    grub_ieee1275_cell_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "write", 3, 1);
   args.ihandle = ihandle;
-  args.buf = buffer;
-  args.len = len;
+  args.buf = (grub_ieee1275_cell_t) buffer;
+  args.len = (grub_ieee1275_cell_t) len;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -225,20 +223,20 @@ grub_ieee1275_write (grub_ieee1275_ihandle_t ihandle, void *buffer,
 
 int
 grub_ieee1275_read (grub_ieee1275_ihandle_t ihandle, void *buffer,
-		    grub_size_t len, grub_size_t *actualp)
+		    grub_size_t len, grub_ssize_t *actualp)
 {
   struct write_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_ihandle_t ihandle;
-    void *buf;
-    grub_size_t len;
-    grub_size_t actual;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t len;
+    grub_ieee1275_cell_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "read", 3, 1);
   args.ihandle = ihandle;
-  args.buf = buffer;
-  args.len = len;
+  args.buf = (grub_ieee1275_cell_t) buffer;
+  args.len = (grub_ieee1275_cell_t) len;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -249,20 +247,20 @@ grub_ieee1275_read (grub_ieee1275_ihandle_t ihandle, void *buffer,
 
 int
 grub_ieee1275_seek (grub_ieee1275_ihandle_t ihandle, int pos_hi,
-		    int pos_lo, int *result)
+		    int pos_lo, grub_ssize_t *result)
 {
   struct write_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_ihandle_t ihandle;
-    int pos_hi;
-    int pos_lo;
-    int result;
+    grub_ieee1275_cell_t pos_hi;
+    grub_ieee1275_cell_t pos_lo;
+    grub_ieee1275_cell_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "seek", 3, 1);
   args.ihandle = ihandle;
-  args.pos_hi = pos_hi;
-  args.pos_lo = pos_lo;
+  args.pos_hi = (grub_ieee1275_cell_t) pos_hi;
+  args.pos_lo = (grub_ieee1275_cell_t) pos_lo;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -332,16 +330,16 @@ grub_ieee1275_parent (grub_ieee1275_phandle_t node,
 }
 
 int
-grub_ieee1275_interpret (const char *command, int *catch)
+grub_ieee1275_interpret (const char *command, grub_ieee1275_cell_t *catch)
 {
   struct enter_args {
     struct grub_ieee1275_common_hdr common;
-    const char *command;
-    int catch;
+    grub_ieee1275_cell_t command;
+    grub_ieee1275_cell_t catch;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "interpret", 1, 1);
-  args.command = command;
+  args.command = (grub_ieee1275_cell_t) command;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -373,22 +371,21 @@ grub_ieee1275_exit (void)
 
   INIT_IEEE1275_COMMON (&args.common, "exit", 0, 0);
 
-  if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
-    return -1;
-  return 0;
+  IEEE1275_CALL_ENTRY_FN (&args);
+  for (;;) ;
 }
 
 int
-grub_ieee1275_open (char *node, grub_ieee1275_ihandle_t *result)
+grub_ieee1275_open (const char *path, grub_ieee1275_ihandle_t *result)
 {
   struct open_args {
     struct grub_ieee1275_common_hdr common;
-    char *cstr;
+    grub_ieee1275_cell_t path;
     grub_ieee1275_ihandle_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "open", 1, 1);
-  args.cstr = node;
+  args.path = (grub_ieee1275_cell_t) path;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -419,16 +416,16 @@ grub_ieee1275_claim (grub_addr_t addr, grub_size_t size, unsigned int align,
 {
   struct claim_args {
     struct grub_ieee1275_common_hdr common;
-    grub_addr_t addr;
-    grub_size_t size;
-    unsigned int align;
-    grub_addr_t base;
+    grub_ieee1275_cell_t addr;
+    grub_ieee1275_cell_t size;
+    grub_ieee1275_cell_t align;
+    grub_ieee1275_cell_t base;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "claim", 3, 1);
-  args.addr = addr;
-  args.size = size;
-  args.align = align;
+  args.addr = (grub_ieee1275_cell_t) addr;
+  args.size = (grub_ieee1275_cell_t) size;
+  args.align = (grub_ieee1275_cell_t) align;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -436,7 +433,7 @@ grub_ieee1275_claim (grub_addr_t addr, grub_size_t size, unsigned int align,
   if (result)
     *result = args.base;
 
-  if (args.base == (grub_addr_t)-1)
+  if (args.base == (grub_ieee1275_cell_t)-1)
     return -1;
 
   return 0;
@@ -447,8 +444,8 @@ grub_ieee1275_release (grub_addr_t addr, grub_size_t size)
 {
  struct release_args {
     struct grub_ieee1275_common_hdr common;
-    grub_addr_t addr;
-    grub_size_t size;
+    grub_ieee1275_cell_t addr;
+    grub_ieee1275_cell_t size;
  } args;
 
   INIT_IEEE1275_COMMON (&args.common, "release", 2, 0);
@@ -464,22 +461,22 @@ grub_ieee1275_release (grub_addr_t addr, grub_size_t size)
 int
 grub_ieee1275_set_property (grub_ieee1275_phandle_t phandle,
 			    const char *propname, void *buf,
-			    grub_size_t size, grub_size_t *actual)
+			    grub_size_t size, grub_ssize_t *actual)
 {
   struct set_property_args {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_phandle_t phandle;
-    const char *propname;
-    void *buf;
-    grub_size_t size;
-    grub_size_t actual;
+    grub_ieee1275_cell_t propname;
+    grub_ieee1275_cell_t buf;
+    grub_ieee1275_cell_t size;
+    grub_ieee1275_cell_t actual;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "setprop", 4, 1);
-  args.size = size;
-  args.buf = buf;
-  args.propname = propname;
-  args.phandle = phandle;
+  args.size = (grub_ieee1275_cell_t) size;
+  args.buf = (grub_ieee1275_cell_t) buf;
+  args.propname = (grub_ieee1275_cell_t) propname;
+  args.phandle = (grub_ieee1275_cell_t) phandle;
 
   if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
     return -1;
@@ -495,11 +492,11 @@ grub_ieee1275_set_color (grub_ieee1275_ihandle_t ihandle,
     struct grub_ieee1275_common_hdr common;
     char *method;
     grub_ieee1275_ihandle_t ihandle;
-    int index;
-    int b;
-    int g;
-    int r;
-    int result;
+    grub_ieee1275_cell_t index;
+    grub_ieee1275_cell_t b;
+    grub_ieee1275_cell_t g;
+    grub_ieee1275_cell_t r;
+    grub_ieee1275_cell_t result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 1);
@@ -521,7 +518,7 @@ grub_ieee1275_milliseconds (grub_uint32_t *msecs)
 {
   struct milliseconds_args {
     struct grub_ieee1275_common_hdr common;
-    grub_uint32_t msecs;
+    grub_ieee1275_cell_t msecs;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "milliseconds", 0, 1);

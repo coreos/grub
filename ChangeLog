@@ -1,3 +1,31 @@
+2005-08-03  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* include/grub/powerpc/ieee1275/ieee1275.h: Move ...
+	* include/grub/ieee1275/ieee1275.h: ... to here.  All users updated.
+	Move `abort', `grub_reboot', and `grub_halt' prototypes ...
+	* include/grub/powerpc/ieee1275/kernel.h: ... to here.
+	* commands/ieee1275/halt.c: Include <grub/machine/kernel.h> instead
+	of <grub/machine/ieee1275.h>.
+	* commands/ieee1275/reboot.c: Likewise.
+	* boot/powerpc/ieee1275/ieee1275.c: Move ...
+	* kern/ieee1275.c: ... to here.  All users updated.  Change all
+	parameter structs to use new type `grub_ieee1275_cell_t'.
+	* term/powerpc/ieee1275/ofconsole.c: Move ...
+	* term/ieee1275/ofconsole.c: ... to here.  All users updated.
+	* disk/powerpc/ieee1275/ofdisk.c: Move ...
+	* disk/ieee1275/ofdisk.c: ... to here.  All users updated.
+	* boot/powerpc/ieee1275/cmain.c: Change `grub_ieee1275_entry_fn' type
+	to return int.
+	* include/grub/i386/pc/console.h: Move to include/grub/console.h.
+	Remove unused prototypes.  All users updated.
+	* include/grub/powerpc/ieee1275/console.h: Removed.
+	* include/grub/powerpc/ieee1275/ieee1275.h: Define
+	`grub_ieee1275_cell_t'.
+	* kern/powerpc/ieee1275/openfw.c: Include <grub/machine/kernel.h>.
+	Cast comparisons with -1 to the correct type.
+	* loader/powerpc/ieee1275/linux.c (kernel_entry_t): Change parameter
+	type to match `grub_ieee1275_entry_fn'.
+
 2005-08-01  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added util/i386/pc/grub-probefs.c.
