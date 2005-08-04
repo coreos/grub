@@ -74,6 +74,12 @@ grub_console_putchar (grub_uint32_t c)
   grub_console_real_putchar (c);
 }
 
+static grub_uint16_t
+grub_console_getwh (void)
+{
+  return (80 << 8) | 25;
+}
+
 static void
 grub_console_setcolorstate (grub_term_color_state state)
 {
@@ -107,6 +113,7 @@ static struct grub_term grub_console_term =
     .putchar = grub_console_putchar,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
+    .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,
     .cls = grub_console_cls,

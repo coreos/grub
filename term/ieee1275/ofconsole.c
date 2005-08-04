@@ -1,7 +1,7 @@
 /*  ofconsole.c -- Open Firmware console for GRUB.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ static int
 grub_ofconsole_readkey (int *key)
 {
   char c;
-  int actual = 0;
+  grub_ssize_t actual = 0;
 
   grub_ieee1275_read (stdin_ihandle, &c, 1, &actual);
 
@@ -207,6 +207,58 @@ grub_ofconsole_getxy (void)
   return ((grub_curr_x - 1) << 8) | grub_curr_y;
 }
 
+static grub_uint16_t
+grub_ofconsole_getwh (void)
+{
+  grub_ieee1275_ihandle_t options;
+  char *val;
+  grub_ssize_t lval;
+  static grub_uint8_t w, h;
+
+  /* Once we have them, don't ask them again.  */
+  if (!w || !h)
+    {
+      if (! grub_ieee1275_finddevice ("/options", &options)
+	  && options != -1)
+        {
+          if (! grub_ieee1275_get_property_length (options, "screen-#columns",
+                                                   &lval) && lval != -1)
+            {
+	      val = grub_malloc (lval);
+	      if (val)
+                {
+                  if (! grub_ieee1275_get_property (options, "screen-#columns",
+                                                    val, lval, 0))
+                    w = (grub_uint8_t) grub_strtoul (val, val + lval, 10);
+
+                  grub_free (val);
+                }
+            }
+          if (! grub_ieee1275_get_property_length (options, "screen-#rows",
+                                                   &lval) && lval != -1)
+            {
+	      val = grub_malloc (lval);
+	      if (val)
+                {
+                  if (! grub_ieee1275_get_property (options, "screen-#rows",
+                                                    val, lval, 0))
+                    h = (grub_uint8_t) grub_strtoul (val, val + lval, 10);
+
+                  grub_free (val);
+                }
+            }
+	}
+    }
+
+  /* Use a small console by default.  */
+  if (! w)
+    w = 80;
+  if (! h)
+    h = 24;
+
+  return (w << 8) | h;
+}
+
 static void
 grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
@@ -241,8 +293,8 @@ grub_ofconsole_refresh (void)
 static grub_err_t
 grub_ofconsole_init (void)
 {
-  char data[4];
-  grub_size_t actual;
+  unsigned char data[4];
+  grub_ssize_t actual;
   int col;
 
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdout", data,
@@ -287,6 +339,7 @@ static struct grub_term grub_ofconsole_term =
     .checkkey = grub_ofconsole_checkkey,
     .getkey = grub_ofconsole_getkey,
     .getxy = grub_ofconsole_getxy,
+    .getwh = grub_ofconsole_getwh,
     .gotoxy = grub_ofconsole_gotoxy,
     .cls = grub_ofconsole_cls,
     .setcolorstate = grub_ofconsole_setcolorstate,

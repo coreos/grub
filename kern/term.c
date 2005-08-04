@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -90,6 +90,8 @@ grub_term_get_current (void)
 void
 grub_putcode (grub_uint32_t code)
 {
+  int height = grub_getwh () & 255;
+
   if (code == '\t' && grub_cur_term->getxy)
     {
       int n;
@@ -108,14 +110,14 @@ grub_putcode (grub_uint32_t code)
       grub_putcode ('\r');
 
       grub_more_lines++;
-      /* XXX: Don't use a fixed height!  */
-      if (grub_more && grub_more_lines == 24 - 1)
+
+      if (grub_more && grub_more_lines == height - 1)
 	{
 	  char key;
 	  int pos = grub_getxy ();
 
 	  /* Show --MORE-- on the lower left side of the screen.  */
-	  grub_gotoxy (1, 24 - 1);
+	  grub_gotoxy (1, height - 1);
 	  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
 	  grub_printf ("--MORE--");
 	  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
@@ -123,7 +125,7 @@ grub_putcode (grub_uint32_t code)
 	  key = grub_getkey ();
 	  
 	  /* Remove the message.  */
-	  grub_gotoxy (1, 24 -1);
+	  grub_gotoxy (1, height - 1);
 	  grub_printf ("        ");
 	  grub_gotoxy (pos >> 8, pos & 0xFF);
 	  
@@ -216,6 +218,12 @@ grub_uint16_t
 grub_getxy (void)
 {
   return (grub_cur_term->getxy) ();
+}
+
+grub_uint16_t
+grub_getwh (void)
+{
+  return (grub_cur_term->getwh) ();
 }
 
 void

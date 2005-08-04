@@ -71,9 +71,9 @@ grub_term_color_state;
 
 /* Menu-related geometrical constants.  */
 
-/* FIXME: These should be dynamically obtained from a terminal.  */
-#define GRUB_TERM_WIDTH		80
-#define GRUB_TERM_HEIGHT	25
+/* FIXME: Ugly way to get them form terminal.  */
+#define GRUB_TERM_WIDTH         ((grub_getwh()&0xFF00)>>8)
+#define GRUB_TERM_HEIGHT        (grub_getwh()&0xFF)
 
 /* The number of lines of "GRUB version..." at the top.  */
 #define GRUB_TERM_INFO_HEIGHT	1
@@ -142,6 +142,9 @@ struct grub_term
   /* Get a character.  */
   int (*getkey) (void);
   
+  /* Get the screen size. The return value is ((Width << 8) | Height).  */
+  grub_uint16_t (*getwh) (void);
+
   /* Get the cursor position. The return value is ((X << 8) | Y).  */
   grub_uint16_t (*getxy) (void);
   
@@ -183,6 +186,7 @@ void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
+grub_uint16_t EXPORT_FUNC(grub_getwh) (void);
 grub_uint16_t EXPORT_FUNC(grub_getxy) (void);
 void EXPORT_FUNC(grub_gotoxy) (grub_uint8_t x, grub_uint8_t y);
 void EXPORT_FUNC(grub_cls) (void);

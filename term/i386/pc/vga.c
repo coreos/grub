@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -473,6 +473,12 @@ grub_vga_putchar (grub_uint32_t c)
 }
 
 static grub_uint16_t
+grub_vga_getwh (void)
+{
+  return (TEXT_WIDTH << 8) | TEXT_HEIGHT;
+}
+
+static grub_uint16_t
 grub_vga_getxy (void)
 {
   return ((xpos << 8) | ypos);
@@ -566,6 +572,7 @@ static struct grub_term grub_vga_term =
     .putchar = grub_vga_putchar,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
+    .getwh = grub_vga_getwh,
     .getxy = grub_vga_getxy,
     .gotoxy = grub_vga_gotoxy,
     .cls = grub_vga_cls,
