@@ -1,3 +1,22 @@
+2005-08-06  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Reordered for
+	readablity.
+
+	* config.guess: Updated to the latest version from gnulib.
+	* config.sub: Likewise.
+	* install.sh: Likewise.
+	* mkinstalldirs: Likewise.
+
+	* include/grub/console.h: Removed. This file is arch-specific. Do
+	not put this in include/grub.
+
+	* include/grub/i386/pc/console.h: Resurrected.
+
+	* util/console.c: Include grub/machine/console.h instead of
+	grub/console.h.
+	* util/grub-emu.c: Likewise.
+
 2005-08-04  Marco Gerards  <metgerards@student.han.nl>
 
 	* kern/term.c (grub_putcode): Use `grub_getwh' instead of

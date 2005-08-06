@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef GRUB_CONSOLE_HEADER
-#define GRUB_CONSOLE_HEADER	1
+#ifndef GRUB_CONSOLE_MACHINE_HEADER
+#define GRUB_CONSOLE_MACHINE_HEADER	1
 
 /* Define scan codes.  */
 #define GRUB_CONSOLE_KEY_LEFT		0x4B00
@@ -33,7 +33,27 @@
 #define GRUB_CONSOLE_KEY_NPAGE		0x4900
 #define GRUB_CONSOLE_KEY_PPAGE		0x5100
 
+#ifndef ASM_FILE
+
+#include <grub/types.h>
+#include <grub/symbol.h>
+
+/* These are global to share code between C and asm.  */
+extern grub_uint8_t grub_console_cur_color;
+void grub_console_real_putchar (int c);
+int EXPORT_FUNC(grub_console_checkkey) (void);
+int EXPORT_FUNC(grub_console_getkey) (void);
+grub_uint16_t grub_console_getxy (void);
+void grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y);
+void grub_console_cls (void);
+void grub_console_setcursor (int on);
+
+/* Initialize the console system.  */
 void grub_console_init (void);
+
+/* Finish the console system.  */
 void grub_console_fini (void);
 
-#endif /* ! GRUB_CONSOLE_HEADER */
+#endif
+
+#endif /* ! GRUB_CONSOLE_MACHINE_HEADER */
