@@ -53,7 +53,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 grub_emu_LDFLAGS = -lncurses
 
 grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
-	kern/ieee1275.c kern/main.c kern/device.c \
+	kern/ieee1275/of.c kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/powerpc/ieee1275/init.c term/ieee1275/ofconsole.c \

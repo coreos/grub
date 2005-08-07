@@ -1,3 +1,11 @@
+2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Replaced
+	kern/ieee1275.c with kern/ieee1275/of.c.
+
+	* kern/ieee1275.c: Moved to ...
+	* kern/ieee1275/of.c: ... here.
+
 2005-08-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* conf/i386-pc.rmk (kernel_img_HEADERS): Reordered for
