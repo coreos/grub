@@ -33,8 +33,10 @@ pkgdatadir=${datadir}/${PACKAGE_TARNAME}/${host_cpu}-${host_vendor}
 grub_setup=${sbindir}/grub-setup
 grub_mkimage=${sbindir}/grub-mkimage
 grub_mkdevicemap=${sbindir}/grub-mkdevicemap
+grub_probefs=${sbindir}/grub-probefs
 rootdir=
 grub_prefix=/boot/grub
+modules=
 
 install_device=
 no_floppy=
@@ -51,11 +53,13 @@ Install GRUB on your drive.
 
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
+  --modules=MODULES       pre-load specified modules MODULES
   --root-directory=DIR    install GRUB images under the directory DIR
                           instead of the root directory
   --grub-setup=FILE       use FILE as grub-setup
   --grub-mkimage=FILE     use FILE as grub-mkimage
   --grub-mkdevicemap=FILE use FILE as grub-mkdevicemap
+  --grub-probefs=FILE     use FILE as grub-probefs
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
 
@@ -78,6 +82,8 @@ for option in "$@"; do
     -v | --version)
 	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
+    --modules=*)
+	modules=`echo "$option" | sed 's/--modules=//'` ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
     --grub-setup=*)
@@ -85,7 +91,9 @@ for option in "$@"; do
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
     --grub-mkdevicemap=*)
-	grub_setup=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
+	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
+    --grub-probefs=*)
+	grub_probefs=`echo "$option" | sed 's/--grub-probefs=//'` ;;
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
@@ -198,10 +206,17 @@ for file in ${pkgdatadir}/*.mod ${pkgdatadir}/*.lst ${pkgdatadir}/*.img; do
     cp -f $file ${grubdir} || exit 1
 done
 
-# Create the core image.
-modules="_chain pc"
-# XXX This must be dynamic. I'm still thinking how to implement this.
-modules="$modules fat"
+# Create the core image. First, auto-detect the filesystme module.
+fs_module=`$grub_probefs --device-map=${device_map} ${grubdir}`
+if test "x$fs_module" = x -a "x$modules" = x; then
+    echo "Auto-detection of a filesystem module failed." 1>&2
+    echo "Please specify the module with the option `--modules' explicitly." 1>&2
+    exit 1
+fi
+
+# Typically, _chain and pc are required.
+modules="$modules $fs_module _chain pc"
+
 $grub_mkimage --output=${grubdir}/core.img $modules || exit 1
 
 # Now perform the installation.

@@ -30,7 +30,6 @@ boot/i386/pc/diskboot.S
 boot/i386/pc/pxeboot.S
 boot/powerpc/ieee1275/cmain.c
 boot/powerpc/ieee1275/crt0.S
-boot/powerpc/ieee1275/ieee1275.c
 commands/i386/pc/halt.c
 commands/i386/pc/reboot.c
 commands/ieee1275/halt.c
@@ -50,7 +49,7 @@ conf/i386-pc.rmk
 conf/powerpc-ieee1275.mk
 conf/powerpc-ieee1275.rmk
 disk/i386/pc/biosdisk.c
-disk/powerpc/ieee1275/ofdisk.c
+disk/ieee1275/ofdisk.c
 disk/loopback.c
 font/manager.c
 fs/ext2.c
@@ -81,7 +80,6 @@ include/grub/powerpc/ieee1275/util/biosdisk.h
 include/grub/powerpc/ieee1275/biosdisk.h
 include/grub/powerpc/ieee1275/console.h
 include/grub/powerpc/ieee1275/ieee1275.h
-include/grub/powerpc/ieee1275/init.h
 include/grub/powerpc/ieee1275/kernel.h
 include/grub/powerpc/ieee1275/loader.h
 include/grub/powerpc/ieee1275/multiboot.h
@@ -122,6 +120,7 @@ kern/i386/pc/init.c
 kern/i386/pc/lzo1x.S
 kern/i386/pc/startup.S
 kern/i386/dl.c
+kern/ieee1275/of.c
 kern/powerpc/ieee1275/init.c
 kern/powerpc/ieee1275/openfw.c
 kern/powerpc/cache.S
@@ -163,7 +162,7 @@ partmap/pc.c
 partmap/sun.c
 term/i386/pc/console.c
 term/i386/pc/vga.c
-term/powerpc/ieee1275/ofconsole.c
+term/ieee1275/ofconsole.c
 util/i386/pc/biosdisk.c
 util/i386/pc/getroot.c
 util/i386/pc/grub-install.in

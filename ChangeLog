@@ -1,5 +1,28 @@
 2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* util/i386/pc/grub-install.in (grub_probefs): New variable.
+	(modules): Likewise.
+	(usage): Added descriptions for --modules and --grub-probefs.
+	Handle --modules and --grub-probefs. Save the arguments in MODULES
+	and GRUB_PROBEFS, respectively.
+	Auto-detect a filesystem module against GRUBDIR. If the result is
+	empty and modules are not specified explicitly, abort the
+	installation. Add the result to MODULES.
+
+	* DISTLIST: Removed boot/powerpc/ieee1275/ieee1275.c,
+	disk/powerpc/ieee1275/ofdisk.c,
+	include/grub/powerpc/ieee1275/init.h and
+	term/powerpc/ieee1275/ofconsole.c.
+	Added disk/ieee1275/ofdisk.c, kern/ieee1275/of.c and
+	term/ieee1275/ofconsole.c.
+
+	* include/grub/powerpc/ieee1275/console.h: Resurrected.
+
+	* COPYING: Upgraded to the latest version. Only the address of the
+	FSF office has changed.
+	
+2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Replaced
 	kern/ieee1275.c with kern/ieee1275/of.c.
 

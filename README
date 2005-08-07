@@ -2,10 +2,6 @@ This is GRUB 2, the second version of the GRand Unified Bootloader.
 GRUB 2 is rewritten from scratch to make GNU GRUB cleaner, safer, more
 robust, more powerful, and more portable.
 
-Because GRUB 2 was formerly developed under the project PUPA, there
-remain still many places where PUPA is used instead of GRUB 2. So
-suppose that PUPA is a synonym of GRUB 2 for now.
-
 See the file NEWS for a description of recent changes to GRUB 2.
 
 See the file INSTALL for instructions on how to build and install the
@@ -14,16 +10,5 @@ GRUB 2 data and program files.
 Please visit the official web page of GRUB 2, for more information.
 The URL is <http://www.gnu.org/software/grub/grub.html>.
 
-
-
-Because GRUB 2 is still in developmental stage, GRUB 2 is not for general
-use (yet). For now, you can install GRUB 2 into a floppy by these
-instructions:
-
-$ configure && make
-$ ./grub-mkimage -v -d . -o core.img _chain ext2
-$ dd if=boot.img of=/dev/fd0 bs=512 count=1
-$ dd if=core.img of=/dev/fd0 bs=512 seek=1
-
-It would be easier to use Bochs <http://bochs.sf.net/> than a real
-machine.
+For now, there is not much documentation yet. Please look at the GRUB
+Wiki <http://www.autistici.org/grub/> for testing procedures.
