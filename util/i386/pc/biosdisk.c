@@ -739,7 +739,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       {
  	struct grub_pc_partition *pcdata = 0;
 	
-	if (!strcmp (partition->partmap->name, "pc"))
+	if (strcmp (partition->partmap->name, "pc_partition_map") == 0)
 	  pcdata = partition->data;
 	  
 	if (pcdata)

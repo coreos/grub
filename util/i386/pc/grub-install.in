@@ -220,8 +220,8 @@ modules="$modules $fs_module _chain pc"
 $grub_mkimage --output=${grubdir}/core.img $modules || exit 1
 
 # Now perform the installation.
-$grub_setup --boot-file=${grubdir}/boot.img --core-file=${grubdir}/core.img \
-    --directory=${grubdir} --device-map=${device_map} || exit 1
+$grub_setup --directory=${grubdir} --device-map=${device_map} \
+    ${install_device} || exit 1
 
 # Prompt the user to check if the device map is correct.
 echo "Installation finished. No error reported."

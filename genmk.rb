@@ -288,6 +288,7 @@ class Script
 
 #{@name}: #{src} config.status
 	./config.status --file=#{name}:#{src}
+	chmod +x $@
 
 "
   end

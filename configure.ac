@@ -94,7 +94,7 @@ if test "x$host_cpu" = xi386; then
   grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
   grub_I386_CHECK_REGPARM_BUG
 else
-  AC_DEFINE([NESTED_FUNC_ATTR], [],[Catch gcc bug])
+  AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
 fi
 
 AC_PROG_INSTALL
@@ -137,6 +137,14 @@ if test "x$host_cpu" = xi386; then
   AC_CHECK_FUNC(lzo1x_999_compress, , 
 	        [AC_MSG_ERROR([LZO1X-999 must be enabled])])
 fi
+
+# Check for curses.
+AC_CHECK_LIB(ncurses, wgetch, [LIBCURSES="-lncurses"],
+  [AC_CHECK_LIB(curses, wgetch, [LIBCURSES="-lcurses"])])
+AC_SUBST(LIBCURSES)
+
+# Check for headers.
+AC_CHECK_HEADERS(ncurses/curses.h ncurses.h curses.h)
 
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"

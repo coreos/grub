@@ -486,7 +486,7 @@ grub_emu-util_powerpc_ieee1275_misc.d: util/powerpc/ieee1275/misc.c
 -include grub_emu-util_powerpc_ieee1275_misc.d
 
 
-grub_emu_LDFLAGS = -lncurses
+grub_emu_LDFLAGS = $(LIBCURSES)
 
 grubof_SOURCES = boot/powerpc/ieee1275/crt0.S boot/powerpc/ieee1275/cmain.c \
 	kern/ieee1275/of.c kern/main.c kern/device.c \

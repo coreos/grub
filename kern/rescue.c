@@ -530,7 +530,7 @@ grub_rescue_cmd_rmmod (int argc, char *argv[])
       return;
     }
 
-  if (! grub_dl_unref (mod))
+  if (grub_dl_unref (mod) <= 0)
     grub_dl_unload (mod);
 }
 

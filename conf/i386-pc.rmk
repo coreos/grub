@@ -92,7 +92,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 	util/i386/pc/misc.c
 
-grub_emu_LDFLAGS = -lncurses
+grub_emu_LDFLAGS = $(LIBCURSES)
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

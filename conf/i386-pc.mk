@@ -1094,7 +1094,7 @@ grub_emu-util_i386_pc_misc.d: util/i386/pc/misc.c
 -include grub_emu-util_i386_pc_misc.d
 
 
-grub_emu_LDFLAGS = -lncurses
+grub_emu_LDFLAGS = $(LIBCURSES)
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
@@ -1122,6 +1122,7 @@ CLEANFILES += grub-install
 
 grub-install: util/i386/pc/grub-install.in config.status
 	./config.status --file=grub-install:util/i386/pc/grub-install.in
+	chmod +x $@
 
 
 # Modules.

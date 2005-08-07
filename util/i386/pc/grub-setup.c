@@ -269,7 +269,8 @@ setup (const char *prefix, const char *dir,
 	      struct grub_pc_partition *pcdata =
 		root_dev->disk->partition->data;
 	      
-	      if (strcmp (root_dev->disk->partition->partmap->name, "pc"))
+	      if (strcmp (root_dev->disk->partition->partmap->name,
+			  "pc_partition_map") != 0)
 		grub_util_error ("No PC style partitions found");
 	      
 	      *install_dos_part
@@ -423,7 +424,8 @@ setup (const char *prefix, const char *dir,
       struct grub_pc_partition *pcdata =
 	root_dev->disk->partition->data;
 
-      if (strcmp (root_dev->disk->partition->partmap->name, "pc"))
+      if (strcmp (root_dev->disk->partition->partmap->name,
+		  "pc_partition_map") != 0)
 	grub_util_error ("No PC style partitions found");
       
       *install_dos_part
@@ -487,8 +489,8 @@ Usage: grub-setup [OPTION]... DEVICE\n\
 Set up images to boot from DEVICE.\n\
 DEVICE must be a GRUB device (e.g. ``(hd0,0)'').\n\
 \n\
-  -b, --boot-file=FILE    use FILE as the boot file [default=%s]\n\
-  -c, --core-file=FILE    use FILE as the core file [default=%s]\n\
+  -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
+  -c, --core-image=FILE   use FILE as the core image [default=%s]\n\
   -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
   -m, --device-map=FILE   use FILE as the device map [default=%s]\n\
   -r, --root-device=DEV   use DEV as the root device [default=guessed]\n\
@@ -655,7 +657,7 @@ main (int argc, char *argv[])
 	  grub_util_error ("Cannot guess the root device. Specify the option ``--root-device''.");
 	}
     }
-  
+
   /* Do the real work.  */
   setup (prefix,
 	 dir ? : DEFAULT_DIRECTORY,

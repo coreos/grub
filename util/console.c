@@ -18,7 +18,24 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <curses.h>
+#include <config.h>
+
+#if defined(HAVE_NCURSES_CURSES_H)
+# include <ncurses/curses.h>
+#elif defined(HAVE_NCURSES_H)
+# include <ncurses.h>
+#elif defined(HAVE_CURSES_H)
+# include <curses.h>
+#endif
+
+/* For compatibility.  */
+#ifndef A_NORMAL
+# define A_NORMAL	0
+#endif /* ! A_NORMAL */
+#ifndef A_STANDOUT
+# define A_STANDOUT	0
+#endif /* ! A_STANDOUT */
+
 #include <grub/machine/console.h>
 #include <grub/term.h>
 #include <grub/types.h>

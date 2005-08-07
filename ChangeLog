@@ -1,5 +1,41 @@
 2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* kern/rescue.c (grub_rescue_cmd_rmmod): If the reference count is
+	negative, unload the module.
+
+	* util/i386/pc/grub-setup.c (setup): The name of the PC partition
+	map is "pc_partition_map" but not "pc".
+	(usage): Fix the description. The options are --boot-image and
+	--core-image but not --boot-file or --core-file.
+	(main): If not specified explicitly, make BOOT_FILE and CORE_FILE
+	based on DEFAULT_BOOT_FILE and DEFAULT_CORE_FILE with DIR or
+	DEFAULT_DIRECTORY.
+
+	* util/i386/pc/grub-install.in: Do not specify --boot-file or
+	--core-file. Specify INSTALL_DEVICE as an argument.
+
+	* util/console.c: Include config.h.
+	[HAVE_NCURSeS_CURSES_H]: Include ncurses/curses.h.
+	[HAVE_NCURSES_H]: Include ncurses.h.
+	[HAVE_CURSES_H]: Include curses.h.
+	[!A_NORMAL] (A_NORMAL): Defined as zero.
+	[!A_STANDOUT] (A_STANDOUT): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_LDFLAGS): Use $(LIBCURSES) instead of
+	-lncurses.
+	* conf/powerpc-ieee1275.rmk (grub_emu_LDFLAGS): Likewise.
+
+	* configure.ac: Check for curses libraries and headers.
+
+	* Makefile.in (LIBCURSES): New variable.
+
+	* genmk.rb (Script::rule): Set the executable bits.
+
+	* util/i386/pc/biosdisk.c (grub_util_biosdisk_get_grub_dev): The
+	name of the PC partition map is "pc_partition_map" but not "pc".
+
+2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* util/i386/pc/grub-install.in (grub_probefs): New variable.
 	(modules): Likewise.
 	(usage): Added descriptions for --modules and --grub-probefs.
