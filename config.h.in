@@ -25,8 +25,11 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `lzo' library (-llzo). */
-#undef HAVE_LIBLZO
+/* Define to 1 if you have the <lzo1x.h> header file. */
+#undef HAVE_LZO1X_H
+
+/* Define to 1 if you have the <lzo/lzo1x.h> header file. */
+#undef HAVE_LZO_LZO1X_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

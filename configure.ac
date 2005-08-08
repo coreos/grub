@@ -132,10 +132,19 @@ AC_CHECK_SIZEOF(long)
 
 # Check LZO when compiling for the i386.
 if test "x$host_cpu" = xi386; then
-  AC_CHECK_LIB(lzo, __lzo_init2, ,
-	       AC_MSG_ERROR([LZO library version 1.02 or later is required]))
+  # There are three possibilities. LZO version 2 installed with the name
+  # liblzo2, with the name liblzo, and LZO version 1.
+  AC_CHECK_LIB(lzo2, __lzo_init_v2, [LIBLZO="-llzo2"],
+    AC_CHECK_LIB(lzo, __lzo_init_v2, [LIBLZO="-llzo"],
+      AC_CHECK_LIB(lzo, __lzo_init2, [LIBLZO="-llzo"],
+	       AC_MSG_ERROR([LZO library version 1.02 or later is required]))))
+  AC_SUBST(LIBLZO)
+  LIBS="$LIBS $LIBLZO"
   AC_CHECK_FUNC(lzo1x_999_compress, , 
 	        [AC_MSG_ERROR([LZO1X-999 must be enabled])])
+
+  # LZO version 2 uses lzo/lzo1x.h, while LZO version 1 uses lzo1x.h.
+  AC_CHECK_HEADERS(lzo/lzo1x.h lzo1x.h)
 fi
 
 # Check for curses.

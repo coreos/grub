@@ -35,7 +35,11 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
-#include <lzo1x.h>
+#if defined(HAVE_LZO_LZO1X_H)
+# include <lzo/lzo1x.h>
+#elif defined(HAVE_LZO1X_H)
+# include <lzo1x.h>
+#endif
 
 static void
 compress_kernel (char *kernel_img, size_t kernel_size,

@@ -1,3 +1,21 @@
+2005-08-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* Makefile.in (LIBLZO): New variable.
+
+	* configure.ac: Check for LZO version 2.
+
+	* util/i386/pc/grub-mkimage.c [HAVE_LZO_LZO1X_H]: Include
+	lzo/lzo1x.h instead of lzo1x.h.
+
+	* conf/i386-pc.rmk (grub_mkimage_LDFLAGS): Use $(LIBLZO) instead
+	of -llzo.
+
+	* util/i386/pc/grub-setup.c (main): Do not free PREFIX
+	twice. Reported by Vladimir Serbinenko <phcoder@gmail.com>.
+
+	* partmap/pc.c (pc_partition_map_probe): Restore P->DATA after
+	copying the data from PARTITION to P.
+
 2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/rescue.c (grub_rescue_cmd_rmmod): If the reference count is

@@ -67,6 +67,7 @@ NM = @NM@
 LD = @LD@
 RUBY = @RUBY@
 LIBCURSES = @LIBCURSES@
+LIBLZO = @LIBLZO@
 
 ### General variables.
 

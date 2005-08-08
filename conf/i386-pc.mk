@@ -305,7 +305,7 @@ grub_mkimage-util_resolve.d: util/resolve.c
 
 -include grub_mkimage-util_resolve.d
 
-grub_mkimage_LDFLAGS = -llzo
+grub_mkimage_LDFLAGS = $(LIBLZO)
 
 # For grub-setup.
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \

@@ -436,6 +436,10 @@ setup (const char *prefix, const char *dir,
   else
     *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);
   
+  grub_util_info ("dos partition is %u, bsd partition is %u, prefix is %s",
+		  grub_le_to_cpu32 (*install_dos_part),
+		  grub_le_to_cpu32 (*install_bsd_part),
+		  prefix);
   strcpy (install_prefix, prefix);
   
   /* Write the first two sectors of the core image onto the disk.  */
@@ -678,7 +682,6 @@ main (int argc, char *argv[])
   
   free (boot_file);
   free (core_file);
-  free (prefix);
   free (dir);
   free (dev_map);
   free (root_dev);

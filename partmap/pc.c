@@ -1,7 +1,7 @@
 /* pc.c - Read PC style partition tables.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005 Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -234,6 +234,7 @@ pc_partition_map_probe (grub_disk_t disk, const char *str)
 	  && pcdata->bsd_part == partdata->bsd_part)
 	{
 	  grub_memcpy (p, partition, sizeof (*p));
+	  p->data = pcdata;
 	  grub_memcpy (pcdata, partdata, sizeof (*pcdata));
 	  return 1;
 	}
