@@ -1,3 +1,21 @@
+2005-08-09  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Added machine/vbe.h.
+	* kern/i386/pc/startup.S: Updated Global Descriptor table's
+	descriptions.
+	(grub_vbe_get_controller_info): New function.
+	(grub_vbe_get_mode_info): Likewise.
+	(grub_vbe_set_mode): Likewise.
+	(grub_vbe_get_mode): Likewise.
+	(grub_vbe_set_memory_window): Likewise.
+	(grub_vbe_get_memory_window): Likewise.
+	(grub_vbe_set_scanline_length): Likewise.
+	(grub_vbe_get_scanline_length): Likewise.
+	(grub_vbe_set_display_start): Likewise.
+	(grub_vbe_get_display_start): Likewise.
+	(grub_vbe_set_palette_data): Likewise.
+	* include/grub/i386/pc/vbe.h: New file.
+
 2005-08-08  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Replaced

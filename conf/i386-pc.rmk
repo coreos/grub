@@ -33,7 +33,8 @@ kernel_img_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h partition.h \
 	pc_partition.h rescue.h symbol.h term.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h machine/time.h machine/vga.h
+	machine/memory.h machine/loader.h machine/time.h machine/vga.h \
+	machine/vbe.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
