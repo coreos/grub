@@ -1,5 +1,11 @@
 2005-08-08  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* term/ieee1275/ofconsole.c: Include <grub/mm.h>.
+	(grub_ofconsole_getwh): Cast -1 to type grub_ieee1275_ihandle_t.
+	Pass 0 as `end' parameter to grub_strtoul().
+
+2005-08-08  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* include/grub/powerpc/ieee1275/console.h: Do not include
 	<grub/types.h>.  Do not include <grub/symbol.h>.  Remove ASM_FILE
 	ifdef.

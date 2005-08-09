@@ -21,6 +21,7 @@
 #include <grub/term.h>
 #include <grub/types.h>
 #include <grub/misc.h>
+#include <grub/mm.h>
 #include <grub/machine/console.h>
 #include <grub/ieee1275/ieee1275.h>
 
@@ -219,7 +220,7 @@ grub_ofconsole_getwh (void)
   if (!w || !h)
     {
       if (! grub_ieee1275_finddevice ("/options", &options)
-	  && options != -1)
+	  && options != (grub_ieee1275_ihandle_t) -1)
         {
           if (! grub_ieee1275_get_property_length (options, "screen-#columns",
                                                    &lval) && lval != -1)
@@ -229,7 +230,7 @@ grub_ofconsole_getwh (void)
                 {
                   if (! grub_ieee1275_get_property (options, "screen-#columns",
                                                     val, lval, 0))
-                    w = (grub_uint8_t) grub_strtoul (val, val + lval, 10);
+                    w = (grub_uint8_t) grub_strtoul (val, 0, 10);
 
                   grub_free (val);
                 }
@@ -242,7 +243,7 @@ grub_ofconsole_getwh (void)
                 {
                   if (! grub_ieee1275_get_property (options, "screen-#rows",
                                                     val, lval, 0))
-                    h = (grub_uint8_t) grub_strtoul (val, val + lval, 10);
+                    h = (grub_uint8_t) grub_strtoul (val, 0, 10);
 
                   grub_free (val);
                 }
