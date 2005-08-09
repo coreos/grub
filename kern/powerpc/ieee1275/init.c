@@ -28,7 +28,7 @@
 #include <grub/setjmp.h>
 #include <grub/env.h>
 #include <grub/misc.h>
-#include <grub/console.h>
+#include <grub/machine/console.h>
 #include <grub/machine/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/ieee1275/ofdisk.h>

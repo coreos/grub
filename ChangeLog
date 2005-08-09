@@ -1,3 +1,20 @@
+2005-08-08  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* include/grub/powerpc/ieee1275/console.h: Do not include
+	<grub/types.h>.  Do not include <grub/symbol.h>.  Remove ASM_FILE
+	ifdef.
+	(grub_console_cur_color): Remove i386-specific prototype.
+	(grub_console_real_putchar): Likewise.
+	(grub_console_checkkey): Likewise.
+	(grub_console_getkey): Likewise.
+	(grub_console_getxy): Likewise.
+	(grub_console_gotoxy): Likewise.
+	(grub_console_cls): Likewise.
+	(grub_console_setcursor): Likewise.
+	* kern/powerpc/ieee1275/init.c: Don't include <grub/console.h>.
+	Include <grub/machine/console.h>.
+	* term/ieee1275/ofconsole.c: Likewise.
+
 2005-08-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* Makefile.in (LIBLZO): New variable.
