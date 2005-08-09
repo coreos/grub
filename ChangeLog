@@ -1,5 +1,13 @@
 2005-08-08  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Replaced
+	kern/ieee1275/of.c with kern/ieee1275/ieee1275.c.
+	* DISTLIST: Likewise.
+	* kern/ieee1275/of.c: Moved to ...
+	* kern/ieee1275/ieee1275.c: ... here.
+
+2005-08-08  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* term/ieee1275/ofconsole.c: Include <grub/mm.h>.
 	(grub_ofconsole_getwh): Cast -1 to type grub_ieee1275_ihandle_t.
 	Pass 0 as `end' parameter to grub_strtoul().

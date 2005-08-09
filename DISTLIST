@@ -120,7 +120,7 @@ kern/i386/pc/init.c
 kern/i386/pc/lzo1x.S
 kern/i386/pc/startup.S
 kern/i386/dl.c
-kern/ieee1275/of.c
+kern/ieee1275/ieee1275.c
 kern/powerpc/ieee1275/init.c
 kern/powerpc/ieee1275/openfw.c
 kern/powerpc/cache.S
