@@ -178,6 +178,7 @@ grub_context_t grub_context_get (void);
 grub_menu_t grub_context_get_current_menu (void);
 grub_menu_t grub_context_push_menu (grub_menu_t menu);
 void grub_context_pop_menu (void);
+char *grub_normal_do_completion (char *buf, int *restore);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);

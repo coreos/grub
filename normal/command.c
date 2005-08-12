@@ -173,8 +173,11 @@ int
 grub_iterate_commands (int (*iterate) (grub_command_t))
 {
   grub_command_t cmd;
+  
   for (cmd = grub_command_list; cmd; cmd = cmd->next)
-    iterate (cmd);
+    if (iterate (cmd))
+      return 1;
+  
   return 0;
 }
 

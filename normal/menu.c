@@ -33,7 +33,7 @@ draw_border (void)
   
   grub_gotoxy (GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y);
   grub_putcode (GRUB_TERM_DISP_UL);
-  for (i = 0; i < GRUB_TERM_BORDER_WIDTH - 2; i++)
+  for (i = 0; i < (unsigned) GRUB_TERM_BORDER_WIDTH - 2; i++)
     grub_putcode (GRUB_TERM_DISP_HLINE);
   grub_putcode (GRUB_TERM_DISP_UR);
 
@@ -47,7 +47,7 @@ draw_border (void)
 
   grub_gotoxy (GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y + GRUB_TERM_NUM_ENTRIES + 1);
   grub_putcode (GRUB_TERM_DISP_LL);
-  for (i = 0; i < GRUB_TERM_BORDER_WIDTH - 2; i++)
+  for (i = 0; i < (unsigned) GRUB_TERM_BORDER_WIDTH - 2; i++)
     grub_putcode (GRUB_TERM_DISP_HLINE);
   grub_putcode (GRUB_TERM_DISP_LR);
 

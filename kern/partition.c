@@ -42,14 +42,16 @@ grub_partition_map_unregister (grub_partition_map_t partmap)
       }
 }
 
-void
+int
 grub_partition_map_iterate (int (*hook) (const grub_partition_map_t partmap))
 {
   grub_partition_map_t p;
 
   for (p = grub_partition_map_list; p; p = p->next)
     if (hook (p))
-      break;
+      return 1;
+
+  return 0;
 }
 
 grub_partition_t
@@ -85,23 +87,35 @@ grub_err_t
 grub_partition_iterate (struct grub_disk *disk,
 			int (*hook) (const grub_partition_t partition))
 {
-  auto int part_map_iterate (const grub_partition_map_t partmap);
+  grub_partition_map_t partmap = 0;
 
-  int part_map_iterate (const grub_partition_map_t partmap)
+  auto int part_map_iterate (const grub_partition_map_t p);
+  auto int part_map_iterate_hook (const grub_partition_t partition);
+
+  int part_map_iterate_hook (const grub_partition_t partition __attribute__ ((unused)))
     {
-      grub_err_t err = partmap->iterate (disk, hook);
+      return 1;
+    }
+  
+  int part_map_iterate (const grub_partition_map_t p)
+    {
+      grub_err_t err = p->iterate (disk, part_map_iterate_hook);
 
-      if (err == GRUB_ERR_BAD_PART_TABLE)
+      if (err != GRUB_ERR_NONE)
 	{
 	  /* Continue to next partition map type.  */
 	  grub_errno = GRUB_ERR_NONE;
 	  return 0;
 	}
 
+      partmap = p;
       return 1;
     }
 
   grub_partition_map_iterate (part_map_iterate);
+  if (partmap)
+    partmap->iterate (disk, hook);
+  
   return grub_errno;
 }
 

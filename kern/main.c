@@ -60,7 +60,8 @@ grub_load_modules (void)
 /* Write hook for the environment variables of root. Remove surrounding
    parentheses, if any.  */
 static char *
-grub_env_write_root (struct grub_env_var *var, const char *val)
+grub_env_write_root (struct grub_env_var *var __attribute__ ((unused)),
+		     const char *val)
 {
   /* XXX Is it better to check the existence of the device?  */
   grub_size_t len = grub_strlen (val);

@@ -114,7 +114,7 @@ void grub_disk_cache_invalidate_all (void);
 
 void EXPORT_FUNC(grub_disk_dev_register) (grub_disk_dev_t dev);
 void EXPORT_FUNC(grub_disk_dev_unregister) (grub_disk_dev_t dev);
-void EXPORT_FUNC(grub_disk_dev_iterate) (int (*hook) (const char *name));
+int EXPORT_FUNC(grub_disk_dev_iterate) (int (*hook) (const char *name));
 
 grub_disk_t EXPORT_FUNC(grub_disk_open) (const char *name);
 void EXPORT_FUNC(grub_disk_close) (grub_disk_t disk);

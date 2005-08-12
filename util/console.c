@@ -217,6 +217,17 @@ grub_ncurses_getxy (void)
   return (x << 8) | y;
 }
 
+static grub_uint16_t
+grub_ncurses_getwh (void)
+{
+  int x;
+  int y;
+
+  getmaxyx (stdscr, y, x);
+
+  return (x << 8) | y;
+}
+
 static void
 grub_ncurses_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
@@ -275,6 +286,7 @@ static struct grub_term grub_ncurses_term =
     .checkkey = grub_ncurses_checkkey,
     .getkey = grub_ncurses_getkey,
     .getxy = grub_ncurses_getxy,
+    .getwh = grub_ncurses_getwh,
     .gotoxy = grub_ncurses_gotoxy,
     .cls = grub_ncurses_cls,
     .setcolorstate = grub_ncurses_setcolorstate,

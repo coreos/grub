@@ -1,3 +1,54 @@
+2005-08-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added normal/completion.c.
+
+	* normal/completion.c: New file.
+	
+	* term/i386/pc/console.c (grub_console_getwh): New function.
+	(grub_console_term): Assign grub_console_getwh to getwh.
+
+	* normal/cmdline.c (grub_tab_complete): Removed. Now the same
+	function is defined in normal/completion.c as
+	grub_normal_do_completion.
+	(grub_cmdline_get): Use grub_normal_do_completion instead of
+	grub_tab_complete.
+
+	* kern/partition.c (grub_partition_map_iterate): Return 1 if HOOK
+	returns non-zero, otherwise return 0.
+	(grub_partition_iterate): First, probe the partition map. Then,
+	call ITERATE only for this partition map.
+
+	* kern/misc.c (grub_strncmp): Rewritten.
+
+	* kern/disk.c (grub_disk_dev_iterate): Return 1 if P->ITERATE
+	returns non-zero. Otherwise return 0.
+
+	* include/grub/partition.h (grub_partition_map_iterate): Return
+	int instead of void.
+
+	* include/grub/normal.h (grub_normal_do_completion): New prototype.
+
+	* include/grub/misc.h (grub_strncmp): Change the type of N to
+	grub_size_t.
+
+	* include/grub/disk.h (grub_disk_dev_iterate): Return int instead
+	of void.
+
+	* normal/menu.c (draw_border): Cast GRUB_TERM_BORDER_WIDTH to
+	unsigned explictly before comparing it with I.
+
+	* kern/main.c (grub_env_write_root): Add the attribute unused into
+	VAR.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Added
+	normal/completion.c.
+	(normal_mod_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* normal/command.c (grub_iterate_commands): If ITERATE returns
+	non-zero, return one immediately.
+
 2005-08-09  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* conf/i386-pc.rmk (kernel_img_HEADERS): Added machine/vbe.h.

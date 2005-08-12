@@ -191,18 +191,18 @@ grub_strcmp (const char *s1, const char *s2)
 }
 
 int
-grub_strncmp (const char *s1, const char *s2, int c)
+grub_strncmp (const char *s1, const char *s2, grub_size_t n)
 {
-  int p = 1;
-
-  while (*s1 && *s2 && p < c)
+  if (n == 0)
+    return 0;
+  
+  while (*s1 && *s2 && --n)
     {
       if (*s1 != *s2)
 	return (int) *s1 - (int) *s2;
       
       s1++;
       s2++;
-      p++;
     }
 
   return (int) *s1 - (int) *s2;

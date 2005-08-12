@@ -152,6 +152,7 @@ normal/powerpc/setjmp.S
 normal/arg.c
 normal/cmdline.c
 normal/command.c
+normal/completion.c
 normal/context.c
 normal/main.c
 normal/menu.c

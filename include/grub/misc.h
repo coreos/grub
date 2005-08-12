@@ -43,7 +43,7 @@ void *EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
 int EXPORT_FUNC(grub_strcmp) (const char *s1, const char *s2);
-int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, int c);
+int EXPORT_FUNC(grub_strncmp) (const char *s1, const char *s2, grub_size_t n);
 int EXPORT_FUNC(grub_strncasecmp) (const char *s1, const char *s2, int c);
 char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
 char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
