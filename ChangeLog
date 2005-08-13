@@ -1,3 +1,11 @@
+2005-08-13  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): Replace the test
+	program with another one, because the old one didn't detect a bug
+	in gcc-3.4. Always use regparm 2, because the new test is still
+	not enough for gcc-4.0. Someone must investigate a simple test
+	case which detects a bug in gcc-4.0.
+
 2005-08-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added normal/completion.c.

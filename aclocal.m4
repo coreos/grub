@@ -300,24 +300,34 @@ AC_DEFUN(grub_I386_CHECK_REGPARM_BUG,
 AC_MSG_CHECKING([if GCC has the regparm=3 bug])
 AC_CACHE_VAL(grub_cv_i386_check_nested_functions,
 [AC_RUN_IFELSE([AC_LANG_SOURCE(
-[[int *p;
+[[
+static int
+test (int *n)
+{
+  return *n == -1;
+}
+
+static int
+testfunc (int __attribute__ ((__regparm__ (3))) (*hook) (int a, int b, int *c))
+{
+  int a = 0;
+  int b = 0;
+  int c = -1;
+  return hook (a, b, &c);
+}
 
 int
-main ()
+main (void)
 {
-  int test;
-
-  int __attribute__ ((__regparm__ (3))) nestedfunc (int a, int b, int c)
+  int __attribute__ ((__regparm__ (3))) nestedfunc (int a, int b, int *c)
     {
-      return (&test == p);
+      return a == b && test (c);
     }
-  
-  p = &test;
-  return ! nestedfunc (0, 0, 0);
+  return testfunc (nestedfunc) ? 0 : 1;
 }
 ]])],
-	[grub_cv_i386_check_nested_functions=yes],
-	[grub_cv_i386_check_nested_functions=no])])
+	[grub_cv_i386_check_nested_functions=no],
+	[grub_cv_i386_check_nested_functions=yes])])
 
 AC_MSG_RESULT([$grub_cv_i386_check_nested_functions])
 
@@ -326,6 +336,10 @@ if test "x$grub_cv_i386_check_nested_functions" = xyes; then
 	[__attribute__ ((__regparm__ (2)))],
 	[Catch gcc bug])
 else
-  AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
+dnl Unfortunately, the above test does not detect a bug in gcc-4.0.
+dnl So use regparm 2 until a better test is found.
+  AC_DEFINE([NESTED_FUNC_ATTR], 
+	[__attribute__ ((__regparm__ (2)))],
+	[Catch gcc bug])
 fi
 ])
