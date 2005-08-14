@@ -160,7 +160,7 @@ grub_cmdline_run (int nested)
       if (! *cmdline)
 	continue;
 
-      grub_command_execute (cmdline);
+      grub_command_execute (cmdline, 1);
     }
 }
 

@@ -182,7 +182,7 @@ grub_iterate_commands (int (*iterate) (grub_command_t))
 }
 
 int
-grub_command_execute (char *cmdline)
+grub_command_execute (char *cmdline, int interactive)
 {
   auto grub_err_t cmdline_get (char **s);
   grub_err_t cmdline_get (char **s)
@@ -210,7 +210,12 @@ grub_command_execute (char *cmdline)
      of calling a function.  */
   if (num == 0 && grub_strchr (args[0], '='))
     {
-      char *val = grub_strchr (args[0], '=');
+      char *val;
+
+      if (! interactive)
+	grub_printf ("%s\n", cmdline);
+      
+      val = grub_strchr (args[0], '=');
       val[0] = 0;
       grub_env_set (args[0], val + 1);
       val[0] = '=';
@@ -221,8 +226,14 @@ grub_command_execute (char *cmdline)
   if (! cmd)
     return -1;
 
+  if (! (cmd->flags & GRUB_COMMAND_FLAG_NO_ECHO) && ! interactive)
+    grub_printf ("%s\n", cmdline);
+  
   /* Enable the pager if the environment pager is set to 1.  */
-  pager = grub_env_get ("pager");
+  if (interactive)
+    pager = grub_env_get ("pager");
+  else
+    pager = 0;
   if (pager && (! grub_strcmp (pager, "1")))
     grub_set_more (1);
   

@@ -23,6 +23,8 @@
 #include <argp.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <grub/mm.h>
 #include <grub/setjmp.h>
@@ -95,6 +97,7 @@ static struct argp_option options[] = {
   {"device-map",  'm', "FILE", 0, "use FILE as the device map", 0},
   {"directory",   'd', "DIR",  0, "use GRUB files in the directory DIR", 0},
   {"verbose",     'v', 0     , 0, "print verbose messages", 0},
+  {"hold",        'H', "SECONDS", OPTION_ARG_OPTIONAL, "wait until a debugger will attach", 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -103,6 +106,7 @@ struct arguments
   char *root_dev;
   char *dev_map;
   char *dir;
+  int hold;
 };
 
 static error_t
@@ -124,6 +128,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'v':
       verbosity++;
       break;
+    case 'H':
+      args->hold = arg ? atoi (arg) : -1;
+      break;
     case ARGP_KEY_END:
       break;
     default:
@@ -143,13 +150,26 @@ main (int argc, char *argv[])
   struct arguments args =
     {
       .dir = DEFAULT_DIRECTORY,
-      .dev_map = DEFAULT_DEVICE_MAP
+      .dev_map = DEFAULT_DEVICE_MAP,
+      .hold = 0
     };
   
   progname = "grub-emu";
   
   argp_parse (&argp, argc, argv, 0, 0, &args);
 
+  /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */
+  if (args.hold && verbosity > 0)
+    printf ("Run \"gdb %s %d\", and set ARGS.HOLD to zero.\n",
+            progname, (int) getpid ());
+  while (args.hold)
+    {
+      if (args.hold > 0)
+        args.hold--;
+
+      sleep (1);
+    }
+  
   /* Make sure that there is a root device.  */
   if (! args.root_dev)
     {

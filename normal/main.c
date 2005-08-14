@@ -178,9 +178,35 @@ read_config_file (const char *config)
   while (get_line (file, cmdline, sizeof (cmdline)))
     {
       grub_command_t cmd;
-      
+
       cmd = grub_command_find (cmdline);
       grub_errno = GRUB_ERR_NONE;
+      
+      if (cur_entry)
+	{
+	  if (! cmd || ! (cmd->flags & GRUB_COMMAND_FLAG_TITLE))
+	    {
+	      cur_cmd = (grub_command_list_t) grub_malloc (sizeof (*cur_cmd));
+	      if (! cur_cmd)
+		goto fail;
+	      
+	      cur_cmd->command = grub_strdup (cmdline);
+	      if (! cur_cmd->command)
+		{
+		  grub_free (cur_cmd);
+		  goto fail;
+		}
+	      
+	      cur_cmd->next = 0;
+	      
+	      *next_cmd = cur_cmd;
+	      next_cmd = &(cur_cmd->next);
+	      
+	      cur_entry->num++;
+	      continue;
+	    }
+	}
+      
       if (! cmd)
 	{
 	  grub_printf ("Unknown command `%s' is ignored.\n", cmdline);
@@ -218,12 +244,12 @@ read_config_file (const char *config)
 	  
 	  menu->size++;
 	}
-      else if (! cur_entry)
+      else
 	{
 	  /* Run the command if possible.  */
 	  if (cmd->flags & GRUB_COMMAND_FLAG_MENU)
 	    {
-	      grub_command_execute (cmdline);
+	      grub_command_execute (cmdline, 0);
 	      if (grub_errno != GRUB_ERR_NONE)
 		{
 		  grub_print_error ();
@@ -235,26 +261,6 @@ read_config_file (const char *config)
 	      grub_printf ("Invalid command `%s' is ignored.\n", cmdline);
 	      continue;
 	    }
-	}
-      else
-	{
-	  cur_cmd = (grub_command_list_t) grub_malloc (sizeof (*cur_cmd));
-	  if (! cur_cmd)
-	    goto fail;
-
-	  cur_cmd->command = grub_strdup (cmdline);
-	  if (! cur_cmd->command)
-	    {
-	      grub_free (cur_cmd);
-	      goto fail;
-	    }
-
-	  cur_cmd->next = 0;
-	  
-	  *next_cmd = cur_cmd;
-	  next_cmd = &(cur_cmd->next);
-	  
-	  cur_entry->num++;
 	}
     }
 
@@ -463,6 +469,9 @@ grub_normal_execute (const char *config, int nested)
 {
   grub_menu_t menu = 0;
 
+  read_command_list ();
+  read_fs_list ();
+  
   if (config)
     {
       menu = read_config_file (config);
@@ -471,9 +480,6 @@ grub_normal_execute (const char *config, int nested)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  read_command_list ();
-  read_fs_list ();
-  
   if (menu)
     {
       grub_menu_run (menu, nested);

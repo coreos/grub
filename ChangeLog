@@ -1,3 +1,28 @@
+2005-08-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* normal/menu.c (run_menu_entry): 
+
+	* normal/command.c (grub_command_execute): If INTERACTIVE is
+	false and GRUB_COMMAND_FLAG_NO_ECHO is not specified, print
+	CMDLINE. Disable the pager if INTERACTIVE is true.
+	All callers are changed.
+
+	* normal/main.c (grub_normal_execute): Read command.lst and fs.lst
+	before reading a config file.
+	* normal/main.c (read_config_file): Even if a command is not
+	found, register it if it is within an entry.
+
+	* util/grub-emu.c: Include sys/types.h and unistd.h.
+	(options): Added --hold.
+	(struct arguments): Added a new member "hold".
+	(parse_opt): If KEY is 'H', set ARGS->HOLD to ARG or -1 if ARG is
+	missing.
+	(main): Initialize ARGS.HOLD to zero. Wait until ARGS.HOLD is
+	cleared by a debugger, if it is not zero.
+
+	* include/grub/normal.h (grub_command_execute): Add an argument
+	INTERACTIVE.
+
 2005-08-14  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* DISTLIST: Added include/grub/i386/pc/vbe.h.

@@ -822,7 +822,6 @@ run (struct screen *screen)
     {
       struct line *linep = screen->lines + i;
       char *p;
-      grub_command_t c;
       
       /* Trim down space characters.  */
       for (p = linep->buf + linep->len - 1;
@@ -839,26 +838,13 @@ run (struct screen *screen)
 	/* Ignore an empty command line.  */
 	continue;
 
-      c = grub_command_find (p);
-      if (! c)
-	break;
-      
-      if (! (c->flags & GRUB_COMMAND_FLAG_CMDLINE))
-	{
-	  grub_error (GRUB_ERR_INVALID_COMMAND, "invalid command `%s'", p);
-	  break;
-	}
-      
-      if (! (c->flags & GRUB_COMMAND_FLAG_NO_ECHO))
-	grub_printf ("%s\n", p);
-      
-      if (grub_command_execute (p) != 0)
+      if (grub_command_execute (p, 0) != 0)
 	break;
     }
   
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
-    grub_command_execute ("boot");
+    grub_command_execute ("boot", 0);
 
   if (grub_errno != GRUB_ERR_NONE)
     {

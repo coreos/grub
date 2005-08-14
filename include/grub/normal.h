@@ -167,7 +167,7 @@ void grub_unregister_command (const char *name);
 grub_command_t grub_command_find (char *cmdline);
 grub_err_t grub_set_history (int newsize);
 int grub_iterate_commands (int (*iterate) (grub_command_t));
-int grub_command_execute (char *cmdline);
+int grub_command_execute (char *cmdline, int interactive);
 void grub_command_init (void);
 void grub_normal_init_page (void);
 void grub_menu_init_page (int nested, int edit);
