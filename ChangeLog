@@ -1,7 +1,5 @@
 2005-08-14  Yoshinori K. Okuji  <okuji@enbug.org>
 
-	* normal/menu.c (run_menu_entry): 
-
 	* normal/command.c (grub_command_execute): If INTERACTIVE is
 	false and GRUB_COMMAND_FLAG_NO_ECHO is not specified, print
 	CMDLINE. Disable the pager if INTERACTIVE is true.
