@@ -1,3 +1,7 @@
+2005-08-14  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* DISTLIST: Added include/grub/i386/pc/vbe.h.
+
 2005-08-13  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): Replace the test

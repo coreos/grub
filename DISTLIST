@@ -73,6 +73,7 @@ include/grub/i386/pc/loader.h
 include/grub/i386/pc/memory.h
 include/grub/i386/pc/multiboot.h
 include/grub/i386/pc/time.h
+include/grub/i386/pc/vbe.h
 include/grub/i386/pc/vga.h
 include/grub/i386/setjmp.h
 include/grub/i386/types.h
