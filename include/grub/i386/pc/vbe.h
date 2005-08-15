@@ -22,6 +22,10 @@
 
 #include <grub/symbol.h>
 #include <grub/types.h>
+#include <grub/err.h>
+
+/* Default video mode to be used.  */
+#define GRUB_VBE_DEFAULT_VIDEO_MODE     0x101
 
 /* Note:
  
@@ -140,6 +144,8 @@ struct grub_vbe_palette_data
   grub_uint8_t aligment;
 } __attribute__ ((packed));
 
+/* Prototypes for kernel real mode thunks.  */
+
 /* Call VESA BIOS 0x4f00 to get VBE Controller Information, return status.  */
 grub_vbe_status_t EXPORT_FUNC(grub_vbe_get_controller_info) (struct grub_vbe_info_block *controller_info);
 
@@ -180,5 +186,14 @@ grub_vbe_status_t EXPORT_FUNC(grub_vbe_get_display_start) (grub_uint32_t *x,
 grub_vbe_status_t EXPORT_FUNC(grub_vbe_set_palette_data) (grub_uint32_t color_count,
                                                           grub_uint32_t start_index,
                                                           struct grub_vbe_palette_data *palette_data);
+
+/* Prototypes for helper functions.  */
+
+grub_err_t grub_vbe_probe (struct grub_vbe_info_block *info_block);
+grub_err_t grub_vbe_set_video_mode (grub_uint32_t mode, struct grub_vbe_mode_info_block *mode_info);
+grub_err_t grub_vbe_get_video_mode (grub_uint32_t *mode);
+grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode, struct grub_vbe_mode_info_block *mode_info);
+void grub_vbe_set_pixel_rgb (grub_uint32_t x, grub_uint32_t y, grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue);
+void grub_vbe_set_pixel_index (grub_uint32_t x, grub_uint32_t y, grub_uint8_t color);
 
 #endif /* ! GRUB_VBE_MACHINE_HEADER */

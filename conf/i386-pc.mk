@@ -1141,7 +1141,8 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	font.mod _multiboot.mod ls.mod boot.mod cmp.mod cat.mod		\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
-	help.mod default.mod timeout.mod configfile.mod
+	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
+	vesafb.mod vbe_test.mod vbe_list_modes.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -2951,6 +2952,206 @@ fs-configfile.lst: commands/configfile.c genfslist.sh
 
 
 configfile_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For vbe.mod.
+vbe_mod_SOURCES = video/i386/pc/vbe.c
+CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o def-vbe.lst und-vbe.lst
+MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d
+DEFSYMFILES += def-vbe.lst
+UNDSYMFILES += und-vbe.lst
+
+vbe.mod: pre-vbe.o mod-vbe.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-vbe.o: vbe_mod-video_i386_pc_vbe.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-vbe.o: mod-vbe.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
+
+mod-vbe.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vbe' $< > $@ || (rm -f $@; exit 1)
+
+def-vbe.lst: pre-vbe.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vbe/' > $@
+
+und-vbe.lst: pre-vbe.o
+	echo 'vbe' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+vbe_mod-video_i386_pc_vbe.o: video/i386/pc/vbe.c
+	$(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
+
+vbe_mod-video_i386_pc_vbe.d: video/i386/pc/vbe.c
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbe\.o[ :]*,vbe_mod-video_i386_pc_vbe.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vbe_mod-video_i386_pc_vbe.d
+
+CLEANFILES += cmd-vbe.lst fs-vbe.lst
+COMMANDFILES += cmd-vbe.lst
+FSFILES += fs-vbe.lst
+
+cmd-vbe.lst: video/i386/pc/vbe.c gencmdlist.sh
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe > $@ || (rm -f $@; exit 1)
+
+fs-vbe.lst: video/i386/pc/vbe.c genfslist.sh
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe > $@ || (rm -f $@; exit 1)
+
+
+vbe_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For vesafb.mod.
+vesafb_mod_SOURCES = term/i386/pc/vesafb.c
+CLEANFILES += vesafb.mod mod-vesafb.o mod-vesafb.c pre-vesafb.o vesafb_mod-term_i386_pc_vesafb.o def-vesafb.lst und-vesafb.lst
+MOSTLYCLEANFILES += vesafb_mod-term_i386_pc_vesafb.d
+DEFSYMFILES += def-vesafb.lst
+UNDSYMFILES += und-vesafb.lst
+
+vesafb.mod: pre-vesafb.o mod-vesafb.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-vesafb.o: vesafb_mod-term_i386_pc_vesafb.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-vesafb.o: mod-vesafb.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -c -o $@ $<
+
+mod-vesafb.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vesafb' $< > $@ || (rm -f $@; exit 1)
+
+def-vesafb.lst: pre-vesafb.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vesafb/' > $@
+
+und-vesafb.lst: pre-vesafb.o
+	echo 'vesafb' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+vesafb_mod-term_i386_pc_vesafb.o: term/i386/pc/vesafb.c
+	$(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -c -o $@ $<
+
+vesafb_mod-term_i386_pc_vesafb.d: term/i386/pc/vesafb.c
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -M $< 	  | sed 's,vesafb\.o[ :]*,vesafb_mod-term_i386_pc_vesafb.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vesafb_mod-term_i386_pc_vesafb.d
+
+CLEANFILES += cmd-vesafb.lst fs-vesafb.lst
+COMMANDFILES += cmd-vesafb.lst
+FSFILES += fs-vesafb.lst
+
+cmd-vesafb.lst: term/i386/pc/vesafb.c gencmdlist.sh
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vesafb > $@ || (rm -f $@; exit 1)
+
+fs-vesafb.lst: term/i386/pc/vesafb.c genfslist.sh
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vesafb > $@ || (rm -f $@; exit 1)
+
+
+vesafb_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For vbe_list_modes.mod.
+vbe_list_modes_mod_SOURCES = commands/i386/pc/vbe_list_modes.c
+CLEANFILES += vbe_list_modes.mod mod-vbe_list_modes.o mod-vbe_list_modes.c pre-vbe_list_modes.o vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.o def-vbe_list_modes.lst und-vbe_list_modes.lst
+MOSTLYCLEANFILES += vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.d
+DEFSYMFILES += def-vbe_list_modes.lst
+UNDSYMFILES += und-vbe_list_modes.lst
+
+vbe_list_modes.mod: pre-vbe_list_modes.o mod-vbe_list_modes.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-vbe_list_modes.o: vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-vbe_list_modes.o: mod-vbe_list_modes.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbe_list_modes_mod_CFLAGS) -c -o $@ $<
+
+mod-vbe_list_modes.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vbe_list_modes' $< > $@ || (rm -f $@; exit 1)
+
+def-vbe_list_modes.lst: pre-vbe_list_modes.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vbe_list_modes/' > $@
+
+und-vbe_list_modes.lst: pre-vbe_list_modes.o
+	echo 'vbe_list_modes' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.o: commands/i386/pc/vbe_list_modes.c
+	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_list_modes_mod_CFLAGS) -c -o $@ $<
+
+vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.d: commands/i386/pc/vbe_list_modes.c
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_list_modes_mod_CFLAGS) -M $< 	  | sed 's,vbe_list_modes\.o[ :]*,vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vbe_list_modes_mod-commands_i386_pc_vbe_list_modes.d
+
+CLEANFILES += cmd-vbe_list_modes.lst fs-vbe_list_modes.lst
+COMMANDFILES += cmd-vbe_list_modes.lst
+FSFILES += fs-vbe_list_modes.lst
+
+cmd-vbe_list_modes.lst: commands/i386/pc/vbe_list_modes.c gencmdlist.sh
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_list_modes_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe_list_modes > $@ || (rm -f $@; exit 1)
+
+fs-vbe_list_modes.lst: commands/i386/pc/vbe_list_modes.c genfslist.sh
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_list_modes_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe_list_modes > $@ || (rm -f $@; exit 1)
+
+
+vbe_list_modes_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For vbe_test.mod.
+vbe_test_mod_SOURCES = commands/i386/pc/vbe_test.c
+CLEANFILES += vbe_test.mod mod-vbe_test.o mod-vbe_test.c pre-vbe_test.o vbe_test_mod-commands_i386_pc_vbe_test.o def-vbe_test.lst und-vbe_test.lst
+MOSTLYCLEANFILES += vbe_test_mod-commands_i386_pc_vbe_test.d
+DEFSYMFILES += def-vbe_test.lst
+UNDSYMFILES += und-vbe_test.lst
+
+vbe_test.mod: pre-vbe_test.o mod-vbe_test.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-vbe_test.o: vbe_test_mod-commands_i386_pc_vbe_test.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-vbe_test.o: mod-vbe_test.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbe_test_mod_CFLAGS) -c -o $@ $<
+
+mod-vbe_test.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vbe_test' $< > $@ || (rm -f $@; exit 1)
+
+def-vbe_test.lst: pre-vbe_test.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vbe_test/' > $@
+
+und-vbe_test.lst: pre-vbe_test.o
+	echo 'vbe_test' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+vbe_test_mod-commands_i386_pc_vbe_test.o: commands/i386/pc/vbe_test.c
+	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_test_mod_CFLAGS) -c -o $@ $<
+
+vbe_test_mod-commands_i386_pc_vbe_test.d: commands/i386/pc/vbe_test.c
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_test_mod_CFLAGS) -M $< 	  | sed 's,vbe_test\.o[ :]*,vbe_test_mod-commands_i386_pc_vbe_test.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vbe_test_mod-commands_i386_pc_vbe_test.d
+
+CLEANFILES += cmd-vbe_test.lst fs-vbe_test.lst
+COMMANDFILES += cmd-vbe_test.lst
+FSFILES += fs-vbe_test.lst
+
+cmd-vbe_test.lst: commands/i386/pc/vbe_test.c gencmdlist.sh
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_test_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe_test > $@ || (rm -f $@; exit 1)
+
+fs-vbe_test.lst: commands/i386/pc/vbe_test.c genfslist.sh
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_test_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe_test > $@ || (rm -f $@; exit 1)
+
+
+vbe_test_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst command.lst fs.lst
 pkgdata_DATA += moddep.lst command.lst fs.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep
