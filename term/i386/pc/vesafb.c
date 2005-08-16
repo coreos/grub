@@ -136,9 +136,9 @@ grub_virtual_screen_setup (grub_uint32_t width,
 
   /* Allocate memory for text buffer.  */
   virtual_screen.text_buffer =
-    (struct grub_colored_char *)grub_malloc (virtual_screen.columns *
-					     virtual_screen.rows *
-					     sizeof(struct grub_colored_char));
+    (struct grub_colored_char *)grub_malloc (virtual_screen.columns
+                                             * virtual_screen.rows
+                                             * sizeof(struct grub_colored_char));
   if (virtual_screen.text_buffer == 0)
     {
       return GRUB_ERR_OUT_OF_MEMORY;
@@ -320,9 +320,9 @@ write_char (void)
   unsigned char bitmap[32];
   unsigned width;
 
-  p = (virtual_screen.text_buffer +
-       virtual_screen.cursor_x +
-       (virtual_screen.cursor_y * virtual_screen.columns));
+  p = (virtual_screen.text_buffer
+       + virtual_screen.cursor_x
+       + (virtual_screen.cursor_y * virtual_screen.columns));
 
   p -= p->index;
 
@@ -356,8 +356,10 @@ write_char (void)
 	      color = p->bg_color;
 	    }
 
-	  grub_vbe_set_pixel_index(i + (virtual_screen.cursor_x * virtual_screen.char_width),
-                                   y + (virtual_screen.cursor_y * virtual_screen.char_height),
+          grub_vbe_set_pixel_index(i + (virtual_screen.cursor_x
+                                        * virtual_screen.char_width),
+                                   y + (virtual_screen.cursor_y
+                                        * virtual_screen.char_height),
                                    color);
 	}
     }
@@ -390,9 +392,9 @@ scroll_up (void)
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
 		virtual_screen.text_buffer + virtual_screen.columns,
-		sizeof (struct grub_colored_char) *
-		virtual_screen.columns *
-		(virtual_screen.rows - 1));
+                sizeof (struct grub_colored_char)
+                * virtual_screen.columns
+                * (virtual_screen.rows - 1));
 
   /* Clear last line in text buffer.  */
   for (i = virtual_screen.columns * (virtual_screen.rows - 1);
@@ -408,16 +410,17 @@ scroll_up (void)
 
   /* Scroll frambuffer with one line to up.  */
   grub_memmove (framebuffer,
-		framebuffer + bytes_per_scan_line * virtual_screen.char_height,
-		bytes_per_scan_line *
-		(mode_info.y_resolution - virtual_screen.char_height));
+                framebuffer
+                + bytes_per_scan_line * virtual_screen.char_height,
+                bytes_per_scan_line
+                * (mode_info.y_resolution - virtual_screen.char_height));
 
   /* Clear last line in framebuffer.  */
-  grub_memset (framebuffer +
-	       (bytes_per_scan_line *
-		(mode_info.y_resolution - virtual_screen.char_height)),
-	       0,
-	       bytes_per_scan_line * virtual_screen.char_height);
+  grub_memset (framebuffer
+               + (bytes_per_scan_line
+                  * (mode_info.y_resolution - virtual_screen.char_height)),
+               0,
+               bytes_per_scan_line * virtual_screen.char_height);
 }
 
 static void
@@ -432,7 +435,7 @@ grub_vesafb_putchar (grub_uint32_t c)
       /* Erase current cursor, if any.  */
       if (virtual_screen.cursor_state)
 	write_char ();
-  
+
       switch (c)
 	{
 	case '\b':

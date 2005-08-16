@@ -1,5 +1,14 @@
 2005-08-16  Vesa Jaaskelainen  <chaac@nic.fi>
 
+	* commands/i386/pc/vbe_list_modes.c: Update source formatting to
+        follow GCS more precisely.
+        * commands/i386/pc/vbe_test.c: Likewise.
+        * include/grub/i386/pc/vbe.h: Likewise.
+        * term/i386/pc/vesafb.c: Likewise.
+        * video/i386/pc/vbe.c: Likewise.
+
+2005-08-16  Vesa Jaaskelainen  <chaac@nic.fi>
+
 	* DISTLIST: Added term/i386/pc/vesafb.c
 	DISTLIST: Added video/i386/pc/vbe.c
 	DISTLIST: Added commands/i386/pc/vbe_list_modes.c.

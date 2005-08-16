@@ -30,8 +30,8 @@
 static void *
 real2pm(grub_vbe_farptr_t ptr)
 {
-  return (void *)((((unsigned long)ptr & 0xFFFF0000) >> 12UL) +
-		  ((unsigned long)ptr & 0x0000FFFF));
+  return (void *)((((unsigned long)ptr & 0xFFFF0000) >> 12UL)
+                  + ((unsigned long)ptr & 0x0000FFFF));
 }
 
 static grub_err_t
@@ -185,8 +185,12 @@ grub_cmd_vbe_test(struct grub_arg_list *state __attribute__ ((unused)),
 GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning.  */
-  grub_register_command ("vbe_test", grub_cmd_vbe_test, GRUB_COMMAND_FLAG_BOTH,
-                         "vbe_test", "Test VESA BIOS Extension 2.0+ support", 0);
+  grub_register_command ("vbe_test",
+                         grub_cmd_vbe_test,
+                         GRUB_COMMAND_FLAG_BOTH,
+                         "vbe_test",
+                         "Test VESA BIOS Extension 2.0+ support",
+                         0);
 }
 
 GRUB_MOD_FINI

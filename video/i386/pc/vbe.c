@@ -329,13 +329,17 @@ grub_vbe_set_pixel_rgb (grub_uint32_t x,
 
   if (active_mode_info.bits_per_pixel == 32)
     {
-      grub_uint32_t *ptr = (grub_uint32_t *)(framebuffer + y * bytes_per_scan_line + x * 4);
+      grub_uint32_t *ptr = (grub_uint32_t *)(framebuffer
+					     + y * bytes_per_scan_line
+					     + x * 4);
 
       *ptr = value;
     }
   else if (active_mode_info.bits_per_pixel == 24)
     {
-      grub_uint8_t *ptr = (grub_uint8_t *)(framebuffer + y * bytes_per_scan_line + x * 3);
+      grub_uint8_t *ptr = (grub_uint8_t *)(framebuffer
+					   + y * bytes_per_scan_line
+					   + x * 3);
       grub_uint8_t *ptr2 = (grub_uint8_t *)&value;
 
       ptr[0] = ptr2[0];
@@ -345,7 +349,9 @@ grub_vbe_set_pixel_rgb (grub_uint32_t x,
   else if ((active_mode_info.bits_per_pixel == 16) ||
 	   (active_mode_info.bits_per_pixel == 15))
     {
-      grub_uint16_t *ptr = (grub_uint16_t *)(framebuffer + y * bytes_per_scan_line + x * 2);
+      grub_uint16_t *ptr = (grub_uint16_t *)(framebuffer
+					     + y * bytes_per_scan_line
+					     + x * 2);
 
       *ptr = (grub_uint16_t)(value & 0xFFFF);
     }
@@ -364,7 +370,9 @@ grub_vbe_set_pixel_index (grub_uint32_t x,
 
   if (index_color_mode == 1)
     {
-      grub_uint8_t *ptr = (grub_uint8_t *)(framebuffer + y * bytes_per_scan_line + x);
+      grub_uint8_t *ptr = (grub_uint8_t *)(framebuffer
+					   + y * bytes_per_scan_line
+					   + x);
 
       *ptr = color;
     }

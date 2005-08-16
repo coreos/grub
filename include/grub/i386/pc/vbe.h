@@ -190,10 +190,18 @@ grub_vbe_status_t EXPORT_FUNC(grub_vbe_set_palette_data) (grub_uint32_t color_co
 /* Prototypes for helper functions.  */
 
 grub_err_t grub_vbe_probe (struct grub_vbe_info_block *info_block);
-grub_err_t grub_vbe_set_video_mode (grub_uint32_t mode, struct grub_vbe_mode_info_block *mode_info);
+grub_err_t grub_vbe_set_video_mode (grub_uint32_t mode,
+                                    struct grub_vbe_mode_info_block *mode_info);
 grub_err_t grub_vbe_get_video_mode (grub_uint32_t *mode);
-grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode, struct grub_vbe_mode_info_block *mode_info);
-void grub_vbe_set_pixel_rgb (grub_uint32_t x, grub_uint32_t y, grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue);
-void grub_vbe_set_pixel_index (grub_uint32_t x, grub_uint32_t y, grub_uint8_t color);
+grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
+                                         struct grub_vbe_mode_info_block *mode_info);
+void grub_vbe_set_pixel_rgb (grub_uint32_t x,
+                             grub_uint32_t y,
+                             grub_uint8_t red,
+                             grub_uint8_t green,
+                             grub_uint8_t blue);
+void grub_vbe_set_pixel_index (grub_uint32_t x,
+                               grub_uint32_t y,
+                               grub_uint8_t color);
 
 #endif /* ! GRUB_VBE_MACHINE_HEADER */

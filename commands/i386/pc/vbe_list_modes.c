@@ -29,8 +29,8 @@
 static void *
 real2pm(grub_vbe_farptr_t ptr)
 {
-  return (void *)((((unsigned long)ptr & 0xFFFF0000) >> 12UL) +
-		  ((unsigned long)ptr & 0x0000FFFF));
+  return (void *)((((unsigned long)ptr & 0xFFFF0000) >> 12UL)
+                  + ((unsigned long)ptr & 0x0000FFFF));
 }
 
 static grub_err_t
@@ -133,8 +133,12 @@ grub_cmd_vbe_list_modes(struct grub_arg_list *state __attribute__ ((unused)),
 GRUB_MOD_INIT
 {
   (void)mod;			/* To stop warning.  */
-  grub_register_command ("vbe_list_modes", grub_cmd_vbe_list_modes, GRUB_COMMAND_FLAG_BOTH,
-                         "vbe_list_modes", "List compatible VESA BIOS extension video modes.", 0);
+  grub_register_command ("vbe_list_modes",
+                         grub_cmd_vbe_list_modes,
+                         GRUB_COMMAND_FLAG_BOTH,
+                         "vbe_list_modes",
+                         "List compatible VESA BIOS extension video modes.",
+                         0);
 }
 
 GRUB_MOD_FINI
