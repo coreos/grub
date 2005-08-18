@@ -1,3 +1,75 @@
+2005-08-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* normal/misc.c: New file.
+
+	* DISTLIST: Added normal/misc.c.
+	
+	* partmap/amiga.c (amiga_partition_map_iterate): Add an argument
+	DISK to HOOK. Call HOOK with DISK.
+	* partmap/apple.c (apple_partition_map_iterate): Likewise.
+	* partmap/pc.c (pc_partition_map_iterate): Likewise.
+	* partmap/sun.c (sun_partition_map_iterate): Likewise.
+
+	* normal/menu_entry.c (struct screen): Added a new member
+	"completion_shown".
+	(completion_buffer): New global variable.
+	(make_screen): Set SCREEN->COMPLETION_SHOWN to zero.
+	(store_completion): New function.
+	(complete): Likewise.
+	(clear_completions): Likewise.
+	(grub_menu_entry_run): If SCREEN->COMPLETION_SHOWN is non-zero,
+	call clear_completions and reset SCREEN->COMPLETION_SHOWN. If C is
+	a tab, call complete.
+
+	* normal/completion.c (disk_dev): Removed.
+	(print_simple_completion): Likewise.
+	(print_partition_completion): Likewise.
+	(print_func): New global variable.
+	(add_completion): Do not take the arguments WHAT or PRINT any
+	longer. Added a new argument TYPE. Instead of printing directly,
+	call PRINT_FUNC if not NULL.
+	All callers changed.
+	(complete_device): Use a local variable DEV instead of
+	DISK_DEV. Do not move CURRENT_WORD to the end of a device name.
+	(grub_normal_do_completion): Take a new argument HOOK. Do not
+	initialize DISK_DEV. Initialize PRINT_FUNC to HOOK. If RET is an
+	empty string, return NULL instead.
+	All callers changed.
+
+	* normal/cmdline.c (print_completion): New function.
+
+	* kern/partition.c (grub_partition_iterate): Add an argument DISK
+	to HOOK.
+	All callers changed.
+
+	* kern/disk.c (grub_print_partinfo): Removed.
+
+	* include/grub/partition.h (struct grub_partition_map): Add a new
+	argument DISK into HOOK of ITERATE.
+	(grub_partition_iterate): Add a new argument DISK to HOOK.
+
+	* include/grub/normal.h (enum grub_completion_type): New enum.
+	(grub_completion_type_t): New type.
+	(GRUB_COMPLETION_TYPE_COMMAND): New constant.
+	(GRUB_COMPLETION_TYPE_DEVICE): Likewise.
+	(GRUB_COMPLETION_TYPE_PARTITION): Likewise.
+	(GRUB_COMPLETION_TYPE_FILE): Likewise.
+	(grub_normal_do_completion): Added a new argument HOOK.
+	(grub_normal_print_device_info): New prototype.
+
+	* include/grub/disk.h (grub_print_partinfo): Removed.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added normal/misc.c.
+	(normal_mod_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* commands/ls.c (grub_ls_list_disks): Use
+	grub_normal_print_device_info instead of grub_print_partinfo. Free
+	PNAME.
+	(grub_ls_list_files): Use grub_normal_print_device_info instead of
+	duplicating the code.
+
 2005-08-16  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* commands/i386/pc/vbe_list_modes.c: Update source formatting to

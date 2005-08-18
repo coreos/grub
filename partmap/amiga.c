@@ -71,10 +71,13 @@ static struct grub_partition_map grub_amiga_partition_map;
 #ifndef GRUB_UTIL
 static grub_dl_t my_mod;
 #endif
+
 
+
 static grub_err_t
 amiga_partition_map_iterate (grub_disk_t disk,
-			     int (*hook) (const grub_partition_t partition))
+			     int (*hook) (grub_disk_t disk,
+					  const grub_partition_t partition))
 {
   struct grub_partition part;
   struct grub_amiga_rdsk rdsk;
@@ -130,7 +133,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
       part.index = partno;
       part.partmap = &grub_amiga_partition_map;
       
-      if (hook (&part))
+      if (hook (disk, &part))
 	return grub_errno;
       
       next = grub_be_to_cpu32 (apart.next);
@@ -148,9 +151,10 @@ amiga_partition_map_probe (grub_disk_t disk, const char *str)
   int partnum = 0;
   char *s = (char *) str;
 
-  auto int find_func (const grub_partition_t partition);
+  auto int find_func (grub_disk_t d, const grub_partition_t partition);
     
-  int find_func (const grub_partition_t partition)
+  int find_func (grub_disk_t d __attribute__ ((unused)),
+		 const grub_partition_t partition)
       {
       if (partnum == partition->index)
 	{

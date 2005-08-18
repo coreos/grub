@@ -129,7 +129,5 @@ grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
 					 unsigned long size,
 					 const char *buf);
 
-grub_err_t EXPORT_FUNC(grub_print_partinfo) (grub_device_t disk,
-					     char *partname);
 
 #endif /* ! GRUB_DISK_HEADER */

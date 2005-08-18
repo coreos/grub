@@ -95,7 +95,8 @@ static grub_dl_t my_mod;
 
 static grub_err_t
 apple_partition_map_iterate (grub_disk_t disk,
-			int (*hook) (const grub_partition_t partition))
+			     int (*hook) (grub_disk_t disk,
+					  const grub_partition_t partition))
 {
   struct grub_partition part;
   struct grub_apple_part apart;
@@ -134,7 +135,7 @@ apple_partition_map_iterate (grub_disk_t disk,
 		    partno, apart.partname, apart.parttype,
 		    apart.first_phys_block, apart.blockcnt);
 
-      if (hook (&part))
+      if (hook (disk, &part))
 	return grub_errno;
 
       if (apart.first_phys_block == GRUB_DISK_SECTOR_SIZE * 2)
@@ -159,9 +160,10 @@ apple_partition_map_probe (grub_disk_t disk, const char *str)
   int partnum = 0;
   char *s = (char *) str;
 
-  auto int find_func (const grub_partition_t partition);
+  auto int find_func (grub_disk_t d, const grub_partition_t partition);
   
-  int find_func (const grub_partition_t partition)
+  int find_func (grub_disk_t d __attribute__ ((unused)),
+		 const grub_partition_t partition)
     {
       if (partnum == partition->index)
 	{

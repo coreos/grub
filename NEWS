@@ -2,6 +2,11 @@ New in 1.91:
 
 * Add support for LZO version 2.
 
+* Support completion in the entry editor.
+
+* Add VBE support.
+
+
 New in 1.90 - 2005-08-07:
 
 * Rename the project name PUPA to GRUB. Now this version is the

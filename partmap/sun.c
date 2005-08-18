@@ -85,7 +85,8 @@ grub_sun_is_valid (struct grub_sun_block *label)
 
 static grub_err_t
 sun_partition_map_iterate (grub_disk_t disk,
-                           int (*hook) (const grub_partition_t partition))
+                           int (*hook) (grub_disk_t disk,
+					const grub_partition_t partition))
 {
   struct grub_partition *p;
   struct grub_disk raw;
@@ -122,7 +123,7 @@ sun_partition_map_iterate (grub_disk_t disk,
 	  p->index = partnum;
 	  if (p->len)
 	    {
-	      if (hook (p))
+	      if (hook (disk, p))
 		partnum = GRUB_PARTMAP_SUN_MAX_PARTS;
 	    }
 	}
@@ -139,14 +140,16 @@ sun_partition_map_probe (grub_disk_t disk, const char *str)
   int partnum = 0;
   char *s = (char *) str;
 
-  auto int find_func (const grub_partition_t partition);
-  int find_func (const grub_partition_t partition)
+  auto int find_func (grub_disk_t d, const grub_partition_t partition);
+  
+  int find_func (grub_disk_t d __attribute__ ((unused)),
+		 const grub_partition_t partition)
     {
       if (partnum == partition->index)
         {
           p = (grub_partition_t) grub_malloc (sizeof (*p));
           if (p)
-            grub_memcpy(p, partition, sizeof (*p));
+            grub_memcpy (p, partition, sizeof (*p));
           return 1;
         }
       return 0;

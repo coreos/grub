@@ -48,18 +48,26 @@ grub_ls_list_disks (int longlist)
   int grub_ls_print_disks (const char *name)
     {
       grub_device_t dev;
-      auto int print_partition (const grub_partition_t p);
+      auto int print_partition (grub_disk_t disk, const grub_partition_t p);
       
-      int print_partition (const grub_partition_t p)
+      int print_partition (grub_disk_t disk __attribute__ ((unused)),
+			   const grub_partition_t p)
 	{
 	  char *pname = grub_partition_get_name (p);
 
 	  if (pname)
 	    {
 	      if (longlist)
-		grub_print_partinfo (dev, pname);
+		{
+		  char device_name[grub_strlen (name) + 1
+				   + grub_strlen (pname) + 1];
+		  grub_sprintf (device_name, "%s,%s", name, pname);
+		  grub_normal_print_device_info (device_name);
+		}
 	      else
 		grub_printf ("(%s,%s) ", name, pname);
+
+	      grub_free (pname);
 	    }
 
 	  return 0;
@@ -71,36 +79,7 @@ grub_ls_list_disks (int longlist)
       if (dev)
 	{
 	  if (longlist)
-	    {
-	      grub_printf ("Device: %s", name);
-
-	      if (! dev->disk || ! dev->disk->has_partitions)
-		{
-		  grub_fs_t fs;
-		  char *label;
-
-		  fs = grub_fs_probe (dev);
-		  grub_errno = GRUB_ERR_NONE;
-
-		  grub_printf (", Filesystem type %s",
-			       fs ? fs->name : "unknown");
-
-		  if (fs && fs->label)
-		    {
-		      (fs->label) (dev, &label);
-		      if (grub_errno == GRUB_ERR_NONE)
-			{
-			  if (label && grub_strlen (label))
-			    grub_printf (", Label: %s", label);
-			  grub_free (label);
-			}
-		      else
-			grub_errno = GRUB_ERR_NONE;
-		    }
-		}
-
-	      grub_putchar ('\n');
-	    }
+	    grub_normal_print_device_info (name);
 	  else
 	    grub_printf ("(%s) ", name);
 
@@ -223,26 +202,8 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
     {
       if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	grub_errno = GRUB_ERR_NONE;
-	  
-      grub_printf ("(%s): Filesystem is %s",
-		   device_name, fs ? fs->name : "unknown");
-      
-      if (fs && fs->label)
-	{
-	  char *label;
-	  
-	  (fs->label) (dev, &label);
-	  if (grub_errno == GRUB_ERR_NONE)
-	    {
-	      if (label && grub_strlen (label))
-		grub_printf (", Label: %s", label);
-	      grub_free (label);
-	    }
-	  else
-	    grub_errno = GRUB_ERR_NONE;
-	}
-      
-      grub_putchar ('\n');
+
+      grub_normal_print_device_info (device_name);
     }
   else if (fs)
     {

@@ -171,9 +171,10 @@ static int
 grub_rescue_print_disks (const char *name)
 {
   grub_device_t dev;
-  auto int print_partition (const grub_partition_t p);
+  auto int print_partition (grub_disk_t disk, const grub_partition_t p);
 
-  int print_partition (const grub_partition_t p)
+  int print_partition (grub_disk_t disk __attribute__ ((unused)),
+		       const grub_partition_t p)
     {
       char *pname = grub_partition_get_name (p);
 

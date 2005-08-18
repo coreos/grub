@@ -93,7 +93,8 @@ grub_partition_parse (const char *str)
 
 static grub_err_t
 pc_partition_map_iterate (grub_disk_t disk,
-			  int (*hook) (const grub_partition_t partition))
+			  int (*hook) (grub_disk_t disk,
+				       const grub_partition_t partition))
 {
   struct grub_partition p;
   struct grub_pc_partition pcdata;
@@ -145,7 +146,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 	    {
 	      pcdata.dos_part++;
 	      
-	      if (hook (&p))
+	      if (hook (disk, &p))
 		goto finish;
 
 	      /* Check if this is a BSD partition.  */
@@ -183,7 +184,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 		      pcdata.bsd_type = be->fs_type;
 		      
 		      if (be->fs_type != GRUB_PC_PARTITION_BSD_TYPE_UNUSED)
-			if (hook (&p))
+			if (hook (disk, &p))
 			  goto finish;
 		    }
 		}
@@ -225,9 +226,10 @@ pc_partition_map_probe (grub_disk_t disk, const char *str)
   grub_partition_t p;
   struct grub_pc_partition *pcdata;
   
-  auto int find_func (const grub_partition_t partition);
+  auto int find_func (grub_disk_t d, const grub_partition_t partition);
 
-  int find_func (const grub_partition_t partition)
+  int find_func (grub_disk_t d __attribute__ ((unused)),
+		 const grub_partition_t partition)
     {
       struct grub_pc_partition *partdata = partition->data;
       if ((pcdata->dos_part == partdata->dos_part || pcdata->dos_part == -1)

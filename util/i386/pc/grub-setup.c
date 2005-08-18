@@ -106,9 +106,11 @@ setup (const char *prefix, const char *dir,
   auto void save_blocklists (unsigned long sector, unsigned offset,
 			     unsigned length);
 
-  auto int find_first_partition_start (const grub_partition_t p);
+  auto int find_first_partition_start (grub_disk_t disk,
+				       const grub_partition_t p);
   
-  int find_first_partition_start (const grub_partition_t p)
+  int find_first_partition_start (grub_disk_t disk __attribute__ ((unused)),
+				  const grub_partition_t p)
     {
       struct grub_pc_partition *pcdata = p->data;
 

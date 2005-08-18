@@ -58,7 +58,12 @@ struct screen
   int y;
   /* The kill buffer.  */
   char *killed_text;
+  /* The flag of a completion window.  */
+  int completion_shown;
 };
+
+/* Used for storing completion items temporarily.  */
+static struct line completion_buffer;
 
 /* Initialize a line.  */
 static int
@@ -422,6 +427,7 @@ make_screen (grub_menu_entry_t entry)
   screen->x = 0;
   screen->y = 0;
   screen->killed_text = 0;
+  screen->completion_shown = 0;
   screen->lines = grub_malloc (sizeof (struct line));
   if (! screen->lines)
     goto fail;
@@ -809,6 +815,163 @@ open_line (struct screen *screen, int update)
   return 1;
 }
 
+/* A completion hook to print items.  */
+static void
+store_completion (const char *item, grub_completion_type_t type, int count)
+{
+  char *p;
+  
+  if (count == 0)
+    {
+      /* If this is the first time, print a label.  */
+      const char *what;
+
+      switch (type)
+	{
+	case GRUB_COMPLETION_TYPE_COMMAND:
+	  what = "commands";
+	  break;
+	case GRUB_COMPLETION_TYPE_DEVICE:
+	  what = "devices";
+	  break;
+	case GRUB_COMPLETION_TYPE_FILE:
+	  what = "files";
+	  break;
+	case GRUB_COMPLETION_TYPE_PARTITION:
+	  what = "partitions";
+	  break;
+	default:
+	  what = "things";
+	  break;
+	}
+	    
+      grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
+      grub_printf ("   Possible %s are:\n    ", what);
+    }
+
+  /* Make sure that the completion buffer has enough room.  */
+  if (completion_buffer.max_len < (completion_buffer.len
+				   + (int) grub_strlen (item) + 1 + 1))
+    {
+      grub_size_t new_len;
+      
+      new_len = completion_buffer.len + grub_strlen (item) + 80;
+      p = grub_realloc (completion_buffer.buf, new_len);
+      if (! p)
+	{
+	  /* Possibly not fatal.  */
+	  grub_errno = GRUB_ERR_NONE;
+	  return;
+	}
+      p[completion_buffer.len] = 0;
+      completion_buffer.buf = p;
+      completion_buffer.max_len = new_len;
+    }
+
+  p = completion_buffer.buf + completion_buffer.len;
+  if (completion_buffer.len != 0)
+    {
+      *p++ = ' ';
+      completion_buffer.len++;
+    }
+  grub_strcpy (p, item);
+  completion_buffer.len += grub_strlen (item);
+}
+
+static int
+complete (struct screen *screen, int continuous, int update)
+{
+  grub_uint16_t pos;
+  char saved_char;
+  struct line *linep;
+  int restore;
+  char *insert;
+  static int count = -1;
+
+  if (continuous)
+    count++;
+  else
+    count = 0;
+  
+  pos = grub_getxy ();
+  grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
+  
+  completion_buffer.buf = 0;
+  completion_buffer.len = 0;
+  completion_buffer.max_len = 0;
+
+  linep = screen->lines + screen->line;
+  saved_char = linep->buf[screen->column];
+  linep->buf[screen->column] = '\0';
+
+  insert = grub_normal_do_completion (linep->buf, &restore, store_completion);
+
+  linep->buf[screen->column] = saved_char;
+  
+  if (restore)
+    {
+      char *p = completion_buffer.buf;
+
+      screen->completion_shown = 1;
+      
+      if (p)
+	{
+	  int num_sections = ((completion_buffer.len + GRUB_TERM_WIDTH - 8 - 1)
+			      / (GRUB_TERM_WIDTH - 8));
+	  char *endp;
+
+	  p += (count % num_sections) * (GRUB_TERM_WIDTH - 8);
+	  endp = p + (GRUB_TERM_WIDTH - 8);
+
+	  if (p != completion_buffer.buf)
+	    grub_putcode (GRUB_TERM_DISP_LEFT);
+	  else
+	    grub_putchar (' ');
+	  
+	  while (*p && p < endp)
+	    grub_putchar (*p++);
+	  
+	  if (*p)
+	    grub_putcode (GRUB_TERM_DISP_RIGHT);
+	}
+    }
+
+  grub_gotoxy (pos >> 8, pos & 0xFF);
+  
+  if (insert)
+    {
+      insert_string (screen, insert, update);
+      count = -1;
+      grub_free (insert);
+    }
+  else if (update)
+    grub_refresh ();
+    
+  grub_free (completion_buffer.buf);
+  return 1;
+}
+
+/* Clear displayed completions.  */
+static void
+clear_completions (void)
+{
+  grub_uint16_t pos;
+  int i, j;
+  
+  pos = grub_getxy ();
+  grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
+  
+  for (i = 0; i < 2; i++)
+    {
+      for (j = 0; j < GRUB_TERM_WIDTH - 1; j++)
+	grub_putchar (' ');
+      grub_putchar ('\n');
+    }
+  
+  grub_gotoxy (pos >> 8, pos & 0xFF);
+  grub_refresh ();
+}
+
 /* Execute the command list in the screen SCREEN.  */
 static int
 run (struct screen *screen)
@@ -880,6 +1043,12 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   while (1)
     {
       int c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
+
+      if (screen->completion_shown)
+	{
+	  clear_completions ();
+	  screen->completion_shown = 0;
+	}
       
       switch (c)
 	{
@@ -914,7 +1083,8 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	  break;
 	  
 	case '\t': /* C-i */
-	  /* FIXME: Completion */
+	  if (! complete (screen, prev_c == c, 1))
+	    goto fail;
 	  break;
 	  
 	case 4: /* C-d */

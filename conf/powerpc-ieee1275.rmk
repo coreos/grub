@@ -45,7 +45,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	kern/partition.c kern/rescue.c kern/term.c			\
 	normal/arg.c normal/cmdline.c normal/command.c			\
 	normal/completion.c normal/context.c	\
-	normal/main.c normal/menu.c normal/menu_entry.c			\
+	normal/main.c normal/menu.c normal/menu_entry.c normal/misc.c	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
@@ -119,7 +119,8 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/completion.c normal/context.c normal/main.c		\
-	normal/menu.c normal/menu_entry.c normal/powerpc/setjmp.S
+	normal/menu.c normal/menu_entry.c normal/misc.c			\
+	normal/powerpc/setjmp.S
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 

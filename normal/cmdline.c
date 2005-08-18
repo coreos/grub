@@ -164,6 +164,46 @@ grub_cmdline_run (int nested)
     }
 }
 
+/* A completion hook to print items.  */
+static void
+print_completion (const char *item, grub_completion_type_t type, int count)
+{
+  if (count == 0)
+    {
+      /* If this is the first time, print a label.  */
+      const char *what;
+
+      switch (type)
+	{
+	case GRUB_COMPLETION_TYPE_COMMAND:
+	  what = "commands";
+	  break;
+	case GRUB_COMPLETION_TYPE_DEVICE:
+	  what = "devices";
+	  break;
+	case GRUB_COMPLETION_TYPE_FILE:
+	  what = "files";
+	  break;
+	case GRUB_COMPLETION_TYPE_PARTITION:
+	  what = "partitions";
+	  break;
+	default:
+	  what = "things";
+	  break;
+	}
+	    
+      grub_printf ("\nPossible %s are:\n", what);
+    }
+
+  if (type == GRUB_COMPLETION_TYPE_PARTITION)
+    {
+      grub_normal_print_device_info (item);
+      grub_errno = GRUB_ERR_NONE;
+    }
+  else
+    grub_printf (" %s", item);
+}
+
 /* Get a command-line. If ECHO_CHAR is not zero, echo it instead of input
    characters. If READLINE is non-zero, readline-like key bindings are
    available. If ESC is pushed, return zero, otherwise return non-zero.  */
@@ -309,7 +349,8 @@ grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		buf[lpos] = '\0';
 		
 
-		insert = grub_normal_do_completion (buf, &restore);
+		insert = grub_normal_do_completion (buf, &restore,
+						    print_completion);
 		/* Restore the original string.  */
 		buf[lpos] = backup;
 		

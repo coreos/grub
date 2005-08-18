@@ -26,9 +26,6 @@
 #include <grub/disk.h>
 #include <grub/file.h>
 
-/* The disk that is used for grub_partition_iterate.  */
-static grub_device_t disk_dev;
-
 /* The current word.  */
 static char *current_word;
 
@@ -41,29 +38,17 @@ static int num_found;
 /* The string to be appended.  */
 static const char *suffix;
 
+/* The callback function to print items.  */
+static void (*print_func) (const char *, grub_completion_type_t, int);
+
 
-
-static void
-print_simple_completion (const char *str)
-{
-  grub_printf (" %s", str);
-}
-
-static void
-print_partition_completion (const char *str)
-{
-  grub_print_partinfo (disk_dev, (char *) str);
-  grub_errno = GRUB_ERR_NONE;
-}
 
 /* Add a string to the list of possible completions. COMPLETION is the
    string that should be added. EXTRA will be appended if COMPLETION
-   matches uniquely. The string WHAT contains a description of the
-   kind of data that is added. Use PRINT to show the completions
-   if there are multiple matches.  */
+   matches uniquely. The type TYPE specifies what kind of data is added.  */
 static int
-add_completion (const char *completion, const char *extra, const char *what,
-		void (*print) (const char *))
+add_completion (const char *completion, const char *extra,
+		grub_completion_type_t type)
 {
   if (grub_strncmp (current_word, completion, grub_strlen (current_word)) == 0)
     {
@@ -79,8 +64,8 @@ add_completion (const char *completion, const char *extra, const char *what,
 	  break;
 
 	case 2:
-	  grub_printf ("\nPossible %s are:\n", what);
-	  print (match);
+	  if (print_func)
+	    print_func (match, type, 0);
 	  
 	  /* Fall through.  */
 
@@ -88,8 +73,9 @@ add_completion (const char *completion, const char *extra, const char *what,
 	  {
 	    char *s = match;
 	    const char *t = completion;
-	    
-	    print (completion);
+
+	    if (print_func)
+	      print_func (completion, type, num_found - 1);
 			    
 	    /* Detect the matched portion.  */
 	    while (*s && *t && *s == *t)
@@ -108,10 +94,30 @@ add_completion (const char *completion, const char *extra, const char *what,
 }
 
 static int
-iterate_partition (const grub_partition_t p)
+iterate_partition (grub_disk_t disk, const grub_partition_t p)
 {
-  return add_completion (grub_partition_get_name (p), ")", "partitions", 
-			 print_partition_completion);
+  const char *disk_name = disk->name;
+  char *partition_name = grub_partition_get_name (p);
+  char *name;
+  int ret;
+  
+  if (! partition_name)
+    return 1;
+
+  name = grub_malloc (grub_strlen (disk_name) + 1
+		      + grub_strlen (partition_name) + 1);
+  if (! name)
+    {
+      grub_free (partition_name);
+      return 1;
+    }
+
+  grub_sprintf (name, "%s,%s", disk_name, partition_name);
+  grub_free (partition_name);
+  
+  ret = add_completion (name, ")", GRUB_COMPLETION_TYPE_PARTITION);
+  grub_free (name);
+  return ret;
 }
 
 static int
@@ -119,7 +125,7 @@ iterate_dir (const char *filename, int dir)
 {
   if (! dir)
     {
-      if (add_completion (filename, " ", "files", print_simple_completion))
+      if (add_completion (filename, " ", GRUB_COMPLETION_TYPE_FILE))
 	return 1;
     }
   else
@@ -127,7 +133,7 @@ iterate_dir (const char *filename, int dir)
       char fname[grub_strlen (filename) + 2];
 
       grub_sprintf (fname, "%s/", filename);
-      if (add_completion (fname, "", "files", print_simple_completion))
+      if (add_completion (fname, "", GRUB_COMPLETION_TYPE_FILE))
 	return 1;
     }
   
@@ -146,14 +152,12 @@ iterate_dev (const char *devname)
     {
       if (dev->disk && dev->disk->has_partitions)
 	{
-	  if (add_completion (devname, ",", "devices",
-			      print_simple_completion))
+	  if (add_completion (devname, ",", GRUB_COMPLETION_TYPE_DEVICE))
 	    return 1;
 	}
       else
 	{
-	  if (add_completion (devname, ")", "devices",
-			      print_simple_completion))
+	  if (add_completion (devname, ")", GRUB_COMPLETION_TYPE_DEVICE))
 	    return 1;
 	}
     }
@@ -169,8 +173,7 @@ iterate_command (grub_command_t cmd)
     {
       if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
 	{
-	  if (add_completion (cmd->name, " ", "commands",
-			      print_simple_completion))
+	  if (add_completion (cmd->name, " ", GRUB_COMPLETION_TYPE_COMMAND))
 	    return 1;
 	}
     }
@@ -184,6 +187,7 @@ complete_device (void)
 {
   /* Check if this is a device or a partition.  */
   char *p = grub_strchr (++current_word, ',');
+  grub_device_t dev;
   
   if (! p)
     {
@@ -195,24 +199,22 @@ complete_device (void)
     {
       /* Complete the partition part.  */
       *p = '\0';
-      disk_dev = grub_device_open (current_word);
+      dev = grub_device_open (current_word);
       *p = ',';
       grub_errno = GRUB_ERR_NONE;
       
-      if (disk_dev)
+      if (dev)
 	{
-	  if (disk_dev->disk && disk_dev->disk->has_partitions)
+	  if (dev->disk && dev->disk->has_partitions)
 	    {
-	      current_word = p + 1;
-	      
-	      if (grub_partition_iterate (disk_dev->disk, iterate_partition))
+	      if (grub_partition_iterate (dev->disk, iterate_partition))
 		{
-		  grub_device_close (disk_dev);
+		  grub_device_close (dev);
 		  return 1;
 		}
 	    }
 	  
-	  grub_device_close (disk_dev);
+	  grub_device_close (dev);
 	}
       else
 	return 1;
@@ -303,18 +305,19 @@ complete_file (void)
 
 /* Try to complete the string in BUF. Return the characters that
    should be added to the string.  This command outputs the possible
-   completions, in that case set RESTORE to 1 so the caller can
-   restore the prompt.  */
+   completions by calling HOOK, in that case set RESTORE to 1 so the
+   caller can restore the prompt.  */
 char *
-grub_normal_do_completion (char *buf, int *restore)
+grub_normal_do_completion (char *buf, int *restore,
+			   void (*hook) (const char *, grub_completion_type_t, int))
 {
   char *first_word;
 
   /* Initialize variables.  */
-  disk_dev = 0;
   match = 0;
   num_found = 0;
   suffix = "";
+  print_func = hook;
 
   *restore = 1;
   
@@ -376,6 +379,12 @@ grub_normal_do_completion (char *buf, int *restore)
       
       grub_free (match);
 
+      if (*ret == '\0')
+	{
+	  grub_free (ret);
+	  return 0;
+	}
+      
       return ret;
     }
 

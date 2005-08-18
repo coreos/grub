@@ -733,9 +733,11 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     struct hd_geometry hdg;
     int dos_part = -1;
     int bsd_part = -1;
-    auto int find_partition (const grub_partition_t partition);
+    auto int find_partition (grub_disk_t disk,
+			     const grub_partition_t partition);
     
-    int find_partition (const grub_partition_t partition)
+    int find_partition (grub_disk_t disk __attribute__ ((unused)),
+			const grub_partition_t partition)
       {
  	struct grub_pc_partition *pcdata = 0;
 	
