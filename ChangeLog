@@ -1,3 +1,57 @@
+2005-08-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Replace commands/i386/pc/vbe_list_modes.c and
+	commands/i386/pc/vbe_test.c with commands/i386/pc/vbeinfo.c and
+	commands/i386/pc/vbetest.c.
+
+	* video/i386/pc/vbe.c (grub_vbe_probe): If INFOBLOCK is not NULL,
+	call grub_vbe_get_controller_info again, because the returned
+	information is volatile.
+	(grub_vbe_set_video_mode): Mostly rewritten.
+	(grub_vbe_get_video_mode): Use grub_vbe_probe and use
+	grub_vbe_status_t correctly.
+	(grub_vbe_get_video_mode_info): Likewise.
+	(grub_vbe_set_pixel_rgb): Use a switch statement rather than
+	several if statements.
+
+	* commands/i386/pc/vbe_list_modes.c: Renamed to ...
+	* commands/i386/pc/vbeinfo.c: ... this.
+
+	* commands/i386/pc/vbe_test.c: Renamed to ...
+	* commands/i386/pc/vbetest.c: ... this.
+
+	* commands/i386/pc/vbeinfo.c (grub_cmd_vbe_list_modes): Renamed to
+	...
+	(grub_cmd_vbeinfo): ... this. Save video modes before
+	iterating. Skip a video mode, if it is not available, not enough
+	information is given or it is monochrome. Show the memory
+	model. Leave the interpretation of MODEVAR to grub_strtoul
+	completely.
+	(GRUB_MOD_INIT): Rename vbe_list_modes to vbeinfo.
+	(GRUB_MOD_FINI): Likewise.
+
+	* commands/i386/pc/vbetest.c (grub_cmd_vbe_test): Renamed to ...
+	(grub_cmd_vbetest): ... this. Don't print unnecessarily. Use
+	grub_err_t instead of grub_uint32_t. Don't use SPTR. Remove a
+	duplicated grub_env_get. Leave the interpretation of MODEVAR to
+	grub_strtoul completely.
+	(real2pm): Removed.
+	(GRUB_MOD_INIT): Rename vbe_test to vbetest.
+	(GRUB_MOD_FINI): Likewise.
+
+	* normal/misc.c: Include grub/mm.h.
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Replaced vbe_test.mod and
+	vbe_list_modes with vbetest.mod and vbeinfo.mod.
+	(vbe_list_modes_mod_SOURCES): Removed.
+	(vbe_list_modes_mod_CFLAGS): Likewise.
+	(vbe_test_mod_SOURCES): Likewise.
+	(vbe_test_mod_CFLAGS): Likewise.
+	(vbeinfo_mod_SOURCES): New variable.
+	(vbeinfo_mod_CFLAGS): Likewise.
+	(vbetest_mod_SOURCES): Likewise.
+	(vbetest_mod_CFLAGS): Likewise.
+
 2005-08-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* normal/misc.c: New file.

@@ -32,8 +32,8 @@ boot/powerpc/ieee1275/cmain.c
 boot/powerpc/ieee1275/crt0.S
 commands/i386/pc/halt.c
 commands/i386/pc/reboot.c
-commands/i386/pc/vbe_list_modes.c
-commands/i386/pc/vbe_test.c
+commands/i386/pc/vbeinfo.c
+commands/i386/pc/vbetest.c
 commands/ieee1275/halt.c
 commands/ieee1275/reboot.c
 commands/ieee1275/suspend.c

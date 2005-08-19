@@ -71,70 +71,51 @@ grub_err_t
 grub_vbe_probe (struct grub_vbe_info_block *info_block)
 {
   struct grub_vbe_info_block *vbe_ib;
-  grub_uint32_t rc;
-
+  grub_vbe_status_t status;
+  
   /* Clear caller's controller info block.  */
-  if (info_block != 0)
-    {
-      grub_memset (info_block, 0, sizeof(struct grub_vbe_info_block));
-    }
+  if (info_block)
+    grub_memset (info_block, 0, sizeof (*info_block));
 
-  /* Do not probe more than one time.  */
-  if (vbe_detected != -1)
+  /* Do not probe more than one time, if not necessary.  */
+  if (vbe_detected == -1 || info_block)
     {
-      if (vbe_detected == 1)
+      /* Clear old copy of controller info block.  */
+      grub_memset (&controller_info, 0, sizeof (controller_info));
+
+      /* Mark VESA BIOS extension as undetected.  */
+      vbe_detected = 0;
+      
+      /* Use low memory scratch area as temporary storage
+	 for VESA BIOS call.  */
+      vbe_ib = (struct grub_vbe_info_block *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+      
+      /* Prepare info block.  */
+      grub_memset (vbe_ib, 0, sizeof (*vbe_ib));
+      
+      vbe_ib->signature[0] = 'V';
+      vbe_ib->signature[1] = 'B';
+      vbe_ib->signature[2] = 'E';
+      vbe_ib->signature[3] = '2';
+      
+      /* Try to get controller info block.  */
+      status = grub_vbe_get_controller_info (vbe_ib);
+      if (status == 0x004F)
 	{
-          /* Make copy of controller info block to caller.  */
-	  if (info_block != 0)
-	    {
-	      grub_memcpy (info_block,
-			   &controller_info,
-			   sizeof(struct grub_vbe_info_block));
-	    }
-	  return GRUB_ERR_NONE;
-	}
-      else
-	{
-	  return GRUB_ERR_BAD_DEVICE;
+	  /* Copy it for later usage.  */
+	  grub_memcpy (&controller_info, vbe_ib, sizeof (controller_info));
+	  
+	  /* Mark VESA BIOS extension as detected.  */
+	  vbe_detected = 1;
 	}
     }
 
-  /* Clear old copy of controller info block.  */
-  grub_memset (&controller_info, 0, sizeof(struct grub_vbe_info_block));
+  if (! vbe_detected)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "VESA BIOS Extension not found");
 
-  /* Mark VESA BIOS extension as undetected.  */
-  vbe_detected = 0;
-
-  /* Use low memory scratch area as temporary storage for VESA BIOS call.  */
-  vbe_ib = (struct grub_vbe_info_block *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-
-  /* Prepare info block.  */
-  grub_memset (vbe_ib, 0, sizeof(struct grub_vbe_info_block));
-
-  vbe_ib->signature[0] = 'V';
-  vbe_ib->signature[1] = 'B';
-  vbe_ib->signature[2] = 'E';
-  vbe_ib->signature[3] = '2';
-
-  /* Try to get controller info block.  */
-  rc = grub_vbe_get_controller_info (vbe_ib);
-  if (rc != 0x004F)
-    {
-      return GRUB_ERR_BAD_DEVICE;
-    }
-
-  /* Copy it for later usage.  */
-  grub_memcpy (&controller_info,
-	       vbe_ib,
-	       sizeof(struct grub_vbe_info_block));
-
-  /* Copy it for caller.  */
-  grub_memcpy (info_block,
-	       vbe_ib,
-	       sizeof(struct grub_vbe_info_block));
-
-  /* Mark VESA BIOS extension as detected.  */
-  vbe_detected = 1;
+  /* Make copy of controller info block to caller.  */
+  if (info_block)
+    grub_memcpy (info_block, &controller_info, sizeof (*info_block));
 
   return GRUB_ERR_NONE;
 }
@@ -143,20 +124,16 @@ grub_err_t
 grub_vbe_set_video_mode (grub_uint32_t mode,
                          struct grub_vbe_mode_info_block *mode_info)
 {
-  grub_uint32_t rc;
-
-  /* If grub_vesafb_probe has not been called or no VBE, abort.  */
-  if (vbe_detected == 0)
-    {
-      return GRUB_ERR_BAD_DEVICE;
-    }
+  grub_vbe_status_t status;
+  grub_uint32_t old_mode;
+  
+  /* Make sure that VBE is supported.  */
+  if (grub_vbe_probe (0) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* Try to get mode info.  */
-  rc = grub_vbe_get_video_mode_info (mode, &active_mode_info);
-  if (rc != GRUB_ERR_NONE)
-    {
-      return rc;
-    }
+  if (grub_vbe_get_video_mode_info (mode, &active_mode_info) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* For all VESA BIOS modes, force linear frame buffer.  */
   if (mode >= 0x100)
@@ -165,27 +142,31 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
       mode |= 1 << 14;
 
       /* Determine frame buffer pixel format.  */
-      switch(active_mode_info.memory_model)
+      switch (active_mode_info.memory_model)
 	{
 	case 0x04:
 	  index_color_mode = 1;
 	  break;
-
+	  
 	case 0x06:
 	  index_color_mode = 0;
 	  break;
-
+	  
 	default:
-	  return GRUB_ERR_BAD_DEVICE;
+	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			     "unsupported pixel format 0x%x",
+			     active_mode_info.memory_model);
 	}
     }
 
+  /* Get current mode.  */
+  if (grub_vbe_get_video_mode (&old_mode) != GRUB_ERR_NONE)
+    return grub_errno;
+  
   /* Try to set video mode.  */
-  rc = grub_vbe_set_mode (mode, 0);
-  if (rc != 0x004F)
-    {
-      return GRUB_ERR_BAD_DEVICE;
-    }
+  status = grub_vbe_set_mode (mode, 0);
+  if (status != 0x004F)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot set VBE mode %x", mode);
 
   /* Save information for later usage.  */
   active_mode = mode;
@@ -193,40 +174,43 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
   if (mode < 0x100)
     {
       /* If this is not a VESA mode, guess address.  */
-      framebuffer = (grub_uint8_t *)0xA0000;
+      framebuffer = (grub_uint8_t *) 0xA0000;
       index_color_mode = 1;
     }
   else
     {
-      framebuffer = (grub_uint8_t *)active_mode_info.phys_base_addr;
+      framebuffer = (grub_uint8_t *) active_mode_info.phys_base_addr;
 
       if (controller_info.version >= 0x300)
-	{
-	  bytes_per_scan_line = active_mode_info.lin_bytes_per_scan_line;
-	}
+	bytes_per_scan_line = active_mode_info.lin_bytes_per_scan_line;
       else
-	{
-	  bytes_per_scan_line = active_mode_info.bytes_per_scan_line;
-	}
+	bytes_per_scan_line = active_mode_info.bytes_per_scan_line;
     }
 
   /* If video mode is in indexed color, setup default VGA palette.  */
-  if (index_color_mode != 0)
+  if (index_color_mode)
     {
-      rc = grub_vbe_set_palette_data (16, 0, vga_colors);
-      if (rc != 0x004F)
-        {
-          return GRUB_ERR_BAD_DEVICE;
-        }
+      struct grub_vbe_palette_data *palette
+	= (struct grub_vbe_palette_data *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+
+      /* Make sure that the BIOS can reach the palette.  */
+      grub_memcpy (palette, vga_colors, sizeof (vga_colors));
+      status = grub_vbe_set_palette_data (16, 0, palette);
+
+      /* For now, ignore the status. Not sure if this is fatal.  */
+#if 0
+      if (status != 0x004F)
+	{
+	  grub_vbe_set_mode (old_mode, 0);
+	  return grub_error (GRUB_ERR_BAD_DEVICE,
+			     "cannot set the default VGA palette");
+	}
+#endif
     }
 
   /* Copy mode info for caller.  */
-  if (mode_info != 0)
-    {
-      grub_memcpy (mode_info,
-                   &active_mode_info,
-                   sizeof(struct grub_vbe_mode_info_block));
-    }
+  if (mode_info)
+    grub_memcpy (mode_info, &active_mode_info, sizeof (*mode_info));
 
   return GRUB_ERR_NONE;
 }
@@ -234,20 +218,16 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
 grub_err_t
 grub_vbe_get_video_mode (grub_uint32_t *mode)
 {
-  grub_uint32_t rc;
+  grub_vbe_status_t status;
 
-  /* If grub_vesafb_probe has not been called or no VBE, abort.  */
-  if (vbe_detected == 0)
-    {
-      return GRUB_ERR_BAD_DEVICE;
-    }
+  /* Make sure that VBE is supported.  */
+  if (grub_vbe_probe (0) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* Try to query current mode from VESA BIOS.  */
-  rc = grub_vbe_get_mode (mode);
-  if (rc != 0x004F)
-    {
-      return GRUB_ERR_BAD_DEVICE;
-    }
+  status = grub_vbe_get_mode (mode);
+  if (status != 0x004F)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current VBE mode");
 
   return GRUB_ERR_NONE;
 }
@@ -256,37 +236,29 @@ grub_err_t
 grub_vbe_get_video_mode_info (grub_uint32_t mode,
                               struct grub_vbe_mode_info_block *mode_info)
 {
-  struct grub_vbe_mode_info_block *mi_tmp = (struct grub_vbe_mode_info_block *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
-  grub_uint32_t rc;
+  struct grub_vbe_mode_info_block *mi_tmp
+    = (struct grub_vbe_mode_info_block *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+  grub_vbe_status_t status;
 
-  /* If grub_vesafb_probe has not been called or no VBE, abort.  */
-  if (vbe_detected == 0)
-    {
-      return GRUB_ERR_BAD_DEVICE;
-    }
+  /* Make sure that VBE is supported.  */
+  if (grub_vbe_probe (0) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* If mode is not VESA mode, skip mode info query.  */
   if (mode >= 0x100)
     {
       /* Try to get mode info from VESA BIOS.  */
-      rc = grub_vbe_get_mode_info (mode, mi_tmp);
-      if (rc != 0x004F)
-	{
-	  return GRUB_ERR_BAD_DEVICE;
-	}
+      status = grub_vbe_get_mode_info (mode, mi_tmp);
+      if (status != 0x004F)
+	return grub_error (GRUB_ERR_BAD_DEVICE,
+			   "cannot get information on the mode %x", mode);
 
       /* Make copy of mode info block.  */
-      grub_memcpy (mode_info,
-		   mi_tmp,
-		   sizeof(struct grub_vbe_mode_info_block));
+      grub_memcpy (mode_info, mi_tmp, sizeof (*mode_info));
     }
   else
-    {
-      /* Just clear mode info block if it isn't a VESA mode.  */
-      grub_memset (mode_info,
-		   0,
-		   sizeof(struct grub_vbe_mode_info_block));
-    }
+    /* Just clear mode info block if it isn't a VESA mode.  */
+    grub_memset (mode_info, 0, sizeof (*mode_info));
 
   return GRUB_ERR_NONE;
 }
@@ -327,33 +299,44 @@ grub_vbe_set_pixel_rgb (grub_uint32_t x,
       value |= blue << active_mode_info.blue_field_position;
     }
 
-  if (active_mode_info.bits_per_pixel == 32)
+  switch (active_mode_info.bits_per_pixel)
     {
-      grub_uint32_t *ptr = (grub_uint32_t *)(framebuffer
-					     + y * bytes_per_scan_line
-					     + x * 4);
+    case 32:
+      {
+	grub_uint32_t *ptr = (grub_uint32_t *) (framebuffer
+						+ y * bytes_per_scan_line
+						+ x * 4);
+	
+	*ptr = value;
+      }
+      break;
+      
+    case 24:
+      {
+	grub_uint8_t *ptr = (grub_uint8_t *) (framebuffer
+					      + y * bytes_per_scan_line
+					      + x * 3);
+	grub_uint8_t *ptr2 = (grub_uint8_t *) &value;
+	
+	ptr[0] = ptr2[0];
+	ptr[1] = ptr2[1];
+	ptr[2] = ptr2[2];
+      }
+      break;
 
-      *ptr = value;
-    }
-  else if (active_mode_info.bits_per_pixel == 24)
-    {
-      grub_uint8_t *ptr = (grub_uint8_t *)(framebuffer
-					   + y * bytes_per_scan_line
-					   + x * 3);
-      grub_uint8_t *ptr2 = (grub_uint8_t *)&value;
+    case 16:
+    case 15:
+      {
+	grub_uint16_t *ptr = (grub_uint16_t *) (framebuffer
+						+ y * bytes_per_scan_line
+						+ x * 2);
+	
+	*ptr = (grub_uint16_t) (value & 0xFFFF);
+      }
+      break;
 
-      ptr[0] = ptr2[0];
-      ptr[1] = ptr2[1];
-      ptr[2] = ptr2[2];
-    }
-  else if ((active_mode_info.bits_per_pixel == 16) ||
-	   (active_mode_info.bits_per_pixel == 15))
-    {
-      grub_uint16_t *ptr = (grub_uint16_t *)(framebuffer
-					     + y * bytes_per_scan_line
-					     + x * 2);
-
-      *ptr = (grub_uint16_t)(value & 0xFFFF);
+    default:
+      break;
     }
 }
 
@@ -370,16 +353,16 @@ grub_vbe_set_pixel_index (grub_uint32_t x,
 
   if (index_color_mode == 1)
     {
-      grub_uint8_t *ptr = (grub_uint8_t *)(framebuffer
-					   + y * bytes_per_scan_line
-					   + x);
+      grub_uint8_t *ptr = (grub_uint8_t *) (framebuffer
+					    + y * bytes_per_scan_line
+					    + x);
 
       *ptr = color;
     }
   else
     {
       color &= 0x0F;
-
+      
       if (color < 16)
 	{
 	  grub_vbe_set_pixel_rgb (x,
@@ -396,5 +379,5 @@ grub_vbe_set_pixel_index (grub_uint32_t x,
                                   0,
                                   0);
 	}
-  }
+    }
 }

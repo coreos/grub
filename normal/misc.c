@@ -23,6 +23,7 @@
 #include <grub/fs.h>
 #include <grub/err.h>
 #include <grub/misc.h>
+#include <grub/mm.h>
 
 /* Print the information on the device NAME.  */
 grub_err_t

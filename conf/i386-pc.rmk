@@ -112,7 +112,7 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
-	vesafb.mod vbe_test.mod vbe_list_modes.mod
+	vesafb.mod vbetest.mod vbeinfo.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -262,10 +262,10 @@ vbe_mod_CFLAGS = $(COMMON_CFLAGS)
 vesafb_mod_SOURCES = term/i386/pc/vesafb.c
 vesafb_mod_CFLAGS = $(COMMON_CFLAGS)
 
-# For vbe_list_modes.mod.
-vbe_list_modes_mod_SOURCES = commands/i386/pc/vbe_list_modes.c
-vbe_list_modes_mod_CFLAGS = $(COMMON_CFLAGS)
+# For vbeinfo.mod.
+vbeinfo_mod_SOURCES = commands/i386/pc/vbeinfo.c
+vbeinfo_mod_CFLAGS = $(COMMON_CFLAGS)
 
-# For vbe_test.mod.
-vbe_test_mod_SOURCES = commands/i386/pc/vbe_test.c
-vbe_test_mod_CFLAGS = $(COMMON_CFLAGS)
+# For vbetest.mod.
+vbetest_mod_SOURCES = commands/i386/pc/vbetest.c
+vbetest_mod_CFLAGS = $(COMMON_CFLAGS)

@@ -1,4 +1,4 @@
-/* vbe_test.c - command to test VESA BIOS Extension 2.0+ support.  */
+/* vbetest.c - command to test VESA BIOS Extension 2.0+ support.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2005  Free Software Foundation, Inc.
@@ -26,21 +26,14 @@
 #include <grub/term.h>
 #include <grub/machine/init.h>
 #include <grub/machine/vbe.h>
-
-static void *
-real2pm(grub_vbe_farptr_t ptr)
-{
-  return (void *)((((unsigned long)ptr & 0xFFFF0000) >> 12UL)
-                  + ((unsigned long)ptr & 0x0000FFFF));
-}
+#include <grub/err.h>
 
 static grub_err_t
-grub_cmd_vbe_test(struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_vbetest (struct grub_arg_list *state __attribute__ ((unused)),
 		  int argc __attribute__ ((unused)),
 		  char **args __attribute__ ((unused)))
 {
-  grub_uint32_t rc;
-  grub_uint16_t *sptr;
+  grub_err_t err;
   char *modevar;
   struct grub_vbe_mode_info_block mode_info;
   struct grub_vbe_info_block controller_info;
@@ -54,12 +47,10 @@ grub_cmd_vbe_test(struct grub_arg_list *state __attribute__ ((unused)),
   grub_printf ("Probing for VESA BIOS Extension ... ");
 
   /* Check if VESA BIOS exists.  */
-  rc = grub_vbe_probe(&controller_info);
-  if (rc != GRUB_ERR_NONE)
-    {
-      grub_printf ("not found!\n");
-      return rc;
-    }
+  err = grub_vbe_probe (&controller_info);
+  if (err != GRUB_ERR_NONE)
+    return err;
+
   grub_printf ("found!\n");
 
   /* Dump out controller information.  */
@@ -77,43 +68,31 @@ grub_cmd_vbe_test(struct grub_arg_list *state __attribute__ ((unused)),
   grub_printf ("Total memory = %d\n",
 	       controller_info.total_memory);
 
-  sptr = real2pm(controller_info.video_mode_ptr);
+  err = grub_vbe_get_video_mode (&old_mode);
+  grub_printf ("Get video mode err = %04x\n", err);
 
-  rc = grub_vbe_get_video_mode(&old_mode);
-  grub_printf ("Get video mode rc = %04x\n", rc);
-
-  if (rc == GRUB_ERR_NONE)
-    {
-      grub_printf ("Old video mode = %04x\n", old_mode);
-    }
-
+  if (err == GRUB_ERR_NONE)
+    grub_printf ("Old video mode = %04x\n", old_mode);
+  else
+    grub_errno = GRUB_ERR_NONE;
+  
   /* Check existence of vbe_mode environment variable.  */
   modevar = grub_env_get ("vbe_mode");
-
   if (modevar != 0)
     {
-      unsigned long value = 0;
+      unsigned long value;
 
-      if ((grub_strncmp (modevar, "0x", 2) == 0) ||
-	  (grub_strncmp (modevar, "0X", 2) == 0))
-	{
-	  /* Convert HEX mode number.  */
-	  value = grub_strtoul (modevar + 2, 0, 16);
-	}
+      value = grub_strtoul (modevar, 0, 0);
+      if (grub_errno == GRUB_ERR_NONE)
+	use_mode = value;
       else
-	{
-	  /* Convert DEC mode number.  */
-	  value = grub_strtoul (modevar, 0, 10);
-	}
-
-      if (value != 0)
-	{
-	  use_mode = value;
-	}
+	grub_errno = GRUB_ERR_NONE;
     }
 
-  rc = grub_vbe_get_video_mode_info (use_mode, &mode_info);
-
+  err = grub_vbe_get_video_mode_info (use_mode, &mode_info);
+  if (err != GRUB_ERR_NONE)
+    return err;
+  
   /* Dump out details about the mode being tested.  */
   grub_printf ("mode: 0x%03x\n",
                use_mode);
@@ -144,10 +123,12 @@ grub_cmd_vbe_test(struct grub_arg_list *state __attribute__ ((unused)),
   grub_getkey ();
 
   /* Setup GFX mode.  */
-  rc = grub_vbe_set_video_mode (use_mode, &mode_info);
+  err = grub_vbe_set_video_mode (use_mode, &mode_info);
+  if (err != GRUB_ERR_NONE)
+    return err;
 
   /* Determine framebuffer address and how many bytes are in scan line.  */
-  framebuffer = (grub_uint8_t *)mode_info.phys_base_addr;
+  framebuffer = (grub_uint8_t *) mode_info.phys_base_addr;
   ptr = framebuffer;
 
   if (controller_info.version >= 0x300)
@@ -179,21 +160,21 @@ grub_cmd_vbe_test(struct grub_arg_list *state __attribute__ ((unused)),
   /* Restore old video mode.  */
   grub_vbe_set_video_mode (old_mode, 0);
 
-  return 0;
+  return grub_errno;
 }
 
 GRUB_MOD_INIT
 {
-  (void)mod;			/* To stop warning.  */
-  grub_register_command ("vbe_test",
-                         grub_cmd_vbe_test,
+  (void) mod;			/* To stop warning.  */
+  grub_register_command ("vbetest",
+                         grub_cmd_vbetest,
                          GRUB_COMMAND_FLAG_BOTH,
-                         "vbe_test",
+                         "vbetest",
                          "Test VESA BIOS Extension 2.0+ support",
                          0);
 }
 
 GRUB_MOD_FINI
 {
-  grub_unregister_command ("vbe_test");
+  grub_unregister_command ("vbetest");
 }
