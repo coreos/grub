@@ -8,6 +8,8 @@ New in 1.91:
 
 * New commands, "search", "vbetest" and "vbeinfo".
 
+* The option BOOT_IMAGE is passed to Linux.
+
 
 New in 1.90 - 2005-08-07:
 

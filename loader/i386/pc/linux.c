@@ -1,7 +1,7 @@
 /* linux.c - boot Linux zImage or bzImage */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -250,21 +250,21 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 		 ((GRUB_LINUX_MAX_SETUP_SECTS - setup_sects - 1)
 		  << GRUB_DISK_SECTOR_BITS));
 
+  /* Specify the boot file.  */
+  dest = grub_stpcpy (grub_linux_tmp_addr + GRUB_LINUX_CL_OFFSET,
+		      "BOOT_IMAGE=");
+  dest = grub_stpcpy (dest, argv[0]);
+  
   /* Copy kernel parameters.  */
-  for (i = 1, dest = grub_linux_tmp_addr + GRUB_LINUX_CL_OFFSET;
+  for (i = 1;
        i < argc
-	 && dest + grub_strlen (argv[i]) < (grub_linux_tmp_addr
-					    + GRUB_LINUX_CL_END_OFFSET);
-       i++, *dest++ = ' ')
+	 && dest + grub_strlen (argv[i]) + 1 < (grub_linux_tmp_addr
+						+ GRUB_LINUX_CL_END_OFFSET);
+       i++)
     {
-      grub_strcpy (dest, argv[i]);
-      dest += grub_strlen (argv[i]);
+      *dest++ = ' ';
+      dest = grub_stpcpy (dest, argv[i]);
     }
-
-  if (i != 1)
-    dest--;
-
-  *dest = '\0';
 
   len = prot_size;
   if (grub_file_read (file, (char *) GRUB_LINUX_BZIMAGE_ADDR, len) != len)

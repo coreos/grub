@@ -108,6 +108,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   grub_addr_t entry;
   int found_addr = 0;
   int size;
+  char *dest;
 
   grub_dl_ref (my_mod);
 
@@ -214,18 +215,22 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 	}
     }
 
-  size = 0;
+  size = sizeof ("BOOT_IMAGE=") + grub_strlen (argv[0]);
   for (i = 0; i < argc; i++)
-    size += grub_strlen (argv[i]);
+    size += grub_strlen (argv[i]) + 1;
 
-  linux_args = grub_malloc (size + argc + 1);
-  if (!linux_args)
+  linux_args = grub_malloc (size);
+  if (! linux_args)
     goto fail;
 
+  /* Specify the boot file.  */
+  dest = grub_stpcpy (linux_args, "BOOT_IMAGE=");
+  dest = grub_stpcpy (dest, argv[0]);
+  
   for (i = 1; i < argc; i++)
     {
-      grub_strcat (linux_args, argv[i]);
-      grub_strcat (linux_args, " ");
+      *dest++ = ' ';
+      dest = grub_stpcpy (dest, argv[i]);
     }
 
  fail:
