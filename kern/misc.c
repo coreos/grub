@@ -742,7 +742,7 @@ grub_sprintf (char *str, const char *fmt, ...)
   return ret;
 }
 
-/* Convert UTF-16 to UTF8.  */
+/* Convert UTF-16 to UTF-8.  */
 grub_uint8_t *
 grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
 		    grub_size_t size)
@@ -804,8 +804,79 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
   return dest;
 }
 
+/* Convert an UTF-8 string to an UCS-4 string. Return the number of
+   characters converted. DEST must be able to hold at least SIZE
+   characters (when the input is unknown). If an invalid sequence is found,
+   return -1.  */
+grub_ssize_t
+grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_uint8_t *src, grub_size_t size)
+{
+  grub_uint32_t *p = dest;
+  int count = 0;
+  grub_uint32_t code = 0;
+  
+  while (size--)
+    {
+      grub_uint32_t c = *src++;
+      
+      if (count)
+	{
+	  if ((c & 0xc0) != 0x80)
+	    {
+	      /* invalid */
+	      return -1;
+	    }
+	  else
+	    {
+	      code <<= 6;
+	      code |= (c & 0x3f);
+	      count--;
+	    }
+	}
+      else
+	{
+	  if ((c & 0x80) == 0x00)
+	    code = c;
+	  else if ((c & 0xe0) == 0xc0)
+	    {
+	      count = 1;
+	      code = c & 0x1f;
+	    }
+	  else if ((c & 0xf0) == 0xe0)
+	    {
+	      count = 2;
+	      code = c & 0x0f;
+	    }
+	  else if ((c & 0xf8) == 0xf0)
+	    {
+	      count = 3;
+	      code = c & 0x07;
+	    }
+	  else if ((c & 0xfc) == 0xf8)
+	    {
+	      count = 4;
+	      code = c & 0x03;
+	    }
+	  else if ((c & 0xfe) == 0xfc)
+	    {
+	      count = 5;
+	      code = c & 0x01;
+	    }
+	  else
+	    /* invalid */
+	    return -1;
+	}
+
+      if (count == 0)
+	*p++ = code;
+    }
+
+  return p - dest;
+}
+
 grub_err_t
-grub_split_cmdline (const char *cmdline, grub_err_t (* getline) (char **), int *argc, char ***argv)
+grub_split_cmdline (const char *cmdline, grub_err_t (*getline) (char **),
+		    int *argc, char ***argv)
 {
   /* XXX: Fixed size buffer, perhaps this buffer should be dynamically
      allocated.  */

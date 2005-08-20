@@ -135,6 +135,10 @@ struct grub_term
   
   /* Put a character. C is encoded in Unicode.  */
   void (*putchar) (grub_uint32_t c);
+
+  /* Get the number of columns occupied by a given character C. C is
+     encoded in Unicode.  */
+  grub_ssize_t (*getcharwidth) (grub_uint32_t c);
   
   /* Check if any input character is available.  */
   int (*checkkey) (void);
@@ -184,6 +188,7 @@ grub_term_t EXPORT_FUNC(grub_term_get_current) (void);
 
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code);
+grub_ssize_t EXPORT_FUNC(grub_getcharwidth) (grub_uint32_t code);
 int EXPORT_FUNC(grub_getkey) (void);
 int EXPORT_FUNC(grub_checkkey) (void);
 grub_uint16_t EXPORT_FUNC(grub_getwh) (void);

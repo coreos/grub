@@ -143,63 +143,31 @@ grub_putcode (grub_uint32_t code)
 void
 grub_putchar (int c)
 {
-  static grub_uint32_t code = 0;
-  static int count = 0;
+  static grub_size_t size = 0;
+  static grub_uint8_t buf[6];
+  grub_uint32_t code;
+  grub_ssize_t ret;
 
-  if (count)
+  buf[size++] = c;
+  ret = grub_utf8_to_ucs4 (&code, buf, size);
+  
+  if (ret > 0)
     {
-      if ((c & 0xc0) != 0x80)
-	{
-	  /* invalid */
-	  code = '@';
-	  count = 0;
-	}
-      else
-	{
-	  code <<= 6;
-	  code |= (c & 0x3f);
-	  count--;
-	}
+      size = 0;
+      grub_putcode (code);
     }
-  else
+  else if (ret < 0)
     {
-      if ((c & 0x80) == 0x00)
-	code = c;
-      else if ((c & 0xe0) == 0xc0)
-	{
-	  count = 1;
-	  code = c & 0x1f;
-	}
-      else if ((c & 0xf0) == 0xe0)
-	{
-	  count = 2;
-	  code = c & 0x0f;
-	}
-      else if ((c & 0xf8) == 0xf0)
-	{
-	  count = 3;
-	  code = c & 0x07;
-	}
-      else if ((c & 0xfc) == 0xf8)
-	{
-	  count = 4;
-	  code = c & 0x03;
-	}
-      else if ((c & 0xfe) == 0xfc)
-	{
-	  count = 5;
-	  code = c & 0x01;
-	}
-      else
-	/* invalid */
-	code = '?';
-    }	
+      size = 0;
+      grub_putcode ('?');
+    }
+}
 
-  if (count)
-    /* Not finished yet.  */
-    return;
-
-  grub_putcode (code);
+/* Return the number of columns occupied by the character code CODE.  */
+grub_ssize_t
+grub_getcharwidth (grub_uint32_t code)
+{
+  return (grub_cur_term->getcharwidth) (code);
 }
 
 int

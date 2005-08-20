@@ -26,8 +26,8 @@ static grub_uint8_t grub_console_standard_color = 0x7;
 static grub_uint8_t grub_console_normal_color = 0x7;
 static grub_uint8_t grub_console_highlight_color = 0x70;
 
-static void
-grub_console_putchar (grub_uint32_t c)
+static grub_uint32_t
+map_char (grub_uint32_t c)
 {
   if (c > 0x7f)
     {
@@ -71,7 +71,20 @@ grub_console_putchar (grub_uint32_t c)
 	}
     }
 
-  grub_console_real_putchar (c);
+  return c;
+}
+
+static void
+grub_console_putchar (grub_uint32_t c)
+{
+  grub_console_real_putchar (map_char (c));
+}
+
+static grub_ssize_t
+grub_console_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
+{
+  /* For now, every printable character has the width 1.  */
+  return 1;
 }
 
 static grub_uint16_t
@@ -111,6 +124,7 @@ static struct grub_term grub_console_term =
     .init = 0,
     .fini = 0,
     .putchar = grub_console_putchar,
+    .getcharwidth = grub_console_getcharwidth,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
     .getwh = grub_console_getwh,

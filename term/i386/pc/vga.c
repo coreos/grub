@@ -472,6 +472,17 @@ grub_vga_putchar (grub_uint32_t c)
 #endif
 }
 
+static grub_ssize_t
+grub_vga_getcharwidth (grub_uint32_t c)
+{
+  unsigned width;
+  
+  if (! get_vga_glyph (c, 0, &width))
+    return 0;
+
+  return width;
+}
+
 static grub_uint16_t
 grub_vga_getwh (void)
 {
@@ -570,6 +581,7 @@ static struct grub_term grub_vga_term =
     .init = grub_vga_init,
     .fini = grub_vga_fini,
     .putchar = grub_vga_putchar,
+    .getcharwidth = grub_vga_getcharwidth,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
     .getwh = grub_vga_getwh,

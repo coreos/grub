@@ -102,12 +102,10 @@ grub_virtual_screen_free (void)
 {
   /* If virtual screen has been allocated, free it.  */
   if (virtual_screen.text_buffer != 0)
-    {
-      grub_free (virtual_screen.text_buffer);
-    }
+    grub_free (virtual_screen.text_buffer);
 
   /* Reset virtual screen data.  */
-  grub_memset (&virtual_screen, 0, sizeof(virtual_screen));
+  grub_memset (&virtual_screen, 0, sizeof (virtual_screen));
 }
 
 static grub_err_t
@@ -136,21 +134,16 @@ grub_virtual_screen_setup (grub_uint32_t width,
 
   /* Allocate memory for text buffer.  */
   virtual_screen.text_buffer =
-    (struct grub_colored_char *)grub_malloc (virtual_screen.columns
-                                             * virtual_screen.rows
-                                             * sizeof(struct grub_colored_char));
-  if (virtual_screen.text_buffer == 0)
-    {
-      return GRUB_ERR_OUT_OF_MEMORY;
-    }
+    (struct grub_colored_char *) grub_malloc (virtual_screen.columns
+					      * virtual_screen.rows
+					      * sizeof (*virtual_screen.text_buffer));
 
-  return GRUB_ERR_NONE;
+  return grub_errno;
 }
 
 static grub_err_t
 grub_vesafb_init (void)
 {
-  grub_uint32_t rc;
   grub_uint32_t use_mode = GRUB_VBE_DEFAULT_VIDEO_MODE;
   struct grub_vbe_info_block controller_info;
   char *modevar;
@@ -159,66 +152,43 @@ grub_vesafb_init (void)
   vga_font = grub_vga_get_font ();
 
   /* Check if we have VESA BIOS installed.  */
-  rc = grub_vbe_probe (&controller_info);
-  if (rc != GRUB_ERR_NONE)
-    {
-      return rc;
-    }
+  if (grub_vbe_probe (&controller_info) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* Check existence of vbe_mode environment variable.  */
   modevar = grub_env_get ("vbe_mode");
 
   if (modevar != 0)
     {
-      unsigned long value = 0;
+      unsigned long value;
 
-      if ((grub_strncmp (modevar, "0x", 2) == 0) ||
-	  (grub_strncmp (modevar, "0X", 2) == 0))
-	{
-	  /* Convert HEX mode number.  */
-	  value = grub_strtoul (modevar + 2, 0, 16);
-	}
-      else
-	{
-	  /* Convert DEC mode number.  */
-	  value = grub_strtoul (modevar, 0, 10);
-	}
-
-      if (value != 0)
-	{
-	  use_mode = value;
-	}
+      value = grub_strtoul (modevar, 0, 0);
+      if (grub_errno == GRUB_ERR_NONE)
+	use_mode = value;
     }
 
   /* Store initial video mode.  */
-  rc = grub_vbe_get_video_mode (&old_mode);
+  if (grub_vbe_get_video_mode (&old_mode) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* Setup desired graphics mode.  */
-  rc = grub_vbe_set_video_mode (use_mode, &mode_info);
-  if (rc != GRUB_ERR_NONE)
-    {
-      return rc;
-    }
+  if (grub_vbe_set_video_mode (use_mode, &mode_info) != GRUB_ERR_NONE)
+    return grub_errno;
 
   /* Determine framebuffer and bytes per scan line.  */
-  framebuffer = (grub_uint8_t *)mode_info.phys_base_addr;
+  framebuffer = (grub_uint8_t *) mode_info.phys_base_addr;
 
   if (controller_info.version >= 0x300)
-  {
-      bytes_per_scan_line = mode_info.lin_bytes_per_scan_line;
-  }
+    bytes_per_scan_line = mode_info.lin_bytes_per_scan_line;
   else
-  {
-      bytes_per_scan_line = mode_info.bytes_per_scan_line;
-  }
+    bytes_per_scan_line = mode_info.bytes_per_scan_line;
 
   /* Create virtual screen.  */
-  rc = grub_virtual_screen_setup (mode_info.x_resolution,
-				  mode_info.y_resolution);
-  if (rc != GRUB_ERR_NONE)
+  if (grub_virtual_screen_setup (mode_info.x_resolution,
+				 mode_info.y_resolution) != GRUB_ERR_NONE)
     {
       grub_vbe_set_video_mode (old_mode, 0);
-      return rc;
+      return grub_errno;
     }
 
   /* Make sure frame buffer is black.  */
@@ -319,6 +289,8 @@ write_char (void)
   struct grub_colored_char *p;
   unsigned char bitmap[32];
   unsigned width;
+  unsigned y;
+  unsigned offset;
 
   p = (virtual_screen.text_buffer
        + virtual_screen.cursor_x
@@ -332,9 +304,6 @@ write_char (void)
       width = 0;
     }
 
-  unsigned y;
-  unsigned offset;
-
   for (y = 0, offset = 0;
        y < virtual_screen.char_height;
        y++, offset++)
@@ -347,7 +316,7 @@ write_char (void)
 	{
 	  unsigned char color;
 
-	  if (bitmap[offset] & (1<<(8-i)))
+	  if (bitmap[offset] & (1 << (8-i)))
 	    {
 	      color = p->fg_color;
 	    }
@@ -392,7 +361,7 @@ scroll_up (void)
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
 		virtual_screen.text_buffer + virtual_screen.columns,
-                sizeof (struct grub_colored_char)
+                sizeof (*virtual_screen.text_buffer)
                 * virtual_screen.columns
                 * (virtual_screen.rows - 1));
 
@@ -468,9 +437,9 @@ grub_vesafb_putchar (grub_uint32_t c)
       if (virtual_screen.cursor_x + width > virtual_screen.columns)
 	grub_putchar ('\n');
 
-      p = virtual_screen.text_buffer +
-	virtual_screen.cursor_x +
-	virtual_screen.cursor_y * virtual_screen.columns;
+      p = (virtual_screen.text_buffer +
+	   virtual_screen.cursor_x +
+	   virtual_screen.cursor_y * virtual_screen.columns);
       p->code = c;
       p->fg_color = virtual_screen.fg_color;
       p->bg_color = virtual_screen.bg_color;
@@ -505,6 +474,17 @@ grub_vesafb_putchar (grub_uint32_t c)
       if (virtual_screen.cursor_state)
 	write_cursor ();
     }
+}
+
+static grub_ssize_t
+grub_vesafb_getcharwidth (grub_uint32_t c)
+{
+  unsigned width;
+  
+  if (! grub_virtual_screen_get_glyph (c, 0, &width))
+    return 0;
+
+  return width;
 }
 
 static grub_uint16_t
@@ -612,6 +592,7 @@ static struct grub_term grub_vesafb_term =
     .init = grub_vesafb_init,
     .fini = grub_vesafb_fini,
     .putchar = grub_vesafb_putchar,
+    .getcharwidth = grub_vesafb_getcharwidth,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
     .getwh = grub_virtual_screen_getwh,

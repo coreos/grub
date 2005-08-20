@@ -1,3 +1,37 @@
+2005-08-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/term.c (grub_putchar): Use grub_utf8_to_ucs4 for the
+	conversion.
+	(grub_getcharwidth): New function.
+
+	* kern/misc.c (grub_utf8_to_ucs4): New function.
+
+	* include/grub/term.h (struct grub_term): Added a new member
+	"getcharwidth".
+	(grub_getcharwidth): New prototype.
+
+	* include/grub/misc.h (grub_utf8_to_ucs4): New prototype.
+
+	* term/i386/pc/console.c (map_char): New function. Segregated from
+	grub_console_putchar.
+	(grub_console_putchar): Use map_char.
+	(grub_console_getcharwidth): New function.
+	(grub_console_term): Specified grub_console_getcharwidth as
+	getcharwidth.
+
+	* term/i386/pc/vga.c (grub_vga_getcharwidth): New function.
+	(grub_vga_term): Specified grub_vga_getcharwidth as getcharwidth.
+
+	* term/i386/pc/vesafb.c (grub_virtual_screen_setup): Return
+	GRUB_ERRNO.
+	(grub_vesafb_init): Do not use RC. Instead, use GRUB_ERRNO. Rely
+	on grub_strtoul completely.
+	(write_char): Declare local variables in the beginning of the
+	function.
+	(grub_vesafb_getcharwidth): New function.
+	(grub_vesafb_term): Specified grub_vesafb_getcharwidth as
+	getcharwidth.
+
 2005-08-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Replace commands/i386/pc/vbe_list_modes.c and
