@@ -1,5 +1,53 @@
 2005-08-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* partmap/pc.c (pc_partition_map_iterate): Include the value of an
+	invalid magic in thre error.
+
+	* commands/search.c: New file.
+	
+	* util/grub-emu.c (main): Call grub_search_init and
+	grub_search_fini.
+
+	* kern/rescue.c (grub_rescue_print_disks): Removed.
+	(grub_rescue_print_devices): New function.
+	(grub_rescue_cmd_ls): Use grub_device_iterate with
+	grub_rescue_print_devices instead of grub_disk_dev_iterate with
+	grub_rescue_print_disks.
+
+	* kern/partition.c (grub_partition_iterate): Return the result of
+	PARTMAP->ITERATE instead of GRUB_ERRNO.
+
+	* kern/device.c: Include grub/partition.h.
+	(grub_device_iterate): New function.
+
+	* include/grub/partition.h (grub_partition_iterate): Return int
+	instead of grub_err_t.
+
+	* include/grub/normal.h [GRUB_UTIL] (grub_search_init): New
+	prototype.
+	[GRUB_UTIL] (grub_search_fini): Likewise.
+
+	* include/grub/device.h (grub_device_iterate): New prototype.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Added
+	commands/search.c.
+	(pkgdata_MODULES): Added search.mod.
+	(search_mod_SOURCES): New variable.
+	(search_mod_CFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added commands/search.c.
+	(pkgdata_MODULES): Added search.mod.
+	(search_mod_SOURCES): New variable.
+	(search_mod_CFLAGS): Likewise.
+
+	* commands/ls.c (grub_ls_list_disks): Renamed to ...
+	(grub_ls_list_devices): ... this, and use grub_device_iterate.
+	All callers changed.
+
+	* DISTLIST: Added commands/search.c.
+
+2005-08-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* kern/term.c (grub_putchar): Use grub_utf8_to_ucs4 for the
 	conversion.
 	(grub_getcharwidth): New function.

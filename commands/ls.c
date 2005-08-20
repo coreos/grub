@@ -42,60 +42,20 @@ static const struct grub_arg_option options[] =
 static const char grub_human_sizes[] = {' ', 'K', 'M', 'G', 'T'};
 
 static grub_err_t
-grub_ls_list_disks (int longlist)
+grub_ls_list_devices (int longlist)
 {
-  auto int grub_ls_print_disks (const char *name);
-  int grub_ls_print_disks (const char *name)
+  auto int grub_ls_print_devices (const char *name);
+  int grub_ls_print_devices (const char *name)
     {
-      grub_device_t dev;
-      auto int print_partition (grub_disk_t disk, const grub_partition_t p);
-      
-      int print_partition (grub_disk_t disk __attribute__ ((unused)),
-			   const grub_partition_t p)
-	{
-	  char *pname = grub_partition_get_name (p);
-
-	  if (pname)
-	    {
-	      if (longlist)
-		{
-		  char device_name[grub_strlen (name) + 1
-				   + grub_strlen (pname) + 1];
-		  grub_sprintf (device_name, "%s,%s", name, pname);
-		  grub_normal_print_device_info (device_name);
-		}
-	      else
-		grub_printf ("(%s,%s) ", name, pname);
-
-	      grub_free (pname);
-	    }
-
-	  return 0;
-	}
-      
-      dev = grub_device_open (name);
-      grub_errno = GRUB_ERR_NONE;
-      
-      if (dev)
-	{
-	  if (longlist)
-	    grub_normal_print_device_info (name);
-	  else
-	    grub_printf ("(%s) ", name);
-
-	  if (dev->disk && dev->disk->has_partitions)
-	    {
-	      grub_partition_iterate (dev->disk, print_partition);
-	      grub_errno = GRUB_ERR_NONE;
-	    }
-
-	  grub_device_close (dev);
-	}
+      if (longlist)
+	grub_normal_print_device_info (name);
+      else
+	grub_printf ("(%s) ", name);
   
       return 0;
     }
   
-  grub_disk_dev_iterate (grub_ls_print_disks);
+  grub_device_iterate (grub_ls_print_devices);
   grub_putchar ('\n');
   grub_refresh ();
 
@@ -260,7 +220,7 @@ static grub_err_t
 grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
 {
   if (argc == 0)
-    grub_ls_list_disks (state[0].set);
+    grub_ls_list_devices (state[0].set);
   else
     grub_ls_list_files (args[0], state[0].set, state[2].set,
 			state[1].set);

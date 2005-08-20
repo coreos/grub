@@ -37,5 +37,6 @@ typedef struct grub_device *grub_device_t;
 
 grub_device_t EXPORT_FUNC(grub_device_open) (const char *name);
 grub_err_t EXPORT_FUNC(grub_device_close) (grub_device_t device);
+int EXPORT_FUNC(grub_device_iterate) (int (*hook) (const char *name));
 
 #endif /* ! GRUB_DEVICE_HEADER */

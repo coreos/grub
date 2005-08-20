@@ -170,7 +170,8 @@ pc_partition_map_iterate (grub_disk_t disk,
 		  if (label.magic
 		      != grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
 		    return grub_error (GRUB_ERR_BAD_PART_TABLE,
-				       "invalid disk label magic");
+				       "invalid disk label magic 0x%x",
+				       label.magic);
 
 		  for (pcdata.bsd_part = 0;
 		       pcdata.bsd_part < grub_cpu_to_le16 (label.num_partitions);

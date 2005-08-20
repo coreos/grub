@@ -25,6 +25,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/partition.h>
 
 grub_device_t
 grub_device_open (const char *name)
@@ -77,4 +78,63 @@ grub_device_close (grub_device_t device)
   grub_free (device);
 
   return grub_errno;
+}
+
+int
+grub_device_iterate (int (*hook) (const char *name))
+{
+  auto int iterate_disk (const char *disk_name);
+  auto int iterate_partition (grub_disk_t disk,
+			      const grub_partition_t partition);
+  
+  int iterate_disk (const char *disk_name)
+    {
+      grub_device_t dev;
+
+      if (hook (disk_name))
+	return 1;
+      
+      dev = grub_device_open (disk_name);
+      if (! dev)
+	return 1;
+      
+      if (dev->disk && dev->disk->has_partitions)
+	if (grub_partition_iterate (dev->disk, iterate_partition))
+	  {
+	    grub_device_close (dev);
+	    return 1;
+	  }
+
+      grub_device_close (dev);
+      return 0;
+    }
+  
+  int iterate_partition (grub_disk_t disk, const grub_partition_t partition)
+    {
+      char *partition_name;
+      char *device_name;
+      int ret;
+      
+      partition_name = grub_partition_get_name (partition);
+      if (! partition_name)
+	return 1;
+      
+      device_name = grub_malloc (grub_strlen (disk->name) + 1
+				 + grub_strlen (partition_name) + 1);
+      if (! device_name)
+	{
+	  grub_free (partition_name);
+	  return 1;
+	}
+
+      grub_sprintf (device_name, "%s,%s", disk->name, partition_name);
+      grub_free (partition_name);
+
+      ret = hook (device_name);
+      grub_free (device_name);
+      return ret;
+    }
+
+  /* Only disk devices are supported at the moment.  */
+  return grub_disk_dev_iterate (iterate_disk);
 }

@@ -72,8 +72,9 @@ struct grub_partition
 
 grub_partition_t EXPORT_FUNC(grub_partition_probe) (struct grub_disk *disk,
 						    const char *str);
-grub_err_t EXPORT_FUNC(grub_partition_iterate) (struct grub_disk *disk,
-						int (*hook) (struct grub_disk *disk, const grub_partition_t partition));
+int EXPORT_FUNC(grub_partition_iterate) (struct grub_disk *disk,
+					 int (*hook) (struct grub_disk *disk,
+						      const grub_partition_t partition));
 char *EXPORT_FUNC(grub_partition_get_name) (const grub_partition_t partition);
 
 int EXPORT_FUNC(grub_partition_map_iterate) (int (*hook) (const grub_partition_map_t partmap));

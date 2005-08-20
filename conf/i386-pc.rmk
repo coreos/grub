@@ -78,7 +78,8 @@ grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
 # For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/default.c commands/help.c	\
-	commands/terminal.c commands/ls.c commands/timeout.c		\
+	commands/terminal.c commands/ls.c commands/search.c		\
+	commands/timeout.c						\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
@@ -112,7 +113,7 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
-	vesafb.mod vbetest.mod vbeinfo.mod
+	vesafb.mod vbetest.mod vbeinfo.mod search.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -269,3 +270,7 @@ vbeinfo_mod_CFLAGS = $(COMMON_CFLAGS)
 # For vbetest.mod.
 vbetest_mod_SOURCES = commands/i386/pc/vbetest.c
 vbetest_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For search.mod.
+search_mod_SOURCES = commands/search.c
+search_mod_CFLAGS = $(COMMON_CFLAGS)

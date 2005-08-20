@@ -6,6 +6,8 @@ New in 1.91:
 
 * Add VBE support.
 
+* New commands, "search", "vbetest" and "vbeinfo".
+
 
 New in 1.90 - 2005-08-07:
 

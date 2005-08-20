@@ -83,13 +83,14 @@ grub_partition_probe (struct grub_disk *disk, const char *str)
   return part;
 }
 
-grub_err_t
+int
 grub_partition_iterate (struct grub_disk *disk,
 			int (*hook) (grub_disk_t disk,
 				     const grub_partition_t partition))
 {
   grub_partition_map_t partmap = 0;
-
+  int ret = 0;
+  
   auto int part_map_iterate (const grub_partition_map_t p);
   auto int part_map_iterate_hook (grub_disk_t d,
 				  const grub_partition_t partition);
@@ -117,9 +118,9 @@ grub_partition_iterate (struct grub_disk *disk,
 
   grub_partition_map_iterate (part_map_iterate);
   if (partmap)
-    partmap->iterate (disk, hook);
+    ret = partmap->iterate (disk, hook);
   
-  return grub_errno;
+  return ret;
 }
 
 char *
