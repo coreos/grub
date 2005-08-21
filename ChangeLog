@@ -1,5 +1,11 @@
 2005-08-21  Vincent Pelletier  <subdino2004@yahoo.fr>
 
+	* conf/sparc64-ieee1275.rmk (grubof_SOURCES): The first file must be
+	kern/sparc64/ieee1275/init.c because it contains _start.
+	* conf/sparc64-ieee1275.mk: Generated from conf/sparc64-ieee1275.rmk.
+
+2005-08-21  Vincent Pelletier  <subdino2004@yahoo.fr>
+
 	* configure.ac: Add support for sparc64 host with ieee1275
 	firmware.
 	* configure: Generated from configure.ac.

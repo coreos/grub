@@ -53,10 +53,10 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 
 #grub_emu_LDFLAGS = $(LIBCURSES)
 
-grubof_SOURCES = kern/ieee1275/ieee1275.c kern/main.c kern/device.c \
-	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
-	kern/sparc64/ieee1275/init.c term/ieee1275/ofconsole.c \
+grubof_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
+	kern/main.c kern/device.c kern/disk.c kern/dl.c kern/file.c \
+	kern/fs.c kern/err.c kern/misc.c kern/mm.c kern/loader.c \
+	kern/rescue.c kern/term.c term/ieee1275/ofconsole.c \
 	kern/sparc64/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
 	kern/partition.c kern/env.c kern/sparc64/dl.c grubof_symlist.c \
 	kern/sparc64/cache.c
