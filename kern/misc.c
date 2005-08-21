@@ -809,7 +809,8 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
    characters (when the input is unknown). If an invalid sequence is found,
    return -1.  */
 grub_ssize_t
-grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_uint8_t *src, grub_size_t size)
+grub_utf8_to_ucs4 (grub_uint32_t *dest, const grub_uint8_t *src,
+		   grub_size_t size)
 {
   grub_uint32_t *p = dest;
   int count = 0;

@@ -73,7 +73,7 @@ grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
 					       grub_uint16_t *src,
 					       grub_size_t size);
 grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
-					     grub_uint8_t *src,
+					     const grub_uint8_t *src,
 					     grub_size_t size);
 
 grub_err_t EXPORT_FUNC(grub_split_cmdline) (const char *str, 

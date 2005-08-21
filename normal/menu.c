@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -41,11 +41,13 @@ draw_border (void)
     {
       grub_gotoxy (GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y + i + 1);
       grub_putcode (GRUB_TERM_DISP_VLINE);
-      grub_gotoxy (GRUB_TERM_MARGIN + GRUB_TERM_BORDER_WIDTH - 1, GRUB_TERM_TOP_BORDER_Y + i + 1);
+      grub_gotoxy (GRUB_TERM_MARGIN + GRUB_TERM_BORDER_WIDTH - 1,
+		   GRUB_TERM_TOP_BORDER_Y + i + 1);
       grub_putcode (GRUB_TERM_DISP_VLINE);
     }
 
-  grub_gotoxy (GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y + GRUB_TERM_NUM_ENTRIES + 1);
+  grub_gotoxy (GRUB_TERM_MARGIN,
+	       GRUB_TERM_TOP_BORDER_Y + GRUB_TERM_NUM_ENTRIES + 1);
   grub_putcode (GRUB_TERM_DISP_LL);
   for (i = 0; i < (unsigned) GRUB_TERM_BORDER_WIDTH - 2; i++)
     grub_putcode (GRUB_TERM_DISP_HLINE);
@@ -53,7 +55,9 @@ draw_border (void)
 
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 
-  grub_gotoxy (GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y + GRUB_TERM_NUM_ENTRIES + GRUB_TERM_MARGIN + 1);
+  grub_gotoxy (GRUB_TERM_MARGIN,
+	       (GRUB_TERM_TOP_BORDER_Y + GRUB_TERM_NUM_ENTRIES
+		+ GRUB_TERM_MARGIN + 1));
 }
 
 static void
@@ -97,8 +101,23 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 {
   int x;
   const char *title;
-
+  grub_ssize_t len;
+  grub_uint32_t *unicode_title;
+  grub_ssize_t i;
+  
   title = entry ? entry->title : "";
+  unicode_title = grub_malloc (grub_strlen (title) * sizeof (*unicode_title));
+  if (! unicode_title)
+    /* XXX How to show this error?  */
+    return;
+  
+  len = grub_utf8_to_ucs4 (unicode_title, title, grub_strlen (title));
+  if (len < 0)
+    {
+      /* It is an invalid sequence.  */
+      grub_free (unicode_title);
+      return;
+    }
   
   grub_setcolorstate (highlight
 		      ? GRUB_TERM_COLOR_HIGHLIGHT
@@ -106,23 +125,36 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 
   grub_gotoxy (GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN, y);
 
-  for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1;
+  for (x = GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_MARGIN + 1, i = 0;
        x < GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH - GRUB_TERM_MARGIN;
-       x++)
+       i++)
     {
-      if (*title && x <= GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH - GRUB_TERM_MARGIN - 1)
+      if (i < len
+	  && x <= (GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH
+		   - GRUB_TERM_MARGIN - 1))
 	{
-	  if (x == GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH - GRUB_TERM_MARGIN - 1)
+	  grub_ssize_t width;
+
+	  width = grub_getcharwidth (unicode_title[i]);
+	  
+	  if (x + width > (GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH
+			   - GRUB_TERM_MARGIN - 1))
 	    grub_putcode (GRUB_TERM_DISP_RIGHT);
 	  else
-	    grub_putchar (*title++);
+	    grub_putcode (unicode_title[i]);
+
+	  x += width;
 	}
       else
-	grub_putchar (' ');
+	{
+	  grub_putchar (' ');
+	  x++;
+	}
     }
   grub_gotoxy (GRUB_TERM_CURSOR_X, y);
 
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+  grub_free (unicode_title);
 }
 
 static void

@@ -1,3 +1,19 @@
+2005-08-21  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/console.c (grub_ncurses_putchar): If C is greater than
+	0x7f, set C to a question mark.
+	(grub_ncurses_getcharwidth): New function.
+	(grub_ncurses_term): Specify grub_ncurses_getcharwidth as
+	getcharwidth.
+
+	* normal/menu.c (print_entry): Made aware of Unicode. First,
+	convert TITLE to UCS-4, and predict the cursor position by
+	grub_getcharwidth.
+
+	* include/grub/misc.h (grub_utf8_to_ucs4): Specify the qualifier
+	const to SRC.
+	* kern/misc.c (grub_utf16_to_utf8): Likewise.
+
 2005-08-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* loader/powerpc/ieee1275/linux.c (grub_rescue_cmd_linux): Specify

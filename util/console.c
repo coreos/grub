@@ -80,10 +80,19 @@ grub_ncurses_putchar (grub_uint32_t c)
       break;
 
     default:
+      /* ncurses does not support Unicode.  */
+      if (c > 0x7f)
+	c = '?';
       break;
     }
   
   addch (c | grub_console_attr);
+}
+
+static grub_ssize_t
+grub_ncurses_getcharwidth (grub_uint32_t code __attribute__ ((unused)))
+{
+  return 1;
 }
 
 static void
@@ -283,6 +292,7 @@ static struct grub_term grub_ncurses_term =
     .init = grub_ncurses_init,
     .fini = grub_ncurses_fini,
     .putchar = grub_ncurses_putchar,
+    .getcharwidth = grub_ncurses_getcharwidth,
     .checkkey = grub_ncurses_checkkey,
     .getkey = grub_ncurses_getkey,
     .getxy = grub_ncurses_getxy,
