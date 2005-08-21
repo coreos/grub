@@ -1397,6 +1397,7 @@ host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 case "$host_cpu" in
   i[3456]86) host_cpu=i386 ;;
   powerpc) ;;
+  sparc64) ;;
   *) { { echo "$as_me:$LINENO: error: unsupported CPU type" >&5
 echo "$as_me: error: unsupported CPU type" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -1405,6 +1406,7 @@ esac
 case "$host_cpu"-"$host_vendor" in
   i386-*) host_vendor=pc ;;
   powerpc-*) host_vendor=ieee1275 ;;
+  sparc64-*) host_vendor=ieee1275 ;;
   *) { { echo "$as_me:$LINENO: error: unsupported machine type" >&5
 echo "$as_me: error: unsupported machine type" >&2;}
    { (exit 1); exit 1; }; } ;;

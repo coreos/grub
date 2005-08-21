@@ -1,3 +1,35 @@
+2005-08-21  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* configure.ac: Add support for sparc64 host with ieee1275
+	firmware.
+	* configure: Generated from configure.ac.
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Use grub_ssize_t
+	instead of int.
+	(grub_ofdisk_read): Likewise.
+	(grub_ofdisk_open): Use %p to print pointer values, and cast the
+	pointers as (void *) to remove a warning.
+	(grub_ofdisk_close): Likewise.
+	(grub_ofdisk_read): Likewise.
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_exit): This never
+	returns, so make it return void to remove a warning.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_exit):
+	Corresponding prototype change.
+	* kern/mm.c (grub_mm_init_region): Use %p to print pointer
+	values, and cast the pointers as (void *) to remove a warning.
+	(grub_mm_dump): Likewise.
+	* conf/sparc64-ieee1275.mk: New file.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* include/grub/sparc64/setjmp.h: Likewise.
+	* include/grub/sparc64/types.h: Likewise.
+	* include/grub/sparc64/ieee1275/console.h: Likewise.
+	* include/grub/sparc64/ieee1275/ieee1275.h: Likewise.
+	* include/grub/sparc64/ieee1275/kernel.h: Likewise.
+	* include/grub/sparc64/ieee1275/time.h: Likewise.
+	* kern/sparc64/cache.c: Likewise.
+	* kern/sparc64/dl.c: Likewise.
+	* kern/sparc64/ieee1275/init.c: Likewise.
+	* kern/sparc64/ieee1275/openfw.c: Likewise.
+
 2005-08-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/console.c (grub_ncurses_putchar): If C is greater than

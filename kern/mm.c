@@ -137,7 +137,7 @@ grub_mm_init_region (void *addr, grub_size_t size)
   grub_mm_header_t h;
   grub_mm_region_t r, *p, q;
 
-  grub_dprintf ("mem", "Using memory for heap: addr=%p, size=%u\n", addr, size);
+  grub_dprintf ("mem", "Using memory for heap: addr=%p, size=%u\n", addr, (unsigned int) size);
 
   /* If this region is too small, ignore it.  */
   if (size < GRUB_MM_ALIGN * 2)
@@ -408,10 +408,10 @@ grub_mm_dump (unsigned lineno)
 	    {
 	    case GRUB_MM_FREE_MAGIC:
 	      grub_printf ("F:%p:%u:%p\n",
-			   p, p->size << GRUB_MM_ALIGN_LOG2, p->next);
+			   p, (unsigned int) p->size << GRUB_MM_ALIGN_LOG2, p->next);
 	      break;
 	    case GRUB_MM_ALLOC_MAGIC:
-	      grub_printf ("A:%p:%u\n", p, p->size << GRUB_MM_ALIGN_LOG2);
+	      grub_printf ("A:%p:%u\n", p, (unsigned int) p->size << GRUB_MM_ALIGN_LOG2);
 	      break;
 	    }
 	}

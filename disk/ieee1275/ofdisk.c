@@ -53,7 +53,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   char *devpath;
   /* XXX: This should be large enough for any possible case.  */
   char prop[64];
-  int actual;
+  grub_ssize_t actual;
 
   devpath = grub_strndup (name, grub_strlen (name) + 2);
   if (! devpath)
@@ -72,7 +72,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       goto fail;
     }
 
-  grub_dprintf ("disk", "Opened `%s' as handle 0x%x.\n", devpath, dev_ihandle);
+  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", devpath, (void *) dev_ihandle);
 
   if (grub_ieee1275_finddevice (devpath, &dev))
     {
@@ -116,8 +116,8 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 static void
 grub_ofdisk_close (grub_disk_t disk)
 {
-  grub_dprintf ("disk", "Closing handle 0x%x.\n",
-		(grub_ieee1275_ihandle_t) disk->data);
+  grub_dprintf ("disk", "Closing handle %p.\n",
+		(void *) disk->data);
   grub_ieee1275_close ((grub_ieee1275_ihandle_t) disk->data);
 }
 
@@ -125,13 +125,12 @@ static grub_err_t
 grub_ofdisk_read (grub_disk_t disk, unsigned long sector,
 		  unsigned long size, char *buf)
 {
-  int status;
-  int actual;
+  grub_ssize_t status, actual;
   unsigned long long pos;
 
   grub_dprintf ("disk",
-		"Reading handle 0x%x: sector 0x%lx, size 0x%lx, buf %p.\n",
-		(grub_ieee1275_ihandle_t) disk->data, sector, size, buf);
+		"Reading handle %p: sector 0x%lx, size 0x%lx, buf %p.\n",
+		(void *) disk->data, sector, size, buf);
 
   pos = (unsigned long long) sector * 512UL;
 

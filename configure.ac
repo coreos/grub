@@ -23,12 +23,14 @@ AC_CANONICAL_HOST
 case "$host_cpu" in
   i[[3456]]86) host_cpu=i386 ;;
   powerpc) ;;
+  sparc64) ;;
   *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
 
 case "$host_cpu"-"$host_vendor" in
   i386-*) host_vendor=pc ;;
   powerpc-*) host_vendor=ieee1275 ;;
+  sparc64-*) host_vendor=ieee1275 ;;
   *) AC_MSG_ERROR([unsupported machine type]) ;;
 esac
 

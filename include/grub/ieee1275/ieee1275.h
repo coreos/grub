@@ -126,7 +126,7 @@ int EXPORT_FUNC(grub_ieee1275_parent) (grub_ieee1275_phandle_t node,
 int EXPORT_FUNC(grub_ieee1275_interpret) (const char *command,
 					  grub_ieee1275_cell_t *catch);
 int EXPORT_FUNC(grub_ieee1275_enter) (void);
-int EXPORT_FUNC(grub_ieee1275_exit) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC(grub_ieee1275_exit) (void) __attribute__ ((noreturn));
 int EXPORT_FUNC(grub_ieee1275_open) (const char *node,
 				     grub_ieee1275_ihandle_t *result);
 int EXPORT_FUNC(grub_ieee1275_close) (grub_ieee1275_ihandle_t ihandle);

@@ -393,7 +393,7 @@ grub_ieee1275_enter (void)
   return 0;
 }
 
-int
+void
 grub_ieee1275_exit (void)
 {
   struct exit_args
