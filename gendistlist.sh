@@ -16,11 +16,11 @@
 EXTRA_DISTFILES="AUTHORS COPYING ChangeLog DISTLIST INSTALL NEWS README \
 	THANKS TODO Makefile.in aclocal.m4 autogen.sh config.guess \
 	config.h.in config.sub configure configure.ac gencmdlist.sh \
-	gendistlist.sh genkernsyms.sh genmk.rb genmodsrc.sh gensymlist.sh \
-	install-sh mkinstalldirs stamp-h.in"
+	gendistlist.sh genfslist.sh genkernsyms.sh genmk.rb \
+	genmodsrc.sh gensymlist.sh install-sh mkinstalldirs stamp-h.in"
 
-DISTDIRS="boot commands conf disk font fs hello include kern loader \
-	normal partmap term util"
+DISTDIRS="boot commands conf disk font fs hello include io kern loader \
+	normal partmap term util video"
 
 for f in $EXTRA_DISTFILES; do
     echo $f
@@ -29,4 +29,10 @@ done
 dir=`dirname $0`
 cd $dir
 
-find $DISTDIRS -name '*.[chS]' -o -name '*.mk' -o -name '*.rmk' -o -name '*.rb'
+for dir in $DISTDIRS; do
+  for d in `find $dir -type d | sort`; do
+    find $d -maxdepth 1 -name '*.[chS]' -o -name '*.mk' -o -name '*.rmk' \
+      -o -name '*.rb' -o -name '*.in' \
+      | sort
+  done
+done

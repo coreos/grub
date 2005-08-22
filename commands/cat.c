@@ -25,6 +25,7 @@
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
+#include <grub/gzio.h>
 
 static grub_err_t
 grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
@@ -38,7 +39,7 @@ grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
-  file = grub_file_open (args[0]);
+  file = grub_gzfile_open (args[0], 1);
   if (! file)
     return 0;
   

@@ -135,7 +135,8 @@ grub_file_close (grub_file_t file)
   if (file->fs->close)
     (file->fs->close) (file);
 
-  grub_device_close (file->device);
+  if (file->device)
+    grub_device_close (file->device);
   grub_free (file);
   return grub_errno;
 }

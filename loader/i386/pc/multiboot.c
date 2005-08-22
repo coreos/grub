@@ -42,6 +42,7 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/gzio.h>
 
 static grub_dl_t my_mod;
 static struct grub_multiboot_info *mbi;
@@ -252,7 +253,7 @@ grub_rescue_cmd_multiboot (int argc, char *argv[])
       goto fail;
     }
 
-  file = grub_file_open (argv[0]);
+  file = grub_gzfile_open (argv[0], 1);
   if (! file)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "Couldn't open file");
@@ -361,7 +362,7 @@ grub_rescue_cmd_module  (int argc, char *argv[])
       goto fail;
     }
 
-  file = grub_file_open (argv[0]);
+  file = grub_gzfile_open (argv[0], 1);
   if (! file)
     goto fail;
 

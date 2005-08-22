@@ -1,3 +1,49 @@
+2005-08-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* gendistlist.sh (EXTRA_DISTFILES): Added genfslist.sh.
+	(DISTDIRS): Added io and video.
+	Rewrite the search routine to make an output consistently.
+
+	* DISTLIST: Added conf/sparc64-ieee1275.mk,
+	conf/sparc64-ieee1275.rmk, include/grub/gzio.h,
+	include/grub/ieee1275/ieee1275.h, include/grub/ieee1275/ofdisk.h,
+	io/gzio.c, kern/sparc64/cache.c, kern/sparc64/dl.c,
+	kern/sparc64/ieee1275/init.c, kern/sparc64/ieee1275/openfw.c and
+	util/powerpc/ieee1275/misc.c.
+	
+	* include/grub/gzio.h: New file.
+	* io/gzio.c: Likewise.
+	
+	* kern/file.c (grub_file_close): Call grub_device_close only if
+	FILE->DEVICE is not NULL.
+
+	* include/grub/mm.h [!NULL] (NULL): New macro.
+
+	* include/grub/err.h (GRUB_ERR_BAD_GZIP_DATA): New constant.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Added io/gzip.c.
+	(pkgdata_MODULES): Added gzio.mod.
+	(gzio_mod_SOURCES): New variable.
+	(gzio_mod_CFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added io/gzip.c.
+	(pkgdata_MODULES): Added gzio.mod.
+	(gzio_mod_SOURCES): New variable.
+	(gzio_mod_CFLAGS): Likewise.
+
+	* commands/cat.c: Include grub/gzio.h.
+	(grub_cmd_cat): Use grub_gzfile_open instead of
+	grub_file_open.
+	
+	* commands/cmp.c: Include grub/gzio.h.
+	(grub_cmd_cmp): Use grub_gzfile_open instead of
+	grub_file_open.
+
+	* loader/i386/pc/multiboot.c: Include grub/gzio.h.
+	(grub_rescue_cmd_multiboot): Use grub_gzfile_open instead of
+	grub_file_open.
+	(grub_rescue_cmd_module): Likewise.
+
 2005-08-21  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* conf/sparc64-ieee1275.rmk (grubof_SOURCES): The first file must be

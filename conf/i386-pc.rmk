@@ -84,6 +84,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
 	fs/minix.c fs/ufs.c						\
+	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
 	kern/partition.c kern/rescue.c kern/term.c			\
@@ -113,7 +114,7 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
-	vesafb.mod vbetest.mod vbeinfo.mod search.mod
+	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -274,3 +275,7 @@ vbetest_mod_CFLAGS = $(COMMON_CFLAGS)
 # For search.mod.
 search_mod_SOURCES = commands/search.c
 search_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For gzio.mod.
+gzio_mod_SOURCES = io/gzio.c
+gzio_mod_CFLAGS = $(COMMON_CFLAGS)

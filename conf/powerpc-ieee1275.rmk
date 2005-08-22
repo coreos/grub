@@ -41,6 +41,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
 	fs/minix.c fs/ufs.c						\
+	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
 	kern/partition.c kern/rescue.c kern/term.c			\
@@ -75,7 +76,7 @@ pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod
+	default.mod timeout.mod configfile.mod search.mod io.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -204,3 +205,7 @@ configfile_mod_CFLAGS = $(COMMON_CFLAGS)
 # For search.mod.
 search_mod_SOURCES = commands/search.c
 search_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For gzio.mod.
+gzio_mod_SOURCES = io/gzio.c
+gzio_mod_CFLAGS = $(COMMON_CFLAGS)

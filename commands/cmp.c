@@ -24,6 +24,7 @@
 #include <grub/misc.h>
 #include <grub/file.h>
 #include <grub/mm.h>
+#include <grub/gzio.h>
 
 #define BUFFER_SIZE 512
 
@@ -45,8 +46,8 @@ grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
   grub_printf ("Compare `%s' and `%s':\n", args[0],
 	       args[1]);
 
-  if (! (file1 = grub_file_open (args[0]) ) ||
-      ! (file2 = grub_file_open (args[1]) ) )
+  if (! (file1 = grub_gzfile_open (args[0], 1) ) ||
+      ! (file2 = grub_gzfile_open (args[1], 1) ) )
     goto cleanup;
 
   if (grub_file_size (file1) != grub_file_size (file2))

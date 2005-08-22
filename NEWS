@@ -10,6 +10,8 @@ New in 1.91:
 
 * The option BOOT_IMAGE is passed to Linux.
 
+* Add support for automatic decompression for gzip.
+
 
 New in 1.90 - 2005-08-07:
 

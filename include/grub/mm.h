@@ -24,6 +24,10 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
+#ifndef NULL
+# define NULL	((void *) 0)
+#endif
+
 void grub_mm_init_region (void *addr, grub_size_t size);
 void *EXPORT_FUNC(grub_malloc) (grub_size_t size);
 void EXPORT_FUNC(grub_free) (void *ptr);
@@ -31,7 +35,7 @@ void *EXPORT_FUNC(grub_realloc) (void *ptr, grub_size_t size);
 void *EXPORT_FUNC(grub_memalign) (grub_size_t align, grub_size_t size);
 
 /* For debugging.  */
-#define MM_DEBUG	1
+#define MM_DEBUG       1
 #if MM_DEBUG
 void grub_mm_dump (unsigned lineno);
 #endif
