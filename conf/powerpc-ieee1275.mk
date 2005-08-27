@@ -756,7 +756,7 @@ pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod io.mod
+	default.mod timeout.mod configfile.mod search.mod gzio.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -2439,6 +2439,52 @@ search_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For gzio.mod.
 gzio_mod_SOURCES = io/gzio.c
+CLEANFILES += gzio.mod mod-gzio.o mod-gzio.c pre-gzio.o gzio_mod-io_gzio.o def-gzio.lst und-gzio.lst
+MOSTLYCLEANFILES += gzio_mod-io_gzio.d
+DEFSYMFILES += def-gzio.lst
+UNDSYMFILES += und-gzio.lst
+
+gzio.mod: pre-gzio.o mod-gzio.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-gzio.o: gzio_mod-io_gzio.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-gzio.o: mod-gzio.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<
+
+mod-gzio.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'gzio' $< > $@ || (rm -f $@; exit 1)
+
+def-gzio.lst: pre-gzio.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gzio/' > $@
+
+und-gzio.lst: pre-gzio.o
+	echo 'gzio' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+gzio_mod-io_gzio.o: io/gzio.c
+	$(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<
+
+gzio_mod-io_gzio.d: io/gzio.c
+	set -e; 	  $(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -M $< 	  | sed 's,gzio\.o[ :]*,gzio_mod-io_gzio.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include gzio_mod-io_gzio.d
+
+CLEANFILES += cmd-gzio.lst fs-gzio.lst
+COMMANDFILES += cmd-gzio.lst
+FSFILES += fs-gzio.lst
+
+cmd-gzio.lst: io/gzio.c gencmdlist.sh
+	set -e; 	  $(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gzio > $@ || (rm -f $@; exit 1)
+
+fs-gzio.lst: io/gzio.c genfslist.sh
+	set -e; 	  $(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gzio > $@ || (rm -f $@; exit 1)
+
+
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 CLEANFILES += moddep.lst command.lst fs.lst
 pkgdata_DATA += moddep.lst command.lst fs.lst

@@ -1,3 +1,8 @@
+2005-08-27  Marco Gerards  <metgerards@student.han.nl>
+
+	* conf/powerpc-ieee1275.rmk (pkgdata_MODULES): Fix typo (use
+	`gzio.mod' instead of `io.mod').
+
 2005-08-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* gendistlist.sh (EXTRA_DISTFILES): Added genfslist.sh.
@@ -610,7 +615,7 @@
 	(grub_console_term): New member `getwh'.
 	* term/i386/pc/vga.c (grub_vga_getwh): New function.
 	(grub_vga_term): New member `getwh'.
-	* term/sparc64/ofconsole.c (grub_ofconsole_readkey): Use
+	* term/ieee1275/ofconsole.c (grub_ofconsole_readkey): Use
 	grub_ssize_t.
 	(grub_ofconsole_getw): New function.
 	(grub_ofconsole_init): Use grub_ssize_t and unsigned char.

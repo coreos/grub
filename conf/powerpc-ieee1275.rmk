@@ -76,7 +76,7 @@ pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod io.mod
+	default.mod timeout.mod configfile.mod search.mod gzio.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
