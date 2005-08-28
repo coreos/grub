@@ -303,6 +303,61 @@ complete_file (void)
   return ret;
 }
 
+/* Complete an argument.  */
+static int
+complete_arguments (char *command)
+{
+  grub_command_t cmd;
+  struct grub_arg_option *option;
+  char shortarg[] = "- ";
+
+  cmd = grub_command_find (command); 
+
+  if (!cmd || !cmd->options)
+    return 0;
+
+  if (add_completion ("-u", " ", GRUB_COMPLETION_TYPE_ARGUMENT))
+    return 1;
+
+  /* Add the short arguments.  */
+  for (option = cmd->options; option->doc; option++)
+    {
+      if (!option->shortarg)
+	continue;
+
+      shortarg[1] = option->shortarg;
+      if (add_completion (shortarg, " ", GRUB_COMPLETION_TYPE_ARGUMENT))
+	return 1;
+
+    }
+
+  /* First add the built-in arguments.  */
+  if (add_completion ("--help", " ", GRUB_COMPLETION_TYPE_ARGUMENT))
+    return 1;
+  if (add_completion ("--usage", " ", GRUB_COMPLETION_TYPE_ARGUMENT))
+    return 1;
+
+  /* Add the long arguments.  */
+  for (option = cmd->options; option->doc; option++)
+    {
+      char *longarg;
+      if (!option->longarg)
+	continue;
+
+      longarg = grub_malloc (grub_strlen (option->longarg));
+      grub_sprintf (longarg, "--%s", option->longarg);
+
+      if (add_completion (longarg, " ", GRUB_COMPLETION_TYPE_ARGUMENT))
+	{
+	  grub_free (longarg);
+	  return 1;
+	}
+      grub_free (longarg);
+    }
+
+  return 0;
+}
+
 /* Try to complete the string in BUF. Return the characters that
    should be added to the string.  This command outputs the possible
    completions by calling HOOK, in that case set RESTORE to 1 so the
@@ -342,7 +397,12 @@ grub_normal_do_completion (char *buf, int *restore,
     {
       current_word++;
       
-      if (*current_word == '(' && ! grub_strchr (current_word, ')'))
+      if (*current_word == '-')
+	{
+	  if (complete_arguments (buf))
+	    goto fail;
+	}
+      else if (*current_word == '(' && ! grub_strchr (current_word, ')'))
 	{
 	  /* Complete a device.  */
 	  if (complete_device ())

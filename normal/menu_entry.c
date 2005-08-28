@@ -840,6 +840,9 @@ store_completion (const char *item, grub_completion_type_t type, int count)
 	case GRUB_COMPLETION_TYPE_PARTITION:
 	  what = "partitions";
 	  break;
+	case GRUB_COMPLETION_TYPE_ARGUMENT:
+	  what = "arguments";
+	  break;
 	default:
 	  what = "things";
 	  break;

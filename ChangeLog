@@ -1,3 +1,16 @@
+2005-08-28  Marco Gerards  <metgerards@student.han.nl>
+
+	* include/grub/normal.h (enum grub_completion_type): Added
+	`GRUB_COMPLETION_TYPE_ARGUMENT'.
+
+	* normal/cmdline.c (print_completion): Handle
+	the `GRUB_COMPLETION_TYPE_ARGUMENT' type.
+	* normal/menu_entry.c (store_completion): Likewise.
+
+	* normal/completion.c (complete_arguments): New function.
+	(grub_normal_do_completion): Call `complete_arguments' when the
+	current words start with a dash.
+
 2005-08-27  Marco Gerards  <metgerards@student.han.nl>
 
 	* conf/powerpc-ieee1275.rmk (pkgdata_MODULES): Fix typo (use
