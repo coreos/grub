@@ -84,7 +84,7 @@ grub_ofconsole_putchar (grub_uint32_t c)
 }
 
 static grub_ssize_t
-grub_ofconsole_getcharwidth (grub_uint32_t c)
+grub_ofconsole_getcharwidth (grub_uint32_t c __attribute__((unused)))
 {
   return 1;
 }

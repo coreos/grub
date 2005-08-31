@@ -1,5 +1,10 @@
 2005-08-30  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* term/ieee1275/ofconsole.c (grub_ofconsole_getcharwidth): Fix
+	`unused parameter' warning.
+
+2005-08-30  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* term/ieee1275/ofconsole.c (grub_ofconsole_getcharwidth): New
 	function.
 	(grub_ofconsole_term): Specify grub_ofconsole_getcharwidth as
