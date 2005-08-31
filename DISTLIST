@@ -28,8 +28,6 @@ stamp-h.in
 boot/i386/pc/boot.S
 boot/i386/pc/diskboot.S
 boot/i386/pc/pxeboot.S
-boot/powerpc/ieee1275/cmain.c
-boot/powerpc/ieee1275/crt0.S
 commands/boot.c
 commands/cat.c
 commands/cmp.c
@@ -153,6 +151,8 @@ kern/i386/pc/startup.S
 kern/ieee1275/ieee1275.c
 kern/powerpc/cache.S
 kern/powerpc/dl.c
+kern/powerpc/ieee1275/cmain.c
+kern/powerpc/ieee1275/crt0.S
 kern/powerpc/ieee1275/init.c
 kern/powerpc/ieee1275/openfw.c
 kern/sparc64/cache.c

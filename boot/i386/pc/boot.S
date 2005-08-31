@@ -184,9 +184,6 @@ real_start:
 	jz	chs_mode
 	
 lba_mode:
-	/* save the total number of sectors */
-	movl	0x10(%si), %ecx
-
 	/* set %si to the disk address packet */
 	movw	$ABS(disk_address_packet), %si
 

@@ -1,3 +1,23 @@
+2005-08-31  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Replaced boot/powerpc/ieee1275/crt0.S and
+	boot/powerpc/ieee1275/cmain.c with kern/powerpc/ieee1275/crt0.S
+	and kern/powerpc/ieee1275/cmain.c, respectively.
+
+	* boot/powerpc/ieee1275/crt0.S: Moved to ...
+	* kern/powerpc/ieee1275/crt0.S: ... here.
+
+	* boot/powerpc/ieee1275/cmain.c: Moved to ...
+	* kern/powerpc/ieee1275/cmain.c: ... here.
+	
+	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Use
+	kern/powerpc/ieee1275/crt0.S and kern/powerpc/ieee1275/cmain.c
+	instead of boot/powerpc/ieee1275/crt0.S and
+	boot/powerpc/ieee1275/cmain.c, respectively.
+
+	* boot/i386/pc/boot.S (lba_mode): Do not store the total number of
+	sectors. It was not used anyway.
+
 2005-08-30  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_getcharwidth): Fix
