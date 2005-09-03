@@ -12,6 +12,8 @@ New in 1.91:
 
 * Add support for automatic decompression for gzip.
 
+* Add support for terminfo and serial.
+
 
 New in 1.90 - 2005-08-07:
 
