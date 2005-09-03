@@ -308,7 +308,7 @@ static int
 complete_arguments (char *command)
 {
   grub_command_t cmd;
-  struct grub_arg_option *option;
+  const struct grub_arg_option *option;
   char shortarg[] = "- ";
 
   cmd = grub_command_find (command); 
@@ -322,7 +322,7 @@ complete_arguments (char *command)
   /* Add the short arguments.  */
   for (option = cmd->options; option->doc; option++)
     {
-      if (!option->shortarg)
+      if (! option->shortarg)
 	continue;
 
       shortarg[1] = option->shortarg;

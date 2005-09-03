@@ -1,3 +1,22 @@
+2005-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* normal/completion.c (complete_arguments): Add the qualifier
+	const into OPTIONS.
+
+	From Omniflux <omniflux+lists@omniflux.com>:
+	* include/grub/terminfo.h: New file.
+	* include/grub/tparm.h: Likewise.
+	* include/grub/i386/pc/serial.h: Likewise.
+	* term/terminfo.c: Likewise.
+	* term/tparm.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added terminfo.mod and
+	serial.mod.
+	(terminfo_mod_SOURCES): New variable.
+	(terminfo_mod_CFLAGS): Likewise.
+	(serial_mod_SOURCES): Likewise.
+	(serial_mod_CFLAGS): Likewise.
+
 2005-08-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Replaced boot/powerpc/ieee1275/crt0.S and

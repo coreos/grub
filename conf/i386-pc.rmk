@@ -114,7 +114,8 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
-	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod
+	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod		\
+	terminfo.mod serial.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -215,6 +216,14 @@ vga_mod_CFLAGS = $(COMMON_CFLAGS)
 # For font.mod.
 font_mod_SOURCES = font/manager.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For terminfo.mod.
+terminfo_mod_SOURCES = term/terminfo.c term/tparm.c
+terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For serial.mod.
+serial_mod_SOURCES = term/i386/pc/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _multiboot.mod.
 _multiboot_mod_SOURCES = loader/i386/pc/multiboot.c

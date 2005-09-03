@@ -1168,7 +1168,8 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	terminal.mod fshelp.mod chain.mod multiboot.mod amiga.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
-	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod
+	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod		\
+	terminfo.mod serial.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -2498,6 +2499,125 @@ fs-manager.lst: font/manager.c genfslist.sh
 
 
 font_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For terminfo.mod.
+terminfo_mod_SOURCES = term/terminfo.c term/tparm.c
+CLEANFILES += terminfo.mod mod-terminfo.o mod-terminfo.c pre-terminfo.o terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o def-terminfo.lst und-terminfo.lst
+MOSTLYCLEANFILES += terminfo_mod-term_terminfo.d terminfo_mod-term_tparm.d
+DEFSYMFILES += def-terminfo.lst
+UNDSYMFILES += und-terminfo.lst
+
+terminfo.mod: pre-terminfo.o mod-terminfo.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-terminfo.o: terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-terminfo.o: mod-terminfo.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
+
+mod-terminfo.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'terminfo' $< > $@ || (rm -f $@; exit 1)
+
+def-terminfo.lst: pre-terminfo.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 terminfo/' > $@
+
+und-terminfo.lst: pre-terminfo.o
+	echo 'terminfo' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+terminfo_mod-term_terminfo.o: term/terminfo.c
+	$(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
+
+terminfo_mod-term_terminfo.d: term/terminfo.c
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -M $< 	  | sed 's,terminfo\.o[ :]*,terminfo_mod-term_terminfo.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include terminfo_mod-term_terminfo.d
+
+CLEANFILES += cmd-terminfo.lst fs-terminfo.lst
+COMMANDFILES += cmd-terminfo.lst
+FSFILES += fs-terminfo.lst
+
+cmd-terminfo.lst: term/terminfo.c gencmdlist.sh
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminfo > $@ || (rm -f $@; exit 1)
+
+fs-terminfo.lst: term/terminfo.c genfslist.sh
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminfo > $@ || (rm -f $@; exit 1)
+
+
+terminfo_mod-term_tparm.o: term/tparm.c
+	$(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
+
+terminfo_mod-term_tparm.d: term/tparm.c
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -M $< 	  | sed 's,tparm\.o[ :]*,terminfo_mod-term_tparm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include terminfo_mod-term_tparm.d
+
+CLEANFILES += cmd-tparm.lst fs-tparm.lst
+COMMANDFILES += cmd-tparm.lst
+FSFILES += fs-tparm.lst
+
+cmd-tparm.lst: term/tparm.c gencmdlist.sh
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminfo > $@ || (rm -f $@; exit 1)
+
+fs-tparm.lst: term/tparm.c genfslist.sh
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminfo > $@ || (rm -f $@; exit 1)
+
+
+terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For serial.mod.
+serial_mod_SOURCES = term/i386/pc/serial.c
+CLEANFILES += serial.mod mod-serial.o mod-serial.c pre-serial.o serial_mod-term_i386_pc_serial.o def-serial.lst und-serial.lst
+MOSTLYCLEANFILES += serial_mod-term_i386_pc_serial.d
+DEFSYMFILES += def-serial.lst
+UNDSYMFILES += und-serial.lst
+
+serial.mod: pre-serial.o mod-serial.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-serial.o: serial_mod-term_i386_pc_serial.o
+	-rm -f $@
+	$(LD) -r -d -o $@ $^
+
+mod-serial.o: mod-serial.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(serial_mod_CFLAGS) -c -o $@ $<
+
+mod-serial.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'serial' $< > $@ || (rm -f $@; exit 1)
+
+def-serial.lst: pre-serial.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 serial/' > $@
+
+und-serial.lst: pre-serial.o
+	echo 'serial' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+serial_mod-term_i386_pc_serial.o: term/i386/pc/serial.c
+	$(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(serial_mod_CFLAGS) -c -o $@ $<
+
+serial_mod-term_i386_pc_serial.d: term/i386/pc/serial.c
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(serial_mod_CFLAGS) -M $< 	  | sed 's,serial\.o[ :]*,serial_mod-term_i386_pc_serial.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include serial_mod-term_i386_pc_serial.d
+
+CLEANFILES += cmd-serial.lst fs-serial.lst
+COMMANDFILES += cmd-serial.lst
+FSFILES += fs-serial.lst
+
+cmd-serial.lst: term/i386/pc/serial.c gencmdlist.sh
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh serial > $@ || (rm -f $@; exit 1)
+
+fs-serial.lst: term/i386/pc/serial.c genfslist.sh
+	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh serial > $@ || (rm -f $@; exit 1)
+
+
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _multiboot.mod.
 _multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
