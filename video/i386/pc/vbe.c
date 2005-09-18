@@ -195,7 +195,10 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
 
       /* Make sure that the BIOS can reach the palette.  */
       grub_memcpy (palette, vga_colors, sizeof (vga_colors));
-      status = grub_vbe_set_palette_data (16, 0, palette);
+      status = grub_vbe_set_palette_data (sizeof (vga_colors) 
+                                          / sizeof (struct grub_vbe_palette_data), 
+                                          0, 
+                                          palette);
 
       /* For now, ignore the status. Not sure if this is fatal.  */
 #if 0

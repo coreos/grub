@@ -1,3 +1,9 @@
+2005-09-18  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* video/i386/pc/vbe.c (grub_vbe_set_video_mode): In indexed
+	color modes, allow greater than 16 colors to be configured as
+	a default palette.
+
 2005-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* normal/completion.c (complete_arguments): Add the qualifier
