@@ -104,6 +104,66 @@ VARIABLE(grub_prefix)
 
 	. = EXT_C(start) + 0x50
 
+/*
+ * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
+ * This uses the a.out kludge to load raw binary to the area starting at 1MB,
+ * and relocates itself after loaded.
+ */
+multiboot_header:
+	/* magic */
+	.long	0x1BADB002
+	/* flags */
+	.long	(1 << 16)
+	/* checksum */
+	.long	-0x1BADB002 - (1 << 16)
+	/* header addr */
+	.long	multiboot_header - _start + 0x100000 + 0x200
+	/* load addr */
+	.long	0x100000
+	/* load end addr */
+	.long	0
+	/* bss end addr */
+	.long	0
+	/* entry addr */
+	.long	multiboot_entry - _start + 0x100000 + 0x200
+	
+multiboot_entry:
+	.code32
+	/* obtain the boot device */
+	movl	12(%ebx), %edx
+
+	/* relocate the code */
+	movl	$(GRUB_KERNEL_MACHINE_RAW_SIZE + 0x200), %ecx
+	addl	EXT_C(grub_compressed_size) - _start + 0x100000 + 0x200, %ecx
+	movl	$0x100000, %esi
+	movl	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %edi
+	cld
+	rep
+	movsb
+	/* jump to the real address */
+	movl	$multiboot_trampoline, %eax
+	jmp	*%eax
+	
+multiboot_trampoline:
+	/* fill the boot information */
+	movl	%edx, %eax
+	shrl	$8, %eax
+	xorl	%ebx, %ebx
+	cmpb	$0xFF, %al
+	je	1f
+	movb	%ah, %bl
+	movl	%ebx, EXT_C(grub_install_dos_part)
+1:
+	cmpb	$0xFF, %ah
+	je	2f
+	movb	%al, %bl
+	movl	%ebx, EXT_C(grub_install_bsd_part)
+2:
+	shrl	$24, %edx
+	/* enter the usual booting */
+	call	prot_to_real
+	.code16
+	
 /* the real mode code continues... */
 codestart:
 	cli		/* we're not safe here! */

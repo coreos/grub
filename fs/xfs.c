@@ -119,6 +119,11 @@ struct grub_xfs_data
   struct grub_fshelp_node diropen;
 
 };
+
+#ifndef GRUB_UTIL
+static grub_dl_t my_mod;
+#endif
+
 
 
 /* Filetype information as used in inodes.  */
@@ -300,6 +305,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 				grub_fshelp_node_t node))
 {
   struct grub_fshelp_node *diro = (struct grub_fshelp_node *) dir;
+  auto int call_hook (grub_uint64_t ino, char *filename);
     
   int call_hook (grub_uint64_t ino, char *filename)
     {
@@ -370,8 +376,8 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 
 	    de = ((struct grub_xfs_dir_entry *) 
 		  (((char *) de)+ sizeof (struct grub_xfs_dir_entry) + de->len
-		   + (smallino ? (sizeof (grub_uint32_t)
-				  : sizeof (grub_uint64_t))) - 1));
+		   + (smallino ? sizeof (grub_uint32_t)
+		      : sizeof (grub_uint64_t))) - 1);
 	  }
 	break;
       }

@@ -1,3 +1,20 @@
+2005-09-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Make GRUB's kernel compliant to Multiboot Specification.
+	
+	* kern/i386/pc/startup.S (multiboot_header): New label.
+	(multiboot_entry): Likewise.
+	(multiboot_trampoline): Likewise.
+
+	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_RAW_SIZE):
+	Increased to 0x4A0.
+
+	* fs/xfs.c (grub_xfs_iterate_dir): Fix a syntax error. You may not
+	put parentheses after a question mark.
+	[!GRUB_UTIL] (my_mod): New variable.
+
+	* util/grub-emu.c (main): Call grub_xfs_init and grub_xfs_fini.
+
 2005-09-28  Marco Gerards  <mgerards@xs4all.nl>
 
 	Adds support for the XFS filesystem.  Btrees are not supported
