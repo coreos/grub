@@ -1,3 +1,9 @@
+2005-09-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/multiboot.texi: Fix a bug in the byte order of
+	boot_device. I hope this won't affect any OS image.
+	Increased the version number to 0.6.94.
+
 2005-09-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/boot.c (load_image): Even if an OS image is an ELF

@@ -25,7 +25,7 @@
 @ifinfo
 Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
 Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -57,7 +57,7 @@ into another language, under the above conditions for modified versions.
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
 Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2005 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -80,7 +80,7 @@ into another language, under the above conditions for modified versions.
 @top Multiboot Specification
 
 This file documents Multiboot Specification, the proposal for the boot
-sequence standard. This edition documents version 0.6.93.
+sequence standard. This edition documents version 0.6.94.
 @end ifnottex
 
 @menu
@@ -677,7 +677,7 @@ follows:
 @example
 @group
 +-------+-------+-------+-------+
-| drive | part1 | part2 | part3 |
+| part3 | part2 | part1 | drive |
 +-------+-------+-------+-------+
 @end group
 @end example
@@ -1198,6 +1198,10 @@ Rewritten, using more strict words.
 The maintainer changes to the GNU GRUB maintainer team
 @email{bug-grub@@gnu.org}, from Bryan Ford and Erich Stefan Boleyn.
 @end itemize
+
+@item
+The byte order of the @samp{boot_device} in Multiboot information is
+reversed. This was a mistake.
 
 @item 0.6
 @itemize @bullet
