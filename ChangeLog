@@ -1,3 +1,9 @@
+2005-09-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/boot.c (load_image): Even if an OS image is an ELF
+	object, use the a.out kludge if MULTIBOOT_AOUT_KLUDGE is
+	specified.
+
 2005-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac (AC_INIT): Upgraded to 0.97.
