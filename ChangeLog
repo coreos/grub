@@ -1,3 +1,31 @@
+2005-09-28  Marco Gerards  <mgerards@xs4all.nl>
+
+	Adds support for the XFS filesystem.  Btrees are not supported
+	yet.
+
+	* fs/xfs.c: New file.
+
+	* DISTLIST: Added `fs/xfs.c'.
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `fs/xfs.c'.
+	(grub_probefs_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	(pkgdata_MODULES): Add `xfs.mod'.
+	(xfs_mod_SOURCES): New variable.
+	(xfs_mod_CFLAGS): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add `fs/xfs.c'.
+	(pkgdata_MODULES): Add `xfs.mod'.
+	(xfs_mod_SOURCES): New variable.
+	(xfs_mod_CFLAGS): Likewise.
+
+	* util/grub-emu.c (main): Call `grub_xfs_init' and
+	`grub_xfs_fini'.
+
+	* include/grub/fs.h (grub_xfs_init): New prototype.
+	(grub_xfs_fini): Likewise.
+
+	
 2005-09-18  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* video/i386/pc/vbe.c (grub_vbe_set_video_mode): In indexed

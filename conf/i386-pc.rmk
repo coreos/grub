@@ -61,7 +61,7 @@ grub_mkimage_LDFLAGS = $(LIBLZO)
 # For grub-setup.
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
-	kern/err.c kern/misc.c fs/fat.c fs/ext2.c \
+	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c  \
 	kern/partition.c partmap/pc.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
 
@@ -73,7 +73,7 @@ grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
 	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 	fs/ext2.c kern/partition.c partmap/pc.c fs/ufs.c fs/minix.c	\
-	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c
+	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c fs/xfs.c
 
 # For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
@@ -83,7 +83,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
 	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
-	fs/minix.c fs/ufs.c						\
+	fs/minix.c fs/ufs.c fs/xfs.c					\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
@@ -115,7 +115,7 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
 	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod		\
-	terminfo.mod serial.mod
+	terminfo.mod serial.mod xfs.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -156,6 +156,10 @@ jfs_mod_CFLAGS = $(COMMON_CFLAGS)
 # For iso9660.mod.
 iso9660_mod_SOURCES = fs/iso9660.c
 iso9660_mod_CFLAGS = $(COMMON_CFLAGS)
+
+# For xfs.mod.
+xfs_mod_SOURCES = fs/xfs.c
+xfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
