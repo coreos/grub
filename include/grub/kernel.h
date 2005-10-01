@@ -26,9 +26,9 @@
 struct grub_module_header
 {
   /* The offset of object code.  */
-  grub_off_t offset;
+  grub_host_off_t offset;
   /* The size of object code plus this header.  */
-  grub_size_t size;
+  grub_host_size_t size;
 };
 
 /* "gmim" (GRUB Module Info Magic).  */
@@ -39,9 +39,9 @@ struct grub_module_info
   /* Magic number so we know we have modules present.  */
   grub_uint32_t magic;
   /* The offset of the modules.  */
-  grub_off_t offset;
+  grub_host_off_t offset;
   /* The size of all modules plus this header.  */
-  grub_size_t size;
+  grub_host_size_t size;
 };
 
 extern grub_addr_t grub_arch_modules_addr (void);

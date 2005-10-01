@@ -70,6 +70,18 @@ typedef unsigned long long	grub_uint64_t;
 
 /* Misc types.  */
 #if GRUB_HOST_SIZEOF_VOID_P == 8
+typedef grub_uint64_t	grub_host_addr_t;
+typedef grub_uint64_t	grub_host_off_t;
+typedef grub_uint64_t	grub_host_size_t;
+typedef grub_int64_t	grub_host_ssize_t;
+#else
+typedef grub_uint32_t	grub_host_addr_t;
+typedef grub_uint32_t	grub_host_off_t;
+typedef grub_uint32_t	grub_host_size_t;
+typedef grub_int32_t	grub_host_ssize_t;
+#endif
+
+#if GRUB_CPU_SIZEOF_VOID_P == 8
 typedef grub_uint64_t	grub_addr_t;
 typedef grub_uint64_t	grub_off_t;
 typedef grub_uint64_t	grub_size_t;

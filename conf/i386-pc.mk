@@ -1,7 +1,8 @@
 # -*- makefile -*-
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin
-COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3
+COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
+COMMON_LDFLAGS = -melf_i386
 
 # Images.
 pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img
@@ -257,7 +258,7 @@ kernel_img_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	machine/vbe.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200
+kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200 $(COMMON_CFLAGS)
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
@@ -1204,12 +1205,12 @@ UNDSYMFILES += und-_chain.lst
 
 _chain.mod: pre-_chain.o mod-_chain.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_chain_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_chain.o: _chain_mod-loader_i386_pc_chainloader.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_chain_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-_chain.o: mod-_chain.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
@@ -1244,6 +1245,7 @@ fs-chainloader.lst: loader/i386/pc/chainloader.c genfslist.sh
 
 
 _chain_mod_CFLAGS = $(COMMON_CFLAGS)
+_chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For chain.mod.
 chain_mod_SOURCES = loader/i386/pc/chainloader_normal.c
@@ -1254,12 +1256,12 @@ UNDSYMFILES += und-chain.lst
 
 chain.mod: pre-chain.o mod-chain.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(chain_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-chain.o: chain_mod-loader_i386_pc_chainloader_normal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(chain_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-chain.o: mod-chain.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
@@ -1294,6 +1296,7 @@ fs-chainloader_normal.lst: loader/i386/pc/chainloader_normal.c genfslist.sh
 
 
 chain_mod_CFLAGS = $(COMMON_CFLAGS)
+chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -1304,12 +1307,12 @@ UNDSYMFILES += und-fshelp.lst
 
 fshelp.mod: pre-fshelp.o mod-fshelp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fshelp_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fshelp.o: fshelp_mod-fs_fshelp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fshelp_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-fshelp.o: mod-fshelp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
@@ -1344,6 +1347,7 @@ fs-fshelp.lst: fs/fshelp.c genfslist.sh
 
 
 fshelp_mod_CFLAGS = $(COMMON_CFLAGS)
+fshelp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For fat.mod.
 fat_mod_SOURCES = fs/fat.c
@@ -1354,12 +1358,12 @@ UNDSYMFILES += und-fat.lst
 
 fat.mod: pre-fat.o mod-fat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fat_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fat.o: fat_mod-fs_fat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fat_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-fat.o: mod-fat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
@@ -1394,6 +1398,7 @@ fs-fat.lst: fs/fat.c genfslist.sh
 
 
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
+fat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ext2.mod.
 ext2_mod_SOURCES = fs/ext2.c
@@ -1404,12 +1409,12 @@ UNDSYMFILES += und-ext2.lst
 
 ext2.mod: pre-ext2.o mod-ext2.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ext2_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ext2.o: ext2_mod-fs_ext2.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ext2_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-ext2.o: mod-ext2.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
@@ -1444,6 +1449,7 @@ fs-ext2.lst: fs/ext2.c genfslist.sh
 
 
 ext2_mod_CFLAGS = $(COMMON_CFLAGS)
+ext2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ufs.mod.
 ufs_mod_SOURCES = fs/ufs.c
@@ -1454,12 +1460,12 @@ UNDSYMFILES += und-ufs.lst
 
 ufs.mod: pre-ufs.o mod-ufs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ufs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ufs.o: ufs_mod-fs_ufs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ufs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-ufs.o: mod-ufs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
@@ -1494,6 +1500,7 @@ fs-ufs.lst: fs/ufs.c genfslist.sh
 
 
 ufs_mod_CFLAGS = $(COMMON_CFLAGS)
+ufs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For minix.mod.
 minix_mod_SOURCES = fs/minix.c
@@ -1504,12 +1511,12 @@ UNDSYMFILES += und-minix.lst
 
 minix.mod: pre-minix.o mod-minix.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(minix_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-minix.o: minix_mod-fs_minix.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(minix_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-minix.o: mod-minix.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
@@ -1544,6 +1551,7 @@ fs-minix.lst: fs/minix.c genfslist.sh
 
 
 minix_mod_CFLAGS = $(COMMON_CFLAGS)
+minix_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hfs.mod.
 hfs_mod_SOURCES = fs/hfs.c
@@ -1554,12 +1562,12 @@ UNDSYMFILES += und-hfs.lst
 
 hfs.mod: pre-hfs.o mod-hfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hfs.o: hfs_mod-fs_hfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hfs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-hfs.o: mod-hfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
@@ -1594,6 +1602,7 @@ fs-hfs.lst: fs/hfs.c genfslist.sh
 
 
 hfs_mod_CFLAGS = $(COMMON_CFLAGS)
+hfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For jfs.mod.
 jfs_mod_SOURCES = fs/jfs.c
@@ -1604,12 +1613,12 @@ UNDSYMFILES += und-jfs.lst
 
 jfs.mod: pre-jfs.o mod-jfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(jfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-jfs.o: jfs_mod-fs_jfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(jfs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-jfs.o: mod-jfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
@@ -1644,10 +1653,12 @@ fs-jfs.lst: fs/jfs.c genfslist.sh
 
 
 jfs_mod_CFLAGS = $(COMMON_CFLAGS)
+jfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For iso9660.mod.
 iso9660_mod_SOURCES = fs/iso9660.c
 iso9660_mod_CFLAGS = $(COMMON_CFLAGS)
+iso9660_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For xfs.mod.
 xfs_mod_SOURCES = fs/xfs.c
@@ -1658,12 +1669,12 @@ UNDSYMFILES += und-xfs.lst
 
 xfs.mod: pre-xfs.o mod-xfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(xfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-xfs.o: xfs_mod-fs_xfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(xfs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-xfs.o: mod-xfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
@@ -1698,6 +1709,7 @@ fs-xfs.lst: fs/xfs.c genfslist.sh
 
 
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
+xfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
@@ -1708,12 +1720,12 @@ UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: _linux_mod-loader_i386_pc_linux.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_linux_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-_linux.o: mod-_linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
@@ -1748,7 +1760,8 @@ fs-linux.lst: loader/i386/pc/linux.c genfslist.sh
 
 
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
- 
+_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For linux.mod.
 linux_mod_SOURCES = loader/i386/pc/linux_normal.c
 CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux_normal.o def-linux.lst und-linux.lst
@@ -1758,12 +1771,12 @@ UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: linux_mod-loader_i386_pc_linux_normal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(linux_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-linux.o: mod-linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -1798,6 +1811,7 @@ fs-linux_normal.lst: loader/i386/pc/linux_normal.c genfslist.sh
 
 
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -1811,12 +1825,12 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(normal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(normal_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-normal.o: mod-normal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -2022,7 +2036,8 @@ fs-setjmp.lst: normal/i386/setjmp.S genfslist.sh
 
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
-normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
+normal_mod_ASFLAGS = $(COMMON_ASFLAGS) -m32
+normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -2033,12 +2048,12 @@ UNDSYMFILES += und-hello.lst
 
 hello.mod: pre-hello.o mod-hello.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hello_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hello.o: hello_mod-hello_hello.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hello_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-hello.o: mod-hello.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
@@ -2073,6 +2088,7 @@ fs-hello.lst: hello/hello.c genfslist.sh
 
 
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
+hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For boot.mod.
 boot_mod_SOURCES = commands/boot.c
@@ -2083,12 +2099,12 @@ UNDSYMFILES += und-boot.lst
 
 boot.mod: pre-boot.o mod-boot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(boot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-boot.o: boot_mod-commands_boot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(boot_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-boot.o: mod-boot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
@@ -2123,6 +2139,7 @@ fs-boot.lst: commands/boot.c genfslist.sh
 
 
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
+boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For terminal.mod.
 terminal_mod_SOURCES = commands/terminal.c
@@ -2133,12 +2150,12 @@ UNDSYMFILES += und-terminal.lst
 
 terminal.mod: pre-terminal.o mod-terminal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(terminal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminal.o: terminal_mod-commands_terminal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(terminal_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-terminal.o: mod-terminal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
@@ -2173,6 +2190,7 @@ fs-terminal.lst: commands/terminal.c genfslist.sh
 
 
 terminal_mod_CFLAGS = $(COMMON_CFLAGS)
+terminal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ls.mod.
 ls_mod_SOURCES = commands/ls.c
@@ -2183,12 +2201,12 @@ UNDSYMFILES += und-ls.lst
 
 ls.mod: pre-ls.o mod-ls.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ls_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ls.o: ls_mod-commands_ls.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ls_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-ls.o: mod-ls.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
@@ -2223,6 +2241,7 @@ fs-ls.lst: commands/ls.c genfslist.sh
 
 
 ls_mod_CFLAGS = $(COMMON_CFLAGS)
+ls_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For cmp.mod.
 cmp_mod_SOURCES = commands/cmp.c
@@ -2233,12 +2252,12 @@ UNDSYMFILES += und-cmp.lst
 
 cmp.mod: pre-cmp.o mod-cmp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cmp_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cmp.o: cmp_mod-commands_cmp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cmp_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-cmp.o: mod-cmp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
@@ -2273,6 +2292,7 @@ fs-cmp.lst: commands/cmp.c genfslist.sh
 
 
 cmp_mod_CFLAGS = $(COMMON_CFLAGS)
+cmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For cat.mod.
 cat_mod_SOURCES = commands/cat.c
@@ -2283,12 +2303,12 @@ UNDSYMFILES += und-cat.lst
 
 cat.mod: pre-cat.o mod-cat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cat_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cat.o: cat_mod-commands_cat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cat_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-cat.o: mod-cat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
@@ -2323,6 +2343,7 @@ fs-cat.lst: commands/cat.c genfslist.sh
 
 
 cat_mod_CFLAGS = $(COMMON_CFLAGS)
+cat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For help.mod.
 help_mod_SOURCES = commands/help.c
@@ -2333,12 +2354,12 @@ UNDSYMFILES += und-help.lst
 
 help.mod: pre-help.o mod-help.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(help_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-help.o: help_mod-commands_help.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(help_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-help.o: mod-help.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
@@ -2373,6 +2394,7 @@ fs-help.lst: commands/help.c genfslist.sh
 
 
 help_mod_CFLAGS = $(COMMON_CFLAGS)
+help_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
 reboot_mod_SOURCES = commands/i386/pc/reboot.c
@@ -2383,12 +2405,12 @@ UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(reboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-reboot.o: reboot_mod-commands_i386_pc_reboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(reboot_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-reboot.o: mod-reboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
@@ -2423,6 +2445,7 @@ fs-reboot.lst: commands/i386/pc/reboot.c genfslist.sh
 
 
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 halt_mod_SOURCES = commands/i386/pc/halt.c
@@ -2433,12 +2456,12 @@ UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(halt_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-halt.o: halt_mod-commands_i386_pc_halt.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(halt_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-halt.o: mod-halt.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
@@ -2473,6 +2496,7 @@ fs-halt.lst: commands/i386/pc/halt.c genfslist.sh
 
 
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vga.mod.
 vga_mod_SOURCES = term/i386/pc/vga.c
@@ -2483,12 +2507,12 @@ UNDSYMFILES += und-vga.lst
 
 vga.mod: pre-vga.o mod-vga.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vga_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vga.o: vga_mod-term_i386_pc_vga.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vga_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-vga.o: mod-vga.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
@@ -2523,6 +2547,7 @@ fs-vga.lst: term/i386/pc/vga.c genfslist.sh
 
 
 vga_mod_CFLAGS = $(COMMON_CFLAGS)
+vga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For font.mod.
 font_mod_SOURCES = font/manager.c
@@ -2533,12 +2558,12 @@ UNDSYMFILES += und-font.lst
 
 font.mod: pre-font.o mod-font.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(font_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-font.o: font_mod-font_manager.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(font_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-font.o: mod-font.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
@@ -2573,6 +2598,7 @@ fs-manager.lst: font/manager.c genfslist.sh
 
 
 font_mod_CFLAGS = $(COMMON_CFLAGS)
+font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For terminfo.mod.
 terminfo_mod_SOURCES = term/terminfo.c term/tparm.c
@@ -2583,12 +2609,12 @@ UNDSYMFILES += und-terminfo.lst
 
 terminfo.mod: pre-terminfo.o mod-terminfo.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(terminfo_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminfo.o: terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(terminfo_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-terminfo.o: mod-terminfo.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
@@ -2642,6 +2668,7 @@ fs-tparm.lst: term/tparm.c genfslist.sh
 
 
 terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
+terminfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c
@@ -2652,12 +2679,12 @@ UNDSYMFILES += und-serial.lst
 
 serial.mod: pre-serial.o mod-serial.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(serial_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-serial.o: serial_mod-term_i386_pc_serial.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(serial_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-serial.o: mod-serial.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(serial_mod_CFLAGS) -c -o $@ $<
@@ -2692,6 +2719,7 @@ fs-serial.lst: term/i386/pc/serial.c genfslist.sh
 
 
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _multiboot.mod.
 _multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
@@ -2702,12 +2730,12 @@ UNDSYMFILES += und-_multiboot.lst
 
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_multiboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_multiboot.o: _multiboot_mod-loader_i386_pc_multiboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_multiboot_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-_multiboot.o: mod-_multiboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
@@ -2742,6 +2770,7 @@ fs-multiboot.lst: loader/i386/pc/multiboot.c genfslist.sh
 
 
 _multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+_multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For multiboot.mod.
 multiboot_mod_SOURCES = loader/i386/pc/multiboot_normal.c
@@ -2752,12 +2781,12 @@ UNDSYMFILES += und-multiboot.lst
 
 multiboot.mod: pre-multiboot.o mod-multiboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(multiboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-multiboot.o: multiboot_mod-loader_i386_pc_multiboot_normal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(multiboot_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-multiboot.o: mod-multiboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
@@ -2792,6 +2821,7 @@ fs-multiboot_normal.lst: loader/i386/pc/multiboot_normal.c genfslist.sh
 
 
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For amiga.mod
 amiga_mod_SOURCES = partmap/amiga.c
@@ -2802,12 +2832,12 @@ UNDSYMFILES += und-amiga.lst
 
 amiga.mod: pre-amiga.o mod-amiga.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(amiga_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-amiga.o: amiga_mod-partmap_amiga.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(amiga_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-amiga.o: mod-amiga.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
@@ -2842,6 +2872,7 @@ fs-amiga.lst: partmap/amiga.c genfslist.sh
 
 
 amiga_mod_CFLAGS = $(COMMON_CFLAGS)
+amiga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For apple.mod
 apple_mod_SOURCES = partmap/apple.c
@@ -2852,12 +2883,12 @@ UNDSYMFILES += und-apple.lst
 
 apple.mod: pre-apple.o mod-apple.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(apple_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-apple.o: apple_mod-partmap_apple.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(apple_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-apple.o: mod-apple.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
@@ -2892,6 +2923,7 @@ fs-apple.lst: partmap/apple.c genfslist.sh
 
 
 apple_mod_CFLAGS = $(COMMON_CFLAGS)
+apple_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For pc.mod
 pc_mod_SOURCES = partmap/pc.c
@@ -2902,12 +2934,12 @@ UNDSYMFILES += und-pc.lst
 
 pc.mod: pre-pc.o mod-pc.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(pc_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-pc.o: pc_mod-partmap_pc.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(pc_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-pc.o: mod-pc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
@@ -2942,6 +2974,7 @@ fs-pc.lst: partmap/pc.c genfslist.sh
 
 
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
+pc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sun.mod
 sun_mod_SOURCES = partmap/sun.c
@@ -2952,12 +2985,12 @@ UNDSYMFILES += und-sun.lst
 
 sun.mod: pre-sun.o mod-sun.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(sun_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-sun.o: sun_mod-partmap_sun.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(sun_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-sun.o: mod-sun.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
@@ -2992,6 +3025,7 @@ fs-sun.lst: partmap/sun.c genfslist.sh
 
 
 sun_mod_CFLAGS = $(COMMON_CFLAGS)
+sun_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For loopback.mod
 loopback_mod_SOURCES = disk/loopback.c
@@ -3002,12 +3036,12 @@ UNDSYMFILES += und-loopback.lst
 
 loopback.mod: pre-loopback.o mod-loopback.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(loopback_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-loopback.o: loopback_mod-disk_loopback.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(loopback_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-loopback.o: mod-loopback.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
@@ -3042,6 +3076,7 @@ fs-loopback.lst: disk/loopback.c genfslist.sh
 
 
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
+loopback_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For default.mod
 default_mod_SOURCES = commands/default.c
@@ -3052,12 +3087,12 @@ UNDSYMFILES += und-default.lst
 
 default.mod: pre-default.o mod-default.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(default_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-default.o: default_mod-commands_default.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(default_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-default.o: mod-default.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
@@ -3092,6 +3127,7 @@ fs-default.lst: commands/default.c genfslist.sh
 
 
 default_mod_CFLAGS = $(COMMON_CFLAGS)
+default_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For timeout.mod
 timeout_mod_SOURCES = commands/timeout.c
@@ -3102,12 +3138,12 @@ UNDSYMFILES += und-timeout.lst
 
 timeout.mod: pre-timeout.o mod-timeout.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(timeout_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-timeout.o: timeout_mod-commands_timeout.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(timeout_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-timeout.o: mod-timeout.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
@@ -3142,6 +3178,7 @@ fs-timeout.lst: commands/timeout.c genfslist.sh
 
 
 timeout_mod_CFLAGS = $(COMMON_CFLAGS)
+timeout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For configfile.mod
 configfile_mod_SOURCES = commands/configfile.c
@@ -3152,12 +3189,12 @@ UNDSYMFILES += und-configfile.lst
 
 configfile.mod: pre-configfile.o mod-configfile.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(configfile_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-configfile.o: configfile_mod-commands_configfile.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(configfile_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-configfile.o: mod-configfile.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
@@ -3192,6 +3229,7 @@ fs-configfile.lst: commands/configfile.c genfslist.sh
 
 
 configfile_mod_CFLAGS = $(COMMON_CFLAGS)
+configfile_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c
@@ -3202,12 +3240,12 @@ UNDSYMFILES += und-vbe.lst
 
 vbe.mod: pre-vbe.o mod-vbe.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vbe_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vbe.o: vbe_mod-video_i386_pc_vbe.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vbe_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-vbe.o: mod-vbe.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
@@ -3242,6 +3280,7 @@ fs-vbe.lst: video/i386/pc/vbe.c genfslist.sh
 
 
 vbe_mod_CFLAGS = $(COMMON_CFLAGS)
+vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vesafb.mod.
 vesafb_mod_SOURCES = term/i386/pc/vesafb.c
@@ -3252,12 +3291,12 @@ UNDSYMFILES += und-vesafb.lst
 
 vesafb.mod: pre-vesafb.o mod-vesafb.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vesafb_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vesafb.o: vesafb_mod-term_i386_pc_vesafb.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vesafb_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-vesafb.o: mod-vesafb.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -c -o $@ $<
@@ -3292,6 +3331,7 @@ fs-vesafb.lst: term/i386/pc/vesafb.c genfslist.sh
 
 
 vesafb_mod_CFLAGS = $(COMMON_CFLAGS)
+vesafb_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbeinfo.mod.
 vbeinfo_mod_SOURCES = commands/i386/pc/vbeinfo.c
@@ -3302,12 +3342,12 @@ UNDSYMFILES += und-vbeinfo.lst
 
 vbeinfo.mod: pre-vbeinfo.o mod-vbeinfo.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vbeinfo_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vbeinfo.o: vbeinfo_mod-commands_i386_pc_vbeinfo.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vbeinfo_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-vbeinfo.o: mod-vbeinfo.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbeinfo_mod_CFLAGS) -c -o $@ $<
@@ -3342,6 +3382,7 @@ fs-vbeinfo.lst: commands/i386/pc/vbeinfo.c genfslist.sh
 
 
 vbeinfo_mod_CFLAGS = $(COMMON_CFLAGS)
+vbeinfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbetest.mod.
 vbetest_mod_SOURCES = commands/i386/pc/vbetest.c
@@ -3352,12 +3393,12 @@ UNDSYMFILES += und-vbetest.lst
 
 vbetest.mod: pre-vbetest.o mod-vbetest.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vbetest_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vbetest.o: vbetest_mod-commands_i386_pc_vbetest.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(vbetest_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-vbetest.o: mod-vbetest.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbetest_mod_CFLAGS) -c -o $@ $<
@@ -3392,6 +3433,7 @@ fs-vbetest.lst: commands/i386/pc/vbetest.c genfslist.sh
 
 
 vbetest_mod_CFLAGS = $(COMMON_CFLAGS)
+vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
 search_mod_SOURCES = commands/search.c
@@ -3402,12 +3444,12 @@ UNDSYMFILES += und-search.lst
 
 search.mod: pre-search.o mod-search.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(search_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-search.o: search_mod-commands_search.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(search_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-search.o: mod-search.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
@@ -3442,6 +3484,7 @@ fs-search.lst: commands/search.c genfslist.sh
 
 
 search_mod_CFLAGS = $(COMMON_CFLAGS)
+search_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For gzio.mod.
 gzio_mod_SOURCES = io/gzio.c
@@ -3452,12 +3495,12 @@ UNDSYMFILES += und-gzio.lst
 
 gzio.mod: pre-gzio.o mod-gzio.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(gzio_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-gzio.o: gzio_mod-io_gzio.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(gzio_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-gzio.o: mod-gzio.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<
@@ -3492,6 +3535,7 @@ fs-gzio.lst: io/gzio.c genfslist.sh
 
 
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
+gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 CLEANFILES += moddep.lst command.lst fs.lst
 pkgdata_DATA += moddep.lst command.lst fs.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

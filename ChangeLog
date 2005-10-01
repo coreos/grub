@@ -1,3 +1,44 @@
+2005-10-01  Marco Gerards  <mgerards@xs4all.nl>
+
+	* configure.ac: Accept `x86_64' as host_cpu.  In that case add
+	`-m32' to CFLAGS.
+
+	* genmk.rb (class PModule): Always use `$(#{prefix}_LDFLAGS)' when
+	linking.
+	
+	* conf/i386-pc.rmk (COMMON_CFLAGS): Add `-m32'.
+	(COMMON_LDFLAGS): New variable.
+	(kernel_img_LDFLAGS): Include `COMMON_FLAGS'.
+	(_chain_mod_LDFLAGS, fshelp_mod_LDFLAGS, fat_mod_LDFLAGS)
+	(ext2_mod_LDFLAGS, ufs_mod_LDFLAGS, minix_mod_LDFLAGS)
+	(hfs_mod_LDFLAGS, jfs_mod_LDFLAGS, iso9660_mod_LDFLAGS)
+	(xfs_mod_LDFLAGS, _linux_mod_LDFLAGS, linux_mod_LDFLAGS)
+	(normal_mod_LDFLAGS, hello_mod_LDFLAGS, boot_mod_LDFLAGS)
+	(terminal_mod_LDFLAGS, ls_mod_LDFLAGS, cmp_mod_LDFLAGS)
+	(cat_mod_LDFLAGS, help_mod_LDFLAGS, reboot_mod_LDFLAGS)
+	(halt_mod_LDFLAGS, vga_mod_LDFLAGS, font_mod_LDFLAGS)
+	(terminfo_mod_LDFLAGS, serial_mod_LDFLAGS, _multiboot_mod_LDFLAGS)
+	(multiboot_mod_LDFLAGS, amiga_mod_LDFLAGS, apple_mod_LDFLAGS)
+	(pc_mod_LDFLAGS, sun_mod_LDFLAGS, loopback_mod_LDFLAGS)
+	(default_mod_LDFLAGS, timeout_mod_LDFLAGS, configfile_mod_LDFLAGS)
+	(vbe_mod_LDFLAGS, vesafb_mod_LDFLAGS, vbeinfo_mod_LDFLAGS)
+	(vbetest_mod_LDFLAGS, search_mod_LDFLAGS, gzio_mod_LDFLAGS): New
+	variables.
+	(normal_mod_ASFLAGS): Add `-m32'.
+
+	* include/grub/types.h (grub_host_addr_t, grub_host_off_t)
+	(grub_host_size_t, grub_host_ssize_t): New types.
+	(grub_addr_t, grub_off_t, grub_size_t, grub_ssize_t): Make type
+	dependant of `GRUB_CPU_SIZEOF_VOID_P' instead on
+	`GRUB_HOST_SIZEOF_VOID_P'.
+
+	* include/grub/kernel.h (struct grub_module_header): Type of
+	member offset changed to `grub_host_off_t'.  Type of member size
+	changed to `grub_host_size_t'.
+	(struct grub_module_info): Type of member offset changed to
+	`grub_host_off_t'.  Type of member size changed to
+	`grub_host_size_t'.
+
 2005-09-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make GRUB's kernel compliant to Multiboot Specification.

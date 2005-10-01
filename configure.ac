@@ -22,6 +22,7 @@ AC_CANONICAL_HOST
 
 case "$host_cpu" in
   i[[3456]]86) host_cpu=i386 ;;
+  x86_64) host_cpu=i386 amd64=1 ;;
   powerpc) ;;
   sparc64) ;;
   *) AC_MSG_ERROR([unsupported CPU type]) ;;
@@ -78,6 +79,10 @@ if test "x$default_CFLAGS" = xyes; then
     fi
   fi
 
+  if test "x$amd64" = x1; then
+    tmp_CFLAGS="$tmp_CFLAGS -m32"
+  fi
+
   CFLAGS="$tmp_CFLAGS"
 fi
 AC_SUBST(CFLAGS)
@@ -122,10 +127,12 @@ fi
 # Test the C compiler for the build environment.
 tmp_CC="$CC"
 tmp_CFLAGS="$CFLAGS"
+tmp_LDFLAGS="$LDFLAGS"
 tmp_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
 CFLAGS="$BUILD_CFLAGS"
 CPPFLAGS="$BUILD_CPPFLAGS"
+LDFLAGS="$BUILD_LDDFLAGS"
 
 # Identify characteristics of the build architecture.
 AC_C_BIGENDIAN
