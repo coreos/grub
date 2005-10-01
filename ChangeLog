@@ -1,5 +1,9 @@
 2005-10-01  Marco Gerards  <mgerards@xs4all.nl>
 
+	* fs/xfs.c (grub_xfs_iterate_dir): Add parentheses.
+
+2005-10-01  Marco Gerards  <mgerards@xs4all.nl>
+
 	* configure.ac: Accept `x86_64' as host_cpu.  In that case add
 	`-m32' to CFLAGS.
 

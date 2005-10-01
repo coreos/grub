@@ -376,8 +376,8 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 
 	    de = ((struct grub_xfs_dir_entry *) 
 		  (((char *) de)+ sizeof (struct grub_xfs_dir_entry) + de->len
-		   + (smallino ? sizeof (grub_uint32_t)
-		      : sizeof (grub_uint64_t))) - 1);
+		   + ((smallino ? sizeof (grub_uint32_t)
+		       : sizeof (grub_uint64_t))) - 1));
 	  }
 	break;
       }
