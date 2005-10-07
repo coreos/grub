@@ -1,3 +1,30 @@
+2005-10-07  Marco Gerards  <mgerards@xs4all.nl>
+
+	Add support for the AFFS filesystem.
+
+	* fs/affs.c: New file.
+
+	* DISTLIST: Added `fs/affs.c'.
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `fs/affs.c'.
+	(grub_probefs_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	(pkgdata_MODULES): Add `affs.mod'.
+	(affs_mod_SOURCES): New variable.
+	(affs_mod_CFLAGS): Likewise.
+	(affs_mod_LDFLAGS): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add `fs/affs.c'.
+	(pkgdata_MODULES): Add `affs.mod'.
+	(affs_mod_SOURCES): New variable.
+	(affs_mod_CFLAGS): Likewise.
+
+	* util/grub-emu.c (main): Call `grub_affs_init' and
+	`grub_affs_fini'.
+
+	* include/grub/fs.h (grub_affs_init): New prototype.
+	(grub_affs_fini): Likewise.
+
 2005-10-01  Marco Gerards  <mgerards@xs4all.nl>
 
 	* fs/xfs.c (grub_xfs_iterate_dir): Add parentheses.

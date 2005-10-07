@@ -69,8 +69,8 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/timeout.c						\
 	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
 	disk/loopback.c							\
-	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
-	fs/minix.c fs/ufs.c fs/xfs.c					\
+	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
+	fs/jfs.c fs/minix.c fs/ufs.c fs/xfs.c				\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
@@ -82,10 +82,10 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 	util/powerpc/ieee1275/misc.c
-CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_search.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_timeout.o grub_emu-commands_ieee1275_halt.o grub_emu-commands_ieee1275_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_powerpc_ieee1275_misc.o
-MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_default.d grub_emu-commands_help.d grub_emu-commands_search.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_timeout.d grub_emu-commands_ieee1275_halt.d grub_emu-commands_ieee1275_reboot.d grub_emu-disk_loopback.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_completion.d grub_emu-normal_context.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_misc.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_powerpc_ieee1275_misc.d
+CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_search.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_timeout.o grub_emu-commands_ieee1275_halt.o grub_emu-commands_ieee1275_reboot.o grub_emu-disk_loopback.o grub_emu-fs_affs.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_powerpc_ieee1275_misc.o
+MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_default.d grub_emu-commands_help.d grub_emu-commands_search.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_timeout.d grub_emu-commands_ieee1275_halt.d grub_emu-commands_ieee1275_reboot.d grub_emu-disk_loopback.d grub_emu-fs_affs.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_completion.d grub_emu-normal_context.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_misc.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_powerpc_ieee1275_misc.d
 
-grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_search.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_timeout.o grub_emu-commands_ieee1275_halt.o grub_emu-commands_ieee1275_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_powerpc_ieee1275_misc.o
+grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_search.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_timeout.o grub_emu-commands_ieee1275_halt.o grub_emu-commands_ieee1275_reboot.o grub_emu-disk_loopback.o grub_emu-fs_affs.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_powerpc_ieee1275_misc.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-commands_boot.o: commands/boot.c
@@ -191,6 +191,14 @@ grub_emu-disk_loopback.d: disk/loopback.c
 	set -e; 	  $(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,grub_emu-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_emu-disk_loopback.d
+
+grub_emu-fs_affs.o: fs/affs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_affs.d: fs/affs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_emu-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_affs.d
 
 grub_emu-fs_ext2.o: fs/ext2.c
 	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -764,7 +772,8 @@ pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod
+	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod \
+	affs.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -775,12 +784,12 @@ UNDSYMFILES += und-fshelp.lst
 
 fshelp.mod: pre-fshelp.o mod-fshelp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fshelp_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fshelp.o: fshelp_mod-fs_fshelp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fshelp_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-fshelp.o: mod-fshelp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
@@ -825,12 +834,12 @@ UNDSYMFILES += und-fat.lst
 
 fat.mod: pre-fat.o mod-fat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fat_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fat.o: fat_mod-fs_fat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(fat_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-fat.o: mod-fat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
@@ -875,12 +884,12 @@ UNDSYMFILES += und-ext2.lst
 
 ext2.mod: pre-ext2.o mod-ext2.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ext2_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ext2.o: ext2_mod-fs_ext2.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ext2_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-ext2.o: mod-ext2.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
@@ -925,12 +934,12 @@ UNDSYMFILES += und-ufs.lst
 
 ufs.mod: pre-ufs.o mod-ufs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ufs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ufs.o: ufs_mod-fs_ufs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ufs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-ufs.o: mod-ufs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
@@ -975,12 +984,12 @@ UNDSYMFILES += und-minix.lst
 
 minix.mod: pre-minix.o mod-minix.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(minix_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-minix.o: minix_mod-fs_minix.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(minix_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-minix.o: mod-minix.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
@@ -1025,12 +1034,12 @@ UNDSYMFILES += und-hfs.lst
 
 hfs.mod: pre-hfs.o mod-hfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hfs.o: hfs_mod-fs_hfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hfs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-hfs.o: mod-hfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
@@ -1075,12 +1084,12 @@ UNDSYMFILES += und-jfs.lst
 
 jfs.mod: pre-jfs.o mod-jfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(jfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-jfs.o: jfs_mod-fs_jfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(jfs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-jfs.o: mod-jfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
@@ -1129,12 +1138,12 @@ UNDSYMFILES += und-xfs.lst
 
 xfs.mod: pre-xfs.o mod-xfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(xfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-xfs.o: xfs_mod-fs_xfs.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(xfs_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-xfs.o: mod-xfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
@@ -1170,6 +1179,56 @@ fs-xfs.lst: fs/xfs.c genfslist.sh
 
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
+# For affs.mod.
+xfs_mod_SOURCES = fs/affs.c
+CLEANFILES += xfs.mod mod-xfs.o mod-xfs.c pre-xfs.o xfs_mod-fs_affs.o def-xfs.lst und-xfs.lst
+MOSTLYCLEANFILES += xfs_mod-fs_affs.d
+DEFSYMFILES += def-xfs.lst
+UNDSYMFILES += und-xfs.lst
+
+xfs.mod: pre-xfs.o mod-xfs.o
+	-rm -f $@
+	$(LD) $(xfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-xfs.o: xfs_mod-fs_affs.o
+	-rm -f $@
+	$(LD) $(xfs_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-xfs.o: mod-xfs.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
+
+mod-xfs.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'xfs' $< > $@ || (rm -f $@; exit 1)
+
+def-xfs.lst: pre-xfs.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 xfs/' > $@
+
+und-xfs.lst: pre-xfs.o
+	echo 'xfs' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+xfs_mod-fs_affs.o: fs/affs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
+
+xfs_mod-fs_affs.d: fs/affs.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,xfs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include xfs_mod-fs_affs.d
+
+CLEANFILES += cmd-affs.lst fs-affs.lst
+COMMANDFILES += cmd-affs.lst
+FSFILES += fs-affs.lst
+
+cmd-affs.lst: fs/affs.c gencmdlist.sh
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh xfs > $@ || (rm -f $@; exit 1)
+
+fs-affs.lst: fs/affs.c genfslist.sh
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh xfs > $@ || (rm -f $@; exit 1)
+
+
+xfs_mod_CFLAGS = $(COMMON_CFLAGS)
+
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
 CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_powerpc_ieee1275_linux.o def-_linux.lst und-_linux.lst
@@ -1179,12 +1238,12 @@ UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: _linux_mod-loader_powerpc_ieee1275_linux.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(_linux_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-_linux.o: mod-_linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
@@ -1219,7 +1278,7 @@ fs-linux.lst: loader/powerpc/ieee1275/linux.c genfslist.sh
 
 
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
- 
+
 # For linux.mod.
 linux_mod_SOURCES = loader/powerpc/ieee1275/linux_normal.c
 CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_powerpc_ieee1275_linux_normal.o def-linux.lst und-linux.lst
@@ -1229,12 +1288,12 @@ UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: linux_mod-loader_powerpc_ieee1275_linux_normal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(linux_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-linux.o: mod-linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -1282,12 +1341,12 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(normal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_powerpc_setjmp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(normal_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-normal.o: mod-normal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1504,12 +1563,12 @@ UNDSYMFILES += und-hello.lst
 
 hello.mod: pre-hello.o mod-hello.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hello_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hello.o: hello_mod-hello_hello.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(hello_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-hello.o: mod-hello.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
@@ -1554,12 +1613,12 @@ UNDSYMFILES += und-boot.lst
 
 boot.mod: pre-boot.o mod-boot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(boot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-boot.o: boot_mod-commands_boot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(boot_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-boot.o: mod-boot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
@@ -1604,12 +1663,12 @@ UNDSYMFILES += und-terminal.lst
 
 terminal.mod: pre-terminal.o mod-terminal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(terminal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminal.o: terminal_mod-commands_terminal.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(terminal_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-terminal.o: mod-terminal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
@@ -1654,12 +1713,12 @@ UNDSYMFILES += und-ls.lst
 
 ls.mod: pre-ls.o mod-ls.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ls_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ls.o: ls_mod-commands_ls.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(ls_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-ls.o: mod-ls.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
@@ -1704,12 +1763,12 @@ UNDSYMFILES += und-cmp.lst
 
 cmp.mod: pre-cmp.o mod-cmp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cmp_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cmp.o: cmp_mod-commands_cmp.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cmp_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-cmp.o: mod-cmp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
@@ -1754,12 +1813,12 @@ UNDSYMFILES += und-cat.lst
 
 cat.mod: pre-cat.o mod-cat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cat_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cat.o: cat_mod-commands_cat.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(cat_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-cat.o: mod-cat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
@@ -1804,12 +1863,12 @@ UNDSYMFILES += und-font.lst
 
 font.mod: pre-font.o mod-font.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(font_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-font.o: font_mod-font_manager.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(font_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-font.o: mod-font.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
@@ -1854,12 +1913,12 @@ UNDSYMFILES += und-amiga.lst
 
 amiga.mod: pre-amiga.o mod-amiga.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(amiga_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-amiga.o: amiga_mod-partmap_amiga.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(amiga_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-amiga.o: mod-amiga.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
@@ -1904,12 +1963,12 @@ UNDSYMFILES += und-apple.lst
 
 apple.mod: pre-apple.o mod-apple.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(apple_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-apple.o: apple_mod-partmap_apple.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(apple_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-apple.o: mod-apple.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
@@ -1954,12 +2013,12 @@ UNDSYMFILES += und-pc.lst
 
 pc.mod: pre-pc.o mod-pc.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(pc_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-pc.o: pc_mod-partmap_pc.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(pc_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-pc.o: mod-pc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
@@ -2004,12 +2063,12 @@ UNDSYMFILES += und-sun.lst
 
 sun.mod: pre-sun.o mod-sun.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(sun_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-sun.o: sun_mod-partmap_sun.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(sun_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-sun.o: mod-sun.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
@@ -2054,12 +2113,12 @@ UNDSYMFILES += und-loopback.lst
 
 loopback.mod: pre-loopback.o mod-loopback.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(loopback_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-loopback.o: loopback_mod-disk_loopback.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(loopback_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-loopback.o: mod-loopback.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
@@ -2104,12 +2163,12 @@ UNDSYMFILES += und-suspend.lst
 
 suspend.mod: pre-suspend.o mod-suspend.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(suspend_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-suspend.o: suspend_mod-commands_ieee1275_suspend.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(suspend_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-suspend.o: mod-suspend.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(suspend_mod_CFLAGS) -c -o $@ $<
@@ -2154,12 +2213,12 @@ UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(reboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-reboot.o: reboot_mod-commands_ieee1275_reboot.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(reboot_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-reboot.o: mod-reboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
@@ -2204,12 +2263,12 @@ UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(halt_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-halt.o: halt_mod-commands_ieee1275_halt.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(halt_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-halt.o: mod-halt.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
@@ -2254,12 +2313,12 @@ UNDSYMFILES += und-help.lst
 
 help.mod: pre-help.o mod-help.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(help_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-help.o: help_mod-commands_help.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(help_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-help.o: mod-help.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
@@ -2304,12 +2363,12 @@ UNDSYMFILES += und-default.lst
 
 default.mod: pre-default.o mod-default.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(default_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-default.o: default_mod-commands_default.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(default_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-default.o: mod-default.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
@@ -2354,12 +2413,12 @@ UNDSYMFILES += und-timeout.lst
 
 timeout.mod: pre-timeout.o mod-timeout.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(timeout_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-timeout.o: timeout_mod-commands_timeout.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(timeout_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-timeout.o: mod-timeout.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
@@ -2404,12 +2463,12 @@ UNDSYMFILES += und-configfile.lst
 
 configfile.mod: pre-configfile.o mod-configfile.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(configfile_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-configfile.o: configfile_mod-commands_configfile.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(configfile_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-configfile.o: mod-configfile.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
@@ -2454,12 +2513,12 @@ UNDSYMFILES += und-search.lst
 
 search.mod: pre-search.o mod-search.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(search_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-search.o: search_mod-commands_search.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(search_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-search.o: mod-search.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
@@ -2504,12 +2563,12 @@ UNDSYMFILES += und-gzio.lst
 
 gzio.mod: pre-gzio.o mod-gzio.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(gzio_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-gzio.o: gzio_mod-io_gzio.o
 	-rm -f $@
-	$(LD) -r -d -o $@ $^
+	$(LD) $(gzio_mod_LDFLAGS) -r -d -o $@ $^
 
 mod-gzio.o: mod-gzio.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<

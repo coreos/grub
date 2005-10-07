@@ -55,6 +55,7 @@ disk/loopback.c
 disk/i386/pc/biosdisk.c
 disk/ieee1275/ofdisk.c
 font/manager.c
+fs/affs.c
 fs/ext2.c
 fs/fat.c
 fs/fshelp.c

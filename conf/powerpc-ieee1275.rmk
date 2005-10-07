@@ -39,8 +39,8 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/timeout.c						\
 	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
 	disk/loopback.c							\
-	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
-	fs/minix.c fs/ufs.c fs/xfs.c					\
+	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
+	fs/jfs.c fs/minix.c fs/ufs.c fs/xfs.c				\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
@@ -76,7 +76,8 @@ pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod
+	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod \
+	affs.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -114,10 +115,14 @@ iso9660_mod_CFLAGS = $(COMMON_CFLAGS)
 xfs_mod_SOURCES = fs/xfs.c
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
+# For affs.mod.
+xfs_mod_SOURCES = fs/affs.c
+xfs_mod_CFLAGS = $(COMMON_CFLAGS)
+
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
- 
+
 # For linux.mod.
 linux_mod_SOURCES = loader/powerpc/ieee1275/linux_normal.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)

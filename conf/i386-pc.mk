@@ -312,13 +312,13 @@ grub_mkimage_LDFLAGS = $(LIBLZO)
 # For grub-setup.
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
-	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c  \
+	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c  \
 	kern/partition.c partmap/pc.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
-CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-fs_xfs.o grub_setup-kern_partition.o grub_setup-partmap_pc.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
-MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-fs_xfs.d grub_setup-kern_partition.d grub_setup-partmap_pc.d grub_setup-fs_ufs.d grub_setup-fs_minix.d grub_setup-fs_hfs.d grub_setup-fs_jfs.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d grub_setup-fs_fshelp.d
+CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-fs_xfs.o grub_setup-fs_affs.o grub_setup-kern_partition.o grub_setup-partmap_pc.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
+MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_i386_pc_biosdisk.d grub_setup-util_misc.d grub_setup-util_i386_pc_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-fs_fat.d grub_setup-fs_ext2.d grub_setup-fs_xfs.d grub_setup-fs_affs.d grub_setup-kern_partition.d grub_setup-partmap_pc.d grub_setup-fs_ufs.d grub_setup-fs_minix.d grub_setup-fs_hfs.d grub_setup-fs_jfs.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d grub_setup-fs_fshelp.d
 
-grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-fs_xfs.o grub_setup-kern_partition.o grub_setup-partmap_pc.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
+grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdisk.o grub_setup-util_misc.o grub_setup-util_i386_pc_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-fs_fat.o grub_setup-fs_ext2.o grub_setup-fs_xfs.o grub_setup-fs_affs.o grub_setup-kern_partition.o grub_setup-partmap_pc.o grub_setup-fs_ufs.o grub_setup-fs_minix.o grub_setup-fs_hfs.o grub_setup-fs_jfs.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_setup_LDFLAGS)
 
 grub_setup-util_i386_pc_grub_setup.o: util/i386/pc/grub-setup.c
@@ -408,6 +408,14 @@ grub_setup-fs_xfs.d: fs/xfs.c
 	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,grub_setup-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_setup-fs_xfs.d
+
+grub_setup-fs_affs.o: fs/affs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
+
+grub_setup-fs_affs.d: fs/affs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_setup-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_setup-fs_affs.d
 
 grub_setup-kern_partition.o: kern/partition.c
 	$(BUILD_CC) -Ikern -I$(srcdir)/kern $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
@@ -520,11 +528,12 @@ grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
 	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 	fs/ext2.c kern/partition.c partmap/pc.c fs/ufs.c fs/minix.c	\
-	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c fs/xfs.c
-CLEANFILES += grub-probefs grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o
-MOSTLYCLEANFILES += grub_probefs-util_i386_pc_grub_probefs.d grub_probefs-util_i386_pc_biosdisk.d grub_probefs-util_misc.d grub_probefs-util_i386_pc_getroot.d grub_probefs-kern_device.d grub_probefs-kern_disk.d grub_probefs-kern_err.d grub_probefs-kern_misc.d grub_probefs-fs_fat.d grub_probefs-fs_ext2.d grub_probefs-kern_partition.d grub_probefs-partmap_pc.d grub_probefs-fs_ufs.d grub_probefs-fs_minix.d grub_probefs-fs_hfs.d grub_probefs-fs_jfs.d grub_probefs-kern_fs.d grub_probefs-kern_env.d grub_probefs-fs_fshelp.d grub_probefs-fs_xfs.d
+	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c fs/xfs.c 	\
+	fs/affs.c
+CLEANFILES += grub-probefs grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o grub_probefs-fs_affs.o
+MOSTLYCLEANFILES += grub_probefs-util_i386_pc_grub_probefs.d grub_probefs-util_i386_pc_biosdisk.d grub_probefs-util_misc.d grub_probefs-util_i386_pc_getroot.d grub_probefs-kern_device.d grub_probefs-kern_disk.d grub_probefs-kern_err.d grub_probefs-kern_misc.d grub_probefs-fs_fat.d grub_probefs-fs_ext2.d grub_probefs-kern_partition.d grub_probefs-partmap_pc.d grub_probefs-fs_ufs.d grub_probefs-fs_minix.d grub_probefs-fs_hfs.d grub_probefs-fs_jfs.d grub_probefs-kern_fs.d grub_probefs-kern_env.d grub_probefs-fs_fshelp.d grub_probefs-fs_xfs.d grub_probefs-fs_affs.d
 
-grub-probefs: grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o
+grub-probefs: grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o grub_probefs-fs_affs.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_probefs_LDFLAGS)
 
 grub_probefs-util_i386_pc_grub_probefs.o: util/i386/pc/grub-probefs.c
@@ -687,6 +696,14 @@ grub_probefs-fs_xfs.d: fs/xfs.c
 
 -include grub_probefs-fs_xfs.d
 
+grub_probefs-fs_affs.o: fs/affs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
+
+grub_probefs-fs_affs.d: fs/affs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_probefs-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_probefs-fs_affs.d
+
 
 # For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
@@ -695,8 +712,8 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/timeout.c						\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
-	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
-	fs/minix.c fs/ufs.c fs/xfs.c					\
+	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
+	fs/jfs.c fs/minix.c fs/ufs.c fs/xfs.c				\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
@@ -708,10 +725,10 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 	util/i386/pc/misc.c
-CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_search.o grub_emu-commands_timeout.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
-MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_default.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_search.d grub_emu-commands_timeout.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_i386_pc_reboot.d grub_emu-disk_loopback.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_completion.d grub_emu-normal_context.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_misc.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_i386_pc_misc.d
+CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_search.o grub_emu-commands_timeout.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_affs.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
+MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_default.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_search.d grub_emu-commands_timeout.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_i386_pc_reboot.d grub_emu-disk_loopback.d grub_emu-fs_affs.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_fshelp.d grub_emu-fs_hfs.d grub_emu-fs_iso9660.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_completion.d grub_emu-normal_context.d grub_emu-normal_main.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_misc.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-util_console.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_i386_pc_biosdisk.d grub_emu-util_i386_pc_getroot.d grub_emu-util_i386_pc_misc.d
 
-grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_search.o grub_emu-commands_timeout.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
+grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_default.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_search.o grub_emu-commands_timeout.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_i386_pc_reboot.o grub_emu-disk_loopback.o grub_emu-fs_affs.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_fshelp.o grub_emu-fs_hfs.o grub_emu-fs_iso9660.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_completion.o grub_emu-normal_context.o grub_emu-normal_main.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-util_console.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_i386_pc_biosdisk.o grub_emu-util_i386_pc_getroot.o grub_emu-util_i386_pc_misc.o
 	$(BUILD_CC) -o $@ $^ $(BUILD_LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-commands_boot.o: commands/boot.c
@@ -817,6 +834,14 @@ grub_emu-disk_loopback.d: disk/loopback.c
 	set -e; 	  $(BUILD_CC) -Idisk -I$(srcdir)/disk $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,grub_emu-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grub_emu-disk_loopback.d
+
+grub_emu-fs_affs.o: fs/affs.c
+	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
+
+grub_emu-fs_affs.d: fs/affs.c
+	set -e; 	  $(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_emu-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grub_emu-fs_affs.d
 
 grub_emu-fs_ext2.o: fs/ext2.c
 	$(BUILD_CC) -Ifs -I$(srcdir)/fs $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
@@ -1194,7 +1219,7 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod fat.mod ufs.mod	\
 	apple.mod pc.mod sun.mod loopback.mod reboot.mod halt.mod	\
 	help.mod default.mod timeout.mod configfile.mod vbe.mod		\
 	vesafb.mod vbetest.mod vbeinfo.mod search.mod gzio.mod		\
-	terminfo.mod serial.mod xfs.mod
+	terminfo.mod serial.mod xfs.mod affs.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -1710,6 +1735,57 @@ fs-xfs.lst: fs/xfs.c genfslist.sh
 
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
 xfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For affs.mod.
+affs_mod_SOURCES = fs/affs.c
+CLEANFILES += affs.mod mod-affs.o mod-affs.c pre-affs.o affs_mod-fs_affs.o def-affs.lst und-affs.lst
+MOSTLYCLEANFILES += affs_mod-fs_affs.d
+DEFSYMFILES += def-affs.lst
+UNDSYMFILES += und-affs.lst
+
+affs.mod: pre-affs.o mod-affs.o
+	-rm -f $@
+	$(LD) $(affs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-affs.o: affs_mod-fs_affs.o
+	-rm -f $@
+	$(LD) $(affs_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-affs.o: mod-affs.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
+
+mod-affs.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'affs' $< > $@ || (rm -f $@; exit 1)
+
+def-affs.lst: pre-affs.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 affs/' > $@
+
+und-affs.lst: pre-affs.o
+	echo 'affs' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+affs_mod-fs_affs.o: fs/affs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
+
+affs_mod-fs_affs.d: fs/affs.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,affs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include affs_mod-fs_affs.d
+
+CLEANFILES += cmd-affs.lst fs-affs.lst
+COMMANDFILES += cmd-affs.lst
+FSFILES += fs-affs.lst
+
+cmd-affs.lst: fs/affs.c gencmdlist.sh
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh affs > $@ || (rm -f $@; exit 1)
+
+fs-affs.lst: fs/affs.c genfslist.sh
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh affs > $@ || (rm -f $@; exit 1)
+
+
+affs_mod_CFLAGS = $(COMMON_CFLAGS)
+affs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
