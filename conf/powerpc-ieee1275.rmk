@@ -116,8 +116,8 @@ xfs_mod_SOURCES = fs/xfs.c
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For affs.mod.
-xfs_mod_SOURCES = fs/affs.c
-xfs_mod_CFLAGS = $(COMMON_CFLAGS)
+affs_mod_SOURCES = fs/affs.c
+affs_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c

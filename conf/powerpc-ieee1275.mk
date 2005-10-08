@@ -1180,54 +1180,54 @@ fs-xfs.lst: fs/xfs.c genfslist.sh
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For affs.mod.
-xfs_mod_SOURCES = fs/affs.c
-CLEANFILES += xfs.mod mod-xfs.o mod-xfs.c pre-xfs.o xfs_mod-fs_affs.o def-xfs.lst und-xfs.lst
-MOSTLYCLEANFILES += xfs_mod-fs_affs.d
-DEFSYMFILES += def-xfs.lst
-UNDSYMFILES += und-xfs.lst
+affs_mod_SOURCES = fs/affs.c
+CLEANFILES += affs.mod mod-affs.o mod-affs.c pre-affs.o affs_mod-fs_affs.o def-affs.lst und-affs.lst
+MOSTLYCLEANFILES += affs_mod-fs_affs.d
+DEFSYMFILES += def-affs.lst
+UNDSYMFILES += und-affs.lst
 
-xfs.mod: pre-xfs.o mod-xfs.o
+affs.mod: pre-affs.o mod-affs.o
 	-rm -f $@
-	$(LD) $(xfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(LD) $(affs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-xfs.o: xfs_mod-fs_affs.o
+pre-affs.o: affs_mod-fs_affs.o
 	-rm -f $@
-	$(LD) $(xfs_mod_LDFLAGS) -r -d -o $@ $^
+	$(LD) $(affs_mod_LDFLAGS) -r -d -o $@ $^
 
-mod-xfs.o: mod-xfs.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
+mod-affs.o: mod-affs.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
 
-mod-xfs.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'xfs' $< > $@ || (rm -f $@; exit 1)
+mod-affs.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'affs' $< > $@ || (rm -f $@; exit 1)
 
-def-xfs.lst: pre-xfs.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 xfs/' > $@
+def-affs.lst: pre-affs.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 affs/' > $@
 
-und-xfs.lst: pre-xfs.o
-	echo 'xfs' > $@
+und-affs.lst: pre-affs.o
+	echo 'affs' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-xfs_mod-fs_affs.o: fs/affs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
+affs_mod-fs_affs.o: fs/affs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
 
-xfs_mod-fs_affs.d: fs/affs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,xfs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+affs_mod-fs_affs.d: fs/affs.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,affs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
--include xfs_mod-fs_affs.d
+-include affs_mod-fs_affs.d
 
 CLEANFILES += cmd-affs.lst fs-affs.lst
 COMMANDFILES += cmd-affs.lst
 FSFILES += fs-affs.lst
 
 cmd-affs.lst: fs/affs.c gencmdlist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh xfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh affs > $@ || (rm -f $@; exit 1)
 
 fs-affs.lst: fs/affs.c genfslist.sh
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh xfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh affs > $@ || (rm -f $@; exit 1)
 
 
-xfs_mod_CFLAGS = $(COMMON_CFLAGS)
+affs_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
