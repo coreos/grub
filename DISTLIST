@@ -64,6 +64,7 @@ fs/iso9660.c
 fs/jfs.c
 fs/minix.c
 fs/ufs.c
+fs/sfs.c
 fs/xfs.c
 hello/hello.c
 include/grub/arg.h

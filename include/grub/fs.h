@@ -89,6 +89,8 @@ void grub_xfs_init (void);
 void grub_xfs_fini (void);
 void grub_affs_init (void);
 void grub_affs_fini (void);
+void grub_sfs_init (void);
+void grub_sfs_fini (void);
 void grub_iso9660_init (void);
 #endif /* GRUB_UTIL */
 

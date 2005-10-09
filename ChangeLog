@@ -1,3 +1,30 @@
+2005-10-09  Marco Gerards  <mgerards@xs4all.nl>
+
+	Add support for the SFS filesystem.
+
+	* fs/sfs.c: New file.
+
+	* DISTLIST: Added `fs/sfs.c'.
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `fs/sfs.c'.
+	(grub_probefs_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	(pkgdata_MODULES): Add `sfs.mod'.
+	(sfs_mod_SOURCES): New variable.
+	(sfs_mod_CFLAGS): Likewise.
+	(sfs_mod_LDFLAGS): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add `fs/sfs.c'.
+	(pkgdata_MODULES): Add `sfs.mod'.
+	(sfs_mod_SOURCES): New variable.
+	(sfs_mod_CFLAGS): Likewise.
+
+	* util/grub-emu.c (main): Call `grub_sfs_init' and
+	`grub_sfs_fini'.
+
+	* include/grub/fs.h (grub_sfs_init): New prototype.
+	(grub_sfs_fini): Likewise.
+
 2005-10-07  Marco Gerards  <mgerards@xs4all.nl>
 
 	Add support for the AFFS filesystem.

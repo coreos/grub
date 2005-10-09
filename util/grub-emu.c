@@ -204,6 +204,7 @@ main (int argc, char *argv[])
   grub_hfs_init ();
   grub_jfs_init ();
   grub_xfs_init ();
+  grub_sfs_init ();
   grub_affs_init ();
   grub_ls_init ();
   grub_boot_init ();
@@ -237,6 +238,7 @@ main (int argc, char *argv[])
   grub_util_biosdisk_fini ();
   grub_normal_fini ();
   grub_affs_fini ();
+  grub_sfs_fini ();
   grub_xfs_fini ();
   grub_ufs_fini ();
   grub_ext2_fini ();
