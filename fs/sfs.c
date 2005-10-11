@@ -485,7 +485,8 @@ grub_sfs_open (struct grub_file *file, const char *name)
  fail:
   if (data && fdiro != &data->diropen)
     grub_free (fdiro);
-  grub_free (data->label);
+  if (data)
+    grub_free (data->label);
   grub_free (data);
   
 #ifndef GRUB_UTIL
@@ -565,7 +566,8 @@ grub_sfs_dir (grub_device_t device, const char *path,
  fail:
   if (data && fdiro != &data->diropen)
     grub_free (fdiro);
-  grub_free (data->label);
+  if (data)
+    grub_free (data->label);
   grub_free (data);
 
 #ifndef GRUB_UTIL

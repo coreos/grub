@@ -1,3 +1,9 @@
+2005-10-11  Marco Gerards  <mgerards@xs4all.nl>
+
+	* fs/sfs.c (grub_sfs_open): Don't free `data->label' if it is not
+	allocated.
+	(grub_sfs_dir): Likewise.
+
 2005-10-09  Marco Gerards  <mgerards@xs4all.nl>
 
 	Add support for the SFS filesystem.
