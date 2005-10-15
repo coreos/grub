@@ -199,6 +199,7 @@ void EXPORT_FUNC(grub_setcolorstate) (grub_term_color_state state);
 void EXPORT_FUNC(grub_setcolor) (grub_uint8_t normal_color,
 				 grub_uint8_t highlight_color);
 int EXPORT_FUNC(grub_setcursor) (int on);
+int EXPORT_FUNC(grub_getcursor) (void);
 void EXPORT_FUNC(grub_refresh) (void);
 void EXPORT_FUNC(grub_set_more) (int onoff);
 

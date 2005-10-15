@@ -156,8 +156,9 @@ static grub_dl_t my_mod;
 #define GRUB_XFS_NEXT_DIRENT(pos,len)		\
   (pos) + GRUB_XFS_ROUND_TO_DIRENT (8 + 1 + len + 2)
 
-static inline int grub_xfs_inode_block (struct grub_xfs_data *data,
-					grub_uint64_t ino)
+static inline int
+grub_xfs_inode_block (struct grub_xfs_data *data,
+		      grub_uint64_t ino)
 {
   long long int inoinag = GRUB_XFS_INO_INOINAG (data, ino);
   long long ag = GRUB_XFS_INO_AG (data, ino);
@@ -169,8 +170,9 @@ static inline int grub_xfs_inode_block (struct grub_xfs_data *data,
 }
 
 
-static inline int grub_xfs_inode_offset (struct grub_xfs_data *data,
-					 grub_uint64_t ino)
+static inline int
+grub_xfs_inode_offset (struct grub_xfs_data *data,
+		       grub_uint64_t ino)
 {
   int inoag = GRUB_XFS_INO_INOINAG (data, ino);
   return (inoag & ((1 << 4) - 1)) << 8;
@@ -361,8 +363,10 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	  {
 	    grub_uint64_t ino;
 	    void *inopos = (((char *) de)
-			    + sizeof (struct grub_xfs_dir_entry) + de->len - 1);
-
+			    + sizeof (struct grub_xfs_dir_entry)
+			    + de->len - 1);
+	    char name[de->len + 1];
+	    
 	    if (smallino)
 	      {
 		ino = grub_be_to_cpu32 (*(grub_uint32_t *) inopos);
@@ -371,7 +375,9 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	    else
 	      ino = *(grub_uint64_t *) inopos;
 
-	    if (call_hook (ino, de->name))
+	    grub_memcpy (name, de->name, de->len);
+	    name[de->len] = '\0';
+	    if (call_hook (ino, name))
 	      return 1;
 
 	    de = ((struct grub_xfs_dir_entry *) 
@@ -387,10 +393,10 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
       {
 	grub_ssize_t numread;
 	char *dirblock;
-	unsigned int blk;
+	grub_uint64_t blk;
 
 	dirblock = grub_malloc (dir->data->bsize);
-	if (!dirblock)
+	if (! dirblock)
 	  return 0;
 
 	/* Iterate over every block the directory has.  */
@@ -495,8 +501,8 @@ grub_xfs_mount (grub_disk_t disk)
   data->diropen.data = data;
   data->diropen.ino = data->sblock.rootino;
   data->diropen.inode_read = 1;
-  data->bsize = grub_cpu_to_be32 (data->sblock.bsize);
-  data->agsize = grub_cpu_to_be32 (data->sblock.agsize);
+  data->bsize = grub_be_to_cpu32 (data->sblock.bsize);
+  data->agsize = grub_be_to_cpu32 (data->sblock.agsize);
 
   data->disk = disk;
   data->inode = &data->diropen.inode;

@@ -34,6 +34,9 @@ static int grub_more_lines;
 /* If the more pager is active.  */
 static int grub_more;
 
+/* The current cursor state.  */
+static int cursor_state = 1;
+
 void
 grub_term_register (grub_term_t term)
 {
@@ -77,6 +80,7 @@ grub_term_set_current (grub_term_t term)
   
   grub_cur_term = term;
   grub_cls ();
+  grub_setcursor (grub_getcursor ());
   return GRUB_ERR_NONE;
 }
 
@@ -229,16 +233,21 @@ grub_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 int
 grub_setcursor (int on)
 {
-  static int prev = 1;
-  int ret = prev;
+  int ret = cursor_state;
 
   if (grub_cur_term->setcursor)
     {
       (grub_cur_term->setcursor) (on);
-      prev = on;
+      cursor_state = on;
     }
   
   return ret;
+}
+
+int
+grub_getcursor (void)
+{
+  return cursor_state;
 }
 
 void

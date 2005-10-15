@@ -165,7 +165,7 @@ typedef unsigned long ulg;
 static int
 test_header (grub_file_t file)
 {
-  unsigned char buf[10];
+  unsigned char buf[10] __attribute__ ((aligned));
   grub_gzio_t gzio = file->data;
 
   if (grub_file_tell (gzio->file) != 0)

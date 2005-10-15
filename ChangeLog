@@ -1,3 +1,23 @@
+2005-10-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* fs/xfs.c (grub_xfs_iterate_dir): Change the type of BLK to
+	grub_uint64_t.
+	Call the hook with a NUL-terminated filename.
+	(grub_xfs_mount): Use grub_be_to_cpu32 instead of
+	grub_cpu_to_be32.
+
+	* kern/term.c (cursor_state): New variable.
+	(grub_term_set_current): Reset the cursor state on a new
+	terminal.
+	(grub_setcursor): Rewritten to use CURSOR_STATE.
+	(grub_getcursor): New function.
+
+	* include/grub/term.h (grub_getcursor): New prototype.
+
+	* io/gzio.c (test_header): Align BUF for accessing it as 32-bit
+	integers on ARM. Reported by Timothy Baldwin
+	<T.E.Baldwin99@members.leeds.ac.uk>.
+
 2005-10-11  Marco Gerards  <mgerards@xs4all.nl>
 
 	* fs/sfs.c (grub_sfs_open): Don't free `data->label' if it is not
