@@ -149,12 +149,12 @@ multiboot_trampoline:
 	movl	%edx, %eax
 	shrl	$8, %eax
 	xorl	%ebx, %ebx
-	cmpb	$0xFF, %al
+	cmpb	$0xFF, %ah
 	je	1f
 	movb	%ah, %bl
 	movl	%ebx, EXT_C(grub_install_dos_part)
 1:
-	cmpb	$0xFF, %ah
+	cmpb	$0xFF, %al
 	je	2f
 	movb	%al, %bl
 	movl	%ebx, EXT_C(grub_install_bsd_part)

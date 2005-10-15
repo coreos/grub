@@ -1,5 +1,13 @@
 2005-10-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* kern/file.c (grub_file_seek): Seeking to an offset equal to a
+	file size must be permitted.
+
+	* kern/i386/pc/startup.S (multiboot_trampoline): Fix a mistake
+	between %ah and %al.
+
+2005-10-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* fs/xfs.c (grub_xfs_iterate_dir): Change the type of BLK to
 	grub_uint64_t.
 	Call the hook with a NUL-terminated filename.

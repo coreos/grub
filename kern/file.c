@@ -146,7 +146,7 @@ grub_file_seek (grub_file_t file, grub_ssize_t offset)
 {
   grub_ssize_t old;
 
-  if (offset < 0 || offset >= file->size)
+  if (offset < 0 || offset > file->size)
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE,
 		  "attempt to seek outside of the file");
