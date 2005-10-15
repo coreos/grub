@@ -1,5 +1,13 @@
 2005-10-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* configure.ac (AC_INIT): Increase the version number to 1.91.
+
+	* DISTLIST: Added include/grub/terminfo.h, include/grub/tparm.h,
+	include/grub/i386/pc/serial.h, term/terminfo.c, term/tparm.c and
+	term/i386/pc/serial.c.
+
+2005-10-15  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* kern/file.c (grub_file_seek): Seeking to an offset equal to a
 	file size must be permitted.
 
