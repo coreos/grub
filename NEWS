@@ -14,6 +14,12 @@ New in 1.91:
 
 * Add support for terminfo and serial.
 
+* Add support for x86_64.
+
+* GRUB itself is a Multiboot-compliant kernel.
+
+* Add new filesystems: XFS, SFS, and AFFS.
+
 
 New in 1.90 - 2005-08-07:
 
