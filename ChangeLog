@@ -1,3 +1,8 @@
+2005-10-15  Marco Gerards  <mgerards@xs4all.nl>
+
+	* fs/xfs.c (grub_xfs_iterate_dir): Detect an error if part of a
+	directory can not be read.
+
 2005-10-15  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac (AC_INIT): Increase the version number to 1.91.

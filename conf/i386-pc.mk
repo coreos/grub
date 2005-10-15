@@ -728,8 +728,8 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/timeout.c						\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
-	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c 		\
-	fs/iso9660.c fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c	\
+	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
+	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c			\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\

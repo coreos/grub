@@ -418,6 +418,8 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	    numread = grub_xfs_read_file (dir, 0,
 					  blk << dir->data->sblock.log2_bsize,
 					  dir->data->bsize, dirblock);
+	    if (numread != dir->data->bsize)
+	      return 0;
 
 	    entries = (grub_be_to_cpu32 (tail->leaf_count)
 		       - grub_be_to_cpu32 (tail->leaf_stale));
