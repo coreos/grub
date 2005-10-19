@@ -1193,7 +1193,7 @@ grub_gzio_read (grub_file_t file, char *buf, grub_ssize_t len)
 	inflate_window (file);
 
       srcaddr = (char *) ((offset & (WSIZE - 1)) + gzio->slide);
-      size = gzio->saved_offset - file->offset;
+      size = gzio->saved_offset - offset;
       if (size > len)
 	size = len;
 

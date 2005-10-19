@@ -1,3 +1,8 @@
+2005-10-20  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
+
+	* io/gzio.c (grub_gzio_read): Use OFFSET instead of FILE->OFFSET
+	consistently within the loop.
+
 2005-10-15  Marco Gerards  <mgerards@xs4all.nl>
 
 	* fs/xfs.c (grub_xfs_iterate_dir): Detect an error if part of a
