@@ -1,3 +1,9 @@
+2005-10-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/grub-probefs.c (main): Call grub_xfs_init and
+	grub_xfs_fini. Do not call grub_hfs_init or grub_hfs_fini any
+	longer, because HFS should not be used on PC.
+
 2005-10-20  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
 
 	* io/gzio.c (grub_gzio_read): Use OFFSET instead of FILE->OFFSET

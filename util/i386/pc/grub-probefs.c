@@ -186,8 +186,8 @@ main (int argc, char *argv[])
   grub_ext2_init ();
   grub_ufs_init ();
   grub_minix_init ();
-  grub_hfs_init ();
   grub_jfs_init ();
+  grub_xfs_init ();
 
   /* Do it.  */
   probe (path);
@@ -197,8 +197,8 @@ main (int argc, char *argv[])
   grub_fat_fini ();
   grub_ufs_fini ();
   grub_minix_fini ();
-  grub_hfs_fini ();
   grub_jfs_fini ();
+  grub_xfs_fini ();
   
   grub_pc_partition_map_fini ();
   grub_util_biosdisk_fini ();
