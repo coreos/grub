@@ -1,5 +1,9 @@
 2005-10-23  Vincent Pelletier  <subdino2004@yahoo.fr>
 
+	* normal/sparc64/setjmp.S: New file.
+
+2005-10-23  Vincent Pelletier  <subdino2004@yahoo.fr>
+
 	* include/grub/sparc64/libgcc.h: New file.
 	* conf/sparc64-ieee1275.rmk (COMMON_ASFLAGS): Remove -Av9.
 	(normal_mod_SOURCES): Use normal/sparc64/setjmp.S instead of

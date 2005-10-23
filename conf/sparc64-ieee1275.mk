@@ -1,7 +1,7 @@
 
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -Av9
+COMMON_ASFLAGS = -nostdinc
 COMMON_CFLAGS = -ggdb -ffreestanding -m64 -mno-app-regs
 COMMON_LDFLAGS = -melf64_sparc
 
