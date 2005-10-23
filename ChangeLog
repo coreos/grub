@@ -1,3 +1,38 @@
+2005-10-23  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* kern/sparc64/dl.c: Rewritten for SPARCV9 ELF.
+	* kern/sparc64/cache.S: New file.
+	* kern/sparc64/cache.c: Removed.
+	* conf/sparc64-ieee1275.rmk (COMMON_ASFLAGS): Add -Av9.
+	(COMMON_CFLAGS): Add -mno-app-regs.  Remove -mcpu=v9 and
+	-mtune=ultrasparc.
+	(COMMON_LDFLAGS): Add -melf64_sparc.
+	(grubof_HEADERS): Add sparc64/libgcc.h and machine/kernel.h.
+	(grubof_SOURCES): Use cache.S instead of cache.c.
+	(grubof_LDFLAGS): Add -mno-app-regs.  Replace "-Xlinker
+	--oformat -Xlinker elf64-sparc" by "-Bstatic,-melf64_sparc".
+	(pkgdata_MODULES): Uncomment. Leave linux.mod and _linux.mod
+	commented though.
+	(normal_mod_SOURCES): Add normal/completion.c and normal/misc.c.
+	(_linux_mod_SOURCES, _linux_mod_CFLAGS, linux_mod_SOURCES)
+	(linux_mod_CFLAGS): Commented out.
+	(_linux_mod_LDFLAGS, linux_mod_LDFLAGS): New macro, commented
+	out because module isn't built.
+	(fshelp_mod_LDFLAGS, fat_mod_LDFLAGS, ext2_mod_LDFLAGS)
+	(ufs_mod_LDFLAGS, minix_mod_LDFLAGS, hfs_mod_LDFLAGS)
+	(jfs_mod_LDFLAGS, iso9660_mod_LDFLAGS, normal_mod_LDFLAGS)
+	(hello_mod_LDFLAGS, boot_mod_LDFLAGS, terminal_mod_LDFLAGS)
+	(ls_mod_LDFLAGS, cmp_mod_LDFLAGS, cat_mod_LDFLAGS)
+	(font_mod_LDFLAGS, amiga_mod_LDFLAGS, apple_mod_LDFLAGS)
+	(pc_mod_LDFLAGS, sun_mod_LDFLAGS, loopback_mod_LDFLAGS)
+	(suspend_mod_LDFLAGS, reboot_mod_LDFLAGS, halt_mod_LDFLAGS)
+	(help_mod_LDFLAGS, default_mod_LDFLAGS, timeout_mod_LDFLAGS)
+	(configfile_mod_LDFLAGS, search_mod_LDFLAGS, xfs_mod_SOURCES)
+	(xfs_mod_CFLAGS, xfs_mod_LDFLAGS, affs_mod_SOURCES)
+	(affs_mod_CFLAGS, affs_mod_LDFLAGS, sfs_mod_SOURCES)
+	(sfs_mod_CFLAGS, sfs_mod_LDFLAGS, gzio_mod_SOURCES)
+	(gzio_mod_CFLAGS, gzio_mod_LDFLAGS): New macro.
+
 2005-10-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/grub-probefs.c (main): Call grub_xfs_init and
