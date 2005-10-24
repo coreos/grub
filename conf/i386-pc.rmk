@@ -26,12 +26,12 @@ diskboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8000
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
-	kern/i386/dl.c kern/i386/pc/init.c kern/partition.c \
+	kern/i386/dl.c kern/i386/pc/init.c kern/parser.c kern/partition.c \
 	kern/env.c disk/i386/pc/biosdisk.c \
 	term/i386/pc/console.c \
 	symlist.c
 kernel_img_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
-	file.h fs.h kernel.h loader.h misc.h mm.h net.h partition.h \
+	file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h partition.h \
 	pc_partition.h rescue.h symbol.h term.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h machine/time.h machine/vga.h \
@@ -63,7 +63,7 @@ grub_mkimage_LDFLAGS = $(LIBLZO)
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c \
 	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c \
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c  \
-	fs/sfs.c kern/partition.c partmap/pc.c \
+	fs/sfs.c kern/parser.c kern/partition.c partmap/pc.c \
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub-mkdevicemap.
@@ -73,9 +73,9 @@ grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
 grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
 	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
-	fs/ext2.c kern/partition.c partmap/pc.c fs/ufs.c fs/minix.c	\
-	fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c fs/xfs.c 	\
-	fs/affs.c fs/sfs.c
+	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c fs/ufs.c 	\
+	fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c 	\
+	fs/xfs.c fs/affs.c fs/sfs.c
 
 # For grub-emu.
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
@@ -89,7 +89,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
-	kern/partition.c kern/rescue.c kern/term.c			\
+	kern/parser.c kern/partition.c kern/rescue.c kern/term.c	\
 	normal/arg.c normal/cmdline.c normal/command.c			\
 	normal/completion.c normal/context.c normal/main.c		\
 	normal/menu.c normal/menu_entry.c normal/misc.c			\

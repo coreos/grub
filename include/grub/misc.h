@@ -76,8 +76,4 @@ grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 					     const grub_uint8_t *src,
 					     grub_size_t size);
 
-grub_err_t EXPORT_FUNC(grub_split_cmdline) (const char *str, 
-					    grub_err_t (* getline) (char **),
-					    int *argc, char ***argv);
-
 #endif /* ! GRUB_MISC_HEADER */

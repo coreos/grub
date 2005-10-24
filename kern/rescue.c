@@ -1,7 +1,7 @@
 /* rescue.c - rescue mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2003, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include <grub/dl.h>
 #include <grub/partition.h>
 #include <grub/env.h>
+#include <grub/parser.h>
 
 #define GRUB_RESCUE_BUF_SIZE	256
 #define GRUB_RESCUE_MAX_ARGS	20
@@ -650,7 +651,7 @@ grub_enter_rescue_mode (void)
       /* Get a command line.  */
       grub_rescue_get_command_line ("grub rescue> ");
 
-      if (grub_split_cmdline (line, getline, &n, &args) || n < 0)
+      if (grub_parser_split_cmdline (line, getline, &n, &args) || n < 0)
 	continue;
 
       /* In case of an assignment set the environment accordingly

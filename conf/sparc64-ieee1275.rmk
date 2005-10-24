@@ -11,7 +11,7 @@ MOSTLYCLEANFILES += grubof_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
 grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
-	file.h fs.h kernel.h misc.h mm.h net.h rescue.h symbol.h \
+	file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h symbol.h \
 	term.h types.h sparc64/libgcc.h loader.h \
 	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
 	machine/kernel.h
@@ -61,7 +61,7 @@ grubof_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
 	kern/rescue.c kern/term.c term/ieee1275/ofconsole.c \
 	kern/sparc64/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
 	kern/partition.c kern/env.c kern/sparc64/dl.c grubof_symlist.c \
-	kern/sparc64/cache.S
+	kern/sparc64/cache.S kern/parser.c
 grubof_HEADERS = grub/sparc64/ieee1275/ieee1275.h
 grubof_CFLAGS = $(COMMON_CFLAGS)
 grubof_ASFLAGS = $(COMMON_ASFLAGS)

@@ -24,6 +24,7 @@
 #include <grub/term.h>
 #include <grub/env.h>
 #include <grub/dl.h>
+#include <grub/parser.h>
 
 static grub_command_t grub_command_list;
 
@@ -203,7 +204,7 @@ grub_command_execute (char *cmdline, int interactive)
   char **arglist;
   int numargs;
 
-  if (grub_split_cmdline (cmdline, cmdline_get, &num, &args))
+  if (grub_parser_split_cmdline (cmdline, cmdline_get, &num, &args))
     return 0;
   
   /* In case of an assignment set the environment accordingly instead

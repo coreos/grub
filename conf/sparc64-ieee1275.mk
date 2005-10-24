@@ -11,7 +11,7 @@ MOSTLYCLEANFILES += grubof_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
 grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
-	file.h fs.h kernel.h misc.h mm.h net.h rescue.h symbol.h \
+	file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h symbol.h \
 	term.h types.h sparc64/libgcc.h loader.h \
 	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
 	machine/kernel.h
@@ -61,11 +61,11 @@ grubof_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
 	kern/rescue.c kern/term.c term/ieee1275/ofconsole.c \
 	kern/sparc64/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
 	kern/partition.c kern/env.c kern/sparc64/dl.c grubof_symlist.c \
-	kern/sparc64/cache.S
-CLEANFILES += grubof grubof-kern_sparc64_ieee1275_init.o grubof-kern_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-term_ieee1275_ofconsole.o grubof-kern_sparc64_ieee1275_openfw.o grubof-disk_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_sparc64_dl.o grubof-grubof_symlist.o grubof-kern_sparc64_cache.o
-MOSTLYCLEANFILES += grubof-kern_sparc64_ieee1275_init.d grubof-kern_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-term_ieee1275_ofconsole.d grubof-kern_sparc64_ieee1275_openfw.d grubof-disk_ieee1275_ofdisk.d grubof-kern_partition.d grubof-kern_env.d grubof-kern_sparc64_dl.d grubof-grubof_symlist.d grubof-kern_sparc64_cache.d
+	kern/sparc64/cache.S kern/parser.c
+CLEANFILES += grubof grubof-kern_sparc64_ieee1275_init.o grubof-kern_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-term_ieee1275_ofconsole.o grubof-kern_sparc64_ieee1275_openfw.o grubof-disk_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_sparc64_dl.o grubof-grubof_symlist.o grubof-kern_sparc64_cache.o grubof-kern_parser.o
+MOSTLYCLEANFILES += grubof-kern_sparc64_ieee1275_init.d grubof-kern_ieee1275_ieee1275.d grubof-kern_main.d grubof-kern_device.d grubof-kern_disk.d grubof-kern_dl.d grubof-kern_file.d grubof-kern_fs.d grubof-kern_err.d grubof-kern_misc.d grubof-kern_mm.d grubof-kern_loader.d grubof-kern_rescue.d grubof-kern_term.d grubof-term_ieee1275_ofconsole.d grubof-kern_sparc64_ieee1275_openfw.d grubof-disk_ieee1275_ofdisk.d grubof-kern_partition.d grubof-kern_env.d grubof-kern_sparc64_dl.d grubof-grubof_symlist.d grubof-kern_sparc64_cache.d grubof-kern_parser.d
 
-grubof: grubof-kern_sparc64_ieee1275_init.o grubof-kern_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-term_ieee1275_ofconsole.o grubof-kern_sparc64_ieee1275_openfw.o grubof-disk_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_sparc64_dl.o grubof-grubof_symlist.o grubof-kern_sparc64_cache.o
+grubof: grubof-kern_sparc64_ieee1275_init.o grubof-kern_ieee1275_ieee1275.o grubof-kern_main.o grubof-kern_device.o grubof-kern_disk.o grubof-kern_dl.o grubof-kern_file.o grubof-kern_fs.o grubof-kern_err.o grubof-kern_misc.o grubof-kern_mm.o grubof-kern_loader.o grubof-kern_rescue.o grubof-kern_term.o grubof-term_ieee1275_ofconsole.o grubof-kern_sparc64_ieee1275_openfw.o grubof-disk_ieee1275_ofdisk.o grubof-kern_partition.o grubof-kern_env.o grubof-kern_sparc64_dl.o grubof-grubof_symlist.o grubof-kern_sparc64_cache.o grubof-kern_parser.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(grubof_LDFLAGS)
 
 grubof-kern_sparc64_ieee1275_init.o: kern/sparc64/ieee1275/init.c
@@ -243,6 +243,14 @@ grubof-kern_sparc64_cache.d: kern/sparc64/cache.S
 	set -e; 	  $(CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,cache\.o[ :]*,grubof-kern_sparc64_cache.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include grubof-kern_sparc64_cache.d
+
+grubof-kern_parser.o: kern/parser.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -c -o $@ $<
+
+grubof-kern_parser.d: kern/parser.c
+	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) $(grubof_CFLAGS) -M $< 	  | sed 's,parser\.o[ :]*,grubof-kern_parser.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include grubof-kern_parser.d
 
 grubof_HEADERS = grub/sparc64/ieee1275/ieee1275.h
 grubof_CFLAGS = $(COMMON_CFLAGS)

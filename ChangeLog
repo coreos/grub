@@ -1,3 +1,43 @@
+2005-10-24  Marco Gerards  <mgerards@xs4all.nl>
+
+	* include/grub/parser.h: New file.
+
+	* kern/parser.c: Likewise.
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/parser.c'.
+	(grub_setup_SOURCES): Likewise.
+	(grub_probefs_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	(kernel_img_HEADERS): Add `parser.h'.
+
+	* conf/powerpc-ieee1275.rmk (grubof_HEADERS): Add `parser.h'.
+	(grub_emu_SOURCES): Add `kern/parser.c'.
+	(grubof_SOURCES): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (grubof_HEADERS): Add `parser.h'.
+	(grubof_SOURCES): Add `kern/parser.c'.
+
+	* include/grub/misc.h (grub_split_cmdline): Removed prototype.
+
+	* kern/misc.c (grub_split_cmdline): Removed function.
+
+	* kern/rescue.c: Include <grub/parser.h>.
+	(grub_enter_rescue_mode): Use `grub_parser_split_cmdline' instead
+	of `grub_split_cmdline'.
+
+	* normal/command.c: Include <grub/parser.h>.
+	(grub_command_execute):  Use `grub_parser_split_cmdline' instead
+	of `grub_split_cmdline'.
+
+	* normal/completion.c: Include <grub/parser.h>.
+	(cmdline_state): New variable.
+	(iterate_dir): End the filename with a quote depending on the
+	command line state.
+	(get_state): new function.
+	(grub_normal_do_completion): Use `grub_parser_split_cmdline' to
+	split the arguments and determine the current argument.  When the
+	argument string is not quoted, escape all spaces.
+
 2005-10-23  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* normal/sparc64/setjmp.S: New file.
