@@ -577,8 +577,9 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 
 	  if (p > fmt)
 	    {
-	      char s[p - fmt];
+	      char s[p - fmt + 1];
 	      grub_strncpy (s, fmt, p - fmt);
+	      s[p - fmt] = 0;
 	      if (s[0] == '0')
 		zerofill = '0';
 	      format1 = grub_strtoul (s, 0, 10);

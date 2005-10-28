@@ -1,3 +1,10 @@
+2005-10-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	From Timothy Baldwin:
+	* commands/ls.c (grub_ls_list_files): Close FILE with
+	grub_file_close.
+	* kern/misc.c (grub_vsprintf): Terminate the string S with NUL.
+
 2005-10-24  Marco Gerards  <mgerards@xs4all.nl>
 
 	* include/grub/parser.h: New file.
