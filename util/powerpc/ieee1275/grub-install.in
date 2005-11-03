@@ -1,0 +1,190 @@
+#! /bin/sh
+
+# Install GRUB on your drive.
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St - Suite 330, Boston, MA 02110, USA.
+
+# This script uses `ofpathname', which is downloadable from
+# http://ppc64-utils.ozlabs.org .
+
+# Initialize some variables.
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sbindir=@sbindir@
+datadir=@datadir@
+PACKAGE_NAME=@PACKAGE_NAME@
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
+PACKAGE_VERSION=@PACKAGE_VERSION@
+host_cpu=@host_cpu@
+host_os=@host_os@
+host_vendor=@host_vendor@
+pkgdatadir=${datadir}/${PACKAGE_TARNAME}/${host_cpu}-${host_vendor}
+
+grub_mkimage=${sbindir}/grub-mkimage
+rootdir=
+grub_prefix=/boot/grub
+modules=
+
+install_device=
+debug=no
+update_nvram=yes
+
+ofpathname=/usr/sbin/ofpathname
+nvsetenv=/sbin/nvsetenv
+
+# Usage: usage
+# Print the usage.
+usage () {
+    cat <<EOF
+Usage: grub-install [OPTION] [install_device]
+Install GRUB on your drive.
+
+  -h, --help              print this message and exit
+  -v, --version           print the version information and exit
+  --modules=MODULES       pre-load specified modules MODULES
+  --root-directory=DIR    install GRUB images under the directory DIR
+                          instead of the root directory
+  --grub-mkimage=FILE     use FILE as grub-mkimage
+  --no-nvram              don't update the boot-device NVRAM variable
+
+grub-install copies GRUB images into the DIR/boot directory specfied by
+--root-directory, and uses nvsetenv to set the Open Firmware boot-device
+variable.
+
+Report bugs to <bug-grub@gnu.org>.
+EOF
+}
+
+# Check the arguments.
+for option in "$@"; do
+    case "$option" in
+    -h | --help)
+	usage
+	exit 0 ;;
+    -v | --version)
+	echo "grub-install (GNU GRUB ${PACKAGE_VERSION})"
+	exit 0 ;;
+    --modules=*)
+	modules=`echo "$option" | sed 's/--modules=//'` ;;
+    --root-directory=*)
+	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+    --grub-mkimage=*)
+	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+    --no-nvram)
+	update_nvram=no ;;
+    # This is an undocumented feature...
+    --debug)
+	debug=yes ;;
+    -*)
+	echo "Unrecognized option \`$option'" 1>&2
+	usage
+	exit 1
+	;;
+    *)
+	if test "x$install_device" != x; then
+	    echo "More than one install_devices?" 1>&2
+	    usage
+	    exit 1
+	fi
+	install_device="${option}" ;;
+    esac
+done
+
+# If the debugging feature is enabled, print commands.
+if test $debug = yes; then
+    set -x
+fi
+
+# Initialize these directories here, since ROOTDIR was initialized.
+bootdir=${rootdir}/boot
+grubdir=${bootdir}/grub
+
+set $grub_mkimage dummy
+if test -f "$1"; then
+    :
+else
+    echo "$1: Not found." 1>&2
+    exit 1
+fi
+
+# Create the GRUB directory if it is not present.
+test -d "$bootdir" || mkdir "$bootdir" || exit 1
+test -d "$grubdir" || mkdir "$grubdir" || exit 1
+
+# Copy the GRUB images to the GRUB directory.
+for file in ${grubdir}/*.mod ${grubdir}/*.lst ; do
+    if test -f $file; then
+	rm -f $file || exit 1
+    fi
+done
+for file in ${pkgdatadir}/*.mod ${pkgdatadir}/*.lst ; do
+    cp -f $file ${grubdir} || exit 1
+done
+
+# Create the core image with all modules, unless user specified a subset.
+# XXX probe for partition map and filesystem?
+if test "x$modules" = x; then
+    modules="$pkgdatadir"/*.mod
+fi
+
+# Now perform the installation.
+"$grub_mkimage" --output=${grubdir}/grub $modules || exit 1
+
+if test $update_nvram = yes; then
+    # Find the partition at the right mount point.
+    install_device=`awk '$2 == '"\"$grubdir\""' { print $1 }' < /proc/mounts`
+    if test "x$install_device" = x; then
+	# Uh oh... grub-mkimage installed into a plain directory somewhere.
+	echo "$grubdir is not a mount point!"
+	exit 1
+    fi
+    # XXX warn on firmware-unreadable filesystems?
+
+    set $ofpathname dummy
+    if test -f "$1"; then
+	:
+    else
+	echo "$1: Not found." 1>&2
+	exit 1
+    fi
+
+    set $nvsetenv dummy
+    if test -f "$1"; then
+	:
+    else
+	echo "$1: Not found." 1>&2
+	exit 1
+    fi
+
+    # Get the Open Firmware device tree path translation.
+    dev=`echo $install_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`
+    partno=`echo $install_device | sed -e 's/.*\([0-9]\+\)$/\1/'`
+    ofpath=`$ofpathname $dev` || {
+	echo "Couldn't find Open Firmware device tree path for $dev."
+	echo "You will have to set boot-device manually."
+	exit 1
+    }
+
+    # Point boot-device at the new grub install
+    "$nvsetenv" boot-device "$ofpath:$partno,"'\grub' || {
+	echo "$nvsetenv failed."
+	echo "You will have to set boot-device manually."
+	exit 1
+    }
+fi
+
+# Bye.
+exit 0

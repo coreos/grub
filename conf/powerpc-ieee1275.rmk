@@ -25,7 +25,8 @@ kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 pkgdata_PROGRAMS = grubof
 
 # Utilities.
-bin_UTILITIES = grub-emu grub-mkimage
+bin_UTILITIES = grub-emu
+sbin_UTILITIES = grub-mkimage
 noinst_UTILITIES = genmoddep
 
 # For grub-mkimage.
@@ -70,6 +71,12 @@ grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-N,-S,-Ttext,0x200000,-Bstat
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
+
+# Scripts.
+sbin_SCRIPTS = grub-install
+
+# For grub-install.
+grub_install_SOURCES = util/powerpc/ieee1275/grub-install.in
 
 # Modules.
 pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \

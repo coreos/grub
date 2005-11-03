@@ -32,8 +32,6 @@
 
 #define ALIGN_UP(addr, align) ((long)((char *)addr + align - 1) & ~(align - 1))
 
-static char *kernel_path = "grubof";
-
 #define GRUB_IEEE1275_NOTE_NAME "PowerPC"
 #define GRUB_IEEE1275_NOTE_TYPE 0x1275
 
@@ -165,10 +163,12 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   Elf32_Phdr *phdrs = NULL;
   Elf32_Phdr *phdr;
   FILE *in;
+  char *kernel_path;
   off_t phdroff;
   int i;
 
   /* Read ELF header.  */
+  kernel_path = grub_util_get_path (dir, "grubof");
   in = fopen (kernel_path, "rb");
   if (! in)
     grub_util_error ("cannot open %s", kernel_path);
@@ -245,6 +245,7 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   grub_util_write_image_at (&ehdr, sizeof (ehdr), 0, out);
 
   free (phdrs);
+  free (kernel_path);
 }
 
 static struct option options[] =

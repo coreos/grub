@@ -25,7 +25,8 @@ kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 pkgdata_PROGRAMS = grubof
 
 # Utilities.
-bin_UTILITIES = grub-emu grub-mkimage
+bin_UTILITIES = grub-emu
+sbin_UTILITIES = grub-mkimage
 noinst_UTILITIES = genmoddep
 
 # For grub-mkimage.
@@ -789,6 +790,18 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 	set -e; 	  $(BUILD_CC) -Iutil -I$(srcdir)/util $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) -DGRUB_UTIL=1 $(genmoddep_CFLAGS) -M $< 	  | sed 's,genmoddep\.o[ :]*,genmoddep-util_genmoddep.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include genmoddep-util_genmoddep.d
+
+
+# Scripts.
+sbin_SCRIPTS = grub-install
+
+# For grub-install.
+grub_install_SOURCES = util/powerpc/ieee1275/grub-install.in
+CLEANFILES += grub-install
+
+grub-install: util/powerpc/ieee1275/grub-install.in config.status
+	./config.status --file=grub-install:util/powerpc/ieee1275/grub-install.in
+	chmod +x $@
 
 
 # Modules.

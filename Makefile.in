@@ -106,7 +106,7 @@ install: install-local
 
 install-local: all
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	@list='$(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_DATA)'; \
+	@list='$(DATA)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
@@ -134,7 +134,7 @@ install-strip:
 	$(MAKE) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" install
 
 uninstall:
-	@list='$(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_DATA)'; \
+	@list='$(DATA)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
