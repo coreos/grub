@@ -186,10 +186,9 @@ grub_stop (void)
 grub_uint32_t
 grub_get_rtc (void)
 {
-  grub_uint32_t msecs;
+  grub_uint32_t msecs = 0;
 
-  if (grub_ieee1275_milliseconds (&msecs))
-    return 0;
+  grub_ieee1275_milliseconds (&msecs);
 
   return msecs;
 }

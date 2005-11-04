@@ -1,5 +1,12 @@
 2005-11-03  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* kern/powerpc/ieee1275/init.c (grub_get_rtc): Initialize `msecs'
+	to 0.
+	* term/ieee1275/ofconsole.c (grub_ofconsole_checkkey): Return -1 if
+	there are no pending characters.
+
+2005-11-03  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* kern/powerpc/ieee1275/openfw.c (grub_ieee1275_get_devname): Use
 	`grub_strndup' to drop device arguments. Replace unnecessary
 	`grub_strndup' with `grub_strdup'.
