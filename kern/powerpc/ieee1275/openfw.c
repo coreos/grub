@@ -231,7 +231,7 @@ grub_ieee1275_get_devname (const char *path)
       /* briQ firmware can change capitalization in /chosen/bootpath.  */
       if (! grub_strncasecmp (curalias->path, path, pathlen))
         {
-	  newpath = grub_strndup (curalias->name, grub_strlen (curalias->name));
+	  newpath = grub_strdup (curalias->name);
 	  return 1;
 	}
 
@@ -245,7 +245,7 @@ grub_ieee1275_get_devname (const char *path)
   grub_devalias_iterate (match_alias);
 
   if (! newpath)
-    newpath = grub_strdup (path);
+    newpath = grub_strndup (path, pathlen);
 
   return newpath;
 }
