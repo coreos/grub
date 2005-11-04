@@ -1,3 +1,21 @@
+2005-11-03  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/term.c (grub_cls): Do not call grub_cur_term->cls() if the
+	`debug' environment variable has been set.
+
+2005-11-02  Hollis Blanchard  <hollis@penguinppc.org>
+	
+	* Makefile.in (install-local): Use $(DATA).
+	(uninstall): Likewise.
+	* conf/powerpc-ieee1275.rmk (bin_UTILITIES): Move grub-mkimage...
+	(sbin_UTILITIES): ... to here.
+	(sbin_SCRIPTS): New variable.
+	(grub_install_SOURCES): New variable.
+	* util/powerpc/ieee1275/grub-install.in: New file.
+	* util/powerpc/ieee1275/grub-mkimage.c (kernel_path): Remove
+	variable.
+	(add_segments): Call `grub_util_get_path'.
+
 2005-10-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Timothy Baldwin:

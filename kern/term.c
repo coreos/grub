@@ -21,6 +21,7 @@
 #include <grub/err.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
+#include <grub/env.h>
 
 /* The list of terminals.  */
 static grub_term_t grub_term_list;
@@ -207,7 +208,7 @@ grub_gotoxy (grub_uint8_t x, grub_uint8_t y)
 void
 grub_cls (void)
 {
-  if (grub_cur_term->flags & GRUB_TERM_DUMB)
+  if ((grub_cur_term->flags & GRUB_TERM_DUMB) || (grub_env_get ("debug")))
     {
       grub_putchar ('\n');
       grub_refresh ();
