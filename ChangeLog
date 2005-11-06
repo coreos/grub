@@ -1,3 +1,38 @@
+2005-11-06  Marco Gerards  <mgerards@xs4all.nl>
+
+	Add initial scripting support.
+
+	* commands/test.c: New file.
+	* include/grub/script.h: Likewise.
+	* normal/execute.c: Likewise.
+	* normal/function.c: Likewise.
+	* normal/lexer.c: Likewise.
+	* normal/parser.y: Likewise.
+	* normal/script.c: Likewise.
+
+	* configure.ac: Add `AC_PROG_YACC' test.
+	
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `commands/test.c',
+	`normal/execute.c', `normal/lexer.c', `grub_script.tab.c',
+	`normal/function.c' and `normal/script.c'.
+	(normal_mod_SOURCES): `normal/execute.c', `normal/lexer.c',
+	`grub_script.tab.c', `normal/function.c' and `normal/script.c'.
+	(test_mod_SOURCES, test_mod_CFLAGS, test_mod_LDFLAGS): New variables.
+	(pkgdata_MODULES): Add `test.mod'.
+	(grub_script.tab.c): New rule.
+	(grub_script.tab.h): Likewise.
+
+	* include/grub/err.h (grub_err_t): Add `GRUB_ERR_TEST_FAILURE'.
+
+	* include/grub/normal.h (grub_test_init): New prototype.
+	(grub_test_fini): Likewise.
+	
+	* normal/command.c: Include <grub/script.h>.
+	(grub_command_execute): Rewritten.
+	
+	* util/grub-emu.c (main): Call `grub_test_init' and
+	`grub_test_fini'.
+
 2005-11-03  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/init.c (grub_get_rtc): Initialize `msecs'

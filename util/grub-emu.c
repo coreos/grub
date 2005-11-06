@@ -219,6 +219,7 @@ main (int argc, char *argv[])
   grub_timeout_init ();
   grub_configfile_init ();
   grub_search_init ();
+  grub_test_init ();
   
   /* XXX: Should normal mode be started by default?  */
   grub_normal_init ();
@@ -227,6 +228,7 @@ main (int argc, char *argv[])
   if (setjmp (main_env) == 0)
     grub_main ();
 
+  grub_test_fini ();
   grub_search_fini ();
   grub_configfile_fini ();
   grub_timeout_fini ();

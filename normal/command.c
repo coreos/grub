@@ -25,6 +25,7 @@
 #include <grub/env.h>
 #include <grub/dl.h>
 #include <grub/parser.h>
+#include <grub/script.h>
 
 static grub_command_t grub_command_list;
 
@@ -193,42 +194,9 @@ grub_command_execute (char *cmdline, int interactive)
       return grub_cmdline_get (">", *s, GRUB_MAX_CMDLINE, 0, 1);
     }
 
-  grub_command_t cmd;
   grub_err_t ret = 0;
   char *pager;
-  int num;
-  char **args;
-  struct grub_arg_list *state;
-  struct grub_arg_option *parser;
-  int maxargs = 0;
-  char **arglist;
-  int numargs;
-
-  if (grub_parser_split_cmdline (cmdline, cmdline_get, &num, &args))
-    return 0;
-  
-  /* In case of an assignment set the environment accordingly instead
-     of calling a function.  */
-  if (num == 0 && grub_strchr (args[0], '='))
-    {
-      char *val;
-
-      if (! interactive)
-	grub_printf ("%s\n", cmdline);
-      
-      val = grub_strchr (args[0], '=');
-      val[0] = 0;
-      grub_env_set (args[0], val + 1);
-      val[0] = '=';
-      return 0;
-    }
-  
-  cmd = grub_command_find (args[0]);
-  if (! cmd)
-    return -1;
-
-  if (! (cmd->flags & GRUB_COMMAND_FLAG_NO_ECHO) && ! interactive)
-    grub_printf ("%s\n", cmdline);
+  struct grub_script *parsed_script;
   
   /* Enable the pager if the environment pager is set to 1.  */
   if (interactive)
@@ -237,27 +205,22 @@ grub_command_execute (char *cmdline, int interactive)
     pager = 0;
   if (pager && (! grub_strcmp (pager, "1")))
     grub_set_more (1);
-  
-  parser = (struct grub_arg_option *) cmd->options;
-  while (parser && (parser++)->doc)
-    maxargs++;
 
-  state = grub_malloc (sizeof (struct grub_arg_list) * maxargs);
-  grub_memset (state, 0, sizeof (struct grub_arg_list) * maxargs);
-  if (! (cmd->flags & GRUB_COMMAND_FLAG_NO_ARG_PARSE))
+  /* Parse the script.  */
+  parsed_script = grub_script_parse (cmdline, cmdline_get);
+
+  if (parsed_script)
     {
-      if (grub_arg_parse (cmd, num, &args[1], state, &arglist, &numargs))
-	ret = (cmd->func) (state, numargs, arglist);
+      /* Execute the command(s).  */
+      grub_script_execute (parsed_script);
+
+      /* The parsed script was executed, throw it away.  */
+      grub_script_free (parsed_script);
     }
-  else
-    ret = (cmd->func) (state, num, &args[1]);
-  
-  grub_free (state);
 
   if (pager && (! grub_strcmp (pager, "1")))
     grub_set_more (0);
-  
-  grub_free (args);
+
   return ret;
 }
 

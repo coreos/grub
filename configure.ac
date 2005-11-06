@@ -44,6 +44,7 @@ if test "x$CFLAGS" = x; then
 fi
 
 AC_PROG_CC
+AC_PROG_YACC
 AC_SYS_LARGEFILE
 
 # Must be GCC.
