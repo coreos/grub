@@ -19,6 +19,12 @@ grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
 	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
 
+# For the parser.
+grub_script.tab.c: normal/parser.y
+	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
+grub_script.tab.h: normal/parser.y
+	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
+
 kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
@@ -37,23 +43,26 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 #	commands/configfile.c commands/default.c commands/help.c	\
 #	commands/search.c commands/terminal.c commands/ls.c		\
-#	commands/timeout.c						\
+#	commands/timeout.c commands/test.c				\
 #	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
 #	disk/loopback.c							\
-#	fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c fs/jfs.c	\
-#	fs/minix.c fs/ufs.c						\
+#	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c  \
+#	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c                  \
+#	grub_script.tab.c						\
+#	io/gzio.c                                                       \
 #	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
 #	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
-#	kern/partition.c kern/rescue.c kern/term.c			\
-#	normal/arg.c normal/cmdline.c normal/command.c 			\
-#	normal/completion.c normal/context.c	\
+#	kern/parser.c kern/partition.c kern/rescue.c kern/term.c	\
+#	normal/arg.c normal/cmdline.c normal/command.c			\
+#	normal/completion.c normal/context.c normal/execute.c		\
+#	normal/function.c normal/lexer.c				\
 #	normal/main.c normal/menu.c normal/menu_entry.c	normal/misc.c	\
 #	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 #	util/console.c util/grub-emu.c util/misc.c			\
 #	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 #	util/sparc64/ieee1275/misc.c
 
-#grub_emu_LDFLAGS = $(LIBCURSES)
+grub_emu_LDFLAGS = $(LIBCURSES)
 
 grubof_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
 	kern/main.c kern/device.c kern/disk.c kern/dl.c kern/file.c \
@@ -810,11 +819,13 @@ sfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
-	normal/completion.c normal/context.c normal/main.c		\
-	normal/menu.c normal/menu_entry.c normal/misc.c			\
-	normal/sparc64/setjmp.c
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_sparc64_setjmp.o def-normal.lst und-normal.lst
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_sparc64_setjmp.d
+	normal/completion.c normal/context.c normal/execute.c		\
+	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
+	normal/menu_entry.c normal/misc.c normal/script.c		\
+	normal/sparc64/setjmp.S						\
+	grub_script.tab.c
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o def-normal.lst und-normal.lst
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_script.d normal_mod-normal_sparc64_setjmp.d normal_mod-grub_script_tab.d
 DEFSYMFILES += def-normal.lst
 UNDSYMFILES += und-normal.lst
 
@@ -823,7 +834,7 @@ normal.mod: pre-normal.o mod-normal.o
 	$(LD) $(normal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_sparc64_setjmp.o
+pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o
 	-rm -f $@
 	$(LD) $(normal_mod_LDFLAGS) -r -d -o $@ $^
 
@@ -935,6 +946,63 @@ fs-context.lst: normal/context.c genfslist.sh
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
 
+normal_mod-normal_execute.o: normal/execute.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_execute.d: normal/execute.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,execute\.o[ :]*,normal_mod-normal_execute.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_execute.d
+
+CLEANFILES += cmd-execute.lst fs-execute.lst
+COMMANDFILES += cmd-execute.lst
+FSFILES += fs-execute.lst
+
+cmd-execute.lst: normal/execute.c gencmdlist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+
+fs-execute.lst: normal/execute.c genfslist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+
+normal_mod-normal_function.o: normal/function.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_function.d: normal/function.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,function\.o[ :]*,normal_mod-normal_function.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_function.d
+
+CLEANFILES += cmd-function.lst fs-function.lst
+COMMANDFILES += cmd-function.lst
+FSFILES += fs-function.lst
+
+cmd-function.lst: normal/function.c gencmdlist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+
+fs-function.lst: normal/function.c genfslist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+
+normal_mod-normal_lexer.o: normal/lexer.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-normal_lexer.d: normal/lexer.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,lexer\.o[ :]*,normal_mod-normal_lexer.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_lexer.d
+
+CLEANFILES += cmd-lexer.lst fs-lexer.lst
+COMMANDFILES += cmd-lexer.lst
+FSFILES += fs-lexer.lst
+
+cmd-lexer.lst: normal/lexer.c gencmdlist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+
+fs-lexer.lst: normal/lexer.c genfslist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+
 normal_mod-normal_main.o: normal/main.c
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
 
@@ -1011,11 +1079,30 @@ fs-misc.lst: normal/misc.c genfslist.sh
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
 
-normal_mod-normal_sparc64_setjmp.o: normal/sparc64/setjmp.c
-	$(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+normal_mod-normal_script.o: normal/script.c
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
 
-normal_mod-normal_sparc64_setjmp.d: normal/sparc64/setjmp.c
-	set -e; 	  $(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,setjmp\.o[ :]*,normal_mod-normal_sparc64_setjmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+normal_mod-normal_script.d: normal/script.c
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,script\.o[ :]*,normal_mod-normal_script.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-normal_script.d
+
+CLEANFILES += cmd-script.lst fs-script.lst
+COMMANDFILES += cmd-script.lst
+FSFILES += fs-script.lst
+
+cmd-script.lst: normal/script.c gencmdlist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+
+fs-script.lst: normal/script.c genfslist.sh
+	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+
+normal_mod-normal_sparc64_setjmp.o: normal/sparc64/setjmp.S
+	$(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -c -o $@ $<
+
+normal_mod-normal_sparc64_setjmp.d: normal/sparc64/setjmp.S
+	set -e; 	  $(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -M $< 	  | sed 's,setjmp\.o[ :]*,normal_mod-normal_sparc64_setjmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include normal_mod-normal_sparc64_setjmp.d
 
@@ -1023,11 +1110,30 @@ CLEANFILES += cmd-setjmp.lst fs-setjmp.lst
 COMMANDFILES += cmd-setjmp.lst
 FSFILES += fs-setjmp.lst
 
-cmd-setjmp.lst: normal/sparc64/setjmp.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+cmd-setjmp.lst: normal/sparc64/setjmp.S gencmdlist.sh
+	set -e; 	  $(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
-fs-setjmp.lst: normal/sparc64/setjmp.c genfslist.sh
-	set -e; 	  $(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+fs-setjmp.lst: normal/sparc64/setjmp.S genfslist.sh
+	set -e; 	  $(CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(CPPFLAGS) $(ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+
+normal_mod-grub_script_tab.o: grub_script.tab.c
+	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
+
+normal_mod-grub_script_tab.d: grub_script.tab.c
+	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,grub_script\.tab\.o[ :]*,normal_mod-grub_script_tab.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include normal_mod-grub_script_tab.d
+
+CLEANFILES += cmd-grub_script.tab.lst fs-grub_script.tab.lst
+COMMANDFILES += cmd-grub_script.tab.lst
+FSFILES += fs-grub_script.tab.lst
+
+cmd-grub_script.tab.lst: grub_script.tab.c gencmdlist.sh
+	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+
+fs-grub_script.tab.lst: grub_script.tab.c genfslist.sh
+	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -2104,6 +2210,11 @@ fs-gzio.lst: io/gzio.c genfslist.sh
 
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For test.mod.
+test_mod_SOURCES = commands/test.c
+test_mod_CFLAGS = $(COMMON_CFLAGS)
+test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 CLEANFILES += moddep.lst command.lst fs.lst
 pkgdata_DATA += moddep.lst command.lst fs.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep

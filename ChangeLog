@@ -1,3 +1,19 @@
+2005-11-07  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Add
+	`commands/test.c', `fs/affs.c', `fs/sfs.c', `fs/xfs.c',
+	`normal/execute.c', `normal/lexer.c', `io/gzio.c',
+	`kern/parser.c', `grub_script.tab.c', `normal/function.c'
+	and `normal/script.c'.
+	(normal_mod_SOURCES): `normal/execute.c', `normal/lexer.c',
+	`grub_script.tab.c', `normal/function.c' and `normal/script.c'.
+	(test_mod_SOURCES): New	variable.
+	(test_mod_CFLAGS): Likewise.
+	(test_mod_LDFLAGS): Likewise.
+	(pkgdata_MODULES): Add `test.mod'.
+	(grub_script.tab.c): New rule.
+	(grub_script.tab.h): Likewise.
+
 2005-11-07  Marco Gerards  <mgerards@xs4all.nl>
 
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
