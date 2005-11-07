@@ -1,3 +1,16 @@
+2005-11-07  Marco Gerards  <mgerards@xs4all.nl>
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
+	`commands/test.c', `normal/execute.c', `normal/lexer.c',
+	`grub_script.tab.c', `normal/function.c' and `normal/script.c'.
+	(normal_mod_SOURCES): `normal/execute.c', `normal/lexer.c',
+	`grub_script.tab.c', `normal/function.c' and `normal/script.c'.
+	(test_mod_SOURCES): New variable.
+	(test_mod_CFLAGS): Likewise.
+	(pkgdata_MODULES): Add `test.mod'.
+	(grub_script.tab.c): New rule.
+	(grub_script.tab.h): Likewise.
+
 2005-11-06  Marco Gerards  <mgerards@xs4all.nl>
 
 	Add initial scripting support.
@@ -17,7 +30,8 @@
 	`normal/function.c' and `normal/script.c'.
 	(normal_mod_SOURCES): `normal/execute.c', `normal/lexer.c',
 	`grub_script.tab.c', `normal/function.c' and `normal/script.c'.
-	(test_mod_SOURCES, test_mod_CFLAGS, test_mod_LDFLAGS): New variables.
+	(test_mod_SOURCES, test_mod_CFLAGS, test_mod_LDFLAGS): New
+	variables.
 	(pkgdata_MODULES): Add `test.mod'.
 	(grub_script.tab.c): New rule.
 	(grub_script.tab.h): Likewise.
