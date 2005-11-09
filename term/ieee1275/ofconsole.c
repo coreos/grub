@@ -28,6 +28,9 @@
 static grub_ieee1275_ihandle_t stdout_ihandle;
 static grub_ieee1275_ihandle_t stdin_ihandle;
 
+static grub_uint8_t grub_ofconsole_width;
+static grub_uint8_t grub_ofconsole_height;
+
 static int grub_curr_x;
 static int grub_curr_y;
 
@@ -79,7 +82,11 @@ grub_ofconsole_putchar (grub_uint32_t c)
       grub_curr_x = 0;
     }
   else
-    grub_curr_x++;
+    {
+      grub_curr_x++;
+      if (grub_curr_x > grub_ofconsole_width)
+	grub_putcode ('\n');
+    }
   grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
 }
 
@@ -220,50 +227,48 @@ grub_ofconsole_getwh (void)
   grub_ieee1275_ihandle_t options;
   char *val;
   grub_ssize_t lval;
-  static grub_uint8_t w, h;
 
-  /* Once we have them, don't ask them again.  */
-  if (!w || !h)
+  if (grub_ofconsole_width && grub_ofconsole_height)
+    return (grub_ofconsole_width << 8) | grub_ofconsole_height;
+
+  if (! grub_ieee1275_finddevice ("/options", &options)
+      && options != (grub_ieee1275_ihandle_t) -1)
     {
-      if (! grub_ieee1275_finddevice ("/options", &options)
-	  && options != (grub_ieee1275_ihandle_t) -1)
-        {
-          if (! grub_ieee1275_get_property_length (options, "screen-#columns",
-                                                   &lval) && lval != -1)
-            {
-	      val = grub_malloc (lval);
-	      if (val)
-                {
-                  if (! grub_ieee1275_get_property (options, "screen-#columns",
-                                                    val, lval, 0))
-                    w = (grub_uint8_t) grub_strtoul (val, 0, 10);
+      if (! grub_ieee1275_get_property_length (options, "screen-#columns",
+					       &lval) && lval != -1)
+	{
+	  val = grub_malloc (lval);
+	  if (val)
+	    {
+	      if (! grub_ieee1275_get_property (options, "screen-#columns",
+						val, lval, 0))
+		grub_ofconsole_width = (grub_uint8_t) grub_strtoul (val, 0, 10);
 
-                  grub_free (val);
-                }
-            }
-          if (! grub_ieee1275_get_property_length (options, "screen-#rows",
-                                                   &lval) && lval != -1)
-            {
-	      val = grub_malloc (lval);
-	      if (val)
-                {
-                  if (! grub_ieee1275_get_property (options, "screen-#rows",
-                                                    val, lval, 0))
-                    h = (grub_uint8_t) grub_strtoul (val, 0, 10);
+	      grub_free (val);
+	    }
+	}
+      if (! grub_ieee1275_get_property_length (options, "screen-#rows",
+					       &lval) && lval != -1)
+	{
+	  val = grub_malloc (lval);
+	  if (val)
+	    {
+	      if (! grub_ieee1275_get_property (options, "screen-#rows",
+						val, lval, 0))
+		grub_ofconsole_height = (grub_uint8_t) grub_strtoul (val, 0, 10);
 
-                  grub_free (val);
-                }
-            }
+	      grub_free (val);
+	    }
 	}
     }
 
   /* Use a small console by default.  */
-  if (! w)
-    w = 80;
-  if (! h)
-    h = 24;
+  if (! grub_ofconsole_width)
+    grub_ofconsole_width = 80;
+  if (! grub_ofconsole_height)
+    grub_ofconsole_height = 24;
 
-  return (w << 8) | h;
+  return (grub_ofconsole_width << 8) | grub_ofconsole_height;
 }
 
 static void
