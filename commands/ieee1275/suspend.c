@@ -21,6 +21,7 @@
 #include <grub/normal.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
+#include <grub/term.h>
 #include <grub/ieee1275/ieee1275.h>
 
 static grub_err_t
@@ -30,6 +31,7 @@ grub_cmd_suspend (struct grub_arg_list *state  __attribute__ ((unused)),
 {
   grub_printf ("Run 'go' to resume GRUB.\n");
   grub_ieee1275_enter ();
+  grub_cls ();
   return 0;
 }
 

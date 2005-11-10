@@ -285,8 +285,10 @@ grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
 static void
 grub_ofconsole_cls (void)
 {
-  /* Clear the screen.  */
-  grub_ofconsole_writeesc ("\e[2J");
+  /* Clear the screen.  Using serial console, screen(1) only recognizes the
+   * ANSI escape sequence.  Using video console, Apple Open Firmware (version
+   * 3.1.1) only recognizes the literal ^L.  So use both.  */
+  grub_ofconsole_writeesc ("\e[2J");
   grub_gotoxy (0, 0);
 }
 

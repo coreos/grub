@@ -1,5 +1,13 @@
 2005-11-09  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* term/ieee1275/ofconsole.c (grub_ofconsole_cls): Use both the ANSI
+	escape sequence and a literal ^L to clear the screen.
+
+	* commands/ieee1275/suspend.c (grub_cmd_suspend): Clear the screen
+	when returning from Open Firmware.
+
+2005-11-09  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* term/ieee1275/ofconsole.c (grub_ofconsole_width): New variable.
 	(grub_ofconsole_height): Likewise.
 	(grub_ofconsole_putchar): If `grub_curr_x' exceeds console width,
