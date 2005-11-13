@@ -1,5 +1,11 @@
 2005-11-13  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
 
+	* include/grub/symbol.h: (FUNCTION): Use double quotes instead of
+	"@" which marks the start of a comment on ARM.
+	(VARIABLE): Likewise.
+
+2005-11-13  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
+
         Add support for Linux/ADFS partition tables.
 
 	* partmap/acorn.c: New file.

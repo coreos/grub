@@ -29,8 +29,8 @@
 # define EXT_C(sym)	sym
 #endif
 
-#define FUNCTION(x)	.globl EXT_C(x) ; .type EXT_C(x), @function ; EXT_C(x):
-#define VARIABLE(x)	.globl EXT_C(x) ; .type EXT_C(x), @object ; EXT_C(x):
+#define FUNCTION(x)	.globl EXT_C(x) ; .type EXT_C(x), "function" ; EXT_C(x):
+#define VARIABLE(x)	.globl EXT_C(x) ; .type EXT_C(x), "object" ; EXT_C(x):
 
 /* Mark an exported symbol.  */
 #define EXPORT_FUNC(x)	x
