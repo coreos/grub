@@ -55,24 +55,7 @@ grub_cmd_test (struct grub_arg_list *state __attribute__ ((unused)), int argc,
 
 
 
-#ifdef GRUB_UTIL
-void
-grub_test_init (void)
-{
-  grub_register_command ("[", grub_cmd_test, GRUB_COMMAND_FLAG_CMDLINE,
-			 "[ EXPRESSION ]", "Evaluate an expression", 0);
-  grub_register_command ("test", grub_cmd_test, GRUB_COMMAND_FLAG_CMDLINE,
-			 "test EXPRESSION", "Evaluate an expression", 0);
-}
-
-void
-grub_test_fini (void)
-{
-  grub_unregister_command ("[");
-  grub_unregister_command ("test");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(test)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("[", grub_cmd_test, GRUB_COMMAND_FLAG_CMDLINE,
@@ -81,9 +64,8 @@ GRUB_MOD_INIT
 			 "test EXPRESSION", "Evaluate an expression", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(test)
 {
   grub_unregister_command ("[");
   grub_unregister_command ("test");
 }
-#endif /* ! GRUB_UTIL */

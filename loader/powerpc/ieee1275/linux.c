@@ -307,7 +307,7 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 
 
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(linux)
 {
   grub_rescue_register_command ("linux", grub_rescue_cmd_linux,
 				"load a linux kernel");
@@ -316,7 +316,7 @@ GRUB_MOD_INIT
   my_mod = mod;
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(linux)
 {
   grub_rescue_unregister_command ("linux");
   grub_rescue_unregister_command ("initrd");

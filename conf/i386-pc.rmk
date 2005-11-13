@@ -85,7 +85,7 @@ grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
 	fs/xfs.c fs/affs.c fs/sfs.c
 
 # For grub-emu.
-grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
+grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 		\
 	commands/configfile.c commands/default.c commands/help.c	\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/timeout.c				\
@@ -104,9 +104,18 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	util/console.c util/grub-emu.c util/misc.c			\
 	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
-	util/i386/pc/misc.c
+	util/i386/pc/misc.c grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
+
+grub_modules_init.lst: geninit.sh
+	(cd $(srcdir); grep -r --include="*.c" GRUB_MOD_INIT *) > $@
+
+grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
+	sh $(srcdir)/geninitheader.sh > $@
+
+grub_emu_init.c: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_modules_init.lst grub_modules_init.h
+	sh $(srcdir)/geninit.sh $(filter %.c,$^) > $@
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c

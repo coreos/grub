@@ -232,7 +232,7 @@ font_command (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(fontmanager)
 {
   (void) mod; /* Stop warning.  */
   grub_register_command ("font", font_command, GRUB_COMMAND_FLAG_BOTH,
@@ -240,7 +240,7 @@ GRUB_MOD_INIT
 			 "Specify one or more font files to display.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(fontmanager)
 {
   grub_unregister_command ("font");
 }

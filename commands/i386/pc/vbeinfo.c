@@ -146,7 +146,7 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(vbeinfo)
 {
   (void) mod;			/* To stop warning.  */
   grub_register_command ("vbeinfo",
@@ -157,7 +157,7 @@ GRUB_MOD_INIT
                          0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(vbeinfo)
 {
   grub_unregister_command ("vbeinfo");
 }

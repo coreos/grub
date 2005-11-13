@@ -102,29 +102,14 @@ cleanup:
 }
 
 
-#ifdef GRUB_UTIL
-void
-grub_cmp_init (void)
-{
-  grub_register_command ("cmp", grub_cmd_cmp, GRUB_COMMAND_FLAG_BOTH,
-			 "cmp FILE1 FILE2", "Compare two files.", 0);
-}
-
-void
-grub_cmp_fini (void)
-{
-  grub_unregister_command ("cmp");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(cmp)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("cmp", grub_cmd_cmp, GRUB_COMMAND_FLAG_BOTH,
 			 "cmp FILE1 FILE2", "Compare two files.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(cmp)
 {
   grub_unregister_command ("cmp");
 }
-#endif /* ! GRUB_UTIL */

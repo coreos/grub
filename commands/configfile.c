@@ -39,22 +39,7 @@ grub_cmd_configfile (struct grub_arg_list *state __attribute__ ((unused)),
 }
 
 
-#ifdef GRUB_UTIL
-void
-grub_configfile_init (void)
-{
-  grub_register_command ("configfile", grub_cmd_configfile,
-                        GRUB_COMMAND_FLAG_BOTH, "configfile FILE",
-                        "Load another config file.", 0);
-}
-
-void
-grub_configfile_fini (void)
-{
-  grub_unregister_command ("configfile");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(configfile)
 {
   (void) mod;                   /* To stop warning. */
   grub_register_command ("configfile", grub_cmd_configfile,
@@ -62,8 +47,7 @@ GRUB_MOD_INIT
                         "Load another config file.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(configfile)
 {
   grub_unregister_command ("configfile");
 }
-#endif /* ! GRUB_UTIL */

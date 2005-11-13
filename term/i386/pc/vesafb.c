@@ -142,7 +142,7 @@ grub_virtual_screen_setup (grub_uint32_t width,
 }
 
 static grub_err_t
-grub_vesafb_init (void)
+grub_vesafb_mod_init (void)
 {
   grub_uint32_t use_mode = GRUB_VBE_DEFAULT_VIDEO_MODE;
   struct grub_vbe_info_block controller_info;
@@ -200,7 +200,7 @@ grub_vesafb_init (void)
 }
 
 static grub_err_t
-grub_vesafb_fini (void)
+grub_vesafb_mod_fini (void)
 {
   grub_virtual_screen_free ();
 
@@ -589,8 +589,8 @@ grub_vesafb_setcursor (int on)
 static struct grub_term grub_vesafb_term =
   {
     .name = "vesafb",
-    .init = grub_vesafb_init,
-    .fini = grub_vesafb_fini,
+    .init = grub_vesafb_mod_init,
+    .fini = grub_vesafb_mod_fini,
     .putchar = grub_vesafb_putchar,
     .getcharwidth = grub_vesafb_getcharwidth,
     .checkkey = grub_console_checkkey,
@@ -606,13 +606,13 @@ static struct grub_term grub_vesafb_term =
     .next = 0
   };
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(vesafb)
 {
   my_mod = mod;
   grub_term_register (&grub_vesafb_term);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(vesafb)
 {
   grub_term_unregister (&grub_vesafb_term);
 }

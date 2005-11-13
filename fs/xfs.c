@@ -689,27 +689,16 @@ static struct grub_fs grub_xfs_fs =
     .next = 0
   };
 
-#ifdef GRUB_UTIL
-void
-grub_xfs_init (void)
+GRUB_MOD_INIT(xfs)
 {
   grub_fs_register (&grub_xfs_fs);
-}
-
-void
-grub_xfs_fini (void)
-{
-  grub_fs_unregister (&grub_xfs_fs);
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
-{
-  grub_fs_register (&grub_xfs_fs);
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(xfs)
 {
   grub_fs_unregister (&grub_xfs_fs);
 }
-#endif /* ! GRUB_UTIL */
+

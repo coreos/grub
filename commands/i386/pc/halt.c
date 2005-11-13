@@ -44,22 +44,7 @@ grub_cmd_halt (struct grub_arg_list *state,
 
 
 
-#ifdef GRUB_UTIL
-void
-grub_halt_init (void)
-{
-  grub_register_command ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
-			 "halt [OPTIONS...]",
-			 "Halt the system, if possible using APM", options);
-}
-
-void
-grub_halt_fini (void)
-{
-  grub_unregister_command ("halt");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(halt)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
@@ -67,8 +52,7 @@ GRUB_MOD_INIT
 			 "Halt the system, if possible using APM", options);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(halt)
 {
   grub_unregister_command ("halt");
 }
-#endif /* ! GRUB_UTIL */

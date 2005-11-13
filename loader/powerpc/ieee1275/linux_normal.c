@@ -43,7 +43,7 @@ grub_cmd_initrd (struct grub_arg_list *state  __attribute__ ((unused)),
   return GRUB_ERR_NONE;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(linux_normal)
 {
   (void) mod;
   grub_register_command ("linux", grub_cmd_linux, GRUB_COMMAND_FLAG_BOTH,
@@ -54,7 +54,7 @@ GRUB_MOD_INIT
 			 "Loads initrd", options);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(linux_normal)
 {
   grub_unregister_command ("linux");
   grub_unregister_command ("initrd");

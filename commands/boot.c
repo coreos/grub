@@ -38,29 +38,14 @@ grub_cmd_boot (struct grub_arg_list *state __attribute__ ((unused)),
 
 
 
-#ifdef GRUB_UTIL
-void
-grub_boot_init (void)
-{
-  grub_register_command ("boot", grub_cmd_boot, GRUB_COMMAND_FLAG_BOTH,
-			 "boot", "Boot an operating system.", 0);
-}
-
-void
-grub_boot_fini (void)
-{
-  grub_unregister_command ("boot");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(boot)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("boot", grub_cmd_boot, GRUB_COMMAND_FLAG_BOTH,
 			 "boot", "Boot an operating system.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(boot)
 {
   grub_unregister_command ("boot");
 }
-#endif /* ! GRUB_UTIL */

@@ -553,27 +553,16 @@ static struct grub_fs grub_affs_fs =
     .next = 0
   };
 
-#ifdef GRUB_UTIL
-void
-grub_affs_init (void)
+GRUB_MOD_INIT(affs)
 {
   grub_fs_register (&grub_affs_fs);
-}
-
-void
-grub_affs_fini (void)
-{
-  grub_fs_unregister (&grub_affs_fs);
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
-{
-  grub_fs_register (&grub_affs_fs);
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(affs)
 {
   grub_fs_unregister (&grub_affs_fs);
 }
-#endif /* ! GRUB_UTIL */
+

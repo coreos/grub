@@ -40,7 +40,7 @@ grub_normal_initrd_command (struct grub_arg_list *state __attribute__ ((unused))
   return grub_errno;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(linux_normal)
 {
   (void) mod; /* To stop warning.  */
   grub_register_command ("linux", grub_normal_linux_command,
@@ -54,7 +54,7 @@ GRUB_MOD_INIT
 			 "Load an initrd.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(linux_normal)
 {
   grub_unregister_command ("linux");
   grub_unregister_command ("initrd");

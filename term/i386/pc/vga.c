@@ -173,7 +173,7 @@ set_start_address (unsigned int start)
 }
 
 static grub_err_t
-grub_vga_init (void)
+grub_vga_mod_init (void)
 {
   vga_font = grub_vga_get_font ();
   text_mode = grub_vga_set_mode (0x10);
@@ -188,7 +188,7 @@ grub_vga_init (void)
 }
 
 static grub_err_t
-grub_vga_fini (void)
+grub_vga_mod_fini (void)
 {
   set_map_mask (saved_map_mask);
   grub_vga_set_mode (text_mode);
@@ -578,8 +578,8 @@ grub_vga_setcursor (int on)
 static struct grub_term grub_vga_term =
   {
     .name = "vga",
-    .init = grub_vga_init,
-    .fini = grub_vga_fini,
+    .init = grub_vga_mod_init,
+    .fini = grub_vga_mod_fini,
     .putchar = grub_vga_putchar,
     .getcharwidth = grub_vga_getcharwidth,
     .checkkey = grub_console_checkkey,
@@ -595,13 +595,15 @@ static struct grub_term grub_vga_term =
     .next = 0
   };
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(vga)
 {
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
   grub_term_register (&grub_vga_term);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(vga)
 {
   grub_term_unregister (&grub_vga_term);
 }

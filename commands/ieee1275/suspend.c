@@ -36,14 +36,14 @@ grub_cmd_suspend (struct grub_arg_list *state  __attribute__ ((unused)),
 }
 
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(ieee1275_suspend)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("suspend", grub_cmd_suspend, GRUB_COMMAND_FLAG_BOTH,
 			 "suspend", "Return to Open Firmware prompt", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(ieee1275_suspend)
 {
   grub_unregister_command ("suspend");
 }

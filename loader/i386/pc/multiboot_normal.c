@@ -40,7 +40,7 @@ grub_normal_cmd_module (struct grub_arg_list *state __attribute__ ((unused)),
   return grub_errno;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(multiboot_normal)
 {
   (void) mod; /* To stop warning.  */
   grub_register_command ("multiboot", grub_normal_cmd_multiboot,
@@ -54,7 +54,7 @@ GRUB_MOD_INIT
 			 "Load a Multiboot module.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(multiboot_normal)
 {
   grub_unregister_command ("multiboot");
   grub_unregister_command ("module");

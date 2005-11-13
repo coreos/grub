@@ -42,7 +42,7 @@ chainloader_command (struct grub_arg_list *state,
   return grub_errno;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(chainloader_normal)
 {
   (void) mod; /* To stop warning.  */
   grub_register_command ("chainloader", chainloader_command,
@@ -51,7 +51,7 @@ GRUB_MOD_INIT
 			 "Prepare to boot another boot loader.", options);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(chainloader_normal)
 {
   grub_unregister_command ("chainloader");
 }

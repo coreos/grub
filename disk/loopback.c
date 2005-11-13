@@ -240,24 +240,8 @@ static struct grub_disk_dev grub_loopback_dev =
   };
 
 
-#ifdef GRUB_UTIL
-void
-grub_loop_init (void)
-{
-  grub_register_command ("loopback", grub_cmd_loopback, GRUB_COMMAND_FLAG_BOTH,
-			 "loopback [-d|-p] DEVICENAME FILE",
-			 "Make a device of a file.", options);
-  grub_disk_dev_register (&grub_loopback_dev);
-}
 
-void
-grub_loop_fini (void)
-{
-  grub_unregister_command ("loopback");
-  grub_disk_dev_unregister (&grub_loopback_dev);
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(loop)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("loopback", grub_cmd_loopback, GRUB_COMMAND_FLAG_BOTH,
@@ -266,9 +250,9 @@ GRUB_MOD_INIT
   grub_disk_dev_register (&grub_loopback_dev);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(loop)
 {
   grub_unregister_command ("loopback");
   grub_disk_dev_unregister (&grub_loopback_dev);
 }
-#endif /* ! GRUB_UTIL */
+

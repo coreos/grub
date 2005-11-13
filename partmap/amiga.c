@@ -1,7 +1,7 @@
 /* amiga.c - Read amiga partition tables (RDB).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -211,27 +211,15 @@ static struct grub_partition_map grub_amiga_partition_map =
     .get_name = amiga_partition_map_get_name
   };
 
-#ifdef GRUB_UTIL
-void
-grub_amiga_partition_map_init (void)
+GRUB_MOD_INIT(amiga_partition_map)
 {
   grub_partition_map_register (&grub_amiga_partition_map);
-}
-
-void
-grub_amiga_partition_map_fini (void)
-{
-  grub_partition_map_unregister (&grub_amiga_partition_map);
-}
-#else
-GRUB_MOD_INIT
-{
-  grub_partition_map_register (&grub_amiga_partition_map);
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(amiga_partition_map)
 {
   grub_partition_map_unregister (&grub_amiga_partition_map);
 }
-#endif

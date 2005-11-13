@@ -44,29 +44,14 @@ grub_cmd_default (struct grub_arg_list *state __attribute__ ((unused)),
 
 
 
-#ifdef GRUB_UTIL
-void
-grub_default_init (void)
-{
-  grub_register_command ("default", grub_cmd_default, GRUB_COMMAND_FLAG_MENU,
-			 "default ENTRY", "Set the default entry", 0);
-}
-
-void
-grub_default_fini (void)
-{
-  grub_unregister_command ("default");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(default)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("default", grub_cmd_default, GRUB_COMMAND_FLAG_MENU,
 			 "default ENTRY", "Set the default entry", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(default)
 {
   grub_unregister_command ("default");
 }
-#endif /* ! GRUB_UTIL */

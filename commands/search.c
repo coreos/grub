@@ -148,26 +148,7 @@ grub_cmd_search (struct grub_arg_list *state, int argc, char **args)
   return grub_errno;
 }
 
-#ifdef GRUB_UTIL
-void
-grub_search_init (void)
-{
-  grub_register_command ("search", grub_cmd_search, GRUB_COMMAND_FLAG_BOTH,
-			 "search [-f|-l|-s] NAME",
-			 "Search devices by a file or a filesystem label."
-			 " If --set is specified, the first device found is"
-			 " set to a variable. If no variable name is"
-			 " specified, \"root\" is used.",
-			 options);
-}
-
-void
-grub_search_fini (void)
-{
-  grub_unregister_command ("search");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(search)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("search", grub_cmd_search, GRUB_COMMAND_FLAG_BOTH,
@@ -179,8 +160,7 @@ GRUB_MOD_INIT
 			 options);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(search)
 {
   grub_unregister_command ("search");
 }
-#endif /* ! GRUB_UTIL */

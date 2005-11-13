@@ -145,7 +145,7 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
 
 static const char loader_name[] = "chainloader";
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(chainloader)
 {
   grub_rescue_register_command (loader_name,
 				grub_rescue_cmd_chainloader,
@@ -153,7 +153,7 @@ GRUB_MOD_INIT
   my_mod = mod;
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(chainloader)
 {
   grub_rescue_unregister_command (loader_name);
 }

@@ -192,27 +192,16 @@ static struct grub_partition_map grub_sun_partition_map =
     .get_name = sun_partition_map_get_name
   };
 
-#ifdef GRUB_UTIL
-void
-grub_sun_partition_map_init (void)
+GRUB_MOD_INIT(sun_partition_map)
 {
   grub_partition_map_register (&grub_sun_partition_map);
-}
-
-void
-grub_sun_partition_map_fini (void)
-{
-  grub_partition_map_unregister (&grub_sun_partition_map);
-}
-#else
-GRUB_MOD_INIT
-{
-  grub_partition_map_register (&grub_sun_partition_map);
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(sun_partition_map)
 {
   grub_partition_map_unregister (&grub_sun_partition_map);
 }
-#endif
+

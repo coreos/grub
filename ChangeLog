@@ -1,3 +1,76 @@
+2005-11-13  Marco Gerards  <mgerards@xs4all.nl>
+
+	* geninit.sh: New file.
+
+	* geninitheader.sh: Likewise.
+
+	* commands/boot.c (grub_boot_init, grub_boot_fini): Removed.
+	* commands/cat.c (grub_cat_init, grub_cat_fini): Likewise.
+	* commands/cmp.c (grub_cmp_init, grub_cmp_fini): Likewise.
+	* commands/configfile.c (grub_configfile_init)
+	(grub_configfile_fini): Likewise.
+	* commands/default.c (grub_default_init, grub_default_fini):
+	Likewise.
+	* commands/help.c (grub_help_init, grub_help_fini): Likewise.
+	* commands/ls.c (grub_ls_init, grub_ls_fini): Likewise.
+	* commands/search.c (grub_search_init, grub_search_fini): Likewise.
+	* commands/terminal.c (grub_terminal_init, grub_terminal_fini):
+	Likewise.
+	* commands/test.c (grub_test_init, grub_test_fini): Likewise.
+	* commands/timeout.c (grub_timeout_init, grub_timeout_fini):
+	Likewise.
+	* commands/i386/pc/halt.c (grub_halt_init, grub_halt_fini): Likewise.
+	* commands/iee1275/halt.c (grub_halt_init, grub_halt_fini):
+	Likewise.
+	* commands/i386/pc/reboot.c (grub_reboot_init, grub_reboot_fini):
+	Likewise.
+	* commands/iee1275/reboot.c (grub_reboot_init, grub_reboot_fini):
+	Likewise.
+	* disk/loopback.c (grub_loop_init, grub_loop_fini): Likewise.
+	* fs/affs.c (grub_affs_init, grub_affs_fini): Likewise.
+	* fs/ext2.c (grub_ext2_init, grub_ext2_fini): Likewise.
+	* fs/fat.c (grub_fat_init, grub_fat_fini): Likewise.
+	* fs/hfs.c (grub_hfs_init, grub_hfs_fini): Likewise.
+	* fs/iso9660.c (grub_iso9660_init, grub_iso9660_fini): Likewise.
+	* fs/jfs.c (grub_jfs_init, grub_jfs_fini): Likewise.
+	* fs/minix.c (grub_minix_init, grub_minix_fini): Likewise.
+	* fs/sfs.c (grub_sfs_init, grub_sfs_fini): Likewise.
+	* fs/ufs.c (grub_ufs_init, grub_ufs_fini): Likewise.
+	* fs/xfs.c (grub_xfs_init, grub_xfs_fini): Likewise.
+	* normal/main.c (grub_normal_init, grub_normal_fini): Likewise.
+	* partmap/amiga.c (grub_amiga_partition_map_init)
+	(grub_amiga_partition_map_fini): Likewise.
+	* partmap/apple.c (grub_apple_partition_map_init)
+	(grub_apple_partition_map_fini): Likewise.
+	* partmap/pc.c (grub_pc_partition_map_init)
+	(grub_pc_partition_map_fini): Likewise.
+	* partmap/sun.c (grub_sun_partition_map_init,
+	grub_sun_partition_map_fini): Likewise.
+	* term/terminfo.c (grub_terminal_init, grub_terminal_fini):
+	Likewise.
+
+	* util/grub-emu.c: Include <grub_modules_init.h>.
+	(main): Don't initialize and de-initialize any modules directly,
+	use `grub_init_all' and `grub_fini_all' instead.
+
+	* term/i386/pc/vesafb.c (grub_vesafb_init): Renamed to
+	`grub_vesafb_mod_init'.
+	(grub_vesafb_fini): Renamed to `grub_vesafb_mod_fini'.  Updated
+	all users.
+	* term/i386/pc/vga.c (grub_vga_init): Renamed to
+	`grub_vga_mod_init'.  Updated all users.
+	(grub_vga_fini): Renamed to `grub_vga_mod_fini'.
+	
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `grub_emu_init.c'.
+	(grub_modules_init.lst, grub_modules_init.h, grub_emu_init.c): New
+	rules.
+
+	* include/grub/dl.h (GRUB_MOD_INIT): Add argument `name'.
+	Generate a function to initialize the module in utilities.
+	Updated all callers.
+	(GRUB_MOD_FINI): Add argument `name'.  Generate a function to
+	initialize the module in utilities.  Updated all callers.
+
 2005-11-09  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* term/ieee1275/ofconsole.c (grub_ofconsole_cls): Use both the ANSI

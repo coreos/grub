@@ -1,7 +1,7 @@
 /* terminal.c - command to show and select a terminal */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -71,29 +71,14 @@ grub_cmd_terminal (struct grub_arg_list *state __attribute__ ((unused)),
 }
 
 
-#ifdef GRUB_UTIL
-void
-grub_terminal_init (void)
-{
-  grub_register_command ("terminal", grub_cmd_terminal, GRUB_COMMAND_FLAG_BOTH,
-			 "terminal [TERM...]", "Select a terminal.", 0);
-}
-
-void
-grub_terminal_fini (void)
-{
-  grub_unregister_command ("terminal");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(terminal)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("terminal", grub_cmd_terminal, GRUB_COMMAND_FLAG_BOTH,
 			 "terminal [TERM...]", "Select a terminal.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(terminal)
 {
   grub_unregister_command ("terminal");
 }
-#endif /* ! GRUB_UTIL */

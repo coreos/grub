@@ -519,33 +519,11 @@ grub_rescue_cmd_normal (int argc, char *argv[])
     grub_enter_normal_mode (argv[0]);
 }
 
-#ifdef GRUB_UTIL
-void
-grub_normal_init (void)
-{
-  grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
-
-  /* Register a command "normal" for the rescue mode.  */
-  grub_rescue_register_command ("normal", grub_rescue_cmd_normal,
-				"enter normal mode");
-
-  /* This registers some built-in commands.  */
-  grub_command_init ();
-  
-}
-
-void
-grub_normal_fini (void)
-{
-  grub_set_history (0);
-  grub_rescue_unregister_command ("normal");
-
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(normal)
 {
   /* Normal mode shouldn't be unloaded.  */
-  grub_dl_ref (mod);
+  if (mod)
+    grub_dl_ref (mod);
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
@@ -557,9 +535,9 @@ GRUB_MOD_INIT
   grub_command_init ();
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(normal)
 {
   grub_set_history (0);
   grub_rescue_unregister_command ("normal");
 }
-#endif /* ! GRUB_UTIL */
+

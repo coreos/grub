@@ -42,29 +42,14 @@ grub_cmd_timeout (struct grub_arg_list *state __attribute__ ((unused)),
 
 
 
-#ifdef GRUB_UTIL
-void
-grub_timeout_init (void)
-{
-  grub_register_command ("timeout", grub_cmd_timeout, GRUB_COMMAND_FLAG_MENU,
-			 "timeout SECS", "Set the timeout", 0);
-}
-
-void
-grub_timeout_fini (void)
-{
-  grub_unregister_command ("timeout");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(timeout)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("timeout", grub_cmd_timeout, GRUB_COMMAND_FLAG_MENU,
 			 "timeout SECS", "Set the timeout", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(timeout)
 {
   grub_unregister_command ("timeout");
 }
-#endif /* ! GRUB_UTIL */

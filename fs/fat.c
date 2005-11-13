@@ -808,27 +808,16 @@ static struct grub_fs grub_fat_fs =
     .next = 0
   };
 
-#ifdef GRUB_UTIL
-void
-grub_fat_init (void)
+GRUB_MOD_INIT(fat)
 {
   grub_fs_register (&grub_fat_fs);
-}
-
-void
-grub_fat_fini (void)
-{
-  grub_fs_unregister (&grub_fat_fs);
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
-{
-  grub_fs_register (&grub_fat_fs);
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(fat)
 {
   grub_fs_unregister (&grub_fat_fs);
 }
-#endif /* ! GRUB_UTIL */
+

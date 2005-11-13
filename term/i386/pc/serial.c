@@ -616,7 +616,7 @@ grub_cmd_serial (struct grub_arg_list *state,
   return hwiniterr;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(serial)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("serial", grub_cmd_serial, GRUB_COMMAND_FLAG_BOTH,
@@ -629,7 +629,7 @@ GRUB_MOD_INIT
   serial_settings.stop_bits = UART_1_STOP_BIT;
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(serial)
 {
   grub_unregister_command ("serial");
   if (registered == 1)		/* Unregister terminal only if registered. */

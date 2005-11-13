@@ -39,6 +39,8 @@
 #include <grub/env.h>
 #include <grub/partition.h>
 
+#include <grub_modules_init.h>
+
 #ifdef __NetBSD__
 /* NetBSD uses /boot for its boot block.  */
 # define DEFAULT_DIRECTORY	"/grub"
@@ -189,74 +191,14 @@ main (int argc, char *argv[])
   
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (args.dev_map);
-  grub_pc_partition_map_init ();
-  grub_amiga_partition_map_init ();
-  grub_apple_partition_map_init ();
-  grub_sun_partition_map_init ();
 
-  /* Initialize the default modules.  */
-  grub_iso9660_init ();
-  grub_xfs_init ();
-  grub_fat_init ();
-  grub_ext2_init ();
-  grub_ufs_init ();
-  grub_minix_init ();
-  grub_hfs_init ();
-  grub_jfs_init ();
-  grub_xfs_init ();
-  grub_sfs_init ();
-  grub_affs_init ();
-  grub_ls_init ();
-  grub_boot_init ();
-  grub_cmp_init ();
-  grub_cat_init ();
-  grub_terminal_init ();
-  grub_loop_init ();
-  grub_help_init ();
-  grub_halt_init ();
-  grub_reboot_init ();
-  grub_default_init ();
-  grub_timeout_init ();
-  grub_configfile_init ();
-  grub_search_init ();
-  grub_test_init ();
-  
-  /* XXX: Should normal mode be started by default?  */
-  grub_normal_init ();
+  grub_init_all ();
 
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)
     grub_main ();
 
-  grub_test_fini ();
-  grub_search_fini ();
-  grub_configfile_fini ();
-  grub_timeout_fini ();
-  grub_default_fini ();
-  grub_reboot_fini ();
-  grub_halt_fini ();
-  grub_help_fini ();
-  grub_loop_fini ();
-  grub_util_biosdisk_fini ();
-  grub_normal_fini ();
-  grub_affs_fini ();
-  grub_sfs_fini ();
-  grub_xfs_fini ();
-  grub_ufs_fini ();
-  grub_ext2_fini ();
-  grub_minix_fini ();
-  grub_hfs_fini ();
-  grub_jfs_fini ();
-  grub_fat_fini ();
-  grub_xfs_fini ();
-  grub_boot_fini ();
-  grub_cmp_fini ();
-  grub_cat_fini ();
-  grub_terminal_fini ();
-  grub_amiga_partition_map_fini ();
-  grub_pc_partition_map_fini ();
-  grub_apple_partition_map_fini ();
-  grub_sun_partition_map_fini ();
+  grub_fini_all ();
 
   grub_machine_fini ();
   

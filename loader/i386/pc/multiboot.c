@@ -435,7 +435,7 @@ grub_rescue_cmd_module  (int argc, char *argv[])
 }
 
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(multiboot)
 {
   grub_rescue_register_command ("multiboot", grub_rescue_cmd_multiboot,
 				"load a multiboot kernel");
@@ -444,7 +444,7 @@ GRUB_MOD_INIT
   my_mod = mod;
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(multiboot)
 {
   grub_rescue_unregister_command ("multiboot");
   grub_rescue_unregister_command ("module");

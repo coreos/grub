@@ -1,7 +1,7 @@
 /* hfs.c - HFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -875,27 +875,15 @@ static struct grub_fs grub_hfs_fs =
     .next = 0
   };
 
-#ifdef GRUB_UTIL
-void
-grub_hfs_init (void)
+GRUB_MOD_INIT(hfs)
 {
   grub_fs_register (&grub_hfs_fs);
-}
-
-void
-grub_hfs_fini (void)
-{
-  grub_fs_unregister (&grub_hfs_fs);
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
-{
-  grub_fs_register (&grub_hfs_fs);
+#ifndef GRUB_UTIL
   my_mod = mod;
+#endif
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(hfs)
 {
   grub_fs_unregister (&grub_hfs_fs);
 }
-#endif /* ! GRUB_UTIL */

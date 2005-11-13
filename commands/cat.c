@@ -70,29 +70,14 @@ grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
 }
 
 
-#ifdef GRUB_UTIL
-void
-grub_cat_init (void)
-{
-  grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
-			 "cat FILE", "Show the contents of a file.", 0);
-}
-
-void
-grub_cat_fini (void)
-{
-  grub_unregister_command ("cat");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(cat)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
 			 "cat FILE", "Show the contents of a file.", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(cat)
 {
   grub_unregister_command ("cat");
 }
-#endif /* ! GRUB_UTIL */

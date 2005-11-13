@@ -174,7 +174,7 @@ grub_cmd_terminfo (struct grub_arg_list *state __attribute__ ((unused)),
     return grub_terminfo_set_current (args[0]);
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(terminfo)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("terminfo", grub_cmd_terminfo, GRUB_COMMAND_FLAG_BOTH,
@@ -182,7 +182,7 @@ GRUB_MOD_INIT
   grub_terminfo_set_current ("vt100");
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(terminfo)
 {
   grub_unregister_command ("terminfo");
 }

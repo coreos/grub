@@ -228,22 +228,7 @@ grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
   return 0;
 }
 
-#ifdef GRUB_UTIL
-void
-grub_ls_init (void)
-{
-  grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			 "ls [-l|-h|-a] [FILE]",
-			 "List devices and files.", options);
-}
-
-void
-grub_ls_fini (void)
-{
-  grub_unregister_command ("ls");
-}
-#else /* ! GRUB_UTIL */
-GRUB_MOD_INIT
+GRUB_MOD_INIT(ls)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
@@ -251,8 +236,7 @@ GRUB_MOD_INIT
 			 "List devices and files.", options);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(ls)
 {
   grub_unregister_command ("ls");
 }
-#endif /* ! GRUB_UTIL */

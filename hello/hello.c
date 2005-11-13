@@ -35,14 +35,14 @@ grub_cmd_hello (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
-GRUB_MOD_INIT
+GRUB_MOD_INIT(hello)
 {
   (void)mod;			/* To stop warning. */
   grub_register_command ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
 			 "hello", "Say hello", 0);
 }
 
-GRUB_MOD_FINI
+GRUB_MOD_FINI(hello)
 {
   grub_unregister_command ("hello");
 }
