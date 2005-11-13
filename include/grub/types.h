@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002, 2005  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -92,6 +92,9 @@ typedef grub_uint32_t	grub_off_t;
 typedef grub_uint32_t	grub_size_t;
 typedef grub_int32_t	grub_ssize_t;
 #endif
+
+/* FIXME: Will be grub_uint64_t */
+typedef unsigned long	grub_disk_addr_t;
 
 /* Byte-orders.  */
 #define grub_swap_bytes16(x)	\

@@ -58,6 +58,7 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #	normal/function.c normal/lexer.c				\
 #	normal/main.c normal/menu.c normal/menu_entry.c	normal/misc.c	\
 #	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
+#	partmap/acorn.c							\
 #	util/console.c util/grub-emu.c util/misc.c			\
 #	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
 #	util/sparc64/ieee1275/misc.c
@@ -290,7 +291,7 @@ pkgdata_MODULES = fat.mod ufs.mod ext2.mod minix.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
 	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod \
-	affs.mod sfs.mod
+	affs.mod sfs.mod acorn.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -1700,6 +1701,56 @@ fs-sun.lst: partmap/sun.c genfslist.sh
 
 sun_mod_CFLAGS = $(COMMON_CFLAGS)
 sun_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For acorn.mod
+acorn_mod_SOURCES = partmap/acorn.c
+CLEANFILES += acorn.mod mod-acorn.o mod-acorn.c pre-acorn.o acorn_mod-partmap_acorn.o def-acorn.lst und-acorn.lst
+MOSTLYCLEANFILES += acorn_mod-partmap_acorn.d
+DEFSYMFILES += def-acorn.lst
+UNDSYMFILES += und-acorn.lst
+
+acorn.mod: pre-acorn.o mod-acorn.o
+	-rm -f $@
+	$(LD) $(acorn_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-acorn.o: acorn_mod-partmap_acorn.o
+	-rm -f $@
+	$(LD) $(acorn_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-acorn.o: mod-acorn.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
+
+mod-acorn.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'acorn' $< > $@ || (rm -f $@; exit 1)
+
+def-acorn.lst: pre-acorn.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 acorn/' > $@
+
+und-acorn.lst: pre-acorn.o
+	echo 'acorn' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+acorn_mod-partmap_acorn.o: partmap/acorn.c
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
+
+acorn_mod-partmap_acorn.d: partmap/acorn.c
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -M $< 	  | sed 's,acorn\.o[ :]*,acorn_mod-partmap_acorn.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include acorn_mod-partmap_acorn.d
+
+CLEANFILES += cmd-acorn.lst fs-acorn.lst
+COMMANDFILES += cmd-acorn.lst
+FSFILES += fs-acorn.lst
+
+cmd-acorn.lst: partmap/acorn.c gencmdlist.sh
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh acorn > $@ || (rm -f $@; exit 1)
+
+fs-acorn.lst: partmap/acorn.c genfslist.sh
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh acorn > $@ || (rm -f $@; exit 1)
+
+
+acorn_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For loopback.mod
 loopback_mod_SOURCES = disk/loopback.c

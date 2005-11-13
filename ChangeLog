@@ -1,3 +1,34 @@
+2005-11-13  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
+
+        Add support for Linux/ADFS partition tables.
+
+	* partmap/acorn.c: New file.
+
+	* include/grub/acorn_filecore.h: Likewise.
+
+	* DISTLIST: Added `partmap/acorn.c' and
+	`include/grub/acorn_filecore.h'.
+	
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
+	`partmap/acorn.c'.
+	(pkgdata_MODULES): Add `acorn.mod'.
+	(acorn_mod_SOURCES): New variable.
+	(acorn_mod_CFLAGS): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Add
+	`partmap/acorn.c'.
+	(pkgdata_MODULES): Add `acorn.mod'.
+	(acorn_mod_SOURCES): New variable.
+	(acorn_mod_CFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `partmap/acorn.c'.
+	(pkgdata_MODULES): Add `acorn.mod'.
+	(acorn_mod_SOURCES): New variable.
+	(acorn_mod_CFLAGS): Likewise.
+	(acorn_mod_LDFLAGS): Likewise.
+
+	* include/types.h (grub_disk_addr_t): New typedef.
+
 2005-11-13  Marco Gerards  <mgerards@xs4all.nl>
 
 	* geninit.sh: New file.

@@ -67,6 +67,7 @@ fs/ufs.c
 fs/sfs.c
 fs/xfs.c
 hello/hello.c
+include/grub/acorn_filecore.h
 include/grub/arg.h
 include/grub/boot.h
 include/grub/cache.h
@@ -184,6 +185,7 @@ normal/menu_entry.c
 normal/misc.c
 normal/i386/setjmp.S
 normal/powerpc/setjmp.S
+partmap/acorn.c
 partmap/amiga.c
 partmap/apple.c
 partmap/pc.c
