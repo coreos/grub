@@ -1,3 +1,17 @@
+2005-11-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* conf/powerpc-ieee1275.rmk (grub_script.tab.h): Unified to ...
+	(grub_script.tab.c): ... here.
+
+	* conf/sparc64-ieee1275.rmk (grub_script.tab.h): Unified to ...
+	(grub_script.tab.c): ... here.
+
+	* conf/i386-pc.rmk (grub_script.tab.h): Unified to ...
+	(grub_script.tab.c): ... here.
+
+	* normal/command.c (grub_command_find): Fixed a memory leak of
+	MODULE_NAME. Reported by Mike Small <smallm@panix.com>.
+
 2005-11-13  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
 
 	* include/grub/symbol.h: (FUNCTION): Use double quotes instead of

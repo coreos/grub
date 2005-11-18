@@ -152,6 +152,7 @@ grub_command_find (char *cmdline)
 		{
 		  grub_dl_ref (mod);
 		  count++;
+		  grub_free (module_name);
   		  goto again;
 		}
 

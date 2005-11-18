@@ -22,9 +22,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
 # For the parser.
-grub_script.tab.c: normal/parser.y
-	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
-grub_script.tab.h: normal/parser.y
+grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
 
 # Programs
