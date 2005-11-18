@@ -1,3 +1,48 @@
+2005-11-18  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
+
+	* genmk.rb: Fixed list rules moved to Makefile.in.  Recognise
+	appending to variables with "+=".
+	(PModule): Use full pathname to generate *.lst filenames.
+
+	* Makefile.in: Fixed list rules moved from genmk.rb.
+	(.DELETE_ON_ERROR): New special target.
+	(RMKFILES): Add common.rmk and sparc64-ieee1275.rmk.
+
+	* conf/i386-pc.rmk: Include conf/common.mk.
+	(pkgdata_MODULES): Removed fshelp.mod, fat.mod, ext2.mod, ufs.mod,
+	minux.mod, hfs.mod, jfs.mod, xfs.mod, affs.mod, sfs.mod,
+	hello.mod, boot.mod, terminal.mod, ls.mod, cmp.mod, cat.mod,
+	help.mod, font.mod, terminfo.mod, amiga.mod, apple.mod, pc.mod,
+	sun.mod, acorn.mod, loopback.mod, default.mod, timeout.mod,
+	configfile.mod, search.mod, gzio.mod and test.mod.
+	(symlist.c, grub_script.tab.c, grub_script.tab.h, kernel_syms.lst)
+	(grub_modules_init.lst, grub_modules_init.h, grub_emu_init.c)
+	(fshelp_mod_SOURCES, fshelp_mod_CFLAGS, fshelp_mod_LDFLAGS)
+	(fat_mod_SOURCES, fat_mod_CFLAGS, fat_mod_LDFLAGS)
+	(ext2_mod_SOURCES, ext2_mod_CFLAGS, ext2_mod_LDFLAGS)
+	(ufs_mod_SOURCES, ufs_mod_CFLAGS, ufs_mod_LDFLAGS)
+	(minix_mod_SOURCES, minix_mod_CFLAGS, minix_mod_LDFLAGS)
+	(hfs_mod_SOURCES, hfs_mod_CFLAGS, hfs_mod_LDFLAGS, jfs_mod_SOURCES)
+	(jfs_mod_CFLAGS, jfs_mod_LDFLAGS, iso9660_mod_SOURCES)
+	(iso9660_mod_CFLAGS, iso9660_mod_LDFLAGS, xfs_mod_SOURCES)
+	(xfs_mod_CFLAGS, xfs_mod_LDFLAGS, affs_mod_SOURCES)
+	(affs_mod_CFLAGS, affs_mod_LDFLAGS, sfs_mod_SOURCES)
+	(sfs_mod_CFLAGS, sfs_mod_LDFLAGS, hello_mod_SOURCES)
+	(hello_mod_CFLAGS, hello_mod_LDFLAGS, boot_mod_SOURCES)
+	(boot_mod_CFLAGS, boot_mod_LDFLAGS, terminal_mod_SOURCES)
+	(terminal_mod_CFLAGS, terminal_mod_LDFLAGS, ls_mod_SOURCES)
+	(ls_mod_CFLAGS, ls_mod_LDFLAGS, cmp_mod_SOURCES, cmp_mod_CFLAGS)
+	(cmp_mod_LDFLAGS, cat_mod_SOURCES, cat_mod_CFLAGS, cat_mod_LDFLAGS)
+	(help_mod_SOURCES, help_mod_CFLAGS, help_mod_LDFLAGS)
+	(font_mod_SOURCES, font_mod_CFLAGS, font_mod_LDFLAGS)
+	(terminfo_mod_SOURCES, terminfo_mod_CFLAGS, terminfo_mod_LDFLAGS)
+	(amiga_mod_SOURCES, amiga_mod_CFLAGS, amiga_mod_LDFLAGS)
+	(apple_mod_SOURCES, apple_mod_CFLAGS, apple_mod_LDFLAG): Move from
+	here...
+	* conf/common.rmk: ... to here.  New file.
+
+	* conf/common.mk: New file.
+
 2005-11-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* conf/powerpc-ieee1275.rmk (grub_script.tab.h): Unified to ...

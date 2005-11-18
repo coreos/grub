@@ -141,8 +141,8 @@ UNDSYMFILES += #{undsym}
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
       fake_obj = File.basename(src).suffix('o')
-      command = 'cmd-' + fake_obj.suffix('lst')
-      fs = 'fs-' + fake_obj.suffix('lst')
+      command = 'cmd-' + obj.suffix('lst')
+      fs = 'fs-' + obj.suffix('lst')
       dep = deps[i]
       flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
       dir = File.dirname(src)
@@ -314,7 +314,7 @@ while l = gets
   unless cont
     s.gsub!(/\\\n/, ' ')
     
-    if /^([a-zA-Z0-9_]+)\s*=\s*(.*?)\s*$/ =~ s
+    if /^([a-zA-Z0-9_]+)\s*\+?=\s*(.*?)\s*$/ =~ s
       var, args = $1, $2
 
       if var =~ /^([a-zA-Z0-9_]+)_([A-Z]+)$/
@@ -367,14 +367,3 @@ while l = gets
   
 end
 
-puts "CLEANFILES += moddep.lst command.lst fs.lst"
-puts "pkgdata_DATA += moddep.lst command.lst fs.lst"
-puts "moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep"
-puts "	cat $(DEFSYMFILES) /dev/null | ./genmoddep $(UNDSYMFILES) > $@ \\"
-puts "	  || (rm -f $@; exit 1)"
-puts ""
-puts "command.lst: $(COMMANDFILES)"
-puts "	cat $^ /dev/null | sort > $@"
-puts ""
-puts "fs.lst: $(FSFILES)"
-puts "	cat $^ /dev/null | sort > $@"
