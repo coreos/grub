@@ -21,10 +21,6 @@ grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
 kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
 	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
 
-# For the parser.
-grub_script.tab.c grub_script.tab.h: normal/parser.y
-	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
-
 # Programs
 pkgdata_PROGRAMS = grubof
 
@@ -62,15 +58,6 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
-grub_modules_init.lst: geninit.sh
-	(cd $(srcdir); grep -r --include="*.c" GRUB_MOD_INIT *) > $@
-
-grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
-	sh $(srcdir)/geninitheader.sh > $@
-
-grub_emu_init.c: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_modules_init.lst grub_modules_init.h
-	sh $(srcdir)/geninit.sh $(filter %.c,$^) > $@
-
 grubof_SOURCES = kern/powerpc/ieee1275/crt0.S kern/powerpc/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c 		\
@@ -94,56 +81,12 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/powerpc/ieee1275/grub-install.in
 
 # Modules.
-pkgdata_MODULES = _linux.mod linux.mod fat.mod ufs.mod ext2.mod minix.mod \
-	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
-	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
-	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod \
-	affs.mod sfs.mod test.mod acorn.mod
-
-# For fshelp.mod.
-fshelp_mod_SOURCES = fs/fshelp.c
-fshelp_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For fat.mod.
-fat_mod_SOURCES = fs/fat.c
-fat_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For ext2.mod.
-ext2_mod_SOURCES = fs/ext2.c
-ext2_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For ufs.mod.
-ufs_mod_SOURCES = fs/ufs.c
-ufs_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For minix.mod.
-minix_mod_SOURCES = fs/minix.c
-minix_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For hfs.mod.
-hfs_mod_SOURCES = fs/hfs.c
-hfs_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For jfs.mod.
-jfs_mod_SOURCES = fs/jfs.c
-jfs_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For iso9660.mod.
-iso9660_mod_SOURCES = fs/iso9660.c
-iso9660_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For xfs.mod.
-xfs_mod_SOURCES = fs/xfs.c
-xfs_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For affs.mod.
-affs_mod_SOURCES = fs/affs.c
-affs_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For sfs.mod.
-sfs_mod_SOURCES = fs/sfs.c
-sfs_mod_CFLAGS = $(COMMON_CFLAGS)
+pkgdata_MODULES = halt.mod \
+	_linux.mod \
+	linux.mod \
+	normal.mod \
+	reboot.mod \
+	suspend.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
@@ -162,58 +105,6 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
-# For hello.mod.
-hello_mod_SOURCES = hello/hello.c
-hello_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For boot.mod.
-boot_mod_SOURCES = commands/boot.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For terminal.mod.
-terminal_mod_SOURCES = commands/terminal.c
-terminal_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For ls.mod.
-ls_mod_SOURCES = commands/ls.c
-ls_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For cmp.mod.
-cmp_mod_SOURCES = commands/cmp.c
-cmp_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For cat.mod.
-cat_mod_SOURCES = commands/cat.c
-cat_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For font.mod.
-font_mod_SOURCES = font/manager.c
-font_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For amiga.mod
-amiga_mod_SOURCES = partmap/amiga.c
-amiga_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For apple.mod
-apple_mod_SOURCES = partmap/apple.c
-apple_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For pc.mod
-pc_mod_SOURCES = partmap/pc.c
-pc_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For sun.mod
-sun_mod_SOURCES = partmap/sun.c
-sun_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For acorn.mod
-acorn_mod_SOURCES = partmap/acorn.c
-acorn_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For loopback.mod
-loopback_mod_SOURCES = disk/loopback.c
-loopback_mod_CFLAGS = $(COMMON_CFLAGS)
-
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
 suspend_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -226,30 +117,4 @@ reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_SOURCES = commands/ieee1275/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 
-# For help.mod.
-help_mod_SOURCES = commands/help.c
-help_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For default.mod
-default_mod_SOURCES = commands/default.c
-default_mod_CFLAGS =  $(COMMON_CFLAGS)
-
-# For timeout.mod
-timeout_mod_SOURCES = commands/timeout.c
-timeout_mod_CFLAGS =  $(COMMON_CFLAGS)
-
-# For configfile.mod
-configfile_mod_SOURCES = commands/configfile.c
-configfile_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For search.mod.
-search_mod_SOURCES = commands/search.c
-search_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For gzio.mod.
-gzio_mod_SOURCES = io/gzio.c
-gzio_mod_CFLAGS = $(COMMON_CFLAGS)
-
-# For test.mod.
-test_mod_SOURCES = commands/test.c
-test_mod_CFLAGS = $(COMMON_CFLAGS)
+include $(srcdir)/conf/common.mk

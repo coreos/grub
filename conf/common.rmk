@@ -6,7 +6,7 @@ grub_script.tab.c grub_script.tab.h: normal/parser.y
 
 # For grub-emu.
 grub_modules_init.lst: geninit.sh
-	(cd $(srcdir); grep -r --include="*.c" GRUB_MOD_INIT *) > $@
+	(find $(srcdir) -name '*.c' | xargs grep GRUB_MOD_INIT) > $@
 
 grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
 	sh $(srcdir)/geninitheader.sh > $@
@@ -110,7 +110,7 @@ acorn_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod default.mod timeout.mod configfile.mod	\
-	terminfo.mod
+	terminfo.mod test.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
