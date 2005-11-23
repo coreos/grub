@@ -1,5 +1,13 @@
 2005-11-22  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* partmap/acorn.c: Change `unsigned' to `unsigned int'.  Move all
+	variable definitions to the beginning of each function.  Sort stack
+	variables by size.
+	(find): Rename to `acorn_partition_map_find'.  Cast `grub_disk_read'
+	`buf' argument to `char *'.
+
+2005-11-22  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* conf/powerpc-ieee1275.rmk: Include conf/common.mk.
 	(pkgdata_MODULES): Removed fshelp.mod, fat.mod, ext2.mod, ufs.mod,
 	minux.mod, hfs.mod, jfs.mod, xfs.mod, affs.mod, sfs.mod,

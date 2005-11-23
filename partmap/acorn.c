@@ -50,33 +50,39 @@ struct linux_part
 static struct grub_partition_map grub_acorn_partition_map;
 
 static grub_err_t
-find (grub_disk_t disk, struct linux_part *m, unsigned *sector)
+acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
+			  unsigned int *sector)
 {
-  int i;
   struct grub_acorn_boot_block boot;
-  grub_err_t err = grub_disk_read (disk, 0xC00 / GRUB_DISK_SECTOR_SIZE, 0,
+  grub_err_t err;
+  unsigned int checksum = 0;
+  unsigned int heads;
+  unsigned int sectors_per_cylinder;
+  int i;
+
+  err = grub_disk_read (disk, 0xC00 / GRUB_DISK_SECTOR_SIZE, 0,
 				   sizeof (struct grub_acorn_boot_block),
-				   &boot);
+				   (char *)&boot);
   if (err)
     return err;
 
   if ((boot.flags & NONADFS_PARTITON_TYPE_MASK) != NONADFS_PARTITON_TYPE_LINUX)
     goto fail;
 
-  unsigned checksum = 0;
   for (i = 0; i != 0x1ff; ++i)
     checksum = (checksum & 0xff) + (checksum >> 8) + boot.misc[i];
 
   if ((grub_uint8_t) checksum != boot.checksum)
     goto fail;
 
-  unsigned heads = (boot.disc_record.heads
+  heads = (boot.disc_record.heads
 		    + ((boot.disc_record.lowsector >> 6) & 1));
-  unsigned sectors_per_cylinder = boot.disc_record.secspertrack * heads;
+  sectors_per_cylinder = boot.disc_record.secspertrack * heads;
   *sector = grub_le_to_cpu16 (boot.start_cylinder) * sectors_per_cylinder;
 
   return grub_disk_read (disk, *sector, 0,
-			 sizeof (struct linux_part) * LINUX_MAP_ENTRIES, m);
+			 sizeof (struct linux_part) * LINUX_MAP_ENTRIES,
+			 (char *)m);
 
 fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
@@ -90,17 +96,18 @@ acorn_partition_map_iterate (grub_disk_t disk,
 			     int (*hook) (grub_disk_t disk,
 					  const grub_partition_t partition))
 {
-  int i;
-  unsigned sector;
   struct grub_partition part;
   struct grub_disk raw;
   struct linux_part map[LINUX_MAP_ENTRIES];
+  int i;
+  unsigned int sector;
+  grub_err_t err;
 
   /* Enforce raw disk access.  */
   raw = *disk;
   raw.partition = 0;
 
-  grub_err_t err = find (&raw, map, &sector);
+  err = acorn_partition_map_find (&raw, map, &sector);
   if (err)
     return err;
 
@@ -128,19 +135,20 @@ acorn_partition_map_iterate (grub_disk_t disk,
 static grub_partition_t
 acorn_partition_map_probe (grub_disk_t disk, const char *str)
 {
-  unsigned sector;
   struct linux_part map[LINUX_MAP_ENTRIES];
+  struct grub_disk raw = *disk;
+  unsigned long partnum = grub_strtoul (str, 0, 10);
+  unsigned int sector;
+  grub_err_t err;
 
   /* Enforce raw disk access.  */
-  struct grub_disk raw = *disk;
   raw.partition = 0;
 
   /* Get the partition number.  */
-  unsigned long partnum = grub_strtoul (str, 0, 10);
   if (partnum > LINUX_MAP_ENTRIES)
     goto fail;
 
-  grub_err_t err = find (&raw, map, &sector);
+  err = acorn_partition_map_find (&raw, map, &sector);
   if (err)
     return 0;
 
