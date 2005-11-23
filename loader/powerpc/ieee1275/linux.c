@@ -173,6 +173,8 @@ grub_rescue_cmd_linux (int argc, char *argv[])
      try some other addresses just like yaboot does.  */
   for (linux_addr = entry; linux_addr < entry + 200 * 0x100000; linux_addr += 0x100000)
     {
+      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n", 
+		    linux_addr, linux_size);
       found_addr = grub_claimmap (linux_addr, linux_size);
       if (found_addr != -1)
 	break;
@@ -261,7 +263,9 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size;
+  grub_addr_t first_addr;
   grub_addr_t addr;
+  int found_addr = 0;
 
   if (argc == 0)
     {
@@ -279,10 +283,21 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
   if (! file)
     goto fail;
 
-  addr = linux_addr + linux_size;
+  first_addr = linux_addr + linux_size;
   size = grub_file_size (file);
 
-  if (grub_claimmap (addr, size) == -1)
+  /* Attempt to claim at a series of addresses until successful in
+     the same way that grub_rescue_cmd_linux does.  */
+  for (addr = first_addr; addr < first_addr + 200 * 0x100000; addr += 0x100000) 
+    {
+      grub_dprintf ("loader", "Attempting to claim at 0x%x, size 0x%x.\n", 
+		    addr, size);
+      found_addr = grub_claimmap (addr, size);
+      if (found_addr != -1)
+	break;
+    }
+
+  if (found_addr == -1)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "Can not claim memory");
       goto fail;

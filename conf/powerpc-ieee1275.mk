@@ -876,8 +876,7 @@ pkgdata_MODULES = halt.mod \
 	linux.mod \
 	normal.mod \
 	reboot.mod \
-	suspend.mod \
-	test.mod
+	suspend.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c

@@ -1309,6 +1309,52 @@ search_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For test.mod.
 test_mod_SOURCES = commands/test.c
+CLEANFILES += test.mod mod-test.o mod-test.c pre-test.o test_mod-commands_test.o def-test.lst und-test.lst
+MOSTLYCLEANFILES += test_mod-commands_test.d
+DEFSYMFILES += def-test.lst
+UNDSYMFILES += und-test.lst
+
+test.mod: pre-test.o mod-test.o
+	-rm -f $@
+	$(LD) $(test_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-test.o: test_mod-commands_test.o
+	-rm -f $@
+	$(LD) $(test_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-test.o: mod-test.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -c -o $@ $<
+
+mod-test.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'test' $< > $@ || (rm -f $@; exit 1)
+
+def-test.lst: pre-test.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 test/' > $@
+
+und-test.lst: pre-test.o
+	echo 'test' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+test_mod-commands_test.o: commands/test.c
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -c -o $@ $<
+
+test_mod-commands_test.d: commands/test.c
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -M $< 	  | sed 's,test\.o[ :]*,test_mod-commands_test.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include test_mod-commands_test.d
+
+CLEANFILES += cmd-test_mod-commands_test.lst fs-test_mod-commands_test.lst
+COMMANDFILES += cmd-test_mod-commands_test.lst
+FSFILES += fs-test_mod-commands_test.lst
+
+cmd-test_mod-commands_test.lst: commands/test.c gencmdlist.sh
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh test > $@ || (rm -f $@; exit 1)
+
+fs-test_mod-commands_test.lst: commands/test.c genfslist.sh
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh test > $@ || (rm -f $@; exit 1)
+
+
 test_mod_CFLAGS = $(COMMON_CFLAGS)
 test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

@@ -1,3 +1,15 @@
+2005-11-22  Mike Small  <smallm@panix.com>
+
+	* util/powerpc/ieee1275/grub-install.in (grubdir): Fixed partition
+	number regex so multidigit numbers are recognized correctly.
+
+2005-11-22  Mike Small  <smallm@panix.com>
+
+	* loader/powerpc/ieee1275/linux.c (grub_rescue_cmd_linux): Add a
+	debugging message before attempting to claim memory.
+	(grub_rescue_cmd_initrd): Add a claim debugging message and try
+	multiple addresses in case of failure.
+
 2005-11-22  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* term/tparm.c (get_space): Remove empty `if' statement.

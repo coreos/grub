@@ -171,7 +171,7 @@ if test $update_nvram = yes; then
 
     # Get the Open Firmware device tree path translation.
     dev=`echo $install_device | sed -e 's/\/dev\///' -e 's/[0-9]\+//'`
-    partno=`echo $install_device | sed -e 's/.*\([0-9]\+\)$/\1/'`
+    partno=`echo $install_device | sed -e 's/.*[^0-9]\([0-9]\+\)$/\1/'`
     ofpath=`$ofpathname $dev` || {
 	echo "Couldn't find Open Firmware device tree path for $dev."
 	echo "You will have to set boot-device manually."
