@@ -120,6 +120,14 @@ else
     exit 1
 fi
 
+# Find the partition at the right mount point.
+install_device=`awk '$2 == '"\"$grubdir\""' { print $1 }' < /proc/mounts`
+if test "x$install_device" = x; then
+    echo "$grubdir must be a mount point."
+    exit 1
+fi
+# XXX warn on firmware-unreadable filesystems?
+
 # Create the GRUB directory if it is not present.
 test -d "$bootdir" || mkdir "$bootdir" || exit 1
 test -d "$grubdir" || mkdir "$grubdir" || exit 1
@@ -144,15 +152,6 @@ fi
 "$grub_mkimage" --output=${grubdir}/grub $modules || exit 1
 
 if test $update_nvram = yes; then
-    # Find the partition at the right mount point.
-    install_device=`awk '$2 == '"\"$grubdir\""' { print $1 }' < /proc/mounts`
-    if test "x$install_device" = x; then
-	# Uh oh... grub-mkimage installed into a plain directory somewhere.
-	echo "$grubdir is not a mount point!"
-	exit 1
-    fi
-    # XXX warn on firmware-unreadable filesystems?
-
     set $ofpathname dummy
     if test -f "$1"; then
 	:

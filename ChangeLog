@@ -1,3 +1,8 @@
+2005-11-22  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* util/powerpc/ieee1275/grub-install.in: Run the mount point
+	check before installing files.
+
 2005-11-22  Mike Small  <smallm@panix.com>
 
 	* util/powerpc/ieee1275/grub-install.in (grubdir): Fixed partition
