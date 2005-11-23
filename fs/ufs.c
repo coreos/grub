@@ -471,7 +471,7 @@ grub_ufs_find_file (struct grub_ufs_data *data, const char *path)
       }
       
       pos += grub_le_to_cpu16 (dirent.direntlen);
-    } while (pos < grub_le_to_cpu32 (INODE_SIZE (data)));
+    } while (pos < INODE_SIZE (data));
   
   grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
   return grub_errno;

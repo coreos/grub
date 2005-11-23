@@ -115,14 +115,14 @@ grub_parser_split_cmdline (const char *cmdline, grub_err_t (*getline) (char **),
   char *args;
   int i;
 
-  auto int check_varstate (grub_parser_state_t state);
+  auto int check_varstate (grub_parser_state_t s);
 
-  int check_varstate (grub_parser_state_t state)
+  int check_varstate (grub_parser_state_t s)
     {
-      return (state == GRUB_PARSER_STATE_VARNAME
-	      || state == GRUB_PARSER_STATE_VARNAME2
-	      || state == GRUB_PARSER_STATE_QVARNAME
-	      || state == GRUB_PARSER_STATE_QVARNAME2);
+      return (s == GRUB_PARSER_STATE_VARNAME
+	      || s == GRUB_PARSER_STATE_VARNAME2
+	      || s == GRUB_PARSER_STATE_QVARNAME
+	      || s == GRUB_PARSER_STATE_QVARNAME2);
     }
 
   auto void add_var (grub_parser_state_t newstate);
