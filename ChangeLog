@@ -1,3 +1,7 @@
+2005-11-26  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* configure.ac: Correct `AC_PROG_YACC' test.
+
 2005-11-22  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* util/powerpc/ieee1275/grub-install.in: Run the mount point
