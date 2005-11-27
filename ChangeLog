@@ -1,3 +1,8 @@
+2005-11-27  Marco Gerards  <mgerards@xs4all.nl>
+
+	* include/grub/dl.h (GRUB_MOD_INIT): Use `__attribute__
+	((unused))' to silence gcc warning.
+
 2005-11-26  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* configure.ac: Correct `AC_PROG_YACC' test.
