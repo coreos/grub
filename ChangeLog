@@ -1,3 +1,10 @@
+2005-12-03  Vincent Pelletier  <subdino2004@yahoo.fr>
+
+	* commands/i386/pc/play.c: New file.
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added play.mod.
+	(play_mod_SOURCES, play_mod_CFLAGS, play_mod_LDFLAGS): New
+	macros.
+	
 2005-11-27  Marco Gerards  <mgerards@xs4all.nl>
 
 	* include/grub/dl.h (GRUB_MOD_INIT): Use `__attribute__

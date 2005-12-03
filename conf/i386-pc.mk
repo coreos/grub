@@ -1336,7 +1336,7 @@ grub-install: util/i386/pc/grub-install.in config.status
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod vga.mod	\
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
-	vbe.mod vesafb.mod vbetest.mod vbeinfo.mod
+	vbe.mod vesafb.mod vbetest.mod vbeinfo.mod play.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -2327,5 +2327,56 @@ fs-vbetest_mod-commands_i386_pc_vbetest.lst: commands/i386/pc/vbetest.c genfslis
 
 vbetest_mod_CFLAGS = $(COMMON_CFLAGS)
 vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For play.mod.
+play_mod_SOURCES = commands/i386/pc/play.c
+CLEANFILES += play.mod mod-play.o mod-play.c pre-play.o play_mod-commands_i386_pc_play.o def-play.lst und-play.lst
+MOSTLYCLEANFILES += play_mod-commands_i386_pc_play.d
+DEFSYMFILES += def-play.lst
+UNDSYMFILES += und-play.lst
+
+play.mod: pre-play.o mod-play.o
+	-rm -f $@
+	$(LD) $(play_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-play.o: play_mod-commands_i386_pc_play.o
+	-rm -f $@
+	$(LD) $(play_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-play.o: mod-play.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(play_mod_CFLAGS) -c -o $@ $<
+
+mod-play.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'play' $< > $@ || (rm -f $@; exit 1)
+
+def-play.lst: pre-play.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 play/' > $@
+
+und-play.lst: pre-play.o
+	echo 'play' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+play_mod-commands_i386_pc_play.o: commands/i386/pc/play.c
+	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(play_mod_CFLAGS) -c -o $@ $<
+
+play_mod-commands_i386_pc_play.d: commands/i386/pc/play.c
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(play_mod_CFLAGS) -M $< 	  | sed 's,play\.o[ :]*,play_mod-commands_i386_pc_play.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include play_mod-commands_i386_pc_play.d
+
+CLEANFILES += cmd-play_mod-commands_i386_pc_play.lst fs-play_mod-commands_i386_pc_play.lst
+COMMANDFILES += cmd-play_mod-commands_i386_pc_play.lst
+FSFILES += fs-play_mod-commands_i386_pc_play.lst
+
+cmd-play_mod-commands_i386_pc_play.lst: commands/i386/pc/play.c gencmdlist.sh
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(play_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh play > $@ || (rm -f $@; exit 1)
+
+fs-play_mod-commands_i386_pc_play.lst: commands/i386/pc/play.c genfslist.sh
+	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) $(play_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh play > $@ || (rm -f $@; exit 1)
+
+
+play_mod_CFLAGS = $(COMMON_CFLAGS)
+play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

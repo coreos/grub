@@ -114,7 +114,7 @@ grub_install_SOURCES = util/i386/pc/grub-install.in
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod vga.mod	\
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
-	vbe.mod vesafb.mod vbetest.mod vbeinfo.mod
+	vbe.mod vesafb.mod vbetest.mod vbeinfo.mod play.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -195,5 +195,10 @@ vbeinfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 vbetest_mod_SOURCES = commands/i386/pc/vbetest.c
 vbetest_mod_CFLAGS = $(COMMON_CFLAGS)
 vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For play.mod.
+play_mod_SOURCES = commands/i386/pc/play.c
+play_mod_CFLAGS = $(COMMON_CFLAGS)
+play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
