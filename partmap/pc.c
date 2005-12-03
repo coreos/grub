@@ -140,6 +140,10 @@ pc_partition_map_iterate (grub_disk_t disk,
 			"partition %d: flag 0x%x, type 0x%x, start 0x%lx, len 0x%lx\n",
 			p.index, e->flag, pcdata.dos_type, p.start, p.len);
 
+	  /* If this is a GPT partition, this MBR is just a dummy.  */
+	  if (e->type == GRUB_PC_PARTITION_TYPE_GPT_DISK && p.index == 0)
+	    return grub_error (GRUB_ERR_BAD_PART_TABLE, "dummy mbr");
+
 	  /* If this partition is a normal one, call the hook.  */
 	  if (! grub_pc_partition_is_empty (e->type)
 	      && ! grub_pc_partition_is_extended (e->type))

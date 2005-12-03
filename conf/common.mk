@@ -6,7 +6,7 @@ grub_script.tab.c grub_script.tab.h: normal/parser.y
 
 # For grub-emu.
 grub_modules_init.lst: geninit.sh
-	(find $(srcdir) -name '*.c' | xargs grep GRUB_MOD_INIT) > $@
+	(cd $(srcdir); find . -name '*.c' -printf "%P\n" | xargs grep GRUB_MOD_INIT) > $@
 
 grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
 	sh $(srcdir)/geninitheader.sh > $@
@@ -581,10 +581,9 @@ fs-sfs_mod-fs_sfs.lst: fs/sfs.c genfslist.sh
 
 sfs_mod_CFLAGS = $(COMMON_CFLAGS)
 sfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
- 
 
-# Partiton maps.
-pkgdata_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod
+# Partition maps.
+pkgdata_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod
 
 # For amiga.mod
 amiga_mod_SOURCES = partmap/amiga.c
@@ -840,6 +839,57 @@ fs-acorn_mod-partmap_acorn.lst: partmap/acorn.c genfslist.sh
 
 acorn_mod_CFLAGS = $(COMMON_CFLAGS)
 acorn_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gpt.mod
+gpt_mod_SOURCES = partmap/gpt.c
+CLEANFILES += gpt.mod mod-gpt.o mod-gpt.c pre-gpt.o gpt_mod-partmap_gpt.o def-gpt.lst und-gpt.lst
+MOSTLYCLEANFILES += gpt_mod-partmap_gpt.d
+DEFSYMFILES += def-gpt.lst
+UNDSYMFILES += und-gpt.lst
+
+gpt.mod: pre-gpt.o mod-gpt.o
+	-rm -f $@
+	$(LD) $(gpt_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-gpt.o: gpt_mod-partmap_gpt.o
+	-rm -f $@
+	$(LD) $(gpt_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-gpt.o: mod-gpt.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -c -o $@ $<
+
+mod-gpt.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'gpt' $< > $@ || (rm -f $@; exit 1)
+
+def-gpt.lst: pre-gpt.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gpt/' > $@
+
+und-gpt.lst: pre-gpt.o
+	echo 'gpt' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+gpt_mod-partmap_gpt.o: partmap/gpt.c
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -c -o $@ $<
+
+gpt_mod-partmap_gpt.d: partmap/gpt.c
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -M $< 	  | sed 's,gpt\.o[ :]*,gpt_mod-partmap_gpt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include gpt_mod-partmap_gpt.d
+
+CLEANFILES += cmd-gpt_mod-partmap_gpt.lst fs-gpt_mod-partmap_gpt.lst
+COMMANDFILES += cmd-gpt_mod-partmap_gpt.lst
+FSFILES += fs-gpt_mod-partmap_gpt.lst
+
+cmd-gpt_mod-partmap_gpt.lst: partmap/gpt.c gencmdlist.sh
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gpt > $@ || (rm -f $@; exit 1)
+
+fs-gpt_mod-partmap_gpt.lst: partmap/gpt.c genfslist.sh
+	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gpt > $@ || (rm -f $@; exit 1)
+
+
+gpt_mod_CFLAGS = $(COMMON_CFLAGS)
+gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 
 # Commands.

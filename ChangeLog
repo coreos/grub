@@ -1,3 +1,23 @@
+2005-12-03  Marco Gerards  <mgerards@xs4all.nl>
+
+	* conf/common.rmk (grub_modules_init.lst): Use `-printf "%P\n"'
+	and `cd' to make sure the filename is not prefixed with a
+	directory name.
+	(pkgdata_MODULES): Add `gpt.mod'.
+	(gpt_mod_SOURCES): New variable.
+	(gpt_mod_CFLAGS): Likewise.
+	(gpt_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `partmap/gpt.c'.
+
+	* include/grub/pc_partition.h (GRUB_PC_PARTITION_TYPE_GPT_DISK):
+	New macro.
+
+	* partmap/gpt.c: New file.
+
+	* partmap/pc.c (pc_partition_map_iterate): Don't continue when a
+	GPT partition map is detected.
+
 2005-12-03  Vincent Pelletier  <subdino2004@yahoo.fr>
 
 	* commands/i386/pc/play.c: New file.

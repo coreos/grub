@@ -6,7 +6,7 @@ grub_script.tab.c grub_script.tab.h: normal/parser.y
 
 # For grub-emu.
 grub_modules_init.lst: geninit.sh
-	(find $(srcdir) -name '*.c' | xargs grep GRUB_MOD_INIT) > $@
+	(cd $(srcdir); find . -name '*.c' -printf "%P\n" | xargs grep GRUB_MOD_INIT) > $@
 
 grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
 	sh $(srcdir)/geninitheader.sh > $@
@@ -75,10 +75,9 @@ affs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 sfs_mod_SOURCES = fs/sfs.c
 sfs_mod_CFLAGS = $(COMMON_CFLAGS)
 sfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
- 
 
-# Partiton maps.
-pkgdata_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod
+# Partition maps.
+pkgdata_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod
 
 # For amiga.mod
 amiga_mod_SOURCES = partmap/amiga.c
@@ -104,6 +103,11 @@ sun_mod_LDFLAGS = $(COMMON_LDFLAGS)
 acorn_mod_SOURCES = partmap/acorn.c
 acorn_mod_CFLAGS = $(COMMON_CFLAGS)
 acorn_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gpt.mod
+gpt_mod_SOURCES = partmap/gpt.c
+gpt_mod_CFLAGS = $(COMMON_CFLAGS)
+gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 
 # Commands.
