@@ -1,3 +1,15 @@
+2005-12-09  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* configure.ac: Accept `powerpc64' as host_cpu.
+	(amd64): Rename to `biarch32'.
+
+	* kern/powerpc/cache.S (grub_arch_sync_caches): Handle
+	non-cacheline-aligned addresses.
+
+	* kern/dl.c (grub_dl_load_core): Add grub_dprintf messages.
+	(grub_dl_flush_cache): Likewise.  Only call `grub_arch_sync_caches'
+	if `size' is non-zero.
+
 2005-12-03  Marco Gerards  <mgerards@xs4all.nl>
 
 	* conf/common.rmk (grub_modules_init.lst): Use `-printf "%P\n"'

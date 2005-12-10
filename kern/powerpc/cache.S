@@ -20,11 +20,15 @@
 
 #define CACHE_LINE_BYTES 32
 
-	         .text
+	.text
 
-	         .align 2
-	         .globl grub_arch_sync_caches
+	.align 2
+	.globl grub_arch_sync_caches
 grub_arch_sync_caches:
+	/* `address' may not be CACHE_LINE_BYTES-aligned.  */
+	andi. 6, 3, CACHE_LINE_BYTES - 1 /* Find the misalignment.  */
+	add 4, 4, 6 /* Adjust `size' to compensate.  */
+
 	/* Force the dcache lines to memory.  */
 	li 5, 0
 1:	dcbst 5, 3

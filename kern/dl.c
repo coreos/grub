@@ -507,9 +507,14 @@ static void
 grub_dl_flush_cache (grub_dl_t mod)
 {
   grub_dl_segment_t seg;
-  
-  for (seg = mod->segment; seg; seg = seg->next)
-    grub_arch_sync_caches (seg->addr, seg->size);
+
+  for (seg = mod->segment; seg; seg = seg->next) {
+    if (seg->size) {
+      grub_dprintf ("modules", "flushing 0x%x bytes at %p\n", seg->size,
+		    seg->addr);
+      grub_arch_sync_caches (seg->addr, seg->size);
+    }
+  }
 }
 
 /* Load a module from core memory.  */
@@ -518,11 +523,12 @@ grub_dl_load_core (void *addr, grub_size_t size)
 {
   Elf_Ehdr *e;
   grub_dl_t mod;
-  
+
+  grub_dprintf ("modules", "module at %p, size 0x%x\n", addr, size);
   e = addr;
   if (grub_dl_check_header (e, size))
     return 0;
-  
+
   if (e->e_type != ET_REL)
     {
       grub_error (GRUB_ERR_BAD_MODULE, "invalid ELF file type");
@@ -547,6 +553,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
   mod->init = 0;
   mod->fini = 0;
 
+  grub_dprintf ("modules", "relocating to %p\n", mod);
   if (grub_dl_resolve_name (mod, e)
       || grub_dl_resolve_dependencies (mod, e)
       || grub_dl_load_segments (mod, e)
@@ -559,15 +566,17 @@ grub_dl_load_core (void *addr, grub_size_t size)
     }
 
   grub_dl_flush_cache (mod);
-  
+
+  grub_dprintf ("modules", "module name: %s\n", mod->name);
+  grub_dprintf ("modules", "init function: %p\n", mod->init);
   grub_dl_call_init (mod);
-  
+
   if (grub_dl_add (mod))
     {
       grub_dl_unload (mod);
       return 0;
     }
-  
+
   return mod;
 }
 

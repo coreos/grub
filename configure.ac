@@ -22,8 +22,9 @@ AC_CANONICAL_HOST
 
 case "$host_cpu" in
   i[[3456]]86) host_cpu=i386 ;;
-  x86_64) host_cpu=i386 amd64=1 ;;
+  x86_64) host_cpu=i386 biarch32=1 ;;
   powerpc) ;;
+  powerpc64) host_cpu=powerpc biarch32=1;;
   sparc64) ;;
   *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
@@ -88,7 +89,7 @@ if test "x$default_CFLAGS" = xyes; then
     fi
   fi
 
-  if test "x$amd64" = x1; then
+  if test "x$biarch32" = x1; then
     tmp_CFLAGS="$tmp_CFLAGS -m32"
   fi
 
