@@ -3,5 +3,6 @@ Makefile
 grub-image
 grub-install
 grub-md5-crypt
+grub-set-default
 grub-terminfo
 mbchk
