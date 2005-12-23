@@ -1,3 +1,18 @@
+2005-12-24  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* kern/err.c (grub_error_push): Added new function to support error
+	stacks.
+	(grub_error_pop): Likewise.
+	(grub_error_stack_items): New local variable to support error stacks.
+	(grub_error_stack_pos): Likewise.
+	(grub_error_stack_assert): Likewise.
+	(GRUB_ERROR_STACK_SIZE): Added new define to configure maximum error
+	stack depth.
+	(grub_print_error): Added support to print errors from error stack.
+
+	* include/grub/err.h (grub_error_push): Added function prototype.
+	(grub_error_pop): Likewise.
+
 2005-12-09  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* configure.ac: Accept `powerpc64' as host_cpu.
