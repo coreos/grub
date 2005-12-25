@@ -1,3 +1,7 @@
+2005-12-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* geninit.sh: Made more robust, and more portable.
+
 2005-12-25  Marco Gerards  <marco@gnu.org>
 
 	Add support for Apple HFS+ filesystems.
