@@ -66,12 +66,6 @@
    cannot straddle a 64K boundary.  */
 #define GRUB_BOOT_MACHINE_BUFFER_SEG	0x7000
 
-/* The address of drive parameters.  */
-#define GRUB_BOOT_MACHINE_DRP_ADDR	0x7f00
-
-/* The size of drive parameters.  */
-#define GRUB_BOOT_MACHINE_DRP_SIZE	0x42
-
 /* The flag for BIOS drive number to designate a hard disk vs. a
    floppy.  */
 #define GRUB_BOOT_MACHINE_BIOS_HD_FLAG	0x80
