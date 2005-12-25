@@ -1,3 +1,19 @@
+2005-12-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added geninitheader.sh, geninit.sh, commands/test.c,
+	commands/i386/pc/play.c, conf/common.mk, conf/common.rmk,
+	include/grub/parser.h, include/grub/script.h, kern/parser.c,
+	kern/sparc64/cache.S, normal/execute.c, normal/function.c,
+	normal/lexer.c, normal/parser.y, normal/script.c, and
+	partmap/gpt.c.
+	Removed kern/sparc64/cache.c.
+
+	* conf/common.rmk (DISTCLEANFILES): Added grub_script.tab.c,
+	grub_script.tab.h, grub_modules_init.lst, grub_modules_init.h,
+	grub_emu_init.c.
+
+	* configure.ac (AC_INIT): Bumped to 1.92.
+
 2005-12-24  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* kern/err.c (grub_error_push): Added new function to support error

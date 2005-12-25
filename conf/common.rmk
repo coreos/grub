@@ -3,17 +3,20 @@
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
+DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
 
 # For grub-emu.
 grub_modules_init.lst: geninit.sh
 	(cd $(srcdir); find . -name '*.c' -printf "%P\n" | xargs grep GRUB_MOD_INIT) > $@
+DISTCLEANFILES += grub_modules_init.lst
 
 grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
 	sh $(srcdir)/geninitheader.sh > $@
+DISTCLEANFILES += grub_modules_init.h
 
 grub_emu_init.c: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_modules_init.lst grub_modules_init.h
 	sh $(srcdir)/geninit.sh $(filter %.c,$^) > $@
-
+DISTCLEANFILES += grub_emu_init.c
 
 
 # Filing systems.
