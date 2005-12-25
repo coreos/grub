@@ -37,7 +37,8 @@
 	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR + GRUB_MEMORY_MACHINE_SCRATCH_SIZE \
 	 + GRUB_MEMORY_MACHINE_PROT_STACK_SIZE - 0x10)
 
-/* The memory area where GRUB uses its own purpose.  */
+/* The memory area where GRUB uses its own purpose. This part is not added
+   into free memory for dynamic allocations.  */
 #define GRUB_MEMORY_MACHINE_RESERVED_START	\
 	GRUB_MEMORY_MACHINE_SCRATCH_ADDR
 #define GRUB_MEMORY_MACHINE_RESERVED_END	\
