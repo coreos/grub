@@ -72,6 +72,7 @@ fs/minix.c
 fs/ufs.c
 fs/sfs.c
 fs/xfs.c
+fs/hfsplus.c
 hello/hello.c
 include/grub/acorn_filecore.h
 include/grub/arg.h

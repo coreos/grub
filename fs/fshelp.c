@@ -1,7 +1,7 @@
 /* fshelp.c -- Filesystem helper functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -275,6 +275,7 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
       if (blknr)
 	{
 	  disk->read_hook = read_hook;	  
+
 	  grub_disk_read (disk, blknr, skipfirst,
 			  blockend, buf);
 	  disk->read_hook = 0;
@@ -288,4 +289,25 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
     }
 
   return len;
+}
+
+unsigned int
+grub_fshelp_log2blksize (unsigned int blksize, unsigned int *pow)
+{
+  int mod;
+  
+  *pow = 0;
+  while (blksize > 1)
+    {
+      mod =  blksize - ((blksize >> 1) << 1);
+      blksize >>= 1;
+
+      /* Check if it really is a power of two.  */
+      if (mod)
+	return grub_error (GRUB_ERR_BAD_NUMBER,
+			   "the blocksize is not a power of two");
+      (*pow)++;
+    }
+
+  return GRUB_ERR_NONE;
 }

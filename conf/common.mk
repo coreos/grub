@@ -22,7 +22,7 @@ DISTCLEANFILES += grub_emu_init.c
 # Filing systems.
 pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod		\
 	minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod affs.mod	\
-	sfs.mod
+	sfs.mod hfsplus.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -584,6 +584,57 @@ fs-sfs_mod-fs_sfs.lst: fs/sfs.c genfslist.sh
 
 sfs_mod_CFLAGS = $(COMMON_CFLAGS)
 sfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For hfsplus.mod.
+hfsplus_mod_SOURCES = fs/hfsplus.c
+CLEANFILES += hfsplus.mod mod-hfsplus.o mod-hfsplus.c pre-hfsplus.o hfsplus_mod-fs_hfsplus.o def-hfsplus.lst und-hfsplus.lst
+MOSTLYCLEANFILES += hfsplus_mod-fs_hfsplus.d
+DEFSYMFILES += def-hfsplus.lst
+UNDSYMFILES += und-hfsplus.lst
+
+hfsplus.mod: pre-hfsplus.o mod-hfsplus.o
+	-rm -f $@
+	$(LD) $(hfsplus_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-hfsplus.o: hfsplus_mod-fs_hfsplus.o
+	-rm -f $@
+	$(LD) $(hfsplus_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-hfsplus.o: mod-hfsplus.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -c -o $@ $<
+
+mod-hfsplus.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'hfsplus' $< > $@ || (rm -f $@; exit 1)
+
+def-hfsplus.lst: pre-hfsplus.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 hfsplus/' > $@
+
+und-hfsplus.lst: pre-hfsplus.o
+	echo 'hfsplus' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+hfsplus_mod-fs_hfsplus.o: fs/hfsplus.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -c -o $@ $<
+
+hfsplus_mod-fs_hfsplus.d: fs/hfsplus.c
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -M $< 	  | sed 's,hfsplus\.o[ :]*,hfsplus_mod-fs_hfsplus.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include hfsplus_mod-fs_hfsplus.d
+
+CLEANFILES += cmd-hfsplus_mod-fs_hfsplus.lst fs-hfsplus_mod-fs_hfsplus.lst
+COMMANDFILES += cmd-hfsplus_mod-fs_hfsplus.lst
+FSFILES += fs-hfsplus_mod-fs_hfsplus.lst
+
+cmd-hfsplus_mod-fs_hfsplus.lst: fs/hfsplus.c gencmdlist.sh
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfsplus > $@ || (rm -f $@; exit 1)
+
+fs-hfsplus_mod-fs_hfsplus.lst: fs/hfsplus.c genfslist.sh
+	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hfsplus > $@ || (rm -f $@; exit 1)
+
+
+hfsplus_mod_CFLAGS = $(COMMON_CFLAGS)
+hfsplus_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Partition maps.
 pkgdata_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod

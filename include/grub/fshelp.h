@@ -1,7 +1,7 @@
 /* fshelp.h -- Filesystem helper functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -71,5 +71,9 @@ EXPORT_FUNC(grub_fshelp_read_file) (grub_disk_t disk, grub_fshelp_node_t node,
 				    int (*get_block) (grub_fshelp_node_t node,
 						      int block),
 				    unsigned int filesize, int log2blocksize);
-     
+
+unsigned int
+EXPORT_FUNC(grub_fshelp_log2blksize) (unsigned int blksize,
+				      unsigned int *pow);
+
 #endif /* ! GRUB_FSHELP_HEADER */

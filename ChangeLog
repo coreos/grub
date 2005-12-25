@@ -1,3 +1,25 @@
+2005-12-25  Marco Gerards  <marco@gnu.org>
+
+	Add support for Apple HFS+ filesystems.
+	
+	* fs/hfsplus.c: New file.
+
+	* DISTLIST: Added `fs/hfsplus.c'.
+
+	* conf/common.rmk (pkgdata_MODULES): Add `hfsplus.mod'.
+	(hfsplus_mod_SOURCES): New variable.
+	(hfsplus_mod_CFLAGS): Likewise.
+	(hfsplus_mod_LDFLAGS): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add `fs/hfsplus.c'.
+	(grub_setup_SOURCES): Likewise.
+	(grub_mkdevicemap_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
+	* fs/fshelp.c (grub_fshelp_log2blksize): New function.
+
+	* include/grub/fshelp.h (grub_fshelp_log2blksize): new prototype.
+
 2005-12-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added geninitheader.sh, geninit.sh, commands/test.c,
