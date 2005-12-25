@@ -96,7 +96,7 @@ grub_env_set (const char *var, const char *val)
     goto fail;
   
   env->value = grub_strdup (val);
-  if (! env->name)
+  if (! env->value)
     goto fail;
   
   /* Insert it in the hashtable.  */

@@ -1,3 +1,8 @@
+2005-12-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/env.c (grub_env_set): Check if ENV->VALUE instead of
+	ENV->NAME is NULL after	allocating ENV->VALUE.
+
 2005-12-25  Marco Gerards  <marco@gnu.org>
 
 	* kern/env.c (grub_env_set): Rewritten the error handling code.
