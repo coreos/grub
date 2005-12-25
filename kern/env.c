@@ -123,15 +123,14 @@ grub_env_set (const char *var, const char *val)
     sort->sort_prevp = &env->sort_next;
   *sortp = env;
 
- fail:
-  if (grub_errno)
-    {
-      grub_free (env->name);
-      grub_free (env->value);
-      grub_free (env);
-    }
-  
   return 0;
+
+ fail:
+  grub_free (env->name);
+  grub_free (env->value);
+  grub_free (env);
+
+  return grub_errno;
 }
 
 char *
