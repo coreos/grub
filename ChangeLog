@@ -1,5 +1,12 @@
 2006-01-03  Marco Gerards  <marco@gnu.org>
 
+	* fs/hfsplus.c (grub_hfsplus_read_block): Convert the offset of
+	the HFS+ filesystem to filesystem blocks.
+	(grub_hfsplus_iterate_dir): Cast the `fileinfo' assignment so a
+	GCC warning is silenced.
+
+2006-01-03  Marco Gerards  <marco@gnu.org>
+
 	* partmap/apple.c (apple_partition_map_iterate): Convert the data
 	read from disk from big	endian to host byte order.
 

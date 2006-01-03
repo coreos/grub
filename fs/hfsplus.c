@@ -279,7 +279,8 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
       /* Try to find this block in the current set of extents.  */
       blk = grub_hfsplus_find_block (extents, fileblock, &retry);
       if (blk != -1)
-	return blk + node->data->embedded_offset;
+	return blk + (node->data->embedded_offset >> (node->data->log2blksize
+						      - GRUB_DISK_SECTOR_BITS));
 
       /* The previous iteration of this loop allocated memory.  The
 	 code above used this memory, it can be free'ed now.  */
@@ -704,8 +705,11 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 
       catkey = (struct grub_hfsplus_catkey *) record;
 
-      fileinfo = (record + grub_be_to_cpu16 (catkey->keylen)
-		  + 2 + grub_be_to_cpu16(catkey->keylen) % 2);
+      fileinfo =
+	(struct grub_hfsplus_catfile *) ((char *) record 
+					 + grub_be_to_cpu16 (catkey->keylen)
+					 + 2 + (grub_be_to_cpu16(catkey->keylen)
+						% 2));
 
       /* Stop iterating when the last directory entry was found.  */
       if (grub_be_to_cpu32 (catkey->parent) != dir->fileid)
