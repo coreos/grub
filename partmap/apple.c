@@ -117,28 +117,30 @@ apple_partition_map_iterate (grub_disk_t disk,
 			  sizeof (struct grub_apple_part),  (char *) &apart))
 	return grub_errno;
 
-      if (apart.magic != GRUB_APPLE_PART_MAGIC)
+      if (grub_be_to_cpu16 (apart.magic) != GRUB_APPLE_PART_MAGIC)
 	{
 	  grub_dprintf ("partition",
 			"partition %d: bad magic (found 0x%x; wanted 0x%x\n",
-			partno, apart.magic, GRUB_APPLE_PART_MAGIC);
+			partno, grub_be_to_cpu16 (apart.magic),
+			GRUB_APPLE_PART_MAGIC);
 	  break;
 	}
 
-      part.start = apart.first_phys_block;
-      part.len = apart.blockcnt;
+      part.start = grub_be_to_cpu32 (apart.first_phys_block);
+      part.len = grub_be_to_cpu32 (apart.blockcnt);
       part.offset = pos;
       part.index = partno;
 
       grub_dprintf ("partition",
 		    "partition %d: name %s, type %s, start 0x%x, len 0x%x\n",
 		    partno, apart.partname, apart.parttype,
-		    apart.first_phys_block, apart.blockcnt);
+		    grub_be_to_cpu32 (apart.first_phys_block),
+		    grub_be_to_cpu32 (apart.blockcnt));
 
       if (hook (disk, &part))
 	return grub_errno;
 
-      if (apart.first_phys_block == GRUB_DISK_SECTOR_SIZE * 2)
+      if (grub_be_to_cpu32 (apart.first_phys_block) == GRUB_DISK_SECTOR_SIZE * 2)
 	return 0;
 
       pos += sizeof (struct grub_apple_part);

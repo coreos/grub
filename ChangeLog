@@ -1,3 +1,8 @@
+2006-01-03  Marco Gerards  <marco@gnu.org>
+
+	* partmap/apple.c (apple_partition_map_iterate): Convert the data
+	read from disk from big	endian to host byte order.
+
 2006-01-03  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* fs/hfs.c: Include <grub/hfs.h>.  Added reference to the official
