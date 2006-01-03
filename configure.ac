@@ -45,13 +45,10 @@ if test "x$CFLAGS" = x; then
 fi
 
 AC_PROG_CC
-AC_PROG_YACC
-# AC_PROG_YACC doesn't actually check if yacc exists!
-tmp_yacc=$YACC
-unset YACC
-AC_CHECK_PROG(YACC, "$tmp_yacc", "$tmp_yacc")
+
+AC_CHECK_PROGS([YACC], [bison])
 if test "x$YACC" = x; then
-  AC_MSG_ERROR([Could not find $tmp_yacc.])
+  AC_MSG_ERROR([Could not find bison.])
 fi
 
 AC_SYS_LARGEFILE

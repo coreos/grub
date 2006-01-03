@@ -68,6 +68,7 @@ LD = @LD@
 RUBY = @RUBY@
 LIBCURSES = @LIBCURSES@
 LIBLZO = @LIBLZO@
+YACC = @YACC@
 
 ### General variables.
 
