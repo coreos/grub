@@ -1,3 +1,25 @@
+2006-01-03  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* fs/hfs.c: Include <grub/hfs.h>.  Added reference to the official
+	documentation.
+	(GRUB_HFS_EMBED_HFSPLUS_SIG): New macro.
+	(grub_hfs_mount): Grammar fix in error. Make sure this is not an
+	embedded HFS+ filesystem.
+	(GRUB_HFS_MAGIC, grub_hfs_extent, grub_hfs_datarecord_t)
+	(grub_hfs_sblock): Move from here...
+	* include/grub/hfs.h: To here...  New file.
+	* fs/hfsplus.c: Include <grub/hfs.h>.  Added reference to the official
+	documentation.
+	(GRUB_HFSPLUS_MAGIC, GRUB_HFSPLUSX_MAGIC, GRUB_HFSPLUS_SBLOCK):
+	New macros.
+	(grub_hfsplus_volheader): Change type of member `magic' to
+	`grub_uint16_t'.
+	(grub_hfsplus_data): Add new member `embedded_offset'.
+	(grub_hfsplus_read_block): Add the HFS+ wrapper offset to the
+	returned block.
+	(grub_hfsplus_mount): Read the HFS+ wrapper if it exists.
+	Calculate the offset.
+
 2005-12-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_DRP_ADDR):

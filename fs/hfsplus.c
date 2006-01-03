@@ -1,7 +1,7 @@
 /* hfsplus.c - HFS+ Filesystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005, 2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* HFS+ is documented at http://developer.apple.com/technotes/tn/tn1150.html */
+
 #include <grub/err.h>
 #include <grub/file.h>
 #include <grub/mm.h>
@@ -26,6 +28,11 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/fshelp.h>
+#include <grub/hfs.h>
+
+#define GRUB_HFSPLUS_MAGIC 0x482B
+#define GRUB_HFSPLUSX_MAGIC 0x4858
+#define GRUB_HFSPLUS_SBLOCK 2
 
 /* A HFS+ extent.  */
 struct grub_hfsplus_extent
@@ -48,7 +55,7 @@ struct grub_hfsplus_forkdata
 /* The HFS+ Volume Header.  */
 struct grub_hfsplus_volheader
 {
-  grub_uint8_t magic[2];
+  grub_uint16_t magic;
   grub_uint16_t version;
   grub_uint32_t attributes;
   grub_uint8_t unused[32];
@@ -208,6 +215,10 @@ struct grub_hfsplus_data
 
   struct grub_fshelp_node dirroot;
   struct grub_fshelp_node opened_file;
+
+  /* This is the offset into the physical disk for an embedded HFS+
+     filesystem (one inside a plain HFS wrapper).  */
+  int embedded_offset;
 };
 
 #ifndef GRUB_UTIL
@@ -268,7 +279,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
       /* Try to find this block in the current set of extents.  */
       blk = grub_hfsplus_find_block (extents, fileblock, &retry);
       if (blk != -1)
-	return blk;
+	return blk + node->data->embedded_offset;
 
       /* The previous iteration of this loop allocated memory.  The
 	 code above used this memory, it can be free'ed now.  */
@@ -333,6 +344,10 @@ grub_hfsplus_mount (grub_disk_t disk)
   struct grub_hfsplus_data *data;
   struct grub_hfsplus_btheader header;
   struct grub_hfsplus_btnode node;
+  union {
+    struct grub_hfs_sblock hfs;
+    struct grub_hfsplus_volheader hfsplus;
+  } volheader;
 
   data = grub_malloc (sizeof (*data));
   if (!data)
@@ -341,19 +356,50 @@ grub_hfsplus_mount (grub_disk_t disk)
   data->disk = disk;
 
   /* Read the bootblock.  */
-  grub_disk_read (disk, 2, 0, sizeof (struct grub_hfsplus_volheader),
-		  (char *) &data->volheader);
+  grub_disk_read (disk, GRUB_HFSPLUS_SBLOCK, 0, sizeof (volheader),
+		  (char *) &volheader);
   if (grub_errno)
     goto fail;
 
-  /* Make sure this is an hfs+ filesystem.  XXX: Do we really support
+  data->embedded_offset = 0;
+  if (grub_be_to_cpu16 (volheader.hfs.magic) == GRUB_HFS_MAGIC)
+    {
+      int extent_start;
+      int ablk_size;
+      int ablk_start;
+
+      /* See if there's an embedded HFS+ filesystem.  */
+      if (grub_be_to_cpu16 (volheader.hfs.embed_sig) != GRUB_HFSPLUS_MAGIC)
+	{
+	  grub_error (GRUB_ERR_BAD_FS, "not a HFS+ filesystem");
+	  goto fail;
+	}
+
+      /* Calculate the offset needed to translate HFS+ sector numbers.  */
+      extent_start = grub_be_to_cpu16 (volheader.hfs.embed_extent.first_block);
+      ablk_size = grub_be_to_cpu32 (volheader.hfs.blksz);
+      ablk_start = grub_be_to_cpu16 (volheader.hfs.first_block);
+      data->embedded_offset = (ablk_start
+			       + extent_start
+			       * (ablk_size >> GRUB_DISK_SECTOR_BITS));
+
+      grub_disk_read (disk, data->embedded_offset + GRUB_HFSPLUS_SBLOCK, 0,
+		      sizeof (volheader), (char *) &volheader);
+      if (grub_errno)
+	goto fail;
+    }
+
+  /* Make sure this is an HFS+ filesystem.  XXX: Do we really support
      HFX?  */
-  if (grub_strncmp (data->volheader.magic, "H+", 2)
-      && grub_strncmp (data->volheader.magic, "HX", 2))
+  if ((grub_be_to_cpu16 (volheader.hfsplus.magic) != GRUB_HFSPLUS_MAGIC)
+      && (grub_be_to_cpu16 (volheader.hfsplus.magic) != GRUB_HFSPLUSX_MAGIC))
     {
       grub_error (GRUB_ERR_BAD_FS, "not a HFS+ filesystem");
       goto fail;
     }
+
+  grub_memcpy (&data->volheader, &volheader.hfsplus,
+      sizeof (volheader.hfsplus));
 
   if (grub_fshelp_log2blksize (grub_be_to_cpu32 (data->volheader.blksize),
 			       &data->log2blksize))

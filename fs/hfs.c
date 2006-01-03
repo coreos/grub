@@ -1,7 +1,7 @@
 /* hfs.c - HFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/* HFS is documented at
+   http://developer.apple.com/documentation/mac/Files/Files-2.html */
+
 #include <grub/err.h>
 #include <grub/file.h>
 #include <grub/mm.h>
@@ -25,9 +28,10 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/types.h>
+#include <grub/hfs.h>
 
 #define	GRUB_HFS_SBLOCK		2
-#define GRUB_HFS_MAGIC		0x4244
+#define GRUB_HFS_EMBED_HFSPLUS_SIG 0x482B
 
 #define GRUB_HFS_BLKS		(data->blksz >> 9)
 
@@ -39,37 +43,6 @@ enum
     GRUB_HFS_FILETYPE_DIR = 1,
     GRUB_HFS_FILETYPE_FILE = 2
   };
-
-/* A single extent.  A file consists of suchs extents.  */
-struct grub_hfs_extent
-{
-  /* The first physical block.  */
-  grub_uint16_t first_block;
-  grub_uint16_t count;
-};
-
-/* HFS stores extents in groups of 3.  */
-typedef struct grub_hfs_extent grub_hfs_datarecord_t[3];
-
-/* The HFS superblock (The official name is `Master Directory
-   Block').  */
-struct grub_hfs_sblock
-{
-  grub_uint16_t magic;
-  grub_uint8_t unused[18];
-  grub_uint32_t blksz;
-  grub_uint8_t unused2[4];
-  grub_uint16_t first_block;
-  grub_uint8_t unused4[6];
-
-  /* A pascal style string that holds the volumename.  */
-  grub_uint8_t volname[28];
-  
-  grub_uint8_t unused5[70];
-  grub_hfs_datarecord_t extent_recs;
-  grub_uint32_t catalog_size;
-  grub_hfs_datarecord_t catalog_recs;
-} __attribute__ ((packed));
 
 /* A node desciptor.  This is the header of every node.  */
 struct grub_hfs_node
@@ -345,7 +318,14 @@ grub_hfs_mount (grub_disk_t disk)
   /* Check if this is a HFS filesystem.  */
   if (grub_be_to_cpu16 (data->sblock.magic) != GRUB_HFS_MAGIC)
     {
-      grub_error (GRUB_ERR_BAD_FS, "not a hfs filesystem");
+      grub_error (GRUB_ERR_BAD_FS, "not an HFS filesystem");
+      goto fail;
+    }
+
+  /* Check if this is an embedded HFS+ filesystem.  */
+  if (grub_be_to_cpu16 (data->sblock.embed_sig) == GRUB_HFS_EMBED_HFSPLUS_SIG)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "embedded HFS+ filesystem");
       goto fail;
     }
   
