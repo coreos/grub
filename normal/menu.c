@@ -347,17 +347,7 @@ run_menu (grub_menu_t menu, int nested)
 static void
 run_menu_entry (grub_menu_entry_t entry)
 {
-  grub_command_list_t cl;
-
-  for (cl = entry->command_list; cl != 0; cl = cl->next)
-    {
-      if (cl->command[0] == '\0')
-	/* Ignore an empty command line.  */
-	continue;
-      
-      if (grub_command_execute (cl->command, 0) != 0)
-	break;
-    }
+  grub_script_execute (entry->commands);
   
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */

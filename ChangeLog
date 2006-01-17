@@ -1,3 +1,40 @@
+2006-01-17  Marco Gerards  <marco@gnu.org>
+
+	* include/grub/normal.h: Include <grub/script.h>.
+	(grub_command_list): Removed struct.
+	(grub_command_list_t): Removed type.
+	(grub_menu_entry): Remove members `num' and `command_list'.  Add
+	members `commands' and `sourcecode'.
+	* include/grub/script.h: Add inclusion guards.
+	(grub_script_cmd_menuentry): New struct.
+	(grub_script_execute_menuentry): New prototype.
+	(grub_script_lexer_record_start): Likewise.
+	(grub_script_lexer_record_stop): Likewise.
+	* normal/execute.c (grub_script_execute_menuentry): New function.
+	* normal/lexer.c (record, recording, recordpos, recordlen): New
+	variables.
+	(grub_script_lexer_record_start): New function.
+	(grub_script_lexer_record_stop): Likewise.
+	(recordchar): Likewise.
+	(nextchar): Likewise.
+	(grub_script_yylex): Use `nextchar' to fetch new characters.  Use
+	2048 as the buffer size.  Add the tokens `menuentry' and `@'.
+	* normal/main.c: Include <grub/parser.h> and <grub/script.h>
+	(current_menu): New variable.
+	(free_menu): Mainly rewritten.
+	(grub_normal_menu_addentry): New function.
+	(read_config_file): Rewritten.
+	* normal/menu.c (run_menu_entry): Mainly rewritten.
+	* normal/menu_entry.c (make_screen): Rewritten te code to insert
+	the menu entry.
+	(run): Mainly rewritten.
+	* normal/parser.y (menu_entry): New variable.
+	(GRUB_PARSER_TOKEN_MENUENTRY): New token.
+	(menuentry): New rule.
+	(command): Add `menuentry'.
+	(if_statement): Allow additional returns before `fi'.
+	* normal/script.c (grub_script_create_cmdmenu): New function.
+
 2006-01-03  Marco Gerards  <marco@gnu.org>
 
 	* INSTALL: GNU Bison is required.

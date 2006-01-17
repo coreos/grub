@@ -27,10 +27,15 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/env.h>
+#include <grub/parser.h>
+#include <grub/script.h>
 
 grub_jmp_buf grub_exit_env;
 
 static grub_fs_module_list_t fs_module_list = 0;
+
+/* The menu to which the new entries are added by the parser.  */
+static grub_menu_t current_menu = 0;
 
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
@@ -110,188 +115,118 @@ free_menu (grub_menu_t menu)
   while (entry)
     {
       grub_menu_entry_t next_entry = entry->next;
-      grub_command_list_t cmd = entry->command_list;
-      
-      while (cmd)
-	{
-	  grub_command_list_t next_cmd = cmd->next;
 
-	  grub_free ((void *) cmd->command);
-	  cmd = next_cmd;
-	}
-
+      grub_script_free (entry->commands);
       grub_free ((void *) entry->title);
+      grub_free ((void *) entry->sourcecode);
       entry = next_entry;
     }
 
   grub_free (menu);
 }
 
-/* Read the config file CONFIG and return a menu. If no entry is present,
-   return NULL.  */
+grub_err_t
+grub_normal_menu_addentry (const char *title, struct grub_script *script,
+			   const char *sourcecode)
+{
+  const char *menutitle;
+  grub_menu_entry_t *last = &current_menu->entry_list;
+
+  menutitle = grub_strdup (title);
+  if (! menutitle)
+    return grub_errno;
+
+  /* Add the menu entry at the end of the list.  */
+  while (*last)
+    last = &(*last)->next;
+
+  *last = grub_malloc (sizeof (**last));
+  if (! *last)
+    {
+      grub_free ((void *) menutitle);
+      grub_free ((void *) sourcecode);
+      return grub_errno;
+    }
+
+  (*last)->commands = script;
+  (*last)->title = menutitle;
+  (*last)->next = 0;
+  (*last)->sourcecode = sourcecode;
+
+  return GRUB_ERR_NONE;
+}
+
 static grub_menu_t
 read_config_file (const char *config)
 {
   grub_file_t file;
-  static char cmdline[GRUB_MAX_CMDLINE];
-  grub_menu_t menu;
-  grub_menu_entry_t *next_entry, cur_entry = 0;
-  grub_command_list_t *next_cmd, cur_cmd;
+  auto grub_err_t getline (char **line);
+  int currline = 0;
   
+  grub_err_t getline (char **line)
+    {
+      char cmdline[100];
+      currline++;
+
+      if (! get_line (file, cmdline, sizeof (cmdline)))
+	return 0;
+      
+      *line = grub_strdup (cmdline);
+      if (! *line)
+	return grub_errno;
+
+      return GRUB_ERR_NONE;
+    }
+
+  char cmdline[100];
+  grub_menu_t newmenu;
+
+  newmenu = grub_malloc (sizeof (*newmenu));
+  if (! newmenu)
+    return 0;
+  newmenu->default_entry = 0;
+  newmenu->fallback_entry = -1;
+  newmenu->timeout = -1;
+  newmenu->size = 0;
+  newmenu->entry_list = 0;
+  current_menu = newmenu;
+
   /* Try to open the config file.  */
   file = grub_file_open (config);
   if (! file)
     return 0;
 
-  /* Initialize the menu.  */
-  menu = (grub_menu_t) grub_malloc (sizeof (*menu));
-  if (! menu)
-    {
-      grub_file_close (file);
-      return 0;
-    }
-  menu->default_entry = 0;
-  menu->fallback_entry = -1;
-  menu->timeout = -1;
-  menu->size = 0;
-  menu->entry_list = 0;
-
-  if (! grub_context_push_menu (menu))
-    {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-
-      free_menu (menu);
-      grub_file_close (file);
-      
-      /* Wait until the user pushes any key so that the user
-	 can see what happened.  */
-      grub_printf ("\nPress any key to continue...");
-      (void) grub_getkey ();
-      return 0;
-    }
-  
-  next_entry = &(menu->entry_list);
-  next_cmd = 0;
-  
-  /* Read each line.  */
   while (get_line (file, cmdline, sizeof (cmdline)))
     {
-      grub_command_t cmd;
-
-      cmd = grub_command_find (cmdline);
-      grub_errno = GRUB_ERR_NONE;
+      struct grub_script *parsed_script;
       
-      if (cur_entry)
+      currline++;
+
+      /* Execute the script, line for line.  */
+      parsed_script = grub_script_parse (cmdline, getline);
+
+      if (! parsed_script)
 	{
-	  if (! cmd || ! (cmd->flags & GRUB_COMMAND_FLAG_TITLE))
-	    {
-	      cur_cmd = (grub_command_list_t) grub_malloc (sizeof (*cur_cmd));
-	      if (! cur_cmd)
-		goto fail;
-	      
-	      cur_cmd->command = grub_strdup (cmdline);
-	      if (! cur_cmd->command)
-		{
-		  grub_free (cur_cmd);
-		  goto fail;
-		}
-	      
-	      cur_cmd->next = 0;
-	      
-	      *next_cmd = cur_cmd;
-	      next_cmd = &(cur_cmd->next);
-	      
-	      cur_entry->num++;
-	      continue;
-	    }
-	}
-      
-      if (! cmd)
-	{
-	  grub_printf ("Unknown command `%s' is ignored.\n", cmdline);
-	  continue;
+	  /* Wait until the user pushes any key so that the user can
+	     see what happened.  */
+	  grub_printf ("\nPress any key to continue...");
+	  (void) grub_getkey ();
+
+	  grub_file_close (file);
+	  return 0;
 	}
 
-      if (cmd->flags & GRUB_COMMAND_FLAG_TITLE)
-	{
-	  char *p;
-	  
-	  cur_entry = (grub_menu_entry_t) grub_malloc (sizeof (*cur_entry));
-	  if (! cur_entry)
-	    goto fail;
+      /* Execute the command(s).  */
+      grub_script_execute (parsed_script);
 
-	  p = grub_strchr (cmdline, ' ');
-	  if (p)
-	    cur_entry->title = grub_strdup (p);
-	  else
-	    cur_entry->title = grub_strdup ("");
-	  
-	  if (! cur_entry->title)
-	    {
-	      grub_free (cur_entry);
-	      goto fail;
-	    }
-	  
-	  cur_entry->num = 0;
-	  cur_entry->command_list = 0;
-	  cur_entry->next = 0;
-	  
-	  *next_entry = cur_entry;
-	  next_entry = &(cur_entry->next);
-
-	  next_cmd = &(cur_entry->command_list);
-	  
-	  menu->size++;
-	}
-      else
-	{
-	  /* Run the command if possible.  */
-	  if (cmd->flags & GRUB_COMMAND_FLAG_MENU)
-	    {
-	      grub_command_execute (cmdline, 0);
-	      if (grub_errno != GRUB_ERR_NONE)
-		{
-		  grub_print_error ();
-		  grub_errno = GRUB_ERR_NONE;
-		}
-	    }
-	  else
-	    {
-	      grub_printf ("Invalid command `%s' is ignored.\n", cmdline);
-	      continue;
-	    }
-	}
+      /* The parsed script was executed, throw it away.  */
+      grub_script_free (parsed_script);
     }
 
- fail:
+  return newmenu;
 
   grub_file_close (file);
-
-  /* If no entry was found or any error occurred, return NULL.  */
-  if (menu->size == 0 || grub_errno != GRUB_ERR_NONE)
-    {
-      grub_context_pop_menu ();
-      free_menu (menu);
-      return 0;
-    }
-
-  /* Check values of the default entry and the fallback one.  */
-  if (menu->fallback_entry >= menu->size)
-    menu->fallback_entry = -1;
-
-  if (menu->default_entry < 0 || menu->default_entry >= menu->size)
-    {
-      if (menu->fallback_entry < 0)
-	menu->default_entry = 0;
-      else
-	{
-	  menu->default_entry = menu->fallback_entry;
-	  menu->fallback_entry = -1;
-	}
-    }
-  
-  return menu;
+  return 0;
 }
 
 /* This starts the normal mode.  */

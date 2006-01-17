@@ -413,7 +413,6 @@ static struct screen *
 make_screen (grub_menu_entry_t entry)
 {
   struct screen *screen;
-  grub_command_list_t cl;
 
   /* Initialize the screen.  */
   screen = grub_malloc (sizeof (*screen));
@@ -435,16 +434,8 @@ make_screen (grub_menu_entry_t entry)
   /* Initialize the first line which must be always present.  */
   if (! init_line (screen->lines))
     goto fail;
-  
-  /* Input the entry.  */
-  for (cl = entry->command_list; cl; cl = cl->next)
-    {
-      if (! insert_string (screen, cl->command, 0))
-	goto fail;
-      
-      if (! insert_string (screen, "\n", 0))
-	goto fail;
-    }
+
+  insert_string (screen, (char *) entry->sourcecode, 0);
 
   /* Reset the cursor position.  */
   screen->column = 0;
@@ -979,38 +970,61 @@ clear_completions (void)
 static int
 run (struct screen *screen)
 {
-  int i;
-  
-  grub_cls ();
-  grub_printf ("  Booting a command list\n\n");
-  
-  for (i = 0; i < screen->num_lines; i++)
+  struct grub_script *parsed_script = 0;
+  int currline = 0;
+  char *nextline;
+
+  auto grub_err_t editor_getline (char **line);
+  grub_err_t editor_getline (char **line)
     {
-      struct line *linep = screen->lines + i;
+      struct line *linep = screen->lines + currline;
       char *p;
-      
+
+      if (currline > screen->num_lines)
+	{
+	  *line = 0;
+	  return 0;
+	}
+
       /* Trim down space characters.  */
       for (p = linep->buf + linep->len - 1;
 	   p >= linep->buf && grub_isspace (*p);
 	   p--)
 	;
       *++p = '\0';
+
       linep->len = p - linep->buf;
-      
       for (p = linep->buf; grub_isspace (*p); p++)
 	;
-      
-      if (*p == '\0')
-	/* Ignore an empty command line.  */
-	continue;
-
-      if (grub_command_execute (p, 0) != 0)
-	break;
+      *line = p;
+      currline++;
+      return 0;
     }
   
-  if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
-    /* Implicit execution of boot, only if something is loaded.  */
-    grub_command_execute ("boot", 0);
+  grub_cls ();
+  grub_printf ("  Booting a command list\n\n");
+
+
+  /* Execute the script, line for line.  */
+  while (currline < screen->num_lines - 1)
+    {
+      editor_getline (&nextline);
+      parsed_script = grub_script_parse (nextline, editor_getline);
+      if (parsed_script)
+	{
+	  /* Execute the command(s).  */
+	  grub_script_execute (parsed_script);
+	  
+	  /* The parsed script was executed, throw it away.  */
+	  grub_script_free (parsed_script);
+
+	  if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
+	    /* Implicit execution of boot, only if something is loaded.  */
+	    grub_command_execute ("boot", 0);
+	}
+      else
+	break;
+    }
 
   if (grub_errno != GRUB_ERR_NONE)
     {
@@ -1021,7 +1035,7 @@ run (struct screen *screen)
       grub_printf ("\nPress any key to continue...");
       (void) grub_getkey ();
     }
-  
+
   return 1;
 }
 

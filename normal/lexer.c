@@ -54,6 +54,11 @@ static int grub_script_lexer_refs = 0;
 static char *script;
 static char *newscript;
 
+static int record = 0;
+static char *recording = 0;
+static int recordpos = 0;
+static int recordlen = 0;
+
 /* XXX: The lexer is not reentrant.  */
 void
 grub_script_lexer_init (char *s, grub_err_t (*getline) (char **))
@@ -78,6 +83,63 @@ grub_script_lexer_deref (void)
   grub_script_lexer_refs--;
 }
 
+/* Start recording all characters passing through the lexer.  */
+void
+grub_script_lexer_record_start (void)
+{
+  record = 1;
+  recordlen = 100;
+  recording = grub_malloc (recordlen);
+  recordpos = 0;
+}
+
+char *
+grub_script_lexer_record_stop (void)
+{
+  record = 0;
+
+  /* Delete the last character, it is a `}'.  */
+  if (recordpos > 0)
+    {
+      if (recording[--recordpos] != '}')
+	{
+	  grub_printf ("Internal error while parsing menu entry");
+	  for (;;); /* XXX */
+	}
+      recording[recordpos] = '\0';
+    }
+
+  return recording;
+}
+
+/* When recording is enabled, record the character C as the next item
+   in the character stream.  */
+static void
+recordchar (char c)
+{
+  if (recordpos == recordlen)
+    {
+      char *old = recording;
+      recordlen += 100;
+      recording = grub_realloc (recording, recordlen);
+      if (! recording)
+	{
+	  grub_free (old);
+	  record = 0;
+	}
+    }
+  recording[recordpos++] = c;
+}
+
+/* Fetch the next character for the lexer.  */
+static void
+nextchar (void)
+{
+  if (record)
+    recordchar (*script);
+  script++;
+}
+
 int
 grub_script_yylex (void)
 {
@@ -96,13 +158,17 @@ grub_script_yylex (void)
 	   || grub_script_lexer_state == GRUB_PARSER_STATE_ESC)
 	  && grub_script_lexer_getline)
 	{
-	  while (! grub_strlen (script))
+	  while (!script || ! grub_strlen (script))
 	    {
 	      grub_free (newscript);
+	      newscript = 0;
 	      grub_script_lexer_getline (&newscript);
 	      script = newscript;
+	      if (! script)
+		return 0;
 	    }
 	  grub_dprintf ("scripting", "token=`\\n'\n");
+	  recordchar ('\n');
 	  if (grub_script_lexer_state != GRUB_PARSER_STATE_ESC)
 	    return '\n';
 	}
@@ -139,7 +205,7 @@ grub_script_yylex (void)
 		      return ' ';
 		    }
 		  grub_script_lexer_state = newstate;
-		  script++;
+		  nextchar ();
 		}
 	      grub_dprintf ("scripting", "token=` '\n");
 	      return ' ';
@@ -147,13 +213,18 @@ grub_script_yylex (void)
 	    case '}':
 	    case ';':
 	    case '\n':
-	      grub_dprintf ("scripting", "token=`%c'\n", *script);
-	      return *(script++);
+	      {
+		char c;
+		grub_dprintf ("scripting", "token=`%c'\n", *script);
+		c = *script;;
+		nextchar ();
+		return c;
+	      }
 	    }
 	}
 
       /* XXX: Use a better size.  */
-      buffer = grub_script_malloc (2096);
+      buffer = grub_script_malloc (2048);
       if (! buffer)
 	return 0;
 
@@ -194,7 +265,7 @@ grub_script_yylex (void)
 	    *(bp++) = use;
 
 	  grub_script_lexer_state = newstate;
-	  script++;
+	  nextchar ();
 	}
 
       /* A string of text was read in.  */
@@ -209,6 +280,10 @@ grub_script_yylex (void)
 	return GRUB_PARSER_TOKEN_IF;
       else if (! grub_strcmp (buffer, "function"))
 	return GRUB_PARSER_TOKEN_FUNCTION;
+      else if (! grub_strcmp (buffer, "menuentry"))
+	return GRUB_PARSER_TOKEN_MENUENTRY;
+      else if (! grub_strcmp (buffer, "@"))
+	return GRUB_PARSER_TOKEN_MENUENTRY;
       else if (! grub_strcmp (buffer, "else"))
 	return GRUB_PARSER_TOKEN_ELSE;
       else if (! grub_strcmp (buffer, "then"))
@@ -240,14 +315,14 @@ grub_script_yylex (void)
 	    {
 	      if (grub_script_lexer_state == GRUB_PARSER_STATE_VARNAME2
 		  || grub_script_lexer_state == GRUB_PARSER_STATE_QVARNAME2)
-		script++;
+		nextchar ();
 	      grub_script_lexer_state = newstate;
 	      break;
 	    }
 
 	  if (use)
 	    *(bp++) = use;
-	  script++;
+	  nextchar ();
 	  grub_script_lexer_state = newstate;
 	}
 

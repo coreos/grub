@@ -28,6 +28,8 @@
 /* Keep track of the memory allocated for this specific function.  */
 static struct grub_script_mem *func_mem = 0;
 
+static char *menu_entry = 0;
+
 %}
 
 %union {
@@ -40,12 +42,13 @@ static struct grub_script_mem *func_mem = 0;
 %token GRUB_PARSER_TOKEN_IF		"if"
 %token GRUB_PARSER_TOKEN_WHILE		"while"
 %token GRUB_PARSER_TOKEN_FUNCTION	"function"
+%token GRUB_PARSER_TOKEN_MENUENTRY	"menuentry"
 %token GRUB_PARSER_TOKEN_ELSE		"else"
 %token GRUB_PARSER_TOKEN_THEN		"then"
 %token GRUB_PARSER_TOKEN_FI		"fi"
 %token GRUB_PARSER_TOKEN_NAME
 %token GRUB_PARSER_TOKEN_VAR
-%type <cmd> script grubcmd command commands if
+%type <cmd> script grubcmd command commands menuentry if
 %type <arglist> arguments;
 %type <arg> argument;
 %type <string> "if" "while" "function" "else" "then" "fi"
@@ -53,7 +56,7 @@ static struct grub_script_mem *func_mem = 0;
 
 %%
 /* It should be possible to do this in a clean way...  */
-script:		commands '\n'
+script:		commands returns
 		  {
 		    grub_script_parsed = $1;
 		  }
@@ -127,6 +130,7 @@ grubcmd:	ws GRUB_PARSER_TOKEN_NAME ' ' arguments ws
 command:	grubcmd 	{ $$ = $1; }
 		| if 		{ $$ = $1; }
 		| function	{ $$ = 0;  }
+		| menuentry	{ $$ = $1;  }
 ;
 
 /* A block of commands.  */
@@ -172,6 +176,24 @@ function:	"function" ' ' GRUB_PARSER_TOKEN_NAME
 		  }
 ;
 
+/* A menu entry.  Carefully save the memory that is allocated.  */
+menuentry:	"menuentry" ' ' argument
+		  { 
+		    grub_script_lexer_ref ();
+		  } ws '{' returns
+		  { 
+		    /* Record sourcecode of the menu entry.  It can be
+		       parsed multiple times if it is part of a
+		       loop.  */
+		    grub_script_lexer_record_start ();
+		  } commands returns '}'
+		  {
+		    menu_entry = grub_script_lexer_record_stop ();
+		    $$ = grub_script_create_cmdmenu ($3, menu_entry, 0);
+		    grub_script_lexer_deref ();
+		  }
+;
+
 /* The first part of the if statement.  It's used to switch the lexer
    to a state in which it demands more tokens.  */
 if_statement:	"if" { grub_script_lexer_ref (); }
@@ -183,7 +205,7 @@ if:		 if_statement grubcmd ';' ws "then" returns commands returns "fi"
 		    $$ = grub_script_create_cmdif ($2, $7, 0);
 		    grub_script_lexer_deref ();
 		  }
-		 | if_statement grubcmd ';' ws "then" returns commands returns "else" returns commands "fi"
+		 | if_statement grubcmd ';' ws "then" returns commands returns "else" returns commands returns  "fi"
 		  {
 		    $$ = grub_script_create_cmdif ($2, $7, $11);
 		    grub_script_lexer_deref ();

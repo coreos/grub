@@ -201,6 +201,37 @@ grub_script_create_cmdif (struct grub_script_cmd *bool,
   return (struct grub_script_cmd *) cmd;
 }
 
+/* Create a command that adds a menu entry to the menu.  Title is an
+   argument that is parsed to generate a string that can be used as
+   the title.  The sourcecode for this entry is passed in SOURCECODE.
+   The options for this entry are passed in OPTIONS.  */
+struct grub_script_cmd *
+grub_script_create_cmdmenu (struct grub_script_arg *title,
+			    char *sourcecode,
+			    int options)
+{
+  struct grub_script_cmd_menuentry *cmd;
+  int i;
+
+  /* Having trailing returns can some some annoying conflicts, remove
+     them.  XXX: Can the parser be improved to handle this?  */
+  for (i = grub_strlen (sourcecode) - 1; i > 0; i--)
+    {
+      if (sourcecode[i] != '\n')
+	break;
+      sourcecode[i] = '\0';
+    }
+
+  cmd = grub_script_malloc (sizeof (*cmd));
+  cmd->cmd.exec = grub_script_execute_menuentry;
+  cmd->cmd.next = 0;
+  cmd->sourcecode = sourcecode;
+  cmd->title = title;
+  cmd->options = options;
+ 
+  return (struct grub_script_cmd *) cmd;
+}
+
 /* Create a block of commands.  CMD contains the command that should
    be added at the end of CMDBLOCK's list.  If CMDBLOCK is zero, a new
    cmdblock will be created.  */

@@ -191,6 +191,36 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd)
     return grub_script_execute_cmd (cmdif->false);
 }
 
+/* Execute the menu entry generate statement.  */
+grub_err_t
+grub_script_execute_menuentry (struct grub_script_cmd *cmd)
+{
+  struct grub_script_cmd_menuentry *cmd_menuentry;
+  char *title;
+  struct grub_script *script;
+
+  cmd_menuentry = (struct grub_script_cmd_menuentry *) cmd;
+
+  /* The title can contain variables, parse them and generate a string
+     from it.  */
+  title = grub_script_execute_argument_to_string (cmd_menuentry->title);
+  if (! title)
+    return grub_errno;
+
+  /* Parse the menu entry *again*.  */
+  script = grub_script_parse ((char *) cmd_menuentry->sourcecode, 0);
+
+  if (! script)
+    {
+      grub_free (title);
+      return grub_errno;
+    }
+
+  /* XXX: When this fails, the memory should be free'ed?  */
+  return grub_normal_menu_addentry (title, script,
+				    cmd_menuentry->sourcecode);
+}
+
 
 
 /* Execute any GRUB pre-parsed command or script.  */

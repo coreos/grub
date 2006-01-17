@@ -17,6 +17,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
+#ifndef GRUB_SCRIPT_HEADER
+#define GRUB_SCRIPT_HEADER	1
+
 #include <grub/types.h>
 #include <grub/err.h>
 
@@ -104,6 +108,21 @@ struct grub_script_cmdif
   struct grub_script_cmd *false;
 };
 
+/* A menu entry generate statement.  */
+struct grub_script_cmd_menuentry
+{
+  struct grub_script_cmd cmd;
+
+  /* The title of the menu entry.  */
+  struct grub_script_arg *title;
+
+  /* The sourcecode the entry will be generated from.  */
+  const char *sourcecode;
+
+  /* Options.  XXX: Not used yet.  */
+  int options;
+};
+
 struct grub_script_arglist *
 grub_script_create_arglist (void);
 
@@ -120,6 +139,12 @@ struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_script_cmd *bool,
 			  struct grub_script_cmd *true,
 			  struct grub_script_cmd *false);
+
+struct grub_script_cmd *
+grub_script_create_cmdmenu (struct grub_script_arg *title,
+			    char *sourcecode,
+			    int options);
+
 struct grub_script_cmd *
 grub_script_add_cmd (struct grub_script_cmdblock *cmdblock,
 		     struct grub_script_cmd *cmd);
@@ -136,6 +161,8 @@ struct grub_script *grub_script_create (struct grub_script_cmd *cmd,
 void grub_script_lexer_init (char *s, grub_err_t (*getline) (char **));
 void grub_script_lexer_ref (void);
 void grub_script_lexer_deref (void);
+void grub_script_lexer_record_start (void);
+char *grub_script_lexer_record_stop (void);
 
 /* Functions to track allocated memory.  */
 void *grub_script_malloc (grub_size_t size);
@@ -151,6 +178,7 @@ void grub_script_yyerror (char const *err);
 grub_err_t grub_script_execute_cmdline (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdblock (struct grub_script_cmd *cmd);
 grub_err_t grub_script_execute_cmdif (struct grub_script_cmd *cmd);
+grub_err_t grub_script_execute_menuentry (struct grub_script_cmd *cmd);
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t grub_script_execute (struct grub_script *script);
@@ -187,3 +215,5 @@ grub_script_function_t grub_script_function_find (char *functionname);
 int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
 int grub_script_function_call (grub_script_function_t func,
 			       int argc, char **args);
+
+#endif /* ! GRUB_SCRIPT_HEADER */

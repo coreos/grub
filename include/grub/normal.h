@@ -25,6 +25,7 @@
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/arg.h>
+#include <grub/script.h>
 
 /* The maximum size of a command-line.  */
 #define GRUB_MAX_CMDLINE	1600
@@ -84,28 +85,17 @@ struct grub_command
 };
 typedef struct grub_command *grub_command_t;
 
-/* The command list.  */
-struct grub_command_list
-{
-  /* The string of a command.  */
-  char *command;
-
-  /* The next element.  */
-  struct grub_command_list *next;
-};
-typedef struct grub_command_list *grub_command_list_t;
-
 /* The menu entry.  */
 struct grub_menu_entry
 {
   /* The title name.  */
   const char *title;
 
-  /* The number of commands.  */
-  int num;
+    /* The commands associated with this menu entry.  */
+  struct grub_script *commands;
 
-  /* The list of commands.  */
-  grub_command_list_t command_list;
+  /* The sourcecode of the menu entry, used by the editor.  */
+  const char *sourcecode;
 
   /* The next element.  */
   struct grub_menu_entry *next;
@@ -192,6 +182,9 @@ void grub_context_pop_menu (void);
 char *grub_normal_do_completion (char *buf, int *restore,
 				 void (*hook) (const char *item, grub_completion_type_t type, int count));
 grub_err_t grub_normal_print_device_info (const char *name);
+grub_err_t grub_normal_menu_addentry (const char *title,
+				      struct grub_script *script,
+				      const char *sourcecode);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);
