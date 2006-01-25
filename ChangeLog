@@ -1,3 +1,8 @@
+2006-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/grub-install.in: Escape a backslash. Reported by
+	Poe Chen <poe.poechen@gmail.com>.
+
 2006-01-17  Marco Gerards  <marco@gnu.org>
 
 	* include/grub/normal.h: Include <grub/script.h>.

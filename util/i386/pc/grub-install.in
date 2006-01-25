@@ -210,7 +210,7 @@ done
 fs_module=`$grub_probefs --device-map=${device_map} ${grubdir}`
 if test "x$fs_module" = x -a "x$modules" = x; then
     echo "Auto-detection of a filesystem module failed." 1>&2
-    echo "Please specify the module with the option `--modules' explicitly." 1>&2
+    echo "Please specify the module with the option \`--modules' explicitly." 1>&2
     exit 1
 fi
 
