@@ -121,7 +121,7 @@ struct grub_multiboot_header
 
 struct grub_multiboot_info
 {
-  /* MultiBoot info version number */
+  /* Multiboot info version number */
   grub_uint32_t flags;
   
   /* Available memory from BIOS */

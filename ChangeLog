@@ -1,3 +1,8 @@
+2006-02-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* boot/i386/pc/boot.S (general_error): Before looping, try INT
+	18H, which might help the BIOS falling back to next boot media.
+
 2006-01-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/grub-install.in: Escape a backslash. Reported by

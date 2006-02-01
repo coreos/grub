@@ -397,6 +397,8 @@ general_error:
 	MSG(general_error_string)
 
 /* go here when you need to stop the machine hard after an error condition */
+        /* tell the BIOS a boot failure, which may result in no effect */
+        int	$0x18
 stop:	jmp	stop
 
 notification_string:	.string "GRUB "
