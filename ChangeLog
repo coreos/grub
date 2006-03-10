@@ -1,3 +1,9 @@
+2006-03-10  Marco Gerards  <marco@gnu.org>
+
+	* configure.ac (AC_INIT): Bumped to 1.93.
+
+	* DISTLIST: Added `include/grub/hfs.h'.
+
 2006-02-01  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* boot/i386/pc/boot.S (general_error): Before looping, try INT

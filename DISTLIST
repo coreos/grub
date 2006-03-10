@@ -89,6 +89,7 @@ include/grub/font.h
 include/grub/fs.h
 include/grub/fshelp.h
 include/grub/gzio.h
+include/grub/hfs.h
 include/grub/kernel.h
 include/grub/loader.h
 include/grub/misc.h

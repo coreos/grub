@@ -11,7 +11,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-AC_INIT(GRUB, 1.92, [bug-grub@gnu.org])
+AC_INIT(GRUB, 1.93, [bug-grub@gnu.org])
 AC_PREREQ(2.53)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
