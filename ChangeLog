@@ -1,3 +1,150 @@
+2006-03-14  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* DISTLIST: Added include/grub/video.h, term/gfxterm.c,
+	video/video.c, commands/videotest.c.  Removed term/i386/pc/vesafb.c.
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added video.mod,
+	gfxterm.mod, videotest.mod.  Removed vga.mod, vesafb.mod.
+	(video_mod_SOURCES): Added.
+	(video_mod_CFLAGS): Likewise.
+	(video_mod_LDFLAGS): Likewise.
+	(gfxterm_mod_SOURCES): Likewise.
+	(gfxterm_mod_CFLAGS): Likewise.
+	(gfxterm_mod_LDFLAGS): Likewise.
+	(videotest_mod_SOURCES): Likewise.
+	(videotest_mod_CFLAGS): Likewise.
+	(videotest_mod_LDFLAGS): Likewise.
+	(vesafb_mod_SOURCES): Removed.
+	(vesafb_mod_CFLAGS): Likewise.
+	(vesafb_mod_LDFLAGS): Likewise.
+	(vga_mod_SOURCES): Likewise.
+	(vga_mod_CFLAGS): Likewise.
+	(vga_mod_LDFLAGS): Likewise.
+
+	* commands/videotest.c: New file.
+
+	* font/manager.c (fill_with_default_glyph): Modified to use
+	grub_font_glyph.
+	(grub_font_get_glyph): Likewise.
+	(fontmanager): Renamed from this...
+	(font_manager): ... to this.
+
+	* include/grub/font.h (grub_font_glyph): Added new structure.
+	(grub_font_get_glyph): Modified to use grub_font_glyph.
+
+	* include/grub/misc.h (grub_abs): Added as inline function.
+
+	* include/grub/video.h: New file.
+
+	* include/grub/i386/pc/vbe.h (GRUB_VBE_STATUS_OK): New macro.
+	(GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR): Likewise.
+	(grub_vbe_get_controller_info): Renamed from this...
+	(grub_vbe_bios_get_controller_info): ... to this.
+	(grub_vbe_get_mode_info): Renamed from this...
+	(grub_vbe_bios_get_mode_info): ... to this.
+	(grub_vbe_set_mode): Renamed from this...
+	(grub_vbe_bios_set_mode): ... to this.
+	(grub_vbe_get_mode): Renamed from this...
+	(grub_vbe_bios_get_mode): ... to this.
+	(grub_vbe_set_memory_window): Renamed from this...
+	(grub_vbe_bios_set_memory_window): ... to this.
+	(grub_vbe_get_memory_window): Renamed from this...
+	(grub_vbe_bios_get_memory_window): ... to this.
+	(grub_vbe_set_scanline_length): Renamed from this...
+	(grub_vbe_set_scanline_length): ... to this.
+	(grub_vbe_get_scanline_length): Renamed from this...
+	(grub_vbe_bios_get_scanline_length): ... to this.
+	(grub_vbe_set_display_start): Renamed from this...
+	(grub_vbe_bios_set_display_start): ... to this.
+	(grub_vbe_get_display_start): Renamed from this...
+	(grub_vbe_bios_get_display_start): ... to this.
+	(grub_vbe_set_palette_data): Renamed from this...
+	(grub_vbe_bios_set_palette_data): ... to this.
+	(grub_vbe_set_pixel_rgb): Removed.
+	(grub_vbe_set_pixel_index): Likewise.
+
+	* kern/i386/pc/startup.S (grub_vbe_get_controller_info): Renamed
+	from this...
+	(grub_vbe_bios_get_controller_info): ... to this.
+	(grub_vbe_get_mode_info): Renamed from this...
+	(grub_vbe_bios_get_mode_info): ... to this.
+	(grub_vbe_set_mode): Renamed from this...
+	(grub_vbe_bios_set_mode): ... to this.
+	(grub_vbe_get_mode): Renamed from this...
+	(grub_vbe_bios_get_mode): ... to this.
+	(grub_vbe_set_memory_window): Renamed from this...
+	(grub_vbe_bios_set_memory_window): ... to this.
+	(grub_vbe_get_memory_window): Renamed from this...
+	(grub_vbe_bios_get_memory_window): ... to this.
+	(grub_vbe_set_scanline_length): Renamed from this...
+	(grub_vbe_set_scanline_length): ... to this.
+	(grub_vbe_get_scanline_length): Renamed from this...
+	(grub_vbe_bios_get_scanline_length): ... to this.
+	(grub_vbe_set_display_start): Renamed from this...
+	(grub_vbe_bios_set_display_start): ... to this.
+	(grub_vbe_get_display_start): Renamed from this...
+	(grub_vbe_bios_get_display_start): ... to this.
+	(grub_vbe_set_palette_data): Renamed from this...
+	(grub_vbe_bios_set_palette_data): ... to this.
+	(grub_vbe_bios_get_controller_info): Fixed problem with registers
+	getting corrupted after calling it.  Added more pushes and pops.
+	(grub_vbe_bios_set_mode): Likewise.
+	(grub_vbe_bios_get_mode): Likewise.
+	(grub_vbe_bios_get_memory_window): Likewise.
+	(grub_vbe_bios_set_scanline_length): Likewise.
+	(grub_vbe_bios_get_scanline_length): Likewise.
+	(grub_vbe_bios_get_display_start): Likewise.
+	(grub_vbe_bios_set_palette_data): Likewise.
+
+	* normal/cmdline.c (cl_set_pos): Refresh the screen.
+	(cl_insert): Likewise.
+	(cl_delete): Likewise.
+
+	* term/gfxterm.c: New file.
+
+	* term/i386/pc/vesafb.c: Removed file.
+
+	* video/video.c: New file.
+
+	* video/i386/pc/vbe.c (real2pm): Added new function.
+	(grub_video_vbe_draw_pixel): Likewise.
+	(grub_video_vbe_get_video_ptr): Likewise.
+	(grub_video_vbe_get_pixel): Likewise
+	(grub_video_vbe_init): Likewise.
+	(grub_video_vbe_fini): Likewise.
+	(grub_video_vbe_setup): Likewise.
+	(grub_video_vbe_get_info): Likewise.
+	(grub_video_vbe_set_palette): Likewise.
+	(grub_video_vbe_get_palette): Likewise.
+	(grub_video_vbe_set_viewport): Likewise.
+	(grub_video_vbe_get_viewport): Likewise.
+	(grub_video_vbe_map_color): Likewise.
+	(grub_video_vbe_map_rgb): Likewise.
+	(grub_video_vbe_map_rgba): Likewise.
+	(grub_video_vbe_unmap_color): Likewise.
+	(grub_video_vbe_fill_rect): Likewise.
+	(grub_video_vbe_blit_glyph): Likewise.
+	(grub_video_vbe_blit_bitmap): Likewise.
+	(grub_video_vbe_blit_render_target): Likewise.
+	(grub_video_vbe_scroll): Likewise.
+	(grub_video_vbe_swap_buffers): Likewise.
+	(grub_video_vbe_create_render_target): Likewise.
+	(grub_video_vbe_delete_render_target): Likewise.
+	(grub_video_vbe_set_active_render_target): Likewise.
+	(grub_vbe_set_pixel_rgb): Remove function.
+	(grub_vbe_set_pixel_index): Likewise.
+	(index_color_mode): Remove static variable.
+	(active_mode): Likewise.
+	(framebuffer): Likewise.
+	(bytes_per_scan_line): Likewise.
+	(grub_video_vbe_adapter): Added new static variable.
+	(framebuffer): Likewise.
+	(render_target): Likewise.
+	(initial_mode): Likewise.
+	(mode_in_use): Likewise.
+	(mode_list): Likewise.
+
 2006-03-10  Marco Gerards  <marco@gnu.org>
 
 	* configure.ac (AC_INIT): Bumped to 1.93.

@@ -1367,9 +1367,10 @@ grub-install: util/i386/pc/grub-install.in config.status
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod vga.mod	\
+pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
-	vbe.mod vesafb.mod vbetest.mod vbeinfo.mod play.mod
+	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
+	videotest.mod play.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -1999,57 +2000,6 @@ fs-halt_mod-commands_i386_pc_halt.lst: commands/i386/pc/halt.c genfslist.sh
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For vga.mod.
-vga_mod_SOURCES = term/i386/pc/vga.c
-CLEANFILES += vga.mod mod-vga.o mod-vga.c pre-vga.o vga_mod-term_i386_pc_vga.o def-vga.lst und-vga.lst
-MOSTLYCLEANFILES += vga_mod-term_i386_pc_vga.d
-DEFSYMFILES += def-vga.lst
-UNDSYMFILES += und-vga.lst
-
-vga.mod: pre-vga.o mod-vga.o
-	-rm -f $@
-	$(LD) $(vga_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-vga.o: vga_mod-term_i386_pc_vga.o
-	-rm -f $@
-	$(LD) $(vga_mod_LDFLAGS) -r -d -o $@ $^
-
-mod-vga.o: mod-vga.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
-
-mod-vga.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'vga' $< > $@ || (rm -f $@; exit 1)
-
-def-vga.lst: pre-vga.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vga/' > $@
-
-und-vga.lst: pre-vga.o
-	echo 'vga' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-vga_mod-term_i386_pc_vga.o: term/i386/pc/vga.c
-	$(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
-
-vga_mod-term_i386_pc_vga.d: term/i386/pc/vga.c
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -M $< 	  | sed 's,vga\.o[ :]*,vga_mod-term_i386_pc_vga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include vga_mod-term_i386_pc_vga.d
-
-CLEANFILES += cmd-vga_mod-term_i386_pc_vga.lst fs-vga_mod-term_i386_pc_vga.lst
-COMMANDFILES += cmd-vga_mod-term_i386_pc_vga.lst
-FSFILES += fs-vga_mod-term_i386_pc_vga.lst
-
-cmd-vga_mod-term_i386_pc_vga.lst: term/i386/pc/vga.c gencmdlist.sh
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga > $@ || (rm -f $@; exit 1)
-
-fs-vga_mod-term_i386_pc_vga.lst: term/i386/pc/vga.c genfslist.sh
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga > $@ || (rm -f $@; exit 1)
-
-
-vga_mod_CFLAGS = $(COMMON_CFLAGS)
-vga_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -2208,57 +2158,6 @@ fs-vbe_mod-video_i386_pc_vbe.lst: video/i386/pc/vbe.c genfslist.sh
 vbe_mod_CFLAGS = $(COMMON_CFLAGS)
 vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For vesafb.mod.
-vesafb_mod_SOURCES = term/i386/pc/vesafb.c
-CLEANFILES += vesafb.mod mod-vesafb.o mod-vesafb.c pre-vesafb.o vesafb_mod-term_i386_pc_vesafb.o def-vesafb.lst und-vesafb.lst
-MOSTLYCLEANFILES += vesafb_mod-term_i386_pc_vesafb.d
-DEFSYMFILES += def-vesafb.lst
-UNDSYMFILES += und-vesafb.lst
-
-vesafb.mod: pre-vesafb.o mod-vesafb.o
-	-rm -f $@
-	$(LD) $(vesafb_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-vesafb.o: vesafb_mod-term_i386_pc_vesafb.o
-	-rm -f $@
-	$(LD) $(vesafb_mod_LDFLAGS) -r -d -o $@ $^
-
-mod-vesafb.o: mod-vesafb.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -c -o $@ $<
-
-mod-vesafb.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'vesafb' $< > $@ || (rm -f $@; exit 1)
-
-def-vesafb.lst: pre-vesafb.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vesafb/' > $@
-
-und-vesafb.lst: pre-vesafb.o
-	echo 'vesafb' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-vesafb_mod-term_i386_pc_vesafb.o: term/i386/pc/vesafb.c
-	$(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -c -o $@ $<
-
-vesafb_mod-term_i386_pc_vesafb.d: term/i386/pc/vesafb.c
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -M $< 	  | sed 's,vesafb\.o[ :]*,vesafb_mod-term_i386_pc_vesafb.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include vesafb_mod-term_i386_pc_vesafb.d
-
-CLEANFILES += cmd-vesafb_mod-term_i386_pc_vesafb.lst fs-vesafb_mod-term_i386_pc_vesafb.lst
-COMMANDFILES += cmd-vesafb_mod-term_i386_pc_vesafb.lst
-FSFILES += fs-vesafb_mod-term_i386_pc_vesafb.lst
-
-cmd-vesafb_mod-term_i386_pc_vesafb.lst: term/i386/pc/vesafb.c gencmdlist.sh
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vesafb > $@ || (rm -f $@; exit 1)
-
-fs-vesafb_mod-term_i386_pc_vesafb.lst: term/i386/pc/vesafb.c genfslist.sh
-	set -e; 	  $(CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(CPPFLAGS) $(CFLAGS) $(vesafb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vesafb > $@ || (rm -f $@; exit 1)
-
-
-vesafb_mod_CFLAGS = $(COMMON_CFLAGS)
-vesafb_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For vbeinfo.mod.
 vbeinfo_mod_SOURCES = commands/i386/pc/vbeinfo.c
 CLEANFILES += vbeinfo.mod mod-vbeinfo.o mod-vbeinfo.c pre-vbeinfo.o vbeinfo_mod-commands_i386_pc_vbeinfo.o def-vbeinfo.lst und-vbeinfo.lst
@@ -2411,5 +2310,158 @@ fs-play_mod-commands_i386_pc_play.lst: commands/i386/pc/play.c genfslist.sh
 
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For video.mod.
+video_mod_SOURCES = video/video.c
+CLEANFILES += video.mod mod-video.o mod-video.c pre-video.o video_mod-video_video.o def-video.lst und-video.lst
+MOSTLYCLEANFILES += video_mod-video_video.d
+DEFSYMFILES += def-video.lst
+UNDSYMFILES += und-video.lst
+
+video.mod: pre-video.o mod-video.o
+	-rm -f $@
+	$(LD) $(video_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-video.o: video_mod-video_video.o
+	-rm -f $@
+	$(LD) $(video_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-video.o: mod-video.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(video_mod_CFLAGS) -c -o $@ $<
+
+mod-video.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'video' $< > $@ || (rm -f $@; exit 1)
+
+def-video.lst: pre-video.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 video/' > $@
+
+und-video.lst: pre-video.o
+	echo 'video' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+video_mod-video_video.o: video/video.c
+	$(CC) -Ivideo -I$(srcdir)/video $(CPPFLAGS) $(CFLAGS) $(video_mod_CFLAGS) -c -o $@ $<
+
+video_mod-video_video.d: video/video.c
+	set -e; 	  $(CC) -Ivideo -I$(srcdir)/video $(CPPFLAGS) $(CFLAGS) $(video_mod_CFLAGS) -M $< 	  | sed 's,video\.o[ :]*,video_mod-video_video.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include video_mod-video_video.d
+
+CLEANFILES += cmd-video_mod-video_video.lst fs-video_mod-video_video.lst
+COMMANDFILES += cmd-video_mod-video_video.lst
+FSFILES += fs-video_mod-video_video.lst
+
+cmd-video_mod-video_video.lst: video/video.c gencmdlist.sh
+	set -e; 	  $(CC) -Ivideo -I$(srcdir)/video $(CPPFLAGS) $(CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh video > $@ || (rm -f $@; exit 1)
+
+fs-video_mod-video_video.lst: video/video.c genfslist.sh
+	set -e; 	  $(CC) -Ivideo -I$(srcdir)/video $(CPPFLAGS) $(CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh video > $@ || (rm -f $@; exit 1)
+
+
+video_mod_CFLAGS = $(COMMON_CFLAGS)
+video_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gfxterm.mod.
+gfxterm_mod_SOURCES = term/gfxterm.c
+CLEANFILES += gfxterm.mod mod-gfxterm.o mod-gfxterm.c pre-gfxterm.o gfxterm_mod-term_gfxterm.o def-gfxterm.lst und-gfxterm.lst
+MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
+DEFSYMFILES += def-gfxterm.lst
+UNDSYMFILES += und-gfxterm.lst
+
+gfxterm.mod: pre-gfxterm.o mod-gfxterm.o
+	-rm -f $@
+	$(LD) $(gfxterm_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-gfxterm.o: gfxterm_mod-term_gfxterm.o
+	-rm -f $@
+	$(LD) $(gfxterm_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-gfxterm.o: mod-gfxterm.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(gfxterm_mod_CFLAGS) -c -o $@ $<
+
+mod-gfxterm.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'gfxterm' $< > $@ || (rm -f $@; exit 1)
+
+def-gfxterm.lst: pre-gfxterm.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gfxterm/' > $@
+
+und-gfxterm.lst: pre-gfxterm.o
+	echo 'gfxterm' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+gfxterm_mod-term_gfxterm.o: term/gfxterm.c
+	$(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(gfxterm_mod_CFLAGS) -c -o $@ $<
+
+gfxterm_mod-term_gfxterm.d: term/gfxterm.c
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(gfxterm_mod_CFLAGS) -M $< 	  | sed 's,gfxterm\.o[ :]*,gfxterm_mod-term_gfxterm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include gfxterm_mod-term_gfxterm.d
+
+CLEANFILES += cmd-gfxterm_mod-term_gfxterm.lst fs-gfxterm_mod-term_gfxterm.lst
+COMMANDFILES += cmd-gfxterm_mod-term_gfxterm.lst
+FSFILES += fs-gfxterm_mod-term_gfxterm.lst
+
+cmd-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c gencmdlist.sh
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gfxterm > $@ || (rm -f $@; exit 1)
+
+fs-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c genfslist.sh
+	set -e; 	  $(CC) -Iterm -I$(srcdir)/term $(CPPFLAGS) $(CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gfxterm > $@ || (rm -f $@; exit 1)
+
+
+gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
+gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For videotest.mod.
+videotest_mod_SOURCES = commands/videotest.c
+CLEANFILES += videotest.mod mod-videotest.o mod-videotest.c pre-videotest.o videotest_mod-commands_videotest.o def-videotest.lst und-videotest.lst
+MOSTLYCLEANFILES += videotest_mod-commands_videotest.d
+DEFSYMFILES += def-videotest.lst
+UNDSYMFILES += und-videotest.lst
+
+videotest.mod: pre-videotest.o mod-videotest.o
+	-rm -f $@
+	$(LD) $(videotest_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-videotest.o: videotest_mod-commands_videotest.o
+	-rm -f $@
+	$(LD) $(videotest_mod_LDFLAGS) -r -d -o $@ $^
+
+mod-videotest.o: mod-videotest.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(videotest_mod_CFLAGS) -c -o $@ $<
+
+mod-videotest.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'videotest' $< > $@ || (rm -f $@; exit 1)
+
+def-videotest.lst: pre-videotest.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 videotest/' > $@
+
+und-videotest.lst: pre-videotest.o
+	echo 'videotest' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+videotest_mod-commands_videotest.o: commands/videotest.c
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(videotest_mod_CFLAGS) -c -o $@ $<
+
+videotest_mod-commands_videotest.d: commands/videotest.c
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(videotest_mod_CFLAGS) -M $< 	  | sed 's,videotest\.o[ :]*,videotest_mod-commands_videotest.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include videotest_mod-commands_videotest.d
+
+CLEANFILES += cmd-videotest_mod-commands_videotest.lst fs-videotest_mod-commands_videotest.lst
+COMMANDFILES += cmd-videotest_mod-commands_videotest.lst
+FSFILES += fs-videotest_mod-commands_videotest.lst
+
+cmd-videotest_mod-commands_videotest.lst: commands/videotest.c gencmdlist.sh
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(videotest_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh videotest > $@ || (rm -f $@; exit 1)
+
+fs-videotest_mod-commands_videotest.lst: commands/videotest.c genfslist.sh
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(videotest_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh videotest > $@ || (rm -f $@; exit 1)
+
+
+videotest_mod_CFLAGS = $(COMMON_CFLAGS)
+videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

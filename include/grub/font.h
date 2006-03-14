@@ -24,7 +24,31 @@
 
 #define GRUB_FONT_MAGIC	"PPF\x7f"
 
+struct grub_font_glyph
+{
+  /* Glyph width in pixels.  */
+  grub_uint8_t width;
+  
+  /* Glyph height in pixels.  */
+  grub_uint8_t height;
+  
+  /* Glyph width in characters.  */
+  grub_uint8_t char_width;
+  
+  /* Glyph baseline position in pixels (from up).  */
+  grub_uint8_t baseline;
+  
+  /* Glyph bitmap data array of bytes in ((width + 7) / 8) * height.
+     Bitmap is formulated by height scanlines, each scanline having
+     width number of pixels. Pixels are coded as bits, value 1 meaning
+     of opaque pixel and 0 is transparent. If width does not fit byte
+     boundary, it will be padded with 0 to make it fit.  */
+  grub_uint8_t bitmap[32];
+};
+
+typedef struct grub_font_glyph *grub_font_glyph_t;
+
 int grub_font_get_glyph (grub_uint32_t code,
-			 unsigned char bitmap[32], unsigned *width);
+			 grub_font_glyph_t glyph);
 
 #endif /* ! GRUB_FONT_HEADER */

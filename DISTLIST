@@ -41,6 +41,7 @@ commands/search.c
 commands/terminal.c
 commands/test.c
 commands/timeout.c
+commands/videotest.c
 commands/i386/pc/halt.c
 commands/i386/pc/play.c
 commands/i386/pc/reboot.c
@@ -107,6 +108,7 @@ include/grub/term.h
 include/grub/terminfo.h
 include/grub/tparm.h
 include/grub/types.h
+include/grub/video.h
 include/grub/i386/setjmp.h
 include/grub/i386/types.h
 include/grub/i386/pc/biosdisk.h
@@ -209,6 +211,7 @@ partmap/pc.c
 partmap/sun.c
 term/terminfo.c
 term/tparm.c
+term/gfxterm.c
 term/i386/pc/console.c
 term/i386/pc/serial.c
 term/i386/pc/vesafb.c
@@ -230,4 +233,5 @@ util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
 util/powerpc/ieee1275/grub-mkimage.c
 util/powerpc/ieee1275/misc.c
+video/video.c
 video/i386/pc/vbe.c

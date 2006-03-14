@@ -113,9 +113,10 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/pc/grub-install.in
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod vga.mod	\
+pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
-	vbe.mod vesafb.mod vbetest.mod vbeinfo.mod play.mod
+	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
+	videotest.mod play.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -157,11 +158,6 @@ halt_mod_SOURCES = commands/i386/pc/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For vga.mod.
-vga_mod_SOURCES = term/i386/pc/vga.c
-vga_mod_CFLAGS = $(COMMON_CFLAGS)
-vga_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -182,11 +178,6 @@ vbe_mod_SOURCES = video/i386/pc/vbe.c
 vbe_mod_CFLAGS = $(COMMON_CFLAGS)
 vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For vesafb.mod.
-vesafb_mod_SOURCES = term/i386/pc/vesafb.c
-vesafb_mod_CFLAGS = $(COMMON_CFLAGS)
-vesafb_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For vbeinfo.mod.
 vbeinfo_mod_SOURCES = commands/i386/pc/vbeinfo.c
 vbeinfo_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -201,5 +192,20 @@ vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 play_mod_SOURCES = commands/i386/pc/play.c
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For video.mod.
+video_mod_SOURCES = video/video.c
+video_mod_CFLAGS = $(COMMON_CFLAGS)
+video_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gfxterm.mod.
+gfxterm_mod_SOURCES = term/gfxterm.c
+gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
+gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For videotest.mod.
+videotest_mod_SOURCES = commands/videotest.c
+videotest_mod_CFLAGS = $(COMMON_CFLAGS)
+videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

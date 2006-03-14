@@ -76,4 +76,14 @@ grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 					     const grub_uint8_t *src,
 					     grub_size_t size);
 
+/* Inline functions.  */
+static inline unsigned int
+grub_abs (int x)
+{
+  if (x < 0)
+    return (unsigned int)(-x);
+  else
+    return (unsigned int)x;
+}
+
 #endif /* ! GRUB_MISC_HEADER */
