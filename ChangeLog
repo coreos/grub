@@ -1,3 +1,9 @@
+2006-03-21  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* stage2/builtins.c (setup_func): Specify the size of DEVICE to
+	grub_strncat instead of a strange number 256. Reported by Vitaly
+	Fertman <vitaly@namesys.com>.
+
 2005-09-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/multiboot.texi: Fix a bug in the byte order of
