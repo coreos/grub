@@ -2108,9 +2108,10 @@ multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbe.mod.
-vbe_mod_SOURCES = video/i386/pc/vbe.c
-CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o def-vbe.lst und-vbe.lst
-MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d
+vbe_mod_SOURCES = video/i386/pc/vbe.c video/i386/pc/vbeblit.c \
+		  video/i386/pc/vbefill.c
+CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o def-vbe.lst und-vbe.lst
+MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d
 DEFSYMFILES += def-vbe.lst
 UNDSYMFILES += und-vbe.lst
 
@@ -2119,7 +2120,7 @@ vbe.mod: pre-vbe.o mod-vbe.o
 	$(LD) $(vbe_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-vbe.o: vbe_mod-video_i386_pc_vbe.o
+pre-vbe.o: vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o
 	-rm -f $@
 	$(LD) $(vbe_mod_LDFLAGS) -r -d -o $@ $^
 
@@ -2152,6 +2153,44 @@ cmd-vbe_mod-video_i386_pc_vbe.lst: video/i386/pc/vbe.c gencmdlist.sh
 	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe > $@ || (rm -f $@; exit 1)
 
 fs-vbe_mod-video_i386_pc_vbe.lst: video/i386/pc/vbe.c genfslist.sh
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe > $@ || (rm -f $@; exit 1)
+
+
+vbe_mod-video_i386_pc_vbeblit.o: video/i386/pc/vbeblit.c
+	$(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
+
+vbe_mod-video_i386_pc_vbeblit.d: video/i386/pc/vbeblit.c
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbeblit\.o[ :]*,vbe_mod-video_i386_pc_vbeblit.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vbe_mod-video_i386_pc_vbeblit.d
+
+CLEANFILES += cmd-vbe_mod-video_i386_pc_vbeblit.lst fs-vbe_mod-video_i386_pc_vbeblit.lst
+COMMANDFILES += cmd-vbe_mod-video_i386_pc_vbeblit.lst
+FSFILES += fs-vbe_mod-video_i386_pc_vbeblit.lst
+
+cmd-vbe_mod-video_i386_pc_vbeblit.lst: video/i386/pc/vbeblit.c gencmdlist.sh
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe > $@ || (rm -f $@; exit 1)
+
+fs-vbe_mod-video_i386_pc_vbeblit.lst: video/i386/pc/vbeblit.c genfslist.sh
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe > $@ || (rm -f $@; exit 1)
+
+
+vbe_mod-video_i386_pc_vbefill.o: video/i386/pc/vbefill.c
+	$(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
+
+vbe_mod-video_i386_pc_vbefill.d: video/i386/pc/vbefill.c
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbefill\.o[ :]*,vbe_mod-video_i386_pc_vbefill.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vbe_mod-video_i386_pc_vbefill.d
+
+CLEANFILES += cmd-vbe_mod-video_i386_pc_vbefill.lst fs-vbe_mod-video_i386_pc_vbefill.lst
+COMMANDFILES += cmd-vbe_mod-video_i386_pc_vbefill.lst
+FSFILES += fs-vbe_mod-video_i386_pc_vbefill.lst
+
+cmd-vbe_mod-video_i386_pc_vbefill.lst: video/i386/pc/vbefill.c gencmdlist.sh
+	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe > $@ || (rm -f $@; exit 1)
+
+fs-vbe_mod-video_i386_pc_vbefill.lst: video/i386/pc/vbefill.c genfslist.sh
 	set -e; 	  $(CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe > $@ || (rm -f $@; exit 1)
 
 

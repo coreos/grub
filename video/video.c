@@ -132,6 +132,53 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
   return grub_video_adapter_active->get_info (mode_info);
 }
 
+enum grub_video_blit_format
+grub_video_get_blit_format (struct grub_video_mode_info *mode_info)
+{
+  /* Check if we have any knwon 32 bit modes.  */
+  if (mode_info->bpp == 32)
+    {
+      if ((mode_info->red_mask_size == 8)
+          && (mode_info->red_field_pos == 0)
+          && (mode_info->green_mask_size == 8)
+          && (mode_info->green_field_pos == 8)
+          && (mode_info->blue_mask_size == 8)
+          && (mode_info->blue_field_pos == 16)
+          && (mode_info->reserved_mask_size == 8)
+          && (mode_info->reserved_field_pos == 24))
+        {
+          return GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8;
+        }
+    }
+
+  /* Check if we have any known 24 bit modes.  */
+  if (mode_info->bpp == 24)
+    {
+      if ((mode_info->red_mask_size == 8)
+          && (mode_info->red_field_pos == 0)
+          && (mode_info->green_mask_size == 8)
+          && (mode_info->green_field_pos == 8)
+          && (mode_info->blue_mask_size == 8)
+          && (mode_info->blue_field_pos == 16))
+        {
+          return GRUB_VIDEO_BLIT_FORMAT_R8G8B8;
+        }
+    }
+
+  /* If there are more than 8 bits per color, assume RGB(A) mode.  */
+  if (mode_info->bpp > 8)
+    {
+      if (mode_info->reserved_mask_size > 0)
+        {
+          return GRUB_VIDEO_BLIT_FORMAT_RGBA;
+        }
+      return GRUB_VIDEO_BLIT_FORMAT_RGB;
+    }
+
+  /* Assume as indexcolor mode.  */
+  return GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR;
+}
+
 grub_err_t
 grub_video_set_palette (unsigned int start, unsigned int count,
                         struct grub_video_palette_data *palette_data)

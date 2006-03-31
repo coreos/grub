@@ -174,7 +174,8 @@ multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbe.mod.
-vbe_mod_SOURCES = video/i386/pc/vbe.c
+vbe_mod_SOURCES = video/i386/pc/vbe.c video/i386/pc/vbeblit.c \
+		  video/i386/pc/vbefill.c
 vbe_mod_CFLAGS = $(COMMON_CFLAGS)
 vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

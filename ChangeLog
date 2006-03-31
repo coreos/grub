@@ -1,3 +1,41 @@
+2006-03-31  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* DISTLIST: Added include/grub/i386/pc/vbeblit.h,
+	include/grub/i386/pc/vbefill.h, video/i386/pc/vbeblit.c,
+	video/i386/pc/vbefill.c.
+
+	* conf/i386-pc.rmk (vbe_mod_SOURCES): Added video/i386/pc/vbeblit.c,
+	video/i386/pc/vbefill.c.
+
+	* include/grub/video.h (grub_video_blit_format): New enum.
+	(grub_video_mode_info): Added new member blit_format.
+	(grub_video_get_blit_format): New function prototype.
+
+	* include/grub/i386/pc/vbe.h (grub_video_vbe_get_video_ptr): New
+	function prototype.
+	(grub_video_vbe_map_rgb): Likewise.
+	(grub_video_vbe_unmap_color): Likewise.
+
+	* include/grub/i386/pc/vbeblit.h: New file.
+
+	* include/grub/i386/pc/vbefill.h: New file.
+
+	* video/video.c (grub_video_get_blit_format): New function.
+	(grub_video_vbe_get_video_ptr): Re-declared as non-static.
+	(grub_video_vbe_map_rgb): Likewise.
+	(grub_video_vbe_unmap_color): Likewise.
+
+	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Changed to use more
+	optimized fills.
+	(grub_video_vbe_blit_render_target): Changed to use more optimized
+	blits.
+	(grub_video_vbe_setup): Added detection for optimized settings.
+	(grub_video_vbe_create_render_target): Likewise.
+
+	* video/i386/pc/vbeblit.c: New file.
+
+	* video/i386/pc/vbefill.c: New file.
+
 2006-03-30  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* font/manager.c (grub_font_get_glyph): Removed font fixup from

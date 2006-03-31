@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <grub/symbol.h>
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/video.h>
 
 /* Default video mode to be used.  */
 #define GRUB_VBE_DEFAULT_VIDEO_MODE     0x101
@@ -202,5 +203,19 @@ grub_err_t grub_vbe_set_video_mode (grub_uint32_t mode,
 grub_err_t grub_vbe_get_video_mode (grub_uint32_t *mode);
 grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
                                          struct grub_vbe_mode_info_block *mode_info);
+
+/* VBE module internal prototypes (should not be used from elsewhere).  */
+grub_uint8_t * grub_video_vbe_get_video_ptr (struct grub_video_render_target *source,
+                                             grub_uint32_t x,
+                                             grub_uint32_t y);
+
+grub_video_color_t grub_video_vbe_map_rgb (grub_uint8_t red, 
+                                           grub_uint8_t green,
+                                           grub_uint8_t blue);
+
+void grub_video_vbe_unmap_color (struct grub_video_render_target * source,
+                                 grub_video_color_t color, grub_uint8_t *red,
+                                 grub_uint8_t *green, grub_uint8_t *blue,
+                                 grub_uint8_t *alpha);
 
 #endif /* ! GRUB_VBE_MACHINE_HEADER */

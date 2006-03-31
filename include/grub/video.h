@@ -46,6 +46,21 @@ struct grub_video_render_target;
 #define GRUB_VIDEO_RENDER_TARGET_FRONT_BUFFER	((struct grub_video_render_target *) 0)
 #define GRUB_VIDEO_RENDER_TARGET_BACK_BUFFER	((struct grub_video_render_target *) 1)
 
+/* Defined blitting formats.  */
+enum grub_video_blit_format
+  {
+    /* Follow exactly field & mask information.  */
+    GRUB_VIDEO_BLIT_FORMAT_RGBA,
+    /* Make optimization assumption.  */
+    GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8,
+    /* Follow exactly field & mask information.  */
+    GRUB_VIDEO_BLIT_FORMAT_RGB,
+    /* Make optimization assumption.  */
+    GRUB_VIDEO_BLIT_FORMAT_R8G8B8,
+    /* When needed, decode color or just use value as is.  */
+    GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR
+  };
+
 struct grub_video_mode_info
 {
   /* Width of the screen.  */
@@ -69,6 +84,9 @@ struct grub_video_mode_info
 
   /* In index color mode, number of colors.  In RGB mode this is 256.  */
   unsigned int number_of_colors;
+
+  /* Optimization hint how binary data is coded.  */
+  enum grub_video_blit_format blit_format;
 
   /* How many bits are reserved for red color.  */
   unsigned int red_mask_size;
@@ -234,6 +252,8 @@ grub_err_t EXPORT_FUNC(grub_video_setup) (unsigned int width,
 grub_err_t EXPORT_FUNC(grub_video_restore) (void);
 
 grub_err_t EXPORT_FUNC(grub_video_get_info) (struct grub_video_mode_info *mode_info);
+
+enum grub_video_blit_format EXPORT_FUNC(grub_video_get_blit_format) (struct grub_video_mode_info *mode_info);
 
 grub_err_t EXPORT_FUNC(grub_video_set_palette) (unsigned int start,
 						unsigned int count,

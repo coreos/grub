@@ -124,6 +124,8 @@ include/grub/i386/pc/multiboot.h
 include/grub/i386/pc/serial.h
 include/grub/i386/pc/time.h
 include/grub/i386/pc/vbe.h
+include/grub/i386/pc/vbeblit.h
+include/grub/i386/pc/vbefill.h
 include/grub/i386/pc/vga.h
 include/grub/i386/pc/util/biosdisk.h
 include/grub/ieee1275/ieee1275.h
@@ -235,3 +237,5 @@ util/powerpc/ieee1275/grub-mkimage.c
 util/powerpc/ieee1275/misc.c
 video/video.c
 video/i386/pc/vbe.c
+video/i386/pc/vbeblit.c
+video/i386/pc/vbefill.c
