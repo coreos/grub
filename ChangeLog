@@ -1,3 +1,12 @@
+2006-03-30  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* font/manager.c (grub_font_get_glyph): Removed font fixup from
+	here...
+
+	* util/unifont2pff.rb: ... and moved it to here.  Improved argument
+	parsing to support both hex and dec ranges.  If filename was missing
+	show usage information.
+
 2006-03-14  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* DISTLIST: Added include/grub/video.h, term/gfxterm.c,

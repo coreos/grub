@@ -184,8 +184,6 @@ grub_font_get_glyph (grub_uint32_t code,
       if (offset)
 	{
 	  grub_uint32_t w;
-	  unsigned int x;
-	  unsigned int y;
 	  int len;
 
           /* Make sure we can find glyphs for error messages.  Push active
@@ -215,11 +213,9 @@ grub_font_get_glyph (grub_uint32_t code,
 	      remove_font (font);
 	      goto restart;
 	    }
-	    
-          /* Temporary workaround, fix font bitmap.  */
-          for (y = 0; y < 16; y++)
-            for (x = 0; x < w; x++)
-              glyph->bitmap[y * w + x] = bitmap[x * 16 + y];
+
+          /* Fill glyph with information.  */	    
+          grub_memcpy (glyph->bitmap, bitmap, w * 16);
           
 	  glyph->char_width = w;
 	  glyph->width = glyph->char_width * 8;

@@ -15,18 +15,26 @@
 MAGIC = "PPF\x7f"
 
 def usage(status = 0)
-  puts "Usage: ruby unifont2pff.rb [RANGE...] FILE"
+  puts "Usage: ruby unifont2pff.rb [RANGE ...] FILE"
   exit(status)
+end
+
+if ARGV.length == 0
+  usage(1)
 end
 
 file = ARGV.pop
 
 ranges = []
 ARGV.each do |range|
-  if /\A([0-9a-fA-F]+):([0-9a-fA-F]+)\z/ =~ range
+  if /\A0x([0-9a-fA-F]+)[:-]0x([0-9a-fA-F]+)\z/ =~ range
     ranges << [$1.hex, $2.hex]
-  elsif /\A([0-9a-fA-F]+)\z/ =~ range
+  elsif /\A0x([0-9a-fA-F]+)\z/ =~ range
     ranges << [$1.hex, $1.hex]
+  elsif /\A([0-9]+)[:-]([0-9]+)\z/ =~ range
+    ranges << [$1.to_i, $2.to_i]
+  elsif /\A([0-9]+)\z/ =~ range
+    ranges << [$1.to_i, $1.to_i]
   else
     usage(1)
   end
@@ -53,6 +61,17 @@ IO.foreach(file) do |line|
     if bitmap.size != 32 and bitmap.size != 64
       raise "invalid bitmap size: #{bitmap}"
     end
+
+    # Fix byte ordering
+    w = (bitmap.size / 32)
+    temp = Array.new
+    for y in 0...16
+      for x in 0...w
+        temp[(y * w + x) * 2 + 0] = bitmap[(x * 16 + y) * 2 + 0].chr
+        temp[(y * w + x) * 2 + 1] = bitmap[(x * 16 + y) * 2 + 1].chr
+      end
+    end
+    bitmap = temp.to_s
 
     fonts << [code, bitmap]
   else
