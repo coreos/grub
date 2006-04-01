@@ -1,5 +1,10 @@
 2006-04-01  Vesa Jaaskelainen  <chaac@nic.fi>
 
+	* util/unifont2pff.rb: Removed unnecessary byte ordering.  Now
+	foreign multibyte characters should be shown correctly.
+
+2006-04-01  Vesa Jaaskelainen  <chaac@nic.fi>
+
 	* normal/main.c (grub_normal_menu_addentry): Fixed menu size
 	calculation.
 	(read_config_file): Made it to close file before returning.

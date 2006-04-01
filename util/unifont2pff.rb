@@ -62,17 +62,6 @@ IO.foreach(file) do |line|
       raise "invalid bitmap size: #{bitmap}"
     end
 
-    # Fix byte ordering
-    w = (bitmap.size / 32)
-    temp = Array.new
-    for y in 0...16
-      for x in 0...w
-        temp[(y * w + x) * 2 + 0] = bitmap[(x * 16 + y) * 2 + 0].chr
-        temp[(y * w + x) * 2 + 1] = bitmap[(x * 16 + y) * 2 + 1].chr
-      end
-    end
-    bitmap = temp.to_s
-
     fonts << [code, bitmap]
   else
     raise "invalid line format: #{line}"
