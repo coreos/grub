@@ -153,6 +153,8 @@ grub_normal_menu_addentry (const char *title, struct grub_script *script,
   (*last)->next = 0;
   (*last)->sourcecode = sourcecode;
 
+  current_menu->size++;
+
   return GRUB_ERR_NONE;
 }
 
@@ -223,10 +225,8 @@ read_config_file (const char *config)
       grub_script_free (parsed_script);
     }
 
-  return newmenu;
-
   grub_file_close (file);
-  return 0;
+  return newmenu;
 }
 
 /* This starts the normal mode.  */
