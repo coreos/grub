@@ -6,6 +6,7 @@ New in 1.93 - 2006-03-10:
 
 * Menu entries are now scriptable.
 
+
 New in 1.92 - 2005-12-25:
 
 * Add support for GPT partition table format.

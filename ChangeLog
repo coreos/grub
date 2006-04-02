@@ -1,3 +1,8 @@
+2006-04-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* configure.ac: Add support for EFI. Fix the typo
+	BUILD_LDDFLAGS. Restore the LDFLAGS after testing.
+
 2006-04-01  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* util/unifont2pff.rb: Removed unnecessary byte ordering.  Now

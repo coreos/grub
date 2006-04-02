@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003,2004,2005  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -30,6 +30,7 @@ case "$host_cpu" in
 esac
 
 case "$host_cpu"-"$host_vendor" in
+  i386-apple | *-efi) host_vendor=efi ;;
   i386-*) host_vendor=pc ;;
   powerpc-*) host_vendor=ieee1275 ;;
   sparc64-*) host_vendor=ieee1275 ;;
@@ -139,7 +140,7 @@ tmp_CPPFLAGS="$CPPFLAGS"
 CC="$BUILD_CC"
 CFLAGS="$BUILD_CFLAGS"
 CPPFLAGS="$BUILD_CPPFLAGS"
-LDFLAGS="$BUILD_LDDFLAGS"
+LDFLAGS="$BUILD_LDFLAGS"
 
 # Identify characteristics of the build architecture.
 AC_C_BIGENDIAN
@@ -171,9 +172,11 @@ AC_SUBST(LIBCURSES)
 # Check for headers.
 AC_CHECK_HEADERS(ncurses/curses.h ncurses.h curses.h)
 
+# Restore the flags.
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"
 CPPFLAGS="$tmp_CPPFLAGS"
+LDFLAGS="$tmp_LDFLAGS"
 
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$host_cpu
