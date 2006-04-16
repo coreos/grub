@@ -170,7 +170,6 @@ grub_script_create_cmdline (char *cmdname, struct grub_script_arglist *arglist)
 
   cmd = grub_script_malloc (sizeof (*cmd));
   cmd->cmd.exec = grub_script_execute_cmdline;
-/*   cmd->cmd.free = grub_script_free_cmdline; */
   cmd->cmd.next = 0;
   cmd->arglist = arglist;
   cmd->cmdname = cmdname;
@@ -305,7 +304,7 @@ grub_script_parse (char *script, grub_err_t (*getline) (char **))
 
   /* Parse the script, the result is stored in
      `grub_script_parsed'.  */
-  if (grub_script_yyparse ())
+  if (grub_script_yyparse () || ! grub_script_parsed)
     {
       struct grub_script_mem *memfree;
       memfree = grub_script_mem_record_stop (membackup);

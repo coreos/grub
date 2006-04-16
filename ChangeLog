@@ -1,3 +1,33 @@
+2006-16-04  Marco Gerards  <marco@gnu.org>
+
+	* normal/command.c (grub_command_init): Remove the title command.
+
+	* normal/lexer.c (grub_script_yylex): Renamed from this...
+	(grub_script_yylex2): ... to this.
+	(grub_script_yylex): New function.  Temporary
+	introduced to filter some tokens.
+	(grub_script_yyerror): Print a newline.
+
+	* normal/main.c (read_config_file): Output information about the
+	lines that contain errors.  Wait for a key after all lines have
+	been processed.  Don't return an empty menu.
+
+	* normal/parser.y (func_mem): Don't initialize.
+	(menu_entry): Likewise.
+	(err): New variable.
+	(script): Don't return anything when an error was encountered.
+	(ws, returns): Removed rules.
+	(argument): Disabled concatenated variable support.
+	(arguments): Remove explicit separators.
+	(grubcmd): Likewise.
+	(function): Likewise.
+	(menuentry): Likewise.
+	(if): Likewise.
+	(commands): Likewise.  Add error handling.
+
+	* normal/script.c (grub_script_create_cmdline): If
+	`grub_script_parsed' is 0, assume the parser encountered an error.
+
 2006-04-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac: Add support for EFI. Fix the typo

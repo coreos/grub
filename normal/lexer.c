@@ -141,7 +141,24 @@ nextchar (void)
 }
 
 int
+grub_script_yylex2 (void);
+
+int
 grub_script_yylex (void)
+{
+  int r = -1;
+
+  while (r == -1)
+    {
+      r = grub_script_yylex2 ();
+      if (r == ' ' || r == '\n')
+	r = -1;
+    }
+  return r;
+}
+
+int
+grub_script_yylex2 (void)
 {
   grub_parser_state_t newstate;
   char use;
@@ -345,5 +362,5 @@ grub_script_yylex (void)
 void
 grub_script_yyerror (char const *err)
 {
-  grub_printf (err);
+  grub_printf ("%s\n", err);
 }

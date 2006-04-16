@@ -357,9 +357,6 @@ lsmod_command (struct grub_arg_list *state __attribute__ ((unused)),
 void
 grub_command_init (void)
 {
-  /* This is a special command, because this never be called actually.  */
-  grub_register_command ("title", 0, GRUB_COMMAND_FLAG_TITLE, 0, 0, 0);
-
   grub_register_command ("rescue", rescue_command, GRUB_COMMAND_FLAG_BOTH,
 			 "rescue", "Go back to the rescue mode.", 0);
 

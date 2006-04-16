@@ -164,6 +164,7 @@ read_config_file (const char *config)
   grub_file_t file;
   auto grub_err_t getline (char **line);
   int currline = 0;
+  int errors = 0;
   
   grub_err_t getline (char **line)
     {
@@ -201,21 +202,18 @@ read_config_file (const char *config)
   while (get_line (file, cmdline, sizeof (cmdline)))
     {
       struct grub_script *parsed_script;
+      int startline;
       
-      currline++;
+      startline = ++currline;
 
       /* Execute the script, line for line.  */
       parsed_script = grub_script_parse (cmdline, getline);
 
       if (! parsed_script)
 	{
-	  /* Wait until the user pushes any key so that the user can
-	     see what happened.  */
-	  grub_printf ("\nPress any key to continue...");
-	  (void) grub_getkey ();
-
-	  grub_file_close (file);
-	  return 0;
+	  grub_printf ("(line %d-%d)\n", startline, currline);
+	  errors++;
+	  continue;
 	}
 
       /* Execute the command(s).  */
@@ -226,6 +224,22 @@ read_config_file (const char *config)
     }
 
   grub_file_close (file);
+
+  if (errors > 0)
+    {
+      /* Wait until the user pushes any key so that the user can
+	 see what happened.  */
+      grub_printf ("\nPress any key to continue...");
+      (void) grub_getkey ();
+    }
+
+  /* If the menu is empty, just drop it.  */
+  if (current_menu->size == 0)
+    {
+      grub_free (current_menu);
+      return 0;
+    }
+
   return newmenu;
 }
 
