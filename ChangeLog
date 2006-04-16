@@ -1,3 +1,8 @@
+2006-04-16  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* docs/multiboot.texi: Correct the offset of address
+	fields. Reported by Jeroen Dekkers.
+
 2006-03-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* stage2/builtins.c (setup_func): Specify the size of DEVICE to
