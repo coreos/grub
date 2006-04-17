@@ -1,3 +1,82 @@
+2006-17-04  Marco Gerards  <marco@gnu.org>
+
+	* include/grub/script.h: Include <grub/parser.h> and
+	"grub_script.tab.h".
+	(struct grub_lexer_param): New struct.
+	(struct grub_parser_param): Likewise.
+	(grub_script_create_arglist): Pass the state in an argument.
+	(grub_script_add_arglist): Likewise.
+	(grub_script_create_cmdline): Likewise.
+	(grub_script_create_cmdblock): Likewise.
+	(grub_script_create_cmdif): Likewise.
+	(grub_script_create_cmdmenu): Likewise.
+	(grub_script_add_cmd): Likewise.
+	(grub_script_arg_add): Likewise.
+	(grub_script_lexer_ref): Likewise.
+	(grub_script_lexer_deref): Likewise.
+	(grub_script_lexer_record_start): Likewise.
+	(grub_script_lexer_record_stop): Likewise.
+	(grub_script_mem_record): Likewise.
+	(grub_script_mem_record_stop): Likewise.
+	(grub_script_malloc): Likewise.
+	(grub_script_yylex): Likewise.
+	(grub_script_yyparse): Likewise.
+	(grub_script_yyerror): Likewise.
+	(grub_script_yylex): Likewise.
+	(grub_script_lexer_init): Return the state.
+
+	* normal/lexer.c (grub_script_lexer_state): Removed variable.
+	(grub_script_lexer_done): Likewise.
+	(grub_script_lexer_getline): Likewise.
+	(grub_script_lexer_refs): Likewise.
+	(script): Likewise.
+	(newscript): Likewise.
+	(record): Likewise.
+	(recording): Likewise.
+	(recordpos): Likewise.
+	(recordlen): Likewise.
+	(grub_script_lexer_init): Return the state instead of setting
+	global variables.
+	(grub_script_lexer_ref): Use the newly added argument for state
+	instead of globals.
+	(grub_script_lexer_deref): Likewise.
+	(grub_script_lexer_record_start): Likewise.
+	(grub_script_lexer_record_stop): Likewise.
+	(recordchar): Likewise.
+	(nextchar): Likewise.
+	(grub_script_yylex2): Likewise.
+	(grub_script_yylex): Likewise.
+	(grub_script_yyerror): Likewise.
+
+	* normal/parser.y (func_mem): Removed variable.
+	(menu_entry): Likewise.
+	(err): Likewise.
+	(%lex-param): New parser option.
+	(%parse-param): Likewise.
+	(script): Always return the AST.
+	(argument): Pass the state around.
+	(arguments): Likewise.
+	(grubcmd): Likewise.
+	(commands): Likewise.
+	(function): Likewise.
+	(menuentry): Likewise.
+	(if_statement): Likewise.
+	(if): Likewise.
+
+	* normal/script.c (grub_script_memused): Removed variable.
+	(grub_script_parsed): Likewise.
+	(grub_script_malloc): Added a state argument.  Use that instead of
+	global variables.
+	(grub_script_mem_record): Likewise.
+	(grub_script_mem_record_stop): Likewise.
+	(grub_script_arg_add): Likewise.
+	(grub_script_add_arglist): Likewise.
+	(grub_script_create_cmdline): Likewise.
+	(grub_script_create_cmdif): Likewise.
+	(grub_script_create_cmdmenu): Likewise.
+	(grub_script_add_cmd): Likewise.
+	(grub_script_parse): Setup the state before calling the parser.
+	
 2006-16-04  Marco Gerards  <marco@gnu.org>
 
 	* normal/command.c (grub_command_init): Remove the title command.

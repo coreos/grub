@@ -25,12 +25,6 @@
 #define YYFREE		grub_free
 #define YYMALLOC	grub_malloc
 
-/* Keep track of the memory allocated for this specific function.  */
-static struct grub_script_mem *func_mem;
-
-static char *menu_entry;
-
-static int err;
 
 %}
 
@@ -56,11 +50,15 @@ static int err;
 %type <string> "if" "while" "function" "else" "then" "fi"
 %type <string> text GRUB_PARSER_TOKEN_NAME GRUB_PARSER_TOKEN_VAR
 
+%pure-parser
+%lex-param { struct grub_parser_param *state };
+%parse-param { struct grub_parser_param *state };
+
 %%
 /* It should be possible to do this in a clean way...  */
-script:		{ err = 0} commands
+script:		{ state->err = 0} commands
 		  {
-		    grub_script_parsed = err ? 0 : $2;
+		    state->parsed = $2;
 		  }
 ;
 
@@ -84,11 +82,11 @@ text:		GRUB_PARSER_TOKEN_NAME
    for example: `foo${bar}baz'.  */
 argument:	GRUB_PARSER_TOKEN_VAR
 		  {
-		    $$ = grub_script_arg_add (0, GRUB_SCRIPT_ARG_TYPE_VAR, $1);
+		    $$ = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_VAR, $1);
 		  }
 		| text
 		  {
-		    $$ = grub_script_arg_add (0, GRUB_SCRIPT_ARG_TYPE_STR, $1);
+		    $$ = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_STR, $1);
 		  }
 /* XXX: Currently disabled to simplify the parser.  This should be
    parsed by yet another parser for readibility.  */
@@ -104,21 +102,21 @@ argument:	GRUB_PARSER_TOKEN_VAR
 
 arguments:	argument
 		  {
-		    $$ = grub_script_add_arglist (0, $1);
+		    $$ = grub_script_add_arglist (state, 0, $1);
 		  }
 		| arguments argument
 		  {
-		    $$ = grub_script_add_arglist ($1, $2);
+		    $$ = grub_script_add_arglist (state, $1, $2);
 		  }
 ;
 
 grubcmd:	GRUB_PARSER_TOKEN_NAME arguments
 		  {
-		    $$ = grub_script_create_cmdline ($1, $2);
+		    $$ = grub_script_create_cmdline (state, $1, $2);
 		  }
 		| GRUB_PARSER_TOKEN_NAME
 		  {
-		    $$ = grub_script_create_cmdline ($1, 0);
+		    $$ = grub_script_create_cmdline (state, $1, 0);
 		  }
 ;
 
@@ -132,18 +130,18 @@ command:	grubcmd 	{ $$ = $1; }
 /* A block of commands.  */
 commands:	command
 		  { 
-		    $$ = grub_script_add_cmd (0, $1);
+		    $$ = grub_script_add_cmd (state, 0, $1);
 		  }
 		| command ';' commands
 		  { 
 		    struct grub_script_cmdblock *cmd;
 		    cmd = (struct grub_script_cmdblock *) $1;
-		    $$ = grub_script_add_cmd (cmd, $3);
+		    $$ = grub_script_add_cmd (state, cmd, $3);
 		  }
 		| error
 		  {
-		    yyerror ("Incorrect command");
-		    err = 1;
+		    yyerror (state, "Incorrect command");
+		    state->err = 1;
 		    yyerrok;
 		  }
 ;
@@ -151,59 +149,61 @@ commands:	command
 /* A function.  Carefully save the memory that is allocated.  */
 function:	"function" GRUB_PARSER_TOKEN_NAME
 		  { 
-		    grub_script_lexer_ref ();
+		    grub_script_lexer_ref (state->lexerstate);
 		  } '{'
 		  { 
 		    /* The first part of the function was recognised.
 		       Now start recording the memory usage to store
 		       this function.  */
-		    func_mem = grub_script_mem_record ();
+		    state->func_mem = grub_script_mem_record (state);
 		  } commands '}'
 		  {
 		    struct grub_script *script;
 
 		    /* All the memory usage for parsing this function
 		       was recorded.  */
-		    func_mem = grub_script_mem_record_stop (func_mem);
-		    script = grub_script_create ($6, func_mem);
+		    state->func_mem = grub_script_mem_record_stop (state,
+								   state->func_mem);
+		    script = grub_script_create ($6, state->func_mem);
 		    if (script)
 		      grub_script_function_create ($2, script);
-		    grub_script_lexer_deref ();
+		    grub_script_lexer_deref (state->lexerstate);
 		  }
 ;
 
 /* A menu entry.  Carefully save the memory that is allocated.  */
 menuentry:	"menuentry" argument
 		  { 
-		    grub_script_lexer_ref ();
+		    grub_script_lexer_ref (state->lexerstate);
 		  } '{'
 		  { 
 		    /* Record sourcecode of the menu entry.  It can be
 		       parsed multiple times if it is part of a
 		       loop.  */
-		    grub_script_lexer_record_start ();
+		    grub_script_lexer_record_start (state->lexerstate);
 		  } commands '}'
 		  {
-		    menu_entry = grub_script_lexer_record_stop ();
-		    $$ = grub_script_create_cmdmenu ($2, menu_entry, 0);
-		    grub_script_lexer_deref ();
+		    char *menu_entry;
+		    menu_entry = grub_script_lexer_record_stop (state->lexerstate);
+		    $$ = grub_script_create_cmdmenu (state, $2, menu_entry, 0);
+		    grub_script_lexer_deref (state->lexerstate);
 		  }
 ;
 
 /* The first part of the if statement.  It's used to switch the lexer
    to a state in which it demands more tokens.  */
-if_statement:	"if" { grub_script_lexer_ref (); }
+if_statement:	"if" { grub_script_lexer_ref (state->lexerstate); }
 ;
 
 /* The if statement.  */
 if:		 if_statement grubcmd ';' "then" commands "fi"
 		  {
-		    $$ = grub_script_create_cmdif ($2, $5, 0);
-		    grub_script_lexer_deref ();
+		    $$ = grub_script_create_cmdif (state, $2, $5, 0);
+		    grub_script_lexer_deref (state->lexerstate);
 		  }
 		 | if_statement grubcmd ';' "then" commands "else" commands  "fi"
 		  {
-		    $$ = grub_script_create_cmdif ($2, $5, $7);
-		    grub_script_lexer_deref ();
+		    $$ = grub_script_create_cmdif (state, $2, $5, $7);
+		    grub_script_lexer_deref (state->lexerstate);
 		  }
 ;
