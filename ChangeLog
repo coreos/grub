@@ -103,7 +103,7 @@
 	(grub_script_add_cmd): Likewise.
 	(grub_script_parse): Setup the state before calling the parser.
 	
-2006-16-04  Marco Gerards  <marco@gnu.org>
+2006-04-16  Marco Gerards  <marco@gnu.org>
 
 	* normal/command.c (grub_command_init): Remove the title command.
 
