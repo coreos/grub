@@ -1,4 +1,30 @@
-2006-17-04  Marco Gerards  <marco@gnu.org>
+2006-04-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added conf/i386-efi.mk, conf/i386-efi.rmk,
+	include/grub/efi/api.h, include/grub/efi/console_control.h,
+	include/grub/efi/efi.h, include/grub/efi/pe32.h,
+	include/grub/i386/efi/time.h, kern/efi/efi.c,
+	kern/i386/efi/init.c, kern/i386/efi/startup.S,
+	and util/i386/efi/grub-mkimage.c.
+
+	* Makefile.in (RMKFILES): Added i386-efi.rmk.
+
+	* genmk.rb (PModule#rule): Do not export symbols if
+	#{prefix}_EXPORTS is set to "no".
+
+	* conf/i386-efi.mk: New file.
+	* conf/i386-efi.rmk: Likewise.
+	* include/grub/efi/api.h: Likewise.
+	* include/grub/efi/console_control.h: Likewise.
+	* include/grub/efi/efi.h: Likewise.
+	* include/grub/efi/pe32.h: Likewise.
+	* include/grub/i386/efi/time.h: Likewise.
+	* kern/efi/efi.c: Likewise.
+	* kern/i386/efi/init.c: Likewise.
+	* kern/i386/efi/startup.S: Likewise.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+
+2006-04-17  Marco Gerards  <marco@gnu.org>
 
 	* include/grub/script.h: Include <grub/parser.h> and
 	"grub_script.tab.h".

@@ -111,9 +111,12 @@ class PModule
     mod_name = File.basename(@name, '.mod')
     symbolic_name = mod_name.sub(/\.[^\.]*$/, '')
     
-    "CLEANFILES += #{@name} #{mod_obj} #{mod_src} #{pre_obj} #{objs_str} #{defsym} #{undsym}
-MOSTLYCLEANFILES += #{deps_str}
+    "CLEANFILES += #{@name} #{mod_obj} #{mod_src} #{pre_obj} #{objs_str} #{undsym}
+ifneq ($(#{prefix}_EXPORTS),no)
+CLEANFILES += #{defsym}
 DEFSYMFILES += #{defsym}
+endif
+MOSTLYCLEANFILES += #{deps_str}
 UNDSYMFILES += #{undsym}
 
 #{@name}: #{pre_obj} #{mod_obj}
@@ -131,8 +134,10 @@ UNDSYMFILES += #{undsym}
 #{mod_src}: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(#{prefix}_EXPORTS),no)
 #{defsym}: #{pre_obj}
 	$(NM) -g --defined-only -P -p $< | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
+endif
 
 #{undsym}: #{pre_obj}
 	echo '#{mod_name}' > $@

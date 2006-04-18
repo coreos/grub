@@ -52,6 +52,8 @@ commands/ieee1275/reboot.c
 commands/ieee1275/suspend.c
 conf/common.mk
 conf/common.rmk
+conf/i386-efi.mk
+conf/i386-efi.rmk
 conf/i386-pc.mk
 conf/i386-pc.rmk
 conf/powerpc-ieee1275.mk
@@ -109,8 +111,13 @@ include/grub/terminfo.h
 include/grub/tparm.h
 include/grub/types.h
 include/grub/video.h
+include/grub/efi/api.h
+include/grub/efi/console_control.h
+include/grub/efi/efi.h
+include/grub/efi/pe32.h
 include/grub/i386/setjmp.h
 include/grub/i386/types.h
+include/grub/i386/efi/time.h
 include/grub/i386/pc/biosdisk.h
 include/grub/i386/pc/boot.h
 include/grub/i386/pc/chainloader.h
@@ -166,7 +173,10 @@ kern/parser.c
 kern/partition.c
 kern/rescue.c
 kern/term.c
+kern/efi/efi.c
 kern/i386/dl.c
+kern/i386/efi/init.c
+kern/i386/efi/startup.S
 kern/i386/pc/init.c
 kern/i386/pc/lzo1x.S
 kern/i386/pc/startup.S
@@ -225,6 +235,7 @@ util/grub-emu.c
 util/misc.c
 util/resolve.c
 util/unifont2pff.rb
+util/i386/efi/grub-mkimage.c
 util/i386/pc/biosdisk.c
 util/i386/pc/getroot.c
 util/i386/pc/grub-install.in

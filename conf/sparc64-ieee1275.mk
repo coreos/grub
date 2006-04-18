@@ -293,9 +293,12 @@ pkgdata_MODULES = fat.mod ufs.mod ext2.mod minix.mod \
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
-CLEANFILES += fshelp.mod mod-fshelp.o mod-fshelp.c pre-fshelp.o fshelp_mod-fs_fshelp.o def-fshelp.lst und-fshelp.lst
-MOSTLYCLEANFILES += fshelp_mod-fs_fshelp.d
+CLEANFILES += fshelp.mod mod-fshelp.o mod-fshelp.c pre-fshelp.o fshelp_mod-fs_fshelp.o und-fshelp.lst
+ifneq ($(fshelp_mod_EXPORTS),no)
+CLEANFILES += def-fshelp.lst
 DEFSYMFILES += def-fshelp.lst
+endif
+MOSTLYCLEANFILES += fshelp_mod-fs_fshelp.d
 UNDSYMFILES += und-fshelp.lst
 
 fshelp.mod: pre-fshelp.o mod-fshelp.o
@@ -313,8 +316,10 @@ mod-fshelp.o: mod-fshelp.c
 mod-fshelp.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'fshelp' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(fshelp_mod_EXPORTS),no)
 def-fshelp.lst: pre-fshelp.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 fshelp/' > $@
+endif
 
 und-fshelp.lst: pre-fshelp.o
 	echo 'fshelp' > $@
@@ -344,9 +349,12 @@ fshelp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For fat.mod.
 fat_mod_SOURCES = fs/fat.c
-CLEANFILES += fat.mod mod-fat.o mod-fat.c pre-fat.o fat_mod-fs_fat.o def-fat.lst und-fat.lst
-MOSTLYCLEANFILES += fat_mod-fs_fat.d
+CLEANFILES += fat.mod mod-fat.o mod-fat.c pre-fat.o fat_mod-fs_fat.o und-fat.lst
+ifneq ($(fat_mod_EXPORTS),no)
+CLEANFILES += def-fat.lst
 DEFSYMFILES += def-fat.lst
+endif
+MOSTLYCLEANFILES += fat_mod-fs_fat.d
 UNDSYMFILES += und-fat.lst
 
 fat.mod: pre-fat.o mod-fat.o
@@ -364,8 +372,10 @@ mod-fat.o: mod-fat.c
 mod-fat.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'fat' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(fat_mod_EXPORTS),no)
 def-fat.lst: pre-fat.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 fat/' > $@
+endif
 
 und-fat.lst: pre-fat.o
 	echo 'fat' > $@
@@ -395,9 +405,12 @@ fat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ext2.mod.
 ext2_mod_SOURCES = fs/ext2.c
-CLEANFILES += ext2.mod mod-ext2.o mod-ext2.c pre-ext2.o ext2_mod-fs_ext2.o def-ext2.lst und-ext2.lst
-MOSTLYCLEANFILES += ext2_mod-fs_ext2.d
+CLEANFILES += ext2.mod mod-ext2.o mod-ext2.c pre-ext2.o ext2_mod-fs_ext2.o und-ext2.lst
+ifneq ($(ext2_mod_EXPORTS),no)
+CLEANFILES += def-ext2.lst
 DEFSYMFILES += def-ext2.lst
+endif
+MOSTLYCLEANFILES += ext2_mod-fs_ext2.d
 UNDSYMFILES += und-ext2.lst
 
 ext2.mod: pre-ext2.o mod-ext2.o
@@ -415,8 +428,10 @@ mod-ext2.o: mod-ext2.c
 mod-ext2.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ext2' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(ext2_mod_EXPORTS),no)
 def-ext2.lst: pre-ext2.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ext2/' > $@
+endif
 
 und-ext2.lst: pre-ext2.o
 	echo 'ext2' > $@
@@ -446,9 +461,12 @@ ext2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ufs.mod.
 ufs_mod_SOURCES = fs/ufs.c
-CLEANFILES += ufs.mod mod-ufs.o mod-ufs.c pre-ufs.o ufs_mod-fs_ufs.o def-ufs.lst und-ufs.lst
-MOSTLYCLEANFILES += ufs_mod-fs_ufs.d
+CLEANFILES += ufs.mod mod-ufs.o mod-ufs.c pre-ufs.o ufs_mod-fs_ufs.o und-ufs.lst
+ifneq ($(ufs_mod_EXPORTS),no)
+CLEANFILES += def-ufs.lst
 DEFSYMFILES += def-ufs.lst
+endif
+MOSTLYCLEANFILES += ufs_mod-fs_ufs.d
 UNDSYMFILES += und-ufs.lst
 
 ufs.mod: pre-ufs.o mod-ufs.o
@@ -466,8 +484,10 @@ mod-ufs.o: mod-ufs.c
 mod-ufs.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ufs' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(ufs_mod_EXPORTS),no)
 def-ufs.lst: pre-ufs.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ufs/' > $@
+endif
 
 und-ufs.lst: pre-ufs.o
 	echo 'ufs' > $@
@@ -497,9 +517,12 @@ ufs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For minix.mod.
 minix_mod_SOURCES = fs/minix.c
-CLEANFILES += minix.mod mod-minix.o mod-minix.c pre-minix.o minix_mod-fs_minix.o def-minix.lst und-minix.lst
-MOSTLYCLEANFILES += minix_mod-fs_minix.d
+CLEANFILES += minix.mod mod-minix.o mod-minix.c pre-minix.o minix_mod-fs_minix.o und-minix.lst
+ifneq ($(minix_mod_EXPORTS),no)
+CLEANFILES += def-minix.lst
 DEFSYMFILES += def-minix.lst
+endif
+MOSTLYCLEANFILES += minix_mod-fs_minix.d
 UNDSYMFILES += und-minix.lst
 
 minix.mod: pre-minix.o mod-minix.o
@@ -517,8 +540,10 @@ mod-minix.o: mod-minix.c
 mod-minix.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'minix' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(minix_mod_EXPORTS),no)
 def-minix.lst: pre-minix.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 minix/' > $@
+endif
 
 und-minix.lst: pre-minix.o
 	echo 'minix' > $@
@@ -548,9 +573,12 @@ minix_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hfs.mod.
 hfs_mod_SOURCES = fs/hfs.c
-CLEANFILES += hfs.mod mod-hfs.o mod-hfs.c pre-hfs.o hfs_mod-fs_hfs.o def-hfs.lst und-hfs.lst
-MOSTLYCLEANFILES += hfs_mod-fs_hfs.d
+CLEANFILES += hfs.mod mod-hfs.o mod-hfs.c pre-hfs.o hfs_mod-fs_hfs.o und-hfs.lst
+ifneq ($(hfs_mod_EXPORTS),no)
+CLEANFILES += def-hfs.lst
 DEFSYMFILES += def-hfs.lst
+endif
+MOSTLYCLEANFILES += hfs_mod-fs_hfs.d
 UNDSYMFILES += und-hfs.lst
 
 hfs.mod: pre-hfs.o mod-hfs.o
@@ -568,8 +596,10 @@ mod-hfs.o: mod-hfs.c
 mod-hfs.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'hfs' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(hfs_mod_EXPORTS),no)
 def-hfs.lst: pre-hfs.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 hfs/' > $@
+endif
 
 und-hfs.lst: pre-hfs.o
 	echo 'hfs' > $@
@@ -599,9 +629,12 @@ hfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For jfs.mod.
 jfs_mod_SOURCES = fs/jfs.c
-CLEANFILES += jfs.mod mod-jfs.o mod-jfs.c pre-jfs.o jfs_mod-fs_jfs.o def-jfs.lst und-jfs.lst
-MOSTLYCLEANFILES += jfs_mod-fs_jfs.d
+CLEANFILES += jfs.mod mod-jfs.o mod-jfs.c pre-jfs.o jfs_mod-fs_jfs.o und-jfs.lst
+ifneq ($(jfs_mod_EXPORTS),no)
+CLEANFILES += def-jfs.lst
 DEFSYMFILES += def-jfs.lst
+endif
+MOSTLYCLEANFILES += jfs_mod-fs_jfs.d
 UNDSYMFILES += und-jfs.lst
 
 jfs.mod: pre-jfs.o mod-jfs.o
@@ -619,8 +652,10 @@ mod-jfs.o: mod-jfs.c
 mod-jfs.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'jfs' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(jfs_mod_EXPORTS),no)
 def-jfs.lst: pre-jfs.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 jfs/' > $@
+endif
 
 und-jfs.lst: pre-jfs.o
 	echo 'jfs' > $@
@@ -655,9 +690,12 @@ iso9660_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For xfs.mod.
 xfs_mod_SOURCES = fs/xfs.c
-CLEANFILES += xfs.mod mod-xfs.o mod-xfs.c pre-xfs.o xfs_mod-fs_xfs.o def-xfs.lst und-xfs.lst
-MOSTLYCLEANFILES += xfs_mod-fs_xfs.d
+CLEANFILES += xfs.mod mod-xfs.o mod-xfs.c pre-xfs.o xfs_mod-fs_xfs.o und-xfs.lst
+ifneq ($(xfs_mod_EXPORTS),no)
+CLEANFILES += def-xfs.lst
 DEFSYMFILES += def-xfs.lst
+endif
+MOSTLYCLEANFILES += xfs_mod-fs_xfs.d
 UNDSYMFILES += und-xfs.lst
 
 xfs.mod: pre-xfs.o mod-xfs.o
@@ -675,8 +713,10 @@ mod-xfs.o: mod-xfs.c
 mod-xfs.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'xfs' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(xfs_mod_EXPORTS),no)
 def-xfs.lst: pre-xfs.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 xfs/' > $@
+endif
 
 und-xfs.lst: pre-xfs.o
 	echo 'xfs' > $@
@@ -706,9 +746,12 @@ xfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For affs.mod.
 affs_mod_SOURCES = fs/affs.c
-CLEANFILES += affs.mod mod-affs.o mod-affs.c pre-affs.o affs_mod-fs_affs.o def-affs.lst und-affs.lst
-MOSTLYCLEANFILES += affs_mod-fs_affs.d
+CLEANFILES += affs.mod mod-affs.o mod-affs.c pre-affs.o affs_mod-fs_affs.o und-affs.lst
+ifneq ($(affs_mod_EXPORTS),no)
+CLEANFILES += def-affs.lst
 DEFSYMFILES += def-affs.lst
+endif
+MOSTLYCLEANFILES += affs_mod-fs_affs.d
 UNDSYMFILES += und-affs.lst
 
 affs.mod: pre-affs.o mod-affs.o
@@ -726,8 +769,10 @@ mod-affs.o: mod-affs.c
 mod-affs.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'affs' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(affs_mod_EXPORTS),no)
 def-affs.lst: pre-affs.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 affs/' > $@
+endif
 
 und-affs.lst: pre-affs.o
 	echo 'affs' > $@
@@ -757,9 +802,12 @@ affs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sfs.mod.
 sfs_mod_SOURCES = fs/sfs.c
-CLEANFILES += sfs.mod mod-sfs.o mod-sfs.c pre-sfs.o sfs_mod-fs_sfs.o def-sfs.lst und-sfs.lst
-MOSTLYCLEANFILES += sfs_mod-fs_sfs.d
+CLEANFILES += sfs.mod mod-sfs.o mod-sfs.c pre-sfs.o sfs_mod-fs_sfs.o und-sfs.lst
+ifneq ($(sfs_mod_EXPORTS),no)
+CLEANFILES += def-sfs.lst
 DEFSYMFILES += def-sfs.lst
+endif
+MOSTLYCLEANFILES += sfs_mod-fs_sfs.d
 UNDSYMFILES += und-sfs.lst
 
 sfs.mod: pre-sfs.o mod-sfs.o
@@ -777,8 +825,10 @@ mod-sfs.o: mod-sfs.c
 mod-sfs.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'sfs' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(sfs_mod_EXPORTS),no)
 def-sfs.lst: pre-sfs.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 sfs/' > $@
+endif
 
 und-sfs.lst: pre-sfs.o
 	echo 'sfs' > $@
@@ -823,9 +873,12 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/menu_entry.c normal/misc.c normal/script.c		\
 	normal/sparc64/setjmp.S						\
 	grub_script.tab.c
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o def-normal.lst und-normal.lst
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_script.d normal_mod-normal_sparc64_setjmp.d normal_mod-grub_script_tab.d
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o und-normal.lst
+ifneq ($(normal_mod_EXPORTS),no)
+CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
+endif
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_script.d normal_mod-normal_sparc64_setjmp.d normal_mod-grub_script_tab.d
 UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
@@ -843,8 +896,10 @@ mod-normal.o: mod-normal.c
 mod-normal.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'normal' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(normal_mod_EXPORTS),no)
 def-normal.lst: pre-normal.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 normal/' > $@
+endif
 
 und-normal.lst: pre-normal.o
 	echo 'normal' > $@
@@ -1141,9 +1196,12 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
-CLEANFILES += hello.mod mod-hello.o mod-hello.c pre-hello.o hello_mod-hello_hello.o def-hello.lst und-hello.lst
-MOSTLYCLEANFILES += hello_mod-hello_hello.d
+CLEANFILES += hello.mod mod-hello.o mod-hello.c pre-hello.o hello_mod-hello_hello.o und-hello.lst
+ifneq ($(hello_mod_EXPORTS),no)
+CLEANFILES += def-hello.lst
 DEFSYMFILES += def-hello.lst
+endif
+MOSTLYCLEANFILES += hello_mod-hello_hello.d
 UNDSYMFILES += und-hello.lst
 
 hello.mod: pre-hello.o mod-hello.o
@@ -1161,8 +1219,10 @@ mod-hello.o: mod-hello.c
 mod-hello.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'hello' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(hello_mod_EXPORTS),no)
 def-hello.lst: pre-hello.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 hello/' > $@
+endif
 
 und-hello.lst: pre-hello.o
 	echo 'hello' > $@
@@ -1192,9 +1252,12 @@ hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For boot.mod.
 boot_mod_SOURCES = commands/boot.c
-CLEANFILES += boot.mod mod-boot.o mod-boot.c pre-boot.o boot_mod-commands_boot.o def-boot.lst und-boot.lst
-MOSTLYCLEANFILES += boot_mod-commands_boot.d
+CLEANFILES += boot.mod mod-boot.o mod-boot.c pre-boot.o boot_mod-commands_boot.o und-boot.lst
+ifneq ($(boot_mod_EXPORTS),no)
+CLEANFILES += def-boot.lst
 DEFSYMFILES += def-boot.lst
+endif
+MOSTLYCLEANFILES += boot_mod-commands_boot.d
 UNDSYMFILES += und-boot.lst
 
 boot.mod: pre-boot.o mod-boot.o
@@ -1212,8 +1275,10 @@ mod-boot.o: mod-boot.c
 mod-boot.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'boot' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(boot_mod_EXPORTS),no)
 def-boot.lst: pre-boot.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 boot/' > $@
+endif
 
 und-boot.lst: pre-boot.o
 	echo 'boot' > $@
@@ -1243,9 +1308,12 @@ boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For terminal.mod.
 terminal_mod_SOURCES = commands/terminal.c
-CLEANFILES += terminal.mod mod-terminal.o mod-terminal.c pre-terminal.o terminal_mod-commands_terminal.o def-terminal.lst und-terminal.lst
-MOSTLYCLEANFILES += terminal_mod-commands_terminal.d
+CLEANFILES += terminal.mod mod-terminal.o mod-terminal.c pre-terminal.o terminal_mod-commands_terminal.o und-terminal.lst
+ifneq ($(terminal_mod_EXPORTS),no)
+CLEANFILES += def-terminal.lst
 DEFSYMFILES += def-terminal.lst
+endif
+MOSTLYCLEANFILES += terminal_mod-commands_terminal.d
 UNDSYMFILES += und-terminal.lst
 
 terminal.mod: pre-terminal.o mod-terminal.o
@@ -1263,8 +1331,10 @@ mod-terminal.o: mod-terminal.c
 mod-terminal.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'terminal' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(terminal_mod_EXPORTS),no)
 def-terminal.lst: pre-terminal.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 terminal/' > $@
+endif
 
 und-terminal.lst: pre-terminal.o
 	echo 'terminal' > $@
@@ -1294,9 +1364,12 @@ terminal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ls.mod.
 ls_mod_SOURCES = commands/ls.c
-CLEANFILES += ls.mod mod-ls.o mod-ls.c pre-ls.o ls_mod-commands_ls.o def-ls.lst und-ls.lst
-MOSTLYCLEANFILES += ls_mod-commands_ls.d
+CLEANFILES += ls.mod mod-ls.o mod-ls.c pre-ls.o ls_mod-commands_ls.o und-ls.lst
+ifneq ($(ls_mod_EXPORTS),no)
+CLEANFILES += def-ls.lst
 DEFSYMFILES += def-ls.lst
+endif
+MOSTLYCLEANFILES += ls_mod-commands_ls.d
 UNDSYMFILES += und-ls.lst
 
 ls.mod: pre-ls.o mod-ls.o
@@ -1314,8 +1387,10 @@ mod-ls.o: mod-ls.c
 mod-ls.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ls' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(ls_mod_EXPORTS),no)
 def-ls.lst: pre-ls.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ls/' > $@
+endif
 
 und-ls.lst: pre-ls.o
 	echo 'ls' > $@
@@ -1345,9 +1420,12 @@ ls_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For cmp.mod.
 cmp_mod_SOURCES = commands/cmp.c
-CLEANFILES += cmp.mod mod-cmp.o mod-cmp.c pre-cmp.o cmp_mod-commands_cmp.o def-cmp.lst und-cmp.lst
-MOSTLYCLEANFILES += cmp_mod-commands_cmp.d
+CLEANFILES += cmp.mod mod-cmp.o mod-cmp.c pre-cmp.o cmp_mod-commands_cmp.o und-cmp.lst
+ifneq ($(cmp_mod_EXPORTS),no)
+CLEANFILES += def-cmp.lst
 DEFSYMFILES += def-cmp.lst
+endif
+MOSTLYCLEANFILES += cmp_mod-commands_cmp.d
 UNDSYMFILES += und-cmp.lst
 
 cmp.mod: pre-cmp.o mod-cmp.o
@@ -1365,8 +1443,10 @@ mod-cmp.o: mod-cmp.c
 mod-cmp.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'cmp' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(cmp_mod_EXPORTS),no)
 def-cmp.lst: pre-cmp.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 cmp/' > $@
+endif
 
 und-cmp.lst: pre-cmp.o
 	echo 'cmp' > $@
@@ -1396,9 +1476,12 @@ cmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For cat.mod.
 cat_mod_SOURCES = commands/cat.c
-CLEANFILES += cat.mod mod-cat.o mod-cat.c pre-cat.o cat_mod-commands_cat.o def-cat.lst und-cat.lst
-MOSTLYCLEANFILES += cat_mod-commands_cat.d
+CLEANFILES += cat.mod mod-cat.o mod-cat.c pre-cat.o cat_mod-commands_cat.o und-cat.lst
+ifneq ($(cat_mod_EXPORTS),no)
+CLEANFILES += def-cat.lst
 DEFSYMFILES += def-cat.lst
+endif
+MOSTLYCLEANFILES += cat_mod-commands_cat.d
 UNDSYMFILES += und-cat.lst
 
 cat.mod: pre-cat.o mod-cat.o
@@ -1416,8 +1499,10 @@ mod-cat.o: mod-cat.c
 mod-cat.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'cat' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(cat_mod_EXPORTS),no)
 def-cat.lst: pre-cat.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 cat/' > $@
+endif
 
 und-cat.lst: pre-cat.o
 	echo 'cat' > $@
@@ -1447,9 +1532,12 @@ cat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For font.mod.
 font_mod_SOURCES = font/manager.c
-CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_manager.o def-font.lst und-font.lst
-MOSTLYCLEANFILES += font_mod-font_manager.d
+CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_manager.o und-font.lst
+ifneq ($(font_mod_EXPORTS),no)
+CLEANFILES += def-font.lst
 DEFSYMFILES += def-font.lst
+endif
+MOSTLYCLEANFILES += font_mod-font_manager.d
 UNDSYMFILES += und-font.lst
 
 font.mod: pre-font.o mod-font.o
@@ -1467,8 +1555,10 @@ mod-font.o: mod-font.c
 mod-font.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'font' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(font_mod_EXPORTS),no)
 def-font.lst: pre-font.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 font/' > $@
+endif
 
 und-font.lst: pre-font.o
 	echo 'font' > $@
@@ -1498,9 +1588,12 @@ font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For amiga.mod
 amiga_mod_SOURCES = partmap/amiga.c
-CLEANFILES += amiga.mod mod-amiga.o mod-amiga.c pre-amiga.o amiga_mod-partmap_amiga.o def-amiga.lst und-amiga.lst
-MOSTLYCLEANFILES += amiga_mod-partmap_amiga.d
+CLEANFILES += amiga.mod mod-amiga.o mod-amiga.c pre-amiga.o amiga_mod-partmap_amiga.o und-amiga.lst
+ifneq ($(amiga_mod_EXPORTS),no)
+CLEANFILES += def-amiga.lst
 DEFSYMFILES += def-amiga.lst
+endif
+MOSTLYCLEANFILES += amiga_mod-partmap_amiga.d
 UNDSYMFILES += und-amiga.lst
 
 amiga.mod: pre-amiga.o mod-amiga.o
@@ -1518,8 +1611,10 @@ mod-amiga.o: mod-amiga.c
 mod-amiga.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'amiga' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(amiga_mod_EXPORTS),no)
 def-amiga.lst: pre-amiga.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 amiga/' > $@
+endif
 
 und-amiga.lst: pre-amiga.o
 	echo 'amiga' > $@
@@ -1549,9 +1644,12 @@ amiga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For apple.mod
 apple_mod_SOURCES = partmap/apple.c
-CLEANFILES += apple.mod mod-apple.o mod-apple.c pre-apple.o apple_mod-partmap_apple.o def-apple.lst und-apple.lst
-MOSTLYCLEANFILES += apple_mod-partmap_apple.d
+CLEANFILES += apple.mod mod-apple.o mod-apple.c pre-apple.o apple_mod-partmap_apple.o und-apple.lst
+ifneq ($(apple_mod_EXPORTS),no)
+CLEANFILES += def-apple.lst
 DEFSYMFILES += def-apple.lst
+endif
+MOSTLYCLEANFILES += apple_mod-partmap_apple.d
 UNDSYMFILES += und-apple.lst
 
 apple.mod: pre-apple.o mod-apple.o
@@ -1569,8 +1667,10 @@ mod-apple.o: mod-apple.c
 mod-apple.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'apple' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(apple_mod_EXPORTS),no)
 def-apple.lst: pre-apple.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 apple/' > $@
+endif
 
 und-apple.lst: pre-apple.o
 	echo 'apple' > $@
@@ -1600,9 +1700,12 @@ apple_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For pc.mod
 pc_mod_SOURCES = partmap/pc.c
-CLEANFILES += pc.mod mod-pc.o mod-pc.c pre-pc.o pc_mod-partmap_pc.o def-pc.lst und-pc.lst
-MOSTLYCLEANFILES += pc_mod-partmap_pc.d
+CLEANFILES += pc.mod mod-pc.o mod-pc.c pre-pc.o pc_mod-partmap_pc.o und-pc.lst
+ifneq ($(pc_mod_EXPORTS),no)
+CLEANFILES += def-pc.lst
 DEFSYMFILES += def-pc.lst
+endif
+MOSTLYCLEANFILES += pc_mod-partmap_pc.d
 UNDSYMFILES += und-pc.lst
 
 pc.mod: pre-pc.o mod-pc.o
@@ -1620,8 +1723,10 @@ mod-pc.o: mod-pc.c
 mod-pc.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'pc' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(pc_mod_EXPORTS),no)
 def-pc.lst: pre-pc.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 pc/' > $@
+endif
 
 und-pc.lst: pre-pc.o
 	echo 'pc' > $@
@@ -1651,9 +1756,12 @@ pc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For sun.mod
 sun_mod_SOURCES = partmap/sun.c
-CLEANFILES += sun.mod mod-sun.o mod-sun.c pre-sun.o sun_mod-partmap_sun.o def-sun.lst und-sun.lst
-MOSTLYCLEANFILES += sun_mod-partmap_sun.d
+CLEANFILES += sun.mod mod-sun.o mod-sun.c pre-sun.o sun_mod-partmap_sun.o und-sun.lst
+ifneq ($(sun_mod_EXPORTS),no)
+CLEANFILES += def-sun.lst
 DEFSYMFILES += def-sun.lst
+endif
+MOSTLYCLEANFILES += sun_mod-partmap_sun.d
 UNDSYMFILES += und-sun.lst
 
 sun.mod: pre-sun.o mod-sun.o
@@ -1671,8 +1779,10 @@ mod-sun.o: mod-sun.c
 mod-sun.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'sun' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(sun_mod_EXPORTS),no)
 def-sun.lst: pre-sun.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 sun/' > $@
+endif
 
 und-sun.lst: pre-sun.o
 	echo 'sun' > $@
@@ -1702,9 +1812,12 @@ sun_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For acorn.mod
 acorn_mod_SOURCES = partmap/acorn.c
-CLEANFILES += acorn.mod mod-acorn.o mod-acorn.c pre-acorn.o acorn_mod-partmap_acorn.o def-acorn.lst und-acorn.lst
-MOSTLYCLEANFILES += acorn_mod-partmap_acorn.d
+CLEANFILES += acorn.mod mod-acorn.o mod-acorn.c pre-acorn.o acorn_mod-partmap_acorn.o und-acorn.lst
+ifneq ($(acorn_mod_EXPORTS),no)
+CLEANFILES += def-acorn.lst
 DEFSYMFILES += def-acorn.lst
+endif
+MOSTLYCLEANFILES += acorn_mod-partmap_acorn.d
 UNDSYMFILES += und-acorn.lst
 
 acorn.mod: pre-acorn.o mod-acorn.o
@@ -1722,8 +1835,10 @@ mod-acorn.o: mod-acorn.c
 mod-acorn.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'acorn' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(acorn_mod_EXPORTS),no)
 def-acorn.lst: pre-acorn.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 acorn/' > $@
+endif
 
 und-acorn.lst: pre-acorn.o
 	echo 'acorn' > $@
@@ -1752,9 +1867,12 @@ acorn_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For loopback.mod
 loopback_mod_SOURCES = disk/loopback.c
-CLEANFILES += loopback.mod mod-loopback.o mod-loopback.c pre-loopback.o loopback_mod-disk_loopback.o def-loopback.lst und-loopback.lst
-MOSTLYCLEANFILES += loopback_mod-disk_loopback.d
+CLEANFILES += loopback.mod mod-loopback.o mod-loopback.c pre-loopback.o loopback_mod-disk_loopback.o und-loopback.lst
+ifneq ($(loopback_mod_EXPORTS),no)
+CLEANFILES += def-loopback.lst
 DEFSYMFILES += def-loopback.lst
+endif
+MOSTLYCLEANFILES += loopback_mod-disk_loopback.d
 UNDSYMFILES += und-loopback.lst
 
 loopback.mod: pre-loopback.o mod-loopback.o
@@ -1772,8 +1890,10 @@ mod-loopback.o: mod-loopback.c
 mod-loopback.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'loopback' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(loopback_mod_EXPORTS),no)
 def-loopback.lst: pre-loopback.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 loopback/' > $@
+endif
 
 und-loopback.lst: pre-loopback.o
 	echo 'loopback' > $@
@@ -1803,9 +1923,12 @@ loopback_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
-CLEANFILES += suspend.mod mod-suspend.o mod-suspend.c pre-suspend.o suspend_mod-commands_ieee1275_suspend.o def-suspend.lst und-suspend.lst
-MOSTLYCLEANFILES += suspend_mod-commands_ieee1275_suspend.d
+CLEANFILES += suspend.mod mod-suspend.o mod-suspend.c pre-suspend.o suspend_mod-commands_ieee1275_suspend.o und-suspend.lst
+ifneq ($(suspend_mod_EXPORTS),no)
+CLEANFILES += def-suspend.lst
 DEFSYMFILES += def-suspend.lst
+endif
+MOSTLYCLEANFILES += suspend_mod-commands_ieee1275_suspend.d
 UNDSYMFILES += und-suspend.lst
 
 suspend.mod: pre-suspend.o mod-suspend.o
@@ -1823,8 +1946,10 @@ mod-suspend.o: mod-suspend.c
 mod-suspend.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'suspend' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(suspend_mod_EXPORTS),no)
 def-suspend.lst: pre-suspend.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 suspend/' > $@
+endif
 
 und-suspend.lst: pre-suspend.o
 	echo 'suspend' > $@
@@ -1854,9 +1979,12 @@ suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod
 reboot_mod_SOURCES = commands/ieee1275/reboot.c
-CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_ieee1275_reboot.o def-reboot.lst und-reboot.lst
-MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
+CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_ieee1275_reboot.o und-reboot.lst
+ifneq ($(reboot_mod_EXPORTS),no)
+CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
+endif
+MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
 UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
@@ -1874,8 +2002,10 @@ mod-reboot.o: mod-reboot.c
 mod-reboot.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(reboot_mod_EXPORTS),no)
 def-reboot.lst: pre-reboot.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 reboot/' > $@
+endif
 
 und-reboot.lst: pre-reboot.o
 	echo 'reboot' > $@
@@ -1905,9 +2035,12 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
 halt_mod_SOURCES = commands/ieee1275/halt.c
-CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee1275_halt.o def-halt.lst und-halt.lst
-MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
+CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee1275_halt.o und-halt.lst
+ifneq ($(halt_mod_EXPORTS),no)
+CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
+endif
+MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
 UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
@@ -1925,8 +2058,10 @@ mod-halt.o: mod-halt.c
 mod-halt.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(halt_mod_EXPORTS),no)
 def-halt.lst: pre-halt.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 halt/' > $@
+endif
 
 und-halt.lst: pre-halt.o
 	echo 'halt' > $@
@@ -1956,9 +2091,12 @@ halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For help.mod.
 help_mod_SOURCES = commands/help.c
-CLEANFILES += help.mod mod-help.o mod-help.c pre-help.o help_mod-commands_help.o def-help.lst und-help.lst
-MOSTLYCLEANFILES += help_mod-commands_help.d
+CLEANFILES += help.mod mod-help.o mod-help.c pre-help.o help_mod-commands_help.o und-help.lst
+ifneq ($(help_mod_EXPORTS),no)
+CLEANFILES += def-help.lst
 DEFSYMFILES += def-help.lst
+endif
+MOSTLYCLEANFILES += help_mod-commands_help.d
 UNDSYMFILES += und-help.lst
 
 help.mod: pre-help.o mod-help.o
@@ -1976,8 +2114,10 @@ mod-help.o: mod-help.c
 mod-help.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'help' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(help_mod_EXPORTS),no)
 def-help.lst: pre-help.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 help/' > $@
+endif
 
 und-help.lst: pre-help.o
 	echo 'help' > $@
@@ -2007,9 +2147,12 @@ help_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For default.mod
 default_mod_SOURCES = commands/default.c
-CLEANFILES += default.mod mod-default.o mod-default.c pre-default.o default_mod-commands_default.o def-default.lst und-default.lst
-MOSTLYCLEANFILES += default_mod-commands_default.d
+CLEANFILES += default.mod mod-default.o mod-default.c pre-default.o default_mod-commands_default.o und-default.lst
+ifneq ($(default_mod_EXPORTS),no)
+CLEANFILES += def-default.lst
 DEFSYMFILES += def-default.lst
+endif
+MOSTLYCLEANFILES += default_mod-commands_default.d
 UNDSYMFILES += und-default.lst
 
 default.mod: pre-default.o mod-default.o
@@ -2027,8 +2170,10 @@ mod-default.o: mod-default.c
 mod-default.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'default' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(default_mod_EXPORTS),no)
 def-default.lst: pre-default.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 default/' > $@
+endif
 
 und-default.lst: pre-default.o
 	echo 'default' > $@
@@ -2058,9 +2203,12 @@ default_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For timeout.mod
 timeout_mod_SOURCES = commands/timeout.c
-CLEANFILES += timeout.mod mod-timeout.o mod-timeout.c pre-timeout.o timeout_mod-commands_timeout.o def-timeout.lst und-timeout.lst
-MOSTLYCLEANFILES += timeout_mod-commands_timeout.d
+CLEANFILES += timeout.mod mod-timeout.o mod-timeout.c pre-timeout.o timeout_mod-commands_timeout.o und-timeout.lst
+ifneq ($(timeout_mod_EXPORTS),no)
+CLEANFILES += def-timeout.lst
 DEFSYMFILES += def-timeout.lst
+endif
+MOSTLYCLEANFILES += timeout_mod-commands_timeout.d
 UNDSYMFILES += und-timeout.lst
 
 timeout.mod: pre-timeout.o mod-timeout.o
@@ -2078,8 +2226,10 @@ mod-timeout.o: mod-timeout.c
 mod-timeout.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'timeout' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(timeout_mod_EXPORTS),no)
 def-timeout.lst: pre-timeout.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 timeout/' > $@
+endif
 
 und-timeout.lst: pre-timeout.o
 	echo 'timeout' > $@
@@ -2109,9 +2259,12 @@ timeout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For configfile.mod
 configfile_mod_SOURCES = commands/configfile.c
-CLEANFILES += configfile.mod mod-configfile.o mod-configfile.c pre-configfile.o configfile_mod-commands_configfile.o def-configfile.lst und-configfile.lst
-MOSTLYCLEANFILES += configfile_mod-commands_configfile.d
+CLEANFILES += configfile.mod mod-configfile.o mod-configfile.c pre-configfile.o configfile_mod-commands_configfile.o und-configfile.lst
+ifneq ($(configfile_mod_EXPORTS),no)
+CLEANFILES += def-configfile.lst
 DEFSYMFILES += def-configfile.lst
+endif
+MOSTLYCLEANFILES += configfile_mod-commands_configfile.d
 UNDSYMFILES += und-configfile.lst
 
 configfile.mod: pre-configfile.o mod-configfile.o
@@ -2129,8 +2282,10 @@ mod-configfile.o: mod-configfile.c
 mod-configfile.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'configfile' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(configfile_mod_EXPORTS),no)
 def-configfile.lst: pre-configfile.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 configfile/' > $@
+endif
 
 und-configfile.lst: pre-configfile.o
 	echo 'configfile' > $@
@@ -2160,9 +2315,12 @@ configfile_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
 search_mod_SOURCES = commands/search.c
-CLEANFILES += search.mod mod-search.o mod-search.c pre-search.o search_mod-commands_search.o def-search.lst und-search.lst
-MOSTLYCLEANFILES += search_mod-commands_search.d
+CLEANFILES += search.mod mod-search.o mod-search.c pre-search.o search_mod-commands_search.o und-search.lst
+ifneq ($(search_mod_EXPORTS),no)
+CLEANFILES += def-search.lst
 DEFSYMFILES += def-search.lst
+endif
+MOSTLYCLEANFILES += search_mod-commands_search.d
 UNDSYMFILES += und-search.lst
 
 search.mod: pre-search.o mod-search.o
@@ -2180,8 +2338,10 @@ mod-search.o: mod-search.c
 mod-search.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'search' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(search_mod_EXPORTS),no)
 def-search.lst: pre-search.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 search/' > $@
+endif
 
 und-search.lst: pre-search.o
 	echo 'search' > $@
@@ -2211,9 +2371,12 @@ search_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For gzio.mod.
 gzio_mod_SOURCES = io/gzio.c
-CLEANFILES += gzio.mod mod-gzio.o mod-gzio.c pre-gzio.o gzio_mod-io_gzio.o def-gzio.lst und-gzio.lst
-MOSTLYCLEANFILES += gzio_mod-io_gzio.d
+CLEANFILES += gzio.mod mod-gzio.o mod-gzio.c pre-gzio.o gzio_mod-io_gzio.o und-gzio.lst
+ifneq ($(gzio_mod_EXPORTS),no)
+CLEANFILES += def-gzio.lst
 DEFSYMFILES += def-gzio.lst
+endif
+MOSTLYCLEANFILES += gzio_mod-io_gzio.d
 UNDSYMFILES += und-gzio.lst
 
 gzio.mod: pre-gzio.o mod-gzio.o
@@ -2231,8 +2394,10 @@ mod-gzio.o: mod-gzio.c
 mod-gzio.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'gzio' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(gzio_mod_EXPORTS),no)
 def-gzio.lst: pre-gzio.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gzio/' > $@
+endif
 
 und-gzio.lst: pre-gzio.o
 	echo 'gzio' > $@

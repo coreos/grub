@@ -1374,9 +1374,12 @@ pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
-CLEANFILES += _chain.mod mod-_chain.o mod-_chain.c pre-_chain.o _chain_mod-loader_i386_pc_chainloader.o def-_chain.lst und-_chain.lst
-MOSTLYCLEANFILES += _chain_mod-loader_i386_pc_chainloader.d
+CLEANFILES += _chain.mod mod-_chain.o mod-_chain.c pre-_chain.o _chain_mod-loader_i386_pc_chainloader.o und-_chain.lst
+ifneq ($(_chain_mod_EXPORTS),no)
+CLEANFILES += def-_chain.lst
 DEFSYMFILES += def-_chain.lst
+endif
+MOSTLYCLEANFILES += _chain_mod-loader_i386_pc_chainloader.d
 UNDSYMFILES += und-_chain.lst
 
 _chain.mod: pre-_chain.o mod-_chain.o
@@ -1394,8 +1397,10 @@ mod-_chain.o: mod-_chain.c
 mod-_chain.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_chain' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(_chain_mod_EXPORTS),no)
 def-_chain.lst: pre-_chain.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _chain/' > $@
+endif
 
 und-_chain.lst: pre-_chain.o
 	echo '_chain' > $@
@@ -1425,9 +1430,12 @@ _chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For chain.mod.
 chain_mod_SOURCES = loader/i386/pc/chainloader_normal.c
-CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_i386_pc_chainloader_normal.o def-chain.lst und-chain.lst
-MOSTLYCLEANFILES += chain_mod-loader_i386_pc_chainloader_normal.d
+CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_i386_pc_chainloader_normal.o und-chain.lst
+ifneq ($(chain_mod_EXPORTS),no)
+CLEANFILES += def-chain.lst
 DEFSYMFILES += def-chain.lst
+endif
+MOSTLYCLEANFILES += chain_mod-loader_i386_pc_chainloader_normal.d
 UNDSYMFILES += und-chain.lst
 
 chain.mod: pre-chain.o mod-chain.o
@@ -1445,8 +1453,10 @@ mod-chain.o: mod-chain.c
 mod-chain.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'chain' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(chain_mod_EXPORTS),no)
 def-chain.lst: pre-chain.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 chain/' > $@
+endif
 
 und-chain.lst: pre-chain.o
 	echo 'chain' > $@
@@ -1476,9 +1486,12 @@ chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
-CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_i386_pc_linux.o def-_linux.lst und-_linux.lst
-MOSTLYCLEANFILES += _linux_mod-loader_i386_pc_linux.d
+CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_i386_pc_linux.o und-_linux.lst
+ifneq ($(_linux_mod_EXPORTS),no)
+CLEANFILES += def-_linux.lst
 DEFSYMFILES += def-_linux.lst
+endif
+MOSTLYCLEANFILES += _linux_mod-loader_i386_pc_linux.d
 UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
@@ -1496,8 +1509,10 @@ mod-_linux.o: mod-_linux.c
 mod-_linux.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(_linux_mod_EXPORTS),no)
 def-_linux.lst: pre-_linux.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _linux/' > $@
+endif
 
 und-_linux.lst: pre-_linux.o
 	echo '_linux' > $@
@@ -1527,9 +1542,12 @@ _linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
 linux_mod_SOURCES = loader/i386/pc/linux_normal.c
-CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux_normal.o def-linux.lst und-linux.lst
-MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux_normal.d
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux_normal.o und-linux.lst
+ifneq ($(linux_mod_EXPORTS),no)
+CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
+endif
+MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux_normal.d
 UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
@@ -1547,8 +1565,10 @@ mod-linux.o: mod-linux.c
 mod-linux.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(linux_mod_EXPORTS),no)
 def-linux.lst: pre-linux.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+endif
 
 und-linux.lst: pre-linux.o
 	echo 'linux' > $@
@@ -1582,9 +1602,12 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
 	normal/menu_entry.c normal/misc.c grub_script.tab.c 		\
 	normal/script.c normal/i386/setjmp.S
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o def-normal.lst und-normal.lst
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o und-normal.lst
+ifneq ($(normal_mod_EXPORTS),no)
+CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
+endif
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
 UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
@@ -1602,8 +1625,10 @@ mod-normal.o: mod-normal.c
 mod-normal.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'normal' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(normal_mod_EXPORTS),no)
 def-normal.lst: pre-normal.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 normal/' > $@
+endif
 
 und-normal.lst: pre-normal.o
 	echo 'normal' > $@
@@ -1900,9 +1925,12 @@ normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
 reboot_mod_SOURCES = commands/i386/pc/reboot.c
-CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_i386_pc_reboot.o def-reboot.lst und-reboot.lst
-MOSTLYCLEANFILES += reboot_mod-commands_i386_pc_reboot.d
+CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_i386_pc_reboot.o und-reboot.lst
+ifneq ($(reboot_mod_EXPORTS),no)
+CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
+endif
+MOSTLYCLEANFILES += reboot_mod-commands_i386_pc_reboot.d
 UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
@@ -1920,8 +1948,10 @@ mod-reboot.o: mod-reboot.c
 mod-reboot.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(reboot_mod_EXPORTS),no)
 def-reboot.lst: pre-reboot.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 reboot/' > $@
+endif
 
 und-reboot.lst: pre-reboot.o
 	echo 'reboot' > $@
@@ -1951,9 +1981,12 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod.
 halt_mod_SOURCES = commands/i386/pc/halt.c
-CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_i386_pc_halt.o def-halt.lst und-halt.lst
-MOSTLYCLEANFILES += halt_mod-commands_i386_pc_halt.d
+CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_i386_pc_halt.o und-halt.lst
+ifneq ($(halt_mod_EXPORTS),no)
+CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
+endif
+MOSTLYCLEANFILES += halt_mod-commands_i386_pc_halt.d
 UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
@@ -1971,8 +2004,10 @@ mod-halt.o: mod-halt.c
 mod-halt.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(halt_mod_EXPORTS),no)
 def-halt.lst: pre-halt.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 halt/' > $@
+endif
 
 und-halt.lst: pre-halt.o
 	echo 'halt' > $@
@@ -2007,9 +2042,12 @@ serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _multiboot.mod.
 _multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
-CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_i386_pc_multiboot.o def-_multiboot.lst und-_multiboot.lst
-MOSTLYCLEANFILES += _multiboot_mod-loader_i386_pc_multiboot.d
+CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_i386_pc_multiboot.o und-_multiboot.lst
+ifneq ($(_multiboot_mod_EXPORTS),no)
+CLEANFILES += def-_multiboot.lst
 DEFSYMFILES += def-_multiboot.lst
+endif
+MOSTLYCLEANFILES += _multiboot_mod-loader_i386_pc_multiboot.d
 UNDSYMFILES += und-_multiboot.lst
 
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
@@ -2027,8 +2065,10 @@ mod-_multiboot.o: mod-_multiboot.c
 mod-_multiboot.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_multiboot' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(_multiboot_mod_EXPORTS),no)
 def-_multiboot.lst: pre-_multiboot.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _multiboot/' > $@
+endif
 
 und-_multiboot.lst: pre-_multiboot.o
 	echo '_multiboot' > $@
@@ -2058,9 +2098,12 @@ _multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For multiboot.mod.
 multiboot_mod_SOURCES = loader/i386/pc/multiboot_normal.c
-CLEANFILES += multiboot.mod mod-multiboot.o mod-multiboot.c pre-multiboot.o multiboot_mod-loader_i386_pc_multiboot_normal.o def-multiboot.lst und-multiboot.lst
-MOSTLYCLEANFILES += multiboot_mod-loader_i386_pc_multiboot_normal.d
+CLEANFILES += multiboot.mod mod-multiboot.o mod-multiboot.c pre-multiboot.o multiboot_mod-loader_i386_pc_multiboot_normal.o und-multiboot.lst
+ifneq ($(multiboot_mod_EXPORTS),no)
+CLEANFILES += def-multiboot.lst
 DEFSYMFILES += def-multiboot.lst
+endif
+MOSTLYCLEANFILES += multiboot_mod-loader_i386_pc_multiboot_normal.d
 UNDSYMFILES += und-multiboot.lst
 
 multiboot.mod: pre-multiboot.o mod-multiboot.o
@@ -2078,8 +2121,10 @@ mod-multiboot.o: mod-multiboot.c
 mod-multiboot.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'multiboot' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(multiboot_mod_EXPORTS),no)
 def-multiboot.lst: pre-multiboot.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 multiboot/' > $@
+endif
 
 und-multiboot.lst: pre-multiboot.o
 	echo 'multiboot' > $@
@@ -2110,9 +2155,12 @@ multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c video/i386/pc/vbeblit.c \
 		  video/i386/pc/vbefill.c
-CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o def-vbe.lst und-vbe.lst
-MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d
+CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o und-vbe.lst
+ifneq ($(vbe_mod_EXPORTS),no)
+CLEANFILES += def-vbe.lst
 DEFSYMFILES += def-vbe.lst
+endif
+MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d
 UNDSYMFILES += und-vbe.lst
 
 vbe.mod: pre-vbe.o mod-vbe.o
@@ -2130,8 +2178,10 @@ mod-vbe.o: mod-vbe.c
 mod-vbe.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'vbe' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(vbe_mod_EXPORTS),no)
 def-vbe.lst: pre-vbe.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vbe/' > $@
+endif
 
 und-vbe.lst: pre-vbe.o
 	echo 'vbe' > $@
@@ -2199,9 +2249,12 @@ vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbeinfo.mod.
 vbeinfo_mod_SOURCES = commands/i386/pc/vbeinfo.c
-CLEANFILES += vbeinfo.mod mod-vbeinfo.o mod-vbeinfo.c pre-vbeinfo.o vbeinfo_mod-commands_i386_pc_vbeinfo.o def-vbeinfo.lst und-vbeinfo.lst
-MOSTLYCLEANFILES += vbeinfo_mod-commands_i386_pc_vbeinfo.d
+CLEANFILES += vbeinfo.mod mod-vbeinfo.o mod-vbeinfo.c pre-vbeinfo.o vbeinfo_mod-commands_i386_pc_vbeinfo.o und-vbeinfo.lst
+ifneq ($(vbeinfo_mod_EXPORTS),no)
+CLEANFILES += def-vbeinfo.lst
 DEFSYMFILES += def-vbeinfo.lst
+endif
+MOSTLYCLEANFILES += vbeinfo_mod-commands_i386_pc_vbeinfo.d
 UNDSYMFILES += und-vbeinfo.lst
 
 vbeinfo.mod: pre-vbeinfo.o mod-vbeinfo.o
@@ -2219,8 +2272,10 @@ mod-vbeinfo.o: mod-vbeinfo.c
 mod-vbeinfo.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'vbeinfo' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(vbeinfo_mod_EXPORTS),no)
 def-vbeinfo.lst: pre-vbeinfo.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vbeinfo/' > $@
+endif
 
 und-vbeinfo.lst: pre-vbeinfo.o
 	echo 'vbeinfo' > $@
@@ -2250,9 +2305,12 @@ vbeinfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbetest.mod.
 vbetest_mod_SOURCES = commands/i386/pc/vbetest.c
-CLEANFILES += vbetest.mod mod-vbetest.o mod-vbetest.c pre-vbetest.o vbetest_mod-commands_i386_pc_vbetest.o def-vbetest.lst und-vbetest.lst
-MOSTLYCLEANFILES += vbetest_mod-commands_i386_pc_vbetest.d
+CLEANFILES += vbetest.mod mod-vbetest.o mod-vbetest.c pre-vbetest.o vbetest_mod-commands_i386_pc_vbetest.o und-vbetest.lst
+ifneq ($(vbetest_mod_EXPORTS),no)
+CLEANFILES += def-vbetest.lst
 DEFSYMFILES += def-vbetest.lst
+endif
+MOSTLYCLEANFILES += vbetest_mod-commands_i386_pc_vbetest.d
 UNDSYMFILES += und-vbetest.lst
 
 vbetest.mod: pre-vbetest.o mod-vbetest.o
@@ -2270,8 +2328,10 @@ mod-vbetest.o: mod-vbetest.c
 mod-vbetest.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'vbetest' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(vbetest_mod_EXPORTS),no)
 def-vbetest.lst: pre-vbetest.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vbetest/' > $@
+endif
 
 und-vbetest.lst: pre-vbetest.o
 	echo 'vbetest' > $@
@@ -2301,9 +2361,12 @@ vbetest_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For play.mod.
 play_mod_SOURCES = commands/i386/pc/play.c
-CLEANFILES += play.mod mod-play.o mod-play.c pre-play.o play_mod-commands_i386_pc_play.o def-play.lst und-play.lst
-MOSTLYCLEANFILES += play_mod-commands_i386_pc_play.d
+CLEANFILES += play.mod mod-play.o mod-play.c pre-play.o play_mod-commands_i386_pc_play.o und-play.lst
+ifneq ($(play_mod_EXPORTS),no)
+CLEANFILES += def-play.lst
 DEFSYMFILES += def-play.lst
+endif
+MOSTLYCLEANFILES += play_mod-commands_i386_pc_play.d
 UNDSYMFILES += und-play.lst
 
 play.mod: pre-play.o mod-play.o
@@ -2321,8 +2384,10 @@ mod-play.o: mod-play.c
 mod-play.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'play' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(play_mod_EXPORTS),no)
 def-play.lst: pre-play.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 play/' > $@
+endif
 
 und-play.lst: pre-play.o
 	echo 'play' > $@
@@ -2352,9 +2417,12 @@ play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For video.mod.
 video_mod_SOURCES = video/video.c
-CLEANFILES += video.mod mod-video.o mod-video.c pre-video.o video_mod-video_video.o def-video.lst und-video.lst
-MOSTLYCLEANFILES += video_mod-video_video.d
+CLEANFILES += video.mod mod-video.o mod-video.c pre-video.o video_mod-video_video.o und-video.lst
+ifneq ($(video_mod_EXPORTS),no)
+CLEANFILES += def-video.lst
 DEFSYMFILES += def-video.lst
+endif
+MOSTLYCLEANFILES += video_mod-video_video.d
 UNDSYMFILES += und-video.lst
 
 video.mod: pre-video.o mod-video.o
@@ -2372,8 +2440,10 @@ mod-video.o: mod-video.c
 mod-video.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'video' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(video_mod_EXPORTS),no)
 def-video.lst: pre-video.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 video/' > $@
+endif
 
 und-video.lst: pre-video.o
 	echo 'video' > $@
@@ -2403,9 +2473,12 @@ video_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For gfxterm.mod.
 gfxterm_mod_SOURCES = term/gfxterm.c
-CLEANFILES += gfxterm.mod mod-gfxterm.o mod-gfxterm.c pre-gfxterm.o gfxterm_mod-term_gfxterm.o def-gfxterm.lst und-gfxterm.lst
-MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
+CLEANFILES += gfxterm.mod mod-gfxterm.o mod-gfxterm.c pre-gfxterm.o gfxterm_mod-term_gfxterm.o und-gfxterm.lst
+ifneq ($(gfxterm_mod_EXPORTS),no)
+CLEANFILES += def-gfxterm.lst
 DEFSYMFILES += def-gfxterm.lst
+endif
+MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
 UNDSYMFILES += und-gfxterm.lst
 
 gfxterm.mod: pre-gfxterm.o mod-gfxterm.o
@@ -2423,8 +2496,10 @@ mod-gfxterm.o: mod-gfxterm.c
 mod-gfxterm.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'gfxterm' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(gfxterm_mod_EXPORTS),no)
 def-gfxterm.lst: pre-gfxterm.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gfxterm/' > $@
+endif
 
 und-gfxterm.lst: pre-gfxterm.o
 	echo 'gfxterm' > $@
@@ -2454,9 +2529,12 @@ gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For videotest.mod.
 videotest_mod_SOURCES = commands/videotest.c
-CLEANFILES += videotest.mod mod-videotest.o mod-videotest.c pre-videotest.o videotest_mod-commands_videotest.o def-videotest.lst und-videotest.lst
-MOSTLYCLEANFILES += videotest_mod-commands_videotest.d
+CLEANFILES += videotest.mod mod-videotest.o mod-videotest.c pre-videotest.o videotest_mod-commands_videotest.o und-videotest.lst
+ifneq ($(videotest_mod_EXPORTS),no)
+CLEANFILES += def-videotest.lst
 DEFSYMFILES += def-videotest.lst
+endif
+MOSTLYCLEANFILES += videotest_mod-commands_videotest.d
 UNDSYMFILES += und-videotest.lst
 
 videotest.mod: pre-videotest.o mod-videotest.o
@@ -2474,8 +2552,10 @@ mod-videotest.o: mod-videotest.c
 mod-videotest.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'videotest' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(videotest_mod_EXPORTS),no)
 def-videotest.lst: pre-videotest.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 videotest/' > $@
+endif
 
 und-videotest.lst: pre-videotest.o
 	echo 'videotest' > $@

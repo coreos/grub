@@ -73,7 +73,7 @@ YACC = @YACC@
 ### General variables.
 
 RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk)
+	sparc64-ieee1275.rmk i386-efi.rmk)
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \

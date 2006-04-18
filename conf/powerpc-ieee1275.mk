@@ -888,9 +888,12 @@ pkgdata_MODULES = halt.mod \
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
-CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_powerpc_ieee1275_linux.o def-_linux.lst und-_linux.lst
-MOSTLYCLEANFILES += _linux_mod-loader_powerpc_ieee1275_linux.d
+CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_powerpc_ieee1275_linux.o und-_linux.lst
+ifneq ($(_linux_mod_EXPORTS),no)
+CLEANFILES += def-_linux.lst
 DEFSYMFILES += def-_linux.lst
+endif
+MOSTLYCLEANFILES += _linux_mod-loader_powerpc_ieee1275_linux.d
 UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
@@ -908,8 +911,10 @@ mod-_linux.o: mod-_linux.c
 mod-_linux.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(_linux_mod_EXPORTS),no)
 def-_linux.lst: pre-_linux.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _linux/' > $@
+endif
 
 und-_linux.lst: pre-_linux.o
 	echo '_linux' > $@
@@ -938,9 +943,12 @@ _linux_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For linux.mod.
 linux_mod_SOURCES = loader/powerpc/ieee1275/linux_normal.c
-CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_powerpc_ieee1275_linux_normal.o def-linux.lst und-linux.lst
-MOSTLYCLEANFILES += linux_mod-loader_powerpc_ieee1275_linux_normal.d
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_powerpc_ieee1275_linux_normal.o und-linux.lst
+ifneq ($(linux_mod_EXPORTS),no)
+CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
+endif
+MOSTLYCLEANFILES += linux_mod-loader_powerpc_ieee1275_linux_normal.d
 UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
@@ -958,8 +966,10 @@ mod-linux.o: mod-linux.c
 mod-linux.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(linux_mod_EXPORTS),no)
 def-linux.lst: pre-linux.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+endif
 
 und-linux.lst: pre-linux.o
 	echo 'linux' > $@
@@ -992,9 +1002,12 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
 	normal/menu_entry.c normal/misc.c grub_script.tab.c 		\
 	normal/script.c normal/powerpc/setjmp.S
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_powerpc_setjmp.o def-normal.lst und-normal.lst
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_powerpc_setjmp.d
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_powerpc_setjmp.o und-normal.lst
+ifneq ($(normal_mod_EXPORTS),no)
+CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
+endif
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_powerpc_setjmp.d
 UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
@@ -1012,8 +1025,10 @@ mod-normal.o: mod-normal.c
 mod-normal.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'normal' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(normal_mod_EXPORTS),no)
 def-normal.lst: pre-normal.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 normal/' > $@
+endif
 
 und-normal.lst: pre-normal.o
 	echo 'normal' > $@
@@ -1309,9 +1324,12 @@ normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c
-CLEANFILES += suspend.mod mod-suspend.o mod-suspend.c pre-suspend.o suspend_mod-commands_ieee1275_suspend.o def-suspend.lst und-suspend.lst
-MOSTLYCLEANFILES += suspend_mod-commands_ieee1275_suspend.d
+CLEANFILES += suspend.mod mod-suspend.o mod-suspend.c pre-suspend.o suspend_mod-commands_ieee1275_suspend.o und-suspend.lst
+ifneq ($(suspend_mod_EXPORTS),no)
+CLEANFILES += def-suspend.lst
 DEFSYMFILES += def-suspend.lst
+endif
+MOSTLYCLEANFILES += suspend_mod-commands_ieee1275_suspend.d
 UNDSYMFILES += und-suspend.lst
 
 suspend.mod: pre-suspend.o mod-suspend.o
@@ -1329,8 +1347,10 @@ mod-suspend.o: mod-suspend.c
 mod-suspend.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'suspend' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(suspend_mod_EXPORTS),no)
 def-suspend.lst: pre-suspend.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 suspend/' > $@
+endif
 
 und-suspend.lst: pre-suspend.o
 	echo 'suspend' > $@
@@ -1359,9 +1379,12 @@ suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For reboot.mod
 reboot_mod_SOURCES = commands/ieee1275/reboot.c
-CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_ieee1275_reboot.o def-reboot.lst und-reboot.lst
-MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
+CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_ieee1275_reboot.o und-reboot.lst
+ifneq ($(reboot_mod_EXPORTS),no)
+CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
+endif
+MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
 UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
@@ -1379,8 +1402,10 @@ mod-reboot.o: mod-reboot.c
 mod-reboot.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(reboot_mod_EXPORTS),no)
 def-reboot.lst: pre-reboot.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 reboot/' > $@
+endif
 
 und-reboot.lst: pre-reboot.o
 	echo 'reboot' > $@
@@ -1409,9 +1434,12 @@ reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 
 # For halt.mod
 halt_mod_SOURCES = commands/ieee1275/halt.c
-CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee1275_halt.o def-halt.lst und-halt.lst
-MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
+CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee1275_halt.o und-halt.lst
+ifneq ($(halt_mod_EXPORTS),no)
+CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
+endif
+MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
 UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
@@ -1429,8 +1457,10 @@ mod-halt.o: mod-halt.c
 mod-halt.c: moddep.lst genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
 
+ifneq ($(halt_mod_EXPORTS),no)
 def-halt.lst: pre-halt.o
 	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 halt/' > $@
+endif
 
 und-halt.lst: pre-halt.o
 	echo 'halt' > $@
