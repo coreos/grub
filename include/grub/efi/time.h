@@ -1,4 +1,3 @@
-/* init.c - initialize an x86-based EFI system */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2006  Free Software Foundation, Inc.
@@ -19,35 +18,15 @@
  *  MA  02110-1301, USA.
  */
 
-#include <grub/types.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/err.h>
-#include <grub/dl.h>
-#include <grub/cache.h>
-#include <grub/kernel.h>
-#include <grub/efi/efi.h>
+#ifndef GRUB_EFI_TIME_HEADER
+#define GRUB_EFI_TIME_HEADER	1
 
-void
-grub_machine_init (void)
-{
-  grub_efi_init ();
-}
+#include <grub/symbol.h>
 
-void
-grub_machine_fini (void)
-{
-  grub_efi_fini ();
-}
+/* This is destined to overflow when one minute passes by.  */
+#define GRUB_TICKS_PER_SECOND	((1UL << 31) / 60 / 60 * 2)
 
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-                       grub_size_t len __attribute__ ((unused)))
-{
-}
+/* Return the real time in ticks.  */
+grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
 
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
-}
+#endif /* ! GRUB_EFI_TIME_HEADER */

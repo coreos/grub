@@ -112,11 +112,14 @@ include/grub/tparm.h
 include/grub/types.h
 include/grub/video.h
 include/grub/efi/api.h
+include/grub/efi/console.h
 include/grub/efi/console_control.h
 include/grub/efi/efi.h
 include/grub/efi/pe32.h
+include/grub/efi/time.h
 include/grub/i386/setjmp.h
 include/grub/i386/types.h
+include/grub/i386/efi/kernel.h
 include/grub/i386/efi/time.h
 include/grub/i386/pc/biosdisk.h
 include/grub/i386/pc/boot.h
@@ -173,7 +176,9 @@ kern/parser.c
 kern/partition.c
 kern/rescue.c
 kern/term.c
+kern/efi/init.c
 kern/efi/efi.c
+kern/efi/mm.c
 kern/i386/dl.c
 kern/i386/efi/init.c
 kern/i386/efi/startup.S
@@ -224,6 +229,7 @@ partmap/sun.c
 term/terminfo.c
 term/tparm.c
 term/gfxterm.c
+term/efi/console.c
 term/i386/pc/console.c
 term/i386/pc/serial.c
 term/i386/pc/vesafb.c

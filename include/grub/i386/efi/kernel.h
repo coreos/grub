@@ -1,7 +1,6 @@
-/* init.c - initialize an x86-based EFI system */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,39 +14,15 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- *  MA  02110-1301, USA.
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/types.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/err.h>
-#include <grub/dl.h>
-#include <grub/cache.h>
-#include <grub/kernel.h>
-#include <grub/efi/efi.h>
+#ifndef GRUB_MACHINE_KERNEL_HEADER
+#define GRUB_MACHINE_KERNEL_HEADER   1
 
-void
-grub_machine_init (void)
-{
-  grub_efi_init ();
-}
+/* The prefix which points to the directory where GRUB modules and its
+   configuration file are located.  */
+extern char grub_prefix[];
 
-void
-grub_machine_fini (void)
-{
-  grub_efi_fini ();
-}
+#endif /* ! GRUB_MACHINE_KERNEL_HEADER */
 
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-                       grub_size_t len __attribute__ ((unused)))
-{
-}
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
-}

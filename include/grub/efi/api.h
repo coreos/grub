@@ -213,9 +213,12 @@ struct grub_efi_guid
 } __attribute__ ((aligned(8)));
 typedef struct grub_efi_guid grub_efi_guid_t;
 
+/* XXX although the spec does not specify the padding, this actually
+   must have the padding!  */
 struct grub_efi_memory_descriptor
 {
   grub_efi_uint32_t type;
+  grub_efi_uint32_t padding;
   grub_efi_physical_address_t physical_start;
   grub_efi_virtual_address_t virtual_start;
   grub_efi_uint64_t num_pages;
@@ -631,6 +634,35 @@ struct grub_efi_simple_text_output_interface
   grub_efi_simple_text_output_mode_t *mode;
 };
 typedef struct grub_efi_simple_text_output_interface grub_efi_simple_text_output_interface_t;
+
+#define GRUB_EFI_BLACK		0x00
+#define GRUB_EFI_BLUE		0x01
+#define GRUB_EFI_GREEN		0x02
+#define GRUB_EFI_CYAN		0x03
+#define GRUB_EFI_RED		0x04
+#define GRUB_EFI_MAGENTA	0x05
+#define GRUB_EFI_BROWN		0x06
+#define GRUB_EFI_LIGHTGRAY	0x07
+#define GRUB_EFI_BRIGHT		0x08
+#define GRUB_EFI_DARKGRAY	0x08
+#define GRUB_EFI_LIGHTBLUE	0x09
+#define GRUB_EFI_LIGHTGREEN	0x0A
+#define GRUB_EFI_LIGHTCYAN	0x0B
+#define GRUB_EFI_LIGHTRED	0x0C
+#define GRUB_EFI_LIGHTMAGENTA	0x0D
+#define GRUB_EFI_YELLOW		0x0E
+#define GRUB_EFI_WHITE		0x0F
+
+#define GRUB_EFI_BACKGROUND_BLACK	0x00
+#define GRUB_EFI_BACKGROUND_BLUE	0x10
+#define GRUB_EFI_BACKGROUND_GREEN	0x20
+#define GRUB_EFI_BACKGROUND_CYAN	0x30
+#define GRUB_EFI_BACKGROUND_RED		0x40
+#define GRUB_EFI_BACKGROUND_MAGENTA	0x50
+#define GRUB_EFI_BACKGROUND_BROWN	0x60
+#define GRUB_EFI_BACKGROUND_LIGHTGRAY	0x70
+
+#define GRUB_EFI_TEXT_ATTR(fg, bg)	((fg) | ((bg) << 4))
 
 struct grub_efi_system_table
 {

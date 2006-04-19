@@ -1,3 +1,76 @@
+2006-04-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added include/grub/efi/console.h,
+	include/grub/efi/time.h, include/grub/i386/efi/kernel.h,
+	kern/efi/init.c, kern/efi/mm.c, and term/efi/console.c.
+
+	* include/grub/efi/console.h: New file.
+	* include/grub/efi/time.h: Likewise.
+	* include/grub/i386/efi/kernel.h: Likewise.
+	* kern/efi/init.c: Likewise.
+	* kern/efi/mm.c: Likewise.
+	* term/efi/console.c: Likewise.
+	
+	* kern/i386/efi/init.c: Do not include grub/machine/time.h.
+	(grub_stop): Removed.
+	(grub_get_rtc): Likewise.
+	(grub_machine_init): Simply call grub_efi_init.
+	(grub_machine_fini): Call grub_efi_fini.
+
+	* kern/efi/efi.c: Include grub/machine/time.h and grub/term.h.
+	(grub_efi_output_string): Removed.
+	(grub_efi_stall): New function.
+	(grub_stop): Likewise.
+	(grub_get_rtc): Likewise.
+
+	* include/grub/efi/efi.h (grub_efi_output_string): Removed.
+	(grub_efi_stall): New prototype.
+	(grub_efi_allocate_pages): Likewise.
+	(grub_efi_free_pages): Likewise.
+	(grub_efi_get_memory_map): Likewise.
+	(grub_efi_mm_init): Likewise.
+	(grub_efi_mm_fini): Likewise.
+	(grub_efi_init): Likewise.
+	(grub_efi_fini): Likewise.
+
+	* include/grub/i386/efi/time.h: Do not include
+	grub/symbol.h. Include grub/efi/time.h.
+	(GRUB_TICKS_PER_SECOND): Removed.
+	(grub_get_rtc): Likewise.
+
+	* include/grub/efi/api.h (struct grub_efi_memory_descriptor):
+	Added padding. The EFI spec is buggy.
+	(GRUB_EFI_BLACK): New macro.
+	(GRUB_EFI_BLUE): Likewise.
+	(GRUB_EFI_GREEN): Likewise.
+	(GRUB_EFI_CYAN): Likewise.
+	(GRUB_EFI_RED): Likewise.
+	(GRUB_EFI_MAGENTA): Likewise.
+	(GRUB_EFI_BROWN): Likewise.
+	(GRUB_EFI_LIGHTGRAY): Likewise.
+	(GRUB_EFI_BRIGHT): Likewise.
+	(GRUB_EFI_DARKGRAY): Likewise.
+	(GRUB_EFI_LIGHTBLUE): Likewise.
+	(GRUB_EFI_LIGHTGREEN): Likewise.
+	(GRUB_EFI_LIGHTCYAN): Likewise.
+	(GRUB_EFI_LIGHTRED): Likewise.
+	(GRUB_EFI_LIGHTMAGENTA): Likewise.
+	(GRUB_EFI_YELLOW): Likewise.
+	(GRUB_EFI_WHITE): Likewise.
+	(GRUB_EFI_BACKGROUND_BLACK): Likewise.
+	(GRUB_EFI_BACKGROUND_BLUE): Likewise.
+	(GRUB_EFI_BACKGROUND_GREEN): Likewise.
+	(GRUB_EFI_BACKGROUND_CYAN): Likewise.
+	(GRUB_EFI_BACKGROUND_RED): Likewise.
+	(GRUB_EFI_BACKGROUND_MAGENTA): Likewise.
+	(GRUB_EFI_BACKGROUND_BROWN): Likewise.
+	(GRUB_EFI_BACKGROUND_LIGHTGRAY): Likewise.
+	(GRUB_EFI_TEXT_ATTR): Likewise.
+
+	* conf/i386-efi.rmk (kernel_mod_SOURCES): Added kern/efi/efi.c,
+	kern/efi/init.c, kern/efi/mm.c, and term/efi/console.c.
+	(kernel_mod_HEADERS): Added efi/time.h.
+
 2006-04-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added conf/i386-efi.mk, conf/i386-efi.rmk,

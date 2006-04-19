@@ -1,4 +1,4 @@
-/* init.c - initialize an x86-based EFI system */
+/* init.c - generic EFI initialization and finalization */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2006  Free Software Foundation, Inc.
@@ -19,35 +19,29 @@
  *  MA  02110-1301, USA.
  */
 
-#include <grub/types.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/err.h>
-#include <grub/dl.h>
-#include <grub/cache.h>
-#include <grub/kernel.h>
 #include <grub/efi/efi.h>
+#include <grub/efi/console.h>
+#include <grub/term.h>
+#include <grub/misc.h>
+#include <grub/machine/kernel.h>
 
 void
-grub_machine_init (void)
+grub_efi_init (void)
 {
-  grub_efi_init ();
+  /* First of all, initialize the console so that GRUB can display
+     messages.  */
+  grub_console_init ();
+
+  /* Initialize the memory management system.  */
+  grub_efi_mm_init ();
+
+  /* FIXME: this must be set to something meaningful.  */
+  grub_env_set ("prefix", grub_prefix);
 }
 
 void
-grub_machine_fini (void)
+grub_efi_fini (void)
 {
-  grub_efi_fini ();
-}
-
-void
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-                       grub_size_t len __attribute__ ((unused)))
-{
-}
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
+  grub_efi_mm_fini ();
+  grub_console_fini ();
 }

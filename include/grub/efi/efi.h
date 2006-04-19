@@ -30,7 +30,21 @@ void *EXPORT_FUNC(grub_efi_locate_protocol) (grub_efi_guid_t *protocol,
 					     void *registration);
 int EXPORT_FUNC(grub_efi_set_text_mode) (int on);
 void EXPORT_FUNC(grub_efi_exit) (void) __attribute__((noreturn));
-int EXPORT_FUNC(grub_efi_output_string) (const char *str);
+void EXPORT_FUNC(grub_efi_stall) (grub_efi_uintn_t microseconds);
+void *EXPORT_FUNC(grub_efi_allocate_pages) (grub_efi_physical_address_t address,
+					    grub_efi_uintn_t pages);
+void EXPORT_FUNC(grub_efi_free_pages) (grub_efi_physical_address_t address,
+				       grub_efi_uintn_t pages);
+int EXPORT_FUNC(grub_efi_get_memory_map) (grub_efi_uintn_t *memory_map_size,
+					  grub_efi_memory_descriptor_t *memory_map,
+					  grub_efi_uintn_t *map_key,
+					  grub_efi_uintn_t *descriptor_size,
+					  grub_efi_uint32_t *descriptor_version);
+
+void grub_efi_mm_init (void);
+void grub_efi_mm_fini (void);
+void grub_efi_init (void);
+void grub_efi_fini (void);
 
 /* Variables.  */
 extern grub_efi_system_table_t *EXPORT_VAR(grub_efi_system_table);

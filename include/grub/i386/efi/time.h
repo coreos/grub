@@ -18,14 +18,9 @@
  *  MA  02110-1301, USA.
  */
 
-#ifndef KERNEL_TIME_HEADER
-#define KERNEL_TIME_HEADER	1
+#ifndef GRUB_MACHINE_TIME_HEADER
+#define GRUB_MACHINE_TIME_HEADER	1
 
-#include <grub/symbol.h>
+#include <grub/efi/time.h>
 
-#define GRUB_TICKS_PER_SECOND	1193
-
-/* Return the real time in ticks.  */
-grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
-
-#endif /* ! KERNEL_TIME_HEADER */
+#endif /* ! GRUB_MACHINE_TIME_HEADER */

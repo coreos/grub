@@ -22,6 +22,8 @@
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/efi/console_control.h>
+#include <grub/machine/time.h>
+#include <grub/term.h>
 
 /* The handle of GRUB itself. Filled in by the startup code.  */
 grub_efi_handle_t grub_efi_image_handle;
@@ -75,23 +77,34 @@ grub_efi_exit (void)
 					      0, 0);
 }
 
-int
-grub_efi_output_string (const char *str)
+void
+grub_efi_stall (grub_efi_uintn_t microseconds)
 {
-  grub_efi_simple_text_output_interface_t *o;
-  grub_size_t len = grub_strlen (str);
-  grub_efi_char16_t utf16_str[len + 1];
-  grub_efi_status_t status;
-
-  /* XXX Assume that STR is all ASCII characters.  */
-  do
-    {
-      utf16_str[len] = str[len];
-    }
-  while (len--);
-  
-  o = grub_efi_system_table->con_out;
-  status = o->output_string (o, utf16_str);
-  return status >= 0;
+  grub_efi_system_table->boot_services->stall (microseconds);
 }
 
+void
+grub_stop (void)
+{
+  grub_printf ("\nPress any key to abort.\n");
+  grub_getkey ();
+  
+  grub_efi_fini ();
+  grub_efi_exit ();
+}
+
+grub_uint32_t
+grub_get_rtc (void)
+{
+  grub_efi_time_t time;
+  grub_efi_runtime_services_t *r;
+
+  r = grub_efi_system_table->runtime_services;
+  if (r->get_time (&time, 0) != GRUB_EFI_SUCCESS)
+    /* What is possible in this case?  */
+    return 0;
+
+  return (((time.minute * 60 + time.second) * 1000
+	   + time.nanosecond / 1000000)
+	  * GRUB_TICKS_PER_SECOND / 1000);
+}

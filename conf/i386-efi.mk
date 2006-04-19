@@ -119,13 +119,14 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/i386/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
-	kern/env.c symlist.c kern/efi/efi.c
-CLEANFILES += kernel.mod mod-kernel.o mod-kernel.c pre-kernel.o kernel_mod-kern_i386_efi_startup.o kernel_mod-kern_main.o kernel_mod-kern_device.o kernel_mod-kern_disk.o kernel_mod-kern_dl.o kernel_mod-kern_file.o kernel_mod-kern_fs.o kernel_mod-kern_err.o kernel_mod-kern_misc.o kernel_mod-kern_mm.o kernel_mod-kern_loader.o kernel_mod-kern_rescue.o kernel_mod-kern_term.o kernel_mod-kern_i386_dl.o kernel_mod-kern_i386_efi_init.o kernel_mod-kern_parser.o kernel_mod-kern_partition.o kernel_mod-kern_env.o kernel_mod-symlist.o kernel_mod-kern_efi_efi.o und-kernel.lst
+	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
+	term/efi/console.c
+CLEANFILES += kernel.mod mod-kernel.o mod-kernel.c pre-kernel.o kernel_mod-kern_i386_efi_startup.o kernel_mod-kern_main.o kernel_mod-kern_device.o kernel_mod-kern_disk.o kernel_mod-kern_dl.o kernel_mod-kern_file.o kernel_mod-kern_fs.o kernel_mod-kern_err.o kernel_mod-kern_misc.o kernel_mod-kern_mm.o kernel_mod-kern_loader.o kernel_mod-kern_rescue.o kernel_mod-kern_term.o kernel_mod-kern_i386_dl.o kernel_mod-kern_i386_efi_init.o kernel_mod-kern_parser.o kernel_mod-kern_partition.o kernel_mod-kern_env.o kernel_mod-symlist.o kernel_mod-kern_efi_efi.o kernel_mod-kern_efi_init.o kernel_mod-kern_efi_mm.o kernel_mod-term_efi_console.o und-kernel.lst
 ifneq ($(kernel_mod_EXPORTS),no)
 CLEANFILES += def-kernel.lst
 DEFSYMFILES += def-kernel.lst
 endif
-MOSTLYCLEANFILES += kernel_mod-kern_i386_efi_startup.d kernel_mod-kern_main.d kernel_mod-kern_device.d kernel_mod-kern_disk.d kernel_mod-kern_dl.d kernel_mod-kern_file.d kernel_mod-kern_fs.d kernel_mod-kern_err.d kernel_mod-kern_misc.d kernel_mod-kern_mm.d kernel_mod-kern_loader.d kernel_mod-kern_rescue.d kernel_mod-kern_term.d kernel_mod-kern_i386_dl.d kernel_mod-kern_i386_efi_init.d kernel_mod-kern_parser.d kernel_mod-kern_partition.d kernel_mod-kern_env.d kernel_mod-symlist.d kernel_mod-kern_efi_efi.d
+MOSTLYCLEANFILES += kernel_mod-kern_i386_efi_startup.d kernel_mod-kern_main.d kernel_mod-kern_device.d kernel_mod-kern_disk.d kernel_mod-kern_dl.d kernel_mod-kern_file.d kernel_mod-kern_fs.d kernel_mod-kern_err.d kernel_mod-kern_misc.d kernel_mod-kern_mm.d kernel_mod-kern_loader.d kernel_mod-kern_rescue.d kernel_mod-kern_term.d kernel_mod-kern_i386_dl.d kernel_mod-kern_i386_efi_init.d kernel_mod-kern_parser.d kernel_mod-kern_partition.d kernel_mod-kern_env.d kernel_mod-symlist.d kernel_mod-kern_efi_efi.d kernel_mod-kern_efi_init.d kernel_mod-kern_efi_mm.d kernel_mod-term_efi_console.d
 UNDSYMFILES += und-kernel.lst
 
 kernel.mod: pre-kernel.o mod-kernel.o
@@ -133,7 +134,7 @@ kernel.mod: pre-kernel.o mod-kernel.o
 	$(LD) $(kernel_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-kernel.o: kernel_mod-kern_i386_efi_startup.o kernel_mod-kern_main.o kernel_mod-kern_device.o kernel_mod-kern_disk.o kernel_mod-kern_dl.o kernel_mod-kern_file.o kernel_mod-kern_fs.o kernel_mod-kern_err.o kernel_mod-kern_misc.o kernel_mod-kern_mm.o kernel_mod-kern_loader.o kernel_mod-kern_rescue.o kernel_mod-kern_term.o kernel_mod-kern_i386_dl.o kernel_mod-kern_i386_efi_init.o kernel_mod-kern_parser.o kernel_mod-kern_partition.o kernel_mod-kern_env.o kernel_mod-symlist.o kernel_mod-kern_efi_efi.o
+pre-kernel.o: kernel_mod-kern_i386_efi_startup.o kernel_mod-kern_main.o kernel_mod-kern_device.o kernel_mod-kern_disk.o kernel_mod-kern_dl.o kernel_mod-kern_file.o kernel_mod-kern_fs.o kernel_mod-kern_err.o kernel_mod-kern_misc.o kernel_mod-kern_mm.o kernel_mod-kern_loader.o kernel_mod-kern_rescue.o kernel_mod-kern_term.o kernel_mod-kern_i386_dl.o kernel_mod-kern_i386_efi_init.o kernel_mod-kern_parser.o kernel_mod-kern_partition.o kernel_mod-kern_env.o kernel_mod-symlist.o kernel_mod-kern_efi_efi.o kernel_mod-kern_efi_init.o kernel_mod-kern_efi_mm.o kernel_mod-term_efi_console.o
 	-rm -f $@
 	$(LD) $(kernel_mod_LDFLAGS) -r -d -o $@ $^
 
@@ -532,10 +533,67 @@ fs-kernel_mod-kern_efi_efi.lst: kern/efi/efi.c genfslist.sh
 	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh kernel > $@ || (rm -f $@; exit 1)
 
 
+kernel_mod-kern_efi_init.o: kern/efi/init.c
+	$(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -c -o $@ $<
+
+kernel_mod-kern_efi_init.d: kern/efi/init.c
+	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -M $< 	  | sed 's,init\.o[ :]*,kernel_mod-kern_efi_init.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include kernel_mod-kern_efi_init.d
+
+CLEANFILES += cmd-kernel_mod-kern_efi_init.lst fs-kernel_mod-kern_efi_init.lst
+COMMANDFILES += cmd-kernel_mod-kern_efi_init.lst
+FSFILES += fs-kernel_mod-kern_efi_init.lst
+
+cmd-kernel_mod-kern_efi_init.lst: kern/efi/init.c gencmdlist.sh
+	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh kernel > $@ || (rm -f $@; exit 1)
+
+fs-kernel_mod-kern_efi_init.lst: kern/efi/init.c genfslist.sh
+	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh kernel > $@ || (rm -f $@; exit 1)
+
+
+kernel_mod-kern_efi_mm.o: kern/efi/mm.c
+	$(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -c -o $@ $<
+
+kernel_mod-kern_efi_mm.d: kern/efi/mm.c
+	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -M $< 	  | sed 's,mm\.o[ :]*,kernel_mod-kern_efi_mm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include kernel_mod-kern_efi_mm.d
+
+CLEANFILES += cmd-kernel_mod-kern_efi_mm.lst fs-kernel_mod-kern_efi_mm.lst
+COMMANDFILES += cmd-kernel_mod-kern_efi_mm.lst
+FSFILES += fs-kernel_mod-kern_efi_mm.lst
+
+cmd-kernel_mod-kern_efi_mm.lst: kern/efi/mm.c gencmdlist.sh
+	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh kernel > $@ || (rm -f $@; exit 1)
+
+fs-kernel_mod-kern_efi_mm.lst: kern/efi/mm.c genfslist.sh
+	set -e; 	  $(CC) -Ikern/efi -I$(srcdir)/kern/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh kernel > $@ || (rm -f $@; exit 1)
+
+
+kernel_mod-term_efi_console.o: term/efi/console.c
+	$(CC) -Iterm/efi -I$(srcdir)/term/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -c -o $@ $<
+
+kernel_mod-term_efi_console.d: term/efi/console.c
+	set -e; 	  $(CC) -Iterm/efi -I$(srcdir)/term/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -M $< 	  | sed 's,console\.o[ :]*,kernel_mod-term_efi_console.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include kernel_mod-term_efi_console.d
+
+CLEANFILES += cmd-kernel_mod-term_efi_console.lst fs-kernel_mod-term_efi_console.lst
+COMMANDFILES += cmd-kernel_mod-term_efi_console.lst
+FSFILES += fs-kernel_mod-term_efi_console.lst
+
+cmd-kernel_mod-term_efi_console.lst: term/efi/console.c gencmdlist.sh
+	set -e; 	  $(CC) -Iterm/efi -I$(srcdir)/term/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh kernel > $@ || (rm -f $@; exit 1)
+
+fs-kernel_mod-term_efi_console.lst: term/efi/console.c genfslist.sh
+	set -e; 	  $(CC) -Iterm/efi -I$(srcdir)/term/efi $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh kernel > $@ || (rm -f $@; exit 1)
+
+
 kernel_mod_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h partition.h \
 	pc_partition.h rescue.h symbol.h term.h types.h \
-	i386/efi/time.h efi/efi.h
+	i386/efi/time.h efi/efi.h efi/time.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)
 kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_mod_LDFLAGS = $(COMMON_LDFLAGS)
