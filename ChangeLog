@@ -1,3 +1,7 @@
+2006-04-19  Roger Leigh  <rleigh@whinlatter.ukfsn.org>
+
+	* DISTLIST: Added `util/powerpc/ieee1275/grub-install.in'.
+
 2006-04-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added include/grub/efi/console.h,
