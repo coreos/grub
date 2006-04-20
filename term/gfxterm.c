@@ -641,8 +641,7 @@ grub_gfxterm_getcharwidth (grub_uint32_t c)
 {
   struct grub_font_glyph glyph;
   
-  if (! grub_font_get_glyph (c, &glyph))
-    return 0;
+  grub_font_get_glyph (c, &glyph);
 
   return glyph.char_width;
 }

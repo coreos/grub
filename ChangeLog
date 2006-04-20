@@ -1,3 +1,8 @@
+2006-04-20  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* term/gfxterm.c (grub_gfxterm_getcharwidth): Fixed character
+	length for unknown glyph.
+
 2006-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Add support for pre-loaded modules into the EFI port.
