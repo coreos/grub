@@ -1,3 +1,9 @@
+2006-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): Compare the file
+	size with GRUB_OS_AREA_SIZE as grub_size_t instead of
+	grub_ssize_t. Reported by Jeff Chua <jeff84@silk.corp.fedex.com>.
+
 2006-04-19  Roger Leigh  <rleigh@whinlatter.ukfsn.org>
 
 	* DISTLIST: Added `util/powerpc/ieee1275/grub-install.in'.
