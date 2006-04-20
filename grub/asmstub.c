@@ -55,6 +55,10 @@ int grub_stage2 (void);
 # endif /* ! BLKFLSBUF */
 #endif /* __linux__ */
 
+#if defined(__FreeBSD_kernel__) || defined(__FreeBSD__)
+# include <sys/sysctl.h>
+#endif
+
 /* We want to prevent any circularararity in our stubs, as well as
    libc name clashes. */
 #define WITHOUT_LIBC_STUBS 1
@@ -777,7 +781,34 @@ get_diskinfo (int drive, struct geometry *geometry)
 
       /* Open read/write, or read-only if that failed. */
       if (! read_only)
-	disks[drive].flags = open (devname, O_RDWR);
+	{
+/* By default, kernel of FreeBSD does not allow overwriting MBR */
+#if defined(__FreeBSD_kernel__) || defined(__FreeBSD__)
+#define GEOM_SYSCTL	"kern.geom.debugflags"
+	  int old_flags, flags;
+	  size_t sizeof_int = sizeof (int);
+
+	  if (sysctlbyname (GEOM_SYSCTL, &old_flags, &sizeof_int, NULL, 0) != 0)
+	    grub_printf ("failed to get " GEOM_SYSCTL "sysctl: %s\n", strerror (errno));
+
+	  if ((old_flags & 0x10) == 0)
+	    {
+	      /* "allow foot shooting", see geom(4) */
+	      flags = old_flags | 0x10;
+
+	      if (sysctlbyname (GEOM_SYSCTL, NULL, NULL, &flags, sizeof (int)) != 0)
+	        grub_printf ("failed to set " GEOM_SYSCTL "sysctl: %s\n", strerror (errno));
+	    }
+#endif
+	  disks[drive].flags = open (devname, O_RDWR);
+#if defined(__FreeBSD_kernel__) || defined(__FreeBSD__)
+	  if (flags != old_flags)
+	    {
+	      if (sysctlbyname (GEOM_SYSCTL, NULL, NULL, &old_flags, sizeof (int)) != 0)
+	        grub_printf ("failed to set " GEOM_SYSCTL "sysctl: %s\n", strerror (errno));
+	    }
+#endif
+	}
 
       if (disks[drive].flags == -1)
 	{

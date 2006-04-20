@@ -1,3 +1,10 @@
+2006-04-20  Robert Millan  <robertmh@gnu.org>
+
+	Fixes for kernel of FreeBSD:
+	* grub/asmstub.c (get_diskinfo): Toggle "kern.geom.debugflags" sysctl
+	before opening a device for writing.
+	* util/grub-install.in: Devices don't have this "r" prefix anymore.
+
 2006-04-16  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/multiboot.texi: Correct the offset of address
