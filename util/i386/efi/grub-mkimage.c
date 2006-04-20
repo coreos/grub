@@ -591,14 +591,74 @@ write_data_sections (FILE *out, Elf32_Addr current_address,
 
 /* Write modules.  */
 static Elf32_Addr
-make_mods_section (FILE *out, Elf32_Addr current_address, char *mods[])
+make_mods_section (FILE *out, Elf32_Addr current_address,
+		   const char *dir, char *mods[])
 {
-  /* FIXME: not implemented yet.  */
-  (void) mods;
-  write_padding (out, GRUB_PE32_SECTION_ALIGNMENT);
-  current_address += GRUB_PE32_SECTION_ALIGNMENT;
+  struct grub_util_path_list *path_list;
+  grub_size_t total_module_size;
+  struct grub_util_path_list *p;
+  struct grub_module_info modinfo;
+  Elf32_Addr addr;
 
-  return current_address;
+  path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
+  
+  total_module_size = sizeof (struct grub_module_info);
+  for (p = path_list; p; p = p->next)
+    {
+      total_module_size += (grub_util_get_image_size (p->name)
+			    + sizeof (struct grub_module_header));
+    }
+
+  grub_util_info ("the total module size is 0x%x", total_module_size);
+
+  modinfo.magic = grub_cpu_to_le32 (GRUB_MODULE_MAGIC);
+  modinfo.offset = grub_cpu_to_le32 (sizeof (modinfo));
+  modinfo.size = grub_cpu_to_le32 (total_module_size);
+
+  if (fwrite (&modinfo, sizeof (modinfo), 1, out) != 1)
+    grub_util_error ("write failed");
+
+  for (p = path_list; p; p = p->next)
+    {
+      struct grub_module_header header;
+      size_t mod_size;
+      char *mod_image;
+      
+      grub_util_info ("adding module %s", p->name);
+      
+      mod_size = grub_util_get_image_size (p->name);
+      header.offset = grub_cpu_to_le32 (sizeof (header));
+      header.size = grub_cpu_to_le32 (mod_size + sizeof (header));
+      
+      mod_image = grub_util_read_image (p->name);
+
+      if (fwrite (&header, sizeof (header), 1, out) != 1
+	  || fwrite (mod_image, mod_size, 1, out) != 1)
+	grub_util_error ("write failed");
+
+      free (mod_image);
+    }
+  
+  for (p = path_list; p; )
+    {
+      struct grub_util_path_list *q;
+
+      q = p->next;
+      free (p);
+      p = q;
+    }
+      
+  current_address += total_module_size;
+  
+  addr = align_pe32_section (current_address);
+  if (addr != current_address)
+    {
+      grub_util_info ("padding %d bytes for the PE32 section alignment",
+		      addr - current_address);
+      write_padding (out, addr - current_address);
+    }
+
+  return addr;
 }
 
 /* Make a .reloc section.  */
@@ -837,7 +897,7 @@ convert_elf (const char *dir, FILE *out, char *mods[])
   mods_address = write_data_sections (out, data_address, e, sections,
 				      section_entsize, num_sections,
 				      strtab);
-  reloc_address = make_mods_section (out, mods_address, mods);
+  reloc_address = make_mods_section (out, mods_address, dir, mods);
   end_address = make_reloc_section (out, reloc_address, e, section_addresses,
 				    sections, section_entsize, num_sections,
 				    strtab);

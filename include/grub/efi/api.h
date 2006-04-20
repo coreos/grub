@@ -69,6 +69,9 @@
 
 #define GRUB_EFI_OPTIONAL_PTR	0x00000001
 
+#define GRUB_EFI_LOADED_IMAGE_GUID	\
+  { 0x5b1b31a1, 0x9562, 0x11d2, 0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b }
+
 /* Enumerations.  */
 enum grub_efi_timer_delay
   {
@@ -343,7 +346,6 @@ struct grub_efi_boot_services
 		   grub_efi_event_t *event);
 
   grub_efi_status_t
-
   (*set_timer) (grub_efi_event_t event,
 		grub_efi_timer_delay_t type,
 		grub_efi_uint64_t trigger_time);
@@ -681,5 +683,27 @@ struct grub_efi_system_table
   grub_efi_configuration_table_t *configuration_table;
 };
 typedef struct grub_efi_system_table  grub_efi_system_table_t;
+
+struct grub_efi_loaded_image
+{
+  grub_efi_uint32_t revision;
+  grub_efi_handle_t parent_handle;
+  grub_efi_system_table_t *system_table;
+
+  grub_efi_handle_t device_handle;
+  grub_efi_device_path_t *file_path;
+  void *reserved;
+
+  grub_efi_uint32_t load_options_size;
+  void *load_options;
+
+  void *image_base;
+  grub_efi_uint64_t image_size;
+  grub_efi_memory_type_t image_code_type;
+  grub_efi_memory_type_t image_data_type;
+
+  grub_efi_status_t (*unload) (grub_efi_handle_t image_handle);
+};
+typedef struct grub_efi_loaded_image grub_efi_loaded_image_t;
 
 #endif /* ! GRUB_EFI_API_HEADER */

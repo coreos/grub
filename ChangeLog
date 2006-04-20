@@ -1,5 +1,26 @@
 2006-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	Add support for pre-loaded modules into the EFI port.
+	
+	* util/i386/efi/grub-mkimage.c (make_mods_section): Rewritten
+	completely. Accept one more argument DIR. The caller has changed.
+
+	* kern/i386/efi/init.c (grub_arch_modules_addr): Removed.
+
+	* kern/efi/efi.c: Include grub/efi/pe32.h and grub/kernel.h.
+	(grub_efi_loaded_image_guid): New variable.
+	(grub_efi_get_loaded_image): New function.
+	(grub_arch_modules_addr): Likewise.
+
+	* include/grub/efi/efi.h (grub_efi_get_loaded_image): New
+	prototype.
+
+	* include/grub/efi/api.h (GRUB_EFI_LOADED_IMAGE_GUID): New macro.
+	(struct grub_efi_loaded_image): New structure.
+	(grub_efi_loaded_image_t): New type.
+
+2006-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
+	
 	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): Compare the file
 	size with GRUB_OS_AREA_SIZE as grub_size_t instead of
 	grub_ssize_t. Reported by Jeff Chua <jeff84@silk.corp.fedex.com>.

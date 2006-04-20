@@ -45,9 +45,3 @@ grub_arch_sync_caches (void *address __attribute__ ((unused)),
                        grub_size_t len __attribute__ ((unused)))
 {
 }
-
-grub_addr_t
-grub_arch_modules_addr (void)
-{
-  return 0;
-}

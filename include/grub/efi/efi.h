@@ -40,6 +40,7 @@ int EXPORT_FUNC(grub_efi_get_memory_map) (grub_efi_uintn_t *memory_map_size,
 					  grub_efi_uintn_t *map_key,
 					  grub_efi_uintn_t *descriptor_size,
 					  grub_efi_uint32_t *descriptor_version);
+grub_efi_loaded_image_t *EXPORT_FUNC(grub_efi_get_loaded_image) (void);
 
 void grub_efi_mm_init (void);
 void grub_efi_mm_fini (void);
