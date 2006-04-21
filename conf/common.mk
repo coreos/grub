@@ -36,12 +36,12 @@ UNDSYMFILES += und-fshelp.lst
 
 fshelp.mod: pre-fshelp.o mod-fshelp.o
 	-rm -f $@
-	$(LD) $(fshelp_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(fshelp_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fshelp.o: fshelp_mod-fs_fshelp.o
 	-rm -f $@
-	$(LD) $(fshelp_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(fshelp_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-fshelp.o: mod-fshelp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
@@ -92,12 +92,12 @@ UNDSYMFILES += und-fat.lst
 
 fat.mod: pre-fat.o mod-fat.o
 	-rm -f $@
-	$(LD) $(fat_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(fat_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-fat.o: fat_mod-fs_fat.o
 	-rm -f $@
-	$(LD) $(fat_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(fat_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-fat.o: mod-fat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
@@ -148,12 +148,12 @@ UNDSYMFILES += und-ufs.lst
 
 ufs.mod: pre-ufs.o mod-ufs.o
 	-rm -f $@
-	$(LD) $(ufs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(ufs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ufs.o: ufs_mod-fs_ufs.o
 	-rm -f $@
-	$(LD) $(ufs_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(ufs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-ufs.o: mod-ufs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
@@ -204,12 +204,12 @@ UNDSYMFILES += und-ext2.lst
 
 ext2.mod: pre-ext2.o mod-ext2.o
 	-rm -f $@
-	$(LD) $(ext2_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(ext2_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ext2.o: ext2_mod-fs_ext2.o
 	-rm -f $@
-	$(LD) $(ext2_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(ext2_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-ext2.o: mod-ext2.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
@@ -260,12 +260,12 @@ UNDSYMFILES += und-minix.lst
 
 minix.mod: pre-minix.o mod-minix.o
 	-rm -f $@
-	$(LD) $(minix_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(minix_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-minix.o: minix_mod-fs_minix.o
 	-rm -f $@
-	$(LD) $(minix_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(minix_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-minix.o: mod-minix.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
@@ -316,12 +316,12 @@ UNDSYMFILES += und-hfs.lst
 
 hfs.mod: pre-hfs.o mod-hfs.o
 	-rm -f $@
-	$(LD) $(hfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(hfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hfs.o: hfs_mod-fs_hfs.o
 	-rm -f $@
-	$(LD) $(hfs_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(hfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-hfs.o: mod-hfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
@@ -372,12 +372,12 @@ UNDSYMFILES += und-jfs.lst
 
 jfs.mod: pre-jfs.o mod-jfs.o
 	-rm -f $@
-	$(LD) $(jfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(jfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-jfs.o: jfs_mod-fs_jfs.o
 	-rm -f $@
-	$(LD) $(jfs_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(jfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-jfs.o: mod-jfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
@@ -428,12 +428,12 @@ UNDSYMFILES += und-iso9660.lst
 
 iso9660.mod: pre-iso9660.o mod-iso9660.o
 	-rm -f $@
-	$(LD) $(iso9660_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(iso9660_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-iso9660.o: iso9660_mod-fs_iso9660.o
 	-rm -f $@
-	$(LD) $(iso9660_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(iso9660_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-iso9660.o: mod-iso9660.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(iso9660_mod_CFLAGS) -c -o $@ $<
@@ -484,12 +484,12 @@ UNDSYMFILES += und-xfs.lst
 
 xfs.mod: pre-xfs.o mod-xfs.o
 	-rm -f $@
-	$(LD) $(xfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(xfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-xfs.o: xfs_mod-fs_xfs.o
 	-rm -f $@
-	$(LD) $(xfs_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(xfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-xfs.o: mod-xfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
@@ -540,12 +540,12 @@ UNDSYMFILES += und-affs.lst
 
 affs.mod: pre-affs.o mod-affs.o
 	-rm -f $@
-	$(LD) $(affs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(affs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-affs.o: affs_mod-fs_affs.o
 	-rm -f $@
-	$(LD) $(affs_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(affs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-affs.o: mod-affs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
@@ -596,12 +596,12 @@ UNDSYMFILES += und-sfs.lst
 
 sfs.mod: pre-sfs.o mod-sfs.o
 	-rm -f $@
-	$(LD) $(sfs_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(sfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-sfs.o: sfs_mod-fs_sfs.o
 	-rm -f $@
-	$(LD) $(sfs_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(sfs_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-sfs.o: mod-sfs.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(sfs_mod_CFLAGS) -c -o $@ $<
@@ -652,12 +652,12 @@ UNDSYMFILES += und-hfsplus.lst
 
 hfsplus.mod: pre-hfsplus.o mod-hfsplus.o
 	-rm -f $@
-	$(LD) $(hfsplus_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(hfsplus_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hfsplus.o: hfsplus_mod-fs_hfsplus.o
 	-rm -f $@
-	$(LD) $(hfsplus_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(hfsplus_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-hfsplus.o: mod-hfsplus.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -c -o $@ $<
@@ -711,12 +711,12 @@ UNDSYMFILES += und-amiga.lst
 
 amiga.mod: pre-amiga.o mod-amiga.o
 	-rm -f $@
-	$(LD) $(amiga_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(amiga_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-amiga.o: amiga_mod-partmap_amiga.o
 	-rm -f $@
-	$(LD) $(amiga_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(amiga_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-amiga.o: mod-amiga.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
@@ -767,12 +767,12 @@ UNDSYMFILES += und-apple.lst
 
 apple.mod: pre-apple.o mod-apple.o
 	-rm -f $@
-	$(LD) $(apple_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(apple_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-apple.o: apple_mod-partmap_apple.o
 	-rm -f $@
-	$(LD) $(apple_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(apple_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-apple.o: mod-apple.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
@@ -823,12 +823,12 @@ UNDSYMFILES += und-pc.lst
 
 pc.mod: pre-pc.o mod-pc.o
 	-rm -f $@
-	$(LD) $(pc_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(pc_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-pc.o: pc_mod-partmap_pc.o
 	-rm -f $@
-	$(LD) $(pc_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(pc_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-pc.o: mod-pc.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
@@ -879,12 +879,12 @@ UNDSYMFILES += und-sun.lst
 
 sun.mod: pre-sun.o mod-sun.o
 	-rm -f $@
-	$(LD) $(sun_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(sun_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-sun.o: sun_mod-partmap_sun.o
 	-rm -f $@
-	$(LD) $(sun_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(sun_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-sun.o: mod-sun.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
@@ -935,12 +935,12 @@ UNDSYMFILES += und-acorn.lst
 
 acorn.mod: pre-acorn.o mod-acorn.o
 	-rm -f $@
-	$(LD) $(acorn_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(acorn_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-acorn.o: acorn_mod-partmap_acorn.o
 	-rm -f $@
-	$(LD) $(acorn_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(acorn_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-acorn.o: mod-acorn.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
@@ -991,12 +991,12 @@ UNDSYMFILES += und-gpt.lst
 
 gpt.mod: pre-gpt.o mod-gpt.o
 	-rm -f $@
-	$(LD) $(gpt_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(gpt_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-gpt.o: gpt_mod-partmap_gpt.o
 	-rm -f $@
-	$(LD) $(gpt_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(gpt_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-gpt.o: mod-gpt.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -c -o $@ $<
@@ -1054,12 +1054,12 @@ UNDSYMFILES += und-hello.lst
 
 hello.mod: pre-hello.o mod-hello.o
 	-rm -f $@
-	$(LD) $(hello_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(hello_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-hello.o: hello_mod-hello_hello.o
 	-rm -f $@
-	$(LD) $(hello_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(hello_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-hello.o: mod-hello.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
@@ -1110,12 +1110,12 @@ UNDSYMFILES += und-boot.lst
 
 boot.mod: pre-boot.o mod-boot.o
 	-rm -f $@
-	$(LD) $(boot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(boot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-boot.o: boot_mod-commands_boot.o
 	-rm -f $@
-	$(LD) $(boot_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(boot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-boot.o: mod-boot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
@@ -1166,12 +1166,12 @@ UNDSYMFILES += und-terminal.lst
 
 terminal.mod: pre-terminal.o mod-terminal.o
 	-rm -f $@
-	$(LD) $(terminal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(terminal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminal.o: terminal_mod-commands_terminal.o
 	-rm -f $@
-	$(LD) $(terminal_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(terminal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-terminal.o: mod-terminal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
@@ -1222,12 +1222,12 @@ UNDSYMFILES += und-ls.lst
 
 ls.mod: pre-ls.o mod-ls.o
 	-rm -f $@
-	$(LD) $(ls_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(ls_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-ls.o: ls_mod-commands_ls.o
 	-rm -f $@
-	$(LD) $(ls_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(ls_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-ls.o: mod-ls.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
@@ -1278,12 +1278,12 @@ UNDSYMFILES += und-cmp.lst
 
 cmp.mod: pre-cmp.o mod-cmp.o
 	-rm -f $@
-	$(LD) $(cmp_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(cmp_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cmp.o: cmp_mod-commands_cmp.o
 	-rm -f $@
-	$(LD) $(cmp_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(cmp_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-cmp.o: mod-cmp.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
@@ -1334,12 +1334,12 @@ UNDSYMFILES += und-cat.lst
 
 cat.mod: pre-cat.o mod-cat.o
 	-rm -f $@
-	$(LD) $(cat_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(cat_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-cat.o: cat_mod-commands_cat.o
 	-rm -f $@
-	$(LD) $(cat_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(cat_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-cat.o: mod-cat.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
@@ -1390,12 +1390,12 @@ UNDSYMFILES += und-help.lst
 
 help.mod: pre-help.o mod-help.o
 	-rm -f $@
-	$(LD) $(help_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(help_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-help.o: help_mod-commands_help.o
 	-rm -f $@
-	$(LD) $(help_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(help_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-help.o: mod-help.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
@@ -1446,12 +1446,12 @@ UNDSYMFILES += und-font.lst
 
 font.mod: pre-font.o mod-font.o
 	-rm -f $@
-	$(LD) $(font_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(font_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-font.o: font_mod-font_manager.o
 	-rm -f $@
-	$(LD) $(font_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(font_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-font.o: mod-font.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
@@ -1502,12 +1502,12 @@ UNDSYMFILES += und-search.lst
 
 search.mod: pre-search.o mod-search.o
 	-rm -f $@
-	$(LD) $(search_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(search_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-search.o: search_mod-commands_search.o
 	-rm -f $@
-	$(LD) $(search_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(search_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-search.o: mod-search.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
@@ -1558,12 +1558,12 @@ UNDSYMFILES += und-test.lst
 
 test.mod: pre-test.o mod-test.o
 	-rm -f $@
-	$(LD) $(test_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(test_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-test.o: test_mod-commands_test.o
 	-rm -f $@
-	$(LD) $(test_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(test_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-test.o: mod-test.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -c -o $@ $<
@@ -1614,12 +1614,12 @@ UNDSYMFILES += und-loopback.lst
 
 loopback.mod: pre-loopback.o mod-loopback.o
 	-rm -f $@
-	$(LD) $(loopback_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(loopback_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-loopback.o: loopback_mod-disk_loopback.o
 	-rm -f $@
-	$(LD) $(loopback_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(loopback_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-loopback.o: mod-loopback.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
@@ -1670,12 +1670,12 @@ UNDSYMFILES += und-default.lst
 
 default.mod: pre-default.o mod-default.o
 	-rm -f $@
-	$(LD) $(default_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(default_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-default.o: default_mod-commands_default.o
 	-rm -f $@
-	$(LD) $(default_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(default_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-default.o: mod-default.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
@@ -1726,12 +1726,12 @@ UNDSYMFILES += und-timeout.lst
 
 timeout.mod: pre-timeout.o mod-timeout.o
 	-rm -f $@
-	$(LD) $(timeout_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(timeout_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-timeout.o: timeout_mod-commands_timeout.o
 	-rm -f $@
-	$(LD) $(timeout_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(timeout_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-timeout.o: mod-timeout.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
@@ -1782,12 +1782,12 @@ UNDSYMFILES += und-configfile.lst
 
 configfile.mod: pre-configfile.o mod-configfile.o
 	-rm -f $@
-	$(LD) $(configfile_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(configfile_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-configfile.o: configfile_mod-commands_configfile.o
 	-rm -f $@
-	$(LD) $(configfile_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(configfile_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-configfile.o: mod-configfile.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
@@ -1838,12 +1838,12 @@ UNDSYMFILES += und-terminfo.lst
 
 terminfo.mod: pre-terminfo.o mod-terminfo.o
 	-rm -f $@
-	$(LD) $(terminfo_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(terminfo_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-terminfo.o: terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o
 	-rm -f $@
-	$(LD) $(terminfo_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(terminfo_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-terminfo.o: mod-terminfo.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
@@ -1917,12 +1917,12 @@ UNDSYMFILES += und-gzio.lst
 
 gzio.mod: pre-gzio.o mod-gzio.o
 	-rm -f $@
-	$(LD) $(gzio_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(gzio_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-gzio.o: gzio_mod-io_gzio.o
 	-rm -f $@
-	$(LD) $(gzio_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(gzio_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-gzio.o: mod-gzio.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<

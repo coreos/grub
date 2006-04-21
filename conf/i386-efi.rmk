@@ -2,7 +2,7 @@
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -m32
-COMMON_LDFLAGS = -melf_i386
+COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Utilities.
 bin_UTILITIES = grub-mkimage

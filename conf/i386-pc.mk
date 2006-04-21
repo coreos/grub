@@ -2,7 +2,7 @@
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
-COMMON_LDFLAGS = -melf_i386
+COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Images.
 pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img
@@ -1384,12 +1384,12 @@ UNDSYMFILES += und-_chain.lst
 
 _chain.mod: pre-_chain.o mod-_chain.o
 	-rm -f $@
-	$(LD) $(_chain_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_chain.o: _chain_mod-loader_i386_pc_chainloader.o
 	-rm -f $@
-	$(LD) $(_chain_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-_chain.o: mod-_chain.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
@@ -1440,12 +1440,12 @@ UNDSYMFILES += und-chain.lst
 
 chain.mod: pre-chain.o mod-chain.o
 	-rm -f $@
-	$(LD) $(chain_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-chain.o: chain_mod-loader_i386_pc_chainloader_normal.o
 	-rm -f $@
-	$(LD) $(chain_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-chain.o: mod-chain.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
@@ -1496,12 +1496,12 @@ UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
-	$(LD) $(_linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: _linux_mod-loader_i386_pc_linux.o
 	-rm -f $@
-	$(LD) $(_linux_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-_linux.o: mod-_linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
@@ -1552,12 +1552,12 @@ UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
 	-rm -f $@
-	$(LD) $(linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: linux_mod-loader_i386_pc_linux_normal.o
 	-rm -f $@
-	$(LD) $(linux_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-linux.o: mod-linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -1612,12 +1612,12 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
-	$(LD) $(normal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
-	$(LD) $(normal_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-normal.o: mod-normal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1935,12 +1935,12 @@ UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
 	-rm -f $@
-	$(LD) $(reboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(reboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-reboot.o: reboot_mod-commands_i386_pc_reboot.o
 	-rm -f $@
-	$(LD) $(reboot_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(reboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-reboot.o: mod-reboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
@@ -1991,12 +1991,12 @@ UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
 	-rm -f $@
-	$(LD) $(halt_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(halt_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-halt.o: halt_mod-commands_i386_pc_halt.o
 	-rm -f $@
-	$(LD) $(halt_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(halt_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-halt.o: mod-halt.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
@@ -2052,12 +2052,12 @@ UNDSYMFILES += und-_multiboot.lst
 
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
 	-rm -f $@
-	$(LD) $(_multiboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_multiboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_multiboot.o: _multiboot_mod-loader_i386_pc_multiboot.o
 	-rm -f $@
-	$(LD) $(_multiboot_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_multiboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-_multiboot.o: mod-_multiboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
@@ -2108,12 +2108,12 @@ UNDSYMFILES += und-multiboot.lst
 
 multiboot.mod: pre-multiboot.o mod-multiboot.o
 	-rm -f $@
-	$(LD) $(multiboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(multiboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-multiboot.o: multiboot_mod-loader_i386_pc_multiboot_normal.o
 	-rm -f $@
-	$(LD) $(multiboot_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(multiboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-multiboot.o: mod-multiboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
@@ -2165,12 +2165,12 @@ UNDSYMFILES += und-vbe.lst
 
 vbe.mod: pre-vbe.o mod-vbe.o
 	-rm -f $@
-	$(LD) $(vbe_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(vbe_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vbe.o: vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o
 	-rm -f $@
-	$(LD) $(vbe_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(vbe_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-vbe.o: mod-vbe.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
@@ -2259,12 +2259,12 @@ UNDSYMFILES += und-vbeinfo.lst
 
 vbeinfo.mod: pre-vbeinfo.o mod-vbeinfo.o
 	-rm -f $@
-	$(LD) $(vbeinfo_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(vbeinfo_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vbeinfo.o: vbeinfo_mod-commands_i386_pc_vbeinfo.o
 	-rm -f $@
-	$(LD) $(vbeinfo_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(vbeinfo_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-vbeinfo.o: mod-vbeinfo.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbeinfo_mod_CFLAGS) -c -o $@ $<
@@ -2315,12 +2315,12 @@ UNDSYMFILES += und-vbetest.lst
 
 vbetest.mod: pre-vbetest.o mod-vbetest.o
 	-rm -f $@
-	$(LD) $(vbetest_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(vbetest_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-vbetest.o: vbetest_mod-commands_i386_pc_vbetest.o
 	-rm -f $@
-	$(LD) $(vbetest_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(vbetest_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-vbetest.o: mod-vbetest.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(vbetest_mod_CFLAGS) -c -o $@ $<
@@ -2371,12 +2371,12 @@ UNDSYMFILES += und-play.lst
 
 play.mod: pre-play.o mod-play.o
 	-rm -f $@
-	$(LD) $(play_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(play_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-play.o: play_mod-commands_i386_pc_play.o
 	-rm -f $@
-	$(LD) $(play_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(play_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-play.o: mod-play.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(play_mod_CFLAGS) -c -o $@ $<
@@ -2427,12 +2427,12 @@ UNDSYMFILES += und-video.lst
 
 video.mod: pre-video.o mod-video.o
 	-rm -f $@
-	$(LD) $(video_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(video_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-video.o: video_mod-video_video.o
 	-rm -f $@
-	$(LD) $(video_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(video_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-video.o: mod-video.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(video_mod_CFLAGS) -c -o $@ $<
@@ -2483,12 +2483,12 @@ UNDSYMFILES += und-gfxterm.lst
 
 gfxterm.mod: pre-gfxterm.o mod-gfxterm.o
 	-rm -f $@
-	$(LD) $(gfxterm_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(gfxterm_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-gfxterm.o: gfxterm_mod-term_gfxterm.o
 	-rm -f $@
-	$(LD) $(gfxterm_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(gfxterm_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-gfxterm.o: mod-gfxterm.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(gfxterm_mod_CFLAGS) -c -o $@ $<
@@ -2539,12 +2539,12 @@ UNDSYMFILES += und-videotest.lst
 
 videotest.mod: pre-videotest.o mod-videotest.o
 	-rm -f $@
-	$(LD) $(videotest_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(videotest_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-videotest.o: videotest_mod-commands_videotest.o
 	-rm -f $@
-	$(LD) $(videotest_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(videotest_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-videotest.o: mod-videotest.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(videotest_mod_CFLAGS) -c -o $@ $<

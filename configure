@@ -2907,6 +2907,8 @@ echo "${ECHO_T}$falign_loop_flag" >&6
 
   if test "x$biarch32" = x1; then
     tmp_CFLAGS="$tmp_CFLAGS -m32"
+    LDFLAGS="$LDFLAGS -m32"
+
   fi
 
   CFLAGS="$tmp_CFLAGS"

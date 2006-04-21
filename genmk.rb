@@ -121,12 +121,12 @@ UNDSYMFILES += #{undsym}
 
 #{@name}: #{pre_obj} #{mod_obj}
 	-rm -f $@
-	$(LD) $(#{prefix}_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(#{prefix}_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 #{pre_obj}: #{objs_str}
 	-rm -f $@
-	$(LD) $(#{prefix}_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(#{prefix}_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 #{mod_obj}: #{mod_src}
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<

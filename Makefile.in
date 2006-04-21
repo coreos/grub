@@ -56,6 +56,7 @@ mkinstalldirs = $(srcdir)/mkinstalldirs
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
 CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W
 BUILD_CC = @BUILD_CC@
 BUILD_CFLAGS = -g -O2
@@ -64,7 +65,6 @@ BUILD_CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W \
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
 NM = @NM@
-LD = @LD@
 RUBY = @RUBY@
 LIBCURSES = @LIBCURSES@
 LIBLZO = @LIBLZO@

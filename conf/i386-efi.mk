@@ -2,7 +2,7 @@
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -m32
-COMMON_LDFLAGS = -melf_i386
+COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
@@ -131,12 +131,12 @@ UNDSYMFILES += und-kernel.lst
 
 kernel.mod: pre-kernel.o mod-kernel.o
 	-rm -f $@
-	$(LD) $(kernel_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(kernel_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-kernel.o: kernel_mod-kern_i386_efi_startup.o kernel_mod-kern_main.o kernel_mod-kern_device.o kernel_mod-kern_disk.o kernel_mod-kern_dl.o kernel_mod-kern_file.o kernel_mod-kern_fs.o kernel_mod-kern_err.o kernel_mod-kern_misc.o kernel_mod-kern_mm.o kernel_mod-kern_loader.o kernel_mod-kern_rescue.o kernel_mod-kern_term.o kernel_mod-kern_i386_dl.o kernel_mod-kern_i386_efi_init.o kernel_mod-kern_parser.o kernel_mod-kern_partition.o kernel_mod-kern_env.o kernel_mod-symlist.o kernel_mod-kern_efi_efi.o kernel_mod-kern_efi_init.o kernel_mod-kern_efi_mm.o kernel_mod-term_efi_console.o
 	-rm -f $@
-	$(LD) $(kernel_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(kernel_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-kernel.o: mod-kernel.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(kernel_mod_CFLAGS) -c -o $@ $<
@@ -624,12 +624,12 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
-	$(LD) $(normal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
-	$(LD) $(normal_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-normal.o: mod-normal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<

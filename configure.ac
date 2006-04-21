@@ -89,6 +89,8 @@ if test "x$default_CFLAGS" = xyes; then
 
   if test "x$biarch32" = x1; then
     tmp_CFLAGS="$tmp_CFLAGS -m32"
+    LDFLAGS="$LDFLAGS -m32"
+    AC_SUBST(LDFLAGS)
   fi
 
   CFLAGS="$tmp_CFLAGS"

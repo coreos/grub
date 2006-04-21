@@ -1,3 +1,18 @@
+2006-04-20  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* Makefile.in (LDFLAGS): Add variable.
+	(LD): Remove variable.
+	* configure.ac: Add -m32 to LDFLAGS.
+	* genmk.rb (PModule#rule): Use $(CC) instead of $(LD).
+	* conf/powerpc-ieee1275.rmk (COMMON_LDFLAGS): Add variable.
+	(grubof_LDFLAGS): Use $(COMMON_LDFLAGS).
+	(_linux_mod_LDFLAGS, linux_mod_LDFLAGS, normal_mod_LDFLAGS,
+	suspend_mod_LDFLAGS, reboot_mod_LDFLAGS, halt_mod_LDFLAGS): New
+	variables.
+	* conf/sparc64-ieee1275.rmk (COMMON_LDFLAGS): Add -nostdlib.
+	* conf/i386-pc.rmk (COMMON_LDFLAGS): Add -nostdlib.
+	* conf/i386-efi.rmk (COMMON_LDFLAGS): Add -nostdlib.
+
 2006-04-20  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* term/gfxterm.c (grub_gfxterm_getcharwidth): Fixed character

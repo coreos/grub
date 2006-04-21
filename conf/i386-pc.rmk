@@ -2,7 +2,7 @@
 
 COMMON_ASFLAGS = -nostdinc -fno-builtin
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
-COMMON_LDFLAGS = -melf_i386
+COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Images.
 pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img

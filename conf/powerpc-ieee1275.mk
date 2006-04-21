@@ -3,6 +3,7 @@
 
 COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
 COMMON_CFLAGS = -ffreestanding -msoft-float
+COMMON_LDFLAGS += -nostdlib
 
 # Images.
 
@@ -847,7 +848,8 @@ grubof-kern_powerpc_cache.d: kern/powerpc/cache.S
 grubof_HEADERS = grub/powerpc/ieee1275/ieee1275.h
 grubof_CFLAGS = $(COMMON_CFLAGS)
 grubof_ASFLAGS = $(COMMON_ASFLAGS)
-grubof_LDFLAGS = -nostdlib -static-libgcc -lgcc -Wl,-N,-S,-Ttext,0x200000,-Bstatic
+grubof_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
+	-Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
@@ -898,12 +900,12 @@ UNDSYMFILES += und-_linux.lst
 
 _linux.mod: pre-_linux.o mod-_linux.o
 	-rm -f $@
-	$(LD) $(_linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: _linux_mod-loader_powerpc_ieee1275_linux.o
 	-rm -f $@
-	$(LD) $(_linux_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(_linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-_linux.o: mod-_linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
@@ -940,6 +942,7 @@ fs-_linux_mod-loader_powerpc_ieee1275_linux.lst: loader/powerpc/ieee1275/linux.c
 
 
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
+_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
 linux_mod_SOURCES = loader/powerpc/ieee1275/linux_normal.c
@@ -953,12 +956,12 @@ UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o
 	-rm -f $@
-	$(LD) $(linux_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: linux_mod-loader_powerpc_ieee1275_linux_normal.o
 	-rm -f $@
-	$(LD) $(linux_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-linux.o: mod-linux.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -995,6 +998,7 @@ fs-linux_mod-loader_powerpc_ieee1275_linux_normal.lst: loader/powerpc/ieee1275/l
 
 
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -1012,12 +1016,12 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
 	-rm -f $@
-	$(LD) $(normal_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_powerpc_setjmp.o
 	-rm -f $@
-	$(LD) $(normal_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-normal.o: mod-normal.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -1320,6 +1324,7 @@ fs-normal_mod-normal_powerpc_setjmp.lst: normal/powerpc/setjmp.S genfslist.sh
 
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
+normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For suspend.mod
@@ -1334,12 +1339,12 @@ UNDSYMFILES += und-suspend.lst
 
 suspend.mod: pre-suspend.o mod-suspend.o
 	-rm -f $@
-	$(LD) $(suspend_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(suspend_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-suspend.o: suspend_mod-commands_ieee1275_suspend.o
 	-rm -f $@
-	$(LD) $(suspend_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(suspend_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-suspend.o: mod-suspend.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(suspend_mod_CFLAGS) -c -o $@ $<
@@ -1376,6 +1381,7 @@ fs-suspend_mod-commands_ieee1275_suspend.lst: commands/ieee1275/suspend.c genfsl
 
 
 suspend_mod_CFLAGS = $(COMMON_CFLAGS)
+suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod
 reboot_mod_SOURCES = commands/ieee1275/reboot.c
@@ -1389,12 +1395,12 @@ UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
 	-rm -f $@
-	$(LD) $(reboot_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(reboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-reboot.o: reboot_mod-commands_ieee1275_reboot.o
 	-rm -f $@
-	$(LD) $(reboot_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(reboot_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-reboot.o: mod-reboot.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
@@ -1431,6 +1437,7 @@ fs-reboot_mod-commands_ieee1275_reboot.lst: commands/ieee1275/reboot.c genfslist
 
 
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
 halt_mod_SOURCES = commands/ieee1275/halt.c
@@ -1444,12 +1451,12 @@ UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
 	-rm -f $@
-	$(LD) $(halt_mod_LDFLAGS) $(LDFLAGS) -r -d -o $@ $^
+	$(CC) $(halt_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 pre-halt.o: halt_mod-commands_ieee1275_halt.o
 	-rm -f $@
-	$(LD) $(halt_mod_LDFLAGS) -r -d -o $@ $^
+	$(CC) $(halt_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
 mod-halt.o: mod-halt.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
@@ -1486,5 +1493,6 @@ fs-halt_mod-commands_ieee1275_halt.lst: commands/ieee1275/halt.c genfslist.sh
 
 
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
