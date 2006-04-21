@@ -499,6 +499,58 @@ grub_itoa (char *str, int c, unsigned n)
   return p;
 }
 
+/* Convert a long long value to a string. This function avoids 64-bit
+   modular arithmetic or divisions.  */
+static char *
+grub_lltoa (char *str, int c, unsigned long long n)
+{
+  unsigned base = (c == 'x') ? 16 : 10;
+  char *p;
+  
+  if ((long long) n < 0 && c == 'd')
+    {
+      n = (unsigned long long) (-((long long) n));
+      *str++ = '-';
+    }
+
+  p = str;
+
+  if (base == 16)
+    do
+      {
+	unsigned d = (unsigned) (n & 0xf);
+	*p++ = (d > 9) ? d + 'a' - 10 : d + '0';
+      }
+    while (n >>= 4);
+  else
+    /* BASE == 10 */
+    do
+      {
+	unsigned high, low;
+	unsigned high_mod, low_mod;
+	unsigned d;
+	
+	high = (unsigned) (n >> 32);
+	low = (unsigned) (n & 0xffffffff);
+	high_mod = high % 10;
+	low_mod = low % 10;
+	/* 6 = (1 << 32) % 10 */
+	d = (high_mod * 6 + low_mod) % 10;
+	*p++ = d + '0';
+	
+	/* (HIGH_MOD << 31) / 5 = (HIGH_MOD << 32) / 10 */
+	n = (((unsigned long long) (high / 10) << 32)
+	     + ((high_mod << 31) / 5)
+	     + low_mod / 10);
+      }
+    while (n);
+  
+  *p = 0;
+
+  grub_reverse (str);
+  return p;
+}
+
 static char *
 grub_ftoa (char *str, double f, int round)
 {
@@ -555,7 +607,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	write_char (c);
       else
 	{
-	  char tmp[16];
+	  char tmp[32];
 	  char *p;
 	  unsigned int format1 = 0;
 	  unsigned int format2 = 3;
@@ -563,6 +615,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	  int rightfill = 0;
 	  int n;
 	  int longfmt = 0;
+	  int longlongfmt = 0;
 
 	  if (*fmt && *fmt =='-')
 	    {
@@ -606,6 +659,11 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	    {
 	      longfmt = 1;
 	      c = *fmt++;
+	      if (c == 'l')
+		{
+		  longlongfmt = 1;
+		  c = *fmt++;
+		}
 	    }
 
 	  switch (c)
@@ -613,16 +671,27 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	    case 'p':
 	      write_str ("0x");
 	      c = 'x';
+	      longlongfmt = (sizeof (void *) == sizeof (long long));
 	      /* fall through */
 	    case 'x':
 	    case 'u':
 	    case 'd':
-	      if (longfmt)
-		n = va_arg (args, long);
+	      if (longlongfmt)
+		{
+		  long long ll;
+
+		  ll = va_arg (args, long long);
+		  grub_lltoa (tmp, c, ll);
+		}
 	      else
-		n = va_arg (args, int);
-	      grub_itoa (tmp, c, n);
-	      if (!rightfill && grub_strlen (tmp) < format1)
+		{
+		  if (longfmt)
+		    n = va_arg (args, long);
+		  else
+		    n = va_arg (args, int);
+		  grub_itoa (tmp, c, n);
+		}
+	      if (! rightfill && grub_strlen (tmp) < format1)
 		write_fill (zerofill, format1 - grub_strlen (tmp));
 	      write_str (tmp);
 	      if (rightfill && grub_strlen (tmp) < format1)

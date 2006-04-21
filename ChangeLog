@@ -1,3 +1,9 @@
+2006-04-21  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/misc.c (grub_lltoa): New function.
+	(grub_vsprintf): Added support for the long long suffix,
+	i.e. "ll".
+
 2006-04-20  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* Makefile.in (LDFLAGS): Add variable.
