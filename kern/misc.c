@@ -526,22 +526,33 @@ grub_lltoa (char *str, int c, unsigned long long n)
     /* BASE == 10 */
     do
       {
-	unsigned high, low;
-	unsigned high_mod, low_mod;
-	unsigned d;
-	
-	high = (unsigned) (n >> 32);
-	low = (unsigned) (n & 0xffffffff);
-	high_mod = high % 10;
-	low_mod = low % 10;
-	/* 6 = (1 << 32) % 10 */
-	d = (high_mod * 6 + low_mod) % 10;
-	*p++ = d + '0';
-	
-	/* (HIGH_MOD << 31) / 5 = (HIGH_MOD << 32) / 10 */
-	n = (((unsigned long long) (high / 10) << 32)
-	     + ((high_mod << 31) / 5)
-	     + low_mod / 10);
+	/* This algorithm is typically implemented by hardware. The idea
+	   is to get the highest bit in N, 64 times, by keeping
+	   upper(N * 2^i) = upper((Q * 10 + M) * 2^i), where upper
+	   represents the high 64 bits in 128-bits space.  */
+	unsigned bits = sizeof (unsigned long long) * 8;
+	unsigned long long q = 0;
+	unsigned m = 0;
+
+	while (bits--)
+	  {
+	    m <<= 1;
+	    
+	    if ((long long ) n < 0)
+	      m |= 1;
+
+	    q <<= 1;
+	    n <<= 1;
+
+	    if (m >= 10)
+	      {
+		q |= 1;
+		m -= 10;
+	      }
+	  }
+
+	*p++ = m + '0';
+	n = q;
       }
     while (n);
   

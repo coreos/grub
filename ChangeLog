@@ -1,3 +1,8 @@
+2006-04-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/misc.c (grub_lltoa): Rewritten the decimal conversion part,
+	as it was simply too buggy.
+
 2006-04-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/misc.c (grub_lltoa): New function.
