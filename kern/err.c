@@ -60,7 +60,7 @@ grub_fatal (const char *fmt, ...)
   grub_vprintf (fmt, ap);
   va_end (ap);
 
-  grub_stop ();
+  grub_abort ();
 }
 
 void

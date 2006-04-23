@@ -28,19 +28,29 @@
 /* Functions.  */
 void *EXPORT_FUNC(grub_efi_locate_protocol) (grub_efi_guid_t *protocol,
 					     void *registration);
+grub_efi_handle_t *
+EXPORT_FUNC(grub_efi_locate_handle) (grub_efi_locate_search_type_t search_type,
+				     grub_efi_guid_t *protocol,
+				     void *search_key,
+				     grub_efi_uintn_t *num_handles);
+void *EXPORT_FUNC(grub_efi_open_protocol) (grub_efi_handle_t handle,
+					   grub_efi_guid_t *protocol,
+					   grub_efi_uint32_t attributes);
 int EXPORT_FUNC(grub_efi_set_text_mode) (int on);
-void EXPORT_FUNC(grub_efi_exit) (void) __attribute__((noreturn));
 void EXPORT_FUNC(grub_efi_stall) (grub_efi_uintn_t microseconds);
-void *EXPORT_FUNC(grub_efi_allocate_pages) (grub_efi_physical_address_t address,
-					    grub_efi_uintn_t pages);
+void *
+EXPORT_FUNC(grub_efi_allocate_pages) (grub_efi_physical_address_t address,
+				      grub_efi_uintn_t pages);
 void EXPORT_FUNC(grub_efi_free_pages) (grub_efi_physical_address_t address,
 				       grub_efi_uintn_t pages);
-int EXPORT_FUNC(grub_efi_get_memory_map) (grub_efi_uintn_t *memory_map_size,
-					  grub_efi_memory_descriptor_t *memory_map,
-					  grub_efi_uintn_t *map_key,
-					  grub_efi_uintn_t *descriptor_size,
-					  grub_efi_uint32_t *descriptor_version);
+int
+EXPORT_FUNC(grub_efi_get_memory_map) (grub_efi_uintn_t *memory_map_size,
+				      grub_efi_memory_descriptor_t *memory_map,
+				      grub_efi_uintn_t *map_key,
+				      grub_efi_uintn_t *descriptor_size,
+				      grub_efi_uint32_t *descriptor_version);
 grub_efi_loaded_image_t *EXPORT_FUNC(grub_efi_get_loaded_image) (void);
+void EXPORT_FUNC(grub_print_device_path) (grub_efi_device_path_t *dp);
 
 void grub_efi_mm_init (void);
 void grub_efi_mm_fini (void);

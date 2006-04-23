@@ -129,16 +129,18 @@ grub_printf (const char *fmt, ...)
 }  
 
 void
-grub_real_dprintf(const char *file, const int line, const char *condition,
-                  const char *fmt, ...)
+grub_real_dprintf (const char *file, const int line, const char *condition,
+		   const char *fmt, ...)
 {
   va_list args;
   const char *debug = grub_env_get ("debug");
+  
   if (! debug)
     return;
+  
   if (grub_strword (debug, "all") || grub_strword (debug, condition))
     {
-      grub_printf ("%s,%d : ", file, line);
+      grub_printf ("%s:%d: ", file, line);
       va_start (args, fmt);
       grub_vprintf (fmt, args);
       va_end (args);
@@ -954,4 +956,17 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, const grub_uint8_t *src,
     }
 
   return p - dest;
+}
+
+/* Abort GRUB. This function does not return.  */
+void
+grub_abort (void)
+{
+  if (grub_term_get_current ())
+    {
+      grub_printf ("Abort. Press any key to exit.");
+      grub_getkey ();
+    }
+  
+  grub_exit ();
 }

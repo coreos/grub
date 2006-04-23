@@ -1,3 +1,194 @@
+2006-04-23  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Use grub_abort instead of grub_stop, and grub_exit must be
+	define in each architecture now. Also, this change adds support
+	for EFI disks.
+	
+	* util/i386/pc/grub-probefs.c: Include grub/term.h.
+	(grub_getkey): New function.
+	(grub_term_get_current): Likewise.
+
+	* util/i386/pc/grub-setup.c: Include grub/term.h.
+	(grub_getkey): New function.
+	(grub_term_get_current): Likewise.
+
+	* util/misc.c (grub_stop): Renamed to ...
+	(grub_exit): ... this.
+
+	* kern/powerpc/ieee1275/init.c (abort): Renamed to ...
+	(grub_exit): ... this.
+	(grub_machine_init): Use grub_abort instead of abort.
+	(grub_stop): Removed.
+
+	* kern/powerpc/ieee1275/cmain.c (cmain): Use grub_abort instead of
+	abort.
+
+	* kern/i386/pc/startup.S (grub_exit): New function.
+	(cold_reboot): New label.
+
+	* kern/efi/init.c: Include grub/efi/disk.h and grub/env.h.
+	(grub_efi_init): Call grub_efidisk_init.
+	(grub_efi_fini): Call grub_efidisk_fini.
+
+	* kern/efi/efi.c: Include grub/mm.h.
+	(grub_efi_console_control_guid): Renamed to ...
+	(console_control_guid): ... this.
+	(grub_efi_loaded_image_guid): Renamed to ...
+	(loaded_image_guid): ... this.
+	(grub_efi_locate_handle): New function.
+	(grub_efi_open_protocol): Likewise.
+	(grub_efi_set_text_mode): Use CONSOLE_CONTROL_GUID instead of
+	GRUB_EFI_CONSOLE_CONTROL_GUID.
+	(grub_efi_exit): Removed.
+	(grub_stop): Likewise.
+	(grub_efi_get_loaded_image): Use grub_efi_open_protocol.
+	(grub_exit): New function.
+	(grub_print_device_path): Likewise.
+
+	* kern/rescue.c (grub_rescue_cmd_exit): New function.
+	(grub_enter_rescue_mode): Register "exit".
+
+	* kern/misc.c (grub_real_dprintf): A cosmetic change.
+	(grub_abort): New function.
+
+	* kern/err.c (grub_fatal): Use grub_abort instead of grub_stop.
+
+	* include/grub/sparc64/ieee1275/kernel.h (abort): Removed.
+
+	* include/grub/powerpc/ieee1275/kernel.h (abort): Removed.
+
+	* include/grub/efi/efi.h (grub_efi_exit): Removed.
+	(grub_print_device_path): New prototype.
+	(grub_efi_locate_handle): Likewise.
+	(grub_efi_open_protocol): Likewise.
+
+	* include/grub/efi/disk.h (grub_efidisk_fini): New file.
+	* disk/efi/efidisk.c: Likewise.
+
+	* DISTLIST: Added disk/efi/efidisk.c and include/grub/efi/disk.h.
+
+	* include/grub/efi/console_control.h
+	(GRUB_EFI_CONSOLE_CONTROL_GUID): Use an array for the last 8 bytes.
+
+	* include/grub/efi/api.h (GRUB_EFI_LOADED_IMAGE_GUID): Specify the
+	last 8 bytes as an array.
+	(GRUB_EFI_DISK_IO_GUID): New macro.
+	(GRUB_EFI_BLOCK_IO_GUID): Likewise.
+	(GRUB_EFI_DEVICE_PATH_GUID): Likewise.
+	(grub_efi_ipv6_address_t): Change the type to grub_uint16_t from
+	grub_uint8_t.
+	(struct grub_efi_guid): Use an array to specify the last 8 bytes.
+	(struct grub_efi_device_path): Rename the member "sub_type" to
+	"subtype".
+	(GRUB_EFI_DEVICE_PATH_TYPE): New macro.
+	(GRUB_EFI_DEVICE_PATH_SUBTYPE): Likewise.
+	(GRUB_EFI_DEVICE_PATH_LENGTH): Likewise.
+	(GRUB_EFI_END_DEVICE_PATH_TYPE): Likewise.
+	(GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE): Likewise.
+	(GRUB_EFI_END_THIS_DEVICE_PATH_SUBTYPE): Likewise.
+	(GRUB_EFI_END_ENTIRE_DEVICE_PATH): Likewise.
+	(GRUB_EFI_NEXT_DEVICE_PATH): Likewise.
+	(GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE): Likewise.
+	(GRUB_EFI_PCI_DEVICE_PATH_SUBTYPE): Likewise.
+	(struct grub_efi_pci_device_path): New structure.
+	(grub_efi_pci_device_path_t): New type.
+	(GRUB_EFI_PCCARD_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_pccard_device_path): New structure.
+	(grub_efi_pccard_device_path_t): New type.
+	(GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_memory_mapped_device_path): New structure.
+	(grub_efi_memory_mapped_device_path_t): New type.
+	(GRUB_EFI_VENDOR_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_vendor_device_path): New structure.
+	(grub_efi_vendor_device_path_t): New type.
+	(GRUB_EFI_CONTROLLER_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_controller_device_path): New structure.
+	(grub_efi_controller_device_path_t): New type.
+	(GRUB_EFI_ACPI_DEVICE_PATH_TYPE): New macro.
+	(GRUB_EFI_ACPI_DEVICE_PATH_SUBTYPE): Likewise.
+	(struct grub_efi_acpi_device_path): New structure.
+	(grub_efi_acpi_device_path_t): New type.
+	(GRUB_EFI_EXPANDED_ACPI_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_expanded_acpi_device_path): New structure.
+	(grub_efi_expanded_acpi_device_path_t): New type.
+	(GRUB_EFI_EXPANDED_ACPI_HIDSTR): New macro.
+	(GRUB_EFI_EXPANDED_ACPI_UIDSTR): Likewise.
+	(GRUB_EFI_EXPANDED_ACPI_CIDSTR): Likewise.
+	(GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE): Likewise.
+	(GRUB_EFI_ATAPI_DEVICE_PATH_SUBTYPE): Likewise.
+	(struct grub_efi_atapi_device_path): New structure.
+	(grub_efi_atapi_device_path_t): New type.
+	(GRUB_EFI_FIBRE_CHANNEL_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_fibre_channel_device_path): New structure.
+	(grub_efi_fibre_channel_device_path_t): New type.
+	(GRUB_EFI_1394_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_1394_device_path): New structure.
+	(grub_efi_1394_device_path_t): New type.
+	(GRUB_EFI_USB_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_usb_device_path): New structure.
+	(grub_efi_usb_device_path_t): New type.
+	(GRUB_EFI_USB_CLASS_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_usb_class_device_path): New structure.
+	(grub_efi_usb_class_device_path_t): New type.
+	(GRUB_EFI_I2O_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_i2o_device_path): New structure.
+	(grub_efi_i2o_device_path_t): New type.
+	(GRUB_EFI_MAC_ADDRESS_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_mac_address_device_path): New structure.
+	(grub_efi_mac_address_device_path_t): New type.
+	(GRUB_EFI_IPV4_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_ipv4_device_path): New structure.
+	(grub_efi_ipv4_device_path_t): New type.
+	(GRUB_EFI_IPV6_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_ipv6_device_path): New structure.
+	(grub_efi_ipv6_device_path_t): New type.
+	(GRUB_EFI_INFINIBAND_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_infiniband_device_path): New structure.
+	(grub_efi_infiniband_device_path_t): New type.
+	(GRUB_EFI_UART_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_uart_device_path): New structure.
+	(grub_efi_uart_device_path_t): New type.
+	(GRUB_EFI_VENDOR_MESSAGING_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_vendor_messaging_device_path): New structure.
+	(grub_efi_vendor_messaging_device_path_t): New type.
+	(GRUB_EFI_MEDIA_DEVICE_PATH_TYPE): New macro.
+	(GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE): Likewise.
+	(struct grub_efi_hard_drive_device_path): New structure.
+	(grub_efi_hard_drive_device_path_t): New type.
+	(GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_cdrom_device_path): New structure.
+	(grub_efi_cdrom_device_path_t): New type.
+	(GRUB_EFI_VENDOR_MEDIA_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_vendor_media_device_path): New structure.
+	(grub_efi_vendor_media_device_path_t): New type.
+	(GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_file_path_device_path): New structure.
+	(grub_efi_file_path_device_path_t): New type.
+	(GRUB_EFI_PROTOCOL_DEVICE_PATH_SUBTYPE): New macro.
+	(struct grub_efi_protocol_device_path): New structure.
+	(grub_efi_protocol_device_path_t): New type.
+	(GRUB_EFI_BIOS_DEVICE_PATH_TYPE): New macro.
+	(GRUB_EFI_BIOS_DEVICE_PATH_SUBTYPE): Likewise.
+	(struct grub_efi_bios_device_path): New structure.
+	(grub_efi_bios_device_path_t): New type.
+	(struct grub_efi_disk_io): New structure.
+	(grub_efi_disk_io_t): New type.
+	(struct grub_efi_block_io_media): New structure.
+	(grub_efi_block_io_media_t): New type.
+	(struct grub_efi_block_io): New structure.
+	(grub_efi_block_io_t): New type.
+
+	* include/grub/misc.h (grub_stop): Removed.
+	(grub_exit): New prototype.
+	(grub_abort): Likewise.
+
+	* include/grub/disk.h (enum grub_disk_dev_id): Added
+	GRUB_DISK_DEVICE_EFIDISK_ID.
+
+	* conf/i386-efi.rmk (kernel_mod_SOURCES): Added
+	disk/efi/efidisk.c.
+	(kernel_syms.lst): Remove the target if an error occurs.
+
 2006-04-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/misc.c (grub_lltoa): Rewritten the decimal conversion part,

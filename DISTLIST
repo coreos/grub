@@ -61,6 +61,7 @@ conf/powerpc-ieee1275.rmk
 conf/sparc64-ieee1275.mk
 conf/sparc64-ieee1275.rmk
 disk/loopback.c
+disk/efi/efidisk.c
 disk/i386/pc/biosdisk.c
 disk/ieee1275/ofdisk.c
 font/manager.c
@@ -114,6 +115,7 @@ include/grub/video.h
 include/grub/efi/api.h
 include/grub/efi/console.h
 include/grub/efi/console_control.h
+include/grub/efi/disk.h
 include/grub/efi/efi.h
 include/grub/efi/pe32.h
 include/grub/efi/time.h

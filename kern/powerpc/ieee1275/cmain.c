@@ -1,7 +1,7 @@
 /* cmain.c - Startup code for the PowerPC.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@ cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
       /* Need to claim ourselves so we don't cannibalize our memory later.  */
       if (grub_ieee1275_claim ((grub_addr_t) &_start, (grub_addr_t) &_end
           - (grub_addr_t) &_start, 0, 0))
-	abort();
+	grub_abort ();
     }
   else
     {

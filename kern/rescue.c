@@ -580,6 +580,14 @@ grub_rescue_cmd_unset (int argc, char *argv[])
   grub_env_unset (argv[0]);
 }
 
+/* exit */
+static void
+grub_rescue_cmd_exit (int argc __attribute__ ((unused)),
+		      char *argv[] __attribute__ ((unused)))
+{
+  grub_exit ();
+}
+
 static void
 attempt_normal_mode (void)
 {
@@ -635,6 +643,8 @@ grub_enter_rescue_mode (void)
 				"set an environment variable");
   grub_rescue_register_command ("unset", grub_rescue_cmd_unset,
 				"remove an environment variable");
+  grub_rescue_register_command ("exit", grub_rescue_cmd_exit,
+				"exit from GRUB");
   
   while (1)
     {

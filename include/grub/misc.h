@@ -68,7 +68,8 @@ void EXPORT_FUNC(grub_real_dprintf) (const char *file,
 int EXPORT_FUNC(grub_vprintf) (const char *fmt, va_list args);
 int EXPORT_FUNC(grub_sprintf) (char *str, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 int EXPORT_FUNC(grub_vsprintf) (char *str, const char *fmt, va_list args);
-void EXPORT_FUNC(grub_stop) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC(grub_exit) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC(grub_abort) (void) __attribute__ ((noreturn));
 grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
 					       grub_uint16_t *src,
 					       grub_size_t size);
@@ -81,9 +82,9 @@ static inline unsigned int
 grub_abs (int x)
 {
   if (x < 0)
-    return (unsigned int)(-x);
+    return (unsigned int) (-x);
   else
-    return (unsigned int)x;
+    return (unsigned int) x;
 }
 
 #endif /* ! GRUB_MISC_HEADER */

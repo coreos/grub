@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006 Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -626,6 +626,18 @@ FUNCTION(grub_stop_floppy)
 	ret
 
 /*
+ * grub_exit()
+ *
+ * Exit the system.
+ */
+FUNCTION(grub_exit)
+	call	prot_to_real
+	.code16
+	/* Tell the BIOS a boot failure. If this does not work, reboot.  */
+	int	$0x18
+	jmp	cold_reboot
+	
+/*
  * grub_reboot()
  *
  * Reboot the system. At the moment, rely on BIOS.
@@ -633,6 +645,7 @@ FUNCTION(grub_stop_floppy)
 FUNCTION(grub_reboot)
 	call	prot_to_real
 	.code16
+cold_reboot:	
 	/* cold boot */
 	movw	$0x0472, %di
 	movw	%ax, (%di)

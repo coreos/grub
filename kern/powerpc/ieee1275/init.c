@@ -39,7 +39,7 @@ static const grub_addr_t grub_heap_start = 0x4000;
 static grub_addr_t grub_heap_len;
 
 void
-abort (void)
+grub_exit (void)
 {
   /* Trap to Open Firmware.  */
   asm ("trap");
@@ -126,7 +126,7 @@ grub_machine_init (void)
     {
       grub_printf ("Failed to claim heap at 0x%x, len 0x%x\n", grub_heap_start,
 		   grub_heap_len);
-      abort ();
+      grub_abort ();
     }
   grub_mm_init_region ((void *) grub_heap_start, grub_heap_len);
 
@@ -175,12 +175,6 @@ grub_machine_fini (void)
 {
   grub_ofdisk_fini ();
   grub_console_fini ();
-}
-
-void
-grub_stop (void)
-{
-  for (;;);
 }
 
 grub_uint32_t

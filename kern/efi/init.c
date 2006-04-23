@@ -21,8 +21,10 @@
 
 #include <grub/efi/efi.h>
 #include <grub/efi/console.h>
+#include <grub/efi/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
+#include <grub/env.h>
 #include <grub/machine/kernel.h>
 
 void
@@ -35,6 +37,8 @@ grub_efi_init (void)
   /* Initialize the memory management system.  */
   grub_efi_mm_init ();
 
+  grub_efidisk_init ();
+
   /* FIXME: this must be set to something meaningful.  */
   grub_env_set ("prefix", grub_prefix);
 }
@@ -42,6 +46,7 @@ grub_efi_init (void)
 void
 grub_efi_fini (void)
 {
+  grub_efidisk_fini ();
   grub_efi_mm_fini ();
   grub_console_fini ();
 }

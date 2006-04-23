@@ -249,7 +249,7 @@ grub_register_exported_symbols (void)
 }
 
 void
-grub_stop (void)
+grub_exit (void)
 {
   exit (1);
 }

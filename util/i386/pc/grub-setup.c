@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006 Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include <grub/machine/util/biosdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
+#include <grub/term.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -68,6 +69,18 @@ void
 grub_putchar (int c)
 {
   putchar (c);
+}
+
+int
+grub_getkey (void)
+{
+  return -1;
+}
+
+grub_term_t
+grub_term_get_current (void)
+{
+  return 0;
 }
 
 void

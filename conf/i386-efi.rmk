@@ -76,7 +76,7 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/i386/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
-	term/efi/console.c
+	term/efi/console.c disk/efi/efidisk.c
 kernel_mod_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h partition.h \
 	pc_partition.h rescue.h symbol.h term.h types.h \
@@ -93,7 +93,7 @@ symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) gensymlist.sh
 	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
 
 kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) genkernsyms.sh
-	sh $(srcdir)/genkernsyms.sh $(filter %.h,$^) > $@
+	sh $(srcdir)/genkernsyms.sh $(filter %.h,$^) > $@ || rm -f $@
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\

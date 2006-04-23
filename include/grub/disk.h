@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,8 @@ enum grub_disk_dev_id
   {
     GRUB_DISK_DEVICE_BIOSDISK_ID,
     GRUB_DISK_DEVICE_OFDISK_ID,
-    GRUB_DISK_DEVICE_LOOPBACK_ID
+    GRUB_DISK_DEVICE_LOOPBACK_ID,
+    GRUB_DISK_DEVICE_EFIDISK_ID
   };
 
 struct grub_disk;

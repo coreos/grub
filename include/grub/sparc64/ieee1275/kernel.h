@@ -22,7 +22,6 @@
 
 #include <grub/symbol.h>
 
-void EXPORT_FUNC (abort) (void);
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
 
