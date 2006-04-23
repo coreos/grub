@@ -797,8 +797,13 @@ get_diskinfo (int drive, struct geometry *geometry)
 	      flags = old_flags | 0x10;
 
 	      if (sysctlbyname (GEOM_SYSCTL, NULL, NULL, &flags, sizeof (int)) != 0)
-	        grub_printf ("failed to set " GEOM_SYSCTL "sysctl: %s\n", strerror (errno));
+		{
+		  flags = old_flags;
+		  grub_printf ("failed to set " GEOM_SYSCTL "sysctl: %s\n", strerror (errno));
+		}
 	    }
+	  else
+	    flags = old_flags;
 #endif
 	  disks[drive].flags = open (devname, O_RDWR);
 #if defined(__FreeBSD_kernel__) || defined(__FreeBSD__)

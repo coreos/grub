@@ -1,3 +1,7 @@
+2006-04-23  Robert Millan  <robertmh@gnu.org>
+
+	* grub/asmstub.c (get_diskinfo): Optimize sysctl routine.
+
 2006-04-20  Robert Millan  <robertmh@gnu.org>
 
 	Fixes for kernel of FreeBSD:
