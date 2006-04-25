@@ -25,6 +25,7 @@
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/env.h>
+#include <grub/mm.h>
 #include <grub/machine/kernel.h>
 
 void
@@ -38,9 +39,45 @@ grub_efi_init (void)
   grub_efi_mm_init ();
 
   grub_efidisk_init ();
+}
 
-  /* FIXME: this must be set to something meaningful.  */
-  grub_env_set ("prefix", grub_prefix);
+void
+grub_efi_set_prefix (void)
+{
+  grub_efi_loaded_image_t *image;
+  
+  image = grub_efi_get_loaded_image ();
+  if (image)
+    {
+      char *device;
+      char *file;
+
+      device = grub_efidisk_get_device_name (image->device_handle);
+      file = grub_efi_get_filename (image->file_path);
+      
+      if (device && file)
+	{
+	  char *p;
+	  char *prefix;
+	  
+	  /* Get the directory.  */
+	  p = grub_strrchr (file, '/');
+	  if (p)
+	    *p = '\0';
+
+	  prefix = grub_malloc (1 + grub_strlen (device) + 1
+				+ grub_strlen (file) + 1);
+	  if (prefix)
+	    {
+	      grub_sprintf (prefix, "(%s)%s", device, file);
+	      grub_env_set ("prefix", prefix);
+	      grub_free (prefix);
+	    }
+	}
+      
+      grub_free (device);
+      grub_free (file);
+    }
 }
 
 void

@@ -62,8 +62,8 @@ grub_translate_ieee1275_path (char *filepath)
     }
 }
 
-static void
-grub_set_prefix (void)
+void
+grub_machine_set_prefix (void)
 {
   char bootpath[64]; /* XXX check length */
   char *filename;
@@ -129,8 +129,6 @@ grub_machine_init (void)
       grub_abort ();
     }
   grub_mm_init_region ((void *) grub_heap_start, grub_heap_len);
-
-  grub_set_prefix ();
 
   grub_ofdisk_init ();
 

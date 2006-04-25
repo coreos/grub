@@ -121,7 +121,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	  /* Calculate the first block and the size of the partition.  */
 	  part.start = grub_le_to_cpu64 (entry.start);
 	  part.len = (grub_le_to_cpu64 (entry.end)
-		      - grub_le_to_cpu64 (entry.start));
+		      - grub_le_to_cpu64 (entry.start) + 1);
 	  part.offset = entries;
 	  part.index = partno;
 	  part.partmap = &grub_gpt_partition_map;

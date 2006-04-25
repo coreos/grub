@@ -50,12 +50,14 @@ EXPORT_FUNC(grub_efi_get_memory_map) (grub_efi_uintn_t *memory_map_size,
 				      grub_efi_uintn_t *descriptor_size,
 				      grub_efi_uint32_t *descriptor_version);
 grub_efi_loaded_image_t *EXPORT_FUNC(grub_efi_get_loaded_image) (void);
-void EXPORT_FUNC(grub_print_device_path) (grub_efi_device_path_t *dp);
+void EXPORT_FUNC(grub_efi_print_device_path) (grub_efi_device_path_t *dp);
+char *EXPORT_FUNC(grub_efi_get_filename) (grub_efi_device_path_t *dp);
 
 void grub_efi_mm_init (void);
 void grub_efi_mm_fini (void);
 void grub_efi_init (void);
 void grub_efi_fini (void);
+void grub_efi_set_prefix (void);
 
 /* Variables.  */
 extern grub_efi_system_table_t *EXPORT_VAR(grub_efi_system_table);

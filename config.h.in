@@ -61,6 +61,9 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you enable memory manager debugging. */
+#undef MM_DEBUG
+
 /* Catch gcc bug */
 #undef NESTED_FUNC_ATTR
 

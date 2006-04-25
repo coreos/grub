@@ -226,8 +226,11 @@ grub_machine_init (void)
   
   /* The memory system was initialized, thus register built-in devices.  */
   grub_biosdisk_init ();
+}
 
-
+void
+grub_machine_set_prefix (void)
+{
   /* Initialize the prefix.  */
   grub_env_set ("prefix", make_install_device ());
 }

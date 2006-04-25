@@ -118,13 +118,14 @@ grub_main (void)
   grub_printf ("Welcome to GRUB!\n\n");
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 
-  /* It is better to set the root device as soon as possible,
-     for convenience.  */
-  grub_set_root_dev ();
-
   /* Load pre-loaded modules and free the space.  */
   grub_register_exported_symbols ();
   grub_load_modules ();
+
+  /* It is better to set the root device as soon as possible,
+     for convenience.  */
+  grub_machine_set_prefix ();
+  grub_set_root_dev ();
 
   /* Load the normal mode module.  */
   grub_load_normal_mode ();

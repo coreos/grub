@@ -67,6 +67,13 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 
+#ifdef MM_DEBUG
+# undef grub_malloc
+# undef grub_realloc
+# undef grub_free
+# undef grub_memalign
+#endif
+
 /* Magic words.  */
 #define GRUB_MM_FREE_MAGIC	0x2d3c2808
 #define GRUB_MM_ALLOC_MAGIC	0x6db08fa4
@@ -388,7 +395,9 @@ grub_realloc (void *ptr, grub_size_t size)
   return q;
 }
 
-#if MM_DEBUG
+#ifdef MM_DEBUG
+grub_mm_debug = 0;
+
 void
 grub_mm_dump (unsigned lineno)
 {
@@ -419,4 +428,51 @@ grub_mm_dump (unsigned lineno)
 
   grub_printf ("\n");
 }
+
+void *
+grub_debug_malloc (const char *file, int line, grub_size_t size)
+{
+  void *ptr;
+
+  if (grub_mm_debug)
+    grub_printf ("%s:%d: malloc (0x%x) = ", file, line, size);
+  ptr = grub_malloc (size);
+  if (grub_mm_debug)
+    grub_printf ("%p\n", ptr);
+  return ptr;
+}
+
+void
+grub_debug_free (const char *file, int line, void *ptr)
+{
+  if (grub_mm_debug)
+    grub_printf ("%s:%d: free (%p)\n", file, line, ptr);
+}
+
+void *
+grub_debug_realloc (const char *file, int line, void *ptr, grub_size_t size)
+{
+  if (grub_mm_debug)
+    grub_printf ("%s:%d: realloc (%p, 0x%x) = ", file, line, ptr, size);
+  ptr = grub_realloc (ptr, size);
+  if (grub_mm_debug)
+    grub_printf ("%p\n", ptr);
+  return ptr;
+}
+
+void *
+grub_debug_memalign (const char *file, int line, grub_size_t align,
+		    grub_size_t size)
+{
+  void *ptr;
+  
+  if (grub_mm_debug)
+    grub_printf ("%s:%d: memalign (0x%x, 0x%x) = ",
+		 file, line, align, size);
+  ptr = grub_memalign (align, size);
+  if (grub_mm_debug)
+    grub_printf ("%p\n", ptr);
+  return ptr;
+}
+
 #endif /* MM_DEBUG */

@@ -849,6 +849,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-largefile     omit support for large files
+  --enable-mm-debug       include memory manger debugging
 
 Some influential environment variables:
   CC          C compiler command
@@ -6562,6 +6563,17 @@ CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"
 CPPFLAGS="$tmp_CPPFLAGS"
 LDFLAGS="$tmp_LDFLAGS"
+
+# Check for options.
+# Check whether --enable-mm-debug or --disable-mm-debug was given.
+if test "${enable_mm_debug+set}" = set; then
+  enableval="$enable_mm_debug"
+
+cat >>confdefs.h <<\_ACEOF
+#define MM_DEBUG 1
+_ACEOF
+
+fi;
 
 # Output files.
                     ac_config_links="$ac_config_links include/grub/cpu:include/grub/$host_cpu include/grub/machine:include/grub/$host_cpu/$host_vendor"

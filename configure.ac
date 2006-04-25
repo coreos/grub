@@ -180,6 +180,13 @@ CFLAGS="$tmp_CFLAGS"
 CPPFLAGS="$tmp_CPPFLAGS"
 LDFLAGS="$tmp_LDFLAGS"
 
+# Check for options.
+AC_ARG_ENABLE([mm-debug], 
+	      AS_HELP_STRING([--enable-mm-debug],
+                             [include memory manger debugging]),
+              [AC_DEFINE([MM_DEBUG], [1],
+                         [Define to 1 if you enable memory manager debugging.])])
+
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$host_cpu
 	include/grub/machine:include/grub/$host_cpu/$host_vendor])

@@ -964,9 +964,9 @@ grub_abort (void)
 {
   if (grub_term_get_current ())
     {
-      grub_printf ("Abort. Press any key to exit.");
+      grub_printf ("\nAborted. Press any key to exit.");
       grub_getkey ();
     }
-  
+
   grub_exit ();
 }

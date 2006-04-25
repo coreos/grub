@@ -1,3 +1,90 @@
+2006-04-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	A new machine-specific function "grub_machine_set_prefix" is
+	defined. This is called after loading modules, so that a prefix
+	initialization can use modules. Also, this change adds an
+	intensive debugging feature for the memory manager via the
+	configure option "--enable-mm-debug".
+	
+	* partmap/gpt.c (gpt_partition_map_iterate): Add one more into
+	PART.LEN.
+
+	* kern/sparc64/ieee1275/init.c (abort): Removed.
+	(grub_stop): Likewise.
+	(grub_exit): New function.
+	(grub_set_prefix): Renamed to ...
+	(grub_machine_set_prefix): ... this.
+	(grub_machine_init): Do not call grub_set_prefix.
+
+	* kern/powerpc/ieee1275/init.c (grub_set_prefix): Renamed to ...
+	(grub_machine_set_prefix): ... this.
+	(grub_machine_init): Do not call grub_set_prefix.
+
+	* kern/i386/pc/init.c (grub_machine_set_prefix): New function.
+	(grub_machine_init): Do not set the prefix here.
+
+	* kern/i386/efi/init.c (grub_machine_set_prefix): New function.
+
+	* kern/efi/init.c: Include grub/mm.h.
+	(grub_efi_set_prefix): New function.
+
+	* kern/efi/efi.c (grub_exit): Call grub_efi_fini.
+	(grub_efi_get_filename): New function.
+	(grub_print_device_path): Renamed to ...
+	(grub_efi_print_device_path): ... this.
+
+	* kern/mm.c [MM_DEBUG] (grub_malloc): Undefined.
+	[MM_DEBUG] (grub_realloc): Likewise.
+	[MM_DEBUG] (grub_free): Likewise.
+	[MM_DEBUG] (grub_memalign): Likewise.
+	[MM_DEBUG] (grub_mm_debug): New variable.
+	[MM_DEBUG] (grub_debug_malloc): New function.
+	[MM_DEBUG] (grub_debug_free): New function.
+	[MM_DEBUG] (grub_debug_realloc): New function.
+	[MM_DEBUG] (grub_debug_memalign): New function.
+
+	* kern/misc.c (grub_abort): Print a newline to distinguish
+	the message.
+
+	* kern/main.c (grub_main): Call grub_machine_set_prefix and
+	grub_set_root_dev after loading modules. This is necessary when
+	setting a prefix depends on modules.
+
+	* include/grub/efi/efi.h (grub_print_device_path): Renamed to ...
+	(grub_efi_print_device_path): ... this.
+	(grub_efi_get_filename): New prototype.
+	(grub_efi_set_prefix): Likewise.
+
+	* include/grub/efi/disk.h: Include grub/efi/api.h, grub/symbol.h
+	and grub/disk.h.
+	(grub_efidisk_get_device_handle): New prototype.
+	(grub_efidisk_get_device_name): Likewise.
+
+	* include/grub/mm.h: Include config.h.
+	(MM_DEBUG): Removed.
+	[MM_DEBUG && !GRUB_UTIL] (grub_mm_debug): New prototype.
+	[MM_DEBUG && !GRUB_UTIL] (grub_malloc): New macro.
+	[MM_DEBUG && !GRUB_UTIL] (grub_realloc): Likewise.
+	[MM_DEBUG && !GRUB_UTIL] (grub_memalign): Likewise.
+	[MM_DEBUG && !GRUB_UTIL] (grub_free): Likewise.
+	[MM_DEBUG && !GRUB_UTIL] (grub_debug_malloc): New prototype.
+	[MM_DEBUG && !GRUB_UTIL] (grub_debug_realloc): New prototype.
+	[MM_DEBUG && !GRUB_UTIL] (grub_debug_memalign): New prototype.
+	[MM_DEBUG && !GRUB_UTIL] (grub_debug_free): New prototype.
+
+	* include/grub/kernel.h (grub_machine_set_prefix): New prototype.
+
+	* disk/efi/efidisk.c: Include grub/partition.h.
+	(iterate_child_devices): New function.
+	(add_device): First, compare only last device path nodes, so that
+	devices are sorted by the types.
+	(grub_efidisk_get_device_handle): New function.
+	(grub_efidisk_get_device_name): Likewise.
+
+	* configure.ac (--enable-mm-debug): New option to enable the
+	memory manager debugging feature. This makes the binary much
+	bigger, so is disabled by default.
+
 2006-04-23  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Use grub_abort instead of grub_stop, and grub_exit must be

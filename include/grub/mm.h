@@ -23,6 +23,7 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
+#include <config.h>
 
 #ifndef NULL
 # define NULL	((void *) 0)
@@ -35,9 +36,31 @@ void *EXPORT_FUNC(grub_realloc) (void *ptr, grub_size_t size);
 void *EXPORT_FUNC(grub_memalign) (grub_size_t align, grub_size_t size);
 
 /* For debugging.  */
-#define MM_DEBUG       1
-#if MM_DEBUG
+#if defined(MM_DEBUG) && !defined(GRUB_UTIL)
+/* Set this variable to 1 when you want to trace all memory function calls.  */
+extern int EXPORT_VAR(grub_mm_debug);
+
 void grub_mm_dump (unsigned lineno);
-#endif
+
+#define grub_malloc(size)	\
+  grub_debug_malloc (__FILE__, __LINE__, size)
+
+#define grub_realloc(ptr,size)	\
+  grub_debug_realloc (__FILE__, __LINE__, ptr, size)
+
+#define grub_memalign(align,size)	\
+  grub_debug_memalign (__FILE__, __LINE__, align, size)
+
+#define grub_free(ptr)	\
+  grub_debug_free (__FILE__, __LINE__, ptr)
+
+void *EXPORT_FUNC(grub_debug_malloc) (const char *file, int line,
+				      grub_size_t size);
+void EXPORT_FUNC(grub_debug_free) (const char *file, int line, void *ptr);
+void *EXPORT_FUNC(grub_debug_realloc) (const char *file, int line, void *ptr,
+				       grub_size_t size);
+void *EXPORT_FUNC(grub_debug_memalign) (const char *file, int line,
+					grub_size_t align, grub_size_t size);
+#endif /* MM_DEBUG && ! GRUB_UTIL */
 
 #endif /* ! GRUB_MM_H */
