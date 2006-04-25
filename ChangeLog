@@ -1,3 +1,7 @@
+2006-04-25  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/misc.c (abort): New alias for grub_abort.
+
 2006-04-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	A new machine-specific function "grub_machine_set_prefix" is

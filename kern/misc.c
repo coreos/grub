@@ -970,3 +970,5 @@ grub_abort (void)
 
   grub_exit ();
 }
+/* GCC emits references to abort().  */
+void abort (void) __attribute__ ((alias ("grub_abort")));
