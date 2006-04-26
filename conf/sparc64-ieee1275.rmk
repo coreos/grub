@@ -16,15 +16,15 @@ grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
 	machine/kernel.h
 
-grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) gensymlist.sh
-	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
+grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
 
-kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) genkernsyms.sh
-	sh $(srcdir)/genkernsyms.sh $(filter %h,$^) > $@
+kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Programs
 pkgdata_PROGRAMS = grubof

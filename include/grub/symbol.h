@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,9 @@
 #define VARIABLE(x)	.globl EXT_C(x) ; .type EXT_C(x), "object" ; EXT_C(x):
 
 /* Mark an exported symbol.  */
-#define EXPORT_FUNC(x)	x
-#define EXPORT_VAR(x)	x
+#ifndef GRUB_SYMBOL_GENERATOR
+# define EXPORT_FUNC(x)	x
+# define EXPORT_VAR(x)	x
+#endif /* ! GRUB_SYMBOL_GENERATOR */
 
 #endif /* ! GRUB_SYMBOL_HEADER */

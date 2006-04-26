@@ -1,3 +1,104 @@
+2006-04-26  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/grub-mkimage.c (compress_kernel): Cast arguments
+	explicitly to suppress gcc's warnings.
+	* fs/fat.c (grub_fat_find_dir): Likewise.
+	(grub_fat_label): Likewise.
+	* fs/xfs.c (grub_xfs_read_inode): Likewise.
+	(grub_xfs_mount): Likewise.
+	(grub_xfs_label): Likewise.
+	* fs/affs.c (grub_affs_mount): Likewise.
+	(grub_affs_label): Likewise.
+	(grub_affs_iterate_dir): Likewise.
+	* fs/sfs.c (grub_sfs_mount): Likewise.
+	(grub_sfs_iterate_dir): Likewise.
+	* fs/ufs.c (grub_ufs_lookup_symlink): Likewise.
+	* fs/hfs.c (grub_hfs_mount): Likewise.
+	(grub_hfs_cmp_catkeys): Likewise.
+	(grub_hfs_find_dir): Likewise.
+	(grub_hfs_dir): Likewise.
+	(grub_hfs_label): Likewise.
+	* fs/jfs.c (grub_jfs_mount): Likewise.
+	(grub_jfs_opendir): Likewise.
+	(grub_jfs_getent): Likewise.
+	(grub_jfs_lookup_symlink): Likewise.
+	(grub_jfs_label): Likewise.
+	* fs/hfsplus.c (grub_hfsplus_cmp_catkey): Likewise.
+	(grub_hfsplus_iterate_dir): Likewise.
+	(grub_hfsplus_btree_iterate_node): Made static.
+
+	* util/grub-emu.c (prefix): New variable.
+	(grub_machine_set_prefix): New function.
+	(main): Do not set the environment variable "prefix" here. Only
+	set PREFIX, which is used later by grub_machine_set_prefix.
+
+	* include/grub/video.h: Do not include grub/symbol.h.
+	(grub_video_register): Not exported. This symbol is not defined in
+	the kernel.
+	(grub_video_unregister): Likewise.
+	(grub_video_iterate): Likewise.
+	(grub_video_setup): Likewise.
+	(grub_video_restore): Likewise.
+	(grub_video_get_info): Likewise.
+	(grub_video_get_blit_format): Likewise.
+	(grub_video_set_palette): Likewise.
+	(grub_video_get_palette): Likewise.
+	(grub_video_set_viewport): Likewise.
+	(grub_video_get_viewport): Likewise.
+	(grub_video_map_color): Likewise.
+	(grub_video_map_rgb): Likewise.
+	(grub_video_map_rgba): Likewise.
+	(grub_video_fill_rect): Likewise.
+	(grub_video_blit_glyph): Likewise.
+	(grub_video_blit_bitmap): Likewise.
+	(grub_video_blit_render_target): Likewise.
+	(grub_video_scroll): Likewise.
+	(grub_video_swap_buffers): Likewise.
+	(grub_video_create_render_target): Likewise.
+	(grub_video_delete_render_target): Likewise.
+	(grub_video_set_active_render_target): Likewise.
+
+	* include/grub/symbol.h [GRUB_SYMBOL_GENERATOR] (EXPORT_FUNC):
+	Undefined.
+	[GRUB_SYMBOL_GENERATOR] (EXPORT_VAR): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (grubof_symlist.c): Depended on
+	config.h. Use gensymlist.sh instead of $(srcdir)/gensymlist.sh.
+	(kernel_syms.lst): Depended on config.h. Use genkernsyms.sh
+	instead of $(srcdir)/genkernsyms.sh.
+
+	* conf/powerpc-ieee1275.rmk (grubof_symlist.c): Depended on
+	config.h. Use gensymlist.sh instead of $(srcdir)/gensymlist.sh.
+	(kernel_syms.lst): Depended on config.h. Use genkernsyms.sh
+	instead of $(srcdir)/genkernsyms.sh.
+
+	* conf/i386-pc.rmk (symlist.c): Depended on config.h. Use
+	gensymlist.sh instead of $(srcdir)/gensymlist.sh.
+	(kernel_syms.lst): Depended on config.h. Use genkernsyms.sh
+	instead of $(srcdir)/genkernsyms.sh.
+
+	* conf/i386-efi.rmk (symlist.c): Depended on config.h. Use
+	gensymlist.sh instead of $(srcdir)/gensymlist.sh.
+	(kernel_syms.lst): Depended on config.h. Use genkernsyms.sh
+	instead of $(srcdir)/genkernsyms.sh.
+
+	* configure.ac (AC_CONFIG_FILES): Added gensymlist.sh and
+	genkernsyms.sh.
+
+	* Makefile.in (DISTCLEANFILES): Added gensymlist.sh and
+	genkernsyms.sh.
+	(gensymlist.sh): New target.
+	(genkernsyms.sh): Likewise.
+
+	* DISTLIST: Removed genkernsyms.sh and gensymlist.sh. Added
+	genkernsyms.sh.in and gensymlist.sh.in.
+
+	* genkernsyms.sh: Removed.
+	* gensymlist.sh: Likewise.
+	
+	* genkernsyms.sh.in: New file.
+	* gensymlist.sh.in: Likewise.
+
 2006-04-25  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/init.c (grub_machine_set_prefix): Do not

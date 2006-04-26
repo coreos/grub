@@ -191,7 +191,7 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
 		      sizeof (struct grub_xfs_inode), (char *) inode))
     return grub_errno;
 
-  if (grub_strncmp (inode->magic, "IN", 2))
+  if (grub_strncmp ((char *) inode->magic, "IN", 2))
     return grub_error (GRUB_ERR_BAD_FS, "not a correct XFS inode.\n");
 
   return 0;
@@ -494,7 +494,7 @@ grub_xfs_mount (grub_disk_t disk)
 		      sizeof (struct grub_xfs_sblock), (char *) &data->sblock))
     goto fail;
   
-  if (grub_strncmp (data->sblock.magic, "XFSB", 4))
+  if (grub_strncmp ((char *) (data->sblock.magic), "XFSB", 4))
     {
       grub_error (GRUB_ERR_BAD_FS, "not a xfs filesystem");
       goto fail;
@@ -663,7 +663,7 @@ grub_xfs_label (grub_device_t device, char **label)
 
   data = grub_xfs_mount (disk);
   if (data)
-    *label = grub_strndup (data->sblock.label, 12);
+    *label = grub_strndup ((char *) (data->sblock.label), 12);
   else
     *label = 0;
 

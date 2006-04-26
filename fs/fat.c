@@ -557,7 +557,8 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 	      for (u = 0; u < slots * 13; u++)
 		unibuf[u] = grub_le_to_cpu16 (unibuf[u]);
 	      
-	      *grub_utf16_to_utf8 (filename, unibuf, slots * 13) = '\0';
+	      *grub_utf16_to_utf8 ((grub_uint8_t *) filename, unibuf,
+				   slots * 13) = '\0';
 	      
 	      if (*dirname == '\0' && call_hook)
 		{
@@ -779,7 +780,7 @@ grub_fat_label (grub_device_t device, char **label)
 
       if (dir.attr == GRUB_FAT_ATTR_VOLUME_ID)
 	{
-	  *label = grub_strndup (dir.name, 11);
+	  *label = grub_strndup ((char *) dir.name, 11);
 	  return GRUB_ERR_NONE;
 	}
     }

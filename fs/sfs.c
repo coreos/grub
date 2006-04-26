@@ -288,7 +288,7 @@ grub_sfs_mount (grub_disk_t disk)
     goto fail;
 
   /* Make sure this is a sfs filesystem.  */
-  if (grub_strncmp (data->rblock.header.magic, "SFS", 4))
+  if (grub_strncmp ((char *) (data->rblock.header.magic), "SFS", 4))
     {
       grub_error (GRUB_ERR_BAD_FS, "not a sfs filesystem");
       goto fail;
@@ -296,7 +296,7 @@ grub_sfs_mount (grub_disk_t disk)
 
   data->blocksize = grub_be_to_cpu32 (data->rblock.blocksize);
   rootobjc_data = grub_malloc (data->blocksize);
-  if (!rootobjc_data)
+  if (! rootobjc_data)
     goto fail;
 
   /* Read the root object container.  */
@@ -312,7 +312,7 @@ grub_sfs_mount (grub_disk_t disk)
   data->diropen.block = blk;
   data->diropen.data = data;
   data->disk = disk;
-  data->label = grub_strdup (rootobjc->objects[0].filename);
+  data->label = grub_strdup ((char *) (rootobjc->objects[0].filename));
 
   return data;
 
@@ -403,7 +403,7 @@ grub_sfs_iterate_dir (grub_fshelp_node_t dir,
 	{
 	  struct grub_sfs_obj *obj;
 	  obj = (struct grub_sfs_obj *) ((char *) objc + pos);
-	  char *filename = obj->filename;
+	  char *filename = (char *) (obj->filename);
 	  int len;
 	  enum grub_fshelp_filetype type;
 	  unsigned int block;

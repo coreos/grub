@@ -190,6 +190,6 @@ AC_ARG_ENABLE([mm-debug],
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$host_cpu
 	include/grub/machine:include/grub/$host_cpu/$host_vendor])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile gensymlist.sh genkernsyms.sh])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
 AC_OUTPUT

@@ -342,7 +342,7 @@ grub_jfs_mount (grub_disk_t disk)
 		      sizeof (struct grub_jfs_sblock), (char *) &data->sblock))
     goto fail;
   
-  if (grub_strncmp (data->sblock.magic, "JFS1", 4))
+  if (grub_strncmp ((char *) (data->sblock.magic), "JFS1", 4))
     {
       grub_error (GRUB_ERR_BAD_FS, "not a jfs filesystem");
       goto fail;
@@ -398,7 +398,7 @@ grub_jfs_opendir (struct grub_jfs_data *data, struct grub_jfs_inode *inode)
     {
       diro->leaf = inode->dir.dirents;
       diro->next_leaf = (struct grub_jfs_leaf_next_dirent *) de;
-      diro->sorted = inode->dir.header.sorted;
+      diro->sorted = (char *) (inode->dir.header.sorted);
       diro->count = inode->dir.header.count;
       diro->dirpage = 0;
 
@@ -530,7 +530,7 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
   diro->index++;
 
   /* Convert the temporary UTF16 filename to UTF8.  */
-  *grub_utf16_to_utf8 (diro->name, filename, strpos) = '\0';
+  *grub_utf16_to_utf8 ((grub_uint8_t *) (diro->name), filename, strpos) = '\0';
   
   return 0;
 }
@@ -703,7 +703,7 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, int ino)
     return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
   
   if (size <= 128)
-    grub_strncpy (symlink, data->currinode.symlink.path, 128);
+    grub_strncpy (symlink, (char *) (data->currinode.symlink.path), 128);
   else if (grub_jfs_read_file (data, 0, 0, size, symlink) < 0)
     return grub_errno;
 
@@ -851,7 +851,7 @@ grub_jfs_label (grub_device_t device, char **label)
   data = grub_jfs_mount (device->disk);
   
   if (data)
-    *label = grub_strndup (data->sblock.volname, 11);
+    *label = grub_strndup ((char *) (data->sblock.volname), 11);
   else
     *label = 0;
   

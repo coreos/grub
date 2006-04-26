@@ -621,11 +621,11 @@ MOSTLYCLEANFILES += symlist.c
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) gensymlist.sh
-	sh $(srcdir)/gensymlist.sh $(filter %.h,$^) > $@
+symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h gensymlist.sh
+	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
-kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) genkernsyms.sh
-	sh $(srcdir)/genkernsyms.sh $(filter %.h,$^) > $@ || rm -f $@
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genkernsyms.sh
+	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\

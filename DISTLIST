@@ -20,10 +20,10 @@ gendistlist.sh
 genfslist.sh
 geninitheader.sh
 geninit.sh
-genkernsyms.sh
+genkernsyms.sh.in
 genmk.rb
 genmodsrc.sh
-gensymlist.sh
+gensymlist.sh.in
 install-sh
 mkinstalldirs
 stamp-h.in

@@ -84,7 +84,8 @@ SCRIPTS = $(sbin_SCRIPTS)
 CLEANFILES =
 MOSTLYCLEANFILES = 
 DISTCLEANFILES = config.status config.cache config.log config.h \
-	Makefile stamp-h include/grub/cpu include/grub/machine
+	Makefile stamp-h include/grub/cpu include/grub/machine \
+	gensymlist.sh genkernsyms.sh
 MAINTAINER_CLEANFILES = $(srcdir)/configure $(addprefix $(srcdir)/,$(MKFILES))
 
 # The default target.
@@ -249,6 +250,12 @@ Makefile: Makefile.in config.status
 
 config.status: configure
 	./config.status --recheck
+
+gensymlist.sh: gensymlist.sh.in config.status
+	./config.status
+
+genkernsyms.sh: genkernsyms.sh.in config.status
+	./config.status
 
 .PHONY: all install install-strip uninstall clean mostlyclean distclean
 .PHONY: maintainer-clean info dvi dist check

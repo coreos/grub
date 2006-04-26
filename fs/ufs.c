@@ -363,7 +363,7 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
   
   if (INODE_SIZE (data) < (GRUB_UFS_DIRBLKS + GRUB_UFS_INDIRBLKS
 			  * INODE_BLKSZ (data)))
-    grub_strcpy (symlink, INODE (data, symlink));
+    grub_strcpy (symlink, (char *) INODE (data, symlink));
   else
     {
       grub_disk_read (data->disk, 

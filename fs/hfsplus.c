@@ -480,7 +480,7 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
 
   filename = grub_malloc (grub_be_to_cpu16 (catkey_a->namelen) + 1);
 
-  if (! grub_utf16_to_utf8 (filename, catkey_a->name,
+  if (! grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey_a->name,
 			    grub_be_to_cpu16 (catkey_a->namelen)))
     return -1; /* XXX: This error never occurs, but in case it happens
 		  just skip this entry.  */
@@ -563,7 +563,7 @@ grub_hfsplus_read_symlink (grub_fshelp_node_t node)
   return symlink;
 }
 
-int
+static int
 grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
 				 struct grub_hfsplus_btnode *first_node,
 				 int first_rec,
@@ -723,7 +723,7 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
       for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
 	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
 
-      if (! grub_utf16_to_utf8 (filename, catkey->name,
+      if (! grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey->name,
 				grub_be_to_cpu16 (catkey->namelen)))
 	{
 	  grub_free (filename);

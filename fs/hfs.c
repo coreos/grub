@@ -357,7 +357,7 @@ grub_hfs_mount (grub_disk_t disk)
      volume name.  */
   key.parent_dir = grub_cpu_to_be32 (1);
   key.strlen = data->sblock.volname[0];
-  grub_strcpy (key.str, data->sblock.volname + 1);
+  grub_strcpy ((char *) key.str, (char *) (data->sblock.volname + 1));
   
   if (grub_hfs_find_node (data, (char *) &key, data->cat_root,
 			  0, (char *) &dir, sizeof (dir)) == 0)
@@ -393,7 +393,7 @@ grub_hfs_cmp_catkeys (struct grub_hfs_catalog_key *k1,
   if (cmp != 0)
     return cmp;
   
-  cmp = grub_strncasecmp (k1->str, k2->str, k1->strlen);
+  cmp = grub_strncasecmp ((char *) (k1->str), (char *) (k2->str), k1->strlen);
   
   /* This is required because the compared strings are not of equal
      length.  */
@@ -673,11 +673,11 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
       
       key.parent_dir = grub_cpu_to_be32 (inode);
       key.strlen = grub_strlen (path);
-      grub_strcpy (key.str, path);
+      grub_strcpy ((char *) (key.str), path);
       
       /* Lookup this node.  */
-      if (!grub_hfs_find_node (data, (char *) &key, data->cat_root,
-			       0, (char *) &frec, sizeof (frec)))
+      if (! grub_hfs_find_node (data, (char *) &key, data->cat_root,
+				0, (char *) &frec, sizeof (frec)))
 	{
 	  grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 	  goto fail;
@@ -717,7 +717,7 @@ grub_hfs_dir (grub_device_t device, const char *path,
       char *filetype = rec->data;
       struct grub_hfs_catalog_key *ckey = rec->key;
       
-      grub_strncpy (fname, ckey->str, ckey->strlen);
+      grub_strncpy (fname, (char *) (ckey->str), ckey->strlen);
       
       if (*filetype == GRUB_HFS_FILETYPE_DIR)
 	return hook (fname, 1);
@@ -834,7 +834,8 @@ grub_hfs_label (grub_device_t device, char **label)
   data = grub_hfs_mount (device->disk);
   
   if (data)
-    *label = grub_strndup (data->sblock.volname + 1, *data->sblock.volname);
+    *label = grub_strndup ((char *) (data->sblock.volname + 1),
+			   *data->sblock.volname);
   else
     *label = 0;
 

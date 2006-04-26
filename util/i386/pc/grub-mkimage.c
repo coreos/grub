@@ -61,9 +61,11 @@ compress_kernel (char *kernel_img, size_t kernel_size,
   memcpy (*core_img, kernel_img, GRUB_KERNEL_MACHINE_RAW_SIZE);
   
   grub_util_info ("compressing the core image");
-  if (lzo1x_999_compress (kernel_img + GRUB_KERNEL_MACHINE_RAW_SIZE,
+  if (lzo1x_999_compress ((const lzo_byte *) (kernel_img
+					      + GRUB_KERNEL_MACHINE_RAW_SIZE),
 			  kernel_size - GRUB_KERNEL_MACHINE_RAW_SIZE,
-			  *core_img + GRUB_KERNEL_MACHINE_RAW_SIZE,
+			  (lzo_byte *) (*core_img
+					+ GRUB_KERNEL_MACHINE_RAW_SIZE),
 			  &size, wrkmem)
       != LZO_E_OK)
     grub_util_error ("cannot compress the kernel image");

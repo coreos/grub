@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,6 +53,9 @@
 /* Used for going back to the main function.  */
 jmp_buf main_env;
 
+/* Store the prefix specified by an argument.  */
+static char *prefix = 0;
+
 grub_addr_t
 grub_arch_modules_addr (void)
 {
@@ -81,6 +84,14 @@ grub_machine_init (void)
 {
   signal (SIGINT, SIG_IGN);
   grub_console_init ();
+}
+
+void
+grub_machine_set_prefix (void)
+{
+  grub_env_set ("prefix", prefix);
+  free (prefix);
+  prefix = 0;
 }
 
 void
@@ -147,8 +158,8 @@ static struct argp argp = {options, parse_opt, 0, doc, 0, 0, 0};
 int
 main (int argc, char *argv[])
 {
-  char *prefix = 0;
-  char rootprefix[100];
+  char *dir;
+  
   struct arguments args =
     {
       .dir = DEFAULT_DIRECTORY,
@@ -184,10 +195,10 @@ main (int argc, char *argv[])
 	}
     }
 
-  prefix = grub_get_prefix (args.dir ? : DEFAULT_DIRECTORY);
-  sprintf (rootprefix, "%s%s", args.root_dev, prefix);
-
-  grub_env_set ("prefix", rootprefix);
+  dir = grub_get_prefix (args.dir ? : DEFAULT_DIRECTORY);
+  prefix = xmalloc (strlen (args.root_dev) + strlen (dir) + 1);
+  sprintf (prefix, "%s%s", args.root_dev, dir);
+  free (dir);
   
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (args.dev_map);

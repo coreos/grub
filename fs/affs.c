@@ -182,7 +182,7 @@ grub_affs_mount (grub_disk_t disk)
     goto fail;
 
   /* Make sure this is an affs filesystem.  */
-  if (grub_strncmp (data->bblock.type, "DOS", 3))
+  if (grub_strncmp ((char *) (data->bblock.type), "DOS", 3))
     {
       grub_error (GRUB_ERR_BAD_FS, "not an affs filesystem");
       goto fail;
@@ -364,7 +364,7 @@ grub_affs_iterate_dir (grub_fshelp_node_t dir,
 	  else
 	    type = GRUB_FSHELP_UNKNOWN;
 
-	  if (grub_affs_create_node (file.name, next,
+	  if (grub_affs_create_node ((char *) (file.name), next,
 				     grub_be_to_cpu32 (file.size), type))
 	    return 1;
 
@@ -527,7 +527,7 @@ grub_affs_label (grub_device_t device, char **label)
       if (grub_errno)
 	return 0;
 
-      *label = grub_strndup (file.name, file.namelen);
+      *label = grub_strndup ((char *) (file.name), file.namelen);
     }
   else
     *label = 0;
