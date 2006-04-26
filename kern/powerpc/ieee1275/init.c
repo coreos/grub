@@ -69,6 +69,10 @@ grub_machine_set_prefix (void)
   char *filename;
   char *prefix;
 
+  if (grub_env_get ("prefix"))
+    /* We already set prefix in grub_machine_init().  */
+    return;
+
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", &bootpath,
 				  sizeof (bootpath), 0))
     {

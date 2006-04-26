@@ -1,5 +1,10 @@
 2006-04-25  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* kern/powerpc/ieee1275/init.c (grub_machine_set_prefix): Do not
+	clobber "prefix", since we may have already set it manually.
+
+2006-04-25  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* kern/misc.c (abort): New alias for grub_abort.
 
 2006-04-25  Yoshinori K. Okuji  <okuji@enbug.org>
