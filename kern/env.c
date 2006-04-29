@@ -1,7 +1,7 @@
 /* env.c - Environment variables */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,10 +26,21 @@
 #define	HASHSZ	13
 
 /* A hashtable for quick lookup of variables.  */
-static struct grub_env_var *grub_env[HASHSZ];
+struct grub_env_context
+{
+  struct grub_env_var *vars[HASHSZ];
+  
+  struct grub_env_var *sorted;
 
-/* The variables in a sorted list.  */
-static struct grub_env_var *grub_env_sorted;
+  /* One level deeper on the stack.  */
+  struct grub_env_context *next;
+};
+
+/* The global context for environment variables.  */
+static struct grub_env_context grub_env_context;
+
+/* The nested contexts for regular variables.  */
+static struct grub_env_context *grub_env_var_context = &grub_env_context;
 
 /* Return the hash representation of the string S.  */
 static unsigned int grub_env_hashval (const char *s)
@@ -49,20 +60,139 @@ grub_env_find (const char *name)
   struct grub_env_var *var;
   int idx = grub_env_hashval (name);
 
-  for (var = grub_env[idx]; var; var = var->next)
+  /* Look for the variable in the current context.  */
+  for (var = grub_env_var_context->vars[idx]; var; var = var->next)
     if (! grub_strcmp (var->name, name))
       return var;
+
+  /* Look for the variable in the environment context.  */
+  for (var = grub_env_context.vars[idx]; var; var = var->next)
+    if (! grub_strcmp (var->name, name))
+      return var;
+
   return 0;
+}
+
+grub_err_t
+grub_env_context_open (void)
+{
+  struct grub_env_context *context;
+  int i;
+
+  context = grub_malloc (sizeof (*context));
+  if (! context)
+    return grub_errno;
+
+  for (i = 0; i < HASHSZ; i++)
+    context->vars[i] = 0;
+  context->next = grub_env_var_context;
+  context->sorted = 0;
+  
+  grub_env_var_context = context;
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_env_context_close (void)
+{
+  struct grub_env_context *context;
+  struct grub_env_var *env;
+  struct grub_env_var *prev = 0;
+
+  context = grub_env_var_context->next;
+
+  /* Free the variables associated with this context.  */
+  for (env = grub_env_var_context->sorted; env; env = env->sort_next)
+    {
+      /* XXX: What if a hook is associated with this variable?  */
+      grub_free (prev);
+      prev = env;
+    }
+  grub_free (prev);
+
+  /* Restore the previous context.  */
+  grub_free (grub_env_var_context);
+  grub_env_var_context = context;
+
+  return GRUB_ERR_NONE;
+}
+
+static void
+grub_env_insert (struct grub_env_context *context,
+		 struct grub_env_var *env)
+{
+  struct grub_env_var **grub_env = context->vars;  
+  struct grub_env_var *sort;
+  struct grub_env_var **sortp;
+  int idx = grub_env_hashval (env->name);
+
+  /* Insert it in the hashtable.  */
+  env->prevp = &grub_env[idx];
+  env->next = grub_env[idx];
+  if (grub_env[idx])
+    grub_env[idx]->prevp = &env->next;
+  grub_env[idx] = env;
+
+  /* Insert it in the sorted list.  */
+  sortp = &context->sorted;
+  sort = context->sorted;
+  while (sort)
+    {
+      if (grub_strcmp (sort->name, env->name) > 0)
+	break;
+      
+      sortp = &sort->sort_next;
+      sort = sort->sort_next;
+    }
+  env->sort_prevp = sortp;
+  env->sort_next = sort;
+  if (sort)
+    sort->sort_prevp = &env->sort_next;
+  *sortp = env;
+}
+
+
+static void
+grub_env_remove (struct grub_env_var *env)
+{
+  /* Remove the entry from the variable table.  */
+  *env->prevp = env->next;
+  if (env->next)
+    env->next->prevp = env->prevp;
+
+  /* And from the sorted list.  */
+  *env->sort_prevp = env->sort_next;
+  if (env->sort_next)
+    env->sort_next->sort_prevp = env->sort_prevp;
+}
+
+grub_err_t
+grub_env_export (const char *var)
+{
+  struct grub_env_var *env;
+  int idx = grub_env_hashval (var);
+
+  /* Look for the variable in the current context only.  */
+  for (env = grub_env_var_context->vars[idx]; env; env = env->next)
+    if (! grub_strcmp (env->name, var))
+      {
+	/* Remove the variable from the old context and reinsert it
+	   into the environment.  */
+	grub_env_remove (env);
+	grub_env_insert (&grub_env_context, env);
+
+	return GRUB_ERR_NONE;
+      }
+
+  return GRUB_ERR_NONE;
 }
 
 grub_err_t
 grub_env_set (const char *var, const char *val)
 {
-  int idx = grub_env_hashval (var);
   struct grub_env_var *env;
-  struct grub_env_var *sort;
-  struct grub_env_var **sortp;
-  
+
   /* If the variable does already exist, just update the variable.  */
   env = grub_env_find (var);
   if (env)
@@ -98,30 +228,8 @@ grub_env_set (const char *var, const char *val)
   env->value = grub_strdup (val);
   if (! env->value)
     goto fail;
-  
-  /* Insert it in the hashtable.  */
-  env->prevp = &grub_env[idx];
-  env->next = grub_env[idx];
-  if (grub_env[idx])
-    grub_env[idx]->prevp = &env->next;
-  grub_env[idx] = env;
-  
-  /* Insert it in the sorted list.  */
-  sortp = &grub_env_sorted;
-  sort = grub_env_sorted;
-  while (sort)
-    {
-      if (grub_strcmp (sort->name, var) > 0)
-	break;
-      
-      sortp = &sort->sort_next;
-      sort = sort->sort_next;
-    }
-  env->sort_prevp = sortp;
-  env->sort_next = sort;
-  if (sort)
-    sort->sort_prevp = &env->sort_next;
-  *sortp = env;
+
+  grub_env_insert (grub_env_var_context, env);
 
   return 0;
 
@@ -160,13 +268,7 @@ grub_env_unset (const char *name)
   if (env->read_hook || env->write_hook)
     return;
 
-  *env->prevp = env->next;
-  if (env->next)
-    env->next->prevp = env->prevp;
-
-  *env->sort_prevp = env->sort_next;
-  if (env->sort_next)
-    env->sort_next->sort_prevp = env->sort_prevp;
+  grub_env_remove (env);
 
   grub_free (env->name);
   grub_free (env->value);
@@ -177,11 +279,32 @@ grub_env_unset (const char *name)
 void
 grub_env_iterate (int (* func) (struct grub_env_var *var))
 {
-  struct grub_env_var *env;
+  struct grub_env_var *env = grub_env_context.sorted;
+  struct grub_env_var *var = grub_env_var_context->sorted;
+
+  /* Initially these are the same.  */
+  if (env == var)
+    var = 0;
   
-  for (env = grub_env_sorted; env; env = env->sort_next)
-    if (func (env))
-      return;
+  while (env || var)
+    {
+      struct grub_env_var **cur;
+
+      /* Select the first name to be printed from the head of two
+	 sorted lists.  */
+      if (! env)
+	cur = &var;
+      else if (! var)
+	cur = &env;
+      else if (grub_strcmp (env->name, var->name) > 0)
+	cur = &var;
+      else
+	cur = &env;
+
+      if (func (*cur))
+	return;
+      *cur = (*cur)->sort_next;
+    }
 }
 
 grub_err_t

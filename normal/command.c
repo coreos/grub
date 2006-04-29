@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -284,6 +284,18 @@ unset_command (struct grub_arg_list *state __attribute__ ((unused)),
 }
 
 static grub_err_t
+export_command (struct grub_arg_list *state __attribute__ ((unused)),
+		int argc, char **args)
+{
+  if (argc < 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "no environment variable specified");
+
+  grub_env_export (args[0]);
+  return 0;
+}
+
+static grub_err_t
 insmod_command (struct grub_arg_list *state __attribute__ ((unused)),
 		int argc, char **args)
 {
@@ -366,6 +378,9 @@ grub_command_init (void)
 
   grub_register_command ("unset", unset_command, GRUB_COMMAND_FLAG_BOTH,
 			 "unset ENVVAR", "Remove an environment variable.", 0);
+
+  grub_register_command ("export", export_command, GRUB_COMMAND_FLAG_BOTH,
+			 "export ENVVAR", "Export a variable.", 0);
 
   grub_register_command ("insmod", insmod_command, GRUB_COMMAND_FLAG_BOTH,
 			 "insmod MODULE",

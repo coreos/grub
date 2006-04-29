@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,5 +50,7 @@ void EXPORT_FUNC(grub_env_iterate) (int (* func) (struct grub_env_var *var));
 grub_err_t EXPORT_FUNC(grub_register_variable_hook) (const char *var,
 						     grub_env_read_hook_t read_hook,
 						     grub_env_write_hook_t write_hook);
+grub_err_t EXPORT_FUNC(grub_env_context_open) (void);
+grub_err_t EXPORT_FUNC(grub_env_context_close) (void);
 
 #endif /* ! GRUB_ENV_HEADER */

@@ -1,3 +1,30 @@
+2006-04-29  Marco Gerards  <marco@gnu.org>
+
+	* commands/configfile.c (grub_cmd_configfile): Execute the
+	configfile within its own context.
+
+	* include/grub/env.h (grub_env_context_open): New prototype.
+	(grub_env_context_close): Likewise.
+
+	* kern/env.c (grub_env): Removed.
+	(grub_env_sorted): Likewise.
+	(grub_env_context): New variable.
+	(grub_env_var_context): Likewise.
+	(grub_env_find): Search both the active context and the global
+	context.
+	(grub_env_context_open): New function.
+	(grub_env_context_close): Likewise.
+	(grub_env_insert): Likewise.
+	(grub_env_remove): Likewise.
+	(grub_env_export): Likewise.
+	(grub_env_set): Changed to use helper functions to avoid code
+	duplication.
+	(grub_env_iterate): Rewritten so both the current context and the
+	global context are being used.
+
+	* normal/command.c (export_command): New function.
+	(grub_command_init): Register the `export' function.
+
 2006-04-26  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/grub-mkimage.c (compress_kernel): Cast arguments

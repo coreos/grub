@@ -1,7 +1,7 @@
 /* configfile.c - command to manually load config file  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,9 @@ grub_cmd_configfile (struct grub_arg_list *state __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
   grub_cls ();
+  grub_env_context_open ();
   grub_normal_execute (args[0], 1);
+  grub_env_context_close ();
 
   return 0;
 }
