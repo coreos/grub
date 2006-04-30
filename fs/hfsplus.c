@@ -761,7 +761,7 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 	  node->data = dir->data;
 	  
 	  grub_memcpy (node->extents, fileinfo->data.extents,
-		       sizeof (*node->extents));
+		       sizeof (node->extents));
 	  node->size = grub_be_to_cpu64 (fileinfo->data.size);
 	  node->fileid = grub_be_to_cpu32 (fileinfo->fileid);
 

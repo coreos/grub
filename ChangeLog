@@ -1,3 +1,8 @@
+2006-04-30  Marco Gerards  <marco@gnu.org>
+
+	* fs/hfsplus.c (grub_hfsplus_iterate_dir): Correctly calculate the
+	size of the extents in a catalog file record.
+
 2006-04-29  Marco Gerards  <marco@gnu.org>
 
 	* commands/configfile.c (grub_cmd_configfile): Execute the
