@@ -1,3 +1,80 @@
+2006-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Extend the loader so that GRUB can accept a loader which comes
+	back to GRUB when a loaded image exits. Also, this change adds
+	support for a chainloader on EFI.
+	
+	* term/efi/console.c: Include grub/misc.h.
+	(grub_console_checkkey): Display a scan code on the top for
+	debugging. This will be removed once the EFI port gets stable.
+	Correct the scan code mapping.
+
+	* kern/efi/mm.c (sort_memory_map): Sort in a descending order to
+	allocate memory from larger regions, in order to reduce the number
+	of allocated regions. Otherwise, the MacOSX loader panics.
+	(filter_memory_map): Avoid less than 1MB for compatibility with
+	other loaders.
+	(add_memory_regions): Allocate from the tail of a region, if
+	possible, to avoid allocating a region near to 1MB, for the MacOSX
+	loader.
+
+	* kern/efi/init.c (grub_efi_set_prefix): Specify
+	GRUB_EFI_IMAGE_HANDLE to grub_efi_get_loaded_image.
+
+	* kern/efi/efi.c (grub_efi_get_loaded_image): Accept a new
+	argument IMAGE_HANDLE and specify it to get a loaded image.
+	(grub_arch_modules_addr): Specify GRUB_EFI_IMAGE_HANDLE to
+	grub_efi_get_loaded_image.
+	(grub_efi_get_filename): Divide the legnth by the size of
+	grub_efi_char16_t.
+	(grub_efi_get_device_path): New function.
+	(grub_efi_print_device_path): Print End Device Path nodes. Divide
+	the length by the size of grub_efi_char16_t for a file path device
+	path node.
+
+	* kern/loader.c (grub_loader_noreturn): New variable.
+	(grub_loader_set): Accept a new argument NORETURN. Set
+	GRUB_LOADER_NORETURN to NORETURN.
+	All callers changed.
+	(grub_loader_boot): If GRUB_LOADER_NORETURN is false, do not call
+	grub_machine_fini.
+
+	* include/grub/efi/efi.h (grub_efi_get_device_path): New
+	prototype.
+	(grub_efi_get_loaded_image): Take an argument to specify an image
+	handle.
+
+	* include/grub/loader.h (grub_loader_set): Added one more argument
+	NORETURN.
+
+	* disk/efi/efidisk.c (make_devices): Use grub_efi_get_device_path
+	instead of grub_efi_open_protocol.
+	(grub_efidisk_get_device_name): Likewise.
+	(grub_efidisk_close): Print a newline.
+	(grub_efidisk_get_device_handle): Fixed to use
+	GRUB_EFI_DEVICE_PATH_SUBTYPE instead of
+	GRUB_EFI_DEVICE_PATH_TYPE.
+
+	* disk/efi/efidisk.c (device_path_guid): Moved to ...
+	* kern/efi/efi.c (device_path_guid): ... here.
+
+	* conf/i386-efi.rmk (pkgdata_MODULES): Added _chain.mod and
+	chain.mod.
+	(kernel_mod_HEADERS): Added efi/disk.h.
+	(_chain_mod_SOURCES): New variable.
+	(_chain_mod_CFLAGS): Likewise.
+	(_chain_mod_LDFLAGS): Likewise.
+	(chain_mod_SOURCES): Likewise.
+	(chain_mod_CFLAGS): Likewise.
+	(chain_mod_LDFLAGS): Likewise.
+
+	* DISTLIST: Added include/grub/efi/chainloader.h,
+	loader/efi/chainloader.c and loader/efi/chainloader_normal.c.
+
+	* include/grub/efi/chainloader.h: New file.
+	* loader/efi/chainloader.c: Likewise.
+	* loader/efi/chainloader_normal.c: Likewise.
+
 2006-04-30  Marco Gerards  <marco@gnu.org>
 
 	* commands/configfile.c (grub_cmd_source): New function.

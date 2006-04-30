@@ -326,7 +326,7 @@ grub_rescue_cmd_multiboot (int argc, char *argv[])
   mbi->flags |= GRUB_MB_INFO_BOOT_LOADER_NAME;
   mbi->boot_loader_name = (grub_uint32_t) grub_strdup (PACKAGE_STRING);
 
-  grub_loader_set (grub_multiboot_boot, grub_multiboot_unload);
+  grub_loader_set (grub_multiboot_boot, grub_multiboot_unload, 1);
 
  fail:
   if (file)

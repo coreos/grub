@@ -18,6 +18,7 @@
  */
 
 #include <grub/term.h>
+#include <grub/misc.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/efi/efi.h>
@@ -70,12 +71,40 @@ grub_console_checkkey (void)
 {
   grub_efi_simple_input_interface_t *i;
   grub_efi_input_key_t key;
+  grub_efi_status_t status;
   
   if (read_key >= 0)
     return 1;
 
   i = grub_efi_system_table->con_in;
-  if (i->read_key_stroke (i, &key) == GRUB_EFI_SUCCESS)
+  status = i->read_key_stroke (i, &key);
+#if 1
+  switch (status)
+    {
+    case GRUB_EFI_SUCCESS:
+      {
+	grub_uint16_t xy;
+	
+	xy = grub_getxy ();
+	grub_gotoxy (0, 0);
+	grub_printf ("scan_code=%x,unicode_char=%x  ",
+		     (unsigned) key.scan_code,
+		     (unsigned) key.unicode_char);
+	grub_gotoxy (xy >> 8, xy & 0xff);
+      }
+      break;
+
+    case GRUB_EFI_NOT_READY:
+      //grub_printf ("not ready   ");
+      break;
+
+    default:
+      //grub_printf ("device error   ");
+      break;
+    }
+#endif
+  
+  if (status == GRUB_EFI_SUCCESS)
     {
       switch (key.scan_code)
 	{
@@ -83,45 +112,41 @@ grub_console_checkkey (void)
 	  read_key = key.unicode_char;
 	  break;
 	case 0x01:
-	  read_key = GRUB_CONSOLE_KEY_UP;
+	  read_key = 16;
 	  break;
 	case 0x02:
-	  read_key = GRUB_CONSOLE_KEY_DOWN;
+	  read_key = 14;
 	  break;
 	case 0x03:
-	  read_key = GRUB_CONSOLE_KEY_RIGHT;
+	  read_key = 6;
 	  break;
 	case 0x04:
-	  read_key = GRUB_CONSOLE_KEY_LEFT;
+	  read_key = 2;
 	  break;
 	case 0x05:
-	  read_key = GRUB_CONSOLE_KEY_HOME;
+	  read_key = 1;
 	  break;
 	case 0x06:
-	  read_key = GRUB_CONSOLE_KEY_END;
+	  read_key = 5;
 	  break;
 	case 0x07:
-	  read_key = GRUB_CONSOLE_KEY_IC;
 	  break;
 	case 0x08:
-	  read_key = GRUB_CONSOLE_KEY_DC;
+	  read_key = 4;
 	  break;
 	case 0x09:
-	  read_key = GRUB_CONSOLE_KEY_PPAGE;
 	  break;
 	case 0x0a:
-	  read_key = GRUB_CONSOLE_KEY_NPAGE;
+	  break;
 	case 0x17:
 	  read_key = '\e';
 	  break;
 	default:
-	  return 0;
+	  break;
 	}
-	      
-      return 1;
     }
 
-  return 0;
+  return read_key >= 0;
 }
 
 static int
@@ -147,7 +172,7 @@ grub_console_getkey (void)
     {
       status = b->wait_for_event (1, &(i->wait_for_key), &index);
       if (status != GRUB_EFI_SUCCESS)
-	return -1;
+      	return -1;
       
       grub_console_checkkey ();
     }

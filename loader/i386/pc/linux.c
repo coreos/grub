@@ -275,7 +275,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   if (grub_errno == GRUB_ERR_NONE)
     {
       grub_linux_prot_size = prot_size;
-      grub_loader_set (grub_linux_boot, grub_linux_unload);
+      grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
       loaded = 1;
     }
 

@@ -111,7 +111,7 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 #grub_install_SOURCES = util/efi/pc/grub-install.in
 
 # Modules.
-pkgdata_MODULES = kernel.mod normal.mod
+pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -612,7 +612,7 @@ fs-kernel_mod-disk_efi_efidisk.lst: disk/efi/efidisk.c genfslist.sh
 kernel_mod_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h partition.h \
 	pc_partition.h rescue.h symbol.h term.h types.h \
-	i386/efi/time.h efi/efi.h efi/time.h
+	i386/efi/time.h efi/efi.h efi/time.h efi/disk.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)
 kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -953,5 +953,117 @@ fs-normal_mod-normal_i386_setjmp.lst: normal/i386/setjmp.S genfslist.sh
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _chain.mod.
+_chain_mod_SOURCES = loader/efi/chainloader.c
+CLEANFILES += _chain.mod mod-_chain.o mod-_chain.c pre-_chain.o _chain_mod-loader_efi_chainloader.o und-_chain.lst
+ifneq ($(_chain_mod_EXPORTS),no)
+CLEANFILES += def-_chain.lst
+DEFSYMFILES += def-_chain.lst
+endif
+MOSTLYCLEANFILES += _chain_mod-loader_efi_chainloader.d
+UNDSYMFILES += und-_chain.lst
+
+_chain.mod: pre-_chain.o mod-_chain.o
+	-rm -f $@
+	$(CC) $(_chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-_chain.o: _chain_mod-loader_efi_chainloader.o
+	-rm -f $@
+	$(CC) $(_chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-_chain.o: mod-_chain.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
+
+mod-_chain.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_chain' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(_chain_mod_EXPORTS),no)
+def-_chain.lst: pre-_chain.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _chain/' > $@
+endif
+
+und-_chain.lst: pre-_chain.o
+	echo '_chain' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+_chain_mod-loader_efi_chainloader.o: loader/efi/chainloader.c
+	$(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
+
+_chain_mod-loader_efi_chainloader.d: loader/efi/chainloader.c
+	set -e; 	  $(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader\.o[ :]*,_chain_mod-loader_efi_chainloader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include _chain_mod-loader_efi_chainloader.d
+
+CLEANFILES += cmd-_chain_mod-loader_efi_chainloader.lst fs-_chain_mod-loader_efi_chainloader.lst
+COMMANDFILES += cmd-_chain_mod-loader_efi_chainloader.lst
+FSFILES += fs-_chain_mod-loader_efi_chainloader.lst
+
+cmd-_chain_mod-loader_efi_chainloader.lst: loader/efi/chainloader.c gencmdlist.sh
+	set -e; 	  $(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _chain > $@ || (rm -f $@; exit 1)
+
+fs-_chain_mod-loader_efi_chainloader.lst: loader/efi/chainloader.c genfslist.sh
+	set -e; 	  $(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(_chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _chain > $@ || (rm -f $@; exit 1)
+
+
+_chain_mod_CFLAGS = $(COMMON_CFLAGS)
+_chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For chain.mod.
+chain_mod_SOURCES = loader/efi/chainloader_normal.c
+CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_efi_chainloader_normal.o und-chain.lst
+ifneq ($(chain_mod_EXPORTS),no)
+CLEANFILES += def-chain.lst
+DEFSYMFILES += def-chain.lst
+endif
+MOSTLYCLEANFILES += chain_mod-loader_efi_chainloader_normal.d
+UNDSYMFILES += und-chain.lst
+
+chain.mod: pre-chain.o mod-chain.o
+	-rm -f $@
+	$(CC) $(chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-chain.o: chain_mod-loader_efi_chainloader_normal.o
+	-rm -f $@
+	$(CC) $(chain_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-chain.o: mod-chain.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
+
+mod-chain.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'chain' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(chain_mod_EXPORTS),no)
+def-chain.lst: pre-chain.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 chain/' > $@
+endif
+
+und-chain.lst: pre-chain.o
+	echo 'chain' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+chain_mod-loader_efi_chainloader_normal.o: loader/efi/chainloader_normal.c
+	$(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
+
+chain_mod-loader_efi_chainloader_normal.d: loader/efi/chainloader_normal.c
+	set -e; 	  $(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader_normal\.o[ :]*,chain_mod-loader_efi_chainloader_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include chain_mod-loader_efi_chainloader_normal.d
+
+CLEANFILES += cmd-chain_mod-loader_efi_chainloader_normal.lst fs-chain_mod-loader_efi_chainloader_normal.lst
+COMMANDFILES += cmd-chain_mod-loader_efi_chainloader_normal.lst
+FSFILES += fs-chain_mod-loader_efi_chainloader_normal.lst
+
+cmd-chain_mod-loader_efi_chainloader_normal.lst: loader/efi/chainloader_normal.c gencmdlist.sh
+	set -e; 	  $(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh chain > $@ || (rm -f $@; exit 1)
+
+fs-chain_mod-loader_efi_chainloader_normal.lst: loader/efi/chainloader_normal.c genfslist.sh
+	set -e; 	  $(CC) -Iloader/efi -I$(srcdir)/loader/efi $(CPPFLAGS) $(CFLAGS) $(chain_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh chain > $@ || (rm -f $@; exit 1)
+
+
+chain_mod_CFLAGS = $(COMMON_CFLAGS)
+chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -36,6 +36,7 @@ grub_efi_system_table_t *grub_efi_system_table;
 
 static grub_efi_guid_t console_control_guid = GRUB_EFI_CONSOLE_CONTROL_GUID;
 static grub_efi_guid_t loaded_image_guid = GRUB_EFI_LOADED_IMAGE_GUID;
+static grub_efi_guid_t device_path_guid = GRUB_EFI_DEVICE_PATH_GUID;
 
 void *
 grub_efi_locate_protocol (grub_efi_guid_t *protocol, void *registration)
@@ -144,9 +145,9 @@ grub_efi_stall (grub_efi_uintn_t microseconds)
 }
 
 grub_efi_loaded_image_t *
-grub_efi_get_loaded_image (void)
+grub_efi_get_loaded_image (grub_efi_handle_t image_handle)
 {
-  return grub_efi_open_protocol (grub_efi_image_handle,
+  return grub_efi_open_protocol (image_handle,
 				 &loaded_image_guid,
 				 GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 }
@@ -189,7 +190,7 @@ grub_arch_modules_addr (void)
   struct grub_module_info *info;
   grub_uint16_t i;
   
-  image = grub_efi_get_loaded_image ();
+  image = grub_efi_get_loaded_image (grub_efi_image_handle);
   if (! image)
     return 0;
 
@@ -248,7 +249,8 @@ grub_efi_get_filename (grub_efi_device_path_t *dp)
 	  else
 	    size = 0;
 	  
-	  len = GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4;
+	  len = ((GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4)
+		 / sizeof (grub_efi_char16_t));
 	  p = grub_realloc (name, size + len * 4 + 1);
 	  if (! p)
 	    {
@@ -278,6 +280,13 @@ grub_efi_get_filename (grub_efi_device_path_t *dp)
   return name;
 }
 
+grub_efi_device_path_t *
+grub_efi_get_device_path (grub_efi_handle_t handle)
+{
+  return grub_efi_open_protocol (handle, &device_path_guid,
+				 GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+}
+
 /* Print the chain of Device Path nodes. This is mainly for debugging. */
 void
 grub_efi_print_device_path (grub_efi_device_path_t *dp)
@@ -294,12 +303,12 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	  switch (subtype)
 	    {
 	    case GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE:
-	      /* grub_printf ("/EndEntire\n"); */
-	      grub_putchar ('\n');
+	      grub_printf ("/EndEntire\n");
+	      //grub_putchar ('\n');
 	      break;
 	    case GRUB_EFI_END_THIS_DEVICE_PATH_SUBTYPE:
-	      /* grub_printf ("/EndThis\n"); */
-	      grub_putchar ('\n');
+	      grub_printf ("/EndThis\n");
+	      //grub_putchar ('\n');
 	      break;
 	    default:
 	      grub_printf ("/EndUnknown(%x)\n", (unsigned) subtype);
@@ -633,9 +642,11 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	    case GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE:
 	      {
 		grub_efi_file_path_device_path_t *fp;
-		grub_uint8_t buf[(len - 4) * 4 + 1];
+		grub_uint8_t buf[(len - 4) * 2 + 1];
 		fp = (grub_efi_file_path_device_path_t *) dp;
-		*grub_utf16_to_utf8 (buf, fp->path_name, len - 4) = '\0';
+		*grub_utf16_to_utf8 (buf, fp->path_name,
+				     (len - 4) / sizeof (grub_efi_char16_t))
+		  = '\0';
 		grub_printf ("/File(%s)", buf);
 	      }
 	      break;

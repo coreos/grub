@@ -114,7 +114,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
     }
 
   grub_file_close (file);
-  grub_loader_set (grub_chainloader_boot, grub_chainloader_unload);
+  grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 1);
   return;
   
  fail:

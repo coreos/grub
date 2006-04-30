@@ -46,7 +46,7 @@ grub_efi_set_prefix (void)
 {
   grub_efi_loaded_image_t *image;
   
-  image = grub_efi_get_loaded_image ();
+  image = grub_efi_get_loaded_image (grub_efi_image_handle);
   if (image)
     {
       char *device;

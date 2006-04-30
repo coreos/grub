@@ -184,23 +184,23 @@ sort_memory_map (grub_efi_memory_descriptor_t *memory_map,
        d1 < memory_map_end;
        d1 = NEXT_MEMORY_DESCRIPTOR (d1, desc_size))
     {
-      grub_efi_memory_descriptor_t *min_desc = d1;
+      grub_efi_memory_descriptor_t *max_desc = d1;
       
       for (d2 = NEXT_MEMORY_DESCRIPTOR (d1, desc_size);
 	   d2 < memory_map_end;
 	   d2 = NEXT_MEMORY_DESCRIPTOR (d2, desc_size))
 	{
-	  if (min_desc->num_pages > d2->num_pages)
-	    min_desc = d2;
+	  if (max_desc->num_pages < d2->num_pages)
+	    max_desc = d2;
 	}
 
-      if (min_desc != d1)
+      if (max_desc != d1)
 	{
 	  grub_efi_memory_descriptor_t tmp;
 
 	  tmp = *d1;
-	  *d1 = *min_desc;
-	  *min_desc = tmp;
+	  *d1 = *max_desc;
+	  *max_desc = tmp;
 	}
     }
 }
@@ -223,16 +223,17 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 #if GRUB_HOST_SIZEOF_VOID_P < 8
 	  && desc->physical_start <= 0xffffffff
 #endif
+	  && desc->physical_start + PAGES_TO_BYTES (desc->num_pages) > 0x100000
 	  && desc->num_pages != 0)
 	{
 	  grub_memcpy (filtered_desc, desc, desc_size);
 	  
-	  /* Avoid the page at the address zero, because this is really
-	     confusing for C programs.  */
-	  if (filtered_desc->physical_start == 0)
+	  /* Avoid less than 1MB, because some loaders seem to be confused.  */
+	  if (desc->physical_start < 0x100000)
 	    {
-	      filtered_desc->physical_start = 0x1000;
-	      filtered_desc->num_pages--;
+	      desc->num_pages -= BYTES_TO_PAGES (0x100000
+						 - desc->physical_start);
+	      desc->physical_start = 0x100000;
 	    }
 	  
 #if GRUB_HOST_SIZEOF_VOID_P < 8
@@ -285,16 +286,21 @@ add_memory_regions (grub_efi_memory_descriptor_t *memory_map,
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
     {
       grub_efi_uint64_t pages;
+      grub_efi_physical_address_t start;
       void *addr;
-      
+
+      start = desc->physical_start;
       pages = desc->num_pages;
       if (pages > required_pages)
-	pages = required_pages;
+	{
+	  start += PAGES_TO_BYTES (pages - required_pages);
+	  pages = required_pages;
+	}
 
-      addr = grub_efi_allocate_pages (desc->physical_start, pages);
+      addr = grub_efi_allocate_pages (start, pages);
       if (! addr)
 	grub_fatal ("cannot allocate conventional memory %p with %u pages",
-		    (void *) ((grub_addr_t) desc->physical_start),
+		    (void *) ((grub_addr_t) start),
 		    (unsigned) pages);
 
       grub_mm_init_region (addr, PAGES_TO_BYTES (pages));
@@ -307,6 +313,27 @@ add_memory_regions (grub_efi_memory_descriptor_t *memory_map,
   if (required_pages > 0)
     grub_fatal ("too little memory");
 }
+
+#if 0
+/* Print the memory map.  */
+static void
+print_memory_map (grub_efi_memory_descriptor_t *memory_map,
+		  grub_efi_uintn_t desc_size,
+		  grub_efi_memory_descriptor_t *memory_map_end)
+{
+  grub_efi_memory_descriptor_t *desc;
+  int i;
+  
+  for (desc = memory_map, i = 0;
+       desc < memory_map_end;
+       desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size), i++)
+    {
+      grub_printf ("MD: t=%x, p=%llx, v=%llx, n=%llx, a=%llx\n",
+		   desc->type, desc->physical_start, desc->virtual_start,
+		   desc->num_pages, desc->attribute);
+    }
+}
+#endif
 
 void
 grub_efi_mm_init (void)
@@ -363,6 +390,19 @@ grub_efi_mm_init (void)
   /* Allocate memory regions for GRUB's memory management.  */
   add_memory_regions (filtered_memory_map, desc_size,
 		      filtered_memory_map_end, required_pages);
+
+#if 0
+  /* For debug.  */
+  map_size = MEMORY_MAP_SIZE;
+
+  if (grub_efi_get_memory_map (&map_size, memory_map, 0, &desc_size, 0) < 0)
+    grub_fatal ("cannot get memory map");
+
+  grub_printf ("printing memory map\n");
+  print_memory_map (memory_map, desc_size,
+		    NEXT_MEMORY_DESCRIPTOR (memory_map, map_size));
+  grub_abort ();
+#endif
   
   /* Release the memory maps.  */
   grub_efi_free_pages ((grub_addr_t) memory_map,

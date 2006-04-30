@@ -67,7 +67,7 @@ genmoddep_SOURCES = util/genmoddep.c
 #grub_install_SOURCES = util/efi/pc/grub-install.in
 
 # Modules.
-pkgdata_MODULES = kernel.mod normal.mod
+pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -80,7 +80,7 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 kernel_mod_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h partition.h \
 	pc_partition.h rescue.h symbol.h term.h types.h \
-	i386/efi/time.h efi/efi.h efi/time.h
+	i386/efi/time.h efi/efi.h efi/time.h efi/disk.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)
 kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -104,5 +104,15 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _chain.mod.
+_chain_mod_SOURCES = loader/efi/chainloader.c
+_chain_mod_CFLAGS = $(COMMON_CFLAGS)
+_chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For chain.mod.
+chain_mod_SOURCES = loader/efi/chainloader_normal.c
+chain_mod_CFLAGS = $(COMMON_CFLAGS)
+chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

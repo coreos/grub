@@ -113,6 +113,7 @@ include/grub/tparm.h
 include/grub/types.h
 include/grub/video.h
 include/grub/efi/api.h
+include/grub/efi/chainloader.h
 include/grub/efi/console.h
 include/grub/efi/console_control.h
 include/grub/efi/disk.h
@@ -198,6 +199,8 @@ kern/sparc64/cache.S
 kern/sparc64/dl.c
 kern/sparc64/ieee1275/init.c
 kern/sparc64/ieee1275/openfw.c
+loader/efi/chainloader.c
+loader/efi/chainloader_normal.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/chainloader_normal.c
 loader/i386/pc/linux.c

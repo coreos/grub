@@ -250,7 +250,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
     }
   else
     {
-      grub_loader_set (grub_linux_boot, grub_linux_unload);
+      grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
       initrd_addr = 0;
       loaded = 1;
     }
