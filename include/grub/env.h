@@ -52,5 +52,6 @@ grub_err_t EXPORT_FUNC(grub_register_variable_hook) (const char *var,
 						     grub_env_write_hook_t write_hook);
 grub_err_t EXPORT_FUNC(grub_env_context_open) (void);
 grub_err_t EXPORT_FUNC(grub_env_context_close) (void);
+grub_err_t EXPORT_FUNC(grub_env_export) (const char *);
 
 #endif /* ! GRUB_ENV_HEADER */

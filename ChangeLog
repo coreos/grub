@@ -1,5 +1,10 @@
 2006-04-30  Marco Gerards  <marco@gnu.org>
 
+	* include/grub/env.h (grub_env_export): New prototype.  Reported
+	by Jan C. Kleinsorge <jan.kleinsorge@udo.edu>.
+
+2006-04-30  Marco Gerards  <marco@gnu.org>
+
 	* fs/hfsplus.c (grub_hfsplus_iterate_dir): Correctly calculate the
 	size of the extents in a catalog file record.
 
