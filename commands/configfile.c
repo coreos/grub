@@ -40,6 +40,19 @@ grub_cmd_configfile (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_err_t
+grub_cmd_source (struct grub_arg_list *state __attribute__ ((unused)),
+		 int argc, char **args)
+
+{
+  if (argc != 1)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
+
+  grub_normal_execute (args[0], 1);
+
+  return 0;
+}
+
 
 GRUB_MOD_INIT(configfile)
 {
@@ -47,9 +60,19 @@ GRUB_MOD_INIT(configfile)
   grub_register_command ("configfile", grub_cmd_configfile,
                         GRUB_COMMAND_FLAG_BOTH, "configfile FILE",
                         "Load another config file.", 0);
+  grub_register_command ("source", grub_cmd_source,
+                        GRUB_COMMAND_FLAG_BOTH, "source FILE",
+                        "Load another config file without changing context.",
+			 0);
+  grub_register_command (".", grub_cmd_source,
+                        GRUB_COMMAND_FLAG_BOTH, ". FILE",
+                        "Load another config file without changing context.",
+			 0);
 }
 
 GRUB_MOD_FINI(configfile)
 {
   grub_unregister_command ("configfile");
+  grub_unregister_command ("source");
+  grub_unregister_command (".");
 }
