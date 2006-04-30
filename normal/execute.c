@@ -25,14 +25,13 @@
 #include <grub/env.h>
 #include <grub/script.h>
 
-static int
+static grub_err_t
 grub_script_execute_cmd (struct grub_script_cmd *cmd)
 {
   if (cmd == 0)
     return 0;
-  cmd->exec (cmd);
 
-  return 0;
+  return cmd->exec (cmd);
 }
 
 /* Parse ARG and return the textual representation.  Add strings are
@@ -104,7 +103,24 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
       /* It's not a GRUB command, try all functions.  */
       func = grub_script_function_find (cmdline->cmdname);
       if (! func)
-	return 0;
+	{
+	  /* As a last resort, try if it is an assignment.  */
+	  char *assign = grub_strdup (cmdline->cmdname);
+	  char *eq = grub_strchr (assign, '=');
+
+	  if (eq)
+	    {
+	      /* Create two strings and set the variable.  */
+	      *eq = '\0';
+	      eq++;
+	      grub_env_set (assign, eq);
+
+	      /* This was set because the command was not found.  */
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+	  grub_free (assign);
+	  return 0;
+	}
     }
 
   if (cmdline->arglist)

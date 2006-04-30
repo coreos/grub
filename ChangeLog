@@ -1,3 +1,10 @@
+2006-04-30  Marco Gerards  <marco@gnu.org>
+
+	* normal/execute.c (grub_script_execute_cmd): Change the return
+	type to `grub_err_t'.  Correctly return the error.
+	(grub_script_execute_cmdline): In case a command line is not a
+	command or a function, try to interpret it as an assignment.
+
 2006-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* fs/hfsplus.c (grub_hfsplus_read_block): Fixed a memory leak.
