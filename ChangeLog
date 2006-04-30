@@ -1,3 +1,14 @@
+2006-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* fs/hfsplus.c (grub_hfsplus_read_block): Fixed a memory leak.
+	(grub_hfsplus_iterate_dir): Reordered to skip unknown nodes. Also,
+	skip a node whose name is obviously invalid as UTF-16,
+	i.e. contains a NUL character. Stop the iteration when the last
+	directory entry is found. Instead of using the return value of
+	grub_hfsplus_btree_iterate_node, store the value in RET and use
+	it, because the iterator can be stopped by the last directory
+	entry.
+
 2006-04-30  Marco Gerards  <marco@gnu.org>
 
 	* include/grub/env.h (grub_env_export): New prototype.  Reported

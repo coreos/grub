@@ -278,20 +278,22 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
 
       /* Try to find this block in the current set of extents.  */
       blk = grub_hfsplus_find_block (extents, fileblock, &retry);
-      if (blk != -1)
-	return blk + (node->data->embedded_offset >> (node->data->log2blksize
-						      - GRUB_DISK_SECTOR_BITS));
 
       /* The previous iteration of this loop allocated memory.  The
 	 code above used this memory, it can be free'ed now.  */
-      if (nnode)
-	grub_free (nnode);
+      grub_free (nnode);
+      nnode = 0;
+      
+      if (blk != -1)
+	return (blk
+		+ (node->data->embedded_offset >> (node->data->log2blksize
+						   - GRUB_DISK_SECTOR_BITS)));
 
       /* For the extent overflow file, extra extents can't be found in
 	 the extent overflow file.  If this happens, you found a
 	 bug...  */
       if (node->fileid == GRUB_HFSPLUS_FILEID_OVERFLOW)
-	return -1;
+	break;
 
       /* Set up the key to look for in the extent overflow file.  */
       extoverflow.fileid = node->fileid;
@@ -300,7 +302,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
       if (grub_hfsplus_btree_search (&node->data->extoverflow_tree,
 				     (struct grub_hfsplus_key_internal *) &extoverflow,
 				     grub_hfsplus_cmp_extkey, &nnode, &ptr))
-	return -1;
+	break;
 
       cnode = (char *) nnode;
 
@@ -317,8 +319,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
       fileblock = retry;
     }
 
-  if (nnode)
-    grub_free (nnode);
+  grub_free (nnode);
 
   /* Too bad, you lose.  */
   return -1;
@@ -692,13 +693,14 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 				   enum grub_fshelp_filetype filetype,
 				   grub_fshelp_node_t node))
 {
+  int ret = 0;
+  
   auto int list_nodes (void *record);
   int list_nodes (void *record)
     {
       struct grub_hfsplus_catkey *catkey;
       char *filename;
       int i;
-      int ret = 0;
       struct grub_fshelp_node *node;
       struct grub_hfsplus_catfile *fileinfo;
       enum grub_fshelp_filetype type = GRUB_FSHELP_UNKNOWN;
@@ -711,32 +713,11 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 					 + 2 + (grub_be_to_cpu16(catkey->keylen)
 						% 2));
 
-      /* Stop iterating when the last directory entry was found.  */
+      /* Stop iterating when the last directory entry is found.  */
       if (grub_be_to_cpu32 (catkey->parent) != dir->fileid)
-	return 0;
+	return 1;
 
-      filename = grub_malloc (grub_be_to_cpu16 (catkey->namelen) + 1);
-      if (! filename)
-	return 0;
-
-      /* Make sure the byte order of the UTF16 string is correct.  */
-      for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
-	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
-
-      if (! grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey->name,
-				grub_be_to_cpu16 (catkey->namelen)))
-	{
-	  grub_free (filename);
-	  return 0;
-	}
-
-      filename[grub_be_to_cpu16 (catkey->namelen)] = '\0';
-
-      /* Restore the byte order to what it was previously.  */
-      for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
-	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
-
-      /* Determine the type of the node that was found.  */
+      /* Determine the type of the node that is found.  */
       if (grub_be_to_cpu16 (fileinfo->type) == GRUB_HFSPLUS_FILETYPE_REG)
 	{
 	  int mode = (grub_be_to_cpu16 (fileinfo->mode)
@@ -752,10 +733,40 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
       else if (grub_be_to_cpu16 (fileinfo->type) == GRUB_HFSPLUS_FILETYPE_DIR)
 	type = GRUB_FSHELP_DIR;
 
-      /* Only accept valid nodes.  */
-      if (type && grub_strlen (filename) == grub_be_to_cpu16 (catkey->namelen))
+      if (type == GRUB_FSHELP_UNKNOWN)
+	return 0;
+
+      /* Make sure the byte order of the UTF16 string is correct.  */
+      for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
 	{
-	  /* A valid node was found; setup the node and call the
+	  catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+
+	  /* If the name is obviously invalid, skip this node.  */
+	  if (catkey->name[i] == 0)
+	    return 0;
+	}
+
+      filename = grub_malloc (grub_be_to_cpu16 (catkey->namelen) + 1);
+      if (! filename)
+	return 0;
+
+      if (! grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey->name,
+				grub_be_to_cpu16 (catkey->namelen)))
+	{
+	  grub_free (filename);
+	  return 0;
+	}
+
+      filename[grub_be_to_cpu16 (catkey->namelen)] = '\0';
+
+      /* Restore the byte order to what it was previously.  */
+      for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
+	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
+
+      /* Only accept valid nodes.  */
+      if (grub_strlen (filename) == grub_be_to_cpu16 (catkey->namelen))
+	{
+	  /* A valid node is found; setup the node and call the
 	     callback function.  */
 	  node = grub_malloc (sizeof (*node));
 	  node->data = dir->data;
@@ -776,7 +787,6 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
   struct grub_hfsplus_key_internal intern;
   struct grub_hfsplus_btnode *node;
   int ptr;
-  int ret;
 
   /* Create a key that points to the first entry in the directory.  */
   intern.catkey.parent = dir->fileid;
@@ -788,8 +798,8 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
     return 0;
 
   /* Iterate over all entries in this directory.  */
-  ret = grub_hfsplus_btree_iterate_node (&dir->data->catalog_tree, node, ptr,
-					 list_nodes);
+  grub_hfsplus_btree_iterate_node (&dir->data->catalog_tree, node, ptr,
+				   list_nodes);
 
   grub_free (node);
 
