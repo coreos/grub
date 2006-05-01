@@ -1,3 +1,47 @@
+2006-05-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/env.c (struct grub_env_context): Removed "sorted". Renamed
+	"next" to "prev" for readability.
+	(struct grub_env_sorted_var): New struct.
+	(grub_env_context): Renamed to ...
+	(initial_context): ... this.
+	(grub_env_var_context): Renamed to ...
+	(current_context): ... this.
+	(grub_env_find): Look only at CURRENT_CONTEXT.
+	(grub_env_context_open): Rewritten to copy exported variables from
+	previous context.
+	(grub_env_context_close): Rewritten according to the new
+	scheme. Also, add an assertion to prevent the initial context from
+	removed.
+	(grub_env_insert): Removed the code for the sorted list.
+	(grub_env_remove): Likewise.
+	(grub_env_export): Simply mark the variable with
+	GRUB_ENV_VAR_GLOBAL.
+	(grub_env_set): A cosmetic change for naming consistency.
+	(grub_env_get): Likewise.
+	(grub_env_unset): Likewise.
+	(grub_env_iterate): Rewritten to sort variables within this
+	function.
+	(grub_register_variable_hook): Fixed for naming consistency. Call
+	grub_env_find again, only if NAME is not found at the first time.
+	(mangle_data_slot_name): New function.
+	(grub_env_set_data_slot): Likewise.
+	(grub_env_get_data_slot): Likewise.
+	(grub_env_unset_data_slot): Likewise.
+
+	* include/grub/env.h (grub_env_var_type): New enum.
+	(GRUB_ENV_VAR_LOCAL): New constant.
+	(GRUB_ENV_VAR_GLOBAL): Likewise.
+	(GRUB_ENV_VAR_DATA): Likewise.
+	(struct grub_env_var): Removed "sort_next" and "sort_prevp". Added
+	"type".
+	(grub_env_set): Replace VAR with NAME for consistency.
+	(grub_register_variable_hook): Likewise.
+	(grub_env_export): Specify the name of the argument.
+	(grub_env_set_data_slot): New prototype.
+	(grub_env_get_data_slot): Likewise.
+	(grub_env_unset_data_slot): Likewise.
+
 2006-04-30  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Extend the loader so that GRUB can accept a loader which comes
