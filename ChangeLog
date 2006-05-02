@@ -1,3 +1,8 @@
+2006-05-02  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* stage2/shared.h (vbe_mode): Back ported aligment fix from GRUB 2
+	to GRUB Legacy.  Problem reported by Gerardo Richarte.
+
 2006-04-23  Robert Millan  <robertmh@gnu.org>
 
 	* grub/asmstub.c (get_diskinfo): Optimize sysctl routine.

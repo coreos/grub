@@ -499,7 +499,11 @@ struct vbe_mode
   unsigned char linear_reserved_field_position;
   unsigned long max_pixel_clock;
 
-  unsigned char reserved3[189];
+  /* Reserved field to make structure to be 256 bytes long, VESA BIOS 
+     Extension 3.0 Specification says to reserve 189 bytes here but 
+     that doesn't make structure to be 256 bytes.  So additional one is 
+     added here.  */
+  unsigned char reserved3[189 + 1];
 } __attribute__ ((packed));
 
 
