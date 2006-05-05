@@ -1,5 +1,9 @@
 2006-05-02  Pavel Roskin  <proski@gnu.org>
 
+	* stage2/stage2.c (run_menu): Fix "savedefault" to save only top
+	level menu positions.  Remember current position when calling a
+	submenu.  Don't recalculate it when booting from a submenu.
+
 	* grub/main.c (main): Make sure the boot drive number doesn't
 	exceed 255.
 
