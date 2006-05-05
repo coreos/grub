@@ -1,3 +1,8 @@
+2006-05-02  Pavel Roskin  <proski@gnu.org>
+
+	* grub/main.c (main): Make sure the boot drive number doesn't
+	exceed 255.
+
 2006-05-02  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* stage2/shared.h (vbe_mode): Back ported aligment fix from GRUB 2
