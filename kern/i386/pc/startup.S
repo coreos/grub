@@ -636,6 +636,7 @@ FUNCTION(grub_exit)
 	/* Tell the BIOS a boot failure. If this does not work, reboot.  */
 	int	$0x18
 	jmp	cold_reboot
+	.code32
 	
 /*
  * grub_reboot()

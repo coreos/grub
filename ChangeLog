@@ -1,3 +1,7 @@
+2006-05-07  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* kern/i386/pc/startup.S (grub_exit): Added missing .code32 tag.
+
 2006-05-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/env.c (struct grub_env_context): Removed "sorted". Renamed
