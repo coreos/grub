@@ -1,7 +1,7 @@
 /* main.c - the normal mode main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -187,9 +187,6 @@ read_config_file (const char *config)
   newmenu = grub_malloc (sizeof (*newmenu));
   if (! newmenu)
     return 0;
-  newmenu->default_entry = 0;
-  newmenu->fallback_entry = -1;
-  newmenu->timeout = -1;
   newmenu->size = 0;
   newmenu->entry_list = 0;
   current_menu = newmenu;
@@ -431,8 +428,9 @@ grub_normal_execute (const char *config, int nested)
 
   if (menu)
     {
+      grub_env_set_data_slot ("menu", menu);
       grub_menu_run (menu, nested);
-      grub_context_pop_menu ();
+      grub_env_unset_data_slot ("menu");
       free_menu (menu);
     }
   else

@@ -63,10 +63,10 @@ grub_mkimage-util_resolve.d: util/resolve.c
 #	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c
 
 # For grub-emu.
-grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 		\
-	commands/configfile.c commands/default.c commands/help.c	\
+grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
+	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\
-	commands/search.c commands/timeout.c				\
+	commands/search.c						\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	disk/loopback.c							\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
@@ -629,16 +629,16 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genke
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
-	normal/completion.c normal/context.c normal/execute.c 		\
+	normal/completion.c normal/execute.c 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
 	normal/menu_entry.c normal/misc.c grub_script.tab.c 		\
 	normal/script.c normal/i386/setjmp.S
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o und-normal.lst
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o und-normal.lst
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
 endif
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
 UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
@@ -646,7 +646,7 @@ normal.mod: pre-normal.o mod-normal.o
 	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o
+pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
 	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
@@ -738,25 +738,6 @@ cmd-normal_mod-normal_completion.lst: normal/completion.c gencmdlist.sh
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 fs-normal_mod-normal_completion.lst: normal/completion.c genfslist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
-
-
-normal_mod-normal_context.o: normal/context.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_context.d: normal/context.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,context\.o[ :]*,normal_mod-normal_context.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include normal_mod-normal_context.d
-
-CLEANFILES += cmd-normal_mod-normal_context.lst fs-normal_mod-normal_context.lst
-COMMANDFILES += cmd-normal_mod-normal_context.lst
-FSFILES += fs-normal_mod-normal_context.lst
-
-cmd-normal_mod-normal_context.lst: normal/context.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
-
-fs-normal_mod-normal_context.lst: normal/context.c genfslist.sh
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
 

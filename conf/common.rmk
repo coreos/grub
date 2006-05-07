@@ -121,7 +121,7 @@ gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Commands.
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
-	loopback.mod default.mod timeout.mod configfile.mod	\
+	loopback.mod configfile.mod				\
 	terminfo.mod test.mod
 
 # For hello.mod.
@@ -178,16 +178,6 @@ test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 loopback_mod_SOURCES = disk/loopback.c
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 loopback_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For default.mod
-default_mod_SOURCES = commands/default.c
-default_mod_CFLAGS = $(COMMON_CFLAGS)
-default_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For timeout.mod
-timeout_mod_SOURCES = commands/timeout.c
-timeout_mod_CFLAGS = $(COMMON_CFLAGS)
-timeout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For configfile.mod
 configfile_mod_SOURCES = commands/configfile.c

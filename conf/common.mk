@@ -1039,7 +1039,7 @@ gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Commands.
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
-	loopback.mod default.mod timeout.mod configfile.mod	\
+	loopback.mod configfile.mod				\
 	terminfo.mod test.mod
 
 # For hello.mod.
@@ -1657,118 +1657,6 @@ fs-loopback_mod-disk_loopback.lst: disk/loopback.c genfslist.sh
 
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 loopback_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For default.mod
-default_mod_SOURCES = commands/default.c
-CLEANFILES += default.mod mod-default.o mod-default.c pre-default.o default_mod-commands_default.o und-default.lst
-ifneq ($(default_mod_EXPORTS),no)
-CLEANFILES += def-default.lst
-DEFSYMFILES += def-default.lst
-endif
-MOSTLYCLEANFILES += default_mod-commands_default.d
-UNDSYMFILES += und-default.lst
-
-default.mod: pre-default.o mod-default.o
-	-rm -f $@
-	$(CC) $(default_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-default.o: default_mod-commands_default.o
-	-rm -f $@
-	$(CC) $(default_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-
-mod-default.o: mod-default.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
-
-mod-default.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'default' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(default_mod_EXPORTS),no)
-def-default.lst: pre-default.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 default/' > $@
-endif
-
-und-default.lst: pre-default.o
-	echo 'default' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-default_mod-commands_default.o: commands/default.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
-
-default_mod-commands_default.d: commands/default.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -M $< 	  | sed 's,default\.o[ :]*,default_mod-commands_default.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include default_mod-commands_default.d
-
-CLEANFILES += cmd-default_mod-commands_default.lst fs-default_mod-commands_default.lst
-COMMANDFILES += cmd-default_mod-commands_default.lst
-FSFILES += fs-default_mod-commands_default.lst
-
-cmd-default_mod-commands_default.lst: commands/default.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh default > $@ || (rm -f $@; exit 1)
-
-fs-default_mod-commands_default.lst: commands/default.c genfslist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh default > $@ || (rm -f $@; exit 1)
-
-
-default_mod_CFLAGS = $(COMMON_CFLAGS)
-default_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For timeout.mod
-timeout_mod_SOURCES = commands/timeout.c
-CLEANFILES += timeout.mod mod-timeout.o mod-timeout.c pre-timeout.o timeout_mod-commands_timeout.o und-timeout.lst
-ifneq ($(timeout_mod_EXPORTS),no)
-CLEANFILES += def-timeout.lst
-DEFSYMFILES += def-timeout.lst
-endif
-MOSTLYCLEANFILES += timeout_mod-commands_timeout.d
-UNDSYMFILES += und-timeout.lst
-
-timeout.mod: pre-timeout.o mod-timeout.o
-	-rm -f $@
-	$(CC) $(timeout_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-timeout.o: timeout_mod-commands_timeout.o
-	-rm -f $@
-	$(CC) $(timeout_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-
-mod-timeout.o: mod-timeout.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
-
-mod-timeout.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'timeout' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(timeout_mod_EXPORTS),no)
-def-timeout.lst: pre-timeout.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 timeout/' > $@
-endif
-
-und-timeout.lst: pre-timeout.o
-	echo 'timeout' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-timeout_mod-commands_timeout.o: commands/timeout.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
-
-timeout_mod-commands_timeout.d: commands/timeout.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -M $< 	  | sed 's,timeout\.o[ :]*,timeout_mod-commands_timeout.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include timeout_mod-commands_timeout.d
-
-CLEANFILES += cmd-timeout_mod-commands_timeout.lst fs-timeout_mod-commands_timeout.lst
-COMMANDFILES += cmd-timeout_mod-commands_timeout.lst
-FSFILES += fs-timeout_mod-commands_timeout.lst
-
-cmd-timeout_mod-commands_timeout.lst: commands/timeout.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh timeout > $@ || (rm -f $@; exit 1)
-
-fs-timeout_mod-commands_timeout.lst: commands/timeout.c genfslist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh timeout > $@ || (rm -f $@; exit 1)
-
-
-timeout_mod_CFLAGS = $(COMMON_CFLAGS)
-timeout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For configfile.mod
 configfile_mod_SOURCES = commands/configfile.c

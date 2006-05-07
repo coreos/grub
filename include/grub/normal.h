@@ -1,7 +1,7 @@
 /* normal.h - prototypes for the normal mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -105,15 +105,6 @@ typedef struct grub_menu_entry *grub_menu_entry_t;
 /* The menu.  */
 struct grub_menu
 {
-  /* The default entry number.  */
-  int default_entry;
-
-  /* The fallback entry number.  */
-  int fallback_entry;
-
-  /* The timeout to boot the default entry automatically.  */
-  int timeout;
-  
   /* The size of a menu.  */
   int size;
 
@@ -121,22 +112,6 @@ struct grub_menu
   grub_menu_entry_t entry_list;
 };
 typedef struct grub_menu *grub_menu_t;
-
-/* A list of menus.  */
-struct grub_menu_list
-{
-  grub_menu_t menu;
-  struct grub_menu_list *next;
-};
-typedef struct grub_menu_list *grub_menu_list_t;
-
-/* The context.  A context holds some global information.  */
-struct grub_context
-{
-  /* The menu list.  */
-  grub_menu_list_t menu_list;
-};
-typedef struct grub_context *grub_context_t;
 
 /* This is used to store the names of filesystem modules for auto-loading.  */
 struct grub_fs_module_list
@@ -175,10 +150,6 @@ void grub_menu_init_page (int nested, int edit);
 int grub_arg_parse (grub_command_t parser, int argc, char **argv,
 		    struct grub_arg_list *usr, char ***args, int *argnum);
 void grub_arg_show_help (grub_command_t cmd);
-grub_context_t grub_context_get (void);
-grub_menu_t grub_context_get_current_menu (void);
-grub_menu_t grub_context_push_menu (grub_menu_t menu);
-void grub_context_pop_menu (void);
 char *grub_normal_do_completion (char *buf, int *restore,
 				 void (*hook) (const char *item, grub_completion_type_t type, int count));
 grub_err_t grub_normal_print_device_info (const char *name);
@@ -209,10 +180,6 @@ void grub_halt_init (void);
 void grub_halt_fini (void);
 void grub_reboot_init (void);
 void grub_reboot_fini (void);
-void grub_default_init (void);
-void grub_default_fini (void);
-void grub_timeout_init (void);
-void grub_timeout_fini (void);
 void grub_configfile_init (void);
 void grub_configfile_fini (void);
 void grub_search_init (void);

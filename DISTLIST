@@ -34,13 +34,11 @@ commands/boot.c
 commands/cat.c
 commands/cmp.c
 commands/configfile.c
-commands/default.c
 commands/help.c
 commands/ls.c
 commands/search.c
 commands/terminal.c
 commands/test.c
-commands/timeout.c
 commands/videotest.c
 commands/i386/pc/halt.c
 commands/i386/pc/play.c
@@ -213,7 +211,6 @@ normal/arg.c
 normal/cmdline.c
 normal/command.c
 normal/completion.c
-normal/context.c
 normal/execute.c
 normal/function.c
 normal/lexer.c

@@ -1,3 +1,72 @@
+2006-05-07  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Use the environment context in the menu. Remove the commands
+	"default" and "timeout", and use variables instead.
+	
+	* normal/menu.c: Include grub/env.h.
+	(print_entry): Cast TITLE to silence gcc.
+	(get_timeout): New function.
+	(set_timeout): Likewise.
+	(get_entry_number): Likewise.
+	(run_menu): Use a default entry, a fallback entry and a timeout
+	in the environment variables "default", "fallback" and
+	"timeout". Also, tweak the default entry if it is not within the
+	current menu entries.
+	(grub_menu_run): Use a fallback entry in the environment variable
+	"fallback".
+
+	* normal/main.c (read_config_file): Do not initialize
+	NEWMENU->DEFAULT_ENTRY, NEWMENU->FALLBACK_ENTRY or
+	NEWMENU->TIMEOUT.
+	(grub_normal_execute): Use a data slot to store the menu.
+
+	* include/grub/normal.h (struct grub_menu): Removed default_entry,
+	fallback_entry and timeout.
+	(struct grub_menu_list): Removed.
+	(grub_menu_list_t): Likewise.
+	(struct grub_context): Likewise.
+	(grub_context_t): Likewise.
+	(grub_context_get): Likewise.
+	(grub_context_get_current_menu): Likewise.
+	(grub_context_push_menu): Likewise.
+	(grub_context_pop_menu): Likewise.
+	(grub_default_init): Likewise.
+	(grub_default_fini): Likewise.
+	(grub_timeout_init): Likewise.
+	(grub_timeout_fini): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (pkgdata_MODULES): Removed default.mod
+	and timeout.mod.
+	(normal_mod_SOURCES): Removed normal/context.c.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Removed
+	commands/default.c, commands/timeout.c and normal/context.c.
+	(normal_mod_SOURCES): Removed normal/context.c.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Removed commands/default.c,
+	commands/timeout.c and normal/context.c.
+	(normal_mod_SOURCES): Removed normal/context.c.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Removed
+	commands/default.c, commands/timeout.c and normal/context.c.
+	(normal_mod_SOURCES): Removed normal/context.c.
+
+	* conf/common.rmk (pkgdata_MODULES): Removed default.mod and
+	timeout.mod.
+	(default_mod_SOURCES): Removed.
+	(default_mod_CFLAGS): Likewise.
+	(default_mod_LDFLAGS): Likewise.
+	(timeout_mod_SOURCES): Removed.
+	(timeout_mod_CFLAGS): Likewise.
+	(timeout_mod_LDFLAGS): Likewise.
+
+	* DISTLIST: Removed commands/default.c, commands/timeout.c and
+	normal/context.c.
+
+	* commands/default.c: Removed.
+	* commands/timeout.c: Likewise.
+	* normal/context.c: Likewise.
+
 2006-05-07  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* kern/i386/pc/startup.S (grub_exit): Added missing .code32 tag.

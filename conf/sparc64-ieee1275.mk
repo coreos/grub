@@ -288,7 +288,7 @@ pkgdata_MODULES = fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \
-	default.mod timeout.mod configfile.mod search.mod gzio.mod xfs.mod \
+	configfile.mod search.mod gzio.mod xfs.mod \
 	affs.mod sfs.mod acorn.mod
 
 # For fshelp.mod.
@@ -868,17 +868,17 @@ sfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
-	normal/completion.c normal/context.c normal/execute.c		\
+	normal/completion.c normal/execute.c				\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
 	normal/menu_entry.c normal/misc.c normal/script.c		\
 	normal/sparc64/setjmp.S						\
 	grub_script.tab.c
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o und-normal.lst
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o und-normal.lst
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
 endif
-MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_context.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_script.d normal_mod-normal_sparc64_setjmp.d normal_mod-grub_script_tab.d
+MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_script.d normal_mod-normal_sparc64_setjmp.d normal_mod-grub_script_tab.d
 UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o
@@ -886,7 +886,7 @@ normal.mod: pre-normal.o mod-normal.o
 	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_context.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o
+pre-normal.o: normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-normal_script.o normal_mod-normal_sparc64_setjmp.o normal_mod-grub_script_tab.o
 	-rm -f $@
 	$(CC) $(normal_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
 
@@ -978,25 +978,6 @@ cmd-normal_mod-normal_completion.lst: normal/completion.c gencmdlist.sh
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 fs-normal_mod-normal_completion.lst: normal/completion.c genfslist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
-
-
-normal_mod-normal_context.o: normal/context.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_context.d: normal/context.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,context\.o[ :]*,normal_mod-normal_context.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include normal_mod-normal_context.d
-
-CLEANFILES += cmd-normal_mod-normal_context.lst fs-normal_mod-normal_context.lst
-COMMANDFILES += cmd-normal_mod-normal_context.lst
-FSFILES += fs-normal_mod-normal_context.lst
-
-cmd-normal_mod-normal_context.lst: normal/context.c gencmdlist.sh
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
-
-fs-normal_mod-normal_context.lst: normal/context.c genfslist.sh
 	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
 
@@ -2147,113 +2128,11 @@ help_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For default.mod
 default_mod_SOURCES = commands/default.c
-CLEANFILES += default.mod mod-default.o mod-default.c pre-default.o default_mod-commands_default.o und-default.lst
-ifneq ($(default_mod_EXPORTS),no)
-CLEANFILES += def-default.lst
-DEFSYMFILES += def-default.lst
-endif
-MOSTLYCLEANFILES += default_mod-commands_default.d
-UNDSYMFILES += und-default.lst
-
-default.mod: pre-default.o mod-default.o
-	-rm -f $@
-	$(CC) $(default_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-default.o: default_mod-commands_default.o
-	-rm -f $@
-	$(CC) $(default_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-
-mod-default.o: mod-default.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
-
-mod-default.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'default' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(default_mod_EXPORTS),no)
-def-default.lst: pre-default.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 default/' > $@
-endif
-
-und-default.lst: pre-default.o
-	echo 'default' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-default_mod-commands_default.o: commands/default.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -c -o $@ $<
-
-default_mod-commands_default.d: commands/default.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -M $< 	  | sed 's,default\.o[ :]*,default_mod-commands_default.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include default_mod-commands_default.d
-
-CLEANFILES += cmd-default_mod-commands_default.lst fs-default_mod-commands_default.lst
-COMMANDFILES += cmd-default_mod-commands_default.lst
-FSFILES += fs-default_mod-commands_default.lst
-
-cmd-default_mod-commands_default.lst: commands/default.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh default > $@ || (rm -f $@; exit 1)
-
-fs-default_mod-commands_default.lst: commands/default.c genfslist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(default_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh default > $@ || (rm -f $@; exit 1)
-
-
 default_mod_CFLAGS =  $(COMMON_CFLAGS)
 default_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For timeout.mod
 timeout_mod_SOURCES = commands/timeout.c
-CLEANFILES += timeout.mod mod-timeout.o mod-timeout.c pre-timeout.o timeout_mod-commands_timeout.o und-timeout.lst
-ifneq ($(timeout_mod_EXPORTS),no)
-CLEANFILES += def-timeout.lst
-DEFSYMFILES += def-timeout.lst
-endif
-MOSTLYCLEANFILES += timeout_mod-commands_timeout.d
-UNDSYMFILES += und-timeout.lst
-
-timeout.mod: pre-timeout.o mod-timeout.o
-	-rm -f $@
-	$(CC) $(timeout_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-timeout.o: timeout_mod-commands_timeout.o
-	-rm -f $@
-	$(CC) $(timeout_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
-
-mod-timeout.o: mod-timeout.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
-
-mod-timeout.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'timeout' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(timeout_mod_EXPORTS),no)
-def-timeout.lst: pre-timeout.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 timeout/' > $@
-endif
-
-und-timeout.lst: pre-timeout.o
-	echo 'timeout' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-timeout_mod-commands_timeout.o: commands/timeout.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -c -o $@ $<
-
-timeout_mod-commands_timeout.d: commands/timeout.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -M $< 	  | sed 's,timeout\.o[ :]*,timeout_mod-commands_timeout.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
--include timeout_mod-commands_timeout.d
-
-CLEANFILES += cmd-timeout_mod-commands_timeout.lst fs-timeout_mod-commands_timeout.lst
-COMMANDFILES += cmd-timeout_mod-commands_timeout.lst
-FSFILES += fs-timeout_mod-commands_timeout.lst
-
-cmd-timeout_mod-commands_timeout.lst: commands/timeout.c gencmdlist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh timeout > $@ || (rm -f $@; exit 1)
-
-fs-timeout_mod-commands_timeout.lst: commands/timeout.c genfslist.sh
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(timeout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh timeout > $@ || (rm -f $@; exit 1)
-
-
 timeout_mod_CFLAGS =  $(COMMON_CFLAGS)
 timeout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

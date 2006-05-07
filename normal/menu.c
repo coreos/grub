@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <grub/loader.h>
 #include <grub/mm.h>
 #include <grub/machine/time.h>
+#include <grub/env.h>
 
 static void
 draw_border (void)
@@ -111,7 +112,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
     /* XXX How to show this error?  */
     return;
   
-  len = grub_utf8_to_ucs4 (unicode_title, title, grub_strlen (title));
+  len = grub_utf8_to_ucs4 (unicode_title, (grub_uint8_t *) title,
+			   grub_strlen (title));
   if (len < 0)
     {
       /* It is an invalid sequence.  */
@@ -202,14 +204,92 @@ grub_menu_init_page (int nested, int edit)
   print_message (nested, edit);
 }
 
+/* Return the current timeout. If the variable "timeout" is not set or
+   invalid, return -1.  */
+static int
+get_timeout (void)
+{
+  char *val;
+  int timeout;
+  
+  val = grub_env_get ("timeout");
+  if (! val)
+    return -1;
+  
+  grub_error_push ();
+  
+  timeout = (int) grub_strtoul (val, 0, 0);
+
+  /* If the value is invalid, unset the variable.  */
+  if (grub_errno != GRUB_ERR_NONE)
+    {
+      grub_env_unset ("timeout");
+      grub_errno = GRUB_ERR_NONE;
+      timeout = -1;
+    }
+
+  grub_error_pop ();
+  
+  return timeout;
+}
+
+/* Set current timeout in the variable "timeout".  */
+static void
+set_timeout (int timeout)
+{
+  /* Ignore TIMEOUT if it is zero, because it will be unset really soon.  */
+  if (timeout > 0)
+    {
+      char buf[16];
+      
+      grub_sprintf (buf, "%d", timeout);
+      grub_env_set ("timeout", buf);
+    }
+}
+
+/* Get the entry number from the variable NAME.  */
+static int
+get_entry_number (const char *name)
+{
+  char *val;
+  int entry;
+  
+  val = grub_env_get (name);
+  if (! val)
+    return -1;
+  
+  grub_error_push ();
+  
+  entry = (int) grub_strtoul (val, 0, 0);
+
+  if (grub_errno != GRUB_ERR_NONE)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      entry = -1;
+    }
+
+  grub_error_pop ();
+  
+  return entry;
+}
+
 static int
 run_menu (grub_menu_t menu, int nested)
 {
   int first, offset;
   unsigned long saved_time;
+  int default_entry;
   
   first = 0;
-  offset = menu->default_entry;
+  
+  default_entry = get_entry_number ("default");
+
+  /* If DEFAULT_ENTRY is not within the menu entries, fall back to
+     the first entry.  */
+  if (default_entry < 0 || default_entry >= menu->size)
+    default_entry = 0;
+
+  offset = default_entry;
   if (offset > GRUB_TERM_NUM_ENTRIES - 1)
     {
       first = offset - (GRUB_TERM_NUM_ENTRIES - 1);
@@ -228,15 +308,19 @@ run_menu (grub_menu_t menu, int nested)
   while (1)
     {
       int c;
+      int timeout;
 
-      if (menu->timeout > 0)
+      timeout = get_timeout ();
+      
+      if (timeout > 0)
 	{
 	  unsigned long current_time;
 
 	  current_time = grub_get_rtc ();
 	  if (current_time - saved_time >= GRUB_TICKS_PER_SECOND)
 	    {
-	      menu->timeout--;
+	      timeout--;
+	      set_timeout (timeout);
 	      saved_time = current_time;
 	    }
 	  
@@ -245,28 +329,28 @@ run_menu (grub_menu_t menu, int nested)
 	     They are required to clear the line.  */
 	  grub_printf ("\
    The highlighted entry will be booted automatically in %d seconds.    ",
-		       menu->timeout);
+		       timeout);
 	  grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
 	  grub_refresh ();
 	}
 
-      if (menu->timeout == 0)
+      if (timeout == 0)
 	{
-	  menu->timeout = -1;
-	  return menu->default_entry;
+	  grub_env_unset ("timeout");
+	  return default_entry;
 	}
       
-      if (grub_checkkey () >= 0 || menu->timeout < 0)
+      if (grub_checkkey () >= 0 || timeout < 0)
 	{
 	  c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
 	  
-	  if (menu->timeout >= 0)
+	  if (timeout >= 0)
 	    {
 	      grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
               grub_printf ("\
                                                                         ");
-              menu->timeout = -1;
-              menu->fallback_entry = -1;
+	      grub_env_unset ("timeout");
+	      grub_env_unset ("fallback");
 	      grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
 	    }
 	  
@@ -361,6 +445,7 @@ grub_menu_run (grub_menu_t menu, int nested)
     {
       int boot_entry;
       grub_menu_entry_t e;
+      int fallback_entry;
       
       boot_entry = run_menu (menu, nested);
       if (boot_entry < 0)
@@ -376,13 +461,14 @@ grub_menu_run (grub_menu_t menu, int nested)
 
       /* Deal with a fallback entry.  */
       /* FIXME: Multiple fallback entries like GRUB Legacy.  */
-      if (menu->fallback_entry >= 0)
+      fallback_entry = get_entry_number ("fallback");
+      if (fallback_entry >= 0)
 	{
 	  grub_print_error ();
 	  grub_errno = GRUB_ERR_NONE;
 	  
-	  e = get_entry (menu, menu->fallback_entry);
-	  menu->fallback_entry = -1;
+	  e = get_entry (menu, fallback_entry);
+	  grub_env_unset ("fallback");
 	  grub_printf ("\n  Falling back to \'%s\'\n\n", e->title);
 	  run_menu_entry (e);
 	}
