@@ -7,23 +7,23 @@ COMMON_LDFLAGS += -nostdlib
 
 # Images.
 
-MOSTLYCLEANFILES += grubof_symlist.c kernel_syms.lst
+MOSTLYCLEANFILES += kernel_elf_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
+kernel_elf_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h symbol.h \
 	term.h types.h powerpc/libgcc.h loader.h \
 	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
 	machine/kernel.h
 
-grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) config.h gensymlist.sh
+kernel_elf_symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
-kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) config.h genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Programs
-pkgdata_PROGRAMS = grubof
+pkgdata_PROGRAMS = kernel.elf
 
 # Utilities.
 bin_UTILITIES = grub-emu
@@ -59,18 +59,18 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
-grubof_SOURCES = kern/powerpc/ieee1275/crt0.S kern/powerpc/ieee1275/cmain.c \
+kernel_elf_SOURCES = kern/powerpc/ieee1275/crt0.S kern/powerpc/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c 		\
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c 	\
 	kern/powerpc/ieee1275/init.c term/ieee1275/ofconsole.c 		\
 	kern/powerpc/ieee1275/openfw.c disk/ieee1275/ofdisk.c 		\
 	kern/parser.c kern/partition.c kern/env.c kern/powerpc/dl.c 	\
-	grubof_symlist.c kern/powerpc/cache.S
-grubof_HEADERS = grub/powerpc/ieee1275/ieee1275.h
-grubof_CFLAGS = $(COMMON_CFLAGS)
-grubof_ASFLAGS = $(COMMON_ASFLAGS)
-grubof_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
+	kernel_elf_symlist.c kern/powerpc/cache.S
+kernel_elf_HEADERS = grub/powerpc/ieee1275/ieee1275.h
+kernel_elf_CFLAGS = $(COMMON_CFLAGS)
+kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
 	-Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
 # For genmoddep.

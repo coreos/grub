@@ -7,27 +7,27 @@ COMMON_LDFLAGS = -melf64_sparc -nostdlib
 
 # Images.
 
-MOSTLYCLEANFILES += grubof_symlist.c kernel_syms.lst
+MOSTLYCLEANFILES += kernel_elf_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-grubof_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
+kernel_elf_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
 	file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h symbol.h \
 	term.h types.h sparc64/libgcc.h loader.h \
 	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
 	machine/kernel.h
 
-grubof_symlist.c: $(addprefix include/grub/,$(grubof_HEADERS)) config.h gensymlist.sh
+kernel_elf_symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
 
-kernel_syms.lst: $(addprefix include/grub/,$(grubof_HEADERS)) config.h genkernsyms.sh
+kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Programs
-pkgdata_PROGRAMS = grubof
+pkgdata_PROGRAMS = kernel.elf
 
 # Utilities.
 #bin_UTILITIES = grub-emu grub-mkimage
@@ -63,17 +63,17 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
-grubof_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
+kernel_elf_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
 	kern/main.c kern/device.c kern/disk.c kern/dl.c kern/file.c \
 	kern/fs.c kern/err.c kern/misc.c kern/mm.c kern/loader.c \
 	kern/rescue.c kern/term.c term/ieee1275/ofconsole.c \
 	kern/sparc64/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
-	kern/partition.c kern/env.c kern/sparc64/dl.c grubof_symlist.c \
+	kern/partition.c kern/env.c kern/sparc64/dl.c kernel_elf_symlist.c \
 	kern/sparc64/cache.S kern/parser.c
-grubof_HEADERS = grub/sparc64/ieee1275/ieee1275.h
-grubof_CFLAGS = $(COMMON_CFLAGS)
-grubof_ASFLAGS = $(COMMON_ASFLAGS)
-grubof_LDFLAGS = -mno-app-regs -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc
+kernel_elf_HEADERS = grub/sparc64/ieee1275/ieee1275.h
+kernel_elf_CFLAGS = $(COMMON_CFLAGS)
+kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
+kernel_elf_LDFLAGS = -mno-app-regs -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc
 
 # For genmoddep.
 genmoddep_SOURCES = util/genmoddep.c
