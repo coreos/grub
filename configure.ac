@@ -29,16 +29,35 @@ case "$host_cpu" in
   *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
 
-case "$host_cpu"-"$host_vendor" in
-  i386-apple | *-efi) host_vendor=efi ;;
-  i386-*) host_vendor=pc ;;
-  powerpc-*) host_vendor=ieee1275 ;;
-  sparc64-*) host_vendor=ieee1275 ;;
+# Specify the platform (such as firmware).
+AC_ARG_WITH([platform],
+            AS_HELP_STRING([--with-platform=PLATFORM],
+                           [select the host platform [guessed]]))
+
+# Guess the platform if not specified.
+if test "x$with_platform" = x; then
+  case "$host_cpu"-"$host_vendor" in
+    i386-apple) platform=efi ;;
+    i386-*) platform=pc ;;
+    powerpc-*) platform=ieee1275 ;;
+    sparc64-*) platform=ieee1275 ;;
+    *) AC_MSG_ERROR([unsupported machine type]) ;;
+  esac
+else
+  platform="$with_platform"
+fi
+
+# Sanity check.
+case "$host_cpu"-"$platform" in
+  i386-efi) ;;
+  i386-pc) ;;
+  powerpc-ieee1275) ;;
+  sparc64-ieee1275) ;;
   *) AC_MSG_ERROR([unsupported machine type]) ;;
 esac
 
 AC_SUBST(host_cpu)
-AC_SUBST(host_vendor)
+AC_SUBST(platform)
 
 # Checks for programs.
 if test "x$CFLAGS" = x; then
@@ -189,7 +208,7 @@ AC_ARG_ENABLE([mm-debug],
 
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$host_cpu
-	include/grub/machine:include/grub/$host_cpu/$host_vendor])
+	include/grub/machine:include/grub/$host_cpu/$platform])
 AC_CONFIG_FILES([Makefile gensymlist.sh genkernsyms.sh])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
 AC_OUTPUT

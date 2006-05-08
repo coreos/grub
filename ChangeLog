@@ -1,3 +1,45 @@
+2006-05-08  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Add --with-platform to configure. Use pkglibdir instead of
+	pkgdatadir. This is reported by Roger Leigh.
+
+	* util/powerpc/ieee1275/grub-install.in (datadir): Removed.
+	(host_vendor): Likewise.
+	(host_os): Likewise.
+	(pkgdatadir): Likewise.
+	(platform): New variable.
+	(pkglibdir): Likewise.
+	Use PKGLIBDIR instead of PKGDATADIR.
+	
+	* util/i386/pc/grub-install.in (datadir): Removed.
+	(host_vendor): Likewise.
+	(host_os): Likewise.
+	(pkgdatadir): Likewise.
+	(platform): New variable.
+	(pkglibdir): Likewise.
+	Use PKGLIBDIR instead of PKGDATADIR.
+
+	* util/powerpc/ieee1275/grub-mkimage.c (usage): Use GRUB_LIBDIR
+	instead of GRUB_DATADIR.
+	(main): Likewise.
+	* util/i386/pc/grub-mkimage.c (usage): Likewise.
+	(main): Likewise.
+	* util/i386/efi/grub-mkimage.c (usage): Likewise.
+	(main): Likewise.
+
+	* configure.ac (--with-platform): New option.
+	Use PLATFORM instead of HOST_VENDOR to specify a platform.
+
+	* Makefile.in: Include a makefile based on PLATFORM instead of
+	HOST_VENDOR.
+	(pkgdatadir): Not appended by the machine type.
+	(pkglibdir): Appended by the machine type.
+	(host_vendor): Removed.
+	(platform): New variable.
+	(BUILD_CPPFLAGS): Specify GRUB_LIBDIR instead of GRUB_DATADIR.
+	(install-local): Use PKGLIBDIR instead of PKGDATADIR.
+	(uninstall): Likewise.
+
 2006-05-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Use the environment context in the menu. Remove the commands

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -278,7 +278,7 @@ Make a bootable image of GRUB.\n\
 -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", GRUB_DATADIR, PACKAGE_BUGREPORT);
+", GRUB_LIBDIR, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -336,7 +336,7 @@ main (int argc, char *argv[])
   if (! fp)
     grub_util_error ("cannot open %s", output);
 
-  add_segments (dir ? : GRUB_DATADIR, fp, chrp, argv + optind);
+  add_segments (dir ? : GRUB_LIBDIR, fp, chrp, argv + optind);
 
   fclose (fp);
 

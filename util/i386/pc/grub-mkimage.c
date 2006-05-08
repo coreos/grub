@@ -207,7 +207,7 @@ Make a bootable image of GRUB.\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", GRUB_DATADIR, PACKAGE_BUGREPORT);
+", GRUB_LIBDIR, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -269,7 +269,7 @@ main (int argc, char *argv[])
 	grub_util_error ("cannot open %s", output);
     }
 
-  generate_image (dir ? : GRUB_DATADIR, fp, argv + optind);
+  generate_image (dir ? : GRUB_LIBDIR, fp, argv + optind);
 
   fclose (fp);
 

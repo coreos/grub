@@ -34,8 +34,8 @@ libdir = @libdir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
-pkgdatadir = $(datadir)/@PACKAGE_TARNAME@/$(host_cpu)-$(host_vendor)
-pkglibdir = $(libdir)/@PACKAGE_TARNAME@
+pkgdatadir = $(datadir)/@PACKAGE_TARNAME@
+pkglibdir = $(libdir)/@PACKAGE_TARNAME@/$(host_cpu)-$(platform)
 
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
@@ -44,7 +44,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 
 host_cpu = @host_cpu@
-host_vendor = @host_vendor@
+platform = @platform@
 
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -61,7 +61,7 @@ CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W
 BUILD_CC = @BUILD_CC@
 BUILD_CFLAGS = -g -O2
 BUILD_CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W \
-	-DGRUB_DATADIR=\"$(pkgdatadir)\"
+	-DGRUB_LIBDIR=\"$(pkglibdir)\"
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
 NM = @NM@
@@ -99,7 +99,7 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 	  $(RUBY) $(srcdir)/genmk.rb < $< > $@; \
 	fi
 
-include $(srcdir)/conf/$(host_cpu)-$(host_vendor).mk
+include $(srcdir)/conf/$(host_cpu)-$(platform).mk
 
 ### General targets.
 
@@ -120,12 +120,12 @@ all-local: $(PROGRAMS) $(DATA) $(SCRIPTS) $(MKFILES)
 install: install-local
 
 install-local: all
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
 	@list='$(DATA)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
@@ -152,7 +152,7 @@ uninstall:
 	@list='$(DATA)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
-	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
+	  rm -f $(DESTDIR)$(pkglibdir)/$$dest; \
 	done
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \

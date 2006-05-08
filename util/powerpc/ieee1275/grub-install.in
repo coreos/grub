@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # Install GRUB on your drive.
-# Copyright (C) 1999,2000,2001,2002,2003,2004,2005 Free Software Foundation, Inc.
+# Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -24,14 +24,13 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
-datadir=@datadir@
+libdir=@libdir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 host_cpu=@host_cpu@
-host_os=@host_os@
-host_vendor=@host_vendor@
-pkgdatadir=${datadir}/${PACKAGE_TARNAME}/${host_cpu}-${host_vendor}
+platform=@platform@
+pkglibdir=${libdir}/${PACKAGE_TARNAME}/${host_cpu}-${platform}
 
 grub_mkimage=${sbindir}/grub-mkimage
 rootdir=
@@ -138,14 +137,14 @@ for file in ${grubdir}/*.mod ${grubdir}/*.lst ; do
 	rm -f $file || exit 1
     fi
 done
-for file in ${pkgdatadir}/*.mod ${pkgdatadir}/*.lst ; do
+for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ; do
     cp -f $file ${grubdir} || exit 1
 done
 
 # Create the core image with all modules, unless user specified a subset.
 # XXX probe for partition map and filesystem?
 if test "x$modules" = x; then
-    modules="$pkgdatadir"/*.mod
+    modules="$pkglibdir"/*.mod
 fi
 
 # Now perform the installation.

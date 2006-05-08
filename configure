@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT YACC INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA SET_MAKE OBJCOPY ac_ct_OBJCOPY STRIP ac_ct_STRIP NM ac_ct_NM LD ac_ct_LD RUBY BUILD_CC CPP EGREP LIBLZO LIBCURSES LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os platform CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT YACC INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA SET_MAKE OBJCOPY ac_ct_OBJCOPY STRIP ac_ct_STRIP NM ac_ct_NM LD ac_ct_LD RUBY BUILD_CC CPP EGREP LIBLZO LIBCURSES LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -850,6 +850,12 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-largefile     omit support for large files
   --enable-mm-debug       include memory manger debugging
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-platform=PLATFORM
+                          select the host platform guessed
 
 Some influential environment variables:
   CC          C compiler command
@@ -1406,11 +1412,35 @@ echo "$as_me: error: unsupported CPU type" >&2;}
    { (exit 1); exit 1; }; } ;;
 esac
 
-case "$host_cpu"-"$host_vendor" in
-  i386-apple | *-efi) host_vendor=efi ;;
-  i386-*) host_vendor=pc ;;
-  powerpc-*) host_vendor=ieee1275 ;;
-  sparc64-*) host_vendor=ieee1275 ;;
+# Specify the platform (such as firmware).
+
+# Check whether --with-platform or --without-platform was given.
+if test "${with_platform+set}" = set; then
+  withval="$with_platform"
+
+fi;
+
+# Guess the platform if not specified.
+if test "x$with_platform" = x; then
+  case "$host_cpu"-"$host_vendor" in
+    i386-apple) platform=efi ;;
+    i386-*) platform=pc ;;
+    powerpc-*) platform=ieee1275 ;;
+    sparc64-*) platform=ieee1275 ;;
+    *) { { echo "$as_me:$LINENO: error: unsupported machine type" >&5
+echo "$as_me: error: unsupported machine type" >&2;}
+   { (exit 1); exit 1; }; } ;;
+  esac
+else
+  platform="$with_platform"
+fi
+
+# Sanity check.
+case "$host_cpu"-"$platform" in
+  i386-efi) ;;
+  i386-pc) ;;
+  powerpc-ieee1275) ;;
+  sparc64-ieee1275) ;;
   *) { { echo "$as_me:$LINENO: error: unsupported machine type" >&5
 echo "$as_me: error: unsupported machine type" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -6576,7 +6606,7 @@ _ACEOF
 fi;
 
 # Output files.
-                    ac_config_links="$ac_config_links include/grub/cpu:include/grub/$host_cpu include/grub/machine:include/grub/$host_cpu/$host_vendor"
+                    ac_config_links="$ac_config_links include/grub/cpu:include/grub/$host_cpu include/grub/machine:include/grub/$host_cpu/$platform"
 
                               ac_config_files="$ac_config_files Makefile gensymlist.sh genkernsyms.sh"
 
@@ -7115,7 +7145,7 @@ do
   "genkernsyms.sh" ) CONFIG_FILES="$CONFIG_FILES genkernsyms.sh" ;;
   "stamp-h" ) CONFIG_FILES="$CONFIG_FILES stamp-h" ;;
   "include/grub/cpu" ) CONFIG_LINKS="$CONFIG_LINKS include/grub/cpu:include/grub/$host_cpu" ;;
-  "include/grub/machine" ) CONFIG_LINKS="$CONFIG_LINKS include/grub/machine:include/grub/$host_cpu/$host_vendor" ;;
+  "include/grub/machine" ) CONFIG_LINKS="$CONFIG_LINKS include/grub/machine:include/grub/$host_cpu/$platform" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -7210,6 +7240,7 @@ s,@host@,$host,;t t
 s,@host_cpu@,$host_cpu,;t t
 s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
+s,@platform@,$platform,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@LDFLAGS@,$LDFLAGS,;t t
