@@ -1,3 +1,11 @@
+2006-05-09  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Corrected bounds
+	checking.
+	(grub_video_vbe_blit_glyph): Likewise.
+	(grub_video_vbe_blit_bitmap): Likewise.
+	(grub_video_vbe_blit_render_target): Likewise.
+
 2006-05-09  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac (--with-platform): Properly quote the square

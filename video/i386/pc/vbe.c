@@ -944,9 +944,9 @@ grub_video_vbe_fill_rect (grub_video_color_t color, int x, int y,
   unsigned int i, j;
 
   /* Make sure there is something to do.  */
-  if ((x > (int)render_target->viewport.width) || (x + (int)width < 0))
+  if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((y > (int)render_target->viewport.height) || (y + (int)height < 0))
+  if ((y >= (int)render_target->viewport.height) || (y + (int)height < 0))
     return GRUB_ERR_NONE;
 
   /* Do not allow drawing out of viewport.  */
@@ -1013,10 +1013,10 @@ grub_video_vbe_blit_glyph (struct grub_font_glyph * glyph,
   unsigned int y_offset = 0;
   
   /* Make sure there is something to do.  */
-  if (x > (int)render_target->viewport.width)
+  if (x >= (int)render_target->viewport.width)
     return GRUB_ERR_NONE;
     
-  if (y > (int)render_target->viewport.height)
+  if (y >= (int)render_target->viewport.height)
     return GRUB_ERR_NONE;
 
   /* Calculate glyph dimensions.  */
@@ -1070,9 +1070,9 @@ grub_video_vbe_blit_bitmap (struct grub_video_bitmap * bitmap,
                             unsigned int width, unsigned int height)
 {
   /* Make sure there is something to do.  */
-  if ((x > (int)render_target->viewport.width) || (x + (int)width < 0))
+  if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((y > (int)render_target->viewport.height) || (y + (int)height < 0))
+  if ((y >= (int)render_target->viewport.height) || (y + (int)height < 0))
     return GRUB_ERR_NONE;
 
   /* Do not allow drawing out of viewport.  */
@@ -1130,19 +1130,19 @@ grub_video_vbe_blit_render_target (struct grub_video_render_target *source,
   /* Make sure there is something to do.  */
   if ((width == 0) || (height == 0))
     return GRUB_ERR_NONE;
-  if ((x > (int)render_target->viewport.width) || (x + (int)width < 0))
+  if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((y > (int)render_target->viewport.height) || (y + (int)height < 0))
+  if ((y >= (int)render_target->viewport.height) || (y + (int)height < 0))
     return GRUB_ERR_NONE;    
   if ((x + (int)source->mode_info.width) < 0)
     return GRUB_ERR_NONE;
   if ((y + (int)source->mode_info.height) < 0)
     return GRUB_ERR_NONE;    
-  if ((offset_x > (int)source->mode_info.width) 
-      || (offset_x + (int)source->mode_info.width < 0))
+  if ((offset_x >= (int)source->mode_info.width) 
+      || (offset_x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((offset_y > (int)source->mode_info.height) 
-      || (offset_y + (int)source->mode_info.height < 0))
+  if ((offset_y >= (int)source->mode_info.height) 
+      || (offset_y + (int)height < 0))
     return GRUB_ERR_NONE;    
 
   /* If we have negative coordinates, optimize drawing to minimum.  */
