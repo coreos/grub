@@ -1,3 +1,8 @@
+2006-05-09  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* configure.ac (--with-platform): Properly quote the square
+	brackets.
+
 2006-05-08  Marco Gerards  <marco@gnu.org>
 
 	* conf/powerpc-ieee1275.rmk (grubof_HEADERS): Renamed from

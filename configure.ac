@@ -32,7 +32,7 @@ esac
 # Specify the platform (such as firmware).
 AC_ARG_WITH([platform],
             AS_HELP_STRING([--with-platform=PLATFORM],
-                           [select the host platform [guessed]]))
+                           [select the host platform [[guessed]]]))
 
 # Guess the platform if not specified.
 if test "x$with_platform" = x; then
