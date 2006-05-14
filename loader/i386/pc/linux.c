@@ -30,7 +30,7 @@
 #include <grub/machine/memory.h>
 #include <grub/rescue.h>
 #include <grub/dl.h>
-#include <grub/machine/linux.h>
+#include <grub/cpu/linux.h>
 
 static grub_dl_t my_mod;
 

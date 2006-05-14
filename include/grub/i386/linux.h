@@ -45,6 +45,9 @@
 #define GRUB_LINUX_SETUP_MOVE_SIZE	0x9100
 #define GRUB_LINUX_CL_MAGIC		0xA33F
 
+#define GRUB_LINUX_EFI_SIGNATURE	\
+  ('E' << 24 | 'F' << 16 | 'I' << 8 | 'L')
+
 #ifndef ASM_FILE
 
 /* For the Linux/i386 boot protocol version 2.03.  */
@@ -79,6 +82,99 @@ struct linux_kernel_header
   grub_uint16_t pad1;			/* Unused */
   char *cmd_line_ptr;			/* Points to the kernel command line */
   grub_uint32_t initrd_addr_max;        /* Highest address for initrd */
+} __attribute__ ((packed));
+
+/* Boot parameters for Linux based on 2.6.12. This is used by the setup
+   sectors of Linux, and must be simulated by GRUB on EFI, because
+   the setup sectors depend on BIOS.  */
+struct linux_kernel_params
+{
+  grub_uint8_t video_cursor_x;		/* 0 */
+  grub_uint8_t video_cursor_y;
+
+  grub_uint16_t ext_mem;		/* 2 */
+  
+  grub_uint16_t video_page;		/* 4 */
+  grub_uint8_t video_mode;		/* 6 */
+  grub_uint8_t video_width;		/* 7 */
+  
+  grub_uint8_t padding1[0xa - 0x8];
+  
+  grub_uint16_t video_ega_bx;		/* a */
+  
+  grub_uint8_t padding2[0xe - 0xc];
+  
+  grub_uint8_t video_height;		/* e */
+  grub_uint8_t have_vga;		/* f */
+  grub_uint16_t font_size;		/* 10 */
+  
+  grub_uint16_t lfb_width;		/* 12 */
+  grub_uint16_t lfb_height;		/* 14 */
+  grub_uint16_t lfb_depth;		/* 16 */
+  grub_uint32_t lfb_base;		/* 18 */
+  grub_uint32_t lfb_size;		/* 1c */
+
+  grub_uint16_t cl_magic;		/* 20 */
+  grub_uint16_t cl_offset;
+
+  grub_uint16_t lfb_line_len;		/* 24 */
+  grub_uint8_t red_mask_size;		/* 26 */
+  grub_uint8_t red_field_pos;
+  grub_uint8_t green_mask_size;
+  grub_uint8_t green_field_pos;
+  grub_uint8_t blue_mask_size;
+  grub_uint8_t blue_field_pos;
+  grub_uint8_t reserved_mask_size;
+  grub_uint8_t reserved_field_pos;
+  grub_uint16_t vesapm_segment;		/* 2e */
+  grub_uint16_t vesapm_offset;		/* 30 */
+  grub_uint16_t lfb_pages;		/* 32 */
+  grub_uint16_t vesa_attrib;		/* 34 */
+
+  grub_uint8_t padding3[0x40 - 0x36];
+
+  grub_uint16_t apm_version;		/* 40 */
+  grub_uint16_t apm_code_segment;	/* 42 */
+  grub_uint32_t apm_entry;		/* 44 */
+  grub_uint16_t apm_16bit_code_segment;	/* 48 */
+  grub_uint16_t apm_data_segment;	/* 4a */
+  grub_uint16_t apm_flags;		/* 4c */
+  grub_uint32_t apm_code_len;		/* 4e */
+  grub_uint16_t apm_data_len;		/* 52 */
+  
+  grub_uint8_t padding4[0x60 - 0x54];
+  
+  grub_uint32_t ist_signature;		/* 60 */
+  grub_uint32_t ist_command;		/* 64 */
+  grub_uint32_t ist_event;		/* 68 */
+  grub_uint32_t ist_perf_level;		/* 6a */
+
+  grub_uint8_t padding5[0x80 - 0x6e];
+  
+  grub_uint8_t hd0_drive_info[10];	/* 80 */
+  grub_uint8_t hd1_drive_info[10];	/* 90 */
+  grub_uint16_t rom_config_len;		/* a0 */
+
+  grub_uint8_t padding6[0x1c0 - 0xa2];
+  
+  grub_uint32_t efi_signature;		/* 1c0 */
+  grub_uint32_t efi_system_table;	/* 1c4 */
+  grub_uint32_t efi_mem_desc_size;	/* 1c8 */
+  grub_uint32_t efi_mem_desc_version;	/* 1cc */
+  grub_uint32_t efi_mmap;		/* 1d0 */
+  grub_uint32_t efi_mmap_size;		/* 1d4 */
+  
+  grub_uint8_t padding7[0x1e0 - 0x1d8];
+  
+  grub_uint32_t alt_mem;		/* 1e0 */
+  
+  grub_uint8_t padding8[0x1e8 - 0x1e4];
+  
+  grub_uint32_t mmap_size;		/* 1e8 */
+
+  grub_uint8_t padding9[0x1ff - 0x1ec];
+  
+  grub_uint8_t ps_mouse;		/* 1ff */
 } __attribute__ ((packed));
 
 #endif /* ! ASM_FILE */

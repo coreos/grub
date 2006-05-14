@@ -1,3 +1,15 @@
+2006-05-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* kern/i386/pc/startup.S: Include grub/cpu/linux.h instead of
+	grub/machine/linux.h
+	* loader/i386/pc/linux.c: Likewise.
+
+	* include/grub/i386/pc/linux.h: Moved to ...
+	* include/grub/i386/linux.h: ... here.
+
+	* include/grub/i386/linux.h (struct linux_kernel_params): New
+	struct.
+	
 2006-05-09  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Corrected bounds

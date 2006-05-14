@@ -48,7 +48,7 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
-#include <grub/machine/linux.h>
+#include <grub/cpu/linux.h>
 #include <grub/machine/kernel.h>
 #include <grub/machine/multiboot.h>
 		
