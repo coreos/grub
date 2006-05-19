@@ -21,6 +21,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
+bindir=@bindir@
 libdir=@libdir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
@@ -30,7 +31,7 @@ platform=@platform@
 pkglibdir=${libdir}/${PACKAGE_TARNAME}/${host_cpu}-${platform}
 
 grub_setup=${sbindir}/grub-setup
-grub_mkimage=${sbindir}/grub-mkimage
+grub_mkimage=${bindir}/grub-mkimage
 grub_mkdevicemap=${sbindir}/grub-mkdevicemap
 grub_probefs=${sbindir}/grub-probefs
 rootdir=
