@@ -1,7 +1,7 @@
 /* lexer.c - The scripting lexer.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005, 2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -147,7 +147,7 @@ grub_script_yylex (YYSTYPE *yylval, struct grub_parser_param *parsestate)
   while (r == -1)
     {
       r = grub_script_yylex2 (yylval, parsestate);
-      if (r == ' ' || r == '\n')
+      if (r == ' ')
 	r = -1;
     }
   return r;

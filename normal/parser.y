@@ -1,7 +1,7 @@
 /* parser.y - The scripting parser.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005, 2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 %token GRUB_PARSER_TOKEN_FI		"fi"
 %token GRUB_PARSER_TOKEN_NAME
 %token GRUB_PARSER_TOKEN_VAR
-%type <cmd> script grubcmd command commands menuentry if
+%type <cmd> script grubcmd command commands commandblock menuentry if
 %type <arglist> arguments;
 %type <arg> argument;
 %type <string> "if" "while" "function" "else" "then" "fi"
@@ -56,10 +56,14 @@
 
 %%
 /* It should be possible to do this in a clean way...  */
-script:		{ state->err = 0} commands
+script:		{ state->err = 0} newlines commands
 		  {
-		    state->parsed = $2;
+		    state->parsed = $3;
 		  }
+;
+
+newlines:	/* Empty */
+		| newlines '\n'
 ;
 
 /* Some tokens are both used as token or as plain text.  XXX: Add all
@@ -128,15 +132,25 @@ command:	grubcmd 	{ $$ = $1; }
 ;
 
 /* A block of commands.  */
-commands:	command
+commands:	command '\n'
+		  { 
+		    $$ = grub_script_add_cmd (state, 0, $1);
+		  }
+		| command
 		  { 
 		    $$ = grub_script_add_cmd (state, 0, $1);
 		  }
 		| command ';' commands
 		  { 
 		    struct grub_script_cmdblock *cmd;
-		    cmd = (struct grub_script_cmdblock *) $1;
-		    $$ = grub_script_add_cmd (state, cmd, $3);
+		    cmd = (struct grub_script_cmdblock *) $3;
+		    $$ = grub_script_add_cmd (state, cmd, $1);
+		  }
+		| command '\n' newlines commands
+		  { 
+		    struct grub_script_cmdblock *cmd;
+		    cmd = (struct grub_script_cmdblock *) $4;
+		    $$ = grub_script_add_cmd (state, cmd, $1);
 		  }
 		| error
 		  {
@@ -146,17 +160,22 @@ commands:	command
 		  }
 ;
 
-/* A function.  Carefully save the memory that is allocated.  */
+/* A function.  Carefully save the memory that is allocated.  Don't
+   change any stuff because it might seem like a fun thing to do!
+   Special care was take to make sure the mid-rule actions are
+   executed on the right moment.  So the `commands' rule should be
+   recognised after executing the `grub_script_mem_record; and before
+   `grub_script_mem_record_stop'.  */
 function:	"function" GRUB_PARSER_TOKEN_NAME
 		  { 
 		    grub_script_lexer_ref (state->lexerstate);
-		  } '{'
+		  } newlines '{'
 		  { 
 		    /* The first part of the function was recognised.
 		       Now start recording the memory usage to store
 		       this function.  */
 		    state->func_mem = grub_script_mem_record (state);
-		  } commands '}'
+		  } newlines commands '}'
 		  {
 		    struct grub_script *script;
 
@@ -164,29 +183,33 @@ function:	"function" GRUB_PARSER_TOKEN_NAME
 		       was recorded.  */
 		    state->func_mem = grub_script_mem_record_stop (state,
 								   state->func_mem);
-		    script = grub_script_create ($6, state->func_mem);
+		    script = grub_script_create ($8, state->func_mem);
 		    if (script)
 		      grub_script_function_create ($2, script);
 		    grub_script_lexer_deref (state->lexerstate);
 		  }
 ;
 
-/* A menu entry.  Carefully save the memory that is allocated.  */
-menuentry:	"menuentry" argument
-		  { 
+/* Carefully designed, together with `menuentry' so everything happens
+   just in the expected order.  */
+commandblock:	'{'
+		  {
 		    grub_script_lexer_ref (state->lexerstate);
-		  } '{'
-		  { 
-		    /* Record sourcecode of the menu entry.  It can be
-		       parsed multiple times if it is part of a
-		       loop.  */
-		    grub_script_lexer_record_start (state->lexerstate);
-		  } commands '}'
+                    grub_script_lexer_record_start (state->lexerstate);
+		  }
+                newlines commands '}'
+                  {
+		    grub_script_lexer_deref (state->lexerstate);
+		    $$ = $4;
+		  }
+;
+
+/* A menu entry.  Carefully save the memory that is allocated.  */
+menuentry:	"menuentry" argument newlines commandblock
 		  {
 		    char *menu_entry;
 		    menu_entry = grub_script_lexer_record_stop (state->lexerstate);
 		    $$ = grub_script_create_cmdmenu (state, $2, menu_entry, 0);
-		    grub_script_lexer_deref (state->lexerstate);
 		  }
 ;
 

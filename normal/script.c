@@ -1,7 +1,7 @@
 /* script.c -- Functions to create an in memory description of the script. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005, 2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -253,15 +253,13 @@ grub_script_add_cmd (struct grub_parser_param *state,
       cmdblock->cmd.exec = grub_script_execute_cmdblock;
       cmdblock->cmd.next = 0;
       cmdblock->cmdlist = cmd;
+      cmd->next = 0;
     }
   else
     {
-      struct grub_script_cmd **last;
-      for (last = &cmdblock->cmdlist; *last; last = &(*last)->next);
-      *last = cmd;
+      cmd->next = cmdblock->cmdlist;
+      cmdblock->cmdlist = cmd;
     }
-
-  cmd->next = 0;
 
   return (struct grub_script_cmd *) cmdblock;
 }
