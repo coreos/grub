@@ -176,6 +176,9 @@ real_start:
 	cmpw	$0xaa55, %bx
 	jne	chs_mode
 
+	/* set %si to the disk address packet */
+	movw	$ABS(disk_address_packet), %si
+	
 	/* check if AH=0x42 is supported if FORCE_LBA is zero */
 	MOV_MEM_TO_AL(ABS(force_lba))	/* movb	ABS(force_lba), %al */
 	testb	%al, %al
@@ -184,11 +187,13 @@ real_start:
 	jz	chs_mode
 	
 lba_mode:
-	/* set %si to the disk address packet */
-	movw	$ABS(disk_address_packet), %si
+	xorl	%eax, %eax
+	movw	%ax, 4(%si)
+	movl	%eax, 12(%si)
 
+	incw	%ax	
 	/* set the mode to non-zero */
-	movb	$1, -1(%si)
+	movb	%al, -1(%si)
 	
 	movl	ABS(kernel_sector), %ebx
 
@@ -196,7 +201,7 @@ lba_mode:
 	movw	$0x0010, (%si)
 
 	/* the blocks */
-	movw	$1, 2(%si)
+	movw	%ax, 2(%si)
 	
 	/* the absolute address (low 32 bits) */
 	movl	%ebx, 8(%si)
@@ -204,10 +209,6 @@ lba_mode:
 	/* the segment of buffer address */
 	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
 
-	xorl	%eax, %eax
-	movw	%ax, 4(%si)
-	movl	%eax, 12(%si)
-	
 /*
  * BIOS call "INT 0x13 Function 0x42" to read sectors from disk into memory
  *	Call with	%ah = 0x42
@@ -245,9 +246,6 @@ chs_mode:
 	jmp	hd_probe_error
 
 final_init:
-	
-	movw	$ABS(sectors), %si
-
 	/* set the mode to zero */
 	movb	$0, -1(%si)
 	

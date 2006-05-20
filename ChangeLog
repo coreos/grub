@@ -1,3 +1,9 @@
+2006-05-20  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* boot/i386/pc/boot.S (real_start): Set %si earlier to eliminate
+	duplication.
+	(lba_mode): Use %eax more intensively to reduce the code size.
+
 2006-05-20  Marco Gerards  <marco@gnu.org>
 
 	* normal/lexer.c (grub_script_yylex): Don't filter out newlines.
