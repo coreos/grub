@@ -1,3 +1,20 @@
+2006-05-20  Marco Gerards  <marco@gnu.org>
+
+	* normal/lexer.c (grub_script_yylex): Don't filter out newlines.
+
+	* normal/parser.y (commandblock): Defined as <cmd>.  A subroutine
+	for `menuentry'.
+	(script): Accept leading newlines.
+	(newlines): New rule to describe 0 or more newlines.
+	(commands): Accept `command' with trailing newline.  Fixed the
+	order in which arguments were passed to `grub_script_add_cmd'.
+	Accept commands separated by newlines.
+	(function): Changed to accept newlines.
+	(menuentry) Rewritten.
+
+	* normal/script.c (grub_script_create_cmdmenu): Add new entries in
+	front of the list, instead of to the end.
+
 2006-05-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/grub-install.in (bindir): New variable.
