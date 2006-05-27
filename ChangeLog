@@ -5,7 +5,7 @@
 	* DISTLIST: Added commands/blocklist.c.
 
 	* term/efi/console.c (grub_console_highlight_color): Use a lighter
-	color for the background, and a daker color for the foreground.
+	color for the background, and a darker color for the foreground.
 	(grub_console_checkkey): Return READ_KEY.
 	(grub_console_cls): Set the background to
 	GRUB_EFI_BACKGROUND_BLACK temporarily to clean out the screen.
