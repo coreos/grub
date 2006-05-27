@@ -161,6 +161,17 @@ grub_exit (void)
 					      0, 0);
 }
 
+int
+grub_efi_exit_boot_services (grub_efi_uintn_t map_key)
+{
+  grub_efi_boot_services_t *b;
+  grub_efi_status_t status;
+  
+  b = grub_efi_system_table->boot_services;
+  status = b->exit_boot_services (grub_efi_image_handle, map_key);
+  return status == GRUB_EFI_SUCCESS;
+}
+
 grub_uint32_t
 grub_get_rtc (void)
 {

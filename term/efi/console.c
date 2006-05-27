@@ -32,8 +32,8 @@ static grub_uint8_t
 grub_console_normal_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_LIGHTGRAY,
 						GRUB_EFI_BACKGROUND_BLACK);
 static grub_uint8_t
-grub_console_highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_WHITE,
-						   GRUB_EFI_BACKGROUND_BLACK);
+grub_console_highlight_color = GRUB_EFI_TEXT_ATTR (GRUB_EFI_BLACK,
+						   GRUB_EFI_BACKGROUND_LIGHTGRAY);
 
 static int read_key = -1;
 
@@ -146,7 +146,7 @@ grub_console_checkkey (void)
 	}
     }
 
-  return read_key >= 0;
+  return read_key;
 }
 
 static int
@@ -222,9 +222,13 @@ static void
 grub_console_cls (void)
 {
   grub_efi_simple_text_output_interface_t *o;
+  grub_efi_int32_t orig_attr;
   
   o = grub_efi_system_table->con_out;
+  orig_attr = o->mode->attribute;
+  o->set_attributes (o, GRUB_EFI_BACKGROUND_BLACK);
   o->clear_screen (o);
+  o->set_attributes (o, orig_attr);
 }
 
 static void

@@ -1002,7 +1002,7 @@ typedef struct grub_efi_simple_text_output_interface grub_efi_simple_text_output
 #define GRUB_EFI_BACKGROUND_BROWN	0x60
 #define GRUB_EFI_BACKGROUND_LIGHTGRAY	0x70
 
-#define GRUB_EFI_TEXT_ATTR(fg, bg)	((fg) | ((bg) << 4))
+#define GRUB_EFI_TEXT_ATTR(fg, bg)	((fg) | ((bg)))
 
 struct grub_efi_system_table
 {

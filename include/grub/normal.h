@@ -186,6 +186,8 @@ void grub_search_init (void);
 void grub_search_fini (void);
 void grub_test_init (void);
 void grub_test_fini (void);
+void grub_blocklist_init (void);
+void grub_blocklist_fini (void);
 #endif
 
 #endif /* ! GRUB_NORMAL_HEADER */

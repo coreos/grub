@@ -1040,7 +1040,7 @@ gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod				\
-	terminfo.mod test.mod
+	terminfo.mod test.mod blocklist.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -1789,6 +1789,61 @@ fs-terminfo_mod-term_tparm.lst: term/tparm.c genfslist.sh
 terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
 terminfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For blocklist.mod.
+blocklist_mod_SOURCES = commands/blocklist.c
+CLEANFILES += blocklist.mod mod-blocklist.o mod-blocklist.c pre-blocklist.o blocklist_mod-commands_blocklist.o und-blocklist.lst
+ifneq ($(blocklist_mod_EXPORTS),no)
+CLEANFILES += def-blocklist.lst
+DEFSYMFILES += def-blocklist.lst
+endif
+MOSTLYCLEANFILES += blocklist_mod-commands_blocklist.d
+UNDSYMFILES += und-blocklist.lst
+
+blocklist.mod: pre-blocklist.o mod-blocklist.o
+	-rm -f $@
+	$(CC) $(blocklist_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-blocklist.o: blocklist_mod-commands_blocklist.o
+	-rm -f $@
+	$(CC) $(blocklist_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-blocklist.o: mod-blocklist.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -c -o $@ $<
+
+mod-blocklist.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'blocklist' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(blocklist_mod_EXPORTS),no)
+def-blocklist.lst: pre-blocklist.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 blocklist/' > $@
+endif
+
+und-blocklist.lst: pre-blocklist.o
+	echo 'blocklist' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+blocklist_mod-commands_blocklist.o: commands/blocklist.c
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -c -o $@ $<
+
+blocklist_mod-commands_blocklist.d: commands/blocklist.c
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -M $< 	  | sed 's,blocklist\.o[ :]*,blocklist_mod-commands_blocklist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include blocklist_mod-commands_blocklist.d
+
+CLEANFILES += cmd-blocklist_mod-commands_blocklist.lst fs-blocklist_mod-commands_blocklist.lst
+COMMANDFILES += cmd-blocklist_mod-commands_blocklist.lst
+FSFILES += fs-blocklist_mod-commands_blocklist.lst
+
+cmd-blocklist_mod-commands_blocklist.lst: commands/blocklist.c gencmdlist.sh
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh blocklist > $@ || (rm -f $@; exit 1)
+
+fs-blocklist_mod-commands_blocklist.lst: commands/blocklist.c genfslist.sh
+	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh blocklist > $@ || (rm -f $@; exit 1)
+
+
+blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
+blocklist_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkgdata_MODULES += gzio.mod 

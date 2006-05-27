@@ -147,12 +147,12 @@ struct linux_kernel_params
   grub_uint32_t ist_signature;		/* 60 */
   grub_uint32_t ist_command;		/* 64 */
   grub_uint32_t ist_event;		/* 68 */
-  grub_uint32_t ist_perf_level;		/* 6a */
+  grub_uint32_t ist_perf_level;		/* 6c */
 
-  grub_uint8_t padding5[0x80 - 0x6e];
+  grub_uint8_t padding5[0x80 - 0x70];
   
-  grub_uint8_t hd0_drive_info[10];	/* 80 */
-  grub_uint8_t hd1_drive_info[10];	/* 90 */
+  grub_uint8_t hd0_drive_info[0x10];	/* 80 */
+  grub_uint8_t hd1_drive_info[0x10];	/* 90 */
   grub_uint16_t rom_config_len;		/* a0 */
 
   grub_uint8_t padding6[0x1c0 - 0xa2];
@@ -176,7 +176,6 @@ struct linux_kernel_params
   
   grub_uint8_t ps_mouse;		/* 1ff */
 } __attribute__ ((packed));
-
 #endif /* ! ASM_FILE */
 
 #endif /* ! GRUB_LINUX_MACHINE_HEADER */

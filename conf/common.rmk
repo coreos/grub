@@ -122,7 +122,7 @@ gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod				\
-	terminfo.mod test.mod
+	terminfo.mod test.mod blocklist.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -189,6 +189,10 @@ terminfo_mod_SOURCES = term/terminfo.c term/tparm.c
 terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
 terminfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For blocklist.mod.
+blocklist_mod_SOURCES = commands/blocklist.c
+blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
+blocklist_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkgdata_MODULES += gzio.mod 

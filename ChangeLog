@@ -1,3 +1,39 @@
+2006-05-27  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* commands/blocklist.c: New file.
+
+	* DISTLIST: Added commands/blocklist.c.
+
+	* term/efi/console.c (grub_console_highlight_color): Use a lighter
+	color for the background, and a daker color for the foreground.
+	(grub_console_checkkey): Return READ_KEY.
+	(grub_console_cls): Set the background to
+	GRUB_EFI_BACKGROUND_BLACK temporarily to clean out the screen.
+
+	* kern/efi/efi.c (grub_efi_exit_boot_services): New function.
+
+	* include/grub/i386/linux.h (struct linux_kernel_params): Fixed
+	the size of "padding5", "hd0_drive_info" and "hd1_drive_info".
+
+	* include/grub/efi/efi.h (grub_efi_exit_boot_services): New
+	prototype.
+
+	* include/grub/efi/api.h (GRUB_EFI_TEXT_ATTR): Do not shift
+	BG. The spec is wrong again.
+
+	* include/grub/normal.h [GRUB_UTIL] (grub_blocklist_init): New
+	prototype.
+	[GRUB_UTIL] (grub_blocklist_fini): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Added
+	commands/blocklist.c.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	
+	* conf/common.rmk (pkgdata_MODULES): Added blocklist.mod.
+	(blocklist_mod_SOURCES): New variable.
+	(blocklist_mod_CFLAGS): Likewise.
+	(blocklist_mod_LDFLAGS): Likewise.
+
 2006-05-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* boot/i386/pc/boot.S (real_start): Set %si earlier to eliminate

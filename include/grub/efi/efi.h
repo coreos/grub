@@ -54,6 +54,7 @@ void EXPORT_FUNC(grub_efi_print_device_path) (grub_efi_device_path_t *dp);
 char *EXPORT_FUNC(grub_efi_get_filename) (grub_efi_device_path_t *dp);
 grub_efi_device_path_t *
 EXPORT_FUNC(grub_efi_get_device_path) (grub_efi_handle_t handle);
+int EXPORT_FUNC(grub_efi_exit_boot_services) (grub_efi_uintn_t map_key);
 
 void grub_efi_mm_init (void);
 void grub_efi_mm_fini (void);
