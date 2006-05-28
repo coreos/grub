@@ -22,6 +22,7 @@ geninitheader.sh
 geninit.sh
 genkernsyms.sh.in
 genmk.rb
+genmoddep.awk
 genmodsrc.sh
 gensymlist.sh.in
 install-sh
@@ -242,7 +243,6 @@ term/i386/pc/vesafb.c
 term/i386/pc/vga.c
 term/ieee1275/ofconsole.c
 util/console.c
-util/genmoddep.c
 util/grub-emu.c
 util/misc.c
 util/resolve.c

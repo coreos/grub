@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005 Free Software Foundation, Inc.
+# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006 Free Software Foundation, Inc.
 #
 # This Makefile.in is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -35,7 +35,7 @@ infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
 pkgdatadir = $(datadir)/@PACKAGE_TARNAME@
-pkglibdir = $(libdir)/@PACKAGE_TARNAME@/$(host_cpu)-$(platform)
+pkglibdir = $(libdir)/@PACKAGE_TARNAME@/$(target_cpu)-$(platform)
 
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
@@ -43,7 +43,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 
-host_cpu = @host_cpu@
+target_cpu = @target_cpu@
 platform = @platform@
 
 INSTALL = @INSTALL@
@@ -57,15 +57,18 @@ mkinstalldirs = $(srcdir)/mkinstalldirs
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
-CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W
-BUILD_CC = @BUILD_CC@
-BUILD_CFLAGS = -g -O2
-BUILD_CPPFLAGS = -I. -Iinclude -I$(srcdir)/include -Wall -W \
-	-DGRUB_LIBDIR=\"$(pkglibdir)\"
+CPPFLAGS = @CPPFLAGS@ -I. -Iinclude -I$(srcdir)/include -Wall -W \
+	 -DGRUB_LIBDIR=\"$(pkglibdir)\"
+TARGET_CC = @TARGET_CC@
+TARGET_CFLAGS = @TARGET_CFLAGS@
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I. -Iinclude -I$(srcdir)/include \
+	-Wall -W
+TARGET_LDFLAGS = @TARGET_LDFLAGS@
 OBJCOPY = @OBJCOPY@
 STRIP = @STRIP@
 NM = @NM@
 RUBY = @RUBY@
+AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBLZO = @LIBLZO@
 YACC = @YACC@
@@ -99,14 +102,15 @@ $(addprefix $(srcdir)/,$(MKFILES)): %.mk: %.rmk genmk.rb
 	  $(RUBY) $(srcdir)/genmk.rb < $< > $@; \
 	fi
 
-include $(srcdir)/conf/$(host_cpu)-$(platform).mk
+include $(srcdir)/conf/$(target_cpu)-$(platform).mk
 
 ### General targets.
 
 CLEANFILES += moddep.lst command.lst fs.lst
 pkgdata_DATA += moddep.lst command.lst fs.lst
-moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep
-	cat $(DEFSYMFILES) /dev/null | ./genmoddep $(UNDSYMFILES) > $@ \
+moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
+	cat $(DEFSYMFILES) /dev/null \
+	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
 	  || (rm -f $@; exit 1)
 
 command.lst: $(COMMANDFILES)

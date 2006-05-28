@@ -26,9 +26,9 @@ libdir=@libdir@
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
-host_cpu=@host_cpu@
+target_cpu=@target_cpu@
 platform=@platform@
-pkglibdir=${libdir}/${PACKAGE_TARNAME}/${host_cpu}-${platform}
+pkglibdir=${libdir}/${PACKAGE_TARNAME}/${target_cpu}-${platform}
 
 grub_setup=${sbindir}/grub-setup
 grub_mkimage=${bindir}/grub-mkimage

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,9 +32,9 @@
 #  undef GRUB_CPU_WORDS_BIGENDIAN
 # endif
 #else /* ! GRUB_UTIL */
-# define GRUB_CPU_SIZEOF_VOID_P	GRUB_HOST_SIZEOF_VOID_P
-# define GRUB_CPU_SIZEOF_LONG	GRUB_HOST_SIZEOF_LONG
-# ifdef GRUB_HOST_WORDS_BIGENDIAN
+# define GRUB_CPU_SIZEOF_VOID_P	GRUB_TARGET_SIZEOF_VOID_P
+# define GRUB_CPU_SIZEOF_LONG	GRUB_TARGET_SIZEOF_LONG
+# ifdef GRUB_TARGET_WORDS_BIGENDIAN
 #  define GRUB_CPU_WORDS_BIGENDIAN	1
 # else
 #  undef GRUB_CPU_WORDS_BIGENDIAN
@@ -69,7 +69,7 @@ typedef unsigned long long	grub_uint64_t;
 #endif
 
 /* Misc types.  */
-#if GRUB_HOST_SIZEOF_VOID_P == 8
+#if SIZEOF_VOID_P == 8
 typedef grub_uint64_t	grub_host_addr_t;
 typedef grub_uint64_t	grub_host_off_t;
 typedef grub_uint64_t	grub_host_size_t;

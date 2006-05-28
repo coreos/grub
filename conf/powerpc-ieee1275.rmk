@@ -28,7 +28,6 @@ pkgdata_PROGRAMS = kernel.elf
 # Utilities.
 bin_UTILITIES = grub-emu
 sbin_UTILITIES = grub-mkimage
-noinst_UTILITIES = genmoddep
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
@@ -72,9 +71,6 @@ kernel_elf_CFLAGS = $(COMMON_CFLAGS)
 kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
 	-Wl,-N,-S,-Ttext,0x200000,-Bstatic
-
-# For genmoddep.
-genmoddep_SOURCES = util/genmoddep.c
 
 # Scripts.
 sbin_SCRIPTS = grub-install

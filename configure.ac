@@ -11,20 +11,45 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+dnl This configure script is complicated, because GRUB needs to deal
+dnl with three potentially different types:
+dnl
+dnl   build  -- the environment for building GRUB
+dnl   host   -- the environment for running utilities
+dnl   target -- the environment for running GRUB
+dnl
+dnl In addition, GRUB needs to deal with a platform specification
+dnl which specifies the system running GRUB, such as firmware.
+dnl This is necessary because the target type in autoconf does not
+dnl describe such a system very well.
+dnl
+dnl The current strategy is to use variables with no prefix (such as
+dnl CC, CFLAGS, etc.) for the host type as well as the build type,
+dnl because GRUB does not need to use those variables for the build
+dnl type, so there is no conflict. Variables with the prefix "TARGET_"
+dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
+dnl type.
+
+
 AC_INIT(GRUB, 1.93, [bug-grub@gnu.org])
 AC_PREREQ(2.53)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
-# Checks for build and host systems.
-AC_CANONICAL_BUILD
+# Checks for host and target systems.
 AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
 
 case "$host_cpu" in
-  i[[3456]]86) host_cpu=i386 ;;
-  x86_64) host_cpu=i386 biarch32=1 ;;
+  x86_64) host_m32=1 ;;
+  powerpc64) host_m32=1 ;;
+esac
+
+case "$target_cpu" in
+  i[[3456]]86) target_cpu=i386 ;;
+  x86_64) target_cpu=i386 target_m32=1 ;;
   powerpc) ;;
-  powerpc64) host_cpu=powerpc biarch32=1;;
+  powerpc64) target_cpu=powerpc target_m32=1;;
   sparc64) ;;
   *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
@@ -36,7 +61,7 @@ AC_ARG_WITH([platform],
 
 # Guess the platform if not specified.
 if test "x$with_platform" = x; then
-  case "$host_cpu"-"$host_vendor" in
+  case "$target_cpu"-"$target_vendor" in
     i386-apple) platform=efi ;;
     i386-*) platform=pc ;;
     powerpc-*) platform=ieee1275 ;;
@@ -48,7 +73,7 @@ else
 fi
 
 # Sanity check.
-case "$host_cpu"-"$platform" in
+case "$target_cpu"-"$platform" in
   i386-efi) ;;
   i386-pc) ;;
   powerpc-ieee1275) ;;
@@ -56,120 +81,48 @@ case "$host_cpu"-"$platform" in
   *) AC_MSG_ERROR([unsupported machine type]) ;;
 esac
 
-AC_SUBST(host_cpu)
+AC_SUBST(target_cpu)
 AC_SUBST(platform)
 
-# Checks for programs.
-if test "x$CFLAGS" = x; then
-  default_CFLAGS=yes
-fi
-
-AC_PROG_CC
+#
+# Checks for build programs.
+#
 
 AC_CHECK_PROGS([YACC], [bison])
 if test "x$YACC" = x; then
   AC_MSG_ERROR([Could not find bison.])
 fi
 
-AC_SYS_LARGEFILE
-
-# Must be GCC.
-test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
-
-if test "x$default_CFLAGS" = xyes; then
-  # debug flags.
-  tmp_CFLAGS="-Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
-		-Wundef -Wstrict-prototypes -g"
-
-  # optimization flags.
-  AC_CACHE_CHECK([whether optimization for size works], size_flag, [
-    CFLAGS=-Os
-    AC_TRY_COMPILE(, , size_flag=yes, size_flag=no)
-  ])
-  if test "x$size_flag" = xyes; then
-    tmp_CFLAGS="$tmp_CFLAGS -Os"
-  else
-    tmp_CFLAGS="$tmp_CFLAGS -O2 -fno-strength-reduce -fno-unroll-loops"
-  fi
-
-  # Force no alignment to save space on i386.
-  if test "x$host_cpu" = xi386; then
-    AC_CACHE_CHECK([whether -falign-loops works], [falign_loop_flag], [
-      CFLAGS="-falign-loops=1"
-      AC_TRY_COMPILE(, , [falign_loop_flag=yes], [falign_loop_flag=no])
-    ])
-
-    if test "x$falign_loop_flag" = xyes; then
-      tmp_CFLAGS="$tmp_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
-    else
-      tmp_CFLAGS="$tmp_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
-    fi
-  fi
-
-  if test "x$biarch32" = x1; then
-    tmp_CFLAGS="$tmp_CFLAGS -m32"
-    LDFLAGS="$LDFLAGS -m32"
-    AC_SUBST(LDFLAGS)
-  fi
-
-  CFLAGS="$tmp_CFLAGS"
-fi
-AC_SUBST(CFLAGS)
-
-# Defined in aclocal.m4.
-grub_ASM_USCORE
-if test "x$host_cpu" = xi386; then
-  grub_CHECK_START_SYMBOL
-  grub_CHECK_BSS_START_SYMBOL
-  grub_CHECK_END_SYMBOL
-fi
-
-if test "x$host_cpu" = xi386; then
-  grub_I386_ASM_PREFIX_REQUIREMENT
-  grub_I386_ASM_ADDR32
-  grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
-  grub_I386_CHECK_REGPARM_BUG
-else
-  AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
-fi
-
 AC_PROG_INSTALL
+AC_PROG_AWK
 AC_PROG_MAKE_SET
-AC_CHECK_TOOL(OBJCOPY, objcopy)
-grub_PROG_OBJCOPY_ABSOLUTE
-AC_CHECK_TOOL(STRIP, strip)
-AC_CHECK_TOOL(NM, nm)
-AC_CHECK_TOOL(LD, ld)
 
 # This is not a "must".
 AC_PATH_PROG(RUBY, ruby)
 
-# For cross-compiling.
-if test "x$build" != "x$host"; then
-  AC_CHECK_PROGS(BUILD_CC, [gcc egcs cc],
-		 [AC_MSG_ERROR([none of gcc, egcs and cc is found. set BUILD_CC manually.])])
-else
-  BUILD_CC="$CC"
-  AC_SUBST(BUILD_CC)
-fi
+#
+# Checks for host programs.
+#
 
-# Test the C compiler for the build environment.
-tmp_CC="$CC"
-tmp_CFLAGS="$CFLAGS"
-tmp_LDFLAGS="$LDFLAGS"
-tmp_CPPFLAGS="$CPPFLAGS"
-CC="$BUILD_CC"
-CFLAGS="$BUILD_CFLAGS"
-CPPFLAGS="$BUILD_CPPFLAGS"
-LDFLAGS="$BUILD_LDFLAGS"
+AC_PROG_CC
+# Must be GCC.
+test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
-# Identify characteristics of the build architecture.
+AC_SYS_LARGEFILE
+
+# Identify characteristics of the host architecture.
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
 
-# Check LZO when compiling for the i386.
-if test "x$host_cpu" = xi386; then
+if test "x$host_m32" = x1; then
+  # Force 32-bit mode.
+  CFLAGS="$CFLAGS -m32"
+  LDFLAGS="$LDFLAGS -m32"
+fi
+
+# Check LZO when compiling for the i386-pc.
+if test "$target_cpu"-"$platform" = i386-pc; then
   # There are three possibilities. LZO version 2 installed with the name
   # liblzo2, with the name liblzo, and LZO version 1.
   AC_CHECK_LIB(lzo2, __lzo_init_v2, [LIBLZO="-llzo2"],
@@ -193,6 +146,100 @@ AC_SUBST(LIBCURSES)
 # Check for headers.
 AC_CHECK_HEADERS(ncurses/curses.h ncurses.h curses.h)
 
+#
+# Check for target programs.
+#
+
+# For cross-compiling.
+if test "x$target" != "x$host"; then
+  # XXX this depends on the implementation of autoconf!
+  tmp_ac_tool_prefix="$ac_tool_prefix"
+  ac_tool_prefix=$target_alias-
+
+  AC_CHECK_TOOLS(TARGET_CC, [gcc egcs cc],
+                 [AC_MSG_ERROR([none of gcc, egcs and cc is found. set TARGET_CC manually.])])
+  AC_CHECK_TOOL(OBJCOPY, objcopy)
+  AC_CHECK_TOOL(STRIP, strip)
+  AC_CHECK_TOOL(NM, nm)
+
+  ac_tool_prefix="$tmp_ac_tool_prefix"
+else
+  if test "x$TARGET_CC" = x; then
+    TARGET_CC=$CC
+  fi
+  AC_CHECK_TOOL(OBJCOPY, objcopy)
+  AC_CHECK_TOOL(STRIP, strip)
+  AC_CHECK_TOOL(NM, nm)
+fi
+AC_SUBST(TARGET_CC)
+
+
+# Test the C compiler for the target environment.
+tmp_CC="$CC"
+tmp_CFLAGS="$CFLAGS"
+tmp_LDFLAGS="$LDFLAGS"
+tmp_CPPFLAGS="$CPPFLAGS"
+CC="$TARGET_CC"
+CFLAGS="$TARGET_CFLAGS"
+CPPFLAGS="$TARGET_CPPFLAGS"
+LDFLAGS="$TARGET_LDFLAGS"
+
+if test "x$TARGET_CFLAGS" = x; then
+  # debug flags.
+  TARGET_CFLAGS="-Wall -W -Wshadow -Wpointer-arith -Wmissing-prototypes \
+                 -Wundef -Wstrict-prototypes -g"
+
+  # optimization flags.
+  AC_CACHE_CHECK([whether optimization for size works], size_flag, [
+    CFLAGS=-Os
+    AC_TRY_COMPILE(, , size_flag=yes, size_flag=no)
+  ])
+  if test "x$size_flag" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -Os"
+  else
+    TARGET_CFLAGS="$TARGET_CFLAGS -O2 -fno-strength-reduce -fno-unroll-loops"
+  fi
+
+  # Force no alignment to save space on i386.
+  if test "x$target_cpu" = xi386; then
+    AC_CACHE_CHECK([whether -falign-loops works], [falign_loop_flag], [
+      CFLAGS="-falign-loops=1"
+      AC_TRY_COMPILE(, , [falign_loop_flag=yes], [falign_loop_flag=no])
+    ])
+
+    if test "x$falign_loop_flag" = xyes; then
+      TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
+    else
+      TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"
+    fi
+  fi
+fi
+
+if test "x$target_m32" = x1; then
+  # Force 32-bit mode.
+  TARGET_CFLAGS="$TARGET_CFLAGS -m32"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
+fi
+
+AC_SUBST(TARGET_CFLAGS)
+AC_SUBST(TARGET_CPPFLAGS)
+AC_SUBST(TARGET_LDFLAGS)
+
+# Defined in aclocal.m4.
+grub_PROG_OBJCOPY_ABSOLUTE
+grub_ASM_USCORE
+if test "x$target_cpu" = xi386; then
+  grub_CHECK_START_SYMBOL
+  grub_CHECK_BSS_START_SYMBOL
+  grub_CHECK_END_SYMBOL
+  grub_I386_ASM_PREFIX_REQUIREMENT
+  grub_I386_ASM_ADDR32
+  grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
+  grub_I386_CHECK_REGPARM_BUG
+else
+  AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
+fi
+
 # Restore the flags.
 CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"
@@ -207,8 +254,8 @@ AC_ARG_ENABLE([mm-debug],
                          [Define to 1 if you enable memory manager debugging.])])
 
 # Output files.
-AC_CONFIG_LINKS([include/grub/cpu:include/grub/$host_cpu
-	include/grub/machine:include/grub/$host_cpu/$platform])
+AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu
+	include/grub/machine:include/grub/$target_cpu/$platform])
 AC_CONFIG_FILES([Makefile gensymlist.sh genkernsyms.sh])
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
 AC_OUTPUT

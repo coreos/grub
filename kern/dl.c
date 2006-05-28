@@ -30,7 +30,7 @@
 #include <grub/env.h>
 #include <grub/cache.h>
 
-#if GRUB_HOST_SIZEOF_VOID_P == 4
+#if GRUB_CPU_SIZEOF_VOID_P == 4
 
 typedef Elf32_Word Elf_Word;
 typedef Elf32_Addr Elf_Addr;
@@ -41,7 +41,7 @@ typedef Elf32_Sym Elf_Sym;
 # define ELF_ST_BIND(val)	ELF32_ST_BIND (val)
 # define ELF_ST_TYPE(val)	ELF32_ST_TYPE (val)
 
-#elif GRUB_HOST_SIZEOF_VOID_P == 8
+#elif GRUB_CPU_SIZEOF_VOID_P == 8
 
 typedef Elf64_Word Elf_Word;
 typedef Elf64_Addr Elf_Addr;

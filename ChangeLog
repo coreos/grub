@@ -1,3 +1,93 @@
+2006-05-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/powerpc/ieee1275/grub-install.in (host_cpu): Removed.
+	(target_cpu): New variable.
+	(pkglibdir): Use target_cpu instead of host_cpu.
+	
+	* util/i386/pc/grub-install.in (host_cpu): Removed.
+	(target_cpu): New variable.
+	(pkglibdir): Use target_cpu instead of host_cpu.
+
+	* util/genmoddep.c: Removed.
+	
+	* kern/efi/mm.c (filter_memory_map): Use GRUB_CPU_SIZEOF_VOID_P
+	instead of GRUB_HOST_SIZEOF_VOID_P.
+	* kern/dl.c: Likewise.
+
+	* include/grub/i386/types.h (GRUB_HOST_SIZEOF_VOID_P): Renamed to
+	...
+	(GRUB_TARGET_SIZEOF_VOID_P): ... this.
+	(GRUB_HOST_SIZEOF_LONG): Renamed to ...
+	(GRUB_TARGET_SIZEOF_LONG): ... this.
+	(GRUB_HOST_WORDS_BIGENDIAN): Renamed to ...
+	(GRUB_TARGET_WORDS_BIGENDIAN): ... this.
+	* include/grub/powerpc/types.h (GRUB_HOST_SIZEOF_VOID_P): Renamed
+	to ...
+	(GRUB_TARGET_SIZEOF_VOID_P): ... this.
+	(GRUB_HOST_SIZEOF_LONG): Renamed to ...
+	(GRUB_TARGET_SIZEOF_LONG): ... this.
+	(GRUB_HOST_WORDS_BIGENDIAN): Renamed to ...
+	(GRUB_TARGET_WORDS_BIGENDIAN): ... this.
+	* include/grub/sparc64/types.h (GRUB_HOST_SIZEOF_VOID_P): Renamed
+	to ...
+	(GRUB_TARGET_SIZEOF_VOID_P): ... this.
+	(GRUB_HOST_SIZEOF_LONG): Renamed to ...
+	(GRUB_TARGET_SIZEOF_LONG): ... this.
+	(GRUB_HOST_WORDS_BIGENDIAN): Renamed to ...
+	(GRUB_TARGET_WORDS_BIGENDIAN): ... this.
+
+	* include/grub/types.h [!GRUB_UTIL] (GRUB_CPU_SIZEOF_VOID_P): Use
+	GRUB_TARGET_SIZEOF_VOID_P instead of GRUB_HOST_SIZEOF_VOID_P.
+	[!GRUB_UTIL] (GRUB_CPU_SIZEOF_LONG): Use GRUB_TARGET_SIZEOF_LONG
+	instead of GRUB_HOST_SIZEOF_LONG.
+	[!GRUB_UTIL]: Refer to GRUB_TARGET_WORDS_BIGENDIAN instead of
+	GRUB_HOST_WORDS_BIGENDIAN to define or undefine
+	GRUB_CPU_WORDS_BIGENDIAN.
+	Refer to SIZEOF_VOID_P instead of GRUB_HOST_SIZEOF_VOID_P to
+	define grub_host_addr_t, grub_host_off_t, grub_host_size_t and
+	grub_host_ssize_t.
+
+	* conf/i386-efi.rmk (noinst_UTILITIES): Removed.
+	(genmoddep_SOURCES): Likewise.
+	* conf/i386-pc.rmk (noinst_UTILITIES): Likewise.
+	(genmoddep_SOURCES): Likewise.
+	* conf/conf/powerpc-ieee1275.rmk (noinst_UTILITIES): Likewise.
+	(genmoddep_SOURCES): Likewise.
+	* conf/conf/conf/sparc64-ieee1275.rmk (noinst_UTILITIES):
+	Likewise.
+	(genmoddep_SOURCES): Likewise.
+
+	* genmoddep.awk: New file.
+
+	* genmk.rb (Image::rule): Use TARGET_CC, TARGET_CPPFLAGS,
+	TARGET_CFLAGS, TARGET_ASFLAGS and TARGET_LDFLAGS instead of CC,
+	CPPFLAGS, CFLAGS, ASFLAGS and LDFLAGS, respectively.
+	(PModule::rule): Likewise.
+	(Program::rule): Likewise.
+	(Utility::rule): Use CC, CPPFLAGS, CFLAGS and LDFLAGS instead of
+	BUILD_CC, BUILD_CPPFLAGS, BUILD_CFLAGS and BUILD_LDFLAGS,
+	respectively.
+
+	* configure.ac: Rewritten intensively to use host and target
+	instead of build and host, respectively.
+
+	* Makefile.in (pkglibdir): Use target_cpu instead of host_cpu.
+	(host_cpu): Removed.
+	(target_cpu): New variable.
+	(CPPFLAGS): Added @CPPFLAGS@ and -DGRUB_LIBDIR=\"$(pkglibdir)\".
+	(BUILD_CC): Removed.
+	(BUILD_CFLAGS): Likewise.
+	(BUILD_CPPFLAGS): Likewise.
+	(TARGET_CC): New variable.
+	(TARGET_CFLAGS): Likewise.
+	(TARGET_CPPFLAGS): Likewise.
+	(TARGET_LDFLAGS): Likewise.
+	(AWK): Likewise.
+	(include): Use target_cpu instead of host_cpu.
+	(moddep.lst:): Use genmoddep.awk instead of genmoddep.
+	
+	* DISTLIST: Added genmoddep.awk. Removed util/genmoddep.c.
+
 2006-05-29  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* include/grub/script.h (grub_script_cmdif): Renamed field 'bool' to

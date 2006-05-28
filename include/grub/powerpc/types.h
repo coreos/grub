@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@
 #define GRUB_TYPES_CPU_HEADER	1
 
 /* The size of void *.  */
-#define GRUB_HOST_SIZEOF_VOID_P	4
+#define GRUB_TARGET_SIZEOF_VOID_P	4
 
 /* The size of long.  */
-#define GRUB_HOST_SIZEOF_LONG	4
+#define GRUB_TARGET_SIZEOF_LONG		4
 
 /* powerpc is big-endian.  */
-#define GRUB_HOST_WORDS_BIGENDIAN	1
+#define GRUB_TARGET_WORDS_BIGENDIAN	1
 
 
 #endif /* ! GRUB_TYPES_CPU_HEADER */
