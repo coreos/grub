@@ -122,6 +122,7 @@ include/grub/efi/time.h
 include/grub/i386/setjmp.h
 include/grub/i386/types.h
 include/grub/i386/efi/kernel.h
+include/grub/i386/efi/loader.h
 include/grub/i386/efi/time.h
 include/grub/i386/pc/biosdisk.h
 include/grub/i386/pc/boot.h
@@ -200,6 +201,8 @@ kern/sparc64/ieee1275/init.c
 kern/sparc64/ieee1275/openfw.c
 loader/efi/chainloader.c
 loader/efi/chainloader_normal.c
+loader/i386/efi/linux.c
+loader/i386/efi/linux_normal.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/chainloader_normal.c
 loader/i386/pc/linux.c

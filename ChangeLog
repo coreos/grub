@@ -1,3 +1,35 @@
+2006-05-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* fs/hfsplus.c (grub_hfsplus_btree_recoffset): Moved to near the
+	top.
+	(grub_hfsplus_btree_recptr): Likewise.
+	(grub_hfsplus_find_block): Do not take RETRY any longer. Use
+	FILEBLOCK both to pass a block number and store next block
+	number.
+	(grub_hfsplus_read_block): Rewritten heavily to support an extent
+	overflow file correctly. Specify errors appropriately, because
+	fshelp expects that GRUB_ERRNO is set when fails. Reuse
+	grub_hfsplus_btree_recptr to get the pointer to a found key.
+	(grub_hfsplus_btree_search): Return 1 instead of 0 when no match
+	is found.
+
+	* conf/i386-efi.rmk (pkgdata_MODULES): Added _linux.mod and
+	linux.mod.
+	(_linux_mod_SOURCES): New variable.
+	(_linux_mod_CFLAGS): Likewise.
+	(_linux_mod_LDFLAGS): Likewise.
+	(linux_mod_SOURCES): Likewise.
+	(linux_mod_CFLAGS): Likewise.
+	(linux_mod_LDFLAGS): Likewise.
+
+	* DISTLIST: Added loader/i386/efi/linux.c,
+	loader/i386/efi/linux_normal.c and
+	include/grub/i386/efi/loader.h.
+
+	* loader/i386/efi/linux.c: New file.
+	* loader/i386/efi/linux_normal.c: Likewise.
+	* include/grub/i386/efi/loader.h: Likewise.
+
 2006-05-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* commands/blocklist.c: New file.

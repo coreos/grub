@@ -111,7 +111,8 @@ genmoddep-util_genmoddep.d: util/genmoddep.c
 #grub_install_SOURCES = util/efi/pc/grub-install.in
 
 # Modules.
-pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod
+pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
+	_linux.mod linux.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -1046,5 +1047,117 @@ fs-chain_mod-loader_efi_chainloader_normal.lst: loader/efi/chainloader_normal.c 
 
 chain_mod_CFLAGS = $(COMMON_CFLAGS)
 chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _linux.mod.
+_linux_mod_SOURCES = loader/i386/efi/linux.c
+CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_i386_efi_linux.o und-_linux.lst
+ifneq ($(_linux_mod_EXPORTS),no)
+CLEANFILES += def-_linux.lst
+DEFSYMFILES += def-_linux.lst
+endif
+MOSTLYCLEANFILES += _linux_mod-loader_i386_efi_linux.d
+UNDSYMFILES += und-_linux.lst
+
+_linux.mod: pre-_linux.o mod-_linux.o
+	-rm -f $@
+	$(CC) $(_linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-_linux.o: _linux_mod-loader_i386_efi_linux.o
+	-rm -f $@
+	$(CC) $(_linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-_linux.o: mod-_linux.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
+
+mod-_linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(_linux_mod_EXPORTS),no)
+def-_linux.lst: pre-_linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _linux/' > $@
+endif
+
+und-_linux.lst: pre-_linux.o
+	echo '_linux' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+_linux_mod-loader_i386_efi_linux.o: loader/i386/efi/linux.c
+	$(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
+
+_linux_mod-loader_i386_efi_linux.d: loader/i386/efi/linux.c
+	set -e; 	  $(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -M $< 	  | sed 's,linux\.o[ :]*,_linux_mod-loader_i386_efi_linux.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include _linux_mod-loader_i386_efi_linux.d
+
+CLEANFILES += cmd-_linux_mod-loader_i386_efi_linux.lst fs-_linux_mod-loader_i386_efi_linux.lst
+COMMANDFILES += cmd-_linux_mod-loader_i386_efi_linux.lst
+FSFILES += fs-_linux_mod-loader_i386_efi_linux.lst
+
+cmd-_linux_mod-loader_i386_efi_linux.lst: loader/i386/efi/linux.c gencmdlist.sh
+	set -e; 	  $(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _linux > $@ || (rm -f $@; exit 1)
+
+fs-_linux_mod-loader_i386_efi_linux.lst: loader/i386/efi/linux.c genfslist.sh
+	set -e; 	  $(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _linux > $@ || (rm -f $@; exit 1)
+
+
+_linux_mod_CFLAGS = $(COMMON_CFLAGS)
+_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/efi/linux_normal.c
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_efi_linux_normal.o und-linux.lst
+ifneq ($(linux_mod_EXPORTS),no)
+CLEANFILES += def-linux.lst
+DEFSYMFILES += def-linux.lst
+endif
+MOSTLYCLEANFILES += linux_mod-loader_i386_efi_linux_normal.d
+UNDSYMFILES += und-linux.lst
+
+linux.mod: pre-linux.o mod-linux.o
+	-rm -f $@
+	$(CC) $(linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-linux.o: linux_mod-loader_i386_efi_linux_normal.o
+	-rm -f $@
+	$(CC) $(linux_mod_LDFLAGS) $(LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-linux.o: mod-linux.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+mod-linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(linux_mod_EXPORTS),no)
+def-linux.lst: pre-linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+endif
+
+und-linux.lst: pre-linux.o
+	echo 'linux' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+linux_mod-loader_i386_efi_linux_normal.o: loader/i386/efi/linux_normal.c
+	$(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+linux_mod-loader_i386_efi_linux_normal.d: loader/i386/efi/linux_normal.c
+	set -e; 	  $(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -M $< 	  | sed 's,linux_normal\.o[ :]*,linux_mod-loader_i386_efi_linux_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include linux_mod-loader_i386_efi_linux_normal.d
+
+CLEANFILES += cmd-linux_mod-loader_i386_efi_linux_normal.lst fs-linux_mod-loader_i386_efi_linux_normal.lst
+COMMANDFILES += cmd-linux_mod-loader_i386_efi_linux_normal.lst
+FSFILES += fs-linux_mod-loader_i386_efi_linux_normal.lst
+
+cmd-linux_mod-loader_i386_efi_linux_normal.lst: loader/i386/efi/linux_normal.c gencmdlist.sh
+	set -e; 	  $(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
+
+fs-linux_mod-loader_i386_efi_linux_normal.lst: loader/i386/efi/linux_normal.c genfslist.sh
+	set -e; 	  $(CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(CPPFLAGS) $(CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh linux > $@ || (rm -f $@; exit 1)
+
+
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

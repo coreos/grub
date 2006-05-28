@@ -1,3 +1,30 @@
+New in 1.94:
+
+* Fix several serious bugs in HFS+.
+
+* Add experimental EFI support. Chainloading and Linux loading are
+  supported at the moment.
+
+* Add a new command "blocklist" to show a block list.
+
+* Use --with-platform to specify a boot environment. For now, efi,
+  ieee1275 and pc are supported.
+
+* Use the filename "kernel.elf" instead of "grubof" on ieee1275.
+
+* Install GRUB into pkglibdir instead of pkgdatadir.
+
+* Support environmental variables. You can export variables by the
+  command "export".
+
+* Remove the commands "default" and "timeout". They are now variables.
+
+* Add the commands "source" and "." to include a file.
+
+* Implement experimental Video API and a new terminal "gfxterm" based
+  on the Video API.
+
+
 New in 1.93 - 2006-03-10:
 
 * Add support for the HFS+ wrapper.

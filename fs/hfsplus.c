@@ -226,15 +226,41 @@ static grub_dl_t my_mod;
 #endif
 
 
+/* Return the offset of the record with the index INDEX, in the node
+   NODE which is part of the B+ tree BTREE.  */
+static inline unsigned int
+grub_hfsplus_btree_recoffset (struct grub_hfsplus_btree *btree,
+			   struct grub_hfsplus_btnode *node, int index)
+{
+  char *cnode = (char *) node;
+  grub_uint16_t *recptr;
+  recptr = (grub_uint16_t *) (&cnode[btree->nodesize
+				     - index * sizeof (grub_uint16_t) - 2]);
+  return grub_be_to_cpu16 (*recptr);
+}
+
+/* Return a pointer to the record with the index INDEX, in the node
+   NODE which is part of the B+ tree BTREE.  */
+static inline struct grub_hfsplus_key *
+grub_hfsplus_btree_recptr (struct grub_hfsplus_btree *btree,
+			   struct grub_hfsplus_btnode *node, int index)
+{
+  char *cnode = (char *) node;
+  unsigned int offset;
+  offset = grub_hfsplus_btree_recoffset (btree, node, index);
+  return (struct grub_hfsplus_key *) &cnode[offset];
+}
+
+
 /* Find the extent that points to FILEBLOCK.  If it is not in one of
    the 8 extents described by EXTENT, return -1.  In that case set
-   RETRY to the last block that was found in the last extent.  */
+   FILEBLOCK to the next block.  */
 static int
 grub_hfsplus_find_block (struct grub_hfsplus_extent *extent,
-			 int fileblock, int *retry)
+			 int *fileblock)
 {
   int i;
-  grub_size_t blksleft = fileblock;
+  grub_size_t blksleft = *fileblock;
 
   /* First lookup the file in the given extents.  */
   for (i = 0; i < 8; i++)
@@ -244,7 +270,7 @@ grub_hfsplus_find_block (struct grub_hfsplus_extent *extent,
       blksleft -= grub_be_to_cpu32 (extent[i].count);
     }
 
-  *retry = fileblock - blksleft;
+  *fileblock = blksleft;
   return -1;
 }
 
@@ -263,21 +289,19 @@ static int grub_hfsplus_cmp_extkey (struct grub_hfsplus_key *keya,
 static int
 grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
 {
-  struct grub_hfsplus_extkey_internal extoverflow;
-  struct grub_hfsplus_extkey *keyfound;
-  int blk;
   struct grub_hfsplus_btnode *nnode = 0;
-  int ptr;
-  int retry = 0;
-
+  int blksleft = fileblock;
   struct grub_hfsplus_extent *extents = &node->extents[0];
 
   while (1)
     {
-      char *cnode;
+      struct grub_hfsplus_extkey *key;
+      struct grub_hfsplus_extkey_internal extoverflow;
+      int blk;
+      int ptr;
 
       /* Try to find this block in the current set of extents.  */
-      blk = grub_hfsplus_find_block (extents, fileblock, &retry);
+      blk = grub_hfsplus_find_block (extents, &blksleft);
 
       /* The previous iteration of this loop allocated memory.  The
 	 code above used this memory, it can be free'ed now.  */
@@ -293,30 +317,33 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
 	 the extent overflow file.  If this happens, you found a
 	 bug...  */
       if (node->fileid == GRUB_HFSPLUS_FILEID_OVERFLOW)
-	break;
+	{
+	  grub_error (GRUB_ERR_READ_ERROR,
+		      "extra extents found in an extend overflow file");
+	  break;
+	}
 
       /* Set up the key to look for in the extent overflow file.  */
       extoverflow.fileid = node->fileid;
-      extoverflow.start = retry;
+      extoverflow.start = fileblock - blksleft;
 
       if (grub_hfsplus_btree_search (&node->data->extoverflow_tree,
 				     (struct grub_hfsplus_key_internal *) &extoverflow,
 				     grub_hfsplus_cmp_extkey, &nnode, &ptr))
-	break;
+	{
+	  grub_error (GRUB_ERR_READ_ERROR,
+		      "no block found for the file id 0x%x and the block offset 0x%x",
+		      node->fileid, fileblock);
+	  break;
+	}
 
-      cnode = (char *) nnode;
-
-      /* The extent overflow file has a 8 extents right after the key.  */
-      keyfound = (struct grub_hfsplus_extkey *) 
-	&cnode[(int) cnode[node->data->extoverflow_tree.nodesize - ptr - 1]];
-      extents = (struct grub_hfsplus_extent *) 
-	((char *) keyfound + sizeof (struct grub_hfsplus_extkey));
+      /* The extent overflow file has 8 extents right after the key.  */
+      key = (struct grub_hfsplus_extkey *)
+	grub_hfsplus_btree_recptr (&node->data->extoverflow_tree, nnode, ptr);
+      extents = (struct grub_hfsplus_extent *) (key + 1);
 
       /* The block wasn't found.  Perhaps the next iteration will find
-	 it.  The last block we found is stored in FILEBLOCK now.  */
-      /* XXX: Multiple iterations for locating the right extent was
-	 not tested enough... */
-      fileblock = retry;
+	 it.  The last block we found is stored in BLKSLEFT now.  */
     }
 
   grub_free (nnode);
@@ -517,32 +544,6 @@ grub_hfsplus_cmp_extkey (struct grub_hfsplus_key *keya,
   return diff;
 }
 
-/* Return the offset of the record with the index INDEX, in the node
-   NODE which is part of the B+ tree BTREE.  */
-static inline unsigned int
-grub_hfsplus_btree_recoffset (struct grub_hfsplus_btree *btree,
-			   struct grub_hfsplus_btnode *node, int index)
-{
-  char *cnode = (char *) node;
-  grub_uint16_t *recptr;
-  recptr = (grub_uint16_t *) (&cnode[btree->nodesize
-				     - index * sizeof (grub_uint16_t) - 2]);
-  return grub_be_to_cpu16 (*recptr);
-}
-
-/* Return a pointer to the record with the index INDEX, in the node
-   NODE which is part of the B+ tree BTREE.  */
-static inline struct grub_hfsplus_key *
-grub_hfsplus_btree_recptr (struct grub_hfsplus_btree *btree,
-			   struct grub_hfsplus_btnode *node, int index)
-{
-  char *cnode = (char *) node;
-  unsigned int offset;
-  offset = grub_hfsplus_btree_recoffset (btree, node, index);
-  return (struct grub_hfsplus_key *) &cnode[offset];
-}
-
-
 static char *
 grub_hfsplus_read_symlink (grub_fshelp_node_t node)
 {
@@ -639,8 +640,8 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
       for (rec = 0; rec < grub_be_to_cpu16 (nodedesc->count); rec++)
 	{
 	  struct grub_hfsplus_key *currkey;
-	  currkey = grub_hfsplus_btree_recptr (btree, nodedesc, rec);
-	  
+	  currkey = grub_hfsplus_btree_recptr (btree, nodedesc, rec);	
+  
 	  /* The action that has to be taken depend on the type of
 	     record.  */
 	  if (nodedesc->type == GRUB_HFSPLUS_BTNODE_TYPE_LEAF
@@ -675,13 +676,13 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 	    }
 	}
 
-      /* No match was found, no record with this key exists in the
+      /* No match is found, no record with this key exists in the
 	 tree.  */
       if (! match)
 	{
 	  *matchnode = 0;
 	  grub_free (node);
-	  return 0;
+	  return 1;
 	}
     }
 }

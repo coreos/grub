@@ -67,7 +67,8 @@ genmoddep_SOURCES = util/genmoddep.c
 #grub_install_SOURCES = util/efi/pc/grub-install.in
 
 # Modules.
-pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod
+pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
+	_linux.mod linux.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -114,5 +115,15 @@ _chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 chain_mod_SOURCES = loader/efi/chainloader_normal.c
 chain_mod_CFLAGS = $(COMMON_CFLAGS)
 chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _linux.mod.
+_linux_mod_SOURCES = loader/i386/efi/linux.c
+_linux_mod_CFLAGS = $(COMMON_CFLAGS)
+_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/efi/linux_normal.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
