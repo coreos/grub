@@ -100,14 +100,14 @@ struct grub_script_cmdif
 {
   struct grub_script_cmd cmd;
 
-  /* The command used to check if the if is true or false.  */
-  struct grub_script_cmd *bool;
+  /* The command used to check if the 'if' is true or false.  */
+  struct grub_script_cmd *exec_to_evaluate;
 
-  /* The code executed in case the result if bool was true.  */
-  struct grub_script_cmd *true;
+  /* The code executed in case the result of 'if' was true.  */
+  struct grub_script_cmd *exec_on_true;
 
-  /* The code executed in case the result if bool was false.  */
-  struct grub_script_cmd *false;
+  /* The code executed in case the result of 'if' was false.  */
+  struct grub_script_cmd *exec_on_false;
 };
 
 /* A menu entry generate statement.  */
@@ -200,9 +200,9 @@ grub_script_create_cmdblock (struct grub_parser_param *state);
 
 struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_parser_param *state,
-			  struct grub_script_cmd *bool,
-			  struct grub_script_cmd *true,
-			  struct grub_script_cmd *false);
+			  struct grub_script_cmd *exec_to_evaluate,
+			  struct grub_script_cmd *exec_on_true,
+			  struct grub_script_cmd *exec_on_false);
 
 struct grub_script_cmd *
 grub_script_create_cmdmenu (struct grub_parser_param *state,

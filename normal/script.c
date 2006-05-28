@@ -178,14 +178,14 @@ grub_script_create_cmdline (struct grub_parser_param *state,
 }
 
 /* Create a command that functions as an if statement.  If BOOL is
-   evaluated to true (the value is returned in envvar RESULT), the
+   evaluated to true (the value is returned in envvar '?'), the
    interpreter will run the command TRUE, otherwise the interpreter
    runs the command FALSE.  */
 struct grub_script_cmd *
 grub_script_create_cmdif (struct grub_parser_param *state,
-			  struct grub_script_cmd *bool,
-			  struct grub_script_cmd *true,
-			  struct grub_script_cmd *false)
+			  struct grub_script_cmd *exec_to_evaluate,
+			  struct grub_script_cmd *exec_on_true,
+			  struct grub_script_cmd *exec_on_false)
 {
   struct grub_script_cmdif *cmd;
 
@@ -194,9 +194,9 @@ grub_script_create_cmdif (struct grub_parser_param *state,
   cmd = grub_script_malloc (state, sizeof (*cmd));
   cmd->cmd.exec = grub_script_execute_cmdif;
   cmd->cmd.next = 0;
-  cmd->bool = bool;
-  cmd->true = true;
-  cmd->false = false;
+  cmd->exec_to_evaluate = exec_to_evaluate;
+  cmd->exec_on_true = exec_on_true;
+  cmd->exec_on_false = exec_on_false;
 
   return (struct grub_script_cmd *) cmd;
 }

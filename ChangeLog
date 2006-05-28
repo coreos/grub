@@ -1,3 +1,15 @@
+2006-05-29  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* include/grub/script.h (grub_script_cmdif): Renamed field 'bool' to
+	'exec_to_evaluate'.  Renamed field 'true' to 'exec_on_true'.  Renamed
+	field 'false' to 'exec_on_false'.
+	(grub_script_create_cmdif): Renamed argument names to reflect above
+	changes.
+
+	* normal/execute.c (grub_script_execute_cmdif): Likewise.
+
+	* normal/script.c (grub_script_create_cmdif): Likewise.
+
 2006-05-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* fs/hfsplus.c (grub_hfsplus_btree_recoffset): Moved to near the

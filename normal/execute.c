@@ -192,19 +192,19 @@ grub_err_t
 grub_script_execute_cmdif (struct grub_script_cmd *cmd)
 {
   struct grub_script_cmdif *cmdif = (struct grub_script_cmdif *) cmd;
-  char *bool;
+  char *result;
 
   /* Check if the commands results in a true or a false.  The value is
-     read from the env variable `RESULT'.  */
-  grub_script_execute_cmd (cmdif->bool);
-  bool = grub_env_get ("?");
+     read from the env variable `?'.  */
+  grub_script_execute_cmd (cmdif->exec_to_evaluate);
+  result = grub_env_get ("?");
 
   /* Execute the `if' or the `else' part depending on the value of
-     `RESULT'.  */
-  if (bool && ! grub_strcmp (bool, "0"))
-    return grub_script_execute_cmd (cmdif->true);
+     `?'.  */
+  if (result && ! grub_strcmp (result, "0"))
+    return grub_script_execute_cmd (cmdif->exec_on_true);
   else
-    return grub_script_execute_cmd (cmdif->false);
+    return grub_script_execute_cmd (cmdif->exec_on_false);
 }
 
 /* Execute the menu entry generate statement.  */
