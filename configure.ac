@@ -88,9 +88,16 @@ AC_SUBST(platform)
 # Checks for build programs.
 #
 
+# Although cmp is listed in the GNU Coding Standards as a command which
+# can used directly, OpenBSD lacks cmp in the default installation.
+AC_CHECK_PROGS([CMP], [cmp])
+if test "x$CMP" = x; then
+  AC_MSG_ERROR([cmp is not found])
+fi
+
 AC_CHECK_PROGS([YACC], [bison])
 if test "x$YACC" = x; then
-  AC_MSG_ERROR([Could not find bison.])
+  AC_MSG_ERROR([bison is not found])
 fi
 
 AC_PROG_INSTALL

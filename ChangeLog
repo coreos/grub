@@ -1,3 +1,7 @@
+2006-05-30  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* configure.ac (CMP): Check if cmp is available explicitly.
+
 2006-05-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/powerpc/ieee1275/grub-install.in (host_cpu): Removed.
