@@ -59,10 +59,10 @@ und-fshelp.lst: pre-fshelp.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 fshelp_mod-fs_fshelp.o: fs/fshelp.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
 
 fshelp_mod-fs_fshelp.d: fs/fshelp.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_TARGET_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,fshelp_mod-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,fshelp_mod-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include fshelp_mod-fs_fshelp.d
 
@@ -71,10 +71,10 @@ COMMANDFILES += cmd-fshelp_mod-fs_fshelp.lst
 FSFILES += fs-fshelp_mod-fs_fshelp.lst
 
 cmd-fshelp_mod-fs_fshelp.lst: fs/fshelp.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fshelp > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fshelp > $@ || (rm -f $@; exit 1)
 
 fs-fshelp_mod-fs_fshelp.lst: fs/fshelp.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh fshelp > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fshelp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh fshelp > $@ || (rm -f $@; exit 1)
 
 
 fshelp_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -115,10 +115,10 @@ und-fat.lst: pre-fat.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 fat_mod-fs_fat.o: fs/fat.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
 
 fat_mod-fs_fat.d: fs/fat.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_TARGET_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,fat_mod-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,fat_mod-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include fat_mod-fs_fat.d
 
@@ -127,10 +127,10 @@ COMMANDFILES += cmd-fat_mod-fs_fat.lst
 FSFILES += fs-fat_mod-fs_fat.lst
 
 cmd-fat_mod-fs_fat.lst: fs/fat.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fat > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fat > $@ || (rm -f $@; exit 1)
 
 fs-fat_mod-fs_fat.lst: fs/fat.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh fat > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(fat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh fat > $@ || (rm -f $@; exit 1)
 
 
 fat_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -171,10 +171,10 @@ und-ufs.lst: pre-ufs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ufs_mod-fs_ufs.o: fs/ufs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
 
 ufs_mod-fs_ufs.d: fs/ufs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_TARGET_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,ufs_mod-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,ufs_mod-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include ufs_mod-fs_ufs.d
 
@@ -183,10 +183,10 @@ COMMANDFILES += cmd-ufs_mod-fs_ufs.lst
 FSFILES += fs-ufs_mod-fs_ufs.lst
 
 cmd-ufs_mod-fs_ufs.lst: fs/ufs.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ufs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ufs > $@ || (rm -f $@; exit 1)
 
 fs-ufs_mod-fs_ufs.lst: fs/ufs.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ufs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ufs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ufs > $@ || (rm -f $@; exit 1)
 
 
 ufs_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -227,10 +227,10 @@ und-ext2.lst: pre-ext2.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ext2_mod-fs_ext2.o: fs/ext2.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
 
 ext2_mod-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_TARGET_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,ext2_mod-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,ext2_mod-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include ext2_mod-fs_ext2.d
 
@@ -239,10 +239,10 @@ COMMANDFILES += cmd-ext2_mod-fs_ext2.lst
 FSFILES += fs-ext2_mod-fs_ext2.lst
 
 cmd-ext2_mod-fs_ext2.lst: fs/ext2.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ext2 > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ext2 > $@ || (rm -f $@; exit 1)
 
 fs-ext2_mod-fs_ext2.lst: fs/ext2.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ext2 > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(ext2_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ext2 > $@ || (rm -f $@; exit 1)
 
 
 ext2_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -283,10 +283,10 @@ und-minix.lst: pre-minix.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 minix_mod-fs_minix.o: fs/minix.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
 
 minix_mod-fs_minix.d: fs/minix.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_TARGET_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,minix_mod-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,minix_mod-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include minix_mod-fs_minix.d
 
@@ -295,10 +295,10 @@ COMMANDFILES += cmd-minix_mod-fs_minix.lst
 FSFILES += fs-minix_mod-fs_minix.lst
 
 cmd-minix_mod-fs_minix.lst: fs/minix.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh minix > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh minix > $@ || (rm -f $@; exit 1)
 
 fs-minix_mod-fs_minix.lst: fs/minix.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh minix > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(minix_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh minix > $@ || (rm -f $@; exit 1)
 
 
 minix_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -339,10 +339,10 @@ und-hfs.lst: pre-hfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 hfs_mod-fs_hfs.o: fs/hfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
 
 hfs_mod-fs_hfs.d: fs/hfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_TARGET_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,hfs_mod-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,hfs_mod-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include hfs_mod-fs_hfs.d
 
@@ -351,10 +351,10 @@ COMMANDFILES += cmd-hfs_mod-fs_hfs.lst
 FSFILES += fs-hfs_mod-fs_hfs.lst
 
 cmd-hfs_mod-fs_hfs.lst: fs/hfs.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfs > $@ || (rm -f $@; exit 1)
 
 fs-hfs_mod-fs_hfs.lst: fs/hfs.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hfs > $@ || (rm -f $@; exit 1)
 
 
 hfs_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -395,10 +395,10 @@ und-jfs.lst: pre-jfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 jfs_mod-fs_jfs.o: fs/jfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
 
 jfs_mod-fs_jfs.d: fs/jfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_TARGET_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,jfs_mod-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,jfs_mod-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include jfs_mod-fs_jfs.d
 
@@ -407,10 +407,10 @@ COMMANDFILES += cmd-jfs_mod-fs_jfs.lst
 FSFILES += fs-jfs_mod-fs_jfs.lst
 
 cmd-jfs_mod-fs_jfs.lst: fs/jfs.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh jfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh jfs > $@ || (rm -f $@; exit 1)
 
 fs-jfs_mod-fs_jfs.lst: fs/jfs.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh jfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(jfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh jfs > $@ || (rm -f $@; exit 1)
 
 
 jfs_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -451,10 +451,10 @@ und-iso9660.lst: pre-iso9660.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 iso9660_mod-fs_iso9660.o: fs/iso9660.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(iso9660_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(iso9660_mod_CFLAGS) -c -o $@ $<
 
 iso9660_mod-fs_iso9660.d: fs/iso9660.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(iso9660_mod_TARGET_CFLAGS) -M $< 	  | sed 's,iso9660\.o[ :]*,iso9660_mod-fs_iso9660.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(iso9660_mod_CFLAGS) -M $< 	  | sed 's,iso9660\.o[ :]*,iso9660_mod-fs_iso9660.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include iso9660_mod-fs_iso9660.d
 
@@ -463,10 +463,10 @@ COMMANDFILES += cmd-iso9660_mod-fs_iso9660.lst
 FSFILES += fs-iso9660_mod-fs_iso9660.lst
 
 cmd-iso9660_mod-fs_iso9660.lst: fs/iso9660.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(iso9660_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh iso9660 > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(iso9660_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh iso9660 > $@ || (rm -f $@; exit 1)
 
 fs-iso9660_mod-fs_iso9660.lst: fs/iso9660.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(iso9660_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh iso9660 > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(iso9660_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh iso9660 > $@ || (rm -f $@; exit 1)
 
 
 iso9660_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -507,10 +507,10 @@ und-xfs.lst: pre-xfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 xfs_mod-fs_xfs.o: fs/xfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
 
 xfs_mod-fs_xfs.d: fs/xfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_TARGET_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,xfs_mod-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,xfs_mod-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include xfs_mod-fs_xfs.d
 
@@ -519,10 +519,10 @@ COMMANDFILES += cmd-xfs_mod-fs_xfs.lst
 FSFILES += fs-xfs_mod-fs_xfs.lst
 
 cmd-xfs_mod-fs_xfs.lst: fs/xfs.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh xfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh xfs > $@ || (rm -f $@; exit 1)
 
 fs-xfs_mod-fs_xfs.lst: fs/xfs.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh xfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(xfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh xfs > $@ || (rm -f $@; exit 1)
 
 
 xfs_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -563,10 +563,10 @@ und-affs.lst: pre-affs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 affs_mod-fs_affs.o: fs/affs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
 
 affs_mod-fs_affs.d: fs/affs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_TARGET_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,affs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,affs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include affs_mod-fs_affs.d
 
@@ -575,10 +575,10 @@ COMMANDFILES += cmd-affs_mod-fs_affs.lst
 FSFILES += fs-affs_mod-fs_affs.lst
 
 cmd-affs_mod-fs_affs.lst: fs/affs.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh affs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh affs > $@ || (rm -f $@; exit 1)
 
 fs-affs_mod-fs_affs.lst: fs/affs.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh affs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(affs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh affs > $@ || (rm -f $@; exit 1)
 
 
 affs_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -619,10 +619,10 @@ und-sfs.lst: pre-sfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 sfs_mod-fs_sfs.o: fs/sfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(sfs_mod_CFLAGS) -c -o $@ $<
 
 sfs_mod-fs_sfs.d: fs/sfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_TARGET_CFLAGS) -M $< 	  | sed 's,sfs\.o[ :]*,sfs_mod-fs_sfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(sfs_mod_CFLAGS) -M $< 	  | sed 's,sfs\.o[ :]*,sfs_mod-fs_sfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include sfs_mod-fs_sfs.d
 
@@ -631,10 +631,10 @@ COMMANDFILES += cmd-sfs_mod-fs_sfs.lst
 FSFILES += fs-sfs_mod-fs_sfs.lst
 
 cmd-sfs_mod-fs_sfs.lst: fs/sfs.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(sfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sfs > $@ || (rm -f $@; exit 1)
 
 fs-sfs_mod-fs_sfs.lst: fs/sfs.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sfs > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(sfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sfs > $@ || (rm -f $@; exit 1)
 
 
 sfs_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -675,10 +675,10 @@ und-hfsplus.lst: pre-hfsplus.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 hfsplus_mod-fs_hfsplus.o: fs/hfsplus.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfsplus_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -c -o $@ $<
 
 hfsplus_mod-fs_hfsplus.d: fs/hfsplus.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfsplus_mod_TARGET_CFLAGS) -M $< 	  | sed 's,hfsplus\.o[ :]*,hfsplus_mod-fs_hfsplus.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -M $< 	  | sed 's,hfsplus\.o[ :]*,hfsplus_mod-fs_hfsplus.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include hfsplus_mod-fs_hfsplus.d
 
@@ -687,10 +687,10 @@ COMMANDFILES += cmd-hfsplus_mod-fs_hfsplus.lst
 FSFILES += fs-hfsplus_mod-fs_hfsplus.lst
 
 cmd-hfsplus_mod-fs_hfsplus.lst: fs/hfsplus.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfsplus_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfsplus > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hfsplus > $@ || (rm -f $@; exit 1)
 
 fs-hfsplus_mod-fs_hfsplus.lst: fs/hfsplus.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfsplus_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hfsplus > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(CFLAGS) $(hfsplus_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hfsplus > $@ || (rm -f $@; exit 1)
 
 
 hfsplus_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -734,10 +734,10 @@ und-amiga.lst: pre-amiga.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 amiga_mod-partmap_amiga.o: partmap/amiga.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
 
 amiga_mod-partmap_amiga.d: partmap/amiga.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_TARGET_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,amiga_mod-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,amiga_mod-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include amiga_mod-partmap_amiga.d
 
@@ -746,10 +746,10 @@ COMMANDFILES += cmd-amiga_mod-partmap_amiga.lst
 FSFILES += fs-amiga_mod-partmap_amiga.lst
 
 cmd-amiga_mod-partmap_amiga.lst: partmap/amiga.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh amiga > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh amiga > $@ || (rm -f $@; exit 1)
 
 fs-amiga_mod-partmap_amiga.lst: partmap/amiga.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh amiga > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(amiga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh amiga > $@ || (rm -f $@; exit 1)
 
 
 amiga_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -790,10 +790,10 @@ und-apple.lst: pre-apple.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 apple_mod-partmap_apple.o: partmap/apple.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
 
 apple_mod-partmap_apple.d: partmap/apple.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_TARGET_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,apple_mod-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,apple_mod-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include apple_mod-partmap_apple.d
 
@@ -802,10 +802,10 @@ COMMANDFILES += cmd-apple_mod-partmap_apple.lst
 FSFILES += fs-apple_mod-partmap_apple.lst
 
 cmd-apple_mod-partmap_apple.lst: partmap/apple.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh apple > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh apple > $@ || (rm -f $@; exit 1)
 
 fs-apple_mod-partmap_apple.lst: partmap/apple.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh apple > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(apple_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh apple > $@ || (rm -f $@; exit 1)
 
 
 apple_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -846,10 +846,10 @@ und-pc.lst: pre-pc.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 pc_mod-partmap_pc.o: partmap/pc.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
 
 pc_mod-partmap_pc.d: partmap/pc.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_TARGET_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,pc_mod-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,pc_mod-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include pc_mod-partmap_pc.d
 
@@ -858,10 +858,10 @@ COMMANDFILES += cmd-pc_mod-partmap_pc.lst
 FSFILES += fs-pc_mod-partmap_pc.lst
 
 cmd-pc_mod-partmap_pc.lst: partmap/pc.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pc > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pc > $@ || (rm -f $@; exit 1)
 
 fs-pc_mod-partmap_pc.lst: partmap/pc.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh pc > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(pc_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh pc > $@ || (rm -f $@; exit 1)
 
 
 pc_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -902,10 +902,10 @@ und-sun.lst: pre-sun.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 sun_mod-partmap_sun.o: partmap/sun.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
 
 sun_mod-partmap_sun.d: partmap/sun.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_TARGET_CFLAGS) -M $< 	  | sed 's,sun\.o[ :]*,sun_mod-partmap_sun.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -M $< 	  | sed 's,sun\.o[ :]*,sun_mod-partmap_sun.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include sun_mod-partmap_sun.d
 
@@ -914,10 +914,10 @@ COMMANDFILES += cmd-sun_mod-partmap_sun.lst
 FSFILES += fs-sun_mod-partmap_sun.lst
 
 cmd-sun_mod-partmap_sun.lst: partmap/sun.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sun > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sun > $@ || (rm -f $@; exit 1)
 
 fs-sun_mod-partmap_sun.lst: partmap/sun.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sun > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(sun_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sun > $@ || (rm -f $@; exit 1)
 
 
 sun_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -958,10 +958,10 @@ und-acorn.lst: pre-acorn.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 acorn_mod-partmap_acorn.o: partmap/acorn.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
 
 acorn_mod-partmap_acorn.d: partmap/acorn.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_TARGET_CFLAGS) -M $< 	  | sed 's,acorn\.o[ :]*,acorn_mod-partmap_acorn.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -M $< 	  | sed 's,acorn\.o[ :]*,acorn_mod-partmap_acorn.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include acorn_mod-partmap_acorn.d
 
@@ -970,10 +970,10 @@ COMMANDFILES += cmd-acorn_mod-partmap_acorn.lst
 FSFILES += fs-acorn_mod-partmap_acorn.lst
 
 cmd-acorn_mod-partmap_acorn.lst: partmap/acorn.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh acorn > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh acorn > $@ || (rm -f $@; exit 1)
 
 fs-acorn_mod-partmap_acorn.lst: partmap/acorn.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh acorn > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(acorn_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh acorn > $@ || (rm -f $@; exit 1)
 
 
 acorn_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1014,10 +1014,10 @@ und-gpt.lst: pre-gpt.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 gpt_mod-partmap_gpt.o: partmap/gpt.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gpt_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -c -o $@ $<
 
 gpt_mod-partmap_gpt.d: partmap/gpt.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gpt_mod_TARGET_CFLAGS) -M $< 	  | sed 's,gpt\.o[ :]*,gpt_mod-partmap_gpt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -M $< 	  | sed 's,gpt\.o[ :]*,gpt_mod-partmap_gpt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include gpt_mod-partmap_gpt.d
 
@@ -1026,10 +1026,10 @@ COMMANDFILES += cmd-gpt_mod-partmap_gpt.lst
 FSFILES += fs-gpt_mod-partmap_gpt.lst
 
 cmd-gpt_mod-partmap_gpt.lst: partmap/gpt.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gpt_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gpt > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gpt > $@ || (rm -f $@; exit 1)
 
 fs-gpt_mod-partmap_gpt.lst: partmap/gpt.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gpt_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gpt > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(CFLAGS) $(gpt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gpt > $@ || (rm -f $@; exit 1)
 
 
 gpt_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1077,10 +1077,10 @@ und-hello.lst: pre-hello.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 hello_mod-hello_hello.o: hello/hello.c
-	$(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
 
 hello_mod-hello_hello.d: hello/hello.c
-	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_TARGET_CFLAGS) -M $< 	  | sed 's,hello\.o[ :]*,hello_mod-hello_hello.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -M $< 	  | sed 's,hello\.o[ :]*,hello_mod-hello_hello.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include hello_mod-hello_hello.d
 
@@ -1089,10 +1089,10 @@ COMMANDFILES += cmd-hello_mod-hello_hello.lst
 FSFILES += fs-hello_mod-hello_hello.lst
 
 cmd-hello_mod-hello_hello.lst: hello/hello.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hello > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hello > $@ || (rm -f $@; exit 1)
 
 fs-hello_mod-hello_hello.lst: hello/hello.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hello > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(CFLAGS) $(hello_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hello > $@ || (rm -f $@; exit 1)
 
 
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1133,10 +1133,10 @@ und-boot.lst: pre-boot.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 boot_mod-commands_boot.o: commands/boot.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
 
 boot_mod-commands_boot.d: commands/boot.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_TARGET_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,boot_mod-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,boot_mod-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include boot_mod-commands_boot.d
 
@@ -1145,10 +1145,10 @@ COMMANDFILES += cmd-boot_mod-commands_boot.lst
 FSFILES += fs-boot_mod-commands_boot.lst
 
 cmd-boot_mod-commands_boot.lst: commands/boot.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh boot > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh boot > $@ || (rm -f $@; exit 1)
 
 fs-boot_mod-commands_boot.lst: commands/boot.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh boot > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh boot > $@ || (rm -f $@; exit 1)
 
 
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1189,10 +1189,10 @@ und-terminal.lst: pre-terminal.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 terminal_mod-commands_terminal.o: commands/terminal.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
 
 terminal_mod-commands_terminal.d: commands/terminal.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_TARGET_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,terminal_mod-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,terminal_mod-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include terminal_mod-commands_terminal.d
 
@@ -1201,10 +1201,10 @@ COMMANDFILES += cmd-terminal_mod-commands_terminal.lst
 FSFILES += fs-terminal_mod-commands_terminal.lst
 
 cmd-terminal_mod-commands_terminal.lst: commands/terminal.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminal > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminal > $@ || (rm -f $@; exit 1)
 
 fs-terminal_mod-commands_terminal.lst: commands/terminal.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminal > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminal > $@ || (rm -f $@; exit 1)
 
 
 terminal_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1245,10 +1245,10 @@ und-ls.lst: pre-ls.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ls_mod-commands_ls.o: commands/ls.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
 
 ls_mod-commands_ls.d: commands/ls.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_TARGET_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,ls_mod-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,ls_mod-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include ls_mod-commands_ls.d
 
@@ -1257,10 +1257,10 @@ COMMANDFILES += cmd-ls_mod-commands_ls.lst
 FSFILES += fs-ls_mod-commands_ls.lst
 
 cmd-ls_mod-commands_ls.lst: commands/ls.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ls > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ls > $@ || (rm -f $@; exit 1)
 
 fs-ls_mod-commands_ls.lst: commands/ls.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ls > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(ls_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ls > $@ || (rm -f $@; exit 1)
 
 
 ls_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1301,10 +1301,10 @@ und-cmp.lst: pre-cmp.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 cmp_mod-commands_cmp.o: commands/cmp.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
 
 cmp_mod-commands_cmp.d: commands/cmp.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_TARGET_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,cmp_mod-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,cmp_mod-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include cmp_mod-commands_cmp.d
 
@@ -1313,10 +1313,10 @@ COMMANDFILES += cmd-cmp_mod-commands_cmp.lst
 FSFILES += fs-cmp_mod-commands_cmp.lst
 
 cmd-cmp_mod-commands_cmp.lst: commands/cmp.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cmp > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cmp > $@ || (rm -f $@; exit 1)
 
 fs-cmp_mod-commands_cmp.lst: commands/cmp.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cmp > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cmp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cmp > $@ || (rm -f $@; exit 1)
 
 
 cmp_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1357,10 +1357,10 @@ und-cat.lst: pre-cat.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 cat_mod-commands_cat.o: commands/cat.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
 
 cat_mod-commands_cat.d: commands/cat.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_TARGET_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,cat_mod-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,cat_mod-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include cat_mod-commands_cat.d
 
@@ -1369,10 +1369,10 @@ COMMANDFILES += cmd-cat_mod-commands_cat.lst
 FSFILES += fs-cat_mod-commands_cat.lst
 
 cmd-cat_mod-commands_cat.lst: commands/cat.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cat > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cat > $@ || (rm -f $@; exit 1)
 
 fs-cat_mod-commands_cat.lst: commands/cat.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cat > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(cat_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cat > $@ || (rm -f $@; exit 1)
 
 
 cat_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1413,10 +1413,10 @@ und-help.lst: pre-help.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 help_mod-commands_help.o: commands/help.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
 
 help_mod-commands_help.d: commands/help.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_TARGET_CFLAGS) -M $< 	  | sed 's,help\.o[ :]*,help_mod-commands_help.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -M $< 	  | sed 's,help\.o[ :]*,help_mod-commands_help.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include help_mod-commands_help.d
 
@@ -1425,10 +1425,10 @@ COMMANDFILES += cmd-help_mod-commands_help.lst
 FSFILES += fs-help_mod-commands_help.lst
 
 cmd-help_mod-commands_help.lst: commands/help.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh help > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh help > $@ || (rm -f $@; exit 1)
 
 fs-help_mod-commands_help.lst: commands/help.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh help > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(help_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh help > $@ || (rm -f $@; exit 1)
 
 
 help_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1469,10 +1469,10 @@ und-font.lst: pre-font.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 font_mod-font_manager.o: font/manager.c
-	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
 
 font_mod-font_manager.d: font/manager.c
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_TARGET_CFLAGS) -M $< 	  | sed 's,manager\.o[ :]*,font_mod-font_manager.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -M $< 	  | sed 's,manager\.o[ :]*,font_mod-font_manager.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include font_mod-font_manager.d
 
@@ -1481,10 +1481,10 @@ COMMANDFILES += cmd-font_mod-font_manager.lst
 FSFILES += fs-font_mod-font_manager.lst
 
 cmd-font_mod-font_manager.lst: font/manager.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
 
 fs-font_mod-font_manager.lst: font/manager.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
 
 
 font_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1525,10 +1525,10 @@ und-search.lst: pre-search.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 search_mod-commands_search.o: commands/search.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
 
 search_mod-commands_search.d: commands/search.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_TARGET_CFLAGS) -M $< 	  | sed 's,search\.o[ :]*,search_mod-commands_search.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -M $< 	  | sed 's,search\.o[ :]*,search_mod-commands_search.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include search_mod-commands_search.d
 
@@ -1537,10 +1537,10 @@ COMMANDFILES += cmd-search_mod-commands_search.lst
 FSFILES += fs-search_mod-commands_search.lst
 
 cmd-search_mod-commands_search.lst: commands/search.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh search > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh search > $@ || (rm -f $@; exit 1)
 
 fs-search_mod-commands_search.lst: commands/search.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh search > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(search_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh search > $@ || (rm -f $@; exit 1)
 
 
 search_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1581,10 +1581,10 @@ und-test.lst: pre-test.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 test_mod-commands_test.o: commands/test.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(test_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -c -o $@ $<
 
 test_mod-commands_test.d: commands/test.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(test_mod_TARGET_CFLAGS) -M $< 	  | sed 's,test\.o[ :]*,test_mod-commands_test.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -M $< 	  | sed 's,test\.o[ :]*,test_mod-commands_test.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include test_mod-commands_test.d
 
@@ -1593,10 +1593,10 @@ COMMANDFILES += cmd-test_mod-commands_test.lst
 FSFILES += fs-test_mod-commands_test.lst
 
 cmd-test_mod-commands_test.lst: commands/test.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(test_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh test > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh test > $@ || (rm -f $@; exit 1)
 
 fs-test_mod-commands_test.lst: commands/test.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(test_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh test > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(test_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh test > $@ || (rm -f $@; exit 1)
 
 
 test_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1637,10 +1637,10 @@ und-loopback.lst: pre-loopback.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 loopback_mod-disk_loopback.o: disk/loopback.c
-	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
 
 loopback_mod-disk_loopback.d: disk/loopback.c
-	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_TARGET_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,loopback_mod-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,loopback_mod-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include loopback_mod-disk_loopback.d
 
@@ -1649,10 +1649,10 @@ COMMANDFILES += cmd-loopback_mod-disk_loopback.lst
 FSFILES += fs-loopback_mod-disk_loopback.lst
 
 cmd-loopback_mod-disk_loopback.lst: disk/loopback.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loopback > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loopback > $@ || (rm -f $@; exit 1)
 
 fs-loopback_mod-disk_loopback.lst: disk/loopback.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh loopback > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(CFLAGS) $(loopback_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh loopback > $@ || (rm -f $@; exit 1)
 
 
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1693,10 +1693,10 @@ und-configfile.lst: pre-configfile.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 configfile_mod-commands_configfile.o: commands/configfile.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
 
 configfile_mod-commands_configfile.d: commands/configfile.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_TARGET_CFLAGS) -M $< 	  | sed 's,configfile\.o[ :]*,configfile_mod-commands_configfile.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -M $< 	  | sed 's,configfile\.o[ :]*,configfile_mod-commands_configfile.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include configfile_mod-commands_configfile.d
 
@@ -1705,10 +1705,10 @@ COMMANDFILES += cmd-configfile_mod-commands_configfile.lst
 FSFILES += fs-configfile_mod-commands_configfile.lst
 
 cmd-configfile_mod-commands_configfile.lst: commands/configfile.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh configfile > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh configfile > $@ || (rm -f $@; exit 1)
 
 fs-configfile_mod-commands_configfile.lst: commands/configfile.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh configfile > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(configfile_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh configfile > $@ || (rm -f $@; exit 1)
 
 
 configfile_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1749,10 +1749,10 @@ und-terminfo.lst: pre-terminfo.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 terminfo_mod-term_terminfo.o: term/terminfo.c
-	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
 
 terminfo_mod-term_terminfo.d: term/terminfo.c
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -M $< 	  | sed 's,terminfo\.o[ :]*,terminfo_mod-term_terminfo.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -M $< 	  | sed 's,terminfo\.o[ :]*,terminfo_mod-term_terminfo.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include terminfo_mod-term_terminfo.d
 
@@ -1761,17 +1761,17 @@ COMMANDFILES += cmd-terminfo_mod-term_terminfo.lst
 FSFILES += fs-terminfo_mod-term_terminfo.lst
 
 cmd-terminfo_mod-term_terminfo.lst: term/terminfo.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminfo > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminfo > $@ || (rm -f $@; exit 1)
 
 fs-terminfo_mod-term_terminfo.lst: term/terminfo.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminfo > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminfo > $@ || (rm -f $@; exit 1)
 
 
 terminfo_mod-term_tparm.o: term/tparm.c
-	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
 
 terminfo_mod-term_tparm.d: term/tparm.c
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -M $< 	  | sed 's,tparm\.o[ :]*,terminfo_mod-term_tparm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -M $< 	  | sed 's,tparm\.o[ :]*,terminfo_mod-term_tparm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include terminfo_mod-term_tparm.d
 
@@ -1780,10 +1780,10 @@ COMMANDFILES += cmd-terminfo_mod-term_tparm.lst
 FSFILES += fs-terminfo_mod-term_tparm.lst
 
 cmd-terminfo_mod-term_tparm.lst: term/tparm.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminfo > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminfo > $@ || (rm -f $@; exit 1)
 
 fs-terminfo_mod-term_tparm.lst: term/tparm.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminfo > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(CFLAGS) $(terminfo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminfo > $@ || (rm -f $@; exit 1)
 
 
 terminfo_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1824,10 +1824,10 @@ und-blocklist.lst: pre-blocklist.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 blocklist_mod-commands_blocklist.o: commands/blocklist.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(blocklist_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -c -o $@ $<
 
 blocklist_mod-commands_blocklist.d: commands/blocklist.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(blocklist_mod_TARGET_CFLAGS) -M $< 	  | sed 's,blocklist\.o[ :]*,blocklist_mod-commands_blocklist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -M $< 	  | sed 's,blocklist\.o[ :]*,blocklist_mod-commands_blocklist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include blocklist_mod-commands_blocklist.d
 
@@ -1836,10 +1836,10 @@ COMMANDFILES += cmd-blocklist_mod-commands_blocklist.lst
 FSFILES += fs-blocklist_mod-commands_blocklist.lst
 
 cmd-blocklist_mod-commands_blocklist.lst: commands/blocklist.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(blocklist_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh blocklist > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh blocklist > $@ || (rm -f $@; exit 1)
 
 fs-blocklist_mod-commands_blocklist.lst: commands/blocklist.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(blocklist_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh blocklist > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(CFLAGS) $(blocklist_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh blocklist > $@ || (rm -f $@; exit 1)
 
 
 blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1883,10 +1883,10 @@ und-gzio.lst: pre-gzio.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 gzio_mod-io_gzio.o: io/gzio.c
-	$(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_TARGET_CFLAGS) -c -o $@ $<
+	$(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<
 
 gzio_mod-io_gzio.d: io/gzio.c
-	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_TARGET_CFLAGS) -M $< 	  | sed 's,gzio\.o[ :]*,gzio_mod-io_gzio.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -M $< 	  | sed 's,gzio\.o[ :]*,gzio_mod-io_gzio.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
 
 -include gzio_mod-io_gzio.d
 
@@ -1895,10 +1895,10 @@ COMMANDFILES += cmd-gzio_mod-io_gzio.lst
 FSFILES += fs-gzio_mod-io_gzio.lst
 
 cmd-gzio_mod-io_gzio.lst: io/gzio.c gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gzio > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gzio > $@ || (rm -f $@; exit 1)
 
 fs-gzio_mod-io_gzio.lst: io/gzio.c genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_TARGET_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gzio > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(CFLAGS) $(gzio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gzio > $@ || (rm -f $@; exit 1)
 
 
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
