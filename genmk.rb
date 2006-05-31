@@ -71,11 +71,11 @@ MOSTLYCLEANFILES += #{deps_str}
       dir = File.dirname(src)
       
       "#{obj}: #{src}
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(#{flag}) $(#{prefix}_#{flag}) -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -c -o $@ $<
 
 #{dep}: #{src}
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(#{flag}) $(#{prefix}_#{flag}) -M $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -M $< \
 	  | sed 's,#{Regexp.quote(fake_obj)}[ :]*,#{obj} $@ : ,g' > $@; \
 	  [ -s $@ ] || rm -f $@
 
@@ -153,11 +153,11 @@ endif
       dir = File.dirname(src)
 
       "#{obj}: #{src}
-	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -c -o $@ $<
+	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -c -o $@ $<
 
 #{dep}: #{src}
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -M $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -M $< \
 	  | sed 's,#{Regexp.quote(fake_obj)}[ :]*,#{obj} $@ : ,g' > $@; \
 	  [ -s $@ ] || rm -f $@
 
@@ -169,12 +169,12 @@ FSFILES += #{fs}
 
 #{command}: #{src} gencmdlist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/gencmdlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{fs}: #{src} genfslist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genfslist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 

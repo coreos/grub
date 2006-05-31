@@ -1,5 +1,10 @@
 2006-05-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* genmk.rb (Image::rule): Prefix CFLAGS or ASFLAGS with TARGET_.
+	(PModule::rule): Likewise.
+
+2006-05-31  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* genmk.rb (Image::rule): Set FLAG to CFLAGS or ASFLAGS instead of
 	TARGET_CFLAGS or TARGET_ASFLAGS. There is no reason why
 	target-specific flags should be prefixed.
