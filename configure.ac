@@ -41,7 +41,6 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 case "$host_cpu" in
-  x86_64) host_m32=1 ;;
   powerpc64) host_m32=1 ;;
 esac
 
@@ -186,10 +185,12 @@ tmp_CC="$CC"
 tmp_CFLAGS="$CFLAGS"
 tmp_LDFLAGS="$LDFLAGS"
 tmp_CPPFLAGS="$CPPFLAGS"
+tmp_LIBS="$LIBS"
 CC="$TARGET_CC"
 CFLAGS="$TARGET_CFLAGS"
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
+LIBS=""
 
 if test "x$TARGET_CFLAGS" = x; then
   # debug flags.
@@ -232,6 +233,12 @@ AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
 
+# Set them to their new values for the tests below.
+CC="$TARGET_CC"
+CFLAGS="$TARGET_CFLAGS"
+CPPFLAGS="$TARGET_CPPFLAGS"
+LDFLAGS="$TARGET_LDFLAGS"
+
 # Defined in aclocal.m4.
 grub_PROG_OBJCOPY_ABSOLUTE
 grub_ASM_USCORE
@@ -252,6 +259,7 @@ CC="$tmp_CC"
 CFLAGS="$tmp_CFLAGS"
 CPPFLAGS="$tmp_CPPFLAGS"
 LDFLAGS="$tmp_LDFLAGS"
+LIBS="$tmp_LIBS"
 
 # Check for options.
 AC_ARG_ENABLE([mm-debug], 

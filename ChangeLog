@@ -1,3 +1,9 @@
+2006-05-31  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* configure.ac: Don't set host_m32 for x86_64. Also reset LIBS
+	for the target-specific tests. Make sure that we also have the
+	up-to-date target variables for those tests.
+
 2006-05-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* genmk.rb (Image::rule): Prefix CFLAGS or ASFLAGS with TARGET_.
