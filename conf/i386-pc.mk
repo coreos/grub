@@ -1344,7 +1344,6 @@ CLEANFILES += _chain.mod mod-_chain.o mod-_chain.c pre-_chain.o _chain_mod-loade
 ifneq ($(_chain_mod_EXPORTS),no)
 CLEANFILES += def-_chain.lst
 DEFSYMFILES += def-_chain.lst
-MODSRCFILES += loader/i386/pc/chainloader.c
 endif
 MOSTLYCLEANFILES += _chain_mod-loader_i386_pc_chainloader.d
 UNDSYMFILES += und-_chain.lst
@@ -1401,7 +1400,6 @@ CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_i38
 ifneq ($(chain_mod_EXPORTS),no)
 CLEANFILES += def-chain.lst
 DEFSYMFILES += def-chain.lst
-MODSRCFILES += loader/i386/pc/chainloader_normal.c
 endif
 MOSTLYCLEANFILES += chain_mod-loader_i386_pc_chainloader_normal.d
 UNDSYMFILES += und-chain.lst
@@ -1458,7 +1456,6 @@ CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loade
 ifneq ($(_linux_mod_EXPORTS),no)
 CLEANFILES += def-_linux.lst
 DEFSYMFILES += def-_linux.lst
-MODSRCFILES += loader/i386/pc/linux.c
 endif
 MOSTLYCLEANFILES += _linux_mod-loader_i386_pc_linux.d
 UNDSYMFILES += und-_linux.lst
@@ -1515,7 +1512,6 @@ CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i38
 ifneq ($(linux_mod_EXPORTS),no)
 CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
-MODSRCFILES += loader/i386/pc/linux_normal.c
 endif
 MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux_normal.d
 UNDSYMFILES += und-linux.lst
@@ -1576,7 +1572,6 @@ CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-norma
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
-MODSRCFILES += normal/arg.c normal/cmdline.c normal/command.c normal/completion.c normal/execute.c normal/function.c normal/lexer.c normal/main.c normal/menu.c normal/menu_entry.c normal/misc.c grub_script.tab.c normal/script.c normal/i386/setjmp.S
 endif
 MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
 UNDSYMFILES += und-normal.lst
@@ -1881,7 +1876,6 @@ CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-comma
 ifneq ($(reboot_mod_EXPORTS),no)
 CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
-MODSRCFILES += commands/i386/pc/reboot.c
 endif
 MOSTLYCLEANFILES += reboot_mod-commands_i386_pc_reboot.d
 UNDSYMFILES += und-reboot.lst
@@ -1938,7 +1932,6 @@ CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_i386_p
 ifneq ($(halt_mod_EXPORTS),no)
 CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
-MODSRCFILES += commands/i386/pc/halt.c
 endif
 MOSTLYCLEANFILES += halt_mod-commands_i386_pc_halt.d
 UNDSYMFILES += und-halt.lst
@@ -2000,7 +1993,6 @@ CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o 
 ifneq ($(_multiboot_mod_EXPORTS),no)
 CLEANFILES += def-_multiboot.lst
 DEFSYMFILES += def-_multiboot.lst
-MODSRCFILES += loader/i386/pc/multiboot.c
 endif
 MOSTLYCLEANFILES += _multiboot_mod-loader_i386_pc_multiboot.d
 UNDSYMFILES += und-_multiboot.lst
@@ -2057,7 +2049,6 @@ CLEANFILES += multiboot.mod mod-multiboot.o mod-multiboot.c pre-multiboot.o mult
 ifneq ($(multiboot_mod_EXPORTS),no)
 CLEANFILES += def-multiboot.lst
 DEFSYMFILES += def-multiboot.lst
-MODSRCFILES += loader/i386/pc/multiboot_normal.c
 endif
 MOSTLYCLEANFILES += multiboot_mod-loader_i386_pc_multiboot_normal.d
 UNDSYMFILES += und-multiboot.lst
@@ -2115,7 +2106,6 @@ CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o 
 ifneq ($(vbe_mod_EXPORTS),no)
 CLEANFILES += def-vbe.lst
 DEFSYMFILES += def-vbe.lst
-MODSRCFILES += video/i386/pc/vbe.c video/i386/pc/vbeblit.c video/i386/pc/vbefill.c
 endif
 MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d
 UNDSYMFILES += und-vbe.lst
@@ -2210,7 +2200,6 @@ CLEANFILES += vbeinfo.mod mod-vbeinfo.o mod-vbeinfo.c pre-vbeinfo.o vbeinfo_mod-
 ifneq ($(vbeinfo_mod_EXPORTS),no)
 CLEANFILES += def-vbeinfo.lst
 DEFSYMFILES += def-vbeinfo.lst
-MODSRCFILES += commands/i386/pc/vbeinfo.c
 endif
 MOSTLYCLEANFILES += vbeinfo_mod-commands_i386_pc_vbeinfo.d
 UNDSYMFILES += und-vbeinfo.lst
@@ -2267,7 +2256,6 @@ CLEANFILES += vbetest.mod mod-vbetest.o mod-vbetest.c pre-vbetest.o vbetest_mod-
 ifneq ($(vbetest_mod_EXPORTS),no)
 CLEANFILES += def-vbetest.lst
 DEFSYMFILES += def-vbetest.lst
-MODSRCFILES += commands/i386/pc/vbetest.c
 endif
 MOSTLYCLEANFILES += vbetest_mod-commands_i386_pc_vbetest.d
 UNDSYMFILES += und-vbetest.lst
@@ -2324,7 +2312,6 @@ CLEANFILES += play.mod mod-play.o mod-play.c pre-play.o play_mod-commands_i386_p
 ifneq ($(play_mod_EXPORTS),no)
 CLEANFILES += def-play.lst
 DEFSYMFILES += def-play.lst
-MODSRCFILES += commands/i386/pc/play.c
 endif
 MOSTLYCLEANFILES += play_mod-commands_i386_pc_play.d
 UNDSYMFILES += und-play.lst
@@ -2381,7 +2368,6 @@ CLEANFILES += video.mod mod-video.o mod-video.c pre-video.o video_mod-video_vide
 ifneq ($(video_mod_EXPORTS),no)
 CLEANFILES += def-video.lst
 DEFSYMFILES += def-video.lst
-MODSRCFILES += video/video.c
 endif
 MOSTLYCLEANFILES += video_mod-video_video.d
 UNDSYMFILES += und-video.lst
@@ -2438,7 +2424,6 @@ CLEANFILES += gfxterm.mod mod-gfxterm.o mod-gfxterm.c pre-gfxterm.o gfxterm_mod-
 ifneq ($(gfxterm_mod_EXPORTS),no)
 CLEANFILES += def-gfxterm.lst
 DEFSYMFILES += def-gfxterm.lst
-MODSRCFILES += term/gfxterm.c
 endif
 MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
 UNDSYMFILES += und-gfxterm.lst
@@ -2495,7 +2480,6 @@ CLEANFILES += videotest.mod mod-videotest.o mod-videotest.c pre-videotest.o vide
 ifneq ($(videotest_mod_EXPORTS),no)
 CLEANFILES += def-videotest.lst
 DEFSYMFILES += def-videotest.lst
-MODSRCFILES += commands/videotest.c
 endif
 MOSTLYCLEANFILES += videotest_mod-commands_videotest.d
 UNDSYMFILES += und-videotest.lst

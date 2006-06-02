@@ -96,7 +96,6 @@ class PModule
 
   def rule(sources)
     prefix = @name.to_var
-    sources_str = sources.join(' ')
     objs = sources.collect do |src|
       raise "unknown source file `#{src}'" if /\.[cS]$/ !~ src
       prefix + '-' + src.to_obj
@@ -116,7 +115,6 @@ class PModule
 ifneq ($(#{prefix}_EXPORTS),no)
 CLEANFILES += #{defsym}
 DEFSYMFILES += #{defsym}
-MODSRCFILES += #{sources_str}
 endif
 MOSTLYCLEANFILES += #{deps_str}
 UNDSYMFILES += #{undsym}

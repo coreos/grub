@@ -6,7 +6,7 @@ grub_script.tab.c grub_script.tab.h: normal/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
 
 # For grub-emu.
-grub_modules_init.lst: geninit.sh $(MODSRCFILES)
+grub_modules_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
 	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
 DISTCLEANFILES += grub_modules_init.lst
 

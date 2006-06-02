@@ -1,5 +1,13 @@
 2006-06-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* conf/common.rmk (grub_modules_init.lst): Depended on
+	grub_emu_SOURCES, excluding grub_emu_init.c, instead of
+	MODSRCFILES.
+
+	* genmk.rb (PModule::rule): Reverted the previous change.
+
+2006-06-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* conf/common.rmk (grub_modules_init.lst): Depends on
 	$(MODSRCFILES). Grep only the files in $(MODSRCFILES). Make sure
 	that the target does not exist before producing.
