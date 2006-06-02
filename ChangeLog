@@ -1,3 +1,13 @@
+2006-06-02  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* conf/common.rmk (grub_modules_init.lst): Depends on
+	$(MODSRCFILES). Grep only the files in $(MODSRCFILES). Make sure
+	that the target does not exist before producing.
+	(grub_modules_init.h): Remove the target before generating.
+	(grub_emu_init.c): Likewise.
+
+	* genmk.rb (PModule::rule): Add source files into MODSRCFILES.
+
 2006-05-31  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* configure.ac: Don't set host_m32 for x86_64. Also reset LIBS

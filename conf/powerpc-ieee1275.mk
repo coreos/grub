@@ -860,6 +860,7 @@ CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loade
 ifneq ($(_linux_mod_EXPORTS),no)
 CLEANFILES += def-_linux.lst
 DEFSYMFILES += def-_linux.lst
+MODSRCFILES += loader/powerpc/ieee1275/linux.c
 endif
 MOSTLYCLEANFILES += _linux_mod-loader_powerpc_ieee1275_linux.d
 UNDSYMFILES += und-_linux.lst
@@ -916,6 +917,7 @@ CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_pow
 ifneq ($(linux_mod_EXPORTS),no)
 CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
+MODSRCFILES += loader/powerpc/ieee1275/linux_normal.c
 endif
 MOSTLYCLEANFILES += linux_mod-loader_powerpc_ieee1275_linux_normal.d
 UNDSYMFILES += und-linux.lst
@@ -976,6 +978,7 @@ CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-norma
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
+MODSRCFILES += normal/arg.c normal/cmdline.c normal/command.c normal/completion.c normal/execute.c normal/function.c normal/lexer.c normal/main.c normal/menu.c normal/menu_entry.c normal/misc.c grub_script.tab.c normal/script.c normal/powerpc/setjmp.S
 endif
 MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_powerpc_setjmp.d
 UNDSYMFILES += und-normal.lst
@@ -1280,6 +1283,7 @@ CLEANFILES += suspend.mod mod-suspend.o mod-suspend.c pre-suspend.o suspend_mod-
 ifneq ($(suspend_mod_EXPORTS),no)
 CLEANFILES += def-suspend.lst
 DEFSYMFILES += def-suspend.lst
+MODSRCFILES += commands/ieee1275/suspend.c
 endif
 MOSTLYCLEANFILES += suspend_mod-commands_ieee1275_suspend.d
 UNDSYMFILES += und-suspend.lst
@@ -1336,6 +1340,7 @@ CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-comma
 ifneq ($(reboot_mod_EXPORTS),no)
 CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
+MODSRCFILES += commands/ieee1275/reboot.c
 endif
 MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
 UNDSYMFILES += und-reboot.lst
@@ -1392,6 +1397,7 @@ CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee12
 ifneq ($(halt_mod_EXPORTS),no)
 CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
+MODSRCFILES += commands/ieee1275/halt.c
 endif
 MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
 UNDSYMFILES += und-halt.lst

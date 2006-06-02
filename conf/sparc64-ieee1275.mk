@@ -279,6 +279,7 @@ CLEANFILES += fshelp.mod mod-fshelp.o mod-fshelp.c pre-fshelp.o fshelp_mod-fs_fs
 ifneq ($(fshelp_mod_EXPORTS),no)
 CLEANFILES += def-fshelp.lst
 DEFSYMFILES += def-fshelp.lst
+MODSRCFILES += fs/fshelp.c
 endif
 MOSTLYCLEANFILES += fshelp_mod-fs_fshelp.d
 UNDSYMFILES += und-fshelp.lst
@@ -335,6 +336,7 @@ CLEANFILES += fat.mod mod-fat.o mod-fat.c pre-fat.o fat_mod-fs_fat.o und-fat.lst
 ifneq ($(fat_mod_EXPORTS),no)
 CLEANFILES += def-fat.lst
 DEFSYMFILES += def-fat.lst
+MODSRCFILES += fs/fat.c
 endif
 MOSTLYCLEANFILES += fat_mod-fs_fat.d
 UNDSYMFILES += und-fat.lst
@@ -391,6 +393,7 @@ CLEANFILES += ext2.mod mod-ext2.o mod-ext2.c pre-ext2.o ext2_mod-fs_ext2.o und-e
 ifneq ($(ext2_mod_EXPORTS),no)
 CLEANFILES += def-ext2.lst
 DEFSYMFILES += def-ext2.lst
+MODSRCFILES += fs/ext2.c
 endif
 MOSTLYCLEANFILES += ext2_mod-fs_ext2.d
 UNDSYMFILES += und-ext2.lst
@@ -447,6 +450,7 @@ CLEANFILES += ufs.mod mod-ufs.o mod-ufs.c pre-ufs.o ufs_mod-fs_ufs.o und-ufs.lst
 ifneq ($(ufs_mod_EXPORTS),no)
 CLEANFILES += def-ufs.lst
 DEFSYMFILES += def-ufs.lst
+MODSRCFILES += fs/ufs.c
 endif
 MOSTLYCLEANFILES += ufs_mod-fs_ufs.d
 UNDSYMFILES += und-ufs.lst
@@ -503,6 +507,7 @@ CLEANFILES += minix.mod mod-minix.o mod-minix.c pre-minix.o minix_mod-fs_minix.o
 ifneq ($(minix_mod_EXPORTS),no)
 CLEANFILES += def-minix.lst
 DEFSYMFILES += def-minix.lst
+MODSRCFILES += fs/minix.c
 endif
 MOSTLYCLEANFILES += minix_mod-fs_minix.d
 UNDSYMFILES += und-minix.lst
@@ -559,6 +564,7 @@ CLEANFILES += hfs.mod mod-hfs.o mod-hfs.c pre-hfs.o hfs_mod-fs_hfs.o und-hfs.lst
 ifneq ($(hfs_mod_EXPORTS),no)
 CLEANFILES += def-hfs.lst
 DEFSYMFILES += def-hfs.lst
+MODSRCFILES += fs/hfs.c
 endif
 MOSTLYCLEANFILES += hfs_mod-fs_hfs.d
 UNDSYMFILES += und-hfs.lst
@@ -615,6 +621,7 @@ CLEANFILES += jfs.mod mod-jfs.o mod-jfs.c pre-jfs.o jfs_mod-fs_jfs.o und-jfs.lst
 ifneq ($(jfs_mod_EXPORTS),no)
 CLEANFILES += def-jfs.lst
 DEFSYMFILES += def-jfs.lst
+MODSRCFILES += fs/jfs.c
 endif
 MOSTLYCLEANFILES += jfs_mod-fs_jfs.d
 UNDSYMFILES += und-jfs.lst
@@ -676,6 +683,7 @@ CLEANFILES += xfs.mod mod-xfs.o mod-xfs.c pre-xfs.o xfs_mod-fs_xfs.o und-xfs.lst
 ifneq ($(xfs_mod_EXPORTS),no)
 CLEANFILES += def-xfs.lst
 DEFSYMFILES += def-xfs.lst
+MODSRCFILES += fs/xfs.c
 endif
 MOSTLYCLEANFILES += xfs_mod-fs_xfs.d
 UNDSYMFILES += und-xfs.lst
@@ -732,6 +740,7 @@ CLEANFILES += affs.mod mod-affs.o mod-affs.c pre-affs.o affs_mod-fs_affs.o und-a
 ifneq ($(affs_mod_EXPORTS),no)
 CLEANFILES += def-affs.lst
 DEFSYMFILES += def-affs.lst
+MODSRCFILES += fs/affs.c
 endif
 MOSTLYCLEANFILES += affs_mod-fs_affs.d
 UNDSYMFILES += und-affs.lst
@@ -788,6 +797,7 @@ CLEANFILES += sfs.mod mod-sfs.o mod-sfs.c pre-sfs.o sfs_mod-fs_sfs.o und-sfs.lst
 ifneq ($(sfs_mod_EXPORTS),no)
 CLEANFILES += def-sfs.lst
 DEFSYMFILES += def-sfs.lst
+MODSRCFILES += fs/sfs.c
 endif
 MOSTLYCLEANFILES += sfs_mod-fs_sfs.d
 UNDSYMFILES += und-sfs.lst
@@ -859,6 +869,7 @@ CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-norma
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
+MODSRCFILES += normal/arg.c normal/cmdline.c normal/command.c normal/completion.c normal/execute.c normal/function.c normal/lexer.c normal/main.c normal/menu.c normal/menu_entry.c normal/misc.c normal/script.c normal/sparc64/setjmp.S grub_script.tab.c
 endif
 MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-normal_script.d normal_mod-normal_sparc64_setjmp.d normal_mod-grub_script_tab.d
 UNDSYMFILES += und-normal.lst
@@ -1163,6 +1174,7 @@ CLEANFILES += hello.mod mod-hello.o mod-hello.c pre-hello.o hello_mod-hello_hell
 ifneq ($(hello_mod_EXPORTS),no)
 CLEANFILES += def-hello.lst
 DEFSYMFILES += def-hello.lst
+MODSRCFILES += hello/hello.c
 endif
 MOSTLYCLEANFILES += hello_mod-hello_hello.d
 UNDSYMFILES += und-hello.lst
@@ -1219,6 +1231,7 @@ CLEANFILES += boot.mod mod-boot.o mod-boot.c pre-boot.o boot_mod-commands_boot.o
 ifneq ($(boot_mod_EXPORTS),no)
 CLEANFILES += def-boot.lst
 DEFSYMFILES += def-boot.lst
+MODSRCFILES += commands/boot.c
 endif
 MOSTLYCLEANFILES += boot_mod-commands_boot.d
 UNDSYMFILES += und-boot.lst
@@ -1275,6 +1288,7 @@ CLEANFILES += terminal.mod mod-terminal.o mod-terminal.c pre-terminal.o terminal
 ifneq ($(terminal_mod_EXPORTS),no)
 CLEANFILES += def-terminal.lst
 DEFSYMFILES += def-terminal.lst
+MODSRCFILES += commands/terminal.c
 endif
 MOSTLYCLEANFILES += terminal_mod-commands_terminal.d
 UNDSYMFILES += und-terminal.lst
@@ -1331,6 +1345,7 @@ CLEANFILES += ls.mod mod-ls.o mod-ls.c pre-ls.o ls_mod-commands_ls.o und-ls.lst
 ifneq ($(ls_mod_EXPORTS),no)
 CLEANFILES += def-ls.lst
 DEFSYMFILES += def-ls.lst
+MODSRCFILES += commands/ls.c
 endif
 MOSTLYCLEANFILES += ls_mod-commands_ls.d
 UNDSYMFILES += und-ls.lst
@@ -1387,6 +1402,7 @@ CLEANFILES += cmp.mod mod-cmp.o mod-cmp.c pre-cmp.o cmp_mod-commands_cmp.o und-c
 ifneq ($(cmp_mod_EXPORTS),no)
 CLEANFILES += def-cmp.lst
 DEFSYMFILES += def-cmp.lst
+MODSRCFILES += commands/cmp.c
 endif
 MOSTLYCLEANFILES += cmp_mod-commands_cmp.d
 UNDSYMFILES += und-cmp.lst
@@ -1443,6 +1459,7 @@ CLEANFILES += cat.mod mod-cat.o mod-cat.c pre-cat.o cat_mod-commands_cat.o und-c
 ifneq ($(cat_mod_EXPORTS),no)
 CLEANFILES += def-cat.lst
 DEFSYMFILES += def-cat.lst
+MODSRCFILES += commands/cat.c
 endif
 MOSTLYCLEANFILES += cat_mod-commands_cat.d
 UNDSYMFILES += und-cat.lst
@@ -1499,6 +1516,7 @@ CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_manager.o 
 ifneq ($(font_mod_EXPORTS),no)
 CLEANFILES += def-font.lst
 DEFSYMFILES += def-font.lst
+MODSRCFILES += font/manager.c
 endif
 MOSTLYCLEANFILES += font_mod-font_manager.d
 UNDSYMFILES += und-font.lst
@@ -1555,6 +1573,7 @@ CLEANFILES += amiga.mod mod-amiga.o mod-amiga.c pre-amiga.o amiga_mod-partmap_am
 ifneq ($(amiga_mod_EXPORTS),no)
 CLEANFILES += def-amiga.lst
 DEFSYMFILES += def-amiga.lst
+MODSRCFILES += partmap/amiga.c
 endif
 MOSTLYCLEANFILES += amiga_mod-partmap_amiga.d
 UNDSYMFILES += und-amiga.lst
@@ -1611,6 +1630,7 @@ CLEANFILES += apple.mod mod-apple.o mod-apple.c pre-apple.o apple_mod-partmap_ap
 ifneq ($(apple_mod_EXPORTS),no)
 CLEANFILES += def-apple.lst
 DEFSYMFILES += def-apple.lst
+MODSRCFILES += partmap/apple.c
 endif
 MOSTLYCLEANFILES += apple_mod-partmap_apple.d
 UNDSYMFILES += und-apple.lst
@@ -1667,6 +1687,7 @@ CLEANFILES += pc.mod mod-pc.o mod-pc.c pre-pc.o pc_mod-partmap_pc.o und-pc.lst
 ifneq ($(pc_mod_EXPORTS),no)
 CLEANFILES += def-pc.lst
 DEFSYMFILES += def-pc.lst
+MODSRCFILES += partmap/pc.c
 endif
 MOSTLYCLEANFILES += pc_mod-partmap_pc.d
 UNDSYMFILES += und-pc.lst
@@ -1723,6 +1744,7 @@ CLEANFILES += sun.mod mod-sun.o mod-sun.c pre-sun.o sun_mod-partmap_sun.o und-su
 ifneq ($(sun_mod_EXPORTS),no)
 CLEANFILES += def-sun.lst
 DEFSYMFILES += def-sun.lst
+MODSRCFILES += partmap/sun.c
 endif
 MOSTLYCLEANFILES += sun_mod-partmap_sun.d
 UNDSYMFILES += und-sun.lst
@@ -1779,6 +1801,7 @@ CLEANFILES += acorn.mod mod-acorn.o mod-acorn.c pre-acorn.o acorn_mod-partmap_ac
 ifneq ($(acorn_mod_EXPORTS),no)
 CLEANFILES += def-acorn.lst
 DEFSYMFILES += def-acorn.lst
+MODSRCFILES += partmap/acorn.c
 endif
 MOSTLYCLEANFILES += acorn_mod-partmap_acorn.d
 UNDSYMFILES += und-acorn.lst
@@ -1834,6 +1857,7 @@ CLEANFILES += loopback.mod mod-loopback.o mod-loopback.c pre-loopback.o loopback
 ifneq ($(loopback_mod_EXPORTS),no)
 CLEANFILES += def-loopback.lst
 DEFSYMFILES += def-loopback.lst
+MODSRCFILES += disk/loopback.c
 endif
 MOSTLYCLEANFILES += loopback_mod-disk_loopback.d
 UNDSYMFILES += und-loopback.lst
@@ -1890,6 +1914,7 @@ CLEANFILES += suspend.mod mod-suspend.o mod-suspend.c pre-suspend.o suspend_mod-
 ifneq ($(suspend_mod_EXPORTS),no)
 CLEANFILES += def-suspend.lst
 DEFSYMFILES += def-suspend.lst
+MODSRCFILES += commands/ieee1275/suspend.c
 endif
 MOSTLYCLEANFILES += suspend_mod-commands_ieee1275_suspend.d
 UNDSYMFILES += und-suspend.lst
@@ -1946,6 +1971,7 @@ CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-comma
 ifneq ($(reboot_mod_EXPORTS),no)
 CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
+MODSRCFILES += commands/ieee1275/reboot.c
 endif
 MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
 UNDSYMFILES += und-reboot.lst
@@ -2002,6 +2028,7 @@ CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee12
 ifneq ($(halt_mod_EXPORTS),no)
 CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
+MODSRCFILES += commands/ieee1275/halt.c
 endif
 MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
 UNDSYMFILES += und-halt.lst
@@ -2058,6 +2085,7 @@ CLEANFILES += help.mod mod-help.o mod-help.c pre-help.o help_mod-commands_help.o
 ifneq ($(help_mod_EXPORTS),no)
 CLEANFILES += def-help.lst
 DEFSYMFILES += def-help.lst
+MODSRCFILES += commands/help.c
 endif
 MOSTLYCLEANFILES += help_mod-commands_help.d
 UNDSYMFILES += und-help.lst
@@ -2124,6 +2152,7 @@ CLEANFILES += configfile.mod mod-configfile.o mod-configfile.c pre-configfile.o 
 ifneq ($(configfile_mod_EXPORTS),no)
 CLEANFILES += def-configfile.lst
 DEFSYMFILES += def-configfile.lst
+MODSRCFILES += commands/configfile.c
 endif
 MOSTLYCLEANFILES += configfile_mod-commands_configfile.d
 UNDSYMFILES += und-configfile.lst
@@ -2180,6 +2209,7 @@ CLEANFILES += search.mod mod-search.o mod-search.c pre-search.o search_mod-comma
 ifneq ($(search_mod_EXPORTS),no)
 CLEANFILES += def-search.lst
 DEFSYMFILES += def-search.lst
+MODSRCFILES += commands/search.c
 endif
 MOSTLYCLEANFILES += search_mod-commands_search.d
 UNDSYMFILES += und-search.lst
@@ -2236,6 +2266,7 @@ CLEANFILES += gzio.mod mod-gzio.o mod-gzio.c pre-gzio.o gzio_mod-io_gzio.o und-g
 ifneq ($(gzio_mod_EXPORTS),no)
 CLEANFILES += def-gzio.lst
 DEFSYMFILES += def-gzio.lst
+MODSRCFILES += io/gzio.c
 endif
 MOSTLYCLEANFILES += gzio_mod-io_gzio.d
 UNDSYMFILES += und-gzio.lst
