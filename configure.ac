@@ -31,7 +31,7 @@ dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
 
-AC_INIT(GRUB, 1.93, [bug-grub@gnu.org])
+AC_INIT(GRUB, 1.94, [bug-grub@gnu.org])
 AC_PREREQ(2.53)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])

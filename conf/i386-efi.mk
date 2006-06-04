@@ -108,7 +108,6 @@ CLEANFILES += kernel.mod mod-kernel.o mod-kernel.c pre-kernel.o kernel_mod-kern_
 ifneq ($(kernel_mod_EXPORTS),no)
 CLEANFILES += def-kernel.lst
 DEFSYMFILES += def-kernel.lst
-MODSRCFILES += kern/i386/efi/startup.S kern/main.c kern/device.c kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c kern/i386/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c term/efi/console.c disk/efi/efidisk.c
 endif
 MOSTLYCLEANFILES += kernel_mod-kern_i386_efi_startup.d kernel_mod-kern_main.d kernel_mod-kern_device.d kernel_mod-kern_disk.d kernel_mod-kern_dl.d kernel_mod-kern_file.d kernel_mod-kern_fs.d kernel_mod-kern_err.d kernel_mod-kern_misc.d kernel_mod-kern_mm.d kernel_mod-kern_loader.d kernel_mod-kern_rescue.d kernel_mod-kern_term.d kernel_mod-kern_i386_dl.d kernel_mod-kern_i386_efi_init.d kernel_mod-kern_parser.d kernel_mod-kern_partition.d kernel_mod-kern_env.d kernel_mod-symlist.d kernel_mod-kern_efi_efi.d kernel_mod-kern_efi_init.d kernel_mod-kern_efi_mm.d kernel_mod-term_efi_console.d kernel_mod-disk_efi_efidisk.d
 UNDSYMFILES += und-kernel.lst
@@ -621,7 +620,6 @@ CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-norma
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
-MODSRCFILES += normal/arg.c normal/cmdline.c normal/command.c normal/completion.c normal/execute.c normal/function.c normal/lexer.c normal/main.c normal/menu.c normal/menu_entry.c normal/misc.c grub_script.tab.c normal/script.c normal/i386/setjmp.S
 endif
 MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
 UNDSYMFILES += und-normal.lst
@@ -926,7 +924,6 @@ CLEANFILES += _chain.mod mod-_chain.o mod-_chain.c pre-_chain.o _chain_mod-loade
 ifneq ($(_chain_mod_EXPORTS),no)
 CLEANFILES += def-_chain.lst
 DEFSYMFILES += def-_chain.lst
-MODSRCFILES += loader/efi/chainloader.c
 endif
 MOSTLYCLEANFILES += _chain_mod-loader_efi_chainloader.d
 UNDSYMFILES += und-_chain.lst
@@ -983,7 +980,6 @@ CLEANFILES += chain.mod mod-chain.o mod-chain.c pre-chain.o chain_mod-loader_efi
 ifneq ($(chain_mod_EXPORTS),no)
 CLEANFILES += def-chain.lst
 DEFSYMFILES += def-chain.lst
-MODSRCFILES += loader/efi/chainloader_normal.c
 endif
 MOSTLYCLEANFILES += chain_mod-loader_efi_chainloader_normal.d
 UNDSYMFILES += und-chain.lst
@@ -1040,7 +1036,6 @@ CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loade
 ifneq ($(_linux_mod_EXPORTS),no)
 CLEANFILES += def-_linux.lst
 DEFSYMFILES += def-_linux.lst
-MODSRCFILES += loader/i386/efi/linux.c
 endif
 MOSTLYCLEANFILES += _linux_mod-loader_i386_efi_linux.d
 UNDSYMFILES += und-_linux.lst
@@ -1097,7 +1092,6 @@ CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i38
 ifneq ($(linux_mod_EXPORTS),no)
 CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
-MODSRCFILES += loader/i386/efi/linux_normal.c
 endif
 MOSTLYCLEANFILES += linux_mod-loader_i386_efi_linux_normal.d
 UNDSYMFILES += und-linux.lst
