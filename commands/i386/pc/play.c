@@ -27,6 +27,7 @@
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
+#include <grub/machine/time.h>
 
 #define BASE_TEMPO 120
 

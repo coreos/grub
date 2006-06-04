@@ -558,8 +558,8 @@ grub_efidisk_close (struct grub_disk *disk __attribute__ ((unused)))
 }
 
 static grub_err_t
-grub_efidisk_read (struct grub_disk *disk, unsigned long sector,
-		   unsigned long size, char *buf)
+grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
+		   grub_size_t size, char *buf)
 {
   /* For now, use the disk io interface rather than the block io's.  */
   struct grub_efidisk_data *d;
@@ -571,7 +571,8 @@ grub_efidisk_read (struct grub_disk *disk, unsigned long sector,
   dio = d->disk_io;
   bio = d->block_io;
 
-  grub_dprintf ("efidisk", "reading 0x%lx sectors at the sector 0x%lx from %s\n",
+  grub_dprintf ("efidisk",
+		"reading 0x%x sectors at the sector 0x%llx from %s\n",
 		size, sector, disk->name);
   
   status = dio->read (dio, bio->media->media_id,
@@ -585,8 +586,8 @@ grub_efidisk_read (struct grub_disk *disk, unsigned long sector,
 }
 
 static grub_err_t
-grub_efidisk_write (struct grub_disk *disk, unsigned long sector,
-		    unsigned long size, const char *buf)
+grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
+		    grub_size_t size, const char *buf)
 {
   /* For now, use the disk io interface rather than the block io's.  */
   struct grub_efidisk_data *d;
@@ -598,7 +599,8 @@ grub_efidisk_write (struct grub_disk *disk, unsigned long sector,
   dio = d->disk_io;
   bio = d->block_io;
   
-  grub_dprintf ("efidisk", "writing 0x%lx sectors at the sector 0x%lx to %s\n",
+  grub_dprintf ("efidisk",
+		"writing 0x%x sectors at the sector 0x%llx to %s\n",
 		size, sector, disk->name);
   
   status = dio->write (dio, bio->media->media_id,

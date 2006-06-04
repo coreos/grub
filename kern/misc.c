@@ -338,10 +338,26 @@ grub_tolower (int c)
   return c;
 }
 
+
 unsigned long
 grub_strtoul (const char *str, char **end, int base)
 {
-  unsigned long num = 0;
+  unsigned long long num;
+
+  num = grub_strtoull (str, end, base);
+  if (num > ~0UL)
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
+      return ~0UL;
+    }
+
+  return (unsigned long) num;
+}
+
+unsigned long long
+grub_strtoull (const char *str, char **end, int base)
+{
+  unsigned long long num = 0;
   int found = 0;
   
   /* Skip white spaces.  */
@@ -380,11 +396,12 @@ grub_strtoul (const char *str, char **end, int base)
 	}
 
       found = 1;
-      
-      if (num > (~0UL - digit) / base)
+
+      /* NUM * BASE + DIGIT > ~0ULL */
+      if (num > grub_divmod64 (~0ULL - digit, base, 0))
 	{
 	  grub_error (GRUB_ERR_OUT_OF_RANGE, "overflow is detected");
-	  return 0;
+	  return ~0ULL;
 	}
 
       num = num * base + digit;
@@ -501,6 +518,50 @@ grub_itoa (char *str, int c, unsigned n)
   return p;
 }
 
+/* Divide N by D, return the quotient, and store the remainder in *R.  */
+grub_uint64_t
+grub_divmod64 (grub_uint64_t n, grub_uint32_t d, grub_uint32_t *r)
+{
+  /* This algorithm is typically implemented by hardware. The idea
+     is to get the highest bit in N, 64 times, by keeping
+     upper(N * 2^i) = upper((Q * 10 + M) * 2^i), where upper
+     represents the high 64 bits in 128-bits space.  */
+  unsigned bits = 64;
+  unsigned long long q = 0;
+  unsigned m = 0;
+
+  /* Skip the slow computation, if 32-bit arithmetics are possible.  */
+  if (n < 0xffffffff)
+    {
+      if (r)
+	*r = ((grub_uint32_t) n) % d;
+
+      return ((grub_uint32_t) n) / d;
+    }
+  
+  while (bits--)
+    {
+      m <<= 1;
+      
+      if (n & (1ULL << 63))
+	m |= 1;
+      
+      q <<= 1;
+      n <<= 1;
+      
+      if (m >= d)
+	{
+	  q |= 1;
+	  m -= d;
+	}
+    }
+
+  if (r)
+    *r = m;
+  
+  return q;
+}
+
 /* Convert a long long value to a string. This function avoids 64-bit
    modular arithmetic or divisions.  */
 static char *
@@ -528,33 +589,10 @@ grub_lltoa (char *str, int c, unsigned long long n)
     /* BASE == 10 */
     do
       {
-	/* This algorithm is typically implemented by hardware. The idea
-	   is to get the highest bit in N, 64 times, by keeping
-	   upper(N * 2^i) = upper((Q * 10 + M) * 2^i), where upper
-	   represents the high 64 bits in 128-bits space.  */
-	unsigned bits = sizeof (unsigned long long) * 8;
-	unsigned long long q = 0;
-	unsigned m = 0;
-
-	while (bits--)
-	  {
-	    m <<= 1;
-	    
-	    if ((long long ) n < 0)
-	      m |= 1;
-
-	    q <<= 1;
-	    n <<= 1;
-
-	    if (m >= 10)
-	      {
-		q |= 1;
-		m -= 10;
-	      }
-	  }
-
+	unsigned m;
+	
+	n = grub_divmod64 (n, 10, &m);
 	*p++ = m + '0';
-	n = q;
       }
     while (n);
   

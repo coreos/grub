@@ -1,7 +1,7 @@
 /* gpt.c - Read GUID Partition Tables (GPT).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	  part.index = partno;
 	  part.partmap = &grub_gpt_partition_map;
 
-	  grub_dprintf ("gpt", "GPT entry %d: start=%ld, length=%ld\n",
+	  grub_dprintf ("gpt", "GPT entry %d: start=%lld, length=%lld\n",
 			partno, part.start, part.len);
 
 	  if (hook (disk, &part))

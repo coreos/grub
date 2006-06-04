@@ -2,7 +2,7 @@
    SUSP, Rock Ridge.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -169,11 +169,11 @@ grub_iso9660_susp_iterate (struct grub_iso9660_data *data,
 	 ((char *) entry + entry->len))
     {
       /* The last entry.  */
-      if (!grub_strncmp (entry->sig, "ST", 2))
+      if (grub_strncmp ((char *) entry->sig, "ST", 2) == 0)
 	break;
       
       /* Additional entries are stored elsewhere.  */
-      if (!grub_strncmp (entry->sig, "CE", 2))
+      if (grub_strncmp ((char *) entry->sig, "CE", 2) == 0)
 	{
 	  struct grub_iso9660_susp_ce *ce;
 	  
@@ -215,7 +215,7 @@ grub_iso9660_mount (grub_disk_t disk)
     {
       /* The "ER" entry is used to detect extensions.  The
 	 `IEEE_P1285' extension means Rock ridge.  */
-      if (!grub_strncmp (susp_entry->sig, "ER", 2))
+      if (grub_strncmp ((char *) susp_entry->sig, "ER", 2) == 0)
 	{
 	  data->rockridge = 1;
 	  return 1;
@@ -224,7 +224,7 @@ grub_iso9660_mount (grub_disk_t disk)
     }
   
   data = grub_malloc (sizeof (struct grub_iso9660_data));
-  if (!data)
+  if (! data)
     return 0;
   
   /* Read the superblock.  */
@@ -236,7 +236,7 @@ grub_iso9660_mount (grub_disk_t disk)
       goto fail;
     }
 
-  if (grub_strncmp (data->voldesc.voldesc.magic, "CD001", 5))
+  if (grub_strncmp ((char *) data->voldesc.voldesc.magic, "CD001", 5) == 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
       goto fail;
@@ -282,7 +282,7 @@ grub_iso9660_mount (grub_disk_t disk)
   entry = (struct grub_iso9660_susp_entry *) sua;
   
   /* Test if the SUSP protocol is used on this filesystem.  */
-  if (!grub_strncmp (entry->sig, "SP", 2))
+  if (grub_strncmp ((char *) entry->sig, "SP", 2) == 0)
     {
       /* The 2nd data byte stored how many bytes are skipped everytime
 	 to get to the SUA (System Usage Area).  */
@@ -324,17 +324,16 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
       int size = grub_strlen (symlink);
       
       symlink = grub_realloc (symlink, size + len + 1);
-      if (!symlink)
+      if (! symlink)
 	return;
+      
       grub_strncat (symlink, part, len);
-
-      return;
     }
     
   /* Read in a symlink.  */
   grub_err_t susp_iterate_sl (struct grub_iso9660_susp_entry *entry)
     {
-      if (!grub_strncmp ("SL", entry->sig, 2))
+      if (grub_strncmp ("SL", (char *) entry->sig, 2) == 0)
 	{
 	  unsigned int pos = 1;
 
@@ -355,7 +354,7 @@ grub_iso9660_read_symlink (grub_fshelp_node_t node)
 		    /* The data on pos + 2 is the actual data, pos + 1
 		       is the length.  Both are part of the `Component
 		       Record'.  */
-		    add_part (&entry->data[pos + 2],
+		    add_part ((char *) &entry->data[pos + 2],
 			      entry->data[pos + 1]);
 		    if ((entry->data[pos] & 1))
 		      addslash = 1;
@@ -432,7 +431,7 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
   grub_err_t susp_iterate_dir (struct grub_iso9660_susp_entry *entry)
     {
       /* The filename in the rock ridge entry.  */
-      if (!grub_strncmp ("NM", entry->sig, 2))
+      if (grub_strncmp ("NM", (char *) entry->sig, 2) == 0)
 	{
 	  /* The flags are stored at the data position 0, here the
 	     filename type is stored.  */
@@ -457,12 +456,12 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 		  filename[0] = '\0';
 		}
 	      filename_alloc = 1;
-	      grub_strncpy (filename, &entry->data[1], size);
-	      filename [size] = '\0';
+	      grub_strncpy (filename, (char *) &entry->data[1], size);
+	      filename[size] = '\0';
 	    }
 	}
       /* The mode information (st_mode).  */
-      else if (!grub_strncmp (entry->sig, "PX", 2))
+      else if (grub_strncmp ((char *) entry->sig, "PX", 2) == 0)
 	{
 	  /* At position 0 of the PX record the st_mode information is
 	     stored.  */
@@ -704,7 +703,7 @@ grub_iso9660_open (struct grub_file *file, const char *name)
 
 
 static grub_ssize_t
-grub_iso9660_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_iso9660_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_iso9660_data *data = 
     (struct grub_iso9660_data *) file->data;
@@ -742,7 +741,7 @@ grub_iso9660_label (grub_device_t device, char **label)
   
   if (data)
     {
-      *label = grub_strndup (data->voldesc.volname, 32);
+      *label = grub_strndup ((char *) data->voldesc.volname, 32);
       grub_free (data);
     }
   else

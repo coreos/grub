@@ -42,7 +42,7 @@ struct grub_fs
   grub_err_t (*open) (struct grub_file *file, const char *name);
   
   /* Read LEN bytes data from FILE into BUF.  */
-  grub_ssize_t (*read) (struct grub_file *file, char *buf, grub_ssize_t len);
+  grub_ssize_t (*read) (struct grub_file *file, char *buf, grub_size_t len);
   
   /* Close the file FILE.  */
   grub_err_t (*close) (struct grub_file *file);

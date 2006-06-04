@@ -56,6 +56,7 @@ int EXPORT_FUNC(grub_isgraph) (int c);
 int EXPORT_FUNC(grub_isdigit) (int c);
 int EXPORT_FUNC(grub_tolower) (int c);
 unsigned long EXPORT_FUNC(grub_strtoul) (const char *str, char **end, int base);
+unsigned long long EXPORT_FUNC(grub_strtoull) (const char *str, char **end, int base);
 char *EXPORT_FUNC(grub_strdup) (const char *s);
 char *EXPORT_FUNC(grub_strndup) (const char *s, grub_size_t n);
 void *EXPORT_FUNC(grub_memset) (void *s, int c, grub_size_t n);
@@ -76,6 +77,8 @@ grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
 grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
 					     const grub_uint8_t *src,
 					     grub_size_t size);
+grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
+					  grub_uint32_t d, grub_uint32_t *r);
 
 /* Inline functions.  */
 static inline unsigned int

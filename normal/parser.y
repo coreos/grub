@@ -24,7 +24,7 @@
 
 #define YYFREE		grub_free
 #define YYMALLOC	grub_malloc
-
+#define YYLTYPE_IS_TRIVIAL      0
 
 %}
 

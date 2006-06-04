@@ -357,9 +357,9 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_hfsplus_read_file (grub_fshelp_node_t node,
-			void (*read_hook) (unsigned long sector,
+			void (*read_hook) (grub_disk_addr_t sector,
 					   unsigned offset, unsigned length),
-			int pos, unsigned int len, char *buf)
+			int pos, grub_size_t len, char *buf)
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_hfsplus_read_block,
@@ -865,7 +865,7 @@ grub_hfsplus_close (grub_file_t file)
 
 /* Read LEN bytes data from FILE into BUF.  */
 static grub_ssize_t
-grub_hfsplus_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_hfsplus_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_hfsplus_data *data = 
     (struct grub_hfsplus_data *) file->data;

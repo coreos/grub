@@ -310,11 +310,11 @@ grub_fat_mount (grub_disk_t disk)
 
 static grub_ssize_t
 grub_fat_read_data (grub_disk_t disk, struct grub_fat_data *data,
-		    void (*read_hook) (unsigned long sector,
+		    void (*read_hook) (grub_disk_addr_t sector,
 				       unsigned offset, unsigned length),
-		    grub_ssize_t offset, grub_ssize_t len, char *buf)
+		    grub_off_t offset, grub_size_t len, char *buf)
 {
-  grub_ssize_t size;
+  grub_size_t size;
   grub_uint32_t logical_cluster;
   unsigned logical_cluster_bits;
   grub_ssize_t ret = 0;
@@ -716,7 +716,7 @@ grub_fat_open (grub_file_t file, const char *name)
 }
 
 static grub_ssize_t
-grub_fat_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_fat_read (grub_file_t file, char *buf, grub_size_t len)
 {
   return grub_fat_read_data (file->device->disk, file->data, file->read_hook,
 			     file->offset, len, buf);

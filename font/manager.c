@@ -207,7 +207,7 @@ grub_font_get_glyph (grub_uint32_t code,
 	    }
 
 	  if (bitmap
-	      && (grub_file_read (font->file, bitmap, w * 16)
+	      && (grub_file_read (font->file, (char *) bitmap, w * 16)
 		  != (grub_ssize_t) w * 16))
 	    {
 	      remove_font (font);

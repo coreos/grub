@@ -1,7 +1,7 @@
 /* minix.c - The minix filesystem, version 1 and 2.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -187,9 +187,9 @@ grub_minix_get_file_block (struct grub_minix_data *data, unsigned int blk)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_minix_read_file (struct grub_minix_data *data,
-		      void (*read_hook) (unsigned long sector,
+		      void (*read_hook) (grub_disk_addr_t sector,
 					 unsigned offset, unsigned length),
-		      int pos, unsigned int len, char *buf)
+		      int pos, grub_disk_addr_t len, char *buf)
 {
   struct grub_minix_sblock *sblock = &data->sblock;
   int i;
@@ -560,7 +560,7 @@ grub_minix_open (struct grub_file *file, const char *name)
 
 
 static grub_ssize_t
-grub_minix_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_minix_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_minix_data *data = 
     (struct grub_minix_data *) file->data;

@@ -1,7 +1,7 @@
 /* biosdisk.c - emulate biosdisk */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -285,7 +285,7 @@ linux_find_partition (char *dev, unsigned long sector)
 #endif /* __linux__ */
 
 static int
-open_device (const grub_disk_t disk, unsigned long sector, int flags)
+open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 {
   int fd;
 
@@ -421,8 +421,8 @@ nwrite (int fd, const char *buf, size_t len)
 }
 
 static grub_err_t
-grub_util_biosdisk_read (grub_disk_t disk, unsigned long sector,
-			 unsigned long size, char *buf)
+grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
+			 grub_size_t size, char *buf)
 {
   int fd;
 
@@ -458,8 +458,8 @@ grub_util_biosdisk_read (grub_disk_t disk, unsigned long sector,
 }
 
 static grub_err_t
-grub_util_biosdisk_write (grub_disk_t disk, unsigned long sector,
-			  unsigned long size, const char *buf)
+grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
+			  grub_size_t size, const char *buf)
 {
   int fd;
 

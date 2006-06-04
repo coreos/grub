@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2002,2005   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2002,2005,2006   Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,22 +33,19 @@
 #define GRUB_BOOT_MACHINE_VER_MAJ	0x3e
 
 /* The offset of BOOT_DRIVE.  */
-#define GRUB_BOOT_MACHINE_BOOT_DRIVE	0x40
-
-/* The offset of FORCE_LBA.  */
-#define GRUB_BOOT_MACHINE_FORCE_LBA	0x41
+#define GRUB_BOOT_MACHINE_BOOT_DRIVE	0x4c
 
 /* The offset of KERNEL_ADDRESS.  */
-#define GRUB_BOOT_MACHINE_KERNEL_ADDRESS	0x42
+#define GRUB_BOOT_MACHINE_KERNEL_ADDRESS	0x40
 
 /* The offset of KERNEL_SECTOR.  */
 #define GRUB_BOOT_MACHINE_KERNEL_SECTOR	0x44
 
 /* The offset of KERNEL_SEGMENT.  */
-#define GRUB_BOOT_MACHINE_KERNEL_SEGMENT	0x48
+#define GRUB_BOOT_MACHINE_KERNEL_SEGMENT	0x42
 
 /* The offset of BOOT_DRIVE_CHECK.  */
-#define GRUB_BOOT_MACHINE_DRIVE_CHECK	0x4b
+#define GRUB_BOOT_MACHINE_DRIVE_CHECK	0x4e
 
 /* The offset of a magic number used by Windows NT.  */
 #define GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC	0x1b8
@@ -77,6 +74,6 @@
 #define GRUB_BOOT_MACHINE_KERNEL_ADDR	(GRUB_BOOT_MACHINE_KERNEL_SEG << 4)
 
 /* The size of a block list used in the kernel startup code.  */
-#define GRUB_BOOT_MACHINE_LIST_SIZE	8
+#define GRUB_BOOT_MACHINE_LIST_SIZE	12
 
 #endif /* ! BOOT_MACHINE_HEADER */

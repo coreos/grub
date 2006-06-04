@@ -292,7 +292,6 @@ struct grub_script *
 grub_script_parse (char *script, grub_err_t (*getline) (char **))
 {
   struct grub_script *parsed;
-  struct grub_script_mem *memfree;
   struct grub_script_mem *membackup;
   struct grub_lexer_param *lexstate;
   struct grub_parser_param *parsestate;

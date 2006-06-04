@@ -357,7 +357,8 @@ grub_script_yylex2 (YYSTYPE *yylval, struct grub_parser_param *parsestate)
 }
 
 void
-grub_script_yyerror (struct grub_parser_param *lex, char const *err)
+grub_script_yyerror (struct grub_parser_param *lex __attribute__ ((unused)),
+		     char const *err)
 {
   grub_printf ("%s\n", err);
 }

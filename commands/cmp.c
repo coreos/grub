@@ -1,7 +1,7 @@
 /* cmd.c - command to cmp an operating system */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,9 +32,8 @@ static grub_err_t
 grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
 	      int argc, char **args)
 {
-  grub_err_t err;
   grub_ssize_t rd1, rd2;
-  grub_uint32_t pos;
+  grub_off_t pos;
   grub_file_t file1 = 0;
   grub_file_t file2 = 0;
   char *buf1 = 0;
@@ -46,25 +45,29 @@ grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
   grub_printf ("Compare `%s' and `%s':\n", args[0],
 	       args[1]);
 
-  if (! (file1 = grub_gzfile_open (args[0], 1) ) ||
-      ! (file2 = grub_gzfile_open (args[1], 1) ) )
+  file1 = grub_gzfile_open (args[0], 1);
+  file2 = grub_gzfile_open (args[1], 1);
+  if (! file1 || ! file2)
     goto cleanup;
 
   if (grub_file_size (file1) != grub_file_size (file2))
-    grub_printf ("Differ in size: %d [%s], %d [%s]\n", 
+    grub_printf ("Differ in size: %llu [%s], %llu [%s]\n", 
 		 grub_file_size (file1), args[0], 
 		 grub_file_size (file2), args[1]);
-  
   else
     {
       pos = 0;
 
-      if (! (buf1 = (char *) grub_malloc (BUFFER_SIZE) ) ||
-          ! (buf2 = (char *) grub_malloc (BUFFER_SIZE) ) )
+      buf1 = grub_malloc (BUFFER_SIZE);
+      buf2 = grub_malloc (BUFFER_SIZE);
+      
+      if (! buf1 || ! buf2)
         goto cleanup;
+      
       do
 	{
 	  int i;
+	  
 	  rd1 = grub_file_read (file1, buf1, BUFFER_SIZE);
 	  rd2 = grub_file_read (file2, buf2, BUFFER_SIZE);
 
@@ -75,7 +78,7 @@ grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
 	    {
 	      if (buf1[i] != buf2[i])
 		{
-		  grub_printf ("Differ at the offset %d: 0x%x [%s], 0x%x [%s]\n",
+		  grub_printf ("Differ at the offset %llu: 0x%x [%s], 0x%x [%s]\n",
 			       i + pos, buf1[i], args[0],
 			       buf2[i], args[1]);
 		  goto cleanup;
@@ -83,12 +86,14 @@ grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
 	    }
 	  pos += BUFFER_SIZE;
 	  
-	} while (rd2);
+	}
+      while (rd2);
+      
       grub_printf ("The files are identical.\n");
     }
 
 cleanup:
-  err=grub_errno;
+  
   if (buf1)
     grub_free (buf1);
   if (buf2)
@@ -98,7 +103,7 @@ cleanup:
   if (file2)
     grub_file_close (file2);
 
-  return err;
+  return grub_errno;
 }
 
 

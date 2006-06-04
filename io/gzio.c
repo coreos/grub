@@ -1,7 +1,7 @@
 /* gzio.c - decompression support for gzip */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ struct grub_gzio
   /* The underlyding file object.  */
   grub_file_t file;
   /* The offset at which the data starts in the underlyding file.  */
-  grub_ssize_t data_offset;
+  grub_off_t data_offset;
   /* The type of current block.  */
   int block_type;
   /* The length of current block.  */
@@ -93,7 +93,7 @@ struct grub_gzio
   /* The lookup bits for the distance code table.  */
   int bd;
   /* The original offset value.  */
-  grub_ssize_t saved_offset;
+  grub_off_t saved_offset;
 };
 typedef struct grub_gzio *grub_gzio_t;
 
@@ -176,7 +176,7 @@ test_header (grub_file_t file)
    *  (other than a real error with the disk) then we don't think it
    *  is a compressed file, and simply mark it as such.
    */
-  if (grub_file_read (gzio->file, buf, 10) != 10
+  if (grub_file_read (gzio->file, (char *) buf, 10) != 10
       || ((*((grub_uint16_t *) buf) != GZIP_MAGIC)
 	  && (*((grub_uint16_t *) buf) != OLD_GZIP_MAGIC)))
     {
@@ -192,7 +192,7 @@ test_header (grub_file_t file)
   if (buf[2] != DEFLATED
       || (buf[3] & UNSUPPORTED_FLAGS)
       || ((buf[3] & EXTRA_FIELD)
-	  && (grub_file_read (gzio->file, buf, 2) != 2
+	  && (grub_file_read (gzio->file, (char *) buf, 2) != 2
 	      || eat_field (gzio->file,
 			    grub_le_to_cpu16 (*((grub_uint16_t *) buf)))))
       || ((buf[3] & ORIG_NAME) && eat_field (gzio->file, -1))
@@ -206,12 +206,14 @@ test_header (grub_file_t file)
   
   grub_file_seek (gzio->file, grub_file_size (gzio->file) - 8);
   
-  if (grub_file_read (gzio->file, buf, 8) != 8)
+  if (grub_file_read (gzio->file, (char *) buf, 8) != 8)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
       return 0;
     }
 
+  /* FIXME: this does not handle files whose original size is over 4GB.
+     But how can we know the real original size?  */
   file->size = grub_le_to_cpu32 (*((grub_uint32_t *) (buf + 4)));
 
   initialize_tables (file);
@@ -362,11 +364,11 @@ get_byte (grub_file_t file)
 {
   grub_gzio_t gzio = file->data;
   
-  if (grub_file_tell (gzio->file) == gzio->data_offset
+  if (grub_file_tell (gzio->file) == (grub_off_t) gzio->data_offset
       || gzio->inbuf_d == INBUFSIZ)
     {
       gzio->inbuf_d = 0;
-      grub_file_read (gzio->file, gzio->inbuf, INBUFSIZ);
+      grub_file_read (gzio->file, (char *) gzio->inbuf, INBUFSIZ);
     }
 
   return gzio->inbuf[gzio->inbuf_d++];
@@ -1166,11 +1168,11 @@ grub_gzfile_open (const char *name, int transparent)
 }
 
 static grub_ssize_t
-grub_gzio_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_gzio_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_ssize_t ret = 0;
   grub_gzio_t gzio = file->data;
-  grub_ssize_t offset;
+  grub_off_t offset;
   
   /* Do we reset decompression to the beginning of the file?  */
   if (gzio->saved_offset > file->offset + WSIZE)
@@ -1186,7 +1188,7 @@ grub_gzio_read (grub_file_t file, char *buf, grub_ssize_t len)
   
   while (len > 0 && grub_errno == GRUB_ERR_NONE)
     {
-      register grub_ssize_t size;
+      register grub_size_t size;
       register char *srcaddr;
 
       while (offset >= gzio->saved_offset)

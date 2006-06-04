@@ -127,7 +127,8 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "segment doesn't fit in memory reserved for the OS");
 
-          if (grub_file_seek (file, phdr->p_offset) == -1)
+          if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
+	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 	  
@@ -201,7 +202,8 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "segment doesn't fit in memory reserved for the OS");
 	  
-	  if (grub_file_seek (file, phdr->p_offset) == -1)
+	  if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
+	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 

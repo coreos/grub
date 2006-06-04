@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,8 @@ struct grub_partition_map
   
   /* Call HOOK with each partition, until HOOK returns non-zero.  */
   grub_err_t (*iterate) (struct grub_disk *disk,
-			 int (*hook) (struct grub_disk *disk, const grub_partition_t partition));
+			 int (*hook) (struct grub_disk *disk,
+				      const grub_partition_t partition));
   
   /* Return the partition named STR on the disk DISK.  */
   grub_partition_t (*probe) (struct grub_disk *disk,
@@ -52,13 +53,13 @@ typedef struct grub_partition_map *grub_partition_map_t;
 struct grub_partition
 {
   /* The start sector.  */
-  unsigned long start;
+  grub_disk_addr_t start;
 
   /* The length in sector units.  */
-  unsigned long len;
+  grub_uint64_t len;
 
   /* The offset of the partition table.  */
-  unsigned long offset;
+  grub_disk_addr_t offset;
 
   /* The index of this partition in the partition table.  */
   int index;
@@ -94,13 +95,13 @@ void grub_sun_partition_map_init (void);
 void grub_sun_partition_map_fini (void);
 #endif
 
-static inline unsigned long
+static inline grub_disk_addr_t
 grub_partition_get_start (const grub_partition_t p)
 {
   return p->start;
 }
 
-static inline unsigned long
+static inline grub_uint64_t
 grub_partition_get_len (const grub_partition_t p)
 {
   return p->len;

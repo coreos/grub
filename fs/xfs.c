@@ -1,7 +1,7 @@
 /* xfs.c - XFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -237,9 +237,9 @@ grub_xfs_read_block (grub_fshelp_node_t node, int fileblock)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_xfs_read_file (grub_fshelp_node_t node,
-		     void (*read_hook) (unsigned long sector,
+		     void (*read_hook) (grub_disk_addr_t sector,
 					unsigned offset, unsigned length),
-		     int pos, unsigned int len, char *buf)
+		     int pos, grub_size_t len, char *buf)
 {
   return grub_fshelp_read_file (node->data->disk, node, read_hook,
 				pos, len, buf, grub_xfs_read_block,
@@ -628,7 +628,7 @@ grub_xfs_open (struct grub_file *file, const char *name)
 
 
 static grub_ssize_t
-grub_xfs_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_xfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_xfs_data *data = 
     (struct grub_xfs_data *) file->data;

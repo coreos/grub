@@ -1,7 +1,7 @@
 /* -*-Asm-*- */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2005   Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -91,17 +91,15 @@ cylinder_start:
 
 boot_version:	
 	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
+kernel_address:
+	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
+kernel_segment:
+	.word	GRUB_BOOT_MACHINE_KERNEL_SEG
+kernel_sector:
+	.long	1, 0
 boot_drive:	
 	.byte 0xff	/* the disk to load kernel from */
 			/* 0xff means use the boot drive */
-force_lba:
-	.byte	0
-kernel_address:
-	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
-kernel_sector:
-	.long	1
-kernel_segment:
-	.word	GRUB_BOOT_MACHINE_KERNEL_SEG
 
 after_BPB:
 
@@ -155,6 +153,9 @@ real_start:
 	/* print a notification message on the screen */
 	MSG(notification_string)
 
+	/* set %si to the disk address packet */
+	movw	$ABS(disk_address_packet), %si
+	
 	/* do not probe LBA if the drive is a floppy */
 	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
 	jz	chs_mode
@@ -176,35 +177,28 @@ real_start:
 	cmpw	$0xaa55, %bx
 	jne	chs_mode
 
-	/* set %si to the disk address packet */
-	movw	$ABS(disk_address_packet), %si
-	
-	/* check if AH=0x42 is supported if FORCE_LBA is zero */
-	MOV_MEM_TO_AL(ABS(force_lba))	/* movb	ABS(force_lba), %al */
-	testb	%al, %al
-	jnz	lba_mode
 	andw	$1, %cx
 	jz	chs_mode
 	
 lba_mode:
-	xorl	%eax, %eax
+	xorw	%ax, %ax
 	movw	%ax, 4(%si)
-	movl	%eax, 12(%si)
 
 	incw	%ax	
 	/* set the mode to non-zero */
 	movb	%al, -1(%si)
 	
-	movl	ABS(kernel_sector), %ebx
+	/* the blocks */
+	movw	%ax, 2(%si)
 
 	/* the size and the reserved byte */
 	movw	$0x0010, (%si)
 
-	/* the blocks */
-	movw	%ax, 2(%si)
-	
-	/* the absolute address (low 32 bits) */
+	/* the absolute address */
+	movl	ABS(kernel_sector), %ebx
 	movl	%ebx, 8(%si)
+	movl	ABS(kernel_sector + 4), %ebx
+	movl	%ebx, 12(%si)
 
 	/* the segment of buffer address */
 	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
@@ -247,16 +241,14 @@ chs_mode:
 
 final_init:
 	/* set the mode to zero */
-	movb	$0, -1(%si)
+	movzbl	%dh, %eax
+	movb	%ah, -1(%si)
 	
 	/* save number of heads */
-	xorl	%eax, %eax
-	movb	%dh, %al
 	incw	%ax
 	movl	%eax, 4(%si)
 
-	xorw	%dx, %dx
-	movb	%cl, %dl
+	movzbw	%cl, %dx
 	shlw	$2, %dx
 	movb	%ch, %al
 	movb	%dh, %ah
@@ -265,14 +257,18 @@ final_init:
 	incw	%ax
 	movw	%ax, 8(%si)
 
-	xorw	%ax, %ax
-	movb	%dl, %al
+	movzbw	%dl, %ax
 	shrb	$2, %al
 
 	/* save number of sectors */
 	movl	%eax, (%si)
 
 setup_sectors:
+	/* load logical sector start (top half) */
+	movl	ABS(kernel_sector + 4), %eax
+	orl	%eax, %eax
+	jnz	geometry_error
+	
 	/* load logical sector start (bottom half) */
 	movl	ABS(kernel_sector), %eax
 
@@ -283,41 +279,34 @@ setup_sectors:
 	divl	(%si)
 
 	/* save sector start */
-	movb	%dl, 10(%si)
+	movb	%dl, %cl
 
-	xorl	%edx, %edx	/* zero %edx */
+	xorw	%dx, %dx	/* zero %edx */
 	divl	4(%si)		/* divide by number of heads */
-
-	/* save head start */
-	movb	%dl, 11(%si)
-
-	/* save cylinder start */
-	movw	%ax, 12(%si)
 
 	/* do we need too many cylinders? */
 	cmpw	8(%si), %ax
 	jge	geometry_error
 
-/*
- *  This is the loop for taking care of BIOS geometry translation (ugh!)
- */
+	/* normalize sector start (1-based) */
+	incb	%cl
 
-	/* get high bits of cylinder */
-	movb	13(%si), %dl
+	/* low bits of cylinder start */
+	movb	%al, %ch
 
-	shlb	$6, %dl		/* shift left by 6 bits */
-	movb	10(%si), %cl	/* get sector */
+	/* high bits of cylinder start */
+	xorb	%al, %al
+	shrw	$2, %ax
+	orb	%al, %cl
 
-	incb	%cl		/* normalize sector (sectors go
-					from 1-N, not 0-(N-1) ) */
-	orb	%dl, %cl	/* composite together */
-	movb	12(%si), %ch	/* sector+hcyl in cl, cylinder in ch */
+	/* save head start */
+	movb	%dl, %al
 
-	/* restore %dx */
+	/* restore %dl */
 	popw	%dx
-	
-	/* head number */
-	movb	11(%si), %dh
+
+	/* head start */
+	movb	%al, %dh
 
 /*
  * BIOS call "INT 0x13 Function 0x2" to read sectors from disk into memory

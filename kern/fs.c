@@ -132,7 +132,7 @@ grub_fs_probe (grub_device_t device)
 
 struct grub_fs_block
 {
-  unsigned long offset;
+  grub_disk_addr_t offset;
   unsigned long length;
 };
 
@@ -150,6 +150,8 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
     {
       num++;
       p = grub_strchr (p, ',');
+      if (p)
+	p++;
     }
   while (p);
 
@@ -164,7 +166,7 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
     {
       if (*p != '+')
 	{
-	  blocks[i].offset = grub_strtoul (p, &p, 0);
+	  blocks[i].offset = grub_strtoull (p, &p, 0);
 	  if (grub_errno != GRUB_ERR_NONE || *p != '+')
 	    {
 	      grub_error (GRUB_ERR_BAD_FILENAME,
@@ -207,11 +209,11 @@ grub_fs_blocklist_open (grub_file_t file, const char *name)
 }
 
 static grub_ssize_t
-grub_fs_blocklist_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_fs_blocklist_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_fs_block *p;
-  unsigned long sector;
-  unsigned long offset;
+  grub_disk_addr_t sector;
+  grub_off_t offset;
   grub_ssize_t ret = 0;
 
   if (len > file->size - file->offset)
@@ -223,7 +225,7 @@ grub_fs_blocklist_read (grub_file_t file, char *buf, grub_ssize_t len)
     {
       if (sector < p->length)
 	{
-	  grub_ssize_t size;
+	  grub_size_t size;
 
 	  size = len;
 	  if (((size + offset + GRUB_DISK_SECTOR_SIZE - 1)

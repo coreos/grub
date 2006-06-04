@@ -1,7 +1,7 @@
 /* amiga.c - Read amiga partition tables (RDB).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
 			  sizeof (rdsk),  (char *) &rdsk))
 	return grub_errno;
       
-      if (!grub_strcmp (rdsk.magic, "RDSK"))
+      if (grub_strcmp ((char *) rdsk.magic, "RDSK") == 0)
 	{
 	  /* Found the first PART block.  */
 	  next = grub_be_to_cpu32 (rdsk.partitionlst);

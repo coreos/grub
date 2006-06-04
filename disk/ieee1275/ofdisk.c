@@ -1,7 +1,7 @@
 /* ofdisk.c - Open Firmware disk access.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -122,35 +122,37 @@ grub_ofdisk_close (grub_disk_t disk)
 }
 
 static grub_err_t
-grub_ofdisk_read (grub_disk_t disk, unsigned long sector,
-		  unsigned long size, char *buf)
+grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
+		  grub_size_t size, char *buf)
 {
   grub_ssize_t status, actual;
   unsigned long long pos;
 
   grub_dprintf ("disk",
-		"Reading handle %p: sector 0x%lx, size 0x%lx, buf %p.\n",
+		"Reading handle %p: sector 0x%llx, size 0x%lx, buf %p.\n",
 		(void *) disk->data, sector, size, buf);
 
-  pos = (unsigned long long) sector * 512UL;
+  pos = sector * 512UL;
 
   grub_ieee1275_seek ((grub_ieee1275_ihandle_t) disk->data, (int) (pos >> 32),
 		      (int) pos & 0xFFFFFFFFUL, &status);
   if (status != 0)
     return grub_error (GRUB_ERR_READ_ERROR,
-		       "Seek error, can't seek block %d", sector);
+		       "Seek error, can't seek block %llu",
+		       sector);
   grub_ieee1275_read ((grub_ieee1275_ihandle_t) disk->data, buf,
 		      size * 512UL, &actual);
   if (actual != actual)
-    return grub_error (GRUB_ERR_READ_ERROR, "Read error on block: %d", sector);
+    return grub_error (GRUB_ERR_READ_ERROR, "Read error on block: %llu",
+		       sector);
     
   return 0;
 }
 
 static grub_err_t
 grub_ofdisk_write (grub_disk_t disk __attribute ((unused)),
-		   unsigned long sector __attribute ((unused)),
-		   unsigned long size __attribute ((unused)),
+		   grub_disk_addr_t sector __attribute ((unused)),
+		   grub_size_t size __attribute ((unused)),
 		   const char *buf __attribute ((unused)))
 {
   return GRUB_ERR_NOT_IMPLEMENTED_YET;

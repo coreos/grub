@@ -1,7 +1,7 @@
 /* jfs.c - JFS.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -540,9 +540,9 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_jfs_read_file (struct grub_jfs_data *data,
-		    void (*read_hook) (unsigned long sector,
+		    void (*read_hook) (grub_disk_addr_t sector,
 				       unsigned offset, unsigned length),
-		    int pos, unsigned int len, char *buf)
+		    int pos, grub_size_t len, char *buf)
 {
   int i;
   int blockcnt;
@@ -822,7 +822,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
 
 
 static grub_ssize_t
-grub_jfs_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_jfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_jfs_data *data = 
     (struct grub_jfs_data *) file->data;

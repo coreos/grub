@@ -56,12 +56,12 @@ struct grub_disk_dev
   void (*close) (struct grub_disk *disk);
 
   /* Read SIZE sectors from the sector SECTOR of the disk DISK into BUF.  */
-  grub_err_t (*read) (struct grub_disk *disk, unsigned long sector,
-		      unsigned long size, char *buf);
+  grub_err_t (*read) (struct grub_disk *disk, grub_disk_addr_t sector,
+		      grub_size_t size, char *buf);
 
   /* Write SIZE sectors from BUF into the sector SECTOR of the disk DISK.  */
-  grub_err_t (*write) (struct grub_disk *disk, unsigned long sector,
-		       unsigned long size, const char *buf);
+  grub_err_t (*write) (struct grub_disk *disk, grub_disk_addr_t sector,
+		       grub_size_t size, const char *buf);
 
   /* The next disk device.  */
   struct grub_disk_dev *next;
@@ -80,7 +80,7 @@ struct grub_disk
   grub_disk_dev_t dev;
 
   /* The total number of sectors.  */
-  unsigned long total_sectors;
+  grub_uint64_t total_sectors;
 
   /* If partitions can be stored.  */
   int has_partitions;
@@ -91,8 +91,10 @@ struct grub_disk
   /* The partition information. This is machine-specific.  */
   struct grub_partition *partition;
 
-  /* Called when a sector was read.  */
-  void (*read_hook) (unsigned long sector, unsigned offset, unsigned length);
+  /* Called when a sector was read. OFFSET is between 0 and
+     the sector size minus 1, and LENGTH is between 0 and the sector size.  */
+  void (*read_hook) (grub_disk_addr_t sector,
+		     unsigned offset, unsigned length);
 
   /* Device-specific data.  */
   void *data;
@@ -120,14 +122,14 @@ int EXPORT_FUNC(grub_disk_dev_iterate) (int (*hook) (const char *name));
 grub_disk_t EXPORT_FUNC(grub_disk_open) (const char *name);
 void EXPORT_FUNC(grub_disk_close) (grub_disk_t disk);
 grub_err_t EXPORT_FUNC(grub_disk_read) (grub_disk_t disk,
-					unsigned long sector,
-					unsigned long offset,
-					unsigned long size,
+					grub_disk_addr_t sector,
+					grub_off_t offset,
+					grub_size_t size,
 					char *buf);
 grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
-					 unsigned long sector,
-					 unsigned long offset,
-					 unsigned long size,
+					 grub_disk_addr_t sector,
+					 grub_off_t offset,
+					 grub_size_t size,
 					 const char *buf);
 
 

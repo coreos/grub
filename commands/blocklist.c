@@ -25,6 +25,7 @@
 #include <grub/file.h>
 #include <grub/mm.h>
 #include <grub/disk.h>
+#include <grub/partition.h>
 
 static grub_err_t
 grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
@@ -35,12 +36,13 @@ grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
   unsigned long start_sector = 0;
   unsigned num_sectors = 0;
   int num_entries = 0;
-  auto void read_blocklist (unsigned long sector, unsigned offset,
+  grub_disk_addr_t part_start = 0;
+  auto void read_blocklist (grub_disk_addr_t sector, unsigned offset,
 			    unsigned length);
-  auto void print_blocklist (unsigned long sector, unsigned num,
+  auto void print_blocklist (grub_disk_addr_t sector, unsigned num,
 			     unsigned offset, unsigned length);
   
-  void read_blocklist (unsigned long sector, unsigned offset,
+  void read_blocklist (grub_disk_addr_t sector, unsigned offset,
 		       unsigned length)
     {
       if (num_sectors > 0)
@@ -65,13 +67,13 @@ grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
 	print_blocklist (sector, 0, offset, length);
     }
   
-  void print_blocklist (unsigned long sector, unsigned num,
+  void print_blocklist (grub_disk_addr_t sector, unsigned num,
 			unsigned offset, unsigned length)
     {
       if (num_entries++)
 	grub_printf (",");
 
-      grub_printf ("%lu", sector);
+      grub_printf ("%llu", sector - part_start);
       if (num > 0)
 	grub_printf ("+%u", num);
       if (offset != 0 || length != 0)
@@ -85,6 +87,13 @@ grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
   if (! file)
     return grub_errno;
 
+  if (! file->device->disk)
+    return grub_error (GRUB_ERR_BAD_DEVICE,
+		       "this command is available only for disk devices.");
+
+  if (file->device->disk->partition)
+    part_start = grub_partition_get_start (file->device->disk->partition);
+  
   file->read_hook = read_blocklist;
 
   while (grub_file_read (file, buf, sizeof (buf)) > 0)

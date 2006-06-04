@@ -60,7 +60,7 @@
 /* This is the blocklist used in the diskboot image.  */
 struct boot_blocklist
 {
-  grub_uint32_t start;
+  grub_uint64_t start;
   grub_uint16_t len;
   grub_uint16_t segment;
 } __attribute__ ((packed));
@@ -99,14 +99,14 @@ setup (const char *prefix, const char *dir,
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
   grub_uint8_t *boot_drive;
-  grub_uint32_t *kernel_sector;
+  grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
   struct boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
   char *install_prefix;
   char *tmp_img;
   int i;
-  unsigned long first_sector;
+  grub_disk_addr_t first_sector;
   grub_uint16_t current_segment
     = GRUB_BOOT_MACHINE_KERNEL_SEG + (GRUB_DISK_SECTOR_SIZE >> 4);
   grub_uint16_t last_length = GRUB_DISK_SECTOR_SIZE;
@@ -114,9 +114,9 @@ setup (const char *prefix, const char *dir,
   FILE *fp;
   unsigned long first_start = ~0UL;
   
-  auto void save_first_sector (unsigned long sector, unsigned offset,
+  auto void save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			       unsigned length);
-  auto void save_blocklists (unsigned long sector, unsigned offset,
+  auto void save_blocklists (grub_disk_addr_t sector, unsigned offset,
 			     unsigned length);
 
   auto int find_first_partition_start (grub_disk_t disk,
@@ -135,10 +135,10 @@ setup (const char *prefix, const char *dir,
       return 0;
     }
   
-  void save_first_sector (unsigned long sector, unsigned offset,
+  void save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			  unsigned length)
     {
-      grub_util_info ("the fist sector is <%lu,%u,%u>",
+      grub_util_info ("the first sector is <%llu,%u,%u>",
 		      sector, offset, length);
       
       if (offset != 0 || length != GRUB_DISK_SECTOR_SIZE)
@@ -147,23 +147,24 @@ setup (const char *prefix, const char *dir,
       first_sector = sector;
     }
 
-  void save_blocklists (unsigned long sector, unsigned offset, unsigned length)
+  void save_blocklists (grub_disk_addr_t sector, unsigned offset,
+			unsigned length)
     {
       struct boot_blocklist *prev = block + 1;
 
-      grub_util_info ("saving <%lu,%u,%u> with the segment 0x%x",
+      grub_util_info ("saving <%llu,%u,%u> with the segment 0x%x",
 		      sector, offset, length, (unsigned) current_segment);
       
       if (offset != 0 || last_length != GRUB_DISK_SECTOR_SIZE)
 	grub_util_error ("Non-sector-aligned data is found in the core file");
 
       if (block != first_block
-	  && (grub_le_to_cpu32 (prev->start)
+	  && (grub_le_to_cpu64 (prev->start)
 	      + grub_le_to_cpu16 (prev->len)) == sector)
 	prev->len = grub_cpu_to_le16 (grub_le_to_cpu16 (prev->len) + 1);
       else
 	{
-	  block->start = grub_cpu_to_le32 (sector);
+	  block->start = grub_cpu_to_le64 (sector);
 	  block->len = grub_cpu_to_le16 (1);
 	  block->segment = grub_cpu_to_le16 (current_segment);
 
@@ -187,7 +188,7 @@ setup (const char *prefix, const char *dir,
 
   /* Set the addresses of BOOT_DRIVE, KERNEL_SECTOR and BOOT_DRIVE_CHECK.  */
   boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
-  kernel_sector = (grub_uint32_t *) (boot_img
+  kernel_sector = (grub_disk_addr_t *) (boot_img
 				     + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
   boot_drive_check = (grub_uint16_t *) (boot_img
 					+ GRUB_BOOT_MACHINE_DRIVE_CHECK);
@@ -266,7 +267,7 @@ setup (const char *prefix, const char *dir,
 	  grub_util_info ("will embed the core image into after the MBR");
 	  
 	  /* The first blocklist contains the whole sectors.  */
-	  first_block->start = grub_cpu_to_le32 (2);
+	  first_block->start = grub_cpu_to_le64 (2);
 	  first_block->len = grub_cpu_to_le16 (core_sectors - 1);
 	  first_block->segment
 	    = grub_cpu_to_le16 (GRUB_BOOT_MACHINE_KERNEL_SEG
@@ -305,7 +306,7 @@ setup (const char *prefix, const char *dir,
 	  /* The boot image and the core image are on the same drive,
 	     so there is no need to specify the boot drive explicitly.  */
 	  *boot_drive = 0xff;
-	  *kernel_sector = grub_cpu_to_le32 (1);
+	  *kernel_sector = grub_cpu_to_le64 (1);
 
 	  /* Write the boot image onto the disk.  */
 	  if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE,
@@ -339,7 +340,7 @@ setup (const char *prefix, const char *dir,
       file = grub_file_open (core_path);
       if (file)
 	{
-	  if (grub_file_size (file) != (grub_ssize_t) core_size)
+	  if (grub_file_size (file) != core_size)
 	    grub_util_info ("succeeded in opening the core image but the size is different (%d != %d)",
 			    (int) grub_file_size (file), (int) core_size);
 	  else if (grub_file_read (file, tmp_img, core_size)
@@ -424,7 +425,7 @@ setup (const char *prefix, const char *dir,
   free (core_path);
   free (tmp_img);
   
-  *kernel_sector = grub_cpu_to_le32 (first_sector);
+  *kernel_sector = grub_cpu_to_le64 (first_sector);
 
   /* If the destination device is different from the root device,
      it is necessary to embed the boot drive explicitly.  */

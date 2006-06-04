@@ -1,7 +1,7 @@
 /* file.c - file I/O functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -112,13 +112,17 @@ grub_file_open (const char *name)
 }
 
 grub_ssize_t
-grub_file_read (grub_file_t file, char *buf, grub_ssize_t len)
+grub_file_read (grub_file_t file, char *buf, grub_size_t len)
 {
   grub_ssize_t res;
   
   if (len == 0 || len > file->size - file->offset)
     len = file->size - file->offset;
 
+  /* Prevent an overflow.  */
+  if ((grub_ssize_t) len < 0)
+    len >>= 1;
+  
   if (len == 0)
     return 0;
   
@@ -141,12 +145,12 @@ grub_file_close (grub_file_t file)
   return grub_errno;
 }
 
-grub_ssize_t
-grub_file_seek (grub_file_t file, grub_ssize_t offset)
+grub_off_t
+grub_file_seek (grub_file_t file, grub_off_t offset)
 {
-  grub_ssize_t old;
+  grub_off_t old;
 
-  if (offset < 0 || offset > file->size)
+  if (offset > file->size)
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE,
 		  "attempt to seek outside of the file");

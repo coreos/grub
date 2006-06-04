@@ -23,6 +23,7 @@
 #include <grub/arg.h>
 #include <grub/term.h>
 #include <grub/misc.h>
+#include <grub/env.h>
 
 static grub_err_t
 grub_cmd_configfile (struct grub_arg_list *state __attribute__ ((unused)),

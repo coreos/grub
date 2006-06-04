@@ -1,7 +1,7 @@
 /* pc.c - Read PC style partition tables.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2004,2005 Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2006 Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 	  pcdata.bsd_type = -1;
 
 	  grub_dprintf ("partition",
-			"partition %d: flag 0x%x, type 0x%x, start 0x%lx, len 0x%lx\n",
+			"partition %d: flag 0x%x, type 0x%x, start 0x%llx, len 0x%llx\n",
 			p.index, e->flag, pcdata.dos_type, p.start, p.len);
 
 	  /* If this is a GPT partition, this MBR is just a dummy.  */

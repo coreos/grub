@@ -35,16 +35,17 @@ struct grub_file
   grub_fs_t fs;
 
   /* The current offset.  */
-  grub_ssize_t offset;
+  grub_off_t offset;
 
   /* The file size.  */
-  grub_ssize_t size;
+  grub_off_t size;
 
   /* Filesystem-specific data.  */
   void *data;
 
   /* This is called when a sector is read. Used only for a disk device.  */
-  void (*read_hook) (unsigned long sector, unsigned offset, unsigned length);
+  void (*read_hook) (grub_disk_addr_t sector,
+		     unsigned offset, unsigned length);
 };
 typedef struct grub_file *grub_file_t;
 
@@ -53,18 +54,17 @@ char *EXPORT_FUNC(grub_file_get_device_name) (const char *name);
 
 grub_file_t EXPORT_FUNC(grub_file_open) (const char *name);
 grub_ssize_t EXPORT_FUNC(grub_file_read) (grub_file_t file, char *buf,
-					  grub_ssize_t len);
-grub_ssize_t EXPORT_FUNC(grub_file_seek) (grub_file_t file,
-					  grub_ssize_t offset);
+					  grub_size_t len);
+grub_off_t EXPORT_FUNC(grub_file_seek) (grub_file_t file, grub_off_t offset);
 grub_err_t EXPORT_FUNC(grub_file_close) (grub_file_t file);
 
-static inline grub_ssize_t
+static inline grub_off_t
 grub_file_size (const grub_file_t file)
 {
   return file->size;
 }
 
-static inline grub_ssize_t
+static inline grub_off_t
 grub_file_tell (const grub_file_t file)
 {
   return file->offset;

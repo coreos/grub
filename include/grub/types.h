@@ -83,18 +83,19 @@ typedef grub_int32_t	grub_host_ssize_t;
 
 #if GRUB_CPU_SIZEOF_VOID_P == 8
 typedef grub_uint64_t	grub_addr_t;
-typedef grub_uint64_t	grub_off_t;
 typedef grub_uint64_t	grub_size_t;
 typedef grub_int64_t	grub_ssize_t;
 #else
 typedef grub_uint32_t	grub_addr_t;
-typedef grub_uint32_t	grub_off_t;
 typedef grub_uint32_t	grub_size_t;
 typedef grub_int32_t	grub_ssize_t;
 #endif
 
-/* FIXME: Will be grub_uint64_t */
-typedef unsigned long	grub_disk_addr_t;
+/* The type for representing a file offset.  */
+typedef grub_uint64_t	grub_off_t;
+
+/* The type for representing a disk block address.  */
+typedef grub_uint64_t	grub_disk_addr_t;
 
 /* Byte-orders.  */
 #define grub_swap_bytes16(x)	\
