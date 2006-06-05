@@ -1,3 +1,8 @@
+New in 1.95:
+
+* Number partitions from 1 instead of 0. For instance, the first
+  partition of "hd0" is now "hd0,1" but not "hd0,0".
+
 New in 1.94 - 2006-06-04:
 
 * Fix several serious bugs in HFS+.

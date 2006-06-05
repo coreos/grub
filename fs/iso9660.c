@@ -236,7 +236,7 @@ grub_iso9660_mount (grub_disk_t disk)
       goto fail;
     }
 
-  if (grub_strncmp ((char *) data->voldesc.voldesc.magic, "CD001", 5) == 0)
+  if (grub_strncmp ((char *) data->voldesc.voldesc.magic, "CD001", 5) != 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "not a iso9660 filesystem");
       goto fail;
@@ -268,7 +268,7 @@ grub_iso9660_mount (grub_disk_t disk)
   sua_size = rootdir.len - sua_pos;
 
   sua = grub_malloc (sua_size);
-  if (!sua)
+  if (! sua)
     goto fail;
   
   if (grub_disk_read (disk, (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
@@ -622,7 +622,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
 #endif
 
   data = grub_iso9660_mount (device->disk);
-  if (!data)
+  if (! data)
     goto fail;
   
   rootnode.data = data;

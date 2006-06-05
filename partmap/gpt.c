@@ -79,7 +79,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
   struct grub_disk raw;
   struct grub_pc_partition_mbr mbr;
   grub_uint64_t entries;
-  int partno = 1;
+  int partno = 0;
   unsigned int i;
   int last_offset = 0;
 
@@ -157,7 +157,7 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
     
   int find_func (grub_disk_t d __attribute__ ((unused)),
 		 const grub_partition_t partition)
-      {
+    {
       if (partnum == partition->index)
 	{
 	  p = (grub_partition_t) grub_malloc (sizeof (*p));
@@ -172,7 +172,7 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
     }
   
   /* Get the partition number.  */
-  partnum = grub_strtoul (s, 0, 10);
+  partnum = grub_strtoul (s, 0, 10) - 1;
   if (grub_errno)
     {
       grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
@@ -199,7 +199,7 @@ gpt_partition_map_get_name (const grub_partition_t p)
   if (! name)
     return 0;
 
-  grub_sprintf (name, "%d", p->index);
+  grub_sprintf (name, "%d", p->index + 1);
   return name;
 }
 

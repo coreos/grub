@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ make_install_device (void)
 		grub_boot_drive & 0x7f);
   
   if (grub_install_dos_part >= 0)
-    grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part);
+    grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part + 1);
 
   if (grub_install_bsd_part >= 0)
     grub_sprintf (dev + grub_strlen (dev), ",%c", grub_install_bsd_part + 'a');

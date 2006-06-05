@@ -1,3 +1,50 @@
+2006-06-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Count partitions from 1 instead of 0 in the string representation
+	of partitions. Still use 0-based internally.
+	
+	* partmap/sun.c (grub_sun_is_valid): A cosmetic change.
+	(sun_partition_map_iterate): Use grub_partition_t instead of
+	struct grub_partition *. Cast DESC->START_CYLINDER to
+	grub_uint64_t after converting the endian.
+	(sun_partition_map_probe): Subtract 1 for PARTNUM.
+	(sun_partition_map_get_name): Add 1 to P->INDEX.
+
+	* partmap/pc.c (grub_partition_parse): Subtract 1 for
+	PCDATA->DOS_PART.
+	(pc_partition_map_get_name): Add 1 into PCDATA->DOS_PART.
+
+	* partmap/gpt.c (gpt_partition_map_iterate): Initialize PARTNO to
+	zero instead of one.
+	(gpt_partition_map_probe): Subtract 1 for PARTNUM.
+	(gpt_partition_map_get_name): Add 1 into P->INDEX.
+
+	* partmap/apple.c (apple_partition_map_iterate): Change the type
+	of POS to unsigned.
+	(apple_partition_map_probe): Subtract 1 for PARTNUM.
+	(apple_partition_map_get_name): Add 1 into P->INDEX.
+
+	* partmap/amiga.c (amiga_partition_map_iterate): Change the type
+	of POS to unsigned.
+	(amiga_partition_map_iterate): Cast NEXT to grub_off_t to
+	calculate the offset of a partition.
+	(amiga_partition_map_probe): Subtract 1 for PARTNUM.
+	(amiga_partition_map_get_name): Add 1 into P->INDEX.
+
+	* partmap/acorn.c (acorn_partition_map_find): Change the type of
+	SECTOR to grub_disk_addr_t.
+	(acorn_partition_map_iterate): Likewise.
+	(acorn_partition_map_probe): Subtract 1 for PARTNUM.
+	Change the type of SECTOR to grub_disk_addr_t. Declare P on the
+	top.
+	(acorn_partition_map_get_name): Add 1 into P->INDEX.
+
+	* kern/i386/pc/init.c (make_install_device): Add 1 into
+	GRUB_INSTALL_DOS_PART.
+
+	* fs/iso9660.c (grub_iso9660_mount): Fixed a reversed
+	conditional.
+
 2006-06-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Clean up the code to support 64-bit addressing in disks and

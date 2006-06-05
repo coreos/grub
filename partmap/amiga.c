@@ -84,7 +84,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
   struct grub_disk raw;
   int partno = 0;
   int next = -1;
-  int pos;
+  unsigned pos;
   
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -94,8 +94,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
   for (pos = 0; pos < 15; pos++)
     {
       /* Read the RDSK block which is a descriptor for the entire disk.  */
-      if (grub_disk_read (&raw, pos, 0,
-			  sizeof (rdsk),  (char *) &rdsk))
+      if (grub_disk_read (&raw, pos, 0, sizeof (rdsk), (char *) &rdsk))
 	return grub_errno;
       
       if (grub_strcmp ((char *) rdsk.magic, "RDSK") == 0)
@@ -116,8 +115,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
       struct grub_amiga_partition apart;
      
       /* Read the RDSK block which is a descriptor for the entire disk.  */
-      if (grub_disk_read (&raw, next, 0,
-			  sizeof (apart),  (char *) &apart))
+      if (grub_disk_read (&raw, next, 0, sizeof (apart), (char *) &apart))
 	return grub_errno;
       
       /* Calculate the first block and the size of the partition.  */
@@ -129,7 +127,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
 		  * grub_be_to_cpu32 (apart.heads)
 		  * grub_be_to_cpu32 (apart.block_per_track));
       
-      part.offset = next * 512;
+      part.offset = (grub_off_t) next * 512;
       part.index = partno;
       part.partmap = &grub_amiga_partition_map;
       
@@ -155,7 +153,7 @@ amiga_partition_map_probe (grub_disk_t disk, const char *str)
     
   int find_func (grub_disk_t d __attribute__ ((unused)),
 		 const grub_partition_t partition)
-      {
+    {
       if (partnum == partition->index)
 	{
 	  p = (grub_partition_t) grub_malloc (sizeof (*p));
@@ -170,7 +168,7 @@ amiga_partition_map_probe (grub_disk_t disk, const char *str)
     }
   
   /* Get the partition number.  */
-  partnum = grub_strtoul (s, 0, 10);
+  partnum = grub_strtoul (s, 0, 10) - 1;
   if (grub_errno)
     {
       grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
@@ -197,7 +195,7 @@ amiga_partition_map_get_name (const grub_partition_t p)
   if (! name)
     return 0;
 
-  grub_sprintf (name, "%d", p->index);
+  grub_sprintf (name, "%d", p->index + 1);
   return name;
 }
 

@@ -1,7 +1,7 @@
 /* apple.c - Read macintosh partition tables.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ apple_partition_map_iterate (grub_disk_t disk,
   struct grub_apple_part apart;
   struct grub_disk raw;
   int partno = 0;
-  int pos = GRUB_DISK_SECTOR_SIZE;
+  unsigned pos = GRUB_DISK_SECTOR_SIZE;
 
   /* Enforce raw disk access.  */
   raw = *disk;
@@ -113,7 +113,7 @@ apple_partition_map_iterate (grub_disk_t disk,
   for (;;)
     {
       if (grub_disk_read (&raw, pos / GRUB_DISK_SECTOR_SIZE,
-		      pos % GRUB_DISK_SECTOR_SIZE,
+			  pos % GRUB_DISK_SECTOR_SIZE,
 			  sizeof (struct grub_apple_part),  (char *) &apart))
 	return grub_errno;
 
@@ -140,7 +140,8 @@ apple_partition_map_iterate (grub_disk_t disk,
       if (hook (disk, &part))
 	return grub_errno;
 
-      if (grub_be_to_cpu32 (apart.first_phys_block) == GRUB_DISK_SECTOR_SIZE * 2)
+      if (grub_be_to_cpu32 (apart.first_phys_block)
+	  == GRUB_DISK_SECTOR_SIZE * 2)
 	return 0;
 
       pos += sizeof (struct grub_apple_part);
@@ -181,7 +182,7 @@ apple_partition_map_probe (grub_disk_t disk, const char *str)
     }
   
   /* Get the partition number.  */
-  partnum = grub_strtoul (s, 0, 10);
+  partnum = grub_strtoul (s, 0, 10) - 1;
   if (grub_errno)
     {
       grub_error (GRUB_ERR_BAD_FILENAME, "invalid partition");
@@ -208,7 +209,7 @@ apple_partition_map_get_name (const grub_partition_t p)
   if (! name)
     return 0;
 
-  grub_sprintf (name, "%d", p->index);
+  grub_sprintf (name, "%d", p->index + 1);
   return name;
 }
 

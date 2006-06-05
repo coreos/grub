@@ -51,7 +51,7 @@ static struct grub_partition_map grub_acorn_partition_map;
 
 static grub_err_t
 acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
-			  unsigned int *sector)
+			  grub_disk_addr_t *sector)
 {
   struct grub_acorn_boot_block boot;
   grub_err_t err;
@@ -61,8 +61,8 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
   int i;
 
   err = grub_disk_read (disk, 0xC00 / GRUB_DISK_SECTOR_SIZE, 0,
-				   sizeof (struct grub_acorn_boot_block),
-				   (char *)&boot);
+			sizeof (struct grub_acorn_boot_block),
+			(char *) &boot);
   if (err)
     return err;
 
@@ -82,7 +82,7 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
 
   return grub_disk_read (disk, *sector, 0,
 			 sizeof (struct linux_part) * LINUX_MAP_ENTRIES,
-			 (char *)m);
+			 (char *) m);
 
 fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,
@@ -100,7 +100,7 @@ acorn_partition_map_iterate (grub_disk_t disk,
   struct grub_disk raw;
   struct linux_part map[LINUX_MAP_ENTRIES];
   int i;
-  unsigned int sector;
+  grub_disk_addr_t sector;
   grub_err_t err;
 
   /* Enforce raw disk access.  */
@@ -119,7 +119,7 @@ acorn_partition_map_iterate (grub_disk_t disk,
 	  && map[i].magic != LINUX_SWAP_MAGIC)
 	return GRUB_ERR_NONE;
 
-      part.start = (grub_disk_addr_t)sector + map[i].start;
+      part.start = sector + map[i].start;
       part.len = map[i].size;
       part.offset = 6;
       part.index = i;
@@ -137,10 +137,11 @@ acorn_partition_map_probe (grub_disk_t disk, const char *str)
 {
   struct linux_part map[LINUX_MAP_ENTRIES];
   struct grub_disk raw = *disk;
-  unsigned long partnum = grub_strtoul (str, 0, 10);
-  unsigned int sector;
+  unsigned long partnum = grub_strtoul (str, 0, 10) - 1;
+  grub_disk_addr_t sector;
   grub_err_t err;
-
+  grub_partition_t p;
+  
   /* Enforce raw disk access.  */
   raw.partition = 0;
 
@@ -156,11 +157,11 @@ acorn_partition_map_probe (grub_disk_t disk, const char *str)
       && map[partnum].magic != LINUX_SWAP_MAGIC)
     goto fail;
 
-  grub_partition_t p = grub_malloc (sizeof (struct grub_partition));
-  if (!p)
+  p = grub_malloc (sizeof (struct grub_partition));
+  if (! p)
     return 0;
 
-  p->start = (grub_disk_addr_t)sector + map[partnum].start;
+  p->start = sector + map[partnum].start;
   p->len = map[partnum].size;
   p->offset = 6;
   p->index = partnum;
@@ -178,10 +179,10 @@ acorn_partition_map_get_name (const grub_partition_t p)
   char *name;
 
   name = grub_malloc (13);
-  if (!name)
+  if (! name)
     return 0;
 
-  grub_sprintf (name, "%d", p->index);
+  grub_sprintf (name, "%d", p->index + 1);
   return name;
 }
 
