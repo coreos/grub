@@ -326,7 +326,7 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
   else
     addr_max = GRUB_LINUX_INITRD_MAX_ADDRESS;
 
-  if (!linux_mem_size && linux_mem_size < addr_max)
+  if (linux_mem_size != 0 && linux_mem_size < addr_max)
     addr_max = linux_mem_size;
 
   /* Linux 2.3.xx has a bug in the memory range check, so avoid

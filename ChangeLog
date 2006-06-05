@@ -1,5 +1,11 @@
 2006-06-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): The conditional
+	of checking LINUX_MEM_SIZE was reverse. Reported by Jesus
+	Velazquez <jesus.velazquez@gmail.com>.
+
+2006-06-05  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	Count partitions from 1 instead of 0 in the string representation
 	of partitions. Still use 0-based internally.
 	
