@@ -322,7 +322,15 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 
   /* Get the highest address available for the initrd.  */
   if (grub_le_to_cpu16 (lh->version) >= 0x0203)
-    addr_max = grub_cpu_to_le32 (lh->initrd_addr_max);
+    {
+      addr_max = grub_cpu_to_le32 (lh->initrd_addr_max);
+
+      /* XXX in reality, Linux specifies a bogus value, so
+	 it is necessary to make sure that ADDR_MAX does not exceed
+	 0x3fffffff.  */
+      if (addr_max > GRUB_LINUX_INITRD_MAX_ADDRESS)
+	addr_max = GRUB_LINUX_INITRD_MAX_ADDRESS;
+    }
   else
     addr_max = GRUB_LINUX_INITRD_MAX_ADDRESS;
 
