@@ -1,3 +1,16 @@
+2006-06-07  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* include/grub/types.h (grub_host_addr_t): Rename to
+	grub_target_addr_t.
+	(grub_host_off_t): Rename to grub_target_off_t.
+	(grub_host_size_t): Rename to grub_target_size_t.
+	(grub_host_ssize_t): Rename to grub_target_ssize_t.
+	Refer to GRUB_TARGET_SIZEOF_VOID_P to define those variables.
+
+	* include/grub/kernel.h (struct grub_module_header): Change type
+	of OFFSET to grub_target_off_t and type of SIZE to grub_target_size_t.
+	(grub_module_info): Likewise.
+	
 2006-06-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): The conditional
