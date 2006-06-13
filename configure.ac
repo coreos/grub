@@ -114,6 +114,7 @@ AC_PROG_CC
 # Must be GCC.
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])
 
+AC_GNU_SOURCE
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.
@@ -151,6 +152,9 @@ AC_SUBST(LIBCURSES)
 
 # Check for headers.
 AC_CHECK_HEADERS(ncurses/curses.h ncurses.h curses.h)
+
+# Check for functions.
+AC_CHECK_FUNCS(posix_memalign memalign)
 
 #
 # Check for target programs.

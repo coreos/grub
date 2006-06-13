@@ -1,3 +1,20 @@
+2006-06-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/misc.c: Include config.h.
+	[!HAVE_MEMALIGN]: Do not include malloc.h.
+	(grub_memalign): Use posix_memalign, if present. Then, use
+	memalign, if present. Otherwise, emit an error.
+
+	* util/grub-emu.c: Do not include malloc.h.
+
+	* include/grub/util/misc.h: Include unistd.h. This is required for
+	FreeBSD, because off_t is defined in unistd.h. Reported by Harley
+	D. Eades III <hde@foobar-qux.org>.
+
+	* configure.ac (AC_GNU_SOURCE): Added.
+	(AC_CHECK_FUNCS): Check posix_memalign and memalign for the host
+	type.
+
 2006-06-09  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Make sure that

@@ -31,6 +31,9 @@
 /* Define to 1 if you have the <lzo/lzo1x.h> header file. */
 #undef HAVE_LZO_LZO1X_H
 
+/* Define to 1 if you have the `memalign' function. */
+#undef HAVE_MEMALIGN
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -39,6 +42,9 @@
 
 /* Define to 1 if you have the <ncurses.h> header file. */
 #undef HAVE_NCURSES_H
+
+/* Define to 1 if you have the `posix_memalign' function. */
+#undef HAVE_POSIX_MEMALIGN
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -100,6 +106,11 @@
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
+
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
 
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES

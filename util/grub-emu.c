@@ -18,7 +18,6 @@
  */
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <sys/stat.h>
 #include <argp.h>
 #include <string.h>
