@@ -890,6 +890,12 @@ write_to_partition (char **map, int drive, int partition,
       if (strcmp (dev + strlen(dev) - 5, "/disc") == 0)
 	strcpy (dev + strlen(dev) - 5, "/part");
     }
+  else
+    {
+      if ((strncmp (dev, "/dev/ataraid/", 13) == 0) ||
+         (strncmp (dev, "/dev/rd/", 8) == 0))
+        strcpy (dev + strlen(dev), "p");
+    }
   sprintf (dev + strlen(dev), "%d", ((partition >> 16) & 0xFF) + 1);
   
   /* Open the partition.  */
