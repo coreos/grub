@@ -1,5 +1,5 @@
 info_TEXINFOS = grub.texi multiboot.texi
-grub_TEXINFOS = internals.texi
+grub_TEXINFOS = internals.texi fdl.texi
 EXAMPLES = boot.S kernel.c multiboot.h
 multiboot_TEXINFOS = boot.S.texi kernel.c.texi multiboot.h.texi
 man_MANS = grub.8 mbchk.1 grub-install.8 grub-md5-crypt.8 grub-terminfo.8

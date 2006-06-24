@@ -1,32 +1,28 @@
 \input texinfo @c -*-texinfo-*-
-@c -*-texinfo-*-
 @c %**start of header
 @setfilename multiboot.info
-@settitle Multiboot Specification
-@c %**end of header
-
+@set VERSION 0.6.95
+@settitle Multiboot Specification version @value{VERSION}
 @c Unify all our little indices for now.
 @syncodeindex fn cp
 @syncodeindex vr cp
 @syncodeindex ky cp
 @syncodeindex pg cp
 @syncodeindex tp cp
+@c %**end of header
 
 @footnotestyle separate
 @paragraphindent 3
 @finalout
 
+@copying
+Copyright @copyright{} 1995,96 Bryan Ford <baford@@cs.utah.edu>
 
-@dircategory Kernel
-@direntry
-* Multiboot Specification: (multiboot).		Multiboot Specification.
-@end direntry
+Copyright @copyright{} 1995,96 Erich Stefan Boleyn <erich@@uruk.org>
 
-@ifinfo
-Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
-Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999, 2000, 2001, 2002, 2005, 2006 Free Software Foundation, Inc.
+Copyright @copyright{} 1999,2000,2001,2002,2005,2006 Free Software Foundation, Inc.
 
+@quotation
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
 are preserved on all copies.
@@ -36,7 +32,6 @@ Permission is granted to process this file through TeX and print the
 results, provided the printed document carries a copying permission
 notice identical to this one except for the removal of this paragraph
 (this paragraph not being relevant to the printed manual).
-
 @end ignore
 
 Permission is granted to copy and distribute modified versions of this
@@ -45,31 +40,23 @@ the entire resulting derived work is distributed under the terms of a
 permission notice identical to this one.
 
 Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions.
-@end ifinfo
+into another language, under the above conditions for modified
+versions.
+@end quotation
+@end copying
+
+@dircategory Kernel
+@direntry
+* Multiboot Specification: (multiboot).		Multiboot Specification.
+@end direntry
 
 @titlepage
 @sp 10
-@title The Multiboot Specification
+@title The Multiboot Specification version @value{VERSION}
 @author Yoshinori K. Okuji, Bryan Ford, Erich Stefan Boleyn, Kunihiro Ishiguro
 @page
-
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1995, 96 Bryan Ford <baford@@cs.utah.edu>
-Copyright @copyright{} 1995, 96 Erich Stefan Boleyn <erich@@uruk.org>
-Copyright @copyright{} 1999, 2000, 2001, 2002, 2005, 2006 Free Software Foundation, Inc.
-
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
-
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided also that
-the entire resulting derived work is distributed under the terms of a
-permission notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions.
+@insertcopying
 @end titlepage
 
 @finalout
@@ -80,7 +67,9 @@ into another language, under the above conditions for modified versions.
 @top Multiboot Specification
 
 This file documents Multiboot Specification, the proposal for the boot
-sequence standard. This edition documents version 0.6.94.
+sequence standard. This edition documents version @value{VERSION}.
+
+@insertcopying
 @end ifnottex
 
 @menu
@@ -1197,7 +1186,6 @@ Rewritten, using more strict words.
 @item
 The maintainer changes to the GNU GRUB maintainer team
 @email{bug-grub@@gnu.org}, from Bryan Ford and Erich Stefan Boleyn.
-@end itemize
 
 @item
 The byte order of the @samp{boot_device} in Multiboot information is
@@ -1205,6 +1193,11 @@ reversed. This was a mistake.
 
 @item
 The offset of the address fields were wrong.
+
+@item
+The format is adapted to a newer Texinfo, and the version number is
+specified more explicitly in the title.
+@end itemize
 
 @item 0.6
 @itemize @bullet
