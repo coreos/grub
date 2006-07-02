@@ -1,6 +1,6 @@
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -fno-builtin
+COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS = -melf_i386 -nostdlib
 
@@ -141,7 +141,7 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/menu_entry.c normal/misc.c grub_script.tab.c 		\
 	normal/script.c normal/i386/setjmp.S
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
-normal_mod_ASFLAGS = $(COMMON_ASFLAGS) -m32
+normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
