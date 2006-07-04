@@ -1,6 +1,6 @@
 # -*- makefile -*-
 
-COMMON_ASFLAGS = -nostdinc -fno-builtin
+COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS = -melf_i386 -nostdlib
 
@@ -1867,7 +1867,7 @@ fs-normal_mod-normal_i386_setjmp.lst: normal/i386/setjmp.S genfslist.sh
 
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
-normal_mod_ASFLAGS = $(COMMON_ASFLAGS) -m32
+normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
