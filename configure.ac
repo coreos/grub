@@ -268,7 +268,7 @@ LIBS="$tmp_LIBS"
 # Check for options.
 AC_ARG_ENABLE([mm-debug], 
 	      AS_HELP_STRING([--enable-mm-debug],
-                             [include memory manger debugging]),
+                             [include memory manager debugging]),
               [AC_DEFINE([MM_DEBUG], [1],
                          [Define to 1 if you enable memory manager debugging.])])
 

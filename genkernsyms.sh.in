@@ -14,7 +14,7 @@
 ### The configure script will replace these variables.
 
 srcdir=@srcdir@
-CC=@CC@
+CC="@CC@"
 
 $CC -DGRUB_SYMBOL_GENERATOR=1 -E -I. -Iinclude -I$srcdir/include $* \
   | grep -v '^#' \

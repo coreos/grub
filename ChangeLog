@@ -1,3 +1,9 @@
+2006-07-12  Marco Gerards  <marco@gnu.org>
+
+	* configure.ac (--enable-mm-debug): Fix typo.
+
+	* genkernsyms.sh.in: Use proper quoting for `CC'.
+
 2006-07-02  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* conf/i386-pc.rmk (COMMON_ASFLAGS): Add "-m32".
