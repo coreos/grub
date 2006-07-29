@@ -27,6 +27,7 @@ static grub_video_adapter_t grub_video_adapter_list;
 /* Active video adapter.  */
 static grub_video_adapter_t grub_video_adapter_active;
 
+/* Register video driver.  */
 void
 grub_video_register (grub_video_adapter_t adapter)
 {
@@ -34,29 +35,32 @@ grub_video_register (grub_video_adapter_t adapter)
   grub_video_adapter_list = adapter;
 }
 
+/* Unregister video driver.  */
 void
 grub_video_unregister (grub_video_adapter_t adapter)
 {
   grub_video_adapter_t *p, q;
-  
+
   for (p = &grub_video_adapter_list, q = *p; q; p = &(q->next), q = q->next)
     if (q == adapter)
       {
         *p = q->next;
         break;
-      }                                    
+      }
 }
 
+/* Iterate thru all registered video drivers.  */
 void
 grub_video_iterate (int (*hook) (grub_video_adapter_t adapter))
 {
   grub_video_adapter_t p;
-  
+
   for (p = grub_video_adapter_list; p; p = p->next)
     if (hook (p))
       break;
 }
 
+/* Setup specified video mode.  */
 grub_err_t
 grub_video_setup (unsigned int width, unsigned int height,
                   unsigned int mode_type)
@@ -70,11 +74,11 @@ grub_video_setup (unsigned int width, unsigned int height,
       grub_video_adapter_active->fini ();
       if (grub_errno != GRUB_ERR_NONE)
         return grub_errno;
-        
+
       /* Mark active adapter as not set.  */
       grub_video_adapter_active = 0;
     }
-  
+
   /* Loop thru all possible video adapter trying to find requested mode.  */
   for (p = grub_video_adapter_list; p; p = p->next)
     {
@@ -86,7 +90,7 @@ grub_video_setup (unsigned int width, unsigned int height,
           continue;
         }
 
-      /* Try to initialize video mode.  */      
+      /* Try to initialize video mode.  */
       p->setup (width, height, mode_type);
       if (grub_errno == GRUB_ERR_NONE)
         {
@@ -96,19 +100,20 @@ grub_video_setup (unsigned int width, unsigned int height,
           return GRUB_ERR_NONE;
         }
       else
-        grub_errno = GRUB_ERR_NONE;        
+        grub_errno = GRUB_ERR_NONE;
 
       /* No valid mode found in this adapter, finalize adapter.  */
       p->fini ();
       if (grub_errno != GRUB_ERR_NONE)
         return grub_errno;
     }
-  
+
   /* We couldn't find suitable adapter for specified mode.  */
   return grub_error (GRUB_ERR_UNKNOWN_DEVICE, 
                      "Can't locate valid adapter for mode");
 }
 
+/* Restore back to initial mode (where applicaple).  */
 grub_err_t
 grub_video_restore (void)
 {
@@ -117,21 +122,23 @@ grub_video_restore (void)
       grub_video_adapter_active->fini ();
       if (grub_errno != GRUB_ERR_NONE)
         return grub_errno;
-      
+
       grub_video_adapter_active = 0;
     }
   return GRUB_ERR_NONE;
 }
 
+/* Get information about active video mode.  */
 grub_err_t
 grub_video_get_info (struct grub_video_mode_info *mode_info)
 {
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
-  
+
   return grub_video_adapter_active->get_info (mode_info);
 }
 
+/* Determine optimized blitting formation for specified video mode info.  */
 enum grub_video_blit_format
 grub_video_get_blit_format (struct grub_video_mode_info *mode_info)
 {
@@ -179,26 +186,29 @@ grub_video_get_blit_format (struct grub_video_mode_info *mode_info)
   return GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR;
 }
 
+/* Set new indexed color palette entries.  */
 grub_err_t
 grub_video_set_palette (unsigned int start, unsigned int count,
                         struct grub_video_palette_data *palette_data)
 {
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
-  
+
   return grub_video_adapter_active->set_palette (start, count, palette_data);
 }
 
+/* Get indexed color palette entries.  */
 grub_err_t
 grub_video_get_palette (unsigned int start, unsigned int count,
                         struct grub_video_palette_data *palette_data)
 {
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
-  
+
   return grub_video_adapter_active->get_palette (start, count, palette_data);
 }
 
+/* Set viewport dimensions.  */
 grub_err_t
 grub_video_set_viewport (unsigned int x, unsigned int y,
                          unsigned int width, unsigned int height)
@@ -209,6 +219,7 @@ grub_video_set_viewport (unsigned int x, unsigned int y,
   return grub_video_adapter_active->set_viewport (x, y, width, height);
 }
 
+/* Get viewport dimensions.  */
 grub_err_t
 grub_video_get_viewport (unsigned int *x, unsigned int *y,
                          unsigned int *width, unsigned int *height)
@@ -219,6 +230,7 @@ grub_video_get_viewport (unsigned int *x, unsigned int *y,
   return grub_video_adapter_active->get_viewport (x, y, width, height);
 }
 
+/* Map color name to adapter specific color.  */
 grub_video_color_t
 grub_video_map_color (grub_uint32_t color_name)
 {
@@ -228,6 +240,7 @@ grub_video_map_color (grub_uint32_t color_name)
   return grub_video_adapter_active->map_color (color_name);
 }
 
+/* Map RGB value to adapter specific color.  */
 grub_video_color_t
 grub_video_map_rgb (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue)
 {
@@ -237,6 +250,7 @@ grub_video_map_rgb (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue)
   return grub_video_adapter_active->map_rgb (red, green, blue);
 }
 
+/* Map RGBA value to adapter specific color.  */
 grub_video_color_t
 grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue,
                      grub_uint8_t alpha)
@@ -247,6 +261,7 @@ grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue,
   return grub_video_adapter_active->map_rgba (red, green, blue, alpha);
 }
 
+/* Fill rectangle using specified color.  */
 grub_err_t
 grub_video_fill_rect (grub_video_color_t color, int x, int y,
                       unsigned int width, unsigned int height)
@@ -257,6 +272,7 @@ grub_video_fill_rect (grub_video_color_t color, int x, int y,
   return grub_video_adapter_active->fill_rect (color, x, y, width, height);
 }
 
+/* Blit glyph to screen using specified color.  */
 grub_err_t
 grub_video_blit_glyph (struct grub_font_glyph *glyph,
                        grub_video_color_t color, int x, int y)
@@ -267,6 +283,7 @@ grub_video_blit_glyph (struct grub_font_glyph *glyph,
   return grub_video_adapter_active->blit_glyph (glyph, color, x, y);
 }
 
+/* Blit bitmap to screen.  */
 grub_err_t
 grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
                         int x, int y, int offset_x, int offset_y,
@@ -280,6 +297,7 @@ grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
                                                  width, height);
 }
 
+/* Blit render target to active render target.  */
 grub_err_t
 grub_video_blit_render_target (struct grub_video_render_target *target,
                                int x, int y, int offset_x, int offset_y,
@@ -293,6 +311,7 @@ grub_video_blit_render_target (struct grub_video_render_target *target,
                                                         width, height);
 }
 
+/* Scroll viewport and fill new areas with specified color.  */
 grub_err_t
 grub_video_scroll (grub_video_color_t color, int dx, int dy)
 {
@@ -302,6 +321,7 @@ grub_video_scroll (grub_video_color_t color, int dx, int dy)
   return grub_video_adapter_active->scroll (color, dx, dy);
 }
 
+/* Swap buffers (swap active render target).  */
 grub_err_t
 grub_video_swap_buffers (void)
 {
@@ -311,6 +331,7 @@ grub_video_swap_buffers (void)
   return grub_video_adapter_active->swap_buffers ();
 }
 
+/* Create new render target.  */
 grub_err_t
 grub_video_create_render_target (struct grub_video_render_target **result,
                                  unsigned int width, unsigned int height,
@@ -324,6 +345,7 @@ grub_video_create_render_target (struct grub_video_render_target **result,
                                                           mode_type);
 }
 
+/* Delete render target.  */
 grub_err_t
 grub_video_delete_render_target (struct grub_video_render_target *target)
 {
@@ -333,6 +355,7 @@ grub_video_delete_render_target (struct grub_video_render_target *target)
   return grub_video_adapter_active->delete_render_target (target);
 }
 
+/* Set active render target.  */
 grub_err_t
 grub_video_set_active_render_target (struct grub_video_render_target *target)
 {
@@ -342,12 +365,14 @@ grub_video_set_active_render_target (struct grub_video_render_target *target)
   return grub_video_adapter_active->set_active_render_target (target);
 }
 
+/* Initialize Video API module.  */
 GRUB_MOD_INIT(video_video)
 {
   grub_video_adapter_active = 0;
   grub_video_adapter_list = 0;
 }
 
+/* Finalize Video API module.  */
 GRUB_MOD_FINI(video_video)
 {
 }

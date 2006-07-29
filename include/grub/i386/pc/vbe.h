@@ -36,10 +36,10 @@
 #define GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR	0x06
 
 /* Note:
- 
+
    Please refer to VESA BIOS Extension 3.0 Specification for more descriptive
    meanings of following structures and how they should be used.
-  
+
    I have tried to maintain field name comatibility against specification 
    while following naming convetions used in GRUB.  */
 
@@ -206,11 +206,9 @@ grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
 
 /* VBE module internal prototypes (should not be used from elsewhere).  */
 grub_uint8_t * grub_video_vbe_get_video_ptr (struct grub_video_render_target *source,
-                                             grub_uint32_t x,
-                                             grub_uint32_t y);
+                                             grub_uint32_t x, grub_uint32_t y);
 
-grub_video_color_t grub_video_vbe_map_rgb (grub_uint8_t red, 
-                                           grub_uint8_t green,
+grub_video_color_t grub_video_vbe_map_rgb (grub_uint8_t red, grub_uint8_t green,
                                            grub_uint8_t blue);
 
 void grub_video_vbe_unmap_color (struct grub_video_render_target * source,

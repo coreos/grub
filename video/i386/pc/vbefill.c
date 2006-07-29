@@ -36,10 +36,10 @@ grub_video_i386_vbefill_R8G8B8A8 (struct grub_video_render_target *dst,
   int i;
   int j;
   grub_uint32_t *dstptr;
-  
+
   /* We do not need to worry about data being out of bounds
      as we assume that everything has been checked before.  */
-  
+
   for (j = 0; j < height; j++)
     {
       dstptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
@@ -60,10 +60,10 @@ grub_video_i386_vbefill_R8G8B8 (struct grub_video_render_target *dst,
   grub_uint8_t fillr = (grub_uint8_t)((color >> 0) & 0xFF);
   grub_uint8_t fillg = (grub_uint8_t)((color >> 8) & 0xFF);
   grub_uint8_t fillb = (grub_uint8_t)((color >> 16) & 0xFF);
-  
+
   /* We do not need to worry about data being out of bounds
      as we assume that everything has been checked before.  */
-  
+
   for (j = 0; j < height; j++)
     {
       dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
@@ -77,7 +77,6 @@ grub_video_i386_vbefill_R8G8B8 (struct grub_video_render_target *dst,
     }
 }
 
-
 void
 grub_video_i386_vbefill_index (struct grub_video_render_target *dst,
                                grub_video_color_t color, int x, int y,
@@ -87,10 +86,10 @@ grub_video_i386_vbefill_index (struct grub_video_render_target *dst,
   int j;
   grub_uint8_t *dstptr;
   grub_uint8_t fill = (grub_uint8_t)color & 0xFF;
-  
+
   /* We do not need to worry about data being out of bounds
      as we assume that everything has been checked before.  */
-  
+
   for (j = 0; j < height; j++)
     {
       dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);

@@ -1,5 +1,19 @@
 2006-07-29  Vesa Jaaskelainen  <chaac@nic.fi>
 
+	* include/grub/video.h: Code cleanup.
+
+	* include/grub/i386/pc/vbe.h: Likewise.
+
+	* video/i386/pc/vbe.c: Likewise.
+
+	* video/i386/pc/vbeblit.c: Likewise.
+
+	* video/i386/pc/vbefill.c: Likewise.
+
+	* video/video.c: Likewise.  Also added more comments.
+
+2006-07-29  Vesa Jaaskelainen  <chaac@nic.fi>
+
 	* disk/i386/pc/biosdisk.c (struct grub_biosdisk_drp): Moved to ...
 	(struct grub_biosdisk_dap): Likewise.
 
