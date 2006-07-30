@@ -1,3 +1,9 @@
+2006-07-30  Johan Rydberg  <jrydberg@gnu.org>
+
+	* kern/efi/efi.c (grub_efi_set_text_mode): Assume console already
+	is in text mode if there is no console control protocol instance
+	available.
+
 2006-07-29  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* include/grub/video.h: Code cleanup.

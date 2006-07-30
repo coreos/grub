@@ -125,7 +125,9 @@ grub_efi_set_text_mode (int on)
 
   c = grub_efi_locate_protocol (&console_control_guid, 0);
   if (! c)
-    return 0;
+    /* No console control protocol instance available, assume it is
+       already in text mode. */
+    return 1;
   
   if (c->get_mode (c, &mode, 0, 0) != GRUB_EFI_SUCCESS)
     return 0;
