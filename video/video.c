@@ -82,7 +82,7 @@ grub_video_setup (unsigned int width, unsigned int height,
   /* Loop thru all possible video adapter trying to find requested mode.  */
   for (p = grub_video_adapter_list; p; p = p->next)
     {
-      /* Try to initialize adapter, if can't skip to next.  */
+      /* Try to initialize adapter, if it fails, skip to next adapter.  */
       p->init ();
       if (grub_errno != GRUB_ERR_NONE)
         {
@@ -142,7 +142,7 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
 enum grub_video_blit_format
 grub_video_get_blit_format (struct grub_video_mode_info *mode_info)
 {
-  /* Check if we have any knwon 32 bit modes.  */
+  /* Check if we have any known 32 bit modes.  */
   if (mode_info->bpp == 32)
     {
       if ((mode_info->red_mask_size == 8)
@@ -286,13 +286,14 @@ grub_video_blit_glyph (struct grub_font_glyph *glyph,
 /* Blit bitmap to screen.  */
 grub_err_t
 grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
+                        enum grub_video_blit_operators oper,
                         int x, int y, int offset_x, int offset_y,
                         unsigned int width, unsigned int height)
 {
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
 
-  return grub_video_adapter_active->blit_bitmap (bitmap, x, y,
+  return grub_video_adapter_active->blit_bitmap (bitmap, oper, x, y,
                                                  offset_x, offset_y,
                                                  width, height);
 }
@@ -300,14 +301,15 @@ grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
 /* Blit render target to active render target.  */
 grub_err_t
 grub_video_blit_render_target (struct grub_video_render_target *target,
+                               enum grub_video_blit_operators oper,
                                int x, int y, int offset_x, int offset_y,
                                unsigned int width, unsigned int height)
 {
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
 
-  return grub_video_adapter_active->blit_render_target (target, x, y,
-                                                        offset_x, offset_y, 
+  return grub_video_adapter_active->blit_render_target (target, oper, x, y,
+                                                        offset_x, offset_y,
                                                         width, height);
 }
 

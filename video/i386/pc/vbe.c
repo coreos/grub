@@ -22,12 +22,14 @@
 #include <grub/machine/vbe.h>
 #include <grub/machine/vbeblit.h>
 #include <grub/machine/vbefill.h>
+#include <grub/machine/vbeutil.h>
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/font.h>
 #include <grub/mm.h>
 #include <grub/video.h>
+#include <grub/bitmap.h>
 
 /* Specify "standard" VGA palette, some video cards may
    need this and this will also be used when using RGB modes.  */
@@ -74,10 +76,6 @@ static struct grub_video_render_target *render_target;
 static grub_uint32_t initial_mode;
 static grub_uint32_t mode_in_use = 0x55aa;
 static grub_uint16_t *mode_list;
-
-static grub_video_color_t
-grub_video_vbe_map_rgba (grub_uint8_t red, grub_uint8_t green,
-                         grub_uint8_t blue, grub_uint8_t alpha);
 
 static void *
 real2pm (grub_vbe_farptr_t ptr)
@@ -176,7 +174,7 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
         default:
           return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
                              "unsupported pixel format 0x%x",
-                            active_mode_info.memory_model);
+                             active_mode_info.memory_model);
         }
     }
 
@@ -220,7 +218,7 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
     default:
       grub_vbe_bios_set_mode (old_mode, 0);
       return grub_error (GRUB_ERR_BAD_DEVICE, 
-                         "cannot set VBE mode %x", 
+                         "cannot set VBE mode %x",
                          mode);
       break;
     }
@@ -238,7 +236,7 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
                                                0, 
                                                palette);
 
-      /* Just ignore the status. */
+      /* Just ignore the status.  */
     }
 
   /* Copy mode info for caller.  */
@@ -299,146 +297,40 @@ grub_vbe_get_video_mode_info (grub_uint32_t mode,
 }
 
 grub_uint8_t *
-grub_video_vbe_get_video_ptr (struct grub_video_render_target *source,
+grub_video_vbe_get_video_ptr (struct grub_video_i386_vbeblit_info *source,
                               grub_uint32_t x, grub_uint32_t y)
 {
   grub_uint8_t *ptr = 0;
 
-  switch (source->mode_info.bpp)
+  switch (source->mode_info->bpp)
     {
     case 32:
       ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info.pitch
+            + y * source->mode_info->pitch
             + x * 4;
       break;
 
     case 24:
       ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info.pitch
+            + y * source->mode_info->pitch
             + x * 3;
       break;
 
     case 16:
     case 15:
       ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info.pitch
+            + y * source->mode_info->pitch
             + x * 2;
       break;
 
     case 8:
       ptr = (grub_uint8_t *)source->data
-            + y * source->mode_info.pitch
+            + y * source->mode_info->pitch
             + x;
       break;
     }
 
   return ptr;
-}
-
-static void
-grub_video_vbe_draw_pixel (grub_uint32_t x, grub_uint32_t y,
-                           grub_video_color_t color)
-{
-  if (x >= render_target->mode_info.width)
-    return;
-
-  if (y >= render_target->mode_info.height)
-    return;
-
-  switch (render_target->mode_info.bpp)
-    {
-    case 32:
-      {
-        grub_uint32_t *ptr;
-
-        ptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (render_target,
-                                                             x, y);
-
-        *ptr = color;
-      }
-      break;
-
-    case 24:
-      {
-        grub_uint8_t *ptr;
-        grub_uint8_t *ptr2 = (grub_uint8_t *) &color;
-
-        ptr = grub_video_vbe_get_video_ptr (render_target, x, y);
-
-        ptr[0] = ptr2[0];
-        ptr[1] = ptr2[1];
-        ptr[2] = ptr2[2];
-      }
-      break;
-
-    case 16:
-    case 15:
-      {
-        grub_uint16_t *ptr;
-
-        ptr = (grub_uint16_t *)grub_video_vbe_get_video_ptr (render_target,
-                                                             x, y);
-
-        *ptr = (grub_uint16_t) (color & 0xFFFF);
-      }
-      break;
-
-    case 8:
-      {
-        grub_uint8_t *ptr;
-
-        ptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (render_target,
-                                                            x, y);
-
-        *ptr = (grub_uint8_t) (color & 0xFF);
-      }
-      break;
-
-    default:
-      break;
-    }
-}
-
-static grub_video_color_t
-grub_video_vbe_get_pixel (struct grub_video_render_target *source,
-                          grub_uint32_t x, grub_uint32_t y)
-{
-  grub_video_color_t color = 0;
-
-  if (x >= source->mode_info.width)
-    return 0;
-
-  if (y >= source->mode_info.height)
-    return 0;
-
-  switch (source->mode_info.bpp)
-    {
-    case 32:
-      color = *(grub_uint32_t *)grub_video_vbe_get_video_ptr (source, x, y);
-      break;
-
-    case 24:
-      {
-        grub_uint8_t *ptr;
-        ptr = grub_video_vbe_get_video_ptr (source, x, y);
-        color = ptr[0] | (ptr[1] << 8) | (ptr[2] << 16);
-      }
-      break;
-
-    case 16:
-    case 15:
-      color = *(grub_uint16_t *)grub_video_vbe_get_video_ptr (source, x, y);
-      break;
-
-    case 8:
-      color = *(grub_uint8_t *)grub_video_vbe_get_video_ptr (source, x, y);
-      break;
-
-    default:
-      break;
-    }
-
-  return color;
 }
 
 static grub_err_t
@@ -482,7 +374,7 @@ grub_video_vbe_init (void)
     }
 
   /* Reset frame buffer and render target variables.  */
-  grub_memset (&framebuffer, 0, sizeof(framebuffer));  
+  grub_memset (&framebuffer, 0, sizeof(framebuffer));
   render_target = &framebuffer.render_target;
 
   return GRUB_ERR_NONE;
@@ -738,7 +630,7 @@ grub_video_vbe_set_viewport (unsigned int x, unsigned int y,
   render_target->viewport.y = y;
   render_target->viewport.width = width;
   render_target->viewport.height = height;
-  
+
   return GRUB_ERR_NONE;
 }
 
@@ -836,7 +728,7 @@ grub_video_vbe_map_rgb (grub_uint8_t red, grub_uint8_t green,
 
 }
 
-static grub_video_color_t
+grub_video_color_t
 grub_video_vbe_map_rgba (grub_uint8_t red, grub_uint8_t green,
                          grub_uint8_t blue, grub_uint8_t alpha)
 {
@@ -864,12 +756,15 @@ grub_video_vbe_map_rgba (grub_uint8_t red, grub_uint8_t green,
 }
 
 void
-grub_video_vbe_unmap_color (struct grub_video_render_target * source,
+grub_video_vbe_unmap_color (struct grub_video_i386_vbeblit_info * source,
                             grub_video_color_t color,
                             grub_uint8_t *red, grub_uint8_t *green,
                             grub_uint8_t *blue, grub_uint8_t *alpha)
 {
-  if ((source->mode_info.mode_type 
+  struct grub_video_mode_info *mode_info;
+  mode_info = source->mode_info;
+
+  if ((mode_info->mode_type 
        & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != 0)
     {
       /* If we have out of bounds color, return trasnparent black.  */
@@ -893,33 +788,33 @@ grub_video_vbe_unmap_color (struct grub_video_render_target * source,
       grub_uint32_t tmp;
 
       /* Get red component.  */
-      tmp = color >> source->mode_info.red_field_pos;
-      tmp &= (1 << source->mode_info.red_mask_size) - 1;
-      tmp <<= 8 - source->mode_info.red_mask_size;
-      tmp |= (1 << (8 - source->mode_info.red_mask_size)) - 1;
+      tmp = color >> mode_info->red_field_pos;
+      tmp &= (1 << mode_info->red_mask_size) - 1;
+      tmp <<= 8 - mode_info->red_mask_size;
+      tmp |= (1 << (8 - mode_info->red_mask_size)) - 1;
       *red = tmp & 0xFF;
 
       /* Get green component.  */
-      tmp = color >> source->mode_info.green_field_pos;
-      tmp &= (1 << source->mode_info.green_mask_size) - 1;
-      tmp <<= 8 - source->mode_info.green_mask_size;
-      tmp |= (1 << (8 - source->mode_info.green_mask_size)) - 1;
+      tmp = color >> mode_info->green_field_pos;
+      tmp &= (1 << mode_info->green_mask_size) - 1;
+      tmp <<= 8 - mode_info->green_mask_size;
+      tmp |= (1 << (8 - mode_info->green_mask_size)) - 1;
       *green = tmp & 0xFF;
 
       /* Get blue component.  */
-      tmp = color >> source->mode_info.blue_field_pos;
-      tmp &= (1 << source->mode_info.blue_mask_size) - 1;
-      tmp <<= 8 - source->mode_info.blue_mask_size;
-      tmp |= (1 << (8 - source->mode_info.blue_mask_size)) - 1;
+      tmp = color >> mode_info->blue_field_pos;
+      tmp &= (1 << mode_info->blue_mask_size) - 1;
+      tmp <<= 8 - mode_info->blue_mask_size;
+      tmp |= (1 << (8 - mode_info->blue_mask_size)) - 1;
       *blue = tmp & 0xFF;
 
       /* Get alpha component.  */
-      if (source->mode_info.reserved_mask_size > 0)
+      if (source->mode_info->reserved_mask_size > 0)
         {
-          tmp = color >> source->mode_info.reserved_field_pos;
-          tmp &= (1 << source->mode_info.reserved_mask_size) - 1;
-          tmp <<= 8 - source->mode_info.reserved_mask_size;
-          tmp |= (1 << (8 - source->mode_info.reserved_mask_size)) - 1;
+          tmp = color >> mode_info->reserved_field_pos;
+          tmp &= (1 << mode_info->reserved_mask_size) - 1;
+          tmp <<= 8 - mode_info->reserved_mask_size;
+          tmp |= (1 << (8 - mode_info->reserved_mask_size)) - 1;
         }
       else
         /* If there is no alpha component, assume it opaque.  */
@@ -933,7 +828,7 @@ static grub_err_t
 grub_video_vbe_fill_rect (grub_video_color_t color, int x, int y,
                           unsigned int width, unsigned int height)
 {
-  unsigned int i, j;
+  struct grub_video_i386_vbeblit_info target;
 
   /* Make sure there is something to do.  */
   if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
@@ -962,40 +857,44 @@ grub_video_vbe_fill_rect (grub_video_color_t color, int x, int y,
   x += render_target->viewport.x;
   y += render_target->viewport.y;
 
+  /* Use vbeblit_info to encapsulate rendering.  */
+  target.mode_info = &render_target->mode_info;
+  target.data = render_target->data;
+
   /* Try to figure out more optimized version.  */
-  if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+  if (target.mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
     {
-      grub_video_i386_vbefill_R8G8B8A8 (render_target, color, x, y, 
+      grub_video_i386_vbefill_R8G8B8A8 (&target, color, x, y, 
                                         width, height);
       return GRUB_ERR_NONE;
     }
 
-  if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+  if (target.mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
     {
-      grub_video_i386_vbefill_R8G8B8 (render_target, color, x, y,
+      grub_video_i386_vbefill_R8G8B8 (&target, color, x, y,
                                       width, height);
       return GRUB_ERR_NONE;
     }
 
-  if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+  if (target.mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
     {
-      grub_video_i386_vbefill_index (render_target, color, x, y,
+      grub_video_i386_vbefill_index (&target, color, x, y,
                                      width, height);
       return GRUB_ERR_NONE;
     }
 
-  /* Use backup method to fill area.  */
-  for (j = 0; j < height; j++)
-    for (i = 0; i < width; i++)
-      grub_video_vbe_draw_pixel (x+i, y+j, color);
+  /* No optimized version found, use default (slow) filler.  */
+  grub_video_i386_vbefill (&target, color, x, y, width, height);
 
   return GRUB_ERR_NONE;
 }
 
+// TODO: Remove this method and replace with bitmap based glyphs
 static grub_err_t
 grub_video_vbe_blit_glyph (struct grub_font_glyph * glyph,
                            grub_video_color_t color, int x, int y)
 {
+  struct grub_video_i386_vbeblit_info target;
   unsigned int width;
   unsigned int charwidth;
   unsigned int height;
@@ -1045,79 +944,184 @@ grub_video_vbe_blit_glyph (struct grub_font_glyph * glyph,
   x += render_target->viewport.x;
   y += render_target->viewport.y;
 
+  /* Use vbeblit_info to encapsulate rendering.  */
+  target.mode_info = &render_target->mode_info;
+  target.data = render_target->data;
+
   /* Draw glyph.  */
   for (j = 0; j < height; j++)
     for (i = 0; i < width; i++)
       if ((glyph->bitmap[((i + x_offset) / 8) 
                          + (j + y_offset) * (charwidth / 8)] 
            & (1 << ((charwidth - (i + x_offset) - 1) % 8))))
-        grub_video_vbe_draw_pixel (x+i, y+j, color);
+        set_pixel (&target, x+i, y+j, color);
 
   return GRUB_ERR_NONE;
 }
 
+/* NOTE: This function assumes that given coordiantes are within bounds of 
+   handled data.  */
+static void
+common_blitter (struct grub_video_i386_vbeblit_info *target,
+                struct grub_video_i386_vbeblit_info *source,
+                enum grub_video_blit_operators oper, int x, int y,
+                unsigned int width, unsigned int height,
+                int offset_x, int offset_y)
+{
+  if (oper == GRUB_VIDEO_BLIT_REPLACE)
+    {
+      /* Try to figure out more optimized version for replace operator.  */
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+        {
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+            {
+              grub_video_i386_vbeblit_R8G8B8X8_R8G8B8X8 (target, source,
+                                                         x, y, width, height,
+                                                         offset_x, offset_y);
+              return;
+            }
+
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+            {
+              grub_video_i386_vbeblit_R8G8B8_R8G8B8X8 (target, source,
+                                                       x, y, width, height,
+                                                       offset_x, offset_y);
+              return;
+            }
+
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+            {
+              grub_video_i386_vbeblit_index_R8G8B8X8 (target, source,
+                                                      x, y, width, height,
+                                                      offset_x, offset_y);
+              return;
+            }
+        }
+
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+        {
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+            {
+              grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (target, source,
+                                                       x, y, width, height,
+                                                       offset_x, offset_y);
+              return;
+            }
+
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+            {
+              grub_video_i386_vbeblit_R8G8B8_R8G8B8 (target, source,
+                                                     x, y, width, height,
+                                                     offset_x, offset_y);
+              return;
+            }
+
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+            {
+              grub_video_i386_vbeblit_index_R8G8B8 (target, source,
+                                                    x, y, width, height,
+                                                    offset_x, offset_y);
+              return;
+            }
+        }
+
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+        {
+          if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+            {
+              grub_video_i386_vbeblit_index_index (target, source,
+                                                   x, y, width, height,
+                                                   offset_x, offset_y);
+              return;
+            }
+        }
+
+      /* No optimized replace operator found, use default (slow) blitter.  */
+      grub_video_i386_vbeblit_replace (target, source, x, y, width, height,
+                                       offset_x, offset_y);
+    }
+  else
+    {
+      /* Try to figure out more optimized blend operator.  */
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+      {
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+        {
+          grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8 (target, source,
+              x, y, width, height,
+              offset_x, offset_y);
+          return;
+        }
+
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+        {
+          grub_video_i386_vbeblit_R8G8B8_R8G8B8A8 (target, source,
+              x, y, width, height,
+              offset_x, offset_y);
+          return;
+        }
+
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+        {
+          grub_video_i386_vbeblit_index_R8G8B8A8 (target, source,
+              x, y, width, height,
+              offset_x, offset_y);
+          return;
+        }
+      }
+
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+      {
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
+        {
+          grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (target, source,
+              x, y, width, height,
+              offset_x, offset_y);
+          return;
+        }
+
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
+        {
+          grub_video_i386_vbeblit_R8G8B8_R8G8B8 (target, source,
+              x, y, width, height,
+              offset_x, offset_y);
+          return;
+        }
+
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+        {
+          grub_video_i386_vbeblit_index_R8G8B8 (target, source,
+              x, y, width, height,
+              offset_x, offset_y);
+          return;
+        }
+      }
+
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+      {
+        if (target->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
+        {
+          grub_video_i386_vbeblit_index_index (target, source,
+                                               x, y, width, height,
+                                               offset_x, offset_y);
+          return;
+        }
+      }
+
+      /* No optimized blend operation found, use default (slow) blitter.  */
+      grub_video_i386_vbeblit_blend (target, source, x, y, width, height,
+                                     offset_x, offset_y);
+    }
+}
+
 static grub_err_t
-grub_video_vbe_blit_bitmap (struct grub_video_bitmap * bitmap,
-                            int x, int y, int offset_x, int offset_y,
+grub_video_vbe_blit_bitmap (struct grub_video_bitmap *bitmap,
+                            enum grub_video_blit_operators oper, int x, int y,
+                            int offset_x, int offset_y,
                             unsigned int width, unsigned int height)
 {
-  /* Make sure there is something to do.  */
-  if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
-    return GRUB_ERR_NONE;
-  if ((y >= (int)render_target->viewport.height) || (y + (int)height < 0))
-    return GRUB_ERR_NONE;
-
-  /* Do not allow drawing out of viewport.  */
-  if (offset_x < 0)
-    {
-      width += offset_x;
-      x -= offset_x;
-      offset_x = 0;
-    }
-
-  if (offset_y < 0)
-    {
-      height += offset_y;
-      y -= offset_y;
-      offset_y = 0;
-    }
-
-  if (x < 0)
-    {
-      width += x;
-      offset_x += (unsigned int)-x;
-      x = 0;
-    }
-  if (y < 0)
-    {
-      height += y;
-      offset_y += (unsigned int)-y;
-      y = 0;
-    }
-
-  if ((x + width) > render_target->viewport.width)
-    width = render_target->viewport.width - x;
-  if ((y + height) > render_target->viewport.height)
-    height = render_target->viewport.height - y;
-
-  /* TODO: Limit drawing to bitmap dimensions.  */
-
-  /* Add viewport offset.  */
-  x += render_target->viewport.x;
-  y += render_target->viewport.y;
-
-  /* TODO: Render bitmap.  */
-
-  return GRUB_ERR_NONE;
-}
-
-static grub_err_t
-grub_video_vbe_blit_render_target (struct grub_video_render_target *source,
-                                   int x, int y, int offset_x, int offset_y,
-                                   unsigned int width, unsigned int height)
-{
-  unsigned int i;
-  unsigned int j;
+  struct grub_video_i386_vbeblit_info source;
+  struct grub_video_i386_vbeblit_info target;
 
   /* Make sure there is something to do.  */
   if ((width == 0) || (height == 0))
@@ -1125,17 +1129,17 @@ grub_video_vbe_blit_render_target (struct grub_video_render_target *source,
   if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
     return GRUB_ERR_NONE;
   if ((y >= (int)render_target->viewport.height) || (y + (int)height < 0))
-    return GRUB_ERR_NONE;    
-  if ((x + (int)source->mode_info.width) < 0)
     return GRUB_ERR_NONE;
-  if ((y + (int)source->mode_info.height) < 0)
-    return GRUB_ERR_NONE;    
-  if ((offset_x >= (int)source->mode_info.width) 
+  if ((x + (int)bitmap->mode_info.width) < 0)
+    return GRUB_ERR_NONE;
+  if ((y + (int)bitmap->mode_info.height) < 0)
+    return GRUB_ERR_NONE;
+  if ((offset_x >= (int)bitmap->mode_info.width) 
       || (offset_x + (int)width < 0))
     return GRUB_ERR_NONE;
-  if ((offset_y >= (int)source->mode_info.height) 
+  if ((offset_y >= (int)bitmap->mode_info.height) 
       || (offset_y + (int)height < 0))
-    return GRUB_ERR_NONE;    
+    return GRUB_ERR_NONE;
 
   /* If we have negative coordinates, optimize drawing to minimum.  */
   if (offset_x < 0)
@@ -1155,14 +1159,105 @@ grub_video_vbe_blit_render_target (struct grub_video_render_target *source,
   if (x < 0)
     {
       width += x;
-      offset_x += (unsigned int)-x;
+      offset_x -= x;
       x = 0;
     }
 
   if (y < 0)
     {
       height += y;
-      offset_y += (unsigned int)-y;
+      offset_y -= y;
+      y = 0;
+    }
+
+  /* Do not allow drawing out of viewport.  */
+  if ((x + width) > render_target->viewport.width)
+    width = render_target->viewport.width - x;
+  if ((y + height) > render_target->viewport.height)
+    height = render_target->viewport.height - y;
+
+  if ((offset_x + width) > bitmap->mode_info.width)
+    width = bitmap->mode_info.width - offset_x;
+  if ((offset_y + height) > bitmap->mode_info.height)
+    height = bitmap->mode_info.height - offset_y;
+
+  /* Limit drawing to source render target dimensions.  */
+  if (width > bitmap->mode_info.width)
+    width = bitmap->mode_info.width;
+
+  if (height > bitmap->mode_info.height)
+    height = bitmap->mode_info.height;
+
+  /* Add viewport offset.  */
+  x += render_target->viewport.x;
+  y += render_target->viewport.y;
+
+  /* Use vbeblit_info to encapsulate rendering.  */
+  source.mode_info = &bitmap->mode_info;
+  source.data = bitmap->data;
+  target.mode_info = &render_target->mode_info;
+  target.data = render_target->data;
+
+  /* Do actual blitting.  */
+  common_blitter (&target, &source, oper, x, y, width, height,
+                  offset_x, offset_y);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_video_vbe_blit_render_target (struct grub_video_render_target *source,
+                                   enum grub_video_blit_operators oper,
+                                   int x, int y, int offset_x, int offset_y,
+                                   unsigned int width, unsigned int height)
+{
+  struct grub_video_i386_vbeblit_info source_info;
+  struct grub_video_i386_vbeblit_info target_info;
+
+  /* Make sure there is something to do.  */
+  if ((width == 0) || (height == 0))
+    return GRUB_ERR_NONE;
+  if ((x >= (int)render_target->viewport.width) || (x + (int)width < 0))
+    return GRUB_ERR_NONE;
+  if ((y >= (int)render_target->viewport.height) || (y + (int)height < 0))
+    return GRUB_ERR_NONE;
+  if ((x + (int)source->mode_info.width) < 0)
+    return GRUB_ERR_NONE;
+  if ((y + (int)source->mode_info.height) < 0)
+    return GRUB_ERR_NONE;
+  if ((offset_x >= (int)source->mode_info.width) 
+      || (offset_x + (int)width < 0))
+    return GRUB_ERR_NONE;
+  if ((offset_y >= (int)source->mode_info.height) 
+      || (offset_y + (int)height < 0))
+    return GRUB_ERR_NONE;
+
+  /* If we have negative coordinates, optimize drawing to minimum.  */
+  if (offset_x < 0)
+    {
+      width += offset_x;
+      x -= offset_x;
+      offset_x = 0;
+    }
+
+  if (offset_y < 0)
+    {
+      height += offset_y;
+      y -= offset_y;
+      offset_y = 0;
+    }
+
+  if (x < 0)
+    {
+      width += x;
+      offset_x -= x;
+      x = 0;
+    }
+
+  if (y < 0)
+    {
+      height += y;
+      offset_y -= y;
       y = 0;
     }
 
@@ -1188,122 +1283,15 @@ grub_video_vbe_blit_render_target (struct grub_video_render_target *source,
   x += render_target->viewport.x;
   y += render_target->viewport.y;
 
-  /* Try to figure out more optimized version.  */
-  if (source->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
-    {
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
-        {
-          grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8 (render_target, source,
-                                                     x, y, width, height,
-                                                     offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
+  /* Use vbeblit_info to encapsulate rendering.  */
+  source_info.mode_info = &source->mode_info;
+  source_info.data = source->data;
+  target_info.mode_info = &render_target->mode_info;
+  target_info.data = render_target->data;
 
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
-        {
-          grub_video_i386_vbeblit_R8G8B8_R8G8B8A8 (render_target, source,
-                                                   x, y, width, height,
-                                                   offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
-
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-        {
-          grub_video_i386_vbeblit_index_R8G8B8A8 (render_target, source,
-                                                  x, y, width, height,
-                                                  offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
-    }
-
-  if (source->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
-    {
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8)
-        {
-          grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (render_target, source,
-                                                   x, y, width, height,
-                                                   offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
-
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_R8G8B8)
-        {
-          grub_video_i386_vbeblit_R8G8B8_R8G8B8 (render_target, source,
-                                                 x, y, width, height,
-                                                 offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
-
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-        {
-          grub_video_i386_vbeblit_index_R8G8B8 (render_target, source,
-                                                x, y, width, height,
-                                                offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
-    }
-
-  if (source->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-    {
-      if (render_target->mode_info.blit_format == GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR)
-        {
-          grub_video_i386_vbeblit_index_index (render_target, source,
-                                               x, y, width, height,
-                                               offset_x, offset_y);
-          return GRUB_ERR_NONE;
-        }
-    }
-
-  /* Use backup method to render.  */
-  for (j = 0; j < height; j++)
-    {
-      for (i = 0; i < width; i++)
-        {
-          grub_uint8_t src_red;
-          grub_uint8_t src_green;
-          grub_uint8_t src_blue;
-          grub_uint8_t src_alpha;
-          grub_uint8_t dst_red;
-          grub_uint8_t dst_green;
-          grub_uint8_t dst_blue;
-          grub_uint8_t dst_alpha;
-          grub_video_color_t src_color;
-          grub_video_color_t dst_color;
-
-          src_color = grub_video_vbe_get_pixel (source, i + offset_x, j + offset_y);
-          grub_video_vbe_unmap_color (source, src_color, &src_red, &src_green, 
-                                      &src_blue, &src_alpha);
-
-          if (src_alpha == 0)
-            continue;
-
-          if (src_alpha == 255)
-            {
-              dst_color = grub_video_vbe_map_rgba (src_red, src_green,
-                                                   src_blue, src_alpha);
-               grub_video_vbe_draw_pixel (x + i, y + j, dst_color);
-               continue;
-            }
-
-          dst_color = grub_video_vbe_get_pixel (render_target, x + i, y + j);
-
-          grub_video_vbe_unmap_color (render_target,  dst_color, &dst_red, 
-                                      &dst_green, &dst_blue, &dst_alpha);
-
-          dst_red = (((src_red * src_alpha)
-                      + (dst_red * (255 - src_alpha))) / 255);
-          dst_green = (((src_green * src_alpha)
-                        + (dst_green * (255 - src_alpha))) / 255);
-          dst_blue = (((src_blue * src_alpha)
-                       + (dst_blue * (255 - src_alpha))) / 255);
-
-          dst_alpha = src_alpha;
-          dst_color = grub_video_vbe_map_rgba (dst_red, dst_green, dst_blue,
-                                               dst_alpha);
-
-          grub_video_vbe_draw_pixel (x + i, y + j, dst_color);
-        }
-    }
+  /* Do actual blitting.  */
+  common_blitter (&target_info, &source_info, oper, x, y, width, height, 
+                  offset_x, offset_y);
 
   return GRUB_ERR_NONE;
 }
@@ -1352,16 +1340,20 @@ grub_video_vbe_scroll (grub_video_color_t color, int dx, int dy)
        && (grub_abs (dy) < render_target->viewport.height))
     {
       /* 3. Move data in render target.  */
+      struct grub_video_i386_vbeblit_info target;
       grub_uint8_t *src;
       grub_uint8_t *dst;
       int j;
 
+      target.mode_info = &render_target->mode_info;
+      target.data = render_target->data;
+
       for (j = 0; j < height; j++)
         {
-          dst = grub_video_vbe_get_video_ptr (render_target, dst_x, dst_y + j);
-          src = grub_video_vbe_get_video_ptr (render_target, src_x, src_y + j);
+          dst = grub_video_vbe_get_video_ptr (&target, dst_x, dst_y + j);
+          src = grub_video_vbe_get_video_ptr (&target, src_x, src_y + j);
           grub_memmove (dst, src,
-                        width * render_target->mode_info.bytes_per_pixel);
+                        width * target.mode_info->bytes_per_pixel);
         }
     }
 
@@ -1544,7 +1536,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .delete_render_target = grub_video_vbe_delete_render_target,
     .set_active_render_target = grub_video_vbe_set_active_render_target,
 
-    .next = 0  
+    .next = 0
   };
 
 GRUB_MOD_INIT(video_i386_pc_vbe)

@@ -205,13 +205,43 @@ grub_err_t grub_vbe_get_video_mode_info (grub_uint32_t mode,
                                          struct grub_vbe_mode_info_block *mode_info);
 
 /* VBE module internal prototypes (should not be used from elsewhere).  */
-grub_uint8_t * grub_video_vbe_get_video_ptr (struct grub_video_render_target *source,
+struct grub_video_i386_vbeblit_info;
+
+struct grub_video_render_target
+{
+  /* Copy of the screen's mode info structure, except that width, height and
+     mode_type has been re-adjusted to requested render target settings.  */
+  struct grub_video_mode_info mode_info;
+
+  struct
+  {
+    unsigned int x;
+    unsigned int y;
+    unsigned int width;
+    unsigned int height;
+  } viewport;
+
+  /* Indicates wether the data has been allocated by us and must be freed
+     when render target is destroyed.  */
+  int is_allocated;
+
+  /* Pointer to data.  Can either be in video card memory or in local host's
+     memory.  */
+  void *data;
+};
+
+grub_uint8_t * grub_video_vbe_get_video_ptr (struct grub_video_i386_vbeblit_info *source,
                                              grub_uint32_t x, grub_uint32_t y);
 
 grub_video_color_t grub_video_vbe_map_rgb (grub_uint8_t red, grub_uint8_t green,
                                            grub_uint8_t blue);
 
-void grub_video_vbe_unmap_color (struct grub_video_render_target * source,
+grub_video_color_t grub_video_vbe_map_rgba (grub_uint8_t red,
+                                            grub_uint8_t green,
+                                            grub_uint8_t blue,
+                                            grub_uint8_t alpha);
+
+void grub_video_vbe_unmap_color (struct grub_video_i386_vbeblit_info *source,
                                  grub_video_color_t color, grub_uint8_t *red,
                                  grub_uint8_t *green, grub_uint8_t *blue,
                                  grub_uint8_t *alpha);

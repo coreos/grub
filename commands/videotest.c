@@ -36,7 +36,7 @@ grub_cmd_videotest (struct grub_arg_list *state __attribute__ ((unused)),
   if (grub_video_setup (1024, 768,
                         GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != GRUB_ERR_NONE)
     return grub_errno;
-  
+
   grub_getkey ();
 
   grub_video_color_t color;
@@ -48,21 +48,21 @@ grub_cmd_videotest (struct grub_arg_list *state __attribute__ ((unused)),
   struct grub_font_glyph glyph;
   struct grub_video_render_target *text_layer;
   grub_video_color_t palette[16];
-  
+
   grub_video_get_viewport (&x, &y, &width, &height);
 
   grub_video_create_render_target (&text_layer, width, height,
                                    GRUB_VIDEO_MODE_TYPE_RGB
                                    | GRUB_VIDEO_MODE_TYPE_ALPHA);
 
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);                                   
+  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   color = grub_video_map_rgb (0, 0, 0);
   grub_video_fill_rect (color, 0, 0, width, height);
-  
+
   color = grub_video_map_rgb (255, 0, 0);
   grub_video_fill_rect (color, 0, 0, 100, 100);
-  
+
   color = grub_video_map_rgb (0, 255, 255);
   grub_video_fill_rect (color, 100, 100, 100, 100);
 
@@ -73,18 +73,18 @@ grub_cmd_videotest (struct grub_arg_list *state __attribute__ ((unused)),
                            width - 150 * 2, height - 150 * 2);
   color = grub_video_map_rgb (77, 33, 77);
   grub_video_fill_rect (color, 0, 0, width, height);
-  
+
   grub_video_set_active_render_target (text_layer);
-  
+
   color = grub_video_map_rgb (255, 255, 255);
-  
-  grub_font_get_glyph ('A', &glyph);  
+
+  grub_font_get_glyph ('A', &glyph);
   grub_video_blit_glyph (&glyph, color, 16, 16);
-  grub_font_get_glyph ('B', &glyph);  
+  grub_font_get_glyph ('B', &glyph);
   grub_video_blit_glyph (&glyph, color, 16 * 2, 16);
 
-  grub_font_get_glyph ('*', &glyph);  
-  
+  grub_font_get_glyph ('*', &glyph);
+
   for (i = 0; i < 16; i++)
     {
       color = grub_video_map_color (i);
@@ -98,18 +98,19 @@ grub_cmd_videotest (struct grub_arg_list *state __attribute__ ((unused)),
     {
       color = grub_video_map_rgb (i, 33, 77);
       grub_video_fill_rect (color, 0, 0, width, height);
-      grub_video_blit_render_target (text_layer, 0, 0, 0, 0, width, height);
+      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, 0, 0,
+                                     0, 0, width, height);
     }
-  
+
   grub_getkey ();
-  
+
   grub_video_delete_render_target (text_layer);
-  
+
   grub_video_restore ();
-  
+
   for (i = 0; i < 16; i++)
     grub_printf("color %d: %08x\n", i, palette[i]);
-  
+
   grub_errno = GRUB_ERR_NONE;
   return grub_errno;
 }

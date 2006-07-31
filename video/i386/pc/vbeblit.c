@@ -17,20 +17,27 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/err.h>
-#include <grub/machine/memory.h>
+/* SPECIAL NOTES!
+
+   Please note following when reading the code below:
+
+   - In this driver we assume that every memory can be accessed by same memory
+   bus.  If there are different address spaces do not use this code as a base
+   code for other archs.
+
+   - Every function in this code assumes that bounds checking has been done in
+   previous phase and they are opted out in here.  */
+
 #include <grub/machine/vbe.h>
 #include <grub/machine/vbeblit.h>
-#include <grub/types.h>
-#include <grub/dl.h>
+#include <grub/machine/vbeutil.h>
 #include <grub/misc.h>
-#include <grub/font.h>
-#include <grub/mm.h>
+#include <grub/types.h>
 #include <grub/video.h>
 
 void
-grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8 (struct grub_video_render_target *dst,
-                                           struct grub_video_render_target *src,
+grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8 (struct grub_video_i386_vbeblit_info *dst,
+                                           struct grub_video_i386_vbeblit_info *src,
                                            int x, int y, int width, int height,
                                            int offset_x, int offset_y)
 {
@@ -52,10 +59,8 @@ grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8 (struct grub_video_render_target *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (src, offset_x,
-                                                              j + offset_y);
-
-      dstptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -97,8 +102,33 @@ grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8 (struct grub_video_render_target *dst,
 }
 
 void
-grub_video_i386_vbeblit_R8G8B8_R8G8B8A8 (struct grub_video_render_target *dst,
-                                         struct grub_video_render_target *src,
+grub_video_i386_vbeblit_R8G8B8X8_R8G8B8X8 (struct grub_video_i386_vbeblit_info *dst,
+                                           struct grub_video_i386_vbeblit_info *src,
+                                           int x, int y, int width, int height,
+                                           int offset_x, int offset_y)
+{
+  int j;
+  grub_uint32_t *srcptr;
+  grub_uint32_t *dstptr;
+  int pitch;
+
+  pitch = src->mode_info->bytes_per_pixel;
+
+  /* We do not need to worry about data being out of bounds
+     as we assume that everything has been checked before.  */
+
+  for (j = 0; j < height; j++)
+    {
+      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
+
+      grub_memmove (dstptr, srcptr, width * pitch);
+    }
+}
+
+void
+grub_video_i386_vbeblit_R8G8B8_R8G8B8A8 (struct grub_video_i386_vbeblit_info *dst,
+                                         struct grub_video_i386_vbeblit_info *src,
                                          int x, int y, int width, int height,
                                          int offset_x, int offset_y)
 {
@@ -120,10 +150,8 @@ grub_video_i386_vbeblit_R8G8B8_R8G8B8A8 (struct grub_video_render_target *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (src, offset_x,
-                                                              j + offset_y);
-
-      dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -166,8 +194,46 @@ grub_video_i386_vbeblit_R8G8B8_R8G8B8A8 (struct grub_video_render_target *dst,
 }
 
 void
-grub_video_i386_vbeblit_index_R8G8B8A8 (struct grub_video_render_target *dst,
-                                        struct grub_video_render_target *src,
+grub_video_i386_vbeblit_R8G8B8_R8G8B8X8 (struct grub_video_i386_vbeblit_info *dst,
+                                         struct grub_video_i386_vbeblit_info *src,
+                                         int x, int y, int width, int height,
+                                         int offset_x, int offset_y)
+{
+  grub_uint32_t color;
+  int i;
+  int j;
+  grub_uint32_t *srcptr;
+  grub_uint8_t *dstptr;
+  unsigned int sr;
+  unsigned int sg;
+  unsigned int sb;
+
+  /* We do not need to worry about data being out of bounds
+     as we assume that everything has been checked before.  */
+
+  for (j = 0; j < height; j++)
+  {
+    srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
+    dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+
+    for (i = 0; i < width; i++)
+    {
+      color = *srcptr++;
+
+      sr = (color >> 0) & 0xFF;
+      sg = (color >> 8) & 0xFF;
+      sb = (color >> 16) & 0xFF;
+
+      *dstptr++ = sr;
+      *dstptr++ = sg;
+      *dstptr++ = sb;
+    }
+  }
+}
+
+void
+grub_video_i386_vbeblit_index_R8G8B8A8 (struct grub_video_i386_vbeblit_info *dst,
+                                        struct grub_video_i386_vbeblit_info *src,
                                         int x, int y, int width, int height,
                                         int offset_x, int offset_y)
 {
@@ -190,10 +256,8 @@ grub_video_i386_vbeblit_index_R8G8B8A8 (struct grub_video_render_target *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (src, offset_x,
-                                                              j + offset_y);
-
-      dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
+      srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -232,8 +296,45 @@ grub_video_i386_vbeblit_index_R8G8B8A8 (struct grub_video_render_target *dst,
 }
 
 void
-grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (struct grub_video_render_target *dst,
-                                         struct grub_video_render_target *src,
+grub_video_i386_vbeblit_index_R8G8B8X8 (struct grub_video_i386_vbeblit_info *dst,
+                                        struct grub_video_i386_vbeblit_info *src,
+                                        int x, int y, int width, int height,
+                                        int offset_x, int offset_y)
+{
+  grub_uint32_t color;
+  int i;
+  int j;
+  grub_uint32_t *srcptr;
+  grub_uint8_t *dstptr;
+  unsigned int sr;
+  unsigned int sg;
+  unsigned int sb;
+
+  /* We do not need to worry about data being out of bounds
+  as we assume that everything has been checked before.  */
+
+  for (j = 0; j < height; j++)
+  {
+    srcptr = (grub_uint32_t *)get_data_ptr (src, offset_x, j + offset_y);
+    dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
+
+    for (i = 0; i < width; i++)
+    {
+      color = *srcptr++;
+
+      sr = (color >> 0) & 0xFF;
+      sg = (color >> 8) & 0xFF;
+      sb = (color >> 16) & 0xFF;
+
+      color = grub_video_vbe_map_rgb(sr, sg, sb);
+      *dstptr++ = color & 0xFF;
+    }
+  }
+}
+
+void
+grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (struct grub_video_i386_vbeblit_info *dst,
+                                         struct grub_video_i386_vbeblit_info *src,
                                          int x, int y, int width, int height,
                                          int offset_x, int offset_y)
 {
@@ -251,10 +352,8 @@ grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (struct grub_video_render_target *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (src, offset_x,
-                                                             j + offset_y);
-
-      dstptr = (grub_uint32_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
+      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint32_t *)get_data_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -270,41 +369,33 @@ grub_video_i386_vbeblit_R8G8B8A8_R8G8B8 (struct grub_video_render_target *dst,
 }
 
 void
-grub_video_i386_vbeblit_R8G8B8_R8G8B8 (struct grub_video_render_target *dst,
-                                       struct grub_video_render_target *src,
+grub_video_i386_vbeblit_R8G8B8_R8G8B8 (struct grub_video_i386_vbeblit_info *dst,
+                                       struct grub_video_i386_vbeblit_info *src,
                                        int x, int y, int width, int height,
                                        int offset_x, int offset_y)
 {
-  int i;
   int j;
   grub_uint8_t *srcptr;
   grub_uint8_t *dstptr;
+  int pitch;
+
+  pitch = src->mode_info->bytes_per_pixel;
 
   /* We do not need to worry about data being out of bounds
      as we assume that everything has been checked before.  */
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (src, 
-                                                             offset_x,
-                                                             j + offset_y);
+      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
 
-      dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst,
-                                                             x, 
-                                                             y + j);
-
-      for (i = 0; i < width; i++)
-        {
-          *dstptr ++ = *srcptr++;
-          *dstptr ++ = *srcptr++;
-          *dstptr ++ = *srcptr++;
-        }
+      grub_memmove (dstptr, srcptr, width * pitch);
     }
 }
 
 void
-grub_video_i386_vbeblit_index_R8G8B8 (struct grub_video_render_target *dst,
-                                      struct grub_video_render_target *src,
+grub_video_i386_vbeblit_index_R8G8B8 (struct grub_video_i386_vbeblit_info *dst,
+                                      struct grub_video_i386_vbeblit_info *src,
                                       int x, int y, int width, int height,
                                       int offset_x, int offset_y)
 {
@@ -322,10 +413,8 @@ grub_video_i386_vbeblit_index_R8G8B8 (struct grub_video_render_target *dst,
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (src, offset_x,
-                                                             j + offset_y);
-
-      dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
+      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
 
       for (i = 0; i < width; i++)
         {
@@ -341,27 +430,122 @@ grub_video_i386_vbeblit_index_R8G8B8 (struct grub_video_render_target *dst,
 }
 
 void
-grub_video_i386_vbeblit_index_index (struct grub_video_render_target *dst,
-                                     struct grub_video_render_target *src,
+grub_video_i386_vbeblit_index_index (struct grub_video_i386_vbeblit_info *dst,
+                                     struct grub_video_i386_vbeblit_info *src,
                                      int x, int y, int width, int height,
                                      int offset_x, int offset_y)
 {
-  int i;
   int j;
   grub_uint8_t *srcptr;
   grub_uint8_t *dstptr;
+  int pitch;
+
+  pitch = src->mode_info->bytes_per_pixel;
 
   /* We do not need to worry about data being out of bounds
      as we assume that everything has been checked before.  */
 
   for (j = 0; j < height; j++)
     {
-      srcptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (src, offset_x,
-                                                             j + offset_y);
+      srcptr = (grub_uint8_t *)get_data_ptr (src, offset_x, j + offset_y);
+      dstptr = (grub_uint8_t *)get_data_ptr (dst, x, y + j);
 
-      dstptr = (grub_uint8_t *)grub_video_vbe_get_video_ptr (dst, x, y + j);
-
-      for (i = 0; i < width; i++)
-          *dstptr++ = *srcptr++;
+      grub_memmove (dstptr, srcptr, width * pitch);
     }
+}
+
+void
+grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
+                               struct grub_video_i386_vbeblit_info *src,
+                               int x, int y, int width, int height,
+                               int offset_x, int offset_y)
+{
+  int i;
+  int j;
+
+  /* We do not need to worry about data being out of bounds
+     as we assume that everything has been checked before.  */
+
+  for (j = 0; j < height; j++)
+    {
+      for (i = 0; i < width; i++)
+        {
+          grub_uint8_t src_red;
+          grub_uint8_t src_green;
+          grub_uint8_t src_blue;
+          grub_uint8_t src_alpha;
+          grub_uint8_t dst_red;
+          grub_uint8_t dst_green;
+          grub_uint8_t dst_blue;
+          grub_uint8_t dst_alpha;
+          grub_video_color_t src_color;
+          grub_video_color_t dst_color;
+
+          src_color = get_pixel (src, i + offset_x, j + offset_y);
+          grub_video_vbe_unmap_color (src, src_color, &src_red, &src_green,
+                                      &src_blue, &src_alpha);
+
+          if (src_alpha == 0)
+            continue;
+
+          if (src_alpha == 255)
+            {
+              dst_color = grub_video_vbe_map_rgba (src_red, src_green,
+                                                   src_blue, src_alpha);
+              set_pixel (dst, x + i, y + j, dst_color);
+              continue;
+            }
+
+          dst_color = get_pixel (dst, x + i, y + j);
+
+          grub_video_vbe_unmap_color (dst, dst_color, &dst_red,
+                                      &dst_green, &dst_blue, &dst_alpha);
+
+          dst_red = (((src_red * src_alpha)
+                      + (dst_red * (255 - src_alpha))) / 255);
+          dst_green = (((src_green * src_alpha)
+                        + (dst_green * (255 - src_alpha))) / 255);
+          dst_blue = (((src_blue * src_alpha)
+                       + (dst_blue * (255 - src_alpha))) / 255);
+
+          dst_alpha = src_alpha;
+          dst_color = grub_video_vbe_map_rgba (dst_red, dst_green, dst_blue,
+                                               dst_alpha);
+
+          set_pixel (dst, x + i, y + j, dst_color);
+        }
+    }
+}
+
+void
+grub_video_i386_vbeblit_replace (struct grub_video_i386_vbeblit_info *dst,
+                                 struct grub_video_i386_vbeblit_info *src,
+                                 int x, int y, int width, int height,
+                                 int offset_x, int offset_y)
+{
+  int i;
+  int j;
+  grub_uint8_t src_red;
+  grub_uint8_t src_green;
+  grub_uint8_t src_blue;
+  grub_uint8_t src_alpha;
+  grub_video_color_t src_color;
+  grub_video_color_t dst_color;
+
+  /* We do not need to worry about data being out of bounds
+     as we assume that everything has been checked before.  */
+
+  for (j = 0; j < height; j++)
+  {
+    for (i = 0; i < width; i++)
+    {
+      src_color = get_pixel (src, i + offset_x, j + offset_y);
+      grub_video_vbe_unmap_color (src, src_color, &src_red, &src_green,
+                                  &src_blue, &src_alpha);
+
+      dst_color = grub_video_vbe_map_rgba (src_red, src_green,
+                                           src_blue, src_alpha);
+      set_pixel (dst, x + i, y + j, dst_color);
+    }
+  }
 }

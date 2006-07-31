@@ -89,7 +89,7 @@ struct grub_virtual_screen
   unsigned int cursor_x;
   unsigned int cursor_y;
   int cursor_state;
-  
+
   /* Color settings.  */
   grub_video_color_t fg_color_setting;
   grub_video_color_t bg_color_setting;
@@ -127,7 +127,7 @@ grub_virtual_screen_free (void)
 
   /* Reset virtual screen data.  */
   grub_memset (&virtual_screen, 0, sizeof (virtual_screen));
-  
+
   /* Free render targets.  */
   grub_video_delete_render_target (text_layer);
   text_layer = 0;
@@ -158,8 +158,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   /* Allocate memory for text buffer.  */
   virtual_screen.text_buffer =
     (struct grub_colored_char *) grub_malloc (virtual_screen.columns
-					      * virtual_screen.rows
-					      * sizeof (*virtual_screen.text_buffer));
+                                              * virtual_screen.rows
+                                              * sizeof (*virtual_screen.text_buffer));
   if (grub_errno != GRUB_ERR_NONE)
     return grub_errno;
 
@@ -171,19 +171,19 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
                                    | GRUB_VIDEO_MODE_TYPE_ALPHA);
   if (grub_errno != GRUB_ERR_NONE)
     return grub_errno;
-  
+
   /* As we want to have colors compatible with rendering target,
-     we can only have those after mode is initialized.  */    
+     we can only have those after mode is initialized.  */
   grub_video_set_active_render_target (text_layer);
-  
+
   virtual_screen.fg_color_setting = grub_video_map_color (DEFAULT_FG_COLOR);
   virtual_screen.bg_color_setting = grub_video_map_color (DEFAULT_BG_COLOR);
   virtual_screen.fg_color = virtual_screen.fg_color_setting;
   virtual_screen.bg_color = virtual_screen.bg_color_setting;
   virtual_screen.cursor_color = grub_video_map_color (DEFAULT_CURSOR_COLOR);
-  
+
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  
+
   return grub_errno;
 }
 
@@ -196,7 +196,7 @@ grub_gfxterm_init (void)
   int depth = -1;
   int flags = DEFAULT_VIDEO_FLAGS;
   grub_video_color_t color;
-  
+
   /* Parse gfxmode environment variable if set.  */
   modevar = grub_env_get ("gfxmode");
   if (modevar)
@@ -204,18 +204,18 @@ grub_gfxterm_init (void)
       char *tmp;
       char *param;
       char *value;
-      
+
       /* Take copy of env.var. as we don't want to modify that.  */
       tmp = grub_strdup (modevar);
       modevar = tmp;
-      
+
       if (grub_errno != GRUB_ERR_NONE)
-        return grub_errno;        
-      
+        return grub_errno;
+
       /* Skip whitespace.  */
       while (grub_isspace (*tmp))
         tmp++;
-      
+
       /* Initialize token holders.  */
       param = tmp;
       value = NULL;
@@ -233,10 +233,10 @@ grub_gfxterm_init (void)
                              "Invalid argument: %s\n",
                              param);
         }
-      
+
       *param = 0;
       param++;
-      
+
       width = grub_strtoul (value, 0, 0);
       if (grub_errno != GRUB_ERR_NONE)
         {
@@ -267,7 +267,7 @@ grub_gfxterm_init (void)
           /* We have optional color depth value.  */
           *param = 0;
           param++;
-          
+
           height = grub_strtoul (value, 0, 0);
           if (grub_errno != GRUB_ERR_NONE)
             {
@@ -277,7 +277,7 @@ grub_gfxterm_init (void)
                                  "Invalid argument: %s\n",
                                  param);
             }
-          
+
           /* Convert color depth value.  */
           value = param;
           depth = grub_strtoul (value, 0, 0);
@@ -290,7 +290,7 @@ grub_gfxterm_init (void)
                                  param);
             }
         }
-      
+
       /* Free memory.  */
       grub_free (modevar);
     }
@@ -323,7 +323,7 @@ grub_gfxterm_init (void)
   /* Leave borders for virtual screen.  */
   width = mode_info.width - (2 * DEFAULT_BORDER_WIDTH);
   height = mode_info.height - (2 * DEFAULT_BORDER_WIDTH);
-  
+
   /* Create virtual screen.  */
   if (grub_virtual_screen_setup (DEFAULT_BORDER_WIDTH, DEFAULT_BORDER_WIDTH,
                                  width, height) != GRUB_ERR_NONE)
@@ -333,7 +333,7 @@ grub_gfxterm_init (void)
     }
 
   /* Mark whole screen as dirty.  */
-  dirty_region_reset ();  
+  dirty_region_reset ();
   dirty_region_add (0, 0, mode_info.width, mode_info.height);
 
   return (grub_errno = GRUB_ERR_NONE);
@@ -354,15 +354,15 @@ redraw_screen_rect (unsigned int x, unsigned int y,
                     unsigned int width, unsigned int height)
 {
   grub_video_color_t color;
-  
+
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Render background layer.  */
   color = virtual_screen.bg_color;
   grub_video_fill_rect (color, x, y, width, height);
-  
+
   /* Render text layer.  */
-  grub_video_blit_render_target (text_layer, x, y,
+  grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
                                  x - virtual_screen.offset_x,
                                  y - virtual_screen.offset_y,
                                  width, height);
@@ -393,7 +393,7 @@ dirty_region_add (int x, int y, unsigned int width, unsigned int height)
 {
   if ((width == 0) || (height == 0))
     return;
-    
+
   if (dirty_region_is_empty ())
     {
       dirty_region.top_left_x = x;
@@ -430,18 +430,18 @@ dirty_region_redraw (void)
   int y;
   int width;
   int height;
-  
+
   if (dirty_region_is_empty ())
     return;
-  
+
   x = dirty_region.top_left_x;
   y = dirty_region.top_left_y;
-  
+
   width = dirty_region.bottom_right_x - x + 1;
   height = dirty_region.bottom_right_y - y + 1;
-  
+
   redraw_screen_rect (x, y, width, height);
-  
+
   dirty_region_reset ();
 }
 
@@ -451,7 +451,7 @@ write_char (void)
   struct grub_colored_char *p;
   struct grub_font_glyph glyph;
   grub_video_color_t color;
-  grub_video_color_t bgcolor;    
+  grub_video_color_t bgcolor;
   unsigned int x;
   unsigned int y;
 
@@ -474,7 +474,7 @@ write_char (void)
   /* Render glyph to text layer.  */
   grub_video_set_active_render_target (text_layer);
   grub_video_fill_rect (bgcolor, x, y, glyph.width, glyph.height);
-  grub_video_blit_glyph (&glyph, color, x, y);  
+  grub_video_blit_glyph (&glyph, color, x, y);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Mark character to be drawn.  */
@@ -517,7 +517,7 @@ scroll_up (void)
 
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
-		virtual_screen.text_buffer + virtual_screen.columns,
+                virtual_screen.text_buffer + virtual_screen.columns,
                 sizeof (*virtual_screen.text_buffer)
                 * virtual_screen.columns
                 * (virtual_screen.rows - 1));
@@ -533,13 +533,13 @@ scroll_up (void)
       virtual_screen.text_buffer[i].width = 0;
       virtual_screen.text_buffer[i].index = 0;
     }
-    
+
   /* Scroll physical screen.  */
   grub_video_set_active_render_target (text_layer);
   color = virtual_screen.bg_color;
   grub_video_scroll (color, 0, -virtual_screen.char_height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  
+
   /* Mark virtual screen to be redrawn.  */
   dirty_region_add_virtualscreen ();
 }
@@ -555,47 +555,47 @@ grub_gfxterm_putchar (grub_uint32_t c)
     {
       /* Erase current cursor, if any.  */
       if (virtual_screen.cursor_state)
-	write_char ();
+        write_char ();
 
       switch (c)
-	{
-	case '\b':
-	  if (virtual_screen.cursor_x > 0)
-	    virtual_screen.cursor_x--;
-	  break;
-	  
-	case '\n':
-	  if (virtual_screen.cursor_y >= virtual_screen.rows - 1)
-	    scroll_up ();
-	  else
-	    virtual_screen.cursor_y++;
-	  break;
-	  
-	case '\r':
-	  virtual_screen.cursor_x = 0;
-	  break;
-	}
+        {
+        case '\b':
+          if (virtual_screen.cursor_x > 0)
+            virtual_screen.cursor_x--;
+          break;
+
+        case '\n':
+          if (virtual_screen.cursor_y >= virtual_screen.rows - 1)
+            scroll_up ();
+          else
+            virtual_screen.cursor_y++;
+          break;
+
+        case '\r':
+          virtual_screen.cursor_x = 0;
+          break;
+        }
 
       /* Redraw cursor if visible.  */
       if (virtual_screen.cursor_state)
-	write_cursor ();
+        write_cursor ();
     }
   else
     {
       struct grub_font_glyph glyph;
       struct grub_colored_char *p;
-  
+
       /* Get properties of the character.  */    
       grub_font_get_glyph (c, &glyph);
 
       /* If we are about to exceed line length, wrap to next line.  */
       if (virtual_screen.cursor_x + glyph.char_width > virtual_screen.columns)
-	grub_putchar ('\n');
+        grub_putchar ('\n');
 
       /* Find position on virtual screen, and fill information.  */
       p = (virtual_screen.text_buffer +
-	   virtual_screen.cursor_x +
-	   virtual_screen.cursor_y * virtual_screen.columns);
+           virtual_screen.cursor_x +
+           virtual_screen.cursor_y * virtual_screen.columns);
       p->code = c;
       p->fg_color = virtual_screen.fg_color;
       p->bg_color = virtual_screen.bg_color;
@@ -604,35 +604,35 @@ grub_gfxterm_putchar (grub_uint32_t c)
 
       /* If we have large glyph, add fixup info.  */
       if (glyph.char_width > 1)
-	{
-	  unsigned i;
+        {
+          unsigned i;
 
-	  for (i = 1; i < glyph.char_width; i++)
-	    {
-	      p[i].code = ' ';
-	      p[i].width = glyph.char_width - 1;
-	      p[i].index = i;
-	    }
-	}
-	  
+          for (i = 1; i < glyph.char_width; i++)
+            {
+              p[i].code = ' ';
+              p[i].width = glyph.char_width - 1;
+              p[i].index = i;
+            }
+        }
+
       /* Draw glyph.  */
       write_char ();
-  
+
       /* Make sure we scroll screen when needed and wrap line correctly.  */
       virtual_screen.cursor_x += glyph.char_width;
       if (virtual_screen.cursor_x >= virtual_screen.columns)
-	{
-	  virtual_screen.cursor_x = 0;
-	  
-	  if (virtual_screen.cursor_y >= virtual_screen.rows - 1)
-	    scroll_up ();
-	  else
-	    virtual_screen.cursor_y++;
-	}
+        {
+          virtual_screen.cursor_x = 0;
+
+          if (virtual_screen.cursor_y >= virtual_screen.rows - 1)
+            scroll_up ();
+          else
+            virtual_screen.cursor_y++;
+        }
 
       /* Draw cursor if visible.  */
       if (virtual_screen.cursor_state)
-	write_cursor ();
+        write_cursor ();
     }
 }
 
@@ -640,7 +640,7 @@ static grub_ssize_t
 grub_gfxterm_getcharwidth (grub_uint32_t c)
 {
   struct grub_font_glyph glyph;
-  
+
   grub_font_get_glyph (c, &glyph);
 
   return glyph.char_width;
@@ -663,7 +663,7 @@ grub_gfxterm_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
   if (x >= virtual_screen.columns)
     x = virtual_screen.columns - 1;
-  
+
   if (y >= virtual_screen.rows)
     y = virtual_screen.rows - 1;
 
@@ -701,13 +701,13 @@ grub_gfxterm_cls (void)
 
   /* Clear virtual screen.  */
   grub_virtual_screen_cls ();
-  
+
   /* Clear text layer.  */
   grub_video_set_active_render_target (text_layer);
   color = virtual_screen.bg_color_setting;
   grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
-  
+
   /* Mark virtual screen to be redrawn.  */
   dirty_region_add_virtualscreen ();
 }
@@ -745,9 +745,9 @@ grub_gfxterm_setcursor (int on)
   if (virtual_screen.cursor_state != on)
     {
       if (virtual_screen.cursor_state)
-	write_char ();
+        write_char ();
       else
-	write_cursor ();
+        write_cursor ();
 
       virtual_screen.cursor_state = on;
     }
@@ -776,7 +776,7 @@ static struct grub_term grub_video_term =
     .setcolorstate = grub_virtual_screen_setcolorstate,
     .setcolor = grub_virtual_screen_setcolor,
     .setcursor = grub_gfxterm_setcursor,
-    .refresh = grub_gfxterm_refresh,    
+    .refresh = grub_gfxterm_refresh,
     .flags = 0,
     .next = 0
   };

@@ -1,3 +1,88 @@
+2006-07-29  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* include/grub/bitmap.h: New file.
+
+	* include/grub/i386/pc/vbeutil.h: Likewise.
+
+	* video/bitmap.c: Likewise.
+
+	* video/readers/tga.c: Likewise.
+
+	* video/i386/pc/vbeutil.c: Likewise.
+
+	* commands/videotest.c: Code cleanup and updated to reflect to new
+	video API.
+
+	* term/gfxterm.c: Likewise.
+
+	* video/video.c: Likewise.
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added tga.mod and bitmap.mod.
+	(vbe_mod_SOURCES): Added video/i386/pc/vbeutil.c.
+	(bitmap_mod_SOURCES): New entry.
+	(bitmap_mod_CFLAGS): Likewise.
+	(bitmap_mod_LDFLAGS): Likewise.
+	(tga_mod_SOURCES): Likewise.
+	(tga_mod_CFLAGS): Likewise.
+	(tga_mod_LDFLAGS): Likewise.
+
+	* include/grub/video.h (grub_video_blit_operators): New enum type.
+	(grub_video_render_target): Changed as forward declaration and moved
+	actual definition to be video driver specific.
+	(grub_video_adapter.blit_bitmap): Added blitting operator.
+	(grub_video_adapter.blit_render_target): Likewise.
+	(grub_video_blit_bitmap): Likewise.
+	(grub_video_blit_render_target): Likewise.
+
+	* include/grub/i386/pc/vbe.h (grub_video_render_target): Added
+	driver specific render target definition.
+	(grub_video_vbe_map_rgba): Added driver internal helper.
+	(grub_video_vbe_unmap_color): Updated to use
+	grub_video_i386_vbeblit_info.
+	(grub_video_vbe_get_video_ptr): Likewise.
+
+	* include/grub/i386/pc/vbeblit.h
+	(grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8): Updated to use
+	grub_video_i386_vbeblit_info.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8A8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8A8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8A8_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_index_index): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8X8_R8G8B8X8): New blitter function.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_blend): Added generic blitter for blend
+	operator.
+	(grub_video_i386_vbeblit_replace): Added generic blitter for replace
+	operator.
+
+	* video/i386/pc/vbeblit.c: Updated to reflect changes on
+	include/grub/i386/pc/vbeblit.h.
+
+	* include/grub/i386/pc/vbefill.h (grub_video_i386_vbefill_R8G8B8A8):
+	Updated to use grub_video_i386_vbeblit_info.
+	(grub_video_i386_vbefill_R8G8B8): Likewise.
+	(grub_video_i386_vbefill_index): Likewise.
+	(grub_video_i386_vbefill): Added generic filler.
+
+	* video/i386/pc/vbefill.c: Updated to reflect changes on
+	include/grub/i386/pc/vbefill.h.
+
+	* video/i386/pc/vbe.c (grub_video_vbe_get_video_ptr): Updated to use
+	grub_video_i386_vbeblit_info.
+	(grub_video_vbe_unmap_color): Likewise.
+	(grub_video_vbe_blit_glyph): Likewise.
+	(grub_video_vbe_scroll): Likewise.
+	(grub_video_vbe_draw_pixel): Removed function.
+	(grub_video_vbe_get_pixel): Likewise.
+	(grub_video_vbe_fill_rect): Moved all blitters to vbefill.c and
+	updated code to use it.
+	(common_blitter): Added common blitter for render target and bitmap.
+	(grub_video_vbe_blit_bitmap): Updated to use common_blitter.
+	(grub_video_vbe_blit_render_target): Likewise.
+
 2006-07-30  Johan Rydberg  <jrydberg@gnu.org>
 
 	* kern/efi/efi.c (grub_efi_set_text_mode): Assume console already

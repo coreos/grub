@@ -1336,7 +1336,7 @@ grub-install: util/i386/pc/grub-install.in config.status
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
-	videotest.mod play.mod
+	videotest.mod play.mod bitmap.mod tga.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -2101,13 +2101,13 @@ multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c video/i386/pc/vbeblit.c \
-		  video/i386/pc/vbefill.c
-CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o und-vbe.lst
+		  video/i386/pc/vbefill.c video/i386/pc/vbeutil.c
+CLEANFILES += vbe.mod mod-vbe.o mod-vbe.c pre-vbe.o vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o vbe_mod-video_i386_pc_vbeutil.o und-vbe.lst
 ifneq ($(vbe_mod_EXPORTS),no)
 CLEANFILES += def-vbe.lst
 DEFSYMFILES += def-vbe.lst
 endif
-MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d
+MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d vbe_mod-video_i386_pc_vbeutil.d
 UNDSYMFILES += und-vbe.lst
 
 vbe.mod: pre-vbe.o mod-vbe.o
@@ -2115,7 +2115,7 @@ vbe.mod: pre-vbe.o mod-vbe.o
 	$(TARGET_CC) $(vbe_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-vbe.o: vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o
+pre-vbe.o: vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o vbe_mod-video_i386_pc_vbeutil.o
 	-rm -f $@
 	$(TARGET_CC) $(vbe_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 
@@ -2188,6 +2188,25 @@ cmd-vbe_mod-video_i386_pc_vbefill.lst: video/i386/pc/vbefill.c gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe > $@ || (rm -f $@; exit 1)
 
 fs-vbe_mod-video_i386_pc_vbefill.lst: video/i386/pc/vbefill.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe > $@ || (rm -f $@; exit 1)
+
+
+vbe_mod-video_i386_pc_vbeutil.o: video/i386/pc/vbeutil.c
+	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
+
+vbe_mod-video_i386_pc_vbeutil.d: video/i386/pc/vbeutil.c
+	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbeutil\.o[ :]*,vbe_mod-video_i386_pc_vbeutil.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include vbe_mod-video_i386_pc_vbeutil.d
+
+CLEANFILES += cmd-vbe_mod-video_i386_pc_vbeutil.lst fs-vbe_mod-video_i386_pc_vbeutil.lst
+COMMANDFILES += cmd-vbe_mod-video_i386_pc_vbeutil.lst
+FSFILES += fs-vbe_mod-video_i386_pc_vbeutil.lst
+
+cmd-vbe_mod-video_i386_pc_vbeutil.lst: video/i386/pc/vbeutil.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vbe > $@ || (rm -f $@; exit 1)
+
+fs-vbe_mod-video_i386_pc_vbeutil.lst: video/i386/pc/vbeutil.c genfslist.sh
 	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vbe > $@ || (rm -f $@; exit 1)
 
 
@@ -2529,5 +2548,117 @@ fs-videotest_mod-commands_videotest.lst: commands/videotest.c genfslist.sh
 
 videotest_mod_CFLAGS = $(COMMON_CFLAGS)
 videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bitmap.mod
+bitmap_mod_SOURCES = video/bitmap.c
+CLEANFILES += bitmap.mod mod-bitmap.o mod-bitmap.c pre-bitmap.o bitmap_mod-video_bitmap.o und-bitmap.lst
+ifneq ($(bitmap_mod_EXPORTS),no)
+CLEANFILES += def-bitmap.lst
+DEFSYMFILES += def-bitmap.lst
+endif
+MOSTLYCLEANFILES += bitmap_mod-video_bitmap.d
+UNDSYMFILES += und-bitmap.lst
+
+bitmap.mod: pre-bitmap.o mod-bitmap.o
+	-rm -f $@
+	$(TARGET_CC) $(bitmap_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-bitmap.o: bitmap_mod-video_bitmap.o
+	-rm -f $@
+	$(TARGET_CC) $(bitmap_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-bitmap.o: mod-bitmap.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -c -o $@ $<
+
+mod-bitmap.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'bitmap' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(bitmap_mod_EXPORTS),no)
+def-bitmap.lst: pre-bitmap.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 bitmap/' > $@
+endif
+
+und-bitmap.lst: pre-bitmap.o
+	echo 'bitmap' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+bitmap_mod-video_bitmap.o: video/bitmap.c
+	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -c -o $@ $<
+
+bitmap_mod-video_bitmap.d: video/bitmap.c
+	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -M $< 	  | sed 's,bitmap\.o[ :]*,bitmap_mod-video_bitmap.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include bitmap_mod-video_bitmap.d
+
+CLEANFILES += cmd-bitmap_mod-video_bitmap.lst fs-bitmap_mod-video_bitmap.lst
+COMMANDFILES += cmd-bitmap_mod-video_bitmap.lst
+FSFILES += fs-bitmap_mod-video_bitmap.lst
+
+cmd-bitmap_mod-video_bitmap.lst: video/bitmap.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh bitmap > $@ || (rm -f $@; exit 1)
+
+fs-bitmap_mod-video_bitmap.lst: video/bitmap.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh bitmap > $@ || (rm -f $@; exit 1)
+
+
+bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
+bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For tga.mod
+tga_mod_SOURCES = video/readers/tga.c
+CLEANFILES += tga.mod mod-tga.o mod-tga.c pre-tga.o tga_mod-video_readers_tga.o und-tga.lst
+ifneq ($(tga_mod_EXPORTS),no)
+CLEANFILES += def-tga.lst
+DEFSYMFILES += def-tga.lst
+endif
+MOSTLYCLEANFILES += tga_mod-video_readers_tga.d
+UNDSYMFILES += und-tga.lst
+
+tga.mod: pre-tga.o mod-tga.o
+	-rm -f $@
+	$(TARGET_CC) $(tga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-tga.o: tga_mod-video_readers_tga.o
+	-rm -f $@
+	$(TARGET_CC) $(tga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+
+mod-tga.o: mod-tga.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -c -o $@ $<
+
+mod-tga.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'tga' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(tga_mod_EXPORTS),no)
+def-tga.lst: pre-tga.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 tga/' > $@
+endif
+
+und-tga.lst: pre-tga.o
+	echo 'tga' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+tga_mod-video_readers_tga.o: video/readers/tga.c
+	$(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -c -o $@ $<
+
+tga_mod-video_readers_tga.d: video/readers/tga.c
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -M $< 	  | sed 's,tga\.o[ :]*,tga_mod-video_readers_tga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
+
+-include tga_mod-video_readers_tga.d
+
+CLEANFILES += cmd-tga_mod-video_readers_tga.lst fs-tga_mod-video_readers_tga.lst
+COMMANDFILES += cmd-tga_mod-video_readers_tga.lst
+FSFILES += fs-tga_mod-video_readers_tga.lst
+
+cmd-tga_mod-video_readers_tga.lst: video/readers/tga.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh tga > $@ || (rm -f $@; exit 1)
+
+fs-tga_mod-video_readers_tga.lst: video/readers/tga.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh tga > $@ || (rm -f $@; exit 1)
+
+
+tga_mod_CFLAGS = $(COMMON_CFLAGS)
+tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

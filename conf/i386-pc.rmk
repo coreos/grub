@@ -112,7 +112,7 @@ grub_install_SOURCES = util/i386/pc/grub-install.in
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
-	videotest.mod play.mod
+	videotest.mod play.mod bitmap.mod tga.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -171,7 +171,7 @@ multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For vbe.mod.
 vbe_mod_SOURCES = video/i386/pc/vbe.c video/i386/pc/vbeblit.c \
-		  video/i386/pc/vbefill.c
+		  video/i386/pc/vbefill.c video/i386/pc/vbeutil.c
 vbe_mod_CFLAGS = $(COMMON_CFLAGS)
 vbe_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -204,5 +204,15 @@ gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 videotest_mod_SOURCES = commands/videotest.c
 videotest_mod_CFLAGS = $(COMMON_CFLAGS)
 videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bitmap.mod
+bitmap_mod_SOURCES = video/bitmap.c
+bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
+bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For tga.mod
+tga_mod_SOURCES = video/readers/tga.c
+tga_mod_CFLAGS = $(COMMON_CFLAGS)
+tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

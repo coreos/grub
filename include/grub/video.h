@@ -23,9 +23,17 @@
 #include <grub/err.h>
 #include <grub/types.h>
 
+/* Video color in hardware dependant format.  Users should not assume any
+   specific coding format.  */
 typedef grub_uint32_t grub_video_color_t;
 
+/* This structure is driver specific and should not be accessed directly by 
+   outside code.  */
 struct grub_video_render_target;
+
+/* Forward declarations for used data structures.  */
+struct grub_font_glyph;
+struct grub_video_bitmap;
 
 /* Defines used to describe video mode or rendering target.  */
 #define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000008
@@ -58,6 +66,15 @@ enum grub_video_blit_format
     GRUB_VIDEO_BLIT_FORMAT_R8G8B8,
     /* When needed, decode color or just use value as is.  */
     GRUB_VIDEO_BLIT_FORMAT_INDEXCOLOR
+  };
+
+/* Define blitting operators.  */
+enum grub_video_blit_operators
+  {
+    /* Replace target bitmap data with source.  */
+    GRUB_VIDEO_BLIT_REPLACE,
+    /* Blend target and source based on source's alpha value.  */
+    GRUB_VIDEO_BLIT_BLEND
   };
 
 struct grub_video_mode_info
@@ -113,29 +130,6 @@ struct grub_video_mode_info
   unsigned int reserved_field_pos;
 };
 
-struct grub_video_render_target
-{
-  /* Copy of the screen's mode info structure, except that width, height and
-     mode_type has been re-adjusted to requested render target settings.  */
-  struct grub_video_mode_info mode_info;
-
-  struct
-  {
-    unsigned int x;
-    unsigned int y;
-    unsigned int width;
-    unsigned int height;	
-  } viewport;
-
-  /* Indicates wether the data has been allocated by us and must be freed 
-     when render target is destroyed.  */
-  int is_allocated;
-
-  /* Pointer to data.  Can either be in video card memory or in local host's
-     memory.  */
-  void *data;
-};
-
 struct grub_video_palette_data
 {
   grub_uint8_t r; /* Red color value (0-255).  */
@@ -143,9 +137,6 @@ struct grub_video_palette_data
   grub_uint8_t b; /* Blue color value (0-255).  */
   grub_uint8_t a; /* Reserved bits value (0-255).  */
 };
-
-struct grub_font_glyph;
-struct grub_video_bitmap;
 
 struct grub_video_adapter
 {
@@ -190,10 +181,12 @@ struct grub_video_adapter
                             grub_video_color_t color, int x, int y);
 
   grub_err_t (*blit_bitmap) (struct grub_video_bitmap *bitmap,
+                             enum grub_video_blit_operators oper,
                              int x, int y, int offset_x, int offset_y,
                              unsigned int width, unsigned int height);
 
   grub_err_t (*blit_render_target) (struct grub_video_render_target *source,
+                                    enum grub_video_blit_operators oper,
                                     int x, int y, int offset_x, int offset_y,
                                     unsigned int width, unsigned int height);
 
@@ -254,10 +247,12 @@ grub_err_t grub_video_blit_glyph (struct grub_font_glyph *glyph,
                                   grub_video_color_t color, int x, int y);
 
 grub_err_t grub_video_blit_bitmap (struct grub_video_bitmap *bitmap,
+                                   enum grub_video_blit_operators oper,
                                    int x, int y, int offset_x, int offset_y,
                                    unsigned int width, unsigned int height);
 
 grub_err_t grub_video_blit_render_target (struct grub_video_render_target *source,
+                                          enum grub_video_blit_operators oper,
                                           int x, int y,
                                           int offset_x, int offset_y,
                                           unsigned int width,

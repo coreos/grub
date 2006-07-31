@@ -20,21 +20,29 @@
 #ifndef GRUB_VBEFILL_MACHINE_HEADER
 #define GRUB_VBEFILL_MACHINE_HEADER	1
 
-#include <grub/video.h>
+/* NOTE: This header is private header for vbe driver and should not be used
+   in other parts of the code.  */
+
+struct grub_video_i386_vbeblit_info;
 
 void
-grub_video_i386_vbefill_R8G8B8A8 (struct grub_video_render_target *dst,
+grub_video_i386_vbefill_R8G8B8A8 (struct grub_video_i386_vbeblit_info *dst,
                                   grub_video_color_t color,  int x, int y,
                                   int width, int height);
 
 void
-grub_video_i386_vbefill_R8G8B8 (struct grub_video_render_target *dst,
+grub_video_i386_vbefill_R8G8B8 (struct grub_video_i386_vbeblit_info *dst,
                                 grub_video_color_t color, int x, int y,
                                 int width, int height);
 
 void
-grub_video_i386_vbefill_index (struct grub_video_render_target *dst,
+grub_video_i386_vbefill_index (struct grub_video_i386_vbeblit_info *dst,
                                grub_video_color_t color, int x, int y,
                                int width, int height);
+
+void
+grub_video_i386_vbefill (struct grub_video_i386_vbeblit_info *dst,
+                         grub_video_color_t color, int x, int y,
+                         int width, int height);
 
 #endif /* ! GRUB_VBEFILL_MACHINE_HEADER */
