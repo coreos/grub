@@ -1,3 +1,8 @@
+2006-08-01  Pelletier Vincent  <subdino2004@yahoo.fr>
+
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_set_color): IEEE1275
+	"color!" method does not return any value.
+
 2006-07-29  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* include/grub/bitmap.h: New file.
