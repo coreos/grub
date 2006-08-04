@@ -1,3 +1,19 @@
+2006-08-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Move the prototypes of grub_setjmp and grub_longjmp to
+	cpu/setjmp.h, so that each architecture may specify different
+	attributes.
+	
+	* include/grub/i386/setjmp.h (grub_setjmp): New prototype.
+	(grub_longjmp): Likewise.
+	* include/grub/powerpc/setjmp.h (grub_setjmp): Likewise..
+	(grub_longjmp): Likewise.
+	* include/grub/sparc64/setjmp.h (grub_setjmp): Likewise..
+	(grub_longjmp): Likewise.
+
+	* include/grub/setjmp.h [!GRUB_UTIL] (grub_setjmp): Removed.
+	[!GRUB_UTIL] (grub_longjmp): Removed.
+
 2006-08-01  Pelletier Vincent  <subdino2004@yahoo.fr>
 
 	* kern/ieee1275/ieee1275.c (grub_ieee1275_set_color): IEEE1275
