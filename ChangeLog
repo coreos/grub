@@ -1,3 +1,13 @@
+2006-08-15  Johan Rydberg  <jrydberg@gnu.org>
+
+	* genmk.rb: Let GCC generate dependenceies the first time it
+	compiles a file; using the -MD option.
+	* conf/common.mk: Regenerate.
+	* conf/i386-pc.mk: Likewise.
+	* conf/i386-efi.mk: Likewise.
+	* conf/powerpc-ieee1275.mk: Likewise.
+	* conf/sparc64-ieee1275.mk: Likewise.
+	
 2006-08-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Move the prototypes of grub_setjmp and grub_longjmp to

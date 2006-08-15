@@ -76,187 +76,95 @@ kernel.elf: kernel_elf-kern_sparc64_ieee1275_init.o kernel_elf-kern_ieee1275_iee
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
 
 kernel_elf-kern_sparc64_ieee1275_init.o: kern/sparc64/ieee1275/init.c
-	$(TARGET_CC) -Ikern/sparc64/ieee1275 -I$(srcdir)/kern/sparc64/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_sparc64_ieee1275_init.d: kern/sparc64/ieee1275/init.c
-	set -e; 	  $(TARGET_CC) -Ikern/sparc64/ieee1275 -I$(srcdir)/kern/sparc64/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,init\.o[ :]*,kernel_elf-kern_sparc64_ieee1275_init.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/sparc64/ieee1275 -I$(srcdir)/kern/sparc64/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_sparc64_ieee1275_init.d
 
 kernel_elf-kern_ieee1275_ieee1275.o: kern/ieee1275/ieee1275.c
-	$(TARGET_CC) -Ikern/ieee1275 -I$(srcdir)/kern/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_ieee1275_ieee1275.d: kern/ieee1275/ieee1275.c
-	set -e; 	  $(TARGET_CC) -Ikern/ieee1275 -I$(srcdir)/kern/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,ieee1275\.o[ :]*,kernel_elf-kern_ieee1275_ieee1275.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/ieee1275 -I$(srcdir)/kern/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_ieee1275_ieee1275.d
 
 kernel_elf-kern_main.o: kern/main.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_main.d: kern/main.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,kernel_elf-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_main.d
 
 kernel_elf-kern_device.o: kern/device.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_device.d: kern/device.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,kernel_elf-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_device.d
 
 kernel_elf-kern_disk.o: kern/disk.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_disk.d: kern/disk.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,kernel_elf-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_disk.d
 
 kernel_elf-kern_dl.o: kern/dl.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_dl.d: kern/dl.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,kernel_elf-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_dl.d
 
 kernel_elf-kern_file.o: kern/file.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_file.d: kern/file.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,kernel_elf-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_file.d
 
 kernel_elf-kern_fs.o: kern/fs.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_fs.d: kern/fs.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,kernel_elf-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_fs.d
 
 kernel_elf-kern_err.o: kern/err.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_err.d: kern/err.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,kernel_elf-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_err.d
 
 kernel_elf-kern_misc.o: kern/misc.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_misc.d: kern/misc.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,kernel_elf-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_misc.d
 
 kernel_elf-kern_mm.o: kern/mm.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_mm.d: kern/mm.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,mm\.o[ :]*,kernel_elf-kern_mm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_mm.d
 
 kernel_elf-kern_loader.o: kern/loader.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_loader.d: kern/loader.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,kernel_elf-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_loader.d
 
 kernel_elf-kern_rescue.o: kern/rescue.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_rescue.d: kern/rescue.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,kernel_elf-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_rescue.d
 
 kernel_elf-kern_term.o: kern/term.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_term.d: kern/term.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,kernel_elf-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_term.d
 
 kernel_elf-term_ieee1275_ofconsole.o: term/ieee1275/ofconsole.c
-	$(TARGET_CC) -Iterm/ieee1275 -I$(srcdir)/term/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-term_ieee1275_ofconsole.d: term/ieee1275/ofconsole.c
-	set -e; 	  $(TARGET_CC) -Iterm/ieee1275 -I$(srcdir)/term/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,ofconsole\.o[ :]*,kernel_elf-term_ieee1275_ofconsole.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iterm/ieee1275 -I$(srcdir)/term/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-term_ieee1275_ofconsole.d
 
 kernel_elf-kern_sparc64_ieee1275_openfw.o: kern/sparc64/ieee1275/openfw.c
-	$(TARGET_CC) -Ikern/sparc64/ieee1275 -I$(srcdir)/kern/sparc64/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_sparc64_ieee1275_openfw.d: kern/sparc64/ieee1275/openfw.c
-	set -e; 	  $(TARGET_CC) -Ikern/sparc64/ieee1275 -I$(srcdir)/kern/sparc64/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,openfw\.o[ :]*,kernel_elf-kern_sparc64_ieee1275_openfw.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/sparc64/ieee1275 -I$(srcdir)/kern/sparc64/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_sparc64_ieee1275_openfw.d
 
 kernel_elf-disk_ieee1275_ofdisk.o: disk/ieee1275/ofdisk.c
-	$(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-disk_ieee1275_ofdisk.d: disk/ieee1275/ofdisk.c
-	set -e; 	  $(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,ofdisk\.o[ :]*,kernel_elf-disk_ieee1275_ofdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-disk_ieee1275_ofdisk.d
 
 kernel_elf-kern_partition.o: kern/partition.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_partition.d: kern/partition.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,kernel_elf-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_partition.d
 
 kernel_elf-kern_env.o: kern/env.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_env.d: kern/env.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,kernel_elf-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_env.d
 
 kernel_elf-kern_sparc64_dl.o: kern/sparc64/dl.c
-	$(TARGET_CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_sparc64_dl.d: kern/sparc64/dl.c
-	set -e; 	  $(TARGET_CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,kernel_elf-kern_sparc64_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_sparc64_dl.d
 
 kernel_elf-kernel_elf_symlist.o: kernel_elf_symlist.c
-	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kernel_elf_symlist.d: kernel_elf_symlist.c
-	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,kernel_elf_symlist\.o[ :]*,kernel_elf-kernel_elf_symlist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kernel_elf_symlist.d
 
 kernel_elf-kern_sparc64_cache.o: kern/sparc64/cache.S
-	$(TARGET_CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_sparc64_cache.d: kern/sparc64/cache.S
-	set -e; 	  $(TARGET_CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,cache\.o[ :]*,kernel_elf-kern_sparc64_cache.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/sparc64 -I$(srcdir)/kern/sparc64 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_sparc64_cache.d
 
 kernel_elf-kern_parser.o: kern/parser.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -c -o $@ $<
-
-kernel_elf-kern_parser.d: kern/parser.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -M $< 	  | sed 's,parser\.o[ :]*,kernel_elf-kern_parser.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_parser.d
 
 kernel_elf_HEADERS = grub/sparc64/ieee1275/ieee1275.h
@@ -308,11 +216,7 @@ und-fshelp.lst: pre-fshelp.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 fshelp_mod-fs_fshelp.o: fs/fshelp.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
-
-fshelp_mod-fs_fshelp.d: fs/fshelp.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,fshelp_mod-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_CFLAGS) -MD -c -o $@ $<
 -include fshelp_mod-fs_fshelp.d
 
 CLEANFILES += cmd-fshelp_mod-fs_fshelp.lst fs-fshelp_mod-fs_fshelp.lst
@@ -364,11 +268,7 @@ und-fat.lst: pre-fat.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 fat_mod-fs_fat.o: fs/fat.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
-
-fat_mod-fs_fat.d: fs/fat.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,fat_mod-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_CFLAGS) -MD -c -o $@ $<
 -include fat_mod-fs_fat.d
 
 CLEANFILES += cmd-fat_mod-fs_fat.lst fs-fat_mod-fs_fat.lst
@@ -420,11 +320,7 @@ und-ext2.lst: pre-ext2.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ext2_mod-fs_ext2.o: fs/ext2.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
-
-ext2_mod-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,ext2_mod-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_CFLAGS) -MD -c -o $@ $<
 -include ext2_mod-fs_ext2.d
 
 CLEANFILES += cmd-ext2_mod-fs_ext2.lst fs-ext2_mod-fs_ext2.lst
@@ -476,11 +372,7 @@ und-ufs.lst: pre-ufs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ufs_mod-fs_ufs.o: fs/ufs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
-
-ufs_mod-fs_ufs.d: fs/ufs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,ufs_mod-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_CFLAGS) -MD -c -o $@ $<
 -include ufs_mod-fs_ufs.d
 
 CLEANFILES += cmd-ufs_mod-fs_ufs.lst fs-ufs_mod-fs_ufs.lst
@@ -532,11 +424,7 @@ und-minix.lst: pre-minix.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 minix_mod-fs_minix.o: fs/minix.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
-
-minix_mod-fs_minix.d: fs/minix.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,minix_mod-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_CFLAGS) -MD -c -o $@ $<
 -include minix_mod-fs_minix.d
 
 CLEANFILES += cmd-minix_mod-fs_minix.lst fs-minix_mod-fs_minix.lst
@@ -588,11 +476,7 @@ und-hfs.lst: pre-hfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 hfs_mod-fs_hfs.o: fs/hfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
-
-hfs_mod-fs_hfs.d: fs/hfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,hfs_mod-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_CFLAGS) -MD -c -o $@ $<
 -include hfs_mod-fs_hfs.d
 
 CLEANFILES += cmd-hfs_mod-fs_hfs.lst fs-hfs_mod-fs_hfs.lst
@@ -644,11 +528,7 @@ und-jfs.lst: pre-jfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 jfs_mod-fs_jfs.o: fs/jfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
-
-jfs_mod-fs_jfs.d: fs/jfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,jfs_mod-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_CFLAGS) -MD -c -o $@ $<
 -include jfs_mod-fs_jfs.d
 
 CLEANFILES += cmd-jfs_mod-fs_jfs.lst fs-jfs_mod-fs_jfs.lst
@@ -705,11 +585,7 @@ und-xfs.lst: pre-xfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 xfs_mod-fs_xfs.o: fs/xfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
-
-xfs_mod-fs_xfs.d: fs/xfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,xfs_mod-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_CFLAGS) -MD -c -o $@ $<
 -include xfs_mod-fs_xfs.d
 
 CLEANFILES += cmd-xfs_mod-fs_xfs.lst fs-xfs_mod-fs_xfs.lst
@@ -761,11 +637,7 @@ und-affs.lst: pre-affs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 affs_mod-fs_affs.o: fs/affs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
-
-affs_mod-fs_affs.d: fs/affs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,affs_mod-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_CFLAGS) -MD -c -o $@ $<
 -include affs_mod-fs_affs.d
 
 CLEANFILES += cmd-affs_mod-fs_affs.lst fs-affs_mod-fs_affs.lst
@@ -817,11 +689,7 @@ und-sfs.lst: pre-sfs.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 sfs_mod-fs_sfs.o: fs/sfs.c
-	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_CFLAGS) -c -o $@ $<
-
-sfs_mod-fs_sfs.d: fs/sfs.c
-	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_CFLAGS) -M $< 	  | sed 's,sfs\.o[ :]*,sfs_mod-fs_sfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_CFLAGS) -MD -c -o $@ $<
 -include sfs_mod-fs_sfs.d
 
 CLEANFILES += cmd-sfs_mod-fs_sfs.lst fs-sfs_mod-fs_sfs.lst
@@ -888,11 +756,7 @@ und-normal.lst: pre-normal.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 normal_mod-normal_arg.o: normal/arg.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_arg.d: normal/arg.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,normal_mod-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_arg.d
 
 CLEANFILES += cmd-normal_mod-normal_arg.lst fs-normal_mod-normal_arg.lst
@@ -907,11 +771,7 @@ fs-normal_mod-normal_arg.lst: normal/arg.c genfslist.sh
 
 
 normal_mod-normal_cmdline.o: normal/cmdline.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_cmdline.d: normal/cmdline.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,normal_mod-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_cmdline.d
 
 CLEANFILES += cmd-normal_mod-normal_cmdline.lst fs-normal_mod-normal_cmdline.lst
@@ -926,11 +786,7 @@ fs-normal_mod-normal_cmdline.lst: normal/cmdline.c genfslist.sh
 
 
 normal_mod-normal_command.o: normal/command.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_command.d: normal/command.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,normal_mod-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_command.d
 
 CLEANFILES += cmd-normal_mod-normal_command.lst fs-normal_mod-normal_command.lst
@@ -945,11 +801,7 @@ fs-normal_mod-normal_command.lst: normal/command.c genfslist.sh
 
 
 normal_mod-normal_completion.o: normal/completion.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_completion.d: normal/completion.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,completion\.o[ :]*,normal_mod-normal_completion.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_completion.d
 
 CLEANFILES += cmd-normal_mod-normal_completion.lst fs-normal_mod-normal_completion.lst
@@ -964,11 +816,7 @@ fs-normal_mod-normal_completion.lst: normal/completion.c genfslist.sh
 
 
 normal_mod-normal_execute.o: normal/execute.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_execute.d: normal/execute.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,execute\.o[ :]*,normal_mod-normal_execute.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_execute.d
 
 CLEANFILES += cmd-normal_mod-normal_execute.lst fs-normal_mod-normal_execute.lst
@@ -983,11 +831,7 @@ fs-normal_mod-normal_execute.lst: normal/execute.c genfslist.sh
 
 
 normal_mod-normal_function.o: normal/function.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_function.d: normal/function.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,function\.o[ :]*,normal_mod-normal_function.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_function.d
 
 CLEANFILES += cmd-normal_mod-normal_function.lst fs-normal_mod-normal_function.lst
@@ -1002,11 +846,7 @@ fs-normal_mod-normal_function.lst: normal/function.c genfslist.sh
 
 
 normal_mod-normal_lexer.o: normal/lexer.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_lexer.d: normal/lexer.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,lexer\.o[ :]*,normal_mod-normal_lexer.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_lexer.d
 
 CLEANFILES += cmd-normal_mod-normal_lexer.lst fs-normal_mod-normal_lexer.lst
@@ -1021,11 +861,7 @@ fs-normal_mod-normal_lexer.lst: normal/lexer.c genfslist.sh
 
 
 normal_mod-normal_main.o: normal/main.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_main.d: normal/main.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,normal_mod-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_main.d
 
 CLEANFILES += cmd-normal_mod-normal_main.lst fs-normal_mod-normal_main.lst
@@ -1040,11 +876,7 @@ fs-normal_mod-normal_main.lst: normal/main.c genfslist.sh
 
 
 normal_mod-normal_menu.o: normal/menu.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_menu.d: normal/menu.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,normal_mod-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_menu.d
 
 CLEANFILES += cmd-normal_mod-normal_menu.lst fs-normal_mod-normal_menu.lst
@@ -1059,11 +891,7 @@ fs-normal_mod-normal_menu.lst: normal/menu.c genfslist.sh
 
 
 normal_mod-normal_menu_entry.o: normal/menu_entry.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_menu_entry.d: normal/menu_entry.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,menu_entry\.o[ :]*,normal_mod-normal_menu_entry.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_menu_entry.d
 
 CLEANFILES += cmd-normal_mod-normal_menu_entry.lst fs-normal_mod-normal_menu_entry.lst
@@ -1078,11 +906,7 @@ fs-normal_mod-normal_menu_entry.lst: normal/menu_entry.c genfslist.sh
 
 
 normal_mod-normal_misc.o: normal/misc.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_misc.d: normal/misc.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,normal_mod-normal_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_misc.d
 
 CLEANFILES += cmd-normal_mod-normal_misc.lst fs-normal_mod-normal_misc.lst
@@ -1097,11 +921,7 @@ fs-normal_mod-normal_misc.lst: normal/misc.c genfslist.sh
 
 
 normal_mod-normal_script.o: normal/script.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_script.d: normal/script.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,script\.o[ :]*,normal_mod-normal_script.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_script.d
 
 CLEANFILES += cmd-normal_mod-normal_script.lst fs-normal_mod-normal_script.lst
@@ -1116,11 +936,7 @@ fs-normal_mod-normal_script.lst: normal/script.c genfslist.sh
 
 
 normal_mod-normal_sparc64_setjmp.o: normal/sparc64/setjmp.S
-	$(TARGET_CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -c -o $@ $<
-
-normal_mod-normal_sparc64_setjmp.d: normal/sparc64/setjmp.S
-	set -e; 	  $(TARGET_CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -M $< 	  | sed 's,setjmp\.o[ :]*,normal_mod-normal_sparc64_setjmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal/sparc64 -I$(srcdir)/normal/sparc64 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_sparc64_setjmp.d
 
 CLEANFILES += cmd-normal_mod-normal_sparc64_setjmp.lst fs-normal_mod-normal_sparc64_setjmp.lst
@@ -1135,11 +951,7 @@ fs-normal_mod-normal_sparc64_setjmp.lst: normal/sparc64/setjmp.S genfslist.sh
 
 
 normal_mod-grub_script_tab.o: grub_script.tab.c
-	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-grub_script_tab.d: grub_script.tab.c
-	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,grub_script\.tab\.o[ :]*,normal_mod-grub_script_tab.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-grub_script_tab.d
 
 CLEANFILES += cmd-normal_mod-grub_script_tab.lst fs-normal_mod-grub_script_tab.lst
@@ -1192,11 +1004,7 @@ und-hello.lst: pre-hello.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 hello_mod-hello_hello.o: hello/hello.c
-	$(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
-
-hello_mod-hello_hello.d: hello/hello.c
-	set -e; 	  $(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_CFLAGS) -M $< 	  | sed 's,hello\.o[ :]*,hello_mod-hello_hello.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ihello -I$(srcdir)/hello $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_CFLAGS) -MD -c -o $@ $<
 -include hello_mod-hello_hello.d
 
 CLEANFILES += cmd-hello_mod-hello_hello.lst fs-hello_mod-hello_hello.lst
@@ -1248,11 +1056,7 @@ und-boot.lst: pre-boot.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 boot_mod-commands_boot.o: commands/boot.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
-
-boot_mod-commands_boot.d: commands/boot.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,boot_mod-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -MD -c -o $@ $<
 -include boot_mod-commands_boot.d
 
 CLEANFILES += cmd-boot_mod-commands_boot.lst fs-boot_mod-commands_boot.lst
@@ -1304,11 +1108,7 @@ und-terminal.lst: pre-terminal.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 terminal_mod-commands_terminal.o: commands/terminal.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
-
-terminal_mod-commands_terminal.d: commands/terminal.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,terminal_mod-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -MD -c -o $@ $<
 -include terminal_mod-commands_terminal.d
 
 CLEANFILES += cmd-terminal_mod-commands_terminal.lst fs-terminal_mod-commands_terminal.lst
@@ -1360,11 +1160,7 @@ und-ls.lst: pre-ls.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ls_mod-commands_ls.o: commands/ls.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
-
-ls_mod-commands_ls.d: commands/ls.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,ls_mod-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_CFLAGS) -MD -c -o $@ $<
 -include ls_mod-commands_ls.d
 
 CLEANFILES += cmd-ls_mod-commands_ls.lst fs-ls_mod-commands_ls.lst
@@ -1416,11 +1212,7 @@ und-cmp.lst: pre-cmp.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 cmp_mod-commands_cmp.o: commands/cmp.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
-
-cmp_mod-commands_cmp.d: commands/cmp.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,cmp_mod-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_CFLAGS) -MD -c -o $@ $<
 -include cmp_mod-commands_cmp.d
 
 CLEANFILES += cmd-cmp_mod-commands_cmp.lst fs-cmp_mod-commands_cmp.lst
@@ -1472,11 +1264,7 @@ und-cat.lst: pre-cat.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 cat_mod-commands_cat.o: commands/cat.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
-
-cat_mod-commands_cat.d: commands/cat.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,cat_mod-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_CFLAGS) -MD -c -o $@ $<
 -include cat_mod-commands_cat.d
 
 CLEANFILES += cmd-cat_mod-commands_cat.lst fs-cat_mod-commands_cat.lst
@@ -1528,11 +1316,7 @@ und-font.lst: pre-font.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 font_mod-font_manager.o: font/manager.c
-	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
-
-font_mod-font_manager.d: font/manager.c
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -M $< 	  | sed 's,manager\.o[ :]*,font_mod-font_manager.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
 -include font_mod-font_manager.d
 
 CLEANFILES += cmd-font_mod-font_manager.lst fs-font_mod-font_manager.lst
@@ -1584,11 +1368,7 @@ und-amiga.lst: pre-amiga.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 amiga_mod-partmap_amiga.o: partmap/amiga.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
-
-amiga_mod-partmap_amiga.d: partmap/amiga.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,amiga_mod-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_CFLAGS) -MD -c -o $@ $<
 -include amiga_mod-partmap_amiga.d
 
 CLEANFILES += cmd-amiga_mod-partmap_amiga.lst fs-amiga_mod-partmap_amiga.lst
@@ -1640,11 +1420,7 @@ und-apple.lst: pre-apple.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 apple_mod-partmap_apple.o: partmap/apple.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
-
-apple_mod-partmap_apple.d: partmap/apple.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,apple_mod-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_CFLAGS) -MD -c -o $@ $<
 -include apple_mod-partmap_apple.d
 
 CLEANFILES += cmd-apple_mod-partmap_apple.lst fs-apple_mod-partmap_apple.lst
@@ -1696,11 +1472,7 @@ und-pc.lst: pre-pc.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 pc_mod-partmap_pc.o: partmap/pc.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
-
-pc_mod-partmap_pc.d: partmap/pc.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,pc_mod-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_CFLAGS) -MD -c -o $@ $<
 -include pc_mod-partmap_pc.d
 
 CLEANFILES += cmd-pc_mod-partmap_pc.lst fs-pc_mod-partmap_pc.lst
@@ -1752,11 +1524,7 @@ und-sun.lst: pre-sun.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 sun_mod-partmap_sun.o: partmap/sun.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
-
-sun_mod-partmap_sun.d: partmap/sun.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_CFLAGS) -M $< 	  | sed 's,sun\.o[ :]*,sun_mod-partmap_sun.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_CFLAGS) -MD -c -o $@ $<
 -include sun_mod-partmap_sun.d
 
 CLEANFILES += cmd-sun_mod-partmap_sun.lst fs-sun_mod-partmap_sun.lst
@@ -1808,11 +1576,7 @@ und-acorn.lst: pre-acorn.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 acorn_mod-partmap_acorn.o: partmap/acorn.c
-	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
-
-acorn_mod-partmap_acorn.d: partmap/acorn.c
-	set -e; 	  $(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_CFLAGS) -M $< 	  | sed 's,acorn\.o[ :]*,acorn_mod-partmap_acorn.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ipartmap -I$(srcdir)/partmap $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_CFLAGS) -MD -c -o $@ $<
 -include acorn_mod-partmap_acorn.d
 
 CLEANFILES += cmd-acorn_mod-partmap_acorn.lst fs-acorn_mod-partmap_acorn.lst
@@ -1863,11 +1627,7 @@ und-loopback.lst: pre-loopback.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 loopback_mod-disk_loopback.o: disk/loopback.c
-	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
-
-loopback_mod-disk_loopback.d: disk/loopback.c
-	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,loopback_mod-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_CFLAGS) -MD -c -o $@ $<
 -include loopback_mod-disk_loopback.d
 
 CLEANFILES += cmd-loopback_mod-disk_loopback.lst fs-loopback_mod-disk_loopback.lst
@@ -1919,11 +1679,7 @@ und-suspend.lst: pre-suspend.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 suspend_mod-commands_ieee1275_suspend.o: commands/ieee1275/suspend.c
-	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -c -o $@ $<
-
-suspend_mod-commands_ieee1275_suspend.d: commands/ieee1275/suspend.c
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -M $< 	  | sed 's,suspend\.o[ :]*,suspend_mod-commands_ieee1275_suspend.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -MD -c -o $@ $<
 -include suspend_mod-commands_ieee1275_suspend.d
 
 CLEANFILES += cmd-suspend_mod-commands_ieee1275_suspend.lst fs-suspend_mod-commands_ieee1275_suspend.lst
@@ -1975,11 +1731,7 @@ und-reboot.lst: pre-reboot.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 reboot_mod-commands_ieee1275_reboot.o: commands/ieee1275/reboot.c
-	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
-
-reboot_mod-commands_ieee1275_reboot.d: commands/ieee1275/reboot.c
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -M $< 	  | sed 's,reboot\.o[ :]*,reboot_mod-commands_ieee1275_reboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
 -include reboot_mod-commands_ieee1275_reboot.d
 
 CLEANFILES += cmd-reboot_mod-commands_ieee1275_reboot.lst fs-reboot_mod-commands_ieee1275_reboot.lst
@@ -2031,11 +1783,7 @@ und-halt.lst: pre-halt.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 halt_mod-commands_ieee1275_halt.o: commands/ieee1275/halt.c
-	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
-
-halt_mod-commands_ieee1275_halt.d: commands/ieee1275/halt.c
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -M $< 	  | sed 's,halt\.o[ :]*,halt_mod-commands_ieee1275_halt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
 -include halt_mod-commands_ieee1275_halt.d
 
 CLEANFILES += cmd-halt_mod-commands_ieee1275_halt.lst fs-halt_mod-commands_ieee1275_halt.lst
@@ -2087,11 +1835,7 @@ und-help.lst: pre-help.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 help_mod-commands_help.o: commands/help.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
-
-help_mod-commands_help.d: commands/help.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_CFLAGS) -M $< 	  | sed 's,help\.o[ :]*,help_mod-commands_help.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_CFLAGS) -MD -c -o $@ $<
 -include help_mod-commands_help.d
 
 CLEANFILES += cmd-help_mod-commands_help.lst fs-help_mod-commands_help.lst
@@ -2153,11 +1897,7 @@ und-configfile.lst: pre-configfile.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 configfile_mod-commands_configfile.o: commands/configfile.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
-
-configfile_mod-commands_configfile.d: commands/configfile.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_CFLAGS) -M $< 	  | sed 's,configfile\.o[ :]*,configfile_mod-commands_configfile.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_CFLAGS) -MD -c -o $@ $<
 -include configfile_mod-commands_configfile.d
 
 CLEANFILES += cmd-configfile_mod-commands_configfile.lst fs-configfile_mod-commands_configfile.lst
@@ -2209,11 +1949,7 @@ und-search.lst: pre-search.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 search_mod-commands_search.o: commands/search.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
-
-search_mod-commands_search.d: commands/search.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_CFLAGS) -M $< 	  | sed 's,search\.o[ :]*,search_mod-commands_search.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_CFLAGS) -MD -c -o $@ $<
 -include search_mod-commands_search.d
 
 CLEANFILES += cmd-search_mod-commands_search.lst fs-search_mod-commands_search.lst
@@ -2265,11 +2001,7 @@ und-gzio.lst: pre-gzio.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 gzio_mod-io_gzio.o: io/gzio.c
-	$(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<
-
-gzio_mod-io_gzio.d: io/gzio.c
-	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_CFLAGS) -M $< 	  | sed 's,gzio\.o[ :]*,gzio_mod-io_gzio.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_CFLAGS) -MD -c -o $@ $<
 -include gzio_mod-io_gzio.d
 
 CLEANFILES += cmd-gzio_mod-io_gzio.lst fs-gzio_mod-io_gzio.lst

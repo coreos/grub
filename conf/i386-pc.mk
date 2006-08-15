@@ -19,11 +19,7 @@ boot.exec: boot_img-boot_i386_pc_boot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(boot_img_LDFLAGS)
 
 boot_img-boot_i386_pc_boot.o: boot/i386/pc/boot.S
-	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(boot_img_ASFLAGS) -c -o $@ $<
-
-boot_img-boot_i386_pc_boot.d: boot/i386/pc/boot.S
-	set -e; 	  $(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(boot_img_ASFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,boot_img-boot_i386_pc_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(boot_img_ASFLAGS) -MD -c -o $@ $<
 -include boot_img-boot_i386_pc_boot.d
 
 boot_img_ASFLAGS = $(COMMON_ASFLAGS)
@@ -41,11 +37,7 @@ pxeboot.exec: pxeboot_img-boot_i386_pc_pxeboot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(pxeboot_img_LDFLAGS)
 
 pxeboot_img-boot_i386_pc_pxeboot.o: boot/i386/pc/pxeboot.S
-	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(pxeboot_img_ASFLAGS) -c -o $@ $<
-
-pxeboot_img-boot_i386_pc_pxeboot.d: boot/i386/pc/pxeboot.S
-	set -e; 	  $(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(pxeboot_img_ASFLAGS) -M $< 	  | sed 's,pxeboot\.o[ :]*,pxeboot_img-boot_i386_pc_pxeboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(pxeboot_img_ASFLAGS) -MD -c -o $@ $<
 -include pxeboot_img-boot_i386_pc_pxeboot.d
 
 pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
@@ -63,11 +55,7 @@ diskboot.exec: diskboot_img-boot_i386_pc_diskboot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(diskboot_img_LDFLAGS)
 
 diskboot_img-boot_i386_pc_diskboot.o: boot/i386/pc/diskboot.S
-	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(diskboot_img_ASFLAGS) -c -o $@ $<
-
-diskboot_img-boot_i386_pc_diskboot.d: boot/i386/pc/diskboot.S
-	set -e; 	  $(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(diskboot_img_ASFLAGS) -M $< 	  | sed 's,diskboot\.o[ :]*,diskboot_img-boot_i386_pc_diskboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(diskboot_img_ASFLAGS) -MD -c -o $@ $<
 -include diskboot_img-boot_i386_pc_diskboot.d
 
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
@@ -91,171 +79,87 @@ kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(kernel_img_LDFLAGS)
 
 kernel_img-kern_i386_pc_startup.o: kern/i386/pc/startup.S
-	$(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(kernel_img_ASFLAGS) -c -o $@ $<
-
-kernel_img-kern_i386_pc_startup.d: kern/i386/pc/startup.S
-	set -e; 	  $(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(kernel_img_ASFLAGS) -M $< 	  | sed 's,startup\.o[ :]*,kernel_img-kern_i386_pc_startup.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(kernel_img_ASFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_i386_pc_startup.d
 
 kernel_img-kern_main.o: kern/main.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_main.d: kern/main.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,kernel_img-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_main.d
 
 kernel_img-kern_device.o: kern/device.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_device.d: kern/device.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,kernel_img-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_device.d
 
 kernel_img-kern_disk.o: kern/disk.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_disk.d: kern/disk.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,kernel_img-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_disk.d
 
 kernel_img-kern_dl.o: kern/dl.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_dl.d: kern/dl.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,kernel_img-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_dl.d
 
 kernel_img-kern_file.o: kern/file.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_file.d: kern/file.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,kernel_img-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_file.d
 
 kernel_img-kern_fs.o: kern/fs.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_fs.d: kern/fs.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,kernel_img-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_fs.d
 
 kernel_img-kern_err.o: kern/err.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_err.d: kern/err.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,kernel_img-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_err.d
 
 kernel_img-kern_misc.o: kern/misc.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_misc.d: kern/misc.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,kernel_img-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_misc.d
 
 kernel_img-kern_mm.o: kern/mm.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_mm.d: kern/mm.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,mm\.o[ :]*,kernel_img-kern_mm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_mm.d
 
 kernel_img-kern_loader.o: kern/loader.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_loader.d: kern/loader.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,kernel_img-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_loader.d
 
 kernel_img-kern_rescue.o: kern/rescue.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_rescue.d: kern/rescue.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,kernel_img-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_rescue.d
 
 kernel_img-kern_term.o: kern/term.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_term.d: kern/term.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,kernel_img-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_term.d
 
 kernel_img-kern_i386_dl.o: kern/i386/dl.c
-	$(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_i386_dl.d: kern/i386/dl.c
-	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,kernel_img-kern_i386_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_i386_dl.d
 
 kernel_img-kern_i386_pc_init.o: kern/i386/pc/init.c
-	$(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_i386_pc_init.d: kern/i386/pc/init.c
-	set -e; 	  $(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,init\.o[ :]*,kernel_img-kern_i386_pc_init.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_i386_pc_init.d
 
 kernel_img-kern_parser.o: kern/parser.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_parser.d: kern/parser.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,parser\.o[ :]*,kernel_img-kern_parser.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_parser.d
 
 kernel_img-kern_partition.o: kern/partition.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_partition.d: kern/partition.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,kernel_img-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_partition.d
 
 kernel_img-kern_env.o: kern/env.c
-	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-kern_env.d: kern/env.c
-	set -e; 	  $(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,kernel_img-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_env.d
 
 kernel_img-disk_i386_pc_biosdisk.o: disk/i386/pc/biosdisk.c
-	$(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-disk_i386_pc_biosdisk.d: disk/i386/pc/biosdisk.c
-	set -e; 	  $(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,kernel_img-disk_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-disk_i386_pc_biosdisk.d
 
 kernel_img-term_i386_pc_console.o: term/i386/pc/console.c
-	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-term_i386_pc_console.d: term/i386/pc/console.c
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,console\.o[ :]*,kernel_img-term_i386_pc_console.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-term_i386_pc_console.d
 
 kernel_img-symlist.o: symlist.c
-	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -c -o $@ $<
-
-kernel_img-symlist.d: symlist.c
-	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -M $< 	  | sed 's,symlist\.o[ :]*,kernel_img-symlist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-symlist.d
 
 kernel_img_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
@@ -291,27 +195,15 @@ grub-mkimage: grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o 
 	$(CC) -o $@ $^ $(LDFLAGS) $(grub_mkimage_LDFLAGS)
 
 grub_mkimage-util_i386_pc_grub_mkimage.o: util/i386/pc/grub-mkimage.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
-
-grub_mkimage-util_i386_pc_grub_mkimage.d: util/i386/pc/grub-mkimage.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,grub\-mkimage\.o[ :]*,grub_mkimage-util_i386_pc_grub_mkimage.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
 -include grub_mkimage-util_i386_pc_grub_mkimage.d
 
 grub_mkimage-util_misc.o: util/misc.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
-
-grub_mkimage-util_misc.d: util/misc.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_mkimage-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
 -include grub_mkimage-util_misc.d
 
 grub_mkimage-util_resolve.o: util/resolve.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -c -o $@ $<
-
-grub_mkimage-util_resolve.d: util/resolve.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -M $< 	  | sed 's,resolve\.o[ :]*,grub_mkimage-util_resolve.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
 -include grub_mkimage-util_resolve.d
 
 grub_mkimage_LDFLAGS = $(LIBLZO)
@@ -330,203 +222,103 @@ grub-setup: grub_setup-util_i386_pc_grub_setup.o grub_setup-util_i386_pc_biosdis
 	$(CC) -o $@ $^ $(LDFLAGS) $(grub_setup_LDFLAGS)
 
 grub_setup-util_i386_pc_grub_setup.o: util/i386/pc/grub-setup.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-util_i386_pc_grub_setup.d: util/i386/pc/grub-setup.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,grub\-setup\.o[ :]*,grub_setup-util_i386_pc_grub_setup.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-util_i386_pc_grub_setup.d
 
 grub_setup-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_setup-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-util_i386_pc_biosdisk.d
 
 grub_setup-util_misc.o: util/misc.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-util_misc.d: util/misc.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_setup-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-util_misc.d
 
 grub_setup-util_i386_pc_getroot.o: util/i386/pc/getroot.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-util_i386_pc_getroot.d: util/i386/pc/getroot.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,grub_setup-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-util_i386_pc_getroot.d
 
 grub_setup-kern_device.o: kern/device.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_device.d: kern/device.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_setup-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_device.d
 
 grub_setup-kern_disk.o: kern/disk.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_disk.d: kern/disk.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grub_setup-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_disk.d
 
 grub_setup-kern_err.o: kern/err.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_err.d: kern/err.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_setup-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_err.d
 
 grub_setup-kern_misc.o: kern/misc.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_misc.d: kern/misc.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_setup-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_misc.d
 
 grub_setup-fs_fat.o: fs/fat.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_fat.d: fs/fat.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_setup-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_fat.d
 
 grub_setup-fs_ext2.o: fs/ext2.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_setup-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_ext2.d
 
 grub_setup-fs_xfs.o: fs/xfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_xfs.d: fs/xfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,grub_setup-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_xfs.d
 
 grub_setup-fs_affs.o: fs/affs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_affs.d: fs/affs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_setup-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_affs.d
 
 grub_setup-fs_sfs.o: fs/sfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_sfs.d: fs/sfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,sfs\.o[ :]*,grub_setup-fs_sfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_sfs.d
 
 grub_setup-kern_parser.o: kern/parser.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_parser.d: kern/parser.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,parser\.o[ :]*,grub_setup-kern_parser.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_parser.d
 
 grub_setup-kern_partition.o: kern/partition.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_partition.d: kern/partition.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_setup-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_partition.d
 
 grub_setup-partmap_pc.o: partmap/pc.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-partmap_pc.d: partmap/pc.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_setup-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-partmap_pc.d
 
 grub_setup-fs_ufs.o: fs/ufs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_ufs.d: fs/ufs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_setup-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_ufs.d
 
 grub_setup-fs_minix.o: fs/minix.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_minix.d: fs/minix.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_setup-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_minix.d
 
 grub_setup-fs_hfs.o: fs/hfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_hfs.d: fs/hfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_setup-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_hfs.d
 
 grub_setup-fs_jfs.o: fs/jfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_jfs.d: fs/jfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,grub_setup-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_jfs.d
 
 grub_setup-fs_hfsplus.o: fs/hfsplus.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_hfsplus.d: fs/hfsplus.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,hfsplus\.o[ :]*,grub_setup-fs_hfsplus.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_hfsplus.d
 
 grub_setup-kern_file.o: kern/file.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_file.d: kern/file.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,grub_setup-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_file.d
 
 grub_setup-kern_fs.o: kern/fs.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_fs.d: kern/fs.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grub_setup-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_fs.d
 
 grub_setup-kern_env.o: kern/env.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-kern_env.d: kern/env.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_setup-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-kern_env.d
 
 grub_setup-fs_fshelp.o: fs/fshelp.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -c -o $@ $<
-
-grub_setup-fs_fshelp.d: fs/fshelp.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,grub_setup-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_setup_CFLAGS) -MD -c -o $@ $<
 -include grub_setup-fs_fshelp.d
 
 
@@ -539,19 +331,11 @@ grub-mkdevicemap: grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o grub_mkdevice
 	$(CC) -o $@ $^ $(LDFLAGS) $(grub_mkdevicemap_LDFLAGS)
 
 grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o: util/i386/pc/grub-mkdevicemap.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -c -o $@ $<
-
-grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.d: util/i386/pc/grub-mkdevicemap.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -M $< 	  | sed 's,grub\-mkdevicemap\.o[ :]*,grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -MD -c -o $@ $<
 -include grub_mkdevicemap-util_i386_pc_grub_mkdevicemap.d
 
 grub_mkdevicemap-util_misc.o: util/misc.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -c -o $@ $<
-
-grub_mkdevicemap-util_misc.d: util/misc.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_mkdevicemap-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -MD -c -o $@ $<
 -include grub_mkdevicemap-util_misc.d
 
 
@@ -569,195 +353,99 @@ grub-probefs: grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc
 	$(CC) -o $@ $^ $(LDFLAGS) $(grub_probefs_LDFLAGS)
 
 grub_probefs-util_i386_pc_grub_probefs.o: util/i386/pc/grub-probefs.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-util_i386_pc_grub_probefs.d: util/i386/pc/grub-probefs.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,grub\-probefs\.o[ :]*,grub_probefs-util_i386_pc_grub_probefs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-util_i386_pc_grub_probefs.d
 
 grub_probefs-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_probefs-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-util_i386_pc_biosdisk.d
 
 grub_probefs-util_misc.o: util/misc.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-util_misc.d: util/misc.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_probefs-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-util_misc.d
 
 grub_probefs-util_i386_pc_getroot.o: util/i386/pc/getroot.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-util_i386_pc_getroot.d: util/i386/pc/getroot.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,grub_probefs-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-util_i386_pc_getroot.d
 
 grub_probefs-kern_device.o: kern/device.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_device.d: kern/device.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_probefs-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_device.d
 
 grub_probefs-kern_disk.o: kern/disk.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_disk.d: kern/disk.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grub_probefs-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_disk.d
 
 grub_probefs-kern_err.o: kern/err.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_err.d: kern/err.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_probefs-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_err.d
 
 grub_probefs-kern_misc.o: kern/misc.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_misc.d: kern/misc.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_probefs-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_misc.d
 
 grub_probefs-fs_fat.o: fs/fat.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_fat.d: fs/fat.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_probefs-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_fat.d
 
 grub_probefs-fs_ext2.o: fs/ext2.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_probefs-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_ext2.d
 
 grub_probefs-kern_parser.o: kern/parser.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_parser.d: kern/parser.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,parser\.o[ :]*,grub_probefs-kern_parser.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_parser.d
 
 grub_probefs-kern_partition.o: kern/partition.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_partition.d: kern/partition.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_probefs-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_partition.d
 
 grub_probefs-partmap_pc.o: partmap/pc.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-partmap_pc.d: partmap/pc.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_probefs-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-partmap_pc.d
 
 grub_probefs-fs_ufs.o: fs/ufs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_ufs.d: fs/ufs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_probefs-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_ufs.d
 
 grub_probefs-fs_minix.o: fs/minix.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_minix.d: fs/minix.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_probefs-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_minix.d
 
 grub_probefs-fs_hfs.o: fs/hfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_hfs.d: fs/hfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_probefs-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_hfs.d
 
 grub_probefs-fs_jfs.o: fs/jfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_jfs.d: fs/jfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,grub_probefs-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_jfs.d
 
 grub_probefs-kern_fs.o: kern/fs.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_fs.d: kern/fs.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grub_probefs-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_fs.d
 
 grub_probefs-kern_env.o: kern/env.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-kern_env.d: kern/env.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_probefs-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-kern_env.d
 
 grub_probefs-fs_fshelp.o: fs/fshelp.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_fshelp.d: fs/fshelp.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,grub_probefs-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_fshelp.d
 
 grub_probefs-fs_xfs.o: fs/xfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_xfs.d: fs/xfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,grub_probefs-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_xfs.d
 
 grub_probefs-fs_affs.o: fs/affs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_affs.d: fs/affs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_probefs-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_affs.d
 
 grub_probefs-fs_sfs.o: fs/sfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_sfs.d: fs/sfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,sfs\.o[ :]*,grub_probefs-fs_sfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_sfs.d
 
 grub_probefs-fs_hfsplus.o: fs/hfsplus.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -c -o $@ $<
-
-grub_probefs-fs_hfsplus.d: fs/hfsplus.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -M $< 	  | sed 's,hfsplus\.o[ :]*,grub_probefs-fs_hfsplus.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
 -include grub_probefs-fs_hfsplus.d
 
 
@@ -790,531 +478,267 @@ grub-emu: grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp
 	$(CC) -o $@ $^ $(LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-commands_boot.o: commands/boot.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_boot.d: commands/boot.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,boot\.o[ :]*,grub_emu-commands_boot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_boot.d
 
 grub_emu-commands_cat.o: commands/cat.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_cat.d: commands/cat.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cat\.o[ :]*,grub_emu-commands_cat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_cat.d
 
 grub_emu-commands_cmp.o: commands/cmp.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_cmp.d: commands/cmp.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cmp\.o[ :]*,grub_emu-commands_cmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_cmp.d
 
 grub_emu-commands_configfile.o: commands/configfile.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_configfile.d: commands/configfile.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,configfile\.o[ :]*,grub_emu-commands_configfile.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_configfile.d
 
 grub_emu-commands_help.o: commands/help.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_help.d: commands/help.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,help\.o[ :]*,grub_emu-commands_help.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_help.d
 
 grub_emu-commands_terminal.o: commands/terminal.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_terminal.d: commands/terminal.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,terminal\.o[ :]*,grub_emu-commands_terminal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_terminal.d
 
 grub_emu-commands_ls.o: commands/ls.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_ls.d: commands/ls.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ls\.o[ :]*,grub_emu-commands_ls.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_ls.d
 
 grub_emu-commands_test.o: commands/test.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_test.d: commands/test.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,test\.o[ :]*,grub_emu-commands_test.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_test.d
 
 grub_emu-commands_search.o: commands/search.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_search.d: commands/search.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,search\.o[ :]*,grub_emu-commands_search.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_search.d
 
 grub_emu-commands_blocklist.o: commands/blocklist.c
-	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_blocklist.d: commands/blocklist.c
-	set -e; 	  $(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,blocklist\.o[ :]*,grub_emu-commands_blocklist.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_blocklist.d
 
 grub_emu-commands_i386_pc_halt.o: commands/i386/pc/halt.c
-	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_i386_pc_halt.d: commands/i386/pc/halt.c
-	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,halt\.o[ :]*,grub_emu-commands_i386_pc_halt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_i386_pc_halt.d
 
 grub_emu-commands_i386_pc_reboot.o: commands/i386/pc/reboot.c
-	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-commands_i386_pc_reboot.d: commands/i386/pc/reboot.c
-	set -e; 	  $(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,reboot\.o[ :]*,grub_emu-commands_i386_pc_reboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-commands_i386_pc_reboot.d
 
 grub_emu-disk_loopback.o: disk/loopback.c
-	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-disk_loopback.d: disk/loopback.c
-	set -e; 	  $(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loopback\.o[ :]*,grub_emu-disk_loopback.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-disk_loopback.d
 
 grub_emu-fs_affs.o: fs/affs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_affs.d: fs/affs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,affs\.o[ :]*,grub_emu-fs_affs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_affs.d
 
 grub_emu-fs_ext2.o: fs/ext2.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_ext2.d: fs/ext2.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ext2\.o[ :]*,grub_emu-fs_ext2.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_ext2.d
 
 grub_emu-fs_fat.o: fs/fat.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_fat.d: fs/fat.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fat\.o[ :]*,grub_emu-fs_fat.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_fat.d
 
 grub_emu-fs_fshelp.o: fs/fshelp.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_fshelp.d: fs/fshelp.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fshelp\.o[ :]*,grub_emu-fs_fshelp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_fshelp.d
 
 grub_emu-fs_hfs.o: fs/hfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_hfs.d: fs/hfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,hfs\.o[ :]*,grub_emu-fs_hfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_hfs.d
 
 grub_emu-fs_iso9660.o: fs/iso9660.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_iso9660.d: fs/iso9660.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,iso9660\.o[ :]*,grub_emu-fs_iso9660.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_iso9660.d
 
 grub_emu-fs_jfs.o: fs/jfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_jfs.d: fs/jfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,jfs\.o[ :]*,grub_emu-fs_jfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_jfs.d
 
 grub_emu-fs_minix.o: fs/minix.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_minix.d: fs/minix.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,minix\.o[ :]*,grub_emu-fs_minix.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_minix.d
 
 grub_emu-fs_sfs.o: fs/sfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_sfs.d: fs/sfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,sfs\.o[ :]*,grub_emu-fs_sfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_sfs.d
 
 grub_emu-fs_ufs.o: fs/ufs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_ufs.d: fs/ufs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,ufs\.o[ :]*,grub_emu-fs_ufs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_ufs.d
 
 grub_emu-fs_xfs.o: fs/xfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_xfs.d: fs/xfs.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,xfs\.o[ :]*,grub_emu-fs_xfs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_xfs.d
 
 grub_emu-fs_hfsplus.o: fs/hfsplus.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-fs_hfsplus.d: fs/hfsplus.c
-	set -e; 	  $(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,hfsplus\.o[ :]*,grub_emu-fs_hfsplus.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-fs_hfsplus.d
 
 grub_emu-io_gzio.o: io/gzio.c
-	$(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-io_gzio.d: io/gzio.c
-	set -e; 	  $(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,gzio\.o[ :]*,grub_emu-io_gzio.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iio -I$(srcdir)/io $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-io_gzio.d
 
 grub_emu-kern_device.o: kern/device.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_device.d: kern/device.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,device\.o[ :]*,grub_emu-kern_device.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_device.d
 
 grub_emu-kern_disk.o: kern/disk.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_disk.d: kern/disk.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,disk\.o[ :]*,grub_emu-kern_disk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_disk.d
 
 grub_emu-kern_dl.o: kern/dl.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_dl.d: kern/dl.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,dl\.o[ :]*,grub_emu-kern_dl.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_dl.d
 
 grub_emu-kern_env.o: kern/env.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_env.d: kern/env.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,env\.o[ :]*,grub_emu-kern_env.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_env.d
 
 grub_emu-kern_err.o: kern/err.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_err.d: kern/err.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,err\.o[ :]*,grub_emu-kern_err.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_err.d
 
 grub_emu-normal_execute.o: normal/execute.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_execute.d: normal/execute.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,execute\.o[ :]*,grub_emu-normal_execute.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_execute.d
 
 grub_emu-kern_file.o: kern/file.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_file.d: kern/file.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,file\.o[ :]*,grub_emu-kern_file.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_file.d
 
 grub_emu-kern_fs.o: kern/fs.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_fs.d: kern/fs.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,fs\.o[ :]*,grub_emu-kern_fs.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_fs.d
 
 grub_emu-normal_lexer.o: normal/lexer.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_lexer.d: normal/lexer.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,lexer\.o[ :]*,grub_emu-normal_lexer.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_lexer.d
 
 grub_emu-kern_loader.o: kern/loader.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_loader.d: kern/loader.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,loader\.o[ :]*,grub_emu-kern_loader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_loader.d
 
 grub_emu-kern_main.o: kern/main.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_main.d: kern/main.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grub_emu-kern_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_main.d
 
 grub_emu-kern_misc.o: kern/misc.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_misc.d: kern/misc.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-kern_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_misc.d
 
 grub_emu-kern_parser.o: kern/parser.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_parser.d: kern/parser.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,parser\.o[ :]*,grub_emu-kern_parser.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_parser.d
 
 grub_emu-grub_script_tab.o: grub_script.tab.c
-	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-grub_script_tab.d: grub_script.tab.c
-	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,grub_script\.tab\.o[ :]*,grub_emu-grub_script_tab.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-grub_script_tab.d
 
 grub_emu-kern_partition.o: kern/partition.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_partition.d: kern/partition.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,partition\.o[ :]*,grub_emu-kern_partition.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_partition.d
 
 grub_emu-kern_rescue.o: kern/rescue.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_rescue.d: kern/rescue.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,rescue\.o[ :]*,grub_emu-kern_rescue.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_rescue.d
 
 grub_emu-kern_term.o: kern/term.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-kern_term.d: kern/term.c
-	set -e; 	  $(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,term\.o[ :]*,grub_emu-kern_term.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-kern_term.d
 
 grub_emu-normal_arg.o: normal/arg.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_arg.d: normal/arg.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,grub_emu-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_arg.d
 
 grub_emu-normal_cmdline.o: normal/cmdline.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_cmdline.d: normal/cmdline.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,grub_emu-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_cmdline.d
 
 grub_emu-normal_command.o: normal/command.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_command.d: normal/command.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,grub_emu-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_command.d
 
 grub_emu-normal_function.o: normal/function.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_function.d: normal/function.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,function\.o[ :]*,grub_emu-normal_function.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_function.d
 
 grub_emu-normal_completion.o: normal/completion.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_completion.d: normal/completion.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,completion\.o[ :]*,grub_emu-normal_completion.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_completion.d
 
 grub_emu-normal_main.o: normal/main.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_main.d: normal/main.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,grub_emu-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_main.d
 
 grub_emu-normal_menu.o: normal/menu.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_menu.d: normal/menu.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,grub_emu-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_menu.d
 
 grub_emu-normal_menu_entry.o: normal/menu_entry.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_menu_entry.d: normal/menu_entry.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,menu_entry\.o[ :]*,grub_emu-normal_menu_entry.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_menu_entry.d
 
 grub_emu-normal_misc.o: normal/misc.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_misc.d: normal/misc.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-normal_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_misc.d
 
 grub_emu-normal_script.o: normal/script.c
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-normal_script.d: normal/script.c
-	set -e; 	  $(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,script\.o[ :]*,grub_emu-normal_script.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-normal_script.d
 
 grub_emu-partmap_amiga.o: partmap/amiga.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_amiga.d: partmap/amiga.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,amiga\.o[ :]*,grub_emu-partmap_amiga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-partmap_amiga.d
 
 grub_emu-partmap_apple.o: partmap/apple.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_apple.d: partmap/apple.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,apple\.o[ :]*,grub_emu-partmap_apple.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-partmap_apple.d
 
 grub_emu-partmap_pc.o: partmap/pc.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_pc.d: partmap/pc.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,pc\.o[ :]*,grub_emu-partmap_pc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-partmap_pc.d
 
 grub_emu-partmap_sun.o: partmap/sun.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_sun.d: partmap/sun.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,sun\.o[ :]*,grub_emu-partmap_sun.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-partmap_sun.d
 
 grub_emu-partmap_acorn.o: partmap/acorn.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_acorn.d: partmap/acorn.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,acorn\.o[ :]*,grub_emu-partmap_acorn.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-partmap_acorn.d
 
 grub_emu-partmap_gpt.o: partmap/gpt.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-partmap_gpt.d: partmap/gpt.c
-	set -e; 	  $(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,gpt\.o[ :]*,grub_emu-partmap_gpt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-partmap_gpt.d
 
 grub_emu-util_console.o: util/console.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_console.d: util/console.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,console\.o[ :]*,grub_emu-util_console.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-util_console.d
 
 grub_emu-util_grub_emu.o: util/grub-emu.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_grub_emu.d: util/grub-emu.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,grub\-emu\.o[ :]*,grub_emu-util_grub_emu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-util_grub_emu.d
 
 grub_emu-util_misc.o: util/misc.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_misc.d: util/misc.c
-	set -e; 	  $(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-util_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-util_misc.d
 
 grub_emu-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_i386_pc_biosdisk.d: util/i386/pc/biosdisk.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,biosdisk\.o[ :]*,grub_emu-util_i386_pc_biosdisk.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-util_i386_pc_biosdisk.d
 
 grub_emu-util_i386_pc_getroot.o: util/i386/pc/getroot.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_i386_pc_getroot.d: util/i386/pc/getroot.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,getroot\.o[ :]*,grub_emu-util_i386_pc_getroot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-util_i386_pc_getroot.d
 
 grub_emu-util_i386_pc_misc.o: util/i386/pc/misc.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-util_i386_pc_misc.d: util/i386/pc/misc.c
-	set -e; 	  $(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,grub_emu-util_i386_pc_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-util_i386_pc_misc.d
 
 grub_emu-grub_emu_init.o: grub_emu_init.c
-	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -c -o $@ $<
-
-grub_emu-grub_emu_init.d: grub_emu_init.c
-	set -e; 	  $(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -M $< 	  | sed 's,grub_emu_init\.o[ :]*,grub_emu-grub_emu_init.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(CC) -I. -I$(srcdir)/. $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-grub_emu_init.d
 
 
@@ -1373,11 +797,7 @@ und-_chain.lst: pre-_chain.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 _chain_mod-loader_i386_pc_chainloader.o: loader/i386/pc/chainloader.c
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_chain_mod_CFLAGS) -c -o $@ $<
-
-_chain_mod-loader_i386_pc_chainloader.d: loader/i386/pc/chainloader.c
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader\.o[ :]*,_chain_mod-loader_i386_pc_chainloader.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_chain_mod_CFLAGS) -MD -c -o $@ $<
 -include _chain_mod-loader_i386_pc_chainloader.d
 
 CLEANFILES += cmd-_chain_mod-loader_i386_pc_chainloader.lst fs-_chain_mod-loader_i386_pc_chainloader.lst
@@ -1429,11 +849,7 @@ und-chain.lst: pre-chain.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 chain_mod-loader_i386_pc_chainloader_normal.o: loader/i386/pc/chainloader_normal.c
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(chain_mod_CFLAGS) -c -o $@ $<
-
-chain_mod-loader_i386_pc_chainloader_normal.d: loader/i386/pc/chainloader_normal.c
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(chain_mod_CFLAGS) -M $< 	  | sed 's,chainloader_normal\.o[ :]*,chain_mod-loader_i386_pc_chainloader_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(chain_mod_CFLAGS) -MD -c -o $@ $<
 -include chain_mod-loader_i386_pc_chainloader_normal.d
 
 CLEANFILES += cmd-chain_mod-loader_i386_pc_chainloader_normal.lst fs-chain_mod-loader_i386_pc_chainloader_normal.lst
@@ -1485,11 +901,7 @@ und-_linux.lst: pre-_linux.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 _linux_mod-loader_i386_pc_linux.o: loader/i386/pc/linux.c
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
-
-_linux_mod-loader_i386_pc_linux.d: loader/i386/pc/linux.c
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -M $< 	  | sed 's,linux\.o[ :]*,_linux_mod-loader_i386_pc_linux.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -MD -c -o $@ $<
 -include _linux_mod-loader_i386_pc_linux.d
 
 CLEANFILES += cmd-_linux_mod-loader_i386_pc_linux.lst fs-_linux_mod-loader_i386_pc_linux.lst
@@ -1541,11 +953,7 @@ und-linux.lst: pre-linux.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 linux_mod-loader_i386_pc_linux_normal.o: loader/i386/pc/linux_normal.c
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
-
-linux_mod-loader_i386_pc_linux_normal.d: loader/i386/pc/linux_normal.c
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -M $< 	  | sed 's,linux_normal\.o[ :]*,linux_mod-loader_i386_pc_linux_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -MD -c -o $@ $<
 -include linux_mod-loader_i386_pc_linux_normal.d
 
 CLEANFILES += cmd-linux_mod-loader_i386_pc_linux_normal.lst fs-linux_mod-loader_i386_pc_linux_normal.lst
@@ -1601,11 +1009,7 @@ und-normal.lst: pre-normal.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 normal_mod-normal_arg.o: normal/arg.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_arg.d: normal/arg.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,arg\.o[ :]*,normal_mod-normal_arg.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_arg.d
 
 CLEANFILES += cmd-normal_mod-normal_arg.lst fs-normal_mod-normal_arg.lst
@@ -1620,11 +1024,7 @@ fs-normal_mod-normal_arg.lst: normal/arg.c genfslist.sh
 
 
 normal_mod-normal_cmdline.o: normal/cmdline.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_cmdline.d: normal/cmdline.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,cmdline\.o[ :]*,normal_mod-normal_cmdline.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_cmdline.d
 
 CLEANFILES += cmd-normal_mod-normal_cmdline.lst fs-normal_mod-normal_cmdline.lst
@@ -1639,11 +1039,7 @@ fs-normal_mod-normal_cmdline.lst: normal/cmdline.c genfslist.sh
 
 
 normal_mod-normal_command.o: normal/command.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_command.d: normal/command.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,command\.o[ :]*,normal_mod-normal_command.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_command.d
 
 CLEANFILES += cmd-normal_mod-normal_command.lst fs-normal_mod-normal_command.lst
@@ -1658,11 +1054,7 @@ fs-normal_mod-normal_command.lst: normal/command.c genfslist.sh
 
 
 normal_mod-normal_completion.o: normal/completion.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_completion.d: normal/completion.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,completion\.o[ :]*,normal_mod-normal_completion.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_completion.d
 
 CLEANFILES += cmd-normal_mod-normal_completion.lst fs-normal_mod-normal_completion.lst
@@ -1677,11 +1069,7 @@ fs-normal_mod-normal_completion.lst: normal/completion.c genfslist.sh
 
 
 normal_mod-normal_execute.o: normal/execute.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_execute.d: normal/execute.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,execute\.o[ :]*,normal_mod-normal_execute.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_execute.d
 
 CLEANFILES += cmd-normal_mod-normal_execute.lst fs-normal_mod-normal_execute.lst
@@ -1696,11 +1084,7 @@ fs-normal_mod-normal_execute.lst: normal/execute.c genfslist.sh
 
 
 normal_mod-normal_function.o: normal/function.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_function.d: normal/function.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,function\.o[ :]*,normal_mod-normal_function.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_function.d
 
 CLEANFILES += cmd-normal_mod-normal_function.lst fs-normal_mod-normal_function.lst
@@ -1715,11 +1099,7 @@ fs-normal_mod-normal_function.lst: normal/function.c genfslist.sh
 
 
 normal_mod-normal_lexer.o: normal/lexer.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_lexer.d: normal/lexer.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,lexer\.o[ :]*,normal_mod-normal_lexer.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_lexer.d
 
 CLEANFILES += cmd-normal_mod-normal_lexer.lst fs-normal_mod-normal_lexer.lst
@@ -1734,11 +1114,7 @@ fs-normal_mod-normal_lexer.lst: normal/lexer.c genfslist.sh
 
 
 normal_mod-normal_main.o: normal/main.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_main.d: normal/main.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,main\.o[ :]*,normal_mod-normal_main.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_main.d
 
 CLEANFILES += cmd-normal_mod-normal_main.lst fs-normal_mod-normal_main.lst
@@ -1753,11 +1129,7 @@ fs-normal_mod-normal_main.lst: normal/main.c genfslist.sh
 
 
 normal_mod-normal_menu.o: normal/menu.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_menu.d: normal/menu.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,menu\.o[ :]*,normal_mod-normal_menu.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_menu.d
 
 CLEANFILES += cmd-normal_mod-normal_menu.lst fs-normal_mod-normal_menu.lst
@@ -1772,11 +1144,7 @@ fs-normal_mod-normal_menu.lst: normal/menu.c genfslist.sh
 
 
 normal_mod-normal_menu_entry.o: normal/menu_entry.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_menu_entry.d: normal/menu_entry.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,menu_entry\.o[ :]*,normal_mod-normal_menu_entry.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_menu_entry.d
 
 CLEANFILES += cmd-normal_mod-normal_menu_entry.lst fs-normal_mod-normal_menu_entry.lst
@@ -1791,11 +1159,7 @@ fs-normal_mod-normal_menu_entry.lst: normal/menu_entry.c genfslist.sh
 
 
 normal_mod-normal_misc.o: normal/misc.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_misc.d: normal/misc.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,misc\.o[ :]*,normal_mod-normal_misc.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_misc.d
 
 CLEANFILES += cmd-normal_mod-normal_misc.lst fs-normal_mod-normal_misc.lst
@@ -1810,11 +1174,7 @@ fs-normal_mod-normal_misc.lst: normal/misc.c genfslist.sh
 
 
 normal_mod-grub_script_tab.o: grub_script.tab.c
-	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-grub_script_tab.d: grub_script.tab.c
-	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,grub_script\.tab\.o[ :]*,normal_mod-grub_script_tab.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-grub_script_tab.d
 
 CLEANFILES += cmd-normal_mod-grub_script_tab.lst fs-normal_mod-grub_script_tab.lst
@@ -1829,11 +1189,7 @@ fs-normal_mod-grub_script_tab.lst: grub_script.tab.c genfslist.sh
 
 
 normal_mod-normal_script.o: normal/script.c
-	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
-
-normal_mod-normal_script.d: normal/script.c
-	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -M $< 	  | sed 's,script\.o[ :]*,normal_mod-normal_script.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_script.d
 
 CLEANFILES += cmd-normal_mod-normal_script.lst fs-normal_mod-normal_script.lst
@@ -1848,11 +1204,7 @@ fs-normal_mod-normal_script.lst: normal/script.c genfslist.sh
 
 
 normal_mod-normal_i386_setjmp.o: normal/i386/setjmp.S
-	$(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -c -o $@ $<
-
-normal_mod-normal_i386_setjmp.d: normal/i386/setjmp.S
-	set -e; 	  $(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -M $< 	  | sed 's,setjmp\.o[ :]*,normal_mod-normal_i386_setjmp.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_i386_setjmp.d
 
 CLEANFILES += cmd-normal_mod-normal_i386_setjmp.lst fs-normal_mod-normal_i386_setjmp.lst
@@ -1905,11 +1257,7 @@ und-reboot.lst: pre-reboot.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 reboot_mod-commands_i386_pc_reboot.o: commands/i386/pc/reboot.c
-	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
-
-reboot_mod-commands_i386_pc_reboot.d: commands/i386/pc/reboot.c
-	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -M $< 	  | sed 's,reboot\.o[ :]*,reboot_mod-commands_i386_pc_reboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
 -include reboot_mod-commands_i386_pc_reboot.d
 
 CLEANFILES += cmd-reboot_mod-commands_i386_pc_reboot.lst fs-reboot_mod-commands_i386_pc_reboot.lst
@@ -1961,11 +1309,7 @@ und-halt.lst: pre-halt.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 halt_mod-commands_i386_pc_halt.o: commands/i386/pc/halt.c
-	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
-
-halt_mod-commands_i386_pc_halt.d: commands/i386/pc/halt.c
-	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -M $< 	  | sed 's,halt\.o[ :]*,halt_mod-commands_i386_pc_halt.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
 -include halt_mod-commands_i386_pc_halt.d
 
 CLEANFILES += cmd-halt_mod-commands_i386_pc_halt.lst fs-halt_mod-commands_i386_pc_halt.lst
@@ -2022,11 +1366,7 @@ und-_multiboot.lst: pre-_multiboot.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 _multiboot_mod-loader_i386_pc_multiboot.o: loader/i386/pc/multiboot.c
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
-
-_multiboot_mod-loader_i386_pc_multiboot.d: loader/i386/pc/multiboot.c
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -M $< 	  | sed 's,multiboot\.o[ :]*,_multiboot_mod-loader_i386_pc_multiboot.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
 -include _multiboot_mod-loader_i386_pc_multiboot.d
 
 CLEANFILES += cmd-_multiboot_mod-loader_i386_pc_multiboot.lst fs-_multiboot_mod-loader_i386_pc_multiboot.lst
@@ -2078,11 +1418,7 @@ und-multiboot.lst: pre-multiboot.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 multiboot_mod-loader_i386_pc_multiboot_normal.o: loader/i386/pc/multiboot_normal.c
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
-
-multiboot_mod-loader_i386_pc_multiboot_normal.d: loader/i386/pc/multiboot_normal.c
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -M $< 	  | sed 's,multiboot_normal\.o[ :]*,multiboot_mod-loader_i386_pc_multiboot_normal.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -MD -c -o $@ $<
 -include multiboot_mod-loader_i386_pc_multiboot_normal.d
 
 CLEANFILES += cmd-multiboot_mod-loader_i386_pc_multiboot_normal.lst fs-multiboot_mod-loader_i386_pc_multiboot_normal.lst
@@ -2135,11 +1471,7 @@ und-vbe.lst: pre-vbe.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 vbe_mod-video_i386_pc_vbe.o: video/i386/pc/vbe.c
-	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
-
-vbe_mod-video_i386_pc_vbe.d: video/i386/pc/vbe.c
-	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbe\.o[ :]*,vbe_mod-video_i386_pc_vbe.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -MD -c -o $@ $<
 -include vbe_mod-video_i386_pc_vbe.d
 
 CLEANFILES += cmd-vbe_mod-video_i386_pc_vbe.lst fs-vbe_mod-video_i386_pc_vbe.lst
@@ -2154,11 +1486,7 @@ fs-vbe_mod-video_i386_pc_vbe.lst: video/i386/pc/vbe.c genfslist.sh
 
 
 vbe_mod-video_i386_pc_vbeblit.o: video/i386/pc/vbeblit.c
-	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
-
-vbe_mod-video_i386_pc_vbeblit.d: video/i386/pc/vbeblit.c
-	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbeblit\.o[ :]*,vbe_mod-video_i386_pc_vbeblit.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -MD -c -o $@ $<
 -include vbe_mod-video_i386_pc_vbeblit.d
 
 CLEANFILES += cmd-vbe_mod-video_i386_pc_vbeblit.lst fs-vbe_mod-video_i386_pc_vbeblit.lst
@@ -2173,11 +1501,7 @@ fs-vbe_mod-video_i386_pc_vbeblit.lst: video/i386/pc/vbeblit.c genfslist.sh
 
 
 vbe_mod-video_i386_pc_vbefill.o: video/i386/pc/vbefill.c
-	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
-
-vbe_mod-video_i386_pc_vbefill.d: video/i386/pc/vbefill.c
-	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbefill\.o[ :]*,vbe_mod-video_i386_pc_vbefill.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -MD -c -o $@ $<
 -include vbe_mod-video_i386_pc_vbefill.d
 
 CLEANFILES += cmd-vbe_mod-video_i386_pc_vbefill.lst fs-vbe_mod-video_i386_pc_vbefill.lst
@@ -2192,11 +1516,7 @@ fs-vbe_mod-video_i386_pc_vbefill.lst: video/i386/pc/vbefill.c genfslist.sh
 
 
 vbe_mod-video_i386_pc_vbeutil.o: video/i386/pc/vbeutil.c
-	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -c -o $@ $<
-
-vbe_mod-video_i386_pc_vbeutil.d: video/i386/pc/vbeutil.c
-	set -e; 	  $(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -M $< 	  | sed 's,vbeutil\.o[ :]*,vbe_mod-video_i386_pc_vbeutil.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo/i386/pc -I$(srcdir)/video/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbe_mod_CFLAGS) -MD -c -o $@ $<
 -include vbe_mod-video_i386_pc_vbeutil.d
 
 CLEANFILES += cmd-vbe_mod-video_i386_pc_vbeutil.lst fs-vbe_mod-video_i386_pc_vbeutil.lst
@@ -2248,11 +1568,7 @@ und-vbeinfo.lst: pre-vbeinfo.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 vbeinfo_mod-commands_i386_pc_vbeinfo.o: commands/i386/pc/vbeinfo.c
-	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbeinfo_mod_CFLAGS) -c -o $@ $<
-
-vbeinfo_mod-commands_i386_pc_vbeinfo.d: commands/i386/pc/vbeinfo.c
-	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbeinfo_mod_CFLAGS) -M $< 	  | sed 's,vbeinfo\.o[ :]*,vbeinfo_mod-commands_i386_pc_vbeinfo.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbeinfo_mod_CFLAGS) -MD -c -o $@ $<
 -include vbeinfo_mod-commands_i386_pc_vbeinfo.d
 
 CLEANFILES += cmd-vbeinfo_mod-commands_i386_pc_vbeinfo.lst fs-vbeinfo_mod-commands_i386_pc_vbeinfo.lst
@@ -2304,11 +1620,7 @@ und-vbetest.lst: pre-vbetest.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 vbetest_mod-commands_i386_pc_vbetest.o: commands/i386/pc/vbetest.c
-	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbetest_mod_CFLAGS) -c -o $@ $<
-
-vbetest_mod-commands_i386_pc_vbetest.d: commands/i386/pc/vbetest.c
-	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbetest_mod_CFLAGS) -M $< 	  | sed 's,vbetest\.o[ :]*,vbetest_mod-commands_i386_pc_vbetest.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vbetest_mod_CFLAGS) -MD -c -o $@ $<
 -include vbetest_mod-commands_i386_pc_vbetest.d
 
 CLEANFILES += cmd-vbetest_mod-commands_i386_pc_vbetest.lst fs-vbetest_mod-commands_i386_pc_vbetest.lst
@@ -2360,11 +1672,7 @@ und-play.lst: pre-play.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 play_mod-commands_i386_pc_play.o: commands/i386/pc/play.c
-	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(play_mod_CFLAGS) -c -o $@ $<
-
-play_mod-commands_i386_pc_play.d: commands/i386/pc/play.c
-	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(play_mod_CFLAGS) -M $< 	  | sed 's,play\.o[ :]*,play_mod-commands_i386_pc_play.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(play_mod_CFLAGS) -MD -c -o $@ $<
 -include play_mod-commands_i386_pc_play.d
 
 CLEANFILES += cmd-play_mod-commands_i386_pc_play.lst fs-play_mod-commands_i386_pc_play.lst
@@ -2416,11 +1724,7 @@ und-video.lst: pre-video.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 video_mod-video_video.o: video/video.c
-	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -c -o $@ $<
-
-video_mod-video_video.d: video/video.c
-	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -M $< 	  | sed 's,video\.o[ :]*,video_mod-video_video.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -MD -c -o $@ $<
 -include video_mod-video_video.d
 
 CLEANFILES += cmd-video_mod-video_video.lst fs-video_mod-video_video.lst
@@ -2472,11 +1776,7 @@ und-gfxterm.lst: pre-gfxterm.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 gfxterm_mod-term_gfxterm.o: term/gfxterm.c
-	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -c -o $@ $<
-
-gfxterm_mod-term_gfxterm.d: term/gfxterm.c
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -M $< 	  | sed 's,gfxterm\.o[ :]*,gfxterm_mod-term_gfxterm.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -MD -c -o $@ $<
 -include gfxterm_mod-term_gfxterm.d
 
 CLEANFILES += cmd-gfxterm_mod-term_gfxterm.lst fs-gfxterm_mod-term_gfxterm.lst
@@ -2528,11 +1828,7 @@ und-videotest.lst: pre-videotest.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 videotest_mod-commands_videotest.o: commands/videotest.c
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(videotest_mod_CFLAGS) -c -o $@ $<
-
-videotest_mod-commands_videotest.d: commands/videotest.c
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(videotest_mod_CFLAGS) -M $< 	  | sed 's,videotest\.o[ :]*,videotest_mod-commands_videotest.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(videotest_mod_CFLAGS) -MD -c -o $@ $<
 -include videotest_mod-commands_videotest.d
 
 CLEANFILES += cmd-videotest_mod-commands_videotest.lst fs-videotest_mod-commands_videotest.lst
@@ -2584,11 +1880,7 @@ und-bitmap.lst: pre-bitmap.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 bitmap_mod-video_bitmap.o: video/bitmap.c
-	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -c -o $@ $<
-
-bitmap_mod-video_bitmap.d: video/bitmap.c
-	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -M $< 	  | sed 's,bitmap\.o[ :]*,bitmap_mod-video_bitmap.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bitmap_mod_CFLAGS) -MD -c -o $@ $<
 -include bitmap_mod-video_bitmap.d
 
 CLEANFILES += cmd-bitmap_mod-video_bitmap.lst fs-bitmap_mod-video_bitmap.lst
@@ -2640,11 +1932,7 @@ und-tga.lst: pre-tga.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 tga_mod-video_readers_tga.o: video/readers/tga.c
-	$(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -c -o $@ $<
-
-tga_mod-video_readers_tga.d: video/readers/tga.c
-	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -M $< 	  | sed 's,tga\.o[ :]*,tga_mod-video_readers_tga.o $@ : ,g' > $@; 	  [ -s $@ ] || rm -f $@
-
+	$(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(tga_mod_CFLAGS) -MD -c -o $@ $<
 -include tga_mod-video_readers_tga.d
 
 CLEANFILES += cmd-tga_mod-video_readers_tga.lst fs-tga_mod-video_readers_tga.lst
