@@ -531,9 +531,6 @@ extern int ip_abort;
 extern int network_ready;
 extern struct rom_info rom;
 extern struct arptable_t arptable[MAX_ARP];
-extern struct bootpd_t bootp_data;
-#define	BOOTP_DATA_ADDR	(&bootp_data)
-extern unsigned char *end_of_rfc1533;
 
 /* config.c */
 extern struct nic nic;

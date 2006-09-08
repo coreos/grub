@@ -1,3 +1,10 @@
+2006-09-08  Pavel Roskin  <proski@gnu.org>
+
+	* netboot/etherboot.h: Remove incorrect extern declarations of
+	the variables later declared static.  Move BOOTP_DATA_ADDR ...
+	* netboot/main.c: ... here.  Eliminate end_of_rfc1533 - it's
+	write-only.
+
 2006-06-24  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* docs/grub.texi: Changed the license term to the GNU Free

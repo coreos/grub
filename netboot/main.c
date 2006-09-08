@@ -56,7 +56,8 @@ static int vendorext_isvalid;
 static unsigned long netmask;
 static struct bootpd_t bootp_data;
 static unsigned long xid;
-static unsigned char *end_of_rfc1533 = NULL;
+
+#define	BOOTP_DATA_ADDR	(&bootp_data)
 
 #ifndef	NO_DHCP_SUPPORT
 #endif /* NO_DHCP_SUPPORT */
@@ -967,7 +968,6 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
   
   if (block == 0)
     {
-      end_of_rfc1533 = NULL;
       vendorext_isvalid = 0;
       
       if (grub_memcmp (p, rfc1533_cookie, 4))
@@ -1021,7 +1021,7 @@ decode_rfc1533 (unsigned char *p, int block, int len, int eof)
 	}
       else if (c == RFC1533_END)
 	{
-	  end_of_rfc1533 = endp = p;
+	  endp = p;
 	  continue;
 	}
       else if (c == RFC1533_NETMASK)
