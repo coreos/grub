@@ -901,7 +901,7 @@ sis900_transmit(struct nic  *nic,
                 const char  *p)     /* Packet */
 {
     u32 status, to, nstype;
-    u32 tx_status;
+    volatile u32 tx_status;
     
     /* Stop the transmitter */
     outl(TxDIS, ioaddr + cr);
@@ -940,7 +940,7 @@ sis900_transmit(struct nic  *nic,
 
     to = currticks() + TX_TIMEOUT;
 
-    while ((((volatile u32) tx_status=txd.cmdsts) & OWN) && (currticks() < to))
+    while (((tx_status=txd.cmdsts) & OWN) && (currticks() < to))
         /* wait */ ;
 
     if (currticks() >= to) {

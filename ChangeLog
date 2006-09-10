@@ -1,3 +1,9 @@
+2006-09-10  Pavel Roskin  <proski@gnu.org>
+
+	* netboot/natsemi.c: Fix compile error with gcc 4.1.1.  Cast
+	cannot make a variable volatile - it should be declared as such.
+	* netboot/sis900.c: Likewise.
+
 2006-09-08  Pavel Roskin  <proski@gnu.org>
 
 	* netboot/etherboot.h: Remove incorrect extern declarations of
