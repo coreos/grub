@@ -378,8 +378,11 @@ make_device_map (const char *device_map, int floppy_disks)
   for (i = 0; i < floppy_disks; i++)
     {
       char name[16];
+      struct stat st;
       
       get_floppy_disk_name (name, i);
+      if (stat (name, &st) < 0)
+	break;
       /* In floppies, write the map, whether check_device succeeds
 	 or not, because the user just may not insert floppies.  */
       if (fp)

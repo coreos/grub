@@ -198,7 +198,7 @@ fi
 
 # Copy the GRUB images to the GRUB directory.
 for file in ${grubdir}/*.mod ${grubdir}/*.lst ${grubdir}/*.img; do
-    if test -f $file; then
+    if test -f $file && [ "`basename $file`" != menu.lst ]; then
 	rm -f $file || exit 1
     fi
 done
@@ -206,7 +206,7 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ${pkglibdir}/*.img; do
     cp -f $file ${grubdir} || exit 1
 done
 
-# Create the core image. First, auto-detect the filesystme module.
+# Create the core image. First, auto-detect the filesystem module.
 fs_module=`$grub_probefs --device-map=${device_map} ${grubdir}`
 if test "x$fs_module" = x -a "x$modules" = x; then
     echo "Auto-detection of a filesystem module failed." 1>&2

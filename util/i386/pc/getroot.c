@@ -160,9 +160,11 @@ find_root_device (const char *dir, dev_t dev)
 	/* Don't follow symbolic links.  */
 	continue;
       
-      if (S_ISDIR (st.st_mode))
+      if (S_ISDIR (st.st_mode) && ent->d_name[0] != '.')
 	{
-	  /* Find it recursively.  */
+	  /* Find it recursively, but avoid dotdirs (like ".static") since they
+	     could contain duplicates, which would later break the
+	     pathname-based check */
 	  char *res;
 
 	  res = find_root_device (ent->d_name, dev);
