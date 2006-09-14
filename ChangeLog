@@ -1,4 +1,4 @@
-2006-08-19  Robert Millan  <rmh@aybabtu.com>
+2006-09-14  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-install.in: Skip menu.lst when removing
 	/boot/grub/*.lst.
