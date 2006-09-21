@@ -1,3 +1,9 @@
+2006-09-21  Robert Millan  <rmh@aybabtu.com>
+
+	Import from GRUB Legacy (lib/device.c):
+	* util/i386/pc/grub-mkdevicemap.c (get_i2o_disk_name): New function.
+	(init_device_map) [__linux__]: Add support for I2O devices.
+
 2006-09-14  Marco Gerards  <marco@gnu.org>
 
 	* conf/i386-pc.rmk (COMMON_LDFLAGS): Use `-m32' instead of

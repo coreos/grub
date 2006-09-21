@@ -277,6 +277,12 @@ get_ataraid_disk_name (char *name, int unit)
 {
   sprintf (name, "/dev/ataraid/d%c", unit + '0');
 }
+
+static void
+get_i2o_disk_name (char *name, char unit)
+{
+  sprintf (name, "/dev/i2o/hd%c", unit);
+}
 #endif
 
 /* Check if DEVICE can be read. If an error occurs, return zero,
@@ -479,6 +485,23 @@ make_device_map (const char *device_map, int floppy_disks)
 		fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 		num_hd++;
 	      }
+	  }
+      }
+  }
+    
+  /* This is for I2O - we have /dev/i2o/hd<logical drive><partition> */
+  {
+    char unit;
+
+    for (unit = 'a'; unit < 'f'; unit++)
+      {
+	char name[24];
+    
+	get_i2o_disk_name (name, unit);
+	if (check_device (name))
+	  {
+	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
+	    num_hd++;
 	  }
       }
   }
