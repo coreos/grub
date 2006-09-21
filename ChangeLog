@@ -6,8 +6,8 @@
 2006-09-14  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-install.in: Skip menu.lst when removing
-
 	/boot/grub/*.lst.
+
 	* util/i386/pc/getroot.c: Don't recurse into dotdirs (e.g. ".static").
 
 	* util/i386/pc/grub-mkdevicemap.c: Make sure the floppy device exists
