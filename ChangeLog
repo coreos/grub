@@ -1,3 +1,9 @@
+2006-09-22  Robert Millan  <rmh@aybabtu.com>
+
+	Sync with i386 version.
+	* conf/powerpc-ieee1275.rmk (bin_UTILITIES): Remove grub-emu, add grub-mkimage.
+	* conf/powerpc-ieee1275.rmk (sbin_UTILITIES): Remove grub-mkimage, add grub-emu.
+
 2006-09-21  Robert Millan  <rmh@aybabtu.com>
 
 	Import from GRUB Legacy (lib/device.c):
