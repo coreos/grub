@@ -1282,6 +1282,11 @@ fs-cat_mod-commands_cat.lst: commands/cat.c genfslist.sh
 cat_mod_CFLAGS = $(COMMON_CFLAGS)
 cat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For echo.mod
+echo_mod_SOURCES = commands/echo.c
+echo_mod_CFLAGS = $(COMMON_CFLAGS)
+echo_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For help.mod.
 help_mod_SOURCES = commands/help.c
 CLEANFILES += help.mod mod-help.o mod-help.c pre-help.o help_mod-commands_help.o und-help.lst

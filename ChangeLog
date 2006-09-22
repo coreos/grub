@@ -1,5 +1,15 @@
 2006-09-22  Marco Gerards  <marco@gnu.org>
 
+	* commands/echo.c: New file.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `commands/echo.c'.
+
+	* conf/common.rmk (echo_mod_SOURCES): New variable.
+	(echo_mod_CFLAGS): Likewise.
+	(echo_mod_LDFLAGS): Likewise.
+
+2006-09-22  Marco Gerards  <marco@gnu.org>
+
 	* normal/main.c (get_line): Malloc memory instead of using
 	preallocated memory.  Removed the arguments `cmdline' and
 	`max_len'.  Updated all callers.

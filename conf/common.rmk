@@ -154,6 +154,11 @@ cat_mod_SOURCES = commands/cat.c
 cat_mod_CFLAGS = $(COMMON_CFLAGS)
 cat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For echo.mod
+echo_mod_SOURCES = commands/echo.c
+echo_mod_CFLAGS = $(COMMON_CFLAGS)
+echo_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # For help.mod.
 help_mod_SOURCES = commands/help.c
 help_mod_CFLAGS = $(COMMON_CFLAGS)
