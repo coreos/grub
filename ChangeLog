@@ -1,5 +1,10 @@
 2006-09-22  Marco Gerards  <marco@gnu.org>
 
+	* normal/script.c (grub_script_create_cmdmenu): Skip leading
+	newlines.
+
+2006-09-22  Marco Gerards  <marco@gnu.org>
+
 	* commands/echo.c: New file.
 
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `commands/echo.c'.

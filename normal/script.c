@@ -214,6 +214,11 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
   struct grub_script_cmd_menuentry *cmd;
   int i;
 
+  /* Skip leading newlines to make the sourcecode better readable when
+     using the editor.  */
+  while (*sourcecode == '\n')
+    sourcecode++;
+
   /* Having trailing returns can some some annoying conflicts, remove
      them.  XXX: Can the parser be improved to handle this?  */
   for (i = grub_strlen (sourcecode) - 1; i > 0; i--)
@@ -226,6 +231,7 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
   cmd = grub_script_malloc (state, sizeof (*cmd));
   cmd->cmd.exec = grub_script_execute_menuentry;
   cmd->cmd.next = 0;
+  /* XXX: Check if this memory is properly free'ed.  */
   cmd->sourcecode = sourcecode;
   cmd->title = title;
   cmd->options = options;
