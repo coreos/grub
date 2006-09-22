@@ -39,9 +39,9 @@ fshelp.mod: pre-fshelp.o mod-fshelp.o
 	$(TARGET_CC) $(fshelp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-fshelp.o: fshelp_mod-fs_fshelp.o
+pre-fshelp.o: $(fshelp_mod_DEPENDENCIES) fshelp_mod-fs_fshelp.o
 	-rm -f $@
-	$(TARGET_CC) $(fshelp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(fshelp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ fshelp_mod-fs_fshelp.o
 
 mod-fshelp.o: mod-fshelp.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
@@ -91,9 +91,9 @@ fat.mod: pre-fat.o mod-fat.o
 	$(TARGET_CC) $(fat_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-fat.o: fat_mod-fs_fat.o
+pre-fat.o: $(fat_mod_DEPENDENCIES) fat_mod-fs_fat.o
 	-rm -f $@
-	$(TARGET_CC) $(fat_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(fat_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ fat_mod-fs_fat.o
 
 mod-fat.o: mod-fat.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
@@ -143,9 +143,9 @@ ufs.mod: pre-ufs.o mod-ufs.o
 	$(TARGET_CC) $(ufs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-ufs.o: ufs_mod-fs_ufs.o
+pre-ufs.o: $(ufs_mod_DEPENDENCIES) ufs_mod-fs_ufs.o
 	-rm -f $@
-	$(TARGET_CC) $(ufs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(ufs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ufs_mod-fs_ufs.o
 
 mod-ufs.o: mod-ufs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
@@ -195,9 +195,9 @@ ext2.mod: pre-ext2.o mod-ext2.o
 	$(TARGET_CC) $(ext2_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-ext2.o: ext2_mod-fs_ext2.o
+pre-ext2.o: $(ext2_mod_DEPENDENCIES) ext2_mod-fs_ext2.o
 	-rm -f $@
-	$(TARGET_CC) $(ext2_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(ext2_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ext2_mod-fs_ext2.o
 
 mod-ext2.o: mod-ext2.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
@@ -247,9 +247,9 @@ minix.mod: pre-minix.o mod-minix.o
 	$(TARGET_CC) $(minix_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-minix.o: minix_mod-fs_minix.o
+pre-minix.o: $(minix_mod_DEPENDENCIES) minix_mod-fs_minix.o
 	-rm -f $@
-	$(TARGET_CC) $(minix_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(minix_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ minix_mod-fs_minix.o
 
 mod-minix.o: mod-minix.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
@@ -299,9 +299,9 @@ hfs.mod: pre-hfs.o mod-hfs.o
 	$(TARGET_CC) $(hfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-hfs.o: hfs_mod-fs_hfs.o
+pre-hfs.o: $(hfs_mod_DEPENDENCIES) hfs_mod-fs_hfs.o
 	-rm -f $@
-	$(TARGET_CC) $(hfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(hfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ hfs_mod-fs_hfs.o
 
 mod-hfs.o: mod-hfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
@@ -351,9 +351,9 @@ jfs.mod: pre-jfs.o mod-jfs.o
 	$(TARGET_CC) $(jfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-jfs.o: jfs_mod-fs_jfs.o
+pre-jfs.o: $(jfs_mod_DEPENDENCIES) jfs_mod-fs_jfs.o
 	-rm -f $@
-	$(TARGET_CC) $(jfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(jfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ jfs_mod-fs_jfs.o
 
 mod-jfs.o: mod-jfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
@@ -403,9 +403,9 @@ iso9660.mod: pre-iso9660.o mod-iso9660.o
 	$(TARGET_CC) $(iso9660_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-iso9660.o: iso9660_mod-fs_iso9660.o
+pre-iso9660.o: $(iso9660_mod_DEPENDENCIES) iso9660_mod-fs_iso9660.o
 	-rm -f $@
-	$(TARGET_CC) $(iso9660_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(iso9660_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ iso9660_mod-fs_iso9660.o
 
 mod-iso9660.o: mod-iso9660.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(iso9660_mod_CFLAGS) -c -o $@ $<
@@ -455,9 +455,9 @@ xfs.mod: pre-xfs.o mod-xfs.o
 	$(TARGET_CC) $(xfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-xfs.o: xfs_mod-fs_xfs.o
+pre-xfs.o: $(xfs_mod_DEPENDENCIES) xfs_mod-fs_xfs.o
 	-rm -f $@
-	$(TARGET_CC) $(xfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(xfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ xfs_mod-fs_xfs.o
 
 mod-xfs.o: mod-xfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
@@ -507,9 +507,9 @@ affs.mod: pre-affs.o mod-affs.o
 	$(TARGET_CC) $(affs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-affs.o: affs_mod-fs_affs.o
+pre-affs.o: $(affs_mod_DEPENDENCIES) affs_mod-fs_affs.o
 	-rm -f $@
-	$(TARGET_CC) $(affs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(affs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ affs_mod-fs_affs.o
 
 mod-affs.o: mod-affs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
@@ -559,9 +559,9 @@ sfs.mod: pre-sfs.o mod-sfs.o
 	$(TARGET_CC) $(sfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-sfs.o: sfs_mod-fs_sfs.o
+pre-sfs.o: $(sfs_mod_DEPENDENCIES) sfs_mod-fs_sfs.o
 	-rm -f $@
-	$(TARGET_CC) $(sfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(sfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ sfs_mod-fs_sfs.o
 
 mod-sfs.o: mod-sfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_CFLAGS) -c -o $@ $<
@@ -611,9 +611,9 @@ hfsplus.mod: pre-hfsplus.o mod-hfsplus.o
 	$(TARGET_CC) $(hfsplus_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-hfsplus.o: hfsplus_mod-fs_hfsplus.o
+pre-hfsplus.o: $(hfsplus_mod_DEPENDENCIES) hfsplus_mod-fs_hfsplus.o
 	-rm -f $@
-	$(TARGET_CC) $(hfsplus_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(hfsplus_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ hfsplus_mod-fs_hfsplus.o
 
 mod-hfsplus.o: mod-hfsplus.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfsplus_mod_CFLAGS) -c -o $@ $<
@@ -666,9 +666,9 @@ amiga.mod: pre-amiga.o mod-amiga.o
 	$(TARGET_CC) $(amiga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-amiga.o: amiga_mod-partmap_amiga.o
+pre-amiga.o: $(amiga_mod_DEPENDENCIES) amiga_mod-partmap_amiga.o
 	-rm -f $@
-	$(TARGET_CC) $(amiga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(amiga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ amiga_mod-partmap_amiga.o
 
 mod-amiga.o: mod-amiga.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
@@ -718,9 +718,9 @@ apple.mod: pre-apple.o mod-apple.o
 	$(TARGET_CC) $(apple_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-apple.o: apple_mod-partmap_apple.o
+pre-apple.o: $(apple_mod_DEPENDENCIES) apple_mod-partmap_apple.o
 	-rm -f $@
-	$(TARGET_CC) $(apple_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(apple_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ apple_mod-partmap_apple.o
 
 mod-apple.o: mod-apple.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
@@ -770,9 +770,9 @@ pc.mod: pre-pc.o mod-pc.o
 	$(TARGET_CC) $(pc_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-pc.o: pc_mod-partmap_pc.o
+pre-pc.o: $(pc_mod_DEPENDENCIES) pc_mod-partmap_pc.o
 	-rm -f $@
-	$(TARGET_CC) $(pc_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(pc_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pc_mod-partmap_pc.o
 
 mod-pc.o: mod-pc.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
@@ -822,9 +822,9 @@ sun.mod: pre-sun.o mod-sun.o
 	$(TARGET_CC) $(sun_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-sun.o: sun_mod-partmap_sun.o
+pre-sun.o: $(sun_mod_DEPENDENCIES) sun_mod-partmap_sun.o
 	-rm -f $@
-	$(TARGET_CC) $(sun_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(sun_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ sun_mod-partmap_sun.o
 
 mod-sun.o: mod-sun.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
@@ -874,9 +874,9 @@ acorn.mod: pre-acorn.o mod-acorn.o
 	$(TARGET_CC) $(acorn_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-acorn.o: acorn_mod-partmap_acorn.o
+pre-acorn.o: $(acorn_mod_DEPENDENCIES) acorn_mod-partmap_acorn.o
 	-rm -f $@
-	$(TARGET_CC) $(acorn_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(acorn_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ acorn_mod-partmap_acorn.o
 
 mod-acorn.o: mod-acorn.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
@@ -926,9 +926,9 @@ gpt.mod: pre-gpt.o mod-gpt.o
 	$(TARGET_CC) $(gpt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-gpt.o: gpt_mod-partmap_gpt.o
+pre-gpt.o: $(gpt_mod_DEPENDENCIES) gpt_mod-partmap_gpt.o
 	-rm -f $@
-	$(TARGET_CC) $(gpt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(gpt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ gpt_mod-partmap_gpt.o
 
 mod-gpt.o: mod-gpt.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gpt_mod_CFLAGS) -c -o $@ $<
@@ -985,9 +985,9 @@ hello.mod: pre-hello.o mod-hello.o
 	$(TARGET_CC) $(hello_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-hello.o: hello_mod-hello_hello.o
+pre-hello.o: $(hello_mod_DEPENDENCIES) hello_mod-hello_hello.o
 	-rm -f $@
-	$(TARGET_CC) $(hello_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(hello_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ hello_mod-hello_hello.o
 
 mod-hello.o: mod-hello.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
@@ -1037,9 +1037,9 @@ boot.mod: pre-boot.o mod-boot.o
 	$(TARGET_CC) $(boot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-boot.o: boot_mod-commands_boot.o
+pre-boot.o: $(boot_mod_DEPENDENCIES) boot_mod-commands_boot.o
 	-rm -f $@
-	$(TARGET_CC) $(boot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(boot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ boot_mod-commands_boot.o
 
 mod-boot.o: mod-boot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
@@ -1089,9 +1089,9 @@ terminal.mod: pre-terminal.o mod-terminal.o
 	$(TARGET_CC) $(terminal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-terminal.o: terminal_mod-commands_terminal.o
+pre-terminal.o: $(terminal_mod_DEPENDENCIES) terminal_mod-commands_terminal.o
 	-rm -f $@
-	$(TARGET_CC) $(terminal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(terminal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ terminal_mod-commands_terminal.o
 
 mod-terminal.o: mod-terminal.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
@@ -1141,9 +1141,9 @@ ls.mod: pre-ls.o mod-ls.o
 	$(TARGET_CC) $(ls_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-ls.o: ls_mod-commands_ls.o
+pre-ls.o: $(ls_mod_DEPENDENCIES) ls_mod-commands_ls.o
 	-rm -f $@
-	$(TARGET_CC) $(ls_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(ls_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ls_mod-commands_ls.o
 
 mod-ls.o: mod-ls.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
@@ -1193,9 +1193,9 @@ cmp.mod: pre-cmp.o mod-cmp.o
 	$(TARGET_CC) $(cmp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-cmp.o: cmp_mod-commands_cmp.o
+pre-cmp.o: $(cmp_mod_DEPENDENCIES) cmp_mod-commands_cmp.o
 	-rm -f $@
-	$(TARGET_CC) $(cmp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(cmp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ cmp_mod-commands_cmp.o
 
 mod-cmp.o: mod-cmp.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
@@ -1245,9 +1245,9 @@ cat.mod: pre-cat.o mod-cat.o
 	$(TARGET_CC) $(cat_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-cat.o: cat_mod-commands_cat.o
+pre-cat.o: $(cat_mod_DEPENDENCIES) cat_mod-commands_cat.o
 	-rm -f $@
-	$(TARGET_CC) $(cat_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(cat_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ cat_mod-commands_cat.o
 
 mod-cat.o: mod-cat.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
@@ -1297,9 +1297,9 @@ help.mod: pre-help.o mod-help.o
 	$(TARGET_CC) $(help_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-help.o: help_mod-commands_help.o
+pre-help.o: $(help_mod_DEPENDENCIES) help_mod-commands_help.o
 	-rm -f $@
-	$(TARGET_CC) $(help_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(help_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ help_mod-commands_help.o
 
 mod-help.o: mod-help.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
@@ -1349,9 +1349,9 @@ font.mod: pre-font.o mod-font.o
 	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-font.o: font_mod-font_manager.o
+pre-font.o: $(font_mod_DEPENDENCIES) font_mod-font_manager.o
 	-rm -f $@
-	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ font_mod-font_manager.o
 
 mod-font.o: mod-font.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
@@ -1401,9 +1401,9 @@ search.mod: pre-search.o mod-search.o
 	$(TARGET_CC) $(search_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-search.o: search_mod-commands_search.o
+pre-search.o: $(search_mod_DEPENDENCIES) search_mod-commands_search.o
 	-rm -f $@
-	$(TARGET_CC) $(search_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(search_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ search_mod-commands_search.o
 
 mod-search.o: mod-search.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
@@ -1453,9 +1453,9 @@ test.mod: pre-test.o mod-test.o
 	$(TARGET_CC) $(test_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-test.o: test_mod-commands_test.o
+pre-test.o: $(test_mod_DEPENDENCIES) test_mod-commands_test.o
 	-rm -f $@
-	$(TARGET_CC) $(test_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(test_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ test_mod-commands_test.o
 
 mod-test.o: mod-test.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(test_mod_CFLAGS) -c -o $@ $<
@@ -1505,9 +1505,9 @@ loopback.mod: pre-loopback.o mod-loopback.o
 	$(TARGET_CC) $(loopback_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-loopback.o: loopback_mod-disk_loopback.o
+pre-loopback.o: $(loopback_mod_DEPENDENCIES) loopback_mod-disk_loopback.o
 	-rm -f $@
-	$(TARGET_CC) $(loopback_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(loopback_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ loopback_mod-disk_loopback.o
 
 mod-loopback.o: mod-loopback.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
@@ -1557,9 +1557,9 @@ configfile.mod: pre-configfile.o mod-configfile.o
 	$(TARGET_CC) $(configfile_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-configfile.o: configfile_mod-commands_configfile.o
+pre-configfile.o: $(configfile_mod_DEPENDENCIES) configfile_mod-commands_configfile.o
 	-rm -f $@
-	$(TARGET_CC) $(configfile_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(configfile_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ configfile_mod-commands_configfile.o
 
 mod-configfile.o: mod-configfile.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
@@ -1609,9 +1609,9 @@ terminfo.mod: pre-terminfo.o mod-terminfo.o
 	$(TARGET_CC) $(terminfo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-terminfo.o: terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o
+pre-terminfo.o: $(terminfo_mod_DEPENDENCIES) terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o
 	-rm -f $@
-	$(TARGET_CC) $(terminfo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(terminfo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ terminfo_mod-term_terminfo.o terminfo_mod-term_tparm.o
 
 mod-terminfo.o: mod-terminfo.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
@@ -1676,9 +1676,9 @@ blocklist.mod: pre-blocklist.o mod-blocklist.o
 	$(TARGET_CC) $(blocklist_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-blocklist.o: blocklist_mod-commands_blocklist.o
+pre-blocklist.o: $(blocklist_mod_DEPENDENCIES) blocklist_mod-commands_blocklist.o
 	-rm -f $@
-	$(TARGET_CC) $(blocklist_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(blocklist_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ blocklist_mod-commands_blocklist.o
 
 mod-blocklist.o: mod-blocklist.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(blocklist_mod_CFLAGS) -c -o $@ $<
@@ -1731,9 +1731,9 @@ gzio.mod: pre-gzio.o mod-gzio.o
 	$(TARGET_CC) $(gzio_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-gzio.o: gzio_mod-io_gzio.o
+pre-gzio.o: $(gzio_mod_DEPENDENCIES) gzio_mod-io_gzio.o
 	-rm -f $@
-	$(TARGET_CC) $(gzio_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(gzio_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ gzio_mod-io_gzio.o
 
 mod-gzio.o: mod-gzio.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<

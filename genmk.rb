@@ -117,9 +117,9 @@ UNDSYMFILES += #{undsym}
 	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-#{pre_obj}: #{objs_str}
+#{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	-rm -f $@
-	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ #{objs_str}
 
 #{mod_obj}: #{mod_src}
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(#{prefix}_CFLAGS) -c -o $@ $<
@@ -189,8 +189,8 @@ class Utility
     "CLEANFILES += #{@name} #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
-#{@name}: #{objs_str}
-	$(CC) -o $@ $^ $(LDFLAGS) $(#{prefix}_LDFLAGS)
+#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
+	$(CC) -o $@ #{objs_str} $(LDFLAGS) $(#{prefix}_LDFLAGS)
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]
@@ -227,8 +227,8 @@ class Program
     "CLEANFILES += #{@name} #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
-#{@name}: #{objs_str}
-	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
+#{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}
+	$(TARGET_CC) -o $@ #{objs_str} $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)
 
 " + objs.collect_with_index do |obj, i|
       src = sources[i]

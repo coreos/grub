@@ -1,3 +1,15 @@
+2006-09-22  Johan Rydberg  <jrydberg@gnu.org>
+
+	* genmk.rb: Add DEPENDENCIES variables to modules, utilities, and
+	programs.
+	* conf/i386-pc.rmk (grub_emu_DEPENDENCIES): Declare.
+	(normal_mod_DEPENDENCIES): Likewise.
+	* conf/i386-pc.mk: Regenerate.
+	* conf/i386-efi.mk: Likewise
+	* conf/common.mk: Likewise.
+	* conf/powerpc-ieee1275.mk: Likewise.
+	* conf/sparc64-ieee1275.mk: Likewise.
+	
 2006-09-22  Robert Millan  <rmh@aybabtu.com>
 
 	Sync with i386 version.
