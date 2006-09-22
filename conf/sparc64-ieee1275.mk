@@ -717,6 +717,7 @@ sfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 #linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
+normal_mod_DEPENDENCIES = grub_script.tab.c grub_script.tab.h
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/completion.c normal/execute.c				\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\

@@ -1,3 +1,13 @@
+2006-09-22  Marco Gerards  <marco@gnu.org>
+
+	* conf/i386-efi.rmk (grub_emu_DEPENDENCIES): New variable.
+	(normal_mod_DEPENDENCIES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_DEPENDENCIES): Likewise.
+	(normal_mod_DEPENDENCIES): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (normal_mod_DEPENDENCIES): Likewise.
+
 2006-09-22  Johan Rydberg  <jrydberg@gnu.org>
 
 	* genmk.rb: Add DEPENDENCIES variables to modules, utilities, and

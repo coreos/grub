@@ -50,6 +50,8 @@ grub_mkimage-util_resolve.o: util/resolve.c
 #	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c
 
 # For grub-emu.
+grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
+	grub_modules_init.h
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\
@@ -503,6 +505,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genke
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # For normal.mod.
+normal_mod_DEPENDENCIES = grub_script.tab.c grub_script.tab.h
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/completion.c normal/execute.c 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
