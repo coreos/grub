@@ -1,5 +1,11 @@
 2006-09-22  Marco Gerards  <marco@gnu.org>
 
+	* normal/main.c (get_line): Malloc memory instead of using
+	preallocated memory.  Removed the arguments `cmdline' and
+	`max_len'.  Updated all callers.
+
+2006-09-22  Marco Gerards  <marco@gnu.org>
+
 	* conf/i386-efi.rmk (grub_emu_DEPENDENCIES): New variable.
 	(normal_mod_DEPENDENCIES): Likewise.
 

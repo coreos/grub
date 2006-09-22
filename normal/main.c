@@ -40,13 +40,20 @@ static grub_menu_t current_menu = 0;
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 /* Read a line from the file FILE.  */
-static int
-get_line (grub_file_t file, char cmdline[], int max_len)
+static char *
+get_line (grub_file_t file)
 {
   char c;
   int pos = 0;
   int literal = 0;
   int comment = 0;
+  char *cmdline;
+  int max_len = 64;
+
+  /* Initially locate some space.  */
+  cmdline = grub_malloc (max_len);
+  if (! cmdline)
+    return 0;
 
   while (1)
     {
@@ -97,14 +104,32 @@ get_line (grub_file_t file, char cmdline[], int max_len)
 	  if (c == '\n')
 	    break;
 
-	  if (pos < max_len)
-	    cmdline[pos++] = c;
+	  if (pos >= max_len)
+	    {
+	      char *old_cmdline = cmdline;
+	      max_len = max_len * 2;
+	      cmdline = grub_realloc (cmdline, max_len);
+	      if (! cmdline)
+		{
+		  grub_free (old_cmdline);
+		  return 0;
+		}
+	    }
+
+	  cmdline[pos++] = c;
 	}
     }
 
   cmdline[pos] = '\0';
+
+  /* If the buffer is empty, don't return anything at all.  */
+  if (pos == 0)
+    {
+      grub_free (cmdline);
+      cmdline = 0;
+    }
   
-  return pos;
+  return cmdline;
 }
 
 static void
@@ -168,20 +193,15 @@ read_config_file (const char *config)
   
   grub_err_t getline (char **line)
     {
-      char cmdline[100];
       currline++;
 
-      if (! get_line (file, cmdline, sizeof (cmdline)))
-	return 0;
-      
-      *line = grub_strdup (cmdline);
+      *line = get_line (file);
       if (! *line)
 	return grub_errno;
 
       return GRUB_ERR_NONE;
     }
 
-  char cmdline[100];
   grub_menu_t newmenu;
 
   newmenu = grub_malloc (sizeof (*newmenu));
@@ -196,15 +216,22 @@ read_config_file (const char *config)
   if (! file)
     return 0;
 
-  while (get_line (file, cmdline, sizeof (cmdline)))
+  while (1)
     {
       struct grub_script *parsed_script;
       int startline;
-      
+      char *cmdline;
+
+      cmdline = get_line (file);
+      if (!cmdline)
+	break;
+
       startline = ++currline;
 
       /* Execute the script, line for line.  */
       parsed_script = grub_script_parse (cmdline, getline);
+
+      grub_free (cmdline);
 
       if (! parsed_script)
 	{
@@ -278,12 +305,14 @@ read_command_list (void)
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
-	      char buf[80]; /* XXX arbitrary */
-
-	      while (get_line (file, buf, sizeof (buf)))
+	      while (1)
 		{
 		  char *p;
 		  grub_command_t cmd;
+		  char *buf = get_line (file);
+
+		  if (! buf)
+		    break;
 		  
 		  if (! grub_isgraph (buf[0]))
 		    continue;
@@ -303,11 +332,15 @@ read_command_list (void)
 					       GRUB_COMMAND_FLAG_NOT_LOADED,
 					       0, 0, 0);
 		  if (! cmd)
-		    continue;
+		    {
+		      grub_free (buf);
+		      continue;
+		    }
 
 		  cmd->module_name = grub_strdup (p);
 		  if (! cmd->module_name)
 		    grub_unregister_command (buf);
+		  grub_free (buf);
 		}
 
 	      grub_file_close (file);
@@ -360,14 +393,20 @@ read_fs_list (void)
 	  file = grub_file_open (filename);
 	  if (file)
 	    {
-	      char buf[80]; /* XXX arbitrary */
-
-	      while (get_line (file, buf, sizeof (buf)))
+	      while (1)
 		{
-		  char *p = buf;
-		  char *q = buf + grub_strlen (buf) - 1;
+		  char *buf;
+		  char *p;
+		  char *q;
 		  grub_fs_module_list_t fs_mod;
 		  
+		  buf = get_line (file);
+		  if (! buf)
+		    break;
+
+		  p = buf;
+		  q = buf + grub_strlen (buf) - 1;
+
 		  /* Ignore space.  */
 		  while (grub_isspace (*p))
 		    p++;
