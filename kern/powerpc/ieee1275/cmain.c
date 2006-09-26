@@ -21,6 +21,7 @@
 #include <alloca.h>
 #include <stdint.h>
 #include <grub/kernel.h>
+#include <grub/misc.h>
 #include <grub/machine/kernel.h>
 #include <grub/ieee1275/ieee1275.h>
 

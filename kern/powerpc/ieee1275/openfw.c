@@ -100,11 +100,10 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
   aliasname[0] = '\0';
 
   /* XXX: Are the while conditions correct?  */
-  while (grub_ieee1275_next_property (devalias, aliasname, aliasname, &actual)
-	 || actual)
+  while (grub_ieee1275_next_property (devalias, aliasname, aliasname, 0))
     {
       grub_ieee1275_phandle_t dev;
-      grub_size_t pathlen;
+      grub_ssize_t pathlen;
       char *devpath;
       /* XXX: This should be large enough for any possible case.  */
       char devtype[64];

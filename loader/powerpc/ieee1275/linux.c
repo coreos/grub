@@ -47,7 +47,7 @@ static grub_err_t
 grub_linux_boot (void)
 {
   kernel_entry_t linuxmain;
-  grub_size_t actual;
+  grub_ssize_t actual;
 
   /* Set the command line arguments.  */
   grub_ieee1275_set_property (grub_ieee1275_chosen, "bootargs", linux_args,
@@ -196,7 +196,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 	{
 	  void *segment_addr = ((char *) entry) + offset;
 
-	  if (grub_file_seek (file, phdr->p_offset) == -1)
+	  if (grub_file_seek (file, phdr->p_offset) == (grub_off_t) -1)
 	    {
 	      grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
 	      goto fail;

@@ -41,3 +41,5 @@ void EXPORT_FUNC (__trampoline_setup) (void);
 void EXPORT_FUNC (__truncdfsf2) (void);
 void EXPORT_FUNC (__unpack_d) (void);
 void EXPORT_FUNC (__unpack_f) (void);
+void EXPORT_FUNC (__floatdisf) (void);
+void EXPORT_FUNC (__cmpdi2) (void);
