@@ -1,5 +1,9 @@
 2005-09-25  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* util/powerpc/ieee1275/grub-mkimage.c: Include config.h.
+
+2005-09-25  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* include/grub/powerpc/libgcc.h (__floatdisf): New prototype.
 	(__cmpdi): Likewise.
 
@@ -7,7 +11,7 @@
 	`flags' to `grub_ieee1275_next_property'.  Change `pathlen' to type
 	`grub_ssize_t'.
 
-	* kern/powerpc/ieee1275/cmain.c: include grub/misc.h.
+	* kern/powerpc/ieee1275/cmain.c: Include grub/misc.h.
 
 	* loader/powerpc/ieee1275/linux.c (grub_linux_boot): Change `actual'
 	to type `grub_ssize_t'.
