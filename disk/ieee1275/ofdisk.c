@@ -28,7 +28,7 @@ static int
 grub_ofdisk_iterate (int (*hook) (const char *name))
 {
   auto int dev_iterate (struct grub_ieee1275_devalias *alias);
-  
+
   int dev_iterate (struct grub_ieee1275_devalias *alias)
     {
       if (! grub_strcmp (alias->type, "block"))
@@ -130,7 +130,7 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   grub_dprintf ("disk",
 		"Reading handle %p: sector 0x%llx, size 0x%lx, buf %p.\n",
-		(void *) disk->data, sector, size, buf);
+		(void *) disk->data, sector, (long) size, buf);
 
   pos = sector * 512UL;
 

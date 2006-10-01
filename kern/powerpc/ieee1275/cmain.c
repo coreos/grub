@@ -51,19 +51,18 @@ grub_ieee1275_find_options (void)
 {
   grub_ieee1275_phandle_t options;
   grub_ieee1275_phandle_t openprom;
-  int realmode;
-  int smartfw;
+  int rc;
+  int realmode = 0;
 
   grub_ieee1275_finddevice ("/options", &options);
-  grub_ieee1275_get_property (options, "real-mode?", &realmode,
-			      sizeof (realmode), 0);
-  if (realmode)
+  rc = grub_ieee1275_get_property (options, "real-mode?", &realmode,
+				   sizeof realmode, 0);
+  if ((rc >= 0) && realmode)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_REAL_MODE);
 
   grub_ieee1275_finddevice ("/openprom", &openprom);
-  smartfw = grub_ieee1275_get_property (openprom, "SmartFirmware-version",
-					0, 0, 0);
-  if (smartfw != -1)
+  rc = grub_ieee1275_get_property (openprom, "SmartFirmware-version", 0, 0, 0);
+  if (rc >= 0)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS);
 }
 

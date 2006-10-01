@@ -1,5 +1,27 @@
 2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Cast `size' to long.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_next_property):
+	Remove `flags' argument.  All callers changed.
+	* kern/ieee1275/ieee1275.c (IEEE1275_PHANDLE_ROOT): Removed.
+	(IEEE1275_IHANDLE_INVALID): New variable.
+	(IEEE1275_CELL_INVALID): New variable.
+	(grub_ieee1275_finddevice, grub_ieee1275_get_property,
+	grub_ieee1275_get_property_length, grub_ieee1275_instance_to_package,
+	grub_ieee1275_package_to_path, grub_ieee1275_instance_to_path,
+	grub_ieee1275_peer, grub_ieee1275_child, grub_ieee1275_open,
+	grub_ieee1275_claim, grub_ieee1275_set_property): Error-check return
+	codes from Open Firmware.  All callers updated.
+	(grub_ieee1275_next_property): Directly return Open Firmware return
+	code.
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options):
+	Standardize error checking from `grub_ieee1275_get_property'.
+	* kern/powerpc/ieee1275/openfw.c (grub_devalias_iterate): Rename
+	`devalias' to `aliases'.  Correct comments.  Consolidate error paths.
+
+2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* kern/ieee1275/ieee1275.c (grub_ieee1275_instance_to_path): Rename
 	`instance_to_package_args' to `instance_to_path_args'.
 
