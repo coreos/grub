@@ -1,3 +1,14 @@
+2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_instance_to_path): Rename
+	`instance_to_package_args' to `instance_to_path_args'.
+
+	* kern/powerpc/ieee1275/init.c (grub_machine_init): Use
+	`grub_ieee1275_chosen'.
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_init): Call
+	`grub_ieee1275_interpret'.
+
 2005-09-25  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* util/powerpc/ieee1275/grub-mkimage.c: Include config.h.

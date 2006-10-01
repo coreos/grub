@@ -311,6 +311,10 @@ grub_ofconsole_init (void)
   grub_ssize_t actual;
   int col;
 
+  /* The latest PowerMacs don't actually initialize the screen for us, so we
+   * use this trick to re-open the output device.  */
+  grub_ieee1275_interpret ("output-device output", 0);
+
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdout", data,
 				  sizeof data, &actual)
       || actual != sizeof data)

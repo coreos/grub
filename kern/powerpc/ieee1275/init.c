@@ -116,7 +116,6 @@ void
 grub_machine_init (void)
 {
   char args[256];
-  grub_ieee1275_phandle_t chosen;
   int actual;
   extern char _start;
 
@@ -137,8 +136,7 @@ grub_machine_init (void)
   grub_ofdisk_init ();
 
   /* Process commandline.  */
-  grub_ieee1275_finddevice ("/chosen", &chosen);
-  if (grub_ieee1275_get_property (chosen, "bootargs", &args,
+  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootargs", &args,
 				  sizeof args, &actual) == 0
       && actual > 1)
     {

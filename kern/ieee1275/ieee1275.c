@@ -190,7 +190,7 @@ grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
 				char *path, grub_size_t len,
 				grub_ssize_t *actual)
 {
-  struct instance_to_package_args
+  struct instance_to_path_args
   {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_ihandle_t ihandle;
