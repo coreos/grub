@@ -1,5 +1,10 @@
 2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* kern/powerpc/ieee1275/cmain.c (cmain): Remove incomplete Old World
+	PowerMac support.
+
+2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Cast `size' to long.
 
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_next_property):
