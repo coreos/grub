@@ -1,3 +1,8 @@
+2006-10-05  Tristan Gingold  <tristan.gingold@bull.net>
+
+	* kern/misc.c (grub_strtoull): Guess the base only if not
+	specified.
+
 2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/cmain.c (cmain): Remove incomplete Old World
