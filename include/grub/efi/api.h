@@ -167,7 +167,7 @@ typedef grub_uint16_t grub_efi_char16_t;
 typedef grub_efi_intn_t grub_efi_status_t;
 
 #define GRUB_EFI_ERROR_CODE(value)	\
-  ((1 << (sizeof (grub_efi_status_t) * 8 - 1)) | (value))
+  ((1L << (sizeof (grub_efi_status_t) * 8 - 1)) | (value))
 
 #define GRUB_EFI_WARNING_CODE(value)	(value)
 

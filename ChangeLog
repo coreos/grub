@@ -1,3 +1,7 @@
+2006-10-10  Tristan Gingold  <tristan.gingold@bull.net>
+
+	* include/grub/efi/api.h (GRUB_EFI_ERROR_CODE): Long constant.
+
 2006-10-05  Tristan Gingold  <tristan.gingold@bull.net>
 
 	* kern/misc.c (grub_strtoull): Guess the base only if not
