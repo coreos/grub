@@ -245,5 +245,5 @@ grub_guess_root_device (const char *dir)
     }
 #endif
     
-  return grub_util_biosdisk_get_grub_dev (os_dev);
+  return os_dev;
 }

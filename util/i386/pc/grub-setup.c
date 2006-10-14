@@ -683,7 +683,7 @@ main (int argc, char *argv[])
     }
   else
     {
-      root_dev = grub_guess_root_device (dir ? : DEFAULT_DIRECTORY);
+      root_dev = grub_util_biosdisk_get_grub_dev (grub_guess_root_device (dir ? : DEFAULT_DIRECTORY));
       if (! root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",

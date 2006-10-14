@@ -6,7 +6,7 @@ COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-#sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probefs
+#sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probe
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
@@ -23,8 +23,8 @@ grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
 # For grub-mkdevicemap.
 #grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
 
-# For grub-probefs.
-#grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
+# For grub-probe.
+#grub_probe_SOURCES = util/i386/pc/grub-probe.c	\
 #	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
 #	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 #	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c fs/ufs.c 	\

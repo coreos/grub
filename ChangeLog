@@ -1,3 +1,22 @@
+2006-10-14  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/getroot.c (grub_guess_root_device): Stop using
+	grub_util_biosdisk_get_grub_dev to convert system device to GRUB device.
+	* util/grub-emu.c (main): Use grub_util_biosdisk_get_grub_dev with the
+	string returned by grub_guess_root_device.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/i386/pc/grub-probefs.c: Likewise.
+
+	* util/i386/pc/grub-probefs.c: Rename to ...
+	* util/i386/pc/grub-probe.c: ... this.
+	* DISTLIST: Remove grub-probefs, add grub-probe.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* util/i386/pc/grub-install.in: Likewise.
+
+	* util/i386/pc/grub-probe.c: Add --target=(fs|device|drive) option to
+	choose which information we want to print.
+
 2006-10-14  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added commands/echo.c, disk/lvm.c, disk/raid.c,

@@ -33,7 +33,7 @@ pkglibdir=${libdir}/${PACKAGE_TARNAME}/${target_cpu}-${platform}
 grub_setup=${sbindir}/grub-setup
 grub_mkimage=${bindir}/grub-mkimage
 grub_mkdevicemap=${sbindir}/grub-mkdevicemap
-grub_probefs=${sbindir}/grub-probefs
+grub_probe=${sbindir}/grub-probe
 rootdir=
 grub_prefix=/boot/grub
 modules=
@@ -59,7 +59,7 @@ Install GRUB on your drive.
   --grub-setup=FILE       use FILE as grub-setup
   --grub-mkimage=FILE     use FILE as grub-mkimage
   --grub-mkdevicemap=FILE use FILE as grub-mkdevicemap
-  --grub-probefs=FILE     use FILE as grub-probefs
+  --grub-probe=FILE       use FILE as grub-probe
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
 
@@ -92,8 +92,8 @@ for option in "$@"; do
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
     --grub-mkdevicemap=*)
 	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
-    --grub-probefs=*)
-	grub_probefs=`echo "$option" | sed 's/--grub-probefs=//'` ;;
+    --grub-probe=*)
+	grub_probe=`echo "$option" | sed 's/--grub-probe=//'` ;;
     --no-floppy)
 	no_floppy="--no-floppy" ;;
     --recheck)
@@ -207,7 +207,7 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ${pkglibdir}/*.img; do
 done
 
 # Create the core image. First, auto-detect the filesystem module.
-fs_module=`$grub_probefs --device-map=${device_map} ${grubdir}`
+fs_module=`$grub_probe --target=fs --device-map=${device_map} ${grubdir}`
 if test "x$fs_module" = x -a "x$modules" = x; then
     echo "Auto-detection of a filesystem module failed." 1>&2
     echo "Please specify the module with the option \`--modules' explicitly." 1>&2
