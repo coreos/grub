@@ -3,6 +3,17 @@ New in 1.95:
 * Number partitions from 1 instead of 0. For instance, the first
   partition of "hd0" is now "hd0,1" but not "hd0,0".
 
+* grub-probefs is renamed to grub-probe, and supports printing a
+  guessed OS device name and a GRUB drive name.
+
+* RAID and LVM support is added.
+
+* New command, echo.
+
+* The disk API is changed to support 64-bit addressing.
+
+* A TGA loader is added for the video API.
+
 New in 1.94 - 2006-06-04:
 
 * Fix several serious bugs in HFS+.
