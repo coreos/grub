@@ -32,7 +32,9 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_BIOSDISK_ID,
     GRUB_DISK_DEVICE_OFDISK_ID,
     GRUB_DISK_DEVICE_LOOPBACK_ID,
-    GRUB_DISK_DEVICE_EFIDISK_ID
+    GRUB_DISK_DEVICE_EFIDISK_ID,
+    GRUB_DISK_DEVICE_RAID_ID,
+    GRUB_DISK_DEVICE_LVM_ID
   };
 
 struct grub_disk;
@@ -132,5 +134,6 @@ grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
 					 grub_size_t size,
 					 const char *buf);
 
+grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 
 #endif /* ! GRUB_DISK_HEADER */

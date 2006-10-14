@@ -59,19 +59,22 @@ make_install_device (void)
   /* XXX: This should be enough.  */
   char dev[100];
 
-  grub_sprintf (dev, "(%cd%u",
-		(grub_boot_drive & 0x80) ? 'h' : 'f',
-		grub_boot_drive & 0x7f);
-  
-  if (grub_install_dos_part >= 0)
-    grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part + 1);
-
-  if (grub_install_bsd_part >= 0)
-    grub_sprintf (dev + grub_strlen (dev), ",%c", grub_install_bsd_part + 'a');
-
-  grub_sprintf (dev + grub_strlen (dev), ")%s", grub_prefix);
-  grub_strcpy (grub_prefix, dev);
-  
+  if (grub_install_dos_part != -2)
+    {
+      grub_sprintf (dev, "(%cd%u",
+		    (grub_boot_drive & 0x80) ? 'h' : 'f',
+		    grub_boot_drive & 0x7f);
+      
+      if (grub_install_dos_part >= 0)
+	grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part + 1);
+      
+      if (grub_install_bsd_part >= 0)
+	grub_sprintf (dev + grub_strlen (dev), ",%c", grub_install_bsd_part + 'a');
+      
+      grub_sprintf (dev + grub_strlen (dev), ")%s", grub_prefix);
+      grub_strcpy (grub_prefix, dev);
+    }
+      
   return grub_prefix;
 }
 

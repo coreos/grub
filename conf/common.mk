@@ -963,6 +963,113 @@ fs-gpt_mod-partmap_gpt.lst: partmap/gpt.c genfslist.sh
 gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# Special disk structures
+
+pkgdata_MODULES += raid.mod lvm.mod
+
+# For raid.mod
+raid_mod_SOURCES = disk/raid.c
+CLEANFILES += raid.mod mod-raid.o mod-raid.c pre-raid.o raid_mod-disk_raid.o und-raid.lst
+ifneq ($(raid_mod_EXPORTS),no)
+CLEANFILES += def-raid.lst
+DEFSYMFILES += def-raid.lst
+endif
+MOSTLYCLEANFILES += raid_mod-disk_raid.d
+UNDSYMFILES += und-raid.lst
+
+raid.mod: pre-raid.o mod-raid.o
+	-rm -f $@
+	$(TARGET_CC) $(raid_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-raid.o: $(raid_mod_DEPENDENCIES) raid_mod-disk_raid.o
+	-rm -f $@
+	$(TARGET_CC) $(raid_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ raid_mod-disk_raid.o
+
+mod-raid.o: mod-raid.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid_mod_CFLAGS) -c -o $@ $<
+
+mod-raid.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'raid' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(raid_mod_EXPORTS),no)
+def-raid.lst: pre-raid.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 raid/' > $@
+endif
+
+und-raid.lst: pre-raid.o
+	echo 'raid' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+raid_mod-disk_raid.o: disk/raid.c
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid_mod_CFLAGS) -MD -c -o $@ $<
+-include raid_mod-disk_raid.d
+
+CLEANFILES += cmd-raid_mod-disk_raid.lst fs-raid_mod-disk_raid.lst
+COMMANDFILES += cmd-raid_mod-disk_raid.lst
+FSFILES += fs-raid_mod-disk_raid.lst
+
+cmd-raid_mod-disk_raid.lst: disk/raid.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh raid > $@ || (rm -f $@; exit 1)
+
+fs-raid_mod-disk_raid.lst: disk/raid.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh raid > $@ || (rm -f $@; exit 1)
+
+
+raid_mod_CFLAGS = $(COMMON_CFLAGS)
+raid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For raid.mod
+lvm_mod_SOURCES = disk/lvm.c
+CLEANFILES += lvm.mod mod-lvm.o mod-lvm.c pre-lvm.o lvm_mod-disk_lvm.o und-lvm.lst
+ifneq ($(lvm_mod_EXPORTS),no)
+CLEANFILES += def-lvm.lst
+DEFSYMFILES += def-lvm.lst
+endif
+MOSTLYCLEANFILES += lvm_mod-disk_lvm.d
+UNDSYMFILES += und-lvm.lst
+
+lvm.mod: pre-lvm.o mod-lvm.o
+	-rm -f $@
+	$(TARGET_CC) $(lvm_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-lvm.o: $(lvm_mod_DEPENDENCIES) lvm_mod-disk_lvm.o
+	-rm -f $@
+	$(TARGET_CC) $(lvm_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ lvm_mod-disk_lvm.o
+
+mod-lvm.o: mod-lvm.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lvm_mod_CFLAGS) -c -o $@ $<
+
+mod-lvm.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'lvm' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(lvm_mod_EXPORTS),no)
+def-lvm.lst: pre-lvm.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 lvm/' > $@
+endif
+
+und-lvm.lst: pre-lvm.o
+	echo 'lvm' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+lvm_mod-disk_lvm.o: disk/lvm.c
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lvm_mod_CFLAGS) -MD -c -o $@ $<
+-include lvm_mod-disk_lvm.d
+
+CLEANFILES += cmd-lvm_mod-disk_lvm.lst fs-lvm_mod-disk_lvm.lst
+COMMANDFILES += cmd-lvm_mod-disk_lvm.lst
+FSFILES += fs-lvm_mod-disk_lvm.lst
+
+cmd-lvm_mod-disk_lvm.lst: disk/lvm.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lvm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh lvm > $@ || (rm -f $@; exit 1)
+
+fs-lvm_mod-disk_lvm.lst: disk/lvm.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lvm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh lvm > $@ || (rm -f $@; exit 1)
+
+
+lvm_mod_CFLAGS = $(COMMON_CFLAGS)
+lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\

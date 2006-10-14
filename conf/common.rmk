@@ -117,6 +117,19 @@ gpt_mod_SOURCES = partmap/gpt.c
 gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# Special disk structures
+
+pkgdata_MODULES += raid.mod lvm.mod
+
+# For raid.mod
+raid_mod_SOURCES = disk/raid.c
+raid_mod_CFLAGS = $(COMMON_CFLAGS)
+raid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For raid.mod
+lvm_mod_SOURCES = disk/lvm.c
+lvm_mod_CFLAGS = $(COMMON_CFLAGS)
+lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\

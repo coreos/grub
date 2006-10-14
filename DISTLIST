@@ -36,6 +36,7 @@ commands/blocklist.c
 commands/cat.c
 commands/cmp.c
 commands/configfile.c
+commands/echo.c
 commands/help.c
 commands/ls.c
 commands/search.c
@@ -61,6 +62,8 @@ conf/powerpc-ieee1275.rmk
 conf/sparc64-ieee1275.mk
 conf/sparc64-ieee1275.rmk
 disk/loopback.c
+disk/lvm.c
+disk/raid.c
 disk/efi/efidisk.c
 disk/i386/pc/biosdisk.c
 disk/ieee1275/ofdisk.c
@@ -80,6 +83,7 @@ fs/hfsplus.c
 hello/hello.c
 include/grub/acorn_filecore.h
 include/grub/arg.h
+include/grub/bitmap.h
 include/grub/boot.h
 include/grub/cache.h
 include/grub/device.h
@@ -96,6 +100,7 @@ include/grub/gzio.h
 include/grub/hfs.h
 include/grub/kernel.h
 include/grub/loader.h
+include/grub/lvm.h
 include/grub/misc.h
 include/grub/mm.h
 include/grub/net.h
@@ -103,6 +108,7 @@ include/grub/normal.h
 include/grub/parser.h
 include/grub/partition.h
 include/grub/pc_partition.h
+include/grub/raid.h
 include/grub/rescue.h
 include/grub/script.h
 include/grub/setjmp.h
@@ -140,6 +146,7 @@ include/grub/i386/pc/time.h
 include/grub/i386/pc/vbe.h
 include/grub/i386/pc/vbeblit.h
 include/grub/i386/pc/vbefill.h
+include/grub/i386/pc/vbeutil.h
 include/grub/i386/pc/vga.h
 include/grub/i386/pc/util/biosdisk.h
 include/grub/ieee1275/ieee1275.h
@@ -162,7 +169,9 @@ include/grub/sparc64/ieee1275/ieee1275.h
 include/grub/sparc64/ieee1275/kernel.h
 include/grub/sparc64/ieee1275/time.h
 include/grub/util/getroot.h
+include/grub/util/lvm.h
 include/grub/util/misc.h
+include/grub/util/raid.h
 include/grub/util/resolve.h
 io/gzio.c
 kern/device.c
@@ -244,7 +253,9 @@ term/i386/pc/vga.c
 term/ieee1275/ofconsole.c
 util/console.c
 util/grub-emu.c
+util/lvm.c
 util/misc.c
+util/raid.c
 util/resolve.c
 util/unifont2pff.rb
 util/i386/efi/grub-mkimage.c
@@ -259,7 +270,10 @@ util/i386/pc/misc.c
 util/powerpc/ieee1275/grub-install.in
 util/powerpc/ieee1275/grub-mkimage.c
 util/powerpc/ieee1275/misc.c
+video/bitmap.c
 video/video.c
 video/i386/pc/vbe.c
 video/i386/pc/vbeblit.c
 video/i386/pc/vbefill.c
+video/readers/tga.c
+video/i386/pc/vbeutil.c

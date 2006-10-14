@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -265,7 +265,14 @@ grub_disk_open (const char *name)
   disk->dev = dev;
 
   if (p)
-    disk->partition = grub_partition_probe (disk, p + 1);
+    {
+      disk->partition = grub_partition_probe (disk, p + 1);
+      if (! disk->partition)
+	{
+	  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "no such partition");
+	  goto fail;
+	}
+    }
 
   /* The cache will be invalidated about 2 seconds after a device was
      closed.  */
@@ -521,4 +528,13 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
  finish:
 
   return grub_errno;
+}
+
+grub_uint64_t 
+grub_disk_get_size (grub_disk_t disk)
+{
+  if (disk->partition)
+    return grub_partition_get_len (disk->partition);
+  else
+    return disk->total_sectors;
 }

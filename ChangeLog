@@ -1,3 +1,50 @@
+2006-10-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added commands/echo.c, disk/lvm.c, disk/raid.c,
+	include/grub/bitmap.h, include/grub/lvm.h, include/grub/raid.h,
+	include/grub/i386/pc/vbeutil.h, include/grub/util/lvm.h,
+	include/grub/util/raid.h, util/lvm.c, util/raid.c, video/bitmap.c,
+	video/readers/tga.c and video/i386/pc/vbeutil.c.
+
+2006-10-14  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	Added support for RAID and LVM.
+	
+	* disk/lvm.c: New file.
+	* disk/raid.c: Likewise.
+	* include/grub/lvm.h: Likewise.
+	* include/grub/raid.h: Likewise.	
+	* include/grub/util/lvm.h: Likewise.
+	* include/grub/util/raid.h: Likewise.
+	* util/lvm.c: Likewise.
+	* util/raid.c: Likewise.
+
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	GRUB_DISK_DEVICE_RAID_ID and GRUB_DISK_DEVICE_LVM_ID.
+	(grub_disk_get_size): New prototype.
+	* kern/disk.c (grub_disk_open): Check whether grub_partition_probe()
+	returns a partition.
+	(grub_disk_get_size): New function.
+	
+	* kern/i386/pc/init.c (make_install_device): Copy the prefix
+	verbatim if grub_install_dos_part is -2.
+
+	* util/i386/pc/getroot.c (grub_guess_root_device): Support RAID
+	and LVM devices.
+
+	* util/i386/pc/grub-setup.c (setup): New argument
+	MUST_EMBED. Force embedding of GRUB when the argument is
+	true. Close FILE before	returning.
+	(main): Add support for RAID and LVM.
+	
+	* conf/common.rmk: Add RAID and LVM modules.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add util/raid.c and
+	util/lvm.c.
+	(grub_emu_SOURCES): Add disk/raid.c and disk/lvm.c.
+
+	* kern/misc.c (grub_strstr): New function.
+	* include/grub/misc.h (grub_strstr): New prototype.
+
 2006-10-10  Tristan Gingold  <tristan.gingold@bull.net>
 
 	* include/grub/efi/api.h (GRUB_EFI_ERROR_CODE): Long constant.

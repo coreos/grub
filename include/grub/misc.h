@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ int EXPORT_FUNC(grub_strncasecmp) (const char *s1, const char *s2, int c);
 char *EXPORT_FUNC(grub_strchr) (const char *s, int c);
 char *EXPORT_FUNC(grub_strrchr) (const char *s, int c);
 int EXPORT_FUNC(grub_strword) (const char *s, const char *w);
+char *EXPORT_FUNC(grub_strstr) (const char *haystack, const char *needle);
 int EXPORT_FUNC(grub_iswordseparator) (int c);
 int EXPORT_FUNC(grub_isspace) (int c);
 int EXPORT_FUNC(grub_isprint) (int c);

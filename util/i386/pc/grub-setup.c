@@ -32,6 +32,8 @@
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>
+#include <grub/util/raid.h>
+#include <grub/util/lvm.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -91,7 +93,7 @@ grub_refresh (void)
 static void
 setup (const char *prefix, const char *dir,
        const char *boot_file, const char *core_file,
-       const char *root, const char *dest)
+       const char *root, const char *dest, int must_embed)
 {
   char *boot_path, *core_path;
   char *boot_img, *core_img;
@@ -218,9 +220,12 @@ setup (const char *prefix, const char *dir,
 		    + GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
-  root_dev = grub_device_open (root);
-  if (! root_dev)
-    grub_util_error ("%s", grub_errmsg);
+  if (!must_embed)
+    {
+      root_dev = grub_device_open (root);
+      if (! root_dev)
+	grub_util_error ("%s", grub_errmsg);
+    }
 
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
@@ -280,7 +285,9 @@ setup (const char *prefix, const char *dir,
 	  block->segment = 0;
 
 	  /* Embed information about the installed location.  */
-	  if (root_dev->disk->partition)
+	  if (must_embed)
+	    *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-2);
+	  else if (root_dev->disk->partition)
 	    {
 	      struct grub_pc_partition *pcdata =
 		root_dev->disk->partition->data;
@@ -316,6 +323,9 @@ setup (const char *prefix, const char *dir,
 	  goto finish;
 	}
     }
+  else if (must_embed)
+    grub_util_error ("Can't embed the core image, but this is required when\n"
+		     "the root device is on a RAID array or LVM volume.");
   
   /* The core image must be put on a filesystem unfortunately.  */
   grub_util_info ("will leave the core image on the filesystem");
@@ -422,6 +432,8 @@ setup (const char *prefix, const char *dir,
       != (grub_ssize_t) core_size - GRUB_DISK_SECTOR_SIZE)
     grub_util_error ("Failed to read the rest sectors of the core image");
 
+  grub_file_close (file);
+  
   free (core_path);
   free (tmp_img);
   
@@ -481,7 +493,8 @@ setup (const char *prefix, const char *dir,
   free (core_img);
   free (boot_img);
   grub_device_close (dest_dev);
-  grub_device_close (root_dev);
+  if (!must_embed)
+    grub_device_close (root_dev);
 }
 
 static struct option options[] =
@@ -548,6 +561,7 @@ main (int argc, char *argv[])
   char *root_dev = 0;
   char *prefix;
   char *dest_dev;
+  int must_embed = 0;
   
   progname = "grub-setup";
 
@@ -678,12 +692,50 @@ main (int argc, char *argv[])
 	}
     }
 
+#ifdef __linux__
+  if (grub_util_lvm_isvolume (root_dev))
+    {
+      char *newprefix;
+      must_embed = 1;
+
+      newprefix = xmalloc (1 + strlen (root_dev) + 1 + strlen (prefix) + 1);
+      sprintf (newprefix, "(%s)%s", root_dev, prefix);
+      free (prefix);
+      prefix = newprefix;
+    }
+    
+  if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
+      && dest_dev[2] >= '0' && dest_dev[2] <= '9')
+    {
+      char **devicelist;
+      char *raid_prefix;
+      int i;
+
+      raid_prefix = xmalloc (1 + strlen (dest_dev) + 1 + strlen (prefix) + 1);
+
+      sprintf (raid_prefix, "(%s)%s", dest_dev, prefix);
+      
+      devicelist = grub_util_raid_getmembers (dest_dev);
+
+      for (i = 0; devicelist[i]; i++)
+	{
+	  setup (raid_prefix,
+		 dir ? : DEFAULT_DIRECTORY,
+		 boot_file ? : DEFAULT_BOOT_FILE,
+		 core_file ? : DEFAULT_CORE_FILE,
+		 root_dev, grub_util_biosdisk_get_grub_dev (devicelist[i]), 1);
+	}
+
+      free (raid_prefix);
+    }
+  else
+#endif
   /* Do the real work.  */
-  setup (prefix,
-	 dir ? : DEFAULT_DIRECTORY,
-	 boot_file ? : DEFAULT_BOOT_FILE,
-	 core_file ? : DEFAULT_CORE_FILE,
-	 root_dev, dest_dev);
+    setup (prefix,
+	   dir ? : DEFAULT_DIRECTORY,
+	   boot_file ? : DEFAULT_BOOT_FILE,
+	   core_file ? : DEFAULT_CORE_FILE,
+	   root_dev, dest_dev, must_embed);
 
   /* Free resources.  */
   grub_ext2_fini ();

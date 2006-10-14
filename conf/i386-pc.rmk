@@ -64,7 +64,7 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c	\
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
 	fs/sfs.c kern/parser.c kern/partition.c partmap/pc.c		\
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/hfsplus.c kern/file.c	\
-	kern/fs.c kern/env.c fs/fshelp.c
+	kern/fs.c kern/env.c fs/fshelp.c util/raid.c util/lvm.c
 
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
@@ -85,7 +85,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c				\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
-	disk/loopback.c							\
+	disk/loopback.c	disk/raid.c disk/lvm.c				\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
 	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
 	io/gzio.c							\
