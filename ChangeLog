@@ -1,3 +1,14 @@
+2006-10-14  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/grub-probe.c (probe): Print DEVICE_NAME instead of
+	DRIVE_NAME when grub_util_biosdisk_get_grub_dev fails. Open
+	DRIVE_NAME instead of DEVICE_NAME. Make sure that DEVICE_NAME and
+	DRIVE_NAME are always freed.
+
+	* util/i386/pc/biosdisk.c (make_device_name): Add one into
+	DOS_PART, as a DOS partition is counted from one instead of zero
+	now. Reported by Robert Millan.
+
 2006-10-14  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/getroot.c (grub_guess_root_device): Stop using

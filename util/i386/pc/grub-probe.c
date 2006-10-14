@@ -80,7 +80,7 @@ static void
 probe (const char *path)
 {
   char *device_name;
-  char *drive_name;
+  char *drive_name = 0;
   grub_device_t dev;
   grub_fs_t fs;
   
@@ -88,30 +88,30 @@ probe (const char *path)
   if (! device_name)
     {
       fprintf (stderr, "cannot find a device for %s.\n", path);
-      return;
+      goto end;
     }
 
   if (print == PRINT_DEVICE)
     {
       printf ("%s\n", device_name);
-      return;
+      goto end;
     }
 
   drive_name = grub_util_biosdisk_get_grub_dev (device_name);
   if (! drive_name)
     {
-      fprintf (stderr, "cannot find a GRUB drive for %s.\n", drive_name);
-      return;
+      fprintf (stderr, "cannot find a GRUB drive for %s.\n", device_name);
+      goto end;
     }
 
   if (print == PRINT_DRIVE)
     {
       printf ("(%s)\n", drive_name);
-      return;
+      goto end;
     }
 
-  grub_util_info ("opening %s", device_name);
-  dev = grub_device_open (device_name);
+  grub_util_info ("opening %s", drive_name);
+  dev = grub_device_open (drive_name);
   if (! dev)
     grub_util_error ("%s", grub_errmsg);
 
@@ -122,7 +122,11 @@ probe (const char *path)
   printf ("%s\n", fs->name);
   
   grub_device_close (dev);
+
+ end:
+  
   free (device_name);
+  free (drive_name);
 }
 
 static struct option options[] =

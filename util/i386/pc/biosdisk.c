@@ -592,7 +592,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
   sprintf (p, (drive & 0x80) ? "hd%d" : "fd%d", drive & ~0x80);
   
   if (dos_part >= 0)
-    sprintf (p + strlen (p), ",%d", dos_part);
+    sprintf (p + strlen (p), ",%d", dos_part + 1);
   
   if (bsd_part >= 0)
     sprintf (p + strlen (p), ",%c", bsd_part + 'a');
