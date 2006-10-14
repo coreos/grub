@@ -234,7 +234,7 @@ grub_guess_root_device (const char *dir)
       return grub_dev;
     }
 
-  if (!strncmp (os_dev, "/dev/md", 7) || !strncmp (os_dev, "/dev/.static/dev/md", 19))
+  if (!strncmp (os_dev, "/dev/md", 7))
     {
       char *p, *grub_dev = xmalloc (8);
 
