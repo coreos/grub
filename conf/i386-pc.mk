@@ -183,7 +183,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probefs
+sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probe
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
@@ -347,114 +347,114 @@ grub_mkdevicemap-util_misc.o: util/misc.c
 -include grub_mkdevicemap-util_misc.d
 
 
-# For grub-probefs.
-grub_probefs_SOURCES = util/i386/pc/grub-probefs.c	\
+# For grub-probe.
+grub_probe_SOURCES = util/i386/pc/grub-probe.c	\
 	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c fs/ufs.c 	\
 	fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c 	\
 	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c
-CLEANFILES += grub-probefs grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_parser.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o grub_probefs-fs_affs.o grub_probefs-fs_sfs.o grub_probefs-fs_hfsplus.o
-MOSTLYCLEANFILES += grub_probefs-util_i386_pc_grub_probefs.d grub_probefs-util_i386_pc_biosdisk.d grub_probefs-util_misc.d grub_probefs-util_i386_pc_getroot.d grub_probefs-kern_device.d grub_probefs-kern_disk.d grub_probefs-kern_err.d grub_probefs-kern_misc.d grub_probefs-fs_fat.d grub_probefs-fs_ext2.d grub_probefs-kern_parser.d grub_probefs-kern_partition.d grub_probefs-partmap_pc.d grub_probefs-fs_ufs.d grub_probefs-fs_minix.d grub_probefs-fs_hfs.d grub_probefs-fs_jfs.d grub_probefs-kern_fs.d grub_probefs-kern_env.d grub_probefs-fs_fshelp.d grub_probefs-fs_xfs.d grub_probefs-fs_affs.d grub_probefs-fs_sfs.d grub_probefs-fs_hfsplus.d
+CLEANFILES += grub-probe grub_probe-util_i386_pc_grub_probe.o grub_probe-util_i386_pc_biosdisk.o grub_probe-util_misc.o grub_probe-util_i386_pc_getroot.o grub_probe-kern_device.o grub_probe-kern_disk.o grub_probe-kern_err.o grub_probe-kern_misc.o grub_probe-fs_fat.o grub_probe-fs_ext2.o grub_probe-kern_parser.o grub_probe-kern_partition.o grub_probe-partmap_pc.o grub_probe-fs_ufs.o grub_probe-fs_minix.o grub_probe-fs_hfs.o grub_probe-fs_jfs.o grub_probe-kern_fs.o grub_probe-kern_env.o grub_probe-fs_fshelp.o grub_probe-fs_xfs.o grub_probe-fs_affs.o grub_probe-fs_sfs.o grub_probe-fs_hfsplus.o
+MOSTLYCLEANFILES += grub_probe-util_i386_pc_grub_probe.d grub_probe-util_i386_pc_biosdisk.d grub_probe-util_misc.d grub_probe-util_i386_pc_getroot.d grub_probe-kern_device.d grub_probe-kern_disk.d grub_probe-kern_err.d grub_probe-kern_misc.d grub_probe-fs_fat.d grub_probe-fs_ext2.d grub_probe-kern_parser.d grub_probe-kern_partition.d grub_probe-partmap_pc.d grub_probe-fs_ufs.d grub_probe-fs_minix.d grub_probe-fs_hfs.d grub_probe-fs_jfs.d grub_probe-kern_fs.d grub_probe-kern_env.d grub_probe-fs_fshelp.d grub_probe-fs_xfs.d grub_probe-fs_affs.d grub_probe-fs_sfs.d grub_probe-fs_hfsplus.d
 
-grub-probefs: $(grub_probefs_DEPENDENCIES) grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_parser.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o grub_probefs-fs_affs.o grub_probefs-fs_sfs.o grub_probefs-fs_hfsplus.o
-	$(CC) -o $@ grub_probefs-util_i386_pc_grub_probefs.o grub_probefs-util_i386_pc_biosdisk.o grub_probefs-util_misc.o grub_probefs-util_i386_pc_getroot.o grub_probefs-kern_device.o grub_probefs-kern_disk.o grub_probefs-kern_err.o grub_probefs-kern_misc.o grub_probefs-fs_fat.o grub_probefs-fs_ext2.o grub_probefs-kern_parser.o grub_probefs-kern_partition.o grub_probefs-partmap_pc.o grub_probefs-fs_ufs.o grub_probefs-fs_minix.o grub_probefs-fs_hfs.o grub_probefs-fs_jfs.o grub_probefs-kern_fs.o grub_probefs-kern_env.o grub_probefs-fs_fshelp.o grub_probefs-fs_xfs.o grub_probefs-fs_affs.o grub_probefs-fs_sfs.o grub_probefs-fs_hfsplus.o $(LDFLAGS) $(grub_probefs_LDFLAGS)
+grub-probe: $(grub_probe_DEPENDENCIES) grub_probe-util_i386_pc_grub_probe.o grub_probe-util_i386_pc_biosdisk.o grub_probe-util_misc.o grub_probe-util_i386_pc_getroot.o grub_probe-kern_device.o grub_probe-kern_disk.o grub_probe-kern_err.o grub_probe-kern_misc.o grub_probe-fs_fat.o grub_probe-fs_ext2.o grub_probe-kern_parser.o grub_probe-kern_partition.o grub_probe-partmap_pc.o grub_probe-fs_ufs.o grub_probe-fs_minix.o grub_probe-fs_hfs.o grub_probe-fs_jfs.o grub_probe-kern_fs.o grub_probe-kern_env.o grub_probe-fs_fshelp.o grub_probe-fs_xfs.o grub_probe-fs_affs.o grub_probe-fs_sfs.o grub_probe-fs_hfsplus.o
+	$(CC) -o $@ grub_probe-util_i386_pc_grub_probe.o grub_probe-util_i386_pc_biosdisk.o grub_probe-util_misc.o grub_probe-util_i386_pc_getroot.o grub_probe-kern_device.o grub_probe-kern_disk.o grub_probe-kern_err.o grub_probe-kern_misc.o grub_probe-fs_fat.o grub_probe-fs_ext2.o grub_probe-kern_parser.o grub_probe-kern_partition.o grub_probe-partmap_pc.o grub_probe-fs_ufs.o grub_probe-fs_minix.o grub_probe-fs_hfs.o grub_probe-fs_jfs.o grub_probe-kern_fs.o grub_probe-kern_env.o grub_probe-fs_fshelp.o grub_probe-fs_xfs.o grub_probe-fs_affs.o grub_probe-fs_sfs.o grub_probe-fs_hfsplus.o $(LDFLAGS) $(grub_probe_LDFLAGS)
 
-grub_probefs-util_i386_pc_grub_probefs.o: util/i386/pc/grub-probefs.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-util_i386_pc_grub_probefs.d
+grub_probe-util_i386_pc_grub_probe.o: util/i386/pc/grub-probe.c
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-util_i386_pc_grub_probe.d
 
-grub_probefs-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-util_i386_pc_biosdisk.d
+grub_probe-util_i386_pc_biosdisk.o: util/i386/pc/biosdisk.c
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-util_i386_pc_biosdisk.d
 
-grub_probefs-util_misc.o: util/misc.c
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-util_misc.d
+grub_probe-util_misc.o: util/misc.c
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-util_misc.d
 
-grub_probefs-util_i386_pc_getroot.o: util/i386/pc/getroot.c
-	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-util_i386_pc_getroot.d
+grub_probe-util_i386_pc_getroot.o: util/i386/pc/getroot.c
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-util_i386_pc_getroot.d
 
-grub_probefs-kern_device.o: kern/device.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_device.d
+grub_probe-kern_device.o: kern/device.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_device.d
 
-grub_probefs-kern_disk.o: kern/disk.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_disk.d
+grub_probe-kern_disk.o: kern/disk.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_disk.d
 
-grub_probefs-kern_err.o: kern/err.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_err.d
+grub_probe-kern_err.o: kern/err.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_err.d
 
-grub_probefs-kern_misc.o: kern/misc.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_misc.d
+grub_probe-kern_misc.o: kern/misc.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_misc.d
 
-grub_probefs-fs_fat.o: fs/fat.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_fat.d
+grub_probe-fs_fat.o: fs/fat.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_fat.d
 
-grub_probefs-fs_ext2.o: fs/ext2.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_ext2.d
+grub_probe-fs_ext2.o: fs/ext2.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_ext2.d
 
-grub_probefs-kern_parser.o: kern/parser.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_parser.d
+grub_probe-kern_parser.o: kern/parser.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_parser.d
 
-grub_probefs-kern_partition.o: kern/partition.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_partition.d
+grub_probe-kern_partition.o: kern/partition.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_partition.d
 
-grub_probefs-partmap_pc.o: partmap/pc.c
-	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-partmap_pc.d
+grub_probe-partmap_pc.o: partmap/pc.c
+	$(CC) -Ipartmap -I$(srcdir)/partmap $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-partmap_pc.d
 
-grub_probefs-fs_ufs.o: fs/ufs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_ufs.d
+grub_probe-fs_ufs.o: fs/ufs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_ufs.d
 
-grub_probefs-fs_minix.o: fs/minix.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_minix.d
+grub_probe-fs_minix.o: fs/minix.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_minix.d
 
-grub_probefs-fs_hfs.o: fs/hfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_hfs.d
+grub_probe-fs_hfs.o: fs/hfs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_hfs.d
 
-grub_probefs-fs_jfs.o: fs/jfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_jfs.d
+grub_probe-fs_jfs.o: fs/jfs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_jfs.d
 
-grub_probefs-kern_fs.o: kern/fs.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_fs.d
+grub_probe-kern_fs.o: kern/fs.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_fs.d
 
-grub_probefs-kern_env.o: kern/env.c
-	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-kern_env.d
+grub_probe-kern_env.o: kern/env.c
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-kern_env.d
 
-grub_probefs-fs_fshelp.o: fs/fshelp.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_fshelp.d
+grub_probe-fs_fshelp.o: fs/fshelp.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_fshelp.d
 
-grub_probefs-fs_xfs.o: fs/xfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_xfs.d
+grub_probe-fs_xfs.o: fs/xfs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_xfs.d
 
-grub_probefs-fs_affs.o: fs/affs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_affs.d
+grub_probe-fs_affs.o: fs/affs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_affs.d
 
-grub_probefs-fs_sfs.o: fs/sfs.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_sfs.d
+grub_probe-fs_sfs.o: fs/sfs.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_sfs.d
 
-grub_probefs-fs_hfsplus.o: fs/hfsplus.c
-	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probefs_CFLAGS) -MD -c -o $@ $<
--include grub_probefs-fs_hfsplus.d
+grub_probe-fs_hfsplus.o: fs/hfsplus.c
+	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_probe_CFLAGS) -MD -c -o $@ $<
+-include grub_probe-fs_hfsplus.d
 
 
 # For grub-emu.
