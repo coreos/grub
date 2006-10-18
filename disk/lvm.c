@@ -25,7 +25,7 @@
 #include <grub/misc.h>
 #include <grub/lvm.h>
 
-static struct grub_lvm_vg *vgs;
+static struct grub_lvm_vg *vg_list;
 static int lv_count;
 
 
@@ -42,10 +42,10 @@ static int
 grub_lvm_iterate (int (*hook) (const char *name))
 {
   struct grub_lvm_vg *vg;
-  for (vg = vgs; vg; vg = vg->next)
+  for (vg = vg_list; vg; vg = vg->next)
     {
       struct grub_lvm_lv *lv;
-      for (lv = vgs->lvs; lv; lv = lv->next)
+      for (lv = vg->lvs; lv; lv = lv->next)
 	if (hook (lv->name))
 	  return 1;
     }
@@ -58,9 +58,9 @@ grub_lvm_open (const char *name, grub_disk_t disk)
 {
   struct grub_lvm_vg *vg;
   struct grub_lvm_lv *lv = NULL;
-  for (vg = vgs; vg; vg = vg->next)
+  for (vg = vg_list; vg; vg = vg->next)
     {
-      for (lv = vgs->lvs; lv; lv = lv->next)
+      for (lv = vg->lvs; lv; lv = lv->next)
 	if (! grub_strcmp (lv->name, name))
 	  break;
 
@@ -291,7 +291,7 @@ grub_lvm_scan_device (const char *name)
   grub_memcpy (vg_id, p, GRUB_LVM_ID_STRLEN);
   vg_id[GRUB_LVM_ID_STRLEN] = '\0';
 
-  for (vg = vgs; vg; vg = vg->next)
+  for (vg = vg_list; vg; vg = vg->next)
     {
       if (! grub_memcmp(vg_id, vg->id, GRUB_LVM_ID_STRLEN))
 	break;
@@ -314,8 +314,8 @@ grub_lvm_scan_device (const char *name)
 
       vg->lvs = NULL;
       vg->pvs = NULL;
-      vg->next = vgs;
-      vgs = vg;
+      vg->next = vg_list;
+      vg_list = vg;
 
       p = grub_strstr (p, "physical_volumes {")
 	+ sizeof ("physical_volumes {") - 1;
