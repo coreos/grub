@@ -369,7 +369,7 @@ grub_lvm_scan_device (const char *name)
 	  if (*p == '}')
 	    break;
 
-	  lv = grub_malloc (sizeof (lv));
+	  lv = grub_malloc (sizeof (*lv));
 
 	  q = p;
 	  while (*q != ' ')

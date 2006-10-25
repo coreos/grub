@@ -1,3 +1,8 @@
+2006-10-25  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* disk/lvm.c (grub_lvm_scan_device): Malloc sizeof(*lv) bytes
+	instead of sizeof(lv). Patch by Michael Guntsche.
+
 2006-10-18  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* disk/lvm.c: Rename VGS to VG_LIST.
