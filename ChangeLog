@@ -1,3 +1,8 @@
+2006-10-26  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/powerpc/ieee1275/openfw.c (grub_ieee1275_encode_devname):
+	Reverse GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS test.
+
 2006-10-25  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* disk/lvm.c (grub_lvm_scan_device): Malloc sizeof(*lv) bytes
@@ -105,12 +110,12 @@
 	* kern/misc.c (grub_strtoull): Guess the base only if not
 	specified.
 
-2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
+2006-10-01  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/cmain.c (cmain): Remove incomplete Old World
 	PowerMac support.
 
-2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
+2006-10-01  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Cast `size' to long.
 
@@ -132,7 +137,7 @@
 	* kern/powerpc/ieee1275/openfw.c (grub_devalias_iterate): Rename
 	`devalias' to `aliases'.  Correct comments.  Consolidate error paths.
 
-2005-10-01  Hollis Blanchard  <hollis@penguinppc.org>
+2006-10-01  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/ieee1275/ieee1275.c (grub_ieee1275_instance_to_path): Rename
 	`instance_to_package_args' to `instance_to_path_args'.
@@ -143,11 +148,11 @@
 	* term/ieee1275/ofconsole.c (grub_ofconsole_init): Call
 	`grub_ieee1275_interpret'.
 
-2005-09-25  Hollis Blanchard  <hollis@penguinppc.org>
+2006-09-25  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* util/powerpc/ieee1275/grub-mkimage.c: Include config.h.
 
-2005-09-25  Hollis Blanchard  <hollis@penguinppc.org>
+2006-09-25  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* include/grub/powerpc/libgcc.h (__floatdisf): New prototype.
 	(__cmpdi): Likewise.
