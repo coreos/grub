@@ -1,5 +1,9 @@
 2006-10-27  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* kern/disk.c (grub_disk_read): Correct debug printf formatting.
+
+2006-10-27  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* kern/disk.c (grub_disk_open): Print debug messages when opening a
 	disk.
 	(grub_disk_close): Print debug messages when closing a disk.
