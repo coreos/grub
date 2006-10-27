@@ -78,16 +78,21 @@ grub_fs_probe (grub_device_t device)
     {
       /* Make it sure not to have an infinite recursive calls.  */
       static int count = 0;
-      
+
       for (p = grub_fs_list; p; p = p->next)
 	{
+	  grub_dprintf ("fs", "Detecting %s...\n", p->name);
 	  (p->dir) (device, "/", dummy_func);
 	  if (grub_errno == GRUB_ERR_NONE)
 	    return p;
-	  
+
+	  grub_error_push ();
+	  grub_dprintf ("fs", "%s detection failed.\n", p->name);
+	  grub_error_pop ();
+
 	  if (grub_errno != GRUB_ERR_BAD_FS)
 	    return 0;
-	  
+
 	  grub_errno = GRUB_ERR_NONE;
 	}
 

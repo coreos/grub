@@ -1,5 +1,17 @@
 2006-10-27  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* kern/disk.c (grub_disk_open): Print debug messages when opening a
+	disk.
+	(grub_disk_close): Print debug messages when closing a disk.
+	(grub_disk_read): Print debug messages when disk read fails.
+	* kern/fs.c (grub_fs_probe): Print debug messages when detecting
+	filesystem type.
+	* kern/partition.c: Include misc.h.
+	(grub_partition_iterate): Print debug messages when detecting
+	partition type.
+
+2006-10-27  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Return error if `status'
 	is negative.
 	* kern/ieee1275/ieee1275.c (IEEE1275_IHANDLE_INVALID): Change to 0.
