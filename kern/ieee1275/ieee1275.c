@@ -21,7 +21,7 @@
 #include <grub/ieee1275/ieee1275.h>
 
 #define IEEE1275_PHANDLE_INVALID  ((grub_ieee1275_phandle_t) -1)
-#define IEEE1275_IHANDLE_INVALID  ((grub_ieee1275_ihandle_t) -1)
+#define IEEE1275_IHANDLE_INVALID  ((grub_ieee1275_ihandle_t) 0)
 #define IEEE1275_CELL_INVALID     ((grub_ieee1275_cell_t) -1)
 
 

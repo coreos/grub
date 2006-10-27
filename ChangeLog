@@ -1,3 +1,9 @@
+2006-10-27  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_read): Return error if `status'
+	is negative.
+	* kern/ieee1275/ieee1275.c (IEEE1275_IHANDLE_INVALID): Change to 0.
+
 2006-10-26  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/openfw.c (grub_ieee1275_encode_devname):
