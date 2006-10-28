@@ -1,3 +1,9 @@
+2006-10-28  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* normal/menu.c: Include grub/script.h.
+	* normal/menu_entry.c: Likewise.
+	* include/grub/normal.h: Do not include grub/script.h.
+
 2006-10-27  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/disk.c (grub_disk_read): Correct debug printf formatting.

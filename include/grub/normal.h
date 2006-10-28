@@ -25,7 +25,6 @@
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/arg.h>
-#include <grub/script.h>
 
 /* The maximum size of a command-line.  */
 #define GRUB_MAX_CMDLINE	1600

@@ -24,6 +24,7 @@
 #include <grub/mm.h>
 #include <grub/machine/time.h>
 #include <grub/env.h>
+#include <grub/script.h>
 
 static void
 draw_border (void)
