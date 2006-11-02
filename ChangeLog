@@ -1,3 +1,8 @@
+2006-11-02  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_set_color): Add
+	`catch_result' to struct set_color_args.
+
 2006-10-28  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* normal/menu.c: Include grub/script.h.
