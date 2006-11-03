@@ -10,11 +10,10 @@ COMMON_LDFLAGS += -nostdlib
 MOSTLYCLEANFILES += kernel_elf_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-kernel_elf_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
-	file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h symbol.h \
-	term.h types.h powerpc/libgcc.h loader.h \
-	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
-	machine/kernel.h
+kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h \
+	symbol.h term.h types.h powerpc/libgcc.h loader.h partition.h \
+	pc_partition.h ieee1275/ieee1275.h machine/time.h machine/kernel.h
 
 kernel_elf_symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
@@ -45,9 +44,10 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
 	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
 	io/gzio.c							\
-	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
-	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
-	kern/parser.c kern/partition.c kern/rescue.c kern/term.c	\
+	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
+	kern/err.c kern/file.c kern/fs.c kern/loader.c kern/main.c	\
+	kern/misc.c kern/parser.c kern/partition.c kern/rescue.c	\
+	kern/term.c							\
 	normal/arg.c normal/cmdline.c normal/command.c			\
 	normal/completion.c normal/execute.c		 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c 	\
@@ -62,7 +62,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 kernel_elf_SOURCES = kern/powerpc/ieee1275/crt0.S kern/powerpc/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
-	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c 		\
+	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c 	\
 	kern/powerpc/ieee1275/init.c term/ieee1275/ofconsole.c 		\
 	kern/powerpc/ieee1275/openfw.c disk/ieee1275/ofdisk.c 		\

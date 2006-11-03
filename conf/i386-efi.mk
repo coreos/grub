@@ -486,9 +486,9 @@ fs-kernel_mod-disk_efi_efidisk.lst: disk/efi/efidisk.c genfslist.sh
 	set -e; 	  $(TARGET_CC) -Idisk/efi -I$(srcdir)/disk/efi $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh kernel > $@ || (rm -f $@; exit 1)
 
 
-kernel_mod_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
-	file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h partition.h \
-	pc_partition.h rescue.h symbol.h term.h types.h \
+kernel_mod_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
+	partition.h pc_partition.h rescue.h symbol.h term.h types.h \
 	i386/efi/time.h efi/efi.h efi/time.h efi/disk.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)
 kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)

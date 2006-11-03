@@ -10,11 +10,10 @@ COMMON_LDFLAGS = -melf64_sparc -nostdlib
 MOSTLYCLEANFILES += kernel_elf_symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
-kernel_elf_HEADERS = arg.h boot.h device.h disk.h dl.h elf.h env.h err.h \
-	file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h symbol.h \
-	term.h types.h sparc64/libgcc.h loader.h \
-	partition.h pc_partition.h ieee1275/ieee1275.h machine/time.h \
-	machine/kernel.h
+kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h \
+	symbol.h term.h types.h sparc64/libgcc.h loader.h partition.h \
+	pc_partition.h ieee1275/ieee1275.h machine/time.h machine/kernel.h
 
 kernel_elf_symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)

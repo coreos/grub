@@ -213,7 +213,12 @@ blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
 blocklist_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
-pkgdata_MODULES += gzio.mod 
+pkgdata_MODULES += gzio.mod elf.mod
+
+# For elf.mod.
+elf_mod_SOURCES = kern/elf.c
+elf_mod_CFLAGS = $(COMMON_CFLAGS)
+elf_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For gzio.mod.
 gzio_mod_SOURCES = io/gzio.c

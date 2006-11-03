@@ -1,3 +1,29 @@
+2006-11-03  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Add kern/elf.c.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(kernel_elf_SOURCES): Likewise.
+	* conf/i386-efi.rmk (kernel_mod_HEADERS): Add elfload.h and cache.h.
+	* conf/i386-pc.rmk (kernel_mod_HEADERS): Likewise.
+	* conf/powerpc-ieee1275.rmk (kernel_elf_HEADERS): Likewise.
+	* conf/sparc64-ieee1275.rmk (kernel_elf_HEADERS): Likewise.
+	* conf/common.rmk (pkgdata_MODULES): Add elf.mod.
+	(elf_mod_SOURCES): New variable.
+	(elf_mod_CFLAGS): Likewise.
+	(elf_mod_LDFLAGS): Likewise.
+	* include/grub/types.h (__unused): New macro.
+	* include/grub/elfload.h: New file.
+	* kern/elf.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Include elfload.h.
+	(ELF32_LOADMASK): New macro.
+	(ELF64_LOADMASK): Likewise.
+	(vmlinux): Removed.
+	(grub_linux_load32): New function.
+	(grub_linux_load64): Likewise.
+	(grub_rescue_cmd_linux): Call grub_linux_load32 or grub_linux_load64.
+	Use grub_elf_t instead of grub_file_t.
+
 2006-11-02  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/ieee1275/ieee1275.c (grub_ieee1275_set_color): Add
