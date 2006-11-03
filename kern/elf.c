@@ -69,6 +69,9 @@ grub_elf_file (grub_file_t file)
   elf->file = file;
   elf->phdrs = 0;
 
+  if (grub_file_seek (elf->file, 0) == (grub_off_t) -1)
+    goto fail;
+
   if (grub_file_read (elf->file, (char *) &elf->ehdr, sizeof (elf->ehdr))
       != sizeof (elf->ehdr))
     {
@@ -82,7 +85,9 @@ grub_elf_file (grub_file_t file)
   return elf;
 
 fail:
+  grub_error_push ();
   grub_elf_close (elf);
+  grub_error_pop ();
   return 0;
 }
 
@@ -129,7 +134,8 @@ grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr, void *hook)
       return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
     }
 
-  if (grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
+  if (phdr->p_filesz
+      && grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
       != (grub_ssize_t) phdr->p_filesz)
     {
       return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
