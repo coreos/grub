@@ -208,7 +208,7 @@ grub_elf32_size (grub_elf_t elf)
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int calcsize (grub_elf_t _elf, Elf32_Phdr *phdr, void *_arg);
-  int calcsize (grub_elf_t __unused _elf, Elf32_Phdr *phdr, void __unused *_arg)
+  int calcsize (grub_elf_t UNUSED _elf, Elf32_Phdr *phdr, void UNUSED *_arg)
     {
       /* Only consider loadable segments.  */
       if (phdr->p_type != PT_LOAD)
@@ -352,7 +352,7 @@ grub_elf64_size (grub_elf_t elf)
   /* Run through the program headers to calculate the total memory size we
    * should claim.  */
   auto int calcsize (grub_elf_t _elf, Elf64_Phdr *phdr, void *_arg);
-  int calcsize (grub_elf_t __unused _elf, Elf64_Phdr *phdr, void __unused *_arg)
+  int calcsize (grub_elf_t UNUSED _elf, Elf64_Phdr *phdr, void UNUSED *_arg)
     {
       /* Only consider loadable segments.  */
       if (phdr->p_type != PT_LOAD)
