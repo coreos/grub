@@ -97,13 +97,21 @@ probe (const char *path)
       goto end;
     }
 
-  drive_name = grub_util_biosdisk_get_grub_dev (device_name);
-  if (! drive_name)
+  if (device_name[0] == 'm' && device_name[1] == 'd'
+      && device_name[2] >= '0' && device_name[2] <= '9')
     {
-      fprintf (stderr, "cannot find a GRUB drive for %s.\n", device_name);
-      goto end;
+      drive_name = xstrdup (device_name);
     }
-
+  else
+    {
+      drive_name = grub_util_biosdisk_get_grub_dev (device_name);
+      if (! drive_name)
+	{
+	  fprintf (stderr, "cannot find a GRUB drive for %s.\n", device_name);
+	  goto end;
+	}
+    }
+  
   if (print == PRINT_DRIVE)
     {
       printf ("(%s)\n", drive_name);
@@ -236,7 +244,9 @@ main (int argc, char *argv[])
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
   grub_pc_partition_map_init ();
-
+  grub_raid_init ();
+  grub_lvm_init ();
+  
   /* Initialize filesystems.  */
   grub_fat_init ();
   grub_ext2_init ();
@@ -256,6 +266,8 @@ main (int argc, char *argv[])
   grub_jfs_fini ();
   grub_xfs_fini ();
   
+  grub_lvm_fini ();
+  grub_raid_fini ();
   grub_pc_partition_map_fini ();
   grub_util_biosdisk_fini ();
   

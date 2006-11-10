@@ -1,3 +1,20 @@
+2006-11-11  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* kern/disk.c (grub_disk_read): When there is a read error, always
+	try to read only the necessary data.
+	
+	* conf/i386-pc.rmk (grub_probe_SOURCES): Add disk/lvm.c and
+	disk/raid.c.
+	* include/grub/disk.h [GRUB_UTIL] (grub_raid_init): New
+	prototype.
+	[GRUB_UTIL] (grub_raid_fini): Likewise.
+	[GRUB_UTIL] (grub_lvm_init): Likewise.
+	[GRUB_UTIL] (grub_lvm_fini): Likewise.	
+	* util/i386/pc/grub-probe.c (probe): Check whether DEVICE_NAME is
+	RAID device and copy DEVICE_NAME to DRIVE_NAME in that case.
+	(main): Call grub_raid_init(), grub_lvm_init(), grub_lvm_fini()
+	and grub_raid_fini().
+	
 2006-11-09  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* include/grub/types.h (__unused): Rename to UNUSED.

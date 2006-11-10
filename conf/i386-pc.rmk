@@ -75,7 +75,7 @@ grub_probe_SOURCES = util/i386/pc/grub-probe.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c fs/ufs.c 	\
 	fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c 	\
-	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c
+	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c disk/lvm.c disk/raid.c
 
 # For grub-emu.
 grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\

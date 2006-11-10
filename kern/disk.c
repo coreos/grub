@@ -412,11 +412,6 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
 	      grub_errno = GRUB_ERR_NONE;
 
-	      /* If more data is required, no way.  */
-	      if (pos + size
-		  >= (GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS))
-		goto finish;
-
 	      num = ((size + GRUB_DISK_SECTOR_SIZE - 1)
 		     >> GRUB_DISK_SECTOR_BITS);
 	      if ((disk->dev->read) (disk, sector, num, tmp_buf))

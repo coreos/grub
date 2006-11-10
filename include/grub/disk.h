@@ -136,4 +136,11 @@ grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
 
 grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 
+#ifdef GRUB_UTIL
+void grub_raid_init (void);
+void grub_raid_fini (void);
+void grub_lvm_init (void);
+void grub_lvm_fini (void);
+#endif
+
 #endif /* ! GRUB_DISK_HEADER */
