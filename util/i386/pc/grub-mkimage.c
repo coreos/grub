@@ -1,7 +1,7 @@
 /* grub-mkimage.c - make a bootable image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -143,7 +143,7 @@ generate_image (const char *dir, FILE *out, char *mods[])
   
   /* i386 is a little endian architecture.  */
   *((grub_uint16_t *) (boot_img + GRUB_DISK_SECTOR_SIZE
-		       - GRUB_BOOT_MACHINE_LIST_SIZE + 4))
+		       - GRUB_BOOT_MACHINE_LIST_SIZE + 8))
     = grub_cpu_to_le16 (num);
 
   grub_util_write_image (boot_img, boot_size, out);

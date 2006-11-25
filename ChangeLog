@@ -1,3 +1,9 @@
+2006-11-25  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* util/i386/pc/grub-mkimage.c (generate_image): Fix the offset of
+	the number of sectors.	Reported by Andrey Shuvikov
+	<mr_hyro@yahoo.com>.
+	
 2006-11-11  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* kern/disk.c (grub_disk_read): When there is a read error, always
