@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <grub/kernel.h>
 #include <grub/misc.h>
+#include <grub/types.h>
 #include <grub/machine/kernel.h>
 #include <grub/ieee1275/ieee1275.h>
 
@@ -67,7 +68,7 @@ grub_ieee1275_find_options (void)
 
 void cmain (uint32_t r3, uint32_t r4, uint32_t r5);
 void
-cmain (uint32_t r3, uint32_t r4 __attribute__((unused)), uint32_t r5)
+cmain (UNUSED uint32_t r3, UNUSED uint32_t r4, uint32_t r5)
 {
   grub_ieee1275_entry_fn = (int (*)(void *)) r5;
 

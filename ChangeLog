@@ -1,3 +1,7 @@
+2006-12-08  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/powerpc/ieee1275/cmain.c (cmain): Mark r3 and r4 as `UNUSED'.
+
 2006-11-25  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* util/i386/pc/grub-mkimage.c (generate_image): Fix the offset of
