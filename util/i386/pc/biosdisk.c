@@ -235,7 +235,10 @@ linux_find_partition (char *dev, unsigned long sector)
     {
       p = strchr (real_dev + 9, 'd');
       if (! p)
-	return 0;
+	{
+	  free (real_dev);
+	  return 0;
+	}
 
       p++;
       while (*p && isdigit (*p))

@@ -1,3 +1,26 @@
+2006-12-12  Marco Gerards  <marco@gnu.org>
+
+	* include/grub/err.h (grub_err_t): Add `GRUB_ERR_MENU'.
+
+	* kern/env.c (grub_env_unset): Don't free the member `value' when
+	the type is GRUB_ENV_VAR_DATA, in this case it's a user defined
+	pointer.
+
+	* normal/main.c (current_menu): Removed.
+	(free_menu): Unset the `menu' environment variable.
+	(grub_normal_menu_addentry): Make use of the environment variable
+	`menu', instead of using the global `current_menu'.  Allocate
+	memory for the sourcecode of this entry.
+	(read_config_file): New argument `nested', changed all callers.
+	Only in the case of a new context, initialize a new menu.  Set the
+	`menu' environment variable.
+	(grub_normal_execute): Don't set and unset the environment
+	variable `menu' here anymore.  Only free the menu when leaving the
+	context.
+
+	* util/i386/pc/biosdisk.c (linux_find_partition): Fixed a memory
+	leak.
+
 2006-12-11  Marco Gerards  <marco@gnu.org>
 
 	* normal/menu_entry.c (run): Fix off by one bug so the last line

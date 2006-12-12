@@ -52,6 +52,7 @@ typedef enum
     GRUB_ERR_NOT_IMPLEMENTED_YET,
     GRUB_ERR_SYMLINK_LOOP,
     GRUB_ERR_BAD_GZIP_DATA,
+    GRUB_ERR_MENU
   }
 grub_err_t;
 

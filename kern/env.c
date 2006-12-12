@@ -261,7 +261,8 @@ grub_env_unset (const char *name)
   grub_env_remove (var);
 
   grub_free (var->name);
-  grub_free (var->value);
+  if (var->type != GRUB_ENV_VAR_DATA)
+    grub_free (var->value);
   grub_free (var);
 }
 

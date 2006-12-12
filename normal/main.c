@@ -34,9 +34,6 @@ grub_jmp_buf grub_exit_env;
 
 static grub_fs_module_list_t fs_module_list = 0;
 
-/* The menu to which the new entries are added by the parser.  */
-static grub_menu_t current_menu = 0;
-
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 /* Read a line from the file FILE.  */
@@ -136,7 +133,7 @@ static void
 free_menu (grub_menu_t menu)
 {
   grub_menu_entry_t entry = menu->entry_list;
-  
+
   while (entry)
     {
       grub_menu_entry_t next_entry = entry->next;
@@ -148,6 +145,7 @@ free_menu (grub_menu_t menu)
     }
 
   grub_free (menu);
+  grub_env_unset_data_slot ("menu");
 }
 
 grub_err_t
@@ -155,11 +153,26 @@ grub_normal_menu_addentry (const char *title, struct grub_script *script,
 			   const char *sourcecode)
 {
   const char *menutitle;
-  grub_menu_entry_t *last = &current_menu->entry_list;
+  const char *menusourcecode;
+  grub_menu_t menu;
+  grub_menu_entry_t *last;
+
+  menu = grub_env_get_data_slot("menu");
+  if (! menu)
+    return grub_error (GRUB_ERR_MENU, "no menu context");
+
+  last = &menu->entry_list;
+
+  menusourcecode = grub_strdup (sourcecode);
+  if (! menusourcecode)
+    return grub_errno;
 
   menutitle = grub_strdup (title);
   if (! menutitle)
-    return grub_errno;
+    {
+      grub_free ((void *) menusourcecode);
+      return grub_errno;
+    }
 
   /* Add the menu entry at the end of the list.  */
   while (*last)
@@ -169,22 +182,22 @@ grub_normal_menu_addentry (const char *title, struct grub_script *script,
   if (! *last)
     {
       grub_free ((void *) menutitle);
-      grub_free ((void *) sourcecode);
+      grub_free ((void *) menusourcecode);
       return grub_errno;
     }
 
   (*last)->commands = script;
   (*last)->title = menutitle;
   (*last)->next = 0;
-  (*last)->sourcecode = sourcecode;
+  (*last)->sourcecode = menusourcecode;
 
-  current_menu->size++;
+  menu->size++;
 
   return GRUB_ERR_NONE;
 }
 
 static grub_menu_t
-read_config_file (const char *config)
+read_config_file (const char *config, int nested)
 {
   grub_file_t file;
   auto grub_err_t getline (char **line);
@@ -204,17 +217,24 @@ read_config_file (const char *config)
 
   grub_menu_t newmenu;
 
-  newmenu = grub_malloc (sizeof (*newmenu));
-  if (! newmenu)
-    return 0;
-  newmenu->size = 0;
-  newmenu->entry_list = 0;
-  current_menu = newmenu;
+  if (nested)
+    {
+      newmenu = grub_malloc (sizeof (*newmenu));
+      if (! newmenu)
+	return 0;
+      newmenu->size = 0;
+      newmenu->entry_list = 0;
+    }
 
   /* Try to open the config file.  */
   file = grub_file_open (config);
   if (! file)
     return 0;
+
+  if (nested)
+    grub_env_set_data_slot ("menu", newmenu);
+  else
+    newmenu = grub_env_get_data_slot ("menu");
 
   while (1)
     {
@@ -255,13 +275,6 @@ read_config_file (const char *config)
 	 see what happened.  */
       grub_printf ("\nPress any key to continue...");
       (void) grub_getkey ();
-    }
-
-  /* If the menu is empty, just drop it.  */
-  if (current_menu->size == 0)
-    {
-      grub_free (current_menu);
-      return 0;
     }
 
   return newmenu;
@@ -459,7 +472,7 @@ grub_normal_execute (const char *config, int nested)
   
   if (config)
     {
-      menu = read_config_file (config);
+      menu = read_config_file (config, nested);
 
       /* Ignore any error.  */
       grub_errno = GRUB_ERR_NONE;
@@ -467,10 +480,9 @@ grub_normal_execute (const char *config, int nested)
 
   if (menu)
     {
-      grub_env_set_data_slot ("menu", menu);
       grub_menu_run (menu, nested);
-      grub_env_unset_data_slot ("menu");
-      free_menu (menu);
+      if (nested)
+	free_menu (menu);
     }
   else
     grub_cmdline_run (nested);
