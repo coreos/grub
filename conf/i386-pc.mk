@@ -183,7 +183,10 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_img_HEADERS)) config.h genke
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probe
+sbin_UTILITIES = grub-setup grub-mkdevicemap grub-probe
+ifeq ($(enable_grub_emu), yes)
+sbin_UTILITIES += grub-emu
+endif
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \

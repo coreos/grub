@@ -6,7 +6,10 @@ COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-#sbin_UTILITIES = grub-setup grub-emu grub-mkdevicemap grub-probe
+#sbin_UTILITIES = grub-setup grub-mkdevicemap grub-probe
+#ifeq ($(enable_grub_emu), yes)
+#sbin_UTILITIES += grub-emu
+#endif
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
