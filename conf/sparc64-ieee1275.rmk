@@ -29,7 +29,10 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genke
 pkgdata_PROGRAMS = kernel.elf
 
 # Utilities.
-#bin_UTILITIES = grub-emu grub-mkimage
+#bin_UTILITIES = grub-mkimage
+#ifeq ($(enable_grub_emu), yes)
+#bin_UTILITIES += grub-emu
+#endif
 
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \

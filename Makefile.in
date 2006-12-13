@@ -73,6 +73,9 @@ LIBCURSES = @LIBCURSES@
 LIBLZO = @LIBLZO@
 YACC = @YACC@
 
+# Options.
+enable_grub_emu = @enable_grub_emu@
+
 ### General variables.
 
 RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \

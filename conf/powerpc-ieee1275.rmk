@@ -26,7 +26,9 @@ pkgdata_PROGRAMS = kernel.elf
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-emu 
+ifeq ($(enable_grub_emu), yes)
+sbin_UTILITIES = grub-emu
+endif
  
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \

@@ -145,14 +145,6 @@ if test "$target_cpu"-"$platform" = i386-pc; then
   AC_CHECK_HEADERS(lzo/lzo1x.h lzo1x.h)
 fi
 
-# Check for curses.
-AC_CHECK_LIB(ncurses, wgetch, [LIBCURSES="-lncurses"],
-  [AC_CHECK_LIB(curses, wgetch, [LIBCURSES="-lcurses"])])
-AC_SUBST(LIBCURSES)
-
-# Check for headers.
-AC_CHECK_HEADERS(ncurses/curses.h ncurses.h curses.h)
-
 # Check for functions.
 AC_CHECK_FUNCS(posix_memalign memalign)
 
@@ -265,12 +257,34 @@ CPPFLAGS="$tmp_CPPFLAGS"
 LDFLAGS="$tmp_LDFLAGS"
 LIBS="$tmp_LIBS"
 
+#
 # Check for options.
+#
+
+# Memory manager debugging.
 AC_ARG_ENABLE([mm-debug], 
 	      AS_HELP_STRING([--enable-mm-debug],
                              [include memory manager debugging]),
               [AC_DEFINE([MM_DEBUG], [1],
                          [Define to 1 if you enable memory manager debugging.])])
+
+AC_ARG_ENABLE([grub-emu],
+	      [AS_HELP_STRING([--enable-grub-emu],
+                             [build and install the `grub-emu' debugging utility])])
+[if [ x"$enable_grub_emu" = xyes ]; then
+  # Check for curses libraries.]
+  AC_CHECK_LIB([ncurses], [wgetch], [LIBCURSES="-lncurses"],
+    [AC_CHECK_LIB([curses], [wgetch], [LIBCURSES="-lcurses"],
+      [AC_MSG_ERROR([(n)curses libraries are required to build `grub-emu'])])])
+  AC_SUBST([LIBCURSES])
+
+  [# Check for headers.]
+  AC_CHECK_HEADERS([ncurses/curses.h], [],
+    [AC_CHECK_HEADERS([ncurses.h], [],
+      [AC_CHECK_HEADERS([curses.h], [],
+	[AC_MSG_ERROR([(n)curses header files are required to build `grub-emu'])])])])
+[fi]
+AC_SUBST([enable_grub_emu])
 
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu

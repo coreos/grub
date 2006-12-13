@@ -1,3 +1,13 @@
+2006-12-13  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* Makefile.in (enable_grub_emu): New variable.
+	* configure.ac (--enable-grub-emu): New option.
+	Do the checks for (n)curses only if `--enable-grub-emu' is requested.
+	* conf/i386-efi.rmk (sbin_UTILITIES): Add `grub-emu' only if requested.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk (bin_UTILITIES): Likewise.
+
 2006-12-12  Marco Gerards  <marco@gnu.org>
 
 	* include/grub/err.h (grub_err_t): Add `GRUB_ERR_MENU'.
