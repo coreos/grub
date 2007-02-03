@@ -149,6 +149,19 @@ fi
 AC_CHECK_FUNCS(posix_memalign memalign)
 
 #
+# Compiler features.
+#
+
+# Smashing stack protector.
+grub_CHECK_STACK_PROTECTOR
+[# Need that, because some distributions ship compilers that include
+# `-fstack-protector' in the default specs.
+if [ x"$ssp_possible" = xyes ]; then
+  CFLAGS=$CFLAGS\ -fno-stack-protector
+fi]
+
+
+#
 # Check for target programs.
 #
 
@@ -224,6 +237,18 @@ if test "x$target_m32" = x1; then
   TARGET_CFLAGS="$TARGET_CFLAGS -m32"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
 fi
+
+#
+# Compiler features.
+#
+
+# Smashing stack protector.
+grub_CHECK_STACK_PROTECTOR
+[# Need that, because some distributions ship compilers that include
+# `-fstack-protector' in the default specs.
+if [ x"$ssp_possible" = xyes ]; then
+  TARGET_CFLAGS=$TARGET_CFLAGS\ -fno-stack-protector
+fi]
 
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
