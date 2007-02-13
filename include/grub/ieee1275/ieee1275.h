@@ -145,6 +145,8 @@ grub_err_t EXPORT_FUNC(grub_devalias_iterate)
      (int (*hook) (struct grub_ieee1275_devalias *alias));
 grub_err_t EXPORT_FUNC(grub_children_iterate) (char *devpath,
      int (*hook) (struct grub_ieee1275_devalias *alias));
+grub_err_t EXPORT_FUNC(grub_available_iterate)
+     (int (*hook) (grub_uint64_t, grub_uint64_t));
 int EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
 char *EXPORT_FUNC(grub_ieee1275_encode_devname) (const char *path);

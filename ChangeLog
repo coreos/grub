@@ -1,3 +1,16 @@
+2007-02-12  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* include/grub/ieee1275/ieee1275.h (grub_available_iterate): New
+	prototype.
+	* kern/powerpc/ieee1275/init.c (grub_heap_start): Removed.
+	(grub_heap_len): Likewise.
+	(HEAP_SIZE): New macro.
+	(grub_claim_heap): New function.
+	(grub_machine_init): Don't claim heap directly.  Call
+	`grub_claim_heap'.
+	* kern/powerpc/ieee1275/openfw.c: Include alloca.h.
+	(grub_available_iterate): New function.
+
 2007-02-03  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* aclocal.m4 (grub_CHECK_STACK_PROTECTOR): New definition.

@@ -34,9 +34,7 @@
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 
-/* Apple OF 1.0.5 reserves 0x0 to 0x4000 for the exception handlers.  */
-static const grub_addr_t grub_heap_start = 0x4000;
-static grub_addr_t grub_heap_len;
+#define HEAP_SIZE (8<<20) /* 8 MiB */
 
 void
 grub_exit (void)
@@ -112,27 +110,44 @@ grub_machine_set_prefix (void)
   grub_free (prefix);
 }
 
+/* Claim some available memory in the first /memory node. */
+static void grub_claim_heap (unsigned long heapsize)
+{
+  unsigned long total = 0;
+
+  auto int heap_init (grub_uint64_t addr, grub_uint64_t len);
+  int heap_init (grub_uint64_t addr, grub_uint64_t len)
+  {
+    len -= 1; /* Required for some firmware.  */
+
+    /* Limit heap to `heapsize'.  */
+    if (total + len > heapsize)
+      len = heapsize - total;
+
+    /* Claim and use it.  */
+    if (grub_claimmap (addr, len) < 0)
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
+			 "Failed to claim heap at 0x%llx, len 0x%llx\n",
+			 addr, len);
+    grub_mm_init_region ((void *) (grub_addr_t) addr, len);
+
+    total += len;
+    if (total >= heapsize)
+      return 1;
+    return 0;
+  }
+
+  grub_available_iterate (heap_init);
+}
+
 void
 grub_machine_init (void)
 {
   char args[256];
   int actual;
-  extern char _start;
 
   grub_console_init ();
-
-  /* Apple OF 3.1.1 reserves an extra 0x1000 bytes below the load address
-     of an ELF file.  */
-  grub_heap_len = (grub_addr_t) &_start - 0x1000 - grub_heap_start;
-
-  if (grub_ieee1275_claim (grub_heap_start, grub_heap_len, 0, 0))
-    {
-      grub_printf ("Failed to claim heap at 0x%x, len 0x%x\n", grub_heap_start,
-		   grub_heap_len);
-      grub_abort ();
-    }
-  grub_mm_init_region ((void *) grub_heap_start, grub_heap_len);
-
+  grub_claim_heap (HEAP_SIZE);
   grub_ofdisk_init ();
 
   /* Process commandline.  */

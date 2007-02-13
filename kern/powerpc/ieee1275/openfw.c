@@ -18,6 +18,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <alloca.h>
+#include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
@@ -133,6 +135,53 @@ nextprop:
     }
 
   return 0;
+}
+
+grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
+{
+  grub_ieee1275_phandle_t root;
+  grub_ieee1275_phandle_t memory;
+  grub_uint32_t available[32];
+  int address_cells = 1;
+  int size_cells = 1;
+  unsigned int i;
+
+  /* Determine the format of each entry in `available'.  */
+  grub_ieee1275_finddevice ("/", &root);
+  grub_ieee1275_get_property (root, "#address-cells", &address_cells,
+	sizeof address_cells, 0);
+  grub_ieee1275_get_property (root, "#size-cells", &size_cells,
+	sizeof size_cells, 0);
+
+  /* Load `/memory/available'.  */
+  if (grub_ieee1275_finddevice ("/memory", &memory))
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+		       "Couldn't find /memory node");
+  if (grub_ieee1275_get_property (memory, "available", available,
+				  sizeof available, 0))
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+		       "Couldn't examine /memory/available propery");
+
+  /* Decode each entry and call `hook'.  */
+  i = 0;
+  while (i < sizeof (*available))
+    {
+      grub_uint64_t address;
+      grub_uint64_t size;
+
+      address = available[i++];
+      if (address_cells == 2)
+	address = (address << 32) | available[i++];
+
+      size = available[i++];
+      if (size_cells == 2)
+	size = (size << 32) | available[i++];
+
+      if (hook (address, size))
+	break;
+    }
+
+  return grub_errno;
 }
 
 /* Call the "map" method of /chosen/mmu.  */
