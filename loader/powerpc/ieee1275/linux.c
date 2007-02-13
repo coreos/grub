@@ -1,7 +1,7 @@
 /* linux.c - boot Linux */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005, 2007  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ grub_linux_load32 (grub_elf_t elf)
       *addr = (phdr->p_paddr & ~ELF32_LOADMASK) + linux_addr;
       return 0;
     }
-  return grub_elf32_load (elf, offset_phdr);
+  return grub_elf32_load (elf, offset_phdr, 0, 0);
 }
 
 static grub_err_t
@@ -183,7 +183,7 @@ grub_linux_load64 (grub_elf_t elf)
       *addr = (phdr->p_paddr & ~ELF64_LOADMASK) + linux_addr;
       return 0;
     }
-  return grub_elf64_load (elf, offset_phdr);
+  return grub_elf64_load (elf, offset_phdr, 0, 0);
 }
 
 void

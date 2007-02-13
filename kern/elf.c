@@ -1,7 +1,7 @@
 /* elf.c - load ELF files */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -112,42 +112,6 @@ grub_elf_is_elf32 (grub_elf_t elf)
   return elf->ehdr.ehdr32.e_ident[EI_CLASS] == ELFCLASS32;
 }
 
-static int
-grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr, void *hook)
-{
-  grub_elf32_load_hook_t load_hook = (grub_elf32_load_hook_t) hook;
-  grub_addr_t load_addr;
-
-  if (phdr->p_type != PT_LOAD)
-    return 0;
-
-  load_addr = phdr->p_paddr;
-  if (load_hook && load_hook (phdr, &load_addr))
-    return 1;
-
-  grub_dprintf ("elf", "Loading segment at %llx, size 0x%llx\n",
-		(unsigned long long) load_addr,
-		(unsigned long long) phdr->p_filesz);
-
-  if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
-    {
-      return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
-    }
-
-  if (phdr->p_filesz
-      && grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
-      != (grub_ssize_t) phdr->p_filesz)
-    {
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
-    }
-
-  if (phdr->p_filesz < phdr->p_memsz)
-    grub_memset ((void *) (long) (load_addr + phdr->p_filesz),
-		 0, phdr->p_memsz - phdr->p_filesz);
-
-  return 0;
-}
-
 static grub_err_t
 grub_elf32_load_phdrs (grub_elf_t elf)
 {
@@ -240,11 +204,65 @@ grub_elf32_size (grub_elf_t elf)
 }
 
 
-/* Load every loadable segment into memory specified by `load_hook'.  */
+/* Load every loadable segment into memory specified by `_load_hook'.  */
 grub_err_t
-grub_elf32_load (grub_elf_t elf, grub_elf32_load_hook_t load_hook)
+grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
+		 grub_addr_t *base, grub_size_t *size)
 {
-  return grub_elf32_phdr_iterate (elf, grub_elf32_load_segment, load_hook);
+  grub_addr_t load_base = (grub_addr_t) -1ULL;
+  grub_size_t load_size = 0;
+  grub_err_t err;
+
+  auto int grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr,
+				    void *hook);
+  int grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr, void *hook)
+  {
+    grub_elf32_load_hook_t load_hook = (grub_elf32_load_hook_t) hook;
+    grub_addr_t load_addr;
+
+    if (phdr->p_type != PT_LOAD)
+      return 0;
+
+    load_addr = phdr->p_paddr;
+    if (load_hook && load_hook (phdr, &load_addr))
+      return 1;
+
+    if (load_addr < load_base)
+      load_base = load_addr;
+
+    grub_dprintf ("elf", "Loading segment at %llx, size 0x%llx\n",
+		  (unsigned long long) load_addr,
+		  (unsigned long long) phdr->p_filesz);
+
+    if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
+      {
+	return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
+      }
+
+    if (phdr->p_filesz
+	&& grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
+	!= (grub_ssize_t) phdr->p_filesz)
+      {
+	return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
+      }
+
+    if (phdr->p_filesz < phdr->p_memsz)
+      grub_memset ((void *) (long) (load_addr + phdr->p_filesz),
+		   0, phdr->p_memsz - phdr->p_filesz);
+
+    load_size += phdr->p_memsz;
+
+    return 0;
+  }
+
+  err = grub_elf32_phdr_iterate (_elf, grub_elf32_load_segment, _load_hook);
+
+  if (base)
+    *base = load_base;
+  if (size)
+    *size = load_size;
+
+  return err;
 }
 
 
@@ -255,41 +273,6 @@ int
 grub_elf_is_elf64 (grub_elf_t elf)
 {
   return elf->ehdr.ehdr64.e_ident[EI_CLASS] == ELFCLASS64;
-}
-
-static int
-grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr, void *hook)
-{
-  grub_elf64_load_hook_t load_hook = (grub_elf64_load_hook_t) hook;
-  grub_addr_t load_addr;
-
-  if (phdr->p_type != PT_LOAD)
-    return 0;
-
-  load_addr = phdr->p_paddr;
-  if (load_hook && load_hook (phdr, &load_addr))
-    return 1;
-
-  grub_dprintf ("elf", "Loading segment at %llx, size 0x%llx\n",
-		(unsigned long long) load_addr,
-		(unsigned long long) phdr->p_filesz);
-
-  if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
-    {
-      return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
-    }
-
-  if (grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
-      != (grub_ssize_t) phdr->p_filesz)
-    {
-      return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
-    }
-
-  if (phdr->p_filesz < phdr->p_memsz)
-    grub_memset ((void *) (long) (load_addr + phdr->p_filesz),
-		 0, phdr->p_memsz - phdr->p_filesz);
-
-  return 0;
 }
 
 static grub_err_t
@@ -384,10 +367,65 @@ grub_elf64_size (grub_elf_t elf)
 }
 
 
-/* Load every loadable segment into memory specified by `load_hook'.  */
+/* Load every loadable segment into memory specified by `_load_hook'.  */
 grub_err_t
-grub_elf64_load (grub_elf_t elf, grub_elf64_load_hook_t load_hook)
+grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
+		 grub_addr_t *base, grub_size_t *size)
 {
-  return grub_elf64_phdr_iterate (elf, grub_elf64_load_segment, load_hook);
+  grub_addr_t load_base = (grub_addr_t) -1ULL;
+  grub_size_t load_size = 0;
+  grub_err_t err;
+
+  auto int grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr,
+				    void *hook);
+  int grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr, void *hook)
+  {
+    grub_elf64_load_hook_t load_hook = (grub_elf64_load_hook_t) hook;
+    grub_addr_t load_addr;
+
+    if (phdr->p_type != PT_LOAD)
+      return 0;
+
+    load_addr = phdr->p_paddr;
+    if (load_hook && load_hook (phdr, &load_addr))
+      return 1;
+
+    if (load_addr < load_base)
+      load_base = load_addr;
+
+    grub_dprintf ("elf", "Loading segment at %llx, size 0x%llx\n",
+		  (unsigned long long) load_addr,
+		  (unsigned long long) phdr->p_filesz);
+
+    if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
+      {
+	return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
+      }
+
+    if (phdr->p_filesz
+	&& grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
+	!= (grub_ssize_t) phdr->p_filesz)
+      {
+	return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
+      }
+
+    if (phdr->p_filesz < phdr->p_memsz)
+      grub_memset ((void *) (long) (load_addr + phdr->p_filesz),
+		   0, phdr->p_memsz - phdr->p_filesz);
+
+    load_size += phdr->p_memsz;
+
+    return 0;
+  }
+
+  err = grub_elf64_phdr_iterate (_elf, grub_elf64_load_segment, _load_hook);
+
+  if (base)
+    *base = load_base;
+  if (size)
+    *size = load_size;
+
+  return err;
 }
+
 

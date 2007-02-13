@@ -1,5 +1,20 @@
 2007-02-12  Hollis Blanchard  <hollis@penguinppc.org>
 
+	* include/grub/ieee1275/ieee1275.h: Update copyright.
+	* kern/powerpc/ieee1275/init.c: Likewise.
+	* kern/powerpc/ieee1275/openfw.c: Likewise.
+
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* include/grub/elfload.h: Likewise.
+	* kern/elf.c: Likewise.
+	(grub_elf32_load): Pass `base' and `size' parameters.  Update all
+	callers.
+	(grub_elf64_load): Likewise.
+	(grub_elf32_load_segment): Move to a nested function.
+	(grub_elf64_load_segment): Likewise.
+
+2007-02-12  Hollis Blanchard  <hollis@penguinppc.org>
+
 	* include/grub/ieee1275/ieee1275.h (grub_available_iterate): New
 	prototype.
 	* kern/powerpc/ieee1275/init.c (grub_heap_start): Removed.
