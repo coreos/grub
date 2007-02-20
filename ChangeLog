@@ -1,3 +1,12 @@
+2007-02-20  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* kern/mm.c: Update copyright.
+	(grub_mm_debug): Correct syntax error.
+	(grub_mm_dump_free): New function.
+	(grub_debug_free): Call `grub_free'.
+	* include/grub/mm.h: Update copyright.
+	(grub_mm_dump_free): Add declaration.
+
 2007-02-12  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* include/grub/ieee1275/ieee1275.h: Update copyright.
