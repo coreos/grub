@@ -75,6 +75,7 @@ grub_elf_file (grub_file_t file)
   if (grub_file_read (elf->file, (char *) &elf->ehdr, sizeof (elf->ehdr))
       != sizeof (elf->ehdr))
     {
+      grub_error_push ();
       grub_error (GRUB_ERR_READ_ERROR, "Cannot read ELF header.");
       goto fail;
     }
@@ -129,7 +130,10 @@ grub_elf32_load_phdrs (grub_elf_t elf)
 
   if ((grub_file_seek (elf->file, elf->ehdr.ehdr32.e_phoff) == (grub_off_t) -1)
       || (grub_file_read (elf->file, elf->phdrs, phdrs_size) != phdrs_size))
-    return grub_error (GRUB_ERR_READ_ERROR, "Cannot read program headers");
+    {
+      grub_error_push ();
+      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read program headers");
+    }
 
   return GRUB_ERR_NONE;
 }
@@ -150,10 +154,13 @@ grub_elf32_phdr_iterate (grub_elf_t elf,
   for (i = 0; i < elf->ehdr.ehdr32.e_phnum; i++)
     {
       Elf32_Phdr *phdr = phdrs + i;
-      grub_dprintf ("elf", "Segment %u: type 0x%x paddr 0x%lx memsz 0x%lx.\n",
+      grub_dprintf ("elf",
+		    "Segment %u: type 0x%x paddr 0x%lx memsz 0x%lx "
+		    "filesz %lx\n",
 		    i, phdr->p_type,
 		    (unsigned long) phdr->p_paddr,
-		    (unsigned long) phdr->p_memsz);
+		    (unsigned long) phdr->p_memsz,
+		    (unsigned long) phdr->p_filesz);
       if (hook (elf, phdr, hook_arg))
 	break;
     }
@@ -230,20 +237,30 @@ grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
     if (load_addr < load_base)
       load_base = load_addr;
 
-    grub_dprintf ("elf", "Loading segment at %llx, size 0x%llx\n",
+    grub_dprintf ("elf", "Loading segment at 0x%llx, size 0x%llx\n",
 		  (unsigned long long) load_addr,
-		  (unsigned long long) phdr->p_filesz);
+		  (unsigned long long) phdr->p_memsz);
 
     if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
       {
-	return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
+	grub_error_push ();
+	return grub_error (GRUB_ERR_BAD_OS,
+			   "Invalid offset in program header.");
       }
 
-    if (phdr->p_filesz
-	&& grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
-	!= (grub_ssize_t) phdr->p_filesz)
+    if (phdr->p_filesz)
       {
-	return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
+	grub_ssize_t read;
+	read = grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz);
+	if (read != (grub_ssize_t) phdr->p_filesz)
+	  {
+	    /* XXX How can we free memory from `load_hook'? */
+	    grub_error_push ();
+	    return grub_error (GRUB_ERR_BAD_OS,
+			       "Couldn't read segment from file: "
+			       "wanted 0x%lx bytes; read 0x%lx bytes.",
+			       phdr->p_filesz, read);
+	  }
       }
 
     if (phdr->p_filesz < phdr->p_memsz)
@@ -292,7 +309,10 @@ grub_elf64_load_phdrs (grub_elf_t elf)
 
   if ((grub_file_seek (elf->file, elf->ehdr.ehdr64.e_phoff) == (grub_off_t) -1)
       || (grub_file_read (elf->file, elf->phdrs, phdrs_size) != phdrs_size))
-    return grub_error (GRUB_ERR_READ_ERROR, "Cannot read program headers");
+    {
+      grub_error_push ();
+      return grub_error (GRUB_ERR_READ_ERROR, "Cannot read program headers");
+    }
 
   return GRUB_ERR_NONE;
 }
@@ -313,10 +333,13 @@ grub_elf64_phdr_iterate (grub_elf_t elf,
   for (i = 0; i < elf->ehdr.ehdr64.e_phnum; i++)
     {
       Elf64_Phdr *phdr = phdrs + i;
-      grub_dprintf ("elf", "Segment %u: type 0x%x paddr 0x%lx memsz 0x%lx.\n",
+      grub_dprintf ("elf",
+		    "Segment %u: type 0x%x paddr 0x%lx memsz 0x%lx "
+		    "filesz %lx\n",
 		    i, phdr->p_type,
 		    (unsigned long) phdr->p_paddr,
-		    (unsigned long) phdr->p_memsz);
+		    (unsigned long) phdr->p_memsz,
+		    (unsigned long) phdr->p_filesz);
       if (hook (elf, phdr, hook_arg))
 	break;
     }
@@ -393,20 +416,28 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
     if (load_addr < load_base)
       load_base = load_addr;
 
-    grub_dprintf ("elf", "Loading segment at %llx, size 0x%llx\n",
+    grub_dprintf ("elf", "Loading segment at 0x%llx, size 0x%llx\n",
 		  (unsigned long long) load_addr,
-		  (unsigned long long) phdr->p_filesz);
+		  (unsigned long long) phdr->p_memsz);
 
     if (grub_file_seek (elf->file, phdr->p_offset) == (grub_off_t) -1)
       {
-	return grub_error (GRUB_ERR_BAD_OS, "Invalid offset in program header");
+	grub_error_push ();
+	return grub_error (GRUB_ERR_BAD_OS,
+			   "Invalid offset in program header.");
       }
 
-    if (phdr->p_filesz
-	&& grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz)
-	!= (grub_ssize_t) phdr->p_filesz)
+    if (phdr->p_filesz)
       {
-	return grub_error (GRUB_ERR_BAD_OS, "Couldn't load segment");
+	grub_ssize_t read;
+	read = grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz);
+	if (read != (grub_ssize_t) phdr->p_filesz)
+	  /* XXX How can we free memory from `load_hook'?  */
+	  grub_error_push ();
+	  return grub_error (GRUB_ERR_BAD_OS,
+			     "Couldn't read segment from file: "
+			     "wanted 0x%lx bytes; read 0x%lx bytes.",
+			     phdr->p_filesz, read);
       }
 
     if (phdr->p_filesz < phdr->p_memsz)
@@ -427,5 +458,3 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
 
   return err;
 }
-
-
