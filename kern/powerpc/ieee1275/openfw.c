@@ -164,7 +164,7 @@ grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
 
   /* Decode each entry and call `hook'.  */
   i = 0;
-  while (i < sizeof (*available))
+  while (i < sizeof (available))
     {
       grub_uint64_t address;
       grub_uint64_t size;
