@@ -34,7 +34,7 @@
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 
-#define HEAP_SIZE (8<<20) /* 8 MiB */
+#define HEAP_LIMIT (4<<20) /* 4 MiB */
 
 extern char _start[];
 extern char _end[];
@@ -114,29 +114,27 @@ grub_machine_set_prefix (void)
 }
 
 /* Claim some available memory in the first /memory node. */
-static void grub_claim_heap (unsigned long heapsize)
+static void grub_claim_heap (unsigned long heaplimit)
 {
-  unsigned long total = 0;
-
   auto int heap_init (grub_uint64_t addr, grub_uint64_t len);
   int heap_init (grub_uint64_t addr, grub_uint64_t len)
   {
     len -= 1; /* Required for some firmware.  */
 
-    /* Limit heap to `heapsize'.  */
-    if (total + len > heapsize)
-      len = heapsize - total;
+    /* Don't claim anything above `heaplimit'.  */
+    if (addr + len > heaplimit)
+      len = heaplimit - addr;
 
-    /* Claim and use it.  */
-    if (grub_claimmap (addr, len) < 0)
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY,
-			 "Failed to claim heap at 0x%llx, len 0x%llx\n",
-			 addr, len);
-    grub_mm_init_region ((void *) (grub_addr_t) addr, len);
+    if (len)
+      {
+	/* Claim and use it.  */
+	if (grub_claimmap (addr, len) < 0)
+	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
+			     "Failed to claim heap at 0x%llx, len 0x%llx\n",
+			     addr, len);
+	grub_mm_init_region ((void *) (grub_addr_t) addr, len);
+      }
 
-    total += len;
-    if (total >= heapsize)
-      return 1;
     return 0;
   }
 
@@ -150,7 +148,7 @@ grub_machine_init (void)
   int actual;
 
   grub_console_init ();
-  grub_claim_heap (HEAP_SIZE);
+  grub_claim_heap (HEAP_LIMIT);
   grub_ofdisk_init ();
 
   /* Process commandline.  */
