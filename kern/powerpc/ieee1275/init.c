@@ -36,6 +36,9 @@
 
 #define HEAP_SIZE (8<<20) /* 8 MiB */
 
+extern char _start[];
+extern char _end[];
+
 void
 grub_exit (void)
 {
@@ -205,5 +208,5 @@ grub_get_rtc (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return GRUB_IEEE1275_MODULE_BASE;
+  return ALIGN_UP(_end, GRUB_IEEE1275_MOD_ALIGN);
 }

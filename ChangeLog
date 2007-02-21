@@ -1,3 +1,18 @@
+2007-02-21  Hollis Blanchard  <hollis@penguinppc.org>
+
+	* conf/powerpc-ieee1275.rmk (kernel_elf_LDFLAGS): Link at 64KB.
+	* kern/powerpc/ieee1275/init.c (_end): Add declaration.
+	(_start): Likewise.
+	(grub_arch_modules_addr): Return address after `_end'.
+	* util/powerpc/ieee1275/grub-mkimage.c: Include grub/misc.h.
+	(load_modules): Use new parameter as `p_paddr' and `p_vaddr'.
+	(add_segments): Calculate `_end' from phdr size and location.
+	(ALIGN_UP): Moved to ...
+	* include/grub/misc.h: here.
+	* include/grub/powerpc/ieee1275/kernel.h (GRUB_IEEE1275_MOD_ALIGN):
+	New macro.
+	(GRUB_IEEE1275_MODULE_BASE): Removed.
+
 2007-02-20  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate): Correct
