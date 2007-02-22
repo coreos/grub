@@ -1,3 +1,8 @@
+2007-02-22  Robert Millan  <rmh@aybabtu.com>
+
+	* util/mkbimage: Update my email address, and remove my name from
+	some places where unnecessary credit is given.
+
 2006-09-10  Pavel Roskin  <proski@gnu.org>
 
 	* netboot/natsemi.c: Fix compile error with gcc 4.1.1.  Cast
