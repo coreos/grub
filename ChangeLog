@@ -1,3 +1,7 @@
+2007-02-22  Pavel Roskin  <proski@gnu.org>
+
+	* stage2/iso9660.h: Remove unnecessary packed attributes.
+
 2007-02-22  Robert Millan  <rmh@aybabtu.com>
 
 	* util/mkbimage: Update my email address, and remove my name from
