@@ -1,3 +1,8 @@
+2007-03-05  Marco Gerards  <marco@gnu.org>
+
+	* normal/main.c (read_config_file): When "menu" is not set, create
+	an initial context.
+
 2007-02-21  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/powerpc/ieee1275/init.c (HEAP_SIZE): Removed.

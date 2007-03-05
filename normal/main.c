@@ -217,7 +217,9 @@ read_config_file (const char *config, int nested)
 
   grub_menu_t newmenu;
 
-  if (nested)
+  newmenu = grub_env_get_data_slot ("menu");
+
+  if (nested || ! newmenu)
     {
       newmenu = grub_malloc (sizeof (*newmenu));
       if (! newmenu)
@@ -231,10 +233,7 @@ read_config_file (const char *config, int nested)
   if (! file)
     return 0;
 
-  if (nested)
-    grub_env_set_data_slot ("menu", newmenu);
-  else
-    newmenu = grub_env_get_data_slot ("menu");
+  grub_env_set_data_slot ("menu", newmenu);
 
   while (1)
     {
