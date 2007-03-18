@@ -1,3 +1,10 @@
+2007-03-18  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* fs/ext2.c (grub_ext2_read_inode): Use the inode size in a
+	superblock instead of the structure size to compute an
+	offset. This fixes the problem that GRUB could not read a
+	filesystem when inode size is different from 128-byte.
+
 2007-03-05  Marco Gerards  <marco@gnu.org>
 
 	* normal/main.c (read_config_file): When "menu" is not set, create

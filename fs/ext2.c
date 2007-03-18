@@ -294,7 +294,7 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   if (grub_disk_read (data->disk, 
 		      ((grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
 		       << LOG2_EXT2_BLOCK_SIZE (data)),
-		      sizeof (struct grub_ext2_inode) * blkoff,
+		      grub_le_to_cpu16 (sblock->inode_size) * blkoff,
 		      sizeof (struct grub_ext2_inode), (char *) inode))
     return grub_errno;
   
