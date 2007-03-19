@@ -1,7 +1,7 @@
 /* ext2.c - Second Extended filesystem */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,10 @@
 #define EXT2_PATH_MAX		4096
 /* Maximum nesting of symlinks, used to prevent a loop.  */
 #define	EXT2_MAX_SYMLINKCNT	8
+
+/* The good old revision and the default inode size.  */
+#define EXT2_GOOD_OLD_REVISION		0
+#define EXT2_GOOD_OLD_INODE_SIZE	128
 
 /* Filetype used in directory entry.  */
 #define	FILETYPE_UNKNOWN	0
@@ -57,7 +61,16 @@
 	(grub_le_to_cpu32 (data->sblock.log2_block_size) + 10)
 
 /* The size of an ext2 block in bytes.  */
-#define EXT2_BLOCK_SIZE(data)		(1 << LOG2_BLOCK_SIZE(data))
+#define EXT2_BLOCK_SIZE(data)		(1 << LOG2_BLOCK_SIZE (data))
+
+/* The revision level.  */
+#define EXT2_REVISION(data)	grub_le_to_cpu32 (data->sblock.revision_level)
+
+/* The inode size.  */
+#define EXT2_INODE_SIZE(data)	\
+        (EXT2_REVISION (data) == EXT2_GOOD_OLD_REVISION \
+         ? EXT2_GOOD_OLD_INODE_SIZE \
+         : grub_le_to_cpu16 (data->sblock.inode_size))
 
 /* The ext2 superblock.  */
 struct grub_ext2_sblock
@@ -107,6 +120,7 @@ struct grub_ext2_block_group
   grub_uint32_t inode_table_id;
   grub_uint16_t free_blocks;
   grub_uint16_t free_inodes;
+  grub_uint16_t used_dirs;
   grub_uint16_t pad;
   grub_uint32_t reserved[3];
 };
@@ -173,7 +187,9 @@ struct grub_ext2_data
 #ifndef GRUB_UTIL
 static grub_dl_t my_mod;
 #endif
+
 
+
 /* Read into BLKGRP the blockgroup descriptor of blockgroup GROUP of
    the mounted filesystem DATA.  */
 inline static grub_err_t
@@ -214,7 +230,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, int fileblock)
       blknr = grub_le_to_cpu32 (indir[fileblock - INDIRECT_BLOCKS]);
     }
   /* Double indirect.  */
-  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * (blksz  / 4 + 1))
+  else if (fileblock < INDIRECT_BLOCKS + blksz / 4 * (blksz / 4 + 1))
     {
       unsigned int perblock = blksz / 4;
       unsigned int rblock = fileblock - (INDIRECT_BLOCKS 
@@ -279,12 +295,13 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   /* It is easier to calculate if the first inode is 0.  */
   ino--;
   
-  grub_ext2_blockgroup (data, ino / grub_le_to_cpu32 (sblock->inodes_per_group),
+  grub_ext2_blockgroup (data,
+                        ino / grub_le_to_cpu32 (sblock->inodes_per_group),
 			&blkgrp);
   if (grub_errno)
     return grub_errno;
 
-  inodes_per_block = EXT2_BLOCK_SIZE (data) / 128;
+  inodes_per_block = EXT2_BLOCK_SIZE (data) / EXT2_INODE_SIZE (data);
   blkno = (ino % grub_le_to_cpu32 (sblock->inodes_per_group))
     / inodes_per_block;
   blkoff = (ino % grub_le_to_cpu32 (sblock->inodes_per_group))
@@ -294,7 +311,7 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   if (grub_disk_read (data->disk, 
 		      ((grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
 		       << LOG2_EXT2_BLOCK_SIZE (data)),
-		      grub_le_to_cpu16 (sblock->inode_size) * blkoff,
+		      EXT2_INODE_SIZE (data) * blkoff,
 		      sizeof (struct grub_ext2_inode), (char *) inode))
     return grub_errno;
   
@@ -312,7 +329,7 @@ grub_ext2_mount (grub_disk_t disk)
 
   /* Read the superblock.  */
   grub_disk_read (disk, 1 * 2, 0, sizeof (struct grub_ext2_sblock),
-			(char *) &data->sblock);
+                  (char *) &data->sblock);
   if (grub_errno)
     goto fail;
 
@@ -345,7 +362,7 @@ grub_ext2_read_symlink (grub_fshelp_node_t node)
   char *symlink;
   struct grub_fshelp_node *diro = node;
   
-  if (!diro->inode_read)
+  if (! diro->inode_read)
     {
       grub_ext2_read_inode (diro->data, diro->ino, &diro->inode);
       if (grub_errno)
@@ -353,7 +370,7 @@ grub_ext2_read_symlink (grub_fshelp_node_t node)
     }
   
   symlink = grub_malloc (grub_le_to_cpu32 (diro->inode.size) + 1);
-  if (!symlink)
+  if (! symlink)
     return 0;
   
   /* If the filesize of the symlink is bigger than
@@ -389,7 +406,7 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
   unsigned int fpos = 0;
   struct grub_fshelp_node *diro = (struct grub_fshelp_node *) dir;
   
-  if (!diro->inode_read)
+  if (! diro->inode_read)
     {
       grub_ext2_read_inode (diro->data, diro->ino, &diro->inode);
       if (grub_errno)
@@ -418,7 +435,7 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
 	    return 0;
 	  
 	  fdiro = grub_malloc (sizeof (struct grub_fshelp_node));
-	  if (!fdiro)
+	  if (! fdiro)
 	    return 0;
 	  
 	  fdiro->data = diro->data;
@@ -441,7 +458,8 @@ grub_ext2_iterate_dir (grub_fshelp_node_t dir,
 	    {
 	      /* The filetype can not be read from the dirent, read
 		 the inode to get more information.  */
-	      grub_ext2_read_inode (diro->data, grub_le_to_cpu32 (dirent.inode),
+	      grub_ext2_read_inode (diro->data,
+                                    grub_le_to_cpu32 (dirent.inode),
 				    &fdiro->inode);
 	      if (grub_errno)
 		{
@@ -484,7 +502,7 @@ grub_ext2_open (struct grub_file *file, const char *name)
 #endif
   
   data = grub_ext2_mount (file->device->disk);
-  if (!data)
+  if (! data)
     goto fail;
   
   grub_fshelp_find_file (name, &data->diropen, &fdiro, grub_ext2_iterate_dir,
@@ -492,7 +510,7 @@ grub_ext2_open (struct grub_file *file, const char *name)
   if (grub_errno)
     goto fail;
   
-  if (!fdiro->inode_read)
+  if (! fdiro->inode_read)
     {
       grub_ext2_read_inode (data, fdiro->ino, &fdiro->inode);
       if (grub_errno)
@@ -536,8 +554,7 @@ grub_ext2_close (grub_file_t file)
 static grub_ssize_t
 grub_ext2_read (grub_file_t file, char *buf, grub_size_t len)
 {
-  struct grub_ext2_data *data = 
-    (struct grub_ext2_data *) file->data;
+  struct grub_ext2_data *data = (struct grub_ext2_data *) file->data;
   
   return grub_ext2_read_file (&data->diropen, file->read_hook,
 			      file->offset, len, buf);
@@ -574,7 +591,7 @@ grub_ext2_dir (grub_device_t device, const char *path,
 #endif
   
   data = grub_ext2_mount (device->disk);
-  if (!data)
+  if (! data)
     goto fail;
   
   grub_fshelp_find_file (path, &data->diropen, &fdiro, grub_ext2_iterate_dir,

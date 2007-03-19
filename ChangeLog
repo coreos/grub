@@ -1,3 +1,16 @@
+2007-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* fs/ext2.c (EXT2_GOOD_OLD_REVISION): New macro.
+	(EXT2_GOOD_OLD_INODE_SIZE): Likewise.
+	(EXT2_REVISION): Likewise.
+	(EXT2_INODE_SIZE): Likewise.
+	(struct grub_ext2_block_group): Added a missing member
+	"used_dirs".
+	(grub_ext2_read_inode): Divide by the inode size in a superblock
+	instead of 128 to obtain INODES_PER_BLOCK.
+	Use the macro EXT2_INODE_SIZE instead of directly using
+	SBLOCK->INODE_SIZE.
+
 2007-03-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* fs/ext2.c (grub_ext2_read_inode): Use the inode size in a

@@ -101,7 +101,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
       while (*name == '/')
 	name++;
   
-      if (!*name)
+      if (! *name)
 	{
 	  *currfound = currnode;
 	  return 0;
@@ -130,7 +130,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  
 	  /* Iterate over the directory.  */
 	  found = iterate_dir (currnode, iterate);
-	  if (!found)
+	  if (! found)
 	    {
 	      if (grub_errno)
 		return grub_errno;
@@ -148,7 +148,8 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 		{
 		  free_node (currnode);
 		  free_node (oldnode);
-		  return grub_error (GRUB_ERR_SYMLINK_LOOP, "too deep nesting of symlinks");
+		  return grub_error (GRUB_ERR_SYMLINK_LOOP,
+                                     "too deep nesting of symlinks");
 		}
 	      
 	      symlink = read_symlink (currnode);
@@ -182,7 +183,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 	  free_node (oldnode);
 	  
 	  /* Found the node!  */
-	  if (!next || *next == '\0')
+	  if (! next || *next == '\0')
 	    {
 	      *currfound = currnode;
 	      foundtype = type;
@@ -232,12 +233,11 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
   int blockcnt;
   int blocksize = 1 << (log2blocksize + GRUB_DISK_SECTOR_BITS);
 
-  /* Adjust len so it we can't read past the end of the file.  */
+  /* Adjust LEN so it we can't read past the end of the file.  */
   if (len > filesize)
     len = filesize;
 
-  blockcnt = ((len + pos) 
-	      + blocksize - 1) / blocksize;
+  blockcnt = ((len + pos) + blocksize - 1) / blocksize;
 
   for (i = pos / blocksize; i < blockcnt; i++)
     {
@@ -259,7 +259,7 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
 	  blockend = (len + pos) % blocksize;
 	  
 	  /* The last portion is exactly blocksize.  */
-	  if (!blockend)
+	  if (! blockend)
 	    blockend = blocksize;
 	}
 
@@ -299,7 +299,7 @@ grub_fshelp_log2blksize (unsigned int blksize, unsigned int *pow)
   *pow = 0;
   while (blksize > 1)
     {
-      mod =  blksize - ((blksize >> 1) << 1);
+      mod = blksize - ((blksize >> 1) << 1);
       blksize >>= 1;
 
       /* Check if it really is a power of two.  */
