@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin St - Suite 330, Boston, MA 02110, USA.
 
 # Initialize some variables.
+transform="@program_transform_name@"
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
@@ -28,14 +30,14 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
-pkglibdir=${libdir}/${PACKAGE_TARNAME}/${target_cpu}-${platform}
+pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
-grub_setup=${sbindir}/grub-setup
-grub_mkimage=${bindir}/grub-mkimage
-grub_mkdevicemap=${sbindir}/grub-mkdevicemap
-grub_probe=${sbindir}/grub-probe
+grub_setup=${sbindir}/`echo grub-setup | sed ${transform}`
+grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
+grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 rootdir=
-grub_prefix=/boot/grub
+grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
 
 install_device=
@@ -132,7 +134,7 @@ case "$host_os" in
 netbsd* | openbsd*)
     # Because /boot is used for the boot block in NetBSD and OpenBSD, use /grub
     # instead of /boot/grub.
-    grub_prefix=/grub
+    grub_prefix=`echo /grub | sed ${transform}`
     bootdir=${rootdir}
     ;;
 *)
@@ -141,7 +143,7 @@ netbsd* | openbsd*)
     ;;
 esac
 
-grubdir=${bootdir}/grub
+grubdir=${bootdir}/`echo grub | sed ${transform}`
 device_map=${grubdir}/device.map
 
 # Check if GRUB is installed.

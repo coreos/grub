@@ -17,6 +17,8 @@ SHELL = /bin/sh
 
 @SET_MAKE@
 
+transform = @program_transform_name@
+
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -34,8 +36,8 @@ libdir = @libdir@
 infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
-pkgdatadir = $(datadir)/@PACKAGE_TARNAME@
-pkglibdir = $(libdir)/@PACKAGE_TARNAME@/$(target_cpu)-$(platform)
+pkgdatadir = $(datadir)/`echo @PACKAGE_TARNAME@ | sed '$(transform)'`
+pkglibdir =  $(libdir)/`echo @PACKAGE_TARNAME@/$(target_cpu)-$(platform) | sed '$(transform)'`
 
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
@@ -137,18 +139,18 @@ install-local: all
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
-	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(sbindir)
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
-	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
-	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
 	done
 
@@ -162,11 +164,11 @@ uninstall:
 	  rm -f $(DESTDIR)$(pkglibdir)/$$dest; \
 	done
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
-	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(bindir)/$$dest; \
 	done
 	@list='$(sbin_UTILITIES) $(sbin_SCRIPTS)'; for file in $$list; do \
-	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sbindir)/$$dest; \
 	done
 

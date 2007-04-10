@@ -1,3 +1,11 @@
+2007-04-10  Jerone Young <jerone@gmail.com>
+	
+	* configure.ac: Add argument for autoconf to use tranformation
+	ability.
+	* Makefile.in: Add autoconf package transformation code.
+	* util/i386/pc/grub-install.in: Likewise.
+	* util/powerpc/ieee1275/grub-install.in: Likewise.
+
 2007-03-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* fs/ext2.c (EXT2_GOOD_OLD_REVISION): New macro.

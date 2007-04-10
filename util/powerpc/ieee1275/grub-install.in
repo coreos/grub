@@ -21,6 +21,8 @@
 # http://ppc64-utils.ozlabs.org .
 
 # Initialize some variables.
+transform="@program_transform_name@"
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 sbindir=@sbindir@
@@ -30,11 +32,11 @@ PACKAGE_TARNAME=@PACKAGE_TARNAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
 target_cpu=@target_cpu@
 platform=@platform@
-pkglibdir=${libdir}/${PACKAGE_TARNAME}/${target_cpu}-${platform}
+pkglibdir= ${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
-grub_mkimage=${bindir}/grub-mkimage
+grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
 rootdir=
-grub_prefix=/boot/grub
+grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
 
 install_device=
@@ -109,7 +111,7 @@ fi
 
 # Initialize these directories here, since ROOTDIR was initialized.
 bootdir=${rootdir}/boot
-grubdir=${bootdir}/grub
+grubdir=${bootdir}/`echo grub | sed ${transform}`
 
 set $grub_mkimage dummy
 if test -f "$1"; then

@@ -40,6 +40,9 @@ AC_CONFIG_HEADER([config.h])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
+# Program name transformations
+AC_ARG_PROGRAM
+
 case "$host_cpu" in
   powerpc64) host_m32=1 ;;
 esac
