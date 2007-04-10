@@ -192,6 +192,13 @@ find_root_device (const char *dir, dev_t dev)
 	  strip_extra_slashes (res);
 	  free (cwd);
 
+	  /* /dev/root is not a real block device keep looking, takes care
+	     of situation where root filesystem is on the same partition as
+	     grub files */
+
+	  if (strcmp(res, "/dev/root") == 0)
+		continue;
+
 	  if (chdir (saved_cwd) < 0)
 	    grub_util_error ("Cannot restore the original directory");
 
