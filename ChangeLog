@@ -1,4 +1,4 @@
-2007-04-10  Jerone Young <jerone@gmail.com>
+2007-04-10  Jerone Young  <jerone@gmail.com>
 	
 	* configure.ac: Add argument for autoconf to use tranformation
 	ability.
