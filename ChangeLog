@@ -1,4 +1,5 @@
 2007-04-10  Jerone Young  <jerone@gmail.com>
+
 	* util/i386/pc/getroot.c: Update so that if root device is /dev/root ,
 	continue on and look for device node with real device name.
 
