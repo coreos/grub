@@ -1,3 +1,8 @@
+2007-04-18  Jerone Young  <jerone@gmail.com>
+
+	* kernel/elf.c: Add missing parenthesis for conditional statement 
+	stanza.
+
 2007-04-10  Jerone Young  <jerone@gmail.com>
 
 	* util/i386/pc/getroot.c: Update so that if root device is /dev/root ,

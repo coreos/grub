@@ -432,12 +432,14 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
 	grub_ssize_t read;
 	read = grub_file_read (elf->file, (void *) load_addr, phdr->p_filesz);
 	if (read != (grub_ssize_t) phdr->p_filesz)
-	  /* XXX How can we free memory from `load_hook'?  */
-	  grub_error_push ();
-	  return grub_error (GRUB_ERR_BAD_OS,
-			     "Couldn't read segment from file: "
-			     "wanted 0x%lx bytes; read 0x%lx bytes.",
-			     phdr->p_filesz, read);
+          {
+	    /* XXX How can we free memory from `load_hook'?  */
+	    grub_error_push ();
+	    return grub_error (GRUB_ERR_BAD_OS,
+			      "Couldn't read segment from file: "
+			      "wanted 0x%lx bytes; read 0x%lx bytes.",
+			      phdr->p_filesz, read);
+          }
       }
 
     if (phdr->p_filesz < phdr->p_memsz)
