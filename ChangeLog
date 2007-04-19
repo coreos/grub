@@ -1,3 +1,8 @@
+2007-04-19  Robert Millan  <rmh@aybabtu.com>
+
+	* util/powerpc/ieee1275/grub-install.in: Initialize ${bindir}, since
+	it is used later.
+
 2007-04-18  Jerone Young  <jerone@gmail.com>
 
 	* kernel/elf.c: Add missing parenthesis for conditional statement 
