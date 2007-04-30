@@ -182,6 +182,11 @@ main (int argc, char *argv[])
       sleep (1);
     }
   
+  /* XXX: This is a bit unportable.  */
+  grub_util_biosdisk_init (args.dev_map);
+
+  grub_init_all ();
+
   /* Make sure that there is a root device.  */
   if (! args.root_dev)
     {
@@ -199,11 +204,6 @@ main (int argc, char *argv[])
   sprintf (prefix, "%s%s", args.root_dev, dir);
   free (dir);
   
-  /* XXX: This is a bit unportable.  */
-  grub_util_biosdisk_init (args.dev_map);
-
-  grub_init_all ();
-
   /* Start GRUB!  */
   if (setjmp (main_env) == 0)
     grub_main ();

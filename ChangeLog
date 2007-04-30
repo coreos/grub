@@ -1,3 +1,9 @@
+2007-05-01  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub-emu.c: Move initialization functions
+	grub_util_biosdisk_init() and grub_init_all() before
+	grub_util_biosdisk_get_grub_dev(), which relies on them.
+
 2007-04-19  Robert Millan  <rmh@aybabtu.com>
 
 	* util/powerpc/ieee1275/grub-install.in: Initialize ${bindir}, since
