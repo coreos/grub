@@ -148,5 +148,6 @@ grub_console_init (void)
 void
 grub_console_fini (void)
 {
+  grub_term_set_current (&grub_console_term);
   grub_term_unregister (&grub_console_term);
 }

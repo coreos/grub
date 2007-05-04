@@ -1,3 +1,8 @@
+2007-05-05  Robert Millan  <rmh@aybabtu.com>
+
+	* term/i386/pc/console.c (grub_console_fini): Call
+	grub_term_set_current() before grub_term_unregister().
+
 2007-05-04  Robert Millan  <rmh@aybabtu.com>
 
 	* DISTLIST: Add util/update-grub.in, util/grub.d/00_header.in,
