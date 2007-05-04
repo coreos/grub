@@ -1,3 +1,17 @@
+2007-05-04  Robert Millan  <rmh@aybabtu.com>
+
+	* DISTLIST: Add util/update-grub.in, util/grub.d/00_header.in,
+	util/grub.d/10_hurd.in, util/grub.d/10_linux.in and util/grub.d/README.
+	* Makefile.in: Build update-grub_SCRIPTS.  Install update-grub_SCRIPTS
+	and update-grub_DATA.
+	* conf/common.rmk: Build and install update-grub components.
+	* conf/common.mk: Regenerate.
+	* util/update-grub.in: New.  Core of update-grub.
+	* util/grub.d/00_header.in: New.  Generates grub.cfg header.
+	* util/grub.d/10_hurd.in: New.  Generates boot entries for the Hurd.
+	* util/grub.d/10_linux.in: New.  Generates boot entries for Linux.
+	* util/grub.d/README: New.  Document grub.d directory layout.
+
 2007-05-01  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub-emu.c: Move initialization functions

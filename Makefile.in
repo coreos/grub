@@ -87,7 +87,7 @@ MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \
 	$(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
-SCRIPTS = $(sbin_SCRIPTS)
+SCRIPTS = $(sbin_SCRIPTS) $(update-grub_SCRIPTS)
 
 CLEANFILES =
 MOSTLYCLEANFILES = 
@@ -152,6 +152,17 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
+	done
+	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
+	@list='$(update-grub_SCRIPTS)'; for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
+	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
+	done
+	@list='$(update-grub_DATA)'; for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
 
 install-strip:

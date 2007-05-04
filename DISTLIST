@@ -258,6 +258,11 @@ util/misc.c
 util/raid.c
 util/resolve.c
 util/unifont2pff.rb
+util/update-grub.in
+util/grub.d/00_header.in
+util/grub.d/10_hurd.in
+util/grub.d/10_linux.in
+util/grub.d/README
 util/i386/efi/grub-mkimage.c
 util/i386/pc/biosdisk.c
 util/i386/pc/getroot.c

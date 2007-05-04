@@ -18,6 +18,33 @@ grub_emu_init.c: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh gr
 	rm -f $@; sh $(srcdir)/geninit.sh $(filter %.c,$^) > $@
 DISTCLEANFILES += grub_emu_init.c
 
+# For update-grub
+update-grub: util/update-grub.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += update-grub
+CLEANFILES += update-grub
+
+00_header: util/grub.d/00_header.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+update-grub_SCRIPTS += 00_header
+CLEANFILES += 00_header
+
+10_linux: util/grub.d/10_linux.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+update-grub_SCRIPTS += 10_linux
+CLEANFILES += 10_linux
+
+10_hurd: util/grub.d/10_hurd.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+update-grub_SCRIPTS += 10_hurd
+CLEANFILES += 10_hurd
+
+update-grub_DATA += util/grub.d/README
+
 
 # Filing systems.
 pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod		\
