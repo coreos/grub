@@ -216,8 +216,8 @@ if test "x$fs_module" = x -a "x$modules" = x; then
     exit 1
 fi
 
-# Typically, _chain and pc are required.
-modules="$modules $fs_module _chain pc"
+# Typically, _chain, pc and gpt are required.
+modules="$modules $fs_module _chain pc gpt"
 
 $grub_mkimage --output=${grubdir}/core.img $modules || exit 1
 

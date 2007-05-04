@@ -1,7 +1,7 @@
 /* biosdisk.c - emulate biosdisk */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -743,9 +743,12 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 			const grub_partition_t partition)
       {
  	struct grub_pc_partition *pcdata = 0;
+	int gpt = 0;
 	
 	if (strcmp (partition->partmap->name, "pc_partition_map") == 0)
 	  pcdata = partition->data;
+	else if (strcmp (partition->partmap->name, "gpt_partition_map") == 0)
+	  gpt = 1;
 	  
 	if (pcdata)
 	  {
@@ -757,6 +760,11 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 			      pcdata->dos_part, pcdata->bsd_part + 'a',
 			      partition->start);
 	  }
+	else if (gpt)
+	  {
+	      grub_util_info ("GPT partition %d starts from %lu",
+			      partition->index, partition->start);
+	  }
 	
 	if (hdg.start == partition->start)
 	  {
@@ -764,6 +772,11 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 	      {
 		dos_part = pcdata->dos_part;
 		bsd_part = pcdata->bsd_part;
+	      }
+	    else if (gpt)
+	      {
+		dos_part = grub_cpu_to_le32 (partition->index);
+		bsd_part = grub_cpu_to_le32 (-1);
 	      }
 	    else
 	      {

@@ -1,5 +1,19 @@
 2007-05-05  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add partmap/gpt.c.
+	(grub_probe_SOURCES): Likewise.
+	* util/i386/pc/biosdisk.c (grub_util_biosdisk_get_grub_dev): Detect
+	GPT and initialize dos_part and bsd_part accordingly.
+	* util/i386/pc/grub-setup.c (setup): Ditto for install_dos_part and
+	install_bsd_part.
+	(main): Activate gpt module for use during partition identification,
+	and deactivate it afterwards.
+	* util/i386/pc/grub-install.in: Add gpt module to core.img.
+	* util/i386/pc/grub-probe.c (main): Activate gpt module for use during
+	partition identification, and deactivate it afterwards.
+
+2007-05-05  Robert Millan  <rmh@aybabtu.com>
+
 	* term/i386/pc/console.c (grub_console_fini): Call
 	grub_term_set_current() before grub_term_unregister().
 

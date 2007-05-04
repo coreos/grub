@@ -244,6 +244,7 @@ main (int argc, char *argv[])
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
   grub_pc_partition_map_init ();
+  grub_gpt_partition_map_init ();
   grub_raid_init ();
   grub_lvm_init ();
   
@@ -268,6 +269,7 @@ main (int argc, char *argv[])
   
   grub_lvm_fini ();
   grub_raid_fini ();
+  grub_gpt_partition_map_fini ();
   grub_pc_partition_map_fini ();
   grub_util_biosdisk_fini ();
   
