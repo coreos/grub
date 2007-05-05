@@ -61,6 +61,7 @@ if ${found} ; then : ; else
 fi
 
 if ${test_mode} ; then : ; else
+  mkdir -p ${grub_prefix}
   exec > ${grub_cfg}.new
   chmod 444 ${grub_cfg}.new
 fi

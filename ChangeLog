@@ -1,5 +1,9 @@
 2007-05-05  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub.in: Create ${grub_prefix} if it doesn't exist.
+
+2007-05-05  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/10_linux.in: Allow the administrator to insert Linux
 	command-line arguments via ${GRUB_CMDLINE_LINUX}.
 
