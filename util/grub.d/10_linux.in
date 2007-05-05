@@ -33,7 +33,7 @@ for linux in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
   basedir=`echo $linux | sed -e "s,/[^/]*$,,g"`
   cat << EOF
 menuentry "${OS}, linux ${version}" {
-	linux	${linux} root=${GRUB_DEVICE} ro
+	linux	${linux} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX}
 EOF
   if test -e ${basedir}/initrd.img-${version} ; then
     echo "Found initrd image: ${basedir}/initrd.img-${version}" >&2
@@ -46,7 +46,7 @@ EOF
 EOF
   cat << EOF
 menuentry "${OS}, linux ${version} (single-user mode)" {
-	linux	${linux} root=${GRUB_DEVICE} ro single
+	linux	${linux} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
 EOF
   if test -e ${basedir}/initrd.img-${version} ; then
     cat << EOF

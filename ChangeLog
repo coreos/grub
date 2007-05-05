@@ -1,5 +1,10 @@
 2007-05-05  Robert Millan  <rmh@aybabtu.com>
 
+	* util/grub.d/10_linux.in: Allow the administrator to insert Linux
+	command-line arguments via ${GRUB_CMDLINE_LINUX}.
+
+2007-05-05  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (grub_setup_SOURCES): Add partmap/gpt.c.
 	(grub_probe_SOURCES): Likewise.
 	* util/i386/pc/biosdisk.c (grub_util_biosdisk_get_grub_dev): Detect
