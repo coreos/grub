@@ -1,5 +1,10 @@
 2007-05-05  Robert Millan  <rmh@aybabtu.com>
 
+	* util/powerpc/ieee1275/grub-install.in: Fix syntax error in pkglibdir
+	initialisation.
+
+2007-05-05  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub.in: Create ${grub_prefix} if it doesn't exist.
 
 2007-05-05  Robert Millan  <rmh@aybabtu.com>
