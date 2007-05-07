@@ -132,35 +132,35 @@ install-local: all
 	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
 	@list='$(DATA)'; \
 	for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(bindir)/$$dest; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(sbindir)
 	@list='$(sbin_UTILITIES)'; for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_PROGRAM) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
 	done
 	@list='$(sbin_SCRIPTS)'; for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sbindir)/$$dest; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
 	@list='$(update-grub_SCRIPTS)'; for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
 	@list='$(update-grub_DATA)'; for file in $$list; do \
-	  if test -f "$$file"; then dir=; else dir="$(srcdir)"; fi; \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done

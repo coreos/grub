@@ -1,3 +1,8 @@
+2007-05-07  Robert Millan  <rmh@aybabtu.com>
+
+	* Makefile.in: Fix assumption that $(srcdir) has a trailing slash when
+	source directory differs from build directory.
+
 2007-05-05  Robert Millan  <rmh@aybabtu.com>
 
 	* util/powerpc/ieee1275/grub-install.in: Fix syntax error in pkglibdir
