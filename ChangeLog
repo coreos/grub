@@ -1,5 +1,12 @@
 2007-05-07  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-probe.c: Add `grub-probe -t partmap' parameter to
+	determine partition map module.
+	* util/i386/pc/grub-install.in: Use this feature to decide which
+	partition module to load, instead of hardcoding pc and gpt.
+
+2007-05-07  Robert Millan  <rmh@aybabtu.com>
+
 	* Makefile.in: Fix assumption that $(srcdir) has a trailing slash when
 	source directory differs from build directory.
 

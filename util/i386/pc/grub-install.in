@@ -216,8 +216,16 @@ if test "x$fs_module" = x -a "x$modules" = x; then
     exit 1
 fi
 
-# Typically, _chain, pc and gpt are required.
-modules="$modules $fs_module _chain pc gpt"
+# Then the partition map module.
+partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir}`
+if test "x$partmap_module" = x -a "x$modules" = x; then
+    echo "Auto-detection of a partition map module failed." 1>&2
+    echo "Please specify the module with the option \`--modules' explicitly." 1>&2
+    exit 1
+fi
+
+# _chain is often useful
+modules="$modules $fs_module $partmap_module _chain"
 
 $grub_mkimage --output=${grubdir}/core.img $modules || exit 1
 

@@ -50,6 +50,7 @@
 #define PRINT_FS	0
 #define PRINT_DRIVE	1
 #define PRINT_DEVICE	2
+#define PRINT_PARTMAP	3
 
 int print = PRINT_FS;
 
@@ -123,6 +124,23 @@ probe (const char *path)
   if (! dev)
     grub_util_error ("%s", grub_errmsg);
 
+  if (print == PRINT_PARTMAP)
+    {
+      if (strcmp (dev->disk->partition->partmap->name, "amiga_partition_map") == 0)
+        printf ("amiga\n");
+      else if (strcmp (dev->disk->partition->partmap->name, "apple_partition_map") == 0)
+        printf ("apple\n");
+      else if (strcmp (dev->disk->partition->partmap->name, "gpt_partition_map") == 0)
+        printf ("gpt\n");
+      else if (strcmp (dev->disk->partition->partmap->name, "pc_partition_map") == 0)
+        printf ("pc\n");
+      else if (strcmp (dev->disk->partition->partmap->name, "sun_partition_map") == 0)
+        printf ("sun\n");
+      else
+        grub_util_error ("Unknown partition map %s", dev->disk->partition->partmap->name);
+      goto end;
+    }
+
   fs = grub_fs_probe (dev);
   if (! fs)
     grub_util_error ("%s", grub_errmsg);
@@ -160,7 +178,8 @@ Usage: grub-probe [OPTION]... PATH\n\
 Probe device information for a given path.\n\
 \n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|drive|device)  print filesystem module, GRUB drive or system device [default=fs]\n\
+  -t, --target=(fs|drive|device|partmap)\n\
+                            print filesystem module, GRUB drive, system device or partition map module [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
@@ -204,6 +223,8 @@ main (int argc, char *argv[])
 	      print = PRINT_DRIVE;
 	    else if (!strcmp (optarg, "device"))
 	      print = PRINT_DEVICE;
+	    else if (!strcmp (optarg, "partmap"))
+	      print = PRINT_PARTMAP;
 	    else
 	      usage (1);
 	    break;
