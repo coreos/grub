@@ -126,6 +126,9 @@ probe (const char *path)
 
   if (print == PRINT_PARTMAP)
     {
+      if (dev->disk->partition == NULL)
+        grub_util_error ("Cannot detect partition map for %s", drive_name);
+
       if (strcmp (dev->disk->partition->partmap->name, "amiga_partition_map") == 0)
         printf ("amiga\n");
       else if (strcmp (dev->disk->partition->partmap->name, "apple_partition_map") == 0)

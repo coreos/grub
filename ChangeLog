@@ -1,3 +1,8 @@
+2007-05-09  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-probe.c (probe): When detecting partition map,
+        fail gracefuly if dev->disk->partition == NULL.
+
 2007-05-07  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-probe.c: Add `grub-probe -t partmap' parameter to
