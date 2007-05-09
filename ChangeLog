@@ -1,3 +1,7 @@
+2007-05-09  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* Makefile.in: Add the datarootdir autoconf variable.
+
 2007-05-09  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-probe.c (probe): When detecting partition map,
