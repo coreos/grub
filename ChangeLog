@@ -1,3 +1,11 @@
+2007-05-11  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Create device.map if it doesn't already exist,
+	before attempting to run grub-probe.
+	Check for grub-probe and grub-mkdevicemap with the same code
+	grub-install is using.
+	Remove test mode.
+
 2007-05-09  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* Makefile.in: Add the datarootdir autoconf variable.

@@ -19,11 +19,16 @@
 
 transform="@program_transform_name@"
 
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sbindir=@sbindir@
 sysconfdir=@sysconfdir@
 grub_prefix=`echo /boot/grub | sed ${transform}`
 grub_cfg=${grub_prefix}/grub.cfg
 update_grub_dir=${sysconfdir}/grub.d
-test_mode=false
+
+grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
+grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 
 if [ "x$UID" = "x" ] ; then
   UID=`id -u`
@@ -38,33 +43,30 @@ if [ "$1" = "-y" ] ; then
   echo "$0: warning: Ignoring -y option (no longer needed)." >&2
 fi
 
-if test -d ${update_grub_dir} ; then : ; else
-  if test -d ./grub.d ; then
-    update_grub_dir=./grub.d
-    test_mode=true
-  fi
+set $grub_mkdevicemap dummy
+if test -f "$1"; then
+    :
+else
+    echo "$1: Not found." 1>&2
+    exit 1
 fi
 
-found=false
-old_IFS="$IFS"
-IFS=:
-for i in $PATH ; do
-  if test -x "$i/grub-probe" ; then
-    found=true
-    break
-  fi
-done
-IFS="$old_IFS"
-if ${found} ; then : ; else
-  echo "$0: grub-probe not found in PATH." >&2
-  exit 1
+set $grub_probe dummy
+if test -f "$1"; then
+    :
+else
+    echo "$1: Not found." 1>&2
+    exit 1
 fi
 
-if ${test_mode} ; then : ; else
-  mkdir -p ${grub_prefix}
-  exec > ${grub_cfg}.new
-  chmod 444 ${grub_cfg}.new
+mkdir -p ${grub_prefix}
+
+if test -e ${grub_prefix}/device.map ; then : ; else
+  grub-mkdevicemap
 fi
+
+exec > ${grub_cfg}.new
+chmod 444 ${grub_cfg}.new
 
 if test -f ${sysconfdir}/default/grub ; then
   . ${sysconfdir}/default/grub
@@ -100,8 +102,6 @@ for i in ${update_grub_dir}/* ; do
 done
 
 # none of the children aborted with error, install the new grub.cfg
-if ${test_mode} ; then : ; else
-  mv ${grub_cfg}.new ${grub_cfg}
-fi
+mv ${grub_cfg}.new ${grub_cfg}
 
 echo "done" >&2
