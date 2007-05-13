@@ -29,8 +29,9 @@ EOF
 
 if test -e /boot/grub/unifont.pff ; then
   cat << EOF
-font /boot/grub/unifont.pff
-set gfxmode=640x480x32
+
+font ${GRUB_DRIVE_BOOT_GRUB}/unifont.pff
+set gfxmode=800x600x16
 insmod gfxterm
 insmod vbe
 terminal gfxterm

@@ -23,11 +23,19 @@ else
   OS="${GRUB_DISTRIBUTOR} GNU/Hurd"
 fi
 
+at_least_one=false
+all_of_them=true
+
 # FIXME: add l4 here?
 kernel=
 for i in /boot/gnumach.gz /boot/gnumach ; do
   if test -e $i ; then
-    kernel=$i
+    basename=`basename $i`
+    dirname=`dirname $i`
+    grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
+    echo "Found GNU Mach: $i" >&2
+    kernel=${grub_dirname}/${basename}
+    at_least_one=true
   fi
 done
 
@@ -37,10 +45,8 @@ case "${GRUB_FS}" in
   *)	hurd_fs="${GRUB_FS}fs" ;;
 esac
 
-at_least_one=false
-all_of_them=true
-for i in "${kernel}" /hurd/${hurd_fs}.static /hurd/exec ; do
-  if test -e "$i" ; then
+for i in /hurd/${hurd_fs}.static /hurd/exec ; do
+  if test -e "$i" ; then 
     echo "Found Hurd module: $i" >&2
     at_least_one=true
   else

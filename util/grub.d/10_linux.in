@@ -23,22 +23,76 @@ else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
 fi
 
-
-for linux in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
-  if test -e ${linux} ; then : ; else
-    continue
+test_numeric ()
+{
+  local a=$1
+  local cmp=$2
+  local b=$3
+  if [ "$a" = "$b" ] ; then
+    case $cmp in
+      ge|eq|le) return 0 ;;
+      gt|lt) return 1 ;;
+    esac
   fi
-  echo "Found linux image:  $linux" >&2
-  version=`echo $linux | sed -e "s,.*/[^0-9]*-,,g"`
-  basedir=`echo $linux | sed -e "s,/[^/]*$,,g"`
+  if [ "$cmp" = "lt" ] ; then
+    c=$a
+    a=$b
+    b=$c
+  fi
+  if (echo $a ; echo $b) | sort -n | head -n 1 | grep -qx $b ; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+test_gt ()
+{
+  local a=$1
+  local b=$2
+  local cmp=gt
+  if [ "x$b" = "x" ] ; then
+    return 0
+  fi
+  case $a:$b in
+    *.old:*.old) ;;
+    *.old:*) a=`echo -n $a | sed -e s/\.old$//g` ; cmp=gt ;;
+    *:*.old) b=`echo -n $b | sed -e s/\.old$//g` ; cmp=ge ;;
+  esac
+  test_numeric $a $cmp $b
+  return $?
+}
+
+find_latest ()
+{
+  local a=""
+  for i in $@ ; do
+    if test_gt "$i" "$a" ; then
+      a="$i"
+    fi
+  done
+  echo "$a"
+}
+
+list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
+        if test -e $i ; then echo -n "$i " ; fi
+      done`
+
+while [ "x$list" != "x" ] ; do
+  linux=`find_latest $list`
+  echo "Found linux image: $linux" >&2
+  basename=`basename $linux`
+  dirname=`dirname $linux`
+  grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
+  version=`echo $basename | sed -e "s,^[^0-9]*-,,g"`
   cat << EOF
 menuentry "${OS}, linux ${version}" {
-	linux	${linux} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX}
+	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX}
 EOF
-  if test -e ${basedir}/initrd.img-${version} ; then
-    echo "Found initrd image: ${basedir}/initrd.img-${version}" >&2
+  if test -e ${dirname}/initrd.img-${version} ; then
+    echo "Found initrd image: ${dirname}/initrd.img-${version}" >&2
     cat << EOF
-	initrd	${basedir}/initrd.img-${version}
+	initrd	${grub_dirname}/initrd.img-${version}
 EOF
   fi
   cat << EOF
@@ -46,14 +100,15 @@ EOF
 EOF
   cat << EOF
 menuentry "${OS}, linux ${version} (single-user mode)" {
-	linux	${linux} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
+	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
 EOF
-  if test -e ${basedir}/initrd.img-${version} ; then
+  if test -e ${dirname}/initrd.img-${version} ; then
     cat << EOF
-	initrd	${basedir}/initrd.img-${version}
+	initrd	${grub_dirname}/initrd.img-${version}
 EOF
   fi
   cat << EOF
 }
 EOF
+  list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
 done

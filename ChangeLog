@@ -1,3 +1,19 @@
+2007-05-13  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Fix a few assumptions about the devices holding
+	/, /boot and /boot/grub being the same.
+	* util/grub.d/00_header.in: Likewise.
+	* util/grub.d/10_hurd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+
+	* util/grub.d/10_linux.in: Implement Linux image sorting with arbitrary
+	patterns.  Use that to define the `.old' suffix as older than `'.
+
+	* util/grub.d/00_header.in: Set default gfxmode to `800x600x16'.
+
+	* util/update-grub.in: Add a reference to ${sysconfdir}/default/grub in
+	the grub.cfg header message.
+
 2007-05-11  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub.in: Create device.map if it doesn't already exist,
