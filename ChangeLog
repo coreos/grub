@@ -1,3 +1,8 @@
+2007-05-15  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Remove duplicated line in grub.cfg header
+	message.
+
 2007-05-13  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub.in: Fix a few assumptions about the devices holding
