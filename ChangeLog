@@ -1,5 +1,9 @@
 2007-05-16  Robert Millan  <rmh@aybabtu.com>
 
+	* util/grub.d/00_header.in: Set default gfxmode to `640x480'.
+
+2007-05-16  Robert Millan  <rmh@aybabtu.com>
+
 	* util/i386/efi/grub-install.in: New.
 	* conf/i386-efi.rmk: Enable grub-mkdevicemap, grub-probe and the
 	newly added grub-install.
