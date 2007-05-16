@@ -18,7 +18,6 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <grub/machine/biosdisk.h>
 #include <grub/disk.h>
 #include <grub/partition.h>
 #include <grub/pc_partition.h>

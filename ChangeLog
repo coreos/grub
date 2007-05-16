@@ -1,5 +1,17 @@
 2007-05-16  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/efi/grub-install.in: New.
+	* conf/i386-efi.rmk: Enable grub-mkdevicemap, grub-probe and the
+	newly added grub-install.
+	* util/biosdisk.c: Remove unnecessary grub/machine/biosdisk.h
+	include.
+	* util/getroot.c: Replace grub/i386/pc/util/biosdisk.h with
+	grub/util/biosdisk.h.
+	* util/grub-probe.c: Replace grub/machine/util/biosdisk.h with
+	grub/util/biosdisk.h.
+
+2007-05-16  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/i386/pc/util/biosdisk.h: Moved to ...
 	* include/grub/util/biosdisk.h: ... here.
 	* util/i386/pc/biosdisk.c: Moved to ...

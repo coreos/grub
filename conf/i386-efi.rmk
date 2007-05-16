@@ -6,7 +6,7 @@ COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-#sbin_UTILITIES = grub-setup grub-mkdevicemap grub-probe
+sbin_UTILITIES = grub-mkdevicemap grub-probe
 #ifeq ($(enable_grub_emu), yes)
 #sbin_UTILITIES += grub-emu
 #endif
@@ -24,15 +24,16 @@ grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
 #	kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub-mkdevicemap.
-#grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 
 # For grub-probe.
-#grub_probe_SOURCES = util/i386/pc/grub-probe.c	\
-#	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
-#	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
-#	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c fs/ufs.c 	\
-#	fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c kern/env.c fs/fshelp.c 	\
-#	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c
+grub_probe_SOURCES = util/grub-probe.c	\
+	util/biosdisk.c	util/misc.c util/getroot.c	\
+	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
+	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c		\
+	partmap/gpt.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c	\
+	kern/env.c fs/fshelp.c fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c	\
+	disk/lvm.c disk/raid.c
 
 # For grub-emu.
 grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
@@ -57,16 +58,16 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
 	util/console.c util/grub-emu.c util/misc.c			\
-	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
+	util/biosdisk.c util/getroot.c			\
 	util/i386/pc/misc.c grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Scripts.
-#sbin_SCRIPTS = grub-install
+sbin_SCRIPTS = grub-install
 
 # For grub-install.
-#grub_install_SOURCES = util/efi/pc/grub-install.in
+grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
 pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod \

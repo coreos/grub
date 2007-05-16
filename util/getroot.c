@@ -24,7 +24,7 @@
 #include <dirent.h>
 
 #include <grub/util/misc.h>
-#include <grub/i386/pc/util/biosdisk.h>
+#include <grub/util/biosdisk.h>
 
 static void
 strip_extra_slashes (char *dir)
