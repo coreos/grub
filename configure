@@ -1265,6 +1265,11 @@ _ACEOF
 
   cat <<\_ACEOF
 
+Program names:
+  --program-prefix=PREFIX            prepend PREFIX to installed program names
+  --program-suffix=SUFFIX            append SUFFIX to installed program names
+  --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
 System types:
   --build=BUILD     configure for building on BUILD [guessed]
   --host=HOST       cross-compile to build programs to run on HOST [BUILD]
@@ -1895,6 +1900,21 @@ test -n "$target_alias" &&
   test "$program_prefix$program_suffix$program_transform_name" = \
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
+
+# Program name transformations
+test "$program_prefix" != NONE &&
+  program_transform_name="s&^&$program_prefix&;$program_transform_name"
+# Use a double $ so make ignores it.
+test "$program_suffix" != NONE &&
+  program_transform_name="s&\$&$program_suffix&;$program_transform_name"
+# Double any \ or $.  echo might interpret backslashes.
+# By default was `s,x,x', remove it if useless.
+cat <<\_ACEOF >conftest.sed
+s/[\\$]/&&/g;s/;s,x,x,$//
+_ACEOF
+program_transform_name=`echo $program_transform_name | sed -f conftest.sed`
+rm -f conftest.sed
+
 
 case "$host_cpu" in
   powerpc64) host_m32=1 ;;
