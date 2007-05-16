@@ -669,7 +669,7 @@ main (int argc, char *argv[])
   if (! dest_dev)
     {
       /* Possibly, the user specified an OS device file.  */
-      dest_dev = grub_util_biosdisk_get_grub_dev (argv[optind]);
+      dest_dev = grub_util_get_grub_dev (argv[optind]);
       if (! dest_dev)
 	{
 	  fprintf (stderr, "Invalid device `%s'.\n", argv[optind]);
@@ -703,7 +703,7 @@ main (int argc, char *argv[])
     }
   else
     {
-      root_dev = grub_util_biosdisk_get_grub_dev (grub_guess_root_device (dir ? : DEFAULT_DIRECTORY));
+      root_dev = grub_util_get_grub_dev (grub_guess_root_device (dir ? : DEFAULT_DIRECTORY));
       if (! root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",
@@ -743,7 +743,7 @@ main (int argc, char *argv[])
 		 dir ? : DEFAULT_DIRECTORY,
 		 boot_file ? : DEFAULT_BOOT_FILE,
 		 core_file ? : DEFAULT_CORE_FILE,
-		 root_dev, grub_util_biosdisk_get_grub_dev (devicelist[i]), 1);
+		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1);
 	}
 
       free (raid_prefix);

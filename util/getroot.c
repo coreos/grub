@@ -1,7 +1,7 @@
 /* getroot.c - Get root device */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2006  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -225,32 +225,46 @@ grub_guess_root_device (const char *dir)
   if (stat (dir, &st) < 0)
     grub_util_error ("Cannot stat `%s'", dir);
 
-  /* This might be truly slow, but is there any better way?  */
-  os_dev = find_root_device ("/dev", st.st_dev);
-  if (! os_dev)
-    return 0;
-
 #ifdef __linux__
+  /* We first try to find the device in the /dev/mapper directory.  If
+     we don't do this, we get useless device names like /dev/dm-0 for
+     LVM. */
+  os_dev = find_root_device ("/dev/mapper", st.st_dev);
+  if (!os_dev)
+#endif __linux_
+    {
+      /* This might be truly slow, but is there any better way?  */
+      os_dev = find_root_device ("/dev", st.st_dev);
+    }
+
+  return os_dev;
+}
+
+char *
+grub_util_get_grub_dev (const char *os_dev)
+{
   /* Check for LVM.  */
   if (!strncmp (os_dev, "/dev/mapper/", 12))
     {
-      char *grub_dev = xmalloc (strlen (os_dev) - 12);
+      char *grub_dev = xmalloc (strlen (os_dev) - 12 + 1);
 
       strcpy (grub_dev, os_dev+12);
 
       return grub_dev;
     }
 
+  /* Check for RAID.  */
   if (!strncmp (os_dev, "/dev/md", 7))
     {
       char *p, *grub_dev = xmalloc (8);
 
       p = strchr (os_dev, 'm');
-      strncpy (grub_dev, p, 8);
+      memcpy (grub_dev, p, 7);
+      grub_dev[7] = '\0';
 
       return grub_dev;
     }
-#endif
-    
-  return os_dev;
+
+  /* If it's not RAID or LVM, it should be a biosdisk.  */
+  return grub_util_biosdisk_get_grub_dev (os_dev);
 }

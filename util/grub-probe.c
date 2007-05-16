@@ -1,7 +1,7 @@
 /* grub-probe.c - probe device information for a given path */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006 Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007 Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -98,19 +98,11 @@ probe (const char *path)
       goto end;
     }
 
-  if (device_name[0] == 'm' && device_name[1] == 'd'
-      && device_name[2] >= '0' && device_name[2] <= '9')
+  drive_name = grub_util_get_grub_dev (device_name);
+  if (! drive_name)
     {
-      drive_name = xstrdup (device_name);
-    }
-  else
-    {
-      drive_name = grub_util_biosdisk_get_grub_dev (device_name);
-      if (! drive_name)
-	{
-	  fprintf (stderr, "cannot find a GRUB drive for %s.\n", device_name);
-	  goto end;
-	}
+      fprintf (stderr, "cannot find a GRUB drive for %s.\n", device_name);
+      goto end;
     }
   
   if (print == PRINT_DRIVE)

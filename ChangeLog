@@ -1,3 +1,17 @@
+2007-05-16  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* util/getroot.c (grub_guess_root_device): Remove RAID and LVM
+	code, first search for device in /dev/mapper, then in /dev.
+	(grub_util_get_grub_dev): New function.
+	* include/grub/util/getroot.h (grub_util_get_grub_dev): Add
+	prototype.
+	* util/grub-probe.c (probe): Remove check for RAID, call
+	grub_util_get_grub_dev() instead of
+	grub_util_biosdisk_get_grub_dev().
+	* util/grub-emu.c (main): Call grub_util_get_grub_dev() instead of
+	grub_util_biosdisk_get_grub_dev().
+	* util/i386/pc/grub-setup.c (main): Likewise.
+
 2007-05-16  Robert Millan  <rmh@aybabtu.com>
 
 	* DISTLIST: Update for the latest changes.
