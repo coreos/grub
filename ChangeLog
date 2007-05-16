@@ -1,3 +1,16 @@
+2007-05-16  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/pc/util/biosdisk.h: Moved to ...
+	* include/grub/util/biosdisk.h: ... here.
+	* util/i386/pc/biosdisk.c: Moved to ...
+	* util/biosdisk.c: ... here.
+	* util/i386/pc/getroot.c: Moved to ...
+	* util/getroot.c: ... here.
+	* util/i386/pc/grub-mkdevicemap.c: Moved to ...
+	* util/grub-mkdevicemap.c: ... here.
+	* util/i386/pc/grub-probe.c: Moved to ...
+	* util/grub-probe.c: ... here.
+
 2007-05-15  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub.in: Remove duplicated line in grub.cfg header
