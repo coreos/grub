@@ -62,8 +62,8 @@ grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 grub_mkimage_LDFLAGS = $(LIBLZO)
 
 # For grub-setup.
-grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c	\
-	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c	\
+grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
+	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
 	fs/sfs.c kern/parser.c kern/partition.c	partmap/pc.c		\
 	partmap/gpt.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c		\
@@ -71,11 +71,11 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c	\
 	util/raid.c util/lvm.c
 
 # For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/i386/pc/grub-mkdevicemap.c util/misc.c
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 
 # For grub-probe.
-grub_probe_SOURCES = util/i386/pc/grub-probe.c	\
-	util/i386/pc/biosdisk.c	util/misc.c util/i386/pc/getroot.c	\
+grub_probe_SOURCES = util/grub-probe.c	\
+	util/biosdisk.c	util/misc.c util/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c		\
 	partmap/gpt.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c	\
@@ -105,7 +105,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
 	util/console.c util/grub-emu.c util/misc.c			\
-	util/i386/pc/biosdisk.c util/i386/pc/getroot.c			\
+	util/biosdisk.c util/getroot.c			\
 	util/i386/pc/misc.c grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)

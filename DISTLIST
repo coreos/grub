@@ -83,6 +83,7 @@ fs/hfsplus.c
 hello/hello.c
 include/grub/acorn_filecore.h
 include/grub/arg.h
+include/grub/biosdisk.h
 include/grub/bitmap.h
 include/grub/boot.h
 include/grub/cache.h
@@ -132,7 +133,6 @@ include/grub/i386/types.h
 include/grub/i386/efi/kernel.h
 include/grub/i386/efi/loader.h
 include/grub/i386/efi/time.h
-include/grub/i386/pc/biosdisk.h
 include/grub/i386/pc/boot.h
 include/grub/i386/pc/chainloader.h
 include/grub/i386/pc/console.h
@@ -251,8 +251,12 @@ term/i386/pc/serial.c
 term/i386/pc/vesafb.c
 term/i386/pc/vga.c
 term/ieee1275/ofconsole.c
+util/biosdisk.c
 util/console.c
+util/getroot.c
 util/grub-emu.c
+util/grub-mkdevicemap.c
+util/grub-probe.c
 util/lvm.c
 util/misc.c
 util/raid.c
@@ -263,13 +267,10 @@ util/grub.d/00_header.in
 util/grub.d/10_hurd.in
 util/grub.d/10_linux.in
 util/grub.d/README
+util/i386/efi/grub-install.in
 util/i386/efi/grub-mkimage.c
-util/i386/pc/biosdisk.c
-util/i386/pc/getroot.c
 util/i386/pc/grub-install.in
-util/i386/pc/grub-mkdevicemap.c
 util/i386/pc/grub-mkimage.c
-util/i386/pc/grub-probe.c
 util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
 util/powerpc/ieee1275/grub-install.in

@@ -28,7 +28,7 @@
 #include <grub/partition.h>
 #include <grub/pc_partition.h>
 #include <grub/env.h>
-#include <grub/machine/util/biosdisk.h>
+#include <grub/util/biosdisk.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
 #include <grub/term.h>

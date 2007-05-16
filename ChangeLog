@@ -1,5 +1,15 @@
 2007-05-16  Robert Millan  <rmh@aybabtu.com>
 
+	* DISTLIST: Update for the latest changes.
+	* conf/i386-pc.rmk: Use the new paths for util/getroot.c,
+	util/grub-mkdevicemap.c, util/grub-probe.c and util/biosdisk.c.
+	* util/grub-emu.c: Replace grub/i386/pc/util/biosdisk.h with
+	grub/util/biosdisk.h.
+	* util/i386/pc/grub-setup.c: Replace grub/machine/util/biosdisk.h with
+	grub/util/biosdisk.h.
+
+2007-05-16  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/00_header.in: Set default gfxmode to `640x480'.
 
 2007-05-16  Robert Millan  <rmh@aybabtu.com>
