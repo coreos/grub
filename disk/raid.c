@@ -1,7 +1,7 @@
 /* raid.c - module to read RAID arrays.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2006, 2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -83,8 +83,7 @@ grub_raid_open (const char *name, grub_disk_t disk)
   if (!array)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
 
-  /* FIXME: superblock version 1 supports partitions.  */
-  disk->has_partitions = 0;
+  disk->has_partitions = 1;
   disk->id = array->number;
   disk->data = array;
 

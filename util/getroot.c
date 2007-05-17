@@ -256,11 +256,55 @@ grub_util_get_grub_dev (const char *os_dev)
   /* Check for RAID.  */
   if (!strncmp (os_dev, "/dev/md", 7))
     {
-      char *p, *grub_dev = xmalloc (8);
+      const char *p;
+      char *grub_dev = xmalloc (20);
 
-      p = strchr (os_dev, 'm');
-      memcpy (grub_dev, p, 7);
-      grub_dev[7] = '\0';
+      if (os_dev[7] == '_' && os_dev[8] == 'd')
+	{
+	  /* This a partitionable RAID device of the form /dev/md_dNNpMM. */
+	  int i;
+
+	  grub_dev[0] = 'm';
+	  grub_dev[1] = 'd';
+	  i = 2;
+	  
+	  p = os_dev + 9;
+	  while (*p >= '0' && *p <= '9')
+	    {
+	      grub_dev[i] = *p;
+	      i++;
+	      p++;
+	    }
+
+	  if (*p == '\0')
+	    grub_dev[i] = '\0';
+	  else if (*p == 'p')
+	    {
+	      p++;
+	      grub_dev[i] = ',';
+	      i++;
+
+	      while (*p >= '0' && *p <= '9')
+		{
+		  grub_dev[i] = *p;
+		  i++;
+		  p++;
+		}
+
+	      grub_dev[i] = '\0';
+	    }
+	  else
+	    grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
+	}
+      else if (os_dev[7] >= '0' && os_dev[7] <= '9')
+	{
+	  p = os_dev + 5;
+	  memcpy (grub_dev, p, 7);
+	  grub_dev[7] = '\0';
+	}
+      else
+	grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
+
 
       return grub_dev;
     }
