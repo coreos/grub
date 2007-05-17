@@ -1,3 +1,26 @@
+2007-05-17  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* video/i386/pc/vbe.c (grub_video_vbe_create_render_target): Add
+	__attribute_ ((unused)) to mode_type argument.
+
+	* util/getroot.c (grub_guess_root_device): Fix #endif.
+	
+	* kern/misc.c (memcmp): Fix prototype.
+
+	* include/grub/partition.h [GRUB_UTIL]
+	(grub_gpt_partition_map_init): Add prototype.
+	(grub_gpt_partition_map_fini): Likewise.
+
+	* fs/jfs.c (struct grub_jfs_inode): Put __attribute__ ((packed)
+	at the right place.
+
+	* fs/fat.c (grub_fat_mount): Replace ~0UL with ~0U.
+	(grub_fat_read_data): Likewise.
+	(grub_fat_find_dir): Likewise.
+
+	* font/manager.c (find_glyph): Make table a const.
+	(grub_font_get_glyph): Remove bitmap from if statement.
+	
 2007-05-16  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* util/getroot.c (grub_guess_root_device): Remove RAID and LVM

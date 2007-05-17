@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2004,2006  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2004,2006,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -93,6 +93,8 @@ void grub_apple_partition_map_init (void);
 void grub_apple_partition_map_fini (void);
 void grub_sun_partition_map_init (void);
 void grub_sun_partition_map_fini (void);
+void grub_gpt_partition_map_init (void);
+void grub_gpt_partition_map_fini (void);
 #endif
 
 static inline grub_disk_addr_t

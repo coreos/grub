@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006,2007  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ find_glyph (const struct font *font, grub_uint32_t code)
 {
   grub_uint32_t start = 0;
   grub_uint32_t end = font->num - 1;
-  struct entry *table = font->table;
+  const struct entry *table = font->table;
   
   /* This shouldn't happen.  */
   if (font->num == 0)
@@ -206,9 +206,8 @@ grub_font_get_glyph (grub_uint32_t code,
 	      goto restart;
 	    }
 
-	  if (bitmap
-	      && (grub_file_read (font->file, (char *) bitmap, w * 16)
-		  != (grub_ssize_t) w * 16))
+	  if (grub_file_read (font->file, (char *) bitmap, w * 16)
+	      != (grub_ssize_t) w * 16)
 	    {
 	      remove_font (font);
 	      goto restart;

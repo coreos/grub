@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -1399,7 +1399,7 @@ grub_video_vbe_swap_buffers (void)
 static grub_err_t
 grub_video_vbe_create_render_target (struct grub_video_render_target **result,
                                      unsigned int width, unsigned int height,
-                                     unsigned int mode_type)
+                                     unsigned int mode_type __attribute__ ((unused)))
 {
   struct grub_video_render_target *target;
   unsigned int size;

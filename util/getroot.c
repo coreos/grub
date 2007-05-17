@@ -231,7 +231,7 @@ grub_guess_root_device (const char *dir)
      LVM. */
   os_dev = find_root_device ("/dev/mapper", st.st_dev);
   if (!os_dev)
-#endif __linux_
+#endif
     {
       /* This might be truly slow, but is there any better way?  */
       os_dev = find_root_device ("/dev", st.st_dev);
