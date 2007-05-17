@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2006,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -414,6 +414,8 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
 	      num = ((size + GRUB_DISK_SECTOR_SIZE - 1)
 		     >> GRUB_DISK_SECTOR_BITS);
+
+	      tmp_buf = grub_realloc (tmp_buf, num << GRUB_DISK_SECTOR_BITS);
 	      if ((disk->dev->read) (disk, sector, num, tmp_buf))
 		{
 		  grub_error_push ();

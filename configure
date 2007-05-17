@@ -5785,40 +5785,6 @@ done
 
 
 #
-# Compiler features.
-#
-
-# Smashing stack protector.
-
-# Smashing stack protector.
-ssp_possible=yes
-{ echo "$as_me:$LINENO: checking whether \`$CC' accepts \`-fstack-protector'" >&5
-echo $ECHO_N "checking whether \`$CC' accepts \`-fstack-protector'... $ECHO_C" >&6; }
-# Is this a reliable test case?
-cat >conftest.$ac_ext <<_ACEOF
-void foo (void) { volatile char a[8]; a[3]; }
-_ACEOF
-# `$CC -c -o ...' might not be portable.  But, oh, well...  Is calling
-# `ac_compile' like this correct, after all?
-if eval "$ac_compile -S -fstack-protector -o conftest.s" 2> /dev/null; then
-  { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
-  # Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
-  rm -f conftest.s
-else
-  ssp_possible=no
-  { echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; }
-fi
-
-# Need that, because some distributions ship compilers that include
-# `-fstack-protector' in the default specs.
-if [ x"$ssp_possible" = xyes ]; then
-  CFLAGS=$CFLAGS\ -fno-stack-protector
-fi
-
-
-#
 # Check for target programs.
 #
 

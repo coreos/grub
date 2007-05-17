@@ -1,5 +1,16 @@
 2007-05-17  Jeroen Dekkers  <jeroen@dekkers.cx>
 
+	* util/biosdisk.c (linux_find_partition): Allocate real_dev on the
+	stack instead of on the heap.
+
+	* kern/disk.c (grub_disk_read): Make sure tmp_buf is big enough
+	before doing a read on it.
+
+	* configure.ac: Only use -fno-stack-protector for the target
+	environment.
+	
+2007-05-17  Jeroen Dekkers  <jeroen@dekkers.cx>
+
 	* video/i386/pc/vbe.c (grub_video_vbe_create_render_target): Add
 	__attribute_ ((unused)) to mode_type argument.
 

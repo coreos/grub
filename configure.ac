@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003,2004,2005,2006  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006,2007  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -150,19 +150,6 @@ fi
 
 # Check for functions.
 AC_CHECK_FUNCS(posix_memalign memalign)
-
-#
-# Compiler features.
-#
-
-# Smashing stack protector.
-grub_CHECK_STACK_PROTECTOR
-[# Need that, because some distributions ship compilers that include
-# `-fstack-protector' in the default specs.
-if [ x"$ssp_possible" = xyes ]; then
-  CFLAGS=$CFLAGS\ -fno-stack-protector
-fi]
-
 
 #
 # Check for target programs.

@@ -214,9 +214,9 @@ linux_find_partition (char *dev, unsigned long sector)
   const char *format;
   char *p;
   int i;
-  char *real_dev;
+  char real_dev[PATH_MAX];
 
-  real_dev = xstrdup (dev);
+  strcpy(real_dev, dev);
   
   if (have_devfs () && strcmp (real_dev + len - 5, "/disc") == 0)
     {
@@ -234,10 +234,7 @@ linux_find_partition (char *dev, unsigned long sector)
     {
       p = strchr (real_dev + 9, 'd');
       if (! p)
-	{
-	  free (real_dev);
-	  return 0;
-	}
+	return 0;
 
       p++;
       while (*p && isdigit (*p))
@@ -246,10 +243,7 @@ linux_find_partition (char *dev, unsigned long sector)
       format = "p%d";
     }
   else
-    {
-      free (real_dev);
-      return 0;
-    }
+    return 0;
 
   for (i = 1; i < 10000; i++)
     {
@@ -259,15 +253,11 @@ linux_find_partition (char *dev, unsigned long sector)
       sprintf (p, format, i);
       fd = open (real_dev, O_RDONLY);
       if (! fd)
-	{
-	  free (real_dev);
-	  return 0;
-	}
+	return 0;
 
       if (ioctl (fd, HDIO_GETGEO, &hdg))
 	{
 	  close (fd);
-	  free (real_dev);
 	  return 0;
 	}
 
@@ -276,12 +266,10 @@ linux_find_partition (char *dev, unsigned long sector)
       if (hdg.start == sector)
 	{
 	  strcpy (dev, real_dev);
-	  free (real_dev);
 	  return 1;
 	}
     }
 
-  free (real_dev);
   return 0;
 }
 #endif /* __linux__ */
