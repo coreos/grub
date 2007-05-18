@@ -409,13 +409,19 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	    {
 	      /* Uggh... Failed. Instead, just read necessary data.  */
 	      unsigned num;
+	      char *p;
 
 	      grub_errno = GRUB_ERR_NONE;
 
 	      num = ((size + GRUB_DISK_SECTOR_SIZE - 1)
 		     >> GRUB_DISK_SECTOR_BITS);
 
-	      tmp_buf = grub_realloc (tmp_buf, num << GRUB_DISK_SECTOR_BITS);
+	      p = grub_realloc (tmp_buf, num << GRUB_DISK_SECTOR_BITS);
+	      if (!p)
+		goto finish;
+
+	      tmp_buf = p;
+	      
 	      if ((disk->dev->read) (disk, sector, num, tmp_buf))
 		{
 		  grub_error_push ();

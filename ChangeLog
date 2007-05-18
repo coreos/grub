@@ -1,5 +1,10 @@
 2007-05-18  Jeroen Dekkers  <jeroen@dekkers.cx>
 
+	* kern/disk.c (grub_disk_read): Check return value of
+	grub_realloc().
+
+2007-05-18  Jeroen Dekkers  <jeroen@dekkers.cx>
+
 	* util/getroot.c (grub_util_get_grub_dev): Support partitionable
 	arrays.
 	* disk/raid.c (grub_raid_open): Likewise.
