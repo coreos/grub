@@ -43,6 +43,7 @@ commands/search.c
 commands/terminal.c
 commands/test.c
 commands/videotest.c
+commands/i386/cpuid.c
 commands/i386/pc/halt.c
 commands/i386/pc/play.c
 commands/i386/pc/reboot.c

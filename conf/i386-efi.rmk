@@ -43,6 +43,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c						\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	commands/i386/cpuid.c						\
 	disk/loopback.c							\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
 	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
@@ -71,7 +72,7 @@ grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
 pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
-	_linux.mod linux.mod
+	_linux.mod linux.mod cpuid.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -129,5 +130,10 @@ _linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 linux_mod_SOURCES = loader/i386/efi/linux_normal.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For cpuid.mod.
+cpuid_mod_SOURCES = commands/i386/cpuid.c
+cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
+cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
