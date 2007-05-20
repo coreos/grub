@@ -17,6 +17,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St - Suite 330, Boston, MA 02110, USA.
 
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+
+# for convert_system_path_to_grub_path()
+. ${libdir}/grub/update-grub_lib
 
 if [ "x${GRUB_DEFAULT}" = "x" ] ; then GRUB_DEFAULT=0 ; fi
 if [ "x${GRUB_TIMEOUT}" = "x" ] ; then GRUB_TIMEOUT=5 ; fi
@@ -27,13 +33,19 @@ set timeout=${GRUB_TIMEOUT}
 set root=${GRUB_DRIVE}
 EOF
 
-if test -e /boot/grub/unifont.pff ; then
-  cat << EOF
+# Prefer system path for space reasons (/boot/grub might be a very small
+# partition in case of OpenFirmware, etc).
+for i in /usr/share/grub/unifont.pff /boot/grub/unifont.pff ; do
+  if test -e $i ; then
+    grub_path=`convert_system_path_to_grub_path $i`
+    cat << EOF
 
-font ${GRUB_DRIVE_BOOT_GRUB}/unifont.pff
+font ${grub_path}
 set gfxmode=640x480
 insmod gfxterm
 insmod vbe
 terminal gfxterm
 EOF
-fi
+    break
+  fi
+done

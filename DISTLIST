@@ -264,6 +264,7 @@ util/raid.c
 util/resolve.c
 util/unifont2pff.rb
 util/update-grub.in
+util/update-grub_lib.in
 util/grub.d/00_header.in
 util/grub.d/10_hurd.in
 util/grub.d/10_linux.in

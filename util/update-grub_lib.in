@@ -1,0 +1,49 @@
+# Helper library for update-grub
+# Copyright (C) 2007 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St - Suite 330, Boston, MA 02110, USA.
+
+transform="@program_transform_name@"
+
+sbindir=@sbindir@
+
+grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
+
+convert_system_path_to_grub_path ()
+{
+  dir=$1
+  dir=`readlink -f $dir`
+
+  drive=`${grub_probe} -t drive $dir`
+  if [ "x$drive" = "x" ] ; then
+    return 1
+  fi
+
+  num=`stat -c %d $dir`
+  relative_path=""
+  while : ; do
+    parent=`echo $dir | sed -e "s,/[^/]*$,,g" -e "s,^$,/,g"`
+    if [ "x`stat -c %d $parent`" = "x$num" ] ; then : ; else
+      break
+    fi
+    if [ "x$dir" = "x/" ] ; then
+      break
+    fi
+    relative_path=`echo $dir | sed -e "s,^.*/,/,g"`$relative_path
+    dir=$parent
+  done
+
+  echo ${drive}${relative_path}
+}

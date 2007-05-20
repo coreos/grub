@@ -25,6 +25,12 @@ update-grub: util/update-grub.in config.status
 sbin_SCRIPTS += update-grub
 CLEANFILES += update-grub
 
+update-grub_lib: util/update-grub_lib.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+lib_DATA += update-grub_lib
+CLEANFILES += update-grub_lib
+
 00_header: util/grub.d/00_header.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@

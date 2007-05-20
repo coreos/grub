@@ -1,3 +1,17 @@
+2007-05-20  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in: New file.
+	* DISTLIST: Add update-grub_lib.in.
+	* conf/common.rmk: Generate update-grub_lib and install it in
+	$(lib_DATA).
+	* Makefile.in: Add install routine for $(lib_DATA).
+
+	* util/grub.d/00_header.in: Use convert_system_path_to_grub_path()
+	function provided by update-grub_lib to support arbitrary paths of
+	unifont.pff.
+	* util/update-grub.in: Use convert_system_path_to_grub_path() to
+	initialize GRUB_DRIVE_BOOT and GRUB_DRIVE_BOOT_GRUB variables.
+
 2007-05-19  Robert Millan  <rmh@aybabtu.com>
 
 	* commands/i386/cpuid.c: New module.

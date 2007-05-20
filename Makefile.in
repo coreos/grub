@@ -86,7 +86,7 @@ RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \
-	$(pkgdata_DATA)
+	$(pkgdata_DATA) $(lib_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(sbin_SCRIPTS) $(update-grub_SCRIPTS)
 
@@ -164,6 +164,13 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
+	done
+	$(mkinstalldirs) $(DESTDIR)$(libdir)/grub
+	@list='$(lib_DATA)'; \
+	for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(libdir)/grub/$$dest; \
 	done
 
 install-strip:
