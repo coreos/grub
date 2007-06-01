@@ -94,7 +94,7 @@ fi
 export GRUB_DEVICE GRUB_FS GRUB_DRIVE GRUB_DRIVE_BOOT GRUB_DRIVE_BOOT_GRUB
 
 # These are optional, user-defined variables.
-export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR
+export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX
 
 exec > ${grub_cfg}.new
 chmod 444 ${grub_cfg}.new

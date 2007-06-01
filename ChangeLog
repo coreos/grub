@@ -1,3 +1,10 @@
+2007-06-01  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Export GRUB_CMDLINE_LINUX.
+
+	* util/grub.d/00_header.in: Only enable gfxterm when
+	convert_system_path_to_grub_path() succeeds.
+
 2007-05-20  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in: New file.

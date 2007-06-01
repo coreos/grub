@@ -36,8 +36,7 @@ EOF
 # Prefer system path for space reasons (/boot/grub might be a very small
 # partition in case of OpenFirmware, etc).
 for i in /usr/share/grub/unifont.pff /boot/grub/unifont.pff ; do
-  if test -e $i ; then
-    grub_path=`convert_system_path_to_grub_path $i`
+  if test -e $i && grub_path=`convert_system_path_to_grub_path $i` ; then
     cat << EOF
 
 font ${grub_path}
