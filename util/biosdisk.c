@@ -60,9 +60,9 @@ struct hd_geometry
   unsigned long start;
 };
 # endif /* ! HDIO_GETGEO */
-# ifndef BLKGETSIZE
-#  define BLKGETSIZE    _IO(0x12,96)    /* return device size */
-# endif /* ! BLKGETSIZE */
+# ifndef BLKGETSIZE64
+#  define BLKGETSIZE64  _IOR(0x12,114,size_t)    /* return device size */
+# endif /* ! BLKGETSIZE64 */
 # ifndef MAJOR
 #  ifndef MINORBITS
 #   define MINORBITS	8
@@ -164,7 +164,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   /* Get the size.  */
 #ifdef __linux__
   {
-    unsigned long nr;
+    unsigned long long nr;
     int fd;
 
     fd = open (map[drive], O_RDONLY);
@@ -177,16 +177,19 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 	goto fail;
       }
     
-    if (ioctl (fd, BLKGETSIZE, &nr))
+    if (ioctl (fd, BLKGETSIZE64, &nr))
       {
 	close (fd);
 	goto fail;
       }
 
     close (fd);
-    disk->total_sectors = nr;
+    disk->total_sectors = nr / 512;
+
+    if (nr % 512)
+      grub_util_error ("unaligned device size");
     
-    grub_util_info ("the size of %s is %lu", name, disk->total_sectors);
+    grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
     
     return GRUB_ERR_NONE;
   }
@@ -730,12 +733,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 			const grub_partition_t partition)
       {
  	struct grub_pc_partition *pcdata = 0;
-	int gpt = 0;
-	
+
 	if (strcmp (partition->partmap->name, "pc_partition_map") == 0)
 	  pcdata = partition->data;
-	else if (strcmp (partition->partmap->name, "gpt_partition_map") == 0)
-	  gpt = 1;
 	  
 	if (pcdata)
 	  {
@@ -747,9 +747,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 			      pcdata->dos_part, pcdata->bsd_part + 'a',
 			      partition->start);
 	  }
-	else if (gpt)
+	else
 	  {
-	      grub_util_info ("GPT partition %d starts from %lu",
+	      grub_util_info ("Partition %d starts from %lu",
 			      partition->index, partition->start);
 	  }
 	
@@ -760,15 +760,10 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 		dos_part = pcdata->dos_part;
 		bsd_part = pcdata->bsd_part;
 	      }
-	    else if (gpt)
-	      {
-		dos_part = grub_cpu_to_le32 (partition->index);
-		bsd_part = grub_cpu_to_le32 (-1);
-	      }
 	    else
 	      {
-		dos_part = 0;
-		bsd_part = 0;
+		dos_part = partition->index;
+		bsd_part = -1;
 	      }
 	    return 1;
 	  }

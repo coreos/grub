@@ -1,3 +1,27 @@
+2007-06-04  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/powerpc-ieee1275.rmk: Enable grub-mkdevicemap and grub-probe.
+
+	* include/grub/partition.h: Declare grub_apple_partition_map_init and
+	grub_apple_partition_map_fini.
+
+	* util/biosdisk.c
+	(grub_util_biosdisk_open): Replace BLKGETSIZE with BLKGETSIZE64 (needed
+	to access >2 TiB disks).
+
+	Print disk->total_sectors with %llu instead of %lu, since this
+	variable is always 64-bit (prevents wrong disk size from being displayed
+	on either >2 TiB disk or big-endian CPU).
+
+	(grub_util_biosdisk_get_grub_dev): Convert gpt_partition_map handling
+	into a generic case that supports all (sane) partition maps.
+
+	Stop using grub_cpu_to_le32() on dos_part / bsd_part since it actually
+	breaks big-endian.
+
+	* util/grub-probe.c: Call grub_apple_partition_map_init() before probe()
+	and grub_apple_partition_map_fini() after that.
+
 2007-06-01  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub.in: Export GRUB_CMDLINE_LINUX.
