@@ -1,5 +1,13 @@
 2007-06-04  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-efi.rmk (grub_probe_SOURCES): Add partmap/apple.c.
+
+	* conf/i386-pc.rmk (grub_probe_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_probe_SOURCES): Add partmap/pc.c.
+
+2007-06-04  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/powerpc-ieee1275.rmk: Enable grub-mkdevicemap and grub-probe.
 
 	* include/grub/partition.h: Declare grub_apple_partition_map_init and

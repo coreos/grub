@@ -77,8 +77,9 @@ grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 grub_probe_SOURCES = util/grub-probe.c	\
 	util/biosdisk.c	util/misc.c util/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
-	fs/ext2.c kern/parser.c kern/partition.c partmap/pc.c		\
-	partmap/gpt.c fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c	\
+	fs/ext2.c kern/parser.c kern/partition.c 			\
+	partmap/pc.c partmap/apple.c partmap/gpt.c 			\
+	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c	\
 	kern/env.c fs/fshelp.c fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c	\
 	disk/lvm.c disk/raid.c
 
