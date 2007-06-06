@@ -24,12 +24,17 @@ grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 convert_system_path_to_grub_path ()
 {
   dir=$1
+  # Abort if file doesn't exist
+  test -e $dir
   dir=`readlink -f $dir`
 
   drive=`${grub_probe} -t drive $dir`
   if [ "x$drive" = "x" ] ; then
     return 1
   fi
+
+  # Abort if file is in a filesystem we can't read
+  ${grub_probe} -t fs $dir > /dev/null 2>&1
 
   num=`stat -c %d $dir`
   relative_path=""

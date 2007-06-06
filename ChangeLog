@@ -1,3 +1,17 @@
+2007-06-06  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in (convert_system_path_to_grub_path): Abort if
+	file doesn't exist, or if it is in a filesystem grub can't read.
+
+	* util/update-grub.in: Set fallback for GRUB_FS check to "unknown".  Do
+	not abort if GRUB_DRIVE could not be defined.  Rearrange generated
+	header comment to fit in 80 columns when the variables are resolved.
+
+	* util/grub.d/00_header.in: Only set root variable when GRUB_DRIVE
+	could be identified by update-grub.  Remove redundant check for
+	unifont.pff existance (since convert_system_path_to_grub_path now
+	handles that).
+
 2007-06-04  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-efi.rmk (grub_probe_SOURCES): Add partmap/apple.c.
