@@ -202,8 +202,11 @@ grub_gfxterm_init (void)
   if (modevar)
     {
       char *tmp;
+      char *next_mode;
+      char *current_mode;
       char *param;
       char *value;
+      int mode_found = 0;
 
       /* Take copy of env.var. as we don't want to modify that.  */
       tmp = grub_strdup (modevar);
@@ -211,110 +214,216 @@ grub_gfxterm_init (void)
 
       if (grub_errno != GRUB_ERR_NONE)
         return grub_errno;
-
-      /* Skip whitespace.  */
-      while (grub_isspace (*tmp))
-        tmp++;
-
-      /* Initialize token holders.  */
-      param = tmp;
-      value = NULL;
-
-      /* Parse <width>x<height>[x<depth>]*/
-
-      /* Find width value.  */
-      value = param;
-      param = grub_strchr(param, 'x');
-      if (param == NULL)
+        
+      /* Initialize next mode.  */
+      next_mode = modevar;
+      
+      /* Loop until all modes has been tested out.  */
+      while (next_mode != NULL)
         {
-          /* Free memory before returning.  */
-          grub_free (modevar);
-          return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                             "Invalid argument: %s\n",
-                             param);
-        }
-
-      *param = 0;
-      param++;
-
-      width = grub_strtoul (value, 0, 0);
-      if (grub_errno != GRUB_ERR_NONE)
-        {
-          /* Free memory before returning.  */
-          grub_free (modevar);
-          return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                             "Invalid argument: %s\n",
-                             param);
-        }
-
-      /* Find height value.  */
-      value = param;
-      param = grub_strchr(param, 'x');
-      if (param == NULL)
-        {
-          height = grub_strtoul (value, 0, 0);
-          if (grub_errno != GRUB_ERR_NONE)
+          /* Use last next_mode as current mode.  */
+          tmp = next_mode;
+          
+          /* Reset video mode settings.  */
+          width = DEFAULT_VIDEO_WIDTH;
+          height = DEFAULT_VIDEO_HEIGHT;
+          depth = -1;
+          flags = DEFAULT_VIDEO_FLAGS;
+        
+          /* Save position of next mode and separate modes.  */
+          next_mode = grub_strchr(next_mode, ';');
+          if (next_mode)
             {
+              *next_mode = 0;
+              next_mode++;
+            }
+
+          /* Skip whitespace.  */
+          while (grub_isspace (*tmp))
+            tmp++;
+
+          /* Initialize token holders.  */
+          current_mode = tmp;
+          param = tmp;
+          value = NULL;
+
+          /* Parse <width>x<height>[x<depth>]*/
+
+          /* Find width value.  */
+          value = param;
+          param = grub_strchr(param, 'x');
+          if (param == NULL)
+            {
+              grub_err_t rc;
+              
+              /* First setup error message.  */
+              rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+                                "Invalid mode: %s\n",
+                                current_mode);
+              
               /* Free memory before returning.  */
               grub_free (modevar);
-              return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                                 "Invalid argument: %s\n",
-                                 param);
+              
+              return rc;
             }
-        }
-      else
-        {
-          /* We have optional color depth value.  */
+
           *param = 0;
           param++;
 
-          height = grub_strtoul (value, 0, 0);
+          width = grub_strtoul (value, 0, 0);
           if (grub_errno != GRUB_ERR_NONE)
             {
+              grub_err_t rc;
+              
+              /* First setup error message.  */
+              rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+                               "Invalid mode: %s\n",
+                               current_mode);
+              
               /* Free memory before returning.  */
               grub_free (modevar);
-              return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                                 "Invalid argument: %s\n",
-                                 param);
+              
+              return rc;
             }
 
-          /* Convert color depth value.  */
+          /* Find height value.  */
           value = param;
-          depth = grub_strtoul (value, 0, 0);
-          if (grub_errno != GRUB_ERR_NONE)
+          param = grub_strchr(param, 'x');
+          if (param == NULL)
             {
-              /* Free memory before returning.  */
-              grub_free (modevar);
-              return grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                                 "Invalid argument: %s\n",
-                                 param);
+              height = grub_strtoul (value, 0, 0);
+              if (grub_errno != GRUB_ERR_NONE)
+                {
+                  grub_err_t rc;
+                  
+                  /* First setup error message.  */
+                  rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+                                   "Invalid mode: %s\n",
+                                   current_mode);
+                                   
+                  /* Free memory before returning.  */
+                  grub_free (modevar);
+                  
+                  return rc;
+                }
             }
+          else
+            {
+              /* We have optional color depth value.  */
+              *param = 0;
+              param++;
+
+              height = grub_strtoul (value, 0, 0);
+              if (grub_errno != GRUB_ERR_NONE)
+                {
+                  grub_err_t rc;
+                  
+                  /* First setup error message.  */
+                  rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+                                   "Invalid mode: %s\n",
+                                   current_mode);
+                                   
+                  /* Free memory before returning.  */
+                  grub_free (modevar);
+                  
+                  return rc;
+                }
+
+              /* Convert color depth value.  */
+              value = param;
+              depth = grub_strtoul (value, 0, 0);
+              if (grub_errno != GRUB_ERR_NONE)
+                {
+                  grub_err_t rc;
+                  
+                  /* First setup error message.  */
+                  rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+                                   "Invalid mode: %s\n",
+                                   current_mode);
+                                   
+                  /* Free memory before returning.  */
+                  grub_free (modevar);
+                  
+                  return rc;
+                }
+            }
+          
+          /* Try out video mode.  */
+          
+          /* If we have 8 or less bits, then assuem that it is indexed color mode.  */
+          if ((depth <= 8) && (depth != -1))
+            flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+
+          /* We have more than 8 bits, then assume that it is RGB color mode.  */
+          if (depth > 8)
+            flags |= GRUB_VIDEO_MODE_TYPE_RGB;
+
+          /* If user requested specific depth, forward that information to driver.  */
+          if (depth != -1)
+            flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+                     & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+
+          /* Try to initialize requested mode.  Ignore any errors.  */
+          grub_error_push ();
+          if (grub_video_setup (width, height, flags) != GRUB_ERR_NONE)
+            {
+              grub_error_pop ();
+              continue;
+            }
+            
+          /* Figure out what mode we ended up.  */
+          if (grub_video_get_info (&mode_info) != GRUB_ERR_NONE)
+            {
+              /* Couldn't get video mode info, restore old mode and continue to next one.  */
+              grub_error_pop ();
+              
+              grub_video_restore ();
+              continue;
+            }
+          
+          /* Restore state of error stack.  */
+          grub_error_pop ();
+          
+          /* Mode found!  Exit loop.  */
+          mode_found = 1;
+          break;
         }
 
       /* Free memory.  */
       grub_free (modevar);
+      
+      if (!mode_found)
+        return grub_error (GRUB_ERR_BAD_ARGUMENT,
+                           "No suitable mode found.");
     }
+  else
+    {
+      /* No gfxmode variable set, use defaults.  */
+      
+      /* If we have 8 or less bits, then assuem that it is indexed color mode.  */
+      if ((depth <= 8) && (depth != -1))
+        flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
 
-  /* If we have 8 or less bits, then assuem that it is indexed color mode.  */
-  if ((depth <= 8) && (depth != -1))
-    flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      /* We have more than 8 bits, then assume that it is RGB color mode.  */
+      if (depth > 8)
+        flags |= GRUB_VIDEO_MODE_TYPE_RGB;
 
-  /* We have more than 8 bits, then assume that it is RGB color mode.  */
-  if (depth > 8)
-    flags |= GRUB_VIDEO_MODE_TYPE_RGB;
+      /* If user requested specific depth, forward that information to driver.  */
+      if (depth != -1)
+        flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+                 & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
 
-  /* If user requested specific depth, forward that information to driver.  */
-  if (depth != -1)
-    flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
-             & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+      /* Initialize user requested mode.  */
+      if (grub_video_setup (width, height, flags) != GRUB_ERR_NONE)
+        return grub_errno;
 
-  /* Initialize user requested mode.  */
-  if (grub_video_setup (width, height, flags) != GRUB_ERR_NONE)
-    return grub_errno;
-
-  /* Figure out what mode we ended up.  */
-  if (grub_video_get_info (&mode_info) != GRUB_ERR_NONE)
-    return grub_errno;
+      /* Figure out what mode we ended up.  */
+      if (grub_video_get_info (&mode_info) != GRUB_ERR_NONE)
+        {
+          grub_video_restore ();
+          return grub_errno;
+        }
+    }
 
   /* Make sure screen is black.  */
   color = grub_video_map_rgb (0, 0, 0);

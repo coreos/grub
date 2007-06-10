@@ -1,3 +1,8 @@
+2007-06-10  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* term/gfxterm.c (grub_gfxterm_init): Added support for specifying
+	list of video modes.
+
 2007-06-06  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in (convert_system_path_to_grub_path): Abort if
