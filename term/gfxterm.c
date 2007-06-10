@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -258,8 +258,8 @@ grub_gfxterm_init (void)
               
               /* First setup error message.  */
               rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                                "Invalid mode: %s\n",
-                                current_mode);
+                               "Invalid mode: %s\n",
+                               current_mode);
               
               /* Free memory before returning.  */
               grub_free (modevar);
