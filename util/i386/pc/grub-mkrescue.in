@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh -e
 
 # Make GRUB rescue image
 # Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
@@ -43,7 +43,9 @@ Make GRUB rescue image.
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
   --modules=MODULES       pre-load specified modules MODULES
+  --pkglibdir=DIR         use images from directory DIR instead of ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
+  --image-type=TYPE       select floppy or cdrom (default)
 
 grub-mkimage generates a bootable rescue image of the specified type.
 
@@ -52,6 +54,8 @@ EOF
 }
 
 image_type=cdrom
+input_dir=${pkglibdir}
+grub_mkimage=grub-mkimage
 
 # Check the arguments.
 for option in "$@"; do
@@ -64,6 +68,8 @@ for option in "$@"; do
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+    --pkglibdir=*)
+	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
     --image-type=*)
@@ -89,8 +95,13 @@ for option in "$@"; do
     esac
 done
 
+if test "x$output_image" = x; then
+  usage
+  exit 1
+fi
+
 if [ "x${modules}" = "x" ] ; then
-  modules=`cd ${pkglibdir}/ && ls *.mod`
+  modules=`cd ${input_dir}/ && ls *.mod`
 fi
 
 if [ "x${image_type}" = "xfloppy" ] ; then
@@ -99,9 +110,9 @@ else
   floppy_image=`mktemp`
 fi
 
-cp ${pkglibdir}/boot.img $floppy_image
+cp ${input_dir}/boot.img $floppy_image
 core_img=`mktemp`
-grub-mkimage -d ${pkglibdir}/ -o ${core_img} ${modules}
+${grub_mkimage} -d ${input_dir}/ -o ${core_img} ${modules}
 cat ${core_img} >> $floppy_image
 rm -f ${core_img}
 

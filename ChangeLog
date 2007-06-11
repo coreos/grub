@@ -1,5 +1,13 @@
 2007-06-11  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-mkrescue.in: Add "set -e".
+	Add --pkglibdir=DIR option to override pkglibdir.
+	Mention --image-type=TYPE in help output.
+	Fix --grub-mkimage (it was a no-op).
+	Abort gracefuly when no parameter is given.
+
+2007-06-11  Robert Millan  <rmh@aybabtu.com>
+
 	* util/i386/pc/grub-mkrescue.in: New file.
 	* conf/i386-pc.rmk: Add its build declarations.  Put it in bin_SCRIPTS.
 	* Makefile.in: Handle bin_SCRIPTS.
