@@ -1,5 +1,10 @@
 2007-06-11  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-mkrescue.in: Pad both floppy images with zeroes,
+	not just the cdrom one.
+
+2007-06-11  Robert Millan  <rmh@aybabtu.com>
+
 	* util/i386/pc/grub-mkrescue.in: Add "set -e".
 	Add --pkglibdir=DIR option to override pkglibdir.
 	Mention --image-type=TYPE in help output.

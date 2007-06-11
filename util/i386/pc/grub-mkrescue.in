@@ -110,10 +110,9 @@ else
   floppy_image=`mktemp`
 fi
 
-cp ${input_dir}/boot.img $floppy_image
 core_img=`mktemp`
 ${grub_mkimage} -d ${input_dir}/ -o ${core_img} ${modules}
-cat ${core_img} >> $floppy_image
+cat ${input_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=1440 > $floppy_image
 rm -f ${core_img}
 
 if [ "x${image_type}" = "xfloppy" ] ; then
@@ -121,7 +120,7 @@ if [ "x${image_type}" = "xfloppy" ] ; then
 fi
 
 iso_dir=`mktemp -d`
-cat ${floppy_image} /dev/zero | dd bs=1024 count=1440 > ${iso_dir}/floppy.img
+cp $floppy_image ${iso_dir}/floppy.img
 genisoimage -b floppy.img -o ${output_image} -r ${iso_dir}
 rm -rf ${iso_dir}
 
