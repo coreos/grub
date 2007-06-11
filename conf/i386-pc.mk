@@ -804,6 +804,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Scripts.
 sbin_SCRIPTS = grub-install
+bin_SCRIPTS = grub-mkrescue
 
 # For grub-install.
 grub_install_SOURCES = util/i386/pc/grub-install.in
@@ -813,6 +814,20 @@ grub-install: util/i386/pc/grub-install.in config.status
 	./config.status --file=grub-install:util/i386/pc/grub-install.in
 	chmod +x $@
 
+
+# For grub-mkrescue.
+grub_mkrescue_SOURCES = util/i386/pc/grub-mkrescue.in
+CLEANFILES += grub-mkrescue
+
+grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
+	./config.status --file=grub-mkrescue:util/i386/pc/grub-mkrescue.in
+	chmod +x $@
+
+CLEANFILES += grub-mkrescue
+
+grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
+	./config.status --file=grub-mkrescue:util/i386/pc/grub-mkrescue.in
+	chmod +x $@
 
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \

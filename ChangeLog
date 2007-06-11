@@ -1,3 +1,9 @@
+2007-06-11  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-mkrescue.in: New file.
+	* conf/i386-pc.rmk: Add its build declarations.  Put it in bin_SCRIPTS.
+	* Makefile.in: Handle bin_SCRIPTS.
+
 2007-06-10  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* term/gfxterm.c (grub_gfxterm_init): Added support for specifying
