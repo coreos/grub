@@ -203,7 +203,7 @@ grub_command_execute (char *cmdline, int interactive)
   if (interactive)
     pager = grub_env_get ("pager");
   else
-    pager = 0;
+    pager = NULL;
   if (pager && (! grub_strcmp (pager, "1")))
     grub_set_more (1);
 

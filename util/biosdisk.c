@@ -732,7 +732,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     int find_partition (grub_disk_t disk __attribute__ ((unused)),
 			const grub_partition_t partition)
       {
- 	struct grub_pc_partition *pcdata = 0;
+ 	struct grub_pc_partition *pcdata = NULL;
 
 	if (strcmp (partition->partmap->name, "pc_partition_map") == 0)
 	  pcdata = partition->data;

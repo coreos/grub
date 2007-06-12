@@ -81,7 +81,7 @@ static void
 probe (const char *path)
 {
   char *device_name;
-  char *drive_name = 0;
+  char *drive_name = NULL;
   grub_device_t dev;
   grub_fs_t fs;
   

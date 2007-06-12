@@ -1,3 +1,11 @@
+2007-06-12  Robert Millan  <rmh@aybabtu.com>
+
+	* normal/command.c (grub_command_execute): Use NULL rather than 0 for
+	"pager" assignment.
+	* util/biosdisk.c (grub_util_biosdisk_get_grub_dev): Likewise for
+	"pcdata".
+	* util/grub-probe.c (probe): Likewise for "drive_name".
+
 2007-06-11  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-mkrescue.in: Pad both floppy images with zeroes,
