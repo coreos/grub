@@ -35,15 +35,6 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
-#ifdef __NetBSD__
-/* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/grub"
-#else
-# define DEFAULT_DIRECTORY	"/boot/grub"
-#endif
-
-#define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
-
 #ifdef __linux__
 # if !defined(__GLIBC__) || \
         ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))

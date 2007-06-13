@@ -50,15 +50,6 @@
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
-#ifdef __NetBSD__
-/* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/grub"
-#else
-# define DEFAULT_DIRECTORY	"/boot/grub"
-#endif
-
-#define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
-
 /* This is the blocklist used in the diskboot image.  */
 struct boot_blocklist
 {

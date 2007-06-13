@@ -25,6 +25,15 @@
 #include <setjmp.h>
 #include <unistd.h>
 
+#ifdef __NetBSD__
+/* NetBSD uses /boot for its boot block.  */
+# define DEFAULT_DIRECTORY	"/grub"
+#else
+# define DEFAULT_DIRECTORY	"/boot/grub"
+#endif
+
+#define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
+
 extern char *progname;
 extern int verbosity;
 extern jmp_buf main_env;

@@ -38,15 +38,6 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
-#ifdef __NetBSD__
-/* NetBSD uses /boot for its boot block.  */
-# define DEFAULT_DIRECTORY	"/grub"
-#else
-# define DEFAULT_DIRECTORY	"/boot/grub"
-#endif
-
-#define DEFAULT_DEVICE_MAP	DEFAULT_DIRECTORY "/device.map"
-
 #define PRINT_FS	0
 #define PRINT_DRIVE	1
 #define PRINT_DEVICE	2
@@ -87,10 +78,7 @@ probe (const char *path)
   
   device_name = grub_guess_root_device (path);
   if (! device_name)
-    {
-      fprintf (stderr, "cannot find a device for %s.\n", path);
-      goto end;
-    }
+    grub_util_error ("cannot find a device for %s.\n", path);
 
   if (print == PRINT_DEVICE)
     {
@@ -100,10 +88,7 @@ probe (const char *path)
 
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
-    {
-      fprintf (stderr, "cannot find a GRUB drive for %s.\n", device_name);
-      goto end;
-    }
+    grub_util_error ("cannot find a GRUB drive for %s.\n", device_name);
   
   if (print == PRINT_DRIVE)
     {

@@ -1,3 +1,15 @@
+2007-06-13  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/util/misc.h: Define DEFAULT_DIRECTORY and
+	DEFAULT_DEVICE_MAP.
+	* util/grub-emu.c: Use above definitions from misc.h instead of
+	defining them.
+	* util/grub-mkdevicemap.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/grub-probe.c: Likewise.
+	(probe): Abort with grub_util_error() when either
+	grub_guess_root_device or grub_util_get_grub_dev fails.
+
 2007-06-12  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/command.c (grub_command_execute): Use NULL rather than 0 for
