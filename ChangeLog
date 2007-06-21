@@ -1,3 +1,26 @@
+2007-06-21  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/pc/kernel.h: Define GRUB_KERNEL_MACHINE_DATA_END to
+	indicate end of data section in kernel image.
+	* include/grub/i386/efi/kernel.h: Define GRUB_KERNEL_MACHINE_PREFIX and
+	GRUB_KERNEL_MACHINE_DATA_END.
+
+	* kern/i386/pc/startup.S: Do not initialize grub_prefix, only reserve
+	space for it.
+	* kern/i386/efi/startup.S: Likewise.
+
+	* util/i386/pc/grub-mkimage.c: Initialize grub_prefix to /boot/grub
+	during image generation.  Implement --prefix option to override this
+	patch.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+
+	* util/update-grub_lib.in (convert_system_path_to_grub_path): Split
+	code to make path relative to its root into a separate function.
+
+	* util/i386/pc/grub-install.in: Use newly provided
+	make_system_path_relative_to_its_root() to convert ${grubdir}, then
+	pass the result to grub-install --prefix.
+
 2007-06-13  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/util/misc.h: Define DEFAULT_DIRECTORY and

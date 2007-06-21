@@ -45,7 +45,7 @@ _start:
         . = EXT_C(start) + 0x8
 
 VARIABLE(grub_prefix)
-        .string "/boot/grub"
+	/* to be filled by grub-mkimage */
 
         /*
          *  Leave some breathing room for the prefix.

@@ -96,7 +96,7 @@ VARIABLE(grub_install_dos_part)
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_prefix)
-	.string "/boot/grub"
+	/* to be filled by grub-mkimage */
 
 	/*
 	 *  Leave some breathing room for the prefix.

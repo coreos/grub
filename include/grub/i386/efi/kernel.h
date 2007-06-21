@@ -24,5 +24,11 @@
    configuration file are located.  */
 extern char grub_prefix[];
 
+/* The offset of GRUB_PREFIX.  */
+#define GRUB_KERNEL_MACHINE_PREFIX		0x8
+
+/* End of the data section. */
+#define GRUB_KERNEL_MACHINE_DATA_END		0x50
+
 #endif /* ! GRUB_MACHINE_KERNEL_HEADER */
 

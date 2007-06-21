@@ -76,7 +76,7 @@ compress_kernel (char *kernel_img, size_t kernel_size,
 }
 
 static void
-generate_image (const char *dir, FILE *out, char *mods[])
+generate_image (const char *dir, char *prefix, FILE *out, char *mods[])
 {
   grub_addr_t module_addr = 0;
   char *kernel_img, *boot_img, *core_img;
@@ -101,6 +101,10 @@ generate_image (const char *dir, FILE *out, char *mods[])
 
   kernel_img = xmalloc (kernel_size + total_module_size);
   grub_util_load_image (kernel_path, kernel_img);
+
+  if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
+    grub_util_error ("prefix too long");
+  strcpy (kernel_img + GRUB_KERNEL_MACHINE_PREFIX, prefix);
 
   /* Fill in the grub_module_info structure.  */
   modinfo = (struct grub_module_info *) (kernel_img + kernel_size);
@@ -182,6 +186,7 @@ generate_image (const char *dir, FILE *out, char *mods[])
 static struct option options[] =
   {
     {"directory", required_argument, 0, 'd'},
+    {"prefix", required_argument, 0, 'p'},
     {"output", required_argument, 0, 'o'},
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
@@ -201,13 +206,14 @@ Usage: grub-mkimage [OPTION]... [MODULES]\n\
 Make a bootable image of GRUB.\n\
 \n\
   -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
+  -p, --prefix=DIR        set grub_prefix directory [default=%s]\n\
   -o, --output=FILE       output a generated image to FILE [default=stdout]\n\
   -h, --help              display this message and exit\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
 \n\
 Report bugs to <%s>.\n\
-", GRUB_LIBDIR, PACKAGE_BUGREPORT);
+", GRUB_LIBDIR, DEFAULT_DIRECTORY, PACKAGE_BUGREPORT);
 
   exit (status);
 }
@@ -215,15 +221,16 @@ Report bugs to <%s>.\n\
 int
 main (int argc, char *argv[])
 {
-  char *output = 0;
-  char *dir = 0;
+  char *output = NULL;
+  char *dir = NULL;
+  char *prefix = NULL;
   FILE *fp = stdout;
 
   progname = "grub-mkimage";
   
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:o:hVv", options, 0);
+      int c = getopt_long (argc, argv, "d:p:o:hVv", options, 0);
 
       if (c == -1)
 	break;
@@ -248,6 +255,13 @@ main (int argc, char *argv[])
 	    usage (0);
 	    break;
 
+	  case 'p':
+	    if (prefix)
+	      free (prefix);
+
+	    prefix = xstrdup (optarg);
+	    break;
+
 	  case 'V':
 	    printf ("grub-mkimage (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	    return 0;
@@ -269,7 +283,7 @@ main (int argc, char *argv[])
 	grub_util_error ("cannot open %s", output);
     }
 
-  generate_image (dir ? : GRUB_LIBDIR, fp, argv + optind);
+  generate_image (dir ? : GRUB_LIBDIR, prefix ? : DEFAULT_DIRECTORY, fp, argv + optind);
 
   fclose (fp);
 

@@ -38,6 +38,9 @@
 /* The offset of GRUB_PREFIX.  */
 #define GRUB_KERNEL_MACHINE_PREFIX		0x1c
 
+/* End of the data section. */
+#define GRUB_KERNEL_MACHINE_DATA_END		0x50
+
 /* The size of the first region which won't be compressed.  */
 #define GRUB_KERNEL_MACHINE_RAW_SIZE		0x4A0
 
