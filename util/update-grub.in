@@ -27,11 +27,12 @@ sysconfdir=@sysconfdir@
 grub_prefix=`echo /boot/grub | sed ${transform}`
 grub_cfg=${grub_prefix}/grub.cfg
 update_grub_dir=${sysconfdir}/grub.d
+platform=@platform@
 
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 
-# for convert_system_path_to_grub_path()
+# for convert_system_path_to_grub_path(), font_path()
 . ${libdir}/grub/update-grub_lib
 
 if [ "x$UID" = "x" ] ; then
@@ -89,12 +90,42 @@ if test -f ${sysconfdir}/default/grub ; then
   . ${sysconfdir}/default/grub
 fi
 
+# if ${GRUB_TERMINAL} is set, check it has a sane value.  if undefined,
+# fallback to our default
+case ${platform}:${GRUB_TERMINAL} in
+  pc:)				GRUB_TERMINAL=gfxterm ;;
+  pc:console | pc:serial)	;;
+  ieee1275:)			GRUB_TERMINAL=ofconsole ;;
+  ieee1275:ofconsole)		;;
+  *:)				GRUB_TERMINAL=console ;;
+  *:*)				echo "Invalid terminal \"${GRUB_TERMINAL}\"" >&2 ; exit 1 ;;
+esac
+
+# check for terminals that require fonts
+case ${GRUB_TERMINAL} in
+  gfxterm)
+    if GRUB_FONT_PATH=`font_path` ; then : ; else
+      # fallback to console
+      GRUB_TERMINAL=console
+    fi
+  ;;
+esac
+
+# does our terminal support utf-8 ?
+case ${platform}:${GRUB_TERMINAL} in
+  *:gfxterm) ;;
+  *:*)
+    # make sure all our children behave in conformance with ascii..
+    export LANG=C
+  ;;
+esac
+
 # These are defined in this script, export them here so that user can
 # override them.
-export GRUB_DEVICE GRUB_FS GRUB_DRIVE GRUB_DRIVE_BOOT GRUB_DRIVE_BOOT_GRUB
+export GRUB_DEVICE GRUB_FS GRUB_DRIVE GRUB_DRIVE_BOOT GRUB_DRIVE_BOOT_GRUB GRUB_FONT_PATH
 
 # These are optional, user-defined variables.
-export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX
+export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_TERMINAL GRUB_SERIAL_COMMAND
 
 exec > ${grub_cfg}.new
 chmod 444 ${grub_cfg}.new

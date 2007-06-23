@@ -20,6 +20,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
+platform=@platform@
 
 # for convert_system_path_to_grub_path()
 . ${libdir}/grub/update-grub_lib
@@ -33,23 +34,27 @@ set timeout=${GRUB_TIMEOUT}
 EOF
 
 if [ "x${GRUB_DRIVE}" = "x" ] ; then : ; else
-  cat << EOF
-set root=${GRUB_DRIVE}
-EOF
+  echo "set root=${GRUB_DRIVE}"
 fi
 
-# Prefer system path for space reasons (/boot/grub might be a very small
-# partition in case of OpenFirmware, etc).
-for i in /usr/share/grub/unifont.pff /boot/grub/unifont.pff ; do
-  if grub_path=`convert_system_path_to_grub_path $i` ; then
-    cat << EOF
+if [ "x${GRUB_FONT_PATH}" = "x" ] ; then : ; else
+  echo "font ${GRUB_FONT_PATH}"
+fi
 
-font ${grub_path}
+case ${platform}:${GRUB_TERMINAL} in
+  pc:gfxterm) cat << EOF
 set gfxmode=640x480
 insmod gfxterm
 insmod vbe
-terminal gfxterm
 EOF
-    break
-  fi
-done
+  ;;
+  *:serial)
+    if [ "x${GRUB_SERIAL_COMMAND}" = "x" ] ; then
+      echo "Warning, requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used." >&2
+      GRUB_SERIAL_COMMAND=serial
+    fi
+    echo "${GRUB_SERIAL_COMMAND}"
+  ;;
+esac
+
+echo "terminal ${GRUB_TERMINAL}"

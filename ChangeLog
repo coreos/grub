@@ -1,5 +1,17 @@
 2007-06-23  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub_lib.in (font_path): New function.  Determine wether
+	a font file can be found and, if so, echo the GRUB path to it.
+
+	* util/update-grub.in: Handle multiple terminals depending on user
+	input, platform availability and font file presence.  Propagate
+	variables of our findings to /etc/grub.d/ children.
+
+	* util/grub.d/00_header.in: Handle multiple terminals, based on
+	environment setup by update-grub.
+
+2007-06-23  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (pkgdata_MODULES): Add serial.mod.
 
 2007-06-21  Robert Millan  <rmh@aybabtu.com>
