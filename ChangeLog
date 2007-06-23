@@ -1,6 +1,6 @@
 2007-06-23  Robert Millan  <rmh@aybabtu.com>
 
-	* conf/i386-pc.rmk: (pkgdata_MODULES): Add serial.mod.
+	* conf/i386-pc.rmk (pkgdata_MODULES): Add serial.mod.
 
 2007-06-21  Robert Millan  <rmh@aybabtu.com>
 
