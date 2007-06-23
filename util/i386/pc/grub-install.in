@@ -46,6 +46,9 @@ force_lba=
 recheck=no
 debug=no
 
+# for make_system_path_relative_to_its_root()
+. ${libdir}/grub/update-grub_lib
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -227,7 +230,7 @@ fi
 # _chain is often useful
 modules="$modules $fs_module $partmap_module _chain"
 
-$grub_mkimage --output=${grubdir}/core.img $modules || exit 1
+$grub_mkimage --output=${grubdir}/core.img --prefix=`make_system_path_relative_to_its_root ${grubdir}` $modules || exit 1
 
 # Now perform the installation.
 $grub_setup --directory=${grubdir} --device-map=${device_map} \
