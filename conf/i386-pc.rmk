@@ -131,7 +131,7 @@ grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
-	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod
+	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c

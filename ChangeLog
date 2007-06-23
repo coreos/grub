@@ -1,3 +1,7 @@
+2007-06-23  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk: (pkgdata_MODULES): Add serial.mod.
+
 2007-06-21  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/pc/kernel.h: Define GRUB_KERNEL_MACHINE_DATA_END to

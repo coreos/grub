@@ -833,7 +833,7 @@ grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
-	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod
+	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c
@@ -1402,6 +1402,53 @@ halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c
+CLEANFILES += serial.mod mod-serial.o mod-serial.c pre-serial.o serial_mod-term_i386_pc_serial.o und-serial.lst
+ifneq ($(serial_mod_EXPORTS),no)
+CLEANFILES += def-serial.lst
+DEFSYMFILES += def-serial.lst
+endif
+MOSTLYCLEANFILES += serial_mod-term_i386_pc_serial.d
+UNDSYMFILES += und-serial.lst
+
+serial.mod: pre-serial.o mod-serial.o
+	-rm -f $@
+	$(TARGET_CC) $(serial_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-serial.o: $(serial_mod_DEPENDENCIES) serial_mod-term_i386_pc_serial.o
+	-rm -f $@
+	$(TARGET_CC) $(serial_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ serial_mod-term_i386_pc_serial.o
+
+mod-serial.o: mod-serial.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -c -o $@ $<
+
+mod-serial.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'serial' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(serial_mod_EXPORTS),no)
+def-serial.lst: pre-serial.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 serial/' > $@
+endif
+
+und-serial.lst: pre-serial.o
+	echo 'serial' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+serial_mod-term_i386_pc_serial.o: term/i386/pc/serial.c
+	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -MD -c -o $@ $<
+-include serial_mod-term_i386_pc_serial.d
+
+CLEANFILES += cmd-serial_mod-term_i386_pc_serial.lst fs-serial_mod-term_i386_pc_serial.lst
+COMMANDFILES += cmd-serial_mod-term_i386_pc_serial.lst
+FSFILES += fs-serial_mod-term_i386_pc_serial.lst
+
+cmd-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh serial > $@ || (rm -f $@; exit 1)
+
+fs-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh serial > $@ || (rm -f $@; exit 1)
+
+
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
