@@ -1,3 +1,18 @@
+2007-07-02  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/efi/grub-install.in: Allow `grub_probe --target=partmap'
+	invocation to fail, in order to support partition-less media.
+
+	* util/i386/pc/grub-install.in: Likewise.
+
+	* util/powerpc/ieee1275/grub-install.in: Use grub-probe to determine
+	which fs or partmap modules are needed (akin to its sister scripts).
+
+	Also use grub-probe to get rid of unportable /proc/mounts check.
+
+	Print the same informational message that the other scripts do, before
+	exitting.
+
 2007-06-23  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in (font_path): New function.  Determine wether

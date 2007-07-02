@@ -36,6 +36,8 @@ platform=@platform@
 pkglibdir=${libdir}/`echo ${PACKAGE_TARNAME}/${target_cpu}-${platform} | sed ${transform}`
 
 grub_mkimage=${bindir}/`echo grub-mkimage | sed ${transform}`
+grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
+grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 rootdir=
 grub_prefix=`echo /boot/grub | sed ${transform}`
 modules=
@@ -59,7 +61,9 @@ Install GRUB on your drive.
   --modules=MODULES       pre-load specified modules MODULES
   --root-directory=DIR    install GRUB images under the directory DIR
                           instead of the root directory
+  --grub-mkdevicemap=FILE use FILE as grub-mkdevicemap
   --grub-mkimage=FILE     use FILE as grub-mkimage
+  --grub-probe=FILE       use FILE as grub-probe
   --no-nvram              don't update the boot-device NVRAM variable
 
 grub-install copies GRUB images into the DIR/boot directory specfied by
@@ -83,8 +87,12 @@ for option in "$@"; do
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
     --root-directory=*)
 	rootdir=`echo "$option" | sed 's/--root-directory=//'` ;;
+    --grub-mkdevicemap=*)
+	grub_mkdevicemap=`echo "$option" | sed 's/--grub-mkdevicemap=//'` ;;
     --grub-mkimage=*)
 	grub_mkimage=`echo "$option" | sed 's/--grub-mkimage=//'` ;;
+    --grub-probe=*)
+	grub_probe=`echo "$option" | sed 's/--grub-probe=//'` ;;
     --no-nvram)
 	update_nvram=no ;;
     # This is an undocumented feature...
@@ -113,6 +121,7 @@ fi
 # Initialize these directories here, since ROOTDIR was initialized.
 bootdir=${rootdir}/boot
 grubdir=${bootdir}/`echo grub | sed ${transform}`
+device_map=${grubdir}/device.map
 
 set $grub_mkimage dummy
 if test -f "$1"; then
@@ -123,8 +132,9 @@ else
 fi
 
 # Find the partition at the right mount point.
-install_device=`awk '$2 == '"\"$grubdir\""' { print $1 }' < /proc/mounts`
-if test "x$install_device" = x; then
+install_device=`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${grubdir}`
+
+if test "x$install_device" = "x`$grub_mkdevicemap --device-map=/dev/stdout | $grub_probe --target=device --device-map=/dev/stdin ${bootdir}`"; then
     echo "$grubdir must be a mount point."
     exit 1
 fi
@@ -133,6 +143,16 @@ fi
 # Create the GRUB directory if it is not present.
 test -d "$bootdir" || mkdir "$bootdir" || exit 1
 test -d "$grubdir" || mkdir "$grubdir" || exit 1
+
+# Create the device map file if it is not present.
+if test -f "$device_map"; then
+    :
+else
+    # Create a safe temporary file.
+    test -n "$mklog" && log_file=`$mklog`
+
+    $grub_mkdevicemap --device-map=$device_map $no_floppy || exit 1
+fi
 
 # Copy the GRUB images to the GRUB directory.
 for file in ${grubdir}/*.mod ${grubdir}/*.lst ; do
@@ -144,11 +164,20 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ; do
     cp -f $file ${grubdir} || exit 1
 done
 
-# Create the core image with all modules, unless user specified a subset.
-# XXX probe for partition map and filesystem?
-if test "x$modules" = x; then
-    modules="$pkglibdir"/*.mod
+# Create the core image. First, auto-detect the filesystem module.
+fs_module=`$grub_probe --target=fs --device-map=${device_map} ${grubdir}`
+if test "x$fs_module" = x -a "x$modules" = x; then
+    echo "Auto-detection of a filesystem module failed." 1>&2
+    echo "Please specify the module with the option \`--modules' explicitly." 1>&2
+    exit 1
 fi
+
+# Then the partition map module.  In order to support partition-less media,
+# this command is allowed to fail (--target=fs already grants us that the
+# filesystem will be accessible).
+partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
+
+modules="$modules $fs_module $partmap_module"
 
 # Now perform the installation.
 "$grub_mkimage" --output=${grubdir}/grub $modules || exit 1
@@ -186,6 +215,15 @@ if test $update_nvram = yes; then
 	exit 1
     }
 fi
+
+# Prompt the user to check if the device map is correct.
+echo "Installation finished. No error reported."
+echo "This is the contents of the device map $device_map."
+echo "Check if this is correct or not. If any of the lines is incorrect,"
+echo "fix it and re-run the script \`grub-install'."
+echo
+
+cat $device_map
 
 # Bye.
 exit 0
