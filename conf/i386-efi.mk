@@ -34,8 +34,8 @@ grub_mkimage-util_resolve.o: util/resolve.c
 
 
 # For grub-setup.
-#grub_setup_SOURCES = util/i386/pc/grub-setup.c util/i386/pc/biosdisk.c	\
-#	util/misc.c util/i386/pc/getroot.c kern/device.c kern/disk.c	\
+#grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
+#	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 #	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
 #	fs/sfs.c kern/parser.c kern/partition.c partmap/pc.c		\
 #	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/hfsplus.c kern/file.c	\

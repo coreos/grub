@@ -181,7 +181,11 @@ main (int argc, char *argv[])
   /* Make sure that there is a root device.  */
   if (! args.root_dev)
     {
-      args.root_dev = grub_util_get_grub_dev (grub_guess_root_device (args.dir ? : DEFAULT_DIRECTORY));
+      char *device_name = grub_guess_root_device (args.dir ? : DEFAULT_DIRECTORY);
+      if (! device_name)
+        grub_util_error ("cannot find a device for %s.\n", args.dir ? : DEFAULT_DIRECTORY);
+
+      args.root_dev = grub_util_get_grub_dev (device_name);
       if (! args.root_dev)
 	{
 	  grub_util_info ("guessing the root device failed, because of `%s'",

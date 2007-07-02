@@ -1,5 +1,15 @@
 2007-07-02  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-efi.rmk: Replace obsolete reference to
+	util/i386/pc/biosdisk.c with util/biosdisk.c, and util/i386/pc/getroot.c
+	with util/getroot.c.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+
+	* util/grub-emu.c (main): Fix unchecked pointer handling.
+
+2007-07-02  Robert Millan  <rmh@aybabtu.com>
+
 	* util/i386/efi/grub-install.in: Allow `grub_probe --target=partmap'
 	invocation to fail, in order to support partition-less media.
 
