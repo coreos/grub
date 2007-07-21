@@ -823,11 +823,6 @@ grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
 	./config.status --file=grub-mkrescue:util/i386/pc/grub-mkrescue.in
 	chmod +x $@
 
-CLEANFILES += grub-mkrescue
-
-grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
-	./config.status --file=grub-mkrescue:util/i386/pc/grub-mkrescue.in
-	chmod +x $@
 
 # Modules.
 pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \

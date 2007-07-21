@@ -1,5 +1,11 @@
 2007-07-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* conf/i386-pc.rmk (CLEANFILES): Removed for grub-mkrescue,
+	because this rule is automatically generated.
+	(grub-mkrescue): Removed for the same reason as above.
+
+2007-07-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	Migrate to GNU General Public License Version 3.
 	
 	* COPYING: Replaced with the plain text version of GPLv3.
