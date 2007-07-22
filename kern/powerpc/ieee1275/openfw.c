@@ -372,7 +372,7 @@ grub_ieee1275_encode_devname (const char *path)
 
       if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS))
 	/* GRUB partition 1 is OF partition 0.  */
-	partno--;
+	partno++;
 
       /* Assume partno will require less than five bytes to encode.  */
       encoding = grub_malloc (grub_strlen (device) + 3 + 5);

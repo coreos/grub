@@ -79,6 +79,9 @@ enum grub_ieee1275_flag
   /* CHRP specifies partitions are numbered from 1 (partition 0 refers to the
      whole disk). However, CodeGen firmware numbers partitions from 0.  */
   GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS,
+
+  /* CodeGen firmware does not correctly implement "output-device output" */
+  GRUB_IEEE1275_FLAG_BROKEN_OUTPUT,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);

@@ -1,3 +1,24 @@
+2007-07-22  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): Add
+	GRUB_IEEE1275_FLAG_BROKEN_OUTPUT flag.
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Set this
+	flag when running on SmartFirmware.
+	* term/ieee1275/ofconsole.c (grub_ofconsole_init): Avoid running
+	"output-device output" command when GRUB_IEEE1275_FLAG_BROKEN_OUTPUT
+	was set.
+
+	* kern/powerpc/ieee1275/openfw.c (grub_ieee1275_encode_devname):
+	Increase partno when GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS flag is set,
+	rather than decreasing it.
+
+	* util/i386/pc/grub-setup.c (setup): When embedding is required, but
+	there's not enough space to do it, fail in the same way as when it
+	can't be done because there are no partitions.
+
+	* util/powerpc/ieee1275/grub-install.in: Improve error message shown
+	when nvsetenv failed.
+
 2007-07-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* conf/i386-pc.rmk (CLEANFILES): Removed for grub-mkrescue,

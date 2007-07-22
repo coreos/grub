@@ -105,6 +105,7 @@ setup (const char *prefix, const char *dir,
   grub_file_t file;
   FILE *fp;
   unsigned long first_start = ~0UL;
+  int able_to_embed = 1;
   
   auto void save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			       unsigned length);
@@ -323,8 +324,13 @@ setup (const char *prefix, const char *dir,
 
 	  goto finish;
 	}
+      else
+        able_to_embed = 0;
     }
-  else if (must_embed)
+  else
+    able_to_embed = 0;
+
+  if (must_embed && !able_to_embed)
     grub_util_error ("Can't embed the core image, but this is required when\n"
 		     "the root device is on a RAID array or LVM volume.");
   

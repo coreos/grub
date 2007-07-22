@@ -311,8 +311,10 @@ grub_ofconsole_init (void)
   int col;
 
   /* The latest PowerMacs don't actually initialize the screen for us, so we
-   * use this trick to re-open the output device.  */
-  grub_ieee1275_interpret ("output-device output", 0);
+   * use this trick to re-open the output device (but we avoid doing this on
+   * platforms where it's known to be broken). */
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_OUTPUT))
+    grub_ieee1275_interpret ("output-device output", 0);
 
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdout", data,
 				  sizeof data, &actual)
