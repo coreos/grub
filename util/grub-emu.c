@@ -37,7 +37,7 @@
 #include <grub/env.h>
 #include <grub/partition.h>
 
-#include <grub_modules_init.h>
+#include <grub_emu_init.h>
 
 /* Used for going back to the main function.  */
 jmp_buf main_env;

@@ -29,6 +29,8 @@
 #include <grub/util/getroot.h>
 #include <grub/term.h>
 
+#include <grub_probe_init.h>
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -243,36 +245,15 @@ main (int argc, char *argv[])
   
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
-  grub_pc_partition_map_init ();
-  grub_gpt_partition_map_init ();
-  grub_apple_partition_map_init ();
-  grub_raid_init ();
-  grub_lvm_init ();
   
-  /* Initialize filesystems.  */
-  grub_fat_init ();
-  grub_ext2_init ();
-  grub_ufs_init ();
-  grub_minix_init ();
-  grub_jfs_init ();
-  grub_xfs_init ();
+  /* Initialize all modules. */
+  grub_init_all ();
 
   /* Do it.  */
   probe (path);
   
   /* Free resources.  */
-  grub_ext2_fini ();
-  grub_fat_fini ();
-  grub_ufs_fini ();
-  grub_minix_fini ();
-  grub_jfs_fini ();
-  grub_xfs_fini ();
-  
-  grub_lvm_fini ();
-  grub_raid_fini ();
-  grub_gpt_partition_map_fini ();
-  grub_apple_partition_map_fini ();
-  grub_pc_partition_map_fini ();
+  grub_fini_all ();
   grub_util_biosdisk_fini ();
   
   free (dev_map);

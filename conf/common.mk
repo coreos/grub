@@ -6,17 +6,43 @@ grub_script.tab.c grub_script.tab.h: normal/parser.y
 DISTCLEANFILES += grub_script.tab.c grub_script.tab.h
 
 # For grub-emu.
-grub_modules_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
+grub_emu_init.lst: geninit.sh $(filter-out grub_emu_init.c,$(grub_emu_SOURCES))
 	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
-DISTCLEANFILES += grub_modules_init.lst
+DISTCLEANFILES += grub_emu_init.lst
 
-grub_modules_init.h: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh grub_modules_init.lst
-	rm -f $@; sh $(srcdir)/geninitheader.sh > $@
-DISTCLEANFILES += grub_modules_init.h
+grub_emu_init.h: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninitheader.sh
+	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+DISTCLEANFILES += grub_emu_init.h
 
-grub_emu_init.c: $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_modules_init.lst grub_modules_init.h
-	rm -f $@; sh $(srcdir)/geninit.sh $(filter %.c,$^) > $@
+grub_emu_init.c: grub_emu_init.lst $(filter-out grub_emu_init.c,$(grub_emu_SOURCES)) geninit.sh grub_emu_init.h
+	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
 DISTCLEANFILES += grub_emu_init.c
+
+# For grub-probe.
+grub_probe_init.lst: geninit.sh $(filter-out grub_probe_init.c,$(grub_probe_SOURCES))
+	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
+DISTCLEANFILES += grub_probe_init.lst
+
+grub_probe_init.h: grub_probe_init.lst $(filter-out grub_probe_init.c,$(grub_probe_SOURCES)) geninitheader.sh
+	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+DISTCLEANFILES += grub_probe_init.h
+
+grub_probe_init.c: grub_probe_init.lst $(filter-out grub_probe_init.c,$(grub_probe_SOURCES)) geninit.sh grub_probe_init.h
+	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
+DISTCLEANFILES += grub_probe_init.c
+
+# For grub-setup.
+grub_setup_init.lst: geninit.sh $(filter-out grub_setup_init.c,$(grub_setup_SOURCES))
+	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
+DISTCLEANFILES += grub_setup_init.lst
+
+grub_setup_init.h: grub_setup_init.lst $(filter-out grub_setup_init.c,$(grub_setup_SOURCES)) geninitheader.sh
+	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+DISTCLEANFILES += grub_setup_init.h
+
+grub_setup_init.c: grub_setup_init.lst $(filter-out grub_setup_init.c,$(grub_setup_SOURCES)) geninit.sh grub_setup_init.h
+	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
+DISTCLEANFILES += grub_setup_init.c
 
 # For update-grub
 update-grub: util/update-grub.in config.status

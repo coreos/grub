@@ -1,5 +1,32 @@
 2007-07-22  Robert Millan  <rmh@aybabtu.com>
 
+	* geninitheader.sh: Process file specified in first parameter rather
+	than hardcoding grub_modules_init.lst.
+	* geninit.sh: Likewise.  Also, construct header name dynamicaly rather
+	than hardcoding grub_modules_init.h.
+
+	* conf/common.rmk: Rename grub_modules_init.[ch] files associated with
+	grub-emu to grub_emu_init.[ch].  Add rules to build analogous
+	grub_probe_init.[ch] and grub_setup_init.[ch].
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_DEPENDENCIES): Replace
+	grub_modules_init.h with grub_emu_init.h.
+	(grub_probe_DEPENDENCIES, grub_probe_SOURCES): Add new
+	grub_probe_init.[ch] files.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	(grub_setup_DEPENDENCIES, grub_setup_SOURCES): Add new
+	grub_setup_init.[ch] files.
+
+	* util/grub-emu.c: Replace grub_modules_init.h with grub_emu_init.h.
+	* util/grub-probe.c: Include grub_probe_init.h.  Use grub_init_all()
+	to initialize modules rather than a list of hardcoded functions.
+	* util/i386/pc/grub-setup.c: Include grub_setup_init.h.  Use
+	grub_init_all() to initialize modules rather than a list of hardcoded
+	functions.
+
+2007-07-22  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Set
 	GRUB_IEEE1275_FLAG_NO_PARTITION_0 flag when running on SmartFirmware.
 

@@ -27,6 +27,7 @@ grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 
 # For grub-probe.
+grub_probe_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = util/grub-probe.c	\
 	util/biosdisk.c	util/misc.c util/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
@@ -34,11 +35,11 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	partmap/pc.c partmap/apple.c partmap/gpt.c 			\
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c kern/fs.c	\
 	kern/env.c fs/fshelp.c fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c	\
-	disk/lvm.c disk/raid.c
+	disk/lvm.c disk/raid.c grub_probe_init.c
 
 # For grub-emu.
 grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
-	grub_modules_init.h
+	grub_emu_init.h
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\

@@ -34,6 +34,8 @@
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
 
+#include <grub_setup_init.h>
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -658,9 +660,10 @@ main (int argc, char *argv[])
 
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
-  grub_pc_partition_map_init ();
-  grub_gpt_partition_map_init ();
 
+  /* Initialize all modules. */
+  grub_init_all ();
+  
   dest_dev = get_device_name (argv[optind]);
   if (! dest_dev)
     {
@@ -677,14 +680,6 @@ main (int argc, char *argv[])
     dest_dev = xstrdup (dest_dev);
 
   prefix = grub_get_prefix (dir ? : DEFAULT_DIRECTORY);
-  
-  /* Initialize filesystems.  */
-  grub_fat_init ();
-  grub_ext2_init ();
-  grub_ufs_init ();
-  grub_minix_init ();
-  grub_hfs_init ();
-  grub_jfs_init ();
   
   if (root_dev)
     {
@@ -754,15 +749,7 @@ main (int argc, char *argv[])
 	   root_dev, dest_dev, must_embed);
 
   /* Free resources.  */
-  grub_ext2_fini ();
-  grub_fat_fini ();
-  grub_ufs_fini ();
-  grub_minix_fini ();
-  grub_hfs_fini ();
-  grub_jfs_fini ();
-  
-  grub_gpt_partition_map_fini ();
-  grub_pc_partition_map_fini ();
+  grub_fini_all ();
   grub_util_biosdisk_fini ();
   
   free (boot_file);
