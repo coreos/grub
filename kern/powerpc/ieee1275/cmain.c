@@ -63,6 +63,7 @@ grub_ieee1275_find_options (void)
   rc = grub_ieee1275_get_property (openprom, "SmartFirmware-version", 0, 0, 0);
   if (rc >= 0)
     {
+      grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0);
       grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS);
       grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_OUTPUT);
     }

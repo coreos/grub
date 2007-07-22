@@ -1,5 +1,10 @@
 2007-07-22  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Set
+	GRUB_IEEE1275_FLAG_NO_PARTITION_0 flag when running on SmartFirmware.
+
+2007-07-22  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): Add
 	GRUB_IEEE1275_FLAG_BROKEN_OUTPUT flag.
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Set this
