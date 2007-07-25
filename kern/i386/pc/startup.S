@@ -49,7 +49,8 @@
 #include <grub/machine/console.h>
 #include <grub/cpu/linux.h>
 #include <grub/machine/kernel.h>
-#include <grub/machine/multiboot.h>
+#include <multiboot.h>
+#include <multiboot2.h>
 		
 #define ABS(x)	((x) - EXT_C(start) + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 	
@@ -813,10 +814,31 @@ FUNCTION(grub_multiboot_real_boot)
 	cli
 	
 	/* Move the magic value into eax and jump to the kernel.  */
-	movl	$GRUB_MB_MAGIC2,%eax
+	movl	$MULTIBOOT_MAGIC2,%eax
 	popl	%ecx
 	jmp 	*%ecx
-	
+
+/*
+ * This starts the multiboot 2 kernel.
+ */
+
+FUNCTION(grub_multiboot2_real_boot)
+        /* Push the entry address on the stack.  */
+        pushl   %eax
+        /* Move the address of the multiboot information structure to ebx.  */
+        movl    %edx,%ebx
+
+        /* Unload all modules and stop the floppy driver.  */
+        call    EXT_C(grub_dl_unload_all)
+        call    EXT_C(grub_stop_floppy)
+
+        /* Interrupts should be disabled.  */
+        cli
+
+        /* Move the magic value into eax and jump to the kernel.  */
+        movl    $MULTIBOOT2_BOOTLOADER_MAGIC,%eax 
+        popl    %ecx
+        jmp     *%ecx
 	
 /*
  *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)

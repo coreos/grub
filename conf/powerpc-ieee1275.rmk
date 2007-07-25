@@ -103,7 +103,9 @@ pkgdata_MODULES = halt.mod \
 	linux.mod \
 	normal.mod \
 	reboot.mod \
-	suspend.mod
+	suspend.mod \
+        _multiboot.mod \
+        multiboot.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
@@ -140,6 +142,19 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/ieee1275/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _multiboot.mod
+_multiboot_mod_SOURCES = loader/powerpc/ieee1275/multiboot2.c \
+                         loader/multiboot2.c \
+                         loader/multiboot_loader.c
+_multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+_multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For multiboot.mod
+multiboot_mod_SOURCES = loader/multiboot_loader_normal.c
+multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS) 
+
 
 include $(srcdir)/conf/common.mk
 

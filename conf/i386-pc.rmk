@@ -177,12 +177,15 @@ serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _multiboot.mod.
-_multiboot_mod_SOURCES = loader/i386/pc/multiboot.c
+_multiboot_mod_SOURCES = loader/i386/pc/multiboot.c \
+                         loader/i386/pc/multiboot2.c \
+                         loader/multiboot2.c \
+                         loader/multiboot_loader.c
 _multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 _multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For multiboot.mod.
-multiboot_mod_SOURCES = loader/i386/pc/multiboot_normal.c
+multiboot_mod_SOURCES = loader/multiboot_loader_normal.c 
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
