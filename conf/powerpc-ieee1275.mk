@@ -639,7 +639,9 @@ pkgdata_MODULES = halt.mod \
 	linux.mod \
 	normal.mod \
 	reboot.mod \
-	suspend.mod
+	suspend.mod \
+        _multiboot.mod \
+        multiboot.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/powerpc/ieee1275/linux.c
@@ -1153,6 +1155,143 @@ fs-halt_mod-commands_ieee1275_halt.lst: commands/ieee1275/halt.c genfslist.sh
 
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _multiboot.mod
+_multiboot_mod_SOURCES = loader/powerpc/ieee1275/multiboot2.c \
+                         loader/multiboot2.c \
+                         loader/multiboot_loader.c
+CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_powerpc_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o und-_multiboot.lst
+ifneq ($(_multiboot_mod_EXPORTS),no)
+CLEANFILES += def-_multiboot.lst
+DEFSYMFILES += def-_multiboot.lst
+endif
+MOSTLYCLEANFILES += _multiboot_mod-loader_powerpc_ieee1275_multiboot2.d _multiboot_mod-loader_multiboot2.d _multiboot_mod-loader_multiboot_loader.d
+UNDSYMFILES += und-_multiboot.lst
+
+_multiboot.mod: pre-_multiboot.o mod-_multiboot.o
+	-rm -f $@
+	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_powerpc_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
+	-rm -f $@
+	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _multiboot_mod-loader_powerpc_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
+
+mod-_multiboot.o: mod-_multiboot.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
+
+mod-_multiboot.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_multiboot' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(_multiboot_mod_EXPORTS),no)
+def-_multiboot.lst: pre-_multiboot.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _multiboot/' > $@
+endif
+
+und-_multiboot.lst: pre-_multiboot.o
+	echo '_multiboot' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+_multiboot_mod-loader_powerpc_ieee1275_multiboot2.o: loader/powerpc/ieee1275/multiboot2.c
+	$(TARGET_CC) -Iloader/powerpc/ieee1275 -I$(srcdir)/loader/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
+-include _multiboot_mod-loader_powerpc_ieee1275_multiboot2.d
+
+CLEANFILES += cmd-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst fs-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst
+COMMANDFILES += cmd-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst
+FSFILES += fs-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst
+
+cmd-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst: loader/powerpc/ieee1275/multiboot2.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/powerpc/ieee1275 -I$(srcdir)/loader/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+fs-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst: loader/powerpc/ieee1275/multiboot2.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/powerpc/ieee1275 -I$(srcdir)/loader/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+
+_multiboot_mod-loader_multiboot2.o: loader/multiboot2.c
+	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
+-include _multiboot_mod-loader_multiboot2.d
+
+CLEANFILES += cmd-_multiboot_mod-loader_multiboot2.lst fs-_multiboot_mod-loader_multiboot2.lst
+COMMANDFILES += cmd-_multiboot_mod-loader_multiboot2.lst
+FSFILES += fs-_multiboot_mod-loader_multiboot2.lst
+
+cmd-_multiboot_mod-loader_multiboot2.lst: loader/multiboot2.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+fs-_multiboot_mod-loader_multiboot2.lst: loader/multiboot2.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+
+_multiboot_mod-loader_multiboot_loader.o: loader/multiboot_loader.c
+	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
+-include _multiboot_mod-loader_multiboot_loader.d
+
+CLEANFILES += cmd-_multiboot_mod-loader_multiboot_loader.lst fs-_multiboot_mod-loader_multiboot_loader.lst
+COMMANDFILES += cmd-_multiboot_mod-loader_multiboot_loader.lst
+FSFILES += fs-_multiboot_mod-loader_multiboot_loader.lst
+
+cmd-_multiboot_mod-loader_multiboot_loader.lst: loader/multiboot_loader.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+fs-_multiboot_mod-loader_multiboot_loader.lst: loader/multiboot_loader.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+
+_multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+_multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For multiboot.mod
+multiboot_mod_SOURCES = loader/multiboot_loader_normal.c
+CLEANFILES += multiboot.mod mod-multiboot.o mod-multiboot.c pre-multiboot.o multiboot_mod-loader_multiboot_loader_normal.o und-multiboot.lst
+ifneq ($(multiboot_mod_EXPORTS),no)
+CLEANFILES += def-multiboot.lst
+DEFSYMFILES += def-multiboot.lst
+endif
+MOSTLYCLEANFILES += multiboot_mod-loader_multiboot_loader_normal.d
+UNDSYMFILES += und-multiboot.lst
+
+multiboot.mod: pre-multiboot.o mod-multiboot.o
+	-rm -f $@
+	$(TARGET_CC) $(multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-multiboot.o: $(multiboot_mod_DEPENDENCIES) multiboot_mod-loader_multiboot_loader_normal.o
+	-rm -f $@
+	$(TARGET_CC) $(multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ multiboot_mod-loader_multiboot_loader_normal.o
+
+mod-multiboot.o: mod-multiboot.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
+
+mod-multiboot.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'multiboot' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(multiboot_mod_EXPORTS),no)
+def-multiboot.lst: pre-multiboot.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 multiboot/' > $@
+endif
+
+und-multiboot.lst: pre-multiboot.o
+	echo 'multiboot' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+multiboot_mod-loader_multiboot_loader_normal.o: loader/multiboot_loader_normal.c
+	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -MD -c -o $@ $<
+-include multiboot_mod-loader_multiboot_loader_normal.d
+
+CLEANFILES += cmd-multiboot_mod-loader_multiboot_loader_normal.lst fs-multiboot_mod-loader_multiboot_loader_normal.lst
+COMMANDFILES += cmd-multiboot_mod-loader_multiboot_loader_normal.lst
+FSFILES += fs-multiboot_mod-loader_multiboot_loader_normal.lst
+
+cmd-multiboot_mod-loader_multiboot_loader_normal.lst: loader/multiboot_loader_normal.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh multiboot > $@ || (rm -f $@; exit 1)
+
+fs-multiboot_mod-loader_multiboot_loader_normal.lst: loader/multiboot_loader_normal.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh multiboot > $@ || (rm -f $@; exit 1)
+
+
+multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS) 
+
 
 include $(srcdir)/conf/common.mk
 
