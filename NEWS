@@ -2,6 +2,15 @@ New in 1.96:
 
 * The license term is changed to GNU General Public License Version 3.
 
+* grub-emu is made optional.  Now you have to use
+  `--enable-grub-emu' to enable it.
+
+* Add Multiboot2 support.
+
+* grub-emu can access the host filesystem now.
+
+* Add support for the NTFS filesystems.
+
 New in 1.95 - 2006-10-15:
 
 * Number partitions from 1 instead of 0. For instance, the first

@@ -1,3 +1,19 @@
+2007-08-02  Marco Gerards  <marco@gnu.org>
+
+	* DISTLIST: Add `disk/host.c', `fs/ntfs.c', `include/multiboot.h',
+	`include/multiboot2.h', `include/grub/elfload.h',
+	`include/multiboot.h', `include/grub/multiboot.h',
+	`include/grub/multiboot_loader.h', `include/grub/multiboot2.h',
+	`include/grub/i386/pc/biosdisk.h', `include/grub/util/biosdisk.h',
+	`kern/elf.c', `loader/multiboot_loader.c',
+	`loader/multiboot_loader_normal.c', `loader/multiboot2.c',
+	`loader/i386/pc/multiboot2.c',
+	`loader/powerpc/ieee1275/multiboot2.c', `util/hostfs.c' and
+	`util/i386/pc/grub-mkrescue.in'.  Remove
+	`include/grub/biosdisk.h', `include/grub/i386/pc/multiboot.h',
+	`include/grub/i386/pc/util/biosdisk.h' and
+	`include/grub/powerpc/ieee1275/multiboot.h'.
+
 2007-08-02  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (pkgdata_MODULES): Add ntfs.mod.

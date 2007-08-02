@@ -62,6 +62,7 @@ conf/powerpc-ieee1275.mk
 conf/powerpc-ieee1275.rmk
 conf/sparc64-ieee1275.mk
 conf/sparc64-ieee1275.rmk
+disk/host.c
 disk/loopback.c
 disk/lvm.c
 disk/raid.c
@@ -77,14 +78,16 @@ fs/hfs.c
 fs/iso9660.c
 fs/jfs.c
 fs/minix.c
+fs/ntfs.c
 fs/ufs.c
 fs/sfs.c
 fs/xfs.c
 fs/hfsplus.c
 hello/hello.c
+include/multiboot.h
+include/multiboot2.h
 include/grub/acorn_filecore.h
 include/grub/arg.h
-include/grub/biosdisk.h
 include/grub/bitmap.h
 include/grub/boot.h
 include/grub/cache.h
@@ -92,6 +95,7 @@ include/grub/device.h
 include/grub/disk.h
 include/grub/dl.h
 include/grub/elf.h
+include/grub/elfload.h
 include/grub/env.h
 include/grub/err.h
 include/grub/file.h
@@ -105,6 +109,10 @@ include/grub/loader.h
 include/grub/lvm.h
 include/grub/misc.h
 include/grub/mm.h
+include/multiboot.h
+include/grub/multiboot.h
+include/grub/multiboot_loader.h
+include/grub/multiboot2.h
 include/grub/net.h
 include/grub/normal.h
 include/grub/parser.h
@@ -134,6 +142,7 @@ include/grub/i386/types.h
 include/grub/i386/efi/kernel.h
 include/grub/i386/efi/loader.h
 include/grub/i386/efi/time.h
+include/grub/i386/pc/biosdisk.h
 include/grub/i386/pc/boot.h
 include/grub/i386/pc/chainloader.h
 include/grub/i386/pc/console.h
@@ -141,7 +150,6 @@ include/grub/i386/pc/init.h
 include/grub/i386/pc/kernel.h
 include/grub/i386/pc/loader.h
 include/grub/i386/pc/memory.h
-include/grub/i386/pc/multiboot.h
 include/grub/i386/pc/serial.h
 include/grub/i386/pc/time.h
 include/grub/i386/pc/vbe.h
@@ -149,7 +157,6 @@ include/grub/i386/pc/vbeblit.h
 include/grub/i386/pc/vbefill.h
 include/grub/i386/pc/vbeutil.h
 include/grub/i386/pc/vga.h
-include/grub/i386/pc/util/biosdisk.h
 include/grub/ieee1275/ieee1275.h
 include/grub/ieee1275/ofdisk.h
 include/grub/powerpc/libgcc.h
@@ -160,7 +167,6 @@ include/grub/powerpc/ieee1275/console.h
 include/grub/powerpc/ieee1275/ieee1275.h
 include/grub/powerpc/ieee1275/kernel.h
 include/grub/powerpc/ieee1275/loader.h
-include/grub/powerpc/ieee1275/multiboot.h
 include/grub/powerpc/ieee1275/time.h
 include/grub/powerpc/ieee1275/util/biosdisk.h
 include/grub/sparc64/setjmp.h
@@ -169,6 +175,7 @@ include/grub/sparc64/ieee1275/console.h
 include/grub/sparc64/ieee1275/ieee1275.h
 include/grub/sparc64/ieee1275/kernel.h
 include/grub/sparc64/ieee1275/time.h
+include/grub/util/biosdisk.h
 include/grub/util/getroot.h
 include/grub/util/lvm.h
 include/grub/util/misc.h
@@ -178,6 +185,7 @@ io/gzio.c
 kern/device.c
 kern/disk.c
 kern/dl.c
+kern/elf.c
 kern/env.c
 kern/err.c
 kern/file.c
@@ -210,6 +218,9 @@ kern/sparc64/cache.S
 kern/sparc64/dl.c
 kern/sparc64/ieee1275/init.c
 kern/sparc64/ieee1275/openfw.c
+loader/multiboot_loader.c
+loader/multiboot_loader_normal.c
+loader/multiboot2.c
 loader/efi/chainloader.c
 loader/efi/chainloader_normal.c
 loader/i386/efi/linux.c
@@ -220,8 +231,10 @@ loader/i386/pc/linux.c
 loader/i386/pc/linux_normal.c
 loader/i386/pc/multiboot.c
 loader/i386/pc/multiboot_normal.c
+loader/i386/pc/multiboot2.c
 loader/powerpc/ieee1275/linux.c
 loader/powerpc/ieee1275/linux_normal.c
+loader/powerpc/ieee1275/multiboot2.c
 normal/arg.c
 normal/cmdline.c
 normal/command.c
@@ -258,6 +271,7 @@ util/getroot.c
 util/grub-emu.c
 util/grub-mkdevicemap.c
 util/grub-probe.c
+util/hostfs.c
 util/lvm.c
 util/misc.c
 util/raid.c
@@ -275,6 +289,7 @@ util/i386/pc/grub-install.in
 util/i386/pc/grub-mkimage.c
 util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
+util/i386/pc/grub-mkrescue.in
 util/powerpc/ieee1275/grub-install.in
 util/powerpc/ieee1275/grub-mkimage.c
 util/powerpc/ieee1275/misc.c
