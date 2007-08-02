@@ -95,7 +95,7 @@ struct grub_disk
 
   /* Called when a sector was read. OFFSET is between 0 and
      the sector size minus 1, and LENGTH is between 0 and the sector size.  */
-  void (*read_hook) (grub_disk_addr_t sector,
+  void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 		     unsigned offset, unsigned length);
 
   /* Device-specific data.  */

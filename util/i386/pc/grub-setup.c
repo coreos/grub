@@ -109,9 +109,9 @@ setup (const char *prefix, const char *dir,
   unsigned long first_start = ~0UL;
   int able_to_embed = 1;
   
-  auto void save_first_sector (grub_disk_addr_t sector, unsigned offset,
+  auto void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			       unsigned length);
-  auto void save_blocklists (grub_disk_addr_t sector, unsigned offset,
+  auto void NESTED_FUNC_ATTR save_blocklists (grub_disk_addr_t sector, unsigned offset,
 			     unsigned length);
 
   auto int find_first_partition_start (grub_disk_t disk,
@@ -130,7 +130,7 @@ setup (const char *prefix, const char *dir,
       return 0;
     }
   
-  void save_first_sector (grub_disk_addr_t sector, unsigned offset,
+  void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			  unsigned length)
     {
       grub_util_info ("the first sector is <%llu,%u,%u>",
@@ -142,7 +142,7 @@ setup (const char *prefix, const char *dir,
       first_sector = sector;
     }
 
-  void save_blocklists (grub_disk_addr_t sector, unsigned offset,
+  void NESTED_FUNC_ATTR save_blocklists (grub_disk_addr_t sector, unsigned offset,
 			unsigned length)
     {
       struct boot_blocklist *prev = block + 1;

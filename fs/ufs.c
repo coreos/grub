@@ -240,7 +240,7 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_ufs_read_file (struct grub_ufs_data *data,
-		    void (*read_hook) (grub_disk_addr_t sector,
+		    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 				       unsigned offset, unsigned length),
 		    int pos, grub_size_t len, char *buf)
 {

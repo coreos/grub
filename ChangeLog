@@ -1,3 +1,40 @@
+2007-08-02  Bean  <bean123ch@gmail.com>
+
+	* disk.h (grub_disk): Use NESTED_FUNC_ATTR.
+
+	* file.h (grub_file): Likewise.
+
+	* fshelp.h (grub_fshelp_read_file): Likewise.
+
+	* util/i386/pc/grub-setup.c (setup): Likewise.
+	(save_first_sector): Likewise.
+	(save_blocklists): Likewise.
+	
+	* fs/affs.c (grub_affs_read_file): Likewise.
+
+	* fs/ext2.c (grub_ext2_read_file): Likewise.
+
+	* fs/fat.c (grub_fat_read_data): Likewise.
+
+	* fs/fshelp.c (grub_fshelp_read_file): Likewise.
+
+	* fs/hfs.c (grub_hfs_read_file): Likewise.
+
+	* fs/hfsplus.c (grub_hfsplus_read_file): Likewise.
+
+	* fs/jfs.c (grub_jfs_read_file): Likewise.
+
+	* fs/minix.c (grub_minix_read_file): Likewise.
+
+	* fs/sfs.c (grub_sfs_read_file): Likewise.
+
+	* fs/ufs.c (grub_ufs_read_file): Likewise.
+	
+	* fs/xfs.c (grub_xfs_read_file): Likewise.
+
+	* command/blocklist.c (read_blocklist): Likewise.
+	(print_blocklist): Likewise.
+
 2007-08-02  Marco Gerards  <marco@gnu.org>
 
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `disk/host.c' and

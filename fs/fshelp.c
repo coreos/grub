@@ -222,7 +222,7 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
    blocks have a size of LOG2BLOCKSIZE (in log2).  */
 grub_ssize_t
 grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
-		       void (*read_hook) (grub_disk_addr_t sector,
+		       void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 					  unsigned offset, unsigned length),
 		       int pos, grub_size_t len, char *buf,
 		       int (*get_block) (grub_fshelp_node_t node, int block),

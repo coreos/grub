@@ -36,12 +36,12 @@ grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
   unsigned num_sectors = 0;
   int num_entries = 0;
   grub_disk_addr_t part_start = 0;
-  auto void read_blocklist (grub_disk_addr_t sector, unsigned offset,
+  auto void NESTED_FUNC_ATTR read_blocklist (grub_disk_addr_t sector, unsigned offset,
 			    unsigned length);
-  auto void print_blocklist (grub_disk_addr_t sector, unsigned num,
+  auto void NESTED_FUNC_ATTR print_blocklist (grub_disk_addr_t sector, unsigned num,
 			     unsigned offset, unsigned length);
   
-  void read_blocklist (grub_disk_addr_t sector, unsigned offset,
+  void NESTED_FUNC_ATTR read_blocklist (grub_disk_addr_t sector, unsigned offset,
 		       unsigned length)
     {
       if (num_sectors > 0)
@@ -66,7 +66,7 @@ grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
 	print_blocklist (sector, 0, offset, length);
     }
   
-  void print_blocklist (grub_disk_addr_t sector, unsigned num,
+  void NESTED_FUNC_ATTR print_blocklist (grub_disk_addr_t sector, unsigned num,
 			unsigned offset, unsigned length)
     {
       if (num_entries++)
