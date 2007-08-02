@@ -94,7 +94,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/search.c commands/blocklist.c				\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	commands/i386/cpuid.c						\
-	disk/loopback.c	disk/raid.c disk/lvm.c				\
+	disk/host.c disk/loopback.c	disk/raid.c disk/lvm.c		\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
 	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
 	io/gzio.c							\
@@ -108,7 +108,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	normal/menu.c normal/menu_entry.c normal/misc.c normal/script.c	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
-	util/console.c util/grub-emu.c util/misc.c			\
+	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/biosdisk.c util/getroot.c			\
 	util/i386/pc/misc.c grub_emu_init.c
 

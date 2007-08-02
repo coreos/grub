@@ -248,6 +248,9 @@ grub_affs_mount (grub_disk_t disk)
   return data;
 
  fail:
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not an affs filesystem");
+
   grub_free (data);
   grub_free (rootblock);
   return 0;
