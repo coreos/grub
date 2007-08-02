@@ -1,5 +1,26 @@
 2007-08-02  Bean  <bean123ch@gmail.com>
 
+	* conf/common.rmk (pkgdata_MODULES): Add ntfs.mod.
+	(ntfs_mod_SOURCES): New variable.
+	(ntfs_mod_CFLAGS): Likewise.
+	(ntfs_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add fs/ntfs.c.
+	(grub_probe_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+
+	* conf/i386-efi.rmk (grub_probe_SOURCES): Add fs/ntfs.c.
+	(grub_emu_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_probe_SOURCES): Add fs/ntfs.c.
+	(grub_emu_SOURCES): Likewise.
+	
+	* conf/misc.c (grub_utf16_to_utf8): Fix unicode conversion bug.
+
+	* fs/ntfs.c: New file.
+
+2007-08-02  Bean  <bean123ch@gmail.com>
+
 	* disk.h (grub_disk): Use NESTED_FUNC_ATTR.
 
 	* file.h (grub_file): Likewise.
