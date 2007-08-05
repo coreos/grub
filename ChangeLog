@@ -1,3 +1,8 @@
+2007-08-05  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_linux.in (test_gt): Strip out vmlinu[xz]- prefix
+	so that [xz] isn't taken into account when determining order.
+
 2007-08-02  Marco Gerards  <marco@gnu.org>
 
 	* DISTLIST: Add `disk/host.c', `fs/ntfs.c', `include/multiboot.h',

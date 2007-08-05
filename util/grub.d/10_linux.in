@@ -47,8 +47,8 @@ test_numeric ()
 
 test_gt ()
 {
-  local a=$1
-  local b=$2
+  local a=`echo $1 | sed -e "s/vmlinu[zx]-//g"`
+  local b=`echo $2 | sed -e "s/vmlinu[zx]-//g"`
   local cmp=gt
   if [ "x$b" = "x" ] ; then
     return 0
