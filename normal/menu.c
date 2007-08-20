@@ -328,7 +328,7 @@ run_menu (grub_menu_t menu, int nested)
 	  /* NOTE: Do not remove the trailing space characters.
 	     They are required to clear the line.  */
 	  grub_printf ("\
-   The highlighted entry will be booted automatically in %d seconds.    ",
+   The highlighted entry will be booted automatically in %d s.    ",
 		       timeout);
 	  grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
 	  grub_refresh ();
