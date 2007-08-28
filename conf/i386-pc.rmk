@@ -72,7 +72,8 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
 	util/raid.c util/lvm.c grub_setup_init.c
 
 # For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
+	util/i386/get_disk_name.c
 
 # For grub-probe.
 grub_probe_DEPENDENCIES = grub_probe_init.h

@@ -1,3 +1,24 @@
+2007-08-28  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/get_disk_name.c: New.  Implement grub_util_get_disk_name()
+	to tell grub-mkdevicemap how to name devices.
+	* util/ieee1275/get_disk_name.c: Likewise (using "ofpathname -a"
+	feature).
+
+	* conf/i386-efi.rmk (grub_mkdevicemap_SOURCES): Add
+	util/i386/get_disk_name.c.
+	* conf/i386-pc.rmk (grub_mkdevicemap_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_mkdevicemap_SOURCES): Add
+	util/ieee1275/get_disk_name.c.
+
+	* include/grub/util/misc.h: grub_util_get_disk_name() declaration.
+
+	* DISTLIST: Add util/i386/get_disk_name.c and
+	util/ieee1275/get_disk_name.c.
+
+	* util/grub-mkdevicemap.c: Replace device naming logic with
+	grub_util_get_disk_name() calls.
+
 2007-08-20  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/menu.c (run_menu): Refer to seconds as "s" not "seconds"

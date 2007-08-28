@@ -36,7 +36,8 @@ grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
         util/resolve.c 
 
 # For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
+	util/ieee1275/get_disk_name.c
 
 # For grub-probe.
 grub_probe_DEPENDENCIES = grub_probe_init.h

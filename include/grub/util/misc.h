@@ -53,5 +53,6 @@ void grub_util_load_image (const char *path, char *buf);
 void grub_util_write_image (const char *img, size_t size, FILE *out);
 void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 			       FILE *out);
+char *grub_util_get_disk_name (int disk, char *name);
 
 #endif /* ! GRUB_UTIL_MISC_HEADER */

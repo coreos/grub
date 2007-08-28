@@ -285,11 +285,13 @@ util/grub.d/10_linux.in
 util/grub.d/README
 util/i386/efi/grub-install.in
 util/i386/efi/grub-mkimage.c
+util/i386/get_disk_name.c
 util/i386/pc/grub-install.in
 util/i386/pc/grub-mkimage.c
 util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
 util/i386/pc/grub-mkrescue.in
+util/ieee1275/get_disk_name.c
 util/powerpc/ieee1275/grub-install.in
 util/powerpc/ieee1275/grub-mkimage.c
 util/powerpc/ieee1275/misc.c
