@@ -198,7 +198,7 @@ MOSTLYCLEANFILES += #{deps_str}
       dep = deps[i]
       dir = File.dirname(src)
 
-      "#{obj}: #{src}
+      "#{obj}: #{src} $(#{src}_DEPENDENCIES)
 	$(CC) -I#{dir} -I$(srcdir)/#{dir} $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(#{prefix}_CFLAGS) -MD -c -o $@ $<
 -include #{dep}
 

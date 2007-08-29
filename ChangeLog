@@ -1,3 +1,14 @@
+2007-08-29  Robert Millan  <rmh@aybabtu.com>
+
+	Patch from Simon Peter <dn.tlp@gmx.net>:
+	* genmk.rb (Utility): Append $(#{src}_DEPENDENCIES) to #{obj} targets.
+	* conf/i386-pc.rmk: Replace grub-probe_DEPENDENCIES with
+	util/grub-probe.c_DEPENDENCIES.  Replace grub-setup_DEPENDENCIES with
+	util/i386/pc/grub-setup.c_DEPENDENCIES.
+	* conf/i386-efi.rmk: Replace grub-probe_DEPENDENCIES with
+	util/grub-probe.c_DEPENDENCIES.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+
 2007-08-28  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/get_disk_name.c: New.  Implement grub_util_get_disk_name()

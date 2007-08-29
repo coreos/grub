@@ -62,7 +62,7 @@ grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 grub_mkimage_LDFLAGS = $(LIBLZO)
 
 # For grub-setup.
-grub_setup_DEPENDENCIES = grub_setup_init.h
+util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
@@ -76,7 +76,7 @@ grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
 	util/i386/get_disk_name.c
 
 # For grub-probe.
-grub_probe_DEPENDENCIES = grub_probe_init.h
+util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
 grub_probe_SOURCES = util/grub-probe.c	\
 	util/biosdisk.c	util/misc.c util/getroot.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
