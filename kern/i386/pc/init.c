@@ -120,6 +120,7 @@ compact_mem_regions (void)
 	grub_memmove (mem_regions + j, mem_regions + j + 1,
 		      (num_regions - j - 1) * sizeof (struct mem_region));
 	i--;
+        num_regions--;
       }
 }
 

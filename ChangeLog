@@ -1,5 +1,11 @@
 2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	From Hitoshi Ozeki:
+	* kern/i386/pc/init.c (compact_mem_regions): Decrease NUM_REGIONS
+	when merging two regions.
+
+2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* kern/rescue.c (grub_enter_rescue_mode): Free ARGS.
 	* normal/completion.c (grub_normal_do_completion): Likewise.
 	Reported by Hitoshi Ozeki.
