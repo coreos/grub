@@ -1,3 +1,14 @@
+2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Do not use devices at boot in chainloading.
+	
+	* loader/i386/pc/chainloader.c (boot_drive): New variable.
+	(boot_part_addr): Likewise.
+	(grub_chainloader_boot): Simply call grub_chainloader_real_boot
+	with BOOT_DRIVE and BOOT_PART_ADDR.
+	(grub_chainloader_cmd): Set BOOT_DRIVE and BOOT_PART_ADDR.
+	Reported by Hitoshi Ozeki <h-ozeki@ck2.so-net.ne.jp>.
+
 2007-08-29  Robert Millan  <rmh@aybabtu.com>
 
 	Patch from Simon Peter <dn.tlp@gmx.net>:

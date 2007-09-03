@@ -33,42 +33,13 @@
 #include <grub/dl.h>
 
 static grub_dl_t my_mod;
+static int boot_drive;
+static void *boot_part_addr;
 
 static grub_err_t
 grub_chainloader_boot (void)
 {
-  grub_device_t dev;
-  int drive = -1;
-  void *part_addr = 0;
-  
-  /* Open the root device.  */
-  dev = grub_device_open (0);
-  if (dev)
-    {
-      grub_disk_t disk = dev->disk;
-      
-      if (disk)
-	{
-	  grub_partition_t p = disk->partition;
-	  
-	  /* In i386-pc, the id is equal to the BIOS drive number.  */
-	  drive = (int) disk->id;
-
-	  if (p)
-	    {
-	      grub_disk_read (disk, p->offset, 446, 64,
-			      (char *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
-	      
-	      /* Ignore errors. Perhaps it's not fatal.  */
-	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
-				    + (p->index << 4));
-	    }
-	}
-
-      grub_device_close (dev);
-    }
-
-  grub_chainloader_real_boot (drive, part_addr);
+  grub_chainloader_real_boot (boot_drive, boot_part_addr);
 
   /* Never reach here.  */
   return GRUB_ERR_NONE;
@@ -86,6 +57,9 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 {
   grub_file_t file = 0;
   grub_uint16_t signature;
+  grub_device_t dev;
+  int drive = -1;
+  void *part_addr = 0;
 
   grub_dl_ref (my_mod);
   
@@ -113,6 +87,38 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
     }
 
   grub_file_close (file);
+
+  /* Obtain the partition table from the root device.  */
+  dev = grub_device_open (0);
+  if (dev)
+    {
+      grub_disk_t disk = dev->disk;
+      
+      if (disk)
+	{
+	  grub_partition_t p = disk->partition;
+	  
+	  /* In i386-pc, the id is equal to the BIOS drive number.  */
+	  drive = (int) disk->id;
+
+	  if (p)
+	    {
+	      grub_disk_read (disk, p->offset, 446, 64,
+			      (char *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
+	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
+				    + (p->index << 4));
+	    }
+	}
+
+      grub_device_close (dev);
+    }
+  
+  /* Ignore errors. Perhaps it's not fatal.  */
+  grub_errno = GRUB_ERR_NONE;
+
+  boot_drive = drive;
+  boot_part_addr = part_addr;
+  
   grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 1);
   return;
   
