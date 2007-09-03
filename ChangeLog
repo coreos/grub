@@ -1,5 +1,11 @@
 2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* kern/rescue.c (grub_enter_rescue_mode): Free ARGS.
+	* normal/completion.c (grub_normal_do_completion): Likewise.
+	Reported by Hitoshi Ozeki.
+
+2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
+	
 	Do not use devices at boot in chainloading.
 	
 	* loader/i386/pc/chainloader.c (boot_drive): New variable.

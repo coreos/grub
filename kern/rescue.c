@@ -671,6 +671,7 @@ grub_enter_rescue_mode (void)
 	  val[0] = 0;
 	  grub_env_set (args[0], val + 1);
 	  val[0] = '=';
+          grub_free (args[0]);
 	  continue;
 	}
 
@@ -679,7 +680,10 @@ grub_enter_rescue_mode (void)
 
       /* If nothing is specified, restart.  */
       if (*name == '\0')
-	continue;
+        {
+          grub_free (args[0]);
+          continue;
+        }
 
       /* Find the command and execute it.  */
       for (cmd = grub_rescue_command_list; cmd; cmd = cmd->next)
@@ -697,5 +701,7 @@ grub_enter_rescue_mode (void)
 	  grub_printf ("Unknown command `%s'\n", name);
 	  grub_printf ("Try `help' for usage\n");
 	}
+
+      grub_free (args[0]);
     }
 }

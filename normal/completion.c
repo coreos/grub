@@ -473,18 +473,19 @@ grub_normal_do_completion (char *buf, int *restore,
       if (num_found == 1)
 	grub_strcat (ret, suffix);
       
-      grub_free (match);
-
       if (*ret == '\0')
 	{
 	  grub_free (ret);
-	  return 0;
+          goto fail;
 	}
       
+      grub_free (argv[0]);
+      grub_free (match);
       return ret;
     }
 
  fail:
+  grub_free (argv[0]);
   grub_free (match);
   grub_errno = GRUB_ERR_NONE;
 
