@@ -1,3 +1,11 @@
+2007-09-07  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_test_flag): Detect
+	SmartFirmware version updates (as released by Sven Luther), and avoid
+	setting GRUB_IEEE1275_FLAG_NO_PARTITION_0 or
+	GRUB_IEEE1275_FLAG_0_BASED_PARTITIONS unless the running version is
+	known broken.
+
 2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Hitoshi Ozeki:
