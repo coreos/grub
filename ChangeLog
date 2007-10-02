@@ -1,3 +1,9 @@
+2007-10-02  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Add util/hostfs.c.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	Reported by Marcin Kurek.
+
 2007-09-07  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_test_flag): Detect

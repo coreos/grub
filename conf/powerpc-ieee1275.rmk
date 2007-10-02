@@ -73,7 +73,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	normal/menu_entry.c normal/misc.c normal/script.c		\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	partmap/acorn.c							\
-	util/console.c util/grub-emu.c util/misc.c			\
+	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
 	util/biosdisk.c util/getroot.c			\
 	util/powerpc/ieee1275/misc.c grub_script.tab.c grub_emu_init.c
 
