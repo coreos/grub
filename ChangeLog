@@ -5,8 +5,14 @@
 	(outb): Removed.
 	Include grub/cpu/io.h.  Replace inb() with grub_inb() and outb()
 	with grub_outb().
-	* term/i386/pc/serial.c: Likewise.
-	* term/i386/pc/vga.c: Likewise.
+	* term/i386/pc/serial.c  (inb): Removed.
+	(outb): Removed.
+	Include grub/cpu/io.h.  Replace inb() with grub_inb() and outb()
+	with grub_outb().
+	* term/i386/pc/vga.c  (inb): Removed.
+	(outb): Removed.
+	Include grub/cpu/io.h.  Replace inb() with grub_inb() and outb()
+	with grub_outb().
 
 2007-10-02  Robert Millan  <rmh@aybabtu.com>
 
