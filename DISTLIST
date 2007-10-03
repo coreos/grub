@@ -142,6 +142,7 @@ include/grub/i386/types.h
 include/grub/i386/efi/kernel.h
 include/grub/i386/efi/loader.h
 include/grub/i386/efi/time.h
+include/grub/i386/io.h
 include/grub/i386/pc/biosdisk.h
 include/grub/i386/pc/boot.h
 include/grub/i386/pc/chainloader.h

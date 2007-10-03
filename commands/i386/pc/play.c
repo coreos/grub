@@ -27,24 +27,9 @@
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/machine/time.h>
+#include <grub/cpu/io.h>
 
 #define BASE_TEMPO 120
-
-/* Read a byte from a port.  */
-static inline unsigned char
-inb (unsigned short port)
-{
-  unsigned char value;
-  asm volatile ("inb    %w1, %0" : "=a" (value) : "Nd" (port));
-  return value;
-}
-
-/* Write a byte to a port.  */
-static inline void
-outb (unsigned short port, unsigned char value)
-{
-  asm volatile ("outb   %b0, %w1" : : "a" (value), "Nd" (port));
-}
 
 /* The speaker port.  */
 #define SPEAKER			0x61
@@ -130,8 +115,8 @@ beep_off (void)
 {
   unsigned char status;
 
-  status = inb (SPEAKER);
-  outb (SPEAKER, status & ~(SPEAKER_TMR2 | SPEAKER_DATA));
+  status = grub_inb (SPEAKER);
+  grub_outb (SPEAKER, status & ~(SPEAKER_TMR2 | SPEAKER_DATA));
 }
 
 static void
@@ -148,14 +133,14 @@ beep_on (short pitch)
   counter = PIT_FREQUENCY / pitch;
 
   /* Program timer 2.  */
-  outb (PIT_CTRL, PIT_CTRL_SELECT_2 | PIT_CTRL_READLOAD_WORD
+  grub_outb (PIT_CTRL, PIT_CTRL_SELECT_2 | PIT_CTRL_READLOAD_WORD
 	| PIT_CTRL_SQUAREWAVE_GEN | PIT_CTRL_COUNT_BINARY);
-  outb (PIT_COUNTER_2, counter & 0xff);		/* LSB */
-  outb (PIT_COUNTER_2, (counter >> 8) & 0xff);	/* MSB */
+  grub_outb (PIT_COUNTER_2, counter & 0xff);		/* LSB */
+  grub_outb (PIT_COUNTER_2, (counter >> 8) & 0xff);	/* MSB */
 
   /* Start speaker.  */
-  status = inb (SPEAKER);
-  outb (SPEAKER, status | SPEAKER_TMR2 | SPEAKER_DATA);
+  status = grub_inb (SPEAKER);
+  grub_outb (SPEAKER, status | SPEAKER_TMR2 | SPEAKER_DATA);
 
 }
 

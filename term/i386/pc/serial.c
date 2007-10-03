@@ -25,6 +25,7 @@
 #include <grub/normal.h>
 #include <grub/arg.h>
 #include <grub/terminfo.h>
+#include <grub/cpu/io.h>
 
 #define TEXT_WIDTH	80
 #define TEXT_HEIGHT	25
@@ -62,26 +63,6 @@ struct serial_port
 /* Serial port settings.  */
 static struct serial_port serial_settings;
 
-/* Read a byte from a port.  */
-static inline unsigned char
-inb (const unsigned short port)
-{
-  unsigned char value;
-
-  asm volatile ("inb    %w1, %0" : "=a" (value) : "Nd" (port));
-  asm volatile ("outb   %%al, $0x80" : : );
-
-  return value;
-}
-
-/* Write a byte to a port.  */
-static inline void
-outb (const unsigned short port, const unsigned char value)
-{
-  asm volatile ("outb   %b0, %w1" : : "a" (value), "Nd" (port));
-  asm volatile ("outb   %%al, $0x80" : : );
-}
-
 /* Return the port number for the UNITth serial device.  */
 static inline unsigned short
 serial_hw_get_port (const unsigned short unit)
@@ -95,8 +76,8 @@ serial_hw_get_port (const unsigned short unit)
 static int
 serial_hw_fetch (void)
 {
-  if (inb (serial_settings.port + UART_LSR) & UART_DATA_READY)
-    return inb (serial_settings.port + UART_RX);
+  if (grub_inb (serial_settings.port + UART_LSR) & UART_DATA_READY)
+    return grub_inb (serial_settings.port + UART_RX);
 
   return -1;
 }
@@ -108,14 +89,14 @@ serial_hw_put (const int c)
   unsigned int timeout = 100000;
 
   /* Wait until the transmitter holding register is empty.  */
-  while ((inb (serial_settings.port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
+  while ((grub_inb (serial_settings.port + UART_LSR) & UART_EMPTY_TRANSMITTER) == 0)
     {
       if (--timeout == 0)
         /* There is something wrong. But what can I do?  */
         return;
     }
 
-  outb (serial_settings.port + UART_TX, c);
+  grub_outb (serial_settings.port + UART_TX, c);
 }
 
 static void
@@ -287,26 +268,26 @@ serial_hw_init (void)
   unsigned char status = 0;
 
   /* Turn off the interupt.  */
-  outb (serial_settings.port + UART_IER, 0);
+  grub_outb (serial_settings.port + UART_IER, 0);
 
   /* Set DLAB.  */
-  outb (serial_settings.port + UART_LCR, UART_DLAB);
+  grub_outb (serial_settings.port + UART_LCR, UART_DLAB);
 
   /* Set the baud rate.  */
-  outb (serial_settings.port + UART_DLL, serial_settings.divisor & 0xFF);
-  outb (serial_settings.port + UART_DLH, serial_settings.divisor >> 8 );
+  grub_outb (serial_settings.port + UART_DLL, serial_settings.divisor & 0xFF);
+  grub_outb (serial_settings.port + UART_DLH, serial_settings.divisor >> 8 );
 
   /* Set the line status.  */
   status |= (serial_settings.parity
 	     | serial_settings.word_len
 	     | serial_settings.stop_bits);
-  outb (serial_settings.port + UART_LCR, status);
+  grub_outb (serial_settings.port + UART_LCR, status);
 
   /* Enable the FIFO.  */
-  outb (serial_settings.port + UART_FCR, UART_ENABLE_FIFO);
+  grub_outb (serial_settings.port + UART_FCR, UART_ENABLE_FIFO);
 
   /* Turn on DTR, RTS, and OUT2.  */
-  outb (serial_settings.port + UART_MCR, UART_ENABLE_MODEM);
+  grub_outb (serial_settings.port + UART_MCR, UART_ENABLE_MODEM);
 
   /* Drain the input buffer.  */
   while (grub_serial_checkkey () != -1)
