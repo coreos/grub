@@ -169,7 +169,10 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   if (grub_linux_real_addr + GRUB_LINUX_SETUP_MOVE_SIZE
       > (char *) grub_lower_mem)
     {
-      grub_error (GRUB_ERR_OUT_OF_RANGE, "too small lower memory");
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
+		 "too small lower memory (0x%x > 0x%x)",
+		 grub_linux_real_addr + GRUB_LINUX_SETUP_MOVE_SIZE,
+		 (char *) grub_lower_mem);
       goto fail;
     }
 
