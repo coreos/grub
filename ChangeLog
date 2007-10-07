@@ -1,7 +1,12 @@
-2007-10-05  Robert Millan  <rmh@aybabtu.com>
+2007-10-07  Robert Millan  <rmh@aybabtu.com>
 
-	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): Specify available
-	and required memory sizes in "too small lower memory" error.
+	* kern/powerpc/ieee1275/init.c: Rename HEAP_LIMIT to HEAP_MAX_ADDR,
+	and make it easier to figure out.
+	Add HEAP_MIN_SIZE and HEAP_MAX_ADDR definitions.
+	(grub_claim_heap): Use HEAP_MAX_ADDR rather than taking a parameter.
+	Do not avoid claiming a region above HEAP_MAX_ADDR if that would
+	leave us with less than HEAP_MIN_SIZE total heap.
+	Avoid our total amount of heap to surpass HEAP_MAX_SIZE.
 
 2007-10-03  Robert Millan  <rmh@aybabtu.com>
 

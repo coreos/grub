@@ -33,7 +33,15 @@
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 
-#define HEAP_LIMIT (4<<20) /* 4 MiB */
+/* The minimal heap size we can live with. */
+#define HEAP_MIN_SIZE		(unsigned long) (2 * 1024 * 1024)
+
+/* The maximum heap size we're going to claim */
+#define HEAP_MAX_SIZE		(unsigned long) (4 * 1024 * 1024)
+
+/* If possible, we will avoid claiming heap above this address, because it
+   seems to cause relocation problems with OSes that link at 4 MiB */
+#define HEAP_MAX_ADDR		(unsigned long) (4 * 1024 * 1024)
 
 extern char _start[];
 extern char _end[];
@@ -113,16 +121,24 @@ grub_machine_set_prefix (void)
 }
 
 /* Claim some available memory in the first /memory node. */
-static void grub_claim_heap (unsigned long heaplimit)
+static void grub_claim_heap ()
 {
+  unsigned long total = 0;
+
   auto int heap_init (grub_uint64_t addr, grub_uint64_t len);
   int heap_init (grub_uint64_t addr, grub_uint64_t len)
   {
     len -= 1; /* Required for some firmware.  */
 
-    /* Don't claim anything above `heaplimit'.  */
-    if (addr + len > heaplimit)
-      len = heaplimit - addr;
+    /* Never exceed HEAP_MAX_SIZE  */
+    if (total + len > HEAP_MAX_SIZE)
+      len = HEAP_MAX_SIZE - total;
+
+    /* Avoid claiming anything above HEAP_MAX_ADDR, if possible. */
+    if ((addr < HEAP_MAX_ADDR) &&				/* if it's too late, don't bother */
+        (addr + len > HEAP_MAX_ADDR) &&				/* if it wasn't available anyway, don't bother */
+        (total + (HEAP_MAX_ADDR - addr) > HEAP_MIN_SIZE))	/* only limit ourselves when we can afford to */
+       len = HEAP_MAX_ADDR - addr;
 
     if (len)
       {
@@ -133,6 +149,10 @@ static void grub_claim_heap (unsigned long heaplimit)
 			     addr, len);
 	grub_mm_init_region ((void *) (grub_addr_t) addr, len);
       }
+
+    total += len;
+    if (total >= HEAP_MAX_SIZE)
+      return 1;
 
     return 0;
   }
@@ -147,7 +167,7 @@ grub_machine_init (void)
   int actual;
 
   grub_console_init ();
-  grub_claim_heap (HEAP_LIMIT);
+  grub_claim_heap ();
   grub_ofdisk_init ();
 
   /* Process commandline.  */
