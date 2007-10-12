@@ -32,7 +32,7 @@ sbin_UTILITIES += grub-emu
 endif
  
 # For grub-mkimage.
-grub_mkimage_SOURCES = util/powerpc/ieee1275/grub-mkimage.c util/misc.c \
+grub_mkimage_SOURCES = util/elf/grub-mkimage.c util/misc.c \
         util/resolve.c 
 
 # For grub-mkdevicemap.

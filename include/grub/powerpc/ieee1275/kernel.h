@@ -21,7 +21,7 @@
 
 #include <grub/symbol.h>
 
-#define GRUB_IEEE1275_MOD_ALIGN 0x1000
+#define GRUB_MOD_ALIGN 0x1000
 
 void EXPORT_FUNC (grub_reboot) (void);
 void EXPORT_FUNC (grub_halt) (void);
