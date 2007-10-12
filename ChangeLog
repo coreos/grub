@@ -1,3 +1,11 @@
+2007-10-12  Robert Millan  <rmh@aybabtu.com>
+
+	* util/powerpc/ieee1275/grub-mkimage.c: Moved to ...
+	* util/elf/grub-mkimage.c: ... here.
+
+	* DISTLIST: Add `util/elf/grub-mkimage.c'.  Remove
+	`util/powerpc/ieee1275/grub-mkimage.c'.
+
 2007-10-07  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/powerpc/ieee1275/init.c: Rename HEAP_LIMIT to HEAP_MAX_ADDR,
