@@ -1,3 +1,13 @@
+2007-10-15  Robert Millan  <rmh@aybabtu.com>
+
+	* normal/misc.c (grub_normal_print_device_info): Do not probe for
+	filesystem when dev->disk is unset.
+	Do probe for filesystem even when dev->disk->has_partitions is set.
+	In case a filesystem is found, always report it.
+	In case it isn't, if dev->disk->has_partitions is set, report that
+	a partition table was found instead of reporting that no filesystem
+	could be identified.
+
 2007-10-12  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/powerpc-ieee1275.rmk (grub_mkimage_SOURCES): Replace reference

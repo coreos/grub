@@ -40,7 +40,7 @@ grub_normal_print_device_info (const char *name)
   dev = grub_device_open (name);
   if (! dev)
     grub_printf ("Filesystem cannot be accessed");
-  else if (! dev->disk || ! dev->disk->has_partitions || dev->disk->partition)
+  else if (dev->disk)
     {
       char *label;
       grub_fs_t fs;
@@ -49,7 +49,12 @@ grub_normal_print_device_info (const char *name)
       /* Ignore all errors.  */
       grub_errno = 0;
 
-      grub_printf ("Filesystem type %s", fs ? fs->name : "unknown");
+      if (fs)
+	grub_printf ("Filesystem type %s", fs->name);
+      else if (! dev->disk->has_partitions || dev->disk->partition)
+	grub_printf ("Unknown filesystem");
+      else
+	grub_printf ("Partition table");
 	  
       if (fs && fs->label)
 	{
