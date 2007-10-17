@@ -19,33 +19,10 @@
 #ifndef GRUB_LOADER_MACHINE_HEADER
 #define GRUB_LOADER_MACHINE_HEADER	1
 
-#include <grub/types.h>
 #include <grub/symbol.h>
-#include <grub/multiboot.h>
-
-extern grub_uint32_t EXPORT_VAR(grub_linux_prot_size);
-extern char *EXPORT_VAR(grub_linux_tmp_addr);
-extern char *EXPORT_VAR(grub_linux_real_addr);
-extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
-extern grub_size_t EXPORT_VAR(grub_os_area_size);
-
-void EXPORT_FUNC(grub_linux_boot_zimage) (void) __attribute__ ((noreturn));
-void EXPORT_FUNC(grub_linux_boot_bzimage) (void) __attribute__ ((noreturn));
+#include <grub/cpu/loader.h>
 
 /* This is an asm part of the chainloader.  */
 void EXPORT_FUNC(grub_chainloader_real_boot) (int drive, void *part_addr) __attribute__ ((noreturn));
-
-/* The asm part of the multiboot loader.  */
-void EXPORT_FUNC(grub_multiboot_real_boot) (grub_addr_t entry, 
-					    struct grub_multiboot_info *mbi) 
-     __attribute__ ((noreturn));
-void EXPORT_FUNC(grub_multiboot2_real_boot) (grub_addr_t entry,
-                                             struct grub_multiboot_info *mbi)
-     __attribute__ ((noreturn));
-
-/* It is necessary to export these functions, because normal mode commands
-   reuse rescue mode commands.  */
-void grub_rescue_cmd_linux (int argc, char *argv[]);
-void grub_rescue_cmd_initrd (int argc, char *argv[]);
 
 #endif /* ! GRUB_LOADER_MACHINE_HEADER */

@@ -1,3 +1,20 @@
+2007-10-17  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/loader.h: New file.
+
+	* include/grub/i386/pc/loader.h (grub_linux_prot_size)
+	(grub_linux_tmp_addr, grub_linux_real_addr, grub_os_area_addr)
+	(grub_os_area_size, grub_linux_boot_zimage, grub_linux_boot_bzimage)
+	(grub_multiboot_real_boot, grub_multiboot2_real_boot)
+	(grub_rescue_cmd_linux, grub_rescue_cmd_initrd): Moved from here ...
+	* include/grub/i386/loader.h (grub_linux_prot_size)
+	(grub_linux_tmp_addr, grub_linux_real_addr, grub_os_area_addr)
+	(grub_os_area_size, grub_linux_boot_zimage, grub_linux_boot_bzimage)
+	(grub_multiboot_real_boot, grub_multiboot2_real_boot)
+	(grub_rescue_cmd_linux, grub_rescue_cmd_initrd): ... to here.
+
+	* include/grub/i386/pc/loader.h: Include `grub/cpu/loader.h'.
+
 2007-10-15  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/misc.c (grub_normal_print_device_info): Do not probe for
