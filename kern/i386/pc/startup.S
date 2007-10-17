@@ -242,15 +242,13 @@ codestart:
 	 */
 	call EXT_C(grub_main)
 
+#include "kern/i386/realmode.S"
 
 /*
  *  This is the area for all of the special variables.
  */
 
 	.p2align	2	/* force 4-byte alignment */
-
-protstack:
-	.long	GRUB_MEMORY_MACHINE_PROT_STACK
 
 VARIABLE(grub_boot_drive)
 	.long	0
@@ -271,65 +269,7 @@ VARIABLE(grub_apm_bios_info)
 	.word	0	/* cseg_16_len */
 	.word	0	/* dseg_16_len */
 	
-/*
- * This is the Global Descriptor Table
- *
- *  An entry, a "Segment Descriptor", looks like this:
- *
- * 31          24         19   16                 7           0
- * ------------------------------------------------------------
- * |             | |B| |A|       | |   |1|0|E|W|A|            |
- * | BASE 31..24 |G|/|L|V| LIMIT |P|DPL|  TYPE   | BASE 23:16 |  4
- * |             | |D| |L| 19..16| |   |1|1|C|R|A|            |
- * ------------------------------------------------------------
- * |                             |                            |
- * |        BASE 15..0           |       LIMIT 15..0          |  0
- * |                             |                            |
- * ------------------------------------------------------------
- *
- *  Note the ordering of the data items is reversed from the above
- *  description.
- */
-
 	.p2align	2	/* force 4-byte alignment */
-gdt:
-	.word	0, 0
-	.byte	0, 0, 0, 0
-
-	/* -- code segment --
-	 * base = 0x00000000, limit = 0xFFFFF (4 KiB Granularity), present
-	 * type = 32bit code execute/read, DPL = 0
-	 */
-	.word	0xFFFF, 0
-	.byte	0, 0x9A, 0xCF, 0
-
-	/* -- data segment --
-	 * base = 0x00000000, limit 0xFFFFF (4 KiB Granularity), present
-	 * type = 32 bit data read/write, DPL = 0 
-	 */
-	.word	0xFFFF, 0
-	.byte	0, 0x92, 0xCF, 0
-
-	/* -- 16 bit real mode CS --
-	 * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
-	 * type = 16 bit code execute/read only/conforming, DPL = 0
-	 */
-	.word	0xFFFF, 0
-	.byte	0, 0x9E, 0, 0
-
-	/* -- 16 bit real mode DS --
-	 * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
-	 * type = 16 bit data read/write, DPL = 0
-	 */
-	.word	0xFFFF, 0
-	.byte	0, 0x92, 0, 0
-
-
-/* this is the GDT descriptor */
-gdtdesc:
-	.word	0x27			/* limit */
-	.long	gdt			/* addr */
-
 	
 /*
  *  These next two routines, "real_to_prot" and "prot_to_real" are structured
@@ -381,69 +321,6 @@ protcseg:
 
 	/* return on the old (or initialized) stack! */
 	ret
-
-
-prot_to_real:
-	/* just in case, set GDT */
-	lgdt	gdtdesc
-
-	/* save the protected mode stack */
-	movl	%esp, %eax
-	movl	%eax, protstack
-
-	/* get the return address */
-	movl	(%esp), %eax
-	movl	%eax, GRUB_MEMORY_MACHINE_REAL_STACK
-
-	/* set up new stack */
-	movl	$GRUB_MEMORY_MACHINE_REAL_STACK, %eax
-	movl	%eax, %esp
-	movl	%eax, %ebp
-
-	/* set up segment limits */
-	movw	$GRUB_MEMORY_MACHINE_PSEUDO_REAL_DSEG, %ax
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	movw	%ax, %ss
-
-	/* this might be an extra step */
-	/* jump to a 16 bit segment */
-	ljmp	$GRUB_MEMORY_MACHINE_PSEUDO_REAL_CSEG, $tmpcseg
-
-tmpcseg:
-	.code16
-
-	/* clear the PE bit of CR0 */
-	movl	%cr0, %eax
-	andl 	$(~GRUB_MEMORY_MACHINE_CR0_PE_ON), %eax
-	movl	%eax, %cr0
-
-	/* flush prefetch queue, reload %cs */
-	DATA32	ljmp	$0, $realcseg
-
-realcseg:
-	/* we are in real mode now
-	 * set up the real mode segment registers : DS, SS, ES
-	 */
-	/* zero %eax */
-	xorl	%eax, %eax
-
-	movw	%ax, %ds
-	movw	%ax, %es
-	movw	%ax, %fs
-	movw	%ax, %gs
-	movw	%ax, %ss
-
-	/* restore interrupts */
-	sti
-
-	/* return on new stack! */
-	DATA32	ret
-
-	.code32
-
 
 /*
  * grub_gate_a20(int on)
@@ -730,115 +607,7 @@ FUNCTION(grub_chainloader_real_boot)
 	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
 	.code32
 
-
-/*
- * void grub_linux_boot_zimage (void)
- */
-VARIABLE(grub_linux_prot_size)
-	.long	0
-VARIABLE(grub_linux_tmp_addr)
-	.long	0
-VARIABLE(grub_linux_real_addr)
-	.long	0
-	
-FUNCTION(grub_linux_boot_zimage)
-	/* copy the kernel */
-	movl	EXT_C(grub_linux_prot_size), %ecx
-	addl	$3, %ecx
-	shrl	$2, %ecx
-	movl	$GRUB_LINUX_BZIMAGE_ADDR, %esi
-	movl	$GRUB_LINUX_ZIMAGE_ADDR, %edi
-	cld
-	rep
-	movsl
-
-FUNCTION(grub_linux_boot_bzimage)
-	call	EXT_C(grub_dl_unload_all)
-	
-	movl	EXT_C(grub_linux_real_addr), %ebx
-
-	/* copy the real mode code */
-	movl	EXT_C(grub_linux_tmp_addr), %esi
-	movl	%ebx, %edi
-	movl	$GRUB_LINUX_SETUP_MOVE_SIZE, %ecx
-	cld
-	rep
-	movsb
-
-	/* change %ebx to the segment address */
-	shrl	$4, %ebx
-	movl	%ebx, %eax
-	addl	$0x20, %eax
-	movw	%ax, linux_setup_seg
-
-	/* XXX new stack pointer in safe area for calling functions */
-	movl	$0x4000, %esp
-	call	EXT_C(grub_stop_floppy)
-
-	/* final setup for linux boot */
-	call	prot_to_real
-	.code16
-
-	cli
-	movw	%bx, %ss
-	movw	$GRUB_LINUX_SETUP_STACK, %sp
-
-	movw	%bx, %ds
-	movw	%bx, %es
-	movw	%bx, %fs
-	movw	%bx, %gs
-
-	/* ljmp */
-	.byte	0xea
-	.word	0
-linux_setup_seg:
-	.word	0
-	.code32
-
-		
-/*
- * This starts the multiboot kernel.
- */
-
-FUNCTION(grub_multiboot_real_boot)
-	/* Push the entry address on the stack.  */
-	pushl	%eax
-	/* Move the address of the multiboot information structure to ebx.  */
-	movl	%edx,%ebx
-	
-	/* Unload all modules and stop the floppy driver.  */
-	call	EXT_C(grub_dl_unload_all)
-	call	EXT_C(grub_stop_floppy)
-
-	/* Interrupts should be disabled.  */
-	cli
-	
-	/* Move the magic value into eax and jump to the kernel.  */
-	movl	$MULTIBOOT_MAGIC2,%eax
-	popl	%ecx
-	jmp 	*%ecx
-
-/*
- * This starts the multiboot 2 kernel.
- */
-
-FUNCTION(grub_multiboot2_real_boot)
-        /* Push the entry address on the stack.  */
-        pushl   %eax
-        /* Move the address of the multiboot information structure to ebx.  */
-        movl    %edx,%ebx
-
-        /* Unload all modules and stop the floppy driver.  */
-        call    EXT_C(grub_dl_unload_all)
-        call    EXT_C(grub_stop_floppy)
-
-        /* Interrupts should be disabled.  */
-        cli
-
-        /* Move the magic value into eax and jump to the kernel.  */
-        movl    $MULTIBOOT2_BOOTLOADER_MAGIC,%eax 
-        popl    %ecx
-        jmp     *%ecx
+#include "kern/i386/loader.S"
 	
 /*
  *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)

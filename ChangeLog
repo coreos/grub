@@ -1,5 +1,36 @@
 2007-10-17  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/i386/loader.S: New file.
+
+	* kern/i386/pc/startup.S (grub_linux_prot_size): Moved from here ...
+	* kern/i386/loader.S (grub_linux_prot_size)... to here.
+	* kern/i386/pc/startup.S (grub_linux_tmp_addr): Moved from here ...
+	* kern/i386/loader.S (grub_linux_tmp_addr)... to here.
+	* kern/i386/pc/startup.S (grub_linux_real_addr): Moved from here ...
+	* kern/i386/loader.S (grub_linux_real_addr)... to here.
+	* kern/i386/pc/startup.S (grub_linux_boot_zimage): Moved from here ...
+	* kern/i386/loader.S (grub_linux_boot_zimage)... to here.
+	* kern/i386/pc/startup.S (grub_linux_boot_bzimage): Moved from here ...
+	* kern/i386/loader.S (grub_linux_boot_bzimage)... to here.
+	* kern/i386/pc/startup.S (grub_multiboot_real_boot): Moved from here ...
+	* kern/i386/loader.S (grub_multiboot_real_boot)... to here.
+	* kern/i386/pc/startup.S (grub_multiboot2_real_boot): Moved from here ...
+	* kern/i386/loader.S (grub_multiboot2_real_boot)... to here.
+
+	* kern/i386/realmode.S: New file.
+
+	* kern/i386/pc/startup.S (protstack): Moved from here ...
+	* kern/i386/realmode.S (protstack)... to here.
+	* kern/i386/pc/startup.S (gdt): Moved from here ...
+	* kern/i386/realmode.S (gdt)... to here.
+	* kern/i386/pc/startup.S (prot_to_real): Moved from here ...
+	* kern/i386/realmode.S (prot_to_real)... to here.
+
+	* kern/i386/pc/startup.S: Include `kern/i386/loader.S' and
+	`kern/i386/realmode.S'.
+
+2007-10-17  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/i386/loader.h: New file.
 
 	* include/grub/i386/pc/loader.h (grub_linux_prot_size)
