@@ -206,9 +206,11 @@ kern/efi/mm.c
 kern/i386/dl.c
 kern/i386/efi/init.c
 kern/i386/efi/startup.S
+kern/i386/loader.S
 kern/i386/pc/init.c
 kern/i386/pc/lzo1x.S
 kern/i386/pc/startup.S
+kern/i386/realmode.S
 kern/ieee1275/ieee1275.c
 kern/powerpc/cache.S
 kern/powerpc/dl.c
