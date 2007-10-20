@@ -1,3 +1,11 @@
+2007-10-20  Robert Millan  <rmh@aybabtu.com>
+
+	* genmk.rb (Image): Copy `extra_flags' from here ...
+	(PModule): ... to here.  Use it in `#{obj}: #{src}' rule.
+
+	* commands/i386/cpuid.c (grub_cmd_cpuid): Add __attribute__ ((unused))
+	to `argc' and `args' arguments.
+
 2007-10-17  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/loader.S: New file.
