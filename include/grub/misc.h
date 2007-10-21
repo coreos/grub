@@ -92,4 +92,13 @@ grub_abs (int x)
     return (unsigned int) x;
 }
 
+static inline long
+grub_max (long x, long y)
+{
+  if (x > y)
+    return x;
+  else
+    return y;
+}
+
 #endif /* ! GRUB_MISC_HEADER */

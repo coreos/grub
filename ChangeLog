@@ -1,5 +1,9 @@
 2007-10-21  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/misc.h (grub_max): New function.
+
+2007-10-21  Robert Millan  <rmh@aybabtu.com>
+
 	* util/misc.c (grub_util_info): Call fflush() before returning.
 
 2007-10-20  Robert Millan  <rmh@aybabtu.com>
