@@ -66,16 +66,16 @@ kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/i386/dl.c kern/i386/pc/init.c kern/parser.c kern/partition.c \
-	kern/env.c disk/i386/pc/biosdisk.c \
+	kern/env.c \
 	term/i386/pc/console.c \
 	symlist.c
-CLEANFILES += kernel.img kernel.exec kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_env.o kernel_img-disk_i386_pc_biosdisk.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
-MOSTLYCLEANFILES += kernel_img-kern_i386_pc_startup.d kernel_img-kern_main.d kernel_img-kern_device.d kernel_img-kern_disk.d kernel_img-kern_dl.d kernel_img-kern_file.d kernel_img-kern_fs.d kernel_img-kern_err.d kernel_img-kern_misc.d kernel_img-kern_mm.d kernel_img-kern_loader.d kernel_img-kern_rescue.d kernel_img-kern_term.d kernel_img-kern_i386_dl.d kernel_img-kern_i386_pc_init.d kernel_img-kern_parser.d kernel_img-kern_partition.d kernel_img-kern_env.d kernel_img-disk_i386_pc_biosdisk.d kernel_img-term_i386_pc_console.d kernel_img-symlist.d
+CLEANFILES += kernel.img kernel.exec kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
+MOSTLYCLEANFILES += kernel_img-kern_i386_pc_startup.d kernel_img-kern_main.d kernel_img-kern_device.d kernel_img-kern_disk.d kernel_img-kern_dl.d kernel_img-kern_file.d kernel_img-kern_fs.d kernel_img-kern_err.d kernel_img-kern_misc.d kernel_img-kern_mm.d kernel_img-kern_loader.d kernel_img-kern_rescue.d kernel_img-kern_term.d kernel_img-kern_i386_dl.d kernel_img-kern_i386_pc_init.d kernel_img-kern_parser.d kernel_img-kern_partition.d kernel_img-kern_env.d kernel_img-term_i386_pc_console.d kernel_img-symlist.d
 
 kernel.img: kernel.exec
 	$(OBJCOPY) -O binary -R .note -R .comment $< $@
 
-kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_env.o kernel_img-disk_i386_pc_biosdisk.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
+kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(kernel_img_LDFLAGS)
 
 kernel_img-kern_i386_pc_startup.o: kern/i386/pc/startup.S
@@ -149,10 +149,6 @@ kernel_img-kern_partition.o: kern/partition.c
 kernel_img-kern_env.o: kern/env.c
 	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_env.d
-
-kernel_img-disk_i386_pc_biosdisk.o: disk/i386/pc/biosdisk.c
-	$(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
--include kernel_img-disk_i386_pc_biosdisk.d
 
 kernel_img-term_i386_pc_console.o: term/i386/pc/console.c
 	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
@@ -860,10 +856,62 @@ grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
 
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
+pkgdata_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod
+
+# For biosdisk.mod.
+biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
+CLEANFILES += biosdisk.mod mod-biosdisk.o mod-biosdisk.c pre-biosdisk.o biosdisk_mod-disk_i386_pc_biosdisk.o und-biosdisk.lst
+ifneq ($(biosdisk_mod_EXPORTS),no)
+CLEANFILES += def-biosdisk.lst
+DEFSYMFILES += def-biosdisk.lst
+endif
+MOSTLYCLEANFILES += biosdisk_mod-disk_i386_pc_biosdisk.d
+UNDSYMFILES += und-biosdisk.lst
+
+biosdisk.mod: pre-biosdisk.o mod-biosdisk.o
+	-rm -f $@
+	$(TARGET_CC) $(biosdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-biosdisk.o: $(biosdisk_mod_DEPENDENCIES) biosdisk_mod-disk_i386_pc_biosdisk.o
+	-rm -f $@
+	$(TARGET_CC) $(biosdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ biosdisk_mod-disk_i386_pc_biosdisk.o
+
+mod-biosdisk.o: mod-biosdisk.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(biosdisk_mod_CFLAGS) -c -o $@ $<
+
+mod-biosdisk.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'biosdisk' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(biosdisk_mod_EXPORTS),no)
+def-biosdisk.lst: pre-biosdisk.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 biosdisk/' > $@
+endif
+
+und-biosdisk.lst: pre-biosdisk.o
+	echo 'biosdisk' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+biosdisk_mod-disk_i386_pc_biosdisk.o: disk/i386/pc/biosdisk.c
+	$(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(biosdisk_mod_CFLAGS) -MD -c -o $@ $<
+-include biosdisk_mod-disk_i386_pc_biosdisk.d
+
+CLEANFILES += cmd-biosdisk_mod-disk_i386_pc_biosdisk.lst fs-biosdisk_mod-disk_i386_pc_biosdisk.lst
+COMMANDFILES += cmd-biosdisk_mod-disk_i386_pc_biosdisk.lst
+FSFILES += fs-biosdisk_mod-disk_i386_pc_biosdisk.lst
+
+cmd-biosdisk_mod-disk_i386_pc_biosdisk.lst: disk/i386/pc/biosdisk.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(biosdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh biosdisk > $@ || (rm -f $@; exit 1)
+
+fs-biosdisk_mod-disk_i386_pc_biosdisk.lst: disk/i386/pc/biosdisk.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk/i386/pc -I$(srcdir)/disk/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(biosdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh biosdisk > $@ || (rm -f $@; exit 1)
+
+
+biosdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+biosdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c

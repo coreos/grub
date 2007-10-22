@@ -21,7 +21,6 @@
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
-#include <grub/machine/biosdisk.h>
 #include <grub/machine/kernel.h>
 #include <grub/types.h>
 #include <grub/err.h>
@@ -233,9 +232,6 @@ grub_machine_init (void)
   
   if (! grub_os_area_addr)
     grub_fatal ("no upper memory");
-  
-  /* The memory system was initialized, thus register built-in devices.  */
-  grub_biosdisk_init ();
 }
 
 void
@@ -248,7 +244,6 @@ grub_machine_set_prefix (void)
 void
 grub_machine_fini (void)
 {
-  grub_biosdisk_fini ();
   grub_console_fini ();
 }
 

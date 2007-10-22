@@ -19,6 +19,7 @@
 #include <grub/machine/biosdisk.h>
 #include <grub/machine/memory.h>
 #include <grub/disk.h>
+#include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/types.h>
 #include <grub/misc.h>
@@ -311,14 +312,12 @@ static struct grub_disk_dev grub_biosdisk_dev =
     .next = 0
   };
 
-void
-grub_biosdisk_init (void)
+GRUB_MOD_INIT(biosdisk)
 {
   grub_disk_dev_register (&grub_biosdisk_dev);
 }
 
-void
-grub_biosdisk_fini (void)
+GRUB_MOD_FINI(biosdisk)
 {
   grub_disk_dev_unregister (&grub_biosdisk_dev);
 }

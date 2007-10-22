@@ -1,5 +1,24 @@
 2007-10-22  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Remove `disk/i386/pc/biosdisk.c'.
+	(pkgdata_MODULES): Add `biosdisk.mod'.
+	(biosdisk_mod_SOURCES, biosdisk_mod_CFLAGS, biosdisk_mod_LDFLAGS): New
+	variables.
+
+	* disk/i386/pc/biosdisk.c: Include `<grub/dl.h>'.
+	(grub_biosdisk_init): Replace with ...
+	(GRUB_MOD_INIT(biosdisk)): ... this.
+	(grub_biosdisk_fini): Replace with ...
+	(GRUB_MOD_FINI(biosdisk)): ... this.
+
+	* kern/i386/pc/init.c: Remove `<grub/machine/biosdisk.h>'.
+	(grub_machine_init): Remove call to grub_biosdisk_init().
+	(grub_machine_fini): Remove call to grub_machine_fini().
+
+	* util/i386/pc/grub-install.in (modules): Add `biosdisk'.
+
+2007-10-22  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/time.h: New file.
 	* include/grub/i386/time.h: Likewise.
 	* include/grub/powerpc/time.h: Likewise.

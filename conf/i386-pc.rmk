@@ -27,7 +27,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/i386/dl.c kern/i386/pc/init.c kern/parser.c kern/partition.c \
-	kern/env.c disk/i386/pc/biosdisk.c \
+	kern/env.c \
 	term/i386/pc/console.c \
 	symlist.c
 kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
@@ -126,10 +126,15 @@ grub_install_SOURCES = util/i386/pc/grub-install.in
 grub_mkrescue_SOURCES = util/i386/pc/grub-mkrescue.in
 
 # Modules.
-pkgdata_MODULES = _chain.mod _linux.mod linux.mod normal.mod \
+pkgdata_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod
+
+# For biosdisk.mod.
+biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
+biosdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+biosdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _chain.mod.
 _chain_mod_SOURCES = loader/i386/pc/chainloader.c

@@ -224,7 +224,7 @@ fi
 partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
 
 # _chain is often useful
-modules="$modules $fs_module $partmap_module _chain"
+modules="$modules $fs_module $partmap_module biosdisk _chain"
 
 $grub_mkimage --output=${grubdir}/core.img --prefix=`make_system_path_relative_to_its_root ${grubdir}` $modules || exit 1
 
