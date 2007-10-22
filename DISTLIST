@@ -139,6 +139,7 @@ include/grub/efi/time.h
 include/grub/i386/linux.h
 include/grub/i386/loader.h
 include/grub/i386/setjmp.h
+include/grub/i386/time.h
 include/grub/i386/types.h
 include/grub/i386/efi/kernel.h
 include/grub/i386/efi/loader.h
@@ -163,6 +164,7 @@ include/grub/ieee1275/ieee1275.h
 include/grub/ieee1275/ofdisk.h
 include/grub/powerpc/libgcc.h
 include/grub/powerpc/setjmp.h
+include/grub/powerpc/time.h
 include/grub/powerpc/types.h
 include/grub/powerpc/ieee1275/biosdisk.h
 include/grub/powerpc/ieee1275/console.h
@@ -172,11 +174,13 @@ include/grub/powerpc/ieee1275/loader.h
 include/grub/powerpc/ieee1275/time.h
 include/grub/powerpc/ieee1275/util/biosdisk.h
 include/grub/sparc64/setjmp.h
+include/grub/sparc64/time.h
 include/grub/sparc64/types.h
 include/grub/sparc64/ieee1275/console.h
 include/grub/sparc64/ieee1275/ieee1275.h
 include/grub/sparc64/ieee1275/kernel.h
 include/grub/sparc64/ieee1275/time.h
+include/grub/time.h
 include/grub/util/biosdisk.h
 include/grub/util/getroot.h
 include/grub/util/lvm.h
