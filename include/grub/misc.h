@@ -83,6 +83,7 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 
 /* Inline functions.  */
+
 static inline unsigned int
 grub_abs (int x)
 {
@@ -99,6 +100,13 @@ grub_max (long x, long y)
     return x;
   else
     return y;
+}
+
+/* Rounded-up division */
+static inline unsigned int
+grub_div_roundup (unsigned int x, unsigned int y)
+{
+  return (x + (y - 1) / y);
 }
 
 #endif /* ! GRUB_MISC_HEADER */

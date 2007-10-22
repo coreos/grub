@@ -1,3 +1,44 @@
+2007-10-22  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/time.h: New file.
+	* include/grub/i386/time.h: Likewise.
+	* include/grub/powerpc/time.h: Likewise.
+	* include/grub/sparc64/time.h: Likewise.
+
+	* include/grub/i386/pc/time.h (KERNEL_TIME_HEADER): Rename all
+	instances to ...
+	(KERNEL_MACHINE_TIME_HEADER): ... this.
+	* include/grub/powerpc/ieee1275/time.h (KERNEL_TIME_HEADER): Rename all
+	instances to ...
+	(KERNEL_MACHINE_TIME_HEADER): ... this.
+	* include/grub/sparc64/ieee1275/time.h (KERNEL_TIME_HEADER): Rename all
+	instances to ...
+	(KERNEL_MACHINE_TIME_HEADER): ... this.
+
+	* kern/i386/efi/init.c: Include `<grub/time.h>'.
+	(grub_millisleep): New function.
+	* kern/i386/pc/init.c: Include `<grub/time.h>'.
+	(grub_millisleep): New function.
+	* kern/powerpc/ieee1275/init.c: Include `<grub/time.h>'.
+	Remove `grub/machine/time.h' include.
+	(grub_millisleep): New function.
+	* kern/sparc64/ieee1275/init.c: Include `<grub/time.h>'.
+	Remove `grub/machine/time.h' include.
+	(grub_millisleep): New function.
+
+	* include/grub/misc.h (grub_div_roundup): New function.
+
+	* kern/misc.c: Include `<grub/time.h>'.
+	(grub_millisleep_generic): New function.
+
+	* conf/i386-efi.rmk (kernel_mod_HEADERS): Remove `i386/efi/time.h'.
+	Add `time.h'.
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Remove `machine/time.h'.
+	Add `time.h'.
+	* conf/powerpc-ieee1275.rmk (kernel_elf_HEADERS): Remove
+	`machine/time.h'.  Add `time.h'.
+	* conf/sparc64-ieee1275.rmk (kernel_elf_HEADERS): Likewise.
+
 2007-10-21  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/misc.h (grub_max): New function.

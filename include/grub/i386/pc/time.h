@@ -16,8 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KERNEL_TIME_HEADER
-#define KERNEL_TIME_HEADER	1
+#ifndef KERNEL_MACHINE_TIME_HEADER
+#define KERNEL_MACHINE_TIME_HEADER	1
 
 #include <grub/symbol.h>
 
@@ -26,4 +26,4 @@
 /* Return the real time in ticks.  */
 grub_uint32_t EXPORT_FUNC (grub_get_rtc) (void);
 
-#endif /* ! KERNEL_TIME_HEADER */
+#endif /* ! KERNEL_MACHINE_TIME_HEADER */

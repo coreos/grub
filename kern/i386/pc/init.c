@@ -30,6 +30,7 @@
 #include <grub/loader.h>
 #include <grub/env.h>
 #include <grub/cache.h>
+#include <grub/time.h>
 
 struct mem_region
 {
@@ -45,6 +46,12 @@ static int num_regions;
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
 grub_size_t grub_lower_mem, grub_upper_mem;
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  grub_millisleep_generic (ms);
+}
 
 void 
 grub_arch_sync_caches (void *address __attribute__ ((unused)),

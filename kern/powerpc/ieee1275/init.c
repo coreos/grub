@@ -27,8 +27,8 @@
 #include <grub/setjmp.h>
 #include <grub/env.h>
 #include <grub/misc.h>
+#include <grub/time.h>
 #include <grub/machine/console.h>
-#include <grub/machine/time.h>
 #include <grub/machine/kernel.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
@@ -45,6 +45,12 @@
 
 extern char _start[];
 extern char _end[];
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  grub_millisleep_generic (ms);
+}
 
 void
 grub_exit (void)

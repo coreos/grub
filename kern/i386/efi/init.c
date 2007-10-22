@@ -25,6 +25,13 @@
 #include <grub/cache.h>
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
+#include <grub/time.h>
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  grub_millisleep_generic (ms);
+}
 
 void
 grub_machine_init (void)
