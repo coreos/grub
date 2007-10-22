@@ -242,7 +242,7 @@ codestart:
 	 */
 	call EXT_C(grub_main)
 
-#include "kern/i386/realmode.S"
+#include "../realmode.S"
 
 /*
  *  This is the area for all of the special variables.
@@ -607,8 +607,8 @@ FUNCTION(grub_chainloader_real_boot)
 	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
 	.code32
 
-#include "kern/i386/loader.S"
-	
+#include "../loader.S"
+
 /*
  *   int grub_biosdisk_rw_int13_extensions (int ah, int drive, void *dap)
  *
