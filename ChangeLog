@@ -1,6 +1,6 @@
 2007-10-27  Robert Millan  <rmh@aybabtu.com>
 
-	* include/grub/types.h: Define ULONG_MAX.
+	* include/grub/types.h (ULONG_MAX): Define macro.
 
 2007-10-22  Robert Millan  <rmh@aybabtu.com>
 
