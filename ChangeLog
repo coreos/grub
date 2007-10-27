@@ -1,3 +1,7 @@
+2007-10-27  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/types.h: Define ULONG_MAX.
+
 2007-10-22  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/pc/startup.S: Remove `"kern/i386/realmode.S"'.  Include

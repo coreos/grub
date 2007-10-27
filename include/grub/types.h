@@ -92,6 +92,12 @@ typedef grub_uint32_t	grub_size_t;
 typedef grub_int32_t	grub_ssize_t;
 #endif
 
+#if GRUB_CPU_SIZEOF_VOID_P == 8
+# define ULONG_MAX 18446744073709551615UL
+#else
+# define ULONG_MAX 4294967295UL
+#endif
+
 /* The type for representing a file offset.  */
 typedef grub_uint64_t	grub_off_t;
 
