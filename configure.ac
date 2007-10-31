@@ -78,6 +78,7 @@ fi
 case "$target_cpu"-"$platform" in
   i386-efi) ;;
   i386-pc) ;;
+  i386-linuxbios) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
   *) AC_MSG_ERROR([unsupported machine type]) ;;

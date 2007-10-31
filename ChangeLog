@@ -1,3 +1,26 @@
+2007-10-31  Robert Millan  <rmh@aybabtu.com>
+
+	* configure.ac: Add `i386-linuxbios' to the list of supported targets.
+
+	* conf/i386-linuxbios.rmk: New file.
+
+	* kern/i386/pc/hardware.c: Likewise.
+	* term/i386/pc/at_keyboard.c: Likewise.
+	* term/i386/pc/vga_text.c: Likewise.
+
+	* include/grub/i386/linuxbios/boot.h: Likewise.
+	* include/grub/i386/linuxbios/console.h: Likewise.
+	* include/grub/i386/linuxbios/init.h: Likewise.
+	* include/grub/i386/linuxbios/kernel.h: Likewise.
+	* include/grub/i386/linuxbios/loader.h: Likewise.
+	* include/grub/i386/linuxbios/memory.h: Likewise.
+	* include/grub/i386/linuxbios/serial.h: Likewise.
+	* include/grub/i386/linuxbios/time.h: Likewise.
+
+	* kern/i386/linuxbios/init.c: Likewise.
+	* kern/i386/linuxbios/startup.S: Likewise.
+	* kern/i386/linuxbios/table.c: Likewise.
+
 2007-10-31  Marco Gerards  <marco@gnu.org>
 
 	* conf/i386-pc.rmk (pkgdata_MODULES): Add `ata.mod'.
