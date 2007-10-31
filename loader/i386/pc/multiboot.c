@@ -34,6 +34,7 @@
 #include <grub/machine/loader.h>
 #include <grub/multiboot.h>
 #include <grub/machine/init.h>
+#include <grub/machine/memory.h>
 #include <grub/elf.h>
 #include <grub/file.h>
 #include <grub/err.h>

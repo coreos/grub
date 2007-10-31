@@ -22,10 +22,6 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
-/* FIXME: Should these be declared in memory.h?  */
-extern grub_size_t EXPORT_VAR(grub_lower_mem);
-extern grub_size_t EXPORT_VAR(grub_upper_mem);
-
 extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
 extern grub_size_t EXPORT_VAR(grub_os_area_size);
 

@@ -1,3 +1,16 @@
+2007-10-31  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/pc/init.h (grub_lower_mem): Moved from here ...
+	* include/grub/i386/pc/memory.h (grub_lower_mem): ... to here.
+
+	* include/grub/i386/pc/init.h (grub_upper_mem): Moved from here ...
+	* include/grub/i386/pc/memory.h (grub_upper_mem): ... to here.
+
+	* include/grub/i386/pc/memory.h: Include `<grub/symbol.h>' and
+	`<grub/types.h>'.
+
+	* loader/i386/pc/multiboot.c: Include `<grub/machine/memory.h>'.
+
 2007-10-27  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/types.h (ULONG_MAX): Define macro.

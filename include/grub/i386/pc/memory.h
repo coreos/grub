@@ -20,6 +20,11 @@
 #ifndef GRUB_MEMORY_MACHINE_HEADER
 #define GRUB_MEMORY_MACHINE_HEADER	1
 
+#include <grub/symbol.h>
+#ifndef ASM_FILE
+#include <grub/types.h>
+#endif
+
 /* The scratch buffer used in real mode code.  */
 #define GRUB_MEMORY_MACHINE_SCRATCH_ADDR	0x68000
 #define GRUB_MEMORY_MACHINE_SCRATCH_SEG	(GRUB_MEMORY_MACHINE_SCRATCH_ADDR >> 4)
@@ -63,5 +68,10 @@
 
 /* The data segment of the pseudo real mode.  */
 #define GRUB_MEMORY_MACHINE_PSEUDO_REAL_DSEG	0x20
+
+#ifndef ASM_FILE
+extern grub_size_t EXPORT_VAR(grub_lower_mem);
+extern grub_size_t EXPORT_VAR(grub_upper_mem);
+#endif
 
 #endif /* ! GRUB_MEMORY_MACHINE_HEADER */
