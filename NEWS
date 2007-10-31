@@ -11,6 +11,8 @@ New in 1.96:
 
 * Add support for the NTFS filesystems.
 
+* Add support for ATA/ATAPI.
+
 New in 1.95 - 2006-10-15:
 
 * Number partitions from 1 instead of 0. For instance, the first

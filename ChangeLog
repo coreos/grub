@@ -1,3 +1,15 @@
+2007-10-31  Marco Gerards  <marco@gnu.org>
+
+	* conf/i386-pc.rmk (pkgdata_MODULES): Add `ata.mod'.
+	(ata_mod_SOURCES): New variable.
+	(ata_mod_CFLAGS): Likewise.
+	(ata_mod_LDFLAGS): Likewise.
+
+	* disk/ata.c: New file.
+
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	`GRUB_DISK_DEV_ATA_ID'.
+	
 2007-10-31  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/pc/init.h (grub_lower_mem): Moved from here ...
