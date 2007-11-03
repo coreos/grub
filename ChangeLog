@@ -1,5 +1,20 @@
 2007-11-03  Marco Gerards  <marco@gnu.org>
 
+	* term/i386/pc/vga_text.c: Include <grub/cpu/io.h>.
+	(CRTC_ADDR_PORT): New macro.
+	(CRTC_DATA_PORT): Likewise.
+	(CRTC_CURSOR): Likewise.
+	(CRTC_CURSOR_ADDR_HIGH): Likewise.
+	(CRTC_CURSOR_ADDR_LOW): Likewise.
+	(update_cursor): New function.
+	(grub_console_real_putchar): Call `update_cursor'.
+	(grub_console_gotoxy): Likewise.
+	(grub_console_cls): Set the default color when clearing the
+	screen.
+	(grub_console_setcursor): Implemented.
+
+2007-11-03  Marco Gerards  <marco@gnu.org>
+
 	* disk/ata.c (grub_ata_pio_read): Don't wait for the command to
 	become activate.
 	(grub_ata_pio_write): Likewise.
