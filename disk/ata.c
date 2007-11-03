@@ -181,7 +181,8 @@ grub_ata_pio_read (struct grub_ata_device *dev, char *buf,
   for (i = 0; i < size / 2; i++)
     buf16[i] = grub_le_to_cpu16 (grub_inw(dev->ioaddress + GRUB_ATA_REG_DATA));
 
-  /* XXX: Do some error checks.  */
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+    return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
 
   return 0;
 }
@@ -203,7 +204,8 @@ grub_ata_pio_write (struct grub_ata_device *dev, char *buf,
   for (i = 0; i < size / 2; i++)
     grub_outw(grub_cpu_to_le16 (buf16[i]), dev->ioaddress + GRUB_ATA_REG_DATA);
 
-  /* XXX: Do some error checks.  */
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+    return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
 
   return 0;
 }
@@ -528,7 +530,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	    {
 	      if (grub_ata_pio_read (dev, buf,
 				     GRUB_DISK_SECTOR_SIZE))
-		return grub_errno;
+		return grub_error (GRUB_ERR_READ_ERROR, "ATA read error");
 	      buf += GRUB_DISK_SECTOR_SIZE;
 	      sector++;
 	    }
@@ -541,7 +543,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	    {
 	      if (grub_ata_pio_write (dev, buf,
 				      GRUB_DISK_SECTOR_SIZE))
-		return grub_errno;
+		return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
 	      buf += GRUB_DISK_SECTOR_SIZE;
 	    }
 	}
@@ -559,7 +561,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       for (sect = 0; sect < (size % batch); sect++)
 	{
 	  if (grub_ata_pio_read (dev, buf, GRUB_DISK_SECTOR_SIZE))
-	    return grub_errno;
+	    return grub_error (GRUB_ERR_READ_ERROR, "ATA read error");
 	  buf += GRUB_DISK_SECTOR_SIZE;
 	}
     } else {
@@ -569,7 +571,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	{
 	  if (grub_ata_pio_write (dev, buf,
 				  (size % batch) * GRUB_DISK_SECTOR_SIZE))
-	    return grub_errno;
+	    return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
 	  buf += GRUB_DISK_SECTOR_SIZE;
 	}
     }
