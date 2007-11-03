@@ -1,3 +1,9 @@
+2007-11-03  Marco Gerards  <marco@gnu.org>
+
+	* disk/ata.c (grub_ata_readwrite): Call grub_ata_pio_read and
+	grub_ata_pio_write once for every single sector, instead of for
+	multiple sectors.
+
 2007-10-31  Robert Millan  <rmh@aybabtu.com>
 
 	* configure.ac: Add `i386-linuxbios' to the list of supported targets.

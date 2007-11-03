@@ -492,6 +492,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
   grub_ata_addressing_t addressing;
   int cmd;
   int cmd_write;
+  unsigned int sect;
 
   addressing = dev->addr;
 
@@ -523,21 +524,28 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	{
 	  /* Read 256/65536 sectors.  */
 	  grub_ata_regset (dev, GRUB_ATA_REG_CMD, cmd);
-	  if (grub_ata_pio_read (dev, buf,
-				 batch * GRUB_DISK_SECTOR_SIZE))
-	    return grub_errno;
+	  for (sect = 0; sect < batch; sect++)
+	    {
+	      if (grub_ata_pio_read (dev, buf,
+				     GRUB_DISK_SECTOR_SIZE))
+		return grub_errno;
+	      buf += GRUB_DISK_SECTOR_SIZE;
+	      sector++;
+	    }
 	}
       else
 	{
 	  /* Write 256/65536 sectors.  */
 	  grub_ata_regset (dev, GRUB_ATA_REG_CMD, cmd_write);
-	  if (grub_ata_pio_write (dev, buf,
-				  batch * GRUB_DISK_SECTOR_SIZE))
-	    return grub_errno;
+	  for (sect = 0; sect < batch; sect++)
+	    {
+	      if (grub_ata_pio_write (dev, buf,
+				      GRUB_DISK_SECTOR_SIZE))
+		return grub_errno;
+	      buf += GRUB_DISK_SECTOR_SIZE;
+	    }
 	}
-
-      buf += batch * GRUB_DISK_SECTOR_SIZE;
-      sector += batch * GRUB_DISK_SECTOR_SIZE;
+      sector += batch;
     }
 
   /* Read/write just a "few" sectors.  */
@@ -548,15 +556,22 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
     {
       /* Read sectors.  */
       grub_ata_regset (dev, GRUB_ATA_REG_CMD, cmd);
-      if (grub_ata_pio_read (dev, buf,
-			     (size % batch) * GRUB_DISK_SECTOR_SIZE))
-	return grub_errno;
+      for (sect = 0; sect < (size % batch); sect++)
+	{
+	  if (grub_ata_pio_read (dev, buf, GRUB_DISK_SECTOR_SIZE))
+	    return grub_errno;
+	  buf += GRUB_DISK_SECTOR_SIZE;
+	}
     } else {
       /* Write sectors.  */
       grub_ata_regset (dev, GRUB_ATA_REG_CMD, cmd_write);
-      if (grub_ata_pio_write (dev, buf,
-			      (size % batch) * GRUB_DISK_SECTOR_SIZE))
-	return grub_errno;
+      for (sect = 0; sect < batch; sect++)
+	{
+	  if (grub_ata_pio_write (dev, buf,
+				  (size % batch) * GRUB_DISK_SECTOR_SIZE))
+	    return grub_errno;
+	  buf += GRUB_DISK_SECTOR_SIZE;
+	}
     }
 
   return GRUB_ERR_NONE;
