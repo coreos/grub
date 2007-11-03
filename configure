@@ -6676,77 +6676,7 @@ CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 
 # Defined in aclocal.m4.
-{ echo "$as_me:$LINENO: checking whether ${OBJCOPY} works for absolute addresses" >&5
-echo $ECHO_N "checking whether ${OBJCOPY} works for absolute addresses... $ECHO_C" >&6; }
-if test "${grub_cv_prog_objcopy_absolute+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat > conftest.c <<\EOF
-void
-cmain (void)
-{
-   *((int *) 0x1000) = 2;
-}
-EOF
-
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && test -s conftest.o; then :
-else
-  { { echo "$as_me:$LINENO: error: ${CC-cc} cannot compile C source code" >&5
-echo "$as_me: error: ${CC-cc} cannot compile C source code" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-grub_cv_prog_objcopy_absolute=yes
-for link_addr in 2000 8000 7C00; do
-  if { ac_try='${CC-cc} ${CFLAGS} -nostdlib -Wl,-N -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then :
-  else
-    { { echo "$as_me:$LINENO: error: ${CC-cc} cannot link at address $link_addr" >&5
-echo "$as_me: error: ${CC-cc} cannot link at address $link_addr" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
-  if { ac_try='${OBJCOPY-objcopy} -O binary conftest.exec conftest'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then :
-  else
-    { { echo "$as_me:$LINENO: error: ${OBJCOPY-objcopy} cannot create binary files" >&5
-echo "$as_me: error: ${OBJCOPY-objcopy} cannot create binary files" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
-  if test ! -f conftest.old || { ac_try='cmp -s conftest.old conftest'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-    mv -f conftest conftest.old
-  else
-    grub_cv_prog_objcopy_absolute=no
-    break
-  fi
-done
-rm -f conftest*
-fi
-
-{ echo "$as_me:$LINENO: result: $grub_cv_prog_objcopy_absolute" >&5
-echo "${ECHO_T}$grub_cv_prog_objcopy_absolute" >&6; }
-
-if test "x$grub_cv_prog_objcopy_absolute" = xno; then
-  { { echo "$as_me:$LINENO: error: GRUB requires a working absolute objcopy; upgrade your binutils" >&5
-echo "$as_me: error: GRUB requires a working absolute objcopy; upgrade your binutils" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
+#grub_PROG_OBJCOPY_ABSOLUTE
 
 { echo "$as_me:$LINENO: checking if C symbols get an underscore after compilation" >&5
 echo $ECHO_N "checking if C symbols get an underscore after compilation... $ECHO_C" >&6; }

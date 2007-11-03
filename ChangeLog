@@ -1,5 +1,16 @@
 2007-11-03  Marco Gerards  <marco@gnu.org>
 
+	* disk/ata.c (grub_ata_pio_read): Don't wait for the command to
+	become activate.
+	(grub_ata_pio_write): Likewise.
+
+	(grub_atapi_identify): Wait after issuing an ATA command.
+	(grub_atapi_packet): Likewise.
+	(grub_ata_identify): Likewise.
+	(grub_ata_readwrite): Likewise.
+
+2007-11-03  Marco Gerards  <marco@gnu.org>
+
 	* disk/ata.c (grub_ata_pio_read): Detect and return the error code.
 	(grub_ata_pio_write): Likewise.
 	(grub_ata_readwrite): Use `grub_error', instead of
