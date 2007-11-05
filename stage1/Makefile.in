@@ -110,7 +110,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
+LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -188,6 +188,7 @@ CLEANFILES = $(nodist_pkglib_DATA)
 
 # We can't use builtins or standard includes.
 AM_CCASFLAGS = $(STAGE1_CFLAGS) -fno-builtin -nostdinc
+stage1_exec_LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
 stage1_exec_SOURCES = stage1.S stage1.h
 SUFFIXES = .exec
 all: all-am

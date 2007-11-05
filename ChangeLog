@@ -1,3 +1,12 @@
+2007-10-29  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Test if '--build-id=none' is supported by the
+	linker and add it to LDFLAGS if possible.  Build ID causes
+	objcopy to generate huge binary files.
+	* aclocal.m4 (grub_PROG_OBJCOPY_ABSOLUTE): Use LDFLAGS when
+	linking, so that build ID doesn't break the test.
+	* stage1/Makefile.am: Preserve LDFLAGS, use stage1_exec_LDFLAGS.
+
 2007-02-22  Pavel Roskin  <proski@gnu.org>
 
 	* stage2/iso9660.h: Remove unnecessary packed attributes.

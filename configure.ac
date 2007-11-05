@@ -150,6 +150,17 @@ if test "x$undef_flag" = xyes; then
   CPPFLAGS="$CPPFLAGS -Wundef"
 fi
 
+# Check if build ID can be disabled in the linker
+AC_MSG_CHECKING([whether linker accepts `--build-id=none'])
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,--build-id=none"
+AC_TRY_LINK(, , build_id_flag=yes, build_id_flag=no)
+AC_MSG_RESULT([$build_id_flag])
+LDFLAGS="$save_LDFLAGS"
+if test "x$build_id_flag" = xyes; then
+  LDFLAGS="$LDFLAGS -Wl,--build-id=none"
+fi
+
 if test "x$with_binutils" != x; then
 dnl  AC_PATH_TOOL(OBJCOPY, objcopy, , "$with_binutils:$PATH")
   AC_PATH_PROG(OBJCOPY, objcopy, , "$with_binutils:$PATH")
