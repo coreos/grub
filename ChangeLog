@@ -1,3 +1,11 @@
+2007-11-05  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/ata.c: Remove `<grub/machine/time.h>'.  Include `<grub/time.h>'.
+	(grub_ata_wait): Reimplement using grub_millisleep().
+
+	* include/grub/misc.h (grub_div_roundup): Fix parenthesization.
+	* include/grub/i386/time.h (grub_cpu_idle): Disable `hlt' instruction.
+
 2007-11-03  Marco Gerards  <marco@gnu.org>
 
 	* term/i386/pc/vga_text.c: Include <grub/cpu/io.h>.

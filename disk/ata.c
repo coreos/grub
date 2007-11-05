@@ -21,9 +21,9 @@
 #include <grub/misc.h>
 #include <grub/disk.h>
 #include <grub/mm.h>
+#include <grub/time.h>
 /* XXX: For now this only works on i386.  */
 #include <grub/cpu/io.h>
-#include <grub/machine/time.h>
 #include <grub/machine/biosdisk.h>
 
 typedef enum
@@ -142,10 +142,7 @@ grub_ata_wait_drq (struct grub_ata_device *dev)
 static inline void
 grub_ata_wait (void)
 {
-  grub_uint32_t  time;
-  time = grub_get_rtc ();
-
-  while (time + 1 > grub_get_rtc ());
+  grub_millisleep (50);
 }
 
 /* Byteorder has to be changed before strings can be read.  */

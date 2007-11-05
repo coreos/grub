@@ -22,7 +22,8 @@
 static __inline void
 grub_cpu_idle ()
 {
-  __asm__ __volatile__ ("hlt");
+  /* FIXME: this can't work untill we handle interrupts.  */
+/*  __asm__ __volatile__ ("hlt"); */
 }
 
 #endif /* ! KERNEL_CPU_TIME_HEADER */

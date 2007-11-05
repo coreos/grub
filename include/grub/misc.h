@@ -106,7 +106,7 @@ grub_max (long x, long y)
 static inline unsigned int
 grub_div_roundup (unsigned int x, unsigned int y)
 {
-  return (x + (y - 1) / y);
+  return (x + y - 1) / y;
 }
 
 #endif /* ! GRUB_MISC_HEADER */

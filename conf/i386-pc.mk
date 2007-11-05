@@ -2283,7 +2283,7 @@ und-ata.lst: pre-ata.o
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
 ata_mod-disk_ata.o: disk/ata.c
-	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -MD -c -o $@ $<
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -MD -c -o $@ $<
 -include ata_mod-disk_ata.d
 
 CLEANFILES += cmd-ata_mod-disk_ata.lst fs-ata_mod-disk_ata.lst
