@@ -1,5 +1,30 @@
 2007-11-05  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/disk.c (grub_disk_firmware_fini)
+	(grub_disk_firmware_is_tainted): New variables.
+
+	* include/grub/disk.h (grub_disk_firmware_fini)
+	(grub_disk_firmware_is_tainted): Likewise.
+
+	* disk/i386/pc/biosdisk.c (GRUB_MOD_FINI(biosdisk)): Moved from here ...
+	(grub_disk_biosdisk_fini): ... to here.
+	(GRUB_MOD_FINI(biosdisk)): Implement using grub_disk_biosdisk_fini().
+	(GRUB_MOD_INIT(biosdisk)): Abort when `grub_disk_firmware_is_tainted'
+	is set.  Register grub_disk_biosdisk_fini() in
+	`grub_disk_firmware_fini'.
+
+	* disk/ata.c: Remove `<grub/machine/biosdisk.h>'.
+	(GRUB_MOD_INIT(ata)): Remove grub_biosdisk_fini() call.
+	Use `grub_disk_firmware_is_tainted' and `grub_disk_firmware_fini'
+	to finish existing firmware disk interface.
+
+	* conf/i386-linuxbios.rmk (pkgdata_MODULES): Add `ata.mod'.
+	(ata_mod_SOURCES): New variable.
+	(ata_mod_CFLAGS): Likewise.
+	(ata_mod_LDFLAGS): Likewise.
+
+2007-11-05  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/ata.c: Remove `<grub/machine/time.h>'.  Include `<grub/time.h>'.
 	(grub_ata_wait): Reimplement using grub_millisleep().
 

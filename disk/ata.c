@@ -24,7 +24,6 @@
 #include <grub/time.h>
 /* XXX: For now this only works on i386.  */
 #include <grub/cpu/io.h>
-#include <grub/machine/biosdisk.h>
 
 typedef enum
   {
@@ -733,8 +732,13 @@ GRUB_MOD_INIT(ata)
 {
   (void) mod;			/* To stop warning. */
 
-  /* XXX: To prevent two drivers operating on the same disks.  */
-  grub_biosdisk_fini ();
+  /* To prevent two drivers operating on the same disks.  */
+  grub_disk_firmware_is_tainted = 1;
+  if (grub_disk_firmware_fini)
+    {
+      grub_disk_firmware_fini ();
+      grub_disk_firmware_fini = NULL;
+    }
   
   /* ATA initialization.  */
   grub_ata_initialize ();

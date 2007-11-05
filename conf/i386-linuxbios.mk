@@ -657,7 +657,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 # Modules.
 pkgdata_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod play.mod		\
-	cpuid.mod serial.mod
+	cpuid.mod serial.mod ata.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
@@ -1323,5 +1323,57 @@ fs-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c genfslist.sh
 
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
 cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ata.mod.
+ata_mod_SOURCES = disk/ata.c
+CLEANFILES += ata.mod mod-ata.o mod-ata.c pre-ata.o ata_mod-disk_ata.o und-ata.lst
+ifneq ($(ata_mod_EXPORTS),no)
+CLEANFILES += def-ata.lst
+DEFSYMFILES += def-ata.lst
+endif
+MOSTLYCLEANFILES += ata_mod-disk_ata.d
+UNDSYMFILES += und-ata.lst
+
+ata.mod: pre-ata.o mod-ata.o
+	-rm -f $@
+	$(TARGET_CC) $(ata_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-ata.o: $(ata_mod_DEPENDENCIES) ata_mod-disk_ata.o
+	-rm -f $@
+	$(TARGET_CC) $(ata_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ata_mod-disk_ata.o
+
+mod-ata.o: mod-ata.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -c -o $@ $<
+
+mod-ata.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ata' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(ata_mod_EXPORTS),no)
+def-ata.lst: pre-ata.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ata/' > $@
+endif
+
+und-ata.lst: pre-ata.o
+	echo 'ata' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ata_mod-disk_ata.o: disk/ata.c
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -MD -c -o $@ $<
+-include ata_mod-disk_ata.d
+
+CLEANFILES += cmd-ata_mod-disk_ata.lst fs-ata_mod-disk_ata.lst
+COMMANDFILES += cmd-ata_mod-disk_ata.lst
+FSFILES += fs-ata_mod-disk_ata.lst
+
+cmd-ata_mod-disk_ata.lst: disk/ata.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ata > $@ || (rm -f $@; exit 1)
+
+fs-ata_mod-disk_ata.lst: disk/ata.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ata > $@ || (rm -f $@; exit 1)
+
+
+ata_mod_CFLAGS = $(COMMON_CFLAGS)
+ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

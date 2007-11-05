@@ -312,12 +312,25 @@ static struct grub_disk_dev grub_biosdisk_dev =
     .next = 0
   };
 
+static void
+grub_disk_biosdisk_fini (void)
+{
+  grub_disk_dev_unregister (&grub_biosdisk_dev);
+}
+
 GRUB_MOD_INIT(biosdisk)
 {
+  if (grub_disk_firmware_is_tainted)
+    {
+      grub_printf ("Firmware is marked as tainted, refusing to initialize.\n");
+      return;
+    }
+  grub_disk_firmware_fini = grub_disk_biosdisk_fini;
+
   grub_disk_dev_register (&grub_biosdisk_dev);
 }
 
 GRUB_MOD_FINI(biosdisk)
 {
-  grub_disk_dev_unregister (&grub_biosdisk_dev);
+  grub_disk_biosdisk_fini ();
 }
