@@ -1,5 +1,10 @@
 2007-11-05  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub.in: Allow files in ${update_grub_dir} to contain
+	spaces.  Skip non-regular files.
+
+2007-11-05  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/disk.c (grub_disk_firmware_fini)
 	(grub_disk_firmware_is_tainted): New variables.
 

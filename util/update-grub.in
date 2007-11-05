@@ -141,14 +141,14 @@ cat << EOF
 EOF
 
 for i in ${update_grub_dir}/* ; do
-  case $i in
+  case "$i" in
     # emacsen backup files. FIXME: support other editors
     *~) ;;
     *)
-      if test -x $i ; then
+      if test -f "$i" && test -x "$i" ; then
         echo
         echo "### BEGIN $i ###"
-        $i
+        "$i"
         echo "### END $i ###"
       fi
     ;;
