@@ -96,7 +96,7 @@ serial_hw_put (const int c)
         return;
     }
 
-  grub_outb (serial_settings.port + UART_TX, c);
+  grub_outb (c, serial_settings.port + UART_TX);
 }
 
 static void
@@ -268,26 +268,26 @@ serial_hw_init (void)
   unsigned char status = 0;
 
   /* Turn off the interupt.  */
-  grub_outb (serial_settings.port + UART_IER, 0);
+  grub_outb (0, serial_settings.port + UART_IER);
 
   /* Set DLAB.  */
-  grub_outb (serial_settings.port + UART_LCR, UART_DLAB);
+  grub_outb (UART_DLAB, serial_settings.port + UART_LCR);
 
   /* Set the baud rate.  */
-  grub_outb (serial_settings.port + UART_DLL, serial_settings.divisor & 0xFF);
-  grub_outb (serial_settings.port + UART_DLH, serial_settings.divisor >> 8 );
+  grub_outb (serial_settings.divisor & 0xFF, serial_settings.port + UART_DLL);
+  grub_outb (serial_settings.divisor >> 8, serial_settings.port + UART_DLH);
 
   /* Set the line status.  */
   status |= (serial_settings.parity
 	     | serial_settings.word_len
 	     | serial_settings.stop_bits);
-  grub_outb (serial_settings.port + UART_LCR, status);
+  grub_outb (status, serial_settings.port + UART_LCR);
 
   /* Enable the FIFO.  */
-  grub_outb (serial_settings.port + UART_FCR, UART_ENABLE_FIFO);
+  grub_outb (UART_ENABLE_FIFO, serial_settings.port + UART_FCR);
 
   /* Turn on DTR, RTS, and OUT2.  */
-  grub_outb (serial_settings.port + UART_MCR, UART_ENABLE_MODEM);
+  grub_outb (UART_ENABLE_MODEM, serial_settings.port + UART_MCR);
 
   /* Drain the input buffer.  */
   while (grub_serial_checkkey () != -1)
