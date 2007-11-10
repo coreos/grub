@@ -23,7 +23,7 @@ boot_img-boot_i386_pc_boot.o: boot/i386/pc/boot.S
 -include boot_img-boot_i386_pc_boot.d
 
 boot_img_ASFLAGS = $(COMMON_ASFLAGS)
-boot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
+boot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
 
 # For pxeboot.img
 pxeboot_img_SOURCES = boot/i386/pc/pxeboot.S
@@ -41,7 +41,7 @@ pxeboot_img-boot_i386_pc_pxeboot.o: boot/i386/pc/pxeboot.S
 -include pxeboot_img-boot_i386_pc_pxeboot.d
 
 pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-pxeboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,7C00
+pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
 
 # For diskboot.img.
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S
@@ -59,7 +59,7 @@ diskboot_img-boot_i386_pc_diskboot.o: boot/i386/pc/diskboot.S
 -include diskboot_img-boot_i386_pc_diskboot.d
 
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-diskboot_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8000
+diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8000
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
@@ -165,7 +165,7 @@ kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = -nostdlib -Wl,-N,-Ttext,8200 $(COMMON_CFLAGS)
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8200 $(COMMON_CFLAGS)
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst

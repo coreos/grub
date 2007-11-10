@@ -1,3 +1,11 @@
+2007-11-10  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* conf/i386-pc.rmk (boot_img_LDFLAGS): Use COMMON_LDFLAGS for target
+	flags.
+	(pxeboot_img_LDFLAGS): Likewise.
+	(diskboot_img_LDFLAGS): Likewise.
+	(kernel_img_LDFLAGS): Likewise.
+
 2007-11-06  Robert Millan  <rmh@aybabtu.com>
 
 	* term/i386/pc/serial.c (serial_hw_put): Switch order of arguments
