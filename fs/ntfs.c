@@ -665,9 +665,6 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, int num)
 	      if (read_run_list (ctx))
 		return grub_errno;
 	    }
-	  if (ctx->target_vcn + 16 < ctx->next_vcn)
-	    return grub_error (GRUB_ERR_BAD_FS,
-			       "Compression block should be 16 sector long");
 	}
 
       nn = (16 - (ctx->target_vcn & 0xF)) / cpb;
@@ -732,7 +729,9 @@ read_block (struct grub_ntfs_rlst *ctx, char *buf, int num)
 	      if (buf)
 		{
 		  if (grub_disk_read
-		      (ctx->comp.disk, ctx->curr_lcn * ctx->comp.spc, 0,
+		      (ctx->comp.disk,
+		       (ctx->target_vcn - ctx->curr_vcn +
+			ctx->curr_lcn) * ctx->comp.spc, 0,
 		       nn * (ctx->comp.spc << BLK_SHR), buf))
 		    return grub_errno;
 		  buf += nn * (ctx->comp.spc << BLK_SHR);

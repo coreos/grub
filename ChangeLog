@@ -1,3 +1,7 @@
+2007-11-10  Bean  <bean123ch@gmail.com>
+
+	* fs/ntfs.c (read_block): Fix a bug caused by adjacent blocks.
+
 2007-11-10  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* conf/i386-pc.rmk (pkgdata_MODULES): Added vga.mod.
