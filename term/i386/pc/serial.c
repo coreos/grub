@@ -16,6 +16,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/machine/machine.h>
 #include <grub/machine/serial.h>
 #include <grub/machine/console.h>
 #include <grub/term.h>
@@ -63,13 +64,18 @@ struct serial_port
 /* Serial port settings.  */
 static struct serial_port serial_settings;
 
+#ifdef GRUB_MACHINE_PCBIOS
+/* The BIOS data area.  */
+static const unsigned short *serial_hw_io_addr = (const unsigned short *) 0x0400;
+#else
+static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8 };
+#endif
+
 /* Return the port number for the UNITth serial device.  */
 static inline unsigned short
 serial_hw_get_port (const unsigned short unit)
 {
-  /* The BIOS data area.  */
-  const unsigned short *addr = (const unsigned short *) 0x0400;
-  return addr[unit];
+  return serial_hw_io_addr[unit];
 }
 
 /* Fetch a key.  */

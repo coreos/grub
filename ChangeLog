@@ -1,3 +1,16 @@
+2007-11-10  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/efi/machine.h: New file.
+	* include/grub/i386/linuxbios/machine.h: Likewise.
+	* include/grub/i386/pc/machine.h: Likewise.
+	* include/grub/powerpc/ieee1275/machine.h: Likewise.
+	* include/grub/sparc64/ieee1275/machine.h: Likewise.
+
+	* term/i386/pc/serial.c: Include <grub/machine/machine.h>.
+	(serial_hw_io_addr): New variable.
+	(serial_hw_get_port): Obtain port address from `serial_hw_io_addr'
+	instead of `(unsigned short *) 0x400'.
+
 2007-11-10  Bean  <bean123ch@gmail.com>
 
 	* fs/ntfs.c (read_block): Fix a bug caused by adjacent blocks.
