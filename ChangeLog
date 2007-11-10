@@ -1,3 +1,9 @@
+2007-11-10  Robert Millan  <rmh@aybabtu.com>
+
+	* commands/i386/pc/play.c (beep_off): Switch order of arguments
+	in grub_outb() calls.
+	(beep_on): Likewise.
+
 2007-11-10  Christian Franke  <franke@computer.org>
 
 	* normal/menu.c (run_menu): Check for empty menu to avoid crash.

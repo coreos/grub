@@ -116,7 +116,7 @@ beep_off (void)
   unsigned char status;
 
   status = grub_inb (SPEAKER);
-  grub_outb (SPEAKER, status & ~(SPEAKER_TMR2 | SPEAKER_DATA));
+  grub_outb (status & ~(SPEAKER_TMR2 | SPEAKER_DATA), SPEAKER);
 }
 
 static void
@@ -133,15 +133,14 @@ beep_on (short pitch)
   counter = PIT_FREQUENCY / pitch;
 
   /* Program timer 2.  */
-  grub_outb (PIT_CTRL, PIT_CTRL_SELECT_2 | PIT_CTRL_READLOAD_WORD
-	| PIT_CTRL_SQUAREWAVE_GEN | PIT_CTRL_COUNT_BINARY);
-  grub_outb (PIT_COUNTER_2, counter & 0xff);		/* LSB */
-  grub_outb (PIT_COUNTER_2, (counter >> 8) & 0xff);	/* MSB */
+  grub_outb (PIT_CTRL_SELECT_2 | PIT_CTRL_READLOAD_WORD
+	| PIT_CTRL_SQUAREWAVE_GEN | PIT_CTRL_COUNT_BINARY, PIT_CTRL);
+  grub_outb (counter & 0xff, PIT_COUNTER_2);		/* LSB */
+  grub_outb ((counter >> 8) & 0xff, PIT_COUNTER_2);	/* MSB */
 
   /* Start speaker.  */
   status = grub_inb (SPEAKER);
-  grub_outb (SPEAKER, status | SPEAKER_TMR2 | SPEAKER_DATA);
-
+  grub_outb (status | SPEAKER_TMR2 | SPEAKER_DATA, SPEAKER);
 }
 
 static grub_err_t
