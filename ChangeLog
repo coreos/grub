@@ -1,5 +1,25 @@
 2007-11-10  Vesa Jaaskelainen  <chaac@nic.fi>
 
+	* conf/i386-pc.rmk (pkgdata_MODULES): Added vga.mod.
+	(vga_mod_SOURCES): Added.
+	(vga_mod_CFLAGS): Likewise.
+	(vga_mod_LDFLAGS): Likewise.
+
+	* term/i386/pc/vga.c (get_map_mask): Switch order of arguments in
+	grub_outb() calls.
+	(set_map_mask): Likewise.
+	(set_read_map): Likewise.
+	(set_read_address): Likewise.
+	(vga_font): Removed variable.
+	(get_vga_glyph): Removed function.
+	(invalidate_char): Likewise.
+	(write_char): Changed to use grub_font_get_glyph() for font
+	information.
+	(grub_vga_putchar): Likewise.
+	(grub_vga_getcharwidth): Likewise.
+
+2007-11-10  Vesa Jaaskelainen  <chaac@nic.fi>
+
 	* conf/i386-pc.rmk (boot_img_LDFLAGS): Use COMMON_LDFLAGS for target
 	flags.
 	(pxeboot_img_LDFLAGS): Likewise.

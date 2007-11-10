@@ -859,7 +859,8 @@ grub-mkrescue: util/i386/pc/grub-mkrescue.in config.status
 pkgdata_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
-	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod ata.mod
+	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod ata.mod \
+	vga.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2299,5 +2300,57 @@ fs-ata_mod-disk_ata.lst: disk/ata.c genfslist.sh
 
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For vga.mod.
+vga_mod_SOURCES = term/i386/pc/vga.c
+CLEANFILES += vga.mod mod-vga.o mod-vga.c pre-vga.o vga_mod-term_i386_pc_vga.o und-vga.lst
+ifneq ($(vga_mod_EXPORTS),no)
+CLEANFILES += def-vga.lst
+DEFSYMFILES += def-vga.lst
+endif
+MOSTLYCLEANFILES += vga_mod-term_i386_pc_vga.d
+UNDSYMFILES += und-vga.lst
+
+vga.mod: pre-vga.o mod-vga.o
+	-rm -f $@
+	$(TARGET_CC) $(vga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-vga.o: $(vga_mod_DEPENDENCIES) vga_mod-term_i386_pc_vga.o
+	-rm -f $@
+	$(TARGET_CC) $(vga_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ vga_mod-term_i386_pc_vga.o
+
+mod-vga.o: mod-vga.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_mod_CFLAGS) -c -o $@ $<
+
+mod-vga.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vga' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(vga_mod_EXPORTS),no)
+def-vga.lst: pre-vga.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vga/' > $@
+endif
+
+und-vga.lst: pre-vga.o
+	echo 'vga' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+vga_mod-term_i386_pc_vga.o: term/i386/pc/vga.c
+	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_mod_CFLAGS) -MD -c -o $@ $<
+-include vga_mod-term_i386_pc_vga.d
+
+CLEANFILES += cmd-vga_mod-term_i386_pc_vga.lst fs-vga_mod-term_i386_pc_vga.lst
+COMMANDFILES += cmd-vga_mod-term_i386_pc_vga.lst
+FSFILES += fs-vga_mod-term_i386_pc_vga.lst
+
+cmd-vga_mod-term_i386_pc_vga.lst: term/i386/pc/vga.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga > $@ || (rm -f $@; exit 1)
+
+fs-vga_mod-term_i386_pc_vga.lst: term/i386/pc/vga.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga > $@ || (rm -f $@; exit 1)
+
+
+vga_mod_CFLAGS = $(COMMON_CFLAGS)
+vga_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
