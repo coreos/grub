@@ -412,7 +412,11 @@ run_menu (grub_menu_t menu, int nested)
 	      goto refresh;
 
 	    case 'e':
-	      grub_menu_entry_run (get_entry (menu, first + offset));
+		{
+		  grub_menu_entry_t e = get_entry (menu, first + offset);
+		  if (e)
+		    grub_menu_entry_run (e);
+		}
 	      goto refresh;
 	      
 	    default:
@@ -451,10 +455,13 @@ grub_menu_run (grub_menu_t menu, int nested)
       if (boot_entry < 0)
 	break;
 
+      e = get_entry (menu, boot_entry);
+      if (! e)
+	continue; /* Menu is empty.  */
+	
       grub_cls ();
       grub_setcursor (1);
 
-      e = get_entry (menu, boot_entry);
       grub_printf ("  Booting \'%s\'\n\n", e->title);
   
       run_menu_entry (e);
