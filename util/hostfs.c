@@ -25,6 +25,34 @@
 #include <dirent.h>
 #include <stdio.h>
 
+
+#ifndef DT_DIR
+/* dirent.d_type is a BSD extension, not part of POSIX */
+#include <sys/stat.h>
+#include <string.h>
+
+static int
+is_dir (const char *path, const char *name)
+{
+  int len1 = strlen(path);
+  int len2 = strlen(name);
+
+  char pathname[len1 + 1 + len2 + 1 + 13];
+  strcpy (pathname, path);
+
+  /* Avoid UNC-path "//name" on Cygwin.  */
+  if (len1 > 0 && pathname[len1 - 1] != '/')
+    strcat (pathname, "/");
+
+  strcat (pathname, name);
+
+  struct stat st;
+  if (stat (pathname, &st))
+    return 0;
+  return S_ISDIR (st.st_mode);
+}
+#endif
+
 static grub_err_t
 grub_hostfs_dir (grub_device_t device, const char *path, 
 		 int (*hook) (const char *filename, int dir))
@@ -48,7 +76,11 @@ grub_hostfs_dir (grub_device_t device, const char *path,
       if (! de)
 	break;
 
+#ifdef DT_DIR
       hook (de->d_name, de->d_type == DT_DIR);
+#else
+      hook (de->d_name, is_dir (path, de->d_name));
+#endif
     }
 
   closedir (dir);
@@ -81,7 +113,8 @@ grub_hostfs_read (grub_file_t file, char *buf, grub_size_t len)
   FILE *f;
 
   f = (FILE *) file->data;
-  int s= fread (buf, 1, len, f);
+  fseek (f, file->offset, SEEK_SET);
+  int s = fread (buf, 1, len, f);
 
   return s;
 }
@@ -101,6 +134,7 @@ static grub_err_t
 grub_hostfs_label (grub_device_t device __attribute ((unused)),
 		   char **label __attribute ((unused)))
 {
+  *label = 0;
   return GRUB_ERR_NONE;
 }
 

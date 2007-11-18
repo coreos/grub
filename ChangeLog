@@ -1,5 +1,13 @@
 2007-11-18  Christian Franke  <franke@computer.org>
 
+	* util/hostfs.c (is_dir): New function.
+	(grub_hostfs_dir):  Handle missing dirent.d_type case.
+	(grub_hostfs_read): Add missing fseek().
+	(grub_hostfs_label): Clear label pointer.  This fixes a crash
+	of grub-emu on "ls (host)".
+
+2007-11-18  Christian Franke  <franke@computer.org>
+
 	* include/grub/i386/pc/init.h (struct grub_machine_mmap_entry):
 	Add attribute packed, gcc 3.4.4 on Cygwin aligns this
 	to 64 bit boundary by default.
