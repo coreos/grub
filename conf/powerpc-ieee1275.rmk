@@ -56,7 +56,7 @@ grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/search.c commands/terminal.c commands/test.c 		\
-	commands/ls.c commands/blocklist.c				\
+	commands/ls.c commands/blocklist.c commands/hexdump.c		\
 	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
 	disk/loopback.c							\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\

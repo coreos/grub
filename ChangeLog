@@ -1,3 +1,22 @@
+2007-11-18  Bean  <bean123ch@gmail.com>
+
+	* conf/common.rmk (pkgdata_MODULES): Add hexdump.mod.
+	(hexdump_mod_SOURCES): New variable.
+	(hexdump_mod_CFLAGS): Likewise.
+	(hexdump_mod_LDFLAGS): Likewise.
+	
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add command/hexdump.c.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Add command/hexdump.c.
+
+	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Add command/hexdump.c.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add command/hexdump.c.
+
+	* include/grub/hexdump.h: New file.
+
+	* commands/hexdump.c: New file.
+
 2007-11-10  Robert Millan  <rmh@aybabtu.com>
 
 	* commands/i386/pc/play.c (beep_off): Switch order of arguments

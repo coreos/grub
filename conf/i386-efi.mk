@@ -206,7 +206,7 @@ grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\
-	commands/search.c						\
+	commands/search.c commands/hexdump.c				\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	commands/i386/cpuid.c						\
 	disk/loopback.c							\

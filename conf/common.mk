@@ -1186,7 +1186,7 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod				\
-	terminfo.mod test.mod blocklist.mod
+	terminfo.mod test.mod blocklist.mod hexdump.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -1935,6 +1935,58 @@ fs-blocklist_mod-commands_blocklist.lst: commands/blocklist.c genfslist.sh
 
 blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
 blocklist_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For hexdump.mod.
+hexdump_mod_SOURCES = commands/hexdump.c
+CLEANFILES += hexdump.mod mod-hexdump.o mod-hexdump.c pre-hexdump.o hexdump_mod-commands_hexdump.o und-hexdump.lst
+ifneq ($(hexdump_mod_EXPORTS),no)
+CLEANFILES += def-hexdump.lst
+DEFSYMFILES += def-hexdump.lst
+endif
+MOSTLYCLEANFILES += hexdump_mod-commands_hexdump.d
+UNDSYMFILES += und-hexdump.lst
+
+hexdump.mod: pre-hexdump.o mod-hexdump.o
+	-rm -f $@
+	$(TARGET_CC) $(hexdump_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-hexdump.o: $(hexdump_mod_DEPENDENCIES) hexdump_mod-commands_hexdump.o
+	-rm -f $@
+	$(TARGET_CC) $(hexdump_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ hexdump_mod-commands_hexdump.o
+
+mod-hexdump.o: mod-hexdump.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hexdump_mod_CFLAGS) -c -o $@ $<
+
+mod-hexdump.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'hexdump' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(hexdump_mod_EXPORTS),no)
+def-hexdump.lst: pre-hexdump.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 hexdump/' > $@
+endif
+
+und-hexdump.lst: pre-hexdump.o
+	echo 'hexdump' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+hexdump_mod-commands_hexdump.o: commands/hexdump.c
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(hexdump_mod_CFLAGS) -MD -c -o $@ $<
+-include hexdump_mod-commands_hexdump.d
+
+CLEANFILES += cmd-hexdump_mod-commands_hexdump.lst fs-hexdump_mod-commands_hexdump.lst
+COMMANDFILES += cmd-hexdump_mod-commands_hexdump.lst
+FSFILES += fs-hexdump_mod-commands_hexdump.lst
+
+cmd-hexdump_mod-commands_hexdump.lst: commands/hexdump.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hexdump_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hexdump > $@ || (rm -f $@; exit 1)
+
+fs-hexdump_mod-commands_hexdump.lst: commands/hexdump.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hexdump_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hexdump > $@ || (rm -f $@; exit 1)
+
+
+hexdump_mod_CFLAGS = $(COMMON_CFLAGS)
+hexdump_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkgdata_MODULES += gzio.mod elf.mod

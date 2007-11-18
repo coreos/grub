@@ -199,7 +199,7 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod				\
-	terminfo.mod test.mod blocklist.mod
+	terminfo.mod test.mod blocklist.mod hexdump.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -275,6 +275,11 @@ terminfo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 blocklist_mod_SOURCES = commands/blocklist.c
 blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
 blocklist_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For hexdump.mod.
+hexdump_mod_SOURCES = commands/hexdump.c
+hexdump_mod_CFLAGS = $(COMMON_CFLAGS)
+hexdump_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkgdata_MODULES += gzio.mod elf.mod
