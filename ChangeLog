@@ -379,19 +379,25 @@
 	* conf/powerpc-ieee1275.rmk (grub_mkimage_SOURCES): Replace reference
 	to util/powerpc/ieee1275/grub-mkimage.c with util/elf/grub-mkimage.c.
 
-	* include/grub/types.h (#ifdef GRUB_CPU_WORDS_BIGENDIAN): Define
-	grub_host_to_target16, grub_host_to_target32, grub_host_to_target64,
-	grub_target_to_host16, grub_target_to_host32 and grub_target_to_host64.
-	(#else): Likewise.
+	* include/grub/types.h (grub_host_to_target16): New macro.
+	(grub_host_to_target32): Likewise.
+	(grub_host_to_target64): Likewise.
+	(grub_target_to_host16): Likewise.
+	(grub_target_to_host32): Likewise.
+	(grub_target_to_host64): Likewise.
 
 	* include/grub/powerpc/ieee1275/kernel.h (GRUB_IEEE1275_MOD_ALIGN):
 	Renamed from to ...
 	(GRUB_MOD_ALIGN): ...this.  Update all users.
 
-	* util/elf/grub-mkimage.c: Replace grub_cpu_to_be16, grub_cpu_to_be32,
-	grub_be_to_cpu16 and grub_be_to_cpu32 macros with grub_host_to_target16,
-	grub_host_to_target32, grub_target_to_host16 and grub_target_to_host32,
-	respectively.
+	* util/elf/grub-mkimage.c (load_note): Replace grub_cpu_to_be32 with
+	grub_host_to_target32.
+	Replace grub_be_to_cpu32 with grub_target_to_host32.
+	(load_modules): Likewise.
+	(add_segments): Replace grub_be_to_cpu16 with grub_target_to_host16.
+	Replace grub_be_to_cpu32 with grub_target_to_host32.
+	Replace grub_cpu_to_be16 with grub_host_to_target16.
+	Replace grub_cpu_to_be32 grub_host_to_target32.
 
 2007-10-12  Robert Millan  <rmh@aybabtu.com>
 
