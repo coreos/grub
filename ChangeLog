@@ -1,5 +1,11 @@
 2007-11-18  Christian Franke  <franke@computer.org>
 
+	* disk/host.c (grub_host_open): Remove attribute unused from
+	name parameter. Add check for "host". This fixes the problem
+	that grub-emu does not find partitions.
+
+2007-11-18  Christian Franke  <franke@computer.org>
+
 	* util/hostfs.c (is_dir): New function.
 	(grub_hostfs_dir):  Handle missing dirent.d_type case.
 	(grub_hostfs_read): Add missing fseek().

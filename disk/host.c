@@ -34,8 +34,11 @@ grub_host_iterate (int (*hook) (const char *name))
 }
 
 static grub_err_t
-grub_host_open (const char *name __attribute((unused)), grub_disk_t disk)
+grub_host_open (const char *name, grub_disk_t disk)
 {
+  if (grub_strcmp (name, "host"))
+      return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a host disk");
+
   disk->total_sectors = 0;
   disk->id = (int) "host";
   
