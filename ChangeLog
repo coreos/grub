@@ -1,5 +1,11 @@
 2007-11-18  Christian Franke  <franke@computer.org>
 
+	* util/console.c (grub_ncurses_getkey): Change curses KEY_* mapping,
+	now return control chars instead of GRUB_CONSOLE_KEY_* constants.
+	This fixes the problem that function keys did not work in grub-emu.
+
+2007-11-18  Christian Franke  <franke@computer.org>
+
 	* disk/host.c (grub_host_open): Remove attribute unused from
 	name parameter. Add check for "host". This fixes the problem
 	that grub-emu does not find partitions.
