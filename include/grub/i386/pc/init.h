@@ -39,7 +39,7 @@ struct grub_machine_mmap_entry
   grub_uint64_t addr;
   grub_uint64_t len;
   grub_uint32_t type;
-};
+} __attribute__((packed));
 
 /* Get a memory map entry. Return next continuation value. Zero means
    the end.  */

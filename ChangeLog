@@ -1,3 +1,9 @@
+2007-11-18  Christian Franke  <franke@computer.org>
+
+	* include/grub/i386/pc/init.h (struct grub_machine_mmap_entry):
+	Add attribute packed, gcc 3.4.4 on Cygwin aligns this
+	to 64 bit boundary by default.
+
 2007-11-18  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (pkgdata_MODULES): Add hexdump.mod.
