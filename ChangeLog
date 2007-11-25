@@ -1,5 +1,14 @@
 2007-11-24  Pavel Roskin  <proski@gnu.org>
 
+	* configure.ac: Test if '--build-id=none' is supported by the
+	linker.  If yes, add it to TARGET_LDFLAGS.  Build ID causes
+	objcopy to generate incorrect binary files (binutils
+	2.17.50.0.18-1 as shipped by Fedora 8).
+	* aclocal.m4 (grub_PROG_OBJCOPY_ABSOLUTE): Use LDFLAGS when
+	linking, so that build ID doesn't break the test.
+
+2007-11-24  Pavel Roskin  <proski@gnu.org>
+
 	* include/grub/i386/time.h: use "void" in the argument list
 	of grub_cpu_idle().
 	* include/grub/powerpc/time.h: Likewise.
