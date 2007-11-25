@@ -1,3 +1,10 @@
+2007-11-24  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/i386/time.h: use "void" in the argument list
+	of grub_cpu_idle().
+	* include/grub/powerpc/time.h: Likewise.
+	* include/grub/sparc64/time.h: Likewise.
+
 2007-11-18  Christian Franke  <franke@computer.org>
 
 	* util/console.c (grub_ncurses_getkey): Change curses KEY_* mapping,
