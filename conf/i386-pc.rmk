@@ -5,7 +5,7 @@ COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS = -m32 -nostdlib
 
 # Images.
-pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img
+pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -21,6 +21,11 @@ pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8000
+
+# For lnxboot.img.
+lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
+lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
+lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,6000
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \

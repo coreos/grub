@@ -5,7 +5,7 @@ COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS = -m32 -nostdlib
 
 # Images.
-pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img
+pkgdata_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -60,6 +60,24 @@ diskboot_img-boot_i386_pc_diskboot.o: boot/i386/pc/diskboot.S
 
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8000
+
+# For lnxboot.img.
+lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
+CLEANFILES += lnxboot.img lnxboot.exec lnxboot_img-boot_i386_pc_lnxboot.o
+MOSTLYCLEANFILES += lnxboot_img-boot_i386_pc_lnxboot.d
+
+lnxboot.img: lnxboot.exec
+	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+
+lnxboot.exec: lnxboot_img-boot_i386_pc_lnxboot.o
+	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(lnxboot_img_LDFLAGS)
+
+lnxboot_img-boot_i386_pc_lnxboot.o: boot/i386/pc/lnxboot.S
+	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(lnxboot_img_ASFLAGS) -MD -c -o $@ $<
+-include lnxboot_img-boot_i386_pc_lnxboot.d
+
+lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
+lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,6000
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
