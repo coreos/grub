@@ -1,3 +1,9 @@
+2007-12-16  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub-mkdevicemap.c (make_device_map): Iterate up to 20 for
+	IDE disk check, since Linux is known to support 20 IDE disks.
+	Reported by Colin Watson.
+
 2007-12-15  Bean  <bean123ch@gmail.com>
 
 	* conf/i386-pc.rmk (pkgdata_IMAGES): Add lnxboot.img.
