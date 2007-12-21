@@ -58,8 +58,10 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c fs/fat.c	\
 	fs/ext2.c kern/parser.c kern/partition.c 			\
 	partmap/pc.c partmap/apple.c partmap/gpt.c 			\
-	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/ntfs.c kern/fs.c	\
-	kern/env.c fs/fshelp.c fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c	\
+	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/ntfs.c fs/ntfscomp.c	\
+	fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c			\
+	kern/fs.c							\
+	kern/env.c fs/fshelp.c 	\
 	disk/lvm.c disk/raid.c grub_probe_init.c
 
 # For grub-emu.
@@ -74,7 +76,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	disk/host.c disk/loopback.c	disk/raid.c disk/lvm.c		\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
 	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
-	fs/ntfs.c							\
+	fs/ntfs.c fs/ntfscomp.c						\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
 	kern/err.c							\

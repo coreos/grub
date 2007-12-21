@@ -23,169 +23,20 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/fshelp.h>
-
-#define FILE_MFT      0
-#define FILE_MFTMIRR  1
-#define FILE_LOGFILE  2
-#define FILE_VOLUME   3
-#define FILE_ATTRDEF  4
-#define FILE_ROOT     5
-#define FILE_BITMAP   6
-#define FILE_BOOT     7
-#define FILE_BADCLUS  8
-#define FILE_QUOTA    9
-#define FILE_UPCASE  10
-
-#define AT_STANDARD_INFORMATION	0x10
-#define AT_ATTRIBUTE_LIST	0x20
-#define AT_FILENAME		0x30
-#define AT_OBJECT_ID		0x40
-#define AT_SECURITY_DESCRIPTOR	0x50
-#define AT_VOLUME_NAME		0x60
-#define AT_VOLUME_INFORMATION	0x70
-#define AT_DATA			0x80
-#define AT_INDEX_ROOT		0x90
-#define AT_INDEX_ALLOCATION	0xA0
-#define AT_BITMAP		0xB0
-#define AT_SYMLINK		0xC0
-#define AT_EA_INFORMATION	0xD0
-#define AT_EA			0xE0
-
-#define ATTR_READ_ONLY		0x1
-#define ATTR_HIDDEN		0x2
-#define ATTR_SYSTEM		0x4
-#define ATTR_ARCHIVE		0x20
-#define ATTR_DEVICE		0x40
-#define ATTR_NORMAL		0x80
-#define ATTR_TEMPORARY		0x100
-#define ATTR_SPARSE		0x200
-#define ATTR_REPARSE		0x400
-#define ATTR_COMPRESSED		0x800
-#define ATTR_OFFLINE		0x1000
-#define ATTR_NOT_INDEXED	0x2000
-#define ATTR_ENCRYPTED		0x4000
-#define ATTR_DIRECTORY		0x10000000
-#define ATTR_INDEX_VIEW		0x20000000
-
-#define FLAG_COMPRESSED		1
-#define FLAG_ENCRYPTED		0x4000
-#define FLAG_SPARSE		0x8000
-
-#define BLK_SHR		GRUB_DISK_SECTOR_BITS
-
-#define MAX_MFT		(1024 >> BLK_SHR)
-#define MAX_IDX		(16384 >> BLK_SHR)
-#define MAX_SPC		(4096 >> BLK_SHR)
-
-#define COM_LEN		4096
-#define COM_SEC		(COM_LEN >> BLK_SHR)
-
-#define BMP_LEN		4096
-
-#define AF_ALST		1
-#define AF_MMFT		2
-#define AF_GPOS		4
-
-#define RF_COMP		1
-#define RF_CBLK		2
-#define RF_BLNK		4
-
-#define valueat(buf,ofs,type)	*((type*)(((char*)buf)+ofs))
-
-#define u16at(buf,ofs)	grub_le_to_cpu16(valueat(buf,ofs,grub_uint16_t))
-#define u32at(buf,ofs)	grub_le_to_cpu32(valueat(buf,ofs,grub_uint32_t))
-#define u64at(buf,ofs)	grub_le_to_cpu64(valueat(buf,ofs,grub_uint64_t))
-
-#define v16at(buf,ofs)	valueat(buf,ofs,grub_uint16_t)
-#define v32at(buf,ofs)	valueat(buf,ofs,grub_uint32_t)
-#define v64at(buf,ofs)	valueat(buf,ofs,grub_uint64_t)
-
-struct grub_ntfs_bpb
-{
-  grub_uint8_t jmp_boot[3];
-  grub_uint8_t oem_name[8];
-  grub_uint16_t bytes_per_sector;
-  grub_uint8_t sectors_per_cluster;
-  grub_uint8_t reserved_1[7];
-  grub_uint8_t media;
-  grub_uint16_t reserved_2;
-  grub_uint16_t sectors_per_track;
-  grub_uint16_t num_heads;
-  grub_uint32_t num_hidden_sectors;
-  grub_uint32_t reserved_3[2];
-  grub_uint64_t num_total_sectors;
-  grub_uint64_t mft_lcn;
-  grub_uint64_t mft_mirr_lcn;
-  grub_int8_t clusters_per_mft;
-  grub_int8_t reserved_4[3];
-  grub_int8_t clusters_per_index;
-  grub_int8_t reserved_5[3];
-  grub_uint64_t serial_number;
-  grub_uint32_t checksum;
-} __attribute__ ((packed));
-
-#define grub_ntfs_file grub_fshelp_node
-
-struct grub_ntfs_attr
-{
-  int flags;
-  char *emft_buf, *edat_buf;
-  char *attr_cur, *attr_nxt, *attr_end;
-  unsigned long save_pos;
-  char *sbuf;
-  struct grub_ntfs_file *mft;
-};
-
-struct grub_fshelp_node
-{
-  struct grub_ntfs_data *data;
-  char *buf;
-  grub_uint32_t size;
-  grub_uint32_t ino;
-  int inode_read;
-  struct grub_ntfs_attr attr;
-};
-
-struct grub_ntfs_data
-{
-  struct grub_ntfs_file cmft;
-  struct grub_ntfs_file mmft;
-  grub_disk_t disk;
-  grub_uint32_t mft_size;
-  grub_uint32_t idx_size;
-  grub_uint32_t spc;
-  grub_uint32_t blocksize;
-  grub_uint32_t mft_start;
-};
-
-struct grub_ntfs_comp
-{
-  grub_disk_t disk;
-  int comp_head, comp_tail;
-  unsigned long comp_table[16][2];
-  unsigned long cbuf_ofs, cbuf_vcn, spc;
-  char *cbuf;
-};
-
-struct grub_ntfs_rlst
-{
-  int flags;
-  unsigned long target_vcn, curr_vcn, next_vcn, curr_lcn;
-  char *cur_run;
-  struct grub_ntfs_attr *attr;
-  struct grub_ntfs_comp comp;
-};
+#include <grub/ntfs.h>
 
 #ifndef GRUB_UTIL
 static grub_dl_t my_mod;
 #endif
+
+ntfscomp_func_t grub_ntfscomp_func;
 
 static grub_err_t
 fixup (struct grub_ntfs_data *data, char *buf, int len, char *magic)
 {
   int ss;
   char *pu;
-  unsigned us;
+  grub_uint16_t us;
 
   if (grub_memcmp (buf, magic, 4))
     return grub_error (GRUB_ERR_BAD_FS, "%s label not found", magic);
@@ -212,9 +63,9 @@ fixup (struct grub_ntfs_data *data, char *buf, int len, char *magic)
 }
 
 static grub_err_t read_mft (struct grub_ntfs_data *data, char *buf,
-			    unsigned long mftno);
+			    grub_uint32_t mftno);
 static grub_err_t read_attr (struct grub_ntfs_attr *at, char *dest,
-			     unsigned long ofs, unsigned long len,
+			     grub_uint32_t ofs, grub_uint32_t len,
 			     int cached,
 			     void
 			     NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t
@@ -223,7 +74,7 @@ static grub_err_t read_attr (struct grub_ntfs_attr *at, char *dest,
 							    unsigned length));
 
 static grub_err_t read_data (struct grub_ntfs_attr *at, char *pa, char *dest,
-			     unsigned long ofs, unsigned long len,
+			     grub_uint32_t ofs, grub_uint32_t len,
 			     int cached,
 			     void
 			     NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t
@@ -413,9 +264,9 @@ locate_attr (struct grub_ntfs_attr *at, struct grub_ntfs_file *mft,
 }
 
 static char *
-read_run_data (char *run, int nn, unsigned long *val, int sig)
+read_run_data (char *run, int nn, grub_uint32_t * val, int sig)
 {
-  unsigned long r, v;
+  grub_uint32_t r, v;
 
   r = 0;
   v = 1;
@@ -433,11 +284,11 @@ read_run_data (char *run, int nn, unsigned long *val, int sig)
   return run;
 }
 
-static grub_err_t
-read_run_list (struct grub_ntfs_rlst *ctx)
+grub_err_t
+grub_ntfs_read_run_list (struct grub_ntfs_rlst * ctx)
 {
   int c1, c2;
-  unsigned long val;
+  grub_uint32_t val;
   char *run;
 
   run = ctx->cur_run;
@@ -482,294 +333,32 @@ retry:
   return 0;
 }
 
-static grub_err_t
-decomp_nextvcn (struct grub_ntfs_comp *cc)
-{
-  if (cc->comp_head >= cc->comp_tail)
-    return grub_error (GRUB_ERR_BAD_FS, "Compression block overflown");
-  if (grub_disk_read
-      (cc->disk,
-       (cc->comp_table[cc->comp_head][1] -
-	(cc->comp_table[cc->comp_head][0] - cc->cbuf_vcn)) * cc->spc, 0,
-       cc->spc << BLK_SHR, cc->cbuf))
-    return grub_errno;
-  cc->cbuf_vcn++;
-  if ((cc->cbuf_vcn >= cc->comp_table[cc->comp_head][0]))
-    cc->comp_head++;
-  cc->cbuf_ofs = 0;
-  return 0;
-}
-
-static grub_err_t
-decomp_getch (struct grub_ntfs_comp *cc, unsigned char *res)
-{
-  if (cc->cbuf_ofs >= (cc->spc << BLK_SHR))
-    {
-      if (decomp_nextvcn (cc))
-	return grub_errno;
-    }
-  *res = (unsigned char) cc->cbuf[cc->cbuf_ofs++];
-  return 0;
-}
-
-static grub_err_t
-decomp_get16 (struct grub_ntfs_comp *cc, grub_uint16_t * res)
-{
-  unsigned char c1, c2;
-
-  if ((decomp_getch (cc, &c1)) || (decomp_getch (cc, &c2)))
-    return grub_errno;
-  *res = ((grub_uint16_t) c2) * 256 + ((grub_uint16_t) c1);
-  return 0;
-}
-
-/* Decompress a block (4096 bytes) */
-static grub_err_t
-decomp_block (struct grub_ntfs_comp *cc, char *dest)
-{
-  grub_uint16_t flg, cnt;
-
-  if (decomp_get16 (cc, &flg))
-    return grub_errno;
-  cnt = (flg & 0xFFF) + 1;
-
-  if (dest)
-    {
-      if (flg & 0x8000)
-	{
-	  unsigned char tag;
-	  unsigned long bits, copied;
-
-	  bits = copied = tag = 0;
-	  while (cnt > 0)
-	    {
-	      if (copied > COM_LEN)
-		return grub_error (GRUB_ERR_BAD_FS,
-				   "Compression block too large");
-
-	      if (!bits)
-		{
-		  if (decomp_getch (cc, &tag))
-		    return grub_errno;
-
-		  bits = 8;
-		  cnt--;
-		  if (cnt <= 0)
-		    break;
-		}
-	      if (tag & 1)
-		{
-		  unsigned long i, len, delta, code, lmask, dshift;
-		  grub_uint16_t word;
-
-		  if (decomp_get16 (cc, &word))
-		    return grub_errno;
-
-		  code = word;
-		  cnt -= 2;
-
-		  if (!copied)
-		    {
-		      grub_error (GRUB_ERR_BAD_FS, "Context window empty");
-		      return 0;
-		    }
-
-		  for (i = copied - 1, lmask = 0xFFF, dshift = 12; i >= 0x10;
-		       i >>= 1)
-		    {
-		      lmask >>= 1;
-		      dshift--;
-		    }
-
-		  delta = code >> dshift;
-		  len = (code & lmask) + 3;
-
-		  for (i = 0; i < len; i++)
-		    {
-		      dest[copied] = dest[copied - delta - 1];
-		      copied++;
-		    }
-		}
-	      else
-		{
-		  unsigned char ch;
-
-		  if (decomp_getch (cc, &ch))
-		    return grub_errno;
-		  dest[copied++] = ch;
-		  cnt--;
-		}
-	      tag >>= 1;
-	      bits--;
-	    }
-	  return 0;
-	}
-      else
-	{
-	  if (cnt != COM_LEN)
-	    return grub_error (GRUB_ERR_BAD_FS,
-			       "Invalid compression block size");
-	}
-    }
-
-  while (cnt > 0)
-    {
-      int n;
-
-      n = (cc->spc << BLK_SHR) - cc->cbuf_ofs;
-      if (n > cnt)
-	n = cnt;
-      if ((dest) && (n))
-	{
-	  memcpy (dest, &cc->cbuf[cc->cbuf_ofs], n);
-	  dest += n;
-	}
-      cnt -= n;
-      cc->cbuf_ofs += n;
-      if ((cnt) && (decomp_nextvcn (cc)))
-	return grub_errno;
-    }
-  return 0;
-}
-
-static grub_err_t
-read_block (struct grub_ntfs_rlst *ctx, char *buf, int num)
-{
-  int cpb = COM_SEC / ctx->comp.spc;
-
-  while (num)
-    {
-      int nn;
-
-      if ((ctx->target_vcn & 0xF) == 0)
-	{
-
-	  if (ctx->comp.comp_head != ctx->comp.comp_tail)
-	    return grub_error (GRUB_ERR_BAD_FS, "Invalid compression block");
-	  ctx->comp.comp_head = ctx->comp.comp_tail = 0;
-	  ctx->comp.cbuf_vcn = ctx->target_vcn;
-	  ctx->comp.cbuf_ofs = (ctx->comp.spc << BLK_SHR);
-	  if (ctx->target_vcn >= ctx->next_vcn)
-	    {
-	      if (read_run_list (ctx))
-		return grub_errno;
-	    }
-	  while (ctx->target_vcn + 16 > ctx->next_vcn)
-	    {
-	      if (ctx->flags & RF_BLNK)
-		break;
-	      ctx->comp.comp_table[ctx->comp.comp_tail][0] = ctx->next_vcn;
-	      ctx->comp.comp_table[ctx->comp.comp_tail][1] =
-		ctx->curr_lcn + ctx->next_vcn - ctx->curr_vcn;
-	      ctx->comp.comp_tail++;
-	      if (read_run_list (ctx))
-		return grub_errno;
-	    }
-	}
-
-      nn = (16 - (ctx->target_vcn & 0xF)) / cpb;
-      if (nn > num)
-	nn = num;
-      num -= nn;
-
-      if (ctx->flags & RF_BLNK)
-	{
-	  ctx->target_vcn += nn * cpb;
-	  if (ctx->comp.comp_tail == 0)
-	    {
-	      if (buf)
-		{
-		  grub_memset (buf, 0, nn * COM_LEN);
-		  buf += nn * COM_LEN;
-		}
-	    }
-	  else
-	    {
-	      while (nn)
-		{
-		  if (decomp_block (&ctx->comp, buf))
-		    return grub_errno;
-		  if (buf)
-		    buf += COM_LEN;
-		  nn--;
-		}
-	    }
-	}
-      else
-	{
-	  nn *= cpb;
-	  while ((ctx->comp.comp_head < ctx->comp.comp_tail) && (nn))
-	    {
-	      int tt;
-
-	      tt =
-		ctx->comp.comp_table[ctx->comp.comp_head][0] -
-		ctx->target_vcn;
-	      if (tt > nn)
-		tt = nn;
-	      ctx->target_vcn += tt;
-	      if (buf)
-		{
-		  if (grub_disk_read
-		      (ctx->comp.disk,
-		       (ctx->comp.comp_table[ctx->comp.comp_head][1] -
-			(ctx->comp.comp_table[ctx->comp.comp_head][0] -
-			 ctx->target_vcn)) * ctx->comp.spc, 0,
-		       tt * (ctx->comp.spc << BLK_SHR), buf))
-		    return grub_errno;
-		  buf += tt * (ctx->comp.spc << BLK_SHR);
-		}
-	      nn -= tt;
-	      if (ctx->target_vcn >=
-		  ctx->comp.comp_table[ctx->comp.comp_head][0])
-		ctx->comp.comp_head++;
-	    }
-	  if (nn)
-	    {
-	      if (buf)
-		{
-		  if (grub_disk_read
-		      (ctx->comp.disk,
-		       (ctx->target_vcn - ctx->curr_vcn +
-			ctx->curr_lcn) * ctx->comp.spc, 0,
-		       nn * (ctx->comp.spc << BLK_SHR), buf))
-		    return grub_errno;
-		  buf += nn * (ctx->comp.spc << BLK_SHR);
-		}
-	      ctx->target_vcn += nn;
-	    }
-	}
-    }
-  return 0;
-}
-
 static int
 grub_ntfs_read_block (grub_fshelp_node_t node, int block)
 {
   struct grub_ntfs_rlst *ctx;
 
   ctx = (struct grub_ntfs_rlst *) node;
-  if ((unsigned long) block >= ctx->next_vcn)
+  if ((grub_uint32_t) block >= ctx->next_vcn)
     {
-      if (read_run_list (ctx))
+      if (grub_ntfs_read_run_list (ctx))
 	return -1;
       return ctx->curr_lcn;
     }
   else
-    return (ctx->flags & RF_BLNK) ? 0 : ((unsigned long) block -
+    return (ctx->flags & RF_BLNK) ? 0 : ((grub_uint32_t) block -
 					 ctx->curr_vcn + ctx->curr_lcn);
 }
 
 static grub_err_t
-read_data (struct grub_ntfs_attr *at, char *pa, char *dest, unsigned long ofs,
-	   unsigned long len, int cached,
+read_data (struct grub_ntfs_attr *at, char *pa, char *dest, grub_uint32_t ofs,
+	   grub_uint32_t len, int cached,
 	   void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 					       unsigned offset,
 					       unsigned length))
 {
-  unsigned long vcn;
+  grub_uint32_t vcn;
   struct grub_ntfs_rlst cc, *ctx;
-  grub_err_t ret;
 
   if (len == 0)
     return 0;
@@ -803,7 +392,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest, unsigned long ofs,
 	{
 	  if ((ofs & (~(COM_LEN - 1))) == at->save_pos)
 	    {
-	      unsigned long n;
+	      grub_uint32_t n;
 
 	      n = COM_LEN - (ofs - at->save_pos);
 	      if (n > len)
@@ -836,13 +425,13 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest, unsigned long ofs,
   ctx->curr_lcn = 0;
   while (ctx->next_vcn <= ctx->target_vcn)
     {
-      if (read_run_list (ctx))
+      if (grub_ntfs_read_run_list (ctx))
 	return grub_errno;
     }
 
   if (at->flags & AF_GPOS)
     {
-      unsigned long st0, st1;
+      grub_uint32_t st0, st1;
 
       st0 =
 	(ctx->target_vcn - ctx->curr_vcn + ctx->curr_lcn) * ctx->comp.spc +
@@ -851,7 +440,7 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest, unsigned long ofs,
       if (st1 ==
 	  (ctx->next_vcn - ctx->curr_vcn + ctx->curr_lcn) * ctx->comp.spc)
 	{
-	  if (read_run_list (ctx))
+	  if (grub_ntfs_read_run_list (ctx))
 	    return grub_errno;
 	  st1 = ctx->curr_lcn * ctx->comp.spc;
 	}
@@ -871,81 +460,14 @@ read_data (struct grub_ntfs_attr *at, char *pa, char *dest, unsigned long ofs,
       return grub_errno;
     }
 
-  ctx->comp.comp_head = ctx->comp.comp_tail = 0;
-  ctx->comp.cbuf = grub_malloc ((ctx->comp.spc) << BLK_SHR);
-  if (!ctx->comp.cbuf)
-    return 0;
-
-  ret = 0;
-
-  //ctx->comp.disk->read_hook = read_hook;
-
-  if ((vcn > ctx->target_vcn) &&
-      (read_block
-       (ctx, NULL, ((vcn - ctx->target_vcn) * ctx->comp.spc) / COM_SEC)))
-    {
-      ret = grub_errno;
-      goto quit;
-    }
-
-  if (ofs % COM_LEN)
-    {
-      unsigned long t, n, o;
-
-      t = ctx->target_vcn * (ctx->comp.spc << BLK_SHR);
-      if (read_block (ctx, at->sbuf, 1))
-	{
-	  ret = grub_errno;
-	  goto quit;
-	}
-
-      at->save_pos = t;
-
-      o = ofs % COM_LEN;
-      n = COM_LEN - o;
-      if (n > len)
-	n = len;
-      grub_memcpy (dest, &at->sbuf[o], n);
-      if (n == len)
-	goto quit;
-      dest += n;
-      len -= n;
-    }
-
-  if (read_block (ctx, dest, len / COM_LEN))
-    {
-      ret = grub_errno;
-      goto quit;
-    }
-
-  dest += (len / COM_LEN) * COM_LEN;
-  len = len % COM_LEN;
-  if (len)
-    {
-      unsigned long t;
-
-      t = ctx->target_vcn * (ctx->comp.spc << BLK_SHR);
-      if (read_block (ctx, at->sbuf, 1))
-	{
-	  ret = grub_errno;
-	  goto quit;
-	}
-
-      at->save_pos = t;
-
-      grub_memcpy (dest, at->sbuf, len);
-    }
-
-quit:
-  //ctx->comp.disk->read_hook = 0;
-  if (ctx->comp.cbuf)
-    grub_free (ctx->comp.cbuf);
-  return ret;
+  return (grub_ntfscomp_func) ? grub_ntfscomp_func (at, dest, ofs, len, ctx,
+						    vcn) :
+    grub_error (GRUB_ERR_BAD_FS, "ntfscomp module not loaded");
 }
 
 static grub_err_t
-read_attr (struct grub_ntfs_attr *at, char *dest, unsigned long ofs,
-	   unsigned long len, int cached,
+read_attr (struct grub_ntfs_attr *at, char *dest, grub_uint32_t ofs,
+	   grub_uint32_t len, int cached,
 	   void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
 					       unsigned offset,
 					       unsigned length))
@@ -961,7 +483,7 @@ read_attr (struct grub_ntfs_attr *at, char *dest, unsigned long ofs,
   if (at->flags & AF_ALST)
     {
       char *pa;
-      unsigned long vcn;
+      grub_uint32_t vcn;
 
       vcn = ofs / (at->mft->data->spc << BLK_SHR);
       pa = at->attr_nxt + u16at (at->attr_nxt, 4);
@@ -987,7 +509,7 @@ read_attr (struct grub_ntfs_attr *at, char *dest, unsigned long ofs,
 }
 
 static grub_err_t
-read_mft (struct grub_ntfs_data *data, char *buf, unsigned long mftno)
+read_mft (struct grub_ntfs_data *data, char *buf, grub_uint32_t mftno)
 {
   if (read_attr
       (&data->mmft.attr, buf, mftno * (data->mft_size << BLK_SHR),
@@ -1220,14 +742,14 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
 
   if (bitmap)
     {
-      unsigned long v, i;
+      grub_uint32_t v, i;
 
       indx = grub_malloc (mft->data->idx_size << BLK_SHR);
       if (indx == NULL)
 	goto done;
 
       v = 1;
-      for (i = 0; i < (unsigned long) bitmap_len * 8; i++)
+      for (i = 0; i < (grub_uint32_t) bitmap_len * 8; i++)
 	{
 	  if (*bitmap & v)
 	    {

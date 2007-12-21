@@ -1,3 +1,43 @@
+2007-12-21  Bean  <bean123ch@gmail.com>
+
+	* conf/common.rmk (pkgdata_MODULES): Add ntfscomp.mod.
+	(ntfscomp_mod_SOURCES): New variable.
+	(ntfscomp_mod_CFLAGS): Likewise.
+	(ntfscomp_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add fs/ntfscomp.c.
+	(grub_probe_SOURCES): Likewise.
+	(grub_emu_SOURCES): Likewise.
+
+	* conf/i386-efi.rmk (grub_probe_SOURCES): Add fs/ntfscomp.c.
+	(grub_emu_SOURCES): Likewise.
+
+	* conf/i386-linuxbios.rmk (grub_probe_SOURCES): Add fs/ntfscomp.c.
+	(grub_emu_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_probe_SOURCES): Add fs/ntfscomp.c.
+	(grub_emu_SOURCES): Likewise.
+
+	* fs/ntfs.c (grub_ntfscomp_func): New variable.
+	(read_run_list): Renamed to grub_ntfs_read_run_list.
+	(decomp_nextvcn): Moved to ntfscomp.c.
+	(decomp_getch): Likewise.
+	(decomp_get16): Likewise.
+	(decomp_block): Likewise.
+	(read_block): Likewise.
+	(read_data): Partially moved to ntfscomp.c.
+	(fixup): Change unsigned to grub_uint16_t.
+	(read_mft): Change unsigned long to grub_uint32_t.
+	(read_attr): Likewise.
+	(read_data): Likewise.
+	(read_run_data): Likewise.
+	(read_run_list): Likewise.
+	(read_mft): Likewise.
+
+	* fs/ntfscomp.c: New file.
+
+	* include/grub/ntfs.h: New file.
+
 2007-12-16  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub-mkdevicemap.c (make_device_map): Iterate up to 20 for

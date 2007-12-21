@@ -79,9 +79,9 @@ update-grub_DATA += util/grub.d/README
 
 
 # Filing systems.
-pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod	\
-	minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod affs.mod	\
-	sfs.mod hfsplus.mod
+pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
+	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
+	affs.mod sfs.mod hfsplus.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -342,6 +342,58 @@ fs-ntfs_mod-fs_ntfs.lst: fs/ntfs.c genfslist.sh
 
 ntfs_mod_CFLAGS = $(COMMON_CFLAGS)
 ntfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ntfscomp.mod.
+ntfscomp_mod_SOURCES = fs/ntfscomp.c
+CLEANFILES += ntfscomp.mod mod-ntfscomp.o mod-ntfscomp.c pre-ntfscomp.o ntfscomp_mod-fs_ntfscomp.o und-ntfscomp.lst
+ifneq ($(ntfscomp_mod_EXPORTS),no)
+CLEANFILES += def-ntfscomp.lst
+DEFSYMFILES += def-ntfscomp.lst
+endif
+MOSTLYCLEANFILES += ntfscomp_mod-fs_ntfscomp.d
+UNDSYMFILES += und-ntfscomp.lst
+
+ntfscomp.mod: pre-ntfscomp.o mod-ntfscomp.o
+	-rm -f $@
+	$(TARGET_CC) $(ntfscomp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-ntfscomp.o: $(ntfscomp_mod_DEPENDENCIES) ntfscomp_mod-fs_ntfscomp.o
+	-rm -f $@
+	$(TARGET_CC) $(ntfscomp_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ntfscomp_mod-fs_ntfscomp.o
+
+mod-ntfscomp.o: mod-ntfscomp.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ntfscomp_mod_CFLAGS) -c -o $@ $<
+
+mod-ntfscomp.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ntfscomp' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(ntfscomp_mod_EXPORTS),no)
+def-ntfscomp.lst: pre-ntfscomp.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ntfscomp/' > $@
+endif
+
+und-ntfscomp.lst: pre-ntfscomp.o
+	echo 'ntfscomp' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ntfscomp_mod-fs_ntfscomp.o: fs/ntfscomp.c
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(ntfscomp_mod_CFLAGS) -MD -c -o $@ $<
+-include ntfscomp_mod-fs_ntfscomp.d
+
+CLEANFILES += cmd-ntfscomp_mod-fs_ntfscomp.lst fs-ntfscomp_mod-fs_ntfscomp.lst
+COMMANDFILES += cmd-ntfscomp_mod-fs_ntfscomp.lst
+FSFILES += fs-ntfscomp_mod-fs_ntfscomp.lst
+
+cmd-ntfscomp_mod-fs_ntfscomp.lst: fs/ntfscomp.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ntfscomp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ntfscomp > $@ || (rm -f $@; exit 1)
+
+fs-ntfscomp_mod-fs_ntfscomp.lst: fs/ntfscomp.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ntfscomp_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ntfscomp > $@ || (rm -f $@; exit 1)
+
+
+ntfscomp_mod_CFLAGS = $(COMMON_CFLAGS)
+ntfscomp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For minix.mod.
 minix_mod_SOURCES = fs/minix.c

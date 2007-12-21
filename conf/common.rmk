@@ -79,9 +79,9 @@ update-grub_DATA += util/grub.d/README
 
 
 # Filing systems.
-pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod	\
-	minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod affs.mod	\
-	sfs.mod hfsplus.mod
+pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
+	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
+	affs.mod sfs.mod hfsplus.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -107,6 +107,11 @@ ext2_mod_LDFLAGS = $(COMMON_LDFLAGS)
 ntfs_mod_SOURCES = fs/ntfs.c
 ntfs_mod_CFLAGS = $(COMMON_CFLAGS)
 ntfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ntfscomp.mod.
+ntfscomp_mod_SOURCES = fs/ntfscomp.c
+ntfscomp_mod_CFLAGS = $(COMMON_CFLAGS)
+ntfscomp_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For minix.mod.
 minix_mod_SOURCES = fs/minix.c
