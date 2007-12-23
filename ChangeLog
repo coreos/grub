@@ -1,3 +1,9 @@
+2007-12-23  Robert Millan  <rmh@aybabtu.com>
+
+	Patch from Bean  <bean123ch@gmail.com>:
+	* disk/loopback.c (grub_loopback_read): Add missing bit shift to
+	`size'.
+
 2007-12-21  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (pkgdata_MODULES): Add ntfscomp.mod.

@@ -214,7 +214,7 @@ grub_loopback_read (grub_disk_t disk, grub_disk_addr_t sector,
   if (pos > file->size)
     {
       grub_size_t amount = pos - file->size;
-      grub_memset (buf + size - amount, 0, amount);
+      grub_memset (buf + (size << GRUB_DISK_SECTOR_BITS) - amount, 0, amount);
     }
   
   return 0;
