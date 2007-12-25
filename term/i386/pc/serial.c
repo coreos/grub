@@ -454,13 +454,6 @@ grub_serial_setcolorstate (const grub_term_color_state state)
 }
 
 static void
-grub_serial_setcolor (grub_uint8_t normal_color __attribute__ ((unused)),
-                      grub_uint8_t highlight_color __attribute__ ((unused)))
-{
-  /* FIXME */
-}
-
-static void
 grub_serial_setcursor (const int on)
 {
   if (on)
@@ -483,7 +476,6 @@ static struct grub_term grub_serial_term =
   .gotoxy = grub_serial_gotoxy,
   .cls = grub_serial_cls,
   .setcolorstate = grub_serial_setcolorstate,
-  .setcolor = grub_serial_setcolor,
   .setcursor = grub_serial_setcursor,
   .flags = 0,
   .next = 0

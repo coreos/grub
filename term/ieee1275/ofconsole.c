@@ -129,6 +129,13 @@ grub_ofconsole_setcolor (grub_uint8_t normal_color,
   bgcolor = highlight_color;
 }
 
+static void
+grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+{
+  *normal_color = fgcolor;
+  *highlight_color = bgcolor;
+}
+
 static int
 grub_ofconsole_readkey (int *key)
 {
@@ -364,6 +371,7 @@ static struct grub_term grub_ofconsole_term =
     .cls = grub_ofconsole_cls,
     .setcolorstate = grub_ofconsole_setcolorstate,
     .setcolor = grub_ofconsole_setcolor,
+    .getcolor = grub_ofconsole_getcolor,
     .setcursor = grub_ofconsole_setcursor,
     .refresh = grub_ofconsole_refresh,
     .flags = 0,

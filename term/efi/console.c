@@ -260,6 +260,13 @@ grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
 }
 
 static void
+grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+{
+  *normal_color = grub_console_normal_color;
+  *highlight_color = grub_console_highlight_color;
+}
+
+static void
 grub_console_setcursor (int on)
 {
   grub_efi_simple_text_output_interface_t *o;
@@ -283,6 +290,7 @@ static struct grub_term grub_console_term =
     .cls = grub_console_cls,
     .setcolorstate = grub_console_setcolorstate,
     .setcolor = grub_console_setcolor,
+    .getcolor = grub_console_getcolor,
     .setcursor = grub_console_setcursor,
     .flags = 0,
     .next = 0

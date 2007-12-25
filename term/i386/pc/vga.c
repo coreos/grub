@@ -460,13 +460,6 @@ grub_vga_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_vga_setcolor (grub_uint8_t normal_color __attribute__ ((unused)),
-		   grub_uint8_t highlight_color __attribute__ ((unused)))
-{
-  /* FIXME */
-}
-
-static void
 grub_vga_setcursor (int on)
 {
   if (cursor_state != on)
@@ -494,7 +487,6 @@ static struct grub_term grub_vga_term =
     .gotoxy = grub_vga_gotoxy,
     .cls = grub_vga_cls,
     .setcolorstate = grub_vga_setcolorstate,
-    .setcolor = grub_vga_setcolor,
     .setcursor = grub_vga_setcursor,
     .flags = 0,
     .next = 0

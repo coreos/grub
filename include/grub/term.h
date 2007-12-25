@@ -164,6 +164,10 @@ struct grub_term
      color is VGA's.  */
   void (*setcolor) (grub_uint8_t normal_color, grub_uint8_t highlight_color);
   
+  /* Get the normal color and the highlight color. The format of each
+     color is VGA's.  */
+  void (*getcolor) (grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
+  
   /* Turn on/off the cursor.  */
   void (*setcursor) (int on);
 
@@ -197,6 +201,8 @@ void EXPORT_FUNC(grub_cls) (void);
 void EXPORT_FUNC(grub_setcolorstate) (grub_term_color_state state);
 void EXPORT_FUNC(grub_setcolor) (grub_uint8_t normal_color,
 				 grub_uint8_t highlight_color);
+void EXPORT_FUNC(grub_getcolor) (grub_uint8_t *normal_color,
+				 grub_uint8_t *highlight_color);
 int EXPORT_FUNC(grub_setcursor) (int on);
 int EXPORT_FUNC(grub_getcursor) (void);
 void EXPORT_FUNC(grub_refresh) (void);

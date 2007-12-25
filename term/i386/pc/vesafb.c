@@ -565,13 +565,6 @@ grub_virtual_screen_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_virtual_screen_setcolor (grub_uint8_t normal_color __attribute__ ((unused)),
-			      grub_uint8_t highlight_color __attribute__ ((unused)))
-{
-  /* FIXME */
-}
-
-static void
 grub_vesafb_setcursor (int on)
 {
   if (virtual_screen.cursor_state != on)
@@ -599,7 +592,6 @@ static struct grub_term grub_vesafb_term =
     .gotoxy = grub_vesafb_gotoxy,
     .cls = grub_vesafb_cls,
     .setcolorstate = grub_virtual_screen_setcolorstate,
-    .setcolor = grub_virtual_screen_setcolor,
     .setcursor = grub_vesafb_setcursor,
     .flags = 0,
     .next = 0

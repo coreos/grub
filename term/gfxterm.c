@@ -840,14 +840,6 @@ grub_virtual_screen_setcolorstate (grub_term_color_state state)
 }
 
 static void
-grub_virtual_screen_setcolor (grub_uint8_t normal_color,
-                              grub_uint8_t highlight_color)
-{
-  virtual_screen.fg_color_setting = grub_video_map_color (normal_color);
-  virtual_screen.bg_color_setting = grub_video_map_color (highlight_color);
-}
-
-static void
 grub_gfxterm_setcursor (int on)
 {
   if (virtual_screen.cursor_state != on)
@@ -882,7 +874,6 @@ static struct grub_term grub_video_term =
     .gotoxy = grub_gfxterm_gotoxy,
     .cls = grub_gfxterm_cls,
     .setcolorstate = grub_virtual_screen_setcolorstate,
-    .setcolor = grub_virtual_screen_setcolor,
     .setcursor = grub_gfxterm_setcursor,
     .refresh = grub_gfxterm_refresh,
     .flags = 0,

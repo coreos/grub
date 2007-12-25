@@ -25,6 +25,9 @@
 #include <grub/env.h>
 #include <grub/script.h>
 
+#define GRUB_COLOR_MENU_NORMAL		0x07
+#define GRUB_COLOR_MENU_HIGHLIGHT	0x70
+
 static void
 draw_border (void)
 {
@@ -105,7 +108,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
   grub_ssize_t len;
   grub_uint32_t *unicode_title;
   grub_ssize_t i;
-  
+  grub_uint8_t normal_code, highlight_code;
+
   title = entry ? entry->title : "";
   unicode_title = grub_malloc (grub_strlen (title) * sizeof (*unicode_title));
   if (! unicode_title)
@@ -121,6 +125,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
       return;
     }
   
+  grub_getcolor (&normal_code, &highlight_code);
+  grub_setcolor (GRUB_COLOR_MENU_NORMAL, GRUB_COLOR_MENU_HIGHLIGHT);
   grub_setcolorstate (highlight
 		      ? GRUB_TERM_COLOR_HIGHLIGHT
 		      : GRUB_TERM_COLOR_NORMAL);
@@ -153,8 +159,12 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 	  x++;
 	}
     }
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+  grub_putchar (' ');
+
   grub_gotoxy (GRUB_TERM_CURSOR_X, y);
 
+  grub_setcolor (normal_code, highlight_code);
   grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
   grub_free (unicode_title);
 }
@@ -199,9 +209,15 @@ print_entries (grub_menu_t menu, int first, int offset)
 void
 grub_menu_init_page (int nested, int edit)
 {
+  grub_uint8_t normal_code, highlight_code;
+  grub_getcolor (&normal_code, &highlight_code);
+  grub_setcolor (GRUB_COLOR_MENU_NORMAL, GRUB_COLOR_MENU_HIGHLIGHT);
+
   grub_normal_init_page ();
   draw_border ();
   print_message (nested, edit);
+
+  grub_setcolor (normal_code, highlight_code);
 }
 
 /* Return the current timeout. If the variable "timeout" is not set or

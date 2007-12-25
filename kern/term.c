@@ -230,6 +230,13 @@ grub_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
     (grub_cur_term->setcolor) (normal_color, highlight_color);
 }
 
+void
+grub_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
+{
+  if (grub_cur_term->getcolor)
+    (grub_cur_term->getcolor) (normal_color, highlight_color);
+}
+
 int
 grub_setcursor (int on)
 {

@@ -1,5 +1,36 @@
 2007-12-25  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/term.h (struct grub_term): Add `getcolor' function.
+	(grub_getcolor): New function.
+
+	* kern/term.c (grub_getcolor): New function.
+	* normal/menu.c (GRUB_COLOR_MENU_NORMAL): New macro.
+	(GRUB_COLOR_MENU_HIGHLIGHT): New macro.
+	(print_entry): Set normal and highlight colors to
+	`GRUB_COLOR_MENU_NORMAL' and `GRUB_COLOR_MENU_HIGHLIGHT',
+	respectively, before printing and restore them to old
+	values afterwards.
+	(grub_menu_init_page): Likewise.  Fill an additional colored space
+	that would otherwise be left blank.
+
+	* term/efi/console.c (grub_console_getcolor): New function.
+	(struct grub_console_term.getcolor): New variable.
+	* term/i386/pc/console.c (grub_console_getcolor): New function.
+	(struct grub_console_term.getcolor): New variable.
+	* term/ieee1275/ofconsole.c (grub_ofconsole_getcolor): New function.
+	(struct grub_console_term.getcolor): New variable.
+
+	* term/i386/pc/serial.c (grub_serial_setcolor): Remove function.
+	(struct grub_console_term.setcolor): Remove variable.
+	* term/i386/pc/vesafb.c (grub_virtual_screen_setcolor): Remove function.
+	(struct grub_console_term.setcolor): Remove variable.
+	* term/i386/pc/vga.c (grub_vga_setcolor): Remove function.
+	(struct grub_console_term.setcolor): Remove variable.
+	* term/gfxterm.c (grub_virtual_screen_setcolor): Remove function.
+	(struct grub_console_term.setcolor): Remove variable.
+
+2007-12-25  Robert Millan  <rmh@aybabtu.com>
+
 	* configure.ac: Search for possible unifont.hex locations, and
 	define UNIFONT_HEX if found.
 
