@@ -75,6 +75,7 @@ AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBLZO = @LIBLZO@
 YACC = @YACC@
+UNIFONT_HEX = @UNIFONT_HEX@
 
 # Options.
 enable_grub_emu = @enable_grub_emu@
@@ -85,8 +86,9 @@ RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \
 	sparc64-ieee1275.rmk i386-efi.rmk)
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
-DATA = $(pkgdata_IMAGES) $(pkgdata_MODULES) $(pkgdata_PROGRAMS) \
-	$(pkgdata_DATA) $(lib_DATA)
+PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
+	$(pkglib_DATA) $(lib_DATA)
+PKGDATA = $(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(update-grub_SCRIPTS)
 
@@ -112,8 +114,8 @@ include $(srcdir)/conf/$(target_cpu)-$(platform).mk
 
 ### General targets.
 
-CLEANFILES += moddep.lst command.lst fs.lst
-pkgdata_DATA += moddep.lst command.lst fs.lst
+CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA)
+pkglib_DATA += moddep.lst command.lst fs.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -125,17 +127,34 @@ command.lst: $(COMMANDFILES)
 fs.lst: $(FSFILES)
 	cat $^ /dev/null | sort > $@
 
-all-local: $(PROGRAMS) $(DATA) $(SCRIPTS) $(MKFILES)
+ifeq (, $(UNIFONT_HEX))
+else
+pkgdata_DATA += unicode.pff ascii.pff
+unicode.pff: $(UNIFONT_HEX)
+	ruby $(srcdir)/util/unifont2pff.rb $(UNIFONT_HEX) > $@
+
+ascii.pff: $(UNIFONT_HEX)
+	ruby $(srcdir)/util/unifont2pff.rb 0-127 $(UNIFONT_HEX) > $@
+endif
+
+all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)
 
 install: install-local
 
 install-local: all
 	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
-	@list='$(DATA)'; \
+	@list='$(PKGLIB)'; \
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
+	done
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	@list='$(PKGDATA)'; \
+	for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_UTILITIES)'; for file in $$list; do \
@@ -182,10 +201,15 @@ install-strip:
 	$(MAKE) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" install
 
 uninstall:
-	@list='$(DATA)'; \
+	@list='$(PKGLIB)'; \
 	for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  rm -f $(DESTDIR)$(pkglibdir)/$$dest; \
+	done
+	@list='$(PKGDATA)'; \
+	for file in $$list; do \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  rm -f $(DESTDIR)$(pkgdatadir)/$$dest; \
 	done
 	@list='$(bin_UTILITIES) $(bin_SCRIPTS)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \

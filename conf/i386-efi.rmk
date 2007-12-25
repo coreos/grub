@@ -76,7 +76,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
+pkglib_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
 	_linux.mod linux.mod cpuid.mod
 
 # For kernel.mod.

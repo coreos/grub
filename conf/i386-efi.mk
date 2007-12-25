@@ -248,7 +248,7 @@ grub-install: util/i386/efi/grub-install.in config.status
 
 
 # Modules.
-pkgdata_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
+pkglib_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
 	_linux.mod linux.mod cpuid.mod
 
 # For kernel.mod.

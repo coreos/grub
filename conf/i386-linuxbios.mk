@@ -5,7 +5,7 @@ COMMON_CFLAGS	= -ffreestanding -mrtd -mregparm=3
 COMMON_LDFLAGS	= -nostdlib -static -lgcc
 
 # Images.
-pkgdata_PROGRAMS = kernel.elf
+pkglib_PROGRAMS = kernel.elf
 
 # For kernel.elf.
 kernel_elf_SOURCES = kern/i386/linuxbios/startup.S kern/i386/linuxbios/init.c \
@@ -669,7 +669,7 @@ grub_emu-grub_emu_init.o: grub_emu_init.c $(grub_emu_init.c_DEPENDENCIES)
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Modules.
-pkgdata_MODULES = _linux.mod linux.mod normal.mod	\
+pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod play.mod		\
 	cpuid.mod serial.mod ata.mod
 

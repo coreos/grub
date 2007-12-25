@@ -26,7 +26,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genke
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Programs
-pkgdata_PROGRAMS = kernel.elf
+pkglib_PROGRAMS = kernel.elf
 
 # Utilities.
 #bin_UTILITIES = grub-mkimage
@@ -78,7 +78,7 @@ kernel_elf_LDFLAGS = -mno-app-regs -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-me
 
 # Modules.
 #_linux.mod linux.mod
-pkgdata_MODULES = fat.mod ufs.mod ext2.mod minix.mod \
+pkglib_MODULES = fat.mod ufs.mod ext2.mod minix.mod \
 	hfs.mod jfs.mod normal.mod hello.mod font.mod ls.mod \
 	boot.mod cmp.mod cat.mod terminal.mod fshelp.mod amiga.mod apple.mod \
 	pc.mod suspend.mod loopback.mod help.mod reboot.mod halt.mod sun.mod \

@@ -103,6 +103,13 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
+for file in /usr/share/unifont/unifont.hex ; do
+  if test -e $file ; then
+    AC_SUBST([UNIFONT_HEX], [$file])
+    break
+  fi
+done
+
 AC_PROG_INSTALL
 AC_PROG_AWK
 AC_PROG_MAKE_SET

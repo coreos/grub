@@ -22,7 +22,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genke
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 # Programs
-pkgdata_PROGRAMS = kernel.elf
+pkglib_PROGRAMS = kernel.elf
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
@@ -665,7 +665,7 @@ grub-install: util/powerpc/ieee1275/grub-install.in config.status
 
 
 # Modules.
-pkgdata_MODULES = halt.mod \
+pkglib_MODULES = halt.mod \
 	_linux.mod \
 	linux.mod \
 	normal.mod \

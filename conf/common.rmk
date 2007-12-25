@@ -79,7 +79,7 @@ update-grub_DATA += util/grub.d/README
 
 
 # Filing systems.
-pkgdata_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
+pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
 	affs.mod sfs.mod hfsplus.mod
 
@@ -154,7 +154,7 @@ hfsplus_mod_CFLAGS = $(COMMON_CFLAGS)
 hfsplus_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Partition maps.
-pkgdata_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod
+pkglib_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod
 
 # For amiga.mod
 amiga_mod_SOURCES = partmap/amiga.c
@@ -188,7 +188,7 @@ gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Special disk structures
 
-pkgdata_MODULES += raid.mod lvm.mod
+pkglib_MODULES += raid.mod lvm.mod
 
 # For raid.mod
 raid_mod_SOURCES = disk/raid.c
@@ -201,7 +201,7 @@ lvm_mod_CFLAGS = $(COMMON_CFLAGS)
 lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
-pkgdata_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
+pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod				\
 	terminfo.mod test.mod blocklist.mod hexdump.mod
@@ -287,7 +287,7 @@ hexdump_mod_CFLAGS = $(COMMON_CFLAGS)
 hexdump_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
-pkgdata_MODULES += gzio.mod elf.mod
+pkglib_MODULES += gzio.mod elf.mod
 
 # For elf.mod.
 elf_mod_SOURCES = kern/elf.c

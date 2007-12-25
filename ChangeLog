@@ -1,3 +1,28 @@
+2007-12-25  Robert Millan  <rmh@aybabtu.com>
+
+	* configure.ac: Search for possible unifont.hex locations, and
+	define UNIFONT_HEX if found.
+
+	* Makefile.in (UNIFONT_HEX): Define variable.
+	(DATA): Rename to ...
+	(PKGLIB): ... this.  Update all users.
+	(PKGDATA): New variable.
+	(pkgdata_IMAGES): Rename to ...
+	(pkglib_IMAGES): ... this. Update all users.
+	(pkgdata_MODULES): Rename to ...
+	(pkglib_MODULES): ... this. Update all users.
+	(pkgdata_PROGRAMS): Rename to ...
+	(pkglib_PROGRAMS): ... this. Update all users.
+	(pkgdata_DATA): Rename to ...
+	(pkglib_DATA): ... this. Update all users.
+	(CLEANFILES): Redefine to `$(pkglib_DATA) $(pkgdata_DATA)'.
+	(unicode.pff, ascii.pff): New rules.
+	(all-local): Add `$(PKGDATA)' dependency.
+	(install-local): Process `$(PKGDATA)'.
+
+	* util/update-grub_lib.in (font_path): Search for *.pff files in
+	a few more locations, including `${pkgdata}'.
+
 2007-12-23  Robert Millan  <rmh@aybabtu.com>
 
 	Patch from Bean  <bean123ch@gmail.com>:

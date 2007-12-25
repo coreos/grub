@@ -667,6 +667,7 @@ target_os
 platform
 CMP
 YACC
+UNIFONT_HEX
 INSTALL_PROGRAM
 INSTALL_SCRIPT
 INSTALL_DATA
@@ -2070,6 +2071,14 @@ if test "x$YACC" = x; then
 echo "$as_me: error: bison is not found" >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+for file in /usr/share/unifont/unifont.hex ; do
+  if test -e $file ; then
+    UNIFONT_HEX=$file
+
+    break
+  fi
+done
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -8817,6 +8826,7 @@ target_os!$target_os$ac_delim
 platform!$platform$ac_delim
 CMP!$CMP$ac_delim
 YACC!$YACC$ac_delim
+UNIFONT_HEX!$UNIFONT_HEX$ac_delim
 INSTALL_PROGRAM!$INSTALL_PROGRAM$ac_delim
 INSTALL_SCRIPT!$INSTALL_SCRIPT$ac_delim
 INSTALL_DATA!$INSTALL_DATA$ac_delim
@@ -8848,7 +8858,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 81; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 82; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
