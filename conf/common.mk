@@ -81,7 +81,7 @@ update-grub_DATA += util/grub.d/README
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
-	affs.mod sfs.mod hfsplus.mod
+	affs.mod sfs.mod hfsplus.mod cpio.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -810,6 +810,58 @@ fs-hfsplus_mod-fs_hfsplus.lst: fs/hfsplus.c genfslist.sh
 
 hfsplus_mod_CFLAGS = $(COMMON_CFLAGS)
 hfsplus_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For cpio.mod.
+cpio_mod_SOURCES = fs/cpio.c
+CLEANFILES += cpio.mod mod-cpio.o mod-cpio.c pre-cpio.o cpio_mod-fs_cpio.o und-cpio.lst
+ifneq ($(cpio_mod_EXPORTS),no)
+CLEANFILES += def-cpio.lst
+DEFSYMFILES += def-cpio.lst
+endif
+MOSTLYCLEANFILES += cpio_mod-fs_cpio.d
+UNDSYMFILES += und-cpio.lst
+
+cpio.mod: pre-cpio.o mod-cpio.o
+	-rm -f $@
+	$(TARGET_CC) $(cpio_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-cpio.o: $(cpio_mod_DEPENDENCIES) cpio_mod-fs_cpio.o
+	-rm -f $@
+	$(TARGET_CC) $(cpio_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ cpio_mod-fs_cpio.o
+
+mod-cpio.o: mod-cpio.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpio_mod_CFLAGS) -c -o $@ $<
+
+mod-cpio.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'cpio' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(cpio_mod_EXPORTS),no)
+def-cpio.lst: pre-cpio.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 cpio/' > $@
+endif
+
+und-cpio.lst: pre-cpio.o
+	echo 'cpio' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+cpio_mod-fs_cpio.o: fs/cpio.c
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(cpio_mod_CFLAGS) -MD -c -o $@ $<
+-include cpio_mod-fs_cpio.d
+
+CLEANFILES += cmd-cpio_mod-fs_cpio.lst fs-cpio_mod-fs_cpio.lst
+COMMANDFILES += cmd-cpio_mod-fs_cpio.lst
+FSFILES += fs-cpio_mod-fs_cpio.lst
+
+cmd-cpio_mod-fs_cpio.lst: fs/cpio.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cpio > $@ || (rm -f $@; exit 1)
+
+fs-cpio_mod-fs_cpio.lst: fs/cpio.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cpio > $@ || (rm -f $@; exit 1)
+
+
+cpio_mod_CFLAGS = $(COMMON_CFLAGS)
+cpio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Partition maps.
 pkglib_MODULES += amiga.mod apple.mod pc.mod sun.mod acorn.mod gpt.mod

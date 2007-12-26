@@ -1,3 +1,20 @@
+2007-12-26  Bean  <bean123ch@gmail.com>
+
+	* conf/common.rmk (pkgdata_MODULES): Add cpio.mod.
+	(cpio_mod_SOURCES): New variable.
+	(cpio_mod_CFLAGS): Likewise.
+	(cpio_mod_LDFLAGS): Likewise.
+
+	* fs/cpio.c: New file.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add cpio.c.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+
+	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
 2007-12-25  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/term.h (struct grub_term): Add `getcolor' function.
