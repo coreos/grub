@@ -84,30 +84,43 @@ while [ "x$list" != "x" ] ; do
   dirname=`dirname $linux`
   grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g"`
+
+  initrd=
+  for i in "initrd.img-${version}" "initrd-${version}.img"; do
+    if test -e "${dirname}/${i}" ; then
+      initrd="$i"
+      break
+    fi
+  done
+  if test -n "${initrd}" ; then
+    echo "Found initrd image: ${dirname}/${initrd}" >&2
+  fi
+
   cat << EOF
 menuentry "${OS}, linux ${version}" {
 	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX}
 EOF
-  if test -e ${dirname}/initrd.img-${version} ; then
-    echo "Found initrd image: ${dirname}/initrd.img-${version}" >&2
+  if test -n "${initrd}" ; then
     cat << EOF
-	initrd	${grub_dirname}/initrd.img-${version}
+	initrd	${grub_dirname}/${initrd}
 EOF
   fi
   cat << EOF
 }
 EOF
+
   cat << EOF
 menuentry "${OS}, linux ${version} (single-user mode)" {
 	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
 EOF
-  if test -e ${dirname}/initrd.img-${version} ; then
+  if test -n "${initrd}" ; then
     cat << EOF
-	initrd	${grub_dirname}/initrd.img-${version}
+	initrd	${grub_dirname}/${initrd}
 EOF
   fi
   cat << EOF
 }
 EOF
+
   list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
 done

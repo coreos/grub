@@ -1,3 +1,8 @@
+2007-12-19  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub.d/10_linux.in: Refactor search for initrd.  Add
+	support for initrd names used in Fedora.
+
 2007-12-26  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (pkgdata_MODULES): Add cpio.mod.
