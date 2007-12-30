@@ -349,7 +349,7 @@ grub_gfxterm_init (void)
           
           /* Try out video mode.  */
           
-          /* If we have 8 or less bits, then assuem that it is indexed color mode.  */
+          /* If we have 8 or less bits, then assume that it is indexed color mode.  */
           if ((depth <= 8) && (depth != -1))
             flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
 
@@ -399,7 +399,7 @@ grub_gfxterm_init (void)
     {
       /* No gfxmode variable set, use defaults.  */
       
-      /* If we have 8 or less bits, then assuem that it is indexed color mode.  */
+      /* If we have 8 or less bits, then assume that it is indexed color mode.  */
       if ((depth <= 8) && (depth != -1))
         flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
 

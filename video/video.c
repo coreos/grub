@@ -20,7 +20,7 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 
-/* The list of video adapters registerd to system.  */
+/* The list of video adapters registered to system.  */
 static grub_video_adapter_t grub_video_adapter_list;
 
 /* Active video adapter.  */
@@ -112,7 +112,7 @@ grub_video_setup (unsigned int width, unsigned int height,
                      "Can't locate valid adapter for mode");
 }
 
-/* Restore back to initial mode (where applicaple).  */
+/* Restore back to initial mode (where applicable).  */
 grub_err_t
 grub_video_restore (void)
 {

@@ -1089,7 +1089,7 @@ xsmap:
  * character and the attribute, and restore the current position.
  *
  * The reason why this is so complicated is that there is no easy way to
- * get the height of the screen, and the TELETYPE OUPUT BIOS call doesn't
+ * get the height of the screen, and the TELETYPE OUTPUT BIOS call doesn't
  * support setting a background attribute.
  */
 FUNCTION(grub_console_real_putchar)

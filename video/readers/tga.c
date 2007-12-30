@@ -327,7 +327,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
      ID from end of file, but we really don't care about that as we are
      not going to support developer area & extensions at this point.  */
 
-  /* Read TGA header from begining of file.  */
+  /* Read TGA header from beginning of file.  */
   if (grub_file_read (file, (char*)&header, sizeof (header)) 
       != sizeof (header))
     {
@@ -440,7 +440,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
         }
     }
 
-  /* If there were loading proble, destroy bitmap.  */
+  /* If there was a loading problem, destroy bitmap.  */
   if (grub_errno != GRUB_ERR_NONE)
     {
       grub_video_bitmap_destroy (*bitmap);

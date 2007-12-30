@@ -257,7 +257,7 @@ main (int argc, char *argv[])
   /* First, get defined symbols.  */
   read_defined_symbols (stdin);
 
-  /* Second, find the dependecies.  */
+  /* Second, find the dependencies.  */
   for (i = 1; i < argc; i++)
     {
       FILE *fp;

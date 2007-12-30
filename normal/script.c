@@ -24,14 +24,14 @@
 
 /* It is not possible to deallocate the memory when a syntax error was
    found.  Because of that it is required to keep track of all memory
-   allocations.  The memory is free'ed in case of an error, or
+   allocations.  The memory is freed in case of an error, or
    assigned to the parsed script when parsing was successful.  */
 
 /* XXX */
 
 /* In case of the normal malloc, some additional bytes are allocated
    for this datastructure.  All reserved memory is stored in a linked
-   list so it can be easily free'ed.  The original memory can be found
+   list so it can be easily freed.  The original memory can be found
    from &mem.  */
 struct grub_script_mem
 {
@@ -230,7 +230,7 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
   cmd = grub_script_malloc (state, sizeof (*cmd));
   cmd->cmd.exec = grub_script_execute_menuentry;
   cmd->cmd.next = 0;
-  /* XXX: Check if this memory is properly free'ed.  */
+  /* XXX: Check if this memory is properly freed.  */
   cmd->sourcecode = sourcecode;
   cmd->title = title;
   cmd->options = options;

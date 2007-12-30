@@ -61,7 +61,7 @@ Install GRUB on your EFI partition.
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
 
-grub-install copies GRUB images into the DIR/boot directory specfied by
+grub-install copies GRUB images into the DIR/boot directory specified by
 --root-directory.
 
 Report bugs to <bug-grub@gnu.org>.

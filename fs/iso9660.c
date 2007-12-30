@@ -283,13 +283,13 @@ grub_iso9660_mount (grub_disk_t disk)
   /* Test if the SUSP protocol is used on this filesystem.  */
   if (grub_strncmp ((char *) entry->sig, "SP", 2) == 0)
     {
-      /* The 2nd data byte stored how many bytes are skipped everytime
+      /* The 2nd data byte stored how many bytes are skipped every time
 	 to get to the SUA (System Usage Area).  */
       data->susp_skip = entry->data[2];
       entry = (struct grub_iso9660_susp_entry *) ((char *) entry + entry->len);
       
       /* Iterate over the entries in the SUA area to detect
-	 entensions.  */
+	 extensions.  */
       if (grub_iso9660_susp_iterate (data,
 				     (grub_le_to_cpu32 (data->voldesc.rootdir.first_sector)
 				      << GRUB_ISO9660_LOG2_BLKSZ),

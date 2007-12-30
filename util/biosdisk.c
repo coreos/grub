@@ -425,7 +425,7 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 #ifdef __linux__
   if (sector == 0 && size > 1)
     {
-      /* Work around a bug in linux's ez remapping.  Linux remaps all
+      /* Work around a bug in Linux ez remapping.  Linux remaps all
 	 sectors that are read together with the MBR in one read.  It
 	 should only remap the MBR, so we split the read in two 
 	 parts. -jochen  */

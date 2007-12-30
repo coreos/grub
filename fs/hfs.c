@@ -43,7 +43,7 @@ enum
     GRUB_HFS_FILETYPE_FILE = 2
   };
 
-/* A node desciptor.  This is the header of every node.  */
+/* A node descriptor.  This is the header of every node.  */
 struct grub_hfs_node
 {
   grub_uint32_t next;

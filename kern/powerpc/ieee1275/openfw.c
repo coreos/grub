@@ -1,4 +1,4 @@
-/*  openfw.c -- Open firmware support funtions.  */
+/*  openfw.c -- Open firmware support functions.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
@@ -159,7 +159,7 @@ grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
   if (grub_ieee1275_get_property (memory, "available", available,
 				  sizeof available, 0))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-		       "Couldn't examine /memory/available propery");
+		       "Couldn't examine /memory/available property");
 
   /* Decode each entry and call `hook'.  */
   i = 0;

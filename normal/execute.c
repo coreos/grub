@@ -231,7 +231,7 @@ grub_script_execute_menuentry (struct grub_script_cmd *cmd)
       return grub_errno;
     }
 
-  /* XXX: When this fails, the memory should be free'ed?  */
+  /* XXX: When this fails, the memory should be freed?  */
   return grub_normal_menu_addentry (title, script,
 				    cmd_menuentry->sourcecode);
 }

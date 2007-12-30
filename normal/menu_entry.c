@@ -335,7 +335,7 @@ insert_string (struct screen *screen, char *s, int update)
 	  int size;
 	  int orig_num, new_num;
 
-	  /* Find a string delimitted by LF.  */
+	  /* Find a string delimited by LF.  */
 	  p = grub_strchr (s, '\n');
 	  if (! p)
 	    p = s + grub_strlen (s);

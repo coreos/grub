@@ -1,4 +1,4 @@
-/*  openfw.c -- Open firmware support funtions.  */
+/*  openfw.c -- Open firmware support functions.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003,2004,2005,2007  Free Software Foundation, Inc.

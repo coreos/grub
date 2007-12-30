@@ -88,7 +88,7 @@ grub_ieee1275_find_options (void)
 	     3rd party updates which fix the partition bugs are common, and for
 	     some reason their fixes aren't being merged into trunk.  So for
 	     example we know that 1.2 and 1.3 are broken, but there's 1.2.99
-	     and 1.3.99 which are known good (and appliing this workaround
+	     and 1.3.99 which are known good (and applying this workaround
 	     would cause breakage). */
 	  if (!grub_strcmp (tmp, "1.0")
 	      || !grub_strcmp (tmp, "1.1")

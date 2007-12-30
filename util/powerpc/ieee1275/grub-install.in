@@ -65,7 +65,7 @@ Install GRUB on your drive.
   --grub-probe=FILE       use FILE as grub-probe
   --no-nvram              don't update the boot-device NVRAM variable
 
-grub-install copies GRUB images into the DIR/boot directory specfied by
+grub-install copies GRUB images into the DIR/boot directory specified by
 --root-directory, and uses nvsetenv to set the Open Firmware boot-device
 variable.
 

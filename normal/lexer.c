@@ -254,7 +254,7 @@ grub_script_yylex2 (YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	    break;
 
 	  /* If the string is not quoted or escaped, stop processing
-	     when a special token was found.  It will be recognised
+	     when a special token was found.  It will be recognized
 	     next time when this function is called.  */
 	  if (newstate == GRUB_PARSER_STATE_TEXT
 	      && state->state != GRUB_PARSER_STATE_ESC)

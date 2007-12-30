@@ -22,7 +22,7 @@
 #include <grub/err.h>
 #include <grub/types.h>
 
-/* Video color in hardware dependant format.  Users should not assume any
+/* Video color in hardware dependent format.  Users should not assume any
    specific coding format.  */
 typedef grub_uint32_t grub_video_color_t;
 

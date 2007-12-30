@@ -478,7 +478,7 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
     {
       unsigned int next;
       
-      /* If the inode contains the entrie tree or if this was the last
+      /* If the inode contains the entry tree or if this was the last
 	 node, there is nothing to read.  */
       if ((diro->inode->file.tree.flags & GRUB_JFS_TREE_LEAF)
 	  || !grub_le_to_cpu64 (diro->dirpage->header.nextb))

@@ -576,7 +576,7 @@ grub_divmod64 (grub_uint64_t n, grub_uint32_t d, grub_uint32_t *r)
   unsigned long long q = 0;
   unsigned m = 0;
 
-  /* Skip the slow computation, if 32-bit arithmetics are possible.  */
+  /* Skip the slow computation if 32-bit arithmetic is possible.  */
   if (n < 0xffffffff)
     {
       if (r)

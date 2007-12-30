@@ -88,7 +88,7 @@ serial_hw_fetch (void)
   return -1;
 }
 
-/* Put a chararacter.  */
+/* Put a character.  */
 static void
 serial_hw_put (const int c)
 {
@@ -273,7 +273,7 @@ serial_hw_init (void)
 {
   unsigned char status = 0;
 
-  /* Turn off the interupt.  */
+  /* Turn off the interrupt.  */
   grub_outb (0, serial_settings.port + UART_IER);
 
   /* Set DLAB.  */

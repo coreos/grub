@@ -21,7 +21,7 @@
 #define	EXT2_MAGIC		0xEF53
 /* Amount of indirect blocks in an inode.  */
 #define INDIRECT_BLOCKS		12
-/* Maximum lenght of a pathname.  */
+/* Maximum length of a pathname.  */
 #define EXT2_PATH_MAX		4096
 /* Maximum nesting of symlinks, used to prevent a loop.  */
 #define	EXT2_MAX_SYMLINKCNT	8
@@ -146,7 +146,7 @@ struct grub_ext2_inode
       grub_uint32_t dir_blocks[INDIRECT_BLOCKS];
       grub_uint32_t indir_block;
       grub_uint32_t double_indir_block;
-      grub_uint32_t tripple_indir_block;
+      grub_uint32_t triple_indir_block;
     } blocks;
     char symlink[60];
   };
@@ -251,11 +251,11 @@ grub_ext2_read_block (grub_fshelp_node_t node, int fileblock)
       
       blknr = grub_le_to_cpu32 (indir[rblock % perblock]);
     }
-  /* Tripple indirect.  */
+  /* triple indirect.  */
   else
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "ext2fs doesn't support tripple indirect blocks");
+		  "ext2fs doesn't support triple indirect blocks");
       blknr = -1;
     }
 

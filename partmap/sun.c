@@ -110,13 +110,13 @@ sun_partition_map_iterate (grub_disk_t disk,
 		      (char *) &block) == GRUB_ERR_NONE)
     {
       if (GRUB_PARTMAP_SUN_MAGIC != grub_be_to_cpu16 (block.magic))
-	grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partiton table");
+	grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partition table");
       
       if (! grub_sun_is_valid (&block))
 	grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid checksum");
       
       /* Maybe another error value would be better, because partition
-	 table _is_ recognised but invalid.  */
+	 table _is_ recognized but invalid.  */
       for (partnum = 0; partnum < GRUB_PARTMAP_SUN_MAX_PARTS; partnum++)
 	{
 	  struct grub_sun_partition_descriptor *desc;

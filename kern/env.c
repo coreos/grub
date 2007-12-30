@@ -53,7 +53,7 @@ grub_env_hashval (const char *s)
 {
   unsigned int i = 0;
 
-  /* XXX: This can be done much more effecient.  */
+  /* XXX: This can be done much more efficiently.  */
   while (*s)
     i += 5 * *(s++);
 

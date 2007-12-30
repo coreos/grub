@@ -164,7 +164,7 @@ grub_mm_init_region (void *addr, grub_size_t size)
   r->size = (h->size << GRUB_MM_ALIGN_LOG2);
 
   /* Find where to insert this region. Put a smaller one before bigger ones,
-     to prevent fragmentations.  */
+     to prevent fragmentation.  */
   for (p = &base, q = *p; q; p = &(q->next), q = *p)
     if (q->size > r->size)
       break;

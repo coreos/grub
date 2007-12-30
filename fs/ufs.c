@@ -231,7 +231,7 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
 
 
   grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-	      "ufs does not support tripple indirect blocks");
+	      "ufs does not support triple indirect blocks");
   return 0;
 }
 

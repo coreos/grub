@@ -711,7 +711,7 @@ struct grub_efi_boot_services
   (*reinstall_protocol_interface) (grub_efi_handle_t handle,
 				   grub_efi_guid_t *protocol,
 				   void *old_interface,
-				   void *new_inteface);
+				   void *new_interface);
   
   grub_efi_status_t
   (*uninstall_protocol_interface) (grub_efi_handle_t handle,

@@ -39,8 +39,8 @@
    Please refer to VESA BIOS Extension 3.0 Specification for more descriptive
    meanings of following structures and how they should be used.
 
-   I have tried to maintain field name comatibility against specification 
-   while following naming convetions used in GRUB.  */
+   I have tried to maintain field name compatibility against specification
+   while following naming conventions used in GRUB.  */
 
 typedef grub_uint32_t grub_vbe_farptr_t;
 typedef grub_uint32_t grub_vbe_physptr_t;
@@ -68,7 +68,7 @@ struct grub_vbe_info_block
 
 struct grub_vbe_mode_info_block
 {
-  /* Mandory information for all VBE revisions.  */
+  /* Mandatory information for all VBE revisions.  */
   grub_uint16_t mode_attributes;
   grub_uint8_t win_a_attributes;
   grub_uint8_t win_b_attributes;
@@ -79,7 +79,7 @@ struct grub_vbe_mode_info_block
   grub_vbe_farptr_t win_func_ptr;
   grub_uint16_t bytes_per_scan_line;
 
-  /* Mandory information for VBE 1.2 and above.  */
+  /* Mandatory information for VBE 1.2 and above.  */
   grub_uint16_t x_resolution;
   grub_uint16_t y_resolution;
   grub_uint8_t x_char_size;
@@ -103,12 +103,12 @@ struct grub_vbe_mode_info_block
   grub_uint8_t rsvd_field_position;
   grub_uint8_t direct_color_mode_info;
 
-  /* Mandory information for VBE 2.0 and above.  */
+  /* Mandatory information for VBE 2.0 and above.  */
   grub_vbe_physptr_t phys_base_addr;
   grub_uint32_t reserved2;
   grub_uint16_t reserved3;
 
-  /* Mandory information for VBE 3.0 and above.  */
+  /* Mandatory information for VBE 3.0 and above.  */
   grub_uint16_t lin_bytes_per_scan_line;
   grub_uint8_t bnk_number_of_image_pages;
   grub_uint8_t lin_number_of_image_pages;
@@ -148,7 +148,7 @@ struct grub_vbe_palette_data
   grub_uint8_t blue;
   grub_uint8_t green;
   grub_uint8_t red;
-  grub_uint8_t aligment;
+  grub_uint8_t alignment;
 } __attribute__ ((packed));
 
 /* Prototypes for kernel real mode thunks.  */
@@ -220,7 +220,7 @@ struct grub_video_render_target
     unsigned int height;
   } viewport;
 
-  /* Indicates wether the data has been allocated by us and must be freed
+  /* Indicates whether the data has been allocated by us and must be freed
      when render target is destroyed.  */
   int is_allocated;
 

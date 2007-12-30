@@ -162,7 +162,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	      read_size = size;
 
 	    /* Check whether the sector was aligned on a chunk size
-	       bounday. If this isn't the case, it's the first read
+	       boundary. If this isn't the case, it's the first read
 	       and the next read should be set back to start of the
 	       boundary.  */
 	    grub_divmod64 (read_sector, array->chunk_size, &i);
@@ -282,7 +282,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	      read_size = size;
 
 	    /* Check whether the sector was aligned on a chunk size
-	       bounday. If this isn't the case, it's the first read
+	       boundary. If this isn't the case, it's the first read
 	       and the next read should be set back to start of the
 	       boundary.  */
 	    grub_divmod64 (read_sector, array->chunk_size, &i);

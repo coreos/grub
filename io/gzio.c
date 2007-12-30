@@ -56,9 +56,9 @@
 /* The state stored in filesystem-specific data.  */
 struct grub_gzio
 {
-  /* The underlyding file object.  */
+  /* The underlying file object.  */
   grub_file_t file;
-  /* The offset at which the data starts in the underlyding file.  */
+  /* The offset at which the data starts in the underlying file.  */
   grub_off_t data_offset;
   /* The type of current block.  */
   int block_type;
@@ -79,7 +79,7 @@ struct grub_gzio
   unsigned long bb;
   /* The bits in the bit buffer.  */
   unsigned bk;
-  /* Ths sliding window in uncompressed data.  */
+  /* The sliding window in uncompressed data.  */
   grub_uint8_t slide[WSIZE];
   /* Current position in the slide.  */
   unsigned wp;

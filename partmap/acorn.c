@@ -27,8 +27,8 @@
 #define LINUX_SWAP_MAGIC   grub_cpu_to_le32 (0xdeafab1e)
 #define LINUX_MAP_ENTRIES  (512 / 12)
 
-#define NONADFS_PARTITON_TYPE_LINUX 9
-#define NONADFS_PARTITON_TYPE_MASK 15
+#define NONADFS_PARTITION_TYPE_LINUX 9
+#define NONADFS_PARTITION_TYPE_MASK 15
 
 struct grub_acorn_boot_block
 {
@@ -65,7 +65,7 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
   if (err)
     return err;
 
-  if ((boot.flags & NONADFS_PARTITON_TYPE_MASK) != NONADFS_PARTITON_TYPE_LINUX)
+  if ((boot.flags & NONADFS_PARTITION_TYPE_MASK) != NONADFS_PARTITION_TYPE_LINUX)
     goto fail;
 
   for (i = 0; i != 0x1ff; ++i)

@@ -92,7 +92,7 @@ argument:	GRUB_PARSER_TOKEN_VAR
 		    $$ = grub_script_arg_add (state, 0, GRUB_SCRIPT_ARG_TYPE_STR, $1);
 		  }
 /* XXX: Currently disabled to simplify the parser.  This should be
-   parsed by yet another parser for readibility.  */
+   parsed by yet another parser for readability.  */
 /* 		| argument GRUB_PARSER_TOKEN_VAR */
 /* 		  { */
 /* 		    $$ = grub_script_arg_add ($1, GRUB_SCRIPT_ARG_TYPE_VAR, $2); */
@@ -163,14 +163,14 @@ commands:	command '\n'
    change any stuff because it might seem like a fun thing to do!
    Special care was take to make sure the mid-rule actions are
    executed on the right moment.  So the `commands' rule should be
-   recognised after executing the `grub_script_mem_record; and before
+   recognized after executing the `grub_script_mem_record; and before
    `grub_script_mem_record_stop'.  */
 function:	"function" GRUB_PARSER_TOKEN_NAME
 		  { 
 		    grub_script_lexer_ref (state->lexerstate);
 		  } newlines '{'
 		  { 
-		    /* The first part of the function was recognised.
+		    /* The first part of the function was recognized.
 		       Now start recording the memory usage to store
 		       this function.  */
 		    state->func_mem = grub_script_mem_record (state);

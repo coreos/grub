@@ -303,7 +303,7 @@ grub_hfsplus_read_block (grub_fshelp_node_t node, int fileblock)
       blk = grub_hfsplus_find_block (extents, &blksleft);
 
       /* The previous iteration of this loop allocated memory.  The
-	 code above used this memory, it can be free'ed now.  */
+	 code above used this memory, it can be freed now.  */
       grub_free (nnode);
       nnode = 0;
       
@@ -505,7 +505,7 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
   if (diff)
     return diff; 
 
-  /* Change the filename in keya so the endianess is correct.  */
+  /* Change the filename in keya so the endianness is correct.  */
   for (i = 0; i < grub_be_to_cpu16 (catkey_a->namelen); i++)
     catkey_a->name[i] = grub_be_to_cpu16 (catkey_a->name[i]);
 
@@ -521,7 +521,7 @@ grub_hfsplus_cmp_catkey (struct grub_hfsplus_key *keya,
 
   grub_free (filename);
 
-  /* The endianess was changed to host format, change it back to
+  /* The endianness was changed to host format, change it back to
      whatever it was.  */
   for (i = 0; i < grub_be_to_cpu16 (catkey_a->namelen); i++)
     catkey_a->name[i] = grub_cpu_to_be16 (catkey_a->name[i]);
@@ -606,7 +606,7 @@ grub_hfsplus_btree_iterate_node (struct grub_hfsplus_btree *btree,
 /* Lookup the node described by KEY in the B+ Tree BTREE.  Compare
    keys using the function COMPARE_KEYS.  When a match is found,
    return the node in MATCHNODE and a pointer to the data in this node
-   in KEYOFFSET.  MATCHNODE should be free'ed by the caller.  */
+   in KEYOFFSET.  MATCHNODE should be freed by the caller.  */
 static grub_err_t
 grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 			   struct grub_hfsplus_key_internal *key,
@@ -661,7 +661,7 @@ grub_hfsplus_btree_search (struct grub_hfsplus_btree *btree,
 	    {
 	      grub_uint32_t *pointer;
 
-	      /* The place where the key could've been found didn't
+	      /* The place where the key could have been found didn't
 		 contain the key.  This means that the previous match
 		 is the one that should be followed.  */
 	      if (compare_keys (currkey, key) > 0)
@@ -943,7 +943,7 @@ grub_hfsplus_label (grub_device_t device __attribute__((unused))
   /* XXX: It's not documented how to read a label.  */
   return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		     "reading the label of a HFS+ "
-		     "partiton is not implemented");
+		     "partition is not implemented");
 }
 
 
