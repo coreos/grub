@@ -35,8 +35,8 @@ grub_dl_t my_mod;
 /* This tracks which version of multiboot to use when using
  * the module command. By default use multiboot version 1.
  * values:
- *      1 - Mulitboot version 1 
- *      2 - Mutliboot version 2
+ *      1 - Multiboot version 1 
+ *      2 - Multiboot version 2
  */
 
 static unsigned int module_version_status = 1; 
@@ -125,7 +125,7 @@ grub_rescue_cmd_multiboot_loader (int argc, char *argv[])
   if (header_multi_ver_found == 0 || header_multi_ver_found == 2)
     {
       grub_dprintf ("multiboot_loader",
-           "Launching mulitboot 2 grub_multiboot2() function\n");
+           "Launching multiboot 2 grub_multiboot2() function\n");
       grub_multiboot2 (argc, argv);
       module_version_status = 2;
     }
@@ -171,6 +171,6 @@ GRUB_MOD_INIT(multiboot)
 
 GRUB_MOD_FINI(multiboot)
 {
-  grub_rescue_unregister_command ("mulitboot");
+  grub_rescue_unregister_command ("multiboot");
   grub_rescue_unregister_command ("module");
 }

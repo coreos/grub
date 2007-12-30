@@ -1,3 +1,8 @@
+2007-12-30  Pavel Roskin  <proski@gnu.org>
+
+	* loader/multiboot_loader.c: Fix multiboot command
+	unregistration.  Fix all typos in the word "multiboot".
+
 2007-12-19  Pavel Roskin  <proski@gnu.org>
 
 	* util/grub.d/10_linux.in: Refactor search for initrd.  Add
