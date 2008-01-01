@@ -1,7 +1,7 @@
 /* biosdisk.c - emulate biosdisk */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -609,7 +609,7 @@ get_os_disk (const char *os_dev)
       if (have_devfs ())
 	{
 	  /* If this is an IDE disk.  */
-	  if (strncmp ("/dev/ide/", p, 9) == 0)
+	  if (strncmp ("ide/", p, 4) == 0)
 	    {
 	      p = strstr (p, "part");
 	      if (p)
@@ -619,7 +619,7 @@ get_os_disk (const char *os_dev)
 	    }
 
 	  /* If this is a SCSI disk.  */
-	  if (strncmp ("/dev/scsi/", p, 10) == 0)
+	  if (strncmp ("scsi/", p, 5) == 0)
 	    {
 	      p = strstr (p, "part");
 	      if (p)

@@ -1,3 +1,7 @@
+2008-01-01  Robert Millan  <rmh@aybabtu.com>
+
+	* util/biosdisk.c (get_os_disk): Fix check for IDE or SCSI discs.
+
 2008-01-01  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* include/grub/video.h: Added grub_video_unmap_color and 
