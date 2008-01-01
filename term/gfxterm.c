@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <grub/mm.h>
 #include <grub/env.h>
 #include <grub/video.h>
+#include <grub/bitmap.h>
 
 #define DEFAULT_VIDEO_WIDTH	640
 #define DEFAULT_VIDEO_HEIGHT	480
@@ -38,9 +39,10 @@
 
 #define DEFAULT_BORDER_WIDTH	10
 
-#define DEFAULT_FG_COLOR    	0x0a
-#define DEFAULT_BG_COLOR    	0x00
-#define DEFAULT_CURSOR_COLOR	0x0f
+#define DEFAULT_STANDARD_COLOR  0x07
+#define DEFAULT_NORMAL_COLOR    0x07
+#define DEFAULT_HIGHLIGHT_COLOR 0x70
+#define DEFAULT_CURSOR_COLOR	0x07
 
 struct grub_dirty_region
 {
@@ -89,9 +91,13 @@ struct grub_virtual_screen
   unsigned int cursor_y;
   int cursor_state;
 
+  /* Terminal color settings.  */
+  grub_uint8_t standard_color_setting;
+  grub_uint8_t normal_color_setting;
+  grub_uint8_t highlight_color_setting;
+  grub_uint8_t term_color;
+  
   /* Color settings.  */
-  grub_video_color_t fg_color_setting;
-  grub_video_color_t bg_color_setting;
   grub_video_color_t fg_color;
   grub_video_color_t bg_color;
   grub_video_color_t cursor_color;
@@ -108,6 +114,10 @@ static struct grub_video_mode_info mode_info;
 
 static struct grub_video_render_target *text_layer;
 
+static unsigned int bitmap_width;
+static unsigned int bitmap_height;
+static struct grub_video_bitmap *bitmap;
+
 static struct grub_dirty_region dirty_region;
 
 static void dirty_region_reset (void);
@@ -116,6 +126,32 @@ static int dirty_region_is_empty (void);
 
 static void dirty_region_add (int x, int y, 
                               unsigned int width, unsigned int height);
+
+static void
+set_term_color (grub_uint8_t term_color)
+{
+  struct grub_video_render_target *old_target;
+
+  /* Save previous target and switch to text layer.  */
+  grub_video_get_active_render_target (&old_target);
+  grub_video_set_active_render_target (text_layer);
+
+  /* Map terminal color to text layer compatible video colors.  */
+  virtual_screen.fg_color = grub_video_map_color(term_color & 0x0f);
+  
+  /* Special case: use black as transparent color.  */
+  if (((term_color >> 4) & 0x0f) == 0)
+    {
+      virtual_screen.bg_color = grub_video_map_rgba(0, 0, 0, 0);
+    } 
+  else
+    {
+      virtual_screen.bg_color = grub_video_map_color((term_color >> 4) & 0x0f);
+    }
+
+  /* Restore previous target.  */
+  grub_video_set_active_render_target (old_target);
+}
 
 static void
 grub_virtual_screen_free (void)
@@ -175,10 +211,14 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
      we can only have those after mode is initialized.  */
   grub_video_set_active_render_target (text_layer);
 
-  virtual_screen.fg_color_setting = grub_video_map_color (DEFAULT_FG_COLOR);
-  virtual_screen.bg_color_setting = grub_video_map_color (DEFAULT_BG_COLOR);
-  virtual_screen.fg_color = virtual_screen.fg_color_setting;
-  virtual_screen.bg_color = virtual_screen.bg_color_setting;
+  virtual_screen.standard_color_setting = DEFAULT_STANDARD_COLOR;
+  virtual_screen.normal_color_setting = DEFAULT_NORMAL_COLOR;
+  virtual_screen.highlight_color_setting = DEFAULT_HIGHLIGHT_COLOR;
+  
+  virtual_screen.term_color = virtual_screen.normal_color_setting;
+  
+  set_term_color (virtual_screen.term_color);
+
   virtual_screen.cursor_color = grub_video_map_color (DEFAULT_CURSOR_COLOR);
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
@@ -427,6 +467,7 @@ grub_gfxterm_init (void)
   /* Make sure screen is black.  */
   color = grub_video_map_rgb (0, 0, 0);
   grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
+  bitmap = 0;
 
   /* Leave borders for virtual screen.  */
   width = mode_info.width - (2 * DEFAULT_BORDER_WIDTH);
@@ -450,6 +491,12 @@ grub_gfxterm_init (void)
 static grub_err_t
 grub_gfxterm_fini (void)
 {
+  if (bitmap)
+    {
+      grub_video_bitmap_destroy (bitmap);
+      bitmap = 0;
+    }
+
   grub_virtual_screen_free ();
 
   grub_video_restore ();
@@ -465,15 +512,72 @@ redraw_screen_rect (unsigned int x, unsigned int y,
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
-  /* Render background layer.  */
-  color = virtual_screen.bg_color;
-  grub_video_fill_rect (color, x, y, width, height);
 
-  /* Render text layer.  */
-  grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
-                                 x - virtual_screen.offset_x,
-                                 y - virtual_screen.offset_y,
-                                 width, height);
+  if (bitmap)
+    {
+      /* Render bitmap as background.  */
+      grub_video_blit_bitmap (bitmap, GRUB_VIDEO_BLIT_REPLACE, x, y, 
+                              x, y, 
+                              width, height);
+      
+      /* If bitmap is smaller than requested blit area, use background 
+         color.  */
+      color = virtual_screen.bg_color;
+
+      /* Fill right side of the bitmap if needed.  */
+      if ((x + width >= bitmap_width) && (y < bitmap_height))
+        {
+          int w = (x + width) - bitmap_width;
+          int h = height;
+          unsigned int tx = x;
+
+          if (y + height >= bitmap_height)
+            {
+              h = bitmap_height - y;
+            }
+          
+          if (bitmap_width > tx)
+            {
+              tx = bitmap_width;
+            }
+          
+          /* Render background layer.  */
+          grub_video_fill_rect (color, tx, y, w, h);        
+        }
+      
+      /* Fill bottom side of the bitmap if needed.  */
+      if (y + height >= bitmap_height)
+        {
+          int h = (y + height) - bitmap_height;
+          unsigned int ty = y;
+          
+          if (bitmap_height > ty)
+            {
+              ty = bitmap_height;
+            }
+          
+          /* Render background layer.  */
+          grub_video_fill_rect (color, x, ty, width, h);        
+        }
+
+      /* Render text layer as blended.  */
+      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_BLEND, x, y,
+                                     x - virtual_screen.offset_x,
+                                     y - virtual_screen.offset_y,
+                                     width, height);
+    }
+  else
+    {
+      /* Render background layer.  */
+      color = virtual_screen.bg_color;
+      grub_video_fill_rect (color, x, y, width, height);
+
+      /* Render text layer as replaced (to get texts background color).  */
+      grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_REPLACE, x, y,
+                                     x - virtual_screen.offset_x,
+                                     y - virtual_screen.offset_y,
+                                     width, height);      
+    }
 }
 
 static void
@@ -623,6 +727,16 @@ scroll_up (void)
   unsigned int i;
   grub_video_color_t color;
 
+  /* If we don't have background bitmap, remove cursor. */
+  if (!bitmap)
+    {
+      /* Remove cursor.  */
+      write_char ();
+
+      /* Redraw only changed regions.  */
+      dirty_region_redraw ();
+    }
+  
   /* Scroll text buffer with one line to up.  */
   grub_memmove (virtual_screen.text_buffer,
                 virtual_screen.text_buffer + virtual_screen.columns,
@@ -647,9 +761,27 @@ scroll_up (void)
   color = virtual_screen.bg_color;
   grub_video_scroll (color, 0, -virtual_screen.char_height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+  
+  /* If we have bitmap, re-draw screen, otherwise scroll physical screen too.  */
+  if (bitmap)
+    {
+      /* Mark virtual screen to be redrawn.  */
+      dirty_region_add_virtualscreen ();
+    }
+  else
+    {      
+      /* Clear new border area.  */
+      grub_video_fill_rect (color, 
+                            virtual_screen.offset_x, virtual_screen.offset_y, 
+                            virtual_screen.width, virtual_screen.char_height);
+      
+      /* Scroll physical screen.  */
+      grub_video_scroll (color, 0, -virtual_screen.char_height);      
 
-  /* Mark virtual screen to be redrawn.  */
-  dirty_region_add_virtualscreen ();
+      /* Draw cursor if visible.  */
+      if (virtual_screen.cursor_state)
+        write_cursor ();
+    }
 }
 
 static void
@@ -812,7 +944,7 @@ grub_gfxterm_cls (void)
 
   /* Clear text layer.  */
   grub_video_set_active_render_target (text_layer);
-  color = virtual_screen.bg_color_setting;
+  color = virtual_screen.bg_color;
   grub_video_fill_rect (color, 0, 0, mode_info.width, mode_info.height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
@@ -826,17 +958,39 @@ grub_virtual_screen_setcolorstate (grub_term_color_state state)
   switch (state)
     {
     case GRUB_TERM_COLOR_STANDARD:
+      virtual_screen.term_color = virtual_screen.standard_color_setting;
+      break;
+      
     case GRUB_TERM_COLOR_NORMAL:
-      virtual_screen.fg_color = virtual_screen.fg_color_setting;
-      virtual_screen.bg_color = virtual_screen.bg_color_setting;
+      virtual_screen.term_color = virtual_screen.normal_color_setting;
       break;
+      
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      virtual_screen.fg_color = virtual_screen.bg_color_setting;
-      virtual_screen.bg_color = virtual_screen.fg_color_setting;
+      virtual_screen.term_color = virtual_screen.highlight_color_setting;
       break;
+      
     default:
       break;
     }
+
+  /* Change color to virtual terminal.  */
+  set_term_color (virtual_screen.term_color);
+}
+
+static void
+grub_virtual_screen_setcolor (grub_uint8_t normal_color,
+                              grub_uint8_t highlight_color)
+{
+  virtual_screen.normal_color_setting = normal_color;
+  virtual_screen.highlight_color_setting = highlight_color;
+}
+
+static void
+grub_virtual_screen_getcolor (grub_uint8_t *normal_color,
+                              grub_uint8_t *highlight_color)
+{
+  *normal_color = virtual_screen.normal_color_setting;
+  *highlight_color = virtual_screen.highlight_color_setting;
 }
 
 static void
@@ -860,6 +1014,52 @@ grub_gfxterm_refresh (void)
   dirty_region_redraw ();
 }
 
+static grub_err_t
+grub_gfxterm_background_image_cmd (struct grub_arg_list *state __attribute__ ((unused)),
+                                   int argc,
+                                   char **args)
+{
+  /* Check that we have video adapter active.  */
+  if (grub_video_get_info(NULL) != GRUB_ERR_NONE)
+    return grub_errno;
+  
+  /* Destroy existing background bitmap if loaded.  */
+  if (bitmap)
+    {
+      grub_video_bitmap_destroy (bitmap);
+      bitmap = 0;
+      
+      /* Mark whole screen as dirty.  */
+      dirty_region_reset ();
+      dirty_region_add (0, 0, mode_info.width, mode_info.height);
+    }
+
+  /* If filename was provided, try to load that.  */
+  if (argc >= 1)
+    {
+    /* Try to load new one.  */
+    grub_video_bitmap_load (&bitmap, args[0]);    
+    if (grub_errno != GRUB_ERR_NONE)
+      return grub_errno;
+
+    /* If bitmap was loaded correctly, display it.  */
+    if (bitmap)
+      {
+        /* Determine bitmap dimensions.  */
+        bitmap_width = grub_video_bitmap_get_width (bitmap);
+        bitmap_height = grub_video_bitmap_get_width (bitmap);
+        
+        /* Mark whole screen as dirty.  */
+        dirty_region_reset ();
+        dirty_region_add (0, 0, mode_info.width, mode_info.height);
+      }
+    }
+  
+  /* All was ok.  */
+  grub_errno = GRUB_ERR_NONE;
+  return grub_errno;
+}
+
 static struct grub_term grub_video_term =
   {
     .name = "gfxterm",
@@ -874,6 +1074,8 @@ static struct grub_term grub_video_term =
     .gotoxy = grub_gfxterm_gotoxy,
     .cls = grub_gfxterm_cls,
     .setcolorstate = grub_virtual_screen_setcolorstate,
+    .setcolor = grub_virtual_screen_setcolor,
+    .getcolor = grub_virtual_screen_getcolor,
     .setcursor = grub_gfxterm_setcursor,
     .refresh = grub_gfxterm_refresh,
     .flags = 0,
@@ -884,9 +1086,17 @@ GRUB_MOD_INIT(term_gfxterm)
 {
   my_mod = mod;
   grub_term_register (&grub_video_term);
+
+  grub_register_command ("background_image",
+                         grub_gfxterm_background_image_cmd,
+                         GRUB_COMMAND_FLAG_BOTH,
+                         "background_image",
+                         "Load background image for active terminal",
+                         0);
 }
 
 GRUB_MOD_FINI(term_gfxterm)
 {
+  grub_unregister_command ("bgimage");
   grub_term_unregister (&grub_video_term);
 }

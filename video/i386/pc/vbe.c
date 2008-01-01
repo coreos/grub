@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -754,11 +754,25 @@ grub_video_vbe_map_rgba (grub_uint8_t red, grub_uint8_t green,
     }
 }
 
+grub_err_t grub_video_vbe_unmap_color (grub_video_color_t color,
+                                       grub_uint8_t *red, grub_uint8_t *green,
+                                       grub_uint8_t *blue, grub_uint8_t *alpha)
+{
+  struct grub_video_i386_vbeblit_info target_info;
+
+  target_info.mode_info = &render_target->mode_info;
+  target_info.data = render_target->data;
+
+  grub_video_vbe_unmap_color_int (&target_info, color, red, green, blue, alpha);
+  
+  return GRUB_ERR_NONE;
+}
+
 void
-grub_video_vbe_unmap_color (struct grub_video_i386_vbeblit_info * source,
-                            grub_video_color_t color,
-                            grub_uint8_t *red, grub_uint8_t *green,
-                            grub_uint8_t *blue, grub_uint8_t *alpha)
+grub_video_vbe_unmap_color_int (struct grub_video_i386_vbeblit_info * source,
+                                grub_video_color_t color,
+                                grub_uint8_t *red, grub_uint8_t *green,
+                                grub_uint8_t *blue, grub_uint8_t *alpha)
 {
   struct grub_video_mode_info *mode_info;
   mode_info = source->mode_info;
@@ -1510,6 +1524,14 @@ grub_video_vbe_set_active_render_target (struct grub_video_render_target *target
   return GRUB_ERR_NONE;
 }
 
+static grub_err_t
+grub_video_vbe_get_active_render_target (struct grub_video_render_target **target)
+{
+  *target = render_target;
+  
+  return GRUB_ERR_NONE;
+}
+
 static struct grub_video_adapter grub_video_vbe_adapter =
   {
     .name = "VESA BIOS Extension Video Driver",
@@ -1525,6 +1547,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .map_color = grub_video_vbe_map_color,
     .map_rgb = grub_video_vbe_map_rgb,
     .map_rgba = grub_video_vbe_map_rgba,
+    .unmap_color = grub_video_vbe_unmap_color,
     .fill_rect = grub_video_vbe_fill_rect,
     .blit_glyph = grub_video_vbe_blit_glyph,
     .blit_bitmap = grub_video_vbe_blit_bitmap,
@@ -1534,6 +1557,7 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .create_render_target = grub_video_vbe_create_render_target,
     .delete_render_target = grub_video_vbe_delete_render_target,
     .set_active_render_target = grub_video_vbe_set_active_render_target,
+    .get_active_render_target = grub_video_vbe_get_active_render_target,
 
     .next = 0
   };

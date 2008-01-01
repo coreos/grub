@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -173,6 +173,10 @@ struct grub_video_adapter
   grub_video_color_t (*map_rgba) (grub_uint8_t red, grub_uint8_t green,
                                   grub_uint8_t blue, grub_uint8_t alpha);
 
+  grub_err_t (*unmap_color) (grub_video_color_t color,
+                             grub_uint8_t *red, grub_uint8_t *green,
+                             grub_uint8_t *blue, grub_uint8_t *alpha);
+
   grub_err_t (*fill_rect) (grub_video_color_t color, int x, int y,
                            unsigned int width, unsigned int height);
 
@@ -200,6 +204,8 @@ struct grub_video_adapter
   grub_err_t (*delete_render_target) (struct grub_video_render_target *target);
 
   grub_err_t (*set_active_render_target) (struct grub_video_render_target *target);
+
+  grub_err_t (*get_active_render_target) (struct grub_video_render_target **target);
 
   /* The next video adapter.  */
   struct grub_video_adapter *next;
@@ -239,6 +245,10 @@ grub_video_color_t grub_video_map_rgb (grub_uint8_t red, grub_uint8_t green,
 grub_video_color_t grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green,
                                         grub_uint8_t blue, grub_uint8_t alpha);
 
+grub_err_t grub_video_unmap_color (grub_video_color_t color,
+                                   grub_uint8_t *red, grub_uint8_t *green,
+                                   grub_uint8_t *blue, grub_uint8_t *alpha);
+
 grub_err_t grub_video_fill_rect (grub_video_color_t color, int x, int y,
                                  unsigned int width, unsigned int height);
 
@@ -269,5 +279,7 @@ grub_err_t grub_video_create_render_target (struct grub_video_render_target **re
 grub_err_t grub_video_delete_render_target (struct grub_video_render_target *target);
 
 grub_err_t grub_video_set_active_render_target (struct grub_video_render_target *target);
+
+grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
 
 #endif /* ! GRUB_VIDEO_HEADER */

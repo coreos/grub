@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -134,6 +134,13 @@ grub_video_get_info (struct grub_video_mode_info *mode_info)
   if (! grub_video_adapter_active)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
 
+  /* If mode_info is NULL just report that video adapter is active.  */
+  if (! mode_info)
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return grub_errno;
+    }
+  
   return grub_video_adapter_active->get_info (mode_info);
 }
 
@@ -260,6 +267,22 @@ grub_video_map_rgba (grub_uint8_t red, grub_uint8_t green, grub_uint8_t blue,
   return grub_video_adapter_active->map_rgba (red, green, blue, alpha);
 }
 
+/* Unmap video color back to RGBA components.  */
+grub_err_t
+grub_video_unmap_color (grub_video_color_t color, grub_uint8_t *red, 
+                        grub_uint8_t *green, grub_uint8_t *blue, 
+                        grub_uint8_t *alpha)
+{
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+
+  return grub_video_adapter_active->unmap_color (color,
+                                                 red,
+                                                 green,
+                                                 blue,
+                                                 alpha);
+}
+
 /* Fill rectangle using specified color.  */
 grub_err_t
 grub_video_fill_rect (grub_video_color_t color, int x, int y,
@@ -364,6 +387,16 @@ grub_video_set_active_render_target (struct grub_video_render_target *target)
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
 
   return grub_video_adapter_active->set_active_render_target (target);
+}
+
+/* Get active render target.  */
+grub_err_t
+grub_video_get_active_render_target (struct grub_video_render_target **target)
+{
+  if (! grub_video_adapter_active)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
+
+  return grub_video_adapter_active->get_active_render_target (target);
 }
 
 /* Initialize Video API module.  */

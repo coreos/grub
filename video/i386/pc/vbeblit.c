@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -281,7 +281,7 @@ grub_video_i386_vbeblit_index_R8G8B8A8 (struct grub_video_i386_vbeblit_info *dst
               continue;
             }
 
-          grub_video_vbe_unmap_color (dst, *dstptr, &dr, &dg, &db, &da);
+          grub_video_vbe_unmap_color_int (dst, *dstptr, &dr, &dg, &db, &da);
 
           dr = (dr * (255 - a) + sr * a) / 255;
           dg = (dg * (255 - a) + sg * a) / 255;
@@ -481,7 +481,7 @@ grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
           grub_video_color_t dst_color;
 
           src_color = get_pixel (src, i + offset_x, j + offset_y);
-          grub_video_vbe_unmap_color (src, src_color, &src_red, &src_green,
+          grub_video_vbe_unmap_color_int (src, src_color, &src_red, &src_green,
                                       &src_blue, &src_alpha);
 
           if (src_alpha == 0)
@@ -497,7 +497,7 @@ grub_video_i386_vbeblit_blend (struct grub_video_i386_vbeblit_info *dst,
 
           dst_color = get_pixel (dst, x + i, y + j);
 
-          grub_video_vbe_unmap_color (dst, dst_color, &dst_red,
+          grub_video_vbe_unmap_color_int (dst, dst_color, &dst_red,
                                       &dst_green, &dst_blue, &dst_alpha);
 
           dst_red = (((src_red * src_alpha)
@@ -539,7 +539,7 @@ grub_video_i386_vbeblit_replace (struct grub_video_i386_vbeblit_info *dst,
     for (i = 0; i < width; i++)
     {
       src_color = get_pixel (src, i + offset_x, j + offset_y);
-      grub_video_vbe_unmap_color (src, src_color, &src_red, &src_green,
+      grub_video_vbe_unmap_color_int (src, src_color, &src_red, &src_green,
                                   &src_blue, &src_alpha);
 
       dst_color = grub_video_vbe_map_rgba (src_red, src_green,

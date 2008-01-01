@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -240,9 +240,17 @@ grub_video_color_t grub_video_vbe_map_rgba (grub_uint8_t red,
                                             grub_uint8_t blue,
                                             grub_uint8_t alpha);
 
-void grub_video_vbe_unmap_color (struct grub_video_i386_vbeblit_info *source,
-                                 grub_video_color_t color, grub_uint8_t *red,
-                                 grub_uint8_t *green, grub_uint8_t *blue,
-                                 grub_uint8_t *alpha);
+grub_err_t grub_video_vbe_unmap_color (grub_video_color_t color,
+                                       grub_uint8_t *red,
+                                       grub_uint8_t *green,
+                                       grub_uint8_t *blue,
+                                       grub_uint8_t *alpha);
+
+void grub_video_vbe_unmap_color_int (struct grub_video_i386_vbeblit_info *source,
+                                     grub_video_color_t color,
+                                     grub_uint8_t *red,
+                                     grub_uint8_t *green,
+                                     grub_uint8_t *blue,
+                                     grub_uint8_t *alpha);
 
 #endif /* ! GRUB_VBE_MACHINE_HEADER */

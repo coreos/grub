@@ -1,3 +1,54 @@
+2008-01-01  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* include/grub/video.h: Added grub_video_unmap_color and 
+	grub_video_get_active_render_target.
+	(grub_video_adapter): Added unmap_color and get_active_render_target.
+
+	* video/video.c: Added grub_video_unmap_color and 
+	grub_video_get_active_render_target.
+	(grub_video_get_info): Changed method to accept NULL pointer as an
+	argument to allow detection of active video adapter.
+
+	* video/i386/pc/vbe.c: Renamed grub_video_vbe_unmap_color as
+	grub_video_vbe_unmap_color_int.
+	Added grub_video_vbe_unmap_color and
+	grub_video_vbe_get_active_render_target.
+	(grub_video_vbe_adapter): Added unmap_color and
+	get_active_render_target.
+
+	* video/i386/pc/vbeblit.c: Replaced grub_video_vbe_unmap_color usage 
+	with grub_video_vbe_unmap_color_int.
+
+	* term/gfxterm.c (DEFAULT_STANDARD_COLOR): Added.
+	(DEFAULT_NORMAL_COLOR): Likewise.
+	(DEFAULT_HIGHLIGHT_COLOR) Likewise.
+	(DEFAULT_FG_COLOR): Removed.
+	(DEFAULT_BG_COLOR): Likewise.
+	(DEFAULT_CURSOR_COLOR): Changed value.
+	(grub_virtual_screen): Added standard_color_setting,
+	normal_color_setting, highlight_color_setting and term_color.
+	(grub_virtual_screen): Removed fg_color_setting and bg_color_setting.
+	(bitmap_width): Added.
+	(bitmap_height): Likewise.
+	(bitmap): Likewise.
+	(set_term_color): Likewise.
+	(grub_virtual_screen_setup): Changed to use new terminal coloring
+	settings.
+	(grub_gfxterm_init): Added init for bitmap.
+	(grub_gfxterm_fini): Added destroy for bitmap.
+	(redraw_screen_rect): Updated to use background bitmap and new
+	terminal coloring.
+	(scroll_up): Added optimization for case when there is no bitmap.
+	(grub_gfxterm_cls): Fixed to use correct background color.
+	(grub_virtual_screen_setcolorstate): Changed to use new terminal
+	coloring.
+	(grub_virtual_screen_setcolor): Likewise.
+	(grub_virtual_screen_getcolor): Added.
+	(grub_gfxterm_background_image_cmd): Likewise.
+	(grub_video_term): Added setcolor and getcolor.
+	(MOD_INIT): Added registration of background_image command.
+	(MOD_TERM): Added unregistration for background_image command.
+
 2007-12-30  Pavel Roskin  <proski@gnu.org>
 
 	* loader/multiboot_loader.c: Fix multiboot command
