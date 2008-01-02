@@ -1,3 +1,9 @@
+2008-01-02  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Improve error
+	message when loaded image is out of bounds.
+	(grub_multiboot_load_elf64): Likewise.
+
 2008-01-02  Pavel Roskin  <proski@gnu.org>
 
 	* util/grub.d/10_linux.in: Try version without ".old" when

@@ -121,11 +121,15 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
       if (phdr->p_type == PT_LOAD)
         {
           /* The segment should fit in the area reserved for the OS.  */
-          if ((phdr->p_paddr < grub_os_area_addr)
-              || (phdr->p_paddr + phdr->p_memsz
-		  > grub_os_area_addr + grub_os_area_size))
+          if (phdr->p_paddr < grub_os_area_addr)
 	    return grub_error (GRUB_ERR_BAD_OS,
-			       "segment doesn't fit in memory reserved for the OS");
+			       "segment doesn't fit in memory reserved for the OS (0x%lx < 0x%lx)",
+			       phdr->p_paddr, grub_os_area_addr);
+          if (phdr->p_paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size)
+	    return grub_error (GRUB_ERR_BAD_OS,
+			       "segment doesn't fit in memory reserved for the OS (0x%lx > 0x%lx)",
+			       phdr->p_paddr + phdr->p_memsz,
+			       grub_os_area_addr + grub_os_area_size);
 
           if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
 	      == (grub_off_t) -1)
@@ -195,12 +199,16 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
       if (phdr->p_type == PT_LOAD)
         {
           /* The segment should fit in the area reserved for the OS.  */
-          if ((phdr->p_paddr < (grub_uint64_t) grub_os_area_addr)
-              || (phdr->p_paddr + phdr->p_memsz
-		  > ((grub_uint64_t) grub_os_area_addr
-		     + (grub_uint64_t) grub_os_area_size)))
+          if (phdr->p_paddr < (grub_uint64_t) grub_os_area_addr)
 	    return grub_error (GRUB_ERR_BAD_OS,
-			       "segment doesn't fit in memory reserved for the OS");
+			       "segment doesn't fit in memory reserved for the OS (0x%lx < 0x%lx)",
+			       phdr->p_paddr, (grub_uint64_t) grub_os_area_addr);
+          if (phdr->p_paddr + phdr->p_memsz
+		  > (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size)
+	    return grub_error (GRUB_ERR_BAD_OS,
+			       "segment doesn't fit in memory reserved for the OS (0x%lx > 0x%lx)",
+			       phdr->p_paddr + phdr->p_memsz,
+			       (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size);
 	  
 	  if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
 	      == (grub_off_t) -1)
