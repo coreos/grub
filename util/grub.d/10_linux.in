@@ -84,9 +84,11 @@ while [ "x$list" != "x" ] ; do
   dirname=`dirname $linux`
   grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g"`
+  alt_version=`echo $version | sed -e "s,\.old$,,g"`
 
   initrd=
-  for i in "initrd.img-${version}" "initrd-${version}.img"; do
+  for i in "initrd.img-${version}" "initrd-${version}.img" \
+	   "initrd.img-${alt_version}" "initrd-${alt_version}.img"; do
     if test -e "${dirname}/${i}" ; then
       initrd="$i"
       break
