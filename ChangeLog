@@ -1,3 +1,12 @@
+2008-01-03  Pavel Roskin  <proski@gnu.org>
+
+	* kern/i386/linuxbios/init.c: Put "void" to all function
+	declarations with no arguments.
+	* kern/powerpc/ieee1275/init.c: Likewise.
+	* term/i386/pc/at_keyboard.c: Likewise.
+	* term/i386/pc/vga_text.c: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+
 2008-01-02  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Improve error

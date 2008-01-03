@@ -87,7 +87,7 @@ struct hd_geometry
   /* Runtime detection of kernel */
 # include <sys/utsname.h>
 int
-get_kfreebsd_version ()
+get_kfreebsd_version (void)
 {
   struct utsname uts;
   int major;

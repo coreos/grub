@@ -57,7 +57,7 @@ update_cursor (void)
 }
 
 static void
-inc_y ()
+inc_y (void)
 {
   grub_curr_x = 0;
   if (grub_curr_y < ROWS - 1)
@@ -72,7 +72,7 @@ inc_y ()
 }
 
 static void
-inc_x ()
+inc_x (void)
 {
   if (grub_curr_x >= COLS - 2)
     inc_y ();
@@ -105,7 +105,7 @@ grub_console_real_putchar (int c)
 }
 
 grub_uint16_t
-grub_console_getxy ()
+grub_console_getxy (void)
 {
   return (grub_curr_x << 8) | grub_curr_y;
 }
@@ -119,7 +119,7 @@ grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y)
 }
 
 void
-grub_console_cls ()
+grub_console_cls (void)
 {
   int i;
   for (i = 0; i < ROWS * COLS; i++)

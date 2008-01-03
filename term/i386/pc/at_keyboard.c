@@ -123,7 +123,7 @@ grub_keyboard_isr (char key)
 
 /* If there is a raw key pending, return it; otherwise return -1.  */
 static int
-grub_keyboard_getkey ()
+grub_keyboard_getkey (void)
 {
   grub_uint8_t key;
   if (KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
@@ -137,7 +137,7 @@ grub_keyboard_getkey ()
 
 /* If there is a character pending, return it; otherwise return -1.  */
 int
-grub_console_checkkey ()
+grub_console_checkkey (void)
 {
   int key;
   key = grub_keyboard_getkey ();
@@ -171,7 +171,7 @@ grub_console_checkkey ()
 }
 
 int
-grub_console_getkey ()
+grub_console_getkey (void)
 {
   int key;
   do

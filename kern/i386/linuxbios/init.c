@@ -66,14 +66,14 @@ grub_millisleep (grub_uint32_t ms __attribute__ ((unused)))
 }
 
 void
-grub_exit ()
+grub_exit (void)
 {
   grub_printf ("grub_exit() is not implemented.\n");
   grub_stop ();
 }
 
 void
-grub_reboot ()
+grub_reboot (void)
 {
   grub_printf ("grub_reboot() is not implemented.\n");
   grub_stop ();

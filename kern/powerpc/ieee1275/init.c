@@ -127,7 +127,7 @@ grub_machine_set_prefix (void)
 }
 
 /* Claim some available memory in the first /memory node. */
-static void grub_claim_heap ()
+static void grub_claim_heap (void)
 {
   unsigned long total = 0;
 
