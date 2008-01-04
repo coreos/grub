@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -199,13 +199,8 @@ grub_machine_init (void)
 
       if (eisa_mmap)
 	{
-	  if ((eisa_mmap & 0xFFFF) == 0x3C00)
-	    add_mem_region (0x100000, (eisa_mmap << 16) + 0x100000 * 15);
-	  else
-	    {
-	      add_mem_region (0x100000, (eisa_mmap & 0xFFFF) << 10);
-	      add_mem_region (0x1000000, eisa_mmap << 16);
-	    }
+	  add_mem_region (0x100000, (eisa_mmap & 0xFFFF) << 10);
+	  add_mem_region (0x1000000, eisa_mmap & ~0xFFFF);
 	}
       else
 	add_mem_region (0x100000, grub_get_memsize (1) << 10);

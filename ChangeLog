@@ -1,3 +1,8 @@
+2008-01-04  Christian Franke  <franke@computer.org>
+
+	* kern/i386/pc/init.c (grub_machine_init): Fix evaluation
+	of eisa_mmap.
+
 2008-01-03  Pavel Roskin  <proski@gnu.org>
 
 	* kern/i386/linuxbios/init.c: Put "void" to all function
