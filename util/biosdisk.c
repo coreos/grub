@@ -606,27 +606,24 @@ get_os_disk (const char *os_dev)
     {
       p = path + 5;
 
-      if (have_devfs ())
+      /* If this is an IDE disk.  */
+      if (strncmp ("ide/", p, 4) == 0)
 	{
-	  /* If this is an IDE disk.  */
-	  if (strncmp ("ide/", p, 4) == 0)
-	    {
-	      p = strstr (p, "part");
-	      if (p)
-		strcpy (p, "disc");
-
-	      return path;
-	    }
-
-	  /* If this is a SCSI disk.  */
-	  if (strncmp ("scsi/", p, 5) == 0)
-	    {
-	      p = strstr (p, "part");
-	      if (p)
-		strcpy (p, "disc");
-
-	      return path;
-	    }
+	  p = strstr (p, "part");
+	  if (p)
+	    strcpy (p, "disc");
+	  
+	  return path;
+	}
+      
+      /* If this is a SCSI disk.  */
+      if (strncmp ("scsi/", p, 5) == 0)
+	{
+	  p = strstr (p, "part");
+	  if (p)
+	    strcpy (p, "disc");
+	  
+	  return path;
 	}
       
       /* If this is a DAC960 disk.  */

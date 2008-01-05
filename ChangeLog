@@ -1,5 +1,11 @@
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
+	* util/biosdisk.c (get_os_disk): Check for devfs-style IDE and SCSI
+	discs unconditionaly, since udev and others have options to provide
+	them.
+
+2008-01-05  Robert Millan  <rmh@aybabtu.com>
+
 	* normal/completion.c (iterate_dir): Skip `.' and `..' directories.
 
 2008-01-04  Christian Franke  <franke@computer.org>
