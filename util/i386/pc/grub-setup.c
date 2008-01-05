@@ -537,7 +537,7 @@ usage (int status)
 Usage: grub-setup [OPTION]... DEVICE\n\
 \n\
 Set up images to boot from DEVICE.\n\
-DEVICE must be a GRUB device (e.g. ``(hd0,0)'').\n\
+DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
 \n\
   -b, --boot-image=FILE   use FILE as the boot image [default=%s]\n\
   -c, --core-image=FILE   use FILE as the core image [default=%s]\n\

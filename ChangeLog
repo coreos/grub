@@ -1,5 +1,10 @@
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-setup.c (usage): Replace obsolete `(hd0,0)' in
+	usage example with `(hd0,1)'.
+
+2008-01-05  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/i386/loader.S (grub_linux_is_bzimage): New variable.
 	(grub_linux_boot_zimage): Rename to ...
 	(grub_linux_boot): ... this.
