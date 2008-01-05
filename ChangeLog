@@ -2,6 +2,7 @@
 
 	* util/i386/pc/grub-setup.c (usage): Replace obsolete `(hd0,0)' in
 	usage example with `(hd0,1)'.
+	Reported by Samuel Thibault.
 
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
