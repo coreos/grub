@@ -138,7 +138,7 @@ iterate_dir (const char *filename, int dir)
       if (add_completion (filename, prefix, GRUB_COMPLETION_TYPE_FILE))
 	return 1;
     }
-  else
+  else if (grub_strcmp (filename, ".") && grub_strcmp (filename, ".."))
     {
       char fname[grub_strlen (filename) + 2];
 

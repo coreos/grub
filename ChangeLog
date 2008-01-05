@@ -1,3 +1,7 @@
+2008-01-05  Robert Millan  <rmh@aybabtu.com>
+
+	* normal/completion.c (iterate_dir): Skip `.' and `..' directories.
+
 2008-01-04  Christian Franke  <franke@computer.org>
 
 	* kern/i386/pc/init.c (grub_machine_init): Fix evaluation
