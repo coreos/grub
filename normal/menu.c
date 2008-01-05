@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,8 +25,17 @@
 #include <grub/env.h>
 #include <grub/script.h>
 
-#define GRUB_COLOR_MENU_NORMAL		0x07
-#define GRUB_COLOR_MENU_HIGHLIGHT	0x70
+static grub_uint8_t grub_color_menu_normal;
+static grub_uint8_t grub_color_menu_highlight;
+
+/* Wait until the user pushes any key so that the user
+   can see what happened.  */
+void
+grub_wait_after_message (void)
+{
+  grub_printf ("\nPress any key to continue...");
+  (void) grub_getkey ();
+}
 
 static void
 draw_border (void)
@@ -57,7 +66,7 @@ draw_border (void)
     grub_putcode (GRUB_TERM_DISP_HLINE);
   grub_putcode (GRUB_TERM_DISP_LR);
 
-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
 
   grub_gotoxy (GRUB_TERM_MARGIN,
 	       (GRUB_TERM_TOP_BORDER_Y + GRUB_TERM_NUM_ENTRIES
@@ -67,6 +76,8 @@ draw_border (void)
 static void
 print_message (int nested, int edit)
 {
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+
   if (edit)
     {
       grub_printf ("\n\
@@ -108,7 +119,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
   grub_ssize_t len;
   grub_uint32_t *unicode_title;
   grub_ssize_t i;
-  grub_uint8_t normal_code, highlight_code;
+  grub_uint8_t old_color_normal, old_color_highlight;
 
   title = entry ? entry->title : "";
   unicode_title = grub_malloc (grub_strlen (title) * sizeof (*unicode_title));
@@ -124,9 +135,9 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
       grub_free (unicode_title);
       return;
     }
-  
-  grub_getcolor (&normal_code, &highlight_code);
-  grub_setcolor (GRUB_COLOR_MENU_NORMAL, GRUB_COLOR_MENU_HIGHLIGHT);
+
+  grub_getcolor (&old_color_normal, &old_color_highlight);
+  grub_setcolor (grub_color_menu_normal, grub_color_menu_highlight);
   grub_setcolorstate (highlight
 		      ? GRUB_TERM_COLOR_HIGHLIGHT
 		      : GRUB_TERM_COLOR_NORMAL);
@@ -164,8 +175,8 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 
   grub_gotoxy (GRUB_TERM_CURSOR_X, y);
 
-  grub_setcolor (normal_code, highlight_code);
-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+  grub_setcolor (old_color_normal, old_color_highlight);
+  grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
   grub_free (unicode_title);
 }
 
@@ -209,15 +220,23 @@ print_entries (grub_menu_t menu, int first, int offset)
 void
 grub_menu_init_page (int nested, int edit)
 {
-  grub_uint8_t normal_code, highlight_code;
-  grub_getcolor (&normal_code, &highlight_code);
-  grub_setcolor (GRUB_COLOR_MENU_NORMAL, GRUB_COLOR_MENU_HIGHLIGHT);
+  grub_uint8_t old_color_normal, old_color_highlight;
+
+  grub_getcolor (&old_color_normal, &old_color_highlight);
+
+  /* By default, use the same colors for the menu.  */
+  grub_color_menu_normal = old_color_normal;
+  grub_color_menu_highlight = old_color_highlight;
+
+  /* Then give user a chance to replace them.  */
+  grub_parse_color_name_pair (&grub_color_menu_normal, grub_env_get ("menu_color_normal"));
+  grub_parse_color_name_pair (&grub_color_menu_highlight, grub_env_get ("menu_color_highlight"));
 
   grub_normal_init_page ();
+  grub_setcolor (grub_color_menu_normal, grub_color_menu_highlight);
   draw_border ();
+  grub_setcolor (old_color_normal, old_color_highlight);
   print_message (nested, edit);
-
-  grub_setcolor (normal_code, highlight_code);
 }
 
 /* Return the current timeout. If the variable "timeout" is not set or
@@ -501,10 +520,7 @@ grub_menu_run (grub_menu_t menu, int nested)
 	  grub_print_error ();
 	  grub_errno = GRUB_ERR_NONE;
 
-	  /* Wait until the user pushes any key so that the user
-	     can see what happened.  */
-	  grub_printf ("\nPress any key to continue...");
-	  (void) grub_getkey ();
+	  grub_wait_after_message ();
 	}
     }
 }

@@ -1,5 +1,47 @@
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/normal.h (grub_env_write_color_normal): New prototype.
+	(grub_env_write_color_highlight): Likewise.
+	(grub_wait_after_message): Likewise.
+
+	* normal/color.c: New file.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `normal/color.c'.
+	(normal_mod_DEPENDENCIES): Likewise.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Add `normal/color.c'.
+	(normal_mod_DEPENDENCIES): Likewise.
+
+	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Add `normal/color.c'.
+	(normal_mod_DEPENDENCIES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add `normal/color.c'.
+	(normal_mod_DEPENDENCIES): Likewise.
+
+	* normal/menu_entry.c (run): Rely on grub_wait_after_message()
+	for waiting after a message is printed.
+	* normal/main.c (read_config_file): Likewise.
+	(grub_normal_init): Register grub_env_write_color_normal() and
+	grub_env_write_color_highlight() hooks.  Mark `color_normal' and
+	`color_highlight' variables as global.
+
+	* normal/menu.c (grub_wait_after_message): New function.
+	(grub_color_menu_normal): New variable.  Replaces ...
+	(GRUB_COLOR_MENU_NORMAL): ... this macro.
+	(grub_color_menu_highlight): New variable.  Replaces ...
+	(GRUB_COLOR_MENU_HIGHLIGHT): ... this macro.
+	(draw_border): Set color state to `GRUB_TERM_COLOR_NORMAL' instead of
+	`GRUB_TERM_COLOR_STANDARD'.
+	(print_message): Use `grub_setcolorstate' to reload colors.  Rename
+	`normal_code' and `highlight_code' to `old_color_normal' and
+	`old_color_highlight', respectively.
+	(grub_menu_init_page): Update colors when drawing the menu, based on
+	`menu_color_normal' and `menu_color_highlight' variables.
+	(grub_menu_run): Rely on grub_wait_after_message() for waiting after
+	a message is printed.
+
+2008-01-05  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/env.c (grub_env_context_open): Propagate hooks for global
 	variables to new context.
 

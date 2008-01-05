@@ -1,7 +1,7 @@
 /* normal.h - prototypes for the normal mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -154,6 +154,9 @@ grub_err_t grub_normal_print_device_info (const char *name);
 grub_err_t grub_normal_menu_addentry (const char *title,
 				      struct grub_script *script,
 				      const char *sourcecode);
+char *grub_env_write_color_normal (struct grub_env_var *var, const char *val);
+char *grub_env_write_color_highlight (struct grub_env_var *var, const char *val);
+void grub_wait_after_message (void);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);

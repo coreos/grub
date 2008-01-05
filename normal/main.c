@@ -1,7 +1,7 @@
 /* main.c - the normal mode main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -268,12 +268,7 @@ read_config_file (const char *config, int nested)
   grub_file_close (file);
 
   if (errors > 0)
-    {
-      /* Wait until the user pushes any key so that the user can
-	 see what happened.  */
-      grub_printf ("\nPress any key to continue...");
-      (void) grub_getkey ();
-    }
+    grub_wait_after_message ();
 
   return newmenu;
 }
@@ -526,6 +521,14 @@ GRUB_MOD_INIT(normal)
   /* Register a command "normal" for the rescue mode.  */
   grub_rescue_register_command ("normal", grub_rescue_cmd_normal,
 				"enter normal mode");
+
+  /* Reload terminal colors when these variables are written to.  */
+  grub_register_variable_hook ("color_normal", NULL, grub_env_write_color_normal);
+  grub_register_variable_hook ("color_highlight", NULL, grub_env_write_color_highlight);
+
+  /* Preserve hooks after context changes.  */
+  grub_env_export ("color_normal");
+  grub_env_export ("color_highlight");
 
   /* This registers some built-in commands.  */
   grub_command_init ();
