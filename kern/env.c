@@ -1,7 +1,7 @@
 /* env.c - Environment variables */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -96,11 +96,14 @@ grub_env_context_open (void)
       for (var = context->prev->vars[i]; var; var = var->next)
 	{
 	  if (var->type == GRUB_ENV_VAR_GLOBAL)
-	    if (grub_env_set (var->name, var->value) != GRUB_ERR_NONE)
-	      {
-		grub_env_context_close ();
-		return grub_errno;
-	      }
+	    {
+	      if (grub_env_set (var->name, var->value) != GRUB_ERR_NONE)
+		{
+		  grub_env_context_close ();
+		  return grub_errno;
+		}
+	      grub_register_variable_hook (var->name, var->read_hook, var->write_hook);
+	    }
 	}
     }
   

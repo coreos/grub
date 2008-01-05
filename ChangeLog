@@ -1,5 +1,12 @@
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/env.c (grub_env_context_open): Propagate hooks for global
+	variables to new context.
+
+	* kern/main.c (grub_set_root_dev): Export `root' variable.
+
+2008-01-05  Robert Millan  <rmh@aybabtu.com>
+
 	* util/biosdisk.c (get_os_disk): Check for devfs-style IDE and SCSI
 	discs unconditionaly, since udev and others have options to provide
 	them.

@@ -1,7 +1,7 @@
 /* main.c - the kernel main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -78,6 +78,7 @@ grub_set_root_dev (void)
   const char *prefix;
 
   grub_register_variable_hook ("root", 0, grub_env_write_root);
+  grub_env_export ("root");
   
   prefix = grub_env_get ("prefix");
   
