@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,11 +26,11 @@
 extern grub_uint32_t EXPORT_VAR(grub_linux_prot_size);
 extern char *EXPORT_VAR(grub_linux_tmp_addr);
 extern char *EXPORT_VAR(grub_linux_real_addr);
+extern grub_int32_t EXPORT_VAR(grub_linux_is_bzimage);
 extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
 extern grub_size_t EXPORT_VAR(grub_os_area_size);
 
-void EXPORT_FUNC(grub_linux_boot_zimage) (void) __attribute__ ((noreturn));
-void EXPORT_FUNC(grub_linux_boot_bzimage) (void) __attribute__ ((noreturn));
+void EXPORT_FUNC(grub_linux_boot) (void) __attribute__ ((noreturn));
 
 /* The asm part of the multiboot loader.  */
 void EXPORT_FUNC(grub_multiboot_real_boot) (grub_addr_t entry, 

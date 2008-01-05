@@ -1,5 +1,21 @@
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/i386/loader.S (grub_linux_is_bzimage): New variable.
+	(grub_linux_boot_zimage): Rename to ...
+	(grub_linux_boot): ... this.
+	(grub_linux_boot_bzimage): Merge with `grub_linux_boot_zimage'.
+	(grub_linux_boot_zimage): Conditionalize zImage copy.
+
+	* include/grub/i386/loader.h (grub_linux_is_bzimage): Add prototype.
+	(grub_linux_boot_bzimage): Remove prototype.
+	(grub_linux_boot_zimage): Rename to ...
+	(grub_linux_boot): ... this.
+
+	* loader/i386/pc/linux.c (big_linux): Replace with `grub_linux_is_bzimage'.
+	(grub_linux_boot): Remove function.
+
+2008-01-05  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/normal.h (grub_env_write_color_normal): New prototype.
 	(grub_env_write_color_highlight): Likewise.
 	(grub_wait_after_message): Likewise.

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -56,8 +56,17 @@ VARIABLE(grub_linux_tmp_addr)
 	.long	0
 VARIABLE(grub_linux_real_addr)
 	.long	0
+VARIABLE(grub_linux_is_bzimage)
+	.long	0
 	
-FUNCTION(grub_linux_boot_zimage)
+FUNCTION(grub_linux_boot)
+	/* Must be done before zImage copy.  */
+	call	EXT_C(grub_dl_unload_all)
+
+	movl	EXT_C(grub_linux_is_bzimage), %ebx
+	test	%ebx, %ebx
+	jne bzimage
+
 	/* copy the kernel */
 	movl	EXT_C(grub_linux_prot_size), %ecx
 	addl	$3, %ecx
@@ -68,9 +77,7 @@ FUNCTION(grub_linux_boot_zimage)
 	rep
 	movsl
 
-FUNCTION(grub_linux_boot_bzimage)
-	call	EXT_C(grub_dl_unload_all)
-	
+bzimage:
 	movl	EXT_C(grub_linux_real_addr), %ebx
 
 	/* copy the real mode code */

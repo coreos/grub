@@ -1,7 +1,7 @@
 /* linux.c - boot Linux zImage or bzImage */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,21 +33,8 @@
 
 static grub_dl_t my_mod;
 
-static int big_linux;
 static grub_size_t linux_mem_size;
 static int loaded;
-
-static grub_err_t
-grub_linux_boot (void)
-{
-  if (big_linux)
-    grub_linux_boot_bzimage ();
-  else
-    grub_linux_boot_zimage ();
-
-  /* Never reach here.  */
-  return GRUB_ERR_NONE;
-}
 
 static grub_err_t
 grub_linux_unload (void)
@@ -106,14 +93,14 @@ grub_rescue_cmd_linux (int argc, char *argv[])
       goto fail;
     }
 
-  big_linux = 0;
+  grub_linux_is_bzimage = 0;
   setup_sects = lh.setup_sects;
   linux_mem_size = 0;
   
   if (lh.header == grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
       && grub_le_to_cpu16 (lh.version) >= 0x0200)
     {
-      big_linux = (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL);
+      grub_linux_is_bzimage = (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL);
       lh.type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
       
       /* Put the real mode part at as a high location as possible.  */
@@ -158,7 +145,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   
   grub_linux_tmp_addr = (char *) GRUB_LINUX_BZIMAGE_ADDR + prot_size;
 
-  if (! big_linux
+  if (! grub_linux_is_bzimage
       && prot_size > (grub_size_t) (grub_linux_real_addr
 				    - (char *) GRUB_LINUX_ZIMAGE_ADDR))
     {
@@ -177,7 +164,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
     }
 
   grub_printf ("   [Linux-%s, setup=0x%x, size=0x%x]\n",
-	       big_linux ? "bzImage" : "zImage", real_size, prot_size);
+	       grub_linux_is_bzimage ? "bzImage" : "zImage", real_size, prot_size);
 
   for (i = 1; i < argc; i++)
     if (grub_memcmp (argv[i], "vga=", 4) == 0)
