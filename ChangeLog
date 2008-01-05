@@ -1,3 +1,7 @@
+2008-01-05  Jeroen Dekkers  <jeroen@dekkers.cx>
+
+	* include/grub/normal.h: Include <grub/env.h>.
+
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (usage): Replace obsolete `(hd0,0)' in
