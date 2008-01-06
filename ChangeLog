@@ -1,3 +1,19 @@
+2008-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Mostly from Vincent Pelletier:
+	
+	* fs/reiserfs.c: New file.
+	
+	* conf/common.rmk (pkglib_MODULES): Added reiserfs.mod.
+	(reiserfs_mod_SOURCES): New variable.
+	(reiserfs_mod_CFLAGS): Likewise.
+	(reiserfs_mod_LDFLAGS): Likewise.
+
+	* DISTLIST: Added boot/i386/pc/lnxboot.S, commands/hexdump.c,
+	disk/ata.c, fs/cpio.c, fs/ntfscomp.c, fs/reiserfs.c,
+	include/grub/ntfs.h, include/grub/i386/pc/machine.h, and
+	normal/color.c.
+
 2008-01-06  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/color.c: Remove `<grub/env.h>'.

@@ -81,7 +81,7 @@ update-grub_DATA += util/grub.d/README
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
-	affs.mod sfs.mod hfsplus.mod cpio.mod
+	affs.mod sfs.mod hfsplus.mod reiserfs.mod cpio.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -810,6 +810,58 @@ fs-hfsplus_mod-fs_hfsplus.lst: fs/hfsplus.c genfslist.sh
 
 hfsplus_mod_CFLAGS = $(COMMON_CFLAGS)
 hfsplus_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reiserfs.mod.
+reiserfs_mod_SOURCES = fs/reiserfs.c
+CLEANFILES += reiserfs.mod mod-reiserfs.o mod-reiserfs.c pre-reiserfs.o reiserfs_mod-fs_reiserfs.o und-reiserfs.lst
+ifneq ($(reiserfs_mod_EXPORTS),no)
+CLEANFILES += def-reiserfs.lst
+DEFSYMFILES += def-reiserfs.lst
+endif
+MOSTLYCLEANFILES += reiserfs_mod-fs_reiserfs.d
+UNDSYMFILES += und-reiserfs.lst
+
+reiserfs.mod: pre-reiserfs.o mod-reiserfs.o
+	-rm -f $@
+	$(TARGET_CC) $(reiserfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-reiserfs.o: $(reiserfs_mod_DEPENDENCIES) reiserfs_mod-fs_reiserfs.o
+	-rm -f $@
+	$(TARGET_CC) $(reiserfs_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ reiserfs_mod-fs_reiserfs.o
+
+mod-reiserfs.o: mod-reiserfs.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reiserfs_mod_CFLAGS) -c -o $@ $<
+
+mod-reiserfs.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'reiserfs' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(reiserfs_mod_EXPORTS),no)
+def-reiserfs.lst: pre-reiserfs.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 reiserfs/' > $@
+endif
+
+und-reiserfs.lst: pre-reiserfs.o
+	echo 'reiserfs' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+reiserfs_mod-fs_reiserfs.o: fs/reiserfs.c
+	$(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reiserfs_mod_CFLAGS) -MD -c -o $@ $<
+-include reiserfs_mod-fs_reiserfs.d
+
+CLEANFILES += cmd-reiserfs_mod-fs_reiserfs.lst fs-reiserfs_mod-fs_reiserfs.lst
+COMMANDFILES += cmd-reiserfs_mod-fs_reiserfs.lst
+FSFILES += fs-reiserfs_mod-fs_reiserfs.lst
+
+cmd-reiserfs_mod-fs_reiserfs.lst: fs/reiserfs.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reiserfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reiserfs > $@ || (rm -f $@; exit 1)
+
+fs-reiserfs_mod-fs_reiserfs.lst: fs/reiserfs.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifs -I$(srcdir)/fs $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reiserfs_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reiserfs > $@ || (rm -f $@; exit 1)
+
+
+reiserfs_mod_CFLAGS = $(COMMON_CFLAGS)
+reiserfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For cpio.mod.
 cpio_mod_SOURCES = fs/cpio.c

@@ -9,7 +9,7 @@ New in 1.96:
 
 * grub-emu can access the host filesystem now.
 
-* Add support for the NTFS filesystems.
+* Add support for the NTFS and Reiserfs filesystems.
 
 * Add support for ATA/ATAPI.
 
