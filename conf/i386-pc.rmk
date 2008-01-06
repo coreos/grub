@@ -70,8 +70,8 @@ util/i386/pc/grub-setup.c_DEPENDENCIES = grub_setup_init.h
 grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
 	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
-	fs/sfs.c kern/parser.c kern/partition.c	partmap/pc.c		\
-	partmap/gpt.c							\
+	fs/sfs.c fs/reiserfs.c kern/parser.c kern/partition.c	\
+	partmap/pc.c partmap/gpt.c				\
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/ntfs.c fs/ntfscomp.c	\
 	fs/hfsplus.c kern/file.c kern/fs.c kern/env.c fs/fshelp.c	\
 	util/raid.c util/lvm.c grub_setup_init.c
@@ -89,7 +89,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	partmap/pc.c partmap/apple.c partmap/gpt.c 			\
 	fs/ufs.c fs/minix.c fs/hfs.c fs/jfs.c fs/ntfs.c kern/fs.c	\
 	kern/env.c fs/fshelp.c fs/xfs.c fs/affs.c fs/sfs.c fs/hfsplus.c	\
-	fs/ntfscomp.c disk/lvm.c disk/raid.c grub_probe_init.c
+	fs/ntfscomp.c fs/reiserfs.c disk/lvm.c disk/raid.c grub_probe_init.c
 
 # For grub-emu.
 grub_emu_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
@@ -103,7 +103,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	disk/host.c disk/loopback.c	disk/raid.c disk/lvm.c		\
 	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c	\
 	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c fs/hfsplus.c	\
-	fs/ntfs.c fs/ntfscomp.c	fs/cpio.c				\
+	fs/ntfs.c fs/ntfscomp.c	fs/cpio.c fs/reiserfs.c			\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
 	kern/err.c							\
@@ -135,8 +135,8 @@ grub_mkrescue_SOURCES = util/i386/pc/grub-mkrescue.in
 pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
-	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod ata.mod \
-	vga.mod
+	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
+	ata.mod vga.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
