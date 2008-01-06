@@ -20,16 +20,13 @@
 /*
   TODO:
   implement journal handling (ram replay)
-  implement symlinks support
-  support items bigger than roughly (blocksize / 4) * blocksize
-    !! that goes for directories aswell, size in such case is metadata size.
   test tail packing & direct files
   validate partition label position
 */
 #warning "TODO : journal, tail packing (?)"
 
-#define GRUB_REISERFS_KEYV2_BITFIELD 1
 #if 0
+# define GRUB_REISERFS_KEYV2_BITFIELD 1
 # define GRUB_REISERFS_DEBUG
 # define GRUB_REISERFS_JOURNALING
 # define GRUB_HEXDUMP
@@ -263,7 +260,7 @@ grub_reiserfs_get_key_v2_type (const struct grub_reiserfs_key *key)
 #ifdef GRUB_REISERFS_KEYV2_BITFIELD
   switch (key->u.v2.type)
 #else
-  switch (key->u.v2.offset_type & 0xF)
+  switch (grub_le_to_cpu64 (key->u.v2.offset_type) >> 60)
 #endif
     {
     case 0:
@@ -372,9 +369,7 @@ grub_reiserfs_get_key_offset (const struct grub_reiserfs_key *key)
 #ifdef GRUB_REISERFS_KEYV2_BITFIELD
       return key->u.v2.offset;
 #else
-      grub_uint64_t temp = grub_le_to_cpu64 (key->u.v2.offset_type & ~0xF);
-      return (((temp & 0xF000000000000000LLU) >> 4) \
-              | (temp & 0x00FFFFFFFFFFFFFFLLU));
+      return grub_le_to_cpu64 (key->u.v2.offset_type) & (~0ULL >> 4);
 #endif
     }
 }
@@ -391,9 +386,8 @@ grub_reiserfs_set_key_offset (struct grub_reiserfs_key *key,
     key->u.v2.offset = value;
 #else
     key->u.v2.offset_type \
-      = ((key->u.v2.offset_type & 0xF) \
-         | grub_cpu_to_le64 (((value & 0x0F00000000000000LLU) << 4) \
-                             | (value & 0x00FFFFFFFFFFFFFFLLU));
+      = ((key->u.v2.offset_type & grub_cpu_to_le64 (15ULL << 60))
+         | grub_cpu_to_le64 (value & (~0ULL >> 4)));
 #endif
 }
 
@@ -443,7 +437,9 @@ grub_reiserfs_set_key_type (struct grub_reiserfs_key *key,
 #ifdef GRUB_REISERFS_KEYV2_BITFIELD
       key->u.v2.type = type;
 #else
-      key->u.v2.offset_type = (key->u.v2.offset_type & ~0xF) | (type & 0xF);
+      key->u.v2.offset_type
+        = ((key->u.v2.offset_type & grub_cpu_to_le64 (~0ULL >> 4))
+           | grub_cpu_to_le64 ((grub_uint64_t) type << 60));
 #endif
     }
   assert (grub_reiserfs_get_key_type (key) == grub_type);
@@ -752,6 +748,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
   struct grub_reiserfs_block_header *block_header = 0;
   grub_uint16_t block_size, block_position;
   grub_uint32_t block_number;
+  int ret = 0;
 
   if (item->type != GRUB_REISERFS_DIRECTORY)
     {
@@ -975,6 +972,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                 {
                   grub_dprintf ("reiserfs", "Found : %s, type=%d\n",
                                 entry_name, entry_type);
+                  ret = 1;
                   goto found;
                 }
 
@@ -999,11 +997,11 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
  found:
   assert (grub_errno == GRUB_ERR_NONE);
   grub_free (block_header);
-  return grub_errno;
+  return ret;
  fail:
   assert (grub_errno != GRUB_ERR_NONE);
   grub_free (block_header);
-  return grub_errno;
+  return 0;
 }
 
 /****************************************************************************/

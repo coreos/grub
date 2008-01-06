@@ -1,5 +1,17 @@
 2008-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* fs/reiserfs.c (grub_reiserfs_get_key_v2_type): Handle endianness
+	correctly.
+	(grub_reiserfs_get_key_offset): Likewise.
+	(grub_reiserfs_set_key_offset): Likewise.
+	(grub_reiserfs_set_key_type): Likewise.
+	(grub_reiserfs_iterate_dir): Return 1 if found, otheriwise 0.
+
+	(GRUB_REISERFS_KEYV2_BITFIELD): Undefined. Probably it would be
+	better to remove the bitfield version completely.
+	
+2008-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
+	
 	* fs/reiserfs.c (grub_reiserfs_iterate_dir): ENTRY_ITEM must be
 	allocated from the heap, due to the fshelp implementation.
 	(grub_reiserfs_dir): Free NODE, due to the same reason.
