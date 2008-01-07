@@ -1,3 +1,8 @@
+2008-01-07  Robert Millan  <rmh@aybabtu.com>
+
+	* TODO: Rewrite.  Just refer to the wiki and the BTS instead of
+	listing actual TODO items.
+
 2008-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* fs/reiserfs.c (grub_reiserfs_get_key_v2_type): Handle endianness
