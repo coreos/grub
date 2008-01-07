@@ -114,7 +114,7 @@ after_BPB:
          * this does nothing (only jump).
          */
 boot_drive_check:
-        jmp     1f
+        jmp     1f	/* grub-setup may overwrite this jump */
         testb   $0x80, %dl
         jnz     1f
         movb    $0x80, %dl

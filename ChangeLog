@@ -1,5 +1,11 @@
 2008-01-07  Robert Millan  <rmh@aybabtu.com>
 
+	* boot/i386/pc/boot.S (boot_drive_check): Add a comment indicating
+	which instruction is modified by grub-setup during installation
+	(since it wasn't obvious by only looking at this file).
+
+2008-01-07  Robert Millan  <rmh@aybabtu.com>
+
 	* TODO: Rewrite.  Just refer to the wiki and the BTS instead of
 	listing actual TODO items.
 
