@@ -1,3 +1,10 @@
+2008-01-08  Robert Millan  <rmh@aybabtu.com>
+
+	* Makefile.in (uninstall): Handle `$(update-grub_SCRIPTS)' and
+	`$(update-grub_DATA)'.
+	(distcheck): Fix race condition when invoking `$(MAKE)' on multiple
+	targets.
+
 2008-01-07  Robert Millan  <rmh@aybabtu.com>
 
 	* boot/i386/pc/boot.S (boot_drive_check): Add a comment indicating

@@ -219,6 +219,10 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sbindir)/$$dest; \
 	done
+	@list='$(update-grub_SCRIPTS) $(update-grub_DATA)'; for file in $$list; do \
+	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
+	  rm -f $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
+	done
 
 clean:
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
@@ -271,11 +275,11 @@ distcheck: dist
 	dc_instdir=`CDPATH=: && cd $(distdir)/=inst && pwd` \
 	  && cd $(distdir)/=build \
 	  && ../configure --srcdir=.. --prefix=$$dc_instdir \
-	  && $(MAKE) all dvi check install uninstall \
+	  && $(MAKE) all dvi check install && $(MAKE) uninstall \
 	  && (test `find $$dc_instdir -type f -print | wc -l` -le 1 \
 	     || (echo "Error: files left after uninstall" 1>&2; \
 	         exit 1)) \
-	  && $(MAKE) dist distclean \
+	  && $(MAKE) dist && $(MAKE) distclean \
 	  && rm -f $(distdir).tar.gz \
 	  && (test `find . -type f -print | wc -l` -eq 0 \
 	     || (echo "Error: files left after distclean" 1>&2; \
