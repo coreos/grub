@@ -1,5 +1,11 @@
 2008-01-08  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): For
+	`! grub_linux_is_bzimage', change order of address comparison to make
+	it more intuitive, and improve "too big zImage" error message.
+
+2008-01-08  Robert Millan  <rmh@aybabtu.com>
+
 	* Makefile.in (uninstall): Handle `$(update-grub_SCRIPTS)' and
 	`$(update-grub_DATA)'.
 	(distcheck): Fix race condition when invoking `$(MAKE)' on multiple
