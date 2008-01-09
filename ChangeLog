@@ -1,5 +1,12 @@
 2008-01-08  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/device.c (grub_device_iterate): Do not abort device iteration
+	when one of the devices cannot be opened.
+	* kern/disk.c (grub_disk_open): Do not account previous failures of
+	unrelated functions when grub_errno is checked for.
+
+2008-01-08  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): For
 	`! grub_linux_is_bzimage', change order of address comparison to make
 	it more intuitive, and improve "too big zImage" error message.

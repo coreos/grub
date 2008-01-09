@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -216,6 +216,9 @@ grub_disk_open (const char *name)
   grub_disk_dev_t dev;
   char *raw = (char *) name;
   unsigned long current_time;
+
+  /* Do not account previous failures when grub_errno is checked for.  */
+  grub_errno = GRUB_ERR_NONE;
 
   grub_dprintf ("disk", "Opening `%s'...\n", name);
 
