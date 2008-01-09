@@ -1,4 +1,4 @@
-2008-01-08  Robert Millan  <rmh@aybabtu.com>
+2008-01-10  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/device.c (grub_device_iterate): Do not abort device iteration
 	when one of the devices cannot be opened.
