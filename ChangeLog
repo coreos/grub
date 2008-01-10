@@ -1,3 +1,13 @@
+2008-01-10  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in (grub_file_is_not_garbage): New function.
+	Determines if a file is garbage left by packaging systems, etc.
+	* util/update-grub.in: Use grub_file_is_not_garbage() as a condition
+	for processing /etc/grub.d scripts.
+	* util/grub.d/10_hurd.in: Fix `GRUB_DISTRIBUTOR' comparison.
+	* util/grub.d/10_linux.in: Likewise.  Use grub_file_is_not_garbage()
+	as a condition for processing Linux images.
+
 2008-01-10  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/powerpc/libgcc.h (__ucmpdi2): New export.  Needed

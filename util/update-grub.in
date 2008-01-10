@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
 # Generate grub.cfg by inspecting /boot contents.
-# Copyright (C) 2006,2007  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -145,7 +145,7 @@ for i in ${update_grub_dir}/* ; do
     # emacsen backup files. FIXME: support other editors
     *~) ;;
     *)
-      if test -f "$i" && test -x "$i" ; then
+      if grub_file_is_not_garbage "$i" && test -x "$i" ; then
         echo
         echo "### BEGIN $i ###"
         "$i"
