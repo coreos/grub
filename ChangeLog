@@ -1,3 +1,8 @@
+2008-01-10  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/powerpc/libgcc.h (__ucmpdi2): New export.  Needed
+	to compile reiserfs.c on PowerPC.
+
 2008-01-10  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/device.c (grub_device_iterate): Do not abort device iteration
