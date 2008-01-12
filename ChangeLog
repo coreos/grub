@@ -1,3 +1,31 @@
+2008-01-12  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/util/getroot.h (grub_dev_abstraction_types): New enum.
+	(grub_util_get_dev_abstraction): New function prototype.
+
+	* util/getroot.c: Include `<grub/util/getroot.h>'
+	(grub_util_get_grub_dev): Move detection of abstraction type to ...
+	(grub_util_get_dev_abstraction): ... here (new function).
+
+	* util/grub-probe.c: Convert PRINT_* to an enum.  Add
+	`PRINT_ABSTRACTION'.
+	(probe): Probe for abstraction type when requested.
+	(main): Understand `--target=abstraction'.
+
+	* util/i386/efi/grub-install.in: Add abstraction module to core
+	image when it is found to be necessary.
+	* util/i386/pc/grub-install.in: Likewise.
+	* util/powerpc/ieee1275/grub-install.in: Likewise.
+
+	* util/update-grub_lib.in (font_path): Return system path without
+	converting to GRUB path.
+	* util/update-grub.in: Convert system path returned by font_path()
+	to a GRUB path.  Use `grub-probe -t abstraction' to determine what
+	abstraction module is needed for loading fonts (if any).  Export
+	that as `GRUB_PRELOAD_MODULES'.
+	* util/grub.d/00_header.in: Process `GRUB_PRELOAD_MODULES' (print
+	insmod commands).
+
 2008-01-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Remove some unused code from reiserfs.

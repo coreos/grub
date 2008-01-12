@@ -1,7 +1,7 @@
 /* grub-probe.c - probe device information for a given path */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007 Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,10 +39,13 @@
 #define _GNU_SOURCE	1
 #include <getopt.h>
 
-#define PRINT_FS	0
-#define PRINT_DRIVE	1
-#define PRINT_DEVICE	2
-#define PRINT_PARTMAP	3
+enum {
+  PRINT_FS,
+  PRINT_DRIVE,
+  PRINT_DEVICE,
+  PRINT_PARTMAP,
+  PRINT_ABSTRACTION,
+};
 
 int print = PRINT_FS;
 
@@ -74,6 +77,7 @@ probe (const char *path)
 {
   char *device_name;
   char *drive_name = NULL;
+  int abstraction_type;
   grub_device_t dev;
   grub_fs_t fs;
   
@@ -84,6 +88,28 @@ probe (const char *path)
   if (print == PRINT_DEVICE)
     {
       printf ("%s\n", device_name);
+      goto end;
+    }
+
+  abstraction_type = grub_util_get_dev_abstraction (device_name);
+  /* No need to check for errors; lack of abstraction is permissible.  */
+  
+  if (print == PRINT_ABSTRACTION)
+    {
+      char *abstraction_name;
+      switch (abstraction_type)
+	{
+	case GRUB_DEV_ABSTRACTION_NONE:
+	  grub_util_info ("did not find LVM/RAID in %s, assuming raw device", device_name);
+	  goto end;
+	case GRUB_DEV_ABSTRACTION_LVM:
+	  abstraction_name = "lvm";
+	  break;
+	case GRUB_DEV_ABSTRACTION_RAID:
+	  abstraction_name = "raid";
+	  break;
+	}
+      printf ("%s\n", abstraction_name);
       goto end;
     }
 
@@ -159,8 +185,8 @@ Usage: grub-probe [OPTION]... PATH\n\
 Probe device information for a given path.\n\
 \n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|drive|device|partmap)\n\
-                            print filesystem module, GRUB drive, system device or partition map module [default=fs]\n\
+  -t, --target=(fs|drive|device|partmap|abstraction)\n\
+                            print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
   -v, --verbose             print verbose messages\n\
@@ -206,6 +232,8 @@ main (int argc, char *argv[])
 	      print = PRINT_DEVICE;
 	    else if (!strcmp (optarg, "partmap"))
 	      print = PRINT_PARTMAP;
+	    else if (!strcmp (optarg, "abstraction"))
+	      print = PRINT_ABSTRACTION;
 	    else
 	      usage (1);
 	    break;

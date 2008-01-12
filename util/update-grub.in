@@ -103,7 +103,10 @@ esac
 # check for terminals that require fonts
 case ${GRUB_TERMINAL} in
   gfxterm)
-    if GRUB_FONT_PATH=`font_path` ; then : ; else
+    if path=`font_path` ; then
+      GRUB_FONT_PATH="`convert_system_path_to_grub_path ${path}`"
+      GRUB_PRELOAD_MODULES="`${GRUB_PRELOAD_MODULES} ${grub_probe} -t abstraction ${path}`"
+    else
       # fallback to console
       GRUB_TERMINAL=console
     fi
@@ -121,7 +124,7 @@ esac
 
 # These are defined in this script, export them here so that user can
 # override them.
-export GRUB_DEVICE GRUB_FS GRUB_DRIVE GRUB_DRIVE_BOOT GRUB_DRIVE_BOOT_GRUB GRUB_FONT_PATH
+export GRUB_DEVICE GRUB_FS GRUB_DRIVE GRUB_DRIVE_BOOT GRUB_DRIVE_BOOT_GRUB GRUB_FONT_PATH GRUB_PRELOAD_MODULES
 
 # These are optional, user-defined variables.
 export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_TERMINAL GRUB_SERIAL_COMMAND

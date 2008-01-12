@@ -1,7 +1,7 @@
 #! /bin/sh -e
 
 # update-grub helper script.
-# Copyright (C) 2006,2007  Free Software Foundation, Inc.
+# Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,12 @@ platform=@platform@
 
 # for convert_system_path_to_grub_path()
 . ${libdir}/grub/update-grub_lib
+
+# Do this as early as possible, since other commands might depend on it.
+# (e.g. the `font' command might need lvm or raid modules)
+for i in ${GRUB_PRELOAD_MODULES} ; do
+  echo "insmod $i"
+done
 
 if [ "x${GRUB_DEFAULT}" = "x" ] ; then GRUB_DEFAULT=0 ; fi
 if [ "x${GRUB_TIMEOUT}" = "x" ] ; then GRUB_TIMEOUT=5 ; fi

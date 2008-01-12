@@ -1,5 +1,5 @@
 # Helper library for update-grub
-# Copyright (C) 2007  Free Software Foundation, Inc.
+# Copyright (C) 2007,2008  Free Software Foundation, Inc.
 #
 # GRUB is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,19 +93,14 @@ convert_system_path_to_grub_path ()
 
 font_path ()
 {
-  if [ "x${GRUB_FONT_PATH}" = "x" ] ; then : ; else
-    echo "${GRUB_FONT_PATH}"
-    return 0
-  fi
-
   # Prefer system path for space reasons (/boot/grub might be a very small
   # partition in case of OpenFirmware, etc).
   for dir in ${pkgdatadir} /usr/share/grub /boot/grub ; do
     # Prefer complete fonts over incomplete ones.
     for basename in unicode unifont ascii ; do
-      if path=`convert_system_path_to_grub_path ${dir}/${basename}.pff` ; then
-        GRUB_FONT_PATH="${path}"
-        echo "${GRUB_FONT_PATH}"
+      path="${dir}/${basename}.pff"
+      if convert_system_path_to_grub_path ${path} > /dev/null ; then
+        echo "${path}"
         return 0
       fi
     done
