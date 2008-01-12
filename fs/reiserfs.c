@@ -26,7 +26,6 @@
 #warning "TODO : journal, tail packing (?)"
 
 #if 0
-# define GRUB_REISERFS_KEYV2_BITFIELD 1
 # define GRUB_REISERFS_DEBUG
 # define GRUB_REISERFS_JOURNALING
 # define GRUB_HEXDUMP
@@ -171,12 +170,7 @@ struct grub_reiserfs_key
     } v1 __attribute__ ((packed));
     struct
     {
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-      grub_uint64_t offset:60;
-      grub_uint64_t type:4;
-#else
       grub_uint64_t offset_type;
-#endif
     } v2 __attribute__ ((packed));
   } u;
 } __attribute__ ((packed));
@@ -219,22 +213,6 @@ struct grub_reiserfs_directory_header
   grub_uint16_t state;
 } __attribute__ ((packed));
 
-struct grub_reiserfs_node_body
-{
-  union
-  {
-    struct
-    {
-      struct grub_reiserfs_key *key_list;
-      struct grub_reiserfs_disk_child *child_list;
-    } internal;
-    struct
-    {
-      struct grub_reiserfs_item_header *item_header_list;
-    } leaf;
-  } u;
-};
-
 struct grub_fshelp_node
 {
   struct grub_reiserfs_data *data;
@@ -257,11 +235,7 @@ struct grub_reiserfs_data
 static enum grub_reiserfs_item_type
 grub_reiserfs_get_key_v2_type (const struct grub_reiserfs_key *key)
 {
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-  switch (key->u.v2.type)
-#else
   switch (grub_le_to_cpu64 (key->u.v2.offset_type) >> 60)
-#endif
     {
     case 0:
       return GRUB_REISERFS_STAT;
@@ -365,13 +339,7 @@ grub_reiserfs_get_key_offset (const struct grub_reiserfs_key *key)
   if (grub_reiserfs_get_key_version (key) == 1)
     return grub_le_to_cpu32 (key->u.v1.offset);
   else
-    {
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-      return key->u.v2.offset;
-#else
-      return grub_le_to_cpu64 (key->u.v2.offset_type) & (~0ULL >> 4);
-#endif
-    }
+    return grub_le_to_cpu64 (key->u.v2.offset_type) & (~0ULL >> 4);
 }
 
 /* Set the offset of given key.  */
@@ -382,13 +350,9 @@ grub_reiserfs_set_key_offset (struct grub_reiserfs_key *key,
   if (grub_reiserfs_get_key_version (key) == 1)
     key->u.v1.offset = grub_cpu_to_le32 (value);
   else
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-    key->u.v2.offset = value;
-#else
     key->u.v2.offset_type \
       = ((key->u.v2.offset_type & grub_cpu_to_le64 (15ULL << 60))
          | grub_cpu_to_le64 (value & (~0ULL >> 4)));
-#endif
 }
 
 /* Return the type of given key.  */
@@ -433,15 +397,10 @@ grub_reiserfs_set_key_type (struct grub_reiserfs_key *key,
   if (version == 1)
     key->u.v1.type = grub_cpu_to_le32 (type);
   else
-    {
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-      key->u.v2.type = type;
-#else
-      key->u.v2.offset_type
-        = ((key->u.v2.offset_type & grub_cpu_to_le64 (~0ULL >> 4))
-           | grub_cpu_to_le64 ((grub_uint64_t) type << 60));
-#endif
-    }
+    key->u.v2.offset_type
+      = ((key->u.v2.offset_type & grub_cpu_to_le64 (~0ULL >> 4))
+         | grub_cpu_to_le64 ((grub_uint64_t) type << 60));
+  
   assert (grub_reiserfs_get_key_type (key) == grub_type);
 }
 
@@ -815,12 +774,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                             + grub_le_to_cpu16 (directory_header->location));
               entry_key.directory_id = directory_header->directory_id;
               entry_key.object_id = directory_header->object_id;
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-              entry_key.u.v2.offset = 0;
-              entry_key.u.v2.type = 0;
-#else
               entry_key.u.v2.offset_type = 0;
-#endif
               grub_reiserfs_set_key_type (&entry_key, GRUB_REISERFS_DIRECTORY,
                                           2);
               grub_reiserfs_set_key_offset (&entry_key, 1);
@@ -1027,12 +981,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
   block_size = grub_le_to_cpu16 (data->superblock.block_size);
   key.directory_id = grub_cpu_to_le32 (1);
   key.object_id = grub_cpu_to_le32 (2);
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-  key.u.v2.offset = 0;
-  key.u.v2.type = 0;
-#else
   key.u.v2.offset_type = 0;
-#endif
   grub_reiserfs_set_key_type (&key, GRUB_REISERFS_DIRECTORY, 2);
   grub_reiserfs_set_key_offset (&key, 1);
   if (grub_reiserfs_get_item (data, &key, &root) != GRUB_ERR_NONE)
@@ -1127,12 +1076,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
 
   key.directory_id = node->header.key.directory_id;
   key.object_id = node->header.key.object_id;
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-  key.u.v2.offset = 0;
-  key.u.v2.type = 0;
-#else
   key.u.v2.offset_type = 0;
-#endif
   grub_reiserfs_set_key_type (&key, GRUB_REISERFS_ANY, 2);
   initial_position = file->offset;
   current_position = 0;
@@ -1339,12 +1283,7 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
     goto fail;
   root_key.directory_id = grub_cpu_to_le32 (1);
   root_key.object_id = grub_cpu_to_le32 (2);
-#ifdef GRUB_REISERFS_KEYV2_BITFIELD
-  root_key.u.v2.offset = 0;
-  root_key.u.v2.type = 0;
-#else
   root_key.u.v2.offset_type = 0;
-#endif
   grub_reiserfs_set_key_type (&root_key, GRUB_REISERFS_DIRECTORY, 2);
   grub_reiserfs_set_key_offset (&root_key, 1);
   if (grub_reiserfs_get_item (data, &root_key, &root) != GRUB_ERR_NONE)

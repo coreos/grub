@@ -1,3 +1,26 @@
+2008-01-12  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Remove some unused code from reiserfs.
+	
+	* fs/reiserfs.c (struct grub_reiserfs_key)
+	[GRUB_REISERFS_KEYV2_BITFIELD]: Removed offset and type.
+	(struct grub_reiserfs_node_body): Removed.
+	(grub_reiserfs_get_key_v2_type) [GRUB_REISERFS_KEYV2_BITFIELD]:
+	Likewise.
+	(grub_reiserfs_get_key_offset) [GRUB_REISERFS_KEYV2_BITFIELD]:
+	Likewise.
+	(grub_reiserfs_set_key_offset) [GRUB_REISERFS_KEYV2_BITFIELD]:
+	Likewise.
+	(grub_reiserfs_set_key_offset) [GRUB_REISERFS_KEYV2_BITFIELD]:
+	Likewise.
+	(grub_reiserfs_set_key_type) [GRUB_REISERFS_KEYV2_BITFIELD]:
+	Likewise.
+	(grub_reiserfs_iterate_dir) [GRUB_REISERFS_KEYV2_BITFIELD]:
+	Likewise.
+	(grub_reiserfs_open) [GRUB_REISERFS_KEYV2_BITFIELD]: Likewise.
+	(grub_reiserfs_read) [GRUB_REISERFS_KEYV2_BITFIELD]: Likewise.
+	(grub_reiserfs_dir) [GRUB_REISERFS_KEYV2_BITFIELD]: Likewise.
+
 2008-01-10  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in (grub_file_is_not_garbage): New function.
