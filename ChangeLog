@@ -1,3 +1,8 @@
+2008-01-13  Pavel Roskin  <proski@gnu.org>
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Don't use
+	grub_errno if no errors have been detected.
+
 2008-01-12  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/util/getroot.h (grub_dev_abstraction_types): New enum.

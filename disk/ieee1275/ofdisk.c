@@ -104,9 +104,11 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   /* XXX: Read this, somehow.  */
   disk->has_partitions = 1;
   disk->data = (void *) dev_ihandle;
+  grub_free (devpath);
+  return 0;
 
  fail:
-  if (grub_errno && dev_ihandle)
+  if (dev_ihandle)
     grub_ieee1275_close (dev_ihandle);
   grub_free (devpath);
   return grub_errno;
