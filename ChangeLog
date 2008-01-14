@@ -1,3 +1,8 @@
+2008-01-14  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_linux.in (prefix): Define.
+	(exec_prefix): Likewise.  Both definitions are later used by `libdir'.
+
 2008-01-13  Pavel Roskin  <proski@gnu.org>
 
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Don't use
