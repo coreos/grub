@@ -55,10 +55,7 @@ grub_millisleep (grub_uint32_t ms)
 void
 grub_exit (void)
 {
-  /* Trap to Open Firmware.  */
-  asm ("trap");
-
-  for (;;);
+  grub_ieee1275_exit ();
 }
 
 /* Translate an OF filesystem path (separated by backslashes), into a GRUB

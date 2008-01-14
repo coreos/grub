@@ -1,5 +1,10 @@
 2008-01-14  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/powerpc/ieee1275/init.c (grub_exit): Reimplement as a wrapper
+	for grub_ieee1275_exit(), in order to improve portability.
+
+2008-01-14  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/10_linux.in (prefix): Define.
 	(exec_prefix): Likewise.  Both definitions are later used by `libdir'.
 
