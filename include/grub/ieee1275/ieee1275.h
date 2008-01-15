@@ -97,6 +97,10 @@ int EXPORT_FUNC(grub_ieee1275_get_property) (grub_ieee1275_phandle_t phandle,
 					     const char *property, void *buf,
 					     grub_size_t size,
 					     grub_ssize_t *actual);
+int EXPORT_FUNC(grub_ieee1275_get_integer_property) (grub_ieee1275_phandle_t phandle,
+						     const char *property, grub_uint32_t *buf,
+						     grub_size_t size,
+						     grub_ssize_t *actual);
 int EXPORT_FUNC(grub_ieee1275_next_property) (grub_ieee1275_phandle_t phandle,
 					      char *prev_prop, char *prop);
 int EXPORT_FUNC(grub_ieee1275_get_property_length) 

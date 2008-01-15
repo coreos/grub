@@ -148,17 +148,17 @@ grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
 
   /* Determine the format of each entry in `available'.  */
   grub_ieee1275_finddevice ("/", &root);
-  grub_ieee1275_get_property (root, "#address-cells", &address_cells,
-	sizeof address_cells, 0);
-  grub_ieee1275_get_property (root, "#size-cells", &size_cells,
-	sizeof size_cells, 0);
+  grub_ieee1275_get_integer_property (root, "#address-cells", &address_cells,
+				      sizeof address_cells, 0);
+  grub_ieee1275_get_integer_property (root, "#size-cells", &size_cells,
+				      sizeof size_cells, 0);
 
   /* Load `/memory/available'.  */
   if (grub_ieee1275_finddevice ("/memory", &memory))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "Couldn't find /memory node");
-  if (grub_ieee1275_get_property (memory, "available", available,
-				  sizeof available, &available_size))
+  if (grub_ieee1275_get_integer_property (memory, "available", available,
+					  sizeof available, &available_size))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "Couldn't examine /memory/available property");
 
@@ -203,8 +203,8 @@ grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
   grub_ieee1275_ihandle_t mmu;
   int len;
 
-  grub_ieee1275_get_property (grub_ieee1275_chosen, "mmu", &mmu, sizeof mmu,
-			      &len);
+  grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "mmu", &mmu, sizeof mmu,
+				      &len);
   if (len != sizeof mmu)
     return -1;
 

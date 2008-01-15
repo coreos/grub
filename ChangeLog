@@ -1,3 +1,19 @@
+2008-01-15  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/ieee1275/ieee1275.h
+	(grub_ieee1275_get_integer_property): New function prototype.
+
+	* kern/ieee1275/ieee1275.c: Include `<grub/types.h>'.
+	(grub_ieee1275_get_integer_property): New function.  Wraps around
+	grub_ieee1275_get_property() to handle endianess.
+
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Replace
+	grub_ieee1275_get_property() with grub_ieee1275_get_integer_property()
+	where appropiate.
+	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate): Likewise.
+	(grub_map): Likewise.
+	* kern/sparc64/ieee1275/openfw.c (grub_map): Likewise.
+
 2008-01-15  Bean  <bean123ch@gmail.com>
 
 	* normal/execute.c (grub_script_exec_argument_to_string): Check for undefined variable.

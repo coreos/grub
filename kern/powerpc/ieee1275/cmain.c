@@ -56,8 +56,8 @@ grub_ieee1275_find_options (void)
   int is_smartfirmware = 0;
 
   grub_ieee1275_finddevice ("/options", &options);
-  rc = grub_ieee1275_get_property (options, "real-mode?", &realmode,
-				   sizeof realmode, 0);
+  rc = grub_ieee1275_get_integer_property (options, "real-mode?", &realmode,
+					   sizeof realmode, 0);
   if ((rc >= 0) && realmode)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_REAL_MODE);
 

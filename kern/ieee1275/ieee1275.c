@@ -18,6 +18,7 @@
  */
 
 #include <grub/ieee1275/ieee1275.h>
+#include <grub/types.h>
 
 #define IEEE1275_PHANDLE_INVALID  ((grub_ieee1275_phandle_t) -1)
 #define IEEE1275_IHANDLE_INVALID  ((grub_ieee1275_ihandle_t) 0)
@@ -86,6 +87,26 @@ grub_ieee1275_get_property (grub_ieee1275_phandle_t phandle,
   if (args.size == IEEE1275_CELL_INVALID)
     return -1;
   return 0;
+}
+
+int
+grub_ieee1275_get_integer_property (grub_ieee1275_phandle_t phandle,
+				    const char *property, grub_uint32_t *buf,
+				    grub_size_t size, grub_ssize_t *actual)
+{
+  int ret;
+  ret = grub_ieee1275_get_property (phandle, property, (void *) buf, size, actual);
+#ifndef GRUB_CPU_WORDS_BIGENDIAN
+  /* Integer properties are always in big endian.  */
+  if (ret == 0)
+    {
+      int i;
+      size /= sizeof (grub_uint32_t);
+      for (i = 0; i < size; i++)
+	buf[i] = grub_be_to_cpu32 (buf[i]);
+    }
+#endif
+  return ret;
 }
 
 int
