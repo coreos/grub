@@ -141,6 +141,7 @@ grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
   grub_ieee1275_phandle_t root;
   grub_ieee1275_phandle_t memory;
   grub_uint32_t available[32];
+  grub_ssize_t available_size;
   int address_cells = 1;
   int size_cells = 1;
   unsigned int i;
@@ -157,13 +158,14 @@ grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "Couldn't find /memory node");
   if (grub_ieee1275_get_property (memory, "available", available,
-				  sizeof available, 0))
+				  sizeof available, &available_size))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "Couldn't examine /memory/available property");
 
   /* Decode each entry and call `hook'.  */
   i = 0;
-  while (i < sizeof (available))
+  available_size /= sizeof (grub_uint32_t);
+  while (i < available_size)
     {
       grub_uint64_t address;
       grub_uint64_t size;
