@@ -308,12 +308,27 @@ get_entry_number (const char *name)
   return entry;
 }
 
+static void
+print_timeout (int timeout, int offset, int second_stage)
+{
+  /* NOTE: Do not remove the trailing space characters.
+     They are required to clear the line.  */
+  char *msg = "   The highlighted entry will be booted automatically in %ds.    ";
+  char *msg_end = grub_strchr (msg, '%');
+  
+  grub_gotoxy (second_stage ? (msg_end - msg) : 0, GRUB_TERM_HEIGHT - 3);
+  grub_printf (second_stage ? msg_end : msg, timeout);
+  grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
+  grub_refresh ();
+};
+
 static int
 run_menu (grub_menu_t menu, int nested)
 {
   int first, offset;
   unsigned long saved_time;
   int default_entry;
+  int timeout;
   
   first = 0;
   
@@ -340,11 +355,14 @@ run_menu (grub_menu_t menu, int nested)
   print_entries (menu, first, offset);
   grub_refresh ();
 
+  timeout = get_timeout ();
+
+  if (timeout > 0)
+    print_timeout (timeout, offset, 0);
+
   while (1)
     {
       int c;
-      int timeout;
-
       timeout = get_timeout ();
       
       if (timeout > 0)
@@ -357,16 +375,8 @@ run_menu (grub_menu_t menu, int nested)
 	      timeout--;
 	      set_timeout (timeout);
 	      saved_time = current_time;
+	      print_timeout (timeout, offset, 1);
 	    }
-	  
-	  grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
-	  /* NOTE: Do not remove the trailing space characters.
-	     They are required to clear the line.  */
-	  grub_printf ("\
-   The highlighted entry will be booted automatically in %d s.    ",
-		       timeout);
-	  grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
-	  grub_refresh ();
 	}
 
       if (timeout == 0)

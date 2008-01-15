@@ -1,5 +1,13 @@
 2008-01-15  Robert Millan  <rmh@aybabtu.com>
 
+	* normal/menu.c (run_menu): Move timeout message from here ...
+	(print_timeout): ... to here.
+	(run_menu): Use print_timeout() once during initial draw to print
+	the whole message, and again in every clock tick to update only
+	the number of seconds.
+
+2008-01-15  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate): Obtain
 	actual size of `available' from grub_ieee1275_get_property(), and
 	restrict parsing to that bound.
