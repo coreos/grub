@@ -1,5 +1,11 @@
 2008-01-15  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/misc.c (grub_vsprintf): Do not reset `longlongfmt' to zero
+	when pointers are 32-bit (but still do set it to one when they are
+	64-bit).
+
+2008-01-15  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/ieee1275/ieee1275.h
 	(grub_ieee1275_get_integer_property): New function prototype.
 
