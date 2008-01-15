@@ -1,5 +1,16 @@
 2008-01-15  Robert Millan  <rmh@aybabtu.com>
 
+	* configure.ac: Add `i386-ieee1275' to the list of supported targets.
+	* conf/i386-ieee1275.rmk: New file.
+	* include/grub/i386/ieee1275/console.h: Likewise.
+	* include/grub/i386/ieee1275/ieee1275.h: Likewise.
+	* include/grub/i386/ieee1275/kernel.h: Likewise.
+	* include/grub/i386/ieee1275/time.h: Likewise.
+	* kern/i386/ieee1275/init.c: Likewise.
+	* kern/i386/ieee1275/startup.S: Likewise.
+
+2008-01-15  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/misc.c (grub_vsprintf): Do not reset `longlongfmt' to zero
 	when pointers are 32-bit (but still do set it to one when they are
 	64-bit).
