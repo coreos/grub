@@ -1341,7 +1341,7 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
-	loopback.mod configfile.mod				\
+	loopback.mod configfile.mod echo.mod			\
 	terminfo.mod test.mod blocklist.mod hexdump.mod
 
 # For hello.mod.
@@ -1658,6 +1658,53 @@ cat_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For echo.mod
 echo_mod_SOURCES = commands/echo.c
+CLEANFILES += echo.mod mod-echo.o mod-echo.c pre-echo.o echo_mod-commands_echo.o und-echo.lst
+ifneq ($(echo_mod_EXPORTS),no)
+CLEANFILES += def-echo.lst
+DEFSYMFILES += def-echo.lst
+endif
+MOSTLYCLEANFILES += echo_mod-commands_echo.d
+UNDSYMFILES += und-echo.lst
+
+echo.mod: pre-echo.o mod-echo.o
+	-rm -f $@
+	$(TARGET_CC) $(echo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-echo.o: $(echo_mod_DEPENDENCIES) echo_mod-commands_echo.o
+	-rm -f $@
+	$(TARGET_CC) $(echo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ echo_mod-commands_echo.o
+
+mod-echo.o: mod-echo.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(echo_mod_CFLAGS) -c -o $@ $<
+
+mod-echo.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'echo' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(echo_mod_EXPORTS),no)
+def-echo.lst: pre-echo.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 echo/' > $@
+endif
+
+und-echo.lst: pre-echo.o
+	echo 'echo' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+echo_mod-commands_echo.o: commands/echo.c
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(echo_mod_CFLAGS) -MD -c -o $@ $<
+-include echo_mod-commands_echo.d
+
+CLEANFILES += cmd-echo_mod-commands_echo.lst fs-echo_mod-commands_echo.lst
+COMMANDFILES += cmd-echo_mod-commands_echo.lst
+FSFILES += fs-echo_mod-commands_echo.lst
+
+cmd-echo_mod-commands_echo.lst: commands/echo.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(echo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh echo > $@ || (rm -f $@; exit 1)
+
+fs-echo_mod-commands_echo.lst: commands/echo.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(echo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh echo > $@ || (rm -f $@; exit 1)
+
+
 echo_mod_CFLAGS = $(COMMON_CFLAGS)
 echo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

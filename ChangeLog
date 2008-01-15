@@ -1,3 +1,21 @@
+2008-01-15  Bean  <bean123ch@gmail.com>
+
+	* normal/execute.c (grub_script_exec_argument_to_string): Check for undefined variable.
+	(grub_script_execute_cmdline): Reset grub_errno.
+
+	* normal/main.c (read_config_file): Reset grub_errno.
+
+	* normal/parse.y (script_init): New.
+	(script): Move function and menuentry here.
+	(delimiter): New.
+	(command): Add delimiter at the end of command.
+	(commands): Adjust to match the new command.
+	(commandblock): Remove grub_script_lexer_record_start.
+	(menuentry): Add grub_script_lexer_record_start, use the new commands. 
+	(if): Use the new commands.
+
+	* conf/common.rmk (pkgdata_MODULES): Add echo.mod.
+
 2008-01-15  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/menu.c (run_menu): Move timeout message from here ...

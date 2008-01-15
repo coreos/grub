@@ -213,7 +213,7 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
-	loopback.mod configfile.mod				\
+	loopback.mod configfile.mod echo.mod			\
 	terminfo.mod test.mod blocklist.mod hexdump.mod
 
 # For hello.mod.
