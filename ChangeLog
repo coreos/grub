@@ -1,3 +1,17 @@
+2008-01-15  Christian Franke  <franke@computer.org>
+
+	* util/grub-emu.c: Replace <argp.h> by <getopt.h>.
+	(argp_program_version): Remove variable.
+	(argp_program_bug_address): Likewise.
+	(options): Convert from struct argp_option to struct option.
+	(struct arguments): Remove.
+	(parse_opt): Remove.
+	(usage): New function.
+	(main): Replace struct args members by simple variables.
+	Replace argp_parse() by getopt_long().
+	Add switch to evaluate options.
+	Add missing "(...)" around root_dev in prefix string.
+
 2008-01-14  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/powerpc/ieee1275/init.c (grub_exit): Reimplement as a wrapper
