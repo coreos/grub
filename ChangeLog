@@ -1,3 +1,13 @@
+2008-01-16  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/linuxbios/memory.h
+	(GRUB_MEMORY_MACHINE_LINUXBIOS_TABLE_ADDR): Remove macro.
+	* kern/i386/linuxbios/table.c (grub_linuxbios_table_iterate): Do not
+	receive `table_header' as argument.  Instead, probe for it in the
+	known memory ranges where it can be present.
+	(grub_available_iterate): Do not pass a fixed `table_header' address
+	to grub_linuxbios_table_iterate().
+
 2008-01-15  Robert Millan  <rmh@aybabtu.com>
 
 	* configure.ac: Add `i386-ieee1275' to the list of supported targets.

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,13 +21,33 @@
 #include <grub/err.h>
 
 static grub_err_t
-grub_linuxbios_table_iterate (grub_linuxbios_table_header_t table_header,
-		      int (*hook) (grub_linuxbios_table_item_t))
+grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t))
 {
+  grub_linuxbios_table_header_t table_header;
   grub_linuxbios_table_item_t table_item;
 
-  if (grub_memcmp (table_header->signature, "LBIO", 4))
-    grub_fatal ("Could not find LinuxBIOS table\n");
+  auto int check_signature (grub_linuxbios_table_header_t);
+  int check_signature (grub_linuxbios_table_header_t table_header)
+  {
+    if (! grub_memcmp (table_header->signature, "LBIO", 4))
+      return 1;
+
+    return 0;
+  }
+
+  /* Assuming table_header is aligned to its size (8 bytes).  */
+
+  for (table_header = 0x500; table_header < 0x1000; table_header++)
+    if (check_signature (table_header))
+      goto signature_found;
+
+  for (table_header = 0xf0000; table_header < 0x100000; table_header++)
+    if (check_signature (table_header))
+      goto signature_found;
+
+  grub_fatal ("Could not find coreboot table\n");
+
+signature_found:
 
   table_item =
     (grub_linuxbios_table_item_t) ((long) table_header +
@@ -62,8 +82,7 @@ grub_available_iterate (int (*hook) (mem_region_t))
     return 0;
   }
 
-  grub_linuxbios_table_iterate (GRUB_MEMORY_MACHINE_LINUXBIOS_TABLE_ADDR,
-			iterate_linuxbios_table);
+  grub_linuxbios_table_iterate (iterate_linuxbios_table);
 
   return 0;
 }

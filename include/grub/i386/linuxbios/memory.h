@@ -28,8 +28,6 @@
 #include <grub/err.h>
 #endif
 
-#define GRUB_MEMORY_MACHINE_LINUXBIOS_TABLE_ADDR	0x500
-
 #define GRUB_MEMORY_MACHINE_LOWER_USABLE		0x9fc00		/* 640 kiB - 1 kiB */
 #define GRUB_MEMORY_MACHINE_LOWER_SIZE			0xf0000		/* 960 kiB */
 
