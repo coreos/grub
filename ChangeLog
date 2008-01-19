@@ -1,3 +1,13 @@
+2008-01-19  Robert Millan  <rmh@aybabtu.com>
+
+	PowerPC changes provided by Pavel Roskin.
+
+	* kern/powerpc/ieee1275/cmain.c (cmain): Don't take any arguments.
+	* kern/powerpc/ieee1275/crt0.S: Store r5 in grub_ieee1275_entry_fn,
+	don't rely on cmain() doing it.
+	* kern/i386/ieee1275/startup.S (_start): Store %eax in
+	grub_ieee1275_entry_fn, don't rely on cmain() doing it.
+
 2008-01-16  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/linuxbios/memory.h

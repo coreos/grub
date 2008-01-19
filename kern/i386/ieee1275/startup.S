@@ -34,5 +34,5 @@
 
 start:
 _start:
-	movl %eax, %ecx
+	movl %eax, EXT_C(grub_ieee1275_entry_fn)
 	jmp EXT_C(cmain)

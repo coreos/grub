@@ -1,7 +1,7 @@
 /* cmain.c - Startup code for the PowerPC.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -102,12 +102,10 @@ grub_ieee1275_find_options (void)
     }
 }
 
-void cmain (uint32_t r3, uint32_t r4, uint32_t r5);
+void cmain (void);
 void
-cmain (UNUSED uint32_t r3, UNUSED uint32_t r4, uint32_t r5)
+cmain (void)
 {
-  grub_ieee1275_entry_fn = (int (*)(void *)) r5;
-
   grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);
 
   grub_ieee1275_find_options ();
