@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,6 +37,13 @@
 #define KEYBOARD_REG_DATA	0x60
 #define KEYBOARD_REG_STATUS	0x64
 
+/* Used for sending commands to the controller.  */
+#define KEYBOARD_COMMAND_ISREADY(x)	!((x) & 0x02)
+#define KEYBOARD_COMMAND_READ		0x20
+#define KEYBOARD_COMMAND_WRITE		0x60
+
+#define KEYBOARD_SCANCODE_SET1		0x40
+
 #define KEYBOARD_ISMAKE(x)	!((x) & 0x80)
 #define KEYBOARD_ISREADY(x)	(((x) & 0x01) == 0)
 #define KEYBOARD_SCANCODE(x)	((x) & 0x7f)
@@ -72,6 +79,28 @@ static char keyboard_map_shift[128] =
   '8', '9', '-', '4', '5', '6', '+', '1',
   '2', '3',
 };
+
+static void
+grub_keyboard_controller_write (grub_uint8_t c)
+{
+  while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
+  grub_outb (KEYBOARD_COMMAND_WRITE, KEYBOARD_REG_STATUS);
+  grub_outb (c, KEYBOARD_REG_DATA);
+}
+
+static grub_uint8_t
+grub_keyboard_controller_read (void)
+{
+  while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
+  grub_outb (KEYBOARD_COMMAND_READ, KEYBOARD_REG_STATUS);
+  return grub_inb (KEYBOARD_REG_DATA);
+}
+
+void
+grub_keyboard_controller_init (void)
+{
+  grub_keyboard_controller_write (grub_keyboard_controller_read () | KEYBOARD_SCANCODE_SET1);
+}
 
 /* FIXME: This should become an interrupt service routine.  For now
    it's just used to catch events from control keys.  */

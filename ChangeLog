@@ -1,5 +1,21 @@
 2008-01-19  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/i386/linuxbios/console.h: Add header protection.
+	(grub_keyboard_controller_init): New function prototype.
+	* term/i386/pc/at_keyboard.c (KEYBOARD_COMMAND_ISREADY): New macro.
+	(KEYBOARD_COMMAND_READ): Likewise.
+	(KEYBOARD_COMMAND_WRITE): Likewise.
+	(KEYBOARD_SCANCODE_SET1): Likewise.
+	(grub_keyboard_controller_write): New function.
+	(grub_keyboard_controller_read): Likewise.
+	(grub_keyboard_controller_init): Likewise.
+
+	* term/i386/pc/console.c: Include `<grub/machine/machine.h>'.
+	(grub_console_init): On coreboot/LinuxBIOS, call
+	grub_keyboard_controller_init().
+
+2008-01-19  Robert Millan  <rmh@aybabtu.com>
+
 	PowerPC changes provided by Pavel Roskin.
 
 	* kern/powerpc/ieee1275/cmain.c (cmain): Don't take any arguments.
