@@ -1,5 +1,17 @@
 2008-01-19  Robert Millan  <rmh@aybabtu.com>
 
+	Get rid of confusing function (superceeded by
+	`grub_ieee1275_get_integer_property')
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_decode_int_4): Remove
+	prototype.
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_decode_int_4): Remove
+	function.
+	* term/ieee1275/ofconsole.c (grub_ofconsole_init): Avoid use of
+	grub_ieee1275_decode_int_4(), by obtaining integer properties directly
+	in native endianess from grub_ieee1275_get_integer_property().
+
+2008-01-19  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/powerpc/ieee1275/openfw.c (grub_halt): Issue "power-off"
 	command after "shut-down", since implementations differ on which
 	the command for halt is.

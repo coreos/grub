@@ -313,7 +313,6 @@ grub_ofconsole_refresh (void)
 static grub_err_t
 grub_ofconsole_init (void)
 {
-  unsigned char data[4];
   grub_ssize_t actual;
   int col;
 
@@ -323,19 +322,15 @@ grub_ofconsole_init (void)
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_OUTPUT))
     grub_ieee1275_interpret ("output-device output", 0);
 
-  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdout", data,
-				  sizeof data, &actual)
-      || actual != sizeof data)
+  if (grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "stdout", &stdout_ihandle,
+					  sizeof stdout_ihandle, &actual)
+      || actual != sizeof stdout_ihandle)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdout");
 
-  stdout_ihandle = grub_ieee1275_decode_int_4 (data);
-  
-  if (grub_ieee1275_get_property (grub_ieee1275_chosen, "stdin", data,
-				  sizeof data, &actual)
-      || actual != sizeof data)
+  if (grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "stdin", &stdin_ihandle,
+					  sizeof stdin_ihandle, &actual)
+      || actual != sizeof stdin_ihandle)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdin");
-
-  stdin_ihandle = grub_ieee1275_decode_int_4 (data);
 
   /* Initialize colors.  */
   for (col = 0; col < 7; col++)

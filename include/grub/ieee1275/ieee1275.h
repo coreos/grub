@@ -90,7 +90,6 @@ extern void EXPORT_FUNC(grub_ieee1275_set_flag) (enum grub_ieee1275_flag flag);
 
 
 
-grub_uint32_t EXPORT_FUNC(grub_ieee1275_decode_int_4) (unsigned char *p);
 int EXPORT_FUNC(grub_ieee1275_finddevice) (char *name,
 					   grub_ieee1275_phandle_t *phandlep);
 int EXPORT_FUNC(grub_ieee1275_get_property) (grub_ieee1275_phandle_t phandle,

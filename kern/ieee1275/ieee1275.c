@@ -26,16 +26,6 @@
 
 
 
-/* FIXME is this function needed? */
-grub_uint32_t
-grub_ieee1275_decode_int_4 (unsigned char *p)
-{
-  grub_uint32_t val = (*p++ << 8);
-  val = (val + *p++) << 8;
-  val = (val + *p++) << 8;
-  return (val + *p);
-}
-
 int
 grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
 {
