@@ -1,5 +1,11 @@
 2008-01-19  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/powerpc/ieee1275/openfw.c (grub_halt): Issue "power-off"
+	command after "shut-down", since implementations differ on which
+	the command for halt is.
+
+2008-01-19  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/i386/linuxbios/console.h: Add header protection.
 	(grub_keyboard_controller_init): New function prototype.
 	* term/i386/pc/at_keyboard.c (KEYBOARD_COMMAND_ISREADY): New macro.
