@@ -200,17 +200,10 @@ grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
     grub_uint32_t phys;
     int catch_result;
   } args;
-  grub_ieee1275_ihandle_t mmu;
-  int len;
-
-  grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "mmu", &mmu, sizeof mmu,
-				      &len);
-  if (len != sizeof mmu)
-    return -1;
 
   INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 1);
   args.method = "map";
-  args.ihandle = mmu;
+  args.ihandle = grub_ieee1275_mmu;
   args.phys = phys;
   args.virt = virt;
   args.size = size;

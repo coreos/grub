@@ -64,6 +64,7 @@ typedef grub_ieee1275_cell_t grub_ieee1275_ihandle_t;
 typedef grub_ieee1275_cell_t grub_ieee1275_phandle_t;
 
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
+extern grub_ieee1275_ihandle_t EXPORT_VAR(grub_ieee1275_mmu);
 extern int (* EXPORT_VAR(grub_ieee1275_entry_fn)) (void *);
 
 enum grub_ieee1275_flag

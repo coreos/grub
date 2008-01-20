@@ -1,3 +1,17 @@
+2008-01-20  Robert Millan  <rmh@aybabtu.com>
+
+	Fix detection of "real mode" when /options/real-mode? doesn't exist.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_mmu): New variable
+	declaration.
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_mmu): New variable.
+	(grub_ieee1275_find_options): If `grub_ieee1275_mmu' is 0, set
+	`GRUB_IEEE1275_FLAG_REAL_MODE'.
+	(cmain): Intialize `grub_ieee1275_mmu' (using /chosen/mmu integer
+	property).
+	* kern/powerpc/ieee1275/openfw.c (grub_map): Rely on pre-initialized
+	`grub_ieee1275_mmu' rather than obtaining a handler on every call.
+
 2008-01-19  Robert Millan  <rmh@aybabtu.com>
 
 	Get rid of confusing function (superceeded by

@@ -28,6 +28,7 @@
 int (*grub_ieee1275_entry_fn) (void *);
 
 grub_ieee1275_phandle_t grub_ieee1275_chosen;
+grub_ieee1275_ihandle_t grub_ieee1275_mmu;
 
 static grub_uint32_t grub_ieee1275_flags;
 
@@ -58,7 +59,7 @@ grub_ieee1275_find_options (void)
   grub_ieee1275_finddevice ("/options", &options);
   rc = grub_ieee1275_get_integer_property (options, "real-mode?", &realmode,
 					   sizeof realmode, 0);
-  if ((rc >= 0) && realmode)
+  if (((rc >= 0) && realmode) || (grub_ieee1275_mmu == 0))
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_REAL_MODE);
 
   grub_ieee1275_finddevice ("/openprom", &openprom);
@@ -107,6 +108,10 @@ void
 cmain (void)
 {
   grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);
+
+  if (grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "mmu", &grub_ieee1275_mmu,
+					  sizeof grub_ieee1275_mmu, 0) < 0)
+    grub_ieee1275_mmu = 0;
 
   grub_ieee1275_find_options ();
 
