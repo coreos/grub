@@ -1,5 +1,18 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	Mostly based on bugfix from Bean.
+
+	* kern/elf.c (grub_elf32_phdr_iterate): Use `NESTED_FUNC_ATTR'
+	attribute with hook() parameter.
+	(grub_elf32_load): Use `NESTED_FUNC_ATTR' with grub_elf32_load_segment()
+	declaration.
+	(grub_elf64_phdr_iterate): Use `NESTED_FUNC_ATTR'
+	attribute with hook() parameter.
+	(grub_elf64_load): Use `NESTED_FUNC_ATTR' with grub_elf64_load_segment()
+	declaration.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (kernel_img_HEADERS): Add `machine/kernel.h'.
 	(pkglib_MODULES): Add `memdisk.mod'.
 	(memdisk_mod_SOURCES): New variable.

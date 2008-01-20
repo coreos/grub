@@ -139,7 +139,7 @@ grub_elf32_load_phdrs (grub_elf_t elf)
 
 static grub_err_t
 grub_elf32_phdr_iterate (grub_elf_t elf,
-			 int (*hook) (grub_elf_t, Elf32_Phdr *, void *),
+			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf32_Phdr *, void *),
 			 void *hook_arg)
 {
   Elf32_Phdr *phdrs;
@@ -219,9 +219,8 @@ grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
   grub_size_t load_size = 0;
   grub_err_t err;
 
-  auto int grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr,
-				    void *hook);
-  int grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr, void *hook)
+  auto int NESTED_FUNC_ATTR grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr, void *hook);
+  int NESTED_FUNC_ATTR grub_elf32_load_segment (grub_elf_t elf, Elf32_Phdr *phdr, void *hook)
   {
     grub_elf32_load_hook_t load_hook = (grub_elf32_load_hook_t) hook;
     grub_addr_t load_addr;
@@ -318,7 +317,7 @@ grub_elf64_load_phdrs (grub_elf_t elf)
 
 static grub_err_t
 grub_elf64_phdr_iterate (grub_elf_t elf,
-			 int (*hook) (grub_elf_t, Elf64_Phdr *, void *),
+			 int NESTED_FUNC_ATTR (*hook) (grub_elf_t, Elf64_Phdr *, void *),
 			 void *hook_arg)
 {
   Elf64_Phdr *phdrs;
@@ -398,9 +397,9 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
   grub_size_t load_size = 0;
   grub_err_t err;
 
-  auto int grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr,
-				    void *hook);
-  int grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr, void *hook)
+  auto int NESTED_FUNC_ATTR grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr,
+						     void *hook);
+  int NESTED_FUNC_ATTR grub_elf64_load_segment (grub_elf_t elf, Elf64_Phdr *phdr, void *hook)
   {
     grub_elf64_load_hook_t load_hook = (grub_elf64_load_hook_t) hook;
     grub_addr_t load_addr;
