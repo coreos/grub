@@ -103,6 +103,8 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
       /* XXX: This should be large enough for any possible case.  */
       char devtype[64];
 
+      grub_dprintf ("devalias", "devalias name = %s\n", aliasname);
+
       grub_ieee1275_get_property_length (aliases, aliasname, &pathlen);
 
       /* The property `name' is a special case we should skip.  */
@@ -115,14 +117,23 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 
       if (grub_ieee1275_get_property (aliases, aliasname, devpath, pathlen,
 				      &actual))
-	goto nextprop;
+	{
+	  grub_dprintf ("devalias", "get_property (%s) failed\n", aliasname);
+	  goto nextprop;
+	}
 
       if (grub_ieee1275_finddevice (devpath, &dev))
-	goto nextprop;
+	{
+	  grub_dprintf ("devalias", "finddevice (%s) failed\n", devpath);
+	  goto nextprop;
+	}
 
       if (grub_ieee1275_get_property (dev, "device_type", devtype,
 				      sizeof devtype, &actual))
-	goto nextprop;
+	{
+	  grub_dprintf ("devalias", "get device type failed\n");
+	  goto nextprop;
+	}
 
       alias.name = aliasname;
       alias.path = devpath;

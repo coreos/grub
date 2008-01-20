@@ -1,5 +1,11 @@
 2008-01-20  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/sparc64/ieee1275/openfw.c (grub_devalias_iterate): Copy debug
+	grub_dprintf() calls from here ...
+	* kern/powerpc/ieee1275/openfw.c (grub_devalias_iterate): ... to here.
+
+2008-01-20  Robert Millan  <rmh@aybabtu.com>
+
 	Fix detection of "real mode" when /options/real-mode? doesn't exist.
 
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_mmu): New variable
