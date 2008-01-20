@@ -20,6 +20,7 @@
 #define GRUB_KERNEL_HEADER	1
 
 #include <grub/types.h>
+#include <grub/symbol.h>
 
 /* The module header.  */
 struct grub_module_header
@@ -44,6 +45,8 @@ struct grub_module_info
 };
 
 extern grub_addr_t grub_arch_modules_addr (void);
+extern grub_addr_t EXPORT_FUNC(grub_arch_memdisk_addr) (void);
+extern grub_off_t EXPORT_FUNC(grub_arch_memdisk_size) (void);
 
 /* The start point of the C code.  */
 void grub_main (void);

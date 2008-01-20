@@ -180,7 +180,7 @@ kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h
+	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h machine/kernel.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8200 $(COMMON_CFLAGS)
@@ -915,7 +915,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
-	ata.mod vga.mod
+	ata.mod vga.mod memdisk.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2423,5 +2423,57 @@ fs-vga_mod-term_i386_pc_vga.lst: term/i386/pc/vga.c genfslist.sh
 
 vga_mod_CFLAGS = $(COMMON_CFLAGS)
 vga_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+memdisk_mod_SOURCES = disk/memdisk.c
+CLEANFILES += memdisk.mod mod-memdisk.o mod-memdisk.c pre-memdisk.o memdisk_mod-disk_memdisk.o und-memdisk.lst
+ifneq ($(memdisk_mod_EXPORTS),no)
+CLEANFILES += def-memdisk.lst
+DEFSYMFILES += def-memdisk.lst
+endif
+MOSTLYCLEANFILES += memdisk_mod-disk_memdisk.d
+UNDSYMFILES += und-memdisk.lst
+
+memdisk.mod: pre-memdisk.o mod-memdisk.o
+	-rm -f $@
+	$(TARGET_CC) $(memdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-memdisk.o: $(memdisk_mod_DEPENDENCIES) memdisk_mod-disk_memdisk.o
+	-rm -f $@
+	$(TARGET_CC) $(memdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ memdisk_mod-disk_memdisk.o
+
+mod-memdisk.o: mod-memdisk.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -c -o $@ $<
+
+mod-memdisk.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'memdisk' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(memdisk_mod_EXPORTS),no)
+def-memdisk.lst: pre-memdisk.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 memdisk/' > $@
+endif
+
+und-memdisk.lst: pre-memdisk.o
+	echo 'memdisk' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+memdisk_mod-disk_memdisk.o: disk/memdisk.c
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -MD -c -o $@ $<
+-include memdisk_mod-disk_memdisk.d
+
+CLEANFILES += cmd-memdisk_mod-disk_memdisk.lst fs-memdisk_mod-disk_memdisk.lst
+COMMANDFILES += cmd-memdisk_mod-disk_memdisk.lst
+FSFILES += fs-memdisk_mod-disk_memdisk.lst
+
+cmd-memdisk_mod-disk_memdisk.lst: disk/memdisk.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh memdisk > $@ || (rm -f $@; exit 1)
+
+fs-memdisk_mod-disk_memdisk.lst: disk/memdisk.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh memdisk > $@ || (rm -f $@; exit 1)
+
+
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

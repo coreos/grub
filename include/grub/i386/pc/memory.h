@@ -48,6 +48,9 @@
 #define GRUB_MEMORY_MACHINE_RESERVED_END	\
 	(GRUB_MEMORY_MACHINE_PROT_STACK + 0x10)
 
+/* The area where GRUB is decompressed at early startup.  */
+#define GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR	0x100000
+
 /* The address of a partition table passed to another boot loader.  */
 #define GRUB_MEMORY_MACHINE_PART_TABLE_ADDR	0x7be
 

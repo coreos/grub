@@ -248,3 +248,19 @@ grub_arch_modules_addr (void)
 {
   return grub_end_addr;
 }
+
+/* Return the start of the memdisk image.  */
+grub_addr_t
+grub_arch_memdisk_addr (void)
+{
+  return GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR
+    + (grub_kernel_image_size - GRUB_KERNEL_MACHINE_RAW_SIZE)
+    + grub_total_module_size;
+}
+
+/* Return the size of the memdisk image.  */
+grub_off_t
+grub_arch_memdisk_size (void)
+{
+  return grub_memdisk_image_size;
+}

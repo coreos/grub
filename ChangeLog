@@ -1,3 +1,46 @@
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Add `machine/kernel.h'.
+	(pkglib_MODULES): Add `memdisk.mod'.
+	(memdisk_mod_SOURCES): New variable.
+	(memdisk_mod_CFLAGS): Likewise.
+	(memdisk_mod_LDFLAGS): Likewise.
+
+	* disk/memdisk.c: New file.
+
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	`GRUB_DISK_DEVICE_MEMDISK_ID'.
+
+	* include/grub/i386/pc/kernel.h
+	(GRUB_KERNEL_MACHINE_MEMDISK_IMAGE_SIZE): New macro.
+	(GRUB_KERNEL_MACHINE_PREFIX): Increment by 4.
+	(grub_kernel_image_size): New variable declaration.
+	(grub_total_module_size): Likewise.
+	(grub_memdisk_image_size): Likewise.
+
+	* include/grub/i386/pc/memory.h
+	(GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR): New macro.
+
+	* include/grub/kernel.h: Include `<grub/symbol.h>'.
+	(grub_arch_memdisk_addr): New variable declaration.
+	(grub_arch_memdisk_size): Likewise.
+
+	* kern/i386/pc/init.c (grub_arch_memdisk_addr): New function.
+	(grub_arch_memdisk_size): Likewise.
+
+	* kern/i386/pc/startup.S (grub_memdisk_image_size): New variable.
+	(codestart): Replace hardcoded `0x100000' with
+	`GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR' macro.
+
+	* util/i386/pc/grub-mkimage.c: Include `<grub/misc.h>'.
+	(generate_image): Add `memdisk_path' parameter.  When `memdisk_path' is
+	not NULL, append the contents of the file it refers to, at the end of
+	the compressed kernel image.  Initialize `grub_memdisk_image_size'
+	variable (at `GRUB_KERNEL_MACHINE_MEMDISK_IMAGE_SIZE' offset).
+	(options): Add "memdisk"|'m' option.
+	(main): Parse --memdisk|-m option, and pass user-provided path as
+	parameter to generate_image().
+
 2008-01-20  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/sparc64/ieee1275/openfw.c (grub_devalias_iterate): Copy debug
