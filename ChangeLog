@@ -1,5 +1,10 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_iterate): Add debug message
+	on grub_biosdisk_rw_standard() error.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/ieee1275/ieee1275.h: Add 2008 to Copyright line for
 	recent changes.
 	* kern/elf.c: Likewise.
