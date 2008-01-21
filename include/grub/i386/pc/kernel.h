@@ -48,6 +48,7 @@
 
 #ifndef ASM_FILE
 
+#include <grub/symbol.h>
 #include <grub/types.h>
 
 /* The size of kernel image.  */
@@ -74,6 +75,9 @@ extern grub_int32_t grub_boot_drive;
 
 /* The end address of the kernel.  */
 extern grub_addr_t grub_end_addr;
+
+extern grub_addr_t EXPORT_FUNC(grub_arch_memdisk_addr) (void);
+extern grub_off_t EXPORT_FUNC(grub_arch_memdisk_size) (void);
 
 #endif /* ! ASM_FILE */
 

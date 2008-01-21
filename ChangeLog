@@ -1,5 +1,15 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/i386/pc/kernel.h: Include `<grub/symbol.h>'.
+
+	* include/grub/kernel.h (grub_arch_memdisk_addr,
+	grub_arch_memdisk_size): Moved from here ...
+
+	* include/grub/i386/pc/kernel.h (grub_arch_memdisk_addr,
+	grub_arch_memdisk_size): ... to here.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	Mostly based on bugfix from Bean.
 
 	* kern/elf.c (grub_elf32_phdr_iterate): Use `NESTED_FUNC_ATTR'
