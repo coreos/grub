@@ -1,5 +1,14 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	Fix detection of very small filesystems (like tar).
+
+	* fs/reiserfs.c (grub_reiserfs_mount): When disk is too small to
+	contain a ReiserFS, abort with GRUB_ERR_BAD_FS rather than
+	GRUB_ERR_OUT_OF_RANGE (which made the upper layer think there's
+	a problem with this disk).
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_iterate): Add debug message
 	on grub_biosdisk_rw_standard() error.
 
