@@ -1,5 +1,14 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/ieee1275/ieee1275.h: Add 2008 to Copyright line for
+	recent changes.
+	* kern/elf.c: Likewise.
+	* kern/ieee1275/ieee1275.c: Likewise.
+	* kern/powerpc/ieee1275/openfw.c: Likewise.
+	* term/ieee1275/ofconsole.c: Likewise.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/i386/pc/kernel.h: Include `<grub/symbol.h>'.
 
 	* include/grub/kernel.h (grub_arch_memdisk_addr)
