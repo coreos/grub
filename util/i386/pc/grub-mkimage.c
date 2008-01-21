@@ -1,7 +1,7 @@
 /* grub-mkimage.c - make a bootable image */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
 #include <grub/kernel.h>
 #include <grub/disk.h>
 #include <grub/util/misc.h>
@@ -180,6 +181,10 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[], char *me
     = grub_cpu_to_le32 (memdisk_size);
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
     = grub_cpu_to_le32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
+
+  if (core_size > GRUB_MEMORY_MACHINE_UPPER - GRUB_MEMORY_MACHINE_LINK_ADDR)
+    grub_util_error ("Core image is too big (%p > %p)\n", core_size,
+		     GRUB_MEMORY_MACHINE_UPPER - GRUB_MEMORY_MACHINE_LINK_ADDR);
   
   grub_util_write_image (core_img, core_size, out);
   free (kernel_img);

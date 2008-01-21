@@ -1,5 +1,26 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-pc.rmk (GRUB_MEMORY_MACHINE_LINK_ADDR): New variable.
+	(kernel_img_LDFLAGS): Use `GRUB_MEMORY_MACHINE_LINK_ADDR' as link
+	address.
+	(grub_mkimage_CFLAGS): Propagate `GRUB_MEMORY_MACHINE_LINK_ADDR' as
+	a C macro.
+	* include/grub/i386/pc/memory.h (GRUB_MEMORY_MACHINE_UPPER): New macro.
+	Indicates start of upper memory.
+	* util/i386/pc/grub-mkimage.c: Include `<grub/machine/memory.h>'.
+	(generate_image): Abort when image size is big enough to corrupt
+	upper memory.
+
+	* include/grub/i386/pc/vga.h: Include `<grub/machine/memory.h>'.
+	(GRUB_MEMORY_MACHINE_VGA_ADDR): Alias for `GRUB_MEMORY_MACHINE_UPPER'.
+	* term/i386/pc/vga.c (VGA_MEM): Use `GRUB_MEMORY_MACHINE_VGA_ADDR'
+	instead of hardcoding 0xA0000.
+	* video/i386/pc/vbe.c: Include `<grub/machine/vga.h>'.
+	(grub_vbe_set_video_mode): Use `GRUB_MEMORY_MACHINE_VGA_ADDR'
+	instead of hardcoding 0xA0000.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/memdisk.c (memdisk_size): New variable.
 	(grub_memdisk_open): Replace grub_arch_memdisk_size() call with
 	`memdisk_size'.

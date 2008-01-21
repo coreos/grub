@@ -1,7 +1,7 @@
 /* memory.h - describe the memory map */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@
 
 /* The size of the protect mode stack.  */
 #define GRUB_MEMORY_MACHINE_PROT_STACK_SIZE	0x8000
+
+/* The upper memory area (starting at 640 kiB).  */
+#define GRUB_MEMORY_MACHINE_UPPER		0xa0000
 
 /* The protected mode stack.  */
 #define GRUB_MEMORY_MACHINE_PROT_STACK	\

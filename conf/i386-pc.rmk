@@ -1,5 +1,7 @@
 # -*- makefile -*-
 
+GRUB_MEMORY_MACHINE_LINK_ADDR = 0x8200
+
 COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS = -m32 -nostdlib
@@ -42,7 +44,7 @@ kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h machine/kernel.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8200 $(COMMON_CFLAGS)
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
@@ -63,6 +65,7 @@ endif
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c
+grub_mkimage_CFLAGS = -DGRUB_MEMORY_MACHINE_LINK_ADDR=$(GRUB_MEMORY_MACHINE_LINK_ADDR)
 grub_mkimage_LDFLAGS = $(LIBLZO)
 
 # For grub-setup.
