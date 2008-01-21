@@ -1,5 +1,9 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/mm.c (grub_mm_init_region): Improve debug message.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (GRUB_MEMORY_MACHINE_LINK_ADDR): New variable.
 	(kernel_img_LDFLAGS): Use `GRUB_MEMORY_MACHINE_LINK_ADDR' as link
 	address.
