@@ -1,7 +1,7 @@
 /* memdisk.c - Access embedded memory disk.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <grub/types.h>
 
 static grub_addr_t memdisk_addr;
+static grub_off_t memdisk_size = 0;
 
 static int
 grub_memdisk_iterate (int (*hook) (const char *name))
@@ -38,7 +39,7 @@ grub_memdisk_open (const char *name, grub_disk_t disk)
   if (grub_strcmp (name, "memdisk"))
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a memdisk");
 
-  disk->total_sectors = grub_arch_memdisk_size () / GRUB_DISK_SECTOR_SIZE;
+  disk->total_sectors = memdisk_size / GRUB_DISK_SECTOR_SIZE;
   disk->id = (int) 'mdsk';
   disk->has_partitions = 0;
 
@@ -80,15 +81,27 @@ static struct grub_disk_dev grub_memdisk_dev =
 
 GRUB_MOD_INIT(memdisk)
 {
-  if (! grub_arch_memdisk_size ())
+  grub_addr_t memdisk_orig_addr;
+
+  memdisk_size = grub_arch_memdisk_size ();
+  if (! memdisk_size)
     return;
-  memdisk_addr = grub_arch_memdisk_addr ();
+
+  memdisk_orig_addr = grub_arch_memdisk_addr ();
+  grub_dprintf ("memdisk", "Found memdisk image at %p\n", memdisk_orig_addr);
+
+  memdisk_addr = grub_malloc (memdisk_size);
+
+  grub_dprintf ("memdisk", "Copying memdisk image to dynamic memory\n");
+  grub_memmove (memdisk_addr, memdisk_orig_addr, memdisk_size);
+
   grub_disk_dev_register (&grub_memdisk_dev);
 }
 
 GRUB_MOD_FINI(memdisk)
 {
-  if (! grub_arch_memdisk_size ())
+  if (! memdisk_size)
     return;
+  grub_free (memdisk_addr);
   grub_disk_dev_unregister (&grub_memdisk_dev);
 }

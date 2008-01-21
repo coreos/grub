@@ -1,5 +1,15 @@
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/memdisk.c (memdisk_size): New variable.
+	(grub_memdisk_open): Replace grub_arch_memdisk_size() call with
+	`memdisk_size'.
+	(grub_memdisk_init): Initialize `memdisk_size'.  Reallocate memdisk
+	image to dynamic memory.
+	(grub_memdisk_fini): Replace grub_arch_memdisk_size() call with
+	`memdisk_size'.  Free memdisk block.
+
+2008-01-21  Robert Millan  <rmh@aybabtu.com>
+
 	Fix detection of very small filesystems (like tar).
 
 	* fs/reiserfs.c (grub_reiserfs_mount): When disk is too small to
