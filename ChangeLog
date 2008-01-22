@@ -1,3 +1,8 @@
+2008-01-22  Bean  <bean123ch@gmail.com>
+
+	* fs/cpio.c (grub_cpio_find_file): Return GRUB_ERR_FILE_NOT_FOUND when
+	there are no more items.
+
 2008-01-21  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/mm.c (grub_mm_init_region): Improve debug message.

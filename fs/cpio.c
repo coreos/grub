@@ -101,7 +101,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (data->size == 0)
 	{
 	  *ofs = 0;
-	  return GRUB_ERR_NONE;
+	  return GRUB_ERR_FILE_NOT_FOUND;
 	}
 
       if (hd.namesize & 1)
@@ -133,7 +133,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (!hd.name[0])
 	{
 	  *ofs = 0;
-	  return GRUB_ERR_NONE;
+	  return GRUB_ERR_FILE_NOT_FOUND;
 	}
 
       if (grub_memcmp (hd.magic, MAGIC_USTAR, sizeof (MAGIC_USTAR) - 1))
