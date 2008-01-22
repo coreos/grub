@@ -918,7 +918,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod
+	ata.mod vga.mod memdisk.mod jpeg.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2478,5 +2478,57 @@ fs-memdisk_mod-disk_memdisk.lst: disk/memdisk.c genfslist.sh
 
 memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
 memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For jpeg.mod.
+jpeg_mod_SOURCES = video/readers/jpeg.c
+CLEANFILES += jpeg.mod mod-jpeg.o mod-jpeg.c pre-jpeg.o jpeg_mod-video_readers_jpeg.o und-jpeg.lst
+ifneq ($(jpeg_mod_EXPORTS),no)
+CLEANFILES += def-jpeg.lst
+DEFSYMFILES += def-jpeg.lst
+endif
+MOSTLYCLEANFILES += jpeg_mod-video_readers_jpeg.d
+UNDSYMFILES += und-jpeg.lst
+
+jpeg.mod: pre-jpeg.o mod-jpeg.o
+	-rm -f $@
+	$(TARGET_CC) $(jpeg_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-jpeg.o: $(jpeg_mod_DEPENDENCIES) jpeg_mod-video_readers_jpeg.o
+	-rm -f $@
+	$(TARGET_CC) $(jpeg_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ jpeg_mod-video_readers_jpeg.o
+
+mod-jpeg.o: mod-jpeg.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jpeg_mod_CFLAGS) -c -o $@ $<
+
+mod-jpeg.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'jpeg' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(jpeg_mod_EXPORTS),no)
+def-jpeg.lst: pre-jpeg.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 jpeg/' > $@
+endif
+
+und-jpeg.lst: pre-jpeg.o
+	echo 'jpeg' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+jpeg_mod-video_readers_jpeg.o: video/readers/jpeg.c
+	$(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(jpeg_mod_CFLAGS) -MD -c -o $@ $<
+-include jpeg_mod-video_readers_jpeg.d
+
+CLEANFILES += cmd-jpeg_mod-video_readers_jpeg.lst fs-jpeg_mod-video_readers_jpeg.lst
+COMMANDFILES += cmd-jpeg_mod-video_readers_jpeg.lst
+FSFILES += fs-jpeg_mod-video_readers_jpeg.lst
+
+cmd-jpeg_mod-video_readers_jpeg.lst: video/readers/jpeg.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jpeg_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh jpeg > $@ || (rm -f $@; exit 1)
+
+fs-jpeg_mod-video_readers_jpeg.lst: video/readers/jpeg.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jpeg_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh jpeg > $@ || (rm -f $@; exit 1)
+
+
+jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
+jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

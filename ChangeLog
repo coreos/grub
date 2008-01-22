@@ -1,5 +1,14 @@
 2008-01-22  Bean  <bean123ch@gmail.com>
 
+	* conf/i386-pc.rmk (pkglib_MODULES): Add `jpeg.mod'.
+	(jpeg_mod_SOURCES): New variable.
+	(jpeg_mod_CFLAGS): Likewise.
+	(jpeg_mod_LDFLAGS): Likewise.
+
+	* video/readers/jpeg.c : New file.
+
+2008-01-22  Bean  <bean123ch@gmail.com>
+
 	* fs/cpio.c (grub_cpio_find_file): Return GRUB_ERR_FILE_NOT_FOUND when
 	there are no more items.
 
