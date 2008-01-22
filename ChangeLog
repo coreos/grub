@@ -1,3 +1,8 @@
+2008-01-22  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/powerpc/ieee1275/init.c (grub_claim_heap): Add sanity check to
+	avoid claiming over our own code.
+
 2008-01-22  Bean  <bean123ch@gmail.com>
 
 	* conf/i386-pc.rmk (pkglib_MODULES): Add `jpeg.mod'.

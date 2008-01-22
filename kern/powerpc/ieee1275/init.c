@@ -1,7 +1,7 @@
 /*  init.c -- Initialize GRUB on the newworld mac (PPC).  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2007,2008 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -142,6 +142,17 @@ static void grub_claim_heap (void)
         (addr + len > HEAP_MAX_ADDR) &&				/* if it wasn't available anyway, don't bother */
         (total + (HEAP_MAX_ADDR - addr) > HEAP_MIN_SIZE))	/* only limit ourselves when we can afford to */
        len = HEAP_MAX_ADDR - addr;
+
+    /* In theory, firmware should already prevent this from happening by not
+       listing our own image in /memory/available.  The check below is intended
+       as a safegard in case that doesn't happen.  It does, however, not protect
+       us from corrupting our module area, which extends up to a
+       yet-undetermined region above _end.  */
+    if ((addr < _end) && ((addr + len) > _start))
+      {
+        grub_printf ("Warning: attempt to claim over our own code!\n");
+        len = 0;
+      }
 
     if (len)
       {
