@@ -1,5 +1,16 @@
 2008-01-22  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): When
+	`GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY' flag is set, skip any
+	device that doesn't look like an SD card.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_flag): Add
+	`GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY' flag.
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_set_flag): Detect
+	OLPC laptop, and set `GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY' when
+	found.
+
+2008-01-22  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/powerpc/ieee1275/init.c (grub_claim_heap): Add sanity check to
 	avoid claiming over our own code.
 

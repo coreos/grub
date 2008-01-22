@@ -83,6 +83,9 @@ enum grub_ieee1275_flag
 
   /* CodeGen firmware does not correctly implement "output-device output" */
   GRUB_IEEE1275_FLAG_BROKEN_OUTPUT,
+
+  /* OLPC / XO firmware hangs when accessing USB devices.  */
+  GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);
