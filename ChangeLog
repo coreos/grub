@@ -1,3 +1,16 @@
+2008-01-24  Bean  <bean123ch@gmail.com>
+
+	* fs/ufs.c (GRUB_UFS_VOLNAME_LEN): New macro.
+	(grub_ufs_sblock): New member volume name.
+	(grub_ufs_find_file): Fix string copy bug.
+	(grub_ufs_label): Implement this function properly.
+
+	* fs/hfs.c (grub_hfs_cnid_type): New enum.
+	(grub_hfs_iterate_records): Use the correct file number for extents
+	and catalog file. Fix problem in next index calculation.
+	(grub_hfs_find_node): Replace recursive function call with loop.
+	(grub_hfs_iterate_dir): Replace recursive function call with loop.
+
 2008-01-23  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/ieee1275/loader.h: Include `<grub/types.h>',

@@ -38,6 +38,8 @@
 
 #define GRUB_UFS_ATTR_DIR	040000
 
+#define GRUB_UFS_VOLNAME_LEN	32
+
 /* Calculate in which group the inode can be found.  */
 #define inode_group(inode,sblock) ()
 
@@ -86,7 +88,12 @@ struct grub_ufs_sblock
   /* The frags per cylinder group.  */
   grub_uint32_t frags_per_group;
   
-  grub_uint8_t unused7[1180];
+  grub_uint8_t unused7[488];
+
+  /* Volume name for UFS2.  */
+  grub_uint8_t volume_name[GRUB_UFS_VOLNAME_LEN];
+
+  grub_uint8_t unused8[660];
   
   /* Magic value to check if this is really a UFS filesystem.  */
   grub_uint32_t magic;
@@ -393,13 +400,13 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
 static grub_err_t
 grub_ufs_find_file (struct grub_ufs_data *data, const char *path)
 {
-  char fpath[grub_strlen (path)];
+  char fpath[grub_strlen (path) + 1];
   char *name = fpath;
   char *next;
   unsigned int pos = 0;
   int dirino;
   
-  grub_strncpy (fpath, path, grub_strlen (path));
+  grub_strcpy (fpath, path);
   
   /* Skip the first slash.  */
   if (name[0] == '/')
@@ -649,10 +656,30 @@ grub_ufs_close (grub_file_t file)
 
 
 static grub_err_t
-grub_ufs_label (grub_device_t device __attribute ((unused)),
-		char **label __attribute ((unused)))
+grub_ufs_label (grub_device_t device, char **label)
 {
-  return GRUB_ERR_NONE;
+  struct grub_ufs_data *data = 0;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  *label = 0;
+
+  data = grub_ufs_mount (device->disk);
+  if (data)
+    {
+      if (data->ufs_type == UFS2)
+        *label = grub_strdup ((char *) data->sblock.volume_name);
+    }
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
 }
 
 
