@@ -1,3 +1,41 @@
+2008-01-23  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Add `machine/loader.h'
+	and `machine/memory.h'.
+	(pkglib_MODULES): Add `multiboot.mod' and `_multiboot.mod'.
+	(_multiboot_mod_SOURCES): New variable.
+	(_multiboot_mod_CFLAGS): Likewise.
+	(_multiboot_mod_LDFLAGS): Likewise.
+	(multiboot_mod_SOURCES): Likewise.
+	(multiboot_mod_CFLAGS): Likewise.
+	(multiboot_mod_LDFLAGS): Likewise.
+
+	* include/grub/i386/ieee1275/loader.h: New file.
+
+	* include/grub/i386/ieee1275/machine.h: Likewise.
+
+	* include/grub/i386/ieee1275/memory.h: Likewise.
+
+	* include/grub/i386/pc/init.h (grub_os_area_addr): Remove (redundant)
+	variable declaration.
+	(grub_os_area_size): Likewise.
+
+	* kern/i386/ieee1275/init.c (grub_os_area_addr, grub_os_area_size)
+	(grub_lower_mem, grub_upper_mem): New variables.
+	(grub_stop_floppy): New function (just to make
+	grub_multiboot2_real_boot() happy).
+
+	* kern/i386/ieee1275/startup.S: Include `<grub/machine/memory.h>',
+	`<grub/cpu/linux.h>', `<multiboot.h>' and `<multiboot2.h>'.
+	(grub_stop): New function.
+	Include `"../realmode.S"' and `"../loader.S"'.
+
+	* loader/multiboot_loader.c: Include `<grub/machine/machine.h>'.
+	Replace `__i386__' #ifdefs with `GRUB_MACHINE_PCBIOS'.
+
+	* loader/powerpc/ieee1275/multiboot2.c (grub_mb2_arch_boot): On i386,
+	rely on grub_multiboot2_real_boot() for final boot.
+
 2008-01-22  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): When

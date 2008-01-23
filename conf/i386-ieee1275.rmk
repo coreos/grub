@@ -22,7 +22,7 @@ kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 kernel_elf_HEADERS = arg.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
-	ieee1275/ieee1275.h machine/kernel.h
+	ieee1275/ieee1275.h machine/kernel.h machine/loader.h machine/memory.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x10000,-Bstatic
 
@@ -96,7 +96,8 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Modules.
-pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod
+pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
+	multiboot.mod _multiboot.mod
 
 # For normal.mod.
 normal_mod_DEPENDENCIES = grub_script.tab.c grub_script.tab.h
@@ -108,6 +109,18 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _multiboot.mod.
+_multiboot_mod_SOURCES = loader/powerpc/ieee1275/multiboot2.c \
+			 loader/multiboot2.c \
+			 loader/multiboot_loader.c
+_multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+_multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For multiboot.mod.
+multiboot_mod_SOURCES = loader/multiboot_loader_normal.c 
+multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
+multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For suspend.mod
 suspend_mod_SOURCES = commands/ieee1275/suspend.c

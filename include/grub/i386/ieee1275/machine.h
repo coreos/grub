@@ -1,7 +1,6 @@
-/*  init.c -- Initialize GRUB on Open Firmware.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,19 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/types.h>
+#ifndef GRUB_MACHINE_MACHINE_HEADER
+#define GRUB_MACHINE_MACHINE_HEADER	1
 
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
-grub_size_t grub_lower_mem, grub_upper_mem;
+#define GRUB_MACHINE_IEEE1275	1
 
-void
-grub_stop_floppy (void)
-{
-}
-
-void 
-grub_arch_sync_caches (void *address __attribute__ ((unused)),
-		       grub_size_t len __attribute__ ((unused)))
-{
-}
+#endif /* ! GRUB_MACHINE_MACHINE_HEADER */
