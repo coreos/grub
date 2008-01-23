@@ -1,5 +1,26 @@
 2008-01-23  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Add
+	`term/i386/pc/at_keyboard.c'.
+	(pkglib_MODULES): Add `serial.mod'.
+	(serial_mod_SOURCES): New variable.
+	(serial_mod_CFLAGS): Likewise.
+	(serial_mod_LDFLAGS): Likewise.
+
+	* include/grub/i386/ieee1275/console.h: Add `<grub/symbol.h>'.  Remove
+	`<grub/powerpc/ieee1275/console.h>'.
+	(grub_keyboard_controller_init): New function prototype.
+	(grub_console_checkkey): Likewise.
+	(grub_console_getkey): Likewise.
+
+	* kern/powerpc/ieee1275/init.c (grub_machine_init): Initialize AT
+	keyboard on i386.
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_term): On i386, use
+	grub_ofconsole_checkkey() and grub_ofconsole_getkey() for input.
+
+2008-01-23  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/i386/pc/init.c (make_install_device): When memdisk image is
 	present, "(memdisk)/boot/grub" becomes the default prefix.
 

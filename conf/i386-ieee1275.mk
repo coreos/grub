@@ -17,13 +17,14 @@ kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 	kern/i386/dl.c kern/parser.c kern/partition.c \
 	kern/env.c \
 	kern/ieee1275/ieee1275.c \
-	term/ieee1275/ofconsole.c disk/ieee1275/ofdisk.c \
+	term/ieee1275/ofconsole.c term/i386/pc/at_keyboard.c \
+	disk/ieee1275/ofdisk.c \
 	symlist.c
-CLEANFILES += kernel.elf kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
-MOSTLYCLEANFILES += kernel_elf-kern_i386_ieee1275_startup.d kernel_elf-kern_i386_ieee1275_init.d kernel_elf-kern_powerpc_ieee1275_init.d kernel_elf-kern_powerpc_ieee1275_cmain.d kernel_elf-kern_powerpc_ieee1275_openfw.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-kern_ieee1275_ieee1275.d kernel_elf-term_ieee1275_ofconsole.d kernel_elf-disk_ieee1275_ofdisk.d kernel_elf-symlist.d
+CLEANFILES += kernel.elf kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
+MOSTLYCLEANFILES += kernel_elf-kern_i386_ieee1275_startup.d kernel_elf-kern_i386_ieee1275_init.d kernel_elf-kern_powerpc_ieee1275_init.d kernel_elf-kern_powerpc_ieee1275_cmain.d kernel_elf-kern_powerpc_ieee1275_openfw.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-kern_ieee1275_ieee1275.d kernel_elf-term_ieee1275_ofconsole.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-disk_ieee1275_ofdisk.d kernel_elf-symlist.d
 
-kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
-	$(TARGET_CC) -o $@ kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
+kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
+	$(TARGET_CC) -o $@ kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
 
 kernel_elf-kern_i386_ieee1275_startup.o: kern/i386/ieee1275/startup.S
 	$(TARGET_CC) -Ikern/i386/ieee1275 -I$(srcdir)/kern/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -116,6 +117,10 @@ kernel_elf-kern_ieee1275_ieee1275.o: kern/ieee1275/ieee1275.c
 kernel_elf-term_ieee1275_ofconsole.o: term/ieee1275/ofconsole.c
 	$(TARGET_CC) -Iterm/ieee1275 -I$(srcdir)/term/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-term_ieee1275_ofconsole.d
+
+kernel_elf-term_i386_pc_at_keyboard.o: term/i386/pc/at_keyboard.c
+	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-term_i386_pc_at_keyboard.d
 
 kernel_elf-disk_ieee1275_ofdisk.o: disk/ieee1275/ofdisk.c
 	$(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -687,7 +692,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
-	multiboot.mod _multiboot.mod
+	multiboot.mod _multiboot.mod serial.mod
 
 # For normal.mod.
 normal_mod_DEPENDENCIES = grub_script.tab.c grub_script.tab.h
@@ -1300,5 +1305,57 @@ fs-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c genfslist.sh
 
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
 cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For serial.mod.
+serial_mod_SOURCES = term/i386/pc/serial.c
+CLEANFILES += serial.mod mod-serial.o mod-serial.c pre-serial.o serial_mod-term_i386_pc_serial.o und-serial.lst
+ifneq ($(serial_mod_EXPORTS),no)
+CLEANFILES += def-serial.lst
+DEFSYMFILES += def-serial.lst
+endif
+MOSTLYCLEANFILES += serial_mod-term_i386_pc_serial.d
+UNDSYMFILES += und-serial.lst
+
+serial.mod: pre-serial.o mod-serial.o
+	-rm -f $@
+	$(TARGET_CC) $(serial_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-serial.o: $(serial_mod_DEPENDENCIES) serial_mod-term_i386_pc_serial.o
+	-rm -f $@
+	$(TARGET_CC) $(serial_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ serial_mod-term_i386_pc_serial.o
+
+mod-serial.o: mod-serial.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -c -o $@ $<
+
+mod-serial.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'serial' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(serial_mod_EXPORTS),no)
+def-serial.lst: pre-serial.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 serial/' > $@
+endif
+
+und-serial.lst: pre-serial.o
+	echo 'serial' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+serial_mod-term_i386_pc_serial.o: term/i386/pc/serial.c
+	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -MD -c -o $@ $<
+-include serial_mod-term_i386_pc_serial.d
+
+CLEANFILES += cmd-serial_mod-term_i386_pc_serial.lst fs-serial_mod-term_i386_pc_serial.lst
+COMMANDFILES += cmd-serial_mod-term_i386_pc_serial.lst
+FSFILES += fs-serial_mod-term_i386_pc_serial.lst
+
+cmd-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh serial > $@ || (rm -f $@; exit 1)
+
+fs-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh serial > $@ || (rm -f $@; exit 1)
+
+
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -17,7 +17,8 @@ kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 	kern/i386/dl.c kern/parser.c kern/partition.c \
 	kern/env.c \
 	kern/ieee1275/ieee1275.c \
-	term/ieee1275/ofconsole.c disk/ieee1275/ofdisk.c \
+	term/ieee1275/ofconsole.c term/i386/pc/at_keyboard.c \
+	disk/ieee1275/ofdisk.c \
 	symlist.c
 kernel_elf_HEADERS = arg.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
@@ -97,7 +98,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
-	multiboot.mod _multiboot.mod
+	multiboot.mod _multiboot.mod serial.mod
 
 # For normal.mod.
 normal_mod_DEPENDENCIES = grub_script.tab.c grub_script.tab.h
@@ -141,5 +142,10 @@ halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 cpuid_mod_SOURCES = commands/i386/cpuid.c
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
 cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For serial.mod.
+serial_mod_SOURCES = term/i386/pc/serial.c
+serial_mod_CFLAGS = $(COMMON_CFLAGS)
+serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -358,8 +358,13 @@ static struct grub_term grub_ofconsole_term =
     .fini = grub_ofconsole_fini,
     .putchar = grub_ofconsole_putchar,
     .getcharwidth = grub_ofconsole_getcharwidth,
+#ifdef __i386__
+    .checkkey = grub_console_checkkey,
+    .getkey = grub_console_getkey,
+#else
     .checkkey = grub_ofconsole_checkkey,
     .getkey = grub_ofconsole_getkey,
+#endif
     .getxy = grub_ofconsole_getxy,
     .getwh = grub_ofconsole_getwh,
     .gotoxy = grub_ofconsole_gotoxy,

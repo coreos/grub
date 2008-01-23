@@ -181,6 +181,9 @@ grub_machine_init (void)
   int actual;
 
   grub_console_init ();
+#ifdef __i386__
+  grub_keyboard_controller_init ();
+#endif
   grub_claim_heap ();
   grub_ofdisk_init ();
 

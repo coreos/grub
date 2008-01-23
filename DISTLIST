@@ -156,6 +156,7 @@ include/grub/i386/efi/time.h
 include/grub/i386/ieee1275/loader.h
 include/grub/i386/ieee1275/machine.h
 include/grub/i386/ieee1275/memory.h
+include/grub/i386/ieee1275/serial.h
 include/grub/i386/io.h
 include/grub/i386/linuxbios/boot.h
 include/grub/i386/linuxbios/console.h
