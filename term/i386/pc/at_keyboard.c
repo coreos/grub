@@ -147,7 +147,9 @@ grub_keyboard_isr (char key)
 	  /* Skip grub_dprintf.  */
 	  return;
       }
+#ifdef DEBUG_AT_KEYBOARD
   grub_dprintf ("atkeyb", "Control key 0x%0x was %s\n", key, is_make ? "pressed" : "unpressed");
+#endif
 }
 
 /* If there is a raw key pending, return it; otherwise return -1.  */
@@ -172,7 +174,9 @@ grub_console_checkkey (void)
   key = grub_keyboard_getkey ();
   if (key == -1)
     return -1;
+#ifdef DEBUG_AT_KEYBOARD
   grub_dprintf ("atkeyb", "Detected key 0x%x\n", key);
+#endif
   switch (key)
     {
       case CAPS_LOCK:
@@ -180,7 +184,9 @@ grub_console_checkkey (void)
 	  at_keyboard_status &= ~KEYBOARD_STATUS_CAPS_LOCK;
 	else
 	  at_keyboard_status |= KEYBOARD_STATUS_CAPS_LOCK;
+#ifdef DEBUG_AT_KEYBOARD
 	grub_dprintf ("atkeyb", "caps_lock = %d\n", !!(at_keyboard_status & KEYBOARD_STATUS_CAPS_LOCK));
+#endif
 	key = -1;
 	break;
       default:
