@@ -21,6 +21,7 @@
 #define GRUB_MEMORY_MACHINE_HEADER	1
 
 #include <grub/symbol.h>
+#include <grub/machine/machine.h>
 #ifndef ASM_FILE
 #include <grub/types.h>
 #endif
@@ -75,9 +76,11 @@
 /* The data segment of the pseudo real mode.  */
 #define GRUB_MEMORY_MACHINE_PSEUDO_REAL_DSEG	0x20
 
+#ifndef GRUB_MACHINE_IEEE1275
 #ifndef ASM_FILE
 extern grub_size_t EXPORT_VAR(grub_lower_mem);
 extern grub_size_t EXPORT_VAR(grub_upper_mem);
+#endif
 #endif
 
 #endif /* ! GRUB_MEMORY_MACHINE_HEADER */

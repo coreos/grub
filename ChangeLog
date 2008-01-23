@@ -1,5 +1,17 @@
 2008-01-23  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/i386/ieee1275/loader.h: Include `<grub/types.h>',
+	`<grub/symbol.h>' and `<grub/multiboot.h>'.
+	(grub_multiboot2_real_boot): New function prototype.
+
+	* include/grub/i386/pc/memory.h: Include `<grub/machine/machine.h>'.
+	[!GRUB_MACHINE_IEEE1275] (grub_lower_mem, grub_upper_mem): Disable.
+
+	* kern/i386/ieee1275/init.c (grub_os_area_addr)
+	(grub_os_area_size, grub_lower_mem, grub_upper_mem): Remove variables.
+
+2008-01-23  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/mm.c (grub_mm_init_region): Replace grub_dprintf() call with
 	#ifdef'ed out grub_printf().
 

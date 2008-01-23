@@ -19,10 +19,6 @@
 
 #include <grub/types.h>
 
-grub_addr_t grub_os_area_addr;
-grub_size_t grub_os_area_size;
-grub_size_t grub_lower_mem, grub_upper_mem;
-
 void
 grub_stop_floppy (void)
 {
