@@ -64,7 +64,12 @@ make_install_device (void)
   /* XXX: This should be enough.  */
   char dev[100];
 
-  if (grub_install_dos_part != -2)
+  if (grub_memdisk_image_size)
+    {
+      grub_sprintf (dev, "(memdisk)%s", grub_prefix);
+      grub_strcpy (grub_prefix, dev);
+    }
+  else if (grub_install_dos_part != -2)
     {
       grub_sprintf (dev, "(%cd%u",
 		    (grub_boot_drive & 0x80) ? 'h' : 'f',

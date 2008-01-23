@@ -1,5 +1,14 @@
 2008-01-23  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/i386/pc/init.c (make_install_device): When memdisk image is
+	present, "(memdisk)/boot/grub" becomes the default prefix.
+
+	* util/i386/pc/grub-mkrescue.in: Switch to a minimal core.img plus
+	a memdisk tarball with all the modules.  Add --overlay=DIR option that
+	allows users to overlay additional files into the image.
+
+2008-01-23  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Add `machine/loader.h'
 	and `machine/memory.h'.
 	(pkglib_MODULES): Add `multiboot.mod' and `_multiboot.mod'.

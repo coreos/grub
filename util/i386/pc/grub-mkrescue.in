@@ -42,6 +42,7 @@ Make GRUB rescue image.
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
   --modules=MODULES       pre-load specified modules MODULES
+  --overlay=DIR           overlay directory DIR in the memdisk image
   --pkglibdir=DIR         use images from directory DIR instead of ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
   --image-type=TYPE       select floppy or cdrom (default)
@@ -67,6 +68,8 @@ for option in "$@"; do
 	exit 0 ;;
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
+    --overlay=*)
+	overlay=`echo "$option" | sed 's/--overlay=//'` ;;
     --pkglibdir=*)
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
     --grub-mkimage=*)
@@ -99,18 +102,29 @@ if test "x$output_image" = x; then
   exit 1
 fi
 
-if [ "x${modules}" = "x" ] ; then
-  modules=`cd ${input_dir}/ && ls *.mod`
-fi
-
 if [ "x${image_type}" = "xfloppy" ] ; then
   floppy_image=${output_image}
 else
   floppy_image=`mktemp`
 fi
 
+memdisk_dir=`mktemp -d`
+mkdir -p ${memdisk_dir}/boot/grub
+cp ${input_dir}/*.mod \
+  ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
+  ${memdisk_dir}/boot/grub/
+
+if test "x$overlay" = x ; then : ; else
+  cp -dpR ${overlay}/* ${memdisk_dir}/
+fi
+
+memdisk_img=`mktemp`
+tar -C ${memdisk_dir} -cf ${memdisk_img} boot
+rm -rf ${memdisk_dir}
+
 core_img=`mktemp`
-${grub_mkimage} -d ${input_dir}/ -o ${core_img} ${modules}
+${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${core_img} memdisk cpio biosdisk ${modules}
+rm -f ${memdisk_img}
 cat ${input_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=1440 > $floppy_image
 rm -f ${core_img}
 
