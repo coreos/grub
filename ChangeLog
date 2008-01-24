@@ -1,3 +1,9 @@
+2008-01-24  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/file.c (grub_file_open): Do not account previous failures of
+	unrelated functions when grub_errno is checked for.
+	Reported by Oleg Strikov.
+
 2008-01-24  Bean  <bean123ch@gmail.com>
 
 	* fs/ufs.c (GRUB_UFS_VOLNAME_LEN): New macro.

@@ -59,6 +59,9 @@ grub_file_open (const char *name)
   char *device_name;
   char *file_name;
 
+  /* Do not account previous failures when grub_errno is checked for.  */
+  grub_errno = GRUB_ERR_NONE;
+
   device_name = grub_file_get_device_name (name);
   if (grub_errno)
     return 0;
