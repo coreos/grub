@@ -86,6 +86,9 @@ enum grub_ieee1275_flag
 
   /* OLPC / XO firmware hangs when accessing USB devices.  */
   GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY,
+
+  /* Open Hack'Ware stops when trying to set colors */
+  GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);

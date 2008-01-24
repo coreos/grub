@@ -1,3 +1,13 @@
+2008-01-24  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/ieee1275/ieee1275.h: Introduce flag for firmwares
+	that hang if GRUB tries to setup colors.
+	* term/ieee1275/ofconsole.c (grub_ofconsole_init): Don't set
+	colors for firmwares that don't support it.
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_set_flag):
+	Recognize Open Hack'Ware, set flags to work around its
+	limitations.
+
 2008-01-24  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/file.c (grub_file_open): Do not account previous failures of

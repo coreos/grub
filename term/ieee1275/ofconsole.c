@@ -333,12 +333,15 @@ grub_ofconsole_init (void)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdin");
 
   /* Initialize colors.  */
-  for (col = 0; col < 7; col++)
-    grub_ieee1275_set_color (stdout_ihandle, col, colors[col].red,
-			     colors[col].green, colors[col].blue);
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS))
+    {
+      for (col = 0; col < 7; col++)
+	grub_ieee1275_set_color (stdout_ihandle, col, colors[col].red,
+				 colors[col].green, colors[col].blue);
 
-  /* Set the right fg and bg colors.  */
-  grub_ofconsole_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+    /* Set the right fg and bg colors.  */
+      grub_ofconsole_setcolorstate (GRUB_TERM_COLOR_NORMAL);
+    }
 
   return 0;
 }
