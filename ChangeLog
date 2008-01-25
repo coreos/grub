@@ -1,5 +1,35 @@
 2008-01-25  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-pc.rmk (grub_setup_SOURCES, grub_emu_SOURCES): Regroup to
+	make all filesystem sources appear together (possibly fixing omissions
+	while at it).
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
+	* conf/i386-pc.rmk (grub_probe_SOURCES): Likewise.  Additionally,
+	add `kern/file.c'.
+	* conf/i386-efi.rmk (grub_probe_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_probe_SOURCES): Likewise.
+	* conf/i386-linuxbios.rmk (grub_probe_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_probe_SOURCES): Likewise.
+
+	* util/grub-probe.c: Include `<grub/file.h>' and `<sys/stat.h>'.
+	(probe): Add a sanity check to make sure of our ability to read
+	requested files when probing for filesystem type.
+
+	* genmk.rb: Update copyright year (2007).
+
+	* include/grub/fs.h (grub_fat_init, grub_fat_fini, grub_ext2_init)
+	(grub_ext2_fini, grub_ufs_init, grub_ufs_fini, grub_minix_init)
+	(grub_minix_fini, grub_hfs_init, grub_hfs_fini, grub_jfs_init)
+	(grub_jfs_fini, grub_xfs_init, grub_xfs_fini, grub_affs_init)
+	(grub_affs_fini, grub_sfs_init, grub_sfs_fini, grub_iso9660_init)
+	: Remove function prototypes.
+
+2008-01-25  Robert Millan  <rmh@aybabtu.com>
+
 	Revert my previous commits (based on wrong assumption of how grub_errno
 	works).
 
