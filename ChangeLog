@@ -1,3 +1,11 @@
+2008-01-25  Robert Millan  <rmh@aybabtu.com>
+
+	Revert my previous commits (based on wrong assumption of how grub_errno
+	works).
+
+	* kern/disk.c (grub_disk_open): Stop reseting grub_errno.
+	* kern/file.c (grub_file_open): Likewise.
+
 2008-01-24  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/ieee1275/ieee1275.h: Introduce flag for firmwares

@@ -217,9 +217,6 @@ grub_disk_open (const char *name)
   char *raw = (char *) name;
   unsigned long current_time;
 
-  /* Do not account previous failures when grub_errno is checked for.  */
-  grub_errno = GRUB_ERR_NONE;
-
   grub_dprintf ("disk", "Opening `%s'...\n", name);
 
   disk = (grub_disk_t) grub_malloc (sizeof (*disk));
