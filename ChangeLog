@@ -1,3 +1,9 @@
+2008-01-26  Bean  <bean123ch@gmail.com>
+
+	* fs/reiserfs.c (grub_fshelp_node): New member next_offset.
+	(grub_reiserfs_get_item): Save offset of the next item.
+	(grub_reiserfs_iterate_dir): Use next_offset to find next item.
+
 2008-01-25  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-pc.rmk (grub_setup_SOURCES, grub_emu_SOURCES): Regroup to

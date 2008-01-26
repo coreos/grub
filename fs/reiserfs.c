@@ -218,6 +218,7 @@ struct grub_fshelp_node
   struct grub_reiserfs_data *data;
   grub_uint32_t block_number; /* 0 if node is not found.  */
   grub_uint16_t block_position;
+  grub_uint64_t next_offset;
   enum grub_reiserfs_item_type type; /* To know how to read the header.  */
   struct grub_reiserfs_item_header header;
 };
@@ -499,6 +500,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
   if (! block_header)
     goto fail;
   
+  item->next_offset = 0;
   do
     {
       grub_disk_read (data->disk,
@@ -542,6 +544,9 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
 #endif
             }
           block_number = grub_le_to_cpu32 (children[i].block_number);
+	  if ((i < item_count) && (key->directory_id == keys[i].directory_id)
+	       && (key->object_id == keys[i].object_id))
+	    item->next_offset = grub_reiserfs_get_key_offset(&(keys[i]));
 #ifdef GRUB_REISERFS_DEBUG
           if (i == item_count
               || grub_reiserfs_compare_keys (key, &(keys[i])) == 0)
@@ -711,6 +716,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
   struct grub_reiserfs_block_header *block_header = 0;
   grub_uint16_t block_size, block_position;
   grub_uint32_t block_number;
+  grub_uint64_t next_offset = item->next_offset;
   int ret = 0;
 
   if (item->type != GRUB_REISERFS_DIRECTORY)
@@ -732,7 +738,6 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
       struct grub_fshelp_node directory_item;
       grub_uint16_t entry_count, entry_number;
       struct grub_reiserfs_item_header *item_headers;
-      grub_uint64_t key_offset;
       
       grub_disk_read (data->disk,
                       (((grub_disk_addr_t) block_number * block_size)
@@ -939,16 +944,18 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                                   the current one.  */
             }
         }
+      
+      if (next_offset == 0)
+        break;
 
-      key_offset
-        = grub_reiserfs_get_key_offset (&(item_headers[block_position].key));
       grub_reiserfs_set_key_offset (&(item_headers[block_position].key),
-                                    key_offset + 1);
+                                    next_offset);
       if (grub_reiserfs_get_item (data, &(item_headers[block_position].key),
                                   &directory_item) != GRUB_ERR_NONE)
         goto fail;
       block_number = directory_item.block_number;
       block_position = directory_item.block_position;
+      next_offset = directory_item.next_offset;
     }
   while (block_number);
 
