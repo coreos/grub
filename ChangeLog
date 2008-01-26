@@ -1,3 +1,8 @@
+2008-01-26  Pavel Roskin  <proski@gnu.org>
+
+	* kern/dl.c (grub_dl_load): Don't abort if prefix is not set,
+	just return an error.
+
 2008-01-26  Bean  <bean123ch@gmail.com>
 
 	* fs/reiserfs.c (grub_fshelp_node): New member next_offset.
