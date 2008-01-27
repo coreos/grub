@@ -238,8 +238,9 @@ grub_probe-grub_probe_init.o: grub_probe_init.c $(grub_probe_init.c_DEPENDENCIES
 
 
 # For grub-emu
-util/grub-emu.c_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
-	grub_emu_init.h
+util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
+normal/execute.c_DEPENDENCIES = grub_script.tab.h
+grub-emu_DEPENDENCIES = grub_script.tab.c
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/search.c commands/terminal.c commands/test.c 		\

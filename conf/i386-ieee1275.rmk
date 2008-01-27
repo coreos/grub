@@ -70,8 +70,9 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	disk/lvm.c disk/raid.c grub_probe_init.c
 
 # For grub-emu.
-util/grub-emu.c_DEPENDENCIES = grub_script.tab.c grub_script.tab.h		\
-	grub_emu_init.h
+util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
+normal/execute.c_DEPENDENCIES = grub_script.tab.h
+grub-emu_DEPENDENCIES = grub_script.tab.c
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/configfile.c commands/echo.c commands/help.c		\
 	commands/terminal.c commands/ls.c commands/test.c 		\
@@ -85,7 +86,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
 	fs/ufs.c fs/xfs.c						\
 	\
-	fs/fshelp.c kern/file.c						\
+	fs/fshelp.c							\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
 	kern/err.c							\
