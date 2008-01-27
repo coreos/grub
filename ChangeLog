@@ -1,3 +1,19 @@
+2008-01-27  Robert Millan  <rmh@aybabtu.com>
+
+	Fix parallel builds with grub-emu.  Based on earlier commit for
+	grub-probe and grub-setup.
+
+	* conf/i386-pc.rmk (grub-emu_DEPENDENCIES): Renamed to ...
+	(util/grub-emu.c_DEPENDENCIES): ... this.
+	* conf/i386-efi.rmk (grub-emu_DEPENDENCIES): Renamed to ...
+	(util/grub-emu.c_DEPENDENCIES): ... this.
+	* conf/i386-linuxbios.rmk (grub-emu_DEPENDENCIES): Renamed to ...
+	(util/grub-emu.c_DEPENDENCIES): ... this.
+	* conf/i386-ieee1275.rmk (grub-emu_DEPENDENCIES): Renamed to ...
+	(util/grub-emu.c_DEPENDENCIES): ... this.
+	* conf/powerpc-ieee1275.rmk (grub-emu_DEPENDENCIES): Renamed to ...
+	(util/grub-emu.c_DEPENDENCIES): ... this.
+
 2008-01-27  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/powerpc/ieee1275/kernel.h: Introduce GRUB_MOD_GAP
