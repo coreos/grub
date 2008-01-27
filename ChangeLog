@@ -1,5 +1,9 @@
 2008-01-27  Robert Millan  <rmh@aybabtu.com>
 
+	* NEWS: Add a few items.
+
+2008-01-27  Robert Millan  <rmh@aybabtu.com>
+
 	Fix parallel builds with grub-emu.  Based on earlier commit for
 	grub-probe and grub-setup.
 
