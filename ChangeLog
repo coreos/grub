@@ -1,5 +1,10 @@
 2008-01-27  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/powerpc/ieee1275/init.c (grub_arch_modules_addr): Skip
+	`GRUB_MOD_GAP' for platforms in which it's not defined.
+
+2008-01-27  Robert Millan  <rmh@aybabtu.com>
+
 	Get grub-emu to build again (including parallel builds).
 
 	* conf/i386-pc.rmk (util/grub-emu.c_DEPENDENCIES): Remove variable.

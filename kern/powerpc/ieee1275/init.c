@@ -242,5 +242,10 @@ grub_get_rtc (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
+/* Only needed for Apple hardware (therefore, powerpc).  */
+#ifndef GRUB_MOD_GAP
+#define GRUB_MOD_GAP 0
+#endif
+
   return ALIGN_UP(_end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
 }
