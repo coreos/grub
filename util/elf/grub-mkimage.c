@@ -217,6 +217,11 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
     {
       grub_addr_t modbase;
 
+/* Only needed for Apple hardware (therefore, powerpc).  */
+#ifndef GRUB_MOD_GAP
+#define GRUB_MOD_GAP 0
+#endif
+
       /* Place modules just after grub segment.  */
       modbase = ALIGN_UP(grub_end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
 
