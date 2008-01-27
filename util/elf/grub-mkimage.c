@@ -218,7 +218,7 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
       grub_addr_t modbase;
 
       /* Place modules just after grub segment.  */
-      modbase = ALIGN_UP(grub_end, GRUB_MOD_ALIGN);
+      modbase = ALIGN_UP(grub_end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
 
       /* Construct new segment header for modules.  */
       phdr = phdrs + grub_target_to_host16 (ehdr.e_phnum);

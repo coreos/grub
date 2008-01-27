@@ -1,3 +1,11 @@
+2008-01-27  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/powerpc/ieee1275/kernel.h: Introduce GRUB_MOD_GAP
+	to create a gap between _end and the modules added to the image
+	with grub-mkrescue.  That fixes "CLAIM failed" on PowerMAC.
+	* kern/powerpc/ieee1275/init.c: Use GRUB_MOD_GAP.
+	* util/elf/grub-mkimage.c (add_segments): Likewise.
+
 2008-01-26  Pavel Roskin  <proski@gnu.org>
 
 	* kern/dl.c (grub_dl_load): Don't abort if prefix is not set,
