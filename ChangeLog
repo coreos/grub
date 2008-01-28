@@ -1,3 +1,10 @@
+2008-01-28  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/linuxbios/kernel.h (GRUB_MOD_GAP): New macro.
+	* kern/powerpc/ieee1275/init.c (grub_arch_modules_addr): Remove
+	`ifndef GRUB_MOD_GAP' hack.
+	* util/elf/grub-mkimage.c (add_segments): Likewise.
+
 2008-01-27  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/powerpc/ieee1275/init.c (grub_arch_modules_addr): Skip

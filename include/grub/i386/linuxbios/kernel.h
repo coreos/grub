@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,5 +22,8 @@
 #include <grub/symbol.h>
 
 #define GRUB_MOD_ALIGN 0x1000
+
+/* Non-zero value is only needed for some IEEE-1275 platforms.  */
+#define GRUB_MOD_GAP 0
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */
