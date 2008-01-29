@@ -1,3 +1,12 @@
+2008-01-29  Bean  <bean123ch@gmail.com>
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Add `png.mod'.
+	(png_mod_SOURCES): New variable.
+	(png_mod_CFLAGS): Likewise.
+	(png_mod_LDFLAGS): Likewise.
+
+	* video/readers/png.c: New file.
+
 2008-01-28  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/linuxbios/kernel.h (GRUB_MOD_GAP): New macro.

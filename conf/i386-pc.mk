@@ -953,7 +953,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod jpeg.mod
+	ata.mod vga.mod memdisk.mod jpeg.mod png.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2565,5 +2565,57 @@ fs-jpeg_mod-video_readers_jpeg.lst: video/readers/jpeg.c genfslist.sh
 
 jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
 jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For png.mod.
+png_mod_SOURCES = video/readers/png.c
+CLEANFILES += png.mod mod-png.o mod-png.c pre-png.o png_mod-video_readers_png.o und-png.lst
+ifneq ($(png_mod_EXPORTS),no)
+CLEANFILES += def-png.lst
+DEFSYMFILES += def-png.lst
+endif
+MOSTLYCLEANFILES += png_mod-video_readers_png.d
+UNDSYMFILES += und-png.lst
+
+png.mod: pre-png.o mod-png.o
+	-rm -f $@
+	$(TARGET_CC) $(png_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-png.o: $(png_mod_DEPENDENCIES) png_mod-video_readers_png.o
+	-rm -f $@
+	$(TARGET_CC) $(png_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ png_mod-video_readers_png.o
+
+mod-png.o: mod-png.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(png_mod_CFLAGS) -c -o $@ $<
+
+mod-png.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'png' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(png_mod_EXPORTS),no)
+def-png.lst: pre-png.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 png/' > $@
+endif
+
+und-png.lst: pre-png.o
+	echo 'png' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+png_mod-video_readers_png.o: video/readers/png.c
+	$(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(png_mod_CFLAGS) -MD -c -o $@ $<
+-include png_mod-video_readers_png.d
+
+CLEANFILES += cmd-png_mod-video_readers_png.lst fs-png_mod-video_readers_png.lst
+COMMANDFILES += cmd-png_mod-video_readers_png.lst
+FSFILES += fs-png_mod-video_readers_png.lst
+
+cmd-png_mod-video_readers_png.lst: video/readers/png.c gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(png_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh png > $@ || (rm -f $@; exit 1)
+
+fs-png_mod-video_readers_png.lst: video/readers/png.c genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo/readers -I$(srcdir)/video/readers $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(png_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh png > $@ || (rm -f $@; exit 1)
+
+
+png_mod_CFLAGS = $(COMMON_CFLAGS)
+png_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk
