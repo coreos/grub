@@ -1,5 +1,11 @@
 2008-01-29  Bean  <bean123ch@gmail.com>
 
+	* boot/i386/pc/lnxboot.S (data_start): Code cleanup.
+	(real_code_2): Code cleanup and change comment style.
+	(move_memory): Avoid using 32-bit address mode.
+
+2008-01-29  Bean  <bean123ch@gmail.com>
+
 	* conf/i386-pc.rmk (pkglib_MODULES): Add `png.mod'.
 	(png_mod_SOURCES): New variable.
 	(png_mod_CFLAGS): Likewise.
