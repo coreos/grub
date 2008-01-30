@@ -1,5 +1,22 @@
 # -*- makefile -*-
 
+# For grub-probe.
+sbin_UTILITIES += grub-probe
+util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
+grub_probe_SOURCES = util/grub-probe.c	\
+	util/biosdisk.c	util/misc.c util/getroot.c		\
+	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
+	kern/parser.c kern/partition.c kern/file.c		\
+	\
+	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
+	fs/hfsplus.c fs/iso9660.c fs/jfs.c fs/minix.c		\
+	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
+	fs/ufs.c fs/xfs.c					\
+	\
+	partmap/pc.c partmap/apple.c partmap/gpt.c 		\
+	kern/fs.c kern/env.c fs/fshelp.c			\
+	disk/lvm.c disk/raid.c grub_probe_init.c
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y

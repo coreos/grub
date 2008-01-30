@@ -38,7 +38,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genke
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
-sbin_UTILITIES = grub-mkdevicemap grub-probe
+sbin_UTILITIES = grub-mkdevicemap
 ifeq ($(enable_grub_emu), yes)
 sbin_UTILITIES += grub-emu
 endif
@@ -51,23 +51,6 @@ grub_mkimage_LDFLAGS = $(LIBLZO)
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
 	util/i386/get_disk_name.c
-
-# For grub-probe.
-util/grub-probe.c_DEPENDENCIES = grub_probe_init.h
-grub_probe_SOURCES = util/grub-probe.c	\
-	util/biosdisk.c	util/misc.c util/getroot.c	\
-	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
-	kern/parser.c kern/partition.c 				\
-	partmap/pc.c partmap/apple.c partmap/gpt.c 		\
-	kern/fs.c kern/file.c					\
-	\
-	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
-	fs/hfsplus.c fs/iso9660.c fs/jfs.c fs/minix.c		\
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/xfs.c					\
-	\
-	kern/env.c fs/fshelp.c 	\
-	disk/lvm.c disk/raid.c grub_probe_init.c
 
 # For grub-emu.
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h

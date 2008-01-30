@@ -1,3 +1,16 @@
+2008-01-30  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk (sbin_UTILITIES): Remove `grub-probe'.
+	(util/grub-probe.c_DEPENDENCIES, grub_probe_SOURCES): Moved from here ...
+	* conf/common.rmk (util/grub-probe.c_DEPENDENCIES)
+	(grub_probe_SOURCES): ... to here.
+
+	* conf/i386-efi.rmk (sbin_UTILITIES): Remove `grub-probe'.
+	(util/grub-probe.c_DEPENDENCIES, grub_probe_SOURCES): Remove.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-linuxbios.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+
 2008-01-30  Tristan Gingold  <gingold@free.fr>
 
 	* kern/rescue.c: Silently accept empty lines.
