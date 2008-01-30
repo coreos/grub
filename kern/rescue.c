@@ -659,6 +659,8 @@ grub_enter_rescue_mode (void)
 
       /* Get a command line.  */
       grub_rescue_get_command_line ("grub rescue> ");
+      if (line[0] == 0)
+	continue;
 
       if (grub_parser_split_cmdline (line, getline, &n, &args) || n < 0)
 	continue;
