@@ -330,6 +330,7 @@ util/i386/pc/misc.c
 util/i386/pc/grub-mkrescue.in
 util/ieee1275/get_disk_name.c
 util/powerpc/ieee1275/grub-install.in
+util/powerpc/ieee1275/grub-mkrescue.in
 util/powerpc/ieee1275/misc.c
 video/bitmap.c
 video/video.c

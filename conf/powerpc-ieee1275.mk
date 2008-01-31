@@ -525,6 +525,7 @@ kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
 
 # Scripts.
 sbin_SCRIPTS = grub-install
+bin_SCRIPTS = grub-mkrescue
 
 # For grub-install.
 grub_install_SOURCES = util/powerpc/ieee1275/grub-install.in
@@ -532,6 +533,15 @@ CLEANFILES += grub-install
 
 grub-install: util/powerpc/ieee1275/grub-install.in config.status
 	./config.status --file=grub-install:util/powerpc/ieee1275/grub-install.in
+	chmod +x $@
+
+
+# For grub-mkrescue.
+grub_mkrescue_SOURCES = util/powerpc/ieee1275/grub-mkrescue.in
+CLEANFILES += grub-mkrescue
+
+grub-mkrescue: util/powerpc/ieee1275/grub-mkrescue.in config.status
+	./config.status --file=grub-mkrescue:util/powerpc/ieee1275/grub-mkrescue.in
 	chmod +x $@
 
 

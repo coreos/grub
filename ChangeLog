@@ -1,3 +1,10 @@
+2008-01-31  Pavel Roskin  <proski@gnu.org>
+
+	* util/powerpc/ieee1275/grub-mkrescue.in: New file.
+	* conf/powerpc-ieee1275.rmk: Add grub-mkrescue support for
+	PowerPC.
+	* DISTLIST: Add util/powerpc/ieee1275/grub-mkrescue.in.
+
 2008-01-30  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-pc.rmk (sbin_UTILITIES): Remove `grub-probe'.
