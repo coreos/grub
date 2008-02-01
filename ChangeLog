@@ -1,5 +1,13 @@
 2008-02-01  Robert Millan  <rmh@aybabtu.com>
 
+	Correct a mistake in previous commit.
+
+	* conf/i386-pc.rmk (normal/execute.c_DEPENDENCIES): Move to the
+	top.
+	(normal/command.c_DEPENDENCIES): New variable.
+
+2008-02-01  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-efi.rmk (normal/execute.c_DEPENDENCIES): Move to the
 	top.
 	(normal/command.c_DEPENDENCIES): New variable.

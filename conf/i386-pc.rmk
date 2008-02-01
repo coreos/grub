@@ -6,6 +6,10 @@ COMMON_ASFLAGS = -nostdinc -fno-builtin -m32
 COMMON_CFLAGS = -fno-builtin -mrtd -mregparm=3 -m32
 COMMON_LDFLAGS = -m32 -nostdlib
 
+# Used by various components.  These rules need to precede them.
+normal/execute.c_DEPENDENCIES = grub_script.tab.h
+normal/command.c_DEPENDENCIES = grub_script.tab.h
+
 # Images.
 pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img
 
