@@ -1,5 +1,20 @@
 2008-02-01  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-efi.rmk (normal/execute.c_DEPENDENCIES): Move to the
+	top.
+	(normal/command.c_DEPENDENCIES): New variable.
+	(grub-emu_DEPENDENCIES, normal_mod_DEPENDENCIES): Remove variables.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-linuxbios.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	(grub_emu_SOURCES): Add `fs/fshelp.c'.
+
+	* genmk.rb: Add `$(#{src}_DEPENDENCIES)' in targets that require it.
+
+2008-02-01  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/disk.c (grub_disk_read, grub_disk_write): Add grub_dprintf()
 	call at beginning of function.
 

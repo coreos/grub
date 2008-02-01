@@ -5,6 +5,10 @@ COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
 COMMON_CFLAGS = -ffreestanding -msoft-float
 COMMON_LDFLAGS += -nostdlib
 
+# Used by various components.  These rules need to precede them.
+normal/execute.c_DEPENDENCIES = grub_script.tab.h
+normal/command.c_DEPENDENCIES = grub_script.tab.h
+
 # Images.
 
 MOSTLYCLEANFILES += kernel_elf_symlist.c kernel_syms.lst
@@ -41,8 +45,6 @@ grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
 
 # For grub-emu
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
-normal/execute.c_DEPENDENCIES = grub_script.tab.h
-grub-emu_DEPENDENCIES = grub_script.tab.c
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/search.c commands/terminal.c commands/test.c 		\
@@ -59,7 +61,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
 	kern/err.c kern/file.c kern/fs.c kern/loader.c kern/main.c	\
 	kern/misc.c kern/parser.c kern/partition.c kern/rescue.c	\
-	kern/term.c							\
+	kern/term.c fs/fshelp.c						\
 	normal/arg.c normal/cmdline.c normal/command.c			\
 	normal/completion.c normal/execute.c		 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c 	\
@@ -118,7 +120,6 @@ linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
-normal_mod_DEPENDENCIES = grub_script.tab.c grub_script.tab.h
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 	normal/completion.c normal/execute.c		 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
