@@ -360,6 +360,8 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 {
   char *tmp_buf;
   unsigned real_offset;
+
+  grub_dprintf ("disk", "Reading `%s'...\n", disk->name);
   
   /* First of all, check if the region is within the disk.  */
   if (grub_disk_check_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
@@ -498,6 +500,8 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 {
   unsigned real_offset;
   
+  grub_dprintf ("disk", "Writing `%s'...\n", disk->name);
+
   if (grub_disk_check_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
     return -1;
 
