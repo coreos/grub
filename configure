@@ -7512,13 +7512,13 @@ echo "${ECHO_T}$grub_cv_i386_check_nested_functions" >&6; }
 if test "x$grub_cv_i386_check_nested_functions" = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
-#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (2)))
+#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (1)))
 _ACEOF
 
 else
 
 cat >>confdefs.h <<\_ACEOF
-#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (2)))
+#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (1)))
 _ACEOF
 
 fi

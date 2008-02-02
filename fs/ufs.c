@@ -52,7 +52,7 @@
                            grub_le_to_cpu##bits2 (data->inode2.field))
 #define INODE_SIZE(data) INODE_ENDIAN (data,size,32,64)
 #define INODE_MODE(data) INODE_ENDIAN (data,mode,16,16)
-#define INODE_BLKSZ(data) (data->ufs_type == UFS1 ? 32 : 64)
+#define INODE_BLKSZ(data) (data->ufs_type == UFS1 ? 4 : 8)
 #define INODE_DIRBLOCKS(data,blk) INODE_ENDIAN \
                                    (data,blocks.dir_blocks[blk],32,64)
 #define INODE_INDIRBLOCKS(data,blk) INODE_ENDIAN \
@@ -205,10 +205,13 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
 {
   struct grub_ufs_sblock *sblock = &data->sblock;
   unsigned int indirsz;
+  int log2_blksz; 
   
   /* Direct.  */
   if (blk < GRUB_UFS_DIRBLKS)
     return INODE_DIRBLOCKS (data, blk);
+  
+  log2_blksz = grub_le_to_cpu32 (data->sblock.log2_blksz);
   
   blk -= GRUB_UFS_DIRBLKS;
   
@@ -216,24 +219,27 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
   /* Single indirect block.  */
   if (blk < indirsz)
     {
-      grub_uint32_t indir[UFS_BLKSZ (sblock)];
-      grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 0),
+      grub_uint32_t indir[UFS_BLKSZ (sblock) >> 2];
+      grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 0) << log2_blksz,
 		      0, sizeof (indir), (char *) indir);
-      return indir[blk];
+      return (data->ufs_type == UFS1) ? indir[blk] : indir[blk << 1];
     }
   blk -= indirsz;
   
   /* Double indirect block.  */
   if (blk < UFS_BLKSZ (sblock) / indirsz)
     {
-      grub_uint32_t indir[UFS_BLKSZ (sblock)];
+      grub_uint32_t indir[UFS_BLKSZ (sblock) >> 2];
       
-      grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 1),
+      grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 1) << log2_blksz,
 		      0, sizeof (indir), (char *) indir);
-      grub_disk_read (data->disk,  indir[blk / indirsz],
+      grub_disk_read (data->disk,
+      		      (data->ufs_type == UFS1) ?
+		      indir[blk / indirsz] : indir [(blk / indirsz) << 1],
 		      0, sizeof (indir), (char *) indir);
       
-      return indir[blk % indirsz];
+      return (data->ufs_type == UFS1) ?
+	     indir[blk % indirsz] : indir[(blk % indirsz) << 1];
     }
 
 

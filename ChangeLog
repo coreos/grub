@@ -1,3 +1,24 @@
+2008-02-02  Bean  <bean123ch@gmail.com>
+
+	* fs/ufs.c (INODE_BLKSZ): Fix incorrect value.
+	(grub_ufs_get_file_block): Fix indirect block calculation problem.
+
+	* fs/xfs.c (grub_xfs_sblock): New member log2_dirblk.
+	(grub_xfs_btree_node): New structure.
+	(grub_xfs_btree_root): New structure.
+	(grub_xfs_inode): New members nblocks, extsize, nextents and btree.
+	(GRUB_XFS_EXTENT_OFFSET): Use exts instead of inode->data.extents.
+	(GRUB_XFS_EXTENT_BLOCK): Likewise.
+	(GRUB_XFS_EXTENT_SIZE): Likewise.
+	(grub_xfs_read_block): Support btree format type.
+	(grub_xfs_iterate_dir): Use NESTED_FUNC_ATTR in call_hook.
+	Use directory block as basic unit.
+
+	* fs/fshelp.c (grub_fshelp_read_file): Bug fix for sparse block.
+
+	* aclocal.m4 (grub_i386_CHECK_REGPARM_BUG): Define NESTED_FUNC_ATTR as
+	__attribute__ ((__regparm__ (1))).
+
 2008-02-01  Robert Millan  <rmh@aybabtu.com>
 
 	Correct a mistake in previous commit.
