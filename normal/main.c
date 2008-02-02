@@ -474,7 +474,7 @@ grub_normal_execute (const char *config, int nested)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  if (menu)
+  if (menu && menu->size)
     {
       grub_menu_run (menu, nested);
       if (nested)

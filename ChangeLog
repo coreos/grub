@@ -1,3 +1,8 @@
+2008-02-02  Robert Millan  <rmh@aybabtu.com>
+
+	* normal/main.c (grub_normal_execute): Check for `menu->size' when
+	determining whether menu has to be displayed.
+
 2008-02-02  Marco Gerards  <marco@gnu.org>
 
 	* bus/pci.c: New file.
