@@ -41,6 +41,7 @@ commands/echo.c
 commands/help.c
 commands/hexdump.c
 commands/ls.c
+commands/read.c
 commands/search.c
 commands/terminal.c
 commands/test.c

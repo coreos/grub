@@ -1,5 +1,13 @@
 2008-02-02  Robert Millan  <rmh@aybabtu.com>
 
+	* commands/read.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add `commands/read.c'.
+	(read_mod_SOURCES): New variable.
+	(read_mod_CFLAGS): Likewise.
+	(read_mod_LDFLAGS): Likewise.
+
+2008-02-02  Robert Millan  <rmh@aybabtu.com>
+
 	* normal/main.c (grub_normal_execute): Check for `menu->size' when
 	determining whether menu has to be displayed.
 

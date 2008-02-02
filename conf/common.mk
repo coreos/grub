@@ -1505,7 +1505,8 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod echo.mod			\
-	terminfo.mod test.mod blocklist.mod hexdump.mod
+	terminfo.mod test.mod blocklist.mod hexdump.mod		\
+	read.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -2461,5 +2462,54 @@ fs-gzio_mod-io_gzio.lst: io/gzio.c $(io/gzio.c_DEPENDENCIES) genfslist.sh
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For read.mod.
+read_mod_SOURCES = commands/read.c
+CLEANFILES += read.mod mod-read.o mod-read.c pre-read.o read_mod-commands_read.o und-read.lst
+ifneq ($(read_mod_EXPORTS),no)
+CLEANFILES += def-read.lst
+DEFSYMFILES += def-read.lst
+endif
+MOSTLYCLEANFILES += read_mod-commands_read.d
+UNDSYMFILES += und-read.lst
+
+read.mod: pre-read.o mod-read.o
+	-rm -f $@
+	$(TARGET_CC) $(read_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-read.o: $(read_mod_DEPENDENCIES) read_mod-commands_read.o
+	-rm -f $@
+	$(TARGET_CC) $(read_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ read_mod-commands_read.o
+
+mod-read.o: mod-read.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -c -o $@ $<
+
+mod-read.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'read' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(read_mod_EXPORTS),no)
+def-read.lst: pre-read.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 read/' > $@
+endif
+
+und-read.lst: pre-read.o
+	echo 'read' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+read_mod-commands_read.o: commands/read.c $(commands/read.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(read_mod_CFLAGS) -MD -c -o $@ $<
+-include read_mod-commands_read.d
+
+CLEANFILES += cmd-read_mod-commands_read.lst fs-read_mod-commands_read.lst
+COMMANDFILES += cmd-read_mod-commands_read.lst
+FSFILES += fs-read_mod-commands_read.lst
+
+cmd-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh read > $@ || (rm -f $@; exit 1)
+
+fs-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh read > $@ || (rm -f $@; exit 1)
 
 
+read_mod_CFLAGS = $(COMMON_CFLAGS)
+read_mod_LDFLAGS = $(COMMON_LDFLAGS)

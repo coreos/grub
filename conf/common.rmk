@@ -231,7 +231,8 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod echo.mod			\
-	terminfo.mod test.mod blocklist.mod hexdump.mod
+	terminfo.mod test.mod blocklist.mod hexdump.mod		\
+	read.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -326,5 +327,7 @@ gzio_mod_SOURCES = io/gzio.c
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-
-
+# For read.mod.
+read_mod_SOURCES = commands/read.c
+read_mod_CFLAGS = $(COMMON_CFLAGS)
+read_mod_LDFLAGS = $(COMMON_LDFLAGS)
