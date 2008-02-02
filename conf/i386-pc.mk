@@ -793,7 +793,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod jpeg.mod png.mod
+	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2456,5 +2456,109 @@ fs-png_mod-video_readers_png.lst: video/readers/png.c $(video/readers/png.c_DEPE
 
 png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For pci.mod
+pci_mod_SOURCES = bus/pci.c
+CLEANFILES += pci.mod mod-pci.o mod-pci.c pre-pci.o pci_mod-bus_pci.o und-pci.lst
+ifneq ($(pci_mod_EXPORTS),no)
+CLEANFILES += def-pci.lst
+DEFSYMFILES += def-pci.lst
+endif
+MOSTLYCLEANFILES += pci_mod-bus_pci.d
+UNDSYMFILES += und-pci.lst
+
+pci.mod: pre-pci.o mod-pci.o
+	-rm -f $@
+	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-pci.o: $(pci_mod_DEPENDENCIES) pci_mod-bus_pci.o
+	-rm -f $@
+	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pci_mod-bus_pci.o
+
+mod-pci.o: mod-pci.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pci_mod_CFLAGS) -c -o $@ $<
+
+mod-pci.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'pci' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(pci_mod_EXPORTS),no)
+def-pci.lst: pre-pci.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 pci/' > $@
+endif
+
+und-pci.lst: pre-pci.o
+	echo 'pci' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+pci_mod-bus_pci.o: bus/pci.c $(bus/pci.c_DEPENDENCIES)
+	$(TARGET_CC) -Ibus -I$(srcdir)/bus $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pci_mod_CFLAGS) -MD -c -o $@ $<
+-include pci_mod-bus_pci.d
+
+CLEANFILES += cmd-pci_mod-bus_pci.lst fs-pci_mod-bus_pci.lst
+COMMANDFILES += cmd-pci_mod-bus_pci.lst
+FSFILES += fs-pci_mod-bus_pci.lst
+
+cmd-pci_mod-bus_pci.lst: bus/pci.c $(bus/pci.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ibus -I$(srcdir)/bus $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pci > $@ || (rm -f $@; exit 1)
+
+fs-pci_mod-bus_pci.lst: bus/pci.c $(bus/pci.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ibus -I$(srcdir)/bus $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh pci > $@ || (rm -f $@; exit 1)
+
+
+pci_mod_CFLAGS = $(COMMON_CFLAGS)
+pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lspci.mod
+lspci_mod_SOURCES = commands/lspci.c
+CLEANFILES += lspci.mod mod-lspci.o mod-lspci.c pre-lspci.o lspci_mod-commands_lspci.o und-lspci.lst
+ifneq ($(lspci_mod_EXPORTS),no)
+CLEANFILES += def-lspci.lst
+DEFSYMFILES += def-lspci.lst
+endif
+MOSTLYCLEANFILES += lspci_mod-commands_lspci.d
+UNDSYMFILES += und-lspci.lst
+
+lspci.mod: pre-lspci.o mod-lspci.o
+	-rm -f $@
+	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-lspci.o: $(lspci_mod_DEPENDENCIES) lspci_mod-commands_lspci.o
+	-rm -f $@
+	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ lspci_mod-commands_lspci.o
+
+mod-lspci.o: mod-lspci.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lspci_mod_CFLAGS) -c -o $@ $<
+
+mod-lspci.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'lspci' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(lspci_mod_EXPORTS),no)
+def-lspci.lst: pre-lspci.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 lspci/' > $@
+endif
+
+und-lspci.lst: pre-lspci.o
+	echo 'lspci' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+lspci_mod-commands_lspci.o: commands/lspci.c $(commands/lspci.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(lspci_mod_CFLAGS) -MD -c -o $@ $<
+-include lspci_mod-commands_lspci.d
+
+CLEANFILES += cmd-lspci_mod-commands_lspci.lst fs-lspci_mod-commands_lspci.lst
+COMMANDFILES += cmd-lspci_mod-commands_lspci.lst
+FSFILES += fs-lspci_mod-commands_lspci.lst
+
+cmd-lspci_mod-commands_lspci.lst: commands/lspci.c $(commands/lspci.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lspci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh lspci > $@ || (rm -f $@; exit 1)
+
+fs-lspci_mod-commands_lspci.lst: commands/lspci.c $(commands/lspci.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lspci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh lspci > $@ || (rm -f $@; exit 1)
+
+
+lspci_mod_CFLAGS = $(COMMON_CFLAGS)
+lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

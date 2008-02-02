@@ -1,3 +1,22 @@
+2008-02-02  Marco Gerards  <marco@gnu.org>
+
+	* bus/pci.c: New file.
+
+	* include/grub/pci.h: Likewise.
+
+	* include/grub/i386/pc/pci.h: Likewise.
+
+	* commands/lspci.c: Likewise.
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Add `pci.mod' and
+	`lspci.mod'.
+	(pci_mod_SOURCES): New variable.
+	(pci_mod_CFLAGS): Likewise.
+	(pci_mod_LDFLAGS): Likewise.
+	(lspci_mod_SOURCES): Likewise.
+	(lspci_mod_CFLAGS): Likewise.
+	(lspci_mod_LDFLAGS): Likewise.	
+
 2008-02-02  Bean  <bean123ch@gmail.com>
 
 	* fs/ufs.c (INODE_BLKSZ): Fix incorrect value.
