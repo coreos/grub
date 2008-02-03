@@ -29,9 +29,11 @@ install-sh
 mkinstalldirs
 stamp-h.in
 boot/i386/pc/boot.S
+boot/i386/pc/cdboot.S
 boot/i386/pc/diskboot.S
 boot/i386/pc/lnxboot.S
 boot/i386/pc/pxeboot.S
+bus/pci.c
 commands/boot.c
 commands/blocklist.c
 commands/cat.c
@@ -41,6 +43,7 @@ commands/echo.c
 commands/help.c
 commands/hexdump.c
 commands/ls.c
+commands/lspci.c
 commands/read.c
 commands/search.c
 commands/terminal.c
@@ -71,6 +74,7 @@ disk/ata.c
 disk/host.c
 disk/loopback.c
 disk/lvm.c
+disk/memdisk.c
 disk/raid.c
 disk/efi/efidisk.c
 disk/i386/pc/biosdisk.c
@@ -128,6 +132,7 @@ include/grub/ntfs.h
 include/grub/parser.h
 include/grub/partition.h
 include/grub/pc_partition.h
+include/grub/pci.h
 include/grub/raid.h
 include/grub/rescue.h
 include/grub/script.h
@@ -176,6 +181,7 @@ include/grub/i386/pc/kernel.h
 include/grub/i386/pc/loader.h
 include/grub/i386/pc/machine.h
 include/grub/i386/pc/memory.h
+include/grub/i386/pc/pci.h
 include/grub/i386/pc/serial.h
 include/grub/i386/pc/time.h
 include/grub/i386/pc/vbe.h
@@ -338,5 +344,7 @@ video/video.c
 video/i386/pc/vbe.c
 video/i386/pc/vbeblit.c
 video/i386/pc/vbefill.c
+video/readers/jpeg.c
 video/readers/tga.c
+video/readers/png.c
 video/i386/pc/vbeutil.c
