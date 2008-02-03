@@ -92,7 +92,7 @@ setup (const char *prefix, const char *dir,
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
-  grub_uint8_t *boot_drive;
+  grub_uint8_t *boot_drive, *root_drive;
   grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
   struct boot_blocklist *first_block, *block;
@@ -181,8 +181,9 @@ setup (const char *prefix, const char *dir,
   boot_img = grub_util_read_image (boot_path);
   free (boot_path);
 
-  /* Set the addresses of BOOT_DRIVE, KERNEL_SECTOR and BOOT_DRIVE_CHECK.  */
+  /* Set the addresses of variables in the boot image.  */
   boot_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_BOOT_DRIVE);
+  root_drive = (grub_uint8_t *) (boot_img + GRUB_BOOT_MACHINE_ROOT_DRIVE);
   kernel_sector = (grub_disk_addr_t *) (boot_img
 				     + GRUB_BOOT_MACHINE_KERNEL_SECTOR);
   boot_drive_check = (grub_uint16_t *) (boot_img
@@ -213,12 +214,9 @@ setup (const char *prefix, const char *dir,
 		    + GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
-  if (!must_embed)
-    {
-      root_dev = grub_device_open (root);
-      if (! root_dev)
-	grub_util_error ("%s", grub_errmsg);
-    }
+  root_dev = grub_device_open (root);
+  if (! root_dev)
+    grub_util_error ("%s", grub_errmsg);
 
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
@@ -319,6 +317,13 @@ setup (const char *prefix, const char *dir,
 	  *boot_drive = 0xff;
 	  *kernel_sector = grub_cpu_to_le64 (1);
 
+          /* If the root device is different from the destination device,
+             it is necessary to embed the root drive explicitly.  */
+          if (root_dev->disk->id != dest_dev->disk->id)
+            *root_drive = (grub_uint8_t) root_dev->disk->id;
+          else
+            *root_drive = 0xFF;
+
 	  /* Write the boot image onto the disk.  */
 	  if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE,
 			       boot_img))
@@ -332,7 +337,7 @@ setup (const char *prefix, const char *dir,
   else
     able_to_embed = 0;
 
-  if (must_embed && !able_to_embed)
+  if (must_embed && ! able_to_embed)
     grub_util_error ("Can't embed the core image, but this is required when\n"
 		     "the root device is on a RAID array or LVM volume.");
   
@@ -455,6 +460,10 @@ setup (const char *prefix, const char *dir,
   else
     *boot_drive = 0xFF;
 
+  /* When the core image is not embedded, the root device always follows
+     the boot device.  */
+  *root_drive = 0xFF;
+
   /* Embed information about the installed location.  */
   if (root_dev->disk->partition)
     {
@@ -510,8 +519,7 @@ setup (const char *prefix, const char *dir,
   free (core_img);
   free (boot_img);
   grub_device_close (dest_dev);
-  if (!must_embed)
-    grub_device_close (root_dev);
+  grub_device_close (root_dev);
 }
 
 static struct option options[] =

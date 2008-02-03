@@ -1,5 +1,17 @@
 2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	Make grub-setup handle a separate root device.
+	
+	* util/i386/pc/grub-setup.c (setup): Always open the root device,
+	so that the root device can be compared with the destination
+	device.
+	When embedding the core image, if the root and destination devices
+	are different, set ROOT_DRIVE to ROOT_DEV->DISK->ID. Otherwise, to
+	0xFF.
+	When not embedding, set ROOT_DRIVE to 0xFF.
+	
+2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	Add support for having a grub directory in a different drive. This
 	is still only the data handling part.
 	
