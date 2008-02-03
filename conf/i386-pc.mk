@@ -11,7 +11,8 @@ normal/execute.c_DEPENDENCIES = grub_script.tab.h
 normal/command.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
-pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img
+pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img \
+		cdboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -84,6 +85,24 @@ lnxboot_img-boot_i386_pc_lnxboot.o: boot/i386/pc/lnxboot.S $(boot/i386/pc/lnxboo
 
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,6000
+
+# For cdboot.img.
+cdboot_img_SOURCES = boot/i386/pc/cdboot.S
+CLEANFILES += cdboot.img cdboot.exec cdboot_img-boot_i386_pc_cdboot.o
+MOSTLYCLEANFILES += cdboot_img-boot_i386_pc_cdboot.d
+
+cdboot.img: cdboot.exec
+	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+
+cdboot.exec: cdboot_img-boot_i386_pc_cdboot.o
+	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(cdboot_img_LDFLAGS)
+
+cdboot_img-boot_i386_pc_cdboot.o: boot/i386/pc/cdboot.S $(boot/i386/pc/cdboot.S_DEPENDENCIES)
+	$(TARGET_CC) -Iboot/i386/pc -I$(srcdir)/boot/i386/pc $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(cdboot_img_ASFLAGS) -MD -c -o $@ $<
+-include cdboot_img-boot_i386_pc_cdboot.d
+
+cdboot_img_ASFLAGS = $(COMMON_ASFLAGS)
+cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \

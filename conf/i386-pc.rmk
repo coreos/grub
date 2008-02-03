@@ -11,7 +11,8 @@ normal/execute.c_DEPENDENCIES = grub_script.tab.h
 normal/command.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
-pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img
+pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img \
+		cdboot.img
 
 # For boot.img.
 boot_img_SOURCES = boot/i386/pc/boot.S
@@ -32,6 +33,11 @@ diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8000
 lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,6000
+
+# For cdboot.img.
+cdboot_img_SOURCES = boot/i386/pc/cdboot.S
+cdboot_img_ASFLAGS = $(COMMON_ASFLAGS)
+cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \

@@ -22,6 +22,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/biosdisk.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/dl.h>
@@ -71,9 +72,13 @@ make_install_device (void)
     }
   else if (grub_install_dos_part != -2)
     {
-      grub_sprintf (dev, "(%cd%u",
-		    (grub_boot_drive & 0x80) ? 'h' : 'f',
-		    grub_boot_drive & 0x7f);
+      if (grub_boot_drive >= GRUB_BIOSDISK_MACHINE_CDROM_START)
+        grub_sprintf (dev, "(cd%u",
+		      grub_boot_drive - GRUB_BIOSDISK_MACHINE_CDROM_START);
+      else
+        grub_sprintf (dev, "(%cd%u",
+		      (grub_boot_drive & 0x80) ? 'h' : 'f',
+		      grub_boot_drive & 0x7f);
       
       if (grub_install_dos_part >= 0)
 	grub_sprintf (dev + grub_strlen (dev), ",%u", grub_install_dos_part + 1);

@@ -1,3 +1,28 @@
+2008-01-31  Bean  <bean123ch@gmail.com>
+
+	* conf/i386-pc.rmk (pkglib_IMAGES): Add cdboot.img.
+	(cdboot_img_SOURCES): New variable.
+	(cdboot_img_ASFLAGS): New variable.
+	(cdboot_img_LDFLAGS): New variable.
+
+	* boot/i386/pc/cdboot.S: New file.
+
+	* disk/i386/pc/biosdisk.c (cd_start): New variable.
+	(cd_count): Likewise.
+	(grub_biosdisk_get_drive): Add support for cd device.
+	(grub_biosdisk_call_hook): Likewise.
+	(grub_biosdisk_iterate): Likewise.
+	(grub_biosdisk_open): Likewise.
+	(GRUB_BIOSDISK_CDROM_RETRY_COUNT): New macro.
+	(grub_biosdisk_rw): Support reading from cd device.
+	(GRUB_MOD_INIT): Iterate cd devices.
+
+	* include/grub/i386/pc/biosdisk.h (GRUB_BIOSDISK_FLAG_CDROM): New macro.
+	(GRUB_BIOSDISK_MACHINE_CDROM_START): Likewise.
+	(GRUB_BIOSDISK_MACHINE_CDROM_END): Likewise.
+
+	* kern/i386/pc/init.c (make_install_device): Check for cd device.
+
 2008-02-02  Robert Millan  <rmh@aybabtu.com>
 
 	* commands/read.c: New file.
