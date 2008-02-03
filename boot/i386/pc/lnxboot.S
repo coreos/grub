@@ -115,7 +115,7 @@ gdt_dst2:
 	.long	0, 0, 0, 0		/* More space for the BIOS.  */
 
 reg_edx:
-	.byte	0x80,0,0xFF,0xFF
+	.byte	0x80, 0xFF, 0xFF, 0xFF
 
 data_leng:
 	.long	0

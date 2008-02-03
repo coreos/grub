@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007 Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2008 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -162,6 +162,7 @@ multiboot_trampoline:
 	movl	%ebx, EXT_C(grub_install_bsd_part)
 2:
 	shrl	$24, %edx
+        movb    $0xFF, %dh
 	/* enter the usual booting */
 	call	prot_to_real
 	.code16
@@ -182,8 +183,9 @@ codestart:
 
 	sti		/* we're safe again */
 
-	/* save boot drive reference */
+	/* save boot and root drive references */
 	ADDR32	movb	%dl, EXT_C(grub_boot_drive)
+	ADDR32	movb	%dh, EXT_C(grub_root_drive)
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
@@ -253,6 +255,9 @@ codestart:
 	.p2align	2	/* force 4-byte alignment */
 
 VARIABLE(grub_boot_drive)
+	.long	0
+
+VARIABLE(grub_root_drive)
 	.long	0
 
 VARIABLE(grub_start_addr)

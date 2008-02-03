@@ -1,3 +1,41 @@
+2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Add support for having a grub directory in a different drive. This
+	is still only the data handling part.
+	
+	* kern/i386/pc/startup.S (multiboot_trampoline): Set %dh to 0xFF.
+	(codestart): Save %dh in GRUB_ROOT_DRIVE.
+	(grub_root_drive): New variable.
+
+	* kern/i386/pc/init.c (make_install_device): Use GRUB_ROOT_DRIVE
+	instead of GRUB_BOOT_DRIVE to construct a device name. Set
+	GRUB_ROOT_DRIVE to GRUB_BOOT_DRIVE if it is 0xFF, otherwise use it
+	as it was.
+
+	* include/grub/i386/pc/kernel.h (grub_root_drive): New prototype.
+
+	* include/grub/i386/pc/boot.h (GRUB_BOOT_MACHINE_ROOT_DRIVE): New
+	macro.
+	(GRUB_BOOT_MACHINE_DRIVE_CHECK): Set to 0x4f.
+
+	* boot/i386/pc/pxeboot.S (_start): Set %dh to 0xFF. For now, this
+	is bogus, because PXE booting does not specify any drive
+	correctly.
+
+	* boot/i386/pc/lnxboot.S (reg_edx): Set the second byte to 0xFF. I
+	am not sure if this is really correct.
+
+	* boot/i386/pc/cdboot.S: Set %dh to 0xFF, because the root drive
+	is always identical to the boot drive when booting from a CD.
+
+	* boot/i386/pc/boot.S (MOV_MEM_TO_AL): Removed. Not needed any
+	longer.
+	(root_drive): New variable.
+	(real_start): Unconditionally set %dh to ROOT_DRIVE.
+	(setup_sectors): Push %dx right after popping it, because %dh will
+	be modified later.
+	(copy_buffer): Restore %dx.
+
 2008-02-03  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-mkrescue.in: Rewrite most of image generation to
