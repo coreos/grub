@@ -1,5 +1,10 @@
 2008-02-03  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-mkrescue.in: Rewrite most of image generation to
+	use `cdboot.img' for cdrom images.
+
+2008-02-03  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/00_header.in: Issue scripting commands for GRUB to
 	only setup gfxterm when `font' command has succeeded.
 
