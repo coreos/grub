@@ -1,3 +1,9 @@
+2008-02-03  Pavel Roskin  <proski@gnu.org>
+
+	* a/kern/i386/pc/startup.S (grub_chainloader_real_boot): Pop
+	%edx and %esi from stack only after grub_gate_a20() is called.
+	grub_gate_a20() clobbers %edx.
+
 2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac (AC_INIT): Bumped to 1.96.

@@ -594,16 +594,16 @@ FUNCTION(grub_chainloader_real_boot)
 
 	call	EXT_C(grub_dl_unload_all)
 
+	/* Turn off Gate A20 */
+	xorl	%eax, %eax
+	call	EXT_C(grub_gate_a20)
+
 	/* set up to pass boot drive */
 	popl	%edx
 
 	/* ESI must point to a partition table entry */
 	popl	%esi
 
-	/* Turn off Gate A20 */
-	xorl	%eax, %eax
-	call	EXT_C(grub_gate_a20)
-	
 	call	prot_to_real
 	.code16
 	ljmp	$0, $GRUB_MEMORY_MACHINE_BOOT_LOADER_ADDR
