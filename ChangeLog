@@ -1,3 +1,9 @@
+2008-02-03  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/multiboot_loader.c [GRUB_MACHINE_LINUXBIOS]
+	(grub_rescue_cmd_multiboot_loader)
+	(grub_rescue_cmd_module_loader): Enable multiboot1 calls.
+
 2008-02-03  Pavel Roskin  <proski@gnu.org>
 
 	* a/kern/i386/pc/startup.S (grub_chainloader_real_boot): Pop

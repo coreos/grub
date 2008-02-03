@@ -114,7 +114,7 @@ grub_rescue_cmd_multiboot_loader (int argc, char *argv[])
 
    /* XXX Find a better way to identify this. 
       This is for i386-pc */
-#ifdef GRUB_MACHINE_PCBIOS
+#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_LINUXBIOS)
   if (header_multi_ver_found == 1)
     {
       grub_dprintf ("multiboot_loader",
@@ -144,7 +144,7 @@ void
 grub_rescue_cmd_module_loader (int argc, char *argv[])
 {
 
-#ifdef GRUB_MACHINE_PCBIOS
+#if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_LINUXBIOS)
   if (module_version_status == 1)
     {
       grub_dprintf("multiboot_loader",
