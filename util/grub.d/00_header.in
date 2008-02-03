@@ -42,15 +42,14 @@ if [ "x${GRUB_DRIVE}" = "x" ] ; then : ; else
   echo "set root=${GRUB_DRIVE}"
 fi
 
-if [ "x${GRUB_FONT_PATH}" = "x" ] ; then : ; else
-  echo "font ${GRUB_FONT_PATH}"
-fi
-
 case ${platform}:${GRUB_TERMINAL} in
   pc:gfxterm) cat << EOF
-set gfxmode=640x480
-insmod gfxterm
-insmod vbe
+if font ${GRUB_FONT_PATH} ; then
+  set gfxmode=640x480
+  insmod gfxterm
+  insmod vbe
+  terminal gfxterm
+fi
 EOF
   ;;
   *:serial)
@@ -59,7 +58,9 @@ EOF
       GRUB_SERIAL_COMMAND=serial
     fi
     echo "${GRUB_SERIAL_COMMAND}"
+    echo "terminal serial"
+  ;;
+  *:*)
+    echo "terminal ${GRUB_TERMINAL}"
   ;;
 esac
-
-echo "terminal ${GRUB_TERMINAL}"

@@ -1,5 +1,10 @@
 2008-02-03  Robert Millan  <rmh@aybabtu.com>
 
+	* util/grub.d/00_header.in: Issue scripting commands for GRUB to
+	only setup gfxterm when `font' command has succeeded.
+
+2008-02-03  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/multiboot_loader.c [GRUB_MACHINE_LINUXBIOS]
 	(grub_rescue_cmd_multiboot_loader)
 	(grub_rescue_cmd_module_loader): Enable multiboot1 calls.
