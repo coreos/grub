@@ -1,3 +1,17 @@
+2008-02-04  Bean  <bean123ch@gmail.com>
+
+	* Makefile.in (enable_grub_fstest): New variable.
+
+	* conf/common.rmk (grub_fstest_init.lst): New rule.
+	(grub_fstest_init.h): Likewise.
+	(grub_fstest_init.c): Likewise.
+	(util/grub-fstest.c_DEPENDENCIES): New variable.
+	(grub_fstest_SOURCES): Likewise.
+
+	* configure.ac (enable_grub_fstest): Check for --enable-grub-fstest.
+
+	* util/grub-fstest.c: New file.
+
 2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make grub-setup handle a separate root device.

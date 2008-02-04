@@ -61,6 +61,19 @@ grub_setup_init.c: grub_setup_init.lst $(filter-out grub_setup_init.c,$(grub_set
 	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
 DISTCLEANFILES += grub_setup_init.c
 
+# For grub-fstest.
+grub_fstest_init.lst: geninit.sh $(filter-out grub_fstest_init.c,$(grub_fstest_SOURCES))
+	rm -f $@; grep GRUB_MOD_INIT $(filter %.c,$^) /dev/null > $@
+DISTCLEANFILES += grub_fstest_init.lst
+
+grub_fstest_init.h: grub_fstest_init.lst $(filter-out grub_fstest_init.c,$(grub_fstest_SOURCES)) geninitheader.sh
+	rm -f $@; sh $(srcdir)/geninitheader.sh $< > $@
+DISTCLEANFILES += grub_fstest_init.h
+
+grub_fstest_init.c: grub_fstest_init.lst $(filter-out grub_fstest_init.c,$(grub_fstest_SOURCES)) geninit.sh grub_fstest_init.h
+	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
+DISTCLEANFILES += grub_fstest_init.c
+
 # For update-grub
 update-grub: util/update-grub.in config.status
 	./config.status --file=$@:$<
@@ -331,3 +344,23 @@ gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 read_mod_SOURCES = commands/read.c
 read_mod_CFLAGS = $(COMMON_CFLAGS)
 read_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+ifeq ($(enable_grub_fstest), yes)
+bin_UTILITIES += grub-fstest
+endif
+
+# For grub-fstest.
+util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
+grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
+	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
+	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
+	io/gzio.c commands/hexdump.c commands/blocklist.c commands/ls.c \
+	\
+	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
+	fs/hfsplus.c fs/iso9660.c fs/jfs.c fs/minix.c			\
+	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
+	fs/ufs.c fs/xfs.c						\
+	\
+	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
+	kern/fs.c kern/env.c fs/fshelp.c disk/lvm.c disk/raid.c	\
+	grub_fstest_init.c

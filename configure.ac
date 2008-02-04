@@ -320,6 +320,11 @@ AC_ARG_ENABLE([grub-emu],
 [fi]
 AC_SUBST([enable_grub_emu])
 
+AC_ARG_ENABLE([grub-fstest],
+	      [AS_HELP_STRING([--enable-grub-fstest],
+                             [build and install the `grub-fstest' debugging utility])])
+AC_SUBST([enable_grub_fstest])
+
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu
 	include/grub/machine:include/grub/$target_cpu/$platform])
