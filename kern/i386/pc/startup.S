@@ -49,6 +49,7 @@
 #include <grub/machine/console.h>
 #include <grub/cpu/linux.h>
 #include <grub/machine/kernel.h>
+#include <grub/term.h>
 #include <multiboot.h>
 #include <multiboot2.h>
 		
@@ -1179,16 +1180,16 @@ FUNCTION(grub_console_real_putchar)
 
 /* this table is used in translate_keycode below */
 translation_table:
-	.word	GRUB_CONSOLE_KEY_LEFT, 2
-	.word	GRUB_CONSOLE_KEY_RIGHT, 6
-	.word	GRUB_CONSOLE_KEY_UP, 16
-	.word	GRUB_CONSOLE_KEY_DOWN, 14
-	.word	GRUB_CONSOLE_KEY_HOME, 1
-	.word	GRUB_CONSOLE_KEY_END, 5
-	.word	GRUB_CONSOLE_KEY_DC, 4
-	.word	GRUB_CONSOLE_KEY_BACKSPACE, 8
-	.word	GRUB_CONSOLE_KEY_PPAGE, 7
-	.word	GRUB_CONSOLE_KEY_NPAGE, 3
+	.word	GRUB_CONSOLE_KEY_LEFT, GRUB_TERM_LEFT
+	.word	GRUB_CONSOLE_KEY_RIGHT, GRUB_TERM_RIGHT
+	.word	GRUB_CONSOLE_KEY_UP, GRUB_TERM_UP
+	.word	GRUB_CONSOLE_KEY_DOWN, GRUB_TERM_DOWN
+	.word	GRUB_CONSOLE_KEY_HOME, GRUB_TERM_HOME
+	.word	GRUB_CONSOLE_KEY_END, GRUB_TERM_END
+	.word	GRUB_CONSOLE_KEY_DC, GRUB_TERM_DC
+	.word	GRUB_CONSOLE_KEY_BACKSPACE, GRUB_TERM_BACKSPACE
+	.word	GRUB_CONSOLE_KEY_PPAGE, GRUB_TERM_PPAGE
+	.word	GRUB_CONSOLE_KEY_NPAGE, GRUB_TERM_NPAGE
 	.word	0
 	
 /*

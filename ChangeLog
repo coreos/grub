@@ -1,3 +1,24 @@
+2008-02-05  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/term.h (GRUB_TERM_LEFT, GRUB_TERM_RIGHT)
+	(GRUB_TERM_UP, GRUB_TERM_DOWN, GRUB_TERM_HOME, GRUB_TERM_END)
+	(GRUB_TERM_DC, GRUB_TERM_PPAGE, GRUB_TERM_NPAGE, GRUB_TERM_ESC)
+	(GRUB_TERM_TAB, GRUB_TERM_BACKSPACE): New macros.
+
+	* kern/i386/pc/startup.S: Include `<grub/term.h>'.
+	(translation_table): Replace hardcoded values with macros
+	provided by `<grub/term.h>'.
+
+	* term/i386/pc/at_keyboard.c: Include `<grub/term.h>'.
+	(keyboard_map): Correct/add a few values, with macros provided
+	by `<grub/term.h>'.
+	(keyboard_map_shift): Zero values that don't differ from their
+	`keyboard_map' equivalents.
+	(grub_console_checkkey): Optimize KEYBOARD_STATUS_CAPS_LOCK toggling.
+	Discard the second scan code that is always sent by Caps lock.
+	Only use `keyboard_map_shift' when it provides a non-zero value,
+	otherwise fallback to `keyboard_map'.
+
 2008-02-04  Bean  <bean123ch@gmail.com>
 
 	* Makefile.in (enable_grub_fstest): New variable.
