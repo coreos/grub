@@ -133,21 +133,23 @@ probe (const char *path)
 
   if (print == PRINT_PARTMAP)
     {
+      char *name;
+      char *underscore;
+      
       if (dev->disk->partition == NULL)
         grub_util_error ("Cannot detect partition map for %s", drive_name);
 
-      if (strcmp (dev->disk->partition->partmap->name, "amiga_partition_map") == 0)
-        printf ("amiga\n");
-      else if (strcmp (dev->disk->partition->partmap->name, "apple_partition_map") == 0)
-        printf ("apple\n");
-      else if (strcmp (dev->disk->partition->partmap->name, "gpt_partition_map") == 0)
-        printf ("gpt\n");
-      else if (strcmp (dev->disk->partition->partmap->name, "pc_partition_map") == 0)
-        printf ("pc\n");
-      else if (strcmp (dev->disk->partition->partmap->name, "sun_partition_map") == 0)
-        printf ("sun\n");
-      else
-        grub_util_error ("Unknown partition map %s", dev->disk->partition->partmap->name);
+      name = strdup (dev->disk->partition->partmap->name);
+      if (! name)
+	grub_util_error ("not enough memory");
+
+      underscore = strchr (name, '_');
+      if (! underscore)
+	grub_util_error ("Invalid partition map %s", name);
+
+      *underscore = '\0';
+      printf ("%s\n", name);
+      free (name);
       goto end;
     }
 

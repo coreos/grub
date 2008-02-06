@@ -1,3 +1,9 @@
+2008-02-06  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub-probe.c (probe): Simplify partmap probing (with the
+	assumption that the first word up to the underscore equals to
+	the module name).
+
 2008-02-06  Christian Franke  <franke@computer.org>
 
 	* fs/cpio.c (grub_cpio_find_file): Return GRUB_ERR_NONE
