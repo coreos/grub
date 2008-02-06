@@ -96,6 +96,7 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr *) buffer;
   Elf32_Phdr *phdr;
+  grub_addr_t physical_entry_addr = 0;
   int i;
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASS32)
@@ -144,9 +145,16 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
           if (phdr->p_filesz < phdr->p_memsz)
             grub_memset ((char *) phdr->p_paddr + phdr->p_filesz, 0,
 			 phdr->p_memsz - phdr->p_filesz);
+
+          if ((entry >= phdr->p_vaddr) &&
+	      (entry < phdr->p_vaddr + phdr->p_memsz))
+	    physical_entry_addr = entry + phdr->p_paddr - phdr->p_vaddr;
         }
     }
-  
+
+  if (physical_entry_addr)
+    entry = physical_entry_addr;
+
   return grub_errno;
 }
 
@@ -164,6 +172,7 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
 {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
   Elf64_Phdr *phdr;
+  grub_addr_t physical_entry_addr = 0;
   int i;
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASS64)
@@ -226,9 +235,16 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
 			  + phdr->p_filesz),
 			 0,
 			 phdr->p_memsz - phdr->p_filesz);
+
+	  if ((entry >= phdr->p_vaddr) &&
+	      (entry < phdr->p_vaddr + phdr->p_memsz))
+	    physical_entry_addr = entry + phdr->p_paddr - phdr->p_vaddr;
         }
     }
-  
+
+  if (physical_entry_addr)
+    entry = physical_entry_addr;
+
   return grub_errno;
 }
 
@@ -305,6 +321,8 @@ grub_multiboot (int argc, char *argv[])
   mbi = grub_malloc (sizeof (struct grub_multiboot_info));
   if (! mbi)
     goto fail;
+
+  grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
 
   mbi->flags = MULTIBOOT_INFO_MEMORY;
 

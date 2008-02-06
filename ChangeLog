@@ -1,3 +1,16 @@
+2008-02-05  Bean  <bean123ch@gmail.com>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Get physical
+	address of entry.
+	(grub_multiboot_load_elf64): Likewise.
+	(grub_multiboot): Initialize mbi structure.
+
+	* util/grub-fstest.c: Don't include unused header file script.h.
+
+	* conf/common.rmk (grub-fstest.c_DEPENDENCIES): Move to the begginning
+	of file.
+	(grub_fstest_SOURCES): Likewise.
+
 2008-02-05  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/term.h (GRUB_TERM_LEFT, GRUB_TERM_RIGHT)

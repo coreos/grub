@@ -17,6 +17,26 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/lvm.c disk/raid.c grub_probe_init.c
 
+ifeq ($(enable_grub_fstest), yes)
+bin_UTILITIES += grub-fstest
+endif
+
+# For grub-fstest.
+util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
+grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
+	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
+	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
+	io/gzio.c commands/hexdump.c commands/blocklist.c commands/ls.c \
+	\
+	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
+	fs/hfsplus.c fs/iso9660.c fs/jfs.c fs/minix.c			\
+	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
+	fs/ufs.c fs/xfs.c						\
+	\
+	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
+	kern/fs.c kern/env.c fs/fshelp.c disk/lvm.c disk/raid.c	\
+	grub_fstest_init.c
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y
@@ -344,23 +364,3 @@ gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 read_mod_SOURCES = commands/read.c
 read_mod_CFLAGS = $(COMMON_CFLAGS)
 read_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-ifeq ($(enable_grub_fstest), yes)
-bin_UTILITIES += grub-fstest
-endif
-
-# For grub-fstest.
-util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
-grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
-	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
-	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
-	io/gzio.c commands/hexdump.c commands/blocklist.c commands/ls.c \
-	\
-	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
-	fs/hfsplus.c fs/iso9660.c fs/jfs.c fs/minix.c			\
-	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/xfs.c						\
-	\
-	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
-	kern/fs.c kern/env.c fs/fshelp.c disk/lvm.c disk/raid.c	\
-	grub_fstest_init.c

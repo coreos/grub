@@ -29,7 +29,6 @@
 #include <grub/term.h>
 #include <grub/mm.h>
 #include <grub/normal.h>
-#include <grub/script.h>
 #include <grub/hexdump.h>
 
 #include <grub_fstest_init.h>
