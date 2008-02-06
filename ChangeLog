@@ -1,3 +1,15 @@
+2008-02-06  Christian Franke  <franke@computer.org>
+
+	* fs/cpio.c (grub_cpio_find_file): Return GRUB_ERR_NONE
+	(and set *ofs = 0) instead of GRUB_ERR_FILE_NOT_FOUND on
+	last block of a cpio or tar stream.
+	Check for "TRAILER!!!" instead of any empty data
+	block to detect last block of a cpio stream.
+	(grub_cpio_dir): Fix constness of variable np.
+	(grub_cpio_open): Return GRUB_ERR_FILE_NOT_FOUND if
+	cpio or tar trailer is detected.  This fixes a crash
+	on open of a non existing file.
+
 2008-02-05  Bean  <bean123ch@gmail.com>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Get physical
