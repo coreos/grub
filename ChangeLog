@@ -1,3 +1,9 @@
+2008-02-07  Christian Franke  <franke@computer.org>
+
+	* util/hostfs.c (grub_hostfs_open): Use fseeko and ftello
+	instead of fseek and ftell to support large files.
+	(grub_hostfs_read): Likewise.
+
 2008-02-07  Robert Millan  <rmh@aybabtu.com>
 
 	Patch from Jeroen Dekkers.
