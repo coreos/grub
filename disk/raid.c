@@ -343,7 +343,10 @@ grub_raid_scan_device (const char *name)
   err = grub_disk_read (disk, sector, 0, GRUB_RAID_SB_BYTES, (char *) &sb);
   grub_disk_close (disk);
   if (err)
-    return 0;
+    {
+      grub_errno = GRUB_ERR_NONE;
+      return 0;
+    }
 
   /* Look whether there is a RAID superblock. */
   if (sb.md_magic != GRUB_RAID_SB_MAGIC)

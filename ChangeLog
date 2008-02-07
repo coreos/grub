@@ -1,3 +1,10 @@
+2008-02-07  Robert Millan  <rmh@aybabtu.com>
+
+	Patch from Jeroen Dekkers.
+	* disk/raid.c (grub_raid_scan_device): Reset `grub_errno' on disk
+	failure, since succesfuly reading all array members might not be
+	required.
+
 2008-02-06  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub-probe.c (probe): Simplify partmap probing (with the
