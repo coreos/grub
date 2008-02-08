@@ -150,7 +150,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	  {
 	    grub_uint32_t i;
 
-	    err = grub_disk_read (array->device[disknr].disk, read_sector, 0,
+	    err = grub_disk_read (array->device[disknr], read_sector, 0,
 				  read_size << GRUB_DISK_SECTOR_BITS, buf);
 	    if (err)
 	      break;
@@ -193,9 +193,9 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	
 	for (i = 0; i < array->total_devs; i++)
 	  {
-	    if (array->device[i].disk)
+	    if (array->device[i])
 	      {
-		err = grub_disk_read (array->device[i].disk, sector, 0,
+		err = grub_disk_read (array->device[i], sector, 0,
 				      size << GRUB_DISK_SECTOR_BITS, buf);
 
 		if (!err)
@@ -238,8 +238,8 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	  {
 	    grub_uint32_t i;
 
-	    if (array->device[disknr].disk)
-	      err = grub_disk_read (array->device[disknr].disk, read_sector, 0,
+	    if (array->device[disknr])
+	      err = grub_disk_read (array->device[disknr], read_sector, 0,
 				    read_size << GRUB_DISK_SECTOR_BITS, buf);
 
 	    /* If an error occurs when we already have an degraded
@@ -247,7 +247,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	    if (err && ((array->total_devs - 1) == array->nr_devs))
 	      break;
 	    
-	    if (err || ! array->device[disknr].disk)
+	    if (err || ! array->device[disknr])
 	      {
 		/* Either an error occured or the disk is not
 		   available.  We have to compute this block from the
@@ -264,7 +264,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 
 		    if (j != (unsigned int) disknr)
 		      {
-			err = grub_disk_read (array->device[j].disk, read_sector,
+			err = grub_disk_read (array->device[j], read_sector,
 					      0, buf_size, buf2);
 			if (err)
 			  return err;
@@ -419,7 +419,7 @@ grub_raid_scan_device (const char *name)
 	  return 0;
 	}
   
-      if (array->device[sb.this_disk.number].name != 0)
+      if (array->device[sb.this_disk.number]->name != 0)
 	{
 	  /* We found multiple devices with the same number. Again,
 	     this shouldn't happen.*/
@@ -502,14 +502,10 @@ grub_raid_scan_device (const char *name)
     }
 
   /* Add the device to the array. */
-  array->device[sb.this_disk.number].name = grub_strdup (name);
-  array->device[sb.this_disk.number].disk = grub_disk_open (name);
+  array->device[sb.this_disk.number] = grub_disk_open (name);
   
-  if (! array->device[sb.this_disk.number].name
-      || ! array->device[sb.this_disk.number].disk)
+  if (! array->device[sb.this_disk.number])
     {
-      grub_free (array->device[sb.this_disk.number].name);
-
       /* Remove array from the list if we have just added it. */
       if (array->nr_devs == 0)
 	{
