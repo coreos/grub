@@ -1,3 +1,10 @@
+2008-02-08  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/raid.c (grub_raid_open, grub_raid_scan_device): Add a few
+	grub_dprintf() calls.
+	* kern/disk.c (grub_disk_read): Include grub_errmsg in out of range
+	error message.
+
 2008-02-07  Christian Franke  <franke@computer.org>
 
 	* util/hostfs.c (grub_hostfs_open): Use fseeko and ftello

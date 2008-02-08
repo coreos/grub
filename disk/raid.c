@@ -86,6 +86,8 @@ grub_raid_open (const char *name, grub_disk_t disk)
   disk->id = array->number;
   disk->data = array;
 
+  grub_dprintf ("raid", "%s: total_devs=%d, disk_size=%d\n", name, array->total_devs, array->disk_size);
+
   switch (array->level)
     {
     case 0:
@@ -101,6 +103,8 @@ grub_raid_open (const char *name, grub_disk_t disk)
       disk->total_sectors = (array->total_devs - 1) * array->disk_size;
       break;
     }
+
+  grub_dprintf ("raid", "%s: level=%d, total_sectors=%d\n", name, array->level, disk->total_sectors);
   
   return 0;
 }
@@ -332,6 +336,8 @@ grub_raid_scan_device (const char *name)
   struct grub_raid_super_09 sb;
   struct grub_raid_array *p, *array = NULL;
 
+  grub_dprintf ("raid", "Scanning for RAID devices\n");
+
   disk = grub_disk_open (name);
   if (!disk)
     return 0;
@@ -487,6 +493,8 @@ grub_raid_scan_device (const char *name)
 	}
 
       grub_sprintf (array->name, "md%d", array->number);
+
+      grub_dprintf ("raid", "Found array: %s\n", array->name);
 
       /* Add our new array to the list.  */
       array->next = array_list;
