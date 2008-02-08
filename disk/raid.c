@@ -419,7 +419,7 @@ grub_raid_scan_device (const char *name)
 	  return 0;
 	}
   
-      if (array->device[sb.this_disk.number]->name != 0)
+      if (array->device[sb.this_disk.number] != NULL)
 	{
 	  /* We found multiple devices with the same number. Again,
 	     this shouldn't happen.*/

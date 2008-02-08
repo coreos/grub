@@ -1,5 +1,12 @@
 2008-02-08  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/raid.c (grub_raid_scan_device): Check for
+	`array->device[sb.this_disk.number]' rather than for
+	`array->device[sb.this_disk.number]->name', since the latter is not
+	garanteed to be accessible.
+
+2008-02-08  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/raid.c: Update copyright.
 	* fs/cpio.c: Likewise.
 	* include/grub/raid.h: Likewise.
