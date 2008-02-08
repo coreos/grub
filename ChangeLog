@@ -1,5 +1,13 @@
 2008-02-08  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/raid.c: Update copyright.
+	* fs/cpio.c: Likewise.
+	* include/grub/raid.h: Likewise.
+	* loader/i386/pc/multiboot.c: Likewise.
+	* util/hostfs.c: Likewise.
+
+2008-02-08  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/raid.h (struct grub_raid_array): Change type of `device'
 	to a grub_disk_t array.
 	* disk/raid.c (grub_raid_read): Replace `device[x].disk' accesses with
