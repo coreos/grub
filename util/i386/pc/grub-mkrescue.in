@@ -49,7 +49,7 @@ Make GRUB rescue image.
 
 grub-mkimage generates a bootable rescue image of the specified type.
 
-Report bugs to <grub-devel@gnu.org>.
+Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 

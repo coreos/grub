@@ -45,9 +45,6 @@ force_lba=
 recheck=no
 debug=no
 
-# for make_system_path_relative_to_its_root()
-. ${libdir}/grub/update-grub_lib
-
 # Usage: usage
 # Print the usage.
 usage () {
@@ -119,6 +116,9 @@ for option in "$@"; do
 	install_device="${option}" ;;
     esac
 done
+
+# for make_system_path_relative_to_its_root()
+. ${libdir}/grub/update-grub_lib
 
 if test "x$install_device" = x; then
     echo "install_device not specified." 1>&2

@@ -31,6 +31,41 @@ platform=@platform@
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 
+# Usage: usage
+# Print the usage.
+usage () {
+    cat <<EOF
+Usage: $0 [OPTION]
+Generate /boot/grub/grub.cfg
+
+  -h, --help              print this message and exit
+  -v, --version           print the version information and exit
+  -y                      ignored for compatibility
+
+Report bugs to <bug-grub@gnu.org>.
+EOF
+}
+
+# Check the arguments.
+for option in "$@"; do
+    case "$option" in
+    -h | --help)
+	usage
+	exit 0 ;;
+    -v | --version)
+	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
+	exit 0 ;;
+    -y)
+        echo "$0: warning: Ignoring -y option (no longer needed)." >&2
+        ;;
+    -*)
+	echo "Unrecognized option \`$option'" 1>&2
+	usage
+	exit 1
+	;;
+    esac
+done
+
 # for convert_system_path_to_grub_path(), font_path()
 . ${libdir}/grub/update-grub_lib
 
@@ -41,10 +76,6 @@ fi
 if [ "$UID" != 0 ] ; then
   echo "$0: You must run this as root" >&2
   exit 1
-fi
-
-if [ "$1" = "-y" ] ; then
-  echo "$0: warning: Ignoring -y option (no longer needed)." >&2
 fi
 
 set $grub_mkdevicemap dummy

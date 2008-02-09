@@ -115,8 +115,9 @@ AC_PROG_INSTALL
 AC_PROG_AWK
 AC_PROG_MAKE_SET
 
-# This is not a "must".
+# These are not a "must".
 AC_PATH_PROG(RUBY, ruby)
+AC_PATH_PROG(HELP2MAN, help2man)
 
 #
 # Checks for host programs.

@@ -674,6 +674,7 @@ INSTALL_DATA
 AWK
 SET_MAKE
 RUBY
+HELP2MAN
 CC
 CFLAGS
 LDFLAGS
@@ -2237,7 +2238,7 @@ echo "${ECHO_T}no" >&6; }
 fi
 
 
-# This is not a "must".
+# These are not a "must".
 # Extract the first word of "ruby", so it can be a program name with args.
 set dummy ruby; ac_word=$2
 { echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -2272,6 +2273,46 @@ RUBY=$ac_cv_path_RUBY
 if test -n "$RUBY"; then
   { echo "$as_me:$LINENO: result: $RUBY" >&5
 echo "${ECHO_T}$RUBY" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+# Extract the first word of "help2man", so it can be a program name with args.
+set dummy help2man; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_path_HELP2MAN+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $HELP2MAN in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_HELP2MAN="$HELP2MAN" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_HELP2MAN="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+HELP2MAN=$ac_cv_path_HELP2MAN
+if test -n "$HELP2MAN"; then
+  { echo "$as_me:$LINENO: result: $HELP2MAN" >&5
+echo "${ECHO_T}$HELP2MAN" >&6; }
 else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
@@ -8844,6 +8885,7 @@ INSTALL_DATA!$INSTALL_DATA$ac_delim
 AWK!$AWK$ac_delim
 SET_MAKE!$SET_MAKE$ac_delim
 RUBY!$RUBY$ac_delim
+HELP2MAN!$HELP2MAN$ac_delim
 CC!$CC$ac_delim
 CFLAGS!$CFLAGS$ac_delim
 LDFLAGS!$LDFLAGS$ac_delim
@@ -8870,7 +8912,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 83; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

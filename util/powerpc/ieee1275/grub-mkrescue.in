@@ -48,7 +48,7 @@ Make GRUB rescue image.
 
 grub-mkimage generates a bootable rescue CD image for PowerMac and CHRP.
 
-Report bugs to <grub-devel@gnu.org>.
+Report bugs to <bug-grub@gnu.org>.
 EOF
 }
 

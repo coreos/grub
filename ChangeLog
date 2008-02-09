@@ -1,4 +1,24 @@
-2008-02-08  Christian Franke  <franke@computer.org>
+2008-02-09  Robert Millan  <rmh@aybabtu.com>
+
+	* configure.ac: Probe for `help2man'.
+	* Makefile.in (builddir): New variable.
+	(HELP2MAN): Likewise.  Set to `true' when @HELP2MAN@ doesn't provide it,
+	or otherwise add a few flags/options to it.
+	(install-local): For every executable utility or script that is
+	installed, invoke $(HELP2MAN) to install a manpage based on --help
+	output.
+
+	* util/i386/pc/grub-install.in: Move down `update-grub_lib' sourcing, so
+	that it doesn't prevent --help from working in build tree.
+
+	* util/i386/pc/grub-mkrescue.in (usage): Replace `grub-devel@gnu.org'
+	with `bug-grub@gnu.org'.
+	* util/powerpc/ieee1275/grub-mkrescue.in (usage): Likewise.
+	* util/update-grub.in (usage): New function.
+	Implement proper argument check, with support for --help and --version
+	(as well as existing -y).
+
+2008-02-09  Christian Franke  <franke@computer.org>
 
 	* commands/cat.c (grub_cmd_cat): Print '\r' as hex to
 	avoid overwriting previous output.
