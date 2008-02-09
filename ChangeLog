@@ -1,5 +1,11 @@
 2008-02-09  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/raid.c (grub_raid_scan_device): Add a pair of sanity checks for
+	situations in which we can deduce the RAID size and the superblock
+	doesn't match it.
+
+2008-02-09  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/lvm.c [GRUB_UTIL] (grub_lvm_memberlist): New function.  Construct
 	and return a grub_diskmemberlist_t composed of LVM physical volumes.
 	[GRUB_UTIL] (grub_lvm_dev): Add `memberlist' member.

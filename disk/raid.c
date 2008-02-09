@@ -523,6 +523,27 @@ grub_raid_scan_device (const char *name)
 
   /* Add the device to the array. */
   array->device[sb.this_disk.number] = grub_disk_open (name);
+
+  if (array->disk_size != array->device[sb.this_disk.number]->total_sectors)
+    {
+      if (array->total_devs == 1)
+	{
+	  grub_dprintf ("raid", "Array contains only one disk, but its size (0x%llx) "
+			"doesn't match with size indicated by superblock (0x%llx).  "
+			"Assuming superblock is wrong.\n",
+			array->device[sb.this_disk.number]->total_sectors, array->disk_size);
+	  array->disk_size = array->device[sb.this_disk.number]->total_sectors;
+	}
+      else if (array->level == 1)
+	{
+	  grub_dprintf ("raid", "Array is RAID level 1, but the size of disk %d (0x%llx) "
+			"doesn't match with size indicated by superblock (0x%llx).  "
+			"Assuming superblock is wrong.\n",
+			sb.this_disk.number,
+			array->device[sb.this_disk.number]->total_sectors, array->disk_size);
+	  array->disk_size = array->device[sb.this_disk.number]->total_sectors;
+	}
+    }
   
   if (! array->device[sb.this_disk.number])
     {
