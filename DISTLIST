@@ -46,6 +46,7 @@ commands/ls.c
 commands/lspci.c
 commands/read.c
 commands/search.c
+commands/sleep.c
 commands/terminal.c
 commands/test.c
 commands/videotest.c

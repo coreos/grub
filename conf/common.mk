@@ -1709,7 +1709,7 @@ pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod configfile.mod echo.mod			\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod
+	read.mod sleep.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -2716,3 +2716,55 @@ fs-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) g
 
 read_mod_CFLAGS = $(COMMON_CFLAGS)
 read_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For sleep.mod.
+sleep_mod_SOURCES = commands/sleep.c
+CLEANFILES += sleep.mod mod-sleep.o mod-sleep.c pre-sleep.o sleep_mod-commands_sleep.o und-sleep.lst
+ifneq ($(sleep_mod_EXPORTS),no)
+CLEANFILES += def-sleep.lst
+DEFSYMFILES += def-sleep.lst
+endif
+MOSTLYCLEANFILES += sleep_mod-commands_sleep.d
+UNDSYMFILES += und-sleep.lst
+
+sleep.mod: pre-sleep.o mod-sleep.o
+	-rm -f $@
+	$(TARGET_CC) $(sleep_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-sleep.o: $(sleep_mod_DEPENDENCIES) sleep_mod-commands_sleep.o
+	-rm -f $@
+	$(TARGET_CC) $(sleep_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ sleep_mod-commands_sleep.o
+
+mod-sleep.o: mod-sleep.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -c -o $@ $<
+
+mod-sleep.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'sleep' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(sleep_mod_EXPORTS),no)
+def-sleep.lst: pre-sleep.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 sleep/' > $@
+endif
+
+und-sleep.lst: pre-sleep.o
+	echo 'sleep' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+sleep_mod-commands_sleep.o: commands/sleep.c $(commands/sleep.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -MD -c -o $@ $<
+-include sleep_mod-commands_sleep.d
+
+CLEANFILES += cmd-sleep_mod-commands_sleep.lst fs-sleep_mod-commands_sleep.lst
+COMMANDFILES += cmd-sleep_mod-commands_sleep.lst
+FSFILES += fs-sleep_mod-commands_sleep.lst
+
+cmd-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sleep > $@ || (rm -f $@; exit 1)
+
+fs-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sleep > $@ || (rm -f $@; exit 1)
+
+
+sleep_mod_CFLAGS = $(COMMON_CFLAGS)
+sleep_mod_LDFLAGS = $(COMMON_LDFLAGS)

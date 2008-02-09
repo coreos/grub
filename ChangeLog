@@ -1,5 +1,13 @@
 2008-02-09  Robert Millan  <rmh@aybabtu.com>
 
+	* commands/sleep.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add `commands/sleep.c'.
+	(sleep_mod_SOURCES): New variable.
+	(sleep_mod_CFLAGS): Likewise.
+	(sleep_mod_LDFLAGS): Likewise.
+
+2008-02-09  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/raid.c (grub_raid_scan_device): Add a pair of sanity checks for
 	situations in which we can deduce the RAID size and the superblock
 	doesn't match it.
