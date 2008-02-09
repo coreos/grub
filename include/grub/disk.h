@@ -40,6 +40,9 @@ enum grub_disk_dev_id
   };
 
 struct grub_disk;
+#ifdef GRUB_UTIL
+struct grub_disk_memberlist;
+#endif
 
 /* Disk device.  */
 struct grub_disk_dev
@@ -66,6 +69,10 @@ struct grub_disk_dev
   /* Write SIZE sectors from BUF into the sector SECTOR of the disk DISK.  */
   grub_err_t (*write) (struct grub_disk *disk, grub_disk_addr_t sector,
 		       grub_size_t size, const char *buf);
+
+#ifdef GRUB_UTIL
+  struct grub_disk_memberlist *(*memberlist) (struct grub_disk *disk);
+#endif
 
   /* The next disk device.  */
   struct grub_disk_dev *next;
@@ -104,6 +111,15 @@ struct grub_disk
   void *data;
 };
 typedef struct grub_disk *grub_disk_t;
+
+#ifdef GRUB_UTIL
+struct grub_disk_memberlist
+{
+  grub_disk_t disk;
+  struct grub_disk_memberlist *next;
+};
+typedef struct grub_disk_memberlist *grub_disk_memberlist_t;
+#endif
 
 /* The sector size.  */
 #define GRUB_DISK_SECTOR_SIZE	0x200

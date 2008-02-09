@@ -75,6 +75,31 @@ grub_refresh (void)
 }
 
 static void
+probe_partmap (grub_disk_t disk)
+{
+  char *name;
+  char *underscore;
+  
+  if (disk->partition == NULL)
+    {
+      grub_util_info ("No partition map found for %s", disk->name);
+      return;
+    }
+  
+  name = strdup (disk->partition->partmap->name);
+  if (! name)
+    grub_util_error ("Not enough memory");
+  
+  underscore = strchr (name, '_');
+  if (! underscore)
+    grub_util_error ("Invalid partition map %s", name);
+  
+  *underscore = '\0';
+  printf ("%s\n", name);
+  free (name);
+}
+
+static void
 probe (const char *path)
 {
   char *device_name;
@@ -133,23 +158,21 @@ probe (const char *path)
 
   if (print == PRINT_PARTMAP)
     {
-      char *name;
-      char *underscore;
-      
-      if (dev->disk->partition == NULL)
-        grub_util_error ("Cannot detect partition map for %s", drive_name);
+      grub_disk_memberlist_t list = NULL, tmp;
 
-      name = strdup (dev->disk->partition->partmap->name);
-      if (! name)
-	grub_util_error ("not enough memory");
+      /* Check if dev->disk itself is contained in a partmap.  */
+      probe_partmap (dev->disk);
 
-      underscore = strchr (name, '_');
-      if (! underscore)
-	grub_util_error ("Invalid partition map %s", name);
-
-      *underscore = '\0';
-      printf ("%s\n", name);
-      free (name);
+      /* In case of LVM/RAID, check the member devices as well.  */
+      if (dev->disk->dev->memberlist)
+	list = dev->disk->dev->memberlist (dev->disk);
+      while (list)
+	{
+	  probe_partmap (list->disk);
+	  tmp = list->next;
+	  free (list);
+	  list = tmp;
+	}
       goto end;
     }
 

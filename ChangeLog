@@ -1,5 +1,28 @@
 2008-02-09  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/lvm.c [GRUB_UTIL] (grub_lvm_memberlist): New function.  Construct
+	and return a grub_diskmemberlist_t composed of LVM physical volumes.
+	[GRUB_UTIL] (grub_lvm_dev): Add `memberlist' member.
+
+	* disk/raid.c [GRUB_UTIL] (grub_raid_memberlist): New function.  Construct
+	and return a grub_diskmemberlist_t composed of physical array members.
+	[GRUB_UTIL] (grub_raid_dev): Add `memberlist' member.
+
+	* include/grub/disk.h [GRUB_UTIL] (grub_disk_memberlist): New struct
+	prototype.
+	[GRUB_UTIL] (struct grub_disk_dev): Add `memberlist' function pointer.
+	[GRUB_UTIL] (struct grub_disk_memberlist): New struct declaration.
+	[GRUB_UTIL] (grub_disk_memberlist_t): New typedef.
+
+	* util/grub-probe.c (probe): Move partmap probing code from here ...
+	(probe_partmap): ... to here.
+	(probe): Use probe_partmap() once for the disk we're probing, and
+	additionally, when such disk contains a memberlist() struct member,
+	once for each disk that is contained in the structure returned by
+	memberlist().
+
+2008-02-09  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub-probe.c (main): When `verbosity > 1', set `debug'
 	environment variable to 'all' in order to obtain debug output from
 	non-util/ code.

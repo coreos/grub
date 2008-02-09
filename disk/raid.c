@@ -67,6 +67,26 @@ grub_raid_iterate (int (*hook) (const char *name))
   return 0;
 }
 
+#ifdef GRUB_UTIL
+static grub_disk_memberlist_t
+grub_raid_memberlist (grub_disk_t disk)
+{
+  struct grub_raid_array *array = disk->data;
+  grub_disk_memberlist_t list = NULL, tmp;
+  int i;
+  
+  for (i = 0; i < array->total_devs; i++)
+    {
+      tmp = grub_malloc (sizeof (*tmp));
+      tmp->disk = array->device[i];
+      tmp->next = list;
+      list = tmp;
+    }
+  
+  return list;
+}
+#endif
+
 static grub_err_t
 grub_raid_open (const char *name, grub_disk_t disk)
 {
@@ -531,6 +551,9 @@ static struct grub_disk_dev grub_raid_dev =
     .close = grub_raid_close,
     .read = grub_raid_read,
     .write = grub_raid_write,
+#ifdef GRUB_UTIL
+    .memberlist = grub_raid_memberlist,
+#endif
     .next = 0
   };
 
