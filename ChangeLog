@@ -1,3 +1,10 @@
+2008-02-09  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub-probe.c (main): When `verbosity > 1', set `debug'
+	environment variable to 'all' in order to obtain debug output from
+	non-util/ code.
+	* util/i386/pc/grub-setup.c (main): Likewise.
+
 2008-02-08  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/raid.c (grub_raid_scan_device): Check for

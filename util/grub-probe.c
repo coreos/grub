@@ -295,6 +295,9 @@ main (int argc, char *argv[])
 	  }
     }
 
+  if (verbosity > 1)
+    grub_env_set ("debug", "all");
+
   /* Obtain PATH.  */
   if (optind >= argc)
     {
