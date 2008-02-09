@@ -151,7 +151,7 @@ grub_rescue_cmd_cat (int argc, char *argv[])
 	{
 	  unsigned char c = buf[i];
 
-	  if (grub_isprint (c) || grub_isspace (c))
+	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
 	    grub_putchar (c);
 	  else
 	    {

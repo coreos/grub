@@ -50,7 +50,7 @@ grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
 	{
 	  unsigned char c = buf[i];
 	  
-	  if (grub_isprint (c) || grub_isspace (c))
+	  if ((grub_isprint (c) || grub_isspace (c)) && c != '\r')
 	    grub_putchar (c);
 	  else
 	    {

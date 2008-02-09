@@ -1,3 +1,9 @@
+2008-02-08  Christian Franke  <franke@computer.org>
+
+	* commands/cat.c (grub_cmd_cat): Print '\r' as hex to
+	avoid overwriting previous output.
+	* kern/rescue.c (grub_rescue_cmd_cat): Likewise.
+
 2008-02-09  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/menu.c (run_menu): If timeout is set to zero, don't bother
