@@ -1,5 +1,10 @@
 2008-02-09  Robert Millan  <rmh@aybabtu.com>
 
+	* normal/menu.c (run_menu): If timeout is set to zero, don't bother
+	drawing the menu.
+
+2008-02-09  Robert Millan  <rmh@aybabtu.com>
+
 	* commands/sleep.c: New file.
 	* conf/common.rmk (pkglib_MODULES): Add `commands/sleep.c'.
 	(sleep_mod_SOURCES): New variable.

@@ -339,6 +339,10 @@ run_menu (grub_menu_t menu, int nested)
   if (default_entry < 0 || default_entry >= menu->size)
     default_entry = 0;
 
+  /* If timeout is 0, drawing is pointless (and ugly).  */
+  if (get_timeout () == 0)
+    return default_entry;
+
   offset = default_entry;
   if (offset > GRUB_TERM_NUM_ENTRIES - 1)
     {
