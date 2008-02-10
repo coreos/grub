@@ -91,7 +91,10 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
 	fs/ufs.c fs/xfs.c					\
 	\
 	partmap/pc.c partmap/gpt.c				\
-	util/raid.c util/lvm.c grub_setup_init.c
+	\
+	disk/raid.c disk/lvm.c					\
+	util/raid.c util/lvm.c					\
+	grub_setup_init.c
 
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
@@ -105,7 +108,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
 	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
 	commands/i386/cpuid.c						\
-	disk/host.c disk/loopback.c	disk/raid.c disk/lvm.c		\
+	disk/host.c disk/loopback.c					\
 	fs/fshelp.c 	\
 	\
 	io/gzio.c							\
@@ -126,8 +129,11 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	fs/ufs.c fs/xfs.c						\
 	\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
-	util/biosdisk.c util/getroot.c			\
-	util/i386/pc/misc.c grub_emu_init.c
+	util/biosdisk.c util/getroot.c					\
+	util/i386/pc/misc.c						\
+	\
+	disk/raid.c disk/lvm.c						\
+	grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 

@@ -1,5 +1,17 @@
 2008-02-10  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Add `disk/raid.c' and
+	`disk/lvm.c'.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Likewise.
+
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Move `disk/raid.c' and
+	`disk/lvm.c' to the end of the list.
+	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
+
+2008-02-10  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/main.c (grub_load_normal_mode): Do not reset `grub_errno'.  Call
 	grub_print_error() instead.  This will let user know why we're entering
 	rescue mode.
