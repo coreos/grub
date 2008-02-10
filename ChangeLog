@@ -1,3 +1,8 @@
+2008-02-10  Alexandre Boeglin  <alex@boeglin.org>
+
+	* normal/arg.c (grub_arg_parse): If one of the args is "--", call add_arg()
+	on remaining N args, instead of "--" arg N times.
+
 2008-02-09  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* font/manager.c (unknown_glyph): Added variable for unknown glyph.
