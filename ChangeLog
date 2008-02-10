@@ -1,3 +1,9 @@
+2008-02-09  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* font/manager.c (unknown_glyph): Added variable for unknown glyph.
+	(fill_with_default_glyph): Changed to use unknown_glyph for fill
+	pattern for unknown glyphs.
+
 2008-02-09  Robert Millan  <rmh@aybabtu.com>
 
 	* configure.ac: Probe for `help2man'.
