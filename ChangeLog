@@ -1,3 +1,10 @@
+2008-02-10  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/main.c (grub_load_normal_mode): Do not reset `grub_errno'.  Call
+	grub_print_error() instead.  This will let user know why we're entering
+	rescue mode.
+	Based on suggestions from Sam Morris.
+
 2008-02-10  Alexandre Boeglin  <alex@boeglin.org>
 
 	* normal/arg.c (grub_arg_parse): If one of the args is "--", call add_arg()
