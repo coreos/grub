@@ -1,3 +1,9 @@
+2008-02-11  Robert Millan  <rmh@aybabtu.com>
+
+	* util/biosdisk.c (grub_util_biosdisk_open, linux_find_partition)
+	(grub_util_biosdisk_get_grub_dev): Check open() exit status by
+	comparing it with -1, not 0.
+
 2008-02-10  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-efi.rmk (grub_emu_SOURCES): Add `disk/raid.c' and
