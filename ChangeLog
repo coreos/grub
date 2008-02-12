@@ -1,3 +1,44 @@
+2008-02-12  Alexandre Boeglin  <alex@boeglin.org>
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Replace commands/i386/pc/halt.c and
+	reboot.c by commands/halt.c and reboot.c.
+	(grub_install_SOURCES): Add halt.mod and reboot.mod.
+	(halt_mod_SOURCES): New variable.
+	(halt_mod_CFLAGS): Likewise.
+	(halt_mod_LDFLAGS): Likewise.
+	(reboot_mod_SOURCES): Likewise.
+	(reboot_mod_CFLAGS): Likewise.
+	(reboot_mod_LDFLAGS): Likewise.
+
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Replace commands/ieee1275/halt.c
+	and reboot.c by commands/halt.c and reboot.c.
+	(halt_mod_SOURCES): Likewise.
+	(reboot_mod_SOURCES): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Replace commands/i386/pc/reboot.c by
+	commands/reboot.c.
+	(reboot_mod_SOURCES): Likewise.
+
+	* commands/i386/pc/reboot.c: merge this file ...
+
+	* commands/ieee1275/reboot.c: ... and this file ...
+
+	* commands/reboot.c: ... to this file.
+	Add some precompiler directive to include the correct header for each
+	machine.
+
+	* commands/ieee1275/halt.c: move this file ...
+
+	* commands/halt.c: ... to here.
+	Add some precompiler directive to include the correct header for each
+	machine.
+
+	* include/grub/efi/efi.h (grub_reboot): New function declaration.
+	(grub_halt): Likewise.
+
+	* kern/efi/efi.c (grub_reboot): New function.
+	(grub_halt): Likewise.
+
 2008-02-12  Robert Millan  <rmh@aybabtu.com>
 
 	* util/getroot.c (grub_guess_root_device): Inspect /dev/evms before

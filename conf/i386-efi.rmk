@@ -37,7 +37,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/hexdump.c				\
-	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	commands/halt.c commands/reboot.c				\
 	commands/i386/cpuid.c						\
 	disk/loopback.c							\
 	\
@@ -75,7 +75,7 @@ grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
 pkglib_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
-	_linux.mod linux.mod cpuid.mod
+	_linux.mod linux.mod cpuid.mod halt.mod reboot.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -137,5 +137,15 @@ linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 cpuid_mod_SOURCES = commands/i386/cpuid.c
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
 cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For halt.mod.
+halt_mod_SOURCES = commands/halt.c
+halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+reboot_mod_SOURCES = commands/reboot.c
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

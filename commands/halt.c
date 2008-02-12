@@ -1,7 +1,7 @@
-/* reboot.c - command to reboot the computer.  */
+/* halt.c - command to halt the computer.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,27 +19,33 @@
 
 #include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/misc.h>
+#include <grub/machine/machine.h>
+
+#if defined(GRUB_MACHINE_IEEE1275)
 #include <grub/machine/kernel.h>
+#elif defined(GRUB_MACHINE_EFI)
+#include <grub/efi/efi.h>
+#endif
 
 static grub_err_t
-grub_cmd_reboot (struct grub_arg_list *state __attribute__ ((unused)),
-		 int argc __attribute__ ((unused)),
-		 char **args __attribute__ ((unused)))
+grub_cmd_halt (struct grub_arg_list *state __attribute__ ((unused)),
+	       int argc __attribute__ ((unused)),
+	       char **args __attribute__ ((unused)))
 {
-  grub_reboot ();
+  grub_halt ();
   return 0;
 }
 
 
-GRUB_MOD_INIT(ieee1275_reboot)
+GRUB_MOD_INIT(halt)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("reboot", grub_cmd_reboot, GRUB_COMMAND_FLAG_BOTH,
-			 "reboot", "Reboot the computer", 0);
+  grub_register_command ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
+			 "halt", "halts the computer.  This command does not"
+			 " work on all firmware.", 0);
 }
 
-GRUB_MOD_FINI(ieee1275_reboot)
+GRUB_MOD_FINI(halt)
 {
-  grub_unregister_command ("reboot");
+  grub_unregister_command ("halt");
 }

@@ -106,7 +106,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/configfile.c commands/echo.c commands/help.c		\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
-	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	commands/i386/pc/halt.c commands/reboot.c			\
 	commands/i386/cpuid.c						\
 	disk/host.c disk/loopback.c					\
 	fs/fshelp.c 	\
@@ -191,7 +191,7 @@ normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
-reboot_mod_SOURCES = commands/i386/pc/reboot.c
+reboot_mod_SOURCES = commands/reboot.c
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
