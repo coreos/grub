@@ -1,3 +1,10 @@
+2008-02-12  Robert Millan  <rmh@aybabtu.com>
+
+	* util/getroot.c (grub_guess_root_device): Inspect /dev/evms before
+	/dev (like it is done for /dev/mapper).  This doesn't provide support
+	for EVMS, but at least it is now easy to identify the problem when it
+	arises.
+
 2008-02-11  Robert Millan  <rmh@aybabtu.com>
 
 	* util/biosdisk.c (grub_util_biosdisk_open, linux_find_partition)

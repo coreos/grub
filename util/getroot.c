@@ -228,9 +228,14 @@ grub_guess_root_device (const char *dir)
 #ifdef __linux__
   /* We first try to find the device in the /dev/mapper directory.  If
      we don't do this, we get useless device names like /dev/dm-0 for
-     LVM. */
+     LVM.  */
   os_dev = find_root_device ("/dev/mapper", st.st_dev);
-  if (!os_dev)
+
+  /* The same applies to /dev/evms directory (for EVMS volumes).  */
+  if (! os_dev)
+    os_dev = find_root_device ("/dev/evms", st.st_dev);
+
+  if (! os_dev)
 #endif
     {
       /* This might be truly slow, but is there any better way?  */
