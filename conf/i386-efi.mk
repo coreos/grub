@@ -73,7 +73,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/hexdump.c				\
-	commands/i386/pc/halt.c commands/i386/pc/reboot.c		\
+	commands/halt.c commands/reboot.c				\
 	commands/i386/cpuid.c						\
 	disk/loopback.c							\
 	\
@@ -117,7 +117,7 @@ grub-install: util/i386/efi/grub-install.in $(util/i386/efi/grub-install.in_DEPE
 
 # Modules.
 pkglib_MODULES = kernel.mod normal.mod _chain.mod chain.mod \
-	_linux.mod linux.mod cpuid.mod
+	_linux.mod linux.mod cpuid.mod halt.mod reboot.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -1063,5 +1063,109 @@ fs-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpui
 
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
 cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For halt.mod.
+halt_mod_SOURCES = commands/halt.c
+CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_halt.o und-halt.lst
+ifneq ($(halt_mod_EXPORTS),no)
+CLEANFILES += def-halt.lst
+DEFSYMFILES += def-halt.lst
+endif
+MOSTLYCLEANFILES += halt_mod-commands_halt.d
+UNDSYMFILES += und-halt.lst
+
+halt.mod: pre-halt.o mod-halt.o
+	-rm -f $@
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_halt.o
+	-rm -f $@
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ halt_mod-commands_halt.o
+
+mod-halt.o: mod-halt.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
+
+mod-halt.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(halt_mod_EXPORTS),no)
+def-halt.lst: pre-halt.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 halt/' > $@
+endif
+
+und-halt.lst: pre-halt.o
+	echo 'halt' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+halt_mod-commands_halt.o: commands/halt.c $(commands/halt.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
+-include halt_mod-commands_halt.d
+
+CLEANFILES += cmd-halt_mod-commands_halt.lst fs-halt_mod-commands_halt.lst
+COMMANDFILES += cmd-halt_mod-commands_halt.lst
+FSFILES += fs-halt_mod-commands_halt.lst
+
+cmd-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
+
+fs-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh halt > $@ || (rm -f $@; exit 1)
+
+
+halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+reboot_mod_SOURCES = commands/reboot.c
+CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_reboot.o und-reboot.lst
+ifneq ($(reboot_mod_EXPORTS),no)
+CLEANFILES += def-reboot.lst
+DEFSYMFILES += def-reboot.lst
+endif
+MOSTLYCLEANFILES += reboot_mod-commands_reboot.d
+UNDSYMFILES += und-reboot.lst
+
+reboot.mod: pre-reboot.o mod-reboot.o
+	-rm -f $@
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o
+	-rm -f $@
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ reboot_mod-commands_reboot.o
+
+mod-reboot.o: mod-reboot.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
+
+mod-reboot.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(reboot_mod_EXPORTS),no)
+def-reboot.lst: pre-reboot.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 reboot/' > $@
+endif
+
+und-reboot.lst: pre-reboot.o
+	echo 'reboot' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+reboot_mod-commands_reboot.o: commands/reboot.c $(commands/reboot.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
+-include reboot_mod-commands_reboot.d
+
+CLEANFILES += cmd-reboot_mod-commands_reboot.lst fs-reboot_mod-commands_reboot.lst
+COMMANDFILES += cmd-reboot_mod-commands_reboot.lst
+FSFILES += fs-reboot_mod-commands_reboot.lst
+
+cmd-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
+
+fs-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reboot > $@ || (rm -f $@; exit 1)
+
+
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

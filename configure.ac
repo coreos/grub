@@ -254,11 +254,11 @@ fi
 
 # Smashing stack protector.
 grub_CHECK_STACK_PROTECTOR
-[# Need that, because some distributions ship compilers that include
+# Need that, because some distributions ship compilers that include
 # `-fstack-protector' in the default specs.
-if [ x"$ssp_possible" = xyes ]; then
-  TARGET_CFLAGS=$TARGET_CFLAGS\ -fno-stack-protector
-fi]
+if test "x$ssp_possible" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-stack-protector"
+fi
 
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
