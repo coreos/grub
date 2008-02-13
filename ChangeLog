@@ -1,3 +1,9 @@
+2008-02-13  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Remove
+	`commands/i386/pc/halt.c' and `commands/i386/pc/reboot.c'.
+	* kern/i386/linuxbios/init.c (grub_halt, grub_reboot): Remove stubs.
+
 2008-02-13  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* configure.ac: Only a cosmetic change on the handling of

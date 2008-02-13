@@ -73,20 +73,6 @@ grub_exit (void)
 }
 
 void
-grub_reboot (void)
-{
-  grub_printf ("grub_reboot() is not implemented.\n");
-  grub_stop ();
-}
-
-void
-grub_halt (int no_apm __attribute__ ((unused)))
-{
-  grub_printf ("grub_halt() is not implemented.\n");
-  grub_stop ();
-}
-
-void
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
 {
