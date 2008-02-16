@@ -1,3 +1,9 @@
+2008-02-16  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-setup.c (setup): In find_first_partition_start(),
+	do not assume partition map is PC/MSDOS before performing checks that
+	are specific to that layout.
+
 2008-02-13  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-linuxbios.rmk (grub_emu_SOURCES): Remove

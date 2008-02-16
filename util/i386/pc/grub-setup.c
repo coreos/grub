@@ -120,13 +120,21 @@ setup (const char *prefix, const char *dir,
   int find_first_partition_start (grub_disk_t disk __attribute__ ((unused)),
 				  const grub_partition_t p)
     {
-      struct grub_pc_partition *pcdata = p->data;
+      if (! strcmp (p->partmap->name, "pc_partition_map"))
+	{
+	  struct grub_pc_partition *pcdata = p->data;
+	  
+	  if (! grub_pc_partition_is_empty (pcdata->dos_type)
+	      && ! grub_pc_partition_is_bsd (pcdata->dos_type)
+	      && first_start > p->start)
+	    first_start = p->start;
+	}
+      else
+	{
+	  if (first_start > p->start)
+	    first_start = p->start;
+	}
 
-      if (! grub_pc_partition_is_empty (pcdata->dos_type)
-	  && ! grub_pc_partition_is_bsd (pcdata->dos_type)
-	  && first_start > p->start)
-	first_start = p->start;
-      
       return 0;
     }
   
