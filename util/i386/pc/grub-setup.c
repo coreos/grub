@@ -130,10 +130,9 @@ setup (const char *prefix, const char *dir,
 	    first_start = p->start;
 	}
       else
-	{
-	  if (first_start > p->start)
-	    first_start = p->start;
-	}
+	/* In other partition maps, the region after MBR and before first
+	   partition is not reserved (on GPT, it contains the primary header).  */
+	first_start = 0;
 
       return 0;
     }

@@ -1,3 +1,8 @@
+2008-02-17  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-setup.c (setup): In find_first_partition_start(),
+	set `first_start' to 0 for non-PC/MSDOS partition maps.
+
 2008-02-16  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (setup): In find_first_partition_start(),
