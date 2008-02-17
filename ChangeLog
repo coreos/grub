@@ -1,3 +1,7 @@
+2008-02-17  Christian Franke  <franke@computer.org>
+
+	* commands/cat.c (grub_cmd_cat): Add break on GRUB_TERM_ESC key.
+
 2008-02-17  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (setup): In find_first_partition_start(),

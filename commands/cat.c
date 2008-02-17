@@ -59,6 +59,12 @@ grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
 	      grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
 	    }
 	}
+
+      if (GRUB_TERM_ASCII_CHAR (grub_checkkey ()) == GRUB_TERM_ESC)
+	{
+	  grub_getkey ();
+	  break;
+	}
     }
 
   grub_putchar ('\n');
