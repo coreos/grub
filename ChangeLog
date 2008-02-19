@@ -1,5 +1,37 @@
 2008-02-19  Robert Millan  <rmh@aybabtu.com>
 
+	* partmap/gpt.c: Include `<grub/gpt_partition.h>'.
+	(grub_gpt_partition_type_empty): Redefine with macro from
+	`<grub/gpt_partition.h>'.
+	(gpt_partition_map_iterate): Adjust partition type comparison.
+
+	Export `entry' as partmap-specific `part.data' struct.
+	(grub_gpt_header, grub_gpt_partentry): Move from here ...
+
+	* include/grub/gpt_partition.h (grub_gpt_header)
+	(grub_gpt_partentry): ... to here (new file).
+
+	* util/i386/pc/grub-setup.c: Include `<grub/gpt_partition.h>'.
+
+	(grub_gpt_partition_type_bios_boot): New const variable, defined
+	with macro from `<grub/gpt_partition.h>'.
+
+	(setup): Replace `first_start' with `embed_region', which keeps
+	track of the embed region (and is partmap-agnostic).
+
+	Replace find_first_partition_start() with find_usable_region(),
+	which finds a usable region for embedding using partmap-specific
+	knowledge (supports PC/MSDOS and GPT).
+
+	Fix all assumptions that the embed region start at sector 1, using
+	`embed_region.start' from now on.  Similarly, use `embed_region.end'
+	rather than `first_start' to calculate available size.
+
+	In grub_util_info() message, replace "into after the MBR" with an
+	indication of the specific sector our embed region starts at.
+
+2008-02-19  Robert Millan  <rmh@aybabtu.com>
+
 	* DISTLIST: Replace `commands/ieee1275/halt.c' and
 	`commands/ieee1275/reboot.c' with `commands/halt.c' and
 	`commands/reboot.c'.

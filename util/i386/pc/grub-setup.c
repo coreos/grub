@@ -1,7 +1,7 @@
 /* grub-setup.c - make GRUB usable */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/pc_partition.h>
+#include <grub/gpt_partition.h>
 #include <grub/env.h>
 #include <grub/util/biosdisk.h>
 #include <grub/machine/boot.h>
@@ -33,6 +34,8 @@
 #include <grub/term.h>
 #include <grub/util/raid.h>
 #include <grub/util/lvm.h>
+
+static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
 
 #include <grub_setup_init.h>
 
@@ -106,7 +109,8 @@ setup (const char *prefix, const char *dir,
   grub_uint16_t last_length = GRUB_DISK_SECTOR_SIZE;
   grub_file_t file;
   FILE *fp;
-  unsigned long first_start = ~0UL;
+  struct { grub_uint64_t start; grub_uint64_t end; } embed_region;
+  embed_region.start = embed_region.end = ~0UL;
   int able_to_embed = 1;
   
   auto void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector, unsigned offset,
@@ -114,25 +118,37 @@ setup (const char *prefix, const char *dir,
   auto void NESTED_FUNC_ATTR save_blocklists (grub_disk_addr_t sector, unsigned offset,
 			     unsigned length);
 
-  auto int find_first_partition_start (grub_disk_t disk,
-				       const grub_partition_t p);
-  
-  int find_first_partition_start (grub_disk_t disk __attribute__ ((unused)),
-				  const grub_partition_t p)
+  auto int find_usable_region (grub_disk_t disk,
+			       const grub_partition_t p);
+  int find_usable_region (grub_disk_t disk __attribute__ ((unused)),
+			  const grub_partition_t p)
     {
       if (! strcmp (p->partmap->name, "pc_partition_map"))
 	{
 	  struct grub_pc_partition *pcdata = p->data;
 	  
+	  /* There's always an embed region, and it starts right after the MBR.  */
+	  embed_region.start = 1;
+	  
+	  /* For its end offset, include as many dummy partitions as we can.  */
 	  if (! grub_pc_partition_is_empty (pcdata->dos_type)
 	      && ! grub_pc_partition_is_bsd (pcdata->dos_type)
-	      && first_start > p->start)
-	    first_start = p->start;
+	      && embed_region.end > p->start)
+	    embed_region.end = p->start;
 	}
       else
-	/* In other partition maps, the region after MBR and before first
-	   partition is not reserved (on GPT, it contains the primary header).  */
-	first_start = 0;
+	{
+	  struct grub_gpt_partentry *gptdata = p->data;
+	  
+	  /* If there's an embed region, it is in a dedicated partition.  */
+	  if (! memcmp (&gptdata->type, &grub_gpt_partition_type_bios_boot, 16))
+	    {
+	      embed_region.start = p->start;
+	      embed_region.end = p->start + p->len;
+	      
+	      return 1;
+	    }
+	}
 
       return 0;
     }
@@ -262,15 +278,15 @@ setup (const char *prefix, const char *dir,
      try to embed the core image into after the MBR.  */
   if (dest_dev->disk->has_partitions && ! dest_dev->disk->partition)
     {
-      grub_partition_iterate (dest_dev->disk, find_first_partition_start);
+      grub_partition_iterate (dest_dev->disk, find_usable_region);
 
       /* If there is enough space...  */
-      if ((unsigned long) core_sectors + 1 <= first_start)
+      if ((unsigned long) core_sectors <= embed_region.end - embed_region.start)
 	{
-	  grub_util_info ("will embed the core image into after the MBR");
-	  
+	  grub_util_info ("will embed the core image at sector 0x%llx", embed_region.start);
+
 	  /* The first blocklist contains the whole sectors.  */
-	  first_block->start = grub_cpu_to_le64 (2);
+	  first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
 	  first_block->len = grub_cpu_to_le16 (core_sectors - 1);
 	  first_block->segment
 	    = grub_cpu_to_le16 (GRUB_BOOT_MACHINE_KERNEL_SEG
@@ -316,13 +332,13 @@ setup (const char *prefix, const char *dir,
 	  strcpy (install_prefix, prefix);
 	  
 	  /* Write the core image onto the disk.  */
-	  if (grub_disk_write (dest_dev->disk, 1, 0, core_size, core_img))
+	  if (grub_disk_write (dest_dev->disk, embed_region.start, 0, core_size, core_img))
 	    grub_util_error ("%s", grub_errmsg);
 
 	  /* The boot image and the core image are on the same drive,
 	     so there is no need to specify the boot drive explicitly.  */
 	  *boot_drive = 0xff;
-	  *kernel_sector = grub_cpu_to_le64 (1);
+	  *kernel_sector = grub_cpu_to_le64 (embed_region.start);
 
           /* If the root device is different from the destination device,
              it is necessary to embed the root drive explicitly.  */
