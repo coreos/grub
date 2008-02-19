@@ -826,7 +826,8 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod
+	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod \
+	aout.mod _bsd.mod bsd.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2593,5 +2594,161 @@ fs-lspci_mod-commands_lspci.lst: commands/lspci.c $(commands/lspci.c_DEPENDENCIE
 
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For aout.mod
+aout_mod_SOURCES = loader/aout.c
+CLEANFILES += aout.mod mod-aout.o mod-aout.c pre-aout.o aout_mod-loader_aout.o und-aout.lst
+ifneq ($(aout_mod_EXPORTS),no)
+CLEANFILES += def-aout.lst
+DEFSYMFILES += def-aout.lst
+endif
+MOSTLYCLEANFILES += aout_mod-loader_aout.d
+UNDSYMFILES += und-aout.lst
+
+aout.mod: pre-aout.o mod-aout.o
+	-rm -f $@
+	$(TARGET_CC) $(aout_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-aout.o: $(aout_mod_DEPENDENCIES) aout_mod-loader_aout.o
+	-rm -f $@
+	$(TARGET_CC) $(aout_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ aout_mod-loader_aout.o
+
+mod-aout.o: mod-aout.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -c -o $@ $<
+
+mod-aout.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'aout' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(aout_mod_EXPORTS),no)
+def-aout.lst: pre-aout.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 aout/' > $@
+endif
+
+und-aout.lst: pre-aout.o
+	echo 'aout' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+aout_mod-loader_aout.o: loader/aout.c $(loader/aout.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -MD -c -o $@ $<
+-include aout_mod-loader_aout.d
+
+CLEANFILES += cmd-aout_mod-loader_aout.lst fs-aout_mod-loader_aout.lst
+COMMANDFILES += cmd-aout_mod-loader_aout.lst
+FSFILES += fs-aout_mod-loader_aout.lst
+
+cmd-aout_mod-loader_aout.lst: loader/aout.c $(loader/aout.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh aout > $@ || (rm -f $@; exit 1)
+
+fs-aout_mod-loader_aout.lst: loader/aout.c $(loader/aout.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh aout > $@ || (rm -f $@; exit 1)
+
+
+aout_mod_CFLAGS = $(COMMON_CFLAGS)
+aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _bsd.mod
+_bsd_mod_SOURCES = loader/i386/bsd.c
+CLEANFILES += _bsd.mod mod-_bsd.o mod-_bsd.c pre-_bsd.o _bsd_mod-loader_i386_bsd.o und-_bsd.lst
+ifneq ($(_bsd_mod_EXPORTS),no)
+CLEANFILES += def-_bsd.lst
+DEFSYMFILES += def-_bsd.lst
+endif
+MOSTLYCLEANFILES += _bsd_mod-loader_i386_bsd.d
+UNDSYMFILES += und-_bsd.lst
+
+_bsd.mod: pre-_bsd.o mod-_bsd.o
+	-rm -f $@
+	$(TARGET_CC) $(_bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-_bsd.o: $(_bsd_mod_DEPENDENCIES) _bsd_mod-loader_i386_bsd.o
+	-rm -f $@
+	$(TARGET_CC) $(_bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _bsd_mod-loader_i386_bsd.o
+
+mod-_bsd.o: mod-_bsd.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_bsd_mod_CFLAGS) -c -o $@ $<
+
+mod-_bsd.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_bsd' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(_bsd_mod_EXPORTS),no)
+def-_bsd.lst: pre-_bsd.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _bsd/' > $@
+endif
+
+und-_bsd.lst: pre-_bsd.o
+	echo '_bsd' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+_bsd_mod-loader_i386_bsd.o: loader/i386/bsd.c $(loader/i386/bsd.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_bsd_mod_CFLAGS) -MD -c -o $@ $<
+-include _bsd_mod-loader_i386_bsd.d
+
+CLEANFILES += cmd-_bsd_mod-loader_i386_bsd.lst fs-_bsd_mod-loader_i386_bsd.lst
+COMMANDFILES += cmd-_bsd_mod-loader_i386_bsd.lst
+FSFILES += fs-_bsd_mod-loader_i386_bsd.lst
+
+cmd-_bsd_mod-loader_i386_bsd.lst: loader/i386/bsd.c $(loader/i386/bsd.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_bsd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _bsd > $@ || (rm -f $@; exit 1)
+
+fs-_bsd_mod-loader_i386_bsd.lst: loader/i386/bsd.c $(loader/i386/bsd.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_bsd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _bsd > $@ || (rm -f $@; exit 1)
+
+
+_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bsd.mod
+bsd_mod_SOURCES = loader/i386/bsd_normal.c
+CLEANFILES += bsd.mod mod-bsd.o mod-bsd.c pre-bsd.o bsd_mod-loader_i386_bsd_normal.o und-bsd.lst
+ifneq ($(bsd_mod_EXPORTS),no)
+CLEANFILES += def-bsd.lst
+DEFSYMFILES += def-bsd.lst
+endif
+MOSTLYCLEANFILES += bsd_mod-loader_i386_bsd_normal.d
+UNDSYMFILES += und-bsd.lst
+
+bsd.mod: pre-bsd.o mod-bsd.o
+	-rm -f $@
+	$(TARGET_CC) $(bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-bsd.o: $(bsd_mod_DEPENDENCIES) bsd_mod-loader_i386_bsd_normal.o
+	-rm -f $@
+	$(TARGET_CC) $(bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ bsd_mod-loader_i386_bsd_normal.o
+
+mod-bsd.o: mod-bsd.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bsd_mod_CFLAGS) -c -o $@ $<
+
+mod-bsd.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'bsd' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(bsd_mod_EXPORTS),no)
+def-bsd.lst: pre-bsd.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 bsd/' > $@
+endif
+
+und-bsd.lst: pre-bsd.o
+	echo 'bsd' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+bsd_mod-loader_i386_bsd_normal.o: loader/i386/bsd_normal.c $(loader/i386/bsd_normal.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(bsd_mod_CFLAGS) -MD -c -o $@ $<
+-include bsd_mod-loader_i386_bsd_normal.d
+
+CLEANFILES += cmd-bsd_mod-loader_i386_bsd_normal.lst fs-bsd_mod-loader_i386_bsd_normal.lst
+COMMANDFILES += cmd-bsd_mod-loader_i386_bsd_normal.lst
+FSFILES += fs-bsd_mod-loader_i386_bsd_normal.lst
+
+cmd-bsd_mod-loader_i386_bsd_normal.lst: loader/i386/bsd_normal.c $(loader/i386/bsd_normal.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bsd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh bsd > $@ || (rm -f $@; exit 1)
+
+fs-bsd_mod-loader_i386_bsd_normal.lst: loader/i386/bsd_normal.c $(loader/i386/bsd_normal.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bsd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh bsd > $@ || (rm -f $@; exit 1)
+
+
+bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

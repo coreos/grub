@@ -17,7 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
+/*
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
  *  - VBE support
@@ -36,6 +36,7 @@
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
 #include <grub/elf.h>
+#include <grub/aout.h>
 #include <grub/file.h>
 #include <grub/err.h>
 #include <grub/rescue.h>
@@ -87,7 +88,7 @@ static int
 grub_multiboot_is_elf32 (void *buffer)
 {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr *) buffer;
-  
+
   return ehdr->e_ident[EI_CLASS] == ELFCLASS32;
 }
 
@@ -101,19 +102,19 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASS32)
     return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
-  
+
   if (grub_dl_check_header (ehdr, sizeof(Elf32_Ehdr)))
     return grub_error (GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
-  
+
   if (ehdr->e_type != ET_EXEC)
     return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
-  
+
   /* FIXME: Should we support program headers at strange locations?  */
   if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
     return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
-  
+
   entry = ehdr->e_entry;
-  
+
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
@@ -136,7 +137,7 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
-	  
+
           if (grub_file_read (file, (void *) phdr->p_paddr, phdr->p_filesz)
               != (grub_ssize_t) phdr->p_filesz)
 	    return grub_error (GRUB_ERR_BAD_OS,
@@ -163,7 +164,7 @@ static int
 grub_multiboot_is_elf64 (void *buffer)
 {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
-  
+
   return ehdr->e_ident[EI_CLASS] == ELFCLASS64;
 }
 
@@ -218,7 +219,7 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
 			       "segment doesn't fit in memory reserved for the OS (0x%lx > 0x%lx)",
 			       phdr->p_paddr + phdr->p_memsz,
 			       (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size);
-	  
+
 	  if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
 	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
@@ -229,7 +230,7 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
               != (grub_ssize_t) phdr->p_filesz)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "couldn't read segment from file");
-	  
+
           if (phdr->p_filesz < phdr->p_memsz)
 	    grub_memset (((char *) ((grub_uint32_t) phdr->p_paddr)
 			  + phdr->p_filesz),
@@ -256,7 +257,7 @@ grub_multiboot_load_elf (grub_file_t file, void *buffer)
     return grub_multiboot_load_elf32 (file, buffer);
   else if (grub_multiboot_is_elf64 (buffer))
     return grub_multiboot_load_elf64 (file, buffer);
-  
+
   return grub_error (GRUB_ERR_UNKNOWN_OS, "unknown ELF class");
 }
 
@@ -270,7 +271,7 @@ grub_multiboot (int argc, char *argv[])
   int i;
 
   grub_loader_unset ();
-    
+
   if (argc == 0)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "No kernel specified");
@@ -293,15 +294,15 @@ grub_multiboot (int argc, char *argv[])
 
   /* Look for the multiboot header in the buffer.  The header should
      be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct grub_multiboot_header *) buffer; 
+  for (header = (struct grub_multiboot_header *) buffer;
        ((char *) header <= buffer + len - 12) || (header = 0);
        header = (struct grub_multiboot_header *) ((char *) header + 4))
     {
-      if (header->magic == MULTIBOOT_MAGIC 
+      if (header->magic == MULTIBOOT_MAGIC
 	  && !(header->magic + header->flags + header->checksum))
 	break;
     }
-  
+
   if (header == 0)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "No multiboot header found");
@@ -315,9 +316,24 @@ grub_multiboot (int argc, char *argv[])
       goto fail;
     }
 
-  if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
+  if (header->flags & MULTIBOOT_AOUT_KLUDGE)
+    {
+      int ofs;
+
+      ofs = (char *) header - buffer -
+            (header->header_addr - header->load_addr);
+      if ((grub_aout_load (file, ofs, header->load_addr,
+                           ((header->load_end_addr == 0) ? 0 :
+                            header->load_end_addr - header->load_addr),
+                           header->bss_end_addr))
+          !=GRUB_ERR_NONE)
+        goto fail;
+
+      entry = header->entry_addr;
+    }
+  else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
-  
+
   mbi = grub_malloc (sizeof (struct grub_multiboot_info));
   if (! mbi)
     goto fail;
@@ -332,20 +348,20 @@ grub_multiboot (int argc, char *argv[])
 
   for (i = 0, len = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;
-  
+
   cmdline = p = grub_malloc (len);
   if (! cmdline)
     goto fail;
-  
+
   for (i = 0; i < argc; i++)
     {
       p = grub_stpcpy (p, argv[i]);
       *(p++) = ' ';
     }
-  
+
   /* Remove the space after the last word.  */
   *(--p) = '\0';
-  
+
   mbi->flags |= MULTIBOOT_INFO_CMDLINE;
   mbi->cmdline = (grub_uint32_t) cmdline;
 
@@ -383,7 +399,7 @@ grub_module  (int argc, char *argv[])
 
   if (!mbi)
     {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, 
+      grub_error (GRUB_ERR_BAD_ARGUMENT,
 		  "You need to load the multiboot kernel first");
       goto fail;
     }
@@ -402,20 +418,20 @@ grub_module  (int argc, char *argv[])
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
       goto fail;
     }
-  
+
   for (i = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;
-  
+
   cmdline = p = grub_malloc (len);
   if (! cmdline)
     goto fail;
-  
+
   for (i = 0; i < argc; i++)
     {
       p = grub_stpcpy (p, argv[i]);
       *(p++) = ' ';
     }
-  
+
   /* Remove the space after the last word.  */
   *(--p) = '\0';
 
@@ -423,7 +439,7 @@ grub_module  (int argc, char *argv[])
     {
       struct grub_mod_list *modlist = (struct grub_mod_list *) mbi->mods_addr;
 
-      modlist = grub_realloc (modlist, (mbi->mods_count + 1) 
+      modlist = grub_realloc (modlist, (mbi->mods_count + 1)
 			               * sizeof (struct grub_mod_list));
       if (! modlist)
 	goto fail;

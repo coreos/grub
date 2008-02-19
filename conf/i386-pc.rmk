@@ -152,7 +152,8 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod
+	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod \
+	aout.mod _bsd.mod bsd.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -303,5 +304,20 @@ pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For aout.mod
+aout_mod_SOURCES = loader/aout.c
+aout_mod_CFLAGS = $(COMMON_CFLAGS)
+aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _bsd.mod
+_bsd_mod_SOURCES = loader/i386/bsd.c
+_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bsd.mod
+bsd_mod_SOURCES = loader/i386/bsd_normal.c
+bsd_mod_CFLAGS = $(COMMON_CFLAGS)
+bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

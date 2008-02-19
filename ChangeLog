@@ -1,3 +1,47 @@
+2008-02-19  Bean  <bean123ch@gmail.com>
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Add aout.mod _bsd.mod and bsd.mod.
+	(aout_mod_SOURCES): New variable.
+	(aout_mod_CFLAGS): Likewise.
+	(aout_mod_LDFLAGS): Likewise.
+	(_bsd_mod_SOURCES): New variable.
+	(_bsd_mod_CFLAGS): Likewise.
+	(_bsd_mod_LDFLAGS): Likewise.
+	(bsd_mod_SOURCES): New variable.
+	(bsd_mod_CFLAGS): Likewise.
+	(bsd_mod_LDFLAGS): Likewise.
+
+	* include/grub/aout.h: New file.
+
+	* include/grub/i386/loader.h (grub_unix_real_boot): New function.
+
+	* include/grub/i386/bsd.h: New file.
+
+	* include/grub/i386/pc/init.h (grub_get_mmap_entry): Use EXPORT_FUNC
+	to make it public.
+
+	* kern/elf.c (grub_elf32_load): Get the physical address after the hook
+	function is called, so that it's possible to change it inside the hook.
+	(grub_elf64_load): Likewise.
+	(grub_elf_file): Don't close the file if elf header is not found.
+	(grub_elf_close): Close the file if grub_elf_file fails (The new
+	grub_elf_file won't close it).
+	(grub_elf32_size): Use NESTED_FUNC_ATTR for nested function calcsize.
+	(grub_elf64_size): Likewise.
+
+	* kern/i386/loader.S (grub_unix_real_boot): New function.
+
+	* loader/aout.c: New file.
+
+	* loader/i386/bsd.c: New file.
+
+	* loader/i386/bsd_normal.c: New file.
+
+	* loader/i386/pc/multiboot.c (grub_multiboot): Handle a.out format.
+
+	* loader/multiboot2.c (grub_multiboot2): Reset grub_errno so that it
+	can test othe formats.
+
 2008-02-19  Robert Millan  <rmh@aybabtu.com>
 
 	* partmap/gpt.c: Include `<grub/gpt_partition.h>'.
