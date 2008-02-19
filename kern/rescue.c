@@ -618,7 +618,7 @@ grub_enter_rescue_mode (void)
   /* First of all, attempt to execute the normal mode.  */
   attempt_normal_mode ();
 
-  grub_printf ("Entering into rescue mode...\n");
+  grub_printf ("Entering rescue mode...\n");
   
   grub_rescue_register_command ("boot", grub_rescue_cmd_boot,
 				"boot an operating system");
