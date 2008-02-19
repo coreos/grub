@@ -1,3 +1,13 @@
+2008-02-19  Robert Millan  <rmh@aybabtu.com>
+
+	* DISTLIST: Replace `commands/ieee1275/halt.c' and
+	`commands/ieee1275/reboot.c' with `commands/halt.c' and
+	`commands/reboot.c'.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES, reboot_mod_SOURCES)
+	(halt_mod_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES, reboot_mod_SOURCES)
+	(halt_mod_SOURCES): Likewise.
+
 2008-02-17  Christian Franke  <franke@computer.org>
 
 	* commands/cat.c (grub_cmd_cat): Add break on GRUB_TERM_ESC key.

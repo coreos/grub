@@ -49,7 +49,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/search.c commands/terminal.c commands/test.c 		\
 	commands/ls.c commands/blocklist.c commands/hexdump.c		\
-	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
+	commands/halt.c commands/reboot.c		\
 	disk/loopback.c							\
 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
@@ -138,12 +138,12 @@ suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod
-reboot_mod_SOURCES = commands/ieee1275/reboot.c
+reboot_mod_SOURCES = commands/reboot.c
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
-halt_mod_SOURCES = commands/ieee1275/halt.c
+halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

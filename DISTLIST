@@ -40,11 +40,13 @@ commands/cat.c
 commands/cmp.c
 commands/configfile.c
 commands/echo.c
+commands/halt.c
 commands/help.c
 commands/hexdump.c
 commands/ls.c
 commands/lspci.c
 commands/read.c
+commands/reboot.c
 commands/search.c
 commands/sleep.c
 commands/terminal.c
@@ -56,8 +58,6 @@ commands/i386/pc/play.c
 commands/i386/pc/reboot.c
 commands/i386/pc/vbeinfo.c
 commands/i386/pc/vbetest.c
-commands/ieee1275/halt.c
-commands/ieee1275/reboot.c
 commands/ieee1275/suspend.c
 conf/common.mk
 conf/common.rmk

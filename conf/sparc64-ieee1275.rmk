@@ -47,7 +47,7 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #	commands/configfile.c commands/default.c commands/help.c	\
 #	commands/search.c commands/terminal.c commands/ls.c		\
 #	commands/timeout.c commands/test.c				\
-#	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
+#	commands/halt.c commands/reboot.c		\
 #	disk/loopback.c							\
 #	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c  \
 #	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c                  \
@@ -235,12 +235,12 @@ suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod
-reboot_mod_SOURCES = commands/ieee1275/reboot.c
+reboot_mod_SOURCES = commands/reboot.c
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
-halt_mod_SOURCES = commands/ieee1275/halt.c
+halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

@@ -47,7 +47,7 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #	commands/configfile.c commands/default.c commands/help.c	\
 #	commands/search.c commands/terminal.c commands/ls.c		\
 #	commands/timeout.c commands/test.c				\
-#	commands/ieee1275/halt.c commands/ieee1275/reboot.c		\
+#	commands/halt.c commands/reboot.c		\
 #	disk/loopback.c							\
 #	fs/affs.c fs/ext2.c fs/fat.c fs/fshelp.c fs/hfs.c fs/iso9660.c  \
 #	fs/jfs.c fs/minix.c fs/sfs.c fs/ufs.c fs/xfs.c                  \
@@ -1703,13 +1703,13 @@ suspend_mod_CFLAGS = $(COMMON_CFLAGS)
 suspend_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod
-reboot_mod_SOURCES = commands/ieee1275/reboot.c
-CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_ieee1275_reboot.o und-reboot.lst
+reboot_mod_SOURCES = commands/reboot.c
+CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_reboot.o und-reboot.lst
 ifneq ($(reboot_mod_EXPORTS),no)
 CLEANFILES += def-reboot.lst
 DEFSYMFILES += def-reboot.lst
 endif
-MOSTLYCLEANFILES += reboot_mod-commands_ieee1275_reboot.d
+MOSTLYCLEANFILES += reboot_mod-commands_reboot.d
 UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o
@@ -1717,9 +1717,9 @@ reboot.mod: pre-reboot.o mod-reboot.o
 	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_ieee1275_reboot.o
+pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o
 	-rm -f $@
-	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ reboot_mod-commands_ieee1275_reboot.o
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ reboot_mod-commands_reboot.o
 
 mod-reboot.o: mod-reboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
@@ -1736,32 +1736,32 @@ und-reboot.lst: pre-reboot.o
 	echo 'reboot' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-reboot_mod-commands_ieee1275_reboot.o: commands/ieee1275/reboot.c $(commands/ieee1275/reboot.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
--include reboot_mod-commands_ieee1275_reboot.d
+reboot_mod-commands_reboot.o: commands/reboot.c $(commands/reboot.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
+-include reboot_mod-commands_reboot.d
 
-CLEANFILES += cmd-reboot_mod-commands_ieee1275_reboot.lst fs-reboot_mod-commands_ieee1275_reboot.lst
-COMMANDFILES += cmd-reboot_mod-commands_ieee1275_reboot.lst
-FSFILES += fs-reboot_mod-commands_ieee1275_reboot.lst
+CLEANFILES += cmd-reboot_mod-commands_reboot.lst fs-reboot_mod-commands_reboot.lst
+COMMANDFILES += cmd-reboot_mod-commands_reboot.lst
+FSFILES += fs-reboot_mod-commands_reboot.lst
 
-cmd-reboot_mod-commands_ieee1275_reboot.lst: commands/ieee1275/reboot.c $(commands/ieee1275/reboot.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
+cmd-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
 
-fs-reboot_mod-commands_ieee1275_reboot.lst: commands/ieee1275/reboot.c $(commands/ieee1275/reboot.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reboot > $@ || (rm -f $@; exit 1)
+fs-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reboot > $@ || (rm -f $@; exit 1)
 
 
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
 reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For halt.mod
-halt_mod_SOURCES = commands/ieee1275/halt.c
-CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_ieee1275_halt.o und-halt.lst
+halt_mod_SOURCES = commands/halt.c
+CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_halt.o und-halt.lst
 ifneq ($(halt_mod_EXPORTS),no)
 CLEANFILES += def-halt.lst
 DEFSYMFILES += def-halt.lst
 endif
-MOSTLYCLEANFILES += halt_mod-commands_ieee1275_halt.d
+MOSTLYCLEANFILES += halt_mod-commands_halt.d
 UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o
@@ -1769,9 +1769,9 @@ halt.mod: pre-halt.o mod-halt.o
 	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_ieee1275_halt.o
+pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_halt.o
 	-rm -f $@
-	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ halt_mod-commands_ieee1275_halt.o
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ halt_mod-commands_halt.o
 
 mod-halt.o: mod-halt.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
@@ -1788,19 +1788,19 @@ und-halt.lst: pre-halt.o
 	echo 'halt' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-halt_mod-commands_ieee1275_halt.o: commands/ieee1275/halt.c $(commands/ieee1275/halt.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
--include halt_mod-commands_ieee1275_halt.d
+halt_mod-commands_halt.o: commands/halt.c $(commands/halt.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
+-include halt_mod-commands_halt.d
 
-CLEANFILES += cmd-halt_mod-commands_ieee1275_halt.lst fs-halt_mod-commands_ieee1275_halt.lst
-COMMANDFILES += cmd-halt_mod-commands_ieee1275_halt.lst
-FSFILES += fs-halt_mod-commands_ieee1275_halt.lst
+CLEANFILES += cmd-halt_mod-commands_halt.lst fs-halt_mod-commands_halt.lst
+COMMANDFILES += cmd-halt_mod-commands_halt.lst
+FSFILES += fs-halt_mod-commands_halt.lst
 
-cmd-halt_mod-commands_ieee1275_halt.lst: commands/ieee1275/halt.c $(commands/ieee1275/halt.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
+cmd-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
 
-fs-halt_mod-commands_ieee1275_halt.lst: commands/ieee1275/halt.c $(commands/ieee1275/halt.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh halt > $@ || (rm -f $@; exit 1)
+fs-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh halt > $@ || (rm -f $@; exit 1)
 
 
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
