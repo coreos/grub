@@ -116,6 +116,7 @@ include/grub/file.h
 include/grub/font.h
 include/grub/fs.h
 include/grub/fshelp.h
+include/grub/gpt_partition.h
 include/grub/gzio.h
 include/grub/hexdump.h
 include/grub/hfs.h
