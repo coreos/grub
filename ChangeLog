@@ -1,3 +1,7 @@
+2008-02-21  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* include/grub/efi/time.h: Fix a wrong comment.
+
 2008-02-19  Pavel Roskin  <proski@gnu.org>
 
 	* kern/rescue.c (grub_enter_rescue_mode): Improve initial
