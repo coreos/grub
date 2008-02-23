@@ -1,3 +1,13 @@
+2008-02-23  Robert Millan  <rmh@aybabtu.com>
+
+	* partmap/gpt.c (grub_gpt_magic): Add `0x' qualifier to each member,
+	since they were intended to be in hex.  This didn't break previously
+	because of a bug in gpt_partition_map_iterate() (see below).
+
+	(gpt_partition_map_iterate): Replace `grub_memcmp' with `! grub_memcmp'
+	when checking the validity of GPT header.
+	Remove `partno', since it always provides the same information as `i'.
+
 2008-02-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* include/grub/efi/time.h: Fix a wrong comment.
