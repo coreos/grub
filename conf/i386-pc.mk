@@ -9,6 +9,8 @@ COMMON_LDFLAGS = -m32 -nostdlib
 # Used by various components.  These rules need to precede them.
 normal/execute.c_DEPENDENCIES = grub_script.tab.h
 normal/command.c_DEPENDENCIES = grub_script.tab.h
+normal/function.c_DEPENDENCIES = grub_script.tab.h
+normal/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
 pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img \

@@ -1,3 +1,18 @@
+2008-02-24  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-efi.rmk (normal/function.c_DEPENDENCIES)
+	(normal/lexer.c_DEPENDENCIES): New variables.
+	* conf/i386-ieee1275.rmk (normal/function.c_DEPENDENCIES)
+	(normal/lexer.c_DEPENDENCIES): Likewise.
+	* conf/i386-linuxbios.rmk (normal/function.c_DEPENDENCIES)
+	(normal/lexer.c_DEPENDENCIES): Likewise.
+	* conf/i386-pc.rmk (normal/function.c_DEPENDENCIES)
+	(normal/lexer.c_DEPENDENCIES): Likewise.
+	* conf/powerpc-ieee1275.rmk (normal/function.c_DEPENDENCIES)
+	(normal/lexer.c_DEPENDENCIES): Likewise.
+	* conf/sparc64-ieee1275.rmk (normal/function.c_DEPENDENCIES)
+	(normal/lexer.c_DEPENDENCIES): Likewise.
+
 2008-02-23  Robert Millan  <rmh@aybabtu.com>
 
 	* partmap/gpt.c (grub_gpt_magic): Add `0x' qualifier to each member,
