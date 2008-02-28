@@ -1,5 +1,14 @@
 2008-02-28  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-linuxbios.rmk (pkglib_MODULES): Add aout.mod.
+	(aout_mod_SOURCES): New variable.
+	(aout_mod_CFLAGS): Likewise.
+	(aout_mod_LDFLAGS): Likewise.
+
+	* conf/i386-ieee1275.rmk: Likewise.
+
+2008-02-28  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub.in: Reorganise terminal validity check.  Accept
 	`ieee1275:console' (OLPC) and `*:gfxterm' as valid too.
 	Based on suggestion by Franklin PIAT.
