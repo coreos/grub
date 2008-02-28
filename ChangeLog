@@ -1,3 +1,19 @@
+2008-02-28  Fabian Greffrath  <greffrath@leat.rub.de>
+
+	* include/grub/util/getroot.h (grub_util_check_block_device): Export new
+	function.
+	* util/getroot.c (grub_util_check_block_device): New function that
+	returns the given argument if it is a block device and returns NULL else.
+	* util/grub-probe.c (argument_is_device): New variable.
+	(probe): Promote device_name from a variable to an argument. Receive
+	device_name from grub_util_check_block_device() if path is NULL and from
+	grub_guess_root_device() else. Do not free() device_name anymore.
+	(options): Introduce new parameter '-d, --device'. 
+	(main): Add description of the new parameter to the help screen.
+	Rename path variable to argument. Set argument_is_device if the '-d'
+	option is given. Pass argument to probe() depending on
+	argument_is_device.
+
 2008-02-24  Bean  <bean123ch@gmail.com>
 
 	* fs/iso9660.c (GRUB_ISO9660_VOLDESC_BOOT): New macro.

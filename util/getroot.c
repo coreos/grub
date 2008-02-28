@@ -332,3 +332,17 @@ grub_util_get_grub_dev (const char *os_dev)
 
   return grub_dev;
 }
+
+char *
+grub_util_check_block_device (const char *blk_dev)
+{
+  struct stat st;
+
+  if (stat (blk_dev, &st) < 0)
+    grub_util_error ("Cannot stat `%s'", blk_dev);
+
+  if (S_ISBLK (st.st_mode))
+    return (blk_dev);
+  else
+    return 0;
+}

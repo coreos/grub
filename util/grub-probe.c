@@ -50,6 +50,7 @@ enum {
 };
 
 int print = PRINT_FS;
+static unsigned int argument_is_device = 0;
 
 void
 grub_putchar (int c)
@@ -100,16 +101,22 @@ probe_partmap (grub_disk_t disk)
 }
 
 static void
-probe (const char *path)
+probe (const char *path, char *device_name)
 {
-  char *device_name;
   char *drive_name = NULL;
   char *grub_path = NULL;
   char *filebuf_via_grub = NULL, *filebuf_via_sys = NULL;
   int abstraction_type;
   grub_device_t dev = NULL;
   
-  device_name = grub_guess_root_device (path);
+  if (path == NULL)
+    {
+      if (! grub_util_check_block_device (device_name))
+        grub_util_error ("%s is not a block device.\n", device_name);
+    }
+  else
+    device_name = grub_guess_root_device (path);
+
   if (! device_name)
     grub_util_error ("cannot find a device for %s.\n", path);
 
@@ -220,12 +227,12 @@ probe (const char *path)
   free (grub_path);
   free (filebuf_via_grub);
   free (filebuf_via_sys);
-  free (device_name);
   free (drive_name);
 }
 
 static struct option options[] =
   {
+    {"device", no_argument, 0, 'd'},
     {"device-map", required_argument, 0, 'm'},
     {"target", required_argument, 0, 't'},
     {"help", no_argument, 0, 'h'},
@@ -242,10 +249,11 @@ usage (int status)
 	     "Try ``grub-probe --help'' for more information.\n");
   else
     printf ("\
-Usage: grub-probe [OPTION]... PATH\n\
+Usage: grub-probe [OPTION]... [PATH|DEVICE]\n\
 \n\
-Probe device information for a given path.\n\
+Probe device information for a given path (or device, if the -d option is given).\n\
 \n\
+  -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
   -t, --target=(fs|drive|device|partmap|abstraction)\n\
                             print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
@@ -264,20 +272,24 @@ int
 main (int argc, char *argv[])
 {
   char *dev_map = 0;
-  char *path;
+  char *argument;
   
   progname = "grub-probe";
   
   /* Check for options.  */
   while (1)
     {
-      int c = getopt_long (argc, argv, "m:t:hVv", options, 0);
+      int c = getopt_long (argc, argv, "dm:t:hVv", options, 0);
       
       if (c == -1)
 	break;
       else
 	switch (c)
 	  {
+	  case 'd':
+	    argument_is_device = 1;
+	    break;
+
 	  case 'm':
 	    if (dev_map)
 	      free (dev_map);
@@ -321,10 +333,10 @@ main (int argc, char *argv[])
   if (verbosity > 1)
     grub_env_set ("debug", "all");
 
-  /* Obtain PATH.  */
+  /* Obtain ARGUMENT.  */
   if (optind >= argc)
     {
-      fprintf (stderr, "No path is specified.\n");
+      fprintf (stderr, "No path or device is specified.\n");
       usage (1);
     }
 
@@ -334,7 +346,7 @@ main (int argc, char *argv[])
       usage (1);
     }
 
-  path = argv[optind];
+  argument = argv[optind];
   
   /* Initialize the emulated biosdisk driver.  */
   grub_util_biosdisk_init (dev_map ? : DEFAULT_DEVICE_MAP);
@@ -343,7 +355,10 @@ main (int argc, char *argv[])
   grub_init_all ();
 
   /* Do it.  */
-  probe (path);
+  if (argument_is_device)
+    probe (NULL, argument);
+  else
+    probe (argument, NULL);
   
   /* Free resources.  */
   grub_fini_all ();
