@@ -1,3 +1,9 @@
+2008-02-28  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Reorganise terminal validity check.  Accept
+	`ieee1275:console' (OLPC) and `*:gfxterm' as valid too.
+	Based on suggestion by Franklin PIAT.
+
 2008-02-28  Fabian Greffrath  <greffrath@leat.rub.de>
 
 	* include/grub/util/getroot.h (grub_util_check_block_device): Export new

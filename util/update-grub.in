@@ -124,10 +124,10 @@ fi
 # fallback to our default
 case ${platform}:${GRUB_TERMINAL} in
   pc:)				GRUB_TERMINAL=gfxterm ;;
-  pc:console | pc:serial)	;;
   ieee1275:)			GRUB_TERMINAL=ofconsole ;;
-  ieee1275:ofconsole)		;;
   *:)				GRUB_TERMINAL=console ;;
+  pc:console | pc:serial | ieee1275:ofconsole | ieee1275:console | *:gfxterm)
+				;;
   *:*)				echo "Invalid terminal \"${GRUB_TERMINAL}\"" >&2 ; exit 1 ;;
 esac
 
