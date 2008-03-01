@@ -80,6 +80,10 @@ disk/raid.c
 disk/efi/efidisk.c
 disk/i386/pc/biosdisk.c
 disk/ieee1275/ofdisk.c
+docs/fdl.texi
+docs/grub.texi
+docs/mdate-sh
+docs/texinfo.tex
 font/manager.c
 fs/affs.c
 fs/cpio.c

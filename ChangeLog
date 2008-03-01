@@ -1,3 +1,19 @@
+2008-03-01  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* DISTLIST: Added docs/fdl.texi, docs/grub.texi, docs/mdate-sh and
+	texinfo.tex.
+
+	* docs/grub.texi: New file. Copied from GRUB Legacy, and slightly
+	modified.
+
+	* docs/fdl.texi: New file.
+	
+	* docs/mdate-sh: New file. Copied from gnulib.
+	* docs/texinfo.tex: Likewise.
+
+	* config.guess: Updated from gnulib.
+	* install-sh: Likewise.
+
 2008-02-28  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-linuxbios.rmk (pkglib_MODULES): Add aout.mod.
