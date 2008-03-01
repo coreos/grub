@@ -577,7 +577,7 @@
 	include/grub/i386/pc/pci.h, video/readers/jpeg.c, and
 	video/readers/png.c.
 
-2008-01-31  Bean  <bean123ch@gmail.com>
+2008-02-03  Bean  <bean123ch@gmail.com>
 
 	* conf/i386-pc.rmk (pkglib_IMAGES): Add cdboot.img.
 	(cdboot_img_SOURCES): New variable.
