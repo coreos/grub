@@ -1,3 +1,8 @@
+2008-03-02  Bean  <bean123ch@gmail.com>
+
+	* fs/reiserfs.c (grub_reiserfs_read_symlink): Add 0 at the end of
+	symlink_buffer.
+
 2008-03-01  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* DISTLIST: Added docs/fdl.texi, docs/grub.texi, docs/mdate-sh and

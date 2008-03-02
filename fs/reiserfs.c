@@ -659,7 +659,7 @@ grub_reiserfs_read_symlink (grub_fshelp_node_t node)
            >> GRUB_DISK_SECTOR_BITS);
   offset = grub_le_to_cpu16 (found.header.item_location);
 
-  symlink_buffer = grub_malloc (len);
+  symlink_buffer = grub_malloc (len + 1);
   if (! symlink_buffer)
     goto fail;
 
@@ -667,6 +667,7 @@ grub_reiserfs_read_symlink (grub_fshelp_node_t node)
   if (grub_errno)
     goto fail;
 
+  symlink_buffer[len] = 0;
   return symlink_buffer;
 
  fail:
