@@ -1,3 +1,10 @@
+2008-03-05  Bean  <bean123ch@gmail.com>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_get_bootdev): New function.
+	(grub_multiboot): Set boot device.
+
+	* boot/i386/pc/lnxboot.S (real_code_2): Set %dh to 0xFF.
+
 2008-03-02  Bean  <bean123ch@gmail.com>
 
 	* fs/reiserfs.c (grub_reiserfs_read_symlink): Add 0 at the end of
