@@ -1,3 +1,11 @@
+2008-03-20  Robert Millan  <rmh@aybabtu.com>
+
+	Remove 2 TiB limit in ata.mod.
+	* disk/ata.c (grub_ata_device): Promote `size' to grub_uint64_t.
+	(grub_ata_dumpinfo): Print sector count with 0x%llx.
+	(grub_ata_identify): Interpret `&info16[100]' as a pointer to
+	grub_uint64_t instead of grub_uint32_t.
+
 2008-03-05  Bean  <bean123ch@gmail.com>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_get_bootdev): New function.
