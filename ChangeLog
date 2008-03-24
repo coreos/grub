@@ -1,3 +1,35 @@
+2008-03-24  Bean  <bean123ch@gmail.com>
+
+	* disk/i386/pc/biosdisk.c (cd_start): Removed.
+	(cd_count): Removed.
+	(cd_drive): New variable.
+	(grub_biosdisk_get_drive): Don't check for (cdN) device.
+	(grub_biosdisk_call_hook): Likewise.
+	(grub_biosdisk_iterate): Change cdrom detection method.
+	(grub_biosdisk_open): Replace cd_start with cd_drive.
+	(GRUB_MOD_INIT): Use grub_biosdisk_get_cdinfo_int13_extension to
+	detect cdrom device.
+
+	* include/grub/i386/pc/biosdisk.h (GRUB_BIOSDISK_MACHINE_CDROM_START):
+	Removed.
+	(GRUB_BIOSDISK_MACHINE_CDROM_END): Removed.
+	(GRUB_BIOSDISK_CDTYPE_NO_EMUL): New macro.
+	(GRUB_BIOSDISK_CDTYPE_1_2_M): Likewise.
+	(GRUB_BIOSDISK_CDTYPE_1_44_M): Likewise.
+	(GRUB_BIOSDISK_CDTYPE_2_88_M): Likewise.
+	(GRUB_BIOSDISK_CDTYPE_HARDDISK): Likewise.
+	(GRUB_BIOSDISK_CDTYPE_MASK): Likewise.
+	(grub_biosdisk_cdrp): New structure.
+	(grub_biosdisk_get_cdinfo_int13_extensions): New function.
+
+	* include/grub/i386/pc/kernel.h (grub_boot_drive): Export this variable.
+
+	* kern/i386/pc/init.c (make_install_device): Don't use (cdN) as root
+	device.
+
+	* kern/i386/pc/startup.S (grub_biosdisk_get_cdinfo_int13_extensions):
+	New function.
+
 2008-03-20  Robert Millan  <rmh@aybabtu.com>
 
 	Remove 2 TiB limit in ata.mod.
