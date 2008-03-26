@@ -1,3 +1,10 @@
+2008-03-26  Pavel Roskin  <proski@gnu.org>
+
+	* normal/color.c (grub_parse_color_name_pair): Make `name' a
+	const.
+	* include/grub/normal.h: Add grub_parse_color_name_pair()
+	declaration.
+
 2008-03-24  Bean  <bean123ch@gmail.com>
 
 	* disk/i386/pc/biosdisk.c (cd_start): Removed.
