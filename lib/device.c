@@ -69,9 +69,9 @@ struct hd_geometry
 # ifndef CDROM_GET_CAPABILITY
 #  define CDROM_GET_CAPABILITY	0x5331	/* get capabilities */
 # endif /* ! CDROM_GET_CAPABILITY */
-# ifndef BLKGETSIZE
-#  define BLKGETSIZE	_IO(0x12,96)	/* return device size */
-# endif /* ! BLKGETSIZE */
+# ifndef BLKGETSIZE64
+#  define BLKGETSIZE64	_IOR(0x12,114,size_t)	/* return device size */
+# endif /* ! BLKGETSIZE64 */
 #endif /* __linux__ */
 
 /* Use __FreeBSD_kernel__ instead of __FreeBSD__ for compatibility with
@@ -152,19 +152,19 @@ get_drive_geometry (struct geometry *geom, char **map, int drive)
   /* Linux */
   {
     struct hd_geometry hdg;
-    unsigned long nr;
+    unsigned long long nr;
     
     if (ioctl (fd, HDIO_GETGEO, &hdg))
       goto fail;
 
-    if (ioctl (fd, BLKGETSIZE, &nr))
+    if (ioctl (fd, BLKGETSIZE64, &nr))
       goto fail;
     
     /* Got the geometry, so save it. */
     geom->cylinders = hdg.cylinders;
     geom->heads = hdg.heads;
     geom->sectors = hdg.sectors;
-    geom->total_sectors = nr;
+    geom->total_sectors = nr / 512;
     
     goto success;
   }

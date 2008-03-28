@@ -811,7 +811,7 @@ int checkkey (void);
 /* Low-level disk I/O */
 int get_diskinfo (int drive, struct geometry *geometry);
 int biosdisk (int subfunc, int drive, struct geometry *geometry,
-	      int sector, int nsec, int segment);
+	      unsigned int sector, int nsec, int segment);
 void stop_floppy (void);
 
 /* Command-line interface functions. */
@@ -924,10 +924,10 @@ int gunzip_test_header (void);
 int gunzip_read (char *buf, int len);
 #endif /* NO_DECOMPRESSION */
 
-int rawread (int drive, int sector, int byte_offset, int byte_len, char *buf);
-int devread (int sector, int byte_offset, int byte_len, char *buf);
-int rawwrite (int drive, int sector, char *buf);
-int devwrite (int sector, int sector_len, char *buf);
+int rawread (int drive, unsigned int sector, int byte_offset, int byte_len, char *buf);
+int devread (unsigned int sector, int byte_offset, int byte_len, char *buf);
+int rawwrite (int drive, unsigned int sector, char *buf);
+int devwrite (unsigned int sector, int sector_len, char *buf);
 
 /* Parse a device string and initialize the global parameters. */
 char *set_device (char *device);

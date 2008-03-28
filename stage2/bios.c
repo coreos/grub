@@ -47,7 +47,7 @@ extern int get_diskinfo_floppy (int drive,
    return the error number. Otherwise, return 0.  */
 int
 biosdisk (int read, int drive, struct geometry *geometry,
-	  int sector, int nsec, int segment)
+	  unsigned int sector, int nsec, int segment)
 {
   int err;
   

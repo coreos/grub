@@ -1,3 +1,16 @@
+2008-03-28  Robert Millan  <rmh@aybabtu.com>
+
+	Surpass 1 TiB disk addressing limit.  Note: there are no plans to handle
+	the 2 TiB disk limit in GRUB Legacy, since that would need considerable
+	rework.  If you have >2TiB disks, use GRUB 2 instead.
+
+	* grub/asmstub.c (biosdisk): Add unsigned qualifier to `sector'.
+	* stage2/bios.c (biosdisk): Likewise.
+	* stage2/disk_io.c (rawread, devread, rawwrite, devwrite): Likewise.
+	* stage2/shared.h (rawread, devread, rawwrite, devwrite): Likewise.
+	* lib/device.c (get_drive_geometry): Replace BLKGETSIZE with
+	BLKGETSIZE64.
+
 2007-10-29  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Test if '--build-id=none' is supported by the

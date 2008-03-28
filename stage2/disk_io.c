@@ -137,7 +137,7 @@ log2 (unsigned long word)
 }
 
 int
-rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
+rawread (int drive, unsigned int sector, int byte_offset, int byte_len, char *buf)
 {
   int slen, sectors_per_vtrack;
   int sector_size_bits = log2 (buf_geom.sector_size);
@@ -261,7 +261,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
        */
       if (disk_read_func)
 	{
-	  int sector_num = sector;
+	  unsigned int sector_num = sector;
 	  int length = buf_geom.sector_size - byte_offset;
 	  if (length > size)
 	    length = size;
@@ -291,7 +291,7 @@ rawread (int drive, int sector, int byte_offset, int byte_len, char *buf)
 
 
 int
-devread (int sector, int byte_offset, int byte_len, char *buf)
+devread (unsigned int sector, int byte_offset, int byte_len, char *buf)
 {
   /*
    *  Check partition boundaries
@@ -330,7 +330,7 @@ devread (int sector, int byte_offset, int byte_len, char *buf)
 
 #ifndef STAGE1_5
 int
-rawwrite (int drive, int sector, char *buf)
+rawwrite (int drive, unsigned int sector, char *buf)
 {
   if (sector == 0)
     {
@@ -363,7 +363,7 @@ rawwrite (int drive, int sector, char *buf)
 }
 
 int
-devwrite (int sector, int sector_count, char *buf)
+devwrite (unsigned int sector, int sector_count, char *buf)
 {
 #if defined(GRUB_UTIL) && defined(__linux__)
   if (current_partition != 0xFFFFFF
