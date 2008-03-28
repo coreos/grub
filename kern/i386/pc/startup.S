@@ -806,7 +806,7 @@ FUNCTION(grub_biosdisk_get_diskinfo_int13_extensions)
 
 	/* compute the address of drive parameters */
 	movw	%dx, %si
-	xorw	%dx, %dx
+	andl	$0xf, %esi
 	shrl	$4, %edx
 	movw	%dx, %bx	/* save the segment into %bx */
 	/* drive */
