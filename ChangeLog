@@ -1,5 +1,9 @@
 2008-03-30  Pavel Roskin  <proski@gnu.org>
 
+	* disk/host.c: Include grub/misc.h to fix a warning.
+	* util/hostfs.c: Use GRUB_MOD_INIT and GRUB_MOD_FINI to fix
+	warnings about implicit declarations.
+
 	* fs/udf.c (grub_udf_mount): Fix warning about a shadowing a
 	variable.
 	* include/grub/i386/loader.h: Change declaration of
