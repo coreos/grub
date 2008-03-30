@@ -1,5 +1,8 @@
 2008-03-30  Pavel Roskin  <proski@gnu.org>
 
+	* loader/i386/pc/multiboot2.c (grub_mb2_arch_elf64_hook): Add
+	missing grub_error() call.
+
 	* util/update-grub_lib.in: Define datarootdir, since Autoconf
 	2.60 and newer uses it to define datadir.
 
