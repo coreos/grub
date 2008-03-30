@@ -1,5 +1,16 @@
 2008-03-30  Pavel Roskin  <proski@gnu.org>
 
+	* fs/udf.c (grub_udf_mount): Fix warning about a shadowing a
+	variable.
+	* include/grub/i386/loader.h: Change declaration of
+	grub_linux_boot() to match what grub_loader_set() expects.
+	* util/getroot.c (grub_guess_root_device): Return const char* to
+	fix a warning.
+	* util/grub-probe.c (probe): Fix a warning about uninitialized
+	abstraction_name variable.
+	* util/i386/get_disk_name.c (grub_util_get_disk_name): Mark
+	second argument as unused to fix a warning.
+
 	* loader/i386/pc/multiboot2.c (grub_mb2_arch_elf64_hook): Add
 	missing grub_error() call.
 
