@@ -1,5 +1,8 @@
 2008-03-30  Pavel Roskin  <proski@gnu.org>
 
+	* util/update-grub_lib.in: Define datarootdir, since Autoconf
+	2.60 and newer uses it to define datadir.
+
 	* commands/sleep.c: Fix warning about implicit declaration.
 	* disk/memdisk.c: Likewise.
 	* loader/aout.c: Likewise.
