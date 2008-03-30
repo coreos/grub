@@ -1,5 +1,11 @@
 2008-03-30  Pavel Roskin  <proski@gnu.org>
 
+	* commands/sleep.c: Fix warning about implicit declaration.
+	* disk/memdisk.c: Likewise.
+	* loader/aout.c: Likewise.
+	* loader/i386/bsd_normal.c: Likewise.
+	* util/grub-probe.c: Likewise.
+
 	* commands/i386/cpuid.c (has_longmode): Make static.
 	* disk/i386/pc/biosdisk.c (cd_drive): Likewise.
 	* include/grub/i386/bsd.h (bios_memmap_t): Remove, it's unused.

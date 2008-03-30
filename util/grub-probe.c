@@ -29,6 +29,7 @@
 #include <grub/util/biosdisk.h>
 #include <grub/util/getroot.h>
 #include <grub/term.h>
+#include <grub/env.h>
 
 #include <grub_probe_init.h>
 
