@@ -1,5 +1,9 @@
 2008-03-30  Pavel Roskin  <proski@gnu.org>
 
+	* commands/i386/cpuid.c (has_longmode): Make static.
+	* disk/i386/pc/biosdisk.c (cd_drive): Likewise.
+	* include/grub/i386/bsd.h (bios_memmap_t): Remove, it's unused.
+
 	* kern/i386/pc/startup.S (real_to_prot): Use %cs prefix to load
 	GDT.  This is more robust, as %ds can change.
 	(grub_biosdisk_rw_int13_extensions): Don't clear %ds before
