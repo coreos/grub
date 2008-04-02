@@ -38,8 +38,7 @@ static struct grub_loopback *loopback_list;
 static const struct grub_arg_option options[] =
   {
     {"delete", 'd', 0, "delete the loopback device entry", 0, 0},
-    {"partitions", 'p', 0, "set that the drive has partitions to"
-     " simulate a harddrive", 0, 0},
+    {"partitions", 'p', 0, "simulate a hard drive with partitions", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 

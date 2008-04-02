@@ -1,5 +1,7 @@
 2008-04-01  Pavel Roskin  <proski@gnu.org>
 
+	* disk/loopback.c (options): Improve help for "--partitions".
+
 	* normal/arg.c (grub_arg_show_help): Fix spacing of the long
 	options to align them with the short options, e.g. "echo -e".
 
