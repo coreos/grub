@@ -1,3 +1,8 @@
+2008-04-01  Pavel Roskin  <proski@gnu.org>
+
+	* normal/arg.c (grub_arg_show_help): Fix spacing of the long
+	options to align them with the short options, e.g. "echo -e".
+
 2008-03-31  Bean  <bean123ch@gmail.com>
 
 	* video/reader/png.c (grub_png_data): New member is_16bit and
