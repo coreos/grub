@@ -1,5 +1,11 @@
 2008-04-01  Pavel Roskin  <proski@gnu.org>
 
+	* disk/ata.c (grub_ata_open): Don't lose precision in disk->id.
+	* disk/host.c (grub_host_open): Likewise.
+	* disk/loopback.c (grub_loopback_open): Likewise.
+	* disk/memdisk.c (grub_memdisk_open): Use a string pointer for
+	disk->id as in disk/host.c, not a multi-character constant.
+
 	* util/grub-fstest.c (cmd_cmp): Use fseeko(), not fseek().  The
 	later is obsolete, potentially dangerous and sets a bad example.
 	* util/i386/efi/grub-mkimage.c (make_header): Likewise.

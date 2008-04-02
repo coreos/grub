@@ -177,7 +177,7 @@ grub_loopback_open (const char *name, grub_disk_t disk)
   /* Use the filesize for the disk size, round up to a complete sector.  */
   disk->total_sectors = ((file->size + GRUB_DISK_SECTOR_SIZE - 1)
 			 / GRUB_DISK_SECTOR_SIZE);
-  disk->id = (int) dev;
+  disk->id = (unsigned long) dev;
   
   disk->has_partitions = dev->has_partitions;
   disk->data = file;
