@@ -1,5 +1,10 @@
 2008-04-02  Pavel Roskin  <proski@gnu.org>
 
+	* genkernsyms.sh.in: Use more robust assignments for CC and
+	srcdir.  Quote srcdir.
+	* gensymlist.sh.in: Likewise.  Assert at the compile time that
+	the symbol table is not empty.
+
 	* disk/raid.c (grub_raid_memberlist): Fix a signedness warning.
 	* fs/cpio.c (grub_cpio_read): Likewise.
 
