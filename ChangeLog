@@ -1,3 +1,8 @@
+2008-04-02  Pavel Roskin  <proski@gnu.org>
+
+	* disk/raid.c (grub_raid_memberlist): Fix a signedness warning.
+	* fs/cpio.c (grub_cpio_read): Likewise.
+
 2008-04-01  Pavel Roskin  <proski@gnu.org>
 
 	* disk/ata.c (grub_ata_open): Don't lose precision in disk->id.
