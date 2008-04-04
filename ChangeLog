@@ -1,3 +1,13 @@
+2008-04-04  Pavel Roskin  <proski@gnu.org>
+
+	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options):
+	Fix signedness warnings.
+	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate):
+	Likewise.
+	* util/ieee1275/get_disk_name.c: Include config.h so that
+	_GNU_SOURCE is defined and getline() is declared.  Mark an
+	unused argument as such.  Fix a signedness warning.
+
 2008-04-02  Pavel Roskin  <proski@gnu.org>
 
 	* genkernsyms.sh.in: Use more robust assignments for CC and
