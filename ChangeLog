@@ -1,5 +1,9 @@
 2008-04-04  Pavel Roskin  <proski@gnu.org>
 
+	* commands/lspci.c (grub_pci_classes): Fix typos.
+	(grub_lspci_iter): Don't print func twice.  Print vendor ID
+	before device ID, as it's normally done.
+
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options):
 	Fix signedness warnings.
 	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate):
