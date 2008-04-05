@@ -120,7 +120,8 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
   const char *sclass;
   grub_pci_address_t addr;
 
-  grub_printf ("%02x:%02x.%x %04x:%04x", 0, dev, func, pciid & 0xFFFF, pciid >> 16);
+  grub_printf ("%02x:%02x.%x %04x:%04x", bus, dev, func, pciid & 0xFFFF,
+	       pciid >> 16);
   addr = grub_pci_make_address (bus, dev, func, 2);
   class = grub_pci_read (addr);
 	  

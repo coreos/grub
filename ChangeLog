@@ -1,5 +1,8 @@
 2008-04-04  Pavel Roskin  <proski@gnu.org>
 
+	* commands/lspci.c (grub_lspci_iter): Print the bus number
+	correctly.
+
 	* commands/lspci.c (grub_pci_classes): Fix typos.
 	(grub_lspci_iter): Don't print func twice.  Print vendor ID
 	before device ID, as it's normally done.
