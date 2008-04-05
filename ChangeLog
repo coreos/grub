@@ -1,3 +1,8 @@
+2008-04-05  Pavel Roskin  <proski@gnu.org>
+
+	* bus/pci.c (grub_pci_iterate): For multifunction devices, probe
+	all 8 functions.  Otherwise, probe function 0 only.
+
 2008-04-04  Pavel Roskin  <proski@gnu.org>
 
 	* commands/lspci.c (grub_lspci_iter): Print the bus number
