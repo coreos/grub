@@ -186,8 +186,6 @@ main (int argc, char *argv[])
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 
-  grub_hostfs_init ();
-
   grub_init_all ();
 
   /* Make sure that there is a root device.  */
@@ -216,8 +214,6 @@ main (int argc, char *argv[])
     grub_main ();
 
   grub_fini_all ();
-
-  grub_hostfs_fini ();
 
   grub_machine_fini ();
   

@@ -1,3 +1,11 @@
+2008-04-06  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub-emu.c (main): Remove calls to grub_hostfs_init() and
+	grub_hostfs_fini(), as they are called from grub_init_all() and
+	grub_fini_all() respectively.  This fixes an infinite loop in
+	grub-fstest due to double registration of hostfs.
+	Reported by Christian Franke <Christian.Franke@t-online.de>
+
 2008-04-05  Pavel Roskin  <proski@gnu.org>
 
 	* bus/pci.c (grub_pci_iterate): For multifunction devices, probe

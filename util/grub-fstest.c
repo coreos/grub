@@ -499,8 +499,6 @@ main (int argc, char *argv[])
       usage (1);
     }
 
-  grub_hostfs_init ();
-
   /* Initialize all modules. */
   grub_init_all ();
 
@@ -515,8 +513,6 @@ main (int argc, char *argv[])
 
   /* Free resources.  */
   grub_fini_all ();
-
-  grub_hostfs_fini ();
 
   return 0;
 }
