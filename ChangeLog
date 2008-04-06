@@ -1,5 +1,16 @@
 2008-04-06  Pavel Roskin  <proski@gnu.org>
 
+	* util/biosdisk.c: Include grub/util/biosdisk.h.
+	* util/grub-fstest.c (execute_command): Make static.
+	* util/grub-mkdevicemap.c (check_device): Likewise.
+	* util/i386/pc/misc.c: Include grub/machine/init.h.
+	* util/powerpc/ieee1275/misc.c: Likewise.
+	* util/lvm.c: Include grub/util/lvm.h.
+	* util/misc.c: Include grub/kernel.h, grub/misc.h and
+	grub/cache.h.
+	* util/raid.c: Include grub/util/raid.h.
+	(grub_util_getdiskname): Make static.
+
 	* util/grub-emu.c (main): Remove calls to grub_hostfs_init() and
 	grub_hostfs_fini(), as they are called from grub_init_all() and
 	grub_fini_all() respectively.  This fixes an infinite loop in

@@ -93,7 +93,7 @@ grub_register_command (const char *name,
   return NULL;
 }
 
-grub_err_t
+static grub_err_t
 execute_command (grub_command_t cmd, int n, char **args)
 {
   int maxargs = 0;

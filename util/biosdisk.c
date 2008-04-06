@@ -23,6 +23,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/util/misc.h>
+#include <grub/util/biosdisk.h>
 
 #include <stdio.h>
 #include <stdlib.h>

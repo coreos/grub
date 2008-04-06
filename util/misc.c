@@ -27,6 +27,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <grub/kernel.h>
+#include <grub/misc.h>
+#include <grub/cache.h>
 #include <grub/util/misc.h>
 #include <grub/mm.h>
 #include <grub/term.h>

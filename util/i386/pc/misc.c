@@ -19,6 +19,7 @@
 #include <setjmp.h>
 
 #include <grub/util/misc.h>
+#include <grub/machine/init.h>
 
 void
 grub_reboot (void)

@@ -277,7 +277,7 @@ get_i2o_disk_name (char *name, char unit)
 
 /* Check if DEVICE can be read. If an error occurs, return zero,
    otherwise return non-zero.  */
-int
+static int
 check_device (const char *device)
 {
   char buf[512];
