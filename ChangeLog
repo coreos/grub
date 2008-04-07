@@ -1,5 +1,12 @@
 2008-04-07  Robert Millan  <rmh@aybabtu.com>
 
+	Revert grub/machine/init.h addition by Pavel (since it breaks on
+	i386-ieee1275 and others):
+	* util/i386/pc/misc.c: Remove grub/machine/init.h.
+	* util/powerpc/ieee1275/misc.c: Likewise.
+
+2008-04-07  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub-probe.c (probe): Improve error message.
 
 2008-04-07  Robert Millan  <rmh@aybabtu.com>
