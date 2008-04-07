@@ -151,7 +151,7 @@ probe (const char *path, char *device_name)
 
   drive_name = grub_util_get_grub_dev (device_name);
   if (! drive_name)
-    grub_util_error ("cannot find a GRUB drive for %s.\n", device_name);
+    grub_util_error ("Cannot find a GRUB drive for %s.  Check your device.map.\n", device_name);
   
   if (print == PRINT_DRIVE)
     {
