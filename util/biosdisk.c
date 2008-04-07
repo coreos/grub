@@ -486,8 +486,9 @@ read_device_map (const char *dev_map)
   FILE *fp;
   char buf[1024];	/* XXX */
   int lineno = 0;
-  auto void show_error (const char *msg);
+  struct stat st;
 
+  auto void show_error (const char *msg);
   void show_error (const char *msg)
     {
       grub_util_error ("%s:%d: %s", dev_map, lineno, msg);
@@ -542,6 +543,12 @@ read_device_map (const char *dev_map)
       /* Multiple entries for a given drive is not allowed.  */
       if (map[drive])
 	show_error ("Duplicated entry found");
+
+      if (stat (p, &st) == -1)
+	{
+	  grub_util_info ("Cannot stat `%s', skipping", p);
+	  continue;
+	}
 
 #ifdef __linux__
       /* On Linux, the devfs uses symbolic links horribly, and that

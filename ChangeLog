@@ -1,3 +1,9 @@
+2008-04-07  Robert Millan  <rmh@aybabtu.com>
+
+	* util/biosdisk.c (read_device_map): Skip devices that don't exist
+	(this prevents the presence of a bogus entry from ruining the whole
+	thing).
+
 2008-04-06  Pavel Roskin  <proski@gnu.org>
 
 	* util/biosdisk.c: Include grub/util/biosdisk.h.
