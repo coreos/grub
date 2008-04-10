@@ -207,11 +207,11 @@ if test "x$TARGET_CFLAGS" = x; then
                  -Wundef -Wstrict-prototypes -g"
 
   # optimization flags.
-  AC_CACHE_CHECK([whether optimization for size works], size_flag, [
+  AC_CACHE_CHECK([whether optimization for size works], grub_cv_cc_Os, [
     CFLAGS=-Os
-    AC_TRY_COMPILE(, , size_flag=yes, size_flag=no)
+    AC_TRY_COMPILE(, , grub_cv_cc_Os=yes, grub_cv_cc_Os=no)
   ])
-  if test "x$size_flag" = xyes; then
+  if test "x$grub_cv_cc_Os" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -Os"
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -O2 -fno-strength-reduce -fno-unroll-loops"
@@ -219,12 +219,12 @@ if test "x$TARGET_CFLAGS" = x; then
 
   # Force no alignment to save space on i386.
   if test "x$target_cpu" = xi386; then
-    AC_CACHE_CHECK([whether -falign-loops works], [falign_loop_flag], [
+    AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
       CFLAGS="-falign-loops=1"
-      AC_TRY_COMPILE(, , [falign_loop_flag=yes], [falign_loop_flag=no])
+      AC_TRY_COMPILE(, , [grub_cv_cc_falign_loop=yes], [grub_cv_cc_falign_loop=no])
     ])
 
-    if test "x$falign_loop_flag" = xyes; then
+    if test "x$grub_cv_cc_falign_loop" = xyes; then
       TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
     else
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"

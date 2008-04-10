@@ -6561,7 +6561,7 @@ if test "x$TARGET_CFLAGS" = x; then
   # optimization flags.
   { echo "$as_me:$LINENO: checking whether optimization for size works" >&5
 echo $ECHO_N "checking whether optimization for size works... $ECHO_C" >&6; }
-if test "${size_flag+set}" = set; then
+if test "${grub_cv_cc_Os+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -6598,20 +6598,20 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
        } && test -s conftest.$ac_objext; then
-  size_flag=yes
+  grub_cv_cc_Os=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	size_flag=no
+	grub_cv_cc_Os=no
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-{ echo "$as_me:$LINENO: result: $size_flag" >&5
-echo "${ECHO_T}$size_flag" >&6; }
-  if test "x$size_flag" = xyes; then
+{ echo "$as_me:$LINENO: result: $grub_cv_cc_Os" >&5
+echo "${ECHO_T}$grub_cv_cc_Os" >&6; }
+  if test "x$grub_cv_cc_Os" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -Os"
   else
     TARGET_CFLAGS="$TARGET_CFLAGS -O2 -fno-strength-reduce -fno-unroll-loops"
@@ -6621,7 +6621,7 @@ echo "${ECHO_T}$size_flag" >&6; }
   if test "x$target_cpu" = xi386; then
     { echo "$as_me:$LINENO: checking whether -falign-loops works" >&5
 echo $ECHO_N "checking whether -falign-loops works... $ECHO_C" >&6; }
-if test "${falign_loop_flag+set}" = set; then
+if test "${grub_cv_cc_falign_loop+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -6658,21 +6658,21 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
        } && test -s conftest.$ac_objext; then
-  falign_loop_flag=yes
+  grub_cv_cc_falign_loop=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	falign_loop_flag=no
+	grub_cv_cc_falign_loop=no
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
-{ echo "$as_me:$LINENO: result: $falign_loop_flag" >&5
-echo "${ECHO_T}$falign_loop_flag" >&6; }
+{ echo "$as_me:$LINENO: result: $grub_cv_cc_falign_loop" >&5
+echo "${ECHO_T}$grub_cv_cc_falign_loop" >&6; }
 
-    if test "x$falign_loop_flag" = xyes; then
+    if test "x$grub_cv_cc_falign_loop" = xyes; then
       TARGET_CFLAGS="$TARGET_CFLAGS -falign-jumps=1 -falign-loops=1 -falign-functions=1"
     else
       TARGET_CFLAGS="$TARGET_CFLAGS -malign-jumps=1 -malign-loops=1 -malign-functions=1"

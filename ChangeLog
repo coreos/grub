@@ -1,3 +1,8 @@
+2008-04-10  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Always use "_cv_" in cache variables for
+	compatibility with Autoconf 2.62.
+
 2008-04-07  Robert Millan  <rmh@aybabtu.com>
 
 	Revert grub/machine/init.h addition by Pavel (since it breaks on
