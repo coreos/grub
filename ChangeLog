@@ -1,3 +1,8 @@
+2008-04-10  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Always use "_cv_" in cache variables for
+	compatibility with Autoconf 2.62.
+
 2008-03-28  Robert Millan  <rmh@aybabtu.com>
 
 	Surpass 1 TiB disk addressing limit.  Note: there are no plans to handle
