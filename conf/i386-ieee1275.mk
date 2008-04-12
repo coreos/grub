@@ -15,8 +15,8 @@ pkglib_PROGRAMS = kernel.elf
 
 # For kernel.elf.
 kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
-	kern/powerpc/ieee1275/init.c \
-	kern/powerpc/ieee1275/cmain.c kern/powerpc/ieee1275/openfw.c \
+	kern/ieee1275/init.c \
+	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
@@ -26,11 +26,11 @@ kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 	term/ieee1275/ofconsole.c term/i386/pc/at_keyboard.c \
 	disk/ieee1275/ofdisk.c \
 	symlist.c
-CLEANFILES += kernel.elf kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
-MOSTLYCLEANFILES += kernel_elf-kern_i386_ieee1275_startup.d kernel_elf-kern_i386_ieee1275_init.d kernel_elf-kern_powerpc_ieee1275_init.d kernel_elf-kern_powerpc_ieee1275_cmain.d kernel_elf-kern_powerpc_ieee1275_openfw.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-kern_ieee1275_ieee1275.d kernel_elf-term_ieee1275_ofconsole.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-disk_ieee1275_ofdisk.d kernel_elf-symlist.d
+CLEANFILES += kernel.elf kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_ieee1275_init.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
+MOSTLYCLEANFILES += kernel_elf-kern_i386_ieee1275_startup.d kernel_elf-kern_i386_ieee1275_init.d kernel_elf-kern_ieee1275_init.d kernel_elf-kern_ieee1275_cmain.d kernel_elf-kern_ieee1275_openfw.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-kern_ieee1275_ieee1275.d kernel_elf-term_ieee1275_ofconsole.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-disk_ieee1275_ofdisk.d kernel_elf-symlist.d
 
-kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
-	$(TARGET_CC) -o $@ kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_init.o kernel_elf-kern_powerpc_ieee1275_cmain.o kernel_elf-kern_powerpc_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
+kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_ieee1275_init.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o
+	$(TARGET_CC) -o $@ kernel_elf-kern_i386_ieee1275_startup.o kernel_elf-kern_i386_ieee1275_init.o kernel_elf-kern_ieee1275_init.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
 
 kernel_elf-kern_i386_ieee1275_startup.o: kern/i386/ieee1275/startup.S $(kern/i386/ieee1275/startup.S_DEPENDENCIES)
 	$(TARGET_CC) -Ikern/i386/ieee1275 -I$(srcdir)/kern/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -40,17 +40,17 @@ kernel_elf-kern_i386_ieee1275_init.o: kern/i386/ieee1275/init.c $(kern/i386/ieee
 	$(TARGET_CC) -Ikern/i386/ieee1275 -I$(srcdir)/kern/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_i386_ieee1275_init.d
 
-kernel_elf-kern_powerpc_ieee1275_init.o: kern/powerpc/ieee1275/init.c $(kern/powerpc/ieee1275/init.c_DEPENDENCIES)
-	$(TARGET_CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
--include kernel_elf-kern_powerpc_ieee1275_init.d
+kernel_elf-kern_ieee1275_init.o: kern/ieee1275/init.c $(kern/ieee1275/init.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/ieee1275 -I$(srcdir)/kern/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_ieee1275_init.d
 
-kernel_elf-kern_powerpc_ieee1275_cmain.o: kern/powerpc/ieee1275/cmain.c $(kern/powerpc/ieee1275/cmain.c_DEPENDENCIES)
-	$(TARGET_CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
--include kernel_elf-kern_powerpc_ieee1275_cmain.d
+kernel_elf-kern_ieee1275_cmain.o: kern/ieee1275/cmain.c $(kern/ieee1275/cmain.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/ieee1275 -I$(srcdir)/kern/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_ieee1275_cmain.d
 
-kernel_elf-kern_powerpc_ieee1275_openfw.o: kern/powerpc/ieee1275/openfw.c $(kern/powerpc/ieee1275/openfw.c_DEPENDENCIES)
-	$(TARGET_CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
--include kernel_elf-kern_powerpc_ieee1275_openfw.d
+kernel_elf-kern_ieee1275_openfw.o: kern/ieee1275/openfw.c $(kern/ieee1275/openfw.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/ieee1275 -I$(srcdir)/kern/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_ieee1275_openfw.d
 
 kernel_elf-kern_main.o: kern/main.c $(kern/main.c_DEPENDENCIES)
 	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -843,15 +843,15 @@ normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _multiboot.mod.
-_multiboot_mod_SOURCES = loader/powerpc/ieee1275/multiboot2.c \
+_multiboot_mod_SOURCES = loader/ieee1275/multiboot2.c \
 			 loader/multiboot2.c \
 			 loader/multiboot_loader.c
-CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_powerpc_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o und-_multiboot.lst
+CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o und-_multiboot.lst
 ifneq ($(_multiboot_mod_EXPORTS),no)
 CLEANFILES += def-_multiboot.lst
 DEFSYMFILES += def-_multiboot.lst
 endif
-MOSTLYCLEANFILES += _multiboot_mod-loader_powerpc_ieee1275_multiboot2.d _multiboot_mod-loader_multiboot2.d _multiboot_mod-loader_multiboot_loader.d
+MOSTLYCLEANFILES += _multiboot_mod-loader_ieee1275_multiboot2.d _multiboot_mod-loader_multiboot2.d _multiboot_mod-loader_multiboot_loader.d
 UNDSYMFILES += und-_multiboot.lst
 
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
@@ -859,9 +859,9 @@ _multiboot.mod: pre-_multiboot.o mod-_multiboot.o
 	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
-pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_powerpc_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
+pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
 	-rm -f $@
-	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _multiboot_mod-loader_powerpc_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
+	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _multiboot_mod-loader_ieee1275_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
 
 mod-_multiboot.o: mod-_multiboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
@@ -878,19 +878,19 @@ und-_multiboot.lst: pre-_multiboot.o
 	echo '_multiboot' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.o: loader/powerpc/ieee1275/multiboot2.c $(loader/powerpc/ieee1275/multiboot2.c_DEPENDENCIES)
-	$(TARGET_CC) -Iloader/powerpc/ieee1275 -I$(srcdir)/loader/powerpc/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
--include _multiboot_mod-loader_powerpc_ieee1275_multiboot2.d
+_multiboot_mod-loader_ieee1275_multiboot2.o: loader/ieee1275/multiboot2.c $(loader/ieee1275/multiboot2.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
+-include _multiboot_mod-loader_ieee1275_multiboot2.d
 
-CLEANFILES += cmd-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst fs-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst
-COMMANDFILES += cmd-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst
-FSFILES += fs-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst
+CLEANFILES += cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst fs-_multiboot_mod-loader_ieee1275_multiboot2.lst
+COMMANDFILES += cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst
+FSFILES += fs-_multiboot_mod-loader_ieee1275_multiboot2.lst
 
-cmd-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst: loader/powerpc/ieee1275/multiboot2.c $(loader/powerpc/ieee1275/multiboot2.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/powerpc/ieee1275 -I$(srcdir)/loader/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
+cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst: loader/ieee1275/multiboot2.c $(loader/ieee1275/multiboot2.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
-fs-_multiboot_mod-loader_powerpc_ieee1275_multiboot2.lst: loader/powerpc/ieee1275/multiboot2.c $(loader/powerpc/ieee1275/multiboot2.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/powerpc/ieee1275 -I$(srcdir)/loader/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
+fs-_multiboot_mod-loader_ieee1275_multiboot2.lst: loader/ieee1275/multiboot2.c $(loader/ieee1275/multiboot2.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
 
 _multiboot_mod-loader_multiboot2.o: loader/multiboot2.c $(loader/multiboot2.c_DEPENDENCIES)
