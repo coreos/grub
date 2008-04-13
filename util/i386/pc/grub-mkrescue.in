@@ -109,6 +109,11 @@ cp ${input_dir}/*.mod \
   ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
   ${aux_dir}/boot/grub/
 
+modules="biosdisk `cat ${input_dir}/partmap.lst` ${modules}"
+for i in ${modules} ; do
+  echo "insmod $i"
+done > ${aux_dir}/boot/grub/grub.cfg
+
 if test "x$overlay" = x ; then : ; else
   cp -dpR ${overlay}/* ${aux_dir}/
 fi
@@ -121,7 +126,7 @@ if [ "x${image_type}" = "xfloppy" ] ; then
 
   # build core.img
   core_img=`mktemp`
-  ${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${core_img} memdisk cpio biosdisk ${modules}
+  ${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${core_img} memdisk cpio
   rm -f ${memdisk_img}
 
   # build floppy image
@@ -130,7 +135,7 @@ if [ "x${image_type}" = "xfloppy" ] ; then
 else
   # build core.img
   core_img=`mktemp`
-  ${grub_mkimage} -d ${input_dir}/ -o ${core_img} biosdisk iso9660 ${modules}
+  ${grub_mkimage} -d ${input_dir}/ -o ${core_img} biosdisk iso9660
 
   # build grub_eltorito image
   cat ${input_dir}/cdboot.img ${core_img} > ${aux_dir}/boot/grub/grub_eltorito

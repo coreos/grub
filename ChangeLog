@@ -1,3 +1,15 @@
+2008-04-13  Robert Millan  <rmh@aybabtu.com>
+
+	* gendistlist.sh (EXTRA_DISTFILES): Add `genpartmaplist.sh'.
+	* genmk.rb (partmap): New variable.
+	(CLEANFILES, PARTMAPFILES): Add #{partmap}.
+	(#{partmap}): New target rule.
+	* genpartmaplist.sh: New file.
+	* Makefile.in (pkglib_DATA): Add partmap.lst.
+	(partmap.lst): New target rule.
+	* util/i386/pc/grub-mkrescue.in: Generate grub.cfg that loads needed
+	modules (including all partition maps), instead of preloading them.
+
 2007-04-13  Fabian Greffrath  <fabian.greffrath@web.de>
 
 	* util/grub.d/30_os-prober.in: New script. Use `os-prober' and

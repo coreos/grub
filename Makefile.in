@@ -123,7 +123,7 @@ include $(srcdir)/conf/$(target_cpu)-$(platform).mk
 ### General targets.
 
 CLEANFILES += $(pkglib_DATA) $(pkgdata_DATA)
-pkglib_DATA += moddep.lst command.lst fs.lst
+pkglib_DATA += moddep.lst command.lst fs.lst partmap.lst
 moddep.lst: $(DEFSYMFILES) $(UNDSYMFILES) genmoddep.awk
 	cat $(DEFSYMFILES) /dev/null \
 	  | $(AWK) -f $(srcdir)/genmoddep.awk $(UNDSYMFILES) > $@ \
@@ -133,6 +133,9 @@ command.lst: $(COMMANDFILES)
 	cat $^ /dev/null | sort > $@
 
 fs.lst: $(FSFILES)
+	cat $^ /dev/null | sort > $@
+
+partmap.lst: $(PARTMAPFILES)
 	cat $^ /dev/null | sort > $@
 
 ifeq (, $(UNIFONT_HEX))

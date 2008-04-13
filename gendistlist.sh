@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (C) 2005  Free Software Foundation, Inc.
+# Copyright (C) 2005, 2008  Free Software Foundation, Inc.
 #
 # This gendistlist.sh is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -16,7 +16,7 @@
 EXTRA_DISTFILES="AUTHORS COPYING ChangeLog DISTLIST INSTALL NEWS README \
 	THANKS TODO Makefile.in aclocal.m4 autogen.sh config.guess \
 	config.h.in config.sub configure configure.ac gencmdlist.sh \
-	gendistlist.sh genfslist.sh genkernsyms.sh genmk.rb \
+	gendistlist.sh genfslist.sh genpartmaplist.sh genkernsyms.sh genmk.rb \
 	genmodsrc.sh gensymlist.sh install-sh mkinstalldirs stamp-h.in"
 
 DISTDIRS="boot commands conf disk font fs hello include io kern loader \
