@@ -124,7 +124,7 @@ grub_env_context_close (void)
     {
       struct grub_env_var *p, *q;
       
-      for (p = current_context->prev->vars[i]; p; p = q)
+      for (p = current_context->vars[i]; p; p = q)
 	{
 	  q = p->next;
 	  grub_free (p);

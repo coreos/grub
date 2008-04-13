@@ -1,5 +1,16 @@
 2008-04-13  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/misc.c (grub_strncat): Fix off-by-one error.
+	Reported by Zhang Huan <zhanghuan@nrchpc.ac.cn>
+
+	* kern/env.c (grub_env_context_close): Clear current context, not
+	previous one.
+	Patch from Zhang Huan <zhanghuan@nrchpc.ac.cn>
+
+	* kern/misc.c (grub_strcat): Minor speed optimization (same code size).
+
+2008-04-13  Robert Millan  <rmh@aybabtu.com>
+
 	Improve robustness when handling LVM.
 
 	* disk/lvm.c (grub_lvm_getvalue): Return 0 when `*p' is NULL
