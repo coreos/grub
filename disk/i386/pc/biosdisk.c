@@ -234,15 +234,17 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
     {
       unsigned coff, hoff, soff;
       unsigned head;
-      unsigned real_sector = (unsigned) sector;
       
-      /* It is impossible to reach over 2TB with the traditional
-	 CHS access.  */
-      if (sector > ~0UL)
+      /* It is impossible to reach over 8064 MiB (a bit less than LBA24) with
+	 the traditional CHS access.  */
+      if (sector >
+	  1024 /* cylinders */ *
+	  256 /* heads */ *
+	  63 /* spt */)
 	return grub_error (GRUB_ERR_OUT_OF_RANGE, "out of disk");
 
-      soff = real_sector % data->sectors + 1;
-      head = real_sector / data->sectors;
+      soff = ((grub_uint32_t) sector) % data->sectors + 1;
+      head = ((grub_uint32_t) sector) / data->sectors;
       hoff = head % data->heads;
       coff = head / data->heads;
 

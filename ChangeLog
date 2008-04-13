@@ -1,3 +1,8 @@
+2008-04-13  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Fix CHS limit check,
+	as per http://www.allensmith.net/Storage/HDDlimit/Int13h.htm
+
 2008-04-13  Christian Franke  <franke@computer.org>
 
 	* util/i386/pc/grub-mkrescue.in: Add --emulation=floppy
