@@ -1,5 +1,21 @@
 2008-04-13  Robert Millan  <rmh@aybabtu.com>
 
+	Improve robustness when handling LVM.
+
+	* disk/lvm.c (grub_lvm_getvalue): Return 0 when `*p' is NULL
+        (and leave `*p' unmodified).
+	(grub_lvm_iterate): Don't assume `vg->lvs != NULL' when iterating
+	through it.
+	(grub_lvm_memberlist): Don't assume `lv->vg->pvs != NULL' when
+	iterating through it.
+	(grub_lvm_open): Don't assume `vg->lvs != NULL' when iterating
+	through it.
+	(grub_lvm_scan_device): Check the return value (and fail gracefuly
+	when due) on each grub_lvm_getvalue() or grub_strstr() call.
+	Don't assume `vg->pvs != NULL' when iterating through it.
+
+2008-04-13  Robert Millan  <rmh@aybabtu.com>
+
 	* gendistlist.sh (EXTRA_DISTFILES): Add `genpartmaplist.sh'.
 	* genmk.rb (partmap): New variable.
 	(CLEANFILES, PARTMAPFILES): Add #{partmap}.

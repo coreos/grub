@@ -29,11 +29,15 @@ static int lv_count;
 
 
 /* Go the string STR and return the number after STR.  *P will point
-   at the number. */
+   at the number.  In case STR is not found, *P will be NULL and the
+   return value will be 0.  */
 static int
 grub_lvm_getvalue (char **p, char *str)
 {
-  *p = grub_strstr (*p, str) + grub_strlen (str);
+  *p = grub_strstr (*p, str);
+  if (! *p)
+    return 0;
+  *p += grub_strlen (str);
   return grub_strtoul (*p, NULL, 10);
 }
 
@@ -44,9 +48,10 @@ grub_lvm_iterate (int (*hook) (const char *name))
   for (vg = vg_list; vg; vg = vg->next)
     {
       struct grub_lvm_lv *lv;
-      for (lv = vg->lvs; lv; lv = lv->next)
-	if (hook (lv->name))
-	  return 1;
+      if (vg->lvs)
+	for (lv = vg->lvs; lv; lv = lv->next)
+	  if (hook (lv->name))
+	    return 1;
     }
 
   return 0;
@@ -60,13 +65,14 @@ grub_lvm_memberlist (grub_disk_t disk)
   grub_disk_memberlist_t list = NULL, tmp;
   struct grub_lvm_pv *pv;
 
-  for (pv = lv->vg->pvs; pv; pv = pv->next)
-    {
-      tmp = grub_malloc (sizeof (*tmp));
-      tmp->disk = pv->disk;
-      tmp->next = list;
-      list = tmp;
-    }
+  if (lv->vg->pvs)
+    for (pv = lv->vg->pvs; pv; pv = pv->next)
+      {
+	tmp = grub_malloc (sizeof (*tmp));
+	tmp->disk = pv->disk;
+	tmp->next = list;
+	list = tmp;
+      }
 
   return list;
 }
@@ -79,9 +85,10 @@ grub_lvm_open (const char *name, grub_disk_t disk)
   struct grub_lvm_lv *lv = NULL;
   for (vg = vg_list; vg; vg = vg->next)
     {
-      for (lv = vg->lvs; lv; lv = lv->next)
-	if (! grub_strcmp (lv->name, name))
-	  break;
+      if (vg->lvs)
+	for (lv = vg->lvs; lv; lv = lv->next)
+	  if (! grub_strcmp (lv->name, name))
+	    break;
 
       if (lv)
 	break;
@@ -330,141 +337,191 @@ grub_lvm_scan_device (const char *name)
       grub_memcpy (vg->id, vg_id, GRUB_LVM_ID_STRLEN+1);
 
       vg->extent_size = grub_lvm_getvalue (&p, "extent_size = ");
+      if (p == NULL)
+	goto fail2;
 
       vg->lvs = NULL;
       vg->pvs = NULL;
       vg->next = vg_list;
       vg_list = vg;
 
-      p = grub_strstr (p, "physical_volumes {")
-	+ sizeof ("physical_volumes {") - 1;
-
-      /* Add all the pvs to the volume group. */
-      while (1)
+      p = grub_strstr (p, "physical_volumes {");
+      if (p)
 	{
-	  int s;
-	  while (grub_isspace (*p))
-	    p++;
+	  p += sizeof ("physical_volumes {") - 1;
 	  
-	  if (*p == '}')
-	    break;
-
-	  pv = grub_malloc (sizeof (*pv));
-	  q = p;
-	  while (*q != ' ')
-	    q++;
-	  
-	  s = q - p;
-	  pv->name = grub_malloc (s + 1);
-	  grub_memcpy (pv->name, p, s);
-	  pv->name[s] = '\0';
-
-	  p = grub_strstr (p, "id = \"") + sizeof("id = \"") - 1;
-
-	  grub_memcpy (pv->id, p, GRUB_LVM_ID_STRLEN);
-	  pv->id[GRUB_LVM_ID_STRLEN] = '\0';
-
-	  pv->start = grub_lvm_getvalue (&p, "pe_start = ");
-	  pv->disk = NULL;
-	  pv->next = vg->pvs;
-	  vg->pvs = pv;
-
-	  p = grub_strchr (p, '}') + 1;
+	  /* Add all the pvs to the volume group. */
+	  while (1)
+	    {
+	      int s;
+	      while (grub_isspace (*p))
+		p++;
+	      
+	      if (*p == '}')
+		break;
+	      
+	      pv = grub_malloc (sizeof (*pv));
+	      q = p;
+	      while (*q != ' ')
+		q++;
+	      
+	      s = q - p;
+	      pv->name = grub_malloc (s + 1);
+	      grub_memcpy (pv->name, p, s);
+	      pv->name[s] = '\0';
+	      
+	      p = grub_strstr (p, "id = \"") + sizeof("id = \"") - 1;
+	      if (p == NULL)
+		goto pvs_fail;
+	      
+	      grub_memcpy (pv->id, p, GRUB_LVM_ID_STRLEN);
+	      pv->id[GRUB_LVM_ID_STRLEN] = '\0';
+	      
+	      pv->start = grub_lvm_getvalue (&p, "pe_start = ");
+	      if (p == NULL)
+		goto pvs_fail;
+	      pv->disk = NULL;
+	      pv->next = vg->pvs;
+	      vg->pvs = pv;
+	      
+	      p = grub_strchr (p, '}') + 1;
+	      
+	      continue;
+	    pvs_fail:
+	      grub_free (pv->name);
+	      grub_free (pv);
+	      goto fail2;
+	    }
 	}
 
       p = grub_strstr (p, "logical_volumes");
-      p += 18;
-      
-      /* And add all the lvs to the volume group. */
-      while (1)
+      if (p)
 	{
-	  int s;
-	  struct grub_lvm_lv *lv;
-	  struct grub_lvm_segment *seg;
+	  p += 18;
 	  
-	  while (grub_isspace (*p))
-	    p++;
-	  
-	  if (*p == '}')
-	    break;
-
-	  lv = grub_malloc (sizeof (*lv));
-
-	  q = p;
-	  while (*q != ' ')
-	    q++;
-
-	  s = q - p;
-	  lv->name = grub_malloc (vgname_len + 1 + s + 1);
-	  grub_memcpy (lv->name, vgname, vgname_len);
-	  lv->name[vgname_len] = '-';
-	  grub_memcpy (lv->name + vgname_len + 1, p, s);
-	  lv->name[vgname_len + 1 + s] = '\0';
-
-	  lv->size = 0;
-	  
-	  lv->segment_count = grub_lvm_getvalue (&p, "segment_count = ");
-	  lv->segments = grub_malloc (sizeof (*seg) * lv->segment_count);
-	  seg = lv->segments;
-
-	  for (i = 0; i < lv->segment_count; i++)
+	  /* And add all the lvs to the volume group. */
+	  while (1)
 	    {
-	      struct grub_lvm_stripe *stripe;
-		
-	      p = grub_strstr (p, "segment");
-
-	      seg->start_extent = grub_lvm_getvalue (&p, "start_extent = ");
-	      seg->extent_count = grub_lvm_getvalue (&p, "extent_count = ");
-	      seg->stripe_count = grub_lvm_getvalue (&p, "stripe_count = ");
-
-	      lv->size += seg->extent_count * vg->extent_size;
+	      int s;
+	      struct grub_lvm_lv *lv;
+	      struct grub_lvm_segment *seg;
 	      
-	      if (seg->stripe_count != 1)
-		seg->stripe_size = grub_lvm_getvalue (&p, "stripe_size = ");
-
-	      seg->stripes = grub_malloc (sizeof (*stripe)
-					  * seg->stripe_count);
-	      stripe = seg->stripes;
+	      while (grub_isspace (*p))
+		p++;
 	      
-	      p = grub_strstr (p, "stripes = [")
-		+ sizeof("stripes = [") - 1;
+	      if (*p == '}')
+		break;
 	      
-	      for (j = 0; j < seg->stripe_count; j++)
+	      lv = grub_malloc (sizeof (*lv));
+	      
+	      q = p;
+	      while (*q != ' ')
+		q++;
+	      
+	      s = q - p;
+	      lv->name = grub_malloc (vgname_len + 1 + s + 1);
+	      grub_memcpy (lv->name, vgname, vgname_len);
+	      lv->name[vgname_len] = '-';
+	      grub_memcpy (lv->name + vgname_len + 1, p, s);
+	      lv->name[vgname_len + 1 + s] = '\0';
+	      
+	      lv->size = 0;
+	      
+	      lv->segment_count = grub_lvm_getvalue (&p, "segment_count = ");
+	      if (p == NULL)
+		goto lvs_fail;
+	      lv->segments = grub_malloc (sizeof (*seg) * lv->segment_count);
+	      seg = lv->segments;
+	      
+	      for (i = 0; i < lv->segment_count; i++)
 		{
-		  char pvname[10];
+		  struct grub_lvm_stripe *stripe;
 		  
-		  q = p = grub_strchr (p, '"') + 1;
-		  while (*q != '"')
-		    q++;
-
-		  s = q - p;
-		  grub_memcpy (pvname, p, s);
-		  pvname[s] = '\0';
+		  p = grub_strstr (p, "segment");
+		  if (p == NULL)
+		    goto lvs_segment_fail;
 		  
-		  for (pv = vg->pvs; pv; pv = pv->next)
+		  seg->start_extent = grub_lvm_getvalue (&p, "start_extent = ");
+		  if (p == NULL)
+		    goto lvs_segment_fail;
+		  seg->extent_count = grub_lvm_getvalue (&p, "extent_count = ");
+		  if (p == NULL)
+		    goto lvs_segment_fail;
+		  seg->stripe_count = grub_lvm_getvalue (&p, "stripe_count = ");
+		  if (p == NULL)
+		    goto lvs_segment_fail;
+		  
+		  lv->size += seg->extent_count * vg->extent_size;
+		  
+		  if (seg->stripe_count != 1)
+		    seg->stripe_size = grub_lvm_getvalue (&p, "stripe_size = ");
+		  
+		  seg->stripes = grub_malloc (sizeof (*stripe)
+					      * seg->stripe_count);
+		  stripe = seg->stripes;
+		  
+		  p = grub_strstr (p, "stripes = [");
+		  if (p == NULL)
+		    goto lvs_segment_fail2;
+		  p += sizeof("stripes = [") - 1;
+		  
+		  for (j = 0; j < seg->stripe_count; j++)
 		    {
-		      if (! grub_strcmp (pvname, pv->name))
-			{
-			  stripe->pv = pv;
-			  break;
-			}
-		    }
+		      char pvname[10];
+		      
+		      p = grub_strchr (p, '"');
+		      if (p == NULL)
+			continue;
+		      q = ++p;
+		      while (*q != '"')
+			q++;
 
-		  p = grub_strchr (p, ',') + 1;
-		  stripe->start = grub_strtoul (p, NULL, 10);
+		      s = q - p;
+		      grub_memcpy (pvname, p, s);
+		      pvname[s] = '\0';
+		      
+		      if (vg->pvs)
+			for (pv = vg->pvs; pv; pv = pv->next)
+			  {
+			    if (! grub_strcmp (pvname, pv->name))
+			      {
+				stripe->pv = pv;
+				break;
+			      }
+			  }
+		      
+		      stripe->start = grub_lvm_getvalue (&p, ",");
+		      if (p == NULL)
+			continue;
+		      
+		      stripe++;
+		    }
 		  
-		  stripe++;
+		  seg++;
+
+		  continue;
+		lvs_segment_fail2:
+		  grub_free (seg->stripes);
+		lvs_segment_fail:
+		  goto fail2;
 		}
 
-	      seg++;
+	      lv->number = lv_count++;
+	      lv->vg = vg;
+	      lv->next = vg->lvs;
+	      vg->lvs = lv;
+	      
+	      p = grub_strchr (p, '}');
+	      if (p == NULL)
+		goto lvs_fail;
+	      p += 3;
+	      
+	      continue;
+	    lvs_fail:
+	      grub_free (lv->name);
+	      grub_free (lv);
+	      goto fail2;
 	    }
-
-	  lv->number = lv_count++;
-	  lv->vg = vg;
-	  lv->next = vg->lvs;
-	  vg->lvs = lv;
-
-	  p = grub_strchr (p, '}') + 3;
 	}
     }
   else
@@ -474,14 +531,15 @@ grub_lvm_scan_device (const char *name)
 
   /* Match the device we are currently reading from with the right
      PV. */
-  for (pv = vg->pvs; pv; pv = pv->next)
-    {
-      if (! grub_memcmp (pv->id, pv_id, GRUB_LVM_ID_STRLEN))
-	{
-	  pv->disk = grub_disk_open (name);
-	  break;
-	}
-    }
+  if (vg->pvs)
+    for (pv = vg->pvs; pv; pv = pv->next)
+      {
+	if (! grub_memcmp (pv->id, pv_id, GRUB_LVM_ID_STRLEN))
+	  {
+	    pv->disk = grub_disk_open (name);
+	    break;
+	  }
+      }
 
  fail2:
   grub_free (metadatabuf);
