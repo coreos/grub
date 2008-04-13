@@ -24,6 +24,7 @@ genkernsyms.sh.in
 genmk.rb
 genmoddep.awk
 genmodsrc.sh
+genpartmaplist.sh
 gensymlist.sh.in
 install-sh
 mkinstalldirs
