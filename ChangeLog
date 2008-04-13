@@ -1,3 +1,10 @@
+2008-04-13  Christian Franke  <franke@computer.org>
+
+	* util/i386/pc/grub-mkrescue.in: Add --emulation=floppy
+	to create a floppy emulation boot CD when non emulation mode
+	does not work.
+	Enable Joliet CD filesystem extension.
+
 2008-04-13  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/misc.c (grub_strncat): Fix off-by-one error.

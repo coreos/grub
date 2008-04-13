@@ -46,6 +46,8 @@ Make GRUB rescue image.
   --pkglibdir=DIR         use images from directory DIR instead of ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
   --image-type=TYPE       select floppy or cdrom (default)
+  --emulation=TYPE        select El Torito boot emulation type floppy
+                          or none (default) (cdrom only)
 
 grub-mkimage generates a bootable rescue image of the specified type.
 
@@ -56,6 +58,7 @@ EOF
 image_type=cdrom
 input_dir=${pkglibdir}
 grub_mkimage=grub-mkimage
+emulation=none
 
 # Check the arguments.
 for option in "$@"; do
@@ -80,6 +83,14 @@ for option in "$@"; do
           floppy|cdrom) ;;
           *)
             echo "Unknown image type \`$image_type'" 1>&2
+            exit 1 ;;
+        esac ;;
+    --emulation=*)
+    	emulation=`echo "$option" | sed 's/--emulation=//'`
+        case "$emulation" in
+          floppy|none) ;;
+          *)
+            echo "Unknown emulation type \`$emulation'" 1>&2
             exit 1 ;;
         esac ;;
     -*)
@@ -118,7 +129,7 @@ if test "x$overlay" = x ; then : ; else
   cp -dpR ${overlay}/* ${aux_dir}/
 fi
 
-if [ "x${image_type}" = "xfloppy" ] ; then
+if [ "x${image_type}" = xfloppy -o "x${emulation}" = xfloppy ] ; then
   # build memdisk
   memdisk_img=`mktemp`
   tar -C ${aux_dir} -cf ${memdisk_img} boot
@@ -130,8 +141,21 @@ if [ "x${image_type}" = "xfloppy" ] ; then
   rm -f ${memdisk_img}
 
   # build floppy image
-  cat ${input_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=1440 > $output_image
+  if [ "x${image_type}" = xcdrom ] ; then
+    floppy_dir=`mktemp -d`
+    floppy_img=${floppy_dir}/grub_floppy.img
+  else
+    floppy_img=${output_image}
+  fi
+  cat ${input_dir}/boot.img ${core_img} /dev/zero | dd bs=1024 count=1440 > ${floppy_img}
   rm -f ${core_img}
+
+  if [ "x${image_type}" = xcdrom ] ; then
+    # build iso image
+    genisoimage -b grub_floppy.img \
+      -o ${output_image} -r -J ${floppy_dir}
+    rm -rf ${floppy_dir}
+  fi
 else
   # build core.img
   core_img=`mktemp`
@@ -144,7 +168,7 @@ else
   # build iso image
   genisoimage -b boot/grub/grub_eltorito \
     -no-emul-boot -boot-load-size 4 -boot-info-table \
-    -o ${output_image} -r ${aux_dir}
+    -o ${output_image} -r -J ${aux_dir}
   rm -rf ${aux_dir}
 fi
 
