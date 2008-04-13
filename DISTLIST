@@ -332,6 +332,7 @@ util/update-grub_lib.in
 util/grub.d/00_header.in
 util/grub.d/10_hurd.in
 util/grub.d/10_linux.in
+util/grub.d/30_os-prober.in
 util/grub.d/README
 util/elf/grub-mkimage.c
 util/i386/efi/grub-install.in

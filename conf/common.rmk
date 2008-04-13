@@ -125,6 +125,12 @@ CLEANFILES += 10_linux
 update-grub_SCRIPTS += 10_hurd
 CLEANFILES += 10_hurd
 
+30_os-prober: util/grub.d/30_os-prober.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+update-grub_SCRIPTS += 30_os-prober
+CLEANFILES += 30_os-prober
+
 update-grub_DATA += util/grub.d/README
 
 
