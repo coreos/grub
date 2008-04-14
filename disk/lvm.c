@@ -477,7 +477,11 @@ grub_lvm_scan_device (const char *name)
 			q++;
 
 		      s = q - p;
+		      
 		      pvname = grub_malloc (s + 1);
+                      if (pvname == NULL)
+                        goto lvs_segment_fail2;
+                      
 		      grub_memcpy (pvname, p, s);
 		      pvname[s] = '\0';
 		      

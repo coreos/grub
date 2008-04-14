@@ -1,5 +1,10 @@
 2008-04-14  Vesa Jaaskelainen  <chaac@nic.fi>
 
+	* disk/lvm.c (grub_lvm_scan_device): Add forgotten failure path when
+	there is no memory left for physical volume name. 
+
+2008-04-14  Vesa Jaaskelainen  <chaac@nic.fi>
+
 	* disk/lvm.c (grub_lvm_scan_device): Fix logical volume's physical
 	volume name mapping to support bigger than 9 character names properly.
 
