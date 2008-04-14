@@ -617,9 +617,10 @@ normal_mod-normal_arg.o: normal/arg.c $(normal/arg.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_arg.d
 
-CLEANFILES += cmd-normal_mod-normal_arg.lst fs-normal_mod-normal_arg.lst
+CLEANFILES += cmd-normal_mod-normal_arg.lst fs-normal_mod-normal_arg.lst partmap-normal_mod-normal_arg.lst
 COMMANDFILES += cmd-normal_mod-normal_arg.lst
 FSFILES += fs-normal_mod-normal_arg.lst
+PARTMAPFILES += partmap-normal_mod-normal_arg.lst
 
 cmd-normal_mod-normal_arg.lst: normal/arg.c $(normal/arg.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -627,14 +628,18 @@ cmd-normal_mod-normal_arg.lst: normal/arg.c $(normal/arg.c_DEPENDENCIES) gencmdl
 fs-normal_mod-normal_arg.lst: normal/arg.c $(normal/arg.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_arg.lst: normal/arg.c $(normal/arg.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_cmdline.o: normal/cmdline.c $(normal/cmdline.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_cmdline.d
 
-CLEANFILES += cmd-normal_mod-normal_cmdline.lst fs-normal_mod-normal_cmdline.lst
+CLEANFILES += cmd-normal_mod-normal_cmdline.lst fs-normal_mod-normal_cmdline.lst partmap-normal_mod-normal_cmdline.lst
 COMMANDFILES += cmd-normal_mod-normal_cmdline.lst
 FSFILES += fs-normal_mod-normal_cmdline.lst
+PARTMAPFILES += partmap-normal_mod-normal_cmdline.lst
 
 cmd-normal_mod-normal_cmdline.lst: normal/cmdline.c $(normal/cmdline.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -642,14 +647,18 @@ cmd-normal_mod-normal_cmdline.lst: normal/cmdline.c $(normal/cmdline.c_DEPENDENC
 fs-normal_mod-normal_cmdline.lst: normal/cmdline.c $(normal/cmdline.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_cmdline.lst: normal/cmdline.c $(normal/cmdline.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_command.o: normal/command.c $(normal/command.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_command.d
 
-CLEANFILES += cmd-normal_mod-normal_command.lst fs-normal_mod-normal_command.lst
+CLEANFILES += cmd-normal_mod-normal_command.lst fs-normal_mod-normal_command.lst partmap-normal_mod-normal_command.lst
 COMMANDFILES += cmd-normal_mod-normal_command.lst
 FSFILES += fs-normal_mod-normal_command.lst
+PARTMAPFILES += partmap-normal_mod-normal_command.lst
 
 cmd-normal_mod-normal_command.lst: normal/command.c $(normal/command.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -657,14 +666,18 @@ cmd-normal_mod-normal_command.lst: normal/command.c $(normal/command.c_DEPENDENC
 fs-normal_mod-normal_command.lst: normal/command.c $(normal/command.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_command.lst: normal/command.c $(normal/command.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_completion.o: normal/completion.c $(normal/completion.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_completion.d
 
-CLEANFILES += cmd-normal_mod-normal_completion.lst fs-normal_mod-normal_completion.lst
+CLEANFILES += cmd-normal_mod-normal_completion.lst fs-normal_mod-normal_completion.lst partmap-normal_mod-normal_completion.lst
 COMMANDFILES += cmd-normal_mod-normal_completion.lst
 FSFILES += fs-normal_mod-normal_completion.lst
+PARTMAPFILES += partmap-normal_mod-normal_completion.lst
 
 cmd-normal_mod-normal_completion.lst: normal/completion.c $(normal/completion.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -672,14 +685,18 @@ cmd-normal_mod-normal_completion.lst: normal/completion.c $(normal/completion.c_
 fs-normal_mod-normal_completion.lst: normal/completion.c $(normal/completion.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_completion.lst: normal/completion.c $(normal/completion.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_execute.o: normal/execute.c $(normal/execute.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_execute.d
 
-CLEANFILES += cmd-normal_mod-normal_execute.lst fs-normal_mod-normal_execute.lst
+CLEANFILES += cmd-normal_mod-normal_execute.lst fs-normal_mod-normal_execute.lst partmap-normal_mod-normal_execute.lst
 COMMANDFILES += cmd-normal_mod-normal_execute.lst
 FSFILES += fs-normal_mod-normal_execute.lst
+PARTMAPFILES += partmap-normal_mod-normal_execute.lst
 
 cmd-normal_mod-normal_execute.lst: normal/execute.c $(normal/execute.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -687,14 +704,18 @@ cmd-normal_mod-normal_execute.lst: normal/execute.c $(normal/execute.c_DEPENDENC
 fs-normal_mod-normal_execute.lst: normal/execute.c $(normal/execute.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_execute.lst: normal/execute.c $(normal/execute.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_function.o: normal/function.c $(normal/function.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_function.d
 
-CLEANFILES += cmd-normal_mod-normal_function.lst fs-normal_mod-normal_function.lst
+CLEANFILES += cmd-normal_mod-normal_function.lst fs-normal_mod-normal_function.lst partmap-normal_mod-normal_function.lst
 COMMANDFILES += cmd-normal_mod-normal_function.lst
 FSFILES += fs-normal_mod-normal_function.lst
+PARTMAPFILES += partmap-normal_mod-normal_function.lst
 
 cmd-normal_mod-normal_function.lst: normal/function.c $(normal/function.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -702,14 +723,18 @@ cmd-normal_mod-normal_function.lst: normal/function.c $(normal/function.c_DEPEND
 fs-normal_mod-normal_function.lst: normal/function.c $(normal/function.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_function.lst: normal/function.c $(normal/function.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_lexer.o: normal/lexer.c $(normal/lexer.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_lexer.d
 
-CLEANFILES += cmd-normal_mod-normal_lexer.lst fs-normal_mod-normal_lexer.lst
+CLEANFILES += cmd-normal_mod-normal_lexer.lst fs-normal_mod-normal_lexer.lst partmap-normal_mod-normal_lexer.lst
 COMMANDFILES += cmd-normal_mod-normal_lexer.lst
 FSFILES += fs-normal_mod-normal_lexer.lst
+PARTMAPFILES += partmap-normal_mod-normal_lexer.lst
 
 cmd-normal_mod-normal_lexer.lst: normal/lexer.c $(normal/lexer.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -717,14 +742,18 @@ cmd-normal_mod-normal_lexer.lst: normal/lexer.c $(normal/lexer.c_DEPENDENCIES) g
 fs-normal_mod-normal_lexer.lst: normal/lexer.c $(normal/lexer.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_lexer.lst: normal/lexer.c $(normal/lexer.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_main.o: normal/main.c $(normal/main.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_main.d
 
-CLEANFILES += cmd-normal_mod-normal_main.lst fs-normal_mod-normal_main.lst
+CLEANFILES += cmd-normal_mod-normal_main.lst fs-normal_mod-normal_main.lst partmap-normal_mod-normal_main.lst
 COMMANDFILES += cmd-normal_mod-normal_main.lst
 FSFILES += fs-normal_mod-normal_main.lst
+PARTMAPFILES += partmap-normal_mod-normal_main.lst
 
 cmd-normal_mod-normal_main.lst: normal/main.c $(normal/main.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -732,14 +761,18 @@ cmd-normal_mod-normal_main.lst: normal/main.c $(normal/main.c_DEPENDENCIES) genc
 fs-normal_mod-normal_main.lst: normal/main.c $(normal/main.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_main.lst: normal/main.c $(normal/main.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_menu.o: normal/menu.c $(normal/menu.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_menu.d
 
-CLEANFILES += cmd-normal_mod-normal_menu.lst fs-normal_mod-normal_menu.lst
+CLEANFILES += cmd-normal_mod-normal_menu.lst fs-normal_mod-normal_menu.lst partmap-normal_mod-normal_menu.lst
 COMMANDFILES += cmd-normal_mod-normal_menu.lst
 FSFILES += fs-normal_mod-normal_menu.lst
+PARTMAPFILES += partmap-normal_mod-normal_menu.lst
 
 cmd-normal_mod-normal_menu.lst: normal/menu.c $(normal/menu.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -747,14 +780,18 @@ cmd-normal_mod-normal_menu.lst: normal/menu.c $(normal/menu.c_DEPENDENCIES) genc
 fs-normal_mod-normal_menu.lst: normal/menu.c $(normal/menu.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_menu.lst: normal/menu.c $(normal/menu.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_menu_entry.o: normal/menu_entry.c $(normal/menu_entry.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_menu_entry.d
 
-CLEANFILES += cmd-normal_mod-normal_menu_entry.lst fs-normal_mod-normal_menu_entry.lst
+CLEANFILES += cmd-normal_mod-normal_menu_entry.lst fs-normal_mod-normal_menu_entry.lst partmap-normal_mod-normal_menu_entry.lst
 COMMANDFILES += cmd-normal_mod-normal_menu_entry.lst
 FSFILES += fs-normal_mod-normal_menu_entry.lst
+PARTMAPFILES += partmap-normal_mod-normal_menu_entry.lst
 
 cmd-normal_mod-normal_menu_entry.lst: normal/menu_entry.c $(normal/menu_entry.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -762,14 +799,18 @@ cmd-normal_mod-normal_menu_entry.lst: normal/menu_entry.c $(normal/menu_entry.c_
 fs-normal_mod-normal_menu_entry.lst: normal/menu_entry.c $(normal/menu_entry.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_menu_entry.lst: normal/menu_entry.c $(normal/menu_entry.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_misc.o: normal/misc.c $(normal/misc.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_misc.d
 
-CLEANFILES += cmd-normal_mod-normal_misc.lst fs-normal_mod-normal_misc.lst
+CLEANFILES += cmd-normal_mod-normal_misc.lst fs-normal_mod-normal_misc.lst partmap-normal_mod-normal_misc.lst
 COMMANDFILES += cmd-normal_mod-normal_misc.lst
 FSFILES += fs-normal_mod-normal_misc.lst
+PARTMAPFILES += partmap-normal_mod-normal_misc.lst
 
 cmd-normal_mod-normal_misc.lst: normal/misc.c $(normal/misc.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -777,14 +818,18 @@ cmd-normal_mod-normal_misc.lst: normal/misc.c $(normal/misc.c_DEPENDENCIES) genc
 fs-normal_mod-normal_misc.lst: normal/misc.c $(normal/misc.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_misc.lst: normal/misc.c $(normal/misc.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-grub_script_tab.o: grub_script.tab.c $(grub_script.tab.c_DEPENDENCIES)
 	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-grub_script_tab.d
 
-CLEANFILES += cmd-normal_mod-grub_script_tab.lst fs-normal_mod-grub_script_tab.lst
+CLEANFILES += cmd-normal_mod-grub_script_tab.lst fs-normal_mod-grub_script_tab.lst partmap-normal_mod-grub_script_tab.lst
 COMMANDFILES += cmd-normal_mod-grub_script_tab.lst
 FSFILES += fs-normal_mod-grub_script_tab.lst
+PARTMAPFILES += partmap-normal_mod-grub_script_tab.lst
 
 cmd-normal_mod-grub_script_tab.lst: grub_script.tab.c $(grub_script.tab.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -792,14 +837,18 @@ cmd-normal_mod-grub_script_tab.lst: grub_script.tab.c $(grub_script.tab.c_DEPEND
 fs-normal_mod-grub_script_tab.lst: grub_script.tab.c $(grub_script.tab.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-grub_script_tab.lst: grub_script.tab.c $(grub_script.tab.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_script.o: normal/script.c $(normal/script.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_script.d
 
-CLEANFILES += cmd-normal_mod-normal_script.lst fs-normal_mod-normal_script.lst
+CLEANFILES += cmd-normal_mod-normal_script.lst fs-normal_mod-normal_script.lst partmap-normal_mod-normal_script.lst
 COMMANDFILES += cmd-normal_mod-normal_script.lst
 FSFILES += fs-normal_mod-normal_script.lst
+PARTMAPFILES += partmap-normal_mod-normal_script.lst
 
 cmd-normal_mod-normal_script.lst: normal/script.c $(normal/script.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -807,14 +856,18 @@ cmd-normal_mod-normal_script.lst: normal/script.c $(normal/script.c_DEPENDENCIES
 fs-normal_mod-normal_script.lst: normal/script.c $(normal/script.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_script.lst: normal/script.c $(normal/script.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_i386_setjmp.o: normal/i386/setjmp.S $(normal/i386/setjmp.S_DEPENDENCIES)
 	$(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) -DASM_FILE=1 $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_i386_setjmp.d
 
-CLEANFILES += cmd-normal_mod-normal_i386_setjmp.lst fs-normal_mod-normal_i386_setjmp.lst
+CLEANFILES += cmd-normal_mod-normal_i386_setjmp.lst fs-normal_mod-normal_i386_setjmp.lst partmap-normal_mod-normal_i386_setjmp.lst
 COMMANDFILES += cmd-normal_mod-normal_i386_setjmp.lst
 FSFILES += fs-normal_mod-normal_i386_setjmp.lst
+PARTMAPFILES += partmap-normal_mod-normal_i386_setjmp.lst
 
 cmd-normal_mod-normal_i386_setjmp.lst: normal/i386/setjmp.S $(normal/i386/setjmp.S_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
@@ -822,20 +875,27 @@ cmd-normal_mod-normal_i386_setjmp.lst: normal/i386/setjmp.S $(normal/i386/setjmp
 fs-normal_mod-normal_i386_setjmp.lst: normal/i386/setjmp.S $(normal/i386/setjmp.S_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
+partmap-normal_mod-normal_i386_setjmp.lst: normal/i386/setjmp.S $(normal/i386/setjmp.S_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal/i386 -I$(srcdir)/normal/i386 $(TARGET_CPPFLAGS) $(TARGET_ASFLAGS) $(normal_mod_ASFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
 
 normal_mod-normal_color.o: normal/color.c $(normal/color.c_DEPENDENCIES)
 	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
 -include normal_mod-normal_color.d
 
-CLEANFILES += cmd-normal_mod-normal_color.lst fs-normal_mod-normal_color.lst
+CLEANFILES += cmd-normal_mod-normal_color.lst fs-normal_mod-normal_color.lst partmap-normal_mod-normal_color.lst
 COMMANDFILES += cmd-normal_mod-normal_color.lst
 FSFILES += fs-normal_mod-normal_color.lst
+PARTMAPFILES += partmap-normal_mod-normal_color.lst
 
 cmd-normal_mod-normal_color.lst: normal/color.c $(normal/color.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
 
 fs-normal_mod-normal_color.lst: normal/color.c $(normal/color.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+partmap-normal_mod-normal_color.lst: normal/color.c $(normal/color.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
 
 
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -882,9 +942,10 @@ _multiboot_mod-loader_ieee1275_multiboot2.o: loader/ieee1275/multiboot2.c $(load
 	$(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
 -include _multiboot_mod-loader_ieee1275_multiboot2.d
 
-CLEANFILES += cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst fs-_multiboot_mod-loader_ieee1275_multiboot2.lst
+CLEANFILES += cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst fs-_multiboot_mod-loader_ieee1275_multiboot2.lst partmap-_multiboot_mod-loader_ieee1275_multiboot2.lst
 COMMANDFILES += cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst
 FSFILES += fs-_multiboot_mod-loader_ieee1275_multiboot2.lst
+PARTMAPFILES += partmap-_multiboot_mod-loader_ieee1275_multiboot2.lst
 
 cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst: loader/ieee1275/multiboot2.c $(loader/ieee1275/multiboot2.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
@@ -892,14 +953,18 @@ cmd-_multiboot_mod-loader_ieee1275_multiboot2.lst: loader/ieee1275/multiboot2.c 
 fs-_multiboot_mod-loader_ieee1275_multiboot2.lst: loader/ieee1275/multiboot2.c $(loader/ieee1275/multiboot2.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
+partmap-_multiboot_mod-loader_ieee1275_multiboot2.lst: loader/ieee1275/multiboot2.c $(loader/ieee1275/multiboot2.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/ieee1275 -I$(srcdir)/loader/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
 
 _multiboot_mod-loader_multiboot2.o: loader/multiboot2.c $(loader/multiboot2.c_DEPENDENCIES)
 	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
 -include _multiboot_mod-loader_multiboot2.d
 
-CLEANFILES += cmd-_multiboot_mod-loader_multiboot2.lst fs-_multiboot_mod-loader_multiboot2.lst
+CLEANFILES += cmd-_multiboot_mod-loader_multiboot2.lst fs-_multiboot_mod-loader_multiboot2.lst partmap-_multiboot_mod-loader_multiboot2.lst
 COMMANDFILES += cmd-_multiboot_mod-loader_multiboot2.lst
 FSFILES += fs-_multiboot_mod-loader_multiboot2.lst
+PARTMAPFILES += partmap-_multiboot_mod-loader_multiboot2.lst
 
 cmd-_multiboot_mod-loader_multiboot2.lst: loader/multiboot2.c $(loader/multiboot2.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
@@ -907,20 +972,27 @@ cmd-_multiboot_mod-loader_multiboot2.lst: loader/multiboot2.c $(loader/multiboot
 fs-_multiboot_mod-loader_multiboot2.lst: loader/multiboot2.c $(loader/multiboot2.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
+partmap-_multiboot_mod-loader_multiboot2.lst: loader/multiboot2.c $(loader/multiboot2.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
 
 _multiboot_mod-loader_multiboot_loader.o: loader/multiboot_loader.c $(loader/multiboot_loader.c_DEPENDENCIES)
 	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
 -include _multiboot_mod-loader_multiboot_loader.d
 
-CLEANFILES += cmd-_multiboot_mod-loader_multiboot_loader.lst fs-_multiboot_mod-loader_multiboot_loader.lst
+CLEANFILES += cmd-_multiboot_mod-loader_multiboot_loader.lst fs-_multiboot_mod-loader_multiboot_loader.lst partmap-_multiboot_mod-loader_multiboot_loader.lst
 COMMANDFILES += cmd-_multiboot_mod-loader_multiboot_loader.lst
 FSFILES += fs-_multiboot_mod-loader_multiboot_loader.lst
+PARTMAPFILES += partmap-_multiboot_mod-loader_multiboot_loader.lst
 
 cmd-_multiboot_mod-loader_multiboot_loader.lst: loader/multiboot_loader.c $(loader/multiboot_loader.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
 fs-_multiboot_mod-loader_multiboot_loader.lst: loader/multiboot_loader.c $(loader/multiboot_loader.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
+
+partmap-_multiboot_mod-loader_multiboot_loader.lst: loader/multiboot_loader.c $(loader/multiboot_loader.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
 
 _multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -964,15 +1036,19 @@ multiboot_mod-loader_multiboot_loader_normal.o: loader/multiboot_loader_normal.c
 	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -MD -c -o $@ $<
 -include multiboot_mod-loader_multiboot_loader_normal.d
 
-CLEANFILES += cmd-multiboot_mod-loader_multiboot_loader_normal.lst fs-multiboot_mod-loader_multiboot_loader_normal.lst
+CLEANFILES += cmd-multiboot_mod-loader_multiboot_loader_normal.lst fs-multiboot_mod-loader_multiboot_loader_normal.lst partmap-multiboot_mod-loader_multiboot_loader_normal.lst
 COMMANDFILES += cmd-multiboot_mod-loader_multiboot_loader_normal.lst
 FSFILES += fs-multiboot_mod-loader_multiboot_loader_normal.lst
+PARTMAPFILES += partmap-multiboot_mod-loader_multiboot_loader_normal.lst
 
 cmd-multiboot_mod-loader_multiboot_loader_normal.lst: loader/multiboot_loader_normal.c $(loader/multiboot_loader_normal.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh multiboot > $@ || (rm -f $@; exit 1)
 
 fs-multiboot_mod-loader_multiboot_loader_normal.lst: loader/multiboot_loader_normal.c $(loader/multiboot_loader_normal.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh multiboot > $@ || (rm -f $@; exit 1)
+
+partmap-multiboot_mod-loader_multiboot_loader_normal.lst: loader/multiboot_loader_normal.c $(loader/multiboot_loader_normal.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh multiboot > $@ || (rm -f $@; exit 1)
 
 
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1016,15 +1092,19 @@ aout_mod-loader_aout.o: loader/aout.c $(loader/aout.c_DEPENDENCIES)
 	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -MD -c -o $@ $<
 -include aout_mod-loader_aout.d
 
-CLEANFILES += cmd-aout_mod-loader_aout.lst fs-aout_mod-loader_aout.lst
+CLEANFILES += cmd-aout_mod-loader_aout.lst fs-aout_mod-loader_aout.lst partmap-aout_mod-loader_aout.lst
 COMMANDFILES += cmd-aout_mod-loader_aout.lst
 FSFILES += fs-aout_mod-loader_aout.lst
+PARTMAPFILES += partmap-aout_mod-loader_aout.lst
 
 cmd-aout_mod-loader_aout.lst: loader/aout.c $(loader/aout.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh aout > $@ || (rm -f $@; exit 1)
 
 fs-aout_mod-loader_aout.lst: loader/aout.c $(loader/aout.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh aout > $@ || (rm -f $@; exit 1)
+
+partmap-aout_mod-loader_aout.lst: loader/aout.c $(loader/aout.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh aout > $@ || (rm -f $@; exit 1)
 
 
 aout_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1068,15 +1148,19 @@ suspend_mod-commands_ieee1275_suspend.o: commands/ieee1275/suspend.c $(commands/
 	$(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -MD -c -o $@ $<
 -include suspend_mod-commands_ieee1275_suspend.d
 
-CLEANFILES += cmd-suspend_mod-commands_ieee1275_suspend.lst fs-suspend_mod-commands_ieee1275_suspend.lst
+CLEANFILES += cmd-suspend_mod-commands_ieee1275_suspend.lst fs-suspend_mod-commands_ieee1275_suspend.lst partmap-suspend_mod-commands_ieee1275_suspend.lst
 COMMANDFILES += cmd-suspend_mod-commands_ieee1275_suspend.lst
 FSFILES += fs-suspend_mod-commands_ieee1275_suspend.lst
+PARTMAPFILES += partmap-suspend_mod-commands_ieee1275_suspend.lst
 
 cmd-suspend_mod-commands_ieee1275_suspend.lst: commands/ieee1275/suspend.c $(commands/ieee1275/suspend.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh suspend > $@ || (rm -f $@; exit 1)
 
 fs-suspend_mod-commands_ieee1275_suspend.lst: commands/ieee1275/suspend.c $(commands/ieee1275/suspend.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh suspend > $@ || (rm -f $@; exit 1)
+
+partmap-suspend_mod-commands_ieee1275_suspend.lst: commands/ieee1275/suspend.c $(commands/ieee1275/suspend.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/ieee1275 -I$(srcdir)/commands/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh suspend > $@ || (rm -f $@; exit 1)
 
 
 suspend_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1120,15 +1204,19 @@ reboot_mod-commands_reboot.o: commands/reboot.c $(commands/reboot.c_DEPENDENCIES
 	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
 -include reboot_mod-commands_reboot.d
 
-CLEANFILES += cmd-reboot_mod-commands_reboot.lst fs-reboot_mod-commands_reboot.lst
+CLEANFILES += cmd-reboot_mod-commands_reboot.lst fs-reboot_mod-commands_reboot.lst partmap-reboot_mod-commands_reboot.lst
 COMMANDFILES += cmd-reboot_mod-commands_reboot.lst
 FSFILES += fs-reboot_mod-commands_reboot.lst
+PARTMAPFILES += partmap-reboot_mod-commands_reboot.lst
 
 cmd-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
 
 fs-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reboot > $@ || (rm -f $@; exit 1)
+
+partmap-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh reboot > $@ || (rm -f $@; exit 1)
 
 
 reboot_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1172,15 +1260,19 @@ halt_mod-commands_halt.o: commands/halt.c $(commands/halt.c_DEPENDENCIES)
 	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
 -include halt_mod-commands_halt.d
 
-CLEANFILES += cmd-halt_mod-commands_halt.lst fs-halt_mod-commands_halt.lst
+CLEANFILES += cmd-halt_mod-commands_halt.lst fs-halt_mod-commands_halt.lst partmap-halt_mod-commands_halt.lst
 COMMANDFILES += cmd-halt_mod-commands_halt.lst
 FSFILES += fs-halt_mod-commands_halt.lst
+PARTMAPFILES += partmap-halt_mod-commands_halt.lst
 
 cmd-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
 
 fs-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh halt > $@ || (rm -f $@; exit 1)
+
+partmap-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh halt > $@ || (rm -f $@; exit 1)
 
 
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1224,15 +1316,19 @@ cpuid_mod-commands_i386_cpuid.o: commands/i386/cpuid.c $(commands/i386/cpuid.c_D
 	$(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -MD -c -o $@ $<
 -include cpuid_mod-commands_i386_cpuid.d
 
-CLEANFILES += cmd-cpuid_mod-commands_i386_cpuid.lst fs-cpuid_mod-commands_i386_cpuid.lst
+CLEANFILES += cmd-cpuid_mod-commands_i386_cpuid.lst fs-cpuid_mod-commands_i386_cpuid.lst partmap-cpuid_mod-commands_i386_cpuid.lst
 COMMANDFILES += cmd-cpuid_mod-commands_i386_cpuid.lst
 FSFILES += fs-cpuid_mod-commands_i386_cpuid.lst
+PARTMAPFILES += partmap-cpuid_mod-commands_i386_cpuid.lst
 
 cmd-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cpuid > $@ || (rm -f $@; exit 1)
 
 fs-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cpuid > $@ || (rm -f $@; exit 1)
+
+partmap-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh cpuid > $@ || (rm -f $@; exit 1)
 
 
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -1276,15 +1372,19 @@ serial_mod-term_i386_pc_serial.o: term/i386/pc/serial.c $(term/i386/pc/serial.c_
 	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -MD -c -o $@ $<
 -include serial_mod-term_i386_pc_serial.d
 
-CLEANFILES += cmd-serial_mod-term_i386_pc_serial.lst fs-serial_mod-term_i386_pc_serial.lst
+CLEANFILES += cmd-serial_mod-term_i386_pc_serial.lst fs-serial_mod-term_i386_pc_serial.lst partmap-serial_mod-term_i386_pc_serial.lst
 COMMANDFILES += cmd-serial_mod-term_i386_pc_serial.lst
 FSFILES += fs-serial_mod-term_i386_pc_serial.lst
+PARTMAPFILES += partmap-serial_mod-term_i386_pc_serial.lst
 
 cmd-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c $(term/i386/pc/serial.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh serial > $@ || (rm -f $@; exit 1)
 
 fs-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c $(term/i386/pc/serial.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh serial > $@ || (rm -f $@; exit 1)
+
+partmap-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c $(term/i386/pc/serial.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh serial > $@ || (rm -f $@; exit 1)
 
 
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
