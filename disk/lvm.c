@@ -467,7 +467,7 @@ grub_lvm_scan_device (const char *name)
 		  
 		  for (j = 0; j < seg->stripe_count; j++)
 		    {
-		      char pvname[10];
+		      char *pvname;
 		      
 		      p = grub_strchr (p, '"');
 		      if (p == NULL)
@@ -477,6 +477,7 @@ grub_lvm_scan_device (const char *name)
 			q++;
 
 		      s = q - p;
+		      pvname = grub_malloc (s + 1);
 		      grub_memcpy (pvname, p, s);
 		      pvname[s] = '\0';
 		      
@@ -489,6 +490,8 @@ grub_lvm_scan_device (const char *name)
 				break;
 			      }
 			  }
+		      
+		      grub_free(pvname);
 		      
 		      stripe->start = grub_lvm_getvalue (&p, ",");
 		      if (p == NULL)

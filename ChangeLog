@@ -1,3 +1,8 @@
+2008-04-14  Vesa Jaaskelainen  <chaac@nic.fi>
+
+	* disk/lvm.c (grub_lvm_scan_device): Fix logical volume's physical
+	volume name mapping to support bigger than 9 character names properly.
+
 2008-04-13  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Fix CHS limit check,
