@@ -238,16 +238,6 @@ if test "x$target_m32" = x1; then
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
 fi
 
-AC_MSG_CHECKING([whether the linker accepts `--build-id=none'])
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -Wl,--build-id=none"
-AC_TRY_LINK(, , build_id_flag=yes, build_id_flag=no)
-AC_MSG_RESULT([$build_id_flag])
-LDFLAGS="$save_LDFLAGS"
-if test "x$build_id_flag" = xyes; then
-  TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,--build-id=none"
-fi
-
 #
 # Compiler features.
 #

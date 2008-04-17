@@ -1,6 +1,6 @@
 #! /usr/bin/ruby -w
 #
-# Copyright (C) 2002,2003,2004,2005,2006,2007  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
 #
 # This genmk.rb is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -57,7 +57,7 @@ class Image
 MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: #{exe}
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 #{exe}: #{objs_str}
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)

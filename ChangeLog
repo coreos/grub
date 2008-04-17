@@ -1,3 +1,13 @@
+2008-04-17  Lubomir Kundrak  <lkundrak@redhat.com>
+
+	* aclocal.m4 (grub_PROG_OBJCOPY_ABSOLUTE): take only .text
+	section into account, newer toolchains generate unique build ids
+	* configure.ac: remove the test for --build-id=none acceptance,
+	we want build ids to bre preserved
+	* genmk.rb: add -R .note.gnu.build-id to objcopy, so build id
+	far from other sections don't cause the raw binary images grow
+	size
+
 2008-04-15  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/lvm.c: Update copyright year.

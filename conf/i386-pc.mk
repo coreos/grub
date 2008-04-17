@@ -22,7 +22,7 @@ CLEANFILES += boot.img boot.exec boot_img-boot_i386_pc_boot.o
 MOSTLYCLEANFILES += boot_img-boot_i386_pc_boot.d
 
 boot.img: boot.exec
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 boot.exec: boot_img-boot_i386_pc_boot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(boot_img_LDFLAGS)
@@ -40,7 +40,7 @@ CLEANFILES += pxeboot.img pxeboot.exec pxeboot_img-boot_i386_pc_pxeboot.o
 MOSTLYCLEANFILES += pxeboot_img-boot_i386_pc_pxeboot.d
 
 pxeboot.img: pxeboot.exec
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 pxeboot.exec: pxeboot_img-boot_i386_pc_pxeboot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(pxeboot_img_LDFLAGS)
@@ -58,7 +58,7 @@ CLEANFILES += diskboot.img diskboot.exec diskboot_img-boot_i386_pc_diskboot.o
 MOSTLYCLEANFILES += diskboot_img-boot_i386_pc_diskboot.d
 
 diskboot.img: diskboot.exec
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 diskboot.exec: diskboot_img-boot_i386_pc_diskboot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(diskboot_img_LDFLAGS)
@@ -76,7 +76,7 @@ CLEANFILES += lnxboot.img lnxboot.exec lnxboot_img-boot_i386_pc_lnxboot.o
 MOSTLYCLEANFILES += lnxboot_img-boot_i386_pc_lnxboot.d
 
 lnxboot.img: lnxboot.exec
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 lnxboot.exec: lnxboot_img-boot_i386_pc_lnxboot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(lnxboot_img_LDFLAGS)
@@ -94,7 +94,7 @@ CLEANFILES += cdboot.img cdboot.exec cdboot_img-boot_i386_pc_cdboot.o
 MOSTLYCLEANFILES += cdboot_img-boot_i386_pc_cdboot.d
 
 cdboot.img: cdboot.exec
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 cdboot.exec: cdboot_img-boot_i386_pc_cdboot.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(cdboot_img_LDFLAGS)
@@ -118,7 +118,7 @@ CLEANFILES += kernel.img kernel.exec kernel_img-kern_i386_pc_startup.o kernel_im
 MOSTLYCLEANFILES += kernel_img-kern_i386_pc_startup.d kernel_img-kern_main.d kernel_img-kern_device.d kernel_img-kern_disk.d kernel_img-kern_dl.d kernel_img-kern_file.d kernel_img-kern_fs.d kernel_img-kern_err.d kernel_img-kern_misc.d kernel_img-kern_mm.d kernel_img-kern_loader.d kernel_img-kern_rescue.d kernel_img-kern_term.d kernel_img-kern_i386_dl.d kernel_img-kern_i386_pc_init.d kernel_img-kern_parser.d kernel_img-kern_partition.d kernel_img-kern_env.d kernel_img-term_i386_pc_console.d kernel_img-symlist.d
 
 kernel.img: kernel.exec
-	$(OBJCOPY) -O binary -R .note -R .comment $< $@
+	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
 kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(kernel_img_LDFLAGS)
