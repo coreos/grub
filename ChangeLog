@@ -1,3 +1,9 @@
+2008-04-18  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* util/i386/pc/grub-mkrescue.in (grub_mkimage): Don't overwrite correct
+	value.
+	* util/powerpc/ieee1275/grub-mkrescue.in (grub_mkimage): Likewise.
+
 2008-04-18  Robert Millan  <rmh@aybabtu.com>
 
 	Restructures early code path on ieee1275 to unify grub_main() as
