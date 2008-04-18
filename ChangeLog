@@ -1,3 +1,9 @@
+2008-04-18  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Fix syntax error when setting
+	`GRUB_PRELOAD_MODULES'.
+	Reported by Stephane Chazelas <stephane@artesyncp.com>
+
 2008-04-17  Lubomir Kundrak  <lkundrak@redhat.com>
 
 	* aclocal.m4 (grub_PROG_OBJCOPY_ABSOLUTE): take only .text
