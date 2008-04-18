@@ -1,5 +1,19 @@
 2008-04-18  Robert Millan  <rmh@aybabtu.com>
 
+	Restructures early code path on ieee1275 to unify grub_main() as
+	the first C function that is executed in every platform.
+
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_init): New prototype.
+	* kern/i386/ieee1275/startup.S (_start): Jump to grub_main() instead of
+	cmain().
+	* kern/powerpc/ieee1275/crt0.S (_start): Likewise.
+	* kern/ieee1275/cmain.c (cmain): Rename to ...
+	* kern/ieee1275/cmain.c (grub_ieee1275_init): ... this.
+	* kern/ieee1275/init.c (grub_machine_init): Call grub_ieee1275_init()
+	at the beginning.
+
+2008-04-18  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub.in: Fix syntax error when setting
 	`GRUB_PRELOAD_MODULES'.
 	Reported by Stephane Chazelas <stephane@artesyncp.com>

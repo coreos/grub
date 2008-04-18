@@ -180,6 +180,8 @@ grub_machine_init (void)
   char args[256];
   int actual;
 
+  grub_ieee1275_init ();
+
   grub_console_init ();
 #ifdef __i386__
   grub_keyboard_controller_init ();

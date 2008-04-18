@@ -151,9 +151,8 @@ grub_ieee1275_find_options (void)
 #undef SF
 #undef OHW
 
-void cmain (void);
 void
-cmain (void)
+grub_ieee1275_init (void)
 {
   grub_ieee1275_finddevice ("/chosen", &grub_ieee1275_chosen);
 
@@ -162,9 +161,4 @@ cmain (void)
     grub_ieee1275_mmu = 0;
 
   grub_ieee1275_find_options ();
-
-  /* Now invoke the main function.  */
-  grub_main ();
-
-  /* Never reached.  */
 }

@@ -39,7 +39,7 @@
 start:
 _start:
 	movl %eax, EXT_C(grub_ieee1275_entry_fn)
-	jmp EXT_C(cmain)
+	jmp EXT_C(grub_main)
 
 /*
  *  This call is special...  it never returns...  in fact it should simply

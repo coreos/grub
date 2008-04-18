@@ -42,5 +42,5 @@ _start:
 	lis	9, grub_ieee1275_entry_fn@ha
 	stw	5, grub_ieee1275_entry_fn@l(9)
 
-	bl	cmain
+	bl	grub_main
 1:	b	1b
