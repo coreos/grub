@@ -29,7 +29,7 @@
 	* aclocal.m4 (grub_PROG_OBJCOPY_ABSOLUTE): take only .text
 	section into account, newer toolchains generate unique build ids
 	* configure.ac: remove the test for --build-id=none acceptance,
-	we want build ids to bre preserved
+	we want build ids to be preserved
 	* genmk.rb: add -R .note.gnu.build-id to objcopy, so build id
 	far from other sections don't cause the raw binary images grow
 	size
@@ -931,7 +931,7 @@
 
 2008-02-03  Pavel Roskin  <proski@gnu.org>
 
-	* a/kern/i386/pc/startup.S (grub_chainloader_real_boot): Pop
+	* kern/i386/pc/startup.S (grub_chainloader_real_boot): Pop
 	%edx and %esi from stack only after grub_gate_a20() is called.
 	grub_gate_a20() clobbers %edx.
 
