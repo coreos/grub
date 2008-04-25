@@ -47,6 +47,9 @@
 #define GRUB_LINUX_EFI_SIGNATURE	\
   ('E' << 24 | 'F' << 16 | 'I' << 8 | 'L')
 
+#define GRUB_LINUX_OFW_SIGNATURE	\
+  (' ' << 24 | 'W' << 16 | 'F' << 8 | 'O')
+
 #ifndef ASM_FILE
 
 /* For the Linux/i386 boot protocol version 2.03.  */
@@ -154,7 +157,14 @@ struct linux_kernel_params
   grub_uint8_t hd1_drive_info[0x10];	/* 90 */
   grub_uint16_t rom_config_len;		/* a0 */
 
-  grub_uint8_t padding6[0x1c0 - 0xa2];
+  grub_uint8_t padding6[0xb0 - 0xa2];
+
+  grub_uint32_t ofw_signature;		/* b0 */
+  grub_uint32_t ofw_num_items;		/* b4 */
+  grub_uint32_t ofw_cif_handler;	/* b8 */
+  grub_uint32_t ofw_idt;		/* bc */
+
+  grub_uint8_t padding7[0x1c0 - 0xc0];
   
   grub_uint32_t efi_signature;		/* 1c0 */
   grub_uint32_t efi_system_table;	/* 1c4 */
@@ -163,15 +173,15 @@ struct linux_kernel_params
   grub_uint32_t efi_mmap;		/* 1d0 */
   grub_uint32_t efi_mmap_size;		/* 1d4 */
   
-  grub_uint8_t padding7[0x1e0 - 0x1d8];
+  grub_uint8_t padding8[0x1e0 - 0x1d8];
   
   grub_uint32_t alt_mem;		/* 1e0 */
   
-  grub_uint8_t padding8[0x1e8 - 0x1e4];
+  grub_uint8_t padding9[0x1e8 - 0x1e4];
   
   grub_uint32_t mmap_size;		/* 1e8 */
 
-  grub_uint8_t padding9[0x1ff - 0x1ec];
+  grub_uint8_t padding10[0x1ff - 0x1ec];
   
   grub_uint8_t ps_mouse;		/* 1ff */
 } __attribute__ ((packed));

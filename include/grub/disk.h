@@ -37,6 +37,7 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_HOST_ID,
     GRUB_DISK_DEVICE_ATA_ID,
     GRUB_DISK_DEVICE_MEMDISK_ID,
+    GRUB_DISK_DEVICE_NAND_ID,
   };
 
 struct grub_disk;

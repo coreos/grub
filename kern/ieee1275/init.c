@@ -128,8 +128,8 @@ static void grub_claim_heap (void)
 {
   unsigned long total = 0;
 
-  auto int heap_init (grub_uint64_t addr, grub_uint64_t len);
-  int heap_init (grub_uint64_t addr, grub_uint64_t len)
+  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len);
+  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t len)
   {
     len -= 1; /* Required for some firmware.  */
 
@@ -174,6 +174,31 @@ static void grub_claim_heap (void)
   grub_available_iterate (heap_init);
 }
 
+#ifdef __i386__
+
+grub_uint32_t grub_upper_mem;
+
+/* We need to call this before grub_claim_memory.  */
+static void
+grub_get_extended_memory (void)
+{
+  auto int NESTED_FUNC_ATTR find_ext_mem (grub_uint64_t addr, grub_uint64_t len);
+  int NESTED_FUNC_ATTR find_ext_mem (grub_uint64_t addr, grub_uint64_t len)
+    {
+      if (addr == 0x100000)
+        {
+          grub_upper_mem = len;
+          return 1;
+        }
+
+      return 0;
+    }
+
+  grub_available_iterate (find_ext_mem);
+}
+
+#endif
+
 void
 grub_machine_init (void)
 {
@@ -184,6 +209,7 @@ grub_machine_init (void)
 
   grub_console_init ();
 #ifdef __i386__
+  grub_get_extended_memory ();
   grub_keyboard_controller_init ();
 #endif
   grub_claim_heap ();

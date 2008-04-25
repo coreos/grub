@@ -131,8 +131,8 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
       if (grub_ieee1275_get_property (dev, "device_type", devtype,
 				      sizeof devtype, &actual))
 	{
-	  grub_dprintf ("devalias", "get device type failed\n");
-	  goto nextprop;
+	  /* NAND device don't have device_type property.  */
+          devtype[0] = 0;
 	}
 
       alias.name = aliasname;
@@ -147,7 +147,7 @@ nextprop:
   return 0;
 }
 
-grub_err_t grub_available_iterate (int (*hook) (grub_uint64_t, grub_uint64_t))
+grub_err_t grub_available_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t))
 {
   grub_ieee1275_phandle_t root;
   grub_ieee1275_phandle_t memory;

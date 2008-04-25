@@ -84,7 +84,10 @@ grub_ofconsole_putchar (grub_uint32_t c)
     {
       grub_curr_x++;
       if (grub_curr_x > grub_ofconsole_width)
-	grub_putcode ('\n');
+        {
+          grub_putcode ('\n');
+          grub_curr_x++;
+        }
     }
   grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
 }

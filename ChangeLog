@@ -1,3 +1,60 @@
+2008-04-25  Bean  <bean123ch@gmail.com>
+	
+	* Makefile.in (RMKFILES): Add missing arch i386-ieee1275 and
+	i386-linuxbios.
+
+	* commands/hexdump.c (grub_cmd_hexdump): Support dumping of device,
+	change the buffer size to 4096 for cdrom device.
+
+	* conf/i386-ieee1275.rmk (pkglib_MODULES): Add _linux.mod, linux.mod
+	and nand.mod.
+	(_linux_mod_SOURCES): New variable.
+	(_linux_mod_CFLAGS): Likewise.
+	(_linux_mod_LDFLAGS): Likewise.
+	(linux_mod_SOURCES): Likewise.
+	(linux_mod_CFLAGS): Likewise.
+	(linux_mod_LDFLAGS): Likewise.
+	(nand_mod_SOURCES): Likewise.
+	(nand_mod_CFLAGS): Likewise.
+	(nand_mod_LDFLAGS): Likewise.
+
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open): Return
+	GRUB_ERR_UNKNOWN_DEVICE instead of GRUB_ERR_BAD_DEVICE if no device
+	type property. (nand device in olpc don't have this property)
+
+	* include/grub/disk.h (grub_disk_dev_id): New macro
+	GRUB_DISK_DEVICE_NAND_ID.
+
+	* include/grub/i386/ieee1275/loader.h (grub_rescue_cmd_linux): New
+	function prototype.
+	(grub_rescue_cmd_initrd): Likewise.
+
+	* include/grub/i386/linux.h (GRUB_LINUX_OFW_SIGNATURE): New macro.
+	(linux_kernel_params): Add new member ofw_signature, ofw_num_items,
+	ofw_cif_handler and ofw_idt, adjust padding number.
+	
+	* include/grub/i386/pc/memory.h (grub_upper_mem): Export it if
+	GRUB_MACHINE_IEEE1275 is defined.
+
+	* include/grub/ieee1275/ieee1275.h (grub_available_iterate):
+	Use NESTED_FUNC_ATTR attribute on the hook parameter.
+
+	* kern/powerpc/ieee1275/init.c (grub_claim_heap): Use NESTED_FUNC_ATTR
+	on nested function heap_init.
+	(grub_upper_mem): New variable for i386-ieee1275.
+	(grub_get_extended_memory): New function for i386-ieee1275.
+	(grub_machine_init): Call grub_get_extended_memory for i386-ieee1275.
+
+	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate): Use
+	NESTED_FUNC_ATTR on the hook parameter. Don't quit if no device type
+	property.
+	
+	* loader/i386/ieee1275/linux.c: New file.
+
+	* loader/i386/ieee1275/linux_normal.c: New file.
+
+	* disk/ieee1275/nand.c: New file.
+
 2008-04-18  Thomas Schwinge  <tschwinge@gnu.org>
 
 	* util/i386/pc/grub-mkrescue.in (grub_mkimage): Don't overwrite correct

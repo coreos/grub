@@ -573,7 +573,8 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
-	multiboot.mod _multiboot.mod aout.mod serial.mod
+	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
+	_linux.mod nand.mod
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -1389,5 +1390,173 @@ partmap-serial_mod-term_i386_pc_serial.lst: term/i386/pc/serial.c $(term/i386/pc
 
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _linux.mod.
+_linux_mod_SOURCES = loader/i386/ieee1275/linux.c
+CLEANFILES += _linux.mod mod-_linux.o mod-_linux.c pre-_linux.o _linux_mod-loader_i386_ieee1275_linux.o und-_linux.lst
+ifneq ($(_linux_mod_EXPORTS),no)
+CLEANFILES += def-_linux.lst
+DEFSYMFILES += def-_linux.lst
+endif
+MOSTLYCLEANFILES += _linux_mod-loader_i386_ieee1275_linux.d
+UNDSYMFILES += und-_linux.lst
+
+_linux.mod: pre-_linux.o mod-_linux.o
+	-rm -f $@
+	$(TARGET_CC) $(_linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-_linux.o: $(_linux_mod_DEPENDENCIES) _linux_mod-loader_i386_ieee1275_linux.o
+	-rm -f $@
+	$(TARGET_CC) $(_linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _linux_mod-loader_i386_ieee1275_linux.o
+
+mod-_linux.o: mod-_linux.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
+
+mod-_linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(_linux_mod_EXPORTS),no)
+def-_linux.lst: pre-_linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 _linux/' > $@
+endif
+
+und-_linux.lst: pre-_linux.o
+	echo '_linux' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+_linux_mod-loader_i386_ieee1275_linux.o: loader/i386/ieee1275/linux.c $(loader/i386/ieee1275/linux.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -MD -c -o $@ $<
+-include _linux_mod-loader_i386_ieee1275_linux.d
+
+CLEANFILES += cmd-_linux_mod-loader_i386_ieee1275_linux.lst fs-_linux_mod-loader_i386_ieee1275_linux.lst partmap-_linux_mod-loader_i386_ieee1275_linux.lst
+COMMANDFILES += cmd-_linux_mod-loader_i386_ieee1275_linux.lst
+FSFILES += fs-_linux_mod-loader_i386_ieee1275_linux.lst
+PARTMAPFILES += partmap-_linux_mod-loader_i386_ieee1275_linux.lst
+
+cmd-_linux_mod-loader_i386_ieee1275_linux.lst: loader/i386/ieee1275/linux.c $(loader/i386/ieee1275/linux.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _linux > $@ || (rm -f $@; exit 1)
+
+fs-_linux_mod-loader_i386_ieee1275_linux.lst: loader/i386/ieee1275/linux.c $(loader/i386/ieee1275/linux.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _linux > $@ || (rm -f $@; exit 1)
+
+partmap-_linux_mod-loader_i386_ieee1275_linux.lst: loader/i386/ieee1275/linux.c $(loader/i386/ieee1275/linux.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh _linux > $@ || (rm -f $@; exit 1)
+
+
+_linux_mod_CFLAGS = $(COMMON_CFLAGS)
+_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/ieee1275/linux_normal.c
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_ieee1275_linux_normal.o und-linux.lst
+ifneq ($(linux_mod_EXPORTS),no)
+CLEANFILES += def-linux.lst
+DEFSYMFILES += def-linux.lst
+endif
+MOSTLYCLEANFILES += linux_mod-loader_i386_ieee1275_linux_normal.d
+UNDSYMFILES += und-linux.lst
+
+linux.mod: pre-linux.o mod-linux.o
+	-rm -f $@
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_i386_ieee1275_linux_normal.o
+	-rm -f $@
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ linux_mod-loader_i386_ieee1275_linux_normal.o
+
+mod-linux.o: mod-linux.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
+
+mod-linux.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(linux_mod_EXPORTS),no)
+def-linux.lst: pre-linux.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 linux/' > $@
+endif
+
+und-linux.lst: pre-linux.o
+	echo 'linux' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+linux_mod-loader_i386_ieee1275_linux_normal.o: loader/i386/ieee1275/linux_normal.c $(loader/i386/ieee1275/linux_normal.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -MD -c -o $@ $<
+-include linux_mod-loader_i386_ieee1275_linux_normal.d
+
+CLEANFILES += cmd-linux_mod-loader_i386_ieee1275_linux_normal.lst fs-linux_mod-loader_i386_ieee1275_linux_normal.lst partmap-linux_mod-loader_i386_ieee1275_linux_normal.lst
+COMMANDFILES += cmd-linux_mod-loader_i386_ieee1275_linux_normal.lst
+FSFILES += fs-linux_mod-loader_i386_ieee1275_linux_normal.lst
+PARTMAPFILES += partmap-linux_mod-loader_i386_ieee1275_linux_normal.lst
+
+cmd-linux_mod-loader_i386_ieee1275_linux_normal.lst: loader/i386/ieee1275/linux_normal.c $(loader/i386/ieee1275/linux_normal.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
+
+fs-linux_mod-loader_i386_ieee1275_linux_normal.lst: loader/i386/ieee1275/linux_normal.c $(loader/i386/ieee1275/linux_normal.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh linux > $@ || (rm -f $@; exit 1)
+
+partmap-linux_mod-loader_i386_ieee1275_linux_normal.lst: loader/i386/ieee1275/linux_normal.c $(loader/i386/ieee1275/linux_normal.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386/ieee1275 -I$(srcdir)/loader/i386/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh linux > $@ || (rm -f $@; exit 1)
+
+
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For nand.mod.
+nand_mod_SOURCES = disk/ieee1275/nand.c
+CLEANFILES += nand.mod mod-nand.o mod-nand.c pre-nand.o nand_mod-disk_ieee1275_nand.o und-nand.lst
+ifneq ($(nand_mod_EXPORTS),no)
+CLEANFILES += def-nand.lst
+DEFSYMFILES += def-nand.lst
+endif
+MOSTLYCLEANFILES += nand_mod-disk_ieee1275_nand.d
+UNDSYMFILES += und-nand.lst
+
+nand.mod: pre-nand.o mod-nand.o
+	-rm -f $@
+	$(TARGET_CC) $(nand_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-nand.o: $(nand_mod_DEPENDENCIES) nand_mod-disk_ieee1275_nand.o
+	-rm -f $@
+	$(TARGET_CC) $(nand_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ nand_mod-disk_ieee1275_nand.o
+
+mod-nand.o: mod-nand.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(nand_mod_CFLAGS) -c -o $@ $<
+
+mod-nand.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'nand' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(nand_mod_EXPORTS),no)
+def-nand.lst: pre-nand.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 nand/' > $@
+endif
+
+und-nand.lst: pre-nand.o
+	echo 'nand' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+nand_mod-disk_ieee1275_nand.o: disk/ieee1275/nand.c $(disk/ieee1275/nand.c_DEPENDENCIES)
+	$(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(nand_mod_CFLAGS) -MD -c -o $@ $<
+-include nand_mod-disk_ieee1275_nand.d
+
+CLEANFILES += cmd-nand_mod-disk_ieee1275_nand.lst fs-nand_mod-disk_ieee1275_nand.lst partmap-nand_mod-disk_ieee1275_nand.lst
+COMMANDFILES += cmd-nand_mod-disk_ieee1275_nand.lst
+FSFILES += fs-nand_mod-disk_ieee1275_nand.lst
+PARTMAPFILES += partmap-nand_mod-disk_ieee1275_nand.lst
+
+cmd-nand_mod-disk_ieee1275_nand.lst: disk/ieee1275/nand.c $(disk/ieee1275/nand.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(nand_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh nand > $@ || (rm -f $@; exit 1)
+
+fs-nand_mod-disk_ieee1275_nand.lst: disk/ieee1275/nand.c $(disk/ieee1275/nand.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(nand_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh nand > $@ || (rm -f $@; exit 1)
+
+partmap-nand_mod-disk_ieee1275_nand.lst: disk/ieee1275/nand.c $(disk/ieee1275/nand.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Idisk/ieee1275 -I$(srcdir)/disk/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(nand_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh nand > $@ || (rm -f $@; exit 1)
+
+
+nand_mod_CFLAGS = $(COMMON_CFLAGS)
+nand_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -97,7 +97,8 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
-	multiboot.mod _multiboot.mod aout.mod serial.mod
+	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
+	_linux.mod nand.mod
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -150,5 +151,20 @@ cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For _linux.mod.
+_linux_mod_SOURCES = loader/i386/ieee1275/linux.c
+_linux_mod_CFLAGS = $(COMMON_CFLAGS)
+_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For linux.mod.
+linux_mod_SOURCES = loader/i386/ieee1275/linux_normal.c
+linux_mod_CFLAGS = $(COMMON_CFLAGS)
+linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For nand.mod.
+nand_mod_SOURCES = disk/ieee1275/nand.c
+nand_mod_CFLAGS = $(COMMON_CFLAGS)
+nand_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

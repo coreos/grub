@@ -91,7 +91,7 @@ enable_grub_fstest = @enable_grub_fstest@
 ### General variables.
 
 RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk i386-efi.rmk)
+	sparc64-ieee1275.rmk i386-efi.rmk i386-ieee1275.rmk i386-linuxbios.rmk)
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \

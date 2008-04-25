@@ -82,26 +82,62 @@ hexdump (unsigned long bse, char *buf, int len)
 static grub_err_t
 grub_cmd_hexdump (struct grub_arg_list *state, int argc, char **args)
 {
-  grub_file_t file;
-  char buf[GRUB_DISK_SECTOR_SIZE];
+  char buf[GRUB_DISK_SECTOR_SIZE * 4];
   grub_ssize_t size, length;
   unsigned long skip;
-  int is_file;
+  int namelen;
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "file name required");
 
+  namelen = grub_strlen (args[0]);
   skip = (state[0].set) ? grub_strtoul (state[0].arg, 0, 0) : 0;
-  length = (state[1].set) ? grub_strtoul (state[1].arg, 0, 0) : 0;
+  length = (state[1].set) ? grub_strtoul (state[1].arg, 0, 0) : 256;
 
-  is_file = (grub_strcmp (args[0], "(mem)"));
-  if ((!is_file) && (!length))
-    length = 256;
-
-  if (is_file)
+  if (!grub_strcmp (args[0], "(mem)"))
+    hexdump (skip, (char *) skip, length);
+  else if ((args[0][0] == '(') && (args[0][namelen - 1] == ')'))
     {
+      grub_disk_t disk;
+      grub_disk_addr_t sector;
+      grub_size_t ofs;
+
+      args[0][namelen - 1] = 0;
+      disk = grub_disk_open (&args[0][1]);
+      if (! disk)
+        return 0;
+
+      sector = (skip >> (GRUB_DISK_SECTOR_BITS + 2)) * 4;
+      ofs = skip & (GRUB_DISK_SECTOR_SIZE * 4 - 1);
+      while (length)
+        {
+          grub_size_t len, n;
+
+          len = length;
+          if (ofs + len > sizeof (buf))
+            len = sizeof (buf) - ofs;
+
+          n = ((ofs + len + GRUB_DISK_SECTOR_SIZE - 1)
+               >> GRUB_DISK_SECTOR_BITS);
+          if (disk->dev->read (disk, sector, n, buf))
+            break;
+
+          hexdump (skip, &buf[ofs], len);
+
+          ofs = 0;
+          skip += len;
+          length -= len;
+          sector += 4;
+        }
+
+      grub_disk_close (disk);
+    }
+  else
+    {
+      grub_file_t file;
+
       file = grub_gzfile_open (args[0], 1);
-      if (!file)
+      if (! file)
 	return 0;
 
       file->offset = skip;
@@ -123,8 +159,6 @@ grub_cmd_hexdump (struct grub_arg_list *state, int argc, char **args)
 
       grub_file_close (file);
     }
-  else
-    hexdump (skip, (char *) skip, length);
 
   return 0;
 }
@@ -134,7 +168,7 @@ GRUB_MOD_INIT (hexdump)
 {
   (void) mod;			/* To stop warning. */
   grub_register_command ("hexdump", grub_cmd_hexdump, GRUB_COMMAND_FLAG_BOTH,
-			 "hexdump  [ -s offset ] [-n length] { FILE | (mem) }",
+			 "hexdump [OPTIONS] FILE_OR_DEVICE",
 			 "Dump the contents of a file or memory.", options);
 }
 
