@@ -1,3 +1,7 @@
+2008-04-26  Robert Millan  <rmh@aybabtu.com>
+
+	* DISTLIST: Sort (sort -u < DISTLIST | sponge DISTLIST).
+
 2008-04-25  Bean  <bean123ch@gmail.com>
 	
 	* Makefile.in (RMKFILES): Add missing arch i386-ieee1275 and
