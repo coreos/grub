@@ -55,6 +55,7 @@ disk/ata.c
 disk/efi/efidisk.c
 disk/host.c
 disk/i386/pc/biosdisk.c
+disk/ieee1275/nand.c
 disk/ieee1275/ofdisk.c
 disk/loopback.c
 disk/lvm.c
@@ -262,6 +263,8 @@ loader/efi/chainloader.c
 loader/efi/chainloader_normal.c
 loader/i386/efi/linux.c
 loader/i386/efi/linux_normal.c
+loader/i386/ieee1275/linux.c
+loader/i386/ieee1275/linux_normal.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/chainloader_normal.c
 loader/i386/pc/linux.c
