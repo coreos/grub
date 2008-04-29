@@ -1,3 +1,7 @@
+2008-04-29  Robert Millan  <rmh@aybabtu.com>
+
+	* docs/grub.cfg: New file (example GRUB configuration).
+
 2008-04-26  Robert Millan  <rmh@aybabtu.com>
 
 	* DISTLIST: Sort (sort -u < DISTLIST | sponge DISTLIST).  Add

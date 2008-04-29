@@ -63,6 +63,7 @@ disk/memdisk.c
 disk/raid.c
 DISTLIST
 docs/fdl.texi
+docs/grub.cfg
 docs/grub.texi
 docs/mdate-sh
 docs/texinfo.tex
