@@ -1,3 +1,10 @@
+2008-04-30  Robert Millan  <rmh@aybabtu.com>
+
+	Based on patch from Fabian Greffrath <greffrath@leat.rub.de>
+	* util/grub.d/10_linux.in: Add ${GRUB_CMDLINE_LINUX_DEFAULT} to the
+	first boot option.
+	* util/update-grub.in: Export GRUB_CMDLINE_LINUX_DEFAULT.
+
 2008-04-29  Robert Millan  <rmh@aybabtu.com>
 
 	* docs/grub.cfg: New file (example GRUB configuration).

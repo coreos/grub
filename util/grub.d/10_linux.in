@@ -105,7 +105,7 @@ while [ "x$list" != "x" ] ; do
 
   cat << EOF
 menuentry "${OS}, linux ${version}" {
-	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX}
+	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
