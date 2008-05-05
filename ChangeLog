@@ -1,3 +1,13 @@
+2008-05-05  Christian Franke  <franke@computer.org>
+
+	* util/grub-mkdevicemap.c (get_floppy_disk_name) [__CYGWIN__]:
+	Add Cygwin device names.
+	(get_ide_disk_name) [__CYGWIN__]: Likewise.
+	(get_scsi_disk_name) [__CYGWIN__]: Likewise.
+	(check_device): Return error instead of success on empty name.
+	(make_device_map): Move label inside linux specific code to
+	prevent compiler warning.
+
 2008-04-30  Robert Millan  <rmh@aybabtu.com>
 
 	Based on patch from Fabian Greffrath <greffrath@leat.rub.de>

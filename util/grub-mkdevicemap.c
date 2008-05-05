@@ -166,6 +166,9 @@ get_floppy_disk_name (char *name, int unit)
 #elif defined(__QNXNTO__)
   /* QNX RTP */
   sprintf (name, "/dev/fd%d", unit);
+#elif defined(__CYGWIN__)
+  /* Cygwin */
+  sprintf (name, "/dev/fd%d", unit);
 #else
 # warning "BIOS floppy drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -207,6 +210,10 @@ get_ide_disk_name (char *name, int unit)
   /* Actually, QNX RTP doesn't distinguish IDE from SCSI, so this could
      contain SCSI disks.  */
   sprintf (name, "/dev/hd%d", unit);
+#elif defined(__CYGWIN__)
+  /* Cygwin emulates all disks as /dev/sdX.  */
+  (void) unit;
+  *name = 0;
 #else
 # warning "BIOS IDE drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -248,6 +255,9 @@ get_scsi_disk_name (char *name, int unit)
   /* QNX RTP doesn't distinguish SCSI from IDE, so it is better to
      disable the detection of SCSI disks here.  */
   *name = 0;
+#elif defined(__CYGWIN__)
+  /* Cygwin emulates all disks as /dev/sdX.  */
+  sprintf (name, "/dev/sd%c", unit + 'a');
 #else
 # warning "BIOS SCSI drives cannot be guessed in your operating system."
   /* Set NAME to a bogus string.  */
@@ -283,9 +293,9 @@ check_device (const char *device)
   char buf[512];
   FILE *fp;
 
-  /* If DEVICE is empty, just return 1.  */
+  /* If DEVICE is empty, just return error.  */
   if (*device == 0)
-    return 1;
+    return 0;
   
   fp = fopen (device, "r");
   if (! fp)
@@ -513,9 +523,10 @@ make_device_map (const char *device_map, int floppy_disks)
 	  }
       }
   }
-#endif /* __linux__ */
 
  finish:
+#endif /* __linux__ */
+
   if (fp != stdout)
     fclose (fp);
 }
