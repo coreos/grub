@@ -1,5 +1,16 @@
 2008-05-06  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub_lib.in (make_system_path_relative_to_its_root):
+	Do not print a trailing slash (therefore, the root directory is an
+	empty string).
+	(convert_system_path_to_grub_path): Do not remove trailing slash
+	from make_system_path_relative_to_its_root() output.
+
+	* util/i386/pc/grub-install.in: Add trailing slash to output from
+	make_system_path_relative_to_its_root().
+
+2008-05-06  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub-fstest.c (grub_refresh): Call `fflush (stdout)'.  This
 	ensures that output lines aren't intermangled with those sent to
 	stderr (via grub_util_info()).

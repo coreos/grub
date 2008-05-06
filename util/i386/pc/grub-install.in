@@ -229,7 +229,7 @@ devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_ma
 # _chain is often useful
 modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module _chain"
 
-$grub_mkimage --output=${grubdir}/core.img --prefix=`make_system_path_relative_to_its_root ${grubdir}` $modules || exit 1
+$grub_mkimage --output=${grubdir}/core.img --prefix=`make_system_path_relative_to_its_root ${grubdir}`/ $modules || exit 1
 
 # Now perform the installation.
 $grub_setup --directory=${grubdir} --device-map=${device_map} \

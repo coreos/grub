@@ -61,7 +61,14 @@ make_system_path_relative_to_its_root ()
     dir=$parent
   done
 
-  echo $path | sed -e "s,^$dir,/,g" -e "s,//,/,g"
+  # This function never prints trailing slashes (so that its output can be
+  # appended a slash unconditionally).  Each slash in $dir is considered a
+  # preceding slash, and therefore the root directory is an empty string.
+  if [ "$dir" = "/" ] ; then
+    dir=""
+  fi
+
+  echo $path | sed -e "s,^$dir,,g"
 }
 
 convert_system_path_to_grub_path ()
@@ -85,9 +92,6 @@ convert_system_path_to_grub_path ()
   if relative_path=`make_system_path_relative_to_its_root $path` ; then : ; else
     return 1
   fi
-
-  # remove any trailing slash, even if that slash is everything we have
-  relative_path=`echo ${relative_path} | sed -e "s,/*$,,g"`
 
   echo ${drive}${relative_path}
 }
