@@ -1,3 +1,11 @@
+2008-05-06  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub-fstest.c (grub_refresh): Call `fflush (stdout)'.  This
+	ensures that output lines aren't intermangled with those sent to
+	stderr (via grub_util_info()).
+	* util/grub-probe.c (grub_refresh): Likewise.
+	* util/i386/pc/grub-setup.c (grub_refresh): Likewise.
+
 2008-05-05  Christian Franke  <franke@computer.org>
 
 	* util/grub-mkdevicemap.c (get_floppy_disk_name) [__CYGWIN__]:

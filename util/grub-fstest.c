@@ -60,6 +60,7 @@ grub_term_get_current (void)
 void
 grub_refresh (void)
 {
+  fflush (stdout);
 }
 
 static struct grub_command cmd_loopback;
