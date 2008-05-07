@@ -1,3 +1,8 @@
+2008-05-07  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/lvm.c (grub_lvm_scan_device): Detect errors in an additional
+	grub_strstr() call.  Correct a few mistakes in failure path handling.
+
 2008-05-06  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in (make_system_path_relative_to_its_root):

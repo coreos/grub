@@ -313,7 +313,10 @@ grub_lvm_scan_device (const char *name)
   grub_memcpy (vgname, p, vgname_len);
   vgname[vgname_len] = '\0';
 
-  p = grub_strstr (q, "id = \"") + sizeof ("id = \"") - 1;
+  p = grub_strstr (q, "id = \"");
+  if (p == NULL)
+    goto fail3;
+  p += sizeof ("id = \"") - 1;
   grub_memcpy (vg_id, p, GRUB_LVM_ID_STRLEN);
   vg_id[GRUB_LVM_ID_STRLEN] = '\0';
 
@@ -329,16 +332,13 @@ grub_lvm_scan_device (const char *name)
 	 whole volume group structure. */
       vg = grub_malloc (sizeof (*vg));
       if (! vg)
-	{
-	  grub_free (vgname);
-	  goto fail;
-	}
+	goto fail3;
       vg->name = vgname;
       grub_memcpy (vg->id, vg_id, GRUB_LVM_ID_STRLEN+1);
 
       vg->extent_size = grub_lvm_getvalue (&p, "extent_size = ");
       if (p == NULL)
-	goto fail2;
+	goto fail4;
 
       vg->lvs = NULL;
       vg->pvs = NULL;
@@ -390,7 +390,7 @@ grub_lvm_scan_device (const char *name)
 	    pvs_fail:
 	      grub_free (pv->name);
 	      grub_free (pv);
-	      goto fail2;
+	      goto fail4;
 	    }
 	}
 
@@ -510,7 +510,7 @@ grub_lvm_scan_device (const char *name)
 		lvs_segment_fail2:
 		  grub_free (seg->stripes);
 		lvs_segment_fail:
-		  goto fail2;
+		  goto fail4;
 		}
 
 	      lv->number = lv_count++;
@@ -527,7 +527,7 @@ grub_lvm_scan_device (const char *name)
 	    lvs_fail:
 	      grub_free (lv->name);
 	      grub_free (lv);
-	      goto fail2;
+	      goto fail4;
 	    }
 	}
     }
@@ -548,6 +548,15 @@ grub_lvm_scan_device (const char *name)
 	  }
       }
 
+  goto fail2;
+
+  /* Failure path.  */
+ fail4:
+  grub_free (vg);
+ fail3:
+  grub_free (vgname);
+
+  /* Normal exit path.  */
  fail2:
   grub_free (metadatabuf);
  fail:
