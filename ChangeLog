@@ -1,3 +1,9 @@
+2008-05-07  Ian Campbell  <ijc@hellion.org.uk>
+
+	* util/biosdisk.c (get_os_disk): Recognise xvd type disks.
+	* util/grub-mkdevicemap.c (get_xvd_disk_name): New function.
+	(make_device_map): Output entries for xvd type disks.
+
 2008-05-07  Robert Millan  <rmh@aybabtu.com>
 
 	* util/biosdisk.c (linux_find_partition, get_os_disk): Handle CCISS

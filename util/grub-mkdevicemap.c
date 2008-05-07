@@ -289,6 +289,12 @@ get_cciss_disk_name (char *name, int controller, int drive)
 {
   sprintf (name, "/dev/cciss/c%dd%d", controller, drive);
 }
+
+static void
+get_xvd_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/xvd%c", unit + 'a');
+}
 #endif
 
 /* Check if DEVICE can be read. If an error occurs, return zero,
@@ -463,6 +469,22 @@ make_device_map (const char *device_map, int floppy_disks)
 	  free (p);
           num_hd++;
         }
+    }
+
+  /* Xen virtual block devices.  */
+  for (i = 0; i < 16; i++)
+    {
+      char name[16];
+
+      get_xvd_disk_name (name, i);
+      if (check_device (name))
+	{
+	  char *p;
+	  p = grub_util_get_disk_name (num_hd, name);
+	  fprintf (fp, "(%s)\t%s\n", p, name);
+	  free (p);
+	  num_hd++;
+	}
     }
 #endif /* __linux__ */
 

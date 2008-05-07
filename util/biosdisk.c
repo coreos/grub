@@ -677,6 +677,14 @@ get_os_disk (const char *os_dev)
 	  p[3] = '\0';
 	  return path;
 	}
+
+      /* If this is a Xen virtual block device.  */
+      if ((strncmp ("xvd", p, 3) == 0) && p[3] >= 'a' && p[3] <= 'z')
+	{
+	  /* /dev/xvd[a-z][0-9]* */
+	  p[4] = '\0';
+	  return path;
+	}
     }
 
   return path;
