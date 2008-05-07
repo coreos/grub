@@ -1,5 +1,13 @@
 2008-05-07  Robert Millan  <rmh@aybabtu.com>
 
+	* util/biosdisk.c (linux_find_partition, get_os_disk): Handle CCISS
+	devices.
+	* util/grub-mkdevicemap.c (get_cciss_disk_name)
+	(make_device_map): Likewise.
+	Reported by Roland Dreier <rdreier@cisco.com>
+
+2008-05-07  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/lvm.c (grub_lvm_scan_device): Detect errors in an additional
 	grub_strstr() call.  Correct a few mistakes in failure path handling.
 

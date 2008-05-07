@@ -283,6 +283,12 @@ get_i2o_disk_name (char *name, char unit)
 {
   sprintf (name, "/dev/i2o/hd%c", unit);
 }
+
+static void
+get_cciss_disk_name (char *name, int controller, int drive)
+{
+  sprintf (name, "/dev/cciss/c%dd%d", controller, drive);
+}
 #endif
 
 /* Check if DEVICE can be read. If an error occurs, return zero,
@@ -492,6 +498,30 @@ make_device_map (const char *device_map, int floppy_disks)
 	    char name[24];
 	    
 	    get_dac960_disk_name (name, controller, drive);
+	    if (check_device (name))
+	      {
+		char *p;
+		p = grub_util_get_disk_name (num_hd, name);
+		fprintf (fp, "(%s)\t%s\n", p, name);
+		free (p);
+		num_hd++;
+	      }
+	  }
+      }
+  }
+    
+  /* This is for CCISS - we have
+     /dev/cciss/c<controller>d<logical drive>p<partition>.  */
+  {
+    int controller, drive;
+    
+    for (controller = 0; controller < 3; controller++)
+      {
+	for (drive = 0; drive < 10; drive++)
+	  {
+	    char name[24];
+	    
+	    get_cciss_disk_name (name, controller, drive);
 	    if (check_device (name))
 	      {
 		char *p;

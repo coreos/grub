@@ -233,9 +233,21 @@ linux_find_partition (char *dev, unsigned long sector)
       p = real_dev + 8;
       format = "%d";
     }
-  else if (strncmp (real_dev + 5, "rd/c", 4) == 0)
+  else if (strncmp (real_dev + 5, "rd/c", 4) == 0)	/* dac960 */
     {
       p = strchr (real_dev + 9, 'd');
+      if (! p)
+	return 0;
+
+      p++;
+      while (*p && isdigit (*p))
+	p++;
+
+      format = "p%d";
+    }
+  else if (strncmp (real_dev + 5, "cciss/c", sizeof("cciss/c")-1) == 0)
+    {
+      p = strchr (real_dev + 5 + sizeof("cciss/c")-1, 'd');
       if (! p)
 	return 0;
 
@@ -638,6 +650,17 @@ get_os_disk (const char *os_dev)
       if (strncmp ("rd/c", p, 4) == 0)
 	{
 	  /* /dev/rd/c[0-9]+d[0-9]+(p[0-9]+)? */
+	  p = strchr (p, 'p');
+	  if (p)
+	    *p = '\0';
+
+	  return path;
+	}
+      
+      /* If this is a CCISS disk.  */
+      if (strncmp ("cciss/c", p, sizeof ("cciss/c") - 1) == 0)
+	{
+	  /* /dev/cciss/c[0-9]+d[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
 	    *p = '\0';
