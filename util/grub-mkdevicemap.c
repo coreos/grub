@@ -267,6 +267,12 @@ get_scsi_disk_name (char *name, int unit)
 
 #ifdef __linux__
 static void
+get_virtio_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/vd%c", unit + 'a');
+}
+
+static void
 get_dac960_disk_name (char *name, int controller, int drive)
 {
   sprintf (name, "/dev/rd/c%dd%d", controller, drive);
@@ -455,6 +461,22 @@ make_device_map (const char *device_map, int floppy_disks)
     }
   
 #ifdef __linux__
+  /* Virtio disks.  */
+  for (i = 0; i < 20; i++)
+    {
+      char name[16];
+      
+      get_virtio_disk_name (name, i);
+      if (check_device (name))
+	{
+	  char *p;
+	  p = grub_util_get_disk_name (num_hd, name);
+	  fprintf (fp, "(%s)\t%s\n", p, name);
+	  free (p);
+	  num_hd++;
+	}
+    }
+  
   /* ATARAID disks.  */
   for (i = 0; i < 8; i++)
     {

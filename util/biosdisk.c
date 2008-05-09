@@ -227,6 +227,7 @@ linux_find_partition (char *dev, unsigned long sector)
       format = "part%d";
     }
   else if ((strncmp (real_dev + 5, "hd", 2) == 0
+	    || strncmp (real_dev + 5, "vd", 2) == 0
 	    || strncmp (real_dev + 5, "sd", 2) == 0)
 	   && real_dev[7] >= 'a' && real_dev[7] <= 'z')
     {
@@ -668,12 +669,13 @@ get_os_disk (const char *os_dev)
 	  return path;
 	}
       
-      /* If this is an IDE disk or a SCSI disk.  */
+      /* If this is an IDE, SCSI or Virtio disk.  */
       if ((strncmp ("hd", p, 2) == 0
+	   || strncmp ("vd", p, 2) == 0
 	   || strncmp ("sd", p, 2) == 0)
 	  && p[2] >= 'a' && p[2] <= 'z')
 	{
-	  /* /dev/[hs]d[a-z][0-9]* */
+	  /* /dev/[hsv]d[a-z][0-9]* */
 	  p[3] = '\0';
 	  return path;
 	}
