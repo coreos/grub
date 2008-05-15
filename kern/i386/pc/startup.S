@@ -1240,6 +1240,23 @@ FUNCTION(grub_console_getkey)
 	call	prot_to_real
 	.code16
 
+	/*
+	 * Due to a bug in apple's bootcamp implementation, INT 16/AH = 0 would
+	 * cause the machine to hang at the second keystroke. However, we can
+	 * work around this problem by ensuring the presence of keystroke with
+	 * INT 16/AH = 1 before calling INT 16/AH = 0.
+	 */
+
+1:
+	movb	$1, %ah
+	int	$0x16
+	jnz	2f
+	hlt
+	jmp	1b
+
+2:
+
+	movb	$0, %ah
 	int	$0x16
 
 	movw	%ax, %dx		/* real_to_prot uses %eax */
