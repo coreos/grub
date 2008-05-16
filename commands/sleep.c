@@ -52,7 +52,8 @@ grub_interruptible_millisleep (grub_uint32_t ms)
   end_at = grub_get_rtc () + grub_div_roundup (ms * GRUB_TICKS_PER_SECOND, 1000);
   
   while (grub_get_rtc () < end_at)
-    if (GRUB_TERM_ASCII_CHAR (grub_checkkey ()) == GRUB_TERM_ESC)
+    if (grub_checkkey () >= 0 &&
+	GRUB_TERM_ASCII_CHAR (grub_getkey ()) == GRUB_TERM_ESC)
       return 1;
 
   return 0;

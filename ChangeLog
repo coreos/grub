@@ -1,5 +1,12 @@
 2008-05-16  Christian Franke  <franke@computer.org>
 
+	* commands/cat.c (grub_cmd_cat): Remove non-ESC keys from keyboard queue
+	to ensure that break with ESC will always work.
+	* commands/sleep.c (grub_interruptible_millisleep): Likewise.
+	Remove ESC from keyboard queue.
+
+2008-05-16  Christian Franke  <franke@computer.org>
+
 	* util/biosdisk.c: [__CYGWIN__] Add includes.
 	(grub_util_biosdisk_open): Use Linux code also for Cygwin.
 	(get_os_disk): Move variable declarations to OS specific
