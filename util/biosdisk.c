@@ -77,6 +77,14 @@ struct hd_geometry
 # endif /* ! LOOP_MAJOR */
 #endif /* __linux__ */
 
+#ifdef __CYGWIN__
+# include <sys/ioctl.h>
+# include <cygwin/fs.h> /* BLKGETSIZE64 */
+# include <cygwin/hdreg.h> /* HDIO_GETGEO */
+# define MAJOR(dev)	((unsigned) ((dev) >> 16))
+# define FLOPPY_MAJOR	2
+#endif
+
 static char *map[256];
 
 #ifdef __linux__
@@ -162,7 +170,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   disk->id = drive;
 
   /* Get the size.  */
-#ifdef __linux__
+#if defined(__linux__) || defined(__CYGWIN__)
   {
     unsigned long long nr;
     int fd;
@@ -616,16 +624,14 @@ make_device_name (int drive, int dos_part, int bsd_part)
 static char *
 get_os_disk (const char *os_dev)
 {
-  char *path, *p;
-  
 #if defined(__linux__)
-  path = xmalloc (PATH_MAX);
+  char *path = xmalloc (PATH_MAX);
   if (! realpath (os_dev, path))
     return 0;
   
   if (strncmp ("/dev/", path, 5) == 0)
     {
-      p = path + 5;
+      char *p = path + 5;
 
       /* If this is an IDE disk.  */
       if (strncmp ("ide/", p, 4) == 0)
@@ -692,13 +698,19 @@ get_os_disk (const char *os_dev)
   return path;
   
 #elif defined(__GNU__)
-  path = xstrdup (os_dev);
+  char *path = xstrdup (os_dev);
   if (strncmp ("/dev/sd", path, 7) == 0 || strncmp ("/dev/hd", path, 7) == 0)
     {
-      p = strchr (path, 's');
+      char *p = strchr (path + 7, 's');
       if (p)
 	*p = '\0';
     }
+  return path;
+
+#elif defined(__CYGWIN__)
+  char *path = xstrdup (os_dev);
+  if (strncmp ("/dev/sd", path, 7) == 0 && 'a' <= path[7] && path[7] <= 'z')
+    path[8] = 0;
   return path;
 
 #else
@@ -751,11 +763,15 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
   if (! S_ISBLK (st.st_mode))
     return make_device_name (drive, -1, -1);
   
-#if defined(__linux__)
+#if defined(__linux__) || defined(__CYGWIN__)
   /* Linux counts partitions uniformly, whether a BSD partition or a DOS
      partition, so mapping them to GRUB devices is not trivial.
      Here, get the start sector of a partition by HDIO_GETGEO, and
-     compare it with each partition GRUB recognizes.  */
+     compare it with each partition GRUB recognizes.
+
+     Cygwin /dev/sdXN emulation uses Windows partition mapping. It
+     does not count the extended partition and missing primary
+     partitions.  Use same method as on Linux here.  */
   {
     char *name;
     grub_disk_t disk;

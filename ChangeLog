@@ -1,3 +1,26 @@
+2008-05-16  Christian Franke  <franke@computer.org>
+
+	* util/biosdisk.c: [__CYGWIN__] Add includes.
+	(grub_util_biosdisk_open): Use Linux code also for Cygwin.
+	(get_os_disk): Move variable declarations to OS specific
+	parts to avoid warning.
+	[__GNU__] (get_os_disk): Fix /dev/sdXsN case.
+	[__CYGWIN__] (get_os_disk): Add Cygwin /dev/sdXN device names.
+	(grub_util_biosdisk_get_grub_dev): Use Linux code also for
+	Cygwin.
+	* util/getroot.c: [__CYGWIN__] Add includes.
+	(strip_extra_slashes): Fix "/" case.
+	[__CYGWIN__] (get_win32_path): New function.
+	[__CYGWIN__] (grub_get_prefix): Add conversion to win32 path.
+	[__CYGWIN__] (find_root_device): Disable.
+	[__CYGWIN__] (get_bootsec_serial): New function.
+	[__CYGWIN__] (find_cygwin_root_device): Likewise.
+	[__linux__] (grub_guess_root_device): Add early returns to simplify
+	structure.
+	[__CYGWIN__] (grub_guess_root_device): Call find_cygwin_root_device.
+	[__linux__] (grub_util_get_dev_abstraction): Enable LVM and RAID
+	check for Linux only.
+
 2008-05-15  Bean  <bean123ch@gmail.com>
 
 	* kern/i386/pc/startup.S (grub_console_getkey): Workaround for the
