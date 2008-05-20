@@ -1,3 +1,8 @@
+2008-05-20  Robert Millan  <rmh@aybabtu.com>
+
+	* netboot/cs89x0.c: Fix license violation.
+	* netboot/cs89x0.h: Likewise.
+
 2008-04-10  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Always use "_cv_" in cache variables for
