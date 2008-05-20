@@ -109,18 +109,19 @@ static grub_dl_t my_mod;
 #endif
 
 
-static int
-grub_affs_read_block (grub_fshelp_node_t node, int fileblock)
+static grub_disk_addr_t
+grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   int links;
   grub_uint32_t pos;
   int block = node->block;
   struct grub_affs_file file;
   struct grub_affs_data *data = node->data;
+  grub_uint32_t mod;
 
   /* Find the block that points to the fileblock we are looking up by
      following the chain until the right table is reached.  */
-  for (links = fileblock / (data->htsize); links; links--)
+  for (links = grub_divmod64 (fileblock, data->htsize, &mod); links; links--)
     {
       grub_disk_read (data->disk, block + data->blocksize - 1,
 		      data->blocksize * (GRUB_DISK_SECTOR_SIZE
@@ -133,7 +134,7 @@ grub_affs_read_block (grub_fshelp_node_t node, int fileblock)
     }
 
   /* Translate the fileblock to the block within the right table.  */
-  fileblock = fileblock % (data->htsize);
+  fileblock = mod;
   grub_disk_read (data->disk, block,
 		  GRUB_AFFS_BLOCKPTR_OFFSET
 		  + (data->htsize - fileblock - 1) * sizeof (pos),
@@ -567,4 +568,3 @@ GRUB_MOD_FINI(affs)
 {
   grub_fs_unregister (&grub_affs_fs);
 }
-

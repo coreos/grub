@@ -220,8 +220,8 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
 }
 
 
-static int
-grub_xfs_read_block (grub_fshelp_node_t node, int fileblock)
+static grub_disk_addr_t
+grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_xfs_btree_node *leaf = 0;
   int ex, nrec;
@@ -244,7 +244,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, int fileblock)
 
           for (i = 0; i < nrec; i++)
             {
-              if ((grub_uint64_t) fileblock < grub_be_to_cpu64 (keys[i]))
+              if (fileblock < grub_be_to_cpu64 (keys[i]))
                 break;
             }
 
@@ -292,8 +292,8 @@ grub_xfs_read_block (grub_fshelp_node_t node, int fileblock)
   for (ex = 0; ex < nrec; ex++)
     {
       grub_uint64_t start = GRUB_XFS_EXTENT_BLOCK (exts, ex);
-      int offset = GRUB_XFS_EXTENT_OFFSET (exts, ex);
-      int size = GRUB_XFS_EXTENT_SIZE (exts, ex);
+      grub_uint64_t offset = GRUB_XFS_EXTENT_OFFSET (exts, ex);
+      grub_uint64_t size = GRUB_XFS_EXTENT_SIZE (exts, ex);
 
       /* Sparse block.  */
       if (fileblock < offset)

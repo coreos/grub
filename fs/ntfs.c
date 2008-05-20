@@ -331,8 +331,8 @@ retry:
   return 0;
 }
 
-static int
-grub_ntfs_read_block (grub_fshelp_node_t node, int block)
+static grub_disk_addr_t
+grub_ntfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t block)
 {
   struct grub_ntfs_rlst *ctx;
 

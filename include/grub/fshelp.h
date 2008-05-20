@@ -34,6 +34,34 @@ enum grub_fshelp_filetype
     GRUB_FSHELP_SYMLINK
   };
 
+enum grub_fshelp_journal_type
+  {
+    GRUB_FSHELP_JOURNAL_TYPE_BLOCK,
+    GRUB_FSHELP_JOURNAL_TYPE_FILE
+  };
+
+#define GRUB_FSHELP_JOURNAL_UNUSED_MAPPING	(grub_disk_addr_t) -1
+
+struct grub_fshelp_journal
+{
+  int type;
+  union
+    {
+      struct
+        {
+          grub_fshelp_node_t node;
+          grub_disk_addr_t (*get_block) (grub_fshelp_node_t node, grub_disk_addr_t block);
+        };
+       grub_disk_addr_t blkno;
+    };
+  int first_block;
+  int last_block;
+  int start_block;
+  int num_mappings;
+  grub_disk_addr_t mapping[0];
+};
+typedef struct grub_fshelp_journal *grub_fshelp_journal_t;
+
 /* Lookup the node PATH.  The node ROOTNODE describes the root of the
    directory tree.  The node found is returned in FOUNDNODE, which is
    either a ROOTNODE or a new malloc'ed node.  ITERATE_DIR is used to
@@ -64,15 +92,18 @@ EXPORT_FUNC(grub_fshelp_find_file) (const char *path,
 grub_ssize_t
 EXPORT_FUNC(grub_fshelp_read_file) (grub_disk_t disk, grub_fshelp_node_t node,
 				    void NESTED_FUNC_ATTR (*read_hook) (grub_disk_addr_t sector,
-						       unsigned offset,
-						       unsigned length),
-				    int pos, grub_size_t len, char *buf,
-				    int (*get_block) (grub_fshelp_node_t node,
-						      int block),
+                                                                        unsigned offset,
+                                                                        unsigned length),
+				    grub_off_t pos, grub_size_t len, char *buf,
+				    grub_disk_addr_t (*get_block) (grub_fshelp_node_t node,
+                                                                   grub_disk_addr_t block),
 				    grub_off_t filesize, int log2blocksize);
 
 unsigned int
 EXPORT_FUNC(grub_fshelp_log2blksize) (unsigned int blksize,
 				      unsigned int *pow);
+
+grub_disk_addr_t
+EXPORT_FUNC(grub_fshelp_map_block) (grub_fshelp_journal_t log, grub_disk_addr_t block);
 
 #endif /* ! GRUB_FSHELP_HEADER */

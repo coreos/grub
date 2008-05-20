@@ -71,6 +71,21 @@
          ? EXT2_GOOD_OLD_INODE_SIZE \
          : grub_le_to_cpu16 (data->sblock.inode_size))
 
+#define EXT3_FEATURE_COMPAT_HAS_JOURNAL	0x0004
+
+#define EXT3_JOURNAL_MAGIC_NUMBER	0xc03b3998U
+
+#define EXT3_JOURNAL_DESCRIPTOR_BLOCK	1
+#define EXT3_JOURNAL_COMMIT_BLOCK	2
+#define EXT3_JOURNAL_SUPERBLOCK_V1	3
+#define EXT3_JOURNAL_SUPERBLOCK_V2	4
+#define EXT3_JOURNAL_REVOKE_BLOCK	5
+
+#define EXT3_JOURNAL_FLAG_ESCAPE	1
+#define EXT3_JOURNAL_FLAG_SAME_UUID	2
+#define EXT3_JOURNAL_FLAG_DELETED	4
+#define EXT3_JOURNAL_FLAG_LAST_TAG	8
+
 /* The ext2 superblock.  */
 struct grub_ext2_sblock
 {
@@ -109,6 +124,21 @@ struct grub_ext2_sblock
   char volume_name[16];
   char last_mounted_on[64];
   grub_uint32_t compression_info;
+  grub_uint8_t prealloc_blocks;
+  grub_uint8_t prealloc_dir_blocks;
+  grub_uint16_t reserved_gdt_blocks;
+  grub_uint8_t journal_uuid[16];
+  grub_uint32_t journal_inum;
+  grub_uint32_t journal_dev;
+  grub_uint32_t last_orphan;
+  grub_uint32_t hash_seed[4];
+  grub_uint8_t def_hash_version;
+  grub_uint8_t jnl_backup_type;
+  grub_uint16_t reserved_word_pad;
+  grub_uint32_t default_mount_opts;
+  grub_uint32_t first_meta_bg;
+  grub_uint32_t mkfs_time;
+  grub_uint32_t jnl_blocks[17];
 };
 
 /* The ext2 blockgroup.  */
@@ -166,6 +196,36 @@ struct ext2_dirent
   grub_uint8_t filetype;
 };
 
+struct grub_ext3_journal_header
+{
+  grub_uint32_t magic;
+  grub_uint32_t block_type;
+  grub_uint32_t sequence;
+};
+
+struct grub_ext3_journal_revoke_header
+{
+  struct grub_ext3_journal_header header;
+  grub_uint32_t count;
+  grub_uint32_t data[0];
+};
+
+struct grub_ext3_journal_block_tag
+{
+  grub_uint32_t block;
+  grub_uint32_t flags;
+};
+
+struct grub_ext3_journal_sblock
+{
+  struct grub_ext3_journal_header header;
+  grub_uint32_t block_size;
+  grub_uint32_t maxlen;
+  grub_uint32_t first;
+  grub_uint32_t sequence;
+  grub_uint32_t start;
+};
+
 struct grub_fshelp_node
 {
   struct grub_ext2_data *data;
@@ -181,6 +241,8 @@ struct grub_ext2_data
   grub_disk_t disk;
   struct grub_ext2_inode *inode;
   struct grub_fshelp_node diropen;
+  struct grub_fshelp_node logfile;
+  grub_fshelp_journal_t journal;
 };
 
 #ifndef GRUB_UTIL
@@ -196,20 +258,21 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
 		      struct grub_ext2_block_group *blkgrp)
 {
   return grub_disk_read (data->disk,
-			 ((grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
+			 (grub_fshelp_map_block (data->journal,
+                                                 grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
 			  << LOG2_EXT2_BLOCK_SIZE (data)),
 			 group * sizeof (struct grub_ext2_block_group), 
 			 sizeof (struct grub_ext2_block_group), (char *) blkgrp);
 }
 
 
-static int
-grub_ext2_read_block (grub_fshelp_node_t node, int fileblock)
+static grub_disk_addr_t
+grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_ext2_data *data = node->data;
   struct grub_ext2_inode *inode = &node->inode;
   int blknr;
-  int blksz = EXT2_BLOCK_SIZE (data);
+  unsigned int blksz = EXT2_BLOCK_SIZE (data);
   int log2_blksz = LOG2_EXT2_BLOCK_SIZE (data);
   
   /* Direct blocks.  */
@@ -221,7 +284,8 @@ grub_ext2_read_block (grub_fshelp_node_t node, int fileblock)
       grub_uint32_t indir[blksz / 4];
 
       if (grub_disk_read (data->disk, 
-			  grub_le_to_cpu32 (inode->blocks.indir_block)
+			  grub_fshelp_map_block(data->journal,
+                                                grub_le_to_cpu32 (inode->blocks.indir_block))
 			  << log2_blksz,
 			  0, blksz, (char *) indir))
 	return grub_errno;
@@ -237,13 +301,15 @@ grub_ext2_read_block (grub_fshelp_node_t node, int fileblock)
       grub_uint32_t indir[blksz / 4];
 
       if (grub_disk_read (data->disk, 
-			  grub_le_to_cpu32 (inode->blocks.double_indir_block) 
+			  grub_fshelp_map_block(data->journal,
+                                                grub_le_to_cpu32 (inode->blocks.double_indir_block))
 			  << log2_blksz,
 			  0, blksz, (char *) indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
-			  grub_le_to_cpu32 (indir[rblock / perblock])
+			  grub_fshelp_map_block(data->journal,
+                                                grub_le_to_cpu32 (indir[rblock / perblock]))
 			  << log2_blksz,
 			  0, blksz, (char *) indir))
 	return grub_errno;
@@ -259,9 +325,8 @@ grub_ext2_read_block (grub_fshelp_node_t node, int fileblock)
       blknr = -1;
     }
 
-  return blknr;
+  return grub_fshelp_map_block (data->journal, blknr);
 }
-
 
 /* Read LEN bytes from the file described by DATA starting with byte
    POS.  Return the amount of read bytes in READ.  */
@@ -308,13 +373,177 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   
   /* Read the inode.  */
   if (grub_disk_read (data->disk, 
-		      ((grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
-		       << LOG2_EXT2_BLOCK_SIZE (data)),
+		      grub_fshelp_map_block(data->journal,
+                                            grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
+                      << LOG2_EXT2_BLOCK_SIZE (data),
 		      EXT2_INODE_SIZE (data) * blkoff,
 		      sizeof (struct grub_ext2_inode), (char *) inode))
     return grub_errno;
   
   return 0;
+}
+
+static void
+grub_ext3_get_journal (struct grub_ext2_data *data)
+{
+  char buf[1 << LOG2_BLOCK_SIZE (data)];
+  struct grub_ext3_journal_sblock *jsb;
+  grub_fshelp_journal_t log;
+  int last_num, num, block, log2bs;
+  grub_uint32_t seq;
+
+  auto void next_block (void);
+  void next_block (void)
+    {
+      block++;
+      if (block >= log->last_block)
+        block = log->first_block;
+    }
+
+  data->journal = 0;
+
+  if (! (data->sblock.feature_compatibility & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+    return;
+
+  if (! data->sblock.journal_inum)
+    return;
+
+  data->logfile.data = data;
+  data->logfile.ino = data->sblock.journal_inum;
+  data->logfile.inode_read = 1;
+
+  if (grub_ext2_read_inode (data, data->logfile.ino, &data->logfile.inode))
+    return;
+
+  log2bs = LOG2_EXT2_BLOCK_SIZE (data);
+  if (grub_fshelp_read_file (data->disk, &data->logfile, 0,
+                             0, sizeof (struct grub_ext3_journal_sblock),
+                             buf, grub_ext2_read_block,
+                             sizeof (buf), log2bs) !=
+      sizeof (struct grub_ext3_journal_sblock))
+    return;
+
+  jsb = (struct grub_ext3_journal_sblock *) &buf[0];
+  if (grub_be_to_cpu32 (jsb->header.magic) != EXT3_JOURNAL_MAGIC_NUMBER)
+    return;
+
+  /* Empty journal.  */
+  if (! jsb->start)
+    return;
+
+  log = grub_malloc (sizeof (struct grub_fshelp_journal) +
+                     grub_be_to_cpu32 (jsb->maxlen) * sizeof (grub_disk_addr_t));
+  if (! log)
+    return;
+
+  log->type = GRUB_FSHELP_JOURNAL_TYPE_FILE;
+  log->node = &data->logfile;
+  log->get_block = grub_ext2_read_block;
+  log->first_block = grub_be_to_cpu32 (jsb->first);
+  log->last_block = grub_be_to_cpu32 (jsb->maxlen);
+  log->start_block = grub_be_to_cpu32 (jsb->start);
+
+  last_num = num = 0;
+  block = log->start_block;
+  seq = grub_be_to_cpu32 (jsb->sequence);
+
+  while (1)
+    {
+      struct grub_ext3_journal_header *jh;
+
+      if (grub_fshelp_read_file (data->disk, &data->logfile, 0,
+                                 block << (log2bs + 9), sizeof (buf),
+                                 buf, grub_ext2_read_block,
+                                 log->last_block << (log2bs + 9),
+                                 log2bs) !=
+          (int) sizeof (buf))
+        break;
+
+      jh = (struct grub_ext3_journal_header *) &buf[0];
+      if (grub_be_to_cpu32 (jh->magic) != EXT3_JOURNAL_MAGIC_NUMBER)
+        break;
+
+      if (grub_be_to_cpu32 (jh->sequence) != seq)
+        break;
+
+      log->mapping[num++] = GRUB_FSHELP_JOURNAL_UNUSED_MAPPING;
+      next_block();
+
+      switch (grub_be_to_cpu32 (jh->block_type))
+        {
+        case EXT3_JOURNAL_DESCRIPTOR_BLOCK:
+          {
+            struct grub_ext3_journal_block_tag *tag;
+            int ofs, flags;
+
+            ofs = sizeof (struct grub_ext3_journal_header);
+
+            do
+              {
+                tag = (struct grub_ext3_journal_block_tag *) &buf[ofs];
+                ofs += sizeof (struct grub_ext3_journal_block_tag);
+
+                if (ofs > (int) sizeof (buf))
+                  break;
+
+                flags = grub_be_to_cpu32 (tag->flags);
+                if (! (flags & EXT3_JOURNAL_FLAG_SAME_UUID))
+                  ofs += 16;
+
+                log->mapping[num++] = grub_be_to_cpu32 (tag->block);
+                next_block();
+              }
+            while (! (flags & EXT3_JOURNAL_FLAG_LAST_TAG));
+
+            continue;
+          }
+
+        case EXT3_JOURNAL_COMMIT_BLOCK:
+          {
+            seq++;
+            last_num = num - 1;
+            continue;
+          }
+
+        case EXT3_JOURNAL_REVOKE_BLOCK:
+          {
+            struct grub_ext3_journal_revoke_header *jrh;
+            grub_uint32_t i;
+
+            jrh = (struct grub_ext3_journal_revoke_header *) jh;
+
+            for (i = 0; i < grub_be_to_cpu32 (jrh->count); i++)
+              {
+                int j;
+                grub_uint32_t map;
+
+                map = grub_be_to_cpu32 (jrh->data[i]);
+                for (j = 0; j < num; j++)
+                  if (log->mapping[j] == map)
+                    log->mapping[j] = GRUB_FSHELP_JOURNAL_UNUSED_MAPPING;
+              }
+
+            continue;
+          }
+        default:
+          last_num = 0;
+          goto quit;
+        }
+    }
+
+quit:
+  if (! last_num)
+    grub_free (log);
+  else
+    {
+      int size;
+
+      size = sizeof (struct grub_fshelp_journal) +
+            last_num * sizeof (grub_disk_addr_t);
+
+      log->num_mappings = last_num;
+      data->journal = grub_realloc (log, size);
+    }
 }
 
 static struct grub_ext2_data *
@@ -336,12 +565,14 @@ grub_ext2_mount (grub_disk_t disk)
   if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC)
     goto fail;
   
+  data->disk = disk;
+  grub_ext3_get_journal (data);
+
   data->diropen.data = data;
   data->diropen.ino = 2;
   data->diropen.inode_read = 1;
 
   data->inode = &data->diropen.inode;
-  data->disk = disk;
 
   grub_ext2_read_inode (data, 2, data->inode);
   if (grub_errno)
@@ -540,7 +771,11 @@ grub_ext2_open (struct grub_file *file, const char *name)
 static grub_err_t
 grub_ext2_close (grub_file_t file)
 {
-  grub_free (file->data);
+  if (file->data)
+    {
+      grub_free (((struct grub_ext2_data *) file->data)->journal);
+      grub_free (file->data);
+    }
 
 #ifndef GRUB_UTIL
   grub_dl_unref (my_mod);

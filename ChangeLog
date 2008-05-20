@@ -1,3 +1,74 @@
+2008-05-20  Bean  <bean123ch@gmail.com>
+
+	* fs/fshelp.c (grub_fshelp_map_block): New function.
+	(grub_fshelp_find_file): Use 64-bit type for pos and block address.
+	Use `>>' and `&' operator to avoid 64-bit divide and modulo.
+
+	* include/grub/fshelp.h (grub_fshelp_journal_type): New enum.
+	(GRUB_FSHELP_JOURNAL_UNUSED_MAPPING): New macro.
+	(grub_fshelp_journal): New structure.
+	(grub_fshelp_map_block): New function prototype.
+	(grub_fshelp_read_file): Use grub_disk_addr_t as block type.
+	(grub_fshelp_map_block): Likewise.
+
+	* fs/ext2.c (EXT3_FEATURE_COMPAT_HAS_JOURNAL): New macro.
+	(EXT3_JOURNAL_MAGIC_NUMBER): Likewise.
+	(EXT3_JOURNAL_DESCRIPTOR_BLOCK): Likewise.
+	(EXT3_JOURNAL_COMMIT_BLOCK): Likewise.
+	(EXT3_JOURNAL_SUPERBLOCK_V1): Likewise.
+	(EXT3_JOURNAL_SUPERBLOCK_V2): Likewise.
+	(EXT3_JOURNAL_REVOKE_BLOCK): Likewise.
+	(EXT3_JOURNAL_FLAG_ESCAPE): Likewise.
+	(EXT3_JOURNAL_FLAG_SAME_UUID): Likewise.
+	(EXT3_JOURNAL_FLAG_DELETED): Likewise.
+	(EXT3_JOURNAL_FLAG_LAST_TAG): Likewise.
+	(grub_ext2_sblock): New members for journal support.
+	(grub_ext3_journal_header): New structure.
+	(grub_ext3_journal_revoke_header): Likewise.
+	(grub_ext3_journal_block_tag): Likewise.
+	(grub_ext3_journal_sblock): Likewise.
+	(grub_fshelp_node): New members logfile and journal.
+	(grub_ext2_read_block): Change block type to grub_disk_addr_t. Use
+	grub_fshelp_map_block to get real block number.
+	(grub_ext2_blockgroup): Use grub_fshelp_map_block to get real block
+	number.
+	(grub_ext2_read_inode): Likewise.
+	(grub_ext3_get_journal): New function.
+	(grub_read_inode): Initialize journal using grub_ext3_get_journal.
+	(grub_ext2_close): Release memory used by journal.
+
+	* fs/reiserfs.c (REISERFS_MAGIC_STRING): Changed to "ReIsEr".
+	(REISERFS_MAGIC_DESC_BLOCK): New macro.
+	(grub_reiserfs_transaction_header): Renamed to
+	grub_reiserfs_description_block, replace field data with real_blocks.
+	(grub_reiserfs_commit_block): New structure.
+	(grub_reiserfs_data): New member journal.
+	(grub_reiserfs_get_item): Use grub_fshelp_map_block to get real block
+	number.
+	(grub_reiserfs_read_symlink): Likewise.
+	(grub_reiserfs_iterate_dir): Likewise.
+	(grub_reiserfs_open): Likewise.
+	(grub_reiserfs_read): Likewise.
+	(grub_reiserfs_get_journal): New function.
+	(grub_reiserfs_mount): Use "ReIsEr" as super block magic, as there are
+	three varieties ReIsErFs, ReIsEr2Fs and ReIsEr3Fs. Initialize journal
+	using grub_reiserfs_get_journal.
+	(grub_reiserfs_close): Release memory used by journal.
+
+	* fs/affs.c (grub_affs_read_block): Change block type to
+	grub_disk_addr_t. Use grub_divmod64 to do 64-bit division.
+
+	* fs/afs.c (grub_afs_read_block): Change block type to grub_disk_addr_t.
+
+	* fs/hfsplus.c (grub_hfsplus_read_block): Likewise.
+
+	* fs/ntfs.c (grub_ntfs_read_block): Likewise.
+
+	* fs/udf.c (grub_udf_read_block): Change block type to
+	grub_disk_addr_t. Use type cast to avoid warning.
+
+	* fs/xfs.c (grub_xfs_read_block): Likewise.
+
 2008-05-16  Christian Franke  <franke@computer.org>
 
 	* commands/cat.c (grub_cmd_cat): Remove non-ESC keys from keyboard queue
