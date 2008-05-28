@@ -161,7 +161,10 @@ export GRUB_DEVICE GRUB_FS GRUB_DRIVE GRUB_DRIVE_BOOT GRUB_DRIVE_BOOT_GRUB GRUB_
 export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_CMDLINE_LINUX_DEFAULT GRUB_TERMINAL GRUB_SERIAL_COMMAND
 
 exec > ${grub_cfg}.new
-chmod 444 ${grub_cfg}.new
+
+# Allow this to fail, since /boot/grub/ might need to be fatfs to support some
+# firmware implementations (e.g. OFW or EFI).
+chmod 444 ${grub_cfg}.new || true
 
 echo "Updating ${grub_cfg} ..." >&2
 

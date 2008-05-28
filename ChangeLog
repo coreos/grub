@@ -1,5 +1,11 @@
 2008-05-28  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub.in: Allow chmod call to fail, since /boot/grub/
+	might need to be fatfs to support some firmware implementations
+	(e.g. OFW or EFI).
+
+2008-05-28  Robert Millan  <rmh@aybabtu.com>
+
 	* util/biosdisk.c (linux_find_partition, get_os_disk): Handle MMC
 	devices.
 	* util/grub-mkdevicemap.c (get_mmc_disk_name)
