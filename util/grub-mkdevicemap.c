@@ -297,6 +297,12 @@ get_cciss_disk_name (char *name, int controller, int drive)
 }
 
 static void
+get_mmc_disk_name (char *name, int unit)
+{
+  sprintf (name, "/dev/mmcblk%d", unit);
+}
+
+static void
 get_xvd_disk_name (char *name, int unit)
 {
   sprintf (name, "/dev/xvd%c", unit + 'a');
@@ -597,6 +603,22 @@ make_device_map (const char *device_map, int floppy_disks)
 	  }
       }
   }
+
+  /* MultiMediaCard (MMC).  */
+  for (i = 0; i < 10; i++)
+    {
+      char name[16];
+      
+      get_mmc_disk_name (name, i);
+      if (check_device (name))
+	{
+	  char *p;
+	  p = grub_util_get_disk_name (num_hd, name);
+	  fprintf (fp, "(%s)\t%s\n", p, name);
+	  free (p);
+	  num_hd++;
+	}
+    }
 
  finish:
 #endif /* __linux__ */

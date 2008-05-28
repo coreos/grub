@@ -239,7 +239,7 @@ linux_find_partition (char *dev, unsigned long sector)
 	    || strncmp (real_dev + 5, "sd", 2) == 0)
 	   && real_dev[7] >= 'a' && real_dev[7] <= 'z')
     {
-      p = real_dev + 8;
+      p = real_dev + sizeof("/dev/hda")-1;
       format = "%d";
     }
   else if (strncmp (real_dev + 5, "rd/c", 4) == 0)	/* dac960 */
@@ -264,6 +264,11 @@ linux_find_partition (char *dev, unsigned long sector)
       while (*p && isdigit (*p))
 	p++;
 
+      format = "p%d";
+    }
+  else if (strncmp (real_dev + 5, "mmcblk", sizeof("mmcblk")-1) == 0)
+    {
+      p = real_dev + sizeof("/dev/mmcblk0")-1;
       format = "p%d";
     }
   else
@@ -668,6 +673,17 @@ get_os_disk (const char *os_dev)
       if (strncmp ("cciss/c", p, sizeof ("cciss/c") - 1) == 0)
 	{
 	  /* /dev/cciss/c[0-9]+d[0-9]+(p[0-9]+)? */
+	  p = strchr (p, 'p');
+	  if (p)
+	    *p = '\0';
+
+	  return path;
+	}
+      
+      /* If this is a MultiMediaCard (MMC).  */
+      if (strncmp ("mmcblk", p, sizeof ("mmcblk") - 1) == 0)
+	{
+	  /* /dev/mmcblk[0-9]+(p[0-9]+)? */
 	  p = strchr (p, 'p');
 	  if (p)
 	    *p = '\0';
