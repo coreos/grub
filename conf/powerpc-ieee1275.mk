@@ -555,11 +555,11 @@ sbin_SCRIPTS = grub-install
 bin_SCRIPTS = grub-mkrescue
 
 # For grub-install.
-grub_install_SOURCES = util/powerpc/ieee1275/grub-install.in
+grub_install_SOURCES = util/ieee1275/grub-install.in
 CLEANFILES += grub-install
 
-grub-install: util/powerpc/ieee1275/grub-install.in $(util/powerpc/ieee1275/grub-install.in_DEPENDENCIES) config.status
-	./config.status --file=grub-install:util/powerpc/ieee1275/grub-install.in
+grub-install: util/ieee1275/grub-install.in $(util/ieee1275/grub-install.in_DEPENDENCIES) config.status
+	./config.status --file=grub-install:util/ieee1275/grub-install.in
 	chmod +x $@
 
 

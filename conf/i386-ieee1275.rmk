@@ -95,6 +95,12 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
+# Scripts.
+sbin_SCRIPTS = grub-install
+
+# For grub-install.
+grub_install_SOURCES = util/ieee1275/grub-install.in
+
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
 	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\

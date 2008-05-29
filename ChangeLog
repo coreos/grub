@@ -1,5 +1,13 @@
 2008-05-29  Robert Millan  <rmh@aybabtu.com>
 
+	* util/powerpc/ieee1275/grub-install.in: Move from here ...
+	* util/ieee1275/grub-install.in: ... to here.
+	* powerpc-ieee1275.rmk (grub_install_SOURCES): Update location.
+	* i386-ieee1275.rmk (sbin_SCRIPTS): New variable.
+	(grub_install_SOURCES): Likewise.
+
+2008-05-29  Robert Millan  <rmh@aybabtu.com>
+
 	* fs/affs.c: Update copyright year.
 	* fs/ext2.c: Likewise.
 	* fs/fshelp.c: Likewise.

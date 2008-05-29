@@ -341,9 +341,9 @@ util/i386/pc/grub-mkrescue.in
 util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
 util/ieee1275/get_disk_name.c
+util/ieee1275/grub-install.in
 util/lvm.c
 util/misc.c
-util/powerpc/ieee1275/grub-install.in
 util/powerpc/ieee1275/grub-mkrescue.in
 util/powerpc/ieee1275/misc.c
 util/raid.c

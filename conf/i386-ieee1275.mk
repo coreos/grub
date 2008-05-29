@@ -571,6 +571,18 @@ grub_emu-grub_emu_init.o: grub_emu_init.c $(grub_emu_init.c_DEPENDENCIES)
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
+# Scripts.
+sbin_SCRIPTS = grub-install
+
+# For grub-install.
+grub_install_SOURCES = util/ieee1275/grub-install.in
+CLEANFILES += grub-install
+
+grub-install: util/ieee1275/grub-install.in $(util/ieee1275/grub-install.in_DEPENDENCIES) config.status
+	./config.status --file=grub-install:util/ieee1275/grub-install.in
+	chmod +x $@
+
+
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
 	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
