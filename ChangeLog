@@ -1,3 +1,14 @@
+2008-05-29  Robert Millan  <rmh@aybabtu.com>
+
+	* fs/affs.c: Update copyright year.
+	* fs/ext2.c: Likewise.
+	* fs/fshelp.c: Likewise.
+	* fs/hfsplus.c: Likewise.
+	* fs/ntfs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* include/grub/fshelp.h: Likewise.
+	* util/grub-mkdevicemap.c: Likewise.
+
 2008-05-28  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub.in: Allow chmod call to fail, since /boot/grub/
