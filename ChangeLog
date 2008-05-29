@@ -1,5 +1,13 @@
 2008-05-29  Robert Millan  <rmh@aybabtu.com>
 
+	* term/i386/pc/at_keyboard.c: Include `grub/machine/machine.h'.
+	(OLPC_UP, OLPC_DOWN, OLPC_LEFT, OLPC_RIGHT): New macros.
+	[GRUB_MACHINE_IEEE1275] (keyboard_map): Add OLPC scan codes
+	(grub_console_checkkey): Add grub_dprintf() call to report unknown
+	scan codes.
+
+2008-05-29  Robert Millan  <rmh@aybabtu.com>
+
 	* term/i386/pc/at_keyboard.c (grub_console_checkkey): Add support for
 	control key combinations.
 
