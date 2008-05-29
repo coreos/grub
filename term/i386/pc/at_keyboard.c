@@ -186,7 +186,9 @@ grub_console_checkkey (void)
 	key = -1;
 	break;
       default:
-	if ((at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L | KEYBOARD_STATUS_SHIFT_R))
+	if (at_keyboard_status & (KEYBOARD_STATUS_CTRL_L | KEYBOARD_STATUS_CTRL_R))
+	  key = keyboard_map[key] - 'a' + 1;
+	else if ((at_keyboard_status & (KEYBOARD_STATUS_SHIFT_L | KEYBOARD_STATUS_SHIFT_R))
 	    && keyboard_map_shift[key])
 	  key = keyboard_map_shift[key];
 	else

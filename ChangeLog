@@ -1,5 +1,10 @@
 2008-05-29  Robert Millan  <rmh@aybabtu.com>
 
+	* term/i386/pc/at_keyboard.c (grub_console_checkkey): Add support for
+	control key combinations.
+
+2008-05-29  Robert Millan  <rmh@aybabtu.com>
+
 	* util/powerpc/ieee1275/grub-install.in: Move from here ...
 	* util/ieee1275/grub-install.in: ... to here.
 	* powerpc-ieee1275.rmk (grub_install_SOURCES): Update location.
