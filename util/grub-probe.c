@@ -44,6 +44,7 @@
 
 enum {
   PRINT_FS,
+  PRINT_FS_UUID,
   PRINT_DRIVE,
   PRINT_DEVICE,
   PRINT_PARTMAP,
@@ -110,6 +111,7 @@ probe (const char *path, char *device_name)
   char *filebuf_via_grub = NULL, *filebuf_via_sys = NULL;
   int abstraction_type;
   grub_device_t dev = NULL;
+  grub_fs_t fs;
   
   if (path == NULL)
     {
@@ -185,10 +187,13 @@ probe (const char *path, char *device_name)
       goto end;
     }
 
+  fs = grub_fs_probe (dev);
+  if (! fs)
+    grub_util_error ("%s", grub_errmsg);
+
   if (print == PRINT_FS)
     {
       struct stat st;
-      grub_fs_t fs;
 
       stat (path, &st);
 
@@ -210,17 +215,19 @@ probe (const char *path, char *device_name)
 	  
 	  if (memcmp (filebuf_via_grub, filebuf_via_sys, file->size))
 	    grub_util_error ("files differ");
-
-	  fs = file->fs;
 	}
-      else
-	{
-	  fs = grub_fs_probe (dev);
-	  if (! fs)
-	    grub_util_error ("%s", grub_errmsg);
-	}
-
       printf ("%s\n", fs->name);
+    }
+
+  if (print == PRINT_FS_UUID)
+    {
+      char *uuid;
+      if (! fs->uuid)
+	grub_util_error ("%s does not support UUIDs", fs->name);
+
+      fs->uuid (dev, &uuid);
+
+      printf ("%s\n", uuid);
     }
 
  end:
@@ -257,7 +264,7 @@ Probe device information for a given path (or device, if the -d option is given)
 \n\
   -d, --device              given argument is a system device, not a path\n\
   -m, --device-map=FILE     use FILE as the device map [default=%s]\n\
-  -t, --target=(fs|drive|device|partmap|abstraction)\n\
+  -t, --target=(fs|fs_uuid|drive|device|partmap|abstraction)\n\
                             print filesystem module, GRUB drive, system device, partition map module or abstraction module [default=fs]\n\
   -h, --help                display this message and exit\n\
   -V, --version             print version information and exit\n\
@@ -302,6 +309,8 @@ main (int argc, char *argv[])
 	  case 't':
 	    if (!strcmp (optarg, "fs"))
 	      print = PRINT_FS;
+	    else if (!strcmp (optarg, "fs_uuid"))
+	      print = PRINT_FS_UUID;
 	    else if (!strcmp (optarg, "drive"))
 	      print = PRINT_DRIVE;
 	    else if (!strcmp (optarg, "device"))

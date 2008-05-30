@@ -31,9 +31,9 @@ for i in /boot/gnumach.gz /boot/gnumach ; do
   if test -e $i ; then
     basename=`basename $i`
     dirname=`dirname $i`
-    grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
+    rel_dirname=`make_system_path_relative_to_its_root $dirname`
     echo "Found GNU Mach: $i" >&2
-    kernel=${grub_dirname}/${basename}
+    kernel=${rel_dirname}/${basename}
     at_least_one=true
   fi
 done

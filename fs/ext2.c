@@ -120,7 +120,7 @@ struct grub_ext2_sblock
   grub_uint32_t feature_compatibility;
   grub_uint32_t feature_incompat;
   grub_uint32_t feature_ro_compat;
-  grub_uint32_t unique_id[4];
+  grub_uint16_t uuid[8];
   char volume_name[16];
   char last_mounted_on[64];
   grub_uint32_t compression_info;
@@ -861,7 +861,39 @@ grub_ext2_label (grub_device_t device, char **label)
   if (data)
     *label = grub_strndup (data->sblock.volume_name, 14);
   else
-    *label = 0;
+    *label = NULL;
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
+static grub_err_t
+grub_ext2_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_ext2_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_ext2_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (40 + sizeof ('\0'));
+      grub_sprintf (*uuid, "%02x%02x-%02x-%02x-%02x-%02x%02x%02x",
+		    grub_be_to_cpu16 (data->sblock.uuid[0]), grub_be_to_cpu16 (data->sblock.uuid[1]),
+		    grub_be_to_cpu16 (data->sblock.uuid[2]), grub_be_to_cpu16 (data->sblock.uuid[3]),
+		    grub_be_to_cpu16 (data->sblock.uuid[4]), grub_be_to_cpu16 (data->sblock.uuid[5]),
+		    grub_be_to_cpu16 (data->sblock.uuid[6]), grub_be_to_cpu16 (data->sblock.uuid[7]));
+    }
+  else
+    *uuid = NULL;
 
 #ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
@@ -881,6 +913,7 @@ static struct grub_fs grub_ext2_fs =
     .read = grub_ext2_read,
     .close = grub_ext2_close,
     .label = grub_ext2_label,
+    .uuid = grub_ext2_uuid,
     .next = 0
   };
 

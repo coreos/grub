@@ -87,7 +87,7 @@ while [ "x$list" != "x" ] ; do
   echo "Found linux image: $linux" >&2
   basename=`basename $linux`
   dirname=`dirname $linux`
-  grub_dirname=`echo ${dirname} | sed -e "s%^/boot%${GRUB_DRIVE_BOOT}%g"`
+  rel_dirname=`make_system_path_relative_to_its_root $dirname`
   version=`echo $basename | sed -e "s,^[^0-9]*-,,g"`
   alt_version=`echo $version | sed -e "s,\.old$,,g"`
 
@@ -105,11 +105,11 @@ while [ "x$list" != "x" ] ; do
 
   cat << EOF
 menuentry "${OS}, linux ${version}" {
-	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
+	linux	${rel_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
-	initrd	${grub_dirname}/${initrd}
+	initrd	${rel_dirname}/${initrd}
 EOF
   fi
   cat << EOF
@@ -118,11 +118,11 @@ EOF
 
   cat << EOF
 menuentry "${OS}, linux ${version} (single-user mode)" {
-	linux	${grub_dirname}/${basename} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
+	linux	${rel_dirname}/${basename} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
-	initrd	${grub_dirname}/${initrd}
+	initrd	${rel_dirname}/${initrd}
 EOF
   fi
   cat << EOF

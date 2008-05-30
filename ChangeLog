@@ -1,5 +1,29 @@
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
+	* commands/search.c (options): Add --fs_uuid option.
+	(search_fs_uuid): New function.
+	(grub_cmd_search): Fix --set argument passing.
+	Use search_fs_uuid() when requested via --fs_uuid.
+	(grub_search_init): Update help message.
+	* fs/ext2.c (struct grub_ext2_sblock): Rename `unique_id' to `uuid'
+	and redeclare it as an array of 16-bit words.
+	(grub_ext2_uuid): New function.
+	(grub_ext2_fs): Reference grub_ext2_uuid() in `uuid' struct member.
+	* include/grub/fs.h (struct grub_fs): Add `uuid' struct member.
+	* util/update-grub.in (GRUB_DEVICE_UUID, GRUB_DEVICE_BOOT)
+	(GRUB_DEVICE_BOOT_UUID): New variables.
+	(GRUB_DRIVE. GRUB_DRIVE_BOOT. GRUB_DRIVE_BOOT_GRUB): Remove.
+	* util/grub.d/00_header.in: Set root using `search --fs_uuid' command
+	whenever possible.
+	* util/grub.d/10_hurd.in: Avoid explicit use of root drive.  Instead,
+	just assume `root' variable has the right value.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub-probe.c (probe): Probe for filesystem UUID when requested
+	via PRINT_FS_UUID.
+	(main): Recognise `-t fs_uuid' argument.
+
+2008-05-30  Robert Millan  <rmh@aybabtu.com>
+
 	* util/biosdisk.c (map): Redefine structure to hold information
 	about GRUB drive name.
 	(get_drive): Reimplement without assuming (and verifiing) BIOS-like

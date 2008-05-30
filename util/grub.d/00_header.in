@@ -38,8 +38,12 @@ set default=${GRUB_DEFAULT}
 set timeout=${GRUB_TIMEOUT}
 EOF
 
-if [ "x${GRUB_DRIVE}" = "x" ] ; then : ; else
-  echo "set root=${GRUB_DRIVE}"
+# If there's a filesystem UUID that GRUB is capable of identifiing, use it;
+# otherwise set root as per value in device.map.
+if [ "x${GRUB_DEVICE_BOOT_UUID}" = "x" ] ; then
+  echo "set root=`grub-probe --device ${GRUB_DEVICE_BOOT} --target=drive`"
+else
+  echo "search --fs_uuid ${GRUB_DEVICE_BOOT_UUID} --set"
 fi
 
 case ${platform}:${GRUB_TERMINAL} in
