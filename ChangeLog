@@ -1,3 +1,11 @@
+2008-05-29  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/script.h: Don't include grub_script.tab.h.  It's
+	a generated file, which may only be included from the files with
+	DEPENDENCIES rules in the makefile.  Don't use typedef YYSTYPE,
+	use union YYSTYPE, as the later allows forward declaration.
+	* normal/lexer.c: Don't use typedef YYSTYPE, use union YYSTYPE.
+
 2008-05-29  Robert Millan  <rmh@aybabtu.com>
 
 	* term/i386/pc/at_keyboard.c: Include `grub/machine/machine.h'.
