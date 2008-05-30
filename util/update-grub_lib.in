@@ -96,6 +96,22 @@ convert_system_path_to_grub_path ()
   echo ${drive}${relative_path}
 }
 
+prepare_grub_to_access_device ()
+{
+  device=$1
+
+  # If there's a filesystem UUID that GRUB is capable of identifiing, use it;
+  # otherwise set root as per value in device.map.
+  if fs_uuid="`grub-probe --device ${device} --target=fs_uuid 2> /dev/null`" ; then
+    echo "search --fs_uuid --set ${fs_uuid}"
+  else
+    echo "set root=`${grub_probe} --device ${device} --target=drive`"
+  fi
+
+  # Abstraction modules aren't auto-loaded.
+  GRUB_PRELOAD_MODULES="${GRUB_PRELOAD_MODULES} `${grub_probe} --device ${device} --target=abstraction`"
+}
+
 font_path ()
 {
   # Prefer system path for space reasons (/boot/grub might be a very small

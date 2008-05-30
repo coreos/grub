@@ -38,17 +38,12 @@ set default=${GRUB_DEFAULT}
 set timeout=${GRUB_TIMEOUT}
 EOF
 
-# If there's a filesystem UUID that GRUB is capable of identifiing, use it;
-# otherwise set root as per value in device.map.
-if [ "x${GRUB_DEVICE_BOOT_UUID}" = "x" ] ; then
-  echo "set root=`grub-probe --device ${GRUB_DEVICE_BOOT} --target=drive`"
-else
-  echo "search --fs_uuid ${GRUB_DEVICE_BOOT_UUID} --set"
-fi
-
 case ${platform}:${GRUB_TERMINAL} in
-  pc:gfxterm) cat << EOF
-if font ${GRUB_FONT_PATH} ; then
+  pc:gfxterm)
+    # Make the font accessible
+    prepare_grub_to_access_device `${grub_probe} --target=device ${GRUB_FONT_PATH}`
+    cat << EOF
+if font `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
   set gfxmode=640x480
   insmod gfxterm
   insmod vbe
@@ -68,3 +63,6 @@ EOF
     echo "terminal ${GRUB_TERMINAL}"
   ;;
 esac
+
+# Set the root device.
+prepare_grub_to_access_device ${GRUB_DEVICE_BOOT}

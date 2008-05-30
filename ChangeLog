@@ -1,5 +1,14 @@
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub_lib.in (prepare_grub_to_access_device): New function.
+	* util/update-grub.in: Set `GRUB_FONT_PATH' to the system path, without
+	converting it first.
+	* util/grub.d/00_header.in: Use prepare_grub_to_access_device() to setup
+	grub.cfg for access to font file, and afterwards call it again to set
+	the root device.
+
+2008-05-30  Robert Millan  <rmh@aybabtu.com>
+
 	* commands/search.c (options): Add --fs_uuid option.
 	(search_fs_uuid): New function.
 	(grub_cmd_search): Fix --set argument passing.

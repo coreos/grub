@@ -131,8 +131,7 @@ esac
 case ${GRUB_TERMINAL} in
   gfxterm)
     if path=`font_path` ; then
-      GRUB_FONT_PATH="`convert_system_path_to_grub_path ${path}`"
-      GRUB_PRELOAD_MODULES="${GRUB_PRELOAD_MODULES} `${grub_probe} -t abstraction ${path}`"
+      GRUB_FONT_PATH="${path}"
     else
       # fallback to console
       GRUB_TERMINAL=console
