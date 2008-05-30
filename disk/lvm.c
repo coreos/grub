@@ -302,8 +302,11 @@ grub_lvm_scan_device (const char *name)
   rlocn = mdah->raw_locns;
   p = q = metadatabuf + grub_le_to_cpu64 (rlocn->offset);
 
-  while (*q != ' ')
+  while (*q != ' ' && q < metadatabuf + mda_size)
     q++;
+
+  if (q == metadatabuf + mda_size)
+    goto fail2;
 
   vgname_len = q - p;
   vgname = grub_malloc (vgname_len + 1);

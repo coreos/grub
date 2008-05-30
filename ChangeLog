@@ -1,5 +1,8 @@
 2008-05-29  Pavel Roskin  <proski@gnu.org>
 
+	* disk/lvm.c (grub_lvm_scan_device): Check for the buffer end
+	when scanning metadata for volume group name.
+
 	* include/grub/script.h: Don't include grub_script.tab.h.  It's
 	a generated file, which may only be included from the files with
 	DEPENDENCIES rules in the makefile.  Don't use typedef YYSTYPE,
