@@ -1,5 +1,13 @@
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
+	* commands/search.c (options): Rename --fs_uuid to --fs-uuid.
+	* util/update-grub_lib.in (prepare_grub_to_access_device): Replace
+	--fs_uuid with --fs-uuid.
+	* util/update-grub.in: Allow filesystem UUID probes to fail (since not
+	all filesystems support them).
+
+2008-05-30  Robert Millan  <rmh@aybabtu.com>
+
 	* fs/ext2.c (grub_ext2_uuid): Use `04x' instead of '02x' as
         grub_printf() flags, since we're printing in units of 2 bytes.
 

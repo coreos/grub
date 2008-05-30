@@ -32,7 +32,7 @@ static const struct grub_arg_option options[] =
   {
     {"file", 'f', 0, "search devices by a file (default)", 0, 0},
     {"label", 'l', 0, "search devices by a filesystem label", 0, 0},
-    {"fs_uuid", 'u', 0, "search devices by a filesystem UUID", 0, 0},
+    {"fs-uuid", 'u', 0, "search devices by a filesystem UUID", 0, 0},
     {"set", 's', GRUB_ARG_OPTION_OPTIONAL, "set a variable to the first device found", "VAR", ARG_TYPE_STRING},
     {0, 0, 0, 0, 0, 0}
   };
