@@ -85,7 +85,11 @@ struct hd_geometry
 # define FLOPPY_MAJOR	2
 #endif
 
-static char *map[256];
+struct
+{
+  char *drive;
+  char *device;
+} map[256];
 
 #ifdef __linux__
 /* Check if we have devfs support.  */
@@ -108,36 +112,22 @@ have_devfs (void)
 static int
 get_drive (const char *name)
 {
-  unsigned long drive;
-  char *p;
-  
-  if ((name[0] != 'f' && name[0] != 'h') || name[1] != 'd')
-    goto fail;
+  unsigned int i;
 
-  drive = strtoul (name + 2, &p, 10);
-  if (p == name + 2)
-    goto fail;
+  if (name)
+    {
+      for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+	if (! strcmp (map[i].drive, name))
+	  return i;
+    }
+  else
+    {
+      for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+	if (! map[i].drive)
+	  return i;
+    }
 
-  if (name[0] == 'h')
-    drive += 0x80;
-
-  if (drive > sizeof (map) / sizeof (map[0]))
-    goto fail;
-  
-  return (int) drive;
-
- fail:
-  grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a biosdisk");
   return -1;
-}
-
-static int
-call_hook (int (*hook) (const char *name), int drive)
-{
-  char name[10];
-
-  sprintf (name, (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
-  return hook (name);
 }
 
 static int
@@ -146,7 +136,7 @@ grub_util_biosdisk_iterate (int (*hook) (const char *name))
   unsigned i;
 
   for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
-    if (map[i] && call_hook (hook, i))
+    if (map[i].drive && hook (map[i].drive))
       return 1;
 
   return 0;
@@ -160,13 +150,10 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   
   drive = get_drive (name);
   if (drive < 0)
-    return grub_errno;
-
-  if (! map[drive])
     return grub_error (GRUB_ERR_BAD_DEVICE,
 		       "no mapping exists for `%s'", name);
   
-  disk->has_partitions = (drive & 0x80);
+  disk->has_partitions = 1;
   disk->id = drive;
 
   /* Get the size.  */
@@ -175,9 +162,9 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     unsigned long long nr;
     int fd;
 
-    fd = open (map[drive], O_RDONLY);
+    fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
-      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[drive]);
+      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[drive].device);
 
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
       {
@@ -207,8 +194,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 #elif !defined (__GNU__)
 # warning "No special routine to get the size of a block device is implemented for your OS. This is not possibly fatal."
 #endif
-  if (stat (map[drive], &st) < 0)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive]);
+  if (stat (map[drive].device, &st) < 0)
+    return grub_error (GRUB_ERR_BAD_DEVICE, "cannot stat `%s'", map[drive].device);
 
   disk->total_sectors = st.st_size >> GRUB_DISK_SECTOR_BITS;
   
@@ -325,8 +312,8 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     int is_partition = 0;
     char dev[PATH_MAX];
     
-    strcpy (dev, map[disk->id]);
-    if (disk->partition && strncmp (map[disk->id], "/dev/", 5) == 0)
+    strcpy (dev, map[disk->id].device);
+    if (disk->partition && strncmp (map[disk->id].device, "/dev/", 5) == 0)
       is_partition = linux_find_partition (dev, disk->partition->start);
     
     /* Open the partition.  */
@@ -345,10 +332,10 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       sector -= disk->partition->start;
   }
 #else /* ! __linux__ */
-  fd = open (map[disk->id], flags);
+  fd = open (map[disk->id].device, flags);
   if (fd < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[disk->id]);
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[disk->id].device);
       return -1;
     }
 #endif /* ! __linux__ */
@@ -366,7 +353,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
     offset = (loff_t) sector << GRUB_DISK_SECTOR_BITS;
     if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id]);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id].device);
 	close (fd);
 	return -1;
       }
@@ -377,7 +364,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 
     if (lseek (fd, offset, SEEK_SET) != offset)
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id]);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot seek `%s'", map[disk->id].device);
 	close (fd);
 	return -1;
       }
@@ -458,7 +445,7 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	 parts. -jochen  */
       if (nread (fd, buf, GRUB_DISK_SECTOR_SIZE) != GRUB_DISK_SECTOR_SIZE)
 	{
-	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id]);
+	  grub_error (GRUB_ERR_READ_ERROR, "cannot read `%s'", map[disk->id].device);
 	  close (fd);
 	  return grub_errno;
 	}
@@ -470,7 +457,7 @@ grub_util_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
   
   if (nread (fd, buf, size << GRUB_DISK_SECTOR_BITS)
       != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
-    grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id]);
+    grub_error (GRUB_ERR_READ_ERROR, "cannot read from `%s'", map[disk->id].device);
 
   close (fd);
   return grub_errno;
@@ -488,7 +475,7 @@ grub_util_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
   
   if (nwrite (fd, buf, size << GRUB_DISK_SECTOR_BITS)
       != (ssize_t) (size << GRUB_DISK_SECTOR_BITS))
-    grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id]);
+    grub_error (GRUB_ERR_WRITE_ERROR, "cannot write to `%s'", map[disk->id].device);
 
   close (fd);
   return grub_errno;
@@ -544,13 +531,19 @@ read_device_map (const char *dev_map)
 	show_error ("No open parenthesis found");
 
       p++;
-      drive = get_drive (p);
-      if (drive < 0 || drive >= (int) (sizeof (map) / sizeof (map[0])))
-	show_error ("Bad device name");
+      /* Find a free slot.  */
+      drive = get_drive (NULL);
+      if (drive < 0)
+	show_error ("Map table size exceeded");
 
+      e = p;
       p = strchr (p, ')');
       if (! p)
 	show_error ("No close parenthesis found");
+
+      map[drive].drive = xmalloc (p - e + sizeof ('\0'));
+      strncpy (map[drive].drive, e, p - e + sizeof ('\0'));
+      map[drive].drive[p - e] = '\0';
 
       p++;
       /* Skip leading spaces.  */
@@ -566,10 +559,6 @@ read_device_map (const char *dev_map)
 	e++;
       *e = '\0';
 
-      /* Multiple entries for a given drive is not allowed.  */
-      if (map[drive])
-	show_error ("Duplicated entry found");
-
       if (stat (p, &st) == -1)
 	{
 	  grub_util_info ("Cannot stat `%s', skipping", p);
@@ -580,11 +569,11 @@ read_device_map (const char *dev_map)
       /* On Linux, the devfs uses symbolic links horribly, and that
 	 confuses the interface very much, so use realpath to expand
 	 symbolic links.  */
-      map[drive] = xmalloc (PATH_MAX);
-      if (! realpath (p, map[drive]))
+      map[drive].device = xmalloc (PATH_MAX);
+      if (! realpath (p, map[drive].device))
 	grub_util_error ("Cannot get the real path of `%s'", p);
 #else
-      map[drive] = xstrdup (p);
+      map[drive].device = xstrdup (p);
 #endif
     }
 
@@ -604,7 +593,13 @@ grub_util_biosdisk_fini (void)
   unsigned i;
   
   for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
-    free (map[i]);
+    {
+      if (map[i].drive)
+	free (map[i].drive);
+      if (map[i].device)
+	free (map[i].device);
+      map[i].drive = map[i].device = NULL;
+    }
   
   grub_disk_dev_unregister (&grub_util_biosdisk_dev);
 }
@@ -615,7 +610,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
   char *p;
 
   p = xmalloc (30);
-  sprintf (p, (drive & 0x80) ? "hd%d" : "fd%d", drive & ~0x80);
+  sprintf (p, "%s", map[drive].drive);
   
   if (dos_part >= 0)
     sprintf (p + strlen (p), ",%d", dos_part + 1);
@@ -746,7 +741,7 @@ find_drive (const char *os_dev)
     return -1;
   
   for (i = 0; i < (int) (sizeof (map) / sizeof (map[0])); i++)
-    if (map[i] && strcmp (map[i], os_disk) == 0)
+    if (map[i].device && strcmp (map[i].device, os_disk) == 0)
       {
 	free (os_disk);
 	return i;

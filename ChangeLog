@@ -1,3 +1,22 @@
+2008-05-30  Robert Millan  <rmh@aybabtu.com>
+
+	* util/biosdisk.c (map): Redefine structure to hold information
+	about GRUB drive name.
+	(get_drive): Reimplement without assuming (and verifiing) BIOS-like
+	drive names.
+	(call_hook): Remove.
+	(grub_util_biosdisk_iterate): Access drive names via `.drive' struct
+	member.  Assume drive has partitions.
+	(grub_util_biosdisk_open): Access device names via `.device' struct
+	member.
+	(open_device): Likewise.
+	(find_drive): Likewise.
+	(read_device_map): Adjust map[] usage to match the new struct
+	definition.  Don't check for duplicates (still possible, but not cheap
+	anymore).
+	(grub_util_biosdisk_fini): Free malloced buffers referenced by map[].
+	(make_device_name): Remove assumption of BIOS-like drive names.
+
 2008-05-30  Pavel Roskin  <proski@gnu.org>
 
 	* conf/i386-efi.rmk (normal/execute.c_DEPENDENCIES): Remove, as
