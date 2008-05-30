@@ -1,5 +1,12 @@
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub.in (GRUB_DISABLE_LINUX_UUID): Export variable.
+	* util/grub.d/10_linux.in: If GRUB_DEVICE_UUID is set, and
+	GRUB_DISABLE_LINUX_UUID isn't true, use the filesystem UUIDs as
+	the `root' parameter to Linux.
+
+2008-05-30  Robert Millan  <rmh@aybabtu.com>
+
 	* commands/search.c (options): Rename --fs_uuid to --fs-uuid.
 	* util/update-grub_lib.in (prepare_grub_to_access_device): Replace
 	--fs_uuid with --fs-uuid.

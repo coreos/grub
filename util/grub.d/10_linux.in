@@ -27,6 +27,12 @@ else
   OS="${GRUB_DISTRIBUTOR} GNU/Linux"
 fi
 
+if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] ; then
+  LINUX_ROOT_DEVICE=${GRUB_DEVICE}
+else
+  LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
+fi
+
 test_numeric ()
 {
   local a=$1
@@ -105,7 +111,7 @@ while [ "x$list" != "x" ] ; do
 
   cat << EOF
 menuentry "${OS}, linux ${version}" {
-	linux	${rel_dirname}/${basename} root=${GRUB_DEVICE} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
+	linux	${rel_dirname}/${basename} root=${LINUX_ROOT_DEVICE} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
@@ -118,7 +124,7 @@ EOF
 
   cat << EOF
 menuentry "${OS}, linux ${version} (single-user mode)" {
-	linux	${rel_dirname}/${basename} root=${GRUB_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
+	linux	${rel_dirname}/${basename} root=${LINUX_ROOT_DEVICE} ro single ${GRUB_CMDLINE_LINUX}
 EOF
   if test -n "${initrd}" ; then
     cat << EOF
