@@ -6,6 +6,7 @@
 00_header
 10_hurd
 10_linux
+30_os-prober
 Makefile
 autom4te.cache
 config.cache
