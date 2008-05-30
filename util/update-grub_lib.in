@@ -71,17 +71,31 @@ make_system_path_relative_to_its_root ()
   echo $path | sed -e "s,^$dir,,g"
 }
 
-convert_system_path_to_grub_path ()
+is_path_readable_by_grub ()
 {
   path=$1
 
-  # abort if file doesn't exist
+  # abort if path doesn't exist
   if test -e $path ; then : ;else
     return 1
   fi
 
   # abort if file is in a filesystem we can't read
   if ${grub_probe} -t fs $path > /dev/null 2>&1 ; then : ; else
+    return 1
+  fi
+
+  return 0
+}
+
+convert_system_path_to_grub_path ()
+{
+  path=$1
+
+  echo "Warning: convert_system_path_to_grub_path() is deprecated.  Use prepare_grub_to_access_device() instead." >&2
+
+  # abort if GRUB can't access the path
+  if is_path_readable_by_grub ${path} ; then : ; else
     return 1
   fi
 
@@ -120,7 +134,7 @@ font_path ()
     # Prefer complete fonts over incomplete ones.
     for basename in unicode unifont ascii ; do
       path="${dir}/${basename}.pff"
-      if convert_system_path_to_grub_path ${path} > /dev/null ; then
+      if is_path_readable_by_grub ${path} > /dev/null ; then
         echo "${path}"
         return 0
       fi

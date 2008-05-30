@@ -1,5 +1,17 @@
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
+	* util/grub.d/00_header.in: Remove obsolete comment referencing
+	convert_system_path_to_grub_path().
+	* util/update-grub.in: Likewise.
+	* util/update-grub_lib.in (is_path_readable_by_grub): New function.
+	(convert_system_path_to_grub_path): Add a warning message explaining
+	that this function is deprecated.  Rely on is_path_readable_by_grub()
+	for the readability checks.
+	(font_path): Use is_path_readable_by_grub() for the readability
+	check rather than convert_system_path_to_grub_path().
+
+2008-05-30  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub_lib.in (prepare_grub_to_access_device): New function.
 	* util/update-grub.in: Set `GRUB_FONT_PATH' to the system path, without
 	converting it first.

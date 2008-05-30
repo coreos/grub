@@ -66,7 +66,6 @@ for option in "$@"; do
     esac
 done
 
-# for convert_system_path_to_grub_path(), font_path()
 . ${libdir}/grub/update-grub_lib
 
 if [ "x$UID" = "x" ] ; then
