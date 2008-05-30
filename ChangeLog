@@ -1,3 +1,15 @@
+2008-05-30  Pavel Roskin  <proski@gnu.org>
+
+	* conf/i386-efi.rmk (normal/execute.c_DEPENDENCIES): Remove, as
+	compiling execute.c doesn't need grub_script.tab.h anymore.
+	(normal/command.c_DEPENDENCIES): Likewise.
+	(normal/function.c_DEPENDENCIES): Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-linuxbios.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+
 2008-05-29  Pavel Roskin  <proski@gnu.org>
 
 	* disk/lvm.c (grub_lvm_scan_device): Check for the buffer end
