@@ -215,57 +215,28 @@ linux_find_partition (char *dev, unsigned long sector)
   char real_dev[PATH_MAX];
 
   strcpy(real_dev, dev);
-  
+
   if (have_devfs () && strcmp (real_dev + len - 5, "/disc") == 0)
     {
       p = real_dev + len - 4;
       format = "part%d";
     }
-  else if ((strncmp (real_dev + 5, "hd", 2) == 0
-	    || strncmp (real_dev + 5, "vd", 2) == 0
-	    || strncmp (real_dev + 5, "sd", 2) == 0)
-	   && real_dev[7] >= 'a' && real_dev[7] <= 'z')
+  else if (real_dev[len - 1] >= '0' && real_dev[len - 1] <= '9')
     {
-      p = real_dev + sizeof("/dev/hda")-1;
-      format = "%d";
-    }
-  else if (strncmp (real_dev + 5, "rd/c", 4) == 0)	/* dac960 */
-    {
-      p = strchr (real_dev + 9, 'd');
-      if (! p)
-	return 0;
-
-      p++;
-      while (*p && isdigit (*p))
-	p++;
-
-      format = "p%d";
-    }
-  else if (strncmp (real_dev + 5, "cciss/c", sizeof("cciss/c")-1) == 0)
-    {
-      p = strchr (real_dev + 5 + sizeof("cciss/c")-1, 'd');
-      if (! p)
-	return 0;
-
-      p++;
-      while (*p && isdigit (*p))
-	p++;
-
-      format = "p%d";
-    }
-  else if (strncmp (real_dev + 5, "mmcblk", sizeof("mmcblk")-1) == 0)
-    {
-      p = real_dev + sizeof("/dev/mmcblk0")-1;
+      p = real_dev + len;
       format = "p%d";
     }
   else
-    return 0;
+    {
+      p = real_dev + len;
+      format = "%d";
+    }
 
   for (i = 1; i < 10000; i++)
     {
       int fd;
       struct hd_geometry hdg;
-      
+
       sprintf (p, format, i);
       fd = open (real_dev, O_RDONLY);
       if (fd == -1)
@@ -278,7 +249,7 @@ linux_find_partition (char *dev, unsigned long sector)
 	}
 
       close (fd);
-      
+
       if (hdg.start == sector)
 	{
 	  strcpy (dev, real_dev);

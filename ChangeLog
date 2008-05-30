@@ -1,3 +1,11 @@
+2008-05-30  Pavel Roskin  <proski@gnu.org>
+
+	* util/biosdisk.c (linux_find_partition): Simplify logic and
+	make the code more universal.  Keep special processing for
+	devfs, but use a simple rule for all other devices.  If the
+	device ends with a number, append 'p' and the partition number.
+	Otherwise, append only the partition number.
+
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub.in (GRUB_DISABLE_LINUX_UUID): Export variable.
