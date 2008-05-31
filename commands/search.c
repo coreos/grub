@@ -63,9 +63,12 @@ search_label (const char *key, const char *var)
 		  if (grub_strcmp (label, key) == 0)
 		    {
 		      /* Found!  */
-		      grub_printf (" %s", name);
-		      if (count++ == 0 && var)
-			grub_env_set (var, name);
+		      if (var)
+			{
+			  grub_printf (" %s", name);
+			  if (count++ == 0)
+			    grub_env_set (var, name);
+			}
 		    }
 		  
 		  grub_free (label);
@@ -111,9 +114,12 @@ search_fs_uuid (const char *key, const char *var)
 		  if (grub_strcmp (uuid, key) == 0)
 		    {
 		      /* Found!  */
-		      grub_printf (" %s", name);
-		      if (count++ == 0 && var)
-			grub_env_set (var, name);
+		      if (var)
+			{
+			  grub_printf (" %s", name);
+			  if (count++ == 0)
+			    grub_env_set (var, name);
+			}
 		    }
 		  
 		  grub_free (uuid);
@@ -158,9 +164,12 @@ search_file (const char *key, const char *var)
       if (file)
 	{
 	  /* Found!  */
-	  grub_printf (" %s", name);
-	  if (count++ == 0 && var)
-	    grub_env_set (var, name);
+	  if (var)
+	    {
+	      grub_printf (" %s", name);
+	      if (count++ == 0)
+		grub_env_set (var, name);
+	    }
 
 	  grub_file_close (file);
 	}

@@ -1,5 +1,10 @@
 2008-05-31  Robert Millan  <rmh@aybabtu.com>
 
+	* commands/search.c (search_label, search_fs_uuid, search_file): Do
+	not print device names when we were asked to set a variable.
+
+2008-05-31  Robert Millan  <rmh@aybabtu.com>
+
 	* term/ieee1275/ofconsole.c (grub_ofconsole_setcursor): Implement
 	using "cursor-on" and "cursor-off" commands (understood at least by
 	the Open Firmware flavour on OLPC).
