@@ -1,3 +1,8 @@
+2008-05-31  Michael Gorven  <michael@gorven.za.net>
+
+	* term/terminfo.c (grub_terminfo_set_current): Correct vt100 cursor
+	on and off sequences.
+
 2008-05-31  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in: Replace `grub-probe' with `${grub_probe}'.
