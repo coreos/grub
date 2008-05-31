@@ -1,5 +1,11 @@
 2008-05-31  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_iterate): Iterate through
+	floppies after everything else, to ensure floppy drive isn't accessed
+	unnecessarily (patch from Bean).
+
+2008-05-31  Robert Millan  <rmh@aybabtu.com>
+
 	* commands/search.c (search_label, search_fs_uuid, search_file): Do
 	not print device names when we were asked to set a variable.
 
