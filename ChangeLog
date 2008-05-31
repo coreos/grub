@@ -1,3 +1,8 @@
+2008-05-31  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in: Replace `grub-probe' with `${grub_probe}'.
+	* util/update-grub.in: Likewise.
+
 2008-05-30  Pavel Roskin  <proski@gnu.org>
 
 	* util/biosdisk.c (linux_find_partition): Simplify logic and
