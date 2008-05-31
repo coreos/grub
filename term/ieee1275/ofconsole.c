@@ -302,9 +302,13 @@ grub_ofconsole_cls (void)
 }
 
 static void
-grub_ofconsole_setcursor (int on __attribute ((unused)))
+grub_ofconsole_setcursor (int on)
 {
-  /* XXX: Not supported.  */
+  /* Understood by the Open Firmware flavour in OLPC.  */
+  if (on)
+    grub_ieee1275_interpret ("cursor-on", 0);
+  else
+    grub_ieee1275_interpret ("cursor-off", 0);
 }
 
 static void

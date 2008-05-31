@@ -1,3 +1,9 @@
+2008-05-31  Robert Millan  <rmh@aybabtu.com>
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_setcursor): Implement
+	using "cursor-on" and "cursor-off" commands (understood at least by
+	the Open Firmware flavour on OLPC).
+
 2008-05-31  Michael Gorven  <michael@gorven.za.net>
 
 	* term/terminfo.c (grub_terminfo_set_current): Correct vt100 cursor
