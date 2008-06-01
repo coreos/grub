@@ -116,10 +116,9 @@ prepare_grub_to_access_device ()
 
   # If there's a filesystem UUID that GRUB is capable of identifiing, use it;
   # otherwise set root as per value in device.map.
+  echo "set root=`${grub_probe} --device ${device} --target=drive`"
   if fs_uuid="`${grub_probe} --device ${device} --target=fs_uuid 2> /dev/null`" ; then
     echo "search --fs-uuid --set ${fs_uuid}"
-  else
-    echo "set root=`${grub_probe} --device ${device} --target=drive`"
   fi
 
   # Abstraction modules aren't auto-loaded.

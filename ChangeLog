@@ -1,3 +1,8 @@
+2008-06-01  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in (prepare_grub_to_access_device): Generate
+	code that is backward compatible with pre-uuid search command.
+
 2008-05-31  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_iterate): Iterate through
