@@ -1,5 +1,28 @@
 2008-06-01  Robert Millan  <rmh@aybabtu.com>
 
+	*  util/biosdisk.c (get_drive): Verify that `map[i].drive' is non-NULL
+	before dereferencing it.
+
+	* fs/fat.c (struct grub_fat_bpb): Move fat32-specific fields into a
+	union with fat12/fat16-specific ones.  Add some new fields, including
+	`num_serial' for both versions.
+	(struct grub_fat_data): Add `uuid' member.
+	(grub_fat_mount): Refer to fat32-specific fields in `bpb' by their new
+	names.  Initialize `data->uuid' using `num_serial'.
+	(grub_fat_uuid): New function.
+	(grub_fat_fs): Reference grub_fat_uuid() in `uuid' struct member.
+
+	* fs/reiserfs.c (grub_reiserfs_superblock): Add `uuid' field.
+	(grub_reiserfs_uuid): New function.
+	(grub_reiserfs_fs): Reference grub_reiserfs_uuid() in `uuid' struct
+	member.
+
+	* fs/xfs.c (grub_xfs_sblock): Add `uuid' field.
+	(grub_xfs_uuid): New function.
+	(grub_xfs_fs): Reference grub_reiserfs_uuid() in `uuid' struct member.
+
+2008-06-01  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub_lib.in (prepare_grub_to_access_device): Generate
 	code that is backward compatible with pre-uuid search command.
 

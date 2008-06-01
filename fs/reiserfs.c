@@ -108,6 +108,8 @@ struct grub_reiserfs_superblock
   grub_uint16_t version;
   grub_uint16_t reserved;
   grub_uint32_t inode_generation;
+  grub_uint8_t unused[4];
+  grub_uint16_t uuid[8];
 } __attribute__ ((packed));
 
 struct grub_reiserfs_journal_header
@@ -1468,6 +1470,38 @@ grub_reiserfs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+static grub_err_t
+grub_reiserfs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_reiserfs_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_reiserfs_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
+      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+		    grub_be_to_cpu16 (data->superblock.uuid[0]), grub_be_to_cpu16 (data->superblock.uuid[1]),
+		    grub_be_to_cpu16 (data->superblock.uuid[2]), grub_be_to_cpu16 (data->superblock.uuid[3]),
+		    grub_be_to_cpu16 (data->superblock.uuid[4]), grub_be_to_cpu16 (data->superblock.uuid[5]),
+		    grub_be_to_cpu16 (data->superblock.uuid[6]), grub_be_to_cpu16 (data->superblock.uuid[7]));
+    }
+  else
+    *uuid = NULL;
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
 static struct grub_fs grub_reiserfs_fs =
   {
     .name = "reiserfs",
@@ -1476,6 +1510,7 @@ static struct grub_fs grub_reiserfs_fs =
     .read = grub_reiserfs_read,
     .close = grub_reiserfs_close,
     .label = grub_reiserfs_label,
+    .uuid = grub_reiserfs_uuid,
     .next = 0
   };
 

@@ -117,7 +117,7 @@ get_drive (const char *name)
   if (name)
     {
       for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
-	if (! strcmp (map[i].drive, name))
+	if (map[i].drive && ! strcmp (map[i].drive, name))
 	  return i;
     }
   else

@@ -37,17 +37,19 @@ struct grub_xfs_sblock
 {
   grub_uint8_t magic[4];
   grub_uint32_t bsize;
-  grub_uint8_t unused1[48];
+  grub_uint8_t unused1[24];
+  grub_uint16_t uuid[8];
+  grub_uint8_t unused2[8];
   grub_uint64_t rootino;
-  grub_uint8_t unused2[20];
-  grub_uint32_t agsize; 
   grub_uint8_t unused3[20];
+  grub_uint32_t agsize; 
+  grub_uint8_t unused4[20];
   grub_uint8_t label[12];
   grub_uint8_t log2_bsize;
-  grub_uint8_t unused4[2];
+  grub_uint8_t unused5[2];
   grub_uint8_t log2_inop;
   grub_uint8_t log2_agblk;
-  grub_uint8_t unused5[67];
+  grub_uint8_t unused6[67];
   grub_uint8_t log2_dirblk;
 } __attribute__ ((packed));
 
@@ -763,6 +765,38 @@ grub_xfs_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+static grub_err_t
+grub_xfs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_xfs_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_xfs_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (sizeof ("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"));
+      grub_sprintf (*uuid, "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+		    grub_be_to_cpu16 (data->sblock.uuid[0]), grub_be_to_cpu16 (data->sblock.uuid[1]),
+		    grub_be_to_cpu16 (data->sblock.uuid[2]), grub_be_to_cpu16 (data->sblock.uuid[3]),
+		    grub_be_to_cpu16 (data->sblock.uuid[4]), grub_be_to_cpu16 (data->sblock.uuid[5]),
+		    grub_be_to_cpu16 (data->sblock.uuid[6]), grub_be_to_cpu16 (data->sblock.uuid[7]));
+    }
+  else
+    *uuid = NULL;
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
 
 
 static struct grub_fs grub_xfs_fs =
@@ -773,6 +807,7 @@ static struct grub_fs grub_xfs_fs =
     .read = grub_xfs_read,
     .close = grub_xfs_close,
     .label = grub_xfs_label,
+    .uuid = grub_xfs_uuid,
     .next = 0
   };
 
