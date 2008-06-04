@@ -646,6 +646,17 @@ get_os_disk (const char *os_dev)
 	  return path;
 	}
       
+      /* If this is a Compaq Intelligent Drive Array.  */
+      if (strncmp ("ida/c", p, sizeof ("ida/c") - 1) == 0)
+	{
+	  /* /dev/ida/c[0-9]+d[0-9]+(p[0-9]+)? */
+	  p = strchr (p, 'p');
+	  if (p)
+	    *p = '\0';
+
+	  return path;
+	}
+      
       /* If this is a MultiMediaCard (MMC).  */
       if (strncmp ("mmcblk", p, sizeof ("mmcblk") - 1) == 0)
 	{

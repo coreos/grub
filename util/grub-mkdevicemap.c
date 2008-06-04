@@ -297,6 +297,12 @@ get_cciss_disk_name (char *name, int controller, int drive)
 }
 
 static void
+get_ida_disk_name (char *name, int controller, int drive)
+{
+  sprintf (name, "/dev/ida/c%dd%d", controller, drive);
+}
+
+static void
 get_mmc_disk_name (char *name, int unit)
 {
   sprintf (name, "/dev/mmcblk%d", unit);
@@ -572,6 +578,30 @@ make_device_map (const char *device_map, int floppy_disks)
 	    char name[24];
 	    
 	    get_cciss_disk_name (name, controller, drive);
+	    if (check_device (name))
+	      {
+		char *p;
+		p = grub_util_get_disk_name (num_hd, name);
+		fprintf (fp, "(%s)\t%s\n", p, name);
+		free (p);
+		num_hd++;
+	      }
+	  }
+      }
+  }
+
+  /* This is for Compaq Intelligent Drive Array - we have
+     /dev/ida/c<controller>d<logical drive>p<partition>.  */
+  {
+    int controller, drive;
+    
+    for (controller = 0; controller < 3; controller++)
+      {
+	for (drive = 0; drive < 10; drive++)
+	  {
+	    char name[24];
+	    
+	    get_ida_disk_name (name, controller, drive);
 	    if (check_device (name))
 	      {
 		char *p;
