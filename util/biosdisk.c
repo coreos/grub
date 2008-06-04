@@ -110,7 +110,7 @@ have_devfs (void)
 #endif /* __linux__ */
 
 static int
-get_drive (const char *name)
+find_grub_drive (const char *name)
 {
   unsigned int i;
 
@@ -148,7 +148,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   int drive;
   struct stat st;
   
-  drive = get_drive (name);
+  drive = find_grub_drive (name);
   if (drive < 0)
     return grub_error (GRUB_ERR_BAD_DEVICE,
 		       "no mapping exists for `%s'", name);
@@ -503,7 +503,7 @@ read_device_map (const char *dev_map)
 
       p++;
       /* Find a free slot.  */
-      drive = get_drive (NULL);
+      drive = find_grub_drive (NULL);
       if (drive < 0)
 	show_error ("Map table size exceeded");
 
@@ -593,7 +593,7 @@ make_device_name (int drive, int dos_part, int bsd_part)
 }
 
 static char *
-get_os_disk (const char *os_dev)
+convert_system_partition_to_system_disk (const char *os_dev)
 {
 #if defined(__linux__)
   char *path = xmalloc (PATH_MAX);
@@ -707,18 +707,18 @@ get_os_disk (const char *os_dev)
   return path;
 
 #else
-# warning "The function `get_os_disk' might not work on your OS correctly."
+# warning "The function `convert_system_partition_to_system_disk' might not work on your OS correctly."
   return xstrdup (os_dev);
 #endif
 }
 
 static int
-find_drive (const char *os_dev)
+find_system_device (const char *os_dev)
 {
   int i;
   char *os_disk;
 
-  os_disk = get_os_disk (os_dev);
+  os_disk = convert_system_partition_to_system_disk (os_dev);
   if (! os_disk)
     return -1;
   
@@ -745,7 +745,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
 
-  drive = find_drive (os_dev);
+  drive = find_system_device (os_dev);
   if (drive < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE,

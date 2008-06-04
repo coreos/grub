@@ -1,5 +1,16 @@
 2008-06-04  Robert Millan  <rmh@aybabtu.com>
 
+	* util/biosdisk.c (get_drive): Rename to ...
+	(find_grub_drive): ... this.  Update all users.
+
+	(get_os_disk): Rename to ...
+	(convert_system_partition_to_system_disk): ... this.  Update all users.
+
+	(find_drive): Rename to ...
+	(find_system_device): ... this.  Update all users.
+
+2008-06-04  Robert Millan  <rmh@aybabtu.com>
+
 	* util/biosdisk.c (get_os_disk): Handle IDA devices.
 	* util/grub-mkdevicemap.c (get_mmc_disk_name)
 	(make_device_map): Likewise.
