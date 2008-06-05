@@ -1,3 +1,8 @@
+2008-06-05  Robert Millan  <rmh@aybabtu.com>
+
+	* normal/misc.c (grub_normal_print_device_info): When a filesystem UUID
+	is found, print it (same layout as with labels).
+
 2008-06-04  Robert Millan  <rmh@aybabtu.com>
 
 	* util/biosdisk.c (get_drive): Rename to ...
