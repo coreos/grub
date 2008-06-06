@@ -148,6 +148,8 @@ esac
 grubdir=${bootdir}/`echo grub | sed ${transform}`
 device_map=${grubdir}/device.map
 
+grub_probe="${grub_probe} --device-map=${device_map}"
+
 # Check if GRUB is installed.
 set $grub_setup dummy
 if test -f "$1"; then
@@ -210,8 +212,11 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst ${pkglibdir}/*.img; do
     cp -f $file ${grubdir} || exit 1
 done
 
+# Write device to a variable so we don't have to traverse /dev every time.
+grub_device=`$grub_probe --target=device ${grubdir}`
+
 # Create the core image. First, auto-detect the filesystem module.
-fs_module=`$grub_probe --target=fs --device-map=${device_map} ${grubdir}`
+fs_module=`$grub_probe --target=fs --device ${grub_device}`
 if test "x$fs_module" = x -a "x$modules" = x; then
     echo "Auto-detection of a filesystem module failed." 1>&2
     echo "Please specify the module with the option \`--modules' explicitly." 1>&2
@@ -221,10 +226,10 @@ fi
 # Then the partition map module.  In order to support partition-less media,
 # this command is allowed to fail (--target=fs already grants us that the
 # filesystem will be accessible).
-partmap_module=`$grub_probe --target=partmap --device-map=${device_map} ${grubdir} 2> /dev/null`
+partmap_module=`$grub_probe --target=partmap --device ${grub_device} 2> /dev/null`
 
 # Device abstraction module, if any (lvm, raid).
-devabstraction_module=`$grub_probe --target=abstraction --device-map=${device_map} ${grubdir}`
+devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 
 # _chain is often useful
 modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module _chain"

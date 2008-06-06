@@ -71,8 +71,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 void
 grub_machine_init (void)
 {
-  signal (SIGINT, SIG_IGN);
-  grub_console_init ();
 }
 
 void
@@ -183,6 +181,9 @@ main (int argc, char *argv[])
       sleep (1);
     }
   
+  signal (SIGINT, SIG_IGN);
+  grub_console_init ();
+
   /* XXX: This is a bit unportable.  */
   grub_util_biosdisk_init (dev_map);
 

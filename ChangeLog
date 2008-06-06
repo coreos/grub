@@ -1,3 +1,17 @@
+2008-06-06  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub-emu.c (grub_machine_init): Move code in this function from
+	here ...
+	(main): ... to here (before grub_util_biosdisk_init() call, to prevent
+	segfault in case grub_printf() is called).
+
+	* util/i386/pc/grub-install.in: Append `--device-map=${device_map}' to
+	grub_probe.  Update all users not to explicitly add it again.
+	(grub_device): New variable; contains corresponding device for grubdir.
+	(fs_module, partmap_module, devabstraction_module): Pass
+	`--device ${grub_device}' to grub_probe to avoid traversing /dev
+	every time.
+
 2008-06-05  Robert Millan  <rmh@aybabtu.com>
 
 	* normal/misc.c (grub_normal_print_device_info): When a filesystem UUID
