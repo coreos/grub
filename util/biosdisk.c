@@ -298,9 +298,6 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 
     /* Make the buffer cache consistent with the physical disk.  */
     ioctl (fd, BLKFLSBUF, 0);
-    
-    if (is_partition)
-      sector -= disk->partition->start;
   }
 #else /* ! __linux__ */
   fd = open (map[disk->id].device, flags);

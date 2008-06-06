@@ -1,5 +1,10 @@
 2008-06-06  Robert Millan  <rmh@aybabtu.com>
 
+	* util/biosdisk.c (open_device): Do not modify sector offset when
+	accessing a partition.  kern/disk.c already handles this for us.
+
+2008-06-06  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub-emu.c (grub_machine_init): Move code in this function from
 	here ...
 	(main): ... to here (before grub_util_biosdisk_init() call, to prevent
