@@ -105,7 +105,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(start) + 0x50
+	. = EXT_C(start) + GRUB_KERNEL_MACHINE_DATA_END
 
 /*
  * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).

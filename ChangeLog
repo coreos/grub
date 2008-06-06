@@ -1,5 +1,16 @@
 2008-06-06  Robert Millan  <rmh@aybabtu.com>
 
+	Ensure GRUB_KERNEL_MACHINE_DATA_END is always consistent with the
+	rest of GRUB, and breakage doesn't happen if its value were modified.
+
+	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_RAW_SIZE):
+	Redefine as an offset from `GRUB_KERNEL_MACHINE_DATA_END' instead of
+	a constant (same value).
+	* kern/i386/pc/startup.S: Replace hardcoded `0x50' with
+	`GRUB_KERNEL_MACHINE_DATA_END' (same value).
+
+2008-06-06  Robert Millan  <rmh@aybabtu.com>
+
 	* util/biosdisk.c (open_device): Do not modify sector offset when
 	accessing a partition.  kern/disk.c already handles this for us.
 

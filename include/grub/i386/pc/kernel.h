@@ -44,7 +44,7 @@
 #define GRUB_KERNEL_MACHINE_DATA_END		0x50
 
 /* The size of the first region which won't be compressed.  */
-#define GRUB_KERNEL_MACHINE_RAW_SIZE		0x4A0
+#define GRUB_KERNEL_MACHINE_RAW_SIZE		(GRUB_KERNEL_MACHINE_DATA_END + 0x450)
 
 #ifndef ASM_FILE
 
