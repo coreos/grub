@@ -1,3 +1,9 @@
+2008-06-07  Pavel Roskin  <proski@gnu.org>
+
+	* util/biosdisk.c (open_device): Revert last change to the
+	function, it broke installation.  The sector needs to be
+	different dependent on which device is opened.
+
 2008-06-06  Robert Millan  <rmh@aybabtu.com>
 
 	Ensure GRUB_KERNEL_MACHINE_DATA_END is always consistent with the
