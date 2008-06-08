@@ -1,3 +1,12 @@
+2008-06-08  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/ntfs.h (struct grub_ntfs_bpb): Rename `serial_number' to
+	`num_serial' (for consistency with other variables).
+	(struct grub_ntfs_data): Add `uuid' member.
+	* fs/ntfs.c (grub_ntfs_mount): Initialize `data->uuid'.
+	(grub_ntfs_uuid): New function.
+	(grub_ntfs_fs): Reference grub_ntfs_uuid() in `uuid' struct member.
+
 2008-06-07  Pavel Roskin  <proski@gnu.org>
 
 	* util/biosdisk.c (open_device): Revert last change to the

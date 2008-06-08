@@ -830,6 +830,8 @@ grub_ntfs_mount (grub_disk_t disk)
       (disk, data->mft_start, 0, data->mft_size << BLK_SHR, data->mmft.buf))
     goto fail;
 
+  data->uuid = grub_le_to_cpu64 (bpb.num_serial);
+
   if (fixup (data, data->mmft.buf, data->mft_size, "FILE"))
     goto fail;
 
@@ -1078,6 +1080,34 @@ fail:
   return grub_errno;
 }
 
+static grub_err_t
+grub_ntfs_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_ntfs_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_ntfs_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (16 + sizeof ('\0'));
+      grub_sprintf (*uuid, "%016llx", data->uuid);
+    }
+  else
+    *uuid = NULL;
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
 static struct grub_fs grub_ntfs_fs = {
   .name = "ntfs",
   .dir = grub_ntfs_dir,
@@ -1085,6 +1115,7 @@ static struct grub_fs grub_ntfs_fs = {
   .read = grub_ntfs_read,
   .close = grub_ntfs_close,
   .label = grub_ntfs_label,
+  .uuid = grub_ntfs_uuid,
   .next = 0
 };
 
