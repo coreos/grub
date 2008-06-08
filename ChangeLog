@@ -1,5 +1,11 @@
 2008-06-08  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-setup.c (main): If install drive is an LVM,
+	don't append the RAID prefix afterwards.
+	Reported by Clint Adams.
+
+2008-06-08  Robert Millan  <rmh@aybabtu.com>
+
 	Based on description from Pavel:
 	* kern/disk.c (grub_disk_check_range): Rename to ...
 	(grub_disk_adjust_range): ... this.  Add a comment explaining the

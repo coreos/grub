@@ -749,9 +749,8 @@ main (int argc, char *argv[])
       free (prefix);
       prefix = newprefix;
     }
-    
-  if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
-      && dest_dev[2] >= '0' && dest_dev[2] <= '9')
+  else if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
+	   && dest_dev[2] >= '0' && dest_dev[2] <= '9')
     {
       char **devicelist;
       char *raid_prefix;
