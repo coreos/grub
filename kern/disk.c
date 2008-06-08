@@ -322,8 +322,12 @@ grub_disk_close (grub_disk_t disk)
   grub_free (disk);
 }
 
+/* This function performs three tasks:
+   - Make sectors disk relative from partition relative.
+   - Normalize offset to be less than the sector size.
+   - Verify that the range is inside the partition.  */
 static grub_err_t
-grub_disk_check_range (grub_disk_t disk, grub_disk_addr_t *sector,
+grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
 		       grub_off_t *offset, grub_size_t size)
 {
   *sector += *offset >> GRUB_DISK_SECTOR_BITS;
@@ -364,7 +368,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
   grub_dprintf ("disk", "Reading `%s'...\n", disk->name);
   
   /* First of all, check if the region is within the disk.  */
-  if (grub_disk_check_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
+  if (grub_disk_adjust_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
     {
       grub_error_push ();
       grub_dprintf ("disk", "Read out of range: sector 0x%llx (%s).\n",
@@ -502,7 +506,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
   
   grub_dprintf ("disk", "Writing `%s'...\n", disk->name);
 
-  if (grub_disk_check_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
+  if (grub_disk_adjust_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
     return -1;
 
   real_offset = offset;

@@ -1,5 +1,12 @@
 2008-06-08  Robert Millan  <rmh@aybabtu.com>
 
+	Based on description from Pavel:
+	* kern/disk.c (grub_disk_check_range): Rename to ...
+	(grub_disk_adjust_range): ... this.  Add a comment explaining the
+	tasks performed by this function.
+
+2008-06-08  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/ntfs.h (struct grub_ntfs_bpb): Rename `serial_number' to
 	`num_serial' (for consistency with other variables).
 	(struct grub_ntfs_data): Add `uuid' member.
