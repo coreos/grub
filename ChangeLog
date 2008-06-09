@@ -1,3 +1,8 @@
+2008-06-09  Pavel Roskin  <proski@gnu.org>
+
+	* fs/minix.c (grub_minix_mount): Handle error reading
+	superblock.
+
 2008-06-08  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (main): If install drive is an LVM,
