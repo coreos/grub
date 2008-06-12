@@ -84,6 +84,15 @@ EXPORT_FUNC(grub_fshelp_find_file) (const char *path,
 				    enum grub_fshelp_filetype expect);
 
 
+/* Read LEN bytes from the block BLOCK on disk DISK into the buffer BUF,
+   beginning with the block POS.  Apply mappings from LOG.  The blocks
+   have a size of LOG2BLOCKSIZE (in log2).  */
+grub_err_t
+EXPORT_FUNC(grub_fshelp_read) (grub_disk_t disk, grub_fshelp_journal_t log,
+			       grub_disk_addr_t block, grub_off_t pos,
+			       grub_size_t len, char *buf, int log2blocksize);
+
+
 /* Read LEN bytes from the file NODE on disk DISK into the buffer BUF,
    beginning with the block POS.  READ_HOOK should be set before
    reading a block from the file.  GET_BLOCK is used to translate file

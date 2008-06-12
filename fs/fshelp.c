@@ -215,6 +215,45 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 }
 
 
+/* Read LEN bytes from the block BLOCK on disk DISK into the buffer BUF,
+   beginning with the block POS.  Apply mappings from LOG.  The blocks
+   have a size of LOG2BLOCKSIZE (in log2).  */
+grub_err_t grub_fshelp_read (grub_disk_t disk, grub_fshelp_journal_t log,
+			     grub_disk_addr_t block, grub_off_t pos,
+			     grub_size_t len, char *buf, int log2blocksize)
+{
+  grub_off_t relblk;
+
+  relblk = pos >> (log2blocksize + GRUB_DISK_SECTOR_BITS);
+  block += relblk;
+  pos -= relblk << (log2blocksize + GRUB_DISK_SECTOR_BITS);
+
+  while (len > 0)
+    {
+      grub_err_t ret;
+      grub_size_t size;
+
+      size = (GRUB_DISK_SECTOR_SIZE << log2blocksize) - pos;
+      if (size > len)
+	size = len;
+
+      ret = grub_disk_read (disk,
+			    grub_fshelp_map_block (log, block) << log2blocksize,
+			    pos, size, buf);
+
+      if (ret)
+	return ret;
+
+      block++;
+      pos = 0;
+      buf += size;
+      len -= size;
+    }
+
+  return 0;
+}
+
+
 /* Read LEN bytes from the file NODE on disk DISK into the buffer BUF,
    beginning with the block POS.  READ_HOOK should be set before
    reading a block from the file.  GET_BLOCK is used to translate file

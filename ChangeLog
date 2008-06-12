@@ -1,3 +1,10 @@
+2008-06-12  Pavel Roskin  <proski@gnu.org>
+
+	* fs/fshelp.c (grub_fshelp_read): New function.  Implement
+	linear disk read with journal translation.
+	* fs/ext2.c: Use grub_fshelp_read() instead of grub_disk_read().
+	* include/grub/fshelp.h: Declare grub_fshelp_read().
+
 2008-06-09  Pavel Roskin  <proski@gnu.org>
 
 	* fs/minix.c (grub_minix_mount): Handle error reading

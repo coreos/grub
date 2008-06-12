@@ -257,12 +257,11 @@ inline static grub_err_t
 grub_ext2_blockgroup (struct grub_ext2_data *data, int group, 
 		      struct grub_ext2_block_group *blkgrp)
 {
-  return grub_disk_read (data->disk,
-			 (grub_fshelp_map_block (data->journal,
-                                                 grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
-			  << LOG2_EXT2_BLOCK_SIZE (data)),
-			 group * sizeof (struct grub_ext2_block_group), 
-			 sizeof (struct grub_ext2_block_group), (char *) blkgrp);
+  return grub_fshelp_read (data->disk, data->journal,
+			   grub_le_to_cpu32 (data->sblock.first_data_block) + 1,
+			   group * sizeof (struct grub_ext2_block_group),
+			   sizeof (struct grub_ext2_block_group),
+			   (char *) blkgrp, LOG2_EXT2_BLOCK_SIZE (data));
 }
 
 
@@ -283,11 +282,9 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
     {
       grub_uint32_t indir[blksz / 4];
 
-      if (grub_disk_read (data->disk, 
-			  grub_fshelp_map_block(data->journal,
-                                                grub_le_to_cpu32 (inode->blocks.indir_block))
-			  << log2_blksz,
-			  0, blksz, (char *) indir))
+      if (grub_fshelp_read (data->disk, data->journal,
+			    grub_le_to_cpu32 (inode->blocks.indir_block),
+			    0, blksz, (char *) indir, log2_blksz))
 	return grub_errno;
 	  
       blknr = grub_le_to_cpu32 (indir[fileblock - INDIRECT_BLOCKS]);
@@ -300,18 +297,14 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 					 + blksz / 4);
       grub_uint32_t indir[blksz / 4];
 
-      if (grub_disk_read (data->disk, 
-			  grub_fshelp_map_block(data->journal,
-                                                grub_le_to_cpu32 (inode->blocks.double_indir_block))
-			  << log2_blksz,
-			  0, blksz, (char *) indir))
+      if (grub_fshelp_read (data->disk, data->journal,
+			    grub_le_to_cpu32 (inode->blocks.double_indir_block),
+			    0, blksz, (char *) indir, log2_blksz))
 	return grub_errno;
 
-      if (grub_disk_read (data->disk,
-			  grub_fshelp_map_block(data->journal,
-                                                grub_le_to_cpu32 (indir[rblock / perblock]))
-			  << log2_blksz,
-			  0, blksz, (char *) indir))
+      if (grub_fshelp_read (data->disk, data->journal,
+			    grub_le_to_cpu32 (indir[rblock / perblock]),
+			    0, blksz, (char *) indir, log2_blksz))
 	return grub_errno;
 
       
@@ -372,12 +365,11 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
     % inodes_per_block;
   
   /* Read the inode.  */
-  if (grub_disk_read (data->disk, 
-		      grub_fshelp_map_block(data->journal,
-                                            grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
-                      << LOG2_EXT2_BLOCK_SIZE (data),
-		      EXT2_INODE_SIZE (data) * blkoff,
-		      sizeof (struct grub_ext2_inode), (char *) inode))
+  if (grub_fshelp_read (data->disk, data->journal,
+			grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno,
+			EXT2_INODE_SIZE (data) * blkoff,
+			sizeof (struct grub_ext2_inode), (char *) inode,
+			LOG2_EXT2_BLOCK_SIZE (data)))
     return grub_errno;
   
   return 0;
