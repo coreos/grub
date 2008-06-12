@@ -1,5 +1,8 @@
 2008-06-12  Pavel Roskin  <proski@gnu.org>
 
+	* fs/ext2.c (grub_ext2_read_inode): Don't normalize block
+	number, grub_fshelp_read() does it for us.
+
 	* fs/fshelp.c (grub_fshelp_read): New function.  Implement
 	linear disk read with journal translation.
 	* fs/ext2.c: Use grub_fshelp_read() instead of grub_disk_read().

@@ -344,9 +344,6 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
 {
   struct grub_ext2_block_group blkgrp;
   struct grub_ext2_sblock *sblock = &data->sblock;
-  int inodes_per_block;
-  
-  unsigned int blkno;
   unsigned int blkoff;
 
   /* It is easier to calculate if the first inode is 0.  */
@@ -358,15 +355,11 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
   if (grub_errno)
     return grub_errno;
 
-  inodes_per_block = EXT2_BLOCK_SIZE (data) / EXT2_INODE_SIZE (data);
-  blkno = (ino % grub_le_to_cpu32 (sblock->inodes_per_group))
-    / inodes_per_block;
-  blkoff = (ino % grub_le_to_cpu32 (sblock->inodes_per_group))
-    % inodes_per_block;
-  
+  blkoff = ino % grub_le_to_cpu32 (sblock->inodes_per_group);
+
   /* Read the inode.  */
   if (grub_fshelp_read (data->disk, data->journal,
-			grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno,
+			grub_le_to_cpu32 (blkgrp.inode_table_id),
 			EXT2_INODE_SIZE (data) * blkoff,
 			sizeof (struct grub_ext2_inode), (char *) inode,
 			LOG2_EXT2_BLOCK_SIZE (data)))
