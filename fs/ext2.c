@@ -436,12 +436,12 @@ grub_ext3_get_journal (struct grub_ext2_data *data)
     {
       struct grub_ext3_journal_header *jh;
 
-      if (grub_fshelp_read_file (data->disk, &data->logfile, 0,
-                                 block << (log2bs + 9), sizeof (buf),
-                                 buf, grub_ext2_read_block,
-                                 log->last_block << (log2bs + 9),
-                                 log2bs) !=
-          (int) sizeof (buf))
+      grub_fshelp_read_file (data->disk, &data->logfile, 0,
+                             block << (log2bs + 9), sizeof (buf),
+                             buf, grub_ext2_read_block,
+                             log->last_block << (log2bs + 9),
+                             log2bs);
+      if (grub_errno)
         break;
 
       jh = (struct grub_ext3_journal_header *) &buf[0];
@@ -493,11 +493,13 @@ grub_ext3_get_journal (struct grub_ext2_data *data)
         case EXT3_JOURNAL_REVOKE_BLOCK:
           {
             struct grub_ext3_journal_revoke_header *jrh;
-            grub_uint32_t i;
+            grub_uint32_t i, cnt;
 
             jrh = (struct grub_ext3_journal_revoke_header *) jh;
+            cnt = (grub_be_to_cpu32 (jrh->count) -
+                   sizeof (struct grub_ext3_journal_revoke_header)) >> 2;
 
-            for (i = 0; i < grub_be_to_cpu32 (jrh->count); i++)
+            for (i = 0; i < cnt; i++)
               {
                 int j;
                 grub_uint32_t map;

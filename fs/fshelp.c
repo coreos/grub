@@ -356,7 +356,7 @@ grub_fshelp_map_block (grub_fshelp_journal_t log, grub_disk_addr_t block)
 {
   int map_block;
 
-  if (! log)
+  if ((! log) || (! block))
     return block;
 
   for (map_block = log->num_mappings - 1; map_block >= 0; map_block--)

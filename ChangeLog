@@ -1,3 +1,12 @@
+2008-06-13  Bean  <bean123ch@gmail.com>
+
+	* commands/hexdump.c (grub_cmd_hexdump): Adjust offset for partition.
+
+	* fs/ext2.c (grub_ext3_get_journal): Fix revoke block handling.
+
+	* fs/fshelp.c (grub_fshelp_map_block): Don't map block 0 as it's used
+	to indicate sparse block.
+
 2008-06-12  Pavel Roskin  <proski@gnu.org>
 
 	* fs/ext2.c (grub_ext2_read_inode): Don't normalize block

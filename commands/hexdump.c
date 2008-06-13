@@ -25,6 +25,7 @@
 #include <grub/misc.h>
 #include <grub/gzio.h>
 #include <grub/hexdump.h>
+#include <grub/partition.h>
 
 static const struct grub_arg_option options[] = {
   {"skip", 's', 0, "skip offset bytes from the beginning of file.", 0,
@@ -84,7 +85,7 @@ grub_cmd_hexdump (struct grub_arg_list *state, int argc, char **args)
 {
   char buf[GRUB_DISK_SECTOR_SIZE * 4];
   grub_ssize_t size, length;
-  unsigned long skip;
+  grub_disk_addr_t skip;
   int namelen;
 
   if (argc != 1)
@@ -106,6 +107,9 @@ grub_cmd_hexdump (struct grub_arg_list *state, int argc, char **args)
       disk = grub_disk_open (&args[0][1]);
       if (! disk)
         return 0;
+
+      if (disk->partition)
+        skip += grub_partition_get_start (disk->partition) << GRUB_DISK_SECTOR_BITS;
 
       sector = (skip >> (GRUB_DISK_SECTOR_BITS + 2)) * 4;
       ofs = skip & (GRUB_DISK_SECTOR_SIZE * 4 - 1);
