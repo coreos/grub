@@ -1,3 +1,7 @@
+2008-06-13  Pavel Roskin  <proski@gnu.org>
+
+	* commands/ls.c (grub_ls_list_files): Fix format warnings.
+
 2008-06-13  Bean  <bean123ch@gmail.com>
 
 	* commands/hexdump.c (grub_cmd_hexdump): Adjust offset for partition.

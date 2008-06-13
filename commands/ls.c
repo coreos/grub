@@ -105,7 +105,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	    }
 
 	  if (! human)
-	    grub_printf ("%-12llu", file->size);
+	    grub_printf ("%-12llu", (unsigned long long) file->size);
 	  else
 	    {
 	      float fsize = file->size;
@@ -126,7 +126,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 		  grub_printf ("%-12s", buf);
 		}
 	      else
-		grub_printf ("%-12llu", file->size);
+		grub_printf ("%-12llu", (unsigned long long) file->size);
 	      
 	    }
 	  grub_file_close (file);
