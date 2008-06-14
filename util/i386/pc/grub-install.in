@@ -231,8 +231,8 @@ partmap_module=`$grub_probe --target=partmap --device ${grub_device} 2> /dev/nul
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 
-# _chain is often useful
-modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module _chain"
+# The order in this list is critical.  Be careful when modifiing it.
+modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module"
 
 $grub_mkimage --output=${grubdir}/core.img --prefix=`make_system_path_relative_to_its_root ${grubdir}`/ $modules || exit 1
 
