@@ -182,6 +182,16 @@ generate_image (const char *dir, char *prefix, FILE *out, char *mods[], char *me
   *((grub_uint32_t *) (core_img + GRUB_KERNEL_MACHINE_COMPRESSED_SIZE))
     = grub_cpu_to_le32 (core_size - GRUB_KERNEL_MACHINE_RAW_SIZE);
 
+  /* If we included a drive in our prefix, let GRUB know it doesn't have to
+     prepend the drive told by BIOS.  */
+  if (prefix[0] == '(')
+    {
+      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART))
+	= grub_cpu_to_le32 (-2);
+      *((grub_int32_t *) (core_img + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART))
+	= grub_cpu_to_le32 (-2);
+    }
+
   if (core_size > GRUB_MEMORY_MACHINE_UPPER - GRUB_MEMORY_MACHINE_LINK_ADDR)
     grub_util_error ("Core image is too big (%p > %p)\n", core_size,
 		     GRUB_MEMORY_MACHINE_UPPER - GRUB_MEMORY_MACHINE_LINK_ADDR);
@@ -278,6 +288,11 @@ main (int argc, char *argv[])
 	      free (memdisk);
 
 	    memdisk = xstrdup (optarg);
+	
+	    if (prefix)
+	      free (prefix);
+
+	    prefix = xstrdup ("(memdisk)/boot/grub");
 	    break;
 
 	  case 'h':

@@ -1,5 +1,17 @@
 2008-06-15  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-mkimage.c (generate_image): If we included a drive
+	in our prefix, set install_{dos,bsd}_part = -2 to indicate this can be
+	skipped later.
+	(main): If a memdisk was requested, add "(memdisk)" drive explicitly to
+	the beginning of the prefix.
+
+	* kern/i386/pc/init.c (make_install_device): Remove memdisk check.
+	It is assumed that if we have a memdisk, grub-mkimage has set
+	grub_prefix to include the "(memdisk)" drive in it.
+
+2008-06-15  Robert Millan  <rmh@aybabtu.com>
+
 	* term/i386/pc/console.c [GRUB_MACHINE_LINUXBIOS] (grub_console_init):
 	Initialize keyboard controller after registering the terminal, so that
 	grub_printf() can be called from grub_keyboard_controller_init().

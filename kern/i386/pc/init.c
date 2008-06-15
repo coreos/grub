@@ -64,12 +64,7 @@ make_install_device (void)
   /* XXX: This should be enough.  */
   char dev[100];
 
-  if (grub_memdisk_image_size)
-    {
-      grub_sprintf (dev, "(memdisk)%s", grub_prefix);
-      grub_strcpy (grub_prefix, dev);
-    }
-  else if (grub_install_dos_part != -2)
+  if (grub_install_dos_part != -2)
     {
       /* If the root drive is not set explicitly, assume that it is identical
          to the boot drive.  */
