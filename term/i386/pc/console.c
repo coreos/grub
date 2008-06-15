@@ -149,12 +149,12 @@ static struct grub_term grub_console_term =
 void
 grub_console_init (void)
 {
+  grub_term_register (&grub_console_term);
+  grub_term_set_current (&grub_console_term);
+
 #ifdef GRUB_MACHINE_LINUXBIOS
   grub_keyboard_controller_init ();
 #endif
-
-  grub_term_register (&grub_console_term);
-  grub_term_set_current (&grub_console_term);
 }
 
 void

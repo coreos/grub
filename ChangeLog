@@ -1,5 +1,11 @@
 2008-06-15  Robert Millan  <rmh@aybabtu.com>
 
+	* term/i386/pc/console.c [GRUB_MACHINE_LINUXBIOS] (grub_console_init):
+	Initialize keyboard controller after registering the terminal, so that
+	grub_printf() can be called from grub_keyboard_controller_init().
+
+2008-06-15  Robert Millan  <rmh@aybabtu.com>
+
 	* fs/sfs.c (grub_sfs_read_extent): Fix the count of nodes in
 	extent-btree which is written as big endian on disk.
 	Reported by Alain Greppin  <al@chilibi.org>.
