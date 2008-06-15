@@ -1,7 +1,7 @@
 /* sfs.c - Amiga Smart FileSystem.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -172,7 +172,7 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 	  return grub_errno;
 	}
 
-      for (i = 0; i < tree->nodes; i++)
+      for (i = 0; i < grub_be_to_cpu16 (tree->nodes); i++)
 	{
 
 #define EXTNODE(tree, index)						\
@@ -189,7 +189,7 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
 
 	  /* In case the last node is reached just use that one, it is
 	     the right match.  */
-	  if (i + 1 == tree->nodes && !tree->leaf)
+	  if (i + 1 == grub_be_to_cpu16 (tree->nodes) && !tree->leaf)
 	    {
 	      next = grub_be_to_cpu32 (EXTNODE (tree, i)->data);
 	      break;

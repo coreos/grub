@@ -1,3 +1,9 @@
+2008-06-15  Robert Millan  <rmh@aybabtu.com>
+
+	* fs/sfs.c (grub_sfs_read_extent): Fix the count of nodes in
+	extent-btree which is written as big endian on disk.
+	Reported by Alain Greppin  <al@chilibi.org>.
+
 2008-06-14  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/efi/grub-install.in (modules): Remove `_chain'.
