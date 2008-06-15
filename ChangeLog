@@ -1,5 +1,11 @@
 2008-06-15  Robert Millan  <rmh@aybabtu.com>
 
+	* util/grub.d/10_linux.in: Use the underliing device for loop-AES
+	devices.
+	Reported by Max Vozeler.
+
+2008-06-15  Robert Millan  <rmh@aybabtu.com>
+
 	* util/i386/pc/grub-mkimage.c (generate_image): If we included a drive
 	in our prefix, set install_{dos,bsd}_part = -2 to indicate this can be
 	skipped later.

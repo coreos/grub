@@ -28,7 +28,16 @@ else
 fi
 
 if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] ; then
-  LINUX_ROOT_DEVICE=${GRUB_DEVICE}
+  # loop-AES arranges things so that /dev/loop/X can be our root device, but
+  # the initrds that Linux uses don't like that.
+  case ${GRUB_DEVICE} in
+    /dev/loop/*|/dev/loop[0-9])
+      LINUX_ROOT_DEVICE=`losetup ${GRUB_DEVICE} | sed -e "s/^[^(]*(\([^)]\+\)).*/\1/"`
+    ;;
+    *)
+      LINUX_ROOT_DEVICE=${GRUB_DEVICE}
+    ;;
+  esac
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}
 fi
