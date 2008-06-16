@@ -7,7 +7,7 @@
 
 2008-06-15  Robert Millan  <rmh@aybabtu.com>
 
-	* util/grub.d/10_linux.in: Use the underliing device for loop-AES
+	* util/grub.d/10_linux.in: Use the underlying device for loop-AES
 	devices.
 	Reported by Max Vozeler.
 
@@ -280,7 +280,7 @@
 
 	* util/biosdisk.c (map): Redefine structure to hold information
 	about GRUB drive name.
-	(get_drive): Reimplement without assuming (and verifiing) BIOS-like
+	(get_drive): Reimplement without assuming (and verifying) BIOS-like
 	drive names.
 	(call_hook): Remove.
 	(grub_util_biosdisk_iterate): Access drive names via `.drive' struct
@@ -685,7 +685,7 @@
 	iterating through it.
 	(grub_lvm_open): Don't assume `vg->lvs != NULL' when iterating
 	through it.
-	(grub_lvm_scan_device): Check the return value (and fail gracefuly
+	(grub_lvm_scan_device): Check the return value (and fail gracefully
 	when due) on each grub_lvm_getvalue() or grub_strstr() call.
 	Don't assume `vg->pvs != NULL' when iterating through it.
 
@@ -1359,7 +1359,7 @@
 	* disk/raid.c (grub_raid_scan_device): Check for
 	`array->device[sb.this_disk.number]' rather than for
 	`array->device[sb.this_disk.number]->name', since the latter is not
-	garanteed to be accessible.
+	guaranteed to be accessible.
 
 2008-02-08  Robert Millan  <rmh@aybabtu.com>
 
@@ -1395,7 +1395,7 @@
 
 	Patch from Jeroen Dekkers.
 	* disk/raid.c (grub_raid_scan_device): Reset `grub_errno' on disk
-	failure, since succesfuly reading all array members might not be
+	failure, since successfully reading all array members might not be
 	required.
 
 2008-02-06  Robert Millan  <rmh@aybabtu.com>
@@ -1425,7 +1425,7 @@
 
 	* util/grub-fstest.c: Don't include unused header file script.h.
 
-	* conf/common.rmk (grub-fstest.c_DEPENDENCIES): Move to the begginning
+	* conf/common.rmk (grub-fstest.c_DEPENDENCIES): Move to the beginning
 	of file.
 	(grub_fstest_SOURCES): Likewise.
 
@@ -1793,7 +1793,7 @@
 	Revert my previous commits (based on wrong assumption of how grub_errno
 	works).
 
-	* kern/disk.c (grub_disk_open): Stop reseting grub_errno.
+	* kern/disk.c (grub_disk_open): Stop resetting grub_errno.
 	* kern/file.c (grub_file_open): Likewise.
 
 2008-01-24  Pavel Roskin  <proski@gnu.org>
@@ -2085,14 +2085,14 @@
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_mmu): New variable.
 	(grub_ieee1275_find_options): If `grub_ieee1275_mmu' is 0, set
 	`GRUB_IEEE1275_FLAG_REAL_MODE'.
-	(cmain): Intialize `grub_ieee1275_mmu' (using /chosen/mmu integer
+	(cmain): Initialize `grub_ieee1275_mmu' (using /chosen/mmu integer
 	property).
 	* kern/powerpc/ieee1275/openfw.c (grub_map): Rely on pre-initialized
 	`grub_ieee1275_mmu' rather than obtaining a handler on every call.
 
 2008-01-19  Robert Millan  <rmh@aybabtu.com>
 
-	Get rid of confusing function (superceeded by
+	Get rid of confusing function (superseded by
 	`grub_ieee1275_get_integer_property')
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_decode_int_4): Remove
 	prototype.
@@ -2172,7 +2172,7 @@
 
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Replace
 	grub_ieee1275_get_property() with grub_ieee1275_get_integer_property()
-	where appropiate.
+	where appropriate.
 	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate): Likewise.
 	(grub_map): Likewise.
 	* kern/sparc64/ieee1275/openfw.c (grub_map): Likewise.
@@ -2342,7 +2342,7 @@
 	(grub_reiserfs_get_key_offset): Likewise.
 	(grub_reiserfs_set_key_offset): Likewise.
 	(grub_reiserfs_set_key_type): Likewise.
-	(grub_reiserfs_iterate_dir): Return 1 if found, otheriwise 0.
+	(grub_reiserfs_iterate_dir): Return 1 if found, otherwise 0.
 
 	(GRUB_REISERFS_KEYV2_BITFIELD): Undefined. Probably it would be
 	better to remove the bitfield version completely.
@@ -2451,7 +2451,7 @@
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
 
 	* util/biosdisk.c (get_os_disk): Check for devfs-style IDE and SCSI
-	discs unconditionaly, since udev and others have options to provide
+	discs unconditionally, since udev and others have options to provide
 	them.
 
 2008-01-05  Robert Millan  <rmh@aybabtu.com>
@@ -3339,7 +3339,7 @@
 
 	* geninitheader.sh: Process file specified in first parameter rather
 	than hardcoding grub_modules_init.lst.
-	* geninit.sh: Likewise.  Also, construct header name dynamicaly rather
+	* geninit.sh: Likewise.  Also, construct header name dynamically rather
 	than hardcoding grub_modules_init.h.
 
 	* conf/common.rmk: Rename grub_modules_init.[ch] files associated with
@@ -3681,11 +3681,11 @@
 	Also use grub-probe to get rid of unportable /proc/mounts check.
 
 	Print the same informational message that the other scripts do, before
-	exitting.
+	exiting.
 
 2007-06-23  Robert Millan  <rmh@aybabtu.com>
 
-	* util/update-grub_lib.in (font_path): New function.  Determine wether
+	* util/update-grub_lib.in (font_path): New function.  Determine whether
 	a font file can be found and, if so, echo the GRUB path to it.
 
 	* util/update-grub.in: Handle multiple terminals depending on user
@@ -3753,7 +3753,7 @@
 	Add --pkglibdir=DIR option to override pkglibdir.
 	Mention --image-type=TYPE in help output.
 	Fix --grub-mkimage (it was a no-op).
-	Abort gracefuly when no parameter is given.
+	Abort gracefully when no parameter is given.
 
 2007-06-11  Robert Millan  <rmh@aybabtu.com>
 
@@ -3777,7 +3777,7 @@
 
 	* util/grub.d/00_header.in: Only set root variable when GRUB_DRIVE
 	could be identified by update-grub.  Remove redundant check for
-	unifont.pff existance (since convert_system_path_to_grub_path now
+	unifont.pff existence (since convert_system_path_to_grub_path now
 	handles that).
 
 2007-06-04  Robert Millan  <rmh@aybabtu.com>
@@ -3974,7 +3974,7 @@
 2007-05-09  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-probe.c (probe): When detecting partition map,
-        fail gracefuly if dev->disk->partition == NULL.
+        fail gracefully if dev->disk->partition == NULL.
 
 2007-05-07  Robert Millan  <rmh@aybabtu.com>
 
@@ -4058,7 +4058,7 @@
 
 2007-04-10  Jerone Young  <jerone@gmail.com>
 	
-	* configure.ac: Add argument for autoconf to use tranformation
+	* configure.ac: Add argument for autoconf to use transformation
 	ability.
 	* Makefile.in: Add autoconf package transformation code.
 	* util/i386/pc/grub-install.in: Likewise.
@@ -4543,7 +4543,7 @@
 
 2006-08-15  Johan Rydberg  <jrydberg@gnu.org>
 
-	* genmk.rb: Let GCC generate dependenceies the first time it
+	* genmk.rb: Let GCC generate dependencies the first time it
 	compiles a file; using the -MD option.
 	* conf/common.mk: Regenerate.
 	* conf/i386-pc.mk: Likewise.
@@ -4832,7 +4832,7 @@
 	SIZE to grub_disk_addr_t, grub_off_t and grub_size_t,
 	respectively.
 
-	* kern/file.c (grub_file_read): Prevent an oveflow of LEN, as the
+	* kern/file.c (grub_file_read): Prevent an overflow of LEN, as the
 	return value is signed.
 	(grub_file_seek): Change the type of OLD to grub_off_t. Do not
 	test if OFFSET is less than zero, as OFFSET is unsigned now.
@@ -5515,7 +5515,7 @@
 	argument IMAGE_HANDLE and specify it to get a loaded image.
 	(grub_arch_modules_addr): Specify GRUB_EFI_IMAGE_HANDLE to
 	grub_efi_get_loaded_image.
-	(grub_efi_get_filename): Divide the legnth by the size of
+	(grub_efi_get_filename): Divide the length by the size of
 	grub_efi_char16_t.
 	(grub_efi_get_device_path): New function.
 	(grub_efi_print_device_path): Print End Device Path nodes. Divide
@@ -6745,7 +6745,7 @@
 
 	* conf/powerpc-ieee1275.rmk: Include conf/common.mk.
 	(pkgdata_MODULES): Removed fshelp.mod, fat.mod, ext2.mod, ufs.mod,
-	minux.mod, hfs.mod, jfs.mod, xfs.mod, affs.mod, sfs.mod,
+	minix.mod, hfs.mod, jfs.mod, xfs.mod, affs.mod, sfs.mod,
 	hello.mod, boot.mod, terminal.mod, ls.mod, cmp.mod, cat.mod,
 	help.mod, font.mod, terminfo.mod, amiga.mod, apple.mod, pc.mod,
 	sun.mod, acorn.mod, loopback.mod, default.mod, timeout.mod,
@@ -6790,7 +6790,7 @@
 
 	* conf/i386-pc.rmk: Include conf/common.mk.
 	(pkgdata_MODULES): Removed fshelp.mod, fat.mod, ext2.mod, ufs.mod,
-	minux.mod, hfs.mod, jfs.mod, xfs.mod, affs.mod, sfs.mod,
+	minix.mod, hfs.mod, jfs.mod, xfs.mod, affs.mod, sfs.mod,
 	hello.mod, boot.mod, terminal.mod, ls.mod, cmp.mod, cat.mod,
 	help.mod, font.mod, terminfo.mod, amiga.mod, apple.mod, pc.mod,
 	sun.mod, acorn.mod, loopback.mod, default.mod, timeout.mod,
@@ -6896,11 +6896,11 @@
 	* commands/timeout.c (grub_timeout_init, grub_timeout_fini):
 	Likewise.
 	* commands/i386/pc/halt.c (grub_halt_init, grub_halt_fini): Likewise.
-	* commands/iee1275/halt.c (grub_halt_init, grub_halt_fini):
+	* commands/ieee1275/halt.c (grub_halt_init, grub_halt_fini):
 	Likewise.
 	* commands/i386/pc/reboot.c (grub_reboot_init, grub_reboot_fini):
 	Likewise.
-	* commands/iee1275/reboot.c (grub_reboot_init, grub_reboot_fini):
+	* commands/ieee1275/reboot.c (grub_reboot_init, grub_reboot_fini):
 	Likewise.
 	* disk/loopback.c (grub_loop_init, grub_loop_fini): Likewise.
 	* fs/affs.c (grub_affs_init, grub_affs_fini): Likewise.
@@ -7300,7 +7300,7 @@
 	* include/grub/types.h (grub_host_addr_t, grub_host_off_t)
 	(grub_host_size_t, grub_host_ssize_t): New types.
 	(grub_addr_t, grub_off_t, grub_size_t, grub_ssize_t): Make type
-	dependant of `GRUB_CPU_SIZEOF_VOID_P' instead on
+	dependent of `GRUB_CPU_SIZEOF_VOID_P' instead on
 	`GRUB_HOST_SIZEOF_VOID_P'.
 
 	* include/grub/kernel.h (struct grub_module_header): Type of
@@ -7544,7 +7544,7 @@
 2005-08-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* partmap/pc.c (pc_partition_map_iterate): Include the value of an
-	invalid magic in thre error.
+	invalid magic in the error.
 
 	* commands/search.c: New file.
 	
@@ -7860,7 +7860,7 @@
 	of void.
 
 	* normal/menu.c (draw_border): Cast GRUB_TERM_BORDER_WIDTH to
-	unsigned explictly before comparing it with I.
+	unsigned explicitly before comparing it with I.
 
 	* kern/main.c (grub_env_write_root): Add the attribute unused into
 	VAR.
@@ -8011,7 +8011,7 @@
 2005-08-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* conf/i386-pc.rmk (kernel_img_HEADERS): Reordered for
-	readablity.
+	readability.
 
 	* config.guess: Updated to the latest version from gnulib.
 	* config.sub: Likewise.
@@ -10018,7 +10018,7 @@
 	print_partition_completion, add_completion, iterate_commands,
 	iterate_dev, iterate_part and iterate_dir. Moved code to print
 	partition information from here to kern/disk.c.
-	(pupa_cmdline_run): Don't check if the funtion exists anymore.
+	(pupa_cmdline_run): Don't check if the function exists anymore.
 	* normal/main.c: Include <pupa/env.h>.
 	(pupa_rescue_cmd_normal): Use the environment variable `prefix'
 	instead of using pupa_dl_get_prefix to get the prefix.
@@ -10531,7 +10531,7 @@
 	* kern/rescue.c (pupa_rescue_cmd_rmmod): Call pupa_dl_unload, if
 	possible.
 
-	* kern/dl.c (pupa_dl_ref): Refer dependending modules
+	* kern/dl.c (pupa_dl_ref): Refer depending modules
 	recursively.
 	(pupa_dl_unref): Unrefer depending modules recursively.
 	Don't call pupa_dl_unload implicitly, because PUPA can crash if
