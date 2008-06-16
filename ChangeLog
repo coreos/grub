@@ -1,3 +1,28 @@
+2008-06-16  Bean  <bean123ch@gmail.com>
+
+	* fs/ext2.c (grub_ext2_blockgroup): Revert to pre journal state.
+	(grub_ext2_read_block): Likewise.
+	(grub_ext2_read_inode): Likewise.
+	(grub_ext2_mount): Likewise.
+	(grub_ext2_close): Likewise.
+	(grub_ext3_get_journal): Removed.
+
+	* fs/reiserfs.c (grub_reiserfs_get_item): Revert to pre journal state.
+	(grub_reiserfs_read_symlink): Likewise.
+	(grub_reiserfs_mount): Likewise.
+	(grub_reiserfs_open): Likewise.
+	(grub_reiserfs_read): Likewise.
+	(grub_reiserfs_close): Likewise.
+	(grub_reiserfs_get_journal): Removed.
+
+	* fs/fshelp.c (grub_fshelp_read): Removed.
+	(grub_fshelp_map_block): Likewise.
+
+	* include/grub/fshelp.h (grub_fshelp_journal_type): Removed.
+	(grub_fshelp_journal): Likewise.
+	(grub_fshelp_read): Likewise.
+	(grub_fshelp_map_block): Likewise.
+
 2008-06-16  Pavel Roskin  <proski@gnu.org>
 
 	* conf/powerpc-ieee1275.rmk: Remove -msoft-float, we don't use

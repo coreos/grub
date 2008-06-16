@@ -234,7 +234,6 @@ struct grub_reiserfs_data
 {
   struct grub_reiserfs_superblock superblock;
   grub_disk_t disk;
-  grub_fshelp_journal_t journal;
 };
 
 /* Internal-only functions. Not to be used outside of this file.  */
@@ -511,8 +510,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
   do
     {
       grub_disk_read (data->disk,
-                      grub_fshelp_map_block (data->journal, block_number) *
-                      (block_size >> GRUB_DISK_SECTOR_BITS),
+                      block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                       (((grub_off_t) block_number * block_size)
                        & (GRUB_DISK_SECTOR_SIZE - 1)),
                       block_size, (char *) block_header);
@@ -662,8 +660,7 @@ grub_reiserfs_read_symlink (grub_fshelp_node_t node)
 
   block_size = grub_le_to_cpu16 (node->data->superblock.block_size);
   len = grub_le_to_cpu16 (found.header.item_size);
-  block = (grub_fshelp_map_block (node->data->journal, found.block_number) *
-           (block_size  >> GRUB_DISK_SECTOR_BITS));
+  block = found.block_number * (block_size  >> GRUB_DISK_SECTOR_BITS);
   offset = grub_le_to_cpu16 (found.header.item_location);
 
   symlink_buffer = grub_malloc (len + 1);
@@ -680,124 +677,6 @@ grub_reiserfs_read_symlink (grub_fshelp_node_t node)
  fail:
   grub_free (symlink_buffer);
   return 0;
-}
-
-static void
-grub_reiserfs_get_journal (struct grub_reiserfs_data *data)
-{
-  int block_size = grub_le_to_cpu16 (data->superblock.block_size);
-  char buf[block_size];
-  struct grub_reiserfs_journal_header *jh;
-  grub_fshelp_journal_t log;
-  grub_uint32_t seq_id, mount_id;
-  int num_blocks = grub_le_to_cpu32 (data->superblock.journal_original_size);
-  int base_block = grub_le_to_cpu32 (data->superblock.journal_block);
-  int last_num, num, block;
-
-  data->journal = 0;
-
-  if (! data->superblock.journal_block)
-    return;
-
-  if (grub_disk_read (data->disk,
-                      (base_block + num_blocks)
-                      * (block_size >> GRUB_DISK_SECTOR_BITS),
-                      0, sizeof (struct grub_reiserfs_journal_header),
-                      buf))
-    return;
-
-  log = grub_malloc (sizeof (struct grub_fshelp_journal) +
-                     num_blocks * sizeof (grub_disk_addr_t));
-  if (! log)
-    return;
-
-  jh = (struct grub_reiserfs_journal_header *) &buf[0];
-
-  log->type = GRUB_FSHELP_JOURNAL_TYPE_BLOCK;
-  log->blkno = base_block;
-  log->first_block = 0;
-  log->last_block = num_blocks;
-  log->start_block = grub_le_to_cpu32 (jh->unflushed_offset);
-
-  seq_id = grub_le_to_cpu32 (jh->last_flush_uid);
-  mount_id = grub_le_to_cpu32 (jh->mount_id);
-
-  last_num = num = 0;
-  block = log->start_block;
-
-  while (1)
-    {
-      struct grub_reiserfs_description_block *db;
-      struct grub_reiserfs_commit_block *cb;
-      grub_uint32_t i, len, half_len, id, mid;
-
-      if (grub_disk_read (data->disk,
-                          (base_block + block)
-                          * (block_size >> GRUB_DISK_SECTOR_BITS),
-                          0, sizeof (buf), buf))
-        break;
-
-      if (grub_memcmp (&buf[block_size - REISERFS_MAGIC_LEN],
-                       REISERFS_MAGIC_DESC_BLOCK,
-                       sizeof (REISERFS_MAGIC_DESC_BLOCK) - 1))
-        break;
-
-      db = (struct grub_reiserfs_description_block *) &buf[0];
-      id = grub_le_to_cpu32 (db->id);
-      len = grub_le_to_cpu32 (db->len);
-      mid = grub_le_to_cpu32 (db->mount_id);
-      if ((id <= seq_id) && (mid <= mount_id))
-        break;
-
-      log->mapping[num++] = GRUB_FSHELP_JOURNAL_UNUSED_MAPPING;
-      half_len = ((block_size - 24) >> 2);
-      if (half_len > len)
-        half_len = len;
-
-      for (i = 0; i < half_len; i++)
-        log->mapping[num++] = db->real_blocks[i];
-
-      block += grub_le_to_cpu32 (db->len) + 1;
-      if (block >= log->last_block)
-        block -= log->last_block;
-
-      if (grub_disk_read (data->disk,
-                          (base_block + block)
-                          * (block_size >> GRUB_DISK_SECTOR_BITS),
-                          0, sizeof (buf), buf))
-        break;
-
-      cb = (struct grub_reiserfs_commit_block *) &buf[0];
-      if ((grub_le_to_cpu32 (cb->id) != id) ||
-          (grub_le_to_cpu32 (cb->len) != len))
-        break;
-
-      for (i = 0; i < len - half_len; i++)
-        log->mapping[num++] = cb->real_blocks[i];
-
-      last_num = num;
-      log->mapping[num++] = GRUB_FSHELP_JOURNAL_UNUSED_MAPPING;
-
-      block++;
-      if (block >= log->last_block)
-        block -= log->last_block;
-
-      seq_id = id;
-      mount_id = mid;
-    };
-
-  if (! last_num)
-    grub_free (log);
-  else
-    {
-      int size;
-
-      size = sizeof (struct grub_fshelp_journal) +
-            last_num * sizeof (grub_disk_addr_t);
-
-      log->num_mappings = last_num;
-      data->journal = grub_realloc (log, size);
-    }
 }
 
 /* Fill the mounted filesystem structure and return it.  */
@@ -819,7 +698,6 @@ grub_reiserfs_mount (grub_disk_t disk)
       goto fail;
     }
   data->disk = disk;
-  grub_reiserfs_get_journal (data);
   return data;
 
  fail:
@@ -867,8 +745,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
       struct grub_reiserfs_item_header *item_headers;
       
       grub_disk_read (data->disk,
-                      grub_fshelp_map_block (data->journal, block_number) *
-                      (block_size >> GRUB_DISK_SECTOR_BITS),
+                      block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                       (((grub_off_t) block_number * block_size)
                        & (GRUB_DISK_SECTOR_SIZE - 1)),
                       block_size, (char *) block_header);
@@ -962,8 +839,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                         {
                           struct grub_reiserfs_stat_item_v1 entry_v1_stat;
                           grub_disk_read (data->disk,
-                                          grub_fshelp_map_block (data->journal, entry_block_number) *
-                                          (block_size >> GRUB_DISK_SECTOR_BITS),
+                                          entry_block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                                           grub_le_to_cpu16 (entry_item->header.item_location),
                                           sizeof (entry_v1_stat),
                                           (char *) &entry_v1_stat);
@@ -1005,8 +881,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                         {
                           struct grub_reiserfs_stat_item_v2 entry_v2_stat;
                           grub_disk_read (data->disk,
-                                          grub_fshelp_map_block (data->journal, entry_block_number) *
-                                          (block_size >> GRUB_DISK_SECTOR_BITS),
+                                          entry_block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                                           grub_le_to_cpu16 (entry_item->header.item_location),
                                           sizeof (entry_v2_stat),
                                           (char *) &entry_v2_stat);
@@ -1154,8 +1029,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
     {
       struct grub_reiserfs_stat_item_v1 entry_v1_stat;
       grub_disk_read (data->disk,
-                      grub_fshelp_map_block (data->journal, block_number) *
-                      (block_size >> GRUB_DISK_SECTOR_BITS),
+                      block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                       entry_location
                       + (((grub_off_t) block_number * block_size)
                          & (GRUB_DISK_SECTOR_SIZE - 1)),
@@ -1168,8 +1042,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
     {
       struct grub_reiserfs_stat_item_v2 entry_v2_stat;
       grub_disk_read (data->disk,
-                      grub_fshelp_map_block (data->journal, block_number) *
-                      (block_size  >> GRUB_DISK_SECTOR_BITS),
+                      block_number * (block_size  >> GRUB_DISK_SECTOR_BITS),
                       entry_location
                       + (((grub_off_t) block_number * block_size)
                          & (GRUB_DISK_SECTOR_SIZE - 1)),
@@ -1237,8 +1110,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
       switch (found.type)
         {
         case GRUB_REISERFS_DIRECT:
-          block = (grub_fshelp_map_block (data->journal, found.block_number) *
-                   (block_size  >> GRUB_DISK_SECTOR_BITS));
+          block = found.block_number * (block_size  >> GRUB_DISK_SECTOR_BITS);
           grub_dprintf ("reiserfs_blocktype", "D: %u\n", (unsigned) block);
           if (initial_position < current_position + item_size)
             {
@@ -1270,8 +1142,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
           if (! indirect_block_ptr)
             goto fail;
           grub_disk_read (found.data->disk,
-                          grub_fshelp_map_block (data->journal, found.block_number) *
-                          (block_size >> GRUB_DISK_SECTOR_BITS),
+                          found.block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                           grub_le_to_cpu16 (found.header.item_location),
                           item_size, (char *) indirect_block_ptr);
           if (grub_errno)
@@ -1282,9 +1153,8 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
                  && current_position < final_position;
                indirect_block++)
             {
-              block = (grub_fshelp_map_block (data->journal,
-                                              grub_le_to_cpu32 (indirect_block_ptr[indirect_block])) *
-                       (block_size >> GRUB_DISK_SECTOR_BITS));
+              block = grub_le_to_cpu32 (indirect_block_ptr[indirect_block]) *
+                      (block_size >> GRUB_DISK_SECTOR_BITS);
               grub_dprintf ("reiserfs_blocktype", "I: %u\n", (unsigned) block);
               if (current_position + block_size >= initial_position)
                 {
@@ -1383,7 +1253,6 @@ grub_reiserfs_close (grub_file_t file)
   struct grub_fshelp_node *node = file->data;
   struct grub_reiserfs_data *data = node->data;
 
-  grub_free (data->journal);
   grub_free (data);
   grub_free (node);
 #ifndef GRUB_UTIL

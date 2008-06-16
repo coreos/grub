@@ -34,34 +34,6 @@ enum grub_fshelp_filetype
     GRUB_FSHELP_SYMLINK
   };
 
-enum grub_fshelp_journal_type
-  {
-    GRUB_FSHELP_JOURNAL_TYPE_BLOCK,
-    GRUB_FSHELP_JOURNAL_TYPE_FILE
-  };
-
-#define GRUB_FSHELP_JOURNAL_UNUSED_MAPPING	(grub_disk_addr_t) -1
-
-struct grub_fshelp_journal
-{
-  int type;
-  union
-    {
-      struct
-        {
-          grub_fshelp_node_t node;
-          grub_disk_addr_t (*get_block) (grub_fshelp_node_t node, grub_disk_addr_t block);
-        };
-       grub_disk_addr_t blkno;
-    };
-  int first_block;
-  int last_block;
-  int start_block;
-  int num_mappings;
-  grub_disk_addr_t mapping[0];
-};
-typedef struct grub_fshelp_journal *grub_fshelp_journal_t;
-
 /* Lookup the node PATH.  The node ROOTNODE describes the root of the
    directory tree.  The node found is returned in FOUNDNODE, which is
    either a ROOTNODE or a new malloc'ed node.  ITERATE_DIR is used to
@@ -84,15 +56,6 @@ EXPORT_FUNC(grub_fshelp_find_file) (const char *path,
 				    enum grub_fshelp_filetype expect);
 
 
-/* Read LEN bytes from the block BLOCK on disk DISK into the buffer BUF,
-   beginning with the block POS.  Apply mappings from LOG.  The blocks
-   have a size of LOG2BLOCKSIZE (in log2).  */
-grub_err_t
-EXPORT_FUNC(grub_fshelp_read) (grub_disk_t disk, grub_fshelp_journal_t log,
-			       grub_disk_addr_t block, grub_off_t pos,
-			       grub_size_t len, char *buf, int log2blocksize);
-
-
 /* Read LEN bytes from the file NODE on disk DISK into the buffer BUF,
    beginning with the block POS.  READ_HOOK should be set before
    reading a block from the file.  GET_BLOCK is used to translate file
@@ -111,8 +74,5 @@ EXPORT_FUNC(grub_fshelp_read_file) (grub_disk_t disk, grub_fshelp_node_t node,
 unsigned int
 EXPORT_FUNC(grub_fshelp_log2blksize) (unsigned int blksize,
 				      unsigned int *pow);
-
-grub_disk_addr_t
-EXPORT_FUNC(grub_fshelp_map_block) (grub_fshelp_journal_t log, grub_disk_addr_t block);
 
 #endif /* ! GRUB_FSHELP_HEADER */
