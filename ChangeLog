@@ -1,3 +1,9 @@
+2008-06-16  Pavel Roskin  <proski@gnu.org>
+
+	* conf/powerpc-ieee1275.rmk: Remove -msoft-float, we don't use
+	floating point anymore.
+	* include/grub/powerpc/libgcc.h: Leave only necessary exports.
+
 2008-06-15  Pavel Roskin  <proski@gnu.org>
 
 	* commands/ls.c (grub_ls_list_files): Use integer calculations

@@ -2,7 +2,7 @@
 # -*- makefile -*-
 
 COMMON_ASFLAGS = -nostdinc -D__ASSEMBLY__
-COMMON_CFLAGS = -ffreestanding -msoft-float
+COMMON_CFLAGS = -ffreestanding
 COMMON_LDFLAGS += -nostdlib
 
 # Used by various components.  These rules need to precede them.
