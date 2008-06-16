@@ -657,6 +657,14 @@ convert_system_partition_to_system_disk (const char *os_dev)
 	  return path;
 	}
       
+      /* If this is an I2O disk.  */
+      if (strncmp ("i2o/hd", p, sizeof ("i2o/hd") - 1) == 0)
+      	{
+	  /* /dev/i2o/hd[a-z]([0-9]+)? */
+	  p[sizeof ("i2o/hda") - 1] = '\0';
+	  return path;
+	}
+      
       /* If this is a MultiMediaCard (MMC).  */
       if (strncmp ("mmcblk", p, sizeof ("mmcblk") - 1) == 0)
 	{

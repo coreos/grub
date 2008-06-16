@@ -1,5 +1,11 @@
 2008-06-16  Robert Millan  <rmh@aybabtu.com>
 
+	* util/biosdisk.c (convert_system_partition_to_system_disk): Detect
+	I2O devices.
+	Patch from Sven Mueller <sven@debian.org>.
+
+2008-06-16  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub.in: Check for $EUID instead of $UID.
 	Reported by Vincent Zweije.
 
