@@ -1,5 +1,12 @@
 2008-06-16  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub_lib.in (prepare_grub_to_access_device): If we were
+	asked to setup access for the same partition that provides /boot,
+	don't bother using UUIDs since our root already has the value we
+	want.
+
+2008-06-16  Robert Millan  <rmh@aybabtu.com>
+
 	* util/biosdisk.c (convert_system_partition_to_system_disk): Detect
 	I2O devices.
 	Patch from Sven Mueller <sven@debian.org>.

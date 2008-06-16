@@ -114,6 +114,12 @@ prepare_grub_to_access_device ()
 {
   device=$1
 
+  # If our target is the same partition that provides /boot, our $root
+  # is already set to what we want, so no need to bother with UUIDs.
+  if [ "x${device}" = "x${GRUB_DEVICE_BOOT}" ] ; then
+    return
+  fi
+
   # If there's a filesystem UUID that GRUB is capable of identifiing, use it;
   # otherwise set root as per value in device.map.
   echo "set root=`${grub_probe} --device ${device} --target=drive`"
