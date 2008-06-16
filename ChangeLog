@@ -1,3 +1,8 @@
+2008-06-16  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub.in: Check for $EUID instead of $UID.
+	Reported by Vincent Zweije.
+
 2008-06-16  Bean  <bean123ch@gmail.com>
 
 	* fs/ext2.c (grub_ext2_blockgroup): Revert to pre journal state.

@@ -68,11 +68,11 @@ done
 
 . ${libdir}/grub/update-grub_lib
 
-if [ "x$UID" = "x" ] ; then
-  UID=`id -u`
+if [ "x$EUID" = "x" ] ; then
+  EUID=`id -u`
 fi
 
-if [ "$UID" != 0 ] ; then
+if [ "$EUID" != 0 ] ; then
   echo "$0: You must run this as root" >&2
   exit 1
 fi
