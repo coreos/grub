@@ -655,24 +655,6 @@ grub_lltoa (char *str, int c, unsigned long long n)
   return p;
 }
 
-static char *
-grub_ftoa (char *str, double f, int round)
-{
-  unsigned int intp;
-  unsigned int fractp;
-  unsigned int power = 1;
-  int i;
-
-  for (i = 0; i < round; i++)
-    power *= 10;
-
-  intp = f;
-  fractp = (f - (float) intp) * power;
-
-  grub_sprintf (str, "%d.%d", intp, fractp);
-  return str;
-}
-
 int
 grub_vsprintf (char *str, const char *fmt, va_list args)
 {
@@ -807,19 +789,6 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	      write_char (n & 0xff);
 	      break;
 
-	    case 'f':
-	      {
-		float f;
-		f = va_arg (args, double);
-		grub_ftoa (tmp, f, format2);
-		if (!rightfill && grub_strlen (tmp) < format1)
-		  write_fill (zerofill, format1 - grub_strlen (tmp));
-		write_str (tmp);
-		if (rightfill && grub_strlen (tmp) < format1)
-		  write_fill (zerofill, format1 - grub_strlen (tmp));
-		break;
-	      }
-	      
 	    case 'C':
 	      {
 		grub_uint32_t code = va_arg (args, grub_uint32_t);

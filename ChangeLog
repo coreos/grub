@@ -1,3 +1,10 @@
+2008-06-15  Pavel Roskin  <proski@gnu.org>
+
+	* commands/ls.c (grub_ls_list_files): Use integer calculations
+	for human readable format, avoid floating point use.
+	* kern/misc.c (grub_ftoa): Remove.
+	(grub_vsprintf): Remove floating point support.
+
 2008-06-15  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/10_linux.in: Use the underliing device for loop-AES
