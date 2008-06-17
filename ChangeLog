@@ -1,5 +1,17 @@
 2008-06-17  Robert Millan  <rmh@aybabtu.com>
 
+	* term/ieee1275/ofconsole.c (fgcolor, bgcolor): Remove variables.
+	(grub_ofconsole_normal_color, grub_ofconsole_highlight_color): New
+	variables.
+	(grub_ofconsole_setcolor, grub_ofconsole_getcolor): Load/store
+	values in grub_ofconsole_normal_color and
+	grub_ofconsole_highlight_color (they're not directly related to
+	background and foreground).
+	(grub_ofconsole_setcolorstate): Extract background and foreground
+	from grub_ofconsole_normal_color and grub_ofconsole_highlight_color.
+
+2008-06-17  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub_lib.in (prepare_grub_to_access_device): Use
 	/boot/grub for the check in last commit, not /boot (they could be
 	different partitions).

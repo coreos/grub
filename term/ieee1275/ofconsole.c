@@ -56,8 +56,8 @@ static struct color colors[8] =
     { MAX, MAX, MAX}
   };
 
-static int fgcolor = 7;
-static int bgcolor = 0;
+static grub_uint8_t grub_ofconsole_normal_color = 0x7;
+static grub_uint8_t grub_ofconsole_highlight_color = 0x70;
 
 /* Write control characters to the console.  */
 static void
@@ -109,12 +109,12 @@ grub_ofconsole_setcolorstate (grub_term_color_state state)
     {
     case GRUB_TERM_COLOR_STANDARD:
     case GRUB_TERM_COLOR_NORMAL:
-      fg = fgcolor;
-      bg = bgcolor;
+      fg = grub_ofconsole_normal_color & 0x0f;
+      bg = grub_ofconsole_normal_color >> 4;
       break;
     case GRUB_TERM_COLOR_HIGHLIGHT:
-      fg = bgcolor;
-      bg = fgcolor;
+      fg = grub_ofconsole_highlight_color & 0x0f;
+      bg = grub_ofconsole_highlight_color >> 4;
       break;
     default:
       return;
@@ -128,15 +128,15 @@ static void
 grub_ofconsole_setcolor (grub_uint8_t normal_color,
 			 grub_uint8_t highlight_color)
 {
-  fgcolor = normal_color;
-  bgcolor = highlight_color;
+  grub_ofconsole_normal_color = normal_color;
+  grub_ofconsole_highlight_color = highlight_color;
 }
 
 static void
 grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
 {
-  *normal_color = fgcolor;
-  *highlight_color = bgcolor;
+  *normal_color = grub_ofconsole_normal_color;
+  *highlight_color = grub_ofconsole_highlight_color;
 }
 
 static int
