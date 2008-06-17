@@ -1,3 +1,9 @@
+2008-06-17  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in (prepare_grub_to_access_device): Use
+	/boot/grub for the check in last commit, not /boot (they could be
+	different partitions).
+
 2008-06-16  Robert Millan  <rmh@aybabtu.com>
 
 	* util/update-grub_lib.in (prepare_grub_to_access_device): If we were
