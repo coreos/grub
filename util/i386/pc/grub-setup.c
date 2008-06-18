@@ -87,7 +87,7 @@ grub_refresh (void)
 }
 
 static void
-setup (const char *prefix, const char *dir,
+setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed)
 {
@@ -101,7 +101,6 @@ setup (const char *prefix, const char *dir,
   grub_uint16_t *boot_drive_check;
   struct boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
-  char *install_prefix;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -234,8 +233,6 @@ setup (const char *prefix, const char *dir,
 				       + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART);
   install_bsd_part = (grub_int32_t *) (core_img + GRUB_DISK_SECTOR_SIZE
 				       + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART);
-  install_prefix = (core_img + GRUB_DISK_SECTOR_SIZE
-		    + GRUB_KERNEL_MACHINE_PREFIX);
 
   /* Open the root device and the destination device.  */
   root_dev = grub_device_open (root);
@@ -274,6 +271,40 @@ setup (const char *prefix, const char *dir,
   if (dest_dev->disk->id & 0x80)
     /* Replace the jmp (2 bytes) with double nop's.  */
     *boot_drive_check = 0x9090;
+
+  /* If we hardcoded drive as part of prefix, we don't want to
+     override the current setting.  */
+  if (*install_dos_part != -2)
+    {
+      /* Embed information about the installed location.  */
+      if (root_dev->disk->partition)
+	{
+	  if (strcmp (root_dev->disk->partition->partmap->name,
+		      "pc_partition_map") == 0)
+	    {
+	      struct grub_pc_partition *pcdata =
+		root_dev->disk->partition->data;
+	      *install_dos_part
+		= grub_cpu_to_le32 (pcdata->dos_part);
+	      *install_bsd_part
+		= grub_cpu_to_le32 (pcdata->bsd_part);
+	    }
+	  else if (strcmp (root_dev->disk->partition->partmap->name,
+			   "gpt_partition_map") == 0)
+	    {
+	      *install_dos_part = grub_cpu_to_le32 (root_dev->disk->partition->index);
+	      *install_bsd_part = grub_cpu_to_le32 (-1);
+	    }
+	  else
+	    grub_util_error ("No PC style partitions found");
+	}
+      else
+	*install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);
+    }
+  
+  grub_util_info ("dos partition is %d, bsd partition is %d",
+		  grub_le_to_cpu32 (*install_dos_part),
+		  grub_le_to_cpu32 (*install_bsd_part));
   
   /* If the destination device can have partitions and it is the MBR,
      try to embed the core image into after the MBR.  */
@@ -299,39 +330,6 @@ setup (const char *prefix, const char *dir,
 	  block->len = 0;
 	  block->segment = 0;
 
-	  /* Embed information about the installed location.  */
-	  if (must_embed)
-	    *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-2);
-	  else if (root_dev->disk->partition)
-	    {
-	      if (strcmp (root_dev->disk->partition->partmap->name,
-			  "pc_partition_map") == 0)
-		{
-		  struct grub_pc_partition *pcdata =
-		    root_dev->disk->partition->data;
-		  *install_dos_part
-		    = grub_cpu_to_le32 (pcdata->dos_part);
-		  *install_bsd_part
-		    = grub_cpu_to_le32 (pcdata->bsd_part);
-		}
-	      else if (strcmp (root_dev->disk->partition->partmap->name,
-			       "gpt_partition_map") == 0)
-		{
-		  *install_dos_part = grub_cpu_to_le32 (root_dev->disk->partition->index);
-		  *install_bsd_part = grub_cpu_to_le32 (-1);
-		}
-	      else
-		grub_util_error ("No PC style partitions found");
-	    }
-	  else
-	    *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);
-
-	  grub_util_info ("dos partition is %d, bsd partition is %d, prefix is %s",
-		  grub_le_to_cpu32 (*install_dos_part),
-		  grub_le_to_cpu32 (*install_bsd_part),
-		  prefix);
-	  strcpy (install_prefix, prefix);
-	  
 	  /* Write the core image onto the disk.  */
 	  if (grub_disk_write (dest_dev->disk, embed_region.start, 0, core_size, core_img))
 	    grub_util_error ("%s", grub_errmsg);
@@ -362,7 +360,7 @@ setup (const char *prefix, const char *dir,
     able_to_embed = 0;
 
   if (must_embed && ! able_to_embed)
-    grub_util_error ("Can't embed the core image, but this is required when\n"
+    grub_util_error ("Core image is too big for embedding, but this is required when\n"
 		     "the root device is on a RAID array or LVM volume.");
   
   /* The core image must be put on a filesystem unfortunately.  */
@@ -370,7 +368,7 @@ setup (const char *prefix, const char *dir,
   
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
-  core_path = grub_util_get_path (prefix, core_file);
+  core_path = grub_util_get_path (DEFAULT_DIRECTORY "core.img", core_file);
   
   /* It is a Good Thing to sync two times.  */
   sync ();
@@ -488,38 +486,6 @@ setup (const char *prefix, const char *dir,
      the boot device.  */
   *root_drive = 0xFF;
 
-  /* Embed information about the installed location.  */
-  if (root_dev->disk->partition)
-    {
-      struct grub_pc_partition *pcdata =
-	root_dev->disk->partition->data;
-
-	if (strcmp (root_dev->disk->partition->partmap->name,
-		  "pc_partition_map") == 0)
-	  {
-	    *install_dos_part
-	      = grub_cpu_to_le32 (pcdata->dos_part);
-	    *install_bsd_part
-	      = grub_cpu_to_le32 (pcdata->bsd_part);
-	  }
-	else if (strcmp (root_dev->disk->partition->partmap->name,
-		  "gpt_partition_map") == 0)
-	  {
-	    *install_dos_part = grub_cpu_to_le32 (root_dev->disk->partition->index);
-	    *install_bsd_part = grub_cpu_to_le32 (-1);
-	  }
-	else
-	  grub_util_error ("No PC style partitions found");
-    }
-  else
-    *install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);
-
-  grub_util_info ("dos partition is %d, bsd partition is %d, prefix is %s",
-		  grub_le_to_cpu32 (*install_dos_part),
-		  grub_le_to_cpu32 (*install_bsd_part),
-		  prefix);
-  strcpy (install_prefix, prefix);
-  
   /* Write the first two sectors of the core image onto the disk.  */
   core_path = grub_util_get_path (dir, core_file);
   grub_util_info ("opening the core image `%s'", core_path);
@@ -608,7 +574,6 @@ main (int argc, char *argv[])
   char *dir = 0;
   char *dev_map = 0;
   char *root_dev = 0;
-  char *prefix;
   char *dest_dev;
   int must_embed = 0;
   
@@ -714,8 +679,6 @@ main (int argc, char *argv[])
     /* For simplicity.  */
     dest_dev = xstrdup (dest_dev);
 
-  prefix = grub_get_prefix (dir ? : DEFAULT_DIRECTORY);
-  
   if (root_dev)
     {
       char *tmp = get_device_name (root_dev);
@@ -740,44 +703,35 @@ main (int argc, char *argv[])
 
 #ifdef __linux__
   if (grub_util_lvm_isvolume (root_dev))
+    must_embed = 1;
+  
+  if (root_dev[0] == 'm' && root_dev[1] == 'd'
+      && root_dev[2] >= '0' && root_dev[2] <= '9')
     {
-      char *newprefix;
+      /* FIXME: we can avoid this on RAID1.  */
       must_embed = 1;
-
-      newprefix = xmalloc (1 + strlen (root_dev) + 1 + strlen (prefix) + 1);
-      sprintf (newprefix, "(%s)%s", root_dev, prefix);
-      free (prefix);
-      prefix = newprefix;
     }
-  else if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
-	   && dest_dev[2] >= '0' && dest_dev[2] <= '9')
+
+  if (dest_dev[0] == 'm' && dest_dev[1] == 'd'
+      && dest_dev[2] >= '0' && dest_dev[2] <= '9')
     {
       char **devicelist;
-      char *raid_prefix;
       int i;
 
-      raid_prefix = xmalloc (1 + strlen (dest_dev) + 1 + strlen (prefix) + 1);
-
-      sprintf (raid_prefix, "(%s)%s", dest_dev, prefix);
-      
       devicelist = grub_util_raid_getmembers (dest_dev);
 
       for (i = 0; devicelist[i]; i++)
 	{
-	  setup (raid_prefix,
-		 dir ? : DEFAULT_DIRECTORY,
+	  setup (dir ? : DEFAULT_DIRECTORY,
 		 boot_file ? : DEFAULT_BOOT_FILE,
 		 core_file ? : DEFAULT_CORE_FILE,
 		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1);
 	}
-
-      free (raid_prefix);
     }
   else
 #endif
   /* Do the real work.  */
-    setup (prefix,
-	   dir ? : DEFAULT_DIRECTORY,
+    setup (dir ? : DEFAULT_DIRECTORY,
 	   boot_file ? : DEFAULT_BOOT_FILE,
 	   core_file ? : DEFAULT_CORE_FILE,
 	   root_dev, dest_dev, must_embed);
@@ -791,7 +745,6 @@ main (int argc, char *argv[])
   free (dir);
   free (dev_map);
   free (root_dev);
-  free (prefix);
   free (dest_dev);
   
   return 0;

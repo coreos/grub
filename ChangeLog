@@ -1,3 +1,20 @@
+2008-06-18  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-install.in: If the drive is LVM or RAID, prepend
+	it in prefix.
+
+	* util/i386/pc/grub-setup.c (main): Don't handle prefix at all.  Set
+	`must_embed' to 1 when root_dev is a RAID device.  When dest_dev is
+	a RAID device, run setup() for all members independently on whether
+	LVM abstraction is being used.
+	(setup): Don't handle prefix at all; let grub-mkimage take care of it.
+	If grub-mkimage has set `*install_dos_part == -2', don't override this
+	value.
+	Perform *install_dos_part adjustments independently on whether
+	we're embedding or not.
+	Clarify error message when image is too big for embedding.
+	Remove duplicate *install_dos_part stanza.
+
 2008-06-17  Robert Millan  <rmh@aybabtu.com>
 
 	* term/ieee1275/ofconsole.c (fgcolor, bgcolor): Remove variables.
