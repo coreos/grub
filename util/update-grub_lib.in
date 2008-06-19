@@ -120,15 +120,18 @@ prepare_grub_to_access_device ()
     return
   fi
 
+  # Abstraction modules aren't auto-loaded.
+  abstraction="`${grub_probe} --device ${device} --target=abstraction`"
+  if [ "x${abstraction}" = "x" ] ; then : ; else
+    echo "insmod ${abstraction}"
+  fi
+
   # If there's a filesystem UUID that GRUB is capable of identifiing, use it;
   # otherwise set root as per value in device.map.
   echo "set root=`${grub_probe} --device ${device} --target=drive`"
   if fs_uuid="`${grub_probe} --device ${device} --target=fs_uuid 2> /dev/null`" ; then
     echo "search --fs-uuid --set ${fs_uuid}"
   fi
-
-  # Abstraction modules aren't auto-loaded.
-  GRUB_PRELOAD_MODULES="${GRUB_PRELOAD_MODULES} `${grub_probe} --device ${device} --target=abstraction`"
 }
 
 font_path ()
