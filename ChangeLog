@@ -1,3 +1,10 @@
+2008-06-18  Pavel Roskin  <proski@gnu.org>
+
+	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Rename
+	kernel_elf_symlist.c to symlist.c for consistency with other
+	architectures.  Update all users.
+	* conf/sparc64-ieee1275.rmk (kernel_elf_SOURCES): Likewise.
+
 2008-06-18  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-install.in: If the drive is LVM or RAID, prepend

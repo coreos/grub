@@ -28,7 +28,6 @@ grub_script.tab.h
 grub_setup_init.c
 grub_setup_init.h
 kernel.elf
-kernel_elf_symlist.c
 mod-*.c
 stamp-h
 stamp-h1

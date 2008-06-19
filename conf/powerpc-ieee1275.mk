@@ -10,7 +10,7 @@ normal/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
 
-MOSTLYCLEANFILES += kernel_elf_symlist.c kernel_syms.lst
+MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
 
 kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
@@ -18,7 +18,7 @@ kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	symbol.h term.h time.h types.h powerpc/libgcc.h loader.h partition.h \
 	pc_partition.h ieee1275/ieee1275.h machine/kernel.h
 
-kernel_elf_symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
+symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
 
 kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genkernsyms.sh
@@ -434,12 +434,12 @@ kernel_elf_SOURCES = kern/powerpc/ieee1275/crt0.S kern/ieee1275/cmain.c \
 	kern/ieee1275/init.c term/ieee1275/ofconsole.c 		\
 	kern/ieee1275/openfw.c disk/ieee1275/ofdisk.c 		\
 	kern/parser.c kern/partition.c kern/env.c kern/powerpc/dl.c 	\
-	kernel_elf_symlist.c kern/powerpc/cache.S
-CLEANFILES += kernel.elf kernel_elf-kern_powerpc_ieee1275_crt0.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_err.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_ieee1275_init.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_powerpc_dl.o kernel_elf-kernel_elf_symlist.o kernel_elf-kern_powerpc_cache.o
-MOSTLYCLEANFILES += kernel_elf-kern_powerpc_ieee1275_crt0.d kernel_elf-kern_ieee1275_cmain.d kernel_elf-kern_ieee1275_ieee1275.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_err.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_ieee1275_init.d kernel_elf-term_ieee1275_ofconsole.d kernel_elf-kern_ieee1275_openfw.d kernel_elf-disk_ieee1275_ofdisk.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-kern_powerpc_dl.d kernel_elf-kernel_elf_symlist.d kernel_elf-kern_powerpc_cache.d
+	symlist.c kern/powerpc/cache.S
+CLEANFILES += kernel.elf kernel_elf-kern_powerpc_ieee1275_crt0.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_err.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_ieee1275_init.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_powerpc_dl.o kernel_elf-symlist.o kernel_elf-kern_powerpc_cache.o
+MOSTLYCLEANFILES += kernel_elf-kern_powerpc_ieee1275_crt0.d kernel_elf-kern_ieee1275_cmain.d kernel_elf-kern_ieee1275_ieee1275.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_err.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_ieee1275_init.d kernel_elf-term_ieee1275_ofconsole.d kernel_elf-kern_ieee1275_openfw.d kernel_elf-disk_ieee1275_ofdisk.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-kern_powerpc_dl.d kernel_elf-symlist.d kernel_elf-kern_powerpc_cache.d
 
-kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_powerpc_ieee1275_crt0.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_err.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_ieee1275_init.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_powerpc_dl.o kernel_elf-kernel_elf_symlist.o kernel_elf-kern_powerpc_cache.o
-	$(TARGET_CC) -o $@ kernel_elf-kern_powerpc_ieee1275_crt0.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_err.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_ieee1275_init.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_powerpc_dl.o kernel_elf-kernel_elf_symlist.o kernel_elf-kern_powerpc_cache.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
+kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_powerpc_ieee1275_crt0.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_err.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_ieee1275_init.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_powerpc_dl.o kernel_elf-symlist.o kernel_elf-kern_powerpc_cache.o
+	$(TARGET_CC) -o $@ kernel_elf-kern_powerpc_ieee1275_crt0.o kernel_elf-kern_ieee1275_cmain.o kernel_elf-kern_ieee1275_ieee1275.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_err.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_ieee1275_init.o kernel_elf-term_ieee1275_ofconsole.o kernel_elf-kern_ieee1275_openfw.o kernel_elf-disk_ieee1275_ofdisk.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-kern_powerpc_dl.o kernel_elf-symlist.o kernel_elf-kern_powerpc_cache.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
 
 kernel_elf-kern_powerpc_ieee1275_crt0.o: kern/powerpc/ieee1275/crt0.S $(kern/powerpc/ieee1275/crt0.S_DEPENDENCIES)
 	$(TARGET_CC) -Ikern/powerpc/ieee1275 -I$(srcdir)/kern/powerpc/ieee1275 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -533,9 +533,9 @@ kernel_elf-kern_powerpc_dl.o: kern/powerpc/dl.c $(kern/powerpc/dl.c_DEPENDENCIES
 	$(TARGET_CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_powerpc_dl.d
 
-kernel_elf-kernel_elf_symlist.o: kernel_elf_symlist.c $(kernel_elf_symlist.c_DEPENDENCIES)
+kernel_elf-symlist.o: symlist.c $(symlist.c_DEPENDENCIES)
 	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
--include kernel_elf-kernel_elf_symlist.d
+-include kernel_elf-symlist.d
 
 kernel_elf-kern_powerpc_cache.o: kern/powerpc/cache.S $(kern/powerpc/cache.S_DEPENDENCIES)
 	$(TARGET_CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
