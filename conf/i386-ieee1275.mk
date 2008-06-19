@@ -178,6 +178,7 @@ grub_mkimage-util_resolve.o: util/resolve.c $(util/resolve.c_DEPENDENCIES)
 -include grub_mkimage-util_resolve.d
 
 grub_mkimage_LDFLAGS = $(LIBLZO)
+util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\

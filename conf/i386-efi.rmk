@@ -17,6 +17,7 @@ sbin_UTILITIES = grub-mkdevicemap
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
 	util/resolve.c
+util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 #grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\

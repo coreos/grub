@@ -1,3 +1,12 @@
+2008-06-19  Pavel Roskin  <proski@gnu.org>
+
+	* conf/i386-efi.rmk: Recompile grub-mkimage.c if Makefile has
+	changed.  This is needed in case GRUB_LIBDIR changes.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-linuxbios.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+
 2008-06-18  Pavel Roskin  <proski@gnu.org>
 
 	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Rename

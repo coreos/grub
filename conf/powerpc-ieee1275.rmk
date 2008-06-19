@@ -37,6 +37,7 @@ endif
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/elf/grub-mkimage.c util/misc.c \
         util/resolve.c 
+util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\

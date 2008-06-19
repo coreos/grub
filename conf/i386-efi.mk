@@ -35,6 +35,7 @@ grub_mkimage-util_resolve.o: util/resolve.c $(util/resolve.c_DEPENDENCIES)
 	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
 -include grub_mkimage-util_resolve.d
 
+util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
 #grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
