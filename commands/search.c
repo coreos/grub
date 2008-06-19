@@ -46,6 +46,7 @@ search_label (const char *key, const char *var)
   int iterate_device (const char *name)
     {
       grub_device_t dev;
+      int abort = 0;
       
       dev = grub_device_open (name);
       if (dev)
@@ -63,12 +64,14 @@ search_label (const char *key, const char *var)
 		  if (grub_strcmp (label, key) == 0)
 		    {
 		      /* Found!  */
+		      count++;
 		      if (var)
 			{
-			  grub_printf (" %s", name);
-			  if (count++ == 0)
-			    grub_env_set (var, name);
+			  grub_env_set (var, name);
+			  abort = 1;
 			}
+		      else
+			  grub_printf (" %s", name);
 		    }
 		  
 		  grub_free (label);
@@ -79,7 +82,7 @@ search_label (const char *key, const char *var)
 	}
 
       grub_errno = GRUB_ERR_NONE;
-      return 0;
+      return abort;
     }
   
   grub_device_iterate (iterate_device);
@@ -97,6 +100,7 @@ search_fs_uuid (const char *key, const char *var)
   int iterate_device (const char *name)
     {
       grub_device_t dev;
+      int abort = 0;
 
       dev = grub_device_open (name);
       if (dev)
@@ -114,12 +118,14 @@ search_fs_uuid (const char *key, const char *var)
 		  if (grub_strcmp (uuid, key) == 0)
 		    {
 		      /* Found!  */
+		      count++;
 		      if (var)
 			{
-			  grub_printf (" %s", name);
-			  if (count++ == 0)
-			    grub_env_set (var, name);
+ 			  grub_env_set (var, name);
+ 			  abort = 1;
 			}
+		      else
+			grub_printf (" %s", name);
 		    }
 		  
 		  grub_free (uuid);
@@ -130,7 +136,7 @@ search_fs_uuid (const char *key, const char *var)
 	}
 
       grub_errno = GRUB_ERR_NONE;
-      return 0;
+      return abort;
     }
   
   grub_device_iterate (iterate_device);
@@ -151,6 +157,7 @@ search_file (const char *key, const char *var)
       grub_size_t len;
       char *p;
       grub_file_t file;
+      int abort = 0;
       
       len = grub_strlen (name) + 2 + grub_strlen (key) + 1;
       p = grub_realloc (buf, len);
@@ -164,18 +171,20 @@ search_file (const char *key, const char *var)
       if (file)
 	{
 	  /* Found!  */
+	  count++;
 	  if (var)
 	    {
-	      grub_printf (" %s", name);
-	      if (count++ == 0)
-		grub_env_set (var, name);
+	      grub_env_set (var, name);
+	      abort = 1;
 	    }
+	  else
+	    grub_printf (" %s", name);
 
 	  grub_file_close (file);
 	}
       
       grub_errno = GRUB_ERR_NONE;
-      return 0;
+      return abort;
     }
   
   grub_device_iterate (iterate_device);

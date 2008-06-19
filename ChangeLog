@@ -1,5 +1,11 @@
 2008-06-19  Robert Millan  <rmh@aybabtu.com>
 
+	* commands/search.c (search_label, search_fs_uuid, search_file): Print
+	search result when not saving to variable, not the other way around.
+	When saving to variable, abort iteration as soon as a match is found.
+
+2008-06-19  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub_lib.in (prepare_grub_to_access_device): Remove
 	check for partition that provides /boot/grub.  Its logic is flawed,
 	as it prevents prepare_grub_to_access_device() from being called
