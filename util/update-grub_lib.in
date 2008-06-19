@@ -114,12 +114,6 @@ prepare_grub_to_access_device ()
 {
   device=$1
 
-  # If our target is the same partition that provides /boot/grub, our $root
-  # is already set to what we want, so no need to bother with UUIDs.
-  if [ "x${device}" = "x`${grub_probe} --target=device /boot/grub`" ] ; then
-    return
-  fi
-
   # Abstraction modules aren't auto-loaded.
   abstraction="`${grub_probe} --device ${device} --target=abstraction`"
   if [ "x${abstraction}" = "x" ] ; then : ; else

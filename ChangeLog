@@ -1,5 +1,12 @@
 2008-06-19  Robert Millan  <rmh@aybabtu.com>
 
+	* util/update-grub_lib.in (prepare_grub_to_access_device): Remove
+	check for partition that provides /boot/grub.  Its logic is flawed,
+	as it prevents prepare_grub_to_access_device() from being called
+	multiple times.
+
+2008-06-19  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub_lib.in (prepare_grub_to_access_device): Issue
 	"insmod" command directly when abstraction modules are needed,
 	instead of reliing on GRUB_PRELOAD_MODULES (which had no effect
