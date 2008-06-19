@@ -125,6 +125,7 @@ grub_main (void)
   /* It is better to set the root device as soon as possible,
      for convenience.  */
   grub_machine_set_prefix ();
+  grub_env_export ("prefix");
   grub_set_root_dev ();
 
   /* Load the normal mode module.  */

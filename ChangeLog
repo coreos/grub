@@ -1,5 +1,10 @@
 2008-06-19  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/main.c (grub_main): Export `prefix' variable inmediately
+	after it has been set by grub_machine_set_prefix().
+
+2008-06-19  Robert Millan  <rmh@aybabtu.com>
+
 	* commands/search.c (search_label, search_fs_uuid, search_file): Print
 	search result when not saving to variable, not the other way around.
 	When saving to variable, abort iteration as soon as a match is found.
