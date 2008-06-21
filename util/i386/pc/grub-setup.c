@@ -368,7 +368,7 @@ setup (const char *dir,
   
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
-  core_path = grub_util_get_path (DEFAULT_DIRECTORY "core.img", core_file);
+  core_path = grub_util_get_path (DEFAULT_DIRECTORY, core_file);
   
   /* It is a Good Thing to sync two times.  */
   sync ();

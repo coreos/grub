@@ -1,3 +1,9 @@
+2008-06-21  Javier Martín  <lordhabbit@gmail.com>
+
+	* util/i386/pc/grub-setup.c (setup): Remove literal "core.img" in a
+	call to resolve the core image location that effectively appended the
+	name twice.
+
 2008-06-21  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/00_header.in: Move last prepare_grub_to_access_device()
