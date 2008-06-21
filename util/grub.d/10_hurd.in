@@ -63,6 +63,8 @@ if ${all_of_them} && test -e /lib/ld.so.1 ; then : ; else
   exit 1
 fi
 
+prepare_grub_to_access_device ${GRUB_DEVICE}
+
 cat << EOF
 menuentry "${OS}" {
 	multiboot ${kernel} root=device:${GRUB_DEVICE}

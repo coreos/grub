@@ -97,6 +97,10 @@ list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 
+if [ "x$list" != "x" ] ; then
+  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT}
+fi
+
 while [ "x$list" != "x" ] ; do
   linux=`find_latest $list`
   echo "Found linux image: $linux" >&2

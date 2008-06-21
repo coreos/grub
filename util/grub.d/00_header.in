@@ -62,6 +62,3 @@ EOF
     echo "terminal ${GRUB_TERMINAL}"
   ;;
 esac
-
-# Set the root device.
-prepare_grub_to_access_device ${GRUB_DEVICE_BOOT}
