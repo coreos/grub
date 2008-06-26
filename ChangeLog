@@ -1,5 +1,8 @@
 2008-06-26  Pavel Roskin  <proski@gnu.org>
 
+	* util/biosdisk.c (read_device_map): Don't leave dead map
+	entries for devices failing stat() check.
+
 	* util/i386/pc/grub-setup.c (setup): Don't reuse core_path, use
 	core_path_dev for the core.img path on the target device.
 

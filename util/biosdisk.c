@@ -532,6 +532,8 @@ read_device_map (const char *dev_map)
 
       if (stat (p, &st) == -1)
 	{
+	  free (map[drive].drive);
+	  map[drive].drive = NULL;
 	  grub_util_info ("Cannot stat `%s', skipping", p);
 	  continue;
 	}
