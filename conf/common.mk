@@ -1938,7 +1938,7 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
-	loopback.mod configfile.mod echo.mod			\
+	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod
 
@@ -2613,6 +2613,62 @@ partmap-loopback_mod-disk_loopback.lst: disk/loopback.c $(disk/loopback.c_DEPEND
 
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 loopback_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For fs_uuid.mod
+fs_uuid_mod_SOURCES = disk/fs_uuid.c
+CLEANFILES += fs_uuid.mod mod-fs_uuid.o mod-fs_uuid.c pre-fs_uuid.o fs_uuid_mod-disk_fs_uuid.o und-fs_uuid.lst
+ifneq ($(fs_uuid_mod_EXPORTS),no)
+CLEANFILES += def-fs_uuid.lst
+DEFSYMFILES += def-fs_uuid.lst
+endif
+MOSTLYCLEANFILES += fs_uuid_mod-disk_fs_uuid.d
+UNDSYMFILES += und-fs_uuid.lst
+
+fs_uuid.mod: pre-fs_uuid.o mod-fs_uuid.o
+	-rm -f $@
+	$(TARGET_CC) $(fs_uuid_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-fs_uuid.o: $(fs_uuid_mod_DEPENDENCIES) fs_uuid_mod-disk_fs_uuid.o
+	-rm -f $@
+	$(TARGET_CC) $(fs_uuid_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ fs_uuid_mod-disk_fs_uuid.o
+
+mod-fs_uuid.o: mod-fs_uuid.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fs_uuid_mod_CFLAGS) -c -o $@ $<
+
+mod-fs_uuid.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'fs_uuid' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(fs_uuid_mod_EXPORTS),no)
+def-fs_uuid.lst: pre-fs_uuid.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 fs_uuid/' > $@
+endif
+
+und-fs_uuid.lst: pre-fs_uuid.o
+	echo 'fs_uuid' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+fs_uuid_mod-disk_fs_uuid.o: disk/fs_uuid.c $(disk/fs_uuid.c_DEPENDENCIES)
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(fs_uuid_mod_CFLAGS) -MD -c -o $@ $<
+-include fs_uuid_mod-disk_fs_uuid.d
+
+CLEANFILES += cmd-fs_uuid_mod-disk_fs_uuid.lst fs-fs_uuid_mod-disk_fs_uuid.lst partmap-fs_uuid_mod-disk_fs_uuid.lst
+COMMANDFILES += cmd-fs_uuid_mod-disk_fs_uuid.lst
+FSFILES += fs-fs_uuid_mod-disk_fs_uuid.lst
+PARTMAPFILES += partmap-fs_uuid_mod-disk_fs_uuid.lst
+
+cmd-fs_uuid_mod-disk_fs_uuid.lst: disk/fs_uuid.c $(disk/fs_uuid.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fs_uuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fs_uuid > $@ || (rm -f $@; exit 1)
+
+fs-fs_uuid_mod-disk_fs_uuid.lst: disk/fs_uuid.c $(disk/fs_uuid.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fs_uuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh fs_uuid > $@ || (rm -f $@; exit 1)
+
+partmap-fs_uuid_mod-disk_fs_uuid.lst: disk/fs_uuid.c $(disk/fs_uuid.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fs_uuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh fs_uuid > $@ || (rm -f $@; exit 1)
+
+
+fs_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
+fs_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For configfile.mod
 configfile_mod_SOURCES = commands/configfile.c

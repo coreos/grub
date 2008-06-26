@@ -280,7 +280,7 @@ lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
-	loopback.mod configfile.mod echo.mod			\
+	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod
 
@@ -343,6 +343,11 @@ test_mod_LDFLAGS = $(COMMON_LDFLAGS)
 loopback_mod_SOURCES = disk/loopback.c
 loopback_mod_CFLAGS = $(COMMON_CFLAGS)
 loopback_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For fs_uuid.mod
+fs_uuid_mod_SOURCES = disk/fs_uuid.c
+fs_uuid_mod_CFLAGS = $(COMMON_CFLAGS)
+fs_uuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For configfile.mod
 configfile_mod_SOURCES = commands/configfile.c

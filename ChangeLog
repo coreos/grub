@@ -1,5 +1,16 @@
 2008-06-26  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/fs_uuid.c: New file.
+	* conf/common.rmk (pkglib_MODULES): Add `fs_uuid.mod'.
+	(fs_uuid_mod_SOURCES, fs_uuid_mod_CFLAGS)
+	(fs_uuid_mod_LDFLAGS): New variables.
+	* include/grub/disk.h (grub_disk_dev_id): Add
+	`GRUB_DISK_DEVICE_UUID_ID'.
+	* kern/disk.c (grub_disk_dev_iterate): Allow disk devices not to
+	implement iterate().
+
+2008-06-26  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/10_linux.in: Avoid passing UUIDs to Linux when either
 	"/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" does not exist, or when a
 	Linux image includes no initrd.

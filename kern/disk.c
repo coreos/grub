@@ -202,7 +202,7 @@ grub_disk_dev_iterate (int (*hook) (const char *name))
   grub_disk_dev_t p;
 
   for (p = grub_disk_dev_list; p; p = p->next)
-    if ((p->iterate) (hook))
+    if (p->iterate && (p->iterate) (hook))
       return 1;
 
   return 0;
