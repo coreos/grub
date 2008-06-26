@@ -385,7 +385,7 @@
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
 	* fs/ext2.c (grub_ext2_uuid): Use `04x' instead of '02x' as
-        grub_printf() flags, since we're printing in units of 2 bytes.
+	grub_printf() flags, since we're printing in units of 2 bytes.
 
 2008-05-30  Robert Millan  <rmh@aybabtu.com>
 
@@ -699,7 +699,7 @@
 	and `disk/ieee1275/nand.c'.
 
 2008-04-25  Bean  <bean123ch@gmail.com>
-	
+
 	* Makefile.in (RMKFILES): Add missing arch i386-ieee1275 and
 	i386-linuxbios.
 
@@ -732,7 +732,7 @@
 	* include/grub/i386/linux.h (GRUB_LINUX_OFW_SIGNATURE): New macro.
 	(linux_kernel_params): Add new member ofw_signature, ofw_num_items,
 	ofw_cif_handler and ofw_idt, adjust padding number.
-	
+
 	* include/grub/i386/pc/memory.h (grub_upper_mem): Export it if
 	GRUB_MACHINE_IEEE1275 is defined.
 
@@ -748,7 +748,7 @@
 	* kern/powerpc/ieee1275/openfw.c (grub_available_iterate): Use
 	NESTED_FUNC_ATTR on the hook parameter. Don't quit if no device type
 	property.
-	
+
 	* loader/i386/ieee1275/linux.c: New file.
 
 	* loader/i386/ieee1275/linux_normal.c: New file.
@@ -799,7 +799,7 @@
 2008-04-14  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* disk/lvm.c (grub_lvm_scan_device): Add forgotten failure path when
-	there is no memory left for physical volume name. 
+	there is no memory left for physical volume name.
 
 2008-04-14  Vesa Jaaskelainen  <chaac@nic.fi>
 
@@ -834,7 +834,7 @@
 	Improve robustness when handling LVM.
 
 	* disk/lvm.c (grub_lvm_getvalue): Return 0 when `*p' is NULL
-        (and leave `*p' unmodified).
+	(and leave `*p' unmodified).
 	(grub_lvm_iterate): Don't assume `vg->lvs != NULL' when iterating
 	through it.
 	(grub_lvm_memberlist): Don't assume `lv->vg->pvs != NULL' when
@@ -1131,7 +1131,7 @@
 	modified.
 
 	* docs/fdl.texi: New file.
-	
+
 	* docs/mdate-sh: New file. Copied from gnulib.
 	* docs/texinfo.tex: Likewise.
 
@@ -1163,7 +1163,7 @@
 	(probe): Promote device_name from a variable to an argument. Receive
 	device_name from grub_util_check_block_device() if path is NULL and from
 	grub_guess_root_device() else. Do not free() device_name anymore.
-	(options): Introduce new parameter '-d, --device'. 
+	(options): Introduce new parameter '-d, --device'.
 	(main): Add description of the new parameter to the help screen.
 	Rename path variable to argument. Set argument_is_device if the '-d'
 	option is given. Pass argument to probe() depending on
@@ -1623,7 +1623,7 @@
 2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make grub-setup handle a separate root device.
-	
+
 	* util/i386/pc/grub-setup.c (setup): Always open the root device,
 	so that the root device can be compared with the destination
 	device.
@@ -1631,12 +1631,12 @@
 	are different, set ROOT_DRIVE to ROOT_DEV->DISK->ID. Otherwise, to
 	0xFF.
 	When not embedding, set ROOT_DRIVE to 0xFF.
-	
+
 2008-02-03  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Add support for having a grub directory in a different drive. This
 	is still only the data handling part.
-	
+
 	* kern/i386/pc/startup.S (multiboot_trampoline): Set %dh to 0xFF.
 	(codestart): Save %dh in GRUB_ROOT_DRIVE.
 	(grub_root_drive): New variable.
@@ -1756,7 +1756,7 @@
 	(pci_mod_LDFLAGS): Likewise.
 	(lspci_mod_SOURCES): Likewise.
 	(lspci_mod_CFLAGS): Likewise.
-	(lspci_mod_LDFLAGS): Likewise.	
+	(lspci_mod_LDFLAGS): Likewise.
 
 2008-02-02  Bean  <bean123ch@gmail.com>
 
@@ -2346,7 +2346,7 @@
 	(command): Add delimiter at the end of command.
 	(commands): Adjust to match the new command.
 	(commandblock): Remove grub_script_lexer_record_start.
-	(menuentry): Add grub_script_lexer_record_start, use the new commands. 
+	(menuentry): Add grub_script_lexer_record_start, use the new commands.
 	(if): Use the new commands.
 
 	* conf/common.rmk (pkgdata_MODULES): Add echo.mod.
@@ -2425,7 +2425,7 @@
 2008-01-12  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Remove some unused code from reiserfs.
-	
+
 	* fs/reiserfs.c (struct grub_reiserfs_key)
 	[GRUB_REISERFS_KEYV2_BITFIELD]: Removed offset and type.
 	(struct grub_reiserfs_node_body): Removed.
@@ -2502,9 +2502,9 @@
 
 	(GRUB_REISERFS_KEYV2_BITFIELD): Undefined. Probably it would be
 	better to remove the bitfield version completely.
-	
+
 2008-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
-	
+
 	* fs/reiserfs.c (grub_reiserfs_iterate_dir): ENTRY_ITEM must be
 	allocated from the heap, due to the fshelp implementation.
 	(grub_reiserfs_dir): Free NODE, due to the same reason.
@@ -2512,9 +2512,9 @@
 2008-01-06  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Mostly from Vincent Pelletier:
-	
+
 	* fs/reiserfs.c: New file.
-	
+
 	* conf/common.rmk (pkglib_MODULES): Added reiserfs.mod.
 	(reiserfs_mod_SOURCES): New variable.
 	(reiserfs_mod_CFLAGS): Likewise.
@@ -2646,11 +2646,11 @@
 
 2008-01-01  Vesa Jaaskelainen  <chaac@nic.fi>
 
-	* include/grub/video.h: Added grub_video_unmap_color and 
+	* include/grub/video.h: Added grub_video_unmap_color and
 	grub_video_get_active_render_target.
 	(grub_video_adapter): Added unmap_color and get_active_render_target.
 
-	* video/video.c: Added grub_video_unmap_color and 
+	* video/video.c: Added grub_video_unmap_color and
 	grub_video_get_active_render_target.
 	(grub_video_get_info): Changed method to accept NULL pointer as an
 	argument to allow detection of active video adapter.
@@ -2662,7 +2662,7 @@
 	(grub_video_vbe_adapter): Added unmap_color and
 	get_active_render_target.
 
-	* video/i386/pc/vbeblit.c: Replaced grub_video_vbe_unmap_color usage 
+	* video/i386/pc/vbeblit.c: Replaced grub_video_vbe_unmap_color usage
 	with grub_video_vbe_unmap_color_int.
 
 	* term/gfxterm.c (DEFAULT_STANDARD_COLOR): Added.
@@ -2887,7 +2887,7 @@
 	(hexdump_mod_SOURCES): New variable.
 	(hexdump_mod_CFLAGS): Likewise.
 	(hexdump_mod_LDFLAGS): Likewise.
-	
+
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add command/hexdump.c.
 
 	* conf/i386-efi.rmk (grub_emu_SOURCES): Add command/hexdump.c.
@@ -3073,7 +3073,7 @@
 
 	* include/grub/disk.h (grub_disk_dev_id): Add
 	`GRUB_DISK_DEV_ATA_ID'.
-	
+
 2007-10-31  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/pc/init.h (grub_lower_mem): Moved from here ...
@@ -3317,9 +3317,9 @@
 	Reported by Hitoshi Ozeki.
 
 2007-09-03  Yoshinori K. Okuji  <okuji@enbug.org>
-	
+
 	Do not use devices at boot in chainloading.
-	
+
 	* loader/i386/pc/chainloader.c (boot_drive): New variable.
 	(boot_part_addr): Likewise.
 	(grub_chainloader_boot): Simply call grub_chainloader_real_boot
@@ -3401,7 +3401,7 @@
 
 	* conf/powerpc-ieee1275.rmk (grub_probe_SOURCES): Add fs/ntfs.c.
 	(grub_emu_SOURCES): Likewise.
-	
+
 	* conf/misc.c (grub_utf16_to_utf8): Fix unicode conversion bug.
 
 	* fs/ntfs.c: New file.
@@ -3417,7 +3417,7 @@
 	* util/i386/pc/grub-setup.c (setup): Likewise.
 	(save_first_sector): Likewise.
 	(save_blocklists): Likewise.
-	
+
 	* fs/affs.c (grub_affs_read_file): Likewise.
 
 	* fs/ext2.c (grub_ext2_read_file): Likewise.
@@ -3437,7 +3437,7 @@
 	* fs/sfs.c (grub_sfs_read_file): Likewise.
 
 	* fs/ufs.c (grub_ufs_read_file): Likewise.
-	
+
 	* fs/xfs.c (grub_xfs_read_file): Likewise.
 
 	* command/blocklist.c (read_blocklist): Likewise.
@@ -3464,7 +3464,7 @@
 
 2007-07-24  Jerone Young  <jerone@gmail.com>
 
-        * conf/i386-pc.rmk: Add Multiboot loader and multiboot 2 to multiboot
+	* conf/i386-pc.rmk: Add Multiboot loader and multiboot 2 to multiboot
 	modules for compilation.
 	* conf/powerpc-ieee1275.rmk: Likewise.
 
@@ -3553,7 +3553,7 @@
 2007-07-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Migrate to GNU General Public License Version 3.
-	
+
 	* COPYING: Replaced with the plain text version of GPLv3.
 
 	* config.guess: Updated from gnulib.
@@ -4017,14 +4017,14 @@
 
 	* configure.ac: Only use -fno-stack-protector for the target
 	environment.
-	
+
 2007-05-17  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* video/i386/pc/vbe.c (grub_video_vbe_create_render_target): Add
 	__attribute_ ((unused)) to mode_type argument.
 
 	* util/getroot.c (grub_guess_root_device): Fix #endif.
-	
+
 	* kern/misc.c (memcmp): Fix prototype.
 
 	* include/grub/partition.h [GRUB_UTIL]
@@ -4040,7 +4040,7 @@
 
 	* font/manager.c (find_glyph): Make table a const.
 	(grub_font_get_glyph): Remove bitmap from if statement.
-	
+
 2007-05-16  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* util/getroot.c (grub_guess_root_device): Remove RAID and LVM
@@ -4130,7 +4130,7 @@
 2007-05-09  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-probe.c (probe): When detecting partition map,
-        fail gracefully if dev->disk->partition == NULL.
+	fail gracefully if dev->disk->partition == NULL.
 
 2007-05-07  Robert Millan  <rmh@aybabtu.com>
 
@@ -4204,7 +4204,7 @@
 
 2007-04-18  Jerone Young  <jerone@gmail.com>
 
-	* kernel/elf.c: Add missing parenthesis for conditional statement 
+	* kernel/elf.c: Add missing parenthesis for conditional statement
 	stanza.
 
 2007-04-10  Jerone Young  <jerone@gmail.com>
@@ -4213,7 +4213,7 @@
 	continue on and look for device node with real device name.
 
 2007-04-10  Jerone Young  <jerone@gmail.com>
-	
+
 	* configure.ac: Add argument for autoconf to use transformation
 	ability.
 	* Makefile.in: Add autoconf package transformation code.
@@ -4368,30 +4368,30 @@
 	* util/i386/pc/grub-mkimage.c (generate_image): Fix the offset of
 	the number of sectors.	Reported by Andrey Shuvikov
 	<mr_hyro@yahoo.com>.
-	
+
 2006-11-11  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* kern/disk.c (grub_disk_read): When there is a read error, always
 	try to read only the necessary data.
-	
+
 	* conf/i386-pc.rmk (grub_probe_SOURCES): Add disk/lvm.c and
 	disk/raid.c.
 	* include/grub/disk.h [GRUB_UTIL] (grub_raid_init): New
 	prototype.
 	[GRUB_UTIL] (grub_raid_fini): Likewise.
 	[GRUB_UTIL] (grub_lvm_init): Likewise.
-	[GRUB_UTIL] (grub_lvm_fini): Likewise.	
+	[GRUB_UTIL] (grub_lvm_fini): Likewise.
 	* util/i386/pc/grub-probe.c (probe): Check whether DEVICE_NAME is
 	RAID device and copy DEVICE_NAME to DRIVE_NAME in that case.
 	(main): Call grub_raid_init(), grub_lvm_init(), grub_lvm_fini()
 	and grub_raid_fini().
-	
+
 2006-11-09  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	* include/grub/types.h (__unused): Rename to UNUSED.
 	* kern/elf.c (grub_elf32_size): Use UNUSED instead of __unused.
 	(grub_elf64_size): Likewise.
-	
+
 2006-11-03  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/elf.c (grub_elf_file): Call grub_file_seek. Call
@@ -4525,11 +4525,11 @@
 2006-10-14  Jeroen Dekkers  <jeroen@dekkers.cx>
 
 	Added support for RAID and LVM.
-	
+
 	* disk/lvm.c: New file.
 	* disk/raid.c: Likewise.
 	* include/grub/lvm.h: Likewise.
-	* include/grub/raid.h: Likewise.	
+	* include/grub/raid.h: Likewise.
 	* include/grub/util/lvm.h: Likewise.
 	* include/grub/util/raid.h: Likewise.
 	* util/lvm.c: Likewise.
@@ -4541,7 +4541,7 @@
 	* kern/disk.c (grub_disk_open): Check whether grub_partition_probe()
 	returns a partition.
 	(grub_disk_get_size): New function.
-	
+
 	* kern/i386/pc/init.c (make_install_device): Copy the prefix
 	verbatim if grub_install_dos_part is -2.
 
@@ -4552,7 +4552,7 @@
 	MUST_EMBED. Force embedding of GRUB when the argument is
 	true. Close FILE before	returning.
 	(main): Add support for RAID and LVM.
-	
+
 	* conf/common.rmk: Add RAID and LVM modules.
 	* conf/i386-pc.rmk (grub_setup_SOURCES): Add util/raid.c and
 	util/lvm.c.
@@ -4669,7 +4669,7 @@
 	* conf/common.mk: Likewise.
 	* conf/powerpc-ieee1275.mk: Likewise.
 	* conf/sparc64-ieee1275.mk: Likewise.
-	
+
 2006-09-22  Robert Millan  <rmh@aybabtu.com>
 
 	Sync with i386 version.
@@ -4706,13 +4706,13 @@
 	* conf/i386-efi.mk: Likewise.
 	* conf/powerpc-ieee1275.mk: Likewise.
 	* conf/sparc64-ieee1275.mk: Likewise.
-	
+
 2006-08-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Move the prototypes of grub_setjmp and grub_longjmp to
 	cpu/setjmp.h, so that each architecture may specify different
 	attributes.
-	
+
 	* include/grub/i386/setjmp.h (grub_setjmp): New prototype.
 	(grub_longjmp): Likewise.
 	* include/grub/powerpc/setjmp.h (grub_setjmp): Likewise..
@@ -4886,7 +4886,7 @@
 	* include/grub/kernel.h (struct grub_module_header): Change type
 	of OFFSET to grub_target_off_t and type of SIZE to grub_target_size_t.
 	(grub_module_info): Likewise.
-	
+
 2006-06-05  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): The conditional
@@ -4897,7 +4897,7 @@
 
 	Count partitions from 1 instead of 0 in the string representation
 	of partitions. Still use 0-based internally.
-	
+
 	* partmap/sun.c (grub_sun_is_valid): A cosmetic change.
 	(sun_partition_map_iterate): Use grub_partition_t instead of
 	struct grub_partition *. Cast DESC->START_CYLINDER to
@@ -4944,7 +4944,7 @@
 
 	Clean up the code to support 64-bit addressing in disks and
 	files. This change is not enough for filesystems yet.
-	
+
 	* util/i386/pc/grub-setup.c (struct boot_blocklist): Change the
 	type of "start" to grub_uint64_t.
 	(setup): Change the types of KERNEL_SECTOR and FIRST_SECTOR to
@@ -5069,7 +5069,7 @@
 	"write".
 	(struct grub_disk): Change the type of "total_sectors" to
 	grub_uint64_t. Change the type of SECTOR to grub_disk_addr_t in
-	"read_hook". 
+	"read_hook".
 	(grub_disk_read): Change the types of SECTOR, OFFSET and SIZE to
 	grub_disk_addr_t, grub_off_t and grub_size_t, respectively.
 	(grub_disk_write): Likewise.
@@ -5227,13 +5227,13 @@
 	* util/powerpc/ieee1275/grub-install.in (host_cpu): Removed.
 	(target_cpu): New variable.
 	(pkglibdir): Use target_cpu instead of host_cpu.
-	
+
 	* util/i386/pc/grub-install.in (host_cpu): Removed.
 	(target_cpu): New variable.
 	(pkglibdir): Use target_cpu instead of host_cpu.
 
 	* util/genmoddep.c: Removed.
-	
+
 	* kern/efi/mm.c (filter_memory_map): Use GRUB_CPU_SIZEOF_VOID_P
 	instead of GRUB_HOST_SIZEOF_VOID_P.
 	* kern/dl.c: Likewise.
@@ -5309,7 +5309,7 @@
 	(AWK): Likewise.
 	(include): Use target_cpu instead of host_cpu.
 	(moddep.lst:): Use genmoddep.awk instead of genmoddep.
-	
+
 	* DISTLIST: Added genmoddep.awk. Removed util/genmoddep.c.
 
 2006-05-29  Vesa Jaaskelainen  <chaac@nic.fi>
@@ -5386,7 +5386,7 @@
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Added
 	commands/blocklist.c.
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
-	
+
 	* conf/common.rmk (pkgdata_MODULES): Added blocklist.mod.
 	(blocklist_mod_SOURCES): New variable.
 	(blocklist_mod_CFLAGS): Likewise.
@@ -5432,7 +5432,7 @@
 
 	* include/grub/i386/linux.h (struct linux_kernel_params): New
 	struct.
-	
+
 2006-05-09  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Corrected bounds
@@ -5497,7 +5497,7 @@
 	(platform): New variable.
 	(pkglibdir): Likewise.
 	Use PKGLIBDIR instead of PKGDATADIR.
-	
+
 	* util/i386/pc/grub-install.in (datadir): Removed.
 	(host_vendor): Likewise.
 	(host_os): Likewise.
@@ -5531,7 +5531,7 @@
 
 	Use the environment context in the menu. Remove the commands
 	"default" and "timeout", and use variables instead.
-	
+
 	* normal/menu.c: Include grub/env.h.
 	(print_entry): Cast TITLE to silence gcc.
 	(get_timeout): New function.
@@ -5649,7 +5649,7 @@
 	Extend the loader so that GRUB can accept a loader which comes
 	back to GRUB when a loaded image exits. Also, this change adds
 	support for a chainloader on EFI.
-	
+
 	* term/efi/console.c: Include grub/misc.h.
 	(grub_console_checkkey): Display a scan code on the top for
 	debugging. This will be removed once the EFI port gets stable.
@@ -5879,7 +5879,7 @@
 
 	* genkernsyms.sh: Removed.
 	* gensymlist.sh: Likewise.
-	
+
 	* genkernsyms.sh.in: New file.
 	* gensymlist.sh.in: Likewise.
 
@@ -5899,7 +5899,7 @@
 	initialization can use modules. Also, this change adds an
 	intensive debugging feature for the memory manager via the
 	configure option "--enable-mm-debug".
-	
+
 	* partmap/gpt.c (gpt_partition_map_iterate): Add one more into
 	PART.LEN.
 
@@ -5984,7 +5984,7 @@
 	Use grub_abort instead of grub_stop, and grub_exit must be
 	define in each architecture now. Also, this change adds support
 	for EFI disks.
-	
+
 	* util/i386/pc/grub-probefs.c: Include grub/term.h.
 	(grub_getkey): New function.
 	(grub_term_get_current): Likewise.
@@ -6204,7 +6204,7 @@
 2006-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Add support for pre-loaded modules into the EFI port.
-	
+
 	* util/i386/efi/grub-mkimage.c (make_mods_section): Rewritten
 	completely. Accept one more argument DIR. The caller has changed.
 
@@ -6223,7 +6223,7 @@
 	(grub_efi_loaded_image_t): New type.
 
 2006-04-20  Yoshinori K. Okuji  <okuji@enbug.org>
-	
+
 	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): Compare the file
 	size with GRUB_OS_AREA_SIZE as grub_size_t instead of
 	grub_ssize_t. Reported by Jeff Chua <jeff84@silk.corp.fedex.com>.
@@ -6244,7 +6244,7 @@
 	* kern/efi/init.c: Likewise.
 	* kern/efi/mm.c: Likewise.
 	* term/efi/console.c: Likewise.
-	
+
 	* kern/i386/efi/init.c: Do not include grub/machine/time.h.
 	(grub_stop): Removed.
 	(grub_get_rtc): Likewise.
@@ -6409,7 +6409,7 @@
 	(grub_script_create_cmdmenu): Likewise.
 	(grub_script_add_cmd): Likewise.
 	(grub_script_parse): Setup the state before calling the parser.
-	
+
 2006-04-16  Marco Gerards  <marco@gnu.org>
 
 	* normal/command.c (grub_command_init): Remove the title command.
@@ -6766,7 +6766,7 @@
 2005-12-25  Marco Gerards  <marco@gnu.org>
 
 	Add support for Apple HFS+ filesystems.
-	
+
 	* fs/hfsplus.c: New file.
 
 	* DISTLIST: Added `fs/hfsplus.c'.
@@ -6854,7 +6854,7 @@
 	* conf/i386-pc.rmk (pkgdata_MODULES): Added play.mod.
 	(play_mod_SOURCES, play_mod_CFLAGS, play_mod_LDFLAGS): New
 	macros.
-	
+
 2005-11-27  Marco Gerards  <mgerards@xs4all.nl>
 
 	* include/grub/dl.h (GRUB_MOD_INIT): Use `__attribute__
@@ -7009,7 +7009,7 @@
 
 	* DISTLIST: Added `partmap/acorn.c' and
 	`include/grub/acorn_filecore.h'.
-	
+
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
 	`partmap/acorn.c'.
 	(pkgdata_MODULES): Add `acorn.mod'.
@@ -7092,7 +7092,7 @@
 	* term/i386/pc/vga.c (grub_vga_init): Renamed to
 	`grub_vga_mod_init'.  Updated all users.
 	(grub_vga_fini): Renamed to `grub_vga_mod_fini'.
-	
+
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `grub_emu_init.c'.
 	(grub_modules_init.lst, grub_modules_init.h, grub_emu_init.c): New
 	rules.
@@ -7162,7 +7162,7 @@
 	* normal/script.c: Likewise.
 
 	* configure.ac: Add `AC_PROG_YACC' test.
-	
+
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `commands/test.c',
 	`normal/execute.c', `normal/lexer.c', `grub_script.tab.c',
 	`normal/function.c' and `normal/script.c'.
@@ -7178,10 +7178,10 @@
 
 	* include/grub/normal.h (grub_test_init): New prototype.
 	(grub_test_fini): Likewise.
-	
+
 	* normal/command.c: Include <grub/script.h>.
 	(grub_command_execute): Rewritten.
-	
+
 	* util/grub-emu.c (main): Call `grub_test_init' and
 	`grub_test_fini'.
 
@@ -7204,7 +7204,7 @@
 	`debug' environment variable has been set.
 
 2005-11-02  Hollis Blanchard  <hollis@penguinppc.org>
-	
+
 	* Makefile.in (install-local): Use $(DATA).
 	(uninstall): Likewise.
 	* conf/powerpc-ieee1275.rmk (bin_UTILITIES): Move grub-mkimage...
@@ -7432,7 +7432,7 @@
 
 	* genmk.rb (class PModule): Always use `$(#{prefix}_LDFLAGS)' when
 	linking.
-	
+
 	* conf/i386-pc.rmk (COMMON_CFLAGS): Add `-m32'.
 	(COMMON_LDFLAGS): New variable.
 	(kernel_img_LDFLAGS): Include `COMMON_FLAGS'.
@@ -7469,7 +7469,7 @@
 2005-09-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make GRUB's kernel compliant to Multiboot Specification.
-	
+
 	* kern/i386/pc/startup.S (multiboot_header): New label.
 	(multiboot_entry): Likewise.
 	(multiboot_trampoline): Likewise.
@@ -7510,7 +7510,7 @@
 	* include/grub/fs.h (grub_xfs_init): New prototype.
 	(grub_xfs_fini): Likewise.
 
-	
+
 2005-09-18  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* video/i386/pc/vbe.c (grub_vbe_set_video_mode): In indexed
@@ -7547,7 +7547,7 @@
 
 	* boot/powerpc/ieee1275/cmain.c: Moved to ...
 	* kern/powerpc/ieee1275/cmain.c: ... here.
-	
+
 	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Use
 	kern/powerpc/ieee1275/crt0.S and kern/powerpc/ieee1275/cmain.c
 	instead of boot/powerpc/ieee1275/crt0.S and
@@ -7598,10 +7598,10 @@
 	io/gzio.c, kern/sparc64/cache.c, kern/sparc64/dl.c,
 	kern/sparc64/ieee1275/init.c, kern/sparc64/ieee1275/openfw.c and
 	util/powerpc/ieee1275/misc.c.
-	
+
 	* include/grub/gzio.h: New file.
 	* io/gzio.c: Likewise.
-	
+
 	* kern/file.c (grub_file_close): Call grub_device_close only if
 	FILE->DEVICE is not NULL.
 
@@ -7622,7 +7622,7 @@
 	* commands/cat.c: Include grub/gzio.h.
 	(grub_cmd_cat): Use grub_gzfile_open instead of
 	grub_file_open.
-	
+
 	* commands/cmp.c: Include grub/gzio.h.
 	(grub_cmd_cmp): Use grub_gzfile_open instead of
 	grub_file_open.
@@ -7703,7 +7703,7 @@
 	invalid magic in the error.
 
 	* commands/search.c: New file.
-	
+
 	* util/grub-emu.c (main): Call grub_search_init and
 	grub_search_fini.
 
@@ -7838,7 +7838,7 @@
 	* normal/misc.c: New file.
 
 	* DISTLIST: Added normal/misc.c.
-	
+
 	* partmap/amiga.c (amiga_partition_map_iterate): Add an argument
 	DISK to HOOK. Call HOOK with DISK.
 	* partmap/apple.c (apple_partition_map_iterate): Likewise.
@@ -7908,11 +7908,11 @@
 2005-08-16  Vesa Jaaskelainen  <chaac@nic.fi>
 
 	* commands/i386/pc/vbe_list_modes.c: Update source formatting to
-        follow GCS more precisely.
-        * commands/i386/pc/vbe_test.c: Likewise.
-        * include/grub/i386/pc/vbe.h: Likewise.
-        * term/i386/pc/vesafb.c: Likewise.
-        * video/i386/pc/vbe.c: Likewise.
+	follow GCS more precisely.
+	* commands/i386/pc/vbe_test.c: Likewise.
+	* include/grub/i386/pc/vbe.h: Likewise.
+	* term/i386/pc/vesafb.c: Likewise.
+	* video/i386/pc/vbe.c: Likewise.
 
 2005-08-16  Vesa Jaaskelainen  <chaac@nic.fi>
 
@@ -7984,7 +7984,7 @@
 	* DISTLIST: Added normal/completion.c.
 
 	* normal/completion.c: New file.
-	
+
 	* term/i386/pc/console.c (grub_console_getwh): New function.
 	(grub_console_term): Assign grub_console_getwh to getwh.
 
@@ -8155,7 +8155,7 @@
 
 	* COPYING: Upgraded to the latest version. Only the address of the
 	FSF office has changed.
-	
+
 2005-08-07  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* conf/powerpc-ieee1275.rmk (grubof_SOURCES): Replaced
@@ -8187,7 +8187,7 @@
 
 	* kern/term.c (grub_putcode): Use `grub_getwh' instead of
 	hardcoded value.
-		
+
 	From Vincent Pelletier  <subdino2004@yahoo.fr>
 	* include/grub/term.h (GRUB_TERM_WIDTH, GRUB_TERM_HEIGHT):
 	Redefined to use grub_getwh.
@@ -8306,7 +8306,7 @@
 
 	Change the semantics of variable hooks. They now return	strings
 	instead of error values.
-	
+
 	* util/i386/pc/grub-setup.c: Include grub/env.h.
 	(setup): Use grub_device_set_root instead of grub_env_set.
 
@@ -8534,7 +8534,7 @@
 	(grub_fs_autoload_hook): New prototype.
 
 	* genfslist.sh: New file.
-	
+
 	* genmk.rb: Added a rule to generate a filesystem list.
 
 2005-06-30  Marco Gerards  <metgerards@student.han.nl>
@@ -8702,7 +8702,7 @@
 
 	* DISTLIST: New file.
 	* gendistlist.sh: Likewise.
-	
+
 	* Makefile.in (COMMON_DISTFILES): Removed.
 	(BOOT_DISTFILES): Likewise.
 	(CONF_DISTFILES): Likewise.
@@ -8731,7 +8731,7 @@
 2005-03-08  Yoshinori Okuji  <okuji@enbug.org>
 
 	Automatic loading of commands is supported.
-	
+
 	* normal/main.c (read_command_list): New function.
 	(grub_normal_execute): Call read_command_list.
 
@@ -8763,7 +8763,7 @@
 2005-03-02  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* gencmdlist.sh: New file.
-	
+
 	* genmk.rb (PModule::rule): Generate a rule for a command list.
 	Clean command.lst.
 	Generate command.lst from $(COMMANDFILES).
@@ -8794,7 +8794,7 @@
 	* include/grub/normal.h [GRUB_UTIL] (grub_configfile_init): New
 	prototype.
 	[GRUB_UTIL] (grub_configfile_fini): Likewise.
-	
+
 2005-02-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* normal/arg.c (grub_arg_show_help): Do not show the bug report
@@ -8808,7 +8808,7 @@
 	* commands/default.h: New file.
 	* commands/timeout.h: Likewise.
 	* normal/context.c: Likewise.
-	
+
 	* util/misc.c: Do not include sys/times.h.
 	Include sys/time.h and grub/machine/time.h.
 	(grub_get_rtc): Rewritten with gettimeofday.
@@ -8895,9 +8895,9 @@
 2005-02-19  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	This implements an Emacs-like menu entry editor.
-	
+
 	* normal/menu_entry.c: New file.
-	
+
 	* util/console.c (grub_ncurses_putchar): Translate some Unicode
 	characters to ASCII.
 	(saved_char): New variable.
@@ -9000,9 +9000,9 @@
 	* disk/i386/pc/biosdisk.c (grub_biosdisk_fini): New function.
 	* kern/i386/pc/init.c (grub_machine_fini): Likewise.
 	* term/i386/pc/console.c (grub_console_fini): Likewise.
-	
+
 	* util/i386/pc/misc.c: New file.
-	
+
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Added
 	util/i386/pc/misc.c, commands/i386/pc/halt.c and
 	commands/i386/pc/reboot.c.
@@ -9037,9 +9037,9 @@
 2005-02-12  Hollis Blanchard  <hollis@penguinppc.org>
 
 	* kern/partition.c (grub_partition_probe): Clear `grub_errno' and
-	return 0 if `grub_errno' is GRUB_ERR_BAD_PART_TABLE. 
+	return 0 if `grub_errno' is GRUB_ERR_BAD_PART_TABLE.
 	(part_map_iterate): Clear `grub_errno' and return 0 if
-	`partmap->iterate' returns GRUB_ERR_BAD_PART_TABLE. 
+	`partmap->iterate' returns GRUB_ERR_BAD_PART_TABLE.
 	* partmap/amiga.c (amiga_partition_map_iterate): Return
 	GRUB_ERR_BAD_PART_TABLE if no partition map magic is found.
 	* partmap/apple.c (apple_partition_map_iterate): Likewise.
@@ -9154,7 +9154,7 @@
 
 	Add the loopback device, a device via which files can be accessed
 	as devices.
-	
+
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `disk/loopback.c'.
 	(pkgdata_MODULES): Add loopback.mod.
 	(loopback_mod_SOURCES): New variable.
@@ -9186,7 +9186,7 @@
 2005-01-20  Timothy Baldwin  <T.E.Baldwin99@members.leeds.ac.uk>
 
 	* include/grub/dl.h (GRUB_MOD_INIT): Changed `__attribute__
-	((unused))' to `__attribute__ ((used))'.	
+	((unused))' to `__attribute__ ((used))'.
 	(GRUB_MOD_FINI): Likewise.
 	* kern/dl.c (grub_dl_load_file): Fix null pointer dereference.
 	* genmk.rb (PModule): Assign space to common symbols when linking
@@ -9411,12 +9411,12 @@
 
 	* normal/cmdline.c (grub_tab_complete): Add a blank line to the
 	output so the output looks better.
-	
+
 2004-12-04  Marco Gerards  <metgerards@student.han.nl>
 
 	Modulize the partition map support and add support for the amiga
 	partition map.
-	
+
 	* commands/ls.c: Include <grub/partition.h> instead of
 	<grub/machine/partition.h>.
 	* kern/disk.c: Likewise.
@@ -9471,7 +9471,7 @@
 	of a PC partition.
 
 2004-11-17  Hollis Blanchard  <hollis@penguinppc.org>
-	
+
 	* kern/powerpc/ieee1275/init.c (grub_setjmp): Remove function.
 	(grub_longjmp): Likewise.
 	* include/grub/powerpc/setjmp.h (grub_jmp_buf): Set array size to
@@ -9482,7 +9482,7 @@
 	(grubof_CFLAGS): Add `-DGRUBOF'.
 	* include/grub/setjmp.h [GRUB_UTIL]: Changed condition to
 	[GRUB_UTIL && !GRUBOF].
-	
+
 2004-11-16  Marco Gerards  <metgerards@student.han.nl>
 
 	* kern/powerpc/ieee1275/openfw.c (grub_devalias_iterate): Skip any
@@ -9527,7 +9527,7 @@
 2004-11-01  Marco Gerards  <metgerards@student.han.nl>
 
 	Add support for iso9660 (including rockridge).
-	
+
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Add fs/iso9660.c.
 	(iso9660_mod_SOURCES): New variable.
 	(iso9660_mod_CFLAGS): Likewise.
@@ -9538,7 +9538,7 @@
 
 	* include/grub/misc.h (grub_strncat): New prototype.
 	* kern/misc.c (grub_strncat): New function.
-	
+
 	* fs/hfs.c (grub_hfs_mount): Translate the error
 	`GRUB_ERR_OUT_OF_RANGE' to `GRUB_ERR_BAD_FS'.
 	* fs/jfs.c (grub_jfs_mount): Likewise.
@@ -9590,7 +9590,7 @@
 	`ide', or `ata'.
 	(grub_ofdisk_open): Remove manual device alias resolution.
 	Fix memory leak when device cannot be opened.
-	* include/grub/powerpc/ieee1275/ieee1275.h 
+	* include/grub/powerpc/ieee1275/ieee1275.h
 	(grub_children_iterate): New prototype.
 	* kern/powerpc/ieee1275/openfw.c (grub_children_iterate):
 	New function.
@@ -9640,7 +9640,7 @@
 2004-09-18  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make the source code of the menu interface more readable.
-	
+
 	* normal/menu.c: Include grub/mm.h.
 	(TERM_WIDTH): New macro.
 	(TERM_HEIGHT): Likewise.
@@ -9670,17 +9670,17 @@
 
 	Add `linux.mod' and `multiboot.mod' so linux and multiboot kernels
 	can be loaded from normal mode.
-	
+
 	* conf/i386-pc.rmk (pkgdata_MODULES): Add `linux.mod' and
 	`multiboot.mod'.
 	(linux_mod_SOURCES, linux_mod_CFLAGS, multiboot_mod_SOURCES)
 	(multiboot_mod_CFLAGS): New variables.
 	* loader/i386/pc/linux_normal.c: New file.
-	* loader/i386/pc/multiboot_normal.c: Likewise.	
-	
+	* loader/i386/pc/multiboot_normal.c: Likewise.
+
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Don't use the
 	attribute `unused'.
-	
+
 	* fs/ext2.c (grub_ext2_iterate_dir): Fix typos in inode type.  Use
 	`fdiro' to read the mode information from instead of `diro'.
 
@@ -9703,23 +9703,23 @@
 	`y + 1' instead of `y - 1'.
 
 	* conf/powerpc-ieee1275.rmk (grubof_LDFLAGS): Add `-N' and `-S'.
-	
+
 2004-09-14  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	From Hollis Blanchard <hollis@penguinppc.org>:
 	* kern/misc.c (memmove): New alias for grub_memmove.
 	(memcmp): New alias for grub_memcmp.
 	(memset): New alias for grub_memset.
-	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_get_property): 
+	* boot/powerpc/ieee1275/ieee1275.c (grub_ieee1275_get_property):
 	Change "int handle" to "grub_ieee1275_phandle_t handle".
-	* include/grub/powerpc/ieee1275/ieee1275.h 
+	* include/grub/powerpc/ieee1275/ieee1275.h
 	(grub_ieee1275_get_property): Likewise.
-	
+
 2004-09-12  Tomas Ebenlendr  <ebik@ucw.cz>
 
 	Added normal mode command `chainloader' as module chain.mod, which
 	depends on normal.mod and _chain.mod.
-	
+
 	* conf/i386-pc.rmk (pkgdata_MODULES): Add `chain.mod'.
 	(chain_mod_SOURCES, chain_mod_CFLAGS): Variables added.
 	* include/grub/i386/pc/loader.h (grub_rescue_cmd_chainloader):
@@ -9813,7 +9813,7 @@
 	(grub_boot_fini) [GRUB_UTIL]: Likewise.
 	(GRUB_MOD_INIT) [!GRUB_UTIL]: Likewise.
 	(GRUB_MOD_FINI) [!GRUB_UTIL]: Likewise.
-	
+
 	* fs/hfs.c (grub_hfs_find_node): Add a prototype for `node_found'.
 	(grub_hfs_iterate_dir): Make the function static.  Add prototypes
 	for `node_found' and `it_dir'.
@@ -9825,13 +9825,13 @@
 
 	* include/grub/fs.h (grub_hfs_init): New prototype.
 	(grub_hfs_fini): Likewise.
-	
-	
+
+
 2004-08-21  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Each disk device has its own id now. This is useful to make use
 	of multiple disk devices.
-	
+
 	* include/grub/disk.h (grub_disk_dev_id): New enum.
 	(GRUB_DISK_DEVICE_BIOSDISK_ID): New constant.
 	(GRUB_DISK_DEVICE_OFDISK_ID): Likewise.
@@ -9951,7 +9951,7 @@
 	Add support for UFS version 1 and 2.  Add support for the minix
 	filesystem version 1 and 2, both the variants with 14 and 30 long
 	filenames.
-	
+
 	* conf/i386-pc.rmk (grub_setup_SOURCES): Add fs/ufs.c and
 	fs/minix.c.
 	(grub_emu_SOURCES): Likewise.
@@ -10007,7 +10007,7 @@
 	generic ieee1275 functions, console and disk support.  This should
 	be easy to port to other architectures with support for Open
 	Firmware.
-	
+
 	* configure.ac: Accept the powerpc as host_cpu.  In the case of
 	the powerpc cpu set the host_vendor to ieee1275.  Make sure the i386
 	specific tests are only executed while building for the i386.
@@ -10032,7 +10032,7 @@
 
 	These files were written by Johan Rydberg
 	(jrydberg@night.trouble.net) and I only modified them slightly.
-		
+
 	* boot/powerpc/ieee1275/cmain.c: New file.
 	* boot/powerpc/ieee1275/crt0.S: Likewise.
 	* boot/powerpc/ieee1275/ieee1275.c: Likewise.
@@ -10050,7 +10050,7 @@
 	* util/i386/pc/pupa-setup.c (usage): Likewise,
 	(main): Call pupa_ext2_init and pupa_ext2_fini.
 
-	* fs/fat.c (log2): Renamed to ... 
+	* fs/fat.c (log2): Renamed to ...
 	(fat_log2): ... this.
 	All callers changed.
 	* kern/misc.c (memcpy): Alias to pupa_memmove.
@@ -10064,7 +10064,7 @@
 	(open_device)[!__linux__]: Check if FD < 0 instead of !FD.
 	(pupa_util_biosdisk_get_pupa_dev)[__GNU__]: Change type of N to
 	long int. Use strtol instead of strtoul.
-	
+
 2004-03-14  Marco Gerards  <metgerards@student.han.nl>
 
 	* commands/boot.c: New file.
@@ -10223,7 +10223,7 @@
 
 	Now this project is GRUB 2 rather than PUPA. The location of
 	the CVS repository was moved to GRUB's.
-	
+
 	* configure.ac: Use bug-grub as the reporting address.
 	Use GRUB instead of PUPA.
 	Change the version number to 1.90.
@@ -10405,7 +10405,7 @@
 	* normal/normal.c (pupa_normal_init) [PUPA_UTIL]: New function.
 	(pupa_normal_fini) [PUPA_UTIL]: Likewise.
 	* util/console.c: New file.
-	
+
 	* util/i386/pc/getroot.c: New file.
 	* util/i386/pc/pupa-setup.c: Include <pupa/util/getroot.h>.
 	(pupa_putchar): New function.
@@ -10413,7 +10413,7 @@
 	(xgetcwd): Function moved to ...
 	(strip_extra_slashes): Likewise.
 	(get_prefix): Likewise.
-	* util/i386/pc/getroot.c: ... here.	
+	* util/i386/pc/getroot.c: ... here.
 	(find_root_device): Function moved and renamed to...
 	* util/i386/pc/getroot.c (pupa_find_root_device): ... here.
 	Changed all callers.
@@ -10492,7 +10492,7 @@
 	(pupa_strncpy): New function.
 	(pupa_strncmp): Likewise.
 	* fs/ext2.c: New file.
-	
+
 	* kern/disk.c (pupa_disk_read): Set pupa_errno to PUPA_ERR_NONE
 	when the read failed before retrying.
 	* util/i386/pc/biosdisk.c (_LARGEFILE_SOURCE): Removed.
@@ -10512,7 +10512,7 @@
 	buggy. Also, a lot of consideration is required for I18N,
 	UNICODE, and VGA font issues. Therefore, assume that this is
 	such that "better than nothing".
-	
+
 	* font/manager.c: New file.
 	* include/pupa/font.h: Likewise.
 	* include/pupa/i386/pc/vga.h: Likewise.
@@ -10529,7 +10529,7 @@
 	* include/pupa/err.h (PUPA_ERR_BAD_FONT): New constant.
 
 	* include/pupa/term.h: Include pupa/err.h.
-	(struct pupa_term): Added init and fini. 
+	(struct pupa_term): Added init and fini.
 	Changed the argument of putchar to pupa_uint32_t.
 
 	* include/pupa/i386/pc/console.h: Include pupa/symbol.h.
@@ -10566,7 +10566,7 @@
 	(DISP_LR): Likewise.
 
 	* term/i386/pc/console.c (pupa_console_putchar): New function.
-	
+
 2003-02-08  NIIBE Yutaka  <gniibe@m17n.org>
 
 	* util/resolve.c (pupa_util_resolve_dependencies): BUG
@@ -10581,7 +10581,7 @@
 2003-01-31  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/i386/pc/lzo1x.S: New file.
-	
+
 	* util/i386/pc/pupa-mkimage.c: Include lzo1x.h.
 	(compress_kernel): New variable.
 	(generate_image): Heavily modified to support compressing a
@@ -10604,7 +10604,7 @@
 
 	* include/pupa/util/misc.h (pupa_util_write_image): Declared.
 
-	* include/pupa/i386/pc/kernel.h 
+	* include/pupa/i386/pc/kernel.h
 	(PUPA_KERNEL_MACHINE_COMPRESSED_SIZE): New macro.
 	(PUPA_KERNEL_MACHINE_INSTALL_DOS_PART): Increased by 4.
 	(PUPA_KERNEL_MACHINE_INSTALL_BSD_PART): Likewise.
@@ -10628,7 +10628,7 @@
 	* normal/main.c: Likewise.
 	* normal/menu.c: Likewise.
 	* normal/i386/setjmp.S: Likewise.
-	
+
 	* loader/i386/pc/linux.c (pupa_rescue_cmd_linux): Made global.
 	(pupa_rescue_cmd_initrd): Likewise.
 
@@ -10700,7 +10700,7 @@
 
 	* include/pupa/i386/pc/linux.h: New file.
 	* loader/i386/pc/linux.c: Likewise.
-	
+
 	* loader/i386/pc/chainloader.c (pupa_chainloader_boot_sector):
 	Removed.
 	(pupa_chainloader_unload): Return PUPA_ERR_NONE.
@@ -10866,7 +10866,7 @@
 	(pupa_dl_get_prefix): Declared.
 
 	* fs/fat.c [!PUPA_UTIL] (my_mod): New variable.
-	(pupa_fat_dir) [!PUPA_UTIL]: Prevent the fat module from being 
+	(pupa_fat_dir) [!PUPA_UTIL]: Prevent the fat module from being
 	unloaded.
 	(pupa_fat_open) [!PUPA_UTIL]: Refer itself if succeeded.
 	(pupa_fat_close) [!PUPA_UTIL]: Unrefer itself.
@@ -10911,7 +10911,7 @@
 	* include/i386/pc/util/biosdisk.h: New file.
 	* util/i386/pc/biosdisk.c: Likewise.
 	* util/i386/pc/pupa-setup.c: Likewise.
-	
+
 	* Makefile.in (INCLUDE_DISTFILES): Added
 	include/pupa/i386/pc/util/biosdisk.h.
 	(UTIL_DISTFILES): Added biosdisk.c and pupa-setup.c under the
@@ -10966,7 +10966,7 @@
 	This means that any missing prototypes could be fatal. Also, you
 	must take care when writing assembly code. See the comments at
 	the beginning of startup.S, for more details.
-	
+
 	* kern/i386/pc/startup.S (pupa_halt): Modified for the new
 	compilation mechanism.
 	(pupa_chainloader_real_boot): Likewise.
@@ -10997,7 +10997,7 @@
 	respectively, before checking endianness and sizes.
 
 	* Makefile.in (LD): New variable.
-	
+
 2002-12-27  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* Makefile.in (BUILD_CC): CC -> BUILD_CC.
