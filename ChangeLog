@@ -1,3 +1,8 @@
+2008-06-26  Pavel Roskin  <proski@gnu.org>
+
+	* util/i386/pc/grub-setup.c (setup): Don't reuse core_path, use
+	core_path_dev for the core.img path on the target device.
+
 2008-06-26  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/fs_uuid.c: New file.

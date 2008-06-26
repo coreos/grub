@@ -91,7 +91,7 @@ setup (const char *dir,
        const char *boot_file, const char *core_file,
        const char *root, const char *dest, int must_embed)
 {
-  char *boot_path, *core_path;
+  char *boot_path, *core_path, *core_path_dev;
   char *boot_img, *core_img;
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
@@ -222,7 +222,6 @@ setup (const char *dir,
     grub_util_error ("The size of `%s' is too large", core_path);
   
   core_img = grub_util_read_image (core_path);
-  free (core_path);
 
   /* Have FIRST_BLOCK to point to the first blocklist.  */
   first_block = (struct boot_blocklist *) (core_img
@@ -368,7 +367,7 @@ setup (const char *dir,
   
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
-  core_path = grub_util_get_path (DEFAULT_DIRECTORY, core_file);
+  core_path_dev = grub_util_get_path (DEFAULT_DIRECTORY, core_file);
   
   /* It is a Good Thing to sync two times.  */
   sync ();
@@ -379,11 +378,11 @@ setup (const char *dir,
   for (i = 0; i < MAX_TRIES; i++)
     {
       grub_util_info ("attempting to read the core image `%s' from GRUB%s",
-		      core_path, (i == 0) ? "" : " again");
+		      core_path_dev, (i == 0) ? "" : " again");
       
       grub_disk_cache_invalidate_all ();
       
-      file = grub_file_open (core_path);
+      file = grub_file_open (core_path_dev);
       if (file)
 	{
 	  if (grub_file_size (file) != core_size)
@@ -436,7 +435,7 @@ setup (const char *dir,
     }
 
   if (i == MAX_TRIES)
-    grub_util_error ("Cannot read `%s' correctly", core_path);
+    grub_util_error ("Cannot read `%s' correctly", core_path_dev);
 
   /* Clean out the blocklists.  */
   block = first_block;
@@ -470,7 +469,7 @@ setup (const char *dir,
 
   grub_file_close (file);
   
-  free (core_path);
+  free (core_path_dev);
   free (tmp_img);
   
   *kernel_sector = grub_cpu_to_le64 (first_sector);
@@ -487,7 +486,6 @@ setup (const char *dir,
   *root_drive = 0xFF;
 
   /* Write the first two sectors of the core image onto the disk.  */
-  core_path = grub_util_get_path (dir, core_file);
   grub_util_info ("opening the core image `%s'", core_path);
   fp = fopen (core_path, "r+b");
   if (! fp)
@@ -495,7 +493,6 @@ setup (const char *dir,
 
   grub_util_write_image (core_img, GRUB_DISK_SECTOR_SIZE * 2, fp);
   fclose (fp);
-  free (core_path);
 
   /* Write the boot image onto the disk.  */
   if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE, boot_img))
@@ -506,6 +503,7 @@ setup (const char *dir,
   /* Sync is a Good Thing.  */
   sync ();
   
+  free (core_path);
   free (core_img);
   free (boot_img);
   grub_device_close (dest_dev);
