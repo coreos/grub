@@ -1,3 +1,9 @@
+2008-06-26  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_linux.in: Avoid passing UUIDs to Linux when either
+	"/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" does not exist, or when a
+	Linux image includes no initrd.
+
 2008-06-21  Javier Martín  <lordhabbit@gmail.com>
 
 	* util/i386/pc/grub-setup.c (setup): Remove literal "core.img" in a
