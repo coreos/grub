@@ -1,5 +1,12 @@
 2008-06-29  Robert Millan  <rmh@aybabtu.com>
 
+	* fs/xfs.c (GRUB_XFS_FSB_TO_BLOCK): New macro.  Maps filesystem
+	block to disk block.
+	(grub_xfs_read_block): Use GRUB_XFS_FSB_TO_BLOCK() on result.
+	Patch from Niels Böhm <bitbucket@arcor.de>
+
+2008-06-29  Robert Millan  <rmh@aybabtu.com>
+
 	* util/update-grub_lib.in (font_path): Search for fonts in
 	/boot/grub first, which is more likely to be readable (we aren't
 	deciding where fonts live, just looking for them).

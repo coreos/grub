@@ -163,6 +163,10 @@ static grub_dl_t my_mod;
 #define GRUB_XFS_INO_AG(data,ino)		\
   (grub_be_to_cpu64 (ino) >> GRUB_XFS_INO_AGBITS (data))
 
+#define GRUB_XFS_FSB_TO_BLOCK(data, fsb) \
+  (((fsb) >> (data)->sblock.log2_agblk) * (data)->agsize \
+ + ((fsb) & ((1 << (data)->sblock.log2_agblk) - 1)))
+
 #define GRUB_XFS_EXTENT_OFFSET(exts,ex) \
 	((grub_be_to_cpu32 (exts[ex][0]) & ~(1 << 31)) << 23 \
 	| grub_be_to_cpu32 (exts[ex][1]) >> 9)
@@ -310,7 +314,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   if (leaf)
     grub_free (leaf);
 
-  return ret;
+  return GRUB_XFS_FSB_TO_BLOCK(node->data, ret);
 }
 
 
