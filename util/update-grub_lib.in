@@ -130,9 +130,7 @@ prepare_grub_to_access_device ()
 
 font_path ()
 {
-  # Prefer system path for space reasons (/boot/grub might be a very small
-  # partition in case of OpenFirmware, etc).
-  for dir in ${pkgdatadir} /usr/share/grub /boot/grub ; do
+  for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
     # Prefer complete fonts over incomplete ones.
     for basename in unicode unifont ascii ; do
       path="${dir}/${basename}.pff"

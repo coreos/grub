@@ -1,3 +1,9 @@
+2008-06-29  Robert Millan  <rmh@aybabtu.com>
+
+	* util/update-grub_lib.in (font_path): Search for fonts in
+	/boot/grub first, which is more likely to be readable (we aren't
+	deciding where fonts live, just looking for them).
+
 2008-06-26  Pavel Roskin  <proski@gnu.org>
 
 	* util/biosdisk.c (read_device_map): Don't leave dead map
