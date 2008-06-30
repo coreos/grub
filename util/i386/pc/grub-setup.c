@@ -452,7 +452,7 @@ setup (const char *dir,
     }
   
   /* Now read the core image to determine where the sectors are.  */
-  file = grub_file_open (core_path);
+  file = grub_file_open (core_path_dev);
   if (! file)
     grub_util_error ("%s", grub_errmsg);
   
