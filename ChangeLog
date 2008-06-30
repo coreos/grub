@@ -1,5 +1,10 @@
 2008-06-30  Pavel Roskin  <proski@gnu.org>
 
+	* util/i386/pc/grub-setup.c (setup): Write install_dos_part and
+	install_bsd_part immediately before core.img is embedded or
+	modified on disk.  This fixes core.img verification if core.img
+	cannot be embedded.
+
 	* util/i386/pc/grub-setup.c (setup): Use core_path_dev, not
 	core_path to calculate the blocklist.
 	Patch from Javier Martín <lordhabbit@gmail.com>

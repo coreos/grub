@@ -101,6 +101,7 @@ setup (const char *dir,
   grub_uint16_t *boot_drive_check;
   struct boot_blocklist *first_block, *block;
   grub_int32_t *install_dos_part, *install_bsd_part;
+  grub_int32_t dos_part, bsd_part;
   char *tmp_img;
   int i;
   grub_disk_addr_t first_sector;
@@ -283,27 +284,29 @@ setup (const char *dir,
 	    {
 	      struct grub_pc_partition *pcdata =
 		root_dev->disk->partition->data;
-	      *install_dos_part
-		= grub_cpu_to_le32 (pcdata->dos_part);
-	      *install_bsd_part
-		= grub_cpu_to_le32 (pcdata->bsd_part);
+	      dos_part = pcdata->dos_part;
+	      bsd_part = pcdata->bsd_part;
 	    }
 	  else if (strcmp (root_dev->disk->partition->partmap->name,
 			   "gpt_partition_map") == 0)
 	    {
-	      *install_dos_part = grub_cpu_to_le32 (root_dev->disk->partition->index);
-	      *install_bsd_part = grub_cpu_to_le32 (-1);
+	      dos_part = root_dev->disk->partition->index;
+	      bsd_part = -1;
 	    }
 	  else
 	    grub_util_error ("No PC style partitions found");
 	}
       else
-	*install_dos_part = *install_bsd_part = grub_cpu_to_le32 (-1);
+	dos_part = bsd_part = -1;
+    }
+  else
+    {
+      dos_part = grub_le_to_cpu32 (*install_dos_part);
+      bsd_part = grub_le_to_cpu32 (*install_bsd_part);
     }
   
   grub_util_info ("dos partition is %d, bsd partition is %d",
-		  grub_le_to_cpu32 (*install_dos_part),
-		  grub_le_to_cpu32 (*install_bsd_part));
+		  dos_part, bsd_part);
   
   /* If the destination device can have partitions and it is the MBR,
      try to embed the core image into after the MBR.  */
@@ -315,6 +318,9 @@ setup (const char *dir,
       if ((unsigned long) core_sectors <= embed_region.end - embed_region.start)
 	{
 	  grub_util_info ("will embed the core image at sector 0x%llx", embed_region.start);
+
+	  *install_dos_part = grub_cpu_to_le32 (dos_part);
+	  *install_bsd_part = grub_cpu_to_le32 (bsd_part);
 
 	  /* The first blocklist contains the whole sectors.  */
 	  first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
@@ -484,6 +490,9 @@ setup (const char *dir,
   /* When the core image is not embedded, the root device always follows
      the boot device.  */
   *root_drive = 0xFF;
+
+  *install_dos_part = grub_cpu_to_le32 (dos_part);
+  *install_bsd_part = grub_cpu_to_le32 (bsd_part);
 
   /* Write the first two sectors of the core image onto the disk.  */
   grub_util_info ("opening the core image `%s'", core_path);
