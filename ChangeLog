@@ -1,3 +1,14 @@
+2008-07-01  Pavel Roskin  <proski@gnu.org>
+
+	* disk/raid.c: Cast grub_dprintf() arguments to unsigned long
+	long if the format specifier expects it.
+	* partmap/gpt.c (gpt_partition_map_iterate): Likewise.
+	* partmap/pc.c (pc_partition_map_iterate): Likewise.
+	* fs/ntfs.c (grub_ntfs_uuid): Cast data->uuid to unsigned long
+	long to fix a warning.
+	* fs/reiserfs.c (grub_reiserfs_read): Change casts in
+	grub_dprintf() arguments to fix warnings.
+
 2008-06-30  Pavel Roskin  <proski@gnu.org>
 
 	* util/i386/pc/grub-setup.c (setup): Write install_dos_part and

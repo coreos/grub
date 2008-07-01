@@ -138,7 +138,9 @@ pc_partition_map_iterate (grub_disk_t disk,
 
 	  grub_dprintf ("partition",
 			"partition %d: flag 0x%x, type 0x%x, start 0x%llx, len 0x%llx\n",
-			p.index, e->flag, pcdata.dos_type, p.start, p.len);
+			p.index, e->flag, pcdata.dos_type,
+			(unsigned long long) p.start,
+			(unsigned long long) p.len);
 
 	  /* If this is a GPT partition, this MBR is just a dummy.  */
 	  if (e->type == GRUB_PC_PARTITION_TYPE_GPT_DISK && p.index == 0)

@@ -98,8 +98,9 @@ gpt_partition_map_iterate (grub_disk_t disk,
 	  part.partmap = &grub_gpt_partition_map;
 	  part.data = &entry;
 
-	  grub_dprintf ("gpt", "GPT entry %d: start=%lld, length=%lld\n",
-			i, part.start, part.len);
+	  grub_dprintf ("gpt", "GPT entry %d: start=%lld, length=%lld\n", i,
+			(unsigned long long) part.start,
+			(unsigned long long) part.len);
 
 	  if (hook (disk, &part))
 	    return grub_errno;

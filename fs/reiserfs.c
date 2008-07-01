@@ -1120,7 +1120,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
               grub_dprintf ("reiserfs",
                             "Reading direct block %u from %u to %u...\n",
                             (unsigned) block, (unsigned) offset,
-                            (unsigned) offset + length);
+                            (unsigned) (offset + length));
               found.data->disk->read_hook = file->read_hook;
               grub_disk_read (found.data->disk,
                               block,
@@ -1165,7 +1165,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
                   grub_dprintf ("reiserfs",
                                 "Reading indirect block %u from %u to %u...\n",
                                 (unsigned) block, (unsigned) offset,
-                                (unsigned) offset + length);
+                                (unsigned) (offset + length));
 #if 0
                   grub_dprintf ("reiserfs",
                                 "\nib=%04d/%04d, ip=%d, cp=%d, fp=%d, off=%d, l=%d, tl=%d\n",

@@ -106,7 +106,8 @@ grub_raid_open (const char *name, grub_disk_t disk)
   disk->id = array->number;
   disk->data = array;
 
-  grub_dprintf ("raid", "%s: total_devs=%d, disk_size=%d\n", name, array->total_devs, array->disk_size);
+  grub_dprintf ("raid", "%s: total_devs=%d, disk_size=%lld\n", name,
+		array->total_devs, (unsigned long long) array->disk_size);
 
   switch (array->level)
     {
@@ -124,7 +125,8 @@ grub_raid_open (const char *name, grub_disk_t disk)
       break;
     }
 
-  grub_dprintf ("raid", "%s: level=%d, total_sectors=%d\n", name, array->level, disk->total_sectors);
+  grub_dprintf ("raid", "%s: level=%d, total_sectors=%lld\n", name,
+		array->level, (unsigned long long) disk->total_sectors);
   
   return 0;
 }
@@ -531,7 +533,8 @@ grub_raid_scan_device (const char *name)
 	  grub_dprintf ("raid", "Array contains only one disk, but its size (0x%llx) "
 			"doesn't match with size indicated by superblock (0x%llx).  "
 			"Assuming superblock is wrong.\n",
-			array->device[sb.this_disk.number]->total_sectors, array->disk_size);
+			(unsigned long long) array->device[sb.this_disk.number]->total_sectors,
+			(unsigned long long) array->disk_size);
 	  array->disk_size = array->device[sb.this_disk.number]->total_sectors;
 	}
       else if (array->level == 1)
@@ -540,7 +543,8 @@ grub_raid_scan_device (const char *name)
 			"doesn't match with size indicated by superblock (0x%llx).  "
 			"Assuming superblock is wrong.\n",
 			sb.this_disk.number,
-			array->device[sb.this_disk.number]->total_sectors, array->disk_size);
+			(unsigned long long) array->device[sb.this_disk.number]->total_sectors,
+			(unsigned long long) array->disk_size);
 	  array->disk_size = array->device[sb.this_disk.number]->total_sectors;
 	}
     }

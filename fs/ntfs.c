@@ -1094,7 +1094,7 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   if (data)
     {
       *uuid = grub_malloc (16 + sizeof ('\0'));
-      grub_sprintf (*uuid, "%016llx", data->uuid);
+      grub_sprintf (*uuid, "%016llx", (unsigned long long) data->uuid);
     }
   else
     *uuid = NULL;
