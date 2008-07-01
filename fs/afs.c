@@ -198,7 +198,7 @@ grub_afs_read_inode (struct grub_afs_data *data,
                          (char *) inode);
 }
 
-static int
+static grub_disk_addr_t
 grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_afs_sblock *sb = &node->data->sblock;

@@ -1,5 +1,8 @@
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* fs/afs.c (grub_afs_read_block): Return grub_disk_addr_t, as
+	grub_fshelp_read_file() expects.
+
 	* fs/fat.c: Fix UUID calculation on big-endian systems.  We
 	write uuid as a 32-bit value in CPU byte order, so declare and
 	use it as such.
