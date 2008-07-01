@@ -143,7 +143,7 @@ struct grub_fat_data
   grub_uint32_t cur_cluster_num;
   grub_uint32_t cur_cluster;
 
-  grub_uint16_t uuid[2];
+  grub_uint32_t uuid;
 };
 
 #ifndef GRUB_UTIL
@@ -311,9 +311,9 @@ grub_fat_mount (grub_disk_t disk)
 
   /* Serial number.  */
   if (bpb.sectors_per_fat_16)
-    *((grub_uint32_t *) &data->uuid) = grub_le_to_cpu32 (bpb.version_specific.fat12_or_fat16.num_serial);
+    data->uuid = grub_le_to_cpu32 (bpb.version_specific.fat12_or_fat16.num_serial);
   else
-    *((grub_uint32_t *) &data->uuid) = grub_le_to_cpu32 (bpb.version_specific.fat32.num_serial);
+    data->uuid = grub_le_to_cpu32 (bpb.version_specific.fat32.num_serial);
   
   /* Ignore the 3rd bit, because some BIOSes assigns 0xF0 to the media
      descriptor, even if it is a so-called superfloppy (e.g. an USB key).
@@ -839,7 +839,8 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   if (data)
     {
       *uuid = grub_malloc (sizeof ("xxxx-xxxx"));
-      grub_sprintf (*uuid, "%04x-%04x", data->uuid[1], data->uuid[0]);
+      grub_sprintf (*uuid, "%04x-%04x", (grub_uint16_t) (data->uuid >> 8),
+		    (grub_uint16_t) data->uuid);
     }
   else
     *uuid = NULL;

@@ -1,5 +1,9 @@
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* fs/fat.c: Fix UUID calculation on big-endian systems.  We
+	write uuid as a 32-bit value in CPU byte order, so declare and
+	use it as such.
+
 	* disk/raid.c: Cast grub_dprintf() arguments to unsigned long
 	long if the format specifier expects it.
 	* partmap/gpt.c (gpt_partition_map_iterate): Likewise.
