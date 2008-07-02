@@ -226,9 +226,15 @@ main (int argc, char *argv[])
     }
 
   /* Obtain PATH.  */
+  if (optind >= argc)
+    {
+      fprintf (stderr, "Filename not specified.\n");
+      usage (1);
+    }
+
   if (optind + 1 >= argc)
     {
-      fprintf (stderr, "Not enough parameter.\n");
+      fprintf (stderr, "Command not specified.\n");
       usage (1);
     }
 

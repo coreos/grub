@@ -1,5 +1,8 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* util/grub-editenv.c (main): Be specific which parameter is
+	missing.
+
 	* disk/memdisk.c (memdisk_addr): Make a pointer to fix warnings.
 	(memdisk): Make memdisk_orig_addr a pointer.
 
