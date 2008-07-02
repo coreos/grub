@@ -23,7 +23,6 @@
   test tail packing & direct files
   validate partition label position
 */
-#warning "TODO : journal, tail packing (?)"
 
 #if 0
 # define GRUB_REISERFS_DEBUG
