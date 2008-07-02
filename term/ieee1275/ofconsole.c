@@ -63,6 +63,9 @@ static grub_uint8_t grub_ofconsole_highlight_color = 0x70;
 static void
 grub_ofconsole_writeesc (const char *str)
 {
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_ANSI))
+    return;
+
   while (*str)
     {
       char chr = *(str++);
@@ -284,11 +287,28 @@ static void
 grub_ofconsole_gotoxy (grub_uint8_t x, grub_uint8_t y)
 {
   char s[11]; /* 5 + 3 + 3.  */
-  grub_curr_x = x;
-  grub_curr_y = y;
 
-  grub_sprintf (s, "\e[%d;%dH", y + 1, x + 1);
-  grub_ofconsole_writeesc (s);
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_ANSI))
+    {
+      grub_curr_x = x;
+      grub_curr_y = y;
+
+      grub_sprintf (s, "\e[%d;%dH", y + 1, x + 1);
+      grub_ofconsole_writeesc (s);
+    }
+  else
+    {
+      if ((y == grub_curr_y) && (x == grub_curr_x - 1))
+        {
+          char chr;
+
+          chr = '\b';
+          grub_ieee1275_write (stdout_ihandle, &chr, 1, 0);
+        }
+
+      grub_curr_x = x;
+      grub_curr_y = y;
+    }
 }
 
 static void

@@ -89,6 +89,15 @@ enum grub_ieee1275_flag
 
   /* Open Hack'Ware stops when trying to set colors */
   GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS,
+
+  /* Open Hack'Ware stops when grub_ieee1275_interpret is used.  */
+  GRUB_IEEE1275_FLAG_CANNOT_INTERPRET,
+
+  /* Open Hack'Ware has no memory map, just claim what we need.  */
+  GRUB_IEEE1275_FLAG_FORCE_CLAIM,
+
+  /* Open Hack'Ware don't support the ANSI sequence.  */
+  GRUB_IEEE1275_FLAG_NO_ANSI,
 };
 
 extern int EXPORT_FUNC(grub_ieee1275_test_flag) (enum grub_ieee1275_flag flag);

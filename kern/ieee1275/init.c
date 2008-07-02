@@ -171,7 +171,10 @@ static void grub_claim_heap (void)
     return 0;
   }
 
-  grub_available_iterate (heap_init);
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_INTERPRET))
+    heap_init (HEAP_MAX_ADDR - HEAP_MIN_SIZE, HEAP_MIN_SIZE);
+  else
+    grub_available_iterate (heap_init);
 }
 
 #ifdef __i386__

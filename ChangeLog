@@ -1,5 +1,28 @@
 2008-07-02  Bean  <bean123ch@gmail.com>
 
+	* include/grub/ieee1275.h (grub_ieee1275_flag): New constant
+	GRUB_IEEE1275_FLAG_CANNOT_INTERPRET, GRUB_IEEE1275_FLAG_FORCE_CLAIM
+	and GRUB_IEEE1275_FLAG_NO_ANSI.
+
+	* kern/ieee1275/cmain.c (grub_ieee1275_find_options): Set flag
+	GRUB_IEEE1275_FLAG_CANNOT_INTERPRET, GRUB_IEEE1275_FLAG_FORCE_CLAIM
+	and GRUB_IEEE1275_FLAG_NO_ANSI for Open Hackware.
+
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_interpret): Return
+	immediately if GRUB_IEEE1275_FLAG_CANNOT_INTERPRET is set.
+
+	* kern/ieee1275/init.c (grub_claim_heap): Claim memory directly if
+	GRUB_IEEE1275_FLAG_FORCE_CLAIM is set.
+
+	* term/ieee1275/ofconsole.c (grub_ofconsole_writeesc): Don't output
+	esc sequence on non ANSI terminal.
+	(grub_ofconsole_gotoxy): Emulate backspace key on non ANSI terminal.
+
+	* util/elf/grub-mkimage.c (add_segments): Move ELF header to the
+	beginning of file.
+
+2008-07-02  Bean  <bean123ch@gmail.com>
+
 	* conf/common.rmk (bin_UTILITIES): Add grub-editenv.
 	(grub_editenv_SOURCES): New variable.
 	(pkglib_MODULES): Add loadenv.mod.

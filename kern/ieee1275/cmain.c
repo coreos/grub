@@ -144,6 +144,9 @@ grub_ieee1275_find_options (void)
 	{
 	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_BROKEN_OUTPUT);
 	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS);
+	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_CANNOT_INTERPRET);
+	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_FORCE_CLAIM);
+	  grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_ANSI);
 	}
     }
 }
