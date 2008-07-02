@@ -1,5 +1,9 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* disk/ata.c (grub_ata_readwrite): Don't increment sector number
+	for every read sector, we already increment it for the whole
+	batch.  This fixes reading more than 256 sectors at once.
+
 	* util/grub-editenv.c (cmd_info): Cast argument to long
 	explicitly.  ptrdiff_t reduces to int on i386.
 

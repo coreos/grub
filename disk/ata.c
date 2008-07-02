@@ -525,7 +525,6 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 				     GRUB_DISK_SECTOR_SIZE))
 		return grub_error (GRUB_ERR_READ_ERROR, "ATA read error");
 	      buf += GRUB_DISK_SECTOR_SIZE;
-	      sector++;
 	    }
 	}
       else
