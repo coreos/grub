@@ -1,3 +1,11 @@
+2008-07-02  Pavel Roskin  <proski@gnu.org>
+
+	* fs/xfs.c (struct grub_xfs_dir_header): Use names similar to
+	those in Linux XFS code.  Provide a way to access 64-bit parent
+	inode.
+	(grub_xfs_iterate_dir): Use the new names.  Avoid reading past
+	the end of struct grub_xfs_dir_header.
+
 2008-07-02  Bean  <bean123ch@gmail.com>
 
 	* include/grub/ieee1275.h (grub_ieee1275_flag): New constant

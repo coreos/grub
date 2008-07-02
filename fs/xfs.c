@@ -55,9 +55,13 @@ struct grub_xfs_sblock
 
 struct grub_xfs_dir_header
 {
-  grub_uint8_t entries;
-  grub_uint8_t smallino;
-  grub_uint32_t parent;
+  grub_uint8_t count;
+  grub_uint8_t i8count;
+  union
+  {
+    grub_uint32_t i4;
+    grub_uint64_t i8;
+  } parent __attribute__ ((packed));
 } __attribute__ ((packed));
 
 struct grub_xfs_dir_entry
@@ -419,7 +423,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
     case XFS_INODE_FORMAT_INO:
       {
 	struct grub_xfs_dir_entry *de = &diro->inode.data.dir.direntry[0];
-	int smallino = !diro->inode.data.dir.dirhead.smallino;
+	int smallino = !diro->inode.data.dir.dirhead.i8count;
 	int i;
 	grub_uint64_t parent;
 
@@ -427,12 +431,12 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	   parent inode number is small too.  */
 	if (smallino)
 	  {
-	    parent = grub_be_to_cpu32 (diro->inode.data.dir.dirhead.parent);
+	    parent = grub_be_to_cpu32 (diro->inode.data.dir.dirhead.parent.i4);
 	    parent = grub_cpu_to_be64 (parent);
 	  }
 	else
 	  {
-	    parent = *(grub_uint64_t *) &diro->inode.data.dir.dirhead.parent;
+	    parent = diro->inode.data.dir.dirhead.parent.i8;
 	    /* The header is a bit bigger than usual.  */
 	    de = (struct grub_xfs_dir_entry *) ((char *) de + 4);
 	  }
@@ -444,7 +448,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	if (call_hook (parent, ".."))
 	  return 1;
 
-	for (i = 0; i < diro->inode.data.dir.dirhead.entries; i++)
+	for (i = 0; i < diro->inode.data.dir.dirhead.count; i++)
 	  {
 	    grub_uint64_t ino;
 	    void *inopos = (((char *) de)
