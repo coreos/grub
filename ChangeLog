@@ -1,5 +1,8 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* loader/aout.c (grub_aout_load): Cast load_addr to pointer
+	explicitly to fix a warning.
+
 	* util/grub-editenv.c (cmd_info): Fix warning in printf format.
 
 	* Makefile.in (MODULE_LDFLAGS): New variable.
