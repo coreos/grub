@@ -1,5 +1,9 @@
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* include/multiboot2.h (struct multiboot_tag_module): Use char,
+	not unsigned char.  This fixes warnings and is consistent with
+	other tags.
+
 	* disk/fs_uuid.c (search_fs_uuid): Correctly increment count.
 
 	* normal/parser.y: Define YYENABLE_NLS as 0 to fix warnings.

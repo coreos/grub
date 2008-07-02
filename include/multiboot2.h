@@ -77,8 +77,8 @@ struct multiboot_tag_module
   struct multiboot_tag_header header;
   multiboot_word addr;
   multiboot_word size;
-  unsigned char type[36];
-  unsigned char cmdline[1];
+  char type[36];
+  char cmdline[1];
 };
 
 #define MULTIBOOT2_TAG_MEMORY    4
