@@ -1079,7 +1079,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
   grub_uint16_t item_size;
   grub_uint32_t *indirect_block_ptr = 0;
   grub_uint64_t current_key_offset = 1;
-  grub_size_t initial_position, current_position, final_position, length;
+  grub_off_t initial_position, current_position, final_position, length;
   grub_disk_addr_t block;
   grub_off_t offset;
 
@@ -1094,9 +1094,11 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
   current_position = 0;
   final_position = MIN (len + initial_position, file->size);
   grub_dprintf ("reiserfs",
-                "Reading from %d to %d (%d instead of requested %d)\n",
-                initial_position, final_position,
-                final_position - initial_position, len);
+		"Reading from %lld to %lld (%lld instead of requested %ld)\n",
+		(unsigned long long) initial_position,
+		(unsigned long long) final_position,
+		(unsigned long long) (final_position - initial_position),
+		(unsigned long) len);
   while (current_position < final_position)
     {
       grub_reiserfs_set_key_offset (&key, current_key_offset);
@@ -1191,9 +1193,10 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
       current_key_offset = current_position + 1;
     }
   
-  grub_dprintf("reiserfs",
-               "Have successfully read %d bytes (%d requested)\n",
-               current_position - initial_position, len);
+  grub_dprintf ("reiserfs",
+		"Have successfully read %lld bytes (%ld requested)\n",
+		(unsigned long long) (current_position - initial_position),
+		(unsigned long) len);
   return current_position - initial_position;
 /*
   switch (found.type)

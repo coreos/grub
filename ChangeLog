@@ -1,5 +1,9 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* fs/reiserfs.c (grub_reiserfs_read): Fix misuse of grub_size_t
+	for file offsets, use grub_off_t instead.  Fix printf format
+	warnings.
+
 	* fs/reiserfs.c: Remove #warning, TODO list items don't belong
 	there.  Real unexpected warnings should not drown in the noise
 	about known problems.
