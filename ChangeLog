@@ -1,5 +1,8 @@
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* loader/i386/pc/multiboot2.c (grub_mb2_arch_module_alloc): Use
+	cast to suppress a warning.
+
 	* fs/afs.c (grub_afs_read_block): Return grub_disk_addr_t, as
 	grub_fshelp_read_file() expects.
 
