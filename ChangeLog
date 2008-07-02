@@ -1,5 +1,7 @@
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* term/tparm.c (analyze): Always set *popcount.
+
 	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): Remove useless
 	cast to fix a warning.
 
