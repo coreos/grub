@@ -25,7 +25,7 @@
 #include <grub/types.h>
 #include <grub/machine/kernel.h>
 
-static grub_addr_t memdisk_addr;
+static char *memdisk_addr;
 static grub_off_t memdisk_size = 0;
 
 static int
@@ -82,13 +82,13 @@ static struct grub_disk_dev grub_memdisk_dev =
 
 GRUB_MOD_INIT(memdisk)
 {
-  grub_addr_t memdisk_orig_addr;
+  char *memdisk_orig_addr;
 
   memdisk_size = grub_arch_memdisk_size ();
   if (! memdisk_size)
     return;
 
-  memdisk_orig_addr = grub_arch_memdisk_addr ();
+  memdisk_orig_addr = (char *) grub_arch_memdisk_addr ();
   grub_dprintf ("memdisk", "Found memdisk image at %p\n", memdisk_orig_addr);
 
   memdisk_addr = grub_malloc (memdisk_size);

@@ -1,5 +1,8 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* disk/memdisk.c (memdisk_addr): Make a pointer to fix warnings.
+	(memdisk): Make memdisk_orig_addr a pointer.
+
 	* fs/reiserfs.c (grub_reiserfs_read): Fix misuse of grub_size_t
 	for file offsets, use grub_off_t instead.  Fix printf format
 	warnings.
