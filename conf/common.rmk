@@ -94,6 +94,11 @@ grub_fstest_init.c: grub_fstest_init.lst $(filter-out grub_fstest_init.c,$(grub_
 	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
 DISTCLEANFILES += grub_fstest_init.c
 
+# for grub-editenv
+bin_UTILITIES += grub-editenv
+grub_editenv_SOURCES = util/grub-editenv.c util/envblk.c util/misc.c kern/misc.c kern/err.c
+CLEANFILES += grub-editenv
+
 # For update-grub
 update-grub: util/update-grub.in config.status
 	./config.status --file=$@:$<
@@ -282,7 +287,7 @@ pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod
+	read.mod sleep.mod loadenv.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -369,6 +374,21 @@ hexdump_mod_SOURCES = commands/hexdump.c
 hexdump_mod_CFLAGS = $(COMMON_CFLAGS)
 hexdump_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For read.mod.
+read_mod_SOURCES = commands/read.c
+read_mod_CFLAGS = $(COMMON_CFLAGS)
+read_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For sleep.mod.
+sleep_mod_SOURCES = commands/sleep.c
+sleep_mod_CFLAGS = $(COMMON_CFLAGS)
+sleep_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For loadenv.mod.
+loadenv_mod_SOURCES = commands/loadenv.c util/envblk.c
+loadenv_mod_CFLAGS = $(COMMON_CFLAGS)
+loadenv_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # Misc.
 pkglib_MODULES += gzio.mod elf.mod
 
@@ -381,13 +401,3 @@ elf_mod_LDFLAGS = $(COMMON_LDFLAGS)
 gzio_mod_SOURCES = io/gzio.c
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For read.mod.
-read_mod_SOURCES = commands/read.c
-read_mod_CFLAGS = $(COMMON_CFLAGS)
-read_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For sleep.mod.
-sleep_mod_SOURCES = commands/sleep.c
-sleep_mod_CFLAGS = $(COMMON_CFLAGS)
-sleep_mod_LDFLAGS = $(COMMON_LDFLAGS)

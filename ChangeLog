@@ -1,3 +1,20 @@
+2008-07-02  Bean  <bean123ch@gmail.com>
+
+	* conf/common.rmk (bin_UTILITIES): Add grub-editenv.
+	(grub_editenv_SOURCES): New variable.
+	(pkglib_MODULES): Add loadenv.mod.
+	(loadenv_mod_SOURCES): New variable.
+	(loadenv_mod_CFLAGS): Likewise.
+	(loadenv_mod_LDFLAGS): Likewise.
+
+	* include/grub/envblk.h: New file.
+
+	* util/envblk.c: New file.
+
+	* util/grub-editenv.c: New file.
+
+	* commands/loadenv.c: New file.
+
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
 	* include/multiboot2.h (struct multiboot_tag_module): Use char,

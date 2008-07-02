@@ -426,6 +426,37 @@ grub_fstest_init.c: grub_fstest_init.lst $(filter-out grub_fstest_init.c,$(grub_
 	rm -f $@; sh $(srcdir)/geninit.sh $< $(filter %.c,$^) > $@
 DISTCLEANFILES += grub_fstest_init.c
 
+# for grub-editenv
+bin_UTILITIES += grub-editenv
+grub_editenv_SOURCES = util/grub-editenv.c util/envblk.c util/misc.c kern/misc.c kern/err.c
+CLEANFILES += grub-editenv grub_editenv-util_grub_editenv.o grub_editenv-util_envblk.o grub_editenv-util_misc.o grub_editenv-kern_misc.o grub_editenv-kern_err.o
+MOSTLYCLEANFILES += grub_editenv-util_grub_editenv.d grub_editenv-util_envblk.d grub_editenv-util_misc.d grub_editenv-kern_misc.d grub_editenv-kern_err.d
+
+grub-editenv: $(grub_editenv_DEPENDENCIES) grub_editenv-util_grub_editenv.o grub_editenv-util_envblk.o grub_editenv-util_misc.o grub_editenv-kern_misc.o grub_editenv-kern_err.o
+	$(CC) -o $@ grub_editenv-util_grub_editenv.o grub_editenv-util_envblk.o grub_editenv-util_misc.o grub_editenv-kern_misc.o grub_editenv-kern_err.o $(LDFLAGS) $(grub_editenv_LDFLAGS)
+
+grub_editenv-util_grub_editenv.o: util/grub-editenv.c $(util/grub-editenv.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_editenv_CFLAGS) -MD -c -o $@ $<
+-include grub_editenv-util_grub_editenv.d
+
+grub_editenv-util_envblk.o: util/envblk.c $(util/envblk.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_editenv_CFLAGS) -MD -c -o $@ $<
+-include grub_editenv-util_envblk.d
+
+grub_editenv-util_misc.o: util/misc.c $(util/misc.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_editenv_CFLAGS) -MD -c -o $@ $<
+-include grub_editenv-util_misc.d
+
+grub_editenv-kern_misc.o: kern/misc.c $(kern/misc.c_DEPENDENCIES)
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_editenv_CFLAGS) -MD -c -o $@ $<
+-include grub_editenv-kern_misc.d
+
+grub_editenv-kern_err.o: kern/err.c $(kern/err.c_DEPENDENCIES)
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_editenv_CFLAGS) -MD -c -o $@ $<
+-include grub_editenv-kern_err.d
+
+CLEANFILES += grub-editenv
+
 # For update-grub
 update-grub: util/update-grub.in config.status
 	./config.status --file=$@:$<
@@ -1940,7 +1971,7 @@ pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod
+	read.mod sleep.mod loadenv.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -2913,6 +2944,193 @@ partmap-hexdump_mod-commands_hexdump.lst: commands/hexdump.c $(commands/hexdump.
 hexdump_mod_CFLAGS = $(COMMON_CFLAGS)
 hexdump_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For read.mod.
+read_mod_SOURCES = commands/read.c
+CLEANFILES += read.mod mod-read.o mod-read.c pre-read.o read_mod-commands_read.o und-read.lst
+ifneq ($(read_mod_EXPORTS),no)
+CLEANFILES += def-read.lst
+DEFSYMFILES += def-read.lst
+endif
+MOSTLYCLEANFILES += read_mod-commands_read.d
+UNDSYMFILES += und-read.lst
+
+read.mod: pre-read.o mod-read.o
+	-rm -f $@
+	$(TARGET_CC) $(read_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-read.o: $(read_mod_DEPENDENCIES) read_mod-commands_read.o
+	-rm -f $@
+	$(TARGET_CC) $(read_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ read_mod-commands_read.o
+
+mod-read.o: mod-read.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -c -o $@ $<
+
+mod-read.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'read' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(read_mod_EXPORTS),no)
+def-read.lst: pre-read.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 read/' > $@
+endif
+
+und-read.lst: pre-read.o
+	echo 'read' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+read_mod-commands_read.o: commands/read.c $(commands/read.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(read_mod_CFLAGS) -MD -c -o $@ $<
+-include read_mod-commands_read.d
+
+CLEANFILES += cmd-read_mod-commands_read.lst fs-read_mod-commands_read.lst partmap-read_mod-commands_read.lst
+COMMANDFILES += cmd-read_mod-commands_read.lst
+FSFILES += fs-read_mod-commands_read.lst
+PARTMAPFILES += partmap-read_mod-commands_read.lst
+
+cmd-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh read > $@ || (rm -f $@; exit 1)
+
+fs-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh read > $@ || (rm -f $@; exit 1)
+
+partmap-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh read > $@ || (rm -f $@; exit 1)
+
+
+read_mod_CFLAGS = $(COMMON_CFLAGS)
+read_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For sleep.mod.
+sleep_mod_SOURCES = commands/sleep.c
+CLEANFILES += sleep.mod mod-sleep.o mod-sleep.c pre-sleep.o sleep_mod-commands_sleep.o und-sleep.lst
+ifneq ($(sleep_mod_EXPORTS),no)
+CLEANFILES += def-sleep.lst
+DEFSYMFILES += def-sleep.lst
+endif
+MOSTLYCLEANFILES += sleep_mod-commands_sleep.d
+UNDSYMFILES += und-sleep.lst
+
+sleep.mod: pre-sleep.o mod-sleep.o
+	-rm -f $@
+	$(TARGET_CC) $(sleep_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-sleep.o: $(sleep_mod_DEPENDENCIES) sleep_mod-commands_sleep.o
+	-rm -f $@
+	$(TARGET_CC) $(sleep_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ sleep_mod-commands_sleep.o
+
+mod-sleep.o: mod-sleep.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -c -o $@ $<
+
+mod-sleep.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'sleep' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(sleep_mod_EXPORTS),no)
+def-sleep.lst: pre-sleep.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 sleep/' > $@
+endif
+
+und-sleep.lst: pre-sleep.o
+	echo 'sleep' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+sleep_mod-commands_sleep.o: commands/sleep.c $(commands/sleep.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -MD -c -o $@ $<
+-include sleep_mod-commands_sleep.d
+
+CLEANFILES += cmd-sleep_mod-commands_sleep.lst fs-sleep_mod-commands_sleep.lst partmap-sleep_mod-commands_sleep.lst
+COMMANDFILES += cmd-sleep_mod-commands_sleep.lst
+FSFILES += fs-sleep_mod-commands_sleep.lst
+PARTMAPFILES += partmap-sleep_mod-commands_sleep.lst
+
+cmd-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sleep > $@ || (rm -f $@; exit 1)
+
+fs-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sleep > $@ || (rm -f $@; exit 1)
+
+partmap-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh sleep > $@ || (rm -f $@; exit 1)
+
+
+sleep_mod_CFLAGS = $(COMMON_CFLAGS)
+sleep_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For loadenv.mod.
+loadenv_mod_SOURCES = commands/loadenv.c util/envblk.c
+CLEANFILES += loadenv.mod mod-loadenv.o mod-loadenv.c pre-loadenv.o loadenv_mod-commands_loadenv.o loadenv_mod-util_envblk.o und-loadenv.lst
+ifneq ($(loadenv_mod_EXPORTS),no)
+CLEANFILES += def-loadenv.lst
+DEFSYMFILES += def-loadenv.lst
+endif
+MOSTLYCLEANFILES += loadenv_mod-commands_loadenv.d loadenv_mod-util_envblk.d
+UNDSYMFILES += und-loadenv.lst
+
+loadenv.mod: pre-loadenv.o mod-loadenv.o
+	-rm -f $@
+	$(TARGET_CC) $(loadenv_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+
+pre-loadenv.o: $(loadenv_mod_DEPENDENCIES) loadenv_mod-commands_loadenv.o loadenv_mod-util_envblk.o
+	-rm -f $@
+	$(TARGET_CC) $(loadenv_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ loadenv_mod-commands_loadenv.o loadenv_mod-util_envblk.o
+
+mod-loadenv.o: mod-loadenv.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -c -o $@ $<
+
+mod-loadenv.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'loadenv' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(loadenv_mod_EXPORTS),no)
+def-loadenv.lst: pre-loadenv.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 loadenv/' > $@
+endif
+
+und-loadenv.lst: pre-loadenv.o
+	echo 'loadenv' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+loadenv_mod-commands_loadenv.o: commands/loadenv.c $(commands/loadenv.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -MD -c -o $@ $<
+-include loadenv_mod-commands_loadenv.d
+
+CLEANFILES += cmd-loadenv_mod-commands_loadenv.lst fs-loadenv_mod-commands_loadenv.lst partmap-loadenv_mod-commands_loadenv.lst
+COMMANDFILES += cmd-loadenv_mod-commands_loadenv.lst
+FSFILES += fs-loadenv_mod-commands_loadenv.lst
+PARTMAPFILES += partmap-loadenv_mod-commands_loadenv.lst
+
+cmd-loadenv_mod-commands_loadenv.lst: commands/loadenv.c $(commands/loadenv.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loadenv > $@ || (rm -f $@; exit 1)
+
+fs-loadenv_mod-commands_loadenv.lst: commands/loadenv.c $(commands/loadenv.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh loadenv > $@ || (rm -f $@; exit 1)
+
+partmap-loadenv_mod-commands_loadenv.lst: commands/loadenv.c $(commands/loadenv.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh loadenv > $@ || (rm -f $@; exit 1)
+
+
+loadenv_mod-util_envblk.o: util/envblk.c $(util/envblk.c_DEPENDENCIES)
+	$(TARGET_CC) -Iutil -I$(srcdir)/util $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -MD -c -o $@ $<
+-include loadenv_mod-util_envblk.d
+
+CLEANFILES += cmd-loadenv_mod-util_envblk.lst fs-loadenv_mod-util_envblk.lst partmap-loadenv_mod-util_envblk.lst
+COMMANDFILES += cmd-loadenv_mod-util_envblk.lst
+FSFILES += fs-loadenv_mod-util_envblk.lst
+PARTMAPFILES += partmap-loadenv_mod-util_envblk.lst
+
+cmd-loadenv_mod-util_envblk.lst: util/envblk.c $(util/envblk.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iutil -I$(srcdir)/util $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loadenv > $@ || (rm -f $@; exit 1)
+
+fs-loadenv_mod-util_envblk.lst: util/envblk.c $(util/envblk.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iutil -I$(srcdir)/util $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh loadenv > $@ || (rm -f $@; exit 1)
+
+partmap-loadenv_mod-util_envblk.lst: util/envblk.c $(util/envblk.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iutil -I$(srcdir)/util $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh loadenv > $@ || (rm -f $@; exit 1)
+
+
+loadenv_mod_CFLAGS = $(COMMON_CFLAGS)
+loadenv_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 # Misc.
 pkglib_MODULES += gzio.mod elf.mod
 
@@ -3027,115 +3245,3 @@ partmap-gzio_mod-io_gzio.lst: io/gzio.c $(io/gzio.c_DEPENDENCIES) genpartmaplist
 
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For read.mod.
-read_mod_SOURCES = commands/read.c
-CLEANFILES += read.mod mod-read.o mod-read.c pre-read.o read_mod-commands_read.o und-read.lst
-ifneq ($(read_mod_EXPORTS),no)
-CLEANFILES += def-read.lst
-DEFSYMFILES += def-read.lst
-endif
-MOSTLYCLEANFILES += read_mod-commands_read.d
-UNDSYMFILES += und-read.lst
-
-read.mod: pre-read.o mod-read.o
-	-rm -f $@
-	$(TARGET_CC) $(read_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-read.o: $(read_mod_DEPENDENCIES) read_mod-commands_read.o
-	-rm -f $@
-	$(TARGET_CC) $(read_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ read_mod-commands_read.o
-
-mod-read.o: mod-read.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -c -o $@ $<
-
-mod-read.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'read' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(read_mod_EXPORTS),no)
-def-read.lst: pre-read.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 read/' > $@
-endif
-
-und-read.lst: pre-read.o
-	echo 'read' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-read_mod-commands_read.o: commands/read.c $(commands/read.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(read_mod_CFLAGS) -MD -c -o $@ $<
--include read_mod-commands_read.d
-
-CLEANFILES += cmd-read_mod-commands_read.lst fs-read_mod-commands_read.lst partmap-read_mod-commands_read.lst
-COMMANDFILES += cmd-read_mod-commands_read.lst
-FSFILES += fs-read_mod-commands_read.lst
-PARTMAPFILES += partmap-read_mod-commands_read.lst
-
-cmd-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh read > $@ || (rm -f $@; exit 1)
-
-fs-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh read > $@ || (rm -f $@; exit 1)
-
-partmap-read_mod-commands_read.lst: commands/read.c $(commands/read.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh read > $@ || (rm -f $@; exit 1)
-
-
-read_mod_CFLAGS = $(COMMON_CFLAGS)
-read_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For sleep.mod.
-sleep_mod_SOURCES = commands/sleep.c
-CLEANFILES += sleep.mod mod-sleep.o mod-sleep.c pre-sleep.o sleep_mod-commands_sleep.o und-sleep.lst
-ifneq ($(sleep_mod_EXPORTS),no)
-CLEANFILES += def-sleep.lst
-DEFSYMFILES += def-sleep.lst
-endif
-MOSTLYCLEANFILES += sleep_mod-commands_sleep.d
-UNDSYMFILES += und-sleep.lst
-
-sleep.mod: pre-sleep.o mod-sleep.o
-	-rm -f $@
-	$(TARGET_CC) $(sleep_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
-
-pre-sleep.o: $(sleep_mod_DEPENDENCIES) sleep_mod-commands_sleep.o
-	-rm -f $@
-	$(TARGET_CC) $(sleep_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ sleep_mod-commands_sleep.o
-
-mod-sleep.o: mod-sleep.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -c -o $@ $<
-
-mod-sleep.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'sleep' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(sleep_mod_EXPORTS),no)
-def-sleep.lst: pre-sleep.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 sleep/' > $@
-endif
-
-und-sleep.lst: pre-sleep.o
-	echo 'sleep' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-sleep_mod-commands_sleep.o: commands/sleep.c $(commands/sleep.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -MD -c -o $@ $<
--include sleep_mod-commands_sleep.d
-
-CLEANFILES += cmd-sleep_mod-commands_sleep.lst fs-sleep_mod-commands_sleep.lst partmap-sleep_mod-commands_sleep.lst
-COMMANDFILES += cmd-sleep_mod-commands_sleep.lst
-FSFILES += fs-sleep_mod-commands_sleep.lst
-PARTMAPFILES += partmap-sleep_mod-commands_sleep.lst
-
-cmd-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh sleep > $@ || (rm -f $@; exit 1)
-
-fs-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh sleep > $@ || (rm -f $@; exit 1)
-
-partmap-sleep_mod-commands_sleep.lst: commands/sleep.c $(commands/sleep.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh sleep > $@ || (rm -f $@; exit 1)
-
-
-sleep_mod_CFLAGS = $(COMMON_CFLAGS)
-sleep_mod_LDFLAGS = $(COMMON_LDFLAGS)
