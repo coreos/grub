@@ -253,6 +253,7 @@ fi
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
+AC_SUBST(MODULE_LDFLAGS)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
@@ -262,6 +263,7 @@ LDFLAGS="$TARGET_LDFLAGS"
 
 # Defined in aclocal.m4.
 grub_PROG_OBJCOPY_ABSOLUTE
+grub_PROG_LD_BUILD_ID_NONE
 grub_ASM_USCORE
 if test "x$target_cpu" = xi386; then
   grub_CHECK_START_SYMBOL

@@ -694,6 +694,7 @@ NM
 TARGET_CFLAGS
 TARGET_CPPFLAGS
 TARGET_LDFLAGS
+MODULE_LDFLAGS
 LIBCURSES
 enable_grub_emu
 enable_grub_fstest
@@ -6723,6 +6724,7 @@ fi
 
 
 
+
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
 CFLAGS="$TARGET_CFLAGS"
@@ -6799,6 +6801,67 @@ if test "x$grub_cv_prog_objcopy_absolute" = xno; then
   { { echo "$as_me:$LINENO: error: GRUB requires a working absolute objcopy; upgrade your binutils" >&5
 echo "$as_me: error: GRUB requires a working absolute objcopy; upgrade your binutils" >&2;}
    { (exit 1); exit 1; }; }
+fi
+
+{ echo "$as_me:$LINENO: checking whether linker accepts --build-id=none" >&5
+echo $ECHO_N "checking whether linker accepts --build-id=none... $ECHO_C" >&6; }
+if test "${grub_cv_prog_ld_build_id_none+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,--build-id=none"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  grub_cv_prog_ld_build_id_none=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	grub_cv_prog_ld_build_id_none=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LDFLAGS="$save_LDFLAGS"
+
+fi
+
+{ echo "$as_me:$LINENO: result: $grub_cv_prog_ld_build_id_none" >&5
+echo "${ECHO_T}$grub_cv_prog_ld_build_id_none" >&6; }
+
+if test "x$grub_cv_prog_ld_build_id_none" = xyes; then
+  MODULE_LDFLAGS="$MODULE_LDFLAGS -Wl,--build-id=none"
 fi
 
 
@@ -8851,6 +8914,7 @@ NM!$NM$ac_delim
 TARGET_CFLAGS!$TARGET_CFLAGS$ac_delim
 TARGET_CPPFLAGS!$TARGET_CPPFLAGS$ac_delim
 TARGET_LDFLAGS!$TARGET_LDFLAGS$ac_delim
+MODULE_LDFLAGS!$MODULE_LDFLAGS$ac_delim
 LIBCURSES!$LIBCURSES$ac_delim
 enable_grub_emu!$enable_grub_emu$ac_delim
 enable_grub_fstest!$enable_grub_fstest$ac_delim
@@ -8858,7 +8922,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

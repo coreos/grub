@@ -81,6 +81,26 @@ fi
 ])
 
 
+dnl Supply --build-id=none to ld if building modules.
+dnl This suppresses warnings from ld on some systems
+AC_DEFUN(grub_PROG_LD_BUILD_ID_NONE,
+[AC_MSG_CHECKING([whether linker accepts --build-id=none])
+AC_CACHE_VAL(grub_cv_prog_ld_build_id_none,
+[save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,--build-id=none"
+AC_TRY_LINK([], [],
+   grub_cv_prog_ld_build_id_none=yes,
+   grub_cv_prog_ld_build_id_none=no)
+LDFLAGS="$save_LDFLAGS"
+])
+AC_MSG_RESULT([$grub_cv_prog_ld_build_id_none])
+
+if test "x$grub_cv_prog_ld_build_id_none" = xyes; then
+  MODULE_LDFLAGS="$MODULE_LDFLAGS -Wl,--build-id=none"
+fi
+])
+
+
 dnl Mass confusion!
 dnl Older versions of GAS interpret `.code16' to mean ``generate 32-bit
 dnl instructions, but implicitly insert addr32 and data32 bytes so

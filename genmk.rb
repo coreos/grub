@@ -114,7 +114,7 @@ UNDSYMFILES += #{undsym}
 
 #{@name}: #{pre_obj} #{mod_obj}
 	-rm -f $@
-	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ $^
+	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
 
 #{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}

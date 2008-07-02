@@ -1,5 +1,12 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in (MODULE_LDFLAGS): New variable.
+	* aclocal.m4 (grub_PROG_LD_BUILD_ID_NONE): New macro.  Check if
+	the linker accepts --build-id=none.
+	* configure.ac: Call grub_PROG_LD_BUILD_ID_NONE.  Substitute
+	MODULE_LDFLAGS.
+	* genmk.rb: Use MODULE_LDFLAGS when linking modules.
+
 	* fs/xfs.c (struct grub_xfs_dir_header): Use names similar to
 	those in Linux XFS code.  Provide a way to access 64-bit parent
 	inode.
