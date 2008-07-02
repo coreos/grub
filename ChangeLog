@@ -1,5 +1,7 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* util/grub-editenv.c (cmd_info): Fix warning in printf format.
+
 	* Makefile.in (MODULE_LDFLAGS): New variable.
 	* aclocal.m4 (grub_PROG_LD_BUILD_ID_NONE): New macro.  Check if
 	the linker accepts --build-id=none.
