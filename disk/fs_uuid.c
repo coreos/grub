@@ -50,7 +50,7 @@ search_fs_uuid (const char *key, unsigned long *count)
 	      (fs->uuid) (dev, &uuid);
 	      if (grub_errno == GRUB_ERR_NONE && uuid)
 		{
-		  *count++;
+		  (*count)++;
 
 		  if (grub_strcmp (uuid, key) == 0)
 		    {
