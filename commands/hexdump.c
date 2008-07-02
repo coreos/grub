@@ -85,7 +85,7 @@ grub_cmd_hexdump (struct grub_arg_list *state, int argc, char **args)
 {
   char buf[GRUB_DISK_SECTOR_SIZE * 4];
   grub_ssize_t size, length;
-  grub_disk_addr_t skip;
+  grub_addr_t skip;
   int namelen;
 
   if (argc != 1)

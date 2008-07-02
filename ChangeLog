@@ -1,5 +1,8 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* commands/hexdump.c (grub_cmd_hexdump): Fix misuse of
+	grub_disk_addr_t for memory addresses.
+
 	* loader/aout.c (grub_aout_load): Cast load_addr to pointer
 	explicitly to fix a warning.
 
