@@ -1,5 +1,8 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* util/grub-editenv.c (cmd_info): Cast argument to long
+	explicitly.  ptrdiff_t reduces to int on i386.
+
 	* util/grub-editenv.c (main): Be specific which parameter is
 	missing.
 

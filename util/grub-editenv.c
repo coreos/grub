@@ -141,7 +141,7 @@ open_envblk_file (char *name)
 static void
 cmd_info (void)
 {
-  printf ("Envblk offset: %ld\n", envblk->data - buffer);
+  printf ("Envblk offset: %ld\n", (long) (envblk->data - buffer));
   printf ("Envblk length: %d\n", envblk->length);
 }
 
