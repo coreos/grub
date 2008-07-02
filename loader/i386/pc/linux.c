@@ -146,8 +146,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   grub_linux_tmp_addr = (char *) GRUB_LINUX_BZIMAGE_ADDR + prot_size;
 
   if (! grub_linux_is_bzimage
-      && ((char *) GRUB_LINUX_ZIMAGE_ADDR + prot_size
-	  > (grub_size_t) grub_linux_real_addr))
+      && ((char *) GRUB_LINUX_ZIMAGE_ADDR + prot_size > grub_linux_real_addr))
     {
       grub_error (GRUB_ERR_BAD_OS, "too big zImage (0x%x > 0x%x), use bzImage instead",
 		  (char *) GRUB_LINUX_ZIMAGE_ADDR + prot_size,

@@ -1,5 +1,8 @@
 2008-07-01  Pavel Roskin  <proski@gnu.org>
 
+	* loader/i386/pc/linux.c (grub_rescue_cmd_linux): Remove useless
+	cast to fix a warning.
+
 	* loader/i386/pc/multiboot2.c (grub_mb2_arch_module_alloc): Use
 	cast to suppress a warning.
 
