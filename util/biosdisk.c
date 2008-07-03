@@ -863,7 +863,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     if (! disk)
       return 0;
     
-    if (grub_partition_iterate (disk, find_partition) != GRUB_ERR_NONE)
+    grub_partition_iterate (disk, find_partition);
+    if (grub_errno != GRUB_ERR_NONE)
       {
 	grub_disk_close (disk);
 	return 0;

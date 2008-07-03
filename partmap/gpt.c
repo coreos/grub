@@ -103,7 +103,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
 			(unsigned long long) part.len);
 
 	  if (hook (disk, &part))
-	    return grub_errno;
+	    return 1;
 	}
 
       last_offset += grub_le_to_cpu32 (gpt.partentry_size);
@@ -151,7 +151,8 @@ gpt_partition_map_probe (grub_disk_t disk, const char *str)
       return 0;
     }
 
-  if (gpt_partition_map_iterate (disk, find_func))
+  gpt_partition_map_iterate (disk, find_func);
+  if (grub_errno)
     goto fail;
 
   return p;

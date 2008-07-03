@@ -1,3 +1,34 @@
+2008-07-04  Robert Millan  <rmh@aybabtu.com>
+
+	This fixes a performance issue when pc & gpt partmap iterators
+	didn't abort iteration even after our hook found what it was
+	looking for (often causing expensive probes of non-existant drives).
+
+	Some callers relied on previous buggy behaviour, since they would
+	rise an error when their own hooks caused early	abortion of its
+	iteration.
+
+	* kern/device.c (grub_device_open): Improve error message.
+	* disk/lvm.c (grub_lvm_open): Likewise.
+	* disk/raid.c (grub_raid_open): Likewise.
+
+	* partmap/pc.c (pc_partition_map_iterate): Abort parent iteration
+	when hook requests it, independently of grub_errno.
+	(pc_partition_map_probe): Do not fail when find_func() caused
+	early abortion of pc_partition_map_iterate().
+
+	* partmap/gpt.c (gpt_partition_map_iterate): Abort parent iteration
+	when hook requests it, independently of grub_errno.
+	(gpt_partition_map_probe): Do not fail when find_func() caused
+	early abortion of gpt_partition_map_iterate().
+
+	* kern/partition.c (grub_partition_iterate): Abort parent iteration
+	when hook requests it, independently of grub_errno.  Do not fail when
+	part_map_iterate_hook() caused early abortion of p->iterate().
+
+	* util/biosdisk.c (grub_util_biosdisk_get_grub_dev): Do not fail
+	when grub_partition_iterate() returned with non-zero.
+
 2008-07-03  Pavel Roskin  <proski@gnu.org>
 
 	* disk/ata.c (grub_ata_pio_write): Check status before writing,

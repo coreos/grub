@@ -95,7 +95,7 @@ grub_lvm_open (const char *name, grub_disk_t disk)
     }
 
   if (! lv)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown LVM device %s", name);
 
   disk->has_partitions = 0;
   disk->id = lv->number;

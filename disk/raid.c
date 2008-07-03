@@ -100,7 +100,7 @@ grub_raid_open (const char *name, grub_disk_t disk)
     }
 
   if (!array)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown RAID device %s", name);
 
   disk->has_partitions = 1;
   disk->id = array->number;

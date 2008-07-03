@@ -50,7 +50,7 @@ grub_device_open (const char *name)
   disk = grub_disk_open (name);
   if (! disk)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "unknown device");
+      grub_error (GRUB_ERR_BAD_DEVICE, "unknown device %s", name);
       goto fail;
     }
 

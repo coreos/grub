@@ -153,7 +153,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 	      pcdata.dos_part++;
 	      
 	      if (hook (disk, &p))
-		goto finish;
+		return 1;
 
 	      /* Check if this is a BSD partition.  */
 	      if (grub_pc_partition_is_bsd (e->type))
@@ -192,7 +192,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 		      
 		      if (be->fs_type != GRUB_PC_PARTITION_BSD_TYPE_UNUSED)
 			if (hook (disk, &p))
-			  goto finish;
+			  return 1;
 		    }
 		}
 	    }
@@ -257,7 +257,8 @@ pc_partition_map_probe (grub_disk_t disk, const char *str)
     return 0;
   
   pcdata = p->data;
-  if (pc_partition_map_iterate (disk, find_func))
+  pc_partition_map_iterate (disk, find_func);
+  if (grub_errno)
     goto fail;
 
   if (p->index < 0)
