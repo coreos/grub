@@ -1,3 +1,12 @@
+2008-07-03  Pavel Roskin  <proski@gnu.org>
+
+	* disk/ata.c (grub_ata_pio_write): Check status before writing,
+	like we do in grub_ata_pio_read().
+	(grub_ata_readwrite): Always write individual sectors.  Fix the
+	sector count for the remainder.
+	(grub_ata_write): Enable writing to ATA devices.  Correctly
+	report error for ATAPI devices.
+
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
 	* boot/i386/pc/cdboot.S: Add _start entry to fix a linker

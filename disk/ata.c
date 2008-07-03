@@ -187,6 +187,9 @@ grub_ata_pio_write (struct grub_ata_device *dev, char *buf,
   grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+    return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
+
   /* Wait until the device is ready to write.  */
   grub_ata_wait_drq (dev);
 
@@ -562,10 +565,9 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
       /* Write sectors.  */
       grub_ata_regset (dev, GRUB_ATA_REG_CMD, cmd_write);
       grub_ata_wait ();
-      for (sect = 0; sect < batch; sect++)
+      for (sect = 0; sect < (size % batch); sect++)
 	{
-	  if (grub_ata_pio_write (dev, buf,
-				  (size % batch) * GRUB_DISK_SECTOR_SIZE))
+	  if (grub_ata_pio_write (dev, buf, GRUB_DISK_SECTOR_SIZE))
 	    return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
 	  buf += GRUB_DISK_SECTOR_SIZE;
 	}
@@ -705,11 +707,12 @@ grub_ata_write (grub_disk_t disk,
 		grub_size_t size,
 		const char *buf)
 {
-#if 1
-  return GRUB_ERR_NOT_IMPLEMENTED_YET;
-#else
-  return grub_ata_readwrite (disk, sector, size, (char *) buf, 1);
-#endif
+  struct grub_ata_device *dev = (struct grub_ata_device *) disk->data;
+
+  if (! dev->atapi)
+    return grub_ata_readwrite (disk, sector, size, (char *) buf, 1);
+
+  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "ATAPI write not supported");
 }
 
 static struct grub_disk_dev grub_atadisk_dev =
