@@ -1,5 +1,8 @@
 2008-07-02  Pavel Roskin  <proski@gnu.org>
 
+	* boot/i386/pc/cdboot.S: Add _start entry to fix a linker
+	warning.
+
 	* disk/ata.c (grub_ata_readwrite): Don't increment sector number
 	for every read sector, we already increment it for the whole
 	batch.  This fixes reading more than 256 sectors at once.
