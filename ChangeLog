@@ -1,3 +1,8 @@
+2008-07-04  Pavel Roskin  <proski@gnu.org>
+
+	* util/elf/grub-mkimage.c: Use GRUB_TARGET_SIZEOF_LONG instead
+	of sizeof(long).  This fixes PowerPC image generation on x86_64.
+
 2008-07-04  Robert Millan  <rmh@aybabtu.com>
 
 	This fixes a performance issue when pc & gpt partmap iterators
