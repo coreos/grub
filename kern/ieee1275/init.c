@@ -148,7 +148,7 @@ static void grub_claim_heap (void)
        as a safegard in case that doesn't happen.  It does, however, not protect
        us from corrupting our module area, which extends up to a
        yet-undetermined region above _end.  */
-    if ((addr < _end) && ((addr + len) > _start))
+    if ((addr < (grub_addr_t) _end) && ((addr + len) > (grub_addr_t) _start))
       {
         grub_printf ("Warning: attempt to claim over our own code!\n");
         len = 0;
@@ -273,5 +273,5 @@ grub_get_rtc (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return ALIGN_UP(_end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
+  return ALIGN_UP((grub_addr_t) _end + GRUB_MOD_GAP, GRUB_MOD_ALIGN);
 }

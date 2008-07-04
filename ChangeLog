@@ -1,5 +1,8 @@
 2008-07-04  Pavel Roskin  <proski@gnu.org>
 
+	* kern/ieee1275/init.c: Cast _start and _end to grub_addr_t to
+	prevent warnings.
+
 	* include/grub/misc.h (ALIGN_UP): Avoid unnecessary cast to a
 	pointer, which can cause warnings.  Support 64-bit addresses.
 
