@@ -19,6 +19,7 @@
 #include <grub/machine/memory.h>
 #include <grub/types.h>
 #include <grub/err.h>
+#include <grub/misc.h>
 
 static grub_err_t
 grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t))
@@ -27,9 +28,9 @@ grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t))
   grub_linuxbios_table_item_t table_item;
 
   auto int check_signature (grub_linuxbios_table_header_t);
-  int check_signature (grub_linuxbios_table_header_t table_header)
+  int check_signature (grub_linuxbios_table_header_t tbl_header)
   {
-    if (! grub_memcmp (table_header->signature, "LBIO", 4))
+    if (! grub_memcmp (tbl_header->signature, "LBIO", 4))
       return 1;
 
     return 0;
@@ -37,11 +38,13 @@ grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t))
 
   /* Assuming table_header is aligned to its size (8 bytes).  */
 
-  for (table_header = 0x500; table_header < 0x1000; table_header++)
+  for (table_header = (grub_linuxbios_table_header_t) 0x500;
+       table_header < (grub_linuxbios_table_header_t) 0x1000; table_header++)
     if (check_signature (table_header))
       goto signature_found;
 
-  for (table_header = 0xf0000; table_header < 0x100000; table_header++)
+  for (table_header = (grub_linuxbios_table_header_t) 0xf0000;
+       table_header < (grub_linuxbios_table_header_t) 0x100000; table_header++)
     if (check_signature (table_header))
       goto signature_found;
 

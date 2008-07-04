@@ -140,7 +140,7 @@ grub_machine_init (void)
 			     quarter);
       }
     else
-      grub_mm_init_region ((void *) addr, (grub_size_t) size);
+      grub_mm_init_region ((void *) (grub_addr_t) addr, (grub_size_t) size);
 
     return 0;
   }
@@ -168,5 +168,5 @@ grub_machine_fini (void)
 grub_addr_t
 grub_arch_modules_addr (void)
 {
-  return ALIGN_UP(_end, GRUB_MOD_ALIGN);
+  return ALIGN_UP((grub_addr_t) _end, GRUB_MOD_ALIGN);
 }

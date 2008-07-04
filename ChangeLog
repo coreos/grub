@@ -1,5 +1,16 @@
 2008-07-04  Pavel Roskin  <proski@gnu.org>
 
+	* kern/i386/linuxbios/init.c (grub_machine_init): Cast addr to
+	grub_addr_t before casting it to the void pointer to fix a
+	warning.  Non-addressable regions are discarded earlier.
+	(grub_arch_modules_addr): Cast _end to grub_addr_t.
+	* kern/i386/linuxbios/table.c: Include grub/misc.h.
+	(check_signature): Don't shadow table_header.
+	(grub_linuxbios_table_iterate): Cast numeric constants to
+	grub_linuxbios_table_header_t.
+	* include/grub/i386/linuxbios/init.h: Add noreturn attribute to
+	grub_stop().
+
 	* kern/ieee1275/init.c: Cast _start and _end to grub_addr_t to
 	prevent warnings.
 
