@@ -1,5 +1,8 @@
 2008-07-04  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/misc.h (ALIGN_UP): Avoid unnecessary cast to a
+	pointer, which can cause warnings.  Support 64-bit addresses.
+
 	* util/elf/grub-mkimage.c: Use GRUB_TARGET_SIZEOF_LONG instead
 	of sizeof(long).  This fixes PowerPC image generation on x86_64.
 
