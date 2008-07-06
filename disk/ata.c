@@ -225,8 +225,11 @@ grub_ata_dumpinfo (struct grub_ata_device *dev, char *info)
   grub_ata_strncpy (text, info + 54, 40);
   grub_printf ("Model: %s\n", text);
 
-  grub_printf ("Addressing: %d\n", dev->addr);
-  grub_printf ("#sectors: 0x%llx\n", dev->size);
+  if (! dev->atapi)
+    {
+      grub_printf ("Addressing: %d\n", dev->addr);
+      grub_printf ("Sectors: %lld\n", dev->size);
+    }
 }
 
 static grub_err_t

@@ -1,5 +1,9 @@
 2008-07-05  Pavel Roskin  <proski@gnu.org>
 
+	* disk/ata.c (grub_ata_dumpinfo): Don't output addressing and
+	size for ATAPI devices, they are undefined.  Output sector
+	number in decimal form.
+
 	* disk/ata.c: Use named constants for status bits.
 
 2008-07-04  Pavel Roskin  <proski@gnu.org>
