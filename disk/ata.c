@@ -54,6 +54,15 @@ static const int grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
 
 #define GRUB_ATA_REG2_CONTROL	0
 
+#define GRUB_ATA_STATUS_ERR	0x01
+#define GRUB_ATA_STATUS_INDEX	0x02
+#define GRUB_ATA_STATUS_ECC	0x04
+#define GRUB_ATA_STATUS_DRQ	0x08
+#define GRUB_ATA_STATUS_SEEK	0x10
+#define GRUB_ATA_STATUS_WRERR	0x20
+#define GRUB_ATA_STATUS_READY	0x40
+#define GRUB_ATA_STATUS_BUSY	0x80
+
 enum grub_ata_commands
   {
     GRUB_ATA_CMD_READ_SECTORS = 0x20,
@@ -129,13 +138,13 @@ grub_ata_regget2 (struct grub_ata_device *dev, int reg)
 static inline void
 grub_ata_wait_busy (struct grub_ata_device *dev)
 {
-  while ((grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 0x80));
+  while ((grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_BUSY));
 }
 
 static inline void
 grub_ata_wait_drq (struct grub_ata_device *dev)
 {
-  while (! (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 0x08));
+  while (! (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_DRQ));
 }
 
 static inline void
@@ -164,7 +173,7 @@ grub_ata_pio_read (struct grub_ata_device *dev, char *buf,
   grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
-  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_ERR)
     return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
 
   /* Wait until the data is available.  */
@@ -174,7 +183,7 @@ grub_ata_pio_read (struct grub_ata_device *dev, char *buf,
   for (i = 0; i < size / 2; i++)
     buf16[i] = grub_le_to_cpu16 (grub_inw(dev->ioaddress + GRUB_ATA_REG_DATA));
 
-  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_ERR)
     return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
 
   return 0;
@@ -187,7 +196,7 @@ grub_ata_pio_write (struct grub_ata_device *dev, char *buf,
   grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
-  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_ERR)
     return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
 
   /* Wait until the device is ready to write.  */
@@ -197,7 +206,7 @@ grub_ata_pio_write (struct grub_ata_device *dev, char *buf,
   for (i = 0; i < size / 2; i++)
     grub_outw(grub_cpu_to_le16 (buf16[i]), dev->ioaddress + GRUB_ATA_REG_DATA);
 
-  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & 1)
+  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_ERR)
     return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
 
   return 0;
