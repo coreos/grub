@@ -1,5 +1,8 @@
 2008-07-11  Pavel Roskin  <proski@gnu.org>
 
+	* commands/read.c (grub_getline): Fix invalid memory access.
+	Don't add newline to the variable value.
+
 	* term/i386/pc/serial.c (GRUB_SERIAL_PORT_NUM): New constant.
 	[!GRUB_MACHINE_PCBIOS] (serial_hw_io_addr): Add COM2 and COM3.
 	(serial_hw_get_port): Check validity of the port number.
