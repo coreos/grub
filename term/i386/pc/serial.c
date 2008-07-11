@@ -67,15 +67,20 @@ static struct serial_port serial_settings;
 #ifdef GRUB_MACHINE_PCBIOS
 /* The BIOS data area.  */
 static const unsigned short *serial_hw_io_addr = (const unsigned short *) 0x0400;
+#define GRUB_SERIAL_PORT_NUM 4
 #else
-static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8 };
+static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
+#define GRUB_SERIAL_PORT_NUM (sizeof(serial_hw_io_addr)/(serial_hw_io_addr[0]))
 #endif
 
 /* Return the port number for the UNITth serial device.  */
 static inline unsigned short
-serial_hw_get_port (const unsigned short unit)
+serial_hw_get_port (const unsigned int unit)
 {
-  return serial_hw_io_addr[unit];
+  if (unit < GRUB_SERIAL_PORT_NUM)
+    return serial_hw_io_addr[unit];
+  else
+    return 0;
 }
 
 /* Fetch a key.  */
@@ -490,14 +495,14 @@ grub_cmd_serial (struct grub_arg_list *state,
 {
   struct serial_port backup_settings = serial_settings;
   grub_err_t hwiniterr;
-  int arg;
 
   if (state[0].set)
     {
-      arg = grub_strtoul (state[0].arg, 0, 0);
-      if (arg >= 0 && arg < 4)
-	serial_settings.port = serial_hw_get_port ((int) arg);
-      else
+      unsigned int unit;
+
+      unit = grub_strtoul (state[0].arg, 0, 0);
+      serial_settings.port = serial_hw_get_port (unit);
+      if (!serial_settings.port)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, "bad unit number.");
     }
   
