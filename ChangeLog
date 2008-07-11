@@ -1,3 +1,10 @@
+2008-07-11  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/40_custom.in: New file. Example on how to add custom
+	entries to /etc/grub.d.
+	* conf/common.rmk (%, update-grub_SCRIPTS, CLEANFILES): Install
+	40_custom (implicitly, by merging all the grub.d rules).
+
 2008-07-11  Pavel Roskin  <proski@gnu.org>
 
 	* commands/read.c (grub_getline): Fix invalid memory access.

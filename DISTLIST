@@ -327,6 +327,7 @@ util/grub.d/00_header.in
 util/grub.d/10_hurd.in
 util/grub.d/10_linux.in
 util/grub.d/30_os-prober.in
+util/grub.d/40_custom.in
 util/grub.d/README
 util/grub-emu.c
 util/grub-mkdevicemap.c
