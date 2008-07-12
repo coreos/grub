@@ -1,3 +1,7 @@
+2008-07-12  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-mkrescue.in: s/grub-install/grub-mkrescue/g.
+
 2008-07-11  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/40_custom.in: New file. Example on how to add custom
