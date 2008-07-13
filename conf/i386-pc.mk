@@ -226,6 +226,7 @@ sbin_UTILITIES += grub-emu
 endif
 
 # For grub-mkimage.
+ifeq ($(enable_lzo), yes)
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c
 CLEANFILES += grub-mkimage grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
@@ -246,8 +247,38 @@ grub_mkimage-util_resolve.o: util/resolve.c $(util/resolve.c_DEPENDENCIES)
 	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
 -include grub_mkimage-util_resolve.d
 
-grub_mkimage_CFLAGS = -DGRUB_MEMORY_MACHINE_LINK_ADDR=$(GRUB_MEMORY_MACHINE_LINK_ADDR)
 grub_mkimage_LDFLAGS = $(LIBLZO)
+else
+grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
+	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
+CLEANFILES += grub-mkimage grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o grub_mkimage-lib_LzmaEnc.o grub_mkimage-lib_LzFind.o
+MOSTLYCLEANFILES += grub_mkimage-util_i386_pc_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d grub_mkimage-lib_LzmaEnc.d grub_mkimage-lib_LzFind.d
+
+grub-mkimage: $(grub_mkimage_DEPENDENCIES) grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o grub_mkimage-lib_LzmaEnc.o grub_mkimage-lib_LzFind.o
+	$(CC) -o $@ grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o grub_mkimage-lib_LzmaEnc.o grub_mkimage-lib_LzFind.o $(LDFLAGS) $(grub_mkimage_LDFLAGS)
+
+grub_mkimage-util_i386_pc_grub_mkimage.o: util/i386/pc/grub-mkimage.c $(util/i386/pc/grub-mkimage.c_DEPENDENCIES)
+	$(CC) -Iutil/i386/pc -I$(srcdir)/util/i386/pc $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
+-include grub_mkimage-util_i386_pc_grub_mkimage.d
+
+grub_mkimage-util_misc.o: util/misc.c $(util/misc.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
+-include grub_mkimage-util_misc.d
+
+grub_mkimage-util_resolve.o: util/resolve.c $(util/resolve.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
+-include grub_mkimage-util_resolve.d
+
+grub_mkimage-lib_LzmaEnc.o: lib/LzmaEnc.c $(lib/LzmaEnc.c_DEPENDENCIES)
+	$(CC) -Ilib -I$(srcdir)/lib $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
+-include grub_mkimage-lib_LzmaEnc.d
+
+grub_mkimage-lib_LzFind.o: lib/LzFind.c $(lib/LzFind.c_DEPENDENCIES)
+	$(CC) -Ilib -I$(srcdir)/lib $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
+-include grub_mkimage-lib_LzFind.d
+
+endif
+grub_mkimage_CFLAGS = -DGRUB_MEMORY_MACHINE_LINK_ADDR=$(GRUB_MEMORY_MACHINE_LINK_ADDR)
 util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.

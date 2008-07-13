@@ -200,6 +200,7 @@ codestart:
 	incl	%eax
 	call	EXT_C(grub_gate_a20)
 	
+#if defined(ENABLE_LZO)
 	/* decompress the compressed part and put the result at 1MB */
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %esi
 	movl	$(START_SYMBOL + GRUB_KERNEL_MACHINE_RAW_SIZE), %edi
@@ -213,6 +214,23 @@ codestart:
 	/* copy back the decompressed part */
 	movl	%eax, %ecx
 	cld
+#elif defined(ENABLE_LZMA)
+	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
+	movl	$(START_SYMBOL + GRUB_KERNEL_MACHINE_RAW_SIZE), %esi
+	pushl	%edi
+	pushl	%esi
+	movl	EXT_C(grub_kernel_image_size), %ecx
+	addl	EXT_C(grub_total_module_size), %ecx
+	addl	EXT_C(grub_memdisk_image_size), %ecx
+	subl	$GRUB_KERNEL_MACHINE_RAW_SIZE, %ecx
+	pushl	%ecx
+	leal	(%edi, %ecx), %ebx
+	call	_LzmaDecodeA
+	popl	%ecx
+	popl	%edi
+	popl	%esi
+#endif
+
 	rep
 	movsb
 
@@ -476,7 +494,11 @@ gate_a20_check_state:
 	popl	%ebx
 	ret
 
+#if defined(ENABLE_LZO)
 #include "lzo1x.S"
+#elif defined(ENABLE_LZMA)
+#include "lzma_decode.S"
+#endif
 
 /*
  * The code beyond this point is compressed.  Assert that the uncompressed

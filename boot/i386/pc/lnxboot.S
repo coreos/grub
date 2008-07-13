@@ -17,6 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
 #include <grub/boot.h>
 #include <grub/machine/boot.h>
 #include <grub/machine/kernel.h>

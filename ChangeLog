@@ -1,5 +1,41 @@
 2008-07-13  Bean  <bean123ch@gmail.com>
 
+	* Makefile.in (enable_lzo): New rule.
+
+	* conf/i386-pc.rmk (grub_mkimage_SOURCES): New test with enable_lzo.
+
+	* configure.ac (ENABLE_LZO): New option --enable-lzo.
+
+	* boot/i386/pc/lnxboot.S: #include <config.h>.
+
+	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_RAW_SIZE): Change
+	its value accordding to the compression algorithm used, lzo or lzma.
+
+	* util/i386/pc/grub-mkimage.c (compress_kernel): Use different
+	compression algorithm according to configure macro.
+
+	* kern/i386/pc/startup.S (codestart): Likewise.
+
+	* kern/i386/pc/lzma_decode.S: New file.
+
+	* include/grub/lib/LzFind.h: Likewise.
+
+	* include/grub/lib/LzHash.h: Likewise.
+
+	* include/grub/lib/LzmaDec.h: Likewise.
+
+	* include/grub/lib/LzmaEnc.h: Likewise.
+
+	* include/grub/lib/LzmaTypes.h: Likewise.
+
+	* lib/LzFind.c: Likewise.
+
+	* lib/LzmaDec.c: Likewise.
+
+	* lib/LzmaEnc.c: Likewise.
+
+2008-07-13  Bean  <bean123ch@gmail.com>
+
 	* fs/ext2.c (EXT4_EXTENTS_FLAG): New macro.
 	(grub_ext4_extent_header): New structure.
 	(grub_ext4_extent): Likewise.

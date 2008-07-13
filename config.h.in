@@ -13,6 +13,12 @@
 /* Define it to \"data32\" or \"data32;\" to make GAS happy */
 #undef DATA32
 
+/* Use lzma compression */
+#undef ENABLE_LZMA
+
+/* Use lzo compression */
+#undef ENABLE_LZO
+
 /* Define it to either end or _end */
 #undef END_SYMBOL
 

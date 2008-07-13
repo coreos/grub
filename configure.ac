@@ -143,19 +143,28 @@ fi
 
 # Check LZO when compiling for the i386-pc.
 if test "$target_cpu"-"$platform" = i386-pc; then
-  # There are three possibilities. LZO version 2 installed with the name
-  # liblzo2, with the name liblzo, and LZO version 1.
-  AC_CHECK_LIB(lzo2, __lzo_init_v2, [LIBLZO="-llzo2"],
-    AC_CHECK_LIB(lzo, __lzo_init_v2, [LIBLZO="-llzo"],
-      AC_CHECK_LIB(lzo, __lzo_init2, [LIBLZO="-llzo"],
-	       AC_MSG_ERROR([LZO library version 1.02 or later is required]))))
-  AC_SUBST(LIBLZO)
-  LIBS="$LIBS $LIBLZO"
-  AC_CHECK_FUNC(lzo1x_999_compress, , 
+  AC_ARG_ENABLE([lzo],
+	      [AS_HELP_STRING([--enable-lzo],
+                             [use lzo to compress kernel (default is lzma)])])
+  [if [ x"$enable_lzo" = xyes ]; then
+    # There are three possibilities. LZO version 2 installed with the name
+    # liblzo2, with the name liblzo, and LZO version 1.]
+    AC_DEFINE([ENABLE_LZO], [1], [Use lzo compression])
+    AC_CHECK_LIB([lzo2], [__lzo_init_v2], [LIBLZO="-llzo2"],
+      [AC_CHECK_LIB([lzo], [__lzo_init_v2], [LIBLZO="-llzo"],
+        [AC_CHECK_LIB([lzo], [__lzo_init2], [LIBLZO="-llzo"],
+	       [AC_MSG_ERROR([LZO library version 1.02 or later is required])])])])
+    AC_SUBST([LIBLZO])
+    [LIBS="$LIBS $LIBLZO"]
+    AC_CHECK_FUNC([lzo1x_999_compress], ,
 	        [AC_MSG_ERROR([LZO1X-999 must be enabled])])
 
-  # LZO version 2 uses lzo/lzo1x.h, while LZO version 1 uses lzo1x.h.
-  AC_CHECK_HEADERS(lzo/lzo1x.h lzo1x.h)
+    [# LZO version 2 uses lzo/lzo1x.h, while LZO version 1 uses lzo1x.h.]
+    AC_CHECK_HEADERS([lzo/lzo1x.h lzo1x.h])
+  [else]
+    AC_DEFINE([ENABLE_LZMA], [1], [Use lzma compression])
+  [fi]
+  AC_SUBST([enable_lzo])
 fi
 
 # Check for functions.

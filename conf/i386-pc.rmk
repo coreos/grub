@@ -72,10 +72,15 @@ sbin_UTILITIES += grub-emu
 endif
 
 # For grub-mkimage.
+ifeq ($(enable_lzo), yes)
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c
-grub_mkimage_CFLAGS = -DGRUB_MEMORY_MACHINE_LINK_ADDR=$(GRUB_MEMORY_MACHINE_LINK_ADDR)
 grub_mkimage_LDFLAGS = $(LIBLZO)
+else
+grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
+	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
+endif
+grub_mkimage_CFLAGS = -DGRUB_MEMORY_MACHINE_LINK_ADDR=$(GRUB_MEMORY_MACHINE_LINK_ADDR)
 util/i386/pc/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.

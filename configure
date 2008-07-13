@@ -686,6 +686,7 @@ CPP
 GREP
 EGREP
 LIBLZO
+enable_lzo
 TARGET_CC
 ac_ct_TARGET_CC
 OBJCOPY
@@ -1291,6 +1292,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-largefile     omit support for large files
+  --enable-lzo            use lzo to compress kernel (default is lzma)
   --enable-mm-debug       include memory manager debugging
   --enable-grub-emu       build and install the `grub-emu' debugging utility
   --enable-grub-fstest    build and install the `grub-fstest' debugging
@@ -5299,9 +5301,20 @@ fi
 
 # Check LZO when compiling for the i386-pc.
 if test "$target_cpu"-"$platform" = i386-pc; then
-  # There are three possibilities. LZO version 2 installed with the name
-  # liblzo2, with the name liblzo, and LZO version 1.
-  { echo "$as_me:$LINENO: checking for __lzo_init_v2 in -llzo2" >&5
+  # Check whether --enable-lzo was given.
+if test "${enable_lzo+set}" = set; then
+  enableval=$enable_lzo;
+fi
+
+  if [ x"$enable_lzo" = xyes ]; then
+    # There are three possibilities. LZO version 2 installed with the name
+    # liblzo2, with the name liblzo, and LZO version 1.
+
+cat >>confdefs.h <<\_ACEOF
+#define ENABLE_LZO 1
+_ACEOF
+
+    { echo "$as_me:$LINENO: checking for __lzo_init_v2 in -llzo2" >&5
 echo $ECHO_N "checking for __lzo_init_v2 in -llzo2... $ECHO_C" >&6; }
 if test "${ac_cv_lib_lzo2___lzo_init_v2+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -5503,8 +5516,8 @@ fi
 fi
 
 
-  LIBS="$LIBS $LIBLZO"
-  { echo "$as_me:$LINENO: checking for lzo1x_999_compress" >&5
+    LIBS="$LIBS $LIBLZO"
+    { echo "$as_me:$LINENO: checking for lzo1x_999_compress" >&5
 echo $ECHO_N "checking for lzo1x_999_compress... $ECHO_C" >&6; }
 if test "${ac_cv_func_lzo1x_999_compress+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -5594,7 +5607,7 @@ echo "$as_me: error: LZO1X-999 must be enabled" >&2;}
 fi
 
 
-  # LZO version 2 uses lzo/lzo1x.h, while LZO version 1 uses lzo1x.h.
+    # LZO version 2 uses lzo/lzo1x.h, while LZO version 1 uses lzo1x.h.
 
 
 for ac_header in lzo/lzo1x.h lzo1x.h
@@ -5740,6 +5753,14 @@ _ACEOF
 fi
 
 done
+
+  else
+
+cat >>confdefs.h <<\_ACEOF
+#define ENABLE_LZMA 1
+_ACEOF
+
+  fi
 
 fi
 
@@ -8906,6 +8927,7 @@ CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 LIBLZO!$LIBLZO$ac_delim
+enable_lzo!$enable_lzo$ac_delim
 TARGET_CC!$TARGET_CC$ac_delim
 ac_ct_TARGET_CC!$ac_ct_TARGET_CC$ac_delim
 OBJCOPY!$OBJCOPY$ac_delim
@@ -8922,7 +8944,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
