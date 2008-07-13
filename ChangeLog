@@ -15,7 +15,7 @@
 	* boot/i386/pc/lnxboot.S: #include <config.h>.
 
 	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_RAW_SIZE): Change
-	its value accordding to the compression algorithm used, lzo or lzma.
+	its value according to the compression algorithm used, lzo or lzma.
 
 	* util/i386/pc/grub-mkimage.c (compress_kernel): Use different
 	compression algorithm according to configure macro.
@@ -110,7 +110,7 @@
 
 	This fixes a performance issue when pc & gpt partmap iterators
 	didn't abort iteration even after our hook found what it was
-	looking for (often causing expensive probes of non-existant drives).
+	looking for (often causing expensive probes of non-existent drives).
 
 	Some callers relied on previous buggy behaviour, since they would
 	rise an error when their own hooks caused early	abortion of its
@@ -332,7 +332,7 @@
 
 2008-06-19  Robert Millan  <rmh@aybabtu.com>
 
-	* kern/main.c (grub_main): Export `prefix' variable inmediately
+	* kern/main.c (grub_main): Export `prefix' variable immediately
 	after it has been set by grub_machine_set_prefix().
 
 2008-06-19  Robert Millan  <rmh@aybabtu.com>
@@ -352,7 +352,7 @@
 
 	* util/update-grub_lib.in (prepare_grub_to_access_device): Issue
 	"insmod" command directly when abstraction modules are needed,
-	instead of reliing on GRUB_PRELOAD_MODULES (which had no effect
+	instead of relying on GRUB_PRELOAD_MODULES (which had no effect
 	since it had already been processed).
 
 2008-06-19  Pavel Roskin  <proski@gnu.org>
@@ -426,14 +426,14 @@
 
 2008-06-16  Bean  <bean123ch@gmail.com>
 
-	* fs/ext2.c (grub_ext2_blockgroup): Revert to pre journal state.
+	* fs/ext2.c (grub_ext2_blockgroup): Revert to pre-journal state.
 	(grub_ext2_read_block): Likewise.
 	(grub_ext2_read_inode): Likewise.
 	(grub_ext2_mount): Likewise.
 	(grub_ext2_close): Likewise.
 	(grub_ext3_get_journal): Removed.
 
-	* fs/reiserfs.c (grub_reiserfs_get_item): Revert to pre journal state.
+	* fs/reiserfs.c (grub_reiserfs_get_item): Revert to pre-journal state.
 	(grub_reiserfs_read_symlink): Likewise.
 	(grub_reiserfs_mount): Likewise.
 	(grub_reiserfs_open): Likewise.
@@ -1580,7 +1580,7 @@
 	* loader/i386/pc/multiboot.c (grub_multiboot): Handle a.out format.
 
 	* loader/multiboot2.c (grub_multiboot2): Reset grub_errno so that it
-	can test othe formats.
+	can test other formats.
 
 2008-02-19  Robert Millan  <rmh@aybabtu.com>
 
@@ -2557,7 +2557,7 @@
 	function.
 	* term/ieee1275/ofconsole.c (grub_ofconsole_init): Avoid use of
 	grub_ieee1275_decode_int_4(), by obtaining integer properties directly
-	in native endianess from grub_ieee1275_get_integer_property().
+	in native endianness from grub_ieee1275_get_integer_property().
 
 2008-01-19  Robert Millan  <rmh@aybabtu.com>
 
@@ -2625,7 +2625,7 @@
 
 	* kern/ieee1275/ieee1275.c: Include `<grub/types.h>'.
 	(grub_ieee1275_get_integer_property): New function.  Wraps around
-	grub_ieee1275_get_property() to handle endianess.
+	grub_ieee1275_get_property() to handle endianness.
 
 	* kern/powerpc/ieee1275/cmain.c (grub_ieee1275_find_options): Replace
 	grub_ieee1275_get_property() with grub_ieee1275_get_integer_property()
@@ -5463,7 +5463,7 @@
 
 	* boot/i386/pc/boot.S (force_lba): Removed.
 	(boot_drive): Moved to under KERNEL_SECTOR.
-	(kernel_sector): Moved to under KENREL_SEGMENT. Allocate 64-bit
+	(kernel_sector): Moved to under KERNEL_SEGMENT. Allocate 64-bit
 	space.
 	(real_start): Set %si earlier. Remove code for FORCE_LBA, since it
 	is useless.
@@ -6994,7 +6994,7 @@
 	(grub_normal_menu_addentry): New function.
 	(read_config_file): Rewritten.
 	* normal/menu.c (run_menu_entry): Mainly rewritten.
-	* normal/menu_entry.c (make_screen): Rewritten te code to insert
+	* normal/menu_entry.c (make_screen): Rewritten the code to insert
 	the menu entry.
 	(run): Mainly rewritten.
 	* normal/parser.y (menu_entry): New variable.
@@ -10105,7 +10105,7 @@
 	endian to the host endian.
 	(grub_fat_utf16_to_utf8): Move function from there...
 	* kern/misc.c (grub_utf16_to_utf8): ...to here.  Do not convert
-	the endianess of the source string anymore.
+	the endianness of the source string anymore.
 	* include/grub/misc.h (grub_utf16_to_utf8): New prototype.
 
 2004-08-24  Marco Gerards  <metgerards@student.han.nl>

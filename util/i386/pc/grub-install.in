@@ -237,7 +237,7 @@ else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}`
 fi
 
-# The order in this list is critical.  Be careful when modifiing it.
+# The order in this list is critical.  Be careful when modifying it.
 modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module"
 
 $grub_mkimage --output=${grubdir}/core.img \
