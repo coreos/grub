@@ -1,3 +1,9 @@
+2008-07-13  Pavel Roskin  <proski@gnu.org>
+
+	* lib/LzmaEnc.c (LzmaEnc_SetProps): Fix warning about comparison
+	between signed and unsigned.
+	(LzmaEnc_Finish): Fix warning about an unused parameter.
+
 2008-07-13  Bean  <bean123ch@gmail.com>
 
 	* Makefile.in (enable_lzo): New rule.

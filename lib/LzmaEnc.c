@@ -431,7 +431,7 @@ SRes LzmaEnc_SetProps(CLzmaEncHandle pp, const CLzmaEncProps *props2)
   LzmaEncProps_Normalize(&props);
 
   if (props.lc > LZMA_LC_MAX || props.lp > LZMA_LP_MAX || props.pb > LZMA_PB_MAX ||
-      props.dictSize > (1 << kDicLogSizeMaxCompress) || props.dictSize > (1 << 30))
+      props.dictSize > (1U << kDicLogSizeMaxCompress) || props.dictSize > (1 << 30))
     return SZ_ERROR_PARAM;
   p->dictSize = props.dictSize;
   p->matchFinderCycles = props.mc;
@@ -2170,6 +2170,8 @@ void LzmaEnc_Finish(CLzmaEncHandle pp)
   CLzmaEnc *p = (CLzmaEnc *)pp;
   if (p->mtMode)
     MatchFinderMt_ReleaseStream(&p->matchFinderMt);
+  #else
+  (void)pp;
   #endif
 }
 
