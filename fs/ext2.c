@@ -86,6 +86,8 @@
 #define EXT3_JOURNAL_FLAG_DELETED	4
 #define EXT3_JOURNAL_FLAG_LAST_TAG	8
 
+#define EXT4_EXTENTS_FLAG		0x80000
+
 /* The ext2 superblock.  */
 struct grub_ext2_sblock
 {
@@ -226,6 +228,33 @@ struct grub_ext3_journal_sblock
   grub_uint32_t start;
 };
 
+#define EXT4_EXT_MAGIC		0xf30a
+
+struct grub_ext4_extent_header
+{
+  grub_uint16_t magic;
+  grub_uint16_t entries;
+  grub_uint16_t max;
+  grub_uint16_t depth;
+  grub_uint32_t generation;
+};
+
+struct grub_ext4_extent
+{
+  grub_uint32_t block;
+  grub_uint16_t len;
+  grub_uint16_t start_hi;
+  grub_uint32_t start;
+};
+
+struct grub_ext4_extent_idx
+{
+  grub_uint32_t block;
+  grub_uint32_t leaf;
+  grub_uint16_t leaf_hi;
+  grub_uint16_t unused;
+};
+
 struct grub_fshelp_node
 {
   struct grub_ext2_data *data;
@@ -262,6 +291,45 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
 			 sizeof (struct grub_ext2_block_group), (char *) blkgrp);
 }
 
+static struct grub_ext4_extent_header *
+grub_ext4_find_leaf (struct grub_ext2_data *data, char *buf,
+                     struct grub_ext4_extent_header *ext_block,
+                     grub_uint32_t fileblock)
+{
+  struct grub_ext4_extent_idx *index;
+
+  while (1)
+    {
+      int i;
+      grub_disk_addr_t block;
+
+      index = (struct grub_ext4_extent_idx *) (ext_block + 1);
+
+      if (grub_le_to_cpu16(ext_block->magic) != EXT4_EXT_MAGIC)
+        return 0;
+
+      if (ext_block->depth == 0)
+        return ext_block;
+
+      for (i = 0; i < grub_le_to_cpu16 (ext_block->entries); i++)
+        {
+          if (fileblock < grub_le_to_cpu32(index[i].block))
+            break;
+        }
+
+      if (--i < 0)
+        return 0;
+
+      block = grub_le_to_cpu16 (index[i].leaf_hi);
+      block = (block << 32) + grub_le_to_cpu32 (index[i].leaf);
+      if (grub_disk_read (data->disk,
+                          block << LOG2_EXT2_BLOCK_SIZE (data),
+                          0, EXT2_BLOCK_SIZE(data), buf))
+        return 0;
+
+      ext_block = (struct grub_ext4_extent_header *) buf;
+    }
+}
 
 static grub_disk_addr_t
 grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
@@ -272,6 +340,50 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   unsigned int blksz = EXT2_BLOCK_SIZE (data);
   int log2_blksz = LOG2_EXT2_BLOCK_SIZE (data);
   
+  if (inode->flags & EXT4_EXTENTS_FLAG)
+    {
+      char buf[EXT2_BLOCK_SIZE(data)];
+      struct grub_ext4_extent_header *leaf;
+      struct grub_ext4_extent *ext;
+      int i;
+
+      leaf = grub_ext4_find_leaf (data, buf,
+                                  (struct grub_ext4_extent_header *) inode->blocks.dir_blocks,
+                                  fileblock);
+      if (! leaf)
+        {
+          grub_error (GRUB_ERR_BAD_FS, "invalid extent");
+          return -1;
+        }
+
+      ext = (struct grub_ext4_extent *) (leaf + 1);
+      for (i = 0; i < grub_le_to_cpu16 (leaf->entries); i++)
+        {
+          if (fileblock < grub_le_to_cpu32 (ext[i].block))
+            break;
+        }
+
+      if (--i >= 0)
+        {
+          fileblock -= grub_le_to_cpu32 (ext[i].block);
+          if (fileblock >= grub_le_to_cpu16 (ext[i].len))
+            return 0;
+          else
+            {
+              grub_disk_addr_t start;
+
+              start = grub_le_to_cpu16 (ext[i].start_hi);
+              start = (start << 32) + grub_le_to_cpu32 (ext[i].start);
+
+              return fileblock + start;
+            }
+        }
+      else
+        {
+          grub_error (GRUB_ERR_BAD_FS, "something wrong with extent");
+          return -1;
+        }
+    }
   /* Direct blocks.  */
   if (fileblock < INDIRECT_BLOCKS)
     blknr = grub_le_to_cpu32 (inode->blocks.dir_blocks[fileblock]);

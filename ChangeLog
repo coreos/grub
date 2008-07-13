@@ -1,3 +1,12 @@
+2008-07-13  Bean  <bean123ch@gmail.com>
+
+	* fs/ext2.c (EXT4_EXTENTS_FLAG): New macro.
+	(grub_ext4_extent_header): New structure.
+	(grub_ext4_extent): Likewise.
+	(grub_ext4_extent_idx): Likewise.
+	(grub_ext4_find_leaf): New function.
+	(grub_ext2_read_block): Handle extents.
+
 2008-07-12  Robert Millan  <rmh@aybabtu.com>
 
 	* util/i386/pc/grub-mkrescue.in: s/grub-install/grub-mkrescue/g.
