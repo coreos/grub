@@ -331,12 +331,7 @@ grub_register_variable_hook (const char *name,
 
   if (! var)
     {
-      char *val = grub_strdup ("");
-
-      if (! val)
-	return grub_errno;
-      
-      if (grub_env_set (name, val) != GRUB_ERR_NONE)
+      if (grub_env_set (name, "") != GRUB_ERR_NONE)
 	return grub_errno;
       
       var = grub_env_find (name);

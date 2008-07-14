@@ -1,5 +1,9 @@
 2008-07-14  Pavel Roskin  <proski@gnu.org>
 
+	* kern/env.c (grub_register_variable_hook): Don't copy empty
+	string, it leaks memory.  Pass "" to grub_env_set(), it should
+	handle constant strings.
+
 	* commands/blocklist.c (grub_cmd_blocklist): Fix format warning.
 	* commands/cmp.c (grub_cmd_cmp): Likewise.
 	* kern/dl.c (grub_dl_flush_cache): Likewise.
