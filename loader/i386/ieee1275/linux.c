@@ -79,12 +79,6 @@ grub_ieee1275_debug (void)
 }
 */
 
-static void
-grub_set_bootpath (void)
-{
-
-}
-
 static grub_err_t
 grub_linux_boot (void)
 {

@@ -1,5 +1,8 @@
 2008-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* loader/i386/ieee1275/linux.c (grub_set_bootpath): Remove.
+	It's empty and unused.
+
 	* fs/ext2.c (grub_ext2_read_block): Initialize blknr in the
 	beginning to avoid warnings with some compilers.
 
