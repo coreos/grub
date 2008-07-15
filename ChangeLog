@@ -1,5 +1,7 @@
 2008-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* term/ieee1275/ofconsole.c: Disable code unused on i386.
+
 	* kern/ieee1275/ieee1275.c (grub_ieee1275_get_integer_property):
 	Fix comparison between signed and unsigned.
 

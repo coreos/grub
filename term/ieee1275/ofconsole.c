@@ -33,8 +33,10 @@ static grub_uint8_t grub_ofconsole_height;
 static int grub_curr_x;
 static int grub_curr_y;
 
+#ifndef __i386__
 static int grub_keybuf;
 static int grub_buflen;
+#endif
 
 struct color
 {
@@ -142,6 +144,7 @@ grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_col
   *highlight_color = grub_ofconsole_highlight_color;
 }
 
+#ifndef __i386__
 static int
 grub_ofconsole_readkey (int *key)
 {
@@ -226,6 +229,7 @@ grub_ofconsole_getkey (void)
   
   return key;
 }
+#endif
 
 static grub_uint16_t
 grub_ofconsole_getxy (void)
