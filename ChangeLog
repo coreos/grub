@@ -1,5 +1,8 @@
 2008-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* kern/ieee1275/ieee1275.c (grub_ieee1275_get_integer_property):
+	Fix comparison between signed and unsigned.
+
 	* include/grub/i386/ieee1275/console.h: Declare
 	grub_console_init() and grub_console_fini().
 
