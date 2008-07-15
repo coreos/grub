@@ -26,6 +26,7 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/loader.h>
 
 typedef void (*kernel_entry_t) (unsigned long, void *, int (void *),
                                 unsigned long, unsigned long);
@@ -114,11 +115,11 @@ grub_mb2_arch_unload (struct multiboot_tag_header *tags)
 void
 grub_mb2_arch_boot (grub_addr_t entry_addr, void *tags)
 {
-  kernel_entry_t entry = (kernel_entry_t) entry_addr;
 #if defined(__powerpc__)
+  kernel_entry_t entry = (kernel_entry_t) entry_addr;
   entry (MULTIBOOT2_BOOTLOADER_MAGIC, tags, grub_ieee1275_entry_fn, 0, 0);
 #elif defined(__i386__)
-  grub_multiboot2_real_boot (entry, tags);
+  grub_multiboot2_real_boot (entry_addr, tags);
 #else
 #error
 #endif

@@ -1,3 +1,8 @@
+2008-07-15  Pavel Roskin  <proski@gnu.org>
+
+	* loader/ieee1275/multiboot2.c: Include grub/machine/loader.h.
+	[__i386__] (grub_mb2_arch_boot): Avoid unnecessary cast.
+
 2008-07-14  Pavel Roskin  <proski@gnu.org>
 
 	* kern/env.c (grub_register_variable_hook): Don't copy empty
