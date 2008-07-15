@@ -336,7 +336,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_ext2_data *data = node->data;
   struct grub_ext2_inode *inode = &node->inode;
-  int blknr;
+  int blknr = -1;
   unsigned int blksz = EXT2_BLOCK_SIZE (data);
   int log2_blksz = LOG2_EXT2_BLOCK_SIZE (data);
   
@@ -428,7 +428,6 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		  "ext2fs doesn't support triple indirect blocks");
-      blknr = -1;
     }
 
   return blknr;

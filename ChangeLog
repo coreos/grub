@@ -1,5 +1,8 @@
 2008-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* fs/ext2.c (grub_ext2_read_block): Initialize blknr in the
+	beginning to avoid warnings with some compilers.
+
 	* loader/ieee1275/multiboot2.c: Include grub/machine/loader.h.
 	[__i386__] (grub_mb2_arch_boot): Avoid unnecessary cast.
 
