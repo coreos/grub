@@ -1,5 +1,8 @@
 2008-07-15  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/i386/ieee1275/console.h: Declare
+	grub_console_init() and grub_console_fini().
+
 	* loader/i386/ieee1275/linux.c (grub_set_bootpath): Remove.
 	It's empty and unused.
 
