@@ -272,10 +272,10 @@ get_symbol_address (Elf32_Ehdr *e, Elf32_Shdr *s, Elf32_Word i)
 }
 
 /* Return the address of a modified value.  */
-static Elf32_Addr
+static Elf32_Addr *
 get_target_address (Elf32_Ehdr *e, Elf32_Shdr *s, Elf32_Addr offset)
 {
-  return (Elf32_Addr) e + grub_le_to_cpu32 (s->sh_offset) + offset;
+  return (Elf32_Addr *) ((char *) e + grub_le_to_cpu32 (s->sh_offset) + offset);
 }
 
 /* Deal with relocation information. This function relocates addresses
@@ -333,8 +333,7 @@ relocate_addresses (Elf32_Ehdr *e, Elf32_Shdr *sections,
 	    Elf32_Addr *target;
 	    
 	    offset = grub_le_to_cpu32 (r->r_offset);
-	    target = (Elf32_Addr *) get_target_address (e, target_section,
-							offset);
+	    target = get_target_address (e, target_section, offset);
 	    info = grub_le_to_cpu32 (r->r_info);
 	    sym_addr = get_symbol_address (e, symtab_section,
 					   ELF32_R_SYM (info));

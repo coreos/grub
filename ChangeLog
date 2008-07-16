@@ -1,3 +1,10 @@
+2008-07-16  Pavel Roskin  <proski@gnu.org>
+
+	* util/i386/efi/grub-mkimage.c (get_target_address): Return a
+	pointer, not an integer.  This fixes a warning and prevents
+	precision loss on 64-bit systems.
+	(relocate_addresses): Remove unneeded cast.
+
 2008-07-15  Pavel Roskin  <proski@gnu.org>
 
 	* kern/i386/ieee1275/init.c: Include grub/cache.h.
