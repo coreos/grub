@@ -168,7 +168,7 @@ allocate_pages (grub_size_t real_size, grub_size_t prot_size)
   prot_size = page_align (prot_size);
   mmap_size = find_mmap_size ();
 
-  grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %x\n",
+  grub_dprintf ("linux", "real_size = %x, prot_size = %x, mmap_size = %lx\n",
 		real_size, prot_size, mmap_size);
   
   /* Calculate the number of pages; Combine the real mode code with
@@ -217,7 +217,7 @@ allocate_pages (grub_size_t real_size, grub_size_t prot_size)
 	  if (addr < 0x10000)
 	    continue;
 
-	  grub_dprintf ("linux", "trying to allocate %u pages at %x\n",
+	  grub_dprintf ("linux", "trying to allocate %lu pages at %x\n",
 			real_mode_pages, (unsigned) addr);
 	  real_mode_mem = grub_efi_allocate_pages (addr, real_mode_pages);
 	  if (! real_mode_mem)

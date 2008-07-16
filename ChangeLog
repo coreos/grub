@@ -1,5 +1,8 @@
 2008-07-16  Pavel Roskin  <proski@gnu.org>
 
+	* loader/i386/efi/linux.c (allocate_pages): Fix warnings in
+	format strings.
+
 	* util/i386/efi/grub-mkimage.c (get_target_address): Return a
 	pointer, not an integer.  This fixes a warning and prevents
 	precision loss on 64-bit systems.
