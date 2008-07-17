@@ -38,6 +38,9 @@ struct grub_module_info
 {
   /* Magic number so we know we have modules present.  */
   grub_uint32_t magic;
+#if GRUB_TARGET_SIZEOF_VOID_P == 8
+  grub_uint32_t padding;
+#endif
   /* The offset of the modules.  */
   grub_target_off_t offset;
   /* The size of all modules plus this header.  */

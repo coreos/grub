@@ -49,11 +49,6 @@ esac
 
 case "$target_cpu" in
   i[[3456]]86) target_cpu=i386 ;;
-  x86_64) target_cpu=i386 target_m32=1 ;;
-  powerpc) ;;
-  powerpc64) target_cpu=powerpc target_m32=1;;
-  sparc64) ;;
-  *) AC_MSG_ERROR([unsupported CPU type]) ;;
 esac
 
 # Specify the platform (such as firmware).
@@ -74,9 +69,27 @@ else
   platform="$with_platform"
 fi
 
+if test "x$platform" = "xefi" ; then
+  case "$target_cpu" in
+    i386) ;;
+    x86_64) target_m64=1 ;;
+    *) AC_MSG_ERROR([unsupported CPU type for EFI]) ;;
+  esac
+else
+  case "$target_cpu" in
+    i386) ;;
+    x86_64) target_cpu=i386 target_m32=1 ;;
+    powerpc) ;;
+    powerpc64) target_cpu=powerpc target_m32=1;;
+    sparc64) ;;
+    *) AC_MSG_ERROR([unsupported CPU type]) ;;
+  esac
+fi
+
 # Sanity check.
 case "$target_cpu"-"$platform" in
   i386-efi) ;;
+  x86_64-efi) ;;
   i386-pc) ;;
   i386-linuxbios) ;;
   i386-ieee1275) ;;
@@ -245,6 +258,12 @@ if test "x$target_m32" = x1; then
   # Force 32-bit mode.
   TARGET_CFLAGS="$TARGET_CFLAGS -m32"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m32"
+fi
+
+if test "x$target_m64" = x1; then
+  # Force 64-bit mode.
+  TARGET_CFLAGS="$TARGET_CFLAGS -m64"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
 fi
 
 #

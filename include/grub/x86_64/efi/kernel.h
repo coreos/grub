@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,18 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_EFI_CHAINLOADER_HEADER
-#define GRUB_EFI_CHAINLOADER_HEADER	1
+#ifndef GRUB_MACHINE_KERNEL_HEADER
+#define GRUB_MACHINE_KERNEL_HEADER   1
 
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
+/* The prefix which points to the directory where GRUB modules and its
+   configuration file are located.  */
+extern char grub_prefix[];
 
-#endif /* ! GRUB_EFI_CHAINLOADER_HEADER */
+/* The offset of GRUB_PREFIX.  */
+#define GRUB_KERNEL_MACHINE_PREFIX		0x8
+
+/* End of the data section. */
+#define GRUB_KERNEL_MACHINE_DATA_END		0x50
+
+#endif /* ! GRUB_MACHINE_KERNEL_HEADER */
+

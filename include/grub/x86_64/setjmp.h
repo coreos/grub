@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2006,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_EFI_CHAINLOADER_HEADER
-#define GRUB_EFI_CHAINLOADER_HEADER	1
+#ifndef GRUB_SETJMP_CPU_HEADER
+#define GRUB_SETJMP_CPU_HEADER	1
 
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
+typedef unsigned long grub_jmp_buf[8];
 
-#endif /* ! GRUB_EFI_CHAINLOADER_HEADER */
+int grub_setjmp (grub_jmp_buf env);
+void grub_longjmp (grub_jmp_buf env, int val) __attribute__ ((noreturn));
+
+#endif /* ! GRUB_SETJMP_CPU_HEADER */

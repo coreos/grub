@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2006,2007  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,17 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_EFI_CHAINLOADER_HEADER
-#define GRUB_EFI_CHAINLOADER_HEADER	1
+#ifndef GRUB_LOADER_MACHINE_HEADER
+#define GRUB_LOADER_MACHINE_HEADER	1
 
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
+#include <grub/types.h>
+#include <grub/symbol.h>
 
-#endif /* ! GRUB_EFI_CHAINLOADER_HEADER */
+/* It is necessary to export these functions, because normal mode commands
+   reuse rescue mode commands.  */
+void grub_rescue_cmd_linux (int argc, char *argv[]);
+void grub_rescue_cmd_initrd (int argc, char *argv[]);
+
+void EXPORT_FUNC(grub_linux_real_boot) (void);
+
+#endif /* ! GRUB_LOADER_MACHINE_HEADER */

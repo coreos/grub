@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,4 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_EFI_CHAINLOADER_HEADER
-#define GRUB_EFI_CHAINLOADER_HEADER	1
-
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
-
-#endif /* ! GRUB_EFI_CHAINLOADER_HEADER */
+#include <grub/i386/pc/pci.h>

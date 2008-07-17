@@ -64,6 +64,7 @@ struct grub_pe32_coff_header
 };
 
 #define GRUB_PE32_MACHINE_I386		0x14c
+#define GRUB_PE32_MACHINE_X86_64	0x8664
 
 #define GRUB_PE32_RELOCS_STRIPPED		0x0001
 #define GRUB_PE32_EXECUTABLE_IMAGE		0x0002
@@ -98,9 +99,13 @@ struct grub_pe32_optional_header
   grub_uint32_t entry_addr;
   grub_uint32_t code_base;
   
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
   grub_uint32_t data_base;
-
   grub_uint32_t image_base;
+#else
+  grub_uint64_t image_base;
+#endif
+
   grub_uint32_t section_alignment;
   grub_uint32_t file_alignment;
   grub_uint16_t major_os_version;
@@ -115,10 +120,23 @@ struct grub_pe32_optional_header
   grub_uint32_t checksum;
   grub_uint16_t subsystem;
   grub_uint16_t dll_characteristics;
+
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+
   grub_uint32_t stack_reserve_size;
   grub_uint32_t stack_commit_size;
   grub_uint32_t heap_reserve_size;
   grub_uint32_t heap_commit_size;
+
+#else
+
+  grub_uint64_t stack_reserve_size;
+  grub_uint64_t stack_commit_size;
+  grub_uint64_t heap_reserve_size;
+  grub_uint64_t heap_commit_size;
+
+#endif
+
   grub_uint32_t loader_flags;
   grub_uint32_t num_data_directories;
   
@@ -141,7 +159,15 @@ struct grub_pe32_optional_header
   struct grub_pe32_data_directory reserved_entry;
 };
 
+#if GRUB_TARGET_SIZEOF_VOID_P == 4
+
 #define GRUB_PE32_PE32_MAGIC	0x10b
+
+#else
+
+#define GRUB_PE32_PE32_MAGIC	0x20b
+
+#endif
 
 #define GRUB_PE32_SUBSYSTEM_EFI_APPLICATION	10
 

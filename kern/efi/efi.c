@@ -43,9 +43,8 @@ grub_efi_locate_protocol (grub_efi_guid_t *protocol, void *registration)
   void *interface;
   grub_efi_status_t status;
   
-  status = grub_efi_system_table->boot_services->locate_protocol (protocol,
-								  registration,
-								  &interface);
+  status = efi_call_3 (grub_efi_system_table->boot_services->locate_protocol,
+                       protocol, registration, &interface);
   if (status != GRUB_EFI_SUCCESS)
     return 0;
   
@@ -71,7 +70,7 @@ grub_efi_locate_handle (grub_efi_locate_search_type_t search_type,
     return 0;
   
   b = grub_efi_system_table->boot_services;
-  status = b->locate_handle (search_type, protocol, search_key,
+  status = efi_call_5 (b->locate_handle, search_type, protocol, search_key,
 			     &buffer_size, buffer);
   if (status == GRUB_EFI_BUFFER_TOO_SMALL)
     {
@@ -80,7 +79,7 @@ grub_efi_locate_handle (grub_efi_locate_search_type_t search_type,
       if (! buffer)
 	return 0;
       
-      status = b->locate_handle (search_type, protocol, search_key,
+      status = efi_call_5 (b->locate_handle, search_type, protocol, search_key,
 				 &buffer_size, buffer);
     }
 
@@ -104,12 +103,12 @@ grub_efi_open_protocol (grub_efi_handle_t handle,
   void *interface;
   
   b = grub_efi_system_table->boot_services;
-  status = b->open_protocol (handle,
-			     protocol,
-			     &interface,
-			     grub_efi_image_handle,
-			     0,
-			     attributes);
+  status = efi_call_6 (b->open_protocol, handle,
+		       protocol,
+		       &interface,
+		       grub_efi_image_handle,
+		       0,
+		       attributes);
   if (status != GRUB_EFI_SUCCESS)
     return 0;
 
@@ -128,12 +127,12 @@ grub_efi_set_text_mode (int on)
        already in text mode. */
     return 1;
   
-  if (c->get_mode (c, &mode, 0, 0) != GRUB_EFI_SUCCESS)
+  if (efi_call_4 (c->get_mode, c, &mode, 0, 0) != GRUB_EFI_SUCCESS)
     return 0;
 
   new_mode = on ? GRUB_EFI_SCREEN_TEXT : GRUB_EFI_SCREEN_GRAPHICS;
   if (mode != new_mode)
-    if (c->set_mode (c, new_mode) != GRUB_EFI_SUCCESS)
+    if (efi_call_2 (c->set_mode, c, new_mode) != GRUB_EFI_SUCCESS)
       return 0;
 
   return 1;
@@ -142,7 +141,7 @@ grub_efi_set_text_mode (int on)
 void
 grub_efi_stall (grub_efi_uintn_t microseconds)
 {
-  grub_efi_system_table->boot_services->stall (microseconds);
+  efi_call_1 (grub_efi_system_table->boot_services->stall, microseconds);
 }
 
 grub_efi_loaded_image_t *
@@ -157,25 +156,24 @@ void
 grub_exit (void)
 {
   grub_efi_fini ();
-  grub_efi_system_table->boot_services->exit (grub_efi_image_handle,
-					      GRUB_EFI_SUCCESS,
-					      0, 0);
+  efi_call_4 (grub_efi_system_table->boot_services->exit,
+              grub_efi_image_handle, GRUB_EFI_SUCCESS, 0, 0);
 }
 
 void
 grub_reboot (void)
 {
   grub_efi_fini ();
-  grub_efi_system_table->runtime_services->
-    reset_system (GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
+  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
+              GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
 }
 
 void
 grub_halt (void)
 {
   grub_efi_fini ();
-  grub_efi_system_table->runtime_services->
-    reset_system (GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
+  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
+              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
 }
 
 int
@@ -185,7 +183,7 @@ grub_efi_exit_boot_services (grub_efi_uintn_t map_key)
   grub_efi_status_t status;
   
   b = grub_efi_system_table->boot_services;
-  status = b->exit_boot_services (grub_efi_image_handle, map_key);
+  status = efi_call_2 (b->exit_boot_services, grub_efi_image_handle, map_key);
   return status == GRUB_EFI_SUCCESS;
 }
 
@@ -196,7 +194,7 @@ grub_get_rtc (void)
   grub_efi_runtime_services_t *r;
 
   r = grub_efi_system_table->runtime_services;
-  if (r->get_time (&time, 0) != GRUB_EFI_SUCCESS)
+  if (efi_call_2 (r->get_time, &time, 0) != GRUB_EFI_SUCCESS)
     /* What is possible in this case?  */
     return 0;
 

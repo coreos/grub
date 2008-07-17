@@ -1,3 +1,165 @@
+2008-07-17  Bean  <bean123ch@gmail.com>
+
+	* conf/i386/efi.rmk (pkglib_MODULES): add pci.mod and lspci.mod.
+	(appleldr_mod_SOURCE): New variavle.
+	(appleldr_mod_CFLAGS): Likewise.
+	(appleldr_mod_LDFLAGS): Likewise.
+	(pci_mod_SOURCES): Likewise.
+	(pci_mod_CFLAGS): Likewise.
+	(pci_mod_LDFLAGS): Likewise.
+	(lspci_mod_SOURCES): Likewise.
+	(lspci_mod_CFLAGS): Likewise.
+	(lspci_mod_LDFLAGS): Likewise.
+
+	* conf/x86_64-efi.rmk: New file.
+
+	* disk/efi/efidisk.c (grub_efidisk_read): Wrap efi calls with efi_call_N
+	macro.
+	(grub_efidisk_write): Likewise.
+
+	* include/efi/api.h (efi_call_0): New macro.
+	(efi_call_1): Likewise.
+	(efi_call_2): Likewise.
+	(efi_call_3): Likewise.
+	(efi_call_4): Likewise.
+	(efi_call_5): Likewise.
+	(efi_call_6): Likewise.
+
+	* include/grub/efi/chainloader.h (grub_chainloader_cmd): Rename to
+	grub_rescue_cmd_chainloader.
+
+	* include/grub/efi/pe32.h (GRUB_PE32_MACHINE_X86_64): New macro.
+	(grub_pe32_optional_header): Change some fields based on i386 or
+	x86_64 platform.
+	(GRUB_PE32_PE32_MAGIC): Likewise.
+
+	* include/grub/efi/uga_draw.h: New file.
+
+	* include/grub/elf.h (STN_ABS): New constant.
+	(R_X86_64_NONE): Relocation constant for x86_64.
+	(R_X86_64_64): Likewise.
+	(R_X86_64_PC32): Likewise.
+	(R_X86_64_GOT32): Likewise.
+	(R_X86_64_PLT32): Likewise.
+	(R_X86_64_COPY): Likewise.
+	(R_X86_64_GLOB_DAT): Likewise.
+	(R_X86_64_JUMP_SLOT): Likewise.
+	(R_X86_64_RELATIVE): Likewise.
+	(R_X86_64_GOTPCREL): Likewise.
+	(R_X86_64_32): Likewise.
+	(R_X86_64_32S): Likewise.
+	(R_X86_64_16): Likewise.
+	(R_X86_64_PC16): Likewise.
+	(R_X86_64_8): Likewise.
+	(R_X86_64_PC8): Likewise.
+
+	* include/grub/i386/efi/pci.h: New file.
+
+	* include/grub/i386/linux.h (GRUB_LINUX_EFI_SIGNATURE):
+	Change it value based on platform.
+	(GRUB_LINUX_EFI_SIGNATURE_0204): New constant.
+	(GRUB_E820_RAM): Likewise.
+	(GRUB_E820_RESERVED): Likewise.
+	(GRUB_E820_ACPI): Likewise.
+	(GRUB_E820_NVS): Likewise.
+	(GRUB_E820_EXEC_CODE): Likewise.
+	(GRUB_E820_MAX_ENTRY): Likewise.
+	(grub_e820_mmap): New structure.
+	(linux_kernel_header): Change the efi field according to different
+	kernel version, also field from linux_kernel_header.
+
+	* include/grub/kernel.h (grub_module_info): Add padding for x86_64.
+
+	* include/grub/pci.h (GRUB_PCI_ADDR_SPACE_MASK): New constant.
+	(GRUB_PCI_ADDR_SPACE_MEMORY): Likewise.
+	(GRUB_PCI_ADDR_SPACE_IO): Likewise.
+	(GRUB_PCI_ADDR_MEM_TYPE_MASK): Likewise.
+	(GRUB_PCI_ADDR_MEM_TYPE_32): Likewise.
+	(GRUB_PCI_ADDR_MEM_TYPE_1M): Likewise.
+	(GRUB_PCI_ADDR_MEM_TYPE_64): Likewise.
+	(GRUB_PCI_ADDR_MEM_PREFETCH): Likewise.
+	(GRUB_PCI_ADDR_MEM_MASK): Likewise.
+	(GRUB_PCI_ADDR_IO_MASK): Likewise.
+
+	* include/grub/x86_64/efi/kernel.h: New file.
+
+	* include/grub/x86_64/efi/loader.h: Likewise.
+
+	* include/grub/x86_64/efi/machine.h: Likewise.
+
+	* include/grub/x86_64/efi/pci.h: Likewise.
+
+	* include/grub/x86_64/efi/time.h: Likewise.
+
+	* include/grub/x86_64/linux.h: Likewise.
+
+	* include/grub/x86_64/setjmp.h: Likewise.
+
+	* include/grub/x86_64/time.h: Likewise.
+
+	* include/grub/x86_64/types.h: Likewise.
+
+	* kern/dl.c (GRUB_CPU_SIZEOF_VOID_P): Changed to
+	 GRUB_TARGET_SIZEOF_VOID_P.
+
+	* kern/efi/efi.c (grub_efi_locate_protocol): Wrap efi calls.
+	(grub_efi_locate_handle): Likewise.
+	(grub_efi_open_protocol): Likewise.
+	(grub_efi_set_text_mode): Likewise.
+	(grub_efi_stall): Likewise.
+	(grub_exit): Likewise.
+	(grub_reboot): Likewise.
+	(grub_halt): Likewise.
+	(grub_efi_exit_boot_services): Likewise.
+	(grub_get_rtc): Likewise.
+
+	* kern/efi/mm.c (MEMORY_MAP_SIZE): Change to 0x3000 for new models.
+	(GRUB_CPU_SIZEOF_VOID_P): Changed to GRUB_TARGET_SIZEOF_VOID_P.
+	(grub_efi_allocate_pages): Wrap efi calls.
+	(grub_efi_free_pages): Wrap efi calls.
+	(grub_efi_get_memory_map): Wrap efi calls.
+
+	* kern/x86_64/dl.c: New file.
+
+	* kern/x86_64/efi/callwrap.S: Likewise.
+
+	* kern/x86_64/efi/startup.S: Likewise.
+
+	* loader/efi/appleloader.c: Likewise.
+
+	* loader/efi/chainloader.c (cmdline): New variable.
+	(grub_chainloader_unload): Wrap efi calls.
+	(grub_chainloader_boot): Likewise.
+	(grub_rescue_cmd_chainloader): Wrap efi calls, handle
+	command line.
+
+	* loader/efi/chainloader_normal.c (chainloader_command):
+	Change grub_chainloader_cmd to grub_rescue_cmd_chainloader, pass
+	command line.
+
+	* loader/i386/efi/linux.c (allocate_pages): Change allocation
+	method.
+	(grub_e820_add_region): New function.
+	(grub_linux_boot): Construct e820 map from efi map, handle x86_64
+	booting.
+	(grub_find_video_card): New function.
+	(grub_linux_setup_video): New function.
+	(grub_rescue_cmd_linux): Probe for video information.
+
+	* normal/x86_64/setjmp.S: New file.
+
+	* term/efi/console.c (map_char): New function.
+	(grub_console_putchar): Map unicode char.
+	(grub_console_checkkey): Wrap efi calls.
+	(grub_console_getkey): Likewise.
+	(grub_console_getwh): Likewise.
+	(grub_console_gotoxy): Likewise.
+	(grub_console_cls): Likewise.
+	(grub_console_setcolorstate): Likewise.
+	(grub_console_setcursor): Likewise.
+
+	* util/i386/efi/grub-mkimage.c: Add support for x86_64.
+
 2008-07-16  Pavel Roskin  <proski@gnu.org>
 
 	* loader/i386/efi/linux.c (allocate_pages): Fix warnings in

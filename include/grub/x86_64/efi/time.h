@@ -16,9 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_EFI_CHAINLOADER_HEADER
-#define GRUB_EFI_CHAINLOADER_HEADER	1
+#ifndef GRUB_MACHINE_TIME_HEADER
+#define GRUB_MACHINE_TIME_HEADER	1
 
-void grub_rescue_cmd_chainloader (int argc, char *argv[]);
+#include <grub/efi/time.h>
 
-#endif /* ! GRUB_EFI_CHAINLOADER_HEADER */
+#endif /* ! GRUB_MACHINE_TIME_HEADER */

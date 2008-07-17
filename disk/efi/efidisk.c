@@ -574,7 +574,7 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
 		"reading 0x%x sectors at the sector 0x%llx from %s\n",
 		size, sector, disk->name);
   
-  status = dio->read (dio, bio->media->media_id,
+  status = efi_call_5 (dio->read, dio, bio->media->media_id,
 		      (grub_efi_uint64_t) sector << GRUB_DISK_SECTOR_BITS,
 		      (grub_efi_uintn_t) size << GRUB_DISK_SECTOR_BITS,
 		      buf);
@@ -602,7 +602,7 @@ grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 		"writing 0x%x sectors at the sector 0x%llx to %s\n",
 		size, sector, disk->name);
   
-  status = dio->write (dio, bio->media->media_id,
+  status = efi_call_5 (dio->write, dio, bio->media->media_id,
 		       (grub_efi_uint64_t) sector << GRUB_DISK_SECTOR_BITS,
 		       (grub_efi_uintn_t) size << GRUB_DISK_SECTOR_BITS,
 		       (void *) buf);
