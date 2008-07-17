@@ -61,46 +61,37 @@ if test "x$with_platform" = x; then
   case "$target_cpu"-"$target_vendor" in
     i386-apple) platform=efi ;;
     i386-*) platform=pc ;;
+    x86_64-apple) platform=efi ;;
     x86_64-*) platform=pc ;;
     powerpc-*) platform=ieee1275 ;;
+    powerpc64-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
-    *) AC_MSG_ERROR([unsupported machine type]) ;;
+    *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
   platform="$with_platform"
 fi
 
-case "$platform" in
-  linuxbios) platform=coreboot ;;
-esac
-
-if test "x$platform" = "xefi" ; then
-  case "$target_cpu" in
-    i386) ;;
-    x86_64) target_m64=1 ;;
-    *) AC_MSG_ERROR([unsupported CPU type for EFI]) ;;
-  esac
-else
-  case "$target_cpu" in
-    i386) ;;
-    x86_64) target_cpu=i386 target_m32=1 ;;
-    powerpc) ;;
-    powerpc64) target_cpu=powerpc target_m32=1;;
-    sparc64) ;;
-    *) AC_MSG_ERROR([unsupported CPU type]) ;;
+# Adjust CPU unless target was explicitly specified.
+if test -z "$target_alias"; then
+  case "$target_cpu"-"$platform" in
+    x86_64-efi) ;;
+    x86_64-*) target_cpu=i386 target_m32=1 ;;
+    powerpc64-ieee1275) target_cpu=powerpc target_m32=1 ;;
   esac
 fi
 
-# Sanity check.
+# Check if the platform is supported, make final adjustments.
 case "$target_cpu"-"$platform" in
   i386-efi) ;;
-  x86_64-efi) ;;
+  x86_64-efi) target_m64=1 ;;
   i386-pc) ;;
   i386-coreboot) ;;
+  i386-linuxbios) platform=coreboot ;;
   i386-ieee1275) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;
-  *) AC_MSG_ERROR([unsupported machine type]) ;;
+  *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
 
 AC_SUBST(target_cpu)

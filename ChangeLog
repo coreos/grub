@@ -1,5 +1,12 @@
 2008-07-17  Pavel Roskin  <proski@gnu.org>
 
+	* configure.ac: Default to efi platform for x86_64-apple.  Allow
+	powerpc64 CPU, default to ieee1275 platform for it.  Split CPU
+	adjustments from the rest, only do them if target is not
+	explicitly given.  Merge other adjustments with the final sanity
+	check.  Remove an extraneous check for supported CPU.  Be
+	specific which CPU and which platform is not supported.
+
 	* configure.ac: Default to pc platform for x86_64.
 
 2008-07-17  Robert Millan  <rmh@aybabtu.com>
