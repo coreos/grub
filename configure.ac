@@ -61,6 +61,7 @@ if test "x$with_platform" = x; then
   case "$target_cpu"-"$target_vendor" in
     i386-apple) platform=efi ;;
     i386-*) platform=pc ;;
+    x86_64-*) platform=pc ;;
     powerpc-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
     *) AC_MSG_ERROR([unsupported machine type]) ;;

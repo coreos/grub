@@ -1,3 +1,7 @@
+2008-07-17  Pavel Roskin  <proski@gnu.org>
+
+	* configure.ac: Default to pc platform for x86_64.
+
 2008-07-17  Robert Millan  <rmh@aybabtu.com>
 
 	Partial LinuxBIOS -> Coreboot rename.
