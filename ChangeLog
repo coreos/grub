@@ -1,5 +1,10 @@
 2008-07-17  Pavel Roskin  <proski@gnu.org>
 
+	* aclocal.m4 (grub_PROG_TARGET_CC): New macro.  Check if the
+	target compiler is functional.
+	* configure.ac: Call grub_PROG_TARGET_CC once all target flags
+	are set up.
+
 	* configure.ac: Default to efi platform for x86_64-apple.  Allow
 	powerpc64 CPU, default to ieee1275 platform for it.  Split CPU
 	adjustments from the rest, only do them if target is not

@@ -1,3 +1,19 @@
+dnl Check whether target compiler is working
+AC_DEFUN(grub_PROG_TARGET_CC,
+[AC_MSG_CHECKING([whether target compiler is working])
+AC_CACHE_VAL(grub_cv_prog_target_cc,
+[AC_TRY_LINK([], [],
+   grub_cv_prog_target_cc=yes,
+   grub_cv_prog_target_cc=no)
+])
+AC_MSG_RESULT([$grub_cv_prog_target_cc])
+
+if test "x$grub_cv_prog_target_cc" = xno; then
+  AC_MSG_ERROR([cannot compile for the target])
+fi
+])
+
+
 dnl grub_ASM_USCORE checks if C symbols get an underscore after
 dnl compiling to assembler.
 dnl Written by Pavel Roskin. Based on grub_ASM_EXT_C written by
