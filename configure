@@ -1955,6 +1955,10 @@ else
   platform="$with_platform"
 fi
 
+case "$platform" in
+  linuxbios) platform=coreboot ;;
+esac
+
 if test "x$platform" = "xefi" ; then
   case "$target_cpu" in
     i386) ;;
@@ -1981,7 +1985,7 @@ case "$target_cpu"-"$platform" in
   i386-efi) ;;
   x86_64-efi) ;;
   i386-pc) ;;
-  i386-linuxbios) ;;
+  i386-coreboot) ;;
   i386-ieee1275) ;;
   powerpc-ieee1275) ;;
   sparc64-ieee1275) ;;

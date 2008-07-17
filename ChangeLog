@@ -1,3 +1,15 @@
+2008-07-17  Robert Millan  <rmh@aybabtu.com>
+
+	Partial LinuxBIOS -> Coreboot rename.
+
+	* conf/i386-linuxbios.rmk: Renamed to ...
+	* conf/i386-coreboot.rmk: ... this.
+	* Makefile.in (RMKFILES): s/i386-linuxbios.rmk/i386-coreboot.rmk/g.
+	* configure.ac: Accept "coreboot" as input platform (but maintain
+	compatibility with "linuxbios").
+	* include/grub/i386/linuxbios: Renamed to ...
+	* include/grub/i386/coreboot: ... this.
+
 2008-07-17  Bean  <bean123ch@gmail.com>
 
 	* conf/i386/efi.rmk (pkglib_MODULES): add pci.mod and lspci.mod.
