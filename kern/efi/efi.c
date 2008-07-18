@@ -367,8 +367,8 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_memcpy (&mmapped, dp, len);
 		grub_printf ("/MMap(%x,%llx,%llx)",
 			     (unsigned) mmapped.memory_type,
-			     mmapped.start_address,
-			     mmapped.end_address);
+			     (unsigned long long) mmapped.start_address,
+			     (unsigned long long) mmapped.end_address);
 	      }
 	      break;
 	    case GRUB_EFI_VENDOR_DEVICE_PATH_SUBTYPE:
@@ -470,14 +470,15 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_efi_fibre_channel_device_path_t fc;
 		grub_memcpy (&fc, dp, len);
 		grub_printf ("/FibreChannel(%llx,%llx)",
-			     fc.wwn, fc.lun);
+			     (unsigned long long) fc.wwn,
+			     (unsigned long long) fc.lun);
 	      }
 	      break;
 	    case GRUB_EFI_1394_DEVICE_PATH_SUBTYPE:
 	      {
 		grub_efi_1394_device_path_t firewire;
 		grub_memcpy (&firewire, dp, len);
-		grub_printf ("/1394(%llx)", firewire.guid);
+		grub_printf ("/1394(%llx)", (unsigned long long) firewire.guid);
 	      }
 	      break;
 	    case GRUB_EFI_USB_DEVICE_PATH_SUBTYPE:
@@ -574,9 +575,9 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_memcpy (&ib, dp, len);
 		grub_printf ("/InfiniBand(%x,%llx,%llx,%llx)",
 			     (unsigned) ib.port_gid[0], /* XXX */
-			     ib.remote_id,
-			     ib.target_port_id,
-			     ib.device_id);
+			     (unsigned long long) ib.remote_id,
+			     (unsigned long long) ib.target_port_id,
+			     (unsigned long long) ib.device_id);
 	      }
 	      break;
 	    case GRUB_EFI_UART_DEVICE_PATH_SUBTYPE:
@@ -584,7 +585,7 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_efi_uart_device_path_t uart;
 		grub_memcpy (&uart, dp, len);
 		grub_printf ("/UART(%llu,%u,%x,%x)",
-			     uart.baud_rate,
+			     (unsigned long long) uart.baud_rate,
 			     uart.data_bits,
 			     uart.parity,
 			     uart.stop_bits);
@@ -623,8 +624,8 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_memcpy (&hd, dp, len);
 		grub_printf ("/HD(%u,%llx,%llx,%02x%02x%02x%02x%02x%02x%02x%02x,%x,%x)",
 			     hd.partition_number,
-			     hd.partition_start,
-			     hd.partition_size,
+			     (unsigned long long) hd.partition_start,
+			     (unsigned long long) hd.partition_size,
 			     (unsigned) hd.partition_signature[0],
 			     (unsigned) hd.partition_signature[1],
 			     (unsigned) hd.partition_signature[2],
@@ -643,8 +644,8 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_memcpy (&cd, dp, len);
 		grub_printf ("/CD(%u,%llx,%llx)",
 			     cd.boot_entry,
-			     cd.partition_start,
-			     cd.partition_size);
+			     (unsigned long long) cd.partition_start,
+			     (unsigned long long) cd.partition_size);
 	      }
 	      break;
 	    case GRUB_EFI_VENDOR_MEDIA_DEVICE_PATH_SUBTYPE:
