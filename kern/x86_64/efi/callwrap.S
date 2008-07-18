@@ -22,7 +22,7 @@
 #include <grub/boot.h>
 
 /*
- * x86_64 uses registry to pass parameters. Unfortuanately, gcc and efi use
+ * x86_64 uses registry to pass parameters. Unfortunately, gcc and efi use
  * different call conversion, so we need to do some conversion.
  *
  * gcc:
