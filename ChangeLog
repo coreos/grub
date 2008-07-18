@@ -1,5 +1,9 @@
 2008-07-17  Pavel Roskin  <proski@gnu.org>
 
+	* configure.ac: Use -m32 or -m64 regardless of whether we had to
+	change target_cpu.  The compiler default can mismatch target_cpu
+	in any case.
+
 	* disk/efi/efidisk.c: Fix format warnings on x86_64.
 	* kern/efi/efi.c: Likewise.
 

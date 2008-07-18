@@ -1962,15 +1962,15 @@ fi
 if test -z "$target_alias"; then
   case "$target_cpu"-"$platform" in
     x86_64-efi) ;;
-    x86_64-*) target_cpu=i386 target_m32=1 ;;
-    powerpc64-ieee1275) target_cpu=powerpc target_m32=1 ;;
+    x86_64-*) target_cpu=i386 ;;
+    powerpc64-ieee1275) target_cpu=powerpc ;;
   esac
 fi
 
 # Check if the platform is supported, make final adjustments.
 case "$target_cpu"-"$platform" in
   i386-efi) ;;
-  x86_64-efi) target_m64=1 ;;
+  x86_64-efi) ;;
   i386-pc) ;;
   i386-coreboot) ;;
   i386-linuxbios) platform=coreboot ;;
@@ -1980,6 +1980,11 @@ case "$target_cpu"-"$platform" in
   *) { { echo "$as_me:$LINENO: error: platform \"$platform\" is not supported for target CPU \"$target_cpu\"" >&5
 echo "$as_me: error: platform \"$platform\" is not supported for target CPU \"$target_cpu\"" >&2;}
    { (exit 1); exit 1; }; } ;;
+esac
+
+case "$target_cpu" in
+  i386 | powerpc) target_m32=1 ;;
+  x86_64 | sparc64) target_m64=1 ;;
 esac
 
 
