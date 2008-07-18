@@ -32,7 +32,7 @@
 2008-07-17  Bean  <bean123ch@gmail.com>
 
 	* conf/i386/efi.rmk (pkglib_MODULES): add pci.mod and lspci.mod.
-	(appleldr_mod_SOURCE): New variavle.
+	(appleldr_mod_SOURCE): New variable.
 	(appleldr_mod_CFLAGS): Likewise.
 	(appleldr_mod_LDFLAGS): Likewise.
 	(pci_mod_SOURCES): Likewise.
