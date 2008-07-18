@@ -1,3 +1,10 @@
+2008-07-18  Pavel Roskin  <proski@gnu.org>
+
+	* kern/dl.c: Go back to using GRUB_CPU_SIZEOF_VOID_P.  We cannot
+	load foreign architecture modules correctly anyway.  Keep
+	support for loading host architecture modules, whether we
+	compile them or not.
+
 2008-07-17  Pavel Roskin  <proski@gnu.org>
 
 	* configure.ac: Use -m32 or -m64 regardless of whether we had to
