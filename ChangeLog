@@ -1,3 +1,8 @@
+2008-07-21  Bean  <bean123ch@gmail.com>
+
+	* kern/i386/pc/startup.S (gate_a20_try_bios): Change test order for
+	a20. Run keyboard test last, as it will cause macbook to halt.
+
 2008-07-18  Pavel Roskin  <proski@gnu.org>
 
 	* kern/dl.c: Go back to using GRUB_CPU_SIZEOF_VOID_P.  We cannot

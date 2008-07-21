@@ -386,9 +386,32 @@ gate_a20_try_bios:
 	popl	%ebp
 	call	gate_a20_check_state
 	cmpb	%al, %dl
-	jnz	gate_a20_try_keyboard_controller
+	jnz	gate_a20_try_system_control_port_a
 	ret
 	
+gate_a20_try_system_control_port_a:
+	/*
+	 * In macbook, the keyboard test would hang the machine, so we move
+	 * this forward.
+	 */
+	/* fourth, try the system control port A */
+	inb	$0x92
+	andb	$(~0x03), %al
+	testb	%dl, %dl
+	jz	6f
+	orb	$0x02, %al
+6:	outb	$0x92
+
+	/* When turning off Gate A20, do not check the state strictly,
+	   because a failure is not fatal usually, and Gate A20 is always
+	   on some modern machines.  */
+	testb	%dl, %dl
+	jz	7f
+	call	gate_a20_check_state
+	cmpb	%al, %dl
+	jnz	gate_a20_try_keyboard_controller
+7:	ret
+
 gate_a20_flush_keyboard_buffer:
 	inb	$0x64
 	andb	$0x02, %al
@@ -427,28 +450,9 @@ gate_a20_try_keyboard_controller:
 
 	call	gate_a20_check_state
 	cmpb	%al, %dl
-	jnz	gate_a20_try_system_control_port_a
-	ret
-
-gate_a20_try_system_control_port_a:
-	/* fourth, try the system control port A */
-	inb	$0x92
-	andb	$(~0x03), %al
-	testb	%dl, %dl
-	jz	6f
-	orb	$0x02, %al
-6:	outb	$0x92
-
-	/* When turning off Gate A20, do not check the state strictly,
-	   because a failure is not fatal usually, and Gate A20 is always
-	   on some modern machines.  */
-	testb	%dl, %dl
-	jz	7f	
-	call	gate_a20_check_state
-	cmpb	%al, %dl
 	/* everything failed, so restart from the beginning */
 	jnz	gate_a20_try_bios
-7:	ret
+	ret
 	
 gate_a20_check_state:
 	/* iterate the checking for a while */
