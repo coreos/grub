@@ -143,11 +143,16 @@ partmap.lst: $(PARTMAPFILES)
 ifeq (, $(UNIFONT_HEX))
 else
 pkgdata_DATA += unicode.pff ascii.pff
+
+# Arrows and lines are needed to draw the menu, so we always include them
+UNICODE_ARROWS=0x2190-0x2193
+UNICODE_LINES=0x2501-0x251B
+
 unicode.pff: $(UNIFONT_HEX)
 	ruby $(srcdir)/util/unifont2pff.rb $(UNIFONT_HEX) > $@
 
 ascii.pff: $(UNIFONT_HEX)
-	ruby $(srcdir)/util/unifont2pff.rb 0-127 $(UNIFONT_HEX) > $@
+	ruby $(srcdir)/util/unifont2pff.rb 0x0-0x7f $(UNICODE_ARROWS) $(UNICODE_LINES) $(UNIFONT_HEX) > $@
 endif
 
 all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)

@@ -131,8 +131,9 @@ prepare_grub_to_access_device ()
 font_path ()
 {
   for dir in ${pkgdatadir} /boot/grub /usr/share/grub ; do
-    # Prefer complete fonts over incomplete ones.
-    for basename in unicode unifont ascii ; do
+    # FIXME: We prefer ascii because loading complete fonts is too slow (and
+    # we don't yet provide the gettext magic that would make unicode useful).
+    for basename in ascii unicode unifont ; do
       path="${dir}/${basename}.pff"
       if is_path_readable_by_grub ${path} > /dev/null ; then
         echo "${path}"

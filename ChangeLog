@@ -1,3 +1,13 @@
+2008-07-23  Robert Millan  <rmh@aybabtu.com>
+
+	* Makefile.in (UNICODE_ARROWS, UNICODE_LINES): New variables (they
+	define the codes for arrows and lines used for the menu).
+	(ascii.pff): Generate fonts for $(UNICODE_ARROWS) and $(UNICODE_LINES)
+	as well.
+
+	* util/update-grub_lib.in (font_path): Prefer ascii.pff over complete
+	fonts, because the latter are too slow.
+
 2008-07-21  Bean  <bean123ch@gmail.com>
 
 	* kern/i386/pc/startup.S (gate_a20_try_bios): Change test order for
