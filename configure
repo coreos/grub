@@ -687,6 +687,9 @@ GREP
 EGREP
 LIBLZO
 enable_lzo
+TARGET_IMG_LDSCRIPT
+TARGET_IMG_LDFLAGS
+TARGET_OBJ2ELF
 TARGET_CC
 ac_ct_TARGET_CC
 OBJCOPY
@@ -5877,6 +5880,34 @@ done
 # Check for target programs.
 #
 
+
+# Use linker script if present, otherwise use builtin -N script.
+{ echo "$as_me:$LINENO: checking for option to link raw image" >&5
+echo $ECHO_N "checking for option to link raw image... $ECHO_C" >&6; }
+if test -f "${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"; then
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+else
+  TARGET_IMG_LDSCRIPT=
+  TARGET_IMG_LDFLAGS='-Wl,-N'
+  TARGET_IMG_LDFLAGS_AC='-Wl,-N'
+fi
+
+
+{ echo "$as_me:$LINENO: result: $TARGET_IMG_LDFLAGS_AC" >&5
+echo "${ECHO_T}$TARGET_IMG_LDFLAGS_AC" >&6; }
+
+# For platforms where ELF is not the default link format.
+{ echo "$as_me:$LINENO: checking for command to convert module to ELF format" >&5
+echo $ECHO_N "checking for command to convert module to ELF format... $ECHO_C" >&6; }
+if test "$host_os" = cygwin; then
+  TARGET_OBJ2ELF='grub-pe2elf.exe'
+fi
+
+{ echo "$as_me:$LINENO: result: $TARGET_OBJ2ELF" >&5
+echo "${ECHO_T}$TARGET_OBJ2ELF" >&6; }
+
 # For cross-compiling.
 if test "x$target" != "x$host"; then
   # XXX this depends on the implementation of autoconf!
@@ -6759,6 +6790,30 @@ if test "x$ssp_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-stack-protector"
 fi
 
+# Smashing stack arg probe.
+sap_possible=yes
+{ echo "$as_me:$LINENO: checking whether \`$CC' accepts \`-mstack-arg-probe'" >&5
+echo $ECHO_N "checking whether \`$CC' accepts \`-mstack-arg-probe'... $ECHO_C" >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+void foo (void) { volatile char a[8]; a[3]; }
+_ACEOF
+if eval "$ac_compile -S -mstack-arg-probe -o conftest.s" 2> /dev/null; then
+  { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+  # Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
+  rm -f conftest.s
+else
+  sap_possible=no
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+# Cygwin's GCC uses alloca() to probe the stackframe on static
+# stack allocations above some threshold.
+if test x"$sap_possible" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
+fi
+
 
 
 
@@ -6856,7 +6911,7 @@ echo "$as_me: error: ${CC-cc} cannot compile C source code" >&2;}
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 2000 8000 7C00; do
-  if { ac_try='${CC-cc} ${CFLAGS} ${LDFLAGS} -nostdlib -Wl,-N -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec'
+  if { ac_try='${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC} -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -7013,6 +7068,11 @@ fi
 echo "${ECHO_T}$grub_cv_asm_uscore" >&6; }
 
 if test "x$target_cpu" = xi386; then
+  if test ! -z "$TARGET_IMG_LDSCRIPT"; then
+    # Check symbols provided by linker script.
+    CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
+  fi
+  if test "x$target_platform" = xpc; then
 
 { echo "$as_me:$LINENO: checking if start is defined by the compiler" >&5
 echo $ECHO_N "checking if start is defined by the compiler... $ECHO_C" >&6; }
@@ -7456,6 +7516,8 @@ echo "$as_me: error: neither end nor _end is defined" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
+  fi
+  CFLAGS="$TARGET_CFLAGS"
 
 { echo "$as_me:$LINENO: checking whether addr32 must be in the same line as the instruction" >&5
 echo $ECHO_N "checking whether addr32 must be in the same line as the instruction... $ECHO_C" >&6; }
@@ -9006,6 +9068,9 @@ GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 LIBLZO!$LIBLZO$ac_delim
 enable_lzo!$enable_lzo$ac_delim
+TARGET_IMG_LDSCRIPT!$TARGET_IMG_LDSCRIPT$ac_delim
+TARGET_IMG_LDFLAGS!$TARGET_IMG_LDFLAGS$ac_delim
+TARGET_OBJ2ELF!$TARGET_OBJ2ELF$ac_delim
 TARGET_CC!$TARGET_CC$ac_delim
 ac_ct_TARGET_CC!$ac_ct_TARGET_CC$ac_delim
 OBJCOPY!$OBJCOPY$ac_delim
@@ -9022,7 +9087,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 89; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

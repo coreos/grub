@@ -188,6 +188,30 @@ AC_CHECK_FUNCS(posix_memalign memalign)
 # Check for target programs.
 #
 
+
+# Use linker script if present, otherwise use builtin -N script.
+AC_MSG_CHECKING([for option to link raw image])
+if test -f "${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"; then
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+else
+  TARGET_IMG_LDSCRIPT=
+  TARGET_IMG_LDFLAGS='-Wl,-N'
+  TARGET_IMG_LDFLAGS_AC='-Wl,-N'
+fi
+AC_SUBST(TARGET_IMG_LDSCRIPT)
+AC_SUBST(TARGET_IMG_LDFLAGS)
+AC_MSG_RESULT([$TARGET_IMG_LDFLAGS_AC])
+
+# For platforms where ELF is not the default link format.
+AC_MSG_CHECKING([for command to convert module to ELF format])
+if test "$host_os" = cygwin; then
+  TARGET_OBJ2ELF='grub-pe2elf.exe'
+fi
+AC_SUBST(TARGET_OBJ2ELF)
+AC_MSG_RESULT([$TARGET_OBJ2ELF])
+
 # For cross-compiling.
 if test "x$target" != "x$host"; then
   # XXX this depends on the implementation of autoconf!
@@ -278,6 +302,12 @@ grub_CHECK_STACK_PROTECTOR
 if test "x$ssp_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-stack-protector"
 fi
+grub_CHECK_STACK_ARG_PROBE
+# Cygwin's GCC uses alloca() to probe the stackframe on static
+# stack allocations above some threshold.
+if test x"$sap_possible" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
+fi
 
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
@@ -296,9 +326,16 @@ grub_PROG_OBJCOPY_ABSOLUTE
 grub_PROG_LD_BUILD_ID_NONE
 grub_ASM_USCORE
 if test "x$target_cpu" = xi386; then
-  grub_CHECK_START_SYMBOL
-  grub_CHECK_BSS_START_SYMBOL
-  grub_CHECK_END_SYMBOL
+  if test ! -z "$TARGET_IMG_LDSCRIPT"; then
+    # Check symbols provided by linker script.
+    CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
+  fi
+  if test "x$target_platform" = xpc; then
+    grub_CHECK_START_SYMBOL
+    grub_CHECK_BSS_START_SYMBOL
+    grub_CHECK_END_SYMBOL
+  fi
+  CFLAGS="$TARGET_CFLAGS"
   grub_I386_ASM_PREFIX_REQUIREMENT
   grub_I386_ASM_ADDR32
   grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK

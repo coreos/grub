@@ -99,6 +99,11 @@ bin_UTILITIES += grub-editenv
 grub_editenv_SOURCES = util/grub-editenv.c util/envblk.c util/misc.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
+# for grub-pe2elf
+bin_UTILITIES += grub-pe2elf
+grub_pe2elf_SOURCES = util/grub-pe2elf.c util/misc.c
+CLEANFILES += grub-pe2elf
+
 # For update-grub
 update-grub: util/update-grub.in config.status
 	./config.status --file=$@:$<

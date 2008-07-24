@@ -29,7 +29,7 @@ boot_img-boot_i386_pc_boot.o: boot/i386/pc/boot.S $(boot/i386/pc/boot.S_DEPENDEN
 -include boot_img-boot_i386_pc_boot.d
 
 boot_img_ASFLAGS = $(COMMON_ASFLAGS)
-boot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
+boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
 
 # For pxeboot.img
 pxeboot_img_SOURCES = boot/i386/pc/pxeboot.S
@@ -47,7 +47,7 @@ pxeboot_img-boot_i386_pc_pxeboot.o: boot/i386/pc/pxeboot.S $(boot/i386/pc/pxeboo
 -include pxeboot_img-boot_i386_pc_pxeboot.d
 
 pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
+pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
 
 # For diskboot.img.
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S
@@ -65,7 +65,7 @@ diskboot_img-boot_i386_pc_diskboot.o: boot/i386/pc/diskboot.S $(boot/i386/pc/dis
 -include diskboot_img-boot_i386_pc_diskboot.d
 
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,8000
+diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,8000
 
 # For lnxboot.img.
 lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
@@ -83,7 +83,7 @@ lnxboot_img-boot_i386_pc_lnxboot.o: boot/i386/pc/lnxboot.S $(boot/i386/pc/lnxboo
 -include lnxboot_img-boot_i386_pc_lnxboot.d
 
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,6000
+lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,6000
 
 # For cdboot.img.
 cdboot_img_SOURCES = boot/i386/pc/cdboot.S
@@ -101,7 +101,7 @@ cdboot_img-boot_i386_pc_cdboot.o: boot/i386/pc/cdboot.S $(boot/i386/pc/cdboot.S_
 -include cdboot_img-boot_i386_pc_cdboot.d
 
 cdboot_img_ASFLAGS = $(COMMON_ASFLAGS)
-cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,7C00
+cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
@@ -207,7 +207,7 @@ kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h machine/kernel.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_img_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
+kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
@@ -229,7 +229,7 @@ endif
 ifeq ($(enable_lzo), yes)
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c
-CLEANFILES += grub-mkimage grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
+CLEANFILES += grub-mkimage$(EXEEXT) grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
 MOSTLYCLEANFILES += grub_mkimage-util_i386_pc_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d
 
 grub-mkimage: $(grub_mkimage_DEPENDENCIES) grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
@@ -251,7 +251,7 @@ grub_mkimage_LDFLAGS = $(LIBLZO)
 else
 grub_mkimage_SOURCES = util/i386/pc/grub-mkimage.c util/misc.c \
 	util/resolve.c lib/LzmaEnc.c lib/LzFind.c
-CLEANFILES += grub-mkimage grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o grub_mkimage-lib_LzmaEnc.o grub_mkimage-lib_LzFind.o
+CLEANFILES += grub-mkimage$(EXEEXT) grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o grub_mkimage-lib_LzmaEnc.o grub_mkimage-lib_LzFind.o
 MOSTLYCLEANFILES += grub_mkimage-util_i386_pc_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d grub_mkimage-lib_LzmaEnc.d grub_mkimage-lib_LzFind.d
 
 grub-mkimage: $(grub_mkimage_DEPENDENCIES) grub_mkimage-util_i386_pc_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o grub_mkimage-lib_LzmaEnc.o grub_mkimage-lib_LzFind.o
@@ -298,7 +298,7 @@ grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
 	disk/raid.c disk/lvm.c					\
 	util/raid.c util/lvm.c					\
 	grub_setup_init.c
-CLEANFILES += grub-setup grub_setup-util_i386_pc_grub_setup.o grub_setup-util_biosdisk.o grub_setup-util_misc.o grub_setup-util_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-kern_parser.o grub_setup-kern_partition.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o grub_setup-fs_affs.o grub_setup-fs_cpio.o grub_setup-fs_ext2.o grub_setup-fs_fat.o grub_setup-fs_hfs.o grub_setup-fs_hfsplus.o grub_setup-fs_iso9660.o grub_setup-fs_udf.o grub_setup-fs_jfs.o grub_setup-fs_minix.o grub_setup-fs_ntfs.o grub_setup-fs_ntfscomp.o grub_setup-fs_reiserfs.o grub_setup-fs_sfs.o grub_setup-fs_ufs.o grub_setup-fs_xfs.o grub_setup-fs_afs.o grub_setup-partmap_pc.o grub_setup-partmap_gpt.o grub_setup-disk_raid.o grub_setup-disk_lvm.o grub_setup-util_raid.o grub_setup-util_lvm.o grub_setup-grub_setup_init.o
+CLEANFILES += grub-setup$(EXEEXT) grub_setup-util_i386_pc_grub_setup.o grub_setup-util_biosdisk.o grub_setup-util_misc.o grub_setup-util_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-kern_parser.o grub_setup-kern_partition.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o grub_setup-fs_affs.o grub_setup-fs_cpio.o grub_setup-fs_ext2.o grub_setup-fs_fat.o grub_setup-fs_hfs.o grub_setup-fs_hfsplus.o grub_setup-fs_iso9660.o grub_setup-fs_udf.o grub_setup-fs_jfs.o grub_setup-fs_minix.o grub_setup-fs_ntfs.o grub_setup-fs_ntfscomp.o grub_setup-fs_reiserfs.o grub_setup-fs_sfs.o grub_setup-fs_ufs.o grub_setup-fs_xfs.o grub_setup-fs_afs.o grub_setup-partmap_pc.o grub_setup-partmap_gpt.o grub_setup-disk_raid.o grub_setup-disk_lvm.o grub_setup-util_raid.o grub_setup-util_lvm.o grub_setup-grub_setup_init.o
 MOSTLYCLEANFILES += grub_setup-util_i386_pc_grub_setup.d grub_setup-util_biosdisk.d grub_setup-util_misc.d grub_setup-util_getroot.d grub_setup-kern_device.d grub_setup-kern_disk.d grub_setup-kern_err.d grub_setup-kern_misc.d grub_setup-kern_parser.d grub_setup-kern_partition.d grub_setup-kern_file.d grub_setup-kern_fs.d grub_setup-kern_env.d grub_setup-fs_fshelp.d grub_setup-fs_affs.d grub_setup-fs_cpio.d grub_setup-fs_ext2.d grub_setup-fs_fat.d grub_setup-fs_hfs.d grub_setup-fs_hfsplus.d grub_setup-fs_iso9660.d grub_setup-fs_udf.d grub_setup-fs_jfs.d grub_setup-fs_minix.d grub_setup-fs_ntfs.d grub_setup-fs_ntfscomp.d grub_setup-fs_reiserfs.d grub_setup-fs_sfs.d grub_setup-fs_ufs.d grub_setup-fs_xfs.d grub_setup-fs_afs.d grub_setup-partmap_pc.d grub_setup-partmap_gpt.d grub_setup-disk_raid.d grub_setup-disk_lvm.d grub_setup-util_raid.d grub_setup-util_lvm.d grub_setup-grub_setup_init.d
 
 grub-setup: $(grub_setup_DEPENDENCIES) grub_setup-util_i386_pc_grub_setup.o grub_setup-util_biosdisk.o grub_setup-util_misc.o grub_setup-util_getroot.o grub_setup-kern_device.o grub_setup-kern_disk.o grub_setup-kern_err.o grub_setup-kern_misc.o grub_setup-kern_parser.o grub_setup-kern_partition.o grub_setup-kern_file.o grub_setup-kern_fs.o grub_setup-kern_env.o grub_setup-fs_fshelp.o grub_setup-fs_affs.o grub_setup-fs_cpio.o grub_setup-fs_ext2.o grub_setup-fs_fat.o grub_setup-fs_hfs.o grub_setup-fs_hfsplus.o grub_setup-fs_iso9660.o grub_setup-fs_udf.o grub_setup-fs_jfs.o grub_setup-fs_minix.o grub_setup-fs_ntfs.o grub_setup-fs_ntfscomp.o grub_setup-fs_reiserfs.o grub_setup-fs_sfs.o grub_setup-fs_ufs.o grub_setup-fs_xfs.o grub_setup-fs_afs.o grub_setup-partmap_pc.o grub_setup-partmap_gpt.o grub_setup-disk_raid.o grub_setup-disk_lvm.o grub_setup-util_raid.o grub_setup-util_lvm.o grub_setup-grub_setup_init.o
@@ -460,7 +460,7 @@ grub_setup-grub_setup_init.o: grub_setup_init.c $(grub_setup_init.c_DEPENDENCIES
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
 	util/i386/get_disk_name.c
-CLEANFILES += grub-mkdevicemap grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o grub_mkdevicemap-util_i386_get_disk_name.o
+CLEANFILES += grub-mkdevicemap$(EXEEXT) grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o grub_mkdevicemap-util_i386_get_disk_name.o
 MOSTLYCLEANFILES += grub_mkdevicemap-util_grub_mkdevicemap.d grub_mkdevicemap-util_misc.d grub_mkdevicemap-util_i386_get_disk_name.d
 
 grub-mkdevicemap: $(grub_mkdevicemap_DEPENDENCIES) grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o grub_mkdevicemap-util_i386_get_disk_name.o
@@ -513,7 +513,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	\
 	disk/raid.c disk/lvm.c						\
 	grub_emu_init.c
-CLEANFILES += grub-emu grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_biosdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
+CLEANFILES += grub-emu$(EXEEXT) grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_biosdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
 MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_echo.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_test.d grub_emu-commands_search.d grub_emu-commands_blocklist.d grub_emu-commands_hexdump.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_reboot.d grub_emu-commands_i386_cpuid.d grub_emu-disk_host.d grub_emu-disk_loopback.d grub_emu-fs_fshelp.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_elf.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-normal_execute.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-normal_lexer.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_parser.d grub_emu-grub_script_tab.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_function.d grub_emu-normal_completion.d grub_emu-normal_main.d grub_emu-normal_color.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_misc.d grub_emu-normal_script.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-partmap_acorn.d grub_emu-partmap_gpt.d grub_emu-fs_affs.d grub_emu-fs_cpio.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_hfs.d grub_emu-fs_hfsplus.d grub_emu-fs_iso9660.d grub_emu-fs_udf.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ntfs.d grub_emu-fs_ntfscomp.d grub_emu-fs_reiserfs.d grub_emu-fs_sfs.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-fs_afs.d grub_emu-util_console.d grub_emu-util_hostfs.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_biosdisk.d grub_emu-util_getroot.d grub_emu-util_i386_pc_misc.d grub_emu-disk_raid.d grub_emu-disk_lvm.d grub_emu-grub_emu_init.d
 
 grub-emu: $(grub_emu_DEPENDENCIES) grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_biosdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
@@ -886,10 +886,11 @@ endif
 MOSTLYCLEANFILES += biosdisk_mod-disk_i386_pc_biosdisk.d
 UNDSYMFILES += und-biosdisk.lst
 
-biosdisk.mod: pre-biosdisk.o mod-biosdisk.o
+biosdisk.mod: pre-biosdisk.o mod-biosdisk.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(biosdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(biosdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-biosdisk.o mod-biosdisk.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-biosdisk.o: $(biosdisk_mod_DEPENDENCIES) biosdisk_mod-disk_i386_pc_biosdisk.o
 	-rm -f $@
@@ -942,10 +943,11 @@ endif
 MOSTLYCLEANFILES += _chain_mod-loader_i386_pc_chainloader.d
 UNDSYMFILES += und-_chain.lst
 
-_chain.mod: pre-_chain.o mod-_chain.o
+_chain.mod: pre-_chain.o mod-_chain.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(_chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(_chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-_chain.o mod-_chain.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-_chain.o: $(_chain_mod_DEPENDENCIES) _chain_mod-loader_i386_pc_chainloader.o
 	-rm -f $@
@@ -998,10 +1000,11 @@ endif
 MOSTLYCLEANFILES += chain_mod-loader_i386_pc_chainloader_normal.d
 UNDSYMFILES += und-chain.lst
 
-chain.mod: pre-chain.o mod-chain.o
+chain.mod: pre-chain.o mod-chain.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-chain.o mod-chain.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-chain.o: $(chain_mod_DEPENDENCIES) chain_mod-loader_i386_pc_chainloader_normal.o
 	-rm -f $@
@@ -1054,10 +1057,11 @@ endif
 MOSTLYCLEANFILES += _linux_mod-loader_i386_pc_linux.d
 UNDSYMFILES += und-_linux.lst
 
-_linux.mod: pre-_linux.o mod-_linux.o
+_linux.mod: pre-_linux.o mod-_linux.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(_linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(_linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-_linux.o mod-_linux.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: $(_linux_mod_DEPENDENCIES) _linux_mod-loader_i386_pc_linux.o
 	-rm -f $@
@@ -1110,10 +1114,11 @@ endif
 MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux_normal.d
 UNDSYMFILES += und-linux.lst
 
-linux.mod: pre-linux.o mod-linux.o
+linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-linux.o mod-linux.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_i386_pc_linux_normal.o
 	-rm -f $@
@@ -1171,10 +1176,11 @@ endif
 MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_color.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_i386_setjmp.d
 UNDSYMFILES += und-normal.lst
 
-normal.mod: pre-normal.o mod-normal.o
+normal.mod: pre-normal.o mod-normal.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-normal.o mod-normal.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: $(normal_mod_DEPENDENCIES) normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_color.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_i386_setjmp.o
 	-rm -f $@
@@ -1494,10 +1500,11 @@ endif
 MOSTLYCLEANFILES += reboot_mod-commands_reboot.d
 UNDSYMFILES += und-reboot.lst
 
-reboot.mod: pre-reboot.o mod-reboot.o
+reboot.mod: pre-reboot.o mod-reboot.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-reboot.o mod-reboot.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o
 	-rm -f $@
@@ -1550,10 +1557,11 @@ endif
 MOSTLYCLEANFILES += halt_mod-commands_i386_pc_halt.d
 UNDSYMFILES += und-halt.lst
 
-halt.mod: pre-halt.o mod-halt.o
+halt.mod: pre-halt.o mod-halt.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-halt.o mod-halt.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_i386_pc_halt.o
 	-rm -f $@
@@ -1606,10 +1614,11 @@ endif
 MOSTLYCLEANFILES += serial_mod-term_i386_pc_serial.d
 UNDSYMFILES += und-serial.lst
 
-serial.mod: pre-serial.o mod-serial.o
+serial.mod: pre-serial.o mod-serial.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(serial_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(serial_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-serial.o mod-serial.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-serial.o: $(serial_mod_DEPENDENCIES) serial_mod-term_i386_pc_serial.o
 	-rm -f $@
@@ -1665,10 +1674,11 @@ endif
 MOSTLYCLEANFILES += _multiboot_mod-loader_i386_pc_multiboot.d _multiboot_mod-loader_i386_pc_multiboot2.d _multiboot_mod-loader_multiboot2.d _multiboot_mod-loader_multiboot_loader.d
 UNDSYMFILES += und-_multiboot.lst
 
-_multiboot.mod: pre-_multiboot.o mod-_multiboot.o
+_multiboot.mod: pre-_multiboot.o mod-_multiboot.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-_multiboot.o mod-_multiboot.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_i386_pc_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
 	-rm -f $@
@@ -1778,10 +1788,11 @@ endif
 MOSTLYCLEANFILES += multiboot_mod-loader_multiboot_loader_normal.d
 UNDSYMFILES += und-multiboot.lst
 
-multiboot.mod: pre-multiboot.o mod-multiboot.o
+multiboot.mod: pre-multiboot.o mod-multiboot.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-multiboot.o mod-multiboot.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-multiboot.o: $(multiboot_mod_DEPENDENCIES) multiboot_mod-loader_multiboot_loader_normal.o
 	-rm -f $@
@@ -1835,10 +1846,11 @@ endif
 MOSTLYCLEANFILES += vbe_mod-video_i386_pc_vbe.d vbe_mod-video_i386_pc_vbeblit.d vbe_mod-video_i386_pc_vbefill.d vbe_mod-video_i386_pc_vbeutil.d
 UNDSYMFILES += und-vbe.lst
 
-vbe.mod: pre-vbe.o mod-vbe.o
+vbe.mod: pre-vbe.o mod-vbe.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(vbe_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(vbe_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-vbe.o mod-vbe.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-vbe.o: $(vbe_mod_DEPENDENCIES) vbe_mod-video_i386_pc_vbe.o vbe_mod-video_i386_pc_vbeblit.o vbe_mod-video_i386_pc_vbefill.o vbe_mod-video_i386_pc_vbeutil.o
 	-rm -f $@
@@ -1948,10 +1960,11 @@ endif
 MOSTLYCLEANFILES += vbeinfo_mod-commands_i386_pc_vbeinfo.d
 UNDSYMFILES += und-vbeinfo.lst
 
-vbeinfo.mod: pre-vbeinfo.o mod-vbeinfo.o
+vbeinfo.mod: pre-vbeinfo.o mod-vbeinfo.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(vbeinfo_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(vbeinfo_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-vbeinfo.o mod-vbeinfo.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-vbeinfo.o: $(vbeinfo_mod_DEPENDENCIES) vbeinfo_mod-commands_i386_pc_vbeinfo.o
 	-rm -f $@
@@ -2004,10 +2017,11 @@ endif
 MOSTLYCLEANFILES += vbetest_mod-commands_i386_pc_vbetest.d
 UNDSYMFILES += und-vbetest.lst
 
-vbetest.mod: pre-vbetest.o mod-vbetest.o
+vbetest.mod: pre-vbetest.o mod-vbetest.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(vbetest_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(vbetest_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-vbetest.o mod-vbetest.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-vbetest.o: $(vbetest_mod_DEPENDENCIES) vbetest_mod-commands_i386_pc_vbetest.o
 	-rm -f $@
@@ -2060,10 +2074,11 @@ endif
 MOSTLYCLEANFILES += play_mod-commands_i386_pc_play.d
 UNDSYMFILES += und-play.lst
 
-play.mod: pre-play.o mod-play.o
+play.mod: pre-play.o mod-play.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(play_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(play_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-play.o mod-play.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-play.o: $(play_mod_DEPENDENCIES) play_mod-commands_i386_pc_play.o
 	-rm -f $@
@@ -2116,10 +2131,11 @@ endif
 MOSTLYCLEANFILES += video_mod-video_video.d
 UNDSYMFILES += und-video.lst
 
-video.mod: pre-video.o mod-video.o
+video.mod: pre-video.o mod-video.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(video_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(video_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-video.o mod-video.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-video.o: $(video_mod_DEPENDENCIES) video_mod-video_video.o
 	-rm -f $@
@@ -2172,10 +2188,11 @@ endif
 MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
 UNDSYMFILES += und-gfxterm.lst
 
-gfxterm.mod: pre-gfxterm.o mod-gfxterm.o
+gfxterm.mod: pre-gfxterm.o mod-gfxterm.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(gfxterm_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(gfxterm_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-gfxterm.o mod-gfxterm.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-gfxterm.o: $(gfxterm_mod_DEPENDENCIES) gfxterm_mod-term_gfxterm.o
 	-rm -f $@
@@ -2228,10 +2245,11 @@ endif
 MOSTLYCLEANFILES += videotest_mod-commands_videotest.d
 UNDSYMFILES += und-videotest.lst
 
-videotest.mod: pre-videotest.o mod-videotest.o
+videotest.mod: pre-videotest.o mod-videotest.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(videotest_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(videotest_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-videotest.o mod-videotest.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-videotest.o: $(videotest_mod_DEPENDENCIES) videotest_mod-commands_videotest.o
 	-rm -f $@
@@ -2284,10 +2302,11 @@ endif
 MOSTLYCLEANFILES += bitmap_mod-video_bitmap.d
 UNDSYMFILES += und-bitmap.lst
 
-bitmap.mod: pre-bitmap.o mod-bitmap.o
+bitmap.mod: pre-bitmap.o mod-bitmap.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(bitmap_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(bitmap_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-bitmap.o mod-bitmap.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-bitmap.o: $(bitmap_mod_DEPENDENCIES) bitmap_mod-video_bitmap.o
 	-rm -f $@
@@ -2340,10 +2359,11 @@ endif
 MOSTLYCLEANFILES += tga_mod-video_readers_tga.d
 UNDSYMFILES += und-tga.lst
 
-tga.mod: pre-tga.o mod-tga.o
+tga.mod: pre-tga.o mod-tga.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(tga_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(tga_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-tga.o mod-tga.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-tga.o: $(tga_mod_DEPENDENCIES) tga_mod-video_readers_tga.o
 	-rm -f $@
@@ -2396,10 +2416,11 @@ endif
 MOSTLYCLEANFILES += cpuid_mod-commands_i386_cpuid.d
 UNDSYMFILES += und-cpuid.lst
 
-cpuid.mod: pre-cpuid.o mod-cpuid.o
+cpuid.mod: pre-cpuid.o mod-cpuid.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-cpuid.o mod-cpuid.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-cpuid.o: $(cpuid_mod_DEPENDENCIES) cpuid_mod-commands_i386_cpuid.o
 	-rm -f $@
@@ -2452,10 +2473,11 @@ endif
 MOSTLYCLEANFILES += ata_mod-disk_ata.d
 UNDSYMFILES += und-ata.lst
 
-ata.mod: pre-ata.o mod-ata.o
+ata.mod: pre-ata.o mod-ata.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(ata_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(ata_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-ata.o mod-ata.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-ata.o: $(ata_mod_DEPENDENCIES) ata_mod-disk_ata.o
 	-rm -f $@
@@ -2508,10 +2530,11 @@ endif
 MOSTLYCLEANFILES += vga_mod-term_i386_pc_vga.d
 UNDSYMFILES += und-vga.lst
 
-vga.mod: pre-vga.o mod-vga.o
+vga.mod: pre-vga.o mod-vga.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(vga_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(vga_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-vga.o mod-vga.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-vga.o: $(vga_mod_DEPENDENCIES) vga_mod-term_i386_pc_vga.o
 	-rm -f $@
@@ -2564,10 +2587,11 @@ endif
 MOSTLYCLEANFILES += memdisk_mod-disk_memdisk.d
 UNDSYMFILES += und-memdisk.lst
 
-memdisk.mod: pre-memdisk.o mod-memdisk.o
+memdisk.mod: pre-memdisk.o mod-memdisk.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(memdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(memdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-memdisk.o mod-memdisk.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-memdisk.o: $(memdisk_mod_DEPENDENCIES) memdisk_mod-disk_memdisk.o
 	-rm -f $@
@@ -2620,10 +2644,11 @@ endif
 MOSTLYCLEANFILES += jpeg_mod-video_readers_jpeg.d
 UNDSYMFILES += und-jpeg.lst
 
-jpeg.mod: pre-jpeg.o mod-jpeg.o
+jpeg.mod: pre-jpeg.o mod-jpeg.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(jpeg_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(jpeg_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-jpeg.o mod-jpeg.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-jpeg.o: $(jpeg_mod_DEPENDENCIES) jpeg_mod-video_readers_jpeg.o
 	-rm -f $@
@@ -2676,10 +2701,11 @@ endif
 MOSTLYCLEANFILES += png_mod-video_readers_png.d
 UNDSYMFILES += und-png.lst
 
-png.mod: pre-png.o mod-png.o
+png.mod: pre-png.o mod-png.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(png_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(png_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-png.o mod-png.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-png.o: $(png_mod_DEPENDENCIES) png_mod-video_readers_png.o
 	-rm -f $@
@@ -2732,10 +2758,11 @@ endif
 MOSTLYCLEANFILES += pci_mod-bus_pci.d
 UNDSYMFILES += und-pci.lst
 
-pci.mod: pre-pci.o mod-pci.o
+pci.mod: pre-pci.o mod-pci.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-pci.o mod-pci.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-pci.o: $(pci_mod_DEPENDENCIES) pci_mod-bus_pci.o
 	-rm -f $@
@@ -2788,10 +2815,11 @@ endif
 MOSTLYCLEANFILES += lspci_mod-commands_lspci.d
 UNDSYMFILES += und-lspci.lst
 
-lspci.mod: pre-lspci.o mod-lspci.o
+lspci.mod: pre-lspci.o mod-lspci.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-lspci.o mod-lspci.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-lspci.o: $(lspci_mod_DEPENDENCIES) lspci_mod-commands_lspci.o
 	-rm -f $@
@@ -2844,10 +2872,11 @@ endif
 MOSTLYCLEANFILES += aout_mod-loader_aout.d
 UNDSYMFILES += und-aout.lst
 
-aout.mod: pre-aout.o mod-aout.o
+aout.mod: pre-aout.o mod-aout.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(aout_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(aout_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-aout.o mod-aout.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-aout.o: $(aout_mod_DEPENDENCIES) aout_mod-loader_aout.o
 	-rm -f $@
@@ -2900,10 +2929,11 @@ endif
 MOSTLYCLEANFILES += _bsd_mod-loader_i386_bsd.d
 UNDSYMFILES += und-_bsd.lst
 
-_bsd.mod: pre-_bsd.o mod-_bsd.o
+_bsd.mod: pre-_bsd.o mod-_bsd.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(_bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(_bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-_bsd.o mod-_bsd.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-_bsd.o: $(_bsd_mod_DEPENDENCIES) _bsd_mod-loader_i386_bsd.o
 	-rm -f $@
@@ -2956,10 +2986,11 @@ endif
 MOSTLYCLEANFILES += bsd_mod-loader_i386_bsd_normal.d
 UNDSYMFILES += und-bsd.lst
 
-bsd.mod: pre-bsd.o mod-bsd.o
+bsd.mod: pre-bsd.o mod-bsd.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(bsd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-bsd.o mod-bsd.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-bsd.o: $(bsd_mod_DEPENDENCIES) bsd_mod-loader_i386_bsd_normal.o
 	-rm -f $@

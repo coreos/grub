@@ -20,7 +20,7 @@ bin_UTILITIES = grub-mkimage
 # For grub-mkimage.
 grub_mkimage_SOURCES = util/i386/efi/grub-mkimage.c util/misc.c \
 	util/resolve.c
-CLEANFILES += grub-mkimage grub_mkimage-util_i386_efi_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
+CLEANFILES += grub-mkimage$(EXEEXT) grub_mkimage-util_i386_efi_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
 MOSTLYCLEANFILES += grub_mkimage-util_i386_efi_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d
 
 grub-mkimage: $(grub_mkimage_DEPENDENCIES) grub_mkimage-util_i386_efi_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
@@ -120,10 +120,11 @@ endif
 MOSTLYCLEANFILES += kernel_mod-kern_x86_64_efi_startup.d kernel_mod-kern_x86_64_efi_callwrap.d kernel_mod-kern_main.d kernel_mod-kern_device.d kernel_mod-kern_disk.d kernel_mod-kern_dl.d kernel_mod-kern_file.d kernel_mod-kern_fs.d kernel_mod-kern_err.d kernel_mod-kern_misc.d kernel_mod-kern_mm.d kernel_mod-kern_loader.d kernel_mod-kern_rescue.d kernel_mod-kern_term.d kernel_mod-kern_x86_64_dl.d kernel_mod-kern_i386_efi_init.d kernel_mod-kern_parser.d kernel_mod-kern_partition.d kernel_mod-kern_env.d kernel_mod-symlist.d kernel_mod-kern_efi_efi.d kernel_mod-kern_efi_init.d kernel_mod-kern_efi_mm.d kernel_mod-term_efi_console.d kernel_mod-disk_efi_efidisk.d
 UNDSYMFILES += und-kernel.lst
 
-kernel.mod: pre-kernel.o mod-kernel.o
+kernel.mod: pre-kernel.o mod-kernel.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(kernel_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(kernel_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-kernel.o mod-kernel.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-kernel.o: $(kernel_mod_DEPENDENCIES) kernel_mod-kern_x86_64_efi_startup.o kernel_mod-kern_x86_64_efi_callwrap.o kernel_mod-kern_main.o kernel_mod-kern_device.o kernel_mod-kern_disk.o kernel_mod-kern_dl.o kernel_mod-kern_file.o kernel_mod-kern_fs.o kernel_mod-kern_err.o kernel_mod-kern_misc.o kernel_mod-kern_mm.o kernel_mod-kern_loader.o kernel_mod-kern_rescue.o kernel_mod-kern_term.o kernel_mod-kern_x86_64_dl.o kernel_mod-kern_i386_efi_init.o kernel_mod-kern_parser.o kernel_mod-kern_partition.o kernel_mod-kern_env.o kernel_mod-symlist.o kernel_mod-kern_efi_efi.o kernel_mod-kern_efi_init.o kernel_mod-kern_efi_mm.o kernel_mod-term_efi_console.o kernel_mod-disk_efi_efidisk.o
 	-rm -f $@
@@ -651,10 +652,11 @@ endif
 MOSTLYCLEANFILES += normal_mod-normal_arg.d normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_x86_64_setjmp.d normal_mod-normal_color.d
 UNDSYMFILES += und-normal.lst
 
-normal.mod: pre-normal.o mod-normal.o
+normal.mod: pre-normal.o mod-normal.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-normal.o mod-normal.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-normal.o: $(normal_mod_DEPENDENCIES) normal_mod-normal_arg.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o normal_mod-normal_color.o
 	-rm -f $@
@@ -974,10 +976,11 @@ endif
 MOSTLYCLEANFILES += _chain_mod-loader_efi_chainloader.d
 UNDSYMFILES += und-_chain.lst
 
-_chain.mod: pre-_chain.o mod-_chain.o
+_chain.mod: pre-_chain.o mod-_chain.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(_chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(_chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-_chain.o mod-_chain.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-_chain.o: $(_chain_mod_DEPENDENCIES) _chain_mod-loader_efi_chainloader.o
 	-rm -f $@
@@ -1030,10 +1033,11 @@ endif
 MOSTLYCLEANFILES += chain_mod-loader_efi_chainloader_normal.d
 UNDSYMFILES += und-chain.lst
 
-chain.mod: pre-chain.o mod-chain.o
+chain.mod: pre-chain.o mod-chain.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-chain.o mod-chain.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-chain.o: $(chain_mod_DEPENDENCIES) chain_mod-loader_efi_chainloader_normal.o
 	-rm -f $@
@@ -1086,10 +1090,11 @@ endif
 MOSTLYCLEANFILES += appleldr_mod-loader_efi_appleloader.d
 UNDSYMFILES += und-appleldr.lst
 
-appleldr.mod: pre-appleldr.o mod-appleldr.o
+appleldr.mod: pre-appleldr.o mod-appleldr.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(appleldr_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(appleldr_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-appleldr.o mod-appleldr.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-appleldr.o: $(appleldr_mod_DEPENDENCIES) appleldr_mod-loader_efi_appleloader.o
 	-rm -f $@
@@ -1142,10 +1147,11 @@ endif
 MOSTLYCLEANFILES += _linux_mod-loader_i386_efi_linux.d
 UNDSYMFILES += und-_linux.lst
 
-_linux.mod: pre-_linux.o mod-_linux.o
+_linux.mod: pre-_linux.o mod-_linux.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(_linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(_linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-_linux.o mod-_linux.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-_linux.o: $(_linux_mod_DEPENDENCIES) _linux_mod-loader_i386_efi_linux.o
 	-rm -f $@
@@ -1198,10 +1204,11 @@ endif
 MOSTLYCLEANFILES += linux_mod-loader_i386_efi_linux_normal.d
 UNDSYMFILES += und-linux.lst
 
-linux.mod: pre-linux.o mod-linux.o
+linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-linux.o mod-linux.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_i386_efi_linux_normal.o
 	-rm -f $@
@@ -1254,10 +1261,11 @@ endif
 MOSTLYCLEANFILES += cpuid_mod-commands_i386_cpuid.d
 UNDSYMFILES += und-cpuid.lst
 
-cpuid.mod: pre-cpuid.o mod-cpuid.o
+cpuid.mod: pre-cpuid.o mod-cpuid.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-cpuid.o mod-cpuid.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-cpuid.o: $(cpuid_mod_DEPENDENCIES) cpuid_mod-commands_i386_cpuid.o
 	-rm -f $@
@@ -1310,10 +1318,11 @@ endif
 MOSTLYCLEANFILES += halt_mod-commands_halt.d
 UNDSYMFILES += und-halt.lst
 
-halt.mod: pre-halt.o mod-halt.o
+halt.mod: pre-halt.o mod-halt.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-halt.o mod-halt.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_halt.o
 	-rm -f $@
@@ -1366,10 +1375,11 @@ endif
 MOSTLYCLEANFILES += reboot_mod-commands_reboot.d
 UNDSYMFILES += und-reboot.lst
 
-reboot.mod: pre-reboot.o mod-reboot.o
+reboot.mod: pre-reboot.o mod-reboot.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-reboot.o mod-reboot.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o
 	-rm -f $@
@@ -1422,10 +1432,11 @@ endif
 MOSTLYCLEANFILES += pci_mod-bus_pci.d
 UNDSYMFILES += und-pci.lst
 
-pci.mod: pre-pci.o mod-pci.o
+pci.mod: pre-pci.o mod-pci.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-pci.o mod-pci.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-pci.o: $(pci_mod_DEPENDENCIES) pci_mod-bus_pci.o
 	-rm -f $@
@@ -1478,10 +1489,11 @@ endif
 MOSTLYCLEANFILES += lspci_mod-commands_lspci.d
 UNDSYMFILES += und-lspci.lst
 
-lspci.mod: pre-lspci.o mod-lspci.o
+lspci.mod: pre-lspci.o mod-lspci.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-lspci.o mod-lspci.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 pre-lspci.o: $(lspci_mod_DEPENDENCIES) lspci_mod-commands_lspci.o
 	-rm -f $@

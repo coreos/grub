@@ -1,3 +1,67 @@
+2008-07-24  Bean  <bean123ch@gmail.com>
+
+	* common.rmk (bin_UTILITIES): Add grub-pe2elf.
+	(grub_pe2elf_SOURCES): New macro.
+	(CLEANFILES): Add grub-pe2elf.
+
+	* include/grub/efi/pe32.h (GRUB_PE32_SCN_ALIGN_1BYTES): New constant.
+	(GRUB_PE32_SCN_ALIGN_2BYTES): Likewise.
+	(GRUB_PE32_SCN_ALIGN_4BYTES): Likewise.
+	(GRUB_PE32_SCN_ALIGN_8BYTES): Likewise.
+	(GRUB_PE32_SCN_ALIGN_16BYTES): Likewise.
+	(GRUB_PE32_SCN_ALIGN_32BYTES): Likewise.
+	(GRUB_PE32_SCN_ALIGN_64BYTES): Likewise.
+	(GRUB_PE32_SCN_ALIGN_SHIFT): Likewise.
+	(GRUB_PE32_SCN_ALIGN_MASK): Likewise.
+	(GRUB_PE32_SYM_CLASS_EXTERNAL): Likewise.
+	(GRUB_PE32_SYM_CLASS_STATIC): Likewise.
+	(GRUB_PE32_SYM_CLASS_FILE): Likewise.
+	(GRUB_PE32_DT_FUNCTION): Likewise.
+	(GRUB_PE32_REL_I386_DIR32): Likewise.
+	(GRUB_PE32_REL_I386_REL32): Likewise.
+	(grub_pe32_symbol): New structure.
+	(grub_pe32_reloc): Likewise.
+
+	* util/grub-pe2elf.c: New file.
+
+	* configure.ac: Set TARGET_OBJ2ELF if host os is cygwin. Don't test for
+	start symbol in non pc platform.
+
+	* genmk.rb: Use TARGET_OBJ2ELF to convert native object format to elf.
+
+	The following patches are from Christian Franke.
+
+	* include/grub/dl.h: Remove .previous, gas supports this only
+	for ELF format.
+
+	* include/grub/symbol.h [__CYGWIN__] (#define FUNCTION/VARIABLE):
+	Remove .type, gas supports this only for ELF format.
+
+	* kern/dl.c (grub_dl_resolve_dependencies): Add check for trailing
+	nullbytes in symbol table. This fixes an infinite loop if table is
+	zero filled.
+
+	* Makefile.in: Add autoconf replacements TARGET_IMG_LDSCRIPT,
+	TARGET_IMG_LDFLAGS and EXEEXT.
+
+	* aclocal.m4 (grub_PROG_OBJCOPY_ABSOLUTE): Replace -Wl,-N by
+	TARGET_IMG_LDFLAGS_AC.
+	(grub_CHECK_STACK_ARG_PROBE): New function.
+
+	* conf/i386-pc.rmk: Replace -Wl,-N by TARGET_IMG_LDFLAGS.
+
+	* conf/i386-pc-cygwin-ld-img.sc: New linker script.
+
+	* configure.ac: Add check for linker script "conf/${target}-img-ld.c"
+	to set TARGET_IMG_LD* accordingly.
+	Add check for Cygwin to set TARGET_MOD_OBJCOPY accordingly.
+	Add call to grub_CHECK_STACK_ARG_PROBE.
+	Use TARGET_IMG_LDFLAGS to check start, bss_start, end symbols.
+
+	* genkernsyms.sh.in: Handle HAVE_ASM_USCORE case.
+
+	* genmk.rb: Add EXEEXT to CLEANFILES.
+
 2008-07-23  Robert Millan  <rmh@aybabtu.com>
 
 	* Makefile.in (UNICODE_ARROWS, UNICODE_LINES): New variables (they

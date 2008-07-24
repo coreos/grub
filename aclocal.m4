@@ -73,7 +73,7 @@ else
 fi
 grub_cv_prog_objcopy_absolute=yes
 for link_addr in 2000 8000 7C00; do
-  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} ${LDFLAGS} -nostdlib -Wl,-N -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec]); then :
+  if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -nostdlib ${TARGET_IMG_LDFLAGS_AC} -Wl,-Ttext -Wl,$link_addr conftest.o -o conftest.exec]); then :
   else
     AC_MSG_ERROR([${CC-cc} cannot link at address $link_addr])
   fi
@@ -395,6 +395,22 @@ if eval "$ac_compile -S -fstack-protector -o conftest.s" 2> /dev/null; then]
   rm -f conftest.s
 else
   ssp_possible=no]
+  AC_MSG_RESULT([no])
+[fi]
+])
+
+dnl Check if the C compiler supports `-mstack-arg-probe' (Cygwin).
+AC_DEFUN(grub_CHECK_STACK_ARG_PROBE,[
+[# Smashing stack arg probe.
+sap_possible=yes]
+AC_MSG_CHECKING([whether `$CC' accepts `-mstack-arg-probe'])
+AC_LANG_CONFTEST([[void foo (void) { volatile char a[8]; a[3]; }]])
+[if eval "$ac_compile -S -mstack-arg-probe -o conftest.s" 2> /dev/null; then]
+  AC_MSG_RESULT([yes])
+  [# Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
+  rm -f conftest.s
+else
+  sap_possible=no]
   AC_MSG_RESULT([no])
 [fi]
 ])

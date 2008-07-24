@@ -112,10 +112,11 @@ endif
 MOSTLYCLEANFILES += #{deps_str}
 UNDSYMFILES += #{undsym}
 
-#{@name}: #{pre_obj} #{mod_obj}
+#{@name}: #{pre_obj} #{mod_obj} $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ $^
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -R .note -R .comment $@
+	$(TARGET_CC) $(#{prefix}_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ #{pre_obj} #{mod_obj}
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
 #{pre_obj}: $(#{prefix}_DEPENDENCIES) #{objs_str}
 	-rm -f $@
@@ -194,7 +195,7 @@ class Utility
     deps = objs.collect {|obj| obj.suffix('d')}
     deps_str = deps.join(' ');
 
-    "CLEANFILES += #{@name} #{objs_str}
+    "CLEANFILES += #{@name}$(EXEEXT) #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: $(#{prefix}_DEPENDENCIES) #{objs_str}

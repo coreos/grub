@@ -454,7 +454,7 @@ grub_dl_resolve_dependencies (grub_dl_t mod, Elf_Ehdr *e)
 	const char *name = (char *) e + s->sh_offset;
 	const char *max = name + s->sh_size;
 
-	while (name < max)
+	while ((name < max) && (*name))
 	  {
 	    grub_dl_t m;
 	    grub_dl_dep_t dep;
