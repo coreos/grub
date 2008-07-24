@@ -7072,7 +7072,7 @@ if test "x$target_cpu" = xi386; then
     # Check symbols provided by linker script.
     CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
   fi
-  if test "x$target_platform" = xpc; then
+  if test "x$platform" = xpc; then
 
 { echo "$as_me:$LINENO: checking if start is defined by the compiler" >&5
 echo $ECHO_N "checking if start is defined by the compiler... $ECHO_C" >&6; }

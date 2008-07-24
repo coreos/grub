@@ -1,5 +1,10 @@
 2008-07-24  Bean  <bean123ch@gmail.com>
 
+	* configure.ac: Fixed a bug caused by the previous cygwin patch,
+	variable `target_platform' should be `platform'.
+
+2008-07-24  Bean  <bean123ch@gmail.com>
+
 	* video/reader/png.c (DELFATE_HLIT_MAX): Change value.
 	(grub_png_init_fixed_block): New function.
 	(grub_png_decode_image_data): Handle fixed huffman code compression.
