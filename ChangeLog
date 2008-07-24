@@ -1,3 +1,8 @@
+2008-07-24  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/types.h: Use __builtin_bswap32() and
+	__builtin_bswap64() with gcc 4.3 and newer.
+
 2008-07-24  Christian Franke  <franke@computer.org>
 
 	* util/i386/pc/grub-install.in: If `--debug' is specified,
