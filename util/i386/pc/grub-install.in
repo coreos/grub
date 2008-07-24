@@ -127,8 +127,10 @@ if test "x$install_device" = x; then
 fi
 
 # If the debugging feature is enabled, print commands.
+setup_verbose=
 if test $debug = yes; then
     set -x
+    setup_verbose="--verbose"
 fi
 
 # Initialize these directories here, since ROOTDIR was initialized.
@@ -240,12 +242,12 @@ fi
 # The order in this list is critical.  Be careful when modifying it.
 modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module"
 
-$grub_mkimage --output=${grubdir}/core.img \
-    --prefix=${prefix_drive}`make_system_path_relative_to_its_root ${grubdir}`/ \
-    $modules || exit 1
+grub_prefix="${prefix_drive}`make_system_path_relative_to_its_root ${grubdir}`" || exit 1
+
+$grub_mkimage --output=${grubdir}/core.img --prefix=${grub_prefix}/ $modules || exit 1
 
 # Now perform the installation.
-$grub_setup --directory=${grubdir} --device-map=${device_map} \
+$grub_setup ${setup_verbose} --directory=${grubdir} --device-map=${device_map} \
     ${install_device} || exit 1
 
 # Prompt the user to check if the device map is correct.

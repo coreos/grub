@@ -1,3 +1,9 @@
+2008-07-24  Christian Franke  <franke@computer.org>	
+	
+	* util/i386/pc/grub-install.in: If `--debug' is specified,
+	pass `--verbose' to grub-setup.
+	Abort script if make_system_path_relative_to_its_root() fails.
+
 2008-07-24  Bean  <bean123ch@gmail.com>
 
 	* configure.ac: Fixed a bug caused by the previous cygwin patch,
