@@ -229,6 +229,17 @@ find_root_device (const char *dir, dev_t dev)
 
       if (S_ISBLK (st.st_mode) && st.st_rdev == dev)
 	{
+#ifdef __linux__
+	  /* Skip useless device names like /dev/dm-0, which prevent us from
+	     finding /dev/mapper/*, /dev/evms/*, /dev/md*, etc.  */
+	  if (ent->d_name[0] == 'd' &&
+	      ent->d_name[1] == 'm' &&
+	      ent->d_name[2] == '-' &&
+	      ent->d_name[3] >= '0' &&
+	      ent->d_name[3] <= '9')
+	    continue;
+#endif
+
 	  /* Found!  */
 	  char *res;
 	  char *cwd;
@@ -357,20 +368,6 @@ grub_guess_root_device (const char *dir)
   
   if (stat (dir, &st) < 0)
     grub_util_error ("Cannot stat `%s'", dir);
-
-#ifdef __linux__
-  /* We first try to find the device in the /dev/mapper directory.  If
-     we don't do this, we get useless device names like /dev/dm-0 for
-     LVM.  */
-  os_dev = find_root_device ("/dev/mapper", st.st_dev);
-  if (os_dev)
-    return os_dev;
-
-  /* The same applies to /dev/evms directory (for EVMS volumes).  */
-  os_dev = find_root_device ("/dev/evms", st.st_dev);
-  if (os_dev)
-    return os_dev;
-#endif
 
 #ifdef __CYGWIN__
   /* Cygwin specific function.  */

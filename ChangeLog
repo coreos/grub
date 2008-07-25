@@ -1,3 +1,12 @@
+2008-07-25  Robert Millan  <rmh@aybabtu.com>
+
+	* util/getroot.c (find_root_device): Skip devices that match
+	/dev/dm-[0-9].  This lets the real device be found for any type of
+	abstraction (LVM, EVMS, RAID..).
+	(grub_guess_root_device): Do not traverse /dev/mapper (for LVM)
+	and /dev/evms (for EVMS) before traversing /dev.  If a /dev/dm-[0-9]
+	device is found first, find_root_device() will now skip it.
+
 2008-07-24  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/types.h: Use __builtin_bswap32() and
