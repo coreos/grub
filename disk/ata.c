@@ -219,16 +219,16 @@ grub_ata_dumpinfo (struct grub_ata_device *dev, char *info)
 
   /* The device information was read, dump it for debugging.  */
   grub_ata_strncpy (text, info + 20, 20);
-  grub_printf ("Serial: %s\n", text);
+  grub_dprintf ("ata", "Serial: %s\n", text);
   grub_ata_strncpy (text, info + 46, 8);
-  grub_printf ("Firmware: %s\n", text);
+  grub_dprintf ("ata", "Firmware: %s\n", text);
   grub_ata_strncpy (text, info + 54, 40);
-  grub_printf ("Model: %s\n", text);
+  grub_dprintf ("ata", "Model: %s\n", text);
 
   if (! dev->atapi)
     {
-      grub_printf ("Addressing: %d\n", dev->addr);
-      grub_printf ("Sectors: %lld\n", dev->size);
+      grub_dprintf ("ata", "Addressing: %d\n", dev->addr);
+      grub_dprintf ("ata", "Sectors: %lld\n", dev->size);
     }
 }
 
