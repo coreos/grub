@@ -24,8 +24,8 @@
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/gzio.h>
-#include <grub/hexdump.h>
 #include <grub/partition.h>
+#include <grub/lib/hexdump.h>
 
 static const struct grub_arg_option options[] = {
   {"skip", 's', 0, "skip offset bytes from the beginning of file.", 0,
@@ -33,52 +33,6 @@ static const struct grub_arg_option options[] = {
   {"length", 'n', 0, "read only length bytes", 0, ARG_TYPE_INT},
   {0, 0, 0, 0, 0, 0}
 };
-
-void
-hexdump (unsigned long bse, char *buf, int len)
-{
-  int pos;
-  char line[80];
-
-  while (len > 0)
-    {
-      int cnt, i;
-
-      pos = grub_sprintf (line, "%08lx  ", bse);
-      cnt = 16;
-      if (cnt > len)
-	cnt = len;
-
-      for (i = 0; i < cnt; i++)
-	{
-	  pos += grub_sprintf (&line[pos], "%02x ", (unsigned char) buf[i]);
-	  if ((i & 7) == 7)
-	    line[pos++] = ' ';
-	}
-
-      for (; i < 16; i++)
-	{
-	  pos += grub_sprintf (&line[pos], "   ");
-	  if ((i & 7) == 7)
-	    line[pos++] = ' ';
-	}
-
-      line[pos++] = '|';
-
-      for (i = 0; i < cnt; i++)
-	line[pos++] = ((buf[i] >= 32) && (buf[i] < 127)) ? buf[i] : '.';
-
-      line[pos++] = '|';
-
-      line[pos] = 0;
-
-      grub_printf ("%s\n", line);
-
-      bse += 16;
-      buf += 16;
-      len -= cnt;
-    }
-}
 
 static grub_err_t
 grub_cmd_hexdump (struct grub_arg_list *state, int argc, char **args)

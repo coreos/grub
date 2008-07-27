@@ -19,8 +19,8 @@
 
 #include <config.h>
 #include <grub/types.h>
-#include <grub/envblk.h>
 #include <grub/misc.h>
+#include <grub/lib/envblk.h>
 
 grub_envblk_t
 grub_envblk_find (char *buf)

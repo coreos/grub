@@ -56,7 +56,7 @@ util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	commands/configfile.c commands/help.c				\
 	commands/terminal.c commands/ls.c commands/test.c 		\
-	commands/search.c commands/hexdump.c				\
+	commands/search.c commands/hexdump.c lib/hexdump.c		\
 	commands/halt.c commands/reboot.c				\
 	commands/i386/cpuid.c						\
 	disk/loopback.c							\

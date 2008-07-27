@@ -26,7 +26,7 @@ util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
-	io/gzio.c commands/hexdump.c commands/blocklist.c commands/ls.c \
+	io/gzio.c lib/hexdump.c commands/blocklist.c commands/ls.c \
 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
@@ -96,7 +96,7 @@ DISTCLEANFILES += grub_fstest_init.c
 
 # for grub-editenv
 bin_UTILITIES += grub-editenv
-grub_editenv_SOURCES = util/grub-editenv.c util/envblk.c util/misc.c kern/misc.c kern/err.c
+grub_editenv_SOURCES = util/grub-editenv.c lib/envblk.c util/misc.c kern/misc.c kern/err.c
 CLEANFILES += grub-editenv
 
 # for grub-pe2elf
@@ -274,7 +274,7 @@ pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
 	cmp.mod cat.mod help.mod font.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod loadenv.mod
+	read.mod sleep.mod loadenv.mod crc.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -357,7 +357,7 @@ blocklist_mod_CFLAGS = $(COMMON_CFLAGS)
 blocklist_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hexdump.mod.
-hexdump_mod_SOURCES = commands/hexdump.c
+hexdump_mod_SOURCES = commands/hexdump.c lib/hexdump.c
 hexdump_mod_CFLAGS = $(COMMON_CFLAGS)
 hexdump_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -372,9 +372,14 @@ sleep_mod_CFLAGS = $(COMMON_CFLAGS)
 sleep_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For loadenv.mod.
-loadenv_mod_SOURCES = commands/loadenv.c util/envblk.c
+loadenv_mod_SOURCES = commands/loadenv.c lib/envblk.c
 loadenv_mod_CFLAGS = $(COMMON_CFLAGS)
 loadenv_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For crc.mod.
+crc_mod_SOURCES = commands/crc.c lib/crc.c
+crc_mod_CFLAGS = $(COMMON_CFLAGS)
+crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkglib_MODULES += gzio.mod elf.mod

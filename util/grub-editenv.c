@@ -20,8 +20,7 @@
 #include <config.h>
 #include <grub/types.h>
 #include <grub/util/misc.h>
-
-#include <grub/envblk.h>
+#include <grub/lib/envblk.h>
 
 #include <stdio.h>
 #include <unistd.h>

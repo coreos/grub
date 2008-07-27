@@ -25,8 +25,8 @@
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/env.h>
-#include <grub/envblk.h>
 #include <grub/partition.h>
+#include <grub/lib/envblk.h>
 
 static const struct grub_arg_option options[] =
   {
