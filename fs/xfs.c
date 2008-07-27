@@ -56,7 +56,7 @@ struct grub_xfs_sblock
 struct grub_xfs_dir_header
 {
   grub_uint8_t count;
-  grub_uint8_t i8count;
+  grub_uint8_t smallino;
   union
   {
     grub_uint32_t i4;
@@ -423,7 +423,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
     case XFS_INODE_FORMAT_INO:
       {
 	struct grub_xfs_dir_entry *de = &diro->inode.data.dir.direntry[0];
-	int smallino = !diro->inode.data.dir.dirhead.i8count;
+	int smallino = !diro->inode.data.dir.dirhead.smallino;
 	int i;
 	grub_uint64_t parent;
 
@@ -433,12 +433,12 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	  {
 	    parent = grub_be_to_cpu32 (diro->inode.data.dir.dirhead.parent.i4);
 	    parent = grub_cpu_to_be64 (parent);
+	    /* The header is a bit smaller than usual.  */
+	    de = (struct grub_xfs_dir_entry *) ((char *) de - 4);
 	  }
 	else
 	  {
 	    parent = diro->inode.data.dir.dirhead.parent.i8;
-	    /* The header is a bit bigger than usual.  */
-	    de = (struct grub_xfs_dir_entry *) ((char *) de + 4);
 	  }
 
 	/* Synthesize the direntries for `.' and `..'.  */

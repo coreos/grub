@@ -1,5 +1,13 @@
 2008-07-27  Bean  <bean123ch@gmail.com>
 
+	* fs/xfs.c (grub_xfs_dir_header): Change field i8count back to
+	smallino, as it's more descriptive, and i8count can be confused with
+	the other field count.
+	(grub_xfs_iterate_dir): Adjust grub_xfs_dir_entry pointer for small
+	inode type.
+
+2008-07-27  Bean  <bean123ch@gmail.com>
+
 	* commands/crc.c: New file.
 
 	* lib/crc.c: Likewise.
