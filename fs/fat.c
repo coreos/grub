@@ -35,6 +35,8 @@
 #define GRUB_FAT_ATTR_DIRECTORY	0x10
 #define GRUB_FAT_ATTR_ARCHIVE	0x20
 
+#define GRUB_FAT_MAXFILE	256
+
 #define GRUB_FAT_ATTR_LONG_NAME	(GRUB_FAT_ATTR_READ_ONLY \
 				 | GRUB_FAT_ATTR_HIDDEN \
 				 | GRUB_FAT_ATTR_SYSTEM \
@@ -629,7 +631,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 	  if (hook (filename, dir.attr & GRUB_FAT_ATTR_DIRECTORY))
 	    break;
 	}
-      else if (grub_strcmp (dirname, filename) == 0)
+      else if (grub_strncasecmp (dirname, filename, GRUB_FAT_MAXFILE) == 0)
 	{
 	  if (call_hook)
 	    hook (filename, dir.attr & GRUB_FAT_ATTR_DIRECTORY);
