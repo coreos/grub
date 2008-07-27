@@ -22,10 +22,6 @@
 #include <grub/arg.h>
 #include <grub/misc.h>
 
-/* XXX: This has to be changed into a function so the screen can be
-   optimally used.  */
-#define TERM_WIDTH	80
-
 static grub_err_t
 grub_cmd_help (struct grub_arg_list *state __attribute__ ((unused)), int argc,
 	       char **args)
@@ -43,16 +39,16 @@ grub_cmd_help (struct grub_arg_list *state __attribute__ ((unused)), int argc,
 	{
 	  if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
 	    {
-	      char description[TERM_WIDTH / 2];
+	      char description[GRUB_TERM_WIDTH / 2];
 	      int desclen = grub_strlen (cmd->summary);
 	      
-	      /* Make a string with a length of TERM_WIDTH / 2 - 1 filled
+	      /* Make a string with a length of GRUB_TERM_WIDTH / 2 - 1 filled
 		 with the description followed by spaces.  */
-	      grub_memset (description, ' ', TERM_WIDTH / 2 - 1);
-	      description[TERM_WIDTH / 2 - 1] = '\0';
+	      grub_memset (description, ' ', GRUB_TERM_WIDTH / 2 - 1);
+	      description[GRUB_TERM_WIDTH / 2 - 1] = '\0';
 	      grub_memcpy (description, cmd->summary,
-			   (desclen < TERM_WIDTH / 2 - 1 
-			    ? desclen : TERM_WIDTH / 2 - 1));
+			   (desclen < GRUB_TERM_WIDTH / 2 - 1 
+			    ? desclen : GRUB_TERM_WIDTH / 2 - 1));
 	      
 	      grub_printf ("%s%s", description, (cnt++) % 2 ? "\n" : " ");
 	    }
