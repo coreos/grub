@@ -230,8 +230,8 @@ find_root_device (const char *dir, dev_t dev)
       if (S_ISBLK (st.st_mode) && st.st_rdev == dev)
 	{
 #ifdef __linux__
-	  /* Skip useless device names like /dev/dm-0, which prevent us from
-	     finding /dev/mapper/*, /dev/evms/*, /dev/md*, etc.  */
+	  /* Skip device names like /dev/dm-0, which are short-hand aliases
+	     to more descriptive device names, e.g. those under /dev/mapper */
 	  if (ent->d_name[0] == 'd' &&
 	      ent->d_name[1] == 'm' &&
 	      ent->d_name[2] == '-' &&

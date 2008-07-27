@@ -1,3 +1,8 @@
+2008-07-27  Pavel Roskin  <proski@gnu.org>
+
+	* util/getroot.c (find_root_device): Rephrase a comment to avoid
+	spurious warnings about a comment within a comment.
+
 2008-07-25  Robert Millan  <rmh@aybabtu.com>
 
 	* util/getroot.c (find_root_device): Skip devices that match
