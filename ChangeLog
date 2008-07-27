@@ -1,3 +1,8 @@
+2008-07-27 Felix Zielcke <fzielcke@z-51.de>
+
+	* commands/help.c: Include <grub/term.h>.
+	(TERM_WIDTH): Removed.  Updated all users.
+
 2008-07-27  Pavel Roskin  <proski@gnu.org>
 
 	* util/getroot.c (find_root_device): Rephrase a comment to avoid
