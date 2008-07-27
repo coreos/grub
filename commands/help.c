@@ -21,6 +21,7 @@
 #include <grub/dl.h>
 #include <grub/arg.h>
 #include <grub/misc.h>
+#include <grub/term.h>
 
 static grub_err_t
 grub_cmd_help (struct grub_arg_list *state __attribute__ ((unused)), int argc,
