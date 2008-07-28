@@ -1,3 +1,9 @@
+2008-07-28  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/raid.c (grub_raid_scan_device): Do not abort when two disks
+	with the same number are found, just use issue a warning with
+	grub_dprintf(), as this error has been reported to be non-fatal.
+	
 2008-07-27  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/ata.c (grub_ata_dumpinfo): Use grub_dprintf() for debugging

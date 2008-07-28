@@ -442,16 +442,10 @@ grub_raid_scan_device (const char *name)
 	}
   
       if (array->device[sb.this_disk.number] != NULL)
-	{
-	  /* We found multiple devices with the same number. Again,
-	     this shouldn't happen.*/
-
-	  grub_error (GRUB_ERR_BAD_NUMBER,
-		      "Found two disks with the number %d?!?",
+	/* We found multiple devices with the same number. Again,
+	   this shouldn't happen.*/
+	grub_dprintf ("raid", "Found two disks with the number %d?!?",
 		      sb.this_disk.number);
-
-	  return 0;
-	}
     }
 
   /* Add an array to the list if we didn't find any.  */
