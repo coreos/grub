@@ -1,3 +1,11 @@
+2008-07-28  Robert Millan  <rmh@aybabtu.com>
+
+	* partmap/apple.c (GRUB_APPLE_HEADER_MAGIC): New macro.
+	(struct grub_apple_header): New struct.  Describes the layout of
+	the partmap header.
+	(apple_partition_map_iterate): Check the header magic as well as the
+	partition magic (which was already being checked).
+
 2008-07-28  Pavel Roskin  <proski@gnu.org>
 
 	* genmk.rb: Add a warning to the beginning of the output that
