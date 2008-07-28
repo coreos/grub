@@ -3,7 +3,7 @@
 	* disk/raid.c (grub_raid_scan_device): Do not abort when two disks
 	with the same number are found, just use issue a warning with
 	grub_dprintf(), as this error has been reported to be non-fatal.
-	
+
 2008-07-27  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/ata.c (grub_ata_dumpinfo): Use grub_dprintf() for debugging
@@ -73,7 +73,7 @@
 
 	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
 
-2008-07-27 Felix Zielcke <fzielcke@z-51.de>
+2008-07-27  Felix Zielcke  <fzielcke@z-51.de>
 
 	* commands/help.c: Include <grub/term.h>.
 	(TERM_WIDTH): Removed.  Updated all users.
