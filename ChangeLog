@@ -1,3 +1,7 @@
+2008-07-29  Bean  <bean123ch@gmail.com>
+
+	* normal/main.c (get_line): Fix buffer overflow bug.
+
 2008-07-28  Robert Millan  <rmh@aybabtu.com>
 
 	* partmap/apple.c (GRUB_APPLE_HEADER_MAGIC): New macro.
