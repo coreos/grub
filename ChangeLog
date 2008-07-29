@@ -1,5 +1,10 @@
 2008-07-29  Christian Franke  <franke@computer.org>
 
+	* util/update-grub_lib.in (make_system_path_relative_to_its_root):
+	Add conversion of emulated mount points on Cygwin.
+
+2008-07-29  Christian Franke  <franke@computer.org>
+
 	* util/update-grub.in: Add a check for admin
 	group on Cygwin.
 	Remove old `grub.cfg.new' before creation.

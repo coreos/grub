@@ -68,7 +68,22 @@ make_system_path_relative_to_its_root ()
     dir=""
   fi
 
-  echo $path | sed -e "s,^$dir,,g"
+  # XXX: This fails if $dir contains ','.
+  path=`echo "$path" | sed -e "s,^$dir,,g"` || return 1
+
+  case "`uname 2>/dev/null`" in
+    CYGWIN*)
+      # Cygwin: Check if regular or emulated mount.
+      if [ -z "$dir" ] || [ "`stat -c %D "$dir/.."`" != 620000 ] ; then
+        # Reached some mount point not below /cygdrive.
+        # GRUB does not know Cygwin's emulated mounts,
+        # convert to Win32 path and remove drive letter.
+        path=`cygpath -m "$path" | sed -n 's,^[A-Za-z]:,,p'`
+        test ! -z "$path" || return 1
+      fi ;;
+  esac
+
+  echo "$path"
 }
 
 is_path_readable_by_grub ()
