@@ -1,3 +1,11 @@
+2008-07-29  Christian Franke  <franke@computer.org>
+
+	* util/update-grub.in: Add a check for admin
+	group on Cygwin.
+	Remove old `grub.cfg.new' before creation.
+	Add `-f' to `mv' to handle the different filesystem
+	semantics of Windows.
+
 2008-07-29  Bean  <bean123ch@gmail.com>
 
 	* normal/main.c (get_line): Fix buffer overflow bug.

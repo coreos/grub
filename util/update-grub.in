@@ -73,8 +73,20 @@ if [ "x$EUID" = "x" ] ; then
 fi
 
 if [ "$EUID" != 0 ] ; then
-  echo "$0: You must run this as root" >&2
-  exit 1
+  root=f
+  case "`uname 2>/dev/null`" in
+    CYGWIN*)
+      # Cygwin: Assume root if member of admin group
+      for g in `id -G 2>/dev/null` ; do
+	case $g in
+	  0|544) root=t ;;
+	esac
+      done ;;
+  esac
+  if [ $root != t ] ; then
+    echo "$0: You must run this as root" >&2
+    exit 1
+  fi
 fi
 
 set $grub_mkdevicemap dummy
@@ -154,6 +166,7 @@ export GRUB_DEVICE GRUB_DEVICE_UUID GRUB_DEVICE_BOOT GRUB_DEVICE_BOOT_UUID GRUB_
 # These are optional, user-defined variables.
 export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_CMDLINE_LINUX_DEFAULT GRUB_TERMINAL GRUB_SERIAL_COMMAND GRUB_DISABLE_LINUX_UUID
 
+rm -f ${grub_cfg}.new
 exec > ${grub_cfg}.new
 
 # Allow this to fail, since /boot/grub/ might need to be fatfs to support some
@@ -187,6 +200,6 @@ for i in ${update_grub_dir}/* ; do
 done
 
 # none of the children aborted with error, install the new grub.cfg
-mv ${grub_cfg}.new ${grub_cfg}
+mv -f ${grub_cfg}.new ${grub_cfg}
 
 echo "done" >&2
