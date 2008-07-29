@@ -124,6 +124,7 @@ grub_console_cls (void)
   int i;
   for (i = 0; i < ROWS * COLS; i++)
     ((short *) VGA_TEXT_SCREEN)[i] = ' ' | (grub_console_cur_color << 8);
+  grub_console_gotoxy (0, 0);
 }
 
 void

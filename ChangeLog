@@ -1,3 +1,9 @@
+2008-07-30  Robert Millan  <rmh@aybabtu.com>
+
+	* term/i386/pc/vga_text.c (grub_console_cls): Use
+	grub_console_gotoxy() to go back to beginning of the screen.
+	Found by Patrick Georgi <patrick.georgi@coresystems.de>
+
 2008-07-29  Christian Franke  <franke@computer.org>
 
 	* util/update-grub_lib.in (make_system_path_relative_to_its_root):
