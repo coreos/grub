@@ -78,12 +78,6 @@ grub_arch_sync_caches (void *address __attribute__ ((unused)),
 {
 }
 
-static char *
-make_install_device (void)
-{
-  return NULL;
-}
-
 void
 grub_machine_init (void)
 {
@@ -155,7 +149,7 @@ void
 grub_machine_set_prefix (void)
 {
   /* Initialize the prefix.  */
-  grub_env_set ("prefix", make_install_device ());
+  grub_env_set ("prefix", grub_prefix);
 }
 
 void

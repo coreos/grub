@@ -19,6 +19,7 @@
 #define ASM_FILE	1
 
 #include <grub/symbol.h>
+#include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
 #include <multiboot.h>
@@ -35,6 +36,24 @@
 	.file	"startup.S"
 	.text
 	.globl	start, _start
+start:
+_start:
+	jmp codestart
+
+	/*
+	 *  This is a special data area at a fixed offset from the beginning.
+	 */
+
+	. = EXT_C(start) + GRUB_KERNEL_MACHINE_PREFIX
+
+VARIABLE(grub_prefix)
+	/* to be filled by grub-mkimage */
+
+	/*
+	 *  Leave some breathing room for the prefix.
+	 */
+
+	. = EXT_C(start) + GRUB_KERNEL_MACHINE_DATA_END
 
 #if 0
 /*
@@ -49,8 +68,7 @@ multiboot_header:
 	.long	-0x1BADB002
 #endif
 
-start:
-_start:
+codestart:
 	/* initialize the stack */
 	movl $GRUB_MEMORY_MACHINE_PROT_STACK, %esp
 

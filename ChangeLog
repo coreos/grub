@@ -1,5 +1,32 @@
 2008-07-30  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/ieee1275/init.c (grub_machine_set_prefix): If `grub_prefix'
+	is non-empty, use it to set the `prefix' environment variable instead
+	of the usual approach.
+	* kern/i386/linuxbios/init.c (make_install_device): Remove function.
+	(grub_machine_set_prefix): Use `grub_prefix' to set the `prefix'
+	environment variable instead of dummy make_install_device().
+
+	* kern/i386/ieee1275/startup.S: Include `<grub/machine/kernel.h>'.
+	(start): Insert a data section, with `grub_prefix' variable.
+        * kern/i386/linuxbios/startup.S: Likewise.
+
+	* include/grub/powerpc/ieee1275/kernel.h [!ASM_FILE] (grub_prefix):
+	New variable reference.
+	* include/grub/i386/ieee1275/kernel.h (GRUB_KERNEL_MACHINE_PREFIX):
+	New macro.  Defines offset of `grub_prefix' within startup.S (relative
+	to `start').
+	(GRUB_KERNEL_MACHINE_DATA_END): New macro.  Defines the end of data
+	section within startup.S (relative to `start').
+	* include/grub/i386/coreboot/kernel.h: Likewise.
+
+	* util/elf/grub-mkimage.c (add_segments): Receive `prefix' parameter.
+	Overwrite grub_prefix with its contents, at the beginning of the
+	first segment.
+	(main): Understand -p|--prefix.
+
+2008-07-30  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/10_hurd.in: Source ${libdir}/grub/update-grub_lib.
 
 2008-07-30  Robert Millan  <rmh@aybabtu.com>

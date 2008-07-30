@@ -19,6 +19,7 @@
 #define ASM_FILE	1
 
 #include <grub/symbol.h>
+#include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
 #include <multiboot.h>
@@ -38,6 +39,24 @@
 
 start:
 _start:
+	jmp codestart
+
+	/*
+	 *  This is a special data area at a fixed offset from the beginning.
+	 */
+
+	. = EXT_C(start) + GRUB_KERNEL_MACHINE_PREFIX
+
+VARIABLE(grub_prefix)
+	/* to be filled by grub-mkimage */
+
+	/*
+	 *  Leave some breathing room for the prefix.
+	 */
+
+	. = EXT_C(start) + GRUB_KERNEL_MACHINE_DATA_END
+
+codestart:
 	movl %eax, EXT_C(grub_ieee1275_entry_fn)
 	jmp EXT_C(grub_main)
 

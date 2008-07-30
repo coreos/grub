@@ -158,7 +158,7 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
 }
 
 void
-add_segments (char *dir, FILE *out, int chrp, char *mods[])
+add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[])
 {
   Elf32_Ehdr ehdr;
   Elf32_Phdr *phdrs = NULL;
@@ -166,7 +166,7 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   FILE *in;
   char *kernel_path;
   grub_addr_t grub_end = 0;
-  off_t offset;
+  off_t offset, first_segment;
   int i, phdr_size;
 
   /* Read ELF header.  */
@@ -191,6 +191,8 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
 
   phdrs = xmalloc (phdr_size);
   offset += ALIGN_UP (phdr_size, GRUB_TARGET_SIZEOF_LONG);
+
+  first_segment = offset;
 
   /* Copy all existing segments.  */
   for (i = 0; i < grub_target_to_host16 (ehdr.e_phnum); i++)
@@ -272,6 +274,13 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
   /* Write ELF header.  */
   grub_util_write_image_at (&ehdr, sizeof (ehdr), 0, out);
 
+  if (prefix)
+    {
+      if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
+        grub_util_error ("prefix too long");
+      grub_util_write_image_at (prefix, strlen (prefix) + 1, first_segment + GRUB_KERNEL_MACHINE_PREFIX, out);
+    }
+
   free (phdrs);
   free (kernel_path);
 }
@@ -279,6 +288,7 @@ add_segments (char *dir, FILE *out, int chrp, char *mods[])
 static struct option options[] =
   {
     {"directory", required_argument, 0, 'd'},
+    {"prefix", required_argument, 0, 'p'},
     {"output", required_argument, 0, 'o'},
     {"help", no_argument, 0, 'h'},
     {"note", no_argument, 0, 'n'},
@@ -299,6 +309,7 @@ Usage: grub-mkimage -o FILE [OPTION]... [MODULES]\n\
 Make a bootable image of GRUB.\n\
 \n\
 -d, --directory=DIR     use images and modules under DIR [default=%s]\n\
+-p, --prefix=DIR        set grub_prefix directory\n\
 -o, --output=FILE       output a generated image to FILE\n\
 -h, --help              display this message and exit\n\
 -n, --note              add NOTE segment for CHRP Open Firmware\n\
@@ -317,13 +328,14 @@ main (int argc, char *argv[])
   FILE *fp;
   char *output = NULL;
   char *dir = NULL;
+  char *prefix = NULL;
   int chrp = 0;
 
   progname = "grub-mkimage";
 
   while (1)
     {
-      int c = getopt_long (argc, argv, "d:o:hVvn", options, 0);
+      int c = getopt_long (argc, argv, "d:p:o:hVvn", options, 0);
       if (c == -1)
 	break;
 
@@ -333,6 +345,11 @@ main (int argc, char *argv[])
 	    if (dir)
 	      free (dir);
 	    dir = xstrdup (optarg);
+	    break;
+	  case 'p':
+	    if (prefix)
+	      free (prefix);
+	    prefix = xstrdup (optarg);
 	    break;
 	  case 'h':
 	    usage (0);
@@ -364,7 +381,7 @@ main (int argc, char *argv[])
   if (! fp)
     grub_util_error ("cannot open %s", output);
 
-  add_segments (dir ? : GRUB_LIBDIR, fp, chrp, argv + optind);
+  add_segments (dir ? : GRUB_LIBDIR, prefix, fp, chrp, argv + optind);
 
   fclose (fp);
 

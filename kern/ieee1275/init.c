@@ -84,6 +84,13 @@ grub_machine_set_prefix (void)
     /* We already set prefix in grub_machine_init().  */
     return;
 
+  if (grub_prefix[0])
+    {
+      grub_env_set ("prefix", grub_prefix);
+      /* Prefix is hardcoded in the core image.  */
+      return;
+    }
+
   if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath", &bootpath,
 				  sizeof (bootpath), 0))
     {
