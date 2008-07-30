@@ -233,14 +233,33 @@ partmap_module=`$grub_probe --target=partmap --device ${grub_device} 2> /dev/nul
 # Device abstraction module, if any (lvm, raid).
 devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 
+# The order in this list is critical.  Be careful when modifying it.
+modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module"
+
+prefix_drive=
 if [ "x${devabstraction_module}" = "x" ] ; then
-    prefix_drive=
+    if echo "${install_device}" | grep -qx "(.*)" ; then
+      install_drive="${install_device}"
+    else
+      install_drive="`$grub_probe --target=drive --device ${install_device}`"
+    fi
+    grub_drive="`$grub_probe --target=drive --device ${grub_device}`"
+
+    # Strip partition number
+    install_drive="`echo ${install_drive} | sed -e s/,[0-9]*//g`"
+    grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*//g`"
+    if [ "x${grub_drive}" != "x${install_drive}" ] ; then
+        uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
+        if [ "x${uuid}" = "x" ] ; then
+          echo "You attempted a cross-disk install, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          exit 1
+        fi
+        prefix_drive="(UUID=${uuid})"
+        modules="$modules fs_uuid"
+    fi
 else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}`
 fi
-
-# The order in this list is critical.  Be careful when modifying it.
-modules="$modules $fs_module $partmap_module biosdisk $devabstraction_module"
 
 grub_prefix="${prefix_drive}`make_system_path_relative_to_its_root ${grubdir}`" || exit 1
 

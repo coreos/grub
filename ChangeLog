@@ -1,5 +1,15 @@
 2008-07-30  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_DATA_END):
+	Increase from 0x50 to 0x60.
+	* util/i386/pc/grub-install.in: Detect cross-disk installs, and
+	use UUIDs to identify the root drive for them.  If that's not
+	possible, abort.
+	* util/i386/pc/grub-setup.c (setup): Do not special-case, or even
+	check, for cross-disk installs.
+
+2008-07-30  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/ieee1275/init.c (grub_machine_set_prefix): If `grub_prefix'
 	is non-empty, use it to set the `prefix' environment variable instead
 	of the usual approach.

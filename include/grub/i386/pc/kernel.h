@@ -41,7 +41,7 @@
 #define GRUB_KERNEL_MACHINE_PREFIX		0x20
 
 /* End of the data section. */
-#define GRUB_KERNEL_MACHINE_DATA_END		0x50
+#define GRUB_KERNEL_MACHINE_DATA_END		0x60
 
 /* The size of the first region which won't be compressed.  */
 #if defined(ENABLE_LZO)
