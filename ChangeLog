@@ -1,3 +1,10 @@
+2008-07-31  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): When loading
+	ELF segments, use a macro for arbitrarily accessing any of them instead
+	of preparing a pointer that allows access to one at a time.
+	(grub_multiboot_load_elf64): Likewise.
+
 2008-07-31  Bean  <bean123ch@gmail.com>
 
 	* boot/i386/pc/lnxboot.S (real_code_2): Replace 0x50 with

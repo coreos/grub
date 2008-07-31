@@ -97,7 +97,7 @@ static grub_err_t
 grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr *) buffer;
-  Elf32_Phdr *phdr;
+  char *phdr_base;
   grub_addr_t physical_entry_addr = 0;
   int i;
 
@@ -116,43 +116,45 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 
   entry = ehdr->e_entry;
 
+  phdr_base = (char *) buffer + ehdr->e_phoff;
+#define phdr(i)			((Elf32_Phdr *) (phdr_base + (i) * ehdr->e_phentsize))
+
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
-      phdr = (Elf32_Phdr *) ((char *) buffer + ehdr->e_phoff
-			     + i * ehdr->e_phentsize);
-      if (phdr->p_type == PT_LOAD)
+      if (phdr(i)->p_type == PT_LOAD)
         {
           /* The segment should fit in the area reserved for the OS.  */
-          if (phdr->p_paddr < grub_os_area_addr)
+          if (phdr(i)->p_paddr < grub_os_area_addr)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "segment doesn't fit in memory reserved for the OS (0x%lx < 0x%lx)",
-			       phdr->p_paddr, grub_os_area_addr);
-          if (phdr->p_paddr + phdr->p_memsz > grub_os_area_addr + grub_os_area_size)
+			       phdr(i)->p_paddr, grub_os_area_addr);
+          if (phdr(i)->p_paddr + phdr(i)->p_memsz > grub_os_area_addr + grub_os_area_size)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "segment doesn't fit in memory reserved for the OS (0x%lx > 0x%lx)",
-			       phdr->p_paddr + phdr->p_memsz,
+			       phdr(i)->p_paddr + phdr(i)->p_memsz,
 			       grub_os_area_addr + grub_os_area_size);
 
-          if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
+          if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 
-          if (grub_file_read (file, (void *) phdr->p_paddr, phdr->p_filesz)
-              != (grub_ssize_t) phdr->p_filesz)
+          if (grub_file_read (file, (void *) phdr(i)->p_paddr, phdr(i)->p_filesz)
+              != (grub_ssize_t) phdr(i)->p_filesz)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "couldn't read segment from file");
 
-          if (phdr->p_filesz < phdr->p_memsz)
-            grub_memset ((char *) phdr->p_paddr + phdr->p_filesz, 0,
-			 phdr->p_memsz - phdr->p_filesz);
+          if (phdr(i)->p_filesz < phdr(i)->p_memsz)
+            grub_memset ((char *) phdr(i)->p_paddr + phdr(i)->p_filesz, 0,
+			 phdr(i)->p_memsz - phdr(i)->p_filesz);
 
-          if ((entry >= phdr->p_vaddr) &&
-	      (entry < phdr->p_vaddr + phdr->p_memsz))
-	    physical_entry_addr = entry + phdr->p_paddr - phdr->p_vaddr;
+          if ((entry >= phdr(i)->p_vaddr) &&
+	      (entry < phdr(i)->p_vaddr + phdr(i)->p_memsz))
+	    physical_entry_addr = entry + phdr(i)->p_paddr - phdr(i)->p_vaddr;
         }
     }
+#undef phdr
 
   if (physical_entry_addr)
     entry = physical_entry_addr;
@@ -173,7 +175,7 @@ static grub_err_t
 grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
 {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
-  Elf64_Phdr *phdr;
+  char *phdr_base;
   grub_addr_t physical_entry_addr = 0;
   int i;
 
@@ -202,47 +204,49 @@ grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
 
   entry = ehdr->e_entry;
 
+  phdr_base = (char *) buffer + ehdr->e_phoff;
+#define phdr(i)			((Elf64_Phdr *) (phdr_base + (i) * ehdr->e_phentsize))
+
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
-      phdr = (Elf64_Phdr *) ((char *) buffer + ehdr->e_phoff
-			     + i * ehdr->e_phentsize);
-      if (phdr->p_type == PT_LOAD)
+      if (phdr(i)->p_type == PT_LOAD)
         {
           /* The segment should fit in the area reserved for the OS.  */
-          if (phdr->p_paddr < (grub_uint64_t) grub_os_area_addr)
+          if (phdr(i)->p_paddr < (grub_uint64_t) grub_os_area_addr)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "segment doesn't fit in memory reserved for the OS (0x%lx < 0x%lx)",
-			       phdr->p_paddr, (grub_uint64_t) grub_os_area_addr);
-          if (phdr->p_paddr + phdr->p_memsz
+			       phdr(i)->p_paddr, (grub_uint64_t) grub_os_area_addr);
+          if (phdr(i)->p_paddr + phdr(i)->p_memsz
 		  > (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "segment doesn't fit in memory reserved for the OS (0x%lx > 0x%lx)",
-			       phdr->p_paddr + phdr->p_memsz,
+			       phdr(i)->p_paddr + phdr(i)->p_memsz,
 			       (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size);
 
-	  if (grub_file_seek (file, (grub_off_t) phdr->p_offset)
+	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "invalid offset in program header");
 
-	  if (grub_file_read (file, (void *) ((grub_uint32_t) phdr->p_paddr),
-			      phdr->p_filesz)
-              != (grub_ssize_t) phdr->p_filesz)
+	  if (grub_file_read (file, (void *) ((grub_uint32_t) phdr(i)->p_paddr),
+			      phdr(i)->p_filesz)
+              != (grub_ssize_t) phdr(i)->p_filesz)
 	    return grub_error (GRUB_ERR_BAD_OS,
 			       "couldn't read segment from file");
 
-          if (phdr->p_filesz < phdr->p_memsz)
-	    grub_memset (((char *) ((grub_uint32_t) phdr->p_paddr)
-			  + phdr->p_filesz),
+          if (phdr(i)->p_filesz < phdr(i)->p_memsz)
+	    grub_memset (((char *) ((grub_uint32_t) phdr(i)->p_paddr)
+			  + phdr(i)->p_filesz),
 			 0,
-			 phdr->p_memsz - phdr->p_filesz);
+			 phdr(i)->p_memsz - phdr(i)->p_filesz);
 
-	  if ((entry >= phdr->p_vaddr) &&
-	      (entry < phdr->p_vaddr + phdr->p_memsz))
-	    physical_entry_addr = entry + phdr->p_paddr - phdr->p_vaddr;
+	  if ((entry >= phdr(i)->p_vaddr) &&
+	      (entry < phdr(i)->p_vaddr + phdr(i)->p_memsz))
+	    physical_entry_addr = entry + phdr(i)->p_paddr - phdr(i)->p_vaddr;
         }
     }
+#undef phdr
 
   if (physical_entry_addr)
     entry = physical_entry_addr;
