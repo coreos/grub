@@ -186,7 +186,7 @@ real_code_2:
 	call	move_memory
 
 	/* Check for multiboot signature.  */
-	cmpl	$MULTIBOOT_MAGIC, %ss:(DATA_ADDR + 0x50)
+	cmpl	$MULTIBOOT_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_DATA_END)
 	jz	1f
 
 	movl	(ramdisk_image - start), %esi

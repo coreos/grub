@@ -1,3 +1,8 @@
+2008-07-31  Bean  <bean123ch@gmail.com>
+
+	* boot/i386/pc/lnxboot.S (real_code_2): Replace 0x50 with
+	GRUB_KERNEL_MACHINE_DATA_END.
+
 2008-07-30  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/i386/pc/kernel.h (GRUB_KERNEL_MACHINE_DATA_END):
