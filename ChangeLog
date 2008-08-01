@@ -1,3 +1,9 @@
+2008-08-01  Bean  <bean123ch@gmail.com>
+
+	* normal/menu_entry.c (editor_getline): Don't return the original
+	string as result, as it will be released by lexer once it has done
+	using it.
+
 2008-08-01  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/10_linux.in: Use prepare_grub_to_access_device() from
