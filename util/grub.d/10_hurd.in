@@ -68,10 +68,11 @@ if ${all_of_them} && test -e /lib/ld.so.1 ; then : ; else
   exit 1
 fi
 
-prepare_grub_to_access_device ${GRUB_DEVICE}
-
 cat << EOF
 menuentry "${OS}" {
+EOF
+prepare_grub_to_access_device ${GRUB_DEVICE} | sed -e "s/^/\t/"
+cat << EOF
 	multiboot ${kernel} root=device:${GRUB_DEVICE}
 	module /hurd/${hurd_fs}.static --readonly \\
 			--multiboot-command-line='\${kernel-command-line}' \\

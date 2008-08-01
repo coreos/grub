@@ -1,3 +1,9 @@
+2008-08-01  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_linux.in: Use prepare_grub_to_access_device() from
+	within menuentries, not before them.
+	util/grub.d/10_hurd.in: Likewise.
+
 2008-08-01  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (pkglib_MODULES): Add bufio.mod.

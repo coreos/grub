@@ -97,10 +97,6 @@ list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
 
-if [ "x$list" != "x" ] ; then
-  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT}
-fi
-
 while [ "x$list" != "x" ] ; do
   linux=`find_latest $list`
   echo "Found linux image: $linux" >&2
@@ -128,6 +124,9 @@ while [ "x$list" != "x" ] ; do
 
   cat << EOF
 menuentry "${OS}, linux ${version}" {
+EOF
+  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  cat << EOF
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
 EOF
   if test -n "${initrd}" ; then
@@ -141,6 +140,9 @@ EOF
 
   cat << EOF
 menuentry "${OS}, linux ${version} (single-user mode)" {
+EOF
+  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  cat << EOF
 	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro single ${GRUB_CMDLINE_LINUX}
 EOF
   if test -n "${initrd}" ; then
