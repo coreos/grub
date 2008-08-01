@@ -23,7 +23,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/arg.h>
-#include <grub/file.h>
+#include <grub/bufio.h>
 
 /* Uncomment following define to enable PNG debug.  */
 //#define PNG_DEBUG
@@ -840,7 +840,7 @@ grub_video_reader_png (struct grub_video_bitmap **bitmap,
   grub_file_t file;
   struct grub_png_data *data;
 
-  file = grub_file_open (filename);
+  file = grub_buffile_open (filename, 0);
   if (!file)
     return grub_errno;
 

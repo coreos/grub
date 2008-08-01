@@ -382,7 +382,7 @@ crc_mod_CFLAGS = $(COMMON_CFLAGS)
 crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
-pkglib_MODULES += gzio.mod elf.mod
+pkglib_MODULES += gzio.mod bufio.mod elf.mod
 
 # For elf.mod.
 elf_mod_SOURCES = kern/elf.c
@@ -393,3 +393,8 @@ elf_mod_LDFLAGS = $(COMMON_LDFLAGS)
 gzio_mod_SOURCES = io/gzio.c
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bufio.mod.
+bufio_mod_SOURCES = io/bufio.c
+bufio_mod_CFLAGS = $(COMMON_CFLAGS)
+bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)

@@ -23,7 +23,7 @@
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/arg.h>
-#include <grub/file.h>
+#include <grub/bufio.h>
 
 /* Uncomment following define to enable TGA debug.  */
 //#define TGA_DEBUG
@@ -319,7 +319,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
   struct grub_tga_header header;
   int has_alpha;
 
-  file = grub_file_open (filename);
+  file = grub_buffile_open (filename, 0);
   if (! file)
     return grub_errno;
 

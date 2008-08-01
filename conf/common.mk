@@ -3275,7 +3275,7 @@ crc_mod_CFLAGS = $(COMMON_CFLAGS)
 crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
-pkglib_MODULES += gzio.mod elf.mod
+pkglib_MODULES += gzio.mod bufio.mod elf.mod
 
 # For elf.mod.
 elf_mod_SOURCES = kern/elf.c
@@ -3390,3 +3390,60 @@ partmap-gzio_mod-io_gzio.lst: io/gzio.c $(io/gzio.c_DEPENDENCIES) genpartmaplist
 
 gzio_mod_CFLAGS = $(COMMON_CFLAGS)
 gzio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bufio.mod.
+bufio_mod_SOURCES = io/bufio.c
+CLEANFILES += bufio.mod mod-bufio.o mod-bufio.c pre-bufio.o bufio_mod-io_bufio.o und-bufio.lst
+ifneq ($(bufio_mod_EXPORTS),no)
+CLEANFILES += def-bufio.lst
+DEFSYMFILES += def-bufio.lst
+endif
+MOSTLYCLEANFILES += bufio_mod-io_bufio.d
+UNDSYMFILES += und-bufio.lst
+
+bufio.mod: pre-bufio.o mod-bufio.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(bufio_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-bufio.o mod-bufio.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-bufio.o: $(bufio_mod_DEPENDENCIES) bufio_mod-io_bufio.o
+	-rm -f $@
+	$(TARGET_CC) $(bufio_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ bufio_mod-io_bufio.o
+
+mod-bufio.o: mod-bufio.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bufio_mod_CFLAGS) -c -o $@ $<
+
+mod-bufio.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'bufio' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(bufio_mod_EXPORTS),no)
+def-bufio.lst: pre-bufio.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 bufio/' > $@
+endif
+
+und-bufio.lst: pre-bufio.o
+	echo 'bufio' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+bufio_mod-io_bufio.o: io/bufio.c $(io/bufio.c_DEPENDENCIES)
+	$(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(bufio_mod_CFLAGS) -MD -c -o $@ $<
+-include bufio_mod-io_bufio.d
+
+CLEANFILES += cmd-bufio_mod-io_bufio.lst fs-bufio_mod-io_bufio.lst partmap-bufio_mod-io_bufio.lst
+COMMANDFILES += cmd-bufio_mod-io_bufio.lst
+FSFILES += fs-bufio_mod-io_bufio.lst
+PARTMAPFILES += partmap-bufio_mod-io_bufio.lst
+
+cmd-bufio_mod-io_bufio.lst: io/bufio.c $(io/bufio.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bufio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh bufio > $@ || (rm -f $@; exit 1)
+
+fs-bufio_mod-io_bufio.lst: io/bufio.c $(io/bufio.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bufio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh bufio > $@ || (rm -f $@; exit 1)
+
+partmap-bufio_mod-io_bufio.lst: io/bufio.c $(io/bufio.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iio -I$(srcdir)/io $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bufio_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh bufio > $@ || (rm -f $@; exit 1)
+
+
+bufio_mod_CFLAGS = $(COMMON_CFLAGS)
+bufio_mod_LDFLAGS = $(COMMON_LDFLAGS)

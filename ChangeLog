@@ -1,3 +1,26 @@
+2008-08-01  Bean  <bean123ch@gmail.com>
+
+	* conf/common.rmk (pkglib_MODULES): Add bufio.mod.
+	(bufio_mod_SOURCES): New macro.
+	(bufio_mod_CFLAGS): Likewise.
+	(bufio_mod_LDFLAGS): Likewise.
+
+	* include/grub/bufio.h: New file.
+
+	* io/bufio.c: Likewise.
+
+	* video/png.c: Replace <grub/file.h> with <grub/bufio.h>.
+	(grub_video_reader_png): Use grub_buffile_open to open file.
+
+	* video/jpeg.c: Replace <grub/file.h> with <grub/bufio.h>.
+	(grub_video_reader_jpeg): Use grub_buffile_open to open file.
+
+	* video/tga.c: Replace <grub/file.h> with <grub/bufio.h>.
+	(grub_video_reader_tga): Use grub_buffile_open to open file.
+
+	* font/manager.c: Include <grub/bufio.h>.
+	(add_font): Use grub_buffile_open to open file.
+
 2008-07-31  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): When loading
