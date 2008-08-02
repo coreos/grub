@@ -1,5 +1,9 @@
 2008-08-02  Robert Millan  <rmh@aybabtu.com>
 
+	* util/i386/pc/grub-install.in: Remove trailing slash from prefix.
+
+2008-08-02  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Add a pair
 	of informational grub_dprintf() calls.
 
