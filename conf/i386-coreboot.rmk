@@ -94,7 +94,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 # Modules.
 pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
-	play.mod cpuid.mod serial.mod ata.mod
+	play.mod cpuid.mod serial.mod ata.mod memdisk.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
@@ -153,5 +153,10 @@ cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 ata_mod_SOURCES = disk/ata.c
 ata_mod_CFLAGS = $(COMMON_CFLAGS)
 ata_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

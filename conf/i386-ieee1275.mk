@@ -589,7 +589,7 @@ grub-install: util/ieee1275/grub-install.in $(util/ieee1275/grub-install.in_DEPE
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
 	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
-	_linux.mod nand.mod
+	_linux.mod nand.mod memdisk.mod
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -1585,5 +1585,62 @@ partmap-nand_mod-disk_ieee1275_nand.lst: disk/ieee1275/nand.c $(disk/ieee1275/na
 
 nand_mod_CFLAGS = $(COMMON_CFLAGS)
 nand_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+memdisk_mod_SOURCES = disk/memdisk.c
+CLEANFILES += memdisk.mod mod-memdisk.o mod-memdisk.c pre-memdisk.o memdisk_mod-disk_memdisk.o und-memdisk.lst
+ifneq ($(memdisk_mod_EXPORTS),no)
+CLEANFILES += def-memdisk.lst
+DEFSYMFILES += def-memdisk.lst
+endif
+MOSTLYCLEANFILES += memdisk_mod-disk_memdisk.d
+UNDSYMFILES += und-memdisk.lst
+
+memdisk.mod: pre-memdisk.o mod-memdisk.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(memdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-memdisk.o mod-memdisk.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-memdisk.o: $(memdisk_mod_DEPENDENCIES) memdisk_mod-disk_memdisk.o
+	-rm -f $@
+	$(TARGET_CC) $(memdisk_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ memdisk_mod-disk_memdisk.o
+
+mod-memdisk.o: mod-memdisk.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -c -o $@ $<
+
+mod-memdisk.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'memdisk' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(memdisk_mod_EXPORTS),no)
+def-memdisk.lst: pre-memdisk.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 memdisk/' > $@
+endif
+
+und-memdisk.lst: pre-memdisk.o
+	echo 'memdisk' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+memdisk_mod-disk_memdisk.o: disk/memdisk.c $(disk/memdisk.c_DEPENDENCIES)
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -MD -c -o $@ $<
+-include memdisk_mod-disk_memdisk.d
+
+CLEANFILES += cmd-memdisk_mod-disk_memdisk.lst fs-memdisk_mod-disk_memdisk.lst partmap-memdisk_mod-disk_memdisk.lst
+COMMANDFILES += cmd-memdisk_mod-disk_memdisk.lst
+FSFILES += fs-memdisk_mod-disk_memdisk.lst
+PARTMAPFILES += partmap-memdisk_mod-disk_memdisk.lst
+
+cmd-memdisk_mod-disk_memdisk.lst: disk/memdisk.c $(disk/memdisk.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh memdisk > $@ || (rm -f $@; exit 1)
+
+fs-memdisk_mod-disk_memdisk.lst: disk/memdisk.c $(disk/memdisk.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh memdisk > $@ || (rm -f $@; exit 1)
+
+partmap-memdisk_mod-disk_memdisk.lst: disk/memdisk.c $(disk/memdisk.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh memdisk > $@ || (rm -f $@; exit 1)
+
+
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

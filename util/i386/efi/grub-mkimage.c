@@ -716,7 +716,7 @@ make_mods_section (FILE *out, Elf_Addr current_address,
       grub_util_info ("adding module %s", p->name);
       
       mod_size = grub_util_get_image_size (p->name);
-      header.offset = grub_cpu_to_le32 (sizeof (header));
+      header.type = grub_cpu_to_le32 (OBJ_TYPE_ELF);
       header.size = grub_cpu_to_le32 (mod_size + sizeof (header));
       
       mod_image = grub_util_read_image (p->name);

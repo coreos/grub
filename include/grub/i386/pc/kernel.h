@@ -34,14 +34,11 @@
 /* The offset of GRUB_INSTALL_BSD_PART.  */
 #define GRUB_KERNEL_MACHINE_INSTALL_BSD_PART	0x18
 
-/* The offset of GRUB_MEMDISK_IMAGE_SIZE.  */
-#define GRUB_KERNEL_MACHINE_MEMDISK_IMAGE_SIZE	0x1c
-
 /* The offset of GRUB_PREFIX.  */
-#define GRUB_KERNEL_MACHINE_PREFIX		0x20
+#define GRUB_KERNEL_MACHINE_PREFIX		0x1c
 
 /* End of the data section. */
-#define GRUB_KERNEL_MACHINE_DATA_END		0x60
+#define GRUB_KERNEL_MACHINE_DATA_END		0x5c
 
 /* The size of the first region which won't be compressed.  */
 #if defined(ENABLE_LZO)
@@ -67,9 +64,6 @@ extern grub_int32_t grub_install_dos_part;
 /* The BSD partition number of the installed partition.  */
 extern grub_int32_t grub_install_bsd_part;
 
-/* The size of memory disk image, if present.  */
-extern grub_int32_t grub_memdisk_image_size;
-
 /* The prefix which points to the directory where GRUB modules and its
    configuration file are located.  */
 extern char grub_prefix[];
@@ -82,9 +76,6 @@ extern grub_int32_t grub_root_drive;
 
 /* The end address of the kernel.  */
 extern grub_addr_t grub_end_addr;
-
-extern grub_addr_t EXPORT_FUNC(grub_arch_memdisk_addr) (void);
-extern grub_off_t EXPORT_FUNC(grub_arch_memdisk_size) (void);
 
 #endif /* ! ASM_FILE */
 

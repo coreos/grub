@@ -19,7 +19,6 @@
 
 #include <grub/kernel.h>
 #include <grub/misc.h>
-#include <grub/mm.h>
 #include <grub/symbol.h>
 #include <grub/dl.h>
 #include <grub/term.h>
@@ -28,9 +27,8 @@
 #include <grub/device.h>
 #include <grub/env.h>
 
-/* Load all modules in core.  */
-static void
-grub_load_modules (void)
+void
+grub_module_iterate (int (*hook) (struct grub_module_header *header))
 {
   struct grub_module_info *modinfo;
   struct grub_module_header *header;
@@ -47,13 +45,30 @@ grub_load_modules (void)
        header < (struct grub_module_header *) (modbase + modinfo->size);
        header = (struct grub_module_header *) ((char *) header + header->size))
     {
-      if (! grub_dl_load_core ((char *) header + header->offset,
-			       (header->size - header->offset)))
+      if (hook (header))
+	break;
+    }
+}
+
+/* Load all modules in core.  */
+static void
+grub_load_modules (void)
+{
+  auto int hook (struct grub_module_header *);
+  int hook (struct grub_module_header *header)
+    {
+      /* Not an ELF module, skip.  */
+      if (header->type != OBJ_TYPE_ELF)
+        return 0;
+
+      if (! grub_dl_load_core ((char *) header + sizeof (struct grub_module_header),
+			       (header->size - sizeof (struct grub_module_header))))
 	grub_fatal ("%s", grub_errmsg);
+
+      return 0;
     }
 
-  /* Add the region where modules reside into dynamic memory.  */
-  grub_mm_init_region ((void *) modinfo, modinfo->size);
+  grub_module_iterate (hook);
 }
 
 /* Write hook for the environment variables of root. Remove surrounding

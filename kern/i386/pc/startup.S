@@ -96,8 +96,6 @@ VARIABLE(grub_install_dos_part)
 	.long	0xFFFFFFFF
 VARIABLE(grub_install_bsd_part)
 	.long	0xFFFFFFFF
-VARIABLE(grub_memdisk_image_size)
-	.long	0
 VARIABLE(grub_prefix)
 	/* to be filled by grub-mkimage */
 
@@ -211,7 +209,6 @@ codestart:
 	call	lzo1x_decompress
 	addl	$12, %esp
 
-	/* copy back the decompressed part */
 	movl	%eax, %ecx
 	cld
 #elif defined(ENABLE_LZMA)
@@ -221,19 +218,22 @@ codestart:
 	pushl	%esi
 	movl	EXT_C(grub_kernel_image_size), %ecx
 	addl	EXT_C(grub_total_module_size), %ecx
-	addl	EXT_C(grub_memdisk_image_size), %ecx
 	subl	$GRUB_KERNEL_MACHINE_RAW_SIZE, %ecx
 	pushl	%ecx
 	leal	(%edi, %ecx), %ebx
 	call	_LzmaDecodeA
+	/* _LzmaDecodeA clears DF, so no need to run cld */
 	popl	%ecx
 	popl	%edi
 	popl	%esi
 #endif
 
+	/* copy back the decompressed part (except the modules) */
+	subl	EXT_C(grub_total_module_size), %ecx
 	rep
 	movsb
 
+#if 0
 	/* copy modules before cleaning out the bss */
 	movl	EXT_C(grub_total_module_size), %ecx
 	movl	EXT_C(grub_kernel_image_size), %esi
@@ -246,6 +246,7 @@ codestart:
 	std
 	rep
 	movsb
+#endif
 	
 	/* clean out the bss */
 	movl	$BSS_START_SYMBOL, %edi

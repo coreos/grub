@@ -102,7 +102,7 @@ grub_install_SOURCES = util/ieee1275/grub-install.in
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
 	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
-	_linux.mod nand.mod
+	_linux.mod nand.mod memdisk.mod
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -170,5 +170,10 @@ linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 nand_mod_SOURCES = disk/ieee1275/nand.c
 nand_mod_CFLAGS = $(COMMON_CFLAGS)
 nand_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memdisk.mod.
+memdisk_mod_SOURCES = disk/memdisk.c
+memdisk_mod_CFLAGS = $(COMMON_CFLAGS)
+memdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

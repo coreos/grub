@@ -1,5 +1,57 @@
 2008-08-02  Robert Millan  <rmh@aybabtu.com>
 
+	* disk/memdisk.c (memdisk_size): Don't initialize.
+	(GRUB_MOD_INIT(memdisk)): Find memdisk using grub_module_iterate().
+
+	* include/grub/i386/pc/kernel.h
+	(GRUB_KERNEL_MACHINE_MEMDISK_IMAGE_SIZE): Remove macro.
+	(GRUB_KERNEL_MACHINE_PREFIX, GRUB_KERNEL_MACHINE_DATA_END): Shift.
+	(grub_memdisk_image_size, grub_arch_memdisk_addr)
+	(grub_arch_memdisk_size): Remove.
+
+	* include/grub/kernel.h (struct grub_module_header): Remove `offset'
+	field (was only used to transfer a constant).  Add `type' field to
+	support multiple module types.
+	(grub_module_iterate): New function.
+
+	* kern/device.c (grub_device_open): Do not hide error messages
+	when grub_disk_open() fails.  Use grub_print_error() instead.
+
+	* kern/i386/pc/init.c (grub_arch_modules_addr)
+	(grub_arch_memdisk_size): Remove functions.
+	(grub_arch_modules_addr): Return the module address in high memory
+	(now that it isn't copied anymore).
+
+	* kern/i386/pc/startup.S (grub_memdisk_image_size): Remove variable.
+	(codestart): Don't add grub_memdisk_image_size to %ecx in LZMA
+	decompression routine (grub_total_module_size already includes that
+	now).  Don't copy modules back to low memory.
+
+	* kern/main.c: Include `<grub/mm.h>'.
+	(grub_load_modules): Split out (and use) ...
+	(grub_module_iterate): ... this function, which iterates through
+	module objects and runs a hook.
+	Comment out grub_mm_init_region() call, as it would cause non-ELF
+	modules to be overwritten.
+
+	* util/i386/pc/grub-mkimage.c (generate_image): Instead of appending
+	the memdisk image in its own region, make it part of the module list.
+	* util/elf/grub-mkimage.c (options): Add "memdisk"|'m' option.
+	(main): Parse --memdisk|-m option, and pass user-provided path as
+	parameter to generate_image().
+	(add_segments): Pass `memdisk_path' down to load_modules().
+	(load_modules): Embed memdisk image in module section when requested.
+	* util/i386/efi/grub-mkimage.c (make_mods_section): Initialize
+	`header.type' instead of `header.offset'.
+
+	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Add `memdisk.mod'.
+	(memdisk_mod_SOURCES, memdisk_mod_CFLAGS)
+	(memdisk_mod_LDFLAGS): New variables.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+
+2008-08-02  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/multiboot.c (playground, forward_relocator)
 	(backward_relocator): New variables.  Used to allocate and relocate
 	the payload, respectively.
