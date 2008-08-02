@@ -123,6 +123,15 @@ linux_setup_seg:
  * This starts the multiboot kernel.
  */
 
+VARIABLE(grub_multiboot_payload_size)
+	.long	0
+VARIABLE(grub_multiboot_payload_orig)
+	.long	0
+VARIABLE(grub_multiboot_payload_dest)
+	.long	0
+VARIABLE(grub_multiboot_payload_entry_offset)
+	.long	0
+
 FUNCTION(grub_multiboot_real_boot)
 	/* Push the entry address on the stack.  */
 	pushl	%eax
@@ -136,11 +145,16 @@ FUNCTION(grub_multiboot_real_boot)
 	/* Interrupts should be disabled.  */
 	cli
 
-	/* Move the magic value into eax and jump to the kernel.  */
-	movl	$MULTIBOOT_MAGIC2,%eax
-	popl	%ecx
-	jmp 	*%ecx
-
+	/* Where do we copy what from.  */
+	movl	EXT_C(grub_multiboot_payload_size), %ecx
+	movl	EXT_C(grub_multiboot_payload_orig), %esi
+	movl	EXT_C(grub_multiboot_payload_dest), %edi
+	movl	EXT_C(grub_multiboot_payload_entry_offset), %eax
+			
+	/* Jump to the relocator.  */
+	popl	%edx
+	jmp 	*%edx
+	
 /*
  * This starts the multiboot 2 kernel.
  */

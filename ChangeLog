@@ -1,3 +1,23 @@
+2008-08-02  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/pc/multiboot.c (playground, forward_relocator)
+	(backward_relocator): New variables.  Used to allocate and relocate
+	the payload, respectively.
+	(grub_multiboot_load_elf32): Load into heap instead of requested
+	address, install the appropiate relocator code in each bound of
+	the payload, and set the entry point such that
+	grub_multiboot_real_boot() will jump to one of them.
+
+	* kern/i386/loader.S (grub_multiboot_payload_size)
+	(grub_multiboot_payload_orig, grub_multiboot_payload_dest)
+	(grub_multiboot_payload_entry_offset): New variables.
+	(grub_multiboot_real_boot): Set cpu context to what the relocator
+	expects, and jump to the relocator instead of the payload.
+
+	* include/grub/i386/loader.h (grub_multiboot_payload_size)
+	(grub_multiboot_payload_orig, grub_multiboot_payload_dest)
+	(grub_multiboot_payload_entry_offset): Export.
+
 2008-08-01  Bean  <bean123ch@gmail.com>
 
 	* normal/menu_entry.c (editor_getline): Don't return the original

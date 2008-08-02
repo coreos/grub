@@ -43,6 +43,10 @@ void EXPORT_FUNC(grub_multiboot2_real_boot) (grub_addr_t entry,
 void EXPORT_FUNC(grub_unix_real_boot) (grub_addr_t entry, ...)
      __attribute__ ((cdecl,noreturn));
 
+extern grub_addr_t EXPORT_VAR(grub_multiboot_payload_orig);
+extern grub_addr_t EXPORT_VAR(grub_multiboot_payload_dest);
+extern grub_size_t EXPORT_VAR(grub_multiboot_payload_size);
+extern grub_uint32_t EXPORT_VAR(grub_multiboot_payload_entry_offset);
 
 /* It is necessary to export these functions, because normal mode commands
    reuse rescue mode commands.  */
