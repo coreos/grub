@@ -174,6 +174,9 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
         {
 	  char *load_this_module_at = grub_multiboot_payload_orig + (phdr(i)->p_paddr - phdr(0)->p_paddr);
 
+	  grub_dprintf ("multiboot_loader", "segment %d: paddr=%p, memsz=%p\n",
+			i, phdr(i)->p_paddr, phdr(i)->p_memsz);
+
 	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
 	    return grub_error (GRUB_ERR_BAD_OS,
@@ -198,6 +201,11 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
     entry = (grub_addr_t) playground;
   else
     entry = (grub_addr_t) grub_multiboot_payload_orig + grub_multiboot_payload_size;
+
+  grub_dprintf ("multiboot_loader", "dest=%p, size=%p, entry_offset=%p\n",
+		grub_multiboot_payload_dest,
+		grub_multiboot_payload_size,
+		grub_multiboot_payload_entry_offset);
 
   return grub_errno;
 }

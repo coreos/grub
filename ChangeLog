@@ -1,5 +1,10 @@
 2008-08-02  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Add a pair
+	of informational grub_dprintf() calls.
+
+2008-08-02  Robert Millan  <rmh@aybabtu.com>
+
 	* disk/memdisk.c (memdisk_size): Don't initialize.
 	(GRUB_MOD_INIT(memdisk)): Find memdisk using grub_module_iterate().
 
