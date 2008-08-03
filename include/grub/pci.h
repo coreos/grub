@@ -45,6 +45,6 @@ grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (int bus, int device,
 
 void EXPORT_FUNC(grub_pci_iterate) (grub_pci_iteratefunc_t hook);
 
-#include <grub/machine/pci.h>
+#include <grub/cpu/pci.h>
 
 #endif /* GRUB_PCI_H */

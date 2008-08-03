@@ -1,5 +1,25 @@
 2008-08-03  Robert Millan  <rmh@aybabtu.com>
 
+	Make PCI available on all i386 architectures.
+
+	* include/grub/i386/pc/pci.h: Move from here ...
+	* include/grub/i386/pci.h: ... to here.
+
+	* include/grub/i386/pc/pci.h: Remove.
+	* include/grub/i386/efi/pci.h: Remove.
+	* include/grub/x86_64/efi/pci.h: Remove.
+
+	* include/grub/pci.h: Replace `<grub/machine/pci.h>' with
+	`<grub/cpu/pci.h>'.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add `pci' and `lspci'.
+	(pci_mod_SOURCES, pci_mod_CFLAGS, pci_mod_LDFLAGS, lspci_mod_SOURCES)
+	(lspci_mod_CFLAGS, lspci_mod_LDFLAGS): New variables.
+
+	* conf/i386-ieee1275.rmk: Likewise.
+
+2008-08-03  Robert Millan  <rmh@aybabtu.com>
+
 	* term/i386/pc/vga_text.c (CRTC_CURSOR_DISABLE): New macro.
 	(grub_console_setcursor): Make it possible to set cursor off.
 
