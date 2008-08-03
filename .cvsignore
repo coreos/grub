@@ -3,10 +3,12 @@
 *.img
 *.lst
 *.mod
+*.elf
 00_header
 10_hurd
 10_linux
 30_os-prober
+40_custom
 Makefile
 autom4te.cache
 config.cache
@@ -19,6 +21,7 @@ grub-install
 grub-mkdevicemap
 grub-mkimage
 grub-mkrescue
+grub-pe2elf
 grub-probe
 grub-setup
 grub_probe_init.c
@@ -27,7 +30,6 @@ grub_script.tab.c
 grub_script.tab.h
 grub_setup_init.c
 grub_setup_init.h
-kernel.elf
 mod-*.c
 stamp-h
 stamp-h1
