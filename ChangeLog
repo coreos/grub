@@ -1,5 +1,10 @@
 2008-08-03  Robert Millan  <rmh@aybabtu.com>
 
+	* term/i386/pc/vga_text.c (CRTC_CURSOR_DISABLE): New macro.
+	(grub_console_setcursor): Make it possible to set cursor off.
+
+2008-08-03  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/00_header.in: Be platform-agnostic.  Probe for existence
 	of modules instead of assuming which platform provides what.
 	* util/update-grub.in: Likewise.

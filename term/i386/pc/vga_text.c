@@ -34,6 +34,8 @@ static int grub_curr_x, grub_curr_y;
 #define CRTC_CURSOR_ADDR_HIGH	0x0e
 #define CRTC_CURSOR_ADDR_LOW	0x0f
 
+#define CRTC_CURSOR_DISABLE	(1 << 5)
+
 static void
 screen_write_char (int x, int y, short c)
 {
@@ -133,5 +135,8 @@ grub_console_setcursor (int on)
   grub_uint8_t old;
   grub_outb (CRTC_CURSOR, CRTC_ADDR_PORT);
   old = grub_inb (CRTC_DATA_PORT);
-  grub_outb ((old & ~(on << 5)), CRTC_DATA_PORT);
+  if (on)
+    grub_outb (old & ~CRTC_CURSOR_DISABLE, CRTC_DATA_PORT);
+  else
+    grub_outb (old | CRTC_CURSOR_DISABLE, CRTC_DATA_PORT);
 }
