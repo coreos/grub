@@ -125,7 +125,6 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr *) buffer;
   char *phdr_base;
-  grub_addr_t physical_entry_addr = 0;
   int lowest_segment = 0, highest_segment = 0;
   int i;
 
@@ -162,20 +161,20 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
   if (! playground)
     return grub_errno;
 
-  grub_multiboot_payload_orig = playground + sizeof (forward_relocator);
+  grub_multiboot_payload_orig = (long) playground + sizeof (forward_relocator);
 
   grub_memmove (playground, forward_relocator, sizeof (forward_relocator));
-  grub_memmove (grub_multiboot_payload_orig + grub_multiboot_payload_size, backward_relocator, sizeof (backward_relocator));
+  grub_memmove ((char *) (grub_multiboot_payload_orig + grub_multiboot_payload_size), backward_relocator, sizeof (backward_relocator));
 
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
       if (phdr(i)->p_type == PT_LOAD)
         {
-	  char *load_this_module_at = grub_multiboot_payload_orig + (phdr(i)->p_paddr - phdr(0)->p_paddr);
+	  char *load_this_module_at = (char *) (grub_multiboot_payload_orig + (phdr(i)->p_paddr - phdr(0)->p_paddr));
 
-	  grub_dprintf ("multiboot_loader", "segment %d: paddr=%p, memsz=%p\n",
-			i, phdr(i)->p_paddr, phdr(i)->p_memsz);
+	  grub_dprintf ("multiboot_loader", "segment %d: paddr=%p, memsz=0x%x\n",
+			i, (void *) phdr(i)->p_paddr, phdr(i)->p_memsz);
 
 	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
@@ -202,8 +201,8 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
   else
     entry = (grub_addr_t) grub_multiboot_payload_orig + grub_multiboot_payload_size;
 
-  grub_dprintf ("multiboot_loader", "dest=%p, size=%p, entry_offset=%p\n",
-		grub_multiboot_payload_dest,
+  grub_dprintf ("multiboot_loader", "dest=%p, size=0x%x, entry_offset=0x%x\n",
+		(void *) grub_multiboot_payload_dest,
 		grub_multiboot_payload_size,
 		grub_multiboot_payload_entry_offset);
 

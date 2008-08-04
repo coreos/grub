@@ -1,3 +1,8 @@
+2008-08-04  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Fix misc
+	warnings introduced in my last commit.
+
 2008-08-03  Robert Millan  <rmh@aybabtu.com>
 
 	Make PCI available on all i386 architectures.
