@@ -1,5 +1,11 @@
 2008-08-04  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-coreboot.rmk (COMMON_ASFLAGS, COMMON_CFLAGS)
+	(COMMON_LDFLAGS): Harmonize with i386-pc version (fixes a code
+	corruption problem).
+
+2008-08-04  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Fix misc
 	warnings introduced in my last commit.
 
