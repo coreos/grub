@@ -1,3 +1,7 @@
+2008-08-04  Pavel Roskin  <proski@gnu.org>
+
+	* kern/main.c: Include grub/mm.h.
+
 2008-08-04  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-coreboot.rmk (COMMON_ASFLAGS, COMMON_CFLAGS)

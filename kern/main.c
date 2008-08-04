@@ -26,6 +26,7 @@
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/env.h>
+#include <grub/mm.h>
 
 void
 grub_module_iterate (int (*hook) (struct grub_module_header *header))
