@@ -45,7 +45,7 @@
 	* kern/i386/pc/init.c (make_install_device): Check for `grub_prefix'
 	instead of `grub_install_dos_part' to determine whether a drive needs
 	to be prepended to prefix (`grub_install_dos_part' is not reliable,
-	because it can be overriden when loading GRUB via Multiboot).
+	because it can be overridden when loading GRUB via Multiboot).
 
 2008-08-02  Robert Millan  <rmh@aybabtu.com>
 
@@ -114,7 +114,7 @@
 	(backward_relocator): New variables.  Used to allocate and relocate
 	the payload, respectively.
 	(grub_multiboot_load_elf32): Load into heap instead of requested
-	address, install the appropiate relocator code in each bound of
+	address, install the appropriate relocator code in each bound of
 	the payload, and set the entry point such that
 	grub_multiboot_real_boot() will jump to one of them.
 
@@ -196,7 +196,7 @@
 
 	* kern/i386/ieee1275/startup.S: Include `<grub/machine/kernel.h>'.
 	(start): Insert a data section, with `grub_prefix' variable.
-        * kern/i386/linuxbios/startup.S: Likewise.
+	* kern/i386/linuxbios/startup.S: Likewise.
 
 	* include/grub/powerpc/ieee1275/kernel.h [!ASM_FILE] (grub_prefix):
 	New variable reference.
