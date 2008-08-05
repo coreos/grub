@@ -1,3 +1,19 @@
+2008-08-05  Bean  <bean123ch@gmail.com>
+
+	* util/console.c (grub_console_cur_color): New variable.
+	(grub_console_standard_color): Likewise.
+	(grub_console_normal_color): Likewise.
+	(grub_console_highlight_color): Likewise.
+	(color_map): Likewise.
+	(use_color): Likewise.
+	(NUM_COLORS): New macro.
+	(grub_ncurses_setcolorstate): Handle color properly.
+	(grub_ncurses_setcolor): Don't change color here, just remember the
+	settings, color will be set in grub_ncurses_setcolorstate.
+	(grub_ncurses_getcolor): New function.
+	(grub_ncurses_init): Initialize color pairs.
+	(grub_ncurses_term): New member grub_ncurses_getcolor.
+
 2008-08-05  Colin D Bennett  <colin@gibibit.com>
  
 	High resolution timer support.  Implemented for x86 CPUs using TSC.
