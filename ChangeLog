@@ -1,3 +1,22 @@
+2008-08-05  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/i386/pit.c'.
+	* conf/i386-efi.rmk (kernel_mod_SOURCES): Likewise.
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Likewise. Also add
+	`kern/i386/tsc.c', `kern/generic/rtc_get_time_ms.c' and
+	`kern/generic/millisleep.c'.
+
+	* kern/i386/tsc.c (calibrate_tsc): Rewrite using grub_pit_wait()
+	instead of grub_get_rtc().
+	(grub_tsc_init): Initialize `tsc_boot_time'.
+
+	* kern/i386/linuxbios/init.c (grub_millisleep): Remove stub.
+	(grub_machine_init): Use grub_tsc_init() rather than
+	installing an RTC-based handler via grub_install_get_time_ms().
+
+	* kern/i386/pit.c: New file.
+	* include/grub/i386/pit.h: Likewise.
+
 2008-08-05  Bean  <bean123ch@gmail.com>
 
 	* boot/i386/pc/pxeboot.S (_start): Use drive number 0x7F for pxe.

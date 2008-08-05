@@ -18,6 +18,9 @@ kernel_elf_SOURCES = kern/i386/linuxbios/startup.S kern/i386/linuxbios/init.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/time.c \
 	kern/i386/dl.c kern/parser.c kern/partition.c \
+	kern/i386/tsc.c kern/i386/pit.c \
+	kern/generic/rtc_get_time_ms.c \
+	kern/generic/millisleep.c \
 	kern/env.c \
 	term/i386/pc/console.c \
 	term/i386/pc/at_keyboard.c term/i386/pc/vga_text.c \

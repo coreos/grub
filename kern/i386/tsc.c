@@ -25,8 +25,7 @@
 #include <grub/misc.h>
 #include <grub/i386/tsc.h>
 
-/* Calibrated reference for TSC=0.  This defines the time since the epoch in 
-   milliseconds that TSC=0 refers to. */
+/* This defines the value TSC had at the epoch (that is, when we calibrated it). */
 static grub_uint64_t tsc_boot_time;
 
 /* Calibrated TSC rate.  (In TSC ticks per millisecond.) */
@@ -47,44 +46,15 @@ grub_tsc_get_time_ms (void)
 static void
 calibrate_tsc (void)
 {
-  /* First calbrate the TSC rate (relative, not absolute time). */
+  /* First calibrate the TSC rate (relative, not absolute time). */
   grub_uint64_t start_tsc;
   grub_uint64_t end_tsc;
-  grub_uint32_t initial_tick;
-  grub_uint32_t start_tick;
-  grub_uint32_t end_tick;
 
-  /* Wait for the start of the next tick;
-     we'll base out timing off this edge. */
-  initial_tick = grub_get_rtc ();
-  do
-    {
-      start_tick = grub_get_rtc ();
-    }
-  while (start_tick == initial_tick);
   start_tsc = grub_get_tsc ();
-
-  /* Wait for the start of the next tick.  This will
-     be the end of the 1-tick period. */
-  do
-    {
-      end_tick = grub_get_rtc ();
-    }
-  while (end_tick - start_tick < CALIBRATION_TICKS);
+  grub_pit_wait (0xffff);
   end_tsc = grub_get_tsc ();
 
-  tsc_ticks_per_ms =
-    grub_divmod64 (grub_divmod64
-                   (end_tsc - start_tsc, end_tick - start_tick, 0)
-                   * GRUB_TICKS_PER_SECOND, 1000, 0);
-
-  /* Reference the TSC zero (boot time) to the epoch to 
-     get an absolute real time reference. */
-  grub_uint64_t ms_since_boot = grub_divmod64 (end_tsc, tsc_ticks_per_ms, 0);
-  grub_uint64_t mstime_now = grub_divmod64 ((grub_uint64_t) 1000 * end_tick,
-                                            GRUB_TICKS_PER_SECOND,
-                                            0);
-  tsc_boot_time = mstime_now - ms_since_boot;
+  tsc_ticks_per_ms = grub_divmod64 (end_tsc - start_tsc, 55, 0);
 }
 
 void
@@ -92,6 +62,7 @@ grub_tsc_init (void)
 {
   if (grub_cpu_is_tsc_supported ())
     {
+      tsc_boot_time = grub_get_tsc ();
       calibrate_tsc ();
       grub_install_get_time_ms (grub_tsc_get_time_ms);
     }

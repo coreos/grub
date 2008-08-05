@@ -85,7 +85,7 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/i386/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
 	term/efi/console.c disk/efi/efidisk.c \
-	kern/i386/tsc.c \
+	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \
 	kern/generic/millisleep.c
 kernel_mod_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
