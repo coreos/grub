@@ -69,7 +69,7 @@
 	* kern/i386/pc/init.c: Include <grub/cpu/tsc.h>.
 	(grub_machine_init): Call grub_tsc_init().
 	(grub_millisleep): Removed.
- 
+
 	* kern/ieee1275/init.c (grub_millisleep): Removed.
 	(grub_machine_init): Install ieee1275_get_time_ms()
 	implementation.
