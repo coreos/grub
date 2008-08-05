@@ -22,6 +22,7 @@
 #include <grub/disk.h>
 #include <grub/mm.h>
 #include <grub/time.h>
+#include <grub/pci.h>
 /* XXX: For now this only works on i386.  */
 #include <grub/cpu/io.h>
 
@@ -71,7 +72,8 @@ enum grub_ata_commands
     GRUB_ATA_CMD_WRITE_SECTORS_EXT = 0x34,
     GRUB_ATA_CMD_IDENTIFY_DEVICE = 0xEC,
     GRUB_ATA_CMD_IDENTIFY_PACKET_DEVICE = 0xA1,
-    GRUB_ATA_CMD_PACKET = 0xA0
+    GRUB_ATA_CMD_PACKET = 0xA0,
+    GRUB_ATA_CMD_EXEC_DEV_DIAGNOSTICS = 0x90
   };
 
 struct grub_ata_device
@@ -344,81 +346,162 @@ grub_ata_identify (struct grub_ata_device *dev)
 }
 
 static grub_err_t
-grub_ata_initialize (void)
+grub_ata_device_initialize (int port, int device, int addr, int addr2)
 {
   struct grub_ata_device *dev;
   struct grub_ata_device **devp;
-  int port;
-  int device;
 
-  for (port = 0; port <= 1; port++)
+  grub_dprintf ("ata", "detecting device %d,%d (0x%x, 0x%x)\n",
+		port, device, addr, addr2);
+
+  dev = grub_malloc (sizeof(*dev));
+  if (! dev)
+    return grub_errno;
+
+  /* Setup the device information.  */
+  dev->port = port;
+  dev->device = device;
+  dev->ioaddress = grub_ata_ioaddress[dev->port];
+  dev->ioaddress2 = grub_ata_ioaddress2[dev->port];
+  dev->next = NULL;
+
+  /* Try to detect if the port is in use by writing to it,
+     waiting for a while and reading it again.  If the value
+     was preserved, there is a device connected.  */
+  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
+  grub_ata_wait ();
+  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);  
+  grub_ata_wait ();
+  if (grub_ata_regget (dev, GRUB_ATA_REG_SECTORS) != 0x5A)
     {
-      for (device = 0; device <= 1; device++)
+      grub_free(dev);
+      return 0;
+    }
+
+  /* Detect if the device is present by issuing a EXECUTE
+     DEVICE DIAGNOSTICS command.  */
+  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
+  grub_ata_regset (dev, GRUB_ATA_REG_CMD,
+		   GRUB_ATA_CMD_EXEC_DEV_DIAGNOSTICS);
+  grub_ata_wait ();
+
+  grub_dprintf ("ata", "Registers: %x %x %x %x\n",
+		grub_ata_regget (dev, GRUB_ATA_REG_SECTORS),
+		grub_ata_regget (dev, GRUB_ATA_REG_LBALOW),
+		grub_ata_regget (dev, GRUB_ATA_REG_LBAMID),
+		grub_ata_regget (dev, GRUB_ATA_REG_LBAHIGH));
+
+  /* Check some registers to see if the channel is used.  */
+  if (grub_ata_regget (dev, GRUB_ATA_REG_SECTORS) == 0x01
+      && grub_ata_regget (dev, GRUB_ATA_REG_LBALOW) == 0x01
+      && grub_ata_regget (dev, GRUB_ATA_REG_LBAMID) == 0x14
+      && grub_ata_regget (dev, GRUB_ATA_REG_LBAHIGH) == 0xeb)
+    {
+      grub_dprintf ("ata", "ATAPI signature detected\n");
+    }
+  else if (! (grub_ata_regget (dev, GRUB_ATA_REG_SECTORS) == 0x01
+	      && grub_ata_regget (dev, GRUB_ATA_REG_LBALOW) == 0x01
+	      && grub_ata_regget (dev, GRUB_ATA_REG_LBAMID) == 0x00
+	      && grub_ata_regget (dev, GRUB_ATA_REG_LBAHIGH) == 0x00))
+    {
+      grub_dprintf ("ata", "incorrect signature\n");
+      grub_free (dev);
+      return 0;
+    }
+  else
+    {
+      grub_dprintf ("ata", "ATA detected\n");
+    }
+
+
+  /* Use the IDENTIFY DEVICE command to query the device.  */
+  if (grub_ata_identify (dev))
+    {
+      grub_free (dev);
+      return 0;
+    }
+
+  /* Register the device.  */
+  for (devp = &grub_ata_devices; *devp; devp = &(*devp)->next);
+  *devp = dev;
+
+  return 0;
+}
+
+static int
+grub_ata_pciinit (int bus, int device, int func, grub_pci_id_t pciid)
+{
+  static int compat_use[2] = { 0 };
+  grub_pci_address_t addr;
+  grub_uint32_t class;
+  grub_uint32_t bar1;
+  grub_uint32_t bar2;
+  int rega;
+  int regb;
+  int i;
+
+  /* Read class.  */
+  addr = grub_pci_make_address (bus, device, func, 2);
+  class = grub_pci_read (addr);
+
+  /* Check if this class ID matches that of a PCI IDE Controller.  */
+  if (class >> 16 != 0x0101)
+    return 0;
+
+  for (i = 0; i < 2; i++)
+    {
+      /* Set to 0 when the channel operated in compatibility mode.  */
+      int compat = (class >> (2 * i)) & 1;
+
+      rega = 0;
+      regb = 0;
+
+      /* If the channel is in compatibility mode, just assign the
+	 default registers.  */
+      if (compat == 0 && !compat_use[i])
 	{
-	  dev = grub_malloc (sizeof(*dev));
-	  if (! dev)
-	    return grub_errno;
+	  rega = grub_ata_ioaddress[i];
+	  regb = grub_ata_ioaddress2[i];
+	  compat_use[i] = 0;
+	}
+      else if (compat)
+	{
+	  /* Read the BARs, which either contain a mmapped IO address
+	     or the IO port address.  */
+	  addr = grub_pci_make_address (bus, device, func, 4 + 2 * i);
+	  bar1 = grub_pci_read (addr);
+	  addr = grub_pci_make_address (bus, device, func, 5 + 2 * i);
+	  bar2 = grub_pci_read (addr);
 
-	  /* Setup the device information.  */
-	  dev->port = port;
-	  dev->device = device;
-	  dev->ioaddress = grub_ata_ioaddress[dev->port];
-	  dev->ioaddress2 = grub_ata_ioaddress2[dev->port];
-	  dev->next = NULL;
-
-	  /* Try to detect if the port is in use by writing to it,
-	     waiting for a while and reading it again.  If the value
-	     was preserved, there is a device connected.  */
-	  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
-	  grub_ata_wait ();
-	  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);  
-	  grub_ata_wait ();
-	  if (grub_ata_regget (dev, GRUB_ATA_REG_SECTORS) != 0x5A)
+	  /* Check if the BARs describe an IO region.  */
+	  if ((bar1 & 1) && (bar2 & 1))   
 	    {
-	      grub_free(dev);
-	      continue;
+	      rega = bar1 & ~3;
+	      regb = bar2 & ~3;
 	    }
+	}
 
-	  /* Detect if the device is present by issuing a reset.  */
-	  grub_ata_regset2 (dev, GRUB_ATA_REG2_CONTROL, 6);
-	  grub_ata_wait ();
-	  grub_ata_regset2 (dev, GRUB_ATA_REG2_CONTROL, 2);
-	  grub_ata_wait ();
-	  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
-	  grub_ata_wait ();
+      grub_dprintf ("ata",
+		    "PCI dev (%d,%d,%d) compat=%d rega=0x%x regb=0x%x\n",
+		    bus, device, func, compat, rega, regb);
 
-	  /* XXX: Check some registers to see if the reset worked as
-	     expected for this device.  */
-#if 1
-	  /* Enable for ATAPI .  */
-	  if (grub_ata_regget (dev, GRUB_ATA_REG_CYLLSB) != 0x14
-	      || grub_ata_regget (dev, GRUB_ATA_REG_CYLMSB) != 0xeb)
-#endif
-	  if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) == 0
-	      || (grub_ata_regget (dev, GRUB_ATA_REG_CYLLSB) != 0
-		  && grub_ata_regget (dev, GRUB_ATA_REG_CYLMSB) != 0
-		  && grub_ata_regget (dev, GRUB_ATA_REG_CYLLSB) != 0x3c
-		  && grub_ata_regget (dev, GRUB_ATA_REG_CYLLSB) != 0xc3))
-	    {
-	      grub_free (dev);
-	      continue;
-	    }
-
-	  /* Use the IDENTIFY DEVICE command to query the device.  */
-	  if (grub_ata_identify (dev))
-	    {
-	      grub_free (dev);
-	      continue;
-	    }
-
-	  /* Register the device.  */
-	  for (devp = &grub_ata_devices; *devp; devp = &(*devp)->next);
-	  *devp = dev;
+      if (rega && regb)
+	{
+	  grub_ata_device_initialize (i, 0, rega, regb);
+	  grub_ata_device_initialize (i, 1, rega, regb);
 	}
     }
 
   return 0;
 }
+
+static grub_err_t
+grub_ata_initialize (void)
+{
+  grub_pci_iterate (grub_ata_pciinit);
+  return 0;
+}
+
 
 static void
 grub_ata_setlba (struct grub_ata_device *dev, grub_disk_addr_t sector,

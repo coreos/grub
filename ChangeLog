@@ -1,3 +1,10 @@
+2008-08-05  Marco Gerards  <marco@gnu.org>
+
+	* disk/ata.c: Include <grub/pci.h>.
+	(enum grub_ata_commands): Add `GRUB_ATA_CMD_EXEC_DEV_DIAGNOSTICS'.
+	(grub_ata_initialize): Rewritten.
+	(grub_ata_device_initialize): New function.
+
 2008-08-04  Pavel Roskin  <proski@gnu.org>
 
 	* kern/main.c: Include grub/mm.h.
