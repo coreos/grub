@@ -23,7 +23,6 @@
 #include <stdarg.h>
 #include <grub/term.h>
 #include <grub/env.h>
-#include <grub/time.h>
 
 void *
 grub_memmove (void *dest, const void *src, grub_size_t n)
@@ -1016,17 +1015,6 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, const grub_uint8_t *src,
     }
 
   return p - dest;
-}
-
-void
-grub_millisleep_generic (grub_uint32_t ms)
-{
-  grub_uint32_t end_at;
-
-  end_at = grub_get_rtc () + grub_div_roundup (ms * GRUB_TICKS_PER_SECOND, 1000);
-
-  while (grub_get_rtc () < end_at)
-    grub_cpu_idle ();
 }
 
 /* Abort GRUB. This function does not return.  */

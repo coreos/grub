@@ -1,3 +1,82 @@
+2008-08-05  Colin D Bennett  <colin@gibibit.com>
+ 
+	High resolution timer support.  Implemented for x86 CPUs using TSC.
+	Extracted generic grub_millisleep() so it's linked in only as needed.
+	This requires a Pentium compatible CPU; if the RDTSC instruction is
+	not supported, then it falls back on the generic grub_get_time_ms()
+	implementation that uses the machine's RTC.
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/time.c',
+	`kern/i386/tsc.c', `kern/generic/rtc_get_time_ms.c' and
+	`kern/generic/millisleep.c'.
+
+	* conf/i386-efi.rmk (kernel_mod_SOURCES): Add `kern/i386/tsc.c',
+	`kern/generic/rtc_get_time_ms.c' and `kern/generic/millisleep.c'.
+
+	* conf/x86_64-efi.rml (kernel_mod_SOURCES): Add
+	`kern/generic/millisleep.c' and `kern/generic/rtc_get_time_ms.c'.
+
+	* conf/sparc64-ieee1275.rmk (kernel_elf_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Add
+	`kern/generic/millisleep.c'.
+
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Likewise.
+
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Add `kern/time.c'.
+
+	* kern/generic/rtc_get_time_ms.c: New file.
+
+	* kern/generic/millisleep.c: New file.
+ 	
+	* kern/misc.c: Don't include
+	<kern/time.h> anymore.
+	(grub_millisleep_generic): Removed.
+
+	* commands/sleep.c (grub_interruptible_millisleep): Uses
+	grub_get_time_ms() instead of grub_get_rtc().
+
+	* include/grub/i386/tsc.h (grub_get_tsc): New file.  New inline
+	function.
+	(grub_cpu_is_cpuid_supported): New inline function.
+	(grub_cpu_is_tsc_supported): New inline function.
+	(grub_tsc_init): New function prototype.
+	(grub_tsc_get_time_ms): New function prototype.
+
+	* kern/i386/tsc.c (grub_get_time_ms): New file.
+
+	* include/grub/time.h: Include <grub/types.h.
+	(grub_millisleep_generic): Removed.
+	(grub_get_time_ms): New prototype.
+	(grub_install_get_time_ms): New prototype.
+	(grub_rtc_get_time_ms): New prototype.
+
+	* kern/time.c (grub_get_time_ms): New function.
+	(grub_install_get_time_ms): New function.
+
+	* kern/i386/efi/init.c: Include <grub/cpu/tsc.h>.  Don't include
+	<grub/time.h> anymore.
+	(grub_millisleep): Removed.
+	(grub_machine_init): Call grub_tsc_init.
+
+	* kern/i386/linuxbios/init.c (grub_machine_init): Install the RTC
+	get_time_ms() implementation.
+
+	* kern/sparc64/ieee1275/init.c (grub_millisleep): Removed.
+	(ieee1275_get_time_ms): New function.
+	(grub_machine_init): Install get_time_ms() implementation.
+
+	* kern/i386/pc/init.c: Include <grub/cpu/tsc.h>.
+	(grub_machine_init): Call grub_tsc_init().
+	(grub_millisleep): Removed.
+ 
+	* kern/ieee1275/init.c (grub_millisleep): Removed.
+	(grub_machine_init): Install ieee1275_get_time_ms()
+	implementation.
+	(ieee1275_get_time_ms): New function.
+	(grub_get_rtc): Now calls ieee1275_get_time_ms(), which does the
+	real work.
+
 2008-08-05  Marco Gerards  <marco@gnu.org>
 
 	* disk/ata.c: Include <grub/pci.h>.

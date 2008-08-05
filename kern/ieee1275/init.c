@@ -47,12 +47,6 @@ extern char _start[];
 extern char _end[];
 
 void
-grub_millisleep (grub_uint32_t ms)
-{
-  grub_millisleep_generic (ms);
-}
-
-void
 grub_exit (void)
 {
   grub_ieee1275_exit ();
@@ -209,6 +203,8 @@ grub_get_extended_memory (void)
 
 #endif
 
+static grub_uint64_t ieee1275_get_time_ms (void);
+
 void
 grub_machine_init (void)
 {
@@ -258,6 +254,8 @@ grub_machine_init (void)
 	    }
 	}
     }
+
+  grub_install_get_time_ms (ieee1275_get_time_ms);
 }
 
 void
@@ -267,14 +265,20 @@ grub_machine_fini (void)
   grub_console_fini ();
 }
 
-grub_uint32_t
-grub_get_rtc (void)
+static grub_uint64_t
+ieee1275_get_time_ms (void)
 {
   grub_uint32_t msecs = 0;
 
   grub_ieee1275_milliseconds (&msecs);
 
   return msecs;
+}
+
+grub_uint32_t
+grub_get_rtc (void)
+{
+  return ieee1275_get_time_ms ();
 }
 
 grub_addr_t

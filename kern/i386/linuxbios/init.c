@@ -143,6 +143,8 @@ grub_machine_init (void)
 
   /* This variable indicates size, not offset.  */
   grub_upper_mem -= GRUB_MEMORY_MACHINE_UPPER_START;
+
+  grub_install_get_time_ms (grub_rtc_get_time_ms);
 }
 
 void

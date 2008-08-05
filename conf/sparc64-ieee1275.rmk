@@ -73,6 +73,7 @@ kernel_elf_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
 	kern/rescue.c kern/term.c term/ieee1275/ofconsole.c \
 	kern/sparc64/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
 	kern/partition.c kern/env.c kern/sparc64/dl.c symlist.c \
+	kern/generic/millisleep.c kern/generic/get_time_ms.c \
 	kern/sparc64/cache.S kern/parser.c
 kernel_elf_HEADERS = grub/sparc64/ieee1275/ieee1275.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)

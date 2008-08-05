@@ -42,7 +42,11 @@ cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
+	kern/time.c \
 	kern/i386/dl.c kern/i386/pc/init.c kern/parser.c kern/partition.c \
+	kern/i386/tsc.c \
+	kern/generic/rtc_get_time_ms.c \
+	kern/generic/millisleep.c \
 	kern/env.c \
 	term/i386/pc/console.c \
 	symlist.c
