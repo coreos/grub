@@ -2054,3 +2054,102 @@ FUNCTION(grub_vbe_bios_set_palette_data)
 	popl	%ebx
 	popl	%ebp
 	ret
+
+
+pxe_rm_entry:
+	.long	0
+
+/*
+ * struct grub_pxenv *grub_pxe_scan (void);
+ */
+FUNCTION(grub_pxe_scan)
+	pushl	%ebp
+	pushl	%ebx
+
+	xorl	%ebx, %ebx
+	xorl	%ecx, %ecx
+
+	call    prot_to_real
+	.code16
+
+	pushw	%es
+
+	movw	$0x5650, %ax
+	int	$0x1A
+	cmpw	$0x564E, %ax
+	jnz	1f
+	cmpl	$0x4E455850, %es:(%bx)		/* PXEN(V+)  */
+	jnz	1f
+	cmpw	$0x201, %es:6(%bx)		/* API version  */
+	jb	1f
+	lesw	%es:0x28(%bx), %bx		/* !PXE structure  */
+	cmpl	$0x45585021, %es:(%bx)		/* !PXE  */
+	jnz	1f
+	movw	%es, %cx
+	jmp	2f
+1:
+	xorw	%bx, %bx
+	xorw	%cx, %cx
+2:
+
+	popw	%es
+
+	DATA32 call	real_to_prot
+	.code32
+
+	xorl	%eax, %eax
+	leal	(%eax, %ecx, 4), %ecx
+	leal	(%ebx, %ecx, 4), %eax		/* eax = ecx * 16 + ebx  */
+
+	orl	%eax, %eax
+	jz	1f
+
+	movl	0x10(%eax), %ecx
+	movl	%ecx, pxe_rm_entry
+
+1:
+
+	popl	%ebx
+	popl	%ebp
+	ret
+
+/*
+ * int grub_pxe_call (int func, void* data);
+ */
+FUNCTION(grub_pxe_call)
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%esi
+	pushl	%edi
+	pushl	%ebx
+
+	movl	%eax, %ecx
+	movl	%edx, %eax
+	andl	$0xF, %eax
+	shrl	$4, %edx
+	shll	$16, %edx
+	addl	%eax, %edx
+	movl	pxe_rm_entry, %ebx
+
+	call    prot_to_real
+	.code16
+
+	pushl	%ebx
+	pushl	%edx
+	pushw	%cx
+	movw	%sp, %bx
+	lcall	*%ss:6(%bx)
+	cld
+	addw	$10, %sp
+	movw	%ax, %cx
+
+	DATA32  call	real_to_prot
+	.code32
+
+	movzwl	%cx, %eax
+
+	popl	%ebx
+	popl	%edi
+	popl	%esi
+	popl	%ebp
+	ret

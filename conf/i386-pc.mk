@@ -225,7 +225,8 @@ kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h machine/kernel.h
+	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h \
+	machine/kernel.h machine/pxe.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
@@ -899,7 +900,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
 	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod \
-	aout.mod _bsd.mod bsd.mod
+	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -3057,5 +3058,119 @@ partmap-bsd_mod-loader_i386_bsd_normal.lst: loader/i386/bsd_normal.c $(loader/i3
 
 bsd_mod_CFLAGS = $(COMMON_CFLAGS)
 bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For pxe.mod
+pxe_mod_SOURCES = fs/i386/pc/pxe.c
+CLEANFILES += pxe.mod mod-pxe.o mod-pxe.c pre-pxe.o pxe_mod-fs_i386_pc_pxe.o und-pxe.lst
+ifneq ($(pxe_mod_EXPORTS),no)
+CLEANFILES += def-pxe.lst
+DEFSYMFILES += def-pxe.lst
+endif
+MOSTLYCLEANFILES += pxe_mod-fs_i386_pc_pxe.d
+UNDSYMFILES += und-pxe.lst
+
+pxe.mod: pre-pxe.o mod-pxe.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(pxe_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-pxe.o mod-pxe.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-pxe.o: $(pxe_mod_DEPENDENCIES) pxe_mod-fs_i386_pc_pxe.o
+	-rm -f $@
+	$(TARGET_CC) $(pxe_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pxe_mod-fs_i386_pc_pxe.o
+
+mod-pxe.o: mod-pxe.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxe_mod_CFLAGS) -c -o $@ $<
+
+mod-pxe.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'pxe' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(pxe_mod_EXPORTS),no)
+def-pxe.lst: pre-pxe.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 pxe/' > $@
+endif
+
+und-pxe.lst: pre-pxe.o
+	echo 'pxe' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+pxe_mod-fs_i386_pc_pxe.o: fs/i386/pc/pxe.c $(fs/i386/pc/pxe.c_DEPENDENCIES)
+	$(TARGET_CC) -Ifs/i386/pc -I$(srcdir)/fs/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pxe_mod_CFLAGS) -MD -c -o $@ $<
+-include pxe_mod-fs_i386_pc_pxe.d
+
+CLEANFILES += cmd-pxe_mod-fs_i386_pc_pxe.lst fs-pxe_mod-fs_i386_pc_pxe.lst partmap-pxe_mod-fs_i386_pc_pxe.lst
+COMMANDFILES += cmd-pxe_mod-fs_i386_pc_pxe.lst
+FSFILES += fs-pxe_mod-fs_i386_pc_pxe.lst
+PARTMAPFILES += partmap-pxe_mod-fs_i386_pc_pxe.lst
+
+cmd-pxe_mod-fs_i386_pc_pxe.lst: fs/i386/pc/pxe.c $(fs/i386/pc/pxe.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifs/i386/pc -I$(srcdir)/fs/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pxe > $@ || (rm -f $@; exit 1)
+
+fs-pxe_mod-fs_i386_pc_pxe.lst: fs/i386/pc/pxe.c $(fs/i386/pc/pxe.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifs/i386/pc -I$(srcdir)/fs/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh pxe > $@ || (rm -f $@; exit 1)
+
+partmap-pxe_mod-fs_i386_pc_pxe.lst: fs/i386/pc/pxe.c $(fs/i386/pc/pxe.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ifs/i386/pc -I$(srcdir)/fs/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxe_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh pxe > $@ || (rm -f $@; exit 1)
+
+
+pxe_mod_CFLAGS = $(COMMON_CFLAGS)
+pxe_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For pxecmd.mod
+pxecmd_mod_SOURCES = commands/i386/pc/pxecmd.c
+CLEANFILES += pxecmd.mod mod-pxecmd.o mod-pxecmd.c pre-pxecmd.o pxecmd_mod-commands_i386_pc_pxecmd.o und-pxecmd.lst
+ifneq ($(pxecmd_mod_EXPORTS),no)
+CLEANFILES += def-pxecmd.lst
+DEFSYMFILES += def-pxecmd.lst
+endif
+MOSTLYCLEANFILES += pxecmd_mod-commands_i386_pc_pxecmd.d
+UNDSYMFILES += und-pxecmd.lst
+
+pxecmd.mod: pre-pxecmd.o mod-pxecmd.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(pxecmd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-pxecmd.o mod-pxecmd.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-pxecmd.o: $(pxecmd_mod_DEPENDENCIES) pxecmd_mod-commands_i386_pc_pxecmd.o
+	-rm -f $@
+	$(TARGET_CC) $(pxecmd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pxecmd_mod-commands_i386_pc_pxecmd.o
+
+mod-pxecmd.o: mod-pxecmd.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxecmd_mod_CFLAGS) -c -o $@ $<
+
+mod-pxecmd.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'pxecmd' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(pxecmd_mod_EXPORTS),no)
+def-pxecmd.lst: pre-pxecmd.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 pxecmd/' > $@
+endif
+
+und-pxecmd.lst: pre-pxecmd.o
+	echo 'pxecmd' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+pxecmd_mod-commands_i386_pc_pxecmd.o: commands/i386/pc/pxecmd.c $(commands/i386/pc/pxecmd.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pxecmd_mod_CFLAGS) -MD -c -o $@ $<
+-include pxecmd_mod-commands_i386_pc_pxecmd.d
+
+CLEANFILES += cmd-pxecmd_mod-commands_i386_pc_pxecmd.lst fs-pxecmd_mod-commands_i386_pc_pxecmd.lst partmap-pxecmd_mod-commands_i386_pc_pxecmd.lst
+COMMANDFILES += cmd-pxecmd_mod-commands_i386_pc_pxecmd.lst
+FSFILES += fs-pxecmd_mod-commands_i386_pc_pxecmd.lst
+PARTMAPFILES += partmap-pxecmd_mod-commands_i386_pc_pxecmd.lst
+
+cmd-pxecmd_mod-commands_i386_pc_pxecmd.lst: commands/i386/pc/pxecmd.c $(commands/i386/pc/pxecmd.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxecmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pxecmd > $@ || (rm -f $@; exit 1)
+
+fs-pxecmd_mod-commands_i386_pc_pxecmd.lst: commands/i386/pc/pxecmd.c $(commands/i386/pc/pxecmd.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxecmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh pxecmd > $@ || (rm -f $@; exit 1)
+
+partmap-pxecmd_mod-commands_i386_pc_pxecmd.lst: commands/i386/pc/pxecmd.c $(commands/i386/pc/pxecmd.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/i386/pc -I$(srcdir)/commands/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pxecmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh pxecmd > $@ || (rm -f $@; exit 1)
+
+
+pxecmd_mod_CFLAGS = $(COMMON_CFLAGS)
+pxecmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

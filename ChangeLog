@@ -1,5 +1,29 @@
 2008-08-05  Bean  <bean123ch@gmail.com>
 
+	* boot/i386/pc/pxeboot.S (_start): Use drive number 0x7F for pxe.
+
+	* conf/i386-pc.rmk (kernel_img_HEADERS): Add machine/pxe.h.
+	(pkglib_MODULES): Add pxe.mod and pxecmd.mod.
+	(pxe_mod_SOURCES): New macro.
+	(pxe_mod_CFLAGS): Likewise.
+	(pxe_mod_LDFLAGS): Likewise.
+	(pxecmd_mod_SOURCES): Likewise.
+	(pxecmd_mod_CFLAGS): Likewise.
+	(pxecmd_mod_LDFLAGS): Likewise.
+
+	* kern/i386/pc/startup.S (grub_pxe_scan): New function.
+	(grub_pxe_call): Likewise.
+
+	* include/grub/disk.h (grub_disk_dev_id): Add GRUB_DISK_DEVICE_PXE_ID.
+
+	* commands/i386/pc/pxecmd.c: New file.
+
+	* disk/i386/pc/pxe.c: Likewise.
+
+	* include/grub/i386/pc/pxe.h: Likewise.
+
+2008-08-05  Bean  <bean123ch@gmail.com>
+
 	* util/console.c (grub_console_cur_color): New variable.
 	(grub_console_standard_color): Likewise.
 	(grub_console_normal_color): Likewise.
