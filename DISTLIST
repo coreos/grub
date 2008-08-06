@@ -124,6 +124,7 @@ include/grub/gpt_partition.h
 include/grub/gzio.h
 include/grub/hexdump.h
 include/grub/hfs.h
+include/grub/i386/at_keyboard.h
 include/grub/i386/coreboot/boot.h
 include/grub/i386/coreboot/console.h
 include/grub/i386/coreboot/init.h
@@ -135,6 +136,7 @@ include/grub/i386/coreboot/time.h
 include/grub/i386/efi/kernel.h
 include/grub/i386/efi/loader.h
 include/grub/i386/efi/time.h
+include/grub/i386/halt.h
 include/grub/i386/ieee1275/loader.h
 include/grub/i386/ieee1275/machine.h
 include/grub/i386/ieee1275/memory.h
@@ -160,6 +162,7 @@ include/grub/i386/pc/vbe.h
 include/grub/i386/pc/vbeutil.h
 include/grub/i386/pc/vga.h
 include/grub/i386/pit.h
+include/grub/i386/reboot.h
 include/grub/i386/setjmp.h
 include/grub/i386/time.h
 include/grub/i386/types.h
@@ -234,6 +237,7 @@ kern/fs.c
 kern/i386/dl.c
 kern/i386/efi/init.c
 kern/i386/efi/startup.S
+kern/i386/halt.c
 kern/i386/linuxbios/init.c
 kern/i386/linuxbios/startup.S
 kern/i386/linuxbios/table.c
@@ -243,6 +247,7 @@ kern/i386/pc/lzo1x.S
 kern/i386/pc/startup.S
 kern/i386/pit.c
 kern/i386/realmode.S
+kern/i386/reboot.c
 kern/ieee1275/cmain.c
 kern/ieee1275/ieee1275.c
 kern/ieee1275/init.c

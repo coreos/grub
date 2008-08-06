@@ -99,7 +99,8 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
 	play.mod cpuid.mod serial.mod ata.mod		\
-	memdisk.mod pci.mod lspci.mod
+	memdisk.mod pci.mod lspci.mod reboot.mod	\
+	halt.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
@@ -120,6 +121,16 @@ normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+reboot_mod_SOURCES = commands/reboot.c kern/i386/reboot.c
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For halt.mod.
+halt_mod_SOURCES = commands/halt.c kern/i386/halt.c
+halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c

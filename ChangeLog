@@ -1,3 +1,29 @@
+2008-08-06  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add `reboot.mod' and
+	`halt.mod'.
+	(reboot_mod_SOURCES, reboot_mod_CFLAGS, reboot_mod_LDFLAGS)
+	(halt_mod_SOURCES, halt_mod_CFLAGS, halt_mod_LDFLAGS): New variables.
+
+	* kern/i386/halt.c: New file.
+	* kern/i386/reboot.c: Likewise.
+	* include/grub/i386/reboot.h: Likewise.
+	* include/grub/i386/halt.h: Likewise.
+
+	* commands/halt.c [! GRUB_MACHINE_IEEE1275 ! GRUB_MACHINE_EFI]:
+	Include `<grub/cpu/halt.h>'.
+	* commands/reboot.c [! GRUB_MACHINE_IEEE1275 ! GRUB_MACHINE_EFI]
+	[! GRUB_MACHINE_PCBIOS]: Include `<grub/cpu/reboot.h>'.
+
+	* term/i386/pc/at_keyboard.c: Include `<grub/cpu/at_keyboard.h>'.
+	(SHIFT_L, SHIFT_R, CTRL, ALT, CAPS_LOCK, KEYBOARD_REG_DATA)
+	(KEYBOARD_REG_STATUS, KEYBOARD_COMMAND_ISREADY, KEYBOARD_COMMAND_READ)
+	(KEYBOARD_COMMAND_WRITE, KEYBOARD_COMMAND_REBOOT)
+	(KEYBOARD_SCANCODE_SET1, KEYBOARD_ISMAKE, KEYBOARD_ISREADY)
+	(KEYBOARD_SCANCODE, OLPC_UP, OLPC_DOWN, OLPC_LEFT, OLPC_RIGHT): Move
+	from here ...
+	* include/grub/i386/at_keyboard.h: ... to here.
+
 2008-08-05  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/i386/pit.c'.

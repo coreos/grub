@@ -19,15 +19,18 @@ kernel_elf_SOURCES = kern/i386/linuxbios/startup.S kern/i386/linuxbios/init.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/time.c \
 	kern/i386/dl.c kern/parser.c kern/partition.c \
+	kern/i386/tsc.c kern/i386/pit.c \
+	kern/generic/rtc_get_time_ms.c \
+	kern/generic/millisleep.c \
 	kern/env.c \
 	term/i386/pc/console.c \
 	term/i386/pc/at_keyboard.c term/i386/pc/vga_text.c \
 	symlist.c
-CLEANFILES += kernel.elf kernel_elf-kern_i386_linuxbios_startup.o kernel_elf-kern_i386_linuxbios_init.o kernel_elf-kern_i386_linuxbios_table.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o
-MOSTLYCLEANFILES += kernel_elf-kern_i386_linuxbios_startup.d kernel_elf-kern_i386_linuxbios_init.d kernel_elf-kern_i386_linuxbios_table.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_time.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_env.d kernel_elf-term_i386_pc_console.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-term_i386_pc_vga_text.d kernel_elf-symlist.d
+CLEANFILES += kernel.elf kernel_elf-kern_i386_linuxbios_startup.o kernel_elf-kern_i386_linuxbios_init.o kernel_elf-kern_i386_linuxbios_table.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o
+MOSTLYCLEANFILES += kernel_elf-kern_i386_linuxbios_startup.d kernel_elf-kern_i386_linuxbios_init.d kernel_elf-kern_i386_linuxbios_table.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_time.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_i386_tsc.d kernel_elf-kern_i386_pit.d kernel_elf-kern_generic_rtc_get_time_ms.d kernel_elf-kern_generic_millisleep.d kernel_elf-kern_env.d kernel_elf-term_i386_pc_console.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-term_i386_pc_vga_text.d kernel_elf-symlist.d
 
-kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_linuxbios_startup.o kernel_elf-kern_i386_linuxbios_init.o kernel_elf-kern_i386_linuxbios_table.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o
-	$(TARGET_CC) -o $@ kernel_elf-kern_i386_linuxbios_startup.o kernel_elf-kern_i386_linuxbios_init.o kernel_elf-kern_i386_linuxbios_table.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
+kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_linuxbios_startup.o kernel_elf-kern_i386_linuxbios_init.o kernel_elf-kern_i386_linuxbios_table.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o
+	$(TARGET_CC) -o $@ kernel_elf-kern_i386_linuxbios_startup.o kernel_elf-kern_i386_linuxbios_init.o kernel_elf-kern_i386_linuxbios_table.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
 
 kernel_elf-kern_i386_linuxbios_startup.o: kern/i386/linuxbios/startup.S $(kern/i386/linuxbios/startup.S_DEPENDENCIES)
 	$(TARGET_CC) -Ikern/i386/linuxbios -I$(srcdir)/kern/i386/linuxbios $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -104,6 +107,22 @@ kernel_elf-kern_parser.o: kern/parser.c $(kern/parser.c_DEPENDENCIES)
 kernel_elf-kern_partition.o: kern/partition.c $(kern/partition.c_DEPENDENCIES)
 	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_partition.d
+
+kernel_elf-kern_i386_tsc.o: kern/i386/tsc.c $(kern/i386/tsc.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_i386_tsc.d
+
+kernel_elf-kern_i386_pit.o: kern/i386/pit.c $(kern/i386/pit.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_i386_pit.d
+
+kernel_elf-kern_generic_rtc_get_time_ms.o: kern/generic/rtc_get_time_ms.c $(kern/generic/rtc_get_time_ms.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/generic -I$(srcdir)/kern/generic $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_generic_rtc_get_time_ms.d
+
+kernel_elf-kern_generic_millisleep.o: kern/generic/millisleep.c $(kern/generic/millisleep.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/generic -I$(srcdir)/kern/generic $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-kern_generic_millisleep.d
 
 kernel_elf-kern_env.o: kern/env.c $(kern/env.c_DEPENDENCIES)
 	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -561,7 +580,8 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
 	play.mod cpuid.mod serial.mod ata.mod		\
-	memdisk.mod pci.mod lspci.mod
+	memdisk.mod pci.mod lspci.mod reboot.mod	\
+	halt.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
@@ -1004,6 +1024,158 @@ partmap-normal_mod-normal_color.lst: normal/color.c $(normal/color.c_DEPENDENCIE
 normal_mod_CFLAGS = $(COMMON_CFLAGS)
 normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
 normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For reboot.mod.
+reboot_mod_SOURCES = commands/reboot.c kern/i386/reboot.c
+CLEANFILES += reboot.mod mod-reboot.o mod-reboot.c pre-reboot.o reboot_mod-commands_reboot.o reboot_mod-kern_i386_reboot.o und-reboot.lst
+ifneq ($(reboot_mod_EXPORTS),no)
+CLEANFILES += def-reboot.lst
+DEFSYMFILES += def-reboot.lst
+endif
+MOSTLYCLEANFILES += reboot_mod-commands_reboot.d reboot_mod-kern_i386_reboot.d
+UNDSYMFILES += und-reboot.lst
+
+reboot.mod: pre-reboot.o mod-reboot.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-reboot.o mod-reboot.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o reboot_mod-kern_i386_reboot.o
+	-rm -f $@
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ reboot_mod-commands_reboot.o reboot_mod-kern_i386_reboot.o
+
+mod-reboot.o: mod-reboot.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
+
+mod-reboot.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(reboot_mod_EXPORTS),no)
+def-reboot.lst: pre-reboot.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 reboot/' > $@
+endif
+
+und-reboot.lst: pre-reboot.o
+	echo 'reboot' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+reboot_mod-commands_reboot.o: commands/reboot.c $(commands/reboot.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
+-include reboot_mod-commands_reboot.d
+
+CLEANFILES += cmd-reboot_mod-commands_reboot.lst fs-reboot_mod-commands_reboot.lst partmap-reboot_mod-commands_reboot.lst
+COMMANDFILES += cmd-reboot_mod-commands_reboot.lst
+FSFILES += fs-reboot_mod-commands_reboot.lst
+PARTMAPFILES += partmap-reboot_mod-commands_reboot.lst
+
+cmd-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
+
+fs-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reboot > $@ || (rm -f $@; exit 1)
+
+partmap-reboot_mod-commands_reboot.lst: commands/reboot.c $(commands/reboot.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh reboot > $@ || (rm -f $@; exit 1)
+
+
+reboot_mod-kern_i386_reboot.o: kern/i386/reboot.c $(kern/i386/reboot.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -MD -c -o $@ $<
+-include reboot_mod-kern_i386_reboot.d
+
+CLEANFILES += cmd-reboot_mod-kern_i386_reboot.lst fs-reboot_mod-kern_i386_reboot.lst partmap-reboot_mod-kern_i386_reboot.lst
+COMMANDFILES += cmd-reboot_mod-kern_i386_reboot.lst
+FSFILES += fs-reboot_mod-kern_i386_reboot.lst
+PARTMAPFILES += partmap-reboot_mod-kern_i386_reboot.lst
+
+cmd-reboot_mod-kern_i386_reboot.lst: kern/i386/reboot.c $(kern/i386/reboot.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh reboot > $@ || (rm -f $@; exit 1)
+
+fs-reboot_mod-kern_i386_reboot.lst: kern/i386/reboot.c $(kern/i386/reboot.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh reboot > $@ || (rm -f $@; exit 1)
+
+partmap-reboot_mod-kern_i386_reboot.lst: kern/i386/reboot.c $(kern/i386/reboot.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh reboot > $@ || (rm -f $@; exit 1)
+
+
+reboot_mod_CFLAGS = $(COMMON_CFLAGS)
+reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For halt.mod.
+halt_mod_SOURCES = commands/halt.c kern/i386/halt.c
+CLEANFILES += halt.mod mod-halt.o mod-halt.c pre-halt.o halt_mod-commands_halt.o halt_mod-kern_i386_halt.o und-halt.lst
+ifneq ($(halt_mod_EXPORTS),no)
+CLEANFILES += def-halt.lst
+DEFSYMFILES += def-halt.lst
+endif
+MOSTLYCLEANFILES += halt_mod-commands_halt.d halt_mod-kern_i386_halt.d
+UNDSYMFILES += und-halt.lst
+
+halt.mod: pre-halt.o mod-halt.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-halt.o mod-halt.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_halt.o halt_mod-kern_i386_halt.o
+	-rm -f $@
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ halt_mod-commands_halt.o halt_mod-kern_i386_halt.o
+
+mod-halt.o: mod-halt.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
+
+mod-halt.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(halt_mod_EXPORTS),no)
+def-halt.lst: pre-halt.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 halt/' > $@
+endif
+
+und-halt.lst: pre-halt.o
+	echo 'halt' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+halt_mod-commands_halt.o: commands/halt.c $(commands/halt.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
+-include halt_mod-commands_halt.d
+
+CLEANFILES += cmd-halt_mod-commands_halt.lst fs-halt_mod-commands_halt.lst partmap-halt_mod-commands_halt.lst
+COMMANDFILES += cmd-halt_mod-commands_halt.lst
+FSFILES += fs-halt_mod-commands_halt.lst
+PARTMAPFILES += partmap-halt_mod-commands_halt.lst
+
+cmd-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
+
+fs-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh halt > $@ || (rm -f $@; exit 1)
+
+partmap-halt_mod-commands_halt.lst: commands/halt.c $(commands/halt.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh halt > $@ || (rm -f $@; exit 1)
+
+
+halt_mod-kern_i386_halt.o: kern/i386/halt.c $(kern/i386/halt.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -MD -c -o $@ $<
+-include halt_mod-kern_i386_halt.d
+
+CLEANFILES += cmd-halt_mod-kern_i386_halt.lst fs-halt_mod-kern_i386_halt.lst partmap-halt_mod-kern_i386_halt.lst
+COMMANDFILES += cmd-halt_mod-kern_i386_halt.lst
+FSFILES += fs-halt_mod-kern_i386_halt.lst
+PARTMAPFILES += partmap-halt_mod-kern_i386_halt.lst
+
+cmd-halt_mod-kern_i386_halt.lst: kern/i386/halt.c $(kern/i386/halt.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh halt > $@ || (rm -f $@; exit 1)
+
+fs-halt_mod-kern_i386_halt.lst: kern/i386/halt.c $(kern/i386/halt.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh halt > $@ || (rm -f $@; exit 1)
+
+partmap-halt_mod-kern_i386_halt.lst: kern/i386/halt.c $(kern/i386/halt.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ikern/i386 -I$(srcdir)/kern/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh halt > $@ || (rm -f $@; exit 1)
+
+
+halt_mod_CFLAGS = $(COMMON_CFLAGS)
+halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c
