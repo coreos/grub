@@ -493,7 +493,7 @@ CLEANFILES += update-grub_lib
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-update-grub_SCRIPTS = 00_header 10_linux 10_hurd 30_os-prober 40_custom
+update-grub_SCRIPTS = 00_header 10_linux 10_hurd 10_windows 30_os-prober 40_custom
 CLEANFILES += $(update-grub_SCRIPTS)
 
 update-grub_DATA += util/grub.d/README

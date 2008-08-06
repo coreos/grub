@@ -7,6 +7,7 @@
 00_header
 10_hurd
 10_linux
+10_windows
 30_os-prober
 40_custom
 Makefile

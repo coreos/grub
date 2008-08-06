@@ -1,3 +1,8 @@
+2008-08-06  Christian Franke  <franke@computer.org>
+
+	* conf/common.rmk: Build and install `10_windows'.
+	* util/grub.d/10_windows.in: New script.
+
 2008-08-06  Pavel Roskin  <proski@gnu.org>
 
 	* kern/i386/pit.c: Include `<grub/i386/pit.h>'.
