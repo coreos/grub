@@ -39,6 +39,8 @@ grub_uint32_t grub_pxe_server_ip;
 grub_uint32_t grub_pxe_gateway_ip;
 int grub_pxe_blksize = GRUB_PXE_MIN_BLKSIZE;
 
+static grub_file_t curr_file = 0;
+
 struct grub_pxe_data
 {
   grub_uint32_t packet_number;
@@ -153,12 +155,9 @@ grub_pxefs_open (struct grub_file *file, const char *name)
       return grub_errno;
     }
 
-  file_int->data = data;
-  file_int->offset = 0;
-  file_int->device = 0;
-  file_int->size = file->size;
-  file_int->read_hook = 0;
-  file_int->fs = &grub_pxefs_fs_int;
+  file->data = data;
+  grub_memcpy (file_int, file, sizeof (struct grub_file));
+  curr_file = file_int;
 
   bufio = grub_bufio_open (file_int, grub_pxe_blksize);
   if (! bufio)
@@ -168,32 +167,13 @@ grub_pxefs_open (struct grub_file *file, const char *name)
       return grub_errno;
     }
 
-  file->data = bufio;
+  grub_memcpy (file, bufio, sizeof (struct grub_file));
 
   return GRUB_ERR_NONE;
 }
 
 static grub_ssize_t
 grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
-{
-  grub_file_t bufio;
-
-  bufio = file->data;
-  bufio->offset = file->offset;
-
-  return bufio->fs->read (bufio, buf, len);
-}
-
-static grub_ssize_t
-grub_pxefs_close (grub_file_t file)
-{
-  grub_file_close ((grub_file_t) file->data);
-
-  return grub_errno;
-}
-
-static grub_ssize_t
-grub_pxefs_read_int (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_pxenv_tftp_read c;
   struct grub_pxe_data *data;
@@ -206,7 +186,7 @@ grub_pxefs_read_int (grub_file_t file, char *buf, grub_size_t len)
     return grub_error (GRUB_ERR_BAD_FS,
                        "read access must be aligned to packet size");
 
-  if (data->packet_number > pn)
+  if ((curr_file != file) || (data->packet_number > pn))
     {
       struct grub_pxenv_tftp_open o;
 
@@ -221,6 +201,7 @@ grub_pxefs_read_int (grub_file_t file, char *buf, grub_size_t len)
       if (o.status)
         return grub_error (GRUB_ERR_BAD_FS, "open fails");
       data->packet_number = 0;
+      curr_file = file;
     }
 
   c.buffer = SEGOFS (GRUB_MEMORY_MACHINE_SCRATCH_ADDR);
@@ -242,7 +223,7 @@ grub_pxefs_read_int (grub_file_t file, char *buf, grub_size_t len)
 }
 
 static grub_err_t
-grub_pxefs_close_int (grub_file_t file)
+grub_pxefs_close (grub_file_t file)
 {
   struct grub_pxenv_tftp_close c;
 
@@ -269,13 +250,6 @@ static struct grub_fs grub_pxefs_fs =
     .close = grub_pxefs_close,
     .label = grub_pxefs_label,
     .next = 0
-  };
-
-static struct grub_fs grub_pxefs_fs_int =
-  {
-    .name = "pxefs",
-    .read = grub_pxefs_read_int,
-    .close = grub_pxefs_close_int,
   };
 
 static void

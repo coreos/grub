@@ -1,3 +1,15 @@
+2008-08-06  Bean  <bean123ch@gmail.com>
+
+	* fs/i386/pc/pxe.c (curr_file): new variable.
+	(grub_pxefs_open): Simply the handling of pxe file system. Don't
+	require the dummy internal file system anymore.
+	(grub_pxefs_read): Removed.
+	(grub_pxefs_close): Likewise.
+	(grub_pxefs_fs_int): Likewise.
+	(grub_pxefs_read_int): Renamed to grub_pxefs_read. Reinitialize tftp
+	connection when we switch file.
+	(grub_pxefs_close_int): Renamed to grub_pxefs_close.
+
 2008-08-06  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-coreboot.rmk (pkglib_MODULES): Add `reboot.mod' and
@@ -63,7 +75,7 @@
 
 	* commands/i386/pc/pxecmd.c: New file.
 
-	* disk/i386/pc/pxe.c: Likewise.
+	* fs/i386/pc/pxe.c: Likewise.
 
 	* include/grub/i386/pc/pxe.h: Likewise.
 
