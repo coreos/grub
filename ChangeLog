@@ -1,3 +1,7 @@
+2008-08-06  Pavel Roskin  <proski@gnu.org>
+
+	* kern/i386/pit.c: Include `<grub/i386/pit.h>'.
+
 2008-08-06  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-coreboot.rmk (kernel_elf_ASFLAGS): New variable.
@@ -110,7 +114,7 @@
 	(grub_ncurses_term): New member grub_ncurses_getcolor.
 
 2008-08-05  Colin D Bennett  <colin@gibibit.com>
- 
+
 	High resolution timer support.  Implemented for x86 CPUs using TSC.
 	Extracted generic grub_millisleep() so it's linked in only as needed.
 	This requires a Pentium compatible CPU; if the RDTSC instruction is
@@ -139,7 +143,7 @@
 	* kern/generic/rtc_get_time_ms.c: New file.
 
 	* kern/generic/millisleep.c: New file.
- 	
+
 	* kern/misc.c: Don't include
 	<kern/time.h> anymore.
 	(grub_millisleep_generic): Removed.
