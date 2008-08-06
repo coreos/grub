@@ -44,6 +44,7 @@ static grub_file_t curr_file = 0;
 struct grub_pxe_data
 {
   grub_uint32_t packet_number;
+  grub_uint32_t block_size;
   char filename[0];
 };
 
@@ -113,8 +114,6 @@ grub_pxefs_dir (grub_device_t device __attribute((unused)),
   return GRUB_ERR_NONE;
 }
 
-static struct grub_fs grub_pxefs_fs_int;
-
 static grub_err_t
 grub_pxefs_open (struct grub_file *file, const char *name)
 {
@@ -146,6 +145,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
     return grub_errno;
 
   data->packet_number = 0;
+  data->block_size = grub_pxe_blksize;
   grub_strcpy (data->filename, name);
 
   file_int = grub_malloc (sizeof (*file_int));
@@ -159,7 +159,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   grub_memcpy (file_int, file, sizeof (struct grub_file));
   curr_file = file_int;
 
-  bufio = grub_bufio_open (file_int, grub_pxe_blksize);
+  bufio = grub_bufio_open (file_int, data->block_size);
   if (! bufio)
     {
       grub_free (file_int);
@@ -181,7 +181,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
 
   data = file->data;
 
-  pn = grub_divmod64 (file->offset, grub_pxe_blksize, &r);
+  pn = grub_divmod64 (file->offset, data->block_size, &r);
   if (r)
     return grub_error (GRUB_ERR_BAD_FS,
                        "read access must be aligned to packet size");
@@ -196,7 +196,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
       o.gateway_ip = grub_pxe_gateway_ip;
       grub_strcpy (o.filename, data->filename);
       o.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
-      o.packet_size = grub_pxe_blksize;
+      o.packet_size = data->block_size;
       grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o);
       if (o.status)
         return grub_error (GRUB_ERR_BAD_FS, "open fails");

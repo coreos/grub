@@ -1,5 +1,14 @@
 2008-08-06  Bean  <bean123ch@gmail.com>
 
+	* fs/i386/pc/pxe.c (grub_pxe_data): New member block_size.
+	(grub_pxefs_fs_int): Remove dummy definition.
+	(grub_pxefs_open): Use data->block_size to store the current block
+	size setting.
+	(grub_pxefs_read): Use block size stored in data->block_size. As the
+	value of grub_pxe_blksize can be changed after the file is opened.
+
+2008-08-06  Bean  <bean123ch@gmail.com>
+
 	* fs/i386/pc/pxe.c (curr_file): new variable.
 	(grub_pxefs_open): Simply the handling of pxe file system. Don't
 	require the dummy internal file system anymore.
