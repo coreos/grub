@@ -1,3 +1,8 @@
+2008-08-06  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-coreboot.rmk (kernel_elf_ASFLAGS): New variable.
+	* kern/i386/tsc.c: Include `<grub/i386/pit.h>'.
+
 2008-08-06  Bean  <bean123ch@gmail.com>
 
 	* fs/i386/pc/pxe.c (grub_pxe_data): New member block_size.

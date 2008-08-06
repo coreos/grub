@@ -24,6 +24,7 @@
 #include <grub/time.h>
 #include <grub/misc.h>
 #include <grub/i386/tsc.h>
+#include <grub/i386/pit.h>
 
 /* This defines the value TSC had at the epoch (that is, when we calibrated it). */
 static grub_uint64_t tsc_boot_time;

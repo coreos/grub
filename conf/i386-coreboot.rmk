@@ -31,6 +31,7 @@ kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
+kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x8200,-Bstatic
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
