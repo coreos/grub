@@ -30,9 +30,9 @@ New in 1.97 - :
 
 * The ATA driver supports filesystems bigger than 2TB.
 
-* Add support for the UDF, AFS filesystem.
+* Add support for the UDF, AFS and EXT4 filesystems.
 
-* The ISO9660 filesystem supports the Juliet extension
+* The ISO9660 filesystem supports the Joliet extension
 
 * Add aout and BSD kernel loaders.
 
