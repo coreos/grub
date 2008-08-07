@@ -19,6 +19,7 @@ kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/i386/dl.c kern/parser.c kern/partition.c \
 	kern/env.c \
+	kern/time.c \
 	kern/generic/millisleep.c \
 	kern/ieee1275/ieee1275.c \
 	term/ieee1275/ofconsole.c term/i386/pc/at_keyboard.c \

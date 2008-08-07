@@ -1,3 +1,12 @@
+2008-08-07  Bean  <bean123ch@gmail.com>
+
+	* conf/i386-efi.rmk (kernel_mod_SOURCES): Add kern/time.c.
+
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Add kern/time.c,
+
+	* include/grub/i386/pit.h: Use macro KERNEL_CPU_PIT_HEADER to avoid
+	multiple inclusion. Add #include <grub/types.h>.
+
 2008-08-06  Christian Franke  <franke@computer.org>
 
 	* conf/common.rmk: Build and install `10_windows'.

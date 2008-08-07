@@ -16,4 +16,11 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef KERNEL_CPU_PIT_HEADER
+#define KERNEL_CPU_PIT_HEADER   1
+
+#include <grub/types.h>
+
 extern void grub_pit_wait (grub_uint16_t tics);
+
+#endif /* ! KERNEL_CPU_PIT_HEADER */
