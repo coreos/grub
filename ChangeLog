@@ -1,5 +1,31 @@
 2008-08-08  Marco Gerards  <marco@gnu.org>
 
+	* disk/ata.c (grub_ata_regget): Change return type to
+	`grub_uint8_t'.
+	(grub_ata_regget2): Likewise.
+	(grub_ata_wait_status): New function.
+	(grub_ata_wait_busy): Removed function, updated all users to use
+	`grub_ata_wait_status'.
+	(grub_ata_wait_drq): Likewise.
+	(grub_ata_cmd): New function.
+	(grub_ata_pio_read): Change return type to `grub_uint8_t'.  Add
+	error handling.
+	(grub_ata_pio_write): Add error handling.
+	(grub_atapi_identify): Likewise.
+	(grub_atapi_packet): Use `grub_ata_cmd' and improve error
+	handling.
+	(grub_ata_identify): Use `grub_ata_cmd' and improve error
+	handling.  Actually use the detected registers.  Reorder the
+	detection logic such that it is easier to read.
+	(grub_ata_pciinit): Do not assign the same ID to each controller.
+	(grub_ata_setaddress): Use `grub_ata_cmd' and improve error
+	handling.
+	(grub_atapi_readsector): Check the result of `grub_ata_pio_read'.
+
+	* include/grub/err.h (grub_err_t): Add `GRUB_ERR_TIMEOUT'.
+
+2008-08-08  Marco Gerards  <marco@gnu.org>
+
 	* NEWS: Update.
 
 2008-08-07  Bean  <bean123ch@gmail.com>
