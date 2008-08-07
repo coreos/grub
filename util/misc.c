@@ -33,6 +33,7 @@
 #include <grub/util/misc.h>
 #include <grub/mm.h>
 #include <grub/term.h>
+#include <grub/time.h>
 #include <grub/machine/time.h>
 
 /* Include malloc.h, only if memalign is available. It is known that
@@ -282,6 +283,16 @@ grub_get_rtc (void)
   return (tv.tv_sec * GRUB_TICKS_PER_SECOND
 	  + (((tv.tv_sec % GRUB_TICKS_PER_SECOND) * 1000000 + tv.tv_usec)
 	     * GRUB_TICKS_PER_SECOND / 1000000));
+}
+
+grub_uint64_t
+grub_get_time_ms (void)
+{
+  struct timeval tv;
+
+  gettimeofday (&tv, 0);
+  
+  return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
 void 

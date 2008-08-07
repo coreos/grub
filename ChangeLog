@@ -1,3 +1,15 @@
+2008-08-08  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/disk.c: Replace `<grub/machine/time.h>' with `<grub/time.h>'.
+	(grub_last_time): Change type to grub_uint64_t.
+	(grub_disk_open): Migrate code from to using grub_get_time_ms().
+	(grub_disk_close): Likewise.
+
+	* normal/menu.c: Replace `<grub/machine/time.h>' with `<grub/time.h>'.
+	(run_menu): Migrate code from to using grub_get_time_ms().
+
+	* util/misc.c (grub_get_time_ms): New function.
+
 2008-08-08  Marco Gerards  <marco@gnu.org>
 
 	* disk/ata.c (grub_ata_regget): Change return type to

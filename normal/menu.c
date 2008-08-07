@@ -21,7 +21,7 @@
 #include <grub/misc.h>
 #include <grub/loader.h>
 #include <grub/mm.h>
-#include <grub/machine/time.h>
+#include <grub/time.h>
 #include <grub/env.h>
 #include <grub/script.h>
 
@@ -326,7 +326,7 @@ static int
 run_menu (grub_menu_t menu, int nested)
 {
   int first, offset;
-  unsigned long saved_time;
+  grub_uint64_t saved_time;
   int default_entry;
   int timeout;
   
@@ -351,7 +351,7 @@ run_menu (grub_menu_t menu, int nested)
     }
 
   /* Initialize the time.  */
-  saved_time = grub_get_rtc ();
+  saved_time = grub_get_time_ms ();
 
  refresh:
   grub_setcursor (0);
@@ -371,10 +371,10 @@ run_menu (grub_menu_t menu, int nested)
       
       if (timeout > 0)
 	{
-	  unsigned long current_time;
+	  grub_uint64_t current_time;
 
-	  current_time = grub_get_rtc ();
-	  if (current_time - saved_time >= GRUB_TICKS_PER_SECOND)
+	  current_time = grub_get_time_ms ();
+	  if (current_time - saved_time >= 1000)
 	    {
 	      timeout--;
 	      set_timeout (timeout);
