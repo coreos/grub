@@ -28,13 +28,29 @@
 #define TIMER_ENABLE_LSB	0x20
 #define TIMER_ENABLE_MSB	0x10
 #define TIMER2_LATCH		0x20
+#define TIMER2_SPEAKER		0x02
+#define TIMER2_GATE		0x01
 
 void
 grub_pit_wait (grub_uint16_t tics)
 {
+  /* Disable timer2 gate and speaker.  */
+  grub_outb (grub_inb (TIMER2_REG_LATCH) & ~ (TIMER2_SPEAKER | TIMER2_GATE),
+             TIMER2_REG_LATCH);
+
+  /* Set tics.  */
   grub_outb (TIMER2_SELECT | TIMER_ENABLE_LSB | TIMER_ENABLE_MSB, TIMER_REG_COMMAND);
   grub_outb (tics & 0xff, TIMER2_REG_CONTROL);
   grub_outb (tics >> 8, TIMER2_REG_CONTROL);
 
+  /* Enable timer2 gate, keep speaker disabled.  */
+  grub_outb ((grub_inb (TIMER2_REG_LATCH) & ~ TIMER2_SPEAKER) | TIMER2_GATE,
+             TIMER2_REG_LATCH);
+
+  /* Wait.  */
   while ((grub_inb (TIMER2_REG_LATCH) & TIMER2_LATCH) == 0x00);
+
+  /* Disable timer2 gate and speaker.  */
+  grub_outb (grub_inb (TIMER2_REG_LATCH) & ~ (TIMER2_SPEAKER | TIMER2_GATE),
+             TIMER2_REG_LATCH);
 }
