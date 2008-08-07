@@ -87,6 +87,8 @@ kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/x86_64/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
+	kern/time.c \
+	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/millisleep.c kern/generic/rtc_get_time_ms.c \
 	term/efi/console.c disk/efi/efidisk.c
 kernel_mod_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \

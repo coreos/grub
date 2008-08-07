@@ -38,6 +38,31 @@ grub_get_tsc (void)
   return (((grub_uint64_t) hi) << 32) | lo;
 }
 
+#ifdef __x86_64__
+
+static __inline int
+grub_cpu_is_cpuid_supported (void)
+{
+  grub_uint64_t id_supported;
+
+  __asm__ ("pushfq\n\t"
+           "popq %%rax             /* Get EFLAGS into EAX */\n\t"
+           "movq %%rax, %%rcx      /* Save original flags in ECX */\n\t"
+           "xorq $0x200000, %%rax  /* Flip ID bit in EFLAGS */\n\t"
+           "pushq %%rax            /* Store modified EFLAGS on stack */\n\t"
+           "popfq                  /* Replace current EFLAGS */\n\t"
+           "pushfq                 /* Read back the EFLAGS */\n\t"
+           "popq %%rax             /* Get EFLAGS into EAX */\n\t"
+           "xorq %%rcx, %%rax      /* Check if flag could be modified */\n\t"
+           : "=a" (id_supported)
+           : /* No inputs.  */
+           : /* Clobbered:  */ "%rcx");
+
+  return id_supported != 0;
+}
+
+#else
+
 static __inline int
 grub_cpu_is_cpuid_supported (void)
 {
@@ -58,6 +83,8 @@ grub_cpu_is_cpuid_supported (void)
 
   return id_supported != 0;
 }
+
+#endif
 
 static __inline int
 grub_cpu_is_tsc_supported (void)

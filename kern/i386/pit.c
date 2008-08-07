@@ -17,7 +17,7 @@
  */
 
 #include <grub/types.h>
-#include <grub/cpu/io.h>
+#include <grub/i386/io.h>
 #include <grub/i386/pit.h>
 
 #define TIMER2_REG_CONTROL	0x42

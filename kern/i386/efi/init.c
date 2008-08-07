@@ -25,7 +25,7 @@
 #include <grub/cache.h>
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
-#include <grub/cpu/tsc.h>
+#include <grub/i386/tsc.h>
 
 void
 grub_machine_init (void)

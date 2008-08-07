@@ -1,5 +1,18 @@
 2008-08-07  Bean  <bean123ch@gmail.com>
 
+	* conf/x86_64-efi.rmk (kernel_mod_SOURCES): Add kern/time.c,
+	kern/i386/tsc.c and kern/i386/pit.c.
+
+	* include/grub/i386/tsc.h (grub_cpu_is_cpuid_supported): Handle
+	x86_64 platform.
+
+	* kern/i386/efi/init.c: Replace <grub/cpu/tsc.h> with
+	<grub/i386/tsc.h>.
+
+	* kern/i386/pit.c: Replace <grub/cpu/io.h> with <grub/i386/io.h>.
+
+2008-08-07  Bean  <bean123ch@gmail.com>
+
 	* conf/i386-efi.rmk (kernel_mod_SOURCES): Add kern/time.c.
 
 	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Add kern/time.c,
