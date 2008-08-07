@@ -1,3 +1,7 @@
+2008-08-07  Bean  <bean123ch@gmail.com>
+
+	* include/grub/x86_64/pci.h: New file.
+
 2008-08-07  Christian Franke  <franke@computer.org>
 
 	* kern/i386/pit.c (TIMER2_SPEAKER): New define.
