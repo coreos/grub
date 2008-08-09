@@ -459,7 +459,10 @@ grub_editenv-kern_err.o: kern/err.c $(kern/err.c_DEPENDENCIES)
 CLEANFILES += grub-editenv
 
 # for grub-pe2elf
+ifeq ($(enable_grub_pe2elf), yes)
 bin_UTILITIES += grub-pe2elf
+endif
+
 grub_pe2elf_SOURCES = util/grub-pe2elf.c util/misc.c
 CLEANFILES += grub-pe2elf$(EXEEXT) grub_pe2elf-util_grub_pe2elf.o grub_pe2elf-util_misc.o
 MOSTLYCLEANFILES += grub_pe2elf-util_grub_pe2elf.d grub_pe2elf-util_misc.d
@@ -493,7 +496,11 @@ CLEANFILES += update-grub_lib
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-update-grub_SCRIPTS = 00_header 10_linux 10_hurd 10_windows 30_os-prober 40_custom
+update-grub_SCRIPTS = 00_header 10_linux 10_hurd 30_os-prober 40_custom
+ifeq ($(target_os), cygwin)
+update-grub_SCRIPTS += 10_windows
+endif
+
 CLEANFILES += $(update-grub_SCRIPTS)
 
 update-grub_DATA += util/grub.d/README

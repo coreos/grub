@@ -100,6 +100,7 @@ case "$target_cpu" in
 esac
 
 AC_SUBST(target_cpu)
+AC_SUBST(target_os)
 AC_SUBST(platform)
 
 #
@@ -206,9 +207,10 @@ AC_MSG_RESULT([$TARGET_IMG_LDFLAGS_AC])
 
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
-if test "$host_os" = cygwin; then
-  TARGET_OBJ2ELF='grub-pe2elf.exe'
-fi
+case "${host_os}:${target_os}" in
+  cygwin:cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+  *) ;;
+esac
 AC_SUBST(TARGET_OBJ2ELF)
 AC_MSG_RESULT([$TARGET_OBJ2ELF])
 
@@ -384,6 +386,11 @@ AC_ARG_ENABLE([grub-fstest],
 	      [AS_HELP_STRING([--enable-grub-fstest],
                              [build and install the `grub-fstest' debugging utility])])
 AC_SUBST([enable_grub_fstest])
+
+AC_ARG_ENABLE([grub-pe2elf],
+	      [AS_HELP_STRING([--enable-grub-pe2elf],
+                             [build and install the `grub-pe2elf' conversion utility])])
+AC_SUBST([enable_grub_pe2elf])
 
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu

@@ -48,6 +48,7 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 
 target_cpu = @target_cpu@
+target_os = @target_os@
 platform = @platform@
 
 INSTALL = @INSTALL@
@@ -92,6 +93,7 @@ UNIFONT_HEX = @UNIFONT_HEX@
 # Options.
 enable_grub_emu = @enable_grub_emu@
 enable_grub_fstest = @enable_grub_fstest@
+enable_grub_pe2elf = @enable_grub_pe2elf@
 enable_lzo = @enable_lzo@
 
 ### General variables.

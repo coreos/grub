@@ -702,6 +702,7 @@ MODULE_LDFLAGS
 LIBCURSES
 enable_grub_emu
 enable_grub_fstest
+enable_grub_pe2elf
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -1299,6 +1300,8 @@ Optional Features:
   --enable-mm-debug       include memory manager debugging
   --enable-grub-emu       build and install the `grub-emu' debugging utility
   --enable-grub-fstest    build and install the `grub-fstest' debugging
+                          utility
+  --enable-grub-pe2elf    build and install the `grub-pe2elf' conversion
                           utility
 
 Optional Packages:
@@ -1989,6 +1992,7 @@ case "$target_cpu" in
   i386 | powerpc) target_m32=1 ;;
   x86_64 | sparc64) target_m64=1 ;;
 esac
+
 
 
 
@@ -5901,9 +5905,10 @@ echo "${ECHO_T}$TARGET_IMG_LDFLAGS_AC" >&6; }
 # For platforms where ELF is not the default link format.
 { echo "$as_me:$LINENO: checking for command to convert module to ELF format" >&5
 echo $ECHO_N "checking for command to convert module to ELF format... $ECHO_C" >&6; }
-if test "$host_os" = cygwin; then
-  TARGET_OBJ2ELF='grub-pe2elf.exe'
-fi
+case "${host_os}:${target_os}" in
+  cygwin:cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+  *) ;;
+esac
 
 { echo "$as_me:$LINENO: result: $TARGET_OBJ2ELF" >&5
 echo "${ECHO_T}$TARGET_OBJ2ELF" >&6; }
@@ -8363,6 +8368,13 @@ fi
 
 
 
+# Check whether --enable-grub-pe2elf was given.
+if test "${enable_grub_pe2elf+set}" = set; then
+  enableval=$enable_grub_pe2elf;
+fi
+
+
+
 # Output files.
 ac_config_links="$ac_config_links include/grub/cpu:include/grub/$target_cpu include/grub/machine:include/grub/$target_cpu/$platform"
 
@@ -9083,11 +9095,12 @@ MODULE_LDFLAGS!$MODULE_LDFLAGS$ac_delim
 LIBCURSES!$LIBCURSES$ac_delim
 enable_grub_emu!$enable_grub_emu$ac_delim
 enable_grub_fstest!$enable_grub_fstest$ac_delim
+enable_grub_pe2elf!$enable_grub_pe2elf$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 89; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 90; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
