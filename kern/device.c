@@ -49,11 +49,7 @@ grub_device_open (const char *name)
   /* Try to open a disk.  */
   disk = grub_disk_open (name);
   if (! disk)
-    {
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-      goto fail;
-    }
+    goto fail;
 
   dev->disk = disk;
   dev->net = 0;	/* FIXME */

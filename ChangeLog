@@ -1,3 +1,8 @@
+2008-08-11  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/device.c (grub_device_open): Do not handle grub_disk_open()
+	errors.  Leave it to the upper layer to handle them.
+
 2008-08-09  Christian Franke  <franke@computer.org>
 
 	* Makefile.in: Add `target_os' and `enable_grub_pe2elf'.
