@@ -1,5 +1,18 @@
 2008-08-11  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/i386/linuxbios/startup.S: Move from here ...
+	* kern/i386/coreboot/startup.S: ... to here.
+
+	* kern/i386/linuxbios/init.c: Move from here ...
+	* kern/i386/coreboot/init.c: ... to here.
+
+	* kern/i386/linuxbios/table.c: Move from here ...
+	* kern/i386/coreboot/mmap.c: ... to here.
+
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Update moved files.
+
+2008-08-11  Robert Millan  <rmh@aybabtu.com>
+
 	* kern/device.c (grub_device_open): Do not handle grub_disk_open()
 	errors.  Leave it to the upper layer to handle them.
 
