@@ -132,6 +132,36 @@ VARIABLE(grub_multiboot_payload_dest)
 VARIABLE(grub_multiboot_payload_entry_offset)
 	.long	0
 
+/*
+ * The relocators below understand the following parameters:
+ * ecx:	Size of the block to be copied.
+ * esi:	Where to copy from (always lowest address, even if we're relocating
+ *      backwards).
+ * edi:	Where to copy to (likewise).
+ * edx:	Offset of the entry point (relative to the beginning of the block).
+ */
+VARIABLE(grub_multiboot_forward_relocator)
+	cld
+	addl	%edi, %edx
+	rep
+	movsb
+	jmp	*%edx
+VARIABLE(grub_multiboot_forward_relocator_end)
+
+VARIABLE(grub_multiboot_backward_relocator)
+	std
+	addl	%ecx, %esi
+	addl	%ecx, %edi
+	/* backward movsb is implicitly off-by-one.  compensate that. */
+	incl	%ecx
+	rep
+	movsb
+	/* same problem again. */
+	incl	%edi
+	addl	%edi, %edx
+	jmp	*%edx
+VARIABLE(grub_multiboot_backward_relocator_end)
+
 FUNCTION(grub_multiboot_real_boot)
 	/* Push the entry address on the stack.  */
 	pushl	%eax
@@ -149,11 +179,14 @@ FUNCTION(grub_multiboot_real_boot)
 	movl	EXT_C(grub_multiboot_payload_size), %ecx
 	movl	EXT_C(grub_multiboot_payload_orig), %esi
 	movl	EXT_C(grub_multiboot_payload_dest), %edi
-	movl	EXT_C(grub_multiboot_payload_entry_offset), %eax
-			
+	movl	EXT_C(grub_multiboot_payload_entry_offset), %edx
+
+	/* Move the magic value into eax.  */
+	movl	$MULTIBOOT_MAGIC2, %eax
+				
 	/* Jump to the relocator.  */
-	popl	%edx
-	jmp 	*%edx
+	popl	%ebp
+	jmp 	*%ebp
 	
 /*
  * This starts the multiboot 2 kernel.

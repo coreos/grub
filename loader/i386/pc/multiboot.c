@@ -52,31 +52,6 @@ static grub_addr_t entry;
 
 static char *playground = NULL;
 
-static grub_uint8_t forward_relocator[] =
-{
-  0xfc,				/* cld */
-  0x89, 0xf2,			/* movl %esi, %edx */
-  0xf3, 0xa4,			/* rep movsb */
-  0x01, 0xc2,			/* addl %eax, %edx */
-  0xb8, 0x02, 0xb0, 0xad, 0x2b,	/* movl $MULTIBOOT_MAGIC2, %eax */
-  0xff, 0xe2,			/* jmp *%edx */
-};
-
-static grub_uint8_t backward_relocator[] =
-{
-  0xfd,				/* std */
-  0x01, 0xce,			/* addl %ecx, %esi */
-  0x01, 0xcf,			/* addl %ecx, %edi */
-				/* backward movsb is implicitly off-by-one.  compensate that. */
-  0x41,				/* incl %ecx */
-  0xf3, 0xa4,			/* rep movsb */
-				/* same problem again. */
-  0x47,				/* incl %edi */
-  0x01, 0xc7,			/* addl %eax, %edi */
-  0xb8, 0x02, 0xb0, 0xad, 0x2b,	/* movl $MULTIBOOT_MAGIC2, %eax */
-  0xff, 0xe7,			/* jmp *%edi */
-};
-
 static grub_err_t
 grub_multiboot_boot (void)
 {
@@ -155,16 +130,11 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
   grub_multiboot_payload_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
-  if (playground)
-    grub_free (playground);
-  playground = grub_malloc (sizeof (forward_relocator) + grub_multiboot_payload_size + sizeof (backward_relocator));
+  playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
   if (! playground)
     return grub_errno;
 
-  grub_multiboot_payload_orig = (long) playground + sizeof (forward_relocator);
-
-  grub_memmove (playground, forward_relocator, sizeof (forward_relocator));
-  grub_memmove ((char *) (grub_multiboot_payload_orig + grub_multiboot_payload_size), backward_relocator, sizeof (backward_relocator));
+  grub_multiboot_payload_orig = (long) playground + RELOCATOR_SIZEOF(forward);
 
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
@@ -195,16 +165,6 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
   grub_multiboot_payload_entry_offset = ehdr->e_entry - phdr(lowest_segment)->p_vaddr;
 
 #undef phdr
-
-  if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
-    entry = (grub_addr_t) playground;
-  else
-    entry = (grub_addr_t) grub_multiboot_payload_orig + grub_multiboot_payload_size;
-
-  grub_dprintf ("multiboot_loader", "dest=%p, size=0x%x, entry_offset=0x%x\n",
-		(void *) grub_multiboot_payload_dest,
-		grub_multiboot_payload_size,
-		grub_multiboot_payload_entry_offset);
 
   return grub_errno;
 }
@@ -413,23 +373,65 @@ grub_multiboot (int argc, char *argv[])
       goto fail;
     }
 
+  if (playground)
+    {
+      grub_free (playground);
+      playground = NULL;
+    }
+
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
-      int ofs;
+      int offset = ((char *) header - buffer -
+		    (header->header_addr - header->load_addr));
+      int load_size = ((header->load_end_addr == 0) ? file->size - offset :
+		       header->load_end_addr - header->load_addr);
 
-      ofs = (char *) header - buffer -
-            (header->header_addr - header->load_addr);
-      if ((grub_aout_load (file, ofs, header->load_addr,
-                           ((header->load_end_addr == 0) ? 0 :
-                            header->load_end_addr - header->load_addr),
-                           header->bss_end_addr))
-          !=GRUB_ERR_NONE)
-        goto fail;
+      if (header->bss_end_addr)
+	grub_multiboot_payload_size = (header->bss_end_addr - header->load_addr);
+      else
+	grub_multiboot_payload_size = load_size;
+      grub_multiboot_payload_dest = header->load_addr;
 
-      entry = header->entry_addr;
+      playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
+      if (! playground)
+	goto fail;
+
+      grub_multiboot_payload_orig = (long) playground + RELOCATOR_SIZEOF(forward);
+
+      if ((grub_file_seek (file, offset)) == (grub_off_t) - 1)
+	goto fail;
+
+      grub_file_read (file, grub_multiboot_payload_orig, load_size);
+      if (grub_errno)
+	goto fail;
+      
+      if (header->bss_end_addr)
+	grub_memset (grub_multiboot_payload_orig + load_size, 0,
+		     header->bss_end_addr - header->load_addr - load_size);
+      
+      grub_multiboot_payload_entry_offset = header->entry_addr - header->load_addr;
+
     }
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
+
+      
+  if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
+    {
+      grub_memmove (playground, &grub_multiboot_forward_relocator, RELOCATOR_SIZEOF(forward));
+      entry = (grub_addr_t) playground;
+    }
+  else
+    {
+      grub_memmove ((char *) (grub_multiboot_payload_orig + grub_multiboot_payload_size),
+		    &grub_multiboot_backward_relocator, RELOCATOR_SIZEOF(backward));
+      entry = (grub_addr_t) grub_multiboot_payload_orig + grub_multiboot_payload_size;
+    }
+  
+  grub_dprintf ("multiboot_loader", "dest=%p, size=0x%x, entry_offset=0x%x\n",
+		(void *) grub_multiboot_payload_dest,
+		grub_multiboot_payload_size,
+		grub_multiboot_payload_entry_offset);
 
   mbi = grub_malloc (sizeof (struct grub_multiboot_info));
   if (! mbi)

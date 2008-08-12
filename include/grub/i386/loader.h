@@ -53,4 +53,11 @@ extern grub_uint32_t EXPORT_VAR(grub_multiboot_payload_entry_offset);
 void grub_rescue_cmd_linux (int argc, char *argv[]);
 void grub_rescue_cmd_initrd (int argc, char *argv[]);
 
+extern grub_uint8_t EXPORT_VAR(grub_multiboot_forward_relocator);
+extern grub_uint8_t EXPORT_VAR(grub_multiboot_forward_relocator_end);
+extern grub_uint8_t EXPORT_VAR(grub_multiboot_backward_relocator);
+extern grub_uint8_t EXPORT_VAR(grub_multiboot_backward_relocator_end);
+
+#define RELOCATOR_SIZEOF(x)	(&grub_multiboot_##x##_relocator_end - &grub_multiboot_##x##_relocator)
+
 #endif /* ! GRUB_LOADER_CPU_HEADER */

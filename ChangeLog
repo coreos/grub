@@ -1,3 +1,18 @@
+2008-08-12  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Move part
+	of the relocation code from here ...
+	(grub_multiboot): ... to here.
+	(forward_relocator, backward_relocator): Move from here ...
+	* kern/i386/loader.S (grub_multiboot_forward_relocator)
+	(grub_multiboot_backward_relocator): ... to here.
+	(grub_multiboot_real_boot): Use %edx for entry offset.  Put Multiboot
+	magic in %eax.  Use %ebp for jumping (so %edx is not trashed).
+	* include/grub/i386/loader.h (grub_multiboot_forward_relocator)
+	(grub_multiboot_forward_relocator_end)
+	(grub_multiboot_backward_relocator)
+	(grub_multiboot_backward_relocator_end): New variables.
+
 2008-08-12  Bean  <bean123ch@gmail.com>
 
 	* disk/raid.c (grub_raid_read): Fix a bug in raid0 code.
