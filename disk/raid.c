@@ -177,7 +177,7 @@ grub_raid_read (grub_disk_t disk, grub_disk_addr_t sector,
 	    if (err)
 	      break;
 
-	    buf += read_size;
+	    buf += read_size << GRUB_DISK_SECTOR_BITS;
 	    size -= read_size;
 	    if (! size)
 	      break;

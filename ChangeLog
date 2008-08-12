@@ -1,3 +1,7 @@
+2008-08-12  Bean  <bean123ch@gmail.com>
+
+	* disk/raid.c (grub_raid_read): Fix a bug in raid0 code.
+
 2008-08-11  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/linuxbios/startup.S: Move from here ...
