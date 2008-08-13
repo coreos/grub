@@ -1,5 +1,9 @@
 2008-08-13  Robert Millan  <rmh@aybabtu.com>
 
+	* docs/grub.cfg: Remove `/dev/' prefix in GNU/Hurd boot entry.
+
+2008-08-13  Robert Millan  <rmh@aybabtu.com>
+
 	* docs/grub.cfg: Use the native device name for the example GNU/Hurd
 	boot entry.
 
