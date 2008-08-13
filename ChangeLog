@@ -1,3 +1,8 @@
+2008-08-13  Robert Millan  <rmh@aybabtu.com>
+
+	* docs/grub.cfg: Use the native device name for the example GNU/Hurd
+	boot entry.
+
 2008-08-12  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Move part
