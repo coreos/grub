@@ -21,16 +21,8 @@
 
 #include <grub/symbol.h>
 
-#define GRUB_MOD_ALIGN 0x1000
-
-/* Non-zero value is only needed for some IEEE-1275 platforms.  */
-#define GRUB_MOD_GAP 0
-
 #ifndef ASM_FILE
 extern char grub_prefix[];
 #endif
-
-#define GRUB_KERNEL_MACHINE_PREFIX	0x2
-#define GRUB_KERNEL_MACHINE_DATA_END	0x42
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

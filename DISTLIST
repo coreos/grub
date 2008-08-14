@@ -142,6 +142,7 @@ include/grub/i386/ieee1275/machine.h
 include/grub/i386/ieee1275/memory.h
 include/grub/i386/ieee1275/serial.h
 include/grub/i386/io.h
+include/grub/i386/kernel.h
 include/grub/i386/linux.h
 include/grub/i386/loader.h
 include/grub/i386/pc/biosdisk.h
@@ -190,6 +191,7 @@ include/grub/powerpc/ieee1275/kernel.h
 include/grub/powerpc/ieee1275/loader.h
 include/grub/powerpc/ieee1275/time.h
 include/grub/powerpc/ieee1275/util/biosdisk.h
+include/grub/powerpc/kernel.h
 include/grub/powerpc/libgcc.h
 include/grub/powerpc/setjmp.h
 include/grub/powerpc/time.h

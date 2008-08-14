@@ -19,9 +19,9 @@
 #define ASM_FILE	1
 
 #include <grub/symbol.h>
-#include <grub/machine/kernel.h>
 #include <grub/machine/memory.h>
 #include <grub/cpu/linux.h>
+#include <grub/cpu/kernel.h>
 #include <multiboot.h>
 #include <multiboot2.h>
 
@@ -44,7 +44,7 @@ _start:
 	 *  This is a special data area at a fixed offset from the beginning.
 	 */
 
-	. = EXT_C(start) + GRUB_KERNEL_MACHINE_PREFIX
+	. = EXT_C(start) + GRUB_KERNEL_CPU_PREFIX
 
 VARIABLE(grub_prefix)
 	/* to be filled by grub-mkimage */
@@ -53,7 +53,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(start) + GRUB_KERNEL_MACHINE_DATA_END
+	. = EXT_C(start) + GRUB_KERNEL_CPU_DATA_END
 
 #if 0
 /*

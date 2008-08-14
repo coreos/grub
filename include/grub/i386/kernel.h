@@ -16,20 +16,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_KERNEL_MACHINE_HEADER
-#define GRUB_KERNEL_MACHINE_HEADER	1
+#ifndef GRUB_KERNEL_CPU_HEADER
+#define GRUB_KERNEL_CPU_HEADER	1
 
-#include <grub/symbol.h>
+#define GRUB_MOD_ALIGN 0x1000
 
-#ifndef ASM_FILE
+/* Non-zero value is only needed for PowerMacs.  */
+#define GRUB_MOD_GAP 0x0
 
-void EXPORT_FUNC (grub_reboot) (void);
-void EXPORT_FUNC (grub_halt) (void);
-
-/* The prefix which points to the directory where GRUB modules and its
-   configuration file are located.  */
-extern char grub_prefix[];
+#define GRUB_KERNEL_CPU_PREFIX	0x2
+#define GRUB_KERNEL_CPU_DATA_END	0x42
 
 #endif
-
-#endif /* ! GRUB_KERNEL_MACHINE_HEADER */

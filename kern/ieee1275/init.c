@@ -30,6 +30,7 @@
 #include <grub/time.h>
 #include <grub/machine/console.h>
 #include <grub/machine/kernel.h>
+#include <grub/cpu/kernel.h>
 #include <grub/ieee1275/ofdisk.h>
 #include <grub/ieee1275/ieee1275.h>
 
