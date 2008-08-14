@@ -1,3 +1,43 @@
+2008-08-14  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/common.rmk (bin_UTILITIES): Add `grub-mkelfimage'.
+	(grub_mkelfimage_SOURCES): New variable.
+	(util/elf/grub-mkimage.c_DEPENDENCIES): Likewise.
+
+	* conf/i386-coreboot.rmk (bin_UTILITIES, grub_mkimage_SOURCES)
+	(grub_mkimage_LDFLAGS, util/elf/grub-mkimage.c_DEPENDENCIES): Remove.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+
+	* kern/ieee1275/init.c: Include `<grub/cpu/kernel.h>'.
+	* kern/i386/coreboot/init.c: Likewise.
+
+	* kern/i386/ieee1275/startup.S: Replace `<grub/machine/kernel.h>'
+	with `<grub/cpu/kernel.h>'.
+	(GRUB_KERNEL_MACHINE_PREFIX, GRUB_KERNEL_MACHINE_DATA_END): Renamed
+	to ...
+	(GRUB_KERNEL_CPU_PREFIX, GRUB_KERNEL_CPU_DATA_END): ... this.
+	* kern/i386/coreboot/startup.S: Likewise.
+
+	* include/grub/powerpc/ieee1275/kernel.h (GRUB_MOD_ALIGN)
+	(GRUB_MOD_GAP): Remove.
+	* include/grub/powerpc/kernel.h: New file.
+	* include/grub/i386/ieee1275/kernel.h (GRUB_KERNEL_MACHINE_PREFIX)
+	(GRUB_KERNEL_MACHINE_DATA_END): Remove.
+	* include/grub/i386/kernel.h: New file.
+	* include/grub/i386/coreboot/kernel.h (GRUB_MOD_ALIGN)
+	(GRUB_MOD_GAP, GRUB_KERNEL_MACHINE_PREFIX)
+	(GRUB_KERNEL_MACHINE_DATA_END): Remove.
+
+	* util/ieee1275/grub-install.in (grub_mkimage): Initialize to use
+	`grub-mkelfimage'.
+	Use --directory when invoking grub_mkimage.
+
+	* util/elf/grub-mkimage.c: Include `<grub/cpu/kernel.h>'.
+	(add_segments): Replace GRUB_KERNEL_MACHINE_DATA_END and
+	GRUB_KERNEL_MACHINE_PREFIX with GRUB_KERNEL_CPU_DATA_END
+	and GRUB_KERNEL_CPU_PREFIX.
+
 2008-08-14  Felix Zielcke  <fzielcke@z-51.de>
 
         * include/grub/err.h (grub_err_printf): New function prototype.
