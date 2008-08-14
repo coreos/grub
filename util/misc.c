@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -72,6 +72,19 @@ grub_util_error (const char *fmt, ...)
   va_end (ap);
   fputc ('\n', stderr);
   exit (1);
+}
+
+int
+grub_err_printf (const char *fmt, ...)
+{
+  va_list ap;
+  int ret;
+  
+  va_start (ap, fmt);
+  ret = vfprintf (stderr, fmt, ap);
+  va_end (ap);
+
+  return ret;
 }
 
 void *

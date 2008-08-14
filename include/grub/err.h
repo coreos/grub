@@ -1,7 +1,7 @@
 /* err.h - error numbers and prototypes */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2007,2008 Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,5 +64,7 @@ void EXPORT_FUNC(grub_fatal) (const char *fmt, ...) __attribute__ ((noreturn));
 void EXPORT_FUNC(grub_error_push) (void);
 int EXPORT_FUNC(grub_error_pop) (void);
 void EXPORT_FUNC(grub_print_error) (void);
+int EXPORT_FUNC(grub_err_printf) (const char *fmt, ...)
+__attribute__ ((format (printf, 1, 2)));
 
 #endif /* ! GRUB_ERR_HEADER */

@@ -134,6 +134,11 @@ grub_printf (const char *fmt, ...)
   return ret;
 }  
 
+#ifndef GRUB_UTIL
+int grub_err_printf (const char *fmt, ...)
+__attribute__ ((alias("grub_printf")));
+#endif
+
 void
 grub_real_dprintf (const char *file, const int line, const char *condition,
 		   const char *fmt, ...)
