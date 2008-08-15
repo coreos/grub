@@ -95,7 +95,7 @@ pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
 	play.mod cpuid.mod serial.mod ata.mod		\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
-	halt.mod
+	halt.mod datetime.mod date.mod datehook.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/pc/linux.c
@@ -179,5 +179,20 @@ pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datetime.mod
+datetime_mod_SOURCES = lib/datetime.c lib/i386/datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

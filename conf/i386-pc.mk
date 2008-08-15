@@ -904,7 +904,8 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	vbe.mod vbetest.mod vbeinfo.mod video.mod gfxterm.mod \
 	videotest.mod play.mod bitmap.mod tga.mod cpuid.mod serial.mod	\
 	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod \
-	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod
+	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
+	datehook.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -3176,5 +3177,195 @@ partmap-pxecmd_mod-commands_i386_pc_pxecmd.lst: commands/i386/pc/pxecmd.c $(comm
 
 pxecmd_mod_CFLAGS = $(COMMON_CFLAGS)
 pxecmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datetime.mod
+datetime_mod_SOURCES = lib/datetime.c lib/i386/datetime.c
+CLEANFILES += datetime.mod mod-datetime.o mod-datetime.c pre-datetime.o datetime_mod-lib_datetime.o datetime_mod-lib_i386_datetime.o und-datetime.lst
+ifneq ($(datetime_mod_EXPORTS),no)
+CLEANFILES += def-datetime.lst
+DEFSYMFILES += def-datetime.lst
+endif
+MOSTLYCLEANFILES += datetime_mod-lib_datetime.d datetime_mod-lib_i386_datetime.d
+UNDSYMFILES += und-datetime.lst
+
+datetime.mod: pre-datetime.o mod-datetime.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(datetime_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-datetime.o mod-datetime.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-datetime.o: $(datetime_mod_DEPENDENCIES) datetime_mod-lib_datetime.o datetime_mod-lib_i386_datetime.o
+	-rm -f $@
+	$(TARGET_CC) $(datetime_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ datetime_mod-lib_datetime.o datetime_mod-lib_i386_datetime.o
+
+mod-datetime.o: mod-datetime.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -c -o $@ $<
+
+mod-datetime.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'datetime' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(datetime_mod_EXPORTS),no)
+def-datetime.lst: pre-datetime.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 datetime/' > $@
+endif
+
+und-datetime.lst: pre-datetime.o
+	echo 'datetime' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+datetime_mod-lib_datetime.o: lib/datetime.c $(lib/datetime.c_DEPENDENCIES)
+	$(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -MD -c -o $@ $<
+-include datetime_mod-lib_datetime.d
+
+CLEANFILES += cmd-datetime_mod-lib_datetime.lst fs-datetime_mod-lib_datetime.lst partmap-datetime_mod-lib_datetime.lst
+COMMANDFILES += cmd-datetime_mod-lib_datetime.lst
+FSFILES += fs-datetime_mod-lib_datetime.lst
+PARTMAPFILES += partmap-datetime_mod-lib_datetime.lst
+
+cmd-datetime_mod-lib_datetime.lst: lib/datetime.c $(lib/datetime.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh datetime > $@ || (rm -f $@; exit 1)
+
+fs-datetime_mod-lib_datetime.lst: lib/datetime.c $(lib/datetime.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh datetime > $@ || (rm -f $@; exit 1)
+
+partmap-datetime_mod-lib_datetime.lst: lib/datetime.c $(lib/datetime.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh datetime > $@ || (rm -f $@; exit 1)
+
+
+datetime_mod-lib_i386_datetime.o: lib/i386/datetime.c $(lib/i386/datetime.c_DEPENDENCIES)
+	$(TARGET_CC) -Ilib/i386 -I$(srcdir)/lib/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -MD -c -o $@ $<
+-include datetime_mod-lib_i386_datetime.d
+
+CLEANFILES += cmd-datetime_mod-lib_i386_datetime.lst fs-datetime_mod-lib_i386_datetime.lst partmap-datetime_mod-lib_i386_datetime.lst
+COMMANDFILES += cmd-datetime_mod-lib_i386_datetime.lst
+FSFILES += fs-datetime_mod-lib_i386_datetime.lst
+PARTMAPFILES += partmap-datetime_mod-lib_i386_datetime.lst
+
+cmd-datetime_mod-lib_i386_datetime.lst: lib/i386/datetime.c $(lib/i386/datetime.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ilib/i386 -I$(srcdir)/lib/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh datetime > $@ || (rm -f $@; exit 1)
+
+fs-datetime_mod-lib_i386_datetime.lst: lib/i386/datetime.c $(lib/i386/datetime.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ilib/i386 -I$(srcdir)/lib/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh datetime > $@ || (rm -f $@; exit 1)
+
+partmap-datetime_mod-lib_i386_datetime.lst: lib/i386/datetime.c $(lib/i386/datetime.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ilib/i386 -I$(srcdir)/lib/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh datetime > $@ || (rm -f $@; exit 1)
+
+
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+date_mod_SOURCES = commands/date.c
+CLEANFILES += date.mod mod-date.o mod-date.c pre-date.o date_mod-commands_date.o und-date.lst
+ifneq ($(date_mod_EXPORTS),no)
+CLEANFILES += def-date.lst
+DEFSYMFILES += def-date.lst
+endif
+MOSTLYCLEANFILES += date_mod-commands_date.d
+UNDSYMFILES += und-date.lst
+
+date.mod: pre-date.o mod-date.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(date_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-date.o mod-date.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-date.o: $(date_mod_DEPENDENCIES) date_mod-commands_date.o
+	-rm -f $@
+	$(TARGET_CC) $(date_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ date_mod-commands_date.o
+
+mod-date.o: mod-date.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(date_mod_CFLAGS) -c -o $@ $<
+
+mod-date.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'date' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(date_mod_EXPORTS),no)
+def-date.lst: pre-date.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 date/' > $@
+endif
+
+und-date.lst: pre-date.o
+	echo 'date' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+date_mod-commands_date.o: commands/date.c $(commands/date.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(date_mod_CFLAGS) -MD -c -o $@ $<
+-include date_mod-commands_date.d
+
+CLEANFILES += cmd-date_mod-commands_date.lst fs-date_mod-commands_date.lst partmap-date_mod-commands_date.lst
+COMMANDFILES += cmd-date_mod-commands_date.lst
+FSFILES += fs-date_mod-commands_date.lst
+PARTMAPFILES += partmap-date_mod-commands_date.lst
+
+cmd-date_mod-commands_date.lst: commands/date.c $(commands/date.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(date_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh date > $@ || (rm -f $@; exit 1)
+
+fs-date_mod-commands_date.lst: commands/date.c $(commands/date.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(date_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh date > $@ || (rm -f $@; exit 1)
+
+partmap-date_mod-commands_date.lst: commands/date.c $(commands/date.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(date_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh date > $@ || (rm -f $@; exit 1)
+
+
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+CLEANFILES += datehook.mod mod-datehook.o mod-datehook.c pre-datehook.o datehook_mod-hook_datehook.o und-datehook.lst
+ifneq ($(datehook_mod_EXPORTS),no)
+CLEANFILES += def-datehook.lst
+DEFSYMFILES += def-datehook.lst
+endif
+MOSTLYCLEANFILES += datehook_mod-hook_datehook.d
+UNDSYMFILES += und-datehook.lst
+
+datehook.mod: pre-datehook.o mod-datehook.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(datehook_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-datehook.o mod-datehook.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-datehook.o: $(datehook_mod_DEPENDENCIES) datehook_mod-hook_datehook.o
+	-rm -f $@
+	$(TARGET_CC) $(datehook_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ datehook_mod-hook_datehook.o
+
+mod-datehook.o: mod-datehook.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datehook_mod_CFLAGS) -c -o $@ $<
+
+mod-datehook.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'datehook' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(datehook_mod_EXPORTS),no)
+def-datehook.lst: pre-datehook.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 datehook/' > $@
+endif
+
+und-datehook.lst: pre-datehook.o
+	echo 'datehook' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+datehook_mod-hook_datehook.o: hook/datehook.c $(hook/datehook.c_DEPENDENCIES)
+	$(TARGET_CC) -Ihook -I$(srcdir)/hook $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datehook_mod_CFLAGS) -MD -c -o $@ $<
+-include datehook_mod-hook_datehook.d
+
+CLEANFILES += cmd-datehook_mod-hook_datehook.lst fs-datehook_mod-hook_datehook.lst partmap-datehook_mod-hook_datehook.lst
+COMMANDFILES += cmd-datehook_mod-hook_datehook.lst
+FSFILES += fs-datehook_mod-hook_datehook.lst
+PARTMAPFILES += partmap-datehook_mod-hook_datehook.lst
+
+cmd-datehook_mod-hook_datehook.lst: hook/datehook.c $(hook/datehook.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ihook -I$(srcdir)/hook $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datehook_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh datehook > $@ || (rm -f $@; exit 1)
+
+fs-datehook_mod-hook_datehook.lst: hook/datehook.c $(hook/datehook.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ihook -I$(srcdir)/hook $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datehook_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh datehook > $@ || (rm -f $@; exit 1)
+
+partmap-datehook_mod-hook_datehook.lst: hook/datehook.c $(hook/datehook.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ihook -I$(srcdir)/hook $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datehook_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh datehook > $@ || (rm -f $@; exit 1)
+
+
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

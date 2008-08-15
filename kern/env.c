@@ -146,10 +146,10 @@ grub_env_insert (struct grub_env_context *context,
   int idx = grub_env_hashval (var->name);
 
   /* Insert the variable into the hashtable.  */
-  var->prevp = &context->vars[idx];;
+  var->prevp = &context->vars[idx];
   var->next = context->vars[idx];
   if (var->next)
-    var->next->prevp = &var;
+    var->next->prevp = &(var->next);
   context->vars[idx] = var;
 }
 

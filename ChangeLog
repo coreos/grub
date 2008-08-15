@@ -1,3 +1,81 @@
+2008-08-15  Bean  <bean123ch@gmail.com>
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Add datetime.mod, date.mod
+	and datehook.mod.
+	(datetime_mod_SOURCES): New macro.
+	(datetime_mod_CFLAGS): Likewise.
+	(datetime_mod_LDFLAGS): Likewise.
+	(date_mod_SOURCES): Likewise.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(datehook_mod_SOURCES): Likewise.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+
+	* conf/i386-coreboot.rmk (pkglib_MODULES): Add datetime.mod, date.mod
+	and datehook.mod.
+	(datetime_mod_SOURCES): New macro.
+	(datetime_mod_CFLAGS): Likewise.
+	(datetime_mod_LDFLAGS): Likewise.
+	(date_mod_SOURCES): Likewise.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(datehook_mod_SOURCES): Likewise.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+
+	* conf/i386-ieee1275.rmk (pkglib_MODULES): Add datetime.mod, date.mod
+	and datehook.mod.
+	(datetime_mod_SOURCES): New macro.
+	(datetime_mod_CFLAGS): Likewise.
+	(datetime_mod_LDFLAGS): Likewise.
+	(date_mod_SOURCES): Likewise.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(datehook_mod_SOURCES): Likewise.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+
+	* conf/i386-efi.rmk (pkglib_MODULES): Add datetime.mod, date.mod
+	and datehook.mod.
+	(datetime_mod_SOURCES): New macro.
+	(datetime_mod_CFLAGS): Likewise.
+	(datetime_mod_LDFLAGS): Likewise.
+	(date_mod_SOURCES): Likewise.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(datehook_mod_SOURCES): Likewise.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+
+	* conf/x86_64-efi.rmk (pkglib_MODULES): Add datetime.mod, date.mod
+	and datehook.mod.
+	(datetime_mod_SOURCES): New macro.
+	(datetime_mod_CFLAGS): Likewise.
+	(datetime_mod_LDFLAGS): Likewise.
+	(date_mod_SOURCES): Likewise.
+	(date_mod_CFLAGS): Likewise.
+	(date_mod_LDFLAGS): Likewise.
+	(datehook_mod_SOURCES): Likewise.
+	(datehook_mod_CFLAGS): Likewise.
+	(datehook_mod_LDFLAGS): Likewise.
+
+	* kern/env.c (grub_env_insert): Fix a bug in prevp pointer.
+
+	* commands/date.c: New file.
+
+	* hook/datehook.c: Likewise.
+
+	* include/grub/lib/datetime.h: Likewise.
+
+	* include/grub/i386/cmos.h: Likewise.
+
+	* lib/datetime.c: Likewise.
+
+	* lib/i386/datetime.c: Likewise.
+
+	* lib/efi/datetime.c: Likewise.
+
 2008-08-14  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/common.rmk (bin_UTILITIES): Add `grub-mkelfimage'.

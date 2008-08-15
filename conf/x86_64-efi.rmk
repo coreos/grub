@@ -77,7 +77,8 @@ grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
 pkglib_MODULES = kernel.mod normal.mod _chain.mod chain.mod appleldr.mod \
-	cpuid.mod halt.mod reboot.mod _linux.mod linux.mod pci.mod lspci.mod
+	cpuid.mod halt.mod reboot.mod _linux.mod linux.mod pci.mod lspci.mod \
+	datetime.mod date.mod datehook.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -168,5 +169,20 @@ pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datetime.mod
+datetime_mod_SOURCES = lib/datetime.c lib/efi/datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

@@ -97,7 +97,8 @@ grub_install_SOURCES = util/ieee1275/grub-install.in
 # Modules.
 pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
 	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
-	_linux.mod nand.mod memdisk.mod pci.mod lspci.mod
+	_linux.mod nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
+	date.mod datehook.mod
 
 # For normal.mod.
 normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
@@ -180,5 +181,20 @@ pci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lspci_mod_SOURCES = commands/lspci.c
 lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datetime.mod
+datetime_mod_SOURCES = lib/datetime.c lib/i386/datetime.c
+datetime_mod_CFLAGS = $(COMMON_CFLAGS)
+datetime_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For date.mod
+date_mod_SOURCES = commands/date.c
+date_mod_CFLAGS = $(COMMON_CFLAGS)
+date_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For datehook.mod
+datehook_mod_SOURCES = hook/datehook.c
+datehook_mod_CFLAGS = $(COMMON_CFLAGS)
+datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/common.mk

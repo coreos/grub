@@ -29,35 +29,11 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h genke
 pkglib_PROGRAMS = kernel.elf
 
 # Utilities.
-bin_UTILITIES = grub-mkimage
 sbin_UTILITIES = grub-mkdevicemap
 ifeq ($(enable_grub_emu), yes)
 sbin_UTILITIES += grub-emu
 endif
  
-# For grub-mkimage.
-grub_mkimage_SOURCES = util/elf/grub-mkimage.c util/misc.c \
-        util/resolve.c 
-CLEANFILES += grub-mkimage$(EXEEXT) grub_mkimage-util_elf_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
-MOSTLYCLEANFILES += grub_mkimage-util_elf_grub_mkimage.d grub_mkimage-util_misc.d grub_mkimage-util_resolve.d
-
-grub-mkimage: $(grub_mkimage_DEPENDENCIES) grub_mkimage-util_elf_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o
-	$(CC) -o $@ grub_mkimage-util_elf_grub_mkimage.o grub_mkimage-util_misc.o grub_mkimage-util_resolve.o $(LDFLAGS) $(grub_mkimage_LDFLAGS)
-
-grub_mkimage-util_elf_grub_mkimage.o: util/elf/grub-mkimage.c $(util/elf/grub-mkimage.c_DEPENDENCIES)
-	$(CC) -Iutil/elf -I$(srcdir)/util/elf $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
--include grub_mkimage-util_elf_grub_mkimage.d
-
-grub_mkimage-util_misc.o: util/misc.c $(util/misc.c_DEPENDENCIES)
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
--include grub_mkimage-util_misc.d
-
-grub_mkimage-util_resolve.o: util/resolve.c $(util/resolve.c_DEPENDENCIES)
-	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkimage_CFLAGS) -MD -c -o $@ $<
--include grub_mkimage-util_resolve.d
-
-util/elf/grub-mkimage.c_DEPENDENCIES = Makefile
-
 # For grub-mkdevicemap.
 grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
 	util/ieee1275/get_disk_name.c
