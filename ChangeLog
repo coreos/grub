@@ -124,11 +124,11 @@
 
 2008-08-14  Felix Zielcke  <fzielcke@z-51.de>
 
-        * include/grub/err.h (grub_err_printf): New function prototype.
-        * util/misc.c (grub_err_printf): New function.
-        * kern/misc.c [! GRUB_UTIL] (grub_err_printf): New alias for
-        grub_printf.
-        * kern/err.c (grub_print_error): Use grub_err_printf.
+	* include/grub/err.h (grub_err_printf): New function prototype.
+	* util/misc.c (grub_err_printf): New function.
+	* kern/misc.c [! GRUB_UTIL] (grub_err_printf): New alias for
+	grub_printf.
+	* kern/err.c (grub_print_error): Use grub_err_printf.
 
 2008-08-13  Robert Millan  <rmh@aybabtu.com>
 
