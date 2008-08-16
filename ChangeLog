@@ -2,10 +2,10 @@
 
 	* gendistlist.sh (EXTRA_DISTFILES): Remove gensymlist.sh,
 	genkernsyms.sh.  Add geninit.sh, geninitheader.sh, genkernsyms.sh.in,
-	genmoddep.awk, gensymlist.sh.in
-	(DISTDIRS): Add bus, docs, hook, lib
+	genmoddep.awk, gensymlist.sh.in.
+	(DISTDIRS): Add bus, docs, hook, lib.
 	* DISTLIST: Regenerated.
-	* NEWS: Add cygwin support and change `os-prober' entry a bit.
+	* NEWS: Add cygwin support and change the `os-prober' entry a bit.
 
 2008-08-16  Robert Millan  <rmh@aybabtu.com>
 
