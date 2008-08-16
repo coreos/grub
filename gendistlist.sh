@@ -16,11 +16,12 @@
 EXTRA_DISTFILES="AUTHORS COPYING ChangeLog DISTLIST INSTALL NEWS README \
 	THANKS TODO Makefile.in aclocal.m4 autogen.sh config.guess \
 	config.h.in config.sub configure configure.ac gencmdlist.sh \
-	gendistlist.sh genfslist.sh genpartmaplist.sh genkernsyms.sh genmk.rb \
-	genmodsrc.sh gensymlist.sh install-sh mkinstalldirs stamp-h.in"
+	gendistlist.sh genfslist.sh geninit.sh geninitheader.sh genkernsyms.sh.in \
+	genmk.rb genmoddep.awk genmodsrc.sh genpartmaplist.sh gensymlist.sh.in
+	install-sh mkinstalldirs stamp-h.in"
 
-DISTDIRS="boot commands conf disk font fs hello include io kern loader \
-	normal partmap term util video"
+DISTDIRS="boot bus commands conf disk docs font fs hello hook include io kern lib \
+	loader normal partmap term util video"
 
 for f in $EXTRA_DISTFILES; do
     echo $f

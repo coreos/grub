@@ -1,3 +1,12 @@
+2008-08-16  Felix Zielcke  <fzielcke@z-51.de>
+
+	* gendistlist.sh (EXTRA_DISTFILES): Remove gensymlist.sh,
+	genkernsyms.sh.  Add geninit.sh, geninitheader.sh, genkernsyms.sh.in,
+	genmoddep.awk, gensymlist.sh.in
+	(DISTDIRS): Add bus, docs, hook, lib
+	* DISTLIST: Regenerated.
+	* NEWS: Add cygwin support and change `os-prober' entry a bit.
+
 2008-08-16  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/raid.c (grub_raid_init): Handle/report errors set by
