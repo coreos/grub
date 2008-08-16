@@ -8,6 +8,8 @@ New in 1.97 - :
 
 * Add `crc' command.
 
+* Add Cygwin support.
+
 * Add grub-pe2elf to convert PE modules to ELF modules.
 
 * Add x86_64 EFI support.
@@ -26,7 +28,8 @@ New in 1.97 - :
 * Create partmap.lst and use it to automatically load partition map
   modules.
 
-* Add os-prober that can add operating systems to the boot menu.
+* update-grub supports os-prober to add operating systems to the
+  boot menu.
 
 * The ATA driver supports filesystems bigger than 2TB.
 
