@@ -580,6 +580,12 @@ static struct grub_disk_dev grub_raid_dev =
 GRUB_MOD_INIT(raid)
 {
   grub_device_iterate (&grub_raid_scan_device);
+  if (grub_errno)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+    }
+
   grub_disk_dev_register (&grub_raid_dev);
 }
 

@@ -1,3 +1,9 @@
+2008-08-16  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/raid.c (grub_raid_init): Handle/report errors set by
+	grub_device_iterate().
+	* disk/lvm.c (grub_lvm_init): Likewise.
+
 2008-08-15  Bean  <bean123ch@gmail.com>
 
 	* conf/i386-pc.rmk (pkglib_MODULES): Add datetime.mod, date.mod

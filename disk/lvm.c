@@ -586,6 +586,12 @@ static struct grub_disk_dev grub_lvm_dev =
 GRUB_MOD_INIT(lvm)
 {
   grub_device_iterate (&grub_lvm_scan_device);
+  if (grub_errno)
+    {
+      grub_print_error ();
+      grub_errno = GRUB_ERR_NONE;
+    }
+
   grub_disk_dev_register (&grub_lvm_dev);
 }
 
