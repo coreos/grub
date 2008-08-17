@@ -1,3 +1,9 @@
+2008-08-17  Felix Zielcke  <fzielcke@z-51.de>
+
+	* gendistlist.sh: Add *.y, *.tex, *.texi, grub.cfg, README, *.sc,
+	mdate-sh to the list `find' searches for.
+	* DISTLIST: Regenerated.
+
 2008-08-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	* gendistlist.sh (EXTRA_DISTFILES): Remove gensymlist.sh,
