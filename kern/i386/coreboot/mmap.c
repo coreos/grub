@@ -63,8 +63,8 @@ signature_found:
   return 0;
 }
 
-grub_err_t
-grub_available_iterate (int (*hook) (mem_region_t))
+void
+grub_machine_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t))
 {
   mem_region_t mem_region;
 
@@ -77,10 +77,16 @@ grub_available_iterate (int (*hook) (mem_region_t))
     mem_region =
       (mem_region_t) ((long) table_item +
 				 sizeof (struct grub_linuxbios_table_item));
-    for (; (long) mem_region < (long) table_item + (long) table_item->size;
-	 mem_region++)
-      if (hook (mem_region))
-	return 1;
+    while ((long) mem_region < (long) table_item + (long) table_item->size)
+      {
+	if (hook (mem_region->addr, mem_region->size,
+		  /* Multiboot mmaps match with the coreboot mmap definition.
+		     Therefore, we can just pass type through.  */
+		  mem_region->type))
+	  return 1;
+
+	mem_region++;
+      }
 
     return 0;
   }

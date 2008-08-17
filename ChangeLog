@@ -1,3 +1,41 @@
+2008-08-17  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/i386/pc/mmap.c'.
+
+	* include/grub/i386/pc/init.h (GRUB_MACHINE_MEMORY_AVAILABLE)
+	(GRUB_MACHINE_MEMORY_RESERVED): New macros.
+	(grub_machine_mmap_iterate): New function declaration.
+	* include/grub/multiboot.h (struct grub_multiboot_mmap_entry): New
+	structure.
+	(GRUB_MMAP_MEMORY_AVAILABLE, GRUB_MMAP_MEMORY_RESERVED): New
+	macros.
+
+	* kern/i386/pc/init.c (grub_machine_init): Replace hardcoded region
+	type check value with `GRUB_MACHINE_MEMORY_AVAILABLE'.
+	Move e820 parsing from here ...
+	* kern/i386/pc/mmap.c: New file.
+	(grub_machine_mmap_iterate): ... to here.
+
+	* include/grub/i386/coreboot/memory.h: Remove `<grub/err.h>'.
+	(GRUB_LINUXBIOS_MEMORY_AVAILABLE): Rename (for consistency) to ...
+	(GRUB_MACHINE_MEMORY_AVAILABLE): ... this.  Update all users.
+	(grub_available_iterate): Redeclare to return `void', and redeclare
+	its hook to use grub_uint64_t as addr and size parameters, and rename
+	to ...
+	(grub_machine_mmap_iterate): ... this.  Update all users.
+
+	* kern/i386/coreboot/mmap.c (grub_mmap_iterate): Simplify parser loop
+	to make it more readable.  Rename to ...
+	(grub_machine_mmap_iterate): ... this.
+
+	* loader/i386/pc/multiboot.c (mmap_addr, mmap_length): New variables.
+	(grub_get_multiboot_mmap_len, grub_fill_multiboot_mmap): New functions.
+	(grub_multiboot): Allocate an extra region after the payload, and fill
+	it with a Multiboot memory map.  Adjust a.out loader to calculate size
+	with the extra space.
+	(grub_multiboot_load_elf32): Adjust elf32 loader to calculate size
+	with the extra space.
+
 2008-08-17  Carles Pina i Estany  <carles@pina.cat>
 
 	* menu/normal.c (run_menu): Add Home and End keys in grub-menu.

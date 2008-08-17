@@ -83,12 +83,9 @@ grub_machine_init (void)
   grub_lower_mem = GRUB_MEMORY_MACHINE_LOWER_USABLE;
   grub_upper_mem = 0;
 
-  auto int heap_init (mem_region_t);
-  int heap_init (mem_region_t mem_region)
+  auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
   {
-    grub_uint64_t addr = mem_region->addr;
-    grub_uint64_t size = mem_region->size;
-
 #if GRUB_CPU_SIZEOF_VOID_P == 4
     /* Restrict ourselves to 32-bit memory space.  */
     if (addr > ULONG_MAX)
@@ -102,7 +99,7 @@ grub_machine_init (void)
 
     grub_upper_mem = grub_max (grub_upper_mem, addr + size);
 
-    if (mem_region->type != GRUB_LINUXBIOS_MEMORY_AVAILABLE)
+    if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
       return 0;
 
     /* Avoid the lower memory.  */
@@ -135,7 +132,7 @@ grub_machine_init (void)
     return 0;
   }
 
-  grub_available_iterate (heap_init);
+  grub_machine_mmap_iterate (heap_init);
 
   /* This variable indicates size, not offset.  */
   grub_upper_mem -= GRUB_MEMORY_MACHINE_UPPER_START;

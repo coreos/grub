@@ -132,9 +132,6 @@ compact_mem_regions (void)
 void
 grub_machine_init (void)
 {
-  grub_uint32_t cont;
-  struct grub_machine_mmap_entry *entry
-    = (struct grub_machine_mmap_entry *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
   int i;
   
   /* Initialize the console as early as possible.  */
@@ -156,55 +153,35 @@ grub_machine_init (void)
     add_mem_region (GRUB_MEMORY_MACHINE_RESERVED_END,
 		    grub_lower_mem - GRUB_MEMORY_MACHINE_RESERVED_END);
   
-  /* Check if grub_get_mmap_entry works.  */
-  cont = grub_get_mmap_entry (entry, 0);
-
-  if (entry->size)
-    do
-      {
-	/* Avoid the lower memory.  */
-	if (entry->addr < 0x100000)
-	  {
-	    if (entry->len <= 0x100000 - entry->addr)
-	      goto next;
-
-	    entry->len -= 0x100000 - entry->addr;
-	    entry->addr = 0x100000;
-	  }
-	
-	/* Ignore >4GB.  */
-	if (entry->addr <= 0xFFFFFFFF && entry->type == 1)
-	  {
-	    grub_addr_t addr;
-	    grub_size_t len;
-
-	    addr = (grub_addr_t) entry->addr;
-	    len = ((addr + entry->len > 0xFFFFFFFF)
-		   ? 0xFFFFFFFF - addr
-		   : (grub_size_t) entry->len);
-	    add_mem_region (addr, len);
-	  }
-	
-      next:
-	if (! cont)
-	  break;
-	
-	cont = grub_get_mmap_entry (entry, cont);
-      }
-    while (entry->size);
-  else
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
     {
-      grub_uint32_t eisa_mmap = grub_get_eisa_mmap ();
-
-      if (eisa_mmap)
+      /* Avoid the lower memory.  */
+      if (addr < 0x100000)
 	{
-	  add_mem_region (0x100000, (eisa_mmap & 0xFFFF) << 10);
-	  add_mem_region (0x1000000, eisa_mmap & ~0xFFFF);
+	  if (size <= 0x100000 - addr)
+	    return 0;
+	  
+	  size -= 0x100000 - addr;
+	  addr = 0x100000;
 	}
-      else
-	add_mem_region (0x100000, grub_get_memsize (1) << 10);
+	
+      /* Ignore >4GB.  */
+      if (addr <= 0xFFFFFFFF && type == GRUB_MACHINE_MEMORY_AVAILABLE)
+	{
+	  grub_size_t len;
+	  
+	  len = (grub_size_t) ((addr + size > 0xFFFFFFFF)
+		 ? 0xFFFFFFFF - addr
+		 : size);
+	  add_mem_region (addr, len);
+	}
+
+      return 0;
     }
 
+  grub_machine_mmap_iterate (hook);
+  
   compact_mem_regions ();
 
   /* Add the memory regions to free memory, except for the region starting

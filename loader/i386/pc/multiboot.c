@@ -78,12 +78,58 @@ grub_multiboot_unload (void)
       grub_free ((void *) mbi->cmdline);
       grub_free (mbi);
     }
-
-
+  
   mbi = 0;
   grub_dl_unref (my_mod);
 
   return GRUB_ERR_NONE;
+}
+
+/* FIXME: grub_uint32_t will break for addresses above 4 GiB, but is mandated
+   by the spec.  Is there something we can do about it?  */
+static grub_uint32_t mmap_addr = 0;
+static grub_uint32_t mmap_length;
+
+/* Return the length of the Multiboot mmap that will be needed to allocate
+   our platform's map.  */
+static grub_uint32_t
+grub_get_multiboot_mmap_len ()
+{
+  grub_size_t count = 0;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr __attribute__ ((unused)),
+			     grub_uint64_t size __attribute__ ((unused)),
+			     grub_uint32_t type __attribute__ ((unused)))
+    {
+      count++;
+      return 0;
+    }
+  
+  grub_machine_mmap_iterate (hook);
+  
+  return count * sizeof (struct grub_multiboot_mmap_entry);
+}
+
+/* Fill previously allocated Multiboot mmap.  */
+static void
+grub_fill_multiboot_mmap (struct grub_multiboot_mmap_entry *first_entry)
+{
+  struct grub_multiboot_mmap_entry *mmap_entry = (struct grub_multiboot_mmap_entry *) first_entry;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      mmap_entry->addr = addr;
+      mmap_entry->len = size;
+      mmap_entry->type = type;
+      mmap_entry->size = sizeof (struct grub_multiboot_mmap_entry) - sizeof (mmap_entry->size);
+      mmap_entry++;
+
+      return 0;
+    }
+
+  grub_machine_mmap_iterate (hook);
 }
 
 /* Check if BUFFER contains ELF32.  */
@@ -127,7 +173,7 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 	if (phdr(i)->p_paddr > phdr(highest_segment)->p_paddr)
 	  highest_segment = i;
       }
-  grub_multiboot_payload_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
+  grub_multiboot_payload_size += (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
   playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
@@ -379,6 +425,9 @@ grub_multiboot (int argc, char *argv[])
       playground = NULL;
     }
 
+  mmap_length = grub_get_multiboot_mmap_len ();
+  grub_multiboot_payload_size = mmap_length;
+
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
       int offset = ((char *) header - buffer -
@@ -387,9 +436,9 @@ grub_multiboot (int argc, char *argv[])
 		       header->load_end_addr - header->load_addr);
 
       if (header->bss_end_addr)
-	grub_multiboot_payload_size = (header->bss_end_addr - header->load_addr);
+	grub_multiboot_payload_size += (header->bss_end_addr - header->load_addr);
       else
-	grub_multiboot_payload_size = load_size;
+	grub_multiboot_payload_size += load_size;
       grub_multiboot_payload_dest = header->load_addr;
 
       playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
@@ -416,6 +465,12 @@ grub_multiboot (int argc, char *argv[])
     goto fail;
 
       
+  grub_fill_multiboot_mmap ((struct grub_mmap_entry *) (grub_multiboot_payload_orig
+							+ grub_multiboot_payload_size
+							- mmap_length));
+
+  mmap_addr = grub_multiboot_payload_dest + grub_multiboot_payload_size - mmap_length;
+
   if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
     {
       grub_memmove (playground, &grub_multiboot_forward_relocator, RELOCATOR_SIZEOF(forward));
@@ -439,11 +494,14 @@ grub_multiboot (int argc, char *argv[])
 
   grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
 
-  mbi->flags = MULTIBOOT_INFO_MEMORY;
-
   /* Convert from bytes to kilobytes.  */
   mbi->mem_lower = grub_lower_mem / 1024;
   mbi->mem_upper = grub_upper_mem / 1024;
+  mbi->flags |= MULTIBOOT_INFO_MEMORY;
+
+  mbi->mmap_addr = mmap_addr;
+  mbi->mmap_length = mmap_length;
+  mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
 
   for (i = 0, len = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;
