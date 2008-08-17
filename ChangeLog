@@ -1,5 +1,9 @@
 2008-08-17  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/x86_64/kernel.h: New file (<grub/i386/kernel.h> stub).
+
+2008-08-17  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `kern/i386/pc/mmap.c'.
 
 	* include/grub/i386/pc/init.h (GRUB_MACHINE_MEMORY_AVAILABLE)
