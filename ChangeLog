@@ -1,3 +1,7 @@
+2008-08-17  Carles Pina i Estany  <carles@pina.cat>
+
+        * menu/normal.c (run_menu): Add Home and End keys in grub-menu.
+
 2008-08-17  Felix Zielcke  <fzielcke@z-51.de>
 
 	* gendistlist.sh: Add *.y, *.tex, *.texi, grub.cfg, README, *.sc,

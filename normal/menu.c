@@ -405,6 +405,22 @@ run_menu (grub_menu_t menu, int nested)
 	  
 	  switch (c)
 	    {
+	    case GRUB_TERM_HOME:
+	      first = 0;
+	      offset = 0;
+	      print_entries (menu, first, offset);
+	      break;
+
+	    case GRUB_TERM_END:
+	      offset = menu->size - 1;
+	      if (offset > GRUB_TERM_NUM_ENTRIES - 1)
+		{
+		  first = offset - (GRUB_TERM_NUM_ENTRIES - 1);
+		  offset = GRUB_TERM_NUM_ENTRIES - 1;
+		}
+		print_entries (menu, first, offset);
+	      break;
+
 	    case 16:
 	    case '^':
 	      if (offset > 0)
