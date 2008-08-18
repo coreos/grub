@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@
 #include <grub/efi/uga_draw.h>
 #include <grub/pci.h>
 
-#define GRUB_EFI_CL_OFFSET	0x1000
-#define GRUB_EFI_CL_END_OFFSET	0x2000
+#define GRUB_LINUX_CL_OFFSET		0x1000
+#define GRUB_LINUX_CL_END_OFFSET	0x2000
 
 #define NEXT_MEMORY_DESCRIPTOR(desc, size)      \
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
@@ -166,7 +166,7 @@ allocate_pages (grub_size_t prot_size)
   grub_size_t real_size;
   
   /* Make sure that each size is aligned to a page boundary.  */
-  real_size = GRUB_EFI_CL_END_OFFSET;
+  real_size = GRUB_LINUX_CL_END_OFFSET;
   prot_size = page_align (prot_size);
   mmap_size = find_mmap_size ();
 
@@ -634,7 +634,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
     goto fail;
   
   params = (struct linux_kernel_params *) real_mode_mem;
-  grub_memset (params, 0, GRUB_EFI_CL_END_OFFSET);
+  grub_memset (params, 0, GRUB_LINUX_CL_END_OFFSET);
   grub_memcpy (&params->setup_sects, &lh.setup_sects, sizeof (lh) - 0x1F1);
 
   params->ps_mouse = params->padding10 =  0;
@@ -647,7 +647,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
     }
 
   /* XXX Linux assumes that only elilo can boot Linux on EFI!!!  */
-  params->type_of_loader = 0x50;
+  params->type_of_loader = (LINUX_LOADER_ID_ELILO << 4);
 
   params->cl_magic = GRUB_LINUX_CL_MAGIC;
   params->cl_offset = 0x1000;
@@ -664,8 +664,8 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   params->ext_mem = ((32 * 0x100000) >> 10);
   params->alt_mem = ((32 * 0x100000) >> 10);
   
-  params->video_cursor_x = grub_efi_system_table->con_out->mode->cursor_column;
-  params->video_cursor_y = grub_efi_system_table->con_out->mode->cursor_row;
+  params->video_cursor_x = grub_getxy () >> 8;
+  params->video_cursor_y = grub_getxy () & 0xff;
   params->video_page = 0; /* ??? */
   params->video_mode = grub_efi_system_table->con_out->mode->mode;
   params->video_width = (grub_getwh () >> 8);
@@ -758,7 +758,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   grub_file_seek (file, real_size + GRUB_DISK_SECTOR_SIZE);
 
   /* XXX there is no way to know if the kernel really supports EFI.  */
-  grub_printf ("   [Linux-EFI, setup=0x%x, size=0x%x]\n",
+  grub_printf ("   [Linux-bzImage, setup=0x%x, size=0x%x]\n",
 	       (unsigned) real_size, (unsigned) prot_size);
 
   /* Detect explicitly specified memory size, if any.  */
@@ -814,7 +814,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
     }
 
   /* Specify the boot file.  */
-  dest = grub_stpcpy ((char *) real_mode_mem + GRUB_EFI_CL_OFFSET,
+  dest = grub_stpcpy ((char *) real_mode_mem + GRUB_LINUX_CL_OFFSET,
 		      "BOOT_IMAGE=");
   dest = grub_stpcpy (dest, argv[0]);
   
@@ -822,7 +822,7 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   for (i = 1;
        i < argc
 	 && dest + grub_strlen (argv[i]) + 1 < ((char *) real_mode_mem
-						+ GRUB_EFI_CL_END_OFFSET);
+						+ GRUB_LINUX_CL_END_OFFSET);
        i++)
     {
       *dest++ = ' ';

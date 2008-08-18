@@ -31,6 +31,9 @@
 #include <grub/dl.h>
 #include <grub/cpu/linux.h>
 
+#define GRUB_LINUX_CL_OFFSET		0x9000
+#define GRUB_LINUX_CL_END_OFFSET	0x90FF
+
 static grub_dl_t my_mod;
 
 static grub_size_t linux_mem_size;

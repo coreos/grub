@@ -1,3 +1,23 @@
+2008-08-18  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/i386/linux.h (LINUX_LOADER_ID_LILO)
+	(LINUX_LOADER_ID_LOADLIN, LINUX_LOADER_ID_BOOTSECT)
+	(LINUX_LOADER_ID_SYSLINUX, LINUX_LOADER_ID_ETHERBOOT)
+	(LINUX_LOADER_ID_ELILO, LINUX_LOADER_ID_GRUB, LINUX_LOADER_ID_UBOOT)
+	(LINUX_LOADER_ID_XEN, LINUX_LOADER_ID_GUJIN, LINUX_LOADER_ID_QEMU):
+	New macros.
+	(GRUB_LINUX_CL_OFFSET, GRUB_LINUX_CL_END_OFFSET): Move from here ...
+	* loader/i386/pc/linux.c (GRUB_LINUX_CL_OFFSET)
+	(GRUB_LINUX_CL_END_OFFSET): ... to here.
+	* loader/i386/efi/linux.c (GRUB_EFI_CL_OFFSET): Rename to ...
+	(GRUB_LINUX_CL_OFFSET): ... this.  Update all users.
+	(GRUB_EFI_CL_END_OFFSET): Rename to ...
+	(GRUB_LINUX_CL_END_OFFSET): ... this.  Update all users.
+	(grub_rescue_cmd_linux): Macroify `type_of_loader' initialization.
+	Initialize `params->video_cursor_x' and `params->video_cursor_y'
+	portably using grub_getxy().
+	Replace `-EFI' with `-bzImage' in boot message.
+
 2008-08-17  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/x86_64/kernel.h: New file (<grub/i386/kernel.h> stub).
