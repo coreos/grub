@@ -1,5 +1,13 @@
 2008-08-18  Robert Millan  <rmh@aybabtu.com>
 
+	Unify (identical) linux_normal.c files.
+	* loader/i386/efi/linux_normal.c: Move from here ...
+	* loader/linux_normal.c: ... to here.  Update all users.
+	* loader/i386/pc/linux_normal.c: Delete.  Update all users.
+	* loader/i386/ieee1275/linux_normal.c: Likewise.
+
+2008-08-18  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/i386/linux.h (LINUX_LOADER_ID_LILO)
 	(LINUX_LOADER_ID_LOADLIN, LINUX_LOADER_ID_BOOTSECT)
 	(LINUX_LOADER_ID_SYSLINUX, LINUX_LOADER_ID_ETHERBOOT)

@@ -344,6 +344,7 @@ lib/LzmaEnc.c
 lib/efi/datetime.c
 lib/i386/datetime.c
 loader/aout.c
+loader/linux_normal.c
 loader/multiboot2.c
 loader/multiboot_loader.c
 loader/multiboot_loader_normal.c
@@ -353,13 +354,10 @@ loader/efi/chainloader_normal.c
 loader/i386/bsd.c
 loader/i386/bsd_normal.c
 loader/i386/efi/linux.c
-loader/i386/efi/linux_normal.c
 loader/i386/ieee1275/linux.c
-loader/i386/ieee1275/linux_normal.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/chainloader_normal.c
 loader/i386/pc/linux.c
-loader/i386/pc/linux_normal.c
 loader/i386/pc/multiboot2.c
 loader/i386/pc/multiboot.c
 loader/i386/pc/multiboot_normal.c

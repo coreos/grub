@@ -1295,13 +1295,13 @@ _linux_mod_CFLAGS = $(COMMON_CFLAGS)
 _linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
-linux_mod_SOURCES = loader/i386/efi/linux_normal.c
-CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_efi_linux_normal.o und-linux.lst
+linux_mod_SOURCES = loader/linux_normal.c
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_linux_normal.o und-linux.lst
 ifneq ($(linux_mod_EXPORTS),no)
 CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
 endif
-MOSTLYCLEANFILES += linux_mod-loader_i386_efi_linux_normal.d
+MOSTLYCLEANFILES += linux_mod-loader_linux_normal.d
 UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
@@ -1310,9 +1310,9 @@ linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_i386_efi_linux_normal.o
+pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_linux_normal.o
 	-rm -f $@
-	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ linux_mod-loader_i386_efi_linux_normal.o
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ linux_mod-loader_linux_normal.o
 
 mod-linux.o: mod-linux.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -1329,23 +1329,23 @@ und-linux.lst: pre-linux.o
 	echo 'linux' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-linux_mod-loader_i386_efi_linux_normal.o: loader/i386/efi/linux_normal.c $(loader/i386/efi/linux_normal.c_DEPENDENCIES)
-	$(TARGET_CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -MD -c -o $@ $<
--include linux_mod-loader_i386_efi_linux_normal.d
+linux_mod-loader_linux_normal.o: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -MD -c -o $@ $<
+-include linux_mod-loader_linux_normal.d
 
-CLEANFILES += cmd-linux_mod-loader_i386_efi_linux_normal.lst fs-linux_mod-loader_i386_efi_linux_normal.lst partmap-linux_mod-loader_i386_efi_linux_normal.lst
-COMMANDFILES += cmd-linux_mod-loader_i386_efi_linux_normal.lst
-FSFILES += fs-linux_mod-loader_i386_efi_linux_normal.lst
-PARTMAPFILES += partmap-linux_mod-loader_i386_efi_linux_normal.lst
+CLEANFILES += cmd-linux_mod-loader_linux_normal.lst fs-linux_mod-loader_linux_normal.lst partmap-linux_mod-loader_linux_normal.lst
+COMMANDFILES += cmd-linux_mod-loader_linux_normal.lst
+FSFILES += fs-linux_mod-loader_linux_normal.lst
+PARTMAPFILES += partmap-linux_mod-loader_linux_normal.lst
 
-cmd-linux_mod-loader_i386_efi_linux_normal.lst: loader/i386/efi/linux_normal.c $(loader/i386/efi/linux_normal.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
+cmd-linux_mod-loader_linux_normal.lst: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
 
-fs-linux_mod-loader_i386_efi_linux_normal.lst: loader/i386/efi/linux_normal.c $(loader/i386/efi/linux_normal.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh linux > $@ || (rm -f $@; exit 1)
+fs-linux_mod-loader_linux_normal.lst: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh linux > $@ || (rm -f $@; exit 1)
 
-partmap-linux_mod-loader_i386_efi_linux_normal.lst: loader/i386/efi/linux_normal.c $(loader/i386/efi/linux_normal.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/efi -I$(srcdir)/loader/i386/efi $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh linux > $@ || (rm -f $@; exit 1)
+partmap-linux_mod-loader_linux_normal.lst: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh linux > $@ || (rm -f $@; exit 1)
 
 
 linux_mod_CFLAGS = $(COMMON_CFLAGS)

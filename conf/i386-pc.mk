@@ -109,20 +109,21 @@ kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
 	kern/time.c \
-	kern/i386/dl.c kern/i386/pc/init.c kern/parser.c kern/partition.c \
+	kern/i386/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
+	kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \
 	kern/generic/millisleep.c \
 	kern/env.c \
 	term/i386/pc/console.c \
 	symlist.c
-CLEANFILES += kernel.img kernel.exec kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_time.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_i386_tsc.o kernel_img-kern_i386_pit.o kernel_img-kern_generic_rtc_get_time_ms.o kernel_img-kern_generic_millisleep.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
-MOSTLYCLEANFILES += kernel_img-kern_i386_pc_startup.d kernel_img-kern_main.d kernel_img-kern_device.d kernel_img-kern_disk.d kernel_img-kern_dl.d kernel_img-kern_file.d kernel_img-kern_fs.d kernel_img-kern_err.d kernel_img-kern_misc.d kernel_img-kern_mm.d kernel_img-kern_loader.d kernel_img-kern_rescue.d kernel_img-kern_term.d kernel_img-kern_time.d kernel_img-kern_i386_dl.d kernel_img-kern_i386_pc_init.d kernel_img-kern_parser.d kernel_img-kern_partition.d kernel_img-kern_i386_tsc.d kernel_img-kern_i386_pit.d kernel_img-kern_generic_rtc_get_time_ms.d kernel_img-kern_generic_millisleep.d kernel_img-kern_env.d kernel_img-term_i386_pc_console.d kernel_img-symlist.d
+CLEANFILES += kernel.img kernel.exec kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_time.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_i386_pc_mmap.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_i386_tsc.o kernel_img-kern_i386_pit.o kernel_img-kern_generic_rtc_get_time_ms.o kernel_img-kern_generic_millisleep.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
+MOSTLYCLEANFILES += kernel_img-kern_i386_pc_startup.d kernel_img-kern_main.d kernel_img-kern_device.d kernel_img-kern_disk.d kernel_img-kern_dl.d kernel_img-kern_file.d kernel_img-kern_fs.d kernel_img-kern_err.d kernel_img-kern_misc.d kernel_img-kern_mm.d kernel_img-kern_loader.d kernel_img-kern_rescue.d kernel_img-kern_term.d kernel_img-kern_time.d kernel_img-kern_i386_dl.d kernel_img-kern_i386_pc_init.d kernel_img-kern_i386_pc_mmap.d kernel_img-kern_parser.d kernel_img-kern_partition.d kernel_img-kern_i386_tsc.d kernel_img-kern_i386_pit.d kernel_img-kern_generic_rtc_get_time_ms.d kernel_img-kern_generic_millisleep.d kernel_img-kern_env.d kernel_img-term_i386_pc_console.d kernel_img-symlist.d
 
 kernel.img: kernel.exec
 	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
 
-kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_time.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_i386_tsc.o kernel_img-kern_i386_pit.o kernel_img-kern_generic_rtc_get_time_ms.o kernel_img-kern_generic_millisleep.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
+kernel.exec: kernel_img-kern_i386_pc_startup.o kernel_img-kern_main.o kernel_img-kern_device.o kernel_img-kern_disk.o kernel_img-kern_dl.o kernel_img-kern_file.o kernel_img-kern_fs.o kernel_img-kern_err.o kernel_img-kern_misc.o kernel_img-kern_mm.o kernel_img-kern_loader.o kernel_img-kern_rescue.o kernel_img-kern_term.o kernel_img-kern_time.o kernel_img-kern_i386_dl.o kernel_img-kern_i386_pc_init.o kernel_img-kern_i386_pc_mmap.o kernel_img-kern_parser.o kernel_img-kern_partition.o kernel_img-kern_i386_tsc.o kernel_img-kern_i386_pit.o kernel_img-kern_generic_rtc_get_time_ms.o kernel_img-kern_generic_millisleep.o kernel_img-kern_env.o kernel_img-term_i386_pc_console.o kernel_img-symlist.o
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(kernel_img_LDFLAGS)
 
 kernel_img-kern_i386_pc_startup.o: kern/i386/pc/startup.S $(kern/i386/pc/startup.S_DEPENDENCIES)
@@ -188,6 +189,10 @@ kernel_img-kern_i386_dl.o: kern/i386/dl.c $(kern/i386/dl.c_DEPENDENCIES)
 kernel_img-kern_i386_pc_init.o: kern/i386/pc/init.c $(kern/i386/pc/init.c_DEPENDENCIES)
 	$(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
 -include kernel_img-kern_i386_pc_init.d
+
+kernel_img-kern_i386_pc_mmap.o: kern/i386/pc/mmap.c $(kern/i386/pc/mmap.c_DEPENDENCIES)
+	$(TARGET_CC) -Ikern/i386/pc -I$(srcdir)/kern/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
+-include kernel_img-kern_i386_pc_mmap.d
 
 kernel_img-kern_parser.o: kern/parser.c $(kern/parser.c_DEPENDENCIES)
 	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(kernel_img_CFLAGS) -MD -c -o $@ $<
@@ -1136,13 +1141,13 @@ _linux_mod_CFLAGS = $(COMMON_CFLAGS)
 _linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For linux.mod.
-linux_mod_SOURCES = loader/i386/pc/linux_normal.c
-CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_i386_pc_linux_normal.o und-linux.lst
+linux_mod_SOURCES = loader/linux_normal.c
+CLEANFILES += linux.mod mod-linux.o mod-linux.c pre-linux.o linux_mod-loader_linux_normal.o und-linux.lst
 ifneq ($(linux_mod_EXPORTS),no)
 CLEANFILES += def-linux.lst
 DEFSYMFILES += def-linux.lst
 endif
-MOSTLYCLEANFILES += linux_mod-loader_i386_pc_linux_normal.d
+MOSTLYCLEANFILES += linux_mod-loader_linux_normal.d
 UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
@@ -1151,9 +1156,9 @@ linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_i386_pc_linux_normal.o
+pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_linux_normal.o
 	-rm -f $@
-	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ linux_mod-loader_i386_pc_linux_normal.o
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ linux_mod-loader_linux_normal.o
 
 mod-linux.o: mod-linux.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
@@ -1170,23 +1175,23 @@ und-linux.lst: pre-linux.o
 	echo 'linux' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-linux_mod-loader_i386_pc_linux_normal.o: loader/i386/pc/linux_normal.c $(loader/i386/pc/linux_normal.c_DEPENDENCIES)
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -MD -c -o $@ $<
--include linux_mod-loader_i386_pc_linux_normal.d
+linux_mod-loader_linux_normal.o: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -MD -c -o $@ $<
+-include linux_mod-loader_linux_normal.d
 
-CLEANFILES += cmd-linux_mod-loader_i386_pc_linux_normal.lst fs-linux_mod-loader_i386_pc_linux_normal.lst partmap-linux_mod-loader_i386_pc_linux_normal.lst
-COMMANDFILES += cmd-linux_mod-loader_i386_pc_linux_normal.lst
-FSFILES += fs-linux_mod-loader_i386_pc_linux_normal.lst
-PARTMAPFILES += partmap-linux_mod-loader_i386_pc_linux_normal.lst
+CLEANFILES += cmd-linux_mod-loader_linux_normal.lst fs-linux_mod-loader_linux_normal.lst partmap-linux_mod-loader_linux_normal.lst
+COMMANDFILES += cmd-linux_mod-loader_linux_normal.lst
+FSFILES += fs-linux_mod-loader_linux_normal.lst
+PARTMAPFILES += partmap-linux_mod-loader_linux_normal.lst
 
-cmd-linux_mod-loader_i386_pc_linux_normal.lst: loader/i386/pc/linux_normal.c $(loader/i386/pc/linux_normal.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
+cmd-linux_mod-loader_linux_normal.lst: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh linux > $@ || (rm -f $@; exit 1)
 
-fs-linux_mod-loader_i386_pc_linux_normal.lst: loader/i386/pc/linux_normal.c $(loader/i386/pc/linux_normal.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh linux > $@ || (rm -f $@; exit 1)
+fs-linux_mod-loader_linux_normal.lst: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh linux > $@ || (rm -f $@; exit 1)
 
-partmap-linux_mod-loader_i386_pc_linux_normal.lst: loader/i386/pc/linux_normal.c $(loader/i386/pc/linux_normal.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh linux > $@ || (rm -f $@; exit 1)
+partmap-linux_mod-loader_linux_normal.lst: loader/linux_normal.c $(loader/linux_normal.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader -I$(srcdir)/loader $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh linux > $@ || (rm -f $@; exit 1)
 
 
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
