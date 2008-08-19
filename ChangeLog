@@ -1,3 +1,11 @@
+2008-08-19  Robert Millan  <rmh@aybabtu.com>
+
+	* term/gfxterm.c (DEFAULT_CURSOR_COLOR): Remove.
+	(struct grub_virtual_screen): Remove `cursor_color'.
+	(grub_virtual_screen_setup): Remove `virtual_screen.cursor_color'
+	initialization.
+	(write_cursor): Use `virtual_screen.fg_color' to draw cursor.
+
 2008-08-18  Robert Millan  <rmh@aybabtu.com>
 
 	Unify (identical) linux_normal.c files.

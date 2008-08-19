@@ -42,7 +42,6 @@
 #define DEFAULT_STANDARD_COLOR  0x07
 #define DEFAULT_NORMAL_COLOR    0x07
 #define DEFAULT_HIGHLIGHT_COLOR 0x70
-#define DEFAULT_CURSOR_COLOR	0x07
 
 struct grub_dirty_region
 {
@@ -100,7 +99,6 @@ struct grub_virtual_screen
   /* Color settings.  */
   grub_video_color_t fg_color;
   grub_video_color_t bg_color;
-  grub_video_color_t cursor_color;
 
   /* Text buffer for virtual screen.  Contains (columns * rows) number
      of entries.  */
@@ -218,8 +216,6 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
   virtual_screen.term_color = virtual_screen.normal_color_setting;
   
   set_term_color (virtual_screen.term_color);
-
-  virtual_screen.cursor_color = grub_video_map_color (DEFAULT_CURSOR_COLOR);
 
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
@@ -709,7 +705,7 @@ write_cursor (void)
   width = virtual_screen.char_width;
   height = 2;
 
-  color = virtual_screen.cursor_color;
+  color = virtual_screen.fg_color;
 
   /* Render cursor to text layer.  */
   grub_video_set_active_render_target (text_layer);
