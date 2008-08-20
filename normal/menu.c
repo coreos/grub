@@ -421,7 +421,7 @@ run_menu (grub_menu_t menu, int nested)
 		print_entries (menu, first, offset);
 	      break;
 
-	    case 16:
+	    case GRUB_TERM_UP:
 	    case '^':
 	      if (offset > 0)
 		{
@@ -438,7 +438,7 @@ run_menu (grub_menu_t menu, int nested)
 		}
 	      break;
 	      
-	    case 14:
+	    case GRUB_TERM_DOWN:
 	    case 'v':
 	      if (menu->size > first + offset + 1)
 		{
