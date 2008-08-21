@@ -353,6 +353,7 @@ loader/efi/chainloader.c
 loader/efi/chainloader_normal.c
 loader/i386/bsd.c
 loader/i386/bsd_normal.c
+loader/i386/linux.c
 loader/i386/efi/linux.c
 loader/i386/ieee1275/linux.c
 loader/i386/pc/chainloader.c

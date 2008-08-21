@@ -98,7 +98,7 @@ pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	halt.mod datetime.mod date.mod datehook.mod
 
 # For _linux.mod.
-_linux_mod_SOURCES = loader/i386/pc/linux.c
+_linux_mod_SOURCES = loader/i386/linux.c
 _linux_mod_CFLAGS = $(COMMON_CFLAGS)
 _linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

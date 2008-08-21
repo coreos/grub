@@ -1,3 +1,10 @@
+2008-08-21  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/linux.c: New file.  Implements generic 32-bit Linux
+	loader.
+	* conf/i386-coreboot.rmk (_linux_mod_SOURCES): Replace
+	`loader/i386/pc/linux.c' with `loader/i386/linux.c'.
+
 2008-08-20  Carles Pina i Estany  <carles@pina.cat>
 
 	* menu/normal.c (run_menu): Replace hardcoded numbers with macros
