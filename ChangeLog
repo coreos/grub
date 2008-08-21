@@ -1,3 +1,7 @@
+2008-08-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* fs/ntfs.c (grub_ntfs_mount): Fix a memory leak.
+
 2008-08-21  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/linux.c: New file.  Implements generic 32-bit Linux

@@ -850,6 +850,7 @@ fail:
     {
       free_file (&data->mmft);
       free_file (&data->cmft);
+      grub_free (data);
     }
   return 0;
 }
