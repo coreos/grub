@@ -1,3 +1,9 @@
+2008-08-22  Felix Zielcke  <fzielcke@z-51.de>
+         
+	* util/update-grub.in (GRUB_GFXMODE): Export variable.
+	* util/grub.d/00_header.in: Allow the administrator to change default
+	gfxmode via ${GRUB_GFXMODE}.
+
 2008-08-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* fs/ntfs.c (grub_ntfs_mount): Fix a memory leak.

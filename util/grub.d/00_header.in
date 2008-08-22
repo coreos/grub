@@ -33,6 +33,7 @@ done
 
 if [ "x${GRUB_DEFAULT}" = "x" ] ; then GRUB_DEFAULT=0 ; fi
 if [ "x${GRUB_TIMEOUT}" = "x" ] ; then GRUB_TIMEOUT=5 ; fi
+if [ "x${GRUB_GFXMODE}" = "x" ] ; then GRUB_GFXMODE=640x480 ; fi
 
 cat << EOF
 set default=${GRUB_DEFAULT}
@@ -58,7 +59,7 @@ case x${GRUB_TERMINAL} in
 
     cat << EOF
 if font `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
-  set gfxmode=640x480
+  set gfxmode=${GRUB_GFXMODE}
   insmod gfxterm
   insmod ${video_backend}
   terminal gfxterm
