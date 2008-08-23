@@ -142,7 +142,7 @@ probe (const char *path, char *device_name)
 	  abstraction_name = "lvm";
 	  break;
 	case GRUB_DEV_ABSTRACTION_RAID:
-	  abstraction_name = "raid";
+	  abstraction_name = "raid mdraid";
 	  break;
 	default:
 	  grub_util_info ("did not find LVM/RAID in %s, assuming raw device", device_name);

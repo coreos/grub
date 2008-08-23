@@ -1,5 +1,87 @@
 2008-08-23  Bean  <bean123ch@gmail.com>
 
+	* conf/common.rmk (grub_probe_SOURCES): Add disk/mdraid_linux.c.
+	(grub_fstest_SOURCES): Add disk/raid5_recover.c, disk/raid6_recover.c,
+	disk/mdraid_linux.c and disk/dmraid_nvidia.c and lib/crc.c.
+	(pkglib_MODULES): Add raid5rec.mod, raid6rec.mod, mdraid.mod and
+	dm_nv.mod.
+	(raid5rec_mod_SOURCES): New macro.
+	(raid5rec_mod_CFLAGS): Likewise.
+	(raid5rec_mod_LDFLAGS): Likewise.
+	(raid6rec_mod_SOURCES): Likewise.
+	(raid6rec_mod_CFLAGS): Likewise.
+	(raid6rec_mod_LDFLAGS): Likewise.
+	(mdraid_mod_SOURCES): Likewise.
+	(mdraid_mod_CFLAGS): Likewise.
+	(mdraid_mod_LDFLAGS): Likewise.
+	(dm_nv_mod_SOURCES): Likewise.
+	(dm_nv_mod_CFLAGS): Likewise.
+	(dm_nv_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_setup_SOURCES): Add disk/mdraid_linux.c.
+	(grub_emu_SOURCES):  Add disk/raid5_recover.c, disk/raid6_recover.c,
+	disk/mdraid_linux.c and disk/dmraid_nvidia.c.
+
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add disk/raid5_recover.c,
+	disk/raid6_recover.c, disk/mdraid_linux.c and disk/dmraid_nvidia.c.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
+	* disk/raid5_recover.c: New file.
+
+	* disk/raid6_recover.c: Likewise.
+
+	* disk/mdraid_linux.c: Likewise.
+
+	* disk/dmraid_nvidia.c: Likewise.
+
+	* disk/i386/pc/biosdisk.c: Set total_sectors of cdrom device to
+	ULONG_MAX.
+
+	* disk/raid.c (grub_raid_open): Use the size of the smallest disk to
+	calculate the size of raid device.
+	(grub_raid_read): Simplify raid0 code. Support raid4, raid6 and four
+	different layout of raid5.
+	(grub_raid_scan_device): Remove code specific to mdraid.
+	(grub_raid_list): New variable.
+	(free_array): New function.
+	(grub_raid_register): Likewise.
+	(grub_raid_unregister): Likewise.
+	(grub_raid_rescan): Likewise.
+	(GRUB_MOD_INIT): Don't iterate device here.
+	(GRUB_MOD_FINI): Use free_array to release resource.
+
+	* include/grub/raid.h: Remove macro and structure specific to mdraid.
+	(grub_raid5_recover_func_t): New function variable type.
+	(grub_raid6_recover_func_t): Likewise.
+	(grub_raid5_recover_func): New variable.
+	(grub_raid6_recover_func): Likewise.
+	(grub_raid_register): New function.
+	(grub_raid_unregister): Likewise.
+	(grub_raid_rescan): Likewise.
+	(grub_raid_block_xor): Likewise.
+
+	* util/grub-fstest.c: Add #include <grub/raid.h> and <grub/lib/crc.h>.
+	(CMD_CRC): New macro.
+	(part): Removed.
+	(read_file): Handle device as well as file.
+	(cmd_crc): New function.
+	(fstest): Handle multiple disks.
+	(options): Remove part, raw and long, add root and diskcount.
+	(usage): Add crc, remove -p, -r, -l, add -r and -c.
+	(main): Find the first non option entry and ignore subsequence options,
+	add handling for the new options, support multiple disks.
+
+	* util/grub-probe.c (probe): Add mdraid to abstraction_name.
+
+2008-08-23  Bean  <bean123ch@gmail.com>
+
 	* normal/x86_64/setjmp.S (grub_longjmp): Return 1 when val = 0.
 
 	* genfslist.sh: Ignore kernel.mod.

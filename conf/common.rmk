@@ -21,7 +21,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	\
 	partmap/pc.c partmap/apple.c partmap/gpt.c 		\
 	kern/fs.c kern/env.c fs/fshelp.c			\
-	disk/lvm.c disk/raid.c grub_probe_init.c
+	disk/lvm.c disk/raid.c disk/mdraid_linux.c grub_probe_init.c
 
 ifeq ($(enable_grub_fstest), yes)
 bin_UTILITIES += grub-fstest
@@ -32,7 +32,7 @@ util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
-	io/gzio.c lib/hexdump.c commands/blocklist.c commands/ls.c \
+	lib/hexdump.c lib/crc.c commands/blocklist.c commands/ls.c 	\
 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
@@ -40,7 +40,9 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/ufs.c fs/xfs.c fs/afs.c					\
 	\
 	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
-	kern/fs.c kern/env.c fs/fshelp.c disk/lvm.c disk/raid.c	\
+	kern/fs.c kern/env.c fs/fshelp.c disk/lvm.c disk/raid.c		\
+	disk/raid5_recover.c disk/raid6_recover.c 			\
+	disk/mdraid_linux.c disk/dmraid_nvidia.c 			\
 	grub_fstest_init.c
 
 # For the parser.
@@ -270,14 +272,35 @@ gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Special disk structures
 
-pkglib_MODULES += raid.mod lvm.mod
+pkglib_MODULES += raid.mod raid5rec.mod raid6rec.mod mdraid.mod dm_nv.mod \
+	lvm.mod
 
 # For raid.mod
 raid_mod_SOURCES = disk/raid.c
 raid_mod_CFLAGS = $(COMMON_CFLAGS)
 raid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For raid.mod
+# For raid5rec.mod
+raid5rec_mod_SOURCES = disk/raid5_recover.c
+raid5rec_mod_CFLAGS = $(COMMON_CFLAGS)
+raid5rec_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For raid6rec.mod
+raid6rec_mod_SOURCES = disk/raid6_recover.c
+raid6rec_mod_CFLAGS = $(COMMON_CFLAGS)
+raid6rec_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For mdraid.mod
+mdraid_mod_SOURCES = disk/mdraid_linux.c
+mdraid_mod_CFLAGS = $(COMMON_CFLAGS)
+mdraid_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For dm_nv.mod
+dm_nv_mod_SOURCES = disk/dmraid_nvidia.c
+dm_nv_mod_CFLAGS = $(COMMON_CFLAGS)
+dm_nv_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lvm.mod
 lvm_mod_SOURCES = disk/lvm.c
 lvm_mod_CFLAGS = $(COMMON_CFLAGS)
 lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
