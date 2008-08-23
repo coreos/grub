@@ -1,3 +1,11 @@
+2008-08-23  Bean  <bean123ch@gmail.com>
+
+	* normal/x86_64/setjmp.S (grub_longjmp): Return 1 when val = 0.
+
+	* genfslist.sh: Ignore kernel.mod.
+
+	* genpartmaplist.sh: Likewise.
+
 2008-08-23  Robert Millan  <rmh@aybabtu.com>
 
 	* util/getroot.c (find_root_device): Skip anything that starts with

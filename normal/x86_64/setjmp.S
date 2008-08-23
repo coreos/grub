@@ -50,6 +50,11 @@ FUNCTION(grub_setjmp)
  */
 FUNCTION(grub_longjmp)
 	movl	%esi, %eax
+	orl	%eax, %eax
+	jnz	1f
+	incl	%eax
+1:
+
 	movq	(%rdi), %rbx
 	movq	8(%rdi), %rsp
 	movq	16(%rdi), %rbp
