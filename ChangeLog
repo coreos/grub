@@ -1,3 +1,8 @@
+2008-08-23  Robert Millan  <rmh@aybabtu.com>
+
+	* util/getroot.c (find_root_device): Skip anything that starts with
+	a dot, not just directories.  This avoids things like /dev/.tmp.md0.
+
 2008-08-22  Felix Zielcke  <fzielcke@z-51.de>
          
 	* util/update-grub.in (GRUB_GFXMODE): Export variable.

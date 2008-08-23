@@ -196,7 +196,10 @@ find_root_device (const char *dir, dev_t dev)
     {
       struct stat st;
       
-      if (strcmp (ent->d_name, ".") == 0 || strcmp (ent->d_name, "..") == 0)
+      /* Avoid:
+	 - dotfiles (like "/dev/.tmp.md0") since they could be duplicates.
+	 - dotdirs (like "/dev/.static") since they could contain duplicates.  */
+      if (ent->d_name[0] == '.')
 	continue;
 
       if (lstat (ent->d_name, &st) < 0)
@@ -207,11 +210,9 @@ find_root_device (const char *dir, dev_t dev)
 	/* Don't follow symbolic links.  */
 	continue;
       
-      if (S_ISDIR (st.st_mode) && ent->d_name[0] != '.')
+      if (S_ISDIR (st.st_mode))
 	{
-	  /* Find it recursively, but avoid dotdirs (like ".static") since they
-	     could contain duplicates, which would later break the
-	     pathname-based check */
+	  /* Find it recursively.  */
 	  char *res;
 
 	  res = find_root_device (ent->d_name, dev);
