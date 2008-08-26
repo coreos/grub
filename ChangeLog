@@ -1,3 +1,9 @@
+2008-08-26  Robert Millan  <rmh@aybabtu.com>
+
+	* util/biosdisk.c (grub_util_biosdisk_open, open_device)
+	(grub_util_biosdisk_get_grub_dev): Make error messages a bit more
+	descriptive.
+
 2008-08-23  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (grub_probe_SOURCES): Add disk/mdraid_linux.c.

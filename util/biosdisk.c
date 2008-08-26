@@ -164,7 +164,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     fd = open (map[drive].device, O_RDONLY);
     if (fd == -1)
-      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[drive].device);
+      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
       {
@@ -288,7 +288,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       is_partition = linux_find_partition (dev, disk->partition->start);
     
     /* Open the partition.  */
-    grub_util_info ("opening the device `%s'", dev);
+    grub_util_info ("opening the device `%s' in open_device()", dev);
     fd = open (dev, flags);
     if (fd < 0)
       {
@@ -306,7 +306,7 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
   fd = open (map[disk->id].device, flags);
   if (fd < 0)
     {
-      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", map[disk->id].device);
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' in open_device()", map[disk->id].device);
       return -1;
     }
 #endif /* ! __linux__ */
@@ -835,7 +835,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     fd = open (os_dev, O_RDONLY);
     if (fd == -1)
       {
-	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s'", os_dev);
+	grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk geometry", os_dev);
 	free (name);
 	return 0;
       }
