@@ -1,3 +1,37 @@
+2008-08-27  Marco Gerards  <marco@gnu.org>
+
+	* conf/common.rmk (pkglib_MODULES): Add scsi.mod.
+	(scsi_mod_SOURCES): New variable.
+	(scsi_mod_CFLAGS): Likewise
+	(scsi_mod_LDFLAGS): Likewise.
+
+	* disk/scsi.c: New file.
+
+	* include/grub/scsi.h: Likewise.
+
+	* include/grub/scsicmd.h: Likewise.
+
+	* disk/ata.c: Include <grub/scsi.h>.
+	(grub_atapi_packet): Do not use grub_ata_cmd, use registers
+	instead.
+	(grub_ata_iterate): Skip ATAPI devices.
+	(grub_ata_open): Only handle ATAPI devices.
+	(struct grub_atapi_read): Removed.
+	(grub_atapi_readsector): Likewise.
+	(grub_ata_read): No longer handle ATAPI devices.
+	(grub_ata_write): Likewise.
+	(grub_atapi_iterate): New function.
+	(grub_atapi_read): Likewise.
+	(grub_atapi_write): Likewise.
+	(grub_atapi_open): Likewise.
+	(grub_atapi_close): Likewise.
+	(grub_atapi_dev): New variable.
+	(GRUB_MOD_INIT(ata)): Register ATAPI as SCSI device.
+	(GRUB_MOD_FINI(ata)): Unregister ATAPI.
+
+	* include/grub/disk.h (enum grub_disk_dev_id): Add
+	`GRUB_DISK_DEVICE_SCSI_ID'.
+
 2008-08-26  Robert Millan  <rmh@aybabtu.com>
 
 	* util/biosdisk.c (grub_util_biosdisk_open, open_device)

@@ -270,10 +270,10 @@ gpt_mod_SOURCES = partmap/gpt.c
 gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# Special disk structures
+# Special disk structures and generic drivers
 
 pkglib_MODULES += raid.mod raid5rec.mod raid6rec.mod mdraid.mod dm_nv.mod \
-	lvm.mod
+	lvm.mod scsi.mod
 
 # For raid.mod
 raid_mod_SOURCES = disk/raid.c
@@ -304,6 +304,11 @@ dm_nv_mod_LDFLAGS = $(COMMON_LDFLAGS)
 lvm_mod_SOURCES = disk/lvm.c
 lvm_mod_CFLAGS = $(COMMON_CFLAGS)
 lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For scsi.mod
+scsi_mod_SOURCES = disk/scsi.c
+scsi_mod_CFLAGS = $(COMMON_CFLAGS)
+scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\

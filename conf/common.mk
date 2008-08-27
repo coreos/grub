@@ -1929,10 +1929,10 @@ partmap-gpt_mod-partmap_gpt.lst: partmap/gpt.c $(partmap/gpt.c_DEPENDENCIES) gen
 gpt_mod_CFLAGS = $(COMMON_CFLAGS)
 gpt_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# Special disk structures
+# Special disk structures and generic drivers
 
 pkglib_MODULES += raid.mod raid5rec.mod raid6rec.mod mdraid.mod dm_nv.mod \
-	lvm.mod
+	lvm.mod scsi.mod
 
 # For raid.mod
 raid_mod_SOURCES = disk/raid.c
@@ -2275,6 +2275,63 @@ partmap-lvm_mod-disk_lvm.lst: disk/lvm.c $(disk/lvm.c_DEPENDENCIES) genpartmapli
 
 lvm_mod_CFLAGS = $(COMMON_CFLAGS)
 lvm_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For scsi.mod
+scsi_mod_SOURCES = disk/scsi.c
+CLEANFILES += scsi.mod mod-scsi.o mod-scsi.c pre-scsi.o scsi_mod-disk_scsi.o und-scsi.lst
+ifneq ($(scsi_mod_EXPORTS),no)
+CLEANFILES += def-scsi.lst
+DEFSYMFILES += def-scsi.lst
+endif
+MOSTLYCLEANFILES += scsi_mod-disk_scsi.d
+UNDSYMFILES += und-scsi.lst
+
+scsi.mod: pre-scsi.o mod-scsi.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(scsi_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-scsi.o mod-scsi.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-scsi.o: $(scsi_mod_DEPENDENCIES) scsi_mod-disk_scsi.o
+	-rm -f $@
+	$(TARGET_CC) $(scsi_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ scsi_mod-disk_scsi.o
+
+mod-scsi.o: mod-scsi.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(scsi_mod_CFLAGS) -c -o $@ $<
+
+mod-scsi.c: moddep.lst genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'scsi' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(scsi_mod_EXPORTS),no)
+def-scsi.lst: pre-scsi.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 scsi/' > $@
+endif
+
+und-scsi.lst: pre-scsi.o
+	echo 'scsi' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+scsi_mod-disk_scsi.o: disk/scsi.c $(disk/scsi.c_DEPENDENCIES)
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(scsi_mod_CFLAGS) -MD -c -o $@ $<
+-include scsi_mod-disk_scsi.d
+
+CLEANFILES += cmd-scsi_mod-disk_scsi.lst fs-scsi_mod-disk_scsi.lst partmap-scsi_mod-disk_scsi.lst
+COMMANDFILES += cmd-scsi_mod-disk_scsi.lst
+FSFILES += fs-scsi_mod-disk_scsi.lst
+PARTMAPFILES += partmap-scsi_mod-disk_scsi.lst
+
+cmd-scsi_mod-disk_scsi.lst: disk/scsi.c $(disk/scsi.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(scsi_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh scsi > $@ || (rm -f $@; exit 1)
+
+fs-scsi_mod-disk_scsi.lst: disk/scsi.c $(disk/scsi.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(scsi_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh scsi > $@ || (rm -f $@; exit 1)
+
+partmap-scsi_mod-disk_scsi.lst: disk/scsi.c $(disk/scsi.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(scsi_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh scsi > $@ || (rm -f $@; exit 1)
+
+
+scsi_mod_CFLAGS = $(COMMON_CFLAGS)
+scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\

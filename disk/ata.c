@@ -23,6 +23,7 @@
 #include <grub/mm.h>
 #include <grub/time.h>
 #include <grub/pci.h>
+#include <grub/scsi.h>
 /* XXX: For now this only works on i386.  */
 #include <grub/cpu/io.h>
 
@@ -305,8 +306,9 @@ grub_atapi_packet (struct grub_ata_device *dev, char *packet)
   grub_ata_regset (dev, GRUB_ATA_REG_LBAHIGH, 0xFF);
   grub_ata_regset (dev, GRUB_ATA_REG_LBAMID, 0xFF);
 
-  if (grub_ata_cmd (dev, GRUB_ATA_CMD_PACKET))
-    return grub_errno;
+  grub_ata_regset (dev, GRUB_ATA_REG_CMD, GRUB_ATA_CMD_PACKET);
+
+  grub_ata_wait ();
 
   if (grub_ata_pio_write (dev, packet, 12))
     return grub_errno;
@@ -757,6 +759,9 @@ grub_ata_iterate (int (*hook) (const char *name))
       char devname[5];
       grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
 
+      if (dev->atapi)
+	continue;
+
       if (hook (devname))
 	return 1;
     }
@@ -781,13 +786,13 @@ grub_ata_open (const char *name, grub_disk_t disk)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Can't open device");
 
   if (dev->atapi)
-    disk->total_sectors = 9000000; /* XXX */
-  else
-    disk->total_sectors = dev->size;
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not an ATA harddisk");
+
+  disk->total_sectors = dev->size;
 
   disk->id = (unsigned long) dev;
   
-  disk->has_partitions = !dev->atapi;
+  disk->has_partitions = 1;
   disk->data = dev;
 
   return 0;
@@ -799,76 +804,11 @@ grub_ata_close (grub_disk_t disk __attribute__((unused)))
   
 }
 
-struct grub_atapi_read
-{
-  grub_uint8_t code;
-  grub_uint8_t reserved1;
-  grub_uint32_t lba;
-  grub_uint32_t length;
-  grub_uint8_t reserved2[2];
-} __attribute__((packed));
-
-static grub_err_t
-grub_atapi_readsector (struct grub_ata_device *dev,
-		       char *buf, grub_disk_addr_t sector)
-{
-  struct grub_atapi_read readcmd;
-
-  readcmd.code = 0xA8;
-  readcmd.lba = grub_cpu_to_be32 (sector);
-  readcmd.length = grub_cpu_to_be32 (1);
-
-  grub_atapi_packet (dev, (char *) &readcmd);
-  grub_ata_wait ();
-  if (grub_ata_pio_read (dev, buf, GRUB_CDROM_SECTOR_SIZE))
-    return grub_errno;
-
-  return 0;
-}
-
 static grub_err_t
 grub_ata_read (grub_disk_t disk, grub_disk_addr_t sector,
 	       grub_size_t size, char *buf)
 {
-  struct grub_ata_device *dev = (struct grub_ata_device *) disk->data;
-  int cdsector;
-  char *sbuf;
-
-  if (! dev->atapi)
-    return grub_ata_readwrite (disk, sector, size, buf, 0);
-
-  /* ATAPI is being used, so try to read from CDROM using ATAPI.  */
-
-  sbuf = grub_malloc (GRUB_CDROM_SECTOR_SIZE);
-  if (! sbuf)
-    return grub_errno;
-
-  /* CDROMs have sectors of 2048 bytes, so chop them into pieces of
-     512 bytes.  */
-  while (size > 0)
-    {
-      int rsize;
-      int offset;
-      int max;
-
-      cdsector = sector >> 2;
-      rsize = ((size * GRUB_DISK_SECTOR_SIZE > GRUB_CDROM_SECTOR_SIZE)
-	       ? GRUB_CDROM_SECTOR_SIZE : size * GRUB_DISK_SECTOR_SIZE);
-      offset = (sector & 3) * GRUB_DISK_SECTOR_SIZE;
-      max = GRUB_CDROM_SECTOR_SIZE - offset;
-      rsize = (rsize > max) ? max : rsize;
-
-      grub_atapi_readsector (dev, sbuf, cdsector);
-      grub_memcpy (buf + offset, sbuf, rsize);
-
-      buf += rsize;
-      size -= rsize / GRUB_DISK_SECTOR_SIZE;
-      sector += rsize / GRUB_DISK_SECTOR_SIZE;
-    }
-
-  grub_free (sbuf);
-
-  return 0;
+  return grub_ata_readwrite (disk, sector, size, buf, 0);
 }
 
 static grub_err_t
@@ -877,12 +817,7 @@ grub_ata_write (grub_disk_t disk,
 		grub_size_t size,
 		const char *buf)
 {
-  struct grub_ata_device *dev = (struct grub_ata_device *) disk->data;
-
-  if (! dev->atapi)
-    return grub_ata_readwrite (disk, sector, size, (char *) buf, 1);
-
-  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "ATAPI write not supported");
+  return grub_ata_readwrite (disk, sector, size, (char *) buf, 1);
 }
 
 static struct grub_disk_dev grub_atadisk_dev =
@@ -896,6 +831,107 @@ static struct grub_disk_dev grub_atadisk_dev =
     .write = grub_ata_write,
     .next = 0
   };
+
+
+
+/* ATAPI code.  */
+
+static int
+grub_atapi_iterate (int (*hook) (const char *name, int luns))
+{
+  struct grub_ata_device *dev;
+
+  for (dev = grub_ata_devices; dev; dev = dev->next)
+    {
+      char devname[7];
+      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+
+      if (! dev->atapi)
+	continue;
+
+      if (hook (devname, 1))
+	return 1;
+    }
+
+  return 0;
+
+}
+
+static grub_err_t
+grub_atapi_read (struct grub_scsi *scsi,
+		 grub_size_t cmdsize __attribute__((unused)),
+		 char *cmd, grub_size_t size, char *buf)
+{
+  struct grub_ata_device *dev = (struct grub_ata_device *) scsi->data;
+
+  if (grub_atapi_packet (dev, cmd))
+    return grub_errno;
+
+  grub_ata_wait (); /* XXX */
+
+  return grub_ata_pio_read (dev, buf, size);
+}
+
+static grub_err_t
+grub_atapi_write (struct grub_scsi *scsi,
+		  grub_size_t cmdsize __attribute__((unused)),
+		  char *cmd, grub_size_t size, char *buf)
+{
+  struct grub_ata_device *dev = (struct grub_ata_device *) scsi->data;
+
+  if (grub_atapi_packet (dev, cmd))
+    return grub_errno;
+
+  grub_ata_wait (); /* XXX */
+
+  return grub_ata_pio_write (dev, buf, size);
+}
+
+static grub_err_t
+grub_atapi_open (const char *name, struct grub_scsi *scsi)
+{
+  struct grub_ata_device *dev;
+  struct grub_ata_device *devfnd;
+
+  for (dev = grub_ata_devices; dev; dev = dev->next)
+    {
+      char devname[7];
+      grub_sprintf (devname, "ata%d", dev->port * 2 + dev->device);
+
+      if (!grub_strcmp (devname, name))
+	{
+	  devfnd = dev;
+	  break;
+	}
+    }
+
+  grub_dprintf ("ata", "opening ATAPI dev `%s'\n", name);
+
+  if (! devfnd)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such ATAPI device");
+
+  scsi->data = devfnd;
+  scsi->name = grub_strdup (name);
+  scsi->luns = 1;
+
+  return GRUB_ERR_NONE;
+}
+
+static void
+grub_atapi_close (struct grub_scsi *scsi)
+{
+  grub_free (scsi->name);
+}
+
+static struct grub_scsi_dev grub_atapi_dev =
+  {
+    .name = "ATAPI",
+    .iterate = grub_atapi_iterate,
+    .open = grub_atapi_open,
+    .close = grub_atapi_close,
+    .read = grub_atapi_read,
+    .write = grub_atapi_write
+  }; 
 
 
 
@@ -915,9 +951,13 @@ GRUB_MOD_INIT(ata)
   grub_ata_initialize ();
 
   grub_disk_dev_register (&grub_atadisk_dev);
+
+  /* ATAPI devices are handled by scsi.mod.  */
+  grub_scsi_dev_register (&grub_atapi_dev);
 }
 
 GRUB_MOD_FINI(ata)
 {
+  grub_scsi_dev_unregister (&grub_atapi_dev);
   grub_disk_dev_unregister (&grub_atadisk_dev);
 }
