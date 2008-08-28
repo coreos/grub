@@ -120,12 +120,16 @@ find_grub_drive (const char *name)
 	if (map[i].drive && ! strcmp (map[i].drive, name))
 	  return i;
     }
-  else
-    {
-      for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
-	if (! map[i].drive)
-	  return i;
-    }
+
+  return -1;
+}
+
+static int
+find_free_slot ()
+{
+  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+    if (! map[i].drive)
+      return i;
 
   return -1;
 }
@@ -503,7 +507,7 @@ read_device_map (const char *dev_map)
 
       p++;
       /* Find a free slot.  */
-      drive = find_grub_drive (NULL);
+      drive = find_free_slot ();
       if (drive < 0)
 	show_error ("Map table size exceeded");
 

@@ -1,3 +1,13 @@
+2008-08-28  Robert Millan  <rmh@aybabtu.com>
+
+	Change find_grub_drive() syntax so it doesn't prevent it from
+	detecting NULL names as errors.
+
+	* util/biosdisk.c (find_grub_drive): Move free slot search code
+	from here ...
+	(find_free_slot): ... to here.
+	(read_device_map): Use find_free_slot() to search for free slots.
+
 2008-08-27  Marco Gerards  <marco@gnu.org>
 
 	* conf/common.rmk (pkglib_MODULES): Add scsi.mod.
