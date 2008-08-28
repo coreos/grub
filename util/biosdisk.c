@@ -127,6 +127,8 @@ find_grub_drive (const char *name)
 static int
 find_free_slot ()
 {
+  unsigned int i;
+
   for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
     if (! map[i].drive)
       return i;

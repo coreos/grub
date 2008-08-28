@@ -1,5 +1,9 @@
 2008-08-28  Robert Millan  <rmh@aybabtu.com>
 
+	* util/biosdisk.c (find_grub_drive): Declare missing `i' variable.
+
+2008-08-28  Robert Millan  <rmh@aybabtu.com>
+
 	Change find_grub_drive() syntax so it doesn't prevent it from
 	detecting NULL names as errors.
 
