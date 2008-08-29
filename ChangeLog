@@ -1,3 +1,8 @@
+2008-08-28  Pavel Roskin  <proski@gnu.org>
+
+	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Add
+	kern/time.c.
+
 2008-08-28  Robert Millan  <rmh@aybabtu.com>
 
 	* util/biosdisk.c (find_grub_drive): Declare missing `i' variable.
