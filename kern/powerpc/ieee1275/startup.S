@@ -1,4 +1,4 @@
-/* crt0.S - Startup code for the PowerPC.  */
+/* startup.S - Startup code for the PowerPC.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2003,2004,2005,2007,2008  Free Software Foundation, Inc.

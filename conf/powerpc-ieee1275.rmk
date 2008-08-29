@@ -73,7 +73,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
-kernel_elf_SOURCES = kern/powerpc/ieee1275/crt0.S kern/ieee1275/cmain.c \
+kernel_elf_SOURCES = kern/powerpc/ieee1275/startup.S kern/ieee1275/cmain.c \
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c 		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c 		\
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c 	\

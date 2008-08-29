@@ -1,5 +1,10 @@
 2008-08-29  Pavel Roskin  <proski@gnu.org>
 
+	* kern/powerpc/ieee1275/crt0.S: Rename to ...
+	* kern/powerpc/ieee1275/startup.S: ... this.
+	* conf/powerpc-ieee1275.rmk: Adjust for the above.
+	* DISTLIST: Likewise.
+
 	* kern/powerpc/ieee1275/crt0.S: Include grub/symbol.h and
 	grub/cpu/kernel.h.  Add start label for consistency with other
 	platforms.  Add grub_prefix immediately after start.  Add jump
