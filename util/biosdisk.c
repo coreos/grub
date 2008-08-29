@@ -163,7 +163,22 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
   disk->id = drive;
 
   /* Get the size.  */
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(__MINGW32__)
+  {
+    grub_uint64_t size;
+
+    size = grub_util_get_disk_size (map[drive].device);
+
+    if (size % 512)
+      grub_util_error ("unaligned device size");
+
+    disk->total_sectors = size >> 9;
+
+    grub_util_info ("the size of %s is %llu", name, disk->total_sectors);
+
+    return GRUB_ERR_NONE;
+  }
+#elif defined(__linux__) || defined(__CYGWIN__)
   {
     unsigned long long nr;
     int fd;
@@ -280,6 +295,9 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
 #endif
 #ifdef O_FSYNC
   flags |= O_FSYNC;
+#endif
+#ifdef O_BINARY
+  flags |= O_BINARY;
 #endif
   
 #ifdef __linux__

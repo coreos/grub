@@ -1,3 +1,34 @@
+2008-08-29  Bean  <bean123ch@gmail.com>
+
+	* configure.ac: Change host_os to cygwin for mingw.
+	(asprintf): New check for function.
+
+	* include/grub/symbol.h: Replace #ifndef __CYGWIN__ with
+	#if ! defined (__CYGWIN__) && ! defined (__MINGW32__).
+
+	* include/grub/util/misc.h: #include <config.h> and <grub/types.h>,
+	declear asprintf if HAVE_ASPRINTF is not set, declear fseeko, ftello,
+	sync, sleep and grub_util_get_disk_size for mingw.
+
+	* util/biosdisk.c (grub_util_biosdisk_open): Use grub_util_get_disk_size
+	to get size in mingw.
+	(open_device): Use flag O_BINARY if it's defined.
+	(find_root_device): Add dummy code for mingw.
+
+	* util/grub-mkdevicemap.c (get_floppy_disk_name): Return 0 for mingw.
+	(get_ide_disk_name): Return //./PHYSICALDRIVE%d for mingw.
+	(get_scsi_disk_name): Return 0 for mingw.
+
+	* util/hostfs.c: #include <grub/util/misc.h>.
+	(grub_hostfs_open): Use "rb" flag to open file, use
+	grub_util_get_disk_size to get disk size for mingw.
+
+	* util/misc.c: #include <windows.h> and <winioctl.h> in mingw.
+	(asprintf): New function if HAVE_ASPRINTF is not set.
+	(sync): New function for mingw.
+	(sleep): Likewise.
+	(grub_util_get_disk_size): Likewise.
+
 2008-08-28  Pavel Roskin  <proski@gnu.org>
 
 	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Add

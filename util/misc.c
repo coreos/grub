@@ -259,6 +259,8 @@ grub_memalign (grub_size_t align, grub_size_t size)
 #elif defined(HAVE_MEMALIGN)
   p = memalign (align, size);
 #else
+  (void) align;
+  (void) size;
   grub_util_error ("grub_memalign is not supported");
 #endif
   
@@ -313,3 +315,82 @@ grub_arch_sync_caches (void *address __attribute__ ((unused)),
 		       grub_size_t len __attribute__ ((unused)))
 {
 }
+
+#ifndef  HAVE_ASPRINTF
+
+int
+asprintf (char **buf, const char *fmt, ...)
+{
+  int status;
+  va_list ap;
+
+  /* Should be large enough.  */
+  *buf = xmalloc (512);
+
+  va_start (ap, fmt);
+  status = vsprintf (*buf, fmt, ap);
+  va_end (ap);
+
+  return status;
+}
+
+#endif
+
+#ifdef __MINGW32__
+
+#include <windows.h>
+#include <winioctl.h>
+
+void sync (void)
+{
+}
+
+void sleep (int s)
+{
+  Sleep (s * 1000);
+}
+
+grub_int64_t
+grub_util_get_disk_size (char *name)
+{
+  HANDLE hd;
+  grub_int64_t size = -1LL;
+
+  hd = CreateFile (name, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                   0, OPEN_EXISTING, 0, 0);
+
+  if (hd == INVALID_HANDLE_VALUE)
+    return size;
+
+  if (((name[0] == '/') || (name[0] == '\\')) &&
+      ((name[1] == '/') || (name[1] == '\\')) &&
+      (name[2] == '.') &&
+      ((name[3] == '/') || (name[3] == '\\')) &&
+      (! strncasecmp (name + 4, "PHYSICALDRIVE", 13)))
+    {
+      DWORD nr;
+      DISK_GEOMETRY g;
+
+      if (! DeviceIoControl (hd, IOCTL_DISK_GET_DRIVE_GEOMETRY,
+                             0, 0, &g, sizeof (g), &nr, 0))
+        goto fail;
+
+      size = g.Cylinders.QuadPart;
+      size *= g.TracksPerCylinder * g.SectorsPerTrack * g.BytesPerSector;
+    }
+  else
+    {
+      LARGE_INTEGER s;
+
+      s.LowPart = GetFileSize (hd, &s.HighPart);
+      size = s.QuadPart;
+    }
+
+fail:
+
+  CloseHandle (hd);
+
+  return size;
+}
+
+#endif

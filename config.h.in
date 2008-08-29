@@ -25,6 +25,9 @@
 /* Define if C symbols get an underscore after compilation */
 #undef HAVE_ASM_USCORE
 
+/* Define to 1 if you have the `asprintf' function. */
+#undef HAVE_ASPRINTF
+
 /* Define to 1 if you have the <curses.h> header file. */
 #undef HAVE_CURSES_H
 

@@ -169,7 +169,16 @@ grub_get_prefix (const char *dir)
   return prefix;
 }
 
-#ifndef __CYGWIN__
+#ifdef __MINGW32__
+
+static char *
+find_root_device (const char *dir __attribute__ ((unused)),
+                  dev_t dev __attribute__ ((unused)))
+{
+  return 0;
+}
+
+#elif ! defined(__CYGWIN__)
 
 static char *
 find_root_device (const char *dir, dev_t dev)

@@ -99,6 +99,14 @@ case "$target_cpu" in
   x86_64 | sparc64) target_m64=1 ;;
 esac
 
+case "$host_os" in
+  mingw32) host_os=cygwin ;;
+esac
+
+case "$target_os" in
+  mingw32) target_os=cygwin ;;
+esac
+
 AC_SUBST(target_cpu)
 AC_SUBST(target_os)
 AC_SUBST(platform)
@@ -183,7 +191,7 @@ if test "$target_cpu"-"$platform" = i386-pc; then
 fi
 
 # Check for functions.
-AC_CHECK_FUNCS(posix_memalign memalign)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf)
 
 #
 # Check for target programs.
