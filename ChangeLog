@@ -1,3 +1,12 @@
+2008-08-29  Pavel Roskin  <proski@gnu.org>
+
+	* kern/powerpc/ieee1275/crt0.S: Include grub/symbol.h and
+	grub/cpu/kernel.h.  Add start label for consistency with other
+	platforms.  Add grub_prefix immediately after start.  Add jump
+	to the code after grub_prefix.
+	* include/grub/powerpc/kernel.h: Provide valid values for
+	GRUB_KERNEL_CPU_PREFIX and GRUB_KERNEL_CPU_DATA_END.
+
 2008-08-29  Bean  <bean123ch@gmail.com>
 
 	* configure.ac: Change host_os to cygwin for mingw.

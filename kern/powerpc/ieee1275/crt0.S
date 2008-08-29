@@ -17,13 +17,31 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/symbol.h>
+#include <grub/cpu/kernel.h>
+
 .extern __bss_start
 .extern _end
 
 	.text
 	.align	2
-	.globl	_start
-_start:	
+	.globl	start, _start
+start:
+_start:
+	b	codestart
+
+	. = EXT_C(start) + GRUB_KERNEL_CPU_PREFIX
+
+VARIABLE(grub_prefix)
+	/* to be filled by grub-mkelfimage */
+
+	/*
+	 *  Leave some breathing room for the prefix.
+	 */
+
+	. = EXT_C(start) + GRUB_KERNEL_CPU_DATA_END
+
+codestart:
 	li      2, 0
 	li      13, 0
 
