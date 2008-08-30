@@ -1,3 +1,9 @@
+2008-08-30  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/i386/pc/startup.S (multiboot_header): Force 4-byte alignment
+	as required by Multiboot spec (it was already 4-byte aligned, but
+	only by chance).
+
 2008-08-29  Pavel Roskin  <proski@gnu.org>
 
 	* kern/powerpc/ieee1275/crt0.S: Rename to ...

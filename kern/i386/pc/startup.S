@@ -110,6 +110,7 @@ VARIABLE(grub_prefix)
  * This uses the a.out kludge to load raw binary to the area starting at 1MB,
  * and relocates itself after loaded.
  */
+	.p2align	2	/* force 4-byte alignment */
 multiboot_header:
 	/* magic */
 	.long	0x1BADB002
