@@ -402,7 +402,6 @@ term/i386/pc/vga_text.c
 term/ieee1275/ofconsole.c
 util/biosdisk.c
 util/console.c
-util/genmoddep.c
 util/getroot.c
 util/grub-editenv.c
 util/grub-emu.c
