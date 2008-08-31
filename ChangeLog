@@ -1,5 +1,9 @@
 2008-08-31  Colin D Bennett <colin@gibibit.com>
 
+	* util/i386/pc/grub-mkrescue.in: Support multiple overlay directories.
+
+2008-08-31  Colin D Bennett <colin@gibibit.com>
+
 	* commands/i386/pc/vbeinfo.c (grub_cmd_vbeinfo): Show VBE version and
 	total video memory in 'vbeinfo' output; show color format details for
 	each video mode.

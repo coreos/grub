@@ -43,6 +43,7 @@ Make GRUB rescue image.
   -v, --version           print the version information and exit
   --modules=MODULES       pre-load specified modules MODULES
   --overlay=DIR           overlay directory DIR in the memdisk image
+                          (may be specified multiple times)
   --pkglibdir=DIR         use images from directory DIR instead of ${pkglibdir}
   --grub-mkimage=FILE     use FILE as grub-mkimage
   --image-type=TYPE       select floppy or cdrom (default)
@@ -71,7 +72,7 @@ for option in "$@"; do
     --modules=*)
 	modules=`echo "$option" | sed 's/--modules=//'` ;;
     --overlay=*)
-	overlay=`echo "$option" | sed 's/--overlay=//'` ;;
+	overlay=${overlay}${overlay:+ }`echo "$option" | sed 's/--overlay=//'` ;;
     --pkglibdir=*)
 	input_dir=`echo "$option" | sed 's/--pkglibdir=//'` ;;
     --grub-mkimage=*)
@@ -124,9 +125,10 @@ for i in ${modules} ; do
   echo "insmod $i"
 done > ${aux_dir}/boot/grub/grub.cfg
 
-if test "x$overlay" = x ; then : ; else
-  cp -dpR ${overlay}/* ${aux_dir}/
-fi
+for d in ${overlay}; do
+  echo "Overlaying $d"
+  cp -dpR "${d}"/* "${aux_dir}"/
+done
 
 if [ "x${image_type}" = xfloppy -o "x${emulation}" = xfloppy ] ; then
   # build memdisk
