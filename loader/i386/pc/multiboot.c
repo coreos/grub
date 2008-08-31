@@ -21,10 +21,8 @@
  *  FIXME: The following features from the Multiboot specification still
  *         need to be implemented:
  *  - VBE support
- *  - a.out support
  *  - boot device
  *  - symbol table
- *  - memory map
  *  - drives table
  *  - ROM configuration table
  *  - APM table
