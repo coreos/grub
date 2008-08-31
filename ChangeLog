@@ -1,5 +1,10 @@
 2008-08-31  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/multiboot.c: Update comment not to say that
+	boot_device support is unimplemented.
+
+2008-08-31  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/multiboot.c: Update comment not to say that a.out
 	or memory map support are unimplemented.
 
