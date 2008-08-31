@@ -48,11 +48,17 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
   grub_err_t err;
   char *modevar;
 
-  grub_printf ("List of compatible video modes:\n");
-
   err = grub_vbe_probe (&controller_info);
   if (err != GRUB_ERR_NONE)
     return err;
+
+  grub_printf ("VBE info:   version: %d.%d  OEM software rev: %d.%d\n",
+               controller_info.version >> 8, 
+               controller_info.version & 0xFF,
+               controller_info.oem_software_rev >> 8,
+               controller_info.oem_software_rev & 0xFF);
+  grub_printf ("            total memory: %d KiB\n",
+               (controller_info.total_memory << 16) / 1024);
 
   /* Because the information on video modes is stored in a temporary place,
      it is better to copy it to somewhere safe.  */
@@ -67,6 +73,10 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
 
   grub_memcpy (saved_video_mode_list, video_mode_list, video_mode_list_size);
   
+  grub_printf ("List of compatible video modes:\n");
+  grub_printf ("Legend: P=Packed pixel, D=Direct color, "
+               "mask/pos=R/G/B/reserved\n"); 
+
   /* Walk through all video modes listed.  */
   for (p = saved_video_mode_list; *p != 0xFFFF; p++)
     {
@@ -103,10 +113,10 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
       switch (mode_info_tmp.memory_model)
 	{
 	case 0x04:
-	  memory_model = "Packed Pixel";
+	  memory_model = "Packed";
 	  break;
 	case 0x06:
-	  memory_model = "Direct Color";
+	  memory_model = "Direct";
 	  break;
 
 	default:
@@ -116,12 +126,25 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
       if (! memory_model)
 	continue;
 
-      grub_printf ("0x%03x: %d x %d x %d bpp (%s)\n",
-		   mode,
+      grub_printf ("0x%03x:  %4d x %4d x %2d  %s", 
+                   mode,
                    mode_info_tmp.x_resolution,
                    mode_info_tmp.y_resolution,
                    mode_info_tmp.bits_per_pixel,
-		   memory_model);
+                   memory_model);
+
+      /* Show mask and position details for direct color modes.  */
+      if (mode_info_tmp.memory_model == 0x06)
+        grub_printf (", mask: %d/%d/%d/%d  pos: %d/%d/%d/%d",
+                     mode_info_tmp.red_mask_size,
+                     mode_info_tmp.green_mask_size,
+                     mode_info_tmp.blue_mask_size,
+                     mode_info_tmp.rsvd_mask_size,
+                     mode_info_tmp.red_field_position,
+                     mode_info_tmp.green_field_position,
+                     mode_info_tmp.blue_field_position,
+                     mode_info_tmp.rsvd_field_position);
+      grub_printf ("\n");
     }
 
   grub_free (saved_video_mode_list);
