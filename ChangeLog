@@ -1,5 +1,11 @@
 2008-08-31  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/multiboot.c (grub_get_multiboot_mmap_len): Fix
+	declaration.
+	(grub_multiboot): Fix a few warnings.
+
+2008-08-31  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/multiboot.c: Update comment not to say that
 	boot_device support is unimplemented.
 

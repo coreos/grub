@@ -90,7 +90,7 @@ static grub_uint32_t mmap_length;
 /* Return the length of the Multiboot mmap that will be needed to allocate
    our platform's map.  */
 static grub_uint32_t
-grub_get_multiboot_mmap_len ()
+grub_get_multiboot_mmap_len (void)
 {
   grub_size_t count = 0;
 
@@ -447,12 +447,12 @@ grub_multiboot (int argc, char *argv[])
       if ((grub_file_seek (file, offset)) == (grub_off_t) - 1)
 	goto fail;
 
-      grub_file_read (file, grub_multiboot_payload_orig, load_size);
+      grub_file_read (file, (void *) grub_multiboot_payload_orig, load_size);
       if (grub_errno)
 	goto fail;
       
       if (header->bss_end_addr)
-	grub_memset (grub_multiboot_payload_orig + load_size, 0,
+	grub_memset ((void *) (grub_multiboot_payload_orig + load_size), 0,
 		     header->bss_end_addr - header->load_addr - load_size);
       
       grub_multiboot_payload_entry_offset = header->entry_addr - header->load_addr;
@@ -462,9 +462,9 @@ grub_multiboot (int argc, char *argv[])
     goto fail;
 
       
-  grub_fill_multiboot_mmap ((struct grub_mmap_entry *) (grub_multiboot_payload_orig
-							+ grub_multiboot_payload_size
-							- mmap_length));
+  grub_fill_multiboot_mmap ((struct grub_multiboot_mmap_entry *) (grub_multiboot_payload_orig
+								  + grub_multiboot_payload_size
+								  - mmap_length));
 
   mmap_addr = grub_multiboot_payload_dest + grub_multiboot_payload_size - mmap_length;
 
