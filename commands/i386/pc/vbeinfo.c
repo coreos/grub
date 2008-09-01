@@ -57,6 +57,8 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
                controller_info.version & 0xFF,
                controller_info.oem_software_rev >> 8,
                controller_info.oem_software_rev & 0xFF);
+
+  /* The total_memory field is in 64 KiB units.  */
   grub_printf ("            total memory: %d KiB\n",
                (controller_info.total_memory << 16) / 1024);
 
@@ -90,32 +92,32 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
 	  continue;
 	}
 
-      if ((mode_info_tmp.mode_attributes & 0x001) == 0)
+      if ((mode_info_tmp.mode_attributes & GRUB_VBE_MODEATTR_SUPPORTED) == 0)
 	/* If not available, skip it.  */
 	continue;
 
-      if ((mode_info_tmp.mode_attributes & 0x002) == 0)
+      if ((mode_info_tmp.mode_attributes & GRUB_VBE_MODEATTR_RESERVED_1) == 0)
 	/* Not enough information.  */
 	continue;
 
-      if ((mode_info_tmp.mode_attributes & 0x008) == 0)
+      if ((mode_info_tmp.mode_attributes & GRUB_VBE_MODEATTR_COLOR) == 0)
 	/* Monochrome is unusable.  */
 	continue;
 
-      if ((mode_info_tmp.mode_attributes & 0x080) == 0)
+      if ((mode_info_tmp.mode_attributes & GRUB_VBE_MODEATTR_LFB_AVAIL) == 0)
 	/* We support only linear frame buffer modes.  */
 	continue;
 
-      if ((mode_info_tmp.mode_attributes & 0x010) == 0)
+      if ((mode_info_tmp.mode_attributes & GRUB_VBE_MODEATTR_GRAPHICS) == 0)
 	/* We allow only graphical modes.  */
 	continue;
 
       switch (mode_info_tmp.memory_model)
 	{
-	case 0x04:
+	case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
 	  memory_model = "Packed";
 	  break;
-	case 0x06:
+	case GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR:
 	  memory_model = "Direct";
 	  break;
 
@@ -134,7 +136,7 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
                    memory_model);
 
       /* Show mask and position details for direct color modes.  */
-      if (mode_info_tmp.memory_model == 0x06)
+      if (mode_info_tmp.memory_model == GRUB_VBE_MEMORY_MODEL_DIRECT_COLOR)
         grub_printf (", mask: %d/%d/%d/%d  pos: %d/%d/%d/%d",
                      mode_info_tmp.red_mask_size,
                      mode_info_tmp.green_mask_size,

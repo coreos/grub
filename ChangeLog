@@ -1,3 +1,28 @@
+2008-09-01  Colin D Bennett <colin@gibibit.com>
+
+	* commands/i386/pc/vbeinfo.c (grub_cmd_vbeinfo): Replaced constant
+	values with defines.
+
+	* include/grub/i386/pc/vbe.h (GRUB_VBE_MODEATTR_SUPPORTED): Added.
+	(GRUB_VBE_MODEATTR_RESERVED_1): Likewise.
+	(GRUB_VBE_MODEATTR_BIOS_TTY_OUTPUT_SUPPORT): Likewise.
+	(GRUB_VBE_MODEATTR_COLOR): Likewise.
+	(GRUB_VBE_MODEATTR_GRAPHICS): Likewise.
+	(GRUB_VBE_MODEATTR_VGA_COMPATIBLE): Likewise.
+	(GRUB_VBE_MODEATTR_VGA_WINDOWED_AVAIL): Likewise.
+	(GRUB_VBE_MODEATTR_LFB_AVAIL): Likewise.
+	(GRUB_VBE_MODEATTR_DOUBLE_SCAN_AVAIL): Likewise.
+	(GRUB_VBE_MODEATTR_INTERLACED_AVAIL): Likewise.
+	(GRUB_VBE_MODEATTR_TRIPLE_BUF_AVAIL): Likewise.
+	(GRUB_VBE_MODEATTR_STEREO_AVAIL): Likewise.
+	(GRUB_VBE_MODEATTR_DUAL_DISPLAY_START): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_TEXT): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_CGA): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_HERCULES): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_PLANAR): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_NONCHAIN4_256): Likewise.
+	(GRUB_VBE_MEMORY_MODEL_YUV): Likewise.
+
 2008-08-31  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c (grub_get_multiboot_mmap_len): Fix
