@@ -1,5 +1,10 @@
 2008-09-01  Colin D Bennett <colin@gibibit.com>
 
+	* include/grub/normal.h: Fixed incorrect comment for
+	GRUB_COMMAND_FLAG_NO_ARG_PARSE.
+
+2008-09-01  Colin D Bennett <colin@gibibit.com>
+
 	* commands/i386/pc/vbeinfo.c (grub_cmd_vbeinfo): Replaced constant
 	values with defines.
 
