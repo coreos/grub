@@ -300,8 +300,8 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  disk->total_sectors = ((scsi->size * scsi->blocksize)
 				 << GRUB_DISK_SECTOR_BITS);
 
-	  grub_dprintf ("scsi", "capacity=%d, blksize=%d\n",
-			(int) disk->total_sectors, scsi->blocksize);
+	  grub_dprintf ("scsi", "capacity=%llu, blksize=%d\n",
+			disk->total_sectors, scsi->blocksize);
 
 	  return GRUB_ERR_NONE;
 	}

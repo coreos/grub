@@ -1,3 +1,8 @@
+2008-09-03  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/scsi.c (grub_scsi_open): Remove size limit when printing
+	`disk->total_sectors'.
+
 2008-09-01  Colin D Bennett <colin@gibibit.com>
 
 	* include/grub/normal.h: Fixed incorrect comment for
