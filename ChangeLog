@@ -1,3 +1,10 @@
+2008-09-03  Felix Zielcke  <fzielcke@z-51.de>
+
+	Based on patch from Ville Skyttä <ville.skytta@iki.fi>
+	* docs/multiboot.texi: Fix some spelling.
+	* docs/internals.texi: Likewise.
+	* docs/grub.texi: Likewise.
+
 2008-05-20  Robert Millan  <rmh@aybabtu.com>
 
 	* netboot/cs89x0.c: Fix license violation.

@@ -375,7 +375,7 @@ The fields @samp{magic}, @samp{flags} and @samp{checksum} are defined in
 @samp{load_addr}, @samp{load_end_addr}, @samp{bss_end_addr} and
 @samp{entry_addr} are defined in @ref{Header address fields}, and the
 fields @samp{mode_type}, @samp{width}, @samp{height} and @samp{depth} are
-defind in @ref{Header graphics fields}.
+defined in @ref{Header graphics fields}.
 
 
 @node Header magic fields
@@ -1208,7 +1208,7 @@ A few wording changes.
 Header checksum.
 
 @item
-Clasification of machine state passed to an operating system.
+Classification of machine state passed to an operating system.
 @end itemize
 
 @item 0.5

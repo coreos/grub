@@ -267,9 +267,9 @@ done with only one mount if in the same filesystem).
 @node Command interface
 @section The generic interface for built-ins
 
-GRUB built-in commands are defined in a uniformal interface, whether
+GRUB built-in commands are defined in a uniform interface, whether
 they are menu-specific or can be used anywhere. The definition of a
-builtin command consists of two parts: the code itself and the table of
+built-in command consists of two parts: the code itself and the table of
 the information.
 
 The code must be a function which takes two arguments, a command-line

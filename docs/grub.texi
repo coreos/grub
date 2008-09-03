@@ -96,7 +96,7 @@ This edition documents version @value{VERSION}.
 * Images::                      GRUB image files
 * Filesystem::                  Filesystem syntax and semantics
 * Interface::                   The menu and the command-line
-* Commands::                    The list of available builtin commands
+* Commands::                    The list of available built-in commands
 * Troubleshooting::             Error messages produced by GRUB
 * Invoking the grub shell::     How to use the grub shell
 * Invoking grub-install::       How to use the GRUB installer
@@ -236,7 +236,7 @@ Support many of the various free 32-bit kernels that lack Multiboot
 compliance (primarily FreeBSD, NetBSD, OpenBSD, and
 Linux). Chain-loading of other boot loaders is also supported.
 
-@item Load multiples modules
+@item Load multiple modules
 Fully support the Multiboot feature of loading multiple modules.
 
 @item Load a configuration file
@@ -266,7 +266,7 @@ devices, partitions, and files in a directory depending on context.
 
 @item Support multiple filesystem types
 Support multiple filesystem types transparently, plus a useful explicit
-blocklist notation. The currently supported filesystem types are
+block list notation. The currently supported filesystem types are
 @dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, @dfn{Linux
 ext2fs}, @dfn{ReiserFS}, @dfn{JFS}, @dfn{XFS}, and @dfn{VSTa
 fs}. @xref{Filesystem}, for more information.
@@ -516,7 +516,7 @@ The device file name may be different. Consult the manual for your OS.
 @section Installing GRUB natively
 
 @strong{Caution:} Installing GRUB's stage1 in this manner will erase the
-normal boot-sector used by an OS.
+normal boot sector used by an OS.
 
 GRUB can currently boot GNU Mach, Linux, FreeBSD, NetBSD, and OpenBSD
 directly, so using it on a boot sector (the first sector of a
@@ -638,7 +638,7 @@ boot floppy with a filesystem. Here is an example:
 
 Another example is when you have a separate boot partition
 which is mounted at @file{/boot}. Since GRUB is a boot loader, it
-doesn't know anything about mountpoints at all. Thus, you need to run
+doesn't know anything about mount points at all. Thus, you need to run
 @command{grub-install} like this:
 
 @example
@@ -1287,7 +1287,7 @@ timeout 30
 @end example
 
 As the comment says, GRUB will boot automatically in 30 seconds, unless
-interrupted with a keypress.
+interrupted with a key press.
 
 @example
 @group
@@ -1459,7 +1459,7 @@ Otherwise, run @command{ifconfig}, like this:
 grub> @kbd{ifconfig --address=192.168.110.23 --server=192.168.110.14}
 @end example
 
-You can also use @command{ifconfig} in conjuction with @command{bootp},
+You can also use @command{ifconfig} in conjunction with @command{bootp},
 @command{dhcp} or @command{rarp} (e.g. to reassign the server address
 manually). @xref{ifconfig}, for more details.
 
@@ -1891,7 +1891,7 @@ This represents that GRUB should read blocks 0 through 99, block 200,
 and blocks 300 through 599. If you omit an offset, then GRUB assumes
 the offset is zero.
 
-Like the file name syntax (@pxref{File name syntax}), if a blocklist
+Like the file name syntax (@pxref{File name syntax}), if a block list
 does not contain a device name, then GRUB uses GRUB's @dfn{root
 device}. So @code{(hd0,1)+1} is the same as @code{+1} when the root
 device is @samp{(hd0,1)}.
@@ -2678,9 +2678,9 @@ you forget a command, you can run the command @command{help}
 * savedefault::                 Save current entry as the default entry
 * setup::                       Set up GRUB's installation automatically
 * testload::                    Load a file for testing a filesystem
-* testvbe::                     Test VESA BIOS EXTENSION
+* testvbe::                     Test VESA BIOS Extension
 * uppermem::                    Set the upper memory size
-* vbeprobe::                    Probe VESA BIOS EXTENSION
+* vbeprobe::                    Probe VESA BIOS Extension
 @end menu
 
 
@@ -2721,7 +2721,7 @@ grub> @kbd{cat /etc/fstab}
 
 @deffn Command chainloader [@option{--force}] file
 Load @var{file} as a chain-loader. Like any other file loaded by the
-filesystem code, it can use the blocklist notation to grab the first
+filesystem code, it can use the block list notation to grab the first
 sector of the current partition with @samp{+1}. If you specify the
 option @option{--force}, then load @var{file} forcibly, whether it has a
 correct signature or not. This is required when you want to load a
@@ -2860,7 +2860,7 @@ is shut down using APM.
 @subsection help
 
 @deffn Command help @option{--all} [pattern @dots{}]
-Display helpful information about builtin commands. If you do not
+Display helpful information about built-in commands. If you do not
 specify @var{pattern}, this command shows short descriptions of most of
 available commands. If you specify the option @option{--all} to this
 command, short descriptions of rarely used commands (such as
@@ -2905,7 +2905,7 @@ In short, it will perform a full install presuming the Stage 2 or Stage
 
 In slightly more detail, it will load @var{stage1_file}, validate that
 it is a GRUB Stage 1 of the right version number, install in it a
-blocklist for loading @var{stage2_file} as a Stage 2. If the option
+block list for loading @var{stage2_file} as a Stage 2. If the option
 @option{d} is present, the Stage 1 will always look for the actual
 disk @var{stage2_file} was installed on, rather than using the booting
 drive. The Stage 2 will be loaded at address @var{addr}, which must be
@@ -3109,7 +3109,7 @@ hex format.
 Set the current @dfn{root device} to the device @var{device}, then
 attempt to mount it to get the partition size (for passing the partition
 descriptor in @code{ES:ESI}, used by some chain-loaded boot loaders), the
-BSD drive-type (for booting BSD kernels using their native boot format),
+BSD drive type (for booting BSD kernels using their native boot format),
 and correctly determine the PC partition where a BSD sub-partition is
 located. The optional @var{hdbias} parameter is a number to tell a BSD
 kernel how many BIOS drive numbers are on controllers before the current
@@ -3210,7 +3210,7 @@ to try loading a kernel.
 @subsection testvbe
 
 @deffn Command testvbe mode
-Test the VESA BIOS EXTENSION mode @var{mode}. This command will switch
+Test the VESA BIOS Extension mode @var{mode}. This command will switch
 your video card to the graphics mode, and show an endless animation. Hit
 any key to return. See also @ref{vbeprobe}.
 @end deffn
@@ -3234,7 +3234,7 @@ also be used for debugging purposes to lie to an OS.
 @subsection vbeprobe
 
 @deffn Command vbeprobe [mode]
-Probe VESA BIOS EXTENSION information. If the mode @var{mode} is
+Probe VESA BIOS Extension information. If the mode @var{mode} is
 specified, show only the information about @var{mode}. Otherwise, this
 command lists up available VBE modes on the screen. See also
 @ref{testvbe}.
@@ -3313,7 +3313,7 @@ The following is a comprehensive list of error messages for the Stage 2
 description):
 
 @table @asis
-@item 1 : Filename must be either an absolute filename or blocklist
+@item 1 : Filename must be either an absolute filename or block list
 This error is returned if a file name is requested which doesn't fit the
 syntax/rules listed in the @ref{Filesystem}.
 
@@ -3696,7 +3696,7 @@ into/from your computer.
 @chapter Invoking grub-md5-crypt
 
 The program @command{grub-md5-crypt} encrypts a password in MD5 format.
-This is just a frontend of the grub shell (@pxref{Invoking the grub
+This is just a front-end of the grub shell (@pxref{Invoking the grub
 shell}). Passwords encrypted by this program can be used with the
 command @command{password} (@pxref{password}).
 
@@ -3918,7 +3918,7 @@ for.
 
 @item
 Write down anything that you think might be related. Please understand
-that we often need to reproduce the same problem you encounterred in our
+that we often need to reproduce the same problem you encountered in our
 environment. So your information should be sufficient for us to do the
 same thing---Don't forget that we cannot see your computer directly. If
 you are not sure whether to state a fact or leave it out, state it!
