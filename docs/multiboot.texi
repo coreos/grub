@@ -158,7 +158,7 @@ across a network.
 Disk-based boot loaders may use a variety of techniques to find the
 relevant OS image and boot module data on disk, such as by
 interpretation of specific file systems (e.g. the BSD/Mach boot loader),
-using precalculated @dfn{block lists} (e.g. LILO), loading from a
+using precalculated @dfn{blocklists} (e.g. LILO), loading from a
 special @dfn{boot partition} (e.g. OS/2), or even loading from within
 another operating system (e.g. the VSTa boot code, which loads from
 DOS). Similarly, network-based boot loaders could use a variety of

@@ -266,7 +266,7 @@ devices, partitions, and files in a directory depending on context.
 
 @item Support multiple filesystem types
 Support multiple filesystem types transparently, plus a useful explicit
-block list notation. The currently supported filesystem types are
+blocklist notation. The currently supported filesystem types are
 @dfn{BSD FFS}, @dfn{DOS FAT16 and FAT32}, @dfn{Minix fs}, @dfn{Linux
 ext2fs}, @dfn{ReiserFS}, @dfn{JFS}, @dfn{XFS}, and @dfn{VSTa
 fs}. @xref{Filesystem}, for more information.
@@ -822,7 +822,7 @@ grub> @kbd{chainloader +1}
 
 @samp{+1} indicates that GRUB should read one sector from the start of
 the partition. The complete description about this syntax can be found
-in @ref{Block list syntax}.
+in @ref{blocklist syntax}.
 
 @item
 Run the command @command{boot} (@pxref{boot}).
@@ -1748,7 +1748,7 @@ sector is 512 bytes, the size of this image is exactly 512 bytes.
 
 All @file{stage1} must do is to load Stage 2 or Stage 1.5 from a local
 disk. Because of the size restriction, @file{stage1} encodes the
-location of Stage 2 (or Stage 1.5) in a block list format, so it never
+location of Stage 2 (or Stage 1.5) in a blocklist format, so it never
 understand any filesystem structure.
 
 @item stage2
@@ -1808,7 +1808,7 @@ you see the files in a device or use the command @command{find}
 @menu
 * Device syntax::               How to specify devices
 * File name syntax::            How to specify files
-* Block list syntax::           How to specify block lists
+* blocklist syntax::           How to specify blocklists
 @end menu
 
 
@@ -1863,7 +1863,7 @@ a GRUB bootable CD-ROM}, for details.
 @section How to specify files
 
 There are two ways to specify files, by @dfn{absolute file name} and by
-@dfn{block list}.
+@dfn{blocklist}.
 
 An absolute file name resembles a Unix absolute file name, using
 @samp{/} for the directory separator (not @samp{\} as in DOS). One
@@ -1875,10 +1875,10 @@ say, @samp{(hd1,0)} by the command @command{root} (@pxref{root}), then
 @code{/boot/kernel} is the same as @code{(hd1,0)/boot/kernel}.
 
 
-@node Block list syntax
-@section How to specify block lists
+@node blocklist syntax
+@section How to specify blocklists
 
-A block list is used for specifying a file that doesn't appear in the
+A blocklist is used for specifying a file that doesn't appear in the
 filesystem, like a chainloader. The syntax is
 @code{[@var{offset}]+@var{length}[,[@var{offset}]+@var{length}]@dots{}}.
 Here is an example:
@@ -1891,7 +1891,7 @@ This represents that GRUB should read blocks 0 through 99, block 200,
 and blocks 300 through 599. If you omit an offset, then GRUB assumes
 the offset is zero.
 
-Like the file name syntax (@pxref{File name syntax}), if a block list
+Like the file name syntax (@pxref{File name syntax}), if a blocklist
 does not contain a device name, then GRUB uses GRUB's @dfn{root
 device}. So @code{(hd0,1)+1} is the same as @code{+1} when the root
 device is @samp{(hd0,1)}.
@@ -2643,7 +2643,7 @@ you forget a command, you can run the command @command{help}
 (@pxref{help}).
 
 @menu
-* blocklist::                   Get the block list notation of a file
+* blocklist::                   Get the blocklist notation of a file
 * boot::                        Start up your operating system
 * cat::                         Show the contents of a file
 * chainloader::                 Chain-load another boot loader
@@ -2688,7 +2688,7 @@ you forget a command, you can run the command @command{help}
 @subsection blocklist
 
 @deffn Command blocklist file
-Print the block list notation of the file @var{file}. @xref{Block list
+Print the blocklist notation of the file @var{file}. @xref{blocklist
 syntax}.
 @end deffn
 
@@ -2721,7 +2721,7 @@ grub> @kbd{cat /etc/fstab}
 
 @deffn Command chainloader [@option{--force}] file
 Load @var{file} as a chain-loader. Like any other file loaded by the
-filesystem code, it can use the block list notation to grab the first
+filesystem code, it can use the blocklist notation to grab the first
 sector of the current partition with @samp{+1}. If you specify the
 option @option{--force}, then load @var{file} forcibly, whether it has a
 correct signature or not. This is required when you want to load a
@@ -2905,7 +2905,7 @@ In short, it will perform a full install presuming the Stage 2 or Stage
 
 In slightly more detail, it will load @var{stage1_file}, validate that
 it is a GRUB Stage 1 of the right version number, install in it a
-block list for loading @var{stage2_file} as a Stage 2. If the option
+blocklist for loading @var{stage2_file} as a Stage 2. If the option
 @option{d} is present, the Stage 1 will always look for the actual
 disk @var{stage2_file} was installed on, rather than using the booting
 drive. The Stage 2 will be loaded at address @var{addr}, which must be
@@ -3313,7 +3313,7 @@ The following is a comprehensive list of error messages for the Stage 2
 description):
 
 @table @asis
-@item 1 : Filename must be either an absolute filename or block list
+@item 1 : Filename must be either an absolute filename or blocklist
 This error is returned if a file name is requested which doesn't fit the
 syntax/rules listed in the @ref{Filesystem}.
 

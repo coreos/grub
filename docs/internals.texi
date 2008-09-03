@@ -120,18 +120,18 @@ The signature (@code{0xAA55}).
 
 See the file @file{stage1/stage1.S}, for more information.
 
-In the first sector of Stage 1.5 and Stage 2, the block lists are
+In the first sector of Stage 1.5 and Stage 2, the blocklists are
 recorded between @code{firstlist} and @code{lastlist}. The address of
 @code{lastlist} is determined when assembling the file
 @file{stage2/start.S}.
 
 The trick here is that it is actually read backward, and the first
-8-byte block list is not read here, but after the pointer is decremented
+8-byte blocklist is not read here, but after the pointer is decremented
 8 bytes, then after reading it, it decrements again, reads, and so on,
 until it is finished. The terminating condition is when the number of
-sectors to be read in the next block list is zero.
+sectors to be read in the next blocklist is zero.
 
-The format of a block list can be seen from the example in the code just
+The format of a blocklist can be seen from the example in the code just
 before the @code{firstlist} label. Note that it is always from the
 beginning of the disk, but @emph{not} relative to the partition 
 boundaries.
@@ -173,10 +173,10 @@ there is a switch table managed by the functions in
 @file{disk_io.c}. The notation is that you can only @dfn{mount} one at a
 time.
 
-The block list filesystem has a special place in the system. In addition
+The blocklist filesystem has a special place in the system. In addition
 to the @dfn{normal} filesystem (or even without one mounted), you can
 access disk blocks directly (in the indicated partition) via the block
-list notation. Using the block list filesystem doesn't effect any other
+list notation. Using the blocklist filesystem doesn't effect any other
 filesystem mounts.
 
 The variables which can be read by the filesystem backend are:
@@ -243,7 +243,7 @@ Only read sectors from within a partition. Sector 0 is the first sector
 in the partition.
 
 @item grub_read
-If the backend uses the block list code, then @code{grub_read} can be
+If the backend uses the blocklist code, then @code{grub_read} can be
 used, after setting @var{block_file} to 1.
 
 @item print_a_completion
@@ -339,7 +339,7 @@ The flow of Stage 2 (and Stage 1.5) is:
 @enumerate
 @item
 Load the rest of itself to the real starting address, that is, the
-starting address plus 512 bytes. The block lists are stored in the last
+starting address plus 512 bytes. The blocklists are stored in the last
 part of the first sector.
 
 @item
