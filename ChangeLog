@@ -1,7 +1,13 @@
 2008-09-04  Felix Zielcke  <fzielcke@z-51.de>
 
-        * config.guess: Update to latest version from config.git.
-        * config.sub: Likewise.
+	* util/getroot.c: Include <config.h>.
+	(grub_util_get_grub_dev): Rewrite to use asprintf for mdraid devices,
+	add support for /dev/md/N devices and handle LVM double dash escaping.
+
+2008-09-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* config.guess: Update to latest version from config git.
+	* config.sub: Likewise.
 
 2008-09-03  Robert Millan  <rmh@aybabtu.com>
 

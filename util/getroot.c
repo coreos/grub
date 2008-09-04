@@ -17,6 +17,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
@@ -417,62 +418,52 @@ grub_util_get_grub_dev (const char *os_dev)
   switch (grub_util_get_dev_abstraction (os_dev))
     {
     case GRUB_DEV_ABSTRACTION_LVM:
-      grub_dev = xmalloc (strlen (os_dev) - 12 + 1);
 
-      strcpy (grub_dev, os_dev + 12);
+      {
+	unsigned short i, len;
+	grub_size_t offset = sizeof ("/dev/mapper/") - 1;
 
+	len = strlen (os_dev) - offset + 1;
+	grub_dev = xmalloc (len);
+
+	for (i = 0; i < len; i++, offset++)
+	  {
+	    grub_dev[i] = os_dev[offset];
+	    if (os_dev[offset] == '-' && os_dev[offset + 1] == '-')
+	      offset++;
+	  }
+      }
+      
       break;
 
     case GRUB_DEV_ABSTRACTION_RAID:
-      grub_dev = xmalloc (20);
 
       if (os_dev[7] == '_' && os_dev[8] == 'd')
 	{
-	  const char *p;
-
 	  /* This a partitionable RAID device of the form /dev/md_dNNpMM. */
-	  int i;
-
-	  grub_dev[0] = 'm';
-	  grub_dev[1] = 'd';
-	  i = 2;
 	  
-	  p = os_dev + 9;
-	  while (*p >= '0' && *p <= '9')
-	    {
-	      grub_dev[i] = *p;
-	      i++;
-	      p++;
-	    }
+	  char *p , *q;
 
-	  if (*p == '\0')
-	    grub_dev[i] = '\0';
-	  else if (*p == 'p')
-	    {
-	      p++;
-	      grub_dev[i] = ',';
-	      i++;
+	  p = strdup (os_dev + sizeof ("/dev/md_d") - 1);
 
-	      while (*p >= '0' && *p <= '9')
-		{
-		  grub_dev[i] = *p;
-		  i++;
-		  p++;
-		}
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
 
-	      grub_dev[i] = '\0';
-	    }
-	  else
-	    grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
+	  asprintf (&grub_dev, "md%s", p);
+	  free (p);
 	}
       else if (os_dev[7] >= '0' && os_dev[7] <= '9')
 	{
-	  memcpy (grub_dev, os_dev + 5, 7);
-	  grub_dev[7] = '\0';
+	  asprintf (&grub_dev, "md%s", os_dev + sizeof ("/dev/md") - 1);
+	}
+      else if (os_dev[7] == '/' && os_dev[8] >= '0' && os_dev[8] <= '9')
+	{
+	  asprintf (&grub_dev, "md%s", os_dev + sizeof ("/dev/md/") - 1);
 	}
       else
 	grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
-
+      
       break;
 
     default:  /* GRUB_DEV_ABSTRACTION_NONE */
