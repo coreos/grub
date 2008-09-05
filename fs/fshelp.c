@@ -80,14 +80,17 @@ grub_fshelp_find_file (const char *path, grub_fshelp_node_t rootnode,
 				    enum grub_fshelp_filetype filetype,
 				    grub_fshelp_node_t node)
 	{
-	  if (type == GRUB_FSHELP_UNKNOWN || grub_strcmp (name, filename))
+	  if (filetype == GRUB_FSHELP_UNKNOWN ||
+              (grub_strcmp (name, filename) &&
+               (! (filetype & GRUB_FSHELP_CASE_INSENSITIVE) ||
+                grub_strncasecmp (name, filename, LONG_MAX))))
 	    {
 	      grub_free (node);
 	      return 0;
 	    }
 	  
 	  /* The node is found, stop iterating over the nodes.  */
-	  type = filetype;
+	  type = filetype & ~GRUB_FSHELP_CASE_INSENSITIVE;
 	  oldnode = currnode;
 	  currnode = node;
 	  

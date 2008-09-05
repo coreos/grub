@@ -575,13 +575,20 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 
   while (1)
     {
-      char *ustr;
+      char *ustr, namespace;
+
       if (pos[0xC] & 2)		/* end signature */
 	break;
 
-      np = pos + 0x52;
-      ns = (unsigned char) *(np - 2);
-      if (ns)
+      np = pos + 0x50;
+      ns = (unsigned char) *(np++);
+      namespace = *(np++);
+
+      /*
+       *  Ignore files in DOS namespace, as they will reappear as Win32
+       *  names.
+       */
+      if ((ns) && (namespace != 2))
 	{
 	  enum grub_fshelp_filetype type;
 	  struct grub_ntfs_file *fdiro;
@@ -609,6 +616,9 @@ list_file (struct grub_ntfs_file *diro, char *pos,
 	    return 0;
 	  *grub_utf16_to_utf8 ((grub_uint8_t *) ustr, (grub_uint16_t *) np,
 			       ns) = '\0';
+
+          if (namespace)
+            type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
 	  if (hook (ustr, type, fdiro))
 	    {

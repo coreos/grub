@@ -1,3 +1,14 @@
+2008-09-05  Bean  <bean123ch@gmail.com>
+
+	* fs/fshelp.c (grub_fshelp_find_file): Handle case insensitive names.
+
+	* fs/ntfs.c (list_file): Ignore names in DOS namespace, set the case
+	insensitive bit for names in Win32 and Win32 & DOS namespace.
+
+	* include/grub/fshelp.h (GRUB_FSHELP_CASE_INSENSITIVE): New macro.
+
+	* include/grub/types.h (LONG_MAX): Likewise.
+
 2008-09-04  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/getroot.c: Include <config.h>.
