@@ -575,6 +575,11 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       /* Add our new array to the list.  */
       array->next = array_list;
       array_list = array;
+
+      /* RAID 1 doestn't use a chunksize but code assumes one so set
+	 one. */
+      if (array->level == 1)
+	array->chunk_size = 64;
     }
 
   /* Add the device to the array. */
