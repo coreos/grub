@@ -1,3 +1,9 @@
+2008-08-31  Felix Zielcke  <fzielcke@z-51.de>
+
+        * fs/iso9660.c (grub_iso9660_date): New structure.
+        (grub_iso9660_primary_voldesc): Add `grub_iso9660_date' member.
+        (grub_iso9660_uuid): New function.
+
 2008-09-05  Bean  <bean123ch@gmail.com>
 
 	* fs/fshelp.c (grub_fshelp_find_file): Handle case insensitive names.

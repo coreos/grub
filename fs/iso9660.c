@@ -67,6 +67,18 @@ struct grub_iso9660_dir
   grub_uint8_t namelen;
 } __attribute__ ((packed));
 
+struct grub_iso9660_date
+{
+  grub_uint8_t year[4];
+  grub_uint8_t month[2];
+  grub_uint8_t day[2];
+  grub_uint8_t hour[2];
+  grub_uint8_t minute[2];
+  grub_uint8_t second[2];
+  grub_uint8_t hundredth[2];
+  grub_uint8_t offset;
+} __attribute__ ((packed));
+
 /* The primary volume descriptor.  Only little endian is used.  */
 struct grub_iso9660_primary_voldesc
 {
@@ -81,6 +93,8 @@ struct grub_iso9660_primary_voldesc
   grub_uint32_t path_table;
   grub_uint8_t unused5[12];
   struct grub_iso9660_dir rootdir;
+  grub_uint8_t unused6[641];
+  struct grub_iso9660_date created;
 } __attribute__ ((packed));
 
 /* A single entry in the path table.  */
@@ -812,6 +826,58 @@ grub_iso9660_label (grub_device_t device, char **label)
   return grub_errno;
 }
 
+
+static grub_err_t
+grub_iso9660_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_iso9660_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_iso9660_mount (disk);
+  if (data)
+    {
+      if (! data->voldesc.created.year[0] && ! data->voldesc.created.year[1]
+	  && ! data->voldesc.created.year[2] && ! data->voldesc.created.year[3]
+	  && ! data->voldesc.created.month[0] && ! data->voldesc.created.month[1]
+	  && ! data->voldesc.created.day[0] && ! data->voldesc.created.day[1]
+	  && ! data->voldesc.created.hour[0] && ! data->voldesc.created.hour[1]
+	  && ! data->voldesc.created.minute[0] && ! data->voldesc.created.minute[1]
+	  && ! data->voldesc.created.second[0] && ! data->voldesc.created.second[1]
+	  && ! data->voldesc.created.hundredth[0] && ! data->voldesc.created.hundredth[1])
+	{
+	  grub_error (GRUB_ERR_BAD_NUMBER, "No creation date in filesystem to generate UUID.");
+	  *uuid = NULL;
+	}
+      else 
+	{
+	  *uuid = grub_malloc (sizeof ("YYYY-MM-DD-HH-mm-ss-hh"));
+	  grub_sprintf (*uuid, "%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
+			data->voldesc.created.year[0], data->voldesc.created.year[1], 
+			data->voldesc.created.year[2], data->voldesc.created.year[3],
+			data->voldesc.created.month[0], data->voldesc.created.month[1],
+			data->voldesc.created.day[0], data->voldesc.created.day[1],
+			data->voldesc.created.hour[0], data->voldesc.created.hour[1],
+			data->voldesc.created.minute[0], data->voldesc.created.minute[1],
+			data->voldesc.created.second[0], data->voldesc.created.second[1],
+			data->voldesc.created.hundredth[0], data->voldesc.created.hundredth[1]);
+	}
+    }
+  else
+    *uuid = NULL;
+
+#ifndef GRUB_UTIL
+	grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
 
 
 static struct grub_fs grub_iso9660_fs =
@@ -822,6 +888,7 @@ static struct grub_fs grub_iso9660_fs =
     .read = grub_iso9660_read,
     .close = grub_iso9660_close,
     .label = grub_iso9660_label,
+    .uuid = grub_iso9660_uuid,
     .next = 0
   };
 
