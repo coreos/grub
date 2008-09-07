@@ -1,7 +1,7 @@
 /* multiboot.c - boot a multiboot OS image. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -81,11 +81,6 @@ grub_multiboot_unload (void)
 
   return GRUB_ERR_NONE;
 }
-
-/* FIXME: grub_uint32_t will break for addresses above 4 GiB, but is mandated
-   by the spec.  Is there something we can do about it?  */
-static grub_uint32_t mmap_addr = 0;
-static grub_uint32_t mmap_length;
 
 /* Return the length of the Multiboot mmap that will be needed to allocate
    our platform's map.  */
@@ -422,8 +417,14 @@ grub_multiboot (int argc, char *argv[])
       playground = NULL;
     }
 
-  mmap_length = grub_get_multiboot_mmap_len ();
-  grub_multiboot_payload_size = mmap_length;
+  mbi = grub_malloc (sizeof (struct grub_multiboot_info));
+  if (! mbi)
+    goto fail;
+
+  grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
+
+  mbi->mmap_length = grub_get_multiboot_mmap_len ();
+  grub_multiboot_payload_size = mbi->mmap_length;
 
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -464,9 +465,12 @@ grub_multiboot (int argc, char *argv[])
       
   grub_fill_multiboot_mmap ((struct grub_multiboot_mmap_entry *) (grub_multiboot_payload_orig
 								  + grub_multiboot_payload_size
-								  - mmap_length));
+								  - mbi->mmap_length));
 
-  mmap_addr = grub_multiboot_payload_dest + grub_multiboot_payload_size - mmap_length;
+  /* FIXME: grub_uint32_t will break for addresses above 4 GiB, but is mandated
+     by the spec.  Is there something we can do about it?  */
+  mbi->mmap_addr = grub_multiboot_payload_dest + grub_multiboot_payload_size - mbi->mmap_length;
+  mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
 
   if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
     {
@@ -485,20 +489,10 @@ grub_multiboot (int argc, char *argv[])
 		grub_multiboot_payload_size,
 		grub_multiboot_payload_entry_offset);
 
-  mbi = grub_malloc (sizeof (struct grub_multiboot_info));
-  if (! mbi)
-    goto fail;
-
-  grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
-
   /* Convert from bytes to kilobytes.  */
   mbi->mem_lower = grub_lower_mem / 1024;
   mbi->mem_upper = grub_upper_mem / 1024;
   mbi->flags |= MULTIBOOT_INFO_MEMORY;
-
-  mbi->mmap_addr = mmap_addr;
-  mbi->mmap_length = mmap_length;
-  mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
 
   for (i = 0, len = 0; i < argc; i++)
     len += grub_strlen (argv[i]) + 1;

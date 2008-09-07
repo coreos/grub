@@ -1,5 +1,13 @@
 2008-09-07  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/multiboot.c (mmap_addr, mmap_length): Remove
+	variables.
+	(grub_multiboot): Move `mbi' allocation upwards, so that mmap address
+	and length can be stored directly in the `mbi->mmap_addr' and
+	`mbi->mmap_length' struct fields.
+
+2008-09-07  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386.rmk: New file.  Provides declaration for building
 	`cpuid.mod'.
 	* conf/i386-pc.rmk (pkglib_MODULES): Remove `cpuid.mod'.
