@@ -573,7 +573,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 # Modules.
 pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
-	play.mod cpuid.mod serial.mod ata.mod		\
+	play.mod serial.mod ata.mod			\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
 	halt.mod datetime.mod date.mod datehook.mod
 
@@ -1516,63 +1516,6 @@ partmap-play_mod-commands_i386_pc_play.lst: commands/i386/pc/play.c $(commands/i
 play_mod_CFLAGS = $(COMMON_CFLAGS)
 play_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For cpuid.mod.
-cpuid_mod_SOURCES = commands/i386/cpuid.c
-CLEANFILES += cpuid.mod mod-cpuid.o mod-cpuid.c pre-cpuid.o cpuid_mod-commands_i386_cpuid.o und-cpuid.lst
-ifneq ($(cpuid_mod_EXPORTS),no)
-CLEANFILES += def-cpuid.lst
-DEFSYMFILES += def-cpuid.lst
-endif
-MOSTLYCLEANFILES += cpuid_mod-commands_i386_cpuid.d
-UNDSYMFILES += und-cpuid.lst
-
-cpuid.mod: pre-cpuid.o mod-cpuid.o $(TARGET_OBJ2ELF)
-	-rm -f $@
-	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-cpuid.o mod-cpuid.o
-	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
-
-pre-cpuid.o: $(cpuid_mod_DEPENDENCIES) cpuid_mod-commands_i386_cpuid.o
-	-rm -f $@
-	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ cpuid_mod-commands_i386_cpuid.o
-
-mod-cpuid.o: mod-cpuid.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -c -o $@ $<
-
-mod-cpuid.c: moddep.lst genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'cpuid' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(cpuid_mod_EXPORTS),no)
-def-cpuid.lst: pre-cpuid.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 cpuid/' > $@
-endif
-
-und-cpuid.lst: pre-cpuid.o
-	echo 'cpuid' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-cpuid_mod-commands_i386_cpuid.o: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -MD -c -o $@ $<
--include cpuid_mod-commands_i386_cpuid.d
-
-CLEANFILES += cmd-cpuid_mod-commands_i386_cpuid.lst fs-cpuid_mod-commands_i386_cpuid.lst partmap-cpuid_mod-commands_i386_cpuid.lst
-COMMANDFILES += cmd-cpuid_mod-commands_i386_cpuid.lst
-FSFILES += fs-cpuid_mod-commands_i386_cpuid.lst
-PARTMAPFILES += partmap-cpuid_mod-commands_i386_cpuid.lst
-
-cmd-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cpuid > $@ || (rm -f $@; exit 1)
-
-fs-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cpuid > $@ || (rm -f $@; exit 1)
-
-partmap-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh cpuid > $@ || (rm -f $@; exit 1)
-
-
-cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
-cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For ata.mod.
 ata_mod_SOURCES = disk/ata.c
 CLEANFILES += ata.mod mod-ata.o mod-ata.c pre-ata.o ata_mod-disk_ata.o und-ata.lst
@@ -1991,4 +1934,5 @@ partmap-datehook_mod-hook_datehook.lst: hook/datehook.c $(hook/datehook.c_DEPEND
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

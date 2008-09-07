@@ -1,0 +1,8 @@
+# -*- makefile -*-
+
+pkglib_MODULES += cpuid.mod
+
+# For cpuid.mod.
+cpuid_mod_SOURCES = commands/i386/cpuid.c
+cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
+cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)

@@ -96,7 +96,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/ieee1275/grub-install.in
 
 # Modules.
-pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod cpuid.mod	\
+pkglib_MODULES = normal.mod halt.mod reboot.mod suspend.mod		\
 	multiboot.mod _multiboot.mod aout.mod serial.mod linux.mod	\
 	_linux.mod nand.mod memdisk.mod pci.mod lspci.mod datetime.mod	\
 	date.mod datehook.mod
@@ -142,11 +142,6 @@ reboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 halt_mod_SOURCES = commands/halt.c
 halt_mod_CFLAGS = $(COMMON_CFLAGS)
 halt_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For cpuid.mod.
-cpuid_mod_SOURCES = commands/i386/cpuid.c
-cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
-cpuid_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For serial.mod.
 serial_mod_SOURCES = term/i386/pc/serial.c
@@ -198,4 +193,5 @@ datehook_mod_SOURCES = hook/datehook.c
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

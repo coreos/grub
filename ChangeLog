@@ -1,3 +1,16 @@
+2008-09-07  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386.rmk: New file.  Provides declaration for building
+	`cpuid.mod'.
+	* conf/i386-pc.rmk (pkglib_MODULES): Remove `cpuid.mod'.
+	(cpuid_mod_SOURCES, cpuid_mod_CFLAGS, cpuid_mod_LDFLAGS): Remove
+	variables.
+	Include `conf/i386.mk'.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+
 2008-09-07  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	Based on patch created by Colin D Bennett <colin@gibibit.com>.
