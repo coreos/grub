@@ -1,3 +1,101 @@
+2008-09-07  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	Based on patch created by Colin D Bennett <colin@gibibit.com>.
+	Adds optimization support for BGR based modes.
+
+	* include/grub/i386/pc/vbeblit.h (grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8) Removed.
+	(grub_video_i386_vbeblit_R8G8B8X8_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8A8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8A8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8A8_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_index_index): Likewise.
+	(grub_video_i386_vbeblit_replace_directN): Added.
+	(grub_video_i386_vbeblit_replace_BGRX8888_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_BGRX8888_RGB888): Likewise.
+	(grub_video_i386_vbeblit_replace_BGR888_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_BGR888_RGB888): Likewise.
+	(grub_video_i386_vbeblit_replace_RGBX8888_RGB888): Likewise.
+	(grub_video_i386_vbeblit_replace_RGB888_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_index_RGBX8888): Likewise.	
+	(grub_video_i386_vbeblit_replace_index_RGB888): Likewise.
+	(grub_video_i386_vbeblit_blend_BGRA8888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_BGR888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_RGBA8888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_RGB888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_index_RGBA8888): Likewise.
+
+	* include/grub/i386/pc/vbefill.h (grub_video_i386_vbefill_R8G8B8A8) Removed.
+	(grub_video_i386_vbefill_R8G8B8): Likewise.
+	(grub_video_i386_vbefill_index): Likewise.
+	(grub_video_i386_vbefill_direct32): Added.
+	(grub_video_i386_vbefill_direct24): Likewise.
+	(grub_video_i386_vbefill_direct16): Likewise.
+	(grub_video_i386_vbefill_direct8): Likewise.
+
+	* include/grub/video.h (grub_video_blit_format): Removed 
+	GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8, GRUB_VIDEO_BLIT_FORMAT_R8G8B8.
+	(grub_video_blit_format): Added GRUB_VIDEO_BLIT_FORMAT_RGBA_8888,
+	GRUB_VIDEO_BLIT_FORMAT_BGRA_8888, GRUB_VIDEO_BLIT_FORMAT_RGB_888,
+	GRUB_VIDEO_BLIT_FORMAT_BGR_888, GRUB_VIDEO_BLIT_FORMAT_RGB_565,
+	GRUB_VIDEO_BLIT_FORMAT_BGR_565.
+	
+	* video/video.c (grub_video_get_blit_format): Updated to use new
+	blit formats.  Added handling for 16 bit color modes.
+	
+	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Updated to use new 
+	fillers.
+	(common_blitter): Updated to use new blitters.
+
+	* video/i386/pc/vbeblit.c (grub_video_i386_vbeblit_R8G8B8A8_R8G8B8A8):
+	Removed.
+	(grub_video_i386_vbeblit_R8G8B8X8_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8A8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8A8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8X8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8A8_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_R8G8B8_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_index_R8G8B8): Likewise.
+	(grub_video_i386_vbeblit_index_index): Likewise.
+	(grub_video_i386_vbeblit_replace_directN): Added.
+	(grub_video_i386_vbeblit_replace_BGRX8888_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_BGRX8888_RGB888): Likewise.
+	(grub_video_i386_vbeblit_replace_BGR888_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_BGR888_RGB888): Likewise.
+	(grub_video_i386_vbeblit_replace_RGBX8888_RGB888): Likewise.
+	(grub_video_i386_vbeblit_replace_RGB888_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_index_RGBX8888): Likewise.
+	(grub_video_i386_vbeblit_replace_index_RGB888): Likewise.
+	(grub_video_i386_vbeblit_blend_BGRA8888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_BGR888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_RGBA8888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_RGB888_RGBA8888): Likewise.
+	(grub_video_i386_vbeblit_blend_index_RGBA8888): Likewise.
+	
+	* video/i386/pc/vbefill.c (grub_video_i386_vbefill_R8G8B8A8): Removed.
+	(grub_video_i386_vbefill_R8G8B8): Likewise.
+	(grub_video_i386_vbefill_index): Likewise.
+	(grub_video_i386_vbefill_direct32): Added.
+	(grub_video_i386_vbefill_direct24): Likewise.
+	(grub_video_i386_vbefill_direct16): Likewise.
+	(grub_video_i386_vbefill_direct8): Likewise.
+	
+	* video/readers/jpeg.c (grub_jpeg_decode_sos): Adapt to new blitter
+	types.
+	
+	* video/readers/tga.c (grub_video_reader_tga): Adapt to new blitter
+	types.
+	
+	* video/readers/png.c (grub_png_decode_image_header): Adapt to new
+	blitter types.
+	
+	* video/bitmap.c (grub_video_bitmap_create): Adapt to new blitter
+	types.
+
 2008-09-06  Felix Zielcke  <fzielcke@z-51.de>
 
 	* disk/raid.c (insert_array): Set `array->chunk_size' to 64 for

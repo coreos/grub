@@ -231,7 +231,7 @@ grub_png_decode_image_header (struct grub_png_data *data)
     {
       if (grub_video_bitmap_create (data->bitmap, data->image_width,
 				    data->image_height,
-				    GRUB_VIDEO_BLIT_FORMAT_R8G8B8))
+				    GRUB_VIDEO_BLIT_FORMAT_RGB_888))
 	return grub_errno;
       data->bpp = 3;
     }
@@ -239,7 +239,7 @@ grub_png_decode_image_header (struct grub_png_data *data)
     {
       if (grub_video_bitmap_create (data->bitmap, data->image_width,
 				    data->image_height,
-				    GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8))
+				    GRUB_VIDEO_BLIT_FORMAT_RGBA_8888))
 	return grub_errno;
       data->bpp = 4;
     }

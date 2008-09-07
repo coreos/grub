@@ -397,7 +397,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
     {
       grub_video_bitmap_create (bitmap, header.image_width,
                                 header.image_height,
-                                GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8);
+                                GRUB_VIDEO_BLIT_FORMAT_RGBA_8888);
       if (grub_errno != GRUB_ERR_NONE)
         {
           grub_file_close (file);
@@ -420,7 +420,7 @@ grub_video_reader_tga (struct grub_video_bitmap **bitmap,
     {
       grub_video_bitmap_create (bitmap, header.image_width,
                                 header.image_height,
-                                GRUB_VIDEO_BLIT_FORMAT_R8G8B8);
+                                GRUB_VIDEO_BLIT_FORMAT_RGB_888);
       if (grub_errno != GRUB_ERR_NONE)
         {
           grub_file_close (file);

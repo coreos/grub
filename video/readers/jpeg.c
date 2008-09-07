@@ -542,7 +542,7 @@ grub_jpeg_decode_sos (struct grub_jpeg_data *data)
 
   if (grub_video_bitmap_create (data->bitmap, data->image_width,
 				data->image_height,
-				GRUB_VIDEO_BLIT_FORMAT_R8G8B8))
+				GRUB_VIDEO_BLIT_FORMAT_RGB_888))
     return grub_errno;
 
   data->bit_mask = 0x0;
