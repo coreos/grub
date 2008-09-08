@@ -158,7 +158,7 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
 #define phdr(i)			((Elf32_Phdr *) (phdr_base + (i) * ehdr->e_phentsize))
 
   for (i = 0; i < ehdr->e_phnum; i++)
-    if (phdr(i)->p_type == PT_LOAD)
+    if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
       {
 	if (phdr(i)->p_paddr < phdr(lowest_segment)->p_paddr)
 	  lowest_segment = i;
@@ -177,9 +177,9 @@ grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
   /* Load every loadable segment in memory.  */
   for (i = 0; i < ehdr->e_phnum; i++)
     {
-      if (phdr(i)->p_type == PT_LOAD)
+      if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
         {
-	  char *load_this_module_at = (char *) (grub_multiboot_payload_orig + (phdr(i)->p_paddr - phdr(0)->p_paddr));
+	  char *load_this_module_at = (char *) (grub_multiboot_payload_orig + (phdr(i)->p_paddr - phdr(lowest_segment)->p_paddr));
 
 	  grub_dprintf ("multiboot_loader", "segment %d: paddr=%p, memsz=0x%x\n",
 			i, (void *) phdr(i)->p_paddr, phdr(i)->p_memsz);

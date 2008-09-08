@@ -1,5 +1,13 @@
 2008-09-08  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Skip
+	segments when their filesz is zero (grub_file_read() interprets
+	zero-size as "read untill EOF", which results in memory corruption).
+	Use `lowest_segment' rather than 0 for calculating the current
+	segment load address.
+
+2008-09-08  Robert Millan  <rmh@aybabtu.com>
+
 	* util/hostdisk.c (open_device): Replace a grub_util_info() call
 	with grub_dprintf("hostdisk", ...), as it was so verbose that it
 	clobbered useful information.
