@@ -31,7 +31,7 @@
 #endif
 
 #include <grub/util/misc.h>
-#include <grub/util/biosdisk.h>
+#include <grub/util/hostdisk.h>
 #include <grub/util/getroot.h>
 
 static void

@@ -1,3 +1,10 @@
+2008-09-08  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/util/biosdisk.h: Move to ...
+	* include/grub/util/hostdisk.h: ... here.  Update all users.
+	* util/biosdisk.c: Move to ...
+	* util/hostdisk.c: ... here.  Update all users.
+
 2008-09-07  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c (mmap_addr, mmap_length): Remove

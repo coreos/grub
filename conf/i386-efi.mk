@@ -39,7 +39,7 @@ grub_mkimage-util_resolve.o: util/resolve.c $(util/resolve.c_DEPENDENCIES)
 util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 
 # For grub-setup.
-#grub_setup_SOURCES = util/i386/pc/grub-setup.c util/biosdisk.c	\
+#grub_setup_SOURCES = util/i386/pc/grub-setup.c util/hostdisk.c	\
 #	util/misc.c util/getroot.c kern/device.c kern/disk.c	\
 #	kern/err.c kern/misc.c fs/fat.c fs/ext2.c fs/xfs.c fs/affs.c	\
 #	fs/sfs.c kern/parser.c kern/partition.c partmap/pc.c		\
@@ -96,7 +96,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	partmap/acorn.c partmap/gpt.c					\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
-	util/biosdisk.c util/getroot.c					\
+	util/hostdisk.c util/getroot.c					\
 	util/i386/pc/misc.c						\
 	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\

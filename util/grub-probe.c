@@ -26,7 +26,7 @@
 #include <grub/fs.h>
 #include <grub/partition.h>
 #include <grub/pc_partition.h>
-#include <grub/util/biosdisk.h>
+#include <grub/util/hostdisk.h>
 #include <grub/util/getroot.h>
 #include <grub/term.h>
 #include <grub/env.h>

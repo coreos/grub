@@ -27,7 +27,7 @@
 #include <grub/mm.h>
 #include <grub/setjmp.h>
 #include <grub/fs.h>
-#include <grub/util/biosdisk.h>
+#include <grub/util/hostdisk.h>
 #include <grub/dl.h>
 #include <grub/machine/console.h>
 #include <grub/util/misc.h>

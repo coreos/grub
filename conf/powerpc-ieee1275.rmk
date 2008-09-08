@@ -64,7 +64,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c 	\
 	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 	partmap/acorn.c							\
 	util/console.c util/hostfs.c util/grub-emu.c util/misc.c	\
-	util/biosdisk.c util/getroot.c					\
+	util/hostdisk.c util/getroot.c					\
 	util/powerpc/ieee1275/misc.c					\
 	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
