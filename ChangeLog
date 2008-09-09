@@ -1,3 +1,8 @@
+2008-09-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/hostdisk.c: Change #include <grub/util/biosdisk.h> to
+	#include <grub/util/hostdisk.h>.
+
 2008-09-08  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Skip
