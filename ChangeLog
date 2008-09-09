@@ -1,6 +1,11 @@
 2008-09-09  Felix Zielcke  <fzielcke@z-51.de>
 
-	* util/hostdisk.c: Change #include <grub/util/biosdisk.h> to
+	* Makefile.in (RMKFILES): Add `i386.rmk' and `x86_64-efi.rmk'.
+	Sort the list.
+
+2008-09-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/hostdisk.c: Replace #include <grub/util/biosdisk.h> with
 	#include <grub/util/hostdisk.h>.
 
 2008-09-08  Robert Millan  <rmh@aybabtu.com>

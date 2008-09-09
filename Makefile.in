@@ -98,8 +98,10 @@ enable_lzo = @enable_lzo@
 
 ### General variables.
 
-RMKFILES = $(addprefix conf/,common.rmk i386-pc.rmk powerpc-ieee1275.rmk \
-	sparc64-ieee1275.rmk i386-efi.rmk i386-ieee1275.rmk i386-coreboot.rmk)
+RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
+	i386-ieee1275.rmk i386-pc.rmk i386.rmk powerpc-ieee1275.rmk \
+	sparc64-ieee1275.rmk x86_64-efi.rmk)
+
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
