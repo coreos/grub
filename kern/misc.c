@@ -1036,3 +1036,12 @@ grub_abort (void)
 }
 /* GCC emits references to abort().  */
 void abort (void) __attribute__ ((alias ("grub_abort")));
+
+#ifdef NEED_ENABLE_EXECUTE_STACK
+/* Some gcc versions generate a call to this function
+   in trampolines for nested functions.  */
+__enable_execute_stack (void *addr __attribute__ ((unused)))
+{
+}
+#endif
+

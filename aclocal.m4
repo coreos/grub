@@ -379,6 +379,33 @@ dnl So use regparm 2 until a better test is found.
 	[Catch gcc bug])
 fi
 ])
+
+dnl Check if the C compiler generates calls to `__enable_execute_stack()'.
+AC_DEFUN(grub_CHECK_ENABLE_EXECUTE_STACK,[
+AC_MSG_CHECKING([whether `$CC' generates calls to `__enable_execute_stack()'])
+AC_LANG_CONFTEST([[
+void f (int (*p) (void));
+void g (int i)
+{
+  int nestedfunc (void) { return i; }
+  f (nestedfunc);
+}
+]])
+if AC_TRY_COMMAND([${CC-cc} ${CFLAGS} -S conftest.c]) && test -s conftest.s; then
+  true
+else
+  AC_MSG_ERROR([${CC-cc} failed to produce assembly code])
+fi
+if grep __enable_execute_stack conftest.s >/dev/null 2>&1; then
+  AC_DEFINE([NEED_ENABLE_EXECUTE_STACK], 1,
+	    [Define to 1 if GCC generates calls to __enable_execute_stack()])
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
+rm -f conftest*
+])
+
 
 dnl Check if the C compiler supports `-fstack-protector'.
 AC_DEFUN(grub_CHECK_STACK_PROTECTOR,[

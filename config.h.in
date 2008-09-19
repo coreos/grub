@@ -79,6 +79,9 @@
 /* Define to 1 if you enable memory manager debugging. */
 #undef MM_DEBUG
 
+/* Define to 1 if GCC generates calls to __enable_execute_stack() */
+#undef NEED_ENABLE_EXECUTE_STACK
+
 /* Catch gcc bug */
 #undef NESTED_FUNC_ATTR
 
