@@ -2,9 +2,9 @@ dnl Check whether target compiler is working
 AC_DEFUN(grub_PROG_TARGET_CC,
 [AC_MSG_CHECKING([whether target compiler is working])
 AC_CACHE_VAL(grub_cv_prog_target_cc,
-[AC_TRY_LINK([], [],
-   grub_cv_prog_target_cc=yes,
-   grub_cv_prog_target_cc=no)
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+  		[grub_cv_prog_target_cc=yes],
+		[grub_cv_prog_target_cc=no])
 ])
 AC_MSG_RESULT([$grub_cv_prog_target_cc])
 
@@ -104,9 +104,9 @@ AC_DEFUN(grub_PROG_LD_BUILD_ID_NONE,
 AC_CACHE_VAL(grub_cv_prog_ld_build_id_none,
 [save_LDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -Wl,--build-id=none"
-AC_TRY_LINK([], [],
-   grub_cv_prog_ld_build_id_none=yes,
-   grub_cv_prog_ld_build_id_none=no)
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+	       [grub_cv_prog_ld_build_id_none=yes],
+	       [grub_cv_prog_ld_build_id_none=no])
 LDFLAGS="$save_LDFLAGS"
 ])
 AC_MSG_RESULT([$grub_cv_prog_ld_build_id_none])
@@ -230,17 +230,19 @@ AC_DEFUN(grub_CHECK_START_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if start is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_start_symbol,
-[AC_TRY_LINK([], [asm ("incl start")],
-   grub_cv_check_start_symbol=yes,
-   grub_cv_check_start_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl start")]])],
+		[grub_cv_check_start_symbol=yes],
+		[grub_cv_check_start_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_start_symbol])
 
 AC_MSG_CHECKING([if _start is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_start_symbol,
-[AC_TRY_LINK([], [asm ("incl _start")],
-   grub_cv_check_uscore_start_symbol=yes,
-   grub_cv_check_uscore_start_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl _start")]])],
+		[grub_cv_check_uscore_start_symbol=yes],
+		[grub_cv_check_uscore_start_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_uscore_start_symbol])
 
@@ -261,25 +263,28 @@ AC_DEFUN(grub_CHECK_BSS_START_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if __bss_start is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_uscore_bss_start_symbol,
-[AC_TRY_LINK([], [asm ("incl __bss_start")],
-   grub_cv_check_uscore_uscore_bss_start_symbol=yes,
-   grub_cv_check_uscore_uscore_bss_start_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl __bss_start")]])],
+		[grub_cv_check_uscore_uscore_bss_start_symbol=yes],
+		[grub_cv_check_uscore_uscore_bss_start_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_uscore_uscore_bss_start_symbol])
 
 AC_MSG_CHECKING([if edata is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_edata_symbol,
-[AC_TRY_LINK([], [asm ("incl edata")],
-   grub_cv_check_edata_symbol=yes,
-   grub_cv_check_edata_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl edata")]])],
+		[grub_cv_check_edata_symbol=yes],
+		[grub_cv_check_edata_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_edata_symbol])
 
 AC_MSG_CHECKING([if _edata is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_edata_symbol,
-[AC_TRY_LINK([], [asm ("incl _edata")],
-   grub_cv_check_uscore_edata_symbol=yes,
-   grub_cv_check_uscore_edata_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl _edata")]])],
+		[grub_cv_check_uscore_edata_symbol=yes],
+		[grub_cv_check_uscore_edata_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_uscore_edata_symbol])
 
@@ -302,17 +307,19 @@ AC_DEFUN(grub_CHECK_END_SYMBOL,
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if end is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_end_symbol,
-[AC_TRY_LINK([], [asm ("incl end")],
-   grub_cv_check_end_symbol=yes,
-   grub_cv_check_end_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl end")]])],
+		[grub_cv_check_end_symbol=yes],
+		[grub_cv_check_end_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_end_symbol])
 
 AC_MSG_CHECKING([if _end is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_end_symbol,
-[AC_TRY_LINK([], [asm ("incl _end")],
-   grub_cv_check_uscore_end_symbol=yes,
-   grub_cv_check_uscore_end_symbol=no)])
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+		[[asm ("incl _end")]])],
+		[grub_cv_check_uscore_end_symbol=yes],
+		[grub_cv_check_uscore_end_symbol=no])])
 
 AC_MSG_RESULT([$grub_cv_check_uscore_end_symbol])
 

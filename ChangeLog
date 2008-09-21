@@ -1,3 +1,12 @@
+008-09-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure.ac (AC_INIT): Quote `GRUB' string and version number.
+	(AC_PREREQ): Bumped to 2.59.
+	(AC_TRY_COMPILE): Replace obsolete macro with ...
+	(AC_COMPILE_IFELSE): ... this.
+	* aclocal.m4 (AC_TRY_LINK): Replace obsolete macro with ...
+	(AC_LINK_IFELSE): ... this.
+
 2008-09-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* autogen.sh: Add a call to `gendistlist.sh'.

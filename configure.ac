@@ -31,8 +31,8 @@ dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
 dnl type.
 
 
-AC_INIT(GRUB, 1.96, [bug-grub@gnu.org])
-AC_PREREQ(2.53)
+AC_INIT([GRUB],[1.96],[bug-grub@gnu.org])
+AC_PREREQ(2.61)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config.h])
 
@@ -266,7 +266,9 @@ if test "x$TARGET_CFLAGS" = x; then
   # optimization flags.
   AC_CACHE_CHECK([whether optimization for size works], grub_cv_cc_Os, [
     CFLAGS=-Os
-    AC_TRY_COMPILE(, , grub_cv_cc_Os=yes, grub_cv_cc_Os=no)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_Os=yes],
+		      [grub_cv_cc_Os=no])
   ])
   if test "x$grub_cv_cc_Os" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -Os"
@@ -278,7 +280,9 @@ if test "x$TARGET_CFLAGS" = x; then
   if test "x$target_cpu" = xi386; then
     AC_CACHE_CHECK([whether -falign-loops works], [grub_cv_cc_falign_loop], [
       CFLAGS="-falign-loops=1"
-      AC_TRY_COMPILE(, , [grub_cv_cc_falign_loop=yes], [grub_cv_cc_falign_loop=no])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		        [grub_cv_cc_falign_loop=yes],
+			[grub_cv_cc_falign_loop=no])
     ])
 
     if test "x$grub_cv_cc_falign_loop" = xyes; then
