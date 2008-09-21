@@ -1,3 +1,7 @@
+2008-09-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* autogen.sh: Add a call to `gendistlist.sh'.
+
 2008-09-19  Christian Franke  <franke@computer.org>
 
 	* aclocal.m4 (grub_CHECK_ENABLE_EXECUTE_STACK): New function.
