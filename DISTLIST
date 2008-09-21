@@ -71,9 +71,11 @@ conf/i386-efi.mk
 conf/i386-efi.rmk
 conf/i386-ieee1275.mk
 conf/i386-ieee1275.rmk
+conf/i386.mk
 conf/i386-pc-cygwin-img-ld.sc
 conf/i386-pc.mk
 conf/i386-pc.rmk
+conf/i386.rmk
 conf/powerpc-ieee1275.mk
 conf/powerpc-ieee1275.rmk
 conf/sparc64-ieee1275.mk
@@ -81,12 +83,17 @@ conf/sparc64-ieee1275.rmk
 conf/x86_64-efi.mk
 conf/x86_64-efi.rmk
 disk/ata.c
+disk/dmraid_nvidia.c
 disk/fs_uuid.c
 disk/host.c
 disk/loopback.c
 disk/lvm.c
+disk/mdraid_linux.c
 disk/memdisk.c
+disk/raid5_recover.c
+disk/raid6_recover.c
 disk/raid.c
+disk/scsi.c
 disk/efi/efidisk.c
 disk/i386/pc/biosdisk.c
 disk/ieee1275/nand.c
@@ -158,6 +165,8 @@ include/grub/pc_partition.h
 include/grub/raid.h
 include/grub/rescue.h
 include/grub/script.h
+include/grub/scsicmd.h
+include/grub/scsi.h
 include/grub/setjmp.h
 include/grub/symbol.h
 include/grub/term.h
@@ -261,8 +270,8 @@ include/grub/sparc64/ieee1275/ieee1275.h
 include/grub/sparc64/ieee1275/kernel.h
 include/grub/sparc64/ieee1275/machine.h
 include/grub/sparc64/ieee1275/time.h
-include/grub/util/biosdisk.h
 include/grub/util/getroot.h
+include/grub/util/hostdisk.h
 include/grub/util/lvm.h
 include/grub/util/misc.h
 include/grub/util/raid.h
@@ -400,7 +409,6 @@ term/i386/pc/vesafb.c
 term/i386/pc/vga.c
 term/i386/pc/vga_text.c
 term/ieee1275/ofconsole.c
-util/biosdisk.c
 util/console.c
 util/getroot.c
 util/grub-editenv.c
@@ -409,6 +417,7 @@ util/grub-fstest.c
 util/grub-mkdevicemap.c
 util/grub-pe2elf.c
 util/grub-probe.c
+util/hostdisk.c
 util/hostfs.c
 util/lvm.c
 util/misc.c
