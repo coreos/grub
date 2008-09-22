@@ -75,8 +75,6 @@
 #define COM_LEN		4096
 #define COM_SEC		(COM_LEN >> BLK_SHR)
 
-#define BMP_LEN		4096
-
 #define AF_ALST		1
 #define AF_MMFT		2
 #define AF_GPOS		4
