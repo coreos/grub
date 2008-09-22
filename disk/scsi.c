@@ -255,7 +255,6 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  scsi->name = grub_strdup (name);
 	  if (! scsi->name)
 	    {
-	      p->close (scsi);
 	      return grub_errno;
 	    }
 
@@ -265,7 +264,6 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  if (err)
 	    {
 	      grub_dprintf ("scsi", "inquiry failed\n");
-	      p->close (scsi);
 	      return grub_errno;
 	    }
 
@@ -277,7 +275,6 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  if (scsi->devtype != grub_scsi_devtype_direct
 	      && scsi->devtype != grub_scsi_devtype_cdrom)
 	    {
-	      p->close (scsi);
 	      return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 				 "unknown SCSI device");
 	    }
@@ -291,7 +288,6 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 	  if (err)
 	    {
 	      grub_dprintf ("scsi", "READ CAPACITY failed\n");
-	      p->close (scsi);
 	      return grub_errno;
 	    }
 

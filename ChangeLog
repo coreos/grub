@@ -1,3 +1,12 @@
+2008-09-22  Bean  <bean123ch@gmail.com>
+
+	* disk/ata.c (grub_apapi_open): Initialize devfnd, no need to set
+	scsi->name and scsi->luns, as they will be set in grub_scsi_open.
+
+	* disk/scsi.c (grub_scsi_open): Don't call p->close (scsi) here when
+	error occurs, as grub_disk_open will call grub_disk_close, which will
+	call p->close (scsi).
+
 008-09-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* configure.ac (AC_INIT): Quote `GRUB' string and version number.

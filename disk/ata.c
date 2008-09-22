@@ -891,7 +891,7 @@ static grub_err_t
 grub_atapi_open (const char *name, struct grub_scsi *scsi)
 {
   struct grub_ata_device *dev;
-  struct grub_ata_device *devfnd;
+  struct grub_ata_device *devfnd = 0;
 
   for (dev = grub_ata_devices; dev; dev = dev->next)
     {
@@ -911,8 +911,6 @@ grub_atapi_open (const char *name, struct grub_scsi *scsi)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "No such ATAPI device");
 
   scsi->data = devfnd;
-  scsi->name = grub_strdup (name);
-  scsi->luns = 1;
 
   return GRUB_ERR_NONE;
 }
