@@ -1,3 +1,9 @@
+2008-09-24  Carles Pina i Estany  <carles@pina.cat>
+
+	* include/grub/i386/pc/console.h (GRUB_TERM_NPAGE):
+	Changed to 0x5100.
+	(GRUB_TERM_PPAGE): Changed to 0x4900.
+
 2008-09-24  Robert Millan  <rmh@aybabtu.com>
 
 	* include/grub/powerpc/ieee1275/console.h (GRUB_CONSOLE_KEY_*): Remove
