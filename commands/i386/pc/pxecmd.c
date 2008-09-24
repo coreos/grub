@@ -46,7 +46,8 @@ print_ip (grub_uint32_t ip)
 }
 
 static grub_err_t
-grub_cmd_pxe (struct grub_arg_list *state, int argc, char **args)
+grub_cmd_pxe (struct grub_arg_list *state, int argc __attribute__ ((unused)),
+	      char **args __attribute__ ((unused)))
 {
   if (! grub_pxe_pxenv)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND, "no pxe environment");

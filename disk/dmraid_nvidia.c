@@ -93,7 +93,6 @@ grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array)
 {
   grub_disk_addr_t sector;
   struct grub_nv_super sb;
-  grub_uint32_t *uuid;
 
   if (disk->partition)
     return grub_error (GRUB_ERR_OUT_OF_RANGE, "skip partition");

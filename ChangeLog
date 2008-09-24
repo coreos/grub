@@ -1,3 +1,9 @@
+2008-09-24 Carles Pina i Estany <carles@pina.cat>
+
+	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Fix `unused parameter'
+	warning.
+	* commands/i386/pc/pxecmd.c (dmraid_nvidia): Likewise.
+
 2008-09-24  Carles Pina i Estany  <carles@pina.cat>
 
 	* include/grub/i386/pc/console.h (GRUB_TERM_NPAGE):
