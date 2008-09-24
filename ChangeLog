@@ -1,4 +1,4 @@
-2008-09-24 Carles Pina i Estany <carles@pina.cat>
+2008-09-24  Carles Pina i Estany  <carles@pina.cat>
 
 	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Fix `unused parameter'
 	warning.
@@ -26,14 +26,14 @@
 
 2008-09-22  Bean  <bean123ch@gmail.com>
 
-	* disk/ata.c (grub_apapi_open): Initialize devfnd, no need to set
+	* disk/ata.c (grub_atapi_open): Initialize devfnd, no need to set
 	scsi->name and scsi->luns, as they will be set in grub_scsi_open.
 
 	* disk/scsi.c (grub_scsi_open): Don't call p->close (scsi) here when
 	error occurs, as grub_disk_open will call grub_disk_close, which will
 	call p->close (scsi).
 
-008-09-21  Felix Zielcke  <fzielcke@z-51.de>
+2008-09-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* configure.ac (AC_INIT): Quote `GRUB' string and version number.
 	(AC_PREREQ): Bumped to 2.59.
@@ -69,7 +69,7 @@
 
 	* loader/i386/pc/multiboot.c (grub_multiboot_load_elf32): Skip
 	segments when their filesz is zero (grub_file_read() interprets
-	zero-size as "read untill EOF", which results in memory corruption).
+	zero-size as "read until EOF", which results in memory corruption).
 	Use `lowest_segment' rather than 0 for calculating the current
 	segment load address.
 
@@ -129,7 +129,7 @@
 	(grub_video_i386_vbeblit_replace_BGR888_RGB888): Likewise.
 	(grub_video_i386_vbeblit_replace_RGBX8888_RGB888): Likewise.
 	(grub_video_i386_vbeblit_replace_RGB888_RGBX8888): Likewise.
-	(grub_video_i386_vbeblit_replace_index_RGBX8888): Likewise.	
+	(grub_video_i386_vbeblit_replace_index_RGBX8888): Likewise.
 	(grub_video_i386_vbeblit_replace_index_RGB888): Likewise.
 	(grub_video_i386_vbeblit_blend_BGRA8888_RGBA8888): Likewise.
 	(grub_video_i386_vbeblit_blend_BGR888_RGBA8888): Likewise.
@@ -145,17 +145,17 @@
 	(grub_video_i386_vbefill_direct16): Likewise.
 	(grub_video_i386_vbefill_direct8): Likewise.
 
-	* include/grub/video.h (grub_video_blit_format): Removed 
+	* include/grub/video.h (grub_video_blit_format): Removed
 	GRUB_VIDEO_BLIT_FORMAT_R8G8B8A8, GRUB_VIDEO_BLIT_FORMAT_R8G8B8.
 	(grub_video_blit_format): Added GRUB_VIDEO_BLIT_FORMAT_RGBA_8888,
 	GRUB_VIDEO_BLIT_FORMAT_BGRA_8888, GRUB_VIDEO_BLIT_FORMAT_RGB_888,
 	GRUB_VIDEO_BLIT_FORMAT_BGR_888, GRUB_VIDEO_BLIT_FORMAT_RGB_565,
 	GRUB_VIDEO_BLIT_FORMAT_BGR_565.
-	
+
 	* video/video.c (grub_video_get_blit_format): Updated to use new
 	blit formats.  Added handling for 16 bit color modes.
-	
-	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Updated to use new 
+
+	* video/i386/pc/vbe.c (grub_video_vbe_fill_rect): Updated to use new
 	fillers.
 	(common_blitter): Updated to use new blitters.
 
@@ -184,7 +184,7 @@
 	(grub_video_i386_vbeblit_blend_RGBA8888_RGBA8888): Likewise.
 	(grub_video_i386_vbeblit_blend_RGB888_RGBA8888): Likewise.
 	(grub_video_i386_vbeblit_blend_index_RGBA8888): Likewise.
-	
+
 	* video/i386/pc/vbefill.c (grub_video_i386_vbefill_R8G8B8A8): Removed.
 	(grub_video_i386_vbefill_R8G8B8): Likewise.
 	(grub_video_i386_vbefill_index): Likewise.
@@ -192,16 +192,16 @@
 	(grub_video_i386_vbefill_direct24): Likewise.
 	(grub_video_i386_vbefill_direct16): Likewise.
 	(grub_video_i386_vbefill_direct8): Likewise.
-	
+
 	* video/readers/jpeg.c (grub_jpeg_decode_sos): Adapt to new blitter
 	types.
-	
+
 	* video/readers/tga.c (grub_video_reader_tga): Adapt to new blitter
 	types.
-	
+
 	* video/readers/png.c (grub_png_decode_image_header): Adapt to new
 	blitter types.
-	
+
 	* video/bitmap.c (grub_video_bitmap_create): Adapt to new blitter
 	types.
 
@@ -243,12 +243,12 @@
 	* disk/scsi.c (grub_scsi_open): Remove size limit when printing
 	`disk->total_sectors'.
 
-2008-09-01  Colin D Bennett <colin@gibibit.com>
+2008-09-01  Colin D Bennett  <colin@gibibit.com>
 
 	* include/grub/normal.h: Fixed incorrect comment for
 	GRUB_COMMAND_FLAG_NO_ARG_PARSE.
 
-2008-09-01  Colin D Bennett <colin@gibibit.com>
+2008-09-01  Colin D Bennett  <colin@gibibit.com>
 
 	* commands/i386/pc/vbeinfo.c (grub_cmd_vbeinfo): Replaced constant
 	values with defines.
@@ -289,11 +289,11 @@
 	* loader/i386/pc/multiboot.c: Update comment not to say that a.out
 	or memory map support are unimplemented.
 
-2008-08-31  Colin D Bennett <colin@gibibit.com>
+2008-08-31  Colin D Bennett  <colin@gibibit.com>
 
 	* util/i386/pc/grub-mkrescue.in: Support multiple overlay directories.
 
-2008-08-31  Colin D Bennett <colin@gibibit.com>
+2008-08-31  Colin D Bennett  <colin@gibibit.com>
 
 	* commands/i386/pc/vbeinfo.c (grub_cmd_vbeinfo): Show VBE version and
 	total video memory in 'vbeinfo' output; show color format details for
@@ -333,7 +333,7 @@
 	#if ! defined (__CYGWIN__) && ! defined (__MINGW32__).
 
 	* include/grub/util/misc.h: #include <config.h> and <grub/types.h>,
-	declear asprintf if HAVE_ASPRINTF is not set, declear fseeko, ftello,
+	declare asprintf if HAVE_ASPRINTF is not set, declare fseeko, ftello,
 	sync, sleep and grub_util_get_disk_size for mingw.
 
 	* util/biosdisk.c (grub_util_biosdisk_open): Use grub_util_get_disk_size
@@ -510,7 +510,7 @@
 	a dot, not just directories.  This avoids things like /dev/.tmp.md0.
 
 2008-08-22  Felix Zielcke  <fzielcke@z-51.de>
-         
+
 	* util/update-grub.in (GRUB_GFXMODE): Export variable.
 	* util/grub.d/00_header.in: Allow the administrator to change default
 	gfxmode via ${GRUB_GFXMODE}.
