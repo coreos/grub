@@ -1,3 +1,10 @@
+2008-09-24  Robert Millan  <rmh@aybabtu.com>
+
+	* include/grub/powerpc/ieee1275/console.h (GRUB_CONSOLE_KEY_*): Remove
+	macros (they were i386-pc specific).
+	* include/grub/sparc64/ieee1275/console.h: Likewise.
+	* include/grub/efi/console.h: Likewise.
+
 2008-09-22  Bean  <bean123ch@gmail.com>
 
 	* fs/ntfs.c (grub_ntfs_iterate_dir): Fix a rare case where $BITMAP is
