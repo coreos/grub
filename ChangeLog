@@ -1,3 +1,20 @@
+2008-09-25  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk (grub_mkdevicemap_SOURCES): Remove
+	`util/i386/get_disk_name.c'.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_mkdevicemap_SOURCES): Remove
+	`util/ieee1275/get_disk_name.c'.
+	* include/grub/util/misc.h (grub_util_get_disk_name): Remove.
+	* util/ieee1275/get_disk_name.c: Remove file.
+	* util/i386/get_disk_name.c: Remove file.
+	* util/grub-mkdevicemap.c (make_device_map): Back to hardcoding
+	"hd%d" for device.map entries, rather than using
+	grub_util_get_disk_name().
+
 2008-09-24  Carles Pina i Estany  <carles@pina.cat>
 
 	* disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Fix `unused parameter'

@@ -28,8 +28,7 @@ util/i386/efi/grub-mkimage.c_DEPENDENCIES = Makefile
 #	kern/fs.c kern/env.c fs/fshelp.c
 
 # For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
-	util/i386/get_disk_name.c
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 
 # For grub-emu.
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h

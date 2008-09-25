@@ -34,8 +34,7 @@ sbin_UTILITIES += grub-emu
 endif
  
 # For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
-	util/ieee1275/get_disk_name.c
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 
 # For grub-emu
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h

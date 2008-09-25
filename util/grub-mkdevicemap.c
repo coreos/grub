@@ -450,11 +450,8 @@ make_device_map (const char *device_map, int floppy_disks)
 	  
 	  if (realpath (discn, name))
 	    {
-	      char *p;
 	      strcat (name, "/disc");
-	      p = grub_util_get_disk_name (num_hd, name);
-	      fprintf (fp, "(%s)\t%s\n", p, name);
-	      free (p);
+	      fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	    }
 	  
 	  num_hd++;
@@ -472,10 +469,7 @@ make_device_map (const char *device_map, int floppy_disks)
       get_ide_disk_name (name, i);
       if (check_device (name))
 	{
-	  char *p;
-	  p = grub_util_get_disk_name (num_hd, name);
-	  fprintf (fp, "(%s)\t%s\n", p, name);
-	  free (p);
+	  fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	  num_hd++;
 	}
     }
@@ -505,10 +499,7 @@ make_device_map (const char *device_map, int floppy_disks)
       get_ataraid_disk_name (name, i);
       if (check_device (name))
 	{
-	  char *p;
-	  p = grub_util_get_disk_name (num_hd, name);
-	  fprintf (fp, "(%s)\t%s\n", p, name);
-	  free (p);
+	  fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
           num_hd++;
         }
     }
@@ -538,10 +529,7 @@ make_device_map (const char *device_map, int floppy_disks)
       get_scsi_disk_name (name, i);
       if (check_device (name))
 	{
-	  char *p;
-	  p = grub_util_get_disk_name (num_hd, name);
-	  fprintf (fp, "(%s)\t%s\n", p, name);
-	  free (p);
+	  fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	  num_hd++;
 	}
     }
@@ -564,10 +552,7 @@ make_device_map (const char *device_map, int floppy_disks)
 	    get_dac960_disk_name (name, controller, drive);
 	    if (check_device (name))
 	      {
-		char *p;
-		p = grub_util_get_disk_name (num_hd, name);
-		fprintf (fp, "(%s)\t%s\n", p, name);
-		free (p);
+		fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 		num_hd++;
 	      }
 	  }
@@ -633,10 +618,7 @@ make_device_map (const char *device_map, int floppy_disks)
 	get_i2o_disk_name (name, unit);
 	if (check_device (name))
 	  {
-	    char *p;
-	    p = grub_util_get_disk_name (num_hd, name);
-	    fprintf (fp, "(%s)\t%s\n", p, name);
-	    free (p);
+	    fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	    num_hd++;
 	  }
       }
