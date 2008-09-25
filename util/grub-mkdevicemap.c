@@ -483,10 +483,7 @@ make_device_map (const char *device_map, int floppy_disks)
       get_virtio_disk_name (name, i);
       if (check_device (name))
 	{
-	  char *p;
-	  p = grub_util_get_disk_name (num_hd, name);
-	  fprintf (fp, "(%s)\t%s\n", p, name);
-	  free (p);
+	  fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	  num_hd++;
 	}
     }
@@ -512,10 +509,7 @@ make_device_map (const char *device_map, int floppy_disks)
       get_xvd_disk_name (name, i);
       if (check_device (name))
 	{
-	  char *p;
-	  p = grub_util_get_disk_name (num_hd, name);
-	  fprintf (fp, "(%s)\t%s\n", p, name);
-	  free (p);
+	  fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	  num_hd++;
 	}
     }
@@ -573,10 +567,7 @@ make_device_map (const char *device_map, int floppy_disks)
 	    get_cciss_disk_name (name, controller, drive);
 	    if (check_device (name))
 	      {
-		char *p;
-		p = grub_util_get_disk_name (num_hd, name);
-		fprintf (fp, "(%s)\t%s\n", p, name);
-		free (p);
+		fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 		num_hd++;
 	      }
 	  }
@@ -597,10 +588,7 @@ make_device_map (const char *device_map, int floppy_disks)
 	    get_ida_disk_name (name, controller, drive);
 	    if (check_device (name))
 	      {
-		char *p;
-		p = grub_util_get_disk_name (num_hd, name);
-		fprintf (fp, "(%s)\t%s\n", p, name);
-		free (p);
+		fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 		num_hd++;
 	      }
 	  }
@@ -632,10 +620,7 @@ make_device_map (const char *device_map, int floppy_disks)
       get_mmc_disk_name (name, i);
       if (check_device (name))
 	{
-	  char *p;
-	  p = grub_util_get_disk_name (num_hd, name);
-	  fprintf (fp, "(%s)\t%s\n", p, name);
-	  free (p);
+	  fprintf (fp, "(hd%d)\t%s\n", num_hd, name);
 	  num_hd++;
 	}
     }

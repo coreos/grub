@@ -1,5 +1,10 @@
 2008-09-25  Robert Millan  <rmh@aybabtu.com>
 
+	* util/grub-mkdevicemap.c (make_device_map): Actually replace all
+	instances of grub_util_get_disk_name() (see previous commit).
+
+2008-09-25  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (grub_mkdevicemap_SOURCES): Remove
 	`util/i386/get_disk_name.c'.
 	* conf/i386-efi.rmk: Likewise.
