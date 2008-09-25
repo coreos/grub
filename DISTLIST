@@ -434,7 +434,6 @@ util/grub.d/10_windows.in
 util/grub.d/30_os-prober.in
 util/grub.d/40_custom.in
 util/grub.d/README
-util/i386/get_disk_name.c
 util/i386/efi/grub-install.in
 util/i386/efi/grub-mkimage.c
 util/i386/pc/grub-install.in
@@ -442,7 +441,6 @@ util/i386/pc/grub-mkimage.c
 util/i386/pc/grub-mkrescue.in
 util/i386/pc/grub-setup.c
 util/i386/pc/misc.c
-util/ieee1275/get_disk_name.c
 util/ieee1275/grub-install.in
 util/powerpc/ieee1275/grub-mkrescue.in
 util/powerpc/ieee1275/misc.c

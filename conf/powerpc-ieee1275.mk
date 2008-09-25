@@ -35,13 +35,12 @@ sbin_UTILITIES += grub-emu
 endif
  
 # For grub-mkdevicemap.
-grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c		\
-	util/ieee1275/get_disk_name.c
-CLEANFILES += grub-mkdevicemap$(EXEEXT) grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o grub_mkdevicemap-util_ieee1275_get_disk_name.o
-MOSTLYCLEANFILES += grub_mkdevicemap-util_grub_mkdevicemap.d grub_mkdevicemap-util_misc.d grub_mkdevicemap-util_ieee1275_get_disk_name.d
+grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
+CLEANFILES += grub-mkdevicemap$(EXEEXT) grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o
+MOSTLYCLEANFILES += grub_mkdevicemap-util_grub_mkdevicemap.d grub_mkdevicemap-util_misc.d
 
-grub-mkdevicemap: $(grub_mkdevicemap_DEPENDENCIES) grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o grub_mkdevicemap-util_ieee1275_get_disk_name.o
-	$(CC) -o $@ grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o grub_mkdevicemap-util_ieee1275_get_disk_name.o $(LDFLAGS) $(grub_mkdevicemap_LDFLAGS)
+grub-mkdevicemap: $(grub_mkdevicemap_DEPENDENCIES) grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o
+	$(CC) -o $@ grub_mkdevicemap-util_grub_mkdevicemap.o grub_mkdevicemap-util_misc.o $(LDFLAGS) $(grub_mkdevicemap_LDFLAGS)
 
 grub_mkdevicemap-util_grub_mkdevicemap.o: util/grub-mkdevicemap.c $(util/grub-mkdevicemap.c_DEPENDENCIES)
 	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -MD -c -o $@ $<
@@ -50,10 +49,6 @@ grub_mkdevicemap-util_grub_mkdevicemap.o: util/grub-mkdevicemap.c $(util/grub-mk
 grub_mkdevicemap-util_misc.o: util/misc.c $(util/misc.c_DEPENDENCIES)
 	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -MD -c -o $@ $<
 -include grub_mkdevicemap-util_misc.d
-
-grub_mkdevicemap-util_ieee1275_get_disk_name.o: util/ieee1275/get_disk_name.c $(util/ieee1275/get_disk_name.c_DEPENDENCIES)
-	$(CC) -Iutil/ieee1275 -I$(srcdir)/util/ieee1275 $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkdevicemap_CFLAGS) -MD -c -o $@ $<
--include grub_mkdevicemap-util_ieee1275_get_disk_name.d
 
 
 # For grub-emu
