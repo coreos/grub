@@ -1,3 +1,8 @@
+008-09-28  Felix Zielcke  <fzielcke@z-51.de>
+
+	fs/jfs.c (grub_jfs_find_file): Treat multiple slashes like one.
+	Based on code from Tomas Ebenlendr <ebik@ucw.cz>.
+
 2008-09-28  Bean  <bean123ch@gmail.com>
 
 	* fs/ntfs.c (grub_ntfs_iterate_dir): Fix a bug in the previous patch.
