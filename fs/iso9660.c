@@ -93,8 +93,9 @@ struct grub_iso9660_primary_voldesc
   grub_uint32_t path_table;
   grub_uint8_t unused5[12];
   struct grub_iso9660_dir rootdir;
-  grub_uint8_t unused6[641];
+  grub_uint8_t unused6[624];
   struct grub_iso9660_date created;
+  struct grub_iso9660_date modified;
 } __attribute__ ((packed));
 
 /* A single entry in the path table.  */
@@ -840,14 +841,14 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
   data = grub_iso9660_mount (disk);
   if (data)
     {
-      if (! data->voldesc.created.year[0] && ! data->voldesc.created.year[1]
-	  && ! data->voldesc.created.year[2] && ! data->voldesc.created.year[3]
-	  && ! data->voldesc.created.month[0] && ! data->voldesc.created.month[1]
-	  && ! data->voldesc.created.day[0] && ! data->voldesc.created.day[1]
-	  && ! data->voldesc.created.hour[0] && ! data->voldesc.created.hour[1]
-	  && ! data->voldesc.created.minute[0] && ! data->voldesc.created.minute[1]
-	  && ! data->voldesc.created.second[0] && ! data->voldesc.created.second[1]
-	  && ! data->voldesc.created.hundredth[0] && ! data->voldesc.created.hundredth[1])
+      if (! data->voldesc.modified.year[0] && ! data->voldesc.modified.year[1]
+	  && ! data->voldesc.modified.year[2] && ! data->voldesc.modified.year[3]
+	  && ! data->voldesc.modified.month[0] && ! data->voldesc.modified.month[1]
+	  && ! data->voldesc.modified.day[0] && ! data->voldesc.modified.day[1]
+	  && ! data->voldesc.modified.hour[0] && ! data->voldesc.modified.hour[1]
+	  && ! data->voldesc.modified.minute[0] && ! data->voldesc.modified.minute[1]
+	  && ! data->voldesc.modified.second[0] && ! data->voldesc.modified.second[1]
+	  && ! data->voldesc.modified.hundredth[0] && ! data->voldesc.modified.hundredth[1])
 	{
 	  grub_error (GRUB_ERR_BAD_NUMBER, "No creation date in filesystem to generate UUID.");
 	  *uuid = NULL;
@@ -856,14 +857,14 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
 	{
 	  *uuid = grub_malloc (sizeof ("YYYY-MM-DD-HH-mm-ss-hh"));
 	  grub_sprintf (*uuid, "%c%c%c%c-%c%c-%c%c-%c%c-%c%c-%c%c-%c%c",
-			data->voldesc.created.year[0], data->voldesc.created.year[1], 
-			data->voldesc.created.year[2], data->voldesc.created.year[3],
-			data->voldesc.created.month[0], data->voldesc.created.month[1],
-			data->voldesc.created.day[0], data->voldesc.created.day[1],
-			data->voldesc.created.hour[0], data->voldesc.created.hour[1],
-			data->voldesc.created.minute[0], data->voldesc.created.minute[1],
-			data->voldesc.created.second[0], data->voldesc.created.second[1],
-			data->voldesc.created.hundredth[0], data->voldesc.created.hundredth[1]);
+			data->voldesc.modified.year[0], data->voldesc.modified.year[1], 
+			data->voldesc.modified.year[2], data->voldesc.modified.year[3],
+			data->voldesc.modified.month[0], data->voldesc.modified.month[1],
+			data->voldesc.modified.day[0], data->voldesc.modified.day[1],
+			data->voldesc.modified.hour[0], data->voldesc.modified.hour[1],
+			data->voldesc.modified.minute[0], data->voldesc.modified.minute[1],
+			data->voldesc.modified.second[0], data->voldesc.modified.second[1],
+			data->voldesc.modified.hundredth[0], data->voldesc.modified.hundredth[1]);
 	}
     }
   else

@@ -1,4 +1,11 @@
-008-09-28  Felix Zielcke  <fzielcke@z-51.de>
+2008-09-28  Robert Millan  <rmh@aybabtu.com>
+
+	* fs/iso9660.c (struct grub_iso9660_primary_voldesc): Rename `created'
+	to `modified'.  Add the real `created' field.
+	(grub_iso9660_uuid): Use `modified' rather than `created' for
+	constructing the UUID.
+
+2008-09-28  Felix Zielcke  <fzielcke@z-51.de>
 
 	fs/jfs.c (grub_jfs_find_file): Treat multiple slashes like one.
 	Based on code from Tomas Ebenlendr <ebik@ucw.cz>.
