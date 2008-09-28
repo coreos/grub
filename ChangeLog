@@ -1,3 +1,8 @@
+2008-09-28  Bean  <bean123ch@gmail.com>
+
+	* fs/ntfs.c (grub_ntfs_iterate_dir): Fix a bug in the previous patch.
+	Thanks to Christian Franke for finding this bug.
+
 2008-09-25  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub-mkdevicemap.c (make_device_map): Actually replace all

@@ -700,7 +700,7 @@ grub_ntfs_iterate_dir (grub_fshelp_node_t dir,
           int is_resident = (cur_pos[8] == 0);
 
           bitmap_len = ((is_resident) ? u32at (cur_pos, 0x10) :
-                        (cur_pos, 0x28));
+                        u32at (cur_pos, 0x28));
 
           bmp = grub_malloc (bitmap_len);
           if (bmp == NULL)
