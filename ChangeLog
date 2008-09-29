@@ -1,5 +1,9 @@
 2008-09-29  Felix Zielcke  <fzielcke@z-51.de>
 
+	* NEWS: Update for rename of update-grub to grub-mkconfig.
+
+2008-09-29  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/update-grub_lib.in: Copy to ...
 	* util/grub-mkconfig_lib.in: ... this.  Update all users.
 	* util/update-grub_lib.in: Make it a stub to `grub-mkconfigig_lib.in'.

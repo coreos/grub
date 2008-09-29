@@ -1,5 +1,7 @@
 New in 1.97 - :
 
+* update-grub is renamed to grub-mkconfig.
+
 * When booting from PXE, PXE can be used to load files.
 
 * High resolution timer support.
@@ -28,7 +30,7 @@ New in 1.97 - :
 * Create partmap.lst and use it to automatically load partition map
   modules.
 
-* update-grub supports os-prober to add operating systems to the
+* grub-mkconfig supports os-prober to add operating systems to the
   boot menu.
 
 * The ATA driver supports filesystems bigger than 2TB.
