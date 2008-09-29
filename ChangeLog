@@ -1,3 +1,24 @@
+2008-09-29  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/update-grub_lib.in: Copy to ...
+	* util/grub-mkconfig_lib.in: ... this.  Update all users.
+	* util/update-grub_lib.in: Make it a stub to `grub-mkconfigig_lib.in'.
+	* util/update-grub.in: Rename to ...
+	* util/grub-mkconfig.in: ... this.  Update all users.  Remove `-y'
+	option. Add `--output' option to allow users to specify the generated
+	configuration file.  Default to stdout.
+	(update_grub_dir): Rename to ...
+	(grub_mkconfig_dir): ... this.
+	(grub_cfg): Default to an empty string.
+	* conf/common.rmk (update-grub): Rename to ...
+	(grub-mkconfig): ... this.
+	(update-grub_lib): Copy to ...
+	(grub-mkconfig_lib): ... this.
+	(update-grub_SCRIPTS): Copy to ...
+	(grub-mkconfig_SCRIPTS): ... this. Update all users.
+	(update-grub_DATA): Rename to ...
+	(grub-mkconfig_DATA): ... this.
+
 2008-09-28  Robert Millan  <rmh@aybabtu.com>
 
 	* fs/iso9660.c (struct grub_iso9660_primary_voldesc): Rename `created'

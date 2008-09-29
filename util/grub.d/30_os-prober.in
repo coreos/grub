@@ -83,7 +83,7 @@ EOF
       done
     ;;
     hurd|*)
-      echo "  ${LONGNAME} is not yet supported by update-grub." >&2
+      echo "  ${LONGNAME} is not yet supported by grub-mkconfig." >&2
     ;;
   esac
 done

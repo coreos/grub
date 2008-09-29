@@ -24,8 +24,8 @@ sbindir=@sbindir@
 libdir=@libdir@
 sysconfdir=@sysconfdir@
 grub_prefix=`echo /boot/grub | sed ${transform}`
-grub_cfg=${grub_prefix}/grub.cfg
-update_grub_dir=${sysconfdir}/grub.d
+grub_cfg=""
+grub_mkconfig_dir=${sysconfdir}/grub.d
 
 grub_mkdevicemap=${sbindir}/`echo grub-mkdevicemap | sed ${transform}`
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
@@ -35,11 +35,11 @@ grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 usage () {
     cat <<EOF
 Usage: $0 [OPTION]
-Generate /boot/grub/grub.cfg
+Generate a grub config file
 
+  -o, --output=FILE       output generated config to FILE [default=stdout]
   -h, --help              print this message and exit
   -v, --version           print the version information and exit
-  -y                      ignored for compatibility
 
 Report bugs to <bug-grub@gnu.org>.
 EOF
@@ -54,9 +54,13 @@ for option in "$@"; do
     -v | --version)
 	echo "$0 (GNU GRUB ${PACKAGE_VERSION})"
 	exit 0 ;;
-    -y)
-        echo "$0: warning: Ignoring -y option (no longer needed)." >&2
-        ;;
+    -o)
+	shift
+	grub_cfg=$1
+	;;
+    --output=)
+	grub_cfg=`echo "$option" | sed 's/--output=//'`
+	;;	
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
@@ -65,7 +69,7 @@ for option in "$@"; do
     esac
 done
 
-. ${libdir}/grub/update-grub_lib
+. ${libdir}/grub/grub-mkconfig_lib
 
 if [ "x$EUID" = "x" ] ; then
   EUID=`id -u`
@@ -165,14 +169,15 @@ export GRUB_DEVICE GRUB_DEVICE_UUID GRUB_DEVICE_BOOT GRUB_DEVICE_BOOT_UUID GRUB_
 # These are optional, user-defined variables.
 export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_CMDLINE_LINUX_DEFAULT GRUB_TERMINAL GRUB_SERIAL_COMMAND GRUB_DISABLE_LINUX_UUID GRUB_GFXMODE
 
-rm -f ${grub_cfg}.new
-exec > ${grub_cfg}.new
+if test "x${grub_cfg}" != "x"; then
+  rm -f ${grub_cfg}.new
+  exec > ${grub_cfg}.new
 
-# Allow this to fail, since /boot/grub/ might need to be fatfs to support some
-# firmware implementations (e.g. OFW or EFI).
-chmod 444 ${grub_cfg}.new || true
-
-echo "Updating ${grub_cfg} ..." >&2
+  # Allow this to fail, since /boot/grub/ might need to be fatfs to support some
+  # firmware implementations (e.g. OFW or EFI).
+  chmod 444 ${grub_cfg}.new || true
+fi
+echo "Generating grub.cfg ..." >&2
 
 cat << EOF
 #
@@ -183,7 +188,7 @@ cat << EOF
 #
 EOF
 
-for i in ${update_grub_dir}/* ; do
+for i in ${grub_mkconfig_dir}/* ; do
   case "$i" in
     # emacsen backup files. FIXME: support other editors
     *~) ;;
@@ -198,7 +203,9 @@ for i in ${update_grub_dir}/* ; do
   esac
 done
 
-# none of the children aborted with error, install the new grub.cfg
-mv -f ${grub_cfg}.new ${grub_cfg}
+if test "x${grub_cfg}" != "x" ; then
+  # none of the children aborted with error, install the new grub.cfg
+  mv -f ${grub_cfg}.new ${grub_cfg}
+fi
 
 echo "done" >&2

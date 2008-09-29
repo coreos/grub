@@ -414,6 +414,8 @@ util/getroot.c
 util/grub-editenv.c
 util/grub-emu.c
 util/grub-fstest.c
+util/grub-mkconfig.in
+util/grub-mkconfig_lib.in
 util/grub-mkdevicemap.c
 util/grub-pe2elf.c
 util/grub-probe.c
@@ -424,7 +426,6 @@ util/misc.c
 util/raid.c
 util/resolve.c
 util/unifont2pff.rb
-util/update-grub.in
 util/update-grub_lib.in
 util/elf/grub-mkimage.c
 util/grub.d/00_header.in

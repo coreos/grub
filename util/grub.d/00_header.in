@@ -23,7 +23,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 grub_prefix=`echo /boot/grub | sed ${transform}`
 
-. ${libdir}/grub/update-grub_lib
+. ${libdir}/grub/grub-mkconfig_lib
 
 # Do this as early as possible, since other commands might depend on it.
 # (e.g. the `font' command might need lvm or raid modules)

@@ -526,12 +526,18 @@ grub_pe2elf-util_misc.o: util/misc.c $(util/misc.c_DEPENDENCIES)
 
 CLEANFILES += grub-pe2elf
 
-# For update-grub
-update-grub: util/update-grub.in config.status
+# For grub-mkconfig
+grub-mkconfig: util/grub-mkconfig.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-sbin_SCRIPTS += update-grub
-CLEANFILES += update-grub
+sbin_SCRIPTS += grub-mkconfig
+CLEANFILES += grub-mkconfig
+
+grub-mkconfig_lib: util/grub-mkconfig_lib.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+lib_DATA += grub-mkconfig_lib
+CLEANFILES += grub-mkconfig_lib
 
 update-grub_lib: util/update-grub_lib.in config.status
 	./config.status --file=$@:$<
@@ -542,14 +548,14 @@ CLEANFILES += update-grub_lib
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-update-grub_SCRIPTS = 00_header 10_linux 10_hurd 30_os-prober 40_custom
+grub-mkconfig_SCRIPTS = 00_header 10_linux 10_hurd 30_os-prober 40_custom
 ifeq ($(target_os), cygwin)
-update-grub_SCRIPTS += 10_windows
+grub-mkconfig_SCRIPTS += 10_windows
 endif
 
-CLEANFILES += $(update-grub_SCRIPTS)
+CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
-update-grub_DATA += util/grub.d/README
+grub-mkconfig_DATA += util/grub.d/README
 
 
 # Filing systems.

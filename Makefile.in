@@ -108,7 +108,7 @@ PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
 	$(pkglib_DATA) $(lib_DATA)
 PKGDATA = $(pkgdata_DATA)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
-SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(update-grub_SCRIPTS)
+SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS)
 
 CLEANFILES =
 MOSTLYCLEANFILES = 
@@ -209,12 +209,12 @@ install-local: all
 	  $(HELP2MAN) --section=8 $(builddir)/$$file > $(DESTDIR)$(mandir)/man8/$$dest.8; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/grub.d
-	@list='$(update-grub_SCRIPTS)'; for file in $$list; do \
+	@list='$(grub-mkconfig_SCRIPTS)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_SCRIPT) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
-	@list='$(update-grub_DATA)'; for file in $$list; do \
+	@list='$(grub-mkconfig_DATA)'; for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
@@ -249,7 +249,7 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sbindir)/$$dest; \
 	done
-	@list='$(update-grub_SCRIPTS) $(update-grub_DATA)'; for file in $$list; do \
+	@list='$(grub-mkconfig_SCRIPTS) $(grub-mkconfig_DATA)'; for file in $$list; do \
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
