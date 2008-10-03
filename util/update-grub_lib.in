@@ -18,5 +18,5 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 
-echo "warning: this file is deprecated, use grub-mkconfig_lib instead" >&2
+echo "warning: update-grub_lib is deprecated, use grub-mkconfig_lib instead" >&2
 . ${libdir}/grub/grub-mkconfig_lib
