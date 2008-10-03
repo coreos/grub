@@ -1,6 +1,6 @@
 2008-10-03  Felix Zielcke  <fzielcke@z-51.de>
 
-	* util/i386/pc: Source grub-mkconfig_lib instead of update-grub_lib.
+	* util/i386/pc/grub-install.in: Source grub-mkconfig_lib instead of update-grub_lib.
 
 2008-10-03  Felix Zielcke  <fzielcke@z-51.de>
 
