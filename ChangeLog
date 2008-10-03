@@ -1,5 +1,9 @@
 2008-10-03  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/i386/pc: Source grub-mkconfig_lib instead of update-grub_lib.
+
+2008-10-03  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/update-grub_lib.in: Mention filename in warning message.
 
 2008-09-29  Felix Zielcke  <fzielcke@z-51.de>

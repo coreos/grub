@@ -118,7 +118,7 @@ for option in "$@"; do
 done
 
 # for make_system_path_relative_to_its_root()
-. ${libdir}/grub/update-grub_lib
+. ${libdir}/grub/grub-mkconfig_lib
 
 if test "x$install_device" = x; then
     echo "install_device not specified." 1>&2
