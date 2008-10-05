@@ -281,7 +281,8 @@ grub_lvm_scan_device (const char *name)
       goto fail;
     }
 
-  metadatabuf = grub_malloc (mda_size);
+  /* Allocate buffer space for the circular worst-case scenario. */
+  metadatabuf = grub_malloc (2 * mda_size);
   if (! metadatabuf)
     goto fail;
 
@@ -300,6 +301,16 @@ grub_lvm_scan_device (const char *name)
     }
 
   rlocn = mdah->raw_locns;
+  if (grub_le_to_cpu64 (rlocn->offset) + grub_le_to_cpu64 (rlocn->size) >
+      grub_le_to_cpu64 (mdah->size))
+    {
+      /* Metadata is circular. Copy the wrap in place. */
+      grub_memcpy (metadatabuf + mda_size,
+                   metadatabuf + GRUB_LVM_MDA_HEADER_SIZE,
+                   grub_le_to_cpu64 (rlocn->offset) +
+                   grub_le_to_cpu64 (rlocn->size) -
+                   grub_le_to_cpu64 (mdah->size));
+    }
   p = q = metadatabuf + grub_le_to_cpu64 (rlocn->offset);
 
   while (*q != ' ' && q < metadatabuf + mda_size)
