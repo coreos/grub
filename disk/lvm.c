@@ -356,8 +356,6 @@ grub_lvm_scan_device (const char *name)
 
       vg->lvs = NULL;
       vg->pvs = NULL;
-      vg->next = vg_list;
-      vg_list = vg;
 
       p = grub_strstr (p, "physical_volumes {");
       if (p)
@@ -395,14 +393,15 @@ grub_lvm_scan_device (const char *name)
 	      pv->start = grub_lvm_getvalue (&p, "pe_start = ");
 	      if (p == NULL)
 		goto pvs_fail;
-	      pv->disk = NULL;
-	      pv->next = vg->pvs;
-	      vg->pvs = pv;
 	      
 	      p = grub_strchr (p, '}');
 	      if (p == NULL)
 		goto pvs_fail;
 	      p++;
+
+	      pv->disk = NULL;
+	      pv->next = vg->pvs;
+	      vg->pvs = pv;
 	      
 	      continue;
 	    pvs_fail:
@@ -531,16 +530,16 @@ grub_lvm_scan_device (const char *name)
 		  goto fail4;
 		}
 
-	      lv->number = lv_count++;
-	      lv->vg = vg;
-	      lv->next = vg->lvs;
-	      vg->lvs = lv;
-	      
 	      p = grub_strchr (p, '}');
 	      if (p == NULL)
 		goto lvs_fail;
 	      p += 3;
 	      
+	      lv->number = lv_count++;
+	      lv->vg = vg;
+	      lv->next = vg->lvs;
+	      vg->lvs = lv;
+
 	      continue;
 	    lvs_fail:
 	      grub_free (lv->name);
@@ -548,6 +547,9 @@ grub_lvm_scan_device (const char *name)
 	      goto fail4;
 	    }
 	}
+
+	vg->next = vg_list;
+	vg_list = vg;
     }
   else
     {

@@ -1,5 +1,10 @@
 2008-10-29  Guillem Jover <guillem.jover@nokia.com>
 
+	* disk/lvm.c (grub_lvm_scan_device): Fix error recovery by delaying the
+	addition of objects until the code is not going to be able to fail.
+
+2008-10-29  Guillem Jover <guillem.jover@nokia.com>
+
 	* disk/lvm.c (grub_lvm_scan_device): Fix possible NULL value handling
 	(add a missing NULL check, and correct them by moving the pointer
 	operations after the actual check).
