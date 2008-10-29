@@ -261,9 +261,12 @@ else
     prefix_drive=`$grub_probe --target=drive --device ${grub_device}`
 fi
 
-grub_prefix="${prefix_drive}`make_system_path_relative_to_its_root ${grubdir}`" || exit 1
+relative_grubdir=`make_system_path_relative_to_its_root ${grubdir}` || exit 1
+if [ "x${relative_grubdir}" = "x" ] ; then
+    relative_grubdir=/
+fi
 
-$grub_mkimage --output=${grubdir}/core.img --prefix=${grub_prefix} $modules || exit 1
+$grub_mkimage --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 
 # Now perform the installation.
 $grub_setup ${setup_verbose} --directory=${grubdir} --device-map=${device_map} \

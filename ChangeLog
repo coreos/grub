@@ -1,3 +1,8 @@
+2008-10-29  Robert Millan  <rmh@aybabtu.com>
+
+	* util/i386/pc/grub-install.in: Handle empty string as output from
+	make_system_path_relative_to_its_root().
+
 2008-10-05  Hans Lambermont  <hans@lambermont.dyndns.org>
 
 	* disk/lvm.c (grub_lvm_scan_device): Allocate buffer space for the
