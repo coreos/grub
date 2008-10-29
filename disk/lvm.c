@@ -384,9 +384,10 @@ grub_lvm_scan_device (const char *name)
 	      grub_memcpy (pv->name, p, s);
 	      pv->name[s] = '\0';
 	      
-	      p = grub_strstr (p, "id = \"") + sizeof("id = \"") - 1;
+	      p = grub_strstr (p, "id = \"");
 	      if (p == NULL)
 		goto pvs_fail;
+	      p += sizeof("id = \"") - 1;
 	      
 	      grub_memcpy (pv->id, p, GRUB_LVM_ID_STRLEN);
 	      pv->id[GRUB_LVM_ID_STRLEN] = '\0';
@@ -398,7 +399,10 @@ grub_lvm_scan_device (const char *name)
 	      pv->next = vg->pvs;
 	      vg->pvs = pv;
 	      
-	      p = grub_strchr (p, '}') + 1;
+	      p = grub_strchr (p, '}');
+	      if (p == NULL)
+		goto pvs_fail;
+	      p++;
 	      
 	      continue;
 	    pvs_fail:
