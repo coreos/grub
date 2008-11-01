@@ -457,6 +457,57 @@ run_menu (grub_menu_t menu, int nested)
 		    }
 		}
 	      break;
+	    
+	    case GRUB_TERM_PPAGE:
+	      if (first == 0)
+		{
+		  offset = 0;
+		}
+	      else
+		{
+		  first -= GRUB_TERM_NUM_ENTRIES;
+
+		  if (first < 0)
+		    {
+		      offset += first;
+		      first = 0;
+		    }
+		}
+	      print_entries (menu, first, offset);
+	      break;
+
+	    case GRUB_TERM_NPAGE:
+	      if (offset == 0)
+		{
+		  offset += GRUB_TERM_NUM_ENTRIES - 1;
+		  if (first + offset >= menu->size)
+		    {
+		      offset = menu->size - first - 1;
+		    }
+		}
+	      else
+		{
+		  first += GRUB_TERM_NUM_ENTRIES;
+			
+		  if (first + offset >= menu->size)
+		    {
+		      first -= GRUB_TERM_NUM_ENTRIES;
+		      offset += GRUB_TERM_NUM_ENTRIES;
+		      
+		      if (offset > menu->size - 1 ||
+		                     offset > GRUB_TERM_NUM_ENTRIES - 1)
+			{
+			  offset = menu->size - first - 1;
+			}
+		      if (offset > GRUB_TERM_NUM_ENTRIES)
+		        {
+			  first += offset - GRUB_TERM_NUM_ENTRIES + 1;
+			  offset = GRUB_TERM_NUM_ENTRIES - 1;
+			}
+		    }
+		}
+	      print_entries (menu, first, offset);
+	      break;
 	      
 	    case '\n':
 	    case '\r':

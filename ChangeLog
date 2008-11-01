@@ -1,3 +1,7 @@
+2008-11-01  Carles Pina i Estany  <carles@pina.cat>
+
+	* normal/menu.c (run_menu): Add Previous and Next Page keys in menu.
+
 2008-10-29  Guillem Jover <guillem.jover@nokia.com>
 
 	* disk/lvm.c (grub_lvm_scan_device): Fix error recovery by delaying the
