@@ -26,7 +26,7 @@ pre-cpuid.o: $(cpuid_mod_DEPENDENCIES) cpuid_mod-commands_i386_cpuid.o
 mod-cpuid.o: mod-cpuid.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -c -o $@ $<
 
-mod-cpuid.c: moddep.lst genmodsrc.sh
+mod-cpuid.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'cpuid' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(cpuid_mod_EXPORTS),no)

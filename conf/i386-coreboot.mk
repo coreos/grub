@@ -595,7 +595,7 @@ pre-_linux.o: $(_linux_mod_DEPENDENCIES) _linux_mod-loader_i386_linux.o
 mod-_linux.o: mod-_linux.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
 
-mod-_linux.c: moddep.lst genmodsrc.sh
+mod-_linux.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(_linux_mod_EXPORTS),no)
@@ -652,7 +652,7 @@ pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_linux_normal.o
 mod-linux.o: mod-linux.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
 
-mod-linux.c: moddep.lst genmodsrc.sh
+mod-linux.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(linux_mod_EXPORTS),no)
@@ -713,7 +713,7 @@ pre-normal.o: $(normal_mod_DEPENDENCIES) normal_mod-normal_arg.o normal_mod-norm
 mod-normal.o: mod-normal.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
 
-mod-normal.c: moddep.lst genmodsrc.sh
+mod-normal.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'normal' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(normal_mod_EXPORTS),no)
@@ -1037,7 +1037,7 @@ pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o reboot_mod
 mod-reboot.o: mod-reboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
 
-mod-reboot.c: moddep.lst genmodsrc.sh
+mod-reboot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(reboot_mod_EXPORTS),no)
@@ -1113,7 +1113,7 @@ pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_halt.o halt_mod-kern_i386
 mod-halt.o: mod-halt.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
 
-mod-halt.c: moddep.lst genmodsrc.sh
+mod-halt.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(halt_mod_EXPORTS),no)
@@ -1189,7 +1189,7 @@ pre-serial.o: $(serial_mod_DEPENDENCIES) serial_mod-term_i386_pc_serial.o
 mod-serial.o: mod-serial.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(serial_mod_CFLAGS) -c -o $@ $<
 
-mod-serial.c: moddep.lst genmodsrc.sh
+mod-serial.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'serial' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(serial_mod_EXPORTS),no)
@@ -1249,7 +1249,7 @@ pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_i386_pc_m
 mod-_multiboot.o: mod-_multiboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
 
-mod-_multiboot.c: moddep.lst genmodsrc.sh
+mod-_multiboot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_multiboot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(_multiboot_mod_EXPORTS),no)
@@ -1363,7 +1363,7 @@ pre-multiboot.o: $(multiboot_mod_DEPENDENCIES) multiboot_mod-loader_multiboot_lo
 mod-multiboot.o: mod-multiboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
 
-mod-multiboot.c: moddep.lst genmodsrc.sh
+mod-multiboot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'multiboot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(multiboot_mod_EXPORTS),no)
@@ -1420,7 +1420,7 @@ pre-aout.o: $(aout_mod_DEPENDENCIES) aout_mod-loader_aout.o
 mod-aout.o: mod-aout.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(aout_mod_CFLAGS) -c -o $@ $<
 
-mod-aout.c: moddep.lst genmodsrc.sh
+mod-aout.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'aout' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(aout_mod_EXPORTS),no)
@@ -1477,7 +1477,7 @@ pre-play.o: $(play_mod_DEPENDENCIES) play_mod-commands_i386_pc_play.o
 mod-play.o: mod-play.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(play_mod_CFLAGS) -c -o $@ $<
 
-mod-play.c: moddep.lst genmodsrc.sh
+mod-play.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'play' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(play_mod_EXPORTS),no)
@@ -1534,7 +1534,7 @@ pre-ata.o: $(ata_mod_DEPENDENCIES) ata_mod-disk_ata.o
 mod-ata.o: mod-ata.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_mod_CFLAGS) -c -o $@ $<
 
-mod-ata.c: moddep.lst genmodsrc.sh
+mod-ata.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ata' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(ata_mod_EXPORTS),no)
@@ -1591,7 +1591,7 @@ pre-memdisk.o: $(memdisk_mod_DEPENDENCIES) memdisk_mod-disk_memdisk.o
 mod-memdisk.o: mod-memdisk.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -c -o $@ $<
 
-mod-memdisk.c: moddep.lst genmodsrc.sh
+mod-memdisk.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'memdisk' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(memdisk_mod_EXPORTS),no)
@@ -1648,7 +1648,7 @@ pre-pci.o: $(pci_mod_DEPENDENCIES) pci_mod-bus_pci.o
 mod-pci.o: mod-pci.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pci_mod_CFLAGS) -c -o $@ $<
 
-mod-pci.c: moddep.lst genmodsrc.sh
+mod-pci.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'pci' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(pci_mod_EXPORTS),no)
@@ -1705,7 +1705,7 @@ pre-lspci.o: $(lspci_mod_DEPENDENCIES) lspci_mod-commands_lspci.o
 mod-lspci.o: mod-lspci.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lspci_mod_CFLAGS) -c -o $@ $<
 
-mod-lspci.c: moddep.lst genmodsrc.sh
+mod-lspci.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'lspci' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(lspci_mod_EXPORTS),no)
@@ -1762,7 +1762,7 @@ pre-datetime.o: $(datetime_mod_DEPENDENCIES) datetime_mod-lib_datetime.o datetim
 mod-datetime.o: mod-datetime.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -c -o $@ $<
 
-mod-datetime.c: moddep.lst genmodsrc.sh
+mod-datetime.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'datetime' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(datetime_mod_EXPORTS),no)
@@ -1838,7 +1838,7 @@ pre-date.o: $(date_mod_DEPENDENCIES) date_mod-commands_date.o
 mod-date.o: mod-date.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(date_mod_CFLAGS) -c -o $@ $<
 
-mod-date.c: moddep.lst genmodsrc.sh
+mod-date.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'date' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(date_mod_EXPORTS),no)
@@ -1895,7 +1895,7 @@ pre-datehook.o: $(datehook_mod_DEPENDENCIES) datehook_mod-hook_datehook.o
 mod-datehook.o: mod-datehook.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datehook_mod_CFLAGS) -c -o $@ $<
 
-mod-datehook.c: moddep.lst genmodsrc.sh
+mod-datehook.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'datehook' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(datehook_mod_EXPORTS),no)

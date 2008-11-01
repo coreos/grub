@@ -587,7 +587,7 @@ pre-fshelp.o: $(fshelp_mod_DEPENDENCIES) fshelp_mod-fs_fshelp.o
 mod-fshelp.o: mod-fshelp.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fshelp_mod_CFLAGS) -c -o $@ $<
 
-mod-fshelp.c: moddep.lst genmodsrc.sh
+mod-fshelp.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'fshelp' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(fshelp_mod_EXPORTS),no)
@@ -644,7 +644,7 @@ pre-fat.o: $(fat_mod_DEPENDENCIES) fat_mod-fs_fat.o
 mod-fat.o: mod-fat.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fat_mod_CFLAGS) -c -o $@ $<
 
-mod-fat.c: moddep.lst genmodsrc.sh
+mod-fat.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'fat' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(fat_mod_EXPORTS),no)
@@ -701,7 +701,7 @@ pre-ufs.o: $(ufs_mod_DEPENDENCIES) ufs_mod-fs_ufs.o
 mod-ufs.o: mod-ufs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ufs_mod_CFLAGS) -c -o $@ $<
 
-mod-ufs.c: moddep.lst genmodsrc.sh
+mod-ufs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ufs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(ufs_mod_EXPORTS),no)
@@ -758,7 +758,7 @@ pre-ext2.o: $(ext2_mod_DEPENDENCIES) ext2_mod-fs_ext2.o
 mod-ext2.o: mod-ext2.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ext2_mod_CFLAGS) -c -o $@ $<
 
-mod-ext2.c: moddep.lst genmodsrc.sh
+mod-ext2.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ext2' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(ext2_mod_EXPORTS),no)
@@ -815,7 +815,7 @@ pre-ntfs.o: $(ntfs_mod_DEPENDENCIES) ntfs_mod-fs_ntfs.o
 mod-ntfs.o: mod-ntfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ntfs_mod_CFLAGS) -c -o $@ $<
 
-mod-ntfs.c: moddep.lst genmodsrc.sh
+mod-ntfs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ntfs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(ntfs_mod_EXPORTS),no)
@@ -872,7 +872,7 @@ pre-ntfscomp.o: $(ntfscomp_mod_DEPENDENCIES) ntfscomp_mod-fs_ntfscomp.o
 mod-ntfscomp.o: mod-ntfscomp.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ntfscomp_mod_CFLAGS) -c -o $@ $<
 
-mod-ntfscomp.c: moddep.lst genmodsrc.sh
+mod-ntfscomp.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ntfscomp' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(ntfscomp_mod_EXPORTS),no)
@@ -929,7 +929,7 @@ pre-minix.o: $(minix_mod_DEPENDENCIES) minix_mod-fs_minix.o
 mod-minix.o: mod-minix.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minix_mod_CFLAGS) -c -o $@ $<
 
-mod-minix.c: moddep.lst genmodsrc.sh
+mod-minix.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'minix' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(minix_mod_EXPORTS),no)
@@ -986,7 +986,7 @@ pre-hfs.o: $(hfs_mod_DEPENDENCIES) hfs_mod-fs_hfs.o
 mod-hfs.o: mod-hfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfs_mod_CFLAGS) -c -o $@ $<
 
-mod-hfs.c: moddep.lst genmodsrc.sh
+mod-hfs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'hfs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(hfs_mod_EXPORTS),no)
@@ -1043,7 +1043,7 @@ pre-jfs.o: $(jfs_mod_DEPENDENCIES) jfs_mod-fs_jfs.o
 mod-jfs.o: mod-jfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(jfs_mod_CFLAGS) -c -o $@ $<
 
-mod-jfs.c: moddep.lst genmodsrc.sh
+mod-jfs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'jfs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(jfs_mod_EXPORTS),no)
@@ -1100,7 +1100,7 @@ pre-iso9660.o: $(iso9660_mod_DEPENDENCIES) iso9660_mod-fs_iso9660.o
 mod-iso9660.o: mod-iso9660.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(iso9660_mod_CFLAGS) -c -o $@ $<
 
-mod-iso9660.c: moddep.lst genmodsrc.sh
+mod-iso9660.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'iso9660' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(iso9660_mod_EXPORTS),no)
@@ -1157,7 +1157,7 @@ pre-xfs.o: $(xfs_mod_DEPENDENCIES) xfs_mod-fs_xfs.o
 mod-xfs.o: mod-xfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(xfs_mod_CFLAGS) -c -o $@ $<
 
-mod-xfs.c: moddep.lst genmodsrc.sh
+mod-xfs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'xfs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(xfs_mod_EXPORTS),no)
@@ -1214,7 +1214,7 @@ pre-affs.o: $(affs_mod_DEPENDENCIES) affs_mod-fs_affs.o
 mod-affs.o: mod-affs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(affs_mod_CFLAGS) -c -o $@ $<
 
-mod-affs.c: moddep.lst genmodsrc.sh
+mod-affs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'affs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(affs_mod_EXPORTS),no)
@@ -1271,7 +1271,7 @@ pre-sfs.o: $(sfs_mod_DEPENDENCIES) sfs_mod-fs_sfs.o
 mod-sfs.o: mod-sfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sfs_mod_CFLAGS) -c -o $@ $<
 
-mod-sfs.c: moddep.lst genmodsrc.sh
+mod-sfs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'sfs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(sfs_mod_EXPORTS),no)
@@ -1328,7 +1328,7 @@ pre-hfsplus.o: $(hfsplus_mod_DEPENDENCIES) hfsplus_mod-fs_hfsplus.o
 mod-hfsplus.o: mod-hfsplus.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hfsplus_mod_CFLAGS) -c -o $@ $<
 
-mod-hfsplus.c: moddep.lst genmodsrc.sh
+mod-hfsplus.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'hfsplus' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(hfsplus_mod_EXPORTS),no)
@@ -1385,7 +1385,7 @@ pre-reiserfs.o: $(reiserfs_mod_DEPENDENCIES) reiserfs_mod-fs_reiserfs.o
 mod-reiserfs.o: mod-reiserfs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reiserfs_mod_CFLAGS) -c -o $@ $<
 
-mod-reiserfs.c: moddep.lst genmodsrc.sh
+mod-reiserfs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'reiserfs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(reiserfs_mod_EXPORTS),no)
@@ -1442,7 +1442,7 @@ pre-cpio.o: $(cpio_mod_DEPENDENCIES) cpio_mod-fs_cpio.o
 mod-cpio.o: mod-cpio.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpio_mod_CFLAGS) -c -o $@ $<
 
-mod-cpio.c: moddep.lst genmodsrc.sh
+mod-cpio.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'cpio' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(cpio_mod_EXPORTS),no)
@@ -1499,7 +1499,7 @@ pre-udf.o: $(udf_mod_DEPENDENCIES) udf_mod-fs_udf.o
 mod-udf.o: mod-udf.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(udf_mod_CFLAGS) -c -o $@ $<
 
-mod-udf.c: moddep.lst genmodsrc.sh
+mod-udf.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'udf' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(udf_mod_EXPORTS),no)
@@ -1556,7 +1556,7 @@ pre-afs.o: $(afs_mod_DEPENDENCIES) afs_mod-fs_afs.o
 mod-afs.o: mod-afs.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(afs_mod_CFLAGS) -c -o $@ $<
 
-mod-afs.c: moddep.lst genmodsrc.sh
+mod-afs.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'afs' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(afs_mod_EXPORTS),no)
@@ -1616,7 +1616,7 @@ pre-amiga.o: $(amiga_mod_DEPENDENCIES) amiga_mod-partmap_amiga.o
 mod-amiga.o: mod-amiga.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(amiga_mod_CFLAGS) -c -o $@ $<
 
-mod-amiga.c: moddep.lst genmodsrc.sh
+mod-amiga.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'amiga' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(amiga_mod_EXPORTS),no)
@@ -1673,7 +1673,7 @@ pre-apple.o: $(apple_mod_DEPENDENCIES) apple_mod-partmap_apple.o
 mod-apple.o: mod-apple.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(apple_mod_CFLAGS) -c -o $@ $<
 
-mod-apple.c: moddep.lst genmodsrc.sh
+mod-apple.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'apple' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(apple_mod_EXPORTS),no)
@@ -1730,7 +1730,7 @@ pre-pc.o: $(pc_mod_DEPENDENCIES) pc_mod-partmap_pc.o
 mod-pc.o: mod-pc.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pc_mod_CFLAGS) -c -o $@ $<
 
-mod-pc.c: moddep.lst genmodsrc.sh
+mod-pc.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'pc' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(pc_mod_EXPORTS),no)
@@ -1787,7 +1787,7 @@ pre-sun.o: $(sun_mod_DEPENDENCIES) sun_mod-partmap_sun.o
 mod-sun.o: mod-sun.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sun_mod_CFLAGS) -c -o $@ $<
 
-mod-sun.c: moddep.lst genmodsrc.sh
+mod-sun.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'sun' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(sun_mod_EXPORTS),no)
@@ -1844,7 +1844,7 @@ pre-acorn.o: $(acorn_mod_DEPENDENCIES) acorn_mod-partmap_acorn.o
 mod-acorn.o: mod-acorn.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(acorn_mod_CFLAGS) -c -o $@ $<
 
-mod-acorn.c: moddep.lst genmodsrc.sh
+mod-acorn.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'acorn' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(acorn_mod_EXPORTS),no)
@@ -1901,7 +1901,7 @@ pre-gpt.o: $(gpt_mod_DEPENDENCIES) gpt_mod-partmap_gpt.o
 mod-gpt.o: mod-gpt.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gpt_mod_CFLAGS) -c -o $@ $<
 
-mod-gpt.c: moddep.lst genmodsrc.sh
+mod-gpt.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'gpt' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(gpt_mod_EXPORTS),no)
@@ -1963,7 +1963,7 @@ pre-raid.o: $(raid_mod_DEPENDENCIES) raid_mod-disk_raid.o
 mod-raid.o: mod-raid.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid_mod_CFLAGS) -c -o $@ $<
 
-mod-raid.c: moddep.lst genmodsrc.sh
+mod-raid.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'raid' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(raid_mod_EXPORTS),no)
@@ -2020,7 +2020,7 @@ pre-raid5rec.o: $(raid5rec_mod_DEPENDENCIES) raid5rec_mod-disk_raid5_recover.o
 mod-raid5rec.o: mod-raid5rec.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid5rec_mod_CFLAGS) -c -o $@ $<
 
-mod-raid5rec.c: moddep.lst genmodsrc.sh
+mod-raid5rec.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'raid5rec' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(raid5rec_mod_EXPORTS),no)
@@ -2077,7 +2077,7 @@ pre-raid6rec.o: $(raid6rec_mod_DEPENDENCIES) raid6rec_mod-disk_raid6_recover.o
 mod-raid6rec.o: mod-raid6rec.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(raid6rec_mod_CFLAGS) -c -o $@ $<
 
-mod-raid6rec.c: moddep.lst genmodsrc.sh
+mod-raid6rec.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'raid6rec' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(raid6rec_mod_EXPORTS),no)
@@ -2134,7 +2134,7 @@ pre-mdraid.o: $(mdraid_mod_DEPENDENCIES) mdraid_mod-disk_mdraid_linux.o
 mod-mdraid.o: mod-mdraid.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(mdraid_mod_CFLAGS) -c -o $@ $<
 
-mod-mdraid.c: moddep.lst genmodsrc.sh
+mod-mdraid.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'mdraid' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(mdraid_mod_EXPORTS),no)
@@ -2191,7 +2191,7 @@ pre-dm_nv.o: $(dm_nv_mod_DEPENDENCIES) dm_nv_mod-disk_dmraid_nvidia.o
 mod-dm_nv.o: mod-dm_nv.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(dm_nv_mod_CFLAGS) -c -o $@ $<
 
-mod-dm_nv.c: moddep.lst genmodsrc.sh
+mod-dm_nv.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'dm_nv' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(dm_nv_mod_EXPORTS),no)
@@ -2248,7 +2248,7 @@ pre-lvm.o: $(lvm_mod_DEPENDENCIES) lvm_mod-disk_lvm.o
 mod-lvm.o: mod-lvm.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lvm_mod_CFLAGS) -c -o $@ $<
 
-mod-lvm.c: moddep.lst genmodsrc.sh
+mod-lvm.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'lvm' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(lvm_mod_EXPORTS),no)
@@ -2305,7 +2305,7 @@ pre-scsi.o: $(scsi_mod_DEPENDENCIES) scsi_mod-disk_scsi.o
 mod-scsi.o: mod-scsi.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(scsi_mod_CFLAGS) -c -o $@ $<
 
-mod-scsi.c: moddep.lst genmodsrc.sh
+mod-scsi.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'scsi' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(scsi_mod_EXPORTS),no)
@@ -2369,7 +2369,7 @@ pre-hello.o: $(hello_mod_DEPENDENCIES) hello_mod-hello_hello.o
 mod-hello.o: mod-hello.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hello_mod_CFLAGS) -c -o $@ $<
 
-mod-hello.c: moddep.lst genmodsrc.sh
+mod-hello.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'hello' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(hello_mod_EXPORTS),no)
@@ -2426,7 +2426,7 @@ pre-boot.o: $(boot_mod_DEPENDENCIES) boot_mod-commands_boot.o
 mod-boot.o: mod-boot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
 
-mod-boot.c: moddep.lst genmodsrc.sh
+mod-boot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'boot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(boot_mod_EXPORTS),no)
@@ -2483,7 +2483,7 @@ pre-terminal.o: $(terminal_mod_DEPENDENCIES) terminal_mod-commands_terminal.o
 mod-terminal.o: mod-terminal.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
 
-mod-terminal.c: moddep.lst genmodsrc.sh
+mod-terminal.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'terminal' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(terminal_mod_EXPORTS),no)
@@ -2540,7 +2540,7 @@ pre-ls.o: $(ls_mod_DEPENDENCIES) ls_mod-commands_ls.o
 mod-ls.o: mod-ls.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ls_mod_CFLAGS) -c -o $@ $<
 
-mod-ls.c: moddep.lst genmodsrc.sh
+mod-ls.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'ls' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(ls_mod_EXPORTS),no)
@@ -2597,7 +2597,7 @@ pre-cmp.o: $(cmp_mod_DEPENDENCIES) cmp_mod-commands_cmp.o
 mod-cmp.o: mod-cmp.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cmp_mod_CFLAGS) -c -o $@ $<
 
-mod-cmp.c: moddep.lst genmodsrc.sh
+mod-cmp.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'cmp' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(cmp_mod_EXPORTS),no)
@@ -2654,7 +2654,7 @@ pre-cat.o: $(cat_mod_DEPENDENCIES) cat_mod-commands_cat.o
 mod-cat.o: mod-cat.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cat_mod_CFLAGS) -c -o $@ $<
 
-mod-cat.c: moddep.lst genmodsrc.sh
+mod-cat.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'cat' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(cat_mod_EXPORTS),no)
@@ -2711,7 +2711,7 @@ pre-echo.o: $(echo_mod_DEPENDENCIES) echo_mod-commands_echo.o
 mod-echo.o: mod-echo.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(echo_mod_CFLAGS) -c -o $@ $<
 
-mod-echo.c: moddep.lst genmodsrc.sh
+mod-echo.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'echo' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(echo_mod_EXPORTS),no)
@@ -2768,7 +2768,7 @@ pre-help.o: $(help_mod_DEPENDENCIES) help_mod-commands_help.o
 mod-help.o: mod-help.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(help_mod_CFLAGS) -c -o $@ $<
 
-mod-help.c: moddep.lst genmodsrc.sh
+mod-help.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'help' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(help_mod_EXPORTS),no)
@@ -2825,7 +2825,7 @@ pre-font.o: $(font_mod_DEPENDENCIES) font_mod-font_manager.o
 mod-font.o: mod-font.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
 
-mod-font.c: moddep.lst genmodsrc.sh
+mod-font.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'font' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(font_mod_EXPORTS),no)
@@ -2882,7 +2882,7 @@ pre-search.o: $(search_mod_DEPENDENCIES) search_mod-commands_search.o
 mod-search.o: mod-search.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(search_mod_CFLAGS) -c -o $@ $<
 
-mod-search.c: moddep.lst genmodsrc.sh
+mod-search.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'search' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(search_mod_EXPORTS),no)
@@ -2939,7 +2939,7 @@ pre-test.o: $(test_mod_DEPENDENCIES) test_mod-commands_test.o
 mod-test.o: mod-test.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(test_mod_CFLAGS) -c -o $@ $<
 
-mod-test.c: moddep.lst genmodsrc.sh
+mod-test.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'test' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(test_mod_EXPORTS),no)
@@ -2996,7 +2996,7 @@ pre-loopback.o: $(loopback_mod_DEPENDENCIES) loopback_mod-disk_loopback.o
 mod-loopback.o: mod-loopback.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loopback_mod_CFLAGS) -c -o $@ $<
 
-mod-loopback.c: moddep.lst genmodsrc.sh
+mod-loopback.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'loopback' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(loopback_mod_EXPORTS),no)
@@ -3053,7 +3053,7 @@ pre-fs_uuid.o: $(fs_uuid_mod_DEPENDENCIES) fs_uuid_mod-disk_fs_uuid.o
 mod-fs_uuid.o: mod-fs_uuid.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fs_uuid_mod_CFLAGS) -c -o $@ $<
 
-mod-fs_uuid.c: moddep.lst genmodsrc.sh
+mod-fs_uuid.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'fs_uuid' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(fs_uuid_mod_EXPORTS),no)
@@ -3110,7 +3110,7 @@ pre-configfile.o: $(configfile_mod_DEPENDENCIES) configfile_mod-commands_configf
 mod-configfile.o: mod-configfile.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(configfile_mod_CFLAGS) -c -o $@ $<
 
-mod-configfile.c: moddep.lst genmodsrc.sh
+mod-configfile.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'configfile' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(configfile_mod_EXPORTS),no)
@@ -3167,7 +3167,7 @@ pre-terminfo.o: $(terminfo_mod_DEPENDENCIES) terminfo_mod-term_terminfo.o termin
 mod-terminfo.o: mod-terminfo.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminfo_mod_CFLAGS) -c -o $@ $<
 
-mod-terminfo.c: moddep.lst genmodsrc.sh
+mod-terminfo.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'terminfo' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(terminfo_mod_EXPORTS),no)
@@ -3243,7 +3243,7 @@ pre-blocklist.o: $(blocklist_mod_DEPENDENCIES) blocklist_mod-commands_blocklist.
 mod-blocklist.o: mod-blocklist.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(blocklist_mod_CFLAGS) -c -o $@ $<
 
-mod-blocklist.c: moddep.lst genmodsrc.sh
+mod-blocklist.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'blocklist' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(blocklist_mod_EXPORTS),no)
@@ -3300,7 +3300,7 @@ pre-hexdump.o: $(hexdump_mod_DEPENDENCIES) hexdump_mod-commands_hexdump.o hexdum
 mod-hexdump.o: mod-hexdump.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hexdump_mod_CFLAGS) -c -o $@ $<
 
-mod-hexdump.c: moddep.lst genmodsrc.sh
+mod-hexdump.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'hexdump' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(hexdump_mod_EXPORTS),no)
@@ -3376,7 +3376,7 @@ pre-read.o: $(read_mod_DEPENDENCIES) read_mod-commands_read.o
 mod-read.o: mod-read.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(read_mod_CFLAGS) -c -o $@ $<
 
-mod-read.c: moddep.lst genmodsrc.sh
+mod-read.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'read' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(read_mod_EXPORTS),no)
@@ -3433,7 +3433,7 @@ pre-sleep.o: $(sleep_mod_DEPENDENCIES) sleep_mod-commands_sleep.o
 mod-sleep.o: mod-sleep.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(sleep_mod_CFLAGS) -c -o $@ $<
 
-mod-sleep.c: moddep.lst genmodsrc.sh
+mod-sleep.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'sleep' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(sleep_mod_EXPORTS),no)
@@ -3490,7 +3490,7 @@ pre-loadenv.o: $(loadenv_mod_DEPENDENCIES) loadenv_mod-commands_loadenv.o loaden
 mod-loadenv.o: mod-loadenv.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadenv_mod_CFLAGS) -c -o $@ $<
 
-mod-loadenv.c: moddep.lst genmodsrc.sh
+mod-loadenv.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'loadenv' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(loadenv_mod_EXPORTS),no)
@@ -3566,7 +3566,7 @@ pre-crc.o: $(crc_mod_DEPENDENCIES) crc_mod-commands_crc.o crc_mod-lib_crc.o
 mod-crc.o: mod-crc.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(crc_mod_CFLAGS) -c -o $@ $<
 
-mod-crc.c: moddep.lst genmodsrc.sh
+mod-crc.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'crc' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(crc_mod_EXPORTS),no)
@@ -3645,7 +3645,7 @@ pre-elf.o: $(elf_mod_DEPENDENCIES) elf_mod-kern_elf.o
 mod-elf.o: mod-elf.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(elf_mod_CFLAGS) -c -o $@ $<
 
-mod-elf.c: moddep.lst genmodsrc.sh
+mod-elf.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'elf' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(elf_mod_EXPORTS),no)
@@ -3702,7 +3702,7 @@ pre-gzio.o: $(gzio_mod_DEPENDENCIES) gzio_mod-io_gzio.o
 mod-gzio.o: mod-gzio.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gzio_mod_CFLAGS) -c -o $@ $<
 
-mod-gzio.c: moddep.lst genmodsrc.sh
+mod-gzio.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'gzio' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(gzio_mod_EXPORTS),no)
@@ -3759,7 +3759,7 @@ pre-bufio.o: $(bufio_mod_DEPENDENCIES) bufio_mod-io_bufio.o
 mod-bufio.o: mod-bufio.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(bufio_mod_CFLAGS) -c -o $@ $<
 
-mod-bufio.c: moddep.lst genmodsrc.sh
+mod-bufio.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'bufio' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(bufio_mod_EXPORTS),no)

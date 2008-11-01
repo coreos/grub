@@ -606,7 +606,7 @@ pre-_linux.o: $(_linux_mod_DEPENDENCIES) _linux_mod-loader_powerpc_ieee1275_linu
 mod-_linux.o: mod-_linux.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_linux_mod_CFLAGS) -c -o $@ $<
 
-mod-_linux.c: moddep.lst genmodsrc.sh
+mod-_linux.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_linux' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(_linux_mod_EXPORTS),no)
@@ -663,7 +663,7 @@ pre-linux.o: $(linux_mod_DEPENDENCIES) linux_mod-loader_powerpc_ieee1275_linux_n
 mod-linux.o: mod-linux.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(linux_mod_CFLAGS) -c -o $@ $<
 
-mod-linux.c: moddep.lst genmodsrc.sh
+mod-linux.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'linux' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(linux_mod_EXPORTS),no)
@@ -724,7 +724,7 @@ pre-normal.o: $(normal_mod_DEPENDENCIES) normal_mod-normal_arg.o normal_mod-norm
 mod-normal.o: mod-normal.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
 
-mod-normal.c: moddep.lst genmodsrc.sh
+mod-normal.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'normal' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(normal_mod_EXPORTS),no)
@@ -1048,7 +1048,7 @@ pre-suspend.o: $(suspend_mod_DEPENDENCIES) suspend_mod-commands_ieee1275_suspend
 mod-suspend.o: mod-suspend.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(suspend_mod_CFLAGS) -c -o $@ $<
 
-mod-suspend.c: moddep.lst genmodsrc.sh
+mod-suspend.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'suspend' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(suspend_mod_EXPORTS),no)
@@ -1105,7 +1105,7 @@ pre-reboot.o: $(reboot_mod_DEPENDENCIES) reboot_mod-commands_reboot.o
 mod-reboot.o: mod-reboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(reboot_mod_CFLAGS) -c -o $@ $<
 
-mod-reboot.c: moddep.lst genmodsrc.sh
+mod-reboot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'reboot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(reboot_mod_EXPORTS),no)
@@ -1162,7 +1162,7 @@ pre-halt.o: $(halt_mod_DEPENDENCIES) halt_mod-commands_halt.o
 mod-halt.o: mod-halt.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(halt_mod_CFLAGS) -c -o $@ $<
 
-mod-halt.c: moddep.lst genmodsrc.sh
+mod-halt.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'halt' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(halt_mod_EXPORTS),no)
@@ -1221,7 +1221,7 @@ pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_ieee1275_
 mod-_multiboot.o: mod-_multiboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
 
-mod-_multiboot.c: moddep.lst genmodsrc.sh
+mod-_multiboot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh '_multiboot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(_multiboot_mod_EXPORTS),no)
@@ -1316,7 +1316,7 @@ pre-multiboot.o: $(multiboot_mod_DEPENDENCIES) multiboot_mod-loader_multiboot_lo
 mod-multiboot.o: mod-multiboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(multiboot_mod_CFLAGS) -c -o $@ $<
 
-mod-multiboot.c: moddep.lst genmodsrc.sh
+mod-multiboot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'multiboot' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(multiboot_mod_EXPORTS),no)
@@ -1373,7 +1373,7 @@ pre-memdisk.o: $(memdisk_mod_DEPENDENCIES) memdisk_mod-disk_memdisk.o
 mod-memdisk.o: mod-memdisk.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memdisk_mod_CFLAGS) -c -o $@ $<
 
-mod-memdisk.c: moddep.lst genmodsrc.sh
+mod-memdisk.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
 	sh $(srcdir)/genmodsrc.sh 'memdisk' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(memdisk_mod_EXPORTS),no)

@@ -62,11 +62,11 @@ mkinstalldirs = $(srcdir)/mkinstalldirs
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
-CPPFLAGS = @CPPFLAGS@ -I. -Iinclude -I$(srcdir)/include -Wall -W \
+CPPFLAGS = @CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/include -Wall -W \
 	 -DGRUB_LIBDIR=\"$(pkglibdir)\"
 TARGET_CC = @TARGET_CC@
 TARGET_CFLAGS = @TARGET_CFLAGS@
-TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I. -Iinclude -I$(srcdir)/include \
+TARGET_CPPFLAGS = @TARGET_CPPFLAGS@ -I$(builddir) -I$(builddir)/include -I$(srcdir)/include \
 	-Wall -W
 TARGET_LDFLAGS = @TARGET_LDFLAGS@
 TARGET_IMG_LDSCRIPT = @TARGET_IMG_LDSCRIPT@

@@ -1,3 +1,9 @@
+2008-11-01  Robert Millan  <rmh@aybabtu.com>
+
+	* Makefile.in (CPPFLAGS): Fix builddir=. assumption.
+	(TARGET_CPPFLAGS): Likewise.
+	* genmk.rb (mod_src): Fix builddir=. and srcdir=. assumptions.
+
 2008-11-01  Carles Pina i Estany  <carles@pina.cat>
 
 	* normal/menu.c (run_menu): Add Previous and Next Page keys in menu.
