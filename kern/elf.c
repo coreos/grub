@@ -232,9 +232,9 @@ grub_elf32_load (grub_elf_t _elf, grub_elf32_load_hook_t _load_hook,
     if (phdr->p_type != PT_LOAD)
       return 0;
 
+    load_addr = phdr->p_paddr;
     if (load_hook && load_hook (phdr, &load_addr))
       return 1;
-    load_addr = phdr->p_paddr;
 
     if (load_addr < load_base)
       load_base = load_addr;
@@ -411,9 +411,9 @@ grub_elf64_load (grub_elf_t _elf, grub_elf64_load_hook_t _load_hook,
     if (phdr->p_type != PT_LOAD)
       return 0;
 
+    load_addr = phdr->p_paddr;
     if (load_hook && load_hook (phdr, &load_addr))
       return 1;
-    load_addr = phdr->p_paddr;
 
     if (load_addr < load_base)
       load_base = load_addr;
