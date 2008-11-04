@@ -1,3 +1,9 @@
+2008-11-04  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: New file.  Generate grub configuration
+	for FreeBSD.
+	* conf/common.rmk (grub-mkconfig_SCRIPTS): Add 10_freebsd.
+
 2008-11-03  Bean  <bean123ch@gmail.com>
 
 	* kern/elf.c (grub_elf32_load): Revert to previous code.

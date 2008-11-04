@@ -429,6 +429,7 @@ util/unifont2pff.rb
 util/update-grub_lib.in
 util/elf/grub-mkimage.c
 util/grub.d/00_header.in
+util/grub.d/10_freebsd.in
 util/grub.d/10_hurd.in
 util/grub.d/10_linux.in
 util/grub.d/10_windows.in

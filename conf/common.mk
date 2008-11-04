@@ -548,7 +548,7 @@ CLEANFILES += update-grub_lib
 %: util/grub.d/%.in config.status
 	./config.status --file=$@:$<
 	chmod +x $@
-grub-mkconfig_SCRIPTS = 00_header 10_linux 10_hurd 30_os-prober 40_custom
+grub-mkconfig_SCRIPTS = 00_header 10_linux 10_hurd 10_freebsd 30_os-prober 40_custom
 ifeq ($(target_os), cygwin)
 grub-mkconfig_SCRIPTS += 10_windows
 endif
