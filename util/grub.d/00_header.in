@@ -41,7 +41,7 @@ set timeout=${GRUB_TIMEOUT}
 EOF
 
 case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in
-  serial:* | *: serial)
+  serial:* | *:serial)
     if ! test -e ${grub_prefix}/serial.mod ; then
       echo "Serial terminal not available on this platform." >&2 ; exit 1
     fi

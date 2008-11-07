@@ -1,3 +1,8 @@
+2008-11-07  Pavel Roskin  <proski@gnu.org>
+
+	* util/grub.d/00_header.in: Remove incorrect space before
+	"serial".
+
 2008-11-07  Robert Millan  <rmh@aybabtu.com>
 
 	* include/multiboot2.h (struct multiboot_header): Add `flags' member as
