@@ -1,5 +1,16 @@
 2008-11-07  Robert Millan  <rmh@aybabtu.com>
 
+	* include/multiboot2.h (struct multiboot_header): Add `flags' member as
+	per specification.
+	* loader/multiboot2.c (grub_multiboot2): Fix Multiboot2 header check.
+	* loader/multiboot_loader.c (find_multi_boot2_header): New function
+	(based on find_multi_boot1_header).
+	(grub_rescue_cmd_multiboot_loader): Check for Multiboot2 header,
+	using find_multi_boot2_header(), and abort if neither Multiboot or
+	Multiboot headers were found.
+
+2008-11-07  Robert Millan  <rmh@aybabtu.com>
+
 	Modularize at_keyboard.mod:
 
 	* conf/i386.rmk (pkglib_MODULES): Add `at_keyboard.mod'.

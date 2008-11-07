@@ -46,6 +46,7 @@ typedef uint32_t multiboot_word;
 struct multiboot_header
 {
   uint32_t magic;
+  uint32_t flags;
 };
 
 struct multiboot_tag_header
