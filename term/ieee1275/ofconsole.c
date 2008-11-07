@@ -33,10 +33,8 @@ static grub_uint8_t grub_ofconsole_height;
 static int grub_curr_x;
 static int grub_curr_y;
 
-#ifndef __i386__
 static int grub_keybuf;
 static int grub_buflen;
-#endif
 
 struct color
 {
@@ -144,7 +142,6 @@ grub_ofconsole_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_col
   *highlight_color = grub_ofconsole_highlight_color;
 }
 
-#ifndef __i386__
 static int
 grub_ofconsole_readkey (int *key)
 {
@@ -342,7 +339,20 @@ grub_ofconsole_refresh (void)
 }
 
 static grub_err_t
-grub_ofconsole_init (void)
+grub_ofconsole_init_input (void)
+{
+  grub_ssize_t actual;
+
+  if (grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "stdin", &stdin_ihandle,
+					  sizeof stdin_ihandle, &actual)
+      || actual != sizeof stdin_ihandle)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdin");
+
+  return 0;
+}
+
+static grub_err_t
+grub_ofconsole_init_output (void)
 {
   grub_ssize_t actual;
   int col;
@@ -357,11 +367,6 @@ grub_ofconsole_init (void)
 					  sizeof stdout_ihandle, &actual)
       || actual != sizeof stdout_ihandle)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdout");
-
-  if (grub_ieee1275_get_integer_property (grub_ieee1275_chosen, "stdin", &stdin_ihandle,
-					  sizeof stdin_ihandle, &actual)
-      || actual != sizeof stdin_ihandle)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Cannot find stdin");
 
   /* Initialize colors.  */
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_SET_COLORS))
@@ -385,20 +390,22 @@ grub_ofconsole_fini (void)
 
 
 
-static struct grub_term grub_ofconsole_term =
+static struct grub_term_input grub_ofconsole_term_input =
   {
     .name = "ofconsole",
-    .init = grub_ofconsole_init,
+    .init = grub_ofconsole_init_input,
+    .fini = grub_ofconsole_fini,
+    .checkkey = grub_ofconsole_checkkey,
+    .getkey = grub_ofconsole_getkey,
+  };
+
+static struct grub_term_output grub_ofconsole_term_output =
+  {
+    .name = "ofconsole",
+    .init = grub_ofconsole_init_output,
     .fini = grub_ofconsole_fini,
     .putchar = grub_ofconsole_putchar,
     .getcharwidth = grub_ofconsole_getcharwidth,
-#ifdef __i386__
-    .checkkey = grub_console_checkkey,
-    .getkey = grub_console_getkey,
-#else
-    .checkkey = grub_ofconsole_checkkey,
-    .getkey = grub_ofconsole_getkey,
-#endif
     .getxy = grub_ofconsole_getxy,
     .getwh = grub_ofconsole_getwh,
     .gotoxy = grub_ofconsole_gotoxy,
@@ -409,18 +416,20 @@ static struct grub_term grub_ofconsole_term =
     .setcursor = grub_ofconsole_setcursor,
     .refresh = grub_ofconsole_refresh,
     .flags = 0,
-    .next = 0
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register (&grub_ofconsole_term);
-  grub_term_set_current (&grub_ofconsole_term);
+  grub_term_register_input (&grub_ofconsole_term_input);
+  grub_term_register_output (&grub_ofconsole_term_output);
+  grub_term_set_current_output (&grub_ofconsole_term_output);
+  grub_term_set_current_input (&grub_ofconsole_term_input);
 }
 
 void
 grub_console_fini (void)
 {
-  grub_term_unregister (&grub_ofconsole_term);
+  grub_term_unregister_input (&grub_ofconsole_term_input);
+  grub_term_unregister_output (&grub_ofconsole_term_output);
 }

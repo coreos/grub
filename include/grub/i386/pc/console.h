@@ -40,8 +40,8 @@
 /* These are global to share code between C and asm.  */
 extern grub_uint8_t grub_console_cur_color;
 void grub_console_real_putchar (int c);
-int EXPORT_FUNC(grub_console_checkkey) (void);
-int EXPORT_FUNC(grub_console_getkey) (void);
+int grub_console_checkkey (void);
+int grub_console_getkey (void);
 grub_uint16_t grub_console_getxy (void);
 void grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y);
 void grub_console_cls (void);

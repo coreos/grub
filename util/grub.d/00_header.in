@@ -40,8 +40,31 @@ set default=${GRUB_DEFAULT}
 set timeout=${GRUB_TIMEOUT}
 EOF
 
-case x${GRUB_TERMINAL} in
-  xgfxterm)
+case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in
+  serial:* | *: serial)
+    if ! test -e ${grub_prefix}/serial.mod ; then
+      echo "Serial terminal not available on this platform." >&2 ; exit 1
+    fi
+
+    if [ "x${GRUB_SERIAL_COMMAND}" = "x" ] ; then
+      echo "Warning, requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used." >&2
+      GRUB_SERIAL_COMMAND=serial
+    fi
+    echo "${GRUB_SERIAL_COMMAND}"
+  ;;
+esac
+
+case x${GRUB_TERMINAL_INPUT} in
+  x)
+    # Just use the native terminal
+  ;;
+  x*)
+    echo "terminal_input ${GRUB_TERMINAL_INPUT}"
+  ;;
+esac
+
+case x${GRUB_TERMINAL_OUTPUT} in
+ xgfxterm)
     # Make the font accessible
     prepare_grub_to_access_device `${grub_probe} --target=device ${GRUB_FONT_PATH}`
 
@@ -62,26 +85,14 @@ if font `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
   set gfxmode=${GRUB_GFXMODE}
   insmod gfxterm
   insmod ${video_backend}
-  terminal gfxterm
+  terminal_output gfxterm
 fi
 EOF
-  ;;
-  xserial)
-    if ! test -e ${grub_prefix}/serial.mod ; then
-      echo "Serial terminal not available on this platform." >&2 ; exit 1
-    fi
-
-    if [ "x${GRUB_SERIAL_COMMAND}" = "x" ] ; then
-      echo "Warning, requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used." >&2
-      GRUB_SERIAL_COMMAND=serial
-    fi
-    echo "${GRUB_SERIAL_COMMAND}"
-    echo "terminal serial"
   ;;
   x)
     # Just use the native terminal
   ;;
   x*)
-    echo "terminal ${GRUB_TERMINAL}"
+    echo "terminal_output ${GRUB_TERMINAL_OUTPUT}"
   ;;
 esac

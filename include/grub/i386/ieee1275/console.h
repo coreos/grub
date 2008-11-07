@@ -21,10 +21,6 @@
 
 #include <grub/symbol.h>
 
-void EXPORT_FUNC(grub_keyboard_controller_init) (void);
-int EXPORT_FUNC(grub_console_checkkey) (void);
-int EXPORT_FUNC(grub_console_getkey) (void);
-
 /* Initialize the console system.  */
 void grub_console_init (void);
 

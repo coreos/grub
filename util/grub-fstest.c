@@ -54,7 +54,13 @@ grub_getkey (void)
 }
 
 grub_term_t
-grub_term_get_current (void)
+grub_term_get_current_input (void)
+{
+  return 0;
+}
+
+grub_term_t
+grub_term_get_current_output (void)
 {
   return 0;
 }

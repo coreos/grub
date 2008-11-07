@@ -1,3 +1,144 @@
+2008-11-07  Robert Millan  <rmh@aybabtu.com>
+
+	Modularize at_keyboard.mod:
+
+	* conf/i386.rmk (pkglib_MODULES): Add `at_keyboard.mod'.
+	(at_keyboard_mod_SOURCES, at_keyboard_mod_CFLAGS)
+	(at_keyboard_mod_LDFLAGS): New variables.
+
+	Actual terminal split:
+
+	* include/grub/term.h (struct grub_term): Split in ...
+	(struct grub_term_input): ... this, and ...
+	(struct grub_term_output): ... this.  Update all users.
+	(grub_term_set_current): Split in ...
+	(grub_term_set_current_input): ... this, and ...
+	(grub_term_set_current_output): ... this.
+	(grub_term_get_current): Split in ...
+	(grub_term_get_current_input): ... this, and ...
+	(grub_term_get_current_output): ... this.
+	(grub_term_register): Split in ...
+	(grub_term_register_input): ... this, and ...
+	(grub_term_register_output): ... this.
+	(grub_term_unregister): Split in ...
+	(grub_term_unregister_input): ... this, and ...
+	(grub_term_unregister_output): ... this.
+	(grub_term_iterate): Split in ...
+	(grub_term_iterate_input): ... this, and ...
+	(grub_term_iterate_output): ... this.
+
+	* kern/term.c (grub_term_list): Split in ...
+	(grub_term_list_input): ... this, and ...
+	(grub_term_list_output): ... this.  Update all users.
+	(grub_cur_term): Split in ...
+	(grub_cur_term_input): ... this, and ...
+	(grub_cur_term_output): ... this.  Update all users.
+	(grub_term_set_current): Split in ...
+	(grub_term_set_current_input): ... this, and ...
+	(grub_term_set_current_output): ... this.
+	(grub_term_get_current): Split in ...
+	(grub_term_get_current_input): ... this, and ...
+	(grub_term_get_current_output): ... this.
+	(grub_term_register): Split in ...
+	(grub_term_register_input): ... this, and ...
+	(grub_term_register_output): ... this.
+	(grub_term_unregister): Split in ...
+	(grub_term_unregister_input): ... this, and ...
+	(grub_term_unregister_output): ... this.
+	(grub_term_iterate): Split in ...
+	(grub_term_iterate_input): ... this, and ...
+	(grub_term_iterate_output): ... this.
+
+	* kern/misc.c (grub_abort): Split use of grub_term_get_current() into
+	a check for input and one for output (and only attempt to get keys
+	from user when input works).
+
+	* util/grub-probe.c (grub_term_get_current): Split in ...
+	(grub_term_get_current_input): ... this, and ...
+	(grub_term_get_current_output): ... this.
+	* util/grub-fstest.c: Likewise.
+	* util/i386/pc/grub-setup.c: Likewise.
+	* util/grub-editenv.c: Likewise.
+
+	Portability adjustments:
+
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Remove
+	`term/i386/pc/at_keyboard.c'.
+	* kern/ieee1275/init.c [__i386__] (grub_machine_init): Remove call to
+	grub_keyboard_controller_init() (now handled by terminal .init).
+	* kern/i386/coreboot/init.c (grub_machine_init): Add call to
+	grub_at_keyboard_init().
+	* include/grub/i386/ieee1275/console.h (grub_keyboard_controller_init)
+	(grub_console_checkkey, grub_console_getkey): Remove (now provided by
+	at_keyboard.mod via input terminal interface).
+	* include/grub/i386/coreboot/console.h: Convert into a stub for
+	`<grub/i386/pc/console.h>'.
+
+	Migrate full terminals to new API:
+
+	* term/efi/console.c (grub_console_term): Split into ...
+	(grub_console_term_input): ... this, and ...
+	(grub_console_term_output): ... this.  Update all users.
+	* term/ieee1275/ofconsole.c: Remove __i386__ hack.
+	(grub_ofconsole_init): Split into ...
+	(grub_ofconsole_init_input): ... this, and ...
+	(grub_ofconsole_init_output): ... this.
+	(grub_ofconsole_term): Split into ...
+	(grub_ofconsole_term_input): ... this, and ...
+	(grub_ofconsole_term_output): ... this.  Update all users.
+	* term/i386/pc/serial.c (grub_serial_term): Split into ...
+	(grub_serial_term_input): ... this, and ...
+	(grub_serial_term_output): ... this.  Update all users.
+	* term/i386/pc/console.c (grub_console_term): Split into ...
+	(grub_console_term_input): ... this, and ...
+	(grub_console_term_output): ... this.  Update all users.
+	(grub_console_term_input): Only enable it on PC/BIOS platform.
+	(grub_console_init): Remove grub_keyboard_controller_init() call.
+
+	Migrate input terminals to new API:
+
+	* term/i386/pc/at_keyboard.c: Replace `cpu' and `machine' with
+	`i386' and `i386/pc' to enable build on x86_64 (this driver is
+	i386-specific anyway).
+	(grub_console_checkkey): Rename to ...
+	(grub_at_keyboard_checkkey): ... this.  Static-ize.  Update all
+	users.
+	(grub_keyboard_controller_orig): New variable.
+	(grub_console_getkey): Rename to ...
+	(grub_at_keyboard_getkey): ... this.  Static-ize.  Update all
+	users.
+	(grub_keyboard_controller_init): Static-ize.  Save original
+	controller value so that it can be restored ...
+	(grub_keyboard_controller_fini): ... here (new function).
+	(grub_at_keyboard_term): New structure.
+	(GRUB_MOD_INIT(at_keyboard), GRUB_MOD_FINI(at_keyboard)): New
+	functions.
+
+	Migrate output terminals to new API:
+
+	* term/i386/pc/vga.c (grub_vga_term): Change type to
+	`struct  grub_term_output'.  Remove `.checkkey' and `.getkey'
+	members.  Update all users.
+	* term/gfxterm.c (grub_video_term): Change type to
+	`struct  grub_term_output'.  Remove `.checkkey' and `.getkey'
+	members.  Update all users.
+	* include/grub/i386/pc/console.h (grub_console_checkkey)
+	(grub_console_getkey): Do not export (no longer needed by gfxterm,
+	etc).
+
+	Migrate `terminal' command and userland tools to new API:
+
+	* commands/terminal.c (grub_cmd_terminal): Split into ...
+	(grub_cmd_terminal_input): ... this, and ...
+	(grub_cmd_terminal_output): ... this.
+	(GRUB_MOD_INIT(terminal)): Split `terminal' command in two commands:
+	`terminal_input' and `terminal_output'.
+	* util/grub.d/00_header.in: Adjust `terminal' calls to new
+	`terminal_input' / `terminal_output' API.
+	* util/grub-mkconfig.in: Export ${GRUB_TERMINAL_INPUT} and
+	${GRUB_TERMINAL_OUTPUT} instead of ${GRUB_TERMINAL} (and if user
+	provided ${GRUB_TERMINAL}, convert it).
+
 2008-11-04  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/10_freebsd.in: New file.  Generate grub configuration

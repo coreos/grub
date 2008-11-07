@@ -22,7 +22,7 @@ kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 	kern/time.c \
 	kern/generic/millisleep.c \
 	kern/ieee1275/ieee1275.c \
-	term/ieee1275/ofconsole.c term/i386/pc/at_keyboard.c \
+	term/ieee1275/ofconsole.c \
 	disk/ieee1275/ofdisk.c \
 	symlist.c
 kernel_elf_HEADERS = arg.h cache.h device.h disk.h dl.h elf.h elfload.h \

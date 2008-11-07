@@ -16,9 +16,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/console.h>
-#include <grub/cpu/at_keyboard.h>
-#include <grub/cpu/io.h>
+#include <grub/dl.h>
+#include <grub/i386/pc/console.h>
+#include <grub/i386/at_keyboard.h>
+#include <grub/i386/io.h>
 #include <grub/misc.h>
 #include <grub/term.h>
 
@@ -61,6 +62,8 @@ static char keyboard_map_shift[128] =
   'B', 'N', 'M', '<', '>', '?'
 };
 
+static grub_uint8_t grub_keyboard_controller_orig;
+
 static void
 grub_keyboard_controller_write (grub_uint8_t c)
 {
@@ -75,12 +78,6 @@ grub_keyboard_controller_read (void)
   while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
   grub_outb (KEYBOARD_COMMAND_READ, KEYBOARD_REG_STATUS);
   return grub_inb (KEYBOARD_REG_DATA);
-}
-
-void
-grub_keyboard_controller_init (void)
-{
-  grub_keyboard_controller_write (grub_keyboard_controller_read () | KEYBOARD_SCANCODE_SET1);
 }
 
 /* FIXME: This should become an interrupt service routine.  For now
@@ -148,8 +145,8 @@ grub_keyboard_getkey (void)
 }
 
 /* If there is a character pending, return it; otherwise return -1.  */
-int
-grub_console_checkkey (void)
+static int
+grub_at_keyboard_checkkey (void)
 {
   int code, key;
   code = grub_keyboard_getkey ();
@@ -192,13 +189,47 @@ grub_console_checkkey (void)
   return (int) key;
 }
 
-int
-grub_console_getkey (void)
+static int
+grub_at_keyboard_getkey (void)
 {
   int key;
   do
     {
-      key = grub_console_checkkey ();
+      key = grub_at_keyboard_checkkey ();
     } while (key == -1);
   return key;
+}
+
+static grub_err_t
+grub_keyboard_controller_init (void)
+{
+  grub_keyboard_controller_orig = grub_keyboard_controller_read ();
+  grub_keyboard_controller_write (grub_keyboard_controller_orig | KEYBOARD_SCANCODE_SET1);
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_keyboard_controller_fini (void)
+{
+  grub_keyboard_controller_write (grub_keyboard_controller_orig);
+  return GRUB_ERR_NONE;
+}
+
+static struct grub_term_input grub_at_keyboard_term =
+  {
+    .name = "at_keyboard",
+    .init = grub_keyboard_controller_init,
+    .fini = grub_keyboard_controller_fini,
+    .checkkey = grub_at_keyboard_checkkey,
+    .getkey = grub_at_keyboard_getkey,
+  };
+
+GRUB_MOD_INIT(at_keyboard)
+{
+  grub_term_register_input (&grub_at_keyboard_term);
+}
+
+GRUB_MOD_FINI(at_keyboard)
+{
+  grub_term_unregister_output (&grub_at_keyboard_term);
 }

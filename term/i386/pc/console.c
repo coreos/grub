@@ -125,15 +125,22 @@ grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color
   *highlight_color = grub_console_highlight_color;
 }
 
-static struct grub_term grub_console_term =
+/* On non-BIOS platforms, console.c is used in combination with vga_text.c
+   (only to handle output).  */
+#ifdef GRUB_MACHINE_PCBIOS
+static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
-    .init = 0,
-    .fini = 0,
-    .putchar = grub_console_putchar,
-    .getcharwidth = grub_console_getcharwidth,
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
+  };
+#endif
+
+static struct grub_term_output grub_console_term_output =
+  {
+    .name = "console",
+    .putchar = grub_console_putchar,
+    .getcharwidth = grub_console_getcharwidth,
     .getwh = grub_console_getwh,
     .getxy = grub_console_getxy,
     .gotoxy = grub_console_gotoxy,
@@ -143,23 +150,26 @@ static struct grub_term grub_console_term =
     .getcolor = grub_console_getcolor,
     .setcursor = grub_console_setcursor,
     .flags = 0,
-    .next = 0
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register (&grub_console_term);
-  grub_term_set_current (&grub_console_term);
-
-#ifdef GRUB_MACHINE_LINUXBIOS
-  grub_keyboard_controller_init ();
+  grub_term_register_output (&grub_console_term_output);
+  grub_term_set_current_output (&grub_console_term_output);
+#ifdef GRUB_MACHINE_PCBIOS
+  grub_term_register_input (&grub_console_term_input);
+  grub_term_set_current_input (&grub_console_term_input);
 #endif
 }
 
 void
 grub_console_fini (void)
 {
-  grub_term_set_current (&grub_console_term);
-  grub_term_unregister (&grub_console_term);
+  grub_term_set_current_output (&grub_console_term_output);
+#ifdef GRUB_MACHINE_PCBIOS
+  grub_term_set_current_input (&grub_console_term_input);
+  grub_term_unregister_input (&grub_console_term_input);
+#endif
+  grub_term_unregister_output (&grub_console_term_output);
 }

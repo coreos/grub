@@ -130,31 +130,37 @@ if test -f ${sysconfdir}/default/grub ; then
   . ${sysconfdir}/default/grub
 fi
 
-case x${GRUB_TERMINAL} in
+# XXX: should this be deprecated at some point?
+if [ "x${GRUB_TERMINAL}" != "x" ] ; then
+  GRUB_TERMINAL_INPUT="${GRUB_TERMINAL}"
+  GRUB_TERMINAL_OUTPUT="${GRUB_TERMINAL}"
+fi
+
+case x${GRUB_TERMINAL_OUTPUT} in
   x)
     # If this platform supports gfxterm, try to use it.
     if test -e ${grub_prefix}/gfxterm.mod ; then
-      GRUB_TERMINAL=gfxterm
+      GRUB_TERMINAL_OUTPUT=gfxterm
     fi
   ;;
   xconsole | xserial | xofconsole | xgfxterm) ;;
-  *) echo "Invalid terminal \"${GRUB_TERMINAL}\"" >&2 ; exit 1 ;;
+  *) echo "Invalid output terminal \"${GRUB_TERMINAL_OUTPUT}\"" >&2 ; exit 1 ;;
 esac
 
 # check for terminals that require fonts
-case ${GRUB_TERMINAL} in
+case ${GRUB_TERMINAL_OUTPUT} in
   gfxterm)
     if path=`font_path` ; then
       GRUB_FONT_PATH="${path}"
     else
       # fallback to the native terminal for this platform
-      unset GRUB_TERMINAL
+      unset GRUB_TERMINAL_OUTPUT
     fi
   ;;
 esac
 
 # does our terminal support utf-8 ?
-case ${GRUB_TERMINAL} in
+case ${GRUB_TERMINAL_OUTPUT} in
   gfxterm) ;;
   *)
     # make sure all our children behave in conformance with ascii..
@@ -167,7 +173,7 @@ esac
 export GRUB_DEVICE GRUB_DEVICE_UUID GRUB_DEVICE_BOOT GRUB_DEVICE_BOOT_UUID GRUB_FS GRUB_FONT_PATH GRUB_PRELOAD_MODULES
 
 # These are optional, user-defined variables.
-export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_CMDLINE_LINUX_DEFAULT GRUB_TERMINAL GRUB_SERIAL_COMMAND GRUB_DISABLE_LINUX_UUID GRUB_GFXMODE
+export GRUB_DEFAULT GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_CMDLINE_LINUX GRUB_CMDLINE_LINUX_DEFAULT GRUB_TERMINAL_OUTPUT GRUB_SERIAL_COMMAND GRUB_DISABLE_LINUX_UUID GRUB_GFXMODE
 
 if test "x${grub_cfg}" != "x"; then
   rm -f ${grub_cfg}.new

@@ -1056,15 +1056,13 @@ grub_gfxterm_background_image_cmd (struct grub_arg_list *state __attribute__ ((u
   return grub_errno;
 }
 
-static struct grub_term grub_video_term =
+static struct grub_term_output grub_video_term =
   {
     .name = "gfxterm",
     .init = grub_gfxterm_init,
     .fini = grub_gfxterm_fini,
     .putchar = grub_gfxterm_putchar,
     .getcharwidth = grub_gfxterm_getcharwidth,
-    .checkkey = grub_console_checkkey,
-    .getkey = grub_console_getkey,
     .getwh = grub_virtual_screen_getwh,
     .getxy = grub_virtual_screen_getxy,
     .gotoxy = grub_gfxterm_gotoxy,
@@ -1081,7 +1079,7 @@ static struct grub_term grub_video_term =
 GRUB_MOD_INIT(term_gfxterm)
 {
   my_mod = mod;
-  grub_term_register (&grub_video_term);
+  grub_term_register_output (&grub_video_term);
 
   grub_register_command ("background_image",
                          grub_gfxterm_background_image_cmd,
@@ -1094,5 +1092,5 @@ GRUB_MOD_INIT(term_gfxterm)
 GRUB_MOD_FINI(term_gfxterm)
 {
   grub_unregister_command ("bgimage");
-  grub_term_unregister (&grub_video_term);
+  grub_term_unregister_output (&grub_video_term);
 }

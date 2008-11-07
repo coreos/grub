@@ -371,7 +371,8 @@ void
 grub_console_init (void)
 {
   grub_term_register (&grub_ncurses_term);
-  grub_term_set_current (&grub_ncurses_term);
+  grub_term_set_current_input (&grub_ncurses_term);
+  grub_term_set_current_output (&grub_ncurses_term);
 }
 
 void

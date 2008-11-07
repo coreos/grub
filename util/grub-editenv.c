@@ -41,7 +41,13 @@ grub_refresh (void)
 }
 
 void *
-grub_term_get_current (void)
+grub_term_get_current_input (void)
+{
+  return 0;
+}
+
+void *
+grub_term_get_current_output (void)
 {
   return 0;
 }

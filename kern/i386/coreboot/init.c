@@ -138,6 +138,7 @@ grub_machine_init (void)
   grub_upper_mem -= GRUB_MEMORY_MACHINE_UPPER_START;
 
   grub_tsc_init ();
+  grub_at_keyboard_init ();
 }
 
 void
