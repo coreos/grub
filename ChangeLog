@@ -1,5 +1,8 @@
 2008-11-07  Pavel Roskin  <proski@gnu.org>
 
+	* gendistlist.sh: Use C locale for sorting to ensure consistent
+	output on all systems.
+
 	* util/grub.d/00_header.in: Remove incorrect space before
 	"serial".
 

@@ -23,6 +23,9 @@ EXTRA_DISTFILES="AUTHORS COPYING ChangeLog DISTLIST INSTALL NEWS README \
 DISTDIRS="boot bus commands conf disk docs font fs hello hook include io kern lib \
 	loader normal partmap term util video"
 
+LC_COLLATE=C
+export LC_COLLATE
+
 for f in $EXTRA_DISTFILES; do
     echo $f
 done
