@@ -1,3 +1,13 @@
+2008-11-08  Robert Millan  <rmh@aybabtu.com>
+
+	* Makefile.in (PKGLIB): Add $(pkglib_BUILDDIR).
+	(PKGDATA): Add $(pkgdata_SRCDIR).
+	(pkglib_BUILDDIR): New variable.
+	(pkgdata_SRCDIR): New variable.
+	(build_env.mk): New target.
+	(include_DATA): New variable.
+	(install-local): Install $(include_DATA) files in $(includedir).
+
 2008-11-07  Pavel Roskin  <proski@gnu.org>
 
 	* gendistlist.sh: Use C locale for sorting to ensure consistent

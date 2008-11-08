@@ -105,8 +105,8 @@ RMKFILES = $(addprefix conf/,common.rmk i386-coreboot.rmk i386-efi.rmk \
 MKFILES = $(patsubst %.rmk,%.mk,$(RMKFILES))
 
 PKGLIB = $(pkglib_IMAGES) $(pkglib_MODULES) $(pkglib_PROGRAMS) \
-	$(pkglib_DATA) $(lib_DATA)
-PKGDATA = $(pkgdata_DATA)
+	$(pkglib_DATA) $(lib_DATA) $(pkglib_BUILDDIR)
+PKGDATA = $(pkgdata_DATA) $(pkgdata_SRCDIR)
 PROGRAMS = $(bin_UTILITIES) $(sbin_UTILITIES)
 SCRIPTS = $(bin_SCRIPTS) $(sbin_SCRIPTS) $(grub-mkconfig_SCRIPTS)
 
@@ -163,6 +163,22 @@ ascii.pff: $(UNIFONT_HEX)
 	ruby $(srcdir)/util/unifont2pff.rb 0x0-0x7f $(UNICODE_ARROWS) $(UNICODE_LINES) $(UNIFONT_HEX) > $@
 endif
 
+# Used for building modules externally
+pkglib_BUILDDIR += build_env.mk
+build_env.mk: Makefile
+	(\
+	echo "TARGET_CC=$(TARGET_CC)" ; \
+	echo "TARGET_CFLAGS=$(TARGET_CFLAGS)" ; \
+	echo "TARGET_CPPFLAGS=$(TARGET_CPPFLAGS) -I$(pkglibdir)" ; \
+	echo "STRIP=$(STRIP)" ; \
+	echo "COMMON_ASFLAGS=$(COMMON_ASFLAGS)" ; \
+	echo "COMMON_CFLAGS=$(COMMON_CFLAGS)" ; \
+	echo "COMMON_LDFLAGS=$(COMMON_LDFLAGS)"\
+	) > $@
+pkglib_BUILDDIR += config.h grub_script.tab.h
+pkgdata_SRCDIR += genmodsrc.sh genmk.rb
+include_DATA += $(shell find include -name \*.h) include/grub/cpu
+
 all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)
 
 install: install-local
@@ -174,6 +190,19 @@ install-local: all
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,.*/,,'`"; \
 	  $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(pkglibdir)/$$dest; \
+	done
+	$(mkinstalldirs) $(DESTDIR)$(includedir)
+	@list='$(include_DATA)'; \
+	for file in $$list; do \
+	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
+	  dest="`echo $$file | sed 's,include/,,'`"; \
+	  destdir="`echo $$dest | sed 's,\(^\|/\)[^/]*$$,,g'`"; \
+	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \
+	  if test -f "$$dir$$file"; then \
+	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
+	  elif test -L "$$dir$$file"; then \
+	    cp -d $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
+	  fi; \
 	done
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	@list='$(PKGDATA)'; \
