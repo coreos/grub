@@ -1,5 +1,14 @@
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 
+	* term/i386/pc/vesafb.c (grub_vesafb_term): Change type to
+	`struct  grub_term_output'.  Remove `.checkkey' and `.getkey'
+	members.  Update all users.
+	* util/console.c (grub_ncurses_term): Split in ...
+	(grub_ncurses_term_input): ... this, and ...
+	(grub_ncurses_term_output): ... this.  Update all users.
+
+2008-11-08  Robert Millan  <rmh@aybabtu.com>
+
 	* Makefile.in (PKGLIB): Add $(pkglib_BUILDDIR).
 	(PKGDATA): Add $(pkgdata_SRCDIR).
 	(pkglib_BUILDDIR): New variable.

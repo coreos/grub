@@ -345,15 +345,20 @@ grub_ncurses_fini (void)
 }
 
 
-static struct grub_term grub_ncurses_term =
+static struct grub_term_input grub_ncurses_term_input =
+  {
+    .name = "console",
+    .checkkey = grub_ncurses_checkkey,
+    .getkey = grub_ncurses_getkey,
+  };
+
+static struct grub_term_output grub_ncurses_term_output =
   {
     .name = "console",
     .init = grub_ncurses_init,
     .fini = grub_ncurses_fini,
     .putchar = grub_ncurses_putchar,
     .getcharwidth = grub_ncurses_getcharwidth,
-    .checkkey = grub_ncurses_checkkey,
-    .getkey = grub_ncurses_getkey,
     .getxy = grub_ncurses_getxy,
     .getwh = grub_ncurses_getwh,
     .gotoxy = grub_ncurses_gotoxy,
@@ -364,15 +369,15 @@ static struct grub_term grub_ncurses_term =
     .setcursor = grub_ncurses_setcursor,
     .refresh = grub_ncurses_refresh,
     .flags = 0,
-    .next = 0
   };
 
 void
 grub_console_init (void)
 {
-  grub_term_register (&grub_ncurses_term);
-  grub_term_set_current_input (&grub_ncurses_term);
-  grub_term_set_current_output (&grub_ncurses_term);
+  grub_term_register_output (&grub_ncurses_term_output);
+  grub_term_register_input (&grub_ncurses_term_input);
+  grub_term_set_current_output (&grub_ncurses_term_output);
+  grub_term_set_current_input (&grub_ncurses_term_input);
 }
 
 void
