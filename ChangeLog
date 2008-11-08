@@ -6,6 +6,7 @@
 	* util/console.c (grub_ncurses_term): Split in ...
 	(grub_ncurses_term_input): ... this, and ...
 	(grub_ncurses_term_output): ... this.  Update all users.
+	* term/ieee1275/ofconsole.c: Remove stale `#endif'.
 
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 

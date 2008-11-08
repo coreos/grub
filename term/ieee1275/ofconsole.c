@@ -226,7 +226,6 @@ grub_ofconsole_getkey (void)
   
   return key;
 }
-#endif
 
 static grub_uint16_t
 grub_ofconsole_getxy (void)
