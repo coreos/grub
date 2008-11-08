@@ -1,6 +1,7 @@
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 
 	* Makefile.in (include_DATA): Fix srcdir=. assumption.
+	(DISTCLEANFILES): Add `build_env.mk'.
 
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 
