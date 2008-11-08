@@ -1,5 +1,9 @@
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 
+	* Makefile.in (include_DATA): Fix srcdir=. assumption.
+
+2008-11-08  Robert Millan  <rmh@aybabtu.com>
+
 	* term/i386/pc/vesafb.c (grub_vesafb_term): Change type to
 	`struct  grub_term_output'.  Remove `.checkkey' and `.getkey'
 	members.  Update all users.

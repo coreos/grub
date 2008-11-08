@@ -177,7 +177,7 @@ build_env.mk: Makefile
 	) > $@
 pkglib_BUILDDIR += config.h grub_script.tab.h
 pkgdata_SRCDIR += genmodsrc.sh genmk.rb
-include_DATA += $(shell find include -name \*.h) include/grub/cpu
+include_DATA += $(shell find $(srcdir)/include -name \*.h | sed -e "s,^$(srcdir)/,,g") include/grub/cpu
 
 all-local: $(PROGRAMS) $(PKGLIB) $(PKGDATA) $(SCRIPTS) $(MKFILES)
 
