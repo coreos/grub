@@ -127,5 +127,6 @@ GRUB_MOD_INIT(terminal)
 
 GRUB_MOD_FINI(terminal)
 {
-  grub_unregister_command ("terminal");
+  grub_unregister_command ("terminal_input");
+  grub_unregister_command ("terminal_output");
 }

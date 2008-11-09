@@ -1,3 +1,8 @@
+2008-11-09  Robert Millan  <rmh@aybabtu.com>
+
+	* commands/terminal.c (GRUB_MOD_FINI(terminal)): Unregister
+	`terminal_input' / `terminal_output', not `terminal'.
+
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 
 	* Makefile.in (include_DATA): Fix srcdir=. assumption.
