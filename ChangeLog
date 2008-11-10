@@ -1,3 +1,9 @@
+2008-11-10  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/00_header.in: Add backward compatibility check for
+	versions of terminal.mod that don't understand `terminal_input' or
+	`terminal_output'.
+
 2008-11-09  Robert Millan  <rmh@aybabtu.com>
 
 	* commands/terminal.c (GRUB_MOD_FINI(terminal)): Unregister

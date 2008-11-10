@@ -59,7 +59,13 @@ case x${GRUB_TERMINAL_INPUT} in
     # Just use the native terminal
   ;;
   x*)
-    echo "terminal_input ${GRUB_TERMINAL_INPUT}"
+    cat << EOF
+if terminal_input ${GRUB_TERMINAL_INPUT} ; then true ; else
+  # For backward compatibility with versions of terminal.mod that don't
+  # understand terminal_input
+  terminal ${GRUB_TERMINAL_INPUT}
+fi
+EOF
   ;;
 esac
 
@@ -85,7 +91,11 @@ if font `make_system_path_relative_to_its_root ${GRUB_FONT_PATH}` ; then
   set gfxmode=${GRUB_GFXMODE}
   insmod gfxterm
   insmod ${video_backend}
-  terminal_output gfxterm
+  if terminal_output gfxterm ; then true ; else
+    # For backward compatibility with versions of terminal.mod that don't
+    # understand terminal_output
+    terminal gfxterm
+  fi
 fi
 EOF
   ;;
@@ -93,6 +103,12 @@ EOF
     # Just use the native terminal
   ;;
   x*)
-    echo "terminal_output ${GRUB_TERMINAL_OUTPUT}"
+    cat << EOF
+if terminal_output ${GRUB_TERMINAL_OUTPUT} ; then true ; else
+  # For backward compatibility with versions of terminal.mod that don't
+  # understand terminal_output
+  terminal ${GRUB_TERMINAL_OUTPUT}
+fi
+EOF
   ;;
 esac
