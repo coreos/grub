@@ -17,7 +17,7 @@
 2008-11-08  Robert Millan  <rmh@aybabtu.com>
 
 	* term/i386/pc/vesafb.c (grub_vesafb_term): Change type to
-	`struct  grub_term_output'.  Remove `.checkkey' and `.getkey'
+	`struct grub_term_output'.  Remove `.checkkey' and `.getkey'
 	members.  Update all users.
 	* util/console.c (grub_ncurses_term): Split in ...
 	(grub_ncurses_term_input): ... this, and ...
@@ -217,12 +217,12 @@
 
 	* normal/menu.c (run_menu): Add Previous and Next Page keys in menu.
 
-2008-10-29  Guillem Jover <guillem.jover@nokia.com>
+2008-10-29  Guillem Jover  <guillem.jover@nokia.com>
 
 	* disk/lvm.c (grub_lvm_scan_device): Fix error recovery by delaying the
 	addition of objects until the code is not going to be able to fail.
 
-2008-10-29  Guillem Jover <guillem.jover@nokia.com>
+2008-10-29  Guillem Jover  <guillem.jover@nokia.com>
 
 	* disk/lvm.c (grub_lvm_scan_device): Fix possible NULL value handling
 	(add a missing NULL check, and correct them by moving the pointer
@@ -807,7 +807,7 @@
 	(fstest): Handle multiple disks.
 	(options): Remove part, raw and long, add root and diskcount.
 	(usage): Add crc, remove -p, -r, -l, add -r and -c.
-	(main): Find the first non option entry and ignore subsequence options,
+	(main): Find the first non option entry and ignore subsequent options,
 	add handling for the new options, support multiple disks.
 
 	* util/grub-probe.c (probe): Add mdraid to abstraction_name.
