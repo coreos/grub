@@ -55,20 +55,24 @@ VARIABLE(grub_prefix)
 
 	. = EXT_C(start) + GRUB_KERNEL_CPU_DATA_END
 
-#if 0
 /*
  *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
  */
+	.p2align	2	/* force 4-byte alignment */
 multiboot_header:
 	/* magic */
 	.long	0x1BADB002
 	/* flags */
-	.long	0
+	.long	MULTIBOOT_MEMORY_INFO
 	/* checksum */
-	.long	-0x1BADB002
-#endif
+	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
 
 codestart:
+	cmpl	$MULTIBOOT_MAGIC2, %eax
+	jne 0f
+	movl	%ebx, EXT_C(startup_multiboot_info)
+0:
+
 	/* initialize the stack */
 	movl $GRUB_MEMORY_MACHINE_PROT_STACK, %esp
 

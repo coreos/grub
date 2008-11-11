@@ -59,6 +59,8 @@ struct grub_linuxbios_mem_region
 };
 typedef struct grub_linuxbios_mem_region *mem_region_t;
 
+void grub_machine_mmap_init (void);
+
 void EXPORT_FUNC(grub_machine_mmap_iterate)
      (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
 

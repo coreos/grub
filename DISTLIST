@@ -313,6 +313,7 @@ kern/generic/rtc_get_time_ms.c
 kern/i386/dl.c
 kern/i386/halt.c
 kern/i386/loader.S
+kern/i386/multiboot_mmap.c
 kern/i386/pit.c
 kern/i386/realmode.S
 kern/i386/reboot.c

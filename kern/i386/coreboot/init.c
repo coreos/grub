@@ -42,7 +42,6 @@ extern char _end[];
 
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
-grub_size_t grub_lower_mem, grub_upper_mem;
 
 /* FIXME: we need interrupts to do this right */
 static grub_uint32_t grub_time_tics = 0;
@@ -79,9 +78,7 @@ grub_machine_init (void)
 {
   /* Initialize the console as early as possible.  */
   grub_console_init ();
-
-  grub_lower_mem = GRUB_MEMORY_MACHINE_LOWER_USABLE;
-  grub_upper_mem = 0;
+  grub_at_keyboard_init ();
 
   auto int NESTED_FUNC_ATTR heap_init (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR heap_init (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
@@ -132,13 +129,13 @@ grub_machine_init (void)
     return 0;
   }
 
+  grub_machine_mmap_init ();
   grub_machine_mmap_iterate (heap_init);
 
   /* This variable indicates size, not offset.  */
   grub_upper_mem -= GRUB_MEMORY_MACHINE_UPPER_START;
 
   grub_tsc_init ();
-  grub_at_keyboard_init ();
 }
 
 void

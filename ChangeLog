@@ -1,5 +1,28 @@
 2008-11-12  Robert Millan  <rmh@aybabtu.com>
 
+	Use newly-added Multiboot support in coreboot.
+
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Replace
+	`kern/i386/coreboot/mmap.c' with `kern/i386/multiboot_mmap.c'.
+
+	* kern/i386/coreboot/startup.S: Enable Multiboot header, fix its
+	alignment, set `MULTIBOOT_MEMORY_INFO' flag.
+	(codestart): Store the MBI in `startup_multiboot_info' when we're
+	being loaded using Multiboot.
+
+	* kern/i386/coreboot/init.c (grub_machine_init): Move
+	grub_at_keyboard_init() call to beginning of function (useful for
+	debugging).  Call grub_machine_mmap_init() before attempting to use
+	grub_machine_mmap_iterate().
+	(grub_lower_mem, grub_upper_mem): Move from here ...
+	* kern/i386/multiboot_mmap.c (grub_lower_mem, grub_upper_mem): ... to
+	here (new file).
+
+	* include/grub/i386/coreboot/memory.h (grub_machine_mmap_init): New
+	function prototype.
+
+2008-11-12  Robert Millan  <rmh@aybabtu.com>
+
 	Fix a regression introduced by the at_keyboard.mod split.  Because
 	some terminals are default on some platforms and non-default on
 	others, the first terminal being registered determines which is
