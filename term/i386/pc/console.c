@@ -156,19 +156,19 @@ void
 grub_console_init (void)
 {
   grub_term_register_output (&grub_console_term_output);
-  grub_term_set_current_output (&grub_console_term_output);
 #ifdef GRUB_MACHINE_PCBIOS
   grub_term_register_input (&grub_console_term_input);
-  grub_term_set_current_input (&grub_console_term_input);
 #endif
 }
 
 void
 grub_console_fini (void)
 {
+  /* This is to make sure the console is restored to text mode before
+     we boot.  */
   grub_term_set_current_output (&grub_console_term_output);
+
 #ifdef GRUB_MACHINE_PCBIOS
-  grub_term_set_current_input (&grub_console_term_input);
   grub_term_unregister_input (&grub_console_term_input);
 #endif
   grub_term_unregister_output (&grub_console_term_output);

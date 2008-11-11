@@ -44,6 +44,8 @@ grub_term_register_input (grub_term_input_t term)
 {
   term->next = grub_term_list_input;
   grub_term_list_input = term;
+  if (! grub_cur_term_input)
+    grub_term_set_current_input (term);
 }
 
 void
@@ -51,6 +53,8 @@ grub_term_register_output (grub_term_output_t term)
 {
   term->next = grub_term_list_output;
   grub_term_list_output = term;
+  if (! grub_cur_term_output)
+    grub_term_set_current_output (term);
 }
 
 void

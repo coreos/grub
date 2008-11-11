@@ -1,3 +1,21 @@
+2008-11-12  Robert Millan  <rmh@aybabtu.com>
+
+	Fix a regression introduced by the at_keyboard.mod split.  Because
+	some terminals are default on some platforms and non-default on
+	others, the first terminal being registered determines which is
+	going to be default.
+
+	* kern/term.c (grub_term_register_input): If this is the first
+	terminal being registered, set it as the current one.
+	(grub_term_register_output): Likewise.
+
+	* term/efi/console.c (grub_console_init): Do not call
+	grub_term_set_current_output() or grub_term_set_current_input().
+	* term/ieee1275/ofconsole.c (grub_console_init): Likewise.
+	* term/i386/pc/console.c (grub_console_init): Likewise.
+	(grub_console_fini): Do not call grub_term_set_current_input()
+	(but leave grub_term_set_current_output() to restore text mode).
+
 2008-11-10  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/00_header.in: Add backward compatibility check for
