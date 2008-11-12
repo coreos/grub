@@ -49,7 +49,7 @@ kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/generic/rtc_get_time_ms.c \
 	kern/generic/millisleep.c \
 	kern/env.c \
-	term/i386/pc/console.c \
+	term/i386/pc/console.c term/i386/vga_common.c \
 	symlist.c
 kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \

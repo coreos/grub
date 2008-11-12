@@ -24,14 +24,14 @@ kernel_elf_SOURCES = kern/i386/coreboot/startup.S \
 	kern/generic/rtc_get_time_ms.c \
 	kern/generic/millisleep.c \
 	kern/env.c \
-	term/i386/pc/console.c \
-	term/i386/pc/at_keyboard.c term/i386/pc/vga_text.c \
+	term/i386/pc/vga_text.c term/i386/vga_common.c \
+	term/i386/pc/at_keyboard.c \
 	symlist.c
-CLEANFILES += kernel.elf kernel_elf-kern_i386_coreboot_startup.o kernel_elf-kern_i386_coreboot_init.o kernel_elf-kern_i386_multiboot_mmap.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o
-MOSTLYCLEANFILES += kernel_elf-kern_i386_coreboot_startup.d kernel_elf-kern_i386_coreboot_init.d kernel_elf-kern_i386_multiboot_mmap.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_time.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_i386_tsc.d kernel_elf-kern_i386_pit.d kernel_elf-kern_generic_rtc_get_time_ms.d kernel_elf-kern_generic_millisleep.d kernel_elf-kern_env.d kernel_elf-term_i386_pc_console.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-term_i386_pc_vga_text.d kernel_elf-symlist.d
+CLEANFILES += kernel.elf kernel_elf-kern_i386_coreboot_startup.o kernel_elf-kern_i386_coreboot_init.o kernel_elf-kern_i386_multiboot_mmap.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-term_i386_vga_common.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-symlist.o
+MOSTLYCLEANFILES += kernel_elf-kern_i386_coreboot_startup.d kernel_elf-kern_i386_coreboot_init.d kernel_elf-kern_i386_multiboot_mmap.d kernel_elf-kern_main.d kernel_elf-kern_device.d kernel_elf-kern_disk.d kernel_elf-kern_dl.d kernel_elf-kern_file.d kernel_elf-kern_fs.d kernel_elf-kern_err.d kernel_elf-kern_misc.d kernel_elf-kern_mm.d kernel_elf-kern_loader.d kernel_elf-kern_rescue.d kernel_elf-kern_term.d kernel_elf-kern_time.d kernel_elf-kern_i386_dl.d kernel_elf-kern_parser.d kernel_elf-kern_partition.d kernel_elf-kern_i386_tsc.d kernel_elf-kern_i386_pit.d kernel_elf-kern_generic_rtc_get_time_ms.d kernel_elf-kern_generic_millisleep.d kernel_elf-kern_env.d kernel_elf-term_i386_pc_vga_text.d kernel_elf-term_i386_vga_common.d kernel_elf-term_i386_pc_at_keyboard.d kernel_elf-symlist.d
 
-kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_coreboot_startup.o kernel_elf-kern_i386_coreboot_init.o kernel_elf-kern_i386_multiboot_mmap.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o
-	$(TARGET_CC) -o $@ kernel_elf-kern_i386_coreboot_startup.o kernel_elf-kern_i386_coreboot_init.o kernel_elf-kern_i386_multiboot_mmap.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_console.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
+kernel.elf: $(kernel_elf_DEPENDENCIES) kernel_elf-kern_i386_coreboot_startup.o kernel_elf-kern_i386_coreboot_init.o kernel_elf-kern_i386_multiboot_mmap.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-term_i386_vga_common.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-symlist.o
+	$(TARGET_CC) -o $@ kernel_elf-kern_i386_coreboot_startup.o kernel_elf-kern_i386_coreboot_init.o kernel_elf-kern_i386_multiboot_mmap.o kernel_elf-kern_main.o kernel_elf-kern_device.o kernel_elf-kern_disk.o kernel_elf-kern_dl.o kernel_elf-kern_file.o kernel_elf-kern_fs.o kernel_elf-kern_err.o kernel_elf-kern_misc.o kernel_elf-kern_mm.o kernel_elf-kern_loader.o kernel_elf-kern_rescue.o kernel_elf-kern_term.o kernel_elf-kern_time.o kernel_elf-kern_i386_dl.o kernel_elf-kern_parser.o kernel_elf-kern_partition.o kernel_elf-kern_i386_tsc.o kernel_elf-kern_i386_pit.o kernel_elf-kern_generic_rtc_get_time_ms.o kernel_elf-kern_generic_millisleep.o kernel_elf-kern_env.o kernel_elf-term_i386_pc_vga_text.o kernel_elf-term_i386_vga_common.o kernel_elf-term_i386_pc_at_keyboard.o kernel_elf-symlist.o $(TARGET_LDFLAGS) $(kernel_elf_LDFLAGS)
 
 kernel_elf-kern_i386_coreboot_startup.o: kern/i386/coreboot/startup.S $(kern/i386/coreboot/startup.S_DEPENDENCIES)
 	$(TARGET_CC) -Ikern/i386/coreboot -I$(srcdir)/kern/i386/coreboot $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
@@ -129,17 +129,17 @@ kernel_elf-kern_env.o: kern/env.c $(kern/env.c_DEPENDENCIES)
 	$(TARGET_CC) -Ikern -I$(srcdir)/kern $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_env.d
 
-kernel_elf-term_i386_pc_console.o: term/i386/pc/console.c $(term/i386/pc/console.c_DEPENDENCIES)
+kernel_elf-term_i386_pc_vga_text.o: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES)
 	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
--include kernel_elf-term_i386_pc_console.d
+-include kernel_elf-term_i386_pc_vga_text.d
+
+kernel_elf-term_i386_vga_common.o: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES)
+	$(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
+-include kernel_elf-term_i386_vga_common.d
 
 kernel_elf-term_i386_pc_at_keyboard.o: term/i386/pc/at_keyboard.c $(term/i386/pc/at_keyboard.c_DEPENDENCIES)
 	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-term_i386_pc_at_keyboard.d
-
-kernel_elf-term_i386_pc_vga_text.o: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES)
-	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
--include kernel_elf-term_i386_pc_vga_text.d
 
 kernel_elf-symlist.o: symlist.c $(symlist.c_DEPENDENCIES)
 	$(TARGET_CC) -I. -I$(srcdir)/. $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<

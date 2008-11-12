@@ -1,5 +1,39 @@
 2008-11-12  Robert Millan  <rmh@aybabtu.com>
 
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `term/i386/vga_common.c'.
+	* conf/i386.rmk (pkglib_MODULES): Add `vga_text.mod'.
+	(vga_text_mod_SOURCES, vga_text_mod_CFLAGS, vga_text_mod_LDFLAGS): New
+	variables.
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Replace
+	`term/i386/pc/console.c' with `term/i386/vga_common.c'.
+
+	* kern/i386/coreboot/init.c (grub_machine_init): Replace call to
+	grub_console_init() with call to grub_vga_text_init().
+	(grub_machine_fini): Replace call to
+	grub_console_fini() with call to grub_vga_text_fini() and
+	grub_at_keyboard_fini().
+
+	* include/grub/i386/pc/console.h: Include `<grub/term.h>'.
+	(grub_console_putchar, grub_console_getcharwidth, grub_console_getwh)
+	(grub_console_setcolorstate, grub_console_setcolor)
+	(grub_console_getcolor): New function prototypes.
+
+	* term/i386/pc/vga_text.c: Include `<grub/dl.h>'.
+	(grub_vga_text_getxy, grub_vga_text_gotoxy, grub_vga_text_cls)
+	(grub_vga_text_setcursor): Static-ize.
+	(grub_vga_text_term): New structure.
+	(GRUB_MOD_INIT(vga_text), GRUB_MOD_FINI(vga_text)): New functions.
+
+	* term/i386/pc/console.c: Remove `<grub/machine/machine.h>'.
+	(grub_console_cur_color, grub_console_standard_color)
+	(grub_console_normal_color, grub_console_highlight_color)
+	(map_char, grub_console_putchar, grub_console_getcharwidth)
+	(grub_console_getwh, grub_console_setcolorstate, grub_console_setcolor)
+	(grub_console_getcolor): Move from here ...
+	* term/i386/vga_common.c: ... to here (same function names).
+
+2008-11-12  Robert Millan  <rmh@aybabtu.com>
+
 	Use newly-added Multiboot support in coreboot.
 
 	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): Replace

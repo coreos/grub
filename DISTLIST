@@ -403,6 +403,7 @@ term/gfxterm.c
 term/terminfo.c
 term/tparm.c
 term/efi/console.c
+term/i386/vga_common.c
 term/i386/pc/at_keyboard.c
 term/i386/pc/console.c
 term/i386/pc/serial.c

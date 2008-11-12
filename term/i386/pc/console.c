@@ -16,125 +16,16 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/machine.h>
 #include <grub/machine/console.h>
 #include <grub/term.h>
 #include <grub/types.h>
 
-grub_uint8_t grub_console_cur_color = 0x7;
-static grub_uint8_t grub_console_standard_color = 0x7;
-static grub_uint8_t grub_console_normal_color = 0x7;
-static grub_uint8_t grub_console_highlight_color = 0x70;
-
-static grub_uint32_t
-map_char (grub_uint32_t c)
-{
-  if (c > 0x7f)
-    {
-      /* Map some unicode characters to the VGA font, if possible.  */
-      switch (c)
-	{
-	case 0x2190:	/* left arrow */
-	  c = 0x1b;
-	  break;
-	case 0x2191:	/* up arrow */
-	  c = 0x18;
-	  break;
-	case 0x2192:	/* right arrow */
-	  c = 0x1a;
-	  break;
-	case 0x2193:	/* down arrow */
-	  c = 0x19;
-	  break;
-	case 0x2501:	/* horizontal line */
-	  c = 0xc4;
-	  break;
-	case 0x2503:	/* vertical line */
-	  c = 0xb3;
-	  break;
-	case 0x250F:	/* upper-left corner */
-	  c = 0xda;
-	  break;
-	case 0x2513:	/* upper-right corner */
-	  c = 0xbf;
-	  break;
-	case 0x2517:	/* lower-left corner */
-	  c = 0xc0;
-	  break;
-	case 0x251B:	/* lower-right corner */
-	  c = 0xd9;
-	  break;
-
-	default:
-	  c = '?';
-	  break;
-	}
-    }
-
-  return c;
-}
-
-static void
-grub_console_putchar (grub_uint32_t c)
-{
-  grub_console_real_putchar (map_char (c));
-}
-
-static grub_ssize_t
-grub_console_getcharwidth (grub_uint32_t c __attribute__ ((unused)))
-{
-  /* For now, every printable character has the width 1.  */
-  return 1;
-}
-
-static grub_uint16_t
-grub_console_getwh (void)
-{
-  return (80 << 8) | 25;
-}
-
-static void
-grub_console_setcolorstate (grub_term_color_state state)
-{
-  switch (state) {
-    case GRUB_TERM_COLOR_STANDARD:
-      grub_console_cur_color = grub_console_standard_color;
-      break;
-    case GRUB_TERM_COLOR_NORMAL:
-      grub_console_cur_color = grub_console_normal_color;
-      break;
-    case GRUB_TERM_COLOR_HIGHLIGHT:
-      grub_console_cur_color = grub_console_highlight_color;
-      break;
-    default:
-      break;
-  }
-}
-
-static void
-grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color)
-{
-  grub_console_normal_color = normal_color;
-  grub_console_highlight_color = highlight_color;
-}
-
-static void
-grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color)
-{
-  *normal_color = grub_console_normal_color;
-  *highlight_color = grub_console_highlight_color;
-}
-
-/* On non-BIOS platforms, console.c is used in combination with vga_text.c
-   (only to handle output).  */
-#ifdef GRUB_MACHINE_PCBIOS
 static struct grub_term_input grub_console_term_input =
   {
     .name = "console",
     .checkkey = grub_console_checkkey,
     .getkey = grub_console_getkey,
   };
-#endif
 
 static struct grub_term_output grub_console_term_output =
   {
@@ -156,9 +47,7 @@ void
 grub_console_init (void)
 {
   grub_term_register_output (&grub_console_term_output);
-#ifdef GRUB_MACHINE_PCBIOS
   grub_term_register_input (&grub_console_term_input);
-#endif
 }
 
 void
@@ -168,8 +57,6 @@ grub_console_fini (void)
      we boot.  */
   grub_term_set_current_output (&grub_console_term_output);
 
-#ifdef GRUB_MACHINE_PCBIOS
   grub_term_unregister_input (&grub_console_term_input);
-#endif
   grub_term_unregister_output (&grub_console_term_output);
 }

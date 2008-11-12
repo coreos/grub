@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2005,2007,2008  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
+#include <grub/term.h>
 
 /* These are global to share code between C and asm.  */
 extern grub_uint8_t grub_console_cur_color;
@@ -46,6 +47,14 @@ grub_uint16_t grub_console_getxy (void);
 void grub_console_gotoxy (grub_uint8_t x, grub_uint8_t y);
 void grub_console_cls (void);
 void grub_console_setcursor (int on);
+
+/* Provided by vga_common.c.  */
+void grub_console_putchar (grub_uint32_t c);
+grub_ssize_t grub_console_getcharwidth (grub_uint32_t c);
+grub_uint16_t grub_console_getwh (void);
+void grub_console_setcolorstate (grub_term_color_state state);
+void grub_console_setcolor (grub_uint8_t normal_color, grub_uint8_t highlight_color);
+void grub_console_getcolor (grub_uint8_t *normal_color, grub_uint8_t *highlight_color);
 
 /* Initialize the console system.  */
 void grub_console_init (void);

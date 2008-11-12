@@ -114,3 +114,79 @@ partmap-at_keyboard_mod-term_i386_pc_at_keyboard.lst: term/i386/pc/at_keyboard.c
 
 at_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
 at_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += vga_text.mod
+vga_text_mod_SOURCES = term/i386/pc/vga_text.c term/i386/vga_common.c
+CLEANFILES += vga_text.mod mod-vga_text.o mod-vga_text.c pre-vga_text.o vga_text_mod-term_i386_pc_vga_text.o vga_text_mod-term_i386_vga_common.o und-vga_text.lst
+ifneq ($(vga_text_mod_EXPORTS),no)
+CLEANFILES += def-vga_text.lst
+DEFSYMFILES += def-vga_text.lst
+endif
+MOSTLYCLEANFILES += vga_text_mod-term_i386_pc_vga_text.d vga_text_mod-term_i386_vga_common.d
+UNDSYMFILES += und-vga_text.lst
+
+vga_text.mod: pre-vga_text.o mod-vga_text.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(vga_text_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-vga_text.o mod-vga_text.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-vga_text.o: $(vga_text_mod_DEPENDENCIES) vga_text_mod-term_i386_pc_vga_text.o vga_text_mod-term_i386_vga_common.o
+	-rm -f $@
+	$(TARGET_CC) $(vga_text_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ vga_text_mod-term_i386_pc_vga_text.o vga_text_mod-term_i386_vga_common.o
+
+mod-vga_text.o: mod-vga_text.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -c -o $@ $<
+
+mod-vga_text.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'vga_text' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(vga_text_mod_EXPORTS),no)
+def-vga_text.lst: pre-vga_text.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 vga_text/' > $@
+endif
+
+und-vga_text.lst: pre-vga_text.o
+	echo 'vga_text' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+vga_text_mod-term_i386_pc_vga_text.o: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES)
+	$(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -MD -c -o $@ $<
+-include vga_text_mod-term_i386_pc_vga_text.d
+
+CLEANFILES += cmd-vga_text_mod-term_i386_pc_vga_text.lst fs-vga_text_mod-term_i386_pc_vga_text.lst partmap-vga_text_mod-term_i386_pc_vga_text.lst
+COMMANDFILES += cmd-vga_text_mod-term_i386_pc_vga_text.lst
+FSFILES += fs-vga_text_mod-term_i386_pc_vga_text.lst
+PARTMAPFILES += partmap-vga_text_mod-term_i386_pc_vga_text.lst
+
+cmd-vga_text_mod-term_i386_pc_vga_text.lst: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga_text > $@ || (rm -f $@; exit 1)
+
+fs-vga_text_mod-term_i386_pc_vga_text.lst: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga_text > $@ || (rm -f $@; exit 1)
+
+partmap-vga_text_mod-term_i386_pc_vga_text.lst: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh vga_text > $@ || (rm -f $@; exit 1)
+
+
+vga_text_mod-term_i386_vga_common.o: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES)
+	$(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -MD -c -o $@ $<
+-include vga_text_mod-term_i386_vga_common.d
+
+CLEANFILES += cmd-vga_text_mod-term_i386_vga_common.lst fs-vga_text_mod-term_i386_vga_common.lst partmap-vga_text_mod-term_i386_vga_common.lst
+COMMANDFILES += cmd-vga_text_mod-term_i386_vga_common.lst
+FSFILES += fs-vga_text_mod-term_i386_vga_common.lst
+PARTMAPFILES += partmap-vga_text_mod-term_i386_vga_common.lst
+
+cmd-vga_text_mod-term_i386_vga_common.lst: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga_text > $@ || (rm -f $@; exit 1)
+
+fs-vga_text_mod-term_i386_vga_common.lst: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga_text > $@ || (rm -f $@; exit 1)
+
+partmap-vga_text_mod-term_i386_vga_common.lst: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh vga_text > $@ || (rm -f $@; exit 1)
+
+
+vga_text_mod_CFLAGS = $(COMMON_CFLAGS)
+vga_text_mod_LDFLAGS = $(COMMON_LDFLAGS)
