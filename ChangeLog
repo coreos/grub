@@ -1,5 +1,14 @@
 2008-11-12  Robert Millan  <rmh@aybabtu.com>
 
+	Make loader/i386/linux.c buildable on i386-pc (although disabled).
+
+	* include/grub/i386/pc/init.h: Include `<grub/machine/memory.h>'.
+	(struct grub_machine_mmap_entry, grub_machine_mmap_iterate): Move
+	from here ...
+	* include/grub/i386/pc/memory.h: ... to here.
+
+2008-11-12  Robert Millan  <rmh@aybabtu.com>
+
 	Fix build problems on i386-ieee1275 and *-efi (introduced by vga_text
 	split).
 

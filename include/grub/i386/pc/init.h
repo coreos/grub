@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
+#include <grub/machine/memory.h>
 
 /* Get the memory size in KB. If EXTENDED is zero, return conventional
    memory, otherwise return extended memory.  */
@@ -30,23 +31,10 @@ grub_uint16_t grub_get_memsize (int extended);
    in 1KB parts, and upper 16 bits are above 16MB in 64KB parts.  */
 grub_uint32_t grub_get_eisa_mmap (void);
 
-struct grub_machine_mmap_entry
-{
-  grub_uint32_t size;
-  grub_uint64_t addr;
-  grub_uint64_t len;
-#define GRUB_MACHINE_MEMORY_AVAILABLE	1
-#define GRUB_MACHINE_MEMORY_RESERVED	2
-  grub_uint32_t type;
-} __attribute__((packed));
-
 /* Get a memory map entry. Return next continuation value. Zero means
    the end.  */
 grub_uint32_t EXPORT_FUNC(grub_get_mmap_entry) (struct grub_machine_mmap_entry *entry,
 				   grub_uint32_t cont);
-
-void EXPORT_FUNC(grub_machine_mmap_iterate)
-     (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));
 
 /* Turn on/off Gate A20.  */
 void grub_gate_a20 (int on);
