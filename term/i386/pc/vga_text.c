@@ -17,8 +17,8 @@
  */
 
 #include <grub/dl.h>
-#include <grub/machine/console.h>
-#include <grub/cpu/io.h>
+#include <grub/i386/vga_common.h>
+#include <grub/i386/io.h>
 #include <grub/types.h>
 
 #define COLS	80

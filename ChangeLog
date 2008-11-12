@@ -1,5 +1,23 @@
 2008-11-12  Robert Millan  <rmh@aybabtu.com>
 
+	Fix build problems on i386-ieee1275 and *-efi (introduced by vga_text
+	split).
+
+	* include/grub/i386/pc/console.h: Include `<grub/i386/vga_common.h>'.
+	(grub_console_cur_color, grub_console_real_putchar)
+	(grub_console_putchar, grub_console_getcharwidth, grub_console_getwh)
+	(grub_console_setcolorstate, grub_console_setcolor)
+	(grub_console_getcolor): Move from here ...
+	* include/grub/i386/vga_common.h: ... to here (new file).
+
+	* term/i386/pc/vga_text.c: Replace `<grub/machine/console.h>' with
+	`<grub/i386/vga_common.h>' and `<grub/cpu/io.h>' with
+	`<grub/i386/io.h>'.
+	* term/i386/vga_common.c: Replace `<grub/machine/console.h>' with
+	`<grub/i386/vga_common.h>'.
+
+2008-11-12  Robert Millan  <rmh@aybabtu.com>
+
 	* conf/i386-pc.rmk (kernel_img_SOURCES): Add `term/i386/vga_common.c'.
 	* conf/i386.rmk (pkglib_MODULES): Add `vga_text.mod'.
 	(vga_text_mod_SOURCES, vga_text_mod_CFLAGS, vga_text_mod_LDFLAGS): New

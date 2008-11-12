@@ -16,7 +16,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/console.h>
+#include <grub/i386/vga_common.h>
 #include <grub/term.h>
 #include <grub/types.h>
 
