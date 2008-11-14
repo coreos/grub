@@ -1,5 +1,18 @@
 2008-11-14  Robert Millan  <rmh@aybabtu.com>
 
+	* include/grub/i386/coreboot/memory.h (GRUB_MEMORY_MACHINE_LOWER_SIZE):
+	Redefine to match with GRUB_MEMORY_MACHINE_UPPER_START (0x100000).  We
+	don't want to mess with lower memory, because it is used in the Linux
+	loader.
+
+	* loader/i386/linux.c (allocate_pages): Allocate `real_mode_mem' in
+	an appropiate place in lower memory, between 0x10000 and 0x90000,
+	like loader/i386/efi/linux.c does.  Linux often panics if real_mode_mem
+	is in our heap (probably as a result of it being corrupted during
+	decompression).
+
+2008-11-14  Robert Millan  <rmh@aybabtu.com>
+
 	* term/i386/pc/serial.c [! GRUB_MACHINE_PCBIOS]
 	(GRUB_SERIAL_PORT_NUM): Fix misscalculation.
 

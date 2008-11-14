@@ -142,23 +142,40 @@ allocate_pages (grub_size_t prot_size)
   real_mode_mem = 0;
   prot_mode_mem = 0;
   
-  real_mode_mem = grub_malloc (real_mode_pages << 12);
-  
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      /* We must put real mode code in the traditional space.  */
+
+      if (type == GRUB_MACHINE_MEMORY_AVAILABLE
+	  && addr <= 0x90000)
+	{
+	  if (addr < 0x10000)
+	    {
+	      size += addr - 0x10000;
+	      addr = 0x10000;
+	    }
+
+	  if (addr + size > 0x90000)
+	    size = 0x90000 - addr;
+
+	  if (real_size + mmap_size > size)
+	    return 0;
+
+	  real_mode_mem = (addr + size) - (real_size + mmap_size);
+	  return 1;
+	}
+
+      return 0;
+    }
+  grub_machine_mmap_iterate (hook);
   if (! real_mode_mem)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
       goto fail;
     }
 
-  /* Next, find free pages for the protected mode code.  */
-  /* XXX what happens if anything is using this address?  */
   prot_mode_mem = (void *) 0x100000;
-  if (! prot_mode_mem)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY,
-		  "cannot allocate protected mode pages");
-      goto fail;
-    }
 
   grub_dprintf ("linux", "real_mode_mem = %lx, real_mode_pages = %x, "
                 "prot_mode_mem = %lx, prot_mode_pages = %x\n",
