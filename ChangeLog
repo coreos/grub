@@ -1,5 +1,10 @@
 2008-11-14  Robert Millan  <rmh@aybabtu.com>
 
+	* fs/cpio.c (grub_cpio_open): Compare `name' and `fn' by hand in
+	order to cope with duplicate slashes.
+
+2008-11-14  Robert Millan  <rmh@aybabtu.com>
+
 	* include/grub/i386/coreboot/memory.h (GRUB_MEMORY_MACHINE_LOWER_SIZE):
 	Redefine to match with GRUB_MEMORY_MACHINE_UPPER_START (0x100000).  We
 	don't want to mess with lower memory, because it is used in the Linux
