@@ -14,7 +14,8 @@
 	an appropiate place in lower memory, between 0x10000 and 0x90000,
 	like loader/i386/efi/linux.c does.  Linux often panics if real_mode_mem
 	is in our heap (probably as a result of it being corrupted during
-	decompression).
+	decompression).  Add #error instance with comment to explain why this
+	loader isn't currently usable on PC/BIOS.
 
 2008-11-14  Robert Millan  <rmh@aybabtu.com>
 
