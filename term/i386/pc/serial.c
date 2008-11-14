@@ -70,7 +70,7 @@ static const unsigned short *serial_hw_io_addr = (const unsigned short *) 0x0400
 #define GRUB_SERIAL_PORT_NUM 4
 #else
 static const unsigned short serial_hw_io_addr[] = { 0x3f8, 0x2f8, 0x3e8, 0x2e8 };
-#define GRUB_SERIAL_PORT_NUM (sizeof(serial_hw_io_addr)/(serial_hw_io_addr[0]))
+#define GRUB_SERIAL_PORT_NUM (sizeof(serial_hw_io_addr)/sizeof(serial_hw_io_addr[0]))
 #endif
 
 /* Return the port number for the UNITth serial device.  */

@@ -1,3 +1,8 @@
+2008-11-14  Robert Millan  <rmh@aybabtu.com>
+
+	* term/i386/pc/serial.c [! GRUB_MACHINE_PCBIOS]
+	(GRUB_SERIAL_PORT_NUM): Fix misscalculation.
+
 2008-11-12  Robert Millan  <rmh@aybabtu.com>
 
 	Make loader/i386/linux.c buildable on i386-pc (although disabled).
