@@ -347,7 +347,7 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 
   size = grub_file_size (file);
 
-  /* Put the initrd as high as possible, 4Ki aligned.  */
+  /* Put the initrd as high as possible, 4KiB aligned.  */
   addr = (addr_max - size) & ~0xFFF;
 
   if (addr < addr_min)
