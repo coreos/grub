@@ -529,8 +529,21 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
   initrd_pages = (page_align (size) >> 12);
 
   lh = (struct linux_kernel_header *) real_mode_mem;
+
+  /* Get the highest address available for the initrd.  */
+  if (grub_le_to_cpu16 (lh->version) >= 0x0203)
+    {
+      addr_max = grub_cpu_to_le32 (lh->initrd_addr_max);
+
+      /* XXX in reality, Linux specifies a bogus value, so
+	 it is necessary to make sure that ADDR_MAX does not exceed
+	 0x3fffffff.  */
+      if (addr_max > GRUB_LINUX_INITRD_MAX_ADDRESS)
+	addr_max = GRUB_LINUX_INITRD_MAX_ADDRESS;
+    }
+  else
+    addr_max = GRUB_LINUX_INITRD_MAX_ADDRESS;
   
-  addr_max = (grub_cpu_to_le32 (lh->initrd_addr_max) << 10);
   if (linux_mem_size != 0 && linux_mem_size < addr_max)
     addr_max = linux_mem_size;
   
@@ -544,18 +557,19 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
   addr_min = (grub_addr_t) prot_mode_mem + ((prot_mode_pages * 3) << 12)
              + page_align (size);
   
-  /* FIXME: This doesn't take addr_max & addr_min into account.  */
-  addr = (grub_addr_t) grub_malloc (page_align (size));
+  if (addr_max > grub_os_area_addr + grub_os_area_size)
+    addr_max = grub_os_area_addr + grub_os_area_size;
 
-  if (addr == 0)
+  /* Put the initrd as high as possible, 4KiB aligned.  */
+  addr = (addr_max - size) & ~0xFFF;
+
+  if (addr < addr_min)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, "no free pages available");
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "The initrd is too big");
       goto fail;
     }
   
   initrd_mem = (void *) addr;
-  if (! initrd_mem)
-    grub_fatal ("cannot allocate pages");
   
   if (grub_file_read (file, initrd_mem, size) != size)
     {

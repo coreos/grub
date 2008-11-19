@@ -1,6 +1,10 @@
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Fix a typo.
+	* loader/i386/linux.c (grub_rescue_cmd_initrd): Implement a few needed
+	constraints to initrd allocation (based on code from
+	loader/i386/pc/linux.c).  Without them, initrd was allocated too high
+	for Linux to find it.
 
 2008-11-14  Robert Millan  <rmh@aybabtu.com>
 
