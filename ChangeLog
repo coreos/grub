@@ -12,6 +12,24 @@
 	* loader/i386/linux.c (allocate_pages): Fix a warning.
 	Move comment text to `#error' stanza.
 
+	Harmonize ieee1275's grub_available_iterate() with the generic
+	grub_machine_mmap_iterate() interface (fixes a recently-introduced
+	build problem on i386-ieee1275):
+	* kern/ieee1275/openfw.c (grub_available_iterate): Moved from here ...
+	* kern/ieee1275/mmap.c (grub_machine_mmap_iterate): ... here.  Add third
+	parameter `type'.  Update all users of this function.
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): Add
+	`kern/ieee1275/mmap.c'.
+	* kern/ieee1275/init.c
+	* include/grub/ieee1275/ieee1275.h (grub_available_iterate): Replace
+	with ...
+	(grub_machine_mmap_iterate): ... this.
+	* include/grub/i386/pc/memory.h (grub_machine_mmap_iterate): Change
+	return type to `grub_err_t'.  Update all implementations of this
+	function prototype.
+	* include/grub/i386/coreboot/memory.h (grub_machine_mmap_iterate):
+	Likewise.
+
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Fix a typo.

@@ -334,6 +334,7 @@ kern/i386/pc/startup.S
 kern/ieee1275/cmain.c
 kern/ieee1275/ieee1275.c
 kern/ieee1275/init.c
+kern/ieee1275/mmap.c
 kern/ieee1275/openfw.c
 kern/powerpc/cache.S
 kern/powerpc/dl.c

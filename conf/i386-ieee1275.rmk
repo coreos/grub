@@ -13,6 +13,7 @@ pkglib_PROGRAMS = kernel.elf
 # For kernel.elf.
 kernel_elf_SOURCES = kern/i386/ieee1275/startup.S kern/i386/ieee1275/init.c \
 	kern/ieee1275/init.c \
+	kern/ieee1275/mmap.c \
 	kern/ieee1275/cmain.c kern/ieee1275/openfw.c \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
