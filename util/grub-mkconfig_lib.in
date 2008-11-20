@@ -25,6 +25,11 @@ pkgdatadir=${datadir}/`echo @PACKAGE_TARNAME@ | sed "${transform}"`
 
 grub_probe=${sbindir}/`echo grub-probe | sed ${transform}`
 
+grub_warn ()
+{
+  echo "Warning: $@" >&2
+}
+
 make_system_path_relative_to_its_root ()
 {
   path=$1
@@ -107,7 +112,7 @@ convert_system_path_to_grub_path ()
 {
   path=$1
 
-  echo "Warning: convert_system_path_to_grub_path() is deprecated.  Use prepare_grub_to_access_device() instead." >&2
+  grub_warn "convert_system_path_to_grub_path() is deprecated.  Use prepare_grub_to_access_device() instead."
 
   # abort if GRUB can't access the path
   if is_path_readable_by_grub ${path} ; then : ; else

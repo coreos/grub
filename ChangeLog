@@ -1,7 +1,13 @@
-2008-11-19  Robert Millan  <rmh@aybabtu.com>
+2008-11-20  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/coreboot/init.c (grub_time_tics): Remove variable.
 	(grub_get_rtc, grub_exit): Abort with grub_fatal() if called.
+
+	* util/grub-mkconfig_lib.in (grub_warn): New function.
+	(convert_system_path_to_grub_path): Use grub_warn() when issuing
+	warnings, to obtain consistent formatting.
+	* util/grub.d/00_header.in: Likewise.
+	* util/update-grub_lib.in: Likewise.
 
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 

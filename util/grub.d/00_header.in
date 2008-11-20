@@ -47,7 +47,7 @@ case ${GRUB_TERMINAL_INPUT}:${GRUB_TERMINAL_OUTPUT} in
     fi
 
     if [ "x${GRUB_SERIAL_COMMAND}" = "x" ] ; then
-      echo "Warning, requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used." >&2
+      grub_warn "Requested serial terminal but GRUB_SERIAL_COMMAND is unspecified. Default parameters will be used."
       GRUB_SERIAL_COMMAND=serial
     fi
     echo "${GRUB_SERIAL_COMMAND}"
