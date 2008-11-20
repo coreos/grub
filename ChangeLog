@@ -10,6 +10,7 @@
 	* util/update-grub_lib.in: Likewise.
 
 	* loader/i386/linux.c (allocate_pages): Fix a warning.
+	Move comment text to `#error' stanza.
 
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 
