@@ -570,7 +570,8 @@ pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
 	play.mod serial.mod ata.mod			\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
-	halt.mod datetime.mod date.mod datehook.mod
+	halt.mod datetime.mod date.mod datehook.mod	\
+	lsmmap.mod
 
 # For _linux.mod.
 _linux_mod_SOURCES = loader/i386/linux.c
@@ -1928,6 +1929,63 @@ partmap-datehook_mod-hook_datehook.lst: hook/datehook.c $(hook/datehook.c_DEPEND
 
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lsmmap.mod
+lsmmap_mod_SOURCES = commands/lsmmap.c
+CLEANFILES += lsmmap.mod mod-lsmmap.o mod-lsmmap.c pre-lsmmap.o lsmmap_mod-commands_lsmmap.o und-lsmmap.lst
+ifneq ($(lsmmap_mod_EXPORTS),no)
+CLEANFILES += def-lsmmap.lst
+DEFSYMFILES += def-lsmmap.lst
+endif
+MOSTLYCLEANFILES += lsmmap_mod-commands_lsmmap.d
+UNDSYMFILES += und-lsmmap.lst
+
+lsmmap.mod: pre-lsmmap.o mod-lsmmap.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(lsmmap_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-lsmmap.o mod-lsmmap.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-lsmmap.o: $(lsmmap_mod_DEPENDENCIES) lsmmap_mod-commands_lsmmap.o
+	-rm -f $@
+	$(TARGET_CC) $(lsmmap_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ lsmmap_mod-commands_lsmmap.o
+
+mod-lsmmap.o: mod-lsmmap.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lsmmap_mod_CFLAGS) -c -o $@ $<
+
+mod-lsmmap.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'lsmmap' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(lsmmap_mod_EXPORTS),no)
+def-lsmmap.lst: pre-lsmmap.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 lsmmap/' > $@
+endif
+
+und-lsmmap.lst: pre-lsmmap.o
+	echo 'lsmmap' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+lsmmap_mod-commands_lsmmap.o: commands/lsmmap.c $(commands/lsmmap.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(lsmmap_mod_CFLAGS) -MD -c -o $@ $<
+-include lsmmap_mod-commands_lsmmap.d
+
+CLEANFILES += cmd-lsmmap_mod-commands_lsmmap.lst fs-lsmmap_mod-commands_lsmmap.lst partmap-lsmmap_mod-commands_lsmmap.lst
+COMMANDFILES += cmd-lsmmap_mod-commands_lsmmap.lst
+FSFILES += fs-lsmmap_mod-commands_lsmmap.lst
+PARTMAPFILES += partmap-lsmmap_mod-commands_lsmmap.lst
+
+cmd-lsmmap_mod-commands_lsmmap.lst: commands/lsmmap.c $(commands/lsmmap.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lsmmap_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh lsmmap > $@ || (rm -f $@; exit 1)
+
+fs-lsmmap_mod-commands_lsmmap.lst: commands/lsmmap.c $(commands/lsmmap.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lsmmap_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh lsmmap > $@ || (rm -f $@; exit 1)
+
+partmap-lsmmap_mod-commands_lsmmap.lst: commands/lsmmap.c $(commands/lsmmap.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(lsmmap_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh lsmmap > $@ || (rm -f $@; exit 1)
+
+
+lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
+lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

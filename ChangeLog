@@ -30,6 +30,15 @@
 	* include/grub/i386/coreboot/memory.h (grub_machine_mmap_iterate):
 	Likewise.
 
+	Add `lsmmap' command (lists firmware-provided memory map):
+	* commands/lsmmap.c: New file.
+	* conf/i386-pc.rmk (pkglib_MODULES): Add `lsmmap.mod'.
+	(lsmmap_mod_SOURCES, lsmmap_mod_CFLAGS, lsmmap_mod_LDFLAGS): New
+	variables.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Fix a typo.

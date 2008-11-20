@@ -48,6 +48,7 @@ commands/help.c
 commands/hexdump.c
 commands/loadenv.c
 commands/ls.c
+commands/lsmmap.c
 commands/lspci.c
 commands/read.c
 commands/reboot.c

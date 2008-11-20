@@ -165,7 +165,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	videotest.mod play.mod bitmap.mod tga.mod serial.mod	\
 	ata.mod vga.mod memdisk.mod jpeg.mod png.mod pci.mod lspci.mod \
 	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
-	datehook.mod
+	datehook.mod lsmmap.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -351,6 +351,11 @@ date_mod_LDFLAGS = $(COMMON_LDFLAGS)
 datehook_mod_SOURCES = hook/datehook.c
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For lsmmap.mod
+lsmmap_mod_SOURCES = commands/lsmmap.c
+lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
+lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
