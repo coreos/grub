@@ -169,7 +169,7 @@ allocate_pages (grub_size_t prot_size)
 	  if (real_size + mmap_size > size)
 	    return 0;
 
-	  real_mode_mem = (addr + size) - (real_size + mmap_size);
+	  real_mode_mem = (void *) ((addr + size) - (real_size + mmap_size));
 	  return 1;
 	}
 

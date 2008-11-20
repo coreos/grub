@@ -9,6 +9,8 @@
 	* util/grub.d/00_header.in: Likewise.
 	* util/update-grub_lib.in: Likewise.
 
+	* loader/i386/linux.c (allocate_pages): Fix a warning.
+
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Fix a typo.
