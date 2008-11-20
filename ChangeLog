@@ -1,5 +1,10 @@
 2008-11-19  Robert Millan  <rmh@aybabtu.com>
 
+	* kern/i386/coreboot/init.c (grub_time_tics): Remove variable.
+	(grub_get_rtc, grub_exit): Abort with grub_fatal() if called.
+
+2008-11-19  Robert Millan  <rmh@aybabtu.com>
+
 	* loader/i386/pc/linux.c (grub_rescue_cmd_initrd): Fix a typo.
 	* loader/i386/linux.c (grub_rescue_cmd_initrd): Implement a few needed
 	constraints to initrd allocation (based on code from

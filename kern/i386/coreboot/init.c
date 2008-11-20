@@ -43,13 +43,10 @@ extern char _end[];
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
 
-/* FIXME: we need interrupts to do this right */
-static grub_uint32_t grub_time_tics = 0;
-
 grub_uint32_t
 grub_get_rtc (void)
 {
-  return grub_time_tics;
+  grub_fatal ("grub_get_rtc() is not implemented.\n");
 }
 
 /* Stop the floppy drive from spinning, so that other software is
@@ -63,8 +60,7 @@ grub_stop_floppy (void)
 void
 grub_exit (void)
 {
-  grub_printf ("grub_exit() is not implemented.\n");
-  grub_stop ();
+  grub_fatal ("grub_exit() is not implemented.\n");
 }
 
 void
