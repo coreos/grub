@@ -1,3 +1,10 @@
+2008-11-22  Robert Millan  <rmh@aybabtu.com>
+
+	Fix breakage on coreboot due to declaration missmatch.
+	* term/i386/pc/vga_text.c (grub_vga_text_init_fini): New function.
+	(grub_vga_text_term): Use grub_vga_text_init_fini() instead of
+	grub_vga_text_cls().
+
 2008-11-20  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/coreboot/init.c (grub_time_tics): Remove variable.
