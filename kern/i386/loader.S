@@ -141,24 +141,32 @@ VARIABLE(grub_multiboot_payload_entry_offset)
  * edx:	Offset of the entry point (relative to the beginning of the block).
  */
 VARIABLE(grub_multiboot_forward_relocator)
-	cld
+	/* Add entry offset.  */
 	addl	%edi, %edx
+
+	/* Forward copy.  */
+	cld
 	rep
 	movsb
+
 	jmp	*%edx
 VARIABLE(grub_multiboot_forward_relocator_end)
 
 VARIABLE(grub_multiboot_backward_relocator)
+	/* Add entry offset (before %edi is mangled).  */
+	addl	%edi, %edx
+
+	/* Backward movsb is implicitly off-by-one.  compensate that.  */
+	decl	%esi
+	decl	%edi
+
+	/* Backward copy.  */
 	std
 	addl	%ecx, %esi
 	addl	%ecx, %edi
-	/* backward movsb is implicitly off-by-one.  compensate that. */
-	incl	%ecx
 	rep
 	movsb
-	/* same problem again. */
-	incl	%edi
-	addl	%edi, %edx
+
 	jmp	*%edx
 VARIABLE(grub_multiboot_backward_relocator_end)
 

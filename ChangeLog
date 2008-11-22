@@ -5,6 +5,9 @@
 	(grub_vga_text_term): Use grub_vga_text_init_fini() instead of
 	grub_vga_text_cls().
 
+	* kern/i386/loader.S (grub_multiboot_backward_relocator): Improve
+	comments.  Avoid copiing one more byte than necessary (just in case).
+
 2008-11-20  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/coreboot/init.c (grub_time_tics): Remove variable.
