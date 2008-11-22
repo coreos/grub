@@ -8,6 +8,11 @@
 	* kern/i386/loader.S (grub_multiboot_backward_relocator): Improve
 	comments.  Avoid copiing one more byte than necessary (just in case).
 
+	* conf/powerpc-ieee1275.rmk (kernel_elf_LDFLAGS): Change link address
+	to 0x200000 (avoids trouble with some OFW implementations, and matches
+	with the one in Yaboot).
+	Reported by Manoel Abranches
+
 2008-11-20  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/i386/coreboot/init.c (grub_time_tics): Remove variable.

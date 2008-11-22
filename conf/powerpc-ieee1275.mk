@@ -548,7 +548,7 @@ kernel_elf_HEADERS = grub/powerpc/ieee1275/ieee1275.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
 kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
-	-Wl,-N,-S,-Ttext,0x10000,-Bstatic
+	-Wl,-N,-S,-Ttext,0x200000,-Bstatic
 
 # Scripts.
 sbin_SCRIPTS = grub-install
