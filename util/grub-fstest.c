@@ -53,13 +53,13 @@ grub_getkey (void)
   return -1;
 }
 
-grub_term_t
+grub_term_input_t
 grub_term_get_current_input (void)
 {
   return 0;
 }
 
-grub_term_t
+grub_term_output_t
 grub_term_get_current_output (void)
 {
   return 0;
