@@ -6,6 +6,12 @@
 	`kern/ieee1275/mmap.c'.
 	* include/grub/powerpc/ieee1275/memory.h: New file.
 
+	Provide grub-install on coreboot.
+	* conf/i386-coreboot.rmk (sbin_SCRIPTS): Add `grub-install'.
+	(grub_install_SOURCES): New variable.
+	* util/i386/pc/grub-install.in: Add a few condition checks to make it
+	usable on coreboot.
+
 2008-11-25  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub-fstest.c (grub_term_get_current_input): Change return type

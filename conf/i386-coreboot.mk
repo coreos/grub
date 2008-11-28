@@ -565,6 +565,15 @@ grub_emu-grub_emu_init.o: grub_emu_init.c $(grub_emu_init.c_DEPENDENCIES)
 
 grub_emu_LDFLAGS = $(LIBCURSES)
 
+sbin_SCRIPTS += grub-install
+grub_install_SOURCES = util/i386/pc/grub-install.in
+CLEANFILES += grub-install
+
+grub-install: util/i386/pc/grub-install.in $(util/i386/pc/grub-install.in_DEPENDENCIES) config.status
+	./config.status --file=grub-install:util/i386/pc/grub-install.in
+	chmod +x $@
+
+
 # Modules.
 pkglib_MODULES = _linux.mod linux.mod normal.mod	\
 	_multiboot.mod multiboot.mod aout.mod		\
