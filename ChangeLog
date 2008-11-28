@@ -1,3 +1,9 @@
+2008-11-28  Krzysztof Smiechowicz <deadwood@wp.pl>
+
+	* fs/affs.c (grub_affs_iterate_dir): Return failure when directory
+	iteration failed.
+	* fs/sfs.c (grub_sfs_iterate_dir): Likewise.
+
 2008-11-28  Robert Millan  <rmh@aybabtu.com>
 
 	Fix build on powerpc-ieee1275.  Based on patch created by
