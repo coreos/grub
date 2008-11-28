@@ -261,6 +261,7 @@ include/grub/powerpc/ieee1275/ieee1275.h
 include/grub/powerpc/ieee1275/kernel.h
 include/grub/powerpc/ieee1275/loader.h
 include/grub/powerpc/ieee1275/machine.h
+include/grub/powerpc/ieee1275/memory.h
 include/grub/powerpc/ieee1275/time.h
 include/grub/powerpc/ieee1275/util/biosdisk.h
 include/grub/sparc64/libgcc.h

@@ -1,3 +1,11 @@
+2008-11-28  Robert Millan  <rmh@aybabtu.com>
+
+	Fix build on powerpc-ieee1275.  Based on patch created by
+	Manoel Abranches <mrabran@linux.vnet.ibm.com>.
+	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Add
+	`kern/ieee1275/mmap.c'.
+	* include/grub/powerpc/ieee1275/memory.h: New file.
+
 2008-11-25  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub-fstest.c (grub_term_get_current_input): Change return type
