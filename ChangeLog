@@ -1,3 +1,8 @@
+2008-11-29  Robert Millan  <rmh@aybabtu.com>
+
+	* disk/ata.c (grub_ata_pciinit): Handle errors rised by
+	grub_ata_device_initialize() calls.
+
 2008-11-28  Krzysztof Smiechowicz <deadwood@wp.pl>
 
 	* fs/affs.c (grub_affs_iterate_dir): Return failure when directory

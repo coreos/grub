@@ -541,7 +541,25 @@ grub_ata_pciinit (int bus, int device, int func,
       if (rega && regb)
 	{
 	  grub_ata_device_initialize (controller * 2 + i, 0, rega, regb);
+
+	  /* Most errors rised by grub_ata_device_initialize() are harmless.
+	     They just indicate this particular drive is not responding, most
+	     likely because it doesn't exist.  We might want to ignore specific
+	     error types here, instead of printing them.  */
+	  if (grub_errno)
+	    {
+	      grub_print_error ();
+	      grub_errno = GRUB_ERR_NONE;
+	    }
+
 	  grub_ata_device_initialize (controller * 2 + i, 1, rega, regb);
+
+	  /* Likewise.  */
+	  if (grub_errno)
+	    {
+	      grub_print_error ();
+	      grub_errno = GRUB_ERR_NONE;
+	    }
 	}
     }
 
