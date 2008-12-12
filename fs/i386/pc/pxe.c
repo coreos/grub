@@ -125,6 +125,12 @@ grub_pxefs_open (struct grub_file *file, const char *name)
   struct grub_pxe_data *data;
   grub_file_t file_int, bufio;
 
+  if (curr_file != 0)
+    {
+      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c.c2);
+      curr_file = 0;
+    }
+
   c.c1.server_ip = grub_pxe_server_ip;
   c.c1.gateway_ip = grub_pxe_gateway_ip;
   grub_strcpy (c.c1.filename, name);
@@ -190,7 +196,8 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
     {
       struct grub_pxenv_tftp_open o;
 
-      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &o);
+      if (curr_file != 0)
+        grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &o);
 
       o.server_ip = grub_pxe_server_ip;
       o.gateway_ip = grub_pxe_gateway_ip;
@@ -227,7 +234,12 @@ grub_pxefs_close (grub_file_t file)
 {
   struct grub_pxenv_tftp_close c;
 
-  grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c);
+  if (curr_file == file)
+    {
+      grub_pxe_call (GRUB_PXENV_TFTP_CLOSE, &c);
+      curr_file = 0;
+    }
+
   grub_free (file->data);
 
   return GRUB_ERR_NONE;

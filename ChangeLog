@@ -1,3 +1,9 @@
+2008-12-12  Alex Smith  <alex@alex-smith.me.uk>
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Handle the one open connection
+	at a time limit of the PXE TFTP API correctly.
+	(grub_pxefs_close): Likewise.
+
 2008-11-29  Robert Millan  <rmh@aybabtu.com>
 
 	* disk/ata.c (grub_ata_pciinit): Handle errors rised by
