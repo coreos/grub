@@ -441,10 +441,25 @@ grub_util_get_grub_dev (const char *os_dev)
       if (os_dev[7] == '_' && os_dev[8] == 'd')
 	{
 	  /* This a partitionable RAID device of the form /dev/md_dNNpMM. */
-	  
-	  char *p , *q;
+
+	  char *p, *q;
 
 	  p = strdup (os_dev + sizeof ("/dev/md_d") - 1);
+
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
+
+	  asprintf (&grub_dev, "md%s", p);
+	  free (p);
+	}
+      else if (os_dev[7] == '/' && os_dev[8] == 'd')
+	{
+	  /* This a partitionable RAID device of the form /dev/md/dNNpMM. */
+
+	  char *p, *q;
+
+	  p = strdup (os_dev + sizeof ("/dev/md/d") - 1);
 
 	  q = strchr (p, 'p');
 	  if (q)
