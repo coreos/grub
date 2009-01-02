@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,6 +52,12 @@ get_data_ptr (struct grub_video_i386_vbeblit_info *source,
             + y * source->mode_info->pitch
             + x;
       break;
+
+    case 1:
+      /* For 1-bit bitmaps, addressing needs to be done at the bit level
+         and it doesn't make sense, in general, to ask for a pointer
+         to a particular pixel's data.  */
+      break;
     }
 
   return ptr;
@@ -84,6 +90,17 @@ get_pixel (struct grub_video_i386_vbeblit_info *source,
 
     case 8:
       color = *(grub_uint8_t *)get_data_ptr (source, x, y);
+      break;
+
+    case 1:
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
+        {
+          int bit_index = y * source->mode_info->width + x;
+          grub_uint8_t *ptr = (grub_uint8_t *)source->data
+                              + bit_index / 8;
+          int bit_pos = 7 - bit_index % 8;
+          color = (*ptr >> bit_pos) & 0x01;
+        }
       break;
 
     default:
@@ -141,6 +158,17 @@ set_pixel (struct grub_video_i386_vbeblit_info *source,
 
         *ptr = (grub_uint8_t) (color & 0xFF);
       }
+      break;
+
+    case 1:
+      if (source->mode_info->blit_format == GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED)
+        {
+          int bit_index = y * source->mode_info->width + x;
+          grub_uint8_t *ptr = (grub_uint8_t *)source->data
+                              + bit_index / 8;
+          int bit_pos = 7 - bit_index % 8;
+          *ptr = (*ptr & ~(1 << bit_pos)) | ((color & 0x01) << bit_pos);
+        }
       break;
 
     default:

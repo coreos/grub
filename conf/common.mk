@@ -2803,13 +2803,13 @@ help_mod_CFLAGS = $(COMMON_CFLAGS)
 help_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For font.mod.
-font_mod_SOURCES = font/manager.c
-CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_manager.o und-font.lst
+font_mod_SOURCES = font/font_cmd.c font/font.c
+CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_font_cmd.o font_mod-font_font.o und-font.lst
 ifneq ($(font_mod_EXPORTS),no)
 CLEANFILES += def-font.lst
 DEFSYMFILES += def-font.lst
 endif
-MOSTLYCLEANFILES += font_mod-font_manager.d
+MOSTLYCLEANFILES += font_mod-font_font_cmd.d font_mod-font_font.d
 UNDSYMFILES += und-font.lst
 
 font.mod: pre-font.o mod-font.o $(TARGET_OBJ2ELF)
@@ -2818,9 +2818,9 @@ font.mod: pre-font.o mod-font.o $(TARGET_OBJ2ELF)
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-font.o: $(font_mod_DEPENDENCIES) font_mod-font_manager.o
+pre-font.o: $(font_mod_DEPENDENCIES) font_mod-font_font_cmd.o font_mod-font_font.o
 	-rm -f $@
-	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ font_mod-font_manager.o
+	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ font_mod-font_font_cmd.o font_mod-font_font.o
 
 mod-font.o: mod-font.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
@@ -2837,22 +2837,41 @@ und-font.lst: pre-font.o
 	echo 'font' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-font_mod-font_manager.o: font/manager.c $(font/manager.c_DEPENDENCIES)
+font_mod-font_font_cmd.o: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES)
 	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
--include font_mod-font_manager.d
+-include font_mod-font_font_cmd.d
 
-CLEANFILES += cmd-font_mod-font_manager.lst fs-font_mod-font_manager.lst partmap-font_mod-font_manager.lst
-COMMANDFILES += cmd-font_mod-font_manager.lst
-FSFILES += fs-font_mod-font_manager.lst
-PARTMAPFILES += partmap-font_mod-font_manager.lst
+CLEANFILES += cmd-font_mod-font_font_cmd.lst fs-font_mod-font_font_cmd.lst partmap-font_mod-font_font_cmd.lst
+COMMANDFILES += cmd-font_mod-font_font_cmd.lst
+FSFILES += fs-font_mod-font_font_cmd.lst
+PARTMAPFILES += partmap-font_mod-font_font_cmd.lst
 
-cmd-font_mod-font_manager.lst: font/manager.c $(font/manager.c_DEPENDENCIES) gencmdlist.sh
+cmd-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) gencmdlist.sh
 	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
 
-fs-font_mod-font_manager.lst: font/manager.c $(font/manager.c_DEPENDENCIES) genfslist.sh
+fs-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) genfslist.sh
 	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
 
-partmap-font_mod-font_manager.lst: font/manager.c $(font/manager.c_DEPENDENCIES) genpartmaplist.sh
+partmap-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh font > $@ || (rm -f $@; exit 1)
+
+
+font_mod-font_font.o: font/font.c $(font/font.c_DEPENDENCIES)
+	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
+-include font_mod-font_font.d
+
+CLEANFILES += cmd-font_mod-font_font.lst fs-font_mod-font_font.lst partmap-font_mod-font_font.lst
+COMMANDFILES += cmd-font_mod-font_font.lst
+FSFILES += fs-font_mod-font_font.lst
+PARTMAPFILES += partmap-font_mod-font_font.lst
+
+cmd-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
+
+fs-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
+
+partmap-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) genpartmaplist.sh
 	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh font > $@ || (rm -f $@; exit 1)
 
 

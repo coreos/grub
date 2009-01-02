@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,9 +34,6 @@
 #define DEFAULT_VIDEO_HEIGHT	480
 #define DEFAULT_VIDEO_FLAGS	0
 
-#define DEFAULT_CHAR_WIDTH  	8
-#define DEFAULT_CHAR_HEIGHT 	16
-
 #define DEFAULT_BORDER_WIDTH	10
 
 #define DEFAULT_STANDARD_COLOR  0x07
@@ -69,26 +66,31 @@ struct grub_colored_char
 
 struct grub_virtual_screen
 {
-  /* Dimensions of the virtual screen.  */
+  /* Dimensions of the virtual screen in pixels.  */
   unsigned int width;
   unsigned int height;
 
-  /* Offset in the display.  */
+  /* Offset in the display in pixels.  */
   unsigned int offset_x;
   unsigned int offset_y;
 
-  /* TTY Character sizes.  */
-  unsigned int char_width;
-  unsigned int char_height;
+  /* TTY Character sizes in pixes.  */
+  unsigned int normal_char_width;
+  unsigned int normal_char_height;
 
-  /* Virtual screen TTY size.  */
+  /* Virtual screen TTY size in characters.  */
   unsigned int columns;
   unsigned int rows;
 
-  /* Current cursor details.  */
+  /* Current cursor location in characters.  */
   unsigned int cursor_x;
   unsigned int cursor_y;
+
+  /* Current cursor state. */
   int cursor_state;
+
+  /* Font settings. */
+  grub_font_t font;
 
   /* Terminal color settings.  */
   grub_uint8_t standard_color_setting;
@@ -124,6 +126,10 @@ static int dirty_region_is_empty (void);
 
 static void dirty_region_add (int x, int y, 
                               unsigned int width, unsigned int height);
+
+static unsigned int calculate_normal_character_width (grub_font_t font);
+
+static unsigned char calculate_character_width (struct grub_font_glyph *glyph);
 
 static void
 set_term_color (grub_uint8_t term_color)
@@ -168,25 +174,32 @@ grub_virtual_screen_free (void)
 
 static grub_err_t
 grub_virtual_screen_setup (unsigned int x, unsigned int y,
-                           unsigned int width, unsigned int height)
+                           unsigned int width, unsigned int height,
+                           const char *font_name)
 {
   /* Free old virtual screen.  */
   grub_virtual_screen_free ();
 
   /* Initialize with default data.  */
+  virtual_screen.font = grub_font_get (font_name);
+  if (!virtual_screen.font)
+    return grub_error (GRUB_ERR_BAD_FONT,
+                       "No font loaded.");
   virtual_screen.width = width;
   virtual_screen.height = height;
   virtual_screen.offset_x = x;
   virtual_screen.offset_y = y;
-  virtual_screen.char_width = DEFAULT_CHAR_WIDTH;
-  virtual_screen.char_height = DEFAULT_CHAR_HEIGHT;
+  virtual_screen.normal_char_width =
+    calculate_normal_character_width (virtual_screen.font);
+  virtual_screen.normal_char_height =
+    grub_font_get_max_char_height (virtual_screen.font);
   virtual_screen.cursor_x = 0;
   virtual_screen.cursor_y = 0;
   virtual_screen.cursor_state = 1;
 
   /* Calculate size of text buffer.  */
-  virtual_screen.columns = virtual_screen.width / virtual_screen.char_width;
-  virtual_screen.rows = virtual_screen.height / virtual_screen.char_height;
+  virtual_screen.columns = virtual_screen.width / virtual_screen.normal_char_width;
+  virtual_screen.rows = virtual_screen.height / virtual_screen.normal_char_height;
 
   /* Allocate memory for text buffer.  */
   virtual_screen.text_buffer =
@@ -225,12 +238,18 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
 static grub_err_t
 grub_gfxterm_init (void)
 {
+  char *font_name;
   char *modevar;
   int width = DEFAULT_VIDEO_WIDTH;
   int height = DEFAULT_VIDEO_HEIGHT;
   int depth = -1;
   int flags = DEFAULT_VIDEO_FLAGS;
   grub_video_color_t color;
+
+  /* Select the font to use. */
+  font_name = grub_env_get ("gfxterm_font");
+  if (! font_name)
+    font_name = "";   /* Allow fallback to any font. */
 
   /* Parse gfxmode environment variable if set.  */
   modevar = grub_env_get ("gfxmode");
@@ -471,7 +490,7 @@ grub_gfxterm_init (void)
 
   /* Create virtual screen.  */
   if (grub_virtual_screen_setup (DEFAULT_BORDER_WIDTH, DEFAULT_BORDER_WIDTH,
-                                 width, height) != GRUB_ERR_NONE)
+                                 width, height, font_name) != GRUB_ERR_NONE)
     {
       grub_video_restore ();
       return grub_errno;
@@ -657,11 +676,12 @@ static void
 write_char (void)
 {
   struct grub_colored_char *p;
-  struct grub_font_glyph glyph;
+  struct grub_font_glyph *glyph;
   grub_video_color_t color;
   grub_video_color_t bgcolor;
   unsigned int x;
   unsigned int y;
+  int ascent;
 
   /* Find out active character.  */
   p = (virtual_screen.text_buffer
@@ -671,27 +691,28 @@ write_char (void)
   p -= p->index;
 
   /* Get glyph for character.  */
-  grub_font_get_glyph (p->code, &glyph);
+  glyph = grub_font_get_glyph (virtual_screen.font, p->code);
+  ascent = grub_font_get_ascent (virtual_screen.font);
 
   color = p->fg_color;
   bgcolor = p->bg_color;
 
-  x = virtual_screen.cursor_x * virtual_screen.char_width;
-  y = virtual_screen.cursor_y * virtual_screen.char_height;
+  x = virtual_screen.cursor_x * virtual_screen.normal_char_width;
+  y = virtual_screen.cursor_y * virtual_screen.normal_char_height;
 
   /* Render glyph to text layer.  */
   grub_video_set_active_render_target (text_layer);
-  grub_video_fill_rect (bgcolor, x, y, glyph.width, glyph.height);
-  grub_video_blit_glyph (&glyph, color, x, y);
+  grub_video_fill_rect (bgcolor, x, y, glyph->width, glyph->height);
+  grub_font_draw_glyph (glyph, color, x, y + ascent);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Mark character to be drawn.  */
   dirty_region_add (virtual_screen.offset_x + x, virtual_screen.offset_y + y,
-                    glyph.width, glyph.height);
+                    glyph->width, glyph->height);
 }
 
 static void
-write_cursor (void)
+draw_cursor (int show)
 {
   unsigned int x;
   unsigned int y;
@@ -700,12 +721,22 @@ write_cursor (void)
   grub_video_color_t color;
 
   /* Determine cursor properties and position on text layer. */
-  x = virtual_screen.cursor_x * virtual_screen.char_width;
-  y = ((virtual_screen.cursor_y + 1) * virtual_screen.char_height) - 3;  
-  width = virtual_screen.char_width;
+  x = virtual_screen.cursor_x * virtual_screen.normal_char_width;
+  y = (virtual_screen.cursor_y * virtual_screen.normal_char_height
+       + grub_font_get_ascent (virtual_screen.font));
+  width = virtual_screen.normal_char_width;
   height = 2;
 
-  color = virtual_screen.fg_color;
+  if (show)
+    {
+      color = virtual_screen.fg_color;
+    }
+  else
+    {
+      color = virtual_screen.bg_color;
+      y = virtual_screen.cursor_y * virtual_screen.normal_char_height;
+      height = virtual_screen.normal_char_height;
+    }
 
   /* Render cursor to text layer.  */
   grub_video_set_active_render_target (text_layer);
@@ -727,7 +758,7 @@ scroll_up (void)
   if (!bitmap)
     {
       /* Remove cursor.  */
-      write_char ();
+      draw_cursor (0);
 
       /* Redraw only changed regions.  */
       dirty_region_redraw ();
@@ -755,7 +786,7 @@ scroll_up (void)
   /* Scroll physical screen.  */
   grub_video_set_active_render_target (text_layer);
   color = virtual_screen.bg_color;
-  grub_video_scroll (color, 0, -virtual_screen.char_height);
+  grub_video_scroll (color, 0, -virtual_screen.normal_char_height);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
   
   /* If we have bitmap, re-draw screen, otherwise scroll physical screen too.  */
@@ -767,16 +798,16 @@ scroll_up (void)
   else
     {      
       /* Clear new border area.  */
-      grub_video_fill_rect (color, 
-                            virtual_screen.offset_x, virtual_screen.offset_y, 
-                            virtual_screen.width, virtual_screen.char_height);
-      
+      grub_video_fill_rect (color,
+                            virtual_screen.offset_x, virtual_screen.offset_y,
+                            virtual_screen.width, virtual_screen.normal_char_height);
+
       /* Scroll physical screen.  */
-      grub_video_scroll (color, 0, -virtual_screen.char_height);      
+      grub_video_scroll (color, 0, -virtual_screen.normal_char_height);
 
       /* Draw cursor if visible.  */
       if (virtual_screen.cursor_state)
-        write_cursor ();
+	draw_cursor (1);
     }
 }
 
@@ -791,7 +822,7 @@ grub_gfxterm_putchar (grub_uint32_t c)
     {
       /* Erase current cursor, if any.  */
       if (virtual_screen.cursor_state)
-        write_char ();
+	draw_cursor (0);
 
       switch (c)
         {
@@ -814,18 +845,27 @@ grub_gfxterm_putchar (grub_uint32_t c)
 
       /* Redraw cursor if visible.  */
       if (virtual_screen.cursor_state)
-        write_cursor ();
+	draw_cursor (1);
     }
   else
     {
-      struct grub_font_glyph glyph;
+      struct grub_font_glyph *glyph;
       struct grub_colored_char *p;
+      unsigned char char_width;
 
-      /* Get properties of the character.  */    
-      grub_font_get_glyph (c, &glyph);
+      /* Erase current cursor, if any.  */
+      if (virtual_screen.cursor_state)
+	draw_cursor (0);
+
+      /* Get properties of the character.  */
+      glyph = grub_font_get_glyph (virtual_screen.font, c);
+
+      /* Calculate actual character width for glyph. This is number of
+         times of normal_font_width.  */
+      char_width = calculate_character_width(glyph);
 
       /* If we are about to exceed line length, wrap to next line.  */
-      if (virtual_screen.cursor_x + glyph.char_width > virtual_screen.columns)
+      if (virtual_screen.cursor_x + char_width > virtual_screen.columns)
         grub_putchar ('\n');
 
       /* Find position on virtual screen, and fill information.  */
@@ -835,18 +875,18 @@ grub_gfxterm_putchar (grub_uint32_t c)
       p->code = c;
       p->fg_color = virtual_screen.fg_color;
       p->bg_color = virtual_screen.bg_color;
-      p->width = glyph.char_width - 1;
+      p->width = char_width - 1;
       p->index = 0;
 
       /* If we have large glyph, add fixup info.  */
-      if (glyph.char_width > 1)
+      if (char_width > 1)
         {
           unsigned i;
 
-          for (i = 1; i < glyph.char_width; i++)
+          for (i = 1; i < char_width; i++)
             {
               p[i].code = ' ';
-              p[i].width = glyph.char_width - 1;
+              p[i].width = char_width - 1;
               p[i].index = i;
             }
         }
@@ -855,7 +895,7 @@ grub_gfxterm_putchar (grub_uint32_t c)
       write_char ();
 
       /* Make sure we scroll screen when needed and wrap line correctly.  */
-      virtual_screen.cursor_x += glyph.char_width;
+      virtual_screen.cursor_x += char_width;
       if (virtual_screen.cursor_x >= virtual_screen.columns)
         {
           virtual_screen.cursor_x = 0;
@@ -868,18 +908,58 @@ grub_gfxterm_putchar (grub_uint32_t c)
 
       /* Draw cursor if visible.  */
       if (virtual_screen.cursor_state)
-        write_cursor ();
+	draw_cursor (1);
     }
+}
+
+/* Use ASCII characters to determine normal character width.  */
+static unsigned int
+calculate_normal_character_width (grub_font_t font)
+{
+  struct grub_font_glyph *glyph;
+  unsigned int width = 0;
+  unsigned int i;
+
+  /* Get properties of every printable ASCII character.  */
+  for (i = 32; i < 127; i++)
+    {
+      glyph = grub_font_get_glyph (font, i);
+
+      /* Skip unknown characters.  Should never happen on normal conditions.  */
+      if (! glyph)
+	continue;
+
+      if (glyph->device_width > width)
+	width = glyph->device_width;
+    }
+
+  return width;
+}
+
+static unsigned char
+calculate_character_width (struct grub_font_glyph *glyph)
+{
+  if (! glyph || glyph->device_width == 0)
+    return 1;
+
+  return (glyph->device_width
+          + (virtual_screen.normal_char_width - 1))
+         / virtual_screen.normal_char_width;
 }
 
 static grub_ssize_t
 grub_gfxterm_getcharwidth (grub_uint32_t c)
 {
-  struct grub_font_glyph glyph;
+  struct grub_font_glyph *glyph;
+  unsigned char char_width;
 
-  grub_font_get_glyph (c, &glyph);
+  /* Get properties of the character.  */
+  glyph = grub_font_get_glyph (virtual_screen.font, c);
 
-  return glyph.char_width;
+  /* Calculate actual character width for glyph.  */
+  char_width = calculate_character_width (glyph);
+
+  return char_width;
 }
 
 static grub_uint16_t
@@ -903,14 +983,16 @@ grub_gfxterm_gotoxy (grub_uint8_t x, grub_uint8_t y)
   if (y >= virtual_screen.rows)
     y = virtual_screen.rows - 1;
 
+  /* Erase current cursor, if any.  */
   if (virtual_screen.cursor_state)
-    write_char ();
+    draw_cursor (0);
 
   virtual_screen.cursor_x = x;
   virtual_screen.cursor_y = y;
 
+  /* Draw cursor if visible.  */
   if (virtual_screen.cursor_state)
-    write_cursor ();
+    draw_cursor (1);
 }
 
 static void
@@ -995,9 +1077,9 @@ grub_gfxterm_setcursor (int on)
   if (virtual_screen.cursor_state != on)
     {
       if (virtual_screen.cursor_state)
-        write_char ();
+	draw_cursor (0);
       else
-        write_cursor ();
+	draw_cursor (1);
 
       virtual_screen.cursor_state = on;
     }

@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+// TODO: Deprecated and broken. Needs to be converted to Video Driver!
 
 #include <grub/machine/vga.h>
 #include <grub/machine/console.h>
@@ -65,6 +67,7 @@ static unsigned char fg_color, bg_color;
 static struct colored_char text_buf[TEXT_WIDTH * TEXT_HEIGHT];
 static unsigned char saved_map_mask;
 static int page = 0;
+static grub_font_t font = 0;
 
 #define SEQUENCER_ADDR_PORT	0x3C4
 #define SEQUENCER_DATA_PORT	0x3C5
@@ -161,6 +164,9 @@ grub_vga_mod_init (void)
   saved_map_mask = get_map_mask ();
   set_map_mask (0x0f);
   set_start_address (PAGE_OFFSET (page));
+  font = grub_font_get ("");  /* Choose any font, for now. */
+  if (!font)
+    return grub_error (GRUB_ERR_BAD_FONT, "No font loaded.");
   
   return GRUB_ERR_NONE;
 }
@@ -185,7 +191,7 @@ static void
 write_char (void)
 {
   struct colored_char *p = text_buf + xpos + ypos * TEXT_WIDTH;
-  struct grub_font_glyph glyph;
+  struct grub_font_glyph *glyph;
   unsigned char *mem_base;
   unsigned plane;
 
@@ -194,7 +200,7 @@ write_char (void)
   p -= p->index;
 
   /* Get glyph for character.  */
-  grub_font_get_glyph (p->code, &glyph);
+  glyph = grub_font_get_glyph (font, p->code);
   
   for (plane = 0x01; plane <= 0x08; plane <<= 1)
     {
@@ -208,19 +214,23 @@ write_char (void)
 	   y < CHAR_HEIGHT;
 	   y++, mem += TEXT_WIDTH)
 	{
+          /* TODO Re-implement glyph drawing for vga module.  */
+#if 0
 	  unsigned i;
 
-	  for (i = 0; i < glyph.char_width && offset < 32; i++)
+          unsigned char_width = 1; /* TODO Figure out wide characters.  */
+	  for (i = 0; i < char_width && offset < 32; i++)
 	    {
 	      unsigned char fg_mask, bg_mask;
 	      
-	      fg_mask = (p->fg_color & plane) ? glyph.bitmap[offset] : 0;
-	      bg_mask = (p->bg_color & plane) ? ~(glyph.bitmap[offset]) : 0;
+	      fg_mask = (p->fg_color & plane) ? glyph->bitmap[offset] : 0;
+	      bg_mask = (p->bg_color & plane) ? ~(glyph->bitmap[offset]) : 0;
 	      offset++;
 
 	      if (check_vga_mem (mem + i))
 		mem[i] = (fg_mask | bg_mask);
 	    }
+#endif /* 0 */ 
 	}
     }
 
@@ -320,36 +330,37 @@ grub_vga_putchar (grub_uint32_t c)
     }
   else
     {
-      struct grub_font_glyph glyph;
+      struct grub_font_glyph *glyph;
       struct colored_char *p;
+      unsigned char_width = 1;
       
-      grub_font_get_glyph(c, &glyph);
+      glyph = grub_font_get_glyph(font, c);
 
-      if (xpos + glyph.char_width > TEXT_WIDTH)
+      if (xpos + char_width > TEXT_WIDTH)
 	grub_putchar ('\n');
 
       p = text_buf + xpos + ypos * TEXT_WIDTH;
       p->code = c;
       p->fg_color = fg_color;
       p->bg_color = bg_color;
-      p->width = glyph.char_width - 1;
+      p->width = char_width - 1;
       p->index = 0;
 
-      if (glyph.char_width > 1)
+      if (char_width > 1)
 	{
 	  unsigned i;
 
-	  for (i = 1; i < glyph.char_width; i++)
+	  for (i = 1; i < char_width; i++)
 	    {
 	      p[i].code = ' ';
-	      p[i].width = glyph.char_width - 1;
+	      p[i].width = char_width - 1;
 	      p[i].index = i;
 	    }
 	}
 	  
       write_char ();
   
-      xpos += glyph.char_width;
+      xpos += char_width;
       if (xpos >= TEXT_WIDTH)
 	{
 	  xpos = 0;
@@ -381,11 +392,16 @@ grub_vga_putchar (grub_uint32_t c)
 static grub_ssize_t
 grub_vga_getcharwidth (grub_uint32_t c)
 {
+#if 0
   struct grub_font_glyph glyph;
   
-  grub_font_get_glyph (c, &glyph);
+  glyph = grub_font_get_glyph (c);
   
   return glyph.char_width;
+#else
+  (void) c;   /* Prevent warning.  */
+  return 1;   /* TODO Fix wide characters?  */
+#endif
 }
 
 static grub_uint16_t

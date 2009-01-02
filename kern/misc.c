@@ -1,7 +1,7 @@
 /* misc.c - definitions of misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -951,22 +951,29 @@ grub_utf16_to_utf8 (grub_uint8_t *dest, grub_uint16_t *src,
   return dest;
 }
 
-/* Convert an UTF-8 string to an UCS-4 string. Return the number of
-   characters converted. DEST must be able to hold at least SIZE
-   characters (when the input is unknown). If an invalid sequence is found,
-   return -1.  */
+/* Convert a (possibly null-terminated) UTF-8 string of at most SRCSIZE
+   bytes (if SRCSIZE is -1, it is ignored) in length to a UCS-4 string.
+   Return the number of characters converted. DEST must be able to hold
+   at least DESTSIZE characters. If an invalid sequence is found, return -1.
+   If SRCEND is not NULL, then *SRCEND is set to the next byte after the
+   last byte used in SRC.  */
 grub_ssize_t
-grub_utf8_to_ucs4 (grub_uint32_t *dest, const grub_uint8_t *src,
-		   grub_size_t size)
+grub_utf8_to_ucs4 (grub_uint32_t *dest, grub_size_t destsize,
+		   const grub_uint8_t *src, grub_size_t srcsize,
+		   const grub_uint8_t **srcend)
 {
   grub_uint32_t *p = dest;
   int count = 0;
   grub_uint32_t code = 0;
   
-  while (size--)
+  if (srcend)
+    *srcend = src;
+
+  while (srcsize && destsize)
     {
       grub_uint32_t c = *src++;
-      
+      if (srcsize != (grub_size_t)-1)
+	srcsize--;
       if (count)
 	{
 	  if ((c & 0xc0) != 0x80)
@@ -983,6 +990,9 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, const grub_uint8_t *src,
 	}
       else
 	{
+	  if (c == 0)
+	    break;
+	  
 	  if ((c & 0x80) == 0x00)
 	    code = c;
 	  else if ((c & 0xe0) == 0xc0)
@@ -1011,14 +1021,18 @@ grub_utf8_to_ucs4 (grub_uint32_t *dest, const grub_uint8_t *src,
 	      code = c & 0x01;
 	    }
 	  else
-	    /* invalid */
 	    return -1;
 	}
 
       if (count == 0)
-	*p++ = code;
+	{
+	  *p++ = code;
+	  destsize--;
+	}
     }
 
+  if (srcend)
+    *srcend = src;
   return p - dest;
 }
 

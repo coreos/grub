@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -334,17 +334,6 @@ grub_video_fill_rect (grub_video_color_t color, int x, int y,
     return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
 
   return grub_video_adapter_active->fill_rect (color, x, y, width, height);
-}
-
-/* Blit glyph to screen using specified color.  */
-grub_err_t
-grub_video_blit_glyph (struct grub_font_glyph *glyph,
-                       grub_video_color_t color, int x, int y)
-{
-  if (! grub_video_adapter_active)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "No video mode activated");
-
-  return grub_video_adapter_active->blit_glyph (glyph, color, x, y);
 }
 
 /* Blit bitmap to screen.  */

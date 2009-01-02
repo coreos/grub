@@ -1,7 +1,7 @@
 /* misc.h - prototypes for misc functions */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -77,8 +77,10 @@ grub_uint8_t *EXPORT_FUNC(grub_utf16_to_utf8) (grub_uint8_t *dest,
 					       grub_uint16_t *src,
 					       grub_size_t size);
 grub_ssize_t EXPORT_FUNC(grub_utf8_to_ucs4) (grub_uint32_t *dest,
+					     grub_size_t destsize,
 					     const grub_uint8_t *src,
-					     grub_size_t size);
+					     grub_size_t srcsize,
+					     const grub_uint8_t **srcend);
 grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint32_t d, grub_uint32_t *r);
 

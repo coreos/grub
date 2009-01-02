@@ -364,7 +364,7 @@ help_mod_CFLAGS = $(COMMON_CFLAGS)
 help_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For font.mod.
-font_mod_SOURCES = font/manager.c
+font_mod_SOURCES = font/font_cmd.c font/font.c
 font_mod_CFLAGS = $(COMMON_CFLAGS)
 font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

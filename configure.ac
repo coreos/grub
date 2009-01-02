@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 2002,2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+# Copyright (C) 2002,2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
 #
 # This configure.ac is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -127,9 +127,9 @@ if test "x$YACC" = x; then
   AC_MSG_ERROR([bison is not found])
 fi
 
-for file in /usr/share/unifont/unifont.hex ; do
+for file in /usr/src/unifont.bdf ; do
   if test -e $file ; then
-    AC_SUBST([UNIFONT_HEX], [$file])
+    AC_SUBST([UNIFONT_BDF], [$file])
     break
   fi
 done

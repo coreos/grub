@@ -103,7 +103,8 @@ docs/fdl.texi
 docs/grub.cfg
 docs/grub.texi
 docs/texinfo.tex
-font/manager.c
+font/font.c
+font/font_cmd.c
 fs/affs.c
 fs/afs.c
 fs/cpio.c

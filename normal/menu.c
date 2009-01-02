@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -116,19 +116,21 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 {
   int x;
   const char *title;
+  grub_size_t title_len;
   grub_ssize_t len;
   grub_uint32_t *unicode_title;
   grub_ssize_t i;
   grub_uint8_t old_color_normal, old_color_highlight;
 
   title = entry ? entry->title : "";
-  unicode_title = grub_malloc (grub_strlen (title) * sizeof (*unicode_title));
+  title_len = grub_strlen (title);
+  unicode_title = grub_malloc (title_len * sizeof (*unicode_title));
   if (! unicode_title)
     /* XXX How to show this error?  */
     return;
   
-  len = grub_utf8_to_ucs4 (unicode_title, (grub_uint8_t *) title,
-			   grub_strlen (title));
+  len = grub_utf8_to_ucs4 (unicode_title, title_len,
+                           (grub_uint8_t *) title, -1, 0);
   if (len < 0)
     {
       /* It is an invalid sequence.  */

@@ -1,6 +1,6 @@
 # -*- makefile -*-
 #
-# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006,2007 Free Software Foundation, Inc.
+# Copyright (C) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2004,2005,2006,2007,2008,2009 Free Software Foundation, Inc.
 #
 # This Makefile.in is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -88,7 +88,7 @@ AWK = @AWK@
 LIBCURSES = @LIBCURSES@
 LIBLZO = @LIBLZO@
 YACC = @YACC@
-UNIFONT_HEX = @UNIFONT_HEX@
+UNIFONT_BDF = @UNIFONT_BDF@
 
 # Options.
 enable_grub_emu = @enable_grub_emu@
@@ -148,19 +148,26 @@ fs.lst: $(FSFILES)
 partmap.lst: $(PARTMAPFILES)
 	cat $^ /dev/null | sort > $@
 
-ifeq (, $(UNIFONT_HEX))
+ifeq (, $(UNIFONT_BDF))
 else
-pkgdata_DATA += unicode.pff ascii.pff
+pkgdata_DATA += unicode.pf2 ascii.pf2
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-unicode.pff: $(UNIFONT_HEX)
-	ruby $(srcdir)/util/unifont2pff.rb $(UNIFONT_HEX) > $@
+# Note: fonttool should be replaced with C only implementation
 
-ascii.pff: $(UNIFONT_HEX)
-	ruby $(srcdir)/util/unifont2pff.rb 0x0-0x7f $(UNICODE_ARROWS) $(UNICODE_LINES) $(UNIFONT_HEX) > $@
+$(builddir)/fonttool/fonttool.jar: 
+	mkdir -p "$(builddir)/fonttool/src"
+	javac -source 1.5 -target 1.5 -g -deprecation -encoding UTF-8 -d "$(builddir)/fonttool/src" `find "$(srcdir)/util/fonttool/src/" -name '*.java'`
+	jar cf $(builddir)/fonttool/fonttool.jar -C $(builddir)/fonttool/src .
+
+unicode.pf2: $(UNIFONT_BDF) $(builddir)/fonttool/fonttool.jar
+	java -cp $(builddir)/fonttool/fonttool.jar org.gnu.grub.fonttool.Converter --in=$(UNIFONT_BDF) --out=$@
+
+ascii.pf2: $(UNIFONT_BDF) $(builddir)/fonttool/fonttool.jar
+	java -cp $(builddir)/fonttool/fonttool.jar org.gnu.grub.fonttool.Converter --in=$(UNIFONT_BDF) --out=$@ 0x0-0x7f $(UNICODE_ARROWS) $(UNICODE_LINES)
 endif
 
 # Used for building modules externally

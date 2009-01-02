@@ -667,7 +667,7 @@ target_os
 platform
 CMP
 YACC
-UNIFONT_HEX
+UNIFONT_BDF
 INSTALL_PROGRAM
 INSTALL_SCRIPT
 INSTALL_DATA
@@ -2107,9 +2107,9 @@ echo "$as_me: error: bison is not found" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-for file in /usr/share/unifont/unifont.hex ; do
+for file in /usr/src/unifont.bdf ; do
   if test -e $file ; then
-    UNIFONT_HEX=$file
+    UNIFONT_BDF=$file
 
     break
   fi
@@ -9110,7 +9110,7 @@ target_os!$target_os$ac_delim
 platform!$platform$ac_delim
 CMP!$CMP$ac_delim
 YACC!$YACC$ac_delim
-UNIFONT_HEX!$UNIFONT_HEX$ac_delim
+UNIFONT_BDF!$UNIFONT_BDF$ac_delim
 INSTALL_PROGRAM!$INSTALL_PROGRAM$ac_delim
 INSTALL_SCRIPT!$INSTALL_SCRIPT$ac_delim
 INSTALL_DATA!$INSTALL_DATA$ac_delim

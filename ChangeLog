@@ -1,3 +1,92 @@
+2009-01-02  Colin D Bennett  <colin@gibibit.com>
+
+	New font engine.
+	
+	Additional changes by Vesa Jääskeläinen <chaac@nic.fi> to adapt to
+	build system and fixed gfxterm.c to work with different	sized fonts.
+
+	* configure.ac: Changed UNIFONT_HEX to UNIFONT_BDF.
+	
+	* configure: Re-generated.
+	
+	* DISTLIST: Removed font/manager.c.
+	Added font/font.c.
+	Added font/font_cmd.c.
+	
+	* Makefile.in: Changed UNIFONT_HEX to UNIFONT_BDF.  Added Font tool
+	compilation.
+	
+	* include/grub/misc.h (grub_utf8_to_ucs4): Changed prototype.  Changed users.
+	
+	* kern/misc.c (grub_utf8_to_ucs4): Changed prototype. 
+
+	* kern/term.c: Changed users of grub_utf8_to_ucs4.
+	
+	* normal/menu.c: Likewise.
+		
+	* conf/common.rmk (font_mod_SOURCES): Removed font/manager.c.
+	(font_mod_SOURCES): Added font/font_cmd.c, font/font.c.
+	
+	* include/grub/font.h: Replaced with new file.
+	
+	* include/grub/video.h (GRUB_VIDEO_MODE_TYPE_ALPHA): Changed value.
+	(GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED): Likewise.
+	(GRUB_VIDEO_MODE_TYPE_COLOR_MASK): Likewise.
+	(GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP): Added.
+	(grub_video_blit_format): Added GRUB_VIDEO_BLIT_FORMAT_1BIT_PACKED.
+	(grub_video_mode_info): Added bg_red, bg_green, bg_blue, bg_alpha, 
+	fg_red, fg_green, fg_blue, fg_alpha.
+	(grub_video_adapter): Removed blit_glyph.
+	(grub_video_blit_glyph): Removed.	
+	
+	* font/manager.c: Removed file.
+	
+	* font/font.c: New file. 
+	
+	* font/font_cmd.c: Likewise.
+	
+	* video/video.c (grub_video_blit_glyph): Removed.
+	
+	* video/i386/pc/vbe.c (grub_video_vbe_map_rgb): Added 1-bit support.
+	(grub_video_vbe_map_rgba): Likewise.
+	(grub_video_vbe_unmap_color_int): Likewise.
+	(grub_video_vbe_blit_glyph): Removed.
+	(grub_video_vbe_adapter): Removed blit_glyph.
+	
+	* video/i386/pc/vbeutil.c (get_data_ptr): Added 1-bit support.
+	(get_pixel): Likewise.
+	(set_pixel): Likewise. 
+	
+	* commands/videotest.c (grub_cmd_videotest): Added more tests for fonts.
+	
+	* term/gfxterm.c: Adapted to new font engine.
+	
+	* term/i386/pc/vesafb.c: Marked as deprecated.  Made it compile.
+	
+	* term/i386/pc/vga.c: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/BDFLoader.java: New file.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/CharDefs.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/CharacterRange.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/CharacterRange.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/Converter.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/Font.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/Glyph.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/PFF2Sections.java: Likewise.
+	
+	* util/fonttool/src/org/gnu/grub/fonttool/PFF2Writer.java: Likewise.
+
+	* util/grub.d/00_header.in: Changed to use new loadfont command.
+	
+	* util/grub-mkconfig_lib.in: Changed font extension.
+
 2008-12-28  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/getroot.c (grub_util_get_grub_dev): Add support for

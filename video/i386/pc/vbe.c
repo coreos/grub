@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/font.h>
 #include <grub/mm.h>
 #include <grub/video.h>
 #include <grub/bitmap.h>
@@ -710,6 +709,16 @@ grub_video_vbe_map_rgb (grub_uint8_t red, grub_uint8_t green,
 
       return minindex;
     }
+  else if ((render_target->mode_info.mode_type 
+            & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP) != 0)
+    {
+       if (red == render_target->mode_info.fg_red
+           && green == render_target->mode_info.fg_green
+           && blue == render_target->mode_info.fg_blue)
+         return 1;
+       else
+         return 0;
+    }
   else
     {
       grub_uint32_t value;
@@ -740,6 +749,17 @@ grub_video_vbe_map_rgba (grub_uint8_t red, grub_uint8_t green,
     /* No alpha available in index color modes, just use
        same value as in only RGB modes.  */
     return grub_video_vbe_map_rgb (red, green, blue);
+  else if ((render_target->mode_info.mode_type 
+            & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP) != 0)
+    {
+      if (red == render_target->mode_info.fg_red
+          && green == render_target->mode_info.fg_green
+          && blue == render_target->mode_info.fg_blue
+          && alpha == render_target->mode_info.fg_alpha)
+        return 1;
+      else
+        return 0;
+    }
   else
     {
       grub_uint32_t value;
@@ -801,6 +821,24 @@ grub_video_vbe_unmap_color_int (struct grub_video_i386_vbeblit_info * source,
       *blue = framebuffer.palette[color].b;
       *alpha = framebuffer.palette[color].a;
       return;
+    }
+  else if ((mode_info->mode_type
+            & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP) != 0)
+    {
+      if (color & 1)
+        {
+          *red = mode_info->fg_red;
+          *green = mode_info->fg_green;
+          *blue = mode_info->fg_blue;
+          *alpha = mode_info->fg_alpha;
+        }
+      else
+        {
+          *red = mode_info->bg_red;
+          *green = mode_info->bg_green;
+          *blue = mode_info->bg_blue;
+          *alpha = mode_info->bg_alpha;
+        }
     }
   else
     {
@@ -921,76 +959,6 @@ grub_video_vbe_fill_rect (grub_video_color_t color, int x, int y,
 
   /* No optimized version found, use default (slow) filler.  */
   grub_video_i386_vbefill (&target, color, x, y, width, height);
-
-  return GRUB_ERR_NONE;
-}
-
-// TODO: Remove this method and replace with bitmap based glyphs
-static grub_err_t
-grub_video_vbe_blit_glyph (struct grub_font_glyph * glyph,
-                           grub_video_color_t color, int x, int y)
-{
-  struct grub_video_i386_vbeblit_info target;
-  unsigned int width;
-  unsigned int charwidth;
-  unsigned int height;
-  unsigned int i;
-  unsigned int j;
-  unsigned int x_offset = 0;
-  unsigned int y_offset = 0;
-
-  /* Make sure there is something to do.  */
-  if (x >= (int)render_target->viewport.width)
-    return GRUB_ERR_NONE;
-
-  if (y >= (int)render_target->viewport.height)
-    return GRUB_ERR_NONE;
-
-  /* Calculate glyph dimensions.  */
-  width = ((glyph->width + 7) / 8) * 8;
-  charwidth = width;
-  height = glyph->height;
-
-  if (x + (int)width < 0)
-    return GRUB_ERR_NONE;
-
-  if (y + (int)height < 0)
-    return GRUB_ERR_NONE;
-
-  /* Do not allow drawing out of viewport.  */
-  if (x < 0)
-    {
-      width += x;
-      x_offset = (unsigned int)-x;
-      x = 0;
-    }
-  if (y < 0)
-    {
-      height += y;
-      y_offset = (unsigned int)-y;
-      y = 0;
-    }
-
-  if ((x + width) > render_target->viewport.width)
-    width = render_target->viewport.width - x;
-  if ((y + height) > render_target->viewport.height)
-    height = render_target->viewport.height - y;
-
-  /* Add viewport offset.  */
-  x += render_target->viewport.x;
-  y += render_target->viewport.y;
-
-  /* Use vbeblit_info to encapsulate rendering.  */
-  target.mode_info = &render_target->mode_info;
-  target.data = render_target->data;
-
-  /* Draw glyph.  */
-  for (j = 0; j < height; j++)
-    for (i = 0; i < width; i++)
-      if ((glyph->bitmap[((i + x_offset) / 8)
-                         + (j + y_offset) * (charwidth / 8)]
-           & (1 << ((charwidth - (i + x_offset) - 1) % 8))))
-        set_pixel (&target, x+i, y+j, color);
 
   return GRUB_ERR_NONE;
 }
@@ -1619,7 +1587,6 @@ static struct grub_video_adapter grub_video_vbe_adapter =
     .map_rgba = grub_video_vbe_map_rgba,
     .unmap_color = grub_video_vbe_unmap_color,
     .fill_rect = grub_video_vbe_fill_rect,
-    .blit_glyph = grub_video_vbe_blit_glyph,
     .blit_bitmap = grub_video_vbe_blit_bitmap,
     .blit_render_target = grub_video_vbe_blit_render_target,
     .scroll = grub_video_vbe_scroll,
