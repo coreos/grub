@@ -2341,11 +2341,10 @@ scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
-	cmp.mod cat.mod help.mod video.mod font.mod search.mod	\
+	cmp.mod cat.mod help.mod search.mod					\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod loadenv.mod crc.mod gfxterm.mod	\
-	videotest.mod bitmap.mod tga.mod jpeg.mod png.mod
+	read.mod sleep.mod loadenv.mod crc.mod
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -2802,139 +2801,6 @@ partmap-help_mod-commands_help.lst: commands/help.c $(commands/help.c_DEPENDENCI
 
 help_mod_CFLAGS = $(COMMON_CFLAGS)
 help_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For video.mod.
-video_mod_SOURCES = video/video.c
-CLEANFILES += video.mod mod-video.o mod-video.c pre-video.o video_mod-video_video.o und-video.lst
-ifneq ($(video_mod_EXPORTS),no)
-CLEANFILES += def-video.lst
-DEFSYMFILES += def-video.lst
-endif
-MOSTLYCLEANFILES += video_mod-video_video.d
-UNDSYMFILES += und-video.lst
-
-video.mod: pre-video.o mod-video.o $(TARGET_OBJ2ELF)
-	-rm -f $@
-	$(TARGET_CC) $(video_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-video.o mod-video.o
-	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
-
-pre-video.o: $(video_mod_DEPENDENCIES) video_mod-video_video.o
-	-rm -f $@
-	$(TARGET_CC) $(video_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ video_mod-video_video.o
-
-mod-video.o: mod-video.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -c -o $@ $<
-
-mod-video.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'video' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(video_mod_EXPORTS),no)
-def-video.lst: pre-video.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 video/' > $@
-endif
-
-und-video.lst: pre-video.o
-	echo 'video' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-video_mod-video_video.o: video/video.c $(video/video.c_DEPENDENCIES)
-	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(video_mod_CFLAGS) -MD -c -o $@ $<
--include video_mod-video_video.d
-
-CLEANFILES += cmd-video_mod-video_video.lst fs-video_mod-video_video.lst partmap-video_mod-video_video.lst
-COMMANDFILES += cmd-video_mod-video_video.lst
-FSFILES += fs-video_mod-video_video.lst
-PARTMAPFILES += partmap-video_mod-video_video.lst
-
-cmd-video_mod-video_video.lst: video/video.c $(video/video.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh video > $@ || (rm -f $@; exit 1)
-
-fs-video_mod-video_video.lst: video/video.c $(video/video.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh video > $@ || (rm -f $@; exit 1)
-
-partmap-video_mod-video_video.lst: video/video.c $(video/video.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh video > $@ || (rm -f $@; exit 1)
-
-
-video_mod_CFLAGS = $(COMMON_CFLAGS)
-video_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For font.mod.
-font_mod_SOURCES = font/font_cmd.c font/font.c
-CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_font_cmd.o font_mod-font_font.o und-font.lst
-ifneq ($(font_mod_EXPORTS),no)
-CLEANFILES += def-font.lst
-DEFSYMFILES += def-font.lst
-endif
-MOSTLYCLEANFILES += font_mod-font_font_cmd.d font_mod-font_font.d
-UNDSYMFILES += und-font.lst
-
-font.mod: pre-font.o mod-font.o $(TARGET_OBJ2ELF)
-	-rm -f $@
-	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-font.o mod-font.o
-	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
-
-pre-font.o: $(font_mod_DEPENDENCIES) font_mod-font_font_cmd.o font_mod-font_font.o
-	-rm -f $@
-	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ font_mod-font_font_cmd.o font_mod-font_font.o
-
-mod-font.o: mod-font.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
-
-mod-font.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'font' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(font_mod_EXPORTS),no)
-def-font.lst: pre-font.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 font/' > $@
-endif
-
-und-font.lst: pre-font.o
-	echo 'font' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-font_mod-font_font_cmd.o: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES)
-	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
--include font_mod-font_font_cmd.d
-
-CLEANFILES += cmd-font_mod-font_font_cmd.lst fs-font_mod-font_font_cmd.lst partmap-font_mod-font_font_cmd.lst
-COMMANDFILES += cmd-font_mod-font_font_cmd.lst
-FSFILES += fs-font_mod-font_font_cmd.lst
-PARTMAPFILES += partmap-font_mod-font_font_cmd.lst
-
-cmd-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
-
-fs-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
-
-partmap-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh font > $@ || (rm -f $@; exit 1)
-
-
-font_mod-font_font.o: font/font.c $(font/font.c_DEPENDENCIES)
-	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
--include font_mod-font_font.d
-
-CLEANFILES += cmd-font_mod-font_font.lst fs-font_mod-font_font.lst partmap-font_mod-font_font.lst
-COMMANDFILES += cmd-font_mod-font_font.lst
-FSFILES += fs-font_mod-font_font.lst
-PARTMAPFILES += partmap-font_mod-font_font.lst
-
-cmd-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
-
-fs-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
-
-partmap-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh font > $@ || (rm -f $@; exit 1)
-
-
-font_mod_CFLAGS = $(COMMON_CFLAGS)
-font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
 search_mod_SOURCES = commands/search.c
@@ -3696,62 +3562,66 @@ partmap-crc_mod-lib_crc.lst: lib/crc.c $(lib/crc.c_DEPENDENCIES) genpartmaplist.
 crc_mod_CFLAGS = $(COMMON_CFLAGS)
 crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For gfxterm.mod.
-gfxterm_mod_SOURCES = term/gfxterm.c
-CLEANFILES += gfxterm.mod mod-gfxterm.o mod-gfxterm.c pre-gfxterm.o gfxterm_mod-term_gfxterm.o und-gfxterm.lst
-ifneq ($(gfxterm_mod_EXPORTS),no)
-CLEANFILES += def-gfxterm.lst
-DEFSYMFILES += def-gfxterm.lst
-endif
-MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
-UNDSYMFILES += und-gfxterm.lst
+# Common Video Subsystem specific modules.
+pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
+	png.mod	font.mod gfxterm.mod
 
-gfxterm.mod: pre-gfxterm.o mod-gfxterm.o $(TARGET_OBJ2ELF)
+# For video.mod.
+video_mod_SOURCES = video/video.c
+CLEANFILES += video.mod mod-video.o mod-video.c pre-video.o video_mod-video_video.o und-video.lst
+ifneq ($(video_mod_EXPORTS),no)
+CLEANFILES += def-video.lst
+DEFSYMFILES += def-video.lst
+endif
+MOSTLYCLEANFILES += video_mod-video_video.d
+UNDSYMFILES += und-video.lst
+
+video.mod: pre-video.o mod-video.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(gfxterm_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-gfxterm.o mod-gfxterm.o
+	$(TARGET_CC) $(video_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-video.o mod-video.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-gfxterm.o: $(gfxterm_mod_DEPENDENCIES) gfxterm_mod-term_gfxterm.o
+pre-video.o: $(video_mod_DEPENDENCIES) video_mod-video_video.o
 	-rm -f $@
-	$(TARGET_CC) $(gfxterm_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ gfxterm_mod-term_gfxterm.o
+	$(TARGET_CC) $(video_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ video_mod-video_video.o
 
-mod-gfxterm.o: mod-gfxterm.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -c -o $@ $<
+mod-video.o: mod-video.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -c -o $@ $<
 
-mod-gfxterm.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'gfxterm' $< > $@ || (rm -f $@; exit 1)
+mod-video.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'video' $< > $@ || (rm -f $@; exit 1)
 
-ifneq ($(gfxterm_mod_EXPORTS),no)
-def-gfxterm.lst: pre-gfxterm.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gfxterm/' > $@
+ifneq ($(video_mod_EXPORTS),no)
+def-video.lst: pre-video.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 video/' > $@
 endif
 
-und-gfxterm.lst: pre-gfxterm.o
-	echo 'gfxterm' > $@
+und-video.lst: pre-video.o
+	echo 'video' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-gfxterm_mod-term_gfxterm.o: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES)
-	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -MD -c -o $@ $<
--include gfxterm_mod-term_gfxterm.d
+video_mod-video_video.o: video/video.c $(video/video.c_DEPENDENCIES)
+	$(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(video_mod_CFLAGS) -MD -c -o $@ $<
+-include video_mod-video_video.d
 
-CLEANFILES += cmd-gfxterm_mod-term_gfxterm.lst fs-gfxterm_mod-term_gfxterm.lst partmap-gfxterm_mod-term_gfxterm.lst
-COMMANDFILES += cmd-gfxterm_mod-term_gfxterm.lst
-FSFILES += fs-gfxterm_mod-term_gfxterm.lst
-PARTMAPFILES += partmap-gfxterm_mod-term_gfxterm.lst
+CLEANFILES += cmd-video_mod-video_video.lst fs-video_mod-video_video.lst partmap-video_mod-video_video.lst
+COMMANDFILES += cmd-video_mod-video_video.lst
+FSFILES += fs-video_mod-video_video.lst
+PARTMAPFILES += partmap-video_mod-video_video.lst
 
-cmd-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gfxterm > $@ || (rm -f $@; exit 1)
+cmd-video_mod-video_video.lst: video/video.c $(video/video.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh video > $@ || (rm -f $@; exit 1)
 
-fs-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gfxterm > $@ || (rm -f $@; exit 1)
+fs-video_mod-video_video.lst: video/video.c $(video/video.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh video > $@ || (rm -f $@; exit 1)
 
-partmap-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh gfxterm > $@ || (rm -f $@; exit 1)
+partmap-video_mod-video_video.lst: video/video.c $(video/video.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ivideo -I$(srcdir)/video $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(video_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh video > $@ || (rm -f $@; exit 1)
 
 
-gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
-gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
+video_mod_CFLAGS = $(COMMON_CFLAGS)
+video_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For videotest.mod.
 videotest_mod_SOURCES = commands/videotest.c
@@ -4037,6 +3907,139 @@ partmap-png_mod-video_readers_png.lst: video/readers/png.c $(video/readers/png.c
 
 png_mod_CFLAGS = $(COMMON_CFLAGS)
 png_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For font.mod.
+font_mod_SOURCES = font/font_cmd.c font/font.c
+CLEANFILES += font.mod mod-font.o mod-font.c pre-font.o font_mod-font_font_cmd.o font_mod-font_font.o und-font.lst
+ifneq ($(font_mod_EXPORTS),no)
+CLEANFILES += def-font.lst
+DEFSYMFILES += def-font.lst
+endif
+MOSTLYCLEANFILES += font_mod-font_font_cmd.d font_mod-font_font.d
+UNDSYMFILES += und-font.lst
+
+font.mod: pre-font.o mod-font.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-font.o mod-font.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-font.o: $(font_mod_DEPENDENCIES) font_mod-font_font_cmd.o font_mod-font_font.o
+	-rm -f $@
+	$(TARGET_CC) $(font_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ font_mod-font_font_cmd.o font_mod-font_font.o
+
+mod-font.o: mod-font.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -c -o $@ $<
+
+mod-font.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'font' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(font_mod_EXPORTS),no)
+def-font.lst: pre-font.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 font/' > $@
+endif
+
+und-font.lst: pre-font.o
+	echo 'font' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+font_mod-font_font_cmd.o: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES)
+	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
+-include font_mod-font_font_cmd.d
+
+CLEANFILES += cmd-font_mod-font_font_cmd.lst fs-font_mod-font_font_cmd.lst partmap-font_mod-font_font_cmd.lst
+COMMANDFILES += cmd-font_mod-font_font_cmd.lst
+FSFILES += fs-font_mod-font_font_cmd.lst
+PARTMAPFILES += partmap-font_mod-font_font_cmd.lst
+
+cmd-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
+
+fs-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
+
+partmap-font_mod-font_font_cmd.lst: font/font_cmd.c $(font/font_cmd.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh font > $@ || (rm -f $@; exit 1)
+
+
+font_mod-font_font.o: font/font.c $(font/font.c_DEPENDENCIES)
+	$(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(font_mod_CFLAGS) -MD -c -o $@ $<
+-include font_mod-font_font.d
+
+CLEANFILES += cmd-font_mod-font_font.lst fs-font_mod-font_font.lst partmap-font_mod-font_font.lst
+COMMANDFILES += cmd-font_mod-font_font.lst
+FSFILES += fs-font_mod-font_font.lst
+PARTMAPFILES += partmap-font_mod-font_font.lst
+
+cmd-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh font > $@ || (rm -f $@; exit 1)
+
+fs-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh font > $@ || (rm -f $@; exit 1)
+
+partmap-font_mod-font_font.lst: font/font.c $(font/font.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ifont -I$(srcdir)/font $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(font_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh font > $@ || (rm -f $@; exit 1)
+
+
+font_mod_CFLAGS = $(COMMON_CFLAGS)
+font_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gfxterm.mod.
+gfxterm_mod_SOURCES = term/gfxterm.c
+CLEANFILES += gfxterm.mod mod-gfxterm.o mod-gfxterm.c pre-gfxterm.o gfxterm_mod-term_gfxterm.o und-gfxterm.lst
+ifneq ($(gfxterm_mod_EXPORTS),no)
+CLEANFILES += def-gfxterm.lst
+DEFSYMFILES += def-gfxterm.lst
+endif
+MOSTLYCLEANFILES += gfxterm_mod-term_gfxterm.d
+UNDSYMFILES += und-gfxterm.lst
+
+gfxterm.mod: pre-gfxterm.o mod-gfxterm.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(gfxterm_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-gfxterm.o mod-gfxterm.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-gfxterm.o: $(gfxterm_mod_DEPENDENCIES) gfxterm_mod-term_gfxterm.o
+	-rm -f $@
+	$(TARGET_CC) $(gfxterm_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ gfxterm_mod-term_gfxterm.o
+
+mod-gfxterm.o: mod-gfxterm.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -c -o $@ $<
+
+mod-gfxterm.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'gfxterm' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(gfxterm_mod_EXPORTS),no)
+def-gfxterm.lst: pre-gfxterm.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 gfxterm/' > $@
+endif
+
+und-gfxterm.lst: pre-gfxterm.o
+	echo 'gfxterm' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+gfxterm_mod-term_gfxterm.o: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES)
+	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -MD -c -o $@ $<
+-include gfxterm_mod-term_gfxterm.d
+
+CLEANFILES += cmd-gfxterm_mod-term_gfxterm.lst fs-gfxterm_mod-term_gfxterm.lst partmap-gfxterm_mod-term_gfxterm.lst
+COMMANDFILES += cmd-gfxterm_mod-term_gfxterm.lst
+FSFILES += fs-gfxterm_mod-term_gfxterm.lst
+PARTMAPFILES += partmap-gfxterm_mod-term_gfxterm.lst
+
+cmd-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh gfxterm > $@ || (rm -f $@; exit 1)
+
+fs-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh gfxterm > $@ || (rm -f $@; exit 1)
+
+partmap-gfxterm_mod-term_gfxterm.lst: term/gfxterm.c $(term/gfxterm.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(gfxterm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh gfxterm > $@ || (rm -f $@; exit 1)
+
+
+gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
+gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkglib_MODULES += gzio.mod bufio.mod elf.mod
