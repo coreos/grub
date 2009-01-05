@@ -318,7 +318,7 @@ scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
 pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
-	cmp.mod cat.mod help.mod font.mod search.mod		\
+	cmp.mod cat.mod help.mod search.mod					\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod
@@ -362,11 +362,6 @@ echo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 help_mod_SOURCES = commands/help.c
 help_mod_CFLAGS = $(COMMON_CFLAGS)
 help_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For font.mod.
-font_mod_SOURCES = font/font_cmd.c font/font.c
-font_mod_CFLAGS = $(COMMON_CFLAGS)
-font_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
 search_mod_SOURCES = commands/search.c
@@ -427,6 +422,50 @@ loadenv_mod_LDFLAGS = $(COMMON_LDFLAGS)
 crc_mod_SOURCES = commands/crc.c lib/crc.c
 crc_mod_CFLAGS = $(COMMON_CFLAGS)
 crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# Common Video Subsystem specific modules.
+pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\
+	png.mod	font.mod gfxterm.mod
+
+# For video.mod.
+video_mod_SOURCES = video/video.c
+video_mod_CFLAGS = $(COMMON_CFLAGS)
+video_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For videotest.mod.
+videotest_mod_SOURCES = commands/videotest.c
+videotest_mod_CFLAGS = $(COMMON_CFLAGS)
+videotest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For bitmap.mod
+bitmap_mod_SOURCES = video/bitmap.c
+bitmap_mod_CFLAGS = $(COMMON_CFLAGS)
+bitmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For tga.mod
+tga_mod_SOURCES = video/readers/tga.c
+tga_mod_CFLAGS = $(COMMON_CFLAGS)
+tga_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For jpeg.mod.
+jpeg_mod_SOURCES = video/readers/jpeg.c
+jpeg_mod_CFLAGS = $(COMMON_CFLAGS)
+jpeg_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For png.mod.
+png_mod_SOURCES = video/readers/png.c
+png_mod_CFLAGS = $(COMMON_CFLAGS)
+png_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For font.mod.
+font_mod_SOURCES = font/font_cmd.c font/font.c
+font_mod_CFLAGS = $(COMMON_CFLAGS)
+font_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For gfxterm.mod.
+gfxterm_mod_SOURCES = term/gfxterm.c
+gfxterm_mod_CFLAGS = $(COMMON_CFLAGS)
+gfxterm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Misc.
 pkglib_MODULES += gzio.mod bufio.mod elf.mod

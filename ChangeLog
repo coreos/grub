@@ -1,3 +1,58 @@
+2009-01-06  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	* commands/videotest.c: Removed include to grub/machine/memory.h.
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Removed video.mod, gfxterm.mod,
+	videotest.mod, bitmap.mod, tga.mod, jpeg.mod, png.mod.
+	(video_mod_SOURCES): Removed.
+	(video_mod_CFLAGS): Likewise.
+	(video_mod_LDFLAGS): Likewise.
+	(gfxterm_mod_SOURCES): Likewise.
+	(gfxterm_mod_CFLAGS): Likewise.
+	(gfxterm_mod_LDFLAGS): Likewise.
+	(videotest_mod_SOURCES): Likewise.
+	(videotest_mod_CFLAGS): Likewise.
+	(videotest_mod_LDFLAGS): Likewise.
+	(bitmap_mod_SOURCES): Likewise.
+	(bitmap_mod_CFLAGS): Likewise.
+	(bitmap_mod_LDFLAGS): Likewise.
+	(tga_mod_SOURCES): Likewise.
+	(tga_mod_CFLAGS): Likewise.
+	(tga_mod_LDFLAGS): Likewise.
+	(jpeg_mod_SOURCES): Likewise.
+	(jpeg_mod_CFLAGS): Likewise.
+	(jpeg_mod_LDFLAGS): Likewise.
+	(png_mod_SOURCES): Likewise.
+	(png_mod_CFLAGS): Likewise.
+	(png_mod_LDFLAGS): Likewise.
+
+	* conf/common.rmk (pkglib_MODULES): Added video.mod, videotest.mod,
+	bitmap.mod, tga.mod, jpeg.mod, png.mod, font.mod, gfxterm.mod
+	(video_mod_SOURCES): Added.
+	(video_mod_CFLAGS): Likewise.
+	(video_mod_LDFLAGS): Likewise.
+	(videotest_mod_SOURCES): Likewise.
+	(videotest_mod_CFLAGS): Likewise.
+	(videotest_mod_LDFLAGS): Likewise.
+	(bitmap_mod_SOURCES): Likewise.
+	(bitmap_mod_CFLAGS): Likewise.
+	(bitmap_mod_LDFLAGS): Likewise.
+	(tga_mod_SOURCES): Likewise.
+	(tga_mod_CFLAGS): Likewise.
+	(tga_mod_LDFLAGS): Likewise.
+	(jpeg_mod_SOURCES): Likewise.
+	(jpeg_mod_CFLAGS): Likewise.
+	(jpeg_mod_LDFLAGS): Likewise.
+	(png_mod_SOURCES): Likewise.
+	(png_mod_CFLAGS): Likewise.
+	(png_mod_LDFLAGS): Likewise.
+	(gfxterm_mod_SOURCES): Likewise.
+	(gfxterm_mod_CFLAGS): Likewise.
+	(gfxterm_mod_LDFLAGS): Likewise.	
+
+	* term/gfxterm.c: Removed include to grub/machine/memory.h,
+	grub/machine/console.h.
+
 2009-01-04  Jerone Young  <jerone@gmail.com>
 
 	Make on screen instructions clearer
