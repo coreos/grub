@@ -82,8 +82,8 @@ print_message (int nested, int edit)
     {
       grub_printf ("\n\
       Minimum Emacs-like screen editing is supported. TAB lists\n\
-      available completions. Press C-x (\'x\' with Ctrl) to boot,\n\
-      C-c (\'c\' with Ctrl) for a command-line or ESC to return menu.");
+      completions. Press Ctrl-x to boot, Ctrl-c for a command-line\n\
+      or ESC to return menu.");
     }
   else
     {

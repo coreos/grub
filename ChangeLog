@@ -1,3 +1,11 @@
+2009-01-04  Jerone Young  <jerone@gmail.com>
+
+	Make on screen instructions clearer
+
+	Based on patch created by Jidanni <jidanni@jidanni.org>
+
+	* normal/menu.c: print clearer instructions on the screen
+
 2009-01-02  Colin D Bennett  <colin@gibibit.com>
 
 	New font engine.
