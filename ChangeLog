@@ -1,3 +1,58 @@
+2009-01-10  Robert Millan  <rmh@aybabtu.com>
+
+	Update a few copyright years which we forgot to do in 2008 (only for
+	files whose changes made in 2008 were copyright-significant)
+
+	* Makefile.in: Add 2008 to Copyright line.
+	* disk/ieee1275/ofdisk.c: Likewise.
+	* disk/efi/efidisk.c: Likewise.
+	* kern/dl.c: Likewise.
+	* kern/sparc64/ieee1275/init.c: Likewise.
+	* kern/mm.c: Likewise.
+	* kern/efi/mm.c: Likewise.
+	* boot/i386/pc/boot.S: Likewise.
+	* genfslist.sh: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/jfs.c: Likewise.
+	* fs/minix.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* gensymlist.sh.in: Likewise.
+	* genkernsyms.sh.in: Likewise.
+	* include/grub/misc.h: Likewise.
+	* include/grub/types.h: Likewise.
+	* include/grub/symbol.h: Likewise.
+	* include/grub/elf.h: Likewise.
+	* include/grub/kernel.h: Likewise.
+	* include/grub/disk.h: Likewise.
+	* include/grub/dl.h: Likewise.
+	* include/grub/i386/linux.h: Likewise.
+	* include/grub/i386/pc/biosdisk.h: Likewise.
+	* include/grub/efi/api.h: Likewise.
+	* include/grub/efi/pe32.h: Likewise.
+	* include/grub/util/misc.h: Likewise.
+	* normal/execute.c: Likewise.
+	* normal/arg.c: Likewise.
+	* normal/completion.c: Likewise.
+	* normal/lexer.c: Likewise.
+	* normal/parser.y: Likewise.
+	* normal/misc.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/terminal.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/help.c: Likewise.
+	* partmap/pc.c: Likewise.
+	* loader/efi/chainloader.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* loader/i386/pc/multiboot2.c: Likewise.
+	* term/efi/console.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* util/lvm.c: Likewise.
+	* util/console.c: Likewise.
+	* util/i386/efi/grub-mkimage.c: Likewise.
+	* util/raid.c: Likewise.
+
 2009-01-06  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	* commands/videotest.c: Removed include to grub/machine/memory.h.
