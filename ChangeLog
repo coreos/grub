@@ -1,3 +1,8 @@
+2009-01-12  Christian Franke  <franke@computer.org>
+
+	* disk/ata.c (grub_ata_pciinit): Fix bit numbers of compatibility
+	mode check.  Fix setting of compat_use[].
+
 2009-01-10  Robert Millan  <rmh@aybabtu.com>
 
 	Update a few copyright years which we forgot to do in 2008 (only for

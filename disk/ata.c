@@ -504,7 +504,7 @@ grub_ata_pciinit (int bus, int device, int func,
   for (i = 0; i < 2; i++)
     {
       /* Set to 0 when the channel operated in compatibility mode.  */
-      int compat = (class >> (2 * i)) & 1;
+      int compat = (class >> (8 + 2 * i)) & 1;
 
       rega = 0;
       regb = 0;
@@ -515,7 +515,7 @@ grub_ata_pciinit (int bus, int device, int func,
 	{
 	  rega = grub_ata_ioaddress[i];
 	  regb = grub_ata_ioaddress2[i];
-	  compat_use[i] = 0;
+	  compat_use[i] = 1;
 	}
       else if (compat)
 	{
