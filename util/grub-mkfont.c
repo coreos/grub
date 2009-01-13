@@ -427,11 +427,6 @@ write_font (struct grub_font_info *font_info, char *output_file)
 
   for (cur = font_info->glyph; cur; cur = cur->next)
     {
-      if (offset >= 0x95ed)
-	{
-	  fclose (file);
-	  grub_util_error ("Stop at %d %d\n", cur->char_code, offset);
-	}
       data = grub_cpu_to_be32 (cur->char_code);
       grub_util_write_image ((char *) &data, 4, file);
       data = 0;
