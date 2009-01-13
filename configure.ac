@@ -407,6 +407,22 @@ AC_ARG_ENABLE([grub-pe2elf],
                              [build and install the `grub-pe2elf' conversion utility])])
 AC_SUBST([enable_grub_pe2elf])
 
+AC_ARG_ENABLE([grub-mkfont],
+	      [AS_HELP_STRING([--enable-grub-mkfont],
+                             [build and install the `grub-mkfont' utility])])
+if test x"$enable_grub_mkfont" = xyes ; then
+  # Check for freetype libraries.
+  AC_CHECK_PROGS([FREETYPE], [freetype-config])
+  if test "x$FREETYPE" = x ; then
+    AC_MSG_ERROR([freetype2 libraries are required to build `grub-mkfont'])
+  fi
+  freetype_cflags=`freetype-config --cflags`
+  freetype_libs=`freetype-config --libs`
+fi
+AC_SUBST([enable_grub_mkfont])
+AC_SUBST([freetype_cflags])
+AC_SUBST([freetype_libs])
+
 # Output files.
 AC_CONFIG_LINKS([include/grub/cpu:include/grub/$target_cpu
 	include/grub/machine:include/grub/$target_cpu/$platform])

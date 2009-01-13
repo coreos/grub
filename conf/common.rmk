@@ -45,6 +45,14 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c 			\
 	grub_fstest_init.c
 
+# For grub-mkfont.
+ifeq ($(enable_grub_mkfont), yes)
+bin_UTILITIES += grub-mkfont
+grub_mkfont_SOURCES = util/grub-mkfont.c util/misc.c
+grub_mkfont_CFLAGS = $(freetype_cflags)
+grub_mkfont_LDFLAGS = $(freetype_libs)
+endif
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y

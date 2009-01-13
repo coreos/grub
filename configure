@@ -703,6 +703,10 @@ LIBCURSES
 enable_grub_emu
 enable_grub_fstest
 enable_grub_pe2elf
+FREETYPE
+enable_grub_mkfont
+freetype_cflags
+freetype_libs
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -1303,6 +1307,7 @@ Optional Features:
                           utility
   --enable-grub-pe2elf    build and install the `grub-pe2elf' conversion
                           utility
+  --enable-grub-mkfont    build and install the `grub-mkfont' utility
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -8425,6 +8430,67 @@ fi
 
 
 
+# Check whether --enable-grub-mkfont was given.
+if test "${enable_grub_mkfont+set}" = set; then
+  enableval=$enable_grub_mkfont;
+fi
+
+if test x"$enable_grub_mkfont" = xyes ; then
+  # Check for freetype libraries.
+  for ac_prog in freetype-config
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_FREETYPE+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$FREETYPE"; then
+  ac_cv_prog_FREETYPE="$FREETYPE" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_FREETYPE="$ac_prog"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+FREETYPE=$ac_cv_prog_FREETYPE
+if test -n "$FREETYPE"; then
+  { echo "$as_me:$LINENO: result: $FREETYPE" >&5
+echo "${ECHO_T}$FREETYPE" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+  test -n "$FREETYPE" && break
+done
+
+  if test "x$FREETYPE" = x ; then
+    { { echo "$as_me:$LINENO: error: freetype2 libraries are required to build \`grub-mkfont'" >&5
+echo "$as_me: error: freetype2 libraries are required to build \`grub-mkfont'" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  freetype_cflags=`freetype-config --cflags`
+  freetype_libs=`freetype-config --libs`
+fi
+
+
+
+
 # Output files.
 ac_config_links="$ac_config_links include/grub/cpu:include/grub/$target_cpu include/grub/machine:include/grub/$target_cpu/$platform"
 
@@ -9146,11 +9212,15 @@ LIBCURSES!$LIBCURSES$ac_delim
 enable_grub_emu!$enable_grub_emu$ac_delim
 enable_grub_fstest!$enable_grub_fstest$ac_delim
 enable_grub_pe2elf!$enable_grub_pe2elf$ac_delim
+FREETYPE!$FREETYPE$ac_delim
+enable_grub_mkfont!$enable_grub_mkfont$ac_delim
+freetype_cflags!$freetype_cflags$ac_delim
+freetype_libs!$freetype_libs$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 90; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 94; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

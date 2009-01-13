@@ -424,6 +424,7 @@ util/grub-fstest.c
 util/grub-mkconfig.in
 util/grub-mkconfig_lib.in
 util/grub-mkdevicemap.c
+util/grub-mkfont.c
 util/grub-pe2elf.c
 util/grub-probe.c
 util/hostdisk.c

@@ -416,6 +416,28 @@ grub_fstest-grub_fstest_init.o: grub_fstest_init.c $(grub_fstest_init.c_DEPENDEN
 -include grub_fstest-grub_fstest_init.d
 
 
+# For grub-mkfont.
+ifeq ($(enable_grub_mkfont), yes)
+bin_UTILITIES += grub-mkfont
+grub_mkfont_SOURCES = util/grub-mkfont.c util/misc.c
+CLEANFILES += grub-mkfont$(EXEEXT) grub_mkfont-util_grub_mkfont.o grub_mkfont-util_misc.o
+MOSTLYCLEANFILES += grub_mkfont-util_grub_mkfont.d grub_mkfont-util_misc.d
+
+grub-mkfont: $(grub_mkfont_DEPENDENCIES) grub_mkfont-util_grub_mkfont.o grub_mkfont-util_misc.o
+	$(CC) -o $@ grub_mkfont-util_grub_mkfont.o grub_mkfont-util_misc.o $(LDFLAGS) $(grub_mkfont_LDFLAGS)
+
+grub_mkfont-util_grub_mkfont.o: util/grub-mkfont.c $(util/grub-mkfont.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkfont_CFLAGS) -MD -c -o $@ $<
+-include grub_mkfont-util_grub_mkfont.d
+
+grub_mkfont-util_misc.o: util/misc.c $(util/misc.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_mkfont_CFLAGS) -MD -c -o $@ $<
+-include grub_mkfont-util_misc.d
+
+grub_mkfont_CFLAGS = $(freetype_cflags)
+grub_mkfont_LDFLAGS = $(freetype_libs)
+endif
+
 # For the parser.
 grub_script.tab.c grub_script.tab.h: normal/parser.y
 	$(YACC) -d -p grub_script_yy -b grub_script $(srcdir)/normal/parser.y

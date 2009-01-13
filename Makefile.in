@@ -95,6 +95,9 @@ enable_grub_emu = @enable_grub_emu@
 enable_grub_fstest = @enable_grub_fstest@
 enable_grub_pe2elf = @enable_grub_pe2elf@
 enable_lzo = @enable_lzo@
+enable_grub_mkfont = @enable_grub_mkfont@
+freetype_cflags = @freetype_cflags@
+freetype_libs = @freetype_libs@
 
 ### General variables.
 
