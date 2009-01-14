@@ -260,7 +260,7 @@ main (int argc, char *argv[])
       else if (! strcmp (argv[optind], "clear"))
         cmd_clear ();
 
-      fseek (f, 0, SEEK_SET);
+      fseeko (f, 0, SEEK_SET);
       fwrite (buffer, sizeof (buffer), 1, f);
     }
   fclose (f);

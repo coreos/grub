@@ -1,3 +1,7 @@
+2009-01-13  Carles Pina i Estany  <carles@pina.cat>
+
+	* util/grub-editenv.c (main): Use fseeko(), not fseek().
+
 2009-01-13  Bean  <bean123ch@gmail.com>
 
 	* util/grub-mkfont.c (write_font): forget to remove some debug code.
