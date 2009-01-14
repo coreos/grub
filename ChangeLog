@@ -1,8 +1,8 @@
-2009-01-13  Bean <bean123ch@gmail.com>
+2009-01-13  Bean  <bean123ch@gmail.com>
 
 	* util/grub-mkfont.c (write_font): forget to remove some debug code.
 
-2009-01-13  Bean <bean123ch@gmail.com>
+2009-01-13  Bean  <bean123ch@gmail.com>
 
 	* Makefile.in: (enable_grub_mkfont): New variable.
 	(freetype_cflags): Likewise.
@@ -131,7 +131,7 @@
 	(png_mod_LDFLAGS): Likewise.
 	(gfxterm_mod_SOURCES): Likewise.
 	(gfxterm_mod_CFLAGS): Likewise.
-	(gfxterm_mod_LDFLAGS): Likewise.	
+	(gfxterm_mod_LDFLAGS): Likewise.
 
 	* term/gfxterm.c: Removed include to grub/machine/memory.h,
 	grub/machine/console.h.
