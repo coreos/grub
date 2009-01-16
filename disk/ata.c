@@ -74,7 +74,12 @@ enum grub_ata_commands
     GRUB_ATA_CMD_IDENTIFY_DEVICE = 0xEC,
     GRUB_ATA_CMD_IDENTIFY_PACKET_DEVICE = 0xA1,
     GRUB_ATA_CMD_PACKET = 0xA0,
-    GRUB_ATA_CMD_EXEC_DEV_DIAGNOSTICS = 0x90
+  };
+
+enum grub_ata_timeout_milliseconds
+  {
+    GRUB_ATA_TOUT_STD  =  1000,  /* 1s standard timeout.  */
+    GRUB_ATA_TOUT_DATA = 10000   /* 10s DATA I/O timeout.  */
   };
 
 struct grub_ata_device
@@ -139,11 +144,12 @@ grub_ata_regget2 (struct grub_ata_device *dev, int reg)
 
 static inline grub_err_t
 grub_ata_wait_status (struct grub_ata_device *dev,
-		      grub_uint8_t maskset, grub_uint8_t maskclear)
+		      grub_uint8_t maskset, grub_uint8_t maskclear,
+		      int milliseconds)
 {
   int i;
 
-  for (i = 0; i < 1000; i++)
+  for (i = 0; i < milliseconds; i++)
     {
       grub_uint8_t reg;
 
@@ -166,12 +172,8 @@ grub_ata_wait (void)
 static grub_err_t
 grub_ata_cmd (struct grub_ata_device *dev, int cmd)
 {
-  grub_err_t err;
-
-  err = grub_ata_wait_status (dev, 0, 
-			      GRUB_ATA_STATUS_DRQ | GRUB_ATA_STATUS_BUSY);
-  if (err)
-    return err;
+  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_STD))
+    return grub_errno;
 
   grub_ata_regset (dev, GRUB_ATA_REG_CMD, cmd);
 
@@ -193,16 +195,16 @@ grub_ata_strncpy (char *dst, char *src, grub_size_t len)
 
 static grub_err_t
 grub_ata_pio_read (struct grub_ata_device *dev, char *buf,
-		   grub_size_t size)
+		   grub_size_t size, int milliseconds)
 {
   grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
   if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_ERR)
-    return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
+    return grub_error (GRUB_ERR_READ_ERROR, "ATA read error");
 
   /* Wait until the data is available.  */
-  if (grub_ata_wait_status (dev, GRUB_ATA_STATUS_DRQ, 0))
+  if (grub_ata_wait_status (dev, GRUB_ATA_STATUS_DRQ, 0, milliseconds))
     return grub_errno;;
 
   /* Read in the data, word by word.  */
@@ -217,16 +219,16 @@ grub_ata_pio_read (struct grub_ata_device *dev, char *buf,
 
 static grub_err_t
 grub_ata_pio_write (struct grub_ata_device *dev, char *buf,
-		    grub_size_t size)
+		    grub_size_t size, int milliseconds)
 {
   grub_uint16_t *buf16 = (grub_uint16_t *) buf;
   unsigned int i;
 
   if (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_ERR)
-    return grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
+    return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
 
-  /* Wait until the data is available.  */
-  if (grub_ata_wait_status (dev, GRUB_ATA_STATUS_DRQ, 0))
+  /* Wait until drive is ready to read data.  */
+  if (grub_ata_wait_status (dev, GRUB_ATA_STATUS_DRQ, 0, milliseconds))
     return 0;
 
   /* Write the data, word by word.  */
@@ -264,11 +266,11 @@ grub_atapi_identify (struct grub_ata_device *dev)
 {
   char *info;
 
-  info = grub_malloc (256);
+  info = grub_malloc (GRUB_DISK_SECTOR_SIZE);
   if (! info)
     return grub_errno;
 
-  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_STD))
     {
       grub_free (info);
       return grub_errno;
@@ -282,7 +284,7 @@ grub_atapi_identify (struct grub_ata_device *dev)
       return grub_errno;
     }
 
-  if (grub_ata_pio_read (dev, info, 256))
+  if (grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_STD))
     {
       grub_free (info);
       return grub_errno;
@@ -310,7 +312,7 @@ grub_atapi_packet (struct grub_ata_device *dev, char *packet)
 
   grub_ata_wait ();
 
-  if (grub_ata_pio_write (dev, packet, 12))
+  if (grub_ata_pio_write (dev, packet, 12, GRUB_ATA_TOUT_STD))
     return grub_errno;
 
   return GRUB_ERR_NONE;
@@ -321,7 +323,6 @@ grub_ata_identify (struct grub_ata_device *dev)
 {
   char *info;
   grub_uint16_t *info16;
-  int ataerr = 0;
 
   info = grub_malloc (GRUB_DISK_SECTOR_SIZE);
   if (! info)
@@ -329,7 +330,7 @@ grub_ata_identify (struct grub_ata_device *dev)
 
   info16 = (grub_uint16_t *) info;
 
-  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_STD))
     {
       grub_free (info);
       return grub_errno;
@@ -343,20 +344,22 @@ grub_ata_identify (struct grub_ata_device *dev)
     }
   grub_ata_wait ();
 
-  if (grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE))
-    ataerr = grub_ata_regget (dev, GRUB_ATA_REG_ERROR);
-  if (ataerr & 4)
+  if (grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_STD))
     {
-      /* ATAPI device detected.  */
-      grub_free(info);
-      return grub_atapi_identify (dev);
-    }
-  else if (ataerr)
-    {
-      /* Error.  */
-      grub_free(info);
-      return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			 "device can not be identified");
+      if (grub_ata_regget (dev, GRUB_ATA_REG_ERROR) & 0x04) /* ABRT */
+	{
+	  /* Device without ATA IDENTIFY, try ATAPI.  */
+	  grub_free(info);
+	  grub_errno = GRUB_ERR_NONE;
+	  return grub_atapi_identify (dev);
+	}
+      else
+	{
+	  /* Error.  */
+	  grub_free(info);
+	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			     "device can not be identified");
+	}
     }
 
   /* Now it is certain that this is not an ATAPI device.  */
@@ -425,45 +428,6 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
       grub_free(dev);
       return 0;
     }
-
-  /* Detect if the device is present by issuing a EXECUTE
-     DEVICE DIAGNOSTICS command.  */
-  grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
-  if (grub_ata_cmd (dev, GRUB_ATA_CMD_EXEC_DEV_DIAGNOSTICS))
-    {
-      grub_free (dev);
-      return grub_errno;
-    }
-  grub_ata_wait ();
-
-  grub_dprintf ("ata", "Registers: %x %x %x %x\n",
-		grub_ata_regget (dev, GRUB_ATA_REG_SECTORS),
-		grub_ata_regget (dev, GRUB_ATA_REG_LBALOW),
-		grub_ata_regget (dev, GRUB_ATA_REG_LBAMID),
-		grub_ata_regget (dev, GRUB_ATA_REG_LBAHIGH));
-
-  /* Check some registers to see if the channel is used.  */
-  if (grub_ata_regget (dev, GRUB_ATA_REG_SECTORS) == 0x01
-      && grub_ata_regget (dev, GRUB_ATA_REG_LBALOW) == 0x01
-      && grub_ata_regget (dev, GRUB_ATA_REG_LBAMID) == 0x14
-      && grub_ata_regget (dev, GRUB_ATA_REG_LBAHIGH) == 0xeb)
-    {
-      grub_dprintf ("ata", "ATAPI signature detected\n");
-    }
-  else if (grub_ata_regget (dev, GRUB_ATA_REG_SECTORS) == 0x01
-	   && grub_ata_regget (dev, GRUB_ATA_REG_LBALOW) == 0x01
-	   && grub_ata_regget (dev, GRUB_ATA_REG_LBAMID) == 0x00
-	   && grub_ata_regget (dev, GRUB_ATA_REG_LBAHIGH) == 0x00)
-    {
-      grub_dprintf ("ata", "ATA detected\n");
-    }
-  else
-    {
-      grub_dprintf ("ata", "incorrect signature\n");
-      grub_free (dev);
-      return 0;
-    }
-
 
   /* Use the IDENTIFY DEVICE command to query the device.  */
   if (grub_ata_identify (dev))
@@ -540,6 +504,7 @@ grub_ata_pciinit (int bus, int device, int func,
 
       if (rega && regb)
 	{
+	  grub_errno = GRUB_ERR_NONE;
 	  grub_ata_device_initialize (controller * 2 + i, 0, rega, regb);
 
 	  /* Most errors rised by grub_ata_device_initialize() are harmless.
@@ -592,7 +557,7 @@ grub_ata_setaddress (struct grub_ata_device *dev,
 		     grub_disk_addr_t sector,
 		     grub_size_t size)
 {
-  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_STD))
     return grub_errno;
 
   switch (addressing)
@@ -616,10 +581,10 @@ grub_ata_setaddress (struct grub_ata_device *dev,
 			     "sector %d can not be addressed "
 			     "using CHS addressing", sector);
 
+	grub_ata_regset (dev, GRUB_ATA_REG_DISK, (dev->device << 4) | head);
 	grub_ata_regset (dev, GRUB_ATA_REG_SECTNUM, sect);
 	grub_ata_regset (dev, GRUB_ATA_REG_CYLLSB, cylinder & 0xFF);
 	grub_ata_regset (dev, GRUB_ATA_REG_CYLMSB, cylinder >> 8);
-	grub_ata_regset (dev, GRUB_ATA_REG_DISK, (dev->device << 4) | head);
 
 	break;
       }
@@ -627,20 +592,20 @@ grub_ata_setaddress (struct grub_ata_device *dev,
     case GRUB_ATA_LBA:
       if (size == 256)
 	size = 0;
-      grub_ata_setlba (dev, sector, size);
       grub_ata_regset (dev, GRUB_ATA_REG_DISK,
 		       0xE0 | (dev->device << 4) | ((sector >> 24) & 0x0F));
+      grub_ata_setlba (dev, sector, size);
       break;
 
     case GRUB_ATA_LBA48:
       if (size == 65536)
 	size = 0;
 
+      grub_ata_regset (dev, GRUB_ATA_REG_DISK, 0xE0 | (dev->device << 4));
       /* Set "Previous".  */
       grub_ata_setlba (dev, sector >> 24, size >> 8);
       /* Set "Current".  */
       grub_ata_setlba (dev, sector, size);
-      grub_ata_regset (dev, GRUB_ATA_REG_DISK, 0xE0 | (dev->device << 4));
 
       break;
     }
@@ -693,13 +658,13 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	    return grub_errno;
 
 	  /* Wait for the command to complete.  */
-	  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+	  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_DATA))
 	    return grub_errno;
 
 	  for (sect = 0; sect < batch; sect++)
 	    {
 	      if (grub_ata_pio_read (dev, buf,
-				     GRUB_DISK_SECTOR_SIZE))
+				     GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_DATA))
 		return grub_errno;
 	      buf += GRUB_DISK_SECTOR_SIZE;
 	    }
@@ -711,13 +676,13 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	    return grub_errno;
 
 	  /* Wait for the command to complete.  */
-	  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+	  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_DATA))
 	    return grub_errno;
 
 	  for (sect = 0; sect < batch; sect++)
 	    {
 	      if (grub_ata_pio_write (dev, buf,
-				      GRUB_DISK_SECTOR_SIZE))
+				      GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_DATA))
 		return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
 	      buf += GRUB_DISK_SECTOR_SIZE;
 	    }
@@ -736,12 +701,12 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	return grub_errno;
 
       /* Wait for the command to complete.  */
-      if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+      if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_DATA))
 	return grub_errno;
 
       for (sect = 0; sect < (size % batch); sect++)
 	{
-	  if (grub_ata_pio_read (dev, buf, GRUB_DISK_SECTOR_SIZE))
+	  if (grub_ata_pio_read (dev, buf, GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_DATA))
 	    return grub_errno;
 	  buf += GRUB_DISK_SECTOR_SIZE;
 	}
@@ -751,12 +716,12 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 	return grub_errno;
 
       /* Wait for the command to complete.  */
-      if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY))
+      if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_DATA))
 	return grub_errno;
 
       for (sect = 0; sect < (size % batch); sect++)
 	{
-	  if (grub_ata_pio_write (dev, buf, GRUB_DISK_SECTOR_SIZE))
+	  if (grub_ata_pio_write (dev, buf, GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_DATA))
 	    return grub_error (GRUB_ERR_WRITE_ERROR, "ATA write error");
 	  buf += GRUB_DISK_SECTOR_SIZE;
 	}
@@ -887,7 +852,7 @@ grub_atapi_read (struct grub_scsi *scsi,
 
   grub_ata_wait (); /* XXX */
 
-  return grub_ata_pio_read (dev, buf, size);
+  return grub_ata_pio_read (dev, buf, size, GRUB_ATA_TOUT_DATA);
 }
 
 static grub_err_t
@@ -902,7 +867,7 @@ grub_atapi_write (struct grub_scsi *scsi,
 
   grub_ata_wait (); /* XXX */
 
-  return grub_ata_pio_write (dev, buf, size);
+  return grub_ata_pio_write (dev, buf, size, GRUB_ATA_TOUT_DATA);
 }
 
 static grub_err_t

@@ -1,3 +1,32 @@
+2009-01-16  Christian Franke  <franke@computer.org>
+
+	* disk/ata.c (enum grub_ata_commands): Remove EXEC_DEV_DIAGNOSTICS.
+	(enum grub_ata_timeout_milliseconds): New enum.
+	(grub_ata_wait_status): Add parameter milliseconds.
+	(grub_ata_cmd): Remove variable `err'.  Remove wait for !DRQ to allow
+	recovery from timed-out commands.
+	(grub_ata_pio_read): Add parameter milliseconds.  Fix error return,
+	return grub_errno instead of REG_ERROR.
+	(grub_ata_pio_write): Add parameter milliseconds.
+	(grub_atapi_identify): Fix size of ATAPI IDENTIFY sector.
+	Pass milliseconds to grub_ata_wait_status () and
+	grub_ata_pio_read ().
+	(grub_atapi_packet): Pass milliseconds to grub_ata_pio_write ().
+	(grub_ata_identify): Remove variable `ataerr'.  Pass milliseconds to
+	grub_ata_wait_status ().  Fix IDENTIFY timeout check.
+	(grub_ata_device_initialize): Remove EXECUTE DEVICE DIAGNOSTICS.
+	It is not suitable for device detection, because DEV bit is ignored,
+	the command may run too long, and not all devices set the signature
+	properly.
+	(grub_ata_pciinit): Clear grub_errno before grub_ata_device_initialize ().
+	(grub_ata_setaddress): Pass milliseconds to grub_ata_wait_status ().
+	Fix device selection, DEV bit must be set first to address the registers
+	of the correct device.
+	(grub_ata_readwrite): Pass milliseconds to grub_ata_wait_status () and
+	grub_ata_pio_read/write ().
+	(grub_atapi_read): Pass milliseconds to grub_ata_pio_read ().
+	(grub_atapi_write): Pass milliseconds to grub_ata_pio_write ().
+
 2009-01-13  Carles Pina i Estany  <carles@pina.cat>
 
 	* util/grub-editenv.c (main): Use fseeko(), not fseek().
