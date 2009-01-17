@@ -153,24 +153,21 @@ partmap.lst: $(PARTMAPFILES)
 
 ifeq (, $(UNIFONT_BDF))
 else
+
+ifeq ($(enable_grub_mkfont),yes)
+
 pkgdata_DATA += unicode.pf2 ascii.pf2
 
 # Arrows and lines are needed to draw the menu, so we always include them
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-# Note: fonttool should be replaced with C only implementation
+unicode.pf2: $(UNIFONT_BDF) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF)
 
-$(builddir)/fonttool/fonttool.jar: 
-	mkdir -p "$(builddir)/fonttool/src"
-	javac -source 1.5 -target 1.5 -g -deprecation -encoding UTF-8 -d "$(builddir)/fonttool/src" `find "$(srcdir)/util/fonttool/src/" -name '*.java'`
-	jar cf $(builddir)/fonttool/fonttool.jar -C $(builddir)/fonttool/src .
-
-unicode.pf2: $(UNIFONT_BDF) $(builddir)/fonttool/fonttool.jar
-	java -cp $(builddir)/fonttool/fonttool.jar org.gnu.grub.fonttool.Converter --in=$(UNIFONT_BDF) --out=$@
-
-ascii.pf2: $(UNIFONT_BDF) $(builddir)/fonttool/fonttool.jar
-	java -cp $(builddir)/fonttool/fonttool.jar org.gnu.grub.fonttool.Converter --in=$(UNIFONT_BDF) --out=$@ 0x0-0x7f $(UNICODE_ARROWS) $(UNICODE_LINES)
+ascii.pf2: $(UNIFONT_BDF) grub-mkfont
+	$(builddir)/grub-mkfont -o $@ $(UNIFONT_BDF) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+endif
 endif
 
 # Used for building modules externally

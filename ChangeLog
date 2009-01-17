@@ -1,3 +1,18 @@
+2009-01-17  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in: Change font compilation to use new grub-mkfont instead
+	of java version.
+
+	* util/fonttool/src/org/gnu/grub/fonttool/BDFLoader.java: Remove.
+	* util/fonttool/src/org/gnu/grub/fonttool/CharDefs.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/CharacterRange.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/CharacterRange.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/Converter.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/Font.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/Glyph.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/PFF2Sections.java: Likewise.
+	* util/fonttool/src/org/gnu/grub/fonttool/PFF2Writer.java: Likewise.
+
 2009-01-16  Christian Franke  <franke@computer.org>
 
 	* disk/ata.c (enum grub_ata_commands): Remove EXEC_DEV_DIAGNOSTICS.
