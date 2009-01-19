@@ -1,5 +1,21 @@
 2009-01-19  Christian Franke  <franke@computer.org>
 
+	* disk/ata.c (GRUB_ATAPI_REG_*): New defines.
+	(GRUB_ATAPI_IREASON_*): Likewise.
+	(grub_ata_pio_write): Fix timeout error return.
+	(grub_atapi_identify): Add grub_ata_wait () after cmd.
+	(grub_atapi_wait_drq): New function.
+	(grub_atapi_packet): New parameter `size'.
+	Use grub_atapi_wait_drq () and direct write instead of
+	grub_ata_pio_write ().
+	(grub_atapi_read): Replace grub_ata_pio_read () by a loop which
+	reads the number of bytes requested by the device for each DRQ
+	assertion.
+	(grub_atapi_write): Remove old implementation, return not
+	implemented instead.
+
+2009-01-19  Christian Franke  <franke@computer.org>
+
 	* disk/scsi.c (grub_scsi_read10): Use scsi->blocksize instead
 	of 512 to calculate data size.
 	(grub_scsi_read12): Likewise.

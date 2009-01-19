@@ -44,12 +44,15 @@ static const int grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
 #define GRUB_ATA_REG_ERROR	1
 #define GRUB_ATA_REG_FEATURES	1
 #define GRUB_ATA_REG_SECTORS	2
+#define GRUB_ATAPI_REG_IREASON	2
 #define GRUB_ATA_REG_SECTNUM	3
 #define GRUB_ATA_REG_CYLLSB	4
 #define GRUB_ATA_REG_CYLMSB	5
 #define GRUB_ATA_REG_LBALOW	3
 #define GRUB_ATA_REG_LBAMID	4
+#define GRUB_ATAPI_REG_CNTLOW	4
 #define GRUB_ATA_REG_LBAHIGH	5
+#define GRUB_ATAPI_REG_CNTHIGH	5
 #define GRUB_ATA_REG_DISK	6
 #define GRUB_ATA_REG_CMD	7
 #define GRUB_ATA_REG_STATUS	7
@@ -64,6 +67,13 @@ static const int grub_ata_ioaddress2[] = { 0x3f6, 0x376 };
 #define GRUB_ATA_STATUS_WRERR	0x20
 #define GRUB_ATA_STATUS_READY	0x40
 #define GRUB_ATA_STATUS_BUSY	0x80
+
+/* ATAPI interrupt reason values (I/O, D/C bits).  */
+#define GRUB_ATAPI_IREASON_MASK     0x3
+#define GRUB_ATAPI_IREASON_DATA_OUT 0x0
+#define GRUB_ATAPI_IREASON_CMD_OUT  0x1
+#define GRUB_ATAPI_IREASON_DATA_IN  0x2
+#define GRUB_ATAPI_IREASON_ERROR    0x3
 
 enum grub_ata_commands
   {
@@ -229,7 +239,7 @@ grub_ata_pio_write (struct grub_ata_device *dev, char *buf,
 
   /* Wait until drive is ready to read data.  */
   if (grub_ata_wait_status (dev, GRUB_ATA_STATUS_DRQ, 0, milliseconds))
-    return 0;
+    return grub_errno;
 
   /* Write the data, word by word.  */
   for (i = 0; i < size / 2; i++)
@@ -283,6 +293,7 @@ grub_atapi_identify (struct grub_ata_device *dev)
       grub_free (info);
       return grub_errno;
     }
+  grub_ata_wait ();
 
   if (grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE, GRUB_ATA_TOUT_STD))
     {
@@ -300,20 +311,64 @@ grub_atapi_identify (struct grub_ata_device *dev)
 }
 
 static grub_err_t
-grub_atapi_packet (struct grub_ata_device *dev, char *packet)
+grub_atapi_wait_drq (struct grub_ata_device *dev,
+		     grub_uint8_t ireason,
+		     int milliseconds)
 {
+  grub_millisleep (1); /* ATA allows 400ns to assert BSY.  */
+
+  if (grub_ata_wait_status (dev, 0, GRUB_ATA_STATUS_BUSY, milliseconds))
+    return grub_errno;
+
+  grub_uint8_t sts = grub_ata_regget (dev, GRUB_ATA_REG_STATUS);
+  grub_uint8_t irs = grub_ata_regget (dev, GRUB_ATAPI_REG_IREASON);
+
+  /* OK if DRQ is asserted and interrupt reason is as expected.  */
+  if ((sts & GRUB_ATA_STATUS_DRQ)
+      && (irs & GRUB_ATAPI_IREASON_MASK) == ireason)
+    return GRUB_ERR_NONE;
+
+  /* No DRQ implies error condition.  */
+  grub_dprintf("ata", "atapi error: status=0x%x, ireason=0x%x, error=0x%x\n",
+	       sts, irs, grub_ata_regget (dev, GRUB_ATA_REG_ERROR));
+
+  if (! (sts & GRUB_ATA_STATUS_DRQ)
+      && (irs & GRUB_ATAPI_IREASON_MASK) == GRUB_ATAPI_IREASON_ERROR)
+    {
+      if (ireason == GRUB_ATAPI_IREASON_CMD_OUT)
+	return grub_error (GRUB_ERR_READ_ERROR, "ATA PACKET command error");
+      else
+	return grub_error (GRUB_ERR_READ_ERROR, "ATAPI read error");
+    }
+
+  return grub_error (GRUB_ERR_READ_ERROR, "ATAPI protocol error");
+}
+
+static grub_err_t
+grub_atapi_packet (struct grub_ata_device *dev, char *packet,
+		   grub_size_t size)
+{
+  if (grub_ata_wait_status(dev, 0, GRUB_ATA_STATUS_BUSY, GRUB_ATA_TOUT_STD))
+    return grub_errno;
+
+  /* Send ATA PACKET command.  */
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
   grub_ata_regset (dev, GRUB_ATA_REG_FEATURES, 0);
-  grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0);
-  grub_ata_regset (dev, GRUB_ATA_REG_LBAHIGH, 0xFF);
-  grub_ata_regset (dev, GRUB_ATA_REG_LBAMID, 0xFF);
+  grub_ata_regset (dev, GRUB_ATAPI_REG_IREASON, 0);
+  grub_ata_regset (dev, GRUB_ATAPI_REG_CNTHIGH, size >> 8);
+  grub_ata_regset (dev, GRUB_ATAPI_REG_CNTLOW, size & 0xFF);
 
   grub_ata_regset (dev, GRUB_ATA_REG_CMD, GRUB_ATA_CMD_PACKET);
 
-  grub_ata_wait ();
-
-  if (grub_ata_pio_write (dev, packet, 12, GRUB_ATA_TOUT_STD))
+  /* Wait for !BSY, DRQ, !I/O, C/D.  */
+  if (grub_atapi_wait_drq (dev, GRUB_ATAPI_IREASON_CMD_OUT, GRUB_ATA_TOUT_STD))
     return grub_errno;
+
+  /* Write the packet.  */
+  grub_uint16_t *buf16 = (grub_uint16_t *) packet;
+  unsigned i;
+  for (i = 0; i < 12 / 2; i++)
+    grub_outw (grub_cpu_to_le16 (buf16[i]), dev->ioaddress + GRUB_ATA_REG_DATA);
 
   return GRUB_ERR_NONE;
 }
@@ -847,27 +902,51 @@ grub_atapi_read (struct grub_scsi *scsi,
 {
   struct grub_ata_device *dev = (struct grub_ata_device *) scsi->data;
 
-  if (grub_atapi_packet (dev, cmd))
+  grub_dprintf("ata", "grub_atapi_read (size=%u)\n", size);
+
+  if (grub_atapi_packet (dev, cmd, size))
     return grub_errno;
 
-  grub_ata_wait (); /* XXX */
+  grub_size_t nread = 0;
+  while (nread < size)
+    {
+      /* Wait for !BSY, DRQ, I/O, !C/D.  */
+      if (grub_atapi_wait_drq (dev, GRUB_ATAPI_IREASON_DATA_IN, GRUB_ATA_TOUT_DATA))
+	return grub_errno;
 
-  return grub_ata_pio_read (dev, buf, size, GRUB_ATA_TOUT_DATA);
+      /* Get byte count for this DRQ assertion.  */
+      unsigned cnt = grub_ata_regget (dev, GRUB_ATAPI_REG_CNTHIGH) << 8
+		   | grub_ata_regget (dev, GRUB_ATAPI_REG_CNTLOW);
+      grub_dprintf("ata", "DRQ count=%u\n", cnt);
+
+      /* Count of last transfer may be uneven.  */
+      if (! (0 < cnt && cnt <= size - nread && (! (cnt & 1) || cnt == size - nread)))
+	return grub_error (GRUB_ERR_READ_ERROR, "Invalid ATAPI transfer count");
+
+      /* Read the data.  */
+      grub_uint16_t *buf16 = (grub_uint16_t *) (buf + nread);
+      unsigned i;
+      for (i = 0; i < cnt / 2; i++)
+	buf16[i] = grub_le_to_cpu16 (grub_inw (dev->ioaddress + GRUB_ATA_REG_DATA));
+
+      if (cnt & 1)
+	buf[nread + cnt - 1] = (char) grub_le_to_cpu16 (grub_inw (dev->ioaddress + GRUB_ATA_REG_DATA));
+
+      nread += cnt;
+    }
+
+  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
-grub_atapi_write (struct grub_scsi *scsi,
+grub_atapi_write (struct grub_scsi *scsi __attribute__((unused)),
 		  grub_size_t cmdsize __attribute__((unused)),
-		  char *cmd, grub_size_t size, char *buf)
+		  char *cmd __attribute__((unused)),
+		  grub_size_t size __attribute__((unused)),
+		  char *buf __attribute__((unused)))
 {
-  struct grub_ata_device *dev = (struct grub_ata_device *) scsi->data;
-
-  if (grub_atapi_packet (dev, cmd))
-    return grub_errno;
-
-  grub_ata_wait (); /* XXX */
-
-  return grub_ata_pio_write (dev, buf, size, GRUB_ATA_TOUT_DATA);
+  // XXX: scsi.mod does not use write yet.
+  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "ATAPI write not implemented");
 }
 
 static grub_err_t
