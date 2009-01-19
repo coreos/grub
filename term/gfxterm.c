@@ -680,6 +680,8 @@ write_char (void)
   unsigned int x;
   unsigned int y;
   int ascent;
+  unsigned int height;
+  unsigned int width;
 
   /* Find out active character.  */
   p = (virtual_screen.text_buffer
@@ -691,7 +693,10 @@ write_char (void)
   /* Get glyph for character.  */
   glyph = grub_font_get_glyph (virtual_screen.font, p->code);
   ascent = grub_font_get_ascent (virtual_screen.font);
-
+  
+  width = virtual_screen.normal_char_width * calculate_character_width(glyph);
+  height = virtual_screen.normal_char_height;
+  
   color = p->fg_color;
   bgcolor = p->bg_color;
 
@@ -700,13 +705,13 @@ write_char (void)
 
   /* Render glyph to text layer.  */
   grub_video_set_active_render_target (text_layer);
-  grub_video_fill_rect (bgcolor, x, y, glyph->width, glyph->height);
+  grub_video_fill_rect (bgcolor, x, y, width, height);
   grub_font_draw_glyph (glyph, color, x, y + ascent);
   grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
   /* Mark character to be drawn.  */
   dirty_region_add (virtual_screen.offset_x + x, virtual_screen.offset_y + y,
-                    glyph->width, glyph->height);
+                    width, height);
 }
 
 static void

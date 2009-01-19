@@ -1,3 +1,10 @@
+2009-01-19  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	* font/font.c (grub_font_loader_init): Re-position unknown glyph.
+
+	* term/gfxterm.c (write_char): Fix background rendering for wide 
+	width glyphs.
+
 2009-01-19  Robert Millan  <rmh@aybabtu.com>
 
 	* config.guess: Update to latest version from config git.

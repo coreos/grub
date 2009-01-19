@@ -145,7 +145,7 @@ grub_font_loader_init (void)
   unknown_glyph->width = 8;
   unknown_glyph->height = 16;
   unknown_glyph->offset_x = 0;
-  unknown_glyph->offset_y = 0;
+  unknown_glyph->offset_y = -3;
   unknown_glyph->device_width = 8;
   grub_memcpy(unknown_glyph->bitmap,
               unknown_glyph_bitmap, sizeof(unknown_glyph_bitmap));
@@ -153,8 +153,8 @@ grub_font_loader_init (void)
   /* Initialize the null font.  */
   font_init (&null_font);
   null_font.name = "<No Font>";
-  null_font.ascent = unknown_glyph->height;
-  null_font.descent = 1;
+  null_font.ascent = unknown_glyph->height-3;
+  null_font.descent = 3;
   null_font.max_char_width = unknown_glyph->width;
   null_font.max_char_height = unknown_glyph->height;
 
