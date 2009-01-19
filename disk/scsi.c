@@ -119,7 +119,7 @@ grub_scsi_read10 (grub_disk_t disk, grub_disk_addr_t sector,
   rd.reserved2 = 0;
   rd.pad = 0;
 
-  return scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * 512, buf);
+  return scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
 }
 
 /* Send a SCSI request for DISK: read SIZE sectors starting with
@@ -140,7 +140,7 @@ grub_scsi_read12 (grub_disk_t disk, grub_disk_addr_t sector,
   rd.reserved = 0;
   rd.control = 0;
 
-  return scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * 512, buf);
+  return scsi->dev->read (scsi, sizeof (rd), (char *) &rd, size * scsi->blocksize, buf);
 }
 
 #if 0
@@ -163,7 +163,7 @@ grub_scsi_write10 (grub_disk_t disk, grub_disk_addr_t sector,
   wr.reserved2 = 0;
   wr.pad = 0;
 
-  return scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * 512, buf);
+  return scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
 }
 
 /* Send a SCSI request for DISK: write the data stored in BUF to SIZE
@@ -184,7 +184,7 @@ grub_scsi_write12 (grub_disk_t disk, grub_disk_addr_t sector,
   wr.reserved = 0;
   wr.pad = 0;
 
-  return scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * 512, buf);
+  return scsi->dev->write (scsi, sizeof (wr), (char *) &wr, size * scsi->blocksize, buf);
 }
 #endif
 
@@ -325,8 +325,22 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   /* SCSI sectors are variable in size.  GRUB uses 512 byte
      sectors.  */
-  sector = grub_divmod64 (sector, scsi->blocksize >> GRUB_DISK_SECTOR_BITS,
-			  NULL);
+  if (scsi->blocksize != GRUB_DISK_SECTOR_SIZE)
+    {
+      unsigned spb = scsi->blocksize >> GRUB_DISK_SECTOR_BITS;
+      if (! (spb != 0 && (scsi->blocksize & GRUB_DISK_SECTOR_SIZE) == 0))
+	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			   "Unsupported SCSI block size");
+
+      grub_int32_t sector_mod = 0;
+      sector = grub_divmod64 (sector, spb, &sector_mod);
+
+      if (! (sector_mod == 0 && size % spb == 0))
+	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			   "Unaligned SCSI read not supported");
+
+      size /= spb;
+    }
 
   /* Depending on the type, select a read function.  */
   switch (scsi->devtype)

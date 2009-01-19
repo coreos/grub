@@ -1,3 +1,13 @@
+2009-01-19  Christian Franke  <franke@computer.org>
+
+	* disk/scsi.c (grub_scsi_read10): Use scsi->blocksize instead
+	of 512 to calculate data size.
+	(grub_scsi_read12): Likewise.
+	(grub_scsi_write10): Likewise.
+	(grub_scsi_write12): Likewise.
+	(grub_scsi_read): Adjust size according to blocksize.
+	Add checks for invalid blocksize and unaligned transfer.
+
 2009-01-19  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	* font/font.c (grub_font_loader_init): Re-position unknown glyph.
