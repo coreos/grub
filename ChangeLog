@@ -1,3 +1,31 @@
+2009-01-22  Christian Franke  <franke@computer.org>
+
+	* disk/ata.c (grub_ata_wait_status): Replace by ...
+	(grub_ata_wait_not_busy): ... this function.  Checks only BSY bit,
+	other status bits may be invalid while BSY is asserted.
+	(grub_ata_check_ready): New function.
+	(grub_ata_cmd): Removed.
+	(grub_ata_wait_drq): New function.
+	(grub_ata_strncpy): Remove inline.
+	(grub_ata_pio_read): Reduce to actual block transfer.  BSY wait
+	and error check now done by grub_ata_wait_drq ().
+	(grub_ata_pio_write): Likewise.
+	(grub_atapi_identify): Set DEV before check for !BSY.  Use
+	grub_ata_wait_drq () to wait for data.
+	(grub_ata_device_initialize): Add status register check to
+	detect missing SATA slave devices.  Add debug messages.
+	(grub_atapi_wait_drq): Use grub_ata_wait_not_busy ().
+	(grub_atapi_packet): Set DEV before check for !BSY.  Replace
+	transfer loop by grub_ata_pio_write ().
+	(grub_ata_identify): Set DEV before check for !BSY. Use
+	grub_ata_wait_drq () to wait for data.
+	(grub_ata_setaddress): Set DEV before check for !BSY. 
+	(grub_ata_readwrite): Remove duplicate code, handle batch/rest and
+	read/write in one loop.  Fix invalid command on write.  Fix incomplete
+	command on (size % batch) == 0.  Add missing error check after write of
+	last block.  Add debug messages.
+	(grub_atapi_read):  Replace transfer loop by grub_ata_pio_read ().
+
 2009-01-19  Christian Franke  <franke@computer.org>
 
 	* disk/ata.c (GRUB_ATAPI_REG_*): New defines.
