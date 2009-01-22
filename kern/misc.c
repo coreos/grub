@@ -700,7 +700,7 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	  char tmp[32];
 	  char *p;
 	  unsigned int format1 = 0;
-	  unsigned int format2 = 3;
+	  unsigned int format2 = ~ 0U;
 	  char zerofill = ' ';
 	  int rightfill = 0;
 	  int n;
@@ -727,20 +727,22 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 		zerofill = '0';
 	      format1 = grub_strtoul (s, 0, 10);
 	      fmt = p;
-	      if (*p && *p == '.')
+	    }
+
+	  if (*p && *p == '.')
+	    {
+	      p++;
+	      fmt++;
+	      while (*p && grub_isdigit (*p))
+		p++;
+
+	      if (p > fmt)
 		{
-		  p++;
-		  fmt++;
-		  while (*p && grub_isdigit (*p))
-		    p++;
-		  
-		  if (p > fmt)
-		    {
-		      char fstr[p - fmt];
-		      grub_strncpy (fstr, fmt, p - fmt);
-		      format2 = grub_strtoul (fstr, 0, 10);
-		      fmt = p;
-		    }
+		  char fstr[p - fmt + 1];
+		  grub_strncpy (fstr, fmt, p - fmt);
+		  fstr[p - fmt] = 0;
+		  format2 = grub_strtoul (fstr, 0, 10);
+		  fmt = p;
 		}
 	    }
 
@@ -847,13 +849,19 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 	      p = va_arg (args, char *);
 	      if (p)
 		{
-		  if (!rightfill && grub_strlen (p) < format1)
-		    write_fill (zerofill, format1 - grub_strlen (p));
-		  
-		  write_str (p);
-		  
-		  if (rightfill && grub_strlen (p) < format1)
-		    write_fill (zerofill, format1 - grub_strlen (p));
+		  grub_size_t len = 0;
+		  while (len < format2 && p[len])
+		    len++;
+
+		  if (!rightfill && len < format1)
+		    write_fill (zerofill, format1 - len);
+
+		  grub_size_t i;
+		  for (i = 0; i < len; i++)
+		    write_char (*p++);
+
+		  if (rightfill && len < format1)
+		    write_fill (zerofill, format1 - len);
 		}
 	      else
 		write_str ("(null)");

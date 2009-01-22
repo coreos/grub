@@ -1,5 +1,12 @@
 2009-01-22  Christian Franke  <franke@computer.org>
 
+	* kern/misc.c (grub_vsprintf): Fix size and termination of `format2'
+	(precision) digit string.  Allow `.format2' without `format1' (width).
+	Limit input chars for `%s' output to `format2' if specified.  This is
+	compatible with standard printf ().
+
+2009-01-22  Christian Franke  <franke@computer.org>
+
 	* disk/ata.c (grub_ata_wait_status): Replace by ...
 	(grub_ata_wait_not_busy): ... this function.  Checks only BSY bit,
 	other status bits may be invalid while BSY is asserted.
