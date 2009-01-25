@@ -223,7 +223,7 @@ AC_SUBST(TARGET_OBJ2ELF)
 AC_MSG_RESULT([$TARGET_OBJ2ELF])
 
 # For cross-compiling.
-if test "x$target" != "x$host"; then
+if test "x$build" != "x$host"; then
   # XXX this depends on the implementation of autoconf!
   tmp_ac_tool_prefix="$ac_tool_prefix"
   ac_tool_prefix=$target_alias-

@@ -1,3 +1,7 @@
+2009-01-26  Robert Millan  <rmh@aybabtu.com>
+
+	* configure.ac: Fix cross-compilation check.
+	
 2009-01-22  Christian Franke  <franke@computer.org>
 
 	* kern/misc.c (grub_vsprintf): Fix size and termination of `format2'
