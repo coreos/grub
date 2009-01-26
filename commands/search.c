@@ -115,7 +115,7 @@ search_fs_uuid (const char *key, const char *var)
 	      (fs->uuid) (dev, &uuid);
 	      if (grub_errno == GRUB_ERR_NONE && uuid)
 		{
-		  if (grub_strcmp (uuid, key) == 0)
+		  if (grub_strcasecmp (uuid, key) == 0)
 		    {
 		      /* Found!  */
 		      count++;

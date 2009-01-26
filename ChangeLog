@@ -1,5 +1,7 @@
 2009-01-26  Daniel Mierswa  <impulze@impulze.org>
 
+	* commands/search.c (search_fs_uuid): Ignore case of the UUID.
+
 	* kern/misc.c (grub_strcasecmp): New function.
 	(grub_strcasecmp): Use grub_size_t instead of int for length.
 	Fix return value.
