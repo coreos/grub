@@ -1,5 +1,7 @@
 2009-01-26  Daniel Mierswa  <impulze@impulze.org>
 
+	* fs/fat.c (grub_fat_uuid): Fix shift of the first two bytes.
+
 	* commands/search.c (search_fs_uuid): Ignore case of the UUID.
 
 	* kern/misc.c (grub_strcasecmp): New function.

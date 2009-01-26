@@ -841,7 +841,7 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   if (data)
     {
       *uuid = grub_malloc (sizeof ("xxxx-xxxx"));
-      grub_sprintf (*uuid, "%04x-%04x", (grub_uint16_t) (data->uuid >> 8),
+      grub_sprintf (*uuid, "%04x-%04x", (grub_uint16_t) (data->uuid >> 16),
 		    (grub_uint16_t) data->uuid);
     }
   else
