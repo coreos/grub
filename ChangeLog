@@ -1,7 +1,7 @@
 2009-01-26  Robert Millan  <rmh@aybabtu.com>
 
 	* configure.ac: Fix cross-compilation check.
-	
+
 2009-01-22  Christian Franke  <franke@computer.org>
 
 	* kern/misc.c (grub_vsprintf): Fix size and termination of `format2'
@@ -30,7 +30,7 @@
 	transfer loop by grub_ata_pio_write ().
 	(grub_ata_identify): Set DEV before check for !BSY. Use
 	grub_ata_wait_drq () to wait for data.
-	(grub_ata_setaddress): Set DEV before check for !BSY. 
+	(grub_ata_setaddress): Set DEV before check for !BSY.
 	(grub_ata_readwrite): Remove duplicate code, handle batch/rest and
 	read/write in one loop.  Fix invalid command on write.  Fix incomplete
 	command on (size % batch) == 0.  Add missing error check after write of
@@ -67,7 +67,7 @@
 
 	* font/font.c (grub_font_loader_init): Re-position unknown glyph.
 
-	* term/gfxterm.c (write_char): Fix background rendering for wide 
+	* term/gfxterm.c (write_char): Fix background rendering for wide
 	width glyphs.
 
 2009-01-19  Robert Millan  <rmh@aybabtu.com>
