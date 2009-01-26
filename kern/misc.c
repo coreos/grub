@@ -194,7 +194,7 @@ grub_strcmp (const char *s1, const char *s2)
   while (*s1 && *s2)
     {
       if (*s1 != *s2)
-	return (int) *s1 - (int) *s2;
+	break;
       
       s1++;
       s2++;
@@ -212,7 +212,7 @@ grub_strncmp (const char *s1, const char *s2, grub_size_t n)
   while (*s1 && *s2 && --n)
     {
       if (*s1 != *s2)
-	return (int) *s1 - (int) *s2;
+	break;
       
       s1++;
       s2++;
@@ -222,21 +222,36 @@ grub_strncmp (const char *s1, const char *s2, grub_size_t n)
 }
 
 int
-grub_strncasecmp (const char *s1, const char *s2, int c)
+grub_strcasecmp (const char *s1, const char *s2)
 {
-  int p = 1;
-
-  while (grub_tolower (*s1) && grub_tolower (*s2) && p < c)
+  while (*s1 && *s2)
     {
       if (grub_tolower (*s1) != grub_tolower (*s2))
-	return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+	break;
+
+      s1++;
+      s2++;
+    }
+
+  return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
+}
+
+int
+grub_strncasecmp (const char *s1, const char *s2, grub_size_t n)
+{
+  if (n == 0)
+    return 0;
+
+  while (*s1 && *s2 && --n)
+    {
+      if (grub_tolower (*s1) != grub_tolower (*s2))
+	break;
       
       s1++;
       s2++;
-      p++;
     }
 
-  return (int) *s1 - (int) *s2;
+  return (int) grub_tolower (*s1) - (int) grub_tolower (*s2);
 }
 
 char *

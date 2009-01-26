@@ -1,3 +1,10 @@
+2009-01-26  Daniel Mierswa  <impulze@impulze.org>
+
+	* kern/misc.c (grub_strcasecmp): New function.
+	(grub_strcasecmp): Use grub_size_t instead of int for length.
+	Fix return value.
+	* include/grub/misc.h: Update function prototypes.
+
 2009-01-26  Robert Millan  <rmh@aybabtu.com>
 
 	* configure.ac: Fix cross-compilation check.
