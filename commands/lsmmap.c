@@ -16,6 +16,7 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/machine/memory.h>
 #include <grub/normal.h>
 #include <grub/dl.h>
 #include <grub/arg.h>
@@ -34,7 +35,7 @@ grub_cmd_lsmmap (struct grub_arg_list *state __attribute__ ((unused)),
       return 0;
     }
   grub_machine_mmap_iterate (hook);
-  
+
   return 0;
 }
 

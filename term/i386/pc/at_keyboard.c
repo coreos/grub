@@ -231,5 +231,5 @@ GRUB_MOD_INIT(at_keyboard)
 
 GRUB_MOD_FINI(at_keyboard)
 {
-  grub_term_unregister_output (&grub_at_keyboard_term);
+  grub_term_unregister_input (&grub_at_keyboard_term);
 }

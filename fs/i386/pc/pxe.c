@@ -133,7 +133,7 @@ grub_pxefs_open (struct grub_file *file, const char *name)
 
   c.c1.server_ip = grub_pxe_server_ip;
   c.c1.gateway_ip = grub_pxe_gateway_ip;
-  grub_strcpy (c.c1.filename, name);
+  grub_strcpy ((char *)&c.c1.filename[0], name);
   grub_pxe_call (GRUB_PXENV_TFTP_GET_FSIZE, &c.c1);
   if (c.c1.status)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
@@ -201,7 +201,7 @@ grub_pxefs_read (grub_file_t file, char *buf, grub_size_t len)
 
       o.server_ip = grub_pxe_server_ip;
       o.gateway_ip = grub_pxe_gateway_ip;
-      grub_strcpy (o.filename, data->filename);
+      grub_strcpy ((char *)&o.filename[0], data->filename);
       o.tftp_port = grub_cpu_to_be16 (GRUB_PXE_TFTP_PORT);
       o.packet_size = data->block_size;
       grub_pxe_call (GRUB_PXENV_TFTP_OPEN, &o);

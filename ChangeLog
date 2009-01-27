@@ -1,5 +1,14 @@
 2009-01-27  Vesa Jääskeläinen  <chaac@nic.fi>
 
+	* commands/lsmmap.c: Add include to grub/machine/memory.h.
+
+	* fs/i386/pc/pxe.c (grub_pxefs_open): Fix sign problem.
+
+	* term/i386/pc/at_keyboard.c (GRUB_MOD_FINI(at_keyboard)): Use proper
+	unregister function.
+
+2009-01-27  Vesa Jääskeläinen  <chaac@nic.fi>
+
 	* disk/scsi.c (grub_scsi_read): Fix sign problem.
 
 	* term/i386/pc/vga_text.c (grub_vga_text_init_fini). Fix declaration.
