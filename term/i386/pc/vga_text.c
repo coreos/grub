@@ -143,7 +143,7 @@ grub_vga_text_setcursor (int on)
 }
 
 static grub_err_t
-grub_vga_text_init_fini ()
+grub_vga_text_init_fini (void)
 {
   grub_vga_text_cls ();
   return 0;

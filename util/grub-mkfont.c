@@ -102,7 +102,7 @@ Usage: grub-mkfont [OPTIONS] FONT_FILES\n\
   -s, --size=N              set font size\n\
   -d, --desc=N              set font descent\n\
   -b, --bold                convert to bold font\n\
-  -a, --force-autohine      force autohint\n\
+  -a, --force-autohint      force autohint\n\
   --no-hinting              disable hinting\n\
   --no-bitmap               ignore bitmap strikes when loading\n\
   -h, --help                display this message and exit\n\

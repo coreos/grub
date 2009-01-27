@@ -41,7 +41,7 @@ void
 grub_scsi_dev_unregister (grub_scsi_dev_t dev)
 {
   grub_scsi_dev_t *p, q;
-  
+
   for (p = &grub_scsi_dev_list, q = *p; q; p = &(q->next), q = q->next)
     if (q == dev)
       {
@@ -52,7 +52,7 @@ grub_scsi_dev_unregister (grub_scsi_dev_t dev)
 
 
 /* Determine the the device is removable and the type of the device
-   SCSI.  */ 
+   SCSI.  */
 static grub_err_t
 grub_scsi_inquiry (grub_scsi_t scsi)
 {
@@ -231,7 +231,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
   grub_err_t err;
   int len;
   int lun;
-  
+
   scsi = grub_malloc (sizeof (*scsi));
   if (! scsi)
     return grub_errno;
@@ -269,7 +269,7 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 
 	  grub_dprintf ("scsi", "inquiry: devtype=0x%02x removable=%d\n",
 			scsi->devtype, scsi->removable);
-	  
+
 	  /* Try to be conservative about the device types
 	     supported.  */
 	  if (scsi->devtype != grub_scsi_devtype_direct
@@ -332,7 +332,7 @@ grub_scsi_read (grub_disk_t disk, grub_disk_addr_t sector,
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			   "Unsupported SCSI block size");
 
-      grub_int32_t sector_mod = 0;
+      grub_uint32_t sector_mod = 0;
       sector = grub_divmod64 (sector, spb, &sector_mod);
 
       if (! (sector_mod == 0 && size % spb == 0))

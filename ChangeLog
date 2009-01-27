@@ -1,3 +1,13 @@
+2009-01-27  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	* disk/scsi.c (grub_scsi_read): Fix sign problem.
+
+	* term/i386/pc/vga_text.c (grub_vga_text_init_fini). Fix declaration.
+
+	* util/grub-mkfont.c (usage): Fix typo.
+
+	* util/elf/grub-mkimage.c (load_modules): Fix warning.
+
 2009-01-26  Daniel Mierswa  <impulze@impulze.org>
 
 	* fs/fat.c (grub_fat_uuid): Fix shift of the first two bytes.

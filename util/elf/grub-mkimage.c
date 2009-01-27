@@ -103,7 +103,9 @@ load_modules (grub_addr_t modbase, Elf32_Phdr *phdr, const char *dir,
   struct grub_util_path_list *path_list;
   struct grub_util_path_list *p;
   struct grub_module_info *modinfo;
-  size_t offset, total_module_size, memdisk_size;
+  size_t offset;
+  size_t total_module_size;
+  size_t memdisk_size = 0;
 
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
 
@@ -197,7 +199,7 @@ add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *
     grub_util_error ("cannot open %s", kernel_path);
 
   grub_util_read_at (&ehdr, sizeof (ehdr), 0, in);
-  
+
   offset = ALIGN_UP (sizeof (ehdr), GRUB_TARGET_SIZEOF_LONG);
   ehdr.e_phoff = grub_host_to_target32 (offset);
 
@@ -240,7 +242,7 @@ add_segments (char *dir, char *prefix, FILE *out, int chrp, char *mods[], char *
 
       /* Read segment data and write it to new file.  */
       segment_img = xmalloc (grub_target_to_host32 (phdr->p_filesz));
-  
+
       grub_util_read_at (segment_img, grub_target_to_host32 (phdr->p_filesz),
 			 grub_target_to_host32 (phdr->p_offset), in);
 
@@ -379,11 +381,11 @@ main (int argc, char *argv[])
 	    if (memdisk)
 	      free (memdisk);
 	    memdisk = xstrdup (optarg);
-	    
+
 	    if (prefix)
 	      free (prefix);
 	    prefix = xstrdup ("(memdisk)/boot/grub");
-	    
+
 	    break;
 	  case 'h':
 	    usage (0);
