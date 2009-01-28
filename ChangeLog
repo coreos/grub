@@ -1,3 +1,7 @@
+2009-01-27  Pavel Roskin  <proski@gnu.org>
+
+	* disk/fs_uuid.c (search_fs_uuid): Ignore case of the UUID.
+
 2009-01-27  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	* commands/lsmmap.c: Add include to grub/machine/memory.h.

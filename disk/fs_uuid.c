@@ -52,7 +52,7 @@ search_fs_uuid (const char *key, unsigned long *count)
 		{
 		  (*count)++;
 
-		  if (grub_strcmp (uuid, key) == 0)
+		  if (grub_strcasecmp (uuid, key) == 0)
 		    {
 		      ret = dev;
 		      grub_free (uuid);
