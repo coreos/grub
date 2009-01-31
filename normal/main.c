@@ -1,7 +1,7 @@
 /* main.c - the normal mode main routine */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2000,2001,2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2000,2001,2002,2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <grub/env.h>
 #include <grub/parser.h>
 #include <grub/script.h>
+#include <grub/menu_viewer.h>
 
 grub_jmp_buf grub_exit_env;
 
@@ -147,14 +148,41 @@ free_menu (grub_menu_t menu)
   grub_env_unset_data_slot ("menu");
 }
 
+static void
+free_menu_entry_classes (struct grub_menu_entry_class *head)
+{
+  /* Free all the classes.  */
+  while (head)
+    {
+      struct grub_menu_entry_class *next;
+
+      grub_free (head->name);
+      next = head->next;
+      grub_free (head);
+      head = next;
+    }
+}
+
 grub_err_t
-grub_normal_menu_addentry (const char *title, struct grub_script *script,
+grub_normal_menu_addentry (int argc, const char **args, struct grub_script *script,
 			   const char *sourcecode)
 {
-  const char *menutitle;
+  const char *menutitle = 0;
   const char *menusourcecode;
   grub_menu_t menu;
   grub_menu_entry_t *last;
+  int failed = 0;
+  int i;
+  struct grub_menu_entry_class *classes_head;  /* Dummy head node for list.  */
+  struct grub_menu_entry_class *classes_tail;
+
+  /* Allocate dummy head node for class list.  */
+  classes_head = grub_malloc (sizeof (struct grub_menu_entry_class));
+  if (! classes_head)
+    return grub_errno;
+  classes_head->name = 0;
+  classes_head->next = 0;
+  classes_tail = classes_head;
 
   menu = grub_env_get_data_slot("menu");
   if (! menu)
@@ -166,10 +194,81 @@ grub_normal_menu_addentry (const char *title, struct grub_script *script,
   if (! menusourcecode)
     return grub_errno;
 
-  menutitle = grub_strdup (title);
-  if (! menutitle)
+  /* Parse menu arguments.  */
+  for (i = 0; i < argc; i++)
     {
+      /* Capture arguments.  */
+      if (grub_strncmp ("--", args[i], 2) == 0)
+	{
+	  const char *arg = &args[i][2];
+
+	  /* Handle menu class.  */
+	  if (grub_strcmp(arg, "class") == 0)
+	    {
+	      char *class_name;
+	      struct grub_menu_entry_class *new_class;
+
+	      i++;
+	      class_name = grub_strdup (args[i]);
+	      if (! class_name)
+		{
+		  failed = 1;
+		  break;
+		}
+
+	      /* Create a new class and add it at the tail of the list.  */
+	      new_class = grub_malloc (sizeof (struct grub_menu_entry_class));
+	      if (! new_class)
+		{
+		  grub_free (class_name);
+		  failed = 1;
+		  break;
+		}
+	      /* Fill in the new class node.  */
+	      new_class->name = class_name;
+	      new_class->next = 0;
+	      /* Link the tail to it, and make it the new tail.  */
+	      classes_tail->next = new_class;
+	      classes_tail = new_class;
+	      continue;
+	    }
+	  else
+	    {
+	      /* Handle invalid argument.  */
+	      failed = 1;
+	      grub_error (GRUB_ERR_MENU, "invalid argument for menuentry: %s", args[i]);
+	      break;
+	    }
+	}
+
+      /* Capture title.  */
+      if (! menutitle)
+	{
+	  menutitle = grub_strdup (args[i]);
+	}
+      else
+	{
+	  failed = 1;
+	  grub_error (GRUB_ERR_MENU, "too many titles for menuentry: %s", args[i]);
+	  break;
+	}
+    }
+
+  /* Validate arguments.  */
+  if ((! failed) && (! menutitle))
+    {
+      grub_error (GRUB_ERR_MENU, "menuentry is missing title");
+      failed = 1;
+    }
+
+  /* If argument parsing failed, free any allocated resources.  */
+  if (failed)
+    {
+      free_menu_entry_classes (classes_head);
+      grub_free ((void *) menutitle);
       grub_free ((void *) menusourcecode);
+
+      /* Here we assume that grub_error has been used to specify failure details.  */
       return grub_errno;
     }
 
@@ -180,6 +279,7 @@ grub_normal_menu_addentry (const char *title, struct grub_script *script,
   *last = grub_malloc (sizeof (**last));
   if (! *last)
     {
+      free_menu_entry_classes (classes_head);
       grub_free ((void *) menutitle);
       grub_free ((void *) menusourcecode);
       return grub_errno;
@@ -187,6 +287,7 @@ grub_normal_menu_addentry (const char *title, struct grub_script *script,
 
   (*last)->commands = script;
   (*last)->title = menutitle;
+  (*last)->classes = classes_head;
   (*last)->next = 0;
   (*last)->sourcecode = menusourcecode;
 
@@ -476,7 +577,7 @@ grub_normal_execute (const char *config, int nested)
 
   if (menu && menu->size)
     {
-      grub_menu_run (menu, nested);
+      grub_menu_viewer_show_menu (menu, nested);
       if (nested)
 	free_menu (menu);
     }
@@ -518,6 +619,8 @@ GRUB_MOD_INIT(normal)
   /* Normal mode shouldn't be unloaded.  */
   if (mod)
     grub_dl_ref (mod);
+
+  grub_menu_viewer_register (&grub_normal_terminal_menu_viewer);
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 

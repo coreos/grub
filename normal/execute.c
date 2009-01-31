@@ -1,7 +1,7 @@
 /* execute.c -- Execute a GRUB script.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -148,11 +148,11 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
       parser = (struct grub_arg_option *) grubcmd->options;
       while (parser && (parser++)->doc)
 	maxargs++;
-      
+
       /* Set up the option state.  */
       state = grub_malloc (sizeof (struct grub_arg_list) * maxargs);
       grub_memset (state, 0, sizeof (struct grub_arg_list) * maxargs);
-  
+
       /* Start the command.  */
       if (! (grubcmd->flags & GRUB_COMMAND_FLAG_NO_ARG_PARSE))
 	{
@@ -161,7 +161,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 	}
       else
 	ret = (grubcmd->func) (state, argcount, args);
-  
+
       grub_free (state);
     }
   else
@@ -178,7 +178,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   return ret;
 }
 
-/* Execute a block of one or more commands.  */  
+/* Execute a block of one or more commands.  */
 grub_err_t
 grub_script_execute_cmdblock (struct grub_script_cmd *cmd)
 {
@@ -216,32 +216,53 @@ grub_err_t
 grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 {
   struct grub_script_cmd_menuentry *cmd_menuentry;
-  char *title;
+  struct grub_script_arglist *arglist;
   struct grub_script *script;
+  char **args = 0;
+  int argcount = 0;
+  int i = 0;
 
   cmd_menuentry = (struct grub_script_cmd_menuentry *) cmd;
 
-  /* The title can contain variables, parse them and generate a string
-     from it.  */
-  title = grub_script_execute_argument_to_string (cmd_menuentry->title);
-  if (! title)
-    return grub_errno;
+  if (cmd_menuentry->arglist)
+    {
+      argcount = cmd_menuentry->arglist->argcount;
+
+      /* Create argv from the arguments.  */
+      args = grub_malloc (sizeof (char *) * argcount);
+
+      if (! args)
+	{
+	  return grub_errno;
+	}
+
+      for (arglist = cmd_menuentry->arglist; arglist; arglist = arglist->next)
+	{
+	  char *str;
+	  str = grub_script_execute_argument_to_string (arglist->arg);
+	  args[i++] = str;
+	}
+    }
 
   /* Parse the menu entry *again*.  */
   script = grub_script_parse ((char *) cmd_menuentry->sourcecode, 0);
 
-  if (! script)
+  /* Add new menu entry.  */
+  if (script)
     {
-      grub_free (title);
-      return grub_errno;
+      grub_normal_menu_addentry (argcount, (const char **)args,
+				 script, cmd_menuentry->sourcecode);
     }
 
-  /* XXX: When this fails, the memory should be freed?  */
-  return grub_normal_menu_addentry (title, script,
-				    cmd_menuentry->sourcecode);
+  /* Free arguments.  */
+  for (i = 0; i < argcount; i++)
+    grub_free (args[i]);
+  grub_free (args);
+
+  return grub_errno;
 }
 
-
+
 
 /* Execute any GRUB pre-parsed command or script.  */
 grub_err_t

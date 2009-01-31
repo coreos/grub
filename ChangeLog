@@ -1,3 +1,68 @@
+2009-01-31  Colin D Bennett  <colin@gibibit.com>
+
+	* normal/main.c: Add include to grub/menu_viewer.h. 
+	(free_menu_entry_classes): Added.
+	(grub_normal_menu_addentry): Added class property handling.
+	(grub_normal_execute): Changed to use new menu viewer for menu viewing.
+	(GRUB_MOD_INIT(normal)): Added register for text based menu viewer.
+
+	* normal/menu_viewer.c: New file.
+
+	* normal/menu.c (run_menu_entry): Renamed to ...
+	(grub_menu_execute_entry): ... this and	made it as global.
+	(grub_menu_run): Renamed to ...
+	(show_text_menu): ... this and made it local.
+	(show_text_menu): Adapt to new function names.
+	(grub_normal_terminal_menu_viewer): New global variable.
+
+	* include/grub/menu.h: New file.
+
+	* include/grub/menu_viewer.h: New file.
+
+	* include/grub/normal.h: Added include to grub/menu.h.
+	(grub_menu_entry): Moved to include/grub/menu.h.
+	(grub_menu_entry_t): Likewise.
+	(grub_menu): Likewise.
+	(grub_menu_t): Likewise.
+	(grub_normal_terminal_menu_viewer): Added.
+	(grub_menu_execute_entry): Likewise.
+	(grub_menu_run): Removed.
+
+	* DISTLIST: Added include/grub/menu.h.
+	Added include/grub/menu_viewer.h.
+	Added normal/menu_viewer.c.
+
+2009-01-31  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	* normal/execute.c (grub_script_execute_menuentry): Changed to use
+	arglist for menutitle arguments.
+
+	* normal/main.c (grub_normal_menu_addentry): Likewise.
+
+	* normal/parser.y (menuentry): Likewise.
+
+	* normal/script.c (grub_script_create_cmdmenu): Likewise.
+
+	* include/grub/script.h (grub_script_cmd_menuentry): Likewise.
+	(grub_script_create_cmdmenu): Likewise.
+
+	* include/grub/normal.h (grub_normal_menu_addentry): Likewise.
+
+	* conf/i386-pc.rmk (normal_mod_SOURCES): Adapt Colin D Bennett's
+	changes.
+
+	* conf/x86_64-efi.rmk (normal_mod_SOURCES): Likewise.
+
+	* conf/i386-coreboot.rmk (normal_mod_SOURCES): Likewise.
+
+	* conf/i386-efi.rmk (normal_mod_SOURCES): Likewise.
+
+	* conf/i386-ieee1275.rmk (normal_mod_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (normal_mod_SOURCES): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (normal_mod_SOURCES): Likewise.
+
 2009-01-30  Christian Franke  <franke@computer.org>
 
 	* normal/arg.c (grub_arg_show_help): Add indentation if '\n' appears

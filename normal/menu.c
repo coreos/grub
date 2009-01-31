@@ -24,6 +24,7 @@
 #include <grub/time.h>
 #include <grub/env.h>
 #include <grub/script.h>
+#include <grub/menu_viewer.h>
 
 static grub_uint8_t grub_color_menu_normal;
 static grub_uint8_t grub_color_menu_highlight;
@@ -41,9 +42,9 @@ static void
 draw_border (void)
 {
   unsigned i;
-  
+
   grub_setcolorstate (GRUB_TERM_COLOR_NORMAL);
-  
+
   grub_gotoxy (GRUB_TERM_MARGIN, GRUB_TERM_TOP_BORDER_Y);
   grub_putcode (GRUB_TERM_DISP_UL);
   for (i = 0; i < (unsigned) GRUB_TERM_BORDER_WIDTH - 2; i++)
@@ -97,7 +98,7 @@ print_message (int nested, int edit)
 	grub_printf ("\n\
       ESC to return previous menu.");
     }
-  
+
 }
 
 static grub_menu_entry_t
@@ -128,7 +129,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
   if (! unicode_title)
     /* XXX How to show this error?  */
     return;
-  
+
   len = grub_utf8_to_ucs4 (unicode_title, title_len,
                            (grub_uint8_t *) title, -1, 0);
   if (len < 0)
@@ -157,7 +158,7 @@ print_entry (int y, int highlight, grub_menu_entry_t entry)
 	  grub_ssize_t width;
 
 	  width = grub_getcharwidth (unicode_title[i]);
-	  
+
 	  if (x + width > (GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH
 			   - GRUB_TERM_MARGIN - 1))
 	    grub_putcode (GRUB_TERM_DISP_RIGHT);
@@ -187,7 +188,7 @@ print_entries (grub_menu_t menu, int first, int offset)
 {
   grub_menu_entry_t e;
   int i;
-  
+
   grub_gotoxy (GRUB_TERM_LEFT_BORDER_X + GRUB_TERM_BORDER_WIDTH,
 	       GRUB_TERM_FIRST_ENTRY_Y);
 
@@ -248,13 +249,13 @@ get_timeout (void)
 {
   char *val;
   int timeout;
-  
+
   val = grub_env_get ("timeout");
   if (! val)
     return -1;
-  
+
   grub_error_push ();
-  
+
   timeout = (int) grub_strtoul (val, 0, 0);
 
   /* If the value is invalid, unset the variable.  */
@@ -266,7 +267,7 @@ get_timeout (void)
     }
 
   grub_error_pop ();
-  
+
   return timeout;
 }
 
@@ -278,7 +279,7 @@ set_timeout (int timeout)
   if (timeout > 0)
     {
       char buf[16];
-      
+
       grub_sprintf (buf, "%d", timeout);
       grub_env_set ("timeout", buf);
     }
@@ -290,13 +291,13 @@ get_entry_number (const char *name)
 {
   char *val;
   int entry;
-  
+
   val = grub_env_get (name);
   if (! val)
     return -1;
-  
+
   grub_error_push ();
-  
+
   entry = (int) grub_strtoul (val, 0, 0);
 
   if (grub_errno != GRUB_ERR_NONE)
@@ -306,7 +307,7 @@ get_entry_number (const char *name)
     }
 
   grub_error_pop ();
-  
+
   return entry;
 }
 
@@ -317,7 +318,7 @@ print_timeout (int timeout, int offset, int second_stage)
      They are required to clear the line.  */
   char *msg = "   The highlighted entry will be booted automatically in %ds.    ";
   char *msg_end = grub_strchr (msg, '%');
-  
+
   grub_gotoxy (second_stage ? (msg_end - msg) : 0, GRUB_TERM_HEIGHT - 3);
   grub_printf (second_stage ? msg_end : msg, timeout);
   grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
@@ -331,9 +332,9 @@ run_menu (grub_menu_t menu, int nested)
   grub_uint64_t saved_time;
   int default_entry;
   int timeout;
-  
+
   first = 0;
-  
+
   default_entry = get_entry_number ("default");
 
   /* If DEFAULT_ENTRY is not within the menu entries, fall back to
@@ -370,7 +371,7 @@ run_menu (grub_menu_t menu, int nested)
     {
       int c;
       timeout = get_timeout ();
-      
+
       if (timeout > 0)
 	{
 	  grub_uint64_t current_time;
@@ -390,11 +391,11 @@ run_menu (grub_menu_t menu, int nested)
 	  grub_env_unset ("timeout");
 	  return default_entry;
 	}
-      
+
       if (grub_checkkey () >= 0 || timeout < 0)
 	{
 	  c = GRUB_TERM_ASCII_CHAR (grub_getkey ());
-	  
+
 	  if (timeout >= 0)
 	    {
 	      grub_gotoxy (0, GRUB_TERM_HEIGHT - 3);
@@ -404,7 +405,7 @@ run_menu (grub_menu_t menu, int nested)
 	      grub_env_unset ("fallback");
 	      grub_gotoxy (GRUB_TERM_CURSOR_X, GRUB_TERM_FIRST_ENTRY_Y + offset);
 	    }
-	  
+
 	  switch (c)
 	    {
 	    case GRUB_TERM_HOME:
@@ -439,7 +440,7 @@ run_menu (grub_menu_t menu, int nested)
 		  print_entries (menu, first, offset);
 		}
 	      break;
-	      
+
 	    case GRUB_TERM_DOWN:
 	    case 'v':
 	      if (menu->size > first + offset + 1)
@@ -459,7 +460,7 @@ run_menu (grub_menu_t menu, int nested)
 		    }
 		}
 	      break;
-	    
+
 	    case GRUB_TERM_PPAGE:
 	      if (first == 0)
 		{
@@ -490,12 +491,12 @@ run_menu (grub_menu_t menu, int nested)
 	      else
 		{
 		  first += GRUB_TERM_NUM_ENTRIES;
-			
+
 		  if (first + offset >= menu->size)
 		    {
 		      first -= GRUB_TERM_NUM_ENTRIES;
 		      offset += GRUB_TERM_NUM_ENTRIES;
-		      
+
 		      if (offset > menu->size - 1 ||
 		                     offset > GRUB_TERM_NUM_ENTRIES - 1)
 			{
@@ -510,13 +511,13 @@ run_menu (grub_menu_t menu, int nested)
 		}
 	      print_entries (menu, first, offset);
 	      break;
-	      
+
 	    case '\n':
 	    case '\r':
 	    case 6:
 	      grub_setcursor (1);
 	      return first + offset;
-	      
+
 	    case '\e':
 	      if (nested)
 		{
@@ -524,7 +525,7 @@ run_menu (grub_menu_t menu, int nested)
 		  return -1;
 		}
 	      break;
-	      
+
 	    case 'c':
 	      grub_cmdline_run (1);
 	      goto refresh;
@@ -536,11 +537,11 @@ run_menu (grub_menu_t menu, int nested)
 		    grub_menu_entry_run (e);
 		}
 	      goto refresh;
-	      
+
 	    default:
 	      break;
 	    }
-	  
+
 	  grub_refresh ();
 	}
     }
@@ -550,25 +551,25 @@ run_menu (grub_menu_t menu, int nested)
 }
 
 /* Run a menu entry.  */
-static void
-run_menu_entry (grub_menu_entry_t entry)
+void
+grub_menu_execute_entry(grub_menu_entry_t entry)
 {
   grub_script_execute (entry->commands);
-  
+
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
     grub_command_execute ("boot", 0);
 }
 
-void
-grub_menu_run (grub_menu_t menu, int nested)
+static grub_err_t
+show_text_menu (grub_menu_t menu, int nested)
 {
   while (1)
     {
       int boot_entry;
       grub_menu_entry_t e;
       int fallback_entry;
-      
+
       boot_entry = run_menu (menu, nested);
       if (boot_entry < 0)
 	break;
@@ -576,13 +577,13 @@ grub_menu_run (grub_menu_t menu, int nested)
       e = get_entry (menu, boot_entry);
       if (! e)
 	continue; /* Menu is empty.  */
-	
+
       grub_cls ();
       grub_setcursor (1);
 
       grub_printf ("  Booting \'%s\'\n\n", e->title);
-  
-      run_menu_entry (e);
+
+      grub_menu_execute_entry (e);
 
       /* Deal with a fallback entry.  */
       /* FIXME: Multiple fallback entries like GRUB Legacy.  */
@@ -591,11 +592,11 @@ grub_menu_run (grub_menu_t menu, int nested)
 	{
 	  grub_print_error ();
 	  grub_errno = GRUB_ERR_NONE;
-	  
+
 	  e = get_entry (menu, fallback_entry);
 	  grub_env_unset ("fallback");
 	  grub_printf ("\n  Falling back to \'%s\'\n\n", e->title);
-	  run_menu_entry (e);
+	  grub_menu_execute_entry (e);
 	}
 
       if (grub_errno != GRUB_ERR_NONE)
@@ -606,4 +607,12 @@ grub_menu_run (grub_menu_t menu, int nested)
 	  grub_wait_after_message ();
 	}
     }
+
+  return GRUB_ERR_NONE;
 }
+
+struct grub_menu_viewer grub_normal_terminal_menu_viewer =
+{
+  .name = "terminal",
+  .show_menu = show_text_menu
+};

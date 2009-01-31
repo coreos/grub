@@ -1,7 +1,7 @@
 /* script.h  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -113,8 +113,8 @@ struct grub_script_cmd_menuentry
 {
   struct grub_script_cmd cmd;
 
-  /* The title of the menu entry.  */
-  struct grub_script_arg *title;
+  /* The arguments for this menu entry.  */
+  struct grub_script_arglist *arglist;
 
   /* The sourcecode the entry will be generated from.  */
   const char *sourcecode;
@@ -204,7 +204,7 @@ grub_script_create_cmdif (struct grub_parser_param *state,
 
 struct grub_script_cmd *
 grub_script_create_cmdmenu (struct grub_parser_param *state,
-			    struct grub_script_arg *title,
+			    struct grub_script_arglist *arglist,
 			    char *sourcecode,
 			    int options);
 

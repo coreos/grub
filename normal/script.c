@@ -1,7 +1,7 @@
 /* script.c -- Functions to create an in memory description of the script. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -206,7 +206,7 @@ grub_script_create_cmdif (struct grub_parser_param *state,
    The options for this entry are passed in OPTIONS.  */
 struct grub_script_cmd *
 grub_script_create_cmdmenu (struct grub_parser_param *state,
-			    struct grub_script_arg *title,
+			    struct grub_script_arglist *arglist,
 			    char *sourcecode,
 			    int options)
 {
@@ -232,9 +232,9 @@ grub_script_create_cmdmenu (struct grub_parser_param *state,
   cmd->cmd.next = 0;
   /* XXX: Check if this memory is properly freed.  */
   cmd->sourcecode = sourcecode;
-  cmd->title = title;
+  cmd->arglist = arglist;
   cmd->options = options;
- 
+
   return (struct grub_script_cmd *) cmd;
 }
 

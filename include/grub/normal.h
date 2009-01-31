@@ -1,7 +1,7 @@
 /* normal.h - prototypes for the normal mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <grub/err.h>
 #include <grub/arg.h>
 #include <grub/env.h>
+#include <grub/menu.h>
 
 /* The maximum size of a command-line.  */
 #define GRUB_MAX_CMDLINE	1600
@@ -84,34 +85,6 @@ struct grub_command
 };
 typedef struct grub_command *grub_command_t;
 
-/* The menu entry.  */
-struct grub_menu_entry
-{
-  /* The title name.  */
-  const char *title;
-
-    /* The commands associated with this menu entry.  */
-  struct grub_script *commands;
-
-  /* The sourcecode of the menu entry, used by the editor.  */
-  const char *sourcecode;
-
-  /* The next element.  */
-  struct grub_menu_entry *next;
-};
-typedef struct grub_menu_entry *grub_menu_entry_t;
-
-/* The menu.  */
-struct grub_menu
-{
-  /* The size of a menu.  */
-  int size;
-
-  /* The list of menu entries.  */
-  grub_menu_entry_t entry_list;
-};
-typedef struct grub_menu *grub_menu_t;
-
 /* This is used to store the names of filesystem modules for auto-loading.  */
 struct grub_fs_module_list
 {
@@ -123,10 +96,12 @@ typedef struct grub_fs_module_list *grub_fs_module_list_t;
 /* To exit from the normal mode.  */
 extern grub_jmp_buf grub_exit_env;
 
+extern struct grub_menu_viewer grub_normal_terminal_menu_viewer;
+
 void grub_enter_normal_mode (const char *config);
 void grub_normal_execute (const char *config, int nested);
-void grub_menu_run (grub_menu_t menu, int nested);
 void grub_menu_entry_run (grub_menu_entry_t entry);
+void grub_menu_execute_entry(grub_menu_entry_t entry);
 void grub_cmdline_run (int nested);
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
@@ -152,7 +127,7 @@ void grub_arg_show_help (grub_command_t cmd);
 char *grub_normal_do_completion (char *buf, int *restore,
 				 void (*hook) (const char *item, grub_completion_type_t type, int count));
 grub_err_t grub_normal_print_device_info (const char *name);
-grub_err_t grub_normal_menu_addentry (const char *title,
+grub_err_t grub_normal_menu_addentry (int argc, const char **args,
 				      struct grub_script *script,
 				      const char *sourcecode);
 char *grub_env_write_color_normal (struct grub_env_var *var, const char *val);
