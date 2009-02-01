@@ -56,7 +56,7 @@
 
 %%
 /* It should be possible to do this in a clean way...  */
-script_init:	{ state->err = 0} script
+script_init:	{ state->err = 0; } script
 		  {
 		    state->parsed = $2;
 		  }

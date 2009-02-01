@@ -1,3 +1,10 @@
+2009-02-01  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	Based on patch on bug #25318 created by Bernhard Rosenkraenzer 
+	<bero@arklinux.org>.
+
+	* normal/parser.y (script_init): Add missing semicolon.
+
 2009-01-31  Colin D Bennett  <colin@gibibit.com>
 
 	* normal/main.c: Add include to grub/menu_viewer.h. 
