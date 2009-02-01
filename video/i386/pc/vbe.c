@@ -709,7 +709,7 @@ grub_video_vbe_map_rgb (grub_uint8_t red, grub_uint8_t green,
 
       return minindex;
     }
-  else if ((render_target->mode_info.mode_type 
+  else if ((render_target->mode_info.mode_type
             & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP) != 0)
     {
        if (red == render_target->mode_info.fg_red
@@ -749,7 +749,7 @@ grub_video_vbe_map_rgba (grub_uint8_t red, grub_uint8_t green,
     /* No alpha available in index color modes, just use
        same value as in only RGB modes.  */
     return grub_video_vbe_map_rgb (red, green, blue);
-  else if ((render_target->mode_info.mode_type 
+  else if ((render_target->mode_info.mode_type
             & GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP) != 0)
     {
       if (red == render_target->mode_info.fg_red
@@ -1399,13 +1399,25 @@ grub_video_vbe_scroll (grub_video_color_t color, int dx, int dy)
       target.mode_info = &render_target->mode_info;
       target.data = render_target->data;
 
-      for (j = 0; j < height; j++)
-        {
-          dst = grub_video_vbe_get_video_ptr (&target, dst_x, dst_y + j);
-          src = grub_video_vbe_get_video_ptr (&target, src_x, src_y + j);
-          grub_memmove (dst, src,
-                        width * target.mode_info->bytes_per_pixel);
-        }
+      /* Check vertical direction of the move.  */
+      if (dy <= 0)
+	/* 3a. Move data upwards.  */
+	for (j = 0; j < height; j++)
+	  {
+	    dst = grub_video_vbe_get_video_ptr (&target, dst_x, dst_y + j);
+	    src = grub_video_vbe_get_video_ptr (&target, src_x, src_y + j);
+	    grub_memmove (dst, src,
+			  width * target.mode_info->bytes_per_pixel);
+	  }
+      else
+	/* 3b. Move data downwards.  */
+	for (j = (height - 1); j >= 0; j--)
+	  {
+	    dst = grub_video_vbe_get_video_ptr (&target, dst_x, dst_y + j);
+	    src = grub_video_vbe_get_video_ptr (&target, src_x, src_y + j);
+	    grub_memmove (dst, src,
+			  width * target.mode_info->bytes_per_pixel);
+	  }
     }
 
   /* 4. Fill empty space with specified color.  In this implementation

@@ -1,5 +1,12 @@
 2009-02-01  Vesa Jääskeläinen  <chaac@nic.fi>
 
+	Base on patch on bug #24154 created by Tomas Tintera
+	<trosos@seznam.cz>.
+
+	* video/i386/pc/vbe.c (grub_video_vbe_scroll): Fix downward scrolling.
+
+2009-02-01  Vesa Jääskeläinen  <chaac@nic.fi>
+
 	Based on patch on bug #25318 created by Bernhard Rosenkraenzer 
 	<bero@arklinux.org>.
 
