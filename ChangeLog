@@ -1,3 +1,8 @@
+2009-02-01  Felix Zielcke  <fzielcke@z-51.de>
+
+	* INSTALL: Note that we now require at least autconf 2.59 and that LZO
+	is optional.
+
 2009-02-01  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	Base on patch on bug #24154 created by Tomas Tintera

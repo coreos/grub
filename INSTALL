@@ -16,12 +16,12 @@ configuring the GRUB.
 * GNU Bison
 * GNU binutils 2.9.1.0.23 or later
 * Other standard GNU/Unix tools
-* LZO 1.02 or later
+* LZO 1.02 or later (optional)
 
 If you'd like to develop GRUB, these below are also required.
 
 * Ruby 1.6 or later
-* Autoconf 2.53 or later
+* Autoconf 2.59 or later
 
 Configuring the GRUB
 ====================
