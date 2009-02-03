@@ -1,5 +1,9 @@
 2009-02-03  Felix Zielcke  <fzielcke@z-51.de>
 
+	* util/unifont2pff.rb: Remove.
+
+2009-02-03  Felix Zielcke  <fzielcke@z-51.de>
+
 	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Add a missing trailing
 	`#'.
 
