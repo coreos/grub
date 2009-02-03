@@ -23,8 +23,8 @@
 
 2009-02-01  Felix Zielcke  <fzielcke@z-51.de>
 
-	* INSTALL: Note that we now require at least autconf 2.59 and that LZO
-	is optional.
+	* INSTALL: Note that we now require at least autoconf 2.59 and
+	that LZO is optional.
 
 2009-02-01  Vesa Jääskeläinen  <chaac@nic.fi>
 
@@ -35,14 +35,14 @@
 
 2009-02-01  Vesa Jääskeläinen  <chaac@nic.fi>
 
-	Based on patch on bug #25318 created by Bernhard Rosenkraenzer 
+	Based on patch on bug #25318 created by Bernhard Rosenkraenzer
 	<bero@arklinux.org>.
 
 	* normal/parser.y (script_init): Add missing semicolon.
 
 2009-01-31  Colin D Bennett  <colin@gibibit.com>
 
-	* normal/main.c: Add include to grub/menu_viewer.h. 
+	* normal/main.c: Add include to grub/menu_viewer.h.
 	(free_menu_entry_classes): Added.
 	(grub_normal_menu_addentry): Added class property handling.
 	(grub_normal_execute): Changed to use new menu viewer for menu viewing.
@@ -997,7 +997,7 @@
 
 	* util/update-grub_lib.in: Copy to ...
 	* util/grub-mkconfig_lib.in: ... this.  Update all users.
-	* util/update-grub_lib.in: Make it a stub to `grub-mkconfigig_lib.in'.
+	* util/update-grub_lib.in: Make it a stub to `grub-mkconfig_lib.in'.
 	* util/update-grub.in: Rename to ...
 	* util/grub-mkconfig.in: ... this.  Update all users.  Remove `-y'
 	option. Add `--output' option to allow users to specify the generated
