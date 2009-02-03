@@ -1,3 +1,13 @@
+2009-02-03  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `normal/menu_viewer.c'.
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
 2009-02-02  Christian Franke  <franke@computer.org>
 
 	* lib/hexdump.c (hexdump): Print at most 3 lines if data is identical.

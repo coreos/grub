@@ -59,11 +59,12 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #	normal/arg.c normal/cmdline.c normal/command.c			\
 #	normal/completion.c normal/context.c normal/execute.c		\
 #	normal/function.c normal/lexer.c				\
-#	normal/main.c normal/menu.c normal/menu_entry.c	normal/misc.c	\
+#	normal/main.c normal/menu.c normal/menu_entry.c			\
+	normal/menu_viewer.c normal/misc.c				\
 #	partmap/amiga.c	partmap/apple.c partmap/pc.c partmap/sun.c	\
 #	partmap/acorn.c							\
 #	util/console.c util/grub-emu.c util/misc.c			\
-#	util/hostdisk.c util/getroot.c			\
+#	util/hostdisk.c util/getroot.c					\
 #	util/sparc64/ieee1275/misc.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
