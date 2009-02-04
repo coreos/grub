@@ -1,3 +1,8 @@
+2009-02-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	util/getroot.c (grub_util_get_grub_dev): Add support for /dev/mdNpN and
+	/dev/md/NpN style mdraid devices.
+
 2009-02-03  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/unifont2pff.rb: Remove.

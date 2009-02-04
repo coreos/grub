@@ -470,11 +470,29 @@ grub_util_get_grub_dev (const char *os_dev)
 	}
       else if (os_dev[7] >= '0' && os_dev[7] <= '9')
 	{
-	  asprintf (&grub_dev, "md%s", os_dev + sizeof ("/dev/md") - 1);
+	  char *p , *q;
+
+	  p = strdup (os_dev + sizeof ("/dev/md") - 1);
+
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
+
+	  asprintf (&grub_dev, "md%s", p);
+	  free (p);
 	}
       else if (os_dev[7] == '/' && os_dev[8] >= '0' && os_dev[8] <= '9')
 	{
-	  asprintf (&grub_dev, "md%s", os_dev + sizeof ("/dev/md/") - 1);
+	  char *p , *q;
+
+	  p = strdup (os_dev + sizeof ("/dev/md/") - 1);
+
+	  q = strchr (p, 'p');
+	  if (q)
+	    *q = ',';
+
+	  asprintf (&grub_dev, "md%s", p);
+	  free (p);
 	}
       else
 	grub_util_error ("Unknown kind of RAID device `%s'", os_dev);
