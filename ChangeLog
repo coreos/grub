@@ -1,3 +1,10 @@
+2009-02-05  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	Fixes problem when running vbetest command as reported by 
+	Vladimir Serbinenko <phcoder@gmail.com>.
+
+	* (grub_vbe_set_video_mode): Fixed problem with text modes.
+
 2009-02-04  Felix Zielcke  <fzielcke@z-51.de>
 
 	util/getroot.c (grub_util_get_grub_dev): Add support for /dev/mdNpN and

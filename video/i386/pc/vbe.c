@@ -206,36 +206,49 @@ grub_vbe_set_video_mode (grub_uint32_t mode,
         framebuffer.bytes_per_scan_line = active_mode_info.bytes_per_scan_line;
     }
 
-  /* Calculate bytes_per_pixel value.  */
-  switch(active_mode_info.bits_per_pixel)
+  /* Check whether mode is text mode or graphics mode.  */
+  if (active_mode_info.memory_model == GRUB_VBE_MEMORY_MODEL_TEXT)
     {
-    case 32: framebuffer.bytes_per_pixel = 4; break;
-    case 24: framebuffer.bytes_per_pixel = 3; break;
-    case 16: framebuffer.bytes_per_pixel = 2; break;
-    case 15: framebuffer.bytes_per_pixel = 2; break;
-    case 8: framebuffer.bytes_per_pixel = 1; break;
-    default:
-      grub_vbe_bios_set_mode (old_mode, 0);
-      return grub_error (GRUB_ERR_BAD_DEVICE,
-                         "cannot set VBE mode %x",
-                         mode);
-      break;
+      /* Text mode.  */
+
+      /* No special action needed for text mode as it is not supported for
+         graphical support.  */
     }
-
-  /* If video mode is in indexed color, setup default VGA palette.  */
-  if (framebuffer.index_color_mode)
+  else
     {
-      struct grub_vbe_palette_data *palette
-        = (struct grub_vbe_palette_data *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+      /* Graphics mode.  */
 
-      /* Make sure that the BIOS can reach the palette.  */
-      grub_memcpy (palette, vga_colors, sizeof (vga_colors));
-      status = grub_vbe_bios_set_palette_data (sizeof (vga_colors)
-                                               / sizeof (struct grub_vbe_palette_data),
-                                               0,
-                                               palette);
+      /* Calculate bytes_per_pixel value.  */
+      switch(active_mode_info.bits_per_pixel)
+	{
+	case 32: framebuffer.bytes_per_pixel = 4; break;
+	case 24: framebuffer.bytes_per_pixel = 3; break;
+	case 16: framebuffer.bytes_per_pixel = 2; break;
+	case 15: framebuffer.bytes_per_pixel = 2; break;
+	case 8: framebuffer.bytes_per_pixel = 1; break;
+	default:
+	  grub_vbe_bios_set_mode (old_mode, 0);
+	  return grub_error (GRUB_ERR_BAD_DEVICE,
+			     "cannot set VBE mode %x",
+			     mode);
+	  break;
+	}
 
-      /* Just ignore the status.  */
+      /* If video mode is in indexed color, setup default VGA palette.  */
+      if (framebuffer.index_color_mode)
+	{
+	  struct grub_vbe_palette_data *palette
+	    = (struct grub_vbe_palette_data *) GRUB_MEMORY_MACHINE_SCRATCH_ADDR;
+
+	  /* Make sure that the BIOS can reach the palette.  */
+	  grub_memcpy (palette, vga_colors, sizeof (vga_colors));
+	  status = grub_vbe_bios_set_palette_data (sizeof (vga_colors)
+						   / sizeof (struct grub_vbe_palette_data),
+						   0,
+						   palette);
+
+	  /* Just ignore the status.  */
+	}
     }
 
   /* Copy mode info for caller.  */
