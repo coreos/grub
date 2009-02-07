@@ -120,6 +120,7 @@ fs/ntfs.c
 fs/ntfscomp.c
 fs/reiserfs.c
 fs/sfs.c
+fs/tar.c
 fs/udf.c
 fs/ufs.c
 fs/xfs.c

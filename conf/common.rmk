@@ -17,7 +17,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
-	fs/ufs.c fs/xfs.c fs/afs.c				\
+	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c			\
 	\
 	partmap/pc.c partmap/apple.c partmap/gpt.c 		\
 	kern/fs.c kern/env.c fs/fshelp.c			\
@@ -37,7 +37,7 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
-	fs/ufs.c fs/xfs.c fs/afs.c					\
+	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c				\
 	\
 	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
@@ -158,8 +158,8 @@ grub-mkconfig_DATA += util/grub.d/README
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
 	ntfscomp.mod minix.mod hfs.mod jfs.mod iso9660.mod xfs.mod	\
-	affs.mod sfs.mod hfsplus.mod reiserfs.mod cpio.mod udf.mod	\
-	afs.mod
+	affs.mod sfs.mod hfsplus.mod reiserfs.mod cpio.mod tar.mod	\
+	udf.mod	afs.mod
 
 # For fshelp.mod.
 fshelp_mod_SOURCES = fs/fshelp.c
@@ -240,6 +240,11 @@ reiserfs_mod_LDFLAGS = $(COMMON_LDFLAGS)
 cpio_mod_SOURCES = fs/cpio.c
 cpio_mod_CFLAGS = $(COMMON_CFLAGS)
 cpio_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For tar.mod.
+tar_mod_SOURCES = fs/cpio.c
+tar_mod_CFLAGS = $(COMMON_CFLAGS) -DMODE_USTAR
+tar_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For udf.mod.
 udf_mod_SOURCES = fs/udf.c

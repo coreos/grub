@@ -138,7 +138,7 @@ if [ "x${image_type}" = xfloppy -o "x${emulation}" = xfloppy ] ; then
 
   # build core.img
   core_img=`mktemp`
-  ${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${core_img} memdisk cpio
+  ${grub_mkimage} -d ${input_dir}/ -m ${memdisk_img} -o ${core_img} memdisk tar
   rm -f ${memdisk_img}
 
   # build floppy image

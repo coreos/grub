@@ -1,3 +1,8 @@
+2009-02-08  Robert Millan  <rmh@aybabtu.com>
+
+	* fs/cpio.c: Split tar functionality to ...
+	* fs/tar.c: ... here (new file).  Update all users.
+
 2009-02-07  Robert Millan  <rmh@aybabtu.com>
 
 	* fs/ext2.c (grub_ext2_mount): Avoid mounting filesystems with
