@@ -1,3 +1,10 @@
+2009-02-07  Robert Millan  <rmh@aybabtu.com>
+
+	* fs/ext2.c (grub_ext2_mount): Avoid mounting filesystems with
+	backward-incompatible features.
+
+	Based on patch from Javier Martín, with some adjustments.
+
 2009-02-07  Michael Scherer <misc@mandriva.org>
 
 	* fs/hfs.c (grub_hfsplus_iterate_dir): Treat hfs+ as case insensitive.

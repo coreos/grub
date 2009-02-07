@@ -71,7 +71,52 @@
          ? EXT2_GOOD_OLD_INODE_SIZE \
          : grub_le_to_cpu16 (data->sblock.inode_size))
 
-#define EXT3_FEATURE_COMPAT_HAS_JOURNAL	0x0004
+/* Superblock filesystem feature flags (RW compatible)
+ * A filesystem with any of these enabled can be read and written by a driver
+ * that does not understand them without causing metadata/data corruption */
+#define EXT2_FEATURE_COMPAT_DIR_PREALLOC	0x0001
+#define EXT2_FEATURE_COMPAT_IMAGIC_INODES	0x0002
+#define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
+#define EXT2_FEATURE_COMPAT_EXT_ATTR		0x0008
+#define EXT2_FEATURE_COMPAT_RESIZE_INODE	0x0010
+#define EXT2_FEATURE_COMPAT_DIR_INDEX		0x0020
+/* Superblock filesystem feature flags (RO compatible)
+ * A filesystem with any of these enabled can be safely read by a driver that
+ * does not understand them, but should not be written to, usually because
+ * additional metadata is required */
+#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+#define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
+#define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
+#define EXT4_FEATURE_RO_COMPAT_GDT_CSUM		0x0010
+#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
+#define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
+/* Superblock filesystem feature flags (back-incompatible)
+ * A filesystem with any of these enabled should not be attempted to be read
+ * by a driver that does not understand them, since they usually indicate
+ * metadata format changes that might confuse the reader. */
+#define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
+#define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
+#define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
+#define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Volume is journal device */
+#define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
+#define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* Extents used */
+#define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
+
+/* The set of back-incompatible features this driver DOES support. Add (OR)
+ * flags here as the related features are implemented into the driver */
+#define EXT2_DRIVER_SUPPORTED_INCOMPAT ( EXT2_FEATURE_INCOMPAT_FILETYPE \
+                                       | EXT4_FEATURE_INCOMPAT_EXTENTS )
+/* List of rationales for the ignored "incompatible" features:
+ * needs_recovery: Not really back-incompatible - was added as such to forbid
+ *                 ext2 drivers from mounting an ext3 volume with a dirty
+ *                 journal because they will ignore the journal, but the next
+ *                 ext3 driver to mount the volume will find the journal and
+ *                 replay it, potentially corrupting the metadata written by
+ *                 the ext2 drivers
+ */
+#define EXT2_DRIVER_IGNORED_INCOMPAT ( EXT3_FEATURE_INCOMPAT_RECOVER )
+
 
 #define EXT3_JOURNAL_MAGIC_NUMBER	0xc03b3998U
 
@@ -503,7 +548,19 @@ grub_ext2_mount (grub_disk_t disk)
 
   /* Make sure this is an ext2 filesystem.  */
   if (grub_le_to_cpu16 (data->sblock.magic) != EXT2_MAGIC)
-    goto fail;
+    {
+      grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
+      goto fail;
+    }
+  
+  /* Check the FS doesn't have feature bits enabled that we don't support. */
+  if (grub_le_to_cpu32 (data->sblock.feature_incompat)
+        & ~(EXT2_DRIVER_SUPPORTED_INCOMPAT | EXT2_DRIVER_IGNORED_INCOMPAT))
+    {
+      grub_error (GRUB_ERR_BAD_FS, "filesystem has unsupported incompatible features");
+      goto fail;
+    }
+    
   
   data->disk = disk;
 
@@ -520,7 +577,6 @@ grub_ext2_mount (grub_disk_t disk)
   return data;
 
  fail:
-  grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
   grub_free (data);
   return 0;
 }
