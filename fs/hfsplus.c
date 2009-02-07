@@ -767,6 +767,9 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
       for (i = 0; i < grub_be_to_cpu16 (catkey->namelen); i++)
 	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
 
+      /* hfs+ is case insensitive.  */
+      type |= GRUB_FSHELP_CASE_INSENSITIVE;
+
       /* Only accept valid nodes.  */
       if (grub_strlen (filename) == grub_be_to_cpu16 (catkey->namelen))
 	{
