@@ -1,3 +1,9 @@
+2009-02-07  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/common.rmk (grub_probe_SOURCES, grub_fstest_SOURCES): Move
+	position of `disk/lvm.c' to ensure grub_init_all() always picks it
+	after the RAID stuff.
+
 2009-02-05  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	Fixes problem when running vbetest command as reported by 

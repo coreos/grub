@@ -436,7 +436,6 @@ util/lvm.c
 util/misc.c
 util/raid.c
 util/resolve.c
-util/unifont2pff.rb
 util/update-grub_lib.in
 util/elf/grub-mkimage.c
 util/grub.d/00_header.in

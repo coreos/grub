@@ -21,7 +21,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	\
 	partmap/pc.c partmap/apple.c partmap/gpt.c 		\
 	kern/fs.c kern/env.c fs/fshelp.c			\
-	disk/lvm.c disk/raid.c disk/mdraid_linux.c grub_probe_init.c
+	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
 ifeq ($(enable_grub_fstest), yes)
 bin_UTILITIES += grub-fstest
@@ -40,9 +40,9 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/ufs.c fs/xfs.c fs/afs.c					\
 	\
 	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
-	kern/fs.c kern/env.c fs/fshelp.c disk/lvm.c disk/raid.c		\
+	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
-	disk/mdraid_linux.c disk/dmraid_nvidia.c 			\
+	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
 	grub_fstest_init.c
 
 # For grub-mkfont.
