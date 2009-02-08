@@ -47,8 +47,10 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 
+host_os = @host_os@
+host_cpu = @host_cpu@
+
 target_cpu = @target_cpu@
-target_os = @target_os@
 platform = @platform@
 
 INSTALL = @INSTALL@

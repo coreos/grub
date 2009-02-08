@@ -2006,9 +2006,7 @@ case "$host_os" in
   mingw32) host_os=cygwin ;;
 esac
 
-case "$target_os" in
-  mingw32) target_os=cygwin ;;
-esac
+
 
 
 
@@ -5906,10 +5904,10 @@ done
 # Use linker script if present, otherwise use builtin -N script.
 { echo "$as_me:$LINENO: checking for option to link raw image" >&5
 echo $ECHO_N "checking for option to link raw image... $ECHO_C" >&6; }
-if test -f "${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"; then
-  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+if test -f "${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
 else
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_LDFLAGS='-Wl,-N'
@@ -5923,8 +5921,8 @@ echo "${ECHO_T}$TARGET_IMG_LDFLAGS_AC" >&6; }
 # For platforms where ELF is not the default link format.
 { echo "$as_me:$LINENO: checking for command to convert module to ELF format" >&5
 echo $ECHO_N "checking for command to convert module to ELF format... $ECHO_C" >&6; }
-case "${host_os}:${target_os}" in
-  cygwin:cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+case "${host_os}" in
+  cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
   *) ;;
 esac
 

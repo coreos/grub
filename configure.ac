@@ -103,12 +103,10 @@ case "$host_os" in
   mingw32) host_os=cygwin ;;
 esac
 
-case "$target_os" in
-  mingw32) target_os=cygwin ;;
-esac
+AC_SUBST(host_cpu)
+AC_SUBST(host_os)
 
 AC_SUBST(target_cpu)
-AC_SUBST(target_os)
 AC_SUBST(platform)
 
 #
@@ -200,10 +198,10 @@ AC_CHECK_FUNCS(posix_memalign memalign asprintf)
 
 # Use linker script if present, otherwise use builtin -N script.
 AC_MSG_CHECKING([for option to link raw image])
-if test -f "${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"; then
-  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+if test -f "${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"; then
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${target_os}-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/conf/${target_cpu}-${platform}-${host_os}-img-ld.sc"
 else
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_LDFLAGS='-Wl,-N'
@@ -215,8 +213,8 @@ AC_MSG_RESULT([$TARGET_IMG_LDFLAGS_AC])
 
 # For platforms where ELF is not the default link format.
 AC_MSG_CHECKING([for command to convert module to ELF format])
-case "${host_os}:${target_os}" in
-  cygwin:cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
+case "${host_os}" in
+  cygwin) TARGET_OBJ2ELF='grub-pe2elf' ;;
   *) ;;
 esac
 AC_SUBST(TARGET_OBJ2ELF)

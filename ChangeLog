@@ -1,3 +1,8 @@
+2009-02-08  Robert Millan  <rmh@aybabtu.com>
+
+	* Makefile.in (host_os, host_cpu): New variables.
+	(target_os): Remove.  Update all users.
+
 2009-02-08  Marco Gerards  <marco@gnu.org>
 
 	* Makefile.in (enable_grub_emu_usb): New variable.
