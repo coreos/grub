@@ -1,6 +1,6 @@
 2009-02-08  Robert Millan  <rmh@aybabtu.com>
 
-	* fs/tar.c: Replace "fs/cpio.h" with "cpio.h".
+	* fs/tar.c: Replace "fs/cpio.c" with "cpio.c".
 
 2009-02-08  Robert Millan  <rmh@aybabtu.com>
 
