@@ -1,5 +1,9 @@
 2009-02-08  Robert Millan  <rmh@aybabtu.com>
 
+	* fs/tar.c: Replace "fs/cpio.h" with "cpio.h".
+
+2009-02-08  Robert Millan  <rmh@aybabtu.com>
+
 	* Makefile.in (host_os, host_cpu): New variables.
 	(target_os): Remove.  Update all users.
 
