@@ -1,3 +1,47 @@
+2009-02-08  Marco Gerards  <marco@gnu.org>
+
+	* Makefile.in (enable_grub_emu_usb): New variable.
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Add `disk/scsi.c'.
+	(grub_emu_SOURCES) [grub_emu_SOURCES]: Add `disk/usbms.c',
+	`util/usb.c', `bus/usb/usb.c' and `commands/usbtest.c'.
+	(grub_emu_LDFLAGS): Add `$(LIBUSB)'.
+	(pkglib_MODULES): Add `usb.mod', `uhci.mod', `ohci.mod',
+	`usbtest.mod' and `usbms.mod'.
+	(usb_mod_SOURCES, usb_mod_CFLAGS, usb_mod_LDFLAGS)
+	(usbtest_mod_SOURCES, usbtest_mod_CFLAGS, usbtest_mod_LDFLAGS)
+	(uhci_mod_SOURCES, uhci_mod_CFLAGS, uhci_mod_LDFLAGS,
+	(ohci_mod_SOURCES, ohci_mod_CFLAGS, ohci_mod_LDFLAGS)
+	(usbms_mod_SOURCES, usbms_mod_CFLAGS, usbms_mod_LDFLAGS): New
+	variables.
+
+	* disk/usbms.c: New file.
+
+	* include/grub/usb.h: Likewise.
+
+	* include/grub/usbtrans.h: Likewise.
+
+	* include/grub/usbdesc.h: Likewise.
+
+	* bus/usb/usbtrans.c: Likewise.
+
+	* bus/usb/ohci.c: Likewise.
+
+	* bus/usb/uhci.c: Likewise.
+
+	* bus/usb/usbhub.c: Likewise.
+
+	* bus/usb/usb.c: Likewise.
+
+	* commands/usbtest.c: Likewise.
+
+	* util/usb.c: Likewise.
+	
+	* include/grub/err.h (grub_err_t): Add `GRUB_ERR_IO'.
+
+	* configure.ac: Test for libusb presence.
+	
+	* util/grub-emu.c (main) [HAVE_LIBUSB_H]: Call `grub_libusb_init'.
+
 2009-02-08  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	* kern/mm.c: Add more comments.

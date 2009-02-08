@@ -35,6 +35,11 @@ boot/i386/pc/diskboot.S
 boot/i386/pc/lnxboot.S
 boot/i386/pc/pxeboot.S
 bus/pci.c
+bus/usb/ohci.c
+bus/usb/uhci.c
+bus/usb/usb.c
+bus/usb/usbhub.c
+bus/usb/usbtrans.c
 commands/blocklist.c
 commands/boot.c
 commands/cat.c
@@ -56,6 +61,7 @@ commands/search.c
 commands/sleep.c
 commands/terminal.c
 commands/test.c
+commands/usbtest.c
 commands/videotest.c
 commands/i386/cpuid.c
 commands/i386/pc/halt.c
@@ -95,6 +101,7 @@ disk/raid.c
 disk/raid5_recover.c
 disk/raid6_recover.c
 disk/scsi.c
+disk/usbms.c
 disk/efi/efidisk.c
 disk/i386/pc/biosdisk.c
 disk/ieee1275/nand.c
@@ -179,6 +186,9 @@ include/grub/terminfo.h
 include/grub/time.h
 include/grub/tparm.h
 include/grub/types.h
+include/grub/usb.h
+include/grub/usbdesc.h
+include/grub/usbtrans.h
 include/grub/video.h
 include/grub/efi/api.h
 include/grub/efi/chainloader.h
@@ -438,6 +448,7 @@ util/misc.c
 util/raid.c
 util/resolve.c
 util/update-grub_lib.in
+util/usb.c
 util/elf/grub-mkimage.c
 util/grub.d/00_header.in
 util/grub.d/10_freebsd.in

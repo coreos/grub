@@ -525,7 +525,7 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
 	lib/hexdump.c commands/i386/pc/halt.c commands/reboot.c		\
 	commands/i386/cpuid.c						\
-	disk/host.c disk/loopback.c					\
+	disk/host.c disk/loopback.c disk/scsi.c				\
 	fs/fshelp.c 	\
 	\
 	io/gzio.c							\
@@ -553,11 +553,11 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
 	grub_emu_init.c
-CLEANFILES += grub-emu$(EXEEXT) grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-lib_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_menu_viewer.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-fs_tar.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_hostdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_raid5_recover.o grub_emu-disk_raid6_recover.o grub_emu-disk_mdraid_linux.o grub_emu-disk_dmraid_nvidia.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
-MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_echo.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_test.d grub_emu-commands_search.d grub_emu-commands_blocklist.d grub_emu-commands_hexdump.d grub_emu-lib_hexdump.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_reboot.d grub_emu-commands_i386_cpuid.d grub_emu-disk_host.d grub_emu-disk_loopback.d grub_emu-fs_fshelp.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_elf.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-normal_execute.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-normal_lexer.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_parser.d grub_emu-grub_script_tab.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_function.d grub_emu-normal_completion.d grub_emu-normal_main.d grub_emu-normal_color.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_menu_viewer.d grub_emu-normal_misc.d grub_emu-normal_script.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-partmap_acorn.d grub_emu-partmap_gpt.d grub_emu-fs_affs.d grub_emu-fs_cpio.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_hfs.d grub_emu-fs_hfsplus.d grub_emu-fs_iso9660.d grub_emu-fs_udf.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ntfs.d grub_emu-fs_ntfscomp.d grub_emu-fs_reiserfs.d grub_emu-fs_sfs.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-fs_afs.d grub_emu-fs_tar.d grub_emu-util_console.d grub_emu-util_hostfs.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_hostdisk.d grub_emu-util_getroot.d grub_emu-util_i386_pc_misc.d grub_emu-disk_raid.d grub_emu-disk_raid5_recover.d grub_emu-disk_raid6_recover.d grub_emu-disk_mdraid_linux.d grub_emu-disk_dmraid_nvidia.d grub_emu-disk_lvm.d grub_emu-grub_emu_init.d
+CLEANFILES += grub-emu$(EXEEXT) grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-lib_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-disk_scsi.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_menu_viewer.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-fs_tar.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_hostdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_raid5_recover.o grub_emu-disk_raid6_recover.o grub_emu-disk_mdraid_linux.o grub_emu-disk_dmraid_nvidia.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
+MOSTLYCLEANFILES += grub_emu-commands_boot.d grub_emu-commands_cat.d grub_emu-commands_cmp.d grub_emu-commands_configfile.d grub_emu-commands_echo.d grub_emu-commands_help.d grub_emu-commands_terminal.d grub_emu-commands_ls.d grub_emu-commands_test.d grub_emu-commands_search.d grub_emu-commands_blocklist.d grub_emu-commands_hexdump.d grub_emu-lib_hexdump.d grub_emu-commands_i386_pc_halt.d grub_emu-commands_reboot.d grub_emu-commands_i386_cpuid.d grub_emu-disk_host.d grub_emu-disk_loopback.d grub_emu-disk_scsi.d grub_emu-fs_fshelp.d grub_emu-io_gzio.d grub_emu-kern_device.d grub_emu-kern_disk.d grub_emu-kern_dl.d grub_emu-kern_elf.d grub_emu-kern_env.d grub_emu-kern_err.d grub_emu-normal_execute.d grub_emu-kern_file.d grub_emu-kern_fs.d grub_emu-normal_lexer.d grub_emu-kern_loader.d grub_emu-kern_main.d grub_emu-kern_misc.d grub_emu-kern_parser.d grub_emu-grub_script_tab.d grub_emu-kern_partition.d grub_emu-kern_rescue.d grub_emu-kern_term.d grub_emu-normal_arg.d grub_emu-normal_cmdline.d grub_emu-normal_command.d grub_emu-normal_function.d grub_emu-normal_completion.d grub_emu-normal_main.d grub_emu-normal_color.d grub_emu-normal_menu.d grub_emu-normal_menu_entry.d grub_emu-normal_menu_viewer.d grub_emu-normal_misc.d grub_emu-normal_script.d grub_emu-partmap_amiga.d grub_emu-partmap_apple.d grub_emu-partmap_pc.d grub_emu-partmap_sun.d grub_emu-partmap_acorn.d grub_emu-partmap_gpt.d grub_emu-fs_affs.d grub_emu-fs_cpio.d grub_emu-fs_ext2.d grub_emu-fs_fat.d grub_emu-fs_hfs.d grub_emu-fs_hfsplus.d grub_emu-fs_iso9660.d grub_emu-fs_udf.d grub_emu-fs_jfs.d grub_emu-fs_minix.d grub_emu-fs_ntfs.d grub_emu-fs_ntfscomp.d grub_emu-fs_reiserfs.d grub_emu-fs_sfs.d grub_emu-fs_ufs.d grub_emu-fs_xfs.d grub_emu-fs_afs.d grub_emu-fs_tar.d grub_emu-util_console.d grub_emu-util_hostfs.d grub_emu-util_grub_emu.d grub_emu-util_misc.d grub_emu-util_hostdisk.d grub_emu-util_getroot.d grub_emu-util_i386_pc_misc.d grub_emu-disk_raid.d grub_emu-disk_raid5_recover.d grub_emu-disk_raid6_recover.d grub_emu-disk_mdraid_linux.d grub_emu-disk_dmraid_nvidia.d grub_emu-disk_lvm.d grub_emu-grub_emu_init.d
 
-grub-emu: $(grub_emu_DEPENDENCIES) grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-lib_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_menu_viewer.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-fs_tar.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_hostdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_raid5_recover.o grub_emu-disk_raid6_recover.o grub_emu-disk_mdraid_linux.o grub_emu-disk_dmraid_nvidia.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
-	$(CC) -o $@ grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-lib_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_menu_viewer.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-fs_tar.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_hostdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_raid5_recover.o grub_emu-disk_raid6_recover.o grub_emu-disk_mdraid_linux.o grub_emu-disk_dmraid_nvidia.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o $(LDFLAGS) $(grub_emu_LDFLAGS)
+grub-emu: $(grub_emu_DEPENDENCIES) grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-lib_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-disk_scsi.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_menu_viewer.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-fs_tar.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_hostdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_raid5_recover.o grub_emu-disk_raid6_recover.o grub_emu-disk_mdraid_linux.o grub_emu-disk_dmraid_nvidia.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o
+	$(CC) -o $@ grub_emu-commands_boot.o grub_emu-commands_cat.o grub_emu-commands_cmp.o grub_emu-commands_configfile.o grub_emu-commands_echo.o grub_emu-commands_help.o grub_emu-commands_terminal.o grub_emu-commands_ls.o grub_emu-commands_test.o grub_emu-commands_search.o grub_emu-commands_blocklist.o grub_emu-commands_hexdump.o grub_emu-lib_hexdump.o grub_emu-commands_i386_pc_halt.o grub_emu-commands_reboot.o grub_emu-commands_i386_cpuid.o grub_emu-disk_host.o grub_emu-disk_loopback.o grub_emu-disk_scsi.o grub_emu-fs_fshelp.o grub_emu-io_gzio.o grub_emu-kern_device.o grub_emu-kern_disk.o grub_emu-kern_dl.o grub_emu-kern_elf.o grub_emu-kern_env.o grub_emu-kern_err.o grub_emu-normal_execute.o grub_emu-kern_file.o grub_emu-kern_fs.o grub_emu-normal_lexer.o grub_emu-kern_loader.o grub_emu-kern_main.o grub_emu-kern_misc.o grub_emu-kern_parser.o grub_emu-grub_script_tab.o grub_emu-kern_partition.o grub_emu-kern_rescue.o grub_emu-kern_term.o grub_emu-normal_arg.o grub_emu-normal_cmdline.o grub_emu-normal_command.o grub_emu-normal_function.o grub_emu-normal_completion.o grub_emu-normal_main.o grub_emu-normal_color.o grub_emu-normal_menu.o grub_emu-normal_menu_entry.o grub_emu-normal_menu_viewer.o grub_emu-normal_misc.o grub_emu-normal_script.o grub_emu-partmap_amiga.o grub_emu-partmap_apple.o grub_emu-partmap_pc.o grub_emu-partmap_sun.o grub_emu-partmap_acorn.o grub_emu-partmap_gpt.o grub_emu-fs_affs.o grub_emu-fs_cpio.o grub_emu-fs_ext2.o grub_emu-fs_fat.o grub_emu-fs_hfs.o grub_emu-fs_hfsplus.o grub_emu-fs_iso9660.o grub_emu-fs_udf.o grub_emu-fs_jfs.o grub_emu-fs_minix.o grub_emu-fs_ntfs.o grub_emu-fs_ntfscomp.o grub_emu-fs_reiserfs.o grub_emu-fs_sfs.o grub_emu-fs_ufs.o grub_emu-fs_xfs.o grub_emu-fs_afs.o grub_emu-fs_tar.o grub_emu-util_console.o grub_emu-util_hostfs.o grub_emu-util_grub_emu.o grub_emu-util_misc.o grub_emu-util_hostdisk.o grub_emu-util_getroot.o grub_emu-util_i386_pc_misc.o grub_emu-disk_raid.o grub_emu-disk_raid5_recover.o grub_emu-disk_raid6_recover.o grub_emu-disk_mdraid_linux.o grub_emu-disk_dmraid_nvidia.o grub_emu-disk_lvm.o grub_emu-grub_emu_init.o $(LDFLAGS) $(grub_emu_LDFLAGS)
 
 grub_emu-commands_boot.o: commands/boot.c $(commands/boot.c_DEPENDENCIES)
 	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
@@ -630,6 +630,10 @@ grub_emu-disk_host.o: disk/host.c $(disk/host.c_DEPENDENCIES)
 grub_emu-disk_loopback.o: disk/loopback.c $(disk/loopback.c_DEPENDENCIES)
 	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
 -include grub_emu-disk_loopback.d
+
+grub_emu-disk_scsi.o: disk/scsi.c $(disk/scsi.c_DEPENDENCIES)
+	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
+-include grub_emu-disk_scsi.d
 
 grub_emu-fs_fshelp.o: fs/fshelp.c $(fs/fshelp.c_DEPENDENCIES)
 	$(CC) -Ifs -I$(srcdir)/fs $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
@@ -912,7 +916,35 @@ grub_emu-grub_emu_init.o: grub_emu_init.c $(grub_emu_init.c_DEPENDENCIES)
 -include grub_emu-grub_emu_init.d
 
 
-grub_emu_LDFLAGS = $(LIBCURSES)
+grub_emu_LDFLAGS = $(LIBCURSES) 
+
+ifeq ($(enable_grub_emu_usb), yes)
+grub_emu_SOURCES += disk/usbms.c util/usb.c bus/usb/usb.c	\
+		commands/usbtest.c
+CLEANFILES += grub-emu$(EXEEXT) grub_emu-disk_usbms.o grub_emu-util_usb.o grub_emu-bus_usb_usb.o grub_emu-commands_usbtest.o
+MOSTLYCLEANFILES += grub_emu-disk_usbms.d grub_emu-util_usb.d grub_emu-bus_usb_usb.d grub_emu-commands_usbtest.d
+
+grub-emu: $(grub_emu_DEPENDENCIES) grub_emu-disk_usbms.o grub_emu-util_usb.o grub_emu-bus_usb_usb.o grub_emu-commands_usbtest.o
+	$(CC) -o $@ grub_emu-disk_usbms.o grub_emu-util_usb.o grub_emu-bus_usb_usb.o grub_emu-commands_usbtest.o $(LDFLAGS) $(grub_emu_LDFLAGS)
+
+grub_emu-disk_usbms.o: disk/usbms.c $(disk/usbms.c_DEPENDENCIES)
+	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
+-include grub_emu-disk_usbms.d
+
+grub_emu-util_usb.o: util/usb.c $(util/usb.c_DEPENDENCIES)
+	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
+-include grub_emu-util_usb.d
+
+grub_emu-bus_usb_usb.o: bus/usb/usb.c $(bus/usb/usb.c_DEPENDENCIES)
+	$(CC) -Ibus/usb -I$(srcdir)/bus/usb $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
+-include grub_emu-bus_usb_usb.d
+
+grub_emu-commands_usbtest.o: commands/usbtest.c $(commands/usbtest.c_DEPENDENCIES)
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_emu_CFLAGS) -MD -c -o $@ $<
+-include grub_emu-commands_usbtest.d
+
+grub_emu_LDFLAGS += $(LIBCURSES) $(LIBUSB)
+endif
 
 # Scripts.
 sbin_SCRIPTS = grub-install
@@ -942,7 +974,8 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod	\
 	ata.mod vga.mod memdisk.mod pci.mod lspci.mod \
 	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
-	datehook.mod lsmmap.mod
+	datehook.mod lsmmap.mod \
+	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -2672,6 +2705,329 @@ partmap-bsd_mod-loader_i386_bsd_normal.lst: loader/i386/bsd_normal.c $(loader/i3
 
 bsd_mod_CFLAGS = $(COMMON_CFLAGS)
 bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usb.mod
+usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c
+CLEANFILES += usb.mod mod-usb.o mod-usb.c pre-usb.o usb_mod-bus_usb_usb.o usb_mod-bus_usb_usbtrans.o usb_mod-bus_usb_usbhub.o und-usb.lst
+ifneq ($(usb_mod_EXPORTS),no)
+CLEANFILES += def-usb.lst
+DEFSYMFILES += def-usb.lst
+endif
+MOSTLYCLEANFILES += usb_mod-bus_usb_usb.d usb_mod-bus_usb_usbtrans.d usb_mod-bus_usb_usbhub.d
+UNDSYMFILES += und-usb.lst
+
+usb.mod: pre-usb.o mod-usb.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(usb_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-usb.o mod-usb.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-usb.o: $(usb_mod_DEPENDENCIES) usb_mod-bus_usb_usb.o usb_mod-bus_usb_usbtrans.o usb_mod-bus_usb_usbhub.o
+	-rm -f $@
+	$(TARGET_CC) $(usb_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ usb_mod-bus_usb_usb.o usb_mod-bus_usb_usbtrans.o usb_mod-bus_usb_usbhub.o
+
+mod-usb.o: mod-usb.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -c -o $@ $<
+
+mod-usb.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'usb' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(usb_mod_EXPORTS),no)
+def-usb.lst: pre-usb.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 usb/' > $@
+endif
+
+und-usb.lst: pre-usb.o
+	echo 'usb' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+usb_mod-bus_usb_usb.o: bus/usb/usb.c $(bus/usb/usb.c_DEPENDENCIES)
+	$(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -MD -c -o $@ $<
+-include usb_mod-bus_usb_usb.d
+
+CLEANFILES += cmd-usb_mod-bus_usb_usb.lst fs-usb_mod-bus_usb_usb.lst partmap-usb_mod-bus_usb_usb.lst
+COMMANDFILES += cmd-usb_mod-bus_usb_usb.lst
+FSFILES += fs-usb_mod-bus_usb_usb.lst
+PARTMAPFILES += partmap-usb_mod-bus_usb_usb.lst
+
+cmd-usb_mod-bus_usb_usb.lst: bus/usb/usb.c $(bus/usb/usb.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh usb > $@ || (rm -f $@; exit 1)
+
+fs-usb_mod-bus_usb_usb.lst: bus/usb/usb.c $(bus/usb/usb.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh usb > $@ || (rm -f $@; exit 1)
+
+partmap-usb_mod-bus_usb_usb.lst: bus/usb/usb.c $(bus/usb/usb.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh usb > $@ || (rm -f $@; exit 1)
+
+
+usb_mod-bus_usb_usbtrans.o: bus/usb/usbtrans.c $(bus/usb/usbtrans.c_DEPENDENCIES)
+	$(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -MD -c -o $@ $<
+-include usb_mod-bus_usb_usbtrans.d
+
+CLEANFILES += cmd-usb_mod-bus_usb_usbtrans.lst fs-usb_mod-bus_usb_usbtrans.lst partmap-usb_mod-bus_usb_usbtrans.lst
+COMMANDFILES += cmd-usb_mod-bus_usb_usbtrans.lst
+FSFILES += fs-usb_mod-bus_usb_usbtrans.lst
+PARTMAPFILES += partmap-usb_mod-bus_usb_usbtrans.lst
+
+cmd-usb_mod-bus_usb_usbtrans.lst: bus/usb/usbtrans.c $(bus/usb/usbtrans.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh usb > $@ || (rm -f $@; exit 1)
+
+fs-usb_mod-bus_usb_usbtrans.lst: bus/usb/usbtrans.c $(bus/usb/usbtrans.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh usb > $@ || (rm -f $@; exit 1)
+
+partmap-usb_mod-bus_usb_usbtrans.lst: bus/usb/usbtrans.c $(bus/usb/usbtrans.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh usb > $@ || (rm -f $@; exit 1)
+
+
+usb_mod-bus_usb_usbhub.o: bus/usb/usbhub.c $(bus/usb/usbhub.c_DEPENDENCIES)
+	$(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -MD -c -o $@ $<
+-include usb_mod-bus_usb_usbhub.d
+
+CLEANFILES += cmd-usb_mod-bus_usb_usbhub.lst fs-usb_mod-bus_usb_usbhub.lst partmap-usb_mod-bus_usb_usbhub.lst
+COMMANDFILES += cmd-usb_mod-bus_usb_usbhub.lst
+FSFILES += fs-usb_mod-bus_usb_usbhub.lst
+PARTMAPFILES += partmap-usb_mod-bus_usb_usbhub.lst
+
+cmd-usb_mod-bus_usb_usbhub.lst: bus/usb/usbhub.c $(bus/usb/usbhub.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh usb > $@ || (rm -f $@; exit 1)
+
+fs-usb_mod-bus_usb_usbhub.lst: bus/usb/usbhub.c $(bus/usb/usbhub.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh usb > $@ || (rm -f $@; exit 1)
+
+partmap-usb_mod-bus_usb_usbhub.lst: bus/usb/usbhub.c $(bus/usb/usbhub.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh usb > $@ || (rm -f $@; exit 1)
+
+
+usb_mod_CFLAGS = $(COMMON_CFLAGS)
+usb_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbtest.mod
+usbtest_mod_SOURCES = commands/usbtest.c
+CLEANFILES += usbtest.mod mod-usbtest.o mod-usbtest.c pre-usbtest.o usbtest_mod-commands_usbtest.o und-usbtest.lst
+ifneq ($(usbtest_mod_EXPORTS),no)
+CLEANFILES += def-usbtest.lst
+DEFSYMFILES += def-usbtest.lst
+endif
+MOSTLYCLEANFILES += usbtest_mod-commands_usbtest.d
+UNDSYMFILES += und-usbtest.lst
+
+usbtest.mod: pre-usbtest.o mod-usbtest.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(usbtest_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-usbtest.o mod-usbtest.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-usbtest.o: $(usbtest_mod_DEPENDENCIES) usbtest_mod-commands_usbtest.o
+	-rm -f $@
+	$(TARGET_CC) $(usbtest_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ usbtest_mod-commands_usbtest.o
+
+mod-usbtest.o: mod-usbtest.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbtest_mod_CFLAGS) -c -o $@ $<
+
+mod-usbtest.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'usbtest' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(usbtest_mod_EXPORTS),no)
+def-usbtest.lst: pre-usbtest.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 usbtest/' > $@
+endif
+
+und-usbtest.lst: pre-usbtest.o
+	echo 'usbtest' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+usbtest_mod-commands_usbtest.o: commands/usbtest.c $(commands/usbtest.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(usbtest_mod_CFLAGS) -MD -c -o $@ $<
+-include usbtest_mod-commands_usbtest.d
+
+CLEANFILES += cmd-usbtest_mod-commands_usbtest.lst fs-usbtest_mod-commands_usbtest.lst partmap-usbtest_mod-commands_usbtest.lst
+COMMANDFILES += cmd-usbtest_mod-commands_usbtest.lst
+FSFILES += fs-usbtest_mod-commands_usbtest.lst
+PARTMAPFILES += partmap-usbtest_mod-commands_usbtest.lst
+
+cmd-usbtest_mod-commands_usbtest.lst: commands/usbtest.c $(commands/usbtest.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbtest_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh usbtest > $@ || (rm -f $@; exit 1)
+
+fs-usbtest_mod-commands_usbtest.lst: commands/usbtest.c $(commands/usbtest.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbtest_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh usbtest > $@ || (rm -f $@; exit 1)
+
+partmap-usbtest_mod-commands_usbtest.lst: commands/usbtest.c $(commands/usbtest.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbtest_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh usbtest > $@ || (rm -f $@; exit 1)
+
+
+usbtest_mod_CFLAGS = $(COMMON_CFLAGS)
+usbtest_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For uhci.mod
+uhci_mod_SOURCES = bus/usb/uhci.c
+CLEANFILES += uhci.mod mod-uhci.o mod-uhci.c pre-uhci.o uhci_mod-bus_usb_uhci.o und-uhci.lst
+ifneq ($(uhci_mod_EXPORTS),no)
+CLEANFILES += def-uhci.lst
+DEFSYMFILES += def-uhci.lst
+endif
+MOSTLYCLEANFILES += uhci_mod-bus_usb_uhci.d
+UNDSYMFILES += und-uhci.lst
+
+uhci.mod: pre-uhci.o mod-uhci.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(uhci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-uhci.o mod-uhci.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-uhci.o: $(uhci_mod_DEPENDENCIES) uhci_mod-bus_usb_uhci.o
+	-rm -f $@
+	$(TARGET_CC) $(uhci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ uhci_mod-bus_usb_uhci.o
+
+mod-uhci.o: mod-uhci.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(uhci_mod_CFLAGS) -c -o $@ $<
+
+mod-uhci.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'uhci' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(uhci_mod_EXPORTS),no)
+def-uhci.lst: pre-uhci.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 uhci/' > $@
+endif
+
+und-uhci.lst: pre-uhci.o
+	echo 'uhci' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+uhci_mod-bus_usb_uhci.o: bus/usb/uhci.c $(bus/usb/uhci.c_DEPENDENCIES)
+	$(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(uhci_mod_CFLAGS) -MD -c -o $@ $<
+-include uhci_mod-bus_usb_uhci.d
+
+CLEANFILES += cmd-uhci_mod-bus_usb_uhci.lst fs-uhci_mod-bus_usb_uhci.lst partmap-uhci_mod-bus_usb_uhci.lst
+COMMANDFILES += cmd-uhci_mod-bus_usb_uhci.lst
+FSFILES += fs-uhci_mod-bus_usb_uhci.lst
+PARTMAPFILES += partmap-uhci_mod-bus_usb_uhci.lst
+
+cmd-uhci_mod-bus_usb_uhci.lst: bus/usb/uhci.c $(bus/usb/uhci.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(uhci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh uhci > $@ || (rm -f $@; exit 1)
+
+fs-uhci_mod-bus_usb_uhci.lst: bus/usb/uhci.c $(bus/usb/uhci.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(uhci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh uhci > $@ || (rm -f $@; exit 1)
+
+partmap-uhci_mod-bus_usb_uhci.lst: bus/usb/uhci.c $(bus/usb/uhci.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(uhci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh uhci > $@ || (rm -f $@; exit 1)
+
+
+uhci_mod_CFLAGS = $(COMMON_CFLAGS)
+uhci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ohci.mod
+ohci_mod_SOURCES = bus/usb/ohci.c
+CLEANFILES += ohci.mod mod-ohci.o mod-ohci.c pre-ohci.o ohci_mod-bus_usb_ohci.o und-ohci.lst
+ifneq ($(ohci_mod_EXPORTS),no)
+CLEANFILES += def-ohci.lst
+DEFSYMFILES += def-ohci.lst
+endif
+MOSTLYCLEANFILES += ohci_mod-bus_usb_ohci.d
+UNDSYMFILES += und-ohci.lst
+
+ohci.mod: pre-ohci.o mod-ohci.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(ohci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-ohci.o mod-ohci.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-ohci.o: $(ohci_mod_DEPENDENCIES) ohci_mod-bus_usb_ohci.o
+	-rm -f $@
+	$(TARGET_CC) $(ohci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ohci_mod-bus_usb_ohci.o
+
+mod-ohci.o: mod-ohci.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ohci_mod_CFLAGS) -c -o $@ $<
+
+mod-ohci.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ohci' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(ohci_mod_EXPORTS),no)
+def-ohci.lst: pre-ohci.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ohci/' > $@
+endif
+
+und-ohci.lst: pre-ohci.o
+	echo 'ohci' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ohci_mod-bus_usb_ohci.o: bus/usb/ohci.c $(bus/usb/ohci.c_DEPENDENCIES)
+	$(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(ohci_mod_CFLAGS) -MD -c -o $@ $<
+-include ohci_mod-bus_usb_ohci.d
+
+CLEANFILES += cmd-ohci_mod-bus_usb_ohci.lst fs-ohci_mod-bus_usb_ohci.lst partmap-ohci_mod-bus_usb_ohci.lst
+COMMANDFILES += cmd-ohci_mod-bus_usb_ohci.lst
+FSFILES += fs-ohci_mod-bus_usb_ohci.lst
+PARTMAPFILES += partmap-ohci_mod-bus_usb_ohci.lst
+
+cmd-ohci_mod-bus_usb_ohci.lst: bus/usb/ohci.c $(bus/usb/ohci.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ohci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ohci > $@ || (rm -f $@; exit 1)
+
+fs-ohci_mod-bus_usb_ohci.lst: bus/usb/ohci.c $(bus/usb/ohci.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ohci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ohci > $@ || (rm -f $@; exit 1)
+
+partmap-ohci_mod-bus_usb_ohci.lst: bus/usb/ohci.c $(bus/usb/ohci.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ibus/usb -I$(srcdir)/bus/usb $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ohci_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh ohci > $@ || (rm -f $@; exit 1)
+
+
+ohci_mod_CFLAGS = $(COMMON_CFLAGS)
+ohci_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usbms.mod
+usbms_mod_SOURCES = disk/usbms.c
+CLEANFILES += usbms.mod mod-usbms.o mod-usbms.c pre-usbms.o usbms_mod-disk_usbms.o und-usbms.lst
+ifneq ($(usbms_mod_EXPORTS),no)
+CLEANFILES += def-usbms.lst
+DEFSYMFILES += def-usbms.lst
+endif
+MOSTLYCLEANFILES += usbms_mod-disk_usbms.d
+UNDSYMFILES += und-usbms.lst
+
+usbms.mod: pre-usbms.o mod-usbms.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(usbms_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-usbms.o mod-usbms.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-usbms.o: $(usbms_mod_DEPENDENCIES) usbms_mod-disk_usbms.o
+	-rm -f $@
+	$(TARGET_CC) $(usbms_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ usbms_mod-disk_usbms.o
+
+mod-usbms.o: mod-usbms.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbms_mod_CFLAGS) -c -o $@ $<
+
+mod-usbms.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'usbms' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(usbms_mod_EXPORTS),no)
+def-usbms.lst: pre-usbms.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 usbms/' > $@
+endif
+
+und-usbms.lst: pre-usbms.o
+	echo 'usbms' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+usbms_mod-disk_usbms.o: disk/usbms.c $(disk/usbms.c_DEPENDENCIES)
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(usbms_mod_CFLAGS) -MD -c -o $@ $<
+-include usbms_mod-disk_usbms.d
+
+CLEANFILES += cmd-usbms_mod-disk_usbms.lst fs-usbms_mod-disk_usbms.lst partmap-usbms_mod-disk_usbms.lst
+COMMANDFILES += cmd-usbms_mod-disk_usbms.lst
+FSFILES += fs-usbms_mod-disk_usbms.lst
+PARTMAPFILES += partmap-usbms_mod-disk_usbms.lst
+
+cmd-usbms_mod-disk_usbms.lst: disk/usbms.c $(disk/usbms.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbms_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh usbms > $@ || (rm -f $@; exit 1)
+
+fs-usbms_mod-disk_usbms.lst: disk/usbms.c $(disk/usbms.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbms_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh usbms > $@ || (rm -f $@; exit 1)
+
+partmap-usbms_mod-disk_usbms.lst: disk/usbms.c $(disk/usbms.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usbms_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh usbms > $@ || (rm -f $@; exit 1)
+
+
+usbms_mod_CFLAGS = $(COMMON_CFLAGS)
+usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For pxe.mod
 pxe_mod_SOURCES = fs/i386/pc/pxe.c

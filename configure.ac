@@ -382,6 +382,9 @@ AC_ARG_ENABLE([mm-debug],
 AC_ARG_ENABLE([grub-emu],
 	      [AS_HELP_STRING([--enable-grub-emu],
                              [build and install the `grub-emu' debugging utility])])
+AC_ARG_ENABLE([grub-emu-usb],
+	      [AS_HELP_STRING([--enable-grub-emu-usb],
+                             [build and install the `grub-emu' debugging utility with USB support])])
 [if [ x"$enable_grub_emu" = xyes ]; then
   # Check for curses libraries.]
   AC_CHECK_LIB([ncurses], [wgetch], [LIBCURSES="-lncurses"],
@@ -394,8 +397,20 @@ AC_ARG_ENABLE([grub-emu],
     [AC_CHECK_HEADERS([ncurses.h], [],
       [AC_CHECK_HEADERS([curses.h], [],
 	[AC_MSG_ERROR([(n)curses header files are required to build `grub-emu'])])])])
+
+  [if [ x"$enable_grub_emu_usb" = xyes ]; then
+    # Check for libusb libraries.]
+    AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
+      [AC_MSG_ERROR([libusb libraries are required to build `grub-emu' with USB support])])
+    AC_SUBST([LIBUSB])
+
+    [# Check for headers.]
+    AC_CHECK_HEADERS([usb.h], [],
+      [AC_MSG_ERROR([libusb header file is required to build `grub-emu' with USB support])])
+  [fi]
 [fi]
 AC_SUBST([enable_grub_emu])
+AC_SUBST([enable_grub_emu_usb])
 
 AC_ARG_ENABLE([grub-fstest],
 	      [AS_HELP_STRING([--enable-grub-fstest],
