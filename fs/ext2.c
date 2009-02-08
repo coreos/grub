@@ -73,7 +73,7 @@
 
 /* Superblock filesystem feature flags (RW compatible)
  * A filesystem with any of these enabled can be read and written by a driver
- * that does not understand them without causing metadata/data corruption */
+ * that does not understand them without causing metadata/data corruption.  */
 #define EXT2_FEATURE_COMPAT_DIR_PREALLOC	0x0001
 #define EXT2_FEATURE_COMPAT_IMAGIC_INODES	0x0002
 #define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
@@ -83,7 +83,7 @@
 /* Superblock filesystem feature flags (RO compatible)
  * A filesystem with any of these enabled can be safely read by a driver that
  * does not understand them, but should not be written to, usually because
- * additional metadata is required */
+ * additional metadata is required.  */
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
 #define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
@@ -93,7 +93,7 @@
 /* Superblock filesystem feature flags (back-incompatible)
  * A filesystem with any of these enabled should not be attempted to be read
  * by a driver that does not understand them, since they usually indicate
- * metadata format changes that might confuse the reader. */
+ * metadata format changes that might confuse the reader.  */
 #define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
 #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
@@ -104,17 +104,17 @@
 #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
 
 /* The set of back-incompatible features this driver DOES support. Add (OR)
- * flags here as the related features are implemented into the driver */
+ * flags here as the related features are implemented into the driver.  */
 #define EXT2_DRIVER_SUPPORTED_INCOMPAT ( EXT2_FEATURE_INCOMPAT_FILETYPE \
-                                       | EXT4_FEATURE_INCOMPAT_EXTENTS )
+                                       | EXT4_FEATURE_INCOMPAT_EXTENTS  \
+                                       | EXT4_FEATURE_INCOMPAT_FLEX_BG )
 /* List of rationales for the ignored "incompatible" features:
  * needs_recovery: Not really back-incompatible - was added as such to forbid
  *                 ext2 drivers from mounting an ext3 volume with a dirty
  *                 journal because they will ignore the journal, but the next
  *                 ext3 driver to mount the volume will find the journal and
  *                 replay it, potentially corrupting the metadata written by
- *                 the ext2 drivers
- */
+ *                 the ext2 drivers. Safe to ignore for this RO driver.  */
 #define EXT2_DRIVER_IGNORED_INCOMPAT ( EXT3_FEATURE_INCOMPAT_RECOVER )
 
 

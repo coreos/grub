@@ -1,5 +1,11 @@
 2009-02-08  Robert Millan  <rmh@aybabtu.com>
 
+	Patch from Javier Martín.
+	* fs/ext2.c (EXT2_DRIVER_SUPPORTED_INCOMPAT): Add
+	`EXT4_FEATURE_INCOMPAT_FLEX_BG'.
+
+2009-02-08  Robert Millan  <rmh@aybabtu.com>
+
 	* fs/cpio.c: Split tar functionality to ...
 	* fs/tar.c: ... here (new file).  Update all users.
 
