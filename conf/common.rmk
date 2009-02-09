@@ -14,7 +14,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	kern/parser.c kern/partition.c kern/file.c		\
 	\
-	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c		\
+	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c		\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
 	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c			\
@@ -34,7 +34,7 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
 	lib/hexdump.c lib/crc.c commands/blocklist.c commands/ls.c 	\
 	\
-	fs/affs.c fs/cpio.c fs/ext2.c fs/fat.c fs/hfs.c			\
+	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
 	fs/hfsplus.c fs/iso9660.c fs/udf.c fs/jfs.c fs/minix.c		\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
 	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c				\
