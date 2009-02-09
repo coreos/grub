@@ -1,3 +1,9 @@
+2009-02-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	fs/fat.c (grub_fat_mount): Try to avoid false positives by checking
+	bpb.version_specific.fat12_or_fat16.fstype and
+	bpb.version_specific.fat32.fstype.
+
 2009-02-08  Robert Millan  <rmh@aybabtu.com>
 
 	* fs/tar.c: Replace "fs/cpio.c" with "cpio.c".
