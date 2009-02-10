@@ -187,9 +187,9 @@ grub_fat_mount (grub_disk_t disk)
   if (grub_disk_read (disk, 0, 0, sizeof (bpb), (char *) &bpb))
     goto fail;
 
-  if (! grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT12",5)
-      || ! grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT16",5)
-      || ! grub_strncmp((const char *) bpb.version_specific.fat32.fstype, "FAT32",5))
+  if (grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT12", 5)
+      && grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT16", 5)
+      && grub_strncmp((const char *) bpb.version_specific.fat32.fstype, "FAT32", 5))
     goto fail;
   
   /* Get the sizes of logical sectors and clusters.  */
