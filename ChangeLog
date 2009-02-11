@@ -1,3 +1,7 @@
+2009-02-11  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/00_header.in: Update old reference to `font' command.
+
 2009-02-10  Felix Zielcke  <fzielcke@z-51.de>
 
 	* fs/fat.c (grub_fat_mount): Fix wrong comparison.
