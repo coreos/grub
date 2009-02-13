@@ -1,3 +1,67 @@
+2009-02-13  Colin D Bennett  <colin@gibibit.com>
+
+	Support multiple fallback entries, and provide an API to support
+	executing default+fallback menu entries.  Renamed the `terminal' menu
+	viewer to `text'.
+
+	* include/grub/normal.h (grub_normal_text_menu_viewer): New global
+	variable declaration.
+	(grub_menu_execute_callback): New structure declaration.
+	(grub_menu_execute_callback_t): New typedef.
+	(grub_menu_execute_with_fallback): New function declaration.
+	(grub_menu_get_entry): Likewise.
+	(grub_menu_get_timeout): Likewise.
+	(grub_menu_set_timeout): Likewise.
+
+	* normal/main.c (GRUB_MOD_INIT(normal)): Refer to new variable name.
+
+	* normal/menu.c (grub_wait_after_message): Moved to
+	`normal/menu_text.c'.
+	(draw_border): Likewise.
+	(print_message): Likewise.
+	(print_entry): Likewise.
+	(print_entries): Likewise.
+	(grub_menu_init_page): Likewise.
+	(get_entry_number): Likewise.
+	(print_timeout): Likewise.
+	(run_menu): Likewise.
+	(grub_menu_execute_entry): Likewise.
+	(show_text_menu): Likewise.
+	(get_and_remove_first_entry_number): New function.
+	(grub_menu_execute_with_fallback): Likewise.
+	(get_entry): Renamed to ...
+	(grub_menu_get_entry): .. this and made it global.
+	(get_timeout): Renamed to ...
+	(grub_menu_get_timeout): ... this and made it global.
+	(set_timeout): Renamed to ...
+	(grub_menu_set_timeout): ... this and made it global.
+	(grub_normal_terminal_menu_viewer): Renamed to ...
+	(grub_normal_text_menu_viewer): ... this.
+
+	* normal/menu_text.c: New file.  Extracted text-menu-specific code
+	from normal/menu.c.
+
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Add `normal/menu_text.c'.
+	(normal_mod_SOURCES): Likewise.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* conf/i386-pc.rmk, (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	(normal_mod_SOURCES): Likewise.
+
 2009-02-11  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/00_header.in: Update old reference to `font' command.

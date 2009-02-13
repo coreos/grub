@@ -79,7 +79,7 @@ struct grub_command
 
   /* The name of a module. Used for auto-loading.  */
   char *module_name;
-  
+
   /* The next element.  */
   struct grub_command *next;
 };
@@ -96,12 +96,39 @@ typedef struct grub_fs_module_list *grub_fs_module_list_t;
 /* To exit from the normal mode.  */
 extern grub_jmp_buf grub_exit_env;
 
-extern struct grub_menu_viewer grub_normal_terminal_menu_viewer;
+extern struct grub_menu_viewer grub_normal_text_menu_viewer;
+
+/* Callback structure menu viewers can use to provide user feedback when
+   default entries are executed, possibly including fallback entries.  */
+typedef struct grub_menu_execute_callback
+{
+  /* Called immediately before ENTRY is booted.  */
+  void (*notify_booting) (grub_menu_entry_t entry, void *userdata);
+
+  /* Called when executing one entry has failed, and another entry, ENTRY, will
+     be executed as a fallback.  The implementation of this function should
+     delay for a period of at least 2 seconds before returning in order to
+     allow the user time to read the information before it can be lost by
+     executing ENTRY.  */
+  void (*notify_fallback) (grub_menu_entry_t entry, void *userdata);
+
+  /* Called when an entry has failed to execute and there is no remaining
+     fallback entry to attempt.  */
+  void (*notify_failure) (void *userdata);
+}
+*grub_menu_execute_callback_t;
 
 void grub_enter_normal_mode (const char *config);
 void grub_normal_execute (const char *config, int nested);
+void grub_menu_execute_with_fallback (grub_menu_t menu,
+				      grub_menu_entry_t entry,
+				      grub_menu_execute_callback_t callback,
+				      void *callback_data);
 void grub_menu_entry_run (grub_menu_entry_t entry);
 void grub_menu_execute_entry(grub_menu_entry_t entry);
+grub_menu_entry_t grub_menu_get_entry (grub_menu_t menu, int no);
+int grub_menu_get_timeout (void);
+void grub_menu_set_timeout (int timeout);
 void grub_cmdline_run (int nested);
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);

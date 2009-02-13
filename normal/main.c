@@ -620,7 +620,7 @@ GRUB_MOD_INIT(normal)
   if (mod)
     grub_dl_ref (mod);
 
-  grub_menu_viewer_register (&grub_normal_terminal_menu_viewer);
+  grub_menu_viewer_register (&grub_normal_text_menu_viewer);
 
   grub_set_history (GRUB_DEFAULT_HISTORY_SIZE);
 
