@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (C) 2005, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2005, 2008, 2009  Free Software Foundation, Inc.
 #
 # This gendistlist.sh is free software; the author
 # gives unlimited permission to copy and/or distribute it,
@@ -34,7 +34,7 @@ dir=`dirname $0`
 cd $dir
 
 for dir in $DISTDIRS; do
-  for d in `find $dir -type d | sort`; do
+  for d in `find $dir -type d | sed '/\/\.svn$/d;\/\.svn\//d' | sort`; do
     find $d -maxdepth 1 -name '*.[chSy]' -o -name '*.mk' -o -name '*.rmk' \
       -o -name '*.rb' -o -name '*.in' -o -name '*.tex' -o -name '*.texi' \
       -o -name 'grub.cfg' -o -name 'README' -o -name '*.sc' -o -name 'mdate.sh' \

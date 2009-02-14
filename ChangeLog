@@ -1,3 +1,7 @@
+2009-02-14  Christian Franke  <franke@computer.org>
+
+	* gendistlist.sh: Ignore `.svn' directories.
+
 2009-02-14  Felix Zielcke  <fzielcke@z-51.de>
 
 	* fs/fat.c: Add 2009 to Copyright line.
