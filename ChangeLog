@@ -1,3 +1,9 @@
+2009-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Corrected wrong declaration
+
+	* kern/disk.c: corrected declaration of grub_disk_ata_pass_through.
+
 2009-02-14  Christian Franke  <franke@computer.org>
 
 	* commands/lspci.c (grub_pci_classes): Add `SATA Controller'.

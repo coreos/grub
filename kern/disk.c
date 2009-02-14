@@ -47,7 +47,7 @@ void (*grub_disk_firmware_fini) (void);
 int grub_disk_firmware_is_tainted;
 
 grub_err_t (* grub_disk_ata_pass_through) (grub_disk_t,
-	    struct grub_ata_pass_through_cmd *);
+	    struct grub_disk_ata_pass_through_parms *);
 
 
 #if 0
