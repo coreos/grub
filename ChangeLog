@@ -1,5 +1,10 @@
 2009-02-14  Christian Franke  <franke@computer.org>
 
+	* commands/lspci.c (grub_pci_classes): Add `SATA Controller'.
+	(grub_lspci_iter): Print class code and programming interface byte.
+
+2009-02-14  Christian Franke  <franke@computer.org>
+
 	* gendistlist.sh: Ignore `.svn' directories.
 
 2009-02-14  Felix Zielcke  <fzielcke@z-51.de>
