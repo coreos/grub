@@ -1,3 +1,41 @@
+2009-02-14  Christian Franke  <franke@computer.org>
+
+	* commands/hdparm.c: New file.  Provides `hdparm' command
+	which sends ATA commands via grub_disk_ata_pass_through ().
+
+	* conf/i386-pc.rmk: Add ata_pthru.mod and hdparm.mod.
+
+	* disk/ata.c: Include <grub/ata.h>.  Move <grub/misc.h>
+	and <grub/cpu/io.h> to include/grub/ata.h.
+	(enum grub_ata_addressing_t): Move to include/grub/ata.h.
+	(GRUB_CDROM_SECTOR_SIZE): Remove.
+	(GRUB_ATA_*): Move to include/grub/ata.h.
+	(GRUB_ATAPI_*): Likewise.
+	(enum grub_ata_commands): Likewise.
+	(enum grub_ata_timeout_milliseconds): Likewise.
+	(struct grub_ata_device): Likewise.
+	(grub_ata_regset): Likewise.
+	(grub_ata_regget): Likewise.
+	(grub_ata_regset2): Likewise.
+	(grub_ata_regget2): Likewise.
+	(grub_ata_check_ready): Likewise.
+	(grub_ata_wait_not_busy): Remove static, exported in
+	include/grub/ata.h.
+	(grub_ata_wait_drq): Likewise.
+	(grub_ata_pio_read): Likewise.
+
+	* disk/ata_pthru.c: New file.  Provides grub_ata_pass_through ()
+	function for hdparm.mod.
+
+	* include/grub/ata.h: New file, contains declarations from
+	disk/ata.c.
+	(enum grub_ata_commands): Add new commands for commands/hdparm.c.
+
+	* include/grub/disk.h (grub_disk_ata_pass_through_parms): New struct.
+	(grub_disk_ata_pass_through): New exported variable.
+
+	* kern/disk.c (grub_disk_ata_pass_through): New variable.
+
 2009-02-13  Colin D Bennett  <colin@gibibit.com>
 
 	Support multiple fallback entries, and provide an API to support

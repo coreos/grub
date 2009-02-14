@@ -979,7 +979,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod	\
 	ata.mod vga.mod memdisk.mod pci.mod lspci.mod \
 	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
-	datehook.mod lsmmap.mod \
+	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod
 
 # For biosdisk.mod.
@@ -3414,6 +3414,139 @@ partmap-lsmmap_mod-commands_lsmmap.lst: commands/lsmmap.c $(commands/lsmmap.c_DE
 
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For ata_pthru.mod.
+ata_pthru_mod_SOURCES = disk/ata_pthru.c
+CLEANFILES += ata_pthru.mod mod-ata_pthru.o mod-ata_pthru.c pre-ata_pthru.o ata_pthru_mod-disk_ata_pthru.o und-ata_pthru.lst
+ifneq ($(ata_pthru_mod_EXPORTS),no)
+CLEANFILES += def-ata_pthru.lst
+DEFSYMFILES += def-ata_pthru.lst
+endif
+MOSTLYCLEANFILES += ata_pthru_mod-disk_ata_pthru.d
+UNDSYMFILES += und-ata_pthru.lst
+
+ata_pthru.mod: pre-ata_pthru.o mod-ata_pthru.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(ata_pthru_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-ata_pthru.o mod-ata_pthru.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-ata_pthru.o: $(ata_pthru_mod_DEPENDENCIES) ata_pthru_mod-disk_ata_pthru.o
+	-rm -f $@
+	$(TARGET_CC) $(ata_pthru_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ ata_pthru_mod-disk_ata_pthru.o
+
+mod-ata_pthru.o: mod-ata_pthru.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_pthru_mod_CFLAGS) -c -o $@ $<
+
+mod-ata_pthru.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'ata_pthru' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(ata_pthru_mod_EXPORTS),no)
+def-ata_pthru.lst: pre-ata_pthru.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 ata_pthru/' > $@
+endif
+
+und-ata_pthru.lst: pre-ata_pthru.o
+	echo 'ata_pthru' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+ata_pthru_mod-disk_ata_pthru.o: disk/ata_pthru.c $(disk/ata_pthru.c_DEPENDENCIES)
+	$(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(ata_pthru_mod_CFLAGS) -MD -c -o $@ $<
+-include ata_pthru_mod-disk_ata_pthru.d
+
+CLEANFILES += cmd-ata_pthru_mod-disk_ata_pthru.lst fs-ata_pthru_mod-disk_ata_pthru.lst partmap-ata_pthru_mod-disk_ata_pthru.lst
+COMMANDFILES += cmd-ata_pthru_mod-disk_ata_pthru.lst
+FSFILES += fs-ata_pthru_mod-disk_ata_pthru.lst
+PARTMAPFILES += partmap-ata_pthru_mod-disk_ata_pthru.lst
+
+cmd-ata_pthru_mod-disk_ata_pthru.lst: disk/ata_pthru.c $(disk/ata_pthru.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_pthru_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh ata_pthru > $@ || (rm -f $@; exit 1)
+
+fs-ata_pthru_mod-disk_ata_pthru.lst: disk/ata_pthru.c $(disk/ata_pthru.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_pthru_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh ata_pthru > $@ || (rm -f $@; exit 1)
+
+partmap-ata_pthru_mod-disk_ata_pthru.lst: disk/ata_pthru.c $(disk/ata_pthru.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Idisk -I$(srcdir)/disk $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(ata_pthru_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh ata_pthru > $@ || (rm -f $@; exit 1)
+
+
+ata_pthru_mod_CFLAGS = $(COMMON_CFLAGS)
+ata_pthru_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For hdparm.mod.
+hdparm_mod_SOURCES = commands/hdparm.c lib/hexdump.c
+CLEANFILES += hdparm.mod mod-hdparm.o mod-hdparm.c pre-hdparm.o hdparm_mod-commands_hdparm.o hdparm_mod-lib_hexdump.o und-hdparm.lst
+ifneq ($(hdparm_mod_EXPORTS),no)
+CLEANFILES += def-hdparm.lst
+DEFSYMFILES += def-hdparm.lst
+endif
+MOSTLYCLEANFILES += hdparm_mod-commands_hdparm.d hdparm_mod-lib_hexdump.d
+UNDSYMFILES += und-hdparm.lst
+
+hdparm.mod: pre-hdparm.o mod-hdparm.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(hdparm_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-hdparm.o mod-hdparm.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-hdparm.o: $(hdparm_mod_DEPENDENCIES) hdparm_mod-commands_hdparm.o hdparm_mod-lib_hexdump.o
+	-rm -f $@
+	$(TARGET_CC) $(hdparm_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ hdparm_mod-commands_hdparm.o hdparm_mod-lib_hexdump.o
+
+mod-hdparm.o: mod-hdparm.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -c -o $@ $<
+
+mod-hdparm.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'hdparm' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(hdparm_mod_EXPORTS),no)
+def-hdparm.lst: pre-hdparm.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 hdparm/' > $@
+endif
+
+und-hdparm.lst: pre-hdparm.o
+	echo 'hdparm' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+hdparm_mod-commands_hdparm.o: commands/hdparm.c $(commands/hdparm.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -MD -c -o $@ $<
+-include hdparm_mod-commands_hdparm.d
+
+CLEANFILES += cmd-hdparm_mod-commands_hdparm.lst fs-hdparm_mod-commands_hdparm.lst partmap-hdparm_mod-commands_hdparm.lst
+COMMANDFILES += cmd-hdparm_mod-commands_hdparm.lst
+FSFILES += fs-hdparm_mod-commands_hdparm.lst
+PARTMAPFILES += partmap-hdparm_mod-commands_hdparm.lst
+
+cmd-hdparm_mod-commands_hdparm.lst: commands/hdparm.c $(commands/hdparm.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hdparm > $@ || (rm -f $@; exit 1)
+
+fs-hdparm_mod-commands_hdparm.lst: commands/hdparm.c $(commands/hdparm.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hdparm > $@ || (rm -f $@; exit 1)
+
+partmap-hdparm_mod-commands_hdparm.lst: commands/hdparm.c $(commands/hdparm.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh hdparm > $@ || (rm -f $@; exit 1)
+
+
+hdparm_mod-lib_hexdump.o: lib/hexdump.c $(lib/hexdump.c_DEPENDENCIES)
+	$(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -MD -c -o $@ $<
+-include hdparm_mod-lib_hexdump.d
+
+CLEANFILES += cmd-hdparm_mod-lib_hexdump.lst fs-hdparm_mod-lib_hexdump.lst partmap-hdparm_mod-lib_hexdump.lst
+COMMANDFILES += cmd-hdparm_mod-lib_hexdump.lst
+FSFILES += fs-hdparm_mod-lib_hexdump.lst
+PARTMAPFILES += partmap-hdparm_mod-lib_hexdump.lst
+
+cmd-hdparm_mod-lib_hexdump.lst: lib/hexdump.c $(lib/hexdump.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh hdparm > $@ || (rm -f $@; exit 1)
+
+fs-hdparm_mod-lib_hexdump.lst: lib/hexdump.c $(lib/hexdump.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh hdparm > $@ || (rm -f $@; exit 1)
+
+partmap-hdparm_mod-lib_hexdump.lst: lib/hexdump.c $(lib/hexdump.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(hdparm_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh hdparm > $@ || (rm -f $@; exit 1)
+
+
+hdparm_mod_CFLAGS = $(COMMON_CFLAGS)
+hdparm_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

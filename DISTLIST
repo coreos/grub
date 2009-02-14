@@ -49,6 +49,7 @@ commands/crc.c
 commands/date.c
 commands/echo.c
 commands/halt.c
+commands/hdparm.c
 commands/help.c
 commands/hexdump.c
 commands/loadenv.c
@@ -90,6 +91,7 @@ conf/sparc64-ieee1275.rmk
 conf/x86_64-efi.mk
 conf/x86_64-efi.rmk
 disk/ata.c
+disk/ata_pthru.c
 disk/dmraid_nvidia.c
 disk/fs_uuid.c
 disk/host.c
@@ -139,6 +141,7 @@ include/multiboot2.h
 include/grub/acorn_filecore.h
 include/grub/aout.h
 include/grub/arg.h
+include/grub/ata.h
 include/grub/bitmap.h
 include/grub/boot.h
 include/grub/bufio.h
