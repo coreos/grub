@@ -980,7 +980,7 @@ pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
 	ata.mod vga.mod memdisk.mod pci.mod lspci.mod \
 	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
-	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod
+	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
@@ -3053,6 +3053,63 @@ partmap-usbms_mod-disk_usbms.lst: disk/usbms.c $(disk/usbms.c_DEPENDENCIES) genp
 
 usbms_mod_CFLAGS = $(COMMON_CFLAGS)
 usbms_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For usb_keyboard.mod
+usb_keyboard_mod_SOURCES = term/usb_keyboard.c
+CLEANFILES += usb_keyboard.mod mod-usb_keyboard.o mod-usb_keyboard.c pre-usb_keyboard.o usb_keyboard_mod-term_usb_keyboard.o und-usb_keyboard.lst
+ifneq ($(usb_keyboard_mod_EXPORTS),no)
+CLEANFILES += def-usb_keyboard.lst
+DEFSYMFILES += def-usb_keyboard.lst
+endif
+MOSTLYCLEANFILES += usb_keyboard_mod-term_usb_keyboard.d
+UNDSYMFILES += und-usb_keyboard.lst
+
+usb_keyboard.mod: pre-usb_keyboard.o mod-usb_keyboard.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(usb_keyboard_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-usb_keyboard.o mod-usb_keyboard.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-usb_keyboard.o: $(usb_keyboard_mod_DEPENDENCIES) usb_keyboard_mod-term_usb_keyboard.o
+	-rm -f $@
+	$(TARGET_CC) $(usb_keyboard_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ usb_keyboard_mod-term_usb_keyboard.o
+
+mod-usb_keyboard.o: mod-usb_keyboard.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_keyboard_mod_CFLAGS) -c -o $@ $<
+
+mod-usb_keyboard.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'usb_keyboard' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(usb_keyboard_mod_EXPORTS),no)
+def-usb_keyboard.lst: pre-usb_keyboard.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 usb_keyboard/' > $@
+endif
+
+und-usb_keyboard.lst: pre-usb_keyboard.o
+	echo 'usb_keyboard' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+usb_keyboard_mod-term_usb_keyboard.o: term/usb_keyboard.c $(term/usb_keyboard.c_DEPENDENCIES)
+	$(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(usb_keyboard_mod_CFLAGS) -MD -c -o $@ $<
+-include usb_keyboard_mod-term_usb_keyboard.d
+
+CLEANFILES += cmd-usb_keyboard_mod-term_usb_keyboard.lst fs-usb_keyboard_mod-term_usb_keyboard.lst partmap-usb_keyboard_mod-term_usb_keyboard.lst
+COMMANDFILES += cmd-usb_keyboard_mod-term_usb_keyboard.lst
+FSFILES += fs-usb_keyboard_mod-term_usb_keyboard.lst
+PARTMAPFILES += partmap-usb_keyboard_mod-term_usb_keyboard.lst
+
+cmd-usb_keyboard_mod-term_usb_keyboard.lst: term/usb_keyboard.c $(term/usb_keyboard.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh usb_keyboard > $@ || (rm -f $@; exit 1)
+
+fs-usb_keyboard_mod-term_usb_keyboard.lst: term/usb_keyboard.c $(term/usb_keyboard.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh usb_keyboard > $@ || (rm -f $@; exit 1)
+
+partmap-usb_keyboard_mod-term_usb_keyboard.lst: term/usb_keyboard.c $(term/usb_keyboard.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iterm -I$(srcdir)/term $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(usb_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh usb_keyboard > $@ || (rm -f $@; exit 1)
+
+
+usb_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
+usb_keyboard_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For pxe.mod
 pxe_mod_SOURCES = fs/i386/pc/pxe.c

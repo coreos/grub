@@ -1,3 +1,13 @@
+2009-02-21  Robert Millan  <rmh@aybabtu.com>
+
+	Implement USB keyboard support (based on patch by Marco Gerards)
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Add `usb_keyboard.mod'.
+	(usb_keyboard_mod_SOURCES, usb_keyboard_mod_CFLAGS)
+	(usb_keyboard_mod_LDFLAGS): New variables.
+
+	* term/usb_keyboard.c: New file.
+
 2009-02-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Corrected wrong declaration
