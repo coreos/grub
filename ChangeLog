@@ -1,3 +1,10 @@
+2009-02-22  Vesa Jääskeläinen  <chaac@nic.fi>
+
+	Patch #25624 by Kevin Lacquement <kevin@lacqui>.
+
+	* util/grub-mkconfig.in: Use ${grub_mkdevicemap} instead of hard
+	coding tool name.
+
 2009-02-22  Robert Millan  <rmh@aybabtu.com>
 
 	* include/multiboot.h (MULTIBOOT_INFO_ALIGN): New macro.
