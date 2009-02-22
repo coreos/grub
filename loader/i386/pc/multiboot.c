@@ -1,7 +1,7 @@
 /* multiboot.c - boot a multiboot OS image. */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2004,2005,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -363,6 +363,7 @@ grub_multiboot (int argc, char *argv[])
   char buffer[MULTIBOOT_SEARCH], *cmdline = 0, *p;
   struct grub_multiboot_header *header;
   grub_ssize_t len;
+  grub_uint32_t mmap_length;
   int i;
 
   grub_loader_unset ();
@@ -417,14 +418,9 @@ grub_multiboot (int argc, char *argv[])
       playground = NULL;
     }
 
-  mbi = grub_malloc (sizeof (struct grub_multiboot_info));
-  if (! mbi)
-    goto fail;
+  mmap_length = grub_get_multiboot_mmap_len ();
 
-  grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
-
-  mbi->mmap_length = grub_get_multiboot_mmap_len ();
-  grub_multiboot_payload_size = mbi->mmap_length;
+  grub_multiboot_payload_size = sizeof (struct grub_multiboot_info) + mmap_length + MULTIBOOT_INFO_ALIGN;
 
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -462,6 +458,11 @@ grub_multiboot (int argc, char *argv[])
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
 
+  grub_multiboot_payload_size = ALIGN_UP (grub_multiboot_payload_size, MULTIBOOT_INFO_ALIGN);
+
+  mbi = grub_multiboot_payload_orig + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info);
+  grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
+  mbi->mmap_length = mmap_length;
       
   grub_fill_multiboot_mmap ((struct grub_multiboot_mmap_entry *) (grub_multiboot_payload_orig
 								  + grub_multiboot_payload_size

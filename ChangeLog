@@ -1,3 +1,10 @@
+2009-02-22  Robert Millan  <rmh@aybabtu.com>
+
+	* include/multiboot.h (MULTIBOOT_INFO_ALIGN): New macro.
+	* loader/i386/pc/multiboot.c (grub_multiboot): Include the MBI
+	in our relocation, instead of using it directly from heap.  Also
+	use `MULTIBOOT_INFO_ALIGN' to ensure it is aligned.
+
 2009-02-21  Robert Millan  <rmh@aybabtu.com>
 
 	Implement USB keyboard support (based on patch by Marco Gerards)
