@@ -1,7 +1,7 @@
 /* startup.S - bootstrap GRUB itself */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -55,9 +55,8 @@ VARIABLE(grub_prefix)
         . = EXT_C(start) + 0x50
 
 codestart:
-
-	movq	%rcx, EXT_C(grub_efi_image_handle)
-	movq	%rdx, EXT_C(grub_efi_system_table)
+	movq	%rcx, EXT_C(grub_efi_image_handle)(%rip)
+	movq	%rdx, EXT_C(grub_efi_system_table)(%rip)
 
 	call	EXT_C(grub_main)
 	ret

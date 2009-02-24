@@ -1,3 +1,50 @@
+2009-02-24  Bean  <bean123ch@gmail.com>
+
+	* configure.ac: Check for -mcmodel=large in x86_64 target.
+
+	* include/grub/efi/api.h (efi_call_10): New macro.
+	(efi_wrap_10): New function.
+
+	* include/grub/efi/pe32.h (GRUB_PE32_REL_BASE_HIGH): New macro.
+	(GRUB_PE32_REL_BASED_HIGH): Likewise.
+	(GRUB_PE32_REL_BASED_LOW): Likewise.
+	(GRUB_PE32_REL_BASED_HIGHLOW): Likewise.
+	(GRUB_PE32_REL_BASED_HIGHADJ): Likewise.
+	(GRUB_PE32_REL_BASED_MIPS_JMPADDR): Likewise.
+	(GRUB_PE32_REL_BASED_SECTION): Likewise.
+	(GRUB_PE32_REL_BASED_REL): Likewise.
+	(GRUB_PE32_REL_BASED_IA64_IMM64): Likewise.
+	(GRUB_PE32_REL_BASED_DIR64): Likewise.
+	(GRUB_PE32_REL_BASED_HIGH3ADJ): Likewise.
+
+	* kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Fixed relocation
+	issue.
+
+	* kern/x86_64/efi/callwrap.S (efi_wrap_6): Bug fix.
+	(efi_wrap_10): New function.
+
+	* kern/x86_64/efi/startup.S (codestart): Use relative addressing.
+
+	* loader/efi/appleloader.c (devpath_5): Add support for late 2008
+	MB/MBP model (NV chipset).
+	(devdata_devs): Add devpath_5 to the list.
+
+	* load/i386/efi/linux.c (video_base): Remove variable.
+	(RGB_MASK): New macro.
+	(RGB_MAGIC): Likewise.
+	(LINE_MIN): Likewise.
+	(LINE_MAX): Likewise.
+	(FBTEST_STEP): Likewise.
+	(FBTEST_COUNT): Likewise.
+	(fb_list): New variable.
+	(grub_find_video_card): Remove function.
+	(find_framebuf): New function.
+	(grub_linux_setup_video): Use find_framebuf to get frame buffer and
+	line length.
+
+	* util/i386/efi/grub-mkimage.c (grub_reloc_section): Fix relocation
+	problem for x86_64.
+
 2009-02-22  Vesa Jääskeläinen  <chaac@nic.fi>
 
 	Patch #25624 by Kevin Lacquement <kevin@lacqui>.

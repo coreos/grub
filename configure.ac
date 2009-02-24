@@ -299,7 +299,16 @@ fi
 
 if test "x$target_m64" = x1; then
   # Force 64-bit mode.
-  TARGET_CFLAGS="$TARGET_CFLAGS -m64"
+  AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
+    CFLAGS="-m64 -mcmodel=large"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_mcmodel=yes],
+		      [grub_cv_cc_mcmodel=no])
+  ])
+  if test "x$grub_cv_cc_mcmodel" = xno; then
+    AC_MSG_ERROR([-mcmodel=large not supported, upgrade your gcc])
+  fi
+  TARGET_CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
 fi
 

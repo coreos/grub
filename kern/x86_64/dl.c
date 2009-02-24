@@ -97,17 +97,17 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		switch (ELF64_R_TYPE (rel->r_info))
 		  {
 		  case R_X86_64_64:
-		    *addr64 = rel->r_addend + sym->st_value;
+		    *addr64 += rel->r_addend + sym->st_value;
 		    break;
 
 		  case R_X86_64_PC32:
-		    *addr32 = rel->r_addend + sym->st_value -
+		    *addr32 += rel->r_addend + sym->st_value -
 		              (Elf64_Xword) seg->addr - rel->r_offset;
 		    break;
 
                   case R_X86_64_32:
                   case R_X86_64_32S:
-                    *addr32 = rel->r_addend + sym->st_value;
+                    *addr32 += rel->r_addend + sym->st_value;
                     break;
 
                   default:

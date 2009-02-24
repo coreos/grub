@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2004,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2004,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -807,17 +807,21 @@ make_reloc_section (FILE *out, Elf_Addr current_address, Elf_Ehdr *e,
 						   out);
 	      }
 #else
-	    if ((ELF_R_TYPE (info) == R_X86_64_64) ||
-                (ELF_R_TYPE (info) == R_X86_64_32) ||
+	    if ((ELF_R_TYPE (info) == R_X86_64_32) ||
                 (ELF_R_TYPE (info) == R_X86_64_32S))
+	      {
+		grub_util_error ("Can\'t add fixup entry for R_X86_64_32(S)");
+	      }
+	    else if (ELF_R_TYPE (info) == R_X86_64_64)
 	      {
 		Elf_Addr addr;
 
 		addr = section_address + offset;
 		grub_util_info ("adding a relocation entry for 0x%llx", addr);
 		current_address = add_fixup_entry (&fixup_block,
-						   GRUB_PE32_REL_BASED_HIGHLOW,
-						   addr, 0, current_address,
+						   GRUB_PE32_REL_BASED_DIR64,
+						   addr,
+						   0, current_address,
 						   out);
 	      }
 #endif

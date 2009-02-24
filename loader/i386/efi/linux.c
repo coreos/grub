@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/efi/uga_draw.h>
-#include <grub/pci.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -458,68 +457,59 @@ grub_linux_unload (void)
   return GRUB_ERR_NONE;
 }
 
-grub_uint64_t video_base;
+static grub_efi_guid_t uga_draw_guid = GRUB_EFI_UGA_DRAW_GUID;
+
+
+#define RGB_MASK	0xffffff
+#define RGB_MAGIC	0x121314
+#define LINE_MIN	800
+#define LINE_MAX	4096
+#define FBTEST_STEP	(0x10000 >> 2)
+#define FBTEST_COUNT	8
+
+static grub_uint32_t fb_list[]=
+  {0x40000000, 0x80000000, 0xc0000000, 0};
 
 static int
-grub_find_video_card (int bus, int dev, int func,
-                      grub_pci_id_t pciid __attribute__ ((unused)))
+find_framebuf (grub_uint32_t *fb_base, grub_uint32_t *line_len)
 {
-  grub_pci_address_t addr;
+  grub_uint32_t *fb;
 
-  addr = grub_pci_make_address (bus, dev, func, 2);
-
-  if (grub_pci_read (addr) >> 24 == 0x3)
+  for (fb = fb_list; *fb; fb++)
     {
+      grub_uint32_t *base = (grub_uint32_t *) (grub_target_addr_t) *fb;
       int i;
 
-      addr = grub_pci_make_address (bus, dev, func, 4);
-      for (i = 0; i < 6; i++, addr += 4)
+      for (i = 0; i < FBTEST_COUNT; i++, base += FBTEST_STEP)
         {
-          grub_uint32_t base, type;
+	  if ((*base & RGB_MASK) == RGB_MAGIC)
+	    {
+	      int j;
 
-          base = grub_pci_read (addr);
-
-          if ((base == 0) || (base == 0xffffffff) ||
-              (base & GRUB_PCI_ADDR_SPACE_IO))
-            continue;
-
-          type = base & GRUB_PCI_ADDR_MEM_TYPE_MASK;
-          if (! (addr & GRUB_PCI_ADDR_MEM_PREFETCH))
+	      for (j = LINE_MIN; j <= LINE_MAX; j++)
             {
-              if (type == GRUB_PCI_ADDR_MEM_TYPE_64)
+		  if ((base[j] & RGB_MASK) == RGB_MAGIC)
                 {
-                  i++;
-                  addr +=4 ;
+		      *fb_base = (grub_uint32_t) (grub_target_addr_t) base;
+		      *line_len = j << 2;
+
+		      return 0;
                 }
-              continue;
             }
 
-          base &= GRUB_PCI_ADDR_MEM_MASK;
-          if (type == GRUB_PCI_ADDR_MEM_TYPE_64)
-            {
-              if (i == 5)
                 break;
-
-              video_base = grub_pci_read (addr + 4);
-              video_base <<= 32;
             }
-
-          video_base |= base;
-
-          return 1;
         }
     }
-
-  return 0;
+  return 1;
 }
-
-static grub_efi_guid_t uga_draw_guid = GRUB_EFI_UGA_DRAW_GUID;
 
 static int
 grub_linux_setup_video (struct linux_kernel_params *params)
 {
   grub_efi_uga_draw_protocol_t *c;
-  grub_uint32_t width, height, depth, rate;
+  grub_uint32_t width, height, depth, rate, pixel, fb_base, line_len;
+  int ret;
 
   c = grub_efi_locate_protocol (&uga_draw_guid, 0);
   if (! c)
@@ -530,26 +520,29 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 
   grub_printf ("Video mode: %ux%u-%u@%u\n", width, height, depth, rate);
 
-  video_base = 0;
-  grub_pci_iterate (grub_find_video_card);
+  grub_efi_set_text_mode (0);
+  pixel = RGB_MAGIC;
+  efi_call_10 (c->blt, c, &pixel, GRUB_EFI_UGA_VIDEO_FILL,
+	       0, 0, 0, 0, 1, height, 0);
+  ret = find_framebuf (&fb_base, &line_len);
+  grub_efi_set_text_mode (1);
 
-  if (! video_base)
+  if (ret)
     {
       grub_printf ("Can\'t find frame buffer address\n");
       return 1;
     }
 
-  grub_printf ("Video frame buffer: %llx\n", (unsigned long long) video_base);
+  grub_printf ("Video frame buffer: 0x%x\n", fb_base);
+  grub_printf ("Video line length: %d\n", line_len);
 
   params->lfb_width = width;
   params->lfb_height = height;
   params->lfb_depth = depth;
+  params->lfb_line_len = line_len;
 
-  /* FIXME: shouldn't use fixed value.  */
-  params->lfb_line_len = 8192;
-
-  params->lfb_base = video_base;
-  params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
+  params->lfb_base = fb_base;
+  params->lfb_size = (line_len * params->lfb_height + 65535) >> 16;
 
   params->red_mask_size = 8;
   params->red_field_pos = 16;

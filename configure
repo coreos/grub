@@ -6774,7 +6774,64 @@ fi
 
 if test "x$target_m64" = x1; then
   # Force 64-bit mode.
-  TARGET_CFLAGS="$TARGET_CFLAGS -m64"
+  { echo "$as_me:$LINENO: checking whether option -mcmodel=large works" >&5
+echo $ECHO_N "checking whether option -mcmodel=large works... $ECHO_C" >&6; }
+if test "${grub_cv_cc_mcmodel+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+    CFLAGS="-m64 -mcmodel=large"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  grub_cv_cc_mcmodel=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	grub_cv_cc_mcmodel=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ echo "$as_me:$LINENO: result: $grub_cv_cc_mcmodel" >&5
+echo "${ECHO_T}$grub_cv_cc_mcmodel" >&6; }
+  if test "x$grub_cv_cc_mcmodel" = xno; then
+    { { echo "$as_me:$LINENO: error: -mcmodel=large not supported, upgrade your gcc" >&5
+echo "$as_me: error: -mcmodel=large not supported, upgrade your gcc" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  TARGET_CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large"
   TARGET_LDFLAGS="$TARGET_LDFLAGS -m64"
 fi
 
