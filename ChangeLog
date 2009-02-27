@@ -1,3 +1,8 @@
+2009-02-27  Krzysztof Smiechowicz <deadwood@wp.pl>
+
+	* fs/sfs.c (grub_sfs_read_extent): Correction to traversing extent
+	b-tree.
+
 2009-02-27  Robert Millan  <rmh@aybabtu.com>
 
 	* kern/misc.c (grub_strtoull): Fix bug (it mistakenly parsed the
