@@ -1,3 +1,8 @@
+2009-02-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't leak in SCSI code.
+	* disk/scsi.c (grub_scsi_close): free `scsi'.
+
 2009-02-27  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/pc/multiboot.c: Move from here ...

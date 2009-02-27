@@ -312,7 +312,8 @@ grub_scsi_close (grub_disk_t disk)
   grub_scsi_t scsi;
 
   scsi = disk->data;
-  return scsi->dev->close (scsi);
+  scsi->dev->close (scsi);
+  grub_free (scsi);
 }
 
 static grub_err_t
