@@ -124,180 +124,13 @@ grub_fill_multiboot_mmap (struct grub_multiboot_mmap_entry *first_entry)
   grub_machine_mmap_iterate (hook);
 }
 
-/* Check if BUFFER contains ELF32.  */
-static int
-grub_multiboot_is_elf32 (void *buffer)
-{
-  Elf32_Ehdr *ehdr = (Elf32_Ehdr *) buffer;
+#define MULTIBOOT_LOAD_ELF64
+#include "multiboot_elfxx.c"
+#undef MULTIBOOT_LOAD_ELF64
 
-  return ehdr->e_ident[EI_CLASS] == ELFCLASS32;
-}
-
-static grub_err_t
-grub_multiboot_load_elf32 (grub_file_t file, void *buffer)
-{
-  Elf32_Ehdr *ehdr = (Elf32_Ehdr *) buffer;
-  char *phdr_base;
-  int lowest_segment = 0, highest_segment = 0;
-  int i;
-
-  if (ehdr->e_ident[EI_CLASS] != ELFCLASS32)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
-
-  if (grub_dl_check_header (ehdr, sizeof(Elf32_Ehdr)))
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
-
-  if (ehdr->e_type != ET_EXEC)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
-
-  /* FIXME: Should we support program headers at strange locations?  */
-  if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
-    return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
-
-  phdr_base = (char *) buffer + ehdr->e_phoff;
-#define phdr(i)			((Elf32_Phdr *) (phdr_base + (i) * ehdr->e_phentsize))
-
-  for (i = 0; i < ehdr->e_phnum; i++)
-    if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
-      {
-	if (phdr(i)->p_paddr < phdr(lowest_segment)->p_paddr)
-	  lowest_segment = i;
-	if (phdr(i)->p_paddr > phdr(highest_segment)->p_paddr)
-	  highest_segment = i;
-      }
-  grub_multiboot_payload_size += (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
-  grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
-
-  playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
-  if (! playground)
-    return grub_errno;
-
-  grub_multiboot_payload_orig = (long) playground + RELOCATOR_SIZEOF(forward);
-
-  /* Load every loadable segment in memory.  */
-  for (i = 0; i < ehdr->e_phnum; i++)
-    {
-      if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
-        {
-	  char *load_this_module_at = (char *) (grub_multiboot_payload_orig + (phdr(i)->p_paddr - phdr(lowest_segment)->p_paddr));
-
-	  grub_dprintf ("multiboot_loader", "segment %d: paddr=%p, memsz=0x%x\n",
-			i, (void *) phdr(i)->p_paddr, phdr(i)->p_memsz);
-
-	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
-	      == (grub_off_t) -1)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "invalid offset in program header");
-
-          if (grub_file_read (file, load_this_module_at, phdr(i)->p_filesz)
-              != (grub_ssize_t) phdr(i)->p_filesz)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "couldn't read segment from file");
-
-          if (phdr(i)->p_filesz < phdr(i)->p_memsz)
-            grub_memset (load_this_module_at + phdr(i)->p_filesz, 0,
-			 phdr(i)->p_memsz - phdr(i)->p_filesz);
-        }
-    }
-
-  grub_multiboot_payload_entry_offset = ehdr->e_entry - phdr(lowest_segment)->p_vaddr;
-
-#undef phdr
-
-  return grub_errno;
-}
-
-/* Check if BUFFER contains ELF64.  */
-static int
-grub_multiboot_is_elf64 (void *buffer)
-{
-  Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
-
-  return ehdr->e_ident[EI_CLASS] == ELFCLASS64;
-}
-
-static grub_err_t
-grub_multiboot_load_elf64 (grub_file_t file, void *buffer)
-{
-  Elf64_Ehdr *ehdr = (Elf64_Ehdr *) buffer;
-  char *phdr_base;
-  grub_addr_t physical_entry_addr = 0;
-  int i;
-
-  if (ehdr->e_ident[EI_CLASS] != ELFCLASS64)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF class");
-
-  if (ehdr->e_ident[EI_MAG0] != ELFMAG0
-      || ehdr->e_ident[EI_MAG1] != ELFMAG1
-      || ehdr->e_ident[EI_MAG2] != ELFMAG2
-      || ehdr->e_ident[EI_MAG3] != ELFMAG3
-      || ehdr->e_version != EV_CURRENT
-      || ehdr->e_ident[EI_DATA] != ELFDATA2LSB
-      || ehdr->e_machine != EM_X86_64)
-    return grub_error(GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
-
-  if (ehdr->e_type != ET_EXEC)
-    return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
-
-  /* FIXME: Should we support program headers at strange locations?  */
-  if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
-    return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
-
-  /* We still in 32-bit mode */
-  if (ehdr->e_entry > 0xffffffff)
-    return grub_error (GRUB_ERR_BAD_OS, "invalid entry point for ELF64");
-
-  entry = ehdr->e_entry;
-
-  phdr_base = (char *) buffer + ehdr->e_phoff;
-#define phdr(i)			((Elf64_Phdr *) (phdr_base + (i) * ehdr->e_phentsize))
-
-  /* Load every loadable segment in memory.  */
-  for (i = 0; i < ehdr->e_phnum; i++)
-    {
-      if (phdr(i)->p_type == PT_LOAD)
-        {
-          /* The segment should fit in the area reserved for the OS.  */
-          if (phdr(i)->p_paddr < (grub_uint64_t) grub_os_area_addr)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "segment doesn't fit in memory reserved for the OS (0x%lx < 0x%lx)",
-			       phdr(i)->p_paddr, (grub_uint64_t) grub_os_area_addr);
-          if (phdr(i)->p_paddr + phdr(i)->p_memsz
-		  > (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "segment doesn't fit in memory reserved for the OS (0x%lx > 0x%lx)",
-			       phdr(i)->p_paddr + phdr(i)->p_memsz,
-			       (grub_uint64_t) grub_os_area_addr + (grub_uint64_t) grub_os_area_size);
-
-	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
-	      == (grub_off_t) -1)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "invalid offset in program header");
-
-	  if (grub_file_read (file, (void *) ((grub_uint32_t) phdr(i)->p_paddr),
-			      phdr(i)->p_filesz)
-              != (grub_ssize_t) phdr(i)->p_filesz)
-	    return grub_error (GRUB_ERR_BAD_OS,
-			       "couldn't read segment from file");
-
-          if (phdr(i)->p_filesz < phdr(i)->p_memsz)
-	    grub_memset (((char *) ((grub_uint32_t) phdr(i)->p_paddr)
-			  + phdr(i)->p_filesz),
-			 0,
-			 phdr(i)->p_memsz - phdr(i)->p_filesz);
-
-	  if ((entry >= phdr(i)->p_vaddr) &&
-	      (entry < phdr(i)->p_vaddr + phdr(i)->p_memsz))
-	    physical_entry_addr = entry + phdr(i)->p_paddr - phdr(i)->p_vaddr;
-        }
-    }
-#undef phdr
-
-  if (physical_entry_addr)
-    entry = physical_entry_addr;
-
-  return grub_errno;
-}
+#define MULTIBOOT_LOAD_ELF32
+#include "multiboot_elfxx.c"
+#undef MULTIBOOT_LOAD_ELF32
 
 /* Load ELF32 or ELF64.  */
 static grub_err_t
@@ -460,7 +293,7 @@ grub_multiboot (int argc, char *argv[])
 
   grub_multiboot_payload_size = ALIGN_UP (grub_multiboot_payload_size, MULTIBOOT_INFO_ALIGN);
 
-  mbi = grub_multiboot_payload_orig + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info);
+  mbi = (void *) (grub_multiboot_payload_orig + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info));
   grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
   mbi->mmap_length = mmap_length;
       

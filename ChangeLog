@@ -1,5 +1,16 @@
 2009-02-27  Robert Millan  <rmh@aybabtu.com>
 
+	Factorize elf32 / elf64 code in Multiboot loader.  This will
+	prevent it from getting out of sync again.
+
+	* loader/i386/multiboot.c (grub_multiboot_is_elf32,
+	grub_multiboot_load_elf32, grub_multiboot_is_elf64,
+	grub_multiboot_load_elf64): Move from here ...
+	* loader/i386/multiboot_elfxx.c (grub_multiboot_is_elf,
+	grub_multiboot_load_elf): ... to here (new file).
+
+2009-02-27  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/10_linux.in: Rename "single-user mode" to
 	"recovery mode".
 
