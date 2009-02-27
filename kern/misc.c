@@ -438,7 +438,7 @@ grub_strtoull (const char *str, char **end, int base)
   
   /* Guess the base, if not specified. The prefix `0x' means 16, and
      the prefix `0' means 8.  */
-  if (base == 0 && str[0] == '0')
+  if (str[0] == '0')
     {
       if (str[1] == 'x')
 	{
@@ -448,7 +448,7 @@ grub_strtoull (const char *str, char **end, int base)
 	      str += 2;
 	    }
 	}
-      else if (str[1] >= '0' && str[1] <= '7')
+      else if (base == 0 && str[1] >= '0' && str[1] <= '7')
 	base = 8;
     }
   

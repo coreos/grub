@@ -1,3 +1,8 @@
+2009-02-27  Robert Millan  <rmh@aybabtu.com>
+
+	* kern/misc.c (grub_strtoull): Fix bug (it mistakenly parsed the
+	`0x' qualifier as 0 when base is specified as parameter).
+
 2009-02-24  Bean  <bean123ch@gmail.com>
 
 	* configure.ac: Check for -mcmodel=large in x86_64 target.
