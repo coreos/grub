@@ -1296,16 +1296,16 @@ serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _multiboot.mod.
-_multiboot_mod_SOURCES = loader/i386/pc/multiboot.c \
+_multiboot_mod_SOURCES = loader/i386/multiboot.c \
                          loader/i386/pc/multiboot2.c \
                          loader/multiboot2.c \
                          loader/multiboot_loader.c
-CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_i386_pc_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o und-_multiboot.lst
+CLEANFILES += _multiboot.mod mod-_multiboot.o mod-_multiboot.c pre-_multiboot.o _multiboot_mod-loader_i386_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o und-_multiboot.lst
 ifneq ($(_multiboot_mod_EXPORTS),no)
 CLEANFILES += def-_multiboot.lst
 DEFSYMFILES += def-_multiboot.lst
 endif
-MOSTLYCLEANFILES += _multiboot_mod-loader_i386_pc_multiboot.d _multiboot_mod-loader_i386_pc_multiboot2.d _multiboot_mod-loader_multiboot2.d _multiboot_mod-loader_multiboot_loader.d
+MOSTLYCLEANFILES += _multiboot_mod-loader_i386_multiboot.d _multiboot_mod-loader_i386_pc_multiboot2.d _multiboot_mod-loader_multiboot2.d _multiboot_mod-loader_multiboot_loader.d
 UNDSYMFILES += und-_multiboot.lst
 
 _multiboot.mod: pre-_multiboot.o mod-_multiboot.o $(TARGET_OBJ2ELF)
@@ -1314,9 +1314,9 @@ _multiboot.mod: pre-_multiboot.o mod-_multiboot.o $(TARGET_OBJ2ELF)
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_i386_pc_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
+pre-_multiboot.o: $(_multiboot_mod_DEPENDENCIES) _multiboot_mod-loader_i386_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
 	-rm -f $@
-	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _multiboot_mod-loader_i386_pc_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
+	$(TARGET_CC) $(_multiboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ _multiboot_mod-loader_i386_multiboot.o _multiboot_mod-loader_i386_pc_multiboot2.o _multiboot_mod-loader_multiboot2.o _multiboot_mod-loader_multiboot_loader.o
 
 mod-_multiboot.o: mod-_multiboot.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -c -o $@ $<
@@ -1333,23 +1333,23 @@ und-_multiboot.lst: pre-_multiboot.o
 	echo '_multiboot' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-_multiboot_mod-loader_i386_pc_multiboot.o: loader/i386/pc/multiboot.c $(loader/i386/pc/multiboot.c_DEPENDENCIES)
-	$(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
--include _multiboot_mod-loader_i386_pc_multiboot.d
+_multiboot_mod-loader_i386_multiboot.o: loader/i386/multiboot.c $(loader/i386/multiboot.c_DEPENDENCIES)
+	$(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -MD -c -o $@ $<
+-include _multiboot_mod-loader_i386_multiboot.d
 
-CLEANFILES += cmd-_multiboot_mod-loader_i386_pc_multiboot.lst fs-_multiboot_mod-loader_i386_pc_multiboot.lst partmap-_multiboot_mod-loader_i386_pc_multiboot.lst
-COMMANDFILES += cmd-_multiboot_mod-loader_i386_pc_multiboot.lst
-FSFILES += fs-_multiboot_mod-loader_i386_pc_multiboot.lst
-PARTMAPFILES += partmap-_multiboot_mod-loader_i386_pc_multiboot.lst
+CLEANFILES += cmd-_multiboot_mod-loader_i386_multiboot.lst fs-_multiboot_mod-loader_i386_multiboot.lst partmap-_multiboot_mod-loader_i386_multiboot.lst
+COMMANDFILES += cmd-_multiboot_mod-loader_i386_multiboot.lst
+FSFILES += fs-_multiboot_mod-loader_i386_multiboot.lst
+PARTMAPFILES += partmap-_multiboot_mod-loader_i386_multiboot.lst
 
-cmd-_multiboot_mod-loader_i386_pc_multiboot.lst: loader/i386/pc/multiboot.c $(loader/i386/pc/multiboot.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
+cmd-_multiboot_mod-loader_i386_multiboot.lst: loader/i386/multiboot.c $(loader/i386/multiboot.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
-fs-_multiboot_mod-loader_i386_pc_multiboot.lst: loader/i386/pc/multiboot.c $(loader/i386/pc/multiboot.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
+fs-_multiboot_mod-loader_i386_multiboot.lst: loader/i386/multiboot.c $(loader/i386/multiboot.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
-partmap-_multiboot_mod-loader_i386_pc_multiboot.lst: loader/i386/pc/multiboot.c $(loader/i386/pc/multiboot.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iloader/i386/pc -I$(srcdir)/loader/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh _multiboot > $@ || (rm -f $@; exit 1)
+partmap-_multiboot_mod-loader_i386_multiboot.lst: loader/i386/multiboot.c $(loader/i386/multiboot.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iloader/i386 -I$(srcdir)/loader/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(_multiboot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh _multiboot > $@ || (rm -f $@; exit 1)
 
 
 _multiboot_mod-loader_i386_pc_multiboot2.o: loader/i386/pc/multiboot2.c $(loader/i386/pc/multiboot2.c_DEPENDENCIES)

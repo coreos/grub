@@ -1,5 +1,10 @@
 2009-02-27  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/pc/multiboot.c: Move from here ...
+	* loader/i386/multiboot.c: ... to here.  Update all users.
+
+2009-02-27  Robert Millan  <rmh@aybabtu.com>
+
 	Patch from Alexandre Bique <bique.alexandre@gmail.com>
 	* util/i386/pc/grub-setup.c (setup): Fix directory path.
 
