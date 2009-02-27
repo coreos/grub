@@ -1,3 +1,8 @@
+2009-02-27  Robert Millan  <rmh@aybabtu.com>
+
+	Patch from Alexandre Bique <bique.alexandre@gmail.com>
+	* util/i386/pc/grub-setup.c (setup): Fix directory path.
+
 2009-02-27  Krzysztof Smiechowicz <deadwood@wp.pl>
 
 	* fs/sfs.c (grub_sfs_read_extent): Correction to traversing extent
