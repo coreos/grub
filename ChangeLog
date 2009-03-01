@@ -1,5 +1,20 @@
 2009-03-01  Bean  <bean123ch@gmail.com>
 
+	* include/grub/efi/api.h (GRUB_EFI_MPS_TABALE_GUID): New constant.
+	(GRUB_EFI_ACPI_TABLE_GUID): Likewise.
+	(GRUB_EFI_ACPI_20_TABLE_GUID): Likewise.
+	(GRUB_EFI_SMBIOS_TABLE_GUID): Likewise.
+
+	* loader/i386/efi/linux.c (acpi_guid): New variable.
+	(acpi_guid): Likewise.
+	(EBDA_SEG_ADDR): New constant.
+	(LOW_MEM_ADDR): Likewise.
+	(FAKE_EBDA_SEG): Likewise.
+	(fake_bios_data): New function.
+	(grub_linux_boot): Call fake_bios_data.
+
+2009-03-01  Bean  <bean123ch@gmail.com>
+
 	* commands/terminal.c: Removed.
 
 	* commands/handler.c: New file.

@@ -283,6 +283,57 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
     }
 }
 
+static grub_efi_guid_t acpi_guid = GRUB_EFI_ACPI_TABLE_GUID;
+static grub_efi_guid_t acpi2_guid = GRUB_EFI_ACPI_20_TABLE_GUID;
+
+#define EBDA_SEG_ADDR	0x40e
+#define LOW_MEM_ADDR	0x413
+#define FAKE_EBDA_SEG	0x9fc0
+
+static void
+fake_bios_data (void)
+{
+  unsigned i;
+  void *acpi;
+  grub_uint16_t *ebda_seg_ptr, *low_mem_ptr;
+
+  acpi = 0;
+  for (i = 0; i < grub_efi_system_table->num_table_entries; i++)
+    {
+      grub_efi_guid_t *guid =
+	&grub_efi_system_table->configuration_table[i].vendor_guid;
+
+      if (! grub_memcmp (guid, &acpi2_guid, sizeof (grub_efi_guid_t)))
+	{
+	  acpi = grub_efi_system_table->configuration_table[i].vendor_table;
+	  grub_printf ("ACPI2: %p\n", acpi);
+	}
+      else if (! grub_memcmp (guid, &acpi_guid, sizeof (grub_efi_guid_t)))
+	{
+	  void *t;
+
+	  t = grub_efi_system_table->configuration_table[i].vendor_table;
+	  if (! acpi)
+	    acpi = t;
+	  grub_printf ("ACPI: %p\n", t);
+	}
+    }
+
+  if (acpi == 0)
+    return;
+
+  ebda_seg_ptr = (grub_uint16_t *) EBDA_SEG_ADDR;
+  low_mem_ptr = (grub_uint16_t *) LOW_MEM_ADDR;
+
+  if ((*ebda_seg_ptr) || (*low_mem_ptr))
+    return;
+
+  *ebda_seg_ptr = FAKE_EBDA_SEG;
+  *low_mem_ptr = FAKE_EBDA_SEG >> 6;
+
+  grub_memcpy ((char *) (FAKE_EBDA_SEG << 4), acpi, 1024);
+}
+
 #ifdef __x86_64__
 struct
 {
@@ -302,6 +353,8 @@ grub_linux_boot (void)
   grub_efi_memory_descriptor_t *desc;
   int e820_num;
   
+  fake_bios_data ();
+
   params = real_mode_mem;
 
   grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
@@ -522,8 +575,8 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 
   grub_efi_set_text_mode (0);
   pixel = RGB_MAGIC;
-  efi_call_10 (c->blt, c, &pixel, GRUB_EFI_UGA_VIDEO_FILL,
-	       0, 0, 0, 0, 1, height, 0);
+  efi_call_10 (c->blt, c, (struct grub_efi_uga_pixel *) &pixel,
+	       GRUB_EFI_UGA_VIDEO_FILL, 0, 0, 0, 0, 1, height, 0);
   ret = find_framebuf (&fb_base, &line_len);
   grub_efi_set_text_mode (1);
 
