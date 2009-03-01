@@ -74,17 +74,8 @@ grub_getkey (void)
   return -1;
 }
 
-grub_term_input_t
-grub_term_get_current_input (void)
-{
-  return 0;
-}
-
-grub_term_output_t
-grub_term_get_current_output (void)
-{
-  return 0;
-}
+struct grub_handler_class grub_term_input_class;
+struct grub_handler_class grub_term_output_class;
 
 void
 grub_refresh (void)

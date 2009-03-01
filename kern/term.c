@@ -22,14 +22,6 @@
 #include <grub/misc.h>
 #include <grub/env.h>
 
-/* The list of terminals.  */
-static grub_term_input_t grub_term_list_input;
-static grub_term_output_t grub_term_list_output;
-
-/* The current terminal.  */
-static grub_term_input_t grub_cur_term_input;
-static grub_term_output_t grub_cur_term_output;
-
 /* The amount of lines counted by the pager.  */
 static int grub_more_lines;
 
@@ -39,111 +31,18 @@ static int grub_more;
 /* The current cursor state.  */
 static int cursor_state = 1;
 
-void
-grub_term_register_input (grub_term_input_t term)
-{
-  term->next = grub_term_list_input;
-  grub_term_list_input = term;
-  if (! grub_cur_term_input)
-    grub_term_set_current_input (term);
-}
-
-void
-grub_term_register_output (grub_term_output_t term)
-{
-  term->next = grub_term_list_output;
-  grub_term_list_output = term;
-  if (! grub_cur_term_output)
-    grub_term_set_current_output (term);
-}
-
-void
-grub_term_unregister_input (grub_term_input_t term)
-{
-  grub_term_input_t *p, q;
-  
-  for (p = &grub_term_list_input, q = *p; q; p = &(q->next), q = q->next)
-    if (q == term)
+struct grub_handler_class grub_term_input_class =
       {
-        *p = q->next;
-	break;
-      }
-}
-
-void
-grub_term_unregister_output (grub_term_output_t term)
-{
-  grub_term_output_t *p, q;
+    .name = "terminal_input"
+  };
   
-  for (p = &grub_term_list_output, q = *p; q; p = &(q->next), q = q->next)
-    if (q == term)
+struct grub_handler_class grub_term_output_class =
       {
-        *p = q->next;
-	break;
-      }
-}
-
-void
-grub_term_iterate_input (int (*hook) (grub_term_input_t term))
-{
-  grub_term_input_t p;
+    .name = "terminal_output"
+  };
   
-  for (p = grub_term_list_input; p; p = p->next)
-    if (hook (p))
-      break;
-}
-
-void
-grub_term_iterate_output (int (*hook) (grub_term_output_t term))
-{
-  grub_term_output_t p;
-  
-  for (p = grub_term_list_output; p; p = p->next)
-    if (hook (p))
-      break;
-}
-
-grub_err_t
-grub_term_set_current_input (grub_term_input_t term)
-{
-  if (grub_cur_term_input && grub_cur_term_input->fini)
-    if ((grub_cur_term_input->fini) () != GRUB_ERR_NONE)
-      return grub_errno;
-
-  if (term->init)
-    if ((term->init) () != GRUB_ERR_NONE)
-      return grub_errno;
-  
-  grub_cur_term_input = term;
-  return GRUB_ERR_NONE;
-}
-
-grub_err_t
-grub_term_set_current_output (grub_term_output_t term)
-{
-  if (grub_cur_term_output && grub_cur_term_output->fini)
-    if ((grub_cur_term_output->fini) () != GRUB_ERR_NONE)
-      return grub_errno;
-
-  if (term->init)
-    if ((term->init) () != GRUB_ERR_NONE)
-      return grub_errno;
-  
-  grub_cur_term_output = term;
-  return GRUB_ERR_NONE;
-}
-
-grub_term_input_t
-grub_term_get_current_input (void)
-{
-  return grub_cur_term_input;
-}
-
-grub_term_output_t
-grub_term_get_current_output (void)
-{
-  return grub_cur_term_output;
-}
+#define grub_cur_term_input	grub_term_get_current_input ()
+#define grub_cur_term_output	grub_term_get_current_output ()
 
 /* Put a Unicode character.  */
 void

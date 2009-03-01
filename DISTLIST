@@ -49,6 +49,7 @@ commands/crc.c
 commands/date.c
 commands/echo.c
 commands/halt.c
+commands/handler.c
 commands/hdparm.c
 commands/help.c
 commands/hexdump.c
@@ -159,8 +160,10 @@ include/grub/fs.h
 include/grub/fshelp.h
 include/grub/gpt_partition.h
 include/grub/gzio.h
+include/grub/handler.h
 include/grub/hfs.h
 include/grub/kernel.h
+include/grub/list.h
 include/grub/loader.h
 include/grub/lvm.h
 include/grub/menu.h
@@ -316,6 +319,8 @@ kern/env.c
 kern/err.c
 kern/file.c
 kern/fs.c
+kern/handler.c
+kern/list.c
 kern/loader.c
 kern/main.c
 kern/misc.c
@@ -386,14 +391,13 @@ loader/i386/bsd.c
 loader/i386/bsd_normal.c
 loader/i386/linux.c
 loader/i386/multiboot.c
+loader/i386/multiboot_elfxx.c
 loader/i386/efi/linux.c
 loader/i386/ieee1275/linux.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/chainloader_normal.c
 loader/i386/pc/linux.c
 loader/i386/pc/multiboot2.c
-loader/i386/pc/multiboot_elf32.c
-loader/i386/pc/multiboot_elf64.c
 loader/i386/pc/multiboot_normal.c
 loader/ieee1275/multiboot2.c
 loader/powerpc/ieee1275/linux.c

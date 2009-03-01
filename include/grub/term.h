@@ -38,6 +38,7 @@
 #include <grub/err.h>
 #include <grub/symbol.h>
 #include <grub/types.h>
+#include <grub/handler.h>
 
 /* These are used to represent the various color states we use.  */
 typedef enum
@@ -139,6 +140,9 @@ grub_term_color_state;
 
 struct grub_term_input
 {
+  /* The next terminal.  */
+  struct grub_term_input *next;
+
   /* The terminal name.  */
   const char *name;
 
@@ -153,14 +157,14 @@ struct grub_term_input
   
   /* Get a character.  */
   int (*getkey) (void);
-
-  /* The next terminal.  */
-  struct grub_term_input *next;
 };
 typedef struct grub_term_input *grub_term_input_t;
 
 struct grub_term_output
 {
+  /* The next terminal.  */
+  struct grub_term_output *next;
+
   /* The terminal name.  */
   const char *name;
 
@@ -208,23 +212,61 @@ struct grub_term_output
 
   /* The feature flags defined above.  */
   grub_uint32_t flags;
-  
-  /* The next terminal.  */
-  struct grub_term_output *next;
 };
 typedef struct grub_term_output *grub_term_output_t;
 
-void EXPORT_FUNC(grub_term_register_input) (grub_term_input_t term);
-void EXPORT_FUNC(grub_term_register_output) (grub_term_output_t term);
-void EXPORT_FUNC(grub_term_unregister_input) (grub_term_input_t term);
-void EXPORT_FUNC(grub_term_unregister_output) (grub_term_output_t term);
-void EXPORT_FUNC(grub_term_iterate_input) (int (*hook) (grub_term_input_t term));
-void EXPORT_FUNC(grub_term_iterate_output) (int (*hook) (grub_term_output_t term));
+extern struct grub_handler_class EXPORT_VAR(grub_term_input_class);
+extern struct grub_handler_class EXPORT_VAR(grub_term_output_class);
 
-grub_err_t EXPORT_FUNC(grub_term_set_current_input) (grub_term_input_t term);
-grub_err_t EXPORT_FUNC(grub_term_set_current_output) (grub_term_output_t term);
-grub_term_input_t EXPORT_FUNC(grub_term_get_current_input) (void);
-grub_term_output_t EXPORT_FUNC(grub_term_get_current_output) (void);
+static inline void
+grub_term_register_input (grub_term_input_t term)
+{
+  grub_handler_register (&grub_term_input_class, GRUB_AS_HANDLER (term));
+}
+
+static inline void
+grub_term_register_output (grub_term_output_t term)
+{
+  grub_handler_register (&grub_term_output_class, GRUB_AS_HANDLER (term));
+}
+
+static inline void
+grub_term_unregister_input (grub_term_input_t term)
+{
+  grub_handler_unregister (&grub_term_input_class, GRUB_AS_HANDLER (term));
+}
+
+static inline void
+grub_term_unregister_output (grub_term_output_t term)
+{
+  grub_handler_unregister (&grub_term_output_class, GRUB_AS_HANDLER (term));
+}
+
+static inline grub_err_t
+grub_term_set_current_input (grub_term_input_t term)
+{
+  return grub_handler_set_current (&grub_term_input_class,
+				   GRUB_AS_HANDLER (term));
+}
+
+static inline grub_err_t
+grub_term_set_current_output (grub_term_output_t term)
+{
+  return grub_handler_set_current (&grub_term_output_class,
+				   GRUB_AS_HANDLER (term));
+}
+
+static inline grub_term_input_t
+grub_term_get_current_input (void)
+{
+  return (grub_term_input_t) grub_term_input_class.cur_handler;
+}
+
+static inline grub_term_output_t
+grub_term_get_current_output (void)
+{
+  return (grub_term_output_t) grub_term_output_class.cur_handler;
+}
 
 void EXPORT_FUNC(grub_putchar) (int c);
 void EXPORT_FUNC(grub_putcode) (grub_uint32_t code);

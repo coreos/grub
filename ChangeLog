@@ -1,3 +1,106 @@
+2009-03-01  Bean  <bean123ch@gmail.com>
+
+	* commands/terminal.c: Removed.
+
+	* commands/handler.c: New file.
+
+	* include/grub/list.h: Likewise.
+
+	* include/grub/handler.h: Likewise.
+
+	* kern/list.c: Likewise.
+
+	* kern/handler.c: Likewise.
+
+	* kern/term.h: Include header file <grub/handler.h>.
+	(grub_term_input): Move next field to the beginning.
+	(grub_term_output): Likewise.
+	(grub_term_input_class): New variable.
+	(grub_term_output_class): Likewise.
+	(grub_term_register_input): Changed to inline function.
+	(grub_term_register_output): Likewise.
+	(grub_term_unregister_input): Likewise.
+	(grub_term_unregister_output): Likewise.
+	(grub_term_set_current_input): Likewise.
+	(grub_term_set_current_output): Likewise.
+	(grub_term_get_current_input): Likewise.
+	(grub_term_get_current_output): Likewise.
+	(grub_term_iterate_input): Removed.
+	(grub_term_iterate_output): Likewise.
+
+	* kern/term.c (grub_term_list_input): Removed.
+	(grub_term_list_output): Likewise.
+	(grub_term_input_class): New variable.
+	(grub_term_output_class): Likewise.
+	(grub_cur_term_input): Change varaible as macro.
+	(grub_cur_term_output): Likewise.
+	(grub_term_register_input): Removed.
+	(grub_term_register_output): Likewise.
+	(grub_term_unregister_input): Likewise.
+	(grub_term_unregister_output): Likewise.
+	(grub_term_set_current_input): Likewise.
+	(grub_term_set_current_output): Likewise.
+	(grub_term_iterate_input): Likewise.
+	(grub_term_iterate_output): Likewise.
+	(grub_term_get_current_input): Likewise.
+	(grub_term_get_current_output): Likewise.
+
+	* util/grub-editenv.c: Include header file <grub/handler.h>.
+	(grub_term_get_current_input): Removed.
+	(grub_term_get_current_output): Likewise.
+	(grub_term_input_class): New variable.
+	(grub_term_outout_class): Likewise.
+
+	* util/grub-fstest.c (grub_term_get_current_input): Removed.
+	(grub_term_get_current_output): Likewise.
+	(grub_term_input_class): New variable.
+	(grub_term_outout_class): Likewise.
+
+	* util/grub-probe.c (grub_term_get_current_input): Removed.
+	(grub_term_get_current_output): Likewise.
+	(grub_term_input_class): New variable.
+	(grub_term_outout_class): Likewise.
+
+	* util/i386/pc/grub-setup.c (grub_term_get_current_input): Removed.
+	(grub_term_get_current_output): Likewise.
+	(grub_term_input_class): New variable.
+	(grub_term_outout_class): Likewise.
+
+	* conf/common.rmk (pkglib_MODULES): Replace terminal with handler.
+	(terminal_mod_SOURCES): Likewise.
+	(terminal_mod_CFLAGS): Likewise.
+	(terminal_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): Replace terminal.c with
+	handler.c.
+	(kernel_img_SOURCES): Add list.c and handler.c.
+	(kernel_img_HEADERS): Add list.h and handler.h.
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Replace terminal.c with
+	handler.c.
+	(kernel_mod_SOURCES): Add list.c and handler.c.
+	(kernel_mod_HEADERS): Add list.h and handler.h.
+
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Replace terminal.c with
+	handler.c.
+	(kernel_elf_SOURCES): Add list.c and handler.c.
+	(kernel_elf_HEADERS): Add list.h and handler.h.
+
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Replace terminal.c with
+	handler.c.
+	(kernel_elf_SOURCES): Add list.c and handler.c.
+	(kernel_elf_HEADERS): Add list.h and handler.h.
+
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Replace terminal.c with
+	handler.c.
+	(kernel_mod_SOURCES): Add list.c and handler.c.
+	(kernel_mod_HEADERS): Add list.h and handler.h.
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Replace terminal.c with
+	handler.c.
+	(kernel_elf_SOURCES): Add list.c and handler.c.
+	(kernel_elf_HEADERS): Add list.h and handler.h.
+
 2009-02-27  Robert Millan  <rmh@aybabtu.com>
 
 	Factorize elf32 / elf64 code in Multiboot loader.  This will

@@ -17,7 +17,7 @@ kernel_elf_SOURCES = kern/i386/coreboot/startup.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
-	kern/time.c \
+	kern/time.c kern/list.c kern/handler.c \
 	kern/i386/dl.c kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
 	kern/generic/rtc_get_time_ms.c \
@@ -30,7 +30,7 @@ kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
 	machine/boot.h machine/console.h machine/init.h \
-	machine/memory.h machine/loader.h
+	machine/memory.h machine/loader.h list.h handler.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
 kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -Wl,-N,-S,-Ttext,0x8200,-Bstatic
@@ -57,7 +57,7 @@ grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/configfile.c commands/echo.c commands/help.c		\
-	commands/terminal.c commands/ls.c commands/test.c 		\
+	commands/handler.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
 	lib/hexdump.c commands/i386/cpuid.c				\
 	disk/host.c disk/loopback.c					\

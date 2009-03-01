@@ -42,7 +42,7 @@ cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
-	kern/time.c \
+	kern/time.c kern/list.c kern/handler.c \
 	kern/i386/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
 	kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
@@ -56,7 +56,7 @@ kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h \
-	machine/kernel.h machine/pxe.h
+	machine/kernel.h machine/pxe.h list.h handler.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
@@ -114,7 +114,7 @@ grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
 grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	commands/configfile.c commands/echo.c commands/help.c		\
-	commands/terminal.c commands/ls.c commands/test.c 		\
+	commands/handler.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
 	lib/hexdump.c commands/i386/pc/halt.c commands/reboot.c		\
 	commands/i386/cpuid.c						\

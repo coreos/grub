@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/util/misc.h>
 #include <grub/lib/envblk.h>
+#include <grub/handler.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -40,17 +41,8 @@ grub_refresh (void)
   fflush (stdout);
 }
 
-void *
-grub_term_get_current_input (void)
-{
-  return 0;
-}
-
-void *
-grub_term_get_current_output (void)
-{
-  return 0;
-}
+struct grub_handler_class grub_term_input_class;
+struct grub_handler_class grub_term_output_class;
 
 int
 grub_getkey (void)

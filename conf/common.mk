@@ -2427,7 +2427,7 @@ scsi_mod_CFLAGS = $(COMMON_CFLAGS)
 scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
-pkglib_MODULES += hello.mod boot.mod terminal.mod ls.mod	\
+pkglib_MODULES += hello.mod boot.mod handler.mod ls.mod	\
 	cmp.mod cat.mod help.mod search.mod					\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
@@ -2547,62 +2547,62 @@ partmap-boot_mod-commands_boot.lst: commands/boot.c $(commands/boot.c_DEPENDENCI
 boot_mod_CFLAGS = $(COMMON_CFLAGS)
 boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For terminal.mod.
-terminal_mod_SOURCES = commands/terminal.c
-CLEANFILES += terminal.mod mod-terminal.o mod-terminal.c pre-terminal.o terminal_mod-commands_terminal.o und-terminal.lst
-ifneq ($(terminal_mod_EXPORTS),no)
-CLEANFILES += def-terminal.lst
-DEFSYMFILES += def-terminal.lst
+# For handler.mod.
+handler_mod_SOURCES = commands/handler.c
+CLEANFILES += handler.mod mod-handler.o mod-handler.c pre-handler.o handler_mod-commands_handler.o und-handler.lst
+ifneq ($(handler_mod_EXPORTS),no)
+CLEANFILES += def-handler.lst
+DEFSYMFILES += def-handler.lst
 endif
-MOSTLYCLEANFILES += terminal_mod-commands_terminal.d
-UNDSYMFILES += und-terminal.lst
+MOSTLYCLEANFILES += handler_mod-commands_handler.d
+UNDSYMFILES += und-handler.lst
 
-terminal.mod: pre-terminal.o mod-terminal.o $(TARGET_OBJ2ELF)
+handler.mod: pre-handler.o mod-handler.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(terminal_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-terminal.o mod-terminal.o
+	$(TARGET_CC) $(handler_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-handler.o mod-handler.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-terminal.o: $(terminal_mod_DEPENDENCIES) terminal_mod-commands_terminal.o
+pre-handler.o: $(handler_mod_DEPENDENCIES) handler_mod-commands_handler.o
 	-rm -f $@
-	$(TARGET_CC) $(terminal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ terminal_mod-commands_terminal.o
+	$(TARGET_CC) $(handler_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ handler_mod-commands_handler.o
 
-mod-terminal.o: mod-terminal.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -c -o $@ $<
+mod-handler.o: mod-handler.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(handler_mod_CFLAGS) -c -o $@ $<
 
-mod-terminal.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'terminal' $< > $@ || (rm -f $@; exit 1)
+mod-handler.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'handler' $< > $@ || (rm -f $@; exit 1)
 
-ifneq ($(terminal_mod_EXPORTS),no)
-def-terminal.lst: pre-terminal.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 terminal/' > $@
+ifneq ($(handler_mod_EXPORTS),no)
+def-handler.lst: pre-handler.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 handler/' > $@
 endif
 
-und-terminal.lst: pre-terminal.o
-	echo 'terminal' > $@
+und-handler.lst: pre-handler.o
+	echo 'handler' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
 
-terminal_mod-commands_terminal.o: commands/terminal.c $(commands/terminal.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -MD -c -o $@ $<
--include terminal_mod-commands_terminal.d
+handler_mod-commands_handler.o: commands/handler.c $(commands/handler.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(handler_mod_CFLAGS) -MD -c -o $@ $<
+-include handler_mod-commands_handler.d
 
-CLEANFILES += cmd-terminal_mod-commands_terminal.lst fs-terminal_mod-commands_terminal.lst partmap-terminal_mod-commands_terminal.lst
-COMMANDFILES += cmd-terminal_mod-commands_terminal.lst
-FSFILES += fs-terminal_mod-commands_terminal.lst
-PARTMAPFILES += partmap-terminal_mod-commands_terminal.lst
+CLEANFILES += cmd-handler_mod-commands_handler.lst fs-handler_mod-commands_handler.lst partmap-handler_mod-commands_handler.lst
+COMMANDFILES += cmd-handler_mod-commands_handler.lst
+FSFILES += fs-handler_mod-commands_handler.lst
+PARTMAPFILES += partmap-handler_mod-commands_handler.lst
 
-cmd-terminal_mod-commands_terminal.lst: commands/terminal.c $(commands/terminal.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh terminal > $@ || (rm -f $@; exit 1)
+cmd-handler_mod-commands_handler.lst: commands/handler.c $(commands/handler.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(handler_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh handler > $@ || (rm -f $@; exit 1)
 
-fs-terminal_mod-commands_terminal.lst: commands/terminal.c $(commands/terminal.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh terminal > $@ || (rm -f $@; exit 1)
+fs-handler_mod-commands_handler.lst: commands/handler.c $(commands/handler.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(handler_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh handler > $@ || (rm -f $@; exit 1)
 
-partmap-terminal_mod-commands_terminal.lst: commands/terminal.c $(commands/terminal.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(terminal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh terminal > $@ || (rm -f $@; exit 1)
+partmap-handler_mod-commands_handler.lst: commands/handler.c $(commands/handler.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(handler_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh handler > $@ || (rm -f $@; exit 1)
 
 
-terminal_mod_CFLAGS = $(COMMON_CFLAGS)
-terminal_mod_LDFLAGS = $(COMMON_LDFLAGS)
+handler_mod_CFLAGS = $(COMMON_CFLAGS)
+handler_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For ls.mod.
 ls_mod_SOURCES = commands/ls.c
