@@ -44,7 +44,7 @@
 #include <grub/env.h>
 
 extern grub_dl_t my_mod;
-static struct grub_multiboot_info *mbi;
+static struct grub_multiboot_info *mbi, *mbi_dest;
 static grub_addr_t entry;
 
 static char *playground = NULL;
@@ -52,7 +52,7 @@ static char *playground = NULL;
 static grub_err_t
 grub_multiboot_boot (void)
 {
-  grub_multiboot_real_boot (entry, mbi);
+  grub_multiboot_real_boot (entry, mbi_dest);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;
@@ -195,7 +195,7 @@ grub_multiboot (int argc, char *argv[])
   grub_file_t file = 0;
   char buffer[MULTIBOOT_SEARCH], *cmdline = 0, *p;
   struct grub_multiboot_header *header;
-  grub_ssize_t len;
+  grub_ssize_t len, cmdline_length, boot_loader_name_length;
   grub_uint32_t mmap_length;
   int i;
 
@@ -253,7 +253,22 @@ grub_multiboot (int argc, char *argv[])
 
   mmap_length = grub_get_multiboot_mmap_len ();
 
-  grub_multiboot_payload_size = sizeof (struct grub_multiboot_info) + mmap_length + MULTIBOOT_INFO_ALIGN;
+  /* Figure out cmdline length.  */
+  for (i = 0, cmdline_length = 0; i < argc; i++)
+    cmdline_length += grub_strlen (argv[i]) + 1;
+
+  boot_loader_name_length = sizeof(PACKAGE_STRING);
+
+#define cmdline_addr(x)		((void *) ((x) + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info) - boot_loader_name_length - cmdline_length))
+#define boot_loader_name_addr(x) \
+				((void *) ((x) + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info) - boot_loader_name_length))
+#define mbi_addr(x)		((void *) ((x) + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info)))
+#define mmap_addr(x)		((void *) ((x) + grub_multiboot_payload_size - mmap_length))
+
+  /* This provides alignment for the MBI, the memory map and the backward relocator.  */
+  boot_loader_name_length += (ALIGN_UP (mbi_addr (0), 4) - (unsigned long) mbi_addr (0));
+
+  grub_multiboot_payload_size = cmdline_length + boot_loader_name_length + sizeof (struct grub_multiboot_info) + mmap_length;
 
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -291,19 +306,16 @@ grub_multiboot (int argc, char *argv[])
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
 
-  grub_multiboot_payload_size = ALIGN_UP (grub_multiboot_payload_size, MULTIBOOT_INFO_ALIGN);
-
-  mbi = (void *) (grub_multiboot_payload_orig + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info));
+  mbi = mbi_addr (grub_multiboot_payload_orig);
+  mbi_dest = mbi_addr (grub_multiboot_payload_dest);
   grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
   mbi->mmap_length = mmap_length;
       
-  grub_fill_multiboot_mmap ((struct grub_multiboot_mmap_entry *) (grub_multiboot_payload_orig
-								  + grub_multiboot_payload_size
-								  - mbi->mmap_length));
+  grub_fill_multiboot_mmap (mmap_addr (grub_multiboot_payload_orig));
 
   /* FIXME: grub_uint32_t will break for addresses above 4 GiB, but is mandated
      by the spec.  Is there something we can do about it?  */
-  mbi->mmap_addr = grub_multiboot_payload_dest + grub_multiboot_payload_size - mbi->mmap_length;
+  mbi->mmap_addr = mmap_addr (grub_multiboot_payload_dest);
   mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
 
   if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)
@@ -328,10 +340,7 @@ grub_multiboot (int argc, char *argv[])
   mbi->mem_upper = grub_upper_mem / 1024;
   mbi->flags |= MULTIBOOT_INFO_MEMORY;
 
-  for (i = 0, len = 0; i < argc; i++)
-    len += grub_strlen (argv[i]) + 1;
-
-  cmdline = p = grub_malloc (len);
+  cmdline = p = cmdline_addr (grub_multiboot_payload_orig);
   if (! cmdline)
     goto fail;
 
@@ -345,10 +354,12 @@ grub_multiboot (int argc, char *argv[])
   *(--p) = '\0';
 
   mbi->flags |= MULTIBOOT_INFO_CMDLINE;
-  mbi->cmdline = (grub_uint32_t) cmdline;
+  mbi->cmdline = (grub_uint32_t) cmdline_addr (grub_multiboot_payload_dest);
 
+
+  grub_strcpy (boot_loader_name_addr (grub_multiboot_payload_orig), PACKAGE_STRING);
   mbi->flags |= MULTIBOOT_INFO_BOOT_LOADER_NAME;
-  mbi->boot_loader_name = (grub_uint32_t) grub_strdup (PACKAGE_STRING);
+  mbi->boot_loader_name = (grub_uint32_t) boot_loader_name_addr (grub_multiboot_payload_dest);
 
   if (grub_multiboot_get_bootdev (&mbi->boot_device))
     mbi->flags |= MULTIBOOT_INFO_BOOTDEV;

@@ -1,3 +1,14 @@
+2009-03-03  Robert Millan  <rmh@aybabtu.com>
+
+	Move more components to the relocation area, and fix mbi pointer
+	handling to use the destination rather than the origin (thanks to
+	Vladimir Serbinenko for spotting).
+
+	* loader/i386/multiboot.c (mbi_dest): New variable.
+	(grub_multiboot_boot): Use `mbi_dest' instead of `mbi'.
+	(grub_multiboot): Put cmdline, boot_loader_name and mbi in the
+	relocation area.
+
 2009-03-01  Bean  <bean123ch@gmail.com>
 
 	* include/grub/efi/api.h (GRUB_EFI_MPS_TABALE_GUID): New constant.
