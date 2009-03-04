@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <grub/kernel.h>
 #include <grub/misc.h>
@@ -308,6 +309,16 @@ grub_get_time_ms (void)
   gettimeofday (&tv, 0);
   
   return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  struct timespec ts;
+
+  ts.tv_sec = ms / 1000;
+  ts.tv_nsec = (ms % 1000) * 1000000;
+  nanosleep (&ts, NULL);
 }
 
 void 
