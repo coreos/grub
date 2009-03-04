@@ -1,3 +1,8 @@
+2009-03-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/misc.c: Include <time.h>.
+	(grub_millisleep): New function.
+
 2009-03-04  Bean  <bean123ch@gmail.com>
 
 	* configure.ac: Only test -mcmodel=large option in x86_64-efi, also add

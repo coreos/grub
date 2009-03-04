@@ -160,9 +160,10 @@ pc_partition_map_iterate (grub_disk_t disk,
 		{
 		  /* Check if the BSD label is within the DOS partition.  */
 		  if (p.len <= GRUB_PC_PARTITION_BSD_LABEL_SECTOR)
-		    return grub_error (GRUB_ERR_BAD_PART_TABLE,
-				       "no space for disk label");
-
+		    {
+		      grub_dprintf ("partition", "no space for disk label\n");
+		      continue;
+		    }
 		  /* Read the BSD label.  */
 		  if (grub_disk_read (&raw,
 				      (p.start
@@ -175,10 +176,12 @@ pc_partition_map_iterate (grub_disk_t disk,
 		  /* Check if it is valid.  */
 		  if (label.magic
 		      != grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
-		    return grub_error (GRUB_ERR_BAD_PART_TABLE,
-				       "invalid disk label magic 0x%x",
-				       label.magic);
-
+		    {
+		      grub_dprintf ("partition",
+				    "invalid disk label magic 0x%x on partition %d\n",
+				    label.magic, p.index);
+		      continue;
+		    }
 		  for (pcdata.bsd_part = 0;
 		       pcdata.bsd_part < grub_cpu_to_le16 (label.num_partitions);
 		       pcdata.bsd_part++)
