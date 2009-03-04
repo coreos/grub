@@ -1,5 +1,11 @@
 2009-03-04  Felix Zielcke  <fzielcke@z-51.de>
 
+	* partmap/pc.c (pc_partition_map_iterate): Skip over invalid BSD partitions
+	or if there's no space for the disk label and print the partition number on a
+	invalid magic.
+
+2009-03-04  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/misc.c: Include <time.h>.
 	(grub_millisleep): New function.
 
