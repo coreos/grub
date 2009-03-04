@@ -664,6 +664,7 @@ target
 target_cpu
 target_vendor
 target_os
+host_kernel
 platform
 CMP
 YACC
@@ -2005,6 +2006,17 @@ esac
 case "$host_os" in
   mingw32) host_os=cygwin ;;
 esac
+
+# This normalizes the names, and creates a new variable ("host_kernel")
+# while at it, since the mapping is not always 1:1 (e.g. different OSes
+# using the same kernel type).
+case "$host_os" in
+  gnu*)				host_kernel=hurd ;;
+  linux*)			host_kernel=linux ;;
+  freebsd* | kfreebsd*-gnu)	host_kernel=freebsd ;;
+  cygwin)			host_kernel=windows ;;
+esac
+
 
 
 
@@ -9528,6 +9540,7 @@ target!$target$ac_delim
 target_cpu!$target_cpu$ac_delim
 target_vendor!$target_vendor$ac_delim
 target_os!$target_os$ac_delim
+host_kernel!$host_kernel$ac_delim
 platform!$platform$ac_delim
 CMP!$CMP$ac_delim
 YACC!$YACC$ac_delim
@@ -9577,7 +9590,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 96; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

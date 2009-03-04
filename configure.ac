@@ -103,8 +103,19 @@ case "$host_os" in
   mingw32) host_os=cygwin ;;
 esac
 
+# This normalizes the names, and creates a new variable ("host_kernel")
+# while at it, since the mapping is not always 1:1 (e.g. different OSes
+# using the same kernel type).
+case "$host_os" in
+  gnu*)				host_kernel=hurd ;;
+  linux*)			host_kernel=linux ;;
+  freebsd* | kfreebsd*-gnu)	host_kernel=freebsd ;;
+  cygwin)			host_kernel=windows ;;
+esac
+
 AC_SUBST(host_cpu)
 AC_SUBST(host_os)
+AC_SUBST(host_kernel)
 
 AC_SUBST(target_cpu)
 AC_SUBST(platform)
