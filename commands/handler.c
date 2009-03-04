@@ -1,4 +1,4 @@
-/* handler.c - test module for dynamic loading */
+/* handler.c - commands to list or select handlers */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.

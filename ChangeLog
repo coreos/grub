@@ -1,3 +1,14 @@
+2009-03-04  Bean  <bean123ch@gmail.com>
+
+	* configure.ac: Only test -mcmodel=large option in x86_64-efi, also add
+	another option -mno-red-zone.
+
+	* commands/handler.c: Change module description.
+
+	* kern/handler.c: Add missing space at the end of description line.
+
+	* kern/list.c: Likewise.
+
 2009-03-03  Robert Millan  <rmh@aybabtu.com>
 
 	Move more components to the relocation area, and fix mbi pointer

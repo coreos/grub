@@ -1,4 +1,4 @@
-/* list.c - grub list function*/
+/* list.c - grub list function */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.

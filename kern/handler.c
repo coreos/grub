@@ -1,4 +1,4 @@
-/* handler.c - grub handler function*/
+/* handler.c - grub handler function */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.
