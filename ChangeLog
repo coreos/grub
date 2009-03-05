@@ -54,7 +54,7 @@
 
 2009-03-01  Bean  <bean123ch@gmail.com>
 
-	* include/grub/efi/api.h (GRUB_EFI_MPS_TABALE_GUID): New constant.
+	* include/grub/efi/api.h (GRUB_EFI_MPS_TABLE_GUID): New constant.
 	(GRUB_EFI_ACPI_TABLE_GUID): Likewise.
 	(GRUB_EFI_ACPI_20_TABLE_GUID): Likewise.
 	(GRUB_EFI_SMBIOS_TABLE_GUID): Likewise.
@@ -101,7 +101,7 @@
 	(grub_term_list_output): Likewise.
 	(grub_term_input_class): New variable.
 	(grub_term_output_class): Likewise.
-	(grub_cur_term_input): Change varaible as macro.
+	(grub_cur_term_input): Change variable as macro.
 	(grub_cur_term_output): Likewise.
 	(grub_term_register_input): Removed.
 	(grub_term_register_output): Likewise.
@@ -118,22 +118,22 @@
 	(grub_term_get_current_input): Removed.
 	(grub_term_get_current_output): Likewise.
 	(grub_term_input_class): New variable.
-	(grub_term_outout_class): Likewise.
+	(grub_term_output_class): Likewise.
 
 	* util/grub-fstest.c (grub_term_get_current_input): Removed.
 	(grub_term_get_current_output): Likewise.
 	(grub_term_input_class): New variable.
-	(grub_term_outout_class): Likewise.
+	(grub_term_output_class): Likewise.
 
 	* util/grub-probe.c (grub_term_get_current_input): Removed.
 	(grub_term_get_current_output): Likewise.
 	(grub_term_input_class): New variable.
-	(grub_term_outout_class): Likewise.
+	(grub_term_output_class): Likewise.
 
 	* util/i386/pc/grub-setup.c (grub_term_get_current_input): Removed.
 	(grub_term_get_current_output): Likewise.
 	(grub_term_input_class): New variable.
-	(grub_term_outout_class): Likewise.
+	(grub_term_output_class): Likewise.
 
 	* conf/common.rmk (pkglib_MODULES): Replace terminal with handler.
 	(terminal_mod_SOURCES): Likewise.
@@ -201,7 +201,7 @@
 	Patch from Alexandre Bique <bique.alexandre@gmail.com>
 	* util/i386/pc/grub-setup.c (setup): Fix directory path.
 
-2009-02-27  Krzysztof Smiechowicz <deadwood@wp.pl>
+2009-02-27  Krzysztof Smiechowicz  <deadwood@wp.pl>
 
 	* fs/sfs.c (grub_sfs_read_extent): Correction to traversing extent
 	b-tree.
@@ -416,7 +416,7 @@
 2009-02-09  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/common.rmk (grub_probe_SOURCES): Move fs/ext2.c before fs/fat.c
-	to avoid false posivites with FAT.
+	to avoid false positives with FAT.
 	(grub_fstest_SOURCES): Likewise.
 	* conf/i386-pc.rmk (grub_emu_SOURCES): Likewise.
 	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
@@ -477,11 +477,11 @@
 	* commands/usbtest.c: Likewise.
 
 	* util/usb.c: Likewise.
-	
+
 	* include/grub/err.h (grub_err_t): Add `GRUB_ERR_IO'.
 
 	* configure.ac: Test for libusb presence.
-	
+
 	* util/grub-emu.c (main) [HAVE_LIBUSB_H]: Call `grub_libusb_init'.
 
 2009-02-08  Vesa Jääskeläinen  <chaac@nic.fi>
@@ -506,7 +506,7 @@
 
 	Based on patch from Javier Martín, with some adjustments.
 
-2009-02-07  Michael Scherer <misc@mandriva.org>
+2009-02-07  Michael Scherer  <misc@mandriva.org>
 
 	* fs/hfs.c (grub_hfsplus_iterate_dir): Treat hfs+ as case insensitive.
 
@@ -518,7 +518,7 @@
 
 2009-02-05  Vesa Jääskeläinen  <chaac@nic.fi>
 
-	Fixes problem when running vbetest command as reported by 
+	Fixes problem when running vbetest command as reported by
 	Vladimir Serbinenko <phcoder@gmail.com>.
 
 	* (grub_vbe_set_video_mode): Fixed problem with text modes.
