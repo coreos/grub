@@ -1,3 +1,12 @@
+2009-03-06  Robert Millan  <rmh@aybabtu.com>
+
+	Fix display issue on terminals with screen size other than 80x25
+	(e.g. gfxterm with resolution higher than 640x480).
+
+	* normal/main.c (grub_normal_init_page): Display title text in a
+	position relative to the center of the terminal instead of reliing
+	on a hardcoded offset.
+
 2009-03-04  Robert Millan  <rmh@aybabtu.com>
 
 	Filter /etc/grub.d/10_* so that only add-ons for native kernels are

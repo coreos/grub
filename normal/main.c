@@ -389,10 +389,22 @@ grub_enter_normal_mode (const char *config)
 void
 grub_normal_init_page (void)
 {
+  grub_uint8_t width, margin;
+
+#define TITLE ("GNU GRUB  version " PACKAGE_VERSION)
+
+  width = grub_getwh () >> 8;
+  margin = (width - (sizeof(TITLE) + 7)) / 2;
+
   grub_cls ();
-  grub_printf ("\n\
-                         GNU GRUB  version %s\n\n",
-	       PACKAGE_VERSION);
+  grub_putchar ('\n');
+
+  while (margin--)
+    grub_putchar (' ');
+
+  grub_printf ("%s\n\n", TITLE);
+
+#undef TITLE
 }
 
 /* Read the file command.lst for auto-loading.  */
