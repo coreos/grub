@@ -963,11 +963,15 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
 	  if (physical_end > addr_max)
 	    physical_end = addr_max;
 
-          if (physical_end < addr_min)
+	  if (physical_end < page_align (size))
             continue;
 
-	  if (physical_end > addr)
-	    addr = physical_end - page_align (size);
+	  physical_end -= page_align (size);
+
+	  if ((physical_end >= addr_min) &&
+	      (physical_end >= desc->physical_start) &&
+	      (physical_end > addr))
+	    addr = physical_end;
 	}
     }
 

@@ -1,3 +1,8 @@
+2009-03-07  Bean  <bean123ch@gmail.com>
+
+	* loader/i386/efi/linux.c (grub_rescue_cmd_initrd): Fix a bug in initrd
+	allocation.
+
 2009-03-06  Robert Millan  <rmh@aybabtu.com>
 
 	Fix display issue on terminals with screen size other than 80x25
