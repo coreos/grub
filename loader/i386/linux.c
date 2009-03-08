@@ -143,9 +143,8 @@ allocate_pages (grub_size_t prot_size)
   real_mode_mem = 0;
   prot_mode_mem = 0;
   
-#ifdef GRUB_MACHINE_PCBIOS
-#error i386-pc port adds lower memory to heap, which collides with `real_mode_mem' allocation below
-#endif
+  /* FIXME: Should request low memory from the heap when this feature is
+     implemented.  */
 
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)

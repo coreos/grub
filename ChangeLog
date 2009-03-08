@@ -1,3 +1,12 @@
+2009-03-08  Robert Millan  <rmh@aybabtu.com>
+
+	Make loader/i386/linux.c usable on i386-pc again.
+
+	* kern/i386/pc/init.c (grub_machine_init): Disable addition of low
+	memory to heap.
+	* loader/i386/linux.c [GRUB_MACHINE_PCBIOS] (allocate_pages): Remove
+	`#error' stanza.
+
 2009-03-07  Bean  <bean123ch@gmail.com>
 
 	* loader/i386/efi/linux.c (grub_rescue_cmd_initrd): Fix a bug in initrd

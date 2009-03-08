@@ -148,10 +148,15 @@ grub_machine_init (void)
   grub_gate_a20 (1);
 #endif
 
+/* FIXME: This prevents loader/i386/linux.c from using low memory.  When our
+   heap implements support for requesting a chunk in low memory, this should
+   no longer be a problem.  */
+#if 0
   /* Add the lower memory into free memory.  */
   if (grub_lower_mem >= GRUB_MEMORY_MACHINE_RESERVED_END)
     add_mem_region (GRUB_MEMORY_MACHINE_RESERVED_END,
 		    grub_lower_mem - GRUB_MEMORY_MACHINE_RESERVED_END);
+#endif
   
   auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
