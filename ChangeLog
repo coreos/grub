@@ -1,3 +1,8 @@
+2009-03-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Remove duplicated
+	`fs/ext2.c'.
+
 2009-03-08  Robert Millan  <rmh@aybabtu.com>
 
 	Make loader/i386/linux.c usable on i386-pc again.
