@@ -88,9 +88,10 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 	if (phdr(i)->p_paddr > phdr(highest_segment)->p_paddr)
 	  highest_segment = i;
       }
-  grub_multiboot_payload_size += (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
+  code_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
+  grub_multiboot_payload_size += code_size;
   playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
   if (! playground)
     return grub_errno;

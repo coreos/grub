@@ -47,7 +47,8 @@ extern grub_dl_t my_mod;
 static struct grub_multiboot_info *mbi, *mbi_dest;
 static grub_addr_t entry;
 
-static char *playground = NULL;
+static char *playground;
+static grub_size_t code_size;
 
 static grub_err_t
 grub_multiboot_boot (void)
@@ -259,16 +260,16 @@ grub_multiboot (int argc, char *argv[])
 
   boot_loader_name_length = sizeof(PACKAGE_STRING);
 
-#define cmdline_addr(x)		((void *) ((x) + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info) - boot_loader_name_length - cmdline_length))
+#define cmdline_addr(x)		((void *) ((x) + code_size))
 #define boot_loader_name_addr(x) \
-				((void *) ((x) + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info) - boot_loader_name_length))
-#define mbi_addr(x)		((void *) ((x) + grub_multiboot_payload_size - mmap_length - sizeof (struct grub_multiboot_info)))
-#define mmap_addr(x)		((void *) ((x) + grub_multiboot_payload_size - mmap_length))
+				((void *) ((x) + code_size + cmdline_length))
+#define mbi_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length))
+#define mmap_addr(x)		((void *) ((x) + code_size + cmdline_length + boot_loader_name_length + sizeof (struct grub_multiboot_info)))
 
-  /* This provides alignment for the MBI, the memory map and the backward relocator.  */
-  boot_loader_name_length += (ALIGN_UP (mbi_addr (0), 4) - (unsigned long) mbi_addr (0));
-
-  grub_multiboot_payload_size = cmdline_length + boot_loader_name_length + sizeof (struct grub_multiboot_info) + mmap_length;
+  grub_multiboot_payload_size = cmdline_length
+    /* boot_loader_name_length might need to grow for mbi,etc to be aligned (see below) */
+    + boot_loader_name_length + 3
+    + sizeof (struct grub_multiboot_info) + mmap_length;
 
   if (header->flags & MULTIBOOT_AOUT_KLUDGE)
     {
@@ -278,11 +279,12 @@ grub_multiboot (int argc, char *argv[])
 		       header->load_end_addr - header->load_addr);
 
       if (header->bss_end_addr)
-	grub_multiboot_payload_size += (header->bss_end_addr - header->load_addr);
+	code_size = (header->bss_end_addr - header->load_addr);
       else
-	grub_multiboot_payload_size += load_size;
+	code_size = load_size;
       grub_multiboot_payload_dest = header->load_addr;
 
+      grub_multiboot_payload_size += code_size;
       playground = grub_malloc (RELOCATOR_SIZEOF(forward) + grub_multiboot_payload_size + RELOCATOR_SIZEOF(backward));
       if (! playground)
 	goto fail;
@@ -306,11 +308,14 @@ grub_multiboot (int argc, char *argv[])
   else if (grub_multiboot_load_elf (file, buffer) != GRUB_ERR_NONE)
     goto fail;
 
+  /* This provides alignment for the MBI, the memory map and the backward relocator.  */
+  boot_loader_name_length += (0x04 - ((unsigned long) mbi_addr (grub_multiboot_payload_dest) & 0x03));
+
   mbi = mbi_addr (grub_multiboot_payload_orig);
   mbi_dest = mbi_addr (grub_multiboot_payload_dest);
   grub_memset (mbi, 0, sizeof (struct grub_multiboot_info));
   mbi->mmap_length = mmap_length;
-      
+  
   grub_fill_multiboot_mmap (mmap_addr (grub_multiboot_payload_orig));
 
   /* FIXME: grub_uint32_t will break for addresses above 4 GiB, but is mandated
@@ -355,8 +360,8 @@ grub_multiboot (int argc, char *argv[])
 
   mbi->flags |= MULTIBOOT_INFO_CMDLINE;
   mbi->cmdline = (grub_uint32_t) cmdline_addr (grub_multiboot_payload_dest);
-
-
+  
+  
   grub_strcpy (boot_loader_name_addr (grub_multiboot_payload_orig), PACKAGE_STRING);
   mbi->flags |= MULTIBOOT_INFO_BOOT_LOADER_NAME;
   mbi->boot_loader_name = (grub_uint32_t) boot_loader_name_addr (grub_multiboot_payload_dest);

@@ -1,3 +1,14 @@
+2009-03-11  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/multiboot.c (code_size): New variable.
+	(grub_multiboot): Define offsets by adding to `code_size' rather
+	than substracting from `grub_multiboot_payload_size'.  Provide
+	4-byte alignment to MBI and others by increasing
+	`boot_loader_name_length' appropiately.
+
+	* loader/i386/multiboot_elfxx.c
+	(CONCAT(grub_multiboot_load_elf, XX)): Initialize `code_size'.
+
 2009-03-09  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Remove duplicated
