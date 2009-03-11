@@ -1,3 +1,8 @@
+2009-03-11  Pavel Roskin  <proski@gnu.org>
+
+	* fs/hfs.c (grub_hfs_strncasecmp): New function.
+	(grub_hfs_cmp_catkeys): Use HFS specific string comparison.
+
 2009-03-11  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/multiboot_elfxx.c
