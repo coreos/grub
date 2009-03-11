@@ -1,3 +1,8 @@
+2009-03-11  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Add `kern/list.c' and
+	`kern/handler.c'.
+
 2009-03-11  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/multiboot.c (code_size): New variable.
