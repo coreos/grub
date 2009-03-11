@@ -1,3 +1,8 @@
+2009-03-11  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/multiboot_elfxx.c
+	(CONCAT(grub_multiboot_load_elf, XX)): Do not reject ET_DYN files.
+
 2009-03-11  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): Add `kern/list.c' and

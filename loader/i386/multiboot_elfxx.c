@@ -63,10 +63,10 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
       || ehdr->e_ident[EI_DATA] != ELFDATA2LSB
       || ehdr->e_machine != E_MACHINE)
     return grub_error(GRUB_ERR_UNKNOWN_OS, "no valid ELF header found");
-
-  if (ehdr->e_type != ET_EXEC)
+  
+  if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN)
     return grub_error (GRUB_ERR_UNKNOWN_OS, "invalid ELF file type");
-
+  
   /* FIXME: Should we support program headers at strange locations?  */
   if (ehdr->e_phoff + ehdr->e_phnum * ehdr->e_phentsize > MULTIBOOT_SEARCH)
     return grub_error (GRUB_ERR_BAD_OS, "program header at a too high offset");
