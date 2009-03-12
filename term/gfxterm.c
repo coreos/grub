@@ -717,38 +717,34 @@ write_char (void)
 static void
 draw_cursor (int show)
 {
-  unsigned int x;
-  unsigned int y;
-  unsigned int width;
-  unsigned int height;
-  grub_video_color_t color;
-
-  /* Determine cursor properties and position on text layer. */
-  x = virtual_screen.cursor_x * virtual_screen.normal_char_width;
-  y = (virtual_screen.cursor_y * virtual_screen.normal_char_height
-       + grub_font_get_ascent (virtual_screen.font));
-  width = virtual_screen.normal_char_width;
-  height = 2;
+  write_char ();
 
   if (show)
     {
+      unsigned int x;
+      unsigned int y;
+      unsigned int width;
+      unsigned int height;
+      grub_video_color_t color;
+
+      /* Determine cursor properties and position on text layer. */
+      x = virtual_screen.cursor_x * virtual_screen.normal_char_width;
+      width = virtual_screen.normal_char_width;
       color = virtual_screen.fg_color;
-    }
-  else
-    {
-      color = virtual_screen.bg_color;
-      y = virtual_screen.cursor_y * virtual_screen.normal_char_height;
-      height = virtual_screen.normal_char_height;
-    }
+      y = (virtual_screen.cursor_y * virtual_screen.normal_char_height
+           + grub_font_get_ascent (virtual_screen.font));
+      height = 2;
 
-  /* Render cursor to text layer.  */
-  grub_video_set_active_render_target (text_layer);
-  grub_video_fill_rect (color, x, y, width, height);
-  grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
+      /* Render cursor to text layer.  */
+      grub_video_set_active_render_target (text_layer);
+      grub_video_fill_rect (color, x, y, width, height);
+      grub_video_set_active_render_target (GRUB_VIDEO_RENDER_TARGET_DISPLAY);
 
-  /* Mark cursor to be redrawn.  */
-  dirty_region_add (virtual_screen.offset_x + x, virtual_screen.offset_y + y,
-                    width, height);
+      /* Mark cursor to be redrawn.  */
+      dirty_region_add (virtual_screen.offset_x + x,
+                        virtual_screen.offset_y + y,
+                        width, height);
+    }
 }
 
 static void
@@ -821,12 +817,12 @@ grub_gfxterm_putchar (grub_uint32_t c)
     /* FIXME */
     return;
 
+  /* Erase current cursor, if any.  */
+  if (virtual_screen.cursor_state)
+    draw_cursor (0);
+
   if (c == '\b' || c == '\n' || c == '\r')
     {
-      /* Erase current cursor, if any.  */
-      if (virtual_screen.cursor_state)
-	draw_cursor (0);
-
       switch (c)
         {
         case '\b':
@@ -845,20 +841,12 @@ grub_gfxterm_putchar (grub_uint32_t c)
           virtual_screen.cursor_x = 0;
           break;
         }
-
-      /* Redraw cursor if visible.  */
-      if (virtual_screen.cursor_state)
-	draw_cursor (1);
     }
   else
     {
       struct grub_font_glyph *glyph;
       struct grub_colored_char *p;
       unsigned char char_width;
-
-      /* Erase current cursor, if any.  */
-      if (virtual_screen.cursor_state)
-	draw_cursor (0);
 
       /* Get properties of the character.  */
       glyph = grub_font_get_glyph (virtual_screen.font, c);
@@ -908,11 +896,13 @@ grub_gfxterm_putchar (grub_uint32_t c)
           else
             virtual_screen.cursor_y++;
         }
-
-      /* Draw cursor if visible.  */
-      if (virtual_screen.cursor_state)
-	draw_cursor (1);
     }
+
+  /* Redraw cursor if it should be visible.  */
+  /* Note: This will redraw the character as well, which means that the
+     above call to write_char is redundant when the cursor is showing.  */
+  if (virtual_screen.cursor_state)
+    draw_cursor (1);
 }
 
 /* Use ASCII characters to determine normal character width.  */

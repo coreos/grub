@@ -1,3 +1,9 @@
+2009-03-12  Colin D Bennett  <colin@gibibit.com>
+
+	* term/gfxterm.c (draw_cursor): Ensure character is redrawn.
+	(grub_gfxterm_putchar): Extract pairs of identical calls to
+	draw_cursor out of conditional blocks.
+
 2009-03-11  Pavel Roskin  <proski@gnu.org>
 
 	* fs/hfs.c (grub_hfs_strncasecmp): New function.
