@@ -1166,6 +1166,6 @@ GRUB_MOD_INIT(term_gfxterm)
 
 GRUB_MOD_FINI(term_gfxterm)
 {
-  grub_unregister_command ("bgimage");
+  grub_unregister_command ("background_image");
   grub_term_unregister_output (&grub_video_term);
 }

@@ -1,3 +1,8 @@
+2009-03-12  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* term/gfxterm.c (GRUB_MOD_FINI(term_gfxterm)): Correct name of
+	background image command.
+
 2009-03-12  Colin D Bennett  <colin@gibibit.com>
 
 	* term/gfxterm.c (draw_cursor): Ensure character is redrawn.
