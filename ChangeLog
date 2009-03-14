@@ -1,3 +1,8 @@
+2009-03-14  Robert Millan  <rmh@aybabtu.com>
+
+	Fix build on powerpc.
+	* conf/powerpc-ieee1275.rmk (kernel_elf_HEADERS): Add `handler.h'.
+
 2009-03-12  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* term/gfxterm.c (GRUB_MOD_FINI(term_gfxterm)): Correct name of
