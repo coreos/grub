@@ -1,3 +1,14 @@
+2009-03-18  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/linux.c: Include `<grub/video.h>' and
+	`<grub/i386/pc/vbe.h>'..
+	(grub_linux_setup_video): New function.  Loosely based on the EFI one.
+	(grub_linux32_boot): Attempt to configure video settings with
+	grub_linux_setup_video().
+	(grub_rescue_cmd_linux): Set noreturn=0 in grub_loader_set, in order
+	to avoid grub_console_fini() which would step out of graphical mode
+	unconditionally.
+
 2009-03-14  Robert Millan  <rmh@aybabtu.com>
 
 	Fix build on powerpc.

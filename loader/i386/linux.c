@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,10 @@
 #include <grub/mm.h>
 #include <grub/term.h>
 #include <grub/cpu/linux.h>
+#include <grub/video.h>
+/* FIXME: the definition of `struct grub_video_render_target' is
+   VBE-specific.  */
+#include <grub/i386/pc/vbe.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -215,6 +219,41 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
     }
 }
 
+static int
+grub_linux_setup_video (struct linux_kernel_params *params)
+{
+  struct grub_video_mode_info mode_info;
+  struct grub_video_render_target *render_target;
+  int ret;
+
+  ret = grub_video_get_info (&mode_info);
+  if (ret)
+    return 1;
+
+  ret = grub_video_get_active_render_target (&render_target);
+  if (ret)
+    return 1;
+
+  params->lfb_width = mode_info.width;
+  params->lfb_height = mode_info.height;
+  params->lfb_depth = mode_info.bpp;
+  params->lfb_line_len = mode_info.pitch;
+
+  params->lfb_base = (void *) render_target->data;
+  params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
+
+  params->red_mask_size = 8;
+  params->red_field_pos = 16;
+  params->green_mask_size = 8;
+  params->green_field_pos = 8;
+  params->blue_mask_size = 8;
+  params->blue_field_pos = 0;
+  params->reserved_mask_size = 8;
+  params->reserved_field_pos = 24;
+
+  return 0;
+}
+
 #ifdef __x86_64__
 struct
 {
@@ -231,6 +270,9 @@ grub_linux32_boot (void)
   
   params = real_mode_mem;
 
+  if (! grub_linux_setup_video (params))
+    params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+  
   grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
 		(unsigned) params->code32_start,
                 (unsigned long) &(idt_desc.limit),
@@ -314,7 +356,6 @@ grub_rescue_cmd_linux (int argc, char *argv[])
   grub_ssize_t len;
   int i;
   char *dest;
-  int video_type;
 
   grub_dl_ref (my_mod);
   
@@ -422,7 +463,6 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 
   /* Detect explicitly specified memory size, if any.  */
   linux_mem_size = 0;
-  video_type = 0;
   for (i = 1; i < argc; i++)
     if (grub_memcmp (argv[i], "mem=", 4) == 0)
       {
@@ -481,7 +521,8 @@ grub_rescue_cmd_linux (int argc, char *argv[])
 
   if (grub_errno == GRUB_ERR_NONE)
     {
-      grub_loader_set (grub_linux32_boot, grub_linux_unload, 1);
+      grub_loader_set (grub_linux32_boot, grub_linux_unload,
+		       0 /* set noreturn=0 in order to avoid grub_console_fini() */);
       loaded = 1;
     }
 
