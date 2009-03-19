@@ -385,7 +385,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   unsigned int blksz = EXT2_BLOCK_SIZE (data);
   int log2_blksz = LOG2_EXT2_BLOCK_SIZE (data);
   
-  if (inode->flags & EXT4_EXTENTS_FLAG)
+  if (grub_le_to_cpu32(inode->flags) & EXT4_EXTENTS_FLAG)
     {
       char buf[EXT2_BLOCK_SIZE(data)];
       struct grub_ext4_extent_header *leaf;

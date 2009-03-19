@@ -1,3 +1,8 @@
+2009-03-18  Michel Dänzer  <michel@daenzer.net>
+
+	* fs/ext2.c (grub_ext2_read_block): Take endianness into account when
+	checking inode flags for EXT4_EXTENTS_FLAG.
+
 2009-03-18  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/linux.c: Include `<grub/video.h>' and
