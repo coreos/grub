@@ -555,7 +555,12 @@ read_device_map (const char *dev_map)
 	e++;
       *e = '\0';
 
+#ifdef __MINGW32__
+      (void) st;
+      if (grub_util_get_disk_size (p) == -1LL)
+#else
       if (stat (p, &st) == -1)
+#endif
 	{
 	  free (map[drive].drive);
 	  map[drive].drive = NULL;

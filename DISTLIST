@@ -392,6 +392,7 @@ loader/i386/linux.c
 loader/i386/multiboot.c
 loader/i386/multiboot_elfxx.c
 loader/i386/efi/linux.c
+loader/i386/efi/loadbios.c
 loader/i386/ieee1275/linux.c
 loader/i386/pc/chainloader.c
 loader/i386/pc/chainloader_normal.c

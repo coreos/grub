@@ -1,5 +1,17 @@
 2009-03-21  Bean  <bean123ch@gmail.com>
 
+	* util/hostdisk.c (read_device_map): Use grub_util_get_disk_size
+	instead of stat in mingw environment.
+
+	* util/misc.c (grub_millisleep): Use Sleep in mingw environment.
+
+	* aclocal.m4 (grub_CHECK_LINK_DIR): New function.
+
+	* configure.ac: Use grub_CHECK_LINK_DIR to determine whether to use
+	AC_CONFIG_LINKS.
+
+2009-03-21  Bean  <bean123ch@gmail.com>
+
 	* fs/ext2.c (grub_ext2_mount): Change errno to GRUB_ERR_BAD_FS for
 	out of range error.
 

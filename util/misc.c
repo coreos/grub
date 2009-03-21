@@ -43,6 +43,11 @@
 # include <malloc.h>
 #endif
 
+#ifdef __MINGW32__
+#include <windows.h>
+#include <winioctl.h>
+#endif
+
 char *progname = 0;
 int verbosity = 0;
 
@@ -311,6 +316,16 @@ grub_get_time_ms (void)
   return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
+#ifdef __MINGW32__
+
+void
+grub_millisleep (grub_uint32_t ms)
+{
+  Sleep (ms);
+}
+
+#else
+
 void
 grub_millisleep (grub_uint32_t ms)
 {
@@ -320,6 +335,8 @@ grub_millisleep (grub_uint32_t ms)
   ts.tv_nsec = (ms % 1000) * 1000000;
   nanosleep (&ts, NULL);
 }
+
+#endif
 
 void 
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
@@ -348,9 +365,6 @@ asprintf (char **buf, const char *fmt, ...)
 #endif
 
 #ifdef __MINGW32__
-
-#include <windows.h>
-#include <winioctl.h>
 
 void sync (void)
 {

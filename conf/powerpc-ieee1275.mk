@@ -17,7 +17,7 @@ DEFSYMFILES += kernel_syms.lst
 kernel_elf_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h \
 	symbol.h term.h time.h types.h powerpc/libgcc.h loader.h partition.h \
-	pc_partition.h ieee1275/ieee1275.h machine/kernel.h
+	pc_partition.h ieee1275/ieee1275.h machine/kernel.h handler.h
 
 symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)

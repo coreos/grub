@@ -8859,8 +8859,35 @@ fi
 
 
 # Output files.
-ac_config_links="$ac_config_links include/grub/cpu:include/grub/$target_cpu include/grub/machine:include/grub/$target_cpu/$platform"
 
+{ echo "$as_me:$LINENO: checking whether ln can handle directories properly" >&5
+echo $ECHO_N "checking whether ln can handle directories properly... $ECHO_C" >&6; }
+mkdir testdir 2>/dev/null
+case $srcdir in
+[\\/$]* | ?:[\\/]* ) reldir=$srcdir/include/grub/util ;;
+    *) reldir=../$srcdir/include/grub/util ;;
+esac
+if ln -s $reldir testdir/util 2>/dev/null ; then
+  { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+  link_dir=yes
+else
+  link_dir=no
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+rm -rf testdir
+
+if test x"$link_dir" = xyes ; then
+  ac_config_links="$ac_config_links include/grub/cpu:include/grub/$target_cpu include/grub/machine:include/grub/$target_cpu/$platform"
+
+else
+  mkdir -p include/grub 2>/dev/null
+  rm -rf include/grub/cpu
+  cp -rp $srcdir/include/grub/$target_cpu include/grub/cpu 2>/dev/null
+  rm -rf include/grub/machine
+  cp -rp $srcdir/include/grub/$target_cpu/$platform include/grub/machine 2>/dev/null
+fi
 ac_config_files="$ac_config_files Makefile gensymlist.sh genkernsyms.sh"
 
 ac_config_files="$ac_config_files stamp-h"
