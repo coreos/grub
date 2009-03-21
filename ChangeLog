@@ -1,3 +1,11 @@
+2009-03-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Bugfixes in multiboot for bugs uncovered by solaris kernel.
+
+	* loader/i386/multiboot_elfxx.c (grub_multiboot_load_elf): Corrected
+	limit detection.
+	Use vaddr of correct segment for entry_point.
+
 2009-03-21  Bean  <bean123ch@gmail.com>
 
 	* commands/blocklist.c: Add include file <grub/command.h>, remove

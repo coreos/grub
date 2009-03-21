@@ -49,7 +49,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
 {
   Elf_Ehdr *ehdr = (Elf_Ehdr *) buffer;
   char *phdr_base;
-  int lowest_segment = 0, highest_segment = 0;
+  int lowest_segment = -1, highest_segment = -1;
   int i;
 
   if (ehdr->e_ident[EI_CLASS] != ELFCLASSXX)
@@ -83,11 +83,18 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
   for (i = 0; i < ehdr->e_phnum; i++)
     if (phdr(i)->p_type == PT_LOAD && phdr(i)->p_filesz != 0)
       {
-	if (phdr(i)->p_paddr < phdr(lowest_segment)->p_paddr)
+	/* Beware that segment 0 isn't necessarily loadable */
+	if (lowest_segment == -1 
+	    || phdr(i)->p_paddr < phdr(lowest_segment)->p_paddr)
 	  lowest_segment = i;
-	if (phdr(i)->p_paddr > phdr(highest_segment)->p_paddr)
+	if (highest_segment == -1
+	    || phdr(i)->p_paddr > phdr(highest_segment)->p_paddr)
 	  highest_segment = i;
       }
+
+  if (lowest_segment == -1)
+    return grub_error (GRUB_ERR_BAD_OS, "ELF contains no loadable segments");
+
   code_size = (phdr(highest_segment)->p_paddr + phdr(highest_segment)->p_memsz) - phdr(lowest_segment)->p_paddr;
   grub_multiboot_payload_dest = phdr(lowest_segment)->p_paddr;
 
@@ -105,8 +112,8 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
         {
 	  char *load_this_module_at = (char *) (grub_multiboot_payload_orig + (long) (phdr(i)->p_paddr - phdr(lowest_segment)->p_paddr));
 
-	  grub_dprintf ("multiboot_loader", "segment %d: paddr=0x%lx, memsz=0x%lx\n",
-			i, (long) phdr(i)->p_paddr, (long) phdr(i)->p_memsz);
+	  grub_dprintf ("multiboot_loader", "segment %d: paddr=0x%lx, memsz=0x%lx, vaddr=0x%lx\n",
+			i, (long) phdr(i)->p_paddr, (long) phdr(i)->p_memsz, (long) phdr(i)->p_vaddr);
 
 	  if (grub_file_seek (file, (grub_off_t) phdr(i)->p_offset)
 	      == (grub_off_t) -1)
@@ -124,7 +131,17 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, void *buffer)
         }
     }
 
-  grub_multiboot_payload_entry_offset = ehdr->e_entry - phdr(lowest_segment)->p_vaddr;
+  for (i = 0; i < ehdr->e_phnum; i++)
+    if (phdr(i)->p_vaddr <= ehdr->e_entry 
+	&& phdr(i)->p_vaddr + phdr(i)->p_memsz > ehdr->e_entry)
+      {
+	grub_multiboot_payload_entry_offset = (ehdr->e_entry - phdr(i)->p_vaddr)
+	  + (phdr(i)->p_paddr  - phdr(lowest_segment)->p_paddr);
+	break;
+      }
+
+  if (i == ehdr->e_phnum)
+    return grub_error (GRUB_ERR_BAD_OS, "entry point isn't in a segment");
 
 #undef phdr
 
