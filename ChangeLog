@@ -1,3 +1,8 @@
+2009-03-21  Bean  <bean123ch@gmail.com>
+
+	* fs/ext2.c (grub_ext2_mount): Change errno to GRUB_ERR_BAD_FS for
+	out of range error.
+
 2009-03-18  Michel Dänzer  <michel@daenzer.net>
 
 	* fs/ext2.c (grub_ext2_read_block): Take endianness into account when

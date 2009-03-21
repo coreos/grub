@@ -577,6 +577,9 @@ grub_ext2_mount (grub_disk_t disk)
   return data;
 
  fail:
+  if (grub_errno == GRUB_ERR_OUT_OF_RANGE)
+    grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
+
   grub_free (data);
   return 0;
 }
