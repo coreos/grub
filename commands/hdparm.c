@@ -17,15 +17,13 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/arg.h>
 #include <grub/ata.h>
 #include <grub/disk.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
 #include <grub/mm.h>
 #include <grub/lib/hexdump.h>
-
+#include <grub/extcmd.h>
 
 static const struct grub_arg_option options[] = {
   {"apm",             'B', 0, "set Advanced Power Management\n"
@@ -270,10 +268,11 @@ static int get_int_arg (const struct grub_arg_list *state)
   return (state->set ? (int)grub_strtoul (state->arg, 0, 0) : -1);
 }
 
-
 static grub_err_t
-grub_cmd_hdparm (struct grub_arg_list *state, int argc, char **args) // state????
+grub_cmd_hdparm (grub_extcmd_t cmd, int argc, char **args) // state????
 {
+  struct grub_arg_list *state = cmd->state;
+
   /* Check command line.  */
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing device name argument");
@@ -405,17 +404,19 @@ grub_cmd_hdparm (struct grub_arg_list *state, int argc, char **args) // state???
   return status;
 }
 
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(hdparm)
 {
   (void) mod;
 
-  grub_register_command ("hdparm", grub_cmd_hdparm, GRUB_COMMAND_FLAG_BOTH,
-			 "hdparm [OPTIONS] DISK",
-			 "Get/set ATA disk parameters.", options);
+  cmd = grub_register_extcmd ("hdparm", grub_cmd_hdparm,
+			      GRUB_COMMAND_FLAG_BOTH,
+			      "hdparm [OPTIONS] DISK",
+			      "Get/set ATA disk parameters.", options);
 }
 
 GRUB_MOD_FINI(hdparm)
 {
-  grub_unregister_command ("hdparm");
+  grub_unregister_extcmd (cmd);
 }

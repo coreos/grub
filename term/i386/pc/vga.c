@@ -27,7 +27,6 @@
 #include <grub/misc.h>
 #include <grub/normal.h>
 #include <grub/font.h>
-#include <grub/arg.h>
 
 #define DEBUG_VGA	0
 

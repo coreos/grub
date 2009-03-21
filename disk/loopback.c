@@ -17,13 +17,12 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/mm.h>
+#include <grub/extcmd.h>
 
 struct grub_loopback
 {
@@ -71,9 +70,9 @@ delete_loopback (const char *name)
 
 /* The command to add and remove loopback devices.  */
 static grub_err_t
-grub_cmd_loopback (struct grub_arg_list *state,
-		   int argc, char **args)
+grub_cmd_loopback (grub_extcmd_t cmd, int argc, char **args)
 {
+  struct grub_arg_list *state = state = cmd->state;
   grub_file_t file;
   struct grub_loopback *newdev;
   
@@ -240,19 +239,20 @@ static struct grub_disk_dev grub_loopback_dev =
     .next = 0
   };
 
-
+static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(loop)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("loopback", grub_cmd_loopback, GRUB_COMMAND_FLAG_BOTH,
-			 "loopback [-d|-p] DEVICENAME FILE",
-			 "Make a device of a file.", options);
+  cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
+			      GRUB_COMMAND_FLAG_BOTH,
+			      "loopback [-d|-p] DEVICENAME FILE",
+			      "Make a device of a file.", options);
   grub_disk_dev_register (&grub_loopback_dev);
 }
 
 GRUB_MOD_FINI(loop)
 {
-  grub_unregister_command ("loopback");
+  grub_unregister_extcmd (cmd);
   grub_disk_dev_unregister (&grub_loopback_dev);
 }

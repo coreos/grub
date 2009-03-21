@@ -17,17 +17,16 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/gzio.h>
+#include <grub/command.h>
 
 static grub_err_t
-grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_cat (grub_command_t cmd __attribute__ ((unused)),
 	      int argc, char **args)
 
 {
@@ -74,15 +73,16 @@ grub_cmd_cat (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(cat)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("cat", grub_cmd_cat, GRUB_COMMAND_FLAG_BOTH,
-			 "cat FILE", "Show the contents of a file.", 0);
+  cmd = grub_register_command_p1 ("cat", grub_cmd_cat,
+				  "cat FILE", "Show the contents of a file.");
 }
 
 GRUB_MOD_FINI(cat)
 {
-  grub_unregister_command ("cat");
+  grub_unregister_command (cmd);
 }

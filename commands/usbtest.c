@@ -22,8 +22,8 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
 #include <grub/usb.h>
+#include <grub/command.h>
 
 static const char *usb_classes[] =
   {
@@ -137,7 +137,7 @@ usb_iterate (grub_usb_device_t dev)
 }
 
 static grub_err_t
-grub_cmd_usbtest (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_usbtest (grub_command_t cmd __attribute__ ((unused)),
 		  int argc __attribute__ ((unused)),
 		  char **args __attribute__ ((unused)))
 {
@@ -147,14 +147,16 @@ grub_cmd_usbtest (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(usbtest)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("usb", grub_cmd_usbtest, GRUB_COMMAND_FLAG_BOTH,
-			 "usb", "Test USB support", 0);
+  cmd = grub_register_command ("usb", grub_cmd_usbtest,
+			       0, "Test USB support");
 }
 
 GRUB_MOD_FINI(usbtest)
 {
-  grub_unregister_command ("usb");
+  grub_unregister_command (cmd);
 }

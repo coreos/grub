@@ -19,7 +19,6 @@
 
 #include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/term.h>
@@ -28,7 +27,7 @@
 #include <grub/err.h>
 
 static grub_err_t
-grub_cmd_vbetest (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_vbetest (grub_command_t cmd __attribute__ ((unused)),
 		  int argc __attribute__ ((unused)),
 		  char **args __attribute__ ((unused)))
 {
@@ -162,18 +161,16 @@ grub_cmd_vbetest (struct grub_arg_list *state __attribute__ ((unused)),
   return grub_errno;
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(vbetest)
 {
   (void) mod;			/* To stop warning.  */
-  grub_register_command ("vbetest",
-                         grub_cmd_vbetest,
-                         GRUB_COMMAND_FLAG_BOTH,
-                         "vbetest",
-                         "Test VESA BIOS Extension 2.0+ support",
-                         0);
+  cmd = grub_register_command ("vbetest", grub_cmd_vbetest,
+			       0, "Test VESA BIOS Extension 2.0+ support");
 }
 
 GRUB_MOD_FINI(vbetest)
 {
-  grub_unregister_command ("vbetest");
+  grub_unregister_command (cmd);
 }

@@ -17,18 +17,17 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/file.h>
 #include <grub/mm.h>
 #include <grub/gzio.h>
+#include <grub/command.h>
 
 #define BUFFER_SIZE 512
 
 static grub_err_t
-grub_cmd_cmp (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_cmp (grub_command_t cmd __attribute__ ((unused)),
 	      int argc, char **args)
 {
   grub_ssize_t rd1, rd2;
@@ -105,15 +104,16 @@ cleanup:
   return grub_errno;
 }
 
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(cmp)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("cmp", grub_cmd_cmp, GRUB_COMMAND_FLAG_BOTH,
-			 "cmp FILE1 FILE2", "Compare two files.", 0);
+  cmd = grub_register_command ("cmp", grub_cmd_cmp,
+			       "cmp FILE1 FILE2", "Compare two files.");
 }
 
 GRUB_MOD_FINI(cmp)
 {
-  grub_unregister_command ("cmp");
+  grub_unregister_command (cmd);
 }

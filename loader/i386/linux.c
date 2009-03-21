@@ -25,7 +25,6 @@
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/types.h>
-#include <grub/rescue.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/term.h>
@@ -34,6 +33,7 @@
 /* FIXME: the definition of `struct grub_video_render_target' is
    VBE-specific.  */
 #include <grub/i386/pc/vbe.h>
+#include <grub/command.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -345,8 +345,9 @@ grub_linux_unload (void)
   return GRUB_ERR_NONE;
 }
 
-void
-grub_rescue_cmd_linux (int argc, char *argv[])
+static grub_err_t
+grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
+		int argc, char *argv[])
 {
   grub_file_t file = 0;
   struct linux_kernel_header lh;
@@ -536,10 +537,13 @@ grub_rescue_cmd_linux (int argc, char *argv[])
       grub_dl_unref (my_mod);
       loaded = 0;
     }
+
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_initrd (int argc, char *argv[])
+static grub_err_t
+grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
+		 int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size;
@@ -625,22 +629,23 @@ grub_rescue_cmd_initrd (int argc, char *argv[])
  fail:
   if (file)
     grub_file_close (file);
+
+  return grub_errno;
 }
 
+static grub_command_t cmd_linux, cmd_initrd;
 
 GRUB_MOD_INIT(linux)
 {
-  grub_rescue_register_command ("linux",
-				grub_rescue_cmd_linux,
-				"load linux");
-  grub_rescue_register_command ("initrd",
-				grub_rescue_cmd_initrd,
-				"load initrd");
+  cmd_linux = grub_register_command ("linux", grub_cmd_linux,
+				     0, "load linux");
+  cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
+				      0, "load initrd");
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(linux)
 {
-  grub_rescue_unregister_command ("linux");
-  grub_rescue_unregister_command ("initrd");
+  grub_unregister_command (cmd_linux);
+  grub_unregister_command (cmd_initrd);
 }

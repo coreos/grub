@@ -19,15 +19,14 @@
 
 /* Lots of this file is borrowed from GNU/Hurd generic-speaker driver.  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/term.h>
 #include <grub/misc.h>
 #include <grub/machine/time.h>
 #include <grub/cpu/io.h>
+#include <grub/command.h>
 
 #define BASE_TEMPO 120
 
@@ -144,7 +143,7 @@ beep_on (short pitch)
 }
 
 static grub_err_t
-grub_cmd_play (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 	       int argc, char **args)
 {
   grub_file_t file;
@@ -203,15 +202,16 @@ grub_cmd_play (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(play)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("play", grub_cmd_play, GRUB_COMMAND_FLAG_BOTH,
-			 "play FILE", "Play a tune", 0);
+  cmd = grub_register_command ("play", grub_cmd_play,
+			       "play FILE", "Play a tune");
 }
 
 GRUB_MOD_FINI(play)
 {
-  grub_unregister_command ("play");
+  grub_unregister_command (cmd);
 }

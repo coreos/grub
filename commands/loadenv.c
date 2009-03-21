@@ -17,16 +17,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
-#include <grub/arg.h>
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/env.h>
 #include <grub/partition.h>
 #include <grub/lib/envblk.h>
+#include <grub/extcmd.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -102,10 +101,12 @@ read_envblk_file (char *filename, void NESTED_FUNC_ATTR read_hook (grub_disk_add
 }
 
 static grub_err_t
-grub_cmd_load_env (struct grub_arg_list *state,
-                   int argc __attribute__ ((unused)), char **args __attribute__ ((unused)))
+grub_cmd_load_env (grub_extcmd_t cmd,
+		   int argc __attribute__ ((unused)),
+		   char **args __attribute__ ((unused)))
 
 {
+  struct grub_arg_list *state = cmd->state;
   grub_file_t file;
 
   auto int hook (char *name, char *value);
@@ -128,9 +129,11 @@ grub_cmd_load_env (struct grub_arg_list *state,
 }
 
 static grub_err_t
-grub_cmd_list_env (struct grub_arg_list *state,
-                   int argc __attribute__ ((unused)), char **args __attribute__ ((unused)))
+grub_cmd_list_env (grub_extcmd_t cmd,
+		   int argc __attribute__ ((unused)),
+		   char **args __attribute__ ((unused)))
 {
+  struct grub_arg_list *state = cmd->state;
   grub_file_t file;
 
   auto int hook (char *name, char *value);
@@ -153,8 +156,9 @@ grub_cmd_list_env (struct grub_arg_list *state,
 }
 
 static grub_err_t
-grub_cmd_save_env (struct grub_arg_list *state, int argc, char **args)
+grub_cmd_save_env (grub_extcmd_t cmd, int argc, char **args)
 {
+  struct grub_arg_list *state = cmd->state;
   grub_file_t file;
   grub_disk_t disk;
   grub_disk_addr_t addr[GRUB_ENVBLK_MAXLEN >> GRUB_DISK_SECTOR_BITS];
@@ -238,20 +242,35 @@ quit:
   return grub_errno;
 }
 
+static grub_extcmd_t cmd_load, cmd_list, cmd_save;
+
 GRUB_MOD_INIT(loadenv)
 {
   (void) mod;
-  grub_register_command ("load_env", grub_cmd_load_env, GRUB_COMMAND_FLAG_BOTH,
-			 "load_env [-f FILE]", "Load variables from environment block file.", options);
-  grub_register_command ("list_env", grub_cmd_list_env, GRUB_COMMAND_FLAG_BOTH,
-			 "list_env [-f FILE]", "List variables from environment block file.", options);
-  grub_register_command ("save_env", grub_cmd_save_env, GRUB_COMMAND_FLAG_BOTH,
-			 "save_env [-f FILE] variable_name [...]", "Save variables to environment block file.", options);
+
+  cmd_load =
+    grub_register_extcmd ("load_env", grub_cmd_load_env,
+			  GRUB_COMMAND_FLAG_BOTH,
+			  "load_env [-f FILE]",
+			  "Load variables from environment block file.",
+			  options);
+  cmd_list =
+    grub_register_extcmd ("list_env", grub_cmd_list_env,
+			  GRUB_COMMAND_FLAG_BOTH,
+			  "list_env [-f FILE]",
+			  "List variables from environment block file.",
+			  options);
+  cmd_save =
+    grub_register_extcmd ("save_env", grub_cmd_save_env,
+			  GRUB_COMMAND_FLAG_BOTH,
+			  "save_env [-f FILE] variable_name [...]",
+			  "Save variables to environment block file.",
+			  options);
 }
 
 GRUB_MOD_FINI(loadenv)
 {
-  grub_unregister_command ("load_env");
-  grub_unregister_command ("list_env");
-  grub_unregister_command ("save_env");
+  grub_unregister_extcmd (cmd_load);
+  grub_unregister_extcmd (cmd_list);
+  grub_unregister_extcmd (cmd_save);
 }

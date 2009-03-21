@@ -212,7 +212,8 @@ endif
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
-	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
+	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
+	lib/arg.c commands/extcmd.c normal/misc.c			\
 	lib/hexdump.c lib/crc.c commands/blocklist.c commands/ls.c 	\
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
@@ -225,11 +226,11 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\
 	grub_fstest_init.c
-CLEANFILES += grub-fstest$(EXEEXT) grub_fstest-util_grub_fstest.o grub_fstest-util_hostfs.o grub_fstest-util_misc.o grub_fstest-kern_file.o grub_fstest-kern_device.o grub_fstest-kern_disk.o grub_fstest-kern_err.o grub_fstest-kern_misc.o grub_fstest-disk_host.o grub_fstest-disk_loopback.o grub_fstest-normal_arg.o grub_fstest-normal_misc.o grub_fstest-lib_hexdump.o grub_fstest-lib_crc.o grub_fstest-commands_blocklist.o grub_fstest-commands_ls.o grub_fstest-fs_affs.o grub_fstest-fs_cpio.o grub_fstest-fs_fat.o grub_fstest-fs_ext2.o grub_fstest-fs_hfs.o grub_fstest-fs_hfsplus.o grub_fstest-fs_iso9660.o grub_fstest-fs_udf.o grub_fstest-fs_jfs.o grub_fstest-fs_minix.o grub_fstest-fs_ntfs.o grub_fstest-fs_ntfscomp.o grub_fstest-fs_reiserfs.o grub_fstest-fs_sfs.o grub_fstest-fs_ufs.o grub_fstest-fs_xfs.o grub_fstest-fs_afs.o grub_fstest-fs_tar.o grub_fstest-kern_partition.o grub_fstest-partmap_pc.o grub_fstest-partmap_apple.o grub_fstest-partmap_gpt.o grub_fstest-kern_fs.o grub_fstest-kern_env.o grub_fstest-fs_fshelp.o grub_fstest-disk_raid.o grub_fstest-disk_raid5_recover.o grub_fstest-disk_raid6_recover.o grub_fstest-disk_mdraid_linux.o grub_fstest-disk_dmraid_nvidia.o grub_fstest-disk_lvm.o grub_fstest-grub_fstest_init.o
-MOSTLYCLEANFILES += grub_fstest-util_grub_fstest.d grub_fstest-util_hostfs.d grub_fstest-util_misc.d grub_fstest-kern_file.d grub_fstest-kern_device.d grub_fstest-kern_disk.d grub_fstest-kern_err.d grub_fstest-kern_misc.d grub_fstest-disk_host.d grub_fstest-disk_loopback.d grub_fstest-normal_arg.d grub_fstest-normal_misc.d grub_fstest-lib_hexdump.d grub_fstest-lib_crc.d grub_fstest-commands_blocklist.d grub_fstest-commands_ls.d grub_fstest-fs_affs.d grub_fstest-fs_cpio.d grub_fstest-fs_fat.d grub_fstest-fs_ext2.d grub_fstest-fs_hfs.d grub_fstest-fs_hfsplus.d grub_fstest-fs_iso9660.d grub_fstest-fs_udf.d grub_fstest-fs_jfs.d grub_fstest-fs_minix.d grub_fstest-fs_ntfs.d grub_fstest-fs_ntfscomp.d grub_fstest-fs_reiserfs.d grub_fstest-fs_sfs.d grub_fstest-fs_ufs.d grub_fstest-fs_xfs.d grub_fstest-fs_afs.d grub_fstest-fs_tar.d grub_fstest-kern_partition.d grub_fstest-partmap_pc.d grub_fstest-partmap_apple.d grub_fstest-partmap_gpt.d grub_fstest-kern_fs.d grub_fstest-kern_env.d grub_fstest-fs_fshelp.d grub_fstest-disk_raid.d grub_fstest-disk_raid5_recover.d grub_fstest-disk_raid6_recover.d grub_fstest-disk_mdraid_linux.d grub_fstest-disk_dmraid_nvidia.d grub_fstest-disk_lvm.d grub_fstest-grub_fstest_init.d
+CLEANFILES += grub-fstest$(EXEEXT) grub_fstest-util_grub_fstest.o grub_fstest-util_hostfs.o grub_fstest-util_misc.o grub_fstest-kern_file.o grub_fstest-kern_device.o grub_fstest-kern_disk.o grub_fstest-kern_err.o grub_fstest-kern_misc.o grub_fstest-disk_host.o grub_fstest-disk_loopback.o grub_fstest-kern_list.o grub_fstest-kern_command.o grub_fstest-lib_arg.o grub_fstest-commands_extcmd.o grub_fstest-normal_misc.o grub_fstest-lib_hexdump.o grub_fstest-lib_crc.o grub_fstest-commands_blocklist.o grub_fstest-commands_ls.o grub_fstest-fs_affs.o grub_fstest-fs_cpio.o grub_fstest-fs_fat.o grub_fstest-fs_ext2.o grub_fstest-fs_hfs.o grub_fstest-fs_hfsplus.o grub_fstest-fs_iso9660.o grub_fstest-fs_udf.o grub_fstest-fs_jfs.o grub_fstest-fs_minix.o grub_fstest-fs_ntfs.o grub_fstest-fs_ntfscomp.o grub_fstest-fs_reiserfs.o grub_fstest-fs_sfs.o grub_fstest-fs_ufs.o grub_fstest-fs_xfs.o grub_fstest-fs_afs.o grub_fstest-fs_tar.o grub_fstest-kern_partition.o grub_fstest-partmap_pc.o grub_fstest-partmap_apple.o grub_fstest-partmap_gpt.o grub_fstest-kern_fs.o grub_fstest-kern_env.o grub_fstest-fs_fshelp.o grub_fstest-disk_raid.o grub_fstest-disk_raid5_recover.o grub_fstest-disk_raid6_recover.o grub_fstest-disk_mdraid_linux.o grub_fstest-disk_dmraid_nvidia.o grub_fstest-disk_lvm.o grub_fstest-grub_fstest_init.o
+MOSTLYCLEANFILES += grub_fstest-util_grub_fstest.d grub_fstest-util_hostfs.d grub_fstest-util_misc.d grub_fstest-kern_file.d grub_fstest-kern_device.d grub_fstest-kern_disk.d grub_fstest-kern_err.d grub_fstest-kern_misc.d grub_fstest-disk_host.d grub_fstest-disk_loopback.d grub_fstest-kern_list.d grub_fstest-kern_command.d grub_fstest-lib_arg.d grub_fstest-commands_extcmd.d grub_fstest-normal_misc.d grub_fstest-lib_hexdump.d grub_fstest-lib_crc.d grub_fstest-commands_blocklist.d grub_fstest-commands_ls.d grub_fstest-fs_affs.d grub_fstest-fs_cpio.d grub_fstest-fs_fat.d grub_fstest-fs_ext2.d grub_fstest-fs_hfs.d grub_fstest-fs_hfsplus.d grub_fstest-fs_iso9660.d grub_fstest-fs_udf.d grub_fstest-fs_jfs.d grub_fstest-fs_minix.d grub_fstest-fs_ntfs.d grub_fstest-fs_ntfscomp.d grub_fstest-fs_reiserfs.d grub_fstest-fs_sfs.d grub_fstest-fs_ufs.d grub_fstest-fs_xfs.d grub_fstest-fs_afs.d grub_fstest-fs_tar.d grub_fstest-kern_partition.d grub_fstest-partmap_pc.d grub_fstest-partmap_apple.d grub_fstest-partmap_gpt.d grub_fstest-kern_fs.d grub_fstest-kern_env.d grub_fstest-fs_fshelp.d grub_fstest-disk_raid.d grub_fstest-disk_raid5_recover.d grub_fstest-disk_raid6_recover.d grub_fstest-disk_mdraid_linux.d grub_fstest-disk_dmraid_nvidia.d grub_fstest-disk_lvm.d grub_fstest-grub_fstest_init.d
 
-grub-fstest: $(grub_fstest_DEPENDENCIES) grub_fstest-util_grub_fstest.o grub_fstest-util_hostfs.o grub_fstest-util_misc.o grub_fstest-kern_file.o grub_fstest-kern_device.o grub_fstest-kern_disk.o grub_fstest-kern_err.o grub_fstest-kern_misc.o grub_fstest-disk_host.o grub_fstest-disk_loopback.o grub_fstest-normal_arg.o grub_fstest-normal_misc.o grub_fstest-lib_hexdump.o grub_fstest-lib_crc.o grub_fstest-commands_blocklist.o grub_fstest-commands_ls.o grub_fstest-fs_affs.o grub_fstest-fs_cpio.o grub_fstest-fs_fat.o grub_fstest-fs_ext2.o grub_fstest-fs_hfs.o grub_fstest-fs_hfsplus.o grub_fstest-fs_iso9660.o grub_fstest-fs_udf.o grub_fstest-fs_jfs.o grub_fstest-fs_minix.o grub_fstest-fs_ntfs.o grub_fstest-fs_ntfscomp.o grub_fstest-fs_reiserfs.o grub_fstest-fs_sfs.o grub_fstest-fs_ufs.o grub_fstest-fs_xfs.o grub_fstest-fs_afs.o grub_fstest-fs_tar.o grub_fstest-kern_partition.o grub_fstest-partmap_pc.o grub_fstest-partmap_apple.o grub_fstest-partmap_gpt.o grub_fstest-kern_fs.o grub_fstest-kern_env.o grub_fstest-fs_fshelp.o grub_fstest-disk_raid.o grub_fstest-disk_raid5_recover.o grub_fstest-disk_raid6_recover.o grub_fstest-disk_mdraid_linux.o grub_fstest-disk_dmraid_nvidia.o grub_fstest-disk_lvm.o grub_fstest-grub_fstest_init.o
-	$(CC) -o $@ grub_fstest-util_grub_fstest.o grub_fstest-util_hostfs.o grub_fstest-util_misc.o grub_fstest-kern_file.o grub_fstest-kern_device.o grub_fstest-kern_disk.o grub_fstest-kern_err.o grub_fstest-kern_misc.o grub_fstest-disk_host.o grub_fstest-disk_loopback.o grub_fstest-normal_arg.o grub_fstest-normal_misc.o grub_fstest-lib_hexdump.o grub_fstest-lib_crc.o grub_fstest-commands_blocklist.o grub_fstest-commands_ls.o grub_fstest-fs_affs.o grub_fstest-fs_cpio.o grub_fstest-fs_fat.o grub_fstest-fs_ext2.o grub_fstest-fs_hfs.o grub_fstest-fs_hfsplus.o grub_fstest-fs_iso9660.o grub_fstest-fs_udf.o grub_fstest-fs_jfs.o grub_fstest-fs_minix.o grub_fstest-fs_ntfs.o grub_fstest-fs_ntfscomp.o grub_fstest-fs_reiserfs.o grub_fstest-fs_sfs.o grub_fstest-fs_ufs.o grub_fstest-fs_xfs.o grub_fstest-fs_afs.o grub_fstest-fs_tar.o grub_fstest-kern_partition.o grub_fstest-partmap_pc.o grub_fstest-partmap_apple.o grub_fstest-partmap_gpt.o grub_fstest-kern_fs.o grub_fstest-kern_env.o grub_fstest-fs_fshelp.o grub_fstest-disk_raid.o grub_fstest-disk_raid5_recover.o grub_fstest-disk_raid6_recover.o grub_fstest-disk_mdraid_linux.o grub_fstest-disk_dmraid_nvidia.o grub_fstest-disk_lvm.o grub_fstest-grub_fstest_init.o $(LDFLAGS) $(grub_fstest_LDFLAGS)
+grub-fstest: $(grub_fstest_DEPENDENCIES) grub_fstest-util_grub_fstest.o grub_fstest-util_hostfs.o grub_fstest-util_misc.o grub_fstest-kern_file.o grub_fstest-kern_device.o grub_fstest-kern_disk.o grub_fstest-kern_err.o grub_fstest-kern_misc.o grub_fstest-disk_host.o grub_fstest-disk_loopback.o grub_fstest-kern_list.o grub_fstest-kern_command.o grub_fstest-lib_arg.o grub_fstest-commands_extcmd.o grub_fstest-normal_misc.o grub_fstest-lib_hexdump.o grub_fstest-lib_crc.o grub_fstest-commands_blocklist.o grub_fstest-commands_ls.o grub_fstest-fs_affs.o grub_fstest-fs_cpio.o grub_fstest-fs_fat.o grub_fstest-fs_ext2.o grub_fstest-fs_hfs.o grub_fstest-fs_hfsplus.o grub_fstest-fs_iso9660.o grub_fstest-fs_udf.o grub_fstest-fs_jfs.o grub_fstest-fs_minix.o grub_fstest-fs_ntfs.o grub_fstest-fs_ntfscomp.o grub_fstest-fs_reiserfs.o grub_fstest-fs_sfs.o grub_fstest-fs_ufs.o grub_fstest-fs_xfs.o grub_fstest-fs_afs.o grub_fstest-fs_tar.o grub_fstest-kern_partition.o grub_fstest-partmap_pc.o grub_fstest-partmap_apple.o grub_fstest-partmap_gpt.o grub_fstest-kern_fs.o grub_fstest-kern_env.o grub_fstest-fs_fshelp.o grub_fstest-disk_raid.o grub_fstest-disk_raid5_recover.o grub_fstest-disk_raid6_recover.o grub_fstest-disk_mdraid_linux.o grub_fstest-disk_dmraid_nvidia.o grub_fstest-disk_lvm.o grub_fstest-grub_fstest_init.o
+	$(CC) -o $@ grub_fstest-util_grub_fstest.o grub_fstest-util_hostfs.o grub_fstest-util_misc.o grub_fstest-kern_file.o grub_fstest-kern_device.o grub_fstest-kern_disk.o grub_fstest-kern_err.o grub_fstest-kern_misc.o grub_fstest-disk_host.o grub_fstest-disk_loopback.o grub_fstest-kern_list.o grub_fstest-kern_command.o grub_fstest-lib_arg.o grub_fstest-commands_extcmd.o grub_fstest-normal_misc.o grub_fstest-lib_hexdump.o grub_fstest-lib_crc.o grub_fstest-commands_blocklist.o grub_fstest-commands_ls.o grub_fstest-fs_affs.o grub_fstest-fs_cpio.o grub_fstest-fs_fat.o grub_fstest-fs_ext2.o grub_fstest-fs_hfs.o grub_fstest-fs_hfsplus.o grub_fstest-fs_iso9660.o grub_fstest-fs_udf.o grub_fstest-fs_jfs.o grub_fstest-fs_minix.o grub_fstest-fs_ntfs.o grub_fstest-fs_ntfscomp.o grub_fstest-fs_reiserfs.o grub_fstest-fs_sfs.o grub_fstest-fs_ufs.o grub_fstest-fs_xfs.o grub_fstest-fs_afs.o grub_fstest-fs_tar.o grub_fstest-kern_partition.o grub_fstest-partmap_pc.o grub_fstest-partmap_apple.o grub_fstest-partmap_gpt.o grub_fstest-kern_fs.o grub_fstest-kern_env.o grub_fstest-fs_fshelp.o grub_fstest-disk_raid.o grub_fstest-disk_raid5_recover.o grub_fstest-disk_raid6_recover.o grub_fstest-disk_mdraid_linux.o grub_fstest-disk_dmraid_nvidia.o grub_fstest-disk_lvm.o grub_fstest-grub_fstest_init.o $(LDFLAGS) $(grub_fstest_LDFLAGS)
 
 grub_fstest-util_grub_fstest.o: util/grub-fstest.c $(util/grub-fstest.c_DEPENDENCIES)
 	$(CC) -Iutil -I$(srcdir)/util $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
@@ -271,9 +272,21 @@ grub_fstest-disk_loopback.o: disk/loopback.c $(disk/loopback.c_DEPENDENCIES)
 	$(CC) -Idisk -I$(srcdir)/disk $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
 -include grub_fstest-disk_loopback.d
 
-grub_fstest-normal_arg.o: normal/arg.c $(normal/arg.c_DEPENDENCIES)
-	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
--include grub_fstest-normal_arg.d
+grub_fstest-kern_list.o: kern/list.c $(kern/list.c_DEPENDENCIES)
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
+-include grub_fstest-kern_list.d
+
+grub_fstest-kern_command.o: kern/command.c $(kern/command.c_DEPENDENCIES)
+	$(CC) -Ikern -I$(srcdir)/kern $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
+-include grub_fstest-kern_command.d
+
+grub_fstest-lib_arg.o: lib/arg.c $(lib/arg.c_DEPENDENCIES)
+	$(CC) -Ilib -I$(srcdir)/lib $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
+-include grub_fstest-lib_arg.d
+
+grub_fstest-commands_extcmd.o: commands/extcmd.c $(commands/extcmd.c_DEPENDENCIES)
+	$(CC) -Icommands -I$(srcdir)/commands $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
+-include grub_fstest-commands_extcmd.d
 
 grub_fstest-normal_misc.o: normal/misc.c $(normal/misc.c_DEPENDENCIES)
 	$(CC) -Inormal -I$(srcdir)/normal $(CPPFLAGS) $(CFLAGS) -DGRUB_UTIL=1 $(grub_fstest_CFLAGS) -MD -c -o $@ $<
@@ -2427,11 +2440,144 @@ scsi_mod_CFLAGS = $(COMMON_CFLAGS)
 scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
-pkglib_MODULES += hello.mod boot.mod handler.mod ls.mod	\
-	cmp.mod cat.mod help.mod search.mod					\
+pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
+	 ls.mod	cmp.mod cat.mod help.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod
+
+# For minicmd.mod.
+minicmd_mod_SOURCES = commands/minicmd.c
+CLEANFILES += minicmd.mod mod-minicmd.o mod-minicmd.c pre-minicmd.o minicmd_mod-commands_minicmd.o und-minicmd.lst
+ifneq ($(minicmd_mod_EXPORTS),no)
+CLEANFILES += def-minicmd.lst
+DEFSYMFILES += def-minicmd.lst
+endif
+MOSTLYCLEANFILES += minicmd_mod-commands_minicmd.d
+UNDSYMFILES += und-minicmd.lst
+
+minicmd.mod: pre-minicmd.o mod-minicmd.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(minicmd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-minicmd.o mod-minicmd.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-minicmd.o: $(minicmd_mod_DEPENDENCIES) minicmd_mod-commands_minicmd.o
+	-rm -f $@
+	$(TARGET_CC) $(minicmd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ minicmd_mod-commands_minicmd.o
+
+mod-minicmd.o: mod-minicmd.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minicmd_mod_CFLAGS) -c -o $@ $<
+
+mod-minicmd.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'minicmd' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(minicmd_mod_EXPORTS),no)
+def-minicmd.lst: pre-minicmd.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 minicmd/' > $@
+endif
+
+und-minicmd.lst: pre-minicmd.o
+	echo 'minicmd' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+minicmd_mod-commands_minicmd.o: commands/minicmd.c $(commands/minicmd.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(minicmd_mod_CFLAGS) -MD -c -o $@ $<
+-include minicmd_mod-commands_minicmd.d
+
+CLEANFILES += cmd-minicmd_mod-commands_minicmd.lst fs-minicmd_mod-commands_minicmd.lst partmap-minicmd_mod-commands_minicmd.lst
+COMMANDFILES += cmd-minicmd_mod-commands_minicmd.lst
+FSFILES += fs-minicmd_mod-commands_minicmd.lst
+PARTMAPFILES += partmap-minicmd_mod-commands_minicmd.lst
+
+cmd-minicmd_mod-commands_minicmd.lst: commands/minicmd.c $(commands/minicmd.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minicmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh minicmd > $@ || (rm -f $@; exit 1)
+
+fs-minicmd_mod-commands_minicmd.lst: commands/minicmd.c $(commands/minicmd.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minicmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh minicmd > $@ || (rm -f $@; exit 1)
+
+partmap-minicmd_mod-commands_minicmd.lst: commands/minicmd.c $(commands/minicmd.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(minicmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh minicmd > $@ || (rm -f $@; exit 1)
+
+
+minicmd_mod_CFLAGS = $(COMMON_CFLAGS)
+minicmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For extcmd.mod.
+extcmd_mod_SOURCES = commands/extcmd.c lib/arg.c
+CLEANFILES += extcmd.mod mod-extcmd.o mod-extcmd.c pre-extcmd.o extcmd_mod-commands_extcmd.o extcmd_mod-lib_arg.o und-extcmd.lst
+ifneq ($(extcmd_mod_EXPORTS),no)
+CLEANFILES += def-extcmd.lst
+DEFSYMFILES += def-extcmd.lst
+endif
+MOSTLYCLEANFILES += extcmd_mod-commands_extcmd.d extcmd_mod-lib_arg.d
+UNDSYMFILES += und-extcmd.lst
+
+extcmd.mod: pre-extcmd.o mod-extcmd.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(extcmd_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-extcmd.o mod-extcmd.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-extcmd.o: $(extcmd_mod_DEPENDENCIES) extcmd_mod-commands_extcmd.o extcmd_mod-lib_arg.o
+	-rm -f $@
+	$(TARGET_CC) $(extcmd_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ extcmd_mod-commands_extcmd.o extcmd_mod-lib_arg.o
+
+mod-extcmd.o: mod-extcmd.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -c -o $@ $<
+
+mod-extcmd.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'extcmd' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(extcmd_mod_EXPORTS),no)
+def-extcmd.lst: pre-extcmd.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 extcmd/' > $@
+endif
+
+und-extcmd.lst: pre-extcmd.o
+	echo 'extcmd' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+extcmd_mod-commands_extcmd.o: commands/extcmd.c $(commands/extcmd.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -MD -c -o $@ $<
+-include extcmd_mod-commands_extcmd.d
+
+CLEANFILES += cmd-extcmd_mod-commands_extcmd.lst fs-extcmd_mod-commands_extcmd.lst partmap-extcmd_mod-commands_extcmd.lst
+COMMANDFILES += cmd-extcmd_mod-commands_extcmd.lst
+FSFILES += fs-extcmd_mod-commands_extcmd.lst
+PARTMAPFILES += partmap-extcmd_mod-commands_extcmd.lst
+
+cmd-extcmd_mod-commands_extcmd.lst: commands/extcmd.c $(commands/extcmd.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh extcmd > $@ || (rm -f $@; exit 1)
+
+fs-extcmd_mod-commands_extcmd.lst: commands/extcmd.c $(commands/extcmd.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh extcmd > $@ || (rm -f $@; exit 1)
+
+partmap-extcmd_mod-commands_extcmd.lst: commands/extcmd.c $(commands/extcmd.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh extcmd > $@ || (rm -f $@; exit 1)
+
+
+extcmd_mod-lib_arg.o: lib/arg.c $(lib/arg.c_DEPENDENCIES)
+	$(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -MD -c -o $@ $<
+-include extcmd_mod-lib_arg.d
+
+CLEANFILES += cmd-extcmd_mod-lib_arg.lst fs-extcmd_mod-lib_arg.lst partmap-extcmd_mod-lib_arg.lst
+COMMANDFILES += cmd-extcmd_mod-lib_arg.lst
+FSFILES += fs-extcmd_mod-lib_arg.lst
+PARTMAPFILES += partmap-extcmd_mod-lib_arg.lst
+
+cmd-extcmd_mod-lib_arg.lst: lib/arg.c $(lib/arg.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh extcmd > $@ || (rm -f $@; exit 1)
+
+fs-extcmd_mod-lib_arg.lst: lib/arg.c $(lib/arg.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh extcmd > $@ || (rm -f $@; exit 1)
+
+partmap-extcmd_mod-lib_arg.lst: lib/arg.c $(lib/arg.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(extcmd_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh extcmd > $@ || (rm -f $@; exit 1)
+
+
+extcmd_mod_CFLAGS = $(COMMON_CFLAGS)
+extcmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
@@ -2489,63 +2635,6 @@ partmap-hello_mod-hello_hello.lst: hello/hello.c $(hello/hello.c_DEPENDENCIES) g
 
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For boot.mod.
-boot_mod_SOURCES = commands/boot.c
-CLEANFILES += boot.mod mod-boot.o mod-boot.c pre-boot.o boot_mod-commands_boot.o und-boot.lst
-ifneq ($(boot_mod_EXPORTS),no)
-CLEANFILES += def-boot.lst
-DEFSYMFILES += def-boot.lst
-endif
-MOSTLYCLEANFILES += boot_mod-commands_boot.d
-UNDSYMFILES += und-boot.lst
-
-boot.mod: pre-boot.o mod-boot.o $(TARGET_OBJ2ELF)
-	-rm -f $@
-	$(TARGET_CC) $(boot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-boot.o mod-boot.o
-	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
-	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
-
-pre-boot.o: $(boot_mod_DEPENDENCIES) boot_mod-commands_boot.o
-	-rm -f $@
-	$(TARGET_CC) $(boot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ boot_mod-commands_boot.o
-
-mod-boot.o: mod-boot.c
-	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -c -o $@ $<
-
-mod-boot.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
-	sh $(srcdir)/genmodsrc.sh 'boot' $< > $@ || (rm -f $@; exit 1)
-
-ifneq ($(boot_mod_EXPORTS),no)
-def-boot.lst: pre-boot.o
-	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 boot/' > $@
-endif
-
-und-boot.lst: pre-boot.o
-	echo 'boot' > $@
-	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-boot_mod-commands_boot.o: commands/boot.c $(commands/boot.c_DEPENDENCIES)
-	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -MD -c -o $@ $<
--include boot_mod-commands_boot.d
-
-CLEANFILES += cmd-boot_mod-commands_boot.lst fs-boot_mod-commands_boot.lst partmap-boot_mod-commands_boot.lst
-COMMANDFILES += cmd-boot_mod-commands_boot.lst
-FSFILES += fs-boot_mod-commands_boot.lst
-PARTMAPFILES += partmap-boot_mod-commands_boot.lst
-
-cmd-boot_mod-commands_boot.lst: commands/boot.c $(commands/boot.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh boot > $@ || (rm -f $@; exit 1)
-
-fs-boot_mod-commands_boot.lst: commands/boot.c $(commands/boot.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh boot > $@ || (rm -f $@; exit 1)
-
-partmap-boot_mod-commands_boot.lst: commands/boot.c $(commands/boot.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(boot_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh boot > $@ || (rm -f $@; exit 1)
-
-
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For handler.mod.
 handler_mod_SOURCES = commands/handler.c

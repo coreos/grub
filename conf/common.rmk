@@ -31,7 +31,8 @@ endif
 util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
-	disk/host.c disk/loopback.c  normal/arg.c normal/misc.c		\
+	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
+	lib/arg.c commands/extcmd.c normal/misc.c			\
 	lib/hexdump.c lib/crc.c commands/blocklist.c commands/ls.c 	\
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\
@@ -330,21 +331,26 @@ scsi_mod_CFLAGS = $(COMMON_CFLAGS)
 scsi_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Commands.
-pkglib_MODULES += hello.mod boot.mod handler.mod ls.mod	\
-	cmp.mod cat.mod help.mod search.mod					\
+pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
+	 ls.mod	cmp.mod cat.mod help.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod
+
+# For minicmd.mod.
+minicmd_mod_SOURCES = commands/minicmd.c
+minicmd_mod_CFLAGS = $(COMMON_CFLAGS)
+minicmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For extcmd.mod.
+extcmd_mod_SOURCES = commands/extcmd.c lib/arg.c
+extcmd_mod_CFLAGS = $(COMMON_CFLAGS)
+extcmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For hello.mod.
 hello_mod_SOURCES = hello/hello.c
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For boot.mod.
-boot_mod_SOURCES = commands/boot.c
-boot_mod_CFLAGS = $(COMMON_CFLAGS)
-boot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For handler.mod.
 handler_mod_SOURCES = commands/handler.c

@@ -23,7 +23,6 @@
 #include <grub/machine/memory.h>
 #include <grub/file.h>
 #include <grub/err.h>
-#include <grub/rescue.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/elfload.h>
@@ -31,6 +30,7 @@
 #include <grub/misc.h>
 #include <grub/gzio.h>
 #include <grub/aout.h>
+#include <grub/command.h>
 
 #define ALIGN_DWORD(a)	ALIGN_UP (a, 4)
 #define ALIGN_PAGE(a)	ALIGN_UP (a, 4096)
@@ -563,8 +563,9 @@ grub_bsd_parse_flags (char *str, const char *opts,
   return result;
 }
 
-void
-grub_rescue_cmd_freebsd (int argc, char *argv[])
+static grub_err_t
+grub_cmd_freebsd (grub_command_t cmd __attribute__ ((unused)),
+		  int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_FREEBSD;
   bootflags = ((argc <= 1) ? 0 :
@@ -576,13 +577,16 @@ grub_rescue_cmd_freebsd (int argc, char *argv[])
       if ((is_elf_kernel) &&
 	  (grub_freebsd_add_meta_module (1, argc, argv, kern_start,
 					 kern_end - kern_start)))
-	return;
+	return grub_errno;
       grub_loader_set (grub_freebsd_boot, grub_bsd_unload, 1);
     }
+
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_openbsd (int argc, char *argv[])
+static grub_err_t
+grub_cmd_openbsd (grub_command_t cmd __attribute__ ((unused)),
+		  int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_OPENBSD;
   bootflags = ((argc <= 1) ? 0 :
@@ -590,10 +594,13 @@ grub_rescue_cmd_openbsd (int argc, char *argv[])
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     grub_loader_set (grub_openbsd_boot, grub_bsd_unload, 1);
+
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_netbsd (int argc, char *argv[])
+static grub_err_t
+grub_cmd_netbsd (grub_command_t cmd __attribute__ ((unused)),
+		 int argc, char *argv[])
 {
   kernel_type = KERNEL_TYPE_NETBSD;
   bootflags = ((argc <= 1) ? 0 :
@@ -601,20 +608,21 @@ grub_rescue_cmd_netbsd (int argc, char *argv[])
 
   if (grub_bsd_load (argc, argv) == GRUB_ERR_NONE)
     grub_loader_set (grub_netbsd_boot, grub_bsd_unload, 1);
+
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_freebsd_loadenv (int argc, char *argv[])
+static grub_err_t
+grub_cmd_freebsd_loadenv (grub_command_t cmd __attribute__ ((unused)),
+			  int argc, char *argv[])
 {
   grub_file_t file = 0;
   char *buf = 0, *curr, *next;
   int len;
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "only freebsd support environment");
-      return;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "only freebsd support environment");
 
   if (argc == 0)
     {
@@ -688,30 +696,29 @@ fail:
 
   if (file)
     grub_file_close (file);
+
+  return grub_errno;
 }
 
-void
-grub_rescue_cmd_freebsd_module (int argc, char *argv[])
+static grub_err_t
+grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
+			 int argc, char *argv[])
 {
   grub_file_t file = 0;
 
   if (kernel_type != KERNEL_TYPE_FREEBSD)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "only freebsd support module");
-      return;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "only freebsd support module");
 
   if (!is_elf_kernel)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "only elf kernel support module");
-      return;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       "only elf kernel support module");
 
   /* List the current modules if no parameter.  */
   if (!argc)
     {
       grub_freebsd_list_modules ();
-      return;
+      return 0;
     }
 
   file = grub_gzfile_open (argv[0], 1);
@@ -732,37 +739,42 @@ grub_rescue_cmd_freebsd_module (int argc, char *argv[])
 fail:
   if (file)
     grub_file_close (file);
+
+  return grub_errno;
 }
+
+static grub_command_t cmd_freebsd, cmd_openbsd, cmd_netbsd;
+static grub_command_t cmd_freebsd_loadenv, cmd_freebsd_module;
 
 GRUB_MOD_INIT (bsd)
 {
-  grub_rescue_register_command ("freebsd",
-				grub_rescue_cmd_freebsd,
-				"load freebsd kernel");
-  grub_rescue_register_command ("openbsd",
-				grub_rescue_cmd_openbsd,
-				"load openbsd kernel");
-  grub_rescue_register_command ("netbsd",
-				grub_rescue_cmd_netbsd, "load netbsd kernel");
-
-  grub_rescue_register_command ("freebsd_loadenv",
-				grub_rescue_cmd_freebsd_loadenv,
-				"load freebsd env");
-  grub_rescue_register_command ("freebsd_module",
-				grub_rescue_cmd_freebsd_module,
-				"load freebsd module");
+  cmd_freebsd =
+    grub_register_command ("freebsd", grub_cmd_freebsd,
+			   0, "load freebsd kernel");
+  cmd_openbsd =
+    grub_register_command ("openbsd", grub_cmd_openbsd,
+			   0, "load openbsd kernel");
+  cmd_netbsd =
+    grub_register_command ("netbsd", grub_cmd_netbsd,
+			   0, "load netbsd kernel");
+  cmd_freebsd_loadenv =
+    grub_register_command ("freebsd_loadenv", grub_cmd_freebsd_loadenv,
+			   0, "load freebsd env");
+  cmd_freebsd_module =
+    grub_register_command ("freebsd_module", grub_cmd_freebsd_module,
+			   0, "load freebsd module");
 
   my_mod = mod;
 }
 
 GRUB_MOD_FINI (bsd)
 {
-  grub_rescue_unregister_command ("freebsd");
-  grub_rescue_unregister_command ("openbsd");
-  grub_rescue_unregister_command ("netbsd");
+  grub_unregister_command (cmd_freebsd);
+  grub_unregister_command (cmd_openbsd);
+  grub_unregister_command (cmd_netbsd);
 
-  grub_rescue_unregister_command ("freebsd_loadenv");
-  grub_rescue_unregister_command ("freebsd_module");
+  grub_unregister_command (cmd_freebsd_loadenv);
+  grub_unregister_command (cmd_freebsd_module);
 
   if (mod_buf)
     {

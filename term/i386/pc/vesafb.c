@@ -28,7 +28,6 @@
 #include <grub/misc.h>
 #include <grub/normal.h>
 #include <grub/font.h>
-#include <grub/arg.h>
 #include <grub/mm.h>
 #include <grub/env.h>
 

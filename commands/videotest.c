@@ -20,14 +20,13 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
-#include <grub/arg.h>
 #include <grub/mm.h>
 #include <grub/font.h>
 #include <grub/term.h>
+#include <grub/command.h>
 
 static grub_err_t
-grub_cmd_videotest (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
                     int argc __attribute__ ((unused)),
                     char **args __attribute__ ((unused)))
 {
@@ -175,17 +174,15 @@ grub_cmd_videotest (struct grub_arg_list *state __attribute__ ((unused)),
   return grub_errno;
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(videotest)
 {
-  grub_register_command ("videotest",
-                         grub_cmd_videotest,
-                         GRUB_COMMAND_FLAG_BOTH,
-                         "videotest",
-                         "Test video subsystem",
-                         0);
+  cmd = grub_register_command ("videotest", grub_cmd_videotest,
+			       0, "Test video subsystem");
 }
 
 GRUB_MOD_FINI(videotest)
 {
-  grub_unregister_command ("videotest");
+  grub_unregister_command (cmd);
 }

@@ -42,7 +42,7 @@ cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
 	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
-	kern/time.c kern/list.c kern/handler.c \
+	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/i386/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
 	kern/parser.c kern/partition.c \
 	kern/i386/tsc.c kern/i386/pit.c \
@@ -51,12 +51,12 @@ kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/env.c \
 	term/i386/pc/console.c term/i386/vga_common.c \
 	symlist.c
-kernel_img_HEADERS = arg.h boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
+kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h \
-	machine/kernel.h machine/pxe.h list.h handler.h
+	machine/kernel.h machine/pxe.h list.h handler.h command.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
@@ -112,7 +112,7 @@ grub_mkdevicemap_SOURCES = util/grub-mkdevicemap.c util/misc.c
 
 # For grub-emu.
 util/grub-emu.c_DEPENDENCIES = grub_emu_init.h
-grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
+grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	commands/configfile.c commands/echo.c commands/help.c		\
 	commands/handler.c commands/ls.c commands/test.c 		\
 	commands/search.c commands/blocklist.c commands/hexdump.c	\
@@ -124,10 +124,11 @@ grub_emu_SOURCES = commands/boot.c commands/cat.c commands/cmp.c	\
 	io/gzio.c							\
 	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
 	kern/err.c kern/list.c kern/handler.c				\
+	kern/command.c kern/corecmd.c commands/extcmd.c			\
 	normal/execute.c kern/file.c kern/fs.c normal/lexer.c 		\
 	kern/loader.c kern/main.c kern/misc.c kern/parser.c		\
 	grub_script.tab.c kern/partition.c kern/rescue.c kern/term.c	\
-	normal/arg.c normal/cmdline.c normal/command.c normal/function.c\
+	lib/arg.c normal/cmdline.c normal/command.c normal/function.c	\
 	normal/completion.c normal/main.c normal/color.c		\
 	normal/menu.c normal/menu_entry.c normal/menu_viewer.c		\
 	normal/menu_text.c						\
@@ -166,12 +167,11 @@ grub_install_SOURCES = util/i386/pc/grub-install.in
 # For grub-mkrescue.
 grub_mkrescue_SOURCES = util/i386/pc/grub-mkrescue.in
 
-# Modules.
-pkglib_MODULES = biosdisk.mod _chain.mod _linux.mod linux.mod normal.mod \
-	_multiboot.mod chain.mod multiboot.mod reboot.mod halt.mod	\
+pkglib_MODULES = biosdisk.mod chain.mod linux.mod normal.mod \
+	multiboot.mod reboot.mod halt.mod	\
 	vbe.mod vbetest.mod vbeinfo.mod play.mod serial.mod	\
-	ata.mod vga.mod memdisk.mod pci.mod lspci.mod \
-	aout.mod _bsd.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
+	ata.mod vga.mod memdisk.mod pci.mod lspci.mod	\
+	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod
 
@@ -180,23 +180,13 @@ biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
 biosdisk_mod_CFLAGS = $(COMMON_CFLAGS)
 biosdisk_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For _chain.mod.
-_chain_mod_SOURCES = loader/i386/pc/chainloader.c
-_chain_mod_CFLAGS = $(COMMON_CFLAGS)
-_chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For chain.mod.
-chain_mod_SOURCES = loader/i386/pc/chainloader_normal.c
+chain_mod_SOURCES = loader/i386/pc/chainloader.c
 chain_mod_CFLAGS = $(COMMON_CFLAGS)
 chain_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For _linux.mod.
-_linux_mod_SOURCES = loader/i386/pc/linux.c
-_linux_mod_CFLAGS = $(COMMON_CFLAGS)
-_linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For linux.mod.
-linux_mod_SOURCES = loader/linux_normal.c
+linux_mod_SOURCES = loader/i386/pc/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -208,7 +198,7 @@ linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
 # Please put arch dependant part of normal.mod at the end of list to
 # keep it simpler to update to different architectures.
 #
-normal_mod_SOURCES = normal/arg.c normal/cmdline.c normal/command.c	\
+normal_mod_SOURCES = normal/cmdline.c normal/command.c	\
 	normal/completion.c normal/execute.c		 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
 	normal/menu_text.c						\
@@ -236,16 +226,11 @@ serial_mod_SOURCES = term/i386/pc/serial.c
 serial_mod_CFLAGS = $(COMMON_CFLAGS)
 serial_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For _multiboot.mod.
-_multiboot_mod_SOURCES = loader/i386/multiboot.c \
-                         loader/i386/pc/multiboot2.c \
-                         loader/multiboot2.c \
-                         loader/multiboot_loader.c
-_multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
-_multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For multiboot.mod.
-multiboot_mod_SOURCES = loader/multiboot_loader_normal.c 
+multiboot_mod_SOURCES = loader/i386/multiboot.c \
+                        loader/i386/pc/multiboot2.c \
+                        loader/multiboot2.c \
+                        loader/multiboot_loader.c
 multiboot_mod_CFLAGS = $(COMMON_CFLAGS)
 multiboot_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
@@ -300,13 +285,8 @@ aout_mod_SOURCES = loader/aout.c
 aout_mod_CFLAGS = $(COMMON_CFLAGS)
 aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
-# For _bsd.mod
-_bsd_mod_SOURCES = loader/i386/bsd.c
-_bsd_mod_CFLAGS = $(COMMON_CFLAGS)
-_bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
 # For bsd.mod
-bsd_mod_SOURCES = loader/i386/bsd_normal.c
+bsd_mod_SOURCES = loader/i386/bsd.c
 bsd_mod_CFLAGS = $(COMMON_CFLAGS)
 bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 

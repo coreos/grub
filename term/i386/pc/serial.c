@@ -23,10 +23,9 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
-#include <grub/arg.h>
 #include <grub/terminfo.h>
 #include <grub/cpu/io.h>
+#include <grub/extcmd.h>
 
 #define TEXT_WIDTH	80
 #define TEXT_HEIGHT	25
@@ -491,10 +490,11 @@ static struct grub_term_output grub_serial_term_output =
 
 
 static grub_err_t
-grub_cmd_serial (struct grub_arg_list *state,
+grub_cmd_serial (grub_extcmd_t cmd,
                  int argc __attribute__ ((unused)),
 		 char **args __attribute__ ((unused)))
 {
+  struct grub_arg_list *state = cmd->state;
   struct serial_port backup_settings = serial_settings;
   grub_err_t hwiniterr;
 
@@ -603,11 +603,16 @@ grub_cmd_serial (struct grub_arg_list *state,
   return hwiniterr;
 }
 
+static grub_extcmd_t cmd;
+
 GRUB_MOD_INIT(serial)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("serial", grub_cmd_serial, GRUB_COMMAND_FLAG_BOTH,
-                         "serial [OPTIONS...]", "Configure serial port.", options);
+  cmd = grub_register_extcmd ("serial", grub_cmd_serial,
+			      GRUB_COMMAND_FLAG_BOTH,
+			      "serial [OPTIONS...]",
+			      "Configure serial port.", options);
+
   /* Set default settings.  */
   serial_settings.port      = serial_hw_get_port (0);
   serial_settings.divisor   = serial_get_divisor (9600);
@@ -618,7 +623,7 @@ GRUB_MOD_INIT(serial)
 
 GRUB_MOD_FINI(serial)
 {
-  grub_unregister_command ("serial");
+  grub_unregister_extcmd (cmd);
   if (registered == 1)		/* Unregister terminal only if registered. */
     {
       grub_term_unregister_input (&grub_serial_term_input);

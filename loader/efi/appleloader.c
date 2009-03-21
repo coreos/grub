@@ -22,9 +22,9 @@
 #include <grub/mm.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
+#include <grub/command.h>
 
 static grub_dl_t my_mod;
 
@@ -130,7 +130,7 @@ struct devdata devs[] =
 };
 
 static grub_err_t
-grub_cmd_appleloader (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_appleloader (grub_command_t cmd __attribute__ ((unused)),
                       int argc, char *argv[])
 {
   grub_efi_boot_services_t *b;
@@ -203,17 +203,16 @@ grub_cmd_appleloader (struct grub_arg_list *state __attribute__ ((unused)),
   return grub_errno;
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(appleloader)
 {
-  grub_register_command ("appleloader", grub_cmd_appleloader,
-			 GRUB_COMMAND_FLAG_BOTH,
-			 "appleloader [OPTS]",
-			 "Boot legacy system.", 0);
-
+  cmd = grub_register_command ("appleloader", grub_cmd_appleloader,
+			       "appleloader [OPTS]", "Boot legacy system.");
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(appleloader)
 {
-  grub_unregister_command ("appleloader");
+  grub_unregister_command (cmd);
 }

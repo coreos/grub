@@ -17,18 +17,18 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
 #include <grub/err.h>
 #include <grub/misc.h>
 #include <grub/term.h>
 #include <grub/handler.h>
+#include <grub/command.h>
 
 static grub_err_t
-grub_cmd_handler_generic (int argc, char **args, char *class_name)
+grub_cmd_handler (struct grub_command *cmd,
+		  int argc, char **args)
 {
-  char *find_name;
-  void *find_result;
+  char *class_name;
   void *curr_item = 0;
   grub_handler_class_t head;
 
@@ -43,10 +43,12 @@ grub_cmd_handler_generic (int argc, char **args, char *class_name)
       return 0;
     }
 
+  class_name = (grub_strcmp (cmd->name, "handler")) ? (char *) cmd->name : 0;
+
   head = grub_handler_class_list;
   if ((argc == 0) && (class_name == 0))
     {
-      grub_list_iterate (head, (grub_list_hook_t) list_item);
+      grub_list_iterate (GRUB_AS_LIST (head), (grub_list_hook_t) list_item);
     }
   else
     {
@@ -66,7 +68,7 @@ grub_cmd_handler_generic (int argc, char **args, char *class_name)
       if (argc == 0)
 	{
 	  curr_item = class->cur_handler;
-	  grub_list_iterate (class->handler_list,
+	  grub_list_iterate (GRUB_AS_LIST (class->handler_list),
 			     (grub_list_hook_t) list_item);
 	}
       else
@@ -87,46 +89,28 @@ grub_cmd_handler_generic (int argc, char **args, char *class_name)
   return 0;
 }
 
-static grub_err_t
-grub_cmd_handler (struct grub_arg_list *state __attribute__ ((unused)),
-		  int argc, char **args)
-{
-  return grub_cmd_handler_generic (argc, args, 0);
-}
-
-static grub_err_t
-grub_cmd_terminal_input (struct grub_arg_list *state __attribute__ ((unused)),
-			 int argc, char **args)
-{
-  return grub_cmd_handler_generic (argc, args, "terminal_input");
-}
-
-static grub_err_t
-grub_cmd_terminal_output (struct grub_arg_list *state __attribute__ ((unused)),
-			  int argc, char **args)
-{
-  return grub_cmd_handler_generic (argc, args, "terminal_output");
-}
+static grub_command_t cmd_handler, cmd_terminal_input, cmd_terminal_output;
 
 GRUB_MOD_INIT(handler)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("handler", grub_cmd_handler, GRUB_COMMAND_FLAG_BOTH,
-			 "handler [class [handler]]",
-			 "List or select a handler", 0);
-  grub_register_command ("terminal_input", grub_cmd_terminal_input,
-			 GRUB_COMMAND_FLAG_BOTH,
-			 "terminal_input [handler]",
-			 "List or select a handler", 0);
-  grub_register_command ("terminal_output", grub_cmd_terminal_output,
-			 GRUB_COMMAND_FLAG_BOTH,
-			 "terminal_output [handler]",
-			 "List or select a handler", 0);
+  cmd_handler =
+    grub_register_command ("handler", grub_cmd_handler,
+			   "handler [class [handler]]",
+			   "List or select a handler");
+  cmd_terminal_input =
+    grub_register_command ("terminal_input", grub_cmd_handler,
+			   "terminal_input [handler]",
+			   "List or select a handler");
+  cmd_terminal_output =
+    grub_register_command ("terminal_output", grub_cmd_handler,
+			   "terminal_output [handler]",
+			   "List or select a handler");
 }
 
 GRUB_MOD_FINI(handler)
 {
-  grub_unregister_command ("terminal_input");
-  grub_unregister_command ("terminal_output");
-  grub_unregister_command ("handler");
+  grub_unregister_command (cmd_handler);
+  grub_unregister_command (cmd_terminal_input);
+  grub_unregister_command (cmd_terminal_output);
 }

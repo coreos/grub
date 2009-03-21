@@ -19,7 +19,6 @@
 
 #include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/loader.h>
 

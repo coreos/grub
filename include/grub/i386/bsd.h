@@ -222,11 +222,4 @@ struct grub_netbsd_btinfo_bootdisk
   int partition;
 };
 
-void grub_rescue_cmd_freebsd (int argc, char *argv[]);
-void grub_rescue_cmd_openbsd (int argc, char *argv[]);
-void grub_rescue_cmd_netbsd (int argc, char *argv[]);
-
-void grub_rescue_cmd_freebsd_loadenv (int argc, char *argv[]);
-void grub_rescue_cmd_freebsd_module (int argc, char *argv[]);
-
 #endif /* ! GRUB_BSD_CPU_HEADER */

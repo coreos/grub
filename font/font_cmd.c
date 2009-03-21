@@ -19,13 +19,13 @@
 
 #include <grub/font.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
 #include <grub/misc.h>
+#include <grub/command.h>
 
 static grub_err_t
-loadfont_command (struct grub_arg_list *state __attribute__ ((unused)),
-	      int argc,
-	      char **args)
+loadfont_command (grub_command_t cmd __attribute__ ((unused)),
+		  int argc,
+		  char **args)
 {
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no font specified");
@@ -38,7 +38,7 @@ loadfont_command (struct grub_arg_list *state __attribute__ ((unused)),
 }
 
 static grub_err_t
-lsfonts_command (struct grub_arg_list *state __attribute__ ((unused)),
+lsfonts_command (grub_command_t cmd __attribute__ ((unused)),
                  int argc __attribute__ ((unused)),
                  char **args __attribute__ ((unused)))
 {
@@ -54,17 +54,19 @@ lsfonts_command (struct grub_arg_list *state __attribute__ ((unused)),
   return GRUB_ERR_NONE;
 }
 
+static grub_command_t cmd_loadfont, cmd_lsfonts;
+
 GRUB_MOD_INIT(font_manager)
 {
   grub_font_loader_init ();
 
-  grub_register_command ("loadfont", loadfont_command, GRUB_COMMAND_FLAG_BOTH,
+  cmd_loadfont =
+    grub_register_command ("loadfont", loadfont_command,
 			 "loadfont FILE...",
-			 "Specify one or more font files to load.", 0);
-
-  grub_register_command ("lsfonts", lsfonts_command, GRUB_COMMAND_FLAG_BOTH,
-			 "lsfonts",
-			 "List the loaded fonts.", 0);
+			 "Specify one or more font files to load.");
+  cmd_lsfonts =
+    grub_register_command ("lsfonts", lsfonts_command,
+			   0, "List the loaded fonts.");
 }
 
 GRUB_MOD_FINI(font_manager)
@@ -72,6 +74,6 @@ GRUB_MOD_FINI(font_manager)
   /* TODO: Determine way to free allocated resources.  
      Warning: possible pointer references could be in use.  */
 
-  grub_unregister_command ("loadfont");
+  grub_unregister_command (cmd_loadfont);
+  grub_unregister_command (cmd_lsfonts);
 }
-

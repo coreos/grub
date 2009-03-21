@@ -17,13 +17,12 @@
  */
 
 #include <grub/machine/memory.h>
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
+#include <grub/command.h>
 
 static grub_err_t
-grub_cmd_lsmmap (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_lsmmap (grub_command_t cmd __attribute__ ((unused)),
 		 int argc __attribute__ ((unused)), char **args __attribute__ ((unused)))
 
 {
@@ -39,15 +38,16 @@ grub_cmd_lsmmap (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(lsmmap)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("lsmmap", grub_cmd_lsmmap, GRUB_COMMAND_FLAG_BOTH,
-			 "lsmmap", "List memory map provided by firmware.", 0);
+  cmd = grub_register_command ("lsmmap", grub_cmd_lsmmap,
+			       0, "List memory map provided by firmware.");
 }
 
 GRUB_MOD_FINI(lsmmap)
 {
-  grub_unregister_command ("lsmmap");
+  grub_unregister_command (cmd);
 }

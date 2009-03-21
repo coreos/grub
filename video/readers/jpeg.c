@@ -22,7 +22,6 @@
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
-#include <grub/arg.h>
 #include <grub/bufio.h>
 
 /* Uncomment following define to enable JPEG debug.  */

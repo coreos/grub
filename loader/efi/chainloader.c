@@ -27,12 +27,11 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/types.h>
-#include <grub/rescue.h>
 #include <grub/dl.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
 #include <grub/efi/disk.h>
-#include <grub/efi/chainloader.h>
+#include <grub/command.h>
 
 static grub_dl_t my_mod;
 
@@ -178,8 +177,9 @@ make_file_path (grub_efi_device_path_t *dp, const char *filename)
   return file_path;
 }
 
-void
-grub_rescue_cmd_chainloader (int argc, char *argv[])
+static grub_err_t
+grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
+		      int argc, char *argv[])
 {
   grub_file_t file = 0;
   grub_ssize_t size;
@@ -192,10 +192,7 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
   char *filename;
 
   if (argc == 0)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
-      return;
-    }
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "no file specified");
   filename = argv[0];
   
   grub_dl_ref (my_mod);
@@ -312,7 +309,7 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
     }
 
   grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 0);
-  return;
+  return 0;
   
  fail:
 
@@ -329,19 +326,20 @@ grub_rescue_cmd_chainloader (int argc, char *argv[])
     efi_call_2 (b->free_pages, address, pages);
   
   grub_dl_unref (my_mod);
+
+  return grub_errno;
 }
 
-static const char loader_name[] = "chainloader";
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(chainloader)
 {
-  grub_rescue_register_command (loader_name,
-				grub_rescue_cmd_chainloader,
-				"load another boot loader");
+  cmd = grub_register_command ("chainloader", grub_cmd_chainloader,
+			       0, "load another boot loader");
   my_mod = mod;
 }
 
 GRUB_MOD_FINI(chainloader)
 {
-  grub_rescue_unregister_command (loader_name);
+  grub_unregister_command (cmd);
 }

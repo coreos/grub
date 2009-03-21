@@ -17,14 +17,13 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/machine/init.h>
 #include <grub/machine/vbe.h>
 #include <grub/mm.h>
+#include <grub/command.h>
 
 static void *
 real2pm (grub_vbe_farptr_t ptr)
@@ -34,7 +33,7 @@ real2pm (grub_vbe_farptr_t ptr)
 }
 
 static grub_err_t
-grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_vbeinfo (grub_command_t cmd __attribute__ ((unused)),
 		  int argc __attribute__ ((unused)),
 		  char **args __attribute__ ((unused)))
 {
@@ -53,7 +52,7 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
     return err;
 
   grub_printf ("VBE info:   version: %d.%d  OEM software rev: %d.%d\n",
-               controller_info.version >> 8, 
+	       controller_info.version >> 8,
                controller_info.version & 0xFF,
                controller_info.oem_software_rev >> 8,
                controller_info.oem_software_rev & 0xFF);
@@ -77,7 +76,7 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
   
   grub_printf ("List of compatible video modes:\n");
   grub_printf ("Legend: P=Packed pixel, D=Direct color, "
-               "mask/pos=R/G/B/reserved\n"); 
+	       "mask/pos=R/G/B/reserved\n");
 
   /* Walk through all video modes listed.  */
   for (p = saved_video_mode_list; *p != 0xFFFF; p++)
@@ -170,18 +169,17 @@ grub_cmd_vbeinfo (struct grub_arg_list *state __attribute__ ((unused)),
   return 0;
 }
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(vbeinfo)
 {
   (void) mod;			/* To stop warning.  */
-  grub_register_command ("vbeinfo",
-                         grub_cmd_vbeinfo,
-                         GRUB_COMMAND_FLAG_BOTH,
-                         "vbeinfo",
-                         "List compatible VESA BIOS extension video modes.",
-                         0);
+  cmd =
+    grub_register_command ("vbeinfo", grub_cmd_vbeinfo, 0,
+			   "List compatible VESA BIOS extension video modes.");
 }
 
 GRUB_MOD_FINI(vbeinfo)
 {
-  grub_unregister_command ("vbeinfo");
+  grub_unregister_command (cmd);
 }

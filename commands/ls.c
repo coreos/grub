@@ -22,13 +22,13 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
-#include <grub/arg.h>
 #include <grub/disk.h>
 #include <grub/device.h>
 #include <grub/term.h>
 #include <grub/partition.h>
 #include <grub/file.h>
+#include <grub/normal.h>
+#include <grub/extcmd.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -134,7 +134,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	      
 	    }
 	  grub_file_close (file);
-      	}
+	}
       else
 	grub_printf ("%-12s", "DIR");
 
@@ -220,8 +220,10 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 }
 
 static grub_err_t
-grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
+grub_cmd_ls (grub_extcmd_t cmd, int argc, char **args)
 {
+  struct grub_arg_list *state = cmd->state;
+
   if (argc == 0)
     grub_ls_list_devices (state[0].set);
   else
@@ -231,15 +233,17 @@ grub_cmd_ls (struct grub_arg_list *state, int argc, char **args)
   return 0;
 }
 
+static grub_extcmd_t cmd;
+
 GRUB_MOD_INIT(ls)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
-			 "ls [-l|-h|-a] [FILE]",
-			 "List devices and files.", options);
+  cmd = grub_register_extcmd ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
+			      "ls [-l|-h|-a] [FILE]",
+			      "List devices and files.", options);
 }
 
 GRUB_MOD_FINI(ls)
 {
-  grub_unregister_command ("ls");
+  grub_unregister_extcmd (cmd);
 }

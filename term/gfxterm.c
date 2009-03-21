@@ -20,13 +20,12 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
 #include <grub/font.h>
-#include <grub/arg.h>
 #include <grub/mm.h>
 #include <grub/env.h>
 #include <grub/video.h>
 #include <grub/bitmap.h>
+#include <grub/command.h>
 
 #define DEFAULT_VIDEO_WIDTH	640
 #define DEFAULT_VIDEO_HEIGHT	480
@@ -309,7 +308,7 @@ grub_gfxterm_init (void)
               grub_err_t rc;
               
               /* First setup error message.  */
-              rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
                                "Invalid mode: %s\n",
                                current_mode);
               
@@ -328,7 +327,7 @@ grub_gfxterm_init (void)
               grub_err_t rc;
               
               /* First setup error message.  */
-              rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+	      rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
                                "Invalid mode: %s\n",
                                current_mode);
               
@@ -347,91 +346,91 @@ grub_gfxterm_init (void)
               if (grub_errno != GRUB_ERR_NONE)
                 {
                   grub_err_t rc;
-                  
+
                   /* First setup error message.  */
-                  rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
+		  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
                                    "Invalid mode: %s\n",
                                    current_mode);
-                                   
+
                   /* Free memory before returning.  */
                   grub_free (modevar);
-                  
-                  return rc;
-                }
+
+		  return rc;
+		}
             }
-          else
+	  else
             {
-              /* We have optional color depth value.  */
-              *param = 0;
-              param++;
+	      /* We have optional color depth value.  */
+	      *param = 0;
+	      param++;
 
-              height = grub_strtoul (value, 0, 0);
-              if (grub_errno != GRUB_ERR_NONE)
-                {
-                  grub_err_t rc;
-                  
-                  /* First setup error message.  */
-                  rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                                   "Invalid mode: %s\n",
-                                   current_mode);
-                                   
-                  /* Free memory before returning.  */
-                  grub_free (modevar);
-                  
-                  return rc;
-                }
+	      height = grub_strtoul (value, 0, 0);
+	      if (grub_errno != GRUB_ERR_NONE)
+		{
+		  grub_err_t rc;
 
-              /* Convert color depth value.  */
-              value = param;
-              depth = grub_strtoul (value, 0, 0);
-              if (grub_errno != GRUB_ERR_NONE)
-                {
-                  grub_err_t rc;
-                  
-                  /* First setup error message.  */
-                  rc = grub_error (GRUB_ERR_BAD_ARGUMENT, 
-                                   "Invalid mode: %s\n",
-                                   current_mode);
-                                   
-                  /* Free memory before returning.  */
-                  grub_free (modevar);
-                  
-                  return rc;
-                }
+		  /* First setup error message.  */
+		  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
+				   "Invalid mode: %s\n",
+				   current_mode);
+
+		  /* Free memory before returning.  */
+		  grub_free (modevar);
+
+		  return rc;
+		}
+
+	      /* Convert color depth value.  */
+	      value = param;
+	      depth = grub_strtoul (value, 0, 0);
+	      if (grub_errno != GRUB_ERR_NONE)
+		{
+		  grub_err_t rc;
+
+		  /* First setup error message.  */
+		  rc = grub_error (GRUB_ERR_BAD_ARGUMENT,
+				   "Invalid mode: %s\n",
+				   current_mode);
+
+		  /* Free memory before returning.  */
+		  grub_free (modevar);
+
+		  return rc;
+		}
             }
-          
-          /* Try out video mode.  */
-          
-          /* If we have 8 or less bits, then assume that it is indexed color mode.  */
-          if ((depth <= 8) && (depth != -1))
-            flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
 
-          /* We have more than 8 bits, then assume that it is RGB color mode.  */
-          if (depth > 8)
-            flags |= GRUB_VIDEO_MODE_TYPE_RGB;
+	  /* Try out video mode.  */
 
-          /* If user requested specific depth, forward that information to driver.  */
-          if (depth != -1)
-            flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
-                     & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+	  /* If we have 8 or less bits, then assume that it is indexed color mode.  */
+	  if ((depth <= 8) && (depth != -1))
+	    flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
 
-          /* Try to initialize requested mode.  Ignore any errors.  */
-          grub_error_push ();
-          if (grub_video_setup (width, height, flags) != GRUB_ERR_NONE)
-            {
-              grub_error_pop ();
-              continue;
-            }
-            
-          /* Figure out what mode we ended up.  */
-          if (grub_video_get_info (&mode_info) != GRUB_ERR_NONE)
-            {
-              /* Couldn't get video mode info, restore old mode and continue to next one.  */
-              grub_error_pop ();
-              
-              grub_video_restore ();
-              continue;
-            }
+	  /* We have more than 8 bits, then assume that it is RGB color mode.  */
+	  if (depth > 8)
+	    flags |= GRUB_VIDEO_MODE_TYPE_RGB;
+
+	  /* If user requested specific depth, forward that information to driver.  */
+	  if (depth != -1)
+	    flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+		     & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+
+	  /* Try to initialize requested mode.  Ignore any errors.  */
+	  grub_error_push ();
+	  if (grub_video_setup (width, height, flags) != GRUB_ERR_NONE)
+	    {
+	      grub_error_pop ();
+	      continue;
+	    }
+
+	  /* Figure out what mode we ended up.  */
+	  if (grub_video_get_info (&mode_info) != GRUB_ERR_NONE)
+	    {
+	      /* Couldn't get video mode info, restore old mode and continue to next one.  */
+	      grub_error_pop ();
+
+	      grub_video_restore ();
+	      continue;
+	    }
           
           /* Restore state of error stack.  */
           grub_error_pop ();
@@ -530,7 +529,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
     {
       /* Render bitmap as background.  */
       grub_video_blit_bitmap (bitmap, GRUB_VIDEO_BLIT_REPLACE, x, y, 
-                              x, y, 
+			      x, y,
                               width, height);
       
       /* If bitmap is smaller than requested blit area, use background 
@@ -555,7 +554,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
             }
           
           /* Render background layer.  */
-          grub_video_fill_rect (color, tx, y, w, h);        
+	  grub_video_fill_rect (color, tx, y, w, h);
         }
       
       /* Fill bottom side of the bitmap if needed.  */
@@ -570,7 +569,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
             }
           
           /* Render background layer.  */
-          grub_video_fill_rect (color, x, ty, width, h);        
+	  grub_video_fill_rect (color, x, ty, width, h);
         }
 
       /* Render text layer as blended.  */
@@ -589,7 +588,7 @@ redraw_screen_rect (unsigned int x, unsigned int y,
       grub_video_blit_render_target (text_layer, GRUB_VIDEO_BLIT_REPLACE, x, y,
                                      x - virtual_screen.offset_x,
                                      y - virtual_screen.offset_y,
-                                     width, height);      
+				     width, height);
     }
 }
 
@@ -1086,7 +1085,7 @@ grub_gfxterm_refresh (void)
 }
 
 static grub_err_t
-grub_gfxterm_background_image_cmd (struct grub_arg_list *state __attribute__ ((unused)),
+grub_gfxterm_background_image_cmd (grub_command_t cmd __attribute__ ((unused)),
                                    int argc,
                                    char **args)
 {
@@ -1151,21 +1150,19 @@ static struct grub_term_output grub_video_term =
     .next = 0
   };
 
+static grub_command_t cmd;
+
 GRUB_MOD_INIT(term_gfxterm)
 {
   my_mod = mod;
   grub_term_register_output (&grub_video_term);
-
-  grub_register_command ("background_image",
-                         grub_gfxterm_background_image_cmd,
-                         GRUB_COMMAND_FLAG_BOTH,
-                         "background_image",
-                         "Load background image for active terminal",
-                         0);
+  cmd = grub_register_command ("background_image",
+			       grub_gfxterm_background_image_cmd,
+			       0, "Load background image for active terminal");
 }
 
 GRUB_MOD_FINI(term_gfxterm)
 {
-  grub_unregister_command ("background_image");
+  grub_unregister_command (cmd);
   grub_term_unregister_output (&grub_video_term);
 }

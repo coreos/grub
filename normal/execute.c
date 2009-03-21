@@ -20,9 +20,9 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/normal.h>
-#include <grub/arg.h>
 #include <grub/env.h>
 #include <grub/script.h>
+#include <grub/lib/arg.h>
 
 static grub_err_t
 grub_script_execute_cmd (struct grub_script_cmd *cmd)
@@ -87,11 +87,6 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   char **args = 0;
   int i = 0;
   grub_command_t grubcmd;
-  struct grub_arg_list *state;
-  struct grub_arg_option *parser;
-  int maxargs = 0;
-  char **parsed_arglist;
-  int numargs;
   grub_err_t ret = 0;
   int argcount = 0;
   grub_script_function_t func = 0;
@@ -143,27 +138,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
 
   /* Execute the GRUB command or function.  */
   if (grubcmd)
-    {
-      /* Count the amount of options the command has.  */
-      parser = (struct grub_arg_option *) grubcmd->options;
-      while (parser && (parser++)->doc)
-	maxargs++;
-
-      /* Set up the option state.  */
-      state = grub_malloc (sizeof (struct grub_arg_list) * maxargs);
-      grub_memset (state, 0, sizeof (struct grub_arg_list) * maxargs);
-
-      /* Start the command.  */
-      if (! (grubcmd->flags & GRUB_COMMAND_FLAG_NO_ARG_PARSE))
-	{
-	  if (grub_arg_parse (grubcmd, argcount, args, state, &parsed_arglist, &numargs))
-	    ret = (grubcmd->func) (state, numargs, parsed_arglist);
-	}
-      else
-	ret = (grubcmd->func) (state, argcount, args);
-
-      grub_free (state);
-    }
+    ret = (grubcmd->func) (grubcmd, argcount, args);
   else
     ret = grub_script_function_call (func, argcount, args);
 
@@ -273,3 +248,4 @@ grub_script_execute (struct grub_script *script)
 
   return grub_script_execute_cmd (script->cmd);
 }
+

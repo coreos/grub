@@ -25,6 +25,7 @@
 #include <grub/disk.h>
 #include <grub/file.h>
 #include <grub/parser.h>
+#include <grub/extcmd.h>
 
 /* The current word.  */
 static char *current_word;
@@ -179,7 +180,7 @@ iterate_dev (const char *devname)
 static int
 iterate_command (grub_command_t cmd)
 {
-  if (grub_command_find (cmd->name))
+  if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
     {
       if (cmd->flags & GRUB_COMMAND_FLAG_CMDLINE)
 	{
@@ -318,19 +319,24 @@ static int
 complete_arguments (char *command)
 {
   grub_command_t cmd;
+  grub_extcmd_t ext;
   const struct grub_arg_option *option;
   char shortarg[] = "- ";
 
   cmd = grub_command_find (command); 
 
-  if (!cmd || !cmd->options)
+  if (!cmd || !(cmd->flags & GRUB_COMMAND_FLAG_EXTCMD))
+    return 0;
+
+  ext = cmd->data;
+  if (!ext->options)
     return 0;
 
   if (add_completion ("-u", " ", GRUB_COMPLETION_TYPE_ARGUMENT))
     return 1;
 
   /* Add the short arguments.  */
-  for (option = cmd->options; option->doc; option++)
+  for (option = ext->options; option->doc; option++)
     {
       if (! option->shortarg)
 	continue;
@@ -348,7 +354,7 @@ complete_arguments (char *command)
     return 1;
 
   /* Add the long arguments.  */
-  for (option = cmd->options; option->doc; option++)
+  for (option = ext->options; option->doc; option++)
     {
       char *longarg;
       if (!option->longarg)
@@ -412,7 +418,7 @@ grub_normal_do_completion (char *buf, int *restore,
   if (argc == 0)
     {
       /* Complete a command.  */
-      if (grub_iterate_commands (iterate_command))
+      if (grub_command_iterate (iterate_command))
 	goto fail;
     }
   else if (*current_word == '-')

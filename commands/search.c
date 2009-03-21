@@ -22,11 +22,10 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
-#include <grub/arg.h>
 #include <grub/device.h>
 #include <grub/file.h>
 #include <grub/env.h>
+#include <grub/extcmd.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -121,8 +120,8 @@ search_fs_uuid (const char *key, const char *var)
 		      count++;
 		      if (var)
 			{
- 			  grub_env_set (var, name);
- 			  abort = 1;
+			  grub_env_set (var, name);
+			  abort = 1;
 			}
 		      else
 			grub_printf (" %s", name);
@@ -196,8 +195,9 @@ search_file (const char *key, const char *var)
 }
 
 static grub_err_t
-grub_cmd_search (struct grub_arg_list *state, int argc, char **args)
+grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
 {
+  struct grub_arg_list *state = cmd->state;
   const char *var = 0;
   
   if (argc == 0)
@@ -216,19 +216,23 @@ grub_cmd_search (struct grub_arg_list *state, int argc, char **args)
   return grub_errno;
 }
 
+static grub_extcmd_t cmd;
+
 GRUB_MOD_INIT(search)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("search", grub_cmd_search, GRUB_COMMAND_FLAG_BOTH,
-			 "search [-f|-l|-u|-s] NAME",
-			 "Search devices by file, filesystem label or filesystem UUID."
-			 " If --set is specified, the first device found is"
-			 " set to a variable. If no variable name is"
-			 " specified, \"root\" is used.",
-			 options);
+  cmd =
+    grub_register_extcmd ("search", grub_cmd_search,
+			  GRUB_COMMAND_FLAG_BOTH,
+			  "search [-f|-l|-u|-s] NAME",
+			  "Search devices by file, filesystem label or filesystem UUID."
+			  " If --set is specified, the first device found is"
+			  " set to a variable. If no variable name is"
+			  " specified, \"root\" is used.",
+			  options);
 }
 
 GRUB_MOD_FINI(search)
 {
-  grub_unregister_command ("search");
+  grub_unregister_extcmd (cmd);
 }

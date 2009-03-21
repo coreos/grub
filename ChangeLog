@@ -1,5 +1,223 @@
 2009-03-21  Bean  <bean123ch@gmail.com>
 
+	* commands/blocklist.c: Add include file <grub/command.h>, remove
+	<grub/normal.h> and <grub/arg.h>.
+	(grub_cmd_blocklist): Use the new command interface.
+	(GRUB_MOD_INIT): Likewise.
+	(GRUB_MOD_FINI): Likewise.
+	* commands/boot.c: Likewise.
+	* commands/cat.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/configfile.c: Likewise.
+	* commands/crc.c: Likewise.
+	* commands/echo.c: Likewise.
+	* commands/halt.c: Likewise.
+	* commands/handler.c: Likewise.
+	* commands/hdparm.c: Likewise.
+	* commands/help.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/lsmmap.c: Likewise.
+	* commands/lspci.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/read.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* commands/search.c: Likewise.
+	* commands/sleep.c: Likewise.
+	* commands/test.c: Likewise.
+	* commands/usbtest.c: Likewise.
+	* commands/videotest.c: Likewise.
+	* commands/i386/cpuid.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/play.c: Likewise.
+	* commands/i386/pc/pxecmd.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/i386/pc/vbetest.c: Likewise.
+	* commands/ieee1275/suspend.c: Likewise.
+	* disk/loopback.c: Likewise.
+	* font/font_cmd.c: Likewise.
+	* hello/hello.c: Likewise.
+	* loader/efi/appleloader.c: Likewise.
+	* loader/efi/chainloader.c: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* loader/i386/efi/linux.c: Likewise.
+	* loader/i386/ieee1275/linux.c: Likewise.
+	* loader/i386/linux.c: Likewise.
+	* loader/i386/pc/chainloader.c: Likewise.
+	* loader/i386/pc/linux.c: Likewise.
+	* loader/powerpc/ieee1275/linux.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+	* term/gfxterm.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* term/terminfo.c: Likewise.
+
+	* term/i386/pc/vesafb.c: Removed <grub/arg.h>.
+	* term/i386/pc/vga.c: Likewise.
+	* video/readers/jpeg.c: Likewise.
+	* video/readers/png.c: Likewise.
+	* video/readers/tga.c: Likewise.
+
+	* util/grub-fstest (cmd_loopback): Removed.
+	(cmd_blocklist): Likewise.
+	(cmd_ls): Likewise.
+	(grub_register_command): Likewise.
+	(grub_unregister_command): Likewise.
+	(execute_command): Use grub_command_find to locate command and execute
+	it.
+
+	* include/grub/efi/chainloader.h: Removed.
+	* loader/efi/chainloader_normal.c: Likewise.
+	* loader/i386/bsd_normal.c: Likewise.
+	* loader/i386/pc/chainloader_normal.c: Likewise.
+	* loader/i386/pc/multiboot_normal.c: Likewise.
+	* loader/linux_normal.c: Likewise.
+	* loader/multiboot_loader_normal.c: Likewise.
+	* loader/powerpc/ieee1275/linux_normal.c: Likewise.
+
+	* gencmdlist.sh: Scan new registration command grub_register_extcmd
+	and grub_register_command_p1.
+
+	* conf/common.rmk (grub_fstest_SOURCES): Add kern/list.c,
+	kern/command.c, lib/arg.c and commands/extcmd.c.
+	(pkglib_MODULES): Remove boot.mod, and minicmd.mod and extcmd.mod.
+	(minicmd_mod_SOURCES): New variable.
+	(minicmd_mod_CFLAGS): Likewise.
+	(minicmd_mod_LDFLAGS): Likewise.
+	(extcmd_mod_SOURCES): Likewise.
+	(extcmd_mod_CFLAGS): Likewise.
+	(extcmd_mod_LDFLAGS): Likewise.
+	(boot_mod_SOURCES): Removed.
+	(boot_mod_CFLAGS): Likewise.
+	(boot_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (kernel_img_SOURCES): Add kern/command.c and
+	kern/corecmd.c.
+	(kernel_img_HEADERS): Add command.h.
+	(grub_emu_SOURCES): Remove commands/boot.c and normal/arg.c, add
+	commands/minicmd.c, kern/command.c, kern/corecmd.c, commands/extcmd.c
+	and lib/arg.c.
+	(pkglib_MODULES): Change _linux.mod, _chain.mod, _bsd.mod and
+	_multiboot.mod as linux.mod, chain.mod, bsd.mod and multiboot.mod,
+	remove the corresponding normal mode command.
+	(normal_mod_SOURCES): Remove normal/arg.c.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
+	* include/grub/arg.h: Move from here ...
+	* include/grub/lib/arg.h: ... to here.
+
+	* normal/arg.c: Move from here ...
+	* lib/arg.c: ... to here.
+
+	* commands/extcmd.c: New file.
+	* commands/minicmd.c: Likewise.
+	* include/grub/command.h: Likewise.
+	* include/grub/extcmd.h: Likewise.
+	* kern/command.c: Likewise.
+	* kern/corecmd.c: Likewise.
+
+	* kern/list.c (grub_list_iterate): Return int instead of void.
+	(grub_list_insert): New function.
+	(grub_prio_list_insert): Likewise.
+
+	* kern/rescue.c (grub_rescue_command): Removed.
+	(grub_rescue_command_list): Likewise.
+	(grub_rescue_register_command): Likewise.
+	(grub_rescue_unregister_command): Likewise.
+	(grub_rescue_cmd_boot): Move to minicmd.c
+	(grub_rescue_cmd_help): Likewise.
+	(grub_rescue_cmd_info): Likewise.
+	(grub_rescue_cmd_boot): Likewise.
+	(grub_rescue_cmd_testload): Likewise.
+	(grub_rescue_cmd_dump): Likewise.
+	(grub_rescue_cmd_rmmod): Likewise.
+	(grub_rescue_cmd_lsmod): Likewise.
+	(grub_rescue_cmd_exit): Likewise.
+	(grub_rescue_print_devices): Moved to corecmd.c.
+	(grub_rescue_print_files): Likewise.
+	(grub_rescue_cmd_ls): Likewise.
+	(grub_rescue_cmd_insmod): Likewise.
+	(grub_rescue_cmd_set): Likewise.
+	(grub_rescue_cmd_unset): Likewise.
+	(attemp_normal_mode): Use grub_command_find to get normal module.
+	(grub_enter_rescue_mode): Use grub_register_core_commands to register
+	commands, remove grub_rescue_regiter_command calls.
+
+	* normal/command.c (grub_regiser_command): Removed.
+	(grub_unregister_command): Likewise.
+	(grub_command_find): Likewise.
+	(grub_iterate_commands): Likewise.
+	(rescue_command): Likewise.
+	(export_command): Moved to corecmd.c.
+	(set_command): Removed.
+	(unset_command): Likewise.
+	(insmod_command): Likewise.
+	(rmmod_command): Likewise.
+	(lsmod_command): Likewise.
+	(grub_command_init): Likewise.
+
+	* normal/completion.c (iterate_command): Use cmd->prio to check for
+	active command.
+	(complete_arguments): Use grub_extcmd_t structure to find options.
+	(grub_normal_do_completion): Change function grub_iterate_commands to
+	grub_command_iterate.
+
+	* normal/execute.c (grub_script_execute_cmd): No need to parse
+	argument here.
+
+	* normal/main.c (grub_dyncmd_dispatcher): New function.
+	(read_command_list): Register unload commands as dyncmd.
+	(grub_cmd_normal): Use new command interface, register rescue,
+	unregister normal at entry, register normal, unregister rescue at exit.
+
+	* include/grub/list.h (grub_list_test_t): New type.
+	(grub_list_iterate): Return int instead of void.
+	(grub_list_insert): New function.
+	(GRUB_AS_NAMED_LIST_P): New macro.
+	(GRUB_AS_PRIO_LIST): Likewise.
+	(GRUB_AS_PRIO_LIST_P): Likewise.
+	(GRUB_PRIO_LIST_PRIO_MASK): New constant.
+	(GRUB_PRIO_LIST_FLAG_ACTIVE): Likewise.
+	(grub_prio_list): New structure.
+	(grub_prio_list_insert): New function.
+	(grub_prio_list_remove): New inline function.
+
+	* include/grub/normal.h: Remove <grub/arg.h>, add <grub/command.h>.
+	(GRUB_COMMAND_FLAG_CMDLINE): Moved to command.h.
+	(GRUB_COMMAND_FLAG_MENU): Likewise.
+	(GRUB_COMMAND_FLAG_BOTH): Likewise.
+	(GRUB_COMMAND_FLAG_TITLE): Likewise.
+	(GRUB_COMMAND_FLAG_NO_ECHO): Likewise.
+	(GRUB_COMMAND_FLAG_NO_ARG_PARSE): Removed.
+	(GRUB_COMMAND_FLAG_NOT_LOADED): Likewise.
+	(grub_command): Likewise.
+	(grub_register_command): Likewise.
+	(grub_command_find): Likewise.
+	(grub_iterate_commands): Likewise.
+	(grub_command_init): Likewise.
+	(grub_arg_parse): Likewise.
+	(grub_arg_show_help): Likewise.
+
+	* include/grub/rescue.h (grub_rescue_register_command): Removed.
+	(grub_rescue_unregister_command): Likewise.
+
+	* include/grub/i386/bsd.h: Remove grub_rescue_cmd_freebsd,
+	grub_rescue_cmd_openbsd, grub_rescue_cmd_netbsd,
+	grub_rescue_cmd_freebsd_loadenv and grub_rescue_cmd_freebsd_module.
+
+	* include/grub/i386/efi/loader.h: Remove grub_rescue_cmd_linux and
+	grub_rescue_cmd_initrd.
+	* include/grub/i386/loader.h: Likewise.
+	* include/grub/x86_64/loader.h: Likewise.
+
+	* include/grub/i386/pc/chainloader.h: Remove grub_chainloader_cmd.
+
+2009-03-21  Bean  <bean123ch@gmail.com>
+
 	* util/hostdisk.c (read_device_map): Use grub_util_get_disk_size
 	instead of stat in mingw environment.
 

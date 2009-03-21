@@ -17,17 +17,15 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/env.h>
+#include <grub/command.h>
 
 static grub_err_t
-grub_cmd_test (struct grub_arg_list *state __attribute__ ((unused)), int argc,
-	       char **args)
-
+grub_cmd_test (grub_command_t cmd __attribute__ ((unused)),
+	       int argc, char **args)
 {
   char *eq;
   char *eqis;
@@ -52,19 +50,19 @@ grub_cmd_test (struct grub_arg_list *state __attribute__ ((unused)), int argc,
   return grub_errno;
 }
 
-
+static grub_command_t cmd_1, cmd_2;
 
 GRUB_MOD_INIT(test)
 {
   (void)mod;			/* To stop warning. */
-  grub_register_command ("[", grub_cmd_test, GRUB_COMMAND_FLAG_CMDLINE,
-			 "[ EXPRESSION ]", "Evaluate an expression", 0);
-  grub_register_command ("test", grub_cmd_test, GRUB_COMMAND_FLAG_CMDLINE,
-			 "test EXPRESSION", "Evaluate an expression", 0);
+  cmd_1 = grub_register_command ("[", grub_cmd_test,
+				 "[ EXPRESSION ]", "Evaluate an expression");
+  cmd_2 = grub_register_command ("test", grub_cmd_test,
+				 "test EXPRESSION", "Evaluate an expression");
 }
 
 GRUB_MOD_FINI(test)
 {
-  grub_unregister_command ("[");
-  grub_unregister_command ("test");
+  grub_unregister_command (cmd_1);
+  grub_unregister_command (cmd_2);
 }

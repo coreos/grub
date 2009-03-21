@@ -19,8 +19,8 @@
 
 #include <grub/pci.h>
 #include <grub/dl.h>
-#include <grub/normal.h>
 #include <grub/misc.h>
+#include <grub/command.h>
 
 struct grub_pci_classname
 {
@@ -146,7 +146,7 @@ grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 }
 
 static grub_err_t
-grub_cmd_lspci (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_lspci (grub_command_t cmd __attribute__ ((unused)),
 		int argc __attribute__ ((unused)),
 		char **args __attribute__ ((unused)))
 {
@@ -154,18 +154,16 @@ grub_cmd_lspci (struct grub_arg_list *state __attribute__ ((unused)),
   return GRUB_ERR_NONE;
 }
 
-
-
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(pci)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("lspci", grub_cmd_lspci, GRUB_COMMAND_FLAG_BOTH,
-			 "lspci", "List PCI devices", 0);
+  cmd = grub_register_command ("lspci", grub_cmd_lspci,
+			       0, "List PCI devices");
 }
-
 
 GRUB_MOD_FINI(pci)
 {
-  grub_unregister_command ("lspci");
+  grub_unregister_command (cmd);
 }

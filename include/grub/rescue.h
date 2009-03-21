@@ -24,13 +24,4 @@
 /* Enter rescue mode.  */
 void grub_enter_rescue_mode (void);
 
-/* Register a rescue mode command.  */
-void EXPORT_FUNC(grub_rescue_register_command) (const char *name,
-						void (*func) (int argc,
-							      char *argv[]),
-						const char *message);
-
-/* Unregister a rescue mode command.  */
-void EXPORT_FUNC(grub_rescue_unregister_command) (const char *name);
-
 #endif /* ! GRUB_RESCUE_HEADER */

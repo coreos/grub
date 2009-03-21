@@ -17,17 +17,16 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
 #include <grub/dl.h>
-#include <grub/arg.h>
 #include <grub/misc.h>
 #include <grub/file.h>
 #include <grub/mm.h>
 #include <grub/disk.h>
 #include <grub/partition.h>
+#include <grub/command.h>
 
 static grub_err_t
-grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
+grub_cmd_blocklist (grub_command_t cmd __attribute__ ((unused)),
 		    int argc, char **args)
 {
   grub_file_t file;
@@ -106,17 +105,16 @@ grub_cmd_blocklist (struct grub_arg_list *state __attribute__ ((unused)),
   return grub_errno;
 }
 
+static grub_command_t cmd;
 
 GRUB_MOD_INIT(blocklist)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("blocklist", grub_cmd_blocklist,
-			 GRUB_COMMAND_FLAG_BOTH,
-			 "blocklist FILE",
-			 "Print a block list.", 0);
+  cmd = grub_register_command ("blocklist", grub_cmd_blocklist,
+			       "blocklist FILE", "Print a block list.");
 }
 
 GRUB_MOD_FINI(blocklist)
 {
-  grub_unregister_command ("blocklist");
+  grub_unregister_command (cmd);
 }
