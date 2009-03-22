@@ -36,7 +36,7 @@ grub_cmd_source (grub_command_t cmd, int argc, char **args)
   if (new_env)
     {
       grub_cls ();
-      grub_env_context_open ();
+      grub_env_context_open (1);
     }
 
   grub_normal_execute (args[0], 1, ! new_env);

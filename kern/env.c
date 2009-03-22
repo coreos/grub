@@ -75,7 +75,7 @@ grub_env_find (const char *name)
 }
 
 grub_err_t
-grub_env_context_open (void)
+grub_env_context_open (int export)
 {
   struct grub_env_context *context;
   int i;
@@ -95,7 +95,7 @@ grub_env_context_open (void)
       
       for (var = context->prev->vars[i]; var; var = var->next)
 	{
-	  if (var->type == GRUB_ENV_VAR_GLOBAL)
+	  if (export && var->type == GRUB_ENV_VAR_GLOBAL)
 	    {
 	      if (grub_env_set (var->name, var->value) != GRUB_ERR_NONE)
 		{

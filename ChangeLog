@@ -1,5 +1,15 @@
 2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* kern/env.c (grub_env_context_open): Added an argument to specify
+	whether a new context inherits exported variables from current
+	one. This is useful when making a sandbox to interpret a config
+	file.
+	All callers updated.
+
+	* include/grub/env.h (grub_env_context_open): Updated the prototype.
+
+2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* kern/env.c (grub_env_context_close): Fix memory leaks.
 
 2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
@@ -11,7 +21,8 @@
 	(read_command_list): Prevent being executed twice.
 	(read_fs_list): Likewise.
 
-	* include/grub/normal.h (grub_normal_execute): 
+	* include/grub/normal.h (grub_normal_execute): Updated the
+	prototype.
 
 2009-03-22  Pavel Roskin  <proski@gno.org>
 
