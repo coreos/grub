@@ -1,5 +1,9 @@
 2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
+	* kern/env.c (grub_env_context_close): Fix memory leaks.
+
+2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
 	* normal/main.c (grub_normal_execute): Added an argument
 	BATCH to specify if an interactive interface should be provided
 	after reading a config file.
