@@ -1,3 +1,9 @@
+2009-03-22  Pavel Roskin  <proski@gno.org>
+
+	* aclocal.m4 (grub_CHECK_START_SYMBOL): Remove.
+	* configure.ac: Don't call grub_CHECK_START_SYMBOL.
+	* kern/i386/pc/startup.S: Use _start instead of START_SYMBOL.
+
 2009-03-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Bugfixes in multiboot for bugs uncovered by solaris kernel.

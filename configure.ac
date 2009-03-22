@@ -383,7 +383,6 @@ if test "x$target_cpu" = xi386; then
     CFLAGS="$TARGET_CFLAGS -nostdlib $TARGET_IMG_LDFLAGS_AC -Wl,-Ttext,8000,--defsym,___main=0x8100"
   fi
   if test "x$platform" = xpc; then
-    grub_CHECK_START_SYMBOL
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL
   fi

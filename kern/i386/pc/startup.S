@@ -202,7 +202,7 @@ codestart:
 #if defined(ENABLE_LZO)
 	/* decompress the compressed part and put the result at 1MB */
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %esi
-	movl	$(START_SYMBOL + GRUB_KERNEL_MACHINE_RAW_SIZE), %edi
+	movl	$(_start + GRUB_KERNEL_MACHINE_RAW_SIZE), %edi
 
 	pushl	%esi
 	pushl	EXT_C(grub_compressed_size)
@@ -214,7 +214,7 @@ codestart:
 	cld
 #elif defined(ENABLE_LZMA)
 	movl	$GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR, %edi
-	movl	$(START_SYMBOL + GRUB_KERNEL_MACHINE_RAW_SIZE), %esi
+	movl	$(_start + GRUB_KERNEL_MACHINE_RAW_SIZE), %esi
 	pushl	%edi
 	pushl	%esi
 	movl	EXT_C(grub_kernel_image_size), %ecx
@@ -239,7 +239,7 @@ codestart:
 	movl	EXT_C(grub_total_module_size), %ecx
 	movl	EXT_C(grub_kernel_image_size), %esi
 	addl	%ecx, %esi
-	addl	$START_SYMBOL, %esi
+	addl	$_start, %esi
 	decl	%esi
 	movl	$END_SYMBOL, %edi
 	addl	%ecx, %edi
@@ -282,7 +282,7 @@ VARIABLE(grub_root_drive)
 	.long	0
 
 VARIABLE(grub_start_addr)
-	.long	START_SYMBOL
+	.long	_start
 
 VARIABLE(grub_end_addr)
 	.long	END_SYMBOL

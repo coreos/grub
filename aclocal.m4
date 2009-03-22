@@ -224,39 +224,6 @@ fi
 AC_MSG_RESULT([$grub_cv_i386_asm_absolute_without_asterisk])])
 
 
-dnl Check what symbol is defined as a start symbol.
-dnl Written by Yoshinori K. Okuji.
-AC_DEFUN(grub_CHECK_START_SYMBOL,
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING([if start is defined by the compiler])
-AC_CACHE_VAL(grub_cv_check_start_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
-		[[asm ("incl start")]])],
-		[grub_cv_check_start_symbol=yes],
-		[grub_cv_check_start_symbol=no])])
-
-AC_MSG_RESULT([$grub_cv_check_start_symbol])
-
-AC_MSG_CHECKING([if _start is defined by the compiler])
-AC_CACHE_VAL(grub_cv_check_uscore_start_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
-		[[asm ("incl _start")]])],
-		[grub_cv_check_uscore_start_symbol=yes],
-		[grub_cv_check_uscore_start_symbol=no])])
-
-AC_MSG_RESULT([$grub_cv_check_uscore_start_symbol])
-
-AH_TEMPLATE([START_SYMBOL], [Define it to either start or _start])
-
-if test "x$grub_cv_check_start_symbol" = xyes; then
-  AC_DEFINE([START_SYMBOL], [start])
-elif test "x$grub_cv_check_uscore_start_symbol" = xyes; then
-  AC_DEFINE([START_SYMBOL], [_start])
-else
-  AC_MSG_ERROR([neither start nor _start is defined])
-fi
-])
-
 dnl Check what symbol is defined as a bss start symbol.
 dnl Written by Michael Hohmoth and Yoshinori K. Okuji.
 AC_DEFUN(grub_CHECK_BSS_START_SYMBOL,
