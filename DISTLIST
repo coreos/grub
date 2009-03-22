@@ -214,6 +214,7 @@ include/grub/i386/io.h
 include/grub/i386/kernel.h
 include/grub/i386/linux.h
 include/grub/i386/loader.h
+include/grub/i386/multiboot.h
 include/grub/i386/pci.h
 include/grub/i386/pit.h
 include/grub/i386/reboot.h
@@ -393,6 +394,7 @@ loader/i386/bsd.c
 loader/i386/linux.c
 loader/i386/multiboot.c
 loader/i386/multiboot_elfxx.c
+loader/i386/multiboot_helper.S
 loader/i386/efi/linux.c
 loader/i386/ieee1275/linux.c
 loader/i386/pc/chainloader.c

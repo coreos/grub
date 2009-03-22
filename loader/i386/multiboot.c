@@ -32,6 +32,7 @@
 #include <grub/multiboot.h>
 #include <grub/machine/init.h>
 #include <grub/machine/memory.h>
+#include <grub/cpu/multiboot.h>
 #include <grub/elf.h>
 #include <grub/aout.h>
 #include <grub/file.h>

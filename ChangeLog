@@ -1,3 +1,19 @@
+2009-03-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move multiboot helper out of kernel
+
+	* conf/i386-pc.rmk (multiboot_mod_SOURCES): Add
+	`loader/i386/multiboot_helper.S'.
+	* conf/i386-coreboot.rmk: Likewise
+	* conf/i386-ieee1275.rmk: Likewise
+
+	* kern/i386/loader.S: Move multiboot helpers from here...
+	* loader/i386/multiboot_helper.S: ...moved here
+	* include/grub/i386/loader.h: Move declarations of multiboot
+	helpers from here...
+	* include/grub/i386/multiboot.h: ...moved here
+	* loader/i386/multiboot.c: Added include of grub/cpu/multiboot.h
+
 2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* kern/env.c (grub_env_context_open): Added an argument to specify

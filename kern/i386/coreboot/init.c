@@ -146,6 +146,7 @@ grub_machine_fini (void)
 {
   grub_at_keyboard_fini ();
   grub_vga_text_fini ();
+  grub_stop_floppy ();
 }
 
 /* Return the end of the core image.  */

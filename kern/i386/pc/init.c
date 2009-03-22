@@ -223,6 +223,7 @@ void
 grub_machine_fini (void)
 {
   grub_console_fini ();
+  grub_stop_floppy ();
 }
 
 /* Return the end of the core image.  */

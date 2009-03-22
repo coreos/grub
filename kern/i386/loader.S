@@ -118,106 +118,6 @@ linux_setup_seg:
 	.word	0
 	.code32
 
-
-/*
- * This starts the multiboot kernel.
- */
-
-VARIABLE(grub_multiboot_payload_size)
-	.long	0
-VARIABLE(grub_multiboot_payload_orig)
-	.long	0
-VARIABLE(grub_multiboot_payload_dest)
-	.long	0
-VARIABLE(grub_multiboot_payload_entry_offset)
-	.long	0
-
-/*
- * The relocators below understand the following parameters:
- * ecx:	Size of the block to be copied.
- * esi:	Where to copy from (always lowest address, even if we're relocating
- *      backwards).
- * edi:	Where to copy to (likewise).
- * edx:	Offset of the entry point (relative to the beginning of the block).
- */
-VARIABLE(grub_multiboot_forward_relocator)
-	/* Add entry offset.  */
-	addl	%edi, %edx
-
-	/* Forward copy.  */
-	cld
-	rep
-	movsb
-
-	jmp	*%edx
-VARIABLE(grub_multiboot_forward_relocator_end)
-
-VARIABLE(grub_multiboot_backward_relocator)
-	/* Add entry offset (before %edi is mangled).  */
-	addl	%edi, %edx
-
-	/* Backward movsb is implicitly off-by-one.  compensate that.  */
-	decl	%esi
-	decl	%edi
-
-	/* Backward copy.  */
-	std
-	addl	%ecx, %esi
-	addl	%ecx, %edi
-	rep
-	movsb
-
-	jmp	*%edx
-VARIABLE(grub_multiboot_backward_relocator_end)
-
-FUNCTION(grub_multiboot_real_boot)
-	/* Push the entry address on the stack.  */
-	pushl	%eax
-	/* Move the address of the multiboot information structure to ebx.  */
-	movl	%edx,%ebx
-
-	/* Unload all modules and stop the floppy driver.  */
-	call	EXT_C(grub_dl_unload_all)
-	call	EXT_C(grub_stop_floppy)
-
-	/* Interrupts should be disabled.  */
-	cli
-
-	/* Where do we copy what from.  */
-	movl	EXT_C(grub_multiboot_payload_size), %ecx
-	movl	EXT_C(grub_multiboot_payload_orig), %esi
-	movl	EXT_C(grub_multiboot_payload_dest), %edi
-	movl	EXT_C(grub_multiboot_payload_entry_offset), %edx
-
-	/* Move the magic value into eax.  */
-	movl	$MULTIBOOT_MAGIC2, %eax
-				
-	/* Jump to the relocator.  */
-	popl	%ebp
-	jmp 	*%ebp
-	
-/*
- * This starts the multiboot 2 kernel.
- */
-
-FUNCTION(grub_multiboot2_real_boot)
-        /* Push the entry address on the stack.  */
-        pushl   %eax
-        /* Move the address of the multiboot information structure to ebx.  */
-        movl    %edx,%ebx
-
-        /* Unload all modules and stop the floppy driver.  */
-        call    EXT_C(grub_dl_unload_all)
-        call    EXT_C(grub_stop_floppy)
-
-        /* Interrupts should be disabled.  */
-        cli
-
-        /* Move the magic value into eax and jump to the kernel.  */
-        movl    $MULTIBOOT2_BOOTLOADER_MAGIC,%eax
-        popl    %ecx
-        jmp     *%ecx
-
 /*
  * Use cdecl calling convention for *BSD kernels.
  */
@@ -225,7 +125,6 @@ FUNCTION(grub_multiboot2_real_boot)
 FUNCTION(grub_unix_real_boot)
 
         call    EXT_C(grub_dl_unload_all)
-        call    EXT_C(grub_stop_floppy)
 
 	/* Interrupts should be disabled.  */
         cli
