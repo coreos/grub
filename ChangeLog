@@ -1,3 +1,14 @@
+2009-03-22  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* normal/main.c (grub_normal_execute): Added an argument
+	BATCH to specify if an interactive interface should be provided
+	after reading a config file.
+	All callers updated.
+	(read_command_list): Prevent being executed twice.
+	(read_fs_list): Likewise.
+
+	* include/grub/normal.h (grub_normal_execute): 
+
 2009-03-22  Pavel Roskin  <proski@gno.org>
 
 	* kern/powerpc/ieee1275/startup.S: Replace EXT_C(start) with

@@ -164,8 +164,8 @@ free_menu_entry_classes (struct grub_menu_entry_class *head)
 }
 
 grub_err_t
-grub_normal_menu_addentry (int argc, const char **args, struct grub_script *script,
-			   const char *sourcecode)
+grub_normal_menu_addentry (int argc, const char **args,
+                           struct grub_script *script, const char *sourcecode)
 {
   const char *menutitle = 0;
   const char *menusourcecode;
@@ -184,7 +184,7 @@ grub_normal_menu_addentry (int argc, const char **args, struct grub_script *scri
   classes_head->next = 0;
   classes_tail = classes_head;
 
-  menu = grub_env_get_data_slot("menu");
+  menu = grub_env_get_data_slot ("menu");
   if (! menu)
     return grub_error (GRUB_ERR_MENU, "no menu context");
 
@@ -236,7 +236,8 @@ grub_normal_menu_addentry (int argc, const char **args, struct grub_script *scri
 	    {
 	      /* Handle invalid argument.  */
 	      failed = 1;
-	      grub_error (GRUB_ERR_MENU, "invalid argument for menuentry: %s", args[i]);
+	      grub_error (GRUB_ERR_MENU,
+                          "invalid argument for menuentry: %s", args[i]);
 	      break;
 	    }
 	}
@@ -249,7 +250,8 @@ grub_normal_menu_addentry (int argc, const char **args, struct grub_script *scri
       else
 	{
 	  failed = 1;
-	  grub_error (GRUB_ERR_MENU, "too many titles for menuentry: %s", args[i]);
+	  grub_error (GRUB_ERR_MENU,
+                      "too many titles for menuentry: %s", args[i]);
 	  break;
 	}
     }
@@ -382,7 +384,7 @@ void
 grub_enter_normal_mode (const char *config)
 {
   if (grub_setjmp (grub_exit_env) == 0)
-    grub_normal_execute (config, 0);
+    grub_normal_execute (config, 0, 0);
 }
 
 /* Initialize the screen.  */
@@ -445,7 +447,13 @@ static void
 read_command_list (void)
 {
   const char *prefix;
-  
+  static int first_time = 1;
+
+  /* Make sure that this function does not get executed twice.  */
+  if (! first_time)
+    return;
+  first_time = 0;
+    
   prefix = grub_env_get ("prefix");
   if (prefix)
     {
@@ -558,6 +566,12 @@ static void
 read_fs_list (void)
 {
   const char *prefix;
+  static int first_time = 1;
+
+  /* Make sure that this function does not get executed twice.  */
+  if (! first_time)
+    return;
+  first_time = 0;
   
   prefix = grub_env_get ("prefix");
   if (prefix)
@@ -627,10 +641,10 @@ read_fs_list (void)
   grub_fs_autoload_hook = autoload_fs_module;
 }
 
-/* Read the config file CONFIG and execute the menu interface or
-   the command-line interface.  */
+/* Read the config file COFIG, and execute the menu interface or
+   the command-line interface if BATCH is false.  */
 void
-grub_normal_execute (const char *config, int nested)
+grub_normal_execute (const char *config, int nested, int batch)
 {
   grub_menu_t menu = 0;
 
@@ -645,14 +659,17 @@ grub_normal_execute (const char *config, int nested)
       grub_errno = GRUB_ERR_NONE;
     }
 
-  if (menu && menu->size)
+  if (! batch)
     {
-      grub_menu_viewer_show_menu (menu, nested);
-      if (nested)
-	free_menu (menu);
+      if (menu && menu->size)
+        {
+          grub_menu_viewer_show_menu (menu, nested);
+          if (nested)
+            free_menu (menu);
+        }
+      else
+        grub_cmdline_run (nested);
     }
-  else
-    grub_cmdline_run (nested);
 }
 
 static grub_err_t

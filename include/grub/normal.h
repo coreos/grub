@@ -75,7 +75,7 @@ typedef struct grub_menu_execute_callback
 *grub_menu_execute_callback_t;
 
 void grub_enter_normal_mode (const char *config);
-void grub_normal_execute (const char *config, int nested);
+void grub_normal_execute (const char *config, int nested, int batch);
 void grub_menu_execute_with_fallback (grub_menu_t menu,
 				      grub_menu_entry_t entry,
 				      grub_menu_execute_callback_t callback,
