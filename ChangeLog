@@ -1,5 +1,13 @@
 2009-03-22  Pavel Roskin  <proski@gno.org>
 
+	* kern/powerpc/ieee1275/startup.S: Replace EXT_C(start) with
+	_start.
+	* kern/i386/pc/startup.S: Likewise.
+	* kern/i386/efi/startup.S: Likewise.
+	* kern/i386/ieee1275/startup.S: Likewise.
+	* kern/i386/coreboot/startup.S: Likewise.
+	* kern/x86_64/efi/startup.S: Likewise.
+
 	* aclocal.m4 (grub_CHECK_START_SYMBOL): Remove.
 	* configure.ac: Don't call grub_CHECK_START_SYMBOL.
 	* kern/i386/pc/startup.S: Use _start instead of START_SYMBOL.

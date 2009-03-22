@@ -44,7 +44,7 @@ _start:
 	 *  This is a special data area at a fixed offset from the beginning.
 	 */
 
-	. = EXT_C(start) + GRUB_KERNEL_CPU_PREFIX
+	. = _start + GRUB_KERNEL_CPU_PREFIX
 
 VARIABLE(grub_prefix)
 	/* to be filled by grub-mkimage */
@@ -53,7 +53,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(start) + GRUB_KERNEL_CPU_DATA_END
+	. = _start + GRUB_KERNEL_CPU_DATA_END
 
 /*
  *  Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).

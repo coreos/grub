@@ -53,7 +53,7 @@
 #include <multiboot.h>
 #include <multiboot2.h>
 		
-#define ABS(x)	((x) - EXT_C(start) + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
+#define ABS(x)	((x) - _start + GRUB_BOOT_MACHINE_KERNEL_ADDR + 0x200)
 	
 	.file	"startup.S"
 
@@ -77,14 +77,14 @@ _start:
 	 *  These MUST be at byte offset 6 and 7 of the executable
 	 *  DO NOT MOVE !!!
 	 */
-	. = EXT_C(start) + 0x6
+	. = _start + 0x6
 	.byte	GRUB_BOOT_VERSION_MAJOR, GRUB_BOOT_VERSION_MINOR
 
 	/*
 	 *  This is a special data area 8 bytes from the beginning.
 	 */
 
-	. = EXT_C(start) + 0x8
+	. = _start + 0x8
 
 VARIABLE(grub_total_module_size)
 	.long	0
@@ -103,7 +103,7 @@ VARIABLE(grub_prefix)
 	 *  Leave some breathing room for the prefix.
 	 */
 
-	. = EXT_C(start) + GRUB_KERNEL_MACHINE_DATA_END
+	. = _start + GRUB_KERNEL_MACHINE_DATA_END
 
 /*
  * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
@@ -510,7 +510,7 @@ gate_a20_check_state:
  * The code beyond this point is compressed.  Assert that the uncompressed
  * code fits GRUB_KERNEL_MACHINE_RAW_SIZE.
  */
-	. = EXT_C(start) + GRUB_KERNEL_MACHINE_RAW_SIZE
+	. = _start + GRUB_KERNEL_MACHINE_RAW_SIZE
 
 /*
  *  This call is special...  it never returns...  in fact it should simply
