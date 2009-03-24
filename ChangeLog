@@ -1,3 +1,8 @@
+2009-03-24  Pavel Roskin  <proski@gnu.org>
+
+	* genmk.rb: Define ASM_FILE for *.S files for *.lst generation,
+	not just for compilation.
+
 2009-03-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Move multiboot helper out of kernel

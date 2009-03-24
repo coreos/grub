@@ -46,13 +46,13 @@ FSFILES += fs-cpuid_mod-commands_i386_cpuid.lst
 PARTMAPFILES += partmap-cpuid_mod-commands_i386_cpuid.lst
 
 cmd-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cpuid > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh cpuid > $@ || (rm -f $@; exit 1)
 
 fs-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cpuid > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh cpuid > $@ || (rm -f $@; exit 1)
 
 partmap-cpuid_mod-commands_i386_cpuid.lst: commands/i386/cpuid.c $(commands/i386/cpuid.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh cpuid > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Icommands/i386 -I$(srcdir)/commands/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(cpuid_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh cpuid > $@ || (rm -f $@; exit 1)
 
 
 cpuid_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -103,13 +103,13 @@ FSFILES += fs-at_keyboard_mod-term_i386_pc_at_keyboard.lst
 PARTMAPFILES += partmap-at_keyboard_mod-term_i386_pc_at_keyboard.lst
 
 cmd-at_keyboard_mod-term_i386_pc_at_keyboard.lst: term/i386/pc/at_keyboard.c $(term/i386/pc/at_keyboard.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(at_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh at_keyboard > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(at_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh at_keyboard > $@ || (rm -f $@; exit 1)
 
 fs-at_keyboard_mod-term_i386_pc_at_keyboard.lst: term/i386/pc/at_keyboard.c $(term/i386/pc/at_keyboard.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(at_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh at_keyboard > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(at_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh at_keyboard > $@ || (rm -f $@; exit 1)
 
 partmap-at_keyboard_mod-term_i386_pc_at_keyboard.lst: term/i386/pc/at_keyboard.c $(term/i386/pc/at_keyboard.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(at_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh at_keyboard > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(at_keyboard_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh at_keyboard > $@ || (rm -f $@; exit 1)
 
 
 at_keyboard_mod_CFLAGS = $(COMMON_CFLAGS)
@@ -160,13 +160,13 @@ FSFILES += fs-vga_text_mod-term_i386_pc_vga_text.lst
 PARTMAPFILES += partmap-vga_text_mod-term_i386_pc_vga_text.lst
 
 cmd-vga_text_mod-term_i386_pc_vga_text.lst: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga_text > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga_text > $@ || (rm -f $@; exit 1)
 
 fs-vga_text_mod-term_i386_pc_vga_text.lst: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga_text > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga_text > $@ || (rm -f $@; exit 1)
 
 partmap-vga_text_mod-term_i386_pc_vga_text.lst: term/i386/pc/vga_text.c $(term/i386/pc/vga_text.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh vga_text > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386/pc -I$(srcdir)/term/i386/pc $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh vga_text > $@ || (rm -f $@; exit 1)
 
 
 vga_text_mod-term_i386_vga_common.o: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES)
@@ -179,13 +179,13 @@ FSFILES += fs-vga_text_mod-term_i386_vga_common.lst
 PARTMAPFILES += partmap-vga_text_mod-term_i386_vga_common.lst
 
 cmd-vga_text_mod-term_i386_vga_common.lst: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga_text > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh vga_text > $@ || (rm -f $@; exit 1)
 
 fs-vga_text_mod-term_i386_vga_common.lst: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga_text > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh vga_text > $@ || (rm -f $@; exit 1)
 
 partmap-vga_text_mod-term_i386_vga_common.lst: term/i386/vga_common.c $(term/i386/vga_common.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh vga_text > $@ || (rm -f $@; exit 1)
+	set -e; 	  $(TARGET_CC) -Iterm/i386 -I$(srcdir)/term/i386 $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(vga_text_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh vga_text > $@ || (rm -f $@; exit 1)
 
 
 vga_text_mod_CFLAGS = $(COMMON_CFLAGS)

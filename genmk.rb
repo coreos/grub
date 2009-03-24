@@ -159,17 +159,17 @@ PARTMAPFILES += #{partmap}
 
 #{command}: #{src} $(#{src}_DEPENDENCIES) gencmdlist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/gencmdlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{fs}: #{src} $(#{src}_DEPENDENCIES) genfslist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genfslist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 #{partmap}: #{src} $(#{src}_DEPENDENCIES) genpartmaplist.sh
 	set -e; \
-	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genpartmaplist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 
