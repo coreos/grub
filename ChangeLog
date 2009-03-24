@@ -212,11 +212,11 @@
 	(grub_rescue_cmd_insmod): Likewise.
 	(grub_rescue_cmd_set): Likewise.
 	(grub_rescue_cmd_unset): Likewise.
-	(attemp_normal_mode): Use grub_command_find to get normal module.
+	(attempt_normal_mode): Use grub_command_find to get normal module.
 	(grub_enter_rescue_mode): Use grub_register_core_commands to register
-	commands, remove grub_rescue_regiter_command calls.
+	commands, remove grub_rescue_register_command calls.
 
-	* normal/command.c (grub_regiser_command): Removed.
+	* normal/command.c (grub_register_command): Removed.
 	(grub_unregister_command): Likewise.
 	(grub_command_find): Likewise.
 	(grub_iterate_commands): Likewise.
@@ -353,9 +353,9 @@
 
 	* loader/i386/multiboot.c (code_size): New variable.
 	(grub_multiboot): Define offsets by adding to `code_size' rather
-	than substracting from `grub_multiboot_payload_size'.  Provide
+	than subtracting from `grub_multiboot_payload_size'.  Provide
 	4-byte alignment to MBI and others by increasing
-	`boot_loader_name_length' appropiately.
+	`boot_loader_name_length' appropriately.
 
 	* loader/i386/multiboot_elfxx.c
 	(CONCAT(grub_multiboot_load_elf, XX)): Initialize `code_size'.
@@ -385,7 +385,7 @@
 	(e.g. gfxterm with resolution higher than 640x480).
 
 	* normal/main.c (grub_normal_init_page): Display title text in a
-	position relative to the center of the terminal instead of reliing
+	position relative to the center of the terminal instead of relying
 	on a hardcoded offset.
 
 2009-03-04  Robert Millan  <rmh@aybabtu.com>
