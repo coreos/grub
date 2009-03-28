@@ -1,3 +1,63 @@
+2009-03-29  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	Make the format of Environment Block plain text. The boot loader
+	part is not tested well yet.
+	
+	* util/grub-editenv.c (DEFAULT_ENVBLK_SIZE): New macro.
+	(buffer): Removed.
+	(envblk): Likewise.
+	(usage): Remove "info" and "clear". Add "unset". Update the
+	description of "set", as this does not delete variables any
+	longer.
+	(create_envblk_file): Complete rewrite.
+	(open_envblk_file): Likewise.
+	(cmd_info): Removed.
+	(cmd_list): Likewise.
+	(cmd_set): Likewise.
+	(cmd_clear): Likewise.
+	(list_variables): New function.
+	(write_envblk): Likewise.
+	(set_variables): Likewise.
+	(unset_variables): Likewise.
+	(main): Complete rewrite.
+
+	* commands/loadenv.c (buffer): Removed.
+	(envblk): Likewise.
+	(open_envblk_file): New function.
+	(read_envblk_file): Complete rewrite.
+	(grub_cmd_load_env): Likewise.
+	(grub_cmd_list_env): Likewise.
+	(struct blocklist): New struct.
+	(free_blocklists): New function.
+	(check_blocklists): Likewise.
+	(write_blocklists): Likewise.
+	(grub_cmd_save_env): Complete rewrite.
+
+	* include/grub/lib/envblk.h (GRUB_ENVBLK_SIGNATURE): Replaced with
+	a plain text signature.
+	(GRUB_ENVBLK_MAXLEN): Removed.
+	(struct grub_envblk): Complete rewrite.
+	(grub_envblk_find): Removed.
+	(grub_envblk_insert): Likewise.
+	(grub_envblk_open): New prototype.
+	(grub_envblk_set): Likewise.
+	(grub_envblk_delete): Put const to VALUE.
+	(grub_envblk_iterate): Put const to NAME and VALUE.
+	(grub_envblk_close): New prototype.
+	(grub_envblk_buffer): New inline function.
+	(grub_envblk_size): Likewise.
+
+	* lib/envblk.c: Include grub/mm.h.
+	(grub_env_find): Removed.
+	(grub_envblk_open): New function.
+	(grub_envblk_close): Likewise.
+	(escaped_value_len): Likewise.
+	(find_next_line): Likewise.
+	(grub_envblk_insert): Removed.
+	(grub_envblk_set): New function.
+	(grub_envblk_delete): Complete rewrite.
+	(grub_envblk_iterate): Likewise.
+
 2009-03-28  Robert Millan  <rmh@aybabtu.com>
 
 	* conf/i386-pc.rmk (pkglib_MODULES): Add `linux16.mod'.
