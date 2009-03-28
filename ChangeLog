@@ -1,3 +1,21 @@
+2009-03-28  Robert Millan  <rmh@aybabtu.com>
+
+	* conf/i386-pc.rmk (pkglib_MODULES): Add `linux16.mod'.
+	(linux16_mod_SOURCES, linux16_mod_CFLAGS, linux16_mod_LDFLAGS): New
+	variables.  Use 16-bit loader.
+	(linux_mod_SOURCES, linux_mod_CFLAGS, linux_mod_LDFLAGS): Use 32-bit
+	loader.
+	* kern/i386/loader.S (grub_linux_boot): Rename to ...
+	(grub_linux16_boot): ... this.  Update all users.
+	* loader/i386/linux.c (grub_linux32_boot): Rename to ...
+	(grub_linux_boot): ... this.  Update all users.
+
+	* loader/i386/pc/linux.c (GRUB_MOD_INIT(linux)): Rename to ...
+	(GRUB_MOD_INIT(linux16)): ... this.  Rename `linux' and `initrd'
+	commands to `linux16' and `initrd16'.
+	(GRUB_MOD_FINI(linux)): Rename to ...
+	(GRUB_MOD_FINI(linux16)): ... this.
+
 2009-03-24  Pavel Roskin  <proski@gnu.org>
 
 	* genmk.rb: Define ASM_FILE for *.S files for *.lst generation,

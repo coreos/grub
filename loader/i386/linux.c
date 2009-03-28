@@ -263,7 +263,7 @@ struct
 #endif
 
 static grub_err_t
-grub_linux32_boot (void)
+grub_linux_boot (void)
 {
   struct linux_kernel_params *params;
   int e820_num;
@@ -522,7 +522,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_errno == GRUB_ERR_NONE)
     {
-      grub_loader_set (grub_linux32_boot, grub_linux_unload,
+      grub_loader_set (grub_linux_boot, grub_linux_unload,
 		       0 /* set noreturn=0 in order to avoid grub_console_fini() */);
       loaded = 1;
     }

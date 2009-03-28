@@ -59,7 +59,7 @@ VARIABLE(grub_linux_real_addr)
 VARIABLE(grub_linux_is_bzimage)
 	.long	0
 
-FUNCTION(grub_linux_boot)
+FUNCTION(grub_linux16_boot)
 	/* Must be done before zImage copy.  */
 	call	EXT_C(grub_dl_unload_all)
 

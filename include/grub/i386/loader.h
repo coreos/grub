@@ -30,7 +30,7 @@ extern grub_int32_t EXPORT_VAR(grub_linux_is_bzimage);
 extern grub_addr_t EXPORT_VAR(grub_os_area_addr);
 extern grub_size_t EXPORT_VAR(grub_os_area_size);
 
-grub_err_t EXPORT_FUNC(grub_linux_boot) (void);
+grub_err_t EXPORT_FUNC(grub_linux16_boot) (void);
 
 void EXPORT_FUNC(grub_unix_real_boot) (grub_addr_t entry, ...)
      __attribute__ ((cdecl,noreturn));

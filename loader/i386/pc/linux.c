@@ -269,7 +269,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_errno == GRUB_ERR_NONE)
     {
       grub_linux_prot_size = prot_size;
-      grub_loader_set (grub_linux_boot, grub_linux_unload, 1);
+      grub_loader_set (grub_linux16_boot, grub_linux_unload, 1);
       loaded = 1;
     }
 
@@ -378,18 +378,18 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
 static grub_command_t cmd_linux, cmd_initrd;
 
-GRUB_MOD_INIT(linux)
+GRUB_MOD_INIT(linux16)
 {
   cmd_linux =
-    grub_register_command ("linux", grub_cmd_linux,
+    grub_register_command ("linux16", grub_cmd_linux,
 			   0, "load linux");
   cmd_initrd =
-    grub_register_command ("initrd", grub_cmd_initrd,
+    grub_register_command ("initrd16", grub_cmd_initrd,
 			   0, "load initrd");
   my_mod = mod;
 }
 
-GRUB_MOD_FINI(linux)
+GRUB_MOD_FINI(linux16)
 {
   grub_unregister_command (cmd_linux);
   grub_unregister_command (cmd_initrd);
