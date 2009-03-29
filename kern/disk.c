@@ -158,10 +158,13 @@ grub_disk_cache_store (unsigned long dev_id, unsigned long disk_id,
   unsigned index;
   struct grub_disk_cache *cache;
   
-  grub_disk_cache_invalidate (dev_id, disk_id, sector);
-  
   index = grub_disk_cache_get_index (dev_id, disk_id, sector);
   cache = grub_disk_cache_table + index;
+ 
+  cache->lock = 1;
+  grub_free (cache->data);
+  cache->data = 0;
+  cache->lock = 0;
   
   cache->data = grub_malloc (GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS);
   if (! cache->data)
