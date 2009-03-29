@@ -1,3 +1,8 @@
+2009-03-29  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_linux.in (linux_entry): New function.
+	Factorize generation of Linux boot entries.
+
 2009-03-29  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	Make the format of Environment Block plain text. The boot loader

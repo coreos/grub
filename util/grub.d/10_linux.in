@@ -93,6 +93,25 @@ find_latest ()
   echo "$a"
 }
 
+linux_entry ()
+{
+  cat << EOF
+menuentry "$1" {
+EOF
+  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
+  cat << EOF
+	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro $2
+EOF
+  if test -n "${initrd}" ; then
+    cat << EOF
+	initrd	${rel_dirname}/${initrd}
+EOF
+  fi
+  cat << EOF
+}
+EOF
+}
+
 list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* ; do
         if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
       done`
@@ -122,37 +141,10 @@ while [ "x$list" != "x" ] ; do
     linux_root_device_thisversion=${GRUB_DEVICE}
   fi
 
-  cat << EOF
-menuentry "${OS}, linux ${version}" {
-EOF
-  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
-  cat << EOF
-	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro ${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}
-EOF
-  if test -n "${initrd}" ; then
-    cat << EOF
-	initrd	${rel_dirname}/${initrd}
-EOF
-  fi
-  cat << EOF
-}
-EOF
-
-  cat << EOF
-menuentry "${OS}, linux ${version} (recovery mode)" {
-EOF
-  prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
-  cat << EOF
-	linux	${rel_dirname}/${basename} root=${linux_root_device_thisversion} ro single ${GRUB_CMDLINE_LINUX}
-EOF
-  if test -n "${initrd}" ; then
-    cat << EOF
-	initrd	${rel_dirname}/${initrd}
-EOF
-  fi
-  cat << EOF
-}
-EOF
+  linux_entry "${OS}, linux ${version}" \
+      "${GRUB_CMDLINE_LINUX} ${GRUB_CMDLINE_LINUX_DEFAULT}"
+  linux_entry "${OS}, linux ${version} (recovery mode)" \
+      "single ${GRUB_CMDLINE_LINUX}"
 
   list=`echo $list | tr ' ' '\n' | grep -vx $linux | tr '\n' ' '`
 done
