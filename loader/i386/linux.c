@@ -85,6 +85,68 @@ static struct idt_descriptor idt_desc =
     0
   };
 
+static grub_uint16_t vid_mode;
+
+struct linux_vesafb_res
+{
+  grub_uint16_t width;
+  grub_uint16_t height;
+};
+
+enum vga_modes
+  {
+    VGA_640_480,
+    VGA_800_600,
+    VGA_1024_768,
+    VGA_1280_1024,
+  };
+
+struct linux_vesafb_mode
+{
+  grub_uint8_t res_index;
+  grub_uint8_t depth;
+};
+
+static struct linux_vesafb_res linux_vesafb_res[] =
+  {
+    { 640, 480 },
+    { 800, 600 },
+    { 1024, 768 },
+    { 1280, 1024 }
+  };
+
+/* This is the reverse of the table in [linux]/Documentation/fb/vesafb.txt.  */
+struct linux_vesafb_mode linux_vesafb_modes[] =
+  {
+    { VGA_640_480, 8 },		/* 0x301 */
+    { 0, 0 },
+    { VGA_800_600, 8 },		/* 0x303 */
+    { 0, 0 },
+    { VGA_1024_768, 8 },	/* 0x305 */
+    { 0, 0 },
+    { VGA_1280_1024, 8 },	/* 0x307 */
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    { 0, 0 },
+    { VGA_640_480, 15 },	/* 0x310 */
+    { VGA_640_480, 16 },	/* 0x311 */
+    { VGA_640_480, 24 },	/* 0x312 */
+    { VGA_800_600, 15 },	/* 0x313 */
+    { VGA_800_600, 16 },	/* 0x314 */
+    { VGA_800_600, 24 },	/* 0x315 */
+    { VGA_1024_768, 15 },	/* 0x316 */
+    { VGA_1024_768, 16 },	/* 0x317 */
+    { VGA_1024_768, 24 },	/* 0x318 */
+    { VGA_1280_1024, 15 },	/* 0x319 */
+    { VGA_1280_1024, 16 },	/* 0x31a */
+    { VGA_1280_1024, 24 },	/* 0x31b */
+  };
+
 static inline grub_size_t
 page_align (grub_size_t size)
 {
@@ -270,8 +332,50 @@ grub_linux_boot (void)
   
   params = real_mode_mem;
 
+  if (vid_mode == GRUB_LINUX_VID_MODE_NORMAL || vid_mode == GRUB_LINUX_VID_MODE_EXTENDED)
+    grub_video_restore ();
+  else if (vid_mode)
+    {
+      struct linux_vesafb_mode *linux_mode;
+      int depth, flags;
+      
+      flags = 0;
+      linux_mode = &linux_vesafb_modes[vid_mode - 0x301];
+      depth = linux_mode->depth;
+      
+      /* If we have 8 or less bits, then assume that it is indexed color mode.  */
+      if ((depth <= 8) && (depth != -1))
+	flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
+      
+      /* We have more than 8 bits, then assume that it is RGB color mode.  */
+      if (depth > 8)
+	flags |= GRUB_VIDEO_MODE_TYPE_RGB;
+      
+      /* If user requested specific depth, forward that information to driver.  */
+      if (depth != -1)
+	flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
+	  & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
+      
+      /* Try to initialize requested mode.  */
+      if (grub_video_setup (linux_vesafb_res[linux_mode->res_index].width,
+			    linux_vesafb_res[linux_mode->res_index].height,
+			    flags) != GRUB_ERR_NONE)
+	{
+	  grub_printf ("Unable to initialize requested video mode (vga=0x%x)\n", vid_mode);
+	  return grub_errno;
+	}
+    }
+
   if (! grub_linux_setup_video (params))
     params->have_vga = GRUB_VIDEO_TYPE_VLFB;
+  else
+    {
+      params->have_vga = 0;
+      params->video_cursor_x = grub_getxy () >> 8;
+      params->video_cursor_y = grub_getxy () & 0xff;
+      params->video_width = 80;
+      params->video_height = 25;
+    }
   
   grub_dprintf ("linux", "code32_start = %x, idt_desc = %lx, gdt_desc = %lx\n",
 		(unsigned) params->code32_start,
@@ -445,14 +549,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   params->ext_mem = ((32 * 0x100000) >> 10);
   params->alt_mem = ((32 * 0x100000) >> 10);
   
-  params->video_cursor_x = grub_getxy () >> 8;
-  params->video_cursor_y = grub_getxy () & 0xff;
   params->video_page = 0; /* ??? */
   params->video_mode = 0;
-  params->video_width = (grub_getwh () >> 8);
   params->video_ega_bx = 0;
-  params->video_height = (grub_getwh () & 0xff);
-  params->have_vga = 0;
   params->font_size = 16; /* XXX */
 
   /* The other parameters are filled when booting.  */
@@ -465,7 +564,22 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Detect explicitly specified memory size, if any.  */
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
-    if (grub_memcmp (argv[i], "mem=", 4) == 0)
+    if (grub_memcmp (argv[i], "vga=", 4) == 0)
+      {
+	/* Video mode selection support.  */
+	char *val = argv[i] + 4;
+
+	if (grub_strcmp (val, "normal") == 0)
+	  vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
+	else if (grub_strcmp (val, "ext") == 0)
+	  vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
+	else
+	  vid_mode = (grub_uint16_t) grub_strtoul (val, 0, 0);
+
+	if (grub_errno)
+	  goto fail;
+      }
+    else if (grub_memcmp (argv[i], "mem=", 4) == 0)
       {
 	char *val = argv[i] + 4;
 	  

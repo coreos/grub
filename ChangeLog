@@ -1,5 +1,11 @@
 2009-03-29  Robert Millan  <rmh@aybabtu.com>
 
+	* loader/i386/linux.c (grub_cmd_linux): Parse "vga=" parameter and
+	set `vid_mode' accordingly.
+	(grub_linux_boot): Process `vid_mode' and set video mode.
+
+2009-03-29  Robert Millan  <rmh@aybabtu.com>
+
 	* util/grub.d/10_linux.in (linux_entry): New function.
 	Factorize generation of Linux boot entries.
 
