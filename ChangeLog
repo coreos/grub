@@ -1,10 +1,10 @@
 2009-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
-      Leak fixes
+	Leak fixes
 
-      * kern/disk.c (grub_disk_cache_store): Invalidate previous cache
-      in case of collision
-      * disk/scsi.c (grub_scsi_open): free scsi in case of error
+	* kern/disk.c (grub_disk_cache_store): Invalidate previous cache
+	in case of collision
+	* disk/scsi.c (grub_scsi_open): free scsi in case of error
 
 2009-03-29  Robert Millan  <rmh@aybabtu.com>
 
