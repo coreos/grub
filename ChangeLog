@@ -1,3 +1,9 @@
+2009-03-30  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/linux.c (grub_cmd_linux): Check for zImage before
+	checking for abi version.  Improve error messages on BIOS to notify
+	user about `linux16' command.
+
 2009-03-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Leak fixes
