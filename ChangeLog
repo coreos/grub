@@ -1,3 +1,10 @@
+2009-03-30  Pavel Roskin  <proski@gnu.org>
+
+	* fs/hfs.c (grub_hfs_strncasecmp): Integrate into ...
+	(grub_hfs_cmp_catkeys): ... this.  Don't assume strings to be
+	zero-terminated, rely only on the strlen value.  Fix comparison
+	of strings differing in length.
+
 2009-03-30  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/linux.c (grub_cmd_linux): Check for zImage before

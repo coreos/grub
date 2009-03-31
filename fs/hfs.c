@@ -390,10 +390,10 @@ grub_hfs_mount (grub_disk_t disk)
   return 0;
 }
 
-/* Case insensitive string comparison using HFS character ordering */
+/* Compare the K1 and K2 catalog file keys using HFS character ordering.  */
 static int
-grub_hfs_strncasecmp (const unsigned char *s1, const unsigned char *s2,
-		      grub_size_t n)
+grub_hfs_cmp_catkeys (struct grub_hfs_catalog_key *k1,
+		      struct grub_hfs_catalog_key *k2)
 {
   /* Taken from hfsutils 3.2.6 and converted to a readable form */
   static const unsigned char hfs_charorder[256] = {
@@ -614,40 +614,23 @@ grub_hfs_strncasecmp (const unsigned char *s1, const unsigned char *s2,
     [0xFE] = 214,
     [0xFF] = 215,
   };
+  int i;
+  int cmp;
+  int minlen = (k1->strlen < k2->strlen) ? k1->strlen : k2->strlen;
 
-  if (n == 0)
-    return 0;
-
-  while (*s1 && *s2 && --n)
-    {
-      if (hfs_charorder[*s1] != hfs_charorder[*s2])
-	break;
-
-      s1++;
-      s2++;
-    }
-
-  return (int) hfs_charorder[*s1] - (int) hfs_charorder[*s2];
-}
-
-/* Compare the K1 and K2 catalog file keys.  */
-static int
-grub_hfs_cmp_catkeys (struct grub_hfs_catalog_key *k1,
-		      struct grub_hfs_catalog_key *k2)
-{
-  int cmp = (grub_be_to_cpu32 (k1->parent_dir)
-	     - grub_be_to_cpu32 (k2->parent_dir));
-  
+  cmp = (grub_be_to_cpu32 (k1->parent_dir) - grub_be_to_cpu32 (k2->parent_dir));
   if (cmp != 0)
     return cmp;
-  
-  cmp = grub_hfs_strncasecmp (k1->str, k2->str, k1->strlen);
-  
-  /* This is required because the compared strings are not of equal
-     length.  */
-  if (cmp == 0 && k1->strlen < k2->strlen)
-    return -1;
-  return cmp;
+
+  for (i = 0; i < minlen; i++)
+    {
+      cmp = (hfs_charorder[k1->str[i]] - hfs_charorder[k2->str[i]]);
+      if (cmp != 0)
+	return cmp;
+    }
+
+  /* Shorter strings precede long ones.  */
+  return (k1->strlen - k2->strlen);
 }
 
 
