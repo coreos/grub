@@ -495,18 +495,15 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
         if (array->total_devs == array->nr_devs)
           /* We found more members of the array than the array
              actually has according to its superblock.  This shouldn't
-             happen normally, but what is the sanest things to do in such
-             a case? */
-          return grub_error (GRUB_ERR_BAD_NUMBER,
-                             "array->nr_devs > array->total_devs (%d)?!?",
-                             array->total_devs);
+             happen normally.  */
+          grub_dprintf ("raid", "array->nr_devs > array->total_devs (%d)?!?",
+			array->total_devs);
 
         if (array->device[new_array->index] != NULL)
           /* We found multiple devices with the same number. Again,
              this shouldn't happen.*/
-          return grub_error (GRUB_ERR_BAD_NUMBER,
-                             "Found two disks with the number %d?!?",
-                             new_array->number);
+          grub_dprintf ("raid", "Found two disks with the number %d?!?",
+			new_array->number);
 
         if (new_array->disk_size < array->disk_size)
           array->disk_size = new_array->disk_size;
