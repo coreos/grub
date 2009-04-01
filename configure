@@ -649,7 +649,6 @@ enable_grub_emu_usb
 enable_grub_emu
 LIBUSB
 LIBCURSES
-MODULE_LDFLAGS
 TARGET_LDFLAGS
 TARGET_CPPFLAGS
 TARGET_CFLAGS
@@ -7439,7 +7438,6 @@ fi
 if test x"$sap_possible" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
 fi
-
 
 
 

@@ -13,7 +13,7 @@ UNDSYMFILES += und-cpuid.lst
 
 cpuid.mod: pre-cpuid.o mod-cpuid.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-cpuid.o mod-cpuid.o
+	$(TARGET_CC) $(cpuid_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-cpuid.o mod-cpuid.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -70,7 +70,7 @@ UNDSYMFILES += und-at_keyboard.lst
 
 at_keyboard.mod: pre-at_keyboard.o mod-at_keyboard.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(at_keyboard_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-at_keyboard.o mod-at_keyboard.o
+	$(TARGET_CC) $(at_keyboard_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-at_keyboard.o mod-at_keyboard.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -127,7 +127,7 @@ UNDSYMFILES += und-vga_text.lst
 
 vga_text.mod: pre-vga_text.o mod-vga_text.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(vga_text_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-vga_text.o mod-vga_text.o
+	$(TARGET_CC) $(vga_text_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-vga_text.o mod-vga_text.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 

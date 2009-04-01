@@ -130,7 +130,7 @@ UNDSYMFILES += und-kernel.lst
 
 kernel.mod: pre-kernel.o mod-kernel.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(kernel_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-kernel.o mod-kernel.o
+	$(TARGET_CC) $(kernel_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-kernel.o mod-kernel.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -845,7 +845,7 @@ UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-normal.o mod-normal.o
+	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-normal.o mod-normal.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1188,7 +1188,7 @@ UNDSYMFILES += und-chain.lst
 
 chain.mod: pre-chain.o mod-chain.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(chain_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-chain.o mod-chain.o
+	$(TARGET_CC) $(chain_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-chain.o mod-chain.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1245,7 +1245,7 @@ UNDSYMFILES += und-appleldr.lst
 
 appleldr.mod: pre-appleldr.o mod-appleldr.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(appleldr_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-appleldr.o mod-appleldr.o
+	$(TARGET_CC) $(appleldr_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-appleldr.o mod-appleldr.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1302,7 +1302,7 @@ UNDSYMFILES += und-linux.lst
 
 linux.mod: pre-linux.o mod-linux.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-linux.o mod-linux.o
+	$(TARGET_CC) $(linux_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-linux.o mod-linux.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1359,7 +1359,7 @@ UNDSYMFILES += und-halt.lst
 
 halt.mod: pre-halt.o mod-halt.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-halt.o mod-halt.o
+	$(TARGET_CC) $(halt_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-halt.o mod-halt.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1416,7 +1416,7 @@ UNDSYMFILES += und-reboot.lst
 
 reboot.mod: pre-reboot.o mod-reboot.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-reboot.o mod-reboot.o
+	$(TARGET_CC) $(reboot_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-reboot.o mod-reboot.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1473,7 +1473,7 @@ UNDSYMFILES += und-pci.lst
 
 pci.mod: pre-pci.o mod-pci.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-pci.o mod-pci.o
+	$(TARGET_CC) $(pci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-pci.o mod-pci.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1530,7 +1530,7 @@ UNDSYMFILES += und-lspci.lst
 
 lspci.mod: pre-lspci.o mod-lspci.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-lspci.o mod-lspci.o
+	$(TARGET_CC) $(lspci_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-lspci.o mod-lspci.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1587,7 +1587,7 @@ UNDSYMFILES += und-datetime.lst
 
 datetime.mod: pre-datetime.o mod-datetime.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(datetime_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-datetime.o mod-datetime.o
+	$(TARGET_CC) $(datetime_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-datetime.o mod-datetime.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1663,7 +1663,7 @@ UNDSYMFILES += und-date.lst
 
 date.mod: pre-date.o mod-date.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(date_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-date.o mod-date.o
+	$(TARGET_CC) $(date_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-date.o mod-date.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
@@ -1720,7 +1720,7 @@ UNDSYMFILES += und-datehook.lst
 
 datehook.mod: pre-datehook.o mod-datehook.o $(TARGET_OBJ2ELF)
 	-rm -f $@
-	$(TARGET_CC) $(datehook_mod_LDFLAGS) $(TARGET_LDFLAGS) $(MODULE_LDFLAGS) -Wl,-r,-d -o $@ pre-datehook.o mod-datehook.o
+	$(TARGET_CC) $(datehook_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-datehook.o mod-datehook.o
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 

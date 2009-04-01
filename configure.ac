@@ -364,7 +364,6 @@ fi
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_LDFLAGS)
-AC_SUBST(MODULE_LDFLAGS)
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
