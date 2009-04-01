@@ -1,3 +1,8 @@
+2009-03-31  Pavel Roskin  <proski@gnu.org>
+
+	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): Provide safe default
+	for cross-compilation.
+
 2009-03-30  Robert Millan  <rmh@aybabtu.com>
 
 	Fix i386-ieee1275 build.

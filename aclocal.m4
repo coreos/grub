@@ -337,6 +337,7 @@ main (void)
 }
 ]])],
 	[grub_cv_i386_check_nested_functions=no],
+	[grub_cv_i386_check_nested_functions=yes],
 	[grub_cv_i386_check_nested_functions=yes])])
 
 AC_MSG_RESULT([$grub_cv_i386_check_nested_functions])
