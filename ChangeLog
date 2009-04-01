@@ -1,3 +1,10 @@
+2009-03-30  Robert Millan  <rmh@aybabtu.com>
+
+	Fix i386-ieee1275 build.
+
+	* include/grub/i386/ieee1275/loader.h (grub_multiboot2_real_boot):
+	Remove declaration.
+
 2009-03-30  Pavel Roskin  <proski@gnu.org>
 
 	* fs/hfs.c (grub_hfs_strncasecmp): Integrate into ...
