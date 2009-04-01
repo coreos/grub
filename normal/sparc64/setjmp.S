@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,13 +26,22 @@
  * int grub_setjmp (grub_jmp_buf env)
  */
 FUNCTION(grub_setjmp)
-        ret
-         nop
+	stx	%o7, [%o0 + 0x00]
+	stx	%sp, [%o0 + 0x08]
+	stx	%fp, [%o0 + 0x10]
+	retl
+	 clr	%o0
 
 /*
  * int grub_longjmp (grub_jmp_buf env, int val)
  */
 FUNCTION(grub_longjmp)
-        ret
-         nop
-
+	ldx	[%o0 + 0x10], %g1
+	movrz	%o1, 1, %o1
+	flushw
+	ldx	[%o0 + 0x00], %o7
+	ldx	[%o0 + 0x08], %fp
+	sub	%fp, 192, %sp
+	stx	%g1, [%sp + 2047 + (14 * 8)]
+	retl
+	 restore %o1, 0, %o0
