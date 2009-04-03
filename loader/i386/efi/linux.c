@@ -306,7 +306,7 @@ fake_bios_data (void)
       if (! grub_memcmp (guid, &acpi2_guid, sizeof (grub_efi_guid_t)))
 	{
 	  acpi = grub_efi_system_table->configuration_table[i].vendor_table;
-	  grub_printf ("ACPI2: %p\n", acpi);
+	  grub_dprintf ("linux", "ACPI2: %p\n", acpi);
 	}
       else if (! grub_memcmp (guid, &acpi_guid, sizeof (grub_efi_guid_t)))
 	{
@@ -315,7 +315,7 @@ fake_bios_data (void)
 	  t = grub_efi_system_table->configuration_table[i].vendor_table;
 	  if (! acpi)
 	    acpi = t;
-	  grub_printf ("ACPI: %p\n", t);
+	  grub_dprintf ("linux", "ACPI: %p\n", t);
 	}
     }
 

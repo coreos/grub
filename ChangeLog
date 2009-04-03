@@ -1,3 +1,8 @@
+2009-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
+
+	* loader/i386/efi/linux.c (fake_bios_data): Use grub_dprintf
+	instead of grub_printf.
+
 2009-04-03  Robert Millan  <rmh@aybabtu.com>
 
 	* loader/i386/linux.c (grub_linux_setup_video): Fill
