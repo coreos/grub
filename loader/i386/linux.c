@@ -304,14 +304,14 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->lfb_base = (void *) render_target->data;
   params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
 
-  params->red_mask_size = 8;
-  params->red_field_pos = 16;
-  params->green_mask_size = 8;
-  params->green_field_pos = 8;
-  params->blue_mask_size = 8;
-  params->blue_field_pos = 0;
-  params->reserved_mask_size = 8;
-  params->reserved_field_pos = 24;
+  params->red_mask_size = mode_info.red_mask_size;
+  params->red_field_pos = mode_info.red_field_pos;
+  params->green_mask_size = mode_info.green_mask_size;
+  params->green_field_pos = mode_info.green_field_pos;
+  params->blue_mask_size = mode_info.blue_mask_size;
+  params->blue_field_pos = mode_info.blue_field_pos;
+  params->reserved_mask_size = mode_info.reserved_mask_size;
+  params->reserved_field_pos = mode_info.reserved_field_pos;
 
   return 0;
 }

@@ -1,3 +1,10 @@
+2009-04-03  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/linux.c (grub_linux_setup_video): Fill
+	`params->{red,green,blue,reserved}_{mask_size,field_pos}' with
+	values from `mode info' structure instead of hardcoded
+	values.
+
 2009-04-01  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in: Remove all references to MODULE_LDFLAGS, it's
