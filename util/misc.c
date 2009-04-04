@@ -370,6 +370,11 @@ void sync (void)
 {
 }
 
+int fsync (int fno __attribute__ ((unused)))
+{
+  return 0;
+}
+
 void sleep (int s)
 {
   Sleep (s * 1000);

@@ -69,6 +69,7 @@ int asprintf (char **buf, const char *fmt, ...);
 #define ftello ftello64
 
 void sync (void);
+int fsync (int fno);
 void sleep(int s);
 
 grub_int64_t grub_util_get_disk_size (char *name);

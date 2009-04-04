@@ -1,3 +1,9 @@
+2009-04-04  Bean  <bean123ch@gnail.com>
+
+	* include/grub/util/misc.h: Add dummy function fsync for mingw.
+
+	* util/misc.c: Likewise.
+
 2009-04-04  Yoshinori K. Okuji  <okuji@enbug.org>
 
 	* loader/i386/efi/linux.c (fake_bios_data): Use grub_dprintf
