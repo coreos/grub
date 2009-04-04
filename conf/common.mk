@@ -600,6 +600,12 @@ CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
 grub-mkconfig_DATA += util/grub.d/README
 
+# For grub-dumpbios
+grub-dumpbios: util/grub-dumpbios.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+sbin_SCRIPTS += grub-dumpbios
+CLEANFILES += grub-dumpbios
 
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
@@ -2444,7 +2450,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	 ls.mod	cmp.mod cat.mod help.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod loadenv.mod crc.mod
+	read.mod sleep.mod loadenv.mod crc.mod memrw.mod
 
 # For minicmd.mod.
 minicmd_mod_SOURCES = commands/minicmd.c
@@ -3737,6 +3743,63 @@ partmap-crc_mod-lib_crc.lst: lib/crc.c $(lib/crc.c_DEPENDENCIES) genpartmaplist.
 
 crc_mod_CFLAGS = $(COMMON_CFLAGS)
 crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For memrw.mod.
+memrw_mod_SOURCES = commands/memrw.c
+CLEANFILES += memrw.mod mod-memrw.o mod-memrw.c pre-memrw.o memrw_mod-commands_memrw.o und-memrw.lst
+ifneq ($(memrw_mod_EXPORTS),no)
+CLEANFILES += def-memrw.lst
+DEFSYMFILES += def-memrw.lst
+endif
+MOSTLYCLEANFILES += memrw_mod-commands_memrw.d
+UNDSYMFILES += und-memrw.lst
+
+memrw.mod: pre-memrw.o mod-memrw.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(memrw_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-memrw.o mod-memrw.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-memrw.o: $(memrw_mod_DEPENDENCIES) memrw_mod-commands_memrw.o
+	-rm -f $@
+	$(TARGET_CC) $(memrw_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ memrw_mod-commands_memrw.o
+
+mod-memrw.o: mod-memrw.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(memrw_mod_CFLAGS) -c -o $@ $<
+
+mod-memrw.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'memrw' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(memrw_mod_EXPORTS),no)
+def-memrw.lst: pre-memrw.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 memrw/' > $@
+endif
+
+und-memrw.lst: pre-memrw.o
+	echo 'memrw' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+memrw_mod-commands_memrw.o: commands/memrw.c $(commands/memrw.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(memrw_mod_CFLAGS) -MD -c -o $@ $<
+-include memrw_mod-commands_memrw.d
+
+CLEANFILES += cmd-memrw_mod-commands_memrw.lst fs-memrw_mod-commands_memrw.lst partmap-memrw_mod-commands_memrw.lst
+COMMANDFILES += cmd-memrw_mod-commands_memrw.lst
+FSFILES += fs-memrw_mod-commands_memrw.lst
+PARTMAPFILES += partmap-memrw_mod-commands_memrw.lst
+
+cmd-memrw_mod-commands_memrw.lst: commands/memrw.c $(commands/memrw.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(memrw_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh memrw > $@ || (rm -f $@; exit 1)
+
+fs-memrw_mod-commands_memrw.lst: commands/memrw.c $(commands/memrw.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(memrw_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh memrw > $@ || (rm -f $@; exit 1)
+
+partmap-memrw_mod-commands_memrw.lst: commands/memrw.c $(commands/memrw.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(memrw_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh memrw > $@ || (rm -f $@; exit 1)
+
+
+memrw_mod_CFLAGS = $(COMMON_CFLAGS)
+memrw_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\

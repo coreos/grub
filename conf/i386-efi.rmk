@@ -79,7 +79,7 @@ grub_install_SOURCES = util/i386/efi/grub-install.in
 # Modules.
 pkglib_MODULES = kernel.mod normal.mod chain.mod appleldr.mod \
 	linux.mod halt.mod reboot.mod pci.mod lspci.mod \
-	datetime.mod date.mod datehook.mod
+	datetime.mod date.mod datehook.mod loadbios.mod fixvideo.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -181,6 +181,16 @@ date_mod_LDFLAGS = $(COMMON_LDFLAGS)
 datehook_mod_SOURCES = hook/datehook.c
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For loadbios.mod
+loadbios_mod_SOURCES = commands/efi/loadbios.c
+loadbios_mod_CFLAGS = $(COMMON_CFLAGS)
+loadbios_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For fixvideo.mod
+fixvideo_mod_SOURCES = commands/efi/fixvideo.c
+fixvideo_mod_CFLAGS = $(COMMON_CFLAGS)
+fixvideo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
