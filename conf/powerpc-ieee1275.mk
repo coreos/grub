@@ -17,7 +17,8 @@ DEFSYMFILES += kernel_syms.lst
 kernel_elf_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h misc.h mm.h net.h parser.h rescue.h \
 	symbol.h term.h time.h types.h powerpc/libgcc.h loader.h partition.h \
-	pc_partition.h ieee1275/ieee1275.h machine/kernel.h handler.h
+	pc_partition.h ieee1275/ieee1275.h machine/kernel.h handler.h list.h \
+	command.h
 
 symlist.c: $(addprefix include/grub/,$(kernel_elf_HEADERS)) config.h gensymlist.sh
 	/bin/sh gensymlist.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
@@ -602,8 +603,6 @@ kernel_elf-kern_powerpc_cache.o: kern/powerpc/cache.S $(kern/powerpc/cache.S_DEP
 	$(TARGET_CC) -Ikern/powerpc -I$(srcdir)/kern/powerpc $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(kernel_elf_CFLAGS) -MD -c -o $@ $<
 -include kernel_elf-kern_powerpc_cache.d
 
-kernel_elf_HEADERS = grub/powerpc/ieee1275/ieee1275.h list.h handler.h \
-	command.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
 kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_elf_LDFLAGS = $(COMMON_LDFLAGS) -static-libgcc -lgcc \
