@@ -1,53 +1,5 @@
 2009-04-04  Bean  <bean123ch@gnail.com>
 
-	* include/grub/efi/api.h (grub_efi_configuration_table): Add packed
-	attribute, otherwise the size would be wrong for i386 platform.
-
-	* include/grub/pci.h (grub_pci_read_word): New inline function.
-	(grub_pci_read_byte): Likewise.
-	(grub_pci_write): Likewise.
-	(grub_pci_write_word): Likewise.
-	(grub_pci_write_byte): Likewise.
-
-	* include/grub/pci.h (grub_pci_iteratefunc_t): Add NESTED_FUNC_ATTR.
-
-	* loader/i386/efi/linux.c (fake_bios_data): Moved to loadbios module.
-	(find_framebuf): Scan pci to locate the frame buffer address.
-
-	* commands/efi/fixvideo.c: New file.
-
-	* commands/efi/loadbios.c: Likewise.
-
-	* commands/memrw.c: Likewise.
-
-	* util/grub-dumpbios.in: Likewise.
-
-	* conf/common.rmk (grub-dumpbios): New utility.
-	(pkglib_MODULES): New module memrw.mod.
-	(memrw_mod_SOURCE): New macro.
-	(memrw_mod_CFLAGS): Likewise.
-	(memrw_mod_LDFLAGS): Likewise.
-
-	* conf/i386-efi.rmk (pkglig_MODULES): New module loadbios.mod and
-	fixvideo.mod.
-	(loadbios_mod_SOURCE): New macro.
-	(loadbios_mod_CFLAGS): Likewise.
-	(loadbios_mod_LDFLAGS): Likewise.
-	(fixvideo_mod_SOURCE): Likewise.
-	(fixvideo_mod_CFLAGS): Likewise.
-	(fixvideo_mod_LDFLAGS): Likewise.
-
-	* conf/x86_64.rmk (pkglig_MODULES): New module loadbios.mod and
-	fixvideo.mod.
-	(loadbios_mod_SOURCE): New macro.
-	(loadbios_mod_CFLAGS): Likewise.
-	(loadbios_mod_LDFLAGS): Likewise.
-	(fixvideo_mod_SOURCE): Likewise.
-	(fixvideo_mod_CFLAGS): Likewise.
-	(fixvideo_mod_LDFLAGS): Likewise.
-
-2009-04-04  Bean  <bean123ch@gnail.com>
-
 	* include/grub/util/misc.h: Add dummy function fsync for mingw.
 
 	* util/misc.c: Likewise.

@@ -58,7 +58,6 @@ commands/loadenv.c
 commands/ls.c
 commands/lsmmap.c
 commands/lspci.c
-commands/memrw.c
 commands/minicmd.c
 commands/read.c
 commands/reboot.c
@@ -67,8 +66,6 @@ commands/sleep.c
 commands/test.c
 commands/usbtest.c
 commands/videotest.c
-commands/efi/fixvideo.c
-commands/efi/loadbios.c
 commands/i386/cpuid.c
 commands/i386/pc/halt.c
 commands/i386/pc/play.c
@@ -445,7 +442,6 @@ term/i386/pc/vga_text.c
 term/ieee1275/ofconsole.c
 util/console.c
 util/getroot.c
-util/grub-dumpbios.in
 util/grub-editenv.c
 util/grub-emu.c
 util/grub-fstest.c

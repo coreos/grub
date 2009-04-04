@@ -155,12 +155,6 @@ CLEANFILES += $(grub-mkconfig_SCRIPTS)
 
 grub-mkconfig_DATA += util/grub.d/README
 
-# For grub-dumpbios
-grub-dumpbios: util/grub-dumpbios.in config.status
-	./config.status --file=$@:$<
-	chmod +x $@
-sbin_SCRIPTS += grub-dumpbios
-CLEANFILES += grub-dumpbios
 
 # Filing systems.
 pkglib_MODULES += fshelp.mod fat.mod ufs.mod ext2.mod ntfs.mod		\
@@ -341,7 +335,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	 ls.mod	cmp.mod cat.mod help.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod loadenv.mod crc.mod memrw.mod
+	read.mod sleep.mod loadenv.mod crc.mod
 
 # For minicmd.mod.
 minicmd_mod_SOURCES = commands/minicmd.c
@@ -447,11 +441,6 @@ loadenv_mod_LDFLAGS = $(COMMON_LDFLAGS)
 crc_mod_SOURCES = commands/crc.c lib/crc.c
 crc_mod_CFLAGS = $(COMMON_CFLAGS)
 crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-# For memrw.mod.
-memrw_mod_SOURCES = commands/memrw.c
-memrw_mod_CFLAGS = $(COMMON_CFLAGS)
-memrw_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # Common Video Subsystem specific modules.
 pkglib_MODULES += video.mod videotest.mod bitmap.mod tga.mod jpeg.mod	\

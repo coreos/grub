@@ -933,7 +933,7 @@ struct grub_efi_configuration_table
 {
   grub_efi_guid_t vendor_guid;
   void *vendor_table;
-} __attribute__ ((packed));
+};
 typedef struct grub_efi_configuration_table grub_efi_configuration_table_t;
 
 struct grub_efi_simple_input_interface
