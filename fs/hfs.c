@@ -943,7 +943,8 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
 
 static grub_err_t
 grub_hfs_dir (grub_device_t device, const char *path, 
-		  int (*hook) (const char *filename, int dir))
+		  int (*hook) (const char *filename,
+			       const struct grub_dirhook_info *info))
 {
   int inode;
 
@@ -954,13 +955,17 @@ grub_hfs_dir (grub_device_t device, const char *path,
       char fname[32] = { 0 };
       char *filetype = rec->data;
       struct grub_hfs_catalog_key *ckey = rec->key;
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
       
       grub_strncpy (fname, (char *) (ckey->str), ckey->strlen);
       
-      if (*filetype == GRUB_HFS_FILETYPE_DIR)
-	return hook (fname, 1);
-      else if (*filetype == GRUB_HFS_FILETYPE_FILE)
-	return hook (fname, 0);
+      if (*filetype == GRUB_HFS_FILETYPE_DIR 
+	  || *filetype == GRUB_HFS_FILETYPE_FILE)
+	{
+	  info.dir = (*filetype == GRUB_HFS_FILETYPE_DIR);
+	  return hook (fname, &info);
+	}
       return 0;
     }
   

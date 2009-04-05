@@ -791,7 +791,8 @@ grub_ext2_read (grub_file_t file, char *buf, grub_size_t len)
 
 static grub_err_t
 grub_ext2_dir (grub_device_t device, const char *path, 
-	       int (*hook) (const char *filename, int dir))
+	       int (*hook) (const char *filename, 
+			    const struct grub_dirhook_info *info))
 {
   struct grub_ext2_data *data = 0;;
   struct grub_fshelp_node *fdiro = 0;
@@ -804,14 +805,24 @@ grub_ext2_dir (grub_device_t device, const char *path,
 				enum grub_fshelp_filetype filetype,
 				grub_fshelp_node_t node)
     {
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
+      if (! node->inode_read)
+	{
+	  grub_ext2_read_inode (data, node->ino, &node->inode);
+	  if (!grub_errno)
+	    node->inode_read = 1;
+	  grub_errno = GRUB_ERR_NONE;
+	}
+      if (node->inode_read)
+	{
+	  info.mtimeset = 1;
+	  info.mtime = grub_le_to_cpu32 (node->inode.mtime);
+	}
+
+      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
       grub_free (node);
-      
-      if (filetype == GRUB_FSHELP_DIR)
-	return hook (filename, 1);
-      else 
-	return hook (filename, 0);
-      
-      return 0;
+      return hook (filename, &info);
     }
 
 #ifndef GRUB_UTIL
@@ -898,6 +909,34 @@ grub_ext2_uuid (grub_device_t device, char **uuid)
   return grub_errno;
 }
 
+/* Get mtime.  */
+static grub_err_t 
+grub_ext2_mtime (grub_device_t device, grub_int32_t *tm)
+{
+  struct grub_ext2_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_ext2_mount (disk);
+  if (!data)
+    *tm = 0;
+  else 
+    *tm = grub_le_to_cpu32 (data->sblock.utime);
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+
+}
+
+
 
 static struct grub_fs grub_ext2_fs =
   {
@@ -908,6 +947,7 @@ static struct grub_fs grub_ext2_fs =
     .close = grub_ext2_close,
     .label = grub_ext2_label,
     .uuid = grub_ext2_uuid,
+    .mtime = grub_ext2_mtime,
     .next = 0
   };
 

@@ -606,7 +606,8 @@ grub_fat_iterate_dir (grub_disk_t disk, struct grub_fat_data *data,
 static char *
 grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 		   const char *path,
-		   int (*hook) (const char *filename, int dir))
+		   int (*hook) (const char *filename, 
+				const struct grub_dirhook_info *info))
 {
   char *dirname, *dirp;
   int call_hook;
@@ -615,10 +616,16 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
   auto int iter_hook (const char *filename, struct grub_fat_dir_entry *dir);
   int iter_hook (const char *filename, struct grub_fat_dir_entry *dir)
   {
+    struct grub_dirhook_info info;
+    grub_memset (&info, 0, sizeof (info));
+
+    info.dir = !! (dir->attr & GRUB_FAT_ATTR_DIRECTORY);
+    info.case_insensitive = 1;
+
     if (dir->attr & GRUB_FAT_ATTR_VOLUME_ID)
       return 0;
     if (*dirname == '\0' && call_hook)
-      return hook (filename, dir->attr & GRUB_FAT_ATTR_DIRECTORY);
+      return hook (filename, &info);
 
     if (grub_strcasecmp (dirname, filename) == 0)
       {
@@ -630,7 +637,7 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 	data->cur_cluster_num = ~0U;
 
 	if (call_hook)
-	  hook (filename, dir->attr & GRUB_FAT_ATTR_DIRECTORY);
+	  hook (filename, &info);
 	    
 	return 1;
       }
@@ -676,7 +683,8 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 
 static grub_err_t
 grub_fat_dir (grub_device_t device, const char *path,
-	      int (*hook) (const char *filename, int dir))
+	      int (*hook) (const char *filename, 
+			   const struct grub_dirhook_info *info))
 {
   struct grub_fat_data *data = 0;
   grub_disk_t disk = device->disk;

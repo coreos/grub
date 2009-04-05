@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#define _BSD_SOURCE
 #include <grub/fs.h>
 #include <grub/file.h>
 #include <grub/disk.h>
@@ -57,7 +57,8 @@ is_dir (const char *path, const char *name)
 
 static grub_err_t
 grub_hostfs_dir (grub_device_t device, const char *path, 
-		 int (*hook) (const char *filename, int dir))
+		 int (*hook) (const char *filename, 
+			      const struct grub_dirhook_info *info))
 {
   DIR *dir;
 
@@ -73,16 +74,20 @@ grub_hostfs_dir (grub_device_t device, const char *path,
   while (1)
     {
       struct dirent *de;
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
 
       de = readdir (dir);
       if (! de)
 	break;
 
 #ifdef DT_DIR
-      hook (de->d_name, de->d_type == DT_DIR);
+      info.dir = (de->d_type == DT_DIR);
 #else
-      hook (de->d_name, is_dir (path, de->d_name));
+      info.dir = !! is_dir (path, de->d_name);
 #endif
+      hook (de->d_name, &info);
+
     }
 
   closedir (dir);

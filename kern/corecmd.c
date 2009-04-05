@@ -117,9 +117,10 @@ grub_mini_print_devices (const char *name)
 }
 
 static int
-grub_mini_print_files (const char *filename, int dir)
+grub_mini_print_files (const char *filename, 
+		       const struct grub_dirhook_info *info)
 {
-  grub_printf ("%s%s ", filename, dir ? "/" : "");
+  grub_printf ("%s%s ", filename, info->dir ? "/" : "");
 
   return 0;
 }

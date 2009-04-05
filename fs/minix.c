@@ -461,7 +461,8 @@ grub_minix_mount (grub_disk_t disk)
 
 static grub_err_t
 grub_minix_dir (grub_device_t device, const char *path, 
-		  int (*hook) (const char *filename, int dir))
+		  int (*hook) (const char *filename, 
+			       const struct grub_dirhook_info *info))
 {
   struct grub_minix_data *data = 0;
   struct grub_minix_sblock *sblock;
@@ -492,6 +493,9 @@ grub_minix_dir (grub_device_t device, const char *path,
       grub_uint16_t ino;
       char filename[data->filename_size + 1];
       int dirino = data->ino;
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
+
       
       if (grub_minix_read_file (data, 0, pos, sizeof (ino),
 				(char *) &ino) < 0)
@@ -506,8 +510,9 @@ grub_minix_dir (grub_device_t device, const char *path,
       /* The filetype is not stored in the dirent.  Read the inode to
 	 find out the filetype.  This *REALLY* sucks.  */
       grub_minix_read_inode (data, grub_le_to_cpu16 (ino));
-      if (hook (filename, ((GRUB_MINIX_INODE_MODE (data) 
-			    & GRUB_MINIX_IFDIR) == GRUB_MINIX_IFDIR)) ? 1 : 0)
+      info.dir = ((GRUB_MINIX_INODE_MODE (data) 
+		   & GRUB_MINIX_IFDIR) == GRUB_MINIX_IFDIR);
+      if (hook (filename, &info) ? 1 : 0)
 	break;
       
       /* Load the old inode back in.  */

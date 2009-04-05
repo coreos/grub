@@ -768,7 +768,8 @@ grub_udf_iterate_dir (grub_fshelp_node_t dir,
 
 static grub_err_t
 grub_udf_dir (grub_device_t device, const char *path,
-	      int (*hook) (const char *filename, int dir))
+	      int (*hook) (const char *filename, 
+			   const struct grub_dirhook_info *info))
 {
   struct grub_udf_data *data = 0;
   struct grub_fshelp_node rootnode;
@@ -782,14 +783,11 @@ grub_udf_dir (grub_device_t device, const char *path,
 				enum grub_fshelp_filetype filetype,
 				grub_fshelp_node_t node)
   {
-    grub_free (node);
-
-    if (filetype == GRUB_FSHELP_DIR)
-      return hook (filename, 1);
-    else
-      return hook (filename, 0);
-
-    return 0;
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
+      info.dir = ((filetype & GRUB_FSHELP_TYPE_MASK) == GRUB_FSHELP_DIR);
+      grub_free (node);
+      return hook (filename, &info);
   }
 
 #ifndef GRUB_UTIL

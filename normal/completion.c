@@ -124,9 +124,9 @@ iterate_partition (grub_disk_t disk, const grub_partition_t p)
 }
 
 static int
-iterate_dir (const char *filename, int dir)
+iterate_dir (const char *filename, const struct grub_dirhook_info *info)
 {
-  if (! dir)
+  if (! info->dir)
     {
       const char *prefix;
       if (cmdline_state == GRUB_PARSER_STATE_DQUOTE)

@@ -20,7 +20,7 @@
 #include <grub/dl.h>
 #include <grub/err.h>
 #include <grub/misc.h>
-#include <grub/lib/datetime.h>
+#include <grub/datetime.h>
 #include <grub/command.h>
 
 #define GRUB_DATETIME_SET_YEAR		1

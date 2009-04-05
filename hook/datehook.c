@@ -22,7 +22,7 @@
 #include <grub/env.h>
 #include <grub/misc.h>
 #include <grub/normal.h>
-#include <grub/lib/datetime.h>
+#include <grub/datetime.h>
 
 static char *grub_datetime_names[] =
 {

@@ -74,7 +74,8 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	kern/loader.c kern/main.c kern/misc.c kern/parser.c		\
 	grub_script.tab.c kern/partition.c kern/rescue.c kern/term.c	\
 	lib/arg.c normal/cmdline.c normal/command.c normal/function.c\
-	normal/completion.c normal/context.c normal/main.c		\
+	normal/completion.c normal/datetime.c normal/context.c 		\
+	normal/main.c		\
 	normal/menu.c normal/menu_entry.c normal/menu_viewer.c		\
 	normal/menu_text.c						\
 	normal/misc.c normal/script.c					\
@@ -827,7 +828,7 @@ kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genke
 # keep it simpler to update to different architectures.
 #
 normal_mod_SOURCES = normal/cmdline.c normal/command.c			\
-	normal/completion.c normal/execute.c		 		\
+	normal/completion.c normal/datetime.c normal/execute.c 		\
 	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
 	normal/menu_text.c						\
 	normal/color.c							\
@@ -835,12 +836,12 @@ normal_mod_SOURCES = normal/cmdline.c normal/command.c			\
 	normal/misc.c grub_script.tab.c 				\
 	normal/script.c							\
 	normal/x86_64/setjmp.S
-CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_text.o normal_mod-normal_color.o normal_mod-normal_menu_viewer.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o und-normal.lst
+CLEANFILES += normal.mod mod-normal.o mod-normal.c pre-normal.o normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_datetime.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_text.o normal_mod-normal_color.o normal_mod-normal_menu_viewer.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o und-normal.lst
 ifneq ($(normal_mod_EXPORTS),no)
 CLEANFILES += def-normal.lst
 DEFSYMFILES += def-normal.lst
 endif
-MOSTLYCLEANFILES += normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_text.d normal_mod-normal_color.d normal_mod-normal_menu_viewer.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_x86_64_setjmp.d
+MOSTLYCLEANFILES += normal_mod-normal_cmdline.d normal_mod-normal_command.d normal_mod-normal_completion.d normal_mod-normal_datetime.d normal_mod-normal_execute.d normal_mod-normal_function.d normal_mod-normal_lexer.d normal_mod-normal_main.d normal_mod-normal_menu.d normal_mod-normal_menu_text.d normal_mod-normal_color.d normal_mod-normal_menu_viewer.d normal_mod-normal_menu_entry.d normal_mod-normal_misc.d normal_mod-grub_script_tab.d normal_mod-normal_script.d normal_mod-normal_x86_64_setjmp.d
 UNDSYMFILES += und-normal.lst
 
 normal.mod: pre-normal.o mod-normal.o $(TARGET_OBJ2ELF)
@@ -849,9 +850,9 @@ normal.mod: pre-normal.o mod-normal.o $(TARGET_OBJ2ELF)
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-normal.o: $(normal_mod_DEPENDENCIES) normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_text.o normal_mod-normal_color.o normal_mod-normal_menu_viewer.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o
+pre-normal.o: $(normal_mod_DEPENDENCIES) normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_datetime.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_text.o normal_mod-normal_color.o normal_mod-normal_menu_viewer.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o
 	-rm -f $@
-	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_text.o normal_mod-normal_color.o normal_mod-normal_menu_viewer.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o
+	$(TARGET_CC) $(normal_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ normal_mod-normal_cmdline.o normal_mod-normal_command.o normal_mod-normal_completion.o normal_mod-normal_datetime.o normal_mod-normal_execute.o normal_mod-normal_function.o normal_mod-normal_lexer.o normal_mod-normal_main.o normal_mod-normal_menu.o normal_mod-normal_menu_text.o normal_mod-normal_color.o normal_mod-normal_menu_viewer.o normal_mod-normal_menu_entry.o normal_mod-normal_misc.o normal_mod-grub_script_tab.o normal_mod-normal_script.o normal_mod-normal_x86_64_setjmp.o
 
 mod-normal.o: mod-normal.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -c -o $@ $<
@@ -922,6 +923,25 @@ fs-normal_mod-normal_completion.lst: normal/completion.c $(normal/completion.c_D
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
 
 partmap-normal_mod-normal_completion.lst: normal/completion.c $(normal/completion.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
+
+
+normal_mod-normal_datetime.o: normal/datetime.c $(normal/datetime.c_DEPENDENCIES)
+	$(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -MD -c -o $@ $<
+-include normal_mod-normal_datetime.d
+
+CLEANFILES += cmd-normal_mod-normal_datetime.lst fs-normal_mod-normal_datetime.lst partmap-normal_mod-normal_datetime.lst
+COMMANDFILES += cmd-normal_mod-normal_datetime.lst
+FSFILES += fs-normal_mod-normal_datetime.lst
+PARTMAPFILES += partmap-normal_mod-normal_datetime.lst
+
+cmd-normal_mod-normal_datetime.lst: normal/datetime.c $(normal/datetime.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh normal > $@ || (rm -f $@; exit 1)
+
+fs-normal_mod-normal_datetime.lst: normal/datetime.c $(normal/datetime.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh normal > $@ || (rm -f $@; exit 1)
+
+partmap-normal_mod-normal_datetime.lst: normal/datetime.c $(normal/datetime.c_DEPENDENCIES) genpartmaplist.sh
 	set -e; 	  $(TARGET_CC) -Inormal -I$(srcdir)/normal $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(normal_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh normal > $@ || (rm -f $@; exit 1)
 
 
@@ -1576,13 +1596,13 @@ lspci_mod_CFLAGS = $(COMMON_CFLAGS)
 lspci_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For datetime.mod
-datetime_mod_SOURCES = lib/datetime.c lib/efi/datetime.c
-CLEANFILES += datetime.mod mod-datetime.o mod-datetime.c pre-datetime.o datetime_mod-lib_datetime.o datetime_mod-lib_efi_datetime.o und-datetime.lst
+datetime_mod_SOURCES = lib/efi/datetime.c
+CLEANFILES += datetime.mod mod-datetime.o mod-datetime.c pre-datetime.o datetime_mod-lib_efi_datetime.o und-datetime.lst
 ifneq ($(datetime_mod_EXPORTS),no)
 CLEANFILES += def-datetime.lst
 DEFSYMFILES += def-datetime.lst
 endif
-MOSTLYCLEANFILES += datetime_mod-lib_datetime.d datetime_mod-lib_efi_datetime.d
+MOSTLYCLEANFILES += datetime_mod-lib_efi_datetime.d
 UNDSYMFILES += und-datetime.lst
 
 datetime.mod: pre-datetime.o mod-datetime.o $(TARGET_OBJ2ELF)
@@ -1591,9 +1611,9 @@ datetime.mod: pre-datetime.o mod-datetime.o $(TARGET_OBJ2ELF)
 	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
 	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
 
-pre-datetime.o: $(datetime_mod_DEPENDENCIES) datetime_mod-lib_datetime.o datetime_mod-lib_efi_datetime.o
+pre-datetime.o: $(datetime_mod_DEPENDENCIES) datetime_mod-lib_efi_datetime.o
 	-rm -f $@
-	$(TARGET_CC) $(datetime_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ datetime_mod-lib_datetime.o datetime_mod-lib_efi_datetime.o
+	$(TARGET_CC) $(datetime_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ datetime_mod-lib_efi_datetime.o
 
 mod-datetime.o: mod-datetime.c
 	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -c -o $@ $<
@@ -1609,25 +1629,6 @@ endif
 und-datetime.lst: pre-datetime.o
 	echo 'datetime' > $@
 	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
-
-datetime_mod-lib_datetime.o: lib/datetime.c $(lib/datetime.c_DEPENDENCIES)
-	$(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -MD -c -o $@ $<
--include datetime_mod-lib_datetime.d
-
-CLEANFILES += cmd-datetime_mod-lib_datetime.lst fs-datetime_mod-lib_datetime.lst partmap-datetime_mod-lib_datetime.lst
-COMMANDFILES += cmd-datetime_mod-lib_datetime.lst
-FSFILES += fs-datetime_mod-lib_datetime.lst
-PARTMAPFILES += partmap-datetime_mod-lib_datetime.lst
-
-cmd-datetime_mod-lib_datetime.lst: lib/datetime.c $(lib/datetime.c_DEPENDENCIES) gencmdlist.sh
-	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh datetime > $@ || (rm -f $@; exit 1)
-
-fs-datetime_mod-lib_datetime.lst: lib/datetime.c $(lib/datetime.c_DEPENDENCIES) genfslist.sh
-	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh datetime > $@ || (rm -f $@; exit 1)
-
-partmap-datetime_mod-lib_datetime.lst: lib/datetime.c $(lib/datetime.c_DEPENDENCIES) genpartmaplist.sh
-	set -e; 	  $(TARGET_CC) -Ilib -I$(srcdir)/lib $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh datetime > $@ || (rm -f $@; exit 1)
-
 
 datetime_mod-lib_efi_datetime.o: lib/efi/datetime.c $(lib/efi/datetime.c_DEPENDENCIES)
 	$(TARGET_CC) -Ilib/efi -I$(srcdir)/lib/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(datetime_mod_CFLAGS) -MD -c -o $@ $<

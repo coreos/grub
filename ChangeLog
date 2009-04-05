@@ -1,5 +1,61 @@
 2009-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Support for mtime and further expandability of dir command
+
+	* include/grub/lib/datetime.h: moved to ...
+	* include/grub/datetime.h: ... moved here and added 
+	declaration of grub_unixtime2datetime. All users updated
+	* include/grub/fs.h: new syntax for dir and mtime functionin 
+	struct grub_fs 
+	* include/grub/fshelp.h: new declarations of GRUB_FSHELP_TYPE_MASK
+	and GRUB_FSHELP_FLAGS_MASK
+	* commands/ls.c (grub_ls_list_files): Write mtime in long format
+	* fs/ext2.c (grub_ext2_dir): use new dir syntax and supply mtime
+	(grub_ext2_mtime): new function
+	* fs/hfsplus.c (grub_hfsplus_dir): use new dir syntax and supply mtime
+	(grub_hfsplus_mtime): new function
+	* fs/ufs.c (GRUB_UFS_ATTR_TYPE): new definition
+	(GRUB_UFS_ATTR_FILE): likewise
+	(GRUB_UFS_ATTR_LNK): likewise
+	(struct grub_ufs_sblock): new fields mtime
+	(grub_ufs_read_inode): new parameter to read inode to a separate buffer
+	all users updated
+	(grub_ufs_dir): mtime support
+	(grub_ufs_mtime): new function
+	* fs/affs.c (grub_affs_dir): use new dir syntax
+	* fs/afs.c (grub_afs_dir): likewise
+	* fs/cpio.c (grub_cpio_dir): likewise
+	* fs/fat.c (grub_fat_find_dir): likewise
+	* fs/hfs.c (grub_hfs_dir): likewise
+	* fs/iso9660.c (grub_iso9660_dir): likewise
+	* fs/jfs.c (grub_jfs_dir): likewise
+	* fs/minix.c (grub_minix_dir): likewise
+	* fs/ntfs.c (grub_ntfs_dir): likewise
+	* fs/reiserfs.c (grub_reiserfs_dir): likewise
+	* fs/sfs.c (grub_sfs_dir): likewise
+	* fs/xfs.c (grub_xfs_dir): likewise
+	* util/hostfs.c (grub_hostfs_dir): likewise
+	* lib/datetime.c: moved to ...
+	* normal/datetime.c: ... moved here
+	(grub_unixtime2datetime): new function
+	* kern/rescue.c (grub_rescue_print_files): use new dir syntax
+	* normal/completition.c (iterate_dir): use new dir syntax
+	* normal/misc.c (grub_normal_print_device_info): tell the 
+	last modification time of a volume
+	* kern/fs.c (grub_fs_probe): updated dummy function to use new syntax 
+	* conf/common.rmk: added lib/datetime.c to ls.mod
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): add normal/datetime.c  
+	(normal_mod_SOURCES): likewise
+	(datetime_mod_SOURCES): Removed lib/datetime.c
+	* conf/i386-efi.rmk: likewise
+	* conf/i386-ieee1275.rmk: likewise	
+	* conf/i386-pc.rmk: likewise
+	* conf/powerpc-ieee1275.rmk: likewise
+	* conf/sparc64-ieee1275.rmk: likewise	
+	* conf/x86_64-efi.rmk: likewise	
+
+2009-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Trim trailing spaces in FAT label and support mtools-like labels
 	
 	* fs/fat.c (grub_fat_iterate_dir): New function based 

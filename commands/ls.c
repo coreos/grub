@@ -29,6 +29,7 @@
 #include <grub/file.h>
 #include <grub/normal.h>
 #include <grub/extcmd.h>
+#include <grub/datetime.h>
 
 static const struct grub_arg_option options[] =
   {
@@ -68,25 +69,29 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
   grub_fs_t fs;
   const char *path;
   grub_device_t dev;
-  auto int print_files (const char *filename, int dir);
-  auto int print_files_long (const char *filename, int dir);
+
+  auto int print_files (const char *filename, 
+			const struct grub_dirhook_info *info);
+  auto int print_files_long (const char *filename, 
+			     const struct grub_dirhook_info *info);
   
-  int print_files (const char *filename, int dir)
+  int print_files (const char *filename, const struct grub_dirhook_info *info)
     {
       if (all || filename[0] != '.')
-	grub_printf ("%s%s ", filename, dir ? "/" : "");
+	grub_printf ("%s%s ", filename, info->dir ? "/" : "");
       
       return 0;
     }
      
-  int print_files_long (const char *filename, int dir)
+  int print_files_long (const char *filename, 
+			const struct grub_dirhook_info *info)
     {
       char pathname[grub_strlen (dirname) + grub_strlen (filename) + 1];
 
       if ((! all) && (filename[0] == '.'))
 	return 0;
 
-      if (! dir)
+      if (! info->dir)
 	{
 	  grub_file_t file;
 	  
@@ -138,7 +143,23 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
       else
 	grub_printf ("%-12s", "DIR");
 
-      grub_printf ("%s%s\n", filename, dir ? "/" : "");
+      if (info->mtimeset)
+	{
+	  struct grub_datetime datetime;
+	  grub_unixtime2datetime (info->mtime, &datetime);
+	  if (human)
+	    grub_printf (" %d-%02d-%02d %02d:%02d:%02d %-11s ",
+			 datetime.year, datetime.month, datetime.day,
+			 datetime.hour, datetime.minute, 
+			 datetime.second,
+			 grub_get_weekday_name (&datetime));
+	  else
+	    grub_printf (" %04d%02d%02d%02d%02d%02d ",
+			 datetime.year, datetime.month, 
+			 datetime.day, datetime.hour, 
+			 datetime.minute, datetime.second);
+	}
+      grub_printf ("%s%s\n", filename, info->dir ? "/" : "");
 
       return 0;
     }
@@ -181,7 +202,7 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	  /* PATH might be a regular file.  */
 	  char *p;
 	  grub_file_t file;
-
+	  struct grub_dirhook_info info;
 	  grub_errno = 0;
 	  
 	  file = grub_file_open (dirname);
@@ -196,10 +217,11 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
 	    goto fail;
 
 	  all = 1;
+	  grub_memset (&info, 0, sizeof (info));
 	  if (longlist)
-	    print_files_long (p, 0);
+	    print_files_long (p, &info);
 	  else
-	    print_files (p, 0);
+	    print_files (p, &info);
 
 	  grub_free (dirname);
 	}

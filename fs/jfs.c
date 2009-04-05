@@ -728,7 +728,8 @@ grub_jfs_lookup_symlink (struct grub_jfs_data *data, int ino)
 
 static grub_err_t
 grub_jfs_dir (grub_device_t device, const char *path, 
-	      int (*hook) (const char *filename, int dir))
+	      int (*hook) (const char *filename, 
+			   const struct grub_dirhook_info *info))
 {
   struct grub_jfs_data *data = 0;
   struct grub_jfs_diropen *diro = 0;
@@ -752,14 +753,15 @@ grub_jfs_dir (grub_device_t device, const char *path,
   while (grub_jfs_getent (diro) != GRUB_ERR_OUT_OF_RANGE)
     {
       struct grub_jfs_inode inode;
-      int isdir;
+      struct grub_dirhook_info info;
+      grub_memset (&info, 0, sizeof (info));
       
       if (grub_jfs_read_inode (data, diro->ino, &inode))
 	goto fail;
       
-      isdir = (grub_le_to_cpu32 (inode.mode)
-	       & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_DIR;
-      if (hook (diro->name, isdir))
+      info.dir = (grub_le_to_cpu32 (inode.mode)
+		  & GRUB_JFS_FILETYPE_MASK) == GRUB_JFS_FILETYPE_DIR;
+      if (hook (diro->name, &info))
 	goto fail;
     }
   

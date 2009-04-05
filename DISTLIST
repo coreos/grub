@@ -148,6 +148,7 @@ include/grub/boot.h
 include/grub/bufio.h
 include/grub/cache.h
 include/grub/command.h
+include/grub/datetime.h
 include/grub/device.h
 include/grub/disk.h
 include/grub/dl.h
@@ -406,6 +407,7 @@ normal/cmdline.c
 normal/color.c
 normal/command.c
 normal/completion.c
+normal/datetime.c
 normal/execute.c
 normal/function.c
 normal/lexer.c
