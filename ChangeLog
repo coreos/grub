@@ -1,3 +1,12 @@
+2009-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Trim trailing spaces in FAT label and support mtools-like labels
+	
+	* fs/fat.c (grub_fat_iterate_dir): New function based 
+	on grub_fat_find_dir
+	(grub_fat_find_dir): use grub_fat_iterate_dir
+	(grub_fat_label): likewise
+
 2009-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/powerpc-ieee1275.rmk (kernel_elf_HEADERS): add list.h 
