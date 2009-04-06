@@ -335,7 +335,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	 ls.mod	cmp.mod cat.mod help.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod loadenv.mod crc.mod
+	read.mod sleep.mod loadenv.mod crc.mod parttool.mod pcpart.mod
 
 # For minicmd.mod.
 minicmd_mod_SOURCES = commands/minicmd.c
@@ -351,6 +351,16 @@ extcmd_mod_LDFLAGS = $(COMMON_LDFLAGS)
 hello_mod_SOURCES = hello/hello.c
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For parttool.mod.
+parttool_mod_SOURCES = commands/parttool.c
+parttool_mod_CFLAGS = $(COMMON_CFLAGS)
+parttool_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For pcpart.mod.
+pcpart_mod_SOURCES = parttool/pcpart.c
+pcpart_mod_CFLAGS = $(COMMON_CFLAGS)
+pcpart_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For handler.mod.
 handler_mod_SOURCES = commands/handler.c

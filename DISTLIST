@@ -59,6 +59,7 @@ commands/ls.c
 commands/lsmmap.c
 commands/lspci.c
 commands/minicmd.c
+commands/parttool.c
 commands/read.c
 commands/reboot.c
 commands/search.c
@@ -181,6 +182,7 @@ include/grub/normal.h
 include/grub/ntfs.h
 include/grub/parser.h
 include/grub/partition.h
+include/grub/parttool.h
 include/grub/pc_partition.h
 include/grub/pci.h
 include/grub/raid.h

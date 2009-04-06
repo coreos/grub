@@ -67,6 +67,7 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #	partmap/acorn.c							\
 #	util/console.c util/grub-emu.c util/misc.c			\
 #	util/hostdisk.c util/getroot.c					\
+#	commands/parttool.c parttool/pcpart.c				\
 #	util/sparc64/ieee1275/misc.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)

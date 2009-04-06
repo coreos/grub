@@ -2444,7 +2444,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	 ls.mod	cmp.mod cat.mod help.mod search.mod		\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
-	read.mod sleep.mod loadenv.mod crc.mod
+	read.mod sleep.mod loadenv.mod crc.mod parttool.mod pcpart.mod
 
 # For minicmd.mod.
 minicmd_mod_SOURCES = commands/minicmd.c
@@ -2635,6 +2635,120 @@ partmap-hello_mod-hello_hello.lst: hello/hello.c $(hello/hello.c_DEPENDENCIES) g
 
 hello_mod_CFLAGS = $(COMMON_CFLAGS)
 hello_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For parttool.mod.
+parttool_mod_SOURCES = commands/parttool.c
+CLEANFILES += parttool.mod mod-parttool.o mod-parttool.c pre-parttool.o parttool_mod-commands_parttool.o und-parttool.lst
+ifneq ($(parttool_mod_EXPORTS),no)
+CLEANFILES += def-parttool.lst
+DEFSYMFILES += def-parttool.lst
+endif
+MOSTLYCLEANFILES += parttool_mod-commands_parttool.d
+UNDSYMFILES += und-parttool.lst
+
+parttool.mod: pre-parttool.o mod-parttool.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(parttool_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-parttool.o mod-parttool.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-parttool.o: $(parttool_mod_DEPENDENCIES) parttool_mod-commands_parttool.o
+	-rm -f $@
+	$(TARGET_CC) $(parttool_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ parttool_mod-commands_parttool.o
+
+mod-parttool.o: mod-parttool.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(parttool_mod_CFLAGS) -c -o $@ $<
+
+mod-parttool.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'parttool' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(parttool_mod_EXPORTS),no)
+def-parttool.lst: pre-parttool.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 parttool/' > $@
+endif
+
+und-parttool.lst: pre-parttool.o
+	echo 'parttool' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+parttool_mod-commands_parttool.o: commands/parttool.c $(commands/parttool.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(parttool_mod_CFLAGS) -MD -c -o $@ $<
+-include parttool_mod-commands_parttool.d
+
+CLEANFILES += cmd-parttool_mod-commands_parttool.lst fs-parttool_mod-commands_parttool.lst partmap-parttool_mod-commands_parttool.lst
+COMMANDFILES += cmd-parttool_mod-commands_parttool.lst
+FSFILES += fs-parttool_mod-commands_parttool.lst
+PARTMAPFILES += partmap-parttool_mod-commands_parttool.lst
+
+cmd-parttool_mod-commands_parttool.lst: commands/parttool.c $(commands/parttool.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(parttool_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh parttool > $@ || (rm -f $@; exit 1)
+
+fs-parttool_mod-commands_parttool.lst: commands/parttool.c $(commands/parttool.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(parttool_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh parttool > $@ || (rm -f $@; exit 1)
+
+partmap-parttool_mod-commands_parttool.lst: commands/parttool.c $(commands/parttool.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands -I$(srcdir)/commands $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(parttool_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh parttool > $@ || (rm -f $@; exit 1)
+
+
+parttool_mod_CFLAGS = $(COMMON_CFLAGS)
+parttool_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For pcpart.mod.
+pcpart_mod_SOURCES = parttool/pcpart.c
+CLEANFILES += pcpart.mod mod-pcpart.o mod-pcpart.c pre-pcpart.o pcpart_mod-parttool_pcpart.o und-pcpart.lst
+ifneq ($(pcpart_mod_EXPORTS),no)
+CLEANFILES += def-pcpart.lst
+DEFSYMFILES += def-pcpart.lst
+endif
+MOSTLYCLEANFILES += pcpart_mod-parttool_pcpart.d
+UNDSYMFILES += und-pcpart.lst
+
+pcpart.mod: pre-pcpart.o mod-pcpart.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(pcpart_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-pcpart.o mod-pcpart.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-pcpart.o: $(pcpart_mod_DEPENDENCIES) pcpart_mod-parttool_pcpart.o
+	-rm -f $@
+	$(TARGET_CC) $(pcpart_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pcpart_mod-parttool_pcpart.o
+
+mod-pcpart.o: mod-pcpart.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(pcpart_mod_CFLAGS) -c -o $@ $<
+
+mod-pcpart.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'pcpart' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(pcpart_mod_EXPORTS),no)
+def-pcpart.lst: pre-pcpart.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 pcpart/' > $@
+endif
+
+und-pcpart.lst: pre-pcpart.o
+	echo 'pcpart' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+pcpart_mod-parttool_pcpart.o: parttool/pcpart.c $(parttool/pcpart.c_DEPENDENCIES)
+	$(TARGET_CC) -Iparttool -I$(srcdir)/parttool $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pcpart_mod_CFLAGS) -MD -c -o $@ $<
+-include pcpart_mod-parttool_pcpart.d
+
+CLEANFILES += cmd-pcpart_mod-parttool_pcpart.lst fs-pcpart_mod-parttool_pcpart.lst partmap-pcpart_mod-parttool_pcpart.lst
+COMMANDFILES += cmd-pcpart_mod-parttool_pcpart.lst
+FSFILES += fs-pcpart_mod-parttool_pcpart.lst
+PARTMAPFILES += partmap-pcpart_mod-parttool_pcpart.lst
+
+cmd-pcpart_mod-parttool_pcpart.lst: parttool/pcpart.c $(parttool/pcpart.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Iparttool -I$(srcdir)/parttool $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pcpart_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh pcpart > $@ || (rm -f $@; exit 1)
+
+fs-pcpart_mod-parttool_pcpart.lst: parttool/pcpart.c $(parttool/pcpart.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Iparttool -I$(srcdir)/parttool $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pcpart_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh pcpart > $@ || (rm -f $@; exit 1)
+
+partmap-pcpart_mod-parttool_pcpart.lst: parttool/pcpart.c $(parttool/pcpart.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Iparttool -I$(srcdir)/parttool $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(pcpart_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh pcpart > $@ || (rm -f $@; exit 1)
+
+
+pcpart_mod_CFLAGS = $(COMMON_CFLAGS)
+pcpart_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For handler.mod.
 handler_mod_SOURCES = commands/handler.c

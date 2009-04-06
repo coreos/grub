@@ -1,3 +1,25 @@
+2009-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
+	
+	Parttool
+
+	* parttool/pcpart.c: new file
+	* commands/parttool.c: likewise
+	* conf/common.rmk (pkglib_MODULES): Added parttool.mod and pcpart.mod
+	(parttool_mod_SOURCES): new variable
+	(parttool_mod_CFLAGS): likewise
+	(parttool_mod_LDFLAGS): likewise
+	(pcpart_mod_SOURCES): likewise
+	(pcpart_mod_CFLAGS): likewise
+	(pcpart_mod_LDFLAGS): likewise
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): added commands/parttool.c 
+	and parttool/pcpart.c
+	* conf/i386-efi.rmk: likewise
+	* conf/i386-ieee1275.rmk: likewise
+	* conf/i386-pc.rmk: likewise
+	* conf/powerpc-ieee1275.rmk: likewise
+	* conf/sparc64-ieee1275.rmk: likewise
+	* conf/x86_64-ieee1275.rmk: likewise
+
 2009-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Support for mtime and further expandability of dir command

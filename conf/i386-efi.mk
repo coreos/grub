@@ -100,6 +100,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	\
 	disk/raid.c disk/raid5_recover.c disk/raid6_recover.c		\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c		\
+	commands/parttool.c parttool/pcpart.c				\
 	grub_emu_init.c
 
 grub_emu_LDFLAGS = $(LIBCURSES)
