@@ -55,7 +55,7 @@ grub_cmd_help (grub_extcmd_t ext __attribute__ ((unused)), int argc,
 
   int print_command_help (grub_command_t cmd)
     {
-      if (cmd->flags & GRUB_PRIO_LIST_FLAG_ACTIVE)
+      if (cmd->prio & GRUB_PRIO_LIST_FLAG_ACTIVE)
 	{
 	  if (! grub_strncmp (cmd->name, currarg, grub_strlen (currarg)))
 	    {

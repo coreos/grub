@@ -1,3 +1,8 @@
+2009-04-06  Pavel Roskin  <proski@gnu.org>
+
+	* commands/help.c (print_command_help): Use cmd->prio, not
+	cmd->flags to check for GRUB_PRIO_LIST_FLAG_ACTIVE.
+
 2009-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
 	
 	Parttool
