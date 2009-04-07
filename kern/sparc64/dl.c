@@ -95,7 +95,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 				     + entsize * ELF64_R_SYM (rel->r_info));
 
 		value = sym->st_value + rel->r_addend;
-		switch (ELF64_R_TYPE (rel->r_info))
+		switch (ELF64_R_TYPE (rel->r_info) & 0xff)
 		  {
                   case R_SPARC_32: /* 3 V-word32 */
                     if (value & 0xFFFFFFFF00000000)
@@ -105,8 +105,8 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                     break;
                   case R_SPARC_WDISP30: /* 7 V-disp30 */
                     if (((value - (Elf64_Addr) addr) & 0xFFFFFFFF00000000) &&
-                        ((value - (Elf64_Addr) addr) & 0xFFFFFFFF00000000
-                        != 0xFFFFFFFF00000000))
+                        (((value - (Elf64_Addr) addr) & 0xFFFFFFFF00000000)
+			 != 0xFFFFFFFF00000000))
                       return grub_error (GRUB_ERR_BAD_MODULE,
                                          "Displacement out of 30 bits range");
                     *addr = (*addr & 0xC0000000) |
@@ -125,6 +125,12 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
                   case R_SPARC_64: /* 32 V-xwords64 */
                     *(Elf64_Xword *) addr = value;
                     break;
+		  case R_SPARC_OLO10:
+		    *addr = (*addr & ~0x1fff)
+		      | (((value & 0x3ff) +
+			  (ELF64_R_TYPE (rel->r_info) >> 8))
+			 & 0x1fff);
+		    break;
 		  default:
 		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 				       "This relocation (%d) is not implemented yet",

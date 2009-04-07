@@ -1,3 +1,9 @@
+2009-04-07  David S. Miller  <davem@davemloft.net>
+
+	* kern/sparc64/dl.c (grub_arch_dl_relocate_symbols): Add
+	support for R_SPARC_OLO10 relocations.  Fix compile warning for
+	R_SPARC_WDISP30 case.
+
 2009-04-06  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/misc.h (ARRAY_SIZE): New macro.
