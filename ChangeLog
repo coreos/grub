@@ -3,6 +3,7 @@
 	* kern/sparc64/dl.c (grub_arch_dl_relocate_symbols): Add
 	support for R_SPARC_OLO10 relocations.  Fix compile warning for
 	R_SPARC_WDISP30 case.
+	* kern/sparc64/cache.S: Fix grub_arch_sync_caches implementation.
 
 2009-04-06  Pavel Roskin  <proski@gnu.org>
 
