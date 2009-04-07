@@ -1,5 +1,15 @@
 2009-04-06  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/misc.h (ARRAY_SIZE): New macro.
+	* include/grub/i386/linux.h (GRUB_LINUX_VID_MODE_VESA_START):
+	New macro.
+	* loader/i386/linux.c (allocate_pages): Use free_pages().
+	(grub_linux_unload): Don't use free_pages().
+	(grub_linux_boot): Prevent accessing linux_vesafb_modes with a
+	wrong index.  Treat all other modes as text modes.
+	(grub_cmd_linux): Initialize vid_mode unconditionally to
+	GRUB_LINUX_VID_MODE_NORMAL.  Recognize and support "vga=ask".
+
 	* commands/help.c (print_command_help): Use cmd->prio, not
 	cmd->flags to check for GRUB_PRIO_LIST_FLAG_ACTIVE.
 

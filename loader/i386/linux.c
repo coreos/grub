@@ -206,8 +206,7 @@ allocate_pages (grub_size_t prot_size)
   prot_mode_pages = (prot_size >> 12);
   
   /* Initialize the memory pointers with NULL for convenience.  */
-  real_mode_mem = 0;
-  prot_mode_mem = 0;
+  free_pages ();
   
   /* FIXME: Should request low memory from the heap when this feature is
      implemented.  */
@@ -332,7 +331,9 @@ grub_linux_boot (void)
   
   params = real_mode_mem;
 
-  if (vid_mode == GRUB_LINUX_VID_MODE_NORMAL || vid_mode == GRUB_LINUX_VID_MODE_EXTENDED)
+  if (vid_mode < GRUB_LINUX_VID_MODE_VESA_START ||
+      vid_mode >= GRUB_LINUX_VID_MODE_VESA_START +
+		  ARRAY_SIZE (linux_vesafb_modes))
     grub_video_restore ();
   else if (vid_mode)
     {
@@ -340,7 +341,7 @@ grub_linux_boot (void)
       int depth, flags;
       
       flags = 0;
-      linux_mode = &linux_vesafb_modes[vid_mode - 0x301];
+      linux_mode = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
       depth = linux_mode->depth;
       
       /* If we have 8 or less bits, then assume that it is indexed color mode.  */
@@ -443,7 +444,6 @@ grub_linux_boot (void)
 static grub_err_t
 grub_linux_unload (void)
 {
-  free_pages ();
   grub_dl_unref (my_mod);
   loaded = 0;
   return GRUB_ERR_NONE;
@@ -569,7 +569,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_printf ("   [Linux-bzImage, setup=0x%x, size=0x%x]\n",
 	       (unsigned) real_size, (unsigned) prot_size);
 
-  /* Detect explicitly specified memory size, if any.  */
+  /* Look for memory size and video mode specified on the command line.  */
+  vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
     if (grub_memcmp (argv[i], "vga=", 4) == 0)
@@ -581,6 +582,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
 	else if (grub_strcmp (val, "ext") == 0)
 	  vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
+	else if (grub_strcmp (val, "ask") == 0)
+	  vid_mode = GRUB_LINUX_VID_MODE_ASK;
 	else
 	  vid_mode = (grub_uint16_t) grub_strtoul (val, 0, 0);
 
