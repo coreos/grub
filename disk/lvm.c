@@ -530,7 +530,8 @@ grub_lvm_scan_device (const char *name)
 		  goto fail4;
 		}
 
-	      p = grub_strchr (p, '}');
+	      if (p != NULL)
+		p = grub_strchr (p, '}');
 	      if (p == NULL)
 		goto lvs_fail;
 	      p += 3;
