@@ -120,7 +120,7 @@ grub-install: util/i386/efi/grub-install.in $(util/i386/efi/grub-install.in_DEPE
 # Modules.
 pkglib_MODULES = kernel.mod normal.mod chain.mod appleldr.mod \
 	linux.mod halt.mod reboot.mod pci.mod lspci.mod \
-	datetime.mod date.mod datehook.mod
+	datetime.mod date.mod datehook.mod loadbios.mod fixvideo.mod
 
 # For kernel.mod.
 kernel_mod_EXPORTS = no
@@ -1758,6 +1758,120 @@ partmap-datehook_mod-hook_datehook.lst: hook/datehook.c $(hook/datehook.c_DEPEND
 
 datehook_mod_CFLAGS = $(COMMON_CFLAGS)
 datehook_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For loadbios.mod
+loadbios_mod_SOURCES = commands/efi/loadbios.c
+CLEANFILES += loadbios.mod mod-loadbios.o mod-loadbios.c pre-loadbios.o loadbios_mod-commands_efi_loadbios.o und-loadbios.lst
+ifneq ($(loadbios_mod_EXPORTS),no)
+CLEANFILES += def-loadbios.lst
+DEFSYMFILES += def-loadbios.lst
+endif
+MOSTLYCLEANFILES += loadbios_mod-commands_efi_loadbios.d
+UNDSYMFILES += und-loadbios.lst
+
+loadbios.mod: pre-loadbios.o mod-loadbios.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(loadbios_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-loadbios.o mod-loadbios.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-loadbios.o: $(loadbios_mod_DEPENDENCIES) loadbios_mod-commands_efi_loadbios.o
+	-rm -f $@
+	$(TARGET_CC) $(loadbios_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ loadbios_mod-commands_efi_loadbios.o
+
+mod-loadbios.o: mod-loadbios.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(loadbios_mod_CFLAGS) -c -o $@ $<
+
+mod-loadbios.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'loadbios' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(loadbios_mod_EXPORTS),no)
+def-loadbios.lst: pre-loadbios.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 loadbios/' > $@
+endif
+
+und-loadbios.lst: pre-loadbios.o
+	echo 'loadbios' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+loadbios_mod-commands_efi_loadbios.o: commands/efi/loadbios.c $(commands/efi/loadbios.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(loadbios_mod_CFLAGS) -MD -c -o $@ $<
+-include loadbios_mod-commands_efi_loadbios.d
+
+CLEANFILES += cmd-loadbios_mod-commands_efi_loadbios.lst fs-loadbios_mod-commands_efi_loadbios.lst partmap-loadbios_mod-commands_efi_loadbios.lst
+COMMANDFILES += cmd-loadbios_mod-commands_efi_loadbios.lst
+FSFILES += fs-loadbios_mod-commands_efi_loadbios.lst
+PARTMAPFILES += partmap-loadbios_mod-commands_efi_loadbios.lst
+
+cmd-loadbios_mod-commands_efi_loadbios.lst: commands/efi/loadbios.c $(commands/efi/loadbios.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(loadbios_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh loadbios > $@ || (rm -f $@; exit 1)
+
+fs-loadbios_mod-commands_efi_loadbios.lst: commands/efi/loadbios.c $(commands/efi/loadbios.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(loadbios_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh loadbios > $@ || (rm -f $@; exit 1)
+
+partmap-loadbios_mod-commands_efi_loadbios.lst: commands/efi/loadbios.c $(commands/efi/loadbios.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(loadbios_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh loadbios > $@ || (rm -f $@; exit 1)
+
+
+loadbios_mod_CFLAGS = $(COMMON_CFLAGS)
+loadbios_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For fixvideo.mod
+fixvideo_mod_SOURCES = commands/efi/fixvideo.c
+CLEANFILES += fixvideo.mod mod-fixvideo.o mod-fixvideo.c pre-fixvideo.o fixvideo_mod-commands_efi_fixvideo.o und-fixvideo.lst
+ifneq ($(fixvideo_mod_EXPORTS),no)
+CLEANFILES += def-fixvideo.lst
+DEFSYMFILES += def-fixvideo.lst
+endif
+MOSTLYCLEANFILES += fixvideo_mod-commands_efi_fixvideo.d
+UNDSYMFILES += und-fixvideo.lst
+
+fixvideo.mod: pre-fixvideo.o mod-fixvideo.o $(TARGET_OBJ2ELF)
+	-rm -f $@
+	$(TARGET_CC) $(fixvideo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ pre-fixvideo.o mod-fixvideo.o
+	if test ! -z $(TARGET_OBJ2ELF); then ./$(TARGET_OBJ2ELF) $@ || (rm -f $@; exit 1); fi
+	$(STRIP) --strip-unneeded -K grub_mod_init -K grub_mod_fini -K _grub_mod_init -K _grub_mod_fini -R .note -R .comment $@
+
+pre-fixvideo.o: $(fixvideo_mod_DEPENDENCIES) fixvideo_mod-commands_efi_fixvideo.o
+	-rm -f $@
+	$(TARGET_CC) $(fixvideo_mod_LDFLAGS) $(TARGET_LDFLAGS) -Wl,-r,-d -o $@ fixvideo_mod-commands_efi_fixvideo.o
+
+mod-fixvideo.o: mod-fixvideo.c
+	$(TARGET_CC) $(TARGET_CPPFLAGS) $(TARGET_CFLAGS) $(fixvideo_mod_CFLAGS) -c -o $@ $<
+
+mod-fixvideo.c: $(builddir)/moddep.lst $(srcdir)/genmodsrc.sh
+	sh $(srcdir)/genmodsrc.sh 'fixvideo' $< > $@ || (rm -f $@; exit 1)
+
+ifneq ($(fixvideo_mod_EXPORTS),no)
+def-fixvideo.lst: pre-fixvideo.o
+	$(NM) -g --defined-only -P -p $< | sed 's/^\([^ ]*\).*/\1 fixvideo/' > $@
+endif
+
+und-fixvideo.lst: pre-fixvideo.o
+	echo 'fixvideo' > $@
+	$(NM) -u -P -p $< | cut -f1 -d' ' >> $@
+
+fixvideo_mod-commands_efi_fixvideo.o: commands/efi/fixvideo.c $(commands/efi/fixvideo.c_DEPENDENCIES)
+	$(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(fixvideo_mod_CFLAGS) -MD -c -o $@ $<
+-include fixvideo_mod-commands_efi_fixvideo.d
+
+CLEANFILES += cmd-fixvideo_mod-commands_efi_fixvideo.lst fs-fixvideo_mod-commands_efi_fixvideo.lst partmap-fixvideo_mod-commands_efi_fixvideo.lst
+COMMANDFILES += cmd-fixvideo_mod-commands_efi_fixvideo.lst
+FSFILES += fs-fixvideo_mod-commands_efi_fixvideo.lst
+PARTMAPFILES += partmap-fixvideo_mod-commands_efi_fixvideo.lst
+
+cmd-fixvideo_mod-commands_efi_fixvideo.lst: commands/efi/fixvideo.c $(commands/efi/fixvideo.c_DEPENDENCIES) gencmdlist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(fixvideo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/gencmdlist.sh fixvideo > $@ || (rm -f $@; exit 1)
+
+fs-fixvideo_mod-commands_efi_fixvideo.lst: commands/efi/fixvideo.c $(commands/efi/fixvideo.c_DEPENDENCIES) genfslist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(fixvideo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genfslist.sh fixvideo > $@ || (rm -f $@; exit 1)
+
+partmap-fixvideo_mod-commands_efi_fixvideo.lst: commands/efi/fixvideo.c $(commands/efi/fixvideo.c_DEPENDENCIES) genpartmaplist.sh
+	set -e; 	  $(TARGET_CC) -Icommands/efi -I$(srcdir)/commands/efi $(TARGET_CPPFLAGS)  $(TARGET_CFLAGS) $(fixvideo_mod_CFLAGS) -E $< 	  | sh $(srcdir)/genpartmaplist.sh fixvideo > $@ || (rm -f $@; exit 1)
+
+
+fixvideo_mod_CFLAGS = $(COMMON_CFLAGS)
+fixvideo_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
