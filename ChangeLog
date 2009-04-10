@@ -1,3 +1,15 @@
+2009-04-10  Vladimir Serbinenko	 <phcoder@gmail.com>
+
+	UFS improvements
+
+	* fs/ufs.c (INODE_NBLOCKS): new definition
+	(struct grub_ufs_dirent): added fields for non-BSD dirents
+	(grub_ufs_get_file_block): fixed double indirect handling
+	(grub_ufs_lookup_symlink): use more robust way to determine whether
+	symlink is inline
+	(grub_ufs_find_file): support for non-BSD dirents
+	(grub_ufs_dir): support for non-BSD dirents
+
 2009-04-10  Bean  <bean123ch@gnail.com>
 
 	* include/grub/efi/api.h (grub_efi_configuration_table): Add packed
