@@ -1,3 +1,24 @@
+2009-04-10  David S. Miller  <davem@davemloft.net>
+
+	* disk/ieee1275/nand.c (grub_nand_open): All ieee1275 call arg
+	slots are of type grub_ieee1275_cell_t.
+	(grub_nand_read): Likewise.
+	* kern/ieee1275/ieee1275.c (IEEE1275_PHANDLE_INVALID,
+	IEEE1275_IHANDLE_INVALID): Use grub_ieee1275_cell_t since these
+	macros are used to compare values in arg/ret block of the call.
+	(grub_ieee1275_finddevice, grub_ieee1275_get_property,
+	grub_ieee1275_next_property, grub_ieee1275_get_property_length,
+	grub_ieee1275_instance_to_package, grub_ieee1275_package_to_path,
+	grub_ieee1275_instance_to_path, grub_ieee1275_write,
+	grub_ieee1275_read, grub_ieee1275_seek, grub_ieee1275_peer,
+	grub_ieee1275_child, grub_ieee1275_parent, grub_ieee1275_open,
+	grub_ieee1275_close, grub_ieee1275_set_property,
+	grub_ieee1275_set_color): All ieee1275 call arg slots are of type
+	grub_ieee1275_cell_t.
+	* kern/ieee1275/openfw.c (grub_map): Likewise.
+	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_ihandle_t,
+	grub_ieee1275_phandle_t): Define as grub_unit32_t type.
+
 2009-04-10  Vladimir Serbinenko	 <phcoder@gmail.com>
 
 	UFS improvements

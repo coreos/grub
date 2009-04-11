@@ -60,8 +60,8 @@ struct grub_ieee1275_common_hdr
   (p)->nr_ins = (grub_ieee1275_cell_t) xins; \
   (p)->nr_outs = (grub_ieee1275_cell_t) xouts
 
-typedef grub_ieee1275_cell_t grub_ieee1275_ihandle_t;
-typedef grub_ieee1275_cell_t grub_ieee1275_phandle_t;
+typedef grub_uint32_t grub_ieee1275_ihandle_t;
+typedef grub_uint32_t grub_ieee1275_phandle_t;
 
 extern grub_ieee1275_phandle_t EXPORT_VAR(grub_ieee1275_chosen);
 extern grub_ieee1275_ihandle_t EXPORT_VAR(grub_ieee1275_mmu);

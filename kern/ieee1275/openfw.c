@@ -154,17 +154,17 @@ grub_map (grub_addr_t phys, grub_addr_t virt, grub_uint32_t size,
 {
   struct map_args {
     struct grub_ieee1275_common_hdr common;
-    char *method;
-    grub_ieee1275_ihandle_t ihandle;
-    grub_uint32_t mode;
-    grub_uint32_t size;
-    grub_uint32_t virt;
-    grub_uint32_t phys;
-    int catch_result;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t mode;
+    grub_ieee1275_cell_t size;
+    grub_ieee1275_cell_t virt;
+    grub_ieee1275_cell_t phys;
+    grub_ieee1275_cell_t catch_result;
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 1);
-  args.method = "map";
+  args.method = (grub_ieee1275_cell_t) "map";
   args.ihandle = grub_ieee1275_mmu;
   args.phys = phys;
   args.virt = virt;

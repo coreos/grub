@@ -20,8 +20,8 @@
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/types.h>
 
-#define IEEE1275_PHANDLE_INVALID  ((grub_ieee1275_phandle_t) -1)
-#define IEEE1275_IHANDLE_INVALID  ((grub_ieee1275_ihandle_t) 0)
+#define IEEE1275_PHANDLE_INVALID  ((grub_ieee1275_cell_t) -1)
+#define IEEE1275_IHANDLE_INVALID  ((grub_ieee1275_cell_t) 0)
 #define IEEE1275_CELL_INVALID     ((grub_ieee1275_cell_t) -1)
 
 
@@ -33,7 +33,7 @@ grub_ieee1275_finddevice (char *name, grub_ieee1275_phandle_t *phandlep)
   {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_cell_t device;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t phandle;
   }
   args;
 
@@ -56,7 +56,7 @@ grub_ieee1275_get_property (grub_ieee1275_phandle_t phandle,
   struct get_property_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t phandle;
     grub_ieee1275_cell_t prop;
     grub_ieee1275_cell_t buf;
     grub_ieee1275_cell_t buflen;
@@ -106,7 +106,7 @@ grub_ieee1275_next_property (grub_ieee1275_phandle_t phandle, char *prev_prop,
   struct get_property_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t phandle;
     grub_ieee1275_cell_t prev_prop;
     grub_ieee1275_cell_t next_prop;
     grub_ieee1275_cell_t flags;
@@ -131,7 +131,7 @@ grub_ieee1275_get_property_length (grub_ieee1275_phandle_t phandle,
   struct get_property_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t phandle;
     grub_ieee1275_cell_t prop;
     grub_ieee1275_cell_t length;
   }
@@ -157,8 +157,8 @@ grub_ieee1275_instance_to_package (grub_ieee1275_ihandle_t ihandle,
   struct instance_to_package_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_ihandle_t ihandle;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t phandle;
   }
   args;
 
@@ -181,7 +181,7 @@ grub_ieee1275_package_to_path (grub_ieee1275_phandle_t phandle,
   struct instance_to_package_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t phandle;
     grub_ieee1275_cell_t buf;
     grub_ieee1275_cell_t buflen;
     grub_ieee1275_cell_t actual;
@@ -210,7 +210,7 @@ grub_ieee1275_instance_to_path (grub_ieee1275_ihandle_t ihandle,
   struct instance_to_path_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_cell_t ihandle;
     grub_ieee1275_cell_t buf;
     grub_ieee1275_cell_t buflen;
     grub_ieee1275_cell_t actual;
@@ -238,7 +238,7 @@ grub_ieee1275_write (grub_ieee1275_ihandle_t ihandle, void *buffer,
   struct write_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_cell_t ihandle;
     grub_ieee1275_cell_t buf;
     grub_ieee1275_cell_t len;
     grub_ieee1275_cell_t actual;
@@ -264,7 +264,7 @@ grub_ieee1275_read (grub_ieee1275_ihandle_t ihandle, void *buffer,
   struct write_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_cell_t ihandle;
     grub_ieee1275_cell_t buf;
     grub_ieee1275_cell_t len;
     grub_ieee1275_cell_t actual;
@@ -290,7 +290,7 @@ grub_ieee1275_seek (grub_ieee1275_ihandle_t ihandle, int pos_hi,
   struct write_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_cell_t ihandle;
     grub_ieee1275_cell_t pos_hi;
     grub_ieee1275_cell_t pos_lo;
     grub_ieee1275_cell_t result;
@@ -317,8 +317,8 @@ grub_ieee1275_peer (grub_ieee1275_phandle_t node,
   struct peer_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t node;
-    grub_ieee1275_phandle_t result;
+    grub_ieee1275_cell_t node;
+    grub_ieee1275_cell_t result;
   }
   args;
 
@@ -340,8 +340,8 @@ grub_ieee1275_child (grub_ieee1275_phandle_t node,
   struct child_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t node;
-    grub_ieee1275_phandle_t result;
+    grub_ieee1275_cell_t node;
+    grub_ieee1275_cell_t result;
   }
   args;
 
@@ -364,8 +364,8 @@ grub_ieee1275_parent (grub_ieee1275_phandle_t node,
   struct parent_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t node;
-    grub_ieee1275_phandle_t result;
+    grub_ieee1275_cell_t node;
+    grub_ieee1275_cell_t result;
   }
   args;
 
@@ -441,7 +441,7 @@ grub_ieee1275_open (const char *path, grub_ieee1275_ihandle_t *result)
   {
     struct grub_ieee1275_common_hdr common;
     grub_ieee1275_cell_t path;
-    grub_ieee1275_ihandle_t result;
+    grub_ieee1275_cell_t result;
   }
   args;
 
@@ -462,7 +462,7 @@ grub_ieee1275_close (grub_ieee1275_ihandle_t ihandle)
   struct close_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_cell_t ihandle;
   }
   args;
 
@@ -531,7 +531,7 @@ grub_ieee1275_set_property (grub_ieee1275_phandle_t phandle,
   struct set_property_args
   {
     struct grub_ieee1275_common_hdr common;
-    grub_ieee1275_phandle_t phandle;
+    grub_ieee1275_cell_t phandle;
     grub_ieee1275_cell_t propname;
     grub_ieee1275_cell_t buf;
     grub_ieee1275_cell_t size;
@@ -560,8 +560,8 @@ grub_ieee1275_set_color (grub_ieee1275_ihandle_t ihandle,
   struct set_color_args
   {
     struct grub_ieee1275_common_hdr common;
-    char *method;
-    grub_ieee1275_ihandle_t ihandle;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
     grub_ieee1275_cell_t index;
     grub_ieee1275_cell_t b;
     grub_ieee1275_cell_t g;
@@ -571,7 +571,7 @@ grub_ieee1275_set_color (grub_ieee1275_ihandle_t ihandle,
   args;
 
   INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 1);
-  args.method = "color!";
+  args.method = (grub_ieee1275_cell_t) "color!";
   args.ihandle = ihandle;
   args.index = index;
   args.r = r;
