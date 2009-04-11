@@ -1,7 +1,7 @@
 /* grub-probe.c - probe device information for a given path */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008 Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -112,8 +112,13 @@ probe (const char *path, char *device_name)
   
   if (path == NULL)
     {
+#if defined(__FreeBSD__)
+      if (! grub_util_check_char_device (device_name))
+        grub_util_error ("%s is not a character device.\n", device_name);
+#else
       if (! grub_util_check_block_device (device_name))
         grub_util_error ("%s is not a block device.\n", device_name);
+#endif
     }
   else
     device_name = grub_guess_root_device (path);

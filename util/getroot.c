@@ -1,7 +1,7 @@
 /* getroot.c - Get root device */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 1999,2000,2001,2002,2003,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -238,7 +238,11 @@ find_root_device (const char *dir, dev_t dev)
 	    }
 	}
 
+#ifdef __FreeBSD__ 
+      if (S_ISCHR (st.st_mode) && st.st_rdev == dev)
+#else
       if (S_ISBLK (st.st_mode) && st.st_rdev == dev)
+#endif
 	{
 #ifdef __linux__
 	  /* Skip device names like /dev/dm-0, which are short-hand aliases
@@ -519,3 +523,18 @@ grub_util_check_block_device (const char *blk_dev)
   else
     return 0;
 }
+
+const char *
+grub_util_check_char_device (const char *blk_dev)
+{
+  struct stat st;
+
+  if (stat (blk_dev, &st) < 0)
+    grub_util_error ("Cannot stat `%s'", blk_dev);
+
+  if (S_ISCHR (st.st_mode))
+    return (blk_dev);
+  else
+    return 0;
+}
+

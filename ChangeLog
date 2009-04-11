@@ -1,3 +1,25 @@
+2009-04-11  Andrey Shuvikov  <mr_hyro@yahoo.com>
+
+	* util/hostdisk.c [__FreeBSD__]: Include sys/disk.h.
+	(grub_util_biosdisk_open) [__FreeBSD__]: Add support for
+	FreeBSD. Check if a device is a character device. Use
+	DIOCGMEDIASIZE to get the size.
+	(convert_system_partition_to_system_disk) [__FreeBSD__]: Add
+	support for FreeBSD.
+	(grub_util_biosdisk_get_grub_dev) [__FreeBSD__]: Check if OS_DEV
+	is a character device instead of a block device. Add support for
+	FreeBSD device names.
+
+	* util/getroot.c (find_root_device) [__FreeBSD__]: Check if ENT is
+	a character device instead of a block device.
+	(grub_util_check_char_device): New function.
+
+	* util/grub-probe.c (probe) [__FreeBSD__]: Check if DEVICE_NAME is
+	a character device instead of a block device.
+
+	* include/grub/util/getroot.h (grub_util_check_char_device): New
+	prototype.
+
 2009-04-11  David S. Miller  <davem@davemloft.net>
 
 	* conf/sparc64-ieee1275.rmk (kernel_img_LDFLAGS): Link with
