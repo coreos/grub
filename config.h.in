@@ -79,6 +79,12 @@
 /* Define to 1 if you have the <usb.h> header file. */
 #undef HAVE_USB_H
 
+/* Define to 1 if you have the `__bswapdi2' function. */
+#undef HAVE___BSWAPDI2
+
+/* Define to 1 if you have the `__bswapsi2' function. */
+#undef HAVE___BSWAPSI2
+
 /* Define to 1 if you enable memory manager debugging. */
 #undef MM_DEBUG
 

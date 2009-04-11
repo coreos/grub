@@ -189,7 +189,7 @@ kernel_elf-kern_parser.o: kern/parser.c $(kern/parser.c_DEPENDENCIES)
 kernel_elf_HEADERS = grub/sparc64/ieee1275/ieee1275.h
 kernel_elf_CFLAGS = $(COMMON_CFLAGS)
 kernel_elf_ASFLAGS = $(COMMON_ASFLAGS)
-kernel_elf_LDFLAGS = -mno-app-regs -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc
+kernel_elf_LDFLAGS = -mno-app-regs -nostdlib -Wl,-N,-Ttext,0x200000,-Bstatic,-melf64_sparc -static-libgcc -lgcc
 
 # Modules.
 #_linux.mod linux.mod
