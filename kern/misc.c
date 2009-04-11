@@ -590,6 +590,31 @@ grub_itoa (char *str, int c, unsigned n)
   return p;
 }
 
+static char *
+grub_ltoa (char *str, int c, unsigned long n)
+{
+  unsigned long base = (c == 'x') ? 16 : 10;
+  char *p;
+
+  if ((long) n < 0 && c == 'd')
+    {
+      n = (unsigned) (-((long) n));
+      *str++ = '-';
+    }
+
+  p = str;
+  do
+    {
+      unsigned long d = n % base;
+      *p++ = (d > 9) ? d + 'a' - 10 : d + '0';
+    }
+  while (n /= base);
+  *p = 0;
+
+  grub_reverse (str);
+  return p;
+}
+
 /* Divide N by D, return the quotient, and store the remainder in *R.  */
 grub_uint64_t
 grub_divmod64 (grub_uint64_t n, grub_uint32_t d, grub_uint32_t *r)
@@ -790,12 +815,14 @@ grub_vsprintf (char *str, const char *fmt, va_list args)
 		  ll = va_arg (args, long long);
 		  grub_lltoa (tmp, c, ll);
 		}
+	      else if (longfmt)
+		{
+		  long l = va_arg (args, long);
+		  grub_ltoa (tmp, c, l);
+		}
 	      else
 		{
-		  if (longfmt)
-		    n = va_arg (args, long);
-		  else
-		    n = va_arg (args, int);
+		  n = va_arg (args, int);
 		  grub_itoa (tmp, c, n);
 		}
 	      if (! rightfill && grub_strlen (tmp) < format1)

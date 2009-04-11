@@ -33,6 +33,9 @@
 	* boot/sparc64/ieee1275/boot.S: Likewise.
 	* boot/sparc64/ieee1275/diskboot.S: Likewise.
 
+	* kern/misc.c (grub_ltoa): New function.
+	(grub_vsprintf): Use it to format 'long' integers.
+
 2009-04-10  David S. Miller  <davem@davemloft.net>
 
 	* disk/ieee1275/nand.c (grub_nand_open): All ieee1275 call arg
