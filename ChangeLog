@@ -7,6 +7,10 @@
 	function, if present.
 	(__bswapdi2): Likewise.
 
+	* include/grub/sparc64/ieee1275/boot.h: New file.
+	* boot/sparc64/ieee1275/boot.S: Likewise.
+	* boot/sparc64/ieee1275/diskboot.S: Likewise.
+
 2009-04-10  David S. Miller  <davem@davemloft.net>
 
 	* disk/ieee1275/nand.c (grub_nand_open): All ieee1275 call arg
