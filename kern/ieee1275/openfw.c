@@ -53,7 +53,7 @@ grub_children_iterate (char *devpath,
       char childname[64];
       char fullname[64];
       struct grub_ieee1275_devalias alias;
-      int actual;
+      grub_ssize_t actual;
 
       if (grub_ieee1275_get_property (child, "device_type", &childtype,
 				      sizeof childtype, &actual))
@@ -86,7 +86,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t aliases;
   char aliasname[32];
-  int actual;
+  grub_ssize_t actual;
   struct grub_ieee1275_devalias alias;
 
   if (grub_ieee1275_finddevice ("/aliases", &aliases))

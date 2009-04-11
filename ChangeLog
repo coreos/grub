@@ -19,6 +19,10 @@
 	* include/grub/ieee1275/ieee1275.h (grub_ieee1275_ihandle_t,
 	grub_ieee1275_phandle_t): Define as grub_unit32_t type.
 
+	* kern/ieee1275/init.c (grub_machine_init): Make 'actual' grub_ssize_t.
+	* kern/ieee1275/openfw.c (grub_children_iterate): Likewise.
+	(grub_devalias_iterate): Likewise.
+
 2009-04-10  Vladimir Serbinenko	 <phcoder@gmail.com>
 
 	UFS improvements

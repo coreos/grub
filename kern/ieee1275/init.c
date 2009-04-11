@@ -213,7 +213,7 @@ void
 grub_machine_init (void)
 {
   char args[256];
-  int actual;
+  grub_ssize_t actual;
 
   grub_ieee1275_init ();
 
