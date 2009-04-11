@@ -1,3 +1,12 @@
+2009-04-11  David S. Miller  <davem@davemloft.net>
+
+	* conf/sparc64-ieee1275.rmk (kernel_img_LDFLAGS): Link with
+	static libgcc.
+	* configure.ac: Check for __bswapsi2 and __bswapdi2 presence.
+	* include/grub/sparc64/libgcc.h (__bswapsi2): Export libgcc
+	function, if present.
+	(__bswapdi2): Likewise.
+
 2009-04-10  David S. Miller  <davem@davemloft.net>
 
 	* disk/ieee1275/nand.c (grub_nand_open): All ieee1275 call arg

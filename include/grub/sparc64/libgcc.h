@@ -16,4 +16,16 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
+
 void EXPORT_FUNC (memset) (void);
+
+#ifdef HAVE___BSWAPSI2
+typedef int SItype __attribute__ ((mode (SI)));
+SItype EXPORT_FUNC (__bswapsi2) (SItype);
+#endif
+
+#ifdef HAVE___BSWAPDI2
+typedef int DItype __attribute__ ((mode (DI)));
+DItype EXPORT_FUNC (__bswapdi2) (DItype);
+#endif

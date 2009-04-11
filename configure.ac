@@ -200,7 +200,7 @@ if test "$target_cpu"-"$platform" = i386-pc; then
 fi
 
 # Check for functions.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf __bswapsi2 __bswapdi2)
 
 #
 # Check for target programs.
