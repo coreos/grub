@@ -238,7 +238,7 @@ find_root_device (const char *dir, dev_t dev)
 	    }
 	}
 
-#ifdef __FreeBSD__ 
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
       if (S_ISCHR (st.st_mode) && st.st_rdev == dev)
 #else
       if (S_ISBLK (st.st_mode) && st.st_rdev == dev)

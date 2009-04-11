@@ -86,7 +86,7 @@ struct hd_geometry
 # define FLOPPY_MAJOR	2
 #endif
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 # include <sys/disk.h> /* DIOCGMEDIASIZE */
 #endif
 
@@ -183,7 +183,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     return GRUB_ERR_NONE;
   }
-#elif defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__)
+#elif defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   {
     unsigned long long nr;
     int fd;
@@ -192,7 +192,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     if (fd == -1)
       return grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' while attempting to get disk size", map[drive].device);
 
-# if defined(__FreeBSD__)
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
 # else
     if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
@@ -202,7 +202,7 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 	goto fail;
       }
     
-# if defined(__FreeBSD__)
+# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     if (ioctl (fd, DIOCGMEDIASIZE, &nr))
 # else
     if (ioctl (fd, BLKGETSIZE64, &nr))
@@ -758,7 +758,7 @@ convert_system_partition_to_system_disk (const char *os_dev)
     path[8] = 0;
   return path;
 
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   char *path = xstrdup (os_dev);
   if (strncmp ("/dev/", path, 5) == 0)
     {
@@ -821,7 +821,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       return 0;
     }
   
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (! S_ISCHR (st.st_mode))
 #else
   if (! S_ISBLK (st.st_mode))
@@ -970,7 +970,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     return make_device_name (drive, dos_part, bsd_part);
   }
   
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   /* FreeBSD uses "/dev/[a-z]+[0-9]+(s[0-9]+[a-z]?)?".  */
   {
     int dos_part = -1;

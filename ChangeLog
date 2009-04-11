@@ -1,3 +1,21 @@
+2009-04-11  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/hostdisk.c [__FreeBSD_kernel__]: Include sys/disk.h.
+	(grub_util_biosdisk_open) [__FreeBSD_kernel__]: Add support for
+	GNU/kFreeBSD. Check if a device is a character device. Use
+	DIOCGMEDIASIZE to get the size.
+	(convert_system_partition_to_system_disk) [__FreeBSD_kernel__]: Add
+	support for GNU/kFreeBSD.
+	(grub_util_biosdisk_get_grub_dev) [__FreeBSD_kernel__]: Check if OS_DEV
+	is a character device instead of a block device. Add support for
+	FreeBSD device names.
+
+	* util/getroot.c (find_root_device) [__FreeBSD_kernel__]: Check if ENT
+	is a character device instead of a block device.
+
+	* util/grub-probe.c (probe) [__FreeBSD_kernel__]: Check if DEVICE_NAME
+	is a character device instead of a block device.
+
 2009-04-11  Andrey Shuvikov  <mr_hyro@yahoo.com>
 
 	* util/hostdisk.c [__FreeBSD__]: Include sys/disk.h.
