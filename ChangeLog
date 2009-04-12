@@ -1,3 +1,8 @@
+2009-04-12  David S. Miller  <davem@davemloft.net>
+
+	* kern/misc.c (grub_ltoa): Fix cast when handling negative
+	values.  Noticed by Pavel Roskin.
+
 2009-04-12  Pavel Roskin  <proski@gnu.org>
 
          * configure.ac: Change the logic when we check for target tools.

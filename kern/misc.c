@@ -598,7 +598,7 @@ grub_ltoa (char *str, int c, unsigned long n)
 
   if ((long) n < 0 && c == 'd')
     {
-      n = (unsigned) (-((long) n));
+      n = (unsigned long) (-((long) n));
       *str++ = '-';
     }
 
