@@ -5942,9 +5942,8 @@ esac
 { echo "$as_me:$LINENO: result: $TARGET_OBJ2ELF" >&5
 echo "${ECHO_T}$TARGET_OBJ2ELF" >&6; }
 
-# For cross-compiling.
-if test "x$build" != "x$host"; then
-  # XXX this depends on the implementation of autoconf!
+# Find tools for the target.
+if test "x$target_alias" != x && test "x$host_alias" != "x$target_alias"; then
   tmp_ac_tool_prefix="$ac_tool_prefix"
   ac_tool_prefix=$target_alias-
 
