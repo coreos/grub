@@ -295,6 +295,7 @@ include/grub/powerpc/ieee1275/machine.h
 include/grub/powerpc/ieee1275/memory.h
 include/grub/powerpc/ieee1275/time.h
 include/grub/powerpc/ieee1275/util/biosdisk.h
+include/grub/sparc64/kernel.h
 include/grub/sparc64/libgcc.h
 include/grub/sparc64/setjmp.h
 include/grub/sparc64/time.h
@@ -303,7 +304,9 @@ include/grub/sparc64/ieee1275/boot.h
 include/grub/sparc64/ieee1275/console.h
 include/grub/sparc64/ieee1275/ieee1275.h
 include/grub/sparc64/ieee1275/kernel.h
+include/grub/sparc64/ieee1275/loader.h
 include/grub/sparc64/ieee1275/machine.h
+include/grub/sparc64/ieee1275/memory.h
 include/grub/sparc64/ieee1275/time.h
 include/grub/util/getroot.h
 include/grub/util/hostdisk.h
@@ -412,6 +415,7 @@ loader/i386/pc/linux.c
 loader/i386/pc/multiboot2.c
 loader/ieee1275/multiboot2.c
 loader/powerpc/ieee1275/linux.c
+loader/sparc64/ieee1275/linux.c
 normal/cmdline.c
 normal/color.c
 normal/command.c

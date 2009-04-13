@@ -8,6 +8,11 @@
 	(grub_ieee1275_map_physical, grub_ieee1275_claim_vaddr,
 	grub_ieee1275_alloc_physmem): Declare new exported functions.
 
+	* include/grub/sparc64/ieee1275/loader.h: New file.
+	* include/grub/sparc64/ieee1275/memory.h: Likewise.
+	* include/grub/sparc64/kernel.h: Likewise.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+
 2009-04-12  David S. Miller  <davem@davemloft.net>
 
 	* kern/misc.c (grub_ltoa): Fix cast when handling negative
