@@ -584,7 +584,7 @@ grub_dl_load_core (void *addr, grub_size_t size)
 grub_dl_t
 grub_dl_load_file (const char *filename)
 {
-  grub_file_t file;
+  grub_file_t file = NULL;
   grub_ssize_t size;
   void *core = 0;
   grub_dl_t mod = 0;
@@ -596,21 +596,31 @@ grub_dl_load_file (const char *filename)
   size = grub_file_size (file);
   core = grub_malloc (size);
   if (! core)
-    goto failed;
+    {
+      grub_file_close (file);
+      return 0;
+    }
 
   if (grub_file_read (file, core, size) != (int) size)
-    goto failed;
+    {
+      grub_file_close (file);
+      grub_free (core);
+      return 0;
+    }
+
+  /* We must close this before we try to process dependencies.
+     Some disk backends do not handle gracefully multiple concurrent
+     opens of the same device.  */
+  grub_file_close (file);
 
   mod = grub_dl_load_core (core, size);
   if (! mod)
-    goto failed;
+    {
+      grub_free (core);
+      return 0;
+    }
   
   mod->ref_count = 0;
-
- failed:
-  grub_file_close (file);
-  grub_free (core);
-
   return mod;
 }
 

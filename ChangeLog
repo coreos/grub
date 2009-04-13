@@ -49,6 +49,9 @@
 	* util/hostdisk.c (make_device_name): Do not make any assumptions
 	about the length of drive names.
 
+	* kern/dl.c (grub_dl_load_file): Close file immediately when
+	we are done using it.
+
 2009-04-12  David S. Miller  <davem@davemloft.net>
 
 	* kern/misc.c (grub_ltoa): Fix cast when handling negative
