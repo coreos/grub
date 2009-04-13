@@ -11,6 +11,13 @@
 	* conf/i386-pc.rmk: Use *_FORMAT.
 	* conf/i386-pc.mk: Rebuilt.
 
+	* disk/ieee1275/ofdisk.c (struct ofdisk_hash_ent): New struct.
+	(OFDISK_HASH_SZ): Define.
+	(ofdisk_hash): New hash table.
+	(ofdisk_hash_fn, ofdisk_hash_find, ofdisk_hash_add): New functions.
+	(grub_ofdisk_open): Use ofdisk_hash_ent address as disk->id
+	instead of device phandle which is not unique.
+
 2009-04-12  Pavel Roskin  <proski@gnu.org>
 
          * configure.ac: Change the logic when we check for target tools.
