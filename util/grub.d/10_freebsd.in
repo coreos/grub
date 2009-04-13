@@ -21,14 +21,15 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 . ${libdir}/grub/grub-mkconfig_lib
 
-devices=/boot/devices.hints
-if ! test -e ${devices} ; then
-  # not FreeBSD
-  exit 0
+if test -e /boot/devices.hints ; then
+  devices=/boot/devices.hints
 fi
 
 if test -e /boot/kernel/kernel ; then
   kfreebsd=/boot/kernel/kernel
+fi
+if test -e /boot/kernel/kernel.gz ; then
+  kfreebsd=/boot/kernel/kernel.gz
 fi
 
 if [ "x$kfreebsd" != "x" ] ; then
@@ -38,9 +39,11 @@ if [ "x$kfreebsd" != "x" ] ; then
   kfreebsd_dirname=`dirname $kfreebsd`
   kfreebsd_rel_dirname=`make_system_path_relative_to_its_root $kfreebsd_dirname`
 
-  devices_basename=`basename $devices`
-  devices_dirname=`dirname $devices`
-  devices_rel_dirname=`make_system_path_relative_to_its_root $devices_dirname`
+  if [ x"$devices" != "x" ] ; then
+    devices_basename=`basename $devices`
+    devices_dirname=`dirname $devices`
+    devices_rel_dirname=`make_system_path_relative_to_its_root $devices_dirname`
+  fi
 
   root_device=`basename ${GRUB_DEVICE}`
 
@@ -53,7 +56,13 @@ EOF
   prepare_grub_to_access_device ${GRUB_DEVICE_BOOT} | sed -e "s/^/\t/"
   cat << EOF
 	freebsd			${kfreebsd_rel_dirname}/${kfreebsd_basename}
+EOF
+
+  if [ x"$devices" != "x" ] ; then
+    cat << EOF
 	freebsd_loadenv		${devices_rel_dirname}/${devices_basename}
+EOF
+  cat << EOF
 	set FreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${root_device}
 }
 EOF
