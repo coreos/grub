@@ -583,7 +583,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	else if (grub_strcmp (val, "ext") == 0)
 	  vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
 	else if (grub_strcmp (val, "ask") == 0)
-	  vid_mode = GRUB_LINUX_VID_MODE_ASK;
+	  {
+	    grub_error (GRUB_ERR_BAD_ARGUMENT, "Legacy `ask' parameter no longer supported.");
+	    goto fail;
+	  }
 	else
 	  vid_mode = (grub_uint16_t) grub_strtoul (val, 0, 0);
 

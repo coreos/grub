@@ -1,3 +1,8 @@
+2009-04-13  Robert Millan  <rmh@aybabtu.com>
+
+	* loader/i386/linux.c (grub_cmd_linux): Don't pass `vga=ask' parameter
+	to Linux, simply abort telling the user it's no longer supported.
+
 2009-04-13  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub.d/10_freebsd.in: Don't exit if /boot/devices.hints
