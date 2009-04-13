@@ -173,7 +173,6 @@ static int
 grub_usb_keyboard_getkey (void)
 {
   int key;
-  int key_release;
   grub_err_t err;
   unsigned char data[8];
   grub_uint64_t currtime;
@@ -192,14 +191,14 @@ grub_usb_keyboard_getkey (void)
 
   switch (repeat)
     {
-    case GRUB_HIDBOOT_REPEAT_NONE:
-      timeout = 100;
-      break;
     case GRUB_HIDBOOT_REPEAT_FIRST:
       timeout = 500;
       break;
     case GRUB_HIDBOOT_REPEAT:
       timeout = 50;
+      break;
+    default:
+      timeout = 100;
       break;
     }
 

@@ -1,3 +1,7 @@
+2009-04-13  Pavel Roskin  <proski@gnu.org>
+
+	* term/usb_keyboard.c (grub_usb_keyboard_getkey): Warning fixes.
+
 2009-04-13  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/i386/pc/grub-install.in (install_drive): Remove the BSD
