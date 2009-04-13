@@ -3,6 +3,9 @@
 	* kern/misc.c (grub_ltoa): Fix cast when handling negative
 	values.  Noticed by Pavel Roskin.
 
+	* configure.ac: Check for __bswapsi2 and__bswapdi2 using
+	target compiler.
+	
 2009-04-12  Pavel Roskin  <proski@gnu.org>
 
          * configure.ac: Change the logic when we check for target tools.

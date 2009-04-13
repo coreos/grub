@@ -200,7 +200,7 @@ if test "$target_cpu"-"$platform" = i386-pc; then
 fi
 
 # Check for functions.
-AC_CHECK_FUNCS(posix_memalign memalign asprintf __bswapsi2 __bswapdi2)
+AC_CHECK_FUNCS(posix_memalign memalign asprintf)
 
 #
 # Check for target programs.
@@ -369,6 +369,9 @@ CC="$TARGET_CC"
 CFLAGS="$TARGET_CFLAGS"
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
+
+# Check for target functions.
+AC_CHECK_FUNCS(__bswapsi2 __bswapdi2)
 
 # Defined in aclocal.m4.
 grub_PROG_TARGET_CC
