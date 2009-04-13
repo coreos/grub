@@ -1,3 +1,8 @@
+2009-04-13  Robert Millan  <rmh@aybabtu.com>
+
+	* util/grub.d/10_freebsd.in: Detect Debian GNU/kFreeBSD and use
+	that name for menuentries when appropiate.
+
 2009-04-13  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub.d/10_freebsd.in: Add a missing `fi'.
