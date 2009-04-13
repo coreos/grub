@@ -57,7 +57,7 @@ class Image
 MOSTLYCLEANFILES += #{deps_str}
 
 #{@name}: #{exe}
-	$(OBJCOPY) -O binary -R .note -R .comment -R .note.gnu.build-id $< $@
+	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id $< $@
 
 #{exe}: #{objs_str}
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)

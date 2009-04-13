@@ -6,6 +6,11 @@
 	* configure.ac: Check for __bswapsi2 and__bswapdi2 using
 	target compiler.
 	
+	* genmk.rb: Add more flexible image type specification, also
+	pass --strip-unneeded to objcopy.
+	* conf/i386-pc.rmk: Use *_FORMAT.
+	* conf/i386-pc.mk: Rebuilt.
+
 2009-04-12  Pavel Roskin  <proski@gnu.org>
 
          * configure.ac: Change the logic when we check for target tools.

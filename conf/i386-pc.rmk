@@ -17,26 +17,31 @@ pkglib_IMAGES = boot.img diskboot.img kernel.img pxeboot.img lnxboot.img \
 boot_img_SOURCES = boot/i386/pc/boot.S
 boot_img_ASFLAGS = $(COMMON_ASFLAGS)
 boot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
+boot_img_FORMAT = binary
 
 # For pxeboot.img
 pxeboot_img_SOURCES = boot/i386/pc/pxeboot.S
 pxeboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 pxeboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
+pxeboot_img_FORMAT = binary
 
 # For diskboot.img.
 diskboot_img_SOURCES = boot/i386/pc/diskboot.S
 diskboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 diskboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,8000
+diskboot_img_FORMAT = binary
 
 # For lnxboot.img.
 lnxboot_img_SOURCES = boot/i386/pc/lnxboot.S
 lnxboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 lnxboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,6000
+lnxboot_img_FORMAT = binary
 
 # For cdboot.img.
 cdboot_img_SOURCES = boot/i386/pc/cdboot.S
 cdboot_img_ASFLAGS = $(COMMON_ASFLAGS)
 cdboot_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,7C00
+cdboot_img_FORMAT = binary
 
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
@@ -60,6 +65,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
+kernel_img_FORMAT = binary
 
 MOSTLYCLEANFILES += symlist.c kernel_syms.lst
 DEFSYMFILES += kernel_syms.lst
