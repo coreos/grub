@@ -379,7 +379,7 @@ kern/powerpc/dl.c
 kern/powerpc/ieee1275/startup.S
 kern/sparc64/cache.S
 kern/sparc64/dl.c
-kern/sparc64/ieee1275/init.c
+kern/sparc64/ieee1275/crt0.S
 kern/sparc64/ieee1275/openfw.c
 kern/x86_64/dl.c
 kern/x86_64/efi/callwrap.S

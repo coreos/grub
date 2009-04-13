@@ -18,6 +18,15 @@
 	(grub_ofdisk_open): Use ofdisk_hash_ent address as disk->id
 	instead of device phandle which is not unique.
 
+	* kern/sparc64/ieee1275/init.c: Delete, replace with...
+	* kern/sparc64/ieee1275/crt0.S: assembler implementation.
+	* include/grub/sparc64/ieee1275/kernel.h: Declare grub_prefix[].
+	(GRUB_MOD_ALIGN, GRUB_MOD_GAP, GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE,
+	GRUB_KERNEL_MACHINE_KERNEL_IMAGE_SIZE,
+	GRUB_KERNEL_MACHINE_COMPRESSED_SIZE, GRUB_KERNEL_MACHINE_PREFIX,
+	GRUB_KERNEL_MACHINE_DATA_END): Define.
+	(grub_kernel_image_size, grub_total_module_size): Declare.
+
 2009-04-12  Pavel Roskin  <proski@gnu.org>
 
          * configure.ac: Change the logic when we check for target tools.
