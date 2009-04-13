@@ -622,9 +622,15 @@ grub_util_biosdisk_fini (void)
 static char *
 make_device_name (int drive, int dos_part, int bsd_part)
 {
+  int len = strlen(map[drive].drive);
   char *p;
 
-  p = xmalloc (30);
+  if (dos_part >= 0)
+    len += 1 + ((dos_part + 1) / 10);
+  if (bsd_part >= 0)
+    len += 2;
+
+  p = xmalloc (len);
   sprintf (p, "%s", map[drive].drive);
   
   if (dos_part >= 0)

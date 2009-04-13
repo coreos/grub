@@ -46,6 +46,9 @@
 	* conf/common.rmk (grub_probe_SOURCES): Add Sun partition module.
 	(grub_fstest_SOURCES): Likewise.
 
+	* util/hostdisk.c (make_device_name): Do not make any assumptions
+	about the length of drive names.
+
 2009-04-12  David S. Miller  <davem@davemloft.net>
 
 	* kern/misc.c (grub_ltoa): Fix cast when handling negative
