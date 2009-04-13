@@ -19,7 +19,7 @@ grub_probe_SOURCES = util/grub-probe.c	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c		\
 	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c			\
 	\
-	partmap/pc.c partmap/apple.c partmap/gpt.c 		\
+	partmap/pc.c partmap/apple.c partmap/sun.c partmap/gpt.c\
 	kern/fs.c kern/env.c fs/fshelp.c			\
 	disk/raid.c disk/mdraid_linux.c disk/lvm.c grub_probe_init.c
 
@@ -40,7 +40,8 @@ grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	fs/ntfs.c fs/ntfscomp.c fs/reiserfs.c fs/sfs.c			\
 	fs/ufs.c fs/xfs.c fs/afs.c fs/tar.c				\
 	\
-	kern/partition.c partmap/pc.c partmap/apple.c partmap/gpt.c 	\
+	kern/partition.c partmap/pc.c partmap/apple.c partmap/sun.c	\
+	partmap/gpt.c							\
 	kern/fs.c kern/env.c fs/fshelp.c disk/raid.c			\
 	disk/raid5_recover.c disk/raid6_recover.c 			\
 	disk/mdraid_linux.c disk/dmraid_nvidia.c disk/lvm.c 		\

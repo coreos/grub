@@ -43,6 +43,9 @@
 	* include/grub/sparc64/kernel.h: Likewise.
 	* loader/sparc64/ieee1275/linux.c: Likewise.
 
+	* conf/common.rmk (grub_probe_SOURCES): Add Sun partition module.
+	(grub_fstest_SOURCES): Likewise.
+
 2009-04-12  David S. Miller  <davem@davemloft.net>
 
 	* kern/misc.c (grub_ltoa): Fix cast when handling negative
