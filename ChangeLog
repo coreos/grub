@@ -1,3 +1,13 @@
+2009-04-13  David S. Miller  <davem@davemloft.net>
+
+	* kern/sparc64/ieee1275/ieee1275.c: New file.
+	* include/grub/sparc64/ieee1275/ieee1275.h (IEEE1275_MAP_WRITE,
+	IEEE1275_MAP_READ, IEEE1275_MAP_EXEC, IEEE1275_MAP_LOCKED,
+	IEEE1275_MAP_CACHED, IEEE1275_MAP_SE, IEEE1275_MAP_GLOBAL,
+	IEEE1275_MAP_IE, IEEE1275_MAP_DEFAULT): Define.
+	(grub_ieee1275_map_physical, grub_ieee1275_claim_vaddr,
+	grub_ieee1275_alloc_physmem): Declare new exported functions.
+
 2009-04-12  David S. Miller  <davem@davemloft.net>
 
 	* kern/misc.c (grub_ltoa): Fix cast when handling negative
