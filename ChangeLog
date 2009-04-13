@@ -1,3 +1,9 @@
+2009-04-13  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/i386/pc/grub-install.in (install_drive): Remove the BSD
+	partition number.
+	(grub_drive): Likewise.
+
 2009-04-13  David S. Miller  <davem@davemloft.net>
 
 	* kern/sparc64/ieee1275/ieee1275.c: New file.

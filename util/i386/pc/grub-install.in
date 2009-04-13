@@ -262,8 +262,8 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     grub_drive="`$grub_probe --target=drive --device ${grub_device}`"
 
     # Strip partition number
-    install_drive="`echo ${install_drive} | sed -e s/,[0-9]*//g`"
-    grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*//g`"
+    install_drive="`echo ${install_drive} | sed -e s/,[0-9]*[a-z]*//g`"
+    grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*[a-z]*//g`"
     if [ "${target_cpu}-${platform}" != "i386-pc" ] ; then
         # generic method (used on coreboot)
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
