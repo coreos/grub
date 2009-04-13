@@ -61,6 +61,7 @@ EOF
   if [ x"$devices" != "x" ] ; then
     cat << EOF
 	freebsd_loadenv		${devices_rel_dirname}/${devices_basename}
+fi
 EOF
   cat << EOF
 	set FreeBSD.vfs.root.mountfrom=${kfreebsd_fs}:${root_device}
