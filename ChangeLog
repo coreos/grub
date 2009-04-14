@@ -1,3 +1,9 @@
+2009-04-14  John Stanley <jpsinthemix@verizon.net>
+	    David S. Miller  <davem@davemloft.net>
+
+	* util/hostdisk.c (make_device_name): Fix buffer length
+	calculations.
+
 2009-04-14  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/hostdisk.c [__FreeBSD__ || __FreeBSD_kernel__]: Include

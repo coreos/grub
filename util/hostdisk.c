@@ -656,11 +656,21 @@ make_device_name (int drive, int dos_part, int bsd_part)
   char *p;
 
   if (dos_part >= 0)
-    len += 1 + ((dos_part + 1) / 10);
+    {
+      /* Add in char length of dos_part+1 */
+      int tmp = dos_part + 1;
+      len++;
+      while ((tmp /= 10) != 0)
+	len++;
+    }
   if (bsd_part >= 0)
     len += 2;
 
-  p = xmalloc (len);
+  /* Length to alloc is: char length of map[drive].drive, plus
+   *                     char length of (dos_part+1) or of bsd_part, plus
+   *                     2 for the comma and a null/end of string (\0)
+   */
+  p = xmalloc (len + 2);
   sprintf (p, "%s", map[drive].drive);
   
   if (dos_part >= 0)
