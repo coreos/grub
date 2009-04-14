@@ -32,7 +32,7 @@ util/grub-fstest.c_DEPENDENCIES = grub_fstest_init.h
 grub_fstest_SOURCES = util/grub-fstest.c util/hostfs.c util/misc.c 	\
 	kern/file.c kern/device.c kern/disk.c kern/err.c kern/misc.c	\
 	disk/host.c disk/loopback.c kern/list.c kern/command.c		\
-	lib/arg.c commands/extcmd.c normal/misc.c			\
+	lib/arg.c commands/extcmd.c normal/datetime.c normal/misc.c	\
 	lib/hexdump.c lib/crc.c commands/blocklist.c commands/ls.c 	\
 	\
 	fs/affs.c fs/cpio.c fs/fat.c fs/ext2.c fs/hfs.c			\

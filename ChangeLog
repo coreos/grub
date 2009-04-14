@@ -1,3 +1,8 @@
+2009-04-13  Pavel Roskin  <proski@gnu.org>
+
+	* conf/common.rmk (grub_fstest_SOURCES): Add normal/datetime.c.
+	Reported by John Stanley <jpsinthemix@verizon.net>
+
 2009-04-13  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/10_freebsd.in: Detect Debian GNU/kFreeBSD and use
