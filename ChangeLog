@@ -1,3 +1,11 @@
+2009-04-14  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/hostdisk.c [__FreeBSD__ || __FreeBSD_kernel__]: Include
+	<sys/param.h> and <sys/sysctl.h>.
+	(open_device) [__FreeBSD__ || __FreeBSD_kernel_]: Use sysctlgetbyname()
+	to add 0x10 to `kern.geom.debugflags' if it's not already set, before
+	opening the device and reset them afterwards.
+
 2009-04-13  Pavel Roskin  <proski@gnu.org>
 
 	* conf/common.rmk (grub_fstest_SOURCES): Add normal/datetime.c.

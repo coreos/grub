@@ -88,6 +88,8 @@ struct hd_geometry
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 # include <sys/disk.h> /* DIOCGMEDIASIZE */
+# include <sys/param.h>
+# include <sys/sysctl.h>
 #endif
 
 struct
@@ -340,7 +342,35 @@ open_device (const grub_disk_t disk, grub_disk_addr_t sector, int flags)
       sector -= disk->partition->start;
   }
 #else /* ! __linux__ */
+#if defined (__FreeBSD__) || defined(__FreeBSD_kernel__)
+  int sysctl_flags, sysctl_oldflags;
+  const size_t sysctl_size = sizeof (sysctl_flags);
+
+  if (sysctlbyname ("kern.geom.debugflags", &sysctl_oldflags, &sysctl_size, NULL, 0))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot get current flags of sysctl kern.geom.debugflags");
+      return -1;
+    }
+  sysctl_flags = sysctl_oldflags | 0x10;
+  if (! (sysctl_oldflags & 0x10)
+      && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_flags, sysctl_size))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags of sysctl kern.geom.debugflags");
+      return -1;
+    }
+#endif
+
   fd = open (map[disk->id].device, flags);
+
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+  if (! (sysctl_oldflags & 0x10)
+      && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_oldflags, sysctl_size))
+    {
+      grub_error (GRUB_ERR_BAD_DEVICE, "cannot set flags back to the old value for sysctl kern.geom.debugflags");
+      return -1;
+    }
+#endif
+
   if (fd < 0)
     {
       grub_error (GRUB_ERR_BAD_DEVICE, "cannot open `%s' in open_device()", map[disk->id].device);
