@@ -2,6 +2,7 @@
 
 	* configure: Remove.
 	* config.h.in: Likewise.
+	* stamp-h.in: Likewise.
 	* DISTLIST: Likewise.
 	* conf/common.mk: Likewise.
 	* conf/i386-coreboot.mk: Likewise.
