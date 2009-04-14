@@ -1,3 +1,21 @@
+2009-04-14  Felix Zielcke  <fzielcke@z-51.de>
+
+	* configure: Remove.
+	* config.h.in: Likewise.
+	* DISTLIST: Likewise.
+	* conf/common.mk: Likewise.
+	* conf/i386-coreboot.mk: Likewise.
+	* conf/i386-efi.mk: Likewise.
+	* conf/i386-ieee1275.mk: Likewise.
+	* conf/i386.mk: Likewise.
+	* conf/i386-pc.mk: Likewise.
+	* conf/powerpc-ieee1275.mk: Likewise.
+	* conf/sparc64-ieee1275.mk: Likewise.
+	* conf/x86_64-efi.mk: Likewise.
+
+	* INSTALL: Remove the sentence that Ruby and autoconf are only required if you
+	develop on GRUB.
+
 2009-04-14  John Stanley <jpsinthemix@verizon.net>
 	    David S. Miller  <davem@davemloft.net>
 
