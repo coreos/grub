@@ -577,8 +577,8 @@ grub_cmd_serial (grub_extcmd_t cmd,
       /* Register terminal if not yet registered.  */
       if (registered == 0)
 	{
-	  grub_term_register_input (&grub_serial_term_input);
-	  grub_term_register_output (&grub_serial_term_output);
+	  grub_term_register_input ("serial", &grub_serial_term_input);
+	  grub_term_register_output ("serial", &grub_serial_term_output);
 	  registered = 1;
 	}
     }

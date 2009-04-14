@@ -219,13 +219,15 @@ extern struct grub_handler_class EXPORT_VAR(grub_term_input_class);
 extern struct grub_handler_class EXPORT_VAR(grub_term_output_class);
 
 static inline void
-grub_term_register_input (grub_term_input_t term)
+grub_term_register_input (const char *name __attribute__ ((unused)),
+			  grub_term_input_t term)
 {
   grub_handler_register (&grub_term_input_class, GRUB_AS_HANDLER (term));
 }
 
 static inline void
-grub_term_register_output (grub_term_output_t term)
+grub_term_register_output (const char *name __attribute__ ((unused)),
+			   grub_term_output_t term)
 {
   grub_handler_register (&grub_term_output_class, GRUB_AS_HANDLER (term));
 }

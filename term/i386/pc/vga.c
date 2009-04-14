@@ -25,7 +25,6 @@
 #include <grub/types.h>
 #include <grub/dl.h>
 #include <grub/misc.h>
-#include <grub/normal.h>
 #include <grub/font.h>
 
 #define DEBUG_VGA	0
@@ -509,7 +508,7 @@ GRUB_MOD_INIT(vga)
 #ifndef GRUB_UTIL
   my_mod = mod;
 #endif
-  grub_term_register_output (&grub_vga_term);
+  grub_term_register_output ("vga", &grub_vga_term);
 }
 
 GRUB_MOD_FINI(vga)

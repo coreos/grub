@@ -26,6 +26,7 @@
 #include <grub/env.h>
 #include <grub/menu.h>
 #include <grub/command.h>
+#include <grub/file.h>
 
 /* The maximum size of a command-line.  */
 #define GRUB_MAX_CMDLINE	1600
@@ -102,6 +103,10 @@ char *grub_env_write_color_normal (struct grub_env_var *var, const char *val);
 char *grub_env_write_color_highlight (struct grub_env_var *var, const char *val);
 void grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
 void grub_wait_after_message (void);
+
+char *grub_file_getline (grub_file_t file);
+void read_handler_list (void);
+void free_handler_list (void);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);

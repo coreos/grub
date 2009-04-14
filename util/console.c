@@ -374,8 +374,8 @@ static struct grub_term_output grub_ncurses_term_output =
 void
 grub_console_init (void)
 {
-  grub_term_register_output (&grub_ncurses_term_output);
-  grub_term_register_input (&grub_ncurses_term_input);
+  grub_term_register_output ("console", &grub_ncurses_term_output);
+  grub_term_register_input ("console", &grub_ncurses_term_input);
   grub_term_set_current_output (&grub_ncurses_term_output);
   grub_term_set_current_input (&grub_ncurses_term_input);
 }

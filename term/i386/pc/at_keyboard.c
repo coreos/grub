@@ -226,7 +226,7 @@ static struct grub_term_input grub_at_keyboard_term =
 
 GRUB_MOD_INIT(at_keyboard)
 {
-  grub_term_register_input (&grub_at_keyboard_term);
+  grub_term_register_input ("at_keyboard", &grub_at_keyboard_term);
 }
 
 GRUB_MOD_FINI(at_keyboard)

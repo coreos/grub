@@ -168,7 +168,7 @@ static struct grub_term_output grub_vga_text_term =
 
 GRUB_MOD_INIT(vga_text)
 {
-  grub_term_register_output (&grub_vga_text_term);
+  grub_term_register_output ("vga_text", &grub_vga_text_term);
 }
 
 GRUB_MOD_FINI(vga_text)

@@ -599,7 +599,7 @@ static struct grub_term_output grub_vesafb_term =
 GRUB_MOD_INIT(vesafb)
 {
   my_mod = mod;
-  grub_term_register_output (&grub_vesafb_term);
+  grub_term_register_output ("vesafb", &grub_vesafb_term);
 }
 
 GRUB_MOD_FINI(vesafb)

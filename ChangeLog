@@ -1,5 +1,51 @@
 2009-04-14  Bean  <bean123ch@gmail.com>
 
+	* Makefile.in (pkglib_DATA): Add handler.lst.
+	(handler.lst): New rule.
+
+	* conf/i386-pc.rmk (normal_mod_SOURCES): Add normal/handler.c.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+
+	* genhandlerlist.sh: New file.
+
+	* genmk.rb: Add rules to generate handler.lst.
+
+	* include/grub/normal.h (grub_file_getline): New function definition.
+	(read_handler_list): Likewise.
+	(free_handler_list): Likewise.
+
+	* include/grub/term.h (grub_term_register_input): Add name parameter
+	for auto generation of handler.lst.
+	(grub_term_register_output): Likewise.
+
+	* normal/handler.c: New file.
+
+	* normal/main.c (get_line): Renamed to grub_file_getline.
+	(read_config_file): Use the newly renamed grub_file_getline.
+	(read_command_list): Likewise.
+	(read_fs_list): Likewise.
+	(grub_normal_execute): Call read_handler_list to parse handler.lst.
+	(GRUB_MOD_FINI): Call free_handler_list to free handler list.
+
+	* term/efi/console.c (grub_console_init): Add name parameter for auto
+	generation of handler.lst.
+	* term/gfxterm.c: Likewise.
+	* term/i386/pc/at_keyboard.c: Likewise.
+	* term/i386/pc/console.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* term/i386/pc/vesafb.c: Likewise.
+	* term/i386/pc/vga.c: Likewise.
+	* term/i386/pc/vga_text.c: Likewise.
+	* term/ieee1275/ofconsole.c: Likewise.
+	* term/usb_keyboard.c: Likewise.
+
+2009-04-14  Bean  <bean123ch@gmail.com>
+
 	* util/grub-pe2elf.c (write_symbol_table): Terminate short name symbol
 	properly with null character.
 

@@ -143,6 +143,7 @@ endif
       command = 'cmd-' + obj.suffix('lst')
       fs = 'fs-' + obj.suffix('lst')
       partmap = 'partmap-' + obj.suffix('lst')
+      handler = 'handler-' + obj.suffix('lst')
       dep = deps[i]
       flag = if /\.c$/ =~ src then 'CFLAGS' else 'ASFLAGS' end
       extra_flags = if /\.S$/ =~ src then '-DASM_FILE=1' else '' end
@@ -152,10 +153,11 @@ endif
 	$(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -MD -c -o $@ $<
 -include #{dep}
 
-CLEANFILES += #{command} #{fs} #{partmap}
+CLEANFILES += #{command} #{fs} #{partmap} #{handler}
 COMMANDFILES += #{command}
 FSFILES += #{fs}
 PARTMAPFILES += #{partmap}
+HANDLERFILES += #{handler}
 
 #{command}: #{src} $(#{src}_DEPENDENCIES) gencmdlist.sh
 	set -e; \
@@ -172,6 +174,10 @@ PARTMAPFILES += #{partmap}
 	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
 	  | sh $(srcdir)/genpartmaplist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
+#{handler}: #{src} $(#{src}_DEPENDENCIES) genhandlerlist.sh
+	set -e; \
+	  $(TARGET_CC) -I#{dir} -I$(srcdir)/#{dir} $(TARGET_CPPFLAGS) #{extra_flags} $(TARGET_#{flag}) $(#{prefix}_#{flag}) -E $< \
+	  | sh $(srcdir)/genhandlerlist.sh #{symbolic_name} > $@ || (rm -f $@; exit 1)
 
 "
     end.join('')

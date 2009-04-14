@@ -247,7 +247,7 @@ GRUB_MOD_INIT(usb_keyboard)
   (void) mod;			/* To stop warning. */
 
   grub_usb_hid ();
-  grub_term_register_input (&grub_usb_keyboard_term);
+  grub_term_register_input ("usb_keyboard", &grub_usb_keyboard_term);
 }
 
 GRUB_MOD_FINI(usb_keyboard)

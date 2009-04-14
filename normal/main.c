@@ -37,8 +37,8 @@ static grub_fs_module_list_t fs_module_list = 0;
 #define GRUB_DEFAULT_HISTORY_SIZE	50
 
 /* Read a line from the file FILE.  */
-static char *
-get_line (grub_file_t file)
+char *
+grub_file_getline (grub_file_t file)
 {
   char c;
   int pos = 0;
@@ -310,7 +310,7 @@ read_config_file (const char *config, int nested)
     {
       currline++;
 
-      *line = get_line (file);
+      *line = grub_file_getline (file);
       if (! *line)
 	return grub_errno;
 
@@ -343,7 +343,7 @@ read_config_file (const char *config, int nested)
       int startline;
       char *cmdline;
 
-      cmdline = get_line (file);
+      cmdline = grub_file_getline (file);
       if (!cmdline)
 	break;
 
@@ -475,7 +475,7 @@ read_command_list (void)
 		  grub_command_t cmd;
 		  int prio = 0;
 
-		  buf = get_line (file);
+		  buf = grub_file_getline (file);
 
 		  if (! buf)
 		    break;
@@ -594,7 +594,7 @@ read_fs_list (void)
 		  char *q;
 		  grub_fs_module_list_t fs_mod;
 		  
-		  buf = get_line (file);
+		  buf = grub_file_getline (file);
 		  if (! buf)
 		    break;
 
@@ -650,6 +650,7 @@ grub_normal_execute (const char *config, int nested, int batch)
 
   read_command_list ();
   read_fs_list ();
+  read_handler_list ();
   
   if (config)
     {
@@ -754,4 +755,5 @@ GRUB_MOD_FINI(normal)
 {
   grub_set_history (0);
   grub_unregister_command (cmd_normal);
+  free_handler_list ();
 }
