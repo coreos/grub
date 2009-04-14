@@ -1,3 +1,8 @@
+2009-04-14  Bean  <bean123ch@gmail.com>
+
+	* util/grub-pe2elf.c (write_symbol_table): Terminate short name symbol
+	properly with null character.
+
 2009-04-14  Felix Zielcke  <fzielcke@z-51.de>
 
 	* configure: Remove.
