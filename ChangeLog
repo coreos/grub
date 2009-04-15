@@ -1,3 +1,9 @@
+2009-04-15  Felix Zielcke  <fzielcke@z-51.de>
+
+	* disk/lvm.c (grub_lvm_scan_device): Add `LVM' to the error messages,
+	that no multiple data or metadata areas are supported and `Unknown 
+	metadata header'.
+
 2009-04-15  Vladimir Serbinenko <phcoder@gmail.com>
 
 	Move loader out of the kernel

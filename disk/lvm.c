@@ -263,7 +263,7 @@ grub_lvm_scan_device (const char *name)
   if (dlocn->offset)
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "We don't support multiple data areas");
+		  "We don't support multiple LVM data areas");
 		  
       goto fail;
     }
@@ -276,7 +276,7 @@ grub_lvm_scan_device (const char *name)
   if (dlocn->offset)
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "We don't support multiple metadata areas");
+		  "We don't support multiple LVM metadata areas");
 		  
       goto fail;
     }
@@ -296,7 +296,7 @@ grub_lvm_scan_device (const char *name)
       || (grub_le_to_cpu32 (mdah->version) != GRUB_LVM_FMTT_VERSION))
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		  "Unknown metadata header");
+		  "Unknown LVM metadata header");
       goto fail2;
     }
 
