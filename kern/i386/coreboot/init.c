@@ -81,13 +81,13 @@ grub_machine_init (void)
   {
 #if GRUB_CPU_SIZEOF_VOID_P == 4
     /* Restrict ourselves to 32-bit memory space.  */
-    if (addr > ULONG_MAX)
+    if (addr > GRUB_ULONG_MAX)
       {
-	grub_upper_mem = ULONG_MAX;
+	grub_upper_mem = GRUB_ULONG_MAX;
 	return 0;
       }
-    if (addr + size > ULONG_MAX)
-      size = ULONG_MAX - addr;
+    if (addr + size > GRUB_ULONG_MAX)
+      size = GRUB_ULONG_MAX - addr;
 #endif
 
     grub_upper_mem = grub_max (grub_upper_mem, addr + size);

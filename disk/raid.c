@@ -604,7 +604,7 @@ grub_raid_scan_device (int head_only)
       if (!disk)
         return 0;
 
-      if (disk->total_sectors == ULONG_MAX)
+      if (disk->total_sectors == GRUB_ULONG_MAX)
         {
           grub_disk_close (disk);
           return 0;

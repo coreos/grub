@@ -120,7 +120,7 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
     {
       data->flags = GRUB_BIOSDISK_FLAG_LBA | GRUB_BIOSDISK_FLAG_CDROM;
       data->sectors = 32;
-      total_sectors = ULONG_MAX;  /* TODO: get the correct size.  */
+      total_sectors = GRUB_ULONG_MAX;  /* TODO: get the correct size.  */
     }
   else if (drive & 0x80)
     {
