@@ -1,3 +1,8 @@
+2009-04-15  Felix Zielcke  <fzielcke@z-51.de>
+
+	* INSTALL: Add that `./autogen.sh' needs to be run before
+	`./configure.'.
+
 2009-04-14  Bean  <bean123ch@gmail.com>
 
 	* Makefile.in (pkglib_DATA): Add handler.lst.
