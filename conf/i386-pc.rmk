@@ -46,7 +46,7 @@ cdboot_img_FORMAT = binary
 # For kernel.img.
 kernel_img_SOURCES = kern/i386/pc/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
+	kern/misc.c kern/mm.c kern/rescue.c kern/term.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \
 	kern/i386/dl.c kern/i386/pc/init.c kern/i386/pc/mmap.c \
 	kern/parser.c kern/partition.c \
@@ -132,7 +132,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c commands/extcmd.c			\
 	normal/execute.c kern/file.c kern/fs.c normal/lexer.c 		\
-	kern/loader.c kern/main.c kern/misc.c kern/parser.c		\
+	commands/boot.c kern/main.c kern/misc.c kern/parser.c		\
 	grub_script.tab.c kern/partition.c kern/rescue.c kern/term.c	\
 	lib/arg.c normal/cmdline.c normal/command.c normal/datetime.c 	\
 	normal/function.c normal/handler.c	\

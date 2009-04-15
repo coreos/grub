@@ -1,3 +1,33 @@
+2009-04-15  Vladimir Serbinenko <phcoder@gmail.com>
+
+	Move loader out of the kernel
+
+	* kern/loader.c: moved to ...
+	* commands/boot.c: ... moved here
+	* commands/minicmd.c (grub_mini_cmd_boot): moved to ...
+	* commands/boot.c (grub_cmd_boot): moved here. All users updated
+	* include/grub/kernel.h (grub_machine_fini): export
+	* include/grub/loader.h (grub_loader_is_loaded): update declaration
+	(grub_loader_set): likewise
+	(grub_loader_unset): likewise
+	(grub_loader_boot): likewise
+	* conf/common.rmk: new module boot.mod
+	(pkglib_MODULES): add boot.mod
+	* conf/i386-coreboot.rmk (kernel_elf_SOURCES): remove kern/loader.c
+	(grub_emu_SOURCES): likewise
+	* conf/i386-efi.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise
+	* conf/i386-ieee1275.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise
+	* conf/i386-pc.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise
+	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise
+	* conf/sparcs64-ieee1275.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise   
+	* conf/x86_64-efi.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise 
+
 2009-04-15  Vladimir Serbinenko	 <phcoder@gmail.com>
 
 	use grub_lltoa instead of grub_itoa and grub_ltoa for all purposes

@@ -52,7 +52,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	kern/err.c kern/list.c kern/handler.c				\
 	kern/command.c kern/corecmd.c commands/extcmd.c			\
 	normal/execute.c kern/file.c kern/fs.c normal/lexer.c 		\
-	kern/loader.c kern/main.c kern/misc.c kern/parser.c		\
+	commands/boot.c kern/main.c kern/misc.c kern/parser.c		\
 	grub_script.tab.c kern/partition.c kern/rescue.c kern/term.c	\
 	lib/arg.c normal/cmdline.c normal/command.c normal/function.c\
 	normal/completion.c normal/datetime.c normal/context.c 		\
@@ -90,7 +90,7 @@ kernel_mod_EXPORTS = no
 kernel_mod_SOURCES = kern/x86_64/efi/startup.S kern/x86_64/efi/callwrap.S \
 	kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/loader.c kern/rescue.c kern/term.c \
+	kern/misc.c kern/mm.c kern/rescue.c kern/term.c \
 	kern/x86_64/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
 	kern/time.c kern/list.c kern/handler.c kern/command.c kern/corecmd.c \

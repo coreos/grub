@@ -1,7 +1,7 @@
 /* boot.c - command to boot an operating system */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,29 +21,82 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/loader.h>
+#include <grub/kernel.h>
 
-static grub_err_t
-grub_cmd_boot (struct grub_arg_list *state __attribute__ ((unused)),
-	       int argc, char **args __attribute__ ((unused)))
+static grub_err_t (*grub_loader_boot_func) (void);
+static grub_err_t (*grub_loader_unload_func) (void);
+static int grub_loader_noreturn;
+
+static int grub_loader_loaded;
+
+int
+grub_loader_is_loaded (void)
 {
-  if (argc)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many arguments");
+  return grub_loader_loaded;
+}
+
+void
+grub_loader_set (grub_err_t (*boot) (void),
+		 grub_err_t (*unload) (void),
+		 int noreturn)
+{
+  if (grub_loader_loaded && grub_loader_unload_func)
+    grub_loader_unload_func ();
   
-  grub_loader_boot ();
+  grub_loader_boot_func = boot;
+  grub_loader_unload_func = unload;
+  grub_loader_noreturn = noreturn;
   
-  return 0;
+  grub_loader_loaded = 1;
+}
+
+void
+grub_loader_unset(void)
+{
+  if (grub_loader_loaded && grub_loader_unload_func)
+    grub_loader_unload_func ();
+  
+  grub_loader_boot_func = 0;
+  grub_loader_unload_func = 0;
+
+  grub_loader_loaded = 0;
+}
+
+grub_err_t
+grub_loader_boot (void)
+{
+  if (! grub_loader_loaded)
+    return grub_error (GRUB_ERR_NO_KERNEL, "no loaded kernel");
+
+  if (grub_loader_noreturn)
+    grub_machine_fini ();
+  
+  return (grub_loader_boot_func) ();
+}
+
+
+/* boot */
+static grub_err_t
+grub_cmd_boot (struct grub_command *cmd __attribute__ ((unused)),
+		    int argc __attribute__ ((unused)),
+		    char *argv[] __attribute__ ((unused)))
+{
+  return grub_loader_boot ();
 }
 
 
 
+static grub_command_t cmd_boot;
+
 GRUB_MOD_INIT(boot)
 {
   (void) mod;			/* To stop warning. */
-  grub_register_command ("boot", grub_cmd_boot, GRUB_COMMAND_FLAG_BOTH,
-			 "boot", "Boot an operating system.", 0);
+  cmd_boot =
+    grub_register_command ("boot", grub_cmd_boot,
+			   0, "boot an operating system");
 }
 
 GRUB_MOD_FINI(boot)
 {
-  grub_unregister_command ("boot");
+  grub_unregister_command (cmd_boot);
 }

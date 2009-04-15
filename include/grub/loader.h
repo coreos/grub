@@ -1,7 +1,7 @@
 /* loader.h - OS loaders */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2002,2003,2004,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2002,2003,2004,2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,19 +26,19 @@
 #include <grub/types.h>
 
 /* Check if a loader is loaded.  */
-int EXPORT_FUNC(grub_loader_is_loaded) (void);
+int grub_loader_is_loaded (void);
 
 /* Set loader functions. NORETURN must be set to true, if BOOT won't return
    to the original state.  */
-void EXPORT_FUNC(grub_loader_set) (grub_err_t (*boot) (void),
-				   grub_err_t (*unload) (void),
-				   int noreturn);
+void grub_loader_set (grub_err_t (*boot) (void),
+		      grub_err_t (*unload) (void),
+		      int noreturn);
 
 /* Unset current loader, if any.  */
-void EXPORT_FUNC(grub_loader_unset) (void);
+void grub_loader_unset (void);
 
 /* Call the boot hook in current loader. This may or may not return,
    depending on the setting by grub_loader_set.  */
-grub_err_t EXPORT_FUNC(grub_loader_boot) (void);
+grub_err_t grub_loader_boot (void);
 
 #endif /* ! GRUB_LOADER_HEADER */

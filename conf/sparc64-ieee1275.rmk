@@ -53,7 +53,7 @@ grub_mkimage_SOURCES = util/sparc64/ieee1275/grub-mkimage.c util/misc.c \
 #	grub_script.tab.c						\
 #	io/gzio.c                                                       \
 #	kern/device.c kern/disk.c kern/dl.c kern/env.c kern/err.c 	\
-#	kern/file.c kern/fs.c kern/loader.c kern/main.c kern/misc.c	\
+#	kern/file.c kern/fs.c commands/boot.c kern/main.c kern/misc.c	\
 #	kern/parser.c kern/partition.c kern/rescue.c kern/term.c	\
 #	kern/list.c kern/handler.c					\
 #	normal/arg.c normal/cmdline.c normal/command.c normal/datetime.c \
@@ -73,7 +73,7 @@ grub_emu_LDFLAGS = $(LIBCURSES)
 
 kernel_elf_SOURCES = kern/sparc64/ieee1275/init.c kern/ieee1275/ieee1275.c \
 	kern/main.c kern/device.c kern/disk.c kern/dl.c kern/file.c \
-	kern/fs.c kern/err.c kern/misc.c kern/mm.c kern/loader.c \
+	kern/fs.c kern/err.c kern/misc.c kern/mm.c  \
 	kern/rescue.c kern/term.c term/ieee1275/ofconsole.c \
 	kern/sparc64/ieee1275/openfw.c disk/ieee1275/ofdisk.c \
 	kern/partition.c kern/env.c kern/sparc64/dl.c symlist.c \

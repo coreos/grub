@@ -1,7 +1,7 @@
 /* minicmd.c - commands for the rescue mode */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2003,2005,2006,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,15 +27,6 @@
 #include <grub/term.h>
 #include <grub/loader.h>
 #include <grub/command.h>
-
-/* boot */
-static grub_err_t
-grub_mini_cmd_boot (struct grub_command *cmd __attribute__ ((unused)),
-		    int argc __attribute__ ((unused)),
-		    char *argv[] __attribute__ ((unused)))
-{
-  return grub_loader_boot ();
-}
 
 /* cat FILE */
 static grub_err_t
@@ -345,16 +336,13 @@ grub_mini_cmd_exit (struct grub_command *cmd __attribute__ ((unused)),
   return 0;
 }
 
-static grub_command_t cmd_boot, cmd_cat, cmd_help, cmd_root;
+static grub_command_t cmd_cat, cmd_help, cmd_root;
 static grub_command_t cmd_dump, cmd_rmmod, cmd_lsmod, cmd_exit;
 
 GRUB_MOD_INIT(minicmd)
 {
   (void) mod;			/* To stop warning. */
 
-  cmd_boot =
-    grub_register_command ("boot", grub_mini_cmd_boot,
-			   0, "boot an operating system");
   cmd_cat =
     grub_register_command ("cat", grub_mini_cmd_cat,
 			   "cat FILE", "show the contents of a file");
@@ -380,7 +368,6 @@ GRUB_MOD_INIT(minicmd)
 
 GRUB_MOD_FINI(minicmd)
 {
-  grub_unregister_command (cmd_boot);
   grub_unregister_command (cmd_cat);
   grub_unregister_command (cmd_help);
   grub_unregister_command (cmd_root);
