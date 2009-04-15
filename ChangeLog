@@ -1,3 +1,12 @@
+2009-04-15  Vladimir Serbinenko	 <phcoder@gmail.com>
+
+	Restore grub-emu
+
+	* conf/i386-pc.rmk (grub_emu_SOURCES): add normal/handler.c
+	* conf/i386-coreboot.rmk: likewise
+	* conf/i386-ieee1275.rmk: likewise
+	* conf/powerpc-ieee1275.rmk: likewise
+	
 2009-04-15  Felix Zielcke  <fzielcke@z-51.de>
 
 	* INSTALL: Add that `./autogen.sh' needs to be run before
