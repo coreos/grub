@@ -1,5 +1,13 @@
 2009-04-15  Vladimir Serbinenko	 <phcoder@gmail.com>
 
+	use grub_lltoa instead of grub_itoa and grub_ltoa for all purposes
+	
+	* kern/misc.c (grub_itoa): Removed function
+	(grub_ltoa): likewise
+	(grub_vsprintf): use grub_lltoa
+
+2009-04-15  Vladimir Serbinenko	 <phcoder@gmail.com>
+
 	Restore grub-emu
 
 	* conf/i386-pc.rmk (grub_emu_SOURCES): add normal/handler.c
