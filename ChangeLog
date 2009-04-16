@@ -1,3 +1,8 @@
+2009-04-16  Bean  <bean123ch@gmail.com>
+
+	* commands/efi/loadbios.c (grub_cmd_fakebios): Add missing return
+	value.
+
 2009-04-15  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/types.h: Rename ULONG_MAX to GRUB_ULONG_MAX and

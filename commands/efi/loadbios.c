@@ -146,6 +146,8 @@ grub_cmd_fakebios (struct grub_command *cmd __attribute__ ((unused)),
     }
   else
     fake_bios_data (0);
+
+  return 0;
 }
 
 static grub_err_t
