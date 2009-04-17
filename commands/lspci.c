@@ -114,7 +114,7 @@ grub_pci_get_class (int class, int subclass)
   return 0;
 }
 
-static int
+static int NESTED_FUNC_ATTR
 grub_lspci_iter (int bus, int dev, int func, grub_pci_id_t pciid)
 {
   grub_uint32_t class;

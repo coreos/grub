@@ -375,7 +375,7 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   return 0;
 }
 
-static int
+static int NESTED_FUNC_ATTR
 grub_ata_pciinit (int bus, int device, int func,
 		  grub_pci_id_t pciid __attribute__((unused)))
 {

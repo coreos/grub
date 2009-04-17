@@ -1,3 +1,10 @@
+2009-04-17  Pavel Roskin  <proski@gnu.org>
+
+	* disk/ata.c (grub_ata_pciinit): Use NESTED_FUNC_ATTR.
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Likewise.
+	* bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
+	* commands/lspci.c (grub_lspci_iter): Likewise.
+
 2009-04-16  Bean  <bean123ch@gmail.com>
 
 	* commands/efi/loadbios.c (grub_cmd_fakebios): Add missing return
