@@ -131,36 +131,36 @@ grub_cmd_multiboot_loader (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-   /* close file before calling functions */
-   if (file)
-     grub_file_close (file);
+  /* close file before calling functions */
+  if (file)
+    grub_file_close (file);
 
-   /* Launch multi boot with header */
+  /* Launch multi boot with header */
 
-   /* XXX Find a better way to identify this. 
-      This is for i386-pc */
+  /* XXX Find a better way to identify this. 
+     This is for i386-pc */
 #if defined(GRUB_MACHINE_PCBIOS) || defined(GRUB_MACHINE_LINUXBIOS)
   if (header_multi_ver_found == 1)
     {
       grub_dprintf ("multiboot_loader",
-           "Launching multiboot 1 grub_multiboot() function\n");
-      grub_multiboot (argc, argv);     
+		    "Launching multiboot 1 grub_multiboot() function\n");
+      grub_multiboot (argc, argv);
       module_version_status = 1;
     }
 #endif
   if (header_multi_ver_found == 0 || header_multi_ver_found == 2)
     {
       grub_dprintf ("multiboot_loader",
-           "Launching multiboot 2 grub_multiboot2() function\n");
+		    "Launching multiboot 2 grub_multiboot2() function\n");
       grub_multiboot2 (argc, argv);
       module_version_status = 2;
     }
 
-   return;
+  return grub_errno;
 
 fail:
   if (file)
-     grub_file_close (file);
+    grub_file_close (file);
 
   grub_dl_unref (my_mod);
 
