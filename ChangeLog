@@ -1,5 +1,9 @@
 2009-04-17  Pavel Roskin  <proski@gnu.org>
 
+	* bus/usb/ohci.c (grub_ohci_transaction): Fix incorrect printf
+	format.
+	(grub_ohci_transfer): Likewise.
+
 	* bus/usb/usbtrans.c (grub_usb_control_msg): Warning fix.
 
 	* loader/multiboot_loader.c (grub_cmd_multiboot_loader): Fix
