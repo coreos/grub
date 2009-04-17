@@ -36,7 +36,7 @@ grub_usb_control_msg (grub_usb_device_t dev,
   int datablocks;
   struct grub_usb_packet_setup setupdata;
   grub_usb_err_t err;
-  int max;
+  unsigned int max;
 
   grub_dprintf ("usb",
 		"control: reqtype=0x%02x req=0x%02x val=0x%02x idx=0x%02x size=%d\n",
