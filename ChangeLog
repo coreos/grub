@@ -1,5 +1,8 @@
 2009-04-17  Pavel Roskin  <proski@gnu.org>
 
+	* fs/i386/pc/pxe.c (grub_pxefs_dir): Fix function prototype to
+	match struct grub_fs.
+
 	* disk/ata.c (grub_ata_pciinit): Use NESTED_FUNC_ATTR.
 	* bus/usb/ohci.c (grub_ohci_pci_iter): Likewise.
 	* bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
