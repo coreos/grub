@@ -1,3 +1,14 @@
+2009-04-19  David S. Miller  <davem@davemloft.net>
+
+	* loader/sparc64/ieee1275/linux.c: Include grub/command.h
+	(grub_rescue_cmd_linux): Rename to...
+	(grub_cmd_linux): and fix prototype.
+	(grub_rescue_cmd_initrd): Rename to...
+	(grub_cmd_initrd): and fix prototype.
+	(cmd_linux, cmd_initrd): New.
+	(GRUB_MOD_INIT(linux)): Use grub_register_command().
+	(GRUB_MOD_FINI(linux): Use grub_unregister_command().
+
 2009-04-17  Pavel Roskin  <proski@gnu.org>
 
 	* bus/usb/ohci.c (grub_ohci_transaction): Fix incorrect printf
