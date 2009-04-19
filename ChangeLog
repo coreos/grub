@@ -1,3 +1,10 @@
+2009-04-19  Vladimir Serbinenko <phcoder@gmail.com>
+
+	Correct GPT definition
+
+	* include/grub/gpt_partition.h (grub_gpt_partentry): Corrected the type 
+	of "attrib" member
+
 2009-04-19  Felix Zielcke  <fzielcke@z-51.de>
 
 	* INSTALL: Replace `autogen.sh' with `./autogen.sh'.
