@@ -50,9 +50,9 @@ Building the GRUB
 The simplest way to compile this package is:
 
   1. `cd' to the directory containing the package's source code and
-     type `autogen.sh' and then `./configure' to configure the package
-     for your system.  If you're using `csh' on an old version of
-     System V, you might need to type `sh ./configure' instead to
+     type `./autogen.sh' and then `./configure' to configure the
+     package for your system.  If you're using `csh' on an old version
+     of System V, you might need to type `sh ./configure' instead to
      prevent `csh' from trying to execute `configure' itself.
 
      Running `configure' takes awhile.  While running, it prints some

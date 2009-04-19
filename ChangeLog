@@ -1,3 +1,7 @@
+2009-04-19  Felix Zielcke  <fzielcke@z-51.de>
+
+	* INSTALL: Replace `autogen.sh' with `./autogen.sh'.
+
 2009-04-19  David S. Miller  <davem@davemloft.net>
 
 	* loader/sparc64/ieee1275/linux.c: Include grub/command.h
