@@ -10,6 +10,31 @@
 	(grub_devalias_iterate): Dynamically allocate 'aliasname' and
 	'devtype'.  Explicitly NULL terminate devalias expansion.
 
+	* util/sparc64/ieee1275/misc.c: New file.
+	* util/sparc64/ieee1275/grub-setup.c: New file.
+	* util/sparc64/ieee1275/grub-ofpathname.c: New file.
+	* util/sparc64/ieee1275/grub-mkimage.c: New file.
+	* util/sparc64/ieee1275/grub-install.in: New file.
+	* util/ieee1275/ofpath.c: New file.
+	* util/ieee1275/devicemap.c: New file.
+	* util/devicemap.c: New file.
+	* util/deviceiter.c: New file.
+	* kern/sparc64/ieee1275/init.c: New file.
+	* include/grub/util/ofpath.h: New file.
+	* include/grub/util/deviceiter.h: New file.
+	* util/grub-mkdevicemap.c: Include deviceiter.h.
+	Implement using grub_util_emit_devicemap_entry and
+	grub_util_iterate_devices.
+	* conf/i386-corebook.rmk: Build util/deviceiter.c and
+	util/devicemap.c into grub-mkdevicemap
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1275.rmk: Likewise.
+	* conf/i386-pc.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Add rules to build boot block
+	images and installation utilities.  Build kernel as image
+	instead of as elf binary.  Use common rules as much as possible.
+
 2009-04-19  Vladimir Serbinenko <phcoder@gmail.com>
 
 	Correct GPT definition
