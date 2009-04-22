@@ -1,3 +1,8 @@
+2009-04-22  David S. Miller  <davem@davemloft.net>
+
+	* kern/ieee1275/mmap.c (grub_machine_mmap_iterate): If size_cells
+	is larger than address_cells, use that value for address_cells too.
+
 2009-04-19  Vladimir Serbinenko <phcoder@gmail.com>
 
 	Correct GPT definition
