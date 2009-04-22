@@ -39,6 +39,9 @@ struct grub_ieee1275_mem_region
   unsigned int size;
 };
 
+#define IEEE1275_MAX_PROP_LEN	8192
+#define IEEE1275_MAX_PATH_LEN	256
+
 #ifndef IEEE1275_CALL_ENTRY_FN
 #define IEEE1275_CALL_ENTRY_FN(args) (*grub_ieee1275_entry_fn) (args)
 #endif

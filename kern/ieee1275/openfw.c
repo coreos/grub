@@ -38,6 +38,8 @@ grub_children_iterate (char *devpath,
 {
   grub_ieee1275_phandle_t dev;
   grub_ieee1275_phandle_t child;
+  char *childtype, *childpath;
+  char *childname, *fullname;
 
   if (grub_ieee1275_finddevice (devpath, &dev))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
@@ -45,13 +47,33 @@ grub_children_iterate (char *devpath,
   if (grub_ieee1275_child (dev, &child))
     return grub_error (GRUB_ERR_BAD_DEVICE, "Device has no children");
 
+  childtype = grub_malloc (IEEE1275_MAX_PROP_LEN);
+  if (!childtype)
+    return grub_errno;
+  childpath = grub_malloc (IEEE1275_MAX_PATH_LEN);
+  if (!childpath)
+    {
+      grub_free (childtype);
+      return grub_errno;
+    }
+  childname = grub_malloc (IEEE1275_MAX_PROP_LEN);
+  if (!childname)
+    {
+      grub_free (childpath);
+      grub_free (childtype);
+      return grub_errno;
+    }
+  fullname = grub_malloc (IEEE1275_MAX_PATH_LEN);
+  if (!fullname)
+    {
+      grub_free (childname);
+      grub_free (childpath);
+      grub_free (childtype);
+      return grub_errno;
+    }
+
   do
     {
-      /* XXX: Don't use hardcoded path lengths.  */
-      char childtype[64];
-      char childpath[64];
-      char childname[64];
-      char fullname[64];
       struct grub_ieee1275_devalias alias;
       grub_ssize_t actual;
 
@@ -76,6 +98,11 @@ grub_children_iterate (char *devpath,
     }
   while (grub_ieee1275_peer (child, &child));
 
+  grub_free (fullname);
+  grub_free (childname);
+  grub_free (childpath);
+  grub_free (childtype);
+
   return 0;
 }
 
@@ -85,12 +112,22 @@ grub_err_t
 grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t aliases;
-  char aliasname[32];
+  char *aliasname, *devtype;
   grub_ssize_t actual;
   struct grub_ieee1275_devalias alias;
 
   if (grub_ieee1275_finddevice ("/aliases", &aliases))
     return -1;
+
+  aliasname = grub_malloc (IEEE1275_MAX_PROP_LEN);
+  if (!aliasname)
+    return grub_errno;
+  devtype = grub_malloc (IEEE1275_MAX_PROP_LEN);
+  if (!devtype)
+    {
+      grub_free (aliasname);
+      return grub_errno;
+    }
 
   /* Find the first property.  */
   aliasname[0] = '\0';
@@ -100,8 +137,6 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
       grub_ieee1275_phandle_t dev;
       grub_ssize_t pathlen;
       char *devpath;
-      /* XXX: This should be large enough for any possible case.  */
-      char devtype[64];
 
       grub_dprintf ("devalias", "devalias name = %s\n", aliasname);
 
@@ -111,9 +146,17 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
       if (!grub_strcmp (aliasname, "name"))
 	continue;
 
+      /* Sun's OpenBoot often doesn't zero terminate the device alias
+	 strings, so we will add a NULL byte at the end explicitly.  */
+      pathlen += 1;
+
       devpath = grub_malloc (pathlen);
       if (! devpath)
-	return grub_errno;
+	{
+	  grub_free (devtype);
+	  grub_free (aliasname);
+	  return grub_errno;
+	}
 
       if (grub_ieee1275_get_property (aliases, aliasname, devpath, pathlen,
 				      &actual))
@@ -121,6 +164,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	  grub_dprintf ("devalias", "get_property (%s) failed\n", aliasname);
 	  goto nextprop;
 	}
+      devpath [actual] = '\0';
 
       if (grub_ieee1275_finddevice (devpath, &dev))
 	{
@@ -144,6 +188,8 @@ nextprop:
       grub_free (devpath);
     }
 
+  grub_free (devtype);
+  grub_free (aliasname);
   return 0;
 }
 

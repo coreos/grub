@@ -3,6 +3,13 @@
 	* kern/ieee1275/mmap.c (grub_machine_mmap_iterate): If size_cells
 	is larger than address_cells, use that value for address_cells too.
 
+	* include/grub/ieee1275/ieee1275.h (IEEE1275_MAX_PROP_LEN,
+	IEEE1275_MAX_PATH_LEN): Define.
+	* kern/ieee1275/openfw.c (grub_children_iterate): Dynamically
+	allocate 'childtype', 'childpath', 'childname', and 'fullname'.
+	(grub_devalias_iterate): Dynamically allocate 'aliasname' and
+	'devtype'.  Explicitly NULL terminate devalias expansion.
+
 2009-04-19  Vladimir Serbinenko <phcoder@gmail.com>
 
 	Correct GPT definition
