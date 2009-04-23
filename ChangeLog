@@ -1,3 +1,7 @@
+2009-04-23  David S. Miller  <davem@davemloft.net>
+
+	* kern/sparc64/ieee1275/openfw.c: Unused, delete.
+
 2009-04-22  David S. Miller  <davem@davemloft.net>
 
 	* kern/ieee1275/mmap.c (grub_machine_mmap_iterate): If size_cells
