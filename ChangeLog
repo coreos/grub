@@ -9,6 +9,18 @@
 	* disk/fs_uuid.c (grub_fs_uuid_close): Call grub_disk_close()
 	on disk->data.
 
+	* disk/ieee1275/nand.c (grub_nand_iterate): Return
+	grub_devalias_iterate() result instead of unconditional 0.
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Likewise.
+	Also, capture hook return value, either directly or via
+	grub_children_iterate(), and propagate to caller.
+	* include/grub/ieee1275/ieee1275.h (grub_devalias_iterate,
+	grub_children_iterate): Return value is now 'int' instead of
+	'grub_err_t'.
+	* kern/ieee1275/openfw.c (grub_children_iterate): Fix to behave
+	like a proper iterator, stopping when hooks return non-zero.
+	(grub_devalias_iterate): Likewise.
+
 2009-04-23  David S. Miller  <davem@davemloft.net>
 
 	* kern/sparc64/ieee1275/openfw.c: Unused, delete.

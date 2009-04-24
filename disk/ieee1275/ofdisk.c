@@ -77,6 +77,8 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 
   int dev_iterate (struct grub_ieee1275_devalias *alias)
     {
+      int ret = 0;
+
       grub_dprintf ("disk", "disk name = %s\n", alias->name);
 
       if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_OFDISK_SDCARD_ONLY))
@@ -105,17 +107,16 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 	}
 
       if (! grub_strcmp (alias->type, "block"))
-	hook (alias->name);
+	ret = hook (alias->name);
       else if ((! grub_strcmp (alias->type, "scsi"))
 	       || (! grub_strcmp (alias->type, "ide"))
 	       || (! grub_strcmp (alias->type, "ata")))
 	/* Search for block-type children of these bus controllers.  */
-	grub_children_iterate (alias->name, dev_iterate);
-      return 0;
+	ret = grub_children_iterate (alias->name, dev_iterate);
+      return ret;
     }
 
-  grub_devalias_iterate (dev_iterate);
-  return 0;
+  return grub_devalias_iterate (dev_iterate);
 }
 
 static grub_err_t

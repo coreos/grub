@@ -166,9 +166,9 @@ int EXPORT_FUNC(grub_ieee1275_set_color) (grub_ieee1275_ihandle_t ihandle,
 int EXPORT_FUNC(grub_ieee1275_milliseconds) (grub_uint32_t *msecs);
 
 
-grub_err_t EXPORT_FUNC(grub_devalias_iterate)
+int EXPORT_FUNC(grub_devalias_iterate)
      (int (*hook) (struct grub_ieee1275_devalias *alias));
-grub_err_t EXPORT_FUNC(grub_children_iterate) (char *devpath,
+int EXPORT_FUNC(grub_children_iterate) (char *devpath,
      int (*hook) (struct grub_ieee1275_devalias *alias));
 grub_err_t EXPORT_FUNC(grub_machine_mmap_iterate)
      (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t, grub_uint64_t, grub_uint32_t));

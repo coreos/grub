@@ -44,8 +44,7 @@ grub_nand_iterate (int (*hook) (const char *name))
       return 0;
     }
 
-  grub_devalias_iterate (dev_iterate);
-  return 0;
+  return grub_devalias_iterate (dev_iterate);
 }
 
 static grub_err_t

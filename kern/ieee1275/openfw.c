@@ -32,36 +32,37 @@ enum grub_ieee1275_parse_type
 };
 
 /* Walk children of 'devpath', calling hook for each.  */
-grub_err_t
+int
 grub_children_iterate (char *devpath,
-		  int (*hook) (struct grub_ieee1275_devalias *alias))
+		       int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t dev;
   grub_ieee1275_phandle_t child;
   char *childtype, *childpath;
   char *childname, *fullname;
+  int ret = 0;
 
   if (grub_ieee1275_finddevice (devpath, &dev))
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "Unknown device");
+    return 0;
 
   if (grub_ieee1275_child (dev, &child))
-    return grub_error (GRUB_ERR_BAD_DEVICE, "Device has no children");
+    return 0;
 
   childtype = grub_malloc (IEEE1275_MAX_PROP_LEN);
   if (!childtype)
-    return grub_errno;
+    return 0;
   childpath = grub_malloc (IEEE1275_MAX_PATH_LEN);
   if (!childpath)
     {
       grub_free (childtype);
-      return grub_errno;
+      return 0;
     }
   childname = grub_malloc (IEEE1275_MAX_PROP_LEN);
   if (!childname)
     {
       grub_free (childpath);
       grub_free (childtype);
-      return grub_errno;
+      return 0;
     }
   fullname = grub_malloc (IEEE1275_MAX_PATH_LEN);
   if (!fullname)
@@ -69,7 +70,7 @@ grub_children_iterate (char *devpath,
       grub_free (childname);
       grub_free (childpath);
       grub_free (childtype);
-      return grub_errno;
+      return 0;
     }
 
   do
@@ -94,7 +95,9 @@ grub_children_iterate (char *devpath,
       alias.type = childtype;
       alias.path = childpath;
       alias.name = fullname;
-      hook (&alias);
+      ret = hook (&alias);
+      if (ret)
+	break;
     }
   while (grub_ieee1275_peer (child, &child));
 
@@ -103,30 +106,31 @@ grub_children_iterate (char *devpath,
   grub_free (childpath);
   grub_free (childtype);
 
-  return 0;
+  return ret;
 }
 
 /* Iterate through all device aliases.  This function can be used to
    find a device of a specific type.  */
-grub_err_t
+int
 grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 {
   grub_ieee1275_phandle_t aliases;
   char *aliasname, *devtype;
   grub_ssize_t actual;
   struct grub_ieee1275_devalias alias;
+  int ret = 0;
 
   if (grub_ieee1275_finddevice ("/aliases", &aliases))
-    return -1;
+    return 0;
 
   aliasname = grub_malloc (IEEE1275_MAX_PROP_LEN);
   if (!aliasname)
-    return grub_errno;
+    return 0;
   devtype = grub_malloc (IEEE1275_MAX_PROP_LEN);
   if (!devtype)
     {
       grub_free (aliasname);
-      return grub_errno;
+      return 0;
     }
 
   /* Find the first property.  */
@@ -155,7 +159,7 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
 	{
 	  grub_free (devtype);
 	  grub_free (aliasname);
-	  return grub_errno;
+	  return 0;
 	}
 
       if (grub_ieee1275_get_property (aliases, aliasname, devpath, pathlen,
@@ -182,15 +186,17 @@ grub_devalias_iterate (int (*hook) (struct grub_ieee1275_devalias *alias))
       alias.name = aliasname;
       alias.path = devpath;
       alias.type = devtype;
-      hook (&alias);
+      ret = hook (&alias);
 
 nextprop:
       grub_free (devpath);
+      if (ret)
+	break;
     }
 
   grub_free (devtype);
   grub_free (aliasname);
-  return 0;
+  return ret;
 }
 
 /* Call the "map" method of /chosen/mmu.  */
