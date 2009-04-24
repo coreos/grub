@@ -1,3 +1,11 @@
+2009-04-24  David S. Miller  <davem@davemloft.net>
+
+	Avoiding openning same device multiple times in device iterator.
+
+	* kern/device.c: (grub_device_iterate): Define struct part_ent,
+	and use it to build a list of partitions in interate_disk() and
+	iterate_partition().
+
 2009-04-23  David S. Miller  <davem@davemloft.net>
 
 	* kern/sparc64/ieee1275/openfw.c: Unused, delete.
