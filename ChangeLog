@@ -6,6 +6,9 @@
 	and use it to build a list of partitions in interate_disk() and
 	iterate_partition().
 
+	* disk/fs_uuid.c (grub_fs_uuid_close): Call grub_disk_close()
+	on disk->data.
+
 2009-04-23  David S. Miller  <davem@davemloft.net>
 
 	* kern/sparc64/ieee1275/openfw.c: Unused, delete.

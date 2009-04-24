@@ -97,6 +97,8 @@ grub_fs_uuid_open (const char *name, grub_disk_t disk)
 static void
 grub_fs_uuid_close (grub_disk_t disk __attribute((unused)))
 {
+  grub_disk_t parent = disk->data;
+  grub_disk_close (parent);
 }
 
 static grub_err_t
