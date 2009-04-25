@@ -63,9 +63,13 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
       for (i = 0; i < 4; i++)
 	mbr.entries[i].flag = 0x0;
       mbr.entries[index].flag = 0x80;
+      grub_printf ("Partition %d is active now. \n", index);
     }
   else
-    mbr.entries[index].flag = 0x0;
+    {
+      mbr.entries[index].flag = 0x0;
+      grub_printf ("Cleared active flag on %d. \n", index);
+    }
 
    /* Write the MBR.  */
   grub_disk_write (dev->disk, 0, 0, sizeof (mbr), (char *) &mbr);
@@ -123,6 +127,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
     }
 
   mbr.entries[index].type = type;
+  grub_printf ("Setting partition type to 0x%x\n", type);
 
    /* Write the parttable.  */
   grub_disk_write (dev->disk, part->offset, 0, 

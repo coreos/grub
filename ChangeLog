@@ -1,3 +1,20 @@
+2009-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Parttool autoloading and improvements
+
+	* Makefile.in (pkglib_DATA): add parttool.lst 
+	(parttool.lst): new target
+	* genmk.rb: generate parttool-*
+	(CLEANFILES): add #{parttool}
+	(PARTTOOLFILES): new variable
+	* genparttoollist.sh: new file
+	* parttool/pcpart.c (grub_pcpart_boot): more feedback 
+	(grub_pcpart_type): likewise
+	* commands/parttool.c (helpmsg): new variable
+	(grub_cmd_parttool): output help if not enough arguments are supplied
+	autoload modules
+	(GRUB_MOD_INIT(parttool)): use helpmsg
+
 2009-04-24  David S. Miller  <davem@davemloft.net>
 
 	Avoiding openning same device multiple times in device iterator.
