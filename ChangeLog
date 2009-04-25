@@ -1,5 +1,11 @@
 2009-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Test command
+
+	* commands/test.c: rewritten to use bash-like test
+
+2009-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Parttool autoloading and improvements
 
 	* Makefile.in (pkglib_DATA): add parttool.lst 
