@@ -1,3 +1,8 @@
+2009-04-26  Pavel Roskin  <proski@gnu.org>
+
+	* Makefile.in: Don't install empty manual pages if help2man is
+	missing.  Use help2man option for output, not shell redirection.
+
 2009-04-26  David S. Miller  <davem@davemloft.net>
 
 	* util/grub-mkdevicemap.c (make_device_map): Add missing
