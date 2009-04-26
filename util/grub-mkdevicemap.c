@@ -42,9 +42,9 @@ make_device_map (const char *device_map, int floppy_disks)
   int num_fd = 0;
   FILE *fp;
 
-  auto int process_device (const char *name, int is_floppy);
+  auto int NESTED_FUNC_ATTR process_device (const char *name, int is_floppy);
 
-  int process_device (const char *name, int is_floppy)
+  int NESTED_FUNC_ATTR process_device (const char *name, int is_floppy)
   {
     grub_util_emit_devicemap_entry (fp, (char *) name,
 				    is_floppy, &num_fd, &num_hd);

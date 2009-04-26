@@ -1,3 +1,8 @@
+2009-04-26  David S. Miller  <davem@davemloft.net>
+
+	* util/grub-mkdevicemap.c (make_device_map): Add missing
+	NESTED_FUNC_ATTR to process_device().
+
 2009-04-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Test command
