@@ -1,3 +1,12 @@
+2009-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Bug and warning fixes
+
+	* include/grub/i386/pc/init.h (grub_stop_floppy): added missing 
+	declaration
+	* commands/test.c (test_parse): fixed bug with file tests and corrected
+	declaration of find_file
+
 2009-04-26  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in: Don't install empty manual pages if help2man is

@@ -55,22 +55,23 @@ test_parse (char **args, int *argn, int argc)
   }
 
   /* Check if file exists and fetch its information. */
-  void get_fileinfo (char *pathname)
+  void get_fileinfo (char *path)
   {
-    char *filename, *path;
+    char *filename, *pathname;
     char *device_name;
     grub_fs_t fs;
     grub_device_t dev;
 
     /* A hook for iterating directories. */
     auto int find_file (const char *cur_filename, 
-			struct grub_dirhook_info info);
-    int find_file (const char *cur_filename, struct grub_dirhook_info info)
+			const struct grub_dirhook_info *info);
+    int find_file (const char *cur_filename, 
+		   const struct grub_dirhook_info *info)
     {
-      if ((info.case_insensitive ? grub_strcasecmp (cur_filename, filename)
+      if ((info->case_insensitive ? grub_strcasecmp (cur_filename, filename)
 	   : grub_strcmp (cur_filename, filename)) == 0)
 	{
-	  file_info = info;
+	  file_info = *info;
 	  file_exists = 1;
 	  return 1;
 	}
@@ -78,7 +79,7 @@ test_parse (char **args, int *argn, int argc)
     }
     
     file_exists = 0;
-    device_name = grub_file_get_device_name (pathname);
+    device_name = grub_file_get_device_name (path);
     dev = grub_device_open (device_name);
     if (! dev)
       {
@@ -87,11 +88,11 @@ test_parse (char **args, int *argn, int argc)
       }
 
     fs = grub_fs_probe (dev);
-    path = grub_strchr (pathname, ')');
-    if (! path)
-      path = pathname;
+    pathname = grub_strchr (path, ')');
+    if (! pathname)
+      pathname = path;
     else
-      path++;
+      pathname++;
     
     /* Remove trailing '/'. */
     while (*pathname && pathname[grub_strlen (pathname) - 1] == '/')
