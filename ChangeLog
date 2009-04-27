@@ -1,3 +1,17 @@
+2009-04-27  Vladimir Serbinenko <phcoder@gmail.com>
+
+	Preboot hooks support
+
+	* commands/boot.c (struct grub_preboot_t): new declaration
+	(preboots_head): new variable
+	(preboots_tail): likewise
+	(grub_loader_register_preboot_hook): new function
+	(grub_loader_unregister_preboot_hook): likewise
+	(grub_loader_set): launch preboot hooks
+	* include/grub/loader.h (grub_loader_preboot_hook_prio_t): new type
+	(grub_loader_register_preboot_hook): new declaration
+	(grub_loader_unregister_preboot_hook): likewise
+
 2009-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Warning fix

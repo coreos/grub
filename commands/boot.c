@@ -22,17 +22,91 @@
 #include <grub/misc.h>
 #include <grub/loader.h>
 #include <grub/kernel.h>
+#include <grub/mm.h>
 
 static grub_err_t (*grub_loader_boot_func) (void);
 static grub_err_t (*grub_loader_unload_func) (void);
 static int grub_loader_noreturn;
 
+struct grub_preboot_t
+{
+  grub_err_t (*preboot_func) (int);
+  grub_err_t (*preboot_rest_func) (void);
+  grub_loader_preboot_hook_prio_t prio;
+  struct grub_preboot_t *next;
+  struct grub_preboot_t *prev;
+};
+
 static int grub_loader_loaded;
+static struct grub_preboot_t *preboots_head = 0, 
+  *preboots_tail = 0;
 
 int
 grub_loader_is_loaded (void)
 {
   return grub_loader_loaded;
+}
+
+/* Register a preboot hook. */
+void *
+grub_loader_register_preboot_hook (grub_err_t (*preboot_func) (int noreturn),
+				   grub_err_t (*preboot_rest_func) (void),
+				   grub_loader_preboot_hook_prio_t prio)
+{
+  struct grub_preboot_t *cur, *new_preboot;
+
+  if (! preboot_func && ! preboot_rest_func)
+    return 0;
+
+  new_preboot = (struct grub_preboot_t *) 
+    grub_malloc (sizeof (struct grub_preboot_t));
+  if (! new_preboot)
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, "hook not added");
+      return 0;
+    }
+
+  new_preboot->preboot_func = preboot_func;
+  new_preboot->preboot_rest_func = preboot_rest_func;
+  new_preboot->prio = prio;
+
+  for (cur = preboots_head; cur && cur->prio > prio; cur = cur->next);
+
+  if (cur)
+    {
+      new_preboot->next = cur;
+      new_preboot->prev = cur->prev;
+      cur->prev = new_preboot;
+    }
+  else
+    {
+      new_preboot->next = 0;
+      new_preboot->prev = preboots_tail;
+      preboots_tail = new_preboot;
+    }
+  if (new_preboot->prev)
+    new_preboot->prev->next = new_preboot;
+  else
+    preboots_head = new_preboot;
+
+  return new_preboot;
+}
+
+void 
+grub_loader_unregister_preboot_hook (void *hnd)
+{
+  struct grub_preboot_t *preb = hnd;
+
+  if (preb->next)
+    preb->next->prev = preb->prev;
+  else
+    preboots_tail = preb->prev;
+  if (preb->prev)
+    preb->prev->next = preb->next;
+  else
+    preboots_head = preb->next;
+
+  grub_free (preb);
 }
 
 void
@@ -65,15 +139,35 @@ grub_loader_unset(void)
 grub_err_t
 grub_loader_boot (void)
 {
+  grub_err_t err = GRUB_ERR_NONE;
+  struct grub_preboot_t *cur;
+
   if (! grub_loader_loaded)
     return grub_error (GRUB_ERR_NO_KERNEL, "no loaded kernel");
 
   if (grub_loader_noreturn)
     grub_machine_fini ();
-  
-  return (grub_loader_boot_func) ();
-}
 
+  for (cur = preboots_head; cur; cur = cur->next)
+    {
+      err = cur->preboot_func (grub_loader_noreturn);
+      if (err)
+	{
+	  for (cur = cur->prev; cur; cur = cur->prev)
+	    cur->preboot_rest_func ();
+	  return err;
+	}
+    }
+  err = (grub_loader_boot_func) ();
+
+  for (cur = preboots_tail; cur; cur = cur->prev)
+    if (! err) 
+      err = cur->preboot_rest_func ();
+    else
+      cur->preboot_rest_func ();
+
+  return err;
+}
 
 /* boot */
 static grub_err_t
