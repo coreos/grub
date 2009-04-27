@@ -1,3 +1,10 @@
+2009-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Warning fix
+
+	* disk/scsi.c (grub_scsi_open): added missing cast when 
+	calling grub_dprintf
+
 2009-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Bug and warning fixes
