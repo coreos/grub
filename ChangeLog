@@ -2,7 +2,7 @@
 
 	* disk/fs_uuid.c (grub_fs_uuid_open): Use parent->data for dev,
 	not disk.  Adjust all dependencies.
-	(grub_device_close): Use grub_device_close(), not
+	(grub_fs_uuid_close): Use grub_device_close(), not
 	grub_disk_close().
 
 	* disk/fs_uuid.c (grub_fs_uuid_open): Allocate memory to copy
