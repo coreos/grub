@@ -99,7 +99,7 @@ grub_fs_uuid_open (const char *name, grub_disk_t disk)
   else
     disk->partition = NULL;
 
-  disk->data = dev->disk;
+  disk->data = dev;
 
   return GRUB_ERR_NONE;
 }
@@ -107,24 +107,24 @@ grub_fs_uuid_open (const char *name, grub_disk_t disk)
 static void
 grub_fs_uuid_close (grub_disk_t disk __attribute((unused)))
 {
-  grub_disk_t parent = disk->data;
-  grub_disk_close (parent);
+  grub_device_t parent = disk->data;
+  grub_device_close (parent);
 }
 
 static grub_err_t
 grub_fs_uuid_read (grub_disk_t disk, grub_disk_addr_t sector,
 		   grub_size_t size, char *buf)
 {
-  grub_disk_t parent = disk->data;
-  return parent->dev->read (parent, sector, size, buf);
+  grub_device_t parent = disk->data;
+  return parent->disk->dev->read (parent->disk, sector, size, buf);
 }
 
 static grub_err_t
 grub_fs_uuid_write (grub_disk_t disk, grub_disk_addr_t sector,
 		    grub_size_t size, const char *buf)
 {
-  grub_disk_t parent = disk->data;
-  return parent->dev->write (parent, sector, size, buf);
+  grub_device_t parent = disk->data;
+  return parent->disk->dev->write (parent->disk, sector, size, buf);
 }
 
 static struct grub_disk_dev grub_fs_uuid_dev =
