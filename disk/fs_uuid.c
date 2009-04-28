@@ -25,6 +25,7 @@
 #include <grub/types.h>
 
 #include <grub/fs.h>
+#include <grub/partition.h>
 
 static grub_device_t
 search_fs_uuid (const char *key, unsigned long *count)
@@ -88,7 +89,16 @@ grub_fs_uuid_open (const char *name, grub_disk_t disk)
 
   disk->total_sectors = dev->disk->total_sectors;
   disk->has_partitions = 0;
-  disk->partition = dev->disk->partition;
+  if (dev->disk->partition)
+    {
+      disk->partition = grub_malloc (sizeof (*disk->partition));
+      if (disk->partition)
+	grub_memcpy (disk->partition, dev->disk->partition,
+		     sizeof (*disk->partition));
+    }
+  else
+    disk->partition = NULL;
+
   disk->data = dev->disk;
 
   return GRUB_ERR_NONE;

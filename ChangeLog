@@ -1,3 +1,9 @@
+2009-04-28  Pavel Roskin  <proski@gnu.org>
+
+	* disk/fs_uuid.c (grub_fs_uuid_open): Allocate memory to copy
+	parent's partition, don't copy it by reference, as it gets freed
+	on close.
+
 2009-04-27  Vladimir Serbinenko <phcoder@gmail.com>
 
 	Preboot hooks support
