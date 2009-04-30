@@ -1,3 +1,8 @@
+2009-04-30  David S. Miller  <davem@davemloft.net>
+
+	* kern/sparc64/ieee1275/init.c (grub_machine_set_prefix): If
+	lettered partition specifier is found, convert to numbered.
+
 2009-04-29  David S. Miller  <davem@davemloft.net>
 
 	* include/grub/powerpc/ieee1275/memory.h: Include ieee1275.h.

@@ -64,8 +64,8 @@ grub_machine_set_prefix (void)
   if (grub_prefix[0] != '(')
     {
       char bootpath[IEEE1275_MAX_PATH_LEN];
+      char *prefix, *path, *colon;
       grub_ssize_t actual;
-      char *prefix, *path;
 
       if (grub_ieee1275_get_property (grub_ieee1275_chosen, "bootpath",
 				      &bootpath, sizeof (bootpath), &actual))
@@ -77,6 +77,17 @@ grub_machine_set_prefix (void)
 	}
 
       /* Transform an OF device path to a GRUB path.  */
+      colon = grub_strchr (bootpath, ':');
+      if (colon)
+	{
+	  char *part = colon + 1;
+
+	  /* Consistently provide numbered partitions to GRUB.
+	     OpenBOOT traditionally uses alphabetical partition
+	     specifiers.  */
+	  if (part[0] >= 'a' && part[0] <= 'z')
+	    part[0] = '1' + (part[0] - 'a');
+	}
       prefix = grub_ieee1275_encode_devname (bootpath);
 
       path = grub_malloc (grub_strlen (grub_prefix)
