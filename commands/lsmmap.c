@@ -30,7 +30,7 @@ grub_cmd_lsmmap (grub_command_t cmd __attribute__ ((unused)),
   int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
     {
       grub_printf ("base_addr = 0x%llx, length = 0x%llx, type = 0x%x\n",
-		   addr, size, type);
+		   (long long) addr, (long long) size, type);
       return 0;
     }
   grub_machine_mmap_iterate (hook);

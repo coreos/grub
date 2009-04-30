@@ -155,7 +155,8 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       goto fail;
     }
 
-  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath, (void *) dev_ihandle);
+  grub_dprintf ("disk", "Opened `%s' as handle %p.\n", op->devpath,
+		(void *) (unsigned long) dev_ihandle);
 
   if (grub_ieee1275_finddevice (op->devpath, &dev))
     {
@@ -185,7 +186,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
 
   /* XXX: Read this, somehow.  */
   disk->has_partitions = 1;
-  disk->data = (void *) dev_ihandle;
+  disk->data = (void *) (unsigned long) dev_ihandle;
   return 0;
 
  fail:
@@ -199,7 +200,7 @@ grub_ofdisk_close (grub_disk_t disk)
 {
   grub_dprintf ("disk", "Closing handle %p.\n",
 		(void *) disk->data);
-  grub_ieee1275_close ((grub_ieee1275_ihandle_t) disk->data);
+  grub_ieee1275_close ((grub_ieee1275_ihandle_t) (unsigned long) disk->data);
 }
 
 static grub_err_t
@@ -211,21 +212,21 @@ grub_ofdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
   grub_dprintf ("disk",
 		"Reading handle %p: sector 0x%llx, size 0x%lx, buf %p.\n",
-		(void *) disk->data, sector, (long) size, buf);
+		(void *) disk->data, (long long) sector, (long) size, buf);
 
   pos = sector * 512UL;
 
-  grub_ieee1275_seek ((grub_ieee1275_ihandle_t) disk->data, (int) (pos >> 32),
-		      (int) pos & 0xFFFFFFFFUL, &status);
+  grub_ieee1275_seek ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
+		      (int) (pos >> 32), (int) pos & 0xFFFFFFFFUL, &status);
   if (status < 0)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       "Seek error, can't seek block %llu",
-		       sector);
-  grub_ieee1275_read ((grub_ieee1275_ihandle_t) disk->data, buf,
-		      size * 512UL, &actual);
+		       (long long) sector);
+  grub_ieee1275_read ((grub_ieee1275_ihandle_t) (unsigned long) disk->data,
+		      buf, size * 512UL, &actual);
   if (actual != actual)
     return grub_error (GRUB_ERR_READ_ERROR, "Read error on block: %llu",
-		       sector);
+		       (long long) sector);
     
   return 0;
 }

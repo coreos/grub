@@ -238,7 +238,8 @@ grub_claimmap (grub_addr_t addr, grub_size_t size)
   if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_REAL_MODE)
       && grub_map (addr, addr, size, 0x00))
     {
-      grub_printf ("map failed: address 0x%x, size 0x%x\n", addr, size);
+      grub_printf ("map failed: address 0x%llx, size 0x%llx\n",
+		   (long long) addr, (long long) size);
       grub_ieee1275_release (addr, size);
       return -1;
     }

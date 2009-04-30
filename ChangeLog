@@ -1,3 +1,12 @@
+2009-04-29  David S. Miller  <davem@davemloft.net>
+
+	* commands/lsmmap.c (grub_cmd_lsmmap): Add casts to avoid printf
+	warnings.
+	* kern/ieee1275/openfw.c (grub_claimmap): Likewise.
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_open, grub_ofdisk_close,
+	grub_ofdisk_read): Likewise, and deal similarly with the fact that
+	ihandles have a 32-bit type but need to be stored in a "void *".
+
 2009-04-28  Pavel Roskin  <proski@gnu.org>
 
 	* disk/fs_uuid.c (grub_fs_uuid_open): Use parent->data for dev,
