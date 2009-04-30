@@ -1,5 +1,7 @@
 2009-04-29  David S. Miller  <davem@davemloft.net>
 
+	* normal/command.c: Add missing newline at end of file.
+
 	* commands/lsmmap.c (grub_cmd_lsmmap): Add casts to avoid printf
 	warnings.
 	* kern/ieee1275/openfw.c (grub_claimmap): Likewise.
