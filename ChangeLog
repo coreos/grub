@@ -1,5 +1,9 @@
 2009-04-30  David S. Miller  <davem@davemloft.net>
 
+	* util/hostdisk.c (convert_system_partition_to_system_disk):
+	Handle virtual disk devices named /dev/vdiskX as found on sparc
+	and powerpc.
+
 	* kern/sparc64/ieee1275/init.c (grub_machine_set_prefix): If
 	lettered partition specifier is found, convert to numbered.
 

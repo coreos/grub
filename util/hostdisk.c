@@ -767,6 +767,13 @@ convert_system_partition_to_system_disk (const char *os_dev)
 	}
       
       /* If this is an IDE, SCSI or Virtio disk.  */
+      if (strncmp ("vdisk", p, 5) == 0
+	  && p[5] >= 'a' && p[5] <= 'z')
+	{
+	  /* /dev/vdisk[a-z][0-9]* */
+	  p[6] = '\0';
+	  return path;
+	}
       if ((strncmp ("hd", p, 2) == 0
 	   || strncmp ("vd", p, 2) == 0
 	   || strncmp ("sd", p, 2) == 0)
