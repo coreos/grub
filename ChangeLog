@@ -1,5 +1,8 @@
 2009-04-29  David S. Miller  <davem@davemloft.net>
 
+	* include/grub/powerpc/ieee1275/memory.h: Include ieee1275.h.
+	* include/grub/sparc64/ieee1275/memory.h: Likewise.
+
 	* normal/command.c: Add missing newline at end of file.
 
 	* commands/lsmmap.c (grub_cmd_lsmmap): Add casts to avoid printf

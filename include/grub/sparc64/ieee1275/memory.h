@@ -19,6 +19,8 @@
 #ifndef GRUB_MEMORY_MACHINE_HEADER
 #define GRUB_MEMORY_MACHINE_HEADER	1
 
+#include <grub/ieee1275/ieee1275.h>
+
 #define GRUB_MACHINE_MEMORY_AVAILABLE		1
 
 #endif
