@@ -1,5 +1,9 @@
 2009-04-30  David S. Miller  <davem@davemloft.net>
 
+	* util/hostdisk.c (device_is_wholedisk): New function.
+	(grub_util_biosdisk_get_grub_dev): Shortcut when hdg.start is
+	zero only if device_is_wholedisk() returns true.
+
 	* util/hostdisk.c (convert_system_partition_to_system_disk):
 	Handle virtual disk devices named /dev/vdiskX as found on sparc
 	and powerpc.

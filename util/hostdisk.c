@@ -834,6 +834,16 @@ convert_system_partition_to_system_disk (const char *os_dev)
 }
 
 static int
+device_is_wholedisk (const char *os_dev)
+{
+  int len = strlen (os_dev);
+
+  if (os_dev[len - 1] < '0' || os_dev[len - 1] > '9')
+    return 1;
+  return 0;
+}
+
+static int
 find_system_device (const char *os_dev)
 {
   int i;
@@ -968,7 +978,7 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     grub_util_info ("%s starts from %lu", os_dev, hdg.start);
     
-    if (hdg.start == 0)
+    if (hdg.start == 0 && device_is_wholedisk (os_dev))
       return name;
 
     grub_util_info ("opening the device %s", name);
