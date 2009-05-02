@@ -211,7 +211,7 @@ if test -n "$tmp"; then
 fi
 
 # Copy the GRUB images to the GRUB directory.
-for file in ${grubdir}/*.mod ${grubdir}/*.lst ${grubdir}/*.img; do
+for file in ${grubdir}/*.mod ${grubdir}/*.lst ${grubdir}/*.img ${grubdir}/efiemu??.o; do
     if test -f $file && [ "`basename $file`" != menu.lst ]; then
 	rm -f $file || exit 1
     fi
@@ -220,7 +220,7 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
     cp -f $file ${grubdir} || exit 1
 done
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
-    for file in ${pkglibdir}/*.img; do
+    for file in ${pkglibdir}/*.img ${pkglibdir}/efiemu??.o; do
         cp -f $file ${grubdir} || exit 1
     done
 fi

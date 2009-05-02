@@ -1,3 +1,44 @@
+2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Efiemu
+ 
+	* conf/i386-pc.rmk: new modules efiemu, efiemu_acpi, efiemu_pnvram,
+	_linux_efi, linux_efi. 
+	new files in grub-emu 
+	new targets efiemu32.o and efiemu64.o
+	* loader/linux_normal_efiemu.c: likewise
+	* loader/i386/efi/linux.c: added preliminary efiemu support
+	* util/i386/pc/grub-install.in: add efiemu??.o to the list of 
+	files to copy
+	* include/grub/autoefi.h: new file
+	* nclude/grub/i386/efiemu.h: likewise
+	* include/grub/i386/pc/efiemu.h: likewise
+	* include/grub/efi/api.h: add LL suffix when necessary
+	new definitions relating to tables
+	* include/grub/efiemu/efiemu.h: new file
+	* include/grub/efiemu/runtime.h: likewise
+	* efiemu/prepare.c: likewise
+	* efiemu/loadcore_common.c: likewise
+	* efiemu/loadcore64.c: likewise
+	* efiemu/runtime/efiemu.sh: likewise
+	* efiemu/runtime/efiemu.S: likewise
+	* efiemu/runtime/efiemu.c: likewise
+	* efiemu/runtime/config.h: likewise
+	* efiemu/prepare32.c: likewise
+	* efiemu/main.c: likewise
+	* efiemu/modules/pnvram.c: likewise
+	* efiemu/modules/i386: likewise
+	* efiemu/modules/i386/pc: likewise
+	* efiemu/modules/acpi.c: likewise
+	* efiemu/i386/pc/cfgtables.c: likewise
+	* efiemu/i386/loadcore64.c: likewise
+	* efiemu/i386/loadcore32.c: likewise
+	* efiemu/prepare64.c: likewise
+	* efiemu/loadcore.c: likewise
+	* efiemu/symbols.c: likewise
+	* efiemu/mm.c: likewise
+	* efiemu/loadcore32.c: likewise
+ 	
 2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
 
 	ACPI spoofing

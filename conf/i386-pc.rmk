@@ -185,7 +185,17 @@ pkglib_MODULES = biosdisk.mod chain.mod \
 	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
-	mmap.mod acpi.mod
+	efiemu.mod mmap.mod acpi.mod
+
+# For efiemu.mod.
+efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \
+		     efiemu/i386/loadcore64.c efiemu/i386/pc/cfgtables.c \
+		     efiemu/mm.c efiemu/loadcore_common.c efiemu/symbols.c \
+		     efiemu/loadcore32.c efiemu/loadcore64.c \
+		     efiemu/prepare32.c efiemu/prepare64.c efiemu/pnvram.c \
+		     efiemu/i386/coredetect.c
+efiemu_mod_CFLAGS = $(COMMON_CFLAGS) -Werror -Wall
+efiemu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For acpi.mod.
 acpi_mod_SOURCES = commands/acpi.c commands/i386/pc/acpi.c
@@ -369,6 +379,20 @@ ata_pthru_mod_LDFLAGS = $(COMMON_LDFLAGS)
 hdparm_mod_SOURCES = commands/hdparm.c lib/hexdump.c
 hdparm_mod_CFLAGS = $(COMMON_CFLAGS)
 hdparm_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+efiemu32.o: efiemu/runtime/efiemu.c
+	$(CC) -c -m32 -DELF32 -o $@ -Wall -Werror efiemu/runtime/efiemu.c -nostdlib -O2 -Iefiemu/runtime -Iinclude 
+efiemu64_c.o: efiemu/runtime/efiemu.c
+	$(CC) -c -m64 -DELF64 -o $@ -Wall -Werror efiemu/runtime/efiemu.c -nostdlib  -mcmodel=large -O2 -Iefiemu/runtime -Iinclude 
+
+efiemu64_s.o: efiemu/runtime/efiemu.S
+	$(CC) -c -m64 -DELF64 -o $@ -Wall -Werror efiemu/runtime/efiemu.S -nostdlib  -mcmodel=large -O2 -Iefiemu/runtime -Iinclude 
+
+efiemu64.o: efiemu64_c.o efiemu64_s.o
+	ld -melf_x86_64 -o $@ -r efiemu64_c.o efiemu64_s.o -nostdlib 
+
+CLEANFILES += efiemu32.o efiemu64.o efiemu64_c.o efiemu64_s.o
+lib_DATA += efiemu32.o efiemu64.o
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk
