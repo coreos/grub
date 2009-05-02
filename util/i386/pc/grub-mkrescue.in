@@ -118,6 +118,7 @@ mkdir -p ${aux_dir}/boot/grub
 
 cp ${input_dir}/*.mod \
   ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
+  ${input_dir}/handler.lst ${input_dir}/parttool.lst  \
   ${aux_dir}/boot/grub/
 
 modules="biosdisk `cat ${input_dir}/partmap.lst` ${modules}"

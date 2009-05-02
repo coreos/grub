@@ -1,3 +1,10 @@
+2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Added missing lst to grub-mkrescue
+
+	* util/i386/pc/grub-mkrescue.in: added ${input_dir}/handler.lst
+	and ${input_dir}/parttool.lst
+
 2009-04-30  David S. Miller  <davem@davemloft.net>
 
 	* util/hostdisk.c (device_is_wholedisk): New function.
