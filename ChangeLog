@@ -1,3 +1,140 @@
+2009-05-02  Bean  <bean123ch@gmail.com>
+
+	* conf/common.rmk (grub_script.tab.c): Change normal/parser.y to
+	script/sh/parser.y.
+	(pkglib_MODULES): Add normal.mod and sh.mod.
+	(normal_SOURCES): New variable.
+	(normal_mod_CFLAGS): Likewise.
+	(normal_mod_LDFLAGS): Likewise.
+	(sh_mod_SOURCES): Likewise.
+	(sh_mod_CFLAGS): Likewise.
+	(sh_mod_LDFLAGS): Likewise.
+
+	* conf/i386-pc.rmk (normal/lexer.c_DEPENDENCIES): Changed to
+	script/sh/lexer.c_DEPENDENCIES.
+	(kernel_img_SOURCES): Remove kern/rescue.c, and kern/reader.c,
+	kern/rescue_reader.c and kern/rescue_parser.c.
+	(kernel_img_HEADERS): Remove rescue.h, add reader.h.
+	(grub_emu_SOURCES): Change source files.
+	(pkglib_MODULES): Remove normal.mod.
+	(normal_SOURCES): Removed.
+	(normal_mod_CFLAGS): Likewise.
+	(normal_mod_LDFLAGS): Likewise.
+	* conf/i386-coreboot.rmk: Likewise.
+	* conf/i386-efi.rmk: Likewise.
+	* conf/i386-ieee1276.rmk: Likewise.
+	* conf/powerpc-ieee1275.rmk: Likewise.
+	* conf/sparc64-ieee1275.rmk: Likewise.
+	* conf/x86_64-efi.rmk: Likewise.
+
+	* include/grub/command.h (grub_command_execute): New inline function.
+
+	* include/grub/menu.h (grub_menu_entry): Removed commands field.
+
+	* include/grub/normal.h: Remove <grub/setjmp.h>.
+	(grub_fs_module_list): Moved to normal/autofs.c.
+	(grub_exit_env): Removed.
+	(grub_command_execute): Likewise.
+	(grub_normal_menu_addentry): Renamed to grub_menu_addentry, removed
+	parameter script.
+	(read_command_list): New function declaration.
+	(read_fs_list): Likewise.
+
+	* include/parser.h: Include <grub/reader.h>.
+	(grub_parser_split_cmdline): Change type of getline parameter.
+	(grub_parser): New structure.
+	(grub_parser_class): New variable.
+	(grub_parser_execute): New function declaration.
+	(grub_register_rescue_parser): Likewise.
+	(grub_parser_register): New inline function.
+	(grub_parser_unregister): Likewise.
+	(grub_parser_get_current): Likewise.
+	(grub_parser_set_current): Likewise.
+
+	* include/grub/reader.h: New file.
+	* kern/reader.c: Likewise.
+	* kern/rescue_parser.c: Likewise.
+	* kern/rescue_reader.c: Likewise.
+	* normal/autofs.c: Likewise.
+	* normal/dyncmd.c: Likewise.
+
+	* include/grub/rescue.h: Removed.
+	* normal/command.h: Likewise.
+
+	* include/grub/script.h: Moved to ...
+	* include/grub/script_sh.h: ... Moved here.
+	* normal/execute.c: Moved to ...
+	* script/sh/execute.c: ... Moved here.
+	* normal/function.c: Moved to ...
+	* script/sh/function.c: ... Moved here.
+	* normal/lexer.c: Moved to ...
+	* script/sh/lexer.c: ... Moved here.
+	* normal/parser.y: Moved to ...
+	* script/sh/parser.y: ... Moved here.
+	* normal/script.c: Moved to ...
+	* script/sh/script.c: ... Moved here.
+
+	* normal/main.c: Remove <grub/rescue.h> and <grub/script.h>, include
+	<grub/reader.h>.
+	(grub_exit_env): Removed.
+	(fs_module_list): Moved to normal/autofs.c.
+	(grub_file_getline): Don't handle comment here.
+	(free_menu): Skip removed field entry->commands.
+	(grub_normal_menu_addentry): Removed as grub_menu_entry, removed
+	script parameter.
+	(read_config_file): Removed nested parameter, change getline function.
+	(grub_enter_normal_mode): Removed.
+	(grub_dyncmd_dispatcher): Moved to normal/dyncmd.c.
+	(read_command_list): Likewise.
+	(autoload_fs_module): Moved to normal/autofs.c.
+	(read_fs_list): Likewise.
+	(reader_nested): New variable.
+	(grub_normal_execute): Run parser.sh to switch to sh parser.
+	(grub_cmd_rescue): Removed.
+	(cmd_normal): Removed.
+	(grub_cmd_normal): Unregister itself at the beginning. Don't register
+	rescue command.
+	(grub_cmdline_run): New function.
+	(grub_normal_reader_init): Likewise.
+	(grub_normal_read_line): Likewise.
+	(grub_env_write_pager): Likewise.
+	(cmdline): New variable.
+	(grub_normal_reader): Likewise.
+	(GRUB_MOD_INIT): Register normal reader and set as current, register
+	pager hook, register normal command with grub_register_command_prio,
+	so that it won't show up in command.lst.
+	(GRUB_MOD_FINI): Unregister normal reader, unhook pager, clear
+	grub_fs_autoload_hook.
+
+	* normal/menu.c: Remove <grub/script.h>, add <grub/command.h>.
+	(grub_menu_execute_entry): Replace grub_script_execute with
+	grub_parser_execute, change parameter to grub_command_execute.
+
+	* normal/menu_text.c: Remove <grub/script.h>.
+
+	* normal/menu_entry.c: Remove <grub/script.h>, add <grub/command.h>
+	and <grub/parser.h>.
+	(run): Change editor_getline to use new parser interface. Change
+	parameter to grub_command_execute.
+
+	* kern/main.c: Remove <grub/rescue.h>, include <grub/command.h>,
+	<grub/reader.h> and <grub/parser.h>.
+	(grub_load_normal_mode): Execute normal command.
+	(grub_main): Call grub_register_core_commands,
+	grub_register_rescue_parser and grub_register_rescue_reader, use
+	grub_reader_loop to enter input loop.
+
+	* kern/parser.c (grub_parser_spli_cmdline): Change type of getline
+	parameter.
+	(grub_parser_class): New variable.
+	(grub_parser_execute): New function.
+
+	* loader/i386/multiboot.c: Remove <grub/rescue.h>.
+	* loader/multiboot2.c: Likewise.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+
+	* util/grub-emu.c (read_command_list): New dummy function.
+
 2009-05-02  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/deviceiter.c (grub_util_iterate_devices): Increase max drive

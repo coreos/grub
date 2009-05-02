@@ -1,4 +1,4 @@
-/* script.h  */
+/* normal_parser.h  */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
@@ -17,8 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_SCRIPT_HEADER
-#define GRUB_SCRIPT_HEADER	1
+#ifndef GRUB_NORMAL_PARSER_HEADER
+#define GRUB_NORMAL_PARSER_HEADER	1
 
 #include <grub/types.h>
 #include <grub/err.h>
@@ -134,7 +134,7 @@ struct grub_lexer_param
 
   /* Function used by the lexer to get a new line when more input is
      expected, but not available.  */
-  grub_err_t (*getline) (char **);
+  grub_reader_getline_t getline;
 
   /* A reference counter.  If this is >0 it means that the parser
      expects more tokens and `getline' should be called to fetch more.
@@ -156,7 +156,7 @@ struct grub_lexer_param
   /* Points to the recording.  */
   char *recording;
 
-  /* index in the RECORDING.  */ 
+  /* index in the RECORDING.  */
   int recordpos;
 
   /* Size of RECORDING.  */
@@ -218,13 +218,13 @@ grub_script_arg_add (struct grub_parser_param *state,
 		     grub_script_arg_type_t type, char *str);
 
 struct grub_script *grub_script_parse (char *script,
-				       grub_err_t (*getline) (char **));
+				       grub_reader_getline_t getline);
 void grub_script_free (struct grub_script *script);
 struct grub_script *grub_script_create (struct grub_script_cmd *cmd,
 					struct grub_script_mem *mem);
 
 struct grub_lexer_param *grub_script_lexer_init (char *s,
-						 grub_err_t (*getline) (char **));
+						 grub_reader_getline_t getline);
 void grub_script_lexer_ref (struct grub_lexer_param *);
 void grub_script_lexer_deref (struct grub_lexer_param *);
 void grub_script_lexer_record_start (struct grub_lexer_param *);
@@ -232,7 +232,7 @@ char *grub_script_lexer_record_stop (struct grub_lexer_param *);
 
 /* Functions to track allocated memory.  */
 struct grub_script_mem *grub_script_mem_record (struct grub_parser_param *state);
-struct grub_script_mem *grub_script_mem_record_stop (struct grub_parser_param *state, 
+struct grub_script_mem *grub_script_mem_record_stop (struct grub_parser_param *state,
 						     struct grub_script_mem *restore);
 void *grub_script_malloc (struct grub_parser_param *state, grub_size_t size);
 
@@ -284,4 +284,4 @@ int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
 int grub_script_function_call (grub_script_function_t func,
 			       int argc, char **args);
 
-#endif /* ! GRUB_SCRIPT_HEADER */
+#endif /* ! GRUB_NORMAL_PARSER_HEADER */

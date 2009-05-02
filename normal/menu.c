@@ -23,8 +23,8 @@
 #include <grub/mm.h>
 #include <grub/time.h>
 #include <grub/env.h>
-#include <grub/script.h>
 #include <grub/menu_viewer.h>
+#include <grub/command.h>
 
 /* Get a menu entry by its index in the entry list.  */
 grub_menu_entry_t
@@ -123,11 +123,11 @@ get_and_remove_first_entry_number (const char *name)
 void
 grub_menu_execute_entry(grub_menu_entry_t entry)
 {
-  grub_script_execute (entry->commands);
+  grub_parser_execute ((char *) entry->sourcecode);
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
-    grub_command_execute ("boot", 0);
+    grub_command_execute ("boot", 0, 0);
 }
 
 /* Execute ENTRY from the menu MENU, falling back to entries specified

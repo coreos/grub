@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2003,2005,2006,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,43 +16,17 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/normal.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/err.h>
-#include <grub/term.h>
-#include <grub/env.h>
 #include <grub/dl.h>
 #include <grub/parser.h>
-#include <grub/script.h>
-#include <grub/list.h>
-#include <grub/command.h>
+#include <grub/script_sh.h>
 
-int
-grub_command_execute (char *cmdline, int interactive)
+static grub_err_t
+grub_normal_parse_line (char *line, grub_reader_getline_t getline)
 {
-  auto grub_err_t cmdline_get (char **s);
-  grub_err_t cmdline_get (char **s)
-    {
-      *s = grub_malloc (GRUB_MAX_CMDLINE);
-      *s[0] = '\0';
-      return grub_cmdline_get (">", *s, GRUB_MAX_CMDLINE, 0, 1);
-    }
-
-  grub_err_t ret = 0;
-  char *pager;
   struct grub_script *parsed_script;
-  
-  /* Enable the pager if the environment pager is set to 1.  */
-  if (interactive)
-    pager = grub_env_get ("pager");
-  else
-    pager = NULL;
-  if (pager && (! grub_strcmp (pager, "1")))
-    grub_set_more (1);
 
   /* Parse the script.  */
-  parsed_script = grub_script_parse (cmdline, cmdline_get);
+  parsed_script = grub_script_parse (line, getline);
 
   if (parsed_script)
     {
@@ -63,8 +37,22 @@ grub_command_execute (char *cmdline, int interactive)
       grub_script_free (parsed_script);
     }
 
-  if (pager && (! grub_strcmp (pager, "1")))
-    grub_set_more (0);
+  return grub_errno;
+}
 
-  return ret;
+static struct grub_parser grub_sh_parser =
+  {
+    .name = "sh",
+    .parse_line = grub_normal_parse_line
+  };
+
+GRUB_MOD_INIT(sh)
+{
+  (void) mod;
+  grub_parser_register ("sh", &grub_sh_parser);
+}
+
+GRUB_MOD_FINI(sh)
+{
+  grub_parser_unregister (&grub_sh_parser);
 }

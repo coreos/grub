@@ -6,7 +6,7 @@ COMMON_CFLAGS = -ffreestanding -m64 -mno-app-regs
 COMMON_LDFLAGS = -melf64_sparc -nostdlib -mno-relax
 
 # Used by various components.  These rules need to precede them.
-normal/lexer.c_DEPENDENCIES = grub_script.tab.h
+script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Images.
 pkglib_IMAGES = boot.img diskboot.img kernel.img
@@ -28,14 +28,15 @@ DEFSYMFILES += kernel_syms.lst
 
 kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
+	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
 	list.h handler.h command.h \
 	sparc64/libgcc.h ieee1275/ieee1275.h machine/kernel.h \
 	sparc64/ieee1275/ieee1275.h
 kernel_img_SOURCES = kern/sparc64/ieee1275/crt0.S kern/ieee1275/cmain.c	\
 	kern/ieee1275/ieee1275.c kern/main.c kern/device.c		\
 	kern/disk.c kern/dl.c kern/err.c kern/file.c kern/fs.c		\
-	kern/misc.c kern/mm.c kern/rescue.c kern/term.c			\
+	kern/misc.c kern/mm.c kern/reader.c kern/term.c			\
+	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/list.c kern/handler.c kern/command.c kern/corecmd.c	\
 	kern/sparc64/ieee1275/ieee1275.c 				\
 	kern/sparc64/ieee1275/init.c 					\
@@ -142,7 +143,6 @@ grub_install_SOURCES = util/sparc64/ieee1275/grub-install.in
 # Modules.
 pkglib_MODULES = halt.mod \
 	linux.mod \
-	normal.mod \
 	reboot.mod \
 	memdisk.mod \
 	lsmmap.mod
@@ -151,27 +151,6 @@ pkglib_MODULES = halt.mod \
 linux_mod_SOURCES = loader/sparc64/ieee1275/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
-
-#
-# Only arch dependant part of normal.mod will be here. Common part for
-# all architecures of normal.mod is at start and should be kept at sync
-# with other makefiles.
-# 
-# Please put arch dependant part of normal.mod at the end of list to
-# keep it simpler to update to different architectures.
-#
-normal_mod_SOURCES = lib/arg.c normal/cmdline.c normal/command.c	\
-	normal/datetime.c normal/completion.c normal/execute.c 		\
-	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
-	normal/handler.c normal/menu_text.c				\
-	normal/color.c							\
-	normal/menu_viewer.c normal/menu_entry.c			\
-	normal/misc.c grub_script.tab.c 				\
-	normal/script.c							\
-	normal/sparc64/setjmp.S
-normal_mod_CFLAGS = $(COMMON_CFLAGS)
-normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
-normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For reboot.mod.
 reboot_mod_SOURCES = commands/reboot.c

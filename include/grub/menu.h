@@ -38,9 +38,6 @@ struct grub_menu_entry
      E.classes->next is the first class if it is not NULL.  */
   struct grub_menu_entry_class *classes;
 
-  /* The commands associated with this menu entry.  */
-  struct grub_script *commands;
-
   /* The sourcecode of the menu entry, used by the editor.  */
   const char *sourcecode;
 

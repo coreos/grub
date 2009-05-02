@@ -86,6 +86,11 @@ grub_machine_fini (void)
 {
   grub_console_fini ();
 }
+
+void
+read_command_list (void)
+{
+}
 
 
 static struct option options[] =

@@ -21,7 +21,8 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/loader.h>
-#include <grub/script.h>
+#include <grub/command.h>
+#include <grub/parser.h>
 
 enum update_mode
   {
@@ -970,12 +971,11 @@ clear_completions (void)
 static int
 run (struct screen *screen)
 {
-  struct grub_script *parsed_script = 0;
   int currline = 0;
   char *nextline;
 
-  auto grub_err_t editor_getline (char **line);
-  grub_err_t editor_getline (char **line)
+  auto grub_err_t editor_getline (char **line, int cont);
+  grub_err_t editor_getline (char **line, int cont __attribute__ ((unused)))
     {
       struct line *linep = screen->lines + currline;
       char *p;
@@ -1008,23 +1008,14 @@ run (struct screen *screen)
   /* Execute the script, line for line.  */
   while (currline < screen->num_lines)
     {
-      editor_getline (&nextline);
-      parsed_script = grub_script_parse (nextline, editor_getline);
-      if (parsed_script)
-	{
-	  /* Execute the command(s).  */
-	  grub_script_execute (parsed_script);
-	  
-	  /* The parsed script was executed, throw it away.  */
-	  grub_script_free (parsed_script);
-	}
-      else
+      editor_getline (&nextline, 0);
+      if (grub_parser_get_current ()->parse_line (nextline, editor_getline))
 	break;
     }
 
   if (grub_errno == GRUB_ERR_NONE && grub_loader_is_loaded ())
     /* Implicit execution of boot, only if something is loaded.  */
-    grub_command_execute ("boot", 0);
+    grub_command_execute ("boot", 0, 0);
 
   if (grub_errno != GRUB_ERR_NONE)
     {

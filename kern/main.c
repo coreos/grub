@@ -22,11 +22,13 @@
 #include <grub/symbol.h>
 #include <grub/dl.h>
 #include <grub/term.h>
-#include <grub/rescue.h>
 #include <grub/file.h>
 #include <grub/device.h>
 #include <grub/env.h>
 #include <grub/mm.h>
+#include <grub/command.h>
+#include <grub/reader.h>
+#include <grub/parser.h>
 
 void
 grub_module_iterate (int (*hook) (struct grub_module_header *header))
@@ -120,6 +122,9 @@ grub_load_normal_mode (void)
   
   /* Something went wrong.  Print errors here to let user know why we're entering rescue mode.  */
   grub_print_error ();
+  grub_errno = 0;
+
+  grub_command_execute ("normal", 0, 0);
 }
 
 /* The main routine.  */
@@ -144,9 +149,10 @@ grub_main (void)
   grub_env_export ("prefix");
   grub_set_root_dev ();
 
-  /* Load the normal mode module.  */
-  grub_load_normal_mode ();
+  grub_register_core_commands ();
+  grub_register_rescue_parser ();
+  grub_register_rescue_reader ();
   
-  /* Enter the rescue mode.  */
-  grub_enter_rescue_mode ();
+  grub_load_normal_mode ();
+  grub_reader_loop (0);
 }

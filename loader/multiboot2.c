@@ -24,7 +24,6 @@
 #include <grub/elfload.h>
 #include <grub/file.h>
 #include <grub/err.h>
-#include <grub/rescue.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
 #include <grub/misc.h>

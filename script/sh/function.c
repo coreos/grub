@@ -1,6 +1,6 @@
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 
 #include <grub/misc.h>
-#include <grub/script.h>
+#include <grub/script_sh.h>
 #include <grub/parser.h>
 #include <grub/mm.h>
 
@@ -28,7 +28,7 @@ grub_script_function_create (char *functionname, struct grub_script *cmd)
 {
   grub_script_function_t func;
   grub_script_function_t *p;
-  
+
   func = (grub_script_function_t) grub_malloc (sizeof (*func));
   if (! func)
     return 0;
@@ -39,7 +39,7 @@ grub_script_function_create (char *functionname, struct grub_script *cmd)
       grub_free (func);
       return 0;
     }
-  
+
   func->func = cmd;
 
   /* Keep the list sorted for simplicity.  */
@@ -107,11 +107,11 @@ int
 grub_script_function_iterate (int (*iterate) (grub_script_function_t))
 {
   grub_script_function_t func;
-  
+
   for (func = grub_script_function_list; func; func = func->next)
     if (iterate (func))
       return 1;
-  
+
   return 0;
 }
 

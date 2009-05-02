@@ -22,7 +22,6 @@
 #include <grub/loader.h>
 #include <grub/dl.h>
 #include <grub/mm.h>
-#include <grub/rescue.h>
 #include <grub/misc.h>
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/machine/loader.h>

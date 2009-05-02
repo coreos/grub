@@ -18,7 +18,7 @@
  */
 
 #include <grub/misc.h>
-#include <grub/script.h>
+#include <grub/script_sh.h>
 #include <grub/parser.h>
 #include <grub/mm.h>
 
@@ -110,7 +110,7 @@ grub_script_arg_add (struct grub_parser_param *state, struct grub_script_arg *ar
 {
   struct grub_script_arg *argpart;
   struct grub_script_arg *ll;
-  
+
   argpart = (struct grub_script_arg *) grub_script_malloc (state, sizeof (*arg));
   argpart->type = type;
   argpart->str = str;
@@ -121,7 +121,7 @@ grub_script_arg_add (struct grub_parser_param *state, struct grub_script_arg *ar
 
   for (ll = arg; ll->next; ll = ll->next);
   ll->next = argpart;
-      
+
   return arg;
 }
 
@@ -294,7 +294,7 @@ grub_script_create (struct grub_script_cmd *cmd, struct grub_script_mem *mem)
 /* Parse the script passed in SCRIPT and return the parsed
    datastructure that is ready to be interpreted.  */
 struct grub_script *
-grub_script_parse (char *script, grub_err_t (*getline) (char **))
+grub_script_parse (char *script, grub_reader_getline_t getline)
 {
   struct grub_script *parsed;
   struct grub_script_mem *membackup;

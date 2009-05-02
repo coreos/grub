@@ -18,7 +18,7 @@
  */
 
 %{
-#include <grub/script.h>
+#include <grub/script_sh.h>
 #include <grub/mm.h>
 
 #define YYFREE		grub_free
@@ -167,10 +167,10 @@ commands:	command
    recognized after executing the `grub_script_mem_record; and before
    `grub_script_mem_record_stop'.  */
 function:	"function" GRUB_PARSER_TOKEN_NAME
-		  { 
+		  {
 		    grub_script_lexer_ref (state->lexerstate);
 		  } newlines '{'
-		  { 
+		  {
 		    /* The first part of the function was recognized.
 		       Now start recording the memory usage to store
 		       this function.  */

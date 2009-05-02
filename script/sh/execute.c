@@ -19,10 +19,12 @@
 
 #include <grub/misc.h>
 #include <grub/mm.h>
-#include <grub/normal.h>
 #include <grub/env.h>
-#include <grub/script.h>
+#include <grub/script_sh.h>
+#include <grub/command.h>
+#include <grub/menu.h>
 #include <grub/lib/arg.h>
+#include <grub/normal.h>
 
 static grub_err_t
 grub_script_execute_cmd (struct grub_script_cmd *cmd)
@@ -192,7 +194,6 @@ grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 {
   struct grub_script_cmd_menuentry *cmd_menuentry;
   struct grub_script_arglist *arglist;
-  struct grub_script *script;
   char **args = 0;
   int argcount = 0;
   int i = 0;
@@ -219,15 +220,8 @@ grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 	}
     }
 
-  /* Parse the menu entry *again*.  */
-  script = grub_script_parse ((char *) cmd_menuentry->sourcecode, 0);
-
-  /* Add new menu entry.  */
-  if (script)
-    {
-      grub_normal_menu_addentry (argcount, (const char **)args,
-				 script, cmd_menuentry->sourcecode);
-    }
+  grub_menu_addentry (argcount, (const char **) args,
+		      cmd_menuentry->sourcecode);
 
   /* Free arguments.  */
   for (i = 0; i < argcount; i++)

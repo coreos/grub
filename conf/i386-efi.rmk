@@ -5,7 +5,7 @@ COMMON_CFLAGS = -fno-builtin -m32
 COMMON_LDFLAGS = -melf_i386 -nostdlib
 
 # Used by various components.  These rules need to precede them.
-normal/lexer.c_DEPENDENCIES = grub_script.tab.h
+script/sh/lexer.c_DEPENDENCIES = grub_script.tab.h
 
 # Utilities.
 bin_UTILITIES = grub-mkimage
@@ -80,7 +80,7 @@ sbin_SCRIPTS = grub-install
 grub_install_SOURCES = util/i386/efi/grub-install.in
 
 # Modules.
-pkglib_MODULES = kernel.mod normal.mod chain.mod appleldr.mod \
+pkglib_MODULES = kernel.mod chain.mod appleldr.mod \
 	linux.mod halt.mod reboot.mod pci.mod lspci.mod \
 	datetime.mod date.mod datehook.mod loadbios.mod fixvideo.mod
 
@@ -88,7 +88,8 @@ pkglib_MODULES = kernel.mod normal.mod chain.mod appleldr.mod \
 kernel_mod_EXPORTS = no
 kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/disk.c kern/dl.c kern/file.c kern/fs.c kern/err.c \
-	kern/misc.c kern/mm.c kern/rescue.c kern/term.c \
+	kern/misc.c kern/mm.c kern/reader.c kern/term.c \
+	kern/rescue_parser.c kern/rescue_reader.c \
 	kern/i386/dl.c kern/i386/efi/init.c kern/parser.c kern/partition.c \
 	kern/env.c symlist.c kern/efi/efi.c kern/efi/init.c kern/efi/mm.c \
 	term/efi/console.c disk/efi/efidisk.c \
@@ -98,7 +99,7 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 	kern/generic/millisleep.c
 kernel_mod_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
-	partition.h pc_partition.h rescue.h symbol.h term.h time.h types.h \
+	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
 	efi/efi.h efi/time.h efi/disk.h list.h handler.h command.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)
 kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
@@ -113,27 +114,6 @@ symlist.c: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h gensymlist.
 
 kernel_syms.lst: $(addprefix include/grub/,$(kernel_mod_HEADERS)) config.h genkernsyms.sh
 	/bin/sh genkernsyms.sh $(filter %.h,$^) > $@ || (rm -f $@; exit 1)
-
-#
-# Only arch dependant part of normal.mod will be here. Common part for
-# all architecures of normal.mod is at start and should be kept at sync
-# with other makefiles.
-# 
-# Please put arch dependant part of normal.mod at the end of list to
-# keep it simpler to update to different architectures.
-#
-normal_mod_SOURCES = normal/cmdline.c normal/command.c normal/handler.c	\
-	normal/completion.c normal/datetime.c normal/execute.c 		\
-	normal/function.c normal/lexer.c normal/main.c normal/menu.c	\
-	normal/menu_text.c						\
-	normal/color.c							\
-	normal/menu_viewer.c normal/menu_entry.c			\
-	normal/misc.c grub_script.tab.c 				\
-	normal/script.c							\
-	normal/i386/setjmp.S
-normal_mod_CFLAGS = $(COMMON_CFLAGS)
-normal_mod_ASFLAGS = $(COMMON_ASFLAGS)
-normal_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For chain.mod.
 chain_mod_SOURCES = loader/efi/chainloader.c

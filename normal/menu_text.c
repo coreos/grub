@@ -24,7 +24,6 @@
 #include <grub/mm.h>
 #include <grub/time.h>
 #include <grub/env.h>
-#include <grub/script.h>
 #include <grub/menu_viewer.h>
 
 /* Time to delay after displaying an error message about a default/fallback

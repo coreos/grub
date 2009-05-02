@@ -20,7 +20,6 @@
 #ifndef GRUB_NORMAL_HEADER
 #define GRUB_NORMAL_HEADER	1
 
-#include <grub/setjmp.h>
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/env.h>
@@ -41,17 +40,6 @@ enum grub_completion_type
     GRUB_COMPLETION_TYPE_ARGUMENT
   };
 typedef enum grub_completion_type grub_completion_type_t;
-
-/* This is used to store the names of filesystem modules for auto-loading.  */
-struct grub_fs_module_list
-{
-  char *name;
-  struct grub_fs_module_list *next;
-};
-typedef struct grub_fs_module_list *grub_fs_module_list_t;
-
-/* To exit from the normal mode.  */
-extern grub_jmp_buf grub_exit_env;
 
 extern struct grub_menu_viewer grub_normal_text_menu_viewer;
 
@@ -86,19 +74,14 @@ void grub_menu_execute_entry(grub_menu_entry_t entry);
 grub_menu_entry_t grub_menu_get_entry (grub_menu_t menu, int no);
 int grub_menu_get_timeout (void);
 void grub_menu_set_timeout (int timeout);
-void grub_cmdline_run (int nested);
 int grub_cmdline_get (const char *prompt, char cmdline[], unsigned max_len,
 		      int echo_char, int readline);
 grub_err_t grub_set_history (int newsize);
-int grub_command_execute (char *cmdline, int interactive);
 void grub_normal_init_page (void);
 void grub_menu_init_page (int nested, int edit);
 char *grub_normal_do_completion (char *buf, int *restore,
 				 void (*hook) (const char *item, grub_completion_type_t type, int count));
 grub_err_t grub_normal_print_device_info (const char *name);
-grub_err_t grub_normal_menu_addentry (int argc, const char **args,
-				      struct grub_script *script,
-				      const char *sourcecode);
 char *grub_env_write_color_normal (struct grub_env_var *var, const char *val);
 char *grub_env_write_color_highlight (struct grub_env_var *var, const char *val);
 void grub_parse_color_name_pair (grub_uint8_t *ret, const char *name);
@@ -107,6 +90,11 @@ void grub_wait_after_message (void);
 char *grub_file_getline (grub_file_t file);
 void read_handler_list (void);
 void free_handler_list (void);
+void read_command_list (void);
+void read_fs_list (void);
+void grub_cmdline_run (int nested);
+grub_err_t grub_menu_addentry (int argc, const char **args,
+			       const char *sourcecode);
 
 #ifdef GRUB_UTIL
 void grub_normal_init (void);

@@ -1,7 +1,7 @@
 /* parser.c - the part of the parser that can return partial tokens */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2007  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2007,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ grub_parser_cmdline_state (grub_parser_state_t state, char c, char *result)
 
 
 grub_err_t
-grub_parser_split_cmdline (const char *cmdline, grub_err_t (*getline) (char **),
+grub_parser_split_cmdline (const char *cmdline, grub_reader_getline_t getline,
 			   int *argc, char ***argv)
 {
   grub_parser_state_t state = GRUB_PARSER_STATE_TEXT;
@@ -152,7 +152,7 @@ grub_parser_split_cmdline (const char *cmdline, grub_err_t (*getline) (char **),
       if (! *rd)
 	{
 	  if (getline)
-	    getline (&rd);
+	    getline (&rd, 1);
 	  else break;
 	}
 
@@ -226,4 +226,46 @@ grub_parser_split_cmdline (const char *cmdline, grub_err_t (*getline) (char **),
   (*argc)--;
 
   return 0;
+}
+
+struct grub_handler_class grub_parser_class =
+  {
+    .name = "parser"
+  };
+
+grub_err_t
+grub_parser_execute (char *source)
+{
+  auto grub_err_t getline (char **line, int cont);
+  grub_err_t getline (char **line, int cont __attribute__ ((unused)))
+    {
+      char *p;
+
+      if (! source)
+	{
+	  *line = 0;
+	  return 0;
+	}
+
+      p = grub_strchr (source, '\n');
+      if (p)
+	*(p++) = 0;
+
+      *line = grub_strdup (source);
+      source = p;
+      return 0;
+    }
+
+  while (source)
+    {
+      char *line;
+      grub_parser_t parser;
+
+      getline (&line, 0);
+      parser = grub_parser_get_current ();
+      parser->parse_line (line, getline);
+      grub_free (line);
+    }
+
+  return grub_errno;
 }

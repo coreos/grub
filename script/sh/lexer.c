@@ -1,7 +1,7 @@
 /* lexer.c - The scripting lexer.  */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2005,2006,2007,2008  Free Software Foundation, Inc.
+ *  Copyright (C) 2005,2006,2007,2008,2009  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include <grub/parser.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
-#include <grub/script.h>
+#include <grub/script_sh.h>
 
 #include "grub_script.tab.h"
 
@@ -44,7 +44,7 @@ check_textstate (grub_parser_state_t state)
 }
 
 struct grub_lexer_param *
-grub_script_lexer_init (char *script, grub_err_t (*getline) (char **))
+grub_script_lexer_init (char *script, grub_reader_getline_t getline)
 {
   struct grub_lexer_param *param;
 
@@ -176,7 +176,7 @@ grub_script_yylex2 (union YYSTYPE *yylval, struct grub_parser_param *parsestate)
 	    {
 	      grub_free (state->newscript);
 	      state->newscript = 0;
-	      state->getline (&state->newscript);
+	      state->getline (&state->newscript, 1);
 	      state->script = state->newscript;
 	      if (! state->script)
 		return 0;

@@ -132,37 +132,6 @@ grub_history_replace (int pos, char *s)
   hist_lines[pos] = grub_strdup (s);
 }
 
-void
-grub_cmdline_run (int nested)
-{
-  grub_normal_init_page ();
-  grub_setcursor (1);
-  
-  grub_printf ("\
- [ Minimal BASH-like line editing is supported. For the first word, TAB\n\
-   lists possible command completions. Anywhere else TAB lists possible\n\
-   device/file completions.%s ]\n\n",
-	       nested ? " ESC at any time exits." : "");
-  
-  while (1)
-    {
-      static char cmdline[GRUB_MAX_CMDLINE];
-
-      grub_print_error ();
-      grub_errno = GRUB_ERR_NONE;
-      cmdline[0] = '\0';
-      
-      if (! grub_cmdline_get ("grub> ", cmdline, sizeof (cmdline), 0, 1)
-	  && nested)
-	return;
-
-      if (! *cmdline)
-	continue;
-
-      grub_command_execute (cmdline, 1);
-    }
-}
-
 /* A completion hook to print items.  */
 static void
 print_completion (const char *item, grub_completion_type_t type, int count)
