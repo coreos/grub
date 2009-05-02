@@ -552,7 +552,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 
     for (controller = 0; controller < 3; controller++)
       {
-	for (drive = 0; drive < 10; drive++)
+	for (drive = 0; drive < 16; drive++)
 	  {
 	    char name[24];
 
@@ -573,7 +573,7 @@ grub_util_iterate_devices (int NESTED_FUNC_ATTR (*hook) (const char *, int),
 
     for (controller = 0; controller < 3; controller++)
       {
-	for (drive = 0; drive < 10; drive++)
+	for (drive = 0; drive < 16; drive++)
 	  {
 	    char name[24];
 

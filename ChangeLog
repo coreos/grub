@@ -1,5 +1,10 @@
 2009-05-02  Robert Millan  <rmh.grub@aybabtu.com>
 
+	* util/deviceiter.c (grub_util_iterate_devices): Increase max drive
+	count to 16 for CCISS and IDA.
+
+2009-05-02  Robert Millan  <rmh.grub@aybabtu.com>
+
 	* normal/menu_text.c  (grub_wait_after_message): Print a newline
 	after waiting for user input.
 
