@@ -1,5 +1,20 @@
 2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
 
+	ACPI spoofing
+
+	* commands/acpi.c: new file
+	* commands/i386/pc/acpi.c: likewise
+	* commands/efi/acpi.c: likewise
+	* include/grub/acpi.h: likewise
+	* conf/i386-pc.rmk (pkglib_MODULES): added acpi.mod
+	(acpi_mod_SOURCES): new variable
+	(acpi_mod_CFLAGS): likewise
+	(acpi_mod_LDFLAGS): likewise
+	* conf/i386-efi.rmk: likewise
+	* conf/x86_64-efi.rmk: likewise
+
+2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
+
 	Missing part from mmap patch
 
 	* mmap/efi/mmap.c (grub_machine_mmap_unregister): renamed to
