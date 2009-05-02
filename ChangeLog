@@ -1,3 +1,38 @@
+2009-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	xnu support
+
+	* conf/i386-efi.rmk (kernel_mod_HEADERS): added i386/pit.h
+	(pkglib_MODULES): add xnu.mod
+	(xnu_mod_SOURCES): new variable
+	(xnu_mod_CFLAGS): likewise
+	(xnu_mod_LDFLAGS): likewise
+	(xnu_mod_ASFLAGS): likewise
+	* conf/i386-pc.rmk: likewise
+	* conf/x86_64-efi.rmk: likewise
+	* include/grub/efi/efi.h (grub_efi_finish_boot_services): 
+	new declaration
+	* include/grub/i386/macho.h: new file
+	* include/grub/i386/xnu.h: likewise
+	* include/grub/macho.h: likewise
+	* include/grub/machoload.h: likewise
+	* include/grub/x86_64/macho.h: likewise
+	* include/grub/x86_64/xnu.h: likewise
+	* include/grub/xnu.h: likewise
+	* kern/efi/efi.c (grub_efi_finish_boot_services): new function
+	* kern/efi/mm.c (MAX_HEAP_SIZE): increase
+	* loader/i386/efi/xnu.c: new file
+	* loader/i386/pc/xnu.c: likewise
+	* loader/i386/xnu.c: likewise
+	* loader/i386/xnu_helper.S: likewise
+	* loader/macho.c: likewise
+	* loader/xnu.c: likewise
+	* loader/xnu_resume.c: likewise
+	* util/grub-dumpdevtree: likewise
+	* include/grub/i386/pit.h: include grub/err.h
+	(grub_pit_wait): export
+	* util/grub.d/30_os-prober.in: support Darwin/Mac OS X
+	
 2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Efiemu

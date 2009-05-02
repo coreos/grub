@@ -1,0 +1,3 @@
+echo "656669{	6465766963652d70726f70657274696573:"
+ioreg -lw0 -p IODeviceTree -n efi -r -x |grep device-properties | sed 's/.*<//;s/>.*//;'
+echo ";}"

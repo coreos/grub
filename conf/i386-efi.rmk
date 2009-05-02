@@ -101,7 +101,7 @@ kernel_mod_SOURCES = kern/i386/efi/startup.S kern/main.c kern/device.c \
 kernel_mod_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	env.h err.h file.h fs.h kernel.h loader.h misc.h mm.h net.h parser.h \
 	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
-	efi/efi.h efi/time.h efi/disk.h list.h handler.h command.h
+	efi/efi.h efi/time.h efi/disk.h i386/pit.h list.h handler.h command.h
 kernel_mod_CFLAGS = $(COMMON_CFLAGS)
 kernel_mod_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_mod_LDFLAGS = $(COMMON_LDFLAGS)
@@ -186,6 +186,13 @@ loadbios_mod_LDFLAGS = $(COMMON_LDFLAGS)
 fixvideo_mod_SOURCES = commands/efi/fixvideo.c
 fixvideo_mod_CFLAGS = $(COMMON_CFLAGS)
 fixvideo_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += xnu.mod
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/efi/xnu.c\
+	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S
+xnu_mod_CFLAGS = $(COMMON_CFLAGS) -Werror -Wall
+xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
+xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 include $(srcdir)/conf/i386.mk
 include $(srcdir)/conf/common.mk

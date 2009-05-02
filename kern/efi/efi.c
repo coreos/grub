@@ -734,3 +734,26 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
       dp = (grub_efi_device_path_t *) ((char *) dp + len);
     }
 }
+
+int
+grub_efi_finish_boot_services (void)
+{
+  grub_efi_uintn_t mmap_size = 0;
+  grub_efi_uintn_t map_key;
+  grub_efi_uintn_t desc_size;
+  grub_efi_uint32_t desc_version;
+  void *mmap_buf = 0;
+
+  if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
+			       &desc_size, &desc_version) < 0)
+    return 0;
+
+  mmap_buf = grub_malloc (mmap_size);
+  
+  if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
+			       &desc_size, &desc_version) <= 0)
+    return 0;
+
+  return grub_efi_exit_boot_services (map_key);
+}
+

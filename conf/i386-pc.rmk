@@ -62,7 +62,7 @@ kernel_img_HEADERS = boot.h cache.h device.h disk.h dl.h elf.h elfload.h \
 	partition.h pc_partition.h reader.h symbol.h term.h time.h types.h \
 	machine/biosdisk.h machine/boot.h machine/console.h machine/init.h \
 	machine/memory.h machine/loader.h machine/vga.h machine/vbe.h \
-	machine/kernel.h machine/pxe.h list.h handler.h command.h
+	machine/kernel.h machine/pxe.h i386/pit.h list.h handler.h command.h
 kernel_img_CFLAGS = $(COMMON_CFLAGS)
 kernel_img_ASFLAGS = $(COMMON_ASFLAGS)
 kernel_img_LDFLAGS = $(COMMON_LDFLAGS) $(TARGET_IMG_LDFLAGS) -Wl,-Ttext,$(GRUB_MEMORY_MACHINE_LINK_ADDR) $(COMMON_CFLAGS)
@@ -228,6 +228,13 @@ pkglib_MODULES += linux.mod
 linux_mod_SOURCES = loader/i386/linux.c
 linux_mod_CFLAGS = $(COMMON_CFLAGS)
 linux_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+pkglib_MODULES += xnu.mod
+xnu_mod_SOURCES = loader/xnu_resume.c loader/i386/xnu.c loader/i386/pc/xnu.c\
+	 loader/macho.c loader/xnu.c loader/i386/xnu_helper.S
+xnu_mod_CFLAGS = $(COMMON_CFLAGS) -Werror -Wall
+xnu_mod_LDFLAGS = $(COMMON_LDFLAGS)
+xnu_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For reboot.mod.
 reboot_mod_SOURCES = commands/reboot.c
