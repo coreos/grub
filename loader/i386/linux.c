@@ -20,6 +20,7 @@
 #include <grub/machine/machine.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/loader.h>
+#include <grub/normal.h>
 #include <grub/file.h>
 #include <grub/disk.h>
 #include <grub/err.h>
@@ -584,7 +585,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
 	else if (grub_strcmp (val, "ask") == 0)
 	  {
-	    grub_error (GRUB_ERR_BAD_ARGUMENT, "Legacy `ask' parameter no longer supported.");
+	    grub_printf ("Legacy `ask' parameter no longer supported.\n");
+
+	    /* We usually would never do this in a loader, but "vga=ask" means user
+	       requested interaction, so it can't hurt to request keyboard input.  */
+	    grub_wait_after_message ();
+
 	    goto fail;
 	  }
 	else

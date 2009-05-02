@@ -41,6 +41,7 @@ grub_wait_after_message (void)
 {
   grub_printf ("\nPress any key to continue...");
   (void) grub_getkey ();
+  grub_putchar ('\n');
 }
 
 static void

@@ -1,3 +1,13 @@
+2009-05-02  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* normal/menu_text.c  (grub_wait_after_message): Print a newline
+	after waiting for user input.
+
+	* loader/i386/linux.c: Include `<grub/normal.h>'.
+	(grub_cmd_linux): Improve the error message about `ask' mode, by
+	waiting for user input so it's not missed (we can do this, since
+	user requested interaction).
+
 2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Added missing lst to grub-mkrescue
