@@ -1,3 +1,58 @@
+2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
+
+	Mmap services
+
+	* loader/i386/efi/linux.c (grub_linux_boot): use grub_mmap_iterate
+	* loader/i386/linux.c (find_mmap_size): likewise
+	(allocate_pages): likewise
+	* loader/i386/multiboot.c (grub_get_multiboot_mmap_len): likewise
+	(grub_fill_multiboot_mmap): likewise
+	(grub_multiboot): use grub_mmap_get_lower and grub_mmap_get_upper
+	* loader/i386/pc/linux.c (grub_cmd_linux): use grub_mmap_get_lower
+	* include/grub/i386/bsd.h (OPENBSD_MMAP_AVAILABLE): new definition
+	(OPENBSD_MMAP_RESERVED): likewise
+	* include/grub/i386/pc/memory.h: include grub/memory.h
+	(grub_lower_mem): removed
+	(grub_upper_mem): likewise
+	(GRUB_MACHINE_MEMORY_ACPI): new definition
+	(GRUB_MACHINE_MEMORY_NVS): likewise
+	(GRUB_MACHINE_MEMORY_MAX_TYPE): likewise
+	(GRUB_MACHINE_MEMORY_HOLE): likewise
+	(grub_machine_mmap_register): likewise
+	(grub_machine_mmap_unregister): likewise
+	(grub_machine_get_upper): likewise
+	(grub_machine_get_lower): likewise
+	(grub_machine_get_post64): likewise
+	* include/grub/i386/efi/memory.h: new file
+	* include/grub/x86_64/efi/memory.h: likewise
+	* include/grub/efi/memory.h: likewise
+	* conf/i386-pc.rmk (pkglib_MODULES): added mmap.mod
+	(mmap_mod_SOURCES): new variable
+	(mmap_mod_LDFLAGS): likewise
+	(mmap_mod_ASFLAGS): likewise
+	* conf/i386-coreboot.rmk: likewise
+	* conf/i386-ieee1275.rmk: likewise
+	* conf/i386-efi.rmk: likewise
+	* conf/x86_64-efi.rmk: likewise
+	* include/grub/types.h (UINT_TO_PTR): new macro
+	(PTR_TO_UINT32): likewise
+	(PTR_TO_UINT64): likewise
+	* include/grub/memory.h: new file
+	* mmap/i386/pc/mmap.c: likewise
+	* mmap/i386/pc/mmap_helper.S: likewise
+	* mmap/i386/uppermem.c: likewise
+	* mmap/mmap.c: likewise
+	* mmap/efi/mmap.c: likewise
+	* kern/i386/coreboot/init.c (grub_machine_init): don't use 
+	grub_upper_mem
+	* kern/i386/pc/init.c (grub_lower_mem): removed variable
+	(grub_upper_mem): likewise
+	(grub_machine_init): don't use grub_upper_mem,
+	make grub_lower_mem local
+	* loader/i386/bsd.c (grub_openbsd_boot): use grub_mmap_get_lower,
+	grub_mmap_iterate and grub_mmap_get_upper
+	(grub_netbsd_boot): use grub_mmap_get_lower and grub_mmap_get_upper
+
 2009-05-02  Bean  <bean123ch@gmail.com>
 
 	* conf/common.rmk (grub_script.tab.c): Change normal/parser.y to

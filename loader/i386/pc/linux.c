@@ -108,8 +108,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       lh.type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
       
       /* Put the real mode part at as a high location as possible.  */
-      grub_linux_real_addr = (char *) (grub_lower_mem
-				       - GRUB_LINUX_SETUP_MOVE_SIZE);
+      grub_linux_real_addr 
+	= (char *) UINT_TO_PTR (grub_mmap_get_lower ()
+				- GRUB_LINUX_SETUP_MOVE_SIZE);
       /* But it must not exceed the traditional area.  */
       if (grub_linux_real_addr > (char *) GRUB_LINUX_OLD_REAL_MODE_ADDR)
 	grub_linux_real_addr = (char *) GRUB_LINUX_OLD_REAL_MODE_ADDR;
@@ -159,12 +160,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
   
   if (grub_linux_real_addr + GRUB_LINUX_SETUP_MOVE_SIZE
-      > (char *) grub_lower_mem)
+      > (char *) UINT_TO_PTR (grub_mmap_get_lower ()))
     {
       grub_error (GRUB_ERR_OUT_OF_RANGE,
 		 "too small lower memory (0x%x > 0x%x)",
-		 grub_linux_real_addr + GRUB_LINUX_SETUP_MOVE_SIZE,
-		 (char *) grub_lower_mem);
+		  grub_linux_real_addr + GRUB_LINUX_SETUP_MOVE_SIZE,
+		  (int) grub_mmap_get_lower ());
       goto fail;
     }
 

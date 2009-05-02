@@ -82,15 +82,10 @@ grub_machine_init (void)
 #if GRUB_CPU_SIZEOF_VOID_P == 4
     /* Restrict ourselves to 32-bit memory space.  */
     if (addr > GRUB_ULONG_MAX)
-      {
-	grub_upper_mem = GRUB_ULONG_MAX;
-	return 0;
-      }
+      return 0;
     if (addr + size > GRUB_ULONG_MAX)
       size = GRUB_ULONG_MAX - addr;
 #endif
-
-    grub_upper_mem = grub_max (grub_upper_mem, addr + size);
 
     if (type != GRUB_MACHINE_MEMORY_AVAILABLE)
       return 0;
@@ -127,9 +122,6 @@ grub_machine_init (void)
 
   grub_machine_mmap_init ();
   grub_machine_mmap_iterate (heap_init);
-
-  /* This variable indicates size, not offset.  */
-  grub_upper_mem -= GRUB_MEMORY_MACHINE_UPPER_START;
 
   grub_tsc_init ();
 }

@@ -148,6 +148,8 @@ struct grub_openbsd_bios_mmap
 {
   grub_uint64_t addr;
   grub_uint64_t len;
+#define	OPENBSD_MMAP_AVAILABLE	1
+#define	OPENBSD_MMAP_RESERVED 2
   grub_uint32_t type;
 };
 

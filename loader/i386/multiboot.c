@@ -99,7 +99,7 @@ grub_get_multiboot_mmap_len (void)
       return 0;
     }
   
-  grub_machine_mmap_iterate (hook);
+  grub_mmap_iterate (hook);
   
   return count * sizeof (struct grub_multiboot_mmap_entry);
 }
@@ -122,7 +122,7 @@ grub_fill_multiboot_mmap (struct grub_multiboot_mmap_entry *first_entry)
       return 0;
     }
 
-  grub_machine_mmap_iterate (hook);
+  grub_mmap_iterate (hook);
 }
 
 #define MULTIBOOT_LOAD_ELF64
@@ -341,8 +341,8 @@ grub_multiboot (int argc, char *argv[])
 		grub_multiboot_payload_entry_offset);
 
   /* Convert from bytes to kilobytes.  */
-  mbi->mem_lower = grub_lower_mem / 1024;
-  mbi->mem_upper = grub_upper_mem / 1024;
+  mbi->mem_lower = grub_mmap_get_lower () / 1024;
+  mbi->mem_upper = grub_mmap_get_upper () / 1024;
   mbi->flags |= MULTIBOOT_INFO_MEMORY;
 
   cmdline = p = cmdline_addr (grub_multiboot_payload_orig);

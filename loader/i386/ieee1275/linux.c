@@ -100,7 +100,7 @@ grub_linux_boot (void)
 
   grub_memset ((char *) params, 0, GRUB_OFW_LINUX_CL_OFFSET);
 
-  params->alt_mem = grub_upper_mem >> 10;
+  params->alt_mem = grub_mmap_get_upper () >> 10;
   params->ext_mem = params->alt_mem;
 
   lh->cmd_line_ptr = (char *)

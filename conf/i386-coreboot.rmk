@@ -105,7 +105,13 @@ pkglib_MODULES = linux.mod multiboot.mod 		\
 	aout.mod play.mod serial.mod ata.mod		\
 	memdisk.mod pci.mod lspci.mod reboot.mod	\
 	halt.mod datetime.mod date.mod datehook.mod	\
-	lsmmap.mod
+	lsmmap.mod mmap.mod
+
+# For mmap.mod.
+mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c
+mmap_mod_CFLAGS = $(COMMON_CFLAGS)
+mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For linux.mod.
 linux_mod_SOURCES = loader/i386/linux.c

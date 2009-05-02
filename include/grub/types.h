@@ -102,6 +102,16 @@ typedef grub_int32_t	grub_ssize_t;
 # define GRUB_LONG_MIN -2147483648UL
 #endif
 
+#if GRUB_CPU_SIZEOF_VOID_P == 4
+#define UINT_TO_PTR(x) ((void*)(grub_uint32_t)(x))
+#define PTR_TO_UINT64(x) ((grub_uint64_t)(grub_uint32_t)(x))
+#define PTR_TO_UINT32(x) ((grub_uint32_t)(x))
+#else
+#define UINT_TO_PTR(x) ((void*)(grub_uint64_t)(x))
+#define PTR_TO_UINT64(x) ((grub_uint64_t)(x))
+#define PTR_TO_UINT32(x) ((grub_uint32_t)(grub_uint64_t)(x))
+#endif
+
 /* The type for representing a file offset.  */
 typedef grub_uint64_t	grub_off_t;
 

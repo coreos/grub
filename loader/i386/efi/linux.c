@@ -32,6 +32,7 @@
 #include <grub/efi/uga_draw.h>
 #include <grub/pci.h>
 #include <grub/command.h>
+#include <grub/memory.h>
 
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
@@ -300,7 +301,6 @@ grub_linux_boot (void)
   grub_efi_uintn_t map_key;
   grub_efi_uintn_t desc_size;
   grub_efi_uint32_t desc_version;
-  grub_efi_memory_descriptor_t *desc;
   int e820_num;
   
   params = real_mode_mem;
@@ -313,83 +313,52 @@ grub_linux_boot (void)
 		(unsigned) idt_desc.limit, (unsigned long) idt_desc.base,
 		(unsigned) gdt_desc.limit, (unsigned long) gdt_desc.base);
 
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      switch (type)
+        {
+        case GRUB_MACHINE_MEMORY_AVAILABLE:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_RAM);
+	  break;
+
+#ifdef GRUB_MACHINE_MEMORY_ACPI
+        case GRUB_MACHINE_MEMORY_ACPI:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_ACPI);
+	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_NVS
+        case GRUB_MACHINE_MEMORY_NVS:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_NVS);
+	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_CODE
+        case GRUB_MACHINE_MEMORY_CODE:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_EXEC_CODE);
+	  break;
+#endif
+
+        default:
+          grub_e820_add_region (params->e820_map, &e820_num,
+                                addr, size, GRUB_E820_RESERVED);
+        }
+      return 0;
+    }
+
+  e820_num = 0;
+  grub_mmap_iterate (hook);
+  params->mmap_size = e820_num;
+
   mmap_size = find_mmap_size ();
   if (grub_efi_get_memory_map (&mmap_size, mmap_buf, &map_key,
 			       &desc_size, &desc_version) <= 0)
     grub_fatal ("cannot get memory map");
-
-  e820_num = 0;
-  for (desc = mmap_buf;
-       desc < NEXT_MEMORY_DESCRIPTOR (mmap_buf, mmap_size);
-       desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
-    {
-      switch (desc->type)
-	{
-	case GRUB_EFI_ACPI_RECLAIM_MEMORY:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				desc->physical_start,
-				desc->num_pages << 12,
-				GRUB_E820_ACPI);
-	  break;
-
-	case GRUB_EFI_ACPI_MEMORY_NVS:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				desc->physical_start,
-				desc->num_pages << 12,
-				GRUB_E820_NVS);
-	  break;
-
-	case GRUB_EFI_RUNTIME_SERVICES_CODE:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				desc->physical_start,
-				desc->num_pages << 12,
-				GRUB_E820_EXEC_CODE);
-	  break;
-
-	case GRUB_EFI_LOADER_CODE:
-	case GRUB_EFI_LOADER_DATA:
-	case GRUB_EFI_BOOT_SERVICES_CODE:
-	case GRUB_EFI_BOOT_SERVICES_DATA:
-	case GRUB_EFI_CONVENTIONAL_MEMORY:
-	  {
-	    grub_uint64_t start, size, end;
-
-	    start = desc->physical_start;
-	    size = desc->num_pages << 12;
-	    end = start + size;
-
-	    /* Skip A0000 - 100000 region.  */
-	    if ((start < 0x100000ULL) && (end > 0xA0000ULL))
-	      {
-		if (start < 0xA0000ULL)
-		  {
-		    grub_e820_add_region (params->e820_map, &e820_num,
-					  start,
-					  0xA0000ULL - start,
-					  GRUB_E820_RAM);
-		  }
-
-		if (end <= 0x100000ULL)
-		  continue;
-
-		start = 0x100000ULL;
-		size = end - start;
-	      }
-
-	    grub_e820_add_region (params->e820_map, &e820_num,
-				  start, size, GRUB_E820_RAM);
-	    break;
-	  }
-
-	default:
-	  grub_e820_add_region (params->e820_map, &e820_num,
-				desc->physical_start,
-				desc->num_pages << 12,
-				GRUB_E820_RESERVED);
-	}
-    }
-
-  params->mmap_size = e820_num;
 
   if (! grub_efi_exit_boot_services (map_key))
      grub_fatal ("cannot exit boot services");

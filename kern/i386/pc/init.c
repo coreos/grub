@@ -45,7 +45,6 @@ static int num_regions;
 
 grub_addr_t grub_os_area_addr;
 grub_size_t grub_os_area_size;
-grub_size_t grub_lower_mem, grub_upper_mem;
 
 void 
 grub_arch_sync_caches (void *address __attribute__ ((unused)),
@@ -133,6 +132,7 @@ void
 grub_machine_init (void)
 {
   int i;
+  int grub_lower_mem;
   
   /* Initialize the console as early as possible.  */
   grub_console_init ();
@@ -197,7 +197,6 @@ grub_machine_init (void)
       {
 	grub_size_t quarter = mem_regions[i].size >> 2;
 
-	grub_upper_mem = mem_regions[i].size;
 	grub_os_area_addr = mem_regions[i].addr;
 	grub_os_area_size = mem_regions[i].size - quarter;
 	grub_mm_init_region ((void *) (grub_os_area_addr + grub_os_area_size),

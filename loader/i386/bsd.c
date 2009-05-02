@@ -313,30 +313,36 @@ static grub_err_t
 grub_openbsd_boot (void)
 {
   char *buf = (char *) GRUB_BSD_TEMP_BUFFER;
-  struct grub_machine_mmap_entry mmap;
   struct grub_openbsd_bios_mmap *pm;
   struct grub_openbsd_bootargs *pa;
-  grub_uint32_t bootdev, biosdev, unit, slice, part, cont;
+  grub_uint32_t bootdev, biosdev, unit, slice, part;
+
+  auto int NESTED_FUNC_ATTR hook (grub_uint64_t, grub_uint64_t, grub_uint32_t);
+  int NESTED_FUNC_ATTR hook (grub_uint64_t addr, grub_uint64_t size, grub_uint32_t type)
+    {
+      pm->addr = addr;
+      pm->len = size;
+
+      switch (type)
+        {
+        case GRUB_MACHINE_MEMORY_AVAILABLE:
+	  pm->type = OPENBSD_MMAP_AVAILABLE;
+	  break;
+	  
+	default:
+	  pm->type = OPENBSD_MMAP_RESERVED;
+	  break;
+	}
+      pm++;
+
+      return 0;
+    }
 
   pa = (struct grub_openbsd_bootargs *) buf;
 
   pa->ba_type = OPENBSD_BOOTARG_MMAP;
   pm = (struct grub_openbsd_bios_mmap *) (pa + 1);
-  cont = grub_get_mmap_entry (&mmap, 0);
-  if (mmap.size)
-    do
-      {
-	pm->addr = mmap.addr;
-	pm->len = mmap.len;
-	pm->type = mmap.type;
-	pm++;
-
-	if (!cont)
-	  break;
-
-	cont = grub_get_mmap_entry (&mmap, cont);
-      }
-    while (mmap.size);
+  grub_mmap_iterate (hook);
 
   pa->ba_size = (char *) pm - (char *) pa;
   pa->ba_next = (struct grub_openbsd_bootargs *) pm;
@@ -349,7 +355,8 @@ grub_openbsd_boot (void)
 	     (part << OPENBSD_B_PARTSHIFT));
 
   grub_unix_real_boot (entry, bootflags, bootdev, OPENBSD_BOOTARG_APIVER,
-		       0, grub_upper_mem >> 10, grub_lower_mem >> 10,
+		       0, grub_mmap_get_upper () >> 10, 
+		       grub_mmap_get_lower () >> 10,
 		       (char *) pa - buf, buf);
 
   /* Not reached.  */
@@ -377,7 +384,8 @@ grub_netbsd_boot (void)
   bootinfo->bi_data[0] = rootdev;
 
   grub_unix_real_boot (entry, bootflags, 0, bootinfo,
-		       0, grub_upper_mem >> 10, grub_lower_mem >> 10);
+		       0, grub_mmap_get_upper () >> 10, 
+		       grub_mmap_get_lower () >> 10);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;

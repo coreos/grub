@@ -169,7 +169,7 @@ find_mmap_size (void)
       return 0;
     }
   
-  grub_machine_mmap_iterate (hook);
+  grub_mmap_iterate (hook);
   
   mmap_size = count * sizeof (struct grub_e820_mmap);
 
@@ -238,7 +238,7 @@ allocate_pages (grub_size_t prot_size)
 
       return 0;
     }
-  grub_machine_mmap_iterate (hook);
+  grub_mmap_iterate (hook);
   if (! real_mode_mem)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate real mode pages");
@@ -397,6 +397,27 @@ grub_linux_boot (void)
 				addr, size, GRUB_E820_RAM);
 	  break;
 
+#ifdef GRUB_MACHINE_MEMORY_ACPI
+        case GRUB_MACHINE_MEMORY_ACPI:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_ACPI);
+	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_NVS
+        case GRUB_MACHINE_MEMORY_NVS:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_NVS);
+	  break;
+#endif
+
+#ifdef GRUB_MACHINE_MEMORY_CODE
+        case GRUB_MACHINE_MEMORY_CODE:
+	  grub_e820_add_region (params->e820_map, &e820_num,
+				addr, size, GRUB_E820_EXEC_CODE);
+	  break;
+#endif
+
         default:
           grub_e820_add_region (params->e820_map, &e820_num,
                                 addr, size, GRUB_E820_RESERVED);
@@ -405,8 +426,9 @@ grub_linux_boot (void)
     }
 
   e820_num = 0;
-  grub_machine_mmap_iterate (hook);
+  grub_mmap_iterate (hook);
   params->mmap_size = e820_num;
+
 
   /* Hardware interrupts are not safe any longer.  */
   asm volatile ("cli" : : );

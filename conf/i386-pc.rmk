@@ -184,7 +184,15 @@ pkglib_MODULES = biosdisk.mod chain.mod \
 	ata.mod vga.mod memdisk.mod pci.mod lspci.mod	\
 	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
-	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod
+	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
+	mmap.mod
+
+# For mmap.mod.
+mmap_mod_SOURCES = mmap/mmap.c mmap/i386/uppermem.c mmap/i386/mmap.c \
+		   mmap/i386/pc/mmap.c mmap/i386/pc/mmap_helper.S
+mmap_mod_CFLAGS = $(COMMON_CFLAGS)
+mmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
+mmap_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For biosdisk.mod.
 biosdisk_mod_SOURCES = disk/i386/pc/biosdisk.c
