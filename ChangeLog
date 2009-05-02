@@ -1,5 +1,13 @@
 2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
 
+	Missing part from mmap patch
+
+	* mmap/efi/mmap.c (grub_machine_mmap_unregister): renamed to
+	(grub_mmap_unregister)
+	(grub_mmap_free_and_unregister): use grub_mmap_register
+
+2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
+
 	Mmap services
 
 	* loader/i386/efi/linux.c (grub_linux_boot): use grub_mmap_iterate

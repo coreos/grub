@@ -191,7 +191,7 @@ grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type)
 }
 
 grub_err_t 
-grub_machine_mmap_unregister (int handle)
+grub_mmap_unregister (int handle)
 {
   struct overlay *curover, *prevover;
   grub_efi_boot_services_t *b;
@@ -280,5 +280,5 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
 void 
 grub_mmap_free_and_unregister (int handle)
 {
-  grub_machine_mmap_unregister (handle);
+  grub_mmap_unregister (handle);
 }
