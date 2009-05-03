@@ -25,6 +25,7 @@
 #include <grub/env.h>
 #include <grub/menu_viewer.h>
 #include <grub/command.h>
+#include <grub/parser.h>
 
 /* Get a menu entry by its index in the entry list.  */
 grub_menu_entry_t

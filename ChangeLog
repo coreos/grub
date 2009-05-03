@@ -1,3 +1,7 @@
+2009-05-03  David S. Miller  <davem@davemloft.net>
+
+	* normal/menu.c: Include grub/parser.h
+
 2009-05-03  Pavel Roskin  <proski@gnu.org>
 
 	* mmap/efi/mmap.c (grub_mmap_malign_and_register): Return void*,
