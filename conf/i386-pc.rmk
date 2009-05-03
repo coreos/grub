@@ -313,9 +313,10 @@ aout_mod_CFLAGS = $(COMMON_CFLAGS)
 aout_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For bsd.mod
-bsd_mod_SOURCES = loader/i386/bsd.c
+bsd_mod_SOURCES = loader/i386/bsd.c loader/i386/bsd_helper.S loader/i386/bsd_trampoline.S
 bsd_mod_CFLAGS = $(COMMON_CFLAGS)
 bsd_mod_LDFLAGS = $(COMMON_LDFLAGS)
+bsd_mod_ASFLAGS = $(COMMON_ASFLAGS)
 
 # For usb.mod
 usb_mod_SOURCES = bus/usb/usb.c bus/usb/usbtrans.c bus/usb/usbhub.c

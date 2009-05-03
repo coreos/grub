@@ -118,25 +118,3 @@ linux_setup_seg:
 	.word	0
 	.code32
 
-/*
- * Use cdecl calling convention for *BSD kernels.
- */
-
-FUNCTION(grub_unix_real_boot)
-
-        call    EXT_C(grub_dl_unload_all)
-
-	/* Interrupts should be disabled.  */
-        cli
-
-	/* Discard `grub_unix_real_boot' return address.  */
-        popl    %eax
-
-        /* Fetch `entry' address ...  */
-        popl	%eax
-
-        /*
-         * ... and put our return address in its place. The kernel will
-         * ignore it, but it expects %esp to point to it.
-         */
-        call	*%eax

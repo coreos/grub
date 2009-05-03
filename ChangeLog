@@ -1,3 +1,39 @@
+2009-05-03  Bean  <bean123ch@gmail.com> Vladimir Serbinenko <phcoder@gmail.com>
+
+	FreeBSD 64-bit support
+
+	* conf/i386-pc.rmk (bsd_mod_SOURCES): add loader/i386/bsd_helper.S 
+	and loader/i386/bsd_trampoline.S
+	(bsd_mod_ASFLAGS): new variable
+	* include/grub/i386/bsd.h (FREEBSD_MODINFOMD_SMAP): new definition
+	(FREEBSD_MODTYPE_KERNEL64): likewise
+	(grub_bsd64_trampoline_start): likewise
+	(grub_bsd64_trampoline_end): likewise
+	(grub_bsd64_trampoline_selfjump): likewise
+	(grub_bsd64_trampoline_gdt): likewise
+	* include/grub/i386/loader.h (grub_unix_real_boot): moved from here ...
+	* include/grub/i386/bsd.h (grub_unix_real_boot): ... moved here
+	* kern/i386/loader.S (grub_unix_real_boot): moved from here ...
+	* loader/i386/bsd_helper.S (grub_unix_real_boot): moved here
+	* include/grub/gpt_partition.h (grub_gpt_partentry): Corrected the type 
+	of "attrib" member
+	* loader/i386/bsd_pagetable.c: new file
+	* loader/i386/bsd_trampoline.S: likewise
+	* loader/i386/bsd.c (ALIGN_QWORD): new macro
+	(ALIGN_VAR): likewise
+	(entry_hi): new variable
+	(kern_end_mdofs): likewise
+	(is_64bit): likewise
+	(grub_freebsd_add_meta): use ALIGN_VAR
+	(grub_e820_mmap): new declaration
+	(grub_freebsd_add_mmap): new function
+	(grub_freebsd_add_meta_module): support 64 bit kernels
+	(grub_freebsd_list_modules): use ALIGN_VAR
+	(gdt_descriptor): new declaration
+	(grub_freebsd_boot): support 64 bit kernels
+	(grub_bsd_elf64_hook): new function
+	(grub_bsd_load_elf): support elf64
+
 2009-05-03  Bean  <bean123ch@gmail.com>
 
 	* script/sh/execute.c (grub_script_execute_cmdif): Reset grub_errno
