@@ -10,7 +10,7 @@
 	(xnu_mod_ASFLAGS): likewise
 	* conf/i386-pc.rmk: likewise
 	* conf/x86_64-efi.rmk: likewise
-	* include/grub/efi/efi.h (grub_efi_finish_boot_services): 
+	* include/grub/efi/efi.h (grub_efi_finish_boot_services):
 	new declaration
 	* include/grub/i386/macho.h: new file
 	* include/grub/i386/xnu.h: likewise
@@ -32,21 +32,21 @@
 	* include/grub/i386/pit.h: include grub/err.h
 	(grub_pit_wait): export
 	* util/grub.d/30_os-prober.in: support Darwin/Mac OS X
-	
+
 2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Efiemu
- 
+
 	* conf/i386-pc.rmk: new modules efiemu, efiemu_acpi, efiemu_pnvram,
-	_linux_efi, linux_efi. 
-	new files in grub-emu 
+	_linux_efi, linux_efi.
+	new files in grub-emu
 	new targets efiemu32.o and efiemu64.o
 	* loader/linux_normal_efiemu.c: likewise
 	* loader/i386/efi/linux.c: added preliminary efiemu support
-	* util/i386/pc/grub-install.in: add efiemu??.o to the list of 
+	* util/i386/pc/grub-install.in: add efiemu??.o to the list of
 	files to copy
 	* include/grub/autoefi.h: new file
-	* nclude/grub/i386/efiemu.h: likewise
+	* include/grub/i386/efiemu.h: likewise
 	* include/grub/i386/pc/efiemu.h: likewise
 	* include/grub/efi/api.h: add LL suffix when necessary
 	new definitions relating to tables
@@ -73,8 +73,8 @@
 	* efiemu/symbols.c: likewise
 	* efiemu/mm.c: likewise
 	* efiemu/loadcore32.c: likewise
- 	
-2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
+
+2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	ACPI spoofing
 
@@ -89,7 +89,7 @@
 	* conf/i386-efi.rmk: likewise
 	* conf/x86_64-efi.rmk: likewise
 
-2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
+2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Missing part from mmap patch
 
@@ -97,7 +97,7 @@
 	(grub_mmap_unregister)
 	(grub_mmap_free_and_unregister): use grub_mmap_register
 
-2009-05-02  Vladimir Serbinenko <phcoder@gmail.com>
+2009-05-02  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Mmap services
 
@@ -142,7 +142,7 @@
 	* mmap/i386/uppermem.c: likewise
 	* mmap/mmap.c: likewise
 	* mmap/efi/mmap.c: likewise
-	* kern/i386/coreboot/init.c (grub_machine_init): don't use 
+	* kern/i386/coreboot/init.c (grub_machine_init): don't use
 	grub_upper_mem
 	* kern/i386/pc/init.c (grub_lower_mem): removed variable
 	(grub_upper_mem): likewise
@@ -278,8 +278,8 @@
 	grub_register_rescue_parser and grub_register_rescue_reader, use
 	grub_reader_loop to enter input loop.
 
-	* kern/parser.c (grub_parser_spli_cmdline): Change type of getline
-	parameter.
+	* kern/parser.c (grub_parser_split_cmdline): Change type of
+	getline parameter.
 	(grub_parser_class): New variable.
 	(grub_parser_execute): New function.
 
@@ -349,7 +349,7 @@
 	parent's partition, don't copy it by reference, as it gets freed
 	on close.
 
-2009-04-27  Vladimir Serbinenko <phcoder@gmail.com>
+2009-04-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Preboot hooks support
 
@@ -367,14 +367,14 @@
 
 	Warning fix
 
-	* disk/scsi.c (grub_scsi_open): added missing cast when 
+	* disk/scsi.c (grub_scsi_open): added missing cast when
 	calling grub_dprintf
 
 2009-04-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Bug and warning fixes
 
-	* include/grub/i386/pc/init.h (grub_stop_floppy): added missing 
+	* include/grub/i386/pc/init.h (grub_stop_floppy): added missing
 	declaration
 	* commands/test.c (test_parse): fixed bug with file tests and corrected
 	declaration of find_file
@@ -399,13 +399,13 @@
 
 	Parttool autoloading and improvements
 
-	* Makefile.in (pkglib_DATA): add parttool.lst 
+	* Makefile.in (pkglib_DATA): add parttool.lst
 	(parttool.lst): new target
 	* genmk.rb: generate parttool-*
 	(CLEANFILES): add #{parttool}
 	(PARTTOOLFILES): new variable
 	* genparttoollist.sh: new file
-	* parttool/pcpart.c (grub_pcpart_boot): more feedback 
+	* parttool/pcpart.c (grub_pcpart_boot): more feedback
 	(grub_pcpart_type): likewise
 	* commands/parttool.c (helpmsg): new variable
 	(grub_cmd_parttool): output help if not enough arguments are supplied
@@ -414,10 +414,10 @@
 
 2009-04-24  David S. Miller  <davem@davemloft.net>
 
-	Avoiding openning same device multiple times in device iterator.
+	Avoiding opening same device multiple times in device iterator.
 
 	* kern/device.c: (grub_device_iterate): Define struct part_ent,
-	and use it to build a list of partitions in interate_disk() and
+	and use it to build a list of partitions in iterate_disk() and
 	iterate_partition().
 
 	* disk/fs_uuid.c (grub_fs_uuid_close): Call grub_disk_close()
@@ -476,11 +476,11 @@
 	images and installation utilities.  Build kernel as image
 	instead of as elf binary.  Use common rules as much as possible.
 
-2009-04-19  Vladimir Serbinenko <phcoder@gmail.com>
+2009-04-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Correct GPT definition
 
-	* include/grub/gpt_partition.h (grub_gpt_partentry): Corrected the type 
+	* include/grub/gpt_partition.h (grub_gpt_partentry): Corrected the type
 	of "attrib" member
 
 2009-04-19  Felix Zielcke  <fzielcke@z-51.de>
@@ -532,10 +532,10 @@
 2009-04-15  Felix Zielcke  <fzielcke@z-51.de>
 
 	* disk/lvm.c (grub_lvm_scan_device): Add `LVM' to the error messages,
-	that no multiple data or metadata areas are supported and `Unknown 
+	that no multiple data or metadata areas are supported and `Unknown
 	metadata header'.
 
-2009-04-15  Vladimir Serbinenko <phcoder@gmail.com>
+2009-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Move loader out of the kernel
 
@@ -560,20 +560,20 @@
 	(grub_emu_SOURCES): likewise
 	* conf/powerpc-ieee1275.rmk (kernel_elf_SOURCES): likewise
 	(grub_emu_SOURCES): likewise
-	* conf/sparcs64-ieee1275.rmk (kernel_elf_SOURCES): likewise
-	(grub_emu_SOURCES): likewise   
+	* conf/sparc64-ieee1275.rmk (kernel_elf_SOURCES): likewise
+	(grub_emu_SOURCES): likewise
 	* conf/x86_64-efi.rmk (kernel_elf_SOURCES): likewise
-	(grub_emu_SOURCES): likewise 
+	(grub_emu_SOURCES): likewise
 
-2009-04-15  Vladimir Serbinenko	 <phcoder@gmail.com>
+2009-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	use grub_lltoa instead of grub_itoa and grub_ltoa for all purposes
-	
+
 	* kern/misc.c (grub_itoa): Removed function
 	(grub_ltoa): likewise
 	(grub_vsprintf): use grub_lltoa
 
-2009-04-15  Vladimir Serbinenko	 <phcoder@gmail.com>
+2009-04-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Restore grub-emu
 
@@ -581,7 +581,7 @@
 	* conf/i386-coreboot.rmk: likewise
 	* conf/i386-ieee1275.rmk: likewise
 	* conf/powerpc-ieee1275.rmk: likewise
-	
+
 2009-04-15  Felix Zielcke  <fzielcke@z-51.de>
 
 	* INSTALL: Add that `./autogen.sh' needs to be run before
@@ -657,7 +657,7 @@
 	* INSTALL: Remove the sentence that Ruby and autoconf are only required if you
 	develop on GRUB.
 
-2009-04-14  John Stanley <jpsinthemix@verizon.net>
+2009-04-14  John Stanley  <jpsinthemix@verizon.net>
 	    David S. Miller  <davem@davemloft.net>
 
 	* util/hostdisk.c (make_device_name): Fix buffer length
@@ -679,7 +679,7 @@
 2009-04-13  Robert Millan  <rmh@aybabtu.com>
 
 	* util/grub.d/10_freebsd.in: Detect Debian GNU/kFreeBSD and use
-	that name for menuentries when appropiate.
+	that name for menuentries when appropriate.
 
 2009-04-13  Felix Zielcke  <fzielcke@z-51.de>
 
@@ -693,7 +693,7 @@
 2009-04-13  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/grub.d/10_freebsd.in: Don't exit if /boot/devices.hints
-	doestn't exist.  Check also for /boot/kernel/kernel.gz.  Print
+	doesn't exist.  Check also for /boot/kernel/kernel.gz.  Print
 	`freebsd_loadenv' only when devices.hints exist.
 
 2009-04-13  Pavel Roskin  <proski@gnu.org>
@@ -737,7 +737,7 @@
 
 	* configure.ac: Check for __bswapsi2 and__bswapdi2 using
 	target compiler.
-	
+
 	* genmk.rb: Add more flexible image type specification, also
 	pass --strip-unneeded to objcopy.
 	* conf/i386-pc.rmk: Use *_FORMAT.
@@ -761,9 +761,9 @@
 
 2009-04-12  Pavel Roskin  <proski@gnu.org>
 
-         * configure.ac: Change the logic when we check for target tools.
-         Do it when the target is specified and it's different from the
-         specified value of the host.
+	 * configure.ac: Change the logic when we check for target tools.
+	 Do it when the target is specified and it's different from the
+	 specified value of the host.
 
 2009-04-11  Felix Zielcke  <fzielcke@z-51.de>
 
@@ -846,7 +846,7 @@
 	* kern/ieee1275/openfw.c (grub_children_iterate): Likewise.
 	(grub_devalias_iterate): Likewise.
 
-2009-04-10  Vladimir Serbinenko	 <phcoder@gmail.com>
+2009-04-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	UFS improvements
 
@@ -888,7 +888,7 @@
 	(memrw_mod_CFLAGS): Likewise.
 	(memrw_mod_LDFLAGS): Likewise.
 
-	* conf/i386-efi.rmk (pkglig_MODULES): New module loadbios.mod and
+	* conf/i386-efi.rmk (pkglib_MODULES): New module loadbios.mod and
 	fixvideo.mod.
 	(loadbios_mod_SOURCE): New macro.
 	(loadbios_mod_CFLAGS): Likewise.
@@ -897,7 +897,7 @@
 	(fixvideo_mod_CFLAGS): Likewise.
 	(fixvideo_mod_LDFLAGS): Likewise.
 
-	* conf/x86_64.rmk (pkglig_MODULES): New module loadbios.mod and
+	* conf/x86_64.rmk (pkglib_MODULES): New module loadbios.mod and
 	fixvideo.mod.
 	(loadbios_mod_SOURCE): New macro.
 	(loadbios_mod_CFLAGS): Likewise.
@@ -933,7 +933,7 @@
 	cmd->flags to check for GRUB_PRIO_LIST_FLAG_ACTIVE.
 
 2009-04-06  Vladimir Serbinenko  <phcoder@gmail.com>
-	
+
 	Parttool
 
 	* parttool/pcpart.c: new file
@@ -945,7 +945,7 @@
 	(pcpart_mod_SOURCES): likewise
 	(pcpart_mod_CFLAGS): likewise
 	(pcpart_mod_LDFLAGS): likewise
-	* conf/i386-coreboot.rmk (grub_emu_SOURCES): added commands/parttool.c 
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): added commands/parttool.c
 	and parttool/pcpart.c
 	* conf/i386-efi.rmk: likewise
 	* conf/i386-ieee1275.rmk: likewise
@@ -959,10 +959,10 @@
 	Support for mtime and further expandability of dir command
 
 	* include/grub/lib/datetime.h: moved to ...
-	* include/grub/datetime.h: ... moved here and added 
+	* include/grub/datetime.h: ... moved here and added
 	declaration of grub_unixtime2datetime. All users updated
-	* include/grub/fs.h: new syntax for dir and mtime functionin 
-	struct grub_fs 
+	* include/grub/fs.h: new syntax for dir and mtime functions in
+	struct grub_fs
 	* include/grub/fshelp.h: new declarations of GRUB_FSHELP_TYPE_MASK
 	and GRUB_FSHELP_FLAGS_MASK
 	* commands/ls.c (grub_ls_list_files): Write mtime in long format
@@ -995,33 +995,33 @@
 	* normal/datetime.c: ... moved here
 	(grub_unixtime2datetime): new function
 	* kern/rescue.c (grub_rescue_print_files): use new dir syntax
-	* normal/completition.c (iterate_dir): use new dir syntax
-	* normal/misc.c (grub_normal_print_device_info): tell the 
+	* normal/completion.c (iterate_dir): use new dir syntax
+	* normal/misc.c (grub_normal_print_device_info): tell the
 	last modification time of a volume
-	* kern/fs.c (grub_fs_probe): updated dummy function to use new syntax 
+	* kern/fs.c (grub_fs_probe): updated dummy function to use new syntax
 	* conf/common.rmk: added lib/datetime.c to ls.mod
-	* conf/i386-coreboot.rmk (grub_emu_SOURCES): add normal/datetime.c  
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): add normal/datetime.c
 	(normal_mod_SOURCES): likewise
 	(datetime_mod_SOURCES): Removed lib/datetime.c
 	* conf/i386-efi.rmk: likewise
-	* conf/i386-ieee1275.rmk: likewise	
+	* conf/i386-ieee1275.rmk: likewise
 	* conf/i386-pc.rmk: likewise
 	* conf/powerpc-ieee1275.rmk: likewise
-	* conf/sparc64-ieee1275.rmk: likewise	
-	* conf/x86_64-efi.rmk: likewise	
+	* conf/sparc64-ieee1275.rmk: likewise
+	* conf/x86_64-efi.rmk: likewise
 
 2009-04-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Trim trailing spaces in FAT label and support mtools-like labels
-	
-	* fs/fat.c (grub_fat_iterate_dir): New function based 
+
+	* fs/fat.c (grub_fat_iterate_dir): New function based
 	on grub_fat_find_dir
 	(grub_fat_find_dir): use grub_fat_iterate_dir
 	(grub_fat_label): likewise
 
 2009-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* conf/powerpc-ieee1275.rmk (kernel_elf_HEADERS): add list.h 
+	* conf/powerpc-ieee1275.rmk (kernel_elf_HEADERS): add list.h
 	and command.h
 	remove extraneous kernel_elf_HEADERS
 
@@ -1058,7 +1058,7 @@
 2009-04-01  David S. Miller  <davem@davemloft.net>
 
 	* normal/sparc64/setjmp.S: Fix setjmp implementation.
-	* include/grub/sparc64/setjmp.h (grub_jmp_buf): Update.	 
+	* include/grub/sparc64/setjmp.h (grub_jmp_buf): Update.
 	(grub_setjmp): Mark with 'returns_twice' attribute.
 	* include/grub/i386/setjmp.h (grub_setjmp): Likewise
 	* include/grub/powerpc/setjmp.h (grub_setjmp): Likewise.
@@ -1121,7 +1121,7 @@
 
 	Make the format of Environment Block plain text. The boot loader
 	part is not tested well yet.
-	
+
 	* util/grub-editenv.c (DEFAULT_ENVBLK_SIZE): New macro.
 	(buffer): Removed.
 	(envblk): Likewise.
