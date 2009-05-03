@@ -221,7 +221,9 @@ for file in ${pkglibdir}/*.mod ${pkglibdir}/*.lst; do
 done
 if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     for file in ${pkglibdir}/*.img ${pkglibdir}/efiemu??.o; do
-        cp -f $file ${grubdir} || exit 1
+	if test -f $file; then
+	    cp -f $file ${grubdir} || exit 1
+	fi
     done
 fi
 

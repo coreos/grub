@@ -1,3 +1,10 @@
+2009-05-03  Pavel Roskin  <proski@gnu.org>
+
+	* util/i386/pc/grub-mkrescue.in: Allow for the case when
+	efiemu??.o doesn't exist.
+	* util/i386/pc/grub-install.in: Likewise.  Use "cp -f" for
+	copying.
+
 2009-05-03  Bean  <bean123ch@gmail.com> Vladimir Serbinenko <phcoder@gmail.com>
 
 	FreeBSD 64-bit support

@@ -116,10 +116,13 @@ fi
 aux_dir=`mktemp -d`
 mkdir -p ${aux_dir}/boot/grub
 
-cp ${input_dir}/*.mod ${input_dir}/efiemu??.o \
+for file in ${input_dir}/*.mod ${input_dir}/efiemu??.o \
   ${input_dir}/command.lst ${input_dir}/moddep.lst ${input_dir}/fs.lst \
-  ${input_dir}/handler.lst ${input_dir}/parttool.lst  \
-  ${aux_dir}/boot/grub/
+  ${input_dir}/handler.lst ${input_dir}/parttool.lst; do
+  if test -f "$file"; then
+    cp -f "$file" ${aux_dir}/boot/grub/
+  fi
+done
 
 modules="biosdisk `cat ${input_dir}/partmap.lst` ${modules}"
 for i in ${modules} ; do
