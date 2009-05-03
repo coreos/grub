@@ -473,6 +473,11 @@ AC_SUBST([enable_grub_mkfont])
 AC_SUBST([freetype_cflags])
 AC_SUBST([freetype_libs])
 
+AC_ARG_ENABLE([efiemu],
+	      [AS_HELP_STRING([--enable-efiemu],
+                             [build and install the efiemu runtimes])])
+AC_SUBST([enable_efiemu])
+
 # Output files.
 grub_CHECK_LINK_DIR
 if test x"$link_dir" = xyes ; then

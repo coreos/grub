@@ -1,3 +1,18 @@
+2009-05-03  Bean  <bean123ch@gmail.com>
+
+	* Makefile.in (enable_efiemu): New variable.
+
+	* conf/i386-pc.rmk: Only compile efiemu runtimes when enable_efiemu is
+	set.
+	(efiemu32.o): Use macro $< for source file, add $(srcdir) to include
+	path.
+	(efi64_c.o): Use macro $< for source file, add $(srcdir) to include
+	path, add -mno-red-zone option.
+	(efiemu64_s.o): Likewise.
+	(efiemu64.o): Use macro $^ for source file.
+
+	* configure.ac (--enable-efiemu): New option.
+
 2009-05-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	xnu support

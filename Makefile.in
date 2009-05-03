@@ -101,6 +101,7 @@ enable_lzo = @enable_lzo@
 enable_grub_mkfont = @enable_grub_mkfont@
 freetype_cflags = @freetype_cflags@
 freetype_libs = @freetype_libs@
+enable_efiemu = @enable_efiemu@
 
 ### General variables.
 
