@@ -1,5 +1,10 @@
 2009-05-03  Bean  <bean123ch@gmail.com>
 
+	* script/sh/execute.c (grub_script_execute_cmdif): Reset grub_errno
+	after we get the result of if statement.
+
+2009-05-03  Bean  <bean123ch@gmail.com>
+
 	* Makefile.in (enable_efiemu): New variable.
 
 	* conf/i386-pc.rmk: Only compile efiemu runtimes when enable_efiemu is

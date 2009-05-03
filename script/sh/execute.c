@@ -180,6 +180,8 @@ grub_script_execute_cmdif (struct grub_script_cmd *cmd)
   grub_script_execute_cmd (cmdif->exec_to_evaluate);
   result = grub_env_get ("?");
 
+  grub_errno = GRUB_ERR_NONE;
+
   /* Execute the `if' or the `else' part depending on the value of
      `?'.  */
   if (result && ! grub_strcmp (result, "0"))
