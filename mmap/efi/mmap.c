@@ -218,7 +218,7 @@ grub_mmap_unregister (int handle)
 }
 
 /* Result is always page-aligned. */
-char *
+void *
 grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)), 
 			       grub_uint64_t size,
 			       int *handle, int type, 

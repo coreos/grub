@@ -1,5 +1,10 @@
 2009-05-03  Pavel Roskin  <proski@gnu.org>
 
+	* mmap/efi/mmap.c (grub_mmap_malign_and_register): Return void*,
+	not char*.
+	* mmap/i386/mmap.c (grub_mmap_malign_and_register): Likewise.
+	Suggested by Javier Martín <lordhabbit@gmail.com>
+
 	* util/i386/pc/grub-mkrescue.in: Allow for the case when
 	efiemu??.o doesn't exist.
 	* util/i386/pc/grub-install.in: Likewise.  Use "cp -f" for

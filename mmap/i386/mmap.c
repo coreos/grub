@@ -26,7 +26,7 @@
 
 #ifndef GRUB_MMAP_REGISTER_BY_FIRMWARE
 
-char *
+void *
 grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
 			       int *handle, int type, int flags)
 {
@@ -48,7 +48,7 @@ grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
     return 0;
   }
 
-  char * ret;
+  void *ret;
   if (flags & GRUB_MMAP_MALLOC_LOW)
     {
       /* FIXME: use low-memory mm allocation once it's available. */

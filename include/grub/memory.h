@@ -30,7 +30,7 @@ grub_err_t grub_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 int grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type);
 grub_err_t grub_mmap_unregister (int handle);
 
-char *grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
+void *grub_mmap_malign_and_register (grub_uint64_t align, grub_uint64_t size,
 				     int *handle, int type, int flags);
 
 void grub_mmap_free_and_unregister (int handle);
