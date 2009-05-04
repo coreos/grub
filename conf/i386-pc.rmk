@@ -402,7 +402,7 @@ efiemu64.o: efiemu64_c.o efiemu64_s.o
 	ld -melf_x86_64 -o $@ -r $^ -nostdlib
 
 CLEANFILES += efiemu32.o efiemu64.o efiemu64_c.o efiemu64_s.o
-lib_DATA += efiemu32.o efiemu64.o
+pkglib_DATA += efiemu32.o efiemu64.o
 
 endif
 
