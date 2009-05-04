@@ -39,6 +39,14 @@
 #define GRUB_LINUX_CL_OFFSET		0x1000
 #define GRUB_LINUX_CL_END_OFFSET	0x2000
 
+/* This macro is useful for distributors, who can be certain they built FB support
+   into Linux, and therefore can benefit from seamless mode transition between
+   GRUB and Linux (saving boot time and visual glitches).  Official GRUB, OTOH,
+   needs to be conservative.  */
+#ifndef GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
+#define GRUB_ASSUME_LINUX_HAS_FB_SUPPORT 0
+#endif
+
 static grub_dl_t my_mod;
 
 static grub_size_t linux_mem_size;
@@ -332,9 +340,7 @@ grub_linux_boot (void)
   
   params = real_mode_mem;
 
-  if (vid_mode < GRUB_LINUX_VID_MODE_VESA_START ||
-      vid_mode >= GRUB_LINUX_VID_MODE_VESA_START +
-		  ARRAY_SIZE (linux_vesafb_modes))
+  if (vid_mode == GRUB_LINUX_VID_MODE_NORMAL || vid_mode == GRUB_LINUX_VID_MODE_EXTENDED)
     grub_video_restore ();
   else if (vid_mode)
     {
@@ -367,6 +373,12 @@ grub_linux_boot (void)
 	  return grub_errno;
 	}
     }
+#if ! GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
+  else
+    /* If user didn't request a video mode, and we can't assume Linux supports FB,
+       then we go back to text mode.  */
+    grub_video_restore ();
+#endif
 
   if (! grub_linux_setup_video (params))
     params->have_vga = GRUB_VIDEO_TYPE_VLFB;
@@ -593,7 +605,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	       (unsigned) real_size, (unsigned) prot_size);
 
   /* Look for memory size and video mode specified on the command line.  */
-  vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
+  vid_mode = 0;
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
     if (grub_memcmp (argv[i], "vga=", 4) == 0)
@@ -617,6 +629,22 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	  }
 	else
 	  vid_mode = (grub_uint16_t) grub_strtoul (val, 0, 0);
+
+	switch (vid_mode)
+	  {
+	  case 0:
+	    vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
+	    break;
+	  case 1:
+	    vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
+	    break;
+	  default:
+	    /* Ignore invalid values.  */
+	    if (vid_mode < GRUB_LINUX_VID_MODE_VESA_START ||
+		vid_mode >= GRUB_LINUX_VID_MODE_VESA_START +
+		ARRAY_SIZE (linux_vesafb_modes))
+	      vid_mode = 0;
+	  }
 
 	if (grub_errno)
 	  goto fail;

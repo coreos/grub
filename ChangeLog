@@ -1,3 +1,14 @@
+2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/linux.c (GRUB_ASSUME_LINUX_HAS_FB_SUPPORT): New macro.
+	(grub_linux_boot): Don't check for `linux_vesafb_modes' bounds (this
+	is done by grub_cmd_linux() now).
+	[! GRUB_ASSUME_LINUX_HAS_FB_SUPPORT]: If "vga=" parameter wasn't set,
+	restore video to text mode.
+	(grub_cmd_linux): Default `vid_mode' initialization to 0, which
+	indicates lack of "vga=" parameter.  "vga=0" is mapped to
+	`GRUB_LINUX_VID_MODE_NORMAL'.
+
 2009-05-04  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/i386-efi.rmk (grub_emu_SOURCES): Remove `normal/execute.c',
