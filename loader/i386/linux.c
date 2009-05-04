@@ -608,6 +608,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   vid_mode = 0;
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
+#ifdef GRUB_MACHINE_PCBIOS
     if (grub_memcmp (argv[i], "vga=", 4) == 0)
       {
 	/* Video mode selection support.  */
@@ -649,6 +650,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	if (grub_errno)
 	  goto fail;
       }
+#endif /* GRUB_MACHINE_PCBIOS */
     else if (grub_memcmp (argv[i], "mem=", 4) == 0)
       {
 	char *val = argv[i] + 4;
