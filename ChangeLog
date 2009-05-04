@@ -1,3 +1,7 @@
+2009-05-04  martin f. krafft <madduck@madduck.net>
+
+	* disk/raid.c (grub_raid_scan_device): Improve debug message.
+
 2009-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Updated copyright year
