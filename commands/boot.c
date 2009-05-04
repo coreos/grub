@@ -184,7 +184,6 @@ static grub_command_t cmd_boot;
 
 GRUB_MOD_INIT(boot)
 {
-  (void) mod;			/* To stop warning. */
   cmd_boot =
     grub_register_command ("boot", grub_cmd_boot,
 			   0, "boot an operating system");

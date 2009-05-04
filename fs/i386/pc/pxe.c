@@ -305,8 +305,6 @@ grub_pxe_unload (void)
 
 GRUB_MOD_INIT(pxe)
 {
-  (void) mod;			/* To stop warning. */
-
   grub_pxe_detect ();
   if (grub_pxe_pxenv)
     {

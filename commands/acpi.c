@@ -756,7 +756,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(acpi)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("acpi", grub_cmd_acpi, 
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "acpi [-1|-2] [--exclude=table1,table2|"

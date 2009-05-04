@@ -125,7 +125,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (hexdump)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("hexdump", grub_cmd_hexdump,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "hexdump [OPTIONS] FILE_OR_DEVICE",

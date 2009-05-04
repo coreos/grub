@@ -48,7 +48,6 @@ static struct grub_parser grub_sh_parser =
 
 GRUB_MOD_INIT(sh)
 {
-  (void) mod;
   grub_parser_register ("sh", &grub_sh_parser);
 }
 

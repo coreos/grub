@@ -243,7 +243,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(loop)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("loopback", grub_cmd_loopback,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "loopback [-d|-p] DEVICENAME FILE",

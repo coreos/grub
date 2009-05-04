@@ -38,7 +38,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(hello)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("hello", grub_cmd_hello, GRUB_COMMAND_FLAG_BOTH,
 			      "hello", "Say hello", 0);
 }

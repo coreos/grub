@@ -46,7 +46,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(reboot)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_command ("reboot", grub_cmd_reboot,
 			       0, "Reboot the computer");
 }

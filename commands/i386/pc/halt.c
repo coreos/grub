@@ -45,7 +45,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(halt)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("halt", grub_cmd_halt, GRUB_COMMAND_FLAG_BOTH,
 			      "halt [-n]",
 			      "Halt the system, if possible using APM",

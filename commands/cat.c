@@ -77,7 +77,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(cat)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_command_p1 ("cat", grub_cmd_cat,
 				  "cat FILE", "Show the contents of a file.");
 }

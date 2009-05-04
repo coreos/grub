@@ -412,7 +412,6 @@ static grub_command_t cmd_1, cmd_2;
 
 GRUB_MOD_INIT(test)
 {
-  (void)mod;			/* To stop warning. */
   cmd_1 = grub_register_command ("[", grub_cmd_test,
 				 "[ EXPRESSION ]", "Evaluate an expression");
   cmd_2 = grub_register_command ("test", grub_cmd_test,

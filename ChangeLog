@@ -1,3 +1,56 @@
+2009-05-03  Pavel Roskin  <proski@gnu.org>
+
+	* disk/ata.c: Don't cast mod to void in GRUB_MOD_INIT to
+	suppress warnings.  It's no longer needed.
+	* disk/host.c: Likewise.
+	* disk/ata_pthru.c: Likewise.
+	* disk/loopback.c: Likewise.
+	* hook/datehook.c: Likewise.
+	* parttool/pcpart.c: Likewise.
+	* fs/i386/pc/pxe.c: Likewise.
+	* fs/ntfscomp.c: Likewise.
+	* efiemu/main.c: Likewise.
+	* mmap/mmap.c: Likewise.
+	* commands/crc.c: Likewise.
+	* commands/hexdump.c: Likewise.
+	* commands/hdparm.c: Likewise.
+	* commands/acpi.c: Likewise.
+	* commands/echo.c: Likewise.
+	* commands/minicmd.c: Likewise.
+	* commands/blocklist.c: Likewise.
+	* commands/memrw.c: Likewise.
+	* commands/loadenv.c: Likewise.
+	* commands/usbtest.c: Likewise.
+	* commands/lsmmap.c: Likewise.
+	* commands/boot.c: Likewise.
+	* commands/parttool.c: Likewise.
+	* commands/configfile.c: Likewise.
+	* commands/search.c: Likewise.
+	* commands/ieee1275/suspend.c: Likewise.
+	* commands/cat.c: Likewise.
+	* commands/i386/pc/pxecmd.c: Likewise.
+	* commands/i386/pc/play.c: Likewise.
+	* commands/i386/pc/halt.c: Likewise.
+	* commands/i386/pc/vbeinfo.c: Likewise.
+	* commands/i386/pc/vbetest.c: Likewise.
+	* commands/lspci.c: Likewise.
+	* commands/date.c: Likewise.
+	* commands/handler.c: Likewise.
+	* commands/ls.c: Likewise.
+	* commands/test.c: Likewise.
+	* commands/cmp.c: Likewise.
+	* commands/efi/loadbios.c: Likewise.
+	* commands/efi/fixvideo.c: Likewise.
+	* commands/halt.c: Likewise.
+	* commands/help.c: Likewise.
+	* commands/reboot.c: Likewise.
+	* hello/hello.c: Likewise.
+	* script/sh/main.c: Likewise.
+	* loader/xnu.c: Likewise.
+	* term/terminfo.c: Likewise.
+	* term/i386/pc/serial.c: Likewise.
+	* term/usb_keyboard.c: Likewise.
+
 2009-05-03  David S. Miller  <davem@davemloft.net>
 
 	* normal/menu.c: Include grub/parser.h

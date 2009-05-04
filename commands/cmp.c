@@ -108,7 +108,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(cmp)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("cmp", grub_cmd_cmp,
 			       "cmp FILE1 FILE2", "Compare two files.");
 }

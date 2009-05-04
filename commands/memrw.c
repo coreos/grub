@@ -69,7 +69,6 @@ grub_cmd_write (grub_command_t cmd, int argc, char **argv)
 
 GRUB_MOD_INIT(memrw)
 {
-  (void) mod;			/* To stop warning. */
   cmd_read_byte =
     grub_register_command ("read_byte", grub_cmd_read,
 			   "read_byte ADDR", "read byte.");

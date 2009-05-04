@@ -87,7 +87,6 @@ static struct grub_disk_dev grub_host_dev =
 
 GRUB_MOD_INIT(host)
 {
-  (void) mod;			/* To stop warning. */
   grub_disk_dev_register (&grub_host_dev);
 }
 

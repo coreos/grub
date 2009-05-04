@@ -42,7 +42,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(lsmmap)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("lsmmap", grub_cmd_lsmmap,
 			       0, "List memory map provided by firmware.");
 }

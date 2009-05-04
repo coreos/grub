@@ -56,7 +56,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(crc)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("crc", grub_cmd_crc,
 			       "crc FILE",
 			       "Calculate the crc32 checksum of a file.");

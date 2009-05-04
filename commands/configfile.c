@@ -51,7 +51,6 @@ static grub_command_t cmd_configfile, cmd_source, cmd_dot;
 
 GRUB_MOD_INIT(configfile)
 {
-  (void) mod;                   /* To stop warning. */
   cmd_configfile =
     grub_register_command ("configfile", grub_cmd_source,
 			   "configfile FILE", "Load another config file.");

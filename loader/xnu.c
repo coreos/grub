@@ -1328,7 +1328,6 @@ static grub_command_t cmd_kernel, cmd_mkext, cmd_kext, cmd_kextdir,
 
 GRUB_MOD_INIT(xnu)
 {
-  (void) mod;			/* To stop warning. */
   cmd_kernel = grub_register_command ("xnu_kernel", grub_cmd_xnu_kernel, 0,
 				      "load a xnu kernel");
   cmd_mkext = grub_register_command ("xnu_mkext", grub_cmd_xnu_mkext, 0,

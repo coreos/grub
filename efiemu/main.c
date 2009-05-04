@@ -321,7 +321,6 @@ grub_efiemu_pnvram_cmd_register (void);
 
 GRUB_MOD_INIT(efiemu)
 {
-  (void) mod;			/* To stop warning. */
   cmd_loadcore = grub_register_command ("efiemu_loadcore", 
 					grub_cmd_efiemu_load, 
 				       "efiemu_loadcore FILE", 

@@ -607,7 +607,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(serial)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("serial", grub_cmd_serial,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "serial [OPTIONS...]",

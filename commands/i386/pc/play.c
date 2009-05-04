@@ -206,7 +206,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(play)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_command ("play", grub_cmd_play,
 			       "play FILE", "Play a tune");
 }

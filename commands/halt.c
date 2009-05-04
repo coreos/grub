@@ -43,7 +43,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(halt)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_command ("halt", grub_cmd_halt,
 			       0, "halts the computer.  This command does not"
 			       " work on all firmware.");

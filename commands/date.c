@@ -133,7 +133,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(date)
 {
-  (void) mod;			/* To stop warning. */
   cmd =
     grub_register_command ("date", grub_cmd_date,
 			   "date [[year-]month-day] [hour:minute[:second]]",

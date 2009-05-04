@@ -259,7 +259,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(ls)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("ls", grub_cmd_ls, GRUB_COMMAND_FLAG_BOTH,
 			      "ls [-l|-h|-a] [FILE]",
 			      "List devices and files.", options);

@@ -96,8 +96,6 @@ grub_ata_pass_through (grub_disk_t disk,
 
 GRUB_MOD_INIT(ata_pthru)
 {
-  (void) mod;
-
   /* Register ATA pass through function.  */
   grub_disk_ata_pass_through = grub_ata_pass_through;
 }

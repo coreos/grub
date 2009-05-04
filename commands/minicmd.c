@@ -341,8 +341,6 @@ static grub_command_t cmd_dump, cmd_rmmod, cmd_lsmod, cmd_exit;
 
 GRUB_MOD_INIT(minicmd)
 {
-  (void) mod;			/* To stop warning. */
-
   cmd_cat =
     grub_register_command ("cat", grub_mini_cmd_cat,
 			   "cat FILE", "show the contents of a file");

@@ -173,7 +173,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(vbeinfo)
 {
-  (void) mod;			/* To stop warning.  */
   cmd =
     grub_register_command ("vbeinfo", grub_cmd_vbeinfo, 0,
 			   "List compatible VESA BIOS extension video modes.");

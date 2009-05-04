@@ -381,8 +381,6 @@ static grub_extcmd_t cmd_load, cmd_list, cmd_save;
 
 GRUB_MOD_INIT(loadenv)
 {
-  (void) mod;
-
   cmd_load =
     grub_register_extcmd ("load_env", grub_cmd_load_env,
 			  GRUB_COMMAND_FLAG_BOTH,

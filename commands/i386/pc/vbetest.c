@@ -165,7 +165,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(vbetest)
 {
-  (void) mod;			/* To stop warning.  */
   cmd = grub_register_command ("vbetest", grub_cmd_vbetest,
 			       0, "Test VESA BIOS Extension 2.0+ support");
 }

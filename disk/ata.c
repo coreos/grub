@@ -835,8 +835,6 @@ static struct grub_scsi_dev grub_atapi_dev =
 
 GRUB_MOD_INIT(ata)
 {
-  (void) mod;			/* To stop warning. */
-
   /* To prevent two drivers operating on the same disks.  */
   grub_disk_firmware_is_tainted = 1;
   if (grub_disk_firmware_fini)

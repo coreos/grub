@@ -112,7 +112,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(echo)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("echo", grub_cmd_echo, GRUB_COMMAND_FLAG_BOTH,
 			      "echo [-e|-n] FILE", "Display a line of text.",
 			      options);

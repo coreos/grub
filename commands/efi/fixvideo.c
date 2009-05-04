@@ -98,7 +98,6 @@ static grub_command_t cmd_fixvideo;
 
 GRUB_MOD_INIT(fixvideo)
 {
-  (void) mod;			/* To stop warning. */
   cmd_fixvideo = grub_register_command ("fix_video", grub_cmd_fixvideo,
 					0, "Fix video problem.");
 

@@ -92,7 +92,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(help)
 {
-  (void)mod;			/* To stop warning. */
   cmd = grub_register_extcmd ("help", grub_cmd_help,
 			      GRUB_COMMAND_FLAG_CMDLINE,
 			      "help [PATTERN ...]",

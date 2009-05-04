@@ -198,7 +198,6 @@ static grub_command_t cmd_fakebios, cmd_loadbios;
 
 GRUB_MOD_INIT(loadbios)
 {
-  (void) mod;			/* To stop warning. */
   cmd_fakebios = grub_register_command ("fakebios", grub_cmd_fakebios,
 					0, "fake bios.");
 

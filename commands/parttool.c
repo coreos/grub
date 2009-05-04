@@ -327,7 +327,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(parttool)
 {
-  (void)mod;			/* To stop warning. */
   mymod = mod;
   cmd = grub_register_command ("parttool", grub_cmd_parttool, 
 			       "parttool PARTITION COMMANDS", 

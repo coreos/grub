@@ -93,7 +93,6 @@ static grub_command_t cmd_handler, cmd_terminal_input, cmd_terminal_output;
 
 GRUB_MOD_INIT(handler)
 {
-  (void)mod;			/* To stop warning. */
   cmd_handler =
     grub_register_command ("handler", grub_cmd_handler,
 			   "handler [class [handler]]",

@@ -220,7 +220,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(search)
 {
-  (void) mod;			/* To stop warning. */
   cmd =
     grub_register_extcmd ("search", grub_cmd_search,
 			  GRUB_COMMAND_FLAG_BOTH,

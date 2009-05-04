@@ -408,8 +408,6 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT(hdparm)
 {
-  (void) mod;
-
   cmd = grub_register_extcmd ("hdparm", grub_cmd_hdparm,
 			      GRUB_COMMAND_FLAG_BOTH,
 			      "hdparm [OPTIONS] DISK",

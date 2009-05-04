@@ -109,7 +109,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(blocklist)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("blocklist", grub_cmd_blocklist,
 			       "blocklist FILE", "Print a block list.");
 }

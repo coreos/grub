@@ -140,8 +140,6 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
 GRUB_MOD_INIT (pcpart)
 {
-  (void)mod;			/* To stop warning. */
-
   activate_table_handle = grub_parttool_register ("pc_partition_map", 
 						  grub_pcpart_boot,
 						  grub_pcpart_bootargs);

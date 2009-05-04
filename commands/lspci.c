@@ -158,7 +158,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(pci)
 {
-  (void) mod;			/* To stop warning. */
   cmd = grub_register_command ("lspci", grub_cmd_lspci,
 			       0, "List PCI devices");
 }

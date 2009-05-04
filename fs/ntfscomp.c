@@ -365,7 +365,6 @@ quit:
 
 GRUB_MOD_INIT (ntfscomp)
 {
-  (void) mod;
   grub_ntfscomp_func = ntfscomp;
 }
 
