@@ -3,6 +3,8 @@
 	* kern/ieee1275/openfw.c (grub_children_iterate): Fix string
 	pointer args to grub_ieee1275_get_property().
 
+	* conf/sparc64-ieee1275.rmk: Fix build due to missing '\'.
+
 2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/linux.h (GRUB_LINUX_VID_MODE_VESA_START): Set
