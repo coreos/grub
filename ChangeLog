@@ -1,5 +1,11 @@
 2009-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Updated copyright year
+
+	* fs/hfsplus.c: updated copyright year
+	
+2009-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	HFS+ UUID
 
 	* fs/hfsplus.c (grub_hfsplus_volheader): added num_serial field 
