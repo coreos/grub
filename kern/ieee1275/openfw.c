@@ -78,7 +78,7 @@ grub_children_iterate (char *devpath,
       struct grub_ieee1275_devalias alias;
       grub_ssize_t actual;
 
-      if (grub_ieee1275_get_property (child, "device_type", &childtype,
+      if (grub_ieee1275_get_property (child, "device_type", childtype,
 				      sizeof childtype, &actual))
 	continue;
 
@@ -86,7 +86,7 @@ grub_children_iterate (char *devpath,
 					 &actual))
 	continue;
 
-      if (grub_ieee1275_get_property (child, "name", &childname,
+      if (grub_ieee1275_get_property (child, "name", childname,
 				      sizeof childname, &actual))
 	continue;
 
