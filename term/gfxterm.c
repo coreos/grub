@@ -106,7 +106,6 @@ struct grub_virtual_screen
 
 static struct grub_virtual_screen virtual_screen;
 
-static grub_dl_t my_mod;
 static struct grub_video_mode_info mode_info;
 
 static struct grub_video_render_target *text_layer;
@@ -1154,7 +1153,6 @@ static grub_command_t cmd;
 
 GRUB_MOD_INIT(term_gfxterm)
 {
-  my_mod = mod;
   grub_term_register_output ("gfxterm", &grub_video_term);
   cmd = grub_register_command ("background_image",
 			       grub_gfxterm_background_image_cmd,

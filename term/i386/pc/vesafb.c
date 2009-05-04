@@ -89,7 +89,6 @@ static struct grub_virtual_screen virtual_screen =
     .text_buffer = 0
   };
 
-static grub_dl_t my_mod;
 static unsigned char *vga_font = 0;
 static grub_uint32_t old_mode = 0;
 
@@ -598,7 +597,6 @@ static struct grub_term_output grub_vesafb_term =
 
 GRUB_MOD_INIT(vesafb)
 {
-  my_mod = mod;
   grub_term_register_output ("vesafb", &grub_vesafb_term);
 }
 

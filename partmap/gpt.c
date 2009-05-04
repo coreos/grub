@@ -34,10 +34,6 @@ static const grub_gpt_part_type_t grub_gpt_partition_type_empty = GRUB_GPT_PARTI
 
 static struct grub_partition_map grub_gpt_partition_map;
 
-#ifndef GRUB_UTIL
-static grub_dl_t my_mod;
-#endif
-
 
 
 static grub_err_t
@@ -189,9 +185,6 @@ static struct grub_partition_map grub_gpt_partition_map =
 GRUB_MOD_INIT(gpt_partition_map)
 {
   grub_partition_map_register (&grub_gpt_partition_map);
-#ifndef GRUB_UTIL
-  my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(gpt_partition_map)

@@ -1,3 +1,15 @@
+2009-05-04  Pavel Roskin  <proski@gnu.org>
+
+	* commands/acpi.c: Remove unused variable my_mod.
+	* partmap/amiga.c: Likewise.
+	* partmap/apple.c: Likewise.
+	* partmap/gpt.c: Likewise.
+	* partmap/pc.c: Likewise.
+	* partmap/sun.c: Likewise.
+	* term/gfxterm.c: Likewise.
+	* term/i386/pc/vesafb.c: Likewise.
+	* term/i386/pc/vga.c: Likewise.
+
 2009-05-04  David S. Miller  <davem@davemloft.net>
 
 	* kern/ieee1275/openfw.c (grub_children_iterate): Fix string

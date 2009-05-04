@@ -94,10 +94,6 @@ struct grub_apple_part
 };
 
 static struct grub_partition_map grub_apple_partition_map;
-
-#ifndef GRUB_UTIL
-static grub_dl_t my_mod;
-#endif
 
 
 static grub_err_t
@@ -247,9 +243,6 @@ static struct grub_partition_map grub_apple_partition_map =
 GRUB_MOD_INIT(apple_partition_map)
 {
   grub_partition_map_register (&grub_apple_partition_map);
-#ifndef GRUB_UTIL
-  my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(apple_partition_map)

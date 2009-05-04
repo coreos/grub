@@ -67,10 +67,6 @@ struct grub_sun_block
 
 static struct grub_partition_map grub_sun_partition_map;
 
-#ifndef GRUB_UTIL
-static grub_dl_t my_mod;
-#endif
-
 /* Verify checksum (true=ok).  */
 static int
 grub_sun_is_valid (struct grub_sun_block *label)
@@ -211,9 +207,6 @@ static struct grub_partition_map grub_sun_partition_map =
 GRUB_MOD_INIT(sun_partition_map)
 {
   grub_partition_map_register (&grub_sun_partition_map);
-#ifndef GRUB_UTIL
-  my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(sun_partition_map)

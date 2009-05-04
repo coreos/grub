@@ -57,7 +57,6 @@ struct colored_char
   unsigned char index;
 };
 
-static grub_dl_t my_mod;
 static unsigned char text_mode;
 static unsigned xpos, ypos;
 static int cursor_state;
@@ -505,9 +504,6 @@ static struct grub_term_output grub_vga_term =
 
 GRUB_MOD_INIT(vga)
 {
-#ifndef GRUB_UTIL
-  my_mod = mod;
-#endif
   grub_term_register_output ("vga", &grub_vga_term);
 }
 

@@ -73,7 +73,6 @@ grub_byte_checksum (void *base, grub_size_t size)
 /* rev1 is 1 if ACPIv1 is to be generated, 0 otherwise. 
    rev2 contains the revision of ACPIv2+ to generate or 0 if none. */
 static int rev1, rev2;
-static grub_dl_t my_mod;
 /* OEMID of RSDP, RSDT and XSDT. */
 static char root_oemid[6];
 /* OEMTABLE of the same tables. */
@@ -764,7 +763,6 @@ GRUB_MOD_INIT(acpi)
 			      "Load host acpi tables and tables "
 			      "specified by arguments", 
 			      options);
-  my_mod=mod;
 }
 
 GRUB_MOD_FINI(acpi)
