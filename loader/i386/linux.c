@@ -650,8 +650,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	if (grub_errno)
 	  goto fail;
       }
+    else
 #endif /* GRUB_MACHINE_PCBIOS */
-    else if (grub_memcmp (argv[i], "mem=", 4) == 0)
+    if (grub_memcmp (argv[i], "mem=", 4) == 0)
       {
 	char *val = argv[i] + 4;
 	  
