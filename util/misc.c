@@ -52,6 +52,19 @@ char *progname = 0;
 int verbosity = 0;
 
 void
+grub_util_warn (const char *fmt, ...)
+{
+  va_list ap;
+  
+  fprintf (stderr, "%s: warn: ", progname);
+  va_start (ap, fmt);
+  vfprintf (stderr, fmt, ap);
+  va_end (ap);
+  fputc ('\n', stderr);
+  fflush (stderr);
+}
+
+void
 grub_util_info (const char *fmt, ...)
 {
   if (verbosity > 0)

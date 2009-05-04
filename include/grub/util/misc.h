@@ -40,6 +40,7 @@ extern char *progname;
 extern int verbosity;
 extern jmp_buf main_env;
 
+void grub_util_warn (const char *fmt, ...);
 void grub_util_info (const char *fmt, ...);
 void grub_util_error (const char *fmt, ...) __attribute__ ((noreturn));
 

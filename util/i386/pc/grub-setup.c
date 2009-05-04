@@ -86,7 +86,7 @@ grub_refresh (void)
 static void
 setup (const char *dir,
        const char *boot_file, const char *core_file,
-       const char *root, const char *dest, int must_embed)
+       const char *root, const char *dest, int must_embed, int force)
 {
   char *boot_path, *core_path, *core_path_dev;
   char *boot_img, *core_img;
@@ -109,7 +109,7 @@ setup (const char *dir,
   FILE *fp;
   struct { grub_uint64_t start; grub_uint64_t end; } embed_region;
   embed_region.start = embed_region.end = ~0UL;
-  int able_to_embed = 1;
+  int embedding_area_exists = 0;
   
   auto void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			       unsigned length);
@@ -304,12 +304,21 @@ setup (const char *dir,
   
   grub_util_info ("dos partition is %d, bsd partition is %d",
 		  dos_part, bsd_part);
+
+  if (! dest_dev->disk->has_partitions)
+    grub_util_warn ("Attempting to install GRUB to a partitionless disk.  This is a BAD idea.");
+
+  if (dest_dev->disk->partition)
+    grub_util_warn ("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.");
   
   /* If the destination device can have partitions and it is the MBR,
      try to embed the core image into after the MBR.  */
   if (dest_dev->disk->has_partitions && ! dest_dev->disk->partition)
     {
       grub_partition_iterate (dest_dev->disk, find_usable_region);
+
+      if (embed_region.end != 0)
+	embedding_area_exists = 1;
 
       /* If there is enough space...  */
       if ((unsigned long) core_sectors <= embed_region.end - embed_region.start)
@@ -349,18 +358,24 @@ setup (const char *dir,
 
 	  goto finish;
 	}
-      else
-        able_to_embed = 0;
     }
-  else
-    able_to_embed = 0;
 
-  if (must_embed && ! able_to_embed)
-    grub_util_error ("Core image is too big for embedding, but this is required when\n"
+  /* If we reached this point, it means we were unable to embed.  */
+
+  if (embedding_area_exists)
+    grub_util_warn ("Embedding area is too small for core.img.");
+  else
+    grub_util_warn ("Embedding area is not present at all!");
+  
+  if (must_embed)
+    grub_util_error ("Embedding is not possible, but this is required when "
 		     "the root device is on a RAID array or LVM volume.");
   
-  /* The core image must be put on a filesystem unfortunately.  */
-  grub_util_info ("will leave the core image on the filesystem");
+  grub_util_warn ("Embedding is not possible.  GRUB can only be installed in this "
+		  "setup by using blocklists.  However, blocklists are UNRELIABLE and "
+		  "its use is discouraged.");
+  if (! force)
+    grub_util_error ("If you really want blocklists, use --force.");
   
   /* Make sure that GRUB reads the identical image as the OS.  */
   tmp_img = xmalloc (core_size);
@@ -510,6 +525,7 @@ static struct option options[] =
     {"directory", required_argument, 0, 'd'},
     {"device-map", required_argument, 0, 'm'},
     {"root-device", required_argument, 0, 'r'},
+    {"force", no_argument, 0, 'f'},
     {"help", no_argument, 0, 'h'},
     {"version", no_argument, 0, 'V'},
     {"verbose", no_argument, 0, 'v'},
@@ -533,6 +549,7 @@ DEVICE must be a GRUB device (e.g. ``(hd0,1)'').\n\
   -d, --directory=DIR     use GRUB files in the directory DIR [default=%s]\n\
   -m, --device-map=FILE   use FILE as the device map [default=%s]\n\
   -r, --root-device=DEV   use DEV as the root device [default=guessed]\n\
+  -f, --force             install even if problems are detected\n\
   -h, --help              display this message and exit\n\
   -V, --version           print version information and exit\n\
   -v, --verbose           print verbose messages\n\
@@ -566,14 +583,14 @@ main (int argc, char *argv[])
   char *dev_map = 0;
   char *root_dev = 0;
   char *dest_dev;
-  int must_embed = 0;
+  int must_embed = 0, force = 0;
   
   progname = "grub-setup";
 
   /* Check for options.  */
   while (1)
     {
-      int c = getopt_long (argc, argv, "b:c:d:m:r:hVv", options, 0);
+      int c = getopt_long (argc, argv, "b:c:d:m:r:hVvf", options, 0);
 
       if (c == -1)
 	break;
@@ -615,6 +632,10 @@ main (int argc, char *argv[])
 	    root_dev = xstrdup (optarg);
 	    break;
 	    
+	  case 'f':
+	    force = 1;
+	    break;
+
 	  case 'h':
 	    usage (0);
 	    break;
@@ -716,7 +737,7 @@ main (int argc, char *argv[])
 	  setup (dir ? : DEFAULT_DIRECTORY,
 		 boot_file ? : DEFAULT_BOOT_FILE,
 		 core_file ? : DEFAULT_CORE_FILE,
-		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1);
+		 root_dev, grub_util_get_grub_dev (devicelist[i]), 1, force);
 	}
     }
   else
@@ -725,7 +746,7 @@ main (int argc, char *argv[])
     setup (dir ? : DEFAULT_DIRECTORY,
 	   boot_file ? : DEFAULT_BOOT_FILE,
 	   core_file ? : DEFAULT_CORE_FILE,
-	   root_dev, dest_dev, must_embed);
+	   root_dev, dest_dev, must_embed, force);
 
   /* Free resources.  */
   grub_fini_all ();

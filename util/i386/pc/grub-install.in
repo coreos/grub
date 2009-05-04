@@ -67,6 +67,7 @@ Install GRUB on your drive.
   --grub-probe=FILE       use FILE as grub-probe
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
+  --force                 install even if problems are detected
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
@@ -106,6 +107,8 @@ for option in "$@"; do
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
+    -f | --force)
+        setup_force="--force" ;;
     -*)
 	echo "Unrecognized option \`$option'" 1>&2
 	usage
@@ -297,7 +300,7 @@ if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
     $grub_mkimage --output=${grubdir}/core.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1
 
     # Now perform the installation.
-    $grub_setup ${setup_verbose} --directory=${grubdir} --device-map=${device_map} \
+    $grub_setup ${setup_verbose} ${setup_force} --directory=${grubdir} --device-map=${device_map} \
         ${install_device} || exit 1
 else
     $grub_mkimage -d ${pkglibdir} --output=/boot/multiboot.img --prefix=${prefix_drive}${relative_grubdir} $modules || exit 1

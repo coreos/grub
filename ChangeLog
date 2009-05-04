@@ -1,3 +1,18 @@
+2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/misc.c (grub_util_warn): New function.  Emmits a warning
+	unconditionally.
+	* include/grub/util/misc.h (grub_util_warn): New declaration.
+
+	* util/i386/pc/grub-install.in: Understand --force and pass it down
+	to grub-setup.
+
+	* util/i386/pc/grub-setup.c (main): Understand --force and pass it
+	down to setup().
+	(setup): Improve error messages and add warnings when requested to
+	install in odd layouts.  Refuse to install using blocklists unless
+	--force was set.
+
 2009-05-04  martin f. krafft <madduck@madduck.net>
 
 	* disk/raid.c (grub_raid_scan_device): Improve debug message.
