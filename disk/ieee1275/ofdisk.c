@@ -115,6 +115,38 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
   return grub_devalias_iterate (dev_iterate);
 }
 
+static char *
+compute_dev_path (const char *name)
+{
+  char *devpath = grub_malloc (grub_strlen (name) + 2);
+  char *p, c;
+
+  if (!devpath)
+    return NULL;
+
+  /* Un-escape commas. */
+  p = devpath;
+  while ((c = *name++) != '\0')
+    {
+      if (c == '\\' && *name == ',')
+	{
+	  *p++ = ',';
+	  name++;
+	}
+      else
+	*p++ = c;
+    }
+
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
+    {
+      *p++ = ':';
+      *p++ = '0';
+    }
+  *p++ = '\0';
+
+  return devpath;
+}
+
 static grub_err_t
 grub_ofdisk_open (const char *name, grub_disk_t disk)
 {
@@ -126,13 +158,9 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
   char prop[64];
   grub_ssize_t actual;
 
-  devpath = grub_strndup (name, grub_strlen (name) + 2);
+  devpath = compute_dev_path (name);
   if (! devpath)
     return grub_errno;
-
-  /* To access the complete disk add `:0'.  */
-  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
-    grub_strcat (devpath, ":0");
 
   op = ofdisk_hash_find (devpath);
   if (!op)

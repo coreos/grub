@@ -215,10 +215,28 @@ grub_disk_dev_iterate (int (*hook) (const char *name))
   return 0;
 }
 
+/* Return the location of the first ',', if any, which is not
+   escaped by a '\'.  */
+static const char *
+find_part_sep (const char *name)
+{
+  const char *p = name;
+  char c;
+
+  while ((c = *p++) != '\0')
+    {
+      if (c == '\\' && *p == ',')
+	p++;
+      else if (c == ',')
+	return p - 1;
+    }
+  return NULL;
+}
+
 grub_disk_t
 grub_disk_open (const char *name)
 {
-  char *p;
+  const char *p;
   grub_disk_t disk;
   grub_disk_dev_t dev;
   char *raw = (char *) name;
@@ -238,7 +256,7 @@ grub_disk_open (const char *name)
   if (! disk->name)
     goto fail;
   
-  p = grub_strchr (name, ',');
+  p = find_part_sep (name);
   if (p)
     {
       grub_size_t len = p - name;

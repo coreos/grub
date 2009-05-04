@@ -8,6 +8,17 @@
 	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Bypass cdrom
 	devices, and do not traverse down under controller nodes.
 
+	* disk/ieee1275/ofdisk.c (compute_dev_path): New.
+	(grub_ofdisk_open): Use it to un-escape "," characters.
+	* kern/disk.c (find_part_sep): New.
+	(grub_disk_open): Use it to find the first non-escaped ','
+	character in the disk name.
+	* util/ieee1275/devicemap.c (escape_of_path): New.
+	(grub_util_emit_devicemap_entry): Use it.
+	* util/sparc64/ieee1275/grub-install.in: Update script to
+	strip partition specifiers properly by not triggering on
+	'\' escaped ',' characters.
+
 2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/linux.h (GRUB_LINUX_VID_MODE_VESA_START): Set
