@@ -1,3 +1,18 @@
+2009-05-04  Felix Zielcke  <fzielcke@z-51.de>
+
+	* conf/i386-efi.rmk (grub_emu_SOURCES): Remove `normal/execute.c',
+	`normal/lexer.c', `kern/rescue.c', `normal/function.c', `normal/misc.c'
+	and `normal/script.c'.  Add `kern/rescue_reader.c',
+	`kern/rescue_parser.c', `script/sh/main.c', `script/sh/execute.c', 
+	`script/sh/function.c', `script/sh/lexer.c', `script/sh/script.c' and
+	`grub_script.tab.c'.
+
+	* conf/i386-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/x86_64-efi.rmk (grub_emu_SOURCES): Likewise.
+	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Likewise.
+	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
+
 2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/misc.c (grub_util_warn): New function.  Emmits a warning
