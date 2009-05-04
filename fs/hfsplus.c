@@ -61,7 +61,8 @@ struct grub_hfsplus_volheader
   grub_uint32_t utime;
   grub_uint8_t unused2[16];
   grub_uint32_t blksize;
-  grub_uint8_t unused3[68];
+  grub_uint8_t unused3[60];
+  grub_uint64_t num_serial;
   struct grub_hfsplus_forkdata allocations_file;
   struct grub_hfsplus_forkdata extents_file;
   struct grub_hfsplus_forkdata catalog_file;
@@ -983,6 +984,36 @@ grub_hfsplus_mtime (grub_device_t device, grub_int32_t *tm)
 
 }
 
+static grub_err_t
+grub_hfsplus_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_hfsplus_data *data;
+  grub_disk_t disk = device->disk;
+
+#ifndef GRUB_UTIL
+  grub_dl_ref (my_mod);
+#endif
+
+  data = grub_hfsplus_mount (disk);
+  if (data)
+    {
+      *uuid = grub_malloc (16 + sizeof ('\0'));
+      grub_sprintf (*uuid, "%016llx", 
+		    (unsigned long long) 
+		    grub_be_to_cpu64 (data->volheader.num_serial));
+    }
+  else
+    *uuid = NULL;
+
+#ifndef GRUB_UTIL
+  grub_dl_unref (my_mod);
+#endif
+
+  grub_free (data);
+
+  return grub_errno;
+}
+
 
 
 static struct grub_fs grub_hfsplus_fs =
@@ -994,6 +1025,7 @@ static struct grub_fs grub_hfsplus_fs =
     .close = grub_hfsplus_close,
     .label = grub_hfsplus_label,
     .mtime = grub_hfsplus_mtime,
+    .uuid = grub_hfsplus_uuid,
     .next = 0
   };
 

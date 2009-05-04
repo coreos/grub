@@ -1,3 +1,12 @@
+2009-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	HFS+ UUID
+
+	* fs/hfsplus.c (grub_hfsplus_volheader): added num_serial field 
+	in the space previously used by unused3
+	(grub_hfsplus_uuid): new function
+	(grub_hfsplus_fs): added uuid field
+
 2009-05-03  Pavel Roskin  <proski@gnu.org>
 
 	* disk/ata.c: Don't cast mod to void in GRUB_MOD_INIT to
