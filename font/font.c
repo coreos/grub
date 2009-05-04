@@ -186,7 +186,7 @@ font_init (grub_font_t font)
 
    On success, the section name is stored in section->name and the length in
    section->length, and 0 is returned.  On failure, 1 is returned and
-   grub_errno is set approriately with an error message.
+   grub_errno is set appropriately with an error message.
 
    If 1 is returned due to being at the end of the file, then section->eof is
    set to 1; otherwise, section->eof is set to 0.  */

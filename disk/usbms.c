@@ -179,7 +179,7 @@ grub_usbms_finddevs (void)
 	  /* XXX: Activate the first configuration.  */
 	  grub_usb_set_configuration (usbdev, 1);
 
-	  /* Bolk-Only Mass Storage Reset, after the reset commands
+	  /* Bulk-Only Mass Storage Reset, after the reset commands
 	     will be accepted.  */
 	  grub_usbms_reset (usbdev, i);
 
@@ -214,8 +214,8 @@ grub_usbms_iterate (int (*hook) (const char *name, int luns))
 }
 
 static grub_err_t
-grub_usbms_tranfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
-		    grub_size_t size, char *buf, int read_write)
+grub_usbms_transfer (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
+		     grub_size_t size, char *buf, int read_write)
 {
   struct grub_usbms_cbw cbw;
   grub_usbms_dev_t dev = (grub_usbms_dev_t) scsi->data;
@@ -322,14 +322,14 @@ static grub_err_t
 grub_usbms_read (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 		 grub_size_t size, char *buf)
 {
-  return grub_usbms_tranfer (scsi, cmdsize, cmd, size, buf, 0);
+  return grub_usbms_transfer (scsi, cmdsize, cmd, size, buf, 0);
 }
 
 static grub_err_t
 grub_usbms_write (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 		  grub_size_t size, char *buf)
 {
-  return grub_usbms_tranfer (scsi, cmdsize, cmd, size, buf, 1);
+  return grub_usbms_transfer (scsi, cmdsize, cmd, size, buf, 1);
 }
 
 static grub_err_t

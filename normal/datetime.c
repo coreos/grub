@@ -64,7 +64,7 @@ grub_unixtime2datetime (grub_int32_t nix, struct grub_datetime *datetime)
   /* In the period of validity of unixtime all years divisible by 4 
      are bissextile*/
   /* Convenience: let's have 3 consecutive non-bissextile years 
-     at the begining of the epoch. So count from 1973 instead of 1970 */
+     at the beginning of the epoch. So count from 1973 instead of 1970 */
   nix -= 3*SECPERYEAR + SECPERDAY;
   /* Transform C divisions and modulos to mathematical ones */
   div = nix / SECPER4YEARS;
@@ -73,8 +73,8 @@ grub_unixtime2datetime (grub_int32_t nix, struct grub_datetime *datetime)
   datetime->year = 1973 + 4 * div;
   nix -= div * SECPER4YEARS;
 
-  /* On 31st december of bissextile years 365 days from the begining 
-     of the year elapsed but year isn't finished yet*/
+  /* On 31st December of bissextile years 365 days from the beginning
+     of the year elapsed but year isn't finished yet */
   if (nix / SECPERYEAR == 4)
     {
       datetime->year += 3;

@@ -809,7 +809,7 @@ grub_reiserfs_iterate_dir (grub_fshelp_node_t item,
                   grub_uint32_t entry_block_number;
                   /* Order is very important here.
                      First set the offset to 0 using current key version.
-                     Then change the key type, which influes on key version
+                     Then change the key type, which affects key version
                      detection.  */
                   grub_reiserfs_set_key_offset (&entry_key, 0);
                   grub_reiserfs_set_key_type (&entry_key, GRUB_REISERFS_STAT,

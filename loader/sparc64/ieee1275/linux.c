@@ -97,7 +97,7 @@ grub_linux_boot (void)
 
   hp = (struct linux_hdrs *) linux_addr;
 
-  /* Any pointer we derefence in the kernel image must be relocated
+  /* Any pointer we dereference in the kernel image must be relocated
      to where we actually loaded the kernel.  */
   addr = (grub_addr_t) hp->bootstr_info;
   addr += (linux_addr - linux_entry);
@@ -474,7 +474,7 @@ fetch_translations (void)
 
   if (grub_ieee1275_get_property (node, "translations", of_trans, actual, &actual))
     {
-      grub_printf ("Cannot fetch /vritual-memory/translations property.\n");
+      grub_printf ("Cannot fetch /virtual-memory/translations property.\n");
       return;
     }
 

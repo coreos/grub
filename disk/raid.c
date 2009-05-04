@@ -573,7 +573,7 @@ insert_array (grub_disk_t disk, struct grub_raid_array *new_array,
       array->next = array_list;
       array_list = array;
 
-      /* RAID 1 doestn't use a chunksize but code assumes one so set
+      /* RAID 1 doesn't use a chunksize but code assumes one so set
 	 one. */
       if (array->level == 1)
 	array->chunk_size = 64;

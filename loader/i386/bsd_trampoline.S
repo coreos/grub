@@ -98,7 +98,7 @@ VARIABLE(grub_bsd64_trampoline_start)
 	orl	$CR0_PG, %eax
 	movl	%eax, %cr0
 
-	/* Now we're in compatability mode. set %cs for long mode.  */
+	/* Now we're in compatibility mode. set %cs for long mode.  */
 	/* lgdt */
 	.byte 0x0f
 	.byte 0x01

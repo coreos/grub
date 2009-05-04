@@ -83,7 +83,7 @@ struct grub_virtual_screen
   struct grub_colored_char *text_buffer;
 };
 
-/* Make seure text buffer is not marked as allocated.  */
+/* Make sure text buffer is not marked as allocated.  */
 static struct grub_virtual_screen virtual_screen =
   {
     .text_buffer = 0

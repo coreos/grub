@@ -77,7 +77,7 @@ struct grub_apple_part
   /* Reserved.  */
   grub_uint32_t reserved2;
   
-  /* The entrypoint of the bootcode.  */
+  /* The entry point of the bootcode.  */
   grub_uint32_t bootcode_entrypoint;
 
   /* Reserved.  */

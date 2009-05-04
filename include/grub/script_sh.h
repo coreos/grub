@@ -170,7 +170,7 @@ struct grub_parser_param
      function.  */
   struct grub_script_mem *func_mem;
 
-  /* When set to 0, no errors have occured during parsing.  */
+  /* When set to 0, no errors have occurred during parsing.  */
   int err;
 
   /* The memory that was used while parsing and scanning.  */

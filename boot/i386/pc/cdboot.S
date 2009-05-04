@@ -46,7 +46,7 @@ next:
 	. = start + 8
 
 bi_pvd:
-	.long 0		/* LBA of primary volume descript.  */
+	.long 0		/* LBA of primary volume descriptor.  */
 bi_file:
 	.long 0		/* LBA of boot file. */
 bi_length:

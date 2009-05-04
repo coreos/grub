@@ -212,7 +212,7 @@ grub_mmap_iterate (int NESTED_FUNC_ATTR (*hook) (grub_uint64_t,
 	if (present[k] && (curtype == -1 || priority[k] > priority[curtype]))
 	  curtype = k;
 
-      /* Anounce region to the hook if necessary. */
+      /* Announce region to the hook if necessary. */
       if ((curtype == -1 || curtype != lasttype) 
 	  && lastaddr != scanline_events[i].pos
 	  && lasttype != -1

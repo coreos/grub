@@ -121,7 +121,7 @@ grub_macho32_readfile (grub_macho_t macho, void *dest)
   grub_ssize_t read;
   if (! grub_macho_contains_macho32 (macho))
     return grub_error (GRUB_ERR_BAD_OS, 
-		       "Couldn't read arcitecture-specific part");
+		       "Couldn't read architecture-specific part");
 
   if (grub_file_seek (macho->file, macho->offset32) == (grub_off_t) -1)
     {
@@ -136,7 +136,7 @@ grub_macho32_readfile (grub_macho_t macho, void *dest)
     {
       grub_error_push ();
       return grub_error (GRUB_ERR_BAD_OS, 
-			 "Couldn't read arcitecture-specific part");
+			 "Couldn't read architecture-specific part");
     }
   return GRUB_ERR_NONE;
 }

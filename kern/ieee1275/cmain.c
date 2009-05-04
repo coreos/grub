@@ -130,7 +130,7 @@ grub_ieee1275_find_options (void)
 
 	 - SD cards.  These work fine.
 
-	 To avoid brekage, we only need to skip USB probing.  However,
+	 To avoid breakage, we only need to skip USB probing.  However,
 	 since detecting SD cards is more reliable, we do that instead.
       */
 

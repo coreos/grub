@@ -35,7 +35,7 @@ grub_strtosl (char *arg, char **end, int base)
   return grub_strtoul (arg, end, base);
 }
 
-/* Parse a test expression startion from *argn. */
+/* Parse a test expression starting from *argn. */
 static int
 test_parse (char **args, int *argn, int argc)
 {

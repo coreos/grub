@@ -1,3 +1,49 @@
+2009-05-04  Pavel Roskin  <proski@gnu.org>
+
+	* disk/ata.c: Spelling fixes.
+	* disk/raid.c: Likewise.
+	* disk/usbms.c: Likewise.
+	* disk/dmraid_nvidia.c: Likewise.
+	* kern/ieee1275/openfw.c: Likewise.
+	* kern/ieee1275/init.c: Likewise.
+	* kern/ieee1275/cmain.c: Likewise.
+	* boot/i386/pc/cdboot.S: Likewise.
+	* video/readers/png.c: Likewise.
+	* video/i386/pc/vbe.c: Likewise.
+	* fs/udf.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/reiserfs.c: Likewise.
+	* efiemu/runtime/efiemu.c: Likewise.
+	* efiemu/main.c: Likewise.
+	* efiemu/mm.c: Likewise.
+	* include/grub/elf.h: Likewise.
+	* include/grub/xnu.h: Likewise.
+	* include/grub/usbdesc.h: Likewise.
+	* include/grub/usb.h: Likewise.
+	* include/grub/script_sh.h: Likewise.
+	* include/grub/lib/LzmaEnc.h: Likewise.
+	* include/grub/efiemu/efiemu.h: Likewise.
+	* include/grub/command.h: Likewise.
+	* normal/menu.c: Likewise.
+	* normal/main.c: Likewise.
+	* normal/datetime.c: Likewise.
+	* bus/usb/uhci.c: Likewise.
+	* mmap/i386/uppermem.c: Likewise.
+	* mmap/mmap.c: Likewise.
+	* commands/acpi.c: Likewise.
+	* commands/test.c: Likewise.
+	* partmap/apple.c: Likewise.
+	* font/font.c: Likewise.
+	* loader/sparc64/ieee1275/linux.c: Likewise.
+	* loader/macho.c: Likewise.
+	* loader/i386/bsd_trampoline.S: Likewise.
+	* loader/i386/bsd.c: Likewise.
+	* loader/xnu.c: Likewise.
+	* term/i386/pc/vesafb.c: Likewise.
+	* term/usb_keyboard.c: Likewise.
+	* util/resolve.c: Likewise.
+	* util/getroot.c: Likewise.
+
 2009-05-04  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/i386-pc.rmk (libpkg_DATA): Rename to pkglib_DATA.

@@ -18,7 +18,7 @@
  */
 /*
   To keep efiemu runtime contiguous this mm is special. 
-  It uses deffered allocation.
+  It uses deferred allocation.
   In the first stage you may request memory with grub_efiemu_request_memalign
   It will give you a handle with which in the second phase you can access your 
   memory with grub_efiemu_mm_obtain_request (handle). It's guaranteed that
@@ -624,7 +624,7 @@ grub_efiemu_mm_do_alloc (void)
   if (!efiemu_mmap)
     {
       grub_efiemu_unload ();
-      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Couldn't initilaize mmap");
+      return grub_error (GRUB_ERR_OUT_OF_MEMORY, "Couldn't initialize mmap");
     }
 
   if ((err = efiemu_alloc_requests ()))

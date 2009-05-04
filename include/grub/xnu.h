@@ -27,7 +27,7 @@ struct grub_xnu_hibernate_header
   /* Size of the image. Notice that file containing image is usually bigger. */
   grub_uint64_t image_size;
   grub_uint8_t unknown1[8];
-  /* Where to copy lauchcode?*/
+  /* Where to copy launchcode? */
   grub_uint32_t launchcode_target_page;
   /* How many pages of launchcode? */
   grub_uint32_t launchcode_numpages;

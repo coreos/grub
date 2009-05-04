@@ -101,7 +101,7 @@ read_dep_list (FILE *fp)
 	  struct mod_list *mod;
 	  char *name;
 
-	  /* Skip white spaces.  */
+	  /* Skip whitespace.  */
 	  while (*p && isspace (*p))
 	    p++;
 
@@ -110,7 +110,7 @@ read_dep_list (FILE *fp)
 
 	  name = p;
 
-	  /* Skip non-WSPs.  */
+	  /* Skip non-whitespace.  */
 	  while (*p && ! isspace (*p))
 	    p++;
 

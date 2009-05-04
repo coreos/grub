@@ -116,7 +116,7 @@ extern grub_int16_t efiemu_time_zone;
 extern grub_uint8_t efiemu_time_daylight;
 extern grub_uint32_t efiemu_time_accuracy;
 
-/* Some standard functions because we need to be stadalone */
+/* Some standard functions because we need to be standalone */
 static void
 efiemu_memcpy (void *to, void *from, int count)
 {
@@ -251,7 +251,7 @@ EFI_FUNC (efiemu_set_time) (grub_efi_time_t *time)
   return GRUB_EFI_SUCCESS;
 }
 
-/* Folowing 2 functions are vendor specific. So announce it as unsupported */
+/* Following 2 functions are vendor specific. So announce it as unsupported */
 grub_efi_status_t
 EFI_FUNC (efiemu_get_wakeup_time) (grub_efi_boolean_t *enabled,
 				      grub_efi_boolean_t *pending,

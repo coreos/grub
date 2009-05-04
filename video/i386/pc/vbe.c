@@ -42,7 +42,7 @@ static struct grub_vbe_palette_data vga_colors[16] =
     {0x00, 0x00, 0xA8, 0x00}, // 4 = red
     {0xA8, 0x00, 0xA8, 0x00}, // 5 = magenta
     {0x00, 0x54, 0xA8, 0x00}, // 6 = brown
-    {0xA8, 0xA8, 0xA8, 0x00}, // 7 = ligth gray
+    {0xA8, 0xA8, 0xA8, 0x00}, // 7 = light gray
 
     {0x54, 0x54, 0x54, 0x00}, // 8 = dark gray
     {0xFE, 0x54, 0x54, 0x00}, // 9 = bright blue
@@ -1552,7 +1552,7 @@ grub_video_vbe_delete_render_target (struct grub_video_render_target *target)
   if (! target)
     return GRUB_ERR_NONE;
 
-  /* TODO: Delist render target fron render target list.  */
+  /* TODO: Delist render target from render target list.  */
 
   /* If this is software render target, free it's memory.  */
   if (target->is_allocated)

@@ -570,7 +570,7 @@ grub_udf_mount (grub_disk_t disk)
     }
 
   data->npd = data->npm = 0;
-  /* Locate Partiton Descriptor (PD) and Logical Volume Descriptor (LVD).  */
+  /* Locate Partition Descriptor (PD) and Logical Volume Descriptor (LVD).  */
   while (1)
     {
       struct grub_udf_tag tag;

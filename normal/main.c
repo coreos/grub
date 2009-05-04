@@ -390,8 +390,8 @@ grub_normal_init_page (void)
 
 static int reader_nested;
 
-/* Read the config file COFIG, and execute the menu interface or
-   the command-line interface if BATCH is false.  */
+/* Read the config file CONFIG and execute the menu interface or
+   the command line interface if BATCH is false.  */
 void
 grub_normal_execute (const char *config, int nested, int batch)
 {

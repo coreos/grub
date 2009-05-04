@@ -92,7 +92,7 @@ grub_usb_hid (void)
   /* Place the device in boot mode.  */
   grub_usb_control_msg (usbdev, 0x21, 0x0B, 0, 0, 0, 0);
 
-  /* Reports everytime an event occurs and not more often than that.  */
+  /* Reports every time an event occurs and not more often than that.  */
   grub_usb_control_msg (usbdev, 0x21, 0x0A, 0<<8, 0, 0, 0);
 }
 

@@ -56,7 +56,7 @@ struct grub_uhci_qh
   grub_uint8_t pad[8];
 } __attribute__ ((packed));
 
-/* UHCI Tranfer Descriptor.  */
+/* UHCI Transfer Descriptor.  */
 struct grub_uhci_td
 {
   /* Pointer to the next TD in the list.  */
@@ -248,7 +248,7 @@ grub_uhci_pci_iter (int bus, int device, int func,
   grub_uhci_writereg32 (u, GRUB_UHCI_REG_FLBASEADD,
 			(grub_uint32_t) u->framelist);
 
-  /* Make the Queue Heads point to eachother.  */
+  /* Make the Queue Heads point to each other.  */
   for (i = 0; i < 256; i++)
     {
       /* Point to the next QH.  */
@@ -482,7 +482,7 @@ grub_uhci_transfer (grub_usb_controller_t dev,
   grub_dprintf ("uhci", "initiate transaction\n");
 
   /* Wait until either the transaction completed or an error
-     occured.  */
+     occurred.  */
   for (;;)
     {
       grub_uhci_td_t errtd;
@@ -507,30 +507,30 @@ grub_uhci_transfer (grub_usb_controller_t dev,
 	  if (errtd->ctrl_status & (1 << 22))
 	    err = GRUB_USB_ERR_STALL;
 
-	  /* Check if an error related to the data buffer occured.  */
+	  /* Check if an error related to the data buffer occurred.  */
 	  if (errtd->ctrl_status & (1 << 21))
 	    err = GRUB_USB_ERR_DATA;
 
-	  /* Check if a babble error occured.  */
+	  /* Check if a babble error occurred.  */
 	  if (errtd->ctrl_status & (1 << 20))
 	    err = GRUB_USB_ERR_BABBLE;
  
-	  /* Check if a NAK occured.  */
+	  /* Check if a NAK occurred.  */
 	  if (errtd->ctrl_status & (1 << 19))
 	    err = GRUB_USB_ERR_NAK;
 
-	  /* Check if a timeout occured.  */
+	  /* Check if a timeout occurred.  */
 	  if (errtd->ctrl_status & (1 << 18))
 	    err = GRUB_USB_ERR_TIMEOUT;
 
-	  /* Check if a bitstuff error occured.  */
+	  /* Check if a bitstuff error occurred.  */
 	  if (errtd->ctrl_status & (1 << 17))
 	    err = GRUB_USB_ERR_BITSTUFF;
 
 	  if (err)
 	    goto fail;
 
-	  /* Fall through, no errors occured, so the QH might be
+	  /* Fall through, no errors occurred, so the QH might be
 	     updated.  */
 	  grub_dprintf ("uhci", "transaction fallthrough\n");
 	}
@@ -660,7 +660,7 @@ GRUB_MOD_INIT(uhci)
 {
   grub_uhci_inithw ();
   grub_usb_controller_dev_register (&usb_controller);
-  grub_dprintf ("uhci", "registed\n");
+  grub_dprintf ("uhci", "registered\n");
 }
 
 GRUB_MOD_FINI(uhci)

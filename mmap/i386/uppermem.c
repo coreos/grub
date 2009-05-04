@@ -63,7 +63,7 @@ grub_mmap_get_upper (void)
   return upper;
 }
 
-/* Count the continous bytes after 64 MiB. */
+/* Count the continuous bytes after 64 MiB. */
 grub_uint64_t 
 grub_mmap_get_post64 (void)
 {

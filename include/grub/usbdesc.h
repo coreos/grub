@@ -62,7 +62,7 @@ struct grub_usb_desc_config
 } __attribute__ ((packed));
 
 #if 0
-struct grub_usb_desc_ifassosiation
+struct grub_usb_desc_if_association
 {
   grub_uint8_t length;
   grub_uint8_t type;

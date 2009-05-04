@@ -155,7 +155,7 @@ struct grub_usb_device
   /* Device speed.  */
   grub_usb_speed_t speed;
 
-  /* All desciptors are read if this is set to 1.  */
+  /* All descriptors are read if this is set to 1.  */
   int initialized;
 
   /* Data toggle values (used for bulk transfers only).  */

@@ -83,7 +83,7 @@ grub_menu_set_timeout (int timeout)
 }
 
 /* Get the first entry number from the value of the environment variable NAME,
-   which is a space-separated list of nonnegative integers.  The entry number
+   which is a space-separated list of non-negative integers.  The entry number
    which is returned is stripped from the value of NAME.  If no entry number
    can be found, -1 is returned.  */
 static int

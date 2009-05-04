@@ -124,7 +124,7 @@ struct grub_hfs_extent_key
   grub_uint16_t first_block;
 } __attribute__ ((packed));
 
-/* A dirrect record.  This is used to find out the directory ID.  */
+/* A directory record.  This is used to find out the directory ID.  */
 struct grub_hfs_dirrec
 {
   /* For a directory, type == 1.  */
@@ -744,7 +744,7 @@ grub_hfs_find_node (struct grub_hfs_data *data, char *key,
       else
 	cmp = grub_hfs_cmp_extkeys (rec->key, (void *) key);
       
-      /* If the key is smaller or equal to the currect node, mark the
+      /* If the key is smaller or equal to the current node, mark the
 	 entry.  In case of a non-leaf mode it will be used to lookup
 	 the rest of the tree.  */
       if (cmp <= 0)

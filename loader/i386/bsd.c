@@ -394,7 +394,7 @@ grub_freebsd_list_modules (void)
     }
 }
 
-/* This function would be here but it's under different licence. */
+/* This function would be here but it's under different license. */
 #include "bsd_pagetable.c"
 
 struct gdt_descriptor

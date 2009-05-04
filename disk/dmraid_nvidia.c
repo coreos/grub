@@ -42,7 +42,7 @@
 #define NV_LEVEL_1_0		0x8180
 
 #define NV_ARRAY_FLAG_BOOT		1 /* BIOS use only.  */
-#define NV_ARRAY_FLAG_ERROR		2 /* Degraded or offling.  */
+#define NV_ARRAY_FLAG_ERROR		2 /* Degraded or offline.  */
 #define NV_ARRAY_FLAG_PARITY_VALID	4 /* RAID-3/5 parity valid.  */
 
 struct grub_nv_array

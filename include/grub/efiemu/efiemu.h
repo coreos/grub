@@ -99,7 +99,7 @@ typedef struct grub_efiemu_runtime_services64 grub_efiemu_runtime_services64_t;
 extern grub_efi_system_table32_t *grub_efiemu_system_table32;
 extern grub_efi_system_table64_t *grub_efiemu_system_table64;
 
-/* Convenience macroses to access currently loaded efiemu */
+/* Convenience macros to access currently loaded efiemu */
 #define grub_efiemu_system_table ((grub_efiemu_sizeof_uintn_t () == 8) \
 				  ? (void *) grub_efiemu_system_table64 \
 				  : (void *) grub_efiemu_system_table32)

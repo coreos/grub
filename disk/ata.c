@@ -439,7 +439,7 @@ grub_ata_pciinit (int bus, int device, int func,
 	  grub_errno = GRUB_ERR_NONE;
 	  grub_ata_device_initialize (controller * 2 + i, 0, rega, regb);
 
-	  /* Most errors rised by grub_ata_device_initialize() are harmless.
+	  /* Most errors raised by grub_ata_device_initialize() are harmless.
 	     They just indicate this particular drive is not responding, most
 	     likely because it doesn't exist.  We might want to ignore specific
 	     error types here, instead of printing them.  */
@@ -586,7 +586,7 @@ grub_ata_readwrite (grub_disk_t disk, grub_disk_addr_t sector,
 
       grub_dprintf("ata", "rw=%d, sector=%llu, batch=%u\n", rw, sector, batch);
 
-      /* Send read/write commmand.  */
+      /* Send read/write command.  */
       if (grub_ata_setaddress (dev, addressing, sector, batch))
 	return grub_errno;
 

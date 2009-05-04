@@ -214,7 +214,7 @@ grub_efiemu_load_file (const char *filename)
       return grub_error (grub_errno, "Couldn't init memory management");
     }
 
-  grub_dprintf ("efiemu", "mm inited\n");
+  grub_dprintf ("efiemu", "mm initialized\n");
 
   err = grub_efiemu_loadcore_init (file);
   if (err)

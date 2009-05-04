@@ -109,7 +109,7 @@ struct grub_png_data
 
   grub_uint8_t *cur_rgb;
 
-  int cur_colume, cur_filter, first_line;
+  int cur_column, cur_filter, first_line;
 };
 
 static grub_uint32_t
@@ -265,7 +265,7 @@ grub_png_decode_image_header (struct grub_png_data *data)
 
   data->raw_bytes = data->image_height * (data->image_width + 1) * data->bpp;
 
-  data->cur_colume = 0;
+  data->cur_column = 0;
   data->first_line = 1;
 
   if (grub_png_get_byte (data) != PNG_COMPRESSION_BASE)
@@ -522,7 +522,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
   if (--data->raw_bytes < 0)
     return grub_error (GRUB_ERR_BAD_FILE_TYPE, "image size overflown");
 
-  if (data->cur_colume == 0)
+  if (data->cur_column == 0)
     {
       if (n >= PNG_FILTER_VALUE_LAST)
 	return grub_error (GRUB_ERR_BAD_FILE_TYPE, "invalid filter value");
@@ -532,9 +532,9 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
   else
     *(data->cur_rgb++) = n;
 
-  data->cur_colume++;
+  data->cur_column++;
   row_bytes = data->image_width * data->bpp;
-  if (data->cur_colume == row_bytes + 1)
+  if (data->cur_column == row_bytes + 1)
     {
       grub_uint8_t *blank_line = NULL;
       grub_uint8_t *cur = data->cur_rgb - row_bytes;
@@ -623,7 +623,7 @@ grub_png_output_byte (struct grub_png_data *data, grub_uint8_t n)
       if (blank_line)
 	grub_free (blank_line);
 
-      data->cur_colume = 0;
+      data->cur_column = 0;
       data->first_line = 0;
     }
 

@@ -206,18 +206,18 @@ typedef struct
 #define EM_68HC12	53		/* Motorola M68HC12 */
 #define EM_MMA		54		/* Fujitsu MMA Multimedia Accelerator*/
 #define EM_PCP		55		/* Siemens PCP */
-#define EM_NCPU		56		/* Sony nCPU embeeded RISC */
+#define EM_NCPU		56		/* Sony nCPU embedded RISC */
 #define EM_NDR1		57		/* Denso NDR1 microprocessor */
 #define EM_STARCORE	58		/* Motorola Start*Core processor */
 #define EM_ME16		59		/* Toyota ME16 processor */
-#define EM_ST100	60		/* STMicroelectronic ST100 processor */
+#define EM_ST100	60		/* STMicroelectronics ST100 processor */
 #define EM_TINYJ	61		/* Advanced Logic Corp. Tinyj emb.fam*/
 #define EM_X86_64	62		/* AMD x86-64 architecture */
 #define EM_PDSP		63		/* Sony DSP Processor */
 
 #define EM_FX66		66		/* Siemens FX66 microcontroller */
 #define EM_ST9PLUS	67		/* STMicroelectronics ST9+ 8/16 mc */
-#define EM_ST7		68		/* STmicroelectronics ST7 8 bit mc */
+#define EM_ST7		68		/* STMicroelectronics ST7 8 bit mc */
 #define EM_68HC16	69		/* Motorola MC68HC16 microcontroller */
 #define EM_68HC11	70		/* Motorola MC68HC11 microcontroller */
 #define EM_68HC08	71		/* Motorola MC68HC08 microcontroller */
@@ -319,7 +319,7 @@ typedef struct
 #define SHT_FINI_ARRAY	  15		/* Array of destructors */
 #define SHT_PREINIT_ARRAY 16		/* Array of pre-constructors */
 #define SHT_GROUP	  17		/* Section group */
-#define SHT_SYMTAB_SHNDX  18		/* Extended section indeces */
+#define SHT_SYMTAB_SHNDX  18		/* Extended section indices */
 #define	SHT_NUM		  19		/* Number of defined types.  */
 #define SHT_LOOS	  0x60000000	/* Start OS-specific */
 #define SHT_GNU_LIBLIST	  0x6ffffff7	/* Prelink library list */
@@ -1191,7 +1191,7 @@ typedef struct
 #define R_SPARC_LM22		36	/* Low middle 22 bits of ... */
 #define R_SPARC_PC_HH22		37	/* Top 22 bits of pc rel 64 bit */
 #define R_SPARC_PC_HM10		38	/* High middle 10 bit of ... */
-#define R_SPARC_PC_LM22		39	/* Low miggle 22 bits of ... */
+#define R_SPARC_PC_LM22		39	/* Low middle 22 bits of ... */
 #define R_SPARC_WDISP16		40	/* PC relative 16 bit shifted */
 #define R_SPARC_WDISP19		41	/* PC relative 19 bit shifted */
 #define R_SPARC_7		43	/* Direct 7 bit */
@@ -1625,9 +1625,9 @@ typedef Elf32_Addr Elf32_Conflict;
 #define EFA_PARISC_1_1		    0x0210 /* PA-RISC 1.1 big-endian.  */
 #define EFA_PARISC_2_0		    0x0214 /* PA-RISC 2.0 big-endian.  */
 
-/* Additional section indeces.  */
+/* Additional section indices.  */
 
-#define SHN_PARISC_ANSI_COMMON	0xff00	   /* Section for tenatively declared
+#define SHN_PARISC_ANSI_COMMON	0xff00	   /* Section for tentatively declared
 					      symbols in ANSI C.  */
 #define SHN_PARISC_HUGE_COMMON	0xff01	   /* Common blocks in huge model.  */
 
@@ -1784,7 +1784,7 @@ typedef Elf32_Addr Elf32_Conflict;
 
 /* Legal values for sh_type field of Elf64_Shdr.  */
 
-/* These two are primerily concerned with ECOFF debugging info.  */
+/* These two are primarily concerned with ECOFF debugging info.  */
 #define SHT_ALPHA_DEBUG		0x70000001
 #define SHT_ALPHA_REGINFO	0x70000002
 
