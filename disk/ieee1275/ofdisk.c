@@ -106,13 +106,9 @@ grub_ofdisk_iterate (int (*hook) (const char *name))
 	    }
 	}
 
-      if (! grub_strcmp (alias->type, "block"))
+      if (! grub_strcmp (alias->type, "block") &&
+	  grub_strcmp (alias->name, "cdrom"))
 	ret = hook (alias->name);
-      else if ((! grub_strcmp (alias->type, "scsi"))
-	       || (! grub_strcmp (alias->type, "ide"))
-	       || (! grub_strcmp (alias->type, "ata")))
-	/* Search for block-type children of these bus controllers.  */
-	ret = grub_children_iterate (alias->name, dev_iterate);
       return ret;
     }
 

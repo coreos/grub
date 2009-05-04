@@ -5,6 +5,9 @@
 
 	* conf/sparc64-ieee1275.rmk: Fix build due to missing '\'.
 
+	* disk/ieee1275/ofdisk.c (grub_ofdisk_iterate): Bypass cdrom
+	devices, and do not traverse down under controller nodes.
+
 2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* include/grub/i386/linux.h (GRUB_LINUX_VID_MODE_VESA_START): Set
