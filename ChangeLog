@@ -13,6 +13,8 @@
 	* conf/i386-coreboot.rmk (grub_emu_SOURCES): Likewise.
 	* conf/sparc64-ieee1275.rmk (grub_emu_SOURCES): Likewise.
 
+	* Makefile.in: Remove duplicated 2008 in Copyright line.
+
 2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/misc.c (grub_util_warn): New function.  Emmits a warning
