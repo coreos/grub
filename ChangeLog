@@ -1,3 +1,12 @@
+2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* include/grub/i386/linux.h (GRUB_LINUX_VID_MODE_VESA_START): Set
+	to 0x300.
+	* loader/i386/linux.c (vga_modes, linux_vesafb_res): Add a few
+	resolutions.
+	(linux_vesafb_modes): Add a lot of additional modes to the list (based
+	on documentation from Wikipedia).
+
 2009-05-04  Pavel Roskin  <proski@gnu.org>
 
 	* disk/ata.c: Spelling fixes.
