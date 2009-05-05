@@ -237,8 +237,8 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     grub_drive="`$grub_probe --target=drive --device ${grub_device}`"
 
     # Strip partition number
-    install_drive="`echo ${install_drive} | sed -e s/\([^\]\),[0-9]*/\1/g`"
-    grub_drive="`echo ${grub_drive} | sed -e s/\([^\]\),[0-9]*/\1/g`"
+    install_drive="`echo ${install_drive} | sed -e 's/\([^\]\),[0-9]*/\1/g'`"
+    grub_drive="`echo ${grub_drive} | sed -e 's/\([^\]\),[0-9]*/\1/g'`"
     if [ "x${grub_drive}" != "x${install_drive}" ] ; then
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
         if [ "x${uuid}" = "x" ] ; then

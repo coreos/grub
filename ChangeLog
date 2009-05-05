@@ -1,3 +1,7 @@
+2009-05-05  David S. Miller  <davem@davemloft.net>
+
+	* util/sparc64/ieee1275/grub-install.in: Fix sed arg quoting.
+
 2009-05-05  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/dl.h [GRUB_UTIL]: Provide inline implementations
