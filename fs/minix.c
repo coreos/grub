@@ -112,9 +112,7 @@ struct grub_minix_data
   int filename_size;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static grub_err_t grub_minix_find_file (struct grub_minix_data *data,
 					const char *path);
@@ -607,9 +605,7 @@ static struct grub_fs grub_minix_fs =
 GRUB_MOD_INIT(minix)
 {
   grub_fs_register (&grub_minix_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(minix)

@@ -150,9 +150,7 @@ struct grub_fshelp_node
   unsigned int dir_off;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 
 /* Iterate over the susp entries, starting with block SUA_BLOCK on the
@@ -688,9 +686,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
       return hook (filename, &info);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_iso9660_mount (device->disk);
   if (! data)
@@ -717,9 +713,7 @@ grub_iso9660_dir (grub_device_t device, const char *path,
  fail:
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -733,9 +727,7 @@ grub_iso9660_open (struct grub_file *file, const char *name)
   struct grub_fshelp_node rootnode;
   struct grub_fshelp_node *foundnode;
   
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_iso9660_mount (file->device->disk);
   if (!data)
@@ -763,9 +755,7 @@ grub_iso9660_open (struct grub_file *file, const char *name)
   return 0;
   
  fail:
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   grub_free (data);
   
@@ -796,9 +786,7 @@ grub_iso9660_close (grub_file_t file)
 {
   grub_free (file->data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   return GRUB_ERR_NONE;
 }
@@ -832,9 +820,7 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
   struct grub_iso9660_data *data;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_iso9660_mount (disk);
   if (data)
@@ -868,9 +854,7 @@ grub_iso9660_uuid (grub_device_t device, char **uuid)
   else
     *uuid = NULL;
 
-#ifndef GRUB_UTIL
 	grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -894,9 +878,7 @@ static struct grub_fs grub_iso9660_fs =
 GRUB_MOD_INIT(iso9660)
 {
   grub_fs_register (&grub_iso9660_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(iso9660)

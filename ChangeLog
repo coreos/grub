@@ -1,3 +1,28 @@
+2009-05-05  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/dl.h [GRUB_UTIL]: Provide inline implementations
+	of grub_dl_ref() and grub_dl_unref().
+	* commands/parttool.c: Remove preprocessor conditionals around
+	grub_dl_ref() and grub_dl_unref().
+	* fs/affs.c: Likewise.
+	* fs/afs.c: Likewise.
+	* fs/cpio.c: Likewise.
+	* fs/ext2.c: Likewise.
+	* fs/fat.c: Likewise.
+	* fs/hfs.c: Likewise.
+	* fs/hfsplus.c: Likewise.
+	* fs/iso9660.c: Likewise.
+	* fs/jfs.c: Likewise.
+	* fs/minix.c: Likewise.
+	* fs/ntfs.c: Likewise.
+	* fs/reiserfs.c: Likewise.
+	* fs/sfs.c: Likewise.
+	* fs/udf.c: Likewise.
+	* fs/ufs.c: Likewise.
+	* fs/xfs.c: Likewise.
+	* include/grub/dl.h: Likewise.
+	* loader/xnu.c: Likewise.
+
 2009-05-04  Pavel Roskin  <proski@gnu.org>
 
 	* commands/acpi.c: Remove unused variable my_mod.

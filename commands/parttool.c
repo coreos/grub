@@ -46,10 +46,8 @@ grub_parttool_register(const char *part_name,
   struct grub_parttool *cur;
   int nargs = 0;
 
-#ifndef GRUB_UTIL
   if (! parts)
     grub_dl_ref (mymod);
-#endif
 
   cur = (struct grub_parttool *) grub_malloc (sizeof (struct grub_parttool));
   cur->next = parts;
@@ -89,10 +87,8 @@ grub_parttool_unregister (int handle)
 	prev = cur;
 	cur = cur->next;
       }
-#ifndef GRUB_UTIL
   if (! parts)
     grub_dl_unref (mymod);
-#endif
 }
 
 static grub_err_t

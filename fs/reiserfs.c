@@ -60,9 +60,7 @@
 
 #define S_IFLNK 0xA000
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 #define assert(boolean) real_assert (boolean, __FILE__, __LINE__)
 static inline void
@@ -986,9 +984,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
   grub_uint32_t block_number;
   grub_uint16_t entry_version, block_size, entry_location;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   data = grub_reiserfs_mount (file->device->disk);
   if (! data)
     goto fail;
@@ -1061,9 +1057,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
   assert (grub_errno != GRUB_ERR_NONE);
   grub_free (found);
   grub_free (data);
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   return grub_errno;
 }
 
@@ -1257,9 +1251,7 @@ grub_reiserfs_close (grub_file_t file)
 
   grub_free (data);
   grub_free (node);
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   return GRUB_ERR_NONE;
 }
 
@@ -1287,9 +1279,7 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
       grub_free (node);
       return hook (filename, &info);
     }
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   data = grub_reiserfs_mount (device->disk);
   if (! data)
     goto fail;
@@ -1311,16 +1301,12 @@ grub_reiserfs_dir (grub_device_t device, const char *path,
     goto fail;
   grub_reiserfs_iterate_dir (found, iterate);
   grub_free (data);
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   return GRUB_ERR_NONE;
 
  fail:
   grub_free (data);
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   return grub_errno;
 }
 
@@ -1347,9 +1333,7 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
   struct grub_reiserfs_data *data;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_reiserfs_mount (disk);
   if (data)
@@ -1364,9 +1348,7 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
   else
     *uuid = NULL;
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -1388,9 +1370,7 @@ static struct grub_fs grub_reiserfs_fs =
 GRUB_MOD_INIT(reiserfs)
 {
   grub_fs_register (&grub_reiserfs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(reiserfs)

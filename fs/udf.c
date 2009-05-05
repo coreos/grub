@@ -356,9 +356,7 @@ struct grub_fshelp_node
   int part_ref;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static grub_uint32_t
 grub_udf_get_block (struct grub_udf_data *data,
@@ -790,9 +788,7 @@ grub_udf_dir (grub_device_t device, const char *path,
       return hook (filename, &info);
   }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_udf_mount (device->disk);
   if (!data)
@@ -814,9 +810,7 @@ grub_udf_dir (grub_device_t device, const char *path,
 fail:
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -828,9 +822,7 @@ grub_udf_open (struct grub_file *file, const char *name)
   struct grub_fshelp_node rootnode;
   struct grub_fshelp_node *foundnode;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_udf_mount (file->device->disk);
   if (!data)
@@ -851,9 +843,7 @@ grub_udf_open (struct grub_file *file, const char *name)
   return 0;
 
 fail:
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -879,9 +869,7 @@ grub_udf_close (grub_file_t file)
       grub_free (node);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -916,9 +904,7 @@ static struct grub_fs grub_udf_fs = {
 GRUB_MOD_INIT (udf)
 {
   grub_fs_register (&grub_udf_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI (udf)

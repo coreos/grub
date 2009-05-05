@@ -135,9 +135,7 @@ struct grub_sfs_data
   char *label;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 
 /* Lookup the extent starting with BLOCK in the filesystem described
@@ -454,9 +452,7 @@ grub_sfs_open (struct grub_file *file, const char *name)
   struct grub_sfs_data *data;
   struct grub_fshelp_node *fdiro = 0;
   
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_sfs_mount (file->device->disk);
   if (!data)
@@ -483,9 +479,7 @@ grub_sfs_open (struct grub_file *file, const char *name)
     grub_free (data->label);
   grub_free (data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -496,9 +490,7 @@ grub_sfs_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -540,9 +532,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
       return hook (filename, &info);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_sfs_mount (device->disk);
   if (!data)
@@ -562,9 +552,7 @@ grub_sfs_dir (grub_device_t device, const char *path,
     grub_free (data->label);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -600,9 +588,7 @@ static struct grub_fs grub_sfs_fs =
 GRUB_MOD_INIT(sfs)
 {
   grub_fs_register (&grub_sfs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(sfs)

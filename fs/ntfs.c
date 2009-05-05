@@ -25,9 +25,7 @@
 #include <grub/fshelp.h>
 #include <grub/ntfs.h>
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 ntfscomp_func_t grub_ntfscomp_func;
 
@@ -885,10 +883,7 @@ grub_ntfs_dir (grub_device_t device, const char *path,
       return hook (filename, &info);
   }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
-
 
   data = grub_ntfs_mount (device->disk);
   if (!data)
@@ -915,9 +910,7 @@ fail:
       grub_free (data);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -928,9 +921,7 @@ grub_ntfs_open (grub_file_t file, const char *name)
   struct grub_ntfs_data *data = 0;
   struct grub_fshelp_node *mft = 0;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_ntfs_mount (file->device->disk);
   if (!data)
@@ -968,9 +959,7 @@ fail:
       grub_free (data);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -1011,9 +1000,7 @@ grub_ntfs_close (grub_file_t file)
       grub_free (data);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -1025,9 +1012,7 @@ grub_ntfs_label (grub_device_t device, char **label)
   struct grub_fshelp_node *mft = 0;
   char *pa;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   *label = 0;
 
@@ -1079,9 +1064,7 @@ fail:
       grub_free (data);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -1092,9 +1075,7 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   struct grub_ntfs_data *data;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_ntfs_mount (disk);
   if (data)
@@ -1105,9 +1086,7 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
   else
     *uuid = NULL;
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -1128,9 +1107,7 @@ static struct grub_fs grub_ntfs_fs = {
 GRUB_MOD_INIT (ntfs)
 {
   grub_fs_register (&grub_ntfs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI (ntfs)

@@ -1306,20 +1306,16 @@ grub_cmd_xnu_resume (grub_command_t cmd __attribute__ ((unused)),
 void
 grub_xnu_lock ()
 {
-#ifndef GRUB_UTIL
   if (!locked)
     grub_dl_ref (my_mod);
-#endif
   locked = 1;
 }
 
 void
 grub_xnu_unlock ()
 {
-#ifndef GRUB_UTIL
   if (locked)
     grub_dl_unref (my_mod);
-#endif
   locked = 0;
 }
 

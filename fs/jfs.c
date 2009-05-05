@@ -229,9 +229,7 @@ struct grub_jfs_diropen
 } __attribute__ ((packed));
 
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static grub_err_t grub_jfs_lookup_symlink (struct grub_jfs_data *data, int ino);
 
@@ -734,9 +732,7 @@ grub_jfs_dir (grub_device_t device, const char *path,
   struct grub_jfs_data *data = 0;
   struct grub_jfs_diropen *diro = 0;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_jfs_mount (device->disk);
   if (!data)
@@ -773,9 +769,7 @@ grub_jfs_dir (grub_device_t device, const char *path,
   grub_jfs_closedir (diro);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -787,9 +781,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
 {
   struct grub_jfs_data *data;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_jfs_mount (file->device->disk);
   if (!data)
@@ -814,9 +806,7 @@ grub_jfs_open (struct grub_file *file, const char *name)
   
  fail:
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   grub_free (data);
   
@@ -839,9 +829,7 @@ grub_jfs_close (grub_file_t file)
 {
   grub_free (file->data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   return GRUB_ERR_NONE;
 }
@@ -876,9 +864,7 @@ static struct grub_fs grub_jfs_fs =
 GRUB_MOD_INIT(jfs)
 {
   grub_fs_register (&grub_jfs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(jfs)

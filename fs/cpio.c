@@ -74,9 +74,7 @@ struct grub_cpio_data
   grub_uint32_t size;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static grub_err_t
 grub_cpio_find_file (struct grub_cpio_data *data, char **name,
@@ -192,9 +190,7 @@ grub_cpio_dir (grub_device_t device, const char *path,
   const char *np;
   int len;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   prev = 0;
 
@@ -251,9 +247,7 @@ fail:
   if (data)
     grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -266,9 +260,7 @@ grub_cpio_open (grub_file_t file, const char *name)
   char *fn;
   int i, j;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_cpio_mount (file->device->disk);
   if (!data)
@@ -322,9 +314,7 @@ fail:
   if (data)
     grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -344,9 +334,7 @@ grub_cpio_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -370,9 +358,7 @@ GRUB_MOD_INIT (tar)
 #endif
 {
   grub_fs_register (&grub_cpio_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 #ifdef MODE_USTAR

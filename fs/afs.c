@@ -175,9 +175,7 @@ struct grub_afs_data
   struct grub_fshelp_node diropen;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static grub_afs_off_t
 grub_afs_run_to_num (struct grub_afs_sblock *sb,
@@ -505,9 +503,7 @@ grub_afs_open (struct grub_file *file, const char *name)
   struct grub_afs_data *data;
   struct grub_fshelp_node *fdiro = 0;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_afs_mount (file->device->disk);
   if (! data)
@@ -532,9 +528,7 @@ fail:
     grub_free (fdiro);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -553,9 +547,7 @@ grub_afs_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -583,9 +575,7 @@ grub_afs_dir (grub_device_t device, const char *path,
       return hook (filename, &info);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_afs_mount (device->disk);
   if (! data)
@@ -603,9 +593,7 @@ grub_afs_dir (grub_device_t device, const char *path,
     grub_free (fdiro);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -623,9 +611,7 @@ static struct grub_fs grub_afs_fs = {
 GRUB_MOD_INIT (afs)
 {
   grub_fs_register (&grub_afs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI (afs)

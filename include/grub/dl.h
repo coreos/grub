@@ -82,8 +82,23 @@ grub_dl_t grub_dl_load_core (void *addr, grub_size_t size);
 int EXPORT_FUNC(grub_dl_unload) (grub_dl_t mod);
 void grub_dl_unload_unneeded (void);
 void grub_dl_unload_all (void);
+#ifdef GRUB_UTIL
+static inline int
+grub_dl_ref (grub_dl_t mod)
+{
+  (void) mod;
+  return 0;
+}
+static inline int
+grub_dl_unref (grub_dl_t mod)
+{
+  (void) mod;
+  return 0;
+}
+#else
 int EXPORT_FUNC(grub_dl_ref) (grub_dl_t mod);
 int EXPORT_FUNC(grub_dl_unref) (grub_dl_t mod);
+#endif
 void EXPORT_FUNC(grub_dl_iterate) (int (*hook) (grub_dl_t mod));
 grub_dl_t EXPORT_FUNC(grub_dl_get) (const char *name);
 grub_err_t EXPORT_FUNC(grub_dl_register_symbol) (const char *name, void *addr,

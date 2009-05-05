@@ -207,9 +207,7 @@ struct grub_ufs_data
   int linknest;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 /* Forward declaration.  */
 static grub_err_t grub_ufs_find_file (struct grub_ufs_data *data,
@@ -720,9 +718,7 @@ grub_ufs_label (grub_device_t device, char **label)
 {
   struct grub_ufs_data *data = 0;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   *label = 0;
 
@@ -733,9 +729,7 @@ grub_ufs_label (grub_device_t device, char **label)
         *label = grub_strdup ((char *) data->sblock.volume_name);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -748,9 +742,7 @@ grub_ufs_mtime (grub_device_t device, grub_int32_t *tm)
 {
   struct grub_ufs_data *data = 0;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_ufs_mount (device->disk);
   if (!data)
@@ -760,9 +752,7 @@ grub_ufs_mtime (grub_device_t device, grub_int32_t *tm)
   else
     *tm = grub_le_to_cpu64 (data->sblock.mtime2);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -786,9 +776,7 @@ static struct grub_fs grub_ufs_fs =
 GRUB_MOD_INIT(ufs)
 {
   grub_fs_register (&grub_ufs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(ufs)

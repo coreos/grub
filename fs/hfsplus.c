@@ -226,9 +226,7 @@ struct grub_hfsplus_data
   int embedded_offset;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 
 /* Return the offset of the record with the index INDEX, in the node
@@ -827,9 +825,7 @@ grub_hfsplus_open (struct grub_file *file, const char *name)
   struct grub_hfsplus_data *data;
   struct grub_fshelp_node *fdiro = 0;
   
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_hfsplus_mount (file->device->disk);
   if (!data)
@@ -855,9 +851,7 @@ grub_hfsplus_open (struct grub_file *file, const char *name)
     grub_free (fdiro);
   grub_free (data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -868,9 +862,7 @@ grub_hfsplus_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return GRUB_ERR_NONE;
 }
@@ -916,9 +908,7 @@ grub_hfsplus_dir (grub_device_t device, const char *path,
       return hook (filename, &info);
     }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_hfsplus_mount (device->disk);
   if (!data)
@@ -939,9 +929,7 @@ grub_hfsplus_dir (grub_device_t device, const char *path,
     grub_free (fdiro);
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return grub_errno;
 }
@@ -964,9 +952,7 @@ grub_hfsplus_mtime (grub_device_t device, grub_int32_t *tm)
   struct grub_hfsplus_data *data;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_hfsplus_mount (disk);
   if (!data)
@@ -974,9 +960,7 @@ grub_hfsplus_mtime (grub_device_t device, grub_int32_t *tm)
   else 
     *tm = grub_be_to_cpu32 (data->volheader.utime) - 2082844800;
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -990,9 +974,7 @@ grub_hfsplus_uuid (grub_device_t device, char **uuid)
   struct grub_hfsplus_data *data;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_hfsplus_mount (disk);
   if (data)
@@ -1005,9 +987,7 @@ grub_hfsplus_uuid (grub_device_t device, char **uuid)
   else
     *uuid = NULL;
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -1032,9 +1012,7 @@ static struct grub_fs grub_hfsplus_fs =
 GRUB_MOD_INIT(hfsplus)
 {
   grub_fs_register (&grub_hfsplus_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(hfsplus)

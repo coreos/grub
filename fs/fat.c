@@ -149,9 +149,7 @@ struct grub_fat_data
   grub_uint32_t uuid;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static int
 fat_log2 (unsigned x)
@@ -692,9 +690,7 @@ grub_fat_dir (grub_device_t device, const char *path,
   char *dirname = 0;
   char *p;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_fat_mount (disk);
   if (! data)
@@ -723,9 +719,7 @@ grub_fat_dir (grub_device_t device, const char *path,
   grub_free (dirname);
   grub_free (data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   return grub_errno;
 }
@@ -736,9 +730,7 @@ grub_fat_open (grub_file_t file, const char *name)
   struct grub_fat_data *data = 0;
   char *p = (char *) name;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_fat_mount (file->device->disk);
   if (! data)
@@ -767,9 +759,7 @@ grub_fat_open (grub_file_t file, const char *name)
   
   grub_free (data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   return grub_errno;
 }
@@ -786,9 +776,7 @@ grub_fat_close (grub_file_t file)
 {
   grub_free (file->data);
   
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   return grub_errno;
 }
@@ -810,9 +798,7 @@ grub_fat_label (grub_device_t device, char **label)
     return 0;
   }
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_fat_mount (disk);
   if (! data)
@@ -830,9 +816,7 @@ grub_fat_label (grub_device_t device, char **label)
 
  fail:
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -845,9 +829,7 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   struct grub_fat_data *data;
   grub_disk_t disk = device->disk;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_fat_mount (disk);
   if (data)
@@ -859,9 +841,7 @@ grub_fat_uuid (grub_device_t device, char **uuid)
   else
     *uuid = NULL;
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   grub_free (data);
 
@@ -883,9 +863,7 @@ static struct grub_fs grub_fat_fs =
 GRUB_MOD_INIT(fat)
 {
   grub_fs_register (&grub_fat_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(fat)

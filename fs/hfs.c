@@ -159,9 +159,7 @@ struct grub_hfs_record
   int datalen;
 };
 
-#ifndef GRUB_UTIL
 static grub_dl_t my_mod;
-#endif
 
 static int grub_hfs_find_node (struct grub_hfs_data *, char *,
 			       grub_uint32_t, int, char *, int);
@@ -972,9 +970,7 @@ grub_hfs_dir (grub_device_t device, const char *path,
   struct grub_hfs_data *data;
   struct grub_hfs_filerec frec;
 
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
   
   data = grub_hfs_mount (device->disk);
   if (!data)
@@ -995,9 +991,7 @@ grub_hfs_dir (grub_device_t device, const char *path,
  fail:
   grub_free (data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
   
   return grub_errno;
 }
@@ -1010,18 +1004,14 @@ grub_hfs_open (struct grub_file *file, const char *name)
   struct grub_hfs_data *data;
   struct grub_hfs_filerec frec;
   
-#ifndef GRUB_UTIL
   grub_dl_ref (my_mod);
-#endif
 
   data = grub_hfs_mount (file->device->disk);
   
   if (grub_hfs_find_dir (data, name, &frec, 0))
     {
       grub_free (data);
-#ifndef GRUB_UTIL
-  grub_dl_unref (my_mod);
-#endif
+      grub_dl_unref (my_mod);
       return grub_errno;
     }
   
@@ -1029,9 +1019,7 @@ grub_hfs_open (struct grub_file *file, const char *name)
     {
       grub_free (data);
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "not a file");
-#ifndef GRUB_UTIL
       grub_dl_unref (my_mod);
-#endif
       return grub_errno;
     }
   
@@ -1061,9 +1049,7 @@ grub_hfs_close (grub_file_t file)
 {
   grub_free (file->data);
 
-#ifndef GRUB_UTIL
   grub_dl_unref (my_mod);
-#endif
 
   return 0;
 }
@@ -1102,9 +1088,7 @@ static struct grub_fs grub_hfs_fs =
 GRUB_MOD_INIT(hfs)
 {
   grub_fs_register (&grub_hfs_fs);
-#ifndef GRUB_UTIL
   my_mod = mod;
-#endif
 }
 
 GRUB_MOD_FINI(hfs)
