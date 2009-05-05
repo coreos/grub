@@ -56,6 +56,7 @@ grub_emu_SOURCES = commands/minicmd.c commands/cat.c commands/cmp.c 	\
 	kern/device.c kern/disk.c kern/dl.c kern/elf.c kern/env.c	\
 	kern/err.c kern/file.c kern/fs.c commands/boot.c kern/main.c	\
 	kern/misc.c kern/parser.c kern/partition.c kern/reader.c	\
+	kern/rescue_reader.c kern/rescue_parser.c			\
 	kern/term.c kern/list.c kern/handler.c fs/fshelp.c		\
 	kern/command.c kern/corecmd.c commands/extcmd.c			\
 	lib/arg.c normal/cmdline.c normal/datetime.c 			\
