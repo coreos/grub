@@ -1,7 +1,7 @@
 2009-05-05  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
-	`kern/rescue_reader.c' and `kern/rescue_parser.c'.
+	`kern/rescue_reader.c', `kern/rescue_parser.c' and `normal/autofs.c'.
 
 2009-05-05  David S. Miller  <davem@davemloft.net>
 
