@@ -317,7 +317,7 @@ setup (const char *dir,
     {
       grub_partition_iterate (dest_dev->disk, find_usable_region);
 
-      if (embed_region.end != 0)
+      if (embed_region.end != embed_region.start)
 	embedding_area_exists = 1;
 
       /* If there is enough space...  */

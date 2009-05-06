@@ -1,3 +1,8 @@
+2009-05-06  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-setup.c (setup): Fix check for embed region
+	existance.
+
 2009-05-05  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/powerpc-ieee1275.rmk (grub_emu_SOURCES): Add
