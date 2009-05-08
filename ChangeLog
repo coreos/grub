@@ -1,3 +1,8 @@
+2009-05-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/i386/pc/grub-setup.c (setup): Factorize find_usable_region(),
+	split in two functions (one for msdos and one for gpt).
+
 2009-05-08  Pavel Roskin  <proski@gnu.org>
 
 	* disk/raid.c (grub_raid_block_xor): Make buf2 constant, it's

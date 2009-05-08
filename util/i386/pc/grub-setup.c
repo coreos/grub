@@ -93,6 +93,7 @@ setup (const char *dir,
   size_t boot_size, core_size;
   grub_uint16_t core_sectors;
   grub_device_t root_dev, dest_dev;
+  const char *dest_partmap;
   grub_uint8_t *boot_drive, *root_drive;
   grub_disk_addr_t *kernel_sector;
   grub_uint16_t *boot_drive_check;
@@ -116,38 +117,41 @@ setup (const char *dir,
   auto void NESTED_FUNC_ATTR save_blocklists (grub_disk_addr_t sector, unsigned offset,
 			     unsigned length);
 
-  auto int find_usable_region (grub_disk_t disk,
-			       const grub_partition_t p);
-  int find_usable_region (grub_disk_t disk __attribute__ ((unused)),
-			  const grub_partition_t p)
+  auto int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk,
+						      const grub_partition_t p);
+  int NESTED_FUNC_ATTR find_usable_region_msdos (grub_disk_t disk __attribute__ ((unused)),
+						 const grub_partition_t p)
     {
-      if (! strcmp (p->partmap->name, "pc_partition_map"))
+      struct grub_pc_partition *pcdata = p->data;
+      
+      /* There's always an embed region, and it starts right after the MBR.  */
+      embed_region.start = 1;
+      
+      /* For its end offset, include as many dummy partitions as we can.  */
+      if (! grub_pc_partition_is_empty (pcdata->dos_type)
+	  && ! grub_pc_partition_is_bsd (pcdata->dos_type)
+	  && embed_region.end > p->start)
+	embed_region.end = p->start;
+      
+      return 1;
+    }
+  
+  auto int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk,
+						    const grub_partition_t p);
+  int NESTED_FUNC_ATTR find_usable_region_gpt (grub_disk_t disk __attribute__ ((unused)),
+					       const grub_partition_t p)
+    {
+      struct grub_gpt_partentry *gptdata = p->data;
+      
+      /* If there's an embed region, it is in a dedicated partition.  */
+      if (! memcmp (&gptdata->type, &grub_gpt_partition_type_bios_boot, 16))
 	{
-	  struct grub_pc_partition *pcdata = p->data;
+	  embed_region.start = p->start;
+	  embed_region.end = p->start + p->len;
 	  
-	  /* There's always an embed region, and it starts right after the MBR.  */
-	  embed_region.start = 1;
-	  
-	  /* For its end offset, include as many dummy partitions as we can.  */
-	  if (! grub_pc_partition_is_empty (pcdata->dos_type)
-	      && ! grub_pc_partition_is_bsd (pcdata->dos_type)
-	      && embed_region.end > p->start)
-	    embed_region.end = p->start;
+	  return 1;
 	}
-      else
-	{
-	  struct grub_gpt_partentry *gptdata = p->data;
-	  
-	  /* If there's an embed region, it is in a dedicated partition.  */
-	  if (! memcmp (&gptdata->type, &grub_gpt_partition_type_bios_boot, 16))
-	    {
-	      embed_region.start = p->start;
-	      embed_region.end = p->start + p->len;
-	      
-	      return 1;
-	    }
-	}
-
+      
       return 0;
     }
   
@@ -315,11 +319,24 @@ setup (const char *dir,
      try to embed the core image into after the MBR.  */
   if (dest_dev->disk->has_partitions && ! dest_dev->disk->partition)
     {
-      grub_partition_iterate (dest_dev->disk, find_usable_region);
+      /* Unlike root_dev, with dest_dev we're interested in the partition map even
+	 if dest_dev itself is a whole disk.  */
+      auto int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk,
+						  const grub_partition_t p);
+      int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
+					     const grub_partition_t p)
+	{
+	  dest_partmap = p->partmap->name;
+	  return 1;
+	}
+      grub_partition_iterate (dest_dev->disk, identify_partmap);
 
+      grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "pc_partition_map") ?
+					       find_usable_region_gpt : find_usable_region_msdos));
+      
       if (embed_region.end != embed_region.start)
 	embedding_area_exists = 1;
-
+      
       /* If there is enough space...  */
       if ((unsigned long) core_sectors <= embed_region.end - embed_region.start)
 	{
@@ -359,9 +376,9 @@ setup (const char *dir,
 	  goto finish;
 	}
     }
-
+  
   /* If we reached this point, it means we were unable to embed.  */
-
+  
   if (embedding_area_exists)
     grub_util_warn ("Embedding area is too small for core.img.");
   else
