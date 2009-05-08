@@ -1,3 +1,10 @@
+2009-05-08  Pavel Roskin  <proski@gnu.org>
+
+	* disk/raid6_recover.c (grub_raid6_recover): Fix warnings about
+	uninitialized err[0] and err[1].  Rename them to bad1 and bad2.
+	Initialize them with -1.  Add sanity check for bad1.  Eliminate
+	nerr variable.
+
 2009-05-08  David S. Miller  <davem@davemloft.net>
 
 	* util/sparc64/ieee1275/grub-ofpathname.c (main): Set progname.
