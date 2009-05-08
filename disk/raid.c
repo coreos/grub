@@ -172,12 +172,13 @@ grub_raid_close (grub_disk_t disk __attribute ((unused)))
 }
 
 void
-grub_raid_block_xor (char *buf1, char *buf2, int size)
+grub_raid_block_xor (char *buf1, const char *buf2, int size)
 {
-  grub_size_t *p1, *p2;
+  grub_size_t *p1;
+  const grub_size_t *p2;
 
   p1 = (grub_size_t *) buf1;
-  p2 = (grub_size_t *) buf2;
+  p2 = (const grub_size_t *) buf2;
   size /= GRUB_CPU_SIZEOF_VOID_P;
 
   while (size)
