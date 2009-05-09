@@ -1,3 +1,10 @@
+2009-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fixed grub-emu
+
+	* kern/dl.c (grub_dl_ref): omit when compiling grub-emu
+	(grub_dl_ref): likewise
+
 2009-05-08  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (setup): Factorize find_usable_region(),
