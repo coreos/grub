@@ -343,7 +343,12 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	loopback.mod fs_uuid.mod configfile.mod echo.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
-	pcpart.mod memrw.mod boot.mod normal.mod sh.mod
+	pcpart.mod memrw.mod boot.mod normal.mod sh.mod gptsync.mod
+
+# For gptsync.mod.
+gptsync_mod_SOURCES = commands/gptsync.c
+gptsync_mod_CFLAGS = $(COMMON_CFLAGS)
+gptsync_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For boot.mod.
 boot_mod_SOURCES = commands/boot.c

@@ -1,3 +1,20 @@
+2009-05-09  Vladimir Serbinenko <phcoder@gmail.com>
+
+	gptsync
+
+	* commands/gptsync.c: new file
+	* conf/common.rmk (pkglib_MODULES): add gptsync.mod
+	(gptsync_mod_SOURCES): new variable
+	(gptsync_mod_CFLAGS): likewise
+	(gptsync_mod_LDFLAGS): likewise
+	* include/grub/pc_partition.h (GRUB_PC_PARTITION_TYPE_NTFS): 
+	new definition
+	(GRUB_PC_PARTITION_TYPE_HFS): likewise
+	* conf/i386-coreboot.rmk (grub_emu_SOURCES): add commands/gptsync.c
+	* conf/i386-ieee1275.rmk: likewise
+	* conf/i386-pc.rmk: likewise
+	* conf/powerpc-ieee1275.rmk: likewise
+
 2009-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fixed grub-emu
