@@ -90,7 +90,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
     }
 
   /* Read the protective MBR.  */
-  if (grub_disk_read (dev->disk, 0, 0, sizeof (mbr), (char *) &mbr))
+  if (grub_disk_read (dev->disk, 0, 0, sizeof (mbr), &mbr))
     {
       grub_device_close (dev);
       return grub_errno;
@@ -222,7 +222,7 @@ grub_cmd_gptsync (grub_command_t cmd __attribute__ ((unused)),
 
   mbr.signature = grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE);
 
-  if (grub_disk_write (dev->disk, 0, 0, sizeof (mbr), (char *) &mbr))
+  if (grub_disk_write (dev->disk, 0, 0, sizeof (mbr), &mbr))
     {
       grub_device_close (dev);
       return grub_errno;

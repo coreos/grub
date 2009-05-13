@@ -183,7 +183,7 @@ grub_fat_mount (grub_disk_t disk)
     goto fail;
 
   /* Read the BPB.  */
-  if (grub_disk_read (disk, 0, 0, sizeof (bpb), (char *) &bpb))
+  if (grub_disk_read (disk, 0, 0, sizeof (bpb), &bpb))
     goto fail;
 
   if (grub_strncmp((const char *) bpb.version_specific.fat12_or_fat16.fstype, "FAT12", 5)
@@ -294,7 +294,7 @@ grub_fat_mount (grub_disk_t disk)
 		      data->fat_sector,
 		      0,
 		      sizeof (first_fat),
-		      (char *) &first_fat))
+		      &first_fat))
     goto fail;
 
   first_fat = grub_le_to_cpu32 (first_fat);

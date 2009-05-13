@@ -1,3 +1,10 @@
+2009-05-13  Pavel Roskin  <proski@gnu.org>
+
+	* kernel/disk.c (grub_disk_read): Use void pointer for the
+	buffer.
+	(grub_disk_write): Use const void pointer for the buffer.
+	Adjust all callers.  Remove unnecessary casts.
+
 2009-05-10  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-install.in: Update copyright year.

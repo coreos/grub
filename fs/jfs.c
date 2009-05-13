@@ -309,7 +309,7 @@ grub_jfs_read_inode (struct grub_jfs_data *data, int ino,
   if (grub_disk_read (data->disk,
 		      iagblk << (grub_le_to_cpu16 (data->sblock.log2_blksz)
 				 - GRUB_DISK_SECTOR_BITS), 0,
-		      sizeof (struct grub_jfs_iag), (char *) &iag))
+		      sizeof (struct grub_jfs_iag), &iag))
     return grub_errno;
   
   inoblk = grub_le_to_cpu32 (iag.inodes[inoext].blk2);
@@ -318,7 +318,7 @@ grub_jfs_read_inode (struct grub_jfs_data *data, int ino,
   inoblk += inonum;
   
   if (grub_disk_read (data->disk, inoblk, 0,
-		      sizeof (struct grub_jfs_inode), (char *) inode))
+		      sizeof (struct grub_jfs_inode), inode))
     return grub_errno;
 
   return 0;
@@ -336,7 +336,7 @@ grub_jfs_mount (grub_disk_t disk)
 
   /* Read the superblock.  */
   if (grub_disk_read (disk, GRUB_JFS_SBLOCK, 0,
-		      sizeof (struct grub_jfs_sblock), (char *) &data->sblock))
+		      sizeof (struct grub_jfs_sblock), &data->sblock))
     goto fail;
   
   if (grub_strncmp ((char *) (data->sblock.magic), "JFS1", 4))
@@ -351,7 +351,7 @@ grub_jfs_mount (grub_disk_t disk)
 
   /* Read the inode of the first fileset.  */
   if (grub_disk_read (data->disk, GRUB_JFS_FS1_INODE_BLK, 0,
-		      sizeof (struct grub_jfs_inode), (char *) &data->fileset))
+		      sizeof (struct grub_jfs_inode), &data->fileset))
     goto fail;
   
   return data;

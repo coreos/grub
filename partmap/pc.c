@@ -114,7 +114,7 @@ pc_partition_map_iterate (grub_disk_t disk,
       struct grub_pc_partition_entry *e;
       
       /* Read the MBR.  */
-      if (grub_disk_read (&raw, p.offset, 0, sizeof (mbr), (char *) &mbr))
+      if (grub_disk_read (&raw, p.offset, 0, sizeof (mbr), &mbr))
 	goto finish;
 
       /* Check if it is valid.  */
@@ -166,7 +166,7 @@ pc_partition_map_iterate (grub_disk_t disk,
 				       + GRUB_PC_PARTITION_BSD_LABEL_SECTOR),
 				      0,
 				      sizeof (label),
-				      (char *) &label))
+				      &label))
 		    goto finish;
 
 		  /* Check if it is valid.  */

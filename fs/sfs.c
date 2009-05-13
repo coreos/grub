@@ -272,7 +272,7 @@ grub_sfs_mount (grub_disk_t disk)
 
   /* Read the rootblock.  */
   grub_disk_read (disk, 0, 0, sizeof (struct grub_sfs_rblock),
-		  (char *) &data->rblock);
+		  &data->rblock);
   if (grub_errno)
     goto fail;
 

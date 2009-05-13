@@ -55,7 +55,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
   raw.partition = 0;
 
   /* Read the protective MBR.  */
-  if (grub_disk_read (&raw, 0, 0, sizeof (mbr), (char *) &mbr))
+  if (grub_disk_read (&raw, 0, 0, sizeof (mbr), &mbr))
     return grub_errno;
 
   /* Check if it is valid.  */
@@ -67,7 +67,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no GPT partition map found");
 
   /* Read the GPT header.  */
-  if (grub_disk_read (&raw, 1, 0, sizeof (gpt), (char *) &gpt))
+  if (grub_disk_read (&raw, 1, 0, sizeof (gpt), &gpt))
     return grub_errno;
 
   if (grub_memcmp (gpt.magic, grub_gpt_magic, sizeof (grub_gpt_magic)))
@@ -79,7 +79,7 @@ gpt_partition_map_iterate (grub_disk_t disk,
   for (i = 0; i < grub_le_to_cpu32 (gpt.maxpart); i++)
     {
       if (grub_disk_read (&raw, entries, last_offset,
-			  sizeof (entry), (char *) &entry))
+			  sizeof (entry), &entry))
 	return grub_errno;
 
       if (grub_memcmp (&grub_gpt_partition_type_empty, &entry.type,

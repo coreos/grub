@@ -331,7 +331,7 @@ grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
                          ((grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
                           << LOG2_EXT2_BLOCK_SIZE (data)),
 			 group * sizeof (struct grub_ext2_block_group),
-			 sizeof (struct grub_ext2_block_group), (char *) blkgrp);
+			 sizeof (struct grub_ext2_block_group), blkgrp);
 }
 
 static struct grub_ext4_extent_header *
@@ -438,7 +438,7 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       if (grub_disk_read (data->disk,
 			  grub_le_to_cpu32 (inode->blocks.indir_block)
 			  << log2_blksz,
-			  0, blksz, (char *) indir))
+			  0, blksz, indir))
 	return grub_errno;
 	  
       blknr = grub_le_to_cpu32 (indir[fileblock - INDIRECT_BLOCKS]);
@@ -454,13 +454,13 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       if (grub_disk_read (data->disk,
 			  grub_le_to_cpu32 (inode->blocks.double_indir_block)
 			  << log2_blksz,
-			  0, blksz, (char *) indir))
+			  0, blksz, indir))
 	return grub_errno;
 
       if (grub_disk_read (data->disk,
 			  grub_le_to_cpu32 (indir[rblock / perblock])
 			  << log2_blksz,
-			  0, blksz, (char *) indir))
+			  0, blksz, indir))
 	return grub_errno;
 
       
@@ -523,7 +523,7 @@ grub_ext2_read_inode (struct grub_ext2_data *data,
 		      ((grub_le_to_cpu32 (blkgrp.inode_table_id) + blkno)
 		        << LOG2_EXT2_BLOCK_SIZE (data)),
 		      EXT2_INODE_SIZE (data) * blkoff,
-		      sizeof (struct grub_ext2_inode), (char *) inode))
+		      sizeof (struct grub_ext2_inode), inode))
     return grub_errno;
   
   return 0;
@@ -540,7 +540,7 @@ grub_ext2_mount (grub_disk_t disk)
 
   /* Read the superblock.  */
   grub_disk_read (disk, 1 * 2, 0, sizeof (struct grub_ext2_sblock),
-                  (char *) &data->sblock);
+                  &data->sblock);
   if (grub_errno)
     goto fail;
 

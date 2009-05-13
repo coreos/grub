@@ -104,7 +104,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
 	  if (p)
 	    {
 	      grub_disk_read (disk, p->offset, 446, 64,
-			      (char *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
+			      (void *) GRUB_MEMORY_MACHINE_PART_TABLE_ADDR);
 	      part_addr = (void *) (GRUB_MEMORY_MACHINE_PART_TABLE_ADDR
 				    + (p->index << 4));
 	    }

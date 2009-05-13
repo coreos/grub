@@ -103,7 +103,7 @@ sun_partition_map_iterate (grub_disk_t disk,
   p->data = 0;
   p->partmap = &grub_sun_partition_map;
   if (grub_disk_read (&raw, 0, 0, sizeof (struct grub_sun_block),
-		      (char *) &block) == GRUB_ERR_NONE)
+		      &block) == GRUB_ERR_NONE)
     {
       if (GRUB_PARTMAP_SUN_MAGIC != grub_be_to_cpu16 (block.magic))
 	grub_error (GRUB_ERR_BAD_PART_TABLE, "not a sun partition table");

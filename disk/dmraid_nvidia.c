@@ -99,7 +99,7 @@ grub_dmraid_nv_detect (grub_disk_t disk, struct grub_raid_array *array)
 
   sector = grub_disk_get_size (disk) - 2;
 
-  if (grub_disk_read (disk, sector, 0, sizeof (sb), (char *) &sb))
+  if (grub_disk_read (disk, sector, 0, sizeof (sb), &sb))
     return grub_errno;
 
   if (grub_memcmp (sb.vendor, NV_ID_STRING, 6))

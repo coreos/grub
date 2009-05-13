@@ -84,7 +84,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       struct HEAD_BCPIO hd;
 
       if (grub_disk_read
-	  (data->disk, 0, data->hofs, sizeof (hd), (char *) &hd))
+	  (data->disk, 0, data->hofs, sizeof (hd), &hd))
 	return grub_errno;
 
       if (hd.magic != MAGIC_BCPIO)
@@ -120,7 +120,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       struct HEAD_USTAR hd;
 
       if (grub_disk_read
-	  (data->disk, 0, data->hofs, sizeof (hd), (char *) &hd))
+	  (data->disk, 0, data->hofs, sizeof (hd), &hd))
 	return grub_errno;
 
       if (!hd.name[0])

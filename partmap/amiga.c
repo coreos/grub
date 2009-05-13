@@ -89,7 +89,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
   for (pos = 0; pos < 15; pos++)
     {
       /* Read the RDSK block which is a descriptor for the entire disk.  */
-      if (grub_disk_read (&raw, pos, 0, sizeof (rdsk), (char *) &rdsk))
+      if (grub_disk_read (&raw, pos, 0, sizeof (rdsk), &rdsk))
 	return grub_errno;
       
       if (grub_strcmp ((char *) rdsk.magic, "RDSK") == 0)
@@ -110,7 +110,7 @@ amiga_partition_map_iterate (grub_disk_t disk,
       struct grub_amiga_partition apart;
      
       /* Read the RDSK block which is a descriptor for the entire disk.  */
-      if (grub_disk_read (&raw, next, 0, sizeof (apart), (char *) &apart))
+      if (grub_disk_read (&raw, next, 0, sizeof (apart), &apart))
 	return grub_errno;
       
       /* Calculate the first block and the size of the partition.  */

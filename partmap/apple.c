@@ -114,7 +114,7 @@ apple_partition_map_iterate (grub_disk_t disk,
 
   part.partmap = &grub_apple_partition_map;
 
-  if (grub_disk_read (&raw, 0, 0, sizeof (aheader), (char *) &aheader))
+  if (grub_disk_read (&raw, 0, 0, sizeof (aheader), &aheader))
     return grub_errno;
 
   if (grub_be_to_cpu16 (aheader.magic) != GRUB_APPLE_HEADER_MAGIC)
@@ -130,7 +130,7 @@ apple_partition_map_iterate (grub_disk_t disk,
     {
       if (grub_disk_read (&raw, pos / GRUB_DISK_SECTOR_SIZE,
 			  pos % GRUB_DISK_SECTOR_SIZE,
-			  sizeof (struct grub_apple_part),  (char *) &apart))
+			  sizeof (struct grub_apple_part),  &apart))
 	return grub_errno;
 
       if (grub_be_to_cpu16 (apart.magic) != GRUB_APPLE_PART_MAGIC)

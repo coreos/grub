@@ -385,7 +385,7 @@ grub_disk_adjust_range (grub_disk_t disk, grub_disk_addr_t *sector,
 /* Read data from the disk.  */
 grub_err_t
 grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
-		grub_off_t offset, grub_size_t size, char *buf)
+		grub_off_t offset, grub_size_t size, void *buf)
 {
   char *tmp_buf;
   unsigned real_offset;
@@ -511,7 +511,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	}
       
       sector = start_sector + GRUB_DISK_CACHE_SIZE;
-      buf += len;
+      buf = (char *) buf + len;
       size -= len;
       real_offset = 0;
     }
@@ -525,7 +525,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 
 grub_err_t
 grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
-		 grub_off_t offset, grub_size_t size, const char *buf)
+		 grub_off_t offset, grub_size_t size, const void *buf)
 {
   unsigned real_offset;
   
@@ -559,7 +559,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	    goto finish;
 
 	  sector++;
-	  buf += len;
+	  buf = (char *) buf + len;
 	  size -= len;
 	  real_offset = 0;
 	}
@@ -577,7 +577,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  while (n--)
 	    grub_disk_cache_invalidate (disk->dev->id, disk->id, sector++);
 
-	  buf += len;
+	  buf = (char *) buf + len;
 	  size -= len;
 	}
     }

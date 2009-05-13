@@ -124,7 +124,7 @@ grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       grub_disk_read (data->disk, block + data->blocksize - 1,
 		      data->blocksize * (GRUB_DISK_SECTOR_SIZE
 					 - GRUB_AFFS_FILE_LOCATION),
-		      sizeof (file), (char *) &file);
+		      sizeof (file), &file);
       if (grub_errno)
 	return 0;
 	  
@@ -136,7 +136,7 @@ grub_affs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
   grub_disk_read (data->disk, block,
 		  GRUB_AFFS_BLOCKPTR_OFFSET
 		  + (data->htsize - fileblock - 1) * sizeof (pos),
-		  sizeof (pos), (char *) &pos);
+		  sizeof (pos), &pos);
   if (grub_errno)
     return 0;
   
@@ -175,7 +175,7 @@ grub_affs_mount (grub_disk_t disk)
 
   /* Read the bootblock.  */
   grub_disk_read (disk, 0, 0, sizeof (struct grub_affs_bblock),
-		  (char *) &data->bblock);
+		  &data->bblock);
   if (grub_errno)
     goto fail;
 
@@ -195,7 +195,7 @@ grub_affs_mount (grub_disk_t disk)
 
   /* Read the bootblock.  */
   grub_disk_read (disk, 0, 0, sizeof (struct grub_affs_bblock),
-		  (char *) &data->bblock);
+		  &data->bblock);
   if (grub_errno)
     goto fail;
 
@@ -209,7 +209,7 @@ grub_affs_mount (grub_disk_t disk)
 
   /* Read the rootblock.  */
   grub_disk_read (disk, (disk->total_sectors >> 1) + blocksize, 0,
-		  GRUB_DISK_SECTOR_SIZE * 16, (char *) rootblock);
+		  GRUB_DISK_SECTOR_SIZE * 16, rootblock);
   if (grub_errno)
     goto fail;
 
@@ -510,7 +510,7 @@ grub_affs_label (grub_device_t device, char **label)
       grub_disk_read (data->disk, disk->total_sectors >> 1,
 		      data->blocksize * (GRUB_DISK_SECTOR_SIZE
 					 - GRUB_AFFS_FILE_LOCATION),
-		      sizeof (file), (char *) &file);
+		      sizeof (file), &file);
       if (grub_errno)
 	return 0;
 

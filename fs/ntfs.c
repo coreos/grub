@@ -800,7 +800,7 @@ grub_ntfs_mount (grub_disk_t disk)
   data->disk = disk;
 
   /* Read the BPB.  */
-  if (grub_disk_read (disk, 0, 0, sizeof (bpb), (char *) &bpb))
+  if (grub_disk_read (disk, 0, 0, sizeof (bpb), &bpb))
     goto fail;
 
   if (grub_memcmp ((char *) &bpb.oem_name, "NTFS", 4))

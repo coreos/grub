@@ -149,12 +149,12 @@ grub_err_t EXPORT_FUNC(grub_disk_read) (grub_disk_t disk,
 					grub_disk_addr_t sector,
 					grub_off_t offset,
 					grub_size_t size,
-					char *buf);
+					void *buf);
 grub_err_t EXPORT_FUNC(grub_disk_write) (grub_disk_t disk,
 					 grub_disk_addr_t sector,
 					 grub_off_t offset,
 					 grub_size_t size,
-					 const char *buf);
+					 const void *buf);
 
 grub_uint64_t EXPORT_FUNC(grub_disk_get_size) (grub_disk_t disk);
 

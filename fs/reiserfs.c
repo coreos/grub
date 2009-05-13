@@ -510,7 +510,7 @@ grub_reiserfs_get_item (struct grub_reiserfs_data *data,
                       block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                       (((grub_off_t) block_number * block_size)
                        & (GRUB_DISK_SECTOR_SIZE - 1)),
-                      block_size, (char *) block_header);
+                      block_size, block_header);
       if (grub_errno)
         goto fail;
       current_level = grub_le_to_cpu16 (block_header->level);
@@ -685,7 +685,7 @@ grub_reiserfs_mount (grub_disk_t disk)
   if (! data)
     goto fail;
   grub_disk_read (disk, REISERFS_SUPER_BLOCK_OFFSET / GRUB_DISK_SECTOR_SIZE,
-                  0, sizeof (data->superblock), (char *) &(data->superblock));
+                  0, sizeof (data->superblock), &(data->superblock));
   if (grub_errno)
     goto fail;
   if (grub_memcmp (data->superblock.magic_string,
@@ -1028,7 +1028,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
                       entry_location
                       + (((grub_off_t) block_number * block_size)
                          & (GRUB_DISK_SECTOR_SIZE - 1)),
-                      sizeof (entry_v1_stat), (char *) &entry_v1_stat);
+                      sizeof (entry_v1_stat), &entry_v1_stat);
       if (grub_errno)
         goto fail;
       file->size = (grub_off_t) grub_le_to_cpu64 (entry_v1_stat.size);
@@ -1041,7 +1041,7 @@ grub_reiserfs_open (struct grub_file *file, const char *name)
                       entry_location
                       + (((grub_off_t) block_number * block_size)
                          & (GRUB_DISK_SECTOR_SIZE - 1)),
-                      sizeof (entry_v2_stat), (char *) &entry_v2_stat);
+                      sizeof (entry_v2_stat), &entry_v2_stat);
       if (grub_errno)
         goto fail;
       file->size = (grub_off_t) grub_le_to_cpu64 (entry_v2_stat.size);
@@ -1139,7 +1139,7 @@ grub_reiserfs_read (grub_file_t file, char *buf, grub_size_t len)
           grub_disk_read (found.data->disk,
                           found.block_number * (block_size >> GRUB_DISK_SECTOR_BITS),
                           grub_le_to_cpu16 (found.header.item_location),
-                          item_size, (char *) indirect_block_ptr);
+                          item_size, indirect_block_ptr);
           if (grub_errno)
             goto fail;
           found.data->disk->read_hook = file->read_hook;

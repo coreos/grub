@@ -319,7 +319,7 @@ grub_hfs_mount (grub_disk_t disk)
 
   /* Read the superblock.  */
   if (grub_disk_read (disk, GRUB_HFS_SBLOCK, 0,
-		      sizeof (struct grub_hfs_sblock), (char *) &data->sblock))
+		      sizeof (struct grub_hfs_sblock), &data->sblock))
     goto fail;
   
   /* Check if this is a HFS filesystem.  */
@@ -345,7 +345,7 @@ grub_hfs_mount (grub_disk_t disk)
 		 + grub_be_to_cpu16 (data->sblock.first_block));
   
   if (grub_disk_read (data->disk, first_block, 0,
-		      sizeof (treehead), (char *)  &treehead))
+		      sizeof (treehead), &treehead))
     goto fail;
   data->ext_root = grub_be_to_cpu32 (treehead.head.root_node);
   data->ext_size = grub_be_to_cpu16 (treehead.head.node_size);
@@ -355,7 +355,7 @@ grub_hfs_mount (grub_disk_t disk)
 		  * GRUB_HFS_BLKS)
 		 + grub_be_to_cpu16 (data->sblock.first_block));
   if (grub_disk_read (data->disk, first_block, 0,
-		      sizeof (treehead), (char *)  &treehead))
+		      sizeof (treehead), &treehead))
     goto fail;
   data->cat_root = grub_be_to_cpu32 (treehead.head.root_node);
   data->cat_size = grub_be_to_cpu16 (treehead.head.node_size);
@@ -684,7 +684,7 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	return grub_errno;
       
       if (grub_disk_read (data->disk, blk, 0,
-			  sizeof (node), (char *)  &node))
+			  sizeof (node), &node))
 	return grub_errno;
       
       /* Iterate over all records in this node.  */

@@ -235,7 +235,7 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
     {
       grub_uint32_t indir[UFS_BLKSZ (sblock) >> 2];
       grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 0) << log2_blksz,
-		      0, sizeof (indir), (char *) indir);
+		      0, sizeof (indir), indir);
       return (data->ufs_type == UFS1) ? indir[blk] : indir[blk << 1];
     }
   blk -= indirsz;
@@ -246,12 +246,12 @@ grub_ufs_get_file_block (struct grub_ufs_data *data, unsigned int blk)
       grub_uint32_t indir[UFS_BLKSZ (sblock) >> 2];
       
       grub_disk_read (data->disk, INODE_INDIRBLOCKS (data, 1) << log2_blksz,
-		      0, sizeof (indir), (char *) indir);
+		      0, sizeof (indir), indir);
       grub_disk_read (data->disk,
       		      ((data->ufs_type == UFS1) ?
 		      indir[blk / indirsz] : indir [(blk / indirsz) << 1]) 
 		      << log2_blksz,
-		      0, sizeof (indir), (char *) indir);
+		      0, sizeof (indir), indir);
       
       return (data->ufs_type == UFS1) ?
 	     indir[blk % indirsz] : indir[(blk % indirsz) << 1];
@@ -362,7 +362,7 @@ grub_ufs_read_inode (struct grub_ufs_data *data, int ino, char *inode)
 		      + grpino / 4,
 		      (grpino % 4) * sizeof (struct grub_ufs_inode),
 		      sizeof (struct grub_ufs_inode),
-		      (char *) inode);
+		      inode);
     }
   else
     {
@@ -378,7 +378,7 @@ grub_ufs_read_inode (struct grub_ufs_data *data, int ino, char *inode)
 		      + grpino / 2,
 		      (grpino % 2) * sizeof (struct grub_ufs2_inode),
 		      sizeof (struct grub_ufs2_inode),
-		      (char *) inode);
+		      inode);
     }
   
   return grub_errno;
@@ -532,7 +532,7 @@ grub_ufs_mount (grub_disk_t disk)
   while (*sblklist != -1)
     {
       grub_disk_read (disk, *sblklist, 0, sizeof (struct grub_ufs_sblock),
-		      (char *) &data->sblock);
+		      &data->sblock);
       if (grub_errno)
 	goto fail;
       

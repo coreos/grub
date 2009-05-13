@@ -193,7 +193,7 @@ grub_afs_read_inode (struct grub_afs_data *data,
                          ino *
                          (data->sblock.block_size >> GRUB_DISK_SECTOR_BITS),
                          0, sizeof (struct grub_afs_inode),
-                         (char *) inode);
+                         inode);
 }
 
 static grub_disk_addr_t
@@ -228,7 +228,7 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
           if (grub_disk_read (node->data->disk,
                               blk * (sb->block_size >> GRUB_DISK_SECTOR_BITS),
                               0, sizeof (indir),
-                              (char *) indir))
+                              indir))
             return 0;
 
           for (j = 0; j < ptrs_per_blk; j++)
@@ -264,14 +264,14 @@ grub_afs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
                            + idblk) *
                           (sb->block_size >> GRUB_DISK_SECTOR_BITS),
                           0, sizeof (indir),
-                          (char *) indir))
+                          indir))
         return 0;
 
       if (grub_disk_read (node->data->disk,
                           (grub_afs_run_to_num (sb, &indir[idptr]) + dblk) *
                           (sb->block_size >> GRUB_DISK_SECTOR_BITS),
                           0, sizeof (indir),
-                          (char *) indir))
+                          indir))
         return 0;
 
       return grub_afs_run_to_num (sb, &indir[dptr]) + off;
@@ -466,13 +466,13 @@ grub_afs_mount (grub_disk_t disk)
 
   /* Read the superblock.  */
   if (grub_disk_read (disk, 1 * 2, 0, sizeof (struct grub_afs_sblock),
-                      (char *) &data->sblock))
+                      &data->sblock))
     goto fail;
 
   if (! grub_afs_validate_sblock (&data->sblock))
     {
       if (grub_disk_read (disk, 1 * 2, 0, sizeof (struct grub_afs_sblock),
-                          (char *) &data->sblock))
+                          &data->sblock))
         goto fail;
 
       if (! grub_afs_validate_sblock (&data->sblock))

@@ -61,7 +61,7 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
 
   err = grub_disk_read (disk, 0xC00 / GRUB_DISK_SECTOR_SIZE, 0,
 			sizeof (struct grub_acorn_boot_block),
-			(char *) &boot);
+			&boot);
   if (err)
     return err;
 
@@ -81,7 +81,7 @@ acorn_partition_map_find (grub_disk_t disk, struct linux_part *m,
 
   return grub_disk_read (disk, *sector, 0,
 			 sizeof (struct linux_part) * LINUX_MAP_ENTRIES,
-			 (char *) m);
+			 m);
 
 fail:
   return grub_error (GRUB_ERR_BAD_PART_TABLE,

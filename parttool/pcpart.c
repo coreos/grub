@@ -52,7 +52,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
   dev->disk->partition = 0;
 
   /* Read the MBR.  */
-  if (grub_disk_read (dev->disk, 0, 0, sizeof (mbr), (char *) &mbr))
+  if (grub_disk_read (dev->disk, 0, 0, sizeof (mbr), &mbr))
     {
       dev->disk->partition = part;
       return grub_errno;
@@ -72,7 +72,7 @@ static grub_err_t grub_pcpart_boot (const grub_device_t dev,
     }
 
    /* Write the MBR.  */
-  grub_disk_write (dev->disk, 0, 0, sizeof (mbr), (char *) &mbr);
+  grub_disk_write (dev->disk, 0, 0, sizeof (mbr), &mbr);
 
   dev->disk->partition = part;
 
@@ -100,7 +100,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
   /* Read the parttable.  */
   if (grub_disk_read (dev->disk, part->offset, 0, 
-		      sizeof (mbr), (char *) &mbr))
+		      sizeof (mbr), &mbr))
     {
       dev->disk->partition = part;
       return grub_errno;
@@ -131,7 +131,7 @@ static grub_err_t grub_pcpart_type (const grub_device_t dev,
 
    /* Write the parttable.  */
   grub_disk_write (dev->disk, part->offset, 0, 
-		   sizeof (mbr), (char *) &mbr);
+		   sizeof (mbr), &mbr);
 
   dev->disk->partition = part;
 

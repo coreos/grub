@@ -390,7 +390,7 @@ grub_udf_read_icb (struct grub_udf_data *data,
 
   if (grub_disk_read (data->disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 		      sizeof (struct grub_udf_file_entry),
-		      (char *) &node->fe))
+		      &node->fe))
     return grub_errno;
 
   if ((U16 (node->fe.tag.tag_ident) != GRUB_UDF_TAG_IDENT_FE) &&
@@ -520,7 +520,7 @@ grub_udf_mount (grub_disk_t disk)
       struct grub_udf_vrs vrs;
 
       if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
-			  sizeof (struct grub_udf_vrs), (char *) &vrs))
+			  sizeof (struct grub_udf_vrs), &vrs))
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
 	  goto fail;
@@ -547,7 +547,7 @@ grub_udf_mount (grub_disk_t disk)
       struct grub_udf_avdp avdp;
 
       if (grub_disk_read (disk, *sblklist << GRUB_UDF_LOG2_BLKSZ, 0,
-			  sizeof (struct grub_udf_avdp), (char *) &avdp))
+			  sizeof (struct grub_udf_avdp), &avdp))
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
 	  goto fail;
@@ -574,7 +574,7 @@ grub_udf_mount (grub_disk_t disk)
       struct grub_udf_tag tag;
 
       if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
-			  sizeof (struct grub_udf_tag), (char *) &tag))
+			  sizeof (struct grub_udf_tag), &tag))
 	{
 	  grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
 	  goto fail;
@@ -591,7 +591,7 @@ grub_udf_mount (grub_disk_t disk)
 
 	  if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 			      sizeof (struct grub_udf_pd),
-			      (char *) &data->pds[data->npd]))
+			      &data->pds[data->npd]))
 	    {
 	      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
 	      goto fail;
@@ -607,7 +607,7 @@ grub_udf_mount (grub_disk_t disk)
 
 	  if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
 			      sizeof (struct grub_udf_lvd),
-			      (char *) &data->lvd))
+			      &data->lvd))
 	    {
 	      grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
 	      goto fail;
@@ -670,7 +670,7 @@ grub_udf_mount (grub_disk_t disk)
     goto fail;
 
   if (grub_disk_read (disk, block << GRUB_UDF_LOG2_BLKSZ, 0,
-		      sizeof (struct grub_udf_fileset), (char *) &root_fs))
+		      sizeof (struct grub_udf_fileset), &root_fs))
     {
       grub_error (GRUB_ERR_BAD_FS, "not an udf filesystem");
       goto fail;
