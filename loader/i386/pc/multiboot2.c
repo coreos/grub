@@ -23,6 +23,8 @@
 #include <grub/err.h>
 #include <grub/machine/loader.h>
 #include <grub/mm.h>
+#include <grub/multiboot.h>
+#include <grub/cpu/multiboot.h>
 
 grub_err_t
 grub_mb2_arch_elf32_hook (Elf32_Phdr *phdr, UNUSED grub_addr_t *addr)
