@@ -1,5 +1,9 @@
 2009-05-13  Pavel Roskin  <proski@gnu.org>
 
+	* fs/iso9660.c (grub_iso9660_iterate_dir): The file mode in the
+	PX record is always little-endian.  We only need the lower 2
+	bytes of the mode.
+
 	* fs/cpio.c: Use the same name "struct head" for tar and cpio to
 	facilitate code reuse.
 	(grub_cpio_mount): Use "struct head", not a char buffer.  This

@@ -521,8 +521,8 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
       else if (grub_strncmp ((char *) entry->sig, "PX", 2) == 0)
 	{
 	  /* At position 0 of the PX record the st_mode information is
-	     stored.  */
-	  grub_uint32_t mode = ((*(grub_uint32_t *) &entry->data[0])
+	     stored (little-endian).  */
+	  grub_uint32_t mode = ((entry->data[0] + (entry->data[1] << 8))
 				& GRUB_ISO9660_FSTYPE_MASK);
 
 	  switch (mode)
