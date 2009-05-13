@@ -110,7 +110,6 @@ setup (const char *dir,
   FILE *fp;
   struct { grub_uint64_t start; grub_uint64_t end; } embed_region;
   embed_region.start = embed_region.end = ~0UL;
-  int embedding_area_exists = 0;
   
   auto void NESTED_FUNC_ATTR save_first_sector (grub_disk_addr_t sector, unsigned offset,
 			       unsigned length);
