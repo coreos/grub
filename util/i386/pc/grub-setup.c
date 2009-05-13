@@ -311,30 +311,30 @@ setup (const char *dir,
 
   if (! dest_dev->disk->has_partitions)
     {
-    grub_util_warn ("Attempting to install GRUB to a partitionless disk.  This is a BAD idea.");
+      grub_util_warn ("Attempting to install GRUB to a partitionless disk.  This is a BAD idea.");
       goto unable_to_embed;
     }
 
   if (dest_dev->disk->partition)
     {
-    grub_util_warn ("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.");
+      grub_util_warn ("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.");
       goto unable_to_embed;
     }
   
-      /* Unlike root_dev, with dest_dev we're interested in the partition map even
-         if dest_dev itself is a whole disk.  */
-      auto int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk,
-						  const grub_partition_t p);
-      int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
-					     const grub_partition_t p)
-	{
-	  dest_partmap = p->partmap->name;
-	  return 1;
-	}
-      grub_partition_iterate (dest_dev->disk, identify_partmap);
-      
-      grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "pc_partition_map") ?
-					       find_usable_region_gpt : find_usable_region_msdos));
+  /* Unlike root_dev, with dest_dev we're interested in the partition map even
+     if dest_dev itself is a whole disk.  */
+  auto int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk,
+					      const grub_partition_t p);
+  int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
+					 const grub_partition_t p)
+    {
+      dest_partmap = p->partmap->name;
+      return 1;
+    }
+  grub_partition_iterate (dest_dev->disk, identify_partmap);
+  
+  grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "pc_partition_map") ?
+					   find_usable_region_gpt : find_usable_region_msdos));
   if (embed_region.end == embed_region.start)
     {
       grub_util_warn ("Embedding area is not present at all!");
@@ -348,40 +348,40 @@ setup (const char *dir,
     }
 
 
-	  grub_util_info ("will embed the core image at sector 0x%llx", embed_region.start);
-
-	  *install_dos_part = grub_cpu_to_le32 (dos_part);
-	  *install_bsd_part = grub_cpu_to_le32 (bsd_part);
-
-	  /* The first blocklist contains the whole sectors.  */
-	  first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
-	  first_block->len = grub_cpu_to_le16 (core_sectors - 1);
-	  first_block->segment
-	    = grub_cpu_to_le16 (GRUB_BOOT_MACHINE_KERNEL_SEG
-				+ (GRUB_DISK_SECTOR_SIZE >> 4));
-
-	  /* Make sure that the second blocklist is a terminator.  */
-	  block = first_block - 1;
-	  block->start = 0;
-	  block->len = 0;
-	  block->segment = 0;
-
-	  /* Write the core image onto the disk.  */
-	  if (grub_disk_write (dest_dev->disk, embed_region.start, 0, core_size, core_img))
-	    grub_util_error ("%s", grub_errmsg);
-
-	  /* FIXME: can this be skipped?  */
-	  *boot_drive = 0xFF;
-	  *root_drive = 0xFF;
-
-	  *kernel_sector = grub_cpu_to_le64 (embed_region.start);
-
-	  /* Write the boot image onto the disk.  */
-	  if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE,
-			       boot_img))
-	    grub_util_error ("%s", grub_errmsg);
-
-	  goto finish;
+  grub_util_info ("will embed the core image at sector 0x%llx", embed_region.start);
+  
+  *install_dos_part = grub_cpu_to_le32 (dos_part);
+  *install_bsd_part = grub_cpu_to_le32 (bsd_part);
+  
+  /* The first blocklist contains the whole sectors.  */
+  first_block->start = grub_cpu_to_le64 (embed_region.start + 1);
+  first_block->len = grub_cpu_to_le16 (core_sectors - 1);
+  first_block->segment
+    = grub_cpu_to_le16 (GRUB_BOOT_MACHINE_KERNEL_SEG
+			+ (GRUB_DISK_SECTOR_SIZE >> 4));
+  
+  /* Make sure that the second blocklist is a terminator.  */
+  block = first_block - 1;
+  block->start = 0;
+  block->len = 0;
+  block->segment = 0;
+  
+  /* Write the core image onto the disk.  */
+  if (grub_disk_write (dest_dev->disk, embed_region.start, 0, core_size, core_img))
+    grub_util_error ("%s", grub_errmsg);
+  
+  /* FIXME: can this be skipped?  */
+  *boot_drive = 0xFF;
+  *root_drive = 0xFF;
+  
+  *kernel_sector = grub_cpu_to_le64 (embed_region.start);
+  
+  /* Write the boot image onto the disk.  */
+  if (grub_disk_write (dest_dev->disk, 0, 0, GRUB_DISK_SECTOR_SIZE,
+		       boot_img))
+    grub_util_error ("%s", grub_errmsg);
+  
+  goto finish;
   
 unable_to_embed:
   
