@@ -337,13 +337,21 @@ setup (const char *dir,
 					   find_usable_region_gpt : find_usable_region_msdos));
   if (embed_region.end == embed_region.start)
     {
-      grub_util_warn ("Embedding area is not present at all!");
+      if (! strcmp (dest_partmap, "pc_partition_map"))
+	grub_util_warn ("This msdos-style partition label has no post-MBR gap; embedding won't be possible!");
+      else
+	grub_util_warn ("This GPT partition label has no BIOS Boot Partition; embedding won't be possible!");
       goto unable_to_embed;
     }
 
   if ((unsigned long) core_sectors > embed_region.end - embed_region.start)
     {
-      grub_util_warn ("Embedding area is too small for core.img.");
+      if (core_sectors > 62 * 512)
+	grub_util_warn ("Your core.img is unusually large.  It won't fit in the embedding area.");
+      else if (embed_region.end - embed_region.start < 62 * 512)
+	grub_util_warn ("Your embedding area is unusually small.  core.img won't fit in it.");
+      else
+	grub_util_warn ("Embedding area is too small for core.img.");
       goto unable_to_embed;
     }
 

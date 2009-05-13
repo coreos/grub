@@ -2,6 +2,8 @@
 
 	* util/i386/pc/grub-setup.c (setup): Restructure code flow to make
 	it easier to understand / work with.
+	Improve warning messages for cases where there's no embedding area,
+	or when it is too small (or core.img too large).
 
 2009-05-13  Pavel Roskin  <proski@gnu.org>
 
