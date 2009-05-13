@@ -1,5 +1,10 @@
 2009-05-13  Pavel Roskin  <proski@gnu.org>
 
+	* fs/cpio.c: Use the same name "struct head" for tar and cpio to
+	facilitate code reuse.
+	(grub_cpio_mount): Use "struct head", not a char buffer.  This
+	fixes a warning reported by gcc 4.4.
+
 	* kernel/disk.c (grub_disk_read): Use void pointer for the
 	buffer.
 	(grub_disk_write): Use const void pointer for the buffer.

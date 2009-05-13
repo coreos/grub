@@ -23,9 +23,10 @@
 #include <grub/disk.h>
 #include <grub/dl.h>
 
+#ifndef MODE_USTAR
+/* cpio support */
 #define	MAGIC_BCPIO	070707
-
-struct HEAD_BCPIO
+struct head
 {
   grub_uint16_t magic;
   grub_uint16_t dev;
@@ -41,10 +42,10 @@ struct HEAD_BCPIO
   grub_uint16_t filesize_1;
   grub_uint16_t filesize_2;
 } __attribute__ ((packed));
-
+#else
+/* tar support */
 #define MAGIC_USTAR	"ustar"
-
-struct HEAD_USTAR
+struct head
 {
   char name[100];
   char mode[8];
@@ -63,8 +64,7 @@ struct HEAD_USTAR
   char devminor[8];
   char prefix[155];
 } __attribute__ ((packed));
-
-#define HEAD_LENG	sizeof(struct HEAD_USTAR)
+#endif
 
 struct grub_cpio_data
 {
@@ -81,7 +81,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 		     grub_uint32_t * ofs)
 {
 #ifndef MODE_USTAR
-      struct HEAD_BCPIO hd;
+      struct head hd;
 
       if (grub_disk_read
 	  (data->disk, 0, data->hofs, sizeof (hd), &hd))
@@ -117,7 +117,7 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
       if (data->size & 1)
 	(*ofs)++;
 #else
-      struct HEAD_USTAR hd;
+      struct head hd;
 
       if (grub_disk_read
 	  (data->disk, 0, data->hofs, sizeof (hd), &hd))
@@ -146,17 +146,17 @@ grub_cpio_find_file (struct grub_cpio_data *data, char **name,
 static struct grub_cpio_data *
 grub_cpio_mount (grub_disk_t disk)
 {
-  char hd[HEAD_LENG];
+  struct head hd;
   struct grub_cpio_data *data;
 
-  if (grub_disk_read (disk, 0, 0, sizeof (hd), hd))
+  if (grub_disk_read (disk, 0, 0, sizeof (hd), &hd))
     goto fail;
 
 #ifndef MODE_USTAR
-  if (((struct HEAD_BCPIO *) hd)->magic != MAGIC_BCPIO)
+  if (hd.magic != MAGIC_BCPIO)
 #else
-  if (grub_memcmp (((struct HEAD_USTAR *) hd)->magic, MAGIC_USTAR,
-			 sizeof (MAGIC_USTAR) - 1))
+  if (grub_memcmp (hd.magic, MAGIC_USTAR,
+		   sizeof (MAGIC_USTAR) - 1))
 #endif
     goto fail;
 
