@@ -310,17 +310,19 @@ setup (const char *dir,
 		  dos_part, bsd_part);
 
   if (! dest_dev->disk->has_partitions)
+    {
     grub_util_warn ("Attempting to install GRUB to a partitionless disk.  This is a BAD idea.");
+      goto unable_to_embed;
+    }
 
   if (dest_dev->disk->partition)
-    grub_util_warn ("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.");
-  
-  /* If the destination device can have partitions and it is the MBR,
-     try to embed the core image into after the MBR.  */
-  if (dest_dev->disk->has_partitions && ! dest_dev->disk->partition)
     {
+    grub_util_warn ("Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.");
+      goto unable_to_embed;
+    }
+  
       /* Unlike root_dev, with dest_dev we're interested in the partition map even
-	 if dest_dev itself is a whole disk.  */
+         if dest_dev itself is a whole disk.  */
       auto int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk,
 						  const grub_partition_t p);
       int NESTED_FUNC_ATTR identify_partmap (grub_disk_t disk __attribute__ ((unused)),
@@ -330,16 +332,22 @@ setup (const char *dir,
 	  return 1;
 	}
       grub_partition_iterate (dest_dev->disk, identify_partmap);
-
+      
       grub_partition_iterate (dest_dev->disk, (strcmp (dest_partmap, "pc_partition_map") ?
 					       find_usable_region_gpt : find_usable_region_msdos));
-      
-      if (embed_region.end != embed_region.start)
-	embedding_area_exists = 1;
-      
-      /* If there is enough space...  */
-      if ((unsigned long) core_sectors <= embed_region.end - embed_region.start)
-	{
+  if (embed_region.end == embed_region.start)
+    {
+      grub_util_warn ("Embedding area is not present at all!");
+      goto unable_to_embed;
+    }
+
+  if ((unsigned long) core_sectors > embed_region.end - embed_region.start)
+    {
+      grub_util_warn ("Embedding area is too small for core.img.");
+      goto unable_to_embed;
+    }
+
+
 	  grub_util_info ("will embed the core image at sector 0x%llx", embed_region.start);
 
 	  *install_dos_part = grub_cpu_to_le32 (dos_part);
@@ -374,15 +382,8 @@ setup (const char *dir,
 	    grub_util_error ("%s", grub_errmsg);
 
 	  goto finish;
-	}
-    }
   
-  /* If we reached this point, it means we were unable to embed.  */
-  
-  if (embedding_area_exists)
-    grub_util_warn ("Embedding area is too small for core.img.");
-  else
-    grub_util_warn ("Embedding area is not present at all!");
+unable_to_embed:
   
   if (must_embed)
     grub_util_error ("Embedding is not possible, but this is required when "
