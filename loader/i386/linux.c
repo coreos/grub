@@ -347,7 +347,8 @@ allocate_pages (grub_size_t prot_size)
 	  if (real_size + mmap_size > size)
 	    return 0;
 
-	  real_mode_mem = (void *) ((addr + size) - (real_size + mmap_size));
+	  real_mode_mem =
+	    (void *) (grub_size_t) ((addr + size) - (real_size + mmap_size));
 	  return 1;
 	}
 
@@ -416,7 +417,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->lfb_depth = mode_info.bpp;
   params->lfb_line_len = mode_info.pitch;
 
-  params->lfb_base = (void *) render_target->data;
+  params->lfb_base = (grub_size_t) render_target->data;
   params->lfb_size = (params->lfb_line_len * params->lfb_height + 65535) >> 16;
 
   params->red_mask_size = mode_info.red_mask_size;

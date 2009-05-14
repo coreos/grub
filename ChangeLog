@@ -1,3 +1,11 @@
+2009-05-13  Pavel Roskin  <proski@gnu.org>
+
+	* loader/i386/linux.c (allocate_pages): When assigning
+	real_mode_mem, cast through grub_size_t to fix a warning.  The
+	code already makes sure that the value would fit a pointer.
+	(grub_linux_setup_video): Cast render_target->data to
+	grub_size_t to fix a warning.
+
 2009-05-13  Javier Martín <lordhabbit@gmail.com>
 
 	* commands/i386/pc/drivemap.c: New file - implement drivemap
