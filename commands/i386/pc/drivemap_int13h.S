@@ -19,7 +19,7 @@
 
 #include <grub/symbol.h>
 
-#define INT13H_OFFSET(x) ((x) - grub_drivemap_handler)
+#define INT13H_OFFSET(x) ((x) - EXT_C(grub_drivemap_handler))
 
 .code16
 
@@ -31,7 +31,7 @@ FUNCTION(grub_drivemap_handler)
 	/* Map the drive number (always in DL).  */
 	push	%ax
 	push	%bx
-	movw	$INT13H_OFFSET(grub_drivemap_mapstart), %bx
+	movw	$INT13H_OFFSET(EXT_C(grub_drivemap_mapstart)), %bx
 
 more_remaining:
 	movw	%cs:(%bx), %ax

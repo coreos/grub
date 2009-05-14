@@ -1,3 +1,8 @@
+2009-05-14  Christian Franke  <franke@computer.org>
+
+	* commands/i386/pc/drivemap_int13h.S: Add missing EXT_C for symbols.
+	This fixes build on Cygwin.
+
 2009-05-14  Pavel Roskin  <proski@gnu.org>
 
 	* commands/i386/pc/drivemap_int13h.S: Eliminate unconditional
