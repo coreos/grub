@@ -37,14 +37,11 @@ more_remaining:
 	movw	%cs:(%bx), %ax
 	cmpb	%ah, %al
 	jz	not_found /* DRV=DST => map end - drive not remapped, keep DL.  */
+	inc	%bx
+	inc	%bx
 	cmpb	%dl, %al
-	jz	found /* Found - drive remapped, modify DL.  */
-	inc	%bx
-	inc	%bx
-	jmp	more_remaining /* Not found, but more remaining, loop.  */
-
-found:
-	movb	%ah, %dl
+	jnz	more_remaining /* Not found, but more remaining, loop.  */
+	movb	%ah, %dl /* Found - drive remapped, modify DL.  */
 
 not_found:
 	pop	%bx

@@ -1,3 +1,9 @@
+2009-05-14  Pavel Roskin  <proski@gnu.org>
+
+	* commands/i386/pc/drivemap_int13h.S: Eliminate unconditional
+	jump.  This saves two bytes, so the typical case of 2 swapped
+	drives would fit 32 bytes.
+
 2009-05-13  Pavel Roskin  <proski@gnu.org>
 
 	* loader/i386/multiboot.c (grub_multiboot): Cast mmap_addr to
