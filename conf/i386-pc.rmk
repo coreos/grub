@@ -185,7 +185,14 @@ pkglib_MODULES = biosdisk.mod chain.mod \
 	aout.mod bsd.mod pxe.mod pxecmd.mod datetime.mod date.mod \
 	datehook.mod lsmmap.mod ata_pthru.mod hdparm.mod \
 	usb.mod uhci.mod ohci.mod usbtest.mod usbms.mod usb_keyboard.mod \
-	efiemu.mod mmap.mod acpi.mod
+	efiemu.mod mmap.mod acpi.mod drivemap.mod
+
+# For drivemap.mod.
+drivemap_mod_SOURCES = commands/i386/pc/drivemap.c \
+                       commands/i386/pc/drivemap_int13h.S
+drivemap_mod_ASFLAGS = $(COMMON_ASFLAGS)
+drivemap_mod_CFLAGS = $(COMMON_CFLAGS)
+drivemap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For efiemu.mod.
 efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \

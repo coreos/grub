@@ -1,3 +1,10 @@
+2009-05-13  Javier Martín <lordhabbit@gmail.com>
+
+	* commands/i386/pc/drivemap.c: New file - implement drivemap
+	command.
+	* commands/i386/pc/drivemap_int13h.S: New file - int13 handler.
+	* conf/i386-pc.rmk: Add drivemap.c and drivemap_int13h.S.
+
 2009-05-13  Pavel Roskin  <proski@gnu.org>
 
 	* util/i386/pc/grub-setup.c (setup): Remove unused variable
