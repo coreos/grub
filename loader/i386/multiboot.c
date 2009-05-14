@@ -320,7 +320,7 @@ grub_multiboot (int argc, char *argv[])
 
   /* FIXME: grub_uint32_t will break for addresses above 4 GiB, but is mandated
      by the spec.  Is there something we can do about it?  */
-  mbi->mmap_addr = mmap_addr (grub_multiboot_payload_dest);
+  mbi->mmap_addr = (grub_uint32_t) mmap_addr (grub_multiboot_payload_dest);
   mbi->flags |= MULTIBOOT_INFO_MEM_MAP;
 
   if (grub_multiboot_payload_dest >= grub_multiboot_payload_orig)

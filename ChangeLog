@@ -1,5 +1,8 @@
 2009-05-13  Pavel Roskin  <proski@gnu.org>
 
+	* loader/i386/multiboot.c (grub_multiboot): Cast mmap_addr to
+	grub_uint32_t to avoid a warning.
+
 	* loader/i386/linux.c (allocate_pages): When assigning
 	real_mode_mem, cast through grub_size_t to fix a warning.  The
 	code already makes sure that the value would fit a pointer.
