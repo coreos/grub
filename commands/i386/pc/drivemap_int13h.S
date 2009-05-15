@@ -25,8 +25,7 @@
 
 /* Copy starts here.  When deployed, this code must be segment-aligned.  */
 
-/* The replacement int13 handler.  The code must be position independent.
-   Preserve all registers.  */
+/* The replacement int13 handler.   Preserve all registers.  */
 FUNCTION(grub_drivemap_handler)
 	/* Map the drive number (always in DL).  */
 	push	%ax
