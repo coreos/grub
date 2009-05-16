@@ -174,4 +174,10 @@ lsmmap_mod_SOURCES = commands/lsmmap.c
 lsmmap_mod_CFLAGS = $(COMMON_CFLAGS)
 lsmmap_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
+# For setjmp.mod
+pkglib_MODULES += setjmp.mod
+setjmp_mod_SOURCES = lib/sparc64/setjmp.S
+setjmp_mod_CFLAGS = $(COMMON_CFLAGS)
+setjmp_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
 include $(srcdir)/conf/common.mk

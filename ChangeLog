@@ -1,5 +1,101 @@
 2009-05-16  Bean  <bean123ch@gmail.com>
 
+	* conf/common.rmk (pkglib_MODULES): Add lua.mod.
+	(lua_mod_SOURCES): New variable.
+	(lua_mod_CFLAGS): Likewise.
+	(lua_mod_LDFLAGS): Likewise.
+
+	* conf/i386.rmk (pkglib_MODULES): Add setjmp.mod.
+	(setjmp_mod_SOURCES): New variable.
+	(setjmp_mod_CFLAGS): Likewise.
+	(setjmp_LDFLAGS): Likewise.
+
+	* conf/x86_64-efi.rmk (pkglib_MODULES): Add setjmp.mod.
+	(setjmp_mod_SOURCES): New variable.
+	(setjmp_mod_CFLAGS): Likewise.
+	(setjmp_LDFLAGS): Likewise.
+
+	* conf/powerpc-ieee1275.rmk (pkglib_MODULES): Add setjmp.mod.
+	(setjmp_mod_SOURCES): New variable.
+	(setjmp_mod_CFLAGS): Likewise.
+	(setjmp_LDFLAGS): Likewise.
+
+	* conf/sparc64-ieee1275.rmk (pkglib_MODULES): Add setjmp.mod.
+	(setjmp_mod_SOURCES): New variable.
+	(setjmp_mod_CFLAGS): Likewise.
+	(setjmp_LDFLAGS): Likewise.
+
+	* normal/i386/setjmp.S: Moved from here ...
+	* lib/i386/setjmp.S: ... Moved here
+	* normal/x86_64/setjmp.S: Moved from here ...
+	* lib/x86_64/setjmp.S: ... Moved here
+	* normal/powerpc/setjmp.S: Moved from here ...
+	* lib/powerpc/setjmp.S: ... Moved here
+	* normal/sparc64/setjmp.S: Moved from here ...
+	* lib/sparc64/setjmp.S: ... Moved here
+
+	* include/grub/i386/setjmp.h (grub_setjmp): Don't use attribute
+	returns_twice in mingw.
+
+	* script/lua/grub_lib.c: New file.
+	* script/lua/grub_lib.h: Likewise.
+	* script/lua/grub_lua.h: Likewise.
+	* script/lua/grub_main.c: Likewise.
+	* script/lua/lapi.c: Likewise.
+	* script/lua/lapi.h: Likewise.
+	* script/lua/lauxlib.c: Likewise.
+	* script/lua/lauxlib.h: Likewise.
+	* script/lua/lbaselib.c: Likewise.
+	* script/lua/lcode.c: Likewise.
+	* script/lua/lcode.h: Likewise.
+	* script/lua/ldblib.c: Likewise.
+	* script/lua/ldebug.c: Likewise.
+	* script/lua/ldebug.h: Likewise.
+	* script/lua/ldo.c: Likewise.
+	* script/lua/ldo.h: Likewise.
+	* script/lua/ldump.c: Likewise.
+	* script/lua/lfunc.c: Likewise.
+	* script/lua/lfunc.h: Likewise.
+	* script/lua/lgc.c: Likewise.
+	* script/lua/lgc.h: Likewise.
+	* script/lua/linit.c: Likewise.
+	* script/lua/liolib.c: Likewise.
+	* script/lua/llex.c: Likewise.
+	* script/lua/llex.h: Likewise.
+	* script/lua/llimits.h: Likewise.
+	* script/lua/lmathlib.c: Likewise.
+	* script/lua/lmem.c: Likewise.
+	* script/lua/lmem.h: Likewise.
+	* script/lua/loadlib.c: Likewise.
+	* script/lua/lobject.c: Likewise.
+	* script/lua/lobject.h: Likewise.
+	* script/lua/lopcodes.c: Likewise.
+	* script/lua/lopcodes.h: Likewise.
+	* script/lua/loslib.c: Likewise.
+	* script/lua/lparser.c: Likewise.
+	* script/lua/lparser.h: Likewise.
+	* script/lua/lstate.c: Likewise.
+	* script/lua/lstate.h: Likewise.
+	* script/lua/lstring.c: Likewise.
+	* script/lua/lstring.h: Likewise.
+	* script/lua/lstrlib.c: Likewise.
+	* script/lua/ltable.c: Likewise.
+	* script/lua/ltable.h: Likewise.
+	* script/lua/ltablib.c: Likewise.
+	* script/lua/ltm.c: Likewise.
+	* script/lua/ltm.h: Likewise.
+	* script/lua/lua.h: Likewise.
+	* script/lua/luaconf.h: Likewise.
+	* script/lua/lualib.h: Likewise.
+	* script/lua/lundump.c: Likewise.
+	* script/lua/lundump.h: Likewise.
+	* script/lua/lvm.c: Likewise.
+	* script/lua/lvm.h: Likewise.
+	* script/lua/lzio.c: Likewise.
+	* script/lua/lzio.h: Likewise.
+
+2009-05-16  Bean  <bean123ch@gmail.com>
+
 	* include/grub/kernel.h (grub_module_header_types): Add type
 	OBJ_TYPE_CONFIG.
 
