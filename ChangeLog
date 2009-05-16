@@ -1,5 +1,10 @@
 2009-05-16  Felix Zielcke  <fzielcke@z-51.de>
 
+	* conf/i386.rmk (setjmp_mod_CFLAGS): Rename to ...
+	(setjmp_mod_ASFLAGS): ... this. Set to $(COMMON_ASFLAGS)
+
+2009-05-16  Felix Zielcke  <fzielcke@z-51.de>
+
 	* util/grub-mkconfig.in: Export GRUB_TERMINAL_INPUT.
 
 2009-05-16  Bean  <bean123ch@gmail.com>
