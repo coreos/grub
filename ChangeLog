@@ -1,3 +1,15 @@
+2009-05-16  Bean  <bean123ch@gmail.com>
+
+	* include/grub/kernel.h (grub_module_header_types): Add type
+	OBJ_TYPE_CONFIG.
+
+	* kern/main.c (grub_load_config): New function.
+	(grub_main): Call grub_load_config to read boot config.
+
+	* grub-mkimage (generate_image): New parameter config_path.
+	(options): New option --config.
+	(main): Parse --config option, and pass it to generate_image.
+
 2009-05-14  Christian Franke  <franke@computer.org>
 
 	* commands/i386/pc/drivemap_int13h.S: Add missing EXT_C for symbols.

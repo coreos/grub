@@ -31,6 +31,7 @@ struct grub_module_header
   {
     OBJ_TYPE_ELF,
     OBJ_TYPE_MEMDISK,
+    OBJ_TYPE_CONFIG
   }  grub_module_header_types;
 
   /* The size of object (including this header).  */
