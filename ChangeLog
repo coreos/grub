@@ -1,7 +1,13 @@
 2009-05-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/i386.rmk (setjmp_mod_CFLAGS): Rename to ...
-	(setjmp_mod_ASFLAGS): ... this. Set to $(COMMON_ASFLAGS)
+	(setjmp_mod_ASFLAGS): ... this. Set to $(COMMON_ASFLAGS).
+	* conf/x86_64-efi.rmk (setjmp_mod_CFLAGS): Rename to ...
+	(setjmp_mod_ASFLAGS): ... this. Set to $(COMMON_ASFLAGS).
+	* conf/powerpc-ieee1275.rmk (setjmp_mod_CFLAGS): Rename to ...
+	(setjmp_mod_ASFLAGS): ... this. Set to $(COMMON_ASFLAGS).
+	* conf/sparc64-ieee1275.rmk (setjmp_mod_CFLAGS): Rename to ...
+	(setjmp_mod_ASFLAGS): ... this. Set to $(COMMON_ASFLAGS).
 
 2009-05-16  Felix Zielcke  <fzielcke@z-51.de>
 
