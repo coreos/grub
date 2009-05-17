@@ -51,7 +51,7 @@ grub_lua_parse_line (char *line, grub_reader_getline_t getline)
 
       if (r == LUA_ERRSYNTAX)
 	{
-	  int lmsg;
+	  size_t lmsg;
 	  const char *msg = lua_tolstring(state, -1, &lmsg);
 	  const char *tp = msg + lmsg - (sizeof(LUA_QL("<eof>")) - 1);
 	  if (grub_strstr(msg, LUA_QL("<eof>")) == tp)

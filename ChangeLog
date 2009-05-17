@@ -1,3 +1,11 @@
+2009-05-16  Pavel Roskin  <proski@gnu.org>
+
+	* script/lua/grub_lib.c (grub_lua_getenv): Make name and value
+	const to avoid a warning.
+	(grub_lua_setenv): Likewise.
+	* script/lua/grub_main.c (grub_lua_parse_line): Use size_t for
+	lmsg to fix a warning.
+
 2009-05-16  Felix Zielcke  <fzielcke@z-51.de>
 
 	* conf/i386.rmk (setjmp_mod_CFLAGS): Rename to ...

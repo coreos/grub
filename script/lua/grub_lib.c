@@ -69,7 +69,7 @@ grub_lua_getenv (lua_State *state)
   n = lua_gettop(state);
   for (i = 1; i <= n; i++)
     {
-      char *name, *value;
+      const char *name, *value;
 
       name = lua_tostring (state, i);
       value = grub_env_get (name);
@@ -85,7 +85,7 @@ grub_lua_getenv (lua_State *state)
 static int
 grub_lua_setenv (lua_State *state)
 {
-  char *name, *value;
+  const char *name, *value;
 
   if (lua_gettop(state) != 2)
     return 0;
