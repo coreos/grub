@@ -1,5 +1,13 @@
 2009-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove -Werror which causes build to fail on some systems
+
+	* conf/i386-pc.rmk (xnu_mod_CFLAGS): Remove -Werror -Wall
+	* conf/i386-efi.rmk (xnu_mod_CFLAGS): Likewise
+	* conf/x86_64-efi.rmk (xnu_mod_CFLAGS): Likewise
+	
+2009-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	trampoline for linux on 64-bit platform
 
 	* conf/x86_64-efi.rmk (linux_mod_SOURCES): added 
