@@ -22,6 +22,5 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
-void EXPORT_FUNC(grub_linux_real_boot) (void);
 
 #endif /* ! GRUB_LOADER_MACHINE_HEADER */

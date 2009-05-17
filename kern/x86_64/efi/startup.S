@@ -61,26 +61,3 @@ codestart:
 	call	EXT_C(grub_main)
 	ret
 
-	.code32
-
-FUNCTION(grub_linux_real_boot)
-        /* Turn off PG bit in CR0 and set CR3 to zero.  */
-        movl    %cr0, %eax
-        andl    $0x7FFFFFFF, %eax
-        movl    %eax, %cr0
-
-        /* Setup EFER (Extended Feature Enable Register).  */
-        movl    $0xc0000080, %ecx
-        rdmsr
-
-        /* Disable Long Mode.  */
-        andl    $0xFFFFFEFF, %eax
-
-        /* Make changes effective.  */
-        wrmsr
-
-        /* Disable PAE.  */
-        xorl    %eax, %eax
-        movl    %eax, %cr4
-
-        jmp     *%ebx

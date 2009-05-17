@@ -1,3 +1,20 @@
+2009-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	trampoline for linux on 64-bit platform
+
+	* conf/x86_64-efi.rmk (linux_mod_SOURCES): added 
+	loader/i386/efi/linux_trampoline.S 
+	* include/grub/x86_64/efi/loader.h (grub_linux_real_boot): removed 
+	declration
+	* kern/x86_64/efi/startup.S (grub_linux_real_boot): moved from here
+	* loader/i386/linux_trampoline.S: moved here
+	* loader/i386/efi/linux.c (allocate_pages): reserve space for trampoline
+	(jumpvector): removed
+	(grub_linux_trampoline_start): new declaration
+	(grub_linux_trampoline_end): likewise
+	(grub_linux_boot): use trampoline when on 64-bit platform
+	* loader/i386/linux.c: likewise
+
 2009-05-16  Pavel Roskin  <proski@gnu.org>
 
 	* script/lua/grub_lib.c (grub_lua_getenv): Make name and value

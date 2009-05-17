@@ -241,7 +241,7 @@ allocate_pages (grub_size_t prot_size)
 	      
   /* Next, find free pages for the protected mode code.  */
   /* XXX what happens if anything is using this address?  */
-  prot_mode_mem = grub_efi_allocate_pages (0x100000, prot_mode_pages);
+  prot_mode_mem = grub_efi_allocate_pages (0x100000, prot_mode_pages + 1);
   if (! prot_mode_mem)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
@@ -286,11 +286,8 @@ grub_e820_add_region (struct grub_e820_mmap *e820_map, int *e820_num,
 }
 
 #ifdef __x86_64__
-struct
-{
-  grub_uint32_t kernel_entry;
-  grub_uint32_t kernel_cs;
-} jumpvector;
+extern grub_uint8_t grub_linux_trampoline_start[];
+extern grub_uint8_t grub_linux_trampoline_end[];
 #endif
 
 static grub_err_t
@@ -384,24 +381,24 @@ grub_linux_boot (void)
       params->v0204.efi_mmap_size = mmap_size;
     }
 
+#ifdef __x86_64__
+  
+  grub_memcpy ((char *) prot_mode_mem + (prot_mode_pages << 12), 
+	       grub_linux_trampoline_start, 
+	       grub_linux_trampoline_end - grub_linux_trampoline_start);
+  
+  ((void (*) (unsigned long, void *)) ((char *) prot_mode_mem 
+                                     + (prot_mode_pages << 12)))
+    (params->code32_start, real_mode_mem);
+
+#else
+
   /* Hardware interrupts are not safe any longer.  */
   asm volatile ("cli" : : );
   
   /* Load the IDT and the GDT for the bootstrap.  */
   asm volatile ("lidt %0" : : "m" (idt_desc));
   asm volatile ("lgdt %0" : : "m" (gdt_desc));
-
-#ifdef __x86_64__
-
-  jumpvector.kernel_entry = (grub_uint64_t) grub_linux_real_boot;
-  jumpvector.kernel_cs = 0x10;
-
-  asm volatile ( "mov %0, %%rbx" : : "m" (params->code32_start));
-  asm volatile ( "mov %0, %%rsi" : : "m" (real_mode_mem));
-
-  asm volatile ( "ljmp *%0" : : "m" (jumpvector));
-
-#else
 
   /* Pass parameters.  */
   asm volatile ("movl %0, %%ecx" : : "m" (params->code32_start));
