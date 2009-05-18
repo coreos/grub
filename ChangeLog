@@ -5,14 +5,14 @@
 	* conf/i386-pc.rmk (xnu_mod_CFLAGS): Remove -Werror -Wall
 	* conf/i386-efi.rmk (xnu_mod_CFLAGS): Likewise
 	* conf/x86_64-efi.rmk (xnu_mod_CFLAGS): Likewise
-	
+
 2009-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	trampoline for linux on 64-bit platform
 
-	* conf/x86_64-efi.rmk (linux_mod_SOURCES): added 
-	loader/i386/efi/linux_trampoline.S 
-	* include/grub/x86_64/efi/loader.h (grub_linux_real_boot): removed 
+	* conf/x86_64-efi.rmk (linux_mod_SOURCES): added
+	loader/i386/efi/linux_trampoline.S
+	* include/grub/x86_64/efi/loader.h (grub_linux_real_boot): removed
 	declration
 	* kern/x86_64/efi/startup.S (grub_linux_real_boot): moved from here
 	* loader/i386/linux_trampoline.S: moved here
@@ -176,7 +176,7 @@
 	(grub_linux_setup_video): Cast render_target->data to
 	grub_size_t to fix a warning.
 
-2009-05-13  Javier Martín <lordhabbit@gmail.com>
+2009-05-13  Javier Martín  <lordhabbit@gmail.com>
 
 	* commands/i386/pc/drivemap.c: New file - implement drivemap
 	command.
@@ -218,7 +218,7 @@
 
 	* util/i386/pc/grub-install.in: Update copyright year.
 
-2009-05-09  Vladimir Serbinenko <phcoder@gmail.com>
+2009-05-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	gptsync
 
@@ -227,7 +227,7 @@
 	(gptsync_mod_SOURCES): new variable
 	(gptsync_mod_CFLAGS): likewise
 	(gptsync_mod_LDFLAGS): likewise
-	* include/grub/pc_partition.h (GRUB_PC_PARTITION_TYPE_NTFS): 
+	* include/grub/pc_partition.h (GRUB_PC_PARTITION_TYPE_NTFS):
 	new definition
 	(GRUB_PC_PARTITION_TYPE_HFS): likewise
 	* conf/i386-coreboot.rmk (grub_emu_SOURCES): add commands/gptsync.c
@@ -424,7 +424,7 @@
 	* conf/i386-efi.rmk (grub_emu_SOURCES): Remove `normal/execute.c',
 	`normal/lexer.c', `kern/rescue.c', `normal/function.c', `normal/misc.c'
 	and `normal/script.c'.  Add `kern/rescue_reader.c',
-	`kern/rescue_parser.c', `script/sh/main.c', `script/sh/execute.c', 
+	`kern/rescue_parser.c', `script/sh/main.c', `script/sh/execute.c',
 	`script/sh/function.c', `script/sh/lexer.c', `script/sh/script.c' and
 	`grub_script.tab.c'.
 
@@ -451,7 +451,7 @@
 	install in odd layouts.  Refuse to install using blocklists unless
 	--force was set.
 
-2009-05-04  martin f. krafft <madduck@madduck.net>
+2009-05-04  martin f. krafft  <madduck@madduck.net>
 
 	* disk/raid.c (grub_raid_scan_device): Improve debug message.
 
@@ -460,12 +460,12 @@
 	Updated copyright year
 
 	* fs/hfsplus.c: updated copyright year
-	
+
 2009-05-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	HFS+ UUID
 
-	* fs/hfsplus.c (grub_hfsplus_volheader): added num_serial field 
+	* fs/hfsplus.c (grub_hfsplus_volheader): added num_serial field
 	in the space previously used by unused3
 	(grub_hfsplus_uuid): new function
 	(grub_hfsplus_fs): added uuid field
@@ -539,11 +539,11 @@
 	* util/i386/pc/grub-install.in: Likewise.  Use "cp -f" for
 	copying.
 
-2009-05-03  Bean  <bean123ch@gmail.com> Vladimir Serbinenko <phcoder@gmail.com>
+2009-05-03  Bean  <bean123ch@gmail.com> Vladimir Serbinenko  <phcoder@gmail.com>
 
 	FreeBSD 64-bit support
 
-	* conf/i386-pc.rmk (bsd_mod_SOURCES): add loader/i386/bsd_helper.S 
+	* conf/i386-pc.rmk (bsd_mod_SOURCES): add loader/i386/bsd_helper.S
 	and loader/i386/bsd_trampoline.S
 	(bsd_mod_ASFLAGS): new variable
 	* include/grub/i386/bsd.h (FREEBSD_MODINFOMD_SMAP): new definition
@@ -556,7 +556,7 @@
 	* include/grub/i386/bsd.h (grub_unix_real_boot): ... moved here
 	* kern/i386/loader.S (grub_unix_real_boot): moved from here ...
 	* loader/i386/bsd_helper.S (grub_unix_real_boot): moved here
-	* include/grub/gpt_partition.h (grub_gpt_partentry): Corrected the type 
+	* include/grub/gpt_partition.h (grub_gpt_partentry): Corrected the type
 	of "attrib" member
 	* loader/i386/bsd_pagetable.c: new file
 	* loader/i386/bsd_trampoline.S: likewise
