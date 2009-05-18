@@ -26,6 +26,21 @@
 
 static lua_State *state;
 
+/* Call `grub_error' to report a Lua error.  The error message string must be
+   on the top of the Lua stack (at index -1).  The error message is popped off
+   the Lua stack before this function returns.  */
+static void
+handle_lua_error (const char *error_type)
+{
+  const char *error_msg;
+  error_msg = lua_tostring (state, -1);
+  if (error_msg == NULL)
+    error_msg = "(error message not a string)";
+  grub_error (GRUB_ERR_BAD_ARGUMENT, "%s: %s", error_type, error_msg);
+  /* Pop the error message.  */
+  lua_pop (state, 1);
+}
+
 static grub_err_t
 grub_lua_parse_line (char *line, grub_reader_getline_t getline)
 {
@@ -35,37 +50,47 @@ grub_lua_parse_line (char *line, grub_reader_getline_t getline)
   lua_settop(state, 0);
   while (1)
     {
-      r = luaL_loadbuffer (state, line, grub_strlen (line), "grub");
+      r = luaL_loadbuffer (state, line, grub_strlen (line), "=grub");
       if (! r)
 	{
+	  /* No error: Execute the statement.  */
 	  r = lua_pcall (state, 0, 0, 0);
 	  if (r)
-	    grub_error (GRUB_ERR_BAD_ARGUMENT, "lua command fails");
+	    {
+	      handle_lua_error ("Lua");
+	      break;
+	    }
 	  else
 	    {
 	      grub_free (old_line);
 	      return grub_errno;
 	    }
-	  break;
 	}
 
       if (r == LUA_ERRSYNTAX)
 	{
+	  /* Check whether the syntax error is a result of an incomplete
+	     statement.  If it is, then try to complete the statement by
+	     reading more lines.  */
 	  size_t lmsg;
-	  const char *msg = lua_tolstring(state, -1, &lmsg);
-	  const char *tp = msg + lmsg - (sizeof(LUA_QL("<eof>")) - 1);
-	  if (grub_strstr(msg, LUA_QL("<eof>")) == tp)
+	  const char *msg = lua_tolstring (state, -1, &lmsg);
+	  const char *tp = msg + lmsg - (sizeof (LUA_QL ("<eof>")) - 1);
+	  if (grub_strstr (msg, LUA_QL ("<eof>")) == tp)
 	    {
 	      char *n, *t;
 	      int len;
 
-	      lua_pop(state, 1);
+	      /* Discard the error message.  */
+	      lua_pop (state, 1);
+	      /* Try to read another line to complete the statement.  */
 	      if ((getline (&n, 1)) || (! n))
 		{
 		  grub_error (GRUB_ERR_BAD_ARGUMENT, "incomplete command");
 		  break;
 		}
 
+	      /* More input was available: Add it to the current statement
+		 contents.  */
 	      len = grub_strlen (line);
 	      t = grub_malloc (len + grub_strlen (n) + 2);
 	      if (! t)
@@ -76,8 +101,17 @@ grub_lua_parse_line (char *line, grub_reader_getline_t getline)
 	      grub_strcpy (t + len + 1, n);
 	      grub_free (old_line);
 	      line = old_line = t;
+	      /* Try again to execute the statement now that more input has
+		 been appended.  */
 	      continue;
 	    }
+	  /* The syntax error was not the result of an incomplete line.  */
+	  handle_lua_error ("Lua syntax error");
+	}
+      else
+	{
+	  /* Handle errors other than syntax errors (out of memory, etc.).  */
+	  handle_lua_error ("Lua parser failed");
 	}
 
       break;
@@ -102,10 +136,10 @@ GRUB_MOD_INIT(lua)
   state = lua_open ();
   if (state)
     {
-      lua_gc(state, LUA_GCSTOP, 0);
-      luaL_openlibs(state);
-      luaL_register(state, "grub", grub_lua_lib);
-      lua_gc(state, LUA_GCRESTART, 0);
+      lua_gc (state, LUA_GCSTOP, 0);
+      luaL_openlibs (state);
+      luaL_register (state, "grub", grub_lua_lib);
+      lua_gc (state, LUA_GCRESTART, 0);
       grub_parser_register ("lua", &grub_lua_parser);
     }
 }
@@ -115,6 +149,6 @@ GRUB_MOD_FINI(lua)
   if (state)
     {
       grub_parser_unregister (&grub_lua_parser);
-      lua_close(state);
+      lua_close (state);
     }
 }

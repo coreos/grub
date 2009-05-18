@@ -1,3 +1,13 @@
+2009-05-18  Colin D Bennett  <colin@gibibit.com>
+
+	Display error messages when parsing a Lua statement fails.  Previously,
+	executing a syntactically invalid statement like ")foo" or "bar;" would
+	silently fail.
+
+	* script/lua/grub_main.c (handle_lua_error): New function.
+	(grub_lua_parse_line): Improved reporting of Lua parser and execution
+	errors.
+
 2009-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove -Werror which causes build to fail on some systems
