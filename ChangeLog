@@ -3,16 +3,16 @@
 	* conf/x86_64-efi.rmk (linux_mod_ASFLAGS): Add missing variable
 	* loader/i386/linux_trampoline.S: Fix identation
 	* loader/i386/xnu_helper.S: Likewise
-	
+
 2009-05-18  Colin D Bennett  <colin@gibibit.com>
 
-	Display error messages when parsing a Lua statement fails.  Previously,
-	executing a syntactically invalid statement like ")foo" or "bar;" would
-	silently fail.
+	Display error messages when parsing a Lua statement fails.
+	Previously, executing a syntactically invalid statement like
+	")foo" or "bar;" would silently fail.
 
 	* script/lua/grub_main.c (handle_lua_error): New function.
-	(grub_lua_parse_line): Improved reporting of Lua parser and execution
-	errors.
+	(grub_lua_parse_line): Improved reporting of Lua parser and
+	execution errors.
 
 2009-05-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
@@ -30,9 +30,11 @@
 	loader/i386/efi/linux_trampoline.S
 	* include/grub/x86_64/efi/loader.h (grub_linux_real_boot): removed
 	declration
-	* kern/x86_64/efi/startup.S (grub_linux_real_boot): moved from here
+	* kern/x86_64/efi/startup.S (grub_linux_real_boot): moved from
+	here
 	* loader/i386/linux_trampoline.S: moved here
-	* loader/i386/efi/linux.c (allocate_pages): reserve space for trampoline
+	* loader/i386/efi/linux.c (allocate_pages): reserve space for
+	trampoline
 	(jumpvector): removed
 	(grub_linux_trampoline_start): new declaration
 	(grub_linux_trampoline_end): likewise
