@@ -99,18 +99,18 @@ VARIABLE(grub_xnu_heap_size)
 
 cont0:	
 
-	lea (cont1-base)(%rsi, 1), %rax
-	mov %eax, (jump_vector-base)(%rsi,1)
+	lea (cont1 - base) (%rsi, 1), %rax
+	mov %eax, (jump_vector - base) (%rsi, 1)
 
-	lea (gdt-base)(%rsi, 1), %rax
-	mov %rax, (gdt_addr-base)(%rsi,1)
+	lea (gdt - base) (%rsi, 1), %rax
+	mov %rax, (gdt_addr - base) (%rsi, 1)
 	
 	/* Switch to compatibility mode. */
 
-	lgdt (gdtdesc-base)(%rsi,1)
+	lgdt (gdtdesc - base) (%rsi, 1)
 	
 	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
-	ljmp *(jump_vector-base)(%rsi,1)
+	ljmp *(jump_vector - base) (%rsi, 1)
 cont1:
 	.code32
 
