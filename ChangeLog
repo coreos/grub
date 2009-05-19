@@ -1,3 +1,9 @@
+2009-05-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/x86_64-efi.rmk (linux_mod_ASFLAGS): Add missing variable
+	* loader/i386/linux_trampoline.S: Fix identation
+	* loader/i386/xnu_helper.S: Likewise
+	
 2009-05-18  Colin D Bennett  <colin@gibibit.com>
 
 	Display error messages when parsing a Lua statement fails.  Previously,
