@@ -1,3 +1,10 @@
+2009-05-21  Felix Zielcke  <fzielcke@z-51.de>
+
+	* normal/i386: Remove.
+	* normal/powerpc: Likewise.
+	* normal/sparc64: Likewise.
+	* normal/x86_64: Likewise.
+
 2009-05-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/x86_64-efi.rmk (linux_mod_ASFLAGS): Add missing variable
