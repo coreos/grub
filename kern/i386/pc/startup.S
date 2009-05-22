@@ -273,30 +273,12 @@ codestart:
  *  This is the area for all of the special variables.
  */
 
-	.p2align	2	/* force 4-byte alignment */
-
 VARIABLE(grub_boot_drive)
-	.long	0
+	.byte	0
 
 VARIABLE(grub_root_drive)
-	.long	0
+	.byte	0
 
-VARIABLE(grub_start_addr)
-	.long	_start
-
-VARIABLE(grub_end_addr)
-	.long	END_SYMBOL
-	
-VARIABLE(grub_apm_bios_info)
-	.word	0	/* version */
-	.word	0	/* cseg */
-	.long	0	/* offset */
-	.word	0	/* cseg_16 */
-	.word	0	/* dseg_16 */
-	.word	0	/* cseg_len */
-	.word	0	/* cseg_16_len */
-	.word	0	/* dseg_16_len */
-	
 	.p2align	2	/* force 4-byte alignment */
 	
 /*

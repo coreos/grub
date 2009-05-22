@@ -1,3 +1,15 @@
+2009-05-22  Pavel Roskin  <proski@gnu.org>
+
+	* include/grub/i386/pc/kernel.h (grub_boot_drive): Change type
+	to grub_uint8_t.
+	(grub_root_drive): Likewise.
+	* kern/i386/pc/startup.S (grub_boot_drive): Change size to byte,
+	remove alignment.
+	(grub_root_drive): Change size to byte.
+	(grub_start_addr): Remove.
+	(grub_end_addr): Likewise.
+	(grub_apm_bios_info): Likewise.
+
 2009-05-21  Felix Zielcke  <fzielcke@z-51.de>
 
 	* normal/i386: Remove.

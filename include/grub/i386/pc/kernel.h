@@ -69,13 +69,10 @@ extern grub_int32_t grub_install_bsd_part;
 extern char grub_prefix[];
 
 /* The boot BIOS drive number.  */
-extern grub_int32_t EXPORT_VAR(grub_boot_drive);
+extern grub_uint8_t EXPORT_VAR(grub_boot_drive);
 
 /* The root BIOS drive number.  */
-extern grub_int32_t grub_root_drive;
-
-/* The end address of the kernel.  */
-extern grub_addr_t grub_end_addr;
+extern grub_uint8_t grub_root_drive;
 
 #endif /* ! ASM_FILE */
 
