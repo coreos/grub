@@ -1,5 +1,10 @@
 2009-05-22  Pavel Roskin  <proski@gnu.org>
 
+	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): Remove.
+	* configure.ac: Don't call grub_I386_CHECK_REGPARM_BUG.  Define
+	NESTED_FUNC_ATTR using AH_BOTTOM.  Use regparm(1) only when
+	compiling for the i386 targets, but not for the utilities.
+
 	* include/grub/i386/pc/kernel.h (grub_boot_drive): Change type
 	to grub_uint8_t.
 	(grub_root_drive): Likewise.

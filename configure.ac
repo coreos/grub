@@ -391,10 +391,15 @@ if test "x$target_cpu" = xi386; then
   grub_I386_ASM_PREFIX_REQUIREMENT
   grub_I386_ASM_ADDR32
   grub_I386_ASM_ABSOLUTE_WITHOUT_ASTERISK
-  grub_I386_CHECK_REGPARM_BUG
 else
   AC_DEFINE([NESTED_FUNC_ATTR], [], [Catch gcc bug])
 fi
+
+AH_BOTTOM([#if defined(__i386__) && !defined(GRUB_UTIL)
+#define NESTED_FUNC_ATTR __attribute__ ((__regparm__ (1)))
+#else
+#define NESTED_FUNC_ATTR
+#endif])
 
 # Restore the flags.
 CC="$tmp_CC"

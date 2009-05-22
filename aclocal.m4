@@ -301,60 +301,6 @@ else
 fi
 ])
 
-dnl Check if the C compiler has a bug while using nested functions when
-dnl mregparm is used on the i386.  Some gcc versions do not pass the third
-dnl parameter correctly to the nested function.
-dnl Written by Marco Gerards.
-AC_DEFUN(grub_I386_CHECK_REGPARM_BUG,
-[AC_REQUIRE([AC_PROG_CC])
-AC_MSG_CHECKING([if GCC has the regparm=3 bug])
-AC_CACHE_VAL(grub_cv_i386_check_nested_functions,
-[AC_RUN_IFELSE([AC_LANG_SOURCE(
-[[
-static int
-test (int *n)
-{
-  return *n == -1;
-}
-
-static int
-testfunc (int __attribute__ ((__regparm__ (3))) (*hook) (int a, int b, int *c))
-{
-  int a = 0;
-  int b = 0;
-  int c = -1;
-  return hook (a, b, &c);
-}
-
-int
-main (void)
-{
-  int __attribute__ ((__regparm__ (3))) nestedfunc (int a, int b, int *c)
-    {
-      return a == b && test (c);
-    }
-  return testfunc (nestedfunc) ? 0 : 1;
-}
-]])],
-	[grub_cv_i386_check_nested_functions=no],
-	[grub_cv_i386_check_nested_functions=yes],
-	[grub_cv_i386_check_nested_functions=yes])])
-
-AC_MSG_RESULT([$grub_cv_i386_check_nested_functions])
-
-if test "x$grub_cv_i386_check_nested_functions" = xyes; then
-  AC_DEFINE([NESTED_FUNC_ATTR], 
-	[__attribute__ ((__regparm__ (1)))],
-	[Catch gcc bug])
-else
-dnl Unfortunately, the above test does not detect a bug in gcc-4.0.
-dnl So use regparm 2 until a better test is found.
-  AC_DEFINE([NESTED_FUNC_ATTR], 
-	[__attribute__ ((__regparm__ (1)))],
-	[Catch gcc bug])
-fi
-])
-
 dnl Check if the C compiler generates calls to `__enable_execute_stack()'.
 AC_DEFUN(grub_CHECK_ENABLE_EXECUTE_STACK,[
 AC_MSG_CHECKING([whether `$CC' generates calls to `__enable_execute_stack()'])
