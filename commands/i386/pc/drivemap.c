@@ -26,7 +26,6 @@
 #include <grub/machine/memory.h>
 
 
-#define MODNAME "drivemap"
 
 /* Real mode IVT slot (seg:off far pointer) for interrupt 0x13.  */
 static grub_uint32_t *const int13slot = UINT_TO_PTR (4 * 0x13);
@@ -304,13 +303,13 @@ grub_cmd_drivemap (struct grub_extcmd *cmd, int argc, char **args)
   if (mapto == mapfrom)
     {
       /* Reset to default.  */
-      grub_dprintf (MODNAME, "Removing mapping for %s (%02x)\n",
+      grub_dprintf ("drivemap", "Removing mapping for %s (%02x)\n",
 		    args[0], mapfrom);
       drivemap_remove (mapfrom);
       return GRUB_ERR_NONE;
     }
   /* Set the mapping for the disk (overwrites any existing mapping).  */
-  grub_dprintf (MODNAME, "%s %s (%02x) = %s (%02x)\n",
+  grub_dprintf ("drivemap", "%s %s (%02x) = %s (%02x)\n",
 		cmd->state[OPTIDX_SWAP].set ? "Swapping" : "Mapping",
 		args[1], mapto, args[0], mapfrom);
   err = drivemap_set (mapto, mapfrom);
@@ -349,16 +348,16 @@ install_int13_handler (int noret __attribute__ ((unused)))
   if (entries == 0)
     {
       /* No need to install the int13h handler.  */
-      grub_dprintf (MODNAME, "No drives marked as remapped, not installing "
+      grub_dprintf ("drivemap", "No drives marked as remapped, not installing "
 		    "our int13h handler.\n");
       return GRUB_ERR_NONE;
     }
 
-  grub_dprintf (MODNAME, "Installing our int13h handler\n");
+  grub_dprintf ("drivemap", "Installing our int13h handler\n");
 
   /* Save the pointer to the old handler.  */
   grub_drivemap_oldhandler = *int13slot;
-  grub_dprintf (MODNAME, "Original int13 handler: %04x:%04x\n",
+  grub_dprintf ("drivemap", "Original int13 handler: %04x:%04x\n",
 		(grub_drivemap_oldhandler >> 16) & 0x0ffff,
 		grub_drivemap_oldhandler & 0x0ffff);
 
@@ -366,7 +365,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
      enough to hold the handler and its data.  */
   total_size = INT13H_OFFSET (&grub_drivemap_mapstart)
     + (entries + 1) * sizeof (int13map_node_t);
-  grub_dprintf (MODNAME, "Payload is %u bytes long\n", total_size);
+  grub_dprintf ("drivemap", "Payload is %u bytes long\n", total_size);
   handler_base = grub_mmap_malign_and_register (16, total_size,
 						&drivemap_mmap,
 						GRUB_MACHINE_MEMORY_RESERVED,
@@ -376,7 +375,7 @@ install_int13_handler (int noret __attribute__ ((unused)))
 		       "memory for the int13h handler");
 
   /* Copy int13h handler bundle to reserved area.  */
-  grub_dprintf (MODNAME, "Reserved memory at %p, copying handler\n",
+  grub_dprintf ("drivemap", "Reserved memory at %p, copying handler\n",
 		handler_base);
   grub_memcpy (handler_base, &grub_drivemap_handler,
 	       INT13H_OFFSET (&grub_drivemap_mapstart));
@@ -385,22 +384,22 @@ install_int13_handler (int noret __attribute__ ((unused)))
   curentry = map_head;
   handler_map = (int13map_node_t *) (handler_base +
 				     INT13H_OFFSET (&grub_drivemap_mapstart));
-  grub_dprintf (MODNAME, "Target map at %p, copying mappings\n", handler_map);
+  grub_dprintf ("drivemap", "Target map at %p, copying mappings\n", handler_map);
   for (i = 0; i < entries; ++i, curentry = curentry->next)
     {
       handler_map[i].disknum = curentry->newdrive;
       handler_map[i].mapto = curentry->redirto;
-      grub_dprintf (MODNAME, "\t#%d: 0x%02x <- 0x%02x\n", i,
+      grub_dprintf ("drivemap", "\t#%d: 0x%02x <- 0x%02x\n", i,
 		    handler_map[i].disknum, handler_map[i].mapto);
     }
   /* Signal end-of-map.  */
   handler_map[i].disknum = 0;
   handler_map[i].mapto = 0;
-  grub_dprintf (MODNAME, "\t#%d: 0x00 <- 0x00 (end)\n", i);
+  grub_dprintf ("drivemap", "\t#%d: 0x00 <- 0x00 (end)\n", i);
 
   /* Install our function as the int13h handler in the IVT.  */
   *int13slot = ((grub_uint32_t) handler_base) << 12;	/* Segment address.  */
-  grub_dprintf (MODNAME, "New int13 handler: %04x:%04x\n",
+  grub_dprintf ("drivemap", "New int13 handler: %04x:%04x\n",
 		(*int13slot >> 16) & 0x0ffff, *int13slot & 0x0ffff);
 
   return GRUB_ERR_NONE;
@@ -415,7 +414,7 @@ uninstall_int13_handler (void)
   *int13slot = grub_drivemap_oldhandler;
   grub_mmap_free_and_unregister (drivemap_mmap);
   grub_drivemap_oldhandler = 0;
-  grub_dprintf (MODNAME, "Restored int13 handler: %04x:%04x\n",
+  grub_dprintf ("drivemap", "Restored int13 handler: %04x:%04x\n",
 		(*int13slot >> 16) & 0x0ffff, *int13slot & 0x0ffff);
 
   return GRUB_ERR_NONE;
@@ -425,9 +424,9 @@ static grub_extcmd_t cmd;
 
 GRUB_MOD_INIT (drivemap)
 {
-  cmd = grub_register_extcmd (MODNAME, grub_cmd_drivemap,
+  cmd = grub_register_extcmd ("drivemap", grub_cmd_drivemap,
 					GRUB_COMMAND_FLAG_BOTH,
-					MODNAME
+					"drivemap"
 					" -l | -r | [-s] grubdev osdisk",
 					"Manage the BIOS drive mappings",
 					options);

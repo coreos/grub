@@ -1,3 +1,7 @@
+2009-05-23  Felix Zielcke  <fzielcke@z-51.de>
+
+	* commands/i386/pc/drivemap.c (MODNAME): Remove. Update all users.
+
 2009-05-22  Pavel Roskin  <proski@gnu.org>
 
 	* aclocal.m4 (grub_I386_CHECK_REGPARM_BUG): Remove.
