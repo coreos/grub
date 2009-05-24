@@ -1,4 +1,4 @@
-/* menu.h - Menu and menu entry model declarations. */
+/* menu.h - Menu model function prototypes and data structures. */
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 2009  Free Software Foundation, Inc.
@@ -56,5 +56,36 @@ struct grub_menu
   grub_menu_entry_t entry_list;
 };
 typedef struct grub_menu *grub_menu_t;
+
+/* Callback structure menu viewers can use to provide user feedback when
+   default entries are executed, possibly including fallback entries.  */
+typedef struct grub_menu_execute_callback
+{
+  /* Called immediately before ENTRY is booted.  */
+  void (*notify_booting) (grub_menu_entry_t entry, void *userdata);
+
+  /* Called when executing one entry has failed, and another entry, ENTRY, will
+     be executed as a fallback.  The implementation of this function should
+     delay for a period of at least 2 seconds before returning in order to
+     allow the user time to read the information before it can be lost by
+     executing ENTRY.  */
+  void (*notify_fallback) (grub_menu_entry_t entry, void *userdata);
+
+  /* Called when an entry has failed to execute and there is no remaining
+     fallback entry to attempt.  */
+  void (*notify_failure) (void *userdata);
+}
+*grub_menu_execute_callback_t;
+
+
+grub_menu_entry_t grub_menu_get_entry (grub_menu_t menu, int no);
+int grub_menu_get_timeout (void);
+void grub_menu_set_timeout (int timeout);
+void grub_menu_execute_entry (grub_menu_entry_t entry);
+void grub_menu_execute_with_fallback (grub_menu_t menu,
+				      grub_menu_entry_t entry,
+				      grub_menu_execute_callback_t callback,
+				      void *callback_data);
+void grub_menu_entry_run (grub_menu_entry_t entry);
 
 #endif /* GRUB_MENU_HEADER */

@@ -149,9 +149,12 @@ free_menu_entry_classes (struct grub_menu_entry_class *head)
     }
 }
 
+/* Add a menu entry to the current menu context (as given by the environment
+   variable data slot `menu').  As the configuration file is read, the script
+   parser calls this when a menu entry is to be created.  */
 grub_err_t
-grub_menu_addentry (int argc, const char **args,
-		    const char *sourcecode)
+grub_normal_add_menu_entry (int argc, const char **args,
+			    const char *sourcecode)
 {
   const char *menutitle = 0;
   const char *menusourcecode;

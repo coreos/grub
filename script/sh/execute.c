@@ -222,8 +222,8 @@ grub_script_execute_menuentry (struct grub_script_cmd *cmd)
 	}
     }
 
-  grub_menu_addentry (argcount, (const char **) args,
-		      cmd_menuentry->sourcecode);
+  grub_normal_add_menu_entry (argcount, (const char **) args,
+			      cmd_menuentry->sourcecode);
 
   /* Free arguments.  */
   for (i = 0; i < argcount; i++)

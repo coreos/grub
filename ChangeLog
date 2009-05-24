@@ -1,3 +1,36 @@
+2009-05-23  Colin D Bennett  <colin@gibibit.com>
+
+	Cleaned up `include/grub/normal.h'.  Grouped prototypes by
+	definition file, and functions defined in `normal/menu.c' have had
+	their prototypes moved to `include/grub/menu.h' for consistency.
+
+	* include/grub/menu.h (grub_menu_execute_callback): Added; moved
+	from normal.h.
+	(grub_menu_get_entry): Likewise.
+	(grub_menu_get_timeout): Likewise.
+	(grub_menu_set_timeout): Likewise.
+	(grub_menu_execute_entry): Likewise.
+	(grub_menu_execute_with_fallback): Likewise.
+	(grub_menu_entry_run): Likewise.
+
+	* include/grub/normal.h: Re-ordered and grouped function
+	prototypes by file that the function is defined in.
+	(grub_menu_execute_callback): Removed; moved to menu.h.
+	(grub_menu_get_entry): Likewise.
+	(grub_menu_get_timeout): Likewise.
+	(grub_menu_set_timeout): Likewise.
+	(grub_menu_execute_entry): Likewise.
+	(grub_menu_execute_with_fallback): Likewise.
+	(grub_menu_entry_run): Likewise.
+	(grub_menu_addentry): Renamed from this ...
+	(grub_normal_add_menu_entry): ... to this.
+
+	* normal/main.c (grub_menu_addentry): Renamed from this ...
+	(grub_normal_add_menu_entry): ... to this.
+
+	* script/sh/execute.c (grub_script_execute_menuentry): Update
+	reference to renamed grub_menu_addentry function.
+
 2009-05-23  Felix Zielcke  <fzielcke@z-51.de>
 
 	* commands/i386/pc/drivemap.c (MODNAME): Remove. Update all users.
