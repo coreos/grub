@@ -41,11 +41,14 @@ grub_ata_wait_not_busy (struct grub_ata_device *dev, int milliseconds)
   grub_millisleep (1);
 
   int i = 1;
-  while (grub_ata_regget (dev, GRUB_ATA_REG_STATUS) & GRUB_ATA_STATUS_BUSY)
+  grub_uint8_t sts;
+  while ((sts = grub_ata_regget (dev, GRUB_ATA_REG_STATUS))
+	 & GRUB_ATA_STATUS_BUSY)
     {
       if (i >= milliseconds)
         {
-	  grub_dprintf ("ata", "timeout: %dms\n", milliseconds);
+	  grub_dprintf ("ata", "timeout: %dms, status=0x%x\n",
+			milliseconds, sts);
 	  return grub_error (GRUB_ERR_TIMEOUT, "ATA timeout");
 	}
 
@@ -151,6 +154,7 @@ grub_atapi_identify (struct grub_ata_device *dev)
     return grub_errno;
 
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, 0xE0 | dev->device << 4);
+  grub_ata_wait ();
   if (grub_ata_check_ready (dev))
     {
       grub_free (info);
@@ -248,6 +252,7 @@ grub_ata_identify (struct grub_ata_device *dev)
   info16 = (grub_uint16_t *) info;
 
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, 0xE0 | dev->device << 4);
+  grub_ata_wait ();
   if (grub_ata_check_ready (dev))
     {
       grub_free (info);
@@ -259,23 +264,38 @@ grub_ata_identify (struct grub_ata_device *dev)
 
   if (grub_ata_wait_drq (dev, 0, GRUB_ATA_TOUT_STD))
     {
-      if (grub_ata_regget (dev, GRUB_ATA_REG_ERROR) & 0x04) /* ABRT */
-	{
-	  /* Device without ATA IDENTIFY, try ATAPI.  */
-	  grub_free(info);
-	  grub_errno = GRUB_ERR_NONE;
-	  return grub_atapi_identify (dev);
-	}
+      grub_free (info);
+      grub_errno = GRUB_ERR_NONE;
+      grub_uint8_t sts = grub_ata_regget (dev, GRUB_ATA_REG_STATUS);
+
+      if ((sts & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ
+	  | GRUB_ATA_STATUS_ERR)) == GRUB_ATA_STATUS_ERR
+	  && (grub_ata_regget (dev, GRUB_ATA_REG_ERROR) & 0x04 /* ABRT */))
+	/* Device without ATA IDENTIFY, try ATAPI.  */
+	return grub_atapi_identify (dev);
+
+      else if (sts == 0x00)
+	/* No device, return error but don't print message.  */
+	return GRUB_ERR_UNKNOWN_DEVICE;
+
       else
-	{
-	  /* Error.  */
-	  grub_free(info);
-	  return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
-			     "device can not be identified");
-	}
+	/* Other Error.  */
+	return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+			   "device can not be identified");
     }
 
   grub_ata_pio_read (dev, info, GRUB_DISK_SECTOR_SIZE);
+
+  /* Re-check status to avoid bogus identify data due to stuck DRQ.  */
+  grub_uint8_t sts = grub_ata_regget (dev, GRUB_ATA_REG_STATUS);
+  if (sts & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ | GRUB_ATA_STATUS_ERR))
+    {
+      grub_dprintf ("ata", "bad status=0x%x\n", sts);
+      grub_free (info);
+      /* No device, return error but don't print message.  */
+      grub_errno = GRUB_ERR_NONE;
+      return GRUB_ERR_UNKNOWN_DEVICE;
+    }
 
   /* Now it is certain that this is not an ATAPI device.  */
   dev->atapi = 0;
@@ -334,32 +354,24 @@ grub_ata_device_initialize (int port, int device, int addr, int addr2)
   grub_ata_regset (dev, GRUB_ATA_REG_DISK, dev->device << 4);
   grub_ata_wait ();
 
-  /* If status is 0x00, it is safe to assume that there
-     is no device (or only a !READY) device connected.  */
-  grub_int8_t sts = grub_ata_regget (dev, GRUB_ATA_REG_STATUS);
-  grub_dprintf ("ata", "status=0x%x\n", sts);
-  if (sts == 0x00)
-    {
-      grub_free(dev);
-      return 0;
-    }
-
   /* Try to detect if the port is in use by writing to it,
      waiting for a while and reading it again.  If the value
-     was preserved, there is a device connected.
-     But this tests often detects a second (slave) device
-     connected to a SATA controller which supports only one
-     (master) device.  In this case, the status register
-     check above usually works.  */
+     was preserved, there is a device connected.  */
   grub_ata_regset (dev, GRUB_ATA_REG_SECTORS, 0x5A);  
   grub_ata_wait ();
-  grub_int8_t sec = grub_ata_regget (dev, GRUB_ATA_REG_SECTORS);
+  grub_uint8_t sec = grub_ata_regget (dev, GRUB_ATA_REG_SECTORS);
   grub_dprintf ("ata", "sectors=0x%x\n", sec);
   if (sec != 0x5A)
     {
       grub_free(dev);
       return 0;
     }
+
+  /* The above test may detect a second (slave) device
+     connected to a SATA controller which supports only one
+     (master) device.  It is not safe to use the status register
+     READY bit to check for controller channel existence.  Some
+     ATAPI commands (RESET, DIAGNOSTIC) may clear this bit.  */
 
   /* Use the IDENTIFY DEVICE command to query the device.  */
   if (grub_ata_identify (dev))

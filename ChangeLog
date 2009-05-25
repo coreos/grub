@@ -1,3 +1,17 @@
+2009-05-25  Christian Franke  <franke@computer.org>
+
+	* disk/ata.c (grub_ata_wait_not_busy): Add debug output of status
+	register.
+	(grub_atapi_identify): Add wait after drive select.
+	(grub_ata_identify): Do more strict status register check before
+	calling grub_atapi_identify ().  Suppress error message if status
+	register is 0x00 after command failure.  Add status register
+	check after PIO read to avoid bogus identify due to stuck DRQ.
+	Thanks to Pavel Roskin for testing.
+	(grub_device_initialize): Remove unsafe status register check.
+	Thanks to 'phcoder' for problem report and patch.
+	Prevent sign extension in debug message.
+
 2009-05-23  Colin D Bennett  <colin@gibibit.com>
 
 	Cleaned up `include/grub/normal.h'.  Grouped prototypes by
