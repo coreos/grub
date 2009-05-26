@@ -1,5 +1,8 @@
 2009-05-26  Pavel Roskin  <proski@gnu.org>
 
+	* genmk.rb: Avoid shadowing variable `s', rename the outer `s'
+	to `str'.
+
 	* util/getroot.c (grub_util_get_dev_abstraction): Mark os_dev as
 	possibly unused.
 
