@@ -398,7 +398,7 @@ grub_guess_root_device (const char *dir)
 }
 
 int
-grub_util_get_dev_abstraction (const char *os_dev)
+grub_util_get_dev_abstraction (const char *os_dev UNUSED)
 {
 #ifdef __linux__
   /* Check for LVM.  */

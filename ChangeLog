@@ -1,3 +1,8 @@
+2009-05-26  Pavel Roskin  <proski@gnu.org>
+
+	* util/getroot.c (grub_util_get_dev_abstraction): Mark os_dev as
+	possibly unused.
+
 2009-05-25  Christian Franke  <franke@computer.org>
 
 	* disk/ata.c (grub_ata_wait_not_busy): Add debug output of status
