@@ -1,3 +1,7 @@
+2009-06-03  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/grub-mkconfig.in (update_grub_dir): Rename to grub_mkconfig_dir.
+
 2009-05-28  Pavel Roskin  <proski@gnu.org>
 
 	* Makefile.in: Don't use "cp -d", it doesn't work on FreeBSD.
