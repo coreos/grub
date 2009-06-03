@@ -1,5 +1,8 @@
 2009-05-28  Pavel Roskin  <proski@gnu.org>
 
+	* Makefile.in: Don't use "cp -d", it doesn't work on FreeBSD.
+	Remove the original symlink explicitly.
+
 	* fs/hfs.c (grub_hfs_find_dir): Skip sequences of slashes, not
 	just one slash.  That's how grub_fshelp_find_file() does it.
 
