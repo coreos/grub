@@ -887,7 +887,8 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
     return grub_errno;
   
   path = origpath;
-  path++;
+  while (*path == '/')
+    path++;
   
   while (path && grub_strlen (path))
     {
@@ -901,8 +902,8 @@ grub_hfs_find_dir (struct grub_hfs_data *data, const char *path,
       next = grub_strchr (path, '/');
       if (next)
 	{
-	  next[0] = '\0';
-	  next++;
+	  while (*next == '/')
+	    *(next++) = '\0';
 	}
       
       struct grub_hfs_catalog_key key;
