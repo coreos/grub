@@ -56,8 +56,18 @@ class Image
     "CLEANFILES += #{@name} #{exe} #{objs_str}
 MOSTLYCLEANFILES += #{deps_str}
 
+ifneq ($(TARGET_APPLE_CC),1)
 #{@name}: #{exe}
 	$(OBJCOPY) -O $(#{prefix}_FORMAT) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id $< $@
+else
+ifneq (#{exe},kernel.exec)
+#{@name}: #{exe} ./grub-macho2img
+	./grub-macho2img $< $@
+else
+#{@name}: #{exe} ./grub-macho2img
+	./grub-macho2img --bss $< $@
+endif
+endif
 
 #{exe}: #{objs_str}
 	$(TARGET_CC) -o $@ $^ $(TARGET_LDFLAGS) $(#{prefix}_LDFLAGS)

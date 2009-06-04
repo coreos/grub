@@ -1,5 +1,18 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use grub-macho2img when compiling with Apple's CC for PCBIOS machine
+
+	* conf/common.rmk (bin_UTILITIES): add (on false on condition) 
+	grub-macho2img 
+	(CLEANFILES): add grub-macho2img
+	(grub_macho2img_SOURCES): new variable
+	* kern/i386/pc/startup.S (bss_start): new variable
+	(bss_end): likewise
+	* genmk.rb: use grub-macho2img for *.img when compiled with Apple's CC
+	* util/grub-macho2img.c: new file
+
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use objconv when compiling with Apple's CC
 
 	* conf/i386-pc.rmk (efiemu32.o): use OBJCONV if defined

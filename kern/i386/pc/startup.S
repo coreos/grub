@@ -110,6 +110,13 @@ VARIABLE(grub_prefix)
 
 	. = _start + GRUB_KERNEL_MACHINE_DATA_END
 
+#ifdef APPLE_CC
+bss_start:
+	.long 0
+bss_end:
+	.long 0
+#endif
+
 /*
  * Support for booting GRUB from a Multiboot boot loader (e.g. GRUB itself).
  * This uses the a.out kludge to load raw binary to the area starting at 1MB,
