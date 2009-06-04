@@ -1,5 +1,11 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove nested functions in efiemu core
+
+	* efiemu/runtime/efiemu.c (reflect): make static instead of nested
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid clobbering %ebx/%rbx in inline assembly with Apple's CC
 
 	* efiemu/runtime/efiemu.c (write_cmos): use %cl instead of %bl as

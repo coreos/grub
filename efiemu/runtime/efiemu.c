@@ -271,25 +271,25 @@ EFI_FUNC (efiemu_set_wakeup_time) (grub_efi_boolean_t enabled,
 
 static grub_uint32_t crc32_table [256];
 
+static grub_uint32_t 
+reflect (grub_uint32_t ref, int len)
+{
+  grub_uint32_t result = 0;
+  int i;
+  
+  for (i = 1; i <= len; i++)
+    {
+      if (ref & 1)
+	result |= 1 << (len - i);
+      ref >>= 1;
+    }
+  
+  return result;
+}
+
 static void
 init_crc32_table (void)
 {
-  auto grub_uint32_t reflect (grub_uint32_t ref, int len);
-  grub_uint32_t reflect (grub_uint32_t ref, int len)
-    {
-      grub_uint32_t result = 0;
-      int i;
-
-      for (i = 1; i <= len; i++)
-        {
-          if (ref & 1)
-            result |= 1 << (len - i);
-          ref >>= 1;
-        }
-
-      return result;
-    }
-
   grub_uint32_t polynomial = 0x04c11db7;
   int i, j;
 
