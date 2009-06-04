@@ -1,5 +1,17 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Disable lnxboot.img when compiled
+	with Apple's CC
+
+	* conf/i386-pc.rmk (pkglib_IMAGES): remove lnxboot.img
+	pkglib_IMAGES [! TARGET_APPLE_CC] (pkglib_IMAGES): add lnxboot.img
+	* boot/i386/pc/lnxboot.S [APPLE_CC]: define an #error
+	[! APPLE_CC] (CODE_LENG): skip
+	[! APPLE_CC] (setup_sects): likewise
+	[! APPLE_CC]: skip filling
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Address in trampolines based on 32-bit registers when compiled
 	with Apple's CC
 

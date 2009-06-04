@@ -24,9 +24,15 @@
 #include <multiboot.h>
 
         .file   "lnxboot.S"
+		
+#ifdef APPLE_CC
+#error Building lnxboot.img with Apple's as results in an unusable image
+#endif
 
 #define CODE_ADDR	0x6000
+#ifndef APPLE_CC
 #define CODE_LENG	(code_end - start)
+#endif
 #define DATA_ADDR	((GRUB_BOOT_MACHINE_KERNEL_ADDR) + 0x200)
 
 #define BLCK_LENG	0x4000
@@ -44,7 +50,12 @@ data_start:
 	. = data_start + 0x1F1
 
 setup_sects:
+/* Apple's cc can't fill this value.  */ 
+#ifdef APPLE_CC
+	.byte	0
+#else
 	.byte	(CODE_LENG >> 9)
+#endif
 root_flags:
 	.word	0
 syssize:
@@ -351,7 +362,10 @@ fail:
 err_int15_msg:
 	.ascii	"move memory fails\0"
 
+	/* Unsupported feature in Apple's cc.  */
+#ifndef APPLE_CC
 	. = (.  & (~0x1FF)) + 0x1FF
+#endif
 
 	.byte	0
 
