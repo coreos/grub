@@ -1,5 +1,14 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix wrong assumptions with grub-mkimage on EFI
+	
+	* i386/efi/grub-mkimage.c (read_kernel_module): don't write prefox here
+	(relocate_addresses): consider both r_addend and value at offset
+	(make_mods_section): zerofill modinfo and header
+	(convert_elf): write prefix here
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use .asciz instead of .string
 
 	* i386/pc/diskboot.S: use .asciz instead of .string

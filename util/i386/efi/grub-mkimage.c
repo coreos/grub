@@ -88,7 +88,7 @@ align_pe32_section (Elf_Addr addr)
 /* Read the whole kernel image. Return the pointer to a read image,
    and store the size in bytes in *SIZE.  */
 static char *
-read_kernel_module (const char *dir, char *prefix, size_t *size)
+read_kernel_module (const char *dir, size_t *size)
 {
   char *kernel_image;
   char *kernel_path;
@@ -97,11 +97,6 @@ read_kernel_module (const char *dir, char *prefix, size_t *size)
   *size = grub_util_get_image_size (kernel_path);
   kernel_image = grub_util_read_image (kernel_path);
   free (kernel_path);
-
-  if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
-    grub_util_error ("prefix too long");
-
-  strcpy (kernel_image + sizeof (Elf_Ehdr) + GRUB_KERNEL_MACHINE_PREFIX, prefix);
 
   return kernel_image;
 }
@@ -378,7 +373,8 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
             Elf_Addr info;
 	    Elf_Addr offset;
 	    Elf_Addr sym_addr;
-	    Elf_Addr *target, *value;
+	    Elf_Addr *target;
+	    Elf_Addr addend;
 	    
 	    offset = grub_le_to_cpu (r->r_offset);
 	    target = get_target_address (e, target_section, offset);
@@ -386,8 +382,8 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
 	    sym_addr = get_symbol_address (e, symtab_section,
 					   ELF_R_SYM (info));
 
-            value = (s->sh_type == grub_cpu_to_le32 (SHT_RELA)) ?
-               (Elf_Addr *) &r->r_addend : target;
+            addend = (s->sh_type == grub_cpu_to_le32 (SHT_RELA)) ?
+	      r->r_addend : 0;
 
             switch (ELF_R_TYPE (info))
 	      {
@@ -397,16 +393,16 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
 
 	      case R_386_32:
 		/* This is absolute.  */
-		*target = grub_cpu_to_le32 (grub_le_to_cpu32 (*value)
-                                            + sym_addr);
+		*target = grub_cpu_to_le32 (grub_le_to_cpu32 (*target)
+                                            + addend + sym_addr);
 		grub_util_info ("relocating an R_386_32 entry to 0x%x at the offset 0x%x",
 				*target, offset);
 		break;
 
 	      case R_386_PC32:
 		/* This is relative.  */
-		*target = grub_cpu_to_le32 (grub_le_to_cpu32 (*value)
-					    + sym_addr
+		*target = grub_cpu_to_le32 (grub_le_to_cpu32 (*target)
+					    + addend + sym_addr
 					    - target_section_addr - offset);
 		grub_util_info ("relocating an R_386_PC32 entry to 0x%x at the offset 0x%x",
 				*target, offset);
@@ -418,7 +414,8 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
                 break;
 
               case R_X86_64_64:
-		*target = grub_cpu_to_le64 (grub_le_to_cpu64 (*value) + sym_addr);
+		*target = grub_cpu_to_le64 (grub_le_to_cpu64 (*target) 
+					    + addend + sym_addr);
 		grub_util_info ("relocating an R_X86_64_64 entry to 0x%llx at the offset 0x%llx",
 				*target, offset);
 		break;
@@ -426,8 +423,8 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
               case R_X86_64_PC32:
                 {
                   grub_uint32_t *t32 = (grub_uint32_t *) target;
-                  *t32 = grub_cpu_to_le64 (grub_le_to_cpu64 (*value)
-                                           + sym_addr
+                  *t32 = grub_cpu_to_le64 (grub_le_to_cpu32 (*t32)
+                                           + addend + sym_addr
                                            - target_section_addr - offset);
                   grub_util_info ("relocating an R_X86_64_PC32 entry to 0x%x at the offset 0x%llx",
                                   *t32, offset);
@@ -438,8 +435,8 @@ relocate_addresses (Elf_Ehdr *e, Elf_Shdr *sections,
               case R_X86_64_32S:
                 {
                   grub_uint32_t *t32 = (grub_uint32_t *) target;
-                  *t32 = grub_cpu_to_le64 (grub_le_to_cpu64 (*value)
-                                           + sym_addr);
+                  *t32 = grub_cpu_to_le64 (grub_le_to_cpu32 (*t32)
+                                           + addend + sym_addr);
                   grub_util_info ("relocating an R_X86_64_32(S) entry to 0x%x at the offset 0x%llx",
                                   *t32, offset);
                   break;
@@ -689,6 +686,8 @@ make_mods_section (FILE *out, Elf_Addr current_address,
   struct grub_module_info modinfo;
   Elf_Addr addr;
 
+  memset (&modinfo, 0, sizeof (modinfo));
+
   path_list = grub_util_resolve_dependencies (dir, "moddep.lst", mods);
   
   total_module_size = sizeof (struct grub_module_info);
@@ -712,6 +711,8 @@ make_mods_section (FILE *out, Elf_Addr current_address,
       struct grub_module_header header;
       size_t mod_size;
       char *mod_image;
+      
+      memset (&header, 0, sizeof (header));
       
       grub_util_info ("adding module %s", p->name);
       
@@ -973,9 +974,11 @@ convert_elf (const char *dir, char *prefix, FILE *out, char *mods[])
   Elf_Addr start_address;
   Elf_Addr text_address, data_address, reloc_address, mods_address;
   Elf_Addr end_address;
+  Elf_Shdr *s;
+  int i;
 
   /* Get the kernel image and check the format.  */
-  kernel_image = read_kernel_module (dir, prefix, &kernel_size);
+  kernel_image = read_kernel_module (dir, &kernel_size);
   e = (Elf_Ehdr *) kernel_image;
   if (! check_elf_header (e, kernel_size))
     grub_util_error ("invalid ELF header");
@@ -990,6 +993,20 @@ convert_elf (const char *dir, char *prefix, FILE *out, char *mods[])
   sections = (Elf_Shdr *) (kernel_image + section_offset);
   strtab = find_strtab (e, sections, section_entsize);
 
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if (is_text_section (s))
+      {
+	  Elf_Off offset = grub_le_to_cpu32 (s->sh_offset);
+
+	  if (GRUB_KERNEL_MACHINE_PREFIX + strlen (prefix) + 1 > GRUB_KERNEL_MACHINE_DATA_END)
+	    grub_util_error ("prefix too long");
+	  
+	  strcpy (kernel_image + offset + GRUB_KERNEL_MACHINE_PREFIX, prefix);
+	  break;
+      }
+	
   /* Relocate sections then symbols in the virtual address space.  */
   section_addresses = locate_sections (sections, section_entsize,
 				       num_sections, strtab);
