@@ -1,5 +1,16 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid clobbering %ebx/%rbx in inline assembly with Apple's CC
+
+	* efiemu/runtime/efiemu.c (write_cmos): use %cl instead of %bl as
+	temporary storage
+	* include/grub/i386/tsc.h (grub_get_tsc): restore %rbx/%ebx when 
+	using Apple's CC 
+	(grub_cpu_is_tsc_supported): likewise
+	* loader/i386/xnu.c (guessfsb): restore %rbx/%ebx in inline assembly
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Absolute addressing through constant with Apple's cc
 
 	* kern/i386/pc/startup.S: Define necessary constants

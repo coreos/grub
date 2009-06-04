@@ -162,8 +162,8 @@ static inline void
 write_cmos (grub_uint8_t addr, grub_uint8_t val)
 {
   __asm__ __volatile__ ("outb %%al,$0x70\n"
-			"mov %%bl, %%al\n"
-			"outb %%al,$0x71": :"a" (addr), "b" (val));
+			"mov %%cl, %%al\n"
+			"outb %%al,$0x71": :"a" (addr), "c" (val));
 }
 
 static inline grub_uint8_t

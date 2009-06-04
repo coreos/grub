@@ -125,6 +125,28 @@ guessfsb (void)
 
   if (! grub_cpu_is_cpuid_supported ())
     return sane_value;
+	
+#ifdef APPLE_CC
+  asm volatile ("movl $0, %%eax\n"
+#ifdef __x86_64__
+		"push %%rbx\n"
+#else
+		"push %%ebx\n"
+#endif
+		"cpuid\n"
+#ifdef __x86_64__
+		"pop %%rbx\n"
+#else
+		"pop %%ebx\n"
+#endif				  
+		: "=a" (max_cpuid), 
+		  "=d" (manufacturer[1]), "=c" (manufacturer[2]));
+  
+  /* Only Intel for now is done. */
+  if (grub_memcmp (manufacturer + 1, "ineIntel", 12) != 0)
+    return sane_value;
+  
+#else
   asm volatile ("movl $0, %%eax\n"
 		"cpuid"
 		: "=a" (max_cpuid), "=b" (manufacturer[0]), 
@@ -133,15 +155,33 @@ guessfsb (void)
   /* Only Intel for now is done. */
   if (grub_memcmp (manufacturer, "GenuineIntel", 12) != 0)
     return sane_value;
+#endif
 
   /* Check Speedstep. */
   if (max_cpuid < 1)
     return sane_value;
 
+#ifdef APPLE_CC
+  asm volatile ("movl $1, %%eax\n"
+#ifdef __x86_64__
+		"push %%rbx\n"
+#else
+		"push %%ebx\n"
+#endif				  
+		"cpuid\n"
+#ifdef __x86_64__
+		"pop %%rbx\n"
+#else
+		"pop %%ebx\n"
+#endif
+		: "=c" (capabilities):
+		: "%rax", "%rdx");	
+#else
   asm volatile ("movl $1, %%eax\n"
 		"cpuid"
 		: "=c" (capabilities):
-		: "%eax", "%ebx", "%edx");
+		: "%rax", "%rbx", "%rdx");
+#endif
 
   if (! (capabilities & (1 << 7)))
     return sane_value;
