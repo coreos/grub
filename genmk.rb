@@ -129,8 +129,13 @@ UNDSYMFILES += #{undsym}
 	sh $(srcdir)/genmodsrc.sh '#{mod_name}' $< > $@ || (rm -f $@; exit 1)
 
 ifneq ($(#{prefix}_EXPORTS),no)
+ifneq ($(TARGET_APPLE_CC),1)
 #{defsym}: #{pre_obj}
 	$(NM) -g --defined-only -P -p $< | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
+else
+#{defsym}: #{pre_obj}
+	$(NM) -g -P -p $< | grep -E '^[a-zA-Z0-9_]* [TDS]'  | sed 's/^\\([^ ]*\\).*/\\1 #{mod_name}/' > $@
+endif
 endif
 
 #{undsym}: #{pre_obj}

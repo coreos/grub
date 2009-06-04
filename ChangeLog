@@ -1,5 +1,29 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Check if compiler is apple cc
+
+	* Makefile.in (ASFLAGS): new variable
+	(TARGET_ASFLAGS): likewise
+	(TARGET_MODULE_FORMAT): likewise
+	(TARGET_APPLE_CC): likewise
+	(OBJCONV): likewise
+	(TARGET_IMG_CFLAGS): likewise
+	(TARGET_CPPFLAGS): add includedir
+	* configure.ac: call grub_apple_cc and grub_apple_target_cc
+	(TARGET_IMG_LDFLAGS): Add -Wl,-Ttext,. All users updated
+	Check for linker script only if compiler isn't Apple's CC
+	(TARGET_MODULE_FORMAT): set
+	(TARGET_APPLE_CC): likewise
+	(TARGET_ASFLAGS): likewise
+	(ASFLAGS): likewise
+	Check for objcopy only if compiler isn't Apple's CC
+	Check for BSS symbol only if compiler isn't Apple's CC
+	* genmk.rb: adapt nm options if we use Apple's utils
+	* aclocal.m4 (grub_apple_cc): new test
+	(grub_apple_target_cc): likewise
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Simplify sed expressions and improve awk
 
 	* Makefile.in (install-local): simplify sed expression
