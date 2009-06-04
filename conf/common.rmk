@@ -413,7 +413,7 @@ help_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For search.mod.
 search_mod_SOURCES = commands/search.c
-search_mod_CFLAGS = $(COMMON_CFLAGS)
+search_mod_CFLAGS = $(COMMON_CFLAGS) -Werror -Wall
 search_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For test.mod.

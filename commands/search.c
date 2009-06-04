@@ -29,15 +29,16 @@
 
 static const struct grub_arg_option options[] =
   {
-    {"file", 'f', 0, "search devices by a file (default)", 0, 0},
-    {"label", 'l', 0, "search devices by a filesystem label", 0, 0},
-    {"fs-uuid", 'u', 0, "search devices by a filesystem UUID", 0, 0},
-    {"set", 's', GRUB_ARG_OPTION_OPTIONAL, "set a variable to the first device found", "VAR", ARG_TYPE_STRING},
+    {"file",		'f', 0, "search devices by a file (default)", 0, 0},
+    {"label",		'l', 0, "search devices by a filesystem label", 0, 0},
+    {"fs-uuid",		'u', 0, "search devices by a filesystem UUID", 0, 0},
+    {"set",		's', GRUB_ARG_OPTION_OPTIONAL, "set a variable to the first device found", "VAR", ARG_TYPE_STRING},
+    {"no-floppy",	'n', 0, "do not probe any floppy drive", 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
 static void
-search_fs (const char *key, const char *var, int is_uuid)
+search_fs (const char *key, const char *var, int no_floppy, int is_uuid)
 {
   int count = 0;
   auto int iterate_device (const char *name);
@@ -46,6 +47,12 @@ search_fs (const char *key, const char *var, int is_uuid)
     {
       grub_device_t dev;
       int abort = 0;
+
+      /* Skip floppy drives when requested.  */
+      if (no_floppy &&
+	  name[0] == 'f' && name[1] == 'd' &&
+	  name[2] >= '0' && name[2] <= '9')
+	return 0;
       
       dev = grub_device_open (name);
       if (dev)
@@ -94,7 +101,7 @@ search_fs (const char *key, const char *var, int is_uuid)
 }
 
 static void
-search_file (const char *key, const char *var)
+search_file (const char *key, const char *var, int no_floppy)
 {
   int count = 0;
   char *buf = 0;
@@ -106,6 +113,12 @@ search_file (const char *key, const char *var)
       char *p;
       grub_file_t file;
       int abort = 0;
+      
+      /* Skip floppy drives when requested.  */
+      if (no_floppy &&
+	  name[0] == 'f' && name[1] == 'd' &&
+	  name[2] >= '0' && name[2] <= '9')
+	return 0;
       
       len = grub_strlen (name) + 2 + grub_strlen (key) + 1;
       p = grub_realloc (buf, len);
@@ -156,11 +169,11 @@ grub_cmd_search (grub_extcmd_t cmd, int argc, char **args)
     var = state[3].arg ? state[3].arg : "root";
   
   if (state[1].set)
-    search_fs (args[0], var, 0);
+    search_fs (args[0], var, state[4].set, 0);
   else if (state[2].set)
-    search_fs (args[0], var, 1);
+    search_fs (args[0], var, state[4].set, 1);
   else
-    search_file (args[0], var);
+    search_file (args[0], var, state[4].set);
 
   return grub_errno;
 }

@@ -1,5 +1,15 @@
 2009-06-04  Robert Millan  <rmh.grub@aybabtu.com>
 
+	Prevent GRUB from probing floppies during boot.
+
+	* conf/common.rmk (search_mod_CFLAGS): Use `-Werror -Wall'.
+	* commands/search.c (options): Add --no-floppy.
+	(search_fs, search_file, grub_cmd_search): Support --no-floppy.
+	* util/grub-mkconfig_lib.in (prepare_grub_to_access_device): Use
+	--no-floppy when searching for UUIDs.
+
+2009-06-04  Robert Millan  <rmh.grub@aybabtu.com>
+
 	Simplify the code duplication in commands/search.c.
 
 	* commands/search.c (search_label, search_fs_uuid): Merge into ...
