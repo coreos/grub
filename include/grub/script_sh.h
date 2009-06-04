@@ -77,11 +77,6 @@ struct grub_script_cmdline
 
   /* The arguments for this command.  */
   struct grub_script_arglist *arglist;
-
-  /* The command name of this command.  XXX: Perhaps an argument
-     should be used for this so we can use variables as command
-     name.  */
-  char *cmdname;
 };
 
 /* A block of commands, this can be used to group commands.  */
@@ -161,6 +156,9 @@ struct grub_lexer_param
 
   /* Size of RECORDING.  */
   int recordlen;
+
+  /* The token that is already parsed but not yet returned. */
+  int tokenonhold;
 };
 
 /* State of the parser as passes to the parser.  */
@@ -191,7 +189,6 @@ grub_script_add_arglist (struct grub_parser_param *state,
 			 struct grub_script_arg *arg);
 struct grub_script_cmd *
 grub_script_create_cmdline (struct grub_parser_param *state,
-			    char *cmdname,
 			    struct grub_script_arglist *arglist);
 struct grub_script_cmd *
 grub_script_create_cmdblock (struct grub_parser_param *state);
@@ -276,12 +273,15 @@ struct grub_script_function
 };
 typedef struct grub_script_function *grub_script_function_t;
 
-grub_script_function_t grub_script_function_create (char *functionname,
+grub_script_function_t grub_script_function_create (struct grub_script_arg *functionname,
 						    struct grub_script *cmd);
 void grub_script_function_remove (const char *name);
 grub_script_function_t grub_script_function_find (char *functionname);
 int grub_script_function_iterate (int (*iterate) (grub_script_function_t));
 int grub_script_function_call (grub_script_function_t func,
 			       int argc, char **args);
+
+char *
+grub_script_execute_argument_to_string (struct grub_script_arg *arg);
 
 #endif /* ! GRUB_NORMAL_PARSER_HEADER */

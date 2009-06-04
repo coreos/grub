@@ -161,7 +161,7 @@ grub_script_add_arglist (struct grub_parser_param *state,
    holds all arguments for this command.  */
 struct grub_script_cmd *
 grub_script_create_cmdline (struct grub_parser_param *state,
-			    char *cmdname, struct grub_script_arglist *arglist)
+			    struct grub_script_arglist *arglist)
 {
   struct grub_script_cmdline *cmd;
 
@@ -171,7 +171,6 @@ grub_script_create_cmdline (struct grub_parser_param *state,
   cmd->cmd.exec = grub_script_execute_cmdline;
   cmd->cmd.next = 0;
   cmd->arglist = arglist;
-  cmd->cmdname = cmdname;
 
   return (struct grub_script_cmd *) cmd;
 }

@@ -1,3 +1,44 @@
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Script fixes
+
+	* include/grub/script_sh.h (grub_script_cmdline): remove cmdline
+	(grub_lexer_param): add tokenonhold
+	(grub_script_create_cmdline): remove cmdline. All callers updated
+	(grub_script_function_create): make functionname
+	grub_script_arg. All callers updated
+	(grub_script_execute_argument_to_string): new prototype
+	* kern/parser.c (state_transitions): reorder
+	(grub_parser_cmdline_state): fix a bug and make more compact
+	* script/sh/execute.c (grub_script_execute_argument_to_string): 
+	make global
+	(grub_script_execute_cmdline): use new format
+	* script/sh/function.c (grub_script_function_create): make functionname
+	grub_script_arg. All callers updated
+	* script/sh/lexer.c (grub_script_lexer_init): initilaize tokenonhold
+	(grub_script_yylex): remove
+	(grub_script_yylex2): renamed to ...
+	(grub_script_yylex): ...renamed
+	parse the expressions like a${b}c
+	* script/sh/parser.y (GRUB_PARSER_TOKEN_ARG): new typed terminal
+	(GRUB_PARSER_TOKEN_VAR): remove
+	(GRUB_PARSER_TOKEN_NAME): likewise
+	("if"): declare as typeless
+	("while"): likewise
+	("function"): likewise
+	("else"): likewise
+	("then"): likewise
+	("fi"): likewise
+	(text): remove
+	(argument): likewise
+	(script): accept empty scripts and make exit on error
+	(arguments): use GRUB_PARSER_TOKEN_ARG
+	(function): likewise
+	(command): move error handling to script
+	(menuentry): move grub_script_lexer_ref before
+	* script/sh/script.c (grub_script_create_cmdline): remove cmdline 
+	argument. All callers updated
+
 2009-06-04  Robert Millan  <rmh.grub@aybabtu.com>
 
 	Prevent GRUB from probing floppies during boot.

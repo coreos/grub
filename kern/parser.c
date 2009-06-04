@@ -47,8 +47,8 @@ static struct grub_parser_state_transition state_transitions[] =
 
   { GRUB_PARSER_STATE_QVAR, GRUB_PARSER_STATE_QVARNAME2, '{', 0},
   { GRUB_PARSER_STATE_QVAR, GRUB_PARSER_STATE_QVARNAME, 0, 1},
-  { GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_DQUOTE, ' ', 1},
   { GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_TEXT, '\"', 0},
+  { GRUB_PARSER_STATE_QVARNAME, GRUB_PARSER_STATE_DQUOTE, ' ', 1},
   { GRUB_PARSER_STATE_QVARNAME2, GRUB_PARSER_STATE_DQUOTE, '}', 0},
 
   { 0, 0, 0, 0}
@@ -60,9 +60,7 @@ grub_parser_state_t
 grub_parser_cmdline_state (grub_parser_state_t state, char c, char *result)
 {
   struct grub_parser_state_transition *transition;
-  struct grub_parser_state_transition *next_match = 0;
   struct grub_parser_state_transition default_transition;
-  int found = 0;
 
   default_transition.to_state = state;
   default_transition.keep_value = 1;
@@ -70,26 +68,24 @@ grub_parser_cmdline_state (grub_parser_state_t state, char c, char *result)
   /* Look for a good translation.  */
   for (transition = state_transitions; transition->from_state; transition++)
     {
+      if (transition->from_state != state)
+	continue;
       /* An exact match was found, use it.  */
-      if (transition->from_state == state && transition->input == c)
-	{
-	  found = 1;
-	  break;
-	}
+      if (transition->input == c)
+	break;
+
+      if (transition->input == ' ' && ! grub_isalpha (c) 
+	  && ! grub_isdigit (c) && c != '_')
+	break;
 
       /* A less perfect match was found, use this one if no exact
 	 match can be found.  */
-      if (transition->from_state == state && transition->input == 0)
-	next_match = transition;
+      if (transition->input == 0)
+	break;
     }
 
-  if (! found)
-    {
-      if (next_match)
-	transition = next_match;
-      else
-	transition = &default_transition;
-    }
+  if (! transition->from_state)
+    transition = &default_transition;
 
   if (transition->keep_value)
     *result = c;
