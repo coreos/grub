@@ -1,5 +1,14 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid calling biosdisk in drivemap
+
+	* commands/i386/pc/drivemap.c (parse_biosdisk): remove
+	(revparse_biosdisk): likewise
+	(list_mappings): derive name from id directly
+	(grub_cmd_drivemap): use tryparse_diskstring
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Script fixes
 
 	* include/grub/script_sh.h (grub_script_cmdline): remove cmdline

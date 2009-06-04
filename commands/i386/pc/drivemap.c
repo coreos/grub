@@ -143,62 +143,6 @@ drivemap_remove (grub_uint8_t newdrive)
     }
 }
 
-/* Given a device name, resolves its BIOS disk number and stores it in the
-   passed location, which should only be trusted if ERR_NONE is returned.  */
-static grub_err_t
-parse_biosdisk (const char *name, grub_uint8_t *disknum)
-{
-  grub_disk_t disk;
-  /* Skip the first ( in (hd0) - disk_open wants just the name.  */
-  if (*name == '(')
-    name++;
-
-  disk = grub_disk_open (name);
-  if (! disk)
-    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown device \"%s\"",
-		       name);
-  const enum grub_disk_dev_id id = disk->dev->id;
-  /* The following assignment is only sound if the device is indeed a
-     biosdisk.  The caller must check the return value.  */
-  if (disknum)
-    *disknum = disk->id;
-  grub_disk_close (disk);
-  if (id != GRUB_DISK_DEVICE_BIOSDISK_ID)
-    return grub_error (GRUB_ERR_BAD_DEVICE, "%s is not a BIOS disk", name);
-  return GRUB_ERR_NONE;
-}
-
-/* Given a BIOS disk number, returns its GRUB device name if it exists.
-   If the call succeeds, the resulting device string must be freed.
-   For nonexisting BIOS disk numbers, this function returns
-   GRUB_ERR_UNKNOWN_DEVICE.  */
-static grub_err_t
-revparse_biosdisk (const grub_uint8_t dnum, const char **output)
-{
-  int found = 0;
-  auto int find (const char *name);
-  int find (const char *name)
-  {
-    const grub_disk_t disk = grub_disk_open (name);
-    if (! disk)
-      return 0;
-    if (disk->id == dnum && disk->dev->id == GRUB_DISK_DEVICE_BIOSDISK_ID)
-      {
-	found = 1;
-	if (output)
-	  *output = grub_strdup (name);
-      }
-    grub_disk_close (disk);
-    return found;
-  }
-
-  grub_disk_dev_iterate (find);
-  if (found)
-    return GRUB_ERR_NONE;
-  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "BIOS disk %02x not found",
-		     dnum);
-}
-
 /* Given a GRUB-like device name and a convenient location, stores the
    related BIOS disk number.  Accepts devices like \((f|h)dN\), with
    0 <= N < 128.  */
@@ -238,15 +182,13 @@ list_mappings (void)
   drivemap_node_t *curnode = map_head;
   while (curnode)
     {
-      const char *dname = 0;
-      grub_err_t err = revparse_biosdisk (curnode->redirto, &dname);
-      if (err != GRUB_ERR_NONE)
-	return err;
-      grub_printf ("%cD #%-3u (0x%02x)       %s\n",
+      grub_printf ("%cD #%-3u (0x%02x)       %cd%d\n",
 		   (curnode->newdrive & 0x80) ? 'H' : 'F',
-		   curnode->newdrive & 0x7F, curnode->newdrive, dname);
+		   curnode->newdrive & 0x7F, curnode->newdrive, 
+		   (curnode->redirto & 0x80) ? 'h' : 'f',
+		   curnode->redirto & 0x7F
+		   );
       curnode = curnode->next;
-      grub_free ((char *) dname);
     }
   return GRUB_ERR_NONE;
 }
@@ -286,17 +228,11 @@ grub_cmd_drivemap (struct grub_extcmd *cmd, int argc, char **args)
   if (argc != 2)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "two arguments required");
 
-  err = parse_biosdisk (args[0], &mapfrom);
+  err = tryparse_diskstring (args[0], &mapfrom);
   if (err != GRUB_ERR_NONE)
     return err;
 
-  /* When swapping we require both devices to be BIOS disks, but when
-     performing direct mappings we only require the 2nd argument to look
-     like a BIOS disk in order to resolve it into a BIOS disk number.  */
-  if (cmd->state[OPTIDX_SWAP].set)
-    err = parse_biosdisk (args[1], &mapto);
-  else
-    err = tryparse_diskstring (args[1], &mapto);
+  err = tryparse_diskstring (args[1], &mapto);
   if (err != GRUB_ERR_NONE)
     return err;
 
