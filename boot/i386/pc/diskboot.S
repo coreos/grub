@@ -28,7 +28,11 @@
 #define ABS(x) (x-_start+GRUB_BOOT_MACHINE_KERNEL_ADDR)
 	
 	/* Print message string */
+#ifdef APPLE_CC
+#define MSG(x)	x ## _abs = ABS(x); mov $x ## _abs, %esi; call message
+#else
 #define MSG(x)	movw $ABS(x), %si; call message
+#endif
 
 	.file	"diskboot.S"
 
@@ -61,7 +65,12 @@ _start:
 	popw	%si
 	
 	/* this sets up for the first run through "bootloop" */
+#ifdef APPLE_CC
+	firstlist_off_abs = ABS (firstlist - GRUB_BOOT_MACHINE_LIST_SIZE)
+	movl	$firstlist_off_abs, %edi
+#else
 	movw	$ABS(firstlist - GRUB_BOOT_MACHINE_LIST_SIZE), %di
+#endif
 
 	/* save the sector number of the second sector in %ebp */
 	movl	(%di), %ebp

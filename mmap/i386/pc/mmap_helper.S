@@ -28,7 +28,12 @@ VARIABLE(grub_machine_mmaphook_int12)
 	push %ds
 	push %cs
 	pop %ds
+#ifdef APPLE_CC
+	grub_machine_mmaphook_kblow_rel = DS (EXT_C (grub_machine_mmaphook_kblow))
+	movw (grub_machine_mmaphook_kblow_rel), %ax
+#else
 	movw DS (EXT_C (grub_machine_mmaphook_kblow)), %ax
+#endif
 	pop %ds
 	iret
 
@@ -53,8 +58,15 @@ e801:
 	push %ds
 	push %cs
 	pop %ds
+#ifdef APPLE_CC
+	grub_machine_mmaphook_kbin16mb_rel = DS (EXT_C (grub_machine_mmaphook_kbin16mb))
+	grub_machine_mmaphook_64kbin4gb_rel = DS (EXT_C (grub_machine_mmaphook_64kbin4gb))
+	movw (grub_machine_mmaphook_kbin16mb_rel), %ax
+	movw (grub_machine_mmaphook_64kbin4gb_rel), %bx
+#else
 	movw DS (EXT_C (grub_machine_mmaphook_kbin16mb)), %ax
 	movw DS (EXT_C (grub_machine_mmaphook_64kbin4gb)), %bx
+#endif
 	movw %ax, %cx
 	movw %bx, %dx
 	pop %ds
@@ -66,26 +78,42 @@ h88:
 	push %ds
 	push %cs
 	pop %ds
+#ifdef APPLE_CC
+	movw (grub_machine_mmaphook_kbin16mb_rel), %ax
+#else
 	movw DS (EXT_C (grub_machine_mmaphook_kbin16mb)), %ax
+#endif
 	pop %ds
 	clc
 	iret
 
 e820:
+#ifdef APPLE_CC
+	mmaphook_mmap_rel = DS(mmaphook_mmap)
+	mmaphook_mmap_num_rel = DS(EXT_C(grub_machine_mmaphook_mmap_num))
+#endif
 	popf
 	push %ds
 	push %cs
 	pop %ds
 	cmpw $20, %cx
 	jb errexit
+#ifdef APPLE_CC
+	cmpw (mmaphook_mmap_num_rel), %bx
+#else
 	cmpw DS (EXT_C (grub_machine_mmaphook_mmap_num)), %bx
+#endif
 	jae errexit
 	cmp $0x534d4150, %edx
 	jne errexit
 	push %si
 	push %di
 	movw $20, %cx
+#ifdef APPLE_CC
+	movl $(mmaphook_mmap_rel), %esi
+#else
 	movw $(DS(mmaphook_mmap)), %si
+#endif
 	mov %bx, %ax
 	imul $20, %ax
 	add %ax, %si
@@ -94,7 +122,11 @@ e820:
 	pop %si
 	movl $20, %ecx
 	inc %bx
+#ifdef APPLE_CC
+	cmpw (mmaphook_mmap_num_rel), %bx
+#else
 	cmpw DS(EXT_C(grub_machine_mmaphook_mmap_num)), %bx
+#endif
 	jb noclean
 	xor %bx, %bx	
 noclean:	

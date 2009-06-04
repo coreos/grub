@@ -69,7 +69,12 @@ _start:
 	/*
 	 *  Guarantee that "main" is loaded at 0x0:0x8200.
 	 */
+#ifdef APPLE_CC
+	codestart_abs = ABS(codestart) - 0x10000
+	ljmp $0, $(codestart_abs)
+#else
 	ljmp $0, $ABS(codestart)
+#endif
 
 	/*
 	 *  Compatibility version number
@@ -249,12 +254,24 @@ codestart:
 	movsb
 #endif
 	
+#ifdef APPLE_CC
+	/* clean out the bss */
+	bss_start_abs = ABS (bss_start)
+	bss_end_abs = ABS (bss_end)
+
+	movl    bss_start_abs, %edi
+
+	/* compute the bss length */
+	movl	bss_end_abs, %ecx
+	subl	%edi, %ecx
+#else
 	/* clean out the bss */
 	movl	$BSS_START_SYMBOL, %edi
 
 	/* compute the bss length */
 	movl	$END_SYMBOL, %ecx
 	subl	%edi, %ecx
+#endif
 			
 	/* clean out */
 	xorl	%eax, %eax
@@ -293,7 +310,13 @@ real_to_prot:
 	cli
 
 	/* load the GDT register */
+#ifdef APPLE_CC
+	mov %cs, %ax
+	mov %ax, %ds
+	DATA32	ADDR32	lgdt	gdtdesc
+#else
 	DATA32	ADDR32	lgdt	%cs:gdtdesc
+#endif
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
@@ -1223,7 +1246,12 @@ translate_keycode:
 	pushw	%bx
 	pushw	%si
 	
+#ifdef APPLE_CC
+	translation_table_abs = ABS (translation_table) - 0x10000
+	movw	$(translation_table_abs), %si
+#else
 	movw	$ABS(translation_table), %si
+#endif
 	
 1:	lodsw
 	/* check if this is the end */

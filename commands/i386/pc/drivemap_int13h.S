@@ -30,7 +30,12 @@ FUNCTION(grub_drivemap_handler)
 	/* Map the drive number (always in DL).  */
 	push	%ax
 	push	%bx
+#ifdef APPLE_CC
+	grub_drivemap_mapstart_ofs = INT13H_OFFSET(EXT_C(grub_drivemap_mapstart))
+	movw	$grub_drivemap_mapstart_ofs, %bx
+#else
 	movw	$INT13H_OFFSET(EXT_C(grub_drivemap_mapstart)), %bx
+#endif
 
 more_remaining:
 	movw	%cs:(%bx), %ax

@@ -30,7 +30,11 @@
 #define ABS(x) (x-_start+0x7c00)
 
 	/* Print message string */
+#ifdef APPLE_CC
+#define MSG(x)	x ## _abs = ABS(x); movw $x ## _abs, %si; call message
+#else
 #define MSG(x)	movw $ABS(x), %si; call message
+#endif
 
 	.file	"boot.S"
 
@@ -125,7 +129,12 @@ boot_drive_check:
 	 * ljmp to the next instruction because some bogus BIOSes
 	 * jump to 07C0:0000 instead of 0000:7C00.
 	 */
+#ifdef APPLE_CC
+	real_start_abs = ABS(real_start)
+	ljmp	$0, $(real_start_abs)
+#else
 	ljmp	$0, $ABS(real_start)
+#endif
 
 real_start:	
 
@@ -143,7 +152,12 @@ real_start:
 	 *  Check if we have a forced disk reference here
 	 */
         /* assign root_drive at the same time */
-        movw    ABS(boot_drive), %ax
+#ifdef APPLE_CC
+	boot_drive_abs = ABS (boot_drive)
+	movw    boot_drive_abs, %ax
+#else
+	movw    ABS(boot_drive), %ax
+#endif
         movb    %ah, %dh
 	cmpb	$0xff, %al
 	je	1f
@@ -156,7 +170,12 @@ real_start:
 	MSG(notification_string)
 
 	/* set %si to the disk address packet */
+#ifdef APPLE_CC
+	disk_address_packet_abs = ABS (disk_address_packet)
+	movw	$disk_address_packet_abs, %si
+#else
 	movw	$ABS(disk_address_packet), %si
+#endif
 	
 	/* do not probe LBA if the drive is a floppy */
 	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
@@ -197,10 +216,18 @@ lba_mode:
 	movw	$0x0010, (%si)
 
 	/* the absolute address */
+#ifdef APPLE_CC
+	kernel_sector_abs = ABS (kernel_sector)
+	movl	(kernel_sector_abs), %ebx
+	movl	%ebx, 8(%si)
+	movl	(kernel_sector_abs + 4), %ebx
+	movl	%ebx, 12(%si)
+#else
 	movl	ABS(kernel_sector), %ebx
 	movl	%ebx, 8(%si)
 	movl	ABS(kernel_sector + 4), %ebx
 	movl	%ebx, 12(%si)
+#endif
 
 	/* the segment of buffer address */
 	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, 6(%si)
@@ -267,12 +294,22 @@ final_init:
 
 setup_sectors:
 	/* load logical sector start (top half) */
+#ifdef APPLE_CC
+	kernel_sector_abs = ABS (kernel_sector)
+	movl	(kernel_sector_abs + 4), %eax
+#else
 	movl	ABS(kernel_sector + 4), %eax
+#endif
+
 	orl	%eax, %eax
 	jnz	geometry_error
 	
 	/* load logical sector start (bottom half) */
+#ifdef APPLE_CC
+	movl	(kernel_sector_abs), %eax
+#else
 	movl	ABS(kernel_sector), %eax
+#endif
 
 	/* zero %edx */
 	xorl	%edx, %edx
@@ -336,7 +373,12 @@ setup_sectors:
 	movw	%es, %bx
 	
 copy_buffer:
+#ifdef APPLE_CC
+	kernel_segment_abs = ABS (kernel_segment)
+	movw	(kernel_segment_abs), %es
+#else
 	movw	ABS(kernel_segment), %es
+#endif
 
 	/*
 	 * We need to save %cx and %si because the startup code in
@@ -360,7 +402,12 @@ copy_buffer:
         popw    %dx
 
 	/* boot kernel */
+#ifdef APPLE_CC
+	kernel_address_abs = ABS (kernel_address)
+	jmp	*(kernel_address_abs)
+#else
 	jmp	*(kernel_address)
+#endif
 
 /* END OF MAIN LOOP */
 
@@ -446,7 +493,12 @@ floppy_probe:
  *  Perform floppy probe.
  */
 
+#ifdef APPLE_CC
+	probe_values_abs = ABS (probe_values)
+	movw	$(probe_values_abs-1), %si
+#else
 	movw	$ABS(probe_values-1), %si
+#endif
 
 probe_loop:
 	/* reset floppy controller INT 13h AH=0 */

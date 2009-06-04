@@ -123,8 +123,15 @@ data_leng:
 
 linux_init:
 
+#ifdef APPLE_CC
+	reg_edx_rel = reg_edx - start 
+	code32_start_rel = code32_start - start 
+	movw	%cs:(reg_edx_rel), %dx
+	movl	%cs:(code32_start_rel), %ebp
+#else
 	movw	%cs:(reg_edx - start), %dx
 	movl	%cs:(code32_start - start), %ebp
+#endif
 
 linux_next:
 
@@ -132,12 +139,22 @@ linux_next:
 
 normalize:
 	popw	%bx
+#ifdef APPLE_CC
+	normalize_rel = normalize - start
+	subw	$(normalize_rel), %bx
+#else
 	subw	$(normalize - start), %bx
+#endif
 	shrw	$4, %bx
 	movw	%cs, %ax
 	addw	%bx, %ax
 	pushw	%ax
+#ifdef APPLE_CC
+	real_code_rel = real_code - start
+	pushw	$(real_code_rel)
+#else
 	pushw	$(real_code - start)
+#endif
 	lret				/* Jump to real_code.  */
 
 real_code:
@@ -164,7 +181,12 @@ real_code:
 	rep
 	movsl
 
+#ifdef APPLE_CC
+	real_code_2_rel = real_code_2 - start
+	ljmp	$(CODE_ADDR >> 4), $(real_code_2_rel)
+#else
 	ljmp	$(CODE_ADDR >> 4), $(real_code_2  - start)
+#endif
 
 real_code_2:
 
@@ -189,8 +211,15 @@ real_code_2:
 	cmpl	$MULTIBOOT_MAGIC, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_DATA_END)
 	jz	1f
 
+#ifdef APPLE_CC
+	ramdisk_image_rel = ramdisk_image - start
+	ramdisk_size_rel = ramdisk_size - start
+	movl	(ramdisk_image_rel), %esi
+	movl	(ramdisk_size_rel), %ecx
+#else
 	movl	(ramdisk_image - start), %esi
 	movl	(ramdisk_size - start), %ecx
+#endif
 	movl	$(DATA_ADDR - 0x200), %edi
 	jmp	2f
 
@@ -205,7 +234,12 @@ real_code_2:
 	movsbl	%dh, %eax
 	movl	%eax, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_INSTALL_DOS_PART)
 
+#ifdef APPLE_CC
+	reg_edx_rel = reg_edx - start
+	movsbl	(reg_edx_rel + 2), %eax
+#else
 	movsbl	(reg_edx + 2 - start), %eax
+#endif
 	movl	%eax, %ss:(DATA_ADDR + GRUB_KERNEL_MACHINE_INSTALL_BSD_PART)
 
 	movb	$0xFF, %dh
@@ -234,6 +268,28 @@ move_memory:
 	pushl	%ecx
 
 	movl	%esi, %eax
+#ifdef APPLE_CC
+	gdt_src1_rel = gdt_src1 - start
+	gdt_src2_rel = gdt_src2 - start
+	gdt_dst1_rel = gdt_dst1 - start
+	gdt_dst2_rel = gdt_dst2 - start
+	gdt_rel = gdt - start
+
+	movw	%si, (gdt_src1_rel)
+	shrl	$16, %eax
+	movb	%al, (gdt_src1_rel + 2)
+	movb	%ah, (gdt_src2_rel)
+
+	movl	%edi, %eax
+	movw	%di, (gdt_dst1_rel)
+	shrl	$16, %eax
+	movb	%al, (gdt_dst1_rel + 2)
+	movb	%ah, (gdt_dst2_rel)
+
+	movw	$(gdt_rel), %si
+	movb	$0x87, %ah
+	shrw	$1, %cx
+#else
 	movw	%si, (gdt_src1 - start)
 	shrl	$16, %eax
 	movb	%al, (gdt_src1 + 2 - start)
@@ -248,6 +304,7 @@ move_memory:
 	movw	$(gdt - start), %si
 	movb	$0x87, %ah
 	shrw	$1, %cx
+#endif
 
 	int	$0x15
 
@@ -257,7 +314,12 @@ move_memory:
 	popl	%esi
 
 	jnc	2f
+#ifdef APPLE_CC
+	err_int15_msg_rel = err_int15_msg - start
+	movw	$(err_int15_msg_rel), %si
+#else
 	movw	$(err_int15_msg - start), %si
+#endif
 	jmp	fail
 
 2:
