@@ -287,6 +287,13 @@ if test x$grub_cv_apple_target_cc == xyes ; then
   CFLAGS="$CFLAGS -DAPPLE_CC=1 -fnested-functions"
   TARGET_ASFLAGS="$TARGET_ASFLAGS -DAPPLE_CC=1"
   TARGET_APPLE_CC=1
+  AC_CHECK_PROG([OBJCONV], [objconv], [objconv], [])
+  if test "x$OBJCONV" = x ; then
+     AC_CHECK_PROG([OBJCONV], [objconv], [./objconv], [], [.])
+  fi
+  if test "x$OBJCONV" = x ; then
+    AC_MSG_ERROR([objconv not found which is required when building with apple compiler])
+  fi
   TARGET_IMG_LDSCRIPT=
   TARGET_IMG_CFLAGS="-static"
   TARGET_IMG_LDFLAGS='-nostdlib -static -Wl,-preload -Wl,-segalign,20 -Wl,-image_base,'
@@ -390,6 +397,7 @@ fi
 
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_MODULE_FORMAT)
+AC_SUBST(OBJCONV)
 AC_SUBST(TARGET_APPLE_CC)
 AC_SUBST(TARGET_ASFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)

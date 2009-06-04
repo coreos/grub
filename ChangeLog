@@ -1,5 +1,17 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use objconv when compiling with Apple's CC
+
+	* conf/i386-pc.rmk (efiemu32.o): use OBJCONV if defined
+	(efiemu64.o): likewise
+	(efiemu64_c.o): omit -mcmodel=large and add -DAPPLE_CC=1
+	when compiling with Apple's CC
+	(efiemu64_s.o): likewise
+	* configure.ac: check for objconv when compiling with Apple's CC
+	* genmk.rb: use objconv for modules when compiled with Apple's CC
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Define segment as well as section when compiling with
 	Apple's CC
 
