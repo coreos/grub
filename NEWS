@@ -1,5 +1,15 @@
 New in 1.97 - :
 
+* Add `hdparm' command.
+
+* Add support for getting the current date and time from CMOS as variables.
+
+* Add `drivemap' command.
+
+* Add support for RAID levels 4,6 and 10.
+
+* Add support for lua scripts.
+
 * update-grub is renamed to grub-mkconfig.
 
 * When booting from PXE, PXE can be used to load files.
