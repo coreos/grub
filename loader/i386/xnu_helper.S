@@ -94,11 +94,28 @@ VARIABLE(grub_xnu_heap_size)
 	movsl
 
 	mov %rax, %rsi
+#ifdef APPLE_CC
+	add $(cont0-base), %eax
+#else
 	add $(cont0-base), %rax
+#endif
 	jmp *%rax
 
 cont0:	
+#ifdef APPLE_CC
+	lea (cont1 - base) (%esi, 1), %eax
+	mov %eax, (jump_vector - base) (%esi, 1)
 
+	lea (gdt - base) (%esi, 1), %eax
+	mov %eax, (gdt_addr - base) (%esi, 1)
+	
+	/* Switch to compatibility mode. */
+
+	lgdt (gdtdesc - base) (%esi, 1)
+	
+	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
+	ljmp *(jump_vector - base) (%esi,1)
+#else
 	lea (cont1 - base) (%rsi, 1), %rax
 	mov %eax, (jump_vector - base) (%rsi, 1)
 
@@ -111,6 +128,8 @@ cont0:
 	
 	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
 	ljmp *(jump_vector - base) (%rsi, 1)
+#endif
+	
 cont1:
 	.code32
 

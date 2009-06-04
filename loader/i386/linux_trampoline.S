@@ -30,7 +30,22 @@ VARIABLE(grub_linux_trampoline_start)
 	call base
 base:	
 	pop %rsi
+
+#ifdef APPLE_CC	
+	lea (cont1 - base) (%esi, 1), %rax
+	mov %eax, (jump_vector - base) (%esi, 1)
+
+	lea (gdt - base) (%esi, 1), %rax
+	mov %rax, (gdtaddr - base) (%esi, 1)
 	
+	/* Switch to compatibility mode. */
+
+	lidt (idtdesc - base) (%esi, 1)
+	lgdt (gdtdesc - base) (%esi, 1)
+	
+	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
+	ljmp *(jump_vector - base) (%esi, 1)
+#else
 	lea (cont1 - base) (%rsi, 1), %rax
 	mov %eax, (jump_vector - base) (%rsi, 1)
 
@@ -44,6 +59,8 @@ base:
 	
 	/* Update %cs. Thanks to David Miller for pointing this mistake out. */
 	ljmp *(jump_vector - base) (%rsi, 1)
+#endif
+ 	
 cont1:
 	.code32
 

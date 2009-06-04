@@ -1,5 +1,14 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Address in trampolines based on 32-bit registers when compiled
+	with Apple's CC
+
+	* loader/i386/xnu_helper.S [APPLE_CC]: use 32-bit registers 
+	for addresses
+	* loader/i386/linux_trampoline.S [APPLE_CC]: likewise
+
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid aliases when compiling with Apple's CC for PCBIOS machine
 
 	* kern/misc.c [APPLE_CC] (memcpy): new function
