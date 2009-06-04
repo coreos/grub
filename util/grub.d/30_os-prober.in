@@ -90,9 +90,6 @@ EOF
 menuentry "${LONGNAME} (on ${DEVICE})" {
 	set root=${OSXROOT}
         insmod vbe
-        insmod gfxterm
-        gfxmode="1024x768x32;800x600x32"
-        terminal_output gfxterm
         do_resume=0
         if [ /var/vm/sleepimage -nt10 / ]; then
            if xnu_resume /var/vm/sleepimage; then

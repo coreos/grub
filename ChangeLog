@@ -1,5 +1,31 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	gfxpayload support
+
+	* commands/videotest.c (grub_cmd_videotest): use grub_video_set_mode
+	* include/grub/video.h (GRUB_VIDEO_MODE_TYPE_PURE_TEXT): new definition
+	(grub_video_setup): remove
+	(grub_video_set_mode): new prototype
+	* loader/i386/linux.c (DEFAULT_VIDEO_MODE): new definition
+	(vid_mode): remove
+	(linux_vesafb_res): compile only on PCBIOS
+	(grub_linux_boot): support gfxpayload
+	* loader/i386/pc/xnu.c (video_hook): new function
+	(grub_xnu_set_video): support gfxpayload
+	* term/gfxterm.c (DEFAULT_VIDEO_WIDTH): removed
+	(DEFAULT_VIDEO_HEIGHT): likewise
+	(DEFAULT_VIDEO_FLAGS): likewise
+	(DEFAULT_VIDEO_MODE): new definition
+	(video_hook): new function
+	(grub_gfxterm_init): use grub_video_set_mode
+	* util/grub.d/30_os-prober.in: remove explicit modesetting before 
+	loading xnu
+	* video/video.c (grub_video_setup): removed
+	(grub_video_set_mode): new function based on grub_gfxterm_init and 
+	grub_video_setup
+
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid calling biosdisk in drivemap
 
 	* commands/i386/pc/drivemap.c (parse_biosdisk): remove

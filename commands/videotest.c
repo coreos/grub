@@ -30,8 +30,7 @@ grub_cmd_videotest (grub_command_t cmd __attribute__ ((unused)),
                     int argc __attribute__ ((unused)),
                     char **args __attribute__ ((unused)))
 {
-  if (grub_video_setup (1024, 768,
-                        GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != GRUB_ERR_NONE)
+  if (grub_video_set_mode ("1024x768;800x600;640x480", 0) != GRUB_ERR_NONE)
     return grub_errno;
 
   grub_video_color_t color;

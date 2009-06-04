@@ -34,6 +34,7 @@ struct grub_video_render_target;
 struct grub_video_bitmap;
 
 /* Defines used to describe video mode or rendering target.  */
+#define GRUB_VIDEO_MODE_TYPE_PURE_TEXT		0x00000040
 #define GRUB_VIDEO_MODE_TYPE_ALPHA		0x00000020
 #define GRUB_VIDEO_MODE_TYPE_DOUBLE_BUFFERED	0x00000010
 #define GRUB_VIDEO_MODE_TYPE_1BIT_BITMAP	0x00000004
@@ -236,9 +237,6 @@ void grub_video_register (grub_video_adapter_t adapter);
 void grub_video_unregister (grub_video_adapter_t adapter);
 void grub_video_iterate (int (*hook) (grub_video_adapter_t adapter));
 
-grub_err_t grub_video_setup (unsigned int width, unsigned int height,
-                             unsigned int mode_type);
-
 grub_err_t grub_video_restore (void);
 
 grub_err_t grub_video_get_info (struct grub_video_mode_info *mode_info);
@@ -298,5 +296,9 @@ grub_err_t grub_video_delete_render_target (struct grub_video_render_target *tar
 grub_err_t grub_video_set_active_render_target (struct grub_video_render_target *target);
 
 grub_err_t grub_video_get_active_render_target (struct grub_video_render_target **target);
+
+grub_err_t grub_video_set_mode (char *modestring,
+				int NESTED_FUNC_ATTR (*hook) (grub_video_adapter_t p,
+							      struct grub_video_mode_info *mode_info));
 
 #endif /* ! GRUB_VIDEO_HEADER */

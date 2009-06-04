@@ -43,8 +43,10 @@
    into Linux, and therefore can benefit from seamless mode transition between
    GRUB and Linux (saving boot time and visual glitches).  Official GRUB, OTOH,
    needs to be conservative.  */
-#ifndef GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
-#define GRUB_ASSUME_LINUX_HAS_FB_SUPPORT 0
+#ifdef GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
+#define DEFAULT_VIDEO_MODE "keep,1024x768,800x600,640x480"
+#else
+#define DEFAULT_VIDEO_MODE "text"
 #endif
 
 static grub_dl_t my_mod;
@@ -94,8 +96,7 @@ static struct idt_descriptor idt_desc =
     0
   };
 
-static grub_uint16_t vid_mode;
-
+#ifdef GRUB_MACHINE_PCBIOS
 struct linux_vesafb_res
 {
   grub_uint16_t width;
@@ -262,6 +263,7 @@ struct linux_vesafb_mode linux_vesafb_modes[] =
     { VGA_800_500, 24 },	/* 0x372 */
     { VGA_800_500, 32 },	/* 0x373 */
   };
+#endif
 
 static inline grub_size_t
 page_align (grub_size_t size)
@@ -442,48 +444,36 @@ grub_linux_boot (void)
 {
   struct linux_kernel_params *params;
   int e820_num;
-  
+  grub_err_t err;
+  char *modevar, *tmp;
+
   params = real_mode_mem;
 
-  if (vid_mode == GRUB_LINUX_VID_MODE_NORMAL || vid_mode == GRUB_LINUX_VID_MODE_EXTENDED)
-    grub_video_restore ();
-  else if (vid_mode)
+  modevar = grub_env_get ("gfxpayload");
+
+  /* Now all graphical modes are acceptable. 
+     May change in future if we have modes without framebuffer.  */
+  if (modevar && *modevar != 0)
     {
-      struct linux_vesafb_mode *linux_mode;
-      int depth, flags;
-      
-      flags = 0;
-      linux_mode = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
-      depth = linux_mode->depth;
-      
-      /* If we have 8 or less bits, then assume that it is indexed color mode.  */
-      if ((depth <= 8) && (depth != -1))
-	flags |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
-      
-      /* We have more than 8 bits, then assume that it is RGB color mode.  */
-      if (depth > 8)
-	flags |= GRUB_VIDEO_MODE_TYPE_RGB;
-      
-      /* If user requested specific depth, forward that information to driver.  */
-      if (depth != -1)
-	flags |= (depth << GRUB_VIDEO_MODE_TYPE_DEPTH_POS)
-	  & GRUB_VIDEO_MODE_TYPE_DEPTH_MASK;
-      
-      /* Try to initialize requested mode.  */
-      if (grub_video_setup (linux_vesafb_res[linux_mode->res_index].width,
-			    linux_vesafb_res[linux_mode->res_index].height,
-			    flags) != GRUB_ERR_NONE)
-	{
-	  grub_printf ("Unable to initialize requested video mode (vga=0x%x)\n", vid_mode);
-	  return grub_errno;
-	}
+      tmp = grub_malloc (grub_strlen (modevar) 
+			 + sizeof (DEFAULT_VIDEO_MODE) + 1);
+      if (! tmp)
+	return grub_errno;
+      grub_sprintf (tmp, "%s;" DEFAULT_VIDEO_MODE, modevar);
+      err = grub_video_set_mode (tmp, 0);
+      grub_free (tmp);
     }
-#if ! GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
+#ifndef GRUB_ASSUME_LINUX_HAS_FB_SUPPORT
   else
-    /* If user didn't request a video mode, and we can't assume Linux supports FB,
-       then we go back to text mode.  */
-    grub_video_restore ();
+    err = grub_video_set_mode (DEFAULT_VIDEO_MODE, 0);
 #endif
+
+  if (err)
+    {
+      grub_print_error ();
+      grub_printf ("Booting however\n");
+      grub_errno = GRUB_ERR_NONE;
+    }
 
   if (! grub_linux_setup_video (params))
     params->have_vga = GRUB_VIDEO_TYPE_VLFB;
@@ -708,7 +698,6 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	       (unsigned) real_size, (unsigned) prot_size);
 
   /* Look for memory size and video mode specified on the command line.  */
-  vid_mode = 0;
   linux_mem_size = 0;
   for (i = 1; i < argc; i++)
 #ifdef GRUB_MACHINE_PCBIOS
@@ -716,6 +705,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       {
 	/* Video mode selection support.  */
 	char *val = argv[i] + 4;
+	unsigned vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
+	struct linux_vesafb_mode *linux_mode;
+	grub_err_t err;
+	char *buf;
 
 	if (grub_strcmp (val, "normal") == 0)
 	  vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
@@ -737,21 +730,57 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	switch (vid_mode)
 	  {
 	  case 0:
-	    vid_mode = GRUB_LINUX_VID_MODE_NORMAL;
+	  case GRUB_LINUX_VID_MODE_NORMAL:
+	    grub_env_set ("gfxpayload", "text");
+	    grub_printf ("%s is deprecated. "
+			 "Use set gfxpayload=text before "
+			 "linux command instead.\n", 
+			 argv[i]);	
 	    break;
+
 	  case 1:
-	    vid_mode = GRUB_LINUX_VID_MODE_EXTENDED;
+	  case GRUB_LINUX_VID_MODE_EXTENDED:
+	    /* FIXME: support 80x50 text. */
+	    grub_env_set ("gfxpayload", "text");
+	    grub_printf ("%s is deprecated. "
+			 "Use set gfxpayload=text before "
+			 "linux command instead.\n", 
+			 argv[i]);	
 	    break;
 	  default:
 	    /* Ignore invalid values.  */
 	    if (vid_mode < GRUB_LINUX_VID_MODE_VESA_START ||
 		vid_mode >= GRUB_LINUX_VID_MODE_VESA_START +
 		ARRAY_SIZE (linux_vesafb_modes))
-	      vid_mode = 0;
-	  }
+	      {
+		grub_env_set ("gfxpayload", "text");
+		grub_printf ("%s is deprecated. Mode %d isn't recognized. "
+			     "Use set gfxpayload=WIDTHxHEIGHT[xDEPTH] before "
+			     "linux command instead.\n", 
+			     argv[i], vid_mode);	
+		break;
+	      }
 
-	if (grub_errno)
-	  goto fail;
+	    buf = grub_malloc (20);
+	    if (! buf)
+	      goto fail;
+	    
+	    linux_mode 
+	      = &linux_vesafb_modes[vid_mode - GRUB_LINUX_VID_MODE_VESA_START];
+	    
+	    grub_sprintf (buf, "%dx%dx%d", 
+			  linux_vesafb_res[linux_mode->res_index].width,
+			  linux_vesafb_res[linux_mode->res_index].height,
+			  linux_mode->depth);
+	    grub_printf ("%s is deprecated. "
+			 "Use set gfxpayload=%s before "
+			 "linux command instead.\n", 
+			 argv[i], buf);	
+	    err = grub_env_set ("gfxpayload", buf);
+	    grub_free (buf);
+	    if (err)
+	      goto fail;
+	  }
       }
     else
 #endif /* GRUB_MACHINE_PCBIOS */
