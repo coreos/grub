@@ -213,7 +213,7 @@ install-local: all
 	for file in $$list; do \
 	  if test -f "$$file"; then dir=; else dir="$(srcdir)/"; fi; \
 	  dest="`echo $$file | sed 's,include/,,'`"; \
-	  destdir="`echo $$dest | sed 's,\(^\|/\)[^/]*$$,,g'`"; \
+	  destdir="`echo $$dest | sed 's,[^/]*$$,,g'`"; \
 	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$destdir; \
 	  if test -f "$$dir$$file"; then \
 	    $(INSTALL_DATA) $$dir$$file $(DESTDIR)$(includedir)/$$dest; \
