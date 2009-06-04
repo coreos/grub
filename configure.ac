@@ -339,18 +339,23 @@ fi
 if test "$target_cpu"-"$platform" = x86_64-efi; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
-    CFLAGS="-m64 -mcmodel=large"
+    SAVED_CFLAGS=$CFLAGS
+    CFLAGS="$CFLAGS -m64 -mcmodel=large"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_mcmodel=yes],
 		      [grub_cv_cc_mcmodel=no])
   ])
-  if test "x$grub_cv_cc_no_mcmodel" = xno; then
-    AC_MSG_ERROR([-mcmodel=large not supported, upgrade your gcc])
+  if test "x$grub_cv_cc_mcmodel" = xno; then
+    CFLAGS="$SAVED_CFLAGS -m64 -DMCMODEL_SMALL=1"
+    TARGET_CFLAGS="$TARGET_CFLAGS -DMCMODEL_SMALL=1"    
+    AC_MSG_WARN([-mcmodel=large not supported. You wan't be able to use the memory over 4GiB. Upgrade your gcc])
+  else
+    TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
   fi
 
   # EFI writes to stack below %rsp, we must not use the red zone
   AC_CACHE_CHECK([whether option -mno-red-zone works], grub_cv_cc_no_red_zone, [
-    CFLAGS="-m64 -mno-red-zone"
+    CFLAGS="$CFLAGS -m64 -mno-red-zone"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_no_red_zone=yes],
 		      [grub_cv_cc_no_red_zone=no])
@@ -359,7 +364,7 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
     AC_MSG_ERROR([-mno-red-zone not supported, upgrade your gcc])
   fi
 
-  TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large -mno-red-zone"
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-red-zone"
 fi
 
 #

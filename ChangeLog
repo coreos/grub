@@ -1,5 +1,16 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Allow a compilation without -mcmodel=large
+
+	* kern/efi/mm.c (grub_efi_allocate_pages): don't allocate >4GiB
+	when compiled without -mcmodel=large
+	(filter_memory_map): remove memory post 4 GiB when compiled 
+	without -mcmodel=large
+	* configure.ac: fail gracefully and add -DMCMODEL_SMALL=1 to 
+	TARGET_CFLAGS when -mcmodel=large isn't supported
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove nested functions in efiemu core
 
 	* efiemu/runtime/efiemu.c (reflect): make static instead of nested
