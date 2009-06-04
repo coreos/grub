@@ -390,11 +390,11 @@ general_error:
         int	$0x18
 stop:	jmp	stop
 
-notification_string:	.string "GRUB "
-geometry_error_string:	.string "Geom"
-hd_probe_error_string:	.string "Hard Disk"
-read_error_string:	.string "Read"
-general_error_string:	.string " Error"
+notification_string:	.asciz "GRUB "
+geometry_error_string:	.asciz "Geom"
+hd_probe_error_string:	.asciz "Hard Disk"
+read_error_string:	.asciz "Read"
+general_error_string:	.asciz " Error"
 
 /*
  * message: write the string pointed to by %si
@@ -464,7 +464,8 @@ probe_loop:
 	MSG(fd_probe_error_string)
 	jmp	general_error
 
-fd_probe_error_string:	.string "Floppy"
+/* "Floppy" */
+fd_probe_error_string:	.asciz "Floppy"
 
 1:
 	/* perform read */

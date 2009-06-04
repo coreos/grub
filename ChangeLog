@@ -1,5 +1,14 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use .asciz instead of .string
+
+	* i386/pc/diskboot.S: use .asciz instead of .string
+	* i386/pc/boot.S: likewise
+	* include/grub/dl.h (GRUB_MOD_DEP): likewise
+	(GRUB_MOD_NAME): likewise
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	gfxpayload support
 
 	* commands/videotest.c (grub_cmd_videotest): use grub_video_set_mode

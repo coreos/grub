@@ -41,10 +41,10 @@ static void \
 grub_mod_fini (void)
 
 #define GRUB_MOD_NAME(name)	\
-__asm__ (".section .modname\n.string \"" #name "\"\n")
+__asm__ (".section .modname\n.asciz \"" #name "\"\n")
 
 #define GRUB_MOD_DEP(name)	\
-__asm__ (".section .moddeps\n.string \"" #name "\"\n")
+__asm__ (".section .moddeps\n.asciz \"" #name "\"\n")
 
 struct grub_dl_segment
 {

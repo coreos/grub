@@ -326,14 +326,14 @@ general_error:
 /* go here when you need to stop the machine hard after an error condition */
 stop:	jmp	stop
 
-notification_string:	.string "loading"
+notification_string:	.asciz "loading"
 
-notification_step:	.string "."
-notification_done:	.string "\r\n"
+notification_step:	.asciz "."
+notification_done:	.asciz "\r\n"
 	
-geometry_error_string:	.string "Geom"
-read_error_string:	.string "Read"
-general_error_string:	.string " Error"
+geometry_error_string:	.asciz "Geom"
+read_error_string:	.asciz "Read"
+general_error_string:	.asciz " Error"
 
 /*
  * message: write the string pointed to by %si
