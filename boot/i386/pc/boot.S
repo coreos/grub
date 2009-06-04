@@ -40,7 +40,9 @@
 	   in real mode. */
 	.code16
 
-.globl _start; _start:
+.globl _start, start; 
+_start:
+start:
 	/*
 	 * _start is loaded at 0x7c00 and is jumped to with CS:IP 0:0x7c00
 	 */

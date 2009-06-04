@@ -23,7 +23,9 @@
 	.code16
 	
 	/* Let's go */
-.globl _start; _start:
+.globl start, _start; 
+_start:
+start: 
 
         /* Root drive will default to boot drive */
         movb	$0xFF, %dh

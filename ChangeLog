@@ -1,5 +1,12 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add missing start symbols
+
+	* boot/i386/pc/boot.S: add start
+	boot/i386/pc/pxeboot.S: likewise
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix wrong assumptions with grub-mkimage on EFI
 	
 	* i386/efi/grub-mkimage.c (read_kernel_module): don't write prefox here
