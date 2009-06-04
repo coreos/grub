@@ -40,18 +40,23 @@ grub_efi_status_t
 efiemu_set_wakeup_time (grub_efi_boolean_t enabled,
 			grub_efi_time_t *time);
 
+#ifdef APPLE_CC
+#define PHYSICAL_ATTRIBUTE __attribute__ ((section("_text-physical, _text-physical")));
+#else
+#define PHYSICAL_ATTRIBUTE __attribute__ ((section(".text-physical")));
+#endif
 
 grub_efi_status_t
 efiemu_set_virtual_address_map (grub_efi_uintn_t memory_map_size,
 				grub_efi_uintn_t descriptor_size,
 				grub_efi_uint32_t descriptor_version,
 				grub_efi_memory_descriptor_t *virtual_map)
-  __attribute__ ((section(".text-physical")));
+  PHYSICAL_ATTRIBUTE;
 
 grub_efi_status_t
 efiemu_convert_pointer (grub_efi_uintn_t debug_disposition, 
 			void **address)
-  __attribute__ ((section(".text-physical")));
+  PHYSICAL_ATTRIBUTE;
 
 grub_efi_status_t
 efiemu_get_variable (grub_efi_char16_t *variable_name,
@@ -84,17 +89,20 @@ EFI_FUNC (efiemu_set_virtual_address_map) (grub_efi_uintn_t,
 					      grub_efi_uintn_t,
 					      grub_efi_uint32_t,
 					      grub_efi_memory_descriptor_t *)
-  __attribute__ ((section(".text-physical")));
+     PHYSICAL_ATTRIBUTE;
 grub_efi_status_t
 EFI_FUNC (efiemu_convert_pointer) (grub_efi_uintn_t debug_disposition, 
 				      void **address)
-  __attribute__ ((section(".text-physical")));
+     PHYSICAL_ATTRIBUTE;
 static grub_uint32_t
 efiemu_getcrc32 (grub_uint32_t crc, void *buf, int size)
-     __attribute__ ((section(".text-physical")));
+     PHYSICAL_ATTRIBUTE;
 static void
 init_crc32_table (void)
-  __attribute__ ((section(".text-physical")));
+     PHYSICAL_ATTRIBUTE;
+static grub_uint32_t 
+reflect (grub_uint32_t ref, int len)
+     PHYSICAL_ATTRIBUTE;
 			     
 /*
   The log. It's used when examining memory dump

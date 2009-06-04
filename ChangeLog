@@ -1,5 +1,21 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Define segment as well as section when compiling with
+	Apple's CC
+
+	* efiemu/runtime/efiemu.c (PHYSICAL_ATTRIBUTE): new definition
+	(efiemu_set_virtual_address_map): declare with PHYSICAL_ATTRIBUTE
+	(efiemu_convert_pointer): likewise
+	(efiemu_set_virtual_address_map): likewise
+	(efiemu_convert_pointer): likewise
+	(efiemu_getcrc32): likewise
+	(init_crc32_table): likewise
+	(reflect): likewise
+	* include/grub/dl.h (GRUB_MOD_NAME): define segment with Apple's CC
+	(GRUB_MOD_DEP): likewise
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Allow a compilation without -mcmodel=large
 
 	* kern/efi/mm.c (grub_efi_allocate_pages): don't allocate >4GiB

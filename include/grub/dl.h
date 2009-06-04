@@ -40,11 +40,19 @@ grub_##name##_fini (void) { grub_mod_fini (); } \
 static void \
 grub_mod_fini (void)
 
+#ifdef APPLE_CC
+#define GRUB_MOD_NAME(name)	\
+static char grub_modname[] __attribute__ ((section ("_modname, _modname"), used)) = #name;
+
+#define GRUB_MOD_DEP(name)	\
+__asm__ (".section _moddeps, _moddeps\n.asciz \"" #name "\"\n")
+#else
 #define GRUB_MOD_NAME(name)	\
 __asm__ (".section .modname\n.asciz \"" #name "\"\n")
 
 #define GRUB_MOD_DEP(name)	\
 __asm__ (".section .moddeps\n.asciz \"" #name "\"\n")
+#endif
 
 struct grub_dl_segment
 {
