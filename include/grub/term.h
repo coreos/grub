@@ -31,7 +31,7 @@
 #define GRUB_TERM_NPAGE		3
 #define GRUB_TERM_ESC		'\e'
 #define GRUB_TERM_TAB		'\t'
-#define GRUB_TERM_BACKSPACE	'\b'
+#define GRUB_TERM_BACKSPACE	8
 
 #ifndef ASM_FILE
 

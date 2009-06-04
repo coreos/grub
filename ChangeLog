@@ -1,5 +1,10 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/term.h (GRUB_TERM_BACKSPACE): explicitely define as 8
+	instead of '\b'
+	
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Definitions for creating asm symbols with Apple's CC
 
 	* include/grub/symbol.h [APPLE_CC] (FUNCTION): new macro
