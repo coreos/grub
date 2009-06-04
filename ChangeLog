@@ -1,5 +1,12 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Definitions for creating asm symbols with Apple's CC
+
+	* include/grub/symbol.h [APPLE_CC] (FUNCTION): new macro
+	[APPLE_CC] (VARIABLE): likewise
+
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Disable lnxboot.img when compiled
 	with Apple's CC
 
