@@ -1,5 +1,20 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid aliases when compiling with Apple's CC for PCBIOS machine
+
+	* kern/misc.c [APPLE_CC] (memcpy): new function
+	[APPLE_CC] (memmove): likewise
+	[APPLE_CC && !GRUB_UTIL] (grub_err_printf): likewise
+	(memcpy): define alias conditionaly on !APPLE_CC
+	(memset): likewise
+	(abort): likewise
+	* include/grub/misc.h (memove): don't define when both GRUB_UTIL and
+	APPLE_CC are defined
+	* include/grub/list.h [APPLE_CC] (grub_assert_fail): new function
+	(grub_assert_fail): make prototype conditional
+
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use grub-macho2img when compiling with Apple's CC for PCBIOS machine
 
 	* conf/common.rmk (bin_UTILITIES): add (on false on condition) 

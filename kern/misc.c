@@ -44,11 +44,23 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
   
   return dest;
 }
+
+#ifndef APPLE_CC
 void *memmove (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
 /* GCC emits references to memcpy() for struct copies etc.  */
 void *memcpy (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memmove")));
+#else
+void *memcpy (void *dest, const void *src, grub_size_t n)
+{
+	return grub_memmove (dest, src, n);
+}
+void *memmove (void *dest, const void *src, grub_size_t n)
+{
+	return grub_memmove (dest, src, n);
+}
+#endif
 
 char *
 grub_strcpy (char *dest, const char *src)
@@ -134,7 +146,22 @@ grub_printf (const char *fmt, ...)
   return ret;
 }  
 
-#ifndef GRUB_UTIL
+#if defined (APPLE_CC) && ! defined (GRUB_UTIL)
+int
+grub_err_printf (const char *fmt, ...)
+{
+	va_list ap;
+	int ret;
+	
+	va_start (ap, fmt);
+	ret = grub_vprintf (fmt, ap);
+	va_end (ap);
+	
+	return ret;
+}  
+#endif
+
+#if ! defined (APPLE_CC) && ! defined (GRUB_UTIL)
 int grub_err_printf (const char *fmt, ...)
 __attribute__ ((alias("grub_printf")));
 #endif
@@ -185,8 +212,10 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 
   return 0;
 }
+#ifndef APPLE_CC
 int memcmp (const void *s1, const void *s2, grub_size_t n)
   __attribute__ ((alias ("grub_memcmp")));
+#endif
 
 int
 grub_strcmp (const char *s1, const char *s2)
@@ -534,8 +563,10 @@ grub_memset (void *s, int c, grub_size_t n)
 
   return s;
 }
+#ifndef APPLE_CC
 void *memset (void *s, int c, grub_size_t n)
   __attribute__ ((alias ("grub_memset")));
+#endif
 
 grub_size_t
 grub_strlen (const char *s)
@@ -1066,8 +1097,11 @@ grub_abort (void)
 
   grub_exit ();
 }
+
+#ifndef APPLE_CC
 /* GCC emits references to abort().  */
 void abort (void) __attribute__ ((alias ("grub_abort")));
+#endif
 
 #ifdef NEED_ENABLE_EXECUTE_STACK
 /* Some gcc versions generate a call to this function

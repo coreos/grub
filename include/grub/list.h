@@ -41,7 +41,18 @@ void EXPORT_FUNC(grub_list_insert) (grub_list_t *head, grub_list_t item,
 
 /* This function doesn't exist, so if assertion is false for some reason, the
    linker would fail.  */
+#ifdef APPLE_CC
+/* This approach fails with Apple's gcc. Use grub_abort.  */
+#include <grub/misc.h>
+static inline void *
+grub_assert_fail (void)
+{
+	grub_abort ();
+	return 0;
+}
+#else
 extern void* grub_assert_fail (void);
+#endif
 
 #define GRUB_FIELD_MATCH(ptr, type, field) \
   ((char *) &(ptr)->field == (char *) &((type) (ptr))->field)
