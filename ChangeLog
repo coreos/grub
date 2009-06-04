@@ -1,5 +1,10 @@
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* kern/i386/pc/startup.S [APPLE_CC]: block of nops to 
+	compensate a compiler bug
+
+2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/term.h (GRUB_TERM_BACKSPACE): explicitely define as 8
 	instead of '\b'
 	

@@ -1120,6 +1120,17 @@ FUNCTION(grub_get_mmap_entry)
 xnosmap:
 	xorl	%ecx, %ecx
 
+/* 	Apple's cc jumps few bytes before the correct
+	label in this context. Hence nops. */
+#ifdef APPLE_CC
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+#endif
+
 xsmap:
 	DATA32	call	real_to_prot
 	.code32
