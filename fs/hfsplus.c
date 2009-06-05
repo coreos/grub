@@ -99,6 +99,13 @@ struct grub_hfsplus_btheader
   grub_uint32_t last_leaf_node;
   grub_uint16_t nodesize;
   grub_uint16_t keysize;
+  grub_uint32_t total_nodes;
+  grub_uint32_t free_nodes;
+  grub_uint16_t reserved1;
+  grub_uint32_t clump_size;  /* ignored */
+  grub_uint8_t btree_type;
+  grub_uint8_t key_compare;
+  grub_uint32_t attributes;
 } __attribute__ ((packed));
 
 /* The on disk layout of a catalog key.  */
@@ -164,6 +171,9 @@ enum grub_hfsplus_filetype
     GRUB_HFSPLUS_FILETYPE_REG_THREAD = 4
   };
 
+#define GRUB_HFSPLUSX_BINARYCOMPARE	0xBC
+#define GRUB_HFSPLUSX_CASEFOLDING	0xCF
+
 /* Internal representation of a catalog key.  */
 struct grub_hfsplus_catkey_internal
 {
@@ -224,6 +234,7 @@ struct grub_hfsplus_data
   /* This is the offset into the physical disk for an embedded HFS+
      filesystem (one inside a plain HFS wrapper).  */
   int embedded_offset;
+  int case_sensitive;
 };
 
 static grub_dl_t my_mod;
@@ -376,6 +387,7 @@ grub_hfsplus_mount (grub_disk_t disk)
   struct grub_hfsplus_data *data;
   struct grub_hfsplus_btheader header;
   struct grub_hfsplus_btnode node;
+  grub_uint16_t magic;
   union {
     struct grub_hfs_sblock hfs;
     struct grub_hfsplus_volheader hfsplus;
@@ -423,8 +435,8 @@ grub_hfsplus_mount (grub_disk_t disk)
 
   /* Make sure this is an HFS+ filesystem.  XXX: Do we really support
      HFX?  */
-  if ((grub_be_to_cpu16 (volheader.hfsplus.magic) != GRUB_HFSPLUS_MAGIC)
-      && (grub_be_to_cpu16 (volheader.hfsplus.magic) != GRUB_HFSPLUSX_MAGIC))
+  magic = grub_be_to_cpu16 (volheader.hfsplus.magic);
+  if ((magic != GRUB_HFSPLUS_MAGIC) && (magic != GRUB_HFSPLUSX_MAGIC))
     {
       grub_error (GRUB_ERR_BAD_FS, "not a HFS+ filesystem");
       goto fail;
@@ -464,6 +476,8 @@ grub_hfsplus_mount (grub_disk_t disk)
 
   data->catalog_tree.root = grub_be_to_cpu32 (header.root);
   data->catalog_tree.nodesize = grub_be_to_cpu16 (header.nodesize);
+  data->case_sensitive = ((magic == GRUB_HFSPLUSX_MAGIC) &&
+			  (header.key_compare == GRUB_HFSPLUSX_BINARYCOMPARE));
 
   if (! grub_hfsplus_read_file (&data->extoverflow_tree.file, 0,
 				sizeof (struct grub_hfsplus_btnode),
@@ -772,7 +786,8 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
 	catkey->name[i] = grub_be_to_cpu16 (catkey->name[i]);
 
       /* hfs+ is case insensitive.  */
-      type |= GRUB_FSHELP_CASE_INSENSITIVE;
+      if (! dir->data->case_sensitive)
+	type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
       /* Only accept valid nodes.  */
       if (grub_strlen (filename) == grub_be_to_cpu16 (catkey->namelen))

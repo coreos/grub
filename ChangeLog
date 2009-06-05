@@ -1,3 +1,10 @@
+2009-06-05  Michael Scherer  <misc@mandriva.org>
+
+	* fs/hfsplus.c (grub_hfsplus_mount): Determine if the filesystem
+	uses case sensitive btree.
+	(grub_hfsplus_iterate_dir): Use GRUB_FSHELP_CASE_INSENSITIVE
+	only for case insensitive filesystems.
+
 2009-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/i386-pc.rmk (efiemu_mod_CFLAGS): remove -Werror -Wall
