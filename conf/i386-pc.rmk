@@ -203,7 +203,7 @@ efiemu_mod_SOURCES = efiemu/main.c efiemu/i386/loadcore32.c \
 		     efiemu/loadcore32.c efiemu/loadcore64.c \
 		     efiemu/prepare32.c efiemu/prepare64.c efiemu/pnvram.c \
 		     efiemu/i386/coredetect.c
-efiemu_mod_CFLAGS = $(COMMON_CFLAGS) -Werror -Wall
+efiemu_mod_CFLAGS = $(COMMON_CFLAGS)
 efiemu_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For acpi.mod.

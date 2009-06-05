@@ -1,3 +1,8 @@
+2009-06-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* conf/i386-pc.rmk (efiemu_mod_CFLAGS): remove -Werror -Wall
+	* conf/common.rmk (search_mod_CFLAGS): likewise
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* kern/i386/pc/startup.S [APPLE_CC]: block of nops to 
