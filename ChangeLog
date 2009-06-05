@@ -1,3 +1,14 @@
+2009-06-05  Colin D Bennett  <colin@gibibit.com>
+
+	Optimized font character lookup using binary search instead of linear
+	search.  Fonts now are required to have the character index ordered by
+	code point.
+
+	* font/font.c (load_font_index): Verify that fonts have ordered
+	character indices.
+	(find_glyph): Use binary search instead of linear search to find a
+	character in a font.
+
 2009-06-05  Michael Scherer  <misc@mandriva.org>
 
 	* fs/hfsplus.c (grub_hfsplus_mount): Determine if the filesystem

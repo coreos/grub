@@ -249,6 +249,7 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
                  grub_font *font)
 {
   unsigned i;
+  grub_uint32_t last_code;
 
 #if FONT_DEBUG >= 2
   grub_printf("load_font_index(sect_length=%d)\n", sect_length);
@@ -277,6 +278,8 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
   grub_printf("num_chars=%d)\n", font->num_chars);
 #endif
 
+  last_code = 0;
+
   /* Load the character index data from the file.  */
   for (i = 0; i < font->num_chars; i++)
     {
@@ -286,6 +289,17 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
       if (grub_file_read (file, (char *) &entry->code, 4) != 4)
         return 1;
       entry->code = grub_be_to_cpu32 (entry->code);
+
+      /* Verify that characters are in ascending order.  */
+      if (i != 0 && entry->code <= last_code)
+        {
+          grub_error (GRUB_ERR_BAD_FONT,
+                      "Font characters not in ascending order: %u <= %u",
+                      entry->code, last_code);
+          return 1;
+        }
+
+      last_code = entry->code;
 
       /* Read storage flags byte.  */
       if (grub_file_read (file, (char *) &entry->storage_flags, 1) != 1)
@@ -583,15 +597,25 @@ read_be_int16 (grub_file_t file, grub_int16_t * value)
 static struct char_index_entry *
 find_glyph (const grub_font_t font, grub_uint32_t code)
 {
-  grub_uint32_t i;
-  grub_uint32_t len = font->num_chars;
-  struct char_index_entry *table = font->char_index;
+  struct char_index_entry *table;
+  grub_size_t lo;
+  grub_size_t hi;
+  grub_size_t mid;
 
-  /* Do a linear search.  */
-  for (i = 0; i < len; i++)
+  /* Do a binary search in `char_index', which is ordered by code point.  */
+  table = font->char_index;
+  lo = 0;
+  hi = font->num_chars - 1;
+
+  while (lo <= hi)
     {
-      if (table[i].code == code)
-        return &table[i];
+      mid = lo + (hi - lo) / 2;
+      if (code < table[mid].code)
+        hi = mid - 1;
+      else if (code > table[mid].code)
+        lo = mid + 1;
+      else
+        return &table[mid];
     }
 
   return 0;
