@@ -1,3 +1,10 @@
+2009-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Not fail if unable to retrieve C/H/S on LBA disks
+
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): behave gracefully 
+	if unable to retrieve C/H/S on LBA disks
+
 2009-06-08  Pavel Roskin  <proski@gnu.org>
 
 	* fs/hfs.c (grub_hfs_find_dir): Use union to avoid a warning

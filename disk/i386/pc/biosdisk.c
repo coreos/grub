@@ -158,8 +158,20 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 					       &data->heads,
 					       &data->sectors) != 0)
         {
-          grub_free (data);
-          return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get C/H/S values");
+	  if (total_sectors && (data->flags & GRUB_BIOSDISK_FLAG_LBA))
+	    {
+	      data->sectors = 63;
+	      data->heads = 255;
+	      data->cylinders 
+		= grub_divmod64 (total_sectors 
+				 + data->heads * data->sectors - 1, 
+				 data->heads * data->sectors, 0);
+	    }
+	  else
+	    {
+	      grub_free (data);
+	      return grub_error (GRUB_ERR_BAD_DEVICE, "cannot get C/H/S values");
+	    }
         }
 
       if (! total_sectors)
