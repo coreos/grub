@@ -128,7 +128,7 @@ grub_ohci_pci_iter (int bus, int device, int func,
   addr = grub_pci_make_address (bus, device, func, 2);
   class = grub_pci_read (addr);
 
-  interf = class & 0xFF;
+  interf = (class >> 8) & 0xFF;
   subclass = (class >> 16) & 0xFF;
   class >>= 24;
 

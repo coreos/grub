@@ -1,5 +1,7 @@
 2009-06-08  Oliver Henshaw <oliver.henshaw@gmail.com>
 
+	* bus/usb/ohci.c: Set interf with correct field.
+
 	* bus/usb/uhci.c: Remove unneeded doubled lines.
 	* bus/usb/ohci.c: Likewise. Change interf to grub_uint32_t.
 	Remove whitespace inside comment.
