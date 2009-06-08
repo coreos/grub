@@ -1,3 +1,8 @@
+2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/i386/pc/grub-install.in: Add a parameter --disk-module
+	to choose between ata and biosdisk module on i386-pc.
+
 2009-06-08  Oliver Henshaw <oliver.henshaw@gmail.com>
 
 	* bus/usb/ohci.c (grub_ohci_pci_iter): Define the Class,

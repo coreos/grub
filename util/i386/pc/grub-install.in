@@ -49,6 +49,12 @@ force_lba=
 recheck=no
 debug=no
 
+if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+    disk_module=biosdisk
+else
+    disk_module=ata
+fi
+
 # Usage: usage
 # Print the usage.
 usage () {
@@ -68,6 +74,13 @@ Install GRUB on your drive.
   --no-floppy             do not probe any floppy drive
   --recheck               probe a device map even if it already exists
   --force                 install even if problems are detected
+EOF
+if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+    cat <<EOF
+  --disk-module=MODULE    disk module to use
+EOF
+fi
+    cat <<EOF
 
 INSTALL_DEVICE can be a GRUB device name or a system device filename.
 
@@ -104,6 +117,10 @@ for option in "$@"; do
 	no_floppy="--no-floppy" ;;
     --recheck)
 	recheck=yes ;;
+    --disk-module=*)
+	if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
+           disk_module=`echo "$option" | sed 's/--disk-module//'`
+        fi ;;
     # This is an undocumented feature...
     --debug)
 	debug=yes ;;
@@ -250,11 +267,7 @@ partmap_module=`$grub_probe --target=partmap --device ${grub_device} 2> /dev/nul
 devabstraction_module=`$grub_probe --target=abstraction --device ${grub_device}`
 
 # The order in this list is critical.  Be careful when modifying it.
-if [ "${target_cpu}-${platform}" = "i386-pc" ] ; then
-    modules="$modules biosdisk"
-else
-    modules="$modules ata"
-fi
+modules="$modules $disk_module"
 modules="$modules $fs_module $partmap_module $devabstraction_module"
 
 prefix_drive=
@@ -269,11 +282,11 @@ if [ "x${devabstraction_module}" = "x" ] ; then
     # Strip partition number
     install_drive="`echo ${install_drive} | sed -e s/,[0-9]*[a-z]*//g`"
     grub_drive="`echo ${grub_drive} | sed -e s/,[0-9]*[a-z]*//g`"
-    if [ "${target_cpu}-${platform}" != "i386-pc" ] ; then
-        # generic method (used on coreboot)
+    if [ "$disk_module" = ata ] ; then
+        # generic method (used on coreboot and ata mod)
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
         if [ "x${uuid}" = "x" ] ; then
-          echo "UUID needed on this platform, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          echo "UUID needed on this platform and with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
         prefix_drive="(UUID=${uuid})"
