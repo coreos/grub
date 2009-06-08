@@ -1,3 +1,7 @@
+2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* Makefile.in (uninstall): Remove all $lib_DATA files.
+
 2009-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Bugfix: install on partitionless device

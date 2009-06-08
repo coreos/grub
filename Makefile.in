@@ -315,6 +315,12 @@ uninstall:
 	  dest="`echo $$file | sed 's,include/,,'`"; \
 	  rm -f $(DESTDIR)$(includedir)/$$dest; \
 	done
+	@list='$(lib_DATA)'; \
+	for file in $$list; do \
+	  dest="`echo $$file | sed 's,.*/,,'`"; \
+	  echo rm -f $(DESTDIR)$(libdir)/$$dest; \
+	  rm -f $(DESTDIR)$(libdir)/grub/$$dest; \
+	done
 
 clean:
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
