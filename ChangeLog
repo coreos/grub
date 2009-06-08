@@ -1,3 +1,8 @@
+2009-06-08  Pavel Roskin  <proski@gnu.org>
+
+	* fs/hfs.c (grub_hfs_find_dir): Use union to avoid a warning
+	about aliasing.
+
 2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
 
 	* Makefile.in (uninstall): Remove all $lib_DATA files.
