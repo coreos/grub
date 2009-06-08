@@ -152,9 +152,6 @@ grub_ohci_pci_iter (int bus, int device, int func,
   if (! o)
     return 1;
 
-  /* Link in the OHCI.  */
-  o->next = ohci;
-  ohci = o;
   o->iobase = (grub_uint32_t *) base;
 
   /* Reserve memory for the HCCA.  */
@@ -190,6 +187,10 @@ grub_ohci_pci_iter (int bus, int device, int func,
   grub_dprintf ("ohci", "OHCI enable: 0x%02x\n",
 		(grub_ohci_readreg32 (o, GRUB_OHCI_REG_CONTROL) >> 6) & 3);
  
+  /* Link to ohci now that initialisation is successful.  */
+  o->next = ohci;
+  ohci = o;
+
   return 0;
 
  fail:

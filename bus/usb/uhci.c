@@ -174,8 +174,6 @@ grub_uhci_pci_iter (int bus, int device, int func,
   if (! u)
     return 1;
 
-  u->next = uhci;
-  uhci = u;
   u->iobase = base & GRUB_UHCI_IOMASK;
   u->framelist = 0;
   u->qh = 0;
@@ -287,6 +285,10 @@ grub_uhci_pci_iter (int bus, int device, int func,
       }
   }
 #endif
+
+  /* Link to uhci now that initialisation is successful.  */
+  u->next = uhci;
+  uhci = u;
 
   return 0;
 
