@@ -118,15 +118,13 @@ grub_ohci_pci_iter (int bus, int device, int func,
 {
   grub_uint32_t class;
   grub_uint32_t subclass;
-  int interf;
+  grub_uint32_t interf;
   grub_uint32_t base;
   grub_pci_address_t addr;
   struct grub_ohci *o;
   grub_uint32_t revision;
   grub_uint32_t frame_interval;
 
-  addr = grub_pci_make_address (bus, device, func, 2);
-  class = grub_pci_read (addr);
   addr = grub_pci_make_address (bus, device, func, 2);
   class = grub_pci_read (addr);
 
@@ -171,8 +169,7 @@ grub_ohci_pci_iter (int bus, int device, int func,
   frame_interval = grub_ohci_readreg32 (o, GRUB_OHCI_REG_FRAME_INTERVAL);
 
   /* Suspend the OHCI by issuing a reset.  */
-  grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, 1); /* XXX: Magic.
-							  */
+  grub_ohci_writereg32 (o, GRUB_OHCI_REG_CMDSTATUS, 1); /* XXX: Magic.  */
   grub_millisleep (1);
   grub_dprintf ("ohci", "OHCI reset\n");
 

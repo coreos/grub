@@ -151,8 +151,6 @@ grub_uhci_pci_iter (int bus, int device, int func,
 
   addr = grub_pci_make_address (bus, device, func, 2);
   class = grub_pci_read (addr);
-  addr = grub_pci_make_address (bus, device, func, 2);
-  class = grub_pci_read (addr);
 
   subclass = (class >> 16) & 0xFF;
   class >>= 24;
