@@ -883,6 +883,10 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 		  "no mapping exists for `%s'", os_dev);
       return 0;
     }
+
+  if (grub_strcmp (os_dev, convert_system_partition_to_system_disk (os_dev)) 
+      == 0)
+    return make_device_name (drive, -1, -1);
   
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (! S_ISCHR (st.st_mode))

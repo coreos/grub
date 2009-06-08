@@ -1,3 +1,10 @@
+2009-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Bugfix: install on partitionless device
+
+	* util/hostdisk.c (grub_util_biosdisk_get_grub_dev): check if os_dev
+	is a whole disk
+
 2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
 
 	* Makefile.in (uninstall): Remove all $include_DATA files.
