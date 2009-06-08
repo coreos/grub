@@ -141,6 +141,7 @@ static int NESTED_FUNC_ATTR
 grub_uhci_pci_iter (int bus, int device, int func,
 		    grub_pci_id_t pciid __attribute__((unused)))
 {
+  grub_uint32_t class_code;
   grub_uint32_t class;
   grub_uint32_t subclass;
   grub_uint32_t interf;
@@ -151,11 +152,11 @@ grub_uhci_pci_iter (int bus, int device, int func,
   int i;
 
   addr = grub_pci_make_address (bus, device, func, 2);
-  class = grub_pci_read (addr);
+  class_code = grub_pci_read (addr) >> 8;
 
-  interf = (class >> 8) & 0xFF;
-  subclass = (class >> 16) & 0xFF;
-  class >>= 24;
+  interf = class_code & 0xFF;
+  subclass = (class_code >> 8) & 0xFF;
+  class = class_code >> 16;
 
   /* If this is not an UHCI controller, just return.  */
   if (class != 0x0c || subclass != 0x03 || interf != 0x00)

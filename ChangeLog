@@ -1,5 +1,10 @@
 2009-06-08  Oliver Henshaw <oliver.henshaw@gmail.com>
 
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Define the Class,
+	Subclass and Programming Interface fields in terms of the 3 byte
+	Class Code register.
+	* bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
+
 	* bus/usb/ohci.c (grub_ohci_pci_iter): Check that programming
 	interface is OHCI.  Add grub_dprintf for symmetry with
 	bus/usb/uhci.c.
