@@ -310,6 +310,13 @@ uninstall:
 	  dest="`echo $$file | sed 's,.*/,,' | sed '$(transform)'`"; \
 	  rm -f $(DESTDIR)$(sysconfdir)/grub.d/$$dest; \
 	done
+	@list='$(include_DATA)'; \
+	for file in $$list; do \
+	  echo $$file; \
+	  dest="`echo $$file | sed 's,include/,,'`"; \
+	  echo $$dest; \
+	  rm -f $(DESTDIR)$(includedir)/$$dest; \
+	done
 
 clean:
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)

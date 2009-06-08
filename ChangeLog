@@ -1,5 +1,9 @@
 2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
 
+	* Makefile.in (uninstall): Remove all $include_DATA files.
+
+2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
+
 	* commands/true.c: New file.  Implement the true and false commands.
 	* conf/common.rmk.c (pkglib_MODULES): Add `true.mod'.
 	(true_mod_SOURCES): New variable.
