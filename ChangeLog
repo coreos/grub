@@ -1,3 +1,8 @@
+2009-06-08  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* loader/i386/linux.c (grub_cmd_linux): When processing `vga=', use
+	as fallback an equivalent option without depth.
+
 2009-06-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Not fail if unable to retrieve C/H/S on LBA disks
