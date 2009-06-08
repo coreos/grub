@@ -1,3 +1,11 @@
+2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
+
+	* commands/true.c: New file.  Implement the true and false commands.
+	* conf/common.rmk.c (pkglib_MODULES): Add `true.mod'.
+	(true_mod_SOURCES): New variable.
+	(true_mod_CFLAGS): Likewise.
+	(true_mod_LDFLAGS): Likewise.
+
 2009-06-05  Colin D Bennett  <colin@gibibit.com>
 
 	Optimized font character lookup using binary search instead of linear

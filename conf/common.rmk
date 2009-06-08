@@ -354,7 +354,7 @@ pkglib_MODULES += minicmd.mod extcmd.mod hello.mod handler.mod	\
 	terminfo.mod test.mod blocklist.mod hexdump.mod		\
 	read.mod sleep.mod loadenv.mod crc.mod parttool.mod	\
 	pcpart.mod memrw.mod boot.mod normal.mod sh.mod lua.mod	\
-	gptsync.mod
+	gptsync.mod true.mod
 
 # For gptsync.mod.
 gptsync_mod_SOURCES = commands/gptsync.c
@@ -485,6 +485,11 @@ crc_mod_LDFLAGS = $(COMMON_LDFLAGS)
 memrw_mod_SOURCES = commands/memrw.c
 memrw_mod_CFLAGS = $(COMMON_CFLAGS)
 memrw_mod_LDFLAGS = $(COMMON_LDFLAGS)
+
+# For true.mod
+true_mod_SOURCES = commands/true.c
+true_mod_CFLAGS = $(COMMON_CFLAGS)
+true_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For normal.mod.
 normal_mod_SOURCES = normal/main.c normal/cmdline.c normal/dyncmd.c \
