@@ -143,6 +143,7 @@ grub_uhci_pci_iter (int bus, int device, int func,
 {
   grub_uint32_t class;
   grub_uint32_t subclass;
+  grub_uint32_t interf;
   grub_uint32_t base;
   grub_uint32_t fp;
   grub_pci_address_t addr;
@@ -152,11 +153,12 @@ grub_uhci_pci_iter (int bus, int device, int func,
   addr = grub_pci_make_address (bus, device, func, 2);
   class = grub_pci_read (addr);
 
+  interf = (class >> 8) & 0xFF;
   subclass = (class >> 16) & 0xFF;
   class >>= 24;
 
   /* If this is not an UHCI controller, just return.  */
-  if (class != 0x0c || subclass != 0x03)
+  if (class != 0x0c || subclass != 0x03 || interf != 0x00)
     return 0;
 
   /* Determine IO base address.  */
@@ -177,8 +179,8 @@ grub_uhci_pci_iter (int bus, int device, int func,
   u->framelist = 0;
   u->qh = 0;
   u->td = 0;
-  grub_dprintf ("uhci", "class=0x%02x 0x%02x base=0x%x\n",
-		class, subclass, u->iobase);
+  grub_dprintf ("uhci", "class=0x%02x 0x%02x interface 0x%02x base=0x%x\n",
+		class, subclass, interf, u->iobase);
 
   /* Reserve a page for the frame list.  */
   u->framelist = grub_memalign (4096, 4096);

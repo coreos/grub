@@ -133,7 +133,7 @@ grub_ohci_pci_iter (int bus, int device, int func,
   class >>= 24;
 
   /* If this is not an OHCI controller, just return.  */
-  if (class != 0x0c || subclass != 0x03)
+  if (class != 0x0c || subclass != 0x03 || interf != 0x10)
     return 0;
 
   /* Determine IO base address.  */
@@ -158,6 +158,9 @@ grub_ohci_pci_iter (int bus, int device, int func,
 
   /* Reserve memory for the HCCA.  */
   o->hcca = (struct grub_ohci_hcca *) grub_memalign (256, 256);
+
+  grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x base=%p\n",
+ 		class, subclass, interf, o->iobase);
 
   /* Check if the OHCI revision is actually 1.0 as supported.  */
   revision = grub_ohci_readreg32 (o, GRUB_OHCI_REG_REVISION);

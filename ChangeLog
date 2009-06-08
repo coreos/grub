@@ -1,5 +1,12 @@
 2009-06-08  Oliver Henshaw <oliver.henshaw@gmail.com>
 
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Check that programming
+	interface is OHCI.  Add grub_dprintf for symmetry with
+	bus/usb/uhci.c.
+	* bus/usb/uhci.c (grub_uhci_pci_iter): Check that programming
+	interface is UHCI.  Add interf variable for programming
+	interface.  Print interface with class/subclass.
+
 	* bus/usb/ohci.c: Set interf with correct field.
 
 	* bus/usb/uhci.c: Remove unneeded doubled lines.
