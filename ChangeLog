@@ -10,20 +10,20 @@
 2009-06-09  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/i386/pc/grub-install.in: Change the error message if UUIDs
-	aren't avaible if ata.mod gets used.
+	aren't available if ata.mod gets used.
 
-2009-06-09  Oliver Henshaw <oliver.henshaw@gmail.com>
+2009-06-09  Oliver Henshaw  <oliver.henshaw@gmail.com>
 
-        * bus/usb/ohci.c (grub_ohci_pci_iter): Link struct only after 
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Link struct only after
 	initialising controller.
-        * bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
+	* bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
 
 2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
 
 	* util/i386/pc/grub-install.in: Add a parameter --disk-module
 	to choose between ata and biosdisk module on i386-pc.
 
-2009-06-08  Oliver Henshaw <oliver.henshaw@gmail.com>
+2009-06-08  Oliver Henshaw  <oliver.henshaw@gmail.com>
 
 	* bus/usb/ohci.c (grub_ohci_pci_iter): Define the Class,
 	Subclass and Programming Interface fields in terms of the 3 byte
@@ -52,7 +52,7 @@
 
 	Not fail if unable to retrieve C/H/S on LBA disks
 
-	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): behave gracefully 
+	* disk/i386/pc/biosdisk.c (grub_biosdisk_open): behave gracefully
 	if unable to retrieve C/H/S on LBA disks
 
 2009-06-08  Pavel Roskin  <proski@gnu.org>
@@ -108,14 +108,14 @@
 
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* kern/i386/pc/startup.S [APPLE_CC]: block of nops to 
+	* kern/i386/pc/startup.S [APPLE_CC]: block of nops to
 	compensate a compiler bug
 
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* include/grub/term.h (GRUB_TERM_BACKSPACE): explicitely define as 8
+	* include/grub/term.h (GRUB_TERM_BACKSPACE): explicitly define as 8
 	instead of '\b'
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Definitions for creating asm symbols with Apple's CC
@@ -134,13 +134,13 @@
 	[! APPLE_CC] (CODE_LENG): skip
 	[! APPLE_CC] (setup_sects): likewise
 	[! APPLE_CC]: skip filling
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Address in trampolines based on 32-bit registers when compiled
 	with Apple's CC
 
-	* loader/i386/xnu_helper.S [APPLE_CC]: use 32-bit registers 
+	* loader/i386/xnu_helper.S [APPLE_CC]: use 32-bit registers
 	for addresses
 	* loader/i386/linux_trampoline.S [APPLE_CC]: likewise
 
@@ -151,7 +151,7 @@
 	* kern/misc.c [APPLE_CC] (memcpy): new function
 	[APPLE_CC] (memmove): likewise
 	[APPLE_CC && !GRUB_UTIL] (grub_err_printf): likewise
-	(memcpy): define alias conditionaly on !APPLE_CC
+	(memcpy): define alias conditionally on !APPLE_CC
 	(memset): likewise
 	(abort): likewise
 	* include/grub/misc.h (memove): don't define when both GRUB_UTIL and
@@ -163,8 +163,8 @@
 
 	Use grub-macho2img when compiling with Apple's CC for PCBIOS machine
 
-	* conf/common.rmk (bin_UTILITIES): add (on false on condition) 
-	grub-macho2img 
+	* conf/common.rmk (bin_UTILITIES): add (on false on condition)
+	grub-macho2img
 	(CLEANFILES): add grub-macho2img
 	(grub_macho2img_SOURCES): new variable
 	* kern/i386/pc/startup.S (bss_start): new variable
@@ -183,7 +183,7 @@
 	(efiemu64_s.o): likewise
 	* configure.ac: check for objconv when compiling with Apple's CC
 	* genmk.rb: use objconv for modules when compiled with Apple's CC
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Define segment as well as section when compiling with
@@ -199,35 +199,35 @@
 	(reflect): likewise
 	* include/grub/dl.h (GRUB_MOD_NAME): define segment with Apple's CC
 	(GRUB_MOD_DEP): likewise
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Allow a compilation without -mcmodel=large
 
 	* kern/efi/mm.c (grub_efi_allocate_pages): don't allocate >4GiB
 	when compiled without -mcmodel=large
-	(filter_memory_map): remove memory post 4 GiB when compiled 
+	(filter_memory_map): remove memory post 4 GiB when compiled
 	without -mcmodel=large
-	* configure.ac: fail gracefully and add -DMCMODEL_SMALL=1 to 
+	* configure.ac: fail gracefully and add -DMCMODEL_SMALL=1 to
 	TARGET_CFLAGS when -mcmodel=large isn't supported
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove nested functions in efiemu core
 
 	* efiemu/runtime/efiemu.c (reflect): make static instead of nested
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Avoid clobbering %ebx/%rbx in inline assembly with Apple's CC
 
 	* efiemu/runtime/efiemu.c (write_cmos): use %cl instead of %bl as
 	temporary storage
-	* include/grub/i386/tsc.h (grub_get_tsc): restore %rbx/%ebx when 
-	using Apple's CC 
+	* include/grub/i386/tsc.h (grub_get_tsc): restore %rbx/%ebx when
+	using Apple's CC
 	(grub_cpu_is_tsc_supported): likewise
 	* loader/i386/xnu.c (guessfsb): restore %rbx/%ebx in inline assembly
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Absolute addressing through constant with Apple's cc
@@ -264,7 +264,7 @@
 	* genmk.rb: adapt nm options if we use Apple's utils
 	* aclocal.m4 (grub_apple_cc): new test
 	(grub_apple_target_cc): likewise
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Simplify sed expressions and improve awk
@@ -279,16 +279,16 @@
 
 	* boot/i386/pc/boot.S: add start
 	* boot/i386/pc/pxeboot.S: likewise
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix wrong assumptions with grub-mkimage on EFI
-	
-	* i386/efi/grub-mkimage.c (read_kernel_module): don't write prefox here
+
+	* i386/efi/grub-mkimage.c (read_kernel_module): don't write prefix here
 	(relocate_addresses): consider both r_addend and value at offset
 	(make_mods_section): zerofill modinfo and header
 	(convert_elf): write prefix here
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Use .asciz instead of .string
@@ -297,7 +297,7 @@
 	* i386/pc/boot.S: likewise
 	* include/grub/dl.h (GRUB_MOD_DEP): likewise
 	(GRUB_MOD_NAME): likewise
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	gfxpayload support
@@ -318,10 +318,10 @@
 	(DEFAULT_VIDEO_MODE): new definition
 	(video_hook): new function
 	(grub_gfxterm_init): use grub_video_set_mode
-	* util/grub.d/30_os-prober.in: remove explicit modesetting before 
+	* util/grub.d/30_os-prober.in: remove explicit modesetting before
 	loading xnu
 	* video/video.c (grub_video_setup): removed
-	(grub_video_set_mode): new function based on grub_gfxterm_init and 
+	(grub_video_set_mode): new function based on grub_gfxterm_init and
 	grub_video_setup
 
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
@@ -332,7 +332,7 @@
 	(revparse_biosdisk): likewise
 	(list_mappings): derive name from id directly
 	(grub_cmd_drivemap): use tryparse_diskstring
-	
+
 2009-06-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Script fixes
@@ -345,12 +345,12 @@
 	(grub_script_execute_argument_to_string): new prototype
 	* kern/parser.c (state_transitions): reorder
 	(grub_parser_cmdline_state): fix a bug and make more compact
-	* script/sh/execute.c (grub_script_execute_argument_to_string): 
+	* script/sh/execute.c (grub_script_execute_argument_to_string):
 	make global
 	(grub_script_execute_cmdline): use new format
 	* script/sh/function.c (grub_script_function_create): make functionname
 	grub_script_arg. All callers updated
-	* script/sh/lexer.c (grub_script_lexer_init): initilaize tokenonhold
+	* script/sh/lexer.c (grub_script_lexer_init): initialize tokenonhold
 	(grub_script_yylex): remove
 	(grub_script_yylex2): renamed to ...
 	(grub_script_yylex): ...renamed
@@ -371,7 +371,7 @@
 	(function): likewise
 	(command): move error handling to script
 	(menuentry): move grub_script_lexer_ref before
-	* script/sh/script.c (grub_script_create_cmdline): remove cmdline 
+	* script/sh/script.c (grub_script_create_cmdline): remove cmdline
 	argument. All callers updated
 
 2009-06-04  Robert Millan  <rmh.grub@aybabtu.com>
@@ -489,7 +489,7 @@
 2009-05-19  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/x86_64-efi.rmk (linux_mod_ASFLAGS): Add missing variable
-	* loader/i386/linux_trampoline.S: Fix identation
+	* loader/i386/linux_trampoline.S: Fix indentation
 	* loader/i386/xnu_helper.S: Likewise
 
 2009-05-18  Colin D Bennett  <colin@gibibit.com>
@@ -517,7 +517,7 @@
 	* conf/x86_64-efi.rmk (linux_mod_SOURCES): added
 	loader/i386/efi/linux_trampoline.S
 	* include/grub/x86_64/efi/loader.h (grub_linux_real_boot): removed
-	declration
+	declaration
 	* kern/x86_64/efi/startup.S (grub_linux_real_boot): moved from
 	here
 	* loader/i386/linux_trampoline.S: moved here
@@ -770,7 +770,7 @@
 2009-05-06  Robert Millan  <rmh.grub@aybabtu.com>
 
 	* util/i386/pc/grub-setup.c (setup): Fix check for embed region
-	existance.
+	existence.
 
 2009-05-05  Felix Zielcke  <fzielcke@z-51.de>
 
@@ -944,7 +944,7 @@
 
 2009-05-04  Robert Millan  <rmh.grub@aybabtu.com>
 
-	* util/misc.c (grub_util_warn): New function.  Emmits a warning
+	* util/misc.c (grub_util_warn): New function.  Emits a warning
 	unconditionally.
 	* include/grub/util/misc.h (grub_util_warn): New declaration.
 
