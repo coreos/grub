@@ -1,8 +1,13 @@
+2009-06-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/i386/pc/grub-install.in: Change the error message if UUIDs
+	aren't avaible if ata.mod gets used.
+
 2009-06-09  Oliver Henshaw <oliver.henshaw@gmail.com>
 
-        * bus/usb/ohci.c (grub_ohci_pci_iter): Link struct only after 
+	* bus/usb/ohci.c (grub_ohci_pci_iter): Link struct only after 
 	initialising controller.
-        * bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
+	* bus/usb/uhci.c (grub_uhci_pci_iter): Likewise.
 
 2009-06-08  Felix Zielcke  <fzielcke@z-51.de>
 

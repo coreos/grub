@@ -286,7 +286,7 @@ if [ "x${devabstraction_module}" = "x" ] ; then
         # generic method (used on coreboot and ata mod)
         uuid="`$grub_probe --target=fs_uuid --device ${grub_device}`"
         if [ "x${uuid}" = "x" ] ; then
-          echo "UUID needed on this platform and with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
+          echo "UUID needed with ata mod, but the filesystem containing ${grubdir} does not support UUIDs." 1>&2
           exit 1
         fi
         prefix_drive="(UUID=${uuid})"
