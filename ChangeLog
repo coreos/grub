@@ -2,6 +2,16 @@
 
 	* fs/i386/pc/pxe.c (grub_pxefs_read): Fix returned values.
 
+2009-06-09  Robert Millan  <rmh.grub@aybabtu.com>
+
+	* util/deviceiter.c (grub_util_iterate_devices): Increase number of
+	disk limit to 26 for IDE, Virtio, Xen and SCSI.
+
+2009-06-09  Felix Zielcke  <fzielcke@z-51.de>
+
+	* util/i386/pc/grub-install.in: Change the error message if UUIDs
+	aren't avaible if ata.mod gets used.
+
 2009-06-09  Oliver Henshaw <oliver.henshaw@gmail.com>
 
         * bus/usb/ohci.c (grub_ohci_pci_iter): Link struct only after 
