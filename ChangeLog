@@ -1,5 +1,8 @@
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
+	* configure.ac: Use -nostdlib when probing for the target.  It
+	should not be required to have libc for the target.
+
 	* configure.ac: Remove checks for __bswapsi2 and __bswapdi2,
 	they fail without libc headers for the target.
 	* include/grub/powerpc/libgcc.h: Use weak attribute for all
