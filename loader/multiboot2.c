@@ -17,10 +17,10 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <multiboot2.h>
 #include <grub/loader.h>
 #include <grub/machine/loader.h>
 #include <grub/multiboot2.h>
+#include <multiboot2.h>
 #include <grub/elfload.h>
 #include <grub/file.h>
 #include <grub/err.h>

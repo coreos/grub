@@ -24,6 +24,12 @@
 #include <grub/err.h>
 #include <grub/elf.h>
 
+#ifndef GRUB_UTIL
+typedef grub_uint32_t uint32_t;
+typedef grub_uint64_t uint64_t;
+#define __WORDSIZE (8 * GRUB_TARGET_SIZEOF_VOID_P)
+#endif
+
 struct multiboot_tag_header;
 
 grub_err_t

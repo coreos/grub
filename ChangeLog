@@ -1,5 +1,15 @@
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
+	* include/grub/multiboot2.h: Provide compatibility defines for
+	multiboot2.h.
+	* include/multiboot2.h: Include stdint.h only if needed, using
+	angle brackets.
+	* loader/i386/pc/multiboot2.c: Include multiboot2.h after
+	grub/multiboot2.h.
+	* loader/ieee1275/multiboot2.c: Likewise.
+	* loader/multiboot2.c: Likewise.
+	* loader/multiboot_loader.c: Likewise.
+
 	* configure.ac: Use -nostdlib when probing for the target.  It
 	should not be required to have libc for the target.
 
