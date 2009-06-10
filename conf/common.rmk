@@ -260,8 +260,8 @@ cpio_mod_CFLAGS = $(COMMON_CFLAGS)
 cpio_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For tar.mod.
-tar_mod_SOURCES = fs/cpio.c
-tar_mod_CFLAGS = $(COMMON_CFLAGS) -DMODE_USTAR
+tar_mod_SOURCES = fs/tar.c
+tar_mod_CFLAGS = $(COMMON_CFLAGS)
 tar_mod_LDFLAGS = $(COMMON_LDFLAGS)
 
 # For udf.mod.

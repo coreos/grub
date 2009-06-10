@@ -1,3 +1,8 @@
+2009-06-10  Pavel Roskin  <proski@gnu.org>
+
+	* conf/common.rmk: Compile tar.mod from tar.c, not cpio.c.  The
+	build system doesn't need to be aware of the tar.c internals.
+
 2009-06-09  Michel Hermier  <michel.hermier@gmail.com>
 
 	* fs/i386/pc/pxe.c (grub_pxefs_read): Fix returned values.
