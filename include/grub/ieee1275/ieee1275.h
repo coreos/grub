@@ -20,7 +20,6 @@
 #ifndef GRUB_IEEE1275_HEADER
 #define GRUB_IEEE1275_HEADER	1
 
-#include <stdint.h>
 #include <grub/err.h>
 #include <grub/types.h>
 #include <grub/machine/ieee1275.h>

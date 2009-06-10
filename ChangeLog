@@ -1,5 +1,9 @@
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
+	* kern/ieee1275/openfw.c: Remove libc includes.
+	* kern/ieee1275/cmain.c: Likewise.
+	* include/grub/ieee1275/ieee1275.h: Likewise.
+
 	* kern/i386/coreboot/init.c: Include grub/cpu/tsc.h to fix
 	compiler warnings.
 

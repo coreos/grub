@@ -17,8 +17,6 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <alloca.h>
-#include <stdint.h>
 #include <grub/kernel.h>
 #include <grub/misc.h>
 #include <grub/types.h>
