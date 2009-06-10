@@ -1,3 +1,11 @@
+2009-06-10  Felix Zielcke  <fzielcke@z-51.de>
+
+	* gendistlist.sh (EXTRA_DISTFILES): Add `genhandlerlist.sh' and
+	`genparttoollist.sh'.
+	(DISTDIRS): Add `efiemu', `mmap', `parttool' and `script'.
+	Add `*.sh' to the list find searches for and change `mdate.sh'
+	to `mdate-sh'.
+
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
 	* include/grub/multiboot2.h: Provide compatibility defines for
