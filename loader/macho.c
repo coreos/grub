@@ -51,7 +51,7 @@ grub_macho_parse32 (grub_macho_t macho)
 
   /* Read header and check magic*/
   if (grub_file_seek (macho->file, macho->offset32) == (grub_off_t) -1
-      || grub_file_read (macho->file, (char *) &head, sizeof (head))
+      || grub_file_read (macho->file, &head, sizeof (head))
       != sizeof(head))
     {
       grub_error (GRUB_ERR_READ_ERROR, "Cannot read Mach-O header.");
@@ -74,7 +74,7 @@ grub_macho_parse32 (grub_macho_t macho)
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "not enough memory to read commands");
       return;
     }
-  if (grub_file_read (macho->file, (char *) macho->cmds32,
+  if (grub_file_read (macho->file, macho->cmds32,
 		      (grub_size_t) macho->cmdsize32)
       != (grub_ssize_t) macho->cmdsize32)
     {
@@ -300,7 +300,7 @@ grub_macho_file (grub_file_t file)
   if (grub_file_seek (macho->file, 0) == (grub_off_t) -1)
     goto fail;
 
-  if (grub_file_read (macho->file, (char *) &filestart, sizeof (filestart))
+  if (grub_file_read (macho->file, &filestart, sizeof (filestart))
       != sizeof (filestart))
     {
       grub_error_push ();
@@ -322,7 +322,7 @@ grub_macho_file (grub_file_t file)
       archs = grub_malloc (sizeof (struct grub_macho_fat_arch) * narchs);
       if (!archs)
 	goto fail;
-      if (grub_file_read (macho->file, (char *) archs,
+      if (grub_file_read (macho->file, archs,
 			  sizeof (struct grub_macho_fat_arch) * narchs)
 	  != (grub_ssize_t)sizeof(struct grub_macho_fat_arch) * narchs)
 	{

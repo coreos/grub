@@ -1,5 +1,8 @@
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
+	* kern/file.c (grub_file_read): Use void pointer for the buffer.
+	Adjust all callers.
+
 	* kern/ieee1275/openfw.c: Remove libc includes.
 	* kern/ieee1275/cmain.c: Likewise.
 	* include/grub/ieee1275/ieee1275.h: Likewise.

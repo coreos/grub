@@ -618,7 +618,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 		       "Couldn't load driver package");
 
   /* Sometimes caches are fat binary. Errgh. */
-  if (grub_file_read (file, (char *) &head, sizeof (head))
+  if (grub_file_read (file, &head, sizeof (head))
       != (grub_ssize_t) (sizeof (head)))
     {
       /* I don't know the internal structure of package but
@@ -641,7 +641,7 @@ grub_cmd_xnu_mkext (grub_command_t cmd __attribute__ ((unused)),
 			     "Couldn't read file %s", args[0]);
 
 	}
-      if (grub_file_read (file, (char *) archs,
+      if (grub_file_read (file, archs,
 			  sizeof (struct grub_macho_fat_arch) * narchs)
 	  != (grub_ssize_t) sizeof(struct grub_macho_fat_arch) * narchs)
 	{

@@ -111,7 +111,7 @@ grub_file_open (const char *name)
 }
 
 grub_ssize_t
-grub_file_read (grub_file_t file, char *buf, grub_size_t len)
+grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 {
   grub_ssize_t res;
 

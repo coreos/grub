@@ -158,7 +158,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
   if (! file)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND, "file not found");
 
-  if (grub_file_read (file, (void *) &tempo, sizeof(tempo)) != sizeof(tempo))
+  if (grub_file_read (file, &tempo, sizeof(tempo)) != sizeof(tempo))
     {
       grub_file_close (file);
       return grub_error (GRUB_ERR_FILE_READ_ERROR,
@@ -167,7 +167,7 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
 
   grub_dprintf ("play","tempo = %d\n", tempo);
 
-  while (grub_file_read (file, (void *) &buf,
+  while (grub_file_read (file, &buf,
                          sizeof (struct note)) == sizeof (struct note)
          && buf.pitch != T_FINE && grub_checkkey () < 0)
     {

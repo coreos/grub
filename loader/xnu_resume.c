@@ -55,7 +55,7 @@ grub_xnu_resume (char *imagename)
     return 0;
 
   /* Read the header. */
-  if (grub_file_read (file, (char *) &hibhead, sizeof (hibhead))
+  if (grub_file_read (file, &hibhead, sizeof (hibhead))
       !=sizeof (hibhead))
     {
       grub_file_close (file);

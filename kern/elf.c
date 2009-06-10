@@ -71,7 +71,7 @@ grub_elf_file (grub_file_t file)
   if (grub_file_seek (elf->file, 0) == (grub_off_t) -1)
     goto fail;
 
-  if (grub_file_read (elf->file, (char *) &elf->ehdr, sizeof (elf->ehdr))
+  if (grub_file_read (elf->file, &elf->ehdr, sizeof (elf->ehdr))
       != sizeof (elf->ehdr))
     {
       grub_error_push ();

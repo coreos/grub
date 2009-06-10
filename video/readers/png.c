@@ -118,7 +118,7 @@ grub_png_get_dword (struct grub_png_data *data)
   grub_uint32_t r;
 
   r = 0;
-  grub_file_read (data->file, (char *) &r, sizeof (grub_uint32_t));
+  grub_file_read (data->file, &r, sizeof (grub_uint32_t));
 
   return grub_be_to_cpu32 (r);
 }
@@ -160,7 +160,7 @@ grub_png_get_byte (struct grub_png_data *data)
     }
 
   r = 0;
-  grub_file_read (data->file, (char *) &r, 1);
+  grub_file_read (data->file, &r, 1);
 
   if (data->inside_idat)
     data->idat_remain--;
@@ -781,7 +781,7 @@ grub_png_decode_png (struct grub_png_data *data)
 {
   grub_uint8_t magic[8];
 
-  if (grub_file_read (data->file, (char *) &magic[0], 8) != 8)
+  if (grub_file_read (data->file, &magic[0], 8) != 8)
     return grub_errno;
 
   if (grub_memcmp (magic, png_magic, sizeof (png_magic)))

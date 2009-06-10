@@ -215,7 +215,7 @@ open_section (grub_file_t file, struct font_file_section *section)
     }
 
   /* Read the big-endian 32-bit section length.  */
-  retval = grub_file_read (file, (char *) &raw_length, 4);
+  retval = grub_file_read (file, &raw_length, 4);
   if (retval >= 0 && retval < 4)
     {
       /* EOF encountered.  */
@@ -286,7 +286,7 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
       struct char_index_entry *entry = &font->char_index[i];
 
       /* Read code point value; convert to native byte order.  */
-      if (grub_file_read (file, (char *) &entry->code, 4) != 4)
+      if (grub_file_read (file, &entry->code, 4) != 4)
         return 1;
       entry->code = grub_be_to_cpu32 (entry->code);
 
@@ -302,11 +302,11 @@ load_font_index (grub_file_t file, grub_uint32_t sect_length, struct
       last_code = entry->code;
 
       /* Read storage flags byte.  */
-      if (grub_file_read (file, (char *) &entry->storage_flags, 1) != 1)
+      if (grub_file_read (file, &entry->storage_flags, 1) != 1)
         return 1;
 
       /* Read glyph data offset; convert to native byte order.  */
-      if (grub_file_read (file, (char *) &entry->offset, 4) != 4)
+      if (grub_file_read (file, &entry->offset, 4) != 4)
         return 1;
       entry->offset = grub_be_to_cpu32 (entry->offset);
 
@@ -364,7 +364,7 @@ read_section_as_short (struct font_file_section *section, grub_int16_t *value)
                   section->length);
       return 1;
     }
-  if (grub_file_read (section->file, (char *) &raw_value, 2) != 2)
+  if (grub_file_read (section->file, &raw_value, 2) != 2)
     return 1;
 
   *value = grub_be_to_cpu16 (raw_value);
@@ -579,7 +579,7 @@ fail:
 static int
 read_be_uint16 (grub_file_t file, grub_uint16_t * value)
 {
-  if (grub_file_read (file, (char *) value, 2) != 2)
+  if (grub_file_read (file, value, 2) != 2)
     return 1;
   *value = grub_be_to_cpu16 (*value);
   return 0;
@@ -683,7 +683,7 @@ grub_font_get_glyph_internal (grub_font_t font, grub_uint32_t code)
       /* Don't try to read empty bitmaps (e.g., space characters).  */
       if (len != 0)
         {
-          if (grub_file_read (font->file, (char *) glyph->bitmap, len) != len)
+          if (grub_file_read (font->file, glyph->bitmap, len) != len)
             {
               remove_font (font);
               return 0;

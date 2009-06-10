@@ -434,7 +434,7 @@ grub_module2 (int argc, char *argv[])
 
   grub_dprintf ("loader", "Loading module at 0x%x - 0x%x\n", modaddr,
 		modaddr + modsize);
-  if (grub_file_read (file, (char *) modaddr, modsize) != modsize)
+  if (grub_file_read (file, (void *) modaddr, modsize) != modsize)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");
       goto out;

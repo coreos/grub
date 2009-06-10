@@ -68,7 +68,7 @@ grub_chainloader_cmd (const char *filename, grub_chainloader_flags_t flags)
     goto fail;
 
   /* Read the first block.  */
-  if (grub_file_read (file, (char *) 0x7C00, GRUB_DISK_SECTOR_SIZE)
+  if (grub_file_read (file, (void *) 0x7C00, GRUB_DISK_SECTOR_SIZE)
       != GRUB_DISK_SECTOR_SIZE)
     {
       if (grub_errno == GRUB_ERR_NONE)

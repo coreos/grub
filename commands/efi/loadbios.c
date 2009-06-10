@@ -169,7 +169,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
       if (file->size != 4)
 	grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid int10 dump size");
       else
-	grub_file_read (file, (char *) 0x40, 4);
+	grub_file_read (file, (void *) 0x40, 4);
 
       grub_file_close (file);
       if (grub_errno)
@@ -185,7 +185,7 @@ grub_cmd_loadbios (grub_command_t cmd __attribute__ ((unused)),
     grub_error (GRUB_ERR_BAD_ARGUMENT, "Invalid bios dump size");
   else if (enable_rom_area ())
     {
-      grub_file_read (file, (char *) VBIOS_ADDR, size);
+      grub_file_read (file, (void *) VBIOS_ADDR, size);
       fake_bios_data (size <= 0x40000);
       lock_rom_area ();
     }

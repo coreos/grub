@@ -163,7 +163,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (! file)
     goto fail;
 
-  if (grub_file_read (file, (char *) &lh, sizeof (lh)) != sizeof (lh))
+  if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
     {
       grub_error (GRUB_ERR_READ_ERROR, "cannot read the linux header");
       goto fail;
@@ -257,7 +257,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
     goto fail;
 
   initrd_size = grub_file_size (file);
-  if (grub_file_read (file, (char *) GRUB_OFW_LINUX_INITRD_ADDR,
+  if (grub_file_read (file, (void *) GRUB_OFW_LINUX_INITRD_ADDR,
                       initrd_size) != (int) initrd_size)
     {
       grub_error (GRUB_ERR_FILE_READ_ERROR, "Couldn't read file");

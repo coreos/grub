@@ -636,7 +636,7 @@ grub_bsd_load_aout (grub_file_t file)
   if ((grub_file_seek (file, 0)) == (grub_off_t) - 1)
     return grub_errno;
 
-  if (grub_file_read (file, (char *) &ah, sizeof (ah)) != sizeof (ah))
+  if (grub_file_read (file, &ah, sizeof (ah)) != sizeof (ah))
     return grub_error (GRUB_ERR_READ_ERROR, "cannot read the a.out header");
 
   if (grub_aout_get_type (&ah) != AOUT_TYPE_AOUT32)
@@ -988,7 +988,7 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_file_read (file, (char *) kern_end, file->size);
+  grub_file_read (file, (void *) kern_end, file->size);
   if ((!grub_errno) &&
       (!grub_freebsd_add_meta_module (0, argc, argv, kern_end, file->size)))
     kern_end = ALIGN_PAGE (kern_end + file->size);

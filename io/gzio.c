@@ -175,7 +175,7 @@ test_header (grub_file_t file)
    *  (other than a real error with the disk) then we don't think it
    *  is a compressed file, and simply mark it as such.
    */
-  if (grub_file_read (gzio->file, (char *) buf, 10) != 10
+  if (grub_file_read (gzio->file, buf, 10) != 10
       || ((*((grub_uint16_t *) buf) != GZIP_MAGIC)
 	  && (*((grub_uint16_t *) buf) != OLD_GZIP_MAGIC)))
     {
@@ -191,7 +191,7 @@ test_header (grub_file_t file)
   if (buf[2] != DEFLATED
       || (buf[3] & UNSUPPORTED_FLAGS)
       || ((buf[3] & EXTRA_FIELD)
-	  && (grub_file_read (gzio->file, (char *) buf, 2) != 2
+	  && (grub_file_read (gzio->file, buf, 2) != 2
 	      || eat_field (gzio->file,
 			    grub_le_to_cpu16 (*((grub_uint16_t *) buf)))))
       || ((buf[3] & ORIG_NAME) && eat_field (gzio->file, -1))
@@ -205,7 +205,7 @@ test_header (grub_file_t file)
 
   grub_file_seek (gzio->file, grub_file_size (gzio->file) - 8);
 
-  if (grub_file_read (gzio->file, (char *) buf, 8) != 8)
+  if (grub_file_read (gzio->file, buf, 8) != 8)
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, "unsupported gzip format");
       return 0;
@@ -367,7 +367,7 @@ get_byte (grub_file_t file)
       || gzio->inbuf_d == INBUFSIZ)
     {
       gzio->inbuf_d = 0;
-      grub_file_read (gzio->file, (char *) gzio->inbuf, INBUFSIZ);
+      grub_file_read (gzio->file, gzio->inbuf, INBUFSIZ);
     }
 
   return gzio->inbuf[gzio->inbuf_d++];
