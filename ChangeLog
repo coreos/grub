@@ -1,5 +1,12 @@
 2009-06-10  Pavel Roskin  <proski@gnu.org>
 
+	* configure.ac: Remove checks for __bswapsi2 and __bswapdi2,
+	they fail without libc headers for the target.
+	* include/grub/powerpc/libgcc.h: Use weak attribute for all
+	exports.
+	* include/grub/sparc64/libgcc.h: Likewise.  Don't use
+	preprocessor conditionals.
+
 	* conf/common.rmk: Compile tar.mod from tar.c, not cpio.c.  The
 	build system doesn't need to be aware of the tar.c internals.
 

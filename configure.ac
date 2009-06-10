@@ -409,9 +409,6 @@ CFLAGS="$TARGET_CFLAGS"
 CPPFLAGS="$TARGET_CPPFLAGS"
 LDFLAGS="$TARGET_LDFLAGS"
 
-# Check for target functions.
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2)
-
 # Defined in aclocal.m4.
 grub_PROG_TARGET_CC
 if test "x$TARGET_APPLE_CC" != x1 ; then

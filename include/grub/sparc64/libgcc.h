@@ -20,12 +20,8 @@
 
 void EXPORT_FUNC (memset) (void);
 
-#ifdef HAVE___BSWAPSI2
 typedef int SItype __attribute__ ((mode (SI)));
-SItype EXPORT_FUNC (__bswapsi2) (SItype);
-#endif
+SItype EXPORT_FUNC (__bswapsi2) (SItype) __attribute__ ((weak));
 
-#ifdef HAVE___BSWAPDI2
 typedef int DItype __attribute__ ((mode (DI)));
-DItype EXPORT_FUNC (__bswapdi2) (DItype);
-#endif
+DItype EXPORT_FUNC (__bswapdi2) (DItype) __attribute__ ((weak));
